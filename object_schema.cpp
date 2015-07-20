@@ -23,7 +23,6 @@
 #include <realm/table.hpp>
 
 using namespace realm;
-using namespace std;
 
 ObjectSchema::ObjectSchema(Group *group, const std::string &name) : name(name) {
     TableRef tableRef = ObjectStore::table_for_object_type(group, name);
@@ -48,7 +47,7 @@ ObjectSchema::ObjectSchema(Group *group, const std::string &name) : name(name) {
             realm::TableRef linkTable = table->get_link_target(col);
             property.object_type = ObjectStore::object_type_for_table_name(linkTable->get_name().data());
         }
-        properties.push_back(move(property));
+        properties.push_back(std::move(property));
     }
 
     primary_key = realm::ObjectStore::get_primary_key_for_object(group, name);

@@ -27,7 +27,6 @@
 #include <string.h>
 
 using namespace realm;
-using namespace std;
 
 template <typename T>
 static inline
@@ -65,10 +64,10 @@ const size_t c_primaryKeyPropertyNameColumnIndex =  1;
 
 const size_t c_zeroRowIndex = 0;
 
-const string c_object_table_prefix = "class_";
+const std::string c_object_table_prefix = "class_";
 const size_t c_object_table_prefix_length = c_object_table_prefix.length();
 
-const uint64_t ObjectStore::NotVersioned = numeric_limits<uint64_t>::max();
+const uint64_t ObjectStore::NotVersioned = std::numeric_limits<uint64_t>::max();
 
 bool ObjectStore::has_metadata_tables(Group *group) {
     return group->get_table(c_primaryKeyTableName) && group->get_table(c_metadataTableName);
@@ -142,14 +141,14 @@ void ObjectStore::set_primary_key_for_object(Group *group, StringData object_typ
     }
 }
 
-string ObjectStore::object_type_for_table_name(const string &table_name) {
+std::string ObjectStore::object_type_for_table_name(const std::string &table_name) {
     if (table_name.size() >= c_object_table_prefix_length && table_name.compare(0, c_object_table_prefix_length, c_object_table_prefix) == 0) {
         return table_name.substr(c_object_table_prefix_length, table_name.length() - c_object_table_prefix_length);
     }
-    return string();
+    return std::string();
 }
 
-string ObjectStore::table_name_for_object_type(const string &object_type) {
+std::string ObjectStore::table_name_for_object_type(const std::string &object_type) {
     return c_object_table_prefix + object_type;
 }
 
@@ -162,7 +161,7 @@ TableRef ObjectStore::table_for_object_type_create_if_needed(Group *group, const
 }
 
 std::vector<ObjectStoreException> ObjectStore::validate_object_schema(Group *group, ObjectSchema &target_schema) {
-    vector<ObjectStoreException> exceptions;
+    std::vector<ObjectStoreException> exceptions;
     ObjectSchema table_schema(group, target_schema.name);
 
     // check to see if properties are the same
@@ -259,7 +258,7 @@ bool ObjectStore::create_tables(Group *group, ObjectStore::Schema &target_schema
     bool changed = false;
 
     // first pass to create missing tables
-    vector<ObjectSchema *> to_update;
+    std::vector<ObjectSchema *> to_update;
     for (auto& object_schema : target_schema) {
         bool created = false;
         ObjectStore::table_for_object_type_create_if_needed(group, object_schema.name, created);
@@ -275,7 +274,7 @@ bool ObjectStore::create_tables(Group *group, ObjectStore::Schema &target_schema
     for (auto& target_object_schema : to_update) {
         TableRef table = table_for_object_type(group, target_object_schema->name);
         ObjectSchema current_schema(group, target_object_schema->name);
-        vector<Property> &target_props = target_object_schema->properties;
+        std::vector<Property> &target_props = target_object_schema->properties;
 
         // add missing columns
         for (auto& target_prop : target_props) {
@@ -399,7 +398,7 @@ bool ObjectStore::update_realm_with_schema(Group *group,
 ObjectStore::Schema ObjectStore::schema_from_group(Group *group) {
     ObjectStore::Schema schema;
     for (size_t i = 0; i < group->size(); i++) {
-        string object_type = object_type_for_table_name(group->get_table_name(i));
+        std::string object_type = object_type_for_table_name(group->get_table_name(i));
         if (object_type.length()) {
             schema.emplace_back(group, move(object_type));
         }

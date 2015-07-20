@@ -43,8 +43,8 @@ namespace realm {
             ObjectStoreValidationFailure,           // ObjectType, vector<ObjectStoreException>
         };
 
-        typedef const std::string InfoKey;
-        typedef std::map<InfoKey, std::string> Info;
+        using InfoKey = std::string;
+        using Info = std::map<InfoKey, std::string>;
 
         ObjectStoreException(Kind kind, const std::string &object_type, const Property &prop);
 

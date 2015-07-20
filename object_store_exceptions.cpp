@@ -23,7 +23,6 @@
 #include <regex>
 
 using namespace realm;
-using namespace std;
 
 ObjectStoreException::ObjectStoreException(Kind kind, Info info) : m_kind(kind), m_info(info), m_what(generate_what()) {}
 
@@ -53,18 +52,18 @@ ObjectStoreException::ObjectStoreException(Kind kind, const std::string &object_
 }
 
 ObjectStoreException::ObjectStoreException(uint64_t old_version, uint64_t new_version) : m_kind(Kind::RealmVersionGreaterThanSchemaVersion) {
-    m_info[InfoKeyOldVersion] = to_string(old_version);
-    m_info[InfoKeyNewVersion] = to_string(new_version);
+    m_info[InfoKeyOldVersion] = std::to_string(old_version);
+    m_info[InfoKeyNewVersion] = std::to_string(new_version);
     m_what = generate_what();
 }
 
-ObjectStoreException::ObjectStoreException(vector<ObjectStoreException> validation_errors, const string &object_type) :
+ObjectStoreException::ObjectStoreException(std::vector<ObjectStoreException> validation_errors, const std::string &object_type) :
     m_validation_errors(validation_errors), m_kind(Kind::ObjectStoreValidationFailure) {
     m_info[InfoKeyObjectType] = object_type;
     m_what = generate_what();
 }
 
-string ObjectStoreException::generate_what() const {
+std::string ObjectStoreException::generate_what() const {
     auto format_string = s_custom_format_strings.find(m_kind);
     if (format_string != s_custom_format_strings.end()) {
         return populate_format_string(format_string->second);
@@ -72,21 +71,21 @@ string ObjectStoreException::generate_what() const {
     return populate_format_string(s_default_format_strings.at(m_kind));
 }
 
-string ObjectStoreException::validation_errors_string() const {
-    string errors_string;
+std::string ObjectStoreException::validation_errors_string() const {
+    std::string errors_string;
     for (auto error : m_validation_errors) {
-        errors_string += string("\n- ") + error.what();
+        errors_string += std::string("\n- ") + error.what();
     }
     return errors_string;
 }
 
 std::string ObjectStoreException::populate_format_string(const std::string & format_string) const {
-    string out_string, current(format_string);
-    smatch sm;
-    regex re("\\{(\\w+)\\}");
+    std::string out_string, current(format_string);
+    std::smatch sm;
+    std::regex re("\\{(\\w+)\\}");
     while(regex_search(current, sm, re)) {
         out_string += sm.prefix();
-        const string &key = sm[1];
+        const std::string &key = sm[1];
         if (key == "ValidationErrors") {
             out_string += validation_errors_string();
         }
