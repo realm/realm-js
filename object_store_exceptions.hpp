@@ -38,6 +38,8 @@ namespace realm {
             ObjectSchemaMismatchedObjectTypes,      // ObjectType, PropertyName, PropertyType, ObjectType, OldObjectType
             ObjectSchemaChangedPrimaryKey,          // ObjectType, PrimaryKey
             ObjectSchemaNewPrimaryKey,              // ObjectType, PrimaryKey
+            ObjectSchemaChangedOptionalProperty,
+            ObjectSchemaNewOptionalProperty,
             ObjectStoreValidationFailure,           // ObjectType, vector<ObjectStoreException>
         };
 

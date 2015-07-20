@@ -119,8 +119,10 @@ const ObjectStoreException::FormatStrings ObjectStoreException::s_default_format
         "Property '{InfoKeyPrimaryKey}' is no longer a primary key."},
     {Kind::ObjectSchemaNewPrimaryKey,
         "Property '{InfoKeyPrimaryKey}' has been made a primary key."},
+    {Kind::ObjectSchemaChangedOptionalProperty,
+        "Property '{InfoKeyPrimaryKey}' is no longer optional."},
+    {Kind::ObjectSchemaNewOptionalProperty,
+        "Property '{InfoKeyPrimaryKey}' has been made optional."},
     {Kind::ObjectStoreValidationFailure,
         "Migration is required for object type '{InfoKeyObjectType}' due to the following errors: {ValidationErrors}"}
 };
-
-

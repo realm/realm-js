@@ -41,10 +41,10 @@ Realm::Realm(Config &config) : m_config(config), m_thread_id(this_thread::get_id
             m_group = m_read_only_group.get();
         }
         else {
-            m_replication = realm::makeWriteLogCollector(config.path, false, config.encryption_key.data());
+            m_history = realm::make_client_history(config.path, config.encryption_key.data());
             SharedGroup::DurabilityLevel durability = config.in_memory ? SharedGroup::durability_MemOnly :
                                                                          SharedGroup::durability_Full;
-            m_shared_group = make_unique<SharedGroup>(*m_replication, durability, config.encryption_key.data());
+            m_shared_group = make_unique<SharedGroup>(*m_history, durability, config.encryption_key.data());
             m_group = nullptr;
         }
     }
@@ -167,7 +167,7 @@ void Realm::begin_transaction()
     // make sure we have a read transaction
     read_group();
 
-    LangBindHelper::promote_to_write(*m_shared_group);
+    LangBindHelper::promote_to_write(*m_shared_group, *m_history);
     m_in_transaction = true;
 
     if (announce) {
@@ -200,7 +200,7 @@ void Realm::cancel_transaction()
         throw RealmException(RealmException::Kind::InvalidTransaction, "Can't cancel a non-existing write transaction");
     }
 
-    LangBindHelper::rollback_and_continue_as_read(*m_shared_group);
+    LangBindHelper::rollback_and_continue_as_read(*m_shared_group, *m_history);
     m_in_transaction = false;
 }
 
@@ -248,7 +248,7 @@ void Realm::notify()
     if (m_shared_group->has_changed()) { // Throws
         if (m_auto_refresh) {
             if (m_group) {
-                LangBindHelper::advance_read(*m_shared_group);
+                LangBindHelper::advance_read(*m_shared_group, *m_history);
             }
             send_local_notifications(DidChangeNotification);
         }
@@ -284,7 +284,7 @@ bool Realm::refresh()
     }
 
     if (m_group) {
-        LangBindHelper::advance_read(*m_shared_group);
+        LangBindHelper::advance_read(*m_shared_group, *m_history);
     }
     else {
         // Create the read transaction

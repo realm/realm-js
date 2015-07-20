@@ -33,6 +33,7 @@ namespace realm {
     class Realm;
     typedef std::shared_ptr<Realm> SharedRealm;
     typedef std::weak_ptr<Realm> WeakRealm;
+    class ClientHistory;
 
     class Realm
     {
@@ -106,7 +107,7 @@ namespace realm {
         typedef std::unique_ptr<std::function<void()>> ExternalNotificationFunction;
         void send_external_notifications() { if (m_external_notifier) (*m_external_notifier)(); }
 
-        std::unique_ptr<Replication> m_replication;
+        std::unique_ptr<ClientHistory> m_history;
         std::unique_ptr<SharedGroup> m_shared_group;
         std::unique_ptr<Group> m_read_only_group;
 

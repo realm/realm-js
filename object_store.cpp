@@ -188,10 +188,10 @@ std::vector<ObjectStoreException> ObjectStore::validate_object_schema(Group *gro
         }
         if (current_prop.is_nullable != target_prop->is_nullable) {
             if (current_prop.is_nullable) {
-                validation_errors.push_back("Property '" + current_prop.name + "' is no longer optional.");
+                exceptions.emplace_back(ObjectStoreException::Kind::ObjectSchemaChangedOptionalProperty, table_schema.name, current_prop, *target_prop);
             }
             else {
-                validation_errors.push_back("Property '" + current_prop.name + "' has been made optional.");
+                exceptions.emplace_back(ObjectStoreException::Kind::ObjectSchemaNewOptionalProperty, table_schema.name, current_prop, *target_prop);
             }
         }
 
