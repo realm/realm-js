@@ -17,8 +17,8 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #include "shared_realm.hpp"
-
 #include <realm/commit_log.hpp>
+#include <memory>
 
 using namespace realm;
 
@@ -28,7 +28,7 @@ std::mutex Realm::s_init_mutex;
 Realm::Config::Config(const Config& c) : path(c.path), read_only(c.read_only), in_memory(c.in_memory), schema_version(c.schema_version), encryption_key(c.encryption_key), migration_function(c.migration_function)
 {
     if (c.schema) {
-        schema = std::make_unique<ObjectStore::Schema>(*c.schema);
+        schema = std::make_unique<Schema>(*c.schema);
     }
 }
 
@@ -48,22 +48,28 @@ Realm::Realm(Config &config) : m_config(config), m_thread_id(std::this_thread::g
         }
     }
     catch (util::File::PermissionDenied const& ex) {
-        throw RealmException(RealmException::Kind::FilePermissionDenied, "Unable to open a realm at path '" + config.path +
+        throw RealmFileException(RealmFileException::Kind::PermissionDenied, "Unable to open a realm at path '" + config.path +
                              "'. Please use a path where your app has " + (config.read_only ? "read" : "read-write") + " permissions.");
     }
     catch (util::File::Exists const& ex) {
-        throw RealmException(RealmException::Kind::FileExists, "Unable to open a realm at path '" + config.path + "'");
+        throw RealmFileException(RealmFileException::Kind::Exists, "Unable to open a realm at path '" + config.path + "'");
     }
     catch (util::File::AccessError const& ex) {
-        throw RealmException(RealmException::Kind::FileAccessError, "Unable to open a realm at path '" + config.path + "'");
+        throw RealmFileException(RealmFileException::Kind::AccessError, "Unable to open a realm at path '" + config.path + "'");
     }
     catch (IncompatibleLockFile const&) {
-        throw RealmException(RealmException::Kind::IncompatibleLockFile, "Realm file is currently open in another process "
+        throw RealmFileException(RealmFileException::Kind::IncompatibleLockFile, "Realm file is currently open in another process "
         "which cannot share access with this process. All processes sharing a single file must be the same architecture.");
     }
 }
 
-Group *Realm::read_group() {
+Realm::~Realm()
+{
+    s_global_cache.remove(m_config.path, m_thread_id);
+}
+
+Group *Realm::read_group()
+{
     if (!m_group) {
         m_group = &const_cast<Group&>(m_shared_group->begin_read());
     }
@@ -75,11 +81,24 @@ SharedRealm Realm::get_shared_realm(Config &config)
     SharedRealm realm = s_global_cache.get_realm(config.path);
     if (realm) {
         if (realm->config().read_only != config.read_only) {
-            throw RealmException(RealmException::Kind::MismatchedConfig, "Realm at path already opened with different read permissions");
+            throw MismatchedConfigException("Realm at path already opened with different read permissions.");
         }
         if (realm->config().in_memory != config.in_memory) {
-            throw RealmException(RealmException::Kind::MismatchedConfig, "Realm at path already opened with different inMemory settings");
+            throw MismatchedConfigException("Realm at path already opened with different inMemory settings.");
         }
+        if (realm->config().encryption_key != config.encryption_key) {
+            throw MismatchedConfigException("Realm at path already opened with a different encryption key.");
+        }
+        if (realm->config().schema_version != config.schema_version && config.schema_version != ObjectStore::NotVersioned) {
+            throw MismatchedConfigException("Realm at path already opened with different schema version.");
+        }
+        // FIXME - enable schma comparison
+        /*if (realm->config().schema != config.schema) {
+            throw MismatchedConfigException("Realm at path already opened with different schema");
+        }*/
+
+        realm->m_config.migration_function = config.migration_function;
+        
         return realm;
     }
 
@@ -89,22 +108,27 @@ SharedRealm Realm::get_shared_realm(Config &config)
     std::lock_guard<std::mutex> lock(s_init_mutex);
 
     if (!config.schema) {
+        uint64_t version = ObjectStore::get_schema_version(realm->read_group());
+        if (version == ObjectStore::NotVersioned) {
+            InvalidSchemaVersionException(ObjectStore::NotVersioned, ObjectStore::NotVersioned);
+        }
+
         // get schema from group and skip validation
-        realm->m_config.schema_version = ObjectStore::get_schema_version(realm->read_group());
-        realm->m_config.schema = std::make_unique<ObjectStore::Schema>(ObjectStore::schema_from_group(realm->read_group()));
+        realm->m_config.schema_version = version;
+        realm->m_config.schema = std::make_unique<Schema>(ObjectStore::schema_from_group(realm->read_group()));
     }
     else if (config.read_only) {
         // for read-only validate all existing tables
         for (auto &object_schema : *realm->m_config.schema) {
-            if (ObjectStore::table_for_object_type(realm->read_group(), object_schema.name)) {
-                ObjectStore::validate_object_schema(realm->read_group(), object_schema);
+            if (ObjectStore::table_for_object_type(realm->read_group(), object_schema.first)) {
+                ObjectStore::validate_object_schema(realm->read_group(), object_schema.second);
             }
         }
     }
     else if(auto existing = s_global_cache.get_any_realm(realm->config().path)) {
         // if there is an existing realm at the current path steal its schema/column mapping
         // FIXME - need to validate that schemas match
-        realm->m_config.schema = std::make_unique<ObjectStore::Schema>(*existing->m_config.schema);
+        realm->m_config.schema = std::make_unique<Schema>(*existing->m_config.schema);
     }
     else {
         // its a non-cached realm so update/migrate if needed
@@ -115,39 +139,62 @@ SharedRealm Realm::get_shared_realm(Config &config)
     return realm;
 }
 
-bool Realm::update_schema(ObjectStore::Schema &schema, uint64_t version)
+bool Realm::update_schema(Schema &schema, uint64_t version)
 {
     bool changed = false;
+    Config old_config(m_config);
+
+    // set new version/schema
+    if (m_config.schema.get() != &schema) {
+        m_config.schema = std::make_unique<Schema>(schema);
+    }
+    m_config.schema_version = version;
+
     try {
-        begin_transaction();
-        changed = ObjectStore::update_realm_with_schema(read_group(), version, schema, m_config.migration_function);
-        commit_transaction();
-        m_config.schema_version = version;
-        if (m_config.schema.get() != &schema) {
-            m_config.schema = std::make_unique<ObjectStore::Schema>(schema);
+        if (ObjectStore::realm_requires_update(read_group(), version, schema)) {
+            // keep old copy to pass to migration function
+            old_config.read_only = true;
+            SharedRealm old_realm = SharedRealm(new Realm(old_config)), updated_realm = shared_from_this();
+
+            // update and migrate
+            begin_transaction();
+            changed = ObjectStore::update_realm_with_schema(read_group(), version, *m_config.schema, [=](__unused Group *group, __unused Schema &target_schema) {
+                m_config.migration_function(old_realm, updated_realm);
+            });
+            commit_transaction();
+        }
+        else {
+            // verify all types
+            for (auto& target_schema : *m_config.schema) {
+                auto errors = ObjectStore::validate_object_schema(read_group(), target_schema.second);
+                if (errors.size()) {
+                    throw ObjectSchemaValidationException(target_schema.first, errors);
+                }
+            }
         }
     }
     catch (...) {
         if (is_in_transaction()) {
             cancel_transaction();
         }
+        m_config.schema_version = old_config.schema_version;
+        m_config.schema = std::move(old_config.schema);
         throw;
     }
-
     return changed;
 }
 
 static void check_read_write(Realm *realm)
 {
     if (realm->config().read_only) {
-        throw RealmException(RealmException::Kind::InvalidTransaction, "Can't perform transactions on read-only Realms.");
+        throw InvalidTransactionException("Can't perform transactions on read-only Realms.");
     }
 }
 
 void Realm::verify_thread()
 {
     if (m_thread_id != std::this_thread::get_id()) {
-        throw RealmException(RealmException::Kind::IncorrectThread, "Realm accessed from incorrect thread.");
+        throw IncorrectThreadException("Realm accessed from incorrect thread.");
     }
 }
 
@@ -157,7 +204,7 @@ void Realm::begin_transaction()
     verify_thread();
 
     if (m_in_transaction) {
-        throw RealmException(RealmException::Kind::InvalidTransaction, "The Realm is already in a write transaction");
+        throw InvalidTransactionException("The Realm is already in a write transaction");
     }
 
     // if the upgrade to write will move the transaction forward, announce the change after promoting
@@ -180,7 +227,7 @@ void Realm::commit_transaction()
     verify_thread();
 
     if (!m_in_transaction) {
-        throw RealmException(RealmException::Kind::InvalidTransaction, "Can't commit a non-existing write transaction");
+        throw InvalidTransactionException("Can't commit a non-existing write transaction");
     }
 
     LangBindHelper::commit_and_continue_as_read(*m_shared_group);
@@ -196,7 +243,7 @@ void Realm::cancel_transaction()
     verify_thread();
 
     if (!m_in_transaction) {
-        throw RealmException(RealmException::Kind::InvalidTransaction, "Can't cancel a non-existing write transaction");
+        throw InvalidTransactionException("Can't cancel a non-existing write transaction");
     }
 
     LangBindHelper::rollback_and_continue_as_read(*m_shared_group, *m_history);
@@ -226,11 +273,11 @@ bool Realm::compact()
 
     bool success = false;
     if (m_in_transaction) {
-        throw RealmException(RealmException::Kind::InvalidTransaction, "Can't compact a Realm within a write transaction");
+        throw InvalidTransactionException("Can't compact a Realm within a write transaction");
     }
 
     for (auto &object_schema : *m_config.schema) {
-        ObjectStore::table_for_object_type(read_group(), object_schema.name)->optimize();
+        ObjectStore::table_for_object_type(read_group(), object_schema.first)->optimize();
     }
 
     m_shared_group->end_read();
@@ -340,7 +387,7 @@ void RealmCache::remove(const std::string &path, std::thread::id thread_id)
     }
 
     auto thread_iter = path_iter->second.find(thread_id);
-    if (thread_iter == path_iter->second.end()) {
+    if (thread_iter != path_iter->second.end()) {
         path_iter->second.erase(thread_iter);
     }
 

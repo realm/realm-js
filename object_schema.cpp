@@ -19,8 +19,8 @@
 #include "object_schema.hpp"
 #include "object_store.hpp"
 
-#include <realm/group.hpp>
-#include <realm/table.hpp>
+#include <realm/group_shared.hpp>
+#include <realm/link_view.hpp>
 
 using namespace realm;
 
@@ -36,11 +36,7 @@ ObjectSchema::ObjectSchema(Group *group, const std::string &name) : name(name) {
         property.type = (PropertyType)table->get_column_type(col);
         property.is_indexed = table->has_search_index(col);
         property.is_primary = false;
-#ifdef REALM_ENABLE_NULL
         property.is_nullable = table->is_nullable(col) || property.type == PropertyTypeObject;
-#else
-        property.is_nullable = property.type == PropertyTypeObject;
-#endif
         property.table_column = col;
         if (property.type == PropertyTypeObject || property.type == PropertyTypeArray) {
             // set link type for objects and arrays
@@ -54,7 +50,7 @@ ObjectSchema::ObjectSchema(Group *group, const std::string &name) : name(name) {
     if (primary_key.length()) {
         auto primary_key_prop = primary_key_property();
         if (!primary_key_prop) {
-            throw ObjectStoreException(ObjectStoreException::Kind::ObjectSchemaChangedPrimaryKey, name, primary_key);
+            throw InvalidPrimaryKeyException(name, primary_key);
         }
         primary_key_prop->is_primary = true;
     }

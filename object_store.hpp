@@ -22,16 +22,15 @@
 #include <map>
 #include <vector>
 #include <functional>
+#include <realm/link_view.hpp>
+#include <realm/group.hpp>
 
 #include "object_schema.hpp"
-#include "object_store_exceptions.hpp"
 
 namespace realm {
-    class Group;
-    class StringData;
-    class Table;
-    template<typename T> class BasicTableRef;
-    typedef BasicTableRef<Table> TableRef;
+    class ObjectSchemaValidationException;
+    class Schema : public std::map<std::string, ObjectSchema> {
+    };
 
     class ObjectStore {
     public:
@@ -48,17 +47,21 @@ namespace realm {
         // updates the column mapping on the target_schema
         // if no table is provided it is fetched from the group
         // returns array of validation errors
-        static std::vector<ObjectStoreException> validate_object_schema(Group *group, ObjectSchema &target_schema);
+        static std::vector<ObjectSchemaValidationException> validate_object_schema(Group *group, ObjectSchema &target_schema);
 
         // updates the target_column member for all properties based on the column indexes in the passed in group
         static void update_column_mapping(Group *group, ObjectSchema &target_schema);
 
+        // determines if you must call update_realm_with_schema for a given realm.
+        // returns true if there is a schema version mismatch, if there tables which still need to be created,
+        // or if file format or other changes/updates need to be made
+        static bool realm_requires_update(Group *group, uint64_t version, Schema &schema);
+        
         // updates a Realm to a given target schema/version creating tables and updating indexes as necessary
         // returns if any changes were made
         // passed in schema ar updated with the correct column mapping
         // optionally runs migration function/lambda if schema is out of date
         // NOTE: must be performed within a write transaction
-        typedef std::vector<ObjectSchema> Schema;
         typedef std::function<void(Group *, Schema &)> MigrationFunction;
         static bool update_realm_with_schema(Group *group, uint64_t version, Schema &schema, MigrationFunction migration);
 
@@ -67,9 +70,6 @@ namespace realm {
 
         // get existing Schema from a group
         static Schema schema_from_group(Group *group);
-
-        // check if indexes are up to date - if false you need to call update_realm_with_schema
-        static bool indexes_are_up_to_date(Group *group, Schema &schema);
 
         // deletes the table for the given type
         static void delete_data_for_object(Group *group, const StringData &object_type);
@@ -88,7 +88,7 @@ namespace realm {
 
         // set references to tables on targetSchema and create/update any missing or out-of-date tables
         // if update existing is true, updates existing tables, otherwise only adds and initializes new tables
-        static bool create_tables(realm::Group *group, ObjectStore::Schema &target_schema, bool update_existing);
+        static bool create_tables(realm::Group *group, Schema &target_schema, bool update_existing);
 
         // get primary key property name for object type
         static StringData get_primary_key_for_object(Group *group, StringData object_type);
@@ -101,6 +101,9 @@ namespace realm {
         static std::string table_name_for_object_type(const std::string &class_name);
         static std::string object_type_for_table_name(const std::string &table_name);
 
+        // check if indexes are up to date - if false you need to call update_realm_with_schema
+        static bool indexes_are_up_to_date(Group *group, Schema &schema);
+
         // returns if any indexes were changed
         static bool update_indexes(Group *group, Schema &schema);
 
@@ -108,6 +111,87 @@ namespace realm {
         static void validate_primary_column_uniqueness(Group *group, Schema &schema);
 
         friend ObjectSchema;
+    };
+
+    // Base exception
+    class ObjectStoreException : public std::exception {
+    public:
+        ObjectStoreException() = default;
+        ObjectStoreException(const std::string &what) : m_what(what) {}
+        virtual const char* what() const noexcept { return m_what.c_str(); }
+    protected:
+        std::string m_what;
+    };
+
+    // Migration exceptions
+    class MigrationException : public ObjectStoreException {};
+
+    class InvalidSchemaVersionException : public MigrationException {
+    public:
+        InvalidSchemaVersionException(uint64_t old_version, uint64_t new_version);
+    private:
+        uint64_t m_old_version, m_new_version;
+    };
+
+    class DuplicatePrimaryKeyValueException : public MigrationException {
+    public:
+        DuplicatePrimaryKeyValueException(std::string object_type, Property &property);
+    private:
+        std::string m_object_type;
+        Property m_property;
+    };
+
+    // Schema validation exceptions
+    class ObjectSchemaValidationException : public ObjectStoreException {
+    public:
+        ObjectSchemaValidationException(std::string object_type) : m_object_type(object_type) {}
+        ObjectSchemaValidationException(std::string object_type, std::vector<ObjectSchemaValidationException> errors);
+    private:
+        std::vector<ObjectSchemaValidationException> m_validation_errors;
+    protected:
+        std::string m_object_type;
+    };
+
+    class PropertyTypeNotIndexableException : public ObjectSchemaValidationException {
+    public:
+        PropertyTypeNotIndexableException(std::string object_type, Property &property);
+    private:
+        Property m_property;
+    };
+
+    class ExtraPropertyException : public ObjectSchemaValidationException {
+    public:
+        ExtraPropertyException(std::string object_type, Property &property);
+    private:
+        Property m_property;
+    };
+
+    class MissingPropertyException : public ObjectSchemaValidationException {
+    public:
+        MissingPropertyException(std::string object_type, Property &property);
+    private:
+        Property m_property;
+    };
+
+    class MismatchedPropertiesException : public ObjectSchemaValidationException {
+    public:
+        MismatchedPropertiesException(std::string object_type, Property &old_property, Property &new_property);
+    private:
+        Property m_old_property, m_new_property;
+    };
+
+    class ChangedPrimaryKeyException : public ObjectSchemaValidationException {
+    public:
+        ChangedPrimaryKeyException(std::string object_type, std::string old_primary, std::string new_primary);
+    private:
+        std::string m_old_primary, m_new_primary;
+    };
+
+    class InvalidPrimaryKeyException : public ObjectSchemaValidationException {
+    public:
+        InvalidPrimaryKeyException(std::string object_type, std::string primary);
+    private:
+        std::string m_primary;
     };
 }
 
