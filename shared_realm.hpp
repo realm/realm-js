@@ -85,6 +85,7 @@ namespace realm {
         typedef std::shared_ptr<std::function<void(const std::string)>> NotificationFunction;
         void add_notification(NotificationFunction &notification) { m_notifications.insert(notification); }
         void remove_notification(NotificationFunction notification) { m_notifications.erase(notification); }
+        void remove_all_notifications() { m_notifications.clear(); }
 
         void invalidate();
         bool compact();
