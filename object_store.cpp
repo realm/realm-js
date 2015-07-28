@@ -164,6 +164,7 @@ std::vector<ObjectSchemaValidationException> ObjectStore::verify_object_schema(G
     ObjectSchema table_schema(group, target_schema.name);
 
     // check to see if properties are the same
+    Property *primary = nullptr;
     for (auto& current_prop : table_schema.properties) {
         auto target_prop = target_schema.property_for_name(current_prop.name);
 
@@ -175,9 +176,38 @@ std::vector<ObjectSchemaValidationException> ObjectStore::verify_object_schema(G
             exceptions.emplace_back(MismatchedPropertiesException(table_schema.name, current_prop, *target_prop));
             continue;
         }
+
+        // check object_type existence
         if (current_prop.object_type.length() && schema.find(current_prop.object_type) == schema.end()) {
             exceptions.emplace_back(InvalidPropertyException(table_schema.name, current_prop,
-                "Target type '" + current_prop.object_type + "' doesn't exist for property '" + current_prop.name + "',"));
+                "Target type '" + current_prop.object_type + "' doesn't exist for property '" + current_prop.name + "'."));
+        }
+
+        // check nullablity
+        if (current_prop.is_nullable) {
+            if (current_prop.type != PropertyTypeObject) {
+                exceptions.emplace_back(InvalidPropertyException(table_schema.name, current_prop,
+                    "Only 'Object' property types are nullable"));
+            }
+        }
+        else if (current_prop.type == PropertyTypeObject) {
+            exceptions.emplace_back(InvalidPropertyException(table_schema.name, current_prop,
+                "'Object' property '" + current_prop.name + "' must be nullable."));
+        }
+
+        // check primary keys
+        if (current_prop.is_primary) {
+            if (primary) {
+                exceptions.emplace_back(InvalidPropertyException(table_schema.name, current_prop, "Duplicate primary keys."));
+            }
+            primary = &current_prop;
+        }
+
+        // check indexable
+        if (current_prop.is_indexed) {
+            if (current_prop.type != PropertyTypeString && current_prop.type != PropertyTypeInt) {
+                exceptions.emplace_back(PropertyTypeNotIndexableException(table_schema.name, current_prop));
+            }
         }
 
         // create new property with aligned column
@@ -447,19 +477,19 @@ SchemaValidationException::SchemaValidationException(std::vector<ObjectSchemaVal
 }
 
 PropertyTypeNotIndexableException::PropertyTypeNotIndexableException(std::string object_type, Property &property) :
-    ObjectSchemaValidationException(object_type), m_property(property)
+    ObjectSchemaPropertyException(object_type, property)
 {
     m_what = "Can't index property " + object_type + "." + property.name + ": indexing a property of type '" + string_for_property_type(property.type) + "' is currently not supported";
 }
 
 ExtraPropertyException::ExtraPropertyException(std::string object_type, Property &property) :
-    ObjectSchemaValidationException(object_type), m_property(property)
+    ObjectSchemaPropertyException(object_type, property)
 {
     m_what = "Property '" + property.name + "' has been added to latest object model.";
 }
 
 MissingPropertyException::MissingPropertyException(std::string object_type, Property &property) :
-    ObjectSchemaValidationException(object_type), m_property(property)
+    ObjectSchemaPropertyException(object_type, property)
 {
     m_what = "Property '" + property.name + "' is missing from latest object model.";
 }
@@ -490,7 +520,7 @@ ChangedPrimaryKeyException::ChangedPrimaryKeyException(std::string object_type, 
 }
 
 InvalidPrimaryKeyException::InvalidPrimaryKeyException(std::string object_type, std::string primary) :
-    ObjectSchemaValidationException(object_type), m_primary(primary)
+    ObjectSchemaValidationException(object_type), m_primary_key(primary)
 {
     m_what = "Specified primary key property '" + primary + "' does not exist.";
 }

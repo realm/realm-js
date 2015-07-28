@@ -33,7 +33,7 @@ namespace realm {
     };
 
     class ObjectStore {
-    public:
+      public:
         // Schema version used for uninitialized Realms
         static const uint64_t NotVersioned;
 
@@ -73,7 +73,7 @@ namespace realm {
         // deletes the table for the given type
         static void delete_data_for_object(Group *group, const StringData &object_type);
 
-    private:
+      private:
         // set a new schema version
         static void set_schema_version(Group *group, uint64_t version);
 
@@ -119,11 +119,11 @@ namespace realm {
 
     // Base exception
     class ObjectStoreException : public std::exception {
-    public:
+      public:
         ObjectStoreException() = default;
         ObjectStoreException(const std::string &what) : m_what(what) {}
         virtual const char* what() const noexcept { return m_what.c_str(); }
-    protected:
+      protected:
         std::string m_what;
     };
 
@@ -131,85 +131,97 @@ namespace realm {
     class MigrationException : public ObjectStoreException {};
 
     class InvalidSchemaVersionException : public MigrationException {
-    public:
+      public:
         InvalidSchemaVersionException(uint64_t old_version, uint64_t new_version);
-    private:
+        uint64_t old_version() { return m_old_version; }
+        uint64_t new_version() { return m_new_version; }
+      private:
         uint64_t m_old_version, m_new_version;
     };
 
     class DuplicatePrimaryKeyValueException : public MigrationException {
-    public:
+      public:
         DuplicatePrimaryKeyValueException(std::string object_type, Property &property);
-    private:
+        std::string object_type() { return m_object_type; }
+        Property &property() { return m_property; }
+      private:
         std::string m_object_type;
         Property m_property;
     };
 
     // Schema validation exceptions
     class SchemaValidationException : public ObjectStoreException {
-    public:
+      public:
         SchemaValidationException(std::vector<ObjectSchemaValidationException> errors);
-    private:
+        std::vector<ObjectSchemaValidationException> &validation_errors() { return m_validation_errors; }
+      private:
         std::vector<ObjectSchemaValidationException> m_validation_errors;
     };
 
     class ObjectSchemaValidationException : public ObjectStoreException {
-    public:
+      public:
         ObjectSchemaValidationException(std::string object_type) : m_object_type(object_type) {}
         ObjectSchemaValidationException(std::string object_type, std::string message) :
             m_object_type(object_type) { m_what = message; }
-    protected:
+        std::string object_type() { return m_object_type; }
+      protected:
         std::string m_object_type;
     };
 
-    class PropertyTypeNotIndexableException : public ObjectSchemaValidationException {
-    public:
+    class ObjectSchemaPropertyException : public ObjectSchemaValidationException {
+      public:
+        ObjectSchemaPropertyException(std::string object_type, Property &property) :
+            ObjectSchemaValidationException(object_type), m_property(property) {}
+        Property &property() { return m_property; }
+      private:
+        Property m_property;
+    };
+
+    class PropertyTypeNotIndexableException : public ObjectSchemaPropertyException {
+      public:
         PropertyTypeNotIndexableException(std::string object_type, Property &property);
-    private:
-        Property m_property;
     };
 
-    class ExtraPropertyException : public ObjectSchemaValidationException {
-    public:
+    class ExtraPropertyException : public ObjectSchemaPropertyException {
+      public:
         ExtraPropertyException(std::string object_type, Property &property);
-    private:
-        Property m_property;
     };
 
-    class MissingPropertyException : public ObjectSchemaValidationException {
-    public:
+    class MissingPropertyException : public ObjectSchemaPropertyException {
+      public:
         MissingPropertyException(std::string object_type, Property &property);
-    private:
-        Property m_property;
+    };
+
+    class InvalidPropertyException : public ObjectSchemaPropertyException {
+      public:
+        InvalidPropertyException(std::string object_type, Property &property, std::string message) :
+            ObjectSchemaPropertyException(object_type, property) { m_what = message; }
     };
 
     class MismatchedPropertiesException : public ObjectSchemaValidationException {
-    public:
+      public:
         MismatchedPropertiesException(std::string object_type, Property &old_property, Property &new_property);
-    private:
+        Property &old_property() { return m_old_property; }
+        Property &new_property() { return m_new_property; }
+      private:
         Property m_old_property, m_new_property;
     };
 
     class ChangedPrimaryKeyException : public ObjectSchemaValidationException {
-    public:
+      public:
         ChangedPrimaryKeyException(std::string object_type, std::string old_primary, std::string new_primary);
-    private:
+        std::string old_primary() { return m_old_primary; }
+        std::string new_primary() { return m_new_primary; }
+      private:
         std::string m_old_primary, m_new_primary;
     };
 
     class InvalidPrimaryKeyException : public ObjectSchemaValidationException {
-    public:
-        InvalidPrimaryKeyException(std::string object_type, std::string primary);
-    private:
-        std::string m_primary;
-    };
-
-    class InvalidPropertyException : public ObjectSchemaValidationException {
-    public:
-        InvalidPropertyException(std::string object_type, Property &property, std::string message) :
-            ObjectSchemaValidationException(object_type), m_property(property) { m_what = message; }
-    private:
-        Property m_property;
+      public:
+        InvalidPrimaryKeyException(std::string object_type, std::string primary_key);
+        std::string primary_key() { return m_primary_key; }
+      private:
+        std::string m_primary_key;
     };
 }
 
