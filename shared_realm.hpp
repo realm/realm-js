@@ -183,6 +183,12 @@ namespace realm {
       public:
         IncorrectThreadException(std::string message) : std::runtime_error(message) {}
     };
+
+    class UnitializedRealmException : public std::runtime_error
+    {
+      public:
+        UnitializedRealmException(std::string message) : std::runtime_error(message) {}
+    };
 }
 
 #endif /* defined(REALM_REALM_HPP) */

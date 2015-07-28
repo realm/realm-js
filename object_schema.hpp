@@ -43,8 +43,6 @@ namespace realm {
         Property *primary_key_property() {
             return property_for_name(primary_key);
         }
-
-        void validate();
     };
 }
 

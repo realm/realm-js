@@ -107,23 +107,17 @@ SharedRealm Realm::get_shared_realm(Config &config)
     // we want to ensure we are only initializing a single realm at a time
     std::lock_guard<std::mutex> lock(s_init_mutex);
 
-    if (!config.schema) {
-        uint64_t version = ObjectStore::get_schema_version(realm->read_group());
-        if (version == ObjectStore::NotVersioned) {
-            InvalidSchemaVersionException(ObjectStore::NotVersioned, ObjectStore::NotVersioned);
-        }
-
+    uint64_t old_version = ObjectStore::get_schema_version(realm->read_group());
+    if (!realm->m_config.schema) {
         // get schema from group and skip validation
-        realm->m_config.schema_version = version;
+        realm->m_config.schema_version = old_version;
         realm->m_config.schema = std::make_unique<Schema>(ObjectStore::schema_from_group(realm->read_group()));
     }
-    else if (config.read_only) {
-        // for read-only validate all existing tables
-        for (auto &object_schema : *realm->m_config.schema) {
-            if (ObjectStore::table_for_object_type(realm->read_group(), object_schema.first)) {
-                ObjectStore::validate_object_schema(realm->read_group(), object_schema.second);
-            }
+    else if (realm->m_config.read_only) {
+        if (old_version == ObjectStore::NotVersioned) {
+            throw UnitializedRealmException("Can't open an un-initizliazed Realm without a Schema");
         }
+        ObjectStore::verify_schema(realm->read_group(), *realm->m_config.schema, true);
     }
     else if(auto existing = s_global_cache.get_any_realm(realm->config().path)) {
         // if there is an existing realm at the current path steal its schema/column mapping
@@ -132,7 +126,7 @@ SharedRealm Realm::get_shared_realm(Config &config)
     }
     else {
         // its a non-cached realm so update/migrate if needed
-        realm->update_schema(*realm->m_config.schema, config.schema_version);
+        realm->update_schema(*realm->m_config.schema, realm->m_config.schema_version);
     }
 
     s_global_cache.cache_realm(realm, realm->m_thread_id);
@@ -151,7 +145,7 @@ bool Realm::update_schema(Schema &schema, uint64_t version)
     m_config.schema_version = version;
 
     try {
-        if (ObjectStore::realm_requires_update(read_group(), version, schema)) {
+        if (!m_config.read_only && ObjectStore::realm_requires_update(read_group(), version, schema)) {
             // keep old copy to pass to migration function
             old_config.read_only = true;
             SharedRealm old_realm = SharedRealm(new Realm(old_config)), updated_realm = shared_from_this();
@@ -164,13 +158,7 @@ bool Realm::update_schema(Schema &schema, uint64_t version)
             commit_transaction();
         }
         else {
-            // verify all types
-            for (auto& target_schema : *m_config.schema) {
-                auto errors = ObjectStore::validate_object_schema(read_group(), target_schema.second);
-                if (errors.size()) {
-                    throw ObjectSchemaValidationException(target_schema.first, errors);
-                }
-            }
+            ObjectStore::verify_schema(read_group(), *m_config.schema, m_config.read_only);
         }
     }
     catch (...) {
@@ -408,5 +396,4 @@ void RealmCache::cache_realm(SharedRealm &realm, std::thread::id thread_id)
         path_iter->second.emplace(thread_id, realm);
     }
 }
-
 

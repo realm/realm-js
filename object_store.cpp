@@ -140,7 +140,26 @@ static inline bool property_has_changed(Property &p1, Property &p2) {
     return p1.type != p2.type || p1.name != p2.name || p1.object_type != p2.object_type || p1.is_nullable != p2.is_nullable;
 }
 
-std::vector<ObjectSchemaValidationException> ObjectStore::validate_object_schema(Group *group, ObjectSchema &target_schema) {
+void ObjectStore::verify_schema(Group *group, Schema &target_schema, bool allow_missing_tables) {
+    std::vector<ObjectSchemaValidationException> errors;
+    for (auto &object_schema : target_schema) {
+        if (!table_for_object_type(group, object_schema.first)) {
+            if (!allow_missing_tables) {
+                errors.emplace_back(ObjectSchemaValidationException(object_schema.first,
+                                    "Missing table for object type '" + object_schema.first + "'."));
+            }
+            continue;
+        }
+
+        auto more_errors = verify_object_schema(group, object_schema.second, target_schema);
+        errors.insert(errors.end(), more_errors.begin(), more_errors.end());
+    }
+    if (errors.size()) {
+        throw SchemaValidationException(errors);
+    }
+}
+
+std::vector<ObjectSchemaValidationException> ObjectStore::verify_object_schema(Group *group, ObjectSchema &target_schema, Schema &schema) {
     std::vector<ObjectSchemaValidationException> exceptions;
     ObjectSchema table_schema(group, target_schema.name);
 
@@ -155,6 +174,10 @@ std::vector<ObjectSchemaValidationException> ObjectStore::validate_object_schema
         if (property_has_changed(current_prop, *target_prop)) {
             exceptions.emplace_back(MismatchedPropertiesException(table_schema.name, current_prop, *target_prop));
             continue;
+        }
+        if (current_prop.object_type.length() && schema.find(current_prop.object_type) == schema.end()) {
+            exceptions.emplace_back(InvalidPropertyException(table_schema.name, current_prop,
+                "Target type '" + current_prop.object_type + "' doesn't exist for property '" + current_prop.name + "',"));
         }
 
         // create new property with aligned column
@@ -300,12 +323,7 @@ bool ObjectStore::update_realm_with_schema(Group *group,
     bool changed = create_metadata_tables(group);
     changed = create_tables(group, schema, migrating) || changed;
 
-    for (auto& target_schema : schema) {
-        auto errors = validate_object_schema(group, target_schema.second);
-        if (errors.size()) {
-            throw ObjectSchemaValidationException(target_schema.first, errors);
-        }
-    }
+    verify_schema(group, schema);
 
     changed = update_indexes(group, schema) || changed;
 
@@ -419,10 +437,10 @@ DuplicatePrimaryKeyValueException::DuplicatePrimaryKeyValueException(std::string
 };
 
 
-ObjectSchemaValidationException::ObjectSchemaValidationException(std::string object_type, std::vector<ObjectSchemaValidationException> errors) :
-    m_object_type(object_type), m_validation_errors(errors)
+SchemaValidationException::SchemaValidationException(std::vector<ObjectSchemaValidationException> errors) :
+    m_validation_errors(errors)
 {
-    m_what ="Migration is required for object type '" + object_type + "' due to the following errors: ";
+    m_what ="Migration is required due to the following errors: ";
     for (auto error : errors) {
         m_what += std::string("\n- ") + error.what();
     }

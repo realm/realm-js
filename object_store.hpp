@@ -43,11 +43,10 @@ namespace realm {
         // checks if the schema in the group is at the given version
         static bool is_schema_at_version(realm::Group *group, uint64_t version);
 
-        // verify a target schema against its table, setting the table_column property on each schema object
-        // updates the column mapping on the target_schema
-        // if no table is provided it is fetched from the group
-        // returns array of validation errors
-        static std::vector<ObjectSchemaValidationException> validate_object_schema(Group *group, ObjectSchema &target_schema);
+        // verify a target schema against tables in the given group
+        // updates the column mapping on all ObjectSchema properties
+        // throws if the schema is invalid or does not match tables in the given group
+        static void verify_schema(Group *group, Schema &target_schema, bool allow_missing_tables = false);
 
         // updates the target_column member for all properties based on the column indexes in the passed in group
         static void update_column_mapping(Group *group, ObjectSchema &target_schema);
@@ -89,6 +88,11 @@ namespace realm {
         // set references to tables on targetSchema and create/update any missing or out-of-date tables
         // if update existing is true, updates existing tables, otherwise only adds and initializes new tables
         static bool create_tables(realm::Group *group, Schema &target_schema, bool update_existing);
+
+        // verify a target schema against its table, setting the table_column property on each schema object
+        // updates the column mapping on the target_schema
+        // returns array of validation errors
+        static std::vector<ObjectSchemaValidationException> verify_object_schema(Group *group, ObjectSchema &target_schema, Schema &schema);
 
         // get primary key property name for object type
         static StringData get_primary_key_for_object(Group *group, StringData object_type);
@@ -142,12 +146,18 @@ namespace realm {
     };
 
     // Schema validation exceptions
+    class SchemaValidationException : public ObjectStoreException {
+    public:
+        SchemaValidationException(std::vector<ObjectSchemaValidationException> errors);
+    private:
+        std::vector<ObjectSchemaValidationException> m_validation_errors;
+    };
+
     class ObjectSchemaValidationException : public ObjectStoreException {
     public:
         ObjectSchemaValidationException(std::string object_type) : m_object_type(object_type) {}
-        ObjectSchemaValidationException(std::string object_type, std::vector<ObjectSchemaValidationException> errors);
-    private:
-        std::vector<ObjectSchemaValidationException> m_validation_errors;
+        ObjectSchemaValidationException(std::string object_type, std::string message) :
+            m_object_type(object_type) { m_what = message; }
     protected:
         std::string m_object_type;
     };
@@ -192,6 +202,14 @@ namespace realm {
         InvalidPrimaryKeyException(std::string object_type, std::string primary);
     private:
         std::string m_primary;
+    };
+
+    class InvalidPropertyException : public ObjectSchemaValidationException {
+    public:
+        InvalidPropertyException(std::string object_type, Property &property, std::string message) :
+            ObjectSchemaValidationException(object_type), m_property(property) { m_what = message; }
+    private:
+        Property m_property;
     };
 }
 
