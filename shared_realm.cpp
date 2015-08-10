@@ -17,6 +17,8 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #include "shared_realm.hpp"
+#include <realm/group_shared.hpp>
+#include <realm/lang_bind_helper.hpp>
 #include <realm/commit_log.hpp>
 #include <memory>
 
