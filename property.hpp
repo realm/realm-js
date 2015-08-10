@@ -47,11 +47,14 @@ namespace realm {
 
     struct Property {
     public:
+        Property() : object_type(""), is_primary(false), is_indexed(false), is_nullable(false) {}
+
         std::string name;
         PropertyType type;
         std::string object_type;
         bool is_primary;
         bool is_indexed;
+        bool is_nullable;
 
         size_t table_column;
         bool requires_index() { return is_primary || is_indexed; }
