@@ -395,3 +395,10 @@ void RealmCache::cache_realm(SharedRealm &realm, std::thread::id thread_id)
     }
 }
 
+void RealmCache::clear()
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    m_cache.clear();
+}
+

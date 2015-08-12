@@ -117,13 +117,13 @@ namespace realm {
         Group *m_group;
 
         static std::mutex s_init_mutex;
-        static RealmCache s_global_cache;
 
       public:
         ExternalNotificationFunction m_external_notifier;
 
         // FIXME private
         Group *read_group();
+        static RealmCache s_global_cache;
     };
 
     class RealmCache
@@ -133,6 +133,7 @@ namespace realm {
         SharedRealm get_any_realm(const std::string &path);
         void remove(const std::string &path, std::thread::id thread_id);
         void cache_realm(SharedRealm &realm, std::thread::id thread_id = std::this_thread::get_id());
+        void clear();
 
       private:
         std::map<std::string, std::map<std::thread::id, WeakRealm>> m_cache;
