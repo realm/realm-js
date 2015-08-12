@@ -120,7 +120,6 @@ namespace realm {
         static RealmCache s_global_cache;
 
       public:
-        ~Realm();
         ExternalNotificationFunction m_external_notifier;
 
         // FIXME private

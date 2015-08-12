@@ -65,11 +65,6 @@ Realm::Realm(Config &config) : m_config(config), m_thread_id(std::this_thread::g
     }
 }
 
-Realm::~Realm()
-{
-    s_global_cache.remove(m_config.path, m_thread_id);
-}
-
 Group *Realm::read_group()
 {
     if (!m_group) {
@@ -110,7 +105,12 @@ SharedRealm Realm::get_shared_realm(Config &config)
     std::lock_guard<std::mutex> lock(s_init_mutex);
 
     uint64_t old_version = ObjectStore::get_schema_version(realm->read_group());
-    if (!realm->m_config.schema) {
+    if (auto existing = s_global_cache.get_any_realm(realm->config().path)) {
+        // if there is an existing realm at the current path steal its schema/column mapping
+        // FIXME - need to validate that schemas match
+        realm->m_config.schema = std::make_unique<Schema>(*existing->m_config.schema);
+    }
+    else if (!realm->m_config.schema) {
         // get schema from group and skip validation
         realm->m_config.schema_version = old_version;
         realm->m_config.schema = std::make_unique<Schema>(ObjectStore::schema_from_group(realm->read_group()));
@@ -120,11 +120,6 @@ SharedRealm Realm::get_shared_realm(Config &config)
             throw UnitializedRealmException("Can't open an un-initizliazed Realm without a Schema");
         }
         ObjectStore::verify_schema(realm->read_group(), *realm->m_config.schema, true);
-    }
-    else if(auto existing = s_global_cache.get_any_realm(realm->config().path)) {
-        // if there is an existing realm at the current path steal its schema/column mapping
-        // FIXME - need to validate that schemas match
-        realm->m_config.schema = std::make_unique<Schema>(*existing->m_config.schema);
     }
     else {
         // its a non-cached realm so update/migrate if needed
@@ -357,11 +352,12 @@ SharedRealm RealmCache::get_any_realm(const std::string &path)
         return SharedRealm();
     }
 
-    for (auto thread_iter = path_iter->second.begin(); thread_iter != path_iter->second.end(); thread_iter++) {
+    auto thread_iter = path_iter->second.begin();
+    while (thread_iter != path_iter->second.end()) {
         if (auto realm = thread_iter->second.lock()) {
             return realm;
         }
-        path_iter->second.erase(thread_iter);
+        path_iter->second.erase(thread_iter++);
     }
 
     return SharedRealm();
