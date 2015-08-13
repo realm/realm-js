@@ -39,8 +39,7 @@
 		0270BC851B7D020100010E03 /* TestCase.js in Resources */ = {isa = PBXBuildFile; fileRef = 0270BC7E1B7D020100010E03 /* TestCase.js */; };
 		0270BC861B7D020100010E03 /* TestObjects.js in Resources */ = {isa = PBXBuildFile; fileRef = 0270BC7F1B7D020100010E03 /* TestObjects.js */; };
 		0270BC871B7D023200010E03 /* RealmJS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 02B58CB11AE99CEC009B348C /* RealmJS.framework */; };
-		02B29A191B7CF7C9008A7E6B /* RealmReact.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 02B29A181B7CF7C9008A7E6B /* RealmReact.h */; };
-		02B29A1B1B7CF7C9008A7E6B /* RealmReact.m in Sources */ = {isa = PBXBuildFile; fileRef = 02B29A1A1B7CF7C9008A7E6B /* RealmReact.m */; };
+		0270BCD11B7D067300010E03 /* RealmReactModule.m in Sources */ = {isa = PBXBuildFile; fileRef = 0270BCD01B7D067300010E03 /* RealmReactModule.m */; };
 		02B29A311B7CF86D008A7E6B /* RealmJS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 02B58CB11AE99CEC009B348C /* RealmJS.framework */; };
 		02B58CCE1AE99D4D009B348C /* JavaScriptCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 02B58CCD1AE99D4D009B348C /* JavaScriptCore.framework */; };
 		02D8D1F71B601984006DB49D /* JavaScriptCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 02B58CCD1AE99D4D009B348C /* JavaScriptCore.framework */; };
@@ -70,7 +69,6 @@
 			dstPath = "include/$(PRODUCT_NAME)";
 			dstSubfolderSpec = 16;
 			files = (
-				02B29A191B7CF7C9008A7E6B /* RealmReact.h in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -111,9 +109,9 @@
 		0270BC7D1B7D020100010E03 /* ResultsTests.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; name = ResultsTests.js; path = tests/ResultsTests.js; sourceTree = SOURCE_ROOT; };
 		0270BC7E1B7D020100010E03 /* TestCase.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; name = TestCase.js; path = tests/TestCase.js; sourceTree = SOURCE_ROOT; };
 		0270BC7F1B7D020100010E03 /* TestObjects.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; name = TestObjects.js; path = tests/TestObjects.js; sourceTree = SOURCE_ROOT; };
+		0270BCCF1B7D067300010E03 /* RealmReactModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RealmReactModule.h; path = ReactNative/RealmReactModule.h; sourceTree = "<group>"; };
+		0270BCD01B7D067300010E03 /* RealmReactModule.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = RealmReactModule.m; path = ReactNative/RealmReactModule.m; sourceTree = "<group>"; };
 		02B29A161B7CF7C9008A7E6B /* libRealmReact.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libRealmReact.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		02B29A181B7CF7C9008A7E6B /* RealmReact.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RealmReact.h; sourceTree = "<group>"; };
-		02B29A1A1B7CF7C9008A7E6B /* RealmReact.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RealmReact.m; sourceTree = "<group>"; };
 		02B58CB11AE99CEC009B348C /* RealmJS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = RealmJS.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		02B58CBC1AE99CEC009B348C /* RealmJSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RealmJSTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		02B58CCD1AE99D4D009B348C /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
@@ -181,13 +179,13 @@
 			name = RealmJS;
 			sourceTree = "<group>";
 		};
-		02B29A171B7CF7C9008A7E6B /* RealmReact */ = {
+		0270BCCE1B7D066100010E03 /* ReactNativeModule */ = {
 			isa = PBXGroup;
 			children = (
-				02B29A181B7CF7C9008A7E6B /* RealmReact.h */,
-				02B29A1A1B7CF7C9008A7E6B /* RealmReact.m */,
+				0270BCCF1B7D067300010E03 /* RealmReactModule.h */,
+				0270BCD01B7D067300010E03 /* RealmReactModule.m */,
 			);
-			path = RealmReact;
+			name = ReactNativeModule;
 			sourceTree = "<group>";
 		};
 		02B58CA71AE99CEB009B348C = {
@@ -196,7 +194,7 @@
 				02B58CCF1AE99D8C009B348C /* Frameworks */,
 				0270BC3D1B7CFBFD00010E03 /* RealmJS */,
 				02B58CC01AE99CEC009B348C /* RealmJSTests */,
-				02B29A171B7CF7C9008A7E6B /* RealmReact */,
+				0270BCCE1B7D066100010E03 /* ReactNativeModule */,
 				02B58CB21AE99CEC009B348C /* Products */,
 			);
 			sourceTree = "<group>";
@@ -398,7 +396,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				02B29A1B1B7CF7C9008A7E6B /* RealmReact.m in Sources */,
+				0270BCD11B7D067300010E03 /* RealmReactModule.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -452,6 +450,11 @@
 					"DEBUG=1",
 					"$(inherited)",
 				);
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
+					"$(SRCROOT)/examples/ReactExample/node_modules/react-native/React/",
+				);
 				IPHONEOS_DEPLOYMENT_TARGET = 8.4;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -462,6 +465,11 @@
 		02B29A291B7CF7C9008A7E6B /* GCov_Build */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
+					"$(SRCROOT)/examples/ReactExample/node_modules/react-native/React/",
+				);
 				IPHONEOS_DEPLOYMENT_TARGET = 8.4;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -472,6 +480,11 @@
 		02B29A2A1B7CF7C9008A7E6B /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
+					"$(SRCROOT)/examples/ReactExample/node_modules/react-native/React/",
+				);
 				IPHONEOS_DEPLOYMENT_TARGET = 8.4;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";

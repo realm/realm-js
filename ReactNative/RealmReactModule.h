@@ -9,7 +9,9 @@
 
 #import <UIKit/UIKit.h>
 
-#import "../node_modules/react-native/React/Base/RCTBridgeModule.h"
+#import "Base/RCTBridgeModule.h"
+
+@protocol RCTBridgeModule;
 
 @interface Realm : NSObject <RCTBridgeModule>
 

@@ -5,7 +5,6 @@
 'use strict';
 
 var React = require('react-native');
-require('NativeModules').Realm;
 
 var {
   AppRegistry,
@@ -96,4 +95,4 @@ var styles = StyleSheet.create({
   },
 });
 
-AppRegistry.registerComponent('RealmReact', () => RealmReact);
+AppRegistry.registerComponent('ReactExample', () => RealmReact);

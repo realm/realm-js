@@ -9,8 +9,8 @@
 
 #import <objc/runtime.h>
 #import "RealmReactModule.h"
-#import "../node_modules/react-native/React/Base/RCTLog.h"
-#import "../node_modules/react-native/React/Base/RCTBridge.h"
+#import "Base/RCTLog.h"
+#import "Base/RCTBridge.h"
 
 @import RealmJS;
 @import JavaScriptCore;
