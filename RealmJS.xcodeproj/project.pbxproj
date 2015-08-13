@@ -7,8 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		020E449A1B03B96300137EF6 /* ObjectTests.js in Resources */ = {isa = PBXBuildFile; fileRef = 020E44991B03B96300137EF6 /* ObjectTests.js */; };
-		0270BC4C1B7CFC0D00010E03 /* RealmJS.h in Headers */ = {isa = PBXBuildFile; fileRef = 0270BC3E1B7CFC0D00010E03 /* RealmJS.h */; };
+		0270BC4C1B7CFC0D00010E03 /* RealmJS.h in Headers */ = {isa = PBXBuildFile; fileRef = 0270BC3E1B7CFC0D00010E03 /* RealmJS.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		0270BC4D1B7CFC0D00010E03 /* RealmJS.mm in Sources */ = {isa = PBXBuildFile; fileRef = 0270BC3F1B7CFC0D00010E03 /* RealmJS.mm */; };
 		0270BC4E1B7CFC0D00010E03 /* RJSArray.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0270BC401B7CFC0D00010E03 /* RJSArray.cpp */; };
 		0270BC4F1B7CFC0D00010E03 /* RJSArray.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 0270BC411B7CFC0D00010E03 /* RJSArray.hpp */; };
@@ -33,16 +32,17 @@
 		0270BC6F1B7CFC1C00010E03 /* results.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 0270BC641B7CFC1C00010E03 /* results.hpp */; };
 		0270BC701B7CFC1C00010E03 /* shared_realm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0270BC651B7CFC1C00010E03 /* shared_realm.cpp */; };
 		0270BC711B7CFC1C00010E03 /* shared_realm.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 0270BC661B7CFC1C00010E03 /* shared_realm.hpp */; };
-		0296C75B1B06896800043ADF /* TestCase.js in Resources */ = {isa = PBXBuildFile; fileRef = 0296C75A1B06896800043ADF /* TestCase.js */; };
+		0270BC811B7D020100010E03 /* ObjectTests.js in Resources */ = {isa = PBXBuildFile; fileRef = 0270BC791B7D020100010E03 /* ObjectTests.js */; };
+		0270BC821B7D020100010E03 /* RealmJSTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = 0270BC7B1B7D020100010E03 /* RealmJSTests.mm */; };
+		0270BC831B7D020100010E03 /* RealmTests.js in Resources */ = {isa = PBXBuildFile; fileRef = 0270BC7C1B7D020100010E03 /* RealmTests.js */; };
+		0270BC841B7D020100010E03 /* ResultsTests.js in Resources */ = {isa = PBXBuildFile; fileRef = 0270BC7D1B7D020100010E03 /* ResultsTests.js */; };
+		0270BC851B7D020100010E03 /* TestCase.js in Resources */ = {isa = PBXBuildFile; fileRef = 0270BC7E1B7D020100010E03 /* TestCase.js */; };
+		0270BC861B7D020100010E03 /* TestObjects.js in Resources */ = {isa = PBXBuildFile; fileRef = 0270BC7F1B7D020100010E03 /* TestObjects.js */; };
+		0270BC871B7D023200010E03 /* RealmJS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 02B58CB11AE99CEC009B348C /* RealmJS.framework */; };
 		02B29A191B7CF7C9008A7E6B /* RealmReact.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 02B29A181B7CF7C9008A7E6B /* RealmReact.h */; };
 		02B29A1B1B7CF7C9008A7E6B /* RealmReact.m in Sources */ = {isa = PBXBuildFile; fileRef = 02B29A1A1B7CF7C9008A7E6B /* RealmReact.m */; };
 		02B29A311B7CF86D008A7E6B /* RealmJS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 02B58CB11AE99CEC009B348C /* RealmJS.framework */; };
-		02B58CBD1AE99CEC009B348C /* RealmJS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 02B58CB11AE99CEC009B348C /* RealmJS.framework */; };
-		02B58CC41AE99CEC009B348C /* RealmJSTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = 02B58CC31AE99CEC009B348C /* RealmJSTests.mm */; };
 		02B58CCE1AE99D4D009B348C /* JavaScriptCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 02B58CCD1AE99D4D009B348C /* JavaScriptCore.framework */; };
-		02CF54691B010D560062C25E /* ResultsTests.js in Resources */ = {isa = PBXBuildFile; fileRef = 02CF54681B010D1B0062C25E /* ResultsTests.js */; };
-		02CF546B1B011BD40062C25E /* TestObjects.js in Resources */ = {isa = PBXBuildFile; fileRef = 02CF546A1B0119FA0062C25E /* TestObjects.js */; };
-		02CF546D1B011D590062C25E /* RealmTests.js in Resources */ = {isa = PBXBuildFile; fileRef = 02CF546C1B011D590062C25E /* RealmTests.js */; };
 		02D8D1F71B601984006DB49D /* JavaScriptCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 02B58CCD1AE99D4D009B348C /* JavaScriptCore.framework */; };
 /* End PBXBuildFile section */
 
@@ -77,7 +77,6 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		020E44991B03B96300137EF6 /* ObjectTests.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; name = ObjectTests.js; path = tests/ObjectTests.js; sourceTree = "<group>"; };
 		0270BC3E1B7CFC0D00010E03 /* RealmJS.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RealmJS.h; path = src/RealmJS.h; sourceTree = "<group>"; };
 		0270BC3F1B7CFC0D00010E03 /* RealmJS.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = RealmJS.mm; path = src/RealmJS.mm; sourceTree = "<group>"; };
 		0270BC401B7CFC0D00010E03 /* RJSArray.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = RJSArray.cpp; path = src/RJSArray.cpp; sourceTree = "<group>"; };
@@ -104,19 +103,20 @@
 		0270BC641B7CFC1C00010E03 /* results.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = results.hpp; path = "src/object-store/results.hpp"; sourceTree = "<group>"; };
 		0270BC651B7CFC1C00010E03 /* shared_realm.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = shared_realm.cpp; path = "src/object-store/shared_realm.cpp"; sourceTree = "<group>"; };
 		0270BC661B7CFC1C00010E03 /* shared_realm.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = shared_realm.hpp; path = "src/object-store/shared_realm.hpp"; sourceTree = "<group>"; };
-		0296C75A1B06896800043ADF /* TestCase.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; name = TestCase.js; path = tests/TestCase.js; sourceTree = "<group>"; };
-		02B19EC31AF9927A0099161B /* RealmJSTests.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = RealmJSTests.h; path = tests/RealmJSTests.h; sourceTree = "<group>"; };
+		0270BC781B7D020100010E03 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = tests/Info.plist; sourceTree = SOURCE_ROOT; };
+		0270BC791B7D020100010E03 /* ObjectTests.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; name = ObjectTests.js; path = tests/ObjectTests.js; sourceTree = SOURCE_ROOT; };
+		0270BC7A1B7D020100010E03 /* RealmJSTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RealmJSTests.h; path = tests/RealmJSTests.h; sourceTree = SOURCE_ROOT; };
+		0270BC7B1B7D020100010E03 /* RealmJSTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = RealmJSTests.mm; path = tests/RealmJSTests.mm; sourceTree = SOURCE_ROOT; };
+		0270BC7C1B7D020100010E03 /* RealmTests.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; name = RealmTests.js; path = tests/RealmTests.js; sourceTree = SOURCE_ROOT; };
+		0270BC7D1B7D020100010E03 /* ResultsTests.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; name = ResultsTests.js; path = tests/ResultsTests.js; sourceTree = SOURCE_ROOT; };
+		0270BC7E1B7D020100010E03 /* TestCase.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; name = TestCase.js; path = tests/TestCase.js; sourceTree = SOURCE_ROOT; };
+		0270BC7F1B7D020100010E03 /* TestObjects.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; name = TestObjects.js; path = tests/TestObjects.js; sourceTree = SOURCE_ROOT; };
 		02B29A161B7CF7C9008A7E6B /* libRealmReact.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libRealmReact.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		02B29A181B7CF7C9008A7E6B /* RealmReact.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RealmReact.h; sourceTree = "<group>"; };
 		02B29A1A1B7CF7C9008A7E6B /* RealmReact.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RealmReact.m; sourceTree = "<group>"; };
 		02B58CB11AE99CEC009B348C /* RealmJS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = RealmJS.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		02B58CBC1AE99CEC009B348C /* RealmJSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RealmJSTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		02B58CC21AE99CEC009B348C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; name = Info.plist; path = tests/Info.plist; sourceTree = "<group>"; };
-		02B58CC31AE99CEC009B348C /* RealmJSTests.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = RealmJSTests.mm; path = tests/RealmJSTests.mm; sourceTree = "<group>"; };
 		02B58CCD1AE99D4D009B348C /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
-		02CF54681B010D1B0062C25E /* ResultsTests.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = ResultsTests.js; path = tests/ResultsTests.js; sourceTree = "<group>"; };
-		02CF546A1B0119FA0062C25E /* TestObjects.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = TestObjects.js; path = tests/TestObjects.js; sourceTree = "<group>"; };
-		02CF546C1B011D590062C25E /* RealmTests.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; name = RealmTests.js; path = tests/RealmTests.js; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -140,8 +140,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0270BC871B7D023200010E03 /* RealmJS.framework in Frameworks */,
 				02D8D1F71B601984006DB49D /* JavaScriptCore.framework in Frameworks */,
-				02B58CBD1AE99CEC009B348C /* RealmJS.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -214,14 +214,14 @@
 		02B58CC01AE99CEC009B348C /* RealmJSTests */ = {
 			isa = PBXGroup;
 			children = (
-				02CF54681B010D1B0062C25E /* ResultsTests.js */,
-				020E44991B03B96300137EF6 /* ObjectTests.js */,
-				02CF546C1B011D590062C25E /* RealmTests.js */,
-				02B19EC31AF9927A0099161B /* RealmJSTests.h */,
-				02B58CC31AE99CEC009B348C /* RealmJSTests.mm */,
-				0296C75A1B06896800043ADF /* TestCase.js */,
-				02CF546A1B0119FA0062C25E /* TestObjects.js */,
-				02B58CC21AE99CEC009B348C /* Info.plist */,
+				0270BC781B7D020100010E03 /* Info.plist */,
+				0270BC791B7D020100010E03 /* ObjectTests.js */,
+				0270BC7A1B7D020100010E03 /* RealmJSTests.h */,
+				0270BC7B1B7D020100010E03 /* RealmJSTests.mm */,
+				0270BC7C1B7D020100010E03 /* RealmTests.js */,
+				0270BC7D1B7D020100010E03 /* ResultsTests.js */,
+				0270BC7E1B7D020100010E03 /* TestCase.js */,
+				0270BC7F1B7D020100010E03 /* TestObjects.js */,
 			);
 			path = RealmJSTests;
 			sourceTree = "<group>";
@@ -241,6 +241,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0270BC4C1B7CFC0D00010E03 /* RealmJS.h in Headers */,
 				0270BC4F1B7CFC0D00010E03 /* RJSArray.hpp in Headers */,
 				0270BC6C1B7CFC1C00010E03 /* object_store.hpp in Headers */,
 				0270BC541B7CFC0D00010E03 /* RJSResults.hpp in Headers */,
@@ -250,7 +251,6 @@
 				0270BC6A1B7CFC1C00010E03 /* object_schema.hpp in Headers */,
 				0270BC6D1B7CFC1C00010E03 /* property.hpp in Headers */,
 				0270BC6F1B7CFC1C00010E03 /* results.hpp in Headers */,
-				0270BC4C1B7CFC0D00010E03 /* RealmJS.h in Headers */,
 				0270BC561B7CFC0D00010E03 /* RJSSchema.hpp in Headers */,
 				0270BC521B7CFC0D00010E03 /* RJSRealm.hpp in Headers */,
 				0270BC501B7CFC0D00010E03 /* RJSObject.hpp in Headers */,
@@ -366,11 +366,11 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				02CF546B1B011BD40062C25E /* TestObjects.js in Resources */,
-				0296C75B1B06896800043ADF /* TestCase.js in Resources */,
-				02CF54691B010D560062C25E /* ResultsTests.js in Resources */,
-				02CF546D1B011D590062C25E /* RealmTests.js in Resources */,
-				020E449A1B03B96300137EF6 /* ObjectTests.js in Resources */,
+				0270BC851B7D020100010E03 /* TestCase.js in Resources */,
+				0270BC811B7D020100010E03 /* ObjectTests.js in Resources */,
+				0270BC861B7D020100010E03 /* TestObjects.js in Resources */,
+				0270BC831B7D020100010E03 /* RealmTests.js in Resources */,
+				0270BC841B7D020100010E03 /* ResultsTests.js in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -425,7 +425,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				02B58CC41AE99CEC009B348C /* RealmJSTests.mm in Sources */,
+				0270BC821B7D020100010E03 /* RealmJSTests.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
