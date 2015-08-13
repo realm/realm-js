@@ -1,0 +1,33 @@
+{
+  "name": "cordova-plugin-console",
+  "version": "1.0.1-dev",
+  "description": "Cordova Console Plugin",
+  "cordova": {
+    "id": "cordova-plugin-console",
+    "platforms": [
+      "ios",
+      "ubuntu",
+      "wp7",
+      "wp8",
+      "windows8",
+      "windows"
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://git-wip-us.apache.org/repos/asf/cordova-plugin-console.git"
+  },
+  "keywords": [
+    "cordova",
+    "console",
+    "ecosystem:cordova",
+    "cordova-ios",
+    "cordova-ubuntu",
+    "cordova-wp7",
+    "cordova-wp8",
+    "cordova-windows8",
+    "cordova-windows"
+  ],
+  "author": "Apache Software Foundation",
+  "license": "Apache 2.0"
+}
