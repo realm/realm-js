@@ -42,6 +42,7 @@
 		0270BCD11B7D067300010E03 /* RealmReactModule.m in Sources */ = {isa = PBXBuildFile; fileRef = 0270BCD01B7D067300010E03 /* RealmReactModule.m */; };
 		02B29A311B7CF86D008A7E6B /* RealmJS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 02B58CB11AE99CEC009B348C /* RealmJS.framework */; };
 		02B58CCE1AE99D4D009B348C /* JavaScriptCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 02B58CCD1AE99D4D009B348C /* JavaScriptCore.framework */; };
+		02D456DA1B7E59A500EE1299 /* ArrayTests.js in Resources */ = {isa = PBXBuildFile; fileRef = 02D456D91B7E59A500EE1299 /* ArrayTests.js */; };
 		02D8D1F71B601984006DB49D /* JavaScriptCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 02B58CCD1AE99D4D009B348C /* JavaScriptCore.framework */; };
 /* End PBXBuildFile section */
 
@@ -115,6 +116,7 @@
 		02B58CB11AE99CEC009B348C /* RealmJS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = RealmJS.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		02B58CBC1AE99CEC009B348C /* RealmJSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RealmJSTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		02B58CCD1AE99D4D009B348C /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
+		02D456D91B7E59A500EE1299 /* ArrayTests.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; name = ArrayTests.js; path = tests/ArrayTests.js; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -212,6 +214,7 @@
 		02B58CC01AE99CEC009B348C /* RealmJSTests */ = {
 			isa = PBXGroup;
 			children = (
+				02D456D91B7E59A500EE1299 /* ArrayTests.js */,
 				0270BC781B7D020100010E03 /* Info.plist */,
 				0270BC791B7D020100010E03 /* ObjectTests.js */,
 				0270BC7A1B7D020100010E03 /* RealmJSTests.h */,
@@ -366,6 +369,7 @@
 			files = (
 				0270BC851B7D020100010E03 /* TestCase.js in Resources */,
 				0270BC811B7D020100010E03 /* ObjectTests.js in Resources */,
+				02D456DA1B7E59A500EE1299 /* ArrayTests.js in Resources */,
 				0270BC861B7D020100010E03 /* TestObjects.js in Resources */,
 				0270BC831B7D020100010E03 /* RealmTests.js in Resources */,
 				0270BC841B7D020100010E03 /* ResultsTests.js in Resources */,

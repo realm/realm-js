@@ -27,6 +27,10 @@ namespace realm {
         SharedRealm realm;
         ObjectSchema &object_schema;
         LinkViewRef link_view;
+
+        size_t size();
+        Row get(std::size_t row_ndx);
+        void verify_attached();
     };
 }
 

@@ -107,9 +107,18 @@ var ObjectTests = {
 
         // set object as JSON
         realm.write(function() {
-            obj.objectCol = { doubleCol: 3 };
+            obj.objectCol = { doubleCol: 1 };
         });
-        TestCase.assertEqual(obj.objectCol.doubleCol, 3);
+        TestCase.assertEqual(obj.objectCol.doubleCol, 1);
         TestCase.assertEqual(realm.objects('TestObject').length, 3);
+
+        // set array property
+        realm.write(function() {
+            obj.arrayCol = [obj.arrayCol[0], obj.objectCol, realm.create('TestObject', [2])];
+        });
+        TestCase.assertEqual(obj.arrayCol.length, 3);
+        TestCase.assertEqual(obj.arrayCol[0].doubleCol, 3);
+        TestCase.assertEqual(obj.arrayCol[1].doubleCol, 1);
+        TestCase.assertEqual(obj.arrayCol[2].doubleCol, 2);
     },
 };

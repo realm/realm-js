@@ -49,7 +49,7 @@ var ResultsTests = {
         var objects = realm.objects('TestObject');
         TestCase.assertEqual(undefined, objects.ablasdf);
     },
-    testResultsEnumberate: function() {
+    testResultsEnumerate: function() {
         var realm = new Realm({schema: [TestObjectSchema]});
         var objects = realm.objects('TestObject');
         for (var object in objects) {

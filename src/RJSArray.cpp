@@ -22,21 +22,43 @@
 
 using namespace realm;
 
+size_t ObjectArray::size() {
+    verify_attached();
+    return link_view->size();
+}
+
+Row ObjectArray::get(std::size_t row_ndx) {
+    verify_attached();
+    if (row_ndx >= link_view->size()) {
+        throw std::range_error(std::string("Index ") + std::to_string(row_ndx) + " is outside of range 0..." +
+                               std::to_string(link_view->size()) + ".");
+    }
+    return link_view->get(row_ndx);
+}
+
+void ObjectArray::verify_attached() {
+    if (!link_view->is_attached()) {
+        throw std::runtime_error("Tableview is not attached");
+    }
+    link_view->sync_if_needed();
+}
+
 JSValueRef ArrayGetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef* jsException) {
     try {
         // index subscripting
         ObjectArray *array = RJSGetInternal<ObjectArray *>(object);
+        size_t size = array->size();
+
         std::string indexStr = RJSStringForJSString(propertyName);
-        size_t size = array->link_view->size();
         if (indexStr == "length") {
             return JSValueMakeNumber(ctx, size);
         }
 
-        long index = std::stol(indexStr);
-        if (index < 0 || index >= size) {
-            throw std::range_error("Invalid index '" + indexStr + "'");
-        }
-        return RJSObjectCreate(ctx, Object(array->realm, array->object_schema, array->link_view->get(index)));
+        return RJSObjectCreate(ctx, Object(array->realm, array->object_schema, array->get(std::stol(indexStr))));
+    }
+    catch (std::invalid_argument &exp) {
+        // for stol failure this could be another property that is handled externally, so ignore
+        return NULL;
     }
     catch (std::exception &exp) {
         if (jsException) {
@@ -60,7 +82,6 @@ void ArrayPropertyNames(JSContextRef ctx, JSObjectRef object, JSPropertyNameAccu
 JSObjectRef RJSArrayCreate(JSContextRef ctx, realm::ObjectArray *array) {
     return RJSWrapObject<ObjectArray *>(ctx, RJSArrayClass(), array);
 }
-
 
 JSClassRef RJSArrayClass() {
     static JSClassRef s_objectClass = RJSCreateWrapperClass<Object>("Results", ArrayGetProperty, NULL, NULL, NULL, ArrayPropertyNames);

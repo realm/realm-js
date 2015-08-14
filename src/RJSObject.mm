@@ -83,6 +83,7 @@ bool ObjectSetProperty(JSContextRef ctx, JSObjectRef jsObject, JSStringRef jsPro
         if (*exception) {
             *exception = RJSMakeError(ctx, ex);
         }
+        return false;
     }
     return true;
 }
