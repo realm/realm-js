@@ -79,3 +79,8 @@ JSValueRef RJSValueForString(JSContextRef ctx, const std::string &str) {
     JSStringRelease(jsStr);
     return value;
 }
+
+bool RJSIsValueArray(JSContextRef ctx, JSValueRef value) {
+    static JSStringRef arrayString = JSStringCreateWithUTF8CString("Array");
+    return RJSIsValueObjectOfType(ctx, value, arrayString);
+}

@@ -211,13 +211,8 @@ JSValueRef RealmCreateObject(JSContextRef ctx, JSObjectRef function, JSObjectRef
         SharedRealm sharedRealm = *RJSGetInternal<SharedRealm *>(thisObject);
         ObjectSchema &object_schema = sharedRealm->config().schema->at(className);
 
-        JSObjectRef object = JSValueToObject(ctx, arguments[1], jsException);
-        if (!object) {
-            return NULL;
-        }
-
-        static JSStringRef arrayString = JSStringCreateWithUTF8CString("Array");
-        if (RJSIsValueObjectOfType(ctx, arguments[1], arrayString)) {
+        JSObjectRef object = RJSValidatedValueToObject(ctx, arguments[1]);
+        if (RJSIsValueArray(ctx, arguments[1])) {
             object = RJSDictForPropertyArray(ctx, object_schema, object);
         }
 
@@ -231,21 +226,58 @@ JSValueRef RealmCreateObject(JSContextRef ctx, JSObjectRef function, JSObjectRef
     }
 }
 
+JSValueRef RealmDelete(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) {
+    try {
+        RJSValidateArgumentCount(argumentCount, 1);
+
+        if (RJSIsValueArray(ctx, arguments[0])) {
+            JSObjectRef array = RJSValidatedValueToObject(ctx, arguments[0]);
+            size_t length = RJSValidatedArrayLength(ctx, array);
+            for (size_t i = 0; i < length; i++) {
+                JSValueRef object = RJSValidatedObjectAtIndex(ctx, array, (unsigned int)i);
+                RealmDelete(ctx, function, thisObject, 1, &object, jsException);
+            }
+            return NULL;
+        }
+
+        if (!JSValueIsObjectOfClass(ctx, arguments[0], RJSObjectClass())) {
+            throw std::runtime_error("Argument to 'delete' must be a Realm object.");
+        }
+
+        Object *object = RJSGetInternal<Object *>(RJSValidatedValueToObject(ctx, arguments[0]));
+
+        SharedRealm realm = *RJSGetInternal<SharedRealm *>(thisObject);
+
+        if (!realm->is_in_transaction()) {
+            throw std::runtime_error("Can only delete objects within a transaction.");
+        }
+
+        realm::TableRef table = ObjectStore::table_for_object_type(realm->read_group(), object->object_schema.name);
+        table->remove(object->row.get_index());
+
+        return NULL;
+    }
+    catch (std::exception &exp) {
+        if (jsException) {
+            *jsException = RJSMakeError(ctx, exp);
+        }
+        return NULL;
+    }
+}
+
 JSValueRef RealmWrite(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) {
     try {
         RJSValidateArgumentCount(argumentCount, 1);
 
-        JSObjectRef object = JSValueToObject(ctx, arguments[0], jsException);
-        if (object) {
-            SharedRealm realm = *RJSGetInternal<SharedRealm *>(thisObject);
-            realm->begin_transaction();
-            JSObjectCallAsFunction(ctx, object, thisObject, 0, NULL, jsException);
-            if (*jsException) {
-                realm->cancel_transaction();
-            }
-            else {
-                realm->commit_transaction();
-            }
+        JSObjectRef object = RJSValidatedValueToObject(ctx, arguments[0]);
+        SharedRealm realm = *RJSGetInternal<SharedRealm *>(thisObject);
+        realm->begin_transaction();
+        JSObjectCallAsFunction(ctx, object, thisObject, 0, NULL, jsException);
+        if (*jsException) {
+            realm->cancel_transaction();
+        }
+        else {
+            realm->commit_transaction();
         }
     }
     catch (std::exception &exp) {
@@ -269,11 +301,7 @@ JSValueRef RealmAddNotification(JSContextRef ctx, JSObjectRef function, JSObject
     try {
         RJSValidateArgumentCount(argumentCount, 1);
 
-        JSObjectRef user_function = JSValueToObject(ctx, arguments[0], jsException);
-        if (!user_function) {
-            return NULL;
-        }
-
+        JSObjectRef user_function = RJSValidatedValueToObject(ctx, arguments[0]);
         SharedRealm realm = *RJSGetInternal<SharedRealm *>(thisObject);
         JSGlobalContextRef gCtx = JSGlobalContextRetain(JSContextGetGlobalContext(ctx));
         Realm::NotificationFunction func = std::make_shared<std::function<void(const std::string)>>([=](std::string notification_name) {
@@ -309,6 +337,7 @@ JSClassRef RJSRealmClass() {
     const JSStaticFunction realmFuncs[] = {
         {"objects", RealmObjects},
         {"create", RealmCreateObject},
+        {"delete", RealmDelete},
         {"write", RealmWrite},
         {"addNotification", RealmAddNotification},
         {NULL, NULL},

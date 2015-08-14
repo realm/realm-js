@@ -84,6 +84,35 @@ var RealmTests = {
         TestCase.assertEqual(objects[1].doubleCol, 2, 'wrong object property value');
     },
 
+    testRealmDelete: function() {
+        var realm = new Realm({schema: [TestObjectSchema]});
+        realm.write(function() {
+            realm.create('TestObject', [1]);
+            realm.create('TestObject', [2]);
+            realm.create('TestObject', [3]);
+            realm.create('TestObject', [4]);
+        });
+
+        var objects = realm.objects('TestObject');
+        TestCase.assertEqual(objects.length, 4, 'wrong object count');
+        TestCase.assertThrows(function() {
+            realm.delete(objects[0]);
+        }, "can only delete in a write transaction");
+
+        realm.write(function() {
+            TestCase.assertThrows(function() {
+                realm.delete();
+            });
+
+            realm.delete(objects[0]);
+            TestCase.assertEqual(objects.length, 3, 'wrong object count');
+            TestCase.assertEqual(objects[0].doubleCol, 2);
+
+            realm.delete([objects[0], objects[1]]);
+            TestCase.assertEqual(objects.length, 1, 'wrong object count');
+        });
+    },
+
     testRealmObjects: function() {
         var realm = new Realm({schema: [TestObjectSchema]});
         realm.write(function() {

@@ -169,9 +169,8 @@ template<> size_t RJSAccessor::to_object_index(JSContextRef ctx, SharedRealm &re
         return RJSGetInternal<Object *>(object)->row.get_index();
     }
 
-    static JSStringRef arrayString = JSStringCreateWithUTF8CString("Array");
     ObjectSchema &object_schema = realm->config().schema->at(prop.object_type);
-    if (RJSIsValueObjectOfType(ctx, object, arrayString)) {
+    if (RJSIsValueArray(ctx, object)) {
         object = RJSDictForPropertyArray(ctx, object_schema, object);
     }
 

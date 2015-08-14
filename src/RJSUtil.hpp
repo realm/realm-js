@@ -172,3 +172,4 @@ static inline bool RJSIsValueObjectOfType(JSContextRef ctx, JSValueRef value, JS
     return ret;
 }
 
+bool RJSIsValueArray(JSContextRef ctx, JSValueRef value);
