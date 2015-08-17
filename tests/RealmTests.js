@@ -114,10 +114,11 @@ var RealmTests = {
     },
 
     testRealmObjects: function() {
-        var realm = new Realm({schema: [TestObjectSchema]});
+        var realm = new Realm({schema: [PersonObject]});
         realm.write(function() {
-            realm.create('TestObject', [1]);
-            realm.create('TestObject', {'doubleCol': 2});
+            realm.create('PersonObject', ['Tim', 11]);
+            realm.create('PersonObject', {'name': 'Bjarne', 'age': 12});
+            realm.create('PersonObject', {'name': 'Alex', 'age': 12});
         });
 
         TestCase.assertThrows(function() { 
@@ -129,15 +130,20 @@ var RealmTests = {
         TestCase.assertThrows(function() { 
             realm.objects('InvalidClass');
         });
-        // TestCase.assertThrows(function() { 
-        //     realm.objects('TestObject', 'invalid query');
-        // });
         TestCase.assertThrows(function() { 
-            realm.objects('TestObject', []);
+            realm.objects('PersonObject', 'invalid query');
+        });
+        TestCase.assertThrows(function() { 
+            realm.objects('PersonObject', []);
         });
 
-        TestCase.assertEqual(realm.objects('TestObject').length, 2);
-        //TestCase.assertEqual(realm.objects('TestObject', 'doubleCol = 1').length, 1);
+        TestCase.assertEqual(realm.objects('PersonObject').length, 3);
+        TestCase.assertEqual(realm.objects('PersonObject', 'age = 11').length, 1);
+        TestCase.assertEqual(realm.objects('PersonObject', 'age = 11')[0].name, 'Tim');
+        TestCase.assertEqual(realm.objects('PersonObject', 'age = 12').length, 2);
+        TestCase.assertEqual(realm.objects('PersonObject', 'age = 13').length, 0);
+        TestCase.assertEqual(realm.objects('PersonObject', 'age < 12').length, 1);
+        TestCase.assertEqual(realm.objects('PersonObject', 'name = \'Tim\'').length, 1);
     },
 
     testNotifications: function() {

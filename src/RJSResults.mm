@@ -64,10 +64,21 @@ JSObjectRef RJSResultsCreate(JSContextRef ctx, SharedRealm realm, std::string cl
     return RJSWrapObject<Results *>(ctx, RJSResultsClass(), new Results(realm, realm->config().schema->at(className), table->where()));
 }
 
+
+void RLMUpdateQueryWithPredicate(realm::Query *query, NSPredicate *predicate, realm::Schema &schema, realm::ObjectSchema &objectSchema);
+
 JSObjectRef RJSResultsCreate(JSContextRef ctx, SharedRealm realm, std::string className, std::string queryString) {
     TableRef table = ObjectStore::table_for_object_type(realm->read_group(), className);
     Query query = table->where();
-    return RJSWrapObject<Results *>(ctx, RJSResultsClass(), new Results(realm, realm->config().schema->at(className), std::move(query)));
+    Schema &schema = *realm->config().schema;
+    ObjectSchema &object_schema = realm->config().schema->at(className);
+    @try {
+        RLMUpdateQueryWithPredicate(&query, [NSPredicate predicateWithFormat:@(queryString.c_str())], schema, object_schema);
+    }
+    @catch(NSException *ex) {
+        throw std::runtime_error(ex.description.UTF8String);
+    }
+    return RJSWrapObject<Results *>(ctx, RJSResultsClass(), new Results(realm, object_schema, std::move(query)));
 }
 
 
