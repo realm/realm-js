@@ -116,6 +116,7 @@ var RealmTests = {
     testRealmObjects: function() {
         var realm = new Realm({schema: [PersonObject]});
         realm.write(function() {
+            realm.create('PersonObject', ['Ari', 10]);
             realm.create('PersonObject', ['Tim', 11]);
             realm.create('PersonObject', {'name': 'Bjarne', 'age': 12});
             realm.create('PersonObject', {'name': 'Alex', 'age': 12});
@@ -137,12 +138,14 @@ var RealmTests = {
             realm.objects('PersonObject', []);
         });
 
-        TestCase.assertEqual(realm.objects('PersonObject').length, 3);
+        TestCase.assertEqual(realm.objects('PersonObject').length, 4);
         TestCase.assertEqual(realm.objects('PersonObject', 'age = 11').length, 1);
         TestCase.assertEqual(realm.objects('PersonObject', 'age = 11')[0].name, 'Tim');
         TestCase.assertEqual(realm.objects('PersonObject', 'age = 12').length, 2);
         TestCase.assertEqual(realm.objects('PersonObject', 'age = 13').length, 0);
-        TestCase.assertEqual(realm.objects('PersonObject', 'age < 12').length, 1);
+        TestCase.assertEqual(realm.objects('PersonObject', 'age < 12').length, 2);
+        TestCase.assertEqual(realm.objects('PersonObject', 'age > 10 && age < 13').length, 3);
+        TestCase.assertEqual(realm.objects('PersonObject', 'age >= 11 && age < 13').length, 3);
         TestCase.assertEqual(realm.objects('PersonObject', 'name = \'Tim\'').length, 1);
     },
 
