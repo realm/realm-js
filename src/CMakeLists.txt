@@ -8,6 +8,7 @@ set(SOURCES
     results.cpp
     schema.cpp
     shared_realm.cpp
+    impl/realm_coordinator.cpp
     impl/transact_log_handler.cpp
     parser/parser.cpp
     parser/query_builder.cpp)
