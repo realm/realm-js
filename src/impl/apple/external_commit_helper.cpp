@@ -143,43 +143,8 @@ ExternalCommitHelper::ExternalCommitHelper(RealmCoordinator& parent)
 
 ExternalCommitHelper::~ExternalCommitHelper()
 {
-    REALM_ASSERT_DEBUG(m_realms.empty());
     notify_fd(m_shutdown_write_fd);
     m_thread.wait(); // Wait for the thread to exit
-}
-
-void ExternalCommitHelper::add_realm(realm::Realm* realm)
-{
-    std::lock_guard<std::mutex> lock(m_realms_mutex);
-
-    // Create the runloop source
-    CFRunLoopSourceContext ctx{};
-    ctx.info = realm;
-    ctx.perform = [](void* info) {
-        static_cast<Realm*>(info)->notify();
-    };
-
-    CFRunLoopRef runloop = CFRunLoopGetCurrent();
-    CFRetain(runloop);
-    CFRunLoopSourceRef signal = CFRunLoopSourceCreate(kCFAllocatorDefault, 0, &ctx);
-    CFRunLoopAddSource(runloop, signal, kCFRunLoopDefaultMode);
-
-    m_realms.push_back({realm, runloop, signal});
-}
-
-void ExternalCommitHelper::remove_realm(realm::Realm* realm)
-{
-    std::lock_guard<std::mutex> lock(m_realms_mutex);
-    for (auto it = m_realms.begin(); it != m_realms.end(); ++it) {
-        if (it->realm == realm) {
-            CFRunLoopSourceInvalidate(it->signal);
-            CFRelease(it->signal);
-            CFRelease(it->runloop);
-            m_realms.erase(it);
-            return;
-        }
-    }
-    REALM_TERMINATE("Realm not registered");
 }
 
 void ExternalCommitHelper::listen()
@@ -216,14 +181,7 @@ void ExternalCommitHelper::listen()
         }
         assert(event.ident == (uint32_t)m_notify_fd);
 
-        std::lock_guard<std::mutex> lock(m_realms_mutex);
-        for (auto const& realm : m_realms) {
-            CFRunLoopSourceSignal(realm.signal);
-            // Signalling the source makes it run the next time the runloop gets
-            // to it, but doesn't make the runloop start if it's currently idle
-            // waiting for events
-            CFRunLoopWakeUp(realm.runloop);
-        }
+        m_parent.on_change();
     }
 }
 

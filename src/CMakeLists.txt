@@ -28,8 +28,10 @@ set(HEADERS
 if(APPLE)
     include_directories(impl/apple)
     list(APPEND SOURCES
+        impl/apple/cached_realm.cpp
         impl/apple/external_commit_helper.cpp)
     list(APPEND HEADERS
+        impl/apple/cached_realm.hpp
         impl/apple/external_commit_helper.hpp)
     find_library(CF_LIBRARY CoreFoundation)
 endif()
