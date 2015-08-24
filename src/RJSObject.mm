@@ -26,7 +26,6 @@
 #import "object_accessor.hpp"
 
 using namespace realm;
-using RJSAccessor = NativeAccessor<JSValueRef, JSContextRef>;
 
 JSValueRef ObjectGetProperty(JSContextRef ctx, JSObjectRef jsObject, JSStringRef jsPropertyName, JSValueRef* exception) {
     Object *obj = RJSGetInternal<Object *>(jsObject);
@@ -164,13 +163,13 @@ template<> DateTime RJSAccessor::to_datetime(JSContextRef ctx, JSValueRef &val) 
 
 extern JSObjectRef RJSDictForPropertyArray(JSContextRef ctx, ObjectSchema &object_schema, JSObjectRef array);
 
-template<> size_t RJSAccessor::to_object_index(JSContextRef ctx, SharedRealm &realm, JSValueRef &val, Property &prop, bool try_update) {
+template<> size_t RJSAccessor::to_object_index(JSContextRef ctx, SharedRealm &realm, JSValueRef &val, std::string &type, bool try_update) {
     JSObjectRef object = RJSValidatedValueToObject(ctx, val);
     if (JSValueIsObjectOfClass(ctx, val, RJSObjectClass())) {
         return RJSGetInternal<Object *>(object)->row.get_index();
     }
 
-    ObjectSchema &object_schema = realm->config().schema->at(prop.object_type);
+    ObjectSchema &object_schema = realm->config().schema->at(type);
     if (RJSIsValueArray(ctx, object)) {
         object = RJSDictForPropertyArray(ctx, object_schema, object);
     }

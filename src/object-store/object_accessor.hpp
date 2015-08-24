@@ -43,7 +43,7 @@ namespace realm {
         // convert value to persisted object
         // for existing objects return the existing row index
         // for new/updated objects return the row index
-        static size_t to_object_index(ContextType ctx, SharedRealm &realm, ValueType &val, Property &prop, bool try_update);
+        static size_t to_object_index(ContextType ctx, SharedRealm &realm, ValueType &val, std::string &type, bool try_update);
 
         // array value acessors
         static size_t array_size(ContextType ctx, ValueType &val);
@@ -125,7 +125,7 @@ namespace realm {
                     row.nullify_link(column);
                 }
                 else {
-                    row.set_link(column, Accessor::to_object_index(ctx, realm, value, property, try_update));
+                    row.set_link(column, Accessor::to_object_index(ctx, realm, value, property.object_type, try_update));
                 }
                 break;
             }
@@ -135,7 +135,7 @@ namespace realm {
                 size_t count = Accessor::array_size(ctx, value);
                 for (size_t i = 0; i < count; i++) {
                     ValueType element = Accessor::array_value_at_index(ctx, value, i);
-                    link_view->add(Accessor::to_object_index(ctx, realm, element, property, try_update));
+                    link_view->add(Accessor::to_object_index(ctx, realm, element, property.object_type, try_update));
                 }
                 break;
             }

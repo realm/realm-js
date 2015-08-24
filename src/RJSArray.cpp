@@ -18,6 +18,7 @@
 
 #include "RJSArray.hpp"
 #include "RJSObject.hpp"
+#include "RJSUtil.hpp"
 #include "object_accessor.hpp"
 
 using namespace realm;
@@ -79,11 +80,29 @@ void ArrayPropertyNames(JSContextRef ctx, JSObjectRef object, JSPropertyNameAccu
     }
 }
 
+JSValueRef ArrayPush(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) {
+    try {
+        ObjectArray *array = RJSGetInternal<ObjectArray *>(thisObject);
+        RJSValidateArgumentCount(argumentCount, 1);
+        array->link_view->add(RJSAccessor::to_object_index(ctx, array->realm, const_cast<JSValueRef &>(arguments[0]), array->object_schema.name, false));
+    }
+    catch (std::exception &exp) {
+        if (jsException) {
+            *jsException = RJSMakeError(ctx, exp);
+        }
+    }
+    return NULL;
+}
+
 JSObjectRef RJSArrayCreate(JSContextRef ctx, realm::ObjectArray *array) {
     return RJSWrapObject<ObjectArray *>(ctx, RJSArrayClass(), array);
 }
 
 JSClassRef RJSArrayClass() {
-    static JSClassRef s_objectClass = RJSCreateWrapperClass<Object>("Results", ArrayGetProperty, NULL, NULL, NULL, ArrayPropertyNames);
+    const JSStaticFunction arrayFuncs[] = {
+        {"push", ArrayPush},
+        {NULL, NULL},
+    };
+    static JSClassRef s_objectClass = RJSCreateWrapperClass<Object>("RealmArray", ArrayGetProperty, NULL, arrayFuncs, NULL, ArrayPropertyNames);
     return s_objectClass;
 }

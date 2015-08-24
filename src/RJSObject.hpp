@@ -18,10 +18,13 @@
 
 #import "RJSUtil.hpp"
 #import "shared_realm.hpp"
+#import "object_accessor.hpp"
 
 namespace realm {
     class Object;
 }
+
+using RJSAccessor = realm::NativeAccessor<JSValueRef, JSContextRef>;
 
 JSClassRef RJSObjectClass();
 JSObjectRef RJSObjectCreate(JSContextRef ctx, realm::Object object);

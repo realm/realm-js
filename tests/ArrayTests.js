@@ -104,4 +104,8 @@ var ArrayTests = {
         }    
         TestCase.assertEqual(2, count);
     },
+
+    testPush: function() {
+        
+    }
 };
