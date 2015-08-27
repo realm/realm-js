@@ -335,11 +335,11 @@ void RJSNotificationFinalize(JSObjectRef object) {
 
 JSClassRef RJSRealmClass() {
     const JSStaticFunction realmFuncs[] = {
-        {"objects", RealmObjects},
-        {"create", RealmCreateObject},
-        {"delete", RealmDelete},
-        {"write", RealmWrite},
-        {"addNotification", RealmAddNotification},
+        {"objects", RealmObjects, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
+        {"create", RealmCreateObject, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
+        {"delete", RealmDelete, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
+        {"write", RealmWrite, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
+        {"addNotification", RealmAddNotification, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
         {NULL, NULL},
     };
     static JSClassRef s_realmClass = RJSCreateWrapperClass<SharedRealm *>("Realm", RealmGetProperty, NULL, realmFuncs);

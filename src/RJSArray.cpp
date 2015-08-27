@@ -100,9 +100,9 @@ JSObjectRef RJSArrayCreate(JSContextRef ctx, realm::ObjectArray *array) {
 
 JSClassRef RJSArrayClass() {
     const JSStaticFunction arrayFuncs[] = {
-        {"push", ArrayPush},
+        {"push", ArrayPush, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
         {NULL, NULL},
     };
-    static JSClassRef s_objectClass = RJSCreateWrapperClass<Object>("RealmArray", ArrayGetProperty, NULL, arrayFuncs, NULL, ArrayPropertyNames);
-    return s_objectClass;
+    static JSClassRef s_arrayClass = RJSCreateWrapperClass<Object>("RealmArray", ArrayGetProperty, NULL, arrayFuncs, NULL, ArrayPropertyNames);
+    return s_arrayClass;
 }

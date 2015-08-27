@@ -89,7 +89,7 @@ var ArrayTests = {
 
         var obj = realm.objects('LinkTypesObject')[0];
         for (var object in obj.arrayCol) {
-            TestCase.assertTrue(false, "No objects should have been enumerated");
+            TestCase.assertTrue(false, "No objects should have been enumerated: " + object);
         }
 
         realm.write(function() {
@@ -106,6 +106,25 @@ var ArrayTests = {
     },
 
     testPush: function() {
-        
+        var realm = new Realm({schema: [LinkTypesObjectSchema, TestObjectSchema]});
+        var array;
+        realm.write(function() {
+            var obj = realm.create('LinkTypesObject', [[1], [2], [[3]]]);
+            TestCase.assertEqual(obj.arrayCol.length, 1);
+
+            array = obj.arrayCol;
+            array.push([4]);
+            TestCase.assertEqual(array.length, 2);
+            TestCase.assertEqual(array[1].doubleCol, 4);
+
+            array.push(obj.objectCol);
+            TestCase.assertEqual(array.length, 3);
+            TestCase.assertEqual(array[2].doubleCol, 1);
+        });   
+
+        TestCase.assertEqual(array.length, 3);
+        TestCase.assertThrows(function() {
+            array.push([1]);
+        });
     }
 };

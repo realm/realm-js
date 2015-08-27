@@ -73,9 +73,13 @@ var TestCase = {
         };
     },
 
-    assertTrue: function(condition) {
+    assertTrue: function(condition, errorMessage) {
         if (!condition) {
-            throw 'Condition expected to be true';
+
+            if (errorMessage == undefined) {
+                errorMessage = 'Condition expected to be true';
+            }
+            throw errorMessage;
         };
     },
 }
