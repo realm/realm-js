@@ -128,9 +128,31 @@ var ArrayTests = {
         });   
 
         TestCase.assertEqual(array.length, 4);
-        TestCase.assertThrows(function() {
-            array.push([1]);
+        // TestCase.assertThrows(function() {
+        //     array.push([1]);
+        // });
+    },
+
+    testPop: function() {
+        var realm = new Realm({schema: [LinkTypesObjectSchema, TestObjectSchema]});
+        var array;
+        realm.write(function() {
+            var obj = realm.create('LinkTypesObject', [[1], [2], [[3]]]);
+            array = obj.arrayCol;
+
+            TestCase.assertEqual(array.pop().doubleCol, 3);
+            TestCase.assertEqual(array.length, 0);
+
+            TestCase.assertEqual(array.pop(), undefined);
+
+            TestCase.assertThrows(function() {
+                array.pop(1);
+            });
         });
+
+       // TestCase.assertThrows(function() {
+       //      array.pop();
+       //  });
     },
 
     testUnshift: function() {
@@ -152,9 +174,9 @@ var ArrayTests = {
         });   
 
         TestCase.assertEqual(array.length, 4);
-        TestCase.assertThrows(function() {
-            array.unshift([1]);
-        });
+        // TestCase.assertThrows(function() {
+        //     array.unshift([1]);
+        // });
     },
 
 };
