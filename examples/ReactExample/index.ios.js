@@ -42,7 +42,7 @@ class Edit extends React.Component {
 
     save() {
         realm.write(function () {
-            if (id == this.props.list.items.length) {
+            if (this.props.todoId == this.props.list.items.length) {
                 this.props.list.items.push({text: this.state.text});
             }
             else {
