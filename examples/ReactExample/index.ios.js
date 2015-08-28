@@ -41,18 +41,15 @@ class Edit extends React.Component {
     }
 
     save() {
-        var list = this.props.list;
-        var id = this.props.todoId;
-        var text = this.state.text;
         realm.write(function () {
-            if (id == list.items.length) {
-                list.items.push({text: text});
+            if (id == this.props.list.items.length) {
+                this.props.list.items.push({text: this.state.text});
             }
             else {
-                var todoItem = list.items[id];
-                todoItem.text = text;
+                var todoItem = this.props.list.items[this.props.todoId];
+                todoItem.text = this.state.text;
             }
-        });
+        }.bind(this));
         // should not be needed once we have notifications
         this.props.parent.updateDataSource();
         this.props.navigator.pop();
@@ -80,12 +77,10 @@ class TodoList extends React.Component {
         this.lists = realm.objects('TodoList');
         if (this.lists.length < 1) {
           realm.write(function() {
-            this.list = realm.create('TodoList', ['List', []]);
+            realm.create('TodoList', ['List', []]);
           });
         }
-        else {
-            this.list = this.lists[0];
-        }
+        this.list = this.lists[0];
         this.menu = this.menu.bind(this);
         this.delete = this.delete.bind(this);
         var dataSource = new ListView.DataSource({
