@@ -83,8 +83,97 @@ void ArrayPropertyNames(JSContextRef ctx, JSObjectRef object, JSPropertyNameAccu
 JSValueRef ArrayPush(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) {
     try {
         ObjectArray *array = RJSGetInternal<ObjectArray *>(thisObject);
-        RJSValidateArgumentCount(argumentCount, 1);
-        array->link_view->add(RJSAccessor::to_object_index(ctx, array->realm, const_cast<JSValueRef &>(arguments[0]), array->object_schema.name, false));
+        RJSValidateArgumentCountIsAtLeast(argumentCount, 1);
+        for (size_t i = 0; i < argumentCount; i++) {
+            array->link_view->add(RJSAccessor::to_object_index(ctx, array->realm, const_cast<JSValueRef &>(arguments[i]), array->object_schema.name, false));
+        }
+        return JSValueMakeNumber(ctx, array->link_view->size());
+    }
+    catch (std::exception &exp) {
+        if (jsException) {
+            *jsException = RJSMakeError(ctx, exp);
+        }
+    }
+    return NULL;
+}
+
+JSValueRef ArrayPop(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) {
+    try {
+        ObjectArray *array = RJSGetInternal<ObjectArray *>(thisObject);
+        RJSValidateArgumentCount(argumentCount, 0);
+        if (array->link_view->size() == 0) {
+            return JSValueMakeUndefined(ctx);
+        }
+        size_t index = array->link_view->size()-1;
+        JSValueRef obj = RJSObjectCreate(ctx, Object(array->realm, array->object_schema, array->get(array->link_view->size()-1)));
+        array->link_view->remove(index);
+        return obj;
+    }
+    catch (std::exception &exp) {
+        if (jsException) {
+            *jsException = RJSMakeError(ctx, exp);
+        }
+    }
+    return NULL;
+}
+
+JSValueRef ArrayUnshift(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) {
+    try {
+        ObjectArray *array = RJSGetInternal<ObjectArray *>(thisObject);
+        RJSValidateArgumentCountIsAtLeast(argumentCount, 1);
+        for (size_t i = 0; i < argumentCount; i++) {
+            array->link_view->insert(i, RJSAccessor::to_object_index(ctx, array->realm, const_cast<JSValueRef &>(arguments[i]), array->object_schema.name, false));
+        }
+        return JSValueMakeNumber(ctx, array->link_view->size());
+    }
+    catch (std::exception &exp) {
+        if (jsException) {
+            *jsException = RJSMakeError(ctx, exp);
+        }
+    }
+    return NULL;
+}
+
+JSValueRef ArrayShift(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) {
+    try {
+        ObjectArray *array = RJSGetInternal<ObjectArray *>(thisObject);
+        RJSValidateArgumentCount(argumentCount, 0);
+        if (array->link_view->size() == 0) {
+            return JSValueMakeUndefined(ctx);
+        }
+        JSValueRef obj = RJSObjectCreate(ctx, Object(array->realm, array->object_schema, array->get(0)));
+        array->link_view->remove(0);
+        return obj;
+    }
+    catch (std::exception &exp) {
+        if (jsException) {
+            *jsException = RJSMakeError(ctx, exp);
+        }
+    }
+    return NULL;
+}
+
+JSValueRef ArraySplice(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) {
+    try {
+        ObjectArray *array = RJSGetInternal<ObjectArray *>(thisObject);
+        RJSValidateArgumentCountIsAtLeast(argumentCount, 2);
+        long index = RJSValidatedValueToNumber(ctx, arguments[0]);
+        if (index < 0) {
+            index = array->link_view->size() - index;
+        }
+
+        long remove = RJSValidatedValueToNumber(ctx, arguments[1]);
+        if (index + remove >= array->link_view->size()) {
+            throw std::runtime_error("Attempting to slice elements beyond Array bounds.");
+        }
+
+        while (remove-- > 0) {
+            array->link_view->remove(index);
+        }
+        for (size_t i = 2; i < argumentCount; i++) {
+            array->link_view->insert(index + i - 2, RJSAccessor::to_object_index(ctx, array->realm, const_cast<JSValueRef &>(arguments[i]), array->object_schema.name, false));
+        }
+        return JSValueMakeNumber(ctx, array->link_view->size());
     }
     catch (std::exception &exp) {
         if (jsException) {
@@ -101,6 +190,10 @@ JSObjectRef RJSArrayCreate(JSContextRef ctx, realm::ObjectArray *array) {
 JSClassRef RJSArrayClass() {
     const JSStaticFunction arrayFuncs[] = {
         {"push", ArrayPush, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
+        {"pop", ArrayPop, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
+        {"shift", ArrayShift, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
+        {"unshift", ArrayUnshift, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
+        {"splice", ArraySplice, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
         {NULL, NULL},
     };
     static JSClassRef s_arrayClass = RJSCreateWrapperClass<Object>("RealmArray", ArrayGetProperty, NULL, arrayFuncs, NULL, ArrayPropertyNames);

@@ -66,6 +66,12 @@ inline void RJSValidateArgumentCount(size_t argumentCount, size_t expected) {
     }
 }
 
+inline void RJSValidateArgumentCountIsAtLeast(size_t argumentCount, size_t expected) {
+    if (argumentCount < expected) {
+        throw std::invalid_argument("Invalid arguments");
+    }
+}
+
 inline void RJSValidateArgumentRange(size_t argumentCount, size_t min, size_t max) {
     if (argumentCount < min || argumentCount > max) {
         throw std::invalid_argument("Invalid arguments");

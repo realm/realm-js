@@ -113,18 +113,48 @@ var ArrayTests = {
             TestCase.assertEqual(obj.arrayCol.length, 1);
 
             array = obj.arrayCol;
-            array.push([4]);
+            TestCase.assertEqual(array.push([4]), 2);
             TestCase.assertEqual(array.length, 2);
             TestCase.assertEqual(array[1].doubleCol, 4);
 
-            array.push(obj.objectCol);
-            TestCase.assertEqual(array.length, 3);
+            TestCase.assertEqual(array.push(obj.objectCol, obj.objectCol1), 4);
+            TestCase.assertEqual(array.length, 4);
             TestCase.assertEqual(array[2].doubleCol, 1);
+            TestCase.assertEqual(array[3].doubleCol, 2);
+
+            TestCase.assertThrows(function() {
+                array.push();
+            });
         });   
 
-        TestCase.assertEqual(array.length, 3);
+        TestCase.assertEqual(array.length, 4);
         TestCase.assertThrows(function() {
             array.push([1]);
         });
-    }
+    },
+
+    testUnshift: function() {
+        var realm = new Realm({schema: [LinkTypesObjectSchema, TestObjectSchema]});
+        var array;
+        realm.write(function() {
+            var obj = realm.create('LinkTypesObject', [[1], [2], [[3]]]);
+            TestCase.assertEqual(obj.arrayCol.length, 1);
+
+            array = obj.arrayCol;
+            TestCase.assertEqual(array.unshift([5]), 2);
+            TestCase.assertEqual(array.length, 2);
+            TestCase.assertEqual(array[0].doubleCol, 5);
+
+            TestCase.assertEqual(array.unshift(obj.objectCol, obj.objectCol1), 4);
+            TestCase.assertEqual(array.length, 4);
+            TestCase.assertEqual(array[0].doubleCol, 1);
+            TestCase.assertEqual(array[1].doubleCol, 2);
+        });   
+
+        TestCase.assertEqual(array.length, 4);
+        TestCase.assertThrows(function() {
+            array.unshift([1]);
+        });
+    },
+
 };
