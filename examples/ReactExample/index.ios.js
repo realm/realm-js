@@ -130,9 +130,7 @@ class TodoList extends React.Component {
           <View style={styles.container}>
             <ListView style={styles.listView} dataSource={this.state.dataSource} renderRow={(rowData, sectionID, rowID) =>
               <TouchableHighlight style={styles.listItem} onPress={() => this.menu(rowData, rowID)}>
-                <Text>
-                    {rowData.text}
-                </Text>
+                <Text>{rowData.text}</Text>
               </TouchableHighlight>
             }/>
             <TouchableHighlight style={styles.button} 
@@ -161,13 +159,13 @@ var styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
-    alignItems: 'center',
+    alignItems: 'stretch',
     backgroundColor: '#ffffff',
   },
   listItem: {
     marginTop: 3,
-    padding: 2,
-    backgroundColor:'#ABABAB',
+    padding: 6,
+    backgroundColor:'#ACACAC',
     alignSelf: 'stretch',
     flexDirection: 'row',
     flex:1,
