@@ -137,9 +137,10 @@ var ArrayTests = {
         var realm = new Realm({schema: [LinkTypesObjectSchema, TestObjectSchema]});
         var array;
         realm.write(function() {
-            var obj = realm.create('LinkTypesObject', [[1], [2], [[3]]]);
+            var obj = realm.create('LinkTypesObject', [[1], [2], [[3], [4]]]);
             array = obj.arrayCol;
 
+            TestCase.assertEqual(array.pop().doubleCol, 4);
             TestCase.assertEqual(array.pop().doubleCol, 3);
             TestCase.assertEqual(array.length, 0);
 
@@ -179,4 +180,65 @@ var ArrayTests = {
         // });
     },
 
+    testShift: function() {
+        var realm = new Realm({schema: [LinkTypesObjectSchema, TestObjectSchema]});
+        var array;
+        realm.write(function() {
+            var obj = realm.create('LinkTypesObject', [[1], [2], [[3], [4]]]);
+            array = obj.arrayCol;
+
+            TestCase.assertEqual(array.shift().doubleCol, 3);
+            TestCase.assertEqual(array.shift().doubleCol, 4);
+            TestCase.assertEqual(array.length, 0);
+
+            TestCase.assertEqual(array.shift(), undefined);
+
+            TestCase.assertThrows(function() {
+                array.shift(1);
+            });
+        });
+
+       // TestCase.assertThrows(function() {
+       //      array.shift();
+       //  });
+    },
+
+    testSplice: function() {
+        var realm = new Realm({schema: [LinkTypesObjectSchema, TestObjectSchema]});
+        var array;
+        realm.write(function() {
+            var obj = realm.create('LinkTypesObject', [[1], [2], [[3], [4]]]);
+            array = obj.arrayCol;
+
+            TestCase.assertEqual(array.splice(0, 0, obj.objectCol, obj.objectCol1), 4);
+            TestCase.assertEqual(array.length, 4);
+            TestCase.assertEqual(array[0].doubleCol, 1);
+            TestCase.assertEqual(array[1].doubleCol, 2);
+
+            TestCase.assertEqual(array.splice(2, 2, [5], [6]), 4);
+            TestCase.assertEqual(array.length, 4);
+            TestCase.assertEqual(array[2].doubleCol, 5);
+            TestCase.assertEqual(array[3].doubleCol, 6);
+
+            TestCase.assertEqual(array.splice(2, 2), 2);
+            TestCase.assertEqual(array[0].doubleCol, 1);
+            TestCase.assertEqual(array[1].doubleCol, 2);
+            TestCase.assertEqual(array.length, 2);
+
+            TestCase.assertEqual(array.splice(-1, 1), 1);
+            TestCase.assertEqual(array.length, 1);
+            TestCase.assertEqual(array[0].doubleCol, 1);
+
+            TestCase.assertThrows(function() {
+                array.splice(0, 2);
+            });
+            TestCase.assertThrows(function() {
+                array.splice(0, 0, 0);
+            });
+        });
+
+       // TestCase.assertThrows(function() {
+       //      array.shift();
+       //  });
+    },
 };
