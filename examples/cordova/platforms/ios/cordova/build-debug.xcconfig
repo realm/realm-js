@@ -22,3 +22,4 @@
 //
 
 #include "build.xcconfig"
+#include "build-extras.xcconfig"

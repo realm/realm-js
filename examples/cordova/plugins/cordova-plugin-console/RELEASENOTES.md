@@ -74,3 +74,11 @@
 * CB-8438 cordova-plugin-console documentation translation: cordova-plugin-console
 * CB-8538 Added package.json file
 * CB-8362 Add Windows platform section to Console plugin
+
+### 1.0.1 (Jun 17, 2015)
+* move logger.js and console-via-logger.js to common modules, instead of the numerous repeats that were there.
+* clean up tests, info is below log level so it does not exist by default.
+* add a couple tests
+* CB-9191 Add basic test
+* CB-9128 cordova-plugin-console documentation translation: cordova-plugin-console
+* attempt to fix npm markdown issue

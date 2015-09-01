@@ -25,6 +25,6 @@
     Note: it does not work if the --shared option was used to create the project.
 */
 
-var VERSION="3.8.0"
+var VERSION="3.9.1"
 
 console.log(VERSION);

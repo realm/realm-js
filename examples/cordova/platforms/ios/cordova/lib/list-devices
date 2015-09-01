@@ -21,7 +21,7 @@
 
 /*jshint node: true*/
 
-var Q = require('Q'),
+var Q = require('q'),
     exec = require('child_process').exec;
 
 /**
@@ -36,14 +36,20 @@ function listDevices() {
     ];
 
     // wrap al lexec calls into promises and wait until they're fullfilled
-    return Q.all(commands).then(function (promises) {
+    return Q.all(commands).then(function (results) {
         var accumulator = [];
-        promises.forEach(function (promise) {
-            if (promise.state === 'fulfilled') {
-                // Each command promise resolves with array [stout, stderr], and we need stdout only
-                // Append stdout lines to accumulator
-                accumulator.concat(promise.value[0].trim().split('\n'));
-            }
+        results.forEach(function (result) {
+          var devicefound;
+          // Each command promise resolves with array [stout, stderr], and we need stdout only
+          // Append stdout lines to accumulator
+          devicefound = result[0].trim().split('\n');
+          if(devicefound && devicefound.length) {
+            devicefound.forEach(function(device) {
+              if (device) {
+                accumulator.push(device);
+              }
+            });
+          }
         });
         return accumulator;
     });

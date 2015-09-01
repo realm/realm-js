@@ -19,10 +19,10 @@
     },
     "installed_plugins": {
         "cordova-plugin-whitelist": {
-            "PACKAGE_NAME": "com.realm.examples.cordova"
+            "PACKAGE_NAME": "io.realm.example.cordova"
         },
         "cordova-plugin-console": {
-            "PACKAGE_NAME": "com.realm.examples.cordova"
+            "PACKAGE_NAME": "io.realm.example.cordova"
         }
     },
     "dependent_plugins": {}

@@ -20,7 +20,7 @@
 
 <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
            id="cordova-plugin-console"
-      version="1.0.1-dev">
+      version="1.0.1">
 
     <name>Console</name>
     <description>Cordova Console Plugin</description>
@@ -29,6 +29,14 @@
     <repo>https://git-wip-us.apache.org/repos/asf/cordova-plugin-console.git</repo>
     <issue>https://issues.apache.org/jira/browse/CB/component/12320644</issue>
 
+    <js-module src="www/logger.js" name="logger">
+        <clobbers target="cordova.logger" />
+    </js-module>
+    
+    <js-module src="www/console-via-logger.js" name="console">
+        <clobbers target="console" />
+    </js-module>
+        
     <!-- ios -->
     <platform name="ios">
 
@@ -38,14 +46,6 @@
 		</feature>
         </config-file>
 
-        <js-module src="www/console-via-logger.js" name="console">
-            <clobbers target="console" />
-        </js-module>
-
-        <js-module src="www/logger.js" name="logger">
-            <clobbers target="cordova.logger" />
-        </js-module>
-
 	<header-file src="src/ios/CDVLogger.h" />
 	<source-file src="src/ios/CDVLogger.m" />
 
@@ -53,13 +53,6 @@
 
     <!-- ubuntu -->
     <platform name="ubuntu">
-        <js-module src="www/console-via-logger.js" name="console">
-            <clobbers target="console" />
-        </js-module>
-
-        <js-module src="www/logger.js" name="logger">
-            <clobbers target="cordova.logger" />
-        </js-module>
 
         <header-file src="src/ubuntu/console.h" />
         <source-file src="src/ubuntu/console.cpp" />
@@ -74,14 +67,6 @@
             </feature>
         </config-file>
 
-        <js-module src="www/console-via-logger.js" name="console">
-            <clobbers target="console" />
-        </js-module>
-
-        <js-module src="www/logger.js" name="logger">
-            <clobbers target="cordova.logger" />
-        </js-module>
-
         <source-file src="src/wp/DebugConsole.cs" />
     </platform>
 
@@ -93,35 +78,15 @@
             </feature>
         </config-file>
 
-        <js-module src="www/console-via-logger.js" name="console">
-            <clobbers target="console" />
-        </js-module>
-
-        <js-module src="www/logger.js" name="logger">
-            <clobbers target="cordova.logger" />
-        </js-module>
-
         <source-file src="src/wp/DebugConsole.cs" />
     </platform>
 
     <!-- windows8 -->
     <platform name="windows8">
-        <js-module src="www/logger.js" name="logger">
-            <clobbers target="cordova.logger" />
-        </js-module>
-        <js-module src="www/console-via-logger.js" name="console">
-            <clobbers target="console" />
-        </js-module>
     </platform>
 
     <!-- Windows universal platform -->
     <platform name="windows">
-        <js-module src="www/logger.js" name="logger">
-            <clobbers target="cordova.logger" />
-        </js-module>
-        <js-module src="www/console-via-logger.js" name="console">
-            <clobbers target="console" />
-        </js-module>
     </platform>
 
 </plugin>

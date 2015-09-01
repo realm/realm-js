@@ -41,22 +41,16 @@ body {
     height:100%;
     margin:0px;
     padding:0px;
-    text-transform:uppercase;
     width:100%;
 }
 
 /* Portrait layout (default) */
 .app {
-    background:url(../img/logo.png) no-repeat center top; /* 170px x 200px */
-    position:absolute;             /* position in the center of the screen */
-    left:50%;
-    top:50%;
-    height:50px;                   /* text area height */
-    width:225px;                   /* text area width */
+    height:100%;                   /* text area height */
+    width:100%;                   /* text area width */
+    padding:34px 10px 10px 10px;
     text-align:center;
-    padding:180px 0px 0px 0px;     /* image height is 200px (bottom 20px are overlapped with text) */
-    margin:-115px 0px 0px -112px;  /* offset vertical: half of image height and text area height */
-                                   /* offset horizontal: half of text area width */
+    margin:0px;
 }
 
 /* Landscape layout (with min-width) */

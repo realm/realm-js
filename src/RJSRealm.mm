@@ -209,14 +209,18 @@ JSValueRef RealmCreateObject(JSContextRef ctx, JSObjectRef function, JSObjectRef
 
         std::string className = RJSValidatedStringForValue(ctx, arguments[0], "objectType");
         SharedRealm sharedRealm = *RJSGetInternal<SharedRealm *>(thisObject);
-        ObjectSchema &object_schema = sharedRealm->config().schema->at(className);
+        auto object_schema = sharedRealm->config().schema->find(className);
+        if (object_schema == sharedRealm->config().schema->end()) {
+            *jsException = RJSMakeError(ctx, "Object type '" + className + "' not found in schema.");
+            return NULL;
+        }
 
         JSObjectRef object = RJSValidatedValueToObject(ctx, arguments[1]);
         if (RJSIsValueArray(ctx, arguments[1])) {
-            object = RJSDictForPropertyArray(ctx, object_schema, object);
+            object = RJSDictForPropertyArray(ctx, object_schema->second, object);
         }
 
-        return RJSObjectCreate(ctx, Object::create<JSValueRef>(ctx, sharedRealm, object_schema, object, false));
+        return RJSObjectCreate(ctx, Object::create<JSValueRef>(ctx, sharedRealm, object_schema->second, object, false));
     }
     catch (std::exception &exp) {
         if (jsException) {

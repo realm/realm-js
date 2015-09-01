@@ -1,6 +1,6 @@
 {
   "name": "cordova-plugin-whitelist",
-  "version": "1.0.1",
+  "version": "1.0.0",
   "description": "Cordova Whitelist Plugin",
   "cordova": {
     "platforms": [

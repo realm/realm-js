@@ -143,7 +143,7 @@
 
 - (void)evalJs:(NSString*)js scheduledOnRunLoop:(BOOL)scheduledOnRunLoop
 {
-    js = [NSString stringWithFormat:@"cordova.require('cordova/exec').nativeEvalAndFetch(function(){%@})", js];
+    js = [NSString stringWithFormat:@"try{cordova.require('cordova/exec').nativeEvalAndFetch(function(){%@})}catch(e){console.log('exeption nativeEvalAndFetch : '+e);};", js];
     if (scheduledOnRunLoop) {
         [self evalJsHelper:js];
     } else {

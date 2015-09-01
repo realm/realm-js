@@ -9,9 +9,8 @@
     },
     "cordova-plugin-console": {
         "source": {
-            "type": "git",
-            "url": "https://git-wip-us.apache.org/repos/asf/cordova-plugin-console.git",
-            "subdir": "."
+            "type": "registry",
+            "id": "cordova-plugin-console"
         },
         "is_top_level": true,
         "variables": {}

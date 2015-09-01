@@ -16,17 +16,41 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
+function Todo() {}
+Todo.prototype.schema = {
+    name: 'Todo',
+    properties: [
+        {name: 'text', type: 'RealmTypeString'},
+    ]
+};
+
+function realm() {
+    return new Realm({schema: [Todo]});
+}
+
+function updateItems() {
+    var itemsHTML = "";
+    var todos = realm().objects("Todo");
+    for (var todo in todos) {
+        itemsHTML += "<div>" + todos[todo].text + "</div>";
+    }
+
+    var items = document.getElementById('items');
+    items.innerHTML = itemsHTML;
+}
+
+function addTodo(todo) {
+    realm().write(function() {
+        realm().create("Todo", [todo]);
+    });
+    updateItems();
+}
+
 var app = {
     // Application Constructor
     initialize: function() {
         this.bindEvents();
-
-        var realm = Realm();
-        realm.write(function() {
-                    realm.create('Person', ['Alex', 39]);
-                    });
-        var people = realm.objects('Person');
-        document.getElementById('deviceready').innerHTLML = people.length;
     },
     // Bind Event Listeners
     //
@@ -41,26 +65,26 @@ var app = {
     // function, we must explicitly call 'app.receivedEvent(...);'
     onDeviceReady: function() {
         app.receivedEvent('deviceready');
+        document.getElementById('todoButton').addEventListener('click', function() {
+            addTodo(document.getElementById('todoInput').value);
+            return false;
+        }.bind(this));
+        document.getElementById('todoInput').addEventListener('keypress', function(e) {
+            if (e.keyCode == 13) {
+                addTodo(document.getElementById('todoInput').value);
+            }
+            return false;
+        }.bind(this));
+        updateItems();
+    },
+    addTodo: function(todo) {
+
     },
     // Update DOM on a Received Event
     receivedEvent: function(id) {
-        var parentElement = document.getElementById(id);
-        var listeningElement = parentElement.querySelector('.listening');
-        var receivedElement = parentElement.querySelector('.received');
-
-        listeningElement.setAttribute('style', 'display:none;');
-        receivedElement.setAttribute('style', 'display:block;');
-
         console.log('Received Event: ' + id);
-
-        var realm = new Realm();
-
-        realm.write(function() {
-                    realm.create('Person', ['Alex', 39]);
-                    });
-        var people = realm.objects('Person');
-        parentElement.appendChild(document.createTextNode(people[0].name));
     }
 };
 
 app.initialize();
+
