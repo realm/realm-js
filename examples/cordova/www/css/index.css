@@ -49,9 +49,29 @@ body {
     height:100%;                   /* text area height */
     width:100%;                   /* text area width */
     padding:34px 10px 10px 10px;
-    text-align:center;
+    text-align:left;
     margin:0px;
 }
+
+.todoContainer {
+    overflow: auto;
+}
+
+.todoContainer:after {
+    content: "";
+    display: table;
+    float: none;
+}
+
+.todoItem {
+    display: inline-block;
+}
+
+.deleteButton {
+    float:right;
+    margin-right: 20px;
+}
+
 
 /* Landscape layout (with min-width) */
 @media screen and (min-aspect-ratio: 1/1) and (min-width:400px) {

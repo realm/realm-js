@@ -29,11 +29,19 @@ function realm() {
     return new Realm({schema: [Todo]});
 }
 
+function deleteTodo(index) {
+    realm().write(function() {
+        realm().delete(realm().objects("Todo")[index]);
+    });
+    updateItems();
+}
+
 function updateItems() {
     var itemsHTML = "";
     var todos = realm().objects("Todo");
     for (var todo in todos) {
-        itemsHTML += "<div>" + todos[todo].text + "</div>";
+        itemsHTML += "<div class='todoContainer'><div class='todoItem'>" + todos[todo].text + 
+            "</div><button class='deleteButton' onclick='deleteTodo(" + todo + ");'>complete</button></div>";
     }
 
     var items = document.getElementById('items');
