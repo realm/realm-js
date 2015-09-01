@@ -41,16 +41,18 @@ function updateItems() {
     var todos = realm().objects("Todo");
     for (var todo in todos) {
         itemsHTML += "<div class='todoContainer'><div class='todoItem'>" + todos[todo].text + 
-            "</div><button class='deleteButton' onclick='deleteTodo(" + todo + ");'>complete</button></div>";
+            "</div><button class='deleteButton' onclick='deleteTodo(" + todo + ");'>Complete</button></div>";
     }
 
     var items = document.getElementById('items');
     items.innerHTML = itemsHTML;
 }
 
-function addTodo(todo) {
+function addTodo() {
     realm().write(function() {
-        realm().create("Todo", [todo]);
+        var input = document.getElementById('todoInput');
+        realm().create("Todo", [input.value]);
+        input.value = "";
     });
     updateItems();
 }
@@ -74,12 +76,12 @@ var app = {
     onDeviceReady: function() {
         app.receivedEvent('deviceready');
         document.getElementById('todoButton').addEventListener('click', function() {
-            addTodo(document.getElementById('todoInput').value);
+            addTodo();
             return false;
         }.bind(this));
         document.getElementById('todoInput').addEventListener('keypress', function(e) {
             if (e.keyCode == 13) {
-                addTodo(document.getElementById('todoInput').value);
+                addTodo();
             }
             return false;
         }.bind(this));
