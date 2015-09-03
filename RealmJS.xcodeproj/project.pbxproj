@@ -221,8 +221,8 @@
 				0270BC7B1B7D020100010E03 /* RealmJSTests.mm */,
 				0270BC7C1B7D020100010E03 /* RealmTests.js */,
 				0270BC7D1B7D020100010E03 /* ResultsTests.js */,
-				0270BC7E1B7D020100010E03 /* TestCase.js */,
 				0270BC7F1B7D020100010E03 /* TestObjects.js */,
+				0270BC7E1B7D020100010E03 /* TestCase.js */,
 			);
 			path = RealmJSTests;
 			sourceTree = "<group>";

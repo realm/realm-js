@@ -118,12 +118,24 @@ static inline ObjectSchema RJSParseObjectSchema(JSContextRef ctx, JSObjectRef ob
 
     ObjectSchema objectSchema;
     static JSStringRef nameString = JSStringCreateWithUTF8CString("name");
+
     objectSchema.name = RJSValidatedStringProperty(ctx, objectSchemaObject, nameString);
 
     size_t numProperties = RJSValidatedArrayLength(ctx, propertiesObject);
     for (unsigned int p = 0; p < numProperties; p++) {
         JSObjectRef property = RJSValidatedObjectAtIndex(ctx, propertiesObject, p);
         objectSchema.properties.emplace_back(RJSParseProperty(ctx, property));
+    }
+
+    static JSStringRef primaryString = JSStringCreateWithUTF8CString("primaryKey");
+    JSValueRef primaryValue = RJSValidatedPropertyValue(ctx, objectSchemaObject, primaryString);
+    if (!JSValueIsUndefined(ctx, primaryValue)) {
+        objectSchema.primary_key = RJSValidatedStringForValue(ctx, primaryValue);
+        Property *property = objectSchema.primary_key_property();
+        if (!property) {
+            throw std::runtime_error("Missing primary key property '" + objectSchema.primary_key + "'");
+        }
+        property->is_primary = true;
     }
 
     // store prototype

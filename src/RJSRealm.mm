@@ -221,7 +221,12 @@ JSValueRef RealmCreateObject(JSContextRef ctx, JSObjectRef function, JSObjectRef
             object = RJSDictForPropertyArray(ctx, object_schema->second, object);
         }
 
-        return RJSObjectCreate(ctx, Object::create<JSValueRef>(ctx, sharedRealm, object_schema->second, object, false));
+        bool update = false;
+        if (argumentCount == 3) {
+            update = RJSValidatedValueToBool(ctx, arguments[2]);
+        }
+
+        return RJSObjectCreate(ctx, Object::create<JSValueRef>(ctx, sharedRealm, object_schema->second, object, update));
     }
     catch (std::exception &exp) {
         if (jsException) {

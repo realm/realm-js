@@ -58,3 +58,21 @@ var LinkTypesObjectSchema = {
         {name: 'arrayCol',   type: RealmType.Array, objectType: 'TestObject'},
     ]
 };
+
+var IntPrimaryObjectSchema = {
+  name: 'IntPrimaryObject',
+  primaryKey: 'primaryCol',
+  properties: [
+    {name: 'primaryCol', type: RealmType.Int},
+    {name: 'valueCol',   type: RealmType.String},
+  ]
+};
+
+var StringPrimaryObjectSchema = {
+  name: 'StringPrimaryObject',
+  primaryKey: 'primaryCol',
+  properties: [
+    {name: 'primaryCol', type: RealmType.String},
+    {name: 'valueCol',   type: RealmType.String},
+  ]
+};

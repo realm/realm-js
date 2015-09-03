@@ -82,6 +82,23 @@ var RealmTests = {
         TestCase.assertEqual(objects.length, 2, 'wrong object count');
         TestCase.assertEqual(objects[0].doubleCol, 1, 'wrong object property value');
         TestCase.assertEqual(objects[1].doubleCol, 2, 'wrong object property value');
+
+        // test primary object
+        realm = new Realm({path: TestUtil.realmPathForFile('intPrimary.realm'), schema: [IntPrimaryObjectSchema, StringPrimaryObjectSchema]});
+        realm.write(function() {
+            var obj0 = realm.create('IntPrimaryObject', [0, 'val0']);
+
+            TestCase.assertThrows(function() {
+                realm.create('IntPrimaryObject', [0, 'val0']);
+            });
+            realm.create('IntPrimaryObject', [1, 'val1'], true);
+            var objects = realm.objects('IntPrimaryObject');
+            TestCase.assertEqual(objects.length, 2);
+
+            realm.create('IntPrimaryObject', [0, 'newVal0'], true);
+            TestCase.assertEqual(obj0.valueCol, 'newVal0');
+            TestCase.assertEqual(objects.length, 2);
+        });
     },
 
     testRealmDelete: function() {
@@ -167,3 +184,4 @@ var RealmTests = {
         TestCase.assertEqual(notificationCount, 1);
     },
 };
+
