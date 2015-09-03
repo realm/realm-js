@@ -19,6 +19,7 @@
 #import "RJSRealm.hpp"
 #import "RJSObject.hpp"
 #import "RJSResults.hpp"
+#import "RJSArray.hpp"
 #import "RJSSchema.hpp"
 
 #import "shared_realm.hpp"
@@ -234,12 +235,18 @@ JSValueRef RealmDelete(JSContextRef ctx, JSObjectRef function, JSObjectRef thisO
     try {
         RJSValidateArgumentCount(argumentCount, 1);
 
-        if (RJSIsValueArray(ctx, arguments[0])) {
+        if (RJSIsValueArray(ctx, arguments[0]) ||
+            JSValueIsObjectOfClass(ctx, arguments[0], RJSResultsClass()) ||
+            JSValueIsObjectOfClass(ctx, arguments[0], RJSArrayClass()))
+        {
             JSObjectRef array = RJSValidatedValueToObject(ctx, arguments[0]);
             size_t length = RJSValidatedArrayLength(ctx, array);
-            for (size_t i = 0; i < length; i++) {
+            for (long i = length-1; i >= 0; i--) {
                 JSValueRef object = RJSValidatedObjectAtIndex(ctx, array, (unsigned int)i);
                 RealmDelete(ctx, function, thisObject, 1, &object, jsException);
+                if (*jsException) {
+                    return NULL;
+                }
             }
             return NULL;
         }
@@ -257,7 +264,7 @@ JSValueRef RealmDelete(JSContextRef ctx, JSObjectRef function, JSObjectRef thisO
         }
 
         realm::TableRef table = ObjectStore::table_for_object_type(realm->read_group(), object->object_schema.name);
-        table->remove(object->row.get_index());
+        table->move_last_over(object->row.get_index());
 
         return NULL;
     }

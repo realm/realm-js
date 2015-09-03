@@ -28,7 +28,7 @@ var TestUtil = {
 var TestCase = {
     assertEqual: function() {
         if (arguments[0] !== arguments[1]) {
-            var message = "'" + arguments[0] + "' does not equal '" + arguments[1] + "'";
+            var message = "'" + arguments[0] + "' does not equal expected value '" + arguments[1] + "'";
             if (arguments.length == 3) {
                 message = arguments[2] + "\n" + message;
             }
