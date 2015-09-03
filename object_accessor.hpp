@@ -29,6 +29,7 @@ namespace realm {
         //
         // Value converters - template specializations must be implemented for each platform
         //
+        static bool dict_has_value_for_key(ContextType ctx, ValueType dict, const std::string &prop_name);
         static ValueType dict_value_for_key(ContextType ctx, ValueType dict, const std::string &prop_name);
 
         static bool to_bool(ContextType ctx, ValueType &val);
@@ -183,9 +184,9 @@ namespace realm {
         // populate
         Object object(realm, object_schema, table->get(row_index));
         for (Property &prop : object_schema.properties) {
-            ValueType prop_value = Accessor::dict_value_for_key(ctx, value, prop.name);
-            if (prop_value) {
+            if (Accessor::dict_has_value_for_key(ctx, value, prop.name)) {
                 if (created || !prop.is_primary) {
+                    ValueType prop_value = Accessor::dict_value_for_key(ctx, value, prop.name);
                     object.set_property_value_impl(ctx, prop, prop_value, try_update);
                 }
             }
