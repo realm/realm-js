@@ -98,6 +98,27 @@ var RealmTests = {
             realm.create('IntPrimaryObject', [0, 'newVal0'], true);
             TestCase.assertEqual(obj0.valueCol, 'newVal0');
             TestCase.assertEqual(objects.length, 2);
+
+            realm.create('IntPrimaryObject', {primaryCol: 0}, true);
+            TestCase.assertEqual(obj0.valueCol, 'newVal0');
+        });
+
+        realm.write(function() {
+            var obj0 = realm.create('StringPrimaryObject', ['0', 'val0']);
+
+            TestCase.assertThrows(function() {
+                realm.create('StringPrimaryObject', ['0', 'val0']);
+            });
+            realm.create('StringPrimaryObject', ['1', 'val1'], true);
+            var objects = realm.objects('StringPrimaryObject');
+            TestCase.assertEqual(objects.length, 2);
+
+            realm.create('StringPrimaryObject', ['0', 'newVal0'], true);
+            TestCase.assertEqual(obj0.valueCol, 'newVal0');
+            TestCase.assertEqual(objects.length, 2);
+
+            realm.create('StringPrimaryObject', {primaryCol: '0'}, true);
+            TestCase.assertEqual(obj0.valueCol, 'newVal0');
         });
     },
 

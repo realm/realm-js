@@ -102,6 +102,12 @@ JSObjectRef RJSObjectCreate(JSContextRef ctx, Object object) {
     return jsObject;
 }
 
+template<> bool RJSAccessor::dict_has_value_for_key(JSContextRef ctx, JSValueRef dict, const std::string &prop_name) {
+    JSObjectRef object = RJSValidatedValueToObject(ctx, dict);
+    JSStringRef propStr =JSStringCreateWithUTF8CString(prop_name.c_str());
+    return JSObjectHasProperty(ctx, object, propStr);
+}
+
 template<> JSValueRef RJSAccessor::dict_value_for_key(JSContextRef ctx, JSValueRef dict, const std::string &prop_name) {
     JSObjectRef object = RJSValidatedValueToObject(ctx, dict);
     JSStringRef propStr =JSStringCreateWithUTF8CString(prop_name.c_str());
