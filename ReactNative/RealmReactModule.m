@@ -24,9 +24,10 @@
 @import RealmJS;
 @import JavaScriptCore;
 
-@protocol RCTJavaScriptContext
+@interface RCTJavaScriptContext : NSObject <RCTInvalidating>
 @property (nonatomic, assign, readonly) JSGlobalContextRef ctx;
 - (void)executeBlockOnJavaScriptQueue:(dispatch_block_t)block;
+- (instancetype)initWithJSContext:(JSGlobalContextRef)context;
 @end
 
 RCT_EXTERN id<RCTJavaScriptExecutor> RCTGetLatestExecutor(void);
@@ -41,16 +42,24 @@ RCT_EXPORT_MODULE()
     _bridge = bridge;
 
     id contextExecutor = RCTGetLatestExecutor();
-
     [contextExecutor executeBlockOnJavaScriptQueue:^{
         Ivar ivar = class_getInstanceVariable([contextExecutor class], "_context");
-        id<RCTJavaScriptContext> rctJSContext = object_getIvar(contextExecutor, ivar);
-        JSContextRef ctx = rctJSContext.ctx;
+        RCTJavaScriptContext *rctJSContext = object_getIvar(contextExecutor, ivar);
+        JSGlobalContextRef ctx;
+        if (rctJSContext) {
+            ctx = rctJSContext.ctx;
+        }
+        else {
+            ctx = JSGlobalContextCreate(NULL);
+            object_setIvar(contextExecutor, ivar, [[RCTJavaScriptContext alloc] initWithJSContext:ctx]);
+        }
 
         [RealmJS initializeContext:ctx];
+
         RCTLogInfo(@"Realm initialized");
     }];
 }
+
 
 @end
 

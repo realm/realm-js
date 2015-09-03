@@ -23,5 +23,4 @@
 @protocol RCTBridgeModule;
 
 @interface Realm : NSObject <RCTBridgeModule>
-
 @end
