@@ -158,7 +158,7 @@ namespace realm {
         size_t row_index = realm::not_found;
         realm::TableRef table = ObjectStore::table_for_object_type(realm->read_group(), object_schema.name);
         Property *primary_prop = object_schema.primary_key_property();
-        if (try_update && primary_prop) {
+        if (primary_prop) {
             // search for existing object based on primary key type
             ValueType primary_value = Accessor::dict_value_for_key(ctx, value, object_schema.primary_key);
             if (primary_prop->type == PropertyTypeString) {
@@ -166,6 +166,10 @@ namespace realm {
             }
             else {
                 row_index = table->find_first_int(primary_prop->table_column, Accessor::to_long(ctx, primary_value));
+            }
+
+            if (!try_update && row_index != realm::not_found) {
+                throw std::runtime_error("Attempting to create an object of type '" + object_schema.name + "' with an exising primary key value.");
             }
         }
 
