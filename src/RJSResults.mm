@@ -59,6 +59,32 @@ void ResultsPropertyNames(JSContextRef ctx, JSObjectRef object, JSPropertyNameAc
     }
 }
 
+JSValueRef SortByProperty(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) {
+    try {
+        Results *results = RJSGetInternal<Results *>(thisObject);
+        RJSValidateArgumentRange(argumentCount, 1, 2);
+        std::string propName = RJSValidatedStringForValue(ctx, arguments[0]);
+        Property *prop = results->object_schema.property_for_name(propName);
+        if (!prop) {
+            throw std::runtime_error("Property '" + propName + "' does not exist on object type '" + results->object_schema.name + "'");
+        }
+
+        bool ascending = true;
+        if (argumentCount == 2) {
+            ascending = RJSValidatedValueToBool(ctx, arguments[1]);
+        }
+
+        SortOrder sort = {{prop->table_column}, {ascending}};
+        results->setSort(sort);
+    }
+    catch (std::exception &exp) {
+        if (jsException) {
+            *jsException = RJSMakeError(ctx, exp);
+        }
+    }
+    return NULL;
+}
+
 JSObjectRef RJSResultsCreate(JSContextRef ctx, SharedRealm realm, std::string className) {
     TableRef table = ObjectStore::table_for_object_type(realm->read_group(), className);
     return RJSWrapObject<Results *>(ctx, RJSResultsClass(), new Results(realm, realm->config().schema->at(className), table->where()));
@@ -83,6 +109,10 @@ JSObjectRef RJSResultsCreate(JSContextRef ctx, SharedRealm realm, std::string cl
 
 
 JSClassRef RJSResultsClass() {
-    static JSClassRef s_objectClass = RJSCreateWrapperClass<Object>("Results", ResultsGetProperty, NULL, NULL, NULL, ResultsPropertyNames);
+    const JSStaticFunction resultsFuncs[] = {
+        {"sortByProperty", SortByProperty, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
+        {NULL, NULL},
+    };
+    static JSClassRef s_objectClass = RJSCreateWrapperClass<Object>("Results", ResultsGetProperty, NULL, resultsFuncs, NULL, ResultsPropertyNames);
     return s_objectClass;
 }

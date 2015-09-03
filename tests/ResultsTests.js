@@ -74,4 +74,29 @@ var ResultsTests = {
         }    
         TestCase.assertEqual(1, count);
     },
+    testSort: function() {
+        var realm = new Realm({schema: [TestObjectSchema]});
+        var objects = realm.objects('TestObject');
+        realm.write(function() {
+            realm.create('TestObject', [2]);
+            realm.create('TestObject', [3]);
+            realm.create('TestObject', [1]);
+            realm.create('TestObject', [4]);
+            realm.create('TestObject', [0]);
+        });
+
+        objects.sortByProperty('doubleCol');
+        TestCase.assertEqual(objects[0].doubleCol, 0);
+        TestCase.assertEqual(objects[1].doubleCol, 1);
+        TestCase.assertEqual(objects[2].doubleCol, 2);
+        TestCase.assertEqual(objects[3].doubleCol, 3);
+        TestCase.assertEqual(objects[4].doubleCol, 4);
+
+        objects.sortByProperty('doubleCol', false);
+        TestCase.assertEqual(objects[0].doubleCol, 4);
+        TestCase.assertEqual(objects[1].doubleCol, 3);
+        TestCase.assertEqual(objects[2].doubleCol, 2);
+        TestCase.assertEqual(objects[3].doubleCol, 1);
+        TestCase.assertEqual(objects[4].doubleCol, 0);
+    },
 }
