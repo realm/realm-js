@@ -17,9 +17,11 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #include "shared_realm.hpp"
+
+#include <realm/commit_log.hpp>
 #include <realm/group_shared.hpp>
 #include <realm/lang_bind_helper.hpp>
-#include <realm/commit_log.hpp>
+
 #include <memory>
 
 using namespace realm;
@@ -27,10 +29,14 @@ using namespace realm;
 RealmCache Realm::s_global_cache;
 std::mutex Realm::s_init_mutex;
 
-Realm::Config::Config(const Config& c) : path(c.path), read_only(c.read_only), in_memory(c.in_memory), schema_version(c.schema_version), encryption_key(c.encryption_key), migration_function(c.migration_function)
+Realm::Config::Config(const Config& c) : path(c.path), read_only(c.read_only), in_memory(c.in_memory), schema_version(c.schema_version), migration_function(c.migration_function)
 {
     if (c.schema) {
         schema = std::make_unique<Schema>(*c.schema);
+    }
+    if (c.encryption_key) {
+        encryption_key = std::make_unique<char[]>(64);
+        memcpy(encryption_key.get(), c.encryption_key.get(), 64);
     }
 }
 
@@ -38,14 +44,14 @@ Realm::Realm(Config &config) : m_config(config), m_thread_id(std::this_thread::g
 {
     try {
         if (config.read_only) {
-            m_read_only_group = std::make_unique<Group>(config.path, config.encryption_key.data(), Group::mode_ReadOnly);
+            m_read_only_group = std::make_unique<Group>(config.path, config.encryption_key.get(), Group::mode_ReadOnly);
             m_group = m_read_only_group.get();
         }
         else {
-            m_history = realm::make_client_history(config.path, config.encryption_key.data());
+            m_history = realm::make_client_history(config.path, config.encryption_key.get());
             SharedGroup::DurabilityLevel durability = config.in_memory ? SharedGroup::durability_MemOnly :
                                                                          SharedGroup::durability_Full;
-            m_shared_group = std::make_unique<SharedGroup>(*m_history, durability, config.encryption_key.data());
+            m_shared_group = std::make_unique<SharedGroup>(*m_history, durability, config.encryption_key.get());
             m_group = nullptr;
         }
     }
