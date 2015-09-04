@@ -68,17 +68,20 @@ var IntPrimaryObjectSchema = {
   ]
 };
 
-var StringPrimaryObjectSchema = {
-  name: 'StringPrimaryObject',
+var AllTypesObjectSchema = {
+  name: 'AllTypesObject',
   primaryKey: 'primaryCol',
   properties: [
-    {name: 'primaryCol', type: RealmType.String},
+    {name: 'primaryCol',type: RealmType.String},
     {name: 'boolCol',   type: RealmType.Bool},
     {name: 'intCol',    type: RealmType.Int},
     {name: 'floatCol',  type: RealmType.Float},
     {name: 'doubleCol', type: RealmType.Double},
     {name: 'stringCol', type: RealmType.String},
     {name: 'dateCol',   type: RealmType.Date},
-    {name: 'dataCol',   type: RealmType.Data},  
+    {name: 'dataCol',   type: RealmType.Data}, 
+    {name: 'objectCol', type: 'TestObject'},
+    {name: 'arrayCol',  type: RealmType.Array, objectType: 'TestObject'}, 
   ]
 };
+

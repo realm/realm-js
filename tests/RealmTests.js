@@ -72,7 +72,7 @@ var RealmTests = {
     },
 
     testRealmCreate: function() {
-        var realm = new Realm({schema: [TestObjectSchema]});
+        var realm = new Realm({schema: [IntPrimaryObjectSchema, AllTypesObjectSchema, TestObjectSchema]});
         realm.write(function() {
             realm.create('TestObject', [1]);
             realm.create('TestObject', {'doubleCol': 2});
@@ -83,8 +83,7 @@ var RealmTests = {
         TestCase.assertEqual(objects[0].doubleCol, 1, 'wrong object property value');
         TestCase.assertEqual(objects[1].doubleCol, 2, 'wrong object property value');
 
-        // test primary object
-        realm = new Realm({path: TestUtil.realmPathForFile('intPrimary.realm'), schema: [IntPrimaryObjectSchema, StringPrimaryObjectSchema]});
+        // test int primary object
         realm.write(function() {
             var obj0 = realm.create('IntPrimaryObject', [0, 'val0']);
 
@@ -103,17 +102,19 @@ var RealmTests = {
             TestCase.assertEqual(obj0.valueCol, 'newVal0');
         });
 
+        // test upsert with all type and string primary object
         realm.write(function() {
-            var obj0 = realm.create('StringPrimaryObject', ['0', true, 1, 1.1, 1.11, '1', new Date(1), '1']);
+            var values = ['0', true, 1, 1.1, 1.11, '1', new Date(1), '1', [1], []];
+            var obj0 = realm.create('AllTypesObject', values);
 
             TestCase.assertThrows(function() {
-                realm.create('StringPrimaryObject', ['0', true, 1, 1.1, 1.11, '1', new Date(1), '1']);
+                realm.create('AllTypesObject', values);
             });
-            realm.create('StringPrimaryObject', ['1', true, 2, 2.2, 2.11, '2', new Date(2), '2'], true);
-            var objects = realm.objects('StringPrimaryObject');
+            realm.create('AllTypesObject', ['1', false, 2, 2.2, 2.11, '2', new Date(2), '2', null, [[2]]], true);
+            var objects = realm.objects('AllTypesObject');
             TestCase.assertEqual(objects.length, 2);
 
-            realm.create('StringPrimaryObject', ['0', false, 2, 2.2, 2.22, '2', new Date(2), '2'], true);
+            realm.create('AllTypesObject', ['0', false, 2, 2.2, 2.22, '2', new Date(2), '2', null, [[2]]], true);
             TestCase.assertEqual(objects.length, 2);
             TestCase.assertEqual(obj0.stringCol, '2');
             TestCase.assertEqual(obj0.boolCol, false);
@@ -122,11 +123,13 @@ var RealmTests = {
             TestCase.assertEqual(obj0.doubleCol, 2.22);
             TestCase.assertEqual(obj0.dateCol.getTime(), 2);
             TestCase.assertEqual(obj0.dataCol, '2');
+            TestCase.assertEqual(obj0.objectCol, null);
+            TestCase.assertEqual(obj0.arrayCol.length, 1);
 
-            realm.create('StringPrimaryObject', { primaryCol: '0' }, true);
+            realm.create('AllTypesObject', { primaryCol: '0' }, true);
             TestCase.assertEqual(obj0.stringCol, '2');
 
-            realm.create('StringPrimaryObject', { primaryCol: '0', stringCol: '3' }, true);
+            realm.create('AllTypesObject', { primaryCol: '0', stringCol: '3', objectCol: [0] }, true);
             TestCase.assertEqual(obj0.stringCol, '3');
             TestCase.assertEqual(obj0.boolCol, false);
             TestCase.assertEqual(obj0.intCol, 2);
@@ -134,6 +137,8 @@ var RealmTests = {
             TestCase.assertEqual(obj0.doubleCol, 2.22);
             TestCase.assertEqual(obj0.dateCol.getTime(), 2);
             TestCase.assertEqual(obj0.dataCol, '2');
+            TestCase.assertEqual(obj0.objectCol.doubleCol, 0);
+            TestCase.assertEqual(obj0.arrayCol.length, 1);
         });
     },
 

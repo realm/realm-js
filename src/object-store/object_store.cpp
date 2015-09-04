@@ -275,6 +275,7 @@ bool ObjectStore::create_tables(Group *group, Schema &target_schema, bool update
                     case PropertyTypeObject:
                     case PropertyTypeArray: {
                         TableRef link_table = ObjectStore::table_for_object_type(group, target_prop.object_type);
+                        REALM_ASSERT(link_table);
                         target_prop.table_column = table->add_column_link(DataType(target_prop.type), target_prop.name, *link_table);
                         break;
                     }
