@@ -73,6 +73,12 @@ var StringPrimaryObjectSchema = {
   primaryKey: 'primaryCol',
   properties: [
     {name: 'primaryCol', type: RealmType.String},
-    {name: 'valueCol',   type: RealmType.String},
+    {name: 'boolCol',   type: RealmType.Bool},
+    {name: 'intCol',    type: RealmType.Int},
+    {name: 'floatCol',  type: RealmType.Float},
+    {name: 'doubleCol', type: RealmType.Double},
+    {name: 'stringCol', type: RealmType.String},
+    {name: 'dateCol',   type: RealmType.Date},
+    {name: 'dataCol',   type: RealmType.Data},  
   ]
 };
