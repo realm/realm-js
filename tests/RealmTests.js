@@ -142,6 +142,24 @@ var RealmTests = {
         });
     },
 
+    testRealmCreateWithDefaults: function() {
+        var realm = new Realm({schema: [DefaultValuesObjectSchema, TestObjectSchema]});
+        realm.write(function() {
+            var obj = realm.create('DefaultValuesObject', {});
+            TestCase.assertEqual(obj.boolCol, DefaultValuesObjectSchema.properties[0].default);
+            TestCase.assertEqual(obj.intCol, DefaultValuesObjectSchema.properties[1].default);
+            TestCase.assertEqualWithTolerance(obj.floatCol, DefaultValuesObjectSchema.properties[2].default, 0.000001);
+            TestCase.assertEqual(obj.doubleCol, DefaultValuesObjectSchema.properties[3].default);
+            TestCase.assertEqual(obj.stringCol, DefaultValuesObjectSchema.properties[4].default);
+            TestCase.assertEqual(obj.dateCol.getTime(), DefaultValuesObjectSchema.properties[5].default.getTime());
+            TestCase.assertEqual(obj.dataCol, DefaultValuesObjectSchema.properties[6].default);
+            TestCase.assertEqual(obj.objectCol.doubleCol, DefaultValuesObjectSchema.properties[7].default[0]);
+            TestCase.assertEqual(obj.nullObjectCol, null);
+            TestCase.assertEqual(obj.arrayCol.length, DefaultValuesObjectSchema.properties[9].default.length);
+            TestCase.assertEqual(obj.arrayCol[0].doubleCol, DefaultValuesObjectSchema.properties[9].default[0][0]);
+        });
+    },
+
     testRealmDelete: function() {
         var realm = new Realm({schema: [TestObjectSchema]});
         realm.write(function() {

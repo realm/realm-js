@@ -85,3 +85,19 @@ var AllTypesObjectSchema = {
   ]
 };
 
+var DefaultValuesObjectSchema = {
+  name: 'DefaultValuesObject',
+  properties: [
+    {name: 'boolCol',   type: RealmType.Bool,   default: true},
+    {name: 'intCol',    type: RealmType.Int,    default: -1},
+    {name: 'floatCol',  type: RealmType.Float,  default: -1.1},
+    {name: 'doubleCol', type: RealmType.Double, default: -1.11},
+    {name: 'stringCol', type: RealmType.String, default: 'defaultString'},
+    {name: 'dateCol',   type: RealmType.Date,   default: new Date(1.111)},
+    {name: 'dataCol',   type: RealmType.Data,   default: 'defaultData'}, 
+    {name: 'objectCol', type: 'TestObject',     default: [1]},
+    {name: 'nullObjectCol', type: 'TestObject', default: null},
+    {name: 'arrayCol',  type: RealmType.Array, objectType: 'TestObject', default: [[2]]}, 
+  ]
+};
+

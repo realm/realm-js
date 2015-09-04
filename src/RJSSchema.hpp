@@ -17,9 +17,11 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #import "RJSUtil.hpp"
+#import <map>
 
 namespace realm {
     class Schema;
+    using ObjectDefaults = std::map<std::string, JSValueRef>;
 }
 
 JSClassRef RJSSchemaClass();
@@ -28,3 +30,4 @@ JSObjectRef RJSSchemaCreate(JSContextRef ctx, realm::Schema *schema);
 realm::Schema RJSParseSchema(JSContextRef ctx, JSObjectRef jsonObject);
 
 JSValueRef RJSPrototypeForClassName(const std::string &className);
+realm::ObjectDefaults &RJSDefaultsForClassName(const std::string &className);

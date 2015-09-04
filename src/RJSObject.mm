@@ -120,6 +120,16 @@ template<> JSValueRef RJSAccessor::dict_value_for_key(JSContextRef ctx, JSValueR
     return ret;
 }
 
+template<> bool RJSAccessor::has_default_value_for_property(JSContextRef ctx, const ObjectSchema &object_schema, const std::string &prop_name) {
+    ObjectDefaults &defaults = RJSDefaultsForClassName(object_schema.name);
+    return defaults.find(prop_name) != defaults.end();
+}
+
+template<> JSValueRef RJSAccessor::default_value_for_property(JSContextRef ctx, const ObjectSchema &object_schema, const std::string &prop_name) {
+    ObjectDefaults &defaults = RJSDefaultsForClassName(object_schema.name);
+    return defaults[prop_name];
+}
+
 template<> bool RJSAccessor::is_null(JSContextRef ctx, JSValueRef &val) {
     return JSValueIsUndefined(ctx, val) || JSValueIsNull(ctx, val);
 }

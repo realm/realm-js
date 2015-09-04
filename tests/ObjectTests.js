@@ -86,7 +86,7 @@ var ObjectTests = {
         var realm = new Realm({schema: [LinkTypesObjectSchema, TestObjectSchema]});
         var obj = null;
         realm.write(function() {
-            obj = realm.create('LinkTypesObject', [[1], undefined, [[3]]]);
+            obj = realm.create('LinkTypesObject', [[1], null, [[3]]]);
         });
         TestCase.assertEqual(realm.objects('TestObject').length, 2);
 
@@ -99,7 +99,7 @@ var ObjectTests = {
         TestCase.assertEqual(realm.objects('TestObject').length, 2);
 
         realm.write(function() {
-            obj.objectCol = undefined;
+            obj.objectCol = null;
             obj.objectCol1 = null;
         });
         TestCase.assertEqual(obj.objectCol, null);

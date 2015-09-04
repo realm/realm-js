@@ -45,6 +45,11 @@ JSObjectRef RJSSchemaCreate(JSContextRef ctx, Schema &schema) {
     return RJSWrapObject(ctx, RJSSchemaClass(), wrapper);
 }
 
+static std::map<std::string, ObjectDefaults> s_defaults;
+ObjectDefaults &RJSDefaultsForClassName(const std::string &className) {
+    return s_defaults[className];
+}
+
 static std::map<std::string, JSValueRef> s_prototypes;
 JSValueRef RJSPrototypeForClassName(const std::string &className) {
     return s_prototypes[className];
@@ -117,15 +122,24 @@ static inline ObjectSchema RJSParseObjectSchema(JSContextRef ctx, JSObjectRef ob
     JSObjectRef propertiesObject = RJSValidatedObjectProperty(ctx, objectSchemaObject, propertiesString, "ObjectSchema object must have a 'properties' array.");
 
     ObjectSchema objectSchema;
-    static JSStringRef nameString = JSStringCreateWithUTF8CString("name");
+    ObjectDefaults defaults;
 
+    static JSStringRef nameString = JSStringCreateWithUTF8CString("name");
     objectSchema.name = RJSValidatedStringProperty(ctx, objectSchemaObject, nameString);
 
     size_t numProperties = RJSValidatedArrayLength(ctx, propertiesObject);
     for (unsigned int p = 0; p < numProperties; p++) {
         JSObjectRef property = RJSValidatedObjectAtIndex(ctx, propertiesObject, p);
         objectSchema.properties.emplace_back(RJSParseProperty(ctx, property));
+
+        static JSStringRef defaultString = JSStringCreateWithUTF8CString("default");
+        JSValueRef defaultValue = JSObjectGetProperty(ctx, property, defaultString, NULL);
+        if (!JSValueIsUndefined(ctx, defaultValue)) {
+            JSValueProtect(ctx, defaultValue);
+            defaults.emplace(objectSchema.properties.back().name, defaultValue);
+        }
     }
+    s_defaults.emplace(objectSchema.name, std::move(defaults));
 
     static JSStringRef primaryString = JSStringCreateWithUTF8CString("primaryKey");
     JSValueRef primaryValue = RJSValidatedPropertyValue(ctx, objectSchemaObject, primaryString);
@@ -141,7 +155,7 @@ static inline ObjectSchema RJSParseObjectSchema(JSContextRef ctx, JSObjectRef ob
     // store prototype
     if (prototypeObject) {
         JSValueProtect(ctx, prototypeObject);
-        s_prototypes[objectSchema.name] = prototypeObject;
+        s_prototypes[objectSchema.name] = std::move(prototypeObject);
     }
 
     return objectSchema;
@@ -158,3 +172,4 @@ realm::Schema RJSParseSchema(JSContextRef ctx, JSObjectRef jsonObject) {
 
     return schema;
 }
+

@@ -32,6 +32,9 @@ namespace realm {
         static bool dict_has_value_for_key(ContextType ctx, ValueType dict, const std::string &prop_name);
         static ValueType dict_value_for_key(ContextType ctx, ValueType dict, const std::string &prop_name);
 
+        static bool has_default_value_for_property(ContextType ctx, const ObjectSchema &object_schema, const std::string &prop_name);
+        static ValueType default_value_for_property(ContextType ctx, const ObjectSchema &object_schema, const std::string &prop_name);
+
         static bool to_bool(ContextType ctx, ValueType &val);
         static long long to_long(ContextType ctx, ValueType &val);
         static float to_float(ContextType ctx, ValueType &val);
@@ -184,14 +187,18 @@ namespace realm {
         // populate
         Object object(realm, object_schema, table->get(row_index));
         for (Property &prop : object_schema.properties) {
-            if (Accessor::dict_has_value_for_key(ctx, value, prop.name)) {
-                if (created || !prop.is_primary) {
-                    ValueType prop_value = Accessor::dict_value_for_key(ctx, value, prop.name);
-                    object.set_property_value_impl(ctx, prop, prop_value, try_update);
+            if (created || !prop.is_primary) {
+                if (Accessor::dict_has_value_for_key(ctx, value, prop.name)) {
+                    object.set_property_value_impl(ctx, prop, Accessor::dict_value_for_key(ctx, value, prop.name), try_update);
                 }
-            }
-            else if (created) {
-                throw std::runtime_error("Missing property value for property " + prop.name);
+                else if (created) {
+                    if (Accessor::has_default_value_for_property(ctx, object_schema, prop.name)) {
+                        object.set_property_value_impl(ctx, prop, Accessor::default_value_for_property(ctx, object_schema, prop.name), try_update);
+                    }
+                    else {
+                        throw std::runtime_error("Missing property value for property " + prop.name);
+                    }
+                }
             }
         }
         return object;
