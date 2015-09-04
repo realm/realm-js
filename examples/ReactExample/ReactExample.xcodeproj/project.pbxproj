@@ -15,6 +15,8 @@
 		00C302EA1ABCBA2D00DB3ED1 /* libRCTVibration.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 00C302E41ABCB9EE00DB3ED1 /* libRCTVibration.a */; };
 		00E356F31AD99517003FC87E /* ReactExampleTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E356F21AD99517003FC87E /* ReactExampleTests.m */; };
 		0270BCD21B7D095C00010E03 /* libRealmReact.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0270BCB31B7D04D700010E03 /* libRealmReact.a */; };
+		02BB0BE51B9A06DC004D6DD2 /* RealmJS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0270BCAF1B7D04D700010E03 /* RealmJS.framework */; };
+		02BB0BE61B9A06DC004D6DD2 /* RealmJS.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 0270BCAF1B7D04D700010E03 /* RealmJS.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		133E29F31AD74F7200F7D852 /* libRCTLinking.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 78C398B91ACF4ADC00677621 /* libRCTLinking.a */; };
 		139105C61AF99C1200B5F7CC /* libRCTSettings.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 139105C11AF99BAD00B5F7CC /* libRCTSettings.a */; };
 		139FDEF61B0652A700C62182 /* libRCTWebSocket.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 139FDEF41B06529B00C62182 /* libRCTWebSocket.a */; };
@@ -90,6 +92,13 @@
 			remoteGlobalIDString = 02B29A161B7CF7C9008A7E6B;
 			remoteInfo = RealmReact;
 		};
+		02BB0BE71B9A06DC004D6DD2 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0270BC9E1B7D04D700010E03 /* RealmJS.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 02B58CB01AE99CEC009B348C;
+			remoteInfo = RealmJS;
+		};
 		139105C01AF99BAD00B5F7CC /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 139105B61AF99BAD00B5F7CC /* RCTSettings.xcodeproj */;
@@ -126,6 +135,20 @@
 			remoteInfo = RCTText;
 		};
 /* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		02BB0BF31B9A06DC004D6DD2 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				02BB0BE61B9A06DC004D6DD2 /* RealmJS.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		008F07F21AC5B25A0029DE68 /* main.jsbundle */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = main.jsbundle; path = iOS/main.jsbundle; sourceTree = "<group>"; };
@@ -171,6 +194,7 @@
 				00C302E81ABCBA2D00DB3ED1 /* libRCTImage.a in Frameworks */,
 				133E29F31AD74F7200F7D852 /* libRCTLinking.a in Frameworks */,
 				00C302E91ABCBA2D00DB3ED1 /* libRCTNetwork.a in Frameworks */,
+				02BB0BE51B9A06DC004D6DD2 /* RealmJS.framework in Frameworks */,
 				139105C61AF99C1200B5F7CC /* libRCTSettings.a in Frameworks */,
 				832341BD1AAA6AB300B99B32 /* libRCTText.a in Frameworks */,
 				00C302EA1ABCBA2D00DB3ED1 /* libRCTVibration.a in Frameworks */,
@@ -369,10 +393,12 @@
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
+				02BB0BF31B9A06DC004D6DD2 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				02BB0BE81B9A06DC004D6DD2 /* PBXTargetDependency */,
 			);
 			name = ReactExample;
 			productName = "Hello World";
@@ -598,6 +624,11 @@
 			isa = PBXTargetDependency;
 			target = 13B07F861A680F5B00A75B9A /* ReactExample */;
 			targetProxy = 00E356F41AD99517003FC87E /* PBXContainerItemProxy */;
+		};
+		02BB0BE81B9A06DC004D6DD2 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = RealmJS;
+			targetProxy = 02BB0BE71B9A06DC004D6DD2 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 

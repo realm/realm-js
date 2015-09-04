@@ -183,6 +183,7 @@ var RealmTests = {
             realm.objects('PersonObject', []);
         });
 
+        TestCase.assertEqual(realm.objects('PersonObject', "truepredicate").length, 4);
         TestCase.assertEqual(realm.objects('PersonObject').length, 4);
         TestCase.assertEqual(realm.objects('PersonObject', 'age = 11').length, 1);
         TestCase.assertEqual(realm.objects('PersonObject', 'age = 11')[0].name, 'Tim');
