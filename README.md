@@ -12,4 +12,5 @@ The ReactNative sample project is in the `examples/ReactExample` directory. You 
 - Drag `RealmJS.xcodeproj` into the `Libraries` folder in your project.
 - In the target for your application, add `libRealmReact.a` in the `Link Binary with Library` build phase.
 - Use Realm in your app.
+- Drag `RealmJS.framework` from the `Products` directory under `RealmJS.xcodeproj` into the `Embedded Libraries` section in the `General` tab for you app's target settings. This bundles the library with your app.
 
