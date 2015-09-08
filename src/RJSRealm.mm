@@ -257,7 +257,7 @@ JSValueRef RealmDelete(JSContextRef ctx, JSObjectRef function, JSObjectRef thisO
         }
 
         if (!JSValueIsObjectOfClass(ctx, arguments[0], RJSObjectClass())) {
-            throw std::runtime_error("Argument to 'delete' must be a Realm object.");
+            throw std::runtime_error("Argument to 'delete' must be a Realm object or a collection of Realm objects.");
         }
 
         Object *object = RJSGetInternal<Object *>(RJSValidatedValueToObject(ctx, arguments[0]));
@@ -271,6 +271,29 @@ JSValueRef RealmDelete(JSContextRef ctx, JSObjectRef function, JSObjectRef thisO
         realm::TableRef table = ObjectStore::table_for_object_type(realm->read_group(), object->object_schema.name);
         table->move_last_over(object->row.get_index());
 
+        return NULL;
+    }
+    catch (std::exception &exp) {
+        if (jsException) {
+            *jsException = RJSMakeError(ctx, exp);
+        }
+        return NULL;
+    }
+}
+
+JSValueRef RealmDeleteAll(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) {
+    try {
+        RJSValidateArgumentCount(argumentCount, 0);
+
+        SharedRealm realm = *RJSGetInternal<SharedRealm *>(thisObject);
+
+        if (!realm->is_in_transaction()) {
+            throw std::runtime_error("Can only delete objects within a transaction.");
+        }
+
+        for (auto objectSchema : *realm->config().schema) {
+            ObjectStore::table_for_object_type(realm->read_group(), objectSchema.first)->clear();
+        }
         return NULL;
     }
     catch (std::exception &exp) {
@@ -354,6 +377,7 @@ JSClassRef RJSRealmClass() {
         {"objects", RealmObjects, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
         {"create", RealmCreateObject, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
         {"delete", RealmDelete, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
+        {"deleteAll", RealmDeleteAll, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
         {"write", RealmWrite, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
         {"addNotification", RealmAddNotification, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
         {NULL, NULL},

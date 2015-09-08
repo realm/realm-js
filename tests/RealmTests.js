@@ -196,6 +196,28 @@ var RealmTests = {
         });
     },
 
+    testDeleteAll: function() {
+        var realm = new Realm({schema: [TestObjectSchema, IntPrimaryObjectSchema]});
+        realm.write(function() {
+            realm.create('TestObject', [1]);
+            realm.create('TestObject', [2]);
+            realm.create('IntPrimaryObject', [2, 'value']);
+        });
+        TestCase.assertEqual(realm.objects('TestObject').length, 2);
+        TestCase.assertEqual(realm.objects('IntPrimaryObject').length, 1);
+
+        TestCase.assertThrows(function() {
+            realm.deleteAll();
+        });
+
+        realm.write(function() {
+            realm.deleteAll();
+        });
+
+        TestCase.assertEqual(realm.objects('TestObject').length, 0);
+        TestCase.assertEqual(realm.objects('IntPrimaryObject').length, 0);
+    },
+
     testRealmObjects: function() {
         var realm = new Realm({schema: [PersonObject]});
         realm.write(function() {
