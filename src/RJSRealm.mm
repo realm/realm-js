@@ -157,9 +157,11 @@ JSObjectRef RealmConstructor(JSContextRef ctx, JSObjectRef constructor, size_t a
                 *jsException = RJSMakeError(ctx, "Invalid arguments when constructing 'Realm'");
                 return NULL;
         }
-        SharedRealm *realm = new SharedRealm(Realm::get_shared_realm(config));
-        (*realm)->m_delegate = std::make_unique<RJSRealmDelegate>();
-        return RJSWrapObject<SharedRealm *>(ctx, RJSRealmClass(), realm);
+        SharedRealm realm = Realm::get_shared_realm(config);
+        if (!realm->m_delegate) {
+            realm->m_delegate = std::make_unique<RJSRealmDelegate>();
+        }
+        return RJSWrapObject<SharedRealm *>(ctx, RJSRealmClass(), new SharedRealm(realm));
     }
     catch (std::exception &ex) {
         if (jsException) {
