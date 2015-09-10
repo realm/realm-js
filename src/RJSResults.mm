@@ -90,7 +90,6 @@ JSObjectRef RJSResultsCreate(JSContextRef ctx, SharedRealm realm, std::string cl
     auto object_schema = realm->config().schema->find(className);
     if (object_schema == realm->config().schema->end()) {
         throw std::runtime_error("Object type '" + className + "' not present in Realm.");
-        return NULL;
     }
     return RJSWrapObject<Results *>(ctx, RJSResultsClass(), new Results(realm, *object_schema, table->where()));
 }
@@ -103,6 +102,9 @@ JSObjectRef RJSResultsCreate(JSContextRef ctx, SharedRealm realm, std::string cl
     Query query = table->where();
     Schema &schema = *realm->config().schema;
     auto object_schema = realm->config().schema->find(className);
+    if (object_schema == realm->config().schema->end()) {
+        throw std::runtime_error("Object type '" + className + "' not present in Realm.");
+    }
     @try {
         RLMUpdateQueryWithPredicate(&query, [NSPredicate predicateWithFormat:@(queryString.c_str())], schema, *object_schema);
     }
