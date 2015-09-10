@@ -87,7 +87,12 @@ JSValueRef SortByProperty(JSContextRef ctx, JSObjectRef function, JSObjectRef th
 
 JSObjectRef RJSResultsCreate(JSContextRef ctx, SharedRealm realm, std::string className) {
     TableRef table = ObjectStore::table_for_object_type(realm->read_group(), className);
-    return RJSWrapObject<Results *>(ctx, RJSResultsClass(), new Results(realm, realm->config().schema->at(className), table->where()));
+    auto object_schema = realm->config().schema->find(className);
+    if (object_schema == realm->config().schema->end()) {
+        throw std::runtime_error("Object type '" + className + "' not present in Realm.");
+        return NULL;
+    }
+    return RJSWrapObject<Results *>(ctx, RJSResultsClass(), new Results(realm, *object_schema, table->where()));
 }
 
 
@@ -97,14 +102,14 @@ JSObjectRef RJSResultsCreate(JSContextRef ctx, SharedRealm realm, std::string cl
     TableRef table = ObjectStore::table_for_object_type(realm->read_group(), className);
     Query query = table->where();
     Schema &schema = *realm->config().schema;
-    ObjectSchema &object_schema = realm->config().schema->at(className);
+    auto object_schema = realm->config().schema->find(className);
     @try {
-        RLMUpdateQueryWithPredicate(&query, [NSPredicate predicateWithFormat:@(queryString.c_str())], schema, object_schema);
+        RLMUpdateQueryWithPredicate(&query, [NSPredicate predicateWithFormat:@(queryString.c_str())], schema, *object_schema);
     }
     @catch(NSException *ex) {
         throw std::runtime_error(ex.description.UTF8String);
     }
-    return RJSWrapObject<Results *>(ctx, RJSResultsClass(), new Results(realm, object_schema, std::move(query)));
+    return RJSWrapObject<Results *>(ctx, RJSResultsClass(), new Results(realm, *object_schema, std::move(query)));
 }
 
 

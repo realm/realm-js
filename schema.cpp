@@ -58,6 +58,15 @@ Schema::const_iterator Schema::find(ObjectSchema const& object) const noexcept
     return const_cast<Schema *>(this)->find(object);
 }
 
+ObjectSchema& Schema::operator[] (std::string const& name)
+{
+    auto iter = find(name);
+    if (iter == end()) {
+        throw std::runtime_error("Object type '" + name + "' not present in schema.");
+    }
+    return *iter;
+}
+
 void Schema::validate() const
 {
     std::vector<ObjectSchemaValidationException> exceptions;

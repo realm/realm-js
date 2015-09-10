@@ -39,6 +39,9 @@ public:
     iterator find(ObjectSchema const& object) noexcept;
     const_iterator find(ObjectSchema const& object) const noexcept;
 
+    // get and ObjectSchema by name, throws if not present in the Schema
+    ObjectSchema& operator[] (std::string const& name);
+
     // Verify that this schema is internally consistent (i.e. all properties are
     // valid, links link to types that actually exist, etc.)
     void validate() const;

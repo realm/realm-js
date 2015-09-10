@@ -24,8 +24,42 @@
 
 #import "shared_realm.hpp"
 #import "object_accessor.hpp"
+#import "realm_delegate.hpp"
+
+#import <set>
 
 using namespace realm;
+
+class RJSRealmDelegate : public RealmDelegate {
+public:
+    typedef std::shared_ptr<std::function<void(const std::string)>> NotificationFunction;
+    void add_notification(NotificationFunction &notification) { m_notifications.insert(notification); }
+    void remove_notification(NotificationFunction notification) { m_notifications.erase(notification); }
+    void remove_all_notifications() { m_notifications.clear(); }
+    std::set<NotificationFunction> m_notifications;
+
+    virtual void changes_available() {
+        for (NotificationFunction notification : m_notifications) {
+            (*notification)("RefreshRequiredNotification");
+        }
+    }
+
+    virtual void did_change(std::vector<ObserverState> const& observers,
+                            std::vector<void*> const& invalidated) {
+        for (NotificationFunction notification : m_notifications) {
+            (*notification)("DidChangeNotification");
+        }
+    }
+
+    virtual std::vector<ObserverState> get_observed_rows() {
+        return std::vector<ObserverState>();
+    }
+
+    virtual void will_change(std::vector<ObserverState> const& observers,
+                             std::vector<void*> const& invalidated) {
+
+    }
+};
 
 std::string writeablePathForFile(const std::string &fileName) {
 #if TARGET_OS_IPHONE
@@ -123,7 +157,9 @@ JSObjectRef RealmConstructor(JSContextRef ctx, JSObjectRef constructor, size_t a
                 *jsException = RJSMakeError(ctx, "Invalid arguments when constructing 'Realm'");
                 return NULL;
         }
-        return RJSWrapObject<SharedRealm *>(ctx, RJSRealmClass(), new SharedRealm(Realm::get_shared_realm(config)));
+        SharedRealm *realm = new SharedRealm(Realm::get_shared_realm(config));
+        (*realm)->m_delegate = std::make_unique<RJSRealmDelegate>();
+        return RJSWrapObject<SharedRealm *>(ctx, RJSRealmClass(), realm);
     }
     catch (std::exception &ex) {
         if (jsException) {
@@ -218,7 +254,7 @@ JSValueRef RealmCreateObject(JSContextRef ctx, JSObjectRef function, JSObjectRef
 
         JSObjectRef object = RJSValidatedValueToObject(ctx, arguments[1]);
         if (RJSIsValueArray(ctx, arguments[1])) {
-            object = RJSDictForPropertyArray(ctx, object_schema->second, object);
+            object = RJSDictForPropertyArray(ctx, *object_schema, object);
         }
 
         bool update = false;
@@ -226,7 +262,7 @@ JSValueRef RealmCreateObject(JSContextRef ctx, JSObjectRef function, JSObjectRef
             update = RJSValidatedValueToBool(ctx, arguments[2]);
         }
 
-        return RJSObjectCreate(ctx, Object::create<JSValueRef>(ctx, sharedRealm, object_schema->second, object, update));
+        return RJSObjectCreate(ctx, Object::create<JSValueRef>(ctx, sharedRealm, *object_schema, object, update));
     }
     catch (std::exception &exp) {
         if (jsException) {
@@ -292,7 +328,7 @@ JSValueRef RealmDeleteAll(JSContextRef ctx, JSObjectRef function, JSObjectRef th
         }
 
         for (auto objectSchema : *realm->config().schema) {
-            ObjectStore::table_for_object_type(realm->read_group(), objectSchema.first)->clear();
+            ObjectStore::table_for_object_type(realm->read_group(), objectSchema.name)->clear();
         }
         return NULL;
     }
@@ -332,7 +368,7 @@ JSValueRef RealmWrite(JSContextRef ctx, JSObjectRef function, JSObjectRef thisOb
 namespace realm {
     struct Notification {
         JSGlobalContextRef ctx;
-        Realm::NotificationFunction func;
+        RJSRealmDelegate::NotificationFunction func;
     };
 }
 
@@ -343,7 +379,7 @@ JSValueRef RealmAddNotification(JSContextRef ctx, JSObjectRef function, JSObject
         JSObjectRef user_function = RJSValidatedValueToObject(ctx, arguments[0]);
         SharedRealm realm = *RJSGetInternal<SharedRealm *>(thisObject);
         JSGlobalContextRef gCtx = JSGlobalContextRetain(JSContextGetGlobalContext(ctx));
-        Realm::NotificationFunction func = std::make_shared<std::function<void(const std::string)>>([=](std::string notification_name) {
+        RJSRealmDelegate::NotificationFunction func = std::make_shared<std::function<void(const std::string)>>([=](std::string notification_name) {
             JSValueRef arguments[2];
             arguments[0] = thisObject;
             arguments[1] = RJSValueForString(gCtx, notification_name);
@@ -353,8 +389,8 @@ JSValueRef RealmAddNotification(JSContextRef ctx, JSObjectRef function, JSObject
                 throw RJSException(gCtx, ex);
             }
         });
-        realm->add_notification(func);
 
+        static_cast<RJSRealmDelegate *>(realm->m_delegate.get())->add_notification(func);
         return RJSWrapObject<Notification *>(ctx, RJSNotificationClass(), new Notification { gCtx, func });
     }
     catch (std::exception &exp) {
