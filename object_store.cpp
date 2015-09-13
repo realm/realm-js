@@ -501,7 +501,19 @@ void ObjectStore::delete_data_for_object(Group *group, const StringData &object_
     }
 }
 
-
+bool ObjectStore::is_empty(const Group *group) {
+    for (size_t i = 0; i < group->size(); i++) {
+        ConstTableRef table = group->get_table(i);
+        std::string object_type = object_type_for_table_name(table->get_name());
+        if (!object_type.length()) {
+            continue;
+        }
+        if (!table->is_empty()) {
+            return false;
+        }
+    }
+    return true;
+}
 
 InvalidSchemaVersionException::InvalidSchemaVersionException(uint64_t old_version, uint64_t new_version) :
     m_old_version(old_version), m_new_version(new_version)
