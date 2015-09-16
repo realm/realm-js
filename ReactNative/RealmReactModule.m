@@ -24,13 +24,15 @@
 @import RealmJS;
 @import JavaScriptCore;
 
+@interface RCTBridge (executor)
+@property (weak) id<RCTJavaScriptExecutor> javaScriptExecutor;
+@end
+
 @interface RCTJavaScriptContext : NSObject <RCTInvalidating>
 @property (nonatomic, assign, readonly) JSGlobalContextRef ctx;
 - (void)executeBlockOnJavaScriptQueue:(dispatch_block_t)block;
 - (instancetype)initWithJSContext:(JSGlobalContextRef)context;
 @end
-
-RCT_EXTERN id<RCTJavaScriptExecutor> RCTGetLatestExecutor(void);
 
 @implementation Realm
 
@@ -41,7 +43,8 @@ RCT_EXPORT_MODULE()
 -(void)setBridge:(RCTBridge *)bridge {
     _bridge = bridge;
 
-    id contextExecutor = RCTGetLatestExecutor();
+    Ivar executorIvar = class_getInstanceVariable([bridge class], "_javaScriptExecutor");
+    id contextExecutor = object_getIvar(bridge, executorIvar);
     [contextExecutor executeBlockOnJavaScriptQueue:^{
         Ivar ivar = class_getInstanceVariable([contextExecutor class], "_context");
         RCTJavaScriptContext *rctJSContext = object_getIvar(contextExecutor, ivar);
