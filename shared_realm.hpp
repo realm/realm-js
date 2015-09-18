@@ -19,21 +19,21 @@
 #ifndef REALM_REALM_HPP
 #define REALM_REALM_HPP
 
+#include <map>
 #include <memory>
 #include <thread>
 #include <vector>
-#include <mutex>
-#include <set>
-#include <map>
 
 #include "object_store.hpp"
 
 namespace realm {
-    class RealmCache;
+    class ClientHistory;
+    class ExternalCommitHelper;
     class Realm;
+    class RealmCache;
+    class RealmDelegate;
     typedef std::shared_ptr<Realm> SharedRealm;
     typedef std::weak_ptr<Realm> WeakRealm;
-    class ClientHistory;
 
     class Realm : public std::enable_shared_from_this<Realm>
     {
@@ -43,83 +43,81 @@ namespace realm {
         struct Config
         {
             std::string path;
-            bool read_only;
-            bool in_memory;
-            StringData encryption_key;
+            bool read_only = false;
+            bool in_memory = false;
+            bool cache = true;
+            std::vector<char> encryption_key;
 
             std::unique_ptr<Schema> schema;
-            uint64_t schema_version;
+            uint64_t schema_version = ObjectStore::NotVersioned;
 
             MigrationFunction migration_function;
 
-            Config() : read_only(false), in_memory(false), schema_version(ObjectStore::NotVersioned) {};
+            Config() = default;
+            Config(Config&&) = default;
             Config(const Config& c);
+            ~Config();
+
+            Config& operator=(Config const&);
+            Config& operator=(Config&&) = default;
         };
 
         // Get a cached Realm or create a new one if no cached copies exists
-        // Caching is done by path - mismatches for inMemory and readOnly Config properties
-        // will raise an exception
-        // If schema/schema_version is specified, update_schema is called automatically on the realm
-        // and a migration is performed. If not specified, the schema version and schema are dynamically
-        // read from the the existing Realm.
-        static SharedRealm get_shared_realm(Config &config);
+        // Caching is done by path - mismatches for in_memory and read_only
+        // Config properties will raise an exception
+        // If schema/schema_version is specified, update_schema is called
+        // automatically on the realm and a migration is performed. If not
+        // specified, the schema version and schema are dynamically read from
+        // the the existing Realm.
+        static SharedRealm get_shared_realm(Config config);
 
-        // Updates a Realm to a given target schema/version creating tables and updating indexes as necessary
-        // Uses the existing migration function on the Config, and the resulting Schema and version with updated
+        // Updates a Realm to a given target schema/version creating tables and
+        // updating indexes as necessary. Uses the existing migration function
+        // on the Config, and the resulting Schema and version with updated
         // column mappings are set on the realms config upon success.
         // returns if any changes were made
-        bool update_schema(Schema &schema, uint64_t version);
+        bool update_schema(std::unique_ptr<Schema> schema, uint64_t version);
+
+        static uint64_t get_schema_version(Config const& config);
 
         const Config &config() const { return m_config; }
 
         void begin_transaction();
         void commit_transaction();
         void cancel_transaction();
-        bool is_in_transaction() { return m_in_transaction; }
+        bool is_in_transaction() const { return m_in_transaction; }
 
         bool refresh();
         void set_auto_refresh(bool auto_refresh) { m_auto_refresh = auto_refresh; }
-        bool auto_refresh() { return m_auto_refresh; }
+        bool auto_refresh() const { return m_auto_refresh; }
         void notify();
-
-        typedef std::shared_ptr<std::function<void(const std::string)>> NotificationFunction;
-        void add_notification(NotificationFunction &notification) { m_notifications.insert(notification); }
-        void remove_notification(NotificationFunction notification) { m_notifications.erase(notification); }
-        void remove_all_notifications() { m_notifications.clear(); }
 
         void invalidate();
         bool compact();
 
         std::thread::id thread_id() const { return m_thread_id; }
-        void verify_thread();
+        void verify_thread() const;
 
-        const std::string RefreshRequiredNotification = "RefreshRequiredNotification";
-        const std::string DidChangeNotification = "DidChangeNotification";
+        ~Realm();
 
       private:
-        Realm(Config &config);
+        Realm(Config config);
 
         Config m_config;
-        std::thread::id m_thread_id;
-        bool m_in_transaction;
-        bool m_auto_refresh;
-
-        std::set<NotificationFunction> m_notifications;
-        void send_local_notifications(const std::string &notification);
-
-        typedef std::unique_ptr<std::function<void()>> ExternalNotificationFunction;
-        void send_external_notifications() { if (m_external_notifier) (*m_external_notifier)(); }
+        std::thread::id m_thread_id = std::this_thread::get_id();
+        bool m_in_transaction = false;
+        bool m_auto_refresh = true;
 
         std::unique_ptr<ClientHistory> m_history;
         std::unique_ptr<SharedGroup> m_shared_group;
         std::unique_ptr<Group> m_read_only_group;
 
-        Group *m_group;
+        Group *m_group = nullptr;
 
-        static std::mutex s_init_mutex;
+        std::shared_ptr<ExternalCommitHelper> m_notifier;
 
       public:
-        ExternalNotificationFunction m_external_notifier;
+        std::unique_ptr<RealmDelegate> m_delegate;
 
         // FIXME private
         Group *read_group();
