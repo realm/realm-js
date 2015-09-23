@@ -45,16 +45,22 @@ RCT_EXPORT_MODULE()
 
     Ivar executorIvar = class_getInstanceVariable([bridge class], "_javaScriptExecutor");
     id contextExecutor = object_getIvar(bridge, executorIvar);
+    Ivar contextIvar = class_getInstanceVariable([contextExecutor class], "_context");
+
+    // The executor could be a RCTWebSocketExecutor, in which case it won't have a JS context.
+    if (!contextIvar) {
+        return;
+    }
+
     [contextExecutor executeBlockOnJavaScriptQueue:^{
-        Ivar ivar = class_getInstanceVariable([contextExecutor class], "_context");
-        RCTJavaScriptContext *rctJSContext = object_getIvar(contextExecutor, ivar);
+        RCTJavaScriptContext *rctJSContext = object_getIvar(contextExecutor, contextIvar);
         JSGlobalContextRef ctx;
         if (rctJSContext) {
             ctx = rctJSContext.ctx;
         }
         else {
             ctx = JSGlobalContextCreate(NULL);
-            object_setIvar(contextExecutor, ivar, [[RCTJavaScriptContext alloc] initWithJSContext:ctx]);
+            object_setIvar(contextExecutor, contextIvar, [[RCTJavaScriptContext alloc] initWithJSContext:ctx]);
         }
 
         [RealmJS initializeContext:ctx];
