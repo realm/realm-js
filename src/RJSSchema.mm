@@ -162,14 +162,14 @@ static inline ObjectSchema RJSParseObjectSchema(JSContextRef ctx, JSObjectRef ob
 }
 
 realm::Schema RJSParseSchema(JSContextRef ctx, JSObjectRef jsonObject) {
-    Schema schema;
+    std::vector<ObjectSchema> schema;
     size_t length = RJSValidatedArrayLength(ctx, jsonObject);
     for (unsigned int i = 0; i < length; i++) {
         JSObjectRef jsonObjectSchema = RJSValidatedObjectAtIndex(ctx, jsonObject, i);
         ObjectSchema objectSchema = RJSParseObjectSchema(ctx, jsonObjectSchema);
-        schema[objectSchema.name] = std::move(objectSchema);
+        schema.emplace_back(std::move(objectSchema));
      }
 
-    return schema;
+    return Schema(schema);
 }
 

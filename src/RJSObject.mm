@@ -58,16 +58,16 @@ JSValueRef ObjectGetProperty(JSContextRef ctx, JSObjectRef jsObject, JSStringRef
             return JSObjectMakeDate(ctx, 1, &time, exception);
         }
         case PropertyTypeObject: {
-            ObjectSchema &linkObjectSchema = obj->realm->config().schema->at(prop->object_type);
-            TableRef table = ObjectStore::table_for_object_type(obj->realm->read_group(), linkObjectSchema.name);
+            auto linkObjectSchema = obj->realm->config().schema->find(prop->object_type);
+            TableRef table = ObjectStore::table_for_object_type(obj->realm->read_group(), linkObjectSchema->name);
             if (obj->row.is_null_link(prop->table_column)) {
                 return JSValueMakeNull(ctx);
             }
-            return RJSObjectCreate(ctx, Object(obj->realm, linkObjectSchema, table->get(obj->row.get_link(prop->table_column))));
+            return RJSObjectCreate(ctx, Object(obj->realm, *linkObjectSchema, table->get(obj->row.get_link(prop->table_column))));
         }
         case PropertyTypeArray: {
-            ObjectSchema &arrayObjectSchema = obj->realm->config().schema->at(prop->object_type);
-            return RJSArrayCreate(ctx, new ObjectArray(obj->realm, arrayObjectSchema, static_cast<LinkViewRef>(obj->row.get_linklist(prop->table_column))));
+            auto arrayObjectSchema = obj->realm->config().schema->find(prop->object_type);
+            return RJSArrayCreate(ctx, new ObjectArray(obj->realm, *arrayObjectSchema, static_cast<LinkViewRef>(obj->row.get_linklist(prop->table_column))));
         }
 
     }
@@ -185,12 +185,12 @@ template<> size_t RJSAccessor::to_object_index(JSContextRef ctx, SharedRealm &re
         return RJSGetInternal<Object *>(object)->row.get_index();
     }
 
-    ObjectSchema &object_schema = realm->config().schema->at(type);
+    auto object_schema = realm->config().schema->find(type);
     if (RJSIsValueArray(ctx, object)) {
-        object = RJSDictForPropertyArray(ctx, object_schema, object);
+        object = RJSDictForPropertyArray(ctx, *object_schema, object);
     }
 
-    Object child = Object::create<JSValueRef>(ctx, realm, object_schema, (JSValueRef)object, try_update);
+    Object child = Object::create<JSValueRef>(ctx, realm, *object_schema, (JSValueRef)object, try_update);
     return child.row.get_index();
 }
 
