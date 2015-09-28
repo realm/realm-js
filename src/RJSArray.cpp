@@ -52,7 +52,6 @@ JSValueRef ArrayGetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef pr
     try {
         // index subscripting
         ObjectArray *array = RJSVerifiedArray(object);
-        array->verify_attached();
         size_t size = array->size();
 
         std::string indexStr = RJSStringForJSString(propertyName);
