@@ -75,10 +75,11 @@ JSValueRef ArrayGetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef pr
 
 void ArrayPropertyNames(JSContextRef ctx, JSObjectRef object, JSPropertyNameAccumulatorRef propertyNames) {
     ObjectArray *array = RJSGetInternal<ObjectArray *>(object);
+    size_t size = array->size();
     
     char str[32];
-    for (int i = 0; i < array->link_view->size(); i++) {
-        sprintf(str, "%i", i);
+    for (size_t i = 0; i < size; i++) {
+        sprintf(str, "%zu", i);
         JSStringRef name = JSStringCreateWithUTF8CString(str);
         JSPropertyNameAccumulatorAddName(propertyNames, name);
         JSStringRelease(name);
