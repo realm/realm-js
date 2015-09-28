@@ -106,11 +106,13 @@ JSValueRef ArrayPop(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObje
     try {
         ObjectArray *array = RJSVerifiedArray(thisObject);
         RJSValidateArgumentCount(argumentCount, 0);
-        if (array->link_view->size() == 0) {
+
+        size_t size = array->size();
+        if (size == 0) {
             return JSValueMakeUndefined(ctx);
         }
-        size_t index = array->link_view->size()-1;
-        JSValueRef obj = RJSObjectCreate(ctx, Object(array->realm, array->object_schema, array->get(array->link_view->size()-1)));
+        size_t index = size - 1;
+        JSValueRef obj = RJSObjectCreate(ctx, Object(array->realm, array->object_schema, array->get(index)));
         array->link_view->remove(index);
         return obj;
     }
