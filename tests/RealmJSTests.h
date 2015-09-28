@@ -26,10 +26,6 @@ extern NSString *TestRealmPath();
 
 + (NSString *)jsSuiteName;
 
-@property JSGlobalContextRef ctx;
-@property (readonly) JSContext *context;
-
-- (JSValueRef)performScript:(NSString *)script exception:(JSValueRef *)exception;
-- (void)performTestScript:(NSString *)script;
+@property (nonatomic, readonly) JSContext *context;
 
 @end

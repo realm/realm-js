@@ -26,33 +26,33 @@ var TestUtil = {
 };
 
 var TestCase = {
-    assertEqual: function() {
-        if (arguments[0] !== arguments[1]) {
-            var message = "'" + arguments[0] + "' does not equal expected value '" + arguments[1] + "'";
-            if (arguments.length == 3) {
-                message = arguments[2] + "\n" + message;
+    assertEqual: function(val1, val2, errorMessage) {
+        if (val1 !== val2) {
+            var message = "'" + val1 + "' does not equal expected value '" + val2 + "'";
+            if (errorMessage) {
+                message = errorMessage + "\n" + message;
             }
-            throw new Error(message);
+            throw new TestFailureError(message);
         }
     },
 
-    assertNotEqual: function() {
-        if (arguments[0] === arguments[1]) {
-            var message = "'" + arguments[0] + "' equals '" + arguments[1] + "'";
-            if (arguments.length == 3) {
-                message = arguments[2] + "\n" + message;
+    assertNotEqual: function(val1, val2, errorMessage) {
+        if (val1 === val2) {
+            var message = "'" + val1 + "' equals '" + val2 + "'";
+            if (errorMessage) {
+                message = errorMessage + "\n" + message;
             }
-            throw new Error(message);
+            throw new TestFailureError(message);
         }
     },
 
     assertEqualWithTolerance: function(val1, val2, tolerance, errorMessage) {
         if (val1 < val2 - tolerance || val1 > val2 + tolerance) {
             var message = "'" + val1 + "' does not equal '" + val2 + "' with tolerance '" + tolerance + "'";
-            if (errorMessage !== undefined) {
+            if (errorMessage) {
                 message = errorMessage + "\n" + message;
             }
-            throw new Error(message);
+            throw new TestFailureError(message);
         }
     },
 
@@ -61,25 +61,39 @@ var TestCase = {
         try {
             func();
         }
-        catch(exception) {
+        catch (e) {
             caught = true;
         }
 
         if (!caught) {
-            if (errorMessage == undefined) {
-                errorMessage = 'Expected exception not thrown: ';
-            }
-            throw errorMessage;
+            throw new TestFailureError(errorMessage || 'Expected exception not thrown');
         };
     },
 
     assertTrue: function(condition, errorMessage) {
         if (!condition) {
-
-            if (errorMessage == undefined) {
-                errorMessage = 'Condition expected to be true';
-            }
-            throw errorMessage;
+            throw new TestFailureError(errorMessage || 'Condition expected to be true');
         };
     },
+}
+
+function TestFailureError(message) {
+    var error;
+    try {
+        throw new Error(message);
+    } catch (e) {
+        error = e;
+    }
+
+    // Remove the top two stack frames if possible.
+    var stack = error.stack && error.stack.split('\n');
+    var match = stack[2] && stack[2].match(/^(?:.*?@)?([^\[\(].+?):(\d+)(?::(\d+))?/);
+    if (match) {
+        this.sourceURL = match[1];
+        this.line = +match[2];
+        this.column = +match[3];
+        this.stack = stack.slice(2).join('\n');
+    }
+
+    this.__proto__ = error;
 }
