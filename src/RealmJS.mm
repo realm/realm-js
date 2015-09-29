@@ -49,9 +49,13 @@ JSClassRef RJSRealmTypeClass() {
     JSValueRef exception = NULL;
     JSObjectRef globalObject = JSContextGetGlobalObject(ctx);
 
-    RJSRegisterGlobalClass(ctx, globalObject, RJSRealmConstructorClass(), "Realm", &exception);
+    JSObjectRef globalRealmObject = RJSRegisterGlobalClass(ctx, globalObject, RJSRealmConstructorClass(), "Realm", &exception);
+    JSObjectRef typesObject = JSObjectMake(ctx, RJSRealmTypeClass(), NULL);
+    JSStringRef typeString = JSStringCreateWithUTF8CString("Type");
+    JSObjectSetProperty(ctx, globalRealmObject, typeString, typesObject, kJSPropertyAttributeNone, &exception);
+    JSStringRelease(typeString);
+
     RJSRegisterGlobalClass(ctx, globalObject, RJSObjectClass(), "RealmObject", &exception);
-    RJSRegisterGlobalClass(ctx, globalObject, RJSRealmTypeClass(), "RealmType", &exception);
 
     assert(!exception);
 }

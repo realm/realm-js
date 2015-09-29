@@ -797,6 +797,7 @@
 				0277984E1BBB2F1000C96559 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "ReactExample" */ = {
 			isa = XCConfigurationList;

@@ -18,11 +18,12 @@
 
 #import "RJSUtil.hpp"
 
-void RJSRegisterGlobalClass(JSContextRef ctx, JSObjectRef globalObject, JSClassRef classRef, const char * name, JSValueRef *exception) {
+JSObjectRef RJSRegisterGlobalClass(JSContextRef ctx, JSObjectRef globalObject, JSClassRef classRef, const char * name, JSValueRef *exception) {
     JSObjectRef classObject = JSObjectMake(ctx, classRef, NULL);
     JSStringRef nameString = JSStringCreateWithUTF8CString(name);
     JSObjectSetProperty(ctx, globalObject, nameString, classObject, kJSPropertyAttributeNone, exception);
     JSStringRelease(nameString);
+    return classObject;
 }
 
 JSValueRef RJSMakeError(JSContextRef ctx, RJSException &exp) {
