@@ -14,6 +14,7 @@
 		00C302E91ABCBA2D00DB3ED1 /* libRCTNetwork.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 00C302DC1ABCB9D200DB3ED1 /* libRCTNetwork.a */; };
 		00C302EA1ABCBA2D00DB3ED1 /* libRCTVibration.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 00C302E41ABCB9EE00DB3ED1 /* libRCTVibration.a */; };
 		0270BCD21B7D095C00010E03 /* libRealmReact.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0270BCB31B7D04D700010E03 /* libRealmReact.a */; };
+		027798491BBB2F1000C96559 /* ReactExampleTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 027798481BBB2F1000C96559 /* ReactExampleTests.m */; };
 		02BB0BE51B9A06DC004D6DD2 /* RealmJS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0270BCAF1B7D04D700010E03 /* RealmJS.framework */; };
 		02BB0BE61B9A06DC004D6DD2 /* RealmJS.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 0270BCAF1B7D04D700010E03 /* RealmJS.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		133E29F31AD74F7200F7D852 /* libRCTLinking.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 78C398B91ACF4ADC00677621 /* libRCTLinking.a */; };
@@ -84,6 +85,13 @@
 			remoteGlobalIDString = 02B29A161B7CF7C9008A7E6B;
 			remoteInfo = RealmReact;
 		};
+		0277984B1BBB2F1000C96559 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 83CBB9F71A601CBA00E9B192 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 13B07F861A680F5B00A75B9A;
+			remoteInfo = ReactExample;
+		};
 		02BB0BE71B9A06DC004D6DD2 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 0270BC9E1B7D04D700010E03 /* RealmJS.xcodeproj */;
@@ -149,9 +157,10 @@
 		00C302BB1ABCB91800DB3ED1 /* RCTImage.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RCTImage.xcodeproj; path = "node_modules/react-native/Libraries/Image/RCTImage.xcodeproj"; sourceTree = "<group>"; };
 		00C302D31ABCB9D200DB3ED1 /* RCTNetwork.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RCTNetwork.xcodeproj; path = "node_modules/react-native/Libraries/Network/RCTNetwork.xcodeproj"; sourceTree = "<group>"; };
 		00C302DF1ABCB9EE00DB3ED1 /* RCTVibration.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RCTVibration.xcodeproj; path = "node_modules/react-native/Libraries/Vibration/RCTVibration.xcodeproj"; sourceTree = "<group>"; };
-		00E356F11AD99517003FC87E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		00E356F21AD99517003FC87E /* ReactExampleTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ReactExampleTests.m; sourceTree = "<group>"; };
 		0270BC9E1B7D04D700010E03 /* RealmJS.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RealmJS.xcodeproj; path = ../../RealmJS.xcodeproj; sourceTree = "<group>"; };
+		027798461BBB2F1000C96559 /* ReactExampleTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ReactExampleTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		027798481BBB2F1000C96559 /* ReactExampleTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ReactExampleTests.m; sourceTree = "<group>"; };
+		0277984A1BBB2F1000C96559 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		139105B61AF99BAD00B5F7CC /* RCTSettings.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RCTSettings.xcodeproj; path = "node_modules/react-native/Libraries/Settings/RCTSettings.xcodeproj"; sourceTree = "<group>"; };
 		139FDEE61B06529A00C62182 /* RCTWebSocket.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RCTWebSocket.xcodeproj; path = "node_modules/react-native/Libraries/WebSocket/RCTWebSocket.xcodeproj"; sourceTree = "<group>"; };
 		13B07F961A680F5B00A75B9A /* ReactExample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ReactExample.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -167,6 +176,13 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		027798431BBB2F1000C96559 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		13B07F8C1A680F5B00A75B9A /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -229,23 +245,6 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		00E356EF1AD99517003FC87E /* ReactExampleTests */ = {
-			isa = PBXGroup;
-			children = (
-				00E356F21AD99517003FC87E /* ReactExampleTests.m */,
-				00E356F01AD99517003FC87E /* Supporting Files */,
-			);
-			path = ReactExampleTests;
-			sourceTree = "<group>";
-		};
-		00E356F01AD99517003FC87E /* Supporting Files */ = {
-			isa = PBXGroup;
-			children = (
-				00E356F11AD99517003FC87E /* Info.plist */,
-			);
-			name = "Supporting Files";
-			sourceTree = "<group>";
-		};
 		0270BC9F1B7D04D700010E03 /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -254,6 +253,15 @@
 				0270BCB31B7D04D700010E03 /* libRealmReact.a */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		027798471BBB2F1000C96559 /* ReactExampleTests */ = {
+			isa = PBXGroup;
+			children = (
+				027798481BBB2F1000C96559 /* ReactExampleTests.m */,
+				0277984A1BBB2F1000C96559 /* Info.plist */,
+			);
+			path = ReactExampleTests;
 			sourceTree = "<group>";
 		};
 		139105B71AF99BAD00B5F7CC /* Products */ = {
@@ -333,7 +341,7 @@
 			children = (
 				13B07FAE1A68108700A75B9A /* ReactExample */,
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
-				00E356EF1AD99517003FC87E /* ReactExampleTests */,
+				027798471BBB2F1000C96559 /* ReactExampleTests */,
 				83CBBA001A601CBA00E9B192 /* Products */,
 			);
 			indentWidth = 2;
@@ -344,6 +352,7 @@
 			isa = PBXGroup;
 			children = (
 				13B07F961A680F5B00A75B9A /* ReactExample.app */,
+				027798461BBB2F1000C96559 /* ReactExampleTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -351,6 +360,24 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		027798451BBB2F1000C96559 /* ReactExampleTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 0277985B1BBB2F1000C96559 /* Build configuration list for PBXNativeTarget "ReactExampleTests" */;
+			buildPhases = (
+				027798421BBB2F1000C96559 /* Sources */,
+				027798431BBB2F1000C96559 /* Frameworks */,
+				027798441BBB2F1000C96559 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				0277984C1BBB2F1000C96559 /* PBXTargetDependency */,
+			);
+			name = ReactExampleTests;
+			productName = ReactExampleTests;
+			productReference = 027798461BBB2F1000C96559 /* ReactExampleTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		13B07F861A680F5B00A75B9A /* ReactExample */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "ReactExample" */;
@@ -378,6 +405,12 @@
 			attributes = {
 				LastUpgradeCheck = 0610;
 				ORGANIZATIONNAME = Facebook;
+				TargetAttributes = {
+					027798451BBB2F1000C96559 = {
+						CreatedOnToolsVersion = 7.0.1;
+						TestTargetID = 13B07F861A680F5B00A75B9A;
+					};
+				};
 			};
 			buildConfigurationList = 83CBB9FA1A601CBA00E9B192 /* Build configuration list for PBXProject "ReactExample" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -439,6 +472,7 @@
 			projectRoot = "";
 			targets = (
 				13B07F861A680F5B00A75B9A /* ReactExample */,
+				027798451BBB2F1000C96559 /* ReactExampleTests */,
 			);
 		};
 /* End PBXProject section */
@@ -538,6 +572,13 @@
 /* End PBXReferenceProxy section */
 
 /* Begin PBXResourcesBuildPhase section */
+		027798441BBB2F1000C96559 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		13B07F8E1A680F5B00A75B9A /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -551,6 +592,14 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		027798421BBB2F1000C96559 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				027798491BBB2F1000C96559 /* ReactExampleTests.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		13B07F871A680F5B00A75B9A /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -563,6 +612,11 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		0277984C1BBB2F1000C96559 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 13B07F861A680F5B00A75B9A /* ReactExample */;
+			targetProxy = 0277984B1BBB2F1000C96559 /* PBXContainerItemProxy */;
+		};
 		02BB0BE81B9A06DC004D6DD2 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			name = RealmJS;
@@ -583,6 +637,38 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
+		0277984D1BBB2F1000C96559 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_TESTABILITY = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
+				INFOPLIST_FILE = ReactExampleTests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = io.realm.ReactExampleTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/ReactExample.app/ReactExample";
+			};
+			name = Debug;
+		};
+		0277984E1BBB2F1000C96559 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_NO_COMMON_BLOCKS = YES;
+				INFOPLIST_FILE = ReactExampleTests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = io.realm.ReactExampleTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/ReactExample.app/ReactExample";
+			};
+			name = Release;
+		};
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -704,6 +790,14 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		0277985B1BBB2F1000C96559 /* Build configuration list for PBXNativeTarget "ReactExampleTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0277984D1BBB2F1000C96559 /* Debug */,
+				0277984E1BBB2F1000C96559 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
 		13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "ReactExample" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
