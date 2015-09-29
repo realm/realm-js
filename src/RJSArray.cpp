@@ -173,9 +173,7 @@ JSValueRef ArraySplice(JSContextRef ctx, JSObjectRef function, JSObjectRef thisO
         }
 
         long remove = std::max<long>(RJSValidatedValueToNumber(ctx, arguments[1]), 0);
-        if (index + remove > size) {
-            remove = size - index;
-        }
+        remove = std::min<long>(remove, size - index);
 
         std::vector<JSObjectRef> removedObjects(remove);
         for (size_t i = 0; i < remove; i++) {
