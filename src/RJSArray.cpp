@@ -74,7 +74,7 @@ JSValueRef ArrayGetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef pr
 }
 
 void ArrayPropertyNames(JSContextRef ctx, JSObjectRef object, JSPropertyNameAccumulatorRef propertyNames) {
-    ObjectArray *array = RJSGetInternal<ObjectArray *>(object);
+    ObjectArray *array = RJSVerifiedArray(object);
     size_t size = array->size();
     
     char str[32];
