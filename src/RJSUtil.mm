@@ -467,7 +467,7 @@ realm::Property *get_property_from_key_path(realm::Schema &schema, realm::Object
         }
 
         if (prop->object_type.length()) {
-            desc = schema.at(prop->object_type);
+            desc = *schema.find(prop->object_type);
         }
         prevPath = path;
         start = end + 1;

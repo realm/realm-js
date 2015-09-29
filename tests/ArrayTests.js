@@ -205,40 +205,48 @@ var ArrayTests = {
 
     testSplice: function() {
         var realm = new Realm({schema: [LinkTypesObjectSchema, TestObjectSchema]});
-        var array;
+
         realm.write(function() {
             var obj = realm.create('LinkTypesObject', [[1], [2], [[3], [4]]]);
-            array = obj.arrayCol;
+            var array = obj.arrayCol;
+            var removed;
 
-            TestCase.assertEqual(array.splice(0, 0, obj.objectCol, obj.objectCol1), 4);
+            removed = array.splice(0, 0, obj.objectCol, obj.objectCol1);
+            TestCase.assertEqual(removed.length, 0);
             TestCase.assertEqual(array.length, 4);
             TestCase.assertEqual(array[0].doubleCol, 1);
             TestCase.assertEqual(array[1].doubleCol, 2);
 
-            TestCase.assertEqual(array.splice(2, 2, [5], [6]), 4);
+            removed = array.splice(2, 2, [5], [6]);
+            TestCase.assertEqual(removed.length, 2);
+            TestCase.assertEqual(removed[0].doubleCol, 3);
+            TestCase.assertEqual(removed[1].doubleCol, 4);
             TestCase.assertEqual(array.length, 4);
             TestCase.assertEqual(array[2].doubleCol, 5);
             TestCase.assertEqual(array[3].doubleCol, 6);
 
-            TestCase.assertEqual(array.splice(2, 2), 2);
+            removed = array.splice(2, 2);
+            TestCase.assertEqual(removed.length, 2);
+            TestCase.assertEqual(removed[0].doubleCol, 5);
+            TestCase.assertEqual(removed[1].doubleCol, 6);
+            TestCase.assertEqual(array.length, 2);
             TestCase.assertEqual(array[0].doubleCol, 1);
             TestCase.assertEqual(array[1].doubleCol, 2);
-            TestCase.assertEqual(array.length, 2);
 
-            TestCase.assertEqual(array.splice(-1, 1), 1);
+            removed = array.splice(-1, 1);
+            TestCase.assertEqual(removed.length, 1);
+            TestCase.assertEqual(removed[0].doubleCol, 2);
             TestCase.assertEqual(array.length, 1);
             TestCase.assertEqual(array[0].doubleCol, 1);
 
-            TestCase.assertThrows(function() {
-                array.splice(0, 2);
-            });
+            removed = array.splice(0, 2);
+            TestCase.assertEqual(removed.length, 1);
+            TestCase.assertEqual(removed[0].doubleCol, 1);
+            TestCase.assertEqual(array.length, 0);
+            
             TestCase.assertThrows(function() {
                 array.splice(0, 0, 0);
             });
         });
-
-       // TestCase.assertThrows(function() {
-       //      array.shift();
-       //  });
     },
 };

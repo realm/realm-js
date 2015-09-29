@@ -52,7 +52,6 @@ JSValueRef ArrayGetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef pr
     try {
         // index subscripting
         ObjectArray *array = RJSVerifiedArray(object);
-        array->verify_attached();
         size_t size = array->size();
 
         std::string indexStr = RJSStringForJSString(propertyName);
@@ -75,11 +74,12 @@ JSValueRef ArrayGetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef pr
 }
 
 void ArrayPropertyNames(JSContextRef ctx, JSObjectRef object, JSPropertyNameAccumulatorRef propertyNames) {
-    ObjectArray *array = RJSGetInternal<ObjectArray *>(object);
+    ObjectArray *array = RJSVerifiedArray(object);
+    size_t size = array->size();
     
     char str[32];
-    for (int i = 0; i < array->link_view->size(); i++) {
-        sprintf(str, "%i", i);
+    for (size_t i = 0; i < size; i++) {
+        sprintf(str, "%zu", i);
         JSStringRef name = JSStringCreateWithUTF8CString(str);
         JSPropertyNameAccumulatorAddName(propertyNames, name);
         JSStringRelease(name);
@@ -107,11 +107,13 @@ JSValueRef ArrayPop(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObje
     try {
         ObjectArray *array = RJSVerifiedArray(thisObject);
         RJSValidateArgumentCount(argumentCount, 0);
-        if (array->link_view->size() == 0) {
+
+        size_t size = array->size();
+        if (size == 0) {
             return JSValueMakeUndefined(ctx);
         }
-        size_t index = array->link_view->size()-1;
-        JSValueRef obj = RJSObjectCreate(ctx, Object(array->realm, array->object_schema, array->get(array->link_view->size()-1)));
+        size_t index = size - 1;
+        JSValueRef obj = RJSObjectCreate(ctx, Object(array->realm, array->object_schema, array->get(index)));
         array->link_view->remove(index);
         return obj;
     }
@@ -162,24 +164,26 @@ JSValueRef ArrayShift(JSContextRef ctx, JSObjectRef function, JSObjectRef thisOb
 JSValueRef ArraySplice(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) {
     try {
         ObjectArray *array = RJSVerifiedArray(thisObject);
+        size_t size = array->size();
+
         RJSValidateArgumentCountIsAtLeast(argumentCount, 2);
-        long index = RJSValidatedValueToNumber(ctx, arguments[0]);
+        long index = std::min<long>(RJSValidatedValueToNumber(ctx, arguments[0]), size);
         if (index < 0) {
-            index = array->size() + index;
+            index = std::max<long>(size + index, 0);
         }
 
-        long remove = RJSValidatedValueToNumber(ctx, arguments[1]);
-        if (index + remove > array->size()) {
-            throw std::runtime_error("Attempting to slice elements beyond Array bounds.");
-        }
+        long remove = std::max<long>(RJSValidatedValueToNumber(ctx, arguments[1]), 0);
+        remove = std::min<long>(remove, size - index);
 
-        while (remove-- > 0) {
+        std::vector<JSObjectRef> removedObjects(remove);
+        for (size_t i = 0; i < remove; i++) {
+            removedObjects[i] = RJSObjectCreate(ctx, Object(array->realm, array->object_schema, array->get(index)));
             array->link_view->remove(index);
         }
         for (size_t i = 2; i < argumentCount; i++) {
             array->link_view->insert(index + i - 2, RJSAccessor::to_object_index(ctx, array->realm, const_cast<JSValueRef &>(arguments[i]), array->object_schema.name, false));
         }
-        return JSValueMakeNumber(ctx, array->link_view->size());
+        return JSObjectMakeArray(ctx, remove, removedObjects.data(), jsException);
     }
     catch (std::exception &exp) {
         if (jsException) {

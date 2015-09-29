@@ -19,6 +19,7 @@
 #include <JavaScriptCore/JavaScriptCore.h>
 #include <string>
 #include <stdexcept>
+#include "schema.hpp"
 
 template<typename T>
 inline void RJSFinalize(JSObjectRef object) {
