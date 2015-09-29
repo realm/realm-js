@@ -21,14 +21,14 @@ var {
 var TodoItemSchema = {
   name: 'Todo',
   properties: [
-    {name: 'text', type: Realm.Type.String},
+    {name: 'text', type: Realm.Types.String},
   ]
 };
 var TodoListSchmea = {
     name: 'TodoList',
     properties: [
-      {name: 'name', type: Realm.Type.String},
-      {name: 'items', type: Realm.Type.Array, objectType: 'Todo'}
+      {name: 'name', type: Realm.Types.String},
+      {name: 'items', type: Realm.Types.Array, objectType: 'Todo'}
     ]
 };
 

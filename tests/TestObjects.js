@@ -21,7 +21,7 @@
 var TestObjectSchema = {
   name: 'TestObject',
   properties: [
-    {name: 'doubleCol', type: Realm.Type.Double},
+    {name: 'doubleCol', type: Realm.Types.Double},
   ]
 };
 
@@ -29,8 +29,8 @@ function PersonObject() {}
 PersonObject.prototype.schema = {
   name: 'PersonObject',
   properties: [
-    {name: 'name', type: Realm.Type.String},
-    {name: 'age',  type: Realm.Type.Double},
+    {name: 'name', type: Realm.Types.String},
+    {name: 'age',  type: Realm.Types.Double},
   ]
 };
 PersonObject.prototype.description = function() {
@@ -40,13 +40,13 @@ PersonObject.prototype.description = function() {
 var BasicTypesObjectSchema = {
     name: 'BasicTypesObject',
     properties: [
-        {name: 'boolCol',   type: Realm.Type.Bool},
-        {name: 'intCol',    type: Realm.Type.Int},
-        {name: 'floatCol',  type: Realm.Type.Float},
-        {name: 'doubleCol', type: Realm.Type.Double},
-        {name: 'stringCol', type: Realm.Type.String},
-        {name: 'dateCol',   type: Realm.Type.Date},
-        {name: 'dataCol',   type: Realm.Type.Data},
+        {name: 'boolCol',   type: Realm.Types.Bool},
+        {name: 'intCol',    type: Realm.Types.Int},
+        {name: 'floatCol',  type: Realm.Types.Float},
+        {name: 'doubleCol', type: Realm.Types.Double},
+        {name: 'stringCol', type: Realm.Types.String},
+        {name: 'dateCol',   type: Realm.Types.Date},
+        {name: 'dataCol',   type: Realm.Types.Data},
     ]
 };
 
@@ -54,8 +54,8 @@ var LinkTypesObjectSchema = {
     name: 'LinkTypesObject',
     properties: [
         {name: 'objectCol',  type: 'TestObject'},
-        {name: 'objectCol1', type: Realm.Type.Object, objectType: 'TestObject'},
-        {name: 'arrayCol',   type: Realm.Type.Array, objectType: 'TestObject'},
+        {name: 'objectCol1', type: Realm.Types.Object, objectType: 'TestObject'},
+        {name: 'arrayCol',   type: Realm.Types.Array, objectType: 'TestObject'},
     ]
 };
 
@@ -63,8 +63,8 @@ var IntPrimaryObjectSchema = {
   name: 'IntPrimaryObject',
   primaryKey: 'primaryCol',
   properties: [
-    {name: 'primaryCol', type: Realm.Type.Int},
-    {name: 'valueCol',   type: Realm.Type.String},
+    {name: 'primaryCol', type: Realm.Types.Int},
+    {name: 'valueCol',   type: Realm.Types.String},
   ]
 };
 
@@ -72,32 +72,32 @@ var AllTypesObjectSchema = {
   name: 'AllTypesObject',
   primaryKey: 'primaryCol',
   properties: [
-    {name: 'primaryCol',type: Realm.Type.String},
-    {name: 'boolCol',   type: Realm.Type.Bool},
-    {name: 'intCol',    type: Realm.Type.Int},
-    {name: 'floatCol',  type: Realm.Type.Float},
-    {name: 'doubleCol', type: Realm.Type.Double},
-    {name: 'stringCol', type: Realm.Type.String},
-    {name: 'dateCol',   type: Realm.Type.Date},
-    {name: 'dataCol',   type: Realm.Type.Data}, 
+    {name: 'primaryCol',type: Realm.Types.String},
+    {name: 'boolCol',   type: Realm.Types.Bool},
+    {name: 'intCol',    type: Realm.Types.Int},
+    {name: 'floatCol',  type: Realm.Types.Float},
+    {name: 'doubleCol', type: Realm.Types.Double},
+    {name: 'stringCol', type: Realm.Types.String},
+    {name: 'dateCol',   type: Realm.Types.Date},
+    {name: 'dataCol',   type: Realm.Types.Data}, 
     {name: 'objectCol', type: 'TestObject'},
-    {name: 'arrayCol',  type: Realm.Type.Array, objectType: 'TestObject'}, 
+    {name: 'arrayCol',  type: Realm.Types.Array, objectType: 'TestObject'}, 
   ]
 };
 
 var DefaultValuesObjectSchema = {
   name: 'DefaultValuesObject',
   properties: [
-    {name: 'boolCol',   type: Realm.Type.Bool,   default: true},
-    {name: 'intCol',    type: Realm.Type.Int,    default: -1},
-    {name: 'floatCol',  type: Realm.Type.Float,  default: -1.1},
-    {name: 'doubleCol', type: Realm.Type.Double, default: -1.11},
-    {name: 'stringCol', type: Realm.Type.String, default: 'defaultString'},
-    {name: 'dateCol',   type: Realm.Type.Date,   default: new Date(1.111)},
-    {name: 'dataCol',   type: Realm.Type.Data,   default: 'defaultData'}, 
+    {name: 'boolCol',   type: Realm.Types.Bool,   default: true},
+    {name: 'intCol',    type: Realm.Types.Int,    default: -1},
+    {name: 'floatCol',  type: Realm.Types.Float,  default: -1.1},
+    {name: 'doubleCol', type: Realm.Types.Double, default: -1.11},
+    {name: 'stringCol', type: Realm.Types.String, default: 'defaultString'},
+    {name: 'dateCol',   type: Realm.Types.Date,   default: new Date(1.111)},
+    {name: 'dataCol',   type: Realm.Types.Data,   default: 'defaultData'}, 
     {name: 'objectCol', type: 'TestObject',     default: [1]},
     {name: 'nullObjectCol', type: 'TestObject', default: null},
-    {name: 'arrayCol',  type: Realm.Type.Array, objectType: 'TestObject', default: [[2]]}, 
+    {name: 'arrayCol',  type: Realm.Types.Array, objectType: 'TestObject', default: [[2]]}, 
   ]
 };
 

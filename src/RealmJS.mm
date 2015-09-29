@@ -26,7 +26,7 @@ JSValueRef RJSTypeGet(JSContextRef ctx, JSObjectRef object, JSStringRef property
 
 JSClassRef RJSRealmTypeClass() {
     JSClassDefinition realmTypesDefinition = kJSClassDefinitionEmpty;
-    realmTypesDefinition.className = "RealmType";
+    realmTypesDefinition.className = "RealmTypes";
     JSStaticValue types[] = {
         { "Bool",   RJSTypeGet, NULL, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontDelete },
         { "Int",    RJSTypeGet, NULL, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontDelete },
@@ -51,7 +51,7 @@ JSClassRef RJSRealmTypeClass() {
 
     JSObjectRef globalRealmObject = RJSRegisterGlobalClass(ctx, globalObject, RJSRealmConstructorClass(), "Realm", &exception);
     JSObjectRef typesObject = JSObjectMake(ctx, RJSRealmTypeClass(), NULL);
-    JSStringRef typeString = JSStringCreateWithUTF8CString("Type");
+    JSStringRef typeString = JSStringCreateWithUTF8CString("Types");
     JSObjectSetProperty(ctx, globalRealmObject, typeString, typesObject, kJSPropertyAttributeNone, &exception);
     JSStringRelease(typeString);
 
