@@ -85,9 +85,13 @@ function TestFailureError(message) {
         error = e;
     }
 
-    // Remove the top two stack frames if possible.
+    // This regular expression will match stack trace lines provided by JavaScriptCore.
+    // Example: someMethod@file:///path/to/file.js:10:24
+    var regex = /^(?:.*?@)?([^\[\(].+?):(\d+)(?::(\d+))?/;
+
+    // Remove the top two stack frames and use information from the third, if possible.
     var stack = error.stack && error.stack.split('\n');
-    var match = stack[2] && stack[2].match(/^(?:.*?@)?([^\[\(].+?):(\d+)(?::(\d+))?/);
+    var match = stack[2] && stack[2].match(regex);
     if (match) {
         this.sourceURL = match[1];
         this.line = +match[2];
