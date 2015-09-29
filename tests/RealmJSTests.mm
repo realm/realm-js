@@ -55,9 +55,13 @@ static void DeleteRealmFilesAtPath(NSString *path) {
 
 static JSClassRef s_globalClass;
 
-@implementation RealmJSTests {
-    NSString *_jsTestSuite;
-}
+@interface RealmJSTests ()
+
+@property (nonatomic, strong) JSContext *context;
+
+@end
+
+@implementation RealmJSTests
 
 + (void)initialize {
     JSClassDefinition globalDefinition = kJSClassDefinitionEmpty;
@@ -73,12 +77,18 @@ static JSClassRef s_globalClass;
     [[NSFileManager defaultManager] createDirectoryAtPath:defaultDir withIntermediateDirectories:YES attributes:nil error:nil];
     RJSSetDefaultPath([defaultDir stringByAppendingPathComponent:@"default.realm"].UTF8String);
 
-    _ctx = JSGlobalContextCreateInGroup(NULL, s_globalClass);
-    [RealmJS initializeContext:_ctx];
+    JSGlobalContextRef ctx = JSGlobalContextCreateInGroup(NULL, s_globalClass);
+    self.context = [JSContext contextWithJSGlobalContextRef:ctx];
+
+    [RealmJS initializeContext:ctx];
+
+    [self evaluateScriptWithName:@"TestCase"];
+    [self evaluateScriptWithName:@"TestObjects"];
+    [self evaluateScriptWithName:self.class.jsSuiteName];
 }
 
 - (void)tearDown {
-    JSGlobalContextRelease(_ctx);
+    self.context = nil;
 
     DeleteRealmFilesAtPath(TestRealmPath());
     DeleteRealmFilesAtPath(@(RJSDefaultPath().c_str()));
@@ -92,25 +102,64 @@ static JSClassRef s_globalClass;
     }
 }
 
-- (JSContext *)context {
-    return [JSContext contextWithJSGlobalContextRef:_ctx];
+- (void)evaluateScriptWithName:(NSString *)name {
+    NSURL *url = [self.class scriptURLWithName:name];
+    NSString *script = [self.class loadScriptWithURL:url];
+
+    [self evaluateScript:script fromURL:url];
 }
 
-- (JSValueRef)performScript:(NSString *)script exception:(JSValueRef *)exception {
-    *exception = NULL;
-    JSStringRef jsScript = JSStringCreateWithUTF8CString(script.UTF8String);
-    JSValueRef result = JSEvaluateScript(_ctx, jsScript, NULL, NULL, 0, exception);
-    JSStringRelease(jsScript);
-    return result;
+- (void)evaluateScript:(NSString *)script fromURL:(NSURL *)url {
+    JSValue *exception;
+    [self.class evaluateScript:script fromURL:url inContext:self.context exception:&exception];
+
+    if (exception) {
+        JSValue *message = [exception hasProperty:@"message"] ? exception[@"message"] : exception;
+        NSString *source = [exception hasProperty:@"sourceURL"] ? [exception[@"sourceURL"] toString] : nil;
+        NSUInteger line = [exception hasProperty:@"line"] ? [exception[@"line"] toUInt32] : 0;
+        NSURL *sourceURL = source ? [NSURL URLWithString:source.lastPathComponent relativeToURL:[NSURL URLWithString:@(__FILE__)]] : nil;
+        const char *sourcePath = sourceURL.absoluteString.UTF8String;
+
+        _XCTFailureHandler(self, YES, sourcePath ?: __FILE__, sourcePath ? line : __LINE__, @"JS", @"%@", message);
+    }
 }
 
-- (void)performTestScript:(NSString *)script {
-    JSValueRef e = NULL;
++ (JSValue *)evaluateScript:(NSString *)script fromURL:(NSURL *)url inContext:(JSContext *)context exception:(JSValue **)exception {
     JSStringRef jsScript = JSStringCreateWithUTF8CString(script.UTF8String);
-    JSEvaluateScript(_ctx, jsScript, NULL, NULL, 0, &e);
-    JSStringRelease(jsScript);
+    JSStringRef jsURL = url ? JSStringCreateWithUTF8CString(url.absoluteString.UTF8String) : NULL;
+    JSValueRef jsException = NULL;
+    JSValueRef jsResult = JSEvaluateScript(context.JSGlobalContextRef, jsScript, NULL, jsURL, 1, &jsException);
 
-    XCTAssertFalse(e, @"%@", [JSValue valueWithJSValueRef:e inContext:self.context]);
+    JSStringRelease(jsScript);
+    if (jsURL) {
+        JSStringRelease(jsURL);
+    }
+
+    if (jsException) {
+        *exception = [JSValue valueWithJSValueRef:jsException inContext:context];
+        return NULL;
+    }
+
+    return [JSValue valueWithJSValueRef:jsResult inContext:context];
+}
+
++ (NSURL *)scriptURLWithName:(NSString *)name {
+    NSURL *url = [[NSBundle bundleForClass:self] URLForResource:name withExtension:@"js"];
+    if (!url) {
+        NSLog(@"JS file does not exist: %@", url);
+        exit(1);
+    }
+    return url;
+}
+
++ (NSString *)loadScriptWithURL:(NSURL *)url {
+    NSError *error;
+    NSString *script = [NSString stringWithContentsOfURL:url encoding:NSUTF8StringEncoding error:&error];
+    if (!script) {
+        NSLog(@"Error reading JS file (%@): %@", url, error);
+        exit(1);
+    }
+    return script;
 }
 
 + (NSString *)jsSuiteName {
@@ -118,76 +167,42 @@ static JSClassRef s_globalClass;
 }
 
 + (NSString *)jsSuiteScript {
-    NSString *testFile = [self jsSuiteName];
-    if (!testFile) {
-        return NULL;
-    }
-
-    testFile = [[NSBundle bundleForClass:self] pathForResource:testFile ofType:@"js"];
-    assert(testFile);
-
-    NSString *script = [NSString stringWithContentsOfFile:testFile encoding:NSUTF8StringEncoding error:nil];
-    if (!script) {
-        NSLog(@"Test file '%@' does not exist", testFile);
-        exit(1);
-    }
-    return script;
+    NSString *name = [self jsSuiteName];
+    return name ? [self loadScriptWithURL:[self scriptURLWithName:name]] : nil;
 }
 
-+ (NSString *)loadScript:(NSString *)name {
-    NSString *testFile = [[NSBundle bundleForClass:self] pathForResource:name ofType:@"js"];
-    NSString *script = [NSString stringWithContentsOfFile:testFile encoding:NSUTF8StringEncoding error:nil];
-    if (!script) {
-        NSLog(@"Test objects file '%@' does not exist", testFile);
-        exit(1);
-    }
-    return script;
-}
-
-+(XCTestSuite *)defaultTestSuite {
++ (XCTestSuite *)defaultTestSuite {
     XCTestSuite *suite = [super defaultTestSuite];
-
-    NSString *script = [self jsSuiteScript];
+    NSString *suiteName = [self jsSuiteName];
+    NSURL *scriptURL = suiteName ? [self scriptURLWithName:suiteName] : nil;
+    NSString *script = scriptURL ? [self loadScriptWithURL:scriptURL] : nil;
     if (!script) {
         return suite;
     }
 
-    JSGlobalContextRef context = JSGlobalContextCreate(NULL);
-    JSContext *jsContext = [JSContext contextWithJSGlobalContextRef:context];
-    JSValueRef e = NULL;
+    JSContext *context = [[JSContext alloc] init];
+    JSValue *exception;
 
-    JSStringRef jsScript = JSStringCreateWithUTF8CString(script.UTF8String);
-    JSEvaluateScript(context, jsScript, NULL, NULL, 0, &e);
-    JSStringRelease(jsScript);
-    if (e) {
-        NSLog(@"%@", [JSValue valueWithJSValueRef:e inContext:jsContext]);
+    [self evaluateScript:script fromURL:scriptURL inContext:context exception:&exception];
+    if (exception) {
+        NSLog(@"%@.js - %@", suiteName, exception);
         exit(1);
     }
 
-    script = [[self jsSuiteName] stringByAppendingString:@";"];
-    jsScript = JSStringCreateWithUTF8CString(script.UTF8String);
-    JSValueRef suiteObjectValue = JSEvaluateScript(context, jsScript, NULL, NULL, 0, &e);
-    JSStringRelease(jsScript);
-    if (e) {
-        NSLog(@"%@", [JSValue valueWithJSValueRef:e inContext:jsContext]);
+    JSValue *suiteObject = [self evaluateScript:suiteName fromURL:nil inContext:context exception:&exception];
+    if (exception) {
+        NSLog(@"%@.js - %@", suiteName, exception);
         exit(1);
     }
 
-    JSObjectRef suiteObject = JSValueToObject(context, suiteObjectValue, &e);
-    if (e) {
-        NSLog(@"%@", [JSValue valueWithJSValueRef:e inContext:jsContext]);
+    if (![suiteObject isObject]) {
+        NSLog(@"%@.js - JS test suite is not an object: %@", suiteName, suiteObject);
         exit(1);
     }
 
-    JSPropertyNameArrayRef testNames = JSObjectCopyPropertyNames(context, suiteObject);
-    size_t count = JSPropertyNameArrayGetCount(testNames);
-    for (size_t i = 0; i < count; i++) {
-        JSStringRef jsName = JSPropertyNameArrayGetNameAtIndex(testNames, i);
-        [suite addTest:[self testCaseWithSelector:NSSelectorFromString(@(RJSStringForJSString(jsName).c_str()))]];
+    for (NSString *testName in [suiteObject toDictionary]) {
+        [suite addTest:[self testCaseWithSelector:NSSelectorFromString(testName)]];
     }
-    JSPropertyNameArrayRelease(testNames);
-
-    JSGlobalContextRelease(context);
 
     return suite;
 }
@@ -201,12 +216,8 @@ static JSClassRef s_globalClass;
 }
 
 - (void)forwardInvocation:(NSInvocation *)anInvocation {
-    [self performTestScript:[NSString stringWithFormat:@"%@;%@;%@;\n%@.%@();",
-                             [self.class loadScript:@"TestCase"],
-                             [self.class loadScript:@"TestObjects"],
-                             self.class.jsSuiteScript,
-                             self.class.jsSuiteName,
-                             NSStringFromSelector(anInvocation.selector)]];
+    NSString *script = [NSString stringWithFormat:@"%@.%@();", [self.class jsSuiteName], NSStringFromSelector(anInvocation.selector)];
+    [self evaluateScript:script fromURL:nil];
 }
 
 @end
