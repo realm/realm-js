@@ -18,11 +18,12 @@
 
 #import "RJSUtil.hpp"
 
-void RJSRegisterGlobalClass(JSContextRef ctx, JSObjectRef globalObject, JSClassRef classRef, const char * name, JSValueRef *exception) {
+JSObjectRef RJSRegisterGlobalClass(JSContextRef ctx, JSObjectRef globalObject, JSClassRef classRef, const char * name, JSValueRef *exception) {
     JSObjectRef classObject = JSObjectMake(ctx, classRef, NULL);
     JSStringRef nameString = JSStringCreateWithUTF8CString(name);
     JSObjectSetProperty(ctx, globalObject, nameString, classObject, kJSPropertyAttributeNone, exception);
     JSStringRelease(nameString);
+    return classObject;
 }
 
 JSValueRef RJSMakeError(JSContextRef ctx, RJSException &exp) {
@@ -53,10 +54,10 @@ std::string RJSStringForJSString(JSStringRef jsString) {
 std::string RJSValidatedStringForValue(JSContextRef ctx, JSValueRef value, const char * name) {
     if (!JSValueIsString(ctx, value)) {
         if (name) {
-            throw std::invalid_argument((std::string)"'" + name + "' must be of type 'string'");
+            throw std::invalid_argument((std::string)"'" + name + "' must be of type 'STRING'");
         }
         else {
-            throw std::invalid_argument("JSValue must be of type 'string'");
+            throw std::invalid_argument("JSValue must be of type 'STRING'");
         }
     }
 

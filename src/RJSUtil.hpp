@@ -53,7 +53,7 @@ JSClassRef RJSCreateWrapperClass(const char * name, JSObjectGetPropertyCallback 
     return JSClassCreate(&classDefinition);
 }
 
-void RJSRegisterGlobalClass(JSContextRef ctx, JSObjectRef globalObject, JSClassRef classRef, const char * name, JSValueRef *exception);
+JSObjectRef RJSRegisterGlobalClass(JSContextRef ctx, JSObjectRef globalObject, JSClassRef classRef, const char * name, JSValueRef *exception);
 
 std::string RJSStringForJSString(JSStringRef jsString);
 std::string RJSValidatedStringForValue(JSContextRef ctx, JSValueRef value, const char * name = nullptr);

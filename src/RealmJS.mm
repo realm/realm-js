@@ -21,22 +21,22 @@
 #import "RJSObject.hpp"
 
 JSValueRef RJSTypeGet(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef* exception) {
-    return RJSValueForString(ctx, "RealmType" + RJSStringForJSString(propertyName));
+    return RJSValueForString(ctx, "PropTypes" + RJSStringForJSString(propertyName));
 }
 
 JSClassRef RJSRealmTypeClass() {
     JSClassDefinition realmTypesDefinition = kJSClassDefinitionEmpty;
-    realmTypesDefinition.className = "RealmType";
+    realmTypesDefinition.className = "PropTypes";
     JSStaticValue types[] = {
-        { "Bool",   RJSTypeGet, NULL, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontDelete },
-        { "Int",    RJSTypeGet, NULL, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontDelete },
-        { "Float",  RJSTypeGet, NULL, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontDelete },
-        { "Double", RJSTypeGet, NULL, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontDelete },
-        { "String", RJSTypeGet, NULL, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontDelete },
-        { "Date",   RJSTypeGet, NULL, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontDelete },
-        { "Data",   RJSTypeGet, NULL, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontDelete },
-        { "Object", RJSTypeGet, NULL, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontDelete },
-        { "Array",  RJSTypeGet, NULL, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontDelete },
+        { "BOOL",   RJSTypeGet, NULL, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontDelete },
+        { "INT",    RJSTypeGet, NULL, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontDelete },
+        { "FLOAT",  RJSTypeGet, NULL, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontDelete },
+        { "DOUBLE", RJSTypeGet, NULL, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontDelete },
+        { "STRING", RJSTypeGet, NULL, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontDelete },
+        { "DATE",   RJSTypeGet, NULL, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontDelete },
+        { "DATA",   RJSTypeGet, NULL, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontDelete },
+        { "OBJECT", RJSTypeGet, NULL, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontDelete },
+        { "ARRAY",  RJSTypeGet, NULL, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontDelete },
         { NULL, NULL, NULL, 0 }
     };
     realmTypesDefinition.staticValues = types;
@@ -49,9 +49,11 @@ JSClassRef RJSRealmTypeClass() {
     JSValueRef exception = NULL;
     JSObjectRef globalObject = JSContextGetGlobalObject(ctx);
 
-    RJSRegisterGlobalClass(ctx, globalObject, RJSRealmConstructorClass(), "Realm", &exception);
-    RJSRegisterGlobalClass(ctx, globalObject, RJSObjectClass(), "RealmObject", &exception);
-    RJSRegisterGlobalClass(ctx, globalObject, RJSRealmTypeClass(), "RealmType", &exception);
+    JSObjectRef globalRealmObject = RJSRegisterGlobalClass(ctx, globalObject, RJSRealmConstructorClass(), "Realm", &exception);
+    JSObjectRef typesObject = JSObjectMake(ctx, RJSRealmTypeClass(), NULL);
+    JSStringRef typeString = JSStringCreateWithUTF8CString("Types");
+    JSObjectSetProperty(ctx, globalRealmObject, typeString, typesObject, kJSPropertyAttributeNone, &exception);
+    JSStringRelease(typeString);
 
     assert(!exception);
 }
