@@ -29,10 +29,10 @@ var ObjectTests = {
 
     	for (var i = 0; i < BasicTypesObjectSchema.properties.length; i++) {
     		var prop = BasicTypesObjectSchema.properties[i];
-    		if (prop.type == Realm.Types.Float) {
+    		if (prop.type == Realm.Types.FLOAT) {
     			TestCase.assertEqualWithTolerance(object[prop.name], basicTypesValues[i], 0.000001);
     		}
-    		else if (prop.type == Realm.Types.Date) {
+    		else if (prop.type == Realm.Types.DATE) {
     			TestCase.assertEqual(object[prop.name].getTime(), basicTypesValues[i].getTime());
     		}
     		else {
