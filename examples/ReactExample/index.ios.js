@@ -28,7 +28,7 @@ var TodoListSchmea = {
     name: 'TodoList',
     properties: [
       {name: 'name', type: Realm.Types.STRING},
-      {name: 'items', type: Realm.Types.ARRAY, objectType: 'Todo'}
+      {name: 'items', type: Realm.Types.LIST, objectType: 'Todo'}
     ]
 };
 

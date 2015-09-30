@@ -55,7 +55,7 @@ var LinkTypesObjectSchema = {
     properties: [
         {name: 'objectCol',  type: 'TestObject'},
         {name: 'objectCol1', type: Realm.Types.OBJECT, objectType: 'TestObject'},
-        {name: 'arrayCol',   type: Realm.Types.ARRAY, objectType: 'TestObject'},
+        {name: 'arrayCol',   type: Realm.Types.LIST, objectType: 'TestObject'},
     ]
 };
 
@@ -81,7 +81,7 @@ var AllTypesObjectSchema = {
     {name: 'dateCol',   type: Realm.Types.DATE},
     {name: 'dataCol',   type: Realm.Types.DATA}, 
     {name: 'objectCol', type: 'TestObject'},
-    {name: 'arrayCol',  type: Realm.Types.ARRAY, objectType: 'TestObject'}, 
+    {name: 'arrayCol',  type: Realm.Types.LIST, objectType: 'TestObject'}, 
   ]
 };
 
@@ -97,7 +97,7 @@ var DefaultValuesObjectSchema = {
     {name: 'dataCol',   type: Realm.Types.DATA,   default: 'defaultData'}, 
     {name: 'objectCol', type: 'TestObject',     default: [1]},
     {name: 'nullObjectCol', type: 'TestObject', default: null},
-    {name: 'arrayCol',  type: Realm.Types.ARRAY, objectType: 'TestObject', default: [[2]]}, 
+    {name: 'arrayCol',  type: Realm.Types.LIST, objectType: 'TestObject', default: [[2]]}, 
   ]
 };
 
