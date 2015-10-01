@@ -90,7 +90,7 @@ static inline Property RJSParseProperty(JSContextRef ctx, JSObjectRef propertyOb
         prop.object_type =  RJSValidatedStringProperty(ctx, propertyObject, objectTypeString);
         prop.is_nullable = true;
     }
-    else if (type == "PropTypesARRAY") {
+    else if (type == "PropTypesLIST") {
         prop.type = PropertyTypeArray;
         prop.object_type =  RJSValidatedStringProperty(ctx, propertyObject, objectTypeString);
     }
