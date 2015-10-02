@@ -82,6 +82,7 @@ static JSClassRef s_globalClass;
 
     [RealmJS initializeContext:ctx];
 
+    [self evaluateScript:@"var exports = {};" fromURL:nil];
     [self evaluateScriptWithName:@"TestCase"];
     [self evaluateScriptWithName:@"TestObjects"];
     [self evaluateScriptWithName:self.class.jsSuiteName];
@@ -183,6 +184,7 @@ static JSClassRef s_globalClass;
     JSContext *context = [[JSContext alloc] init];
     JSValue *exception;
 
+    [self evaluateScript:@"var exports = {};" fromURL:nil inContext:context exception:&exception];
     [self evaluateScript:script fromURL:scriptURL inContext:context exception:&exception];
     if (exception) {
         NSLog(@"%@.js - %@", suiteName, exception);

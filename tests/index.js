@@ -1,5 +1,15 @@
 'use strict';
 
+var TestCase = require('./TestCase');
+var {
+  LinkTypesObjectSchema,
+  TestObjectSchema,
+  IntPrimaryObjectSchema, 
+  AllTypesObjectSchema,
+  DefaultValuesObjectSchema,
+  PersonObject,
+} = require('./TestObjects');
+
 var RealmTestSuite = {
 	tests: [
 		require('./ArrayTests.js'),

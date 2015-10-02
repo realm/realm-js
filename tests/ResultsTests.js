@@ -18,12 +18,6 @@
 
 'use strict';
 
-var TestCase = require('./TestCase');
-var {
-  LinkTypesObjectSchema,
-  TestObjectSchema,
-} = require('./TestObjects');
-
 var ResultsTests = {
     testResultsLength: function() {
         var realm = new Realm({schema: [TestObjectSchema]});
