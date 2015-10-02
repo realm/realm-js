@@ -18,6 +18,12 @@
 
 'use strict';
 
+var TestCase = require('./TestCase');
+var {
+  LinkTypesObjectSchema,
+  TestObjectSchema,
+} = require('./TestObjects');
+
 var ArrayTests = {
     testLinkTypesPropertySetters: function() {
         var realm = new Realm({schema: [LinkTypesObjectSchema, TestObjectSchema]});
@@ -250,3 +256,5 @@ var ArrayTests = {
         });
     },
 };
+exports.ArrayTests = ArrayTests;
+

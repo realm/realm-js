@@ -18,6 +18,16 @@
 
 'use strict';
 
+var TestCase = require('./TestCase');
+var {
+  LinkTypesObjectSchema,
+  TestObjectSchema,
+  IntPrimaryObjectSchema, 
+  AllTypesObjectSchema,
+  DefaultValuesObjectSchema,
+  PersonObject,
+} = require('./TestObjects');
+
 var RealmTests = {
     testRealmConstructorPath: function() {
         TestCase.assertThrows(function() { new Realm('/invalidpath'); });
@@ -266,4 +276,5 @@ var RealmTests = {
         TestCase.assertEqual(notificationCount, 1);
     },
 };
+exports.RealmTests = RealmTests;
 

@@ -24,6 +24,7 @@ var TestUtil = {
         return path.substring(0, path.lastIndexOf("/") + 1) + str;
     },
 };
+exports.TestUtil = TestUtil;
 
 var TestCase = {
     assertEqual: function(val1, val2, errorMessage) {
@@ -76,6 +77,7 @@ var TestCase = {
         };
     },
 }
+exports.TestCase = TestCase;
 
 function TestFailureError(message) {
     var error;
@@ -101,3 +103,5 @@ function TestFailureError(message) {
 
     this.__proto__ = error;
 }
+exports.TestFailureError = TestFailureError;
+

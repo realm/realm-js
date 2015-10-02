@@ -18,6 +18,13 @@
 
 'use strict';
 
+var TestCase = require('./TestCase');
+var {
+  LinkTypesObjectSchema,
+  TestObjectSchema,
+  BasicTypesObjectSchema,
+} = require('./TestObjects');
+
 var ObjectTests = {
     testBasicTypesPropertyGetters: function() {
     	var basicTypesValues = [true, 1, 1.1, 1.11, 'string', new Date(1), 'DATA'];
@@ -122,3 +129,4 @@ var ObjectTests = {
         TestCase.assertEqual(obj.arrayCol[2].doubleCol, 2);
     },
 };
+exports.ObjectTests = ObjectTests;
