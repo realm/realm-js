@@ -5,6 +5,7 @@
 'use strict';
 
 var React = require('react-native');
+var Realm = require('realm');
 
 var {
   AppRegistry,
