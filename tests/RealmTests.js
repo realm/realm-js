@@ -266,5 +266,5 @@ var RealmTests = {
         TestCase.assertEqual(notificationCount, 1);
     },
 };
-exports.RealmTests = RealmTests;
+module.exports = RealmTests;
 

@@ -8,6 +8,12 @@ var React = require('react-native');
 var Realm = require('realm');
 var RealmTestSuite = require('RealmTestSuite');
 
+RealmTestSuite.tests.forEach(function(suite, name) {
+  for (var name in suite) {
+    suite[name]();
+  }
+});
+
 var {
   AppRegistry,
   StyleSheet,

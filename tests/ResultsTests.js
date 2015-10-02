@@ -100,4 +100,4 @@ var ResultsTests = {
         TestCase.assertEqual(objects[4].doubleCol, 0);
     },
 }
-exports.ResultsTests = ResultsTests;
+module.exports = ResultsTests;

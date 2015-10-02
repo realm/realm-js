@@ -250,5 +250,5 @@ var ArrayTests = {
         });
     },
 };
-exports.ArrayTests = ArrayTests;
+module.exports = ArrayTests;
 

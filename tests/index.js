@@ -17,5 +17,6 @@ var RealmTestSuite = {
 		require('./RealmTests.js'),
 		require('./ResultsTests.js'),
 	],
+	testObjects: require('./TestObjects'),
 }
 module.exports = RealmTestSuite;  // eslint-disable-line no-undef
