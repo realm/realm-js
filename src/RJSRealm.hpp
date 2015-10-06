@@ -25,3 +25,5 @@ JSClassRef RJSNotificationClass();
 std::string RJSDefaultPath();
 void RJSSetDefaultPath(std::string path);
 
+JSObjectRef RealmConstructor(JSContextRef ctx, JSObjectRef constructor, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException);
+JSValueRef RealmCreateObject(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException);

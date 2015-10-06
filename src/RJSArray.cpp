@@ -21,6 +21,7 @@
 #include "RJSUtil.hpp"
 #include "object_accessor.hpp"
 
+using RJSAccessor = realm::NativeAccessor<JSValueRef, JSContextRef>;
 using namespace realm;
 
 size_t ObjectArray::size() {

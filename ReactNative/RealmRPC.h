@@ -16,15 +16,12 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#import "RJSUtil.hpp"
+#pragma once
 
-namespace realm {
-    class Object;
-}
+#import <GCDWebServers/GCDWebServers.h>
 
-JSClassRef RJSObjectClass();
-JSObjectRef RJSObjectCreate(JSContextRef ctx, realm::Object object);
+@interface RJSRPCServer : NSObject
 
-JSValueRef ObjectGetProperty(JSContextRef ctx, JSObjectRef jsObject, JSStringRef jsPropertyName, JSValueRef* exception);
-bool ObjectSetProperty(JSContextRef ctx, JSObjectRef jsObject, JSStringRef jsPropertyName, JSValueRef value, JSValueRef* exception);
++ (void)start;
 
+@end

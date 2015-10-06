@@ -20,6 +20,7 @@
 #import "RealmReactModule.h"
 #import "Base/RCTLog.h"
 #import "Base/RCTBridge.h"
+#import "RealmRPC.h"
 
 @import RealmJS;
 @import JavaScriptCore;
@@ -49,6 +50,7 @@ RCT_EXPORT_MODULE()
 
     // The executor could be a RCTWebSocketExecutor, in which case it won't have a JS context.
     if (!contextIvar) {
+        [RJSRPCServer start];
         return;
     }
 
