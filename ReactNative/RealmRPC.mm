@@ -41,14 +41,14 @@ static RPCObjectID s_id_counter = 0;
     GCDWebServer* webServer = [[GCDWebServer alloc] init];
     s_context = JSGlobalContextCreate(NULL);
 
-    s_requests["create_realm"] = [=](NSDictionary *dict) {
+    s_requests["/create_realm"] = [=](NSDictionary *dict) {
         RPCObjectID realmId = s_id_counter++;
         JSValueRef value = [[JSValue valueWithObject:dict
                                            inContext:[JSContext contextWithJSGlobalContextRef:s_context]] JSValueRef];
         s_objects[realmId] = RealmConstructor(s_context, NULL, 1, &value, NULL);
-        return std::to_string(realmId);
+        return "{\"realmId\":" + std::to_string(realmId) + "}";
     };
-    s_requests["create_object"] = [=](NSDictionary *dict) {
+    s_requests["/create_object"] = [=](NSDictionary *dict) {
         RPCObjectID newOid = s_id_counter++;
         RPCObjectID realmId = [dict[@"realmId"] longValue];
         JSValueRef value = [[JSValue valueWithObject:dict[@"value"]
@@ -59,13 +59,13 @@ static RPCObjectID s_id_counter = 0;
         s_objects[newOid] = (JSObjectRef)object;
         return std::to_string(newOid);
     };
-    s_requests["dispose_realm"] = [=](NSDictionary *dict) {
+    s_requests["/dispose_realm"] = [=](NSDictionary *dict) {
         RPCObjectID realmId = [dict[@"realmId"] longValue];
         JSValueUnprotect(s_context, s_objects[realmId]);
         s_objects.erase(realmId);
         return "";
     };
-    s_requests["get_property"] = [=](NSDictionary *dict) {
+    s_requests["/get_property"] = [=](NSDictionary *dict) {
         JSStringRef propString = RJSStringForString([dict[@"name"] UTF8String]);
         RPCObjectID realmId = [dict[@"realmId"] longValue];
         JSValueRef propertyValue = ObjectGetProperty(s_context, s_objects[realmId], propString, NULL);
@@ -73,7 +73,7 @@ static RPCObjectID s_id_counter = 0;
 
         return RJSValidatedStringForValue(s_context, propertyValue);
     };
-    s_requests["set_property"] = [=](NSDictionary *dict) {
+    s_requests["/set_property"] = [=](NSDictionary *dict) {
         JSValueRef exception = NULL;
         JSStringRef propString = RJSStringForString([dict[@"name"] UTF8String]);
         RPCObjectID realmId = [dict[@"realmId"] longValue];
@@ -84,7 +84,7 @@ static RPCObjectID s_id_counter = 0;
 
         return exception ? "exception" : "";
     };
-    s_requests["dispose_object"] = [=](NSDictionary *dict) {
+    s_requests["/dispose_object"] = [=](NSDictionary *dict) {
         RPCObjectID oid = [dict[@"realmId"] longValue];
         JSValueUnprotect(s_context, s_objects[oid]);
         s_objects.erase(oid);
@@ -96,8 +96,10 @@ static RPCObjectID s_id_counter = 0;
                              requestClass:[GCDWebServerDataRequest class]
                              processBlock:^GCDWebServerResponse *(GCDWebServerRequest* request) {
         RPCRequest action = s_requests[request.path.UTF8String];
-        NSDictionary *json = [(GCDWebServerDataRequest *)request jsonObject];
-        return [GCDWebServerDataResponse responseWithHTML:@(action(json).c_str())];
+        NSDictionary *json = [NSJSONSerialization JSONObjectWithData:[(GCDWebServerDataRequest *)request data] options:0 error:nil];
+        GCDWebServerDataResponse *response = [GCDWebServerDataResponse responseWithHTML:@(action(json).c_str())];
+        [response setValue:@"http://localhost:8081" forAdditionalHeader:@"Access-Control-Allow-Origin"];
+        return response;
     }];
     [webServer startWithPort:8082 bonjourName:nil];
 }
