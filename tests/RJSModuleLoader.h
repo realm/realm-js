@@ -16,9 +16,15 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-'use strict';
+#import <Foundation/Foundation.h>
+#import <JavaScriptCore/JavaScriptCore.h>
 
-exports.ArrayTests = require('./ArrayTests');
-exports.ObjectTests = require('./ObjectTests');
-exports.RealmTests = require('./RealmTests');
-exports.ResultsTests = require('./ResultsTests');
+@interface RJSModuleLoader : NSObject
+
+- (instancetype)initWithContext:(JSContext *)context;
+
+- (void)addGlobalModuleObject:(id)object forName:(NSString *)name;
+
+- (JSValue *)loadModuleFromURL:(NSURL *)url error:(NSError **)error;
+
+@end

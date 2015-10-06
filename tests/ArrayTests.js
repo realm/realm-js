@@ -18,9 +18,12 @@
 
 'use strict';
 
-var ArrayTests = {
+var TestCase = require('./asserts');
+var schemas = require('./schemas');
+
+module.exports = {
     testLinkTypesPropertySetters: function() {
-        var realm = new Realm({schema: [LinkTypesObjectSchema, TestObjectSchema]});
+        var realm = new Realm({schema: [schemas.LinkTypes, schemas.TestObject]});
         var obj = null;
         realm.write(function() {
             obj = realm.create('LinkTypesObject', [[1], undefined, [[3]]]);
@@ -51,7 +54,7 @@ var ArrayTests = {
     },
 
     testArrayLength: function() {
-        var realm = new Realm({schema: [LinkTypesObjectSchema, TestObjectSchema]});
+        var realm = new Realm({schema: [schemas.LinkTypes, schemas.TestObject]});
         realm.write(function() {
             var obj = realm.create('LinkTypesObject', [[1], [2], [[3]]]);
             TestCase.assertEqual(obj.arrayCol.length, 1);
@@ -65,7 +68,7 @@ var ArrayTests = {
     },
 
     testArraySubscript: function() {
-        var realm = new Realm({schema: [LinkTypesObjectSchema, TestObjectSchema]});
+        var realm = new Realm({schema: [schemas.LinkTypes, schemas.TestObject]});
         realm.write(function() { realm.create('LinkTypesObject', [[1], [2], [[3], [4]]]); }); 
 
         var array = realm.objects('LinkTypesObject')[0].arrayCol;
@@ -76,7 +79,7 @@ var ArrayTests = {
     },
 
     testArrayInvalidProperty: function() {       
-        var realm = new Realm({schema: [LinkTypesObjectSchema, TestObjectSchema]});
+        var realm = new Realm({schema: [schemas.LinkTypes, schemas.TestObject]});
         realm.write(function() { realm.create('LinkTypesObject', [[1], [2], [[3], [4]]]); }); 
 
         var array = realm.objects('LinkTypesObject')[0].arrayCol;
@@ -84,7 +87,7 @@ var ArrayTests = {
     },
 
     testArrayEnumerate: function() {
-        var realm = new Realm({schema: [LinkTypesObjectSchema, TestObjectSchema]});
+        var realm = new Realm({schema: [schemas.LinkTypes, schemas.TestObject]});
         realm.write(function() { realm.create('LinkTypesObject', [[1], [2], []]); }); 
 
         var obj = realm.objects('LinkTypesObject')[0];
@@ -106,7 +109,7 @@ var ArrayTests = {
     },
 
     testPush: function() {
-        var realm = new Realm({schema: [LinkTypesObjectSchema, TestObjectSchema]});
+        var realm = new Realm({schema: [schemas.LinkTypes, schemas.TestObject]});
         var array;
         realm.write(function() {
             var obj = realm.create('LinkTypesObject', [[1], [2], [[3]]]);
@@ -134,7 +137,7 @@ var ArrayTests = {
     },
 
     testPop: function() {
-        var realm = new Realm({schema: [LinkTypesObjectSchema, TestObjectSchema]});
+        var realm = new Realm({schema: [schemas.LinkTypes, schemas.TestObject]});
         var array;
         realm.write(function() {
             var obj = realm.create('LinkTypesObject', [[1], [2], [[3], [4]]]);
@@ -157,7 +160,7 @@ var ArrayTests = {
     },
 
     testUnshift: function() {
-        var realm = new Realm({schema: [LinkTypesObjectSchema, TestObjectSchema]});
+        var realm = new Realm({schema: [schemas.LinkTypes, schemas.TestObject]});
         var array;
         realm.write(function() {
             var obj = realm.create('LinkTypesObject', [[1], [2], [[3]]]);
@@ -181,7 +184,7 @@ var ArrayTests = {
     },
 
     testShift: function() {
-        var realm = new Realm({schema: [LinkTypesObjectSchema, TestObjectSchema]});
+        var realm = new Realm({schema: [schemas.LinkTypes, schemas.TestObject]});
         var array;
         realm.write(function() {
             var obj = realm.create('LinkTypesObject', [[1], [2], [[3], [4]]]);
@@ -204,7 +207,7 @@ var ArrayTests = {
     },
 
     testSplice: function() {
-        var realm = new Realm({schema: [LinkTypesObjectSchema, TestObjectSchema]});
+        var realm = new Realm({schema: [schemas.LinkTypes, schemas.TestObject]});
 
         realm.write(function() {
             var obj = realm.create('LinkTypesObject', [[1], [2], [[3], [4]]]);
@@ -250,5 +253,3 @@ var ArrayTests = {
         });
     },
 };
-module.exports = ArrayTests;
-

@@ -16,9 +16,12 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+#import <objc/runtime.h>
+
 #import "RealmJSTests.h"
 #import "RJSUtil.hpp"
 #import "RJSRealm.hpp"
+#import "RJSModuleLoader.h"
 
 NSString *RealmPathForFile(NSString *fileName) {
 #if TARGET_OS_IPHONE
@@ -53,20 +56,27 @@ static void DeleteRealmFilesAtPath(NSString *path) {
     DeleteOrThrow([path stringByAppendingString:@".note"]);
 }
 
-static JSClassRef s_globalClass;
-
 @interface RealmJSTests ()
 
-@property (nonatomic, strong) JSContext *context;
+@property (nonatomic, strong) JSValue *testObject;
 
 @end
 
 @implementation RealmJSTests
 
-+ (void)initialize {
-    JSClassDefinition globalDefinition = kJSClassDefinitionEmpty;
-    globalDefinition.attributes = kJSClassAttributeNoAutomaticPrototype;
-    s_globalClass = JSClassCreate(&globalDefinition);
+- (instancetype)initWithJSTestObject:(JSValue *)testObject methodName:(NSString *)methodName {
+    self = [super initWithSelector:NSSelectorFromString(methodName)];
+    if (!self) {
+        return nil;
+    }
+
+    _testObject = testObject;
+
+    return self;
+}
+
+- (JSContext *)context {
+    return self.testObject.context;
 }
 
 - (void)setUp {
@@ -77,20 +87,10 @@ static JSClassRef s_globalClass;
     [[NSFileManager defaultManager] createDirectoryAtPath:defaultDir withIntermediateDirectories:YES attributes:nil error:nil];
     RJSSetDefaultPath([defaultDir stringByAppendingPathComponent:@"default.realm"].UTF8String);
 
-    JSGlobalContextRef ctx = JSGlobalContextCreateInGroup(NULL, s_globalClass);
-    self.context = [JSContext contextWithJSGlobalContextRef:ctx];
-
-    [RealmJS initializeContext:ctx];
-
-    [self evaluateScript:@"var exports = {};" fromURL:nil];
-    [self evaluateScriptWithName:@"TestCase"];
-    [self evaluateScriptWithName:@"TestObjects"];
-    [self evaluateScriptWithName:self.class.jsSuiteName];
+    self.context.exception = nil;
 }
 
 - (void)tearDown {
-    self.context = nil;
-
     DeleteRealmFilesAtPath(TestRealmPath());
     DeleteRealmFilesAtPath(@(RJSDefaultPath().c_str()));
     
@@ -103,107 +103,33 @@ static JSClassRef s_globalClass;
     }
 }
 
-- (void)evaluateScriptWithName:(NSString *)name {
-    NSURL *url = [self.class scriptURLWithName:name];
-    NSString *script = [self.class loadScriptWithURL:url];
-
-    [self evaluateScript:script fromURL:url];
-}
-
-- (void)evaluateScript:(NSString *)script fromURL:(NSURL *)url {
-    JSValue *exception;
-    [self.class evaluateScript:script fromURL:url inContext:self.context exception:&exception];
-
-    if (exception) {
-        JSValue *message = [exception hasProperty:@"message"] ? exception[@"message"] : exception;
-        NSString *source = [exception hasProperty:@"sourceURL"] ? [exception[@"sourceURL"] toString] : nil;
-        NSUInteger line = [exception hasProperty:@"line"] ? [exception[@"line"] toUInt32] : 0;
-        NSURL *sourceURL = source ? [NSURL URLWithString:source.lastPathComponent relativeToURL:[NSURL URLWithString:@(__FILE__)]] : nil;
-        const char *sourcePath = sourceURL.absoluteString.UTF8String;
-
-        _XCTFailureHandler(self, YES, sourcePath ?: __FILE__, sourcePath ? line : __LINE__, @"JS", @"%@", message);
-    }
-}
-
-+ (JSValue *)evaluateScript:(NSString *)script fromURL:(NSURL *)url inContext:(JSContext *)context exception:(JSValue **)exception {
-    JSStringRef jsScript = JSStringCreateWithUTF8CString(script.UTF8String);
-    JSStringRef jsURL = url ? JSStringCreateWithUTF8CString(url.absoluteString.UTF8String) : NULL;
-    JSValueRef jsException = NULL;
-    JSValueRef jsResult = JSEvaluateScript(context.JSGlobalContextRef, jsScript, NULL, jsURL, 1, &jsException);
-
-    JSStringRelease(jsScript);
-    if (jsURL) {
-        JSStringRelease(jsURL);
-    }
-
-    if (jsException) {
-        *exception = [JSValue valueWithJSValueRef:jsException inContext:context];
-        return NULL;
-    }
-
-    return [JSValue valueWithJSValueRef:jsResult inContext:context];
-}
-
-+ (NSURL *)scriptURLWithName:(NSString *)name {
-    NSURL *url = [[NSBundle bundleForClass:self] URLForResource:name withExtension:@"js"];
-    if (!url) {
-        NSLog(@"JS file does not exist: %@", url);
-        exit(1);
-    }
-    return url;
-}
-
-+ (NSString *)loadScriptWithURL:(NSURL *)url {
-    NSError *error;
-    NSString *script = [NSString stringWithContentsOfURL:url encoding:NSUTF8StringEncoding error:&error];
-    if (!script) {
-        NSLog(@"Error reading JS file (%@): %@", url, error);
-        exit(1);
-    }
-    return script;
-}
-
-+ (NSString *)jsSuiteName {
-    return nil;
-}
-
-+ (NSString *)jsSuiteScript {
-    NSString *name = [self jsSuiteName];
-    return name ? [self loadScriptWithURL:[self scriptURLWithName:name]] : nil;
-}
-
 + (XCTestSuite *)defaultTestSuite {
     XCTestSuite *suite = [super defaultTestSuite];
-    NSString *suiteName = [self jsSuiteName];
-    NSURL *scriptURL = suiteName ? [self scriptURLWithName:suiteName] : nil;
-    NSString *script = scriptURL ? [self loadScriptWithURL:scriptURL] : nil;
-    if (!script) {
-        return suite;
-    }
-
     JSContext *context = [[JSContext alloc] init];
-    JSValue *exception;
+    RJSModuleLoader *moduleLoader = [[RJSModuleLoader alloc] initWithContext:context];
+    NSURL *scriptURL = [[NSBundle bundleForClass:self] URLForResource:@"index" withExtension:@"js"];
 
-    [self evaluateScript:@"var exports = {};" fromURL:nil inContext:context exception:&exception];
-    [self evaluateScript:script fromURL:scriptURL inContext:context exception:&exception];
-    if (exception) {
-        NSLog(@"%@.js - %@", suiteName, exception);
+    [RealmJS initializeContext:context.JSGlobalContextRef];
+
+    NSError *error;
+    JSValue *testObjects = [moduleLoader loadModuleFromURL:scriptURL error:&error];
+
+    if (!testObjects) {
+        NSLog(@"index.js - %@", error);
         exit(1);
     }
 
-    JSValue *suiteObject = [self evaluateScript:suiteName fromURL:nil inContext:context exception:&exception];
-    if (exception) {
-        NSLog(@"%@.js - %@", suiteName, exception);
-        exit(1);
-    }
+    for (NSString *testName in [testObjects toDictionary]) {
+        JSValue *testObject = testObjects[testName];
+        XCTestSuite *testSuite = [[XCTestSuite alloc] initWithName:testName];
+        Class testClass = objc_allocateClassPair(self, testName.UTF8String, 0);
 
-    if (![suiteObject isObject]) {
-        NSLog(@"%@.js - JS test suite is not an object: %@", suiteName, suiteObject);
-        exit(1);
-    }
+        for (NSString *methodName in [testObject toDictionary]) {
+            XCTestCase *testCase = [[testClass alloc] initWithJSTestObject:testObject methodName:methodName];
+            [testSuite addTest:testCase];
+        }
 
-    for (NSString *testName in [suiteObject toDictionary]) {
-        [suite addTest:[self testCaseWithSelector:NSSelectorFromString(testName)]];
+        [suite addTest:testSuite];
     }
 
     return suite;
@@ -211,48 +137,28 @@ static JSClassRef s_globalClass;
 
 - (NSMethodSignature *)methodSignatureForSelector:(SEL)aSelector {
     NSMethodSignature *sig = [super methodSignatureForSelector:aSelector];
-    if (sig) {
-        return sig;
-    }
-    return [NSMethodSignature signatureWithObjCTypes:"v@:"];
+    return sig ?: [NSMethodSignature signatureWithObjCTypes:"v@:"];
 }
 
 - (void)forwardInvocation:(NSInvocation *)anInvocation {
-    NSString *script = [NSString stringWithFormat:@"%@.%@();", [self.class jsSuiteName], NSStringFromSelector(anInvocation.selector)];
-    [self evaluateScript:script fromURL:nil];
+    JSValue *testObject = self.testObject;
+    JSContext *context = testObject.context;
+
+    [testObject invokeMethod:NSStringFromSelector(anInvocation.selector) withArguments:nil];
+
+    JSValue *exception = context.exception;
+
+    if (exception) {
+        JSValue *message = [exception hasProperty:@"message"] ? exception[@"message"] : exception;
+        NSString *source = [exception hasProperty:@"sourceURL"] ? [exception[@"sourceURL"] toString] : nil;
+        NSUInteger line = [exception hasProperty:@"line"] ? [exception[@"line"] toUInt32] - 1 : 0;
+        NSURL *sourceURL = source ? [NSURL URLWithString:source.lastPathComponent relativeToURL:[NSURL URLWithString:@(__FILE__)]] : nil;
+
+        [self recordFailureWithDescription:message.description
+                                    inFile:sourceURL ? sourceURL.absoluteString : @(__FILE__)
+                                    atLine:sourceURL ? line : __LINE__
+                                  expected:YES];
+    }
 }
 
 @end
-
-@interface RJSResultsTests : RealmJSTests
-@end
-@implementation RJSResultsTests
-+ (NSString *)jsSuiteName {
-    return @"ResultsTests";
-}
-@end
-
-@interface RJSObjectTests : RealmJSTests
-@end
-@implementation RJSObjectTests
-+ (NSString *)jsSuiteName {
-    return @"ObjectTests";
-}
-@end
-
-@interface RJSArrayTests : RealmJSTests
-@end
-@implementation RJSArrayTests
-+ (NSString *)jsSuiteName {
-    return @"ArrayTests";
-}
-@end
-
-@interface RJSRealmTests : RealmJSTests
-@end
-@implementation RJSRealmTests
-+ (NSString *)jsSuiteName {
-    return @"RealmTests";
-}
-@end
-

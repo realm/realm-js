@@ -18,7 +18,7 @@
 
 'use strict';
 
-exports.ArrayTests = require('./ArrayTests');
-exports.ObjectTests = require('./ObjectTests');
-exports.RealmTests = require('./RealmTests');
-exports.ResultsTests = require('./ResultsTests');
+exports.realmPathForFile = function(str) {
+    var path = Realm.defaultPath;
+    return path.substring(0, path.lastIndexOf("/") + 1) + str;
+};

@@ -18,9 +18,12 @@
 
 'use strict';
 
-var ResultsTests = {
+var TestCase = require('./asserts');
+var schemas = require('./schemas');
+
+module.exports = {
     testResultsLength: function() {
-        var realm = new Realm({schema: [TestObjectSchema]});
+        var realm = new Realm({schema: [schemas.TestObject]});
         var objects = realm.objects('TestObject');
         TestCase.assertEqual(objects.length, 0);
 
@@ -31,7 +34,7 @@ var ResultsTests = {
         TestCase.assertEqual(objects.length, 1);
     },
     testResultsSubscript: function() {
-        var realm = new Realm({schema: [PersonObject]});
+        var realm = new Realm({schema: [schemas.PersonObject]});
         realm.write(function() {
             realm.create('PersonObject', ['name1', 1]);
             realm.create('PersonObject', ['name2', 2]);
@@ -42,21 +45,21 @@ var ResultsTests = {
         TestCase.assertEqual(people[1].age, 2);
         TestCase.assertThrows(function() { people[2]; }, 'Invalid index');
         TestCase.assertThrows(function() { people[-1]; }, 'Invalid index');
-        TestCase.assertTrue(Object.getPrototypeOf(people[0]) === PersonObject.prototype);
+        TestCase.assertTrue(Object.getPrototypeOf(people[0]) === schemas.PersonObject.prototype);
     },
     testResultsInvalidProperty: function() {
-        var realm = new Realm({schema: [TestObjectSchema]});
+        var realm = new Realm({schema: [schemas.TestObject]});
         var objects = realm.objects('TestObject');
         TestCase.assertEqual(undefined, objects.ablasdf);
     },
     testResultsInvalidObjectType: function() {
-        var realm = new Realm({schema: [TestObjectSchema]});
+        var realm = new Realm({schema: [schemas.TestObject]});
         TestCase.assertThrows(function() {
             var objects = realm.objects('NotTestObject');
         });
     },
     testResultsEnumerate: function() {
-        var realm = new Realm({schema: [TestObjectSchema]});
+        var realm = new Realm({schema: [schemas.TestObject]});
         var objects = realm.objects('TestObject');
         for (var object in objects) {
             TestCase.assertTrue(false, "No objects should have been enumerated");
@@ -75,7 +78,7 @@ var ResultsTests = {
         TestCase.assertEqual(1, count);
     },
     testSort: function() {
-        var realm = new Realm({schema: [TestObjectSchema]});
+        var realm = new Realm({schema: [schemas.TestObject]});
         var objects = realm.objects('TestObject');
         realm.write(function() {
             realm.create('TestObject', [2]);
@@ -99,5 +102,4 @@ var ResultsTests = {
         TestCase.assertEqual(objects[3].doubleCol, 1);
         TestCase.assertEqual(objects[4].doubleCol, 0);
     },
-}
-module.exports = ResultsTests;
+};

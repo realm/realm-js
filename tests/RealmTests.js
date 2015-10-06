@@ -18,10 +18,14 @@
 
 'use strict';
 
-var RealmTests = {
+var TestCase = require('./asserts');
+var schemas = require('./schemas');
+var util = require('./util');
+
+module.exports = {
     testRealmConstructorPath: function() {
         TestCase.assertThrows(function() { new Realm('/invalidpath'); });
-        TestCase.assertThrows(function() { new Realm(TestUtil.realmPathForFile('test1.realm'), 'invalidArgument'); });
+        TestCase.assertThrows(function() { new Realm(util.realmPathForFile('test1.realm'), 'invalidArgument'); });
 
         var defaultRealm = new Realm({schema: []});
         TestCase.assertEqual(defaultRealm.path, Realm.defaultPath);
@@ -29,12 +33,12 @@ var RealmTests = {
         var defaultRealm2 = new Realm();
         TestCase.assertEqual(defaultRealm2.path, Realm.defaultPath);
 
-        var testPath = TestUtil.realmPathForFile('test1.realm');
+        var testPath = util.realmPathForFile('test1.realm');
         var realm = new Realm({schema: [], path: testPath});
         //TestCase.assertTrue(realm instanceof Realm);
         TestCase.assertEqual(realm.path, testPath);
 
-        var testPath2 = TestUtil.realmPathForFile('test2.realm');
+        var testPath2 = util.realmPathForFile('test2.realm');
         var realm2 = new Realm({schema: [], path: testPath2});
         //TestCase.assertTrue(realm2 instanceof Realm);
         TestCase.assertEqual(realm2.path, testPath2);
@@ -51,7 +55,7 @@ var RealmTests = {
         TestCase.assertEqual(new Realm().schemaVersion, 0);
         TestCase.assertEqual(new Realm({schemaVersion: 0}).schemaVersion, 0);
 
-        var testPath = TestUtil.realmPathForFile('test1.realm');
+        var testPath = util.realmPathForFile('test1.realm');
         var realm = new Realm({path: testPath, schema: [], schemaVersion: 1});
         TestCase.assertEqual(realm.schemaVersion, 1);
 
@@ -63,7 +67,7 @@ var RealmTests = {
         var defaultRealm = new Realm({schema: []});
         TestCase.assertEqual(defaultRealm.path, Realm.defaultPath);
 
-        var newPath = TestUtil.realmPathForFile('default2.realm');
+        var newPath = util.realmPathForFile('default2.realm');
         Realm.defaultPath = newPath;
         defaultRealm = new Realm({schema: []});
         TestCase.assertEqual(defaultRealm.path, newPath);
@@ -72,7 +76,7 @@ var RealmTests = {
     },
 
     testRealmCreate: function() {
-        var realm = new Realm({schema: [IntPrimaryObjectSchema, AllTypesObjectSchema, TestObjectSchema]});
+        var realm = new Realm({schema: [schemas.IntPrimary, schemas.AllTypes, schemas.TestObject]});
         realm.write(function() {
             realm.create('TestObject', [1]);
             realm.create('TestObject', {'doubleCol': 2});
@@ -143,25 +147,25 @@ var RealmTests = {
     },
 
     testRealmCreateWithDefaults: function() {
-        var realm = new Realm({schema: [DefaultValuesObjectSchema, TestObjectSchema]});
+        var realm = new Realm({schema: [schemas.DefaultValues, schemas.TestObject]});
         realm.write(function() {
             var obj = realm.create('DefaultValuesObject', {});
-            TestCase.assertEqual(obj.boolCol, DefaultValuesObjectSchema.properties[0].default);
-            TestCase.assertEqual(obj.intCol, DefaultValuesObjectSchema.properties[1].default);
-            TestCase.assertEqualWithTolerance(obj.floatCol, DefaultValuesObjectSchema.properties[2].default, 0.000001);
-            TestCase.assertEqual(obj.doubleCol, DefaultValuesObjectSchema.properties[3].default);
-            TestCase.assertEqual(obj.stringCol, DefaultValuesObjectSchema.properties[4].default);
-            TestCase.assertEqual(obj.dateCol.getTime(), DefaultValuesObjectSchema.properties[5].default.getTime());
-            TestCase.assertEqual(obj.dataCol, DefaultValuesObjectSchema.properties[6].default);
-            TestCase.assertEqual(obj.objectCol.doubleCol, DefaultValuesObjectSchema.properties[7].default[0]);
+            TestCase.assertEqual(obj.boolCol, schemas.DefaultValues.properties[0].default);
+            TestCase.assertEqual(obj.intCol, schemas.DefaultValues.properties[1].default);
+            TestCase.assertEqualWithTolerance(obj.floatCol, schemas.DefaultValues.properties[2].default, 0.000001);
+            TestCase.assertEqual(obj.doubleCol, schemas.DefaultValues.properties[3].default);
+            TestCase.assertEqual(obj.stringCol, schemas.DefaultValues.properties[4].default);
+            TestCase.assertEqual(obj.dateCol.getTime(), schemas.DefaultValues.properties[5].default.getTime());
+            TestCase.assertEqual(obj.dataCol, schemas.DefaultValues.properties[6].default);
+            TestCase.assertEqual(obj.objectCol.doubleCol, schemas.DefaultValues.properties[7].default[0]);
             TestCase.assertEqual(obj.nullObjectCol, null);
-            TestCase.assertEqual(obj.arrayCol.length, DefaultValuesObjectSchema.properties[9].default.length);
-            TestCase.assertEqual(obj.arrayCol[0].doubleCol, DefaultValuesObjectSchema.properties[9].default[0][0]);
+            TestCase.assertEqual(obj.arrayCol.length, schemas.DefaultValues.properties[9].default.length);
+            TestCase.assertEqual(obj.arrayCol[0].doubleCol, schemas.DefaultValues.properties[9].default[0][0]);
         });
     },
 
     testRealmDelete: function() {
-        var realm = new Realm({schema: [TestObjectSchema]});
+        var realm = new Realm({schema: [schemas.TestObject]});
         realm.write(function() {
             for (var i = 0; i < 10; i++) {
                 realm.create('TestObject', [i]);
@@ -197,7 +201,7 @@ var RealmTests = {
     },
 
     testDeleteAll: function() {
-        var realm = new Realm({schema: [TestObjectSchema, IntPrimaryObjectSchema]});
+        var realm = new Realm({schema: [schemas.TestObject, schemas.IntPrimary]});
         realm.write(function() {
             realm.create('TestObject', [1]);
             realm.create('TestObject', [2]);
@@ -219,7 +223,7 @@ var RealmTests = {
     },
 
     testRealmObjects: function() {
-        var realm = new Realm({schema: [PersonObject]});
+        var realm = new Realm({schema: [schemas.PersonObject]});
         realm.write(function() {
             realm.create('PersonObject', ['Ari', 10]);
             realm.create('PersonObject', ['Tim', 11]);
@@ -266,5 +270,3 @@ var RealmTests = {
         TestCase.assertEqual(notificationCount, 1);
     },
 };
-module.exports = RealmTests;
-

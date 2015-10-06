@@ -6,13 +6,13 @@
 
 var React = require('react-native');
 var Realm = require('realm');
-var RealmTestSuite = require('RealmTestSuite');
+var RealmTests = require('realm-tests');
 
-RealmTestSuite.tests.forEach(function(suite, name) {
-  for (var name in suite) {
-    suite[name]();
-  }
-});
+for (var suiteName in RealmTests) {
+    for (var testName in RealmTests[suiteName]) {
+        RealmTests[suiteName][testName]();
+    }
+}
 
 var {
   AppRegistry,

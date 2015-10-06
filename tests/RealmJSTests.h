@@ -24,8 +24,4 @@ extern NSString *TestRealmPath();
 
 @interface RealmJSTests : XCTestCase
 
-+ (NSString *)jsSuiteName;
-
-@property (nonatomic, readonly) JSContext *context;
-
 @end

@@ -18,15 +18,7 @@
 
 'use strict';
 
-var TestUtil = {
-    realmPathForFile: function(str) {
-        var path = Realm.defaultPath;
-        return path.substring(0, path.lastIndexOf("/") + 1) + str;
-    },
-};
-exports.TestUtil = TestUtil;
-
-var TestCase = {
+module.exports = {
     assertEqual: function(val1, val2, errorMessage) {
         if (val1 !== val2) {
             var message = "'" + val1 + "' does not equal expected value '" + val2 + "'";
@@ -76,8 +68,7 @@ var TestCase = {
             throw new TestFailureError(errorMessage || 'Condition expected to be true');
         };
     },
-}
-exports.TestCase = TestCase;
+};
 
 function TestFailureError(message) {
     var error;
@@ -103,5 +94,3 @@ function TestFailureError(message) {
 
     this.__proto__ = error;
 }
-exports.TestFailureError = TestFailureError;
-
