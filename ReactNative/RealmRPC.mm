@@ -90,6 +90,47 @@ static RPCObjectID s_id_counter = 0;
         s_objects.erase(oid);
         return "";
     };
+    s_requests["/get_objects"] = [=](NSDictionary *dict) {
+        RPCObjectID newOid = s_id_counter++;
+        RPCObjectID realmId = [dict[@"realmId"] longValue];
+
+        JSValueRef arguments[2];
+        long argumentCount = 1;
+        arguments[0] = RJSValueForString(s_context, [dict[@"type"] UTF8String]);
+
+        NSString *query = dict[@"predicate"];
+        if (query) {
+            arguments[1] = RJSValueForString(s_context, query.UTF8String);
+        }
+
+        JSValueRef exception = NULL;
+        JSValueRef results = RealmObjects(s_context, NULL, s_objects[realmId], argumentCount, arguments, &exception);
+        JSValueProtect(s_context, results);
+        s_objects[newOid] = (JSObjectRef)results;
+        return "{\"resultsId\":" + std::to_string(realmId) + "}";
+    };
+    s_requests["/get_results_size"] = [=](NSDictionary *dict) {
+        RPCObjectID resultsId = [dict[@"resultsId"] longValue];
+
+        JSValueRef exception = NULL;
+        static JSStringRef lengthPropertyName = JSStringCreateWithUTF8CString("length");
+        JSValueRef lengthValue = ResultsGetProperty(s_context, s_objects[resultsId], lengthPropertyName, &exception);
+        return "{\"result\":" + std::to_string(JSValueToNumber(s_context, lengthValue, &exception)) + "}";
+    };
+    s_requests["/get_results_item"] = [=](NSDictionary *dict) {
+        RPCObjectID resultsId = [dict[@"resultsId"] longValue];
+        long index = [dict[@"index"] longValue];
+
+        JSValueRef exception = NULL;
+        JSStringRef indexPropertyName = JSStringCreateWithUTF8CString(std::to_string(index).c_str());
+        JSValueRef objectValue = ResultsGetProperty(s_context, s_objects[resultsId], indexPropertyName, &exception);
+        JSStringRelease(indexPropertyName);
+
+        RPCObjectID newOid = s_id_counter++;
+        JSValueProtect(s_context, objectValue);
+        s_objects[newOid] = (JSObjectRef)objectValue;
+        return "{\"result\":" + std::to_string(newOid) + "}";
+    };
 
     // Add a handler to respond to GET requests on any URL
     [webServer addDefaultHandlerForMethod:@"POST"
