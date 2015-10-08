@@ -233,7 +233,7 @@ static JSGlobalContextRef s_context;
 }
 
 + (RPCObjectID)storeObject:(JSObjectRef)object {
-    static RPCObjectID s_next_id = 0;
+    static RPCObjectID s_next_id = 1;
     RPCObjectID next_id = s_next_id++;
     JSValueProtect(s_context, object);
     s_objects[next_id] = object;
