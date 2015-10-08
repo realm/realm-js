@@ -18,6 +18,8 @@
 
 #import "RJSUtil.hpp"
 
+extern const JSStaticFunction RJSRealmFuncs[];
+
 JSClassRef RJSRealmClass();
 JSClassRef RJSRealmConstructorClass();
 JSClassRef RJSNotificationClass();
@@ -26,7 +28,3 @@ std::string RJSDefaultPath();
 void RJSSetDefaultPath(std::string path);
 
 JSObjectRef RealmConstructor(JSContextRef ctx, JSObjectRef constructor, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException);
-JSValueRef RealmCreateObject(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException);
-JSValueRef RealmDelete(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException);
-JSValueRef RealmDeleteAll(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException);
-JSValueRef RealmObjects(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException);
