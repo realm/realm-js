@@ -42,6 +42,8 @@ static JSGlobalContextRef s_context;
 @implementation RJSRPCServer
 
 + (void)start {
+    [GCDWebServer setLogLevel:3];
+
     // Create server
     GCDWebServer* webServer = [[GCDWebServer alloc] init];
     s_context = JSGlobalContextCreate(NULL);
