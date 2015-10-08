@@ -73,7 +73,34 @@ static JSGlobalContextRef s_context;
                                            inContext:[JSContext contextWithJSGlobalContextRef:s_context]] JSValueRef];
         JSValueRef exception = NULL;
         RPCObjectID oid = [self storeObject:(JSObjectRef)RealmCreateObject(s_context, NULL, s_objects[realmId], 1, &value, &exception)];
-        return @{@"result": @{@"type": @"PropTypesOBJECT", @"id": @(oid)}};
+
+        if (exception) {
+            return @{@"error": @(RJSStringForValue(s_context, exception).c_str())};
+        }
+        return @{@"result": @{@"type": @(RJSTypeGet(realm::PropertyTypeObject).c_str()), @"id": @(oid)}};
+    };
+    s_requests["/delete_object"] = [=](NSDictionary *dict) {
+        RPCObjectID realmId = [dict[@"realmId"] longValue];
+        JSValueRef jsObject = [self valueFromDictionary:dict[@"object"]];
+        JSValueRef exception = NULL;
+
+        RealmDelete(s_context, NULL, s_objects[realmId], 1, &jsObject, &exception);
+
+        if (exception) {
+            return @{@"error": @(RJSStringForValue(s_context, exception).c_str())};
+        }
+        return @{};
+    };
+    s_requests["/delete_all"] = [=](NSDictionary *dict) {
+        RPCObjectID realmId = [dict[@"realmId"] longValue];
+        JSValueRef exception = NULL;
+
+        RealmDeleteAll(s_context, NULL, s_objects[realmId], 0, NULL, &exception);
+
+        if (exception) {
+            return @{@"error": @(RJSStringForValue(s_context, exception).c_str())};
+        }
+        return @{};
     };
     s_requests["/dispose_realm"] = [=](NSDictionary *dict) {
         RPCObjectID realmId = [dict[@"realmId"] longValue];
