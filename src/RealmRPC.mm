@@ -114,8 +114,12 @@ using RPCRequest = std::function<NSDictionary *(NSDictionary *dictionary)>;
             JSValueRef exception = NULL;
             static JSStringRef lengthPropertyName = JSStringCreateWithUTF8CString("length");
             JSValueRef lengthValue = ResultsGetProperty(_context, _objects[resultsId], lengthPropertyName, &exception);
-            
-            return @{@"result": @(JSValueToNumber(_context, lengthValue, &exception))};
+            size_t length = JSValueToNumber(_context, lengthValue, &exception);
+
+            if (exception) {
+                return @{@"error": @(RJSStringForValue(_context, exception).c_str())};
+            }
+            return @{@"result": @(length)};
         };
         _requests["/get_results_item"] = [=](NSDictionary *dict) {
             RPCObjectID resultsId = [dict[@"resultsId"] unsignedLongValue];
@@ -129,7 +133,6 @@ using RPCRequest = std::function<NSDictionary *(NSDictionary *dictionary)>;
             if (exception) {
                 return @{@"error": @(RJSStringForValue(_context, exception).c_str())};
             }
-
             return @{@"result": [self resultForJSValue:objectValue]};
         };
         _requests["/get_list_size"] = [=](NSDictionary *dict) {
@@ -138,7 +141,12 @@ using RPCRequest = std::function<NSDictionary *(NSDictionary *dictionary)>;
             JSValueRef exception = NULL;
             static JSStringRef lengthPropertyName = JSStringCreateWithUTF8CString("length");
             JSValueRef lengthValue = ArrayGetProperty(_context, _objects[listId], lengthPropertyName, &exception);
-            return @{@"result": @(JSValueToNumber(_context, lengthValue, &exception))};
+            size_t length = JSValueToNumber(_context, lengthValue, &exception);
+
+            if (exception) {
+                return @{@"error": @(RJSStringForValue(_context, exception).c_str())};
+            }
+            return @{@"result": @(length)};
         };
         _requests["/get_list_item"] = [=](NSDictionary *dict) {
             RPCObjectID listId = [dict[@"listId"] unsignedLongValue];
