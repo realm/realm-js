@@ -21,16 +21,18 @@
 
 #include <map>
 #include <string>
+#include "RealmJS.h"
 #include "RJSObject.hpp"
 #include "RJSResults.hpp"
 #include "RJSRealm.hpp"
 #include "RJSUtil.hpp"
 
+#include "object_accessor.hpp"
 #include "shared_realm.hpp"
 #include "results.hpp"
 
 using RPCObjectID = long;
-using RPCRequest = std::function<std::string(NSDictionary *dictionary)>;
+using RPCRequest = std::function<NSDictionary *(NSDictionary *dictionary)>;
 static std::map<std::string, RPCRequest> s_requests;
 static std::map<RPCObjectID, JSObjectRef> s_objects;
 
@@ -49,22 +51,22 @@ static RPCObjectID s_id_counter = 0;
         JSValueRef value = [[JSValue valueWithObject:dict
                                            inContext:[JSContext contextWithJSGlobalContextRef:s_context]] JSValueRef];
         s_objects[realmId] = RealmConstructor(s_context, NULL, 1, &value, NULL);
-        return "{\"realmId\":" + std::to_string(realmId) + "}";
+        return @{@"result": @(realmId)};
     };
     s_requests["/begin_transaction"] = [=](NSDictionary *dict) {
         RPCObjectID realmId = [dict[@"realmId"] longValue];
         RJSGetInternal<realm::SharedRealm *>(s_objects[realmId])->get()->begin_transaction();
-        return "{}";
+        return @{};
     };
     s_requests["/cancel_transaction"] = [=](NSDictionary *dict) {
         RPCObjectID realmId = [dict[@"realmId"] longValue];
         RJSGetInternal<realm::SharedRealm *>(s_objects[realmId])->get()->cancel_transaction();
-        return "{}";
+        return @{};
     };
     s_requests["/commit_transaction"] = [=](NSDictionary *dict) {
         RPCObjectID realmId = [dict[@"realmId"] longValue];
         RJSGetInternal<realm::SharedRealm *>(s_objects[realmId])->get()->commit_transaction();
-        return "{}";
+        return @{};
     };
     s_requests["/create_object"] = [=](NSDictionary *dict) {
         RPCObjectID newOid = s_id_counter++;
@@ -75,21 +77,27 @@ static RPCObjectID s_id_counter = 0;
         JSValueRef object = RealmCreateObject(s_context, NULL, s_objects[realmId], 1, &value, &exception);
         JSValueProtect(s_context, object);
         s_objects[newOid] = (JSObjectRef)object;
-        return std::to_string(newOid);
+        return @{@"result": @{@"type": @"PropTypesOBJECT", @"id": @(newOid)}};
     };
     s_requests["/dispose_realm"] = [=](NSDictionary *dict) {
         RPCObjectID realmId = [dict[@"realmId"] longValue];
         JSValueUnprotect(s_context, s_objects[realmId]);
         s_objects.erase(realmId);
-        return "";
+        return @{};
     };
     s_requests["/get_property"] = [=](NSDictionary *dict) {
+        JSValueRef exception = NULL;
         JSStringRef propString = RJSStringForString([dict[@"name"] UTF8String]);
         RPCObjectID realmId = [dict[@"realmId"] longValue];
-        JSValueRef propertyValue = ObjectGetProperty(s_context, s_objects[realmId], propString, NULL);
+        JSValueRef propertyValue = ObjectGetProperty(s_context, s_objects[realmId], propString, &exception);
         JSStringRelease(propString);
 
-        return RJSValidatedStringForValue(s_context, propertyValue);
+        if (exception) {
+            return @{@"error": @(RJSStringForValue(s_context, exception).c_str())};
+        }
+
+        // TODO: Convert propertyValue to appropriate type!
+        return @{};
     };
     s_requests["/set_property"] = [=](NSDictionary *dict) {
         JSValueRef exception = NULL;
@@ -100,13 +108,13 @@ static RPCObjectID s_id_counter = 0;
         ObjectSetProperty(s_context, s_objects[realmId], propString, value, &exception);
         JSStringRelease(propString);
 
-        return exception ? "exception" : "";
+        return exception ? @{@"error": @(RJSStringForValue(s_context, exception).c_str())} : @{};
     };
     s_requests["/dispose_object"] = [=](NSDictionary *dict) {
         RPCObjectID oid = [dict[@"realmId"] longValue];
         JSValueUnprotect(s_context, s_objects[oid]);
         s_objects.erase(oid);
-        return "";
+        return @{};
     };
     s_requests["/get_objects"] = [=](NSDictionary *dict) {
         RPCObjectID resultsId = s_id_counter++;
@@ -126,7 +134,7 @@ static RPCObjectID s_id_counter = 0;
         JSValueProtect(s_context, results);
         s_objects[resultsId] = (JSObjectRef)results;
         size_t size = RJSGetInternal<realm::Results *>((JSObjectRef)results)->size();
-        return "{\"result\":{\"resultsId\":" + std::to_string(resultsId) + ", \"size\":" + std::to_string(size) + "}}";
+        return @{@"result": @{@"resultsId": @(resultsId), @"size": @(size)}};
     };
     s_requests["/get_results_size"] = [=](NSDictionary *dict) {
         RPCObjectID resultsId = [dict[@"resultsId"] longValue];
@@ -134,7 +142,7 @@ static RPCObjectID s_id_counter = 0;
         JSValueRef exception = NULL;
         static JSStringRef lengthPropertyName = JSStringCreateWithUTF8CString("length");
         JSValueRef lengthValue = ResultsGetProperty(s_context, s_objects[resultsId], lengthPropertyName, &exception);
-        return "{\"result\":" + std::to_string(JSValueToNumber(s_context, lengthValue, &exception)) + "}";
+        return @{@"result": @(JSValueToNumber(s_context, lengthValue, &exception))};
     };
     s_requests["/get_results_item"] = [=](NSDictionary *dict) {
         RPCObjectID resultsId = [dict[@"resultsId"] longValue];
@@ -145,10 +153,22 @@ static RPCObjectID s_id_counter = 0;
         JSValueRef objectValue = ResultsGetProperty(s_context, s_objects[resultsId], indexPropertyName, &exception);
         JSStringRelease(indexPropertyName);
 
+        if (exception) {
+            return @{@"error": @(RJSStringForValue(s_context, exception).c_str())};
+        }
+
         RPCObjectID newOid = s_id_counter++;
         JSValueProtect(s_context, objectValue);
         s_objects[newOid] = (JSObjectRef)objectValue;
-        return "{\"result\":" + std::to_string(newOid) + "}";
+
+        realm::Object *object = RJSGetInternal<realm::Object *>((JSObjectRef)objectValue);
+        return @{
+            @"result": @{
+                @"type": @(RJSTypeGet(realm::PropertyTypeObject).c_str()),
+                @"id": @(newOid),
+                @"schema": [self schemaForObject:object],
+            }
+        };
     };
 
     // Add a handler to respond to GET requests on any URL
@@ -157,11 +177,30 @@ static RPCObjectID s_id_counter = 0;
                              processBlock:^GCDWebServerResponse *(GCDWebServerRequest* request) {
         RPCRequest action = s_requests[request.path.UTF8String];
         NSDictionary *json = [NSJSONSerialization JSONObjectWithData:[(GCDWebServerDataRequest *)request data] options:0 error:nil];
-        GCDWebServerDataResponse *response = [GCDWebServerDataResponse responseWithHTML:@(action(json).c_str())];
+        GCDWebServerDataResponse *response = [GCDWebServerDataResponse responseWithJSONObject:action(json)];
         [response setValue:@"http://localhost:8081" forAdditionalHeader:@"Access-Control-Allow-Origin"];
         return response;
     }];
     [webServer startWithPort:8082 bonjourName:nil];
+}
+
++ (NSDictionary *)schemaForObject:(realm::Object *)object {
+    realm::ObjectSchema &objectSchema = object->object_schema;
+    NSMutableArray *properties = [[NSMutableArray alloc] init];
+
+    for (realm::Property prop : objectSchema.properties) {
+        NSDictionary *dict = @{
+            @"name": @(prop.name.c_str()),
+            @"type": @(RJSTypeGet(prop.type).c_str()),
+        };
+
+        [properties addObject:dict];
+    }
+
+    return @{
+        @"name": @(objectSchema.name.c_str()),
+        @"properties": properties,
+    };
 }
 
 @end

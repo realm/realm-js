@@ -19,6 +19,7 @@
 #include <JavaScriptCore/JavaScriptCore.h>
 #include <string>
 #include <stdexcept>
+#include "property.hpp"
 #include "schema.hpp"
 
 template<typename T>
@@ -55,7 +56,11 @@ JSClassRef RJSCreateWrapperClass(const char * name, JSObjectGetPropertyCallback 
 
 JSObjectRef RJSRegisterGlobalClass(JSContextRef ctx, JSObjectRef globalObject, JSClassRef classRef, const char * name, JSValueRef *exception);
 
+std::string RJSTypeGet(realm::PropertyType propertyType);
+std::string RJSTypeGet(std::string typeString);
+
 std::string RJSStringForJSString(JSStringRef jsString);
+std::string RJSStringForValue(JSContextRef ctx, JSValueRef value);
 std::string RJSValidatedStringForValue(JSContextRef ctx, JSValueRef value, const char * name = nullptr);
 
 JSStringRef RJSStringForString(const std::string &str);
