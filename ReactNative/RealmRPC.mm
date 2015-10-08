@@ -272,6 +272,7 @@ static JSGlobalContextRef s_context;
         return @{
              @"type": @(RJSTypeGet(realm::PropertyTypeArray).c_str()),
              @"id": @(oid),
+             @"size": @(array->link_view->size()),
              @"schema": [self objectSchemaToJSONObject:array->object_schema]
          };
     }
