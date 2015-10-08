@@ -88,8 +88,8 @@ static RPCObjectID s_id_counter = 0;
     s_requests["/get_property"] = [=](NSDictionary *dict) {
         JSValueRef exception = NULL;
         JSStringRef propString = RJSStringForString([dict[@"name"] UTF8String]);
-        RPCObjectID realmId = [dict[@"realmId"] longValue];
-        JSValueRef propertyValue = ObjectGetProperty(s_context, s_objects[realmId], propString, &exception);
+        RPCObjectID objectId = [dict[@"objectId"] longValue];
+        JSValueRef propertyValue = ObjectGetProperty(s_context, s_objects[objectId], propString, &exception);
         JSStringRelease(propString);
 
         if (exception) {
