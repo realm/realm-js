@@ -26,6 +26,9 @@
 #include "RJSRealm.hpp"
 #include "RJSUtil.hpp"
 
+#include "shared_realm.hpp"
+#include "results.hpp"
+
 using RPCObjectID = long;
 using RPCRequest = std::function<std::string(NSDictionary *dictionary)>;
 static std::map<std::string, RPCRequest> s_requests;
@@ -47,6 +50,21 @@ static RPCObjectID s_id_counter = 0;
                                            inContext:[JSContext contextWithJSGlobalContextRef:s_context]] JSValueRef];
         s_objects[realmId] = RealmConstructor(s_context, NULL, 1, &value, NULL);
         return "{\"realmId\":" + std::to_string(realmId) + "}";
+    };
+    s_requests["/begin_transaction"] = [=](NSDictionary *dict) {
+        RPCObjectID realmId = [dict[@"realmId"] longValue];
+        RJSGetInternal<realm::SharedRealm *>(s_objects[realmId])->get()->begin_transaction();
+        return "{}";
+    };
+    s_requests["/cancel_transaction"] = [=](NSDictionary *dict) {
+        RPCObjectID realmId = [dict[@"realmId"] longValue];
+        RJSGetInternal<realm::SharedRealm *>(s_objects[realmId])->get()->cancel_transaction();
+        return "{}";
+    };
+    s_requests["/commit_transaction"] = [=](NSDictionary *dict) {
+        RPCObjectID realmId = [dict[@"realmId"] longValue];
+        RJSGetInternal<realm::SharedRealm *>(s_objects[realmId])->get()->commit_transaction();
+        return "{}";
     };
     s_requests["/create_object"] = [=](NSDictionary *dict) {
         RPCObjectID newOid = s_id_counter++;
@@ -107,7 +125,8 @@ static RPCObjectID s_id_counter = 0;
         JSValueRef results = RealmObjects(s_context, NULL, s_objects[realmId], argumentCount, arguments, &exception);
         JSValueProtect(s_context, results);
         s_objects[newOid] = (JSObjectRef)results;
-        return "{\"resultsId\":" + std::to_string(realmId) + "}";
+        size_t size = RJSGetInternal<realm::Results *>((JSObjectRef)results)->size();
+        return "{\"resultsId\":" + std::to_string(realmId) + ", \"size\":" + std::to_string(size) + "}";
     };
     s_requests["/get_results_size"] = [=](NSDictionary *dict) {
         RPCObjectID resultsId = [dict[@"resultsId"] longValue];
