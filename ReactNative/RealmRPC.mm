@@ -276,7 +276,13 @@ static JSGlobalContextRef s_context;
          };
     }
     else if (RJSIsValueArray(s_context, value)) {
-        assert(0);
+        JSObjectRef jsObject = JSValueToObject(s_context, value, NULL);
+        size_t length = RJSValidatedArrayLength(s_context, jsObject);
+        NSMutableArray *array = [NSMutableArray new];
+        for (unsigned int i = 0; i < length; i++) {
+            [array addObject:[self resultForJSValue:JSObjectGetPropertyAtIndex(s_context, jsObject, i, NULL)]];
+        }
+        return @{@"value": array};
     }
     else {
         assert(0);
