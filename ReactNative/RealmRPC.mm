@@ -109,7 +109,7 @@ static RPCObjectID s_id_counter = 0;
         return "";
     };
     s_requests["/get_objects"] = [=](NSDictionary *dict) {
-        RPCObjectID newOid = s_id_counter++;
+        RPCObjectID resultsId = s_id_counter++;
         RPCObjectID realmId = [dict[@"realmId"] longValue];
 
         JSValueRef arguments[2];
@@ -124,9 +124,9 @@ static RPCObjectID s_id_counter = 0;
         JSValueRef exception = NULL;
         JSValueRef results = RealmObjects(s_context, NULL, s_objects[realmId], argumentCount, arguments, &exception);
         JSValueProtect(s_context, results);
-        s_objects[newOid] = (JSObjectRef)results;
+        s_objects[resultsId] = (JSObjectRef)results;
         size_t size = RJSGetInternal<realm::Results *>((JSObjectRef)results)->size();
-        return "{\"resultsId\":" + std::to_string(realmId) + ", \"size\":" + std::to_string(size) + "}";
+        return "{\"result\":{\"resultsId\":" + std::to_string(resultsId) + ", \"size\":" + std::to_string(size) + "}}";
     };
     s_requests["/get_results_size"] = [=](NSDictionary *dict) {
         RPCObjectID resultsId = [dict[@"resultsId"] longValue];
