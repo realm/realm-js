@@ -239,10 +239,10 @@ using RPCRequest = std::function<NSDictionary *(NSDictionary *dictionary)>;
     }
 
     JSObjectRef jsObject = JSValueToObject(_context, value, NULL);
-    RPCObjectID oid = [self storeObject:jsObject];
 
     if (JSValueIsObjectOfClass(_context, value, RJSObjectClass())) {
         realm::Object *object = RJSGetInternal<realm::Object *>(jsObject);
+        RPCObjectID oid = [self storeObject:jsObject];
         return @{
              @"type": @(RJSTypeGet(realm::PropertyTypeObject).c_str()),
              @"id": @(oid),
@@ -251,6 +251,7 @@ using RPCRequest = std::function<NSDictionary *(NSDictionary *dictionary)>;
     }
     else if (JSValueIsObjectOfClass(_context, value, RJSArrayClass())) {
         realm::ObjectArray *array = RJSGetInternal<realm::ObjectArray *>(jsObject);
+        RPCObjectID oid = [self storeObject:jsObject];
         return @{
              @"type": @(RJSTypeGet(realm::PropertyTypeArray).c_str()),
              @"id": @(oid),
@@ -260,9 +261,10 @@ using RPCRequest = std::function<NSDictionary *(NSDictionary *dictionary)>;
     }
     else if (JSValueIsObjectOfClass(_context, value, RJSResultsClass())) {
         realm::Results *results = RJSGetInternal<realm::Results *>(jsObject);
+        RPCObjectID oid = [self storeObject:jsObject];
         return @{
              @"type": @"ObjectTypesRESULTS",
-             @"resultsId": @(oid),
+             @"id": @(oid),
              @"size": @(results->size()),
              @"schema": [self objectSchemaToJSONObject:results->object_schema]
         };
