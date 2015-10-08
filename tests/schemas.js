@@ -18,6 +18,8 @@
 
 'use strict';
 
+var Realm = require('realm');
+
 var TestObjectSchema = {
   name: 'TestObject',
   properties: [
@@ -107,4 +109,3 @@ var DefaultValuesObjectSchema = {
   ]
 };
 exports.DefaultValues = DefaultValuesObjectSchema;
-

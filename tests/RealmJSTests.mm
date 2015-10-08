@@ -111,6 +111,9 @@ static void DeleteRealmFilesAtPath(NSString *path) {
 
     [RealmJS initializeContext:context.JSGlobalContextRef];
 
+    // Expose the global Realm object as a global 'realm' CommonJS module.
+    [moduleLoader addGlobalModuleObject:context[@"Realm"] forName:@"realm"];
+
     NSError *error;
     JSValue *testObjects = [moduleLoader loadModuleFromURL:scriptURL error:&error];
 

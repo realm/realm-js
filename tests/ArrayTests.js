@@ -18,6 +18,7 @@
 
 'use strict';
 
+var Realm = require('realm');
 var TestCase = require('./asserts');
 var schemas = require('./schemas');
 
