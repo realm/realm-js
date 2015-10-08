@@ -18,10 +18,10 @@
 
 #pragma once
 
-#import <GCDWebServers/GCDWebServers.h>
+#import <Foundation/Foundation.h>
 
 @interface RJSRPCServer : NSObject
 
-+ (void)start;
+- (NSDictionary *)performRequest:(NSString *)name args:(NSDictionary *)args;
 
 @end

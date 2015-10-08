@@ -20,8 +20,8 @@
 #import "RealmReactModule.h"
 #import "Base/RCTLog.h"
 #import "Base/RCTBridge.h"
-#import "RealmRPC.h"
 
+@import GCDWebServers;
 @import RealmJS;
 @import JavaScriptCore;
 
@@ -50,7 +50,22 @@ RCT_EXPORT_MODULE()
 
     // The executor could be a RCTWebSocketExecutor, in which case it won't have a JS context.
     if (!contextIvar) {
-        [RJSRPCServer start];
+
+        [GCDWebServer setLogLevel:3];
+        GCDWebServer *webServer = [[GCDWebServer alloc] init];
+        RJSRPCServer *rpcServer = [[RJSRPCServer alloc] init];
+
+        // Add a handler to respond to GET requests on any URL
+        [webServer addDefaultHandlerForMethod:@"POST"
+                                 requestClass:[GCDWebServerDataRequest class]
+                                 processBlock:^GCDWebServerResponse *(GCDWebServerRequest* request) {
+             NSDictionary *json = [NSJSONSerialization JSONObjectWithData:[(GCDWebServerDataRequest *)request data] options:0 error:nil];
+             GCDWebServerDataResponse *response = [GCDWebServerDataResponse responseWithJSONObject:[rpcServer performRequest:request.path args:json]];
+             [response setValue:@"http://localhost:8081" forAdditionalHeader:@"Access-Control-Allow-Origin"];
+             return response;
+         }];
+
+        [webServer startWithPort:8082 bonjourName:nil];
         return;
     }
 

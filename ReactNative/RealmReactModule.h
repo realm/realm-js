@@ -17,9 +17,8 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #import <UIKit/UIKit.h>
-
 #import "Base/RCTBridgeModule.h"
-#import "RealmRPC.h"
+@import RealmJS;
 
 @protocol RCTBridgeModule;
 
