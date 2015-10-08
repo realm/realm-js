@@ -18,6 +18,8 @@
 
 #import "RJSUtil.hpp"
 
+using namespace realm;
+
 JSObjectRef RJSRegisterGlobalClass(JSContextRef ctx, JSObjectRef globalObject, JSClassRef classRef, const char * name, JSValueRef *exception) {
     JSObjectRef classObject = JSObjectMake(ctx, classRef, NULL);
     JSStringRef nameString = JSStringCreateWithUTF8CString(name);
@@ -43,12 +45,44 @@ JSValueRef RJSMakeError(JSContextRef ctx, const std::string &message) {
     return JSObjectMakeError(ctx, 1, &value, NULL);
 }
 
+std::string RJSTypeGet(PropertyType propertyType) {
+    switch (propertyType) {
+        case PropertyTypeBool:  return RJSTypeGet("BOOL");
+        case PropertyTypeInt:   return RJSTypeGet("INT");
+        case PropertyTypeFloat: return RJSTypeGet("FLOAT");
+        case PropertyTypeDouble:return RJSTypeGet("DOUBLE");
+        case PropertyTypeString:return RJSTypeGet("STRING");
+        case PropertyTypeDate:  return RJSTypeGet("DATE");
+        case PropertyTypeData:  return RJSTypeGet("DATA");
+        case PropertyTypeObject:return RJSTypeGet("OBJECT");
+        case PropertyTypeArray: return RJSTypeGet("LIST");
+        default:                return nullptr;
+    }
+}
+
+std::string RJSTypeGet(std::string propertyTypeString) {
+    return "PropTypes" + propertyTypeString;
+}
+
 std::string RJSStringForJSString(JSStringRef jsString) {
     std::string str;
     size_t maxSize = JSStringGetMaximumUTF8CStringSize(jsString);
     str.resize(maxSize);
     str.resize(JSStringGetUTF8CString(jsString, &str[0], maxSize) - 1);
     return str;
+}
+
+std::string RJSStringForValue(JSContextRef ctx, JSValueRef value) {
+    JSValueRef *exception;
+    JSStringRef jsString = JSValueToStringCopy(ctx, value, exception);
+    if (!jsString) {
+        throw RJSException(ctx, *exception);
+    }
+
+    std::string string = RJSStringForJSString(jsString);
+    JSStringRelease(jsString);
+
+    return string;
 }
 
 std::string RJSValidatedStringForValue(JSContextRef ctx, JSValueRef value, const char * name) {
@@ -61,13 +95,7 @@ std::string RJSValidatedStringForValue(JSContextRef ctx, JSValueRef value, const
         }
     }
 
-    JSValueRef *exception;
-    JSStringRef jsString = JSValueToStringCopy(ctx, value, exception);
-    if (!jsString) {
-        throw RJSException(ctx, *exception);
-    }
-
-    return RJSStringForJSString(jsString);
+    return RJSStringForValue(ctx, value);
 }
 
 JSStringRef RJSStringForString(const std::string &str) {

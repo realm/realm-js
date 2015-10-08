@@ -25,6 +25,7 @@
 #import "object_store.hpp"
 #import "object_accessor.hpp"
 
+using RJSAccessor = realm::NativeAccessor<JSValueRef, JSContextRef>;
 using namespace realm;
 
 JSValueRef ObjectGetProperty(JSContextRef ctx, JSObjectRef jsObject, JSStringRef jsPropertyName, JSValueRef* exception) {
@@ -69,7 +70,6 @@ JSValueRef ObjectGetProperty(JSContextRef ctx, JSObjectRef jsObject, JSStringRef
             auto arrayObjectSchema = obj->realm->config().schema->find(prop->object_type);
             return RJSArrayCreate(ctx, new ObjectArray(obj->realm, *arrayObjectSchema, static_cast<LinkViewRef>(obj->row.get_linklist(prop->table_column))));
         }
-
     }
     return NULL;
 }

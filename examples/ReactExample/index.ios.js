@@ -4,6 +4,7 @@
  */
 'use strict';
 
+var Realm = require('realm');
 var React = require('react-native');
 
 var {

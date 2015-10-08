@@ -16,11 +16,12 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#import <UIKit/UIKit.h>
-#import "Base/RCTBridgeModule.h"
-@import RealmJS;
+#pragma once
 
-@protocol RCTBridgeModule;
+#import <Foundation/Foundation.h>
 
-@interface Realm : NSObject <RCTBridgeModule>
+@interface RJSRPCServer : NSObject
+
+- (NSDictionary *)performRequest:(NSString *)name args:(NSDictionary *)args;
+
 @end

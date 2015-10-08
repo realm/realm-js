@@ -21,6 +21,7 @@
 #import "Base/RCTLog.h"
 #import "Base/RCTBridge.h"
 
+@import GCDWebServers;
 @import RealmJS;
 @import JavaScriptCore;
 
@@ -49,6 +50,29 @@ RCT_EXPORT_MODULE()
 
     // The executor could be a RCTWebSocketExecutor, in which case it won't have a JS context.
     if (!contextIvar) {
+
+        [GCDWebServer setLogLevel:3];
+        GCDWebServer *webServer = [[GCDWebServer alloc] init];
+        RJSRPCServer *rpcServer = [[RJSRPCServer alloc] init];
+
+        // Add a handler to respond to POST requests on any URL
+        [webServer addDefaultHandlerForMethod:@"POST"
+                                 requestClass:[GCDWebServerDataRequest class]
+                                 processBlock:^GCDWebServerResponse *(GCDWebServerRequest* request) {
+            NSError *error;
+            NSData *data = [(GCDWebServerDataRequest *)request data];
+            NSDictionary *json = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
+            if (error) {
+                NSLog(@"%@", error);
+                return [GCDWebServerErrorResponse responseWithClientError:kGCDWebServerHTTPStatusCode_UnprocessableEntity underlyingError:error message:@"Invalid RPC request"];
+            }
+                                     
+            GCDWebServerDataResponse *response = [GCDWebServerDataResponse responseWithJSONObject:[rpcServer performRequest:request.path args:json]];
+            [response setValue:@"http://localhost:8081" forAdditionalHeader:@"Access-Control-Allow-Origin"];
+            return response;
+         }];
+
+        [webServer startWithPort:8082 bonjourName:nil];
         return;
     }
 

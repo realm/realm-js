@@ -18,6 +18,8 @@
 
 #import "RJSUtil.hpp"
 
+extern const JSStaticFunction RJSRealmFuncs[];
+
 JSClassRef RJSRealmClass();
 JSClassRef RJSRealmConstructorClass();
 JSClassRef RJSNotificationClass();
@@ -25,3 +27,4 @@ JSClassRef RJSNotificationClass();
 std::string RJSDefaultPath();
 void RJSSetDefaultPath(std::string path);
 
+JSObjectRef RealmConstructor(JSContextRef ctx, JSObjectRef constructor, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException);

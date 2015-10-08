@@ -19,9 +19,10 @@
 #import "RealmJS.h"
 #import "RJSRealm.hpp"
 #import "RJSObject.hpp"
+#import "RJSUtil.hpp"
 
 JSValueRef RJSTypeGet(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef* exception) {
-    return RJSValueForString(ctx, "PropTypes" + RJSStringForJSString(propertyName));
+    return RJSValueForString(ctx, RJSTypeGet(RJSStringForJSString(propertyName)));
 }
 
 JSClassRef RJSRealmTypeClass() {
