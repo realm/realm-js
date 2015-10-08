@@ -112,24 +112,6 @@ static JSGlobalContextRef s_context;
         s_objects.erase(oid);
         return @{};
     };
-    s_requests["/get_objects"] = [=](NSDictionary *dict) {
-        RPCObjectID realmId = [dict[@"realmId"] longValue];
-
-        JSValueRef arguments[2];
-        long argumentCount = 1;
-        arguments[0] = RJSValueForString(s_context, [dict[@"type"] UTF8String]);
-
-        NSString *query = dict[@"predicate"];
-        if (query) {
-            arguments[1] = RJSValueForString(s_context, query.UTF8String);
-        }
-
-        JSValueRef exception = NULL;
-        JSValueRef results = RealmObjects(s_context, NULL, s_objects[realmId], argumentCount, arguments, &exception);
-        RPCObjectID resultsId = [self storeObject:(JSObjectRef)results];
-        size_t size = RJSGetInternal<realm::Results *>((JSObjectRef)results)->size();
-        return @{@"result": @{@"resultsId": @(resultsId), @"size": @(size)}};
-    };
     s_requests["/get_results_size"] = [=](NSDictionary *dict) {
         RPCObjectID resultsId = [dict[@"resultsId"] longValue];
 
@@ -272,6 +254,15 @@ static JSGlobalContextRef s_context;
              @"size": @(array->link_view->size()),
              @"schema": [self objectSchemaToJSONObject:array->object_schema]
          };
+    }
+    else if (JSValueIsObjectOfClass(s_context, value, RJSResultsClass())) {
+        realm::Results *results = RJSGetInternal<realm::Results *>(jsObject);
+        return @{
+             @"type": @"PrivateTypesRESULTS",
+             @"resultsId": @(oid),
+             @"size": @(results->size()),
+             @"schema": [self objectSchemaToJSONObject:results->object_schema]
+        };
     }
     else if (RJSIsValueArray(s_context, value)) {
         JSObjectRef jsObject = JSValueToObject(s_context, value, NULL);
