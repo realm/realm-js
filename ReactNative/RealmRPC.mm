@@ -92,9 +92,7 @@ static JSGlobalContextRef s_context;
         if (exception) {
             return @{@"error": @(RJSStringForValue(s_context, exception).c_str())};
         }
-
-        realm::Property *prop = RJSGetInternal<realm::Object *>(s_objects[objectId])->object_schema.property_for_name(name.UTF8String);
-        return @{@"result": [self resultForJSValue:propertyValue type:prop->type]};
+        return @{@"result": [self resultForJSValue:propertyValue]};
     };
     s_requests["/set_property"] = [=](NSDictionary *dict) {
         JSValueRef exception = NULL;
@@ -152,7 +150,7 @@ static JSGlobalContextRef s_context;
             return @{@"error": @(RJSStringForValue(s_context, exception).c_str())};
         }
 
-        return @{@"result": [self resultForJSValue:objectValue type:realm::PropertyTypeObject]};
+        return @{@"result": [self resultForJSValue:objectValue]};
     };
     s_requests["/get_list_size"] = [=](NSDictionary *dict) {
         RPCObjectID listId = [dict[@"listId"] longValue];
@@ -175,7 +173,44 @@ static JSGlobalContextRef s_context;
             return @{@"error": @(RJSStringForValue(s_context, exception).c_str())};
         }
 
-        return @{@"result": [self resultForJSValue:objectValue type:realm::PropertyTypeObject]};
+        return @{@"result": [self resultForJSValue:objectValue]};
+    };
+    s_requests["/call_list_method"] = [=](NSDictionary *dict) {
+        NSString *name = dict[@"name"];
+        RPCObjectID listId = [dict[@"listId"] longValue];
+        JSValueRef exception = NULL;
+
+        NSArray *arguments = dict[@"arguments"];
+        JSValueRef argumentValues[arguments.count];
+        JSContext *context = [JSContext contextWithJSGlobalContextRef:s_context];
+        for (int i = 0; i < arguments.count; i++) {
+            argumentValues[i] = [JSValue valueWithObject:arguments[i] inContext:context].JSValueRef;
+        }
+
+        JSValueRef ret;
+        if ([name isEqualToString:@"push"]) {
+            ret = ArrayPush(s_context, NULL, s_objects[listId], arguments.count, argumentValues, &exception);
+        }
+        else if ([name isEqualToString:@"pop"]) {
+            ret = ArrayPop(s_context, NULL, s_objects[listId], arguments.count, argumentValues, &exception);
+        }
+        else if ([name isEqualToString:@"shift"]) {
+            ret = ArrayShift(s_context, NULL, s_objects[listId], arguments.count, argumentValues, &exception);
+        }
+        else if ([name isEqualToString:@"unshift"]) {
+            ret = ArrayUnshift(s_context, NULL, s_objects[listId], arguments.count, argumentValues, &exception);
+        }
+        else if ([name isEqualToString:@"splice"]) {
+            ret = ArraySplice(s_context, NULL, s_objects[listId], arguments.count, argumentValues, &exception);
+        }
+        else {
+            return @{@"error": @"invalid command"};
+        }
+
+        if (exception) {
+            return @{@"error": @(RJSStringForValue(s_context, exception).c_str())};
+        }
+        return @{@"result": [self resultForJSValue:ret]};
     };
 
     // Add a handler to respond to GET requests on any URL
@@ -193,7 +228,7 @@ static JSGlobalContextRef s_context;
         [response setValue:@"http://localhost:8081" forAdditionalHeader:@"Access-Control-Allow-Origin"];
         return response;
     }];
-    
+
     [webServer startWithPort:8082 bonjourName:nil];
 }
 
@@ -205,7 +240,7 @@ static JSGlobalContextRef s_context;
     return next_id;
 }
 
-+ (NSDictionary *)resultForJSValue:(JSValueRef)value type:(realm::PropertyType)type {
++ (NSDictionary *)resultForJSValue:(JSValueRef)value {
     switch (JSValueGetType(s_context, value)) {
         case kJSTypeUndefined:
             return @{};
@@ -224,7 +259,7 @@ static JSGlobalContextRef s_context;
     JSObjectRef jsObject = JSValueToObject(s_context, value, NULL);
     RPCObjectID oid = [self storeObject:jsObject];
 
-    if (type == realm::PropertyTypeObject) {
+    if (JSValueIsObjectOfClass(s_context, value, RJSObjectClass())) {
         realm::Object *object = RJSGetInternal<realm::Object *>(jsObject);
         return @{
              @"type": @(RJSTypeGet(realm::PropertyTypeObject).c_str()),
@@ -232,13 +267,19 @@ static JSGlobalContextRef s_context;
              @"schema": [self objectSchemaToJSONObject:object->object_schema]
         };
     }
-    else {
+    else if (JSValueIsObjectOfClass(s_context, value, RJSArrayClass())) {
         realm::ObjectArray *array = RJSGetInternal<realm::ObjectArray *>(jsObject);
         return @{
              @"type": @(RJSTypeGet(realm::PropertyTypeArray).c_str()),
              @"id": @(oid),
              @"schema": [self objectSchemaToJSONObject:array->object_schema]
          };
+    }
+    else if (RJSIsValueArray(s_context, value)) {
+        assert(0);
+    }
+    else {
+        assert(0);
     }
 }
 
