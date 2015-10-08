@@ -96,8 +96,7 @@ static RPCObjectID s_id_counter = 0;
             return @{@"error": @(RJSStringForValue(s_context, exception).c_str())};
         }
 
-        // TODO: Convert propertyValue to appropriate type!
-        return @{};
+        return @{@"result": [self resultForJSValue:propertyValue]};
     };
     s_requests["/set_property"] = [=](NSDictionary *dict) {
         JSValueRef exception = NULL;
@@ -157,18 +156,7 @@ static RPCObjectID s_id_counter = 0;
             return @{@"error": @(RJSStringForValue(s_context, exception).c_str())};
         }
 
-        RPCObjectID newOid = s_id_counter++;
-        JSValueProtect(s_context, objectValue);
-        s_objects[newOid] = (JSObjectRef)objectValue;
-
-        realm::Object *object = RJSGetInternal<realm::Object *>((JSObjectRef)objectValue);
-        return @{
-            @"result": @{
-                @"type": @(RJSTypeGet(realm::PropertyTypeObject).c_str()),
-                @"id": @(newOid),
-                @"schema": [self schemaForObject:object],
-            }
-        };
+        return @{@"result": [self resultForJSValue:objectValue]};
     };
 
     // Add a handler to respond to GET requests on any URL
@@ -182,6 +170,36 @@ static RPCObjectID s_id_counter = 0;
         return response;
     }];
     [webServer startWithPort:8082 bonjourName:nil];
+}
+
++ (NSDictionary *)resultForJSValue:(JSValueRef)value {
+    switch (JSValueGetType(s_context, value)) {
+        case kJSTypeUndefined:
+            return @{};
+        case kJSTypeNull:
+            return @{@"value": [NSNull null]};
+        case kJSTypeBoolean:
+            return @{@"value": @(JSValueToBoolean(s_context, value))};
+        case kJSTypeNumber:
+            return @{@"value": @(JSValueToNumber(s_context, value, NULL))};
+        case kJSTypeString:
+            return @{@"value": @(RJSStringForValue(s_context, value).c_str())};
+        case kJSTypeObject:
+            break;
+    }
+
+    RPCObjectID newOid = s_id_counter++;
+    JSValueProtect(s_context, value);
+    s_objects[newOid] = (JSObjectRef)value;
+
+    // TODO: Check for List object!
+
+    realm::Object *object = RJSGetInternal<realm::Object *>((JSObjectRef)value);
+    return @{
+        @"type": @(RJSTypeGet(realm::PropertyTypeObject).c_str()),
+        @"id": @(newOid),
+        @"schema": [self schemaForObject:object],
+    };
 }
 
 + (NSDictionary *)schemaForObject:(realm::Object *)object {
@@ -204,6 +222,3 @@ static RPCObjectID s_id_counter = 0;
 }
 
 @end
-
-
-
