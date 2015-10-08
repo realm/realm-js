@@ -122,11 +122,11 @@ static JSGlobalContextRef s_context;
         return @{@"result": [self resultForJSValue:propertyValue]};
     };
     s_requests["/set_property"] = [=](NSDictionary *dict) {
-        JSValueRef exception = NULL;
         JSStringRef propString = RJSStringForString([dict[@"name"] UTF8String]);
-        RPCObjectID realmId = [dict[@"realmId"] longValue];
-        JSValueRef value = [[JSValue valueWithObject:dict[@"value"]
-                                           inContext:[JSContext contextWithJSGlobalContextRef:s_context]] JSValueRef];
+        RPCObjectID realmId = [dict[@"objectId"] longValue];
+        JSValueRef value = [self valueFromDictionary:dict[@"value"]];
+        JSValueRef exception = NULL;
+
         ObjectSetProperty(s_context, s_objects[realmId], propString, value, &exception);
         JSStringRelease(propString);
 
