@@ -184,14 +184,17 @@ static JSGlobalContextRef s_context;
                              processBlock:^GCDWebServerResponse *(GCDWebServerRequest* request) {
         RPCRequest action = s_requests[request.path.UTF8String];
         NSDictionary *json = [NSJSONSerialization JSONObjectWithData:[(GCDWebServerDataRequest *)request data] options:0 error:nil];
-        GCDWebServerDataResponse *response = [GCDWebServerDataResponse responseWithJSONObject:action(json)];
+
+        // perform all realm ops on the main thread
+        __block GCDWebServerDataResponse *response;
+        dispatch_sync(dispatch_get_main_queue(), ^{
+            response = [GCDWebServerDataResponse responseWithJSONObject:action(json)];
+        });
         [response setValue:@"http://localhost:8081" forAdditionalHeader:@"Access-Control-Allow-Origin"];
         return response;
     }];
-
-    [webServer startWithOptions:@{GCDWebServerOption_MaxPendingConnections: @(1),
-                                  GCDWebServerOption_Port: @(8082)}
-                          error:nil];
+    
+    [webServer startWithPort:8082 bonjourName:nil];
 }
 
 + (RPCObjectID)storeObject:(JSObjectRef)object {
