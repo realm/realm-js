@@ -69,40 +69,12 @@ static JSGlobalContextRef s_context;
         RJSGetInternal<realm::SharedRealm *>(s_objects[realmId])->get()->commit_transaction();
         return @{};
     };
-    s_requests["/create_object"] = [=](NSDictionary *dict) {
-        RPCObjectID realmId = [dict[@"realmId"] longValue];
-        JSValueRef value = [[JSValue valueWithObject:dict[@"value"]
-                                           inContext:[JSContext contextWithJSGlobalContextRef:s_context]] JSValueRef];
-        JSValueRef exception = NULL;
-        RPCObjectID oid = [self storeObject:(JSObjectRef)RealmCreateObject(s_context, NULL, s_objects[realmId], 1, &value, &exception)];
-
-        if (exception) {
-            return @{@"error": @(RJSStringForValue(s_context, exception).c_str())};
-        }
-        return @{@"result": @{@"type": @(RJSTypeGet(realm::PropertyTypeObject).c_str()), @"id": @(oid)}};
-    };
-    s_requests["/delete_object"] = [=](NSDictionary *dict) {
-        RPCObjectID realmId = [dict[@"realmId"] longValue];
-        JSValueRef jsObject = [self valueFromDictionary:dict[@"object"]];
-        JSValueRef exception = NULL;
-
-        RealmDelete(s_context, NULL, s_objects[realmId], 1, &jsObject, &exception);
-
-        if (exception) {
-            return @{@"error": @(RJSStringForValue(s_context, exception).c_str())};
-        }
-        return @{};
-    };
-    s_requests["/delete_all"] = [=](NSDictionary *dict) {
-        RPCObjectID realmId = [dict[@"realmId"] longValue];
-        JSValueRef exception = NULL;
-
-        RealmDeleteAll(s_context, NULL, s_objects[realmId], 0, NULL, &exception);
-
-        if (exception) {
-            return @{@"error": @(RJSStringForValue(s_context, exception).c_str())};
-        }
-        return @{};
+    s_requests["/call_realm_method"] = [=](NSDictionary *dict) {
+        NSString *name = dict[@"name"];
+        return [self performObjectMethod:name.UTF8String
+                            classMethods:RJSRealmFuncs
+                                    args:dict[@"arguments"]
+                                objectId:[dict[@"realmId"] longValue]];
     };
     s_requests["/dispose_realm"] = [=](NSDictionary *dict) {
         RPCObjectID realmId = [dict[@"realmId"] longValue];
@@ -206,41 +178,10 @@ static JSGlobalContextRef s_context;
     };
     s_requests["/call_list_method"] = [=](NSDictionary *dict) {
         NSString *name = dict[@"name"];
-        RPCObjectID listId = [dict[@"listId"] longValue];
-        JSValueRef exception = NULL;
-
-        NSArray *arguments = dict[@"arguments"];
-        NSUInteger count = arguments.count;
-        JSValueRef argumentValues[count];
-
-        for (NSUInteger i = 0; i < count; i++) {
-            argumentValues[i] = [self valueFromDictionary:arguments[i]];
-        }
-
-        JSValueRef ret;
-        if ([name isEqualToString:@"push"]) {
-            ret = ArrayPush(s_context, NULL, s_objects[listId], arguments.count, argumentValues, &exception);
-        }
-        else if ([name isEqualToString:@"pop"]) {
-            ret = ArrayPop(s_context, NULL, s_objects[listId], arguments.count, argumentValues, &exception);
-        }
-        else if ([name isEqualToString:@"shift"]) {
-            ret = ArrayShift(s_context, NULL, s_objects[listId], arguments.count, argumentValues, &exception);
-        }
-        else if ([name isEqualToString:@"unshift"]) {
-            ret = ArrayUnshift(s_context, NULL, s_objects[listId], arguments.count, argumentValues, &exception);
-        }
-        else if ([name isEqualToString:@"splice"]) {
-            ret = ArraySplice(s_context, NULL, s_objects[listId], arguments.count, argumentValues, &exception);
-        }
-        else {
-            return @{@"error": @"invalid command"};
-        }
-
-        if (exception) {
-            return @{@"error": @(RJSStringForValue(s_context, exception).c_str())};
-        }
-        return @{@"result": [self resultForJSValue:ret]};
+        return [self performObjectMethod:name.UTF8String
+                            classMethods:RJSArrayFuncs
+                                    args:dict[@"arguments"]
+                                objectId:[dict[@"listId"] longValue]];
     };
 
     // Add a handler to respond to GET requests on any URL
@@ -260,6 +201,32 @@ static JSGlobalContextRef s_context;
     }];
 
     [webServer startWithPort:8082 bonjourName:nil];
+}
+
++ (NSDictionary *)performObjectMethod:(const char *)name
+                         classMethods:(const JSStaticFunction [])methods
+                                 args:(NSArray *)args
+                             objectId:(RPCObjectID)oid {
+    NSUInteger count = args.count;
+    JSValueRef argValues[count];
+    for (NSUInteger i = 0; i < count; i++) {
+        argValues[i] = [self valueFromDictionary:args[i]];
+    }
+
+    size_t index = 0;
+    while (methods[index].name) {
+        if (!strcmp(methods[index].name, name)) {
+            JSValueRef ex = NULL;
+            JSValueRef ret = methods[index].callAsFunction(s_context, NULL, s_objects[oid], count, argValues, &ex);
+            if (ex) {
+                return @{@"error": @(RJSStringForValue(s_context, ex).c_str())};
+            }
+            return @{@"result": [self resultForJSValue:ret]};
+        }
+        index++;
+    }
+
+    return @{@"error": @"invalid method"};
 }
 
 + (RPCObjectID)storeObject:(JSObjectRef)object {
@@ -362,13 +329,13 @@ static JSGlobalContextRef s_context;
     }
     else if ([value isKindOfClass:[NSArray class]]) {
         NSUInteger count = [value count];
-        std::vector<JSValueRef> jsValues(count);
+        JSValueRef jsValues[count];
 
         for (NSUInteger i = 0; i < count; i++) {
             jsValues[i] = [self valueFromDictionary:value[i]];
         }
 
-        return JSObjectMakeArray(s_context, count, jsValues.data(), NULL);
+        return JSObjectMakeArray(s_context, count, jsValues, NULL);
     }
     else if ([value isKindOfClass:[NSDictionary class]]) {
         JSObjectRef jsObject = JSObjectMake(s_context, NULL, NULL);

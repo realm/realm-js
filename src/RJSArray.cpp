@@ -198,15 +198,16 @@ JSObjectRef RJSArrayCreate(JSContextRef ctx, realm::ObjectArray *array) {
     return RJSWrapObject<ObjectArray *>(ctx, RJSArrayClass(), array);
 }
 
+const JSStaticFunction RJSArrayFuncs[] = {
+    {"push", ArrayPush, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
+    {"pop", ArrayPop, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
+    {"shift", ArrayShift, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
+    {"unshift", ArrayUnshift, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
+    {"splice", ArraySplice, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
+    {NULL, NULL},
+};
+
 JSClassRef RJSArrayClass() {
-    const JSStaticFunction arrayFuncs[] = {
-        {"push", ArrayPush, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
-        {"pop", ArrayPop, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
-        {"shift", ArrayShift, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
-        {"unshift", ArrayUnshift, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
-        {"splice", ArraySplice, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
-        {NULL, NULL},
-    };
-    static JSClassRef s_arrayClass = RJSCreateWrapperClass<Object>("RealmArray", ArrayGetProperty, NULL, arrayFuncs, NULL, ArrayPropertyNames);
+    static JSClassRef s_arrayClass = RJSCreateWrapperClass<Object>("RealmArray", ArrayGetProperty, NULL, RJSArrayFuncs, NULL, ArrayPropertyNames);
     return s_arrayClass;
 }

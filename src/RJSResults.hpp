@@ -23,6 +23,7 @@ namespace realm {
     typedef std::shared_ptr<Realm> SharedRealm;
 }
 
+extern const JSStaticFunction RJSRealmFuncs[];
 JSClassRef RJSResultsClass();
 JSObjectRef RJSResultsCreate(JSContextRef ctx, realm::SharedRealm realm, std::string className);
 JSObjectRef RJSResultsCreate(JSContextRef ctx, realm::SharedRealm realm, std::string className, std::string query);

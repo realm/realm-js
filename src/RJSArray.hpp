@@ -34,6 +34,7 @@ namespace realm {
     };
 }
 
+extern const JSStaticFunction RJSArrayFuncs[];
 JSClassRef RJSArrayClass();
 JSObjectRef RJSArrayCreate(JSContextRef ctx, realm::ObjectArray *array);
 
