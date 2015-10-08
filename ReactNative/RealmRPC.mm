@@ -258,7 +258,7 @@ static JSGlobalContextRef s_context;
     else if (JSValueIsObjectOfClass(s_context, value, RJSResultsClass())) {
         realm::Results *results = RJSGetInternal<realm::Results *>(jsObject);
         return @{
-             @"type": @"PrivateTypesRESULTS",
+             @"type": @"ObjectTypesRESULTS",
              @"resultsId": @(oid),
              @"size": @(results->size()),
              @"schema": [self objectSchemaToJSONObject:results->object_schema]

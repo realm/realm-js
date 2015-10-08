@@ -47,26 +47,16 @@ JSValueRef RJSMakeError(JSContextRef ctx, const std::string &message) {
 
 std::string RJSTypeGet(PropertyType propertyType) {
     switch (propertyType) {
-        case PropertyTypeBool:
-        return RJSTypeGet("BOOL");
-        case PropertyTypeInt:
-        return RJSTypeGet("INT");
-        case PropertyTypeFloat:
-        return RJSTypeGet("FLOAT");
-        case PropertyTypeDouble:
-        return RJSTypeGet("DOUBLE");
-        case PropertyTypeString:
-        return RJSTypeGet("STRING");
-        case PropertyTypeDate:
-        return RJSTypeGet("DATE");
-        case PropertyTypeData:
-        return RJSTypeGet("DATA");
-        case PropertyTypeObject:
-        return RJSTypeGet("OBJECT");
-        case PropertyTypeArray:
-        return RJSTypeGet("LIST");
-        default:
-        return nullptr;
+        case PropertyTypeBool:  return RJSTypeGet("BOOL");
+        case PropertyTypeInt:   return RJSTypeGet("INT");
+        case PropertyTypeFloat: return RJSTypeGet("FLOAT");
+        case PropertyTypeDouble:return RJSTypeGet("DOUBLE");
+        case PropertyTypeString:return RJSTypeGet("STRING");
+        case PropertyTypeDate:  return RJSTypeGet("DATE");
+        case PropertyTypeData:  return RJSTypeGet("DATA");
+        case PropertyTypeObject:return RJSTypeGet("OBJECT");
+        case PropertyTypeArray: return RJSTypeGet("LIST");
+        default:                return nullptr;
     }
 }
 
