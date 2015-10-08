@@ -169,7 +169,7 @@
 		0270BCD01B7D067300010E03 /* RealmReactModule.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = RealmReactModule.m; path = ReactNative/RealmReactModule.m; sourceTree = "<group>"; };
 		027799281BC3037900C96559 /* RealmRPC.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = RealmRPC.mm; path = ReactNative/RealmRPC.mm; sourceTree = "<group>"; };
 		0277992A1BC3039100C96559 /* RealmRPC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RealmRPC.h; path = ReactNative/RealmRPC.h; sourceTree = "<group>"; };
-		02A3C7841BC4317A00B1A7BE /* GCDWebServer.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = GCDWebServer.xcodeproj; path = "../../../Downloads/GCDWebServer-3.2.7/GCDWebServer.xcodeproj"; sourceTree = "<group>"; };
+		02A3C7841BC4317A00B1A7BE /* GCDWebServer.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = GCDWebServer.xcodeproj; path = "vendor/GCDWebServer/GCDWebServer.xcodeproj"; sourceTree = "<group>"; };
 		02A3C7A41BC4341500B1A7BE /* libc++.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.tbd"; path = "usr/lib/libc++.tbd"; sourceTree = SDKROOT; };
 		02B29A161B7CF7C9008A7E6B /* libRealmReact.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libRealmReact.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		02B58CB11AE99CEC009B348C /* RealmJS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = RealmJS.framework; sourceTree = BUILT_PRODUCTS_DIR; };
