@@ -73,7 +73,34 @@ static JSGlobalContextRef s_context;
                                            inContext:[JSContext contextWithJSGlobalContextRef:s_context]] JSValueRef];
         JSValueRef exception = NULL;
         RPCObjectID oid = [self storeObject:(JSObjectRef)RealmCreateObject(s_context, NULL, s_objects[realmId], 1, &value, &exception)];
-        return @{@"result": @{@"type": @"PropTypesOBJECT", @"id": @(oid)}};
+
+        if (exception) {
+            return @{@"error": @(RJSStringForValue(s_context, exception).c_str())};
+        }
+        return @{@"result": @{@"type": @(RJSTypeGet(realm::PropertyTypeObject).c_str()), @"id": @(oid)}};
+    };
+    s_requests["/delete_object"] = [=](NSDictionary *dict) {
+        RPCObjectID realmId = [dict[@"realmId"] longValue];
+        JSValueRef jsObject = [self valueFromDictionary:dict[@"object"]];
+        JSValueRef exception = NULL;
+
+        RealmDelete(s_context, NULL, s_objects[realmId], 1, &jsObject, &exception);
+
+        if (exception) {
+            return @{@"error": @(RJSStringForValue(s_context, exception).c_str())};
+        }
+        return @{};
+    };
+    s_requests["/delete_all"] = [=](NSDictionary *dict) {
+        RPCObjectID realmId = [dict[@"realmId"] longValue];
+        JSValueRef exception = NULL;
+
+        RealmDeleteAll(s_context, NULL, s_objects[realmId], 0, NULL, &exception);
+
+        if (exception) {
+            return @{@"error": @(RJSStringForValue(s_context, exception).c_str())};
+        }
+        return @{};
     };
     s_requests["/dispose_realm"] = [=](NSDictionary *dict) {
         RPCObjectID realmId = [dict[@"realmId"] longValue];
@@ -95,11 +122,11 @@ static JSGlobalContextRef s_context;
         return @{@"result": [self resultForJSValue:propertyValue]};
     };
     s_requests["/set_property"] = [=](NSDictionary *dict) {
-        JSValueRef exception = NULL;
         JSStringRef propString = RJSStringForString([dict[@"name"] UTF8String]);
-        RPCObjectID realmId = [dict[@"realmId"] longValue];
-        JSValueRef value = [[JSValue valueWithObject:dict[@"value"]
-                                           inContext:[JSContext contextWithJSGlobalContextRef:s_context]] JSValueRef];
+        RPCObjectID realmId = [dict[@"objectId"] longValue];
+        JSValueRef value = [self valueFromDictionary:dict[@"value"]];
+        JSValueRef exception = NULL;
+
         ObjectSetProperty(s_context, s_objects[realmId], propString, value, &exception);
         JSStringRelease(propString);
 
@@ -181,10 +208,11 @@ static JSGlobalContextRef s_context;
         JSValueRef exception = NULL;
 
         NSArray *arguments = dict[@"arguments"];
-        JSValueRef argumentValues[arguments.count];
-        JSContext *context = [JSContext contextWithJSGlobalContextRef:s_context];
-        for (int i = 0; i < arguments.count; i++) {
-            argumentValues[i] = [JSValue valueWithObject:arguments[i] inContext:context].JSValueRef;
+        NSUInteger count = arguments.count;
+        JSValueRef argumentValues[count];
+
+        for (NSUInteger i = 0; i < count; i++) {
+            argumentValues[i] = [self valueFromDictionary:arguments[i]];
         }
 
         JSValueRef ret;
@@ -306,6 +334,55 @@ static JSGlobalContextRef s_context;
         @"name": @(objectSchema.name.c_str()),
         @"properties": properties,
     };
+}
+
++ (JSValueRef)valueFromDictionary:(NSDictionary *)dict {
+    RPCObjectID oid = [dict[@"id"] longValue];
+    if (oid) {
+        return s_objects[oid];
+    }
+
+    id value = dict[@"value"];
+    if (!value) {
+        return JSValueMakeUndefined(s_context);
+    }
+    else if ([value isKindOfClass:[NSNull class]]) {
+        return JSValueMakeNull(s_context);
+    }
+    else if ([value isKindOfClass:[@YES class]]) {
+        return JSValueMakeBoolean(s_context, [value boolValue]);
+    }
+    else if ([value isKindOfClass:[NSNumber class]]) {
+        return JSValueMakeNumber(s_context, [value doubleValue]);
+    }
+    else if ([value isKindOfClass:[NSString class]]) {
+        return RJSValueForString(s_context, std::string([value UTF8String]));
+    }
+    else if ([value isKindOfClass:[NSArray class]]) {
+        NSUInteger count = [value count];
+        std::vector<JSValueRef> jsValues(count);
+
+        for (NSUInteger i = 0; i < count; i++) {
+            jsValues[i] = [self valueFromDictionary:value[i]];
+        }
+
+        return JSObjectMakeArray(s_context, count, jsValues.data(), NULL);
+    }
+    else if ([value isKindOfClass:[NSDictionary class]]) {
+        JSObjectRef jsObject = JSObjectMake(s_context, NULL, NULL);
+
+        for (NSString *key in value) {
+            JSValueRef jsValue = [self valueFromDictionary:value[key]];
+            JSStringRef jsKey = JSStringCreateWithCFString((__bridge CFStringRef)key);
+
+            JSObjectSetProperty(s_context, jsObject, jsKey, jsValue, 0, NULL);
+            JSStringRelease(jsKey);
+        }
+
+        return jsObject;
+    }
+
+    return JSValueMakeUndefined(s_context);
 }
 
 @end
