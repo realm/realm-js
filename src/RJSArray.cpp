@@ -82,6 +82,35 @@ JSValueRef ArrayGetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef pr
     }
 }
 
+bool ArraySetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef value, JSValueRef* jsException) {
+    try {
+        ObjectArray *array = RJSVerifiedMutableArray(object);
+        size_t size = array->size();
+        std::string indexStr = RJSStringForJSString(propertyName);
+        if (indexStr == "length") {
+            throw std::runtime_error("The 'length' property is readonly.");
+        }
+
+        size_t index = std::stol(indexStr);
+        if (index >= size) {
+            throw std::out_of_range("Cannot set list item beyond its bounds.");
+        }
+
+        array->link_view->set(index, RJSAccessor::to_object_index(ctx, array->realm, const_cast<JSValueRef &>(value), array->object_schema.name, false));
+        return true;
+    }
+    catch (std::invalid_argument &exp) {
+        // for stol failure this could be another property that is handled externally, so ignore
+        return false;
+    }
+    catch (std::exception &exp) {
+        if (jsException) {
+            *jsException = RJSMakeError(ctx, exp);
+        }
+        return false;
+    }
+}
+
 void ArrayPropertyNames(JSContextRef ctx, JSObjectRef object, JSPropertyNameAccumulatorRef propertyNames) {
     ObjectArray *array = RJSVerifiedArray(object);
     size_t size = array->size();
@@ -216,6 +245,6 @@ const JSStaticFunction RJSArrayFuncs[] = {
 };
 
 JSClassRef RJSArrayClass() {
-    static JSClassRef s_arrayClass = RJSCreateWrapperClass<Object>("RealmArray", ArrayGetProperty, NULL, RJSArrayFuncs, NULL, ArrayPropertyNames);
+    static JSClassRef s_arrayClass = RJSCreateWrapperClass<Object>("RealmArray", ArrayGetProperty, ArraySetProperty, RJSArrayFuncs, NULL, ArrayPropertyNames);
     return s_arrayClass;
 }
