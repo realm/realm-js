@@ -260,7 +260,15 @@ var ArrayTests = {
             TestCase.assertEqual(removed.length, 1);
             TestCase.assertEqual(removed[0].doubleCol, 1);
             TestCase.assertEqual(array.length, 0);
-            
+
+            removed = array.splice('0', '0', obj.objectCol);
+            TestCase.assertEqual(removed.length, 0);
+            TestCase.assertEqual(array.length, 1);
+
+            TestCase.assertThrows(function() {
+                array.splice('cat', 1);
+            });
+
             TestCase.assertThrows(function() {
                 array.splice(0, 0, 0);
             });

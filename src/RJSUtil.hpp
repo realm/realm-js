@@ -112,6 +112,9 @@ static inline double RJSValidatedValueToNumber(JSContextRef ctx, JSValueRef valu
     if (exception) {
         throw RJSException(ctx, exception);
     }
+    if (isnan(number)) {
+        throw std::invalid_argument("Value not convertible to a number.");
+    }
     return number;
 }
 
