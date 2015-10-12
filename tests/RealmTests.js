@@ -73,6 +73,11 @@ var RealmTests = {
 
     testRealmCreate: function() {
         var realm = new Realm({schema: [IntPrimaryObjectSchema, AllTypesObjectSchema, TestObjectSchema]});
+
+        TestCase.assertThrows(function() {
+            realm.create('TestObject', [1]);
+        }, 'can only create inside a write transaction');
+
         realm.write(function() {
             realm.create('TestObject', [1]);
             realm.create('TestObject', {'doubleCol': 2});
@@ -171,7 +176,7 @@ var RealmTests = {
         var objects = realm.objects('TestObject');
         TestCase.assertThrows(function() {
             realm.delete(objects[0]);
-        }, "can only delete in a write transaction");
+        }, 'can only delete in a write transaction');
 
         realm.write(function() {
             TestCase.assertThrows(function() {
@@ -208,7 +213,7 @@ var RealmTests = {
 
         TestCase.assertThrows(function() {
             realm.deleteAll();
-        });
+        }, 'can only deleteAll in a write transaction');
 
         realm.write(function() {
             realm.deleteAll();

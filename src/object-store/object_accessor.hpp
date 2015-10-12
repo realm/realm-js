@@ -98,6 +98,10 @@ namespace realm {
     {
         using Accessor = NativeAccessor<ValueType, ContextType>;
 
+        if (!realm->is_in_transaction()) {
+            throw std::runtime_error("Can only set property values within a transaction.");
+        }
+
         size_t column = property.table_column;
         switch (property.type) {
             case PropertyTypeBool:

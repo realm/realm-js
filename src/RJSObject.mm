@@ -79,7 +79,7 @@ bool ObjectSetProperty(JSContextRef ctx, JSObjectRef jsObject, JSStringRef jsPro
         Object *obj = RJSGetInternal<Object *>(jsObject);
         obj->set_property_value(ctx, RJSStringForJSString(jsPropertyName), value, true);
     } catch (std::exception &ex) {
-        if (*exception) {
+        if (exception) {
             *exception = RJSMakeError(ctx, ex);
         }
         return false;
