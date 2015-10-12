@@ -20,6 +20,8 @@
 #import "RJSUtil.hpp"
 #import "RJSRealm.hpp"
 
+#import "shared_realm.hpp"
+
 NSString *RealmPathForFile(NSString *fileName) {
 #if TARGET_OS_IPHONE
     NSString *path = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES)[0];
@@ -30,10 +32,9 @@ NSString *RealmPathForFile(NSString *fileName) {
     return [path stringByAppendingPathComponent:fileName];
 }
 
-static NSString *s_testPrefix;
 
 NSString *TestRealmPath() {
-    return RealmPathForFile([s_testPrefix stringByAppendingPathComponent:@"test.realm"]);
+    return RealmPathForFile(@"test.realm");
 }
 
 static void DeleteOrThrow(NSString *path) {
@@ -72,10 +73,8 @@ static JSClassRef s_globalClass;
 - (void)setUp {
     [super setUp];
 
-    s_testPrefix = [[NSUUID UUID] UUIDString];
-    NSString *defaultDir = RealmPathForFile(s_testPrefix);
+    NSString *defaultDir = [[NSString stringWithUTF8String:RJSDefaultPath().c_str()] stringByDeletingLastPathComponent];
     [[NSFileManager defaultManager] createDirectoryAtPath:defaultDir withIntermediateDirectories:YES attributes:nil error:nil];
-    RJSSetDefaultPath([defaultDir stringByAppendingPathComponent:@"default.realm"].UTF8String);
 
     JSGlobalContextRef ctx = JSGlobalContextCreateInGroup(NULL, s_globalClass);
     self.context = [JSContext contextWithJSGlobalContextRef:ctx];
@@ -90,9 +89,12 @@ static JSClassRef s_globalClass;
 - (void)tearDown {
     self.context = nil;
 
+    realm::Realm::s_global_cache.invalidate_all();
+    realm::Realm::s_global_cache.clear();
+
     DeleteRealmFilesAtPath(TestRealmPath());
     DeleteRealmFilesAtPath(@(RJSDefaultPath().c_str()));
-    
+
     [super tearDown];
 }
 
