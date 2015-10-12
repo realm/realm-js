@@ -49,6 +49,14 @@ static inline ObjectArray * RJSVerifiedArray(JSObjectRef object) {
     return array;
 }
 
+static inline ObjectArray * RJSVerifiedMutableArray(JSObjectRef object) {
+    ObjectArray *array = RJSVerifiedArray(object);
+    if (!array->realm->is_in_transaction()) {
+        throw std::runtime_error("Can only mutate lists within a transaction.");
+    }
+    return array;
+}
+
 JSValueRef ArrayGetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef* jsException) {
     try {
         // index subscripting
@@ -89,7 +97,7 @@ void ArrayPropertyNames(JSContextRef ctx, JSObjectRef object, JSPropertyNameAccu
 
 JSValueRef ArrayPush(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) {
     try {
-        ObjectArray *array = RJSVerifiedArray(thisObject);
+        ObjectArray *array = RJSVerifiedMutableArray(thisObject);
         RJSValidateArgumentCountIsAtLeast(argumentCount, 1);
         for (size_t i = 0; i < argumentCount; i++) {
             array->link_view->add(RJSAccessor::to_object_index(ctx, array->realm, const_cast<JSValueRef &>(arguments[i]), array->object_schema.name, false));
@@ -106,7 +114,7 @@ JSValueRef ArrayPush(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObj
 
 JSValueRef ArrayPop(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) {
     try {
-        ObjectArray *array = RJSVerifiedArray(thisObject);
+        ObjectArray *array = RJSVerifiedMutableArray(thisObject);
         RJSValidateArgumentCount(argumentCount, 0);
 
         size_t size = array->size();
@@ -128,7 +136,7 @@ JSValueRef ArrayPop(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObje
 
 JSValueRef ArrayUnshift(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) {
     try {
-        ObjectArray *array = RJSVerifiedArray(thisObject);
+        ObjectArray *array = RJSVerifiedMutableArray(thisObject);
         RJSValidateArgumentCountIsAtLeast(argumentCount, 1);
         for (size_t i = 0; i < argumentCount; i++) {
             array->link_view->insert(i, RJSAccessor::to_object_index(ctx, array->realm, const_cast<JSValueRef &>(arguments[i]), array->object_schema.name, false));
@@ -145,7 +153,7 @@ JSValueRef ArrayUnshift(JSContextRef ctx, JSObjectRef function, JSObjectRef this
 
 JSValueRef ArrayShift(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) {
     try {
-        ObjectArray *array = RJSVerifiedArray(thisObject);
+        ObjectArray *array = RJSVerifiedMutableArray(thisObject);
         RJSValidateArgumentCount(argumentCount, 0);
         if (array->size() == 0) {
             return JSValueMakeUndefined(ctx);
@@ -164,7 +172,7 @@ JSValueRef ArrayShift(JSContextRef ctx, JSObjectRef function, JSObjectRef thisOb
 
 JSValueRef ArraySplice(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) {
     try {
-        ObjectArray *array = RJSVerifiedArray(thisObject);
+        ObjectArray *array = RJSVerifiedMutableArray(thisObject);
         size_t size = array->size();
 
         RJSValidateArgumentCountIsAtLeast(argumentCount, 2);

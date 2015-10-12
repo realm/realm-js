@@ -108,6 +108,7 @@ var ArrayTests = {
     testPush: function() {
         var realm = new Realm({schema: [LinkTypesObjectSchema, TestObjectSchema]});
         var array;
+
         realm.write(function() {
             var obj = realm.create('LinkTypesObject', [[1], [2], [[3]]]);
             TestCase.assertEqual(obj.arrayCol.length, 1);
@@ -128,14 +129,15 @@ var ArrayTests = {
         });   
 
         TestCase.assertEqual(array.length, 4);
-        // TestCase.assertThrows(function() {
-        //     array.push([1]);
-        // });
+        TestCase.assertThrows(function() {
+            array.push([1]);
+        }, 'can only push in a write transaction');
     },
 
     testPop: function() {
         var realm = new Realm({schema: [LinkTypesObjectSchema, TestObjectSchema]});
         var array;
+
         realm.write(function() {
             var obj = realm.create('LinkTypesObject', [[1], [2], [[3], [4]]]);
             array = obj.arrayCol;
@@ -151,14 +153,15 @@ var ArrayTests = {
             });
         });
 
-       // TestCase.assertThrows(function() {
-       //      array.pop();
-       //  });
+        TestCase.assertThrows(function() {
+            array.pop();
+        }, 'can only pop in a write transaction');
     },
 
     testUnshift: function() {
         var realm = new Realm({schema: [LinkTypesObjectSchema, TestObjectSchema]});
         var array;
+
         realm.write(function() {
             var obj = realm.create('LinkTypesObject', [[1], [2], [[3]]]);
             TestCase.assertEqual(obj.arrayCol.length, 1);
@@ -175,14 +178,15 @@ var ArrayTests = {
         });   
 
         TestCase.assertEqual(array.length, 4);
-        // TestCase.assertThrows(function() {
-        //     array.unshift([1]);
-        // });
+        TestCase.assertThrows(function() {
+            array.unshift([1]);
+        }, 'can only unshift in a write transaction');
     },
 
     testShift: function() {
         var realm = new Realm({schema: [LinkTypesObjectSchema, TestObjectSchema]});
         var array;
+
         realm.write(function() {
             var obj = realm.create('LinkTypesObject', [[1], [2], [[3], [4]]]);
             array = obj.arrayCol;
@@ -198,18 +202,20 @@ var ArrayTests = {
             });
         });
 
-       // TestCase.assertThrows(function() {
-       //      array.shift();
-       //  });
+        TestCase.assertThrows(function() {
+            array.shift();
+        }, 'can only shift in a write transaction');
     },
 
     testSplice: function() {
         var realm = new Realm({schema: [LinkTypesObjectSchema, TestObjectSchema]});
+        var array;
 
         realm.write(function() {
             var obj = realm.create('LinkTypesObject', [[1], [2], [[3], [4]]]);
-            var array = obj.arrayCol;
             var removed;
+
+            array = obj.arrayCol;
 
             removed = array.splice(0, 0, obj.objectCol, obj.objectCol1);
             TestCase.assertEqual(removed.length, 0);
@@ -248,5 +254,9 @@ var ArrayTests = {
                 array.splice(0, 0, 0);
             });
         });
+
+        TestCase.assertThrows(function() {
+            obj.arrayCol.splice(0, 0, obj.objectCol);
+        }, 'can only splice in a write transaction');
     },
 };
