@@ -19,37 +19,6 @@
 'use strict';
 
 var ArrayTests = {
-    testLinkTypesPropertySetters: function() {
-        var realm = new Realm({schema: [LinkTypesObjectSchema, TestObjectSchema]});
-        var obj = null;
-        realm.write(function() {
-            obj = realm.create('LinkTypesObject', [[1], undefined, [[3]]]);
-        });
-        TestCase.assertEqual(realm.objects('TestObject').length, 2);
-
-        // set/reuse object property
-        realm.write(function() {
-            obj.objectCol1 = obj.objectCol;
-        });
-        TestCase.assertEqual(obj.objectCol1.doubleCol, 1);
-        //TestCase.assertEqual(obj.objectCol, obj.objectCol1);
-        TestCase.assertEqual(realm.objects('TestObject').length, 2);
-
-        realm.write(function() {
-            obj.objectCol = undefined;
-            obj.objectCol1 = null;
-        });
-        TestCase.assertEqual(obj.objectCol, null);
-        TestCase.assertEqual(obj.objectCol1, null);
-
-        // set object as JSON
-        realm.write(function() {
-            obj.objectCol = { doubleCol: 3 };
-        });
-        TestCase.assertEqual(obj.objectCol.doubleCol, 3);
-        TestCase.assertEqual(realm.objects('TestObject').length, 3);
-    },
-
     testArrayLength: function() {
         var realm = new Realm({schema: [LinkTypesObjectSchema, TestObjectSchema]});
         realm.write(function() {
