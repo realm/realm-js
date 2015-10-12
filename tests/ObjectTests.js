@@ -44,6 +44,7 @@ var ObjectTests = {
         var basicTypesValues = [true, 1, 1.1, 1.11, 'string', new Date(1), 'DATA'];
         var realm = new Realm({schema: [BasicTypesObjectSchema]});
         var obj = null;
+
         realm.write(function() {
             obj = realm.create('BasicTypesObject', basicTypesValues);
             obj.boolCol = false;
@@ -54,6 +55,11 @@ var ObjectTests = {
             obj.dateCol = new Date(2);
             obj.dataCol = 'b';
         });
+
+        TestCase.assertThrows(function() {
+            obj.boolCol = true;
+        }, 'can only set property values in a write transaction');
+
         TestCase.assertEqual(obj.boolCol, false, 'wrong bool value');
         TestCase.assertEqual(obj.intCol, 2, 'wrong int value');
         TestCase.assertEqualWithTolerance(obj.floatCol, 2.2, 0.000001, 'wrong float value');
@@ -89,6 +95,10 @@ var ObjectTests = {
             obj = realm.create('LinkTypesObject', [[1], null, [[3]]]);
         });
         TestCase.assertEqual(realm.objects('TestObject').length, 2);
+
+        TestCase.assertThrows(function() {
+            obj.objectCol1 = obj.objectCol;
+        }, 'can only set property values in a write transaction');
 
         // set/reuse object property
         realm.write(function() {
