@@ -30,6 +30,10 @@ var ArrayTests = {
 
             obj.arrayCol = [[1], [2]];
             TestCase.assertEqual(obj.arrayCol.length, 2);
+
+            TestCase.assertThrows(function() {
+                obj.arrayCol.length = 0;
+            }, 'cannot set length property on lists');
         });
     },
 
@@ -44,8 +48,8 @@ var ArrayTests = {
 
         TestCase.assertEqual(array[0].doubleCol, 3);
         TestCase.assertEqual(array[1].doubleCol, 4);
-        TestCase.assertThrows(function() { array[2]; }, 'Invalid index');
-        TestCase.assertThrows(function() { array[-1]; }, 'Invalid index');
+        TestCase.assertEqual(array[2], undefined);
+        TestCase.assertEqual(array[-1], undefined);
     },
 
     testArraySubscriptSetters: function() {
@@ -63,12 +67,12 @@ var ArrayTests = {
             TestCase.assertEqual(array[1].doubleCol, 6);
 
             TestCase.assertThrows(function() {
-                array.length = 0;
-            }, 'cannot set length property on lists');
-
-            TestCase.assertThrows(function() {
                 array[2] = [1];
             }, 'cannot set list item beyond its bounds');
+
+            TestCase.assertThrows(function() {
+                array[-1] = [1];
+            }, 'cannot set list item with negative index');
         });
 
         TestCase.assertThrows(function() {
@@ -133,7 +137,7 @@ var ArrayTests = {
             TestCase.assertThrows(function() {
                 array.push();
             });
-        });   
+        });
 
         TestCase.assertEqual(array.length, 4);
         TestCase.assertThrows(function() {

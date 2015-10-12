@@ -87,6 +87,10 @@ JSValueRef ArrayGetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef pr
 
         return RJSObjectCreate(ctx, Object(array->realm, array->object_schema, array->get(RJSVerifiedPositiveIndex(indexStr))));
     }
+    catch (std::out_of_range &exp) {
+        // getters for nonexistent properties in JS should always return undefined
+        return JSValueMakeUndefined(ctx);
+    }
     catch (std::invalid_argument &exp) {
         // for stol failure this could be another property that is handled externally, so ignore
         return NULL;
