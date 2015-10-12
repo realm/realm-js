@@ -179,6 +179,14 @@ static inline size_t RJSValidatedArrayLength(JSContextRef ctx, JSObjectRef objec
     return RJSValidatedValueToNumber(ctx, lengthValue);
 }
 
+static inline size_t RJSValidatedPositiveIndex(std::string indexStr) {
+    long index = std::stol(indexStr);
+    if (index < 0) {
+        throw std::out_of_range(std::string("Index ") + indexStr + " cannot be less than zero.");
+    }
+    return index;
+}
+
 static inline bool RJSIsValueObjectOfType(JSContextRef ctx, JSValueRef value, JSStringRef type) {
     JSObjectRef globalObject = JSContextGetGlobalObject(ctx);
 

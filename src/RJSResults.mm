@@ -34,7 +34,11 @@ JSValueRef ResultsGetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef 
             return JSValueMakeNumber(ctx, size);
         }
 
-        return RJSObjectCreate(ctx, Object(results->realm, results->object_schema, results->get(std::stol(indexStr))));
+        return RJSObjectCreate(ctx, Object(results->realm, results->object_schema, results->get(RJSValidatedPositiveIndex(indexStr))));
+    }
+    catch (std::out_of_range &exp) {
+        // getters for nonexistent properties in JS should always return undefined
+        return JSValueMakeUndefined(ctx);
     }
     catch (std::invalid_argument &exp) {
         // for stol failure this could be another property that is handled externally, so ignore
