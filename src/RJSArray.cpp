@@ -29,11 +29,20 @@ size_t ObjectArray::size() {
 }
 
 Row ObjectArray::get(std::size_t row_ndx) {
-    if (row_ndx >= link_view->size()) {
-        throw std::range_error(std::string("Index ") + std::to_string(row_ndx) + " is outside of range 0..." +
-                               std::to_string(link_view->size()) + ".");
-    }
+    verify_valid_row(row_ndx);
     return link_view->get(row_ndx);
+}
+
+void ObjectArray::set(std::size_t row_ndx, std::size_t target_row_ndx) {
+    verify_valid_row(row_ndx);
+    link_view->set(row_ndx, target_row_ndx);
+}
+
+void ObjectArray::verify_valid_row(std::size_t row_ndx) {
+    size_t size = link_view->size();
+    if (row_ndx >= size) {
+        throw std::out_of_range(std::string("Index ") + std::to_string(row_ndx) + " is outside of range 0..." + std::to_string(size) + ".");
+    }
 }
 
 void ObjectArray::verify_attached() {
@@ -57,6 +66,14 @@ static inline ObjectArray * RJSVerifiedMutableArray(JSObjectRef object) {
     return array;
 }
 
+static inline size_t RJSVerifiedPositiveIndex(std::string indexStr) {
+    long index = std::stol(indexStr);
+    if (index < 0) {
+        throw std::out_of_range(std::string("Index ") + indexStr + " cannot be less than zero.");
+    }
+    return index;
+}
+
 JSValueRef ArrayGetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef* jsException) {
     try {
         // index subscripting
@@ -68,7 +85,7 @@ JSValueRef ArrayGetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef pr
             return JSValueMakeNumber(ctx, size);
         }
 
-        return RJSObjectCreate(ctx, Object(array->realm, array->object_schema, array->get(std::stol(indexStr))));
+        return RJSObjectCreate(ctx, Object(array->realm, array->object_schema, array->get(RJSVerifiedPositiveIndex(indexStr))));
     }
     catch (std::invalid_argument &exp) {
         // for stol failure this could be another property that is handled externally, so ignore
@@ -85,18 +102,12 @@ JSValueRef ArrayGetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef pr
 bool ArraySetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef value, JSValueRef* jsException) {
     try {
         ObjectArray *array = RJSVerifiedMutableArray(object);
-        size_t size = array->size();
         std::string indexStr = RJSStringForJSString(propertyName);
         if (indexStr == "length") {
             throw std::runtime_error("The 'length' property is readonly.");
         }
 
-        size_t index = std::stol(indexStr);
-        if (index >= size) {
-            throw std::out_of_range("Cannot set list item beyond its bounds.");
-        }
-
-        array->link_view->set(index, RJSAccessor::to_object_index(ctx, array->realm, const_cast<JSValueRef &>(value), array->object_schema.name, false));
+        array->set(RJSVerifiedPositiveIndex(indexStr), RJSAccessor::to_object_index(ctx, array->realm, const_cast<JSValueRef &>(value), array->object_schema.name, false));
         return true;
     }
     catch (std::invalid_argument &exp) {
