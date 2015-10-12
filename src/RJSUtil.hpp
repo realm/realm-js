@@ -108,26 +108,11 @@ static inline JSObjectRef RJSValidatedValueToObject(JSContextRef ctx, JSValueRef
 
 static inline double RJSValidatedValueToNumber(JSContextRef ctx, JSValueRef value) {
     JSValueRef exception = NULL;
-    if (!JSValueIsNumber(ctx, value)) {
-        throw std::runtime_error("Value is not a number");
-    }
     double number = JSValueToNumber(ctx, value, &exception);
     if (exception) {
         throw RJSException(ctx, exception);
     }
     return number;
-}
-
-static inline bool RJSValidatedValueToBool(JSContextRef ctx, JSValueRef value) {
-    JSValueRef exception = NULL;
-    if (!JSValueIsBoolean(ctx, value)) {
-        throw std::runtime_error("Value is not a boolean");
-    }
-    bool b = JSValueToNumber(ctx, value, &exception);
-    if (exception) {
-        throw RJSException(ctx, exception);
-    }
-    return b;
 }
 
 static inline JSValueRef RJSValidatedPropertyValue(JSContextRef ctx, JSObjectRef object, JSStringRef property) {

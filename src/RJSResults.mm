@@ -75,7 +75,7 @@ JSValueRef SortByProperty(JSContextRef ctx, JSObjectRef function, JSObjectRef th
 
         bool ascending = true;
         if (argumentCount == 2) {
-            ascending = RJSValidatedValueToBool(ctx, arguments[1]);
+            ascending = JSValueToBoolean(ctx, arguments[1]);
         }
 
         SortOrder sort = {{prop->table_column}, {ascending}};
