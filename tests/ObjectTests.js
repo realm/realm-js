@@ -56,10 +56,6 @@ var ObjectTests = {
             obj.dataCol = 'b';
         });
 
-        TestCase.assertThrows(function() {
-            obj.boolCol = true;
-        }, 'can only set property values in a write transaction');
-
         TestCase.assertEqual(obj.boolCol, false, 'wrong bool value');
         TestCase.assertEqual(obj.intCol, 2, 'wrong int value');
         TestCase.assertEqualWithTolerance(obj.floatCol, 2.2, 0.000001, 'wrong float value');
@@ -67,6 +63,12 @@ var ObjectTests = {
         TestCase.assertEqual(obj.stringCol, 'STRING', 'wrong string value');
         TestCase.assertEqual(obj.dateCol.getTime(), 2, 'wrong date value');
         TestCase.assertEqual(obj.dataCol, 'b', 'wrong data value');
+
+        TestCase.assertThrows(function() {
+            obj.boolCol = true;
+        }, 'can only set property values in a write transaction');
+
+        TestCase.assertEqual(obj.boolCol, false, 'bool value changed outside transaction');
     },
     testLinkTypesPropertyGetters: function() {
         var realm = new Realm({schema: [LinkTypesObjectSchema, TestObjectSchema]});
