@@ -43,7 +43,7 @@ Row Results::get(std::size_t row_ndx)
 {
     verify_attached();
     if (row_ndx >= table_view.size()) {
-        throw std::range_error(std::string("Index ") + std::to_string(row_ndx) + " is outside of range 0..." +
+        throw std::out_of_range(std::string("Index ") + std::to_string(row_ndx) + " is outside of range 0..." +
                                std::to_string(table_view.size()) + ".");
     }
     return table_view.get(row_ndx);
