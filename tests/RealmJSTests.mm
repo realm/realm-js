@@ -92,6 +92,7 @@ static JSClassRef s_globalClass;
     realm::Realm::s_global_cache.invalidate_all();
     realm::Realm::s_global_cache.clear();
 
+    // FIXME - find all realm files in the docs dir and delete them rather than hardcoding these
     DeleteRealmFilesAtPath(RealmPathForFile(@"test.realm"));
     DeleteRealmFilesAtPath(RealmPathForFile(@"test1.realm"));
     DeleteRealmFilesAtPath(RealmPathForFile(@"test2.realm"));

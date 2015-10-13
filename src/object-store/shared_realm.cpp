@@ -444,8 +444,8 @@ void RealmCache::invalidate_all()
 {
     std::lock_guard<std::mutex> lock(m_mutex);
 
-    for (auto &path_realms:m_cache) {
-        for (auto &realm_iter:path_realms.second) {
+    for (auto &path_realms : m_cache) {
+        for (auto &realm_iter : path_realms.second) {
             if (auto realm = realm_iter.second.lock()) {
                 realm->invalidate();
             }
