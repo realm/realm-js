@@ -68,7 +68,7 @@ JSValueRef ObjectGetProperty(JSContextRef ctx, JSObjectRef jsObject, JSStringRef
         }
         case PropertyTypeArray: {
             auto arrayObjectSchema = obj->realm->config().schema->find(prop->object_type);
-            return RJSArrayCreate(ctx, new ObjectArray(obj->realm, *arrayObjectSchema, static_cast<LinkViewRef>(obj->row.get_linklist(prop->table_column))));
+            return RJSArrayCreate(ctx, new List(obj->realm, *arrayObjectSchema, static_cast<LinkViewRef>(obj->row.get_linklist(prop->table_column))));
         }
     }
     return NULL;

@@ -250,13 +250,13 @@ using RPCRequest = std::function<NSDictionary *(NSDictionary *dictionary)>;
         };
     }
     else if (JSValueIsObjectOfClass(_context, value, RJSArrayClass())) {
-        realm::ObjectArray *array = RJSGetInternal<realm::ObjectArray *>(jsObject);
+        realm::List *list = RJSGetInternal<realm::List *>(jsObject);
         RPCObjectID oid = [self storeObject:jsObject];
         return @{
              @"type": @(RJSTypeGet(realm::PropertyTypeArray).c_str()),
              @"id": @(oid),
-             @"size": @(array->link_view->size()),
-             @"schema": [self objectSchemaToJSONObject:array->object_schema]
+             @"size": @(list->link_view->size()),
+             @"schema": [self objectSchemaToJSONObject:list->object_schema]
          };
     }
     else if (JSValueIsObjectOfClass(_context, value, RJSResultsClass())) {

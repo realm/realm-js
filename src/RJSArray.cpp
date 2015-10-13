@@ -24,60 +24,60 @@
 using RJSAccessor = realm::NativeAccessor<JSValueRef, JSContextRef>;
 using namespace realm;
 
-size_t ObjectArray::size() {
+size_t List::size() {
     return link_view->size();
 }
 
-Row ObjectArray::get(std::size_t row_ndx) {
+Row List::get(std::size_t row_ndx) {
     verify_valid_row(row_ndx);
     return link_view->get(row_ndx);
 }
 
-void ObjectArray::set(std::size_t row_ndx, std::size_t target_row_ndx) {
+void List::set(std::size_t row_ndx, std::size_t target_row_ndx) {
     verify_valid_row(row_ndx);
     link_view->set(row_ndx, target_row_ndx);
 }
 
-void ObjectArray::verify_valid_row(std::size_t row_ndx) {
+void List::verify_valid_row(std::size_t row_ndx) {
     size_t size = link_view->size();
     if (row_ndx >= size) {
         throw std::out_of_range(std::string("Index ") + std::to_string(row_ndx) + " is outside of range 0..." + std::to_string(size) + ".");
     }
 }
 
-void ObjectArray::verify_attached() {
+void List::verify_attached() {
     if (!link_view->is_attached()) {
         throw std::runtime_error("Tableview is not attached");
     }
     link_view->sync_if_needed();
 }
 
-static inline ObjectArray * RJSVerifiedArray(JSObjectRef object) {
-    ObjectArray *array = RJSGetInternal<ObjectArray *>(object);
-    array->verify_attached();
-    return array;
+static inline List * RJSVerifiedArray(JSObjectRef object) {
+    List *list = RJSGetInternal<List *>(object);
+    list->verify_attached();
+    return list;
 }
 
-static inline ObjectArray * RJSVerifiedMutableArray(JSObjectRef object) {
-    ObjectArray *array = RJSVerifiedArray(object);
-    if (!array->realm->is_in_transaction()) {
+static inline List * RJSVerifiedMutableArray(JSObjectRef object) {
+    List *list = RJSVerifiedArray(object);
+    if (!list->realm->is_in_transaction()) {
         throw std::runtime_error("Can only mutate lists within a transaction.");
     }
-    return array;
+    return list;
 }
 
 JSValueRef ArrayGetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef* jsException) {
     try {
         // index subscripting
-        ObjectArray *array = RJSVerifiedArray(object);
-        size_t size = array->size();
+        List *list = RJSVerifiedArray(object);
+        size_t size = list->size();
 
         std::string indexStr = RJSStringForJSString(propertyName);
         if (indexStr == "length") {
             return JSValueMakeNumber(ctx, size);
         }
 
-        return RJSObjectCreate(ctx, Object(array->realm, array->object_schema, array->get(RJSValidatedPositiveIndex(indexStr))));
+        return RJSObjectCreate(ctx, Object(list->realm, list->object_schema, list->get(RJSValidatedPositiveIndex(indexStr))));
     }
     catch (std::out_of_range &exp) {
         // getters for nonexistent properties in JS should always return undefined
@@ -97,13 +97,13 @@ JSValueRef ArrayGetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef pr
 
 bool ArraySetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef value, JSValueRef* jsException) {
     try {
-        ObjectArray *array = RJSVerifiedMutableArray(object);
+        List *list = RJSVerifiedMutableArray(object);
         std::string indexStr = RJSStringForJSString(propertyName);
         if (indexStr == "length") {
             throw std::runtime_error("The 'length' property is readonly.");
         }
 
-        array->set(RJSValidatedPositiveIndex(indexStr), RJSAccessor::to_object_index(ctx, array->realm, const_cast<JSValueRef &>(value), array->object_schema.name, false));
+        list->set(RJSValidatedPositiveIndex(indexStr), RJSAccessor::to_object_index(ctx, list->realm, const_cast<JSValueRef &>(value), list->object_schema.name, false));
         return true;
     }
     catch (std::invalid_argument &exp) {
@@ -119,8 +119,8 @@ bool ArraySetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef property
 }
 
 void ArrayPropertyNames(JSContextRef ctx, JSObjectRef object, JSPropertyNameAccumulatorRef propertyNames) {
-    ObjectArray *array = RJSVerifiedArray(object);
-    size_t size = array->size();
+    List *list = RJSVerifiedArray(object);
+    size_t size = list->size();
     
     char str[32];
     for (size_t i = 0; i < size; i++) {
@@ -133,7 +133,7 @@ void ArrayPropertyNames(JSContextRef ctx, JSObjectRef object, JSPropertyNameAccu
 
 JSValueRef ArrayPush(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) {
     try {
-        ObjectArray *array = RJSVerifiedMutableArray(thisObject);
+        List *array = RJSVerifiedMutableArray(thisObject);
         RJSValidateArgumentCountIsAtLeast(argumentCount, 1);
         for (size_t i = 0; i < argumentCount; i++) {
             array->link_view->add(RJSAccessor::to_object_index(ctx, array->realm, const_cast<JSValueRef &>(arguments[i]), array->object_schema.name, false));
@@ -150,16 +150,16 @@ JSValueRef ArrayPush(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObj
 
 JSValueRef ArrayPop(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) {
     try {
-        ObjectArray *array = RJSVerifiedMutableArray(thisObject);
+        List *list = RJSVerifiedMutableArray(thisObject);
         RJSValidateArgumentCount(argumentCount, 0);
 
-        size_t size = array->size();
+        size_t size = list->size();
         if (size == 0) {
             return JSValueMakeUndefined(ctx);
         }
         size_t index = size - 1;
-        JSValueRef obj = RJSObjectCreate(ctx, Object(array->realm, array->object_schema, array->get(index)));
-        array->link_view->remove(index);
+        JSValueRef obj = RJSObjectCreate(ctx, Object(list->realm, list->object_schema, list->get(index)));
+        list->link_view->remove(index);
         return obj;
     }
     catch (std::exception &exp) {
@@ -172,7 +172,7 @@ JSValueRef ArrayPop(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObje
 
 JSValueRef ArrayUnshift(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) {
     try {
-        ObjectArray *array = RJSVerifiedMutableArray(thisObject);
+        List *array = RJSVerifiedMutableArray(thisObject);
         RJSValidateArgumentCountIsAtLeast(argumentCount, 1);
         for (size_t i = 0; i < argumentCount; i++) {
             array->link_view->insert(i, RJSAccessor::to_object_index(ctx, array->realm, const_cast<JSValueRef &>(arguments[i]), array->object_schema.name, false));
@@ -189,13 +189,13 @@ JSValueRef ArrayUnshift(JSContextRef ctx, JSObjectRef function, JSObjectRef this
 
 JSValueRef ArrayShift(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) {
     try {
-        ObjectArray *array = RJSVerifiedMutableArray(thisObject);
+        List *list = RJSVerifiedMutableArray(thisObject);
         RJSValidateArgumentCount(argumentCount, 0);
-        if (array->size() == 0) {
+        if (list->size() == 0) {
             return JSValueMakeUndefined(ctx);
         }
-        JSValueRef obj = RJSObjectCreate(ctx, Object(array->realm, array->object_schema, array->get(0)));
-        array->link_view->remove(0);
+        JSValueRef obj = RJSObjectCreate(ctx, Object(list->realm, list->object_schema, list->get(0)));
+        list->link_view->remove(0);
         return obj;
     }
     catch (std::exception &exp) {
@@ -208,8 +208,8 @@ JSValueRef ArrayShift(JSContextRef ctx, JSObjectRef function, JSObjectRef thisOb
 
 JSValueRef ArraySplice(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) {
     try {
-        ObjectArray *array = RJSVerifiedMutableArray(thisObject);
-        size_t size = array->size();
+        List *list = RJSVerifiedMutableArray(thisObject);
+        size_t size = list->size();
 
         RJSValidateArgumentCountIsAtLeast(argumentCount, 2);
         long index = std::min<long>(RJSValidatedValueToNumber(ctx, arguments[0]), size);
@@ -222,11 +222,11 @@ JSValueRef ArraySplice(JSContextRef ctx, JSObjectRef function, JSObjectRef thisO
 
         std::vector<JSObjectRef> removedObjects(remove);
         for (size_t i = 0; i < remove; i++) {
-            removedObjects[i] = RJSObjectCreate(ctx, Object(array->realm, array->object_schema, array->get(index)));
-            array->link_view->remove(index);
+            removedObjects[i] = RJSObjectCreate(ctx, Object(list->realm, list->object_schema, list->get(index)));
+            list->link_view->remove(index);
         }
         for (size_t i = 2; i < argumentCount; i++) {
-            array->link_view->insert(index + i - 2, RJSAccessor::to_object_index(ctx, array->realm, const_cast<JSValueRef &>(arguments[i]), array->object_schema.name, false));
+            list->link_view->insert(index + i - 2, RJSAccessor::to_object_index(ctx, list->realm, const_cast<JSValueRef &>(arguments[i]), list->object_schema.name, false));
         }
         return JSObjectMakeArray(ctx, remove, removedObjects.data(), jsException);
     }
@@ -238,8 +238,8 @@ JSValueRef ArraySplice(JSContextRef ctx, JSObjectRef function, JSObjectRef thisO
     return NULL;
 }
 
-JSObjectRef RJSArrayCreate(JSContextRef ctx, realm::ObjectArray *array) {
-    return RJSWrapObject<ObjectArray *>(ctx, RJSArrayClass(), array);
+JSObjectRef RJSArrayCreate(JSContextRef ctx, realm::List *list) {
+    return RJSWrapObject<List *>(ctx, RJSArrayClass(), list);
 }
 
 const JSStaticFunction RJSArrayFuncs[] = {
