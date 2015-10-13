@@ -54,21 +54,20 @@ var RealmTests = {
         var testPath = TestUtil.realmPathForFile('test1.realm');
         var realm = new Realm({path: testPath, schema: [], schemaVersion: 1});
         TestCase.assertEqual(realm.schemaVersion, 1);
+        // FIXME - enable once Realm exposes a schema object
         //TestCase.assertEqual(realm.schema.length, 0);
  
         realm.close();
-//        TestCase.assertThrows(function() {
-//            realm = new Realm({path: testPath, schema: [TestObjectSchema], schemaVersion: 1});
-//        }, "schema changes require updating the schema version");
+        // FIXME - enable once realm initialization supports schema comparison
+        // TestCase.assertThrows(function() {
+        //     realm = new Realm({path: testPath, schema: [TestObjectSchema], schemaVersion: 1});
+        // }, "schema changes require updating the schema version");
 
         realm = new Realm({path: testPath, schema: [TestObjectSchema], schemaVersion: 2});
         realm.write(function() {
             realm.create('TestObject', [1]);
         });
         TestCase.assertEqual(realm.objects('TestObject')[0].doubleCol, 1)
-
-        //realm = undefined;
-        //realm = new Realm({path: testPath, schema: [], schemaVersion: 2});
     },
 
     testDefaultPath: function() {
