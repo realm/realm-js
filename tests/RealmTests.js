@@ -272,14 +272,19 @@ var RealmTests = {
     },
 
     testNotifications: function() {
-        var notificationCount = 0;
         var realm = new Realm({schema: []});
-        var notification = realm.addNotification(function() { 
-            notificationCount++; 
+        var notificationCount = 0;
+        var notificationName;
+
+        var notification = realm.addNotification(function(realm, name) {
+            notificationCount++;
+            notificationName = name;
         });
+
         TestCase.assertEqual(notificationCount, 0);
         realm.write(function() {});
         TestCase.assertEqual(notificationCount, 1);
+        TestCase.assertEqual(notificationName, 'DidChangeNotification');
     },
 };
 
