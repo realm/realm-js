@@ -403,6 +403,21 @@ JSValueRef RealmAddNotification(JSContextRef ctx, JSObjectRef function, JSObject
     }
 }
 
+JSValueRef RealmClose(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) {
+    try {
+        RJSValidateArgumentCount(argumentCount, 0);
+        SharedRealm realm = *RJSGetInternal<SharedRealm *>(thisObject);
+        realm->invalidate();
+        realm::Realm::s_global_cache.remove(realm->config().path, realm->thread_id());
+    }
+    catch (std::exception &exp) {
+        if (jsException) {
+            *jsException = RJSMakeError(ctx, exp);
+        }
+    }
+    return NULL;
+}
+
 void RJSNotificationFinalize(JSObjectRef object) {
     Notification *notification = RJSGetInternal<Notification *>(object);
     JSGlobalContextRelease(notification->ctx);
@@ -416,6 +431,7 @@ const JSStaticFunction RJSRealmFuncs[] = {
     {"deleteAll", RealmDeleteAll, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
     {"write", RealmWrite, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
     {"addNotification", RealmAddNotification, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
+    {"close", RealmClose, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
     {NULL, NULL},
 };
 

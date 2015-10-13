@@ -92,7 +92,9 @@ static JSClassRef s_globalClass;
     realm::Realm::s_global_cache.invalidate_all();
     realm::Realm::s_global_cache.clear();
 
-    DeleteRealmFilesAtPath(TestRealmPath());
+    DeleteRealmFilesAtPath(RealmPathForFile(@"test.realm"));
+    DeleteRealmFilesAtPath(RealmPathForFile(@"test1.realm"));
+    DeleteRealmFilesAtPath(RealmPathForFile(@"test2.realm"));
     DeleteRealmFilesAtPath(@(RJSDefaultPath().c_str()));
 
     [super tearDown];
