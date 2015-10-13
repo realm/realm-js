@@ -373,6 +373,18 @@ namespace realm {
         JSObjectRef realmObject;
         JSObjectRef callbackObject;
         RJSRealmDelegate::NotificationFunction func;
+
+        Notification(JSGlobalContextRef c, JSObjectRef r, JSObjectRef cb, RJSRealmDelegate::NotificationFunction f) : ctx(c), realmObject(r), callbackObject(cb), func(f) {
+            JSGlobalContextRetain(ctx);
+            JSValueProtect(ctx, realmObject);
+            JSValueProtect(ctx, callbackObject);
+        }
+
+        ~Notification() {
+            JSValueUnprotect(ctx, callbackObject);
+            JSValueUnprotect(ctx, realmObject);
+            JSGlobalContextRelease(ctx);
+        }
     };
 }
 
@@ -382,10 +394,7 @@ JSValueRef RealmAddNotification(JSContextRef ctx, JSObjectRef function, JSObject
 
         JSObjectRef callback = RJSValidatedValueToFunction(ctx, arguments[0]);
         SharedRealm realm = *RJSGetInternal<SharedRealm *>(thisObject);
-        JSGlobalContextRef gCtx = JSGlobalContextRetain(JSContextGetGlobalContext(ctx));
-
-        JSValueProtect(gCtx, thisObject);
-        JSValueProtect(gCtx, callback);
+        JSGlobalContextRef gCtx = JSContextGetGlobalContext(ctx);
 
         RJSRealmDelegate::NotificationFunction func = std::make_shared<std::function<void(const std::string)>>([=](std::string notification_name) {
             JSValueRef arguments[2];
@@ -424,16 +433,6 @@ JSValueRef RealmClose(JSContextRef ctx, JSObjectRef function, JSObjectRef thisOb
     return NULL;
 }
 
-void RJSNotificationFinalize(JSObjectRef object) {
-    Notification *notification = RJSGetInternal<Notification *>(object);
-    JSGlobalContextRef ctx = notification->ctx;
-
-    JSValueUnprotect(ctx, notification->callbackObject);
-    JSValueUnprotect(ctx, notification->realmObject);
-    JSGlobalContextRelease(ctx);
-    RJSFinalize<Notification *>(object);
-}
-
 const JSStaticFunction RJSRealmFuncs[] = {
     {"objects", RealmObjects, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
     {"create", RealmCreateObject, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
@@ -451,7 +450,7 @@ JSClassRef RJSRealmClass() {
 }
 
 JSClassRef RJSNotificationClass() {
-    static JSClassRef s_notificationClass = RJSCreateWrapperClass<Notification *>("Notification", NULL, NULL, NULL, RJSNotificationFinalize);
+    static JSClassRef s_notificationClass = RJSCreateWrapperClass<Notification *>("Notification", NULL, NULL, NULL);
     return s_notificationClass;
 }
 
