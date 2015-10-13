@@ -86,7 +86,7 @@ inline void RJSValidateArgumentRange(size_t argumentCount, size_t min, size_t ma
 
 class RJSException : public std::runtime_error {
 public:
-    RJSException(JSContextRef ctx, JSValueRef &ex) : std::runtime_error(RJSValidatedStringForValue(ctx, ex, "exception")),
+    RJSException(JSContextRef ctx, JSValueRef &ex) : std::runtime_error(RJSStringForValue(ctx, ex)),
         m_jsException(ex) {}
     JSValueRef exception() { return m_jsException; }
 
