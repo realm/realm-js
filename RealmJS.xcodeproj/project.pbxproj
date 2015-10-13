@@ -54,6 +54,8 @@
 		0270BCD11B7D067300010E03 /* RealmReactModule.m in Sources */ = {isa = PBXBuildFile; fileRef = 0270BCD01B7D067300010E03 /* RealmReactModule.m */; };
 		02B29A311B7CF86D008A7E6B /* RealmJS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 02B58CB11AE99CEC009B348C /* RealmJS.framework */; };
 		02B58CCE1AE99D4D009B348C /* JavaScriptCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 02B58CCD1AE99D4D009B348C /* JavaScriptCore.framework */; };
+		02C0864E1BCDB27000942F9C /* list.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02C0864C1BCDB27000942F9C /* list.cpp */; settings = {ASSET_TAGS = (); }; };
+		02C0864F1BCDB27000942F9C /* list.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 02C0864D1BCDB27000942F9C /* list.hpp */; settings = {ASSET_TAGS = (); }; };
 		02D456DA1B7E59A500EE1299 /* ArrayTests.js in Resources */ = {isa = PBXBuildFile; fileRef = 02D456D91B7E59A500EE1299 /* ArrayTests.js */; };
 		02D8D1F71B601984006DB49D /* JavaScriptCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 02B58CCD1AE99D4D009B348C /* JavaScriptCore.framework */; };
 /* End PBXBuildFile section */
@@ -183,6 +185,8 @@
 		02B58CB11AE99CEC009B348C /* RealmJS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = RealmJS.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		02B58CBC1AE99CEC009B348C /* RealmJSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RealmJSTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		02B58CCD1AE99D4D009B348C /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
+		02C0864C1BCDB27000942F9C /* list.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = list.cpp; path = "src/object-store/list.cpp"; sourceTree = "<group>"; };
+		02C0864D1BCDB27000942F9C /* list.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = list.hpp; path = "src/object-store/list.hpp"; sourceTree = "<group>"; };
 		02D456D91B7E59A500EE1299 /* ArrayTests.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; name = ArrayTests.js; path = tests/ArrayTests.js; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
@@ -234,6 +238,8 @@
 				02601F021BA0F0C4007C91FF /* external_commit_helper.hpp */,
 				02601F051BA0F0CD007C91FF /* index_set.cpp */,
 				02601F061BA0F0CD007C91FF /* index_set.hpp */,
+				02C0864C1BCDB27000942F9C /* list.cpp */,
+				02C0864D1BCDB27000942F9C /* list.hpp */,
 				02601F0B1BA0F3A7007C91FF /* schema.cpp */,
 				02601F0C1BA0F3A7007C91FF /* schema.hpp */,
 				02601F0F1BA10228007C91FF /* transact_log_handler.cpp */,
@@ -353,6 +359,7 @@
 				02601F041BA0F0C4007C91FF /* external_commit_helper.hpp in Headers */,
 				02601F091BA0F0CD007C91FF /* index_set.hpp in Headers */,
 				0270BC6D1B7CFC1C00010E03 /* property.hpp in Headers */,
+				02C0864F1BCDB27000942F9C /* list.hpp in Headers */,
 				0270BC6F1B7CFC1C00010E03 /* results.hpp in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -563,6 +570,7 @@
 				02601F111BA10228007C91FF /* transact_log_handler.cpp in Sources */,
 				0270BC591B7CFC0D00010E03 /* RJSUtil.mm in Sources */,
 				0270BC551B7CFC0D00010E03 /* RJSResults.mm in Sources */,
+				02C0864E1BCDB27000942F9C /* list.cpp in Sources */,
 				02601F031BA0F0C4007C91FF /* external_commit_helper.cpp in Sources */,
 				0270BC6B1B7CFC1C00010E03 /* object_store.cpp in Sources */,
 				0270BC701B7CFC1C00010E03 /* shared_realm.cpp in Sources */,
