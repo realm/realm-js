@@ -131,6 +131,7 @@ namespace realm {
         SharedRealm get_any_realm(const std::string &path);
         void remove(const std::string &path, std::thread::id thread_id);
         void cache_realm(SharedRealm &realm, std::thread::id thread_id = std::this_thread::get_id());
+        void invalidate_all();
         void clear();
 
       private:

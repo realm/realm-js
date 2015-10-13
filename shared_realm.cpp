@@ -198,7 +198,9 @@ bool Realm::update_schema(std::unique_ptr<Schema> schema, uint64_t version)
     auto migration_function = [&](Group*,  Schema&) {
         SharedRealm old_realm(new Realm(old_config));
         auto updated_realm = shared_from_this();
-        m_config.migration_function(old_realm, updated_realm);
+        if (m_config.migration_function) {
+            m_config.migration_function(old_realm, updated_realm);
+        }
     };
 
     try {
@@ -435,6 +437,19 @@ void RealmCache::cache_realm(SharedRealm &realm, std::thread::id thread_id)
     }
     else {
         path_iter->second.emplace(thread_id, realm);
+    }
+}
+
+void RealmCache::invalidate_all()
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    for (auto &path_realms : m_cache) {
+        for (auto &realm_iter : path_realms.second) {
+            if (auto realm = realm_iter.second.lock()) {
+                realm->invalidate();
+            }
+        }
     }
 }
 
