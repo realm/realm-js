@@ -140,7 +140,7 @@ using RPCRequest = std::function<NSDictionary *(NSDictionary *dictionary)>;
 
             JSValueRef exception = NULL;
             static JSStringRef lengthPropertyName = JSStringCreateWithUTF8CString("length");
-            JSValueRef lengthValue = ArrayGetProperty(_context, _objects[listId], lengthPropertyName, &exception);
+            JSValueRef lengthValue = ListGetProperty(_context, _objects[listId], lengthPropertyName, &exception);
             size_t length = JSValueToNumber(_context, lengthValue, &exception);
 
             if (exception) {
@@ -154,7 +154,7 @@ using RPCRequest = std::function<NSDictionary *(NSDictionary *dictionary)>;
 
             JSValueRef exception = NULL;
             JSStringRef indexPropertyName = JSStringCreateWithUTF8CString(std::to_string(index).c_str());
-            JSValueRef objectValue = ArrayGetProperty(_context, _objects[listId], indexPropertyName, &exception);
+            JSValueRef objectValue = ListGetProperty(_context, _objects[listId], indexPropertyName, &exception);
             JSStringRelease(indexPropertyName);
 
             if (exception) {

@@ -24,4 +24,4 @@ extern const JSStaticFunction RJSListFuncs[];
 JSClassRef RJSListClass();
 JSObjectRef RJSListCreate(JSContextRef ctx, realm::List &list);
 
-JSValueRef ArrayGetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef* jsException);
+JSValueRef ListGetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef* jsException);
