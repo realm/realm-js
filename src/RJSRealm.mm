@@ -261,7 +261,7 @@ JSValueRef RealmCreateObject(JSContextRef ctx, JSObjectRef function, JSObjectRef
 
         bool update = false;
         if (argumentCount == 3) {
-            update = RJSValidatedValueToBool(ctx, arguments[2]);
+            update = JSValueToBoolean(ctx, arguments[2]);
         }
 
         return RJSObjectCreate(ctx, Object::create<JSValueRef>(ctx, sharedRealm, *object_schema, object, update));

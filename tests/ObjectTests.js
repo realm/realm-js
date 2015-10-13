@@ -64,6 +64,16 @@ var ObjectTests = {
         TestCase.assertEqual(obj.dateCol.getTime(), 2, 'wrong date value');
         TestCase.assertEqual(obj.dataCol, 'b', 'wrong data value');
 
+        realm.write(function() {
+            TestCase.assertThrows(function() {
+                obj.boolCol = 'cat';
+            });
+
+            TestCase.assertThrows(function() {
+                obj.intCol = 'dog';
+            });
+        });
+
         TestCase.assertThrows(function() {
             obj.boolCol = true;
         }, 'can only set property values in a write transaction');

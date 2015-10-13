@@ -29,11 +29,20 @@ size_t ObjectArray::size() {
 }
 
 Row ObjectArray::get(std::size_t row_ndx) {
-    if (row_ndx >= link_view->size()) {
-        throw std::range_error(std::string("Index ") + std::to_string(row_ndx) + " is outside of range 0..." +
-                               std::to_string(link_view->size()) + ".");
-    }
+    verify_valid_row(row_ndx);
     return link_view->get(row_ndx);
+}
+
+void ObjectArray::set(std::size_t row_ndx, std::size_t target_row_ndx) {
+    verify_valid_row(row_ndx);
+    link_view->set(row_ndx, target_row_ndx);
+}
+
+void ObjectArray::verify_valid_row(std::size_t row_ndx) {
+    size_t size = link_view->size();
+    if (row_ndx >= size) {
+        throw std::out_of_range(std::string("Index ") + std::to_string(row_ndx) + " is outside of range 0..." + std::to_string(size) + ".");
+    }
 }
 
 void ObjectArray::verify_attached() {
@@ -68,7 +77,11 @@ JSValueRef ArrayGetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef pr
             return JSValueMakeNumber(ctx, size);
         }
 
-        return RJSObjectCreate(ctx, Object(array->realm, array->object_schema, array->get(std::stol(indexStr))));
+        return RJSObjectCreate(ctx, Object(array->realm, array->object_schema, array->get(RJSValidatedPositiveIndex(indexStr))));
+    }
+    catch (std::out_of_range &exp) {
+        // getters for nonexistent properties in JS should always return undefined
+        return JSValueMakeUndefined(ctx);
     }
     catch (std::invalid_argument &exp) {
         // for stol failure this could be another property that is handled externally, so ignore
@@ -79,6 +92,29 @@ JSValueRef ArrayGetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef pr
             *jsException = RJSMakeError(ctx, exp);
         }
         return NULL;
+    }
+}
+
+bool ArraySetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef value, JSValueRef* jsException) {
+    try {
+        ObjectArray *array = RJSVerifiedMutableArray(object);
+        std::string indexStr = RJSStringForJSString(propertyName);
+        if (indexStr == "length") {
+            throw std::runtime_error("The 'length' property is readonly.");
+        }
+
+        array->set(RJSValidatedPositiveIndex(indexStr), RJSAccessor::to_object_index(ctx, array->realm, const_cast<JSValueRef &>(value), array->object_schema.name, false));
+        return true;
+    }
+    catch (std::invalid_argument &exp) {
+        // for stol failure this could be another property that is handled externally, so ignore
+        return false;
+    }
+    catch (std::exception &exp) {
+        if (jsException) {
+            *jsException = RJSMakeError(ctx, exp);
+        }
+        return false;
     }
 }
 
@@ -216,6 +252,6 @@ const JSStaticFunction RJSArrayFuncs[] = {
 };
 
 JSClassRef RJSArrayClass() {
-    static JSClassRef s_arrayClass = RJSCreateWrapperClass<Object>("RealmArray", ArrayGetProperty, NULL, RJSArrayFuncs, NULL, ArrayPropertyNames);
+    static JSClassRef s_arrayClass = RJSCreateWrapperClass<Object>("RealmArray", ArrayGetProperty, ArraySetProperty, RJSArrayFuncs, NULL, ArrayPropertyNames);
     return s_arrayClass;
 }

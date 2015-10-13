@@ -19,37 +19,6 @@
 'use strict';
 
 var ArrayTests = {
-    testLinkTypesPropertySetters: function() {
-        var realm = new Realm({schema: [LinkTypesObjectSchema, TestObjectSchema]});
-        var obj = null;
-        realm.write(function() {
-            obj = realm.create('LinkTypesObject', [[1], undefined, [[3]]]);
-        });
-        TestCase.assertEqual(realm.objects('TestObject').length, 2);
-
-        // set/reuse object property
-        realm.write(function() {
-            obj.objectCol1 = obj.objectCol;
-        });
-        TestCase.assertEqual(obj.objectCol1.doubleCol, 1);
-        //TestCase.assertEqual(obj.objectCol, obj.objectCol1);
-        TestCase.assertEqual(realm.objects('TestObject').length, 2);
-
-        realm.write(function() {
-            obj.objectCol = undefined;
-            obj.objectCol1 = null;
-        });
-        TestCase.assertEqual(obj.objectCol, null);
-        TestCase.assertEqual(obj.objectCol1, null);
-
-        // set object as JSON
-        realm.write(function() {
-            obj.objectCol = { doubleCol: 3 };
-        });
-        TestCase.assertEqual(obj.objectCol.doubleCol, 3);
-        TestCase.assertEqual(realm.objects('TestObject').length, 3);
-    },
-
     testArrayLength: function() {
         var realm = new Realm({schema: [LinkTypesObjectSchema, TestObjectSchema]});
         realm.write(function() {
@@ -61,35 +30,78 @@ var ArrayTests = {
 
             obj.arrayCol = [[1], [2]];
             TestCase.assertEqual(obj.arrayCol.length, 2);
-        });        
+
+            TestCase.assertThrows(function() {
+                obj.arrayCol.length = 0;
+            }, 'cannot set length property on lists');
+        });
     },
 
-    testArraySubscript: function() {
+    testArraySubscriptGetters: function() {
         var realm = new Realm({schema: [LinkTypesObjectSchema, TestObjectSchema]});
-        realm.write(function() { realm.create('LinkTypesObject', [[1], [2], [[3], [4]]]); }); 
+        var array;
 
-        var array = realm.objects('LinkTypesObject')[0].arrayCol;
+        realm.write(function() {
+            var obj = realm.create('LinkTypesObject', [[1], [2], [[3], [4]]]);
+            array = obj.arrayCol;
+        });
+
         TestCase.assertEqual(array[0].doubleCol, 3);
         TestCase.assertEqual(array[1].doubleCol, 4);
-        TestCase.assertThrows(function() { array[2]; }, 'Invalid index');
-        TestCase.assertThrows(function() { array[-1]; }, 'Invalid index');
+        TestCase.assertEqual(array[2], undefined);
+        TestCase.assertEqual(array[-1], undefined);
     },
 
-    testArrayInvalidProperty: function() {       
+    testArraySubscriptSetters: function() {
         var realm = new Realm({schema: [LinkTypesObjectSchema, TestObjectSchema]});
-        realm.write(function() { realm.create('LinkTypesObject', [[1], [2], [[3], [4]]]); }); 
+        var array;
 
-        var array = realm.objects('LinkTypesObject')[0].arrayCol;
+        realm.write(function() {
+            var obj = realm.create('LinkTypesObject', [[1], [2], [[3], [4]]]);
+            array = obj.arrayCol;
+
+            array[0] = [5];
+            array[1] = [6];
+
+            TestCase.assertEqual(array[0].doubleCol, 5);
+            TestCase.assertEqual(array[1].doubleCol, 6);
+
+            TestCase.assertThrows(function() {
+                array[2] = [1];
+            }, 'cannot set list item beyond its bounds');
+
+            TestCase.assertThrows(function() {
+                array[-1] = [1];
+            }, 'cannot set list item with negative index');
+        });
+
+        TestCase.assertThrows(function() {
+            array[0] = [3];
+        }, 'cannot set list item outside write transaction');
+    },
+
+    testArrayInvalidProperty: function() {
+        var realm = new Realm({schema: [LinkTypesObjectSchema, TestObjectSchema]});
+        var array;
+
+        realm.write(function() {
+            var obj = realm.create('LinkTypesObject', [[1], [2], [[3], [4]]]);
+            array = obj.arrayCol;
+        });
+
         TestCase.assertEqual(undefined, array.ablasdf);
     },
 
     testArrayEnumerate: function() {
         var realm = new Realm({schema: [LinkTypesObjectSchema, TestObjectSchema]});
-        realm.write(function() { realm.create('LinkTypesObject', [[1], [2], []]); }); 
+        var obj;
 
-        var obj = realm.objects('LinkTypesObject')[0];
-        for (var object in obj.arrayCol) {
-            TestCase.assertTrue(false, "No objects should have been enumerated: " + object);
+        realm.write(function() {
+            obj = realm.create('LinkTypesObject', [[1], [2], []]);
+        });
+
+        for (var index in obj.arrayCol) {
+            TestCase.assertTrue(false, "No objects should have been enumerated: " + index);
         }
 
         realm.write(function() {
@@ -98,10 +110,9 @@ var ArrayTests = {
         });
 
         var count = 0;
-        for (var object in obj.arrayCol) {
+        for (var index in obj.arrayCol) {
             count++;
-            //TestCase.assertTrue(object instanceof Object);
-        }    
+        }
         TestCase.assertEqual(2, count);
     },
 
@@ -126,7 +137,7 @@ var ArrayTests = {
             TestCase.assertThrows(function() {
                 array.push();
             });
-        });   
+        });
 
         TestCase.assertEqual(array.length, 4);
         TestCase.assertThrows(function() {
@@ -249,7 +260,15 @@ var ArrayTests = {
             TestCase.assertEqual(removed.length, 1);
             TestCase.assertEqual(removed[0].doubleCol, 1);
             TestCase.assertEqual(array.length, 0);
-            
+
+            removed = array.splice('0', '0', obj.objectCol);
+            TestCase.assertEqual(removed.length, 0);
+            TestCase.assertEqual(array.length, 1);
+
+            TestCase.assertThrows(function() {
+                array.splice('cat', 1);
+            });
+
             TestCase.assertThrows(function() {
                 array.splice(0, 0, 0);
             });

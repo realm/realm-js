@@ -30,6 +30,8 @@ namespace realm {
 
         size_t size();
         Row get(std::size_t row_ndx);
+        void set(std::size_t row_ndx, std::size_t target_row_ndx);
+        void verify_valid_row(std::size_t row_ndx);
         void verify_attached();
     };
 }
