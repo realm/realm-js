@@ -24,7 +24,7 @@
 #include "RealmJS.h"
 #include "RJSObject.hpp"
 #include "RJSResults.hpp"
-#include "RJSArray.hpp"
+#include "RJSList.hpp"
 #include "RJSRealm.hpp"
 #include "RJSUtil.hpp"
 
@@ -166,7 +166,7 @@ using RPCRequest = std::function<NSDictionary *(NSDictionary *dictionary)>;
         _requests["/call_list_method"] = [=](NSDictionary *dict) {
             NSString *name = dict[@"name"];
             return [self performObjectMethod:name.UTF8String
-                                classMethods:RJSArrayFuncs
+                                classMethods:RJSListFuncs
                                         args:dict[@"arguments"]
                                     objectId:[dict[@"listId"] unsignedLongValue]];
         };
@@ -249,7 +249,7 @@ using RPCRequest = std::function<NSDictionary *(NSDictionary *dictionary)>;
              @"schema": [self objectSchemaToJSONObject:object->object_schema]
         };
     }
-    else if (JSValueIsObjectOfClass(_context, value, RJSArrayClass())) {
+    else if (JSValueIsObjectOfClass(_context, value, RJSListClass())) {
         realm::List *list = RJSGetInternal<realm::List *>(jsObject);
         RPCObjectID oid = [self storeObject:jsObject];
         return @{

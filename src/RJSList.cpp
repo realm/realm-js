@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#include "RJSArray.hpp"
+#include "RJSList.hpp"
 #include "RJSObject.hpp"
 #include "RJSUtil.hpp"
 #include "object_accessor.hpp"
@@ -210,11 +210,11 @@ JSValueRef ArraySplice(JSContextRef ctx, JSObjectRef function, JSObjectRef thisO
     return NULL;
 }
 
-JSObjectRef RJSArrayCreate(JSContextRef ctx, realm::List &list) {
-    return RJSWrapObject<List *>(ctx, RJSArrayClass(), new List(list));
+JSObjectRef RJSListCreate(JSContextRef ctx, realm::List &list) {
+    return RJSWrapObject<List *>(ctx, RJSListClass(), new List(list));
 }
 
-const JSStaticFunction RJSArrayFuncs[] = {
+const JSStaticFunction RJSListFuncs[] = {
     {"push", ArrayPush, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
     {"pop", ArrayPop, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
     {"shift", ArrayShift, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
@@ -223,7 +223,7 @@ const JSStaticFunction RJSArrayFuncs[] = {
     {NULL, NULL},
 };
 
-JSClassRef RJSArrayClass() {
-    static JSClassRef s_arrayClass = RJSCreateWrapperClass<Object>("RealmArray", ArrayGetProperty, ArraySetProperty, RJSArrayFuncs, NULL, ArrayPropertyNames);
+JSClassRef RJSListClass() {
+    static JSClassRef s_arrayClass = RJSCreateWrapperClass<Object>("RealmList", ArrayGetProperty, ArraySetProperty, RJSListFuncs, NULL, ArrayPropertyNames);
     return s_arrayClass;
 }

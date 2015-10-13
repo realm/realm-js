@@ -20,8 +20,8 @@
 #import "shared_realm.hpp"
 #import "list.hpp"
 
-extern const JSStaticFunction RJSArrayFuncs[];
-JSClassRef RJSArrayClass();
-JSObjectRef RJSArrayCreate(JSContextRef ctx, realm::List &list);
+extern const JSStaticFunction RJSListFuncs[];
+JSClassRef RJSListClass();
+JSObjectRef RJSListCreate(JSContextRef ctx, realm::List &list);
 
 JSValueRef ArrayGetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef* jsException);

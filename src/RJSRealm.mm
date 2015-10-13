@@ -19,7 +19,7 @@
 #import "RJSRealm.hpp"
 #import "RJSObject.hpp"
 #import "RJSResults.hpp"
-#import "RJSArray.hpp"
+#import "RJSList.hpp"
 #import "RJSSchema.hpp"
 
 #import "shared_realm.hpp"
@@ -280,7 +280,7 @@ JSValueRef RealmDelete(JSContextRef ctx, JSObjectRef function, JSObjectRef thisO
 
         if (RJSIsValueArray(ctx, arguments[0]) ||
             JSValueIsObjectOfClass(ctx, arguments[0], RJSResultsClass()) ||
-            JSValueIsObjectOfClass(ctx, arguments[0], RJSArrayClass()))
+            JSValueIsObjectOfClass(ctx, arguments[0], RJSListClass()))
         {
             JSObjectRef array = RJSValidatedValueToObject(ctx, arguments[0]);
             size_t length = RJSValidatedListLength(ctx, array);

@@ -20,7 +20,7 @@
 #import "RJSObject.hpp"
 #import "RJSResults.hpp"
 #import "RJSSchema.hpp"
-#import "RJSArray.hpp"
+#import "RJSList.hpp"
 
 #import "object_store.hpp"
 #import "object_accessor.hpp"
@@ -192,5 +192,5 @@ template<> JSValueRef RJSAccessor::list_value_at_index(JSContextRef ctx, JSValue
     return RJSValidatedObjectAtIndex(ctx, RJSValidatedValueToObject(ctx, val), (unsigned int)index);
 }
 template<> JSValueRef RJSAccessor::from_list(JSContextRef ctx, List list) {
-    return RJSArrayCreate(ctx, list);
+    return RJSListCreate(ctx, list);
 }
