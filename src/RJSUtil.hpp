@@ -106,6 +106,14 @@ static inline JSObjectRef RJSValidatedValueToObject(JSContextRef ctx, JSValueRef
     return object;
 }
 
+static inline JSObjectRef RJSValidatedValueToFunction(JSContextRef ctx, JSValueRef value, const char *message = NULL) {
+    JSObjectRef object = JSValueToObject(ctx, value, NULL);
+    if (!object || !JSObjectIsFunction(ctx, object)) {
+        throw std::runtime_error(message ?: "Value is not a function.");
+    }
+    return object;
+}
+
 static inline double RJSValidatedValueToNumber(JSContextRef ctx, JSValueRef value) {
     JSValueRef exception = NULL;
     double number = JSValueToNumber(ctx, value, &exception);
