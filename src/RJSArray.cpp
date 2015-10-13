@@ -210,8 +210,8 @@ JSValueRef ArraySplice(JSContextRef ctx, JSObjectRef function, JSObjectRef thisO
     return NULL;
 }
 
-JSObjectRef RJSArrayCreate(JSContextRef ctx, realm::List *list) {
-    return RJSWrapObject<List *>(ctx, RJSArrayClass(), list);
+JSObjectRef RJSArrayCreate(JSContextRef ctx, realm::List &list) {
+    return RJSWrapObject<List *>(ctx, RJSArrayClass(), new List(list));
 }
 
 const JSStaticFunction RJSArrayFuncs[] = {

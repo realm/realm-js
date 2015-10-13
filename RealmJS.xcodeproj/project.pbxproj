@@ -33,7 +33,6 @@
 		0270BC571B7CFC0D00010E03 /* RJSSchema.mm in Sources */ = {isa = PBXBuildFile; fileRef = 0270BC491B7CFC0D00010E03 /* RJSSchema.mm */; };
 		0270BC581B7CFC0D00010E03 /* RJSUtil.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 0270BC4A1B7CFC0D00010E03 /* RJSUtil.hpp */; settings = {ATTRIBUTES = (Private, ); }; };
 		0270BC591B7CFC0D00010E03 /* RJSUtil.mm in Sources */ = {isa = PBXBuildFile; fileRef = 0270BC4B1B7CFC0D00010E03 /* RJSUtil.mm */; };
-		0270BC671B7CFC1C00010E03 /* object_accessor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0270BC5C1B7CFC1C00010E03 /* object_accessor.cpp */; };
 		0270BC681B7CFC1C00010E03 /* object_accessor.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 0270BC5D1B7CFC1C00010E03 /* object_accessor.hpp */; };
 		0270BC691B7CFC1C00010E03 /* object_schema.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0270BC5E1B7CFC1C00010E03 /* object_schema.cpp */; };
 		0270BC6A1B7CFC1C00010E03 /* object_schema.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 0270BC5F1B7CFC1C00010E03 /* object_schema.hpp */; };
@@ -158,7 +157,6 @@
 		0270BC4A1B7CFC0D00010E03 /* RJSUtil.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = RJSUtil.hpp; path = src/RJSUtil.hpp; sourceTree = "<group>"; };
 		0270BC4B1B7CFC0D00010E03 /* RJSUtil.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = RJSUtil.mm; path = src/RJSUtil.mm; sourceTree = "<group>"; };
 		0270BC5A1B7CFC1300010E03 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = src/Info.plist; sourceTree = "<group>"; };
-		0270BC5C1B7CFC1C00010E03 /* object_accessor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = object_accessor.cpp; path = "src/object-store/object_accessor.cpp"; sourceTree = "<group>"; };
 		0270BC5D1B7CFC1C00010E03 /* object_accessor.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = object_accessor.hpp; path = "src/object-store/object_accessor.hpp"; sourceTree = "<group>"; };
 		0270BC5E1B7CFC1C00010E03 /* object_schema.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = object_schema.cpp; path = "src/object-store/object_schema.cpp"; sourceTree = "<group>"; };
 		0270BC5F1B7CFC1C00010E03 /* object_schema.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = object_schema.hpp; path = "src/object-store/object_schema.hpp"; sourceTree = "<group>"; };
@@ -223,7 +221,6 @@
 		0270BC3D1B7CFBFD00010E03 /* RealmJS */ = {
 			isa = PBXGroup;
 			children = (
-				0270BC5C1B7CFC1C00010E03 /* object_accessor.cpp */,
 				0270BC5D1B7CFC1C00010E03 /* object_accessor.hpp */,
 				0270BC5E1B7CFC1C00010E03 /* object_schema.cpp */,
 				0270BC5F1B7CFC1C00010E03 /* object_schema.hpp */,
@@ -574,7 +571,6 @@
 				02601F031BA0F0C4007C91FF /* external_commit_helper.cpp in Sources */,
 				0270BC6B1B7CFC1C00010E03 /* object_store.cpp in Sources */,
 				0270BC701B7CFC1C00010E03 /* shared_realm.cpp in Sources */,
-				0270BC671B7CFC1C00010E03 /* object_accessor.cpp in Sources */,
 				0270BC4E1B7CFC0D00010E03 /* RJSArray.cpp in Sources */,
 				0270BC531B7CFC0D00010E03 /* RJSRealm.mm in Sources */,
 			);

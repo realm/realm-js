@@ -270,7 +270,7 @@ using RPCRequest = std::function<NSDictionary *(NSDictionary *dictionary)>;
         };
     }
     else if (RJSIsValueArray(_context, value)) {
-        size_t length = RJSValidatedArrayLength(_context, jsObject);
+        size_t length = RJSValidatedListLength(_context, jsObject);
         NSMutableArray *array = [NSMutableArray new];
         for (unsigned int i = 0; i < length; i++) {
             [array addObject:[self resultForJSValue:JSObjectGetPropertyAtIndex(_context, jsObject, i, NULL)]];

@@ -22,6 +22,6 @@
 
 extern const JSStaticFunction RJSArrayFuncs[];
 JSClassRef RJSArrayClass();
-JSObjectRef RJSArrayCreate(JSContextRef ctx, realm::List *list);
+JSObjectRef RJSArrayCreate(JSContextRef ctx, realm::List &list);
 
 JSValueRef ArrayGetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef* jsException);

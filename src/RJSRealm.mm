@@ -221,7 +221,7 @@ JSValueRef RealmObjects(JSContextRef ctx, JSObjectRef function, JSObjectRef this
 
 JSObjectRef RJSDictForPropertyArray(JSContextRef ctx, ObjectSchema &object_schema, JSObjectRef array) {
     // copy to dictionary
-    if (object_schema.properties.size() != RJSValidatedArrayLength(ctx, array)) {
+    if (object_schema.properties.size() != RJSValidatedListLength(ctx, array)) {
         throw std::runtime_error("Array must contain values for all object properties");
     }
 
@@ -283,7 +283,7 @@ JSValueRef RealmDelete(JSContextRef ctx, JSObjectRef function, JSObjectRef thisO
             JSValueIsObjectOfClass(ctx, arguments[0], RJSArrayClass()))
         {
             JSObjectRef array = RJSValidatedValueToObject(ctx, arguments[0]);
-            size_t length = RJSValidatedArrayLength(ctx, array);
+            size_t length = RJSValidatedListLength(ctx, array);
             for (long i = length-1; i >= 0; i--) {
                 JSValueRef object = RJSValidatedObjectAtIndex(ctx, array, (unsigned int)i);
                 RealmDelete(ctx, function, thisObject, 1, &object, jsException);

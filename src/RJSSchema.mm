@@ -127,7 +127,7 @@ static inline ObjectSchema RJSParseObjectSchema(JSContextRef ctx, JSObjectRef ob
     static JSStringRef nameString = JSStringCreateWithUTF8CString("name");
     objectSchema.name = RJSValidatedStringProperty(ctx, objectSchemaObject, nameString);
 
-    size_t numProperties = RJSValidatedArrayLength(ctx, propertiesObject);
+    size_t numProperties = RJSValidatedListLength(ctx, propertiesObject);
     for (unsigned int p = 0; p < numProperties; p++) {
         JSObjectRef property = RJSValidatedObjectAtIndex(ctx, propertiesObject, p);
         objectSchema.properties.emplace_back(RJSParseProperty(ctx, property));
@@ -163,7 +163,7 @@ static inline ObjectSchema RJSParseObjectSchema(JSContextRef ctx, JSObjectRef ob
 
 realm::Schema RJSParseSchema(JSContextRef ctx, JSObjectRef jsonObject) {
     std::vector<ObjectSchema> schema;
-    size_t length = RJSValidatedArrayLength(ctx, jsonObject);
+    size_t length = RJSValidatedListLength(ctx, jsonObject);
     for (unsigned int i = 0; i < length; i++) {
         JSObjectRef jsonObjectSchema = RJSValidatedObjectAtIndex(ctx, jsonObject, i);
         ObjectSchema objectSchema = RJSParseObjectSchema(ctx, jsonObjectSchema);
