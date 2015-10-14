@@ -18,15 +18,19 @@
 
 'use strict';
 
-var Realm = require('realm');
+var util = require('./util');
 
-var global = (typeof global != 'undefined') ? global : this;
+var prototype = exports.prototype = {};
 
-exports.realmPathForFile = function(str) {
-    var path = Realm.defaultPath;
-    return path.substring(0, path.lastIndexOf("/") + 1) + str;
+exports.extend = function(object) {
+    object.__proto__ = prototype;
+    return object;
 };
 
-exports.cleanupTestRealms = function() {
-    global.cleanupTestRealms();
-};
+Object.defineProperties(prototype, {
+    afterEach: {
+        value: function() {
+            util.cleanupTestRealms();
+        }
+    }
+});

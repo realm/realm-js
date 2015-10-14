@@ -19,11 +19,12 @@
 'use strict';
 
 var Realm = require('realm');
+var BaseTest = require('./base-test');
 var TestCase = require('./asserts');
 var schemas = require('./schemas');
 var util = require('./util');
 
-module.exports = {
+module.exports = BaseTest.extend({
     testRealmConstructorPath: function() {
         TestCase.assertThrows(function() { new Realm('/invalidpath'); });
         TestCase.assertThrows(function() { new Realm(util.realmPathForFile('test1.realm'), 'invalidArgument'); });
@@ -291,4 +292,4 @@ module.exports = {
         TestCase.assertEqual(notificationCount, 1);
         TestCase.assertEqual(notificationName, 'DidChangeNotification');
     },
-};
+});

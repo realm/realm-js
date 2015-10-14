@@ -19,10 +19,11 @@
 'use strict';
 
 var Realm = require('realm');
+var BaseTest = require('./base-test');
 var TestCase = require('./asserts');
 var schemas = require('./schemas');
 
-module.exports = {
+module.exports = BaseTest.extend({
     testArrayLength: function() {
         var realm = new Realm({schema: [schemas.LinkTypes, schemas.TestObject]});
         realm.write(function() {
@@ -282,4 +283,4 @@ module.exports = {
             obj.arrayCol.splice(0, 0, obj.objectCol);
         }, 'can only splice in a write transaction');
     },
-};
+});

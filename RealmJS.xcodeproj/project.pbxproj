@@ -63,6 +63,7 @@
 		F64E1EF11BC3510E00E0E150 /* util.js in Resources */ = {isa = PBXBuildFile; fileRef = F64E1EF01BC3510E00E0E150 /* util.js */; settings = {ASSET_TAGS = (); }; };
 		F68A278C1BC2722A0063D40A /* RJSModuleLoader.m in Sources */ = {isa = PBXBuildFile; fileRef = F68A278B1BC2722A0063D40A /* RJSModuleLoader.m */; settings = {ASSET_TAGS = (); }; };
 		F68A278E1BC30F0A0063D40A /* index.js in Resources */ = {isa = PBXBuildFile; fileRef = F68A278D1BC30F0A0063D40A /* index.js */; settings = {ASSET_TAGS = (); }; };
+		F6F405F81BCF0C1A00A1E24F /* base-test.js in Resources */ = {isa = PBXBuildFile; fileRef = F6F405F71BCF0C1A00A1E24F /* base-test.js */; settings = {ASSET_TAGS = (); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -199,6 +200,7 @@
 		F68A278A1BC2722A0063D40A /* RJSModuleLoader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RJSModuleLoader.h; path = tests/RJSModuleLoader.h; sourceTree = SOURCE_ROOT; };
 		F68A278B1BC2722A0063D40A /* RJSModuleLoader.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = RJSModuleLoader.m; path = tests/RJSModuleLoader.m; sourceTree = SOURCE_ROOT; };
 		F68A278D1BC30F0A0063D40A /* index.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; name = index.js; path = tests/index.js; sourceTree = SOURCE_ROOT; };
+		F6F405F71BCF0C1A00A1E24F /* base-test.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; name = "base-test.js"; path = "tests/base-test.js"; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -325,6 +327,7 @@
 				0270BC781B7D020100010E03 /* Info.plist */,
 				F68A278D1BC30F0A0063D40A /* index.js */,
 				0270BC7E1B7D020100010E03 /* asserts.js */,
+				F6F405F71BCF0C1A00A1E24F /* base-test.js */,
 				0270BC7F1B7D020100010E03 /* schemas.js */,
 				F64E1EF01BC3510E00E0E150 /* util.js */,
 				02D456D91B7E59A500EE1299 /* ArrayTests.js */,
@@ -546,6 +549,7 @@
 				0270BC811B7D020100010E03 /* ObjectTests.js in Resources */,
 				02D456DA1B7E59A500EE1299 /* ArrayTests.js in Resources */,
 				0270BC861B7D020100010E03 /* schemas.js in Resources */,
+				F6F405F81BCF0C1A00A1E24F /* base-test.js in Resources */,
 				F68A278E1BC30F0A0063D40A /* index.js in Resources */,
 				0270BC831B7D020100010E03 /* RealmTests.js in Resources */,
 				0270BC841B7D020100010E03 /* ResultsTests.js in Resources */,

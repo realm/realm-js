@@ -19,10 +19,11 @@
 'use strict';
 
 var Realm = require('realm');
+var BaseTest = require('./base-test');
 var TestCase = require('./asserts');
 var schemas = require('./schemas');
 
-module.exports = {
+module.exports = BaseTest.extend({
     testBasicTypesPropertyGetters: function() {
         var basicTypesValues = [true, 1, 1.1, 1.11, 'string', new Date(1), 'DATA'];
         var realm = new Realm({schema: [schemas.BasicTypes]});
@@ -147,4 +148,4 @@ module.exports = {
         TestCase.assertEqual(obj.arrayCol[1].doubleCol, 1);
         TestCase.assertEqual(obj.arrayCol[2].doubleCol, 2);
     },
-};
+});

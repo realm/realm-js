@@ -19,10 +19,11 @@
 'use strict';
 
 var Realm = require('realm');
+var BaseTest = require('./base-test');
 var TestCase = require('./asserts');
 var schemas = require('./schemas');
 
-module.exports = {
+module.exports = BaseTest.extend({
     testResultsLength: function() {
         var realm = new Realm({schema: [schemas.TestObject]});
         var objects = realm.objects('TestObject');
@@ -103,4 +104,4 @@ module.exports = {
         TestCase.assertEqual(objects[3].doubleCol, 1);
         TestCase.assertEqual(objects[4].doubleCol, 0);
     },
-};
+});

@@ -92,15 +92,6 @@ static void DeleteRealmFilesAtPath(NSString *path) {
 - (void)tearDown {
     [self invokeMethod:@"afterEach"];
 
-    realm::Realm::s_global_cache.invalidate_all();
-    realm::Realm::s_global_cache.clear();
-
-    // FIXME - find all realm files in the docs dir and delete them rather than hardcoding these
-    DeleteRealmFilesAtPath(RealmPathForFile(@"test.realm"));
-    DeleteRealmFilesAtPath(RealmPathForFile(@"test1.realm"));
-    DeleteRealmFilesAtPath(RealmPathForFile(@"test2.realm"));
-    DeleteRealmFilesAtPath(@(RJSDefaultPath().c_str()));
-
     [super tearDown];
 }
 
@@ -115,6 +106,10 @@ static void DeleteRealmFilesAtPath(NSString *path) {
     JSContext *context = [[JSContext alloc] init];
     RJSModuleLoader *moduleLoader = [[RJSModuleLoader alloc] initWithContext:context];
     NSURL *scriptURL = [[NSBundle bundleForClass:self] URLForResource:@"index" withExtension:@"js"];
+
+    context[@"cleanupTestRealms"] = ^{
+        [self cleanupTestRealms];
+    };
 
     [RealmJS initializeContext:context.JSGlobalContextRef];
 
@@ -153,6 +148,17 @@ static void DeleteRealmFilesAtPath(NSString *path) {
     }
 
     return suite;
+}
+
++ (void)cleanupTestRealms {
+    realm::Realm::s_global_cache.invalidate_all();
+    realm::Realm::s_global_cache.clear();
+
+    // FIXME - find all realm files in the docs dir and delete them rather than hardcoding these
+    DeleteRealmFilesAtPath(RealmPathForFile(@"test.realm"));
+    DeleteRealmFilesAtPath(RealmPathForFile(@"test1.realm"));
+    DeleteRealmFilesAtPath(RealmPathForFile(@"test2.realm"));
+    DeleteRealmFilesAtPath(@(RJSDefaultPath().c_str()));
 }
 
 - (NSMethodSignature *)methodSignatureForSelector:(SEL)aSelector {
