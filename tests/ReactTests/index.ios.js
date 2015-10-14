@@ -8,12 +8,6 @@ var React = require('react-native');
 var Realm = require('realm');
 var RealmTests = require('realm-tests');
 
-for (var suiteName in RealmTests) {
-    for (var testName in RealmTests[suiteName]) {
-        RealmTests[suiteName][testName]();
-    }
-}
-
 var {
   AppRegistry,
   StyleSheet,
@@ -21,23 +15,58 @@ var {
   View,
 } = React;
 
+function runTests() {
+    let specialMethodNames = {'beforeEach': true, 'afterEach': true};
+
+    for (let suiteName in RealmTests) {
+        let testSuite = RealmTests[suiteName];
+
+        console.log('Starting suite:', suiteName);
+
+        for (let testName in testSuite) {
+            if (testName in specialMethodNames || typeof testSuite[testName] != 'function') {
+                continue;
+            }
+
+            console.log('-', testName);
+
+            if (testSuite.beforeEach) {
+                testSuite.beforeEach();
+            }
+
+            try {
+                testSuite[testName]();
+            }
+            finally {
+                if (testSuite.afterEach) {
+                    testSuite.afterEach();
+                }
+            }
+        }
+    }
+}
+
 var ReactTests = React.createClass({
-  render: function() {
-    return (
-      <View style={styles.container}>
-        <Text style={styles.welcome}>
-          Welcome to React Native!
-        </Text>
-        <Text style={styles.instructions}>
-          To get started, edit index.ios.js
-        </Text>
-        <Text style={styles.instructions}>
-          Press Cmd+R to reload,{'\n'}
-          Cmd+D or shake for dev menu
-        </Text>
-      </View>
-    );
-  }
+    componentDidMount() {
+        runTests();
+    },
+
+    render() {
+        return (
+            <View style={styles.container}>
+                <Text style={styles.welcome}>
+                    Welcome to React Native!
+                </Text>
+                <Text style={styles.instructions}>
+                    To get started, edit index.ios.js
+                </Text>
+                <Text style={styles.instructions}>
+                    Press Cmd+R to reload,{'\n'}
+                    Cmd+D or shake for dev menu
+                </Text>
+            </View>
+        );
+    }
 });
 
 var styles = StyleSheet.create({

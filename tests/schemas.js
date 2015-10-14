@@ -20,13 +20,12 @@
 
 var Realm = require('realm');
 
-var TestObjectSchema = {
+exports.TestObject = {
   name: 'TestObject',
   properties: [
     {name: 'doubleCol', type: Realm.Types.DOUBLE},
   ]
 };
-exports.TestObject = TestObjectSchema;
 
 function PersonObject() {}
 PersonObject.prototype.schema = {
@@ -41,7 +40,7 @@ PersonObject.prototype.description = function() {
 };
 exports.PersonObject = PersonObject;
 
-var BasicTypesObjectSchema = {
+exports.BasicTypes = {
     name: 'BasicTypesObject',
     properties: [
         {name: 'boolCol',   type: Realm.Types.BOOL},
@@ -53,9 +52,8 @@ var BasicTypesObjectSchema = {
         {name: 'dataCol',   type: Realm.Types.DATA},
     ]
 };
-exports.BasicTypes = BasicTypesObjectSchema;
 
-var LinkTypesObjectSchema = {
+exports.LinkTypes = {
     name: 'LinkTypesObject',
     properties: [
         {name: 'objectCol',  type: 'TestObject'},
@@ -63,9 +61,8 @@ var LinkTypesObjectSchema = {
         {name: 'arrayCol',   type: Realm.Types.LIST, objectType: 'TestObject'},
     ]
 };
-exports.LinkTypes = LinkTypesObjectSchema;
 
-var IntPrimaryObjectSchema = {
+exports.IntPrimary = {
   name: 'IntPrimaryObject',
   primaryKey: 'primaryCol',
   properties: [
@@ -73,9 +70,8 @@ var IntPrimaryObjectSchema = {
     {name: 'valueCol',   type: Realm.Types.STRING},
   ]
 };
-exports.IntPrimary = IntPrimaryObjectSchema;
 
-var AllTypesObjectSchema = {
+exports.AllTypes = {
   name: 'AllTypesObject',
   primaryKey: 'primaryCol',
   properties: [
@@ -91,9 +87,8 @@ var AllTypesObjectSchema = {
     {name: 'arrayCol',  type: Realm.Types.LIST, objectType: 'TestObject'},
   ]
 };
-exports.AllTypes = AllTypesObjectSchema;
 
-var DefaultValuesObjectSchema = {
+exports.DefaultValues = {
   name: 'DefaultValuesObject',
   properties: [
     {name: 'boolCol',   type: Realm.Types.BOOL,   default: true},
@@ -108,4 +103,3 @@ var DefaultValuesObjectSchema = {
     {name: 'arrayCol',  type: Realm.Types.LIST, objectType: 'TestObject', default: [[2]]},
   ]
 };
-exports.DefaultValues = DefaultValuesObjectSchema;

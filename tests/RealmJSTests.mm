@@ -86,10 +86,12 @@ static void DeleteRealmFilesAtPath(NSString *path) {
     NSString *defaultDir = [[NSString stringWithUTF8String:RJSDefaultPath().c_str()] stringByDeletingLastPathComponent];
     [[NSFileManager defaultManager] createDirectoryAtPath:defaultDir withIntermediateDirectories:YES attributes:nil error:nil];
 
-    self.context.exception = nil;
+    [self invokeMethod:@"beforeEach"];
 }
 
 - (void)tearDown {
+    [self invokeMethod:@"afterEach"];
+
     realm::Realm::s_global_cache.invalidate_all();
     realm::Realm::s_global_cache.clear();
 
@@ -127,14 +129,24 @@ static void DeleteRealmFilesAtPath(NSString *path) {
         exit(1);
     }
 
+    NSSet *specialMethodNames = [NSSet setWithObjects:@"beforeEach", @"afterEach", nil];
+
     for (NSString *testName in [testObjects toDictionary]) {
         JSValue *testObject = testObjects[testName];
         XCTestSuite *testSuite = [[XCTestSuite alloc] initWithName:testName];
         Class testClass = objc_allocateClassPair(self, testName.UTF8String, 0);
 
         for (NSString *methodName in [testObject toDictionary]) {
-            XCTestCase *testCase = [[testClass alloc] initWithJSTestObject:testObject methodName:methodName];
-            [testSuite addTest:testCase];
+            if ([specialMethodNames containsObject:methodName]) {
+                continue;
+            }
+
+            JSObjectRef jsMethod = JSValueToObject(context.JSGlobalContextRef, [testObject[methodName] JSValueRef], NULL);
+
+            if (jsMethod && JSObjectIsFunction(context.JSGlobalContextRef, jsMethod)) {
+                XCTestCase *testCase = [[testClass alloc] initWithJSTestObject:testObject methodName:methodName];
+                [testSuite addTest:testCase];
+            }
         }
 
         [suite addTest:testSuite];
@@ -149,13 +161,22 @@ static void DeleteRealmFilesAtPath(NSString *path) {
 }
 
 - (void)forwardInvocation:(NSInvocation *)anInvocation {
-    JSValue *testObject = self.testObject;
-    JSContext *context = testObject.context;
+    [self invokeMethod:NSStringFromSelector(anInvocation.selector)];
+}
 
-    [testObject invokeMethod:NSStringFromSelector(anInvocation.selector) withArguments:nil];
+- (void)invokeMethod:(NSString *)method {
+    JSValue *testObject = self.testObject;
+
+    if (![testObject hasProperty:method]) {
+        return;
+    }
+
+    JSContext *context = testObject.context;
+    context.exception = nil;
+
+    [testObject invokeMethod:method withArguments:nil];
 
     JSValue *exception = context.exception;
-
     if (exception) {
         JSValue *message = [exception hasProperty:@"message"] ? exception[@"message"] : exception;
         NSString *source = [exception hasProperty:@"sourceURL"] ? [exception[@"sourceURL"] toString] : nil;
