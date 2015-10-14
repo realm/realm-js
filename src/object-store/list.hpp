@@ -16,13 +16,15 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#import "RJSUtil.hpp"
+#ifndef REALM_LIST_HPP
+#define REALM_LIST_HPP
+
 #import "shared_realm.hpp"
 #import <realm/link_view.hpp>
 
 namespace realm {
-    struct ObjectArray {
-        ObjectArray(SharedRealm &r, ObjectSchema &s, LinkViewRef l) : realm(r), object_schema(s), link_view(l) {}
+    struct List {
+        List(SharedRealm &r, ObjectSchema &s, LinkViewRef l) : realm(r), object_schema(s), link_view(l) {}
         // FIXME - all should be const
         SharedRealm realm;
         ObjectSchema &object_schema;
@@ -36,8 +38,5 @@ namespace realm {
     };
 }
 
-extern const JSStaticFunction RJSArrayFuncs[];
-JSClassRef RJSArrayClass();
-JSObjectRef RJSArrayCreate(JSContextRef ctx, realm::ObjectArray *array);
 
-JSValueRef ArrayGetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef* jsException);
+#endif /* REALM_LIST_HPP */

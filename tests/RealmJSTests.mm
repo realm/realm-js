@@ -243,9 +243,9 @@ static JSClassRef s_globalClass;
 }
 @end
 
-@interface RJSArrayTests : RealmJSTests
+@interface RJSListTests : RealmJSTests
 @end
-@implementation RJSArrayTests
+@implementation RJSListTests
 + (NSString *)jsSuiteName {
     return @"ArrayTests";
 }

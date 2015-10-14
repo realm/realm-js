@@ -16,4 +16,12 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#include "object_accessor.hpp"
+#import "RJSUtil.hpp"
+#import "shared_realm.hpp"
+#import "list.hpp"
+
+extern const JSStaticFunction RJSListFuncs[];
+JSClassRef RJSListClass();
+JSObjectRef RJSListCreate(JSContextRef ctx, realm::List &list);
+
+JSValueRef ListGetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef* jsException);

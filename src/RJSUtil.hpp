@@ -161,7 +161,7 @@ static inline std::string RJSValidatedStringProperty(JSContextRef ctx, JSObjectR
     return RJSValidatedStringForValue(ctx, propertyValue);
 }
 
-static inline size_t RJSValidatedArrayLength(JSContextRef ctx, JSObjectRef object) {
+static inline size_t RJSValidatedListLength(JSContextRef ctx, JSObjectRef object) {
     JSValueRef exception = NULL;
     static JSStringRef lengthString = JSStringCreateWithUTF8CString("length");
     JSValueRef lengthValue = JSObjectGetProperty(ctx, object, lengthString, &exception);

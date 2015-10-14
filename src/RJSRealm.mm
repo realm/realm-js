@@ -19,7 +19,7 @@
 #import "RJSRealm.hpp"
 #import "RJSObject.hpp"
 #import "RJSResults.hpp"
-#import "RJSArray.hpp"
+#import "RJSList.hpp"
 #import "RJSSchema.hpp"
 
 #import "shared_realm.hpp"
@@ -221,7 +221,7 @@ JSValueRef RealmObjects(JSContextRef ctx, JSObjectRef function, JSObjectRef this
 
 JSObjectRef RJSDictForPropertyArray(JSContextRef ctx, ObjectSchema &object_schema, JSObjectRef array) {
     // copy to dictionary
-    if (object_schema.properties.size() != RJSValidatedArrayLength(ctx, array)) {
+    if (object_schema.properties.size() != RJSValidatedListLength(ctx, array)) {
         throw std::runtime_error("Array must contain values for all object properties");
     }
 
@@ -280,10 +280,10 @@ JSValueRef RealmDelete(JSContextRef ctx, JSObjectRef function, JSObjectRef thisO
 
         if (RJSIsValueArray(ctx, arguments[0]) ||
             JSValueIsObjectOfClass(ctx, arguments[0], RJSResultsClass()) ||
-            JSValueIsObjectOfClass(ctx, arguments[0], RJSArrayClass()))
+            JSValueIsObjectOfClass(ctx, arguments[0], RJSListClass()))
         {
             JSObjectRef array = RJSValidatedValueToObject(ctx, arguments[0]);
-            size_t length = RJSValidatedArrayLength(ctx, array);
+            size_t length = RJSValidatedListLength(ctx, array);
             for (long i = length-1; i >= 0; i--) {
                 JSValueRef object = RJSValidatedObjectAtIndex(ctx, array, (unsigned int)i);
                 RealmDelete(ctx, function, thisObject, 1, &object, jsException);
