@@ -16,11 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#import <UIKit/UIKit.h>
-#import "Base/RCTBridgeModule.h"
-@import RealmJS;
+@import Foundation;
 
-@protocol RCTBridgeModule;
-
-@interface Realm : NSObject <RCTBridgeModule>
+@interface RealmReact : NSObject
 @end

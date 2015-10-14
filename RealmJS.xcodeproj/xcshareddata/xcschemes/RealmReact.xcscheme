@@ -15,7 +15,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "02B29A151B7CF7C9008A7E6B"
-               BuildableName = "libRealmReact.a"
+               BuildableName = "RealmReact.framework"
                BlueprintName = "RealmReact"
                ReferencedContainer = "container:RealmJS.xcodeproj">
             </BuildableReference>
@@ -46,7 +46,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "02B29A151B7CF7C9008A7E6B"
-            BuildableName = "libRealmReact.a"
+            BuildableName = "RealmReact.framework"
             BlueprintName = "RealmReact"
             ReferencedContainer = "container:RealmJS.xcodeproj">
          </BuildableReference>
@@ -64,7 +64,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "02B29A151B7CF7C9008A7E6B"
-            BuildableName = "libRealmReact.a"
+            BuildableName = "RealmReact.framework"
             BlueprintName = "RealmReact"
             ReferencedContainer = "container:RealmJS.xcodeproj">
          </BuildableReference>
