@@ -23,37 +23,6 @@ var TestCase = require('./asserts');
 var schemas = require('./schemas');
 
 module.exports = {
-    testLinkTypesPropertySetters: function() {
-        var realm = new Realm({schema: [schemas.LinkTypes, schemas.TestObject]});
-        var obj = null;
-        realm.write(function() {
-            obj = realm.create('LinkTypesObject', [[1], undefined, [[3]]]);
-        });
-        TestCase.assertEqual(realm.objects('TestObject').length, 2);
-
-        // set/reuse object property
-        realm.write(function() {
-            obj.objectCol1 = obj.objectCol;
-        });
-        TestCase.assertEqual(obj.objectCol1.doubleCol, 1);
-        //TestCase.assertEqual(obj.objectCol, obj.objectCol1);
-        TestCase.assertEqual(realm.objects('TestObject').length, 2);
-
-        realm.write(function() {
-            obj.objectCol = undefined;
-            obj.objectCol1 = null;
-        });
-        TestCase.assertEqual(obj.objectCol, null);
-        TestCase.assertEqual(obj.objectCol1, null);
-
-        // set object as JSON
-        realm.write(function() {
-            obj.objectCol = { doubleCol: 3 };
-        });
-        TestCase.assertEqual(obj.objectCol.doubleCol, 3);
-        TestCase.assertEqual(realm.objects('TestObject').length, 3);
-    },
-
     testArrayLength: function() {
         var realm = new Realm({schema: [schemas.LinkTypes, schemas.TestObject]});
         realm.write(function() {
@@ -65,35 +34,78 @@ module.exports = {
 
             obj.arrayCol = [[1], [2]];
             TestCase.assertEqual(obj.arrayCol.length, 2);
-        });        
+
+            TestCase.assertThrows(function() {
+                obj.arrayCol.length = 0;
+            }, 'cannot set length property on lists');
+        });
     },
 
-    testArraySubscript: function() {
+    testArraySubscriptGetters: function() {
         var realm = new Realm({schema: [schemas.LinkTypes, schemas.TestObject]});
-        realm.write(function() { realm.create('LinkTypesObject', [[1], [2], [[3], [4]]]); }); 
+        var array;
 
-        var array = realm.objects('LinkTypesObject')[0].arrayCol;
+        realm.write(function() {
+            var obj = realm.create('LinkTypesObject', [[1], [2], [[3], [4]]]);
+            array = obj.arrayCol;
+        });
+
         TestCase.assertEqual(array[0].doubleCol, 3);
         TestCase.assertEqual(array[1].doubleCol, 4);
-        TestCase.assertThrows(function() { array[2]; }, 'Invalid index');
-        TestCase.assertThrows(function() { array[-1]; }, 'Invalid index');
+        TestCase.assertEqual(array[2], undefined);
+        TestCase.assertEqual(array[-1], undefined);
     },
 
-    testArrayInvalidProperty: function() {       
+    testArraySubscriptSetters: function() {
         var realm = new Realm({schema: [schemas.LinkTypes, schemas.TestObject]});
-        realm.write(function() { realm.create('LinkTypesObject', [[1], [2], [[3], [4]]]); }); 
+        var array;
 
-        var array = realm.objects('LinkTypesObject')[0].arrayCol;
+        realm.write(function() {
+            var obj = realm.create('LinkTypesObject', [[1], [2], [[3], [4]]]);
+            array = obj.arrayCol;
+
+            array[0] = [5];
+            array[1] = [6];
+
+            TestCase.assertEqual(array[0].doubleCol, 5);
+            TestCase.assertEqual(array[1].doubleCol, 6);
+
+            TestCase.assertThrows(function() {
+                array[2] = [1];
+            }, 'cannot set list item beyond its bounds');
+
+            TestCase.assertThrows(function() {
+                array[-1] = [1];
+            }, 'cannot set list item with negative index');
+        });
+
+        TestCase.assertThrows(function() {
+            array[0] = [3];
+        }, 'cannot set list item outside write transaction');
+    },
+
+    testArrayInvalidProperty: function() {
+        var realm = new Realm({schema: [schemas.LinkTypes, schemas.TestObject]});
+        var array;
+
+        realm.write(function() {
+            var obj = realm.create('LinkTypesObject', [[1], [2], [[3], [4]]]);
+            array = obj.arrayCol;
+        });
+
         TestCase.assertEqual(undefined, array.ablasdf);
     },
 
     testArrayEnumerate: function() {
         var realm = new Realm({schema: [schemas.LinkTypes, schemas.TestObject]});
-        realm.write(function() { realm.create('LinkTypesObject', [[1], [2], []]); }); 
+        var obj;
 
-        var obj = realm.objects('LinkTypesObject')[0];
-        for (var object in obj.arrayCol) {
-            TestCase.assertTrue(false, "No objects should have been enumerated: " + object);
+        realm.write(function() {
+            obj = realm.create('LinkTypesObject', [[1], [2], []]);
+        });
+
+        for (var index in obj.arrayCol) {
+            TestCase.assertTrue(false, "No objects should have been enumerated: " + index);
         }
 
         realm.write(function() {
@@ -102,16 +114,16 @@ module.exports = {
         });
 
         var count = 0;
-        for (var object in obj.arrayCol) {
+        for (var index in obj.arrayCol) {
             count++;
-            //TestCase.assertTrue(object instanceof Object);
-        }    
+        }
         TestCase.assertEqual(2, count);
     },
 
     testPush: function() {
         var realm = new Realm({schema: [schemas.LinkTypes, schemas.TestObject]});
         var array;
+
         realm.write(function() {
             var obj = realm.create('LinkTypesObject', [[1], [2], [[3]]]);
             TestCase.assertEqual(obj.arrayCol.length, 1);
@@ -129,17 +141,18 @@ module.exports = {
             TestCase.assertThrows(function() {
                 array.push();
             });
-        });   
+        });
 
         TestCase.assertEqual(array.length, 4);
-        // TestCase.assertThrows(function() {
-        //     array.push([1]);
-        // });
+        TestCase.assertThrows(function() {
+            array.push([1]);
+        }, 'can only push in a write transaction');
     },
 
     testPop: function() {
         var realm = new Realm({schema: [schemas.LinkTypes, schemas.TestObject]});
         var array;
+
         realm.write(function() {
             var obj = realm.create('LinkTypesObject', [[1], [2], [[3], [4]]]);
             array = obj.arrayCol;
@@ -155,14 +168,15 @@ module.exports = {
             });
         });
 
-       // TestCase.assertThrows(function() {
-       //      array.pop();
-       //  });
+        TestCase.assertThrows(function() {
+            array.pop();
+        }, 'can only pop in a write transaction');
     },
 
     testUnshift: function() {
         var realm = new Realm({schema: [schemas.LinkTypes, schemas.TestObject]});
         var array;
+
         realm.write(function() {
             var obj = realm.create('LinkTypesObject', [[1], [2], [[3]]]);
             TestCase.assertEqual(obj.arrayCol.length, 1);
@@ -179,14 +193,15 @@ module.exports = {
         });   
 
         TestCase.assertEqual(array.length, 4);
-        // TestCase.assertThrows(function() {
-        //     array.unshift([1]);
-        // });
+        TestCase.assertThrows(function() {
+            array.unshift([1]);
+        }, 'can only unshift in a write transaction');
     },
 
     testShift: function() {
         var realm = new Realm({schema: [schemas.LinkTypes, schemas.TestObject]});
         var array;
+
         realm.write(function() {
             var obj = realm.create('LinkTypesObject', [[1], [2], [[3], [4]]]);
             array = obj.arrayCol;
@@ -202,18 +217,20 @@ module.exports = {
             });
         });
 
-       // TestCase.assertThrows(function() {
-       //      array.shift();
-       //  });
+        TestCase.assertThrows(function() {
+            array.shift();
+        }, 'can only shift in a write transaction');
     },
 
     testSplice: function() {
         var realm = new Realm({schema: [schemas.LinkTypes, schemas.TestObject]});
+        var array;
 
         realm.write(function() {
             var obj = realm.create('LinkTypesObject', [[1], [2], [[3], [4]]]);
-            var array = obj.arrayCol;
             var removed;
+
+            array = obj.arrayCol;
 
             removed = array.splice(0, 0, obj.objectCol, obj.objectCol1);
             TestCase.assertEqual(removed.length, 0);
@@ -247,10 +264,22 @@ module.exports = {
             TestCase.assertEqual(removed.length, 1);
             TestCase.assertEqual(removed[0].doubleCol, 1);
             TestCase.assertEqual(array.length, 0);
-            
+
+            removed = array.splice('0', '0', obj.objectCol);
+            TestCase.assertEqual(removed.length, 0);
+            TestCase.assertEqual(array.length, 1);
+
+            TestCase.assertThrows(function() {
+                array.splice('cat', 1);
+            });
+
             TestCase.assertThrows(function() {
                 array.splice(0, 0, 0);
             });
         });
+
+        TestCase.assertThrows(function() {
+            obj.arrayCol.splice(0, 0, obj.objectCol);
+        }, 'can only splice in a write transaction');
     },
 };

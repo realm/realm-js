@@ -86,7 +86,7 @@ inline void RJSValidateArgumentRange(size_t argumentCount, size_t min, size_t ma
 
 class RJSException : public std::runtime_error {
 public:
-    RJSException(JSContextRef ctx, JSValueRef &ex) : std::runtime_error(RJSValidatedStringForValue(ctx, ex, "exception")),
+    RJSException(JSContextRef ctx, JSValueRef &ex) : std::runtime_error(RJSStringForValue(ctx, ex)),
         m_jsException(ex) {}
     JSValueRef exception() { return m_jsException; }
 
@@ -106,28 +106,24 @@ static inline JSObjectRef RJSValidatedValueToObject(JSContextRef ctx, JSValueRef
     return object;
 }
 
+static inline JSObjectRef RJSValidatedValueToFunction(JSContextRef ctx, JSValueRef value, const char *message = NULL) {
+    JSObjectRef object = JSValueToObject(ctx, value, NULL);
+    if (!object || !JSObjectIsFunction(ctx, object)) {
+        throw std::runtime_error(message ?: "Value is not a function.");
+    }
+    return object;
+}
+
 static inline double RJSValidatedValueToNumber(JSContextRef ctx, JSValueRef value) {
     JSValueRef exception = NULL;
-    if (!JSValueIsNumber(ctx, value)) {
-        throw std::runtime_error("Value is not a number");
-    }
     double number = JSValueToNumber(ctx, value, &exception);
     if (exception) {
         throw RJSException(ctx, exception);
     }
+    if (isnan(number)) {
+        throw std::invalid_argument("Value not convertible to a number.");
+    }
     return number;
-}
-
-static inline bool RJSValidatedValueToBool(JSContextRef ctx, JSValueRef value) {
-    JSValueRef exception = NULL;
-    if (!JSValueIsBoolean(ctx, value)) {
-        throw std::runtime_error("Value is not a boolean");
-    }
-    bool b = JSValueToNumber(ctx, value, &exception);
-    if (exception) {
-        throw RJSException(ctx, exception);
-    }
-    return b;
 }
 
 static inline JSValueRef RJSValidatedPropertyValue(JSContextRef ctx, JSObjectRef object, JSStringRef property) {
@@ -165,7 +161,7 @@ static inline std::string RJSValidatedStringProperty(JSContextRef ctx, JSObjectR
     return RJSValidatedStringForValue(ctx, propertyValue);
 }
 
-static inline size_t RJSValidatedArrayLength(JSContextRef ctx, JSObjectRef object) {
+static inline size_t RJSValidatedListLength(JSContextRef ctx, JSObjectRef object) {
     JSValueRef exception = NULL;
     static JSStringRef lengthString = JSStringCreateWithUTF8CString("length");
     JSValueRef lengthValue = JSObjectGetProperty(ctx, object, lengthString, &exception);
@@ -177,6 +173,14 @@ static inline size_t RJSValidatedArrayLength(JSContextRef ctx, JSObjectRef objec
     }
 
     return RJSValidatedValueToNumber(ctx, lengthValue);
+}
+
+static inline size_t RJSValidatedPositiveIndex(std::string indexStr) {
+    long index = std::stol(indexStr);
+    if (index < 0) {
+        throw std::out_of_range(std::string("Index ") + indexStr + " cannot be less than zero.");
+    }
+    return index;
 }
 
 static inline bool RJSIsValueObjectOfType(JSContextRef ctx, JSValueRef value, JSStringRef type) {

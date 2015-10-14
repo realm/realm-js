@@ -16,26 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#import "RJSUtil.hpp"
-#import "shared_realm.hpp"
-#import <realm/link_view.hpp>
+@import Foundation;
 
-namespace realm {
-    struct ObjectArray {
-        ObjectArray(SharedRealm &r, ObjectSchema &s, LinkViewRef l) : realm(r), object_schema(s), link_view(l) {}
-        // FIXME - all should be const
-        SharedRealm realm;
-        ObjectSchema &object_schema;
-        LinkViewRef link_view;
-
-        size_t size();
-        Row get(std::size_t row_ndx);
-        void verify_attached();
-    };
-}
-
-extern const JSStaticFunction RJSArrayFuncs[];
-JSClassRef RJSArrayClass();
-JSObjectRef RJSArrayCreate(JSContextRef ctx, realm::ObjectArray *array);
-
-JSValueRef ArrayGetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef* jsException);
+@interface RealmReact : NSObject
+@end

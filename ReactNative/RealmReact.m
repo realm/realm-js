@@ -16,32 +16,43 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#import <objc/runtime.h>
-#import "RealmReactModule.h"
-#import "Base/RCTLog.h"
+#import "RealmReact.h"
 #import "Base/RCTBridge.h"
 
 @import GCDWebServers;
 @import RealmJS;
 @import JavaScriptCore;
+@import ObjectiveC;
+@import Darwin;
 
-@interface RCTBridge (executor)
-@property (weak) id<RCTJavaScriptExecutor> javaScriptExecutor;
-@end
-
-@interface RCTJavaScriptContext : NSObject <RCTInvalidating>
-@property (nonatomic, assign, readonly) JSGlobalContextRef ctx;
-- (void)executeBlockOnJavaScriptQueue:(dispatch_block_t)block;
+@interface NSObject (RCTJavaScriptContext)
 - (instancetype)initWithJSContext:(JSGlobalContextRef)context;
+- (JSGlobalContextRef)ctx;
 @end
 
-@implementation Realm
+@interface RealmReact () <RCTBridgeModule>
+@end
 
-RCT_EXPORT_MODULE()
+@implementation RealmReact
 
 @synthesize bridge = _bridge;
 
--(void)setBridge:(RCTBridge *)bridge {
++ (void)load {
+    void (*RCTRegisterModule)(Class) = dlsym(RTLD_DEFAULT, "RCTRegisterModule");
+
+    if (RCTRegisterModule) {
+        RCTRegisterModule(self);
+    }
+    else {
+        NSLog(@"Failed to load RCTRegisterModule symbol - %s", dlerror());
+    }
+}
+
++ (NSString *)moduleName {
+    return @"Realm";
+}
+
+- (void)setBridge:(RCTBridge *)bridge {
     _bridge = bridge;
 
     Ivar executorIvar = class_getInstanceVariable([bridge class], "_javaScriptExecutor");
@@ -50,7 +61,6 @@ RCT_EXPORT_MODULE()
 
     // The executor could be a RCTWebSocketExecutor, in which case it won't have a JS context.
     if (!contextIvar) {
-
         [GCDWebServer setLogLevel:3];
         GCDWebServer *webServer = [[GCDWebServer alloc] init];
         RJSRPCServer *rpcServer = [[RJSRPCServer alloc] init];
@@ -77,22 +87,26 @@ RCT_EXPORT_MODULE()
     }
 
     [contextExecutor executeBlockOnJavaScriptQueue:^{
-        RCTJavaScriptContext *rctJSContext = object_getIvar(contextExecutor, contextIvar);
+        id rctJSContext = object_getIvar(contextExecutor, contextIvar);
         JSGlobalContextRef ctx;
+
         if (rctJSContext) {
-            ctx = rctJSContext.ctx;
+            ctx = [rctJSContext ctx];
         }
         else {
-            ctx = JSGlobalContextCreate(NULL);
-            object_setIvar(contextExecutor, contextIvar, [[RCTJavaScriptContext alloc] initWithJSContext:ctx]);
+            Class RCTJavaScriptContext = NSClassFromString(@"RCTJavaScriptContext");
+
+            if (RCTJavaScriptContext) {
+                ctx = JSGlobalContextCreate(NULL);
+                object_setIvar(contextExecutor, contextIvar, [[RCTJavaScriptContext alloc] initWithJSContext:ctx]);
+            }
+            else {
+                NSLog(@"Failed to load RCTJavaScriptContext class");
+            }
         }
 
         [RealmJS initializeContext:ctx];
-
-        RCTLogInfo(@"Realm initialized");
     }];
 }
 
-
 @end
-

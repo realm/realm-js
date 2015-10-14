@@ -16,11 +16,12 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#import <UIKit/UIKit.h>
-#import "Base/RCTBridgeModule.h"
-@import RealmJS;
+#import "RJSUtil.hpp"
+#import "shared_realm.hpp"
+#import "list.hpp"
 
-@protocol RCTBridgeModule;
+extern const JSStaticFunction RJSListFuncs[];
+JSClassRef RJSListClass();
+JSObjectRef RJSListCreate(JSContextRef ctx, realm::List &list);
 
-@interface Realm : NSObject <RCTBridgeModule>
-@end
+JSValueRef ListGetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef* jsException);

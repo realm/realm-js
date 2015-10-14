@@ -24,7 +24,7 @@
 #include "RealmJS.h"
 #include "RJSObject.hpp"
 #include "RJSResults.hpp"
-#include "RJSArray.hpp"
+#include "RJSList.hpp"
 #include "RJSRealm.hpp"
 #include "RJSUtil.hpp"
 
@@ -140,7 +140,7 @@ using RPCRequest = std::function<NSDictionary *(NSDictionary *dictionary)>;
 
             JSValueRef exception = NULL;
             static JSStringRef lengthPropertyName = JSStringCreateWithUTF8CString("length");
-            JSValueRef lengthValue = ArrayGetProperty(_context, _objects[listId], lengthPropertyName, &exception);
+            JSValueRef lengthValue = ListGetProperty(_context, _objects[listId], lengthPropertyName, &exception);
             size_t length = JSValueToNumber(_context, lengthValue, &exception);
 
             if (exception) {
@@ -154,7 +154,7 @@ using RPCRequest = std::function<NSDictionary *(NSDictionary *dictionary)>;
 
             JSValueRef exception = NULL;
             JSStringRef indexPropertyName = JSStringCreateWithUTF8CString(std::to_string(index).c_str());
-            JSValueRef objectValue = ArrayGetProperty(_context, _objects[listId], indexPropertyName, &exception);
+            JSValueRef objectValue = ListGetProperty(_context, _objects[listId], indexPropertyName, &exception);
             JSStringRelease(indexPropertyName);
 
             if (exception) {
@@ -166,7 +166,7 @@ using RPCRequest = std::function<NSDictionary *(NSDictionary *dictionary)>;
         _requests["/call_list_method"] = [=](NSDictionary *dict) {
             NSString *name = dict[@"name"];
             return [self performObjectMethod:name.UTF8String
-                                classMethods:RJSArrayFuncs
+                                classMethods:RJSListFuncs
                                         args:dict[@"arguments"]
                                     objectId:[dict[@"listId"] unsignedLongValue]];
         };
@@ -249,14 +249,14 @@ using RPCRequest = std::function<NSDictionary *(NSDictionary *dictionary)>;
              @"schema": [self objectSchemaToJSONObject:object->object_schema]
         };
     }
-    else if (JSValueIsObjectOfClass(_context, value, RJSArrayClass())) {
-        realm::ObjectArray *array = RJSGetInternal<realm::ObjectArray *>(jsObject);
+    else if (JSValueIsObjectOfClass(_context, value, RJSListClass())) {
+        realm::List *list = RJSGetInternal<realm::List *>(jsObject);
         RPCObjectID oid = [self storeObject:jsObject];
         return @{
              @"type": @(RJSTypeGet(realm::PropertyTypeArray).c_str()),
              @"id": @(oid),
-             @"size": @(array->link_view->size()),
-             @"schema": [self objectSchemaToJSONObject:array->object_schema]
+             @"size": @(list->link_view->size()),
+             @"schema": [self objectSchemaToJSONObject:list->object_schema]
          };
     }
     else if (JSValueIsObjectOfClass(_context, value, RJSResultsClass())) {
@@ -270,7 +270,7 @@ using RPCRequest = std::function<NSDictionary *(NSDictionary *dictionary)>;
         };
     }
     else if (RJSIsValueArray(_context, value)) {
-        size_t length = RJSValidatedArrayLength(_context, jsObject);
+        size_t length = RJSValidatedListLength(_context, jsObject);
         NSMutableArray *array = [NSMutableArray new];
         for (unsigned int i = 0; i < length; i++) {
             [array addObject:[self resultForJSValue:JSObjectGetPropertyAtIndex(_context, jsObject, i, NULL)]];

@@ -24,67 +24,85 @@ var schemas = require('./schemas');
 
 module.exports = {
     testBasicTypesPropertyGetters: function() {
-    	var basicTypesValues = [true, 1, 1.1, 1.11, 'string', new Date(1), 'DATA'];
-    	var realm = new Realm({schema: [schemas.BasicTypes]});
-    	var object = null;
-    	realm.write(function() {
-    		object = realm.create('BasicTypesObject', basicTypesValues);
-    	});
+        var basicTypesValues = [true, 1, 1.1, 1.11, 'string', new Date(1), 'DATA'];
+        var realm = new Realm({schema: [schemas.BasicTypes]});
+        var object = null;
+        realm.write(function() {
+            object = realm.create('BasicTypesObject', basicTypesValues);
+        });
 
-    	for (var i = 0; i < schemas.BasicTypes.properties.length; i++) {
-    		var prop = schemas.BasicTypes.properties[i];
-    		if (prop.type == Realm.Types.FLOAT) {
-    			TestCase.assertEqualWithTolerance(object[prop.name], basicTypesValues[i], 0.000001);
-    		}
-    		else if (prop.type == Realm.Types.DATE) {
-    			TestCase.assertEqual(object[prop.name].getTime(), basicTypesValues[i].getTime());
-    		}
-    		else {
-	    		TestCase.assertEqual(object[prop.name], basicTypesValues[i]);
-	    	}
-    	}
+        for (var i = 0; i < schemas.BasicTypes.properties.length; i++) {
+            var prop = schemas.BasicTypes.properties[i];
+            if (prop.type == Realm.Types.FLOAT) {
+                TestCase.assertEqualWithTolerance(object[prop.name], basicTypesValues[i], 0.000001);
+            }
+            else if (prop.type == Realm.Types.DATE) {
+                TestCase.assertEqual(object[prop.name].getTime(), basicTypesValues[i].getTime());
+            }
+            else {
+                TestCase.assertEqual(object[prop.name], basicTypesValues[i]);
+            }
+        }
     },
     testBasicTypesPropertySetters: function() {
-    	var basicTypesValues = [true, 1, 1.1, 1.11, 'string', new Date(1), 'DATA'];
-    	var realm = new Realm({schema: [schemas.BasicTypes]});
-    	var obj = null;
-    	realm.write(function() {
-    		obj = realm.create('BasicTypesObject', basicTypesValues);
-    		obj.boolCol = false; 
-    		obj.intCol = 2; 
-    		obj.floatCol = 2.2;
-    		obj.doubleCol = 2.22;
-    		obj.stringCol = 'STRING';
-    		obj.dateCol = new Date(2); 
-    		obj.dataCol = 'b';
-   		});
-   		TestCase.assertEqual(obj.boolCol, false, 'wrong bool value');
-    	TestCase.assertEqual(obj.intCol, 2, 'wrong int value');
-    	TestCase.assertEqualWithTolerance(obj.floatCol, 2.2, 0.000001, 'wrong float value');
-    	TestCase.assertEqual(obj.doubleCol, 2.22, 'wrong double value');
-    	TestCase.assertEqual(obj.stringCol, 'STRING', 'wrong string value');
-    	TestCase.assertEqual(obj.dateCol.getTime(), 2, 'wrong date value');
-    	TestCase.assertEqual(obj.dataCol, 'b', 'wrong data value');
+        var basicTypesValues = [true, 1, 1.1, 1.11, 'string', new Date(1), 'DATA'];
+        var realm = new Realm({schema: [schemas.BasicTypes]});
+        var obj = null;
+
+        realm.write(function() {
+            obj = realm.create('BasicTypesObject', basicTypesValues);
+            obj.boolCol = false;
+            obj.intCol = 2;
+            obj.floatCol = 2.2;
+            obj.doubleCol = 2.22;
+            obj.stringCol = 'STRING';
+            obj.dateCol = new Date(2);
+            obj.dataCol = 'b';
+        });
+
+        TestCase.assertEqual(obj.boolCol, false, 'wrong bool value');
+        TestCase.assertEqual(obj.intCol, 2, 'wrong int value');
+        TestCase.assertEqualWithTolerance(obj.floatCol, 2.2, 0.000001, 'wrong float value');
+        TestCase.assertEqual(obj.doubleCol, 2.22, 'wrong double value');
+        TestCase.assertEqual(obj.stringCol, 'STRING', 'wrong string value');
+        TestCase.assertEqual(obj.dateCol.getTime(), 2, 'wrong date value');
+        TestCase.assertEqual(obj.dataCol, 'b', 'wrong data value');
+
+        realm.write(function() {
+            TestCase.assertThrows(function() {
+                obj.boolCol = 'cat';
+            });
+
+            TestCase.assertThrows(function() {
+                obj.intCol = 'dog';
+            });
+        });
+
+        TestCase.assertThrows(function() {
+            obj.boolCol = true;
+        }, 'can only set property values in a write transaction');
+
+        TestCase.assertEqual(obj.boolCol, false, 'bool value changed outside transaction');
     },
     testLinkTypesPropertyGetters: function() {
-    	var realm = new Realm({schema: [schemas.LinkTypes, schemas.TestObject]});
-    	var obj = null;
-    	realm.write(function() {
-    		obj = realm.create('LinkTypesObject', [[1], null, [[3]]]);
-    	});
+        var realm = new Realm({schema: [schemas.LinkTypes, schemas.TestObject]});
+        var obj = null;
+        realm.write(function() {
+            obj = realm.create('LinkTypesObject', [[1], null, [[3]]]);
+        });
 
-    	var objVal = obj.objectCol;
-    	TestCase.assertEqual(typeof objVal, 'object');
-    	TestCase.assertNotEqual(objVal, null);
-    	TestCase.assertEqual(objVal.doubleCol, 1);
+        var objVal = obj.objectCol;
+        TestCase.assertEqual(typeof objVal, 'object');
+        TestCase.assertNotEqual(objVal, null);
+        TestCase.assertEqual(objVal.doubleCol, 1);
 
         TestCase.assertEqual(obj.objectCol1, null);
 
-    	var arrayVal = obj.arrayCol;
-    	TestCase.assertEqual(typeof arrayVal, 'object');
-    	TestCase.assertNotEqual(arrayVal, null);
-    	TestCase.assertEqual(arrayVal.length, 1);
-    	TestCase.assertEqual(arrayVal[0].doubleCol, 3);
+        var arrayVal = obj.arrayCol;
+        TestCase.assertEqual(typeof arrayVal, 'object');
+        TestCase.assertNotEqual(arrayVal, null);
+        TestCase.assertEqual(arrayVal.length, 1);
+        TestCase.assertEqual(arrayVal[0].doubleCol, 3);
     },
     testLinkTypesPropertySetters: function() {
         var realm = new Realm({schema: [schemas.LinkTypes, schemas.TestObject]});
@@ -93,6 +111,10 @@ module.exports = {
             obj = realm.create('LinkTypesObject', [[1], null, [[3]]]);
         });
         TestCase.assertEqual(realm.objects('TestObject').length, 2);
+
+        TestCase.assertThrows(function() {
+            obj.objectCol1 = obj.objectCol;
+        }, 'can only set property values in a write transaction');
 
         // set/reuse object property
         realm.write(function() {

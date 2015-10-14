@@ -23,6 +23,8 @@
 #import "RJSRealm.hpp"
 #import "RJSModuleLoader.h"
 
+#import "shared_realm.hpp"
+
 NSString *RealmPathForFile(NSString *fileName) {
 #if TARGET_OS_IPHONE
     NSString *path = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES)[0];
@@ -33,10 +35,9 @@ NSString *RealmPathForFile(NSString *fileName) {
     return [path stringByAppendingPathComponent:fileName];
 }
 
-static NSString *s_testPrefix;
 
 NSString *TestRealmPath() {
-    return RealmPathForFile([s_testPrefix stringByAppendingPathComponent:@"test.realm"]);
+    return RealmPathForFile(@"test.realm");
 }
 
 static void DeleteOrThrow(NSString *path) {
@@ -82,18 +83,22 @@ static void DeleteRealmFilesAtPath(NSString *path) {
 - (void)setUp {
     [super setUp];
 
-    s_testPrefix = [[NSUUID UUID] UUIDString];
-    NSString *defaultDir = RealmPathForFile(s_testPrefix);
+    NSString *defaultDir = [[NSString stringWithUTF8String:RJSDefaultPath().c_str()] stringByDeletingLastPathComponent];
     [[NSFileManager defaultManager] createDirectoryAtPath:defaultDir withIntermediateDirectories:YES attributes:nil error:nil];
-    RJSSetDefaultPath([defaultDir stringByAppendingPathComponent:@"default.realm"].UTF8String);
 
     self.context.exception = nil;
 }
 
 - (void)tearDown {
-    DeleteRealmFilesAtPath(TestRealmPath());
+    realm::Realm::s_global_cache.invalidate_all();
+    realm::Realm::s_global_cache.clear();
+
+    // FIXME - find all realm files in the docs dir and delete them rather than hardcoding these
+    DeleteRealmFilesAtPath(RealmPathForFile(@"test.realm"));
+    DeleteRealmFilesAtPath(RealmPathForFile(@"test1.realm"));
+    DeleteRealmFilesAtPath(RealmPathForFile(@"test2.realm"));
     DeleteRealmFilesAtPath(@(RJSDefaultPath().c_str()));
-    
+
     [super tearDown];
 }
 

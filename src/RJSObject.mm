@@ -20,7 +20,7 @@
 #import "RJSObject.hpp"
 #import "RJSResults.hpp"
 #import "RJSSchema.hpp"
-#import "RJSArray.hpp"
+#import "RJSList.hpp"
 
 #import "object_store.hpp"
 #import "object_accessor.hpp"
@@ -29,49 +29,15 @@ using RJSAccessor = realm::NativeAccessor<JSValueRef, JSContextRef>;
 using namespace realm;
 
 JSValueRef ObjectGetProperty(JSContextRef ctx, JSObjectRef jsObject, JSStringRef jsPropertyName, JSValueRef* exception) {
-    Object *obj = RJSGetInternal<Object *>(jsObject);
-
-    std::string propName = RJSStringForJSString(jsPropertyName);
-    ObjectSchema &objectSchema = obj->object_schema;
-    Property *prop = objectSchema.property_for_name(propName);
-    if (!prop) {
+    try {
+        Object *obj = RJSGetInternal<Object *>(jsObject);
+        return obj->get_property_value<JSValueRef>(ctx, RJSStringForJSString(jsPropertyName));
+    } catch (std::exception &ex) {
+        if (exception) {
+            *exception = RJSMakeError(ctx, ex);
+        }
         return NULL;
     }
-
-    switch (prop->type) {
-        case PropertyTypeBool:
-            return JSValueMakeBoolean(ctx, obj->row.get_bool(prop->table_column));
-        case PropertyTypeInt:
-            return JSValueMakeNumber(ctx, obj->row.get_int(prop->table_column));
-        case PropertyTypeFloat:
-            return JSValueMakeNumber(ctx, obj->row.get_float(prop->table_column));
-        case PropertyTypeDouble:
-            return JSValueMakeNumber(ctx, obj->row.get_double(prop->table_column));
-        case PropertyTypeString:
-            return RJSValueForString(ctx, obj->row.get_string(prop->table_column));
-        case PropertyTypeData:
-            return RJSValueForString(ctx, (std::string)obj->row.get_binary(prop->table_column));
-        case PropertyTypeAny:
-            *exception = RJSMakeError(ctx, "'Any' type not supported");
-            return NULL;
-        case PropertyTypeDate: {
-            JSValueRef time = JSValueMakeNumber(ctx, obj->row.get_datetime(prop->table_column).get_datetime());
-            return JSObjectMakeDate(ctx, 1, &time, exception);
-        }
-        case PropertyTypeObject: {
-            auto linkObjectSchema = obj->realm->config().schema->find(prop->object_type);
-            TableRef table = ObjectStore::table_for_object_type(obj->realm->read_group(), linkObjectSchema->name);
-            if (obj->row.is_null_link(prop->table_column)) {
-                return JSValueMakeNull(ctx);
-            }
-            return RJSObjectCreate(ctx, Object(obj->realm, *linkObjectSchema, table->get(obj->row.get_link(prop->table_column))));
-        }
-        case PropertyTypeArray: {
-            auto arrayObjectSchema = obj->realm->config().schema->find(prop->object_type);
-            return RJSArrayCreate(ctx, new ObjectArray(obj->realm, *arrayObjectSchema, static_cast<LinkViewRef>(obj->row.get_linklist(prop->table_column))));
-        }
-    }
-    return NULL;
 }
 
 bool ObjectSetProperty(JSContextRef ctx, JSObjectRef jsObject, JSStringRef jsPropertyName, JSValueRef value, JSValueRef* exception) {
@@ -79,7 +45,7 @@ bool ObjectSetProperty(JSContextRef ctx, JSObjectRef jsObject, JSStringRef jsPro
         Object *obj = RJSGetInternal<Object *>(jsObject);
         obj->set_property_value(ctx, RJSStringForJSString(jsPropertyName), value, true);
     } catch (std::exception &ex) {
-        if (*exception) {
+        if (exception) {
             *exception = RJSMakeError(ctx, ex);
         }
         return false;
@@ -133,6 +99,9 @@ template<> JSValueRef RJSAccessor::default_value_for_property(JSContextRef ctx, 
 template<> bool RJSAccessor::is_null(JSContextRef ctx, JSValueRef &val) {
     return JSValueIsUndefined(ctx, val) || JSValueIsNull(ctx, val);
 }
+template<> JSValueRef RJSAccessor::null_value(JSContextRef ctx) {
+    return JSValueMakeNull(ctx);
+}
 
 template<> bool RJSAccessor::to_bool(JSContextRef ctx, JSValueRef &val) {
     if (!JSValueIsBoolean(ctx, val)) {
@@ -140,21 +109,36 @@ template<> bool RJSAccessor::to_bool(JSContextRef ctx, JSValueRef &val) {
     }
     return JSValueToBoolean(ctx, val);
 }
+template<> JSValueRef RJSAccessor::from_bool(JSContextRef ctx, bool b) {
+    return JSValueMakeBoolean(ctx, b);
+}
 
 template<> long long RJSAccessor::to_long(JSContextRef ctx, JSValueRef &val) {
     return RJSValidatedValueToNumber(ctx, val);
+}
+template<> JSValueRef RJSAccessor::from_long(JSContextRef ctx, long long l) {
+    return JSValueMakeNumber(ctx, l);
 }
 
 template<> float RJSAccessor::to_float(JSContextRef ctx, JSValueRef &val) {
     return RJSValidatedValueToNumber(ctx, val);
 }
+template<> JSValueRef RJSAccessor::from_float(JSContextRef ctx, float f) {
+    return JSValueMakeNumber(ctx, f);
+}
 
 template<> double RJSAccessor::to_double(JSContextRef ctx, JSValueRef &val) {
     return RJSValidatedValueToNumber(ctx, val);
 }
+template<> JSValueRef RJSAccessor::from_double(JSContextRef ctx, double d) {
+    return JSValueMakeNumber(ctx, d);
+}
 
 template<> std::string RJSAccessor::to_string(JSContextRef ctx, JSValueRef &val) {
     return RJSValidatedStringForValue(ctx, val);
+}
+template<> JSValueRef RJSAccessor::from_string(JSContextRef ctx, StringData s) {
+    return RJSValueForString(ctx, s);
 }
 
 template<> DateTime RJSAccessor::to_datetime(JSContextRef ctx, JSValueRef &val) {
@@ -176,6 +160,10 @@ template<> DateTime RJSAccessor::to_datetime(JSContextRef ctx, JSValueRef &val) 
 
     return DateTime(utc);
 }
+template<> JSValueRef RJSAccessor::from_datetime(JSContextRef ctx, DateTime dt) {
+    JSValueRef time = JSValueMakeNumber(ctx, dt.get_datetime());
+    return JSObjectMakeDate(ctx, 1, &time, NULL);
+}
 
 extern JSObjectRef RJSDictForPropertyArray(JSContextRef ctx, ObjectSchema &object_schema, JSObjectRef array);
 
@@ -193,11 +181,16 @@ template<> size_t RJSAccessor::to_object_index(JSContextRef ctx, SharedRealm &re
     Object child = Object::create<JSValueRef>(ctx, realm, *object_schema, (JSValueRef)object, try_update);
     return child.row.get_index();
 }
-
-template<> size_t RJSAccessor::array_size(JSContextRef ctx, JSValueRef &val) {
-    return RJSValidatedArrayLength(ctx, RJSValidatedValueToObject(ctx, val));
+template<> JSValueRef RJSAccessor::from_object(JSContextRef ctx, Object object) {
+    return RJSObjectCreate(ctx, object);
 }
 
-template<> JSValueRef RJSAccessor::array_value_at_index(JSContextRef ctx, JSValueRef &val, size_t index) {
+template<> size_t RJSAccessor::list_size(JSContextRef ctx, JSValueRef &val) {
+    return RJSValidatedListLength(ctx, RJSValidatedValueToObject(ctx, val));
+}
+template<> JSValueRef RJSAccessor::list_value_at_index(JSContextRef ctx, JSValueRef &val, size_t index) {
     return RJSValidatedObjectAtIndex(ctx, RJSValidatedValueToObject(ctx, val), (unsigned int)index);
+}
+template<> JSValueRef RJSAccessor::from_list(JSContextRef ctx, List list) {
+    return RJSListCreate(ctx, list);
 }

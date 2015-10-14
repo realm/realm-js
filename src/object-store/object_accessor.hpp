@@ -21,43 +21,9 @@
 
 #include <string>
 #include "shared_realm.hpp"
+#include "list.hpp"
 
 namespace realm {
-    template<typename ValueType, typename ContextType>
-    class NativeAccessor {
-    public:
-        //
-        // Value converters - template specializations must be implemented for each platform
-        //
-        static bool dict_has_value_for_key(ContextType ctx, ValueType dict, const std::string &prop_name);
-        static ValueType dict_value_for_key(ContextType ctx, ValueType dict, const std::string &prop_name);
-
-        static bool has_default_value_for_property(ContextType ctx, const ObjectSchema &object_schema, const std::string &prop_name);
-        static ValueType default_value_for_property(ContextType ctx, const ObjectSchema &object_schema, const std::string &prop_name);
-
-        static bool to_bool(ContextType ctx, ValueType &val);
-        static long long to_long(ContextType ctx, ValueType &val);
-        static float to_float(ContextType ctx, ValueType &val);
-        static double to_double(ContextType ctx, ValueType &val);
-        static std::string to_string(ContextType ctx, ValueType &val);
-        static DateTime to_datetime(ContextType ctx, ValueType &val);
-
-        static bool is_null(ContextType ctx, ValueType &val);
-
-        // convert value to persisted object
-        // for existing objects return the existing row index
-        // for new/updated objects return the row index
-        static size_t to_object_index(ContextType ctx, SharedRealm &realm, ValueType &val, std::string &type, bool try_update);
-
-        // array value acessors
-        static size_t array_size(ContextType ctx, ValueType &val);
-        static ValueType array_value_at_index(ContextType ctx, ValueType &val, size_t index);
-
-        //
-        // Deprecated
-        //
-        static Mixed to_mixed(ContextType ctx, ValueType &val) { throw std::runtime_error("'Any' type is unsupported"); }
-    };
 
     class Object {
     public:
@@ -67,9 +33,12 @@ namespace realm {
         ObjectSchema &object_schema;
         Row row;
 
-        // property setter
+        // property getter/setter
         template<typename ValueType, typename ContextType>
         inline void set_property_value(ContextType ctx, std::string prop_name, ValueType value, bool try_update);
+
+        template<typename ValueType, typename ContextType>
+        inline ValueType get_property_value(ContextType ctx, std::string prop_name);
 
         // create an Object from a native representation
         template<typename ValueType, typename ContextType>
@@ -78,6 +47,53 @@ namespace realm {
     private:
         template<typename ValueType, typename ContextType>
         inline void set_property_value_impl(ContextType ctx, Property &property, ValueType value, bool try_update);
+        template<typename ValueType, typename ContextType>
+        inline ValueType get_property_value_impl(ContextType ctx, Property &property);
+    };
+
+    //
+    // Value converters - template specializations must be implemented for each platform in order to call templated methods on Object
+    //
+    template<typename ValueType, typename ContextType>
+    class NativeAccessor {
+    public:
+        static bool dict_has_value_for_key(ContextType ctx, ValueType dict, const std::string &prop_name);
+        static ValueType dict_value_for_key(ContextType ctx, ValueType dict, const std::string &prop_name);
+
+        static bool has_default_value_for_property(ContextType ctx, const ObjectSchema &object_schema, const std::string &prop_name);
+        static ValueType default_value_for_property(ContextType ctx, const ObjectSchema &object_schema, const std::string &prop_name);
+
+        static bool to_bool(ContextType, ValueType &);
+        static ValueType from_bool(ContextType, bool);
+        static long long to_long(ContextType, ValueType &);
+        static ValueType from_long(ContextType, long long);
+        static float to_float(ContextType, ValueType &);
+        static ValueType from_float(ContextType, float);
+        static double to_double(ContextType, ValueType &);
+        static ValueType from_double(ContextType, double);
+        static std::string to_string(ContextType, ValueType &);
+        static ValueType from_string(ContextType, StringData);
+        static DateTime to_datetime(ContextType, ValueType &);
+        static ValueType from_datetime(ContextType, DateTime);
+
+        static bool is_null(ContextType, ValueType &);
+        static ValueType null_value(ContextType);
+
+        // convert value to persisted object
+        // for existing objects return the existing row index
+        // for new/updated objects return the row index
+        static size_t to_object_index(ContextType ctx, SharedRealm &realm, ValueType &val, std::string &type, bool try_update);
+        static ValueType from_object(ContextType ctx, Object);
+
+        // list value acessors
+        static size_t list_size(ContextType ctx, ValueType &val);
+        static ValueType list_value_at_index(ContextType ctx, ValueType &val, size_t index);
+        static ValueType from_list(ContextType ctx, List);
+
+        //
+        // Deprecated
+        //
+        static Mixed to_mixed(ContextType ctx, ValueType &val) { throw std::runtime_error("'Any' type is unsupported"); }
     };
 
     //
@@ -94,9 +110,23 @@ namespace realm {
     };
 
     template <typename ValueType, typename ContextType>
+    inline ValueType Object::get_property_value(ContextType ctx, std::string prop_name)
+    {
+        Property *prop = object_schema.property_for_name(prop_name);
+        if (!prop) {
+            throw std::runtime_error("Setting invalid property '" + prop_name + "' on object '" + object_schema.name + "'.");
+        }
+        return get_property_value_impl<ValueType>(ctx, *prop);
+    };
+
+    template <typename ValueType, typename ContextType>
     inline void Object::set_property_value_impl(ContextType ctx, Property &property, ValueType value, bool try_update)
     {
         using Accessor = NativeAccessor<ValueType, ContextType>;
+
+        if (!realm->is_in_transaction()) {
+            throw std::runtime_error("Can only set property values within a transaction.");
+        }
 
         size_t column = property.table_column;
         switch (property.type) {
@@ -136,12 +166,50 @@ namespace realm {
             case PropertyTypeArray: {
                 realm::LinkViewRef link_view = row.get_linklist(column);
                 link_view->clear();
-                size_t count = Accessor::array_size(ctx, value);
+                size_t count = Accessor::list_size(ctx, value);
                 for (size_t i = 0; i < count; i++) {
-                    ValueType element = Accessor::array_value_at_index(ctx, value, i);
+                    ValueType element = Accessor::list_value_at_index(ctx, value, i);
                     link_view->add(Accessor::to_object_index(ctx, realm, element, property.object_type, try_update));
                 }
                 break;
+            }
+        }
+    }
+
+    template <typename ValueType, typename ContextType>
+    inline ValueType Object::get_property_value_impl(ContextType ctx, Property &property)
+    {
+        using Accessor = NativeAccessor<ValueType, ContextType>;
+
+        size_t column = property.table_column;
+        switch (property.type) {
+            case PropertyTypeBool:
+                return Accessor::from_bool(ctx, row.get_bool(column));
+            case PropertyTypeInt:
+                return Accessor::from_long(ctx, row.get_int(column));
+            case PropertyTypeFloat:
+                return Accessor::from_float(ctx, row.get_float(column));
+            case PropertyTypeDouble:
+                return Accessor::from_double(ctx, row.get_double(column));
+            case PropertyTypeString:
+                return Accessor::from_string(ctx, row.get_string(column));
+            case PropertyTypeData:
+                return Accessor::from_string(ctx, (std::string)row.get_binary(column));
+            case PropertyTypeAny:
+                throw "Any not supported";
+            case PropertyTypeDate:
+                return Accessor::from_datetime(ctx, row.get_datetime(column));
+            case PropertyTypeObject: {
+                auto linkObjectSchema = realm->config().schema->find(property.object_type);
+                TableRef table = ObjectStore::table_for_object_type(realm->read_group(), linkObjectSchema->name);
+                if (row.is_null_link(property.table_column)) {
+                    return Accessor::null_value(ctx);
+                }
+                return Accessor::from_object(ctx, std::move(Object(realm, *linkObjectSchema, table->get(row.get_link(column)))));
+            }
+            case PropertyTypeArray: {
+                auto arrayObjectSchema = realm->config().schema->find(property.object_type);
+                return Accessor::from_list(ctx, std::move(List(realm, *arrayObjectSchema, static_cast<LinkViewRef>(row.get_linklist(column)))));
             }
         }
     }

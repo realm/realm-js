@@ -59,9 +59,20 @@ module.exports = {
         var testPath = util.realmPathForFile('test1.realm');
         var realm = new Realm({path: testPath, schema: [], schemaVersion: 1});
         TestCase.assertEqual(realm.schemaVersion, 1);
+        // FIXME - enable once Realm exposes a schema object
+        //TestCase.assertEqual(realm.schema.length, 0);
+ 
+        realm.close();
+        // FIXME - enable once realm initialization supports schema comparison
+        // TestCase.assertThrows(function() {
+        //     realm = new Realm({path: testPath, schema: [schemas.TestObject], schemaVersion: 1});
+        // }, "schema changes require updating the schema version");
 
-        //realm = undefined;
-        //realm = new Realm({path: testPath, schema: [], schemaVersion: 2});
+        realm = new Realm({path: testPath, schema: [schemas.TestObject], schemaVersion: 2});
+        realm.write(function() {
+            realm.create('TestObject', [1]);
+        });
+        TestCase.assertEqual(realm.objects('TestObject')[0].doubleCol, 1)
     },
 
     testDefaultPath: function() {
@@ -78,6 +89,11 @@ module.exports = {
 
     testRealmCreate: function() {
         var realm = new Realm({schema: [schemas.IntPrimary, schemas.AllTypes, schemas.TestObject]});
+
+        TestCase.assertThrows(function() {
+            realm.create('TestObject', [1]);
+        }, 'can only create inside a write transaction');
+
         realm.write(function() {
             realm.create('TestObject', [1]);
             realm.create('TestObject', {'doubleCol': 2});
@@ -176,7 +192,7 @@ module.exports = {
         var objects = realm.objects('TestObject');
         TestCase.assertThrows(function() {
             realm.delete(objects[0]);
-        }, "can only delete in a write transaction");
+        }, 'can only delete in a write transaction');
 
         realm.write(function() {
             TestCase.assertThrows(function() {
@@ -213,7 +229,7 @@ module.exports = {
 
         TestCase.assertThrows(function() {
             realm.deleteAll();
-        });
+        }, 'can only deleteAll in a write transaction');
 
         realm.write(function() {
             realm.deleteAll();
@@ -261,13 +277,18 @@ module.exports = {
     },
 
     testNotifications: function() {
-        var notificationCount = 0;
         var realm = new Realm({schema: []});
-        var notification = realm.addNotification(function() { 
-            notificationCount++; 
+        var notificationCount = 0;
+        var notificationName;
+
+        var notification = realm.addNotification(function(realm, name) {
+            notificationCount++;
+            notificationName = name;
         });
+
         TestCase.assertEqual(notificationCount, 0);
         realm.write(function() {});
         TestCase.assertEqual(notificationCount, 1);
+        TestCase.assertEqual(notificationName, 'DidChangeNotification');
     },
 };

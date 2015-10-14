@@ -44,8 +44,8 @@ module.exports = {
         var people = realm.objects('PersonObject');
         TestCase.assertEqual(people[0].age, 1);
         TestCase.assertEqual(people[1].age, 2);
-        TestCase.assertThrows(function() { people[2]; }, 'Invalid index');
-        TestCase.assertThrows(function() { people[-1]; }, 'Invalid index');
+        TestCase.assertEqual(people[2], undefined);
+        TestCase.assertEqual(people[-1], undefined);
         TestCase.assertTrue(Object.getPrototypeOf(people[0]) === schemas.PersonObject.prototype);
     },
     testResultsInvalidProperty: function() {
