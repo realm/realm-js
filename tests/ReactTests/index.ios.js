@@ -28,7 +28,6 @@ function runTests() {
                 continue;
             }
 
-            console.log('-', testName);
 
             if (testSuite.beforeEach) {
                 testSuite.beforeEach();
@@ -36,6 +35,11 @@ function runTests() {
 
             try {
                 testSuite[testName]();
+                console.log('+ ' + testName);
+            }
+            catch (e) {
+                console.log('- ' + testName);
+                console.warn(e);
             }
             finally {
                 if (testSuite.afterEach) {
