@@ -101,11 +101,14 @@ static void DeleteRealmFilesAtPath(NSString *path) {
     }
 }
 
++ (NSURL *)scriptURL {
+    return nil;
+}
+
 + (XCTestSuite *)defaultTestSuite {
     XCTestSuite *suite = [super defaultTestSuite];
     JSContext *context = [[JSContext alloc] init];
     RJSModuleLoader *moduleLoader = [[RJSModuleLoader alloc] initWithContext:context];
-    NSURL *scriptURL = [[NSBundle bundleForClass:self] URLForResource:@"index" withExtension:@"js"];
 
     context[@"cleanupTestRealms"] = ^{
         [self cleanupTestRealms];
@@ -117,8 +120,13 @@ static void DeleteRealmFilesAtPath(NSString *path) {
     [moduleLoader addGlobalModuleObject:context[@"Realm"] forName:@"realm"];
 
     NSError *error;
-    JSValue *testObjects = [moduleLoader loadModuleFromURL:scriptURL error:&error];
 
+    NSURL *scriptURL = [self scriptURL];
+    if (!scriptURL) {
+        return suite;
+    }
+
+    JSValue *testObjects = [moduleLoader loadModuleFromURL:scriptURL error:&error];
     if (!testObjects) {
         NSLog(@"index.js - %@", error);
         exit(1);
