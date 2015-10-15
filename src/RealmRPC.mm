@@ -45,31 +45,40 @@ using RPCRequest = std::function<NSDictionary *(NSDictionary *dictionary)>;
     self = [super init];
     if (self) {
         _context = JSGlobalContextCreate(NULL);
+
         _requests["/create_realm"] = [=](NSDictionary *dict) {
-            // We should have a method for serializing schema rather than relying on JSValue
-            JSValueRef value = [[JSValue valueWithObject:dict
-                                               inContext:[JSContext contextWithJSGlobalContextRef:_context]] JSValueRef];
-            JSValueRef ex = NULL;
-            RPCObjectID realmId = [self storeObject:RealmConstructor(_context, NULL, 1, &value, &ex)];
-            if (ex) {
-                return @{@"error": @(RJSStringForValue(_context, ex).c_str())};
+            NSArray *args = dict[@"arguments"];
+            NSUInteger argCount = args.count;
+            JSValueRef argValues[argCount];
+
+            for (NSUInteger i = 0; i < argCount; i++) {
+                argValues[i] = [self valueFromDictionary:args[i]];
             }
+
+            JSValueRef exception = NULL;
+            JSObjectRef realmObject = RealmConstructor(_context, NULL, argCount, argValues, &exception);
+
+            if (exception) {
+                return @{@"error": @(RJSStringForValue(_context, exception).c_str())};
+            }
+
+            RPCObjectID realmId = [self storeObject:realmObject];
             return @{@"result": @(realmId)};
         };
         _requests["/begin_transaction"] = [=](NSDictionary *dict) {
             RPCObjectID realmId = [dict[@"realmId"] unsignedLongValue];
             RJSGetInternal<realm::SharedRealm *>(_objects[realmId])->get()->begin_transaction();
-            return @{};
+            return nil;
         };
         _requests["/cancel_transaction"] = [=](NSDictionary *dict) {
             RPCObjectID realmId = [dict[@"realmId"] unsignedLongValue];
             RJSGetInternal<realm::SharedRealm *>(_objects[realmId])->get()->cancel_transaction();
-            return @{};
+            return nil;
         };
         _requests["/commit_transaction"] = [=](NSDictionary *dict) {
             RPCObjectID realmId = [dict[@"realmId"] unsignedLongValue];
             RJSGetInternal<realm::SharedRealm *>(_objects[realmId])->get()->commit_transaction();
-            return @{};
+            return nil;
         };
         _requests["/call_realm_method"] = [=](NSDictionary *dict) {
             NSString *name = dict[@"name"];
@@ -106,7 +115,7 @@ using RPCRequest = std::function<NSDictionary *(NSDictionary *dictionary)>;
             RPCObjectID oid = [dict[@"id"] unsignedLongValue];
             JSValueUnprotect(_context, _objects[oid]);
             _objects.erase(oid);
-            return @{};
+            return nil;
         };
         _requests["/get_results_size"] = [=](NSDictionary *dict) {
             RPCObjectID resultsId = [dict[@"resultsId"] unsignedLongValue];
@@ -185,26 +194,26 @@ using RPCRequest = std::function<NSDictionary *(NSDictionary *dictionary)>;
             response = @{@"error": [@"exception thrown: " stringByAppendingString:@(exception.what())]};
         }
     });
-    return response;
+    return response ?: @{};
 }
 
 - (NSDictionary *)performObjectMethod:(const char *)name
                          classMethods:(const JSStaticFunction [])methods
                                  args:(NSArray *)args
                              objectId:(RPCObjectID)oid {
-    NSUInteger count = args.count;
-    JSValueRef argValues[count];
-    for (NSUInteger i = 0; i < count; i++) {
+    NSUInteger argCount = args.count;
+    JSValueRef argValues[argCount];
+    for (NSUInteger i = 0; i < argCount; i++) {
         argValues[i] = [self valueFromDictionary:args[i]];
     }
 
     size_t index = 0;
     while (methods[index].name) {
         if (!strcmp(methods[index].name, name)) {
-            JSValueRef ex = NULL;
-            JSValueRef ret = methods[index].callAsFunction(_context, NULL, _objects[oid], count, argValues, &ex);
-            if (ex) {
-                return @{@"error": @(RJSStringForValue(_context, ex).c_str())};
+            JSValueRef exception = NULL;
+            JSValueRef ret = methods[index].callAsFunction(_context, NULL, _objects[oid], argCount, argValues, &exception);
+            if (exception) {
+                return @{@"error": @(RJSStringForValue(_context, exception).c_str())};
             }
             return @{@"result": [self resultForJSValue:ret]};
         }
