@@ -19,43 +19,7 @@
 #import <objc/runtime.h>
 
 #import "RealmJSTests.h"
-#import "RJSUtil.hpp"
-#import "RJSRealm.hpp"
 #import "RJSModuleLoader.h"
-
-#import "shared_realm.hpp"
-
-NSString *RealmPathForFile(NSString *fileName) {
-#if TARGET_OS_IPHONE
-    NSString *path = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES)[0];
-#else
-    NSString *path = NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, YES)[0];
-    path = [path stringByAppendingPathComponent:[[[NSBundle mainBundle] executablePath] lastPathComponent]];
-#endif
-    return [path stringByAppendingPathComponent:fileName];
-}
-
-
-NSString *TestRealmPath() {
-    return RealmPathForFile(@"test.realm");
-}
-
-static void DeleteOrThrow(NSString *path) {
-    NSError *error;
-    if (![[NSFileManager defaultManager] removeItemAtPath:path error:&error]) {
-        if (error.code != NSFileNoSuchFileError) {
-            @throw [NSException exceptionWithName:@"RLMTestException"
-                                           reason:[@"Unable to delete realm: " stringByAppendingString:error.description]
-                                         userInfo:nil];
-        }
-    }
-}
-
-static void DeleteRealmFilesAtPath(NSString *path) {
-    DeleteOrThrow(path);
-    DeleteOrThrow([path stringByAppendingString:@".lock"]);
-    DeleteOrThrow([path stringByAppendingString:@".note"]);
-}
 
 @interface RealmJSTests ()
 
@@ -83,9 +47,6 @@ static void DeleteRealmFilesAtPath(NSString *path) {
 - (void)setUp {
     [super setUp];
 
-    NSString *defaultDir = [[NSString stringWithUTF8String:RJSDefaultPath().c_str()] stringByDeletingLastPathComponent];
-    [[NSFileManager defaultManager] createDirectoryAtPath:defaultDir withIntermediateDirectories:YES attributes:nil error:nil];
-
     [self invokeMethod:@"beforeEach"];
 }
 
@@ -109,10 +70,6 @@ static void DeleteRealmFilesAtPath(NSString *path) {
     XCTestSuite *suite = [super defaultTestSuite];
     JSContext *context = [[JSContext alloc] init];
     RJSModuleLoader *moduleLoader = [[RJSModuleLoader alloc] initWithContext:context];
-
-    context[@"cleanupTestRealms"] = ^{
-        [self cleanupTestRealms];
-    };
 
     [RealmJS initializeContext:context.JSGlobalContextRef];
 
@@ -156,17 +113,6 @@ static void DeleteRealmFilesAtPath(NSString *path) {
     }
 
     return suite;
-}
-
-+ (void)cleanupTestRealms {
-    realm::Realm::s_global_cache.invalidate_all();
-    realm::Realm::s_global_cache.clear();
-
-    // FIXME - find all realm files in the docs dir and delete them rather than hardcoding these
-    DeleteRealmFilesAtPath(RealmPathForFile(@"test.realm"));
-    DeleteRealmFilesAtPath(RealmPathForFile(@"test1.realm"));
-    DeleteRealmFilesAtPath(RealmPathForFile(@"test2.realm"));
-    DeleteRealmFilesAtPath(@(RJSDefaultPath().c_str()));
 }
 
 - (NSMethodSignature *)methodSignatureForSelector:(SEL)aSelector {

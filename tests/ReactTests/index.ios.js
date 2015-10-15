@@ -21,6 +21,10 @@ function runTests() {
     for (let suiteName in RealmTests) {
         let testSuite = RealmTests[suiteName];
 
+        if (typeof testSuite != 'object') {
+            continue;
+        }
+
         console.log('Starting suite:', suiteName);
 
         for (let testName in testSuite) {

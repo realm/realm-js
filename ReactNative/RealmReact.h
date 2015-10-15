@@ -19,4 +19,9 @@
 @import Foundation;
 
 @interface RealmReact : NSObject
+
+@property (nonatomic) id executor;
+
++ (id)executor;
+
 @end

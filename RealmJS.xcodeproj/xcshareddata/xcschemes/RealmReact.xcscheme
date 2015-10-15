@@ -28,7 +28,31 @@
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "YES">
       <Testables>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "00E356ED1AD99517003FC87E"
+               BuildableName = "RealmReactTests.xctest"
+               BlueprintName = "RealmReactTests"
+               ReferencedContainer = "container:tests/ReactTests/ios/ReactTests.xcodeproj">
+            </BuildableReference>
+            <SkippedTests>
+               <Test
+                  Identifier = "RealmJSTests">
+               </Test>
+            </SkippedTests>
+         </TestableReference>
       </Testables>
+      <MacroExpansion>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "02B29A151B7CF7C9008A7E6B"
+            BuildableName = "RealmReact.framework"
+            BlueprintName = "RealmReact"
+            ReferencedContainer = "container:RealmJS.xcodeproj">
+         </BuildableReference>
+      </MacroExpansion>
       <AdditionalOptions>
       </AdditionalOptions>
    </TestAction>

@@ -33,8 +33,11 @@
 @interface RealmReact () <RCTBridgeModule>
 @end
 
+static id s_executor;
+
 @implementation RealmReact
 
+@dynamic executor;
 @synthesize bridge = _bridge;
 
 + (void)load {
@@ -52,12 +55,16 @@
     return @"Realm";
 }
 
++ (id)executor {
+    return s_executor;
+}
+
 - (void)setBridge:(RCTBridge *)bridge {
     _bridge = bridge;
 
     Ivar executorIvar = class_getInstanceVariable([bridge class], "_javaScriptExecutor");
-    id contextExecutor = object_getIvar(bridge, executorIvar);
-    Ivar contextIvar = class_getInstanceVariable([contextExecutor class], "_context");
+    s_executor = object_getIvar(bridge, executorIvar);
+    Ivar contextIvar = class_getInstanceVariable([s_executor class], "_context");
 
     // The executor could be a RCTWebSocketExecutor, in which case it won't have a JS context.
     if (!contextIvar) {
@@ -86,8 +93,8 @@
         return;
     }
 
-    [contextExecutor executeBlockOnJavaScriptQueue:^{
-        id rctJSContext = object_getIvar(contextExecutor, contextIvar);
+    [s_executor executeBlockOnJavaScriptQueue:^{
+        id rctJSContext = object_getIvar(s_executor, contextIvar);
         JSGlobalContextRef ctx;
 
         if (rctJSContext) {
@@ -98,7 +105,7 @@
 
             if (RCTJavaScriptContext) {
                 ctx = JSGlobalContextCreate(NULL);
-                object_setIvar(contextExecutor, contextIvar, [[RCTJavaScriptContext alloc] initWithJSContext:ctx]);
+                object_setIvar(s_executor, contextIvar, [[RCTJavaScriptContext alloc] initWithJSContext:ctx]);
             }
             else {
                 NSLog(@"Failed to load RCTJavaScriptContext class");

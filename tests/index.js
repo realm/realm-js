@@ -22,3 +22,8 @@ exports.ArrayTests = require('./ArrayTests');
 exports.ObjectTests = require('./ObjectTests');
 exports.RealmTests = require('./RealmTests');
 exports.ResultsTests = require('./ResultsTests');
+
+exports.executeTest = function(suiteName, testName) {
+	var suite = exports[suiteName];
+	suite[textName]();
+};

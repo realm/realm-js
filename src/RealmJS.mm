@@ -21,6 +21,8 @@
 #import "RJSObject.hpp"
 #import "RJSUtil.hpp"
 
+#include "shared_realm.hpp"
+
 JSValueRef RJSTypeGet(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef* exception) {
     return RJSValueForString(ctx, RJSTypeGet(RJSStringForJSString(propertyName)));
 }
@@ -44,6 +46,34 @@ JSClassRef RJSRealmTypeClass() {
     return JSClassCreate(&realmTypesDefinition);
 }
 
+
+NSString *RealmPathForFile(NSString *fileName) {
+#if TARGET_OS_IPHONE
+    NSString *path = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES)[0];
+#else
+    NSString *path = NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, YES)[0];
+    path = [path stringByAppendingPathComponent:[[[NSBundle mainBundle] executablePath] lastPathComponent]];
+#endif
+    return [path stringByAppendingPathComponent:fileName];
+}
+
+static void DeleteOrThrow(NSString *path) {
+    NSError *error;
+    if (![[NSFileManager defaultManager] removeItemAtPath:path error:&error]) {
+        if (error.code != NSFileNoSuchFileError) {
+            @throw [NSException exceptionWithName:@"RLMTestException"
+                                           reason:[@"Unable to delete realm: " stringByAppendingString:error.description]
+                                         userInfo:nil];
+        }
+    }
+}
+
+static void DeleteRealmFilesAtPath(NSString *path) {
+    DeleteOrThrow(path);
+    DeleteOrThrow([path stringByAppendingString:@".lock"]);
+    DeleteOrThrow([path stringByAppendingString:@".note"]);
+}
+
 @implementation RealmJS
 
 + (void)initializeContext:(JSContextRef)ctx {
@@ -56,7 +86,23 @@ JSClassRef RJSRealmTypeClass() {
     JSObjectSetProperty(ctx, globalRealmObject, typeString, typesObject, kJSPropertyAttributeNone, &exception);
     JSStringRelease(typeString);
 
+    [JSContext contextWithJSGlobalContextRef:JSContextGetGlobalContext(ctx)][@"cleanupTestRealms"] = ^{
+        [RealmJS cleanupTestRealms];
+    };
+
     assert(!exception);
+}
+
++ (void)cleanupTestRealms {
+    realm::Realm::s_global_cache.invalidate_all();
+    realm::Realm::s_global_cache.clear();
+
+    // FIXME - find all realm files in the docs dir and delete them rather than hardcoding these
+    
+    DeleteRealmFilesAtPath(RealmPathForFile(@"test.realm"));
+    DeleteRealmFilesAtPath(RealmPathForFile(@"test1.realm"));
+    DeleteRealmFilesAtPath(RealmPathForFile(@"test2.realm"));
+    DeleteRealmFilesAtPath(@(RJSDefaultPath().c_str()));
 }
 
 @end
