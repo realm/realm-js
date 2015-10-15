@@ -17,11 +17,10 @@
 ////////////////////////////////////////////////////////////////////////////
 
 @import Foundation;
+@import JavaScriptCore;
+
+extern JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executor);
 
 @interface RealmReact : NSObject
-
-@property (nonatomic, readonly) id executor;
-
-+ (id)executor;
 
 @end

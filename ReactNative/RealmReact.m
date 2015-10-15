@@ -21,7 +21,6 @@
 
 @import GCDWebServers;
 @import RealmJS;
-@import JavaScriptCore;
 @import ObjectiveC;
 @import Darwin;
 
@@ -30,10 +29,15 @@
 - (JSGlobalContextRef)ctx;
 @end
 
+JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executor) {
+    Ivar contextIvar = class_getInstanceVariable([executor class], "_context");
+    id rctJSContext = contextIvar ? object_getIvar(executor, contextIvar) : nil;
+
+    return [rctJSContext ctx];
+}
+
 @interface RealmReact () <RCTBridgeModule>
 @end
-
-static id s_executor;
 
 @implementation RealmReact
 
@@ -54,16 +58,12 @@ static id s_executor;
     return @"Realm";
 }
 
-+ (id)executor {
-    return s_executor;
-}
-
 - (void)setBridge:(RCTBridge *)bridge {
     _bridge = bridge;
 
     Ivar executorIvar = class_getInstanceVariable([bridge class], "_javaScriptExecutor");
-    s_executor = object_getIvar(bridge, executorIvar);
-    Ivar contextIvar = class_getInstanceVariable([s_executor class], "_context");
+    id executor = object_getIvar(bridge, executorIvar);
+    Ivar contextIvar = class_getInstanceVariable([executor class], "_context");
 
     // The executor could be a RCTWebSocketExecutor, in which case it won't have a JS context.
     if (!contextIvar) {
@@ -96,8 +96,8 @@ static id s_executor;
         return;
     }
 
-    [s_executor executeBlockOnJavaScriptQueue:^{
-        id rctJSContext = object_getIvar(s_executor, contextIvar);
+    [executor executeBlockOnJavaScriptQueue:^{
+        id rctJSContext = object_getIvar(executor, contextIvar);
         JSGlobalContextRef ctx;
 
         if (rctJSContext) {
@@ -108,7 +108,7 @@ static id s_executor;
 
             if (RCTJavaScriptContext) {
                 ctx = JSGlobalContextCreate(NULL);
-                object_setIvar(s_executor, contextIvar, [[RCTJavaScriptContext alloc] initWithJSContext:ctx]);
+                object_setIvar(executor, contextIvar, [[RCTJavaScriptContext alloc] initWithJSContext:ctx]);
             }
             else {
                 NSLog(@"Failed to load RCTJavaScriptContext class");

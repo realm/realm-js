@@ -22,13 +22,31 @@
 
 @import RealmReact;
 
+extern void JSGlobalContextSetIncludesNativeCallStackWhenReportingExceptions(JSGlobalContextRef ctx, bool includesNativeCallStack);
+
+static id<RCTJavaScriptExecutor> s_currentJavaScriptExecutor;
+
 @interface RealmReactTests : RealmJSTests
 @end
 
 @implementation RealmReactTests
 
 + (XCTestSuite *)defaultTestSuite {
-    [self waitForNotification:RCTJavaScriptDidLoadNotification];
+    NSNotification *notification = [self waitForNotification:RCTJavaScriptDidLoadNotification];
+    RCTBridge *bridge = notification.userInfo[@"bridge"];
+
+    if (!bridge) {
+        NSLog(@"No RCTBridge provided by RCTJavaScriptDidLoadNotification");
+        exit(1);
+    }
+
+    s_currentJavaScriptExecutor = [bridge valueForKey:@"javaScriptExecutor"];
+
+    // FIXME: Remove this nonsense once the crashes go away when a test fails!
+    JSGlobalContextRef ctx = RealmReactGetJSGlobalContextForExecutor(s_currentJavaScriptExecutor);
+    if (ctx) {
+        JSGlobalContextSetIncludesNativeCallStackWhenReportingExceptions(ctx, false);
+    }
 
     NSError *error;
     NSDictionary *testCaseNames = [self invokeMethod:@"getTestNames" inModule:@"index" error:&error];
@@ -47,34 +65,34 @@
     return suite;
 }
 
-+ (void)waitForNotification:(NSString *)notificationName {
++ (NSNotification *)waitForNotification:(NSString *)notificationName {
     NSRunLoop *runLoop = [NSRunLoop currentRunLoop];
     NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
-    __block BOOL received = NO;
+    __block NSNotification *notification;
 
     id token = [nc addObserverForName:notificationName object:nil queue:[NSOperationQueue mainQueue] usingBlock:^(NSNotification *note) {
-        received = YES;
+        notification = note;
     }];
 
-    while (!received) {
+    while (!notification) {
         @autoreleasepool {
             [runLoop runMode:NSDefaultRunLoopMode beforeDate:[NSDate distantFuture]];
         }
     }
 
     [nc removeObserver:token];
+    return notification;
 }
 
 + (id)invokeMethod:(NSString *)method inModule:(NSString *)module error:(NSError * __strong *)outError {
     module = [NSString stringWithFormat:@"realm-tests/%@.js", module];
 
-    id<RCTJavaScriptExecutor> executor = [RealmReact executor];
     dispatch_group_t group = dispatch_group_create();
     __block id result;
 
     dispatch_group_enter(group);
 
-    [executor executeJSCall:module method:method arguments:@[] callback:^(id json, NSError *error) {
+    [s_currentJavaScriptExecutor executeJSCall:module method:method arguments:@[] callback:^(id json, NSError *error) {
         result = json;
 
         if (error && outError) {
