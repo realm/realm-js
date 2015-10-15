@@ -79,12 +79,16 @@ static id s_executor;
             NSError *error;
             NSData *data = [(GCDWebServerDataRequest *)request data];
             NSDictionary *json = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
-            if (error) {
-                NSLog(@"%@", error);
-                return [GCDWebServerErrorResponse responseWithClientError:kGCDWebServerHTTPStatusCode_UnprocessableEntity underlyingError:error message:@"Invalid RPC request"];
+            GCDWebServerResponse *response;
+
+            if (error || ![json isKindOfClass:[NSDictionary class]]) {
+                NSLog(@"Invalid RPC request - %@", error ?: json);
+                response = [GCDWebServerErrorResponse responseWithClientError:kGCDWebServerHTTPStatusCode_UnprocessableEntity underlyingError:error message:@"Invalid RPC request"];
             }
-                                     
-            GCDWebServerDataResponse *response = [GCDWebServerDataResponse responseWithJSONObject:[rpcServer performRequest:request.path args:json]];
+            else {
+                response = [GCDWebServerDataResponse responseWithJSONObject:[rpcServer performRequest:request.path args:json]];
+            }
+
             [response setValue:@"http://localhost:8081" forAdditionalHeader:@"Access-Control-Allow-Origin"];
             return response;
          }];
