@@ -317,6 +317,13 @@ using RPCRequest = std::function<NSDictionary *(NSDictionary *dictionary)>;
              @"schema": [self objectSchemaToJSONObject:results->object_schema]
         };
     }
+    else if (JSValueIsObjectOfClass(_context, value, RJSNotificationClass())) {
+        RPCObjectID oid = [self storeObject:jsObject];
+        return @{
+            @"type": @"ObjectTypesNOTIFICATION",
+            @"id": @(oid),
+        };
+    }
     else if (RJSIsValueArray(_context, value)) {
         size_t length = RJSValidatedListLength(_context, jsObject);
         NSMutableArray *array = [NSMutableArray new];
@@ -352,6 +359,16 @@ using RPCRequest = std::function<NSDictionary *(NSDictionary *dictionary)>;
     RPCObjectID oid = [dict[@"id"] longValue];
     if (oid) {
         return _objects[oid];
+    }
+
+    NSString *type = dict[@"type"];
+    if ([type isEqualToString:@"ObjectTypesFUNCTION"]) {
+        // FIXME: Make this actually call the function by its id once we need it to.
+        JSStringRef jsBody = JSStringCreateWithUTF8CString("");
+        JSObjectRef jsFunction = JSObjectMakeFunction(_context, NULL, 0, NULL, jsBody, NULL, 1, NULL);
+        JSStringRelease(jsBody);
+
+        return jsFunction;
     }
 
     id value = dict[@"value"];
