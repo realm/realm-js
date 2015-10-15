@@ -20,7 +20,7 @@
 
 @interface RealmReact : NSObject
 
-@property (nonatomic) id executor;
+@property (nonatomic, readonly) id executor;
 
 + (id)executor;
 

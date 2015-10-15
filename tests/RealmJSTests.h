@@ -19,9 +19,6 @@
 #import <XCTest/XCTest.h>
 #import <RealmJS/RealmJS.h>
 
-extern NSString *RealmPathForFile(NSString *fileName);
-extern NSString *TestRealmPath();
-
 @interface RealmJSTests : XCTestCase
 
 @end

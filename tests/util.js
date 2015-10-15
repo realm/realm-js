@@ -20,13 +20,7 @@
 
 var Realm = require('realm');
 
-var global = (typeof global != 'undefined') ? global : this;
-
 exports.realmPathForFile = function(str) {
     var path = Realm.defaultPath;
     return path.substring(0, path.lastIndexOf("/") + 1) + str;
-};
-
-exports.cleanupTestRealms = function() {
-    global.cleanupTestRealms();
 };

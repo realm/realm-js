@@ -37,7 +37,6 @@ static id s_executor;
 
 @implementation RealmReact
 
-@dynamic executor;
 @synthesize bridge = _bridge;
 
 + (void)load {

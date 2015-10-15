@@ -46,7 +46,6 @@ JSClassRef RJSRealmTypeClass() {
     return JSClassCreate(&realmTypesDefinition);
 }
 
-
 NSString *RealmPathForFile(NSString *fileName) {
 #if TARGET_OS_IPHONE
     NSString *path = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES)[0];
@@ -74,6 +73,11 @@ static void DeleteRealmFilesAtPath(NSString *path) {
     DeleteOrThrow([path stringByAppendingString:@".note"]);
 }
 
+static JSValueRef DeleteTestFiles(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef *exception) {
+    [RealmJS deleteTestFiles];
+    return NULL;
+}
+
 @implementation RealmJS
 
 + (void)initializeContext:(JSContextRef)ctx {
@@ -83,17 +87,19 @@ static void DeleteRealmFilesAtPath(NSString *path) {
     JSObjectRef globalRealmObject = RJSRegisterGlobalClass(ctx, globalObject, RJSRealmConstructorClass(), "Realm", &exception);
     JSObjectRef typesObject = JSObjectMake(ctx, RJSRealmTypeClass(), NULL);
     JSStringRef typeString = JSStringCreateWithUTF8CString("Types");
-    JSObjectSetProperty(ctx, globalRealmObject, typeString, typesObject, kJSPropertyAttributeNone, &exception);
+    JSPropertyAttributes attributes = kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete;
+    JSObjectSetProperty(ctx, globalRealmObject, typeString, typesObject, attributes, &exception);
     JSStringRelease(typeString);
 
-    [JSContext contextWithJSGlobalContextRef:JSContextGetGlobalContext(ctx)][@"cleanupTestRealms"] = ^{
-        [RealmJS cleanupTestRealms];
-    };
+    JSStringRef deleteTestFilesString = JSStringCreateWithUTF8CString("deleteTestFiles");
+    JSObjectRef deleteTestFilesFunction = JSObjectMakeFunctionWithCallback(ctx, deleteTestFilesString, DeleteTestFiles);
+    JSObjectSetProperty(ctx, globalRealmObject, deleteTestFilesString, deleteTestFilesFunction, attributes, &exception);
+    JSStringRelease(deleteTestFilesString);
 
     assert(!exception);
 }
 
-+ (void)cleanupTestRealms {
++ (void)deleteTestFiles {
     realm::Realm::s_global_cache.invalidate_all();
     realm::Realm::s_global_cache.clear();
 

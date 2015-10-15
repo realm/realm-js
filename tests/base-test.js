@@ -18,7 +18,7 @@
 
 'use strict';
 
-var util = require('./util');
+var Realm = require('realm');
 
 var prototype = exports.prototype = {};
 
@@ -28,9 +28,14 @@ exports.extend = function(object) {
 };
 
 Object.defineProperties(prototype, {
+    // TODO: Remove once missing undefined check is fixed inside RCTContextExecutor.
+    beforeEach: {
+        value: function() {}
+    },
+
     afterEach: {
         value: function() {
-            util.cleanupTestRealms();
+            Realm.deleteTestFiles();
         }
     }
 });

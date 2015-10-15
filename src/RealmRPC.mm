@@ -179,6 +179,10 @@ using RPCRequest = std::function<NSDictionary *(NSDictionary *dictionary)>;
                                         args:dict[@"arguments"]
                                     objectId:[dict[@"listId"] unsignedLongValue]];
         };
+        _requests["/delete_test_files"] = [=](NSDictionary *dict) {
+            [RealmJS deleteTestFiles];
+            return nil;
+        };
     }
     return self;
 }
