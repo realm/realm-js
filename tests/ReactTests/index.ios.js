@@ -9,25 +9,22 @@ var Realm = require('realm');
 var RealmTests = require('realm-tests');
 
 var {
-  AppRegistry,
-  StyleSheet,
-  Text,
-  View,
+    AppRegistry,
+    StyleSheet,
+    Text,
+    TouchableHighlight,
+    View,
 } = React;
 
 function runTests() {
-    let specialMethodNames = {'beforeEach': true, 'afterEach': true};
+    let testNames = RealmTests.getTestNames();
 
-    for (let suiteName in RealmTests) {
+    for (let suiteName in testNames) {
         let testSuite = RealmTests[suiteName];
 
-        console.log('Starting suite:', suiteName);
+        console.log('Starting ' + suiteName);
 
-        for (let testName in testSuite) {
-            if (testName in specialMethodNames || typeof testSuite[testName] != 'function') {
-                continue;
-            }
-
+        for (let testName of testNames[suiteName]) {
             if (testSuite.beforeEach) {
                 testSuite.beforeEach();
             }
@@ -50,18 +47,11 @@ function runTests() {
 }
 
 var ReactTests = React.createClass({
-    componentDidMount() {
-        runTests();
-    },
-
     render() {
         return (
             <View style={styles.container}>
-                <Text style={styles.welcome}>
-                    Welcome to React Native!
-                </Text>
-                <Text style={styles.instructions}>
-                    To get started, edit index.ios.js
+                <Text style={styles.button} onPress={runTests}>
+                    Tap to Run Tests
                 </Text>
                 <Text style={styles.instructions}>
                     Press Cmd+R to reload,{'\n'}
@@ -73,22 +63,26 @@ var ReactTests = React.createClass({
 });
 
 var styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F5FCFF',
-  },
-  welcome: {
-    fontSize: 20,
-    textAlign: 'center',
-    margin: 10,
-  },
-  instructions: {
-    textAlign: 'center',
-    color: '#333333',
-    marginBottom: 5,
-  },
+    container: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#F5FCFF',
+    },
+    button: {
+        borderColor: '#cccccc',
+        borderRadius: 4,
+        borderWidth: 1,
+        fontSize: 20,
+        textAlign: 'center',
+        margin: 20,
+        padding: 10,
+    },
+    instructions: {
+        textAlign: 'center',
+        color: '#333333',
+        marginBottom: 5,
+    },
 });
 
 AppRegistry.registerComponent('ReactTests', () => ReactTests);

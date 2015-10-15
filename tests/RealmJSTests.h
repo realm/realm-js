@@ -21,4 +21,8 @@
 
 @interface RealmJSTests : XCTestCase
 
++ (NSArray *)testSuitesFromDictionary:(NSDictionary *)testCaseNames;
+
+- (instancetype)initWithTestName:(NSString *)name;
+
 @end

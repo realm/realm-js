@@ -144,7 +144,6 @@
 /* Begin PBXFileReference section */
 		02258FB11BC6E2D00075F13A /* RealmRPC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RealmRPC.h; path = src/RealmRPC.h; sourceTree = "<group>"; };
 		02258FB21BC6E2D00075F13A /* RealmRPC.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = RealmRPC.mm; path = src/RealmRPC.mm; sourceTree = "<group>"; };
-		02409DC01BCF11D6005F3B3E /* RealmJSCoreTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RealmJSCoreTests.h; path = src/RealmJSCoreTests.h; sourceTree = SOURCE_ROOT; };
 		02409DC11BCF11D6005F3B3E /* RealmJSCoreTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = RealmJSCoreTests.m; path = src/RealmJSCoreTests.m; sourceTree = SOURCE_ROOT; };
 		02601F011BA0F0C4007C91FF /* external_commit_helper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = external_commit_helper.cpp; path = "src/object-store/apple/external_commit_helper.cpp"; sourceTree = "<group>"; };
 		02601F021BA0F0C4007C91FF /* external_commit_helper.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = external_commit_helper.hpp; path = "src/object-store/apple/external_commit_helper.hpp"; sourceTree = "<group>"; };
@@ -339,7 +338,6 @@
 				0270BC7D1B7D020100010E03 /* ResultsTests.js */,
 				0270BC7A1B7D020100010E03 /* RealmJSTests.h */,
 				0270BC7B1B7D020100010E03 /* RealmJSTests.mm */,
-				02409DC01BCF11D6005F3B3E /* RealmJSCoreTests.h */,
 				02409DC11BCF11D6005F3B3E /* RealmJSCoreTests.m */,
 				F68A278A1BC2722A0063D40A /* RJSModuleLoader.h */,
 				F68A278B1BC2722A0063D40A /* RJSModuleLoader.m */,
