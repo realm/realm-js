@@ -118,12 +118,12 @@ JSObjectRef RJSResultsCreate(JSContextRef ctx, SharedRealm realm, std::string cl
     return RJSWrapObject<Results *>(ctx, RJSResultsClass(), new Results(realm, *object_schema, std::move(query)));
 }
 
+const JSStaticFunction RJSResultsFuncs[] = {
+    {"sortByProperty", SortByProperty, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
+    {NULL, NULL},
+};
 
 JSClassRef RJSResultsClass() {
-    const JSStaticFunction resultsFuncs[] = {
-        {"sortByProperty", SortByProperty, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
-        {NULL, NULL},
-    };
-    static JSClassRef s_objectClass = RJSCreateWrapperClass<Results *>("Results", ResultsGetProperty, NULL, resultsFuncs, ResultsPropertyNames);
+    static JSClassRef s_objectClass = RJSCreateWrapperClass<Results *>("Results", ResultsGetProperty, NULL, RJSResultsFuncs, ResultsPropertyNames);
     return s_objectClass;
 }

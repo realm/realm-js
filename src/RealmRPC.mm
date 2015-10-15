@@ -169,6 +169,13 @@ using RPCRequest = std::function<NSDictionary *(NSDictionary *dictionary)>;
             }
             return @{@"result": @(length)};
         };
+        _requests["/call_results_method"] = [=](NSDictionary *dict) {
+            NSString *name = dict[@"name"];
+            return [self performObjectMethod:name.UTF8String
+                                classMethods:RJSResultsFuncs
+                                        args:dict[@"arguments"]
+                                    objectId:[dict[@"resultsId"] unsignedLongValue]];
+        };
         _requests["/get_list_item"] = [=](NSDictionary *dict) {
             RPCObjectID listId = [dict[@"listId"] unsignedLongValue];
             long index = [dict[@"index"] longValue];
