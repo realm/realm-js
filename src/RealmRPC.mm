@@ -41,10 +41,22 @@ using RPCRequest = std::function<NSDictionary *(NSDictionary *dictionary)>;
     std::map<RPCObjectID, JSObjectRef> _objects;
 }
 
+- (void)dealloc {
+    for (auto item : _objects) {
+        JSValueUnprotect(_context, item.second);
+    }
+
+    JSGlobalContextRelease(_context);
+    _requests.clear();
+}
+
 - (instancetype)init {
     self = [super init];
     if (self) {
         _context = JSGlobalContextCreate(NULL);
+
+        id _self = self;
+        __weak __typeof__(self) self = _self;
 
         _requests["/create_realm"] = [=](NSDictionary *dict) {
             NSArray *args = dict[@"arguments"];
