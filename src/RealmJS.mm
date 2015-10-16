@@ -20,6 +20,7 @@
 #import "RJSRealm.hpp"
 #import "RJSObject.hpp"
 #import "RJSUtil.hpp"
+#import "RJSSchema.hpp"
 
 #include "shared_realm.hpp"
 
@@ -57,6 +58,7 @@ NSString *RealmFileDirectory() {
 
 static JSValueRef ClearTestState(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef *exception) {
     [RealmJS clearTestState];
+    RJSSchemaClearState(ctx);
     return NULL;
 }
 

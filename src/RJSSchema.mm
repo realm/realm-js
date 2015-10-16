@@ -55,6 +55,20 @@ JSValueRef RJSPrototypeForClassName(const std::string &className) {
     return s_prototypes[className];
 }
 
+void RJSSchemaClearState(JSContextRef ctx) {
+    for (auto prototype : s_prototypes) {
+        JSValueUnprotect(ctx, prototype.second);
+    }
+    s_prototypes.clear();
+
+    for (auto defaults : s_defaults) {
+        for (auto value : defaults.second) {
+            JSValueUnprotect(ctx, value.second);
+        }
+    }
+    s_defaults.clear();
+}
+
 static inline Property RJSParseProperty(JSContextRef ctx, JSObjectRef propertyObject) {
     static JSStringRef nameString = JSStringCreateWithUTF8CString("name");
     static JSStringRef typeString = JSStringCreateWithUTF8CString("type");

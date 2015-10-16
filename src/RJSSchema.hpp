@@ -31,3 +31,4 @@ realm::Schema RJSParseSchema(JSContextRef ctx, JSObjectRef jsonObject);
 
 JSValueRef RJSPrototypeForClassName(const std::string &className);
 realm::ObjectDefaults &RJSDefaultsForClassName(const std::string &className);
+void RJSSchemaClearState(JSContextRef ctx);
