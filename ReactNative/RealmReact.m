@@ -65,6 +65,13 @@ JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executor) {
     id executor = object_getIvar(bridge, executorIvar);
     Ivar contextIvar = class_getInstanceVariable([executor class], "_context");
 
+    static GCDWebServer *s_webServer;
+    if (s_webServer) {
+        [s_webServer stop];
+        [s_webServer removeAllHandlers];
+        s_webServer = nil;
+    }
+
     // The executor could be a RCTWebSocketExecutor, in which case it won't have a JS context.
     if (!contextIvar) {
         [GCDWebServer setLogLevel:3];
@@ -90,9 +97,11 @@ JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executor) {
 
             [response setValue:@"http://localhost:8081" forAdditionalHeader:@"Access-Control-Allow-Origin"];
             return response;
-         }];
+        }];
 
         [webServer startWithPort:8082 bonjourName:nil];
+
+        s_webServer = webServer;
         return;
     }
 
