@@ -35,7 +35,7 @@ Object.defineProperties(prototype, {
 
     afterEach: {
         value: function() {
-            Realm.deleteTestFiles();
+            Realm.clearTestState();
         }
     }
 });

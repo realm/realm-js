@@ -195,8 +195,13 @@ using RPCRequest = std::function<NSDictionary *(NSDictionary *dictionary)>;
                                         args:dict[@"arguments"]
                                     objectId:[dict[@"listId"] unsignedLongValue]];
         };
-        _requests["/delete_test_files"] = [=](NSDictionary *dict) {
-            [RealmJS deleteTestFiles];
+        _requests["/clear_test_state"] = [=](NSDictionary *dict) {
+            for (auto object : _objects) {
+                JSValueUnprotect(_context, object.second);
+            }
+            _objects.clear();
+            JSGarbageCollect(_context);
+            [RealmJS clearTestState];
             return nil;
         };
     }

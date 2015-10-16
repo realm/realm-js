@@ -55,8 +55,8 @@ NSString *RealmFileDirectory() {
 #endif
 }
 
-static JSValueRef DeleteTestFiles(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef *exception) {
-    [RealmJS deleteTestFiles];
+static JSValueRef ClearTestState(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef *exception) {
+    [RealmJS clearTestState];
     return NULL;
 }
 
@@ -73,15 +73,15 @@ static JSValueRef DeleteTestFiles(JSContextRef ctx, JSObjectRef function, JSObje
     JSObjectSetProperty(ctx, globalRealmObject, typeString, typesObject, attributes, &exception);
     JSStringRelease(typeString);
 
-    JSStringRef deleteTestFilesString = JSStringCreateWithUTF8CString("deleteTestFiles");
-    JSObjectRef deleteTestFilesFunction = JSObjectMakeFunctionWithCallback(ctx, deleteTestFilesString, DeleteTestFiles);
-    JSObjectSetProperty(ctx, globalRealmObject, deleteTestFilesString, deleteTestFilesFunction, attributes, &exception);
-    JSStringRelease(deleteTestFilesString);
+    JSStringRef clearTestStateString = JSStringCreateWithUTF8CString("clearTestState");
+    JSObjectRef clearTestStateFunction = JSObjectMakeFunctionWithCallback(ctx, clearTestStateString, ClearTestState);
+    JSObjectSetProperty(ctx, globalRealmObject, clearTestStateString, clearTestStateFunction, attributes, &exception);
+    JSStringRelease(clearTestStateString);
 
     assert(!exception);
 }
 
-+ (void)deleteTestFiles {
++ (void)clearTestState {
     realm::Realm::s_global_cache.invalidate_all();
     realm::Realm::s_global_cache.clear();
 
