@@ -58,7 +58,7 @@ void ObjectPropertyNames(JSContextRef ctx, JSObjectRef object, JSPropertyNameAcc
 }
 
 JSClassRef RJSObjectClass() {
-    static JSClassRef s_objectClass = RJSCreateWrapperClass<Object>("RealmObject", ObjectGetProperty, ObjectSetProperty, NULL, NULL, ObjectPropertyNames);
+    static JSClassRef s_objectClass = RJSCreateWrapperClass<Object *>("RealmObject", ObjectGetProperty, ObjectSetProperty, NULL, ObjectPropertyNames);
     return s_objectClass;
 }
 

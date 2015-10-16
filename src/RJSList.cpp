@@ -224,6 +224,6 @@ const JSStaticFunction RJSListFuncs[] = {
 };
 
 JSClassRef RJSListClass() {
-    static JSClassRef s_listClass = RJSCreateWrapperClass<Object>("RealmList", ListGetProperty, ListSetProperty, RJSListFuncs, NULL, ListPropertyNames);
+    static JSClassRef s_listClass = RJSCreateWrapperClass<List *>("RealmList", ListGetProperty, ListSetProperty, RJSListFuncs, ListPropertyNames);
     return s_listClass;
 }
