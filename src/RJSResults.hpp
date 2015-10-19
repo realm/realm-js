@@ -27,6 +27,3 @@ extern const JSStaticFunction RJSResultsFuncs[];
 JSClassRef RJSResultsClass();
 JSObjectRef RJSResultsCreate(JSContextRef ctx, realm::SharedRealm realm, std::string className);
 JSObjectRef RJSResultsCreate(JSContextRef ctx, realm::SharedRealm realm, std::string className, std::string query);
-
-JSValueRef ResultsGetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef* jsException);
-

@@ -19,6 +19,7 @@
 #import "RealmRPC.h"
 #import <JavaScriptCore/JavaScriptCore.h>
 
+#include <dlfcn.h>
 #include <map>
 #include <string>
 #include "RealmJS.h"
@@ -68,6 +69,13 @@ static std::map<std::string, const JSStaticFunction *> s_objectTypeMethods;
     if (self) {
         _context = JSGlobalContextCreate(NULL);
 
+        // JavaScriptCore crashes when trying to walk up the native stack to print the stacktrace.
+        // FIXME: Avoid having to do this!
+        static void (*setIncludesNativeCallStack)(JSGlobalContextRef, bool) = (void (*)(JSGlobalContextRef, bool))dlsym(RTLD_DEFAULT, "JSGlobalContextSetIncludesNativeCallStackWhenReportingExceptions");
+        if (setIncludesNativeCallStack) {
+            setIncludesNativeCallStack(_context, false);
+        }
+
         id _self = self;
         __weak __typeof__(self) self = _self;
 
@@ -112,103 +120,50 @@ static std::map<std::string, const JSStaticFunction *> s_objectTypeMethods;
                                     objectId:[dict[@"id"] unsignedLongValue]];
         };
         _requests["/get_property"] = [=](NSDictionary *dict) {
+            RPCObjectID oid = [dict[@"id"] unsignedLongValue];
+            id name = dict[@"name"];
+            JSValueRef value = NULL;
             JSValueRef exception = NULL;
-            NSString *name = dict[@"name"];
-            JSStringRef propString = RJSStringForString(name.UTF8String);
-            RPCObjectID objectId = [dict[@"id"] unsignedLongValue];
-            JSValueRef propertyValue = ObjectGetProperty(_context, _objects[objectId], propString, &exception);
-            JSStringRelease(propString);
+
+            if ([name isKindOfClass:[NSNumber class]]) {
+                value = JSObjectGetPropertyAtIndex(_context, _objects[oid], [name unsignedIntValue], &exception);
+            }
+            else {
+                JSStringRef propString = RJSStringForString([name UTF8String]);
+                value = JSObjectGetProperty(_context, _objects[oid], propString, &exception);
+                JSStringRelease(propString);
+            }
 
             if (exception) {
                 return @{@"error": @(RJSStringForValue(_context, exception).c_str())};
             }
-            return @{@"result": [self resultForJSValue:propertyValue]};
+            return @{@"result": [self resultForJSValue:value]};
         };
         _requests["/set_property"] = [=](NSDictionary *dict) {
-            JSStringRef propString = RJSStringForString([dict[@"name"] UTF8String]);
-            RPCObjectID objectId = [dict[@"id"] unsignedLongValue];
+            RPCObjectID oid = [dict[@"id"] unsignedLongValue];
+            id name = dict[@"name"];
             JSValueRef value = [self deserializeDictionaryValue:dict[@"value"]];
             JSValueRef exception = NULL;
 
-            ObjectSetProperty(_context, _objects[objectId], propString, value, &exception);
-            JSStringRelease(propString);
+            if ([name isKindOfClass:[NSNumber class]]) {
+                JSObjectSetPropertyAtIndex(_context, _objects[oid], [name unsignedIntValue], value, &exception);
+            }
+            else {
+                JSStringRef propString = RJSStringForString([name UTF8String]);
+                JSObjectSetProperty(_context, _objects[oid], propString, value, 0, &exception);
+                JSStringRelease(propString);
+            }
 
-            return exception ? @{@"error": @(RJSStringForValue(_context, exception).c_str())} : @{};
+            if (exception) {
+                return @{@"error": @(RJSStringForValue(_context, exception).c_str())};
+            }
+            return @{};
         };
         _requests["/dispose_object"] = [=](NSDictionary *dict) {
             RPCObjectID oid = [dict[@"id"] unsignedLongValue];
             JSValueUnprotect(_context, _objects[oid]);
             _objects.erase(oid);
             return nil;
-        };
-        _requests["/get_results_size"] = [=](NSDictionary *dict) {
-            RPCObjectID resultsId = [dict[@"id"] unsignedLongValue];
-
-            JSValueRef exception = NULL;
-            static JSStringRef lengthPropertyName = JSStringCreateWithUTF8CString("length");
-            JSValueRef lengthValue = ResultsGetProperty(_context, _objects[resultsId], lengthPropertyName, &exception);
-            size_t length = JSValueToNumber(_context, lengthValue, &exception);
-
-            if (exception) {
-                return @{@"error": @(RJSStringForValue(_context, exception).c_str())};
-            }
-            return @{@"result": @(length)};
-        };
-        _requests["/get_results_item"] = [=](NSDictionary *dict) {
-            RPCObjectID resultsId = [dict[@"id"] unsignedLongValue];
-            long index = [dict[@"index"] longValue];
-
-            JSValueRef exception = NULL;
-            JSStringRef indexPropertyName = JSStringCreateWithUTF8CString(std::to_string(index).c_str());
-            JSValueRef objectValue = ResultsGetProperty(_context, _objects[resultsId], indexPropertyName, &exception);
-            JSStringRelease(indexPropertyName);
-
-            if (exception) {
-                return @{@"error": @(RJSStringForValue(_context, exception).c_str())};
-            }
-            return @{@"result": [self resultForJSValue:objectValue]};
-        };
-        _requests["/get_list_size"] = [=](NSDictionary *dict) {
-            RPCObjectID listId = [dict[@"id"] unsignedLongValue];
-
-            JSValueRef exception = NULL;
-            static JSStringRef lengthPropertyName = JSStringCreateWithUTF8CString("length");
-            JSValueRef lengthValue = ListGetProperty(_context, _objects[listId], lengthPropertyName, &exception);
-            size_t length = JSValueToNumber(_context, lengthValue, &exception);
-
-            if (exception) {
-                return @{@"error": @(RJSStringForValue(_context, exception).c_str())};
-            }
-            return @{@"result": @(length)};
-        };
-        _requests["/get_list_item"] = [=](NSDictionary *dict) {
-            RPCObjectID listId = [dict[@"id"] unsignedLongValue];
-            long index = [dict[@"index"] longValue];
-
-            JSValueRef exception = NULL;
-            JSStringRef indexPropertyName = JSStringCreateWithUTF8CString(std::to_string(index).c_str());
-            JSValueRef objectValue = ListGetProperty(_context, _objects[listId], indexPropertyName, &exception);
-            JSStringRelease(indexPropertyName);
-
-            if (exception) {
-                return @{@"error": @(RJSStringForValue(_context, exception).c_str())};
-            }
-            return @{@"result": [self resultForJSValue:objectValue]};
-        };
-        _requests["/set_list_item"] = [=](NSDictionary *dict) {
-            RPCObjectID listId = [dict[@"id"] unsignedLongValue];
-            long index = [dict[@"index"] longValue];
-
-            JSValueRef exception = NULL;
-            JSStringRef indexPropertyName = JSStringCreateWithUTF8CString(std::to_string(index).c_str());
-            JSValueRef value = [self deserializeDictionaryValue:dict[@"value"]];
-            ListSetProperty(_context, _objects[listId], indexPropertyName, value, &exception);
-            JSStringRelease(indexPropertyName);
-
-            if (exception) {
-                return @{@"error": @(RJSStringForValue(_context, exception).c_str())};
-            }
-            return @{};
         };
         _requests["/clear_test_state"] = [=](NSDictionary *dict) {
             for (auto object : _objects) {
