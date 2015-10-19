@@ -31,7 +31,22 @@
 
 JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executor) {
     Ivar contextIvar = class_getInstanceVariable([executor class], "_context");
+    if (!contextIvar) {
+        return NULL;
+    }
+
     id rctJSContext = contextIvar ? object_getIvar(executor, contextIvar) : nil;
+    if (!rctJSContext) {
+        Class RCTJavaScriptContext = NSClassFromString(@"RCTJavaScriptContext");
+        if (RCTJavaScriptContext) {
+            JSGlobalContextRef ctx = JSGlobalContextCreate(NULL);
+            rctJSContext = [[RCTJavaScriptContext alloc] initWithJSContext:ctx];
+            object_setIvar(executor, contextIvar, rctJSContext);
+        }
+        else {
+            NSLog(@"Failed to load RCTJavaScriptContext class");
+        }
+    }
 
     return [rctJSContext ctx];
 }
@@ -61,10 +76,6 @@ JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executor) {
 - (void)setBridge:(RCTBridge *)bridge {
     _bridge = bridge;
 
-    Ivar executorIvar = class_getInstanceVariable([bridge class], "_javaScriptExecutor");
-    id executor = object_getIvar(bridge, executorIvar);
-    Ivar contextIvar = class_getInstanceVariable([executor class], "_context");
-
     static GCDWebServer *s_webServer;
     if (s_webServer) {
         [s_webServer stop];
@@ -73,7 +84,9 @@ JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executor) {
     }
 
     // The executor could be a RCTWebSocketExecutor, in which case it won't have a JS context.
-    if (!contextIvar) {
+    Ivar executorIvar = class_getInstanceVariable([bridge class], "_javaScriptExecutor");
+    id executor = object_getIvar(bridge, executorIvar);
+    if ([executor isMemberOfClass:NSClassFromString(@"RCTWebSocketExecutor")]) {
         [GCDWebServer setLogLevel:3];
         GCDWebServer *webServer = [[GCDWebServer alloc] init];
         RJSRPCServer *rpcServer = [[RJSRPCServer alloc] init];
@@ -106,24 +119,7 @@ JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executor) {
     }
 
     [executor executeBlockOnJavaScriptQueue:^{
-        id rctJSContext = object_getIvar(executor, contextIvar);
-        JSGlobalContextRef ctx;
-
-        if (rctJSContext) {
-            ctx = [rctJSContext ctx];
-        }
-        else {
-            Class RCTJavaScriptContext = NSClassFromString(@"RCTJavaScriptContext");
-
-            if (RCTJavaScriptContext) {
-                ctx = JSGlobalContextCreate(NULL);
-                object_setIvar(executor, contextIvar, [[RCTJavaScriptContext alloc] initWithJSContext:ctx]);
-            }
-            else {
-                NSLog(@"Failed to load RCTJavaScriptContext class");
-            }
-        }
-
+        JSGlobalContextRef ctx = RealmReactGetJSGlobalContextForExecutor(executor);
         [RealmJS initializeContext:ctx];
     }];
 }
