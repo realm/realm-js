@@ -70,6 +70,14 @@ static const char * const RealmObjectTypesResults = "ObjectTypesRESULTS";
         id _self = self;
         __weak __typeof__(self) self = _self;
 
+        _requests["/get_default_path"] = [=](NSDictionary *dict) {
+            return @{@"result": @(RJSDefaultPath().c_str())};
+        };
+        _requests["/set_default_path"] = [=](NSDictionary *dict) {
+            NSString *path = dict[@"path"];
+            RJSSetDefaultPath(path.UTF8String);
+            return nil;
+        };
         _requests["/create_realm"] = [=](NSDictionary *dict) {
             NSArray *args = dict[@"arguments"];
             NSUInteger argCount = args.count;
