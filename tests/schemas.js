@@ -18,7 +18,9 @@
 
 'use strict';
 
-var TestObjectSchema = {
+var Realm = require('realm');
+
+exports.TestObject = {
   name: 'TestObject',
   properties: [
     {name: 'doubleCol', type: Realm.Types.DOUBLE},
@@ -36,8 +38,9 @@ PersonObject.prototype.schema = {
 PersonObject.prototype.description = function() {
     return this.name + ' ' + this.age;
 };
+exports.PersonObject = PersonObject;
 
-var BasicTypesObjectSchema = {
+exports.BasicTypes = {
     name: 'BasicTypesObject',
     properties: [
         {name: 'boolCol',   type: Realm.Types.BOOL},
@@ -50,7 +53,7 @@ var BasicTypesObjectSchema = {
     ]
 };
 
-var LinkTypesObjectSchema = {
+exports.LinkTypes = {
     name: 'LinkTypesObject',
     properties: [
         {name: 'objectCol',  type: 'TestObject'},
@@ -59,7 +62,7 @@ var LinkTypesObjectSchema = {
     ]
 };
 
-var IntPrimaryObjectSchema = {
+exports.IntPrimary = {
   name: 'IntPrimaryObject',
   primaryKey: 'primaryCol',
   properties: [
@@ -68,7 +71,7 @@ var IntPrimaryObjectSchema = {
   ]
 };
 
-var AllTypesObjectSchema = {
+exports.AllTypes = {
   name: 'AllTypesObject',
   primaryKey: 'primaryCol',
   properties: [
@@ -85,7 +88,7 @@ var AllTypesObjectSchema = {
   ]
 };
 
-var DefaultValuesObjectSchema = {
+exports.DefaultValues = {
   name: 'DefaultValuesObject',
   properties: [
     {name: 'boolCol',   type: Realm.Types.BOOL,   default: true},
@@ -100,4 +103,3 @@ var DefaultValuesObjectSchema = {
     {name: 'arrayCol',  type: Realm.Types.LIST, objectType: 'TestObject', default: [[2]]},
   ]
 };
-

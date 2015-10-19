@@ -19,13 +19,10 @@
 #import <XCTest/XCTest.h>
 #import <RealmJS/RealmJS.h>
 
-extern NSString *RealmPathForFile(NSString *fileName);
-extern NSString *TestRealmPath();
-
 @interface RealmJSTests : XCTestCase
 
-+ (NSString *)jsSuiteName;
++ (NSArray *)testSuitesFromDictionary:(NSDictionary *)testCaseNames;
 
-@property (nonatomic, readonly) JSContext *context;
+- (instancetype)initWithTestName:(NSString *)name;
 
 @end

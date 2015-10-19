@@ -16,19 +16,30 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#import "RJSUtil.hpp"
-#import <map>
+'use strict';
 
-namespace realm {
-    class Schema;
-    using ObjectDefaults = std::map<std::string, JSValueRef>;
-}
+exports.ArrayTests = require('./ArrayTests');
+exports.ObjectTests = require('./ObjectTests');
+exports.RealmTests = require('./RealmTests');
+exports.ResultsTests = require('./ResultsTests');
 
-JSClassRef RJSSchemaClass();
-JSObjectRef RJSSchemaCreate(JSContextRef ctx, realm::Schema *schema);
+var SPECIAL_METHODS = {
+    beforeEach: true,
+    afterEach: true,
+};
 
-realm::Schema RJSParseSchema(JSContextRef ctx, JSObjectRef jsonObject);
+Object.defineProperty(exports, 'getTestNames', {
+    value: function() {
+        var testNames = {};
 
-JSValueRef RJSPrototypeForClassName(const std::string &className);
-realm::ObjectDefaults &RJSDefaultsForClassName(const std::string &className);
-void RJSSchemaClearState(JSContextRef ctx);
+        for (var suiteName in exports) {
+            var testSuite = exports[suiteName];
+
+            testNames[suiteName] = Object.keys(testSuite).filter(function(testName) {
+                return !(testName in SPECIAL_METHODS) && typeof testSuite[testName] == 'function';
+            });
+        }
+
+        return testNames;
+    }
+});

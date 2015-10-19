@@ -21,7 +21,6 @@
 
 @import GCDWebServers;
 @import RealmJS;
-@import JavaScriptCore;
 @import ObjectiveC;
 @import Darwin;
 
@@ -29,6 +28,28 @@
 - (instancetype)initWithJSContext:(JSGlobalContextRef)context;
 - (JSGlobalContextRef)ctx;
 @end
+
+JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executor, bool create) {
+    Ivar contextIvar = class_getInstanceVariable([executor class], "_context");
+    if (!contextIvar) {
+        return NULL;
+    }
+
+    id rctJSContext = contextIvar ? object_getIvar(executor, contextIvar) : nil;
+    if (!rctJSContext && create) {
+        Class RCTJavaScriptContext = NSClassFromString(@"RCTJavaScriptContext");
+        if (RCTJavaScriptContext) {
+            JSGlobalContextRef ctx = JSGlobalContextCreate(NULL);
+            rctJSContext = [[RCTJavaScriptContext alloc] initWithJSContext:ctx];
+            object_setIvar(executor, contextIvar, rctJSContext);
+        }
+        else {
+            NSLog(@"Failed to load RCTJavaScriptContext class");
+        }
+    }
+
+    return [rctJSContext ctx];
+}
 
 @interface RealmReact () <RCTBridgeModule>
 @end
@@ -55,12 +76,17 @@
 - (void)setBridge:(RCTBridge *)bridge {
     _bridge = bridge;
 
-    Ivar executorIvar = class_getInstanceVariable([bridge class], "_javaScriptExecutor");
-    id contextExecutor = object_getIvar(bridge, executorIvar);
-    Ivar contextIvar = class_getInstanceVariable([contextExecutor class], "_context");
+    static GCDWebServer *s_webServer;
+    if (s_webServer) {
+        [s_webServer stop];
+        [s_webServer removeAllHandlers];
+        s_webServer = nil;
+    }
 
     // The executor could be a RCTWebSocketExecutor, in which case it won't have a JS context.
-    if (!contextIvar) {
+    Ivar executorIvar = class_getInstanceVariable([bridge class], "_javaScriptExecutor");
+    id executor = object_getIvar(bridge, executorIvar);
+    if ([executor isMemberOfClass:NSClassFromString(@"RCTWebSocketExecutor")]) {
         [GCDWebServer setLogLevel:3];
         GCDWebServer *webServer = [[GCDWebServer alloc] init];
         RJSRPCServer *rpcServer = [[RJSRPCServer alloc] init];
@@ -72,39 +98,28 @@
             NSError *error;
             NSData *data = [(GCDWebServerDataRequest *)request data];
             NSDictionary *json = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
-            if (error) {
-                NSLog(@"%@", error);
-                return [GCDWebServerErrorResponse responseWithClientError:kGCDWebServerHTTPStatusCode_UnprocessableEntity underlyingError:error message:@"Invalid RPC request"];
+            GCDWebServerResponse *response;
+
+            if (error || ![json isKindOfClass:[NSDictionary class]]) {
+                NSLog(@"Invalid RPC request - %@", error ?: json);
+                response = [GCDWebServerErrorResponse responseWithClientError:kGCDWebServerHTTPStatusCode_UnprocessableEntity underlyingError:error message:@"Invalid RPC request"];
             }
-                                     
-            GCDWebServerDataResponse *response = [GCDWebServerDataResponse responseWithJSONObject:[rpcServer performRequest:request.path args:json]];
+            else {
+                response = [GCDWebServerDataResponse responseWithJSONObject:[rpcServer performRequest:request.path args:json]];
+            }
+
             [response setValue:@"http://localhost:8081" forAdditionalHeader:@"Access-Control-Allow-Origin"];
             return response;
-         }];
+        }];
 
         [webServer startWithPort:8082 bonjourName:nil];
+
+        s_webServer = webServer;
         return;
     }
 
-    [contextExecutor executeBlockOnJavaScriptQueue:^{
-        id rctJSContext = object_getIvar(contextExecutor, contextIvar);
-        JSGlobalContextRef ctx;
-
-        if (rctJSContext) {
-            ctx = [rctJSContext ctx];
-        }
-        else {
-            Class RCTJavaScriptContext = NSClassFromString(@"RCTJavaScriptContext");
-
-            if (RCTJavaScriptContext) {
-                ctx = JSGlobalContextCreate(NULL);
-                object_setIvar(contextExecutor, contextIvar, [[RCTJavaScriptContext alloc] initWithJSContext:ctx]);
-            }
-            else {
-                NSLog(@"Failed to load RCTJavaScriptContext class");
-            }
-        }
-
+    [executor executeBlockOnJavaScriptQueue:^{
+        JSGlobalContextRef ctx = RealmReactGetJSGlobalContextForExecutor(executor, true);
         [RealmJS initializeContext:ctx];
     }];
 }

@@ -18,9 +18,14 @@
 
 'use strict';
 
-var ArrayTests = {
+var Realm = require('realm');
+var BaseTest = require('./base-test');
+var TestCase = require('./asserts');
+var schemas = require('./schemas');
+
+module.exports = BaseTest.extend({
     testArrayLength: function() {
-        var realm = new Realm({schema: [LinkTypesObjectSchema, TestObjectSchema]});
+        var realm = new Realm({schema: [schemas.LinkTypes, schemas.TestObject]});
         realm.write(function() {
             var obj = realm.create('LinkTypesObject', [[1], [2], [[3]]]);
             TestCase.assertEqual(obj.arrayCol.length, 1);
@@ -38,7 +43,7 @@ var ArrayTests = {
     },
 
     testArraySubscriptGetters: function() {
-        var realm = new Realm({schema: [LinkTypesObjectSchema, TestObjectSchema]});
+        var realm = new Realm({schema: [schemas.LinkTypes, schemas.TestObject]});
         var array;
 
         realm.write(function() {
@@ -53,7 +58,7 @@ var ArrayTests = {
     },
 
     testArraySubscriptSetters: function() {
-        var realm = new Realm({schema: [LinkTypesObjectSchema, TestObjectSchema]});
+        var realm = new Realm({schema: [schemas.LinkTypes, schemas.TestObject]});
         var array;
 
         realm.write(function() {
@@ -81,7 +86,7 @@ var ArrayTests = {
     },
 
     testArrayInvalidProperty: function() {
-        var realm = new Realm({schema: [LinkTypesObjectSchema, TestObjectSchema]});
+        var realm = new Realm({schema: [schemas.LinkTypes, schemas.TestObject]});
         var array;
 
         realm.write(function() {
@@ -93,7 +98,7 @@ var ArrayTests = {
     },
 
     testArrayEnumerate: function() {
-        var realm = new Realm({schema: [LinkTypesObjectSchema, TestObjectSchema]});
+        var realm = new Realm({schema: [schemas.LinkTypes, schemas.TestObject]});
         var obj;
 
         realm.write(function() {
@@ -117,7 +122,7 @@ var ArrayTests = {
     },
 
     testPush: function() {
-        var realm = new Realm({schema: [LinkTypesObjectSchema, TestObjectSchema]});
+        var realm = new Realm({schema: [schemas.LinkTypes, schemas.TestObject]});
         var array;
 
         realm.write(function() {
@@ -146,7 +151,7 @@ var ArrayTests = {
     },
 
     testPop: function() {
-        var realm = new Realm({schema: [LinkTypesObjectSchema, TestObjectSchema]});
+        var realm = new Realm({schema: [schemas.LinkTypes, schemas.TestObject]});
         var array;
 
         realm.write(function() {
@@ -170,7 +175,7 @@ var ArrayTests = {
     },
 
     testUnshift: function() {
-        var realm = new Realm({schema: [LinkTypesObjectSchema, TestObjectSchema]});
+        var realm = new Realm({schema: [schemas.LinkTypes, schemas.TestObject]});
         var array;
 
         realm.write(function() {
@@ -195,7 +200,7 @@ var ArrayTests = {
     },
 
     testShift: function() {
-        var realm = new Realm({schema: [LinkTypesObjectSchema, TestObjectSchema]});
+        var realm = new Realm({schema: [schemas.LinkTypes, schemas.TestObject]});
         var array;
 
         realm.write(function() {
@@ -219,7 +224,7 @@ var ArrayTests = {
     },
 
     testSplice: function() {
-        var realm = new Realm({schema: [LinkTypesObjectSchema, TestObjectSchema]});
+        var realm = new Realm({schema: [schemas.LinkTypes, schemas.TestObject]});
         var array;
 
         realm.write(function() {
@@ -278,4 +283,4 @@ var ArrayTests = {
             obj.arrayCol.splice(0, 0, obj.objectCol);
         }, 'can only splice in a write transaction');
     },
-};
+});

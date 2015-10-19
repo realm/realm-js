@@ -16,19 +16,26 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#import "RJSUtil.hpp"
-#import <map>
+'use strict';
 
-namespace realm {
-    class Schema;
-    using ObjectDefaults = std::map<std::string, JSValueRef>;
-}
+var Realm = require('realm');
 
-JSClassRef RJSSchemaClass();
-JSObjectRef RJSSchemaCreate(JSContextRef ctx, realm::Schema *schema);
+var prototype = exports.prototype = {};
 
-realm::Schema RJSParseSchema(JSContextRef ctx, JSObjectRef jsonObject);
+exports.extend = function(object) {
+    object.__proto__ = prototype;
+    return object;
+};
 
-JSValueRef RJSPrototypeForClassName(const std::string &className);
-realm::ObjectDefaults &RJSDefaultsForClassName(const std::string &className);
-void RJSSchemaClearState(JSContextRef ctx);
+Object.defineProperties(prototype, {
+    // TODO: Remove once missing undefined check is fixed inside RCTContextExecutor.
+    beforeEach: {
+        value: function() {}
+    },
+
+    afterEach: {
+        value: function() {
+            Realm.clearTestState();
+        }
+    }
+});

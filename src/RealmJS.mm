@@ -20,6 +20,9 @@
 #import "RJSRealm.hpp"
 #import "RJSObject.hpp"
 #import "RJSUtil.hpp"
+#import "RJSSchema.hpp"
+
+#include "shared_realm.hpp"
 
 JSValueRef RJSTypeGet(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef* exception) {
     return RJSValueForString(ctx, RJSTypeGet(RJSStringForJSString(propertyName)));
@@ -44,6 +47,21 @@ JSClassRef RJSRealmTypeClass() {
     return JSClassCreate(&realmTypesDefinition);
 }
 
+NSString *RealmFileDirectory() {
+#if TARGET_OS_IPHONE
+    return NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES)[0];
+#else
+    NSString *path = NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, YES)[0];
+    return [path stringByAppendingPathComponent:[[[NSBundle mainBundle] executablePath] lastPathComponent]];
+#endif
+}
+
+static JSValueRef ClearTestState(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef *exception) {
+    [RealmJS clearTestState];
+    //RJSSchemaClearState(ctx);
+    return NULL;
+}
+
 @implementation RealmJS
 
 + (void)initializeContext:(JSContextRef)ctx {
@@ -53,10 +71,29 @@ JSClassRef RJSRealmTypeClass() {
     JSObjectRef globalRealmObject = RJSRegisterGlobalClass(ctx, globalObject, RJSRealmConstructorClass(), "Realm", &exception);
     JSObjectRef typesObject = JSObjectMake(ctx, RJSRealmTypeClass(), NULL);
     JSStringRef typeString = JSStringCreateWithUTF8CString("Types");
-    JSObjectSetProperty(ctx, globalRealmObject, typeString, typesObject, kJSPropertyAttributeNone, &exception);
+    JSPropertyAttributes attributes = kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete;
+    JSObjectSetProperty(ctx, globalRealmObject, typeString, typesObject, attributes, &exception);
     JSStringRelease(typeString);
 
+    JSStringRef clearTestStateString = JSStringCreateWithUTF8CString("clearTestState");
+    JSObjectRef clearTestStateFunction = JSObjectMakeFunctionWithCallback(ctx, clearTestStateString, ClearTestState);
+    JSObjectSetProperty(ctx, globalRealmObject, clearTestStateString, clearTestStateFunction, attributes, &exception);
+    JSStringRelease(clearTestStateString);
+
     assert(!exception);
+}
+
++ (void)clearTestState {
+    realm::Realm::s_global_cache.invalidate_all();
+    realm::Realm::s_global_cache.clear();
+
+    NSFileManager *manager = [NSFileManager defaultManager];
+    NSString *fileDir = RealmFileDirectory();
+    for (NSString *path in [manager enumeratorAtPath:fileDir]) {
+        if (![manager removeItemAtPath:[fileDir stringByAppendingPathComponent:path] error:nil]) {
+            @throw [NSException exceptionWithName:@"removeItemAtPath error" reason:@"Failed to delete file" userInfo:nil];
+        }
+    }
 }
 
 @end

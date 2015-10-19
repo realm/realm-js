@@ -124,6 +124,6 @@ JSClassRef RJSResultsClass() {
         {"sortByProperty", SortByProperty, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
         {NULL, NULL},
     };
-    static JSClassRef s_objectClass = RJSCreateWrapperClass<Object>("Results", ResultsGetProperty, NULL, resultsFuncs, NULL, ResultsPropertyNames);
+    static JSClassRef s_objectClass = RJSCreateWrapperClass<Results *>("Results", ResultsGetProperty, NULL, resultsFuncs, ResultsPropertyNames);
     return s_objectClass;
 }

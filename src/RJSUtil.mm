@@ -20,10 +20,11 @@
 
 using namespace realm;
 
-JSObjectRef RJSRegisterGlobalClass(JSContextRef ctx, JSObjectRef globalObject, JSClassRef classRef, const char * name, JSValueRef *exception) {
+JSObjectRef RJSRegisterGlobalClass(JSContextRef ctx, JSObjectRef globalObject, JSClassRef classRef, const char *name, JSValueRef *exception) {
     JSObjectRef classObject = JSObjectMake(ctx, classRef, NULL);
     JSStringRef nameString = JSStringCreateWithUTF8CString(name);
-    JSObjectSetProperty(ctx, globalObject, nameString, classObject, kJSPropertyAttributeNone, exception);
+    JSPropertyAttributes attributes = kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete;
+    JSObjectSetProperty(ctx, globalObject, nameString, classObject, attributes, exception);
     JSStringRelease(nameString);
     return classObject;
 }

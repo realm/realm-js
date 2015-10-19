@@ -16,19 +16,15 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#import "RJSUtil.hpp"
-#import <map>
+#import <Foundation/Foundation.h>
+#import <JavaScriptCore/JavaScriptCore.h>
 
-namespace realm {
-    class Schema;
-    using ObjectDefaults = std::map<std::string, JSValueRef>;
-}
+@interface RJSModuleLoader : NSObject
 
-JSClassRef RJSSchemaClass();
-JSObjectRef RJSSchemaCreate(JSContextRef ctx, realm::Schema *schema);
+- (instancetype)initWithContext:(JSContext *)context;
 
-realm::Schema RJSParseSchema(JSContextRef ctx, JSObjectRef jsonObject);
+- (void)addGlobalModuleObject:(id)object forName:(NSString *)name;
 
-JSValueRef RJSPrototypeForClassName(const std::string &className);
-realm::ObjectDefaults &RJSDefaultsForClassName(const std::string &className);
-void RJSSchemaClearState(JSContextRef ctx);
+- (JSValue *)loadModuleFromURL:(NSURL *)url error:(NSError **)error;
+
+@end

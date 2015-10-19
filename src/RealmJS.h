@@ -25,4 +25,6 @@
 // add realm apis to the given js context
 + (void)initializeContext:(JSContextRef)ctx;
 
++ (void)clearTestState;
+
 @end

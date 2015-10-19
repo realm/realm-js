@@ -18,17 +18,22 @@
 
 'use strict';
 
-var ObjectTests = {
+var Realm = require('realm');
+var BaseTest = require('./base-test');
+var TestCase = require('./asserts');
+var schemas = require('./schemas');
+
+module.exports = BaseTest.extend({
     testBasicTypesPropertyGetters: function() {
         var basicTypesValues = [true, 1, 1.1, 1.11, 'string', new Date(1), 'DATA'];
-        var realm = new Realm({schema: [BasicTypesObjectSchema]});
+        var realm = new Realm({schema: [schemas.BasicTypes]});
         var object = null;
         realm.write(function() {
             object = realm.create('BasicTypesObject', basicTypesValues);
         });
 
-        for (var i = 0; i < BasicTypesObjectSchema.properties.length; i++) {
-            var prop = BasicTypesObjectSchema.properties[i];
+        for (var i = 0; i < schemas.BasicTypes.properties.length; i++) {
+            var prop = schemas.BasicTypes.properties[i];
             if (prop.type == Realm.Types.FLOAT) {
                 TestCase.assertEqualWithTolerance(object[prop.name], basicTypesValues[i], 0.000001);
             }
@@ -42,7 +47,7 @@ var ObjectTests = {
     },
     testBasicTypesPropertySetters: function() {
         var basicTypesValues = [true, 1, 1.1, 1.11, 'string', new Date(1), 'DATA'];
-        var realm = new Realm({schema: [BasicTypesObjectSchema]});
+        var realm = new Realm({schema: [schemas.BasicTypes]});
         var obj = null;
 
         realm.write(function() {
@@ -81,7 +86,7 @@ var ObjectTests = {
         TestCase.assertEqual(obj.boolCol, false, 'bool value changed outside transaction');
     },
     testLinkTypesPropertyGetters: function() {
-        var realm = new Realm({schema: [LinkTypesObjectSchema, TestObjectSchema]});
+        var realm = new Realm({schema: [schemas.LinkTypes, schemas.TestObject]});
         var obj = null;
         realm.write(function() {
             obj = realm.create('LinkTypesObject', [[1], null, [[3]]]);
@@ -101,7 +106,7 @@ var ObjectTests = {
         TestCase.assertEqual(arrayVal[0].doubleCol, 3);
     },
     testLinkTypesPropertySetters: function() {
-        var realm = new Realm({schema: [LinkTypesObjectSchema, TestObjectSchema]});
+        var realm = new Realm({schema: [schemas.LinkTypes, schemas.TestObject]});
         var obj = null;
         realm.write(function() {
             obj = realm.create('LinkTypesObject', [[1], null, [[3]]]);
@@ -143,4 +148,4 @@ var ObjectTests = {
         TestCase.assertEqual(obj.arrayCol[1].doubleCol, 1);
         TestCase.assertEqual(obj.arrayCol[2].doubleCol, 2);
     },
-};
+});

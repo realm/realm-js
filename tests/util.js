@@ -16,19 +16,11 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#import "RJSUtil.hpp"
-#import <map>
+'use strict';
 
-namespace realm {
-    class Schema;
-    using ObjectDefaults = std::map<std::string, JSValueRef>;
-}
+var Realm = require('realm');
 
-JSClassRef RJSSchemaClass();
-JSObjectRef RJSSchemaCreate(JSContextRef ctx, realm::Schema *schema);
-
-realm::Schema RJSParseSchema(JSContextRef ctx, JSObjectRef jsonObject);
-
-JSValueRef RJSPrototypeForClassName(const std::string &className);
-realm::ObjectDefaults &RJSDefaultsForClassName(const std::string &className);
-void RJSSchemaClearState(JSContextRef ctx);
+exports.realmPathForFile = function(str) {
+    var path = Realm.defaultPath;
+    return path.substring(0, path.lastIndexOf("/") + 1) + str;
+};

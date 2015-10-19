@@ -18,14 +18,7 @@
 
 'use strict';
 
-var TestUtil = {
-    realmPathForFile: function(str) {
-        var path = Realm.defaultPath;
-        return path.substring(0, path.lastIndexOf("/") + 1) + str;
-    },
-};
-
-var TestCase = {
+module.exports = {
     assertEqual: function(val1, val2, errorMessage) {
         if (val1 !== val2) {
             var message = "'" + val1 + "' does not equal expected value '" + val2 + "'";
@@ -75,7 +68,7 @@ var TestCase = {
             throw new TestFailureError(errorMessage || 'Condition expected to be true');
         };
     },
-}
+};
 
 function TestFailureError(message) {
     var error;
@@ -87,7 +80,7 @@ function TestFailureError(message) {
 
     // This regular expression will match stack trace lines provided by JavaScriptCore.
     // Example: someMethod@file:///path/to/file.js:10:24
-    var regex = /^(?:.*?@)?([^\[\(].+?):(\d+)(?::(\d+))?/;
+    var regex = /^(?:.*?@)?([^\[\(].+?):(\d+)(?::(\d+))?\s*$/;
 
     // Remove the top two stack frames and use information from the third, if possible.
     var stack = error.stack && error.stack.split('\n');

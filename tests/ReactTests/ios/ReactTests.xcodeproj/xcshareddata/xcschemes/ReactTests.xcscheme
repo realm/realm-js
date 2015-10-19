@@ -14,10 +14,24 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "02B29A151B7CF7C9008A7E6B"
-               BuildableName = "RealmReact.framework"
-               BlueprintName = "RealmReact"
-               ReferencedContainer = "container:RealmJS.xcodeproj">
+               BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
+               BuildableName = "ReactTests.app"
+               BlueprintName = "ReactTests"
+               ReferencedContainer = "container:ReactTests.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "NO"
+            buildForArchiving = "NO"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "00E356ED1AD99517003FC87E"
+               BuildableName = "RealmReactTests.xctest"
+               BlueprintName = "RealmReactTests"
+               ReferencedContainer = "container:ReactTests.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -35,22 +49,17 @@
                BlueprintIdentifier = "00E356ED1AD99517003FC87E"
                BuildableName = "RealmReactTests.xctest"
                BlueprintName = "RealmReactTests"
-               ReferencedContainer = "container:tests/ReactTests/ios/ReactTests.xcodeproj">
+               ReferencedContainer = "container:ReactTests.xcodeproj">
             </BuildableReference>
-            <SkippedTests>
-               <Test
-                  Identifier = "RealmJSTests">
-               </Test>
-            </SkippedTests>
          </TestableReference>
       </Testables>
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "02B29A151B7CF7C9008A7E6B"
-            BuildableName = "RealmReact.framework"
-            BlueprintName = "RealmReact"
-            ReferencedContainer = "container:RealmJS.xcodeproj">
+            BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
+            BuildableName = "ReactTests.app"
+            BlueprintName = "ReactTests"
+            ReferencedContainer = "container:ReactTests.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
       <AdditionalOptions>
@@ -66,15 +75,16 @@
       debugDocumentVersioning = "YES"
       debugServiceExtension = "internal"
       allowLocationSimulation = "YES">
-      <MacroExpansion>
+      <BuildableProductRunnable
+         runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "02B29A151B7CF7C9008A7E6B"
-            BuildableName = "RealmReact.framework"
-            BlueprintName = "RealmReact"
-            ReferencedContainer = "container:RealmJS.xcodeproj">
+            BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
+            BuildableName = "ReactTests.app"
+            BlueprintName = "ReactTests"
+            ReferencedContainer = "container:ReactTests.xcodeproj">
          </BuildableReference>
-      </MacroExpansion>
+      </BuildableProductRunnable>
       <AdditionalOptions>
       </AdditionalOptions>
    </LaunchAction>
@@ -84,15 +94,16 @@
       savedToolIdentifier = ""
       useCustomWorkingDirectory = "NO"
       debugDocumentVersioning = "YES">
-      <MacroExpansion>
+      <BuildableProductRunnable
+         runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "02B29A151B7CF7C9008A7E6B"
-            BuildableName = "RealmReact.framework"
-            BlueprintName = "RealmReact"
-            ReferencedContainer = "container:RealmJS.xcodeproj">
+            BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
+            BuildableName = "ReactTests.app"
+            BlueprintName = "ReactTests"
+            ReferencedContainer = "container:ReactTests.xcodeproj">
          </BuildableReference>
-      </MacroExpansion>
+      </BuildableProductRunnable>
    </ProfileAction>
    <AnalyzeAction
       buildConfiguration = "Debug">
