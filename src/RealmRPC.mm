@@ -38,21 +38,12 @@ using RPCRequest = std::function<NSDictionary *(NSDictionary *dictionary)>;
 
 static const char * const RealmObjectTypesFunction = "ObjectTypesFUNCTION";
 static const char * const RealmObjectTypesNotification = "ObjectTypesNOTIFICATION";
-static const char * const RealmObjectTypesRealm = "ObjectTypesREALM";
 static const char * const RealmObjectTypesResults = "ObjectTypesRESULTS";
-
-static std::map<std::string, const JSStaticFunction *> s_objectTypeMethods;
 
 @implementation RJSRPCServer {
     JSGlobalContextRef _context;
     std::map<std::string, RPCRequest> _requests;
     std::map<RPCObjectID, JSObjectRef> _objects;
-}
-
-+ (void)initialize {
-    s_objectTypeMethods[RealmObjectTypesRealm] = RJSRealmFuncs;
-    s_objectTypeMethods[RealmObjectTypesResults] = RJSResultsFuncs;
-    s_objectTypeMethods[RJSTypeGet(realm::PropertyTypeArray)] = RJSListFuncs;
 }
 
 - (void)dealloc {
@@ -115,7 +106,6 @@ static std::map<std::string, const JSStaticFunction *> s_objectTypeMethods;
         };
         _requests["/call_method"] = [=](NSDictionary *dict) {
             return [self performObjectMethod:dict[@"name"]
-                                    withType:dict[@"type"]
                                         args:dict[@"arguments"]
                                     objectId:[dict[@"id"] unsignedLongValue]];
         };
@@ -194,32 +184,25 @@ static std::map<std::string, const JSStaticFunction *> s_objectTypeMethods;
     return response ?: @{};
 }
 
-- (NSDictionary *)performObjectMethod:(NSString *)method
-                             withType:(NSString *)type
-                                 args:(NSArray *)args
-                             objectId:(RPCObjectID)oid {
-    const JSStaticFunction *methods = s_objectTypeMethods.at(type.UTF8String);
+- (NSDictionary *)performObjectMethod:(NSString *)method args:(NSArray *)args objectId:(RPCObjectID)oid {
+    JSObjectRef object = _objects[oid];
+    JSStringRef methodString = RJSStringForString(method.UTF8String);
+    JSObjectRef function = RJSValidatedObjectProperty(_context, object, methodString);
+    JSStringRelease(methodString);
+
     NSUInteger argCount = args.count;
     JSValueRef argValues[argCount];
     for (NSUInteger i = 0; i < argCount; i++) {
         argValues[i] = [self deserializeDictionaryValue:args[i]];
     }
 
-    const char *name = method.UTF8String;
-    size_t index = 0;
-    while (methods[index].name) {
-        if (!strcmp(methods[index].name, name)) {
-            JSValueRef exception = NULL;
-            JSValueRef ret = methods[index].callAsFunction(_context, NULL, _objects[oid], argCount, argValues, &exception);
-            if (exception) {
-                return @{@"error": @(RJSStringForValue(_context, exception).c_str())};
-            }
-            return @{@"result": [self resultForJSValue:ret]};
-        }
-        index++;
-    }
+    JSValueRef exception = NULL;
+    JSValueRef result = JSObjectCallAsFunction(_context, function, object, argCount, argValues, &exception);
 
-    return @{@"error": [NSString stringWithFormat:@"Attempted to call invalid method (%@) on type: %@", method, type]};
+    if (exception) {
+        return @{@"error": @(RJSStringForValue(_context, exception).c_str())};
+    }
+    return @{@"result": [self resultForJSValue:result]};
 }
 
 - (RPCObjectID)storeObject:(JSObjectRef)object {

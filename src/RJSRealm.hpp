@@ -18,8 +18,6 @@
 
 #import "RJSUtil.hpp"
 
-extern const JSStaticFunction RJSRealmFuncs[];
-
 JSClassRef RJSRealmClass();
 JSClassRef RJSRealmConstructorClass();
 JSClassRef RJSNotificationClass();
