@@ -142,21 +142,8 @@ template<> JSValueRef RJSAccessor::from_string(JSContextRef ctx, StringData s) {
 }
 
 template<> DateTime RJSAccessor::to_datetime(JSContextRef ctx, JSValueRef &val) {
-    JSObjectRef object = RJSValidatedValueToObject(ctx, val, "Property must be a Date");
-
-    JSValueRef exception = NULL;
-    static JSStringRef utcString = JSStringCreateWithUTF8CString("getTime");
-    JSObjectRef utcGetter = RJSValidatedObjectProperty(ctx, object, utcString);
-
-    JSValueRef utcVal = JSObjectCallAsFunction(ctx, utcGetter, object, 0, NULL, &exception);
-    if (exception) {
-        throw RJSException(ctx, exception);
-    }
-
-    double utc = JSValueToNumber(ctx, utcVal, &exception);
-    if (exception) {
-        throw RJSException(ctx, exception);
-    }
+    JSObjectRef object = RJSValidatedValueToDate(ctx, val);
+    double utc = RJSValidatedValueToNumber(ctx, object);
 
     return DateTime(utc);
 }

@@ -275,6 +275,12 @@ static const char * const RealmObjectTypesResults = "ObjectTypesRESULTS";
         }
         return @{@"value": array};
     }
+    else if (RJSIsValueDate(_context, value)) {
+        return @{
+            @"type": @(RJSTypeGet(realm::PropertyTypeDate).c_str()),
+            @"value": @(RJSValidatedValueToNumber(_context, value)),
+        };
+    }
     else {
         assert(0);
     }
@@ -305,6 +311,8 @@ static const char * const RealmObjectTypesResults = "ObjectTypesRESULTS";
     }
 
     NSString *type = dict[@"type"];
+    id value = dict[@"value"];
+
     if ([type isEqualToString:@(RealmObjectTypesFunction)]) {
         // FIXME: Make this actually call the function by its id once we need it to.
         JSStringRef jsBody = JSStringCreateWithUTF8CString("");
@@ -313,8 +321,17 @@ static const char * const RealmObjectTypesResults = "ObjectTypesRESULTS";
 
         return jsFunction;
     }
+    else if ([type isEqualToString:@(RJSTypeGet(realm::PropertyTypeDate).c_str())]) {
+        JSValueRef exception = NULL;
+        JSValueRef time = JSValueMakeNumber(_context, [value doubleValue]);
+        JSObjectRef date = JSObjectMakeDate(_context, 1, &time, &exception);
 
-    id value = dict[@"value"];
+        if (exception) {
+            throw RJSException(_context, exception);
+        }
+        return date;
+    }
+
     if (!value) {
         return JSValueMakeUndefined(_context);
     }
