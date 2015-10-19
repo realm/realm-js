@@ -94,6 +94,7 @@ namespace realm {
 
         void invalidate();
         bool compact();
+        void close();
 
         std::thread::id thread_id() const { return m_thread_id; }
         void verify_thread() const;
@@ -131,7 +132,7 @@ namespace realm {
         SharedRealm get_any_realm(const std::string &path);
         void remove(const std::string &path, std::thread::id thread_id);
         void cache_realm(SharedRealm &realm, std::thread::id thread_id = std::this_thread::get_id());
-        void invalidate_all();
+        void close_all(std::thread::id thread_id = std::this_thread::get_id());
         void clear();
 
       private:
