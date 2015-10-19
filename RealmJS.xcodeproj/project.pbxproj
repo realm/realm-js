@@ -772,7 +772,6 @@
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					REALM_HAVE_CONFIG,
-					REALM_DEBUG,
 					__ASSERTMACROS__,
 				);
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
@@ -852,7 +851,6 @@
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					REALM_HAVE_CONFIG,
 					"DEBUG=1",
-					REALM_DEBUG,
 					__ASSERTMACROS__,
 				);
 				HEADER_SEARCH_PATHS = (
@@ -869,8 +867,8 @@
 					"-isystem",
 					core/include,
 				);
-				OTHER_LDFLAGS = "-lrealm-ios-dbg";
-				OTHER_LIBTOOLFLAGS = "-lrealm-ios-dbg";
+				OTHER_LDFLAGS = "-lrealm-ios";
+				OTHER_LIBTOOLFLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = "io.realm.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -903,7 +901,7 @@
 					core/include,
 				);
 				OTHER_LDFLAGS = "-lrealm-ios";
-				OTHER_LIBTOOLFLAGS = "-lrealm-ios";
+				OTHER_LIBTOOLFLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = "io.realm.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -986,7 +984,6 @@
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					REALM_HAVE_CONFIG,
-					REALM_DEBUG,
 					__ASSERTMACROS__,
 				);
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
@@ -1020,7 +1017,6 @@
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					REALM_HAVE_CONFIG,
 					"DEBUG=1",
-					REALM_DEBUG,
 					__ASSERTMACROS__,
 				);
 				HEADER_SEARCH_PATHS = (
@@ -1037,8 +1033,8 @@
 					"-isystem",
 					core/include,
 				);
-				OTHER_LDFLAGS = "-lrealm-ios-dbg";
-				OTHER_LIBTOOLFLAGS = "-lrealm-ios-dbg";
+				OTHER_LDFLAGS = "-lrealm-ios";
+				OTHER_LIBTOOLFLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = "io.realm.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
