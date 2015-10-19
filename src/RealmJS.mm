@@ -58,7 +58,7 @@ NSString *RealmFileDirectory() {
 
 static JSValueRef ClearTestState(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef *exception) {
     [RealmJS clearTestState];
-    RJSSchemaClearState(ctx);
+    //RJSSchemaClearState(ctx);
     return NULL;
 }
 
