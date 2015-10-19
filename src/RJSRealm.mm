@@ -454,7 +454,7 @@ JSValueRef RealmClose(JSContextRef ctx, JSObjectRef function, JSObjectRef thisOb
     try {
         RJSValidateArgumentCount(argumentCount, 0);
         SharedRealm realm = *RJSGetInternal<SharedRealm *>(thisObject);
-        realm->invalidate();
+        realm->close();
         realm::Realm::s_global_cache.remove(realm->config().path, realm->thread_id());
 
     }

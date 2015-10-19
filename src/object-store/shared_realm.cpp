@@ -295,6 +295,16 @@ void Realm::invalidate()
     m_group = nullptr;
 }
 
+void Realm::close()
+{
+    invalidate();
+    if (m_notifier) {
+        m_notifier->remove_realm(this);
+        m_notifier = nullptr;
+    }
+    m_delegate = nullptr;
+}
+
 bool Realm::compact()
 {
     verify_thread();
@@ -440,14 +450,15 @@ void RealmCache::cache_realm(SharedRealm &realm, std::thread::id thread_id)
     }
 }
 
-void RealmCache::invalidate_all()
+void RealmCache::close_all(std::thread::id thread_id)
 {
     std::lock_guard<std::mutex> lock(m_mutex);
 
     for (auto &path_realms : m_cache) {
-        for (auto &realm_iter : path_realms.second) {
-            if (auto realm = realm_iter.second.lock()) {
-                realm->invalidate();
+        auto thread_realm = path_realms.second.find(thread_id);
+        if (thread_realm != path_realms.second.end()) {
+            if (auto realm = thread_realm->second.lock()) {
+                realm->close();
             }
         }
     }

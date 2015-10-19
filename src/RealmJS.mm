@@ -83,7 +83,7 @@ static JSValueRef ClearTestState(JSContextRef ctx, JSObjectRef function, JSObjec
 }
 
 + (void)clearTestState {
-    realm::Realm::s_global_cache.invalidate_all();
+    realm::Realm::s_global_cache.close_all();
     realm::Realm::s_global_cache.clear();
 
     NSFileManager *manager = [NSFileManager defaultManager];
