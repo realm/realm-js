@@ -19,7 +19,7 @@
 @import Foundation;
 @import JavaScriptCore;
 
-extern JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executor);
+extern JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executor, bool create);
 
 @interface RealmReact : NSObject
 

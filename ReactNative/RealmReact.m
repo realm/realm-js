@@ -29,14 +29,14 @@
 - (JSGlobalContextRef)ctx;
 @end
 
-JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executor) {
+JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executor, bool create) {
     Ivar contextIvar = class_getInstanceVariable([executor class], "_context");
     if (!contextIvar) {
         return NULL;
     }
 
     id rctJSContext = contextIvar ? object_getIvar(executor, contextIvar) : nil;
-    if (!rctJSContext) {
+    if (!rctJSContext && create) {
         Class RCTJavaScriptContext = NSClassFromString(@"RCTJavaScriptContext");
         if (RCTJavaScriptContext) {
             JSGlobalContextRef ctx = JSGlobalContextCreate(NULL);
@@ -119,7 +119,7 @@ JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executor) {
     }
 
     [executor executeBlockOnJavaScriptQueue:^{
-        JSGlobalContextRef ctx = RealmReactGetJSGlobalContextForExecutor(executor);
+        JSGlobalContextRef ctx = RealmReactGetJSGlobalContextForExecutor(executor, true);
         [RealmJS initializeContext:ctx];
     }];
 }
