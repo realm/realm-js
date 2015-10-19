@@ -27,8 +27,4 @@ namespace realm {
 JSClassRef RJSSchemaClass();
 JSObjectRef RJSSchemaCreate(JSContextRef ctx, realm::Schema *schema);
 
-realm::Schema RJSParseSchema(JSContextRef ctx, JSObjectRef jsonObject);
-
-JSValueRef RJSPrototypeForClassName(const std::string &className);
-realm::ObjectDefaults &RJSDefaultsForClassName(const std::string &className);
-void RJSSchemaClearState(JSContextRef ctx);
+realm::Schema RJSParseSchema(JSContextRef ctx, JSObjectRef jsonObject, std::map<std::string, realm::ObjectDefaults> &defaults, std::map<std::string, JSValueRef> &prototypes);

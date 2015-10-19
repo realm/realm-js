@@ -17,6 +17,12 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #import "RJSUtil.hpp"
+#include <map>
+
+namespace realm {
+    class Realm;
+    using ObjectDefaults = std::map<std::string, JSValueRef>;
+}
 
 extern const JSStaticFunction RJSRealmFuncs[];
 
@@ -28,3 +34,6 @@ std::string RJSDefaultPath();
 void RJSSetDefaultPath(std::string path);
 
 JSObjectRef RealmConstructor(JSContextRef ctx, JSObjectRef constructor, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException);
+
+std::map<std::string, realm::ObjectDefaults> &RJSDefaults(realm::Realm *realm);
+std::map<std::string, JSValueRef> &RJSPrototypes(realm::Realm *realm);
