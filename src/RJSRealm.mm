@@ -59,7 +59,35 @@ public:
                              std::vector<void*> const& invalidated) {
 
     }
+
+    JSGlobalContextRef m_context;
+    std::map<std::string, ObjectDefaults> m_defaults;
+    std::map<std::string, JSValueRef> m_prototypes;
+
+    RJSRealmDelegate(JSGlobalContextRef ctx) : m_context(ctx) {
+        JSGlobalContextRetain(m_context);
+    }
+
+    ~RJSRealmDelegate() {
+        for (auto prototype : m_prototypes) {
+            JSValueUnprotect(m_context, prototype.second);
+        }
+        for (auto objectDefaults : m_defaults) {
+            for (auto value : objectDefaults.second) {
+                JSValueUnprotect(m_context, value.second);
+            }
+        }
+        JSGlobalContextRelease(m_context);
+    }
 };
+
+std::map<std::string, ObjectDefaults> &RJSDefaults(Realm *realm) {
+    return static_cast<RJSRealmDelegate *>(realm->m_delegate.get())->m_defaults;
+}
+
+std::map<std::string, JSValueRef> &RJSPrototypes(Realm *realm) {
+    return static_cast<RJSRealmDelegate *>(realm->m_delegate.get())->m_prototypes;
+}
 
 std::string writeablePathForFile(const std::string &fileName) {
 #if TARGET_OS_IPHONE
@@ -114,6 +142,8 @@ static bool SetDefaultPath(JSContextRef ctx, JSObjectRef object, JSStringRef pro
 JSObjectRef RealmConstructor(JSContextRef ctx, JSObjectRef constructor, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) {
     try {
         Realm::Config config;
+        std::map<std::string, realm::ObjectDefaults> defaults;
+        std::map<std::string, JSValueRef> prototypes;
         switch (argumentCount) {
             case 0:
                 config.path = RJSDefaultPath();
@@ -139,7 +169,7 @@ JSObjectRef RealmConstructor(JSContextRef ctx, JSObjectRef constructor, size_t a
                     static JSStringRef schemaString = JSStringCreateWithUTF8CString("schema");
                     JSValueRef schemaValue = RJSValidatedPropertyValue(ctx, object, schemaString);
                     if (!JSValueIsUndefined(ctx, schemaValue)) {
-                        config.schema = std::make_unique<Schema>(RJSParseSchema(ctx, RJSValidatedValueToObject(ctx, schemaValue)));
+                        config.schema = std::make_unique<Schema>(RJSParseSchema(ctx, RJSValidatedValueToObject(ctx, schemaValue), defaults, prototypes));
                     }
 
                     static JSStringRef schemaVersionString = JSStringCreateWithUTF8CString("schemaVersion");
@@ -159,8 +189,10 @@ JSObjectRef RealmConstructor(JSContextRef ctx, JSObjectRef constructor, size_t a
         }
         SharedRealm realm = Realm::get_shared_realm(config);
         if (!realm->m_delegate) {
-            realm->m_delegate = std::make_unique<RJSRealmDelegate>();
+            realm->m_delegate = std::make_unique<RJSRealmDelegate>(JSContextGetGlobalContext(ctx));
         }
+        RJSDefaults(realm.get()) = defaults;
+        RJSPrototypes(realm.get()) = prototypes;
         return RJSWrapObject<SharedRealm *>(ctx, RJSRealmClass(), new SharedRealm(realm));
     }
     catch (std::exception &ex) {
@@ -422,8 +454,9 @@ JSValueRef RealmClose(JSContextRef ctx, JSObjectRef function, JSObjectRef thisOb
     try {
         RJSValidateArgumentCount(argumentCount, 0);
         SharedRealm realm = *RJSGetInternal<SharedRealm *>(thisObject);
-        realm->invalidate();
+        realm->close();
         realm::Realm::s_global_cache.remove(realm->config().path, realm->thread_id());
+
     }
     catch (std::exception &exp) {
         if (jsException) {

@@ -21,6 +21,7 @@
 #import "RJSResults.hpp"
 #import "RJSSchema.hpp"
 #import "RJSList.hpp"
+#import "RJSRealm.hpp"
 
 #import "object_store.hpp"
 #import "object_accessor.hpp"
@@ -63,7 +64,7 @@ JSClassRef RJSObjectClass() {
 }
 
 JSObjectRef RJSObjectCreate(JSContextRef ctx, Object object) {
-    JSValueRef prototype = RJSPrototypeForClassName(object.object_schema.name);
+    JSValueRef prototype = RJSPrototypes(object.realm.get())[object.object_schema.name];
     JSObjectRef jsObject = RJSWrapObject(ctx, RJSObjectClass(), new Object(object), prototype);
     return jsObject;
 }
@@ -86,13 +87,13 @@ template<> JSValueRef RJSAccessor::dict_value_for_key(JSContextRef ctx, JSValueR
     return ret;
 }
 
-template<> bool RJSAccessor::has_default_value_for_property(JSContextRef ctx, const ObjectSchema &object_schema, const std::string &prop_name) {
-    ObjectDefaults &defaults = RJSDefaultsForClassName(object_schema.name);
+template<> bool RJSAccessor::has_default_value_for_property(JSContextRef ctx, Realm *realm, const ObjectSchema &object_schema, const std::string &prop_name) {
+    ObjectDefaults &defaults = RJSDefaults(realm)[object_schema.name];
     return defaults.find(prop_name) != defaults.end();
 }
 
-template<> JSValueRef RJSAccessor::default_value_for_property(JSContextRef ctx, const ObjectSchema &object_schema, const std::string &prop_name) {
-    ObjectDefaults &defaults = RJSDefaultsForClassName(object_schema.name);
+template<> JSValueRef RJSAccessor::default_value_for_property(JSContextRef ctx, Realm *realm, const ObjectSchema &object_schema, const std::string &prop_name) {
+    ObjectDefaults &defaults = RJSDefaults(realm)[object_schema.name];
     return defaults[prop_name];
 }
 

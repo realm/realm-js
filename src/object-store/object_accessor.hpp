@@ -60,8 +60,8 @@ namespace realm {
         static bool dict_has_value_for_key(ContextType ctx, ValueType dict, const std::string &prop_name);
         static ValueType dict_value_for_key(ContextType ctx, ValueType dict, const std::string &prop_name);
 
-        static bool has_default_value_for_property(ContextType ctx, const ObjectSchema &object_schema, const std::string &prop_name);
-        static ValueType default_value_for_property(ContextType ctx, const ObjectSchema &object_schema, const std::string &prop_name);
+        static bool has_default_value_for_property(ContextType ctx, Realm *realm, const ObjectSchema &object_schema, const std::string &prop_name);
+        static ValueType default_value_for_property(ContextType ctx, Realm *realm, const ObjectSchema &object_schema, const std::string &prop_name);
 
         static bool to_bool(ContextType, ValueType &);
         static ValueType from_bool(ContextType, bool);
@@ -260,8 +260,8 @@ namespace realm {
                     object.set_property_value_impl(ctx, prop, Accessor::dict_value_for_key(ctx, value, prop.name), try_update);
                 }
                 else if (created) {
-                    if (Accessor::has_default_value_for_property(ctx, object_schema, prop.name)) {
-                        object.set_property_value_impl(ctx, prop, Accessor::default_value_for_property(ctx, object_schema, prop.name), try_update);
+                    if (Accessor::has_default_value_for_property(ctx, realm.get(), object_schema, prop.name)) {
+                        object.set_property_value_impl(ctx, prop, Accessor::default_value_for_property(ctx, realm.get(), object_schema, prop.name), try_update);
                     }
                     else {
                         throw std::runtime_error("Missing property value for property " + prop.name);
