@@ -19,6 +19,7 @@
 #import "RealmRPC.h"
 #import <JavaScriptCore/JavaScriptCore.h>
 
+#include <dlfcn.h>
 #include <map>
 #include <string>
 #include "RealmJS.h"
@@ -34,6 +35,10 @@
 
 using RPCObjectID = u_int64_t;
 using RPCRequest = std::function<NSDictionary *(NSDictionary *dictionary)>;
+
+static const char * const RealmObjectTypesFunction = "ObjectTypesFUNCTION";
+static const char * const RealmObjectTypesNotification = "ObjectTypesNOTIFICATION";
+static const char * const RealmObjectTypesResults = "ObjectTypesRESULTS";
 
 @implementation RJSRPCServer {
     JSGlobalContextRef _context;
@@ -55,9 +60,24 @@ using RPCRequest = std::function<NSDictionary *(NSDictionary *dictionary)>;
     if (self) {
         _context = JSGlobalContextCreate(NULL);
 
+        // JavaScriptCore crashes when trying to walk up the native stack to print the stacktrace.
+        // FIXME: Avoid having to do this!
+        static void (*setIncludesNativeCallStack)(JSGlobalContextRef, bool) = (void (*)(JSGlobalContextRef, bool))dlsym(RTLD_DEFAULT, "JSGlobalContextSetIncludesNativeCallStackWhenReportingExceptions");
+        if (setIncludesNativeCallStack) {
+            setIncludesNativeCallStack(_context, false);
+        }
+
         id _self = self;
         __weak __typeof__(self) self = _self;
 
+        _requests["/get_default_path"] = [=](NSDictionary *dict) {
+            return @{@"result": @(RJSDefaultPath().c_str())};
+        };
+        _requests["/set_default_path"] = [=](NSDictionary *dict) {
+            NSString *path = dict[@"path"];
+            RJSSetDefaultPath(path.UTF8String);
+            return nil;
+        };
         _requests["/create_realm"] = [=](NSDictionary *dict) {
             NSArray *args = dict[@"arguments"];
             NSUInteger argCount = args.count;
@@ -92,120 +112,56 @@ using RPCRequest = std::function<NSDictionary *(NSDictionary *dictionary)>;
             RJSGetInternal<realm::SharedRealm *>(_objects[realmId])->get()->commit_transaction();
             return nil;
         };
-        _requests["/call_realm_method"] = [=](NSDictionary *dict) {
-            NSString *name = dict[@"name"];
-            return [self performObjectMethod:name.UTF8String
-                                classMethods:RJSRealmFuncs
+        _requests["/call_method"] = [=](NSDictionary *dict) {
+            return [self performObjectMethod:dict[@"name"]
                                         args:dict[@"arguments"]
-                                    objectId:[dict[@"realmId"] unsignedLongValue]];
+                                    objectId:[dict[@"id"] unsignedLongValue]];
         };
         _requests["/get_property"] = [=](NSDictionary *dict) {
+            RPCObjectID oid = [dict[@"id"] unsignedLongValue];
+            id name = dict[@"name"];
+            JSValueRef value = NULL;
             JSValueRef exception = NULL;
-            NSString *name = dict[@"name"];
-            JSStringRef propString = RJSStringForString(name.UTF8String);
-            RPCObjectID objectId = [dict[@"objectId"] unsignedLongValue];
-            JSValueRef propertyValue = ObjectGetProperty(_context, _objects[objectId], propString, &exception);
-            JSStringRelease(propString);
+
+            if ([name isKindOfClass:[NSNumber class]]) {
+                value = JSObjectGetPropertyAtIndex(_context, _objects[oid], [name unsignedIntValue], &exception);
+            }
+            else {
+                JSStringRef propString = RJSStringForString([name UTF8String]);
+                value = JSObjectGetProperty(_context, _objects[oid], propString, &exception);
+                JSStringRelease(propString);
+            }
 
             if (exception) {
                 return @{@"error": @(RJSStringForValue(_context, exception).c_str())};
             }
-            return @{@"result": [self resultForJSValue:propertyValue]};
+            return @{@"result": [self resultForJSValue:value]};
         };
         _requests["/set_property"] = [=](NSDictionary *dict) {
-            JSStringRef propString = RJSStringForString([dict[@"name"] UTF8String]);
-            RPCObjectID realmId = [dict[@"objectId"] unsignedLongValue];
+            RPCObjectID oid = [dict[@"id"] unsignedLongValue];
+            id name = dict[@"name"];
             JSValueRef value = [self deserializeDictionaryValue:dict[@"value"]];
             JSValueRef exception = NULL;
 
-            ObjectSetProperty(_context, _objects[realmId], propString, value, &exception);
-            JSStringRelease(propString);
+            if ([name isKindOfClass:[NSNumber class]]) {
+                JSObjectSetPropertyAtIndex(_context, _objects[oid], [name unsignedIntValue], value, &exception);
+            }
+            else {
+                JSStringRef propString = RJSStringForString([name UTF8String]);
+                JSObjectSetProperty(_context, _objects[oid], propString, value, 0, &exception);
+                JSStringRelease(propString);
+            }
 
-            return exception ? @{@"error": @(RJSStringForValue(_context, exception).c_str())} : @{};
+            if (exception) {
+                return @{@"error": @(RJSStringForValue(_context, exception).c_str())};
+            }
+            return @{};
         };
         _requests["/dispose_object"] = [=](NSDictionary *dict) {
             RPCObjectID oid = [dict[@"id"] unsignedLongValue];
             JSValueUnprotect(_context, _objects[oid]);
             _objects.erase(oid);
             return nil;
-        };
-        _requests["/get_results_size"] = [=](NSDictionary *dict) {
-            RPCObjectID resultsId = [dict[@"resultsId"] unsignedLongValue];
-
-            JSValueRef exception = NULL;
-            static JSStringRef lengthPropertyName = JSStringCreateWithUTF8CString("length");
-            JSValueRef lengthValue = ResultsGetProperty(_context, _objects[resultsId], lengthPropertyName, &exception);
-            size_t length = JSValueToNumber(_context, lengthValue, &exception);
-
-            if (exception) {
-                return @{@"error": @(RJSStringForValue(_context, exception).c_str())};
-            }
-            return @{@"result": @(length)};
-        };
-        _requests["/get_results_item"] = [=](NSDictionary *dict) {
-            RPCObjectID resultsId = [dict[@"resultsId"] unsignedLongValue];
-            long index = [dict[@"index"] longValue];
-
-            JSValueRef exception = NULL;
-            JSStringRef indexPropertyName = JSStringCreateWithUTF8CString(std::to_string(index).c_str());
-            JSValueRef objectValue = ResultsGetProperty(_context, _objects[resultsId], indexPropertyName, &exception);
-            JSStringRelease(indexPropertyName);
-
-            if (exception) {
-                return @{@"error": @(RJSStringForValue(_context, exception).c_str())};
-            }
-            return @{@"result": [self resultForJSValue:objectValue]};
-        };
-        _requests["/get_list_size"] = [=](NSDictionary *dict) {
-            RPCObjectID listId = [dict[@"listId"] unsignedLongValue];
-
-            JSValueRef exception = NULL;
-            static JSStringRef lengthPropertyName = JSStringCreateWithUTF8CString("length");
-            JSValueRef lengthValue = ListGetProperty(_context, _objects[listId], lengthPropertyName, &exception);
-            size_t length = JSValueToNumber(_context, lengthValue, &exception);
-
-            if (exception) {
-                return @{@"error": @(RJSStringForValue(_context, exception).c_str())};
-            }
-            return @{@"result": @(length)};
-        };
-        _requests["/get_list_item"] = [=](NSDictionary *dict) {
-            RPCObjectID listId = [dict[@"listId"] unsignedLongValue];
-            long index = [dict[@"index"] longValue];
-
-            JSValueRef exception = NULL;
-            JSStringRef indexPropertyName = JSStringCreateWithUTF8CString(std::to_string(index).c_str());
-            JSValueRef objectValue = ListGetProperty(_context, _objects[listId], indexPropertyName, &exception);
-            JSStringRelease(indexPropertyName);
-
-            if (exception) {
-                return @{@"error": @(RJSStringForValue(_context, exception).c_str())};
-            }
-            
-            return @{@"result": [self resultForJSValue:objectValue]};
-        };
-        _requests["/set_list_item"] = [=](NSDictionary *dict) {
-            RPCObjectID listId = [dict[@"listId"] unsignedLongValue];
-            long index = [dict[@"index"] longValue];
-
-            JSValueRef exception = NULL;
-            JSStringRef indexPropertyName = JSStringCreateWithUTF8CString(std::to_string(index).c_str());
-            JSValueRef value = [self deserializeDictionaryValue:dict[@"value"]];
-            ListSetProperty(_context, _objects[listId], indexPropertyName, value, &exception);
-            JSStringRelease(indexPropertyName);
-
-            if (exception) {
-                return @{@"error": @(RJSStringForValue(_context, exception).c_str())};
-            }
-
-            return @{};
-        };
-        _requests["/call_list_method"] = [=](NSDictionary *dict) {
-            NSString *name = dict[@"name"];
-            return [self performObjectMethod:name.UTF8String
-                                classMethods:RJSListFuncs
-                                        args:dict[@"arguments"]
-                                    objectId:[dict[@"listId"] unsignedLongValue]];
         };
         _requests["/clear_test_state"] = [=](NSDictionary *dict) {
             for (auto object : _objects) {
@@ -236,30 +192,25 @@ using RPCRequest = std::function<NSDictionary *(NSDictionary *dictionary)>;
     return response ?: @{};
 }
 
-- (NSDictionary *)performObjectMethod:(const char *)name
-                         classMethods:(const JSStaticFunction [])methods
-                                 args:(NSArray *)args
-                             objectId:(RPCObjectID)oid {
+- (NSDictionary *)performObjectMethod:(NSString *)method args:(NSArray *)args objectId:(RPCObjectID)oid {
+    JSObjectRef object = _objects[oid];
+    JSStringRef methodString = RJSStringForString(method.UTF8String);
+    JSObjectRef function = RJSValidatedObjectProperty(_context, object, methodString);
+    JSStringRelease(methodString);
+
     NSUInteger argCount = args.count;
     JSValueRef argValues[argCount];
     for (NSUInteger i = 0; i < argCount; i++) {
         argValues[i] = [self deserializeDictionaryValue:args[i]];
     }
 
-    size_t index = 0;
-    while (methods[index].name) {
-        if (!strcmp(methods[index].name, name)) {
-            JSValueRef exception = NULL;
-            JSValueRef ret = methods[index].callAsFunction(_context, NULL, _objects[oid], argCount, argValues, &exception);
-            if (exception) {
-                return @{@"error": @(RJSStringForValue(_context, exception).c_str())};
-            }
-            return @{@"result": [self resultForJSValue:ret]};
-        }
-        index++;
-    }
+    JSValueRef exception = NULL;
+    JSValueRef result = JSObjectCallAsFunction(_context, function, object, argCount, argValues, &exception);
 
-    return @{@"error": @"invalid method"};
+    if (exception) {
+        return @{@"error": @(RJSStringForValue(_context, exception).c_str())};
+    }
+    return @{@"result": [self resultForJSValue:result]};
 }
 
 - (RPCObjectID)storeObject:(JSObjectRef)object {
@@ -311,10 +262,17 @@ using RPCRequest = std::function<NSDictionary *(NSDictionary *dictionary)>;
         realm::Results *results = RJSGetInternal<realm::Results *>(jsObject);
         RPCObjectID oid = [self storeObject:jsObject];
         return @{
-             @"type": @"ObjectTypesRESULTS",
+             @"type": @(RealmObjectTypesResults),
              @"id": @(oid),
              @"size": @(results->size()),
              @"schema": [self objectSchemaToJSONObject:results->object_schema]
+        };
+    }
+    else if (JSValueIsObjectOfClass(_context, value, RJSNotificationClass())) {
+        RPCObjectID oid = [self storeObject:jsObject];
+        return @{
+            @"type": @(RealmObjectTypesNotification),
+            @"id": @(oid),
         };
     }
     else if (RJSIsValueArray(_context, value)) {
@@ -324,6 +282,12 @@ using RPCRequest = std::function<NSDictionary *(NSDictionary *dictionary)>;
             [array addObject:[self resultForJSValue:JSObjectGetPropertyAtIndex(_context, jsObject, i, NULL)]];
         }
         return @{@"value": array};
+    }
+    else if (RJSIsValueDate(_context, value)) {
+        return @{
+            @"type": @(RJSTypeGet(realm::PropertyTypeDate).c_str()),
+            @"value": @(RJSValidatedValueToNumber(_context, value)),
+        };
     }
     else {
         assert(0);
@@ -354,7 +318,28 @@ using RPCRequest = std::function<NSDictionary *(NSDictionary *dictionary)>;
         return _objects[oid];
     }
 
+    NSString *type = dict[@"type"];
     id value = dict[@"value"];
+
+    if ([type isEqualToString:@(RealmObjectTypesFunction)]) {
+        // FIXME: Make this actually call the function by its id once we need it to.
+        JSStringRef jsBody = JSStringCreateWithUTF8CString("");
+        JSObjectRef jsFunction = JSObjectMakeFunction(_context, NULL, 0, NULL, jsBody, NULL, 1, NULL);
+        JSStringRelease(jsBody);
+
+        return jsFunction;
+    }
+    else if ([type isEqualToString:@(RJSTypeGet(realm::PropertyTypeDate).c_str())]) {
+        JSValueRef exception = NULL;
+        JSValueRef time = JSValueMakeNumber(_context, [value doubleValue]);
+        JSObjectRef date = JSObjectMakeDate(_context, 1, &time, &exception);
+
+        if (exception) {
+            throw RJSException(_context, exception);
+        }
+        return date;
+    }
+
     if (!value) {
         return JSValueMakeUndefined(_context);
     }

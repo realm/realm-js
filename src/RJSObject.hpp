@@ -24,7 +24,3 @@ namespace realm {
 
 JSClassRef RJSObjectClass();
 JSObjectRef RJSObjectCreate(JSContextRef ctx, realm::Object object);
-
-JSValueRef ObjectGetProperty(JSContextRef ctx, JSObjectRef jsObject, JSStringRef jsPropertyName, JSValueRef* exception);
-bool ObjectSetProperty(JSContextRef ctx, JSObjectRef jsObject, JSStringRef jsPropertyName, JSValueRef value, JSValueRef* exception);
-

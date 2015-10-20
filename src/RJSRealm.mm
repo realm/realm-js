@@ -466,7 +466,7 @@ JSValueRef RealmClose(JSContextRef ctx, JSObjectRef function, JSObjectRef thisOb
     return NULL;
 }
 
-const JSStaticFunction RJSRealmFuncs[] = {
+static const JSStaticFunction RJSRealmFuncs[] = {
     {"objects", RealmObjects, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
     {"create", RealmCreateObject, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
     {"delete", RealmDelete, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},

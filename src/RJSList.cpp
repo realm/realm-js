@@ -214,7 +214,7 @@ JSObjectRef RJSListCreate(JSContextRef ctx, realm::List &list) {
     return RJSWrapObject<List *>(ctx, RJSListClass(), new List(list));
 }
 
-const JSStaticFunction RJSListFuncs[] = {
+static const JSStaticFunction RJSListFuncs[] = {
     {"push", ListPush, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
     {"pop", ListPop, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
     {"shift", ListShift, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},

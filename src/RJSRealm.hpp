@@ -24,8 +24,6 @@ namespace realm {
     using ObjectDefaults = std::map<std::string, JSValueRef>;
 }
 
-extern const JSStaticFunction RJSRealmFuncs[];
-
 JSClassRef RJSRealmClass();
 JSClassRef RJSRealmConstructorClass();
 JSClassRef RJSNotificationClass();

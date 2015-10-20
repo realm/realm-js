@@ -99,10 +99,21 @@ JSValueRef RJSMakeError(JSContextRef ctx, RJSException &exp);
 JSValueRef RJSMakeError(JSContextRef ctx, std::exception &exp);
 JSValueRef RJSMakeError(JSContextRef ctx, const std::string &message);
 
+bool RJSIsValueArray(JSContextRef ctx, JSValueRef value);
+bool RJSIsValueDate(JSContextRef ctx, JSValueRef value);
+
 static inline JSObjectRef RJSValidatedValueToObject(JSContextRef ctx, JSValueRef value, const char *message = NULL) {
     JSObjectRef object = JSValueToObject(ctx, value, NULL);
     if (!object) {
         throw std::runtime_error(message ?: "Value is not an object.");
+    }
+    return object;
+}
+
+static inline JSObjectRef RJSValidatedValueToDate(JSContextRef ctx, JSValueRef value, const char *message = NULL) {
+    JSObjectRef object = JSValueToObject(ctx, value, NULL);
+    if (!object || !RJSIsValueDate(ctx, object)) {
+        throw std::runtime_error(message ?: "Value is not a date.");
     }
     return object;
 }
@@ -200,6 +211,3 @@ static inline bool RJSIsValueObjectOfType(JSContextRef ctx, JSValueRef value, JS
 
     return ret;
 }
-
-bool RJSIsValueArray(JSContextRef ctx, JSValueRef value);
-
