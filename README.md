@@ -2,6 +2,8 @@
 
 RealmJS contains Realm bindings for integrating with mobile apps built using javascript frameworks such as ReactNative and PhoneGap.
 
+RealmJS uses submodules so you need to run `git submodule update --init --recursive` in the realm-js root directory before running any examples or including the project in your app.
+
 ## ReactNative Example
 Make sure your environment is set up to run react native applications. Follow the instructions here https://facebook.github.io/react-native/docs/getting-started.html to the point you have installed the react-native-cli.
 
