@@ -44,6 +44,7 @@ static const char * const RealmObjectTypesResults = "ObjectTypesRESULTS";
     JSGlobalContextRef _context;
     std::map<std::string, RPCRequest> _requests;
     std::map<RPCObjectID, JSObjectRef> _objects;
+    RPCObjectID _sessionID;
 }
 
 - (void)dealloc {
@@ -70,15 +71,22 @@ static const char * const RealmObjectTypesResults = "ObjectTypesRESULTS";
         id _self = self;
         __weak __typeof__(self) self = _self;
 
-        _requests["/get_default_path"] = [=](NSDictionary *dict) {
-            return @{@"result": @(RJSDefaultPath().c_str())};
-        };
-        _requests["/set_default_path"] = [=](NSDictionary *dict) {
-            NSString *path = dict[@"path"];
-            RJSSetDefaultPath(path.UTF8String);
-            return nil;
+        _requests["/create_session"] = [=](NSDictionary *dict) {
+            [RealmJS initializeContext:_context];
+
+            JSStringRef realmString = RJSStringForString("Realm");
+            JSObjectRef realmConstructor = RJSValidatedObjectProperty(_context, JSContextGetGlobalObject(_context), realmString);
+            JSStringRelease(realmString);
+
+            _sessionID = [self storeObject:realmConstructor];
+            return @{@"result": @(_sessionID)};
         };
         _requests["/create_realm"] = [=](NSDictionary *dict) {
+            JSObjectRef realmConstructor = _sessionID ? _objects[_sessionID] : NULL;
+            if (!realmConstructor) {
+                throw std::runtime_error("Realm constructor not found!");
+            }
+
             NSArray *args = dict[@"arguments"];
             NSUInteger argCount = args.count;
             JSValueRef argValues[argCount];
@@ -88,7 +96,7 @@ static const char * const RealmObjectTypesResults = "ObjectTypesRESULTS";
             }
 
             JSValueRef exception = NULL;
-            JSObjectRef realmObject = RealmConstructor(_context, NULL, argCount, argValues, &exception);
+            JSObjectRef realmObject = JSObjectCallAsConstructor(_context, realmConstructor, argCount, argValues, &exception);
 
             if (exception) {
                 return @{@"error": @(RJSStringForValue(_context, exception).c_str())};
@@ -165,9 +173,14 @@ static const char * const RealmObjectTypesResults = "ObjectTypesRESULTS";
         };
         _requests["/clear_test_state"] = [=](NSDictionary *dict) {
             for (auto object : _objects) {
+                // The session ID points to the Realm constructor object, which should remain.
+                if (object.first == _sessionID) {
+                    continue;
+                }
+
                 JSValueUnprotect(_context, object.second);
+                _objects.erase(object.first);
             }
-            _objects.clear();
             JSGarbageCollect(_context);
             [RealmJS clearTestState];
             return nil;
@@ -183,6 +196,11 @@ static const char * const RealmObjectTypesResults = "ObjectTypesRESULTS";
 
     __block id response;
     dispatch_sync(dispatch_get_main_queue(), ^{
+        if (_sessionID != [args[@"sessionId"] unsignedLongValue]) {
+            response = @{@"error": @"Invalid session ID"};
+            return;
+        }
+
         try {
             response = action(args);
         } catch (std::exception &exception) {
