@@ -1,0 +1,8 @@
+{
+  "env": {
+    "commonjs": true
+  },
+  "rules": {
+    "no-unused-vars": 0
+  }
+}

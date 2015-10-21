@@ -1,6 +1,4 @@
 {
-  "root": true,
-  "extends": "eslint:recommended",
   "env": {
     "commonjs": true,
     "browser": true,
@@ -8,10 +6,5 @@
   },
   "globals": {
     "global": true
-  },
-  "rules": {
-    "comma-dangle": 0,
-    "no-unused-vars": 1,
-    "strict": [2, "global"]
   }
 }
