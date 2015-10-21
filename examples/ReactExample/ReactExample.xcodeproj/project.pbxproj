@@ -15,7 +15,6 @@
 		00C302EA1ABCBA2D00DB3ED1 /* libRCTVibration.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 00C302E41ABCB9EE00DB3ED1 /* libRCTVibration.a */; };
 		0270BCD21B7D095C00010E03 /* RealmReact.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0270BCB31B7D04D700010E03 /* RealmReact.framework */; };
 		027798491BBB2F1000C96559 /* ReactExampleTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 027798481BBB2F1000C96559 /* ReactExampleTests.m */; };
-		02A3C7A71BC4347100B1A7BE /* libc++.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 02A3C7A61BC4347100B1A7BE /* libc++.tbd */; };
 		133E29F31AD74F7200F7D852 /* libRCTLinking.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 78C398B91ACF4ADC00677621 /* libRCTLinking.a */; };
 		139105C61AF99C1200B5F7CC /* libRCTSettings.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 139105C11AF99BAD00B5F7CC /* libRCTSettings.a */; };
 		139FDEF61B0652A700C62182 /* libRCTWebSocket.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 139FDEF41B06529B00C62182 /* libRCTWebSocket.a */; };
@@ -169,7 +168,6 @@
 		027798461BBB2F1000C96559 /* ReactExampleTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ReactExampleTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		027798481BBB2F1000C96559 /* ReactExampleTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ReactExampleTests.m; sourceTree = "<group>"; };
 		0277984A1BBB2F1000C96559 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		02A3C7A61BC4347100B1A7BE /* libc++.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.tbd"; path = "usr/lib/libc++.tbd"; sourceTree = SDKROOT; };
 		139105B61AF99BAD00B5F7CC /* RCTSettings.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RCTSettings.xcodeproj; path = "node_modules/react-native/Libraries/Settings/RCTSettings.xcodeproj"; sourceTree = "<group>"; };
 		139FDEE61B06529A00C62182 /* RCTWebSocket.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RCTWebSocket.xcodeproj; path = "node_modules/react-native/Libraries/WebSocket/RCTWebSocket.xcodeproj"; sourceTree = "<group>"; };
 		13B07F961A680F5B00A75B9A /* ReactExample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ReactExample.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -197,7 +195,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				02A3C7A71BC4347100B1A7BE /* libc++.tbd in Frameworks */,
 				0270BCD21B7D095C00010E03 /* RealmReact.framework in Frameworks */,
 				146834051AC3E58100842450 /* libReact.a in Frameworks */,
 				00C302E51ABCBA2D00DB3ED1 /* libRCTActionSheet.a in Frameworks */,
@@ -351,7 +348,6 @@
 		83CBB9F61A601CBA00E9B192 = {
 			isa = PBXGroup;
 			children = (
-				02A3C7A61BC4347100B1A7BE /* libc++.tbd */,
 				13B07FAE1A68108700A75B9A /* ReactExample */,
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				027798471BBB2F1000C96559 /* ReactExampleTests */,
