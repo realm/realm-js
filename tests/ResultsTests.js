@@ -50,6 +50,27 @@ module.exports = BaseTest.extend({
         TestCase.assertTrue(Object.getPrototypeOf(people[0]) === schemas.PersonObject.prototype);
         TestCase.assertTrue(people[0] instanceof schemas.PersonObject);
     },
+    testResultsReadonly: function() {
+        var realm = new Realm({schema: [schemas.TestObject]});
+        var objects = realm.objects('TestObject');
+
+        realm.write(function() {
+            realm.create('TestObject', [1]);
+        });
+
+        TestCase.assertThrows(function() {
+            objects[-1] = [0];
+        });
+        TestCase.assertThrows(function() {
+            objects[0] = [0];
+        });
+        TestCase.assertThrows(function() {
+            objects[1] = [0];
+        });
+        TestCase.assertThrows(function() {
+            objects.length = 0;
+        });
+    },
     testResultsInvalidProperty: function() {
         var realm = new Realm({schema: [schemas.TestObject]});
         var objects = realm.objects('TestObject');
