@@ -6,6 +6,9 @@
     "browser": true,
     "es6": true,
   },
+  "globals": {
+    "global": true
+  },
   "rules": {
     "comma-dangle": 0,
     "no-unused-vars": 1,
