@@ -115,10 +115,14 @@ module.exports = BaseTest.extend({
         });
 
         var count = 0;
+        var keys = Object.keys(obj.arrayCol);
         for (var index in obj.arrayCol) {
-            count++;
+            TestCase.assertEqual(count++, +index);
+            TestCase.assertEqual(keys[index], index);
         }
-        TestCase.assertEqual(2, count);
+
+        TestCase.assertEqual(count, 2);
+        TestCase.assertEqual(keys.length, 2);
     },
 
     testPush: function() {
