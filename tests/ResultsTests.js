@@ -48,6 +48,7 @@ module.exports = BaseTest.extend({
         TestCase.assertEqual(people[2], undefined);
         TestCase.assertEqual(people[-1], undefined);
         TestCase.assertTrue(Object.getPrototypeOf(people[0]) === schemas.PersonObject.prototype);
+        TestCase.assertTrue(people[0] instanceof schemas.PersonObject);
     },
     testResultsInvalidProperty: function() {
         var realm = new Realm({schema: [schemas.TestObject]});
