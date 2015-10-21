@@ -60,15 +60,12 @@ bool ResultsSetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef proper
         }
 
         // attempts to assign to 'length' or an index should throw an exception
-        throw std::runtime_error("Results objects are readonly");
+        if (jsException) {
+            *jsException = RJSMakeError(ctx, "Results objects are readonly");
+        }
     }
     catch (std::invalid_argument &exp) {
         // for stol failure this could be another property that is handled externally, so ignore
-    }
-    catch (std::exception &exp) {
-        if (jsException) {
-            *jsException = RJSMakeError(ctx, exp);
-        }
     }
     return false;
 }
