@@ -74,11 +74,14 @@ module.exports = BaseTest.extend({
         });
 
         var count = 0;
-        for (var object in objects) {
-            count++;
-            //TestCase.assertTrue(object instanceof Object);
-        }    
-        TestCase.assertEqual(1, count);
+        var keys = Object.keys(objects);
+        for (var index in objects) {
+            TestCase.assertEqual(count++, +index);
+            TestCase.assertEqual(keys[index], index);
+        } 
+
+        TestCase.assertEqual(count, 1);
+        TestCase.assertEqual(keys.length, 1);
     },
     testSort: function() {
         var realm = new Realm({schema: [schemas.TestObject]});
