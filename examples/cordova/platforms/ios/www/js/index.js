@@ -21,7 +21,7 @@ function Todo() {}
 Todo.prototype.schema = {
     name: 'Todo',
     properties: [
-        {name: 'text', type: 'RealmTypeString'},
+        {name: 'text', type: Realm.Types.STRING},
     ]
 };
 
