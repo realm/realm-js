@@ -127,6 +127,10 @@ static inline JSObjectRef RJSValidatedValueToFunction(JSContextRef ctx, JSValueR
 }
 
 static inline double RJSValidatedValueToNumber(JSContextRef ctx, JSValueRef value) {
+    if (JSValueIsNull(ctx, value)) {
+        throw std::invalid_argument("`null` is not a number.");
+    }
+    
     JSValueRef exception = NULL;
     double number = JSValueToNumber(ctx, value, &exception);
     if (exception) {
