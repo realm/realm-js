@@ -82,10 +82,14 @@ JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executor, bool cre
     _bridge = bridge;
 
     static GCDWebServer *s_webServer;
+    static realm_js::RPCServer *rpcServer;
+
     if (s_webServer) {
         [s_webServer stop];
         [s_webServer removeAllHandlers];
         s_webServer = nil;
+
+        delete rpcServer;
     }
 
     // The executor could be a RCTWebSocketExecutor, in which case it won't have a JS context.
@@ -94,17 +98,16 @@ JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executor, bool cre
     if ([executor isMemberOfClass:NSClassFromString(@"RCTWebSocketExecutor")]) {
         [GCDWebServer setLogLevel:3];
         GCDWebServer *webServer = [[GCDWebServer alloc] init];
-        __block realm_js::RPCServer rpcServer;
+        rpcServer = new realm_js::RPCServer();
 
         // Add a handler to respond to POST requests on any URL
         [webServer addDefaultHandlerForMethod:@"POST"
                                  requestClass:[GCDWebServerDataRequest class]
                                  processBlock:^GCDWebServerResponse *(GCDWebServerRequest* request) {
-
             GCDWebServerResponse *response;
             try {
                 realm_js::json args = realm_js::json::parse([[(GCDWebServerDataRequest *)request text] UTF8String]);
-                std::string response_text = rpcServer.perform_request(request.path.UTF8String, args).dump();
+                std::string response_text = rpcServer->perform_request(request.path.UTF8String, args).dump();
                 response = [[GCDWebServerDataResponse alloc] initWithData:[NSData dataWithBytes:response_text.c_str() length:response_text.length()] contentType:@"application/json"];
             }
             catch(std::exception &ex) {

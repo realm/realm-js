@@ -48,7 +48,7 @@ RPCServer::RPCServer() {
         setIncludesNativeCallStack(_context, false);
     }
 
-    _requests["/create_session"] = [=](const json dict) {
+    _requests["/create_session"] = [this](const json dict) {
         [RealmJS initializeContext:_context];
 
         JSStringRef realm_string = RJSStringForString("Realm");
@@ -56,9 +56,9 @@ RPCServer::RPCServer() {
         JSStringRelease(realm_string);
 
         _sessionID = store_object(realm_constructor);
-        return json({"result", _sessionID});
+        return (json){{"result", _sessionID}};
     };
-    _requests["/create_realm"] = [=](const json dict) {
+    _requests["/create_realm"] = [this](const json dict) {
         JSObjectRef realm_constructor = _sessionID ? _objects[_sessionID] : NULL;
         if (!realm_constructor) {
             throw std::runtime_error("Realm constructor not found!");
@@ -76,28 +76,28 @@ RPCServer::RPCServer() {
         JSObjectRef realmObject = JSObjectCallAsConstructor(_context, realm_constructor, arg_count, arg_values, &exception);
 
         if (exception) {
-            return (json){"error", RJSStringForValue(_context, exception)};
+            return (json){{"error", RJSStringForValue(_context, exception)}};
         }
 
         RPCObjectID realmId = store_object(realmObject);
-        return (json){"result", realmId};
+        return (json){{"result", realmId}};
     };
-    _requests["/begin_transaction"] = [=](const json dict) {
+    _requests["/begin_transaction"] = [this](const json dict) {
         RPCObjectID realmId = dict["realmId"].get<RPCObjectID>();
         RJSGetInternal<realm::SharedRealm *>(_objects[realmId])->get()->begin_transaction();
-        return nil;
+        return json::object();
     };
-    _requests["/cancel_transaction"] = [=](const json dict) {
+    _requests["/cancel_transaction"] = [this](const json dict) {
         RPCObjectID realmId = dict["realmId"].get<RPCObjectID>();
         RJSGetInternal<realm::SharedRealm *>(_objects[realmId])->get()->cancel_transaction();
-        return nil;
+        return json::object();
     };
-    _requests["/commit_transaction"] = [=](const json dict) {
+    _requests["/commit_transaction"] = [this](const json dict) {
         RPCObjectID realmId = dict["realmId"].get<RPCObjectID>();
         RJSGetInternal<realm::SharedRealm *>(_objects[realmId])->get()->commit_transaction();
-        return nil;
+        return json::object();
     };
-    _requests["/call_method"] = [=](const json dict) {
+    _requests["/call_method"] = [this](const json dict) {
         JSObjectRef object = _objects[dict["id"].get<RPCObjectID>()];
         JSStringRef methodString = RJSStringForString(dict["name"].get<std::string>());
         JSObjectRef function = RJSValidatedObjectProperty(_context, object, methodString);
@@ -114,11 +114,11 @@ RPCServer::RPCServer() {
         JSValueRef result = JSObjectCallAsFunction(_context, function, object, argCount, argValues, &exception);
 
         if (exception) {
-            return (json){"error", RJSStringForValue(_context, exception)};
+            return (json){{"error", RJSStringForValue(_context, exception)}};
         }
-        return (json){"result", serialize_json_value(result)};
+        return (json){{"result", serialize_json_value(result)}};
     };
-    _requests["/get_property"] = [=](const json dict) {
+    _requests["/get_property"] = [this](const json dict) {
         RPCObjectID oid = dict["id"].get<RPCObjectID>();
         json name = dict["name"];
         JSValueRef value = NULL;
@@ -134,11 +134,11 @@ RPCServer::RPCServer() {
         }
 
         if (exception) {
-            return (json){"error", RJSStringForValue(_context, exception)};
+            return (json){{"error", RJSStringForValue(_context, exception)}};
         }
-        return (json){"result", serialize_json_value(value)};
+        return (json){{"result", serialize_json_value(value)}};
     };
-    _requests["/set_property"] = [=](const json dict) {
+    _requests["/set_property"] = [this](const json dict) {
         RPCObjectID oid = dict["id"].get<RPCObjectID>();
         json name = dict["name"];
         JSValueRef value = deserialize_json_value(dict["value"]);
@@ -154,17 +154,17 @@ RPCServer::RPCServer() {
         }
 
         if (exception) {
-            return json({"error", RJSStringForValue(_context, exception)});
+            return (json){{"error", RJSStringForValue(_context, exception)}};
         }
-        return json({});
+        return json::object();
     };
-    _requests["/dispose_object"] = [=](const json dict) {
+    _requests["/dispose_object"] = [this](const json dict) {
         RPCObjectID oid = dict["id"].get<RPCObjectID>();
         JSValueUnprotect(_context, _objects[oid]);
         _objects.erase(oid);
-        return nil;
+        return json::object();
     };
-    _requests["/clear_test_state"] = [=](const json dict) {
+    _requests["/clear_test_state"] = [this](const json dict) {
         for (auto object : _objects) {
             // The session ID points to the Realm constructor object, which should remain.
             if (object.first == _sessionID) {
@@ -176,7 +176,7 @@ RPCServer::RPCServer() {
         }
         JSGarbageCollect(_context);
         [RealmJS clearTestState];
-        return nil;
+        return json::object();
     };
 }
 
@@ -188,25 +188,26 @@ RPCServer::~RPCServer() {
     JSGlobalContextRelease(_context);
 }
 
-json RPCServer::perform_request(std::string name, const json args) {
+json RPCServer::perform_request(std::string name, json &args) {
     // perform all realm ops on the main thread
-    RPCRequest action = _requests[name];
-    assert(action);
-
     __block json response;
     dispatch_sync(dispatch_get_main_queue(), ^{
-        if (_sessionID != args["sessionId"].get<RPCObjectID>()) {
-            response = {"error", "Invalid session ID"};
-            return;
-        }
-
         try {
-            response = action(args);
+            RPCRequest action = _requests[name];
+            assert(action);
+
+            if (name == "/create_session" || _sessionID == args["sessionId"].get<RPCObjectID>()) {
+                response = action(args);
+                assert(response.is_object());
+            }
+            else {
+                response = {{"error", "Invalid session ID"}};
+            }
         } catch (std::exception &exception) {
-            response = {"error", (std::string)"exception thrown: " + exception.what()};
+            response = {{"error", (std::string)"exception thrown: " + exception.what()}};
         }
     });
-    return response ?: json();
+    return response;
 }
 
 RPCObjectID RPCServer::store_object(JSObjectRef object) {
@@ -220,15 +221,15 @@ RPCObjectID RPCServer::store_object(JSObjectRef object) {
 json RPCServer::serialize_json_value(JSValueRef value) {
     switch (JSValueGetType(_context, value)) {
         case kJSTypeUndefined:
-            return {};
+            return json::object();
         case kJSTypeNull:
-            return {"value", json(nullptr)};
+            return {{"value", json(nullptr)}};
         case kJSTypeBoolean:
-            return {"value", JSValueToBoolean(_context, value)};
+            return {{"value", JSValueToBoolean(_context, value)}};
         case kJSTypeNumber:
-            return {"value", JSValueToNumber(_context, value, NULL)};
+            return {{"value", JSValueToNumber(_context, value, NULL)}};
         case kJSTypeString:
-            return {"value", RJSStringForValue(_context, value).c_str()};
+            return {{"value", RJSStringForValue(_context, value).c_str()}};
         case kJSTypeObject:
             break;
     }
@@ -238,33 +239,33 @@ json RPCServer::serialize_json_value(JSValueRef value) {
     if (JSValueIsObjectOfClass(_context, value, RJSObjectClass())) {
         realm::Object *object = RJSGetInternal<realm::Object *>(jsObject);
         return {
-            "type", RJSTypeGet(realm::PropertyTypeObject).c_str(),
-            "id", store_object(jsObject),
-            "schema", serialize_object_schema(object->object_schema)
+            {"type", RJSTypeGet(realm::PropertyTypeObject).c_str()},
+            {"id", store_object(jsObject)},
+            {"schema", serialize_object_schema(object->object_schema)}
         };
     }
     else if (JSValueIsObjectOfClass(_context, value, RJSListClass())) {
         realm::List *list = RJSGetInternal<realm::List *>(jsObject);
         return {
-            "type", RJSTypeGet(realm::PropertyTypeArray),
-            "id", store_object(jsObject),
-            "size", list->link_view->size(),
-            "schema", serialize_object_schema(list->object_schema)
+            {"type", RJSTypeGet(realm::PropertyTypeArray)},
+            {"id", store_object(jsObject)},
+            {"size", list->link_view->size()},
+            {"schema", serialize_object_schema(list->object_schema)}
          };
     }
     else if (JSValueIsObjectOfClass(_context, value, RJSResultsClass())) {
         realm::Results *results = RJSGetInternal<realm::Results *>(jsObject);
         return {
-            "type", RealmObjectTypesResults,
-            "id", store_object(jsObject),
-            "size", results->size(),
-            "schema", serialize_object_schema(results->object_schema)
+            {"type", RealmObjectTypesResults},
+            {"id", store_object(jsObject)},
+            {"size", results->size()},
+            {"schema", serialize_object_schema(results->object_schema)}
         };
     }
     else if (JSValueIsObjectOfClass(_context, value, RJSNotificationClass())) {
         return {
-            "type", RealmObjectTypesNotification,
-            "id", store_object(jsObject),
+            {"type", RealmObjectTypesNotification},
+            {"id", store_object(jsObject)},
         };
     }
     else if (RJSIsValueArray(_context, value)) {
@@ -273,65 +274,64 @@ json RPCServer::serialize_json_value(JSValueRef value) {
         for (unsigned int i = 0; i < length; i++) {
             array.push_back(serialize_json_value(JSObjectGetPropertyAtIndex(_context, jsObject, i, NULL)));
         }
-        return {"value", array};
+        return {{"value", array}};
     }
     else if (RJSIsValueDate(_context, value)) {
         return {
-            "type", RJSTypeGet(realm::PropertyTypeDate),
-            "value", RJSValidatedValueToNumber(_context, value),
+            {"type", RJSTypeGet(realm::PropertyTypeDate)},
+            {"value", RJSValidatedValueToNumber(_context, value)},
         };
     }
     assert(0);
 }
 
 json RPCServer::serialize_object_schema(realm::ObjectSchema &objectSchema) {
-    json properties({});
+    json properties = json::array();
     for (realm::Property prop : objectSchema.properties) {
         properties.push_back({
-            "name", prop.name,
-            "type", RJSTypeGet(prop.type),
+            {"name", prop.name},
+            {"type", RJSTypeGet(prop.type)},
         });
     }
 
     return {
-        "name", objectSchema.name,
-        "properties", properties,
+        {"name", objectSchema.name},
+        {"properties", properties},
     };
 }
 
 JSValueRef RPCServer::deserialize_json_value(const json dict)
 {
-    RPCObjectID oid = dict["id"].get<long>();
-    if (oid) {
-        return _objects[oid];
+    json oid = dict["id"];
+    if (oid.is_number()) {
+        return _objects[oid.get<RPCObjectID>()];
     }
 
-    std::string type = dict["type"].get<std::string>();
     json value = dict["value"];
+    json type = dict["type"];
+    if (type.is_string()) {
+        std::string type_string = type.get<std::string>();
+        if (type_string == RealmObjectTypesFunction) {
+            // FIXME: Make this actually call the function by its id once we need it to.
+            JSStringRef jsBody = JSStringCreateWithUTF8CString("");
+            JSObjectRef jsFunction = JSObjectMakeFunction(_context, NULL, 0, NULL, jsBody, NULL, 1, NULL);
+            JSStringRelease(jsBody);
 
-    if (type == RealmObjectTypesFunction) {
-        // FIXME: Make this actually call the function by its id once we need it to.
-        JSStringRef jsBody = JSStringCreateWithUTF8CString("");
-        JSObjectRef jsFunction = JSObjectMakeFunction(_context, NULL, 0, NULL, jsBody, NULL, 1, NULL);
-        JSStringRelease(jsBody);
-
-        return jsFunction;
-    }
-    else if (type == RJSTypeGet(realm::PropertyTypeDate)) {
-        JSValueRef exception = NULL;
-        JSValueRef time = JSValueMakeNumber(_context, value.get<double>());
-        JSObjectRef date = JSObjectMakeDate(_context, 1, &time, &exception);
-
-        if (exception) {
-            throw RJSException(_context, exception);
+            return jsFunction;
         }
-        return date;
+        else if (type_string == RJSTypeGet(realm::PropertyTypeDate)) {
+            JSValueRef exception = NULL;
+            JSValueRef time = JSValueMakeNumber(_context, value.get<double>());
+            JSObjectRef date = JSObjectMakeDate(_context, 1, &time, &exception);
+
+            if (exception) {
+                throw RJSException(_context, exception);
+            }
+            return date;
+        }
     }
 
-    if (!value) {
-        return JSValueMakeUndefined(_context);
-    }
-    else if (value.is_null()) {
+    if (value.is_null()) {
         return JSValueMakeNull(_context);
     }
     else if (value.is_boolean()) {
