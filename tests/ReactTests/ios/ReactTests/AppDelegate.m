@@ -1,61 +1,68 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- */
+////////////////////////////////////////////////////////////////////////////
+//
+// Copyright 2015 Realm Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+////////////////////////////////////////////////////////////////////////////
 
 #import "AppDelegate.h"
-
 #import "RCTRootView.h"
 
 @implementation AppDelegate
 
-- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
-{
-  NSURL *jsCodeLocation;
+- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+    NSURL *jsCodeLocation;
 
-  /**
-   * Loading JavaScript code - uncomment the one you want.
-   *
-   * OPTION 1
-   * Load from development server. Start the server from the repository root:
-   *
-   * $ npm start
-   *
-   * To run on device, change `localhost` to the IP address of your computer
-   * (you can get this by typing `ifconfig` into the terminal and selecting the
-   * `inet` value under `en0:`) and make sure your computer and iOS device are
-   * on the same Wi-Fi network.
-   */
+    /**
+     * Loading JavaScript code - uncomment the one you want.
+     *
+     * OPTION 1
+     * Load from development server. Start the server from the repository root:
+     *
+     * $ npm start
+     *
+     * To run on device, change `localhost` to the IP address of your computer
+     * (you can get this by typing `ifconfig` into the terminal and selecting the
+     * `inet` value under `en0:`) and make sure your computer and iOS device are
+     * on the same Wi-Fi network.
+     */
 
-  jsCodeLocation = [NSURL URLWithString:@"http://localhost:8081/index.ios.bundle?platform=ios"];
+    jsCodeLocation = [NSURL URLWithString:@"http://localhost:8081/index.ios.bundle?platform=ios"];
 
-  /**
-   * OPTION 2
-   * Load from pre-bundled file on disk. To re-generate the static bundle
-   * from the root of your project directory, run
-   *
-   * $ react-native bundle --minify
-   *
-   * see http://facebook.github.io/react-native/docs/runningondevice.html
-   */
+    /**
+     * OPTION 2
+     * Load from pre-bundled file on disk. To re-generate the static bundle
+     * from the root of your project directory, run
+     *
+     * $ react-native bundle --minify
+     *
+     * see http://facebook.github.io/react-native/docs/runningondevice.html
+     */
 
-//   jsCodeLocation = [[NSBundle mainBundle] URLForResource:@"main" withExtension:@"jsbundle"];
+    //   jsCodeLocation = [[NSBundle mainBundle] URLForResource:@"main" withExtension:@"jsbundle"];
 
-  RCTRootView *rootView = [[RCTRootView alloc] initWithBundleURL:jsCodeLocation
-                                                      moduleName:@"ReactTests"
-                                               initialProperties:nil
-                                                   launchOptions:launchOptions];
+    RCTRootView *rootView = [[RCTRootView alloc] initWithBundleURL:jsCodeLocation
+                                                        moduleName:@"ReactTests"
+                                                 initialProperties:nil
+                                                     launchOptions:launchOptions];
 
-  self.window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
-  UIViewController *rootViewController = [[UIViewController alloc] init];
-  rootViewController.view = rootView;
-  self.window.rootViewController = rootViewController;
-  [self.window makeKeyAndVisible];
-  return YES;
+    self.window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
+    UIViewController *rootViewController = [[UIViewController alloc] init];
+    rootViewController.view = rootView;
+    self.window.rootViewController = rootViewController;
+    [self.window makeKeyAndVisible];
+    return YES;
 }
 
 @end
