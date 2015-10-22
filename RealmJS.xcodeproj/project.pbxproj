@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		02258FB31BC6E2D00075F13A /* RealmRPC.h in Headers */ = {isa = PBXBuildFile; fileRef = 02258FB11BC6E2D00075F13A /* RealmRPC.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		02258FB31BC6E2D00075F13A /* RealmRPC.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 02258FB11BC6E2D00075F13A /* RealmRPC.hpp */; settings = {ATTRIBUTES = (Public, ); }; };
 		02258FB41BC6E2D00075F13A /* RealmRPC.mm in Sources */ = {isa = PBXBuildFile; fileRef = 02258FB21BC6E2D00075F13A /* RealmRPC.mm */; };
 		02409DC21BCF11D6005F3B3E /* RealmJSCoreTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 02409DC11BCF11D6005F3B3E /* RealmJSCoreTests.m */; settings = {ASSET_TAGS = (); }; };
 		02601F031BA0F0C4007C91FF /* external_commit_helper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02601F011BA0F0C4007C91FF /* external_commit_helper.cpp */; };
@@ -156,7 +156,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		02258FB11BC6E2D00075F13A /* RealmRPC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RealmRPC.h; path = src/RealmRPC.h; sourceTree = "<group>"; };
+		02258FB11BC6E2D00075F13A /* RealmRPC.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = RealmRPC.hpp; path = src/RealmRPC.hpp; sourceTree = "<group>"; };
 		02258FB21BC6E2D00075F13A /* RealmRPC.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = RealmRPC.mm; path = src/RealmRPC.mm; sourceTree = "<group>"; };
 		02409DC11BCF11D6005F3B3E /* RealmJSCoreTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = RealmJSCoreTests.m; path = tests/RealmJSCoreTests.m; sourceTree = SOURCE_ROOT; };
 		02601F011BA0F0C4007C91FF /* external_commit_helper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = external_commit_helper.cpp; path = "src/object-store/apple/external_commit_helper.cpp"; sourceTree = "<group>"; };
@@ -276,7 +276,7 @@
 				02601F071BA0F0CD007C91FF /* realm_delegate.hpp */,
 				0270BC3E1B7CFC0D00010E03 /* RealmJS.h */,
 				0270BC3F1B7CFC0D00010E03 /* RealmJS.mm */,
-				02258FB11BC6E2D00075F13A /* RealmRPC.h */,
+				02258FB11BC6E2D00075F13A /* RealmRPC.hpp */,
 				02258FB21BC6E2D00075F13A /* RealmRPC.mm */,
 				0270BC401B7CFC0D00010E03 /* RJSList.cpp */,
 				0270BC411B7CFC0D00010E03 /* RJSList.hpp */,
@@ -387,7 +387,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				0270BC4C1B7CFC0D00010E03 /* RealmJS.h in Headers */,
-				02258FB31BC6E2D00075F13A /* RealmRPC.h in Headers */,
+				02258FB31BC6E2D00075F13A /* RealmRPC.hpp in Headers */,
 				0270BC4F1B7CFC0D00010E03 /* RJSList.hpp in Headers */,
 				0270BC541B7CFC0D00010E03 /* RJSResults.hpp in Headers */,
 				0270BC581B7CFC0D00010E03 /* RJSUtil.hpp in Headers */,
@@ -706,6 +706,7 @@
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
 					"$(SRCROOT)/examples/ReactExample/node_modules/react-native/React/",
 					"$(SRCROOT)/tests/ReactTests/node_modules/react-native/React/",
+					"$(SRCROOT)/vendor",
 				);
 				INFOPLIST_FILE = src/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
@@ -739,6 +740,7 @@
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
 					"$(SRCROOT)/examples/ReactExample/node_modules/react-native/React/",
 					"$(SRCROOT)/tests/ReactTests/node_modules/react-native/React/",
+					"$(SRCROOT)/vendor",
 				);
 				INFOPLIST_FILE = src/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
@@ -772,6 +774,7 @@
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
 					"$(SRCROOT)/examples/ReactExample/node_modules/react-native/React/",
 					"$(SRCROOT)/tests/ReactTests/node_modules/react-native/React/",
+					"$(SRCROOT)/vendor",
 				);
 				INFOPLIST_FILE = src/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
@@ -902,6 +905,7 @@
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
+					"$(SRCROOT)/vendor",
 				);
 				INFOPLIST_FILE = src/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
@@ -935,6 +939,7 @@
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
+					"$(SRCROOT)/vendor",
 				);
 				INFOPLIST_FILE = src/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
@@ -966,6 +971,7 @@
 					"DEBUG=1",
 					"$(inherited)",
 				);
+				HEADER_SEARCH_PATHS = "";
 				INFOPLIST_FILE = tests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
@@ -987,6 +993,7 @@
 					"$(inherited)",
 					build/iOS,
 				);
+				HEADER_SEARCH_PATHS = "";
 				INFOPLIST_FILE = tests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
@@ -1068,6 +1075,7 @@
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
+					"$(SRCROOT)/vendor",
 				);
 				INFOPLIST_FILE = src/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
@@ -1099,6 +1107,7 @@
 					"DEBUG=1",
 					"$(inherited)",
 				);
+				HEADER_SEARCH_PATHS = "";
 				INFOPLIST_FILE = tests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
