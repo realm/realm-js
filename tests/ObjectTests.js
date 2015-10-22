@@ -73,9 +73,51 @@ module.exports = BaseTest.extend({
             TestCase.assertThrows(function() {
                 obj.boolCol = 'cat';
             });
-
             TestCase.assertThrows(function() {
                 obj.intCol = 'dog';
+            });
+
+            TestCase.assertThrows(function() {
+                obj.boolCol = null;
+            });
+            TestCase.assertThrows(function() {
+                obj.boolCol = undefined;
+            });
+            TestCase.assertThrows(function() {
+                obj.intCol = null;
+            });
+            TestCase.assertThrows(function() {
+                obj.intCol = undefined;
+            });
+            TestCase.assertThrows(function() {
+                obj.floatCol = null;
+            });
+            TestCase.assertThrows(function() {
+                obj.floatCol = undefined;
+            });
+            TestCase.assertThrows(function() {
+                obj.doubleCol = null;
+            });
+            TestCase.assertThrows(function() {
+                obj.doubleCol = undefined;
+            });
+            TestCase.assertThrows(function() {
+                obj.stringCol = null;
+            });
+            TestCase.assertThrows(function() {
+                obj.stringCol = undefined;
+            });
+            TestCase.assertThrows(function() {
+                obj.dateCol = null;
+            });
+            TestCase.assertThrows(function() {
+                obj.dateCol = undefined;
+            });          
+            TestCase.assertThrows(function() {
+                obj.dataCol = null;
+            });
+            TestCase.assertThrows(function() {
+                obj.dataCol = undefined;
             });
         });
 
