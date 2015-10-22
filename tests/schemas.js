@@ -53,6 +53,19 @@ exports.BasicTypes = {
     ]
 };
 
+exports.NullableBasicTypes = {
+    name: 'NullableBasicTypes',
+    properties: [
+        {name: 'boolCol',   type: Realm.Types.BOOL,   optional: true},
+        {name: 'intCol',    type: Realm.Types.INT,    optional: true},
+        {name: 'floatCol',  type: Realm.Types.FLOAT,  optional: true},
+        {name: 'doubleCol', type: Realm.Types.DOUBLE, optional: true},
+        {name: 'stringCol', type: Realm.Types.STRING, optional: true},
+        {name: 'dateCol',   type: Realm.Types.DATE,   optional: true},
+        {name: 'dataCol',   type: Realm.Types.DATA,   optional: true},
+    ]
+};
+
 exports.LinkTypes = {
     name: 'LinkTypesObject',
     properties: [

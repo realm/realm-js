@@ -47,6 +47,19 @@ module.exports = BaseTest.extend({
 
         TestCase.assertEqual(object.nonexistent, undefined);
     },
+    testNullableBasicTypesPropertyGetters: function() {
+        var basicTypesValues = [null, null, null, null, null, null, null];
+        var realm = new Realm({schema: [schemas.NullableBasicTypes]});
+        var object = null;
+        realm.write(function() {
+            object = realm.create('NullableBasicTypesObject', basicTypesValues);
+        });
+
+        for (var i = 0; i < schemas.BasicTypes.properties.length; i++) {
+            var prop = schemas.BasicTypes.properties[i];
+            TestCase.assertEqual(object[prop.name], null);
+        }
+    },
     testBasicTypesPropertySetters: function() {
         var basicTypesValues = [true, 1, 1.1, 1.11, 'string', new Date(1), 'DATA'];
         var realm = new Realm({schema: [schemas.BasicTypes]});

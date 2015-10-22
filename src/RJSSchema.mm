@@ -49,9 +49,19 @@ static inline Property RJSParseProperty(JSContextRef ctx, JSObjectRef propertyOb
     static JSStringRef nameString = JSStringCreateWithUTF8CString("name");
     static JSStringRef typeString = JSStringCreateWithUTF8CString("type");
     static JSStringRef objectTypeString = JSStringCreateWithUTF8CString("objectType");
+    static JSStringRef optionalString = JSStringCreateWithUTF8CString("optional");
 
     Property prop;
     prop.name = RJSValidatedStringProperty(ctx, propertyObject, nameString);
+
+    prop.is_nullable = false;
+    JSValueRef optionalValue = JSObjectGetProperty(ctx, propertyObject, optionalString, NULL);
+    if (!JSValueIsUndefined(ctx, optionalValue)) {
+        if (!JSValueIsBoolean(ctx, optionalValue)) {
+            throw std::runtime_error("Property expected to be of type boolean");
+        }
+        prop.is_nullable = JSValueToBoolean(ctx, optionalValue);
+    }
 
     std::string type = RJSValidatedStringProperty(ctx, propertyObject, typeString);
     if (type == "PropTypesBOOL") {
@@ -75,19 +85,14 @@ static inline Property RJSParseProperty(JSContextRef ctx, JSObjectRef propertyOb
     else if (type == "PropTypesDATA") {
         prop.type = PropertyTypeData;
     }
-    else if (type == "PropTypesOBJECT") {
-        prop.type = PropertyTypeObject;
-        prop.object_type =  RJSValidatedStringProperty(ctx, propertyObject, objectTypeString);
-        prop.is_nullable = true;
-    }
     else if (type == "PropTypesLIST") {
         prop.type = PropertyTypeArray;
         prop.object_type =  RJSValidatedStringProperty(ctx, propertyObject, objectTypeString);
     }
     else {
         prop.type = PropertyTypeObject;
-        prop.object_type = type;
         prop.is_nullable = true;
+        prop.object_type = type == "PropTypesOBJECT" ? RJSValidatedStringProperty(ctx, propertyObject, objectTypeString) : type;
     }
     return prop;
 }
