@@ -409,9 +409,9 @@
 			productReference = 00E356EE1AD99517003FC87E /* RealmReactTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
-		13B07F861A680F5B00A75B9A /* ReactTests */ = {
+		13B07F861A680F5B00A75B9A /* ReactTestApp */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "ReactTests" */;
+			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "ReactTestApp" */;
 			buildPhases = (
 				F65C4BCA1BC72C5A000A1793 /* ShellScript */,
 				13B07F871A680F5B00A75B9A /* Sources */,
@@ -424,7 +424,7 @@
 			dependencies = (
 				F6F405B81BCE55FB00A1E24F /* PBXTargetDependency */,
 			);
-			name = ReactTests;
+			name = ReactTestApp;
 			productName = "Hello World";
 			productReference = 13B07F961A680F5B00A75B9A /* ReactTests.app */;
 			productType = "com.apple.product-type.application";
@@ -507,7 +507,7 @@
 			);
 			projectRoot = "";
 			targets = (
-				13B07F861A680F5B00A75B9A /* ReactTests */,
+				13B07F861A680F5B00A75B9A /* ReactTestApp */,
 				00E356ED1AD99517003FC87E /* RealmReactTests */,
 			);
 		};
@@ -674,7 +674,7 @@
 /* Begin PBXTargetDependency section */
 		00E356F51AD99517003FC87E /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 13B07F861A680F5B00A75B9A /* ReactTests */;
+			target = 13B07F861A680F5B00A75B9A /* ReactTestApp */;
 			targetProxy = 00E356F41AD99517003FC87E /* PBXContainerItemProxy */;
 		};
 		F6F405B81BCE55FB00A1E24F /* PBXTargetDependency */ = {
@@ -859,7 +859,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "ReactTests" */ = {
+		13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "ReactTestApp" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				13B07F941A680F5B00A75B9A /* Debug */,

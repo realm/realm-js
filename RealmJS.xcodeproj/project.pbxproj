@@ -124,6 +124,20 @@
 			remoteGlobalIDString = 02B58CB01AE99CEC009B348C;
 			remoteInfo = RealmJS;
 		};
+		02EE6D891BD87E310016A82E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 02EE6D781BD87E310016A82E /* ReactTests.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 13B07F961A680F5B00A75B9A;
+			remoteInfo = ReactTests;
+		};
+		02EE6D8B1BD87E310016A82E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 02EE6D781BD87E310016A82E /* ReactTests.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 00E356EE1AD99517003FC87E;
+			remoteInfo = RealmReactTests;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -198,6 +212,7 @@
 		02C0864C1BCDB27000942F9C /* list.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = list.cpp; path = "src/object-store/list.cpp"; sourceTree = "<group>"; };
 		02C0864D1BCDB27000942F9C /* list.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = list.hpp; path = "src/object-store/list.hpp"; sourceTree = "<group>"; };
 		02D456D91B7E59A500EE1299 /* ArrayTests.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; name = ArrayTests.js; path = tests/ArrayTests.js; sourceTree = SOURCE_ROOT; };
+		02EE6D781BD87E310016A82E /* ReactTests.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = ReactTests.xcodeproj; path = tests/ReactTests/ios/ReactTests.xcodeproj; sourceTree = "<group>"; };
 		F64E1EF01BC3510E00E0E150 /* util.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; name = util.js; path = tests/util.js; sourceTree = SOURCE_ROOT; };
 		F68A278A1BC2722A0063D40A /* RJSModuleLoader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RJSModuleLoader.h; path = tests/RJSModuleLoader.h; sourceTree = SOURCE_ROOT; };
 		F68A278B1BC2722A0063D40A /* RJSModuleLoader.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = RJSModuleLoader.m; path = tests/RJSModuleLoader.m; sourceTree = SOURCE_ROOT; };
@@ -305,6 +320,7 @@
 			isa = PBXGroup;
 			children = (
 				02A3C7841BC4317A00B1A7BE /* GCDWebServer.xcodeproj */,
+				02EE6D781BD87E310016A82E /* ReactTests.xcodeproj */,
 				02B58CCF1AE99D8C009B348C /* Frameworks */,
 				0270BC3D1B7CFBFD00010E03 /* RealmJS */,
 				02B58CC01AE99CEC009B348C /* RealmJSTests */,
@@ -352,6 +368,15 @@
 				02B58CCD1AE99D4D009B348C /* JavaScriptCore.framework */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		02EE6D791BD87E310016A82E /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				02EE6D8A1BD87E310016A82E /* ReactTests.app */,
+				02EE6D8C1BD87E310016A82E /* RealmReactTests.xctest */,
+			);
+			name = Products;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -487,6 +512,10 @@
 					ProductGroup = 02A3C7851BC4317A00B1A7BE /* Products */;
 					ProjectRef = 02A3C7841BC4317A00B1A7BE /* GCDWebServer.xcodeproj */;
 				},
+				{
+					ProductGroup = 02EE6D791BD87E310016A82E /* Products */;
+					ProjectRef = 02EE6D781BD87E310016A82E /* ReactTests.xcodeproj */;
+				},
 			);
 			projectRoot = "";
 			targets = (
@@ -533,6 +562,20 @@
 			remoteRef = 02A3C7951BC4317A00B1A7BE /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
+		02EE6D8A1BD87E310016A82E /* ReactTests.app */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.application;
+			path = ReactTests.app;
+			remoteRef = 02EE6D891BD87E310016A82E /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		02EE6D8C1BD87E310016A82E /* RealmReactTests.xctest */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.cfbundle;
+			path = RealmReactTests.xctest;
+			remoteRef = 02EE6D8B1BD87E310016A82E /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
 /* End PBXReferenceProxy section */
 
 /* Begin PBXResourcesBuildPhase section */
@@ -574,7 +617,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = ": ${REALM_CORE_VERSION:=0.92.1.1} # set to \"current\" to always use the current build\n\necho \"Downloading dependency: core ${REALM_CORE_VERSION}\"\nTMP_DIR=\"$TMPDIR/core_bin\"\nmkdir -p \"${TMP_DIR}\"\nCORE_TMP_TAR=\"${TMP_DIR}/core-${REALM_CORE_VERSION}.tar.bz2.tmp\"\nCORE_TAR=\"${TMP_DIR}/core-${REALM_CORE_VERSION}.tar.bz2\"\nif [ ! -f \"${CORE_TAR}\" ]; then\ncurl -f -L -s \"http://static.realm.io/downloads/core/realm-core-${REALM_CORE_VERSION}.tar.bz2\" -o \"${CORE_TMP_TAR}\" ||\n(echo \"Downloading core failed. Please try again once you have an Internet connection.\" && exit 1)\nmv \"${CORE_TMP_TAR}\" \"${CORE_TAR}\"\nfi\n\n(\ncd \"${TMP_DIR}\"\nrm -rf core\ntar xjf \"${CORE_TAR}\"\nmv core core-${REALM_CORE_VERSION}\n)\n\nrm -rf core-${REALM_CORE_VERSION} core\nmv ${TMP_DIR}/core-${REALM_CORE_VERSION} .\nln -s core-${REALM_CORE_VERSION} core";
+			shellScript = ": ${REALM_CORE_VERSION:=0.94.3} # set to \"current\" to always use the current build\n\necho \"Downloading dependency: core ${REALM_CORE_VERSION}\"\nTMP_DIR=\"$TMPDIR/core_bin\"\nmkdir -p \"${TMP_DIR}\"\nCORE_TMP_TAR=\"${TMP_DIR}/core-${REALM_CORE_VERSION}.tar.bz2.tmp\"\nCORE_TAR=\"${TMP_DIR}/core-${REALM_CORE_VERSION}.tar.bz2\"\nif [ ! -f \"${CORE_TAR}\" ]; then\ncurl -f -L -s \"http://static.realm.io/downloads/core/realm-core-${REALM_CORE_VERSION}.tar.bz2\" -o \"${CORE_TMP_TAR}\" ||\n(echo \"Downloading core failed. Please try again once you have an Internet connection.\" && exit 1)\nmv \"${CORE_TMP_TAR}\" \"${CORE_TAR}\"\nfi\n\n(\ncd \"${TMP_DIR}\"\nrm -rf core\ntar xjf \"${CORE_TAR}\"\nmv core core-${REALM_CORE_VERSION}\n)\n\nrm -rf core-${REALM_CORE_VERSION} core\nmv ${TMP_DIR}/core-${REALM_CORE_VERSION} .\nln -s core-${REALM_CORE_VERSION} core";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -870,7 +913,7 @@
 					"-isystem",
 					core/include,
 				);
-				OTHER_LDFLAGS = "-lrealm-ios";
+				OTHER_LDFLAGS = "-lrealm-ios-bitcode";
 				OTHER_LIBTOOLFLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = "io.realm.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -903,7 +946,7 @@
 					"-isystem",
 					core/include,
 				);
-				OTHER_LDFLAGS = "-lrealm-ios";
+				OTHER_LDFLAGS = "-lrealm-ios-bitcode";
 				OTHER_LIBTOOLFLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = "io.realm.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1036,7 +1079,7 @@
 					"-isystem",
 					core/include,
 				);
-				OTHER_LDFLAGS = "-lrealm-ios";
+				OTHER_LDFLAGS = "-lrealm-ios-bitcode";
 				OTHER_LIBTOOLFLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = "io.realm.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
