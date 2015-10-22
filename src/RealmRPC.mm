@@ -99,7 +99,7 @@ RPCServer::RPCServer() {
     };
     _requests["/call_method"] = [=](const json dict) {
         JSObjectRef object = _objects[dict["id"].get<RPCObjectID>()];
-        JSStringRef methodString = RJSStringForString(dict["name"].get<const char *>());
+        JSStringRef methodString = RJSStringForString(dict["name"].get<std::string>());
         JSObjectRef function = RJSValidatedObjectProperty(_context, object, methodString);
         JSStringRelease(methodString);
 
@@ -128,7 +128,7 @@ RPCServer::RPCServer() {
             value = JSObjectGetPropertyAtIndex(_context, _objects[oid], name.get<unsigned int>(), &exception);
         }
         else {
-            JSStringRef propString = RJSStringForString(name.get<const char *>());
+            JSStringRef propString = RJSStringForString(name.get<std::string>());
             value = JSObjectGetProperty(_context, _objects[oid], propString, &exception);
             JSStringRelease(propString);
         }
@@ -148,15 +148,15 @@ RPCServer::RPCServer() {
             JSObjectSetPropertyAtIndex(_context, _objects[oid], name.get<unsigned int>(), value, &exception);
         }
         else {
-            JSStringRef propString = RJSStringForString(name.get<const char *>());
+            JSStringRef propString = RJSStringForString(name.get<std::string>());
             JSObjectSetProperty(_context, _objects[oid], propString, value, 0, &exception);
             JSStringRelease(propString);
         }
 
         if (exception) {
-            return @{@"error": @(RJSStringForValue(_context, exception).c_str())};
+            return json({"error", RJSStringForValue(_context, exception)});
         }
-        return @{};
+        return json({});
     };
     _requests["/dispose_object"] = [=](const json dict) {
         RPCObjectID oid = dict["id"].get<RPCObjectID>();
@@ -188,7 +188,7 @@ RPCServer::~RPCServer() {
     JSGlobalContextRelease(_context);
 }
 
-json RPCServer::perform_request(const std::string &name, const json args) {
+json RPCServer::perform_request(std::string name, const json args) {
     // perform all realm ops on the main thread
     RPCRequest action = _requests[name];
     assert(action);
@@ -306,10 +306,10 @@ JSValueRef RPCServer::deserialize_json_value(const json dict)
         return _objects[oid];
     }
 
-    NSString *type = dict[@"type"];
-    id value = dict[@"value"];
+    std::string type = dict["type"].get<std::string>();
+    json value = dict["value"];
 
-    if ([type isEqualToString:@(RealmObjectTypesFunction)]) {
+    if (type == RealmObjectTypesFunction) {
         // FIXME: Make this actually call the function by its id once we need it to.
         JSStringRef jsBody = JSStringCreateWithUTF8CString("");
         JSObjectRef jsFunction = JSObjectMakeFunction(_context, NULL, 0, NULL, jsBody, NULL, 1, NULL);
@@ -317,9 +317,9 @@ JSValueRef RPCServer::deserialize_json_value(const json dict)
 
         return jsFunction;
     }
-    else if ([type isEqualToString:@(RJSTypeGet(realm::PropertyTypeDate).c_str())]) {
+    else if (type == RJSTypeGet(realm::PropertyTypeDate)) {
         JSValueRef exception = NULL;
-        JSValueRef time = JSValueMakeNumber(_context, [value doubleValue]);
+        JSValueRef time = JSValueMakeNumber(_context, value.get<double>());
         JSObjectRef date = JSObjectMakeDate(_context, 1, &time, &exception);
 
         if (exception) {
@@ -331,34 +331,34 @@ JSValueRef RPCServer::deserialize_json_value(const json dict)
     if (!value) {
         return JSValueMakeUndefined(_context);
     }
-    else if ([value isKindOfClass:[NSNull class]]) {
+    else if (value.is_null()) {
         return JSValueMakeNull(_context);
     }
-    else if ([value isKindOfClass:[@YES class]]) {
-        return JSValueMakeBoolean(_context, [value boolValue]);
+    else if (value.is_boolean()) {
+        return JSValueMakeBoolean(_context, value.get<bool>());
     }
-    else if ([value isKindOfClass:[NSNumber class]]) {
-        return JSValueMakeNumber(_context, [value doubleValue]);
+    else if (value.is_number()) {
+        return JSValueMakeNumber(_context, value.get<double>());
     }
-    else if ([value isKindOfClass:[NSString class]]) {
-        return RJSValueForString(_context, std::string([value UTF8String]));
+    else if (value.is_string()) {
+        return RJSValueForString(_context, value.get<std::string>());
     }
-    else if ([value isKindOfClass:[NSArray class]]) {
-        NSUInteger count = [value count];
+    else if (value.is_array()) {
+        size_t count = value.size();
         JSValueRef jsValues[count];
 
-        for (NSUInteger i = 0; i < count; i++) {
-            jsValues[i] = [self deserializeDictionaryValue:value[i]];
+        for (size_t i = 0; i < count; i++) {
+            jsValues[i] = deserialize_json_value(value.at(i));
         }
 
         return JSObjectMakeArray(_context, count, jsValues, NULL);
     }
-    else if ([value isKindOfClass:[NSDictionary class]]) {
+    else if (value.is_object()) {
         JSObjectRef jsObject = JSObjectMake(_context, NULL, NULL);
 
-        for (NSString *key in value) {
-            JSValueRef jsValue = [self deserializeDictionaryValue:value[key]];
-            JSStringRef jsKey = JSStringCreateWithCFString((__bridge CFStringRef)key);
+        for (json::iterator it = value.begin(); it != value.end(); ++it) {
+            JSValueRef jsValue = deserialize_json_value(it.value());
+            JSStringRef jsKey = JSStringCreateWithUTF8CString(it.key().c_str());
 
             JSObjectSetProperty(_context, jsObject, jsKey, jsValue, 0, NULL);
             JSStringRelease(jsKey);
@@ -369,5 +369,3 @@ JSValueRef RPCServer::deserialize_json_value(const json dict)
 
     return JSValueMakeUndefined(_context);
 }
-
-@end

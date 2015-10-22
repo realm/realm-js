@@ -18,7 +18,6 @@
 
 #import <Foundation/Foundation.h>
 #import <JavaScriptCore/JavaScriptCore.h>
-#import <RealmJS/RealmRPC.h>
 
 @interface RealmJS : NSObject
 

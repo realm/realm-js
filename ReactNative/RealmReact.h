@@ -16,8 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-@import Foundation;
-@import JavaScriptCore;
+#import <Foundation/Foundation.h>
+#import <JavaScriptCore/JavaScriptCore.h>
 
 extern JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executor, bool create);
 

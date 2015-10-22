@@ -35,7 +35,7 @@ class RPCServer {
   public:
     RPCServer();
     ~RPCServer();
-    json perform_request(const std::string &name, const json args);
+    json perform_request(std::string name, const json args);
 
   private:
     JSGlobalContextRef _context;

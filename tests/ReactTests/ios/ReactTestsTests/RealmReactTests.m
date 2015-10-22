@@ -41,7 +41,8 @@ static id<RCTJavaScriptExecutor> s_currentJavaScriptExecutor;
     }
 
     s_currentJavaScriptExecutor = [bridge valueForKey:@"javaScriptExecutor"];
-
+    assert(s_currentJavaScriptExecutor);
+    
     // FIXME: Remove this nonsense once the crashes go away when a test fails!
     JSGlobalContextRef ctx = RealmReactGetJSGlobalContextForExecutor(s_currentJavaScriptExecutor, false);
     if (ctx) {
