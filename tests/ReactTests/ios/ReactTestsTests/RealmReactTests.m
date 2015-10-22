@@ -40,6 +40,9 @@ static id<RCTJavaScriptExecutor> s_currentJavaScriptExecutor;
         exit(1);
     }
 
+    // Wait for the RCTDevMenu to handle this notification and act upon it.
+    [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.1]];
+
     s_currentJavaScriptExecutor = [bridge valueForKey:@"javaScriptExecutor"];
 
     // FIXME: Remove this nonsense once the crashes go away when a test fails!
@@ -66,43 +69,49 @@ static id<RCTJavaScriptExecutor> s_currentJavaScriptExecutor;
 }
 
 + (NSNotification *)waitForNotification:(NSString *)notificationName {
-    NSRunLoop *runLoop = [NSRunLoop currentRunLoop];
     NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
+    __block BOOL condition = NO;
     __block NSNotification *notification;
 
     id token = [nc addObserverForName:notificationName object:nil queue:[NSOperationQueue mainQueue] usingBlock:^(NSNotification *note) {
+        condition = YES;
         notification = note;
     }];
 
-    while (!notification) {
+    [self waitForCondition:&condition];
+    [nc removeObserver:token];
+
+    return notification;
+}
+
++ (void)waitForCondition:(BOOL *)condition {
+    NSRunLoop *runLoop = [NSRunLoop currentRunLoop];
+
+    while (!*condition) {
         @autoreleasepool {
             [runLoop runMode:NSDefaultRunLoopMode beforeDate:[NSDate distantFuture]];
         }
     }
-
-    [nc removeObserver:token];
-    return notification;
 }
 
 + (id)invokeMethod:(NSString *)method inModule:(NSString *)module error:(NSError * __strong *)outError {
     module = [NSString stringWithFormat:@"realm-tests/%@.js", module];
 
-    dispatch_group_t group = dispatch_group_create();
+    __block BOOL condition = NO;
     __block id result;
 
-    dispatch_group_enter(group);
-
     [s_currentJavaScriptExecutor executeJSCall:module method:method arguments:@[] callback:^(id json, NSError *error) {
-        result = json;
+        dispatch_async(dispatch_get_main_queue(), ^{
+            condition = YES;
+            result = json;
 
-        if (error && outError) {
-            *outError = error;
-        }
-
-        dispatch_group_leave(group);
+            if (error && outError) {
+                *outError = error;
+            }
+        });
     }];
 
-    dispatch_group_wait(group, DISPATCH_TIME_FOREVER);
+    [self waitForCondition:&condition];
 
     return result;
 }
