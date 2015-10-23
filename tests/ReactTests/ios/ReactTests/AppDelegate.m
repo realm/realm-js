@@ -19,29 +19,7 @@
 #import "AppDelegate.h"
 #import "RCTRootView.h"
 
-static NSString * const RealmReactEnableChromeDebuggingKey = @"RealmReactEnableChromeDebugging";
-static NSString * const RCTDevMenuKey = @"RCTDevMenu";
-
 @implementation AppDelegate
-
-- (BOOL)application:(UIApplication *)application willFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
-    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-
-    // Check if this default is explicitly set, otherwise just leave the settings as is.
-    if ([defaults objectForKey:RealmReactEnableChromeDebuggingKey]) {
-        NSMutableDictionary *settings = [([defaults dictionaryForKey:RCTDevMenuKey] ?: @{}) mutableCopy];
-        NSMutableDictionary *domain = [[defaults volatileDomainForName:NSArgumentDomain] mutableCopy];
-
-        settings[@"executorClass"] = [defaults boolForKey:RealmReactEnableChromeDebuggingKey] ? @"RCTWebSocketExecutor" : @"RCTContextExecutor";
-        domain[RCTDevMenuKey] = settings;
-
-        // Re-register the arguments domain (highest precedent and volatile) with our new overridden settings.
-        [defaults removeVolatileDomainForName:NSArgumentDomain];
-        [defaults setVolatileDomain:domain forName:NSArgumentDomain];
-    }
-
-    return YES;
-}
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     NSURL *jsCodeLocation;
