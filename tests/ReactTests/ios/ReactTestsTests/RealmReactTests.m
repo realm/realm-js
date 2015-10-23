@@ -147,6 +147,15 @@ extern void JSGlobalContextSetIncludesNativeCallStackWhenReportingExceptions(JSG
     __block id result;
 
     [executor executeJSCall:module method:method arguments:@[] callback:^(id json, NSError *error) {
+        // The React Native debuggerWorker.js very bizarrely returns an array five empty arrays to signify an error.
+        if ([json isKindOfClass:[NSArray class]] && [json isEqualToArray:@[@[], @[], @[], @[], @[]]]) {
+            json = nil;
+
+            if (!error) {
+                error = [NSError errorWithDomain:@"JS" code:1 userInfo:@{NSLocalizedDescriptionKey: @"unknown JS error"}];
+            }
+        }
+
         dispatch_async(dispatch_get_main_queue(), ^{
             condition = YES;
             result = json;
