@@ -16,13 +16,14 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+extern "C" {
 #import "RealmReact.h"
 #import "Base/RCTBridge.h"
 
-@import GCDWebServers;
-@import RealmJS;
-@import ObjectiveC;
-@import Darwin;
+#import <GCDWebServers/GCDWebServers.h>
+#import <RealmJS/RealmJS.h>
+#import <objc/runtime.h>
+#import <dlfcn.h>
 
 @interface NSObject (RCTJavaScriptContext)
 - (instancetype)initWithJSContext:(JSGlobalContextRef)context;
@@ -47,9 +48,13 @@ JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executor, bool cre
             NSLog(@"Failed to load RCTJavaScriptContext class");
         }
     }
-
+    
     return [rctJSContext ctx];
 }
+}
+
+#import <RealmJS/RealmRPC.hpp>
+#import <RealmJS/RJSUtil.hpp>
 
 @interface RealmReact () <RCTBridgeModule>
 @end
@@ -59,7 +64,7 @@ JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executor, bool cre
 @synthesize bridge = _bridge;
 
 + (void)load {
-    void (*RCTRegisterModule)(Class) = dlsym(RTLD_DEFAULT, "RCTRegisterModule");
+    void (*RCTRegisterModule)(Class) = (void (*)(Class))dlsym(RTLD_DEFAULT, "RCTRegisterModule");
 
     if (RCTRegisterModule) {
         RCTRegisterModule(self);
@@ -77,10 +82,14 @@ JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executor, bool cre
     _bridge = bridge;
 
     static GCDWebServer *s_webServer;
+    static realm_js::RPCServer *rpcServer;
+
     if (s_webServer) {
         [s_webServer stop];
         [s_webServer removeAllHandlers];
         s_webServer = nil;
+
+        delete rpcServer;
     }
 
     // The executor could be a RCTWebSocketExecutor, in which case it won't have a JS context.
@@ -89,23 +98,28 @@ JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executor, bool cre
     if ([executor isMemberOfClass:NSClassFromString(@"RCTWebSocketExecutor")]) {
         [GCDWebServer setLogLevel:3];
         GCDWebServer *webServer = [[GCDWebServer alloc] init];
-        RJSRPCServer *rpcServer = [[RJSRPCServer alloc] init];
+        rpcServer = new realm_js::RPCServer();
 
         // Add a handler to respond to POST requests on any URL
         [webServer addDefaultHandlerForMethod:@"POST"
                                  requestClass:[GCDWebServerDataRequest class]
                                  processBlock:^GCDWebServerResponse *(GCDWebServerRequest* request) {
-            NSError *error;
-            NSData *data = [(GCDWebServerDataRequest *)request data];
-            NSDictionary *json = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
             GCDWebServerResponse *response;
-
-            if (error || ![json isKindOfClass:[NSDictionary class]]) {
-                NSLog(@"Invalid RPC request - %@", error ?: json);
-                response = [GCDWebServerErrorResponse responseWithClientError:kGCDWebServerHTTPStatusCode_UnprocessableEntity underlyingError:error message:@"Invalid RPC request"];
+            try {
+                // perform all realm ops on the main thread
+                __block NSData *responseData;
+                dispatch_sync(dispatch_get_main_queue(), ^{
+                    realm_js::json args = realm_js::json::parse([[(GCDWebServerDataRequest *)request text] UTF8String]);
+                    std::string responseText = rpcServer->perform_request(request.path.UTF8String, args).dump();
+                    responseData = [NSData dataWithBytes:responseText.c_str() length:responseText.length()];
+                });
+                response = [[GCDWebServerDataResponse alloc] initWithData:responseData contentType:@"application/json"];
             }
-            else {
-                response = [GCDWebServerDataResponse responseWithJSONObject:[rpcServer performRequest:request.path args:json]];
+            catch(std::exception &ex) {
+                NSLog(@"Invalid RPC request - %@", [(GCDWebServerDataRequest *)request text]);
+                response = [GCDWebServerErrorResponse responseWithClientError:kGCDWebServerHTTPStatusCode_UnprocessableEntity
+                                                              underlyingError:nil
+                                                                      message:@"Invalid RPC request"];
             }
 
             [response setValue:@"http://localhost:8081" forAdditionalHeader:@"Access-Control-Allow-Origin"];
