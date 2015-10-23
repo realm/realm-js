@@ -26,8 +26,8 @@ extern "C" {
 #import <dlfcn.h>
 
 @interface NSObject (RCTJavaScriptContext)
-    - (instancetype)initWithJSContext:(JSGlobalContextRef)context;
-    - (JSGlobalContextRef)ctx;
+- (instancetype)initWithJSContext:(JSGlobalContextRef)context;
+- (JSGlobalContextRef)ctx;
 @end
 
 JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executor, bool create) {
@@ -116,7 +116,6 @@ JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executor, bool cre
                                                               underlyingError:nil
                                                                       message:@"Invalid RPC request"];
             }
-
 
             [response setValue:@"http://localhost:8081" forAdditionalHeader:@"Access-Control-Allow-Origin"];
             return response;

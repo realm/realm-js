@@ -38,10 +38,10 @@ class RPCServer {
     json perform_request(std::string name, json &args);
 
   private:
-    JSGlobalContextRef _context;
-    std::map<std::string, RPCRequest> _requests;
-    std::map<RPCObjectID, JSObjectRef> _objects;
-    RPCObjectID _sessionID;
+    JSGlobalContextRef m_context;
+    std::map<std::string, RPCRequest> m_requests;
+    std::map<RPCObjectID, JSObjectRef> m_objects;
+    RPCObjectID m_session_id;
 
     RPCObjectID store_object(JSObjectRef object);
 
