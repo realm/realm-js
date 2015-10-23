@@ -106,9 +106,14 @@ JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executor, bool cre
                                  processBlock:^GCDWebServerResponse *(GCDWebServerRequest* request) {
             GCDWebServerResponse *response;
             try {
-                realm_js::json args = realm_js::json::parse([[(GCDWebServerDataRequest *)request text] UTF8String]);
-                std::string response_text = rpcServer->perform_request(request.path.UTF8String, args).dump();
-                response = [[GCDWebServerDataResponse alloc] initWithData:[NSData dataWithBytes:response_text.c_str() length:response_text.length()] contentType:@"application/json"];
+                // perform all realm ops on the main thread
+                __block NSData *responseData;
+                dispatch_sync(dispatch_get_main_queue(), ^{
+                    realm_js::json args = realm_js::json::parse([[(GCDWebServerDataRequest *)request text] UTF8String]);
+                    std::string responseText = rpcServer->perform_request(request.path.UTF8String, args).dump();
+                    responseData = [NSData dataWithBytes:responseText.c_str() length:responseText.length()];
+                });
+                response = [[GCDWebServerDataResponse alloc] initWithData:responseData contentType:@"application/json"];
             }
             catch(std::exception &ex) {
                 NSLog(@"Invalid RPC request - %@", [(GCDWebServerDataRequest *)request text]);

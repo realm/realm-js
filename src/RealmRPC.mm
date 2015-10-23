@@ -146,8 +146,9 @@ RPCServer::RPCServer() {
             JSObjectSetPropertyAtIndex(m_context, m_objects[oid], name.get<unsigned int>(), value, &exception);
         }
         else {
-            static JSStringRef prop_string = RJSStringForString(name.get<std::string>());
+            JSStringRef prop_string = RJSStringForString(name.get<std::string>());
             JSObjectSetProperty(m_context, m_objects[oid], prop_string, value, 0, &exception);
+            JSStringRelease(prop_string);
         }
 
         if (exception) {
@@ -186,25 +187,19 @@ RPCServer::~RPCServer() {
 }
 
 json RPCServer::perform_request(std::string name, json &args) {
-    // perform all realm ops on the main thread
-    __block json response;
-    dispatch_sync(dispatch_get_main_queue(), ^{
-        try {
-            RPCRequest action = m_requests[name];
-            assert(action);
+    try {
+        RPCRequest action = m_requests[name];
+        assert(action);
 
-            if (name == "/create_session" || m_session_id == args["sessionId"].get<RPCObjectID>()) {
-                response = action(args);
-                assert(response.is_object());
-            }
-            else {
-                response = {{"error", "Invalid session ID"}};
-            }
-        } catch (std::exception &exception) {
-            response = {{"error", (std::string)"exception thrown: " + exception.what()}};
+        if (name == "/create_session" || m_session_id == args["sessionId"].get<RPCObjectID>()) {
+            return action(args);
         }
-    });
-    return response;
+        else {
+            return {{"error", "Invalid session ID"}};
+        }
+    } catch (std::exception &exception) {
+        return {{"error", (std::string)"exception thrown: " + exception.what()}};
+    }
 }
 
 RPCObjectID RPCServer::store_object(JSObjectRef object) {
