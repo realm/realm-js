@@ -923,7 +923,7 @@
 					"-isystem",
 					core/include,
 				);
-				OTHER_LDFLAGS = "-lrealm-ios-bitcode";
+				OTHER_LDFLAGS = "-lrealm-ios-no-bitcode";
 				OTHER_LIBTOOLFLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = "io.realm.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -958,7 +958,7 @@
 					"-isystem",
 					core/include,
 				);
-				OTHER_LDFLAGS = "-lrealm-ios-bitcode";
+				OTHER_LDFLAGS = "-lrealm-ios-no-bitcode";
 				OTHER_LIBTOOLFLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = "io.realm.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1097,7 +1097,7 @@
 					"-isystem",
 					core/include,
 				);
-				OTHER_LDFLAGS = "-lrealm-ios-bitcode";
+				OTHER_LDFLAGS = "-lrealm-ios-no-bitcode";
 				OTHER_LIBTOOLFLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = "io.realm.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
