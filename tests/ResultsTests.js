@@ -48,6 +48,28 @@ module.exports = BaseTest.extend({
         TestCase.assertEqual(people[2], undefined);
         TestCase.assertEqual(people[-1], undefined);
         TestCase.assertTrue(Object.getPrototypeOf(people[0]) === schemas.PersonObject.prototype);
+        TestCase.assertTrue(people[0] instanceof schemas.PersonObject);
+    },
+    testResultsReadonly: function() {
+        var realm = new Realm({schema: [schemas.TestObject]});
+        var objects = realm.objects('TestObject');
+
+        realm.write(function() {
+            realm.create('TestObject', [1]);
+        });
+
+        TestCase.assertThrows(function() {
+            objects[-1] = [0];
+        });
+        TestCase.assertThrows(function() {
+            objects[0] = [0];
+        });
+        TestCase.assertThrows(function() {
+            objects[1] = [0];
+        });
+        TestCase.assertThrows(function() {
+            objects.length = 0;
+        });
     },
     testResultsInvalidProperty: function() {
         var realm = new Realm({schema: [schemas.TestObject]});
@@ -73,11 +95,14 @@ module.exports = BaseTest.extend({
         });
 
         var count = 0;
-        for (var object in objects) {
-            count++;
-            //TestCase.assertTrue(object instanceof Object);
-        }    
-        TestCase.assertEqual(1, count);
+        var keys = Object.keys(objects);
+        for (var index in objects) {
+            TestCase.assertEqual(count++, +index);
+            TestCase.assertEqual(keys[index], index);
+        } 
+
+        TestCase.assertEqual(count, 1);
+        TestCase.assertEqual(keys.length, 1);
     },
     testSort: function() {
         var realm = new Realm({schema: [schemas.TestObject]});

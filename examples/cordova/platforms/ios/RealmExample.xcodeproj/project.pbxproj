@@ -159,7 +159,7 @@
 			children = (
 				021CDA2B1B9639C9002FADCE /* RealmJS.framework */,
 				021CDA2D1B9639C9002FADCE /* RealmJSTests.xctest */,
-				021CDA2F1B9639C9002FADCE /* libRealmReact.a */,
+				021CDA2F1B9639C9002FADCE /* RealmReact.framework */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -381,10 +381,10 @@
 			remoteRef = 021CDA2C1B9639C9002FADCE /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		021CDA2F1B9639C9002FADCE /* libRealmReact.a */ = {
+		021CDA2F1B9639C9002FADCE /* RealmReact.framework */ = {
 			isa = PBXReferenceProxy;
-			fileType = archive.ar;
-			path = libRealmReact.a;
+			fileType = wrapper.framework;
+			path = RealmReact.framework;
 			remoteRef = 021CDA2E1B9639C9002FADCE /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
@@ -506,7 +506,7 @@
 				GCC_THUMB_SUPPORT = NO;
 				GCC_VERSION = "";
 				INFOPLIST_FILE = "RealmExample/RealmExample-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				OTHER_LDFLAGS = (
 					"-weak_framework",
 					CoreFoundation,
@@ -535,7 +535,7 @@
 				GCC_THUMB_SUPPORT = NO;
 				GCC_VERSION = "";
 				INFOPLIST_FILE = "RealmExample/RealmExample-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				OTHER_LDFLAGS = (
 					"-weak_framework",
 					CoreFoundation,
@@ -577,7 +577,7 @@
 					"\"$(OBJROOT)/UninstalledProducts/include\"",
 					"\"$(BUILT_PRODUCTS_DIR)\"",
 				);
-				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = (
 					"-weak_framework",
@@ -621,7 +621,7 @@
 					"\"$(OBJROOT)/UninstalledProducts/include\"",
 					"\"$(BUILT_PRODUCTS_DIR)\"",
 				);
-				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				OTHER_LDFLAGS = (
 					"-weak_framework",
 					CoreFoundation,

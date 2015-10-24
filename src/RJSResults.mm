@@ -52,6 +52,24 @@ JSValueRef ResultsGetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef 
     }
 }
 
+bool ResultsSetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef value, JSValueRef *jsException) {
+    try {
+        std::string indexStr = RJSStringForJSString(propertyName);
+        if (indexStr != "length") {
+            std::stol(RJSStringForJSString(propertyName));
+        }
+
+        // attempts to assign to 'length' or an index should throw an exception
+        if (jsException) {
+            *jsException = RJSMakeError(ctx, "Results objects are readonly");
+        }
+    }
+    catch (std::invalid_argument &exp) {
+        // for stol failure this could be another property that is handled externally, so ignore
+    }
+    return false;
+}
+
 void ResultsPropertyNames(JSContextRef ctx, JSObjectRef object, JSPropertyNameAccumulatorRef propertyNames) {
     Results *results = RJSGetInternal<Results *>(object);
     char str[32];
@@ -124,6 +142,6 @@ static const JSStaticFunction RJSResultsFuncs[] = {
 };
 
 JSClassRef RJSResultsClass() {
-    static JSClassRef s_objectClass = RJSCreateWrapperClass<Results *>("Results", ResultsGetProperty, NULL, RJSResultsFuncs, ResultsPropertyNames);
+    static JSClassRef s_objectClass = RJSCreateWrapperClass<Results *>("Results", ResultsGetProperty, ResultsSetProperty, RJSResultsFuncs, ResultsPropertyNames);
     return s_objectClass;
 }
