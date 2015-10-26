@@ -619,7 +619,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = ": ${REALM_CORE_VERSION:=0.94.3} # set to \"current\" to always use the current build\n\necho \"Downloading dependency: core ${REALM_CORE_VERSION}\"\nTMP_DIR=\"$TMPDIR/core_bin\"\nmkdir -p \"${TMP_DIR}\"\nCORE_TMP_TAR=\"${TMP_DIR}/core-${REALM_CORE_VERSION}.tar.bz2.tmp\"\nCORE_TAR=\"${TMP_DIR}/core-${REALM_CORE_VERSION}.tar.bz2\"\nif [ ! -f \"${CORE_TAR}\" ]; then\ncurl -f -L -s \"http://static.realm.io/downloads/core/realm-core-${REALM_CORE_VERSION}.tar.bz2\" -o \"${CORE_TMP_TAR}\" ||\n(echo \"Downloading core failed. Please try again once you have an Internet connection.\" && exit 1)\nmv \"${CORE_TMP_TAR}\" \"${CORE_TAR}\"\nfi\n\n(\ncd \"${TMP_DIR}\"\nrm -rf core\ntar xjf \"${CORE_TAR}\"\nmv core core-${REALM_CORE_VERSION}\n)\n\nrm -rf core-${REALM_CORE_VERSION} core\nmv ${TMP_DIR}/core-${REALM_CORE_VERSION} .\nln -s core-${REALM_CORE_VERSION} core";
+			shellScript = ": ${REALM_CORE_VERSION:=0.94.0} # set to \"current\" to always use the current build\n\necho \"Downloading dependency: core ${REALM_CORE_VERSION}\"\nTMP_DIR=\"$TMPDIR/core_bin\"\nmkdir -p \"${TMP_DIR}\"\nCORE_TMP_TAR=\"${TMP_DIR}/core-${REALM_CORE_VERSION}.tar.bz2.tmp\"\nCORE_TAR=\"${TMP_DIR}/core-${REALM_CORE_VERSION}.tar.bz2\"\nif [ ! -f \"${CORE_TAR}\" ]; then\ncurl -f -L -s \"http://static.realm.io/downloads/core/realm-core-${REALM_CORE_VERSION}.tar.bz2\" -o \"${CORE_TMP_TAR}\" ||\n(echo \"Downloading core failed. Please try again once you have an Internet connection.\" && exit 1)\nmv \"${CORE_TMP_TAR}\" \"${CORE_TAR}\"\nfi\n\n(\ncd \"${TMP_DIR}\"\nrm -rf core\ntar xjf \"${CORE_TAR}\"\nmv core core-${REALM_CORE_VERSION}\n)\n\nrm -rf core-${REALM_CORE_VERSION} core\nmv ${TMP_DIR}/core-${REALM_CORE_VERSION} .\nln -s core-${REALM_CORE_VERSION} core";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -695,6 +695,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				ENABLE_BITCODE = NO;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)",
@@ -733,6 +734,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				ENABLE_BITCODE = NO;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)",
@@ -767,6 +769,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				ENABLE_BITCODE = NO;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)",
@@ -897,6 +900,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				ENABLE_BITCODE = NO;
 				FRAMEWORK_SEARCH_PATHS = "$(PROJECT_DIR)";
 				GCC_NO_COMMON_BLOCKS = NO;
 				GCC_PREPROCESSOR_DEFINITIONS = (
@@ -919,7 +923,7 @@
 					"-isystem",
 					core/include,
 				);
-				OTHER_LDFLAGS = "-lrealm-ios-bitcode";
+				OTHER_LDFLAGS = "-lrealm-ios-no-bitcode";
 				OTHER_LIBTOOLFLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = "io.realm.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -936,6 +940,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				ENABLE_BITCODE = NO;
 				FRAMEWORK_SEARCH_PATHS = "$(PROJECT_DIR)";
 				GCC_NO_COMMON_BLOCKS = NO;
 				HEADER_SEARCH_PATHS = (
@@ -953,7 +958,7 @@
 					"-isystem",
 					core/include,
 				);
-				OTHER_LDFLAGS = "-lrealm-ios-bitcode";
+				OTHER_LDFLAGS = "-lrealm-ios-no-bitcode";
 				OTHER_LIBTOOLFLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = "io.realm.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -964,6 +969,7 @@
 		02B58CCB1AE99CEC009B348C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ENABLE_BITCODE = NO;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(SDKROOT)/Developer/Library/Frameworks",
 					"$(inherited)",
@@ -990,6 +996,7 @@
 		02B58CCC1AE99CEC009B348C /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ENABLE_BITCODE = NO;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(SDKROOT)/Developer/Library/Frameworks",
 					"$(inherited)",
@@ -1067,6 +1074,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				ENABLE_BITCODE = NO;
 				FRAMEWORK_SEARCH_PATHS = "$(PROJECT_DIR)";
 				GCC_NO_COMMON_BLOCKS = NO;
 				GCC_PREPROCESSOR_DEFINITIONS = (
@@ -1089,7 +1097,7 @@
 					"-isystem",
 					core/include,
 				);
-				OTHER_LDFLAGS = "-lrealm-ios-bitcode";
+				OTHER_LDFLAGS = "-lrealm-ios-no-bitcode";
 				OTHER_LIBTOOLFLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = "io.realm.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1100,6 +1108,7 @@
 		02F9EE1E1B6BF66300C807E8 /* GCov_Build */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ENABLE_BITCODE = NO;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(SDKROOT)/Developer/Library/Frameworks",
 					"$(inherited)",
