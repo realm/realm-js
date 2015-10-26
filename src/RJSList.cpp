@@ -32,7 +32,7 @@ static inline List * RJSVerifiedList(JSObjectRef object) {
 
 static inline List * RJSVerifiedMutableList(JSObjectRef object) {
     List *list = RJSVerifiedList(object);
-    if (!list->realm->is_in_transaction()) {
+    if (!list->realm()->is_in_transaction()) {
         throw std::runtime_error("Can only mutate lists within a transaction.");
     }
     return list;
@@ -49,7 +49,7 @@ JSValueRef ListGetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef pro
             return JSValueMakeNumber(ctx, size);
         }
 
-        return RJSObjectCreate(ctx, Object(list->realm, list->object_schema, list->get(RJSValidatedPositiveIndex(indexStr))));
+        return RJSObjectCreate(ctx, Object(list->realm(), list->object_schema, list->get(RJSValidatedPositiveIndex(indexStr))));
     }
     catch (std::out_of_range &exp) {
         // getters for nonexistent properties in JS should always return undefined
@@ -75,7 +75,7 @@ bool ListSetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef propertyN
             throw std::runtime_error("The 'length' property is readonly.");
         }
 
-        list->set(RJSValidatedPositiveIndex(indexStr), RJSAccessor::to_object_index(ctx, list->realm, const_cast<JSValueRef &>(value), list->object_schema.name, false));
+        list->set(RJSValidatedPositiveIndex(indexStr), RJSAccessor::to_object_index(ctx, list->realm(), const_cast<JSValueRef &>(value), list->object_schema.name, false));
         return true;
     }
     catch (std::invalid_argument &exp) {
@@ -108,9 +108,9 @@ JSValueRef ListPush(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObje
         List *array = RJSVerifiedMutableList(thisObject);
         RJSValidateArgumentCountIsAtLeast(argumentCount, 1);
         for (size_t i = 0; i < argumentCount; i++) {
-            array->link_view->add(RJSAccessor::to_object_index(ctx, array->realm, const_cast<JSValueRef &>(arguments[i]), array->object_schema.name, false));
+            array->link_view()->add(RJSAccessor::to_object_index(ctx, array->realm(), const_cast<JSValueRef &>(arguments[i]), array->object_schema.name, false));
         }
-        return JSValueMakeNumber(ctx, array->link_view->size());
+        return JSValueMakeNumber(ctx, array->link_view()->size());
     }
     catch (std::exception &exp) {
         if (jsException) {
@@ -130,8 +130,8 @@ JSValueRef ListPop(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObjec
             return JSValueMakeUndefined(ctx);
         }
         size_t index = size - 1;
-        JSValueRef obj = RJSObjectCreate(ctx, Object(list->realm, list->object_schema, list->get(index)));
-        list->link_view->remove(index);
+        JSValueRef obj = RJSObjectCreate(ctx, Object(list->realm(), list->object_schema, list->get(index)));
+        list->link_view()->remove(index);
         return obj;
     }
     catch (std::exception &exp) {
@@ -147,9 +147,9 @@ JSValueRef ListUnshift(JSContextRef ctx, JSObjectRef function, JSObjectRef thisO
         List *array = RJSVerifiedMutableList(thisObject);
         RJSValidateArgumentCountIsAtLeast(argumentCount, 1);
         for (size_t i = 0; i < argumentCount; i++) {
-            array->link_view->insert(i, RJSAccessor::to_object_index(ctx, array->realm, const_cast<JSValueRef &>(arguments[i]), array->object_schema.name, false));
+            array->link_view()->insert(i, RJSAccessor::to_object_index(ctx, array->realm(), const_cast<JSValueRef &>(arguments[i]), array->object_schema.name, false));
         }
-        return JSValueMakeNumber(ctx, array->link_view->size());
+        return JSValueMakeNumber(ctx, array->link_view()->size());
     }
     catch (std::exception &exp) {
         if (jsException) {
@@ -166,8 +166,8 @@ JSValueRef ListShift(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObj
         if (list->size() == 0) {
             return JSValueMakeUndefined(ctx);
         }
-        JSValueRef obj = RJSObjectCreate(ctx, Object(list->realm, list->object_schema, list->get(0)));
-        list->link_view->remove(0);
+        JSValueRef obj = RJSObjectCreate(ctx, Object(list->realm(), list->object_schema, list->get(0)));
+        list->link_view()->remove(0);
         return obj;
     }
     catch (std::exception &exp) {
@@ -194,11 +194,11 @@ JSValueRef ListSplice(JSContextRef ctx, JSObjectRef function, JSObjectRef thisOb
 
         std::vector<JSObjectRef> removedObjects(remove);
         for (size_t i = 0; i < remove; i++) {
-            removedObjects[i] = RJSObjectCreate(ctx, Object(list->realm, list->object_schema, list->get(index)));
-            list->link_view->remove(index);
+            removedObjects[i] = RJSObjectCreate(ctx, Object(list->realm(), list->object_schema, list->get(index)));
+            list->link_view()->remove(index);
         }
         for (size_t i = 2; i < argumentCount; i++) {
-            list->link_view->insert(index + i - 2, RJSAccessor::to_object_index(ctx, list->realm, const_cast<JSValueRef &>(arguments[i]), list->object_schema.name, false));
+            list->link_view()->insert(index + i - 2, RJSAccessor::to_object_index(ctx, list->realm(), const_cast<JSValueRef &>(arguments[i]), list->object_schema.name, false));
         }
         return JSObjectMakeArray(ctx, remove, removedObjects.data(), jsException);
     }

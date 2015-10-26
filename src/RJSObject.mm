@@ -64,7 +64,7 @@ JSClassRef RJSObjectClass() {
 }
 
 JSObjectRef RJSObjectCreate(JSContextRef ctx, Object object) {
-    JSValueRef prototype = RJSPrototypes(object.realm.get())[object.object_schema.name];
+    JSValueRef prototype = RJSPrototypes(object.realm().get())[object.object_schema.name];
     JSObjectRef jsObject = RJSWrapObject(ctx, RJSObjectClass(), new Object(object), prototype);
     return jsObject;
 }
@@ -155,10 +155,10 @@ template<> JSValueRef RJSAccessor::from_datetime(JSContextRef ctx, DateTime dt) 
 
 extern JSObjectRef RJSDictForPropertyArray(JSContextRef ctx, ObjectSchema &object_schema, JSObjectRef array);
 
-template<> size_t RJSAccessor::to_object_index(JSContextRef ctx, SharedRealm &realm, JSValueRef &val, std::string &type, bool try_update) {
+template<> size_t RJSAccessor::to_object_index(JSContextRef ctx, SharedRealm realm, JSValueRef &val, const std::string &type, bool try_update) {
     JSObjectRef object = RJSValidatedValueToObject(ctx, val);
     if (JSValueIsObjectOfClass(ctx, val, RJSObjectClass())) {
-        return RJSGetInternal<Object *>(object)->row.get_index();
+        return RJSGetInternal<Object *>(object)->row().get_index();
     }
 
     auto object_schema = realm->config().schema->find(type);
@@ -167,7 +167,7 @@ template<> size_t RJSAccessor::to_object_index(JSContextRef ctx, SharedRealm &re
     }
 
     Object child = Object::create<JSValueRef>(ctx, realm, *object_schema, (JSValueRef)object, try_update);
-    return child.row.get_index();
+    return child.row().get_index();
 }
 template<> JSValueRef RJSAccessor::from_object(JSContextRef ctx, Object object) {
     return RJSObjectCreate(ctx, object);
