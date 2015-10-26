@@ -49,7 +49,7 @@ RPCServer::RPCServer() {
     }
 
     m_requests["/create_session"] = [this](const json dict) {
-        [RealmJS initializeContext:m_context];
+        RJSInitializeInContext(m_context);
 
         JSStringRef realm_string = RJSStringForString("Realm");
         JSObjectRef realm_constructor = RJSValidatedObjectProperty(m_context, JSContextGetGlobalObject(m_context), realm_string);
@@ -173,7 +173,7 @@ RPCServer::RPCServer() {
             m_objects.erase(object.first);
         }
         JSGarbageCollect(m_context);
-        [RealmJS clearTestState];
+        RJSClearTestState();
         return json::object();
     };
 }

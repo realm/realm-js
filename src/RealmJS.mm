@@ -57,13 +57,11 @@ NSString *RealmFileDirectory() {
 }
 
 static JSValueRef ClearTestState(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef *exception) {
-    [RealmJS clearTestState];
+    RJSClearTestState();
     return NULL;
 }
 
-@implementation RealmJS
-
-+ (void)initializeContext:(JSContextRef)ctx {
+void RJSInitializeInContext(JSContextRef ctx) {
     JSValueRef exception = NULL;
     JSObjectRef globalObject = JSContextGetGlobalObject(ctx);
 
@@ -82,7 +80,7 @@ static JSValueRef ClearTestState(JSContextRef ctx, JSObjectRef function, JSObjec
     assert(!exception);
 }
 
-+ (void)clearTestState {
+void RJSClearTestState() {
     realm::Realm::s_global_cache.close_all();
     realm::Realm::s_global_cache.clear();
 
@@ -94,5 +92,3 @@ static JSValueRef ClearTestState(JSContextRef ctx, JSObjectRef function, JSObjec
         }
     }
 }
-
-@end
