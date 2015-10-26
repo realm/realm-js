@@ -33,10 +33,10 @@ using namespace realm;
 class RJSRealmDelegate : public RealmDelegate {
 public:
     virtual void changes_available() {
-        notify("RefreshRequiredNotification");
+        assert(0);
     }
     virtual void did_change(std::vector<ObserverState> const& observers, std::vector<void*> const& invalidated) {
-        notify("DidChangeNotification");
+        notify("change");
     }
     virtual std::vector<ObserverState> get_observed_rows() {
         return std::vector<ObserverState>();

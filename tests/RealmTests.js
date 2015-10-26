@@ -290,7 +290,7 @@ module.exports = BaseTest.extend({
         TestCase.assertEqual(notificationCount, 0);
         realm.write(function() {});
         TestCase.assertEqual(notificationCount, 1);
-        TestCase.assertEqual(notificationName, 'DidChangeNotification');
+        TestCase.assertEqual(notificationName, 'change');
 
         var secondNotificationCount = 0;
         function secondNotification(realm, name) {
