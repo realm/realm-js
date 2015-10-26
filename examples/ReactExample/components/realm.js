@@ -7,7 +7,8 @@ module.exports = new Realm({
         {
             name: 'Todo',
             properties: [
-                {name: 'text', type: Realm.Types.STRING},
+                {name: 'done', type: Realm.Types.BOOL, default: false},
+                {name: 'text', type: Realm.Types.STRING, default: ''},
             ]
         },
         {

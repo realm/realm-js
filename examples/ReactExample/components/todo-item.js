@@ -1,6 +1,7 @@
 'use strict';
 
 const React = require('react-native');
+const TodoItemCheckbox = require('./todo-item-checkbox');
 const realm = require('./realm');
 const styles = require('./styles');
 
@@ -11,6 +12,7 @@ class TodoItem extends React.Component {
         super(props);
 
         this._onChangeText = this._onChangeText.bind(this);
+        this._onPressCheckbox = this._onPressCheckbox.bind(this);
     }
 
     componentDidMount() {
@@ -23,15 +25,16 @@ class TodoItem extends React.Component {
     }
 
     render() {
+        let item = this.props.item;
         let contents;
 
         if (this.props.editing) {
             contents = (
                 <TextInput
                     ref="input"
-                    value={this.props.item.text}
+                    value={item.text}
                     placeholder="Call Mom"
-                    style={styles.listItemText}
+                    style={styles.listItemInput}
                     onChangeText={this._onChangeText}
                     onEndEditing={this.props.onEndEditing}
                     enablesReturnKeyAutomatically={true} />
@@ -42,13 +45,14 @@ class TodoItem extends React.Component {
                     style={styles.listItemText}
                     onPress={this.props.onPress}
                     suppressHighlighting={true}>
-                    {this.props.item.text}
+                    {item.text}
                 </Text>
             );
         }
 
         return (
             <View style={styles.listItem}>
+                <TodoItemCheckbox checked={item.done} onPress={this._onPressCheckbox} />
                 {contents}
             </View>
         );
@@ -57,6 +61,15 @@ class TodoItem extends React.Component {
     _onChangeText(text) {
         realm.write(() => {
             this.props.item.text = text;
+        });
+
+        this.forceUpdate();
+    }
+
+    _onPressCheckbox() {
+        let item = this.props.item;
+        realm.write(() => {
+            item.done = !item.done;
         });
 
         this.forceUpdate();
