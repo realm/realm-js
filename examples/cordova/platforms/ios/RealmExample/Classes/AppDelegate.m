@@ -90,7 +90,7 @@
     [self.window makeKeyAndVisible];
 
     JSContext *ctx = [self.viewController.webView valueForKeyPath:@"documentView.webView.mainFrame.javaScriptContext"];
-    [RealmJS initializeContext:ctx.JSGlobalContextRef];
+    RJSInitializeInContext(ctx.JSGlobalContextRef);
 
     return YES;
 }

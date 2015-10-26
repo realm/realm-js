@@ -134,7 +134,7 @@ JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executor, bool cre
 
     [executor executeBlockOnJavaScriptQueue:^{
         JSGlobalContextRef ctx = RealmReactGetJSGlobalContextForExecutor(executor, true);
-        [RealmJS initializeContext:ctx];
+        RJSInitializeInContext(ctx);
     }];
 }
 

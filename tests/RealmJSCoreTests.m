@@ -34,7 +34,7 @@
     RJSModuleLoader *moduleLoader = [[RJSModuleLoader alloc] initWithContext:context];
     NSURL *scriptURL = [[NSBundle bundleForClass:self] URLForResource:@"index" withExtension:@"js"];
 
-    [RealmJS initializeContext:context.JSGlobalContextRef];
+    RJSInitializeInContext(context.JSGlobalContextRef);
 
     // Expose the global Realm object as a global 'realm' CommonJS module.
     [moduleLoader addGlobalModuleObject:context[@"Realm"] forName:@"realm"];

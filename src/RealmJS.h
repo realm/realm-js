@@ -16,13 +16,15 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#import <Foundation/Foundation.h>
 #import <JavaScriptCore/JavaScriptCore.h>
 
-@interface RealmJS : NSObject
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-// add realm apis to the given js context
-+ (void)initializeContext:(JSContextRef)ctx;
-+ (void)clearTestState;
+void RJSInitializeInContext(JSContextRef ctx);
+void RJSClearTestState(void);
 
-@end
+#ifdef __cplusplus
+}
+#endif
