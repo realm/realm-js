@@ -26,7 +26,6 @@ namespace realm {
 
 JSClassRef RJSRealmClass();
 JSClassRef RJSRealmConstructorClass();
-JSClassRef RJSNotificationClass();
 
 std::string RJSDefaultPath();
 void RJSSetDefaultPath(std::string path);

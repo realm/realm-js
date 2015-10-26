@@ -32,43 +32,25 @@ using namespace realm;
 
 class RJSRealmDelegate : public RealmDelegate {
 public:
-    typedef std::shared_ptr<std::function<void(const std::string)>> NotificationFunction;
-    void add_notification(NotificationFunction &notification) { m_notifications.insert(notification); }
-    void remove_notification(NotificationFunction notification) { m_notifications.erase(notification); }
-    void remove_all_notifications() { m_notifications.clear(); }
-    std::set<NotificationFunction> m_notifications;
-
     virtual void changes_available() {
-        for (NotificationFunction notification : m_notifications) {
-            (*notification)("RefreshRequiredNotification");
-        }
+        notify("RefreshRequiredNotification");
     }
-
-    virtual void did_change(std::vector<ObserverState> const& observers,
-                            std::vector<void*> const& invalidated) {
-        for (NotificationFunction notification : m_notifications) {
-            (*notification)("DidChangeNotification");
-        }
+    virtual void did_change(std::vector<ObserverState> const& observers, std::vector<void*> const& invalidated) {
+        notify("DidChangeNotification");
     }
-
     virtual std::vector<ObserverState> get_observed_rows() {
         return std::vector<ObserverState>();
     }
-
     virtual void will_change(std::vector<ObserverState> const& observers,
-                             std::vector<void*> const& invalidated) {
+                             std::vector<void*> const& invalidated) {}
 
-    }
-
-    JSGlobalContextRef m_context;
-    std::map<std::string, ObjectDefaults> m_defaults;
-    std::map<std::string, JSValueRef> m_prototypes;
-
-    RJSRealmDelegate(JSGlobalContextRef ctx) : m_context(ctx) {
+    RJSRealmDelegate(WeakRealm realm, JSGlobalContextRef ctx) : m_context(ctx), m_realm(realm) {
         JSGlobalContextRetain(m_context);
     }
 
     ~RJSRealmDelegate() {
+        remove_all_notifications();
+
         for (auto prototype : m_prototypes) {
             JSValueUnprotect(m_context, prototype.second);
         }
@@ -78,6 +60,48 @@ public:
             }
         }
         JSGlobalContextRelease(m_context);
+    }
+
+    void add_notification(JSObjectRef notification) {
+        JSValueProtect(m_context, notification);
+        m_notifications.insert(notification);
+    }
+    void remove_notification(JSObjectRef notification) {
+        JSValueUnprotect(m_context, notification);
+        m_notifications.erase(notification);
+    }
+    void remove_all_notifications() {
+        for (auto notification : m_notifications) {
+            JSValueUnprotect(m_context, notification);
+        }
+        m_notifications.clear();
+    }
+
+    std::map<std::string, ObjectDefaults> m_defaults;
+    std::map<std::string, JSValueRef> m_prototypes;
+
+  private:
+    std::set<JSObjectRef> m_notifications;
+    JSGlobalContextRef m_context;
+    WeakRealm m_realm;
+
+    void notify(const char *notification_name) {
+        for (auto callback : m_notifications) {
+            JSValueRef arguments[2];
+            SharedRealm realm = m_realm.lock();
+            if (!realm) {
+                throw std::runtime_error("Realm no longer exists");
+            }
+            JSObjectRef realm_object = RJSWrapObject<SharedRealm *>(m_context, RJSRealmClass(), new SharedRealm(realm));
+            arguments[0] = realm_object;
+            arguments[1] = RJSValueForString(m_context, notification_name);
+
+            JSValueRef ex = NULL;
+            JSObjectCallAsFunction(m_context, callback, realm_object, 2, arguments, &ex);
+            if (ex) {
+                throw RJSException(m_context, ex);
+            }
+        }
     }
 };
 
@@ -189,7 +213,7 @@ JSObjectRef RealmConstructor(JSContextRef ctx, JSObjectRef constructor, size_t a
         }
         SharedRealm realm = Realm::get_shared_realm(config);
         if (!realm->m_delegate) {
-            realm->m_delegate = std::make_unique<RJSRealmDelegate>(JSContextGetGlobalContext(ctx));
+            realm->m_delegate = std::make_unique<RJSRealmDelegate>(realm, JSContextGetGlobalContext(ctx));
         }
         RJSDefaults(realm.get()) = defaults;
         RJSPrototypes(realm.get()) = prototypes;
@@ -399,48 +423,14 @@ JSValueRef RealmWrite(JSContextRef ctx, JSObjectRef function, JSObjectRef thisOb
     return NULL;
 }
 
-namespace realm {
-    struct Notification {
-        JSGlobalContextRef ctx;
-        JSObjectRef realmObject;
-        JSObjectRef callbackObject;
-        RJSRealmDelegate::NotificationFunction func;
-
-        Notification(JSGlobalContextRef c, JSObjectRef r, JSObjectRef cb, RJSRealmDelegate::NotificationFunction f) : ctx(c), realmObject(r), callbackObject(cb), func(f) {
-            JSGlobalContextRetain(ctx);
-            JSValueProtect(ctx, realmObject);
-            JSValueProtect(ctx, callbackObject);
-        }
-
-        ~Notification() {
-            JSValueUnprotect(ctx, callbackObject);
-            JSValueUnprotect(ctx, realmObject);
-            JSGlobalContextRelease(ctx);
-        }
-    };
-}
-
 JSValueRef RealmAddNotification(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) {
     try {
         RJSValidateArgumentCount(argumentCount, 1);
 
         JSObjectRef callback = RJSValidatedValueToFunction(ctx, arguments[0]);
         SharedRealm realm = *RJSGetInternal<SharedRealm *>(thisObject);
-        JSGlobalContextRef gCtx = JSContextGetGlobalContext(ctx);
-
-        RJSRealmDelegate::NotificationFunction func = std::make_shared<std::function<void(const std::string)>>([=](std::string notification_name) {
-            JSValueRef arguments[2];
-            arguments[0] = thisObject;
-            arguments[1] = RJSValueForString(gCtx, notification_name);
-            JSValueRef ex = NULL;
-            JSObjectCallAsFunction(gCtx, callback, thisObject, 2, arguments, &ex);
-            if (ex) {
-                throw RJSException(gCtx, ex);
-            }
-        });
-
-        static_cast<RJSRealmDelegate *>(realm->m_delegate.get())->add_notification(func);
-        return RJSWrapObject<Notification *>(ctx, RJSNotificationClass(), new Notification { gCtx, thisObject, callback, func });
+        static_cast<RJSRealmDelegate *>(realm->m_delegate.get())->add_notification(callback);
+        return NULL;
     }
     catch (std::exception &exp) {
         if (jsException) {
@@ -482,8 +472,4 @@ JSClassRef RJSRealmClass() {
     return s_realmClass;
 }
 
-JSClassRef RJSNotificationClass() {
-    static JSClassRef s_notificationClass = RJSCreateWrapperClass<Notification *>("Notification", NULL, NULL, NULL);
-    return s_notificationClass;
-}
 
