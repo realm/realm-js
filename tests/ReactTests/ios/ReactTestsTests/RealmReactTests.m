@@ -26,6 +26,9 @@
 
 extern void JSGlobalContextSetIncludesNativeCallStackWhenReportingExceptions(JSGlobalContextRef ctx, bool includesNativeCallStack);
 
+@interface RCTDevMenu () <RCTInvalidating>
+@end
+
 @interface RealmReactTests : RealmJSTests
 @end
 
@@ -33,12 +36,6 @@ extern void JSGlobalContextSetIncludesNativeCallStackWhenReportingExceptions(JSG
 @end
 
 @implementation RealmReactTests
-
-+ (void)load {
-    // Swap the [RCTDevMenu init] method with [NSObject init] in order to disable RCTDevMenu completely.
-    IMP init = class_getMethodImplementation([NSObject class], @selector(init));
-    class_replaceMethod([RCTDevMenu class], @selector(init), init, NULL);
-}
 
 + (Class)executorClass {
     return NSClassFromString(@"RCTContextExecutor");
@@ -56,14 +53,23 @@ extern void JSGlobalContextSetIncludesNativeCallStackWhenReportingExceptions(JSG
     }
 
     static RCTBridge *s_bridge;
+    if (!s_bridge) {
+        [[NSNotificationCenter defaultCenter] postNotificationName:RCTReloadNotification object:nil];
+    }
+
     if (!s_bridge.valid) {
-        NSNotification *notification = [self waitForNotification:RCTJavaScriptDidLoadNotification];;
-        s_bridge = notification.userInfo[@"bridge"];
+        NSNotification *notification = [self waitForNotification:RCTDidCreateNativeModules];
+        s_bridge = notification.object;
 
         if (!s_bridge) {
             NSLog(@"No RCTBridge provided by RCTJavaScriptDidLoadNotification");
             exit(1);
         }
+
+        // We don't want the RCTDevMenu from switching the executor class from underneath us.
+        [s_bridge.devMenu invalidate];
+
+        [self waitForNotification:RCTJavaScriptDidLoadNotification];
     }
 
     if (s_bridge.executorClass != executorClass) {
@@ -190,6 +196,7 @@ extern void JSGlobalContextSetIncludesNativeCallStackWhenReportingExceptions(JSG
 
 @end
 
+/* TODO: Re-enable once this works in CI
 @implementation RealmReactChromeTests
 
 + (Class)executorClass {
@@ -201,3 +208,4 @@ extern void JSGlobalContextSetIncludesNativeCallStackWhenReportingExceptions(JSG
 }
 
 @end
+ */
