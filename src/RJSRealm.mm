@@ -339,7 +339,7 @@ JSValueRef RealmDelete(JSContextRef ctx, JSObjectRef function, JSObjectRef thisO
         }
 
         realm::TableRef table = ObjectStore::table_for_object_type(realm->read_group(), object->object_schema.name);
-        table->move_last_over(object->row.get_index());
+        table->move_last_over(object->row().get_index());
 
         return NULL;
     }

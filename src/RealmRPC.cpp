@@ -241,7 +241,7 @@ json RPCServer::serialize_json_value(JSValueRef value) {
         return {
             {"type", RJSTypeGet(realm::PropertyTypeArray)},
             {"id", store_object(js_object)},
-            {"size", list->link_view->size()},
+            {"size", list->link_view()->size()},
             {"schema", serialize_object_schema(list->object_schema)}
          };
     }
@@ -277,7 +277,7 @@ json RPCServer::serialize_json_value(JSValueRef value) {
     assert(0);
 }
 
-json RPCServer::serialize_object_schema(realm::ObjectSchema &object_schema) {
+json RPCServer::serialize_object_schema(const realm::ObjectSchema &object_schema) {
     json properties = json::array();
     for (realm::Property prop : object_schema.properties) {
         properties.push_back({

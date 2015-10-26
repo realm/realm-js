@@ -27,11 +27,7 @@ namespace realm {
 
     class Object {
     public:
-        Object(SharedRealm &r, ObjectSchema &s, Row o) : realm(r), object_schema(s), row(o) {}
-        // FIXME - all should be const
-        SharedRealm realm;
-        ObjectSchema &object_schema;
-        Row row;
+        Object(SharedRealm r, const ObjectSchema &s, Row o) : m_realm(r), object_schema(s), m_row(o) {}
 
         // property getter/setter
         template<typename ValueType, typename ContextType>
@@ -43,12 +39,19 @@ namespace realm {
         // create an Object from a native representation
         template<typename ValueType, typename ContextType>
         static inline Object create(ContextType ctx, SharedRealm realm, ObjectSchema &object_schema, ValueType value, bool try_update);
-        
+
+        const ObjectSchema &object_schema;
+        SharedRealm realm() { return m_realm; }
+        Row row() { return m_row; }
+
     private:
+        SharedRealm m_realm;
+        Row m_row;
+
         template<typename ValueType, typename ContextType>
-        inline void set_property_value_impl(ContextType ctx, Property &property, ValueType value, bool try_update);
+        inline void set_property_value_impl(ContextType ctx, const Property &property, ValueType value, bool try_update);
         template<typename ValueType, typename ContextType>
-        inline ValueType get_property_value_impl(ContextType ctx, Property &property);
+        inline ValueType get_property_value_impl(ContextType ctx, const Property &property);
     };
 
     //
@@ -82,7 +85,7 @@ namespace realm {
         // convert value to persisted object
         // for existing objects return the existing row index
         // for new/updated objects return the row index
-        static size_t to_object_index(ContextType ctx, SharedRealm &realm, ValueType &val, std::string &type, bool try_update);
+        static size_t to_object_index(ContextType ctx, SharedRealm realm, ValueType &val, const std::string &type, bool try_update);
         static ValueType from_object(ContextType ctx, Object);
 
         // list value acessors
@@ -102,7 +105,7 @@ namespace realm {
     template <typename ValueType, typename ContextType>
     inline void Object::set_property_value(ContextType ctx, std::string prop_name, ValueType value, bool try_update)
     {
-        Property *prop = object_schema.property_for_name(prop_name);
+        const Property *prop = object_schema.property_for_name(prop_name);
         if (!prop) {
             throw std::runtime_error("Setting invalid property '" + prop_name + "' on object '" + object_schema.name + "'.");
         }
@@ -112,7 +115,7 @@ namespace realm {
     template <typename ValueType, typename ContextType>
     inline ValueType Object::get_property_value(ContextType ctx, std::string prop_name)
     {
-        Property *prop = object_schema.property_for_name(prop_name);
+        const Property *prop = object_schema.property_for_name(prop_name);
         if (!prop) {
             throw std::runtime_error("Setting invalid property '" + prop_name + "' on object '" + object_schema.name + "'.");
         }
@@ -120,56 +123,56 @@ namespace realm {
     };
 
     template <typename ValueType, typename ContextType>
-    inline void Object::set_property_value_impl(ContextType ctx, Property &property, ValueType value, bool try_update)
+    inline void Object::set_property_value_impl(ContextType ctx, const Property &property, ValueType value, bool try_update)
     {
         using Accessor = NativeAccessor<ValueType, ContextType>;
 
-        if (!realm->is_in_transaction()) {
+        if (!m_realm->is_in_transaction()) {
             throw std::runtime_error("Can only set property values within a transaction.");
         }
 
         size_t column = property.table_column;
         switch (property.type) {
             case PropertyTypeBool:
-                row.set_bool(column, Accessor::to_bool(ctx, value));
+                m_row.set_bool(column, Accessor::to_bool(ctx, value));
                 break;
             case PropertyTypeInt:
-                row.set_int(column, Accessor::to_long(ctx, value));
+                m_row.set_int(column, Accessor::to_long(ctx, value));
                 break;
             case PropertyTypeFloat:
-                row.set_float(column, Accessor::to_float(ctx, value));
+                m_row.set_float(column, Accessor::to_float(ctx, value));
                 break;
             case PropertyTypeDouble:
-                row.set_double(column, Accessor::to_double(ctx, value));
+                m_row.set_double(column, Accessor::to_double(ctx, value));
                 break;
             case PropertyTypeString:
-                row.set_string(column, Accessor::to_string(ctx, value));
+                m_row.set_string(column, Accessor::to_string(ctx, value));
                 break;
             case PropertyTypeData:
-                row.set_binary(column, BinaryData(Accessor::to_string(ctx, value)));
+                m_row.set_binary(column, BinaryData(Accessor::to_string(ctx, value)));
                 break;
             case PropertyTypeAny:
-                row.set_mixed(column, Accessor::to_mixed(ctx, value));
+                m_row.set_mixed(column, Accessor::to_mixed(ctx, value));
                 break;
             case PropertyTypeDate:
-                row.set_datetime(column, Accessor::to_datetime(ctx, value));
+                m_row.set_datetime(column, Accessor::to_datetime(ctx, value));
                 break;
             case PropertyTypeObject: {
                 if (Accessor::is_null(ctx, value)) {
-                    row.nullify_link(column);
+                    m_row.nullify_link(column);
                 }
                 else {
-                    row.set_link(column, Accessor::to_object_index(ctx, realm, value, property.object_type, try_update));
+                    m_row.set_link(column, Accessor::to_object_index(ctx, m_realm, value, property.object_type, try_update));
                 }
                 break;
             }
             case PropertyTypeArray: {
-                realm::LinkViewRef link_view = row.get_linklist(column);
+                realm::LinkViewRef link_view = m_row.get_linklist(column);
                 link_view->clear();
                 size_t count = Accessor::list_size(ctx, value);
                 for (size_t i = 0; i < count; i++) {
                     ValueType element = Accessor::list_value_at_index(ctx, value, i);
-                    link_view->add(Accessor::to_object_index(ctx, realm, element, property.object_type, try_update));
+                    link_view->add(Accessor::to_object_index(ctx, m_realm, element, property.object_type, try_update));
                 }
                 break;
             }
@@ -177,39 +180,39 @@ namespace realm {
     }
 
     template <typename ValueType, typename ContextType>
-    inline ValueType Object::get_property_value_impl(ContextType ctx, Property &property)
+    inline ValueType Object::get_property_value_impl(ContextType ctx, const Property &property)
     {
         using Accessor = NativeAccessor<ValueType, ContextType>;
 
         size_t column = property.table_column;
         switch (property.type) {
             case PropertyTypeBool:
-                return Accessor::from_bool(ctx, row.get_bool(column));
+                return Accessor::from_bool(ctx, m_row.get_bool(column));
             case PropertyTypeInt:
-                return Accessor::from_long(ctx, row.get_int(column));
+                return Accessor::from_long(ctx, m_row.get_int(column));
             case PropertyTypeFloat:
-                return Accessor::from_float(ctx, row.get_float(column));
+                return Accessor::from_float(ctx, m_row.get_float(column));
             case PropertyTypeDouble:
-                return Accessor::from_double(ctx, row.get_double(column));
+                return Accessor::from_double(ctx, m_row.get_double(column));
             case PropertyTypeString:
-                return Accessor::from_string(ctx, row.get_string(column));
+                return Accessor::from_string(ctx, m_row.get_string(column));
             case PropertyTypeData:
-                return Accessor::from_string(ctx, (std::string)row.get_binary(column));
+                return Accessor::from_string(ctx, (std::string)m_row.get_binary(column));
             case PropertyTypeAny:
                 throw "Any not supported";
             case PropertyTypeDate:
-                return Accessor::from_datetime(ctx, row.get_datetime(column));
+                return Accessor::from_datetime(ctx, m_row.get_datetime(column));
             case PropertyTypeObject: {
-                auto linkObjectSchema = realm->config().schema->find(property.object_type);
-                TableRef table = ObjectStore::table_for_object_type(realm->read_group(), linkObjectSchema->name);
-                if (row.is_null_link(property.table_column)) {
+                auto linkObjectSchema = m_realm->config().schema->find(property.object_type);
+                TableRef table = ObjectStore::table_for_object_type(m_realm->read_group(), linkObjectSchema->name);
+                if (m_row.is_null_link(property.table_column)) {
                     return Accessor::null_value(ctx);
                 }
-                return Accessor::from_object(ctx, std::move(Object(realm, *linkObjectSchema, table->get(row.get_link(column)))));
+                return Accessor::from_object(ctx, std::move(Object(m_realm, *linkObjectSchema, table->get(m_row.get_link(column)))));
             }
             case PropertyTypeArray: {
-                auto arrayObjectSchema = realm->config().schema->find(property.object_type);
-                return Accessor::from_list(ctx, std::move(List(realm, *arrayObjectSchema, static_cast<LinkViewRef>(row.get_linklist(column)))));
+                auto arrayObjectSchema = m_realm->config().schema->find(property.object_type);
+                return Accessor::from_list(ctx, std::move(List(m_realm, *arrayObjectSchema, static_cast<LinkViewRef>(m_row.get_linklist(column)))));
             }
         }
     }
@@ -229,7 +232,7 @@ namespace realm {
         // try to get existing row if updating
         size_t row_index = realm::not_found;
         realm::TableRef table = ObjectStore::table_for_object_type(realm->read_group(), object_schema.name);
-        Property *primary_prop = object_schema.primary_key_property();
+        const Property *primary_prop = object_schema.primary_key_property();
         if (primary_prop) {
             // search for existing object based on primary key type
             ValueType primary_value = Accessor::dict_value_for_key(ctx, value, object_schema.primary_key);

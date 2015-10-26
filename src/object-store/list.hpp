@@ -23,18 +23,24 @@
 #import <realm/link_view.hpp>
 
 namespace realm {
-    struct List {
-        List(SharedRealm &r, ObjectSchema &s, LinkViewRef l) : realm(r), object_schema(s), link_view(l) {}
-        // FIXME - all should be const
-        SharedRealm realm;
-        ObjectSchema &object_schema;
-        LinkViewRef link_view;
+    class List {
+      public:
+        List(SharedRealm &r, const ObjectSchema &s, LinkViewRef l) : m_realm(r), object_schema(s), m_link_view(l) {}
+
+        const ObjectSchema &object_schema;
+        SharedRealm realm() { return m_realm; }
+        LinkViewRef link_view() { return m_link_view; }
 
         size_t size();
         Row get(std::size_t row_ndx);
         void set(std::size_t row_ndx, std::size_t target_row_ndx);
+
         void verify_valid_row(std::size_t row_ndx);
         void verify_attached();
+
+      private:
+        SharedRealm m_realm;
+        LinkViewRef m_link_view;
     };
 }
 
