@@ -66,8 +66,10 @@ extern void JSGlobalContextSetIncludesNativeCallStackWhenReportingExceptions(JSG
             exit(1);
         }
 
+#ifdef DEBUG
         // We don't want the RCTDevMenu from switching the executor class from underneath us.
         [s_bridge.devMenu invalidate];
+#endif
 
         [self waitForNotification:RCTJavaScriptDidLoadNotification];
     }
