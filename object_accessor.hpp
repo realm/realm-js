@@ -27,7 +27,7 @@ namespace realm {
 
     class Object {
     public:
-        Object(SharedRealm &r, ObjectSchema &s, Row o) : m_realm(r), object_schema(s), m_row(o) {}
+        Object(SharedRealm r, const ObjectSchema &s, Row o) : m_realm(r), object_schema(s), m_row(o) {}
 
         // property getter/setter
         template<typename ValueType, typename ContextType>
@@ -85,7 +85,7 @@ namespace realm {
         // convert value to persisted object
         // for existing objects return the existing row index
         // for new/updated objects return the row index
-        static size_t to_object_index(ContextType ctx, SharedRealm &realm, ValueType &val, const std::string &type, bool try_update);
+        static size_t to_object_index(ContextType ctx, SharedRealm realm, ValueType &val, const std::string &type, bool try_update);
         static ValueType from_object(ContextType ctx, Object);
 
         // list value acessors
