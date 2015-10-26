@@ -282,7 +282,7 @@ module.exports = BaseTest.extend({
         var notificationCount = 0;
         var notificationName;
 
-        var notification = realm.addNotification(function(realm, name) {
+        realm.addListener(function(realm, name) {
             notificationCount++;
             notificationName = name;
         });
@@ -291,5 +291,25 @@ module.exports = BaseTest.extend({
         realm.write(function() {});
         TestCase.assertEqual(notificationCount, 1);
         TestCase.assertEqual(notificationName, 'DidChangeNotification');
+
+        var secondNotificationCount = 0;
+        function secondNotification(realm, name) {
+            secondNotificationCount++;
+        };
+        realm.addListener(secondNotification)
+
+        realm.write(function() {});
+        TestCase.assertEqual(notificationCount, 2);
+        TestCase.assertEqual(secondNotificationCount, 1);
+
+        realm.removeListener(secondNotification);
+        realm.write(function() {});
+        TestCase.assertEqual(notificationCount, 3);
+        TestCase.assertEqual(secondNotificationCount, 1);
+
+        realm.removeAllListeners();
+        realm.write(function() {});
+        TestCase.assertEqual(notificationCount, 3);
+        TestCase.assertEqual(secondNotificationCount, 1);
     },
 });

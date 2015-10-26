@@ -423,7 +423,7 @@ JSValueRef RealmWrite(JSContextRef ctx, JSObjectRef function, JSObjectRef thisOb
     return NULL;
 }
 
-JSValueRef RealmAddNotification(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) {
+JSValueRef RealmAddListener(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) {
     try {
         RJSValidateArgumentCount(argumentCount, 1);
 
@@ -439,6 +439,40 @@ JSValueRef RealmAddNotification(JSContextRef ctx, JSObjectRef function, JSObject
         return NULL;
     }
 }
+
+JSValueRef RealmRemoveListener(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) {
+    try {
+        RJSValidateArgumentCount(argumentCount, 1);
+
+        JSObjectRef callback = RJSValidatedValueToFunction(ctx, arguments[0]);
+        SharedRealm realm = *RJSGetInternal<SharedRealm *>(thisObject);
+        static_cast<RJSRealmDelegate *>(realm->m_delegate.get())->remove_notification(callback);
+        return NULL;
+    }
+    catch (std::exception &exp) {
+        if (jsException) {
+            *jsException = RJSMakeError(ctx, exp);
+        }
+        return NULL;
+    }
+}
+
+JSValueRef RealmRemoveAllListeners(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) {
+    try {
+        RJSValidateArgumentCount(argumentCount, 0);
+        SharedRealm realm = *RJSGetInternal<SharedRealm *>(thisObject);
+        static_cast<RJSRealmDelegate *>(realm->m_delegate.get())->remove_all_notifications();
+        return NULL;
+    }
+    catch (std::exception &exp) {
+        if (jsException) {
+            *jsException = RJSMakeError(ctx, exp);
+        }
+        return NULL;
+    }
+}
+
+
 
 JSValueRef RealmClose(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) {
     try {
@@ -462,7 +496,9 @@ static const JSStaticFunction RJSRealmFuncs[] = {
     {"delete", RealmDelete, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
     {"deleteAll", RealmDeleteAll, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
     {"write", RealmWrite, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
-    {"addNotification", RealmAddNotification, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
+    {"addListener", RealmAddListener, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
+    {"removeListener", RealmRemoveListener, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
+    {"removeAllListeners", RealmRemoveAllListeners, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
     {"close", RealmClose, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
     {NULL, NULL},
 };
