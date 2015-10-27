@@ -514,8 +514,12 @@ DuplicatePrimaryKeyValueException::DuplicatePrimaryKeyValueException(std::string
     m_object_type(object_type), m_property(property)
 {
     m_what = "Primary key property '" + property.name + "' has duplicate values after migration.";
-};
+}
 
+DuplicatePrimaryKeyValueException::DuplicatePrimaryKeyValueException(std::string const& object_type, Property const& property, const std::string message) : m_object_type(object_type), m_property(property)
+{
+    m_what = message;
+}
 
 SchemaValidationException::SchemaValidationException(std::vector<ObjectSchemaValidationException> const& errors) :
     m_validation_errors(errors)
@@ -600,3 +604,4 @@ DuplicatePrimaryKeysException::DuplicatePrimaryKeysException(std::string const& 
 {
     m_what = "Duplicate primary keys for object '" + object_type + "'.";
 }
+
