@@ -44,6 +44,8 @@ module.exports = BaseTest.extend({
                 TestCase.assertEqual(object[prop.name], basicTypesValues[i]);
             }
         }
+
+        TestCase.assertEqual(object.nonexistent, undefined);
     },
     testBasicTypesPropertySetters: function() {
         var basicTypesValues = [true, 1, 1.1, 1.11, 'string', new Date(1), 'DATA'];
