@@ -19,6 +19,6 @@ The ReactNative exampoe project is in the `examples/ReactExample` directory. You
 ## Documentation
 Currently there is no documentation for the current apis. You can see examples of how to use the apis in the example app and in the js test files here: https://github.com/realm/realm-js/tree/master/tests
 
-# License
+## License
 Copyright 2015 Realm Inc - All Rights Reserved
 Proprietary and Confidential
