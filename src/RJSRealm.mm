@@ -86,16 +86,16 @@ public:
     WeakRealm m_realm;
 
     void notify(const char *notification_name) {
-        for (auto callback : m_notifications) {
-            JSValueRef arguments[2];
-            SharedRealm realm = m_realm.lock();
-            if (!realm) {
-                throw std::runtime_error("Realm no longer exists");
-            }
-            JSObjectRef realm_object = RJSWrapObject<SharedRealm *>(m_context, RJSRealmClass(), new SharedRealm(realm));
-            arguments[0] = realm_object;
-            arguments[1] = RJSValueForString(m_context, notification_name);
+        JSValueRef arguments[2];
+        SharedRealm realm = m_realm.lock();
+        if (!realm) {
+            throw std::runtime_error("Realm no longer exists");
+        }
+        JSObjectRef realm_object = RJSWrapObject<SharedRealm *>(m_context, RJSRealmClass(), new SharedRealm(realm));
+        arguments[0] = realm_object;
+        arguments[1] = RJSValueForString(m_context, notification_name);
 
+        for (auto callback : m_notifications) {
             JSValueRef ex = NULL;
             JSObjectCallAsFunction(m_context, callback, realm_object, 2, arguments, &ex);
             if (ex) {
@@ -486,8 +486,6 @@ JSValueRef RealmRemoveAllListeners(JSContextRef ctx, JSObjectRef function, JSObj
     }
 }
 
-
-
 JSValueRef RealmClose(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) {
     try {
         RJSValidateArgumentCount(argumentCount, 0);
@@ -521,5 +519,3 @@ JSClassRef RJSRealmClass() {
     static JSClassRef s_realmClass = RJSCreateWrapperClass<SharedRealm *>("Realm", RealmGetProperty, NULL, RJSRealmFuncs);
     return s_realmClass;
 }
-
-

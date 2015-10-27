@@ -311,5 +311,17 @@ module.exports = BaseTest.extend({
         realm.write(function() {});
         TestCase.assertEqual(notificationCount, 3);
         TestCase.assertEqual(secondNotificationCount, 1);
+
+        TestCase.assertThrows(function() {
+            realm.addListener('invalid', function() {});
+        });
+
+        realm.addListener('change', function() {
+            throw new Error('error');
+        });
+
+        TestCase.assertThrows(function() {
+            realm.write(function() {});
+        });
     },
 });
