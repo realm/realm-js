@@ -99,6 +99,28 @@ namespace realm {
         static Mixed to_mixed(ContextType ctx, ValueType &val) { throw std::runtime_error("'Any' type is unsupported"); }
     };
 
+    class InvalidPropertyException : public std::runtime_error
+    {
+      public:
+        InvalidPropertyException(const std::string object_type, const std::string property_name, const std::string message) : std::runtime_error(message), object_type(object_type), property_name(property_name) {}
+        const std::string object_type;
+        const std::string property_name;
+    };
+
+    class MissingPropertyValueException : public std::runtime_error
+    {
+    public:
+        MissingPropertyValueException(const std::string object_type, const std::string property_name, const std::string message) : std::runtime_error(message), object_type(object_type), property_name(property_name) {}
+        const std::string object_type;
+        const std::string property_name;
+    };
+
+    class MutationOutsideTransactionException : public std::runtime_error
+    {
+      public:
+        MutationOutsideTransactionException(std::string message) : std::runtime_error(message) {}
+    };
+
     //
     // template method implementations
     //
@@ -107,7 +129,8 @@ namespace realm {
     {
         const Property *prop = object_schema.property_for_name(prop_name);
         if (!prop) {
-            throw std::runtime_error("Setting invalid property '" + prop_name + "' on object '" + object_schema.name + "'.");
+            throw InvalidPropertyException(object_schema.name, prop_name,
+                "Setting invalid property '" + prop_name + "' on object '" + object_schema.name + "'.");
         }
         set_property_value_impl(ctx, *prop, value, try_update);
     };
@@ -117,7 +140,8 @@ namespace realm {
     {
         const Property *prop = object_schema.property_for_name(prop_name);
         if (!prop) {
-            throw std::runtime_error("Getting invalid property '" + prop_name + "' on object '" + object_schema.name + "'.");
+            throw InvalidPropertyException(object_schema.name, prop_name,
+                "Getting invalid property '" + prop_name + "' on object '" + object_schema.name + "'.");
         }
         return get_property_value_impl<ValueType>(ctx, *prop);
     };
@@ -128,7 +152,7 @@ namespace realm {
         using Accessor = NativeAccessor<ValueType, ContextType>;
 
         if (!m_realm->is_in_transaction()) {
-            throw std::runtime_error("Can only set property values within a transaction.");
+            throw MutationOutsideTransactionException("Can only set property values within a transaction.");
         }
 
         size_t column = property.table_column;
@@ -223,7 +247,7 @@ namespace realm {
         using Accessor = NativeAccessor<ValueType, ContextType>;
 
         if (!realm->is_in_transaction()) {
-            throw std::runtime_error("Can only create objects within a transaction.");
+            throw MutationOutsideTransactionException("Can only create objects within a transaction.");
         }
 
         // get or create our accessor
@@ -244,7 +268,8 @@ namespace realm {
             }
 
             if (!try_update && row_index != realm::not_found) {
-                throw std::runtime_error("Attempting to create an object of type '" + object_schema.name + "' with an exising primary key value.");
+                throw DuplicatePrimaryKeyValueException(object_schema.name, *primary_prop,
+                    "Attempting to create an object of type '" + object_schema.name + "' with an exising primary key value.");
             }
         }
 
@@ -267,7 +292,8 @@ namespace realm {
                         object.set_property_value_impl(ctx, prop, Accessor::default_value_for_property(ctx, realm.get(), object_schema, prop.name), try_update);
                     }
                     else {
-                        throw std::runtime_error("Missing property value for property " + prop.name);
+                        throw MissingPropertyValueException(object_schema.name, prop.name,
+                            "Missing property value for property " + prop.name);
                     }
                 }
             }
