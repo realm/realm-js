@@ -315,6 +315,10 @@ JSValueRef RPCServer::deserialize_json_value(const json dict)
             }
             return date;
         }
+        else if (type_string == "undefined") {
+            return JSValueMakeUndefined(m_context);
+        }
+        assert(0);
     }
 
     if (value.is_null()) {
@@ -353,5 +357,5 @@ JSValueRef RPCServer::deserialize_json_value(const json dict)
         return js_object;
     }
 
-    return JSValueMakeUndefined(m_context);
+    assert(0);
 }
