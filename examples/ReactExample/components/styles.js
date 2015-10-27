@@ -46,6 +46,9 @@ module.exports = React.StyleSheet.create({
         flex: 1,
         lineHeight: 30,
     },
+    listItemTextSpecial: {
+        fontStyle: 'italic',
+    },
     listItemDelete: {
         paddingLeft: 12,
         paddingRight: 12,

@@ -12,6 +12,7 @@ class TodoListView extends React.Component {
         super(props);
 
         this.dataSource = new ListView.DataSource({
+            sectionHeaderHasChanged: () => false,
             rowHasChanged: (row1, row2) => row1 !== row2
         });
 
@@ -34,8 +35,14 @@ class TodoListView extends React.Component {
 
     render() {
         // Clone the items into a new Array to prevent unexpected errors from changes in length.
-        let items = Array.from(this.props.items);
-        let dataSource = this.dataSource.cloneWithRows(items);
+        let sections = [Array.from(this.props.items)];
+        let extraItems = this.props.extraItems;
+
+        if (extraItems && extraItems.length) {
+            sections.push(extraItems);
+        }
+
+        let dataSource = this.dataSource.cloneWithRowsAndSections(sections);
 
         return (
             <View style={styles.container}>
@@ -49,32 +56,41 @@ class TodoListView extends React.Component {
     }
 
     renderRow(item, sectionIndex, rowIndex) {
-        let RowClass = this.props.rowClass || TodoListItem;
+        let RowClass;
+        let editing = false;
+
+        if (sectionIndex == 0) {
+            RowClass = this.props.rowClass || TodoListItem;
+            editing = this.state.editingRow == rowIndex;
+        } else if (sectionIndex == 1) {
+            RowClass = TodoListExtraItem;
+        }
 
         return (
             <RowClass
                 item={item}
-                editing={this.state.editingRow == rowIndex}
-                onPress={() => this._onPressRow(item, rowIndex)}
-                onPressDelete={() => this._onPressDeleteRow(item, rowIndex)}
+                editing={editing}
+                onPress={() => this._onPressRow(item, sectionIndex, rowIndex)}
+                onPressDelete={() => this._onPressDeleteRow(item)}
                 onEndEditing={() => this._onEndEditingRow(item, rowIndex)} />
         );
     }
 
-    _onPressRow(item, rowIndex) {
+    _onPressRow(item, sectionIndex, rowIndex) {
         let onPressItem = this.props.onPressItem;
         if (onPressItem) {
-            onPressItem(item, rowIndex);
+            onPressItem(item);
             return;
         }
 
         // If no handler was provided, then default to editing the row.
-        this.setState({editingRow: rowIndex});
+        if (sectionIndex == 0) {
+            this.setState({editingRow: rowIndex});
+        }
     }
 
     _onPressDeleteRow(item) {
-        realm.write(() => realm.delete(item));
-
+        this._deleteItem(item);
         this.forceUpdate();
     }
 
@@ -86,11 +102,42 @@ class TodoListView extends React.Component {
         }
     }
 
+    _deleteItem(item) {
+        let items = item.items;
+
+        realm.write(() => {
+            // If the item is a TodoList, then delete all of its items.
+            if (items && items.length) {
+                realm.delete(items);
+            }
+
+            realm.delete(item);
+        });
+    }
+
     _deleteItemIfEmpty(item) {
         // The item could be a TodoList or a Todo.
         if (!item.name && !item.text) {
-            realm.write(() => realm.delete(item));
+            this._deleteItem(item);
         }
+    }
+}
+
+class TodoListExtraItem extends TodoListItem {
+    renderText() {
+        return super.renderText(styles.listItemTextSpecial);
+    }
+
+    renderLeftSide() {
+        return (
+            <View style={styles.listItemLeftSide}>
+                <Text>{this.props.item.items.length}</Text>
+            </View>
+        );
+    }
+
+    renderRightSide() {
+        return null;
     }
 }
 

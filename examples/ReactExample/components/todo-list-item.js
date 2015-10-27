@@ -58,14 +58,14 @@ class TodoListItem extends React.Component {
         return this.props.editing ? null : this.renderDelete();
     }
 
-    renderText() {
+    renderText(extraStyle) {
         if (this.props.editing) {
             return (
                 <TextInput
                     ref="input"
                     value={this.text}
                     placeholder="Call Mom"
-                    style={styles.listItemInput}
+                    style={[styles.listItemInput, extraStyle]}
                     onChangeText={this._onChangeText}
                     onEndEditing={this.props.onEndEditing}
                     enablesReturnKeyAutomatically={true} />
@@ -73,7 +73,7 @@ class TodoListItem extends React.Component {
         } else {
             return (
                 <Text
-                    style={styles.listItemText}
+                    style={[styles.listItemText, extraStyle]}
                     onPress={this.props.onPress}
                     suppressHighlighting={true}>
                     {this.text}

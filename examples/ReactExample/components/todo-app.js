@@ -30,14 +30,21 @@ class TodoApp extends React.Component {
     }
 
     render() {
+        let extraItems = [
+            {name: 'Complete', items: realm.objects('Todo', 'done = true')},
+            {name: 'Incomplete', items: realm.objects('Todo', 'done = false')},
+        ];
+
         let route = {
             title: 'My Todo Lists',
             component: TodoListView,
             passProps: {
                 ref: 'listView',
                 items: this.todoLists,
+                extraItems: extraItems,
                 onPressItem: (list) => this._onPressTodoList(list),
             },
+            backButtonTitle: 'Lists',
             rightButtonTitle: 'Add',
             onRightButtonPress: () => this._addNewTodoList(),
         };
@@ -64,17 +71,27 @@ class TodoApp extends React.Component {
     }
 
     _onPressTodoList(list) {
-        this.refs.nav.push({
+        let items = list.items;
+
+        let route = {
             title: list.name,
             component: TodoListView,
             passProps: {
                 ref: 'listItemView',
-                items: list.items,
+                items: items,
                 rowClass: TodoItem,
             },
-            rightButtonTitle: 'Add',
-            onRightButtonPress: () => this._addNewTodoItem(list),
-        });
+        };
+
+        // Check if the items are mutable (i.e. List rather than Results).
+        if (items.push) {
+            Object.assign(route, {
+                rightButtonTitle: 'Add',
+                onRightButtonPress: () => this._addNewTodoItem(list),
+            });
+        }
+
+        this.refs.nav.push(route);
     }
 
     _setEditingRow(rowIndex) {
