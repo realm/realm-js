@@ -254,12 +254,6 @@ json RPCServer::serialize_json_value(JSValueRef value) {
             {"schema", serialize_object_schema(results->object_schema)}
         };
     }
-    else if (JSValueIsObjectOfClass(m_context, value, RJSNotificationClass())) {
-        return {
-            {"type", RealmObjectTypesNotification},
-            {"id", store_object(js_object)},
-        };
-    }
     else if (RJSIsValueArray(m_context, value)) {
         size_t length = RJSValidatedListLength(m_context, js_object);
         std::vector<json> array;
