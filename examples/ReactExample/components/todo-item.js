@@ -2,6 +2,7 @@
 
 const React = require('react-native');
 const TodoItemCheckbox = require('./todo-item-checkbox');
+const TodoItemDelete = require('./todo-item-delete');
 const realm = require('./realm');
 const styles = require('./styles');
 
@@ -26,6 +27,7 @@ class TodoItem extends React.Component {
 
     render() {
         let item = this.props.item;
+        let deleteButton;
         let contents;
 
         if (this.props.editing) {
@@ -48,12 +50,17 @@ class TodoItem extends React.Component {
                     {item.text}
                 </Text>
             );
+
+            deleteButton = (
+                <TodoItemDelete onPress={this.props.onPressDelete} />
+            );
         }
 
         return (
             <View style={styles.listItem}>
                 <TodoItemCheckbox checked={item.done} onPress={this._onPressCheckbox} />
                 {contents}
+                {deleteButton}
             </View>
         );
     }

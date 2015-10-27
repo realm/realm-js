@@ -39,6 +39,7 @@ class TodoList extends React.Component {
                 item={item}
                 editing={this.state.editingRow == rowIndex}
                 onPress={() => this._onPressRow(rowIndex)}
+                onPressDelete={() => this._onPressDeleteRow(rowIndex)}
                 onEndEditing={() => this._onEndEditingRow(rowIndex)} />
         );
     }
@@ -51,6 +52,14 @@ class TodoList extends React.Component {
         }
 
         this.setState({editingRow: rowIndex});
+    }
+
+    _onPressDeleteRow(rowIndex) {
+        let items = this.props.list.items;
+
+        realm.write(() => items.splice(rowIndex, 1));
+
+        this.forceUpdate();
     }
 
     _onEndEditingRow(rowIndex) {

@@ -10,7 +10,6 @@ module.exports = React.StyleSheet.create({
         backgroundColor: '#ffffff',
     },
     listItem: {
-        paddingRight: 12,
         borderColor: "#c8c7cc",
         borderBottomWidth: 0.5,
         alignItems: 'stretch',
@@ -44,6 +43,12 @@ module.exports = React.StyleSheet.create({
         flexDirection: 'column',
         flex: 1,
         lineHeight: 30,
+    },
+    listItemDelete: {
+        paddingLeft: 12,
+        paddingRight: 12,
+        flexDirection: 'column',
+        justifyContent: 'center',
     },
     instructions: {
         textAlign: 'center',
