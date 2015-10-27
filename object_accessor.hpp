@@ -156,6 +156,11 @@ namespace realm {
         }
 
         size_t column = property.table_column;
+        if (property.is_nullable && Accessor::is_null(ctx, value)) {
+            m_row.set_null(column);
+            return;
+        }
+
         switch (property.type) {
             case PropertyTypeBool:
                 m_row.set_bool(column, Accessor::to_bool(ctx, value));
@@ -209,6 +214,10 @@ namespace realm {
         using Accessor = NativeAccessor<ValueType, ContextType>;
 
         size_t column = property.table_column;
+        if (property.is_nullable && m_row.is_null(column)) {
+            return Accessor::null_value(ctx);
+        }
+
         switch (property.type) {
             case PropertyTypeBool:
                 return Accessor::from_bool(ctx, m_row.get_bool(column));
