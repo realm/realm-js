@@ -48,17 +48,32 @@ module.exports = BaseTest.extend({
         TestCase.assertEqual(object.nonexistent, undefined);
     },
     testNullableBasicTypesPropertyGetters: function() {
-        var basicTypesValues = [null, null, null, null, null, null, null];
+        var nullValues = [null, null, null, null, null, null, null];
+        var basicTypesValues = [true, 1, 1.1, 1.11, 'string', new Date(1), 'DATA'];
+
         var realm = new Realm({schema: [schemas.NullableBasicTypes]});
+        var nullObject = null;
         var object = null;
         realm.write(function() {
+            nullObject = realm.create('NullableBasicTypesObject', nullValues);
             object = realm.create('NullableBasicTypesObject', basicTypesValues);
         });
 
         for (var i = 0; i < schemas.BasicTypes.properties.length; i++) {
             var prop = schemas.BasicTypes.properties[i];
-            TestCase.assertEqual(object[prop.name], null);
+            TestCase.assertEqual(nullObject[prop.name], null);
+
+            if (prop.type == Realm.Types.FLOAT) {
+                TestCase.assertEqualWithTolerance(object[prop.name], basicTypesValues[i], 0.000001);
+            }
+            else if (prop.type == Realm.Types.DATE) {
+                TestCase.assertEqual(object[prop.name].getTime(), basicTypesValues[i].getTime());
+            }
+            else {
+                TestCase.assertEqual(object[prop.name], basicTypesValues[i]);
+            }
         }
+
     },
     testBasicTypesPropertySetters: function() {
         var basicTypesValues = [true, 1, 1.1, 1.11, 'string', new Date(1), 'DATA'];

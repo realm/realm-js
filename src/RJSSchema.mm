@@ -58,7 +58,7 @@ static inline Property RJSParseProperty(JSContextRef ctx, JSObjectRef propertyOb
     JSValueRef optionalValue = JSObjectGetProperty(ctx, propertyObject, optionalString, NULL);
     if (!JSValueIsUndefined(ctx, optionalValue)) {
         if (!JSValueIsBoolean(ctx, optionalValue)) {
-            throw std::runtime_error("Property expected to be of type boolean");
+            throw std::runtime_error("'optional' designation expected to be of type boolean");
         }
         prop.is_nullable = JSValueToBoolean(ctx, optionalValue);
     }

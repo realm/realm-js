@@ -54,7 +54,7 @@ exports.BasicTypes = {
 };
 
 exports.NullableBasicTypes = {
-    name: 'NullableBasicTypes',
+    name: 'NullableBasicTypesObject',
     properties: [
         {name: 'boolCol',   type: Realm.Types.BOOL,   optional: true},
         {name: 'intCol',    type: Realm.Types.INT,    optional: true},
