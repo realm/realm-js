@@ -133,6 +133,13 @@
 			remoteGlobalIDString = 02B29A151B7CF7C9008A7E6B;
 			remoteInfo = RealmReact;
 		};
+		F6EA29001BDEEC4B00ECDC7B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 146833FF1AC3E56700842450 /* React.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 83CBBA2D1A601D0E00E9B192;
+			remoteInfo = React;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -389,6 +396,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				F6EA29011BDEEC4B00ECDC7B /* PBXTargetDependency */,
 				F636F6E31BCDB72D0023F35C /* PBXTargetDependency */,
 			);
 			name = ReactExample;
@@ -636,6 +644,11 @@
 			isa = PBXTargetDependency;
 			name = RealmReact;
 			targetProxy = F636F6E21BCDB72D0023F35C /* PBXContainerItemProxy */;
+		};
+		F6EA29011BDEEC4B00ECDC7B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = React;
+			targetProxy = F6EA29001BDEEC4B00ECDC7B /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
