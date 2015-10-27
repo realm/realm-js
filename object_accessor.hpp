@@ -117,7 +117,7 @@ namespace realm {
     {
         const Property *prop = object_schema.property_for_name(prop_name);
         if (!prop) {
-            throw std::runtime_error("Setting invalid property '" + prop_name + "' on object '" + object_schema.name + "'.");
+            throw std::runtime_error("Getting invalid property '" + prop_name + "' on object '" + object_schema.name + "'.");
         }
         return get_property_value_impl<ValueType>(ctx, *prop);
     };
