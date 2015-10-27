@@ -33,10 +33,14 @@ JSValueRef ObjectGetProperty(JSContextRef ctx, JSObjectRef jsObject, JSStringRef
     try {
         Object *obj = RJSGetInternal<Object *>(jsObject);
         return obj->get_property_value<JSValueRef>(ctx, RJSStringForJSString(jsPropertyName));
-    } catch (std::exception &ex) {
+    } catch (InvalidPropertyException &ex) {
         // getters for nonexistent properties in JS should always return undefined
-        return NULL;
+    } catch (std::exception &ex) {
+        if (exception) {
+            *exception = RJSMakeError(ctx, ex);
+        }
     }
+    return NULL;
 }
 
 bool ObjectSetProperty(JSContextRef ctx, JSObjectRef jsObject, JSStringRef jsPropertyName, JSValueRef value, JSValueRef* exception) {
