@@ -9,6 +9,9 @@ module.exports = React.StyleSheet.create({
         alignItems: 'stretch',
         backgroundColor: '#ffffff',
     },
+    navigator: {
+        flex: 1,
+    },
     listItem: {
         borderColor: "#c8c7cc",
         borderBottomWidth: 0.5,
@@ -18,16 +21,15 @@ module.exports = React.StyleSheet.create({
         flex: 1,
         height: 44,
     },
-    listItemCheckboxContainer: {
-        paddingLeft: 12,
-        paddingRight: 4,
+    listItemLeftSide: {
         flexDirection: 'column',
+        alignItems: 'center',
         justifyContent: 'center',
+        width: 36,
     },
     listItemCheckbox: {
         borderColor: "#000",
         borderWidth: 0.5,
-        marginRight: 8,
         width: 16,
         height: 16,
     },

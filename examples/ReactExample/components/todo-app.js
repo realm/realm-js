@@ -1,50 +1,85 @@
 'use strict';
 
 const React = require('react-native');
-const TodoList = require('./todo-list');
+const TodoItem = require('./todo-item');
+const TodoListView = require('./todo-listview');
 const realm = require('./realm');
+const styles = require('./styles');
 
 const { NavigatorIOS } = React;
 
 class TodoApp extends React.Component {
-    componentWillMount() {
-        let todoLists = realm.objects('TodoList');
+    constructor(props) {
+        super(props);
 
+        let todoLists = realm.objects('TodoList');
         if (todoLists.length < 1) {
             realm.write(() => {
                 realm.create('TodoList', {name: 'Todo List', items: []});
             });
         }
 
+        // This is a Results object, which will live-update.
         this.todoLists = todoLists;
+        this.state = {};
+    }
+
+    get currentListView() {
+        let refs = this.refs.nav.refs;
+        return refs.listItemView || refs.listView;
     }
 
     render() {
-        let list = this.todoLists[0];
-
         let route = {
-            title: list.name,
-            component: TodoList,
+            title: 'My Todo Lists',
+            component: TodoListView,
             passProps: {
-                ref: 'todoList',
-                list: list,
+                ref: 'listView',
+                items: this.todoLists,
+                onPressItem: (list) => this._onPressTodoList(list),
             },
             rightButtonTitle: 'Add',
-            onRightButtonPress: () => this._addNewItem(list)
+            onRightButtonPress: () => this._addNewTodoList(),
         };
 
         return (
-            <NavigatorIOS ref="nav" initialRoute={route} style={{flex: 1}} />
+            <NavigatorIOS ref="nav" initialRoute={route} style={styles.navigator} />
         );
     }
 
-    _addNewItem(list) {
+    _addNewTodoItem(list) {
         realm.write(() => {
             list.items.push({text: ''});
         });
 
-        let todoList = this.refs.nav.refs.todoList;
-        todoList.setState({editingRow: list.items.length - 1});
+        this._setEditingRow(list.items.length - 1);
+    }
+
+    _addNewTodoList() {
+        realm.write(() => {
+            realm.create('TodoList', {name: '', items: []});
+        });
+
+        this._setEditingRow(this.todoLists.length - 1);
+    }
+
+    _onPressTodoList(list) {
+        this.refs.nav.push({
+            title: list.name,
+            component: TodoListView,
+            passProps: {
+                ref: 'listItemView',
+                items: list.items,
+                rowClass: TodoItem,
+            },
+            rightButtonTitle: 'Add',
+            onRightButtonPress: () => this._addNewTodoItem(list),
+        });
+    }
+
+    _setEditingRow(rowIndex) {
+        // Update the state on the currently displayed TodoList to edit this new item.
+        this.currentListView.setState({editingRow: rowIndex});
     }
 }
 

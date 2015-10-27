@@ -1,96 +1,53 @@
 'use strict';
 
 const React = require('react-native');
-const TodoItemCheckbox = require('./todo-item-checkbox');
-const TodoItemDelete = require('./todo-item-delete');
+const TodoListItem = require('./todo-list-item');
 const realm = require('./realm');
 const styles = require('./styles');
 
-const { Text, TextInput, View } = React;
+const { Text, TouchableWithoutFeedback, View } = React;
 
-class TodoItem extends React.Component {
+class TodoItem extends TodoListItem {
     constructor(props) {
         super(props);
 
-        this._onChangeText = this._onChangeText.bind(this);
         this._onPressCheckbox = this._onPressCheckbox.bind(this);
     }
 
-    componentDidMount() {
-        // The autoFocus prop on TextInput was not working for us :(
-        this._focusInputIfNecessary();
+    get done() {
+        return this.props.item.done;
     }
 
-    componentDidUpdate() {
-        this._focusInputIfNecessary();
+    set done(done) {
+        this.props.item.done = done;
     }
 
-    render() {
-        let item = this.props.item;
-        let deleteButton;
-        let contents;
+    get text() {
+        return this.props.item.text;
+    }
 
-        if (this.props.editing) {
-            contents = (
-                <TextInput
-                    ref="input"
-                    value={item.text}
-                    placeholder="Call Mom"
-                    style={styles.listItemInput}
-                    onChangeText={this._onChangeText}
-                    onEndEditing={this.props.onEndEditing}
-                    enablesReturnKeyAutomatically={true} />
-            );
-        } else {
-            contents = (
-                <Text
-                    style={styles.listItemText}
-                    onPress={this.props.onPress}
-                    suppressHighlighting={true}>
-                    {item.text}
-                </Text>
-            );
+    set text(text) {
+        this.props.item.text = text;
+    }
 
-            deleteButton = (
-                <TodoItemDelete onPress={this.props.onPressDelete} />
-            );
-        }
-
+    renderLeftSide() {
         return (
-            <View style={styles.listItem}>
-                <TodoItemCheckbox checked={item.done} onPress={this._onPressCheckbox} />
-                {contents}
-                {deleteButton}
-            </View>
+            <TouchableWithoutFeedback onPress={this._onPressCheckbox}>
+                <View style={styles.listItemLeftSide}>
+                    <View style={styles.listItemCheckbox}>
+                        <Text>{this.done ? '✓' : ''}</Text>
+                    </View>
+                </View>
+            </TouchableWithoutFeedback>
         );
     }
 
-    _onChangeText(text) {
-        realm.write(() => {
-            this.props.item.text = text;
-        });
-
-        this.forceUpdate();
-    }
-
     _onPressCheckbox() {
-        let item = this.props.item;
         realm.write(() => {
-            item.done = !item.done;
+            this.done = !this.done;
         });
 
         this.forceUpdate();
-    }
-
-    _focusInputIfNecessary() {
-        if (!this.props.editing) {
-            return;
-        }
-
-        let input = this.refs.input;
-        if (!input.isFocused()) {
-            input.focus();
-        }
     }
 }
 
