@@ -423,11 +423,20 @@ JSValueRef RealmWrite(JSContextRef ctx, JSObjectRef function, JSObjectRef thisOb
     return NULL;
 }
 
+std::string RJSValidatedNotificationName(JSContextRef ctx, JSValueRef value) {
+    std::string name = RJSValidatedStringForValue(ctx, value);
+    if (name != "change") {
+        throw std::runtime_error("Only the 'change' notification name is supported.");
+    }
+    return name;
+}
+
 JSValueRef RealmAddListener(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) {
     try {
-        RJSValidateArgumentCount(argumentCount, 1);
+        RJSValidateArgumentCount(argumentCount, 2);
+        __unused std::string name = RJSValidatedNotificationName(ctx, arguments[0]);
+        JSObjectRef callback = RJSValidatedValueToFunction(ctx, arguments[1]);
 
-        JSObjectRef callback = RJSValidatedValueToFunction(ctx, arguments[0]);
         SharedRealm realm = *RJSGetInternal<SharedRealm *>(thisObject);
         static_cast<RJSRealmDelegate *>(realm->m_delegate.get())->add_notification(callback);
         return NULL;
@@ -442,9 +451,10 @@ JSValueRef RealmAddListener(JSContextRef ctx, JSObjectRef function, JSObjectRef 
 
 JSValueRef RealmRemoveListener(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) {
     try {
-        RJSValidateArgumentCount(argumentCount, 1);
+        RJSValidateArgumentCount(argumentCount, 2);
+        __unused std::string name = RJSValidatedNotificationName(ctx, arguments[0]);
+        JSObjectRef callback = RJSValidatedValueToFunction(ctx, arguments[1]);
 
-        JSObjectRef callback = RJSValidatedValueToFunction(ctx, arguments[0]);
         SharedRealm realm = *RJSGetInternal<SharedRealm *>(thisObject);
         static_cast<RJSRealmDelegate *>(realm->m_delegate.get())->remove_notification(callback);
         return NULL;
@@ -459,7 +469,11 @@ JSValueRef RealmRemoveListener(JSContextRef ctx, JSObjectRef function, JSObjectR
 
 JSValueRef RealmRemoveAllListeners(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) {
     try {
-        RJSValidateArgumentCount(argumentCount, 0);
+        RJSValidateArgumentRange(argumentCount, 0, 1);
+        if (argumentCount) {
+            RJSValidatedNotificationName(ctx, arguments[0]);
+        }
+
         SharedRealm realm = *RJSGetInternal<SharedRealm *>(thisObject);
         static_cast<RJSRealmDelegate *>(realm->m_delegate.get())->remove_all_notifications();
         return NULL;
