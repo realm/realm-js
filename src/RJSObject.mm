@@ -100,7 +100,7 @@ template<> JSValueRef RJSAccessor::default_value_for_property(JSContextRef ctx, 
 }
 
 template<> bool RJSAccessor::is_null(JSContextRef ctx, JSValueRef &val) {
-    return JSValueIsUndefined(ctx, val) || JSValueIsNull(ctx, val);
+    return JSValueIsNull(ctx, val);
 }
 template<> JSValueRef RJSAccessor::null_value(JSContextRef ctx) {
     return JSValueMakeNull(ctx);

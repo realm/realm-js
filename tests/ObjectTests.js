@@ -157,6 +157,58 @@ module.exports = BaseTest.extend({
 
         TestCase.assertEqual(obj.boolCol, false, 'bool value changed outside transaction');
     },
+    testNullableBasicTypesPropertySetters: function() {
+        var basicTypesValues = [true, 1, 1.1, 1.11, 'string', new Date(1), 'DATA'];
+        var realm = new Realm({schema: [schemas.NullableBasicTypes]});
+        var obj = null;
+
+        realm.write(function() {
+            obj = realm.create('NullableBasicTypesObject', basicTypesValues);
+            for (var prop of schemas.NullableBasicTypes.properties) {
+                obj[prop.name] = null;
+            }
+        });
+
+        for (var prop of schemas.NullableBasicTypes.properties) {
+            TestCase.assertEqual(obj[prop.name], null);
+        }
+
+        realm.write(function() {
+            TestCase.assertThrows(function() {
+                obj.boolCol = 'cat';
+            });
+            TestCase.assertThrows(function() {
+                obj.intCol = 'dog';
+            });
+
+
+            TestCase.assertThrows(function() {
+                obj.boolCol = undefined;
+            });
+            TestCase.assertThrows(function() {
+                obj.intCol = undefined;
+            });
+            TestCase.assertThrows(function() {
+                obj.floatCol = undefined;
+            });
+            TestCase.assertThrows(function() {
+                obj.doubleCol = undefined;
+            });
+            TestCase.assertThrows(function() {
+                obj.stringCol = undefined;
+            });
+            TestCase.assertThrows(function() {
+                obj.dateCol = undefined;
+            });          
+            TestCase.assertThrows(function() {
+                obj.dataCol = undefined;
+            });
+        });
+
+        TestCase.assertThrows(function() {
+            obj.boolCol = null;
+        }, 'can only set property values in a write transaction');
+    },
     testLinkTypesPropertyGetters: function() {
         var realm = new Realm({schema: [schemas.LinkTypes, schemas.TestObject]});
         var obj = null;
