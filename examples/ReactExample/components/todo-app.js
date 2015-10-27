@@ -1,3 +1,7 @@
+/* Copyright 2015 Realm Inc - All Rights Reserved
+ * Proprietary and Confidential
+ */
+
 'use strict';
 
 const React = require('react-native');
