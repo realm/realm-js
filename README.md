@@ -17,7 +17,7 @@ The ReactNative exampoe project is in the `examples/ReactExample` directory. You
 - Drag `RealmJS.framework` from the `Products` directory under `RealmJS.xcodeproj` into the `Embedded Libraries` section in the `General` tab for you app's target settings. This bundles the library with your app.
 
 ## Documentation
-Currently there is no documentation for the current apis. You can see examples of how to use the apis in the example app and in the js test files here: https://github.com/realm/realm-js/tree/master/tests
+Currently there is no documentation for the ReactNative apis. You can see examples of how to use the apis in the example app and in the js test files here: https://github.com/realm/realm-js/tree/master/tests
 
 ## License
 Copyright 2015 Realm Inc - All Rights Reserved
