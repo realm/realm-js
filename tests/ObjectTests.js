@@ -181,7 +181,6 @@ module.exports = BaseTest.extend({
                 obj.intCol = 'dog';
             });
 
-
             TestCase.assertThrows(function() {
                 obj.boolCol = undefined;
             });
