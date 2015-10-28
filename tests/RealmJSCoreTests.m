@@ -2,7 +2,6 @@
  * Proprietary and Confidential
  */
 
-
 #import "RealmJSTests.h"
 #import "RJSModuleLoader.h"
 

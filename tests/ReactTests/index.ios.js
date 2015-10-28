@@ -1,7 +1,7 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
+/* Copyright 2015 Realm Inc - All Rights Reserved
+ * Proprietary and Confidential
  */
+
 'use strict';
 
 var React = require('react-native');
