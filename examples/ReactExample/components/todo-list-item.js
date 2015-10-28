@@ -68,7 +68,7 @@ class TodoListItem extends React.Component {
                 <TextInput
                     ref="input"
                     value={this.text}
-                    placeholder="Call Mom"
+                    placeholder="Todo…"
                     style={[styles.listItemInput, extraStyle]}
                     onChangeText={this._onChangeText}
                     onEndEditing={this.props.onEndEditing}
