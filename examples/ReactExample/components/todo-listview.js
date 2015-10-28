@@ -24,16 +24,21 @@ class TodoListView extends React.Component {
         this.renderRow = this.renderRow.bind(this);
     }
 
-    componentWillUpdate(nextProps, nextState) {
+    componentDidUpdate() {
+        let items = this.props.items;
         let editingRow = this.state.editingRow;
 
-        if (editingRow != null && editingRow != nextState.editingRow) {
-            let item = this.props.items[editingRow];
-
-            // The item may have already been deleted.
-            if (item) {
-                this._deleteItemIfEmpty(item);
+        for (let i = items.length; i--;) {
+            if (i == editingRow) {
+                continue;
             }
+            if (this._deleteItemIfEmpty(items[i]) && i < editingRow) {
+                editingRow--;
+            }
+        }
+
+        if (editingRow != this.state.editingRow) {
+            this.setState({editingRow});
         }
     }
 
@@ -123,7 +128,9 @@ class TodoListView extends React.Component {
         // The item could be a TodoList or a Todo.
         if (!item.name && !item.text) {
             this._deleteItem(item);
+            return true;
         }
+        return false;
     }
 }
 

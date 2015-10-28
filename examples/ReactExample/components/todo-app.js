@@ -59,19 +59,29 @@ class TodoApp extends React.Component {
     }
 
     _addNewTodoItem(list) {
+        let items = list.items;
+        if (!this._shouldAddNewItem(items)) {
+            return;
+        }
+
         realm.write(() => {
-            list.items.push({text: ''});
+            items.push({text: ''});
         });
 
-        this._setEditingRow(list.items.length - 1);
+        this._setEditingRow(items.length - 1);
     }
 
     _addNewTodoList() {
+        let items = this.todoLists;
+        if (!this._shouldAddNewItem(items)) {
+            return;
+        }
+
         realm.write(() => {
             realm.create('TodoList', {name: '', items: []});
         });
 
-        this._setEditingRow(this.todoLists.length - 1);
+        this._setEditingRow(items.length - 1);
     }
 
     _onPressTodoList(list) {
@@ -96,6 +106,14 @@ class TodoApp extends React.Component {
         }
 
         this.refs.nav.push(route);
+    }
+
+    _shouldAddNewItem(items) {
+        let editingRow = this.currentListView.state.editingRow;
+        let editingItem = editingRow != null && items[editingRow];
+
+        // Don't allow adding a new item if the one being edited is empty.
+        return !editingItem || !!editingItem.text || !!editingItem.name;
     }
 
     _setEditingRow(rowIndex) {
