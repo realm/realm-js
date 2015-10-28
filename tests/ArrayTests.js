@@ -289,6 +289,7 @@ module.exports = BaseTest.extend({
                 TestCase.assertEqual(array.length, 1);
                 TestCase.assertEqual(array[0].doubleCol, 4);
 
+                // This should cancel the transaction and cause the list to be reset.
                 throw new Error('Transaction FAIL');
             });
         } catch (e) {}
@@ -323,6 +324,7 @@ module.exports = BaseTest.extend({
                 array.push(objects[0], objects[1]);
                 TestCase.assertEqual(objects.length, 7);
 
+                // This should cancel the transaction and cause the list and results to be reset.
                 throw new Error('Transaction FAIL');
             });
         } catch (e) {}
