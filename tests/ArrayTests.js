@@ -270,7 +270,66 @@ module.exports = BaseTest.extend({
         });
 
         TestCase.assertThrows(function() {
-            obj.arrayCol.splice(0, 0, obj.objectCol);
+            array.splice(0, 0, [1]);
         }, 'can only splice in a write transaction');
+    },
+
+    testDeletions: function() {
+        var realm = new Realm({schema: [schemas.LinkTypes, schemas.TestObject]});
+        var array;
+
+        realm.write(function() {
+            var obj = realm.create('LinkTypesObject', [[1], [2], [[3], [4]]]);
+            array = obj.arrayCol;
+        });
+
+        try {
+            realm.write(function() {
+                realm.delete(array[0]);
+                TestCase.assertEqual(array.length, 1);
+                TestCase.assertEqual(array[0].doubleCol, 4);
+
+                // This should cancel the transaction and cause the list to be reset.
+                throw new Error('Transaction FAIL');
+            });
+        } catch (e) {}
+
+        TestCase.assertEqual(array.length, 2);
+        TestCase.assertEqual(array[0].doubleCol, 3);
+    },
+
+    testLiveUpdatingResults: function() {
+        var realm = new Realm({schema: [schemas.LinkTypes, schemas.TestObject]});
+        var objects = realm.objects('TestObject');
+        var array;
+
+        realm.write(function() {
+            var obj = realm.create('LinkTypesObject', [[1], [2], [[3], [4]]]);
+            array = obj.arrayCol;
+        });
+
+        TestCase.assertEqual(objects.length, 4);
+
+        try {
+            realm.write(function() {
+                array.push([5]);
+                TestCase.assertEqual(objects.length, 5);
+
+                array.unshift([2]);
+                TestCase.assertEqual(objects.length, 6);
+
+                array.splice(0, 0, [1]);
+                TestCase.assertEqual(objects.length, 7);
+
+                array.push(objects[0], objects[1]);
+                TestCase.assertEqual(objects.length, 7);
+
+                // This should cancel the transaction and cause the list and results to be reset.
+                throw new Error('Transaction FAIL');
+            });
+        } catch (e) {}
+
+        TestCase.assertEqual(array.length, 2);
+        TestCase.assertEqual(objects.length, 4);
     },
 });
