@@ -349,9 +349,9 @@
 				027798471BBB2F1000C96559 /* ReactExampleTests */,
 				83CBBA001A601CBA00E9B192 /* Products */,
 			);
-			indentWidth = 2;
+			indentWidth = 4;
 			sourceTree = "<group>";
-			tabWidth = 2;
+			tabWidth = 4;
 		};
 		83CBBA001A601CBA00E9B192 /* Products */ = {
 			isa = PBXGroup;
@@ -411,7 +411,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastUpgradeCheck = 0700;
-				ORGANIZATIONNAME = Facebook;
+				ORGANIZATIONNAME = Realm;
 				TargetAttributes = {
 					027798451BBB2F1000C96559 = {
 						CreatedOnToolsVersion = 7.0.1;
