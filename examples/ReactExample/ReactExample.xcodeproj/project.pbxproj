@@ -133,6 +133,13 @@
 			remoteGlobalIDString = 02B29A151B7CF7C9008A7E6B;
 			remoteInfo = RealmReact;
 		};
+		F6EA29001BDEEC4B00ECDC7B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 146833FF1AC3E56700842450 /* React.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 83CBBA2D1A601D0E00E9B192;
+			remoteInfo = React;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -342,9 +349,9 @@
 				027798471BBB2F1000C96559 /* ReactExampleTests */,
 				83CBBA001A601CBA00E9B192 /* Products */,
 			);
-			indentWidth = 2;
+			indentWidth = 4;
 			sourceTree = "<group>";
-			tabWidth = 2;
+			tabWidth = 4;
 		};
 		83CBBA001A601CBA00E9B192 /* Products */ = {
 			isa = PBXGroup;
@@ -389,6 +396,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				F6EA29011BDEEC4B00ECDC7B /* PBXTargetDependency */,
 				F636F6E31BCDB72D0023F35C /* PBXTargetDependency */,
 			);
 			name = ReactExample;
@@ -403,7 +411,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastUpgradeCheck = 0700;
-				ORGANIZATIONNAME = Facebook;
+				ORGANIZATIONNAME = Realm;
 				TargetAttributes = {
 					027798451BBB2F1000C96559 = {
 						CreatedOnToolsVersion = 7.0.1;
@@ -636,6 +644,11 @@
 			isa = PBXTargetDependency;
 			name = RealmReact;
 			targetProxy = F636F6E21BCDB72D0023F35C /* PBXContainerItemProxy */;
+		};
+		F6EA29011BDEEC4B00ECDC7B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = React;
+			targetProxy = F6EA29001BDEEC4B00ECDC7B /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
