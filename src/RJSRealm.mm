@@ -125,6 +125,19 @@ std::string writeablePathForFile(const std::string &fileName) {
     return std::string(path.UTF8String) + "/" + fileName;
 }
 
+void ensureDirectoryForFile(const std::string &fileName) {
+    NSString *docsDir = [[NSString stringWithUTF8String:fileName.c_str()] stringByDeletingLastPathComponent];
+    NSFileManager *manager = [NSFileManager defaultManager];
+
+    if (![manager fileExistsAtPath:docsDir]) {
+        NSError *error = nil;
+        [manager createDirectoryAtPath:docsDir withIntermediateDirectories:YES attributes:nil error:&error];
+        if (error) {
+            throw std::runtime_error([[error description] UTF8String]);
+        }
+    }
+}
+
 static std::string s_defaultPath = writeablePathForFile("default.realm");
 std::string RJSDefaultPath() {
     return s_defaultPath;
@@ -197,6 +210,7 @@ JSObjectRef RealmConstructor(JSContextRef ctx, JSObjectRef constructor, size_t a
                 *jsException = RJSMakeError(ctx, "Invalid arguments when constructing 'Realm'");
                 return NULL;
         }
+        ensureDirectoryForFile(config.path);
         SharedRealm realm = Realm::get_shared_realm(config);
         if (!realm->m_delegate) {
             realm->m_delegate = std::make_unique<RJSRealmDelegate>(realm, JSContextGetGlobalContext(ctx));
