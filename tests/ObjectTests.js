@@ -216,11 +216,13 @@ module.exports = BaseTest.extend({
     },
     testLinkTypesPropertySetters: function() {
         var realm = new Realm({schema: [schemas.LinkTypes, schemas.TestObject]});
+        var objects = realm.objects('TestObject');
         var obj = null;
+
         realm.write(function() {
             obj = realm.create('LinkTypesObject', [[1], null, [[3]]]);
         });
-        TestCase.assertEqual(realm.objects('TestObject').length, 2);
+        TestCase.assertEqual(objects.length, 2);
 
         TestCase.assertThrows(function() {
             obj.objectCol1 = obj.objectCol;
@@ -232,7 +234,7 @@ module.exports = BaseTest.extend({
         });
         TestCase.assertEqual(obj.objectCol1.doubleCol, 1);
         //TestCase.assertEqual(obj.objectCol, obj.objectCol1);
-        TestCase.assertEqual(realm.objects('TestObject').length, 2);
+        TestCase.assertEqual(objects.length, 2);
 
         realm.write(function() {
             obj.objectCol = null;
@@ -246,12 +248,13 @@ module.exports = BaseTest.extend({
             obj.objectCol = { doubleCol: 1 };
         });
         TestCase.assertEqual(obj.objectCol.doubleCol, 1);
-        TestCase.assertEqual(realm.objects('TestObject').length, 3);
+        TestCase.assertEqual(objects.length, 3);
 
         // set array property
         realm.write(function() {
             obj.arrayCol = [obj.arrayCol[0], obj.objectCol, realm.create('TestObject', [2])];
         });
+        TestCase.assertEqual(objects.length, 4);
         TestCase.assertEqual(obj.arrayCol.length, 3);
         TestCase.assertEqual(obj.arrayCol[0].doubleCol, 3);
         TestCase.assertEqual(obj.arrayCol[1].doubleCol, 1);

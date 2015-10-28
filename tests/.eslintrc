@@ -2,7 +2,11 @@
   "env": {
     "commonjs": true
   },
+  "ecmaFeatures": {
+    "forOf": true
+  },
   "rules": {
+    "no-empty": 0,
     "no-unused-vars": 0
   }
 }
