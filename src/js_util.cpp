@@ -47,10 +47,10 @@ std::string RJSStringForJSString(JSStringRef jsString) {
 }
 
 std::string RJSStringForValue(JSContextRef ctx, JSValueRef value) {
-    JSValueRef *exception;
-    JSStringRef jsString = JSValueToStringCopy(ctx, value, exception);
+    JSValueRef exception = NULL;
+    JSStringRef jsString = JSValueToStringCopy(ctx, value, &exception);
     if (!jsString) {
-        throw RJSException(ctx, *exception);
+        throw RJSException(ctx, exception);
     }
 
     std::string string = RJSStringForJSString(jsString);
@@ -97,4 +97,3 @@ bool RJSIsValueDate(JSContextRef ctx, JSValueRef value) {
     static JSStringRef dateString = JSStringCreateWithUTF8CString("Date");
     return RJSIsValueObjectOfType(ctx, value, dateString);
 }
-
