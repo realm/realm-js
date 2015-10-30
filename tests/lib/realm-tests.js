@@ -162,17 +162,19 @@ module.exports = BaseTest.extend({
         var realm = new Realm({schema: [schemas.DefaultValues, schemas.TestObject]});
         realm.write(function() {
             var obj = realm.create('DefaultValuesObject', {});
-            TestCase.assertEqual(obj.boolCol, schemas.DefaultValues.properties[0].default);
-            TestCase.assertEqual(obj.intCol, schemas.DefaultValues.properties[1].default);
-            TestCase.assertEqualWithTolerance(obj.floatCol, schemas.DefaultValues.properties[2].default, 0.000001);
-            TestCase.assertEqual(obj.doubleCol, schemas.DefaultValues.properties[3].default);
-            TestCase.assertEqual(obj.stringCol, schemas.DefaultValues.properties[4].default);
-            TestCase.assertEqual(obj.dateCol.getTime(), schemas.DefaultValues.properties[5].default.getTime());
-            TestCase.assertEqual(obj.dataCol.byteLength, schemas.DefaultValues.properties[6].default.byteLength);
-            TestCase.assertEqual(obj.objectCol.doubleCol, schemas.DefaultValues.properties[7].default[0]);
+            var properties = schemas.DefaultValues.properties;
+
+            TestCase.assertEqual(obj.boolCol, properties.boolCol.default);
+            TestCase.assertEqual(obj.intCol, properties.intCol.default);
+            TestCase.assertEqualWithTolerance(obj.floatCol, properties.floatCol.default, 0.000001);
+            TestCase.assertEqual(obj.doubleCol, properties.doubleCol.default);
+            TestCase.assertEqual(obj.stringCol, properties.stringCol.default);
+            TestCase.assertEqual(obj.dateCol.getTime(), properties.dateCol.default.getTime());
+            TestCase.assertEqual(obj.dataCol.byteLength, properties.dataCol.default.byteLength);
+            TestCase.assertEqual(obj.objectCol.doubleCol, properties.objectCol.default[0]);
             TestCase.assertEqual(obj.nullObjectCol, null);
-            TestCase.assertEqual(obj.arrayCol.length, schemas.DefaultValues.properties[9].default.length);
-            TestCase.assertEqual(obj.arrayCol[0].doubleCol, schemas.DefaultValues.properties[9].default[0][0]);
+            TestCase.assertEqual(obj.arrayCol.length, properties.arrayCol.default.length);
+            TestCase.assertEqual(obj.arrayCol[0].doubleCol, properties.arrayCol.default[0][0]);
         });
     },
 
