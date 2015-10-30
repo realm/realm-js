@@ -23,6 +23,7 @@
 #include <realm/link_view.hpp>
 
 namespace realm {
+    class ObjectSchema;
     class List {
       public:
         List(SharedRealm &r, const ObjectSchema &s, LinkViewRef l) : m_realm(r), m_object_schema(&s), m_link_view(l) {}

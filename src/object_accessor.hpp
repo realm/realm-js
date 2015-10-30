@@ -5,10 +5,13 @@
 #ifndef REALM_OBJECT_ACCESSOR_HPP
 #define REALM_OBJECT_ACCESSOR_HPP
 
-#include <string>
-#include "shared_realm.hpp"
-#include "schema.hpp"
 #include "list.hpp"
+#include "object_schema.hpp"
+#include "object_store.hpp"
+#include "schema.hpp"
+#include "shared_realm.hpp"
+
+#include <string>
 
 namespace realm {
 
