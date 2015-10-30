@@ -19,6 +19,7 @@
 #include "results.hpp"
 
 #include "object_store.hpp"
+#include "impl/realm_coordinator.hpp"
 
 #include <stdexcept>
 
@@ -60,6 +61,8 @@ void Results::validate_read() const
         m_realm->verify_thread();
     if (m_table && !m_table->is_attached())
         throw InvalidatedException();
+    if (m_mode == Mode::TableView && !m_table_view.is_attached())
+        throw InvalidatedException();
 }
 
 void Results::validate_write() const
@@ -92,6 +95,11 @@ size_t Results::size()
             return m_table_view.size();
     }
     REALM_UNREACHABLE();
+}
+
+StringData Results::get_object_type() const noexcept
+{
+    return get_object_schema().name;
 }
 
 RowExpr Results::get(size_t row_ndx)
@@ -301,8 +309,9 @@ Query Results::get_query() const
     switch (m_mode) {
         case Mode::Empty:
         case Mode::Query:
-        case Mode::TableView:
             return m_query;
+        case Mode::TableView:
+            return m_table_view.get_query();
         case Mode::Table:
             return m_table->where();
     }
@@ -341,4 +350,32 @@ Results::UnsupportedColumnTypeException::UnsupportedColumnTypeException(size_t c
 , column_name(table->get_column_name(column))
 , column_type(table->get_column_type(column))
 {
+}
+
+AsyncQueryCancelationToken Results::async(std::unique_ptr<AsyncQueryCallback> target)
+{
+    return _impl::RealmCoordinator::register_query(*this, std::move(target));
+}
+
+AsyncQueryCancelationToken::~AsyncQueryCancelationToken()
+{
+    if (m_registration) {
+        _impl::RealmCoordinator::unregister_query(*m_registration);
+    }
+}
+
+AsyncQueryCancelationToken::AsyncQueryCancelationToken(AsyncQueryCancelationToken&& rgt)
+: m_registration(std::move(rgt.m_registration))
+{
+}
+
+AsyncQueryCancelationToken& AsyncQueryCancelationToken::operator=(realm::AsyncQueryCancelationToken&& rgt)
+{
+    if (this != &rgt) {
+        if (m_registration) {
+            _impl::RealmCoordinator::unregister_query(*m_registration);
+        }
+        m_registration = std::move(rgt.m_registration);
+    }
+    return *this;
 }

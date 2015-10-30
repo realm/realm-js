@@ -431,7 +431,8 @@ public:
 namespace realm {
 namespace _impl {
 namespace transaction {
-void advance(SharedGroup& sg, ClientHistory& history, BindingContext* context)
+void advance(SharedGroup& sg, ClientHistory& history, BindingContext* context,
+             SharedGroup::VersionID version)
 {
     TransactLogObserver(context, sg, [&](auto&&... args) {
         LangBindHelper::advance_read(sg, history, std::move(args)...);
