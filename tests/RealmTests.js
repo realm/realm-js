@@ -118,7 +118,7 @@ module.exports = BaseTest.extend({
             TestCase.assertThrows(function() {
                 realm.create('AllTypesObject', values);
             });
-            realm.create('AllTypesObject', ['1', false, 2, 2.2, 2.11, '2', new Date(2), '2', null, [[2]]], true);
+            var obj1 = realm.create('AllTypesObject', ['1', false, 2, 2.2, 2.11, '2', new Date(2), '2', [0], [[2]]], true);
             var objects = realm.objects('AllTypesObject');
             TestCase.assertEqual(objects.length, 2);
 
@@ -135,7 +135,10 @@ module.exports = BaseTest.extend({
             TestCase.assertEqual(obj0.arrayCol.length, 1);
 
             realm.create('AllTypesObject', { primaryCol: '0' }, true);
+            realm.create('AllTypesObject', { primaryCol: '1' }, true);
             TestCase.assertEqual(obj0.stringCol, '2');
+            TestCase.assertEqual(obj0.objectCol, null);
+            TestCase.assertEqual(obj1.objectCol.doubleCol, 0);
 
             realm.create('AllTypesObject', { primaryCol: '0', stringCol: '3', objectCol: [0] }, true);
             TestCase.assertEqual(obj0.stringCol, '3');
@@ -147,6 +150,11 @@ module.exports = BaseTest.extend({
             TestCase.assertEqual(obj0.dataCol, '2');
             TestCase.assertEqual(obj0.objectCol.doubleCol, 0);
             TestCase.assertEqual(obj0.arrayCol.length, 1);
+
+            realm.create('AllTypesObject', { primaryCol: '0', objectCol: undefined }, true);
+            realm.create('AllTypesObject', { primaryCol: '1', objectCol: null }, true);
+            TestCase.assertEqual(obj0.objectCol, null);
+            TestCase.assertEqual(obj1.objectCol, null);
         });
     },
 
