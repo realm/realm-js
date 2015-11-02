@@ -7,7 +7,7 @@ This repository uses submodules so you need to run `git submodule update --init 
 ## ReactNative Example
 Make sure your environment is set up to run react native applications. Follow the instructions here https://facebook.github.io/react-native/docs/getting-started.html.
 
-The ReactNative exampoe project is in the `examples/ReactExample` directory. You need to run `npm install` in this directory before running the example for the first time.
+The ReactNative example project is in the `examples/ReactExample` directory. You need to run `npm install` in this directory before running the example for the first time.
 
 ## ReactNative Project Setup
 - Create a new ReactNative project `react-native init <project-name>` and open the generated XCode project.
