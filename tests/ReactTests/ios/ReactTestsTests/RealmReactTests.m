@@ -173,7 +173,6 @@ extern void JSGlobalContextSetIncludesNativeCallStackWhenReportingExceptions(JSG
 
 @end
 
-/* TODO: Re-enable once this works in CI
 @implementation RealmReactChromeTests
 
 + (Class)executorClass {
@@ -185,4 +184,3 @@ extern void JSGlobalContextSetIncludesNativeCallStackWhenReportingExceptions(JSG
 }
 
 @end
- */
