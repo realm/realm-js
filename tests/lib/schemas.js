@@ -98,9 +98,9 @@ exports.DefaultValues = {
         stringCol:     {type: Realm.Types.STRING, default: 'defaultString'},
         dateCol:       {type: Realm.Types.DATE,   default: new Date(1.111)},
         dataCol:       {type: Realm.Types.DATA,   default: new ArrayBuffer(1)},
-        objectCol:     {type: 'TestObject',       default: [1]},
+        objectCol:     {type: 'TestObject',       default: {doubleCol: 1}},
         nullObjectCol: {type: 'TestObject',       default: null},
-        arrayCol:      {type: Realm.Types.LIST, objectType: 'TestObject', default: [[2]]},
+        arrayCol:      {type: Realm.Types.LIST, objectType: 'TestObject', default: [{doubleCol: 2}]},
     }
 };
 
