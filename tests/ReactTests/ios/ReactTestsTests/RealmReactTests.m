@@ -12,9 +12,6 @@
 
 extern void JSGlobalContextSetIncludesNativeCallStackWhenReportingExceptions(JSGlobalContextRef ctx, bool includesNativeCallStack);
 
-@interface RCTDevMenu () <RCTInvalidating>
-@end
-
 @interface RealmReactTests : RealmJSTests
 @end
 
@@ -22,6 +19,12 @@ extern void JSGlobalContextSetIncludesNativeCallStackWhenReportingExceptions(JSG
 @end
 
 @implementation RealmReactTests
+
++ (void)load {
+    // We don't want the RCTDevMenu from switching the executor class from underneath us.
+    IMP init = class_getMethodImplementation([NSObject class], @selector(init));
+    class_replaceMethod([RCTDevMenu class], @selector(init), init, NULL);
+}
 
 + (Class)executorClass {
     return NSClassFromString(@"RCTContextExecutor");
@@ -33,10 +36,7 @@ extern void JSGlobalContextSetIncludesNativeCallStackWhenReportingExceptions(JSG
 
 + (id<RCTJavaScriptExecutor>)currentExecutor {
     Class executorClass = [self executorClass];
-    if (!executorClass) {
-        NSLog(@"%@: Executor class not found", self);
-        exit(1);
-    }
+    assert(executorClass);
 
     static RCTBridge *s_bridge;
     if (!s_bridge) {
@@ -44,20 +44,9 @@ extern void JSGlobalContextSetIncludesNativeCallStackWhenReportingExceptions(JSG
     }
 
     if (!s_bridge.valid) {
-        NSNotification *notification = [self waitForNotification:RCTDidCreateNativeModules];
-        s_bridge = notification.object;
-
-        if (!s_bridge) {
-            NSLog(@"No RCTBridge provided by RCTJavaScriptDidLoadNotification");
-            exit(1);
-        }
-
-#ifdef DEBUG
-        // We don't want the RCTDevMenu from switching the executor class from underneath us.
-        [s_bridge.devMenu invalidate];
-#endif
-
-        [self waitForNotification:RCTJavaScriptDidLoadNotification];
+        NSNotification *notification = [self waitForNotification:RCTJavaScriptDidLoadNotification];
+        s_bridge = notification.userInfo[@"bridge"];
+        assert(s_bridge);
     }
 
     if (s_bridge.executorClass != executorClass) {
