@@ -36,7 +36,9 @@ extern void JSGlobalContextSetIncludesNativeCallStackWhenReportingExceptions(JSG
 
 + (id<RCTJavaScriptExecutor>)currentExecutor {
     Class executorClass = [self executorClass];
-    assert(executorClass);
+    if (!executorClass) {
+        return nil;
+    }
 
     static RCTBridge *s_bridge;
     if (!s_bridge) {
@@ -63,7 +65,13 @@ extern void JSGlobalContextSetIncludesNativeCallStackWhenReportingExceptions(JSG
 }
 
 + (XCTestSuite *)defaultTestSuite {
+    XCTestSuite *suite = [super defaultTestSuite];
     id<RCTJavaScriptExecutor> executor = [self currentExecutor];
+
+    // The executor may be nil if the executorClass was not found (i.e. release build).
+    if (!executor) {
+        return suite;
+    }
 
     // FIXME: Remove this nonsense once the crashes go away when a test fails!
     JSGlobalContextRef ctx = RealmReactGetJSGlobalContextForExecutor(executor, false);
@@ -88,7 +96,6 @@ extern void JSGlobalContextSetIncludesNativeCallStackWhenReportingExceptions(JSG
         testCaseNames = renamedTestCaseNames;
     }
 
-    XCTestSuite *suite = [super defaultTestSuite];
     for (XCTestSuite *testSuite in [self testSuitesFromDictionary:testCaseNames]) {
         [suite addTest:testSuite];
     }
