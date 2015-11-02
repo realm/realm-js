@@ -146,17 +146,20 @@ module.exports = BaseTest.extend({
     testNullableBasicTypesPropertySetters: function() {
         var basicTypesValues = [true, 1, 1.1, 1.11, 'string', new Date(1), 'DATA'];
         var realm = new Realm({schema: [schemas.NullableBasicTypes]});
-        var obj = null;
+        var obj, obj1;
 
         realm.write(function() {
             obj = realm.create('NullableBasicTypesObject', basicTypesValues);
+            obj1 = realm.create('NullableBasicTypesObject', basicTypesValues);
             for (var prop of schemas.NullableBasicTypes.properties) {
                 obj[prop.name] = null;
+                obj1[prop.name] = undefined;
             }
         });
 
         for (var prop of schemas.NullableBasicTypes.properties) {
             TestCase.assertEqual(obj[prop.name], null);
+            TestCase.assertEqual(obj1[prop.name], null);
         }
 
         realm.write(function() {
@@ -165,28 +168,6 @@ module.exports = BaseTest.extend({
             });
             TestCase.assertThrows(function() {
                 obj.intCol = 'dog';
-            });
-
-            TestCase.assertThrows(function() {
-                obj.boolCol = undefined;
-            });
-            TestCase.assertThrows(function() {
-                obj.intCol = undefined;
-            });
-            TestCase.assertThrows(function() {
-                obj.floatCol = undefined;
-            });
-            TestCase.assertThrows(function() {
-                obj.doubleCol = undefined;
-            });
-            TestCase.assertThrows(function() {
-                obj.stringCol = undefined;
-            });
-            TestCase.assertThrows(function() {
-                obj.dateCol = undefined;
-            });          
-            TestCase.assertThrows(function() {
-                obj.dataCol = undefined;
             });
         });
 
