@@ -22,6 +22,7 @@
 using RJSAccessor = realm::NativeAccessor<JSValueRef, JSContextRef>;
 using namespace realm_js;
 
+static const char * const RealmObjectTypesDictionary = "ObjectTypesDICT";
 static const char * const RealmObjectTypesFunction = "ObjectTypesFUNCTION";
 static const char * const RealmObjectTypesResults = "ObjectTypesRESULTS";
 
@@ -262,6 +263,28 @@ json RPCServer::serialize_json_value(JSValueRef value) {
             {"value", RJSValidatedValueToNumber(m_context, value)},
         };
     }
+    else {
+        JSPropertyNameArrayRef js_keys = JSObjectCopyPropertyNames(m_context, js_object);
+        size_t count = JSPropertyNameArrayGetCount(js_keys);
+        std::vector<std::string> keys;
+        std::vector<json> values;
+
+        for (size_t i = 0; i < count; i++) {
+            JSStringRef js_key = JSPropertyNameArrayGetNameAtIndex(js_keys, i);
+            JSValueRef js_value = RJSValidatedPropertyValue(m_context, js_object, js_key);
+
+            keys.push_back(RJSStringForJSString(js_key));
+            values.push_back(serialize_json_value(js_value));
+        }
+
+        JSPropertyNameArrayRelease(js_keys);
+
+        return {
+            {"type", RealmObjectTypesDictionary},
+            {"keys", keys},
+            {"values", values},
+        };
+    }
     assert(0);
 }
 
@@ -298,6 +321,22 @@ JSValueRef RPCServer::deserialize_json_value(const json dict)
             JSStringRelease(js_body);
 
             return js_function;
+        }
+        else if (type_string == RealmObjectTypesDictionary) {
+            JSObjectRef js_object = JSObjectMake(m_context, NULL, NULL);
+            json keys = dict["keys"];
+            json values = dict["values"];
+            size_t count = keys.size();
+
+            for (size_t i = 0; i < count; i++) {
+                JSStringRef js_key = RJSStringForString(keys.at(i));
+                JSValueRef js_value = deserialize_json_value(values.at(i));
+
+                JSObjectSetProperty(m_context, js_object, js_key, js_value, 0, NULL);
+                JSStringRelease(js_key);
+            }
+
+            return js_object;
         }
         else if (type_string == RJSTypeGet(realm::PropertyTypeData)) {
             std::string bytes;
@@ -344,19 +383,5 @@ JSValueRef RPCServer::deserialize_json_value(const json dict)
 
         return JSObjectMakeArray(m_context, count, js_values, NULL);
     }
-    else if (value.is_object()) {
-        JSObjectRef js_object = JSObjectMake(m_context, NULL, NULL);
-
-        for (json::iterator it = value.begin(); it != value.end(); ++it) {
-            JSValueRef js_value = deserialize_json_value(it.value());
-            JSStringRef js_key = JSStringCreateWithUTF8CString(it.key().c_str());
-
-            JSObjectSetProperty(m_context, js_object, js_key, js_value, 0, NULL);
-            JSStringRelease(js_key);
-        }
-
-        return js_object;
-    }
-
     assert(0);
 }
