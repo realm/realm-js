@@ -17,4 +17,5 @@ std::string RJSDefaultPath();
 void RJSSetDefaultPath(std::string path);
 
 std::map<std::string, realm::ObjectDefaults> &RJSDefaults(realm::Realm *realm);
+std::map<std::string, JSObjectRef> &RJSObjects(realm::Realm *realm, std::string type);
 std::map<std::string, JSValueRef> &RJSPrototypes(realm::Realm *realm);
