@@ -10,17 +10,17 @@ module.exports = new Realm({
     schema: [
         {
             name: 'Todo',
-            properties: [
-                {name: 'done', type: Realm.Types.BOOL, default: false},
-                {name: 'text', type: Realm.Types.STRING, default: ''},
-            ]
+            properties: {
+                done: {type: Realm.Types.BOOL, default: false},
+                text: Realm.Types.STRING,
+            },
         },
         {
             name: 'TodoList',
-            properties: [
-                {name: 'name', type: Realm.Types.STRING},
-                {name: 'items', type: Realm.Types.LIST, objectType: 'Todo'},
-            ]
+            properties: {
+                name: Realm.Types.STRING,
+                items: {type: Realm.Types.LIST, objectType: 'Todo', default: []},
+            },
         },
     ],
 });
