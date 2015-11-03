@@ -88,6 +88,7 @@ namespace realm {
         void commit_transaction();
         void cancel_transaction();
         bool is_in_transaction() const { return m_in_transaction; }
+        bool is_in_read_transaction() const { return !!m_group; }
 
         bool refresh();
         void set_auto_refresh(bool auto_refresh) { m_auto_refresh = auto_refresh; }
