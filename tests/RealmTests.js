@@ -289,8 +289,11 @@ module.exports = BaseTest.extend({
         var secondNotificationCount = 0;
         function secondNotification(realm, name) {
             secondNotificationCount++;
-        };
-        realm.addListener('change', secondNotification)
+        }
+
+        // The listener should only be added once.
+        realm.addListener('change', secondNotification);
+        realm.addListener('change', secondNotification);
 
         realm.write(function() {});
         TestCase.assertEqual(notificationCount, 2);
