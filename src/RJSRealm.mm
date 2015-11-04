@@ -49,12 +49,16 @@ public:
     }
 
     void add_notification(JSObjectRef notification) {
-        JSValueProtect(m_context, notification);
-        m_notifications.insert(notification);
+        if (!m_notifications.count(notification)) {
+            JSValueProtect(m_context, notification);
+            m_notifications.insert(notification);
+        }
     }
     void remove_notification(JSObjectRef notification) {
-        JSValueUnprotect(m_context, notification);
-        m_notifications.erase(notification);
+        if (m_notifications.count(notification)) {
+            JSValueUnprotect(m_context, notification);
+            m_notifications.erase(notification);
+        }
     }
     void remove_all_notifications() {
         for (auto notification : m_notifications) {
