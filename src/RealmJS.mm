@@ -47,22 +47,36 @@ static JSValueRef ClearTestState(JSContextRef ctx, JSObjectRef function, JSObjec
     return NULL;
 }
 
-void RJSInitializeInContext(JSContextRef ctx) {
-    JSValueRef exception = NULL;
-    JSObjectRef globalObject = JSContextGetGlobalObject(ctx);
-
-    JSObjectRef globalRealmObject = RJSRegisterGlobalClass(ctx, globalObject, RJSRealmConstructorClass(), "Realm", &exception);
+JSObjectRef RJSConstructorCreate(JSContextRef ctx) {
+    JSObjectRef realmObject = JSObjectMake(ctx, RJSRealmConstructorClass(), NULL);
     JSObjectRef typesObject = JSObjectMake(ctx, RJSRealmTypeClass(), NULL);
+
+    JSValueRef exception = NULL;
     JSStringRef typeString = JSStringCreateWithUTF8CString("Types");
     JSPropertyAttributes attributes = kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete;
-    JSObjectSetProperty(ctx, globalRealmObject, typeString, typesObject, attributes, &exception);
+    JSObjectSetProperty(ctx, realmObject, typeString, typesObject, attributes, &exception);
     JSStringRelease(typeString);
+    assert(!exception);
 
     JSStringRef clearTestStateString = JSStringCreateWithUTF8CString("clearTestState");
     JSObjectRef clearTestStateFunction = JSObjectMakeFunctionWithCallback(ctx, clearTestStateString, ClearTestState);
-    JSObjectSetProperty(ctx, globalRealmObject, clearTestStateString, clearTestStateFunction, attributes, &exception);
+    JSObjectSetProperty(ctx, realmObject, clearTestStateString, clearTestStateFunction, attributes, &exception);
     JSStringRelease(clearTestStateString);
+    assert(!exception);
 
+    return realmObject;
+}
+
+void RJSInitializeInContext(JSContextRef ctx) {
+    JSObjectRef globalObject = JSContextGetGlobalObject(ctx);
+    JSObjectRef realmObject = RJSConstructorCreate(ctx);
+
+    JSValueRef exception = NULL;
+    JSStringRef nameString = JSStringCreateWithUTF8CString("Realm");
+    JSPropertyAttributes attributes = kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete;
+
+    JSObjectSetProperty(ctx, globalObject, nameString, realmObject, attributes, &exception);
+    JSStringRelease(nameString);
     assert(!exception);
 }
 

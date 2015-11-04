@@ -6,15 +6,6 @@
 
 using namespace realm;
 
-JSObjectRef RJSRegisterGlobalClass(JSContextRef ctx, JSObjectRef globalObject, JSClassRef classRef, const char *name, JSValueRef *exception) {
-    JSObjectRef classObject = JSObjectMake(ctx, classRef, NULL);
-    JSStringRef nameString = JSStringCreateWithUTF8CString(name);
-    JSPropertyAttributes attributes = kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete;
-    JSObjectSetProperty(ctx, globalObject, nameString, classObject, attributes, exception);
-    JSStringRelease(nameString);
-    return classObject;
-}
-
 JSValueRef RJSMakeError(JSContextRef ctx, RJSException &exp) {
     JSValueRef value = exp.exception();
     return JSObjectMakeError(ctx, 1, &value, NULL);

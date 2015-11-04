@@ -16,13 +16,12 @@
 + (XCTestSuite *)defaultTestSuite {
     XCTestSuite *suite = [super defaultTestSuite];
     JSContext *context = [[JSContext alloc] init];
+    JSValue *realmConstructor = [JSValue valueWithJSValueRef:RJSConstructorCreate(context.JSGlobalContextRef) inContext:context];
     RJSModuleLoader *moduleLoader = [[RJSModuleLoader alloc] initWithContext:context];
     NSURL *scriptURL = [[NSBundle bundleForClass:self] URLForResource:@"index" withExtension:@"js"];
 
-    RJSInitializeInContext(context.JSGlobalContextRef);
-
-    // Expose the global Realm object as a global 'realm' CommonJS module.
-    [moduleLoader addGlobalModuleObject:context[@"Realm"] forName:@"realm"];
+    // Expose the Realm constructor as a global 'realm' CommonJS module.
+    [moduleLoader addGlobalModuleObject:realmConstructor forName:@"realm"];
 
     NSError *error;
     JSValue *testObjects = [moduleLoader loadModuleFromURL:scriptURL error:&error];
