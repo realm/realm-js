@@ -84,7 +84,7 @@ let characters = realm.objects('Person');
 let chandler = realm.objects('Person', 'name = "Chandler Bing"')[0];
 ```
 
-Queries are live updating, so as change are made to the Realm, queries are updated automatically on access.
+Queries are live updating, so as change are made to a Realm queries are updated automatically to reflect those changes.
 
 You can see more examples of how to use these APIs in the [ReactExample](https://github.com/realm/realm-js/tree/master/examples/ReactExample) app and in the [JS test files](https://github.com/realm/realm-js/tree/master/tests).
 
