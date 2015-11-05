@@ -90,14 +90,16 @@ You can see more examples of how to use these APIs in the [ReactExample](https:/
 
 ## Documentation
 ### `Realm` Constructor Options
-- `path` – defaults to `Realm.defaultPath` (which initially is `'Documents/default.realm'`)
-- `schema` – array of object type definitions (see below, optional if realm already created)
-- `schemaVersion` – defaults to `0` (must be incremented after changing the schema)
+#### `new Realm(config)`
+The configuration passed can contain the following:
+- `schema` – required when first accessing a realm - array of `ObjectSchema` or object constructors (see below)
+- `path` – optional - defaults to `Realm.defaultPath` (which initially is `'Documents/default.realm'`)
+- `schemaVersion` – optiona - defaults to `0` but must be specified and incremented after changing the schema
 
-### Object Types
-- `name` – string used to refer to this object type
-- `primaryKey` – optional name of `STRING` or `INT` property that should be unique
-- `properties` – array of property defitions (see below)
+### ObjectSchema
+- `name` – required - string used to refer to this object type
+- `properties` - required – array of property defitions (see below)
+- `primaryKey` – optional - name of `STRING` or `INT` property that should be unique
 
 ### Property Types
 When definining object `properties` in a `schema`, each should have a unique `name`, and the `type` of each property must be defined as either the name of an object type in the same schema **or** as one of the following:
@@ -124,7 +126,7 @@ You _may_ specify these property options as well:
 - `update` – optional boolean signaling that an existing object (matching primary key) should be updated - only the primary key property and properties which should be updated need to be specified for the `props` arguments - all missing property values will remain unchanged
 - _Returns a new realm object instance_
 
-#### `delete(object)`
+#### `delete(object, ..., objectN)`
 - `object` – realm object or array of realm objects (which can be a `List` or `Results` object)
 
 #### `deleteAll()`
