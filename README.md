@@ -63,7 +63,7 @@ realm.write(() => {
 });
 ```
 
-When creating an object, values for all properties without default values need to be specified. In the example above, since the `points` property has a default property it can be ommitted.
+When creating an object, values for all properties without default values need to be specified. In the example above, since the `points` property has a default property it can be omitted.
 
 Changes to object properties and object deletions also need to take place in a write transactions:
 
@@ -75,7 +75,7 @@ realm.write(() => {
 });
 ```
 
-**Note:** If an uncaught exception occurs during a write transaction, then the write transaction will roll-back and all, deletions, and modifications will be undone.
+**Note:** If an uncaught exception occurs during a write transaction, then the write transaction will rollback and all object creations, deletions and modifications will be undone.
 
 You can query for existing objects by passing the object type and an optional query into the `realm.objects()` method:
 
@@ -92,6 +92,7 @@ You can see more examples of how to use these APIs in the [ReactExample](https:/
 ### `Realm` Constructor Options
 #### `new Realm(realmConfig)`
 The `realmConfig` passed to the constructor can contain the following:
+
 - `schema` – required when first accessing a realm - array of `ObjectSchema` or object constructors (see below)
 - `path` – optional - defaults to `Realm.defaultPath` (which initially is `'Documents/default.realm'`)
 - `schemaVersion` – optional - defaults to `0` but must be specified and incremented after changing the schema
@@ -123,10 +124,10 @@ You _may_ specify these property options as well:
 #### `create(type, props [, update])`
 - `type` – string matching object `name` in the `schema` definition
 - `props` – object with property values for all required properties without a default value
-- `update` – optional - boolean signaling that an existing object (matching primary key) should be updated - only the primary key property and properties which should be updated need to be specified for the `props` arguments - all missing property values will remain unchanged
+- `update` – optional – boolean signaling that an existing object (matching primary key) should be updated – only the primary key property and properties which should be updated need to be specified for the `props` arguments (all missing property values will remain unchanged)
 - _Returns a new realm object instance_
 
-#### `delete(object, ..., objectN)`
+#### `delete(object)`
 - `object` – realm object or array of realm objects (which can be a `List` or `Results` object)
 
 #### `deleteAll()`
@@ -134,11 +135,22 @@ You _may_ specify these property options as well:
 
 #### `objects(type [, query])`
 - `type` - string matching object `name` in the `schema` definition
-- `query` – optional - string that defines a query to filter results (see tests for examples)
+- `query` – optional – string that defines a query to filter results (see tests for examples)
 - _Returns `Results` object_
 
 #### `write(callback)`
 - `callback` – function that is synchronously called inside the write transaction
+
+#### `addListener(event, callback)`
+- `event` – string specifying the event name (only `'change'` is currently supported)
+- `callback` – function that is called when that event occurs
+
+#### `removeListener(event, callback)`
+- `event` – string specifying the event name (only `'change'` is currently supported)
+- `callback` – function that was previously added a listener callback
+
+### `removeAllListeners([event])`
+- `event` – optional – string specifying the event name (only `'change'` is currently supported)
 
 #### `close()`
 **WARNING:** This is only for advanced use cases and generally doesn't need to be used.
