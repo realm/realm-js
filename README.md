@@ -18,26 +18,40 @@ The ReactNative example project is in the `examples/ReactExample` directory. You
 - You can now `require('realm')` in your app's JS to use Realm!
 
 ## Getting Started
-Start with creating a `realm` by defining its `schema` (object types and their properties):
+Start with creating a `realm` by passing it an array of `objectSchema` (object types and their properties) for each type of object it will contain:
 
 ```js
 const Realm = require('realm');
 
-const realm = new Realm({
-    schema: [
-        {
-            name: 'Person',
-            properties: [
-                {name: 'name', type: Realm.Types.STRING},
-                {name: 'birthday', type: Realm.Types.DATE},
-                {name: 'friends', type: Realm.Types.LIST, objectType: 'Person'},
-            ]
-        },
-    ]
-});
+const personSchema = {
+    name: 'Person',
+    primaryKey: 'name',
+    properties: [
+        {name: 'name', type: Realm.Types.STRING},
+        {name: 'birthday', type: Realm.Types.DATE},
+        {name: 'friends', type: Realm.Types.LIST, objectType: 'Person'},
+        {name: 'points', type: Realm.Types.INT, default: 0},
+    ],
+};
+
+const realm = new Realm({schema: [personSchema]});
 ```
 
-You can now use this `realm` to create new objects inside a write transaction:
+If you'd prefer your objects inherit from a prototype, you just need to define the `schema` on the `prototype` object and instead pass in the constructor when creating a `realm`:
+
+```js
+function Person() {}
+Person.prototype = {
+    schema: personSchema,
+    get age() {
+        return Math.floor((Date.now() - this.birthday.getTime()) / 31557600000);
+    },
+};
+
+const realm = new Realm({schema: [Person]});
+```
+
+You can now use the `realm` instance to create new objects. When using Realm, all mutations must take place inside of a write transaction:
 
 ```js
 realm.write(() => {
@@ -49,16 +63,19 @@ realm.write(() => {
 });
 ```
 
-Remember you'll also need to modify and delete objects in write transactions:
+When creating an object, values for all properties without default values need to be specified. In the example above, since the `points` property has a default property it can be ommitted.
+
+Changes to object properties and object deletions also need to take place in a write transactions:
 
 ```js
 realm.write(() => {
+    rachel.points++;
     rachel.friends.push(ross);
     realm.delete(janine);
 });
 ```
 
-**Note:** If an uncaught exception occurs during a write transaction, then object creations, deletions, and modifications will be undone.
+**Note:** If an uncaught exception occurs during a write transaction, then the write transaction will roll-back and all, deletions, and modifications will be undone.
 
 You can query for existing objects by passing the object type and an optional query into the `realm.objects()` method:
 
@@ -67,26 +84,7 @@ let characters = realm.objects('Person');
 let chandler = realm.objects('Person', 'name = "Chandler Bing"')[0];
 ```
 
-If you'd prefer your objects inherit from a prototype, you just need to define the `schema` on the `prototype` object and instead pass in the constructor when creating a `realm`:
-
-```js
-function Person() {}
-Person.prototype = {
-    schema: {
-        name: 'Person',
-        properties: [
-            {name: 'name', type: Realm.Types.STRING},
-            {name: 'birthday', type: Realm.Types.DATE},
-            {name: 'friends', type: Realm.Types.LIST, objectType: 'Person'},
-        ]
-    },
-    get age() {
-        return Math.floor((Date.now() - this.birthday.getTime()) / 31557600000);
-    },
-};
-
-const realm = new Realm({schema: [Person]});
-```
+Queries are live updating, so as change are made to the Realm, queries are updated automatically on access.
 
 You can see more examples of how to use these APIs in the [ReactExample](https://github.com/realm/realm-js/tree/master/examples/ReactExample) app and in the [JS test files](https://github.com/realm/realm-js/tree/master/tests).
 
@@ -94,7 +92,7 @@ You can see more examples of how to use these APIs in the [ReactExample](https:/
 ### `Realm` Constructor Options
 - `path` – defaults to `Realm.defaultPath` (which initially is `'Documents/default.realm'`)
 - `schema` – array of object type definitions (see below, optional if realm already created)
-- `schemaVersion` – defaults to `0` (should be incremented after changing the schema)
+- `schemaVersion` – defaults to `0` (must be incremented after changing the schema)
 
 ### Object Types
 - `name` – string used to refer to this object type
@@ -120,10 +118,10 @@ You _may_ specify these property options as well:
 - `optional` – boolean indicating if this property may be assigned `null` or `undefined`
 
 ### `Realm` Instance Methods
-#### `create(type, props, update)`
+#### `create(type, props [, update])`
 - `type` – string matching object `name` in the `schema` definition
 - `props` – object with property values for all required properties without a default value
-- `update` – optional boolean signaling that an existing object (matching primary key) should be updated
+- `update` – optional boolean signaling that an existing object (matching primary key) should be updated - only the primary key property and properties which should be updated need to be specified for the `props` arguments - all missing property values will remain unchanged
 - _Returns a new realm object instance_
 
 #### `delete(object)`
@@ -132,7 +130,7 @@ You _may_ specify these property options as well:
 #### `deleteAll()`
 **WARNING:** This does what you think it does!
 
-#### `objects(type, query)`
+#### `objects(type [, query])`
 - `type` – string matching object `name` in the `schema` definition
 - `query` – optional string that defines a query to filter results (see tests for examples)
 - _Returns `Results` object_
