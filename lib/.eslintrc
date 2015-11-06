@@ -4,6 +4,9 @@
     "browser": true,
     "es6": true,
   },
+  "ecmaFeatures": {
+    "forOf": false
+  },
   "globals": {
     "global": true
   }
