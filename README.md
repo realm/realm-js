@@ -149,7 +149,7 @@ You _may_ specify these property options as well:
 - `event` – string specifying the event name (only `'change'` is currently supported)
 - `callback` – function that was previously added a listener callback
 
-### `removeAllListeners([event])`
+#### `removeAllListeners([event])`
 - `event` – optional – string specifying the event name (only `'change'` is currently supported)
 
 #### `close()`
