@@ -69,6 +69,8 @@ namespace realm {
 
             // for compounds
             std::vector<Predicate> sub_predicates;
+
+            bool negate;
         };
 
         Predicate parse(const std::string &query);

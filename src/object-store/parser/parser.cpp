@@ -95,6 +95,7 @@ struct ParserState
 {
     std::vector<Predicate *> predicate_stack;
     Predicate *current() { return predicate_stack.back(); }
+    bool negate_next;
 
     void addExpression(Expression exp)
     {
@@ -106,6 +107,10 @@ struct ParserState
             Predicate p;
             p.type = Predicate::Type::Comparison;
             p.sub_expressions.emplace_back(std::move(exp));
+            if (negate_next) {
+                p.negate = true;
+                negate_next = false;
+            }
             current()->sub_predicates.emplace_back(std::move(p));
             predicate_stack.push_back(&current()->sub_predicates.back());
         }
@@ -244,6 +249,11 @@ template<> struct action< one< '(' > >
 
         Predicate group;
         group.type = Predicate::Type::And;
+        if (state.negate_next) {
+            group.negate = true;
+            state.negate_next = false;
+        }
+
         state.current()->sub_predicates.emplace_back(std::move(group));
         state.predicate_stack.push_back(&state.current()->sub_predicates.back());
     }
@@ -264,6 +274,8 @@ template<> struct action< not_pre >
     static void apply( const input & in, ParserState & state )
     {
         std::cout << "<not>" << std::endl;
+
+        state.negate_next = true;
     }
 };
 
