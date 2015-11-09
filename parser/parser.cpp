@@ -57,13 +57,17 @@ namespace query
     struct group_pred : if_must< one< '(' >, pad< pred, blank >, one< ')' > > {};
 
     struct single_pred : pad< sor< group_pred, comparison_pred >, blank > {};
-    struct not_pre : pegtl::string< 'N', 'O', 'T' > {};
+    struct not_pre : sor< seq< one< '!' >, star< blank > >, seq< istring< 'N', 'O', 'T' >, plus< blank > > > {};
     struct atom_pred : seq< opt< not_pre >, single_pred > {};
 
-    struct or_ext : if_must< two< '|' >, atom_pred > {};
-    struct and_ext : if_must< two< '&' >, atom_pred > {};
+    struct and_op : sor< two< '&' >, istring< 'A', 'N', 'D' > > {};
+    struct or_op : sor< two< '|' >, istring< 'O', 'R' > > {};
 
-    struct pred : seq< atom_pred, star< sor< or_ext, and_ext > > > {};
+    struct or_ext : seq< pad< or_op, blank >, pred > {};
+    struct and_ext : seq< pad< and_op, blank >, pred > {};
+    struct and_pred : seq< atom_pred, star< and_ext > > {};
+
+    struct pred : seq< and_pred, star< or_ext > > {};
 
     // rules
     template< typename Rule >
@@ -92,11 +96,27 @@ namespace query
         }
     };
 
+    template<> struct action< one< '(' > >
+    {
+        static void apply( const input & in, std::string & string_value )
+        {
+            std::cout << "<begin_group>" << std::endl;
+        }
+    };
+
     template<> struct action< group_pred >
     {
         static void apply( const input & in, std::string & string_value )
         {
-            std::cout << "<group>" << std::endl;
+            std::cout << "<end_group>" << std::endl;
+        }
+    };
+
+    template<> struct action< not_pre >
+    {
+        static void apply( const input & in, std::string & string_value )
+        {
+            std::cout << "<not>" << std::endl;
         }
     };
 }
@@ -106,7 +126,7 @@ int main( int argc, char ** argv )
     if ( argc > 1 ) {
         std::string intstring;
         analyze< query::pred >();
-        parse< must< seq< query::pred, eof > >, query::action >( 1, argv, intstring);
+        parse< must< query::pred, eof >, query::action >( 1, argv, intstring);
     }
 }
 
