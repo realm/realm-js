@@ -121,6 +121,28 @@ template<> struct action< and_ext >
     static void apply( const input & in, ParserState & state )
     {
         std::cout << "<and>" << in.string() << std::endl;
+
+        // if we were put into an OR group we need to rearrange
+        auto current = state.current();
+        if (current->type == Predicate::Type::Or) {
+            auto &sub_preds = state.current()->sub_predicates;
+            auto second_last = sub_preds[sub_preds.size()-2];
+            if (second_last.type == Predicate::Type::And) {
+                // if we are in an OR group and second to last predicate group is
+                // an AND group then move the last predicate inside
+                second_last.sub_predicates.push_back(sub_preds.back());
+                sub_preds.pop_back();
+            }
+            else {
+                // otherwise combine last two into a new AND group
+                Predicate pred;
+                pred.type = Predicate::Type::And;
+                pred.sub_predicates = { second_last, sub_preds.back() };
+                sub_preds.pop_back();
+                sub_preds.pop_back();
+                sub_preds.push_back(pred);
+            }
+        }
     }
 };
 
@@ -129,6 +151,29 @@ template<> struct action< or_ext >
     static void apply( const input & in, ParserState & state )
     {
         std::cout << "<or>" << in.string() << std::endl;
+
+        // if already an OR group do nothing
+        auto current = state.current();
+        if (current->type == Predicate::Type::Or) {
+            return;
+        }
+
+        // if only two predicates in the group, then convert to OR
+        auto &sub_preds = state.current()->sub_predicates;
+        if (sub_preds.size()) {
+            current->type = Predicate::Type::Or;
+            return;
+        }
+
+        // split the current group into to groups which are ORed together
+        Predicate pred1, pred2;
+        pred1.type = Predicate::Type::And;
+        pred2.type = Predicate::Type::And;
+        pred1.sub_predicates.insert(sub_preds.begin(), sub_preds.back());
+        pred2.sub_predicates.push_back(sub_preds.back());
+
+        current->type = Predicate::Type::Or;
+        sub_preds = { pred1, pred2 };
     }
 };
 
