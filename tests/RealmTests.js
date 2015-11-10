@@ -237,10 +237,10 @@ module.exports = BaseTest.extend({
     testRealmObjects: function() {
         var realm = new Realm({schema: [schemas.PersonObject]});
         realm.write(function() {
-            realm.create('PersonObject', ['Ari', 10]);
-            realm.create('PersonObject', ['Tim', 11]);
+            realm.create('PersonObject', ['Ari', 10, false]);
+            realm.create('PersonObject', ['Tim', 11, false]);
             realm.create('PersonObject', {'name': 'Bjarne', 'age': 12});
-            realm.create('PersonObject', {'name': 'Alex', 'age': 12});
+            realm.create('PersonObject', {'name': 'Alex', 'age': 12, 'married': true});
         });
 
         TestCase.assertThrows(function() { 
@@ -270,6 +270,8 @@ module.exports = BaseTest.extend({
         TestCase.assertEqual(realm.objects('PersonObject', 'age >= 11 && age < 13').length, 3);
         TestCase.assertEqual(realm.objects('PersonObject', 'name = "Tim"').length, 1);
         TestCase.assertEqual(realm.objects('PersonObject', 'name = \'Tim\'').length, 1);
+        TestCase.assertEqual(realm.objects('PersonObject', 'married == TRUE').length, 1);
+        TestCase.assertEqual(realm.objects('PersonObject', 'married == false').length, 3);
     },
 
     testNotifications: function() {

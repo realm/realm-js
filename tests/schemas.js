@@ -17,8 +17,9 @@ function PersonObject() {}
 PersonObject.prototype.schema = {
   name: 'PersonObject',
   properties: [
-    {name: 'name', type: Realm.Types.STRING},
-    {name: 'age',  type: Realm.Types.DOUBLE},
+    {name: 'name',    type: Realm.Types.STRING},
+    {name: 'age',     type: Realm.Types.DOUBLE},
+    {name: 'married', type: Realm.Types.BOOL, default: false}
   ]
 };
 PersonObject.prototype.description = function() {

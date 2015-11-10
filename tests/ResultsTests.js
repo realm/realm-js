@@ -24,8 +24,8 @@ module.exports = BaseTest.extend({
     testResultsSubscript: function() {
         var realm = new Realm({schema: [schemas.PersonObject]});
         realm.write(function() {
-            realm.create('PersonObject', ['name1', 1]);
-            realm.create('PersonObject', ['name2', 2]);
+            realm.create('PersonObject', ['name1', 1, false]);
+            realm.create('PersonObject', ['name2', 2, false]);
         });
 
         var people = realm.objects('PersonObject');

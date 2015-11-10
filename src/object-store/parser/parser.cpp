@@ -23,7 +23,6 @@
 #include <pegtl.hh>
 #include <pegtl/analyze.hh>
 #include <pegtl/trace.hh>
-#include <pegtl/internal/pegtl_string.hh>
 
 using namespace pegtl;
 
@@ -56,6 +55,9 @@ struct int_num : plus< digit > {};
 
 struct number : seq< minus, sor< float_num, hex_num, int_num > > {};
 
+struct true_value : pegtl_istring_t("true") {};
+struct false_value : pegtl_istring_t("false") {};
+
 // key paths
 struct key_path : list< seq< sor< alpha, one< '_' > >, star< sor< alnum, one< '_', '-' > > > >, one< '.' > > {};
 
@@ -64,7 +66,7 @@ struct argument_index : until< at< one< '}' > >, must< digit > > {};
 struct argument : seq< one< '{' >, must< argument_index >, any > {};
 
 // expressions and operators
-struct expr : sor< dq_string, sq_string, key_path, number, argument > {};
+struct expr : sor< dq_string, sq_string, number, argument, true_value, false_value, key_path > {};
 
 struct eq : sor< two< '=' >, one< '=' > > {};
 struct noteq : pegtl::string< '!', '=' > {};
@@ -87,8 +89,8 @@ struct comparison_pred : seq< expr, sor< padded_oper, symbolic_oper >, expr > {}
 
 struct pred;
 struct group_pred : if_must< one< '(' >, pad< pred, blank >, one< ')' > > {};
-struct true_pred : sor< pegtl_istring_t("truepredicate"), pegtl_istring_t("true") > {};
-struct false_pred : sor< pegtl_istring_t("falsepredicate"), pegtl_istring_t("false") > {};
+struct true_pred : pegtl_istring_t("truepredicate") {};
+struct false_pred : pegtl_istring_t("falsepredicate") {};
 
 struct not_pre : sor< seq< one< '!' >, star< blank > >, seq< pegtl_istring_t("not"), plus< blank > > > {};
 struct atom_pred : seq< opt< not_pre >, pad< sor< group_pred, true_pred, false_pred, comparison_pred >, blank > > {};
@@ -207,6 +209,8 @@ EXPRESSION_ACTION(dq_string_content, Expression::Type::String)
 EXPRESSION_ACTION(sq_string_content, Expression::Type::String)
 EXPRESSION_ACTION(key_path, Expression::Type::KeyPath)
 EXPRESSION_ACTION(number, Expression::Type::Number)
+EXPRESSION_ACTION(true_value, Expression::Type::True)
+EXPRESSION_ACTION(false_value, Expression::Type::False)
 EXPRESSION_ACTION(argument_index, Expression::Type::Argument)
 
 
@@ -228,7 +232,6 @@ template<> struct action< false_pred >
     }
 };
 
-
 #define OPERATOR_ACTION(rule, oper)                                 \
 template<> struct action< rule > {                                  \
     static void apply( const input & in, ParserState & state ) {    \
@@ -244,7 +247,6 @@ OPERATOR_ACTION(lt, Predicate::Operator::LessThan)
 OPERATOR_ACTION(begins, Predicate::Operator::BeginsWith)
 OPERATOR_ACTION(ends, Predicate::Operator::EndsWith)
 OPERATOR_ACTION(contains, Predicate::Operator::Contains)
-
 
 template<> struct action< one< '(' > >
 {

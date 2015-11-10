@@ -152,7 +152,7 @@ void add_string_constraint_to_query(realm::Query& query,
 
 template <typename RequestedType, typename TableGetter>
 struct ColumnOfTypeHelper {
-    static Columns<RequestedType> convert(TableGetter&& table, unsigned int idx)
+    static Columns<RequestedType> convert(TableGetter&& table, size_t idx)
     {
         return table()->template column<RequestedType>(idx);
     }
@@ -160,7 +160,7 @@ struct ColumnOfTypeHelper {
 
 template <typename TableGetter>
 struct ColumnOfTypeHelper<DateTime, TableGetter> {
-    static Columns<Int> convert(TableGetter&& table, unsigned int idx)
+    static Columns<Int> convert(TableGetter&& table, size_t idx)
     {
         return table()->template column<Int>(idx);
     }
@@ -171,7 +171,7 @@ struct ValueOfTypeHelper;
 
 template <typename TableGetter>
 struct ValueOfTypeHelper<DateTime, TableGetter> {
-    static Int convert(TableGetter&&, const std::string & value)
+    static Int convert(TableGetter&&, const parser::Expression & value)
     {
         assert(0);
     }
@@ -179,41 +179,41 @@ struct ValueOfTypeHelper<DateTime, TableGetter> {
 
 template <typename TableGetter>
 struct ValueOfTypeHelper<bool, TableGetter> {
-    static bool convert(TableGetter&&, const std::string & value)
+    static bool convert(TableGetter&&, const parser::Expression & value)
     {
-        assert(0);
+        return value.type == parser::Expression::Type::True;
     }
 };
 
 template <typename TableGetter>
 struct ValueOfTypeHelper<Double, TableGetter> {
-    static Double convert(TableGetter&&, const std::string & value)
+    static Double convert(TableGetter&&, const parser::Expression & value)
     {
-        return std::stod(value);
+        return std::stod(value.s);
     }
 };
 
 template <typename TableGetter>
 struct ValueOfTypeHelper<Float, TableGetter> {
-    static Float convert(TableGetter&&, const std::string & value)
+    static Float convert(TableGetter&&, const parser::Expression & value)
     {
-        return std::stof(value);
+        return std::stof(value.s);
     }
 };
 
 template <typename TableGetter>
 struct ValueOfTypeHelper<Int, TableGetter> {
-    static Int convert(TableGetter&&, const std::string & value)
+    static Int convert(TableGetter&&, const parser::Expression & value)
     {
-        return std::stoll(value);
+        return std::stoll(value.s);
     }
 };
 
 template <typename TableGetter>
 struct ValueOfTypeHelper<String, TableGetter> {
-    static std::string convert(TableGetter&&, const std::string & value)
+    static std::string convert(TableGetter&&, const parser::Expression & value)
     {
-        return value;
+        return value.s;
     }
 };
 
@@ -222,8 +222,8 @@ auto value_of_type_for_query(TableGetter&& tables, Value&& value)
 {
     const bool isColumnIndex = std::is_same<size_t, typename std::remove_reference<Value>::type>::value;
     using helper = std::conditional_t<isColumnIndex,
-    ColumnOfTypeHelper<RequestedType, TableGetter>,
-    ValueOfTypeHelper<RequestedType, TableGetter>>;
+                                      ColumnOfTypeHelper<RequestedType, TableGetter>,
+                                      ValueOfTypeHelper<RequestedType, TableGetter>>;
     return helper::convert(std::forward<TableGetter>(tables), std::forward<Value>(value));
 }
 
@@ -310,11 +310,11 @@ void add_comparison_to_query(Query &query, Predicate &pred, Schema &schema, Obje
     auto t0 = cmpr.expr[0].type, t1 = cmpr.expr[1].type;
     if (t0 == parser::Expression::Type::KeyPath && t1 != parser::Expression::Type::KeyPath) {
         Property *prop = get_property_from_key_path(schema, object_schema, cmpr.expr[0].s, indexes);
-        do_add_comparison_to_query(query, schema, object_schema, prop, cmpr.op, indexes, prop->table_column, cmpr.expr[1].s);
+        do_add_comparison_to_query(query, schema, object_schema, prop, cmpr.op, indexes, prop->table_column, cmpr.expr[1]);
     }
     else if (t0 != parser::Expression::Type::KeyPath && t1 == parser::Expression::Type::KeyPath) {
         Property *prop = get_property_from_key_path(schema, object_schema, cmpr.expr[1].s, indexes);
-        do_add_comparison_to_query(query, schema, object_schema, prop, cmpr.op, indexes, cmpr.expr[0].s, prop->table_column);
+        do_add_comparison_to_query(query, schema, object_schema, prop, cmpr.op, indexes, cmpr.expr[0], prop->table_column);
     }
     else {
         throw std::runtime_error("Predicate expressions must compare a keypath and another keypath or a constant value");
