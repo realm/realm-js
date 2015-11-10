@@ -19,6 +19,7 @@
 #ifndef REALM_OBJECT_STORE_HPP
 #define REALM_OBJECT_STORE_HPP
 
+#include "schema.hpp"
 #include "object_schema.hpp"
 #include "property.hpp"
 
@@ -29,7 +30,6 @@
 
 namespace realm {
     class ObjectSchemaValidationException;
-    class Schema;
 
     class ObjectStore {
       public:
