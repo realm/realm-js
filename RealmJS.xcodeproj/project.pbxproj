@@ -53,6 +53,8 @@
 		029445941BDEDF40006D1617 /* transact_log_handler.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 029445921BDEDF40006D1617 /* transact_log_handler.hpp */; };
 		029445971BDEDF46006D1617 /* external_commit_helper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 029445951BDEDF46006D1617 /* external_commit_helper.cpp */; };
 		029445981BDEDF46006D1617 /* external_commit_helper.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 029445961BDEDF46006D1617 /* external_commit_helper.hpp */; };
+		0294465E1BF27DE6006D1617 /* query_builder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0294465C1BF27DE6006D1617 /* query_builder.cpp */; };
+		0294465F1BF27DE6006D1617 /* query_builder.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 0294465D1BF27DE6006D1617 /* query_builder.hpp */; };
 		02B29A311B7CF86D008A7E6B /* RealmJS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 02B58CB11AE99CEC009B348C /* RealmJS.framework */; };
 		02B58CCE1AE99D4D009B348C /* JavaScriptCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 02B58CCD1AE99D4D009B348C /* JavaScriptCore.framework */; };
 		02C0864E1BCDB27000942F9C /* list.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02C0864C1BCDB27000942F9C /* list.cpp */; };
@@ -208,7 +210,9 @@
 		029445921BDEDF40006D1617 /* transact_log_handler.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = transact_log_handler.hpp; path = "src/object-store/impl/transact_log_handler.hpp"; sourceTree = "<group>"; };
 		029445951BDEDF46006D1617 /* external_commit_helper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = external_commit_helper.cpp; path = "src/object-store/impl/apple/external_commit_helper.cpp"; sourceTree = "<group>"; };
 		029445961BDEDF46006D1617 /* external_commit_helper.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = external_commit_helper.hpp; path = "src/object-store/impl/apple/external_commit_helper.hpp"; sourceTree = "<group>"; };
-		02A3C7841BC4317A00B1A7BE /* GCDWebServer.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = GCDWebServer.xcodeproj; path = GCDWebServer/GCDWebServer.xcodeproj; sourceTree = "<group>"; };
+		0294465C1BF27DE6006D1617 /* query_builder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = query_builder.cpp; path = "src/object-store/parser/query_builder.cpp"; sourceTree = "<group>"; };
+		0294465D1BF27DE6006D1617 /* query_builder.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = query_builder.hpp; path = "src/object-store/parser/query_builder.hpp"; sourceTree = "<group>"; };
+		02A3C7841BC4317A00B1A7BE /* GCDWebServer.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = GCDWebServer.xcodeproj; path = vendor/GCDWebServer/GCDWebServer.xcodeproj; sourceTree = "<group>"; };
 		02A3C7A41BC4341500B1A7BE /* libc++.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.tbd"; path = "usr/lib/libc++.tbd"; sourceTree = SDKROOT; };
 		02B29A161B7CF7C9008A7E6B /* RealmReact.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = RealmReact.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		02B58CB11AE99CEC009B348C /* RealmJS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = RealmJS.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -285,6 +289,8 @@
 				029445961BDEDF46006D1617 /* external_commit_helper.hpp */,
 				02786E311BF1065000937061 /* parser.cpp */,
 				02786E321BF1065000937061 /* parser.hpp */,
+				0294465C1BF27DE6006D1617 /* query_builder.cpp */,
+				0294465D1BF27DE6006D1617 /* query_builder.hpp */,
 				0270BC3E1B7CFC0D00010E03 /* RealmJS.h */,
 				0270BC3F1B7CFC0D00010E03 /* RealmJS.mm */,
 				02258FB11BC6E2D00075F13A /* RealmRPC.hpp */,
@@ -412,6 +418,7 @@
 				0270BC4C1B7CFC0D00010E03 /* RealmJS.h in Headers */,
 				02258FB31BC6E2D00075F13A /* RealmRPC.hpp in Headers */,
 				0270BC4F1B7CFC0D00010E03 /* RJSList.hpp in Headers */,
+				0294465F1BF27DE6006D1617 /* query_builder.hpp in Headers */,
 				0270BC541B7CFC0D00010E03 /* RJSResults.hpp in Headers */,
 				02D0F23B1BF6C95200B4FC45 /* binding_context.hpp in Headers */,
 				0270BC581B7CFC0D00010E03 /* RJSUtil.hpp in Headers */,
@@ -673,6 +680,7 @@
 				0270BC551B7CFC0D00010E03 /* RJSResults.mm in Sources */,
 				02C0864E1BCDB27000942F9C /* list.cpp in Sources */,
 				0270BC6B1B7CFC1C00010E03 /* object_store.cpp in Sources */,
+				0294465E1BF27DE6006D1617 /* query_builder.cpp in Sources */,
 				0270BC701B7CFC1C00010E03 /* shared_realm.cpp in Sources */,
 				F6BB7DF11BF681BC00D0A69E /* base64.cpp in Sources */,
 				0270BC4E1B7CFC0D00010E03 /* RJSList.cpp in Sources */,

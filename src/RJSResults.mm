@@ -7,6 +7,7 @@
 #import "object_accessor.hpp"
 #import "results.hpp"
 #import "parser.hpp"
+#import "query_builder.hpp"
 
 using namespace realm;
 
@@ -113,7 +114,7 @@ JSObjectRef RJSResultsCreate(JSContextRef ctx, SharedRealm realm, std::string cl
         throw std::runtime_error("Object type '" + className + "' not present in Realm.");
     }
     parser::Predicate predicate = parser::parse(queryString);
-    parser::apply_predicate(query, predicate, schema, object_schema->name);
+    query_builder::apply_predicate(query, predicate, schema, object_schema->name);
 
     return RJSWrapObject<Results *>(ctx, RJSResultsClass(), new Results(realm, *object_schema, std::move(query)));
 }
