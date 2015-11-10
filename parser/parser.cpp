@@ -23,6 +23,7 @@
 #include <pegtl.hh>
 #include <pegtl/analyze.hh>
 #include <pegtl/trace.hh>
+#include <pegtl/internal/pegtl_string.hh>
 
 using namespace pegtl;
 
@@ -71,27 +72,32 @@ struct lteq : pegtl::string< '<', '=' > {};
 struct lt : one< '<' > {};
 struct gteq : pegtl::string< '>', '=' > {};
 struct gt : one< '>' > {};
-struct begins : istring< 'b','e','g','i','n','s','w','i','t','h' > {};
-struct ends : istring< 'e','n','d','s','w','i','t','h' > {};
-struct contains : istring< 'c','o','n','t','a','i','n','s' > {};
-struct oper : sor< eq, noteq, lteq, lt, gteq, gt, begins, ends, contains > {};
+struct contains : pegtl_istring_t("contains") {};
+struct begins : pegtl_istring_t("beginswith") {};
+struct ends : pegtl_istring_t("endswith") {};
+
+template<typename A, typename B>
+struct pad_plus : seq< plus< B >, A, plus< B > > {};
+
+struct padded_oper : pad_plus< sor< contains, begins, ends >, blank > {};
+struct symbolic_oper : pad< sor< eq, noteq, lteq, lt, gteq, gt >, blank > {};
 
 // predicates
-struct comparison_pred : seq< expr, pad< oper, blank >, expr > {};
+struct comparison_pred : seq< expr, sor< padded_oper, symbolic_oper >, expr > {};
 
 struct pred;
 struct group_pred : if_must< one< '(' >, pad< pred, blank >, one< ')' > > {};
-struct true_pred : sor< istring<'t','r','u','e','p','r','e','d','i','c','a','t','e'>, istring<'t','r','u','e'> > {};
-struct false_pred : sor< istring<'f','a','l','s','e','p','r','e','d','i','c','a','t','e'>, istring<'f','a','l','s','e'> > {};
+struct true_pred : sor< pegtl_istring_t("truepredicate"), pegtl_istring_t("true") > {};
+struct false_pred : sor< pegtl_istring_t("falsepredicate"), pegtl_istring_t("false") > {};
 
-struct not_pre : sor< seq< one< '!' >, star< blank > >, seq< istring< 'N', 'O', 'T' >, plus< blank > > > {};
+struct not_pre : sor< seq< one< '!' >, star< blank > >, seq< pegtl_istring_t("not"), plus< blank > > > {};
 struct atom_pred : seq< opt< not_pre >, pad< sor< group_pred, true_pred, false_pred, comparison_pred >, blank > > {};
 
-struct and_op : sor< two< '&' >, istring< 'A', 'N', 'D' > > {};
-struct or_op : sor< two< '|' >, istring< 'O', 'R' > > {};
+struct and_op : sor< pad< two< '&' >, blank >, pad_plus< pegtl_istring_t("and"), blank > > {};
+struct or_op : sor< pad< two< '|' >, blank> , pad_plus< pegtl_istring_t("or"), blank > > {};
 
-struct or_ext : seq< pad< or_op, blank >, pred > {};
-struct and_ext : seq< pad< and_op, blank >, pred > {};
+struct or_ext : if_must< or_op, pred > {};
+struct and_ext : if_must< and_op, pred > {};
 struct and_pred : seq< atom_pred, star< and_ext > > {};
 
 struct pred : seq< and_pred, star< or_ext > > {};
