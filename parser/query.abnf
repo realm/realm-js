@@ -17,7 +17,7 @@ string 		= dq-string / sq-string
 sq-string 	= "'" *(%x20-ffffffff) "'"
 dq-string 	= DQUOTE *("\\" / %x20-21 / %x23-ffffffff) DQUOTE
 
-num 		= float-num / int-num / hex-num
-float-num	= ["-"] (*DIGIT "." 1*DIGIT / "." 1*DIGIT)
-int-num		= ["-"] 1*DIGIT
-hex-num		= ["-"] ["0"] "x" 1*HEXDIG
+num 		= ["-"] (float-num / int-num / hex-num)
+float-num	= (*DIGIT "." 1*DIGIT / "." 1*DIGIT)
+int-num		= 1*DIGIT
+hex-num		= ("0x" / "0X") 1*HEXDIG

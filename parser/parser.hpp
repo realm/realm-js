@@ -23,6 +23,9 @@
 #include <string>
 
 namespace realm {
+    class Query;
+    class Schema;
+
     namespace parser {
         struct Expression
         {
@@ -74,6 +77,8 @@ namespace realm {
         };
 
         Predicate parse(const std::string &query);
+
+        void apply_predicate(Query &query, Predicate &predicate, Schema &schema, std::string objectType);
     }
 }
 
