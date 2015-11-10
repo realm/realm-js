@@ -268,6 +268,7 @@ module.exports = BaseTest.extend({
         TestCase.assertEqual(realm.objects('PersonObject', 'age < 12').length, 2);
         TestCase.assertEqual(realm.objects('PersonObject', 'age > 10 && age < 13').length, 3);
         TestCase.assertEqual(realm.objects('PersonObject', 'age >= 11 && age < 13').length, 3);
+        TestCase.assertEqual(realm.objects('PersonObject', 'name = "Tim"').length, 1);
         TestCase.assertEqual(realm.objects('PersonObject', 'name = \'Tim\'').length, 1);
     },
 

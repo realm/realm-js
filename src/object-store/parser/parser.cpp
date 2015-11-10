@@ -35,16 +35,16 @@ namespace parser {
 
 // strings
 struct unicode : list< seq< one< 'u' >, rep< 4, must< xdigit > > >, one< '\\' > > {};
-struct escaped_char : one< '"', '\\', '/', 'b', 'f', 'n', 'r', 't' > {};
+struct escaped_char : one< '"', '\'', '\\', '/', 'b', 'f', 'n', 'r', 't' > {};
 struct escaped : sor< escaped_char, unicode > {};
 struct unescaped : utf8::range< 0x20, 0x10FFFF > {};
 struct char_ : if_then_else< one< '\\' >, must< escaped >, unescaped > {};
 
-struct string_content : until< at< one< '"' > >, must< char_ > > {};
-struct string : seq< one< '"' >, must< string_content >, any >
-{
-    using content = string_content;
-};
+struct dq_string_content : until< at< one< '"' > >, must< char_ > > {};
+struct dq_string : seq< one< '"' >, must< dq_string_content >, any > {};
+
+struct sq_string_content : until< at< one< '\'' > >, must< char_ > > {};
+struct sq_string : seq< one< '\'' >, must< sq_string_content >, any > {};
 
 // numbers
 struct minus : opt< one< '-' > > {};
@@ -63,17 +63,17 @@ struct number : seq< minus, sor< float_num, hex_num, int_num > > {};
 struct key_path : list< seq< sor< alpha, one< '_' > >, star< sor< alnum, one< '_', '-' > > > >, one< '.' > > {};
 
 // expressions and operators
-struct expr : sor< string, key_path, number > {};
+struct expr : sor< dq_string, sq_string, key_path, number > {};
 
 struct eq : sor< two< '=' >, one< '=' > > {};
 struct noteq : pegtl::string< '!', '=' > {};
 struct lteq : pegtl::string< '<', '=' > {};
 struct lt : one< '<' > {};
 struct gteq : pegtl::string< '>', '=' > {};
-struct gt : one< '<' > {};
-struct begins : istring< 'b', 'e', 'g', 'i', 'n', 's', 'w', 'i', 't', 'h' > {};
-struct ends : istring< 'e', 'n', 'd', 's', 'w', 'i', 't', 'h' > {};
-struct contains : istring< 'c', 'o', 'n', 't', 'a', 'i', 'n', 's' > {};
+struct gt : one< '>' > {};
+struct begins : istring< 'b','e','g','i','n','s','w','i','t','h' > {};
+struct ends : istring< 'e','n','d','s','w','i','t','h' > {};
+struct contains : istring< 'c','o','n','t','a','i','n','s' > {};
 struct oper : sor< eq, noteq, lteq, lt, gteq, gt, begins, ends, contains > {};
 
 // predicates
@@ -81,9 +81,11 @@ struct comparison_pred : seq< expr, pad< oper, blank >, expr > {};
 
 struct pred;
 struct group_pred : if_must< one< '(' >, pad< pred, blank >, one< ')' > > {};
+struct true_pred : sor< istring<'t','r','u','e','p','r','e','d','i','c','a','t','e'>, istring<'t','r','u','e'> > {};
+struct false_pred : sor< istring<'f','a','l','s','e','p','r','e','d','i','c','a','t','e'>, istring<'f','a','l','s','e'> > {};
 
 struct not_pre : sor< seq< one< '!' >, star< blank > >, seq< istring< 'N', 'O', 'T' >, plus< blank > > > {};
-struct atom_pred : seq< opt< not_pre >, pad< sor< group_pred, comparison_pred >, blank > > {};
+struct atom_pred : seq< opt< not_pre >, pad< sor< group_pred, true_pred, false_pred, comparison_pred >, blank > > {};
 
 struct and_op : sor< two< '&' >, istring< 'A', 'N', 'D' > > {};
 struct or_op : sor< two< '|' >, istring< 'O', 'R' > > {};
@@ -186,7 +188,21 @@ template<> struct action< or_ext >
     }
 };
 
-template<> struct action< string >
+template<> struct action< dq_string_content >
+{
+    static void apply( const input & in, ParserState & state )
+    {
+        std::cout << in.string() << std::endl;
+
+        Expression exp;
+        exp.type = Expression::Type::String;
+        exp.s = in.string();
+
+        state.addExpression(exp);
+    }
+};
+
+template<> struct action< sq_string_content >
 {
     static void apply( const input & in, ParserState & state )
     {
@@ -225,6 +241,28 @@ template<> struct action< number >
         exp.s = in.string();
 
         state.addExpression(std::move(exp));
+    }
+};
+
+template<> struct action< true_pred >
+{
+    static void apply( const input & in, ParserState & state )
+    {
+        std::cout << in.string() << std::endl;
+        Predicate pred;
+        pred.type = Predicate::Type::True;
+        state.current()->sub_predicates.push_back(std::move(pred));
+    }
+};
+
+template<> struct action< false_pred >
+{
+    static void apply( const input & in, ParserState & state )
+    {
+        std::cout << in.string() << std::endl;
+        Predicate pred;
+        pred.type = Predicate::Type::False;
+        state.current()->sub_predicates.push_back(std::move(pred));
     }
 };
 
@@ -522,13 +560,18 @@ Property *get_property_from_key_path(Schema &schema, ObjectSchema &desc, const s
 
     auto paths = split(key_path, '.');
     for (size_t index = 0; index < paths.size(); index++) {
+        if (prop) {
+            precondition(prop->type == PropertyTypeObject || prop->type == PropertyTypeArray,
+                         (std::string)"Property '" + paths[index] + "' is not a link in object of type '" + desc.name + "'");
+            indexes.push_back(prop->table_column);
+
+        }
         prop = desc.property_for_name(paths[index]);
         precondition(prop != nullptr, "No property '" + paths[index] + "' on object of type '" + desc.name + "'");
-        precondition(index == paths.size() - 1 || prop->type == PropertyTypeObject || prop->type == PropertyTypeArray,
-                     (std::string)"Property '" + paths[index] + "' is not a link in object of type '" + desc.name + "'");
 
-        indexes.push_back(prop->table_column);
-        desc = *schema.find(prop->object_type);
+        if (prop->object_type.size()) {
+            desc = *schema.find(prop->object_type);
+        }
     }
     return prop;
 }
