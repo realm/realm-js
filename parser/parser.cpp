@@ -62,8 +62,12 @@ struct number : seq< minus, sor< float_num, hex_num, int_num > > {};
 // key paths
 struct key_path : list< seq< sor< alpha, one< '_' > >, star< sor< alnum, one< '_', '-' > > > >, one< '.' > > {};
 
+// argument
+struct argument_index : until< at< one< '}' > >, must< digit > > {};
+struct argument : seq< one< '{' >, must< argument_index >, any > {};
+
 // expressions and operators
-struct expr : sor< dq_string, sq_string, key_path, number > {};
+struct expr : sor< dq_string, sq_string, key_path, number, argument > {};
 
 struct eq : sor< two< '=' >, one< '=' > > {};
 struct noteq : pegtl::string< '!', '=' > {};
@@ -103,9 +107,10 @@ struct ParserState
     Predicate &current() {
         return *predicate_stack.back();
     }
-    bool negate_next;
 
-    void addExpression(Expression exp)
+    bool negate_next = false;
+
+    void addExpression(Expression && exp)
     {
         if (current().type == Predicate::Type::Comparison) {
             current().cmpr.expr[1] = std::move(exp);
@@ -189,69 +194,26 @@ template<> struct action< or_ext >
     }
 };
 
-template<> struct action< dq_string_content >
-{
-    static void apply( const input & in, ParserState & state )
-    {
-        std::cout << in.string() << std::endl;
 
-        Expression exp;
-        exp.type = Expression::Type::String;
-        exp.s = in.string();
+#define EXPRESSION_ACTION(rule, type)                               \
+template<> struct action< rule > {                                  \
+    static void apply( const input & in, ParserState & state ) {    \
+        std::cout << in.string() << std::endl;                      \
+        state.addExpression(Expression(type, in.string())); }};
 
-        state.addExpression(exp);
-    }
-};
+EXPRESSION_ACTION(dq_string_content, Expression::Type::String)
+EXPRESSION_ACTION(sq_string_content, Expression::Type::String)
+EXPRESSION_ACTION(key_path, Expression::Type::KeyPath)
+EXPRESSION_ACTION(number, Expression::Type::Number)
+EXPRESSION_ACTION(argument_index, Expression::Type::Argument)
 
-template<> struct action< sq_string_content >
-{
-    static void apply( const input & in, ParserState & state )
-    {
-        std::cout << in.string() << std::endl;
-
-        Expression exp;
-        exp.type = Expression::Type::String;
-        exp.s = in.string();
-
-        state.addExpression(exp);
-    }
-};
-
-template<> struct action< key_path >
-{
-    static void apply( const input & in, ParserState & state )
-    {
-        std::cout << in.string() << std::endl;
-
-        Expression exp;
-        exp.type = Expression::Type::KeyPath;
-        exp.s = in.string();
-
-        state.addExpression(std::move(exp));
-    }
-};
-
-template<> struct action< number >
-{
-    static void apply( const input & in, ParserState & state )
-    {
-        std::cout << in.string() << std::endl;
-
-        Expression exp;
-        exp.type = Expression::Type::Number;
-        exp.s = in.string();
-
-        state.addExpression(std::move(exp));
-    }
-};
 
 template<> struct action< true_pred >
 {
     static void apply( const input & in, ParserState & state )
     {
         std::cout << in.string() << std::endl;
-        Predicate pred(Predicate::Type::True);
-        state.current().cpnd.sub_predicates.push_back(std::move(pred));
+        state.current().cpnd.sub_predicates.emplace_back(Predicate::Type::True);
     }
 };
 
@@ -260,10 +222,10 @@ template<> struct action< false_pred >
     static void apply( const input & in, ParserState & state )
     {
         std::cout << in.string() << std::endl;
-        Predicate pred(Predicate::Type::False);
-        state.current().cpnd.sub_predicates.push_back(std::move(pred));
+        state.current().cpnd.sub_predicates.emplace_back(Predicate::Type::False);
     }
 };
+
 
 #define OPERATOR_ACTION(rule, oper)                                 \
 template<> struct action< rule > {                                  \
@@ -304,7 +266,6 @@ template<> struct action< group_pred >
     static void apply( const input & in, ParserState & state )
     {
         std::cout << "<end_group>" << std::endl;
-
         state.predicate_stack.pop_back();
     }
 };
@@ -314,7 +275,6 @@ template<> struct action< not_pre >
     static void apply( const input & in, ParserState & state )
     {
         std::cout << "<not>" << std::endl;
-
         state.negate_next = true;
     }
 };

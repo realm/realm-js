@@ -29,8 +29,10 @@ namespace realm {
     namespace parser {
         struct Expression
         {
-            enum class Type { Number, String, KeyPath } type;
+            enum class Type { Number, String, KeyPath, Argument } type;
             std::string s;
+            Expression() {}
+            Expression(Type t, std::string s) : type(t), s(s) {}
         };
 
         struct Predicate
