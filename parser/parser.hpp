@@ -29,33 +29,21 @@ namespace realm {
     namespace parser {
         struct Expression
         {
-            enum class Type
-            {
-                Number,
-                String,
-                KeyPath,
-            };
-            Type type;
-            
+            enum class Type { Number, String, KeyPath } type;
             std::string s;
         };
 
         struct Predicate
         {
-            enum class Type
-            {
-                None,
+            enum class Type {
                 Comparison,
                 Or,
                 And,
                 True,
-                False,
-            };
-            Type type = Type::None;
+                False
+            } type = Type::And;
 
-            // for comparison
-            enum class Operator
-            {
+            enum class Operator {
                 None,
                 Equal,
                 NotEqual,
@@ -65,15 +53,25 @@ namespace realm {
                 GreaterThanOrEqual,
                 BeginsWith,
                 EndsWith,
-                Contains,
+                Contains
             };
-            Operator op = Operator::None;
-            std::vector<Expression> sub_expressions;
 
-            // for compounds
-            std::vector<Predicate> sub_predicates;
+            struct Comparison {
+                Operator op = Operator::None;
+                Expression expr[2];
+                ~Comparison() {}
+            };
 
-            bool negate;
+            struct Compound {
+                std::vector<Predicate> sub_predicates;
+            };
+
+            Comparison cmpr;
+            Compound   cpnd;
+
+            bool negate = false;
+
+            Predicate(Type t) : type(t) {}
         };
 
         Predicate parse(const std::string &query);

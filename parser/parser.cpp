@@ -100,25 +100,26 @@ struct pred : seq< and_pred, star< or_ext > > {};
 struct ParserState
 {
     std::vector<Predicate *> predicate_stack;
-    Predicate *current() { return predicate_stack.back(); }
+    Predicate &current() {
+        return *predicate_stack.back();
+    }
     bool negate_next;
 
     void addExpression(Expression exp)
     {
-        if (current()->type == Predicate::Type::Comparison) {
-            current()->sub_expressions.emplace_back(std::move(exp));
+        if (current().type == Predicate::Type::Comparison) {
+            current().cmpr.expr[1] = std::move(exp);
             predicate_stack.pop_back();
         }
         else {
-            Predicate p;
-            p.type = Predicate::Type::Comparison;
-            p.sub_expressions.emplace_back(std::move(exp));
+            Predicate p(Predicate::Type::Comparison);
+            p.cmpr.expr[0] = std::move(exp);
             if (negate_next) {
                 p.negate = true;
                 negate_next = false;
             }
-            current()->sub_predicates.emplace_back(std::move(p));
-            predicate_stack.push_back(&current()->sub_predicates.back());
+            current().cpnd.sub_predicates.emplace_back(std::move(p));
+            predicate_stack.push_back(&current().cpnd.sub_predicates.back());
         }
     }
 };
@@ -134,24 +135,24 @@ template<> struct action< and_ext >
         std::cout << "<and>" << in.string() << std::endl;
 
         // if we were put into an OR group we need to rearrange
-        auto current = state.current();
-        if (current->type == Predicate::Type::Or) {
-            auto &sub_preds = state.current()->sub_predicates;
-            auto second_last = sub_preds[sub_preds.size()-2];
+        auto &current = state.current();
+        if (current.type == Predicate::Type::Or) {
+            auto &sub_preds = state.current().cpnd.sub_predicates;
+            auto &second_last = sub_preds[sub_preds.size()-2];
             if (second_last.type == Predicate::Type::And) {
                 // if we are in an OR group and second to last predicate group is
                 // an AND group then move the last predicate inside
-                second_last.sub_predicates.push_back(sub_preds.back());
+                second_last.cpnd.sub_predicates.push_back(std::move(sub_preds.back()));
                 sub_preds.pop_back();
             }
             else {
                 // otherwise combine last two into a new AND group
-                Predicate pred;
-                pred.type = Predicate::Type::And;
-                pred.sub_predicates = { second_last, sub_preds.back() };
+                Predicate pred(Predicate::Type::And);
+                pred.cpnd.sub_predicates.emplace_back(std::move(second_last));
+                pred.cpnd.sub_predicates.emplace_back(std::move(sub_preds.back()));
                 sub_preds.pop_back();
                 sub_preds.pop_back();
-                sub_preds.push_back(pred);
+                sub_preds.push_back(std::move(pred));
             }
         }
     }
@@ -164,27 +165,27 @@ template<> struct action< or_ext >
         std::cout << "<or>" << in.string() << std::endl;
 
         // if already an OR group do nothing
-        auto current = state.current();
-        if (current->type == Predicate::Type::Or) {
+        auto &current = state.current();
+        if (current.type == Predicate::Type::Or) {
             return;
         }
 
         // if only two predicates in the group, then convert to OR
-        auto &sub_preds = state.current()->sub_predicates;
+        auto &sub_preds = state.current().cpnd.sub_predicates;
         if (sub_preds.size()) {
-            current->type = Predicate::Type::Or;
+            current.type = Predicate::Type::Or;
             return;
         }
 
         // split the current group into to groups which are ORed together
-        Predicate pred1, pred2;
-        pred1.type = Predicate::Type::And;
-        pred2.type = Predicate::Type::And;
-        pred1.sub_predicates.insert(sub_preds.begin(), sub_preds.back());
-        pred2.sub_predicates.push_back(sub_preds.back());
+        Predicate pred1(Predicate::Type::And), pred2(Predicate::Type::And);
+        pred1.cpnd.sub_predicates.insert(sub_preds.begin(), sub_preds.back());
+        pred2.cpnd.sub_predicates.push_back(std::move(sub_preds.back()));
 
-        current->type = Predicate::Type::Or;
-        sub_preds = { pred1, pred2 };
+        current.type = Predicate::Type::Or;
+        sub_preds.clear();
+        sub_preds.emplace_back(std::move(pred1));
+        sub_preds.emplace_back(std::move(pred2));
     }
 };
 
@@ -249,9 +250,8 @@ template<> struct action< true_pred >
     static void apply( const input & in, ParserState & state )
     {
         std::cout << in.string() << std::endl;
-        Predicate pred;
-        pred.type = Predicate::Type::True;
-        state.current()->sub_predicates.push_back(std::move(pred));
+        Predicate pred(Predicate::Type::True);
+        state.current().cpnd.sub_predicates.push_back(std::move(pred));
     }
 };
 
@@ -260,9 +260,8 @@ template<> struct action< false_pred >
     static void apply( const input & in, ParserState & state )
     {
         std::cout << in.string() << std::endl;
-        Predicate pred;
-        pred.type = Predicate::Type::False;
-        state.current()->sub_predicates.push_back(std::move(pred));
+        Predicate pred(Predicate::Type::False);
+        state.current().cpnd.sub_predicates.push_back(std::move(pred));
     }
 };
 
@@ -270,7 +269,7 @@ template<> struct action< false_pred >
 template<> struct action< rule > {                                  \
     static void apply( const input & in, ParserState & state ) {    \
         std::cout << in.string() << std::endl;      \
-        state.current()->op = oper; }};
+        state.current().cmpr.op = oper; }};
 
 OPERATOR_ACTION(eq, Predicate::Operator::Equal)
 OPERATOR_ACTION(noteq, Predicate::Operator::NotEqual)
@@ -289,15 +288,14 @@ template<> struct action< one< '(' > >
     {
         std::cout << "<begin_group>" << std::endl;
 
-        Predicate group;
-        group.type = Predicate::Type::And;
+        Predicate group(Predicate::Type::And);
         if (state.negate_next) {
             group.negate = true;
             state.negate_next = false;
         }
 
-        state.current()->sub_predicates.emplace_back(std::move(group));
-        state.predicate_stack.push_back(&state.current()->sub_predicates.back());
+        state.current().cpnd.sub_predicates.emplace_back(std::move(group));
+        state.predicate_stack.push_back(&state.current().cpnd.sub_predicates.back());
     }
 };
 
@@ -326,19 +324,17 @@ Predicate parse(const std::string &query)
     analyze< pred >();
     const std::string source = "user query";
 
-    Predicate out_predicate;
-    out_predicate.type = Predicate::Type::And;
+    Predicate out_predicate(Predicate::Type::And);
 
     ParserState state;
     state.predicate_stack.push_back(&out_predicate);
 
     pegtl::parse< must< pred, eof >, action >(query, source, state);
-    if (out_predicate.type == Predicate::Type::And && out_predicate.sub_predicates.size() == 1) {
-        return out_predicate.sub_predicates.back();
+    if (out_predicate.type == Predicate::Type::And && out_predicate.cpnd.sub_predicates.size() == 1) {
+        return std::move(out_predicate.cpnd.sub_predicates.back());
     }
-    return out_predicate;
+    return std::move(out_predicate);
 }
-
 
 
 // check a precondition and throw an exception if it is not met
@@ -618,14 +614,15 @@ template <typename... T>
 void add_comparison_to_query(Query &query, Predicate &pred, Schema &schema, ObjectSchema &object_schema)
 {
     std::vector<size_t> indexes;
-    auto t0 = pred.sub_expressions[0].type, t1 = pred.sub_expressions[1].type;
+    Predicate::Comparison &cmpr = pred.cmpr;
+    auto t0 = cmpr.expr[0].type, t1 = cmpr.expr[1].type;
     if (t0 == Expression::Type::KeyPath && t1 != Expression::Type::KeyPath) {
-        Property *prop = get_property_from_key_path(schema, object_schema, pred.sub_expressions[0].s, indexes);
-        do_add_comparison_to_query(query, schema, object_schema, prop, pred.op, indexes, prop->table_column, pred.sub_expressions[1].s);
+        Property *prop = get_property_from_key_path(schema, object_schema, cmpr.expr[0].s, indexes);
+        do_add_comparison_to_query(query, schema, object_schema, prop, cmpr.op, indexes, prop->table_column, cmpr.expr[1].s);
     }
     else if (t0 != Expression::Type::KeyPath && t1 == Expression::Type::KeyPath) {
-        Property *prop = get_property_from_key_path(schema, object_schema, pred.sub_expressions[1].s, indexes);
-        do_add_comparison_to_query(query, schema, object_schema, prop, pred.op, indexes, pred.sub_expressions[0].s, prop->table_column);
+        Property *prop = get_property_from_key_path(schema, object_schema, cmpr.expr[1].s, indexes);
+        do_add_comparison_to_query(query, schema, object_schema, prop, cmpr.op, indexes, cmpr.expr[0].s, prop->table_column);
     }
     else {
         throw std::runtime_error("Predicate expressions must compare a keypath and another keypath or a constant value");
@@ -641,10 +638,10 @@ void update_query_with_predicate(Query &query, Predicate &pred, Schema &schema, 
     switch (pred.type) {
         case Predicate::Type::And:
             query.group();
-            for (auto &sub : pred.sub_predicates) {
+            for (auto &sub : pred.cpnd.sub_predicates) {
                 update_query_with_predicate(query, sub, schema, object_schema);
             }
-            if (!pred.sub_predicates.size()) {
+            if (!pred.cpnd.sub_predicates.size()) {
                 query.and_query(new TrueExpression);
             }
             query.end_group();
@@ -652,11 +649,11 @@ void update_query_with_predicate(Query &query, Predicate &pred, Schema &schema, 
 
         case Predicate::Type::Or:
             query.group();
-            for (auto &sub : pred.sub_predicates) {
+            for (auto &sub : pred.cpnd.sub_predicates) {
                 query.Or();
                 update_query_with_predicate(query, sub, schema, object_schema);
             }
-            if (!pred.sub_predicates.size()) {
+            if (!pred.cpnd.sub_predicates.size()) {
                 query.and_query(new FalseExpression);
             }
             query.end_group();
