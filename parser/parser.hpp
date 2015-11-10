@@ -16,14 +16,13 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#ifndef REALM_EXTERNAL_COMMIT_HELPER_HPP
-#define REALM_EXTERNAL_COMMIT_HELPER_HPP
+#ifndef REALM_PARSER_HPP
+#define REALM_PARSER_HPP
 
 #include <vector>
 #include <string>
 
 namespace realm {
-    class Query;
     class Schema;
 
     namespace parser {
@@ -77,9 +76,7 @@ namespace realm {
         };
 
         Predicate parse(const std::string &query);
-
-        void apply_predicate(Query &query, Predicate &predicate, Schema &schema, std::string objectType);
     }
 }
 
-#endif // REALM_EXTERNAL_COMMIT_HELPER_HPP
+#endif // REALM_PARSER_HPP
