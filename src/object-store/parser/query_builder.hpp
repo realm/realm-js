@@ -21,13 +21,57 @@
 
 #include <string>
 #include "parser.hpp"
+#include "object_accessor.hpp"
 
 namespace realm {
     class Query;
     class Schema;
 
     namespace query_builder {
-        void apply_predicate(Query &query, parser::Predicate &predicate, Schema &schema, std::string objectType);
+        class Arguments;
+
+        void apply_predicate(Query &query, parser::Predicate &predicate, Arguments &arguments, Schema &schema, std::string objectType);
+
+        class Arguments
+        {
+          public:
+            virtual bool bool_for_argument(size_t argument_index) = 0;
+            virtual long long long_for_argument(size_t argument_index) = 0;
+            virtual float float_for_argument(size_t argument_index) = 0;
+            virtual double double_for_argument(size_t argument_index) = 0;
+            virtual std::string string_for_argument(size_t argument_index) = 0;
+            virtual DateTime datetime_for_argument(size_t argument_index) = 0;
+            virtual size_t object_index_for_argument(size_t argument_index) = 0;
+            virtual bool is_argument_null(size_t argument_index) = 0;
+        };
+
+        template<typename ValueType, typename ContextType>
+        class ArgumentConverter : public Arguments
+        {
+          public:
+            ArgumentConverter(ContextType context, std::vector<ValueType> arguments) : m_arguments(arguments), m_ctx(context) {};
+
+            using Accessor = realm::NativeAccessor<ValueType, ContextType>;
+            virtual bool bool_for_argument(size_t argument_index) { return Accessor::to_bool(m_ctx, argument_at(argument_index)); }
+            virtual long long long_for_argument(size_t argument_index) { return Accessor::to_long(m_ctx, argument_at(argument_index)); }
+            virtual float float_for_argument(size_t argument_index) { return Accessor::to_float(m_ctx, argument_at(argument_index)); }
+            virtual double double_for_argument(size_t argument_index) { return Accessor::to_double(m_ctx, argument_at(argument_index)); }
+            virtual std::string string_for_argument(size_t argument_index) { return Accessor::to_string(m_ctx, argument_at(argument_index)); }
+            virtual DateTime datetime_for_argument(size_t argument_index) { return Accessor::to_datetime(m_ctx, argument_at(argument_index)); }
+            virtual size_t object_index_for_argument(size_t argument_index) { return Accessor::to_existing_object_index(m_ctx, argument_at(argument_index)); }
+            virtual bool is_argument_null(size_t argument_index) { return Accessor::is_null(m_ctx, argument_at(argument_index)); }
+
+          private:
+            std::vector<ValueType> m_arguments;
+            ContextType m_ctx;
+
+            ValueType &argument_at(size_t index) {
+                if (index >= m_arguments.size()) {
+                    throw std::out_of_range((std::string)"Argument index " + std::to_string(index) + " out of range 0.." + std::to_string(m_arguments.size()-1));
+                }
+                return m_arguments[index];
+            }
+        };
     }
 }
 

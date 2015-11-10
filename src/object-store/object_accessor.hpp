@@ -76,6 +76,9 @@ namespace realm {
         static size_t to_object_index(ContextType ctx, SharedRealm realm, ValueType &val, const std::string &type, bool try_update);
         static ValueType from_object(ContextType ctx, Object);
 
+        // object index for an existing object
+        static size_t to_existing_object_index(ContextType ctx, ValueType &val);
+
         // list value acessors
         static size_t list_size(ContextType ctx, ValueType &val);
         static ValueType list_value_at_index(ContextType ctx, ValueType &val, size_t index);

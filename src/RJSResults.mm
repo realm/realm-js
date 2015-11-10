@@ -105,7 +105,7 @@ JSObjectRef RJSResultsCreate(JSContextRef ctx, SharedRealm realm, std::string cl
 }
 
 
-JSObjectRef RJSResultsCreate(JSContextRef ctx, SharedRealm realm, std::string className, std::string queryString) {
+JSObjectRef RJSResultsCreate(JSContextRef ctx, SharedRealm realm, std::string className, std::string queryString, std::vector<JSValueRef> args) {
     TableRef table = ObjectStore::table_for_object_type(realm->read_group(), className);
     Query query = table->where();
     Schema &schema = *realm->config().schema;
@@ -114,7 +114,8 @@ JSObjectRef RJSResultsCreate(JSContextRef ctx, SharedRealm realm, std::string cl
         throw std::runtime_error("Object type '" + className + "' not present in Realm.");
     }
     parser::Predicate predicate = parser::parse(queryString);
-    query_builder::apply_predicate(query, predicate, schema, object_schema->name);
+    query_builder::ArgumentConverter<JSValueRef, JSContextRef> arguments(ctx, args);
+    query_builder::apply_predicate(query, predicate, arguments, schema, object_schema->name);
 
     return RJSWrapObject<Results *>(ctx, RJSResultsClass(), new Results(realm, *object_schema, std::move(query)));
 }

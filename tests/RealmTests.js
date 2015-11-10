@@ -272,6 +272,12 @@ module.exports = BaseTest.extend({
         TestCase.assertEqual(realm.objects('PersonObject', 'name = \'Tim\'').length, 1);
         TestCase.assertEqual(realm.objects('PersonObject', 'married == TRUE').length, 1);
         TestCase.assertEqual(realm.objects('PersonObject', 'married == false').length, 3);
+
+        TestCase.assertEqual(realm.objects('PersonObject', 'name = {0}', 'Tim').length, 1);
+        TestCase.assertEqual(realm.objects('PersonObject', 'age > {1} && age < {0}', 13, 10).length, 3);
+        TestCase.assertThrows(function() {
+            realm.objects('PersonObject', 'age > {2} && age < {0}', 13, 10)
+        });
     },
 
     testNotifications: function() {
