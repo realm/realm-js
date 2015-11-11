@@ -235,7 +235,7 @@ module.exports = BaseTest.extend({
     },
 
     testRealmObjects: function() {
-        var realm = new Realm({schema: [schemas.PersonObject]});
+        var realm = new Realm({schema: [schemas.PersonObject, schemas.DefaultValues, schemas.TestObject]});
         realm.write(function() {
             realm.create('PersonObject', ['Ari', 10, false]);
             realm.create('PersonObject', ['Tim', 11, false]);
@@ -278,6 +278,15 @@ module.exports = BaseTest.extend({
         TestCase.assertThrows(function() {
             realm.objects('PersonObject', 'age > {2} && age < {0}', 13, 10)
         });
+
+        realm.write(function() {
+            realm.create('DefaultValuesObject', {'dateCol': new Date(3)});
+            realm.create('DefaultValuesObject', {'dateCol': new Date(4)});
+            realm.create('DefaultValuesObject', {'dateCol': new Date(5)});
+        });
+
+        TestCase.assertEqual(realm.objects('DefaultValuesObject', 'dateCol > {0}', new Date(4)).length, 1);
+        TestCase.assertEqual(realm.objects('DefaultValuesObject', 'dateCol <= {0}', new Date(4)).length, 2);
     },
 
     testNotifications: function() {
