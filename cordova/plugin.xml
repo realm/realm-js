@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin xmlns="http://apache.org/cordova/ns/plugins/1.0" id="realm-cordova" version="0.0.1">
+    <name>Realm</name>
+    <description>Realm Cordova Plugin</description>
+    <author>Realm</author>
+
+    <engines>
+        <engine name="cordova" version=">=5.4.0" />
+    </engines>
+
+    <js-module src="www/realm.js" name="Realm">
+        <runs />
+    </js-module>
+
+    <platform name="ios">
+        <config-file target="config.xml" parent="/*">
+            <feature name="Realm">
+                <param name="ios-package" value="RealmCordova" />
+                <param name="onload" value="true" />
+            </feature>
+        </config-file>
+
+        <hook type="before_plugin_install" src="hooks/build-ios.js" />
+
+        <header-file src="RealmCordova.h" />
+        <source-file src="RealmCordova.m" />
+        <framework src="build/RealmJS.framework" custom="true" />
+        <framework src="JavaScriptCore.framework" />
+    </platform>
+</plugin>

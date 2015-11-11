@@ -218,6 +218,8 @@
 		F68A278A1BC2722A0063D40A /* RJSModuleLoader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RJSModuleLoader.h; path = tests/RJSModuleLoader.h; sourceTree = SOURCE_ROOT; };
 		F68A278B1BC2722A0063D40A /* RJSModuleLoader.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = RJSModuleLoader.m; path = tests/RJSModuleLoader.m; sourceTree = SOURCE_ROOT; };
 		F68A278D1BC30F0A0063D40A /* index.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; name = index.js; path = tests/index.js; sourceTree = SOURCE_ROOT; };
+		F6EA2B131BEEB8AA00ECDC7B /* RealmCordova.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RealmCordova.h; sourceTree = "<group>"; };
+		F6EA2B141BEEB8AA00ECDC7B /* RealmCordova.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RealmCordova.m; sourceTree = "<group>"; };
 		F6F405F71BCF0C1A00A1E24F /* base-test.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; name = "base-test.js"; path = "tests/base-test.js"; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
@@ -326,6 +328,7 @@
 				02B58CCF1AE99D8C009B348C /* Frameworks */,
 				0270BC3D1B7CFBFD00010E03 /* RealmJS */,
 				02B58CC01AE99CEC009B348C /* RealmJSTests */,
+				F6EA2B0B1BEEB62E00ECDC7B /* RealmCordova */,
 				0270BCCE1B7D066100010E03 /* RealmReact */,
 				02B58CB21AE99CEC009B348C /* Products */,
 			);
@@ -379,6 +382,16 @@
 				02EE6D8C1BD87E310016A82E /* RealmReactTests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		F6EA2B0B1BEEB62E00ECDC7B /* RealmCordova */ = {
+			isa = PBXGroup;
+			children = (
+				F6EA2B131BEEB8AA00ECDC7B /* RealmCordova.h */,
+				F6EA2B141BEEB8AA00ECDC7B /* RealmCordova.m */,
+			);
+			name = RealmCordova;
+			path = cordova;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
