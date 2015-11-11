@@ -203,14 +203,6 @@ struct ColumnGetter {
     }
 };
 
-template <typename TableGetter>
-struct ColumnGetter<DateTime, TableGetter> {
-    static Columns<Int> convert(TableGetter&& table, const PropertyExpression & expr, Arguments &args)
-    {
-        return table()->template column<Int>(expr.prop->table_column);
-    }
-};
-
 template <typename RequestedType, typename TableGetter>
 struct ValueGetter;
 
