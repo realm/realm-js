@@ -137,11 +137,18 @@ struct ParserState
 template< typename Rule >
 struct action : nothing< Rule > {};
 
+#define REALM_PARSER_PRINT_TOKENS
+#ifdef REALM_PARSER_PRINT_TOKENS
+    #define DEBUG_PRINT_TOKEN(string) std::cout << string << std::endl
+#else
+    #define DEBUG_PRINT_TOKEN(string)
+#endif
+
 template<> struct action< and_ext >
 {
     static void apply( const input & in, ParserState & state )
     {
-        std::cout << "<and>" << in.string() << std::endl;
+        DEBUG_PRINT_TOKEN("<and>");
 
         // if we were put into an OR group we need to rearrange
         auto &current = state.current();
@@ -171,7 +178,7 @@ template<> struct action< or_ext >
 {
     static void apply( const input & in, ParserState & state )
     {
-        std::cout << "<or>" << in.string() << std::endl;
+        DEBUG_PRINT_TOKEN("<or>");
 
         // if already an OR group do nothing
         auto &current = state.current();
@@ -202,7 +209,7 @@ template<> struct action< or_ext >
 #define EXPRESSION_ACTION(rule, type)                               \
 template<> struct action< rule > {                                  \
     static void apply( const input & in, ParserState & state ) {    \
-        std::cout << in.string() << std::endl;                      \
+        DEBUG_PRINT_TOKEN(in.string());                             \
         state.addExpression(Expression(type, in.string())); }};
 
 EXPRESSION_ACTION(dq_string_content, Expression::Type::String)
@@ -218,7 +225,7 @@ template<> struct action< true_pred >
 {
     static void apply( const input & in, ParserState & state )
     {
-        std::cout << in.string() << std::endl;
+        DEBUG_PRINT_TOKEN(in.string());
         state.current().cpnd.sub_predicates.emplace_back(Predicate::Type::True);
     }
 };
@@ -227,7 +234,7 @@ template<> struct action< false_pred >
 {
     static void apply( const input & in, ParserState & state )
     {
-        std::cout << in.string() << std::endl;
+        DEBUG_PRINT_TOKEN(in.string());
         state.current().cpnd.sub_predicates.emplace_back(Predicate::Type::False);
     }
 };
@@ -235,7 +242,7 @@ template<> struct action< false_pred >
 #define OPERATOR_ACTION(rule, oper)                                 \
 template<> struct action< rule > {                                  \
     static void apply( const input & in, ParserState & state ) {    \
-        std::cout << in.string() << std::endl;      \
+        DEBUG_PRINT_TOKEN(in.string());                             \
         state.current().cmpr.op = oper; }};
 
 OPERATOR_ACTION(eq, Predicate::Operator::Equal)
@@ -252,7 +259,7 @@ template<> struct action< one< '(' > >
 {
     static void apply( const input & in, ParserState & state )
     {
-        std::cout << "<begin_group>" << std::endl;
+        DEBUG_PRINT_TOKEN("<begin_group>");
 
         Predicate group(Predicate::Type::And);
         if (state.negate_next) {
@@ -269,7 +276,7 @@ template<> struct action< group_pred >
 {
     static void apply( const input & in, ParserState & state )
     {
-        std::cout << "<end_group>" << std::endl;
+        DEBUG_PRINT_TOKEN("<end_group>");
         state.predicate_stack.pop_back();
     }
 };
@@ -278,7 +285,7 @@ template<> struct action< not_pre >
 {
     static void apply( const input & in, ParserState & state )
     {
-        std::cout << "<not>" << std::endl;
+        DEBUG_PRINT_TOKEN("<not>");
         state.negate_next = true;
     }
 };
