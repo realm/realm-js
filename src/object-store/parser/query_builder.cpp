@@ -32,12 +32,7 @@ using namespace parser;
 // check a precondition and throw an exception if it is not met
 // this should be used iff the condition being false indicates a bug in the caller
 // of the function checking its preconditions
-static void precondition(bool condition, const std::string message) {
-    if (__builtin_expect(condition, 1)) {
-        return;
-    }
-    throw std::runtime_error(message);
-}
+#define precondition(condition, message) if (!__builtin_expect(condition, 1)) {  throw std::runtime_error(message); }
 
 // FIXME: TrueExpression and FalseExpression should be supported by core in some way
 struct TrueExpression : realm::Expression {
