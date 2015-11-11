@@ -137,7 +137,6 @@ struct ParserState
 template< typename Rule >
 struct action : nothing< Rule > {};
 
-#define REALM_PARSER_PRINT_TOKENS
 #ifdef REALM_PARSER_PRINT_TOKENS
     #define DEBUG_PRINT_TOKEN(string) std::cout << string << std::endl
 #else
