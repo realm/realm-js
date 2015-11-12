@@ -31,15 +31,14 @@ namespace parser {
 
 // strings
 struct unicode : list< seq< one< 'u' >, rep< 4, must< xdigit > > >, one< '\\' > > {};
-struct escaped_char : one< '"', '\'', '\\', '/', 'b', 'f', 'n', 'r', 't' > {};
+struct escaped_char : one< '"', '\'', '\\', '/', 'b', 'f', 'n', 'r', 't', '0' > {};
 struct escaped : sor< escaped_char, unicode > {};
 struct unescaped : utf8::range< 0x20, 0x10FFFF > {};
-struct char_ : if_then_else< one< '\\' >, must< escaped >, unescaped > {};
-
-struct dq_string_content : until< at< one< '"' > >, must< char_ > > {};
+struct chars : if_then_else< one< '\\' >, must< escaped >, unescaped > {};
+struct dq_string_content : until< at< one< '"' > >, must< chars > > {};
 struct dq_string : seq< one< '"' >, must< dq_string_content >, any > {};
 
-struct sq_string_content : until< at< one< '\'' > >, must< char_ > > {};
+struct sq_string_content : until< at< one< '\'' > >, must< chars > > {};
 struct sq_string : seq< one< '\'' >, must< sq_string_content >, any > {};
 
 // numbers
