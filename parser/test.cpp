@@ -51,6 +51,20 @@ static std::vector<std::string> valid_queries = {
     "0 contains 0",
     "0 BeGiNsWiTh 0",
     "0 ENDSWITH 0",
+
+    // atoms/groups
+    "(0=0)",
+    "( 0=0 )",
+    "((0=0))",
+    "!0=0",
+    "! 0=0",
+    "!(0=0)",
+    "! (0=0)",
+    "NOT0=0",   // keypath NOT0
+    "not 0=0",
+    "NOT(0=0)",
+    "not (0=0)",
+    "NOT (!0=0)",
 };
 
 static std::vector<std::string> invalid_queries = {
@@ -85,6 +99,15 @@ static std::vector<std::string> invalid_queries = {
     "0 <> 0",
     "0 contains1",
     "endswith 0",
+
+    // atoms/groups
+    "0=0)",
+    "(0=0",
+    "(0=0))",
+    "! =0",
+    "NOTNOT(0=0)",
+    "(!!0=0)",
+    "0=0 !",
 
     "truepredicate &&",
     "truepredicate & truepredicate",
