@@ -61,8 +61,8 @@ struct false_value : pegtl_istring_t("false") {};
 struct key_path : list< seq< sor< alpha, one< '_' > >, star< sor< alnum, one< '_', '-' > > > >, one< '.' > > {};
 
 // argument
-struct argument_index : until< at< one< '}' > >, must< digit > > {};
-struct argument : seq< one< '{' >, must< argument_index >, any > {};
+struct argument_index : plus< digit > {};
+struct argument : seq< one< '{' >, must< argument_index, one< '}' > > > {};
 
 // expressions and operators
 struct expr : sor< dq_string, sq_string, number, argument, true_value, false_value, key_path > {};

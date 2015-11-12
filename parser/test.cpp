@@ -20,7 +20,7 @@ static std::vector<std::string> valid_queries = {
     "'\\uffFf' = '\\u0020'",
     "'\\u01111' = 'asdf\\u0111asdf'",
 
-    // numbers, bools, keypaths
+    // expressions (numbers, bools, keypaths, arguments)
     "-1 = 12",
     "0 = 001",
     "0x0 = -0X398235fcAb",
@@ -30,6 +30,10 @@ static std::vector<std::string> valid_queries = {
     "_ = a",
     "_a = _.aZ",
     "a09._br.z = __-__.Z-9",
+
+    // arguments
+    "{0} = {19}",
+    "{0} = {0}",
 };
 
 static std::vector<std::string> invalid_queries = {
@@ -44,12 +48,21 @@ static std::vector<std::string> invalid_queries = {
     "\" = ''",
     "' = ''",
 
-    // invalid numbers, bools, keypaths
+    // expressions
     "03a = 1",
     "1..0 = 1",
     "1.0. = 1",
+    "1-0 = 1",
     "0x = 1",
     "truey = false",
+    "- = a",
+    "a..b = a",
+    "a$a = a",
+    "{} = {0}",
+    "{-1} = {0}",
+    "{a} = {0}",
+    "{ = }",
+
 
     "truepredicate &&",
     "truepredicate & truepredicate",
