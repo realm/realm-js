@@ -1,0 +1,17 @@
+{
+  "name": "realm-cordova",
+  "version": "0.0.1",
+  "private": true,
+  "cordova": {
+    "id": "realm-cordova",
+    "platforms": [
+      "ios"
+    ]
+  },
+  "dependencies": {
+    "xcode": "0.8.2"
+  },
+  "engines": {
+    "node": ">=0.12"
+  }
+}
