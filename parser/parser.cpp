@@ -62,7 +62,7 @@ struct key_path : list< seq< sor< alpha, one< '_' > >, star< sor< alnum, one< '_
 
 // argument
 struct argument_index : plus< digit > {};
-struct argument : seq< one< '{' >, must< argument_index, one< '}' > > > {};
+struct argument : seq< one< '$' >, must< argument_index > > {};
 
 // expressions and operators
 struct expr : sor< dq_string, sq_string, number, argument, true_value, false_value, key_path > {};
