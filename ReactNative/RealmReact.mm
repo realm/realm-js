@@ -6,10 +6,13 @@ extern "C" {
 #import "RealmReact.h"
 #import "Base/RCTBridge.h"
 
-#import <GCDWebServers/GCDWebServers.h>
 #import <RealmJS/RealmJS.h>
 #import <objc/runtime.h>
 #import <dlfcn.h>
+
+#if DEBUG
+#import <GCDWebServers/GCDWebServers.h>
+#endif
 
 @interface NSObject (RCTJavaScriptContext)
 - (instancetype)initWithJSContext:(JSGlobalContextRef)context;
@@ -66,7 +69,12 @@ JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executor, bool cre
 
 - (void)setBridge:(RCTBridge *)bridge {
     _bridge = bridge;
+    
+    Ivar executorIvar = class_getInstanceVariable([bridge class], "_javaScriptExecutor");
+    id executor = object_getIvar(bridge, executorIvar);
+    bool chromeDebugMode = [executor isMemberOfClass:NSClassFromString(@"RCTWebSocketExecutor")];
 
+#if DEBUG
     static GCDWebServer *s_webServer;
     static realm_js::RPCServer *rpcServer;
 
@@ -79,9 +87,7 @@ JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executor, bool cre
     }
 
     // The executor could be a RCTWebSocketExecutor, in which case it won't have a JS context.
-    Ivar executorIvar = class_getInstanceVariable([bridge class], "_javaScriptExecutor");
-    id executor = object_getIvar(bridge, executorIvar);
-    if ([executor isMemberOfClass:NSClassFromString(@"RCTWebSocketExecutor")]) {
+    if (chromeDebugMode) {
         [GCDWebServer setLogLevel:3];
         GCDWebServer *webServer = [[GCDWebServer alloc] init];
         rpcServer = new realm_js::RPCServer();
@@ -116,6 +122,11 @@ JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executor, bool cre
 
         s_webServer = webServer;
         return;
+    }
+#endif
+
+    if (chromeDebugMode) {
+        @throw [NSException exceptionWithName:@"Invalid Executor" reason:@"Chrome debug mode not supported in Release builds" userInfo:nil];
     }
 
     [executor executeBlockOnJavaScriptQueue:^{

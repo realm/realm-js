@@ -64,7 +64,6 @@
 		F67191381BCE231100AD0939 /* GCDWebServers.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 02A3C7941BC4317A00B1A7BE /* GCDWebServers.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		F68A278C1BC2722A0063D40A /* RJSModuleLoader.m in Sources */ = {isa = PBXBuildFile; fileRef = F68A278B1BC2722A0063D40A /* RJSModuleLoader.m */; };
 		F68A278E1BC30F0A0063D40A /* index.js in Resources */ = {isa = PBXBuildFile; fileRef = F68A278D1BC30F0A0063D40A /* index.js */; };
-		F6B3963D1BCE2430008BDC39 /* GCDWebServers.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 02A3C7941BC4317A00B1A7BE /* GCDWebServers.framework */; };
 		F6F405F81BCF0C1A00A1E24F /* base-test.js in Resources */ = {isa = PBXBuildFile; fileRef = F6F405F71BCF0C1A00A1E24F /* base-test.js */; };
 /* End PBXBuildFile section */
 
@@ -227,7 +226,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				0291DBD21BD994F700E3852C /* JavaScriptCore.framework in Frameworks */,
-				F6B3963D1BCE2430008BDC39 /* GCDWebServers.framework in Frameworks */,
 				02B29A311B7CF86D008A7E6B /* RealmJS.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -300,6 +298,7 @@
 		0270BCCE1B7D066100010E03 /* RealmReact */ = {
 			isa = PBXGroup;
 			children = (
+				02EE6D781BD87E310016A82E /* ReactTests.xcodeproj */,
 				0270BCCF1B7D067300010E03 /* RealmReact.h */,
 				0270BCD01B7D067300010E03 /* RealmReact.mm */,
 			);
@@ -321,8 +320,6 @@
 		02B58CA71AE99CEB009B348C = {
 			isa = PBXGroup;
 			children = (
-				02A3C7841BC4317A00B1A7BE /* GCDWebServer.xcodeproj */,
-				02EE6D781BD87E310016A82E /* ReactTests.xcodeproj */,
 				02B58CCF1AE99D8C009B348C /* Frameworks */,
 				0270BC3D1B7CFBFD00010E03 /* RealmJS */,
 				02B58CC01AE99CEC009B348C /* RealmJSTests */,
@@ -368,6 +365,7 @@
 			children = (
 				02A3C7A41BC4341500B1A7BE /* libc++.tbd */,
 				02B58CCD1AE99D4D009B348C /* JavaScriptCore.framework */,
+				02A3C7841BC4317A00B1A7BE /* GCDWebServer.xcodeproj */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -695,9 +693,11 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				EXCLUDED_SOURCE_FILE_NAMES = "";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)",
+					"$(BUILT_PRODUCTS_DIR)",
 				);
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
@@ -719,6 +719,10 @@
 					"-isystem",
 					core/include,
 				);
+				OTHER_LDFLAGS = (
+					"-framework",
+					GCDWebServers,
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = "io.realm.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -733,9 +737,11 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				EXCLUDED_SOURCE_FILE_NAMES = "";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)",
+					"$(BUILT_PRODUCTS_DIR)",
 				);
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
@@ -753,6 +759,7 @@
 					"-isystem",
 					core/include,
 				);
+				OTHER_LDFLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = "io.realm.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -767,9 +774,11 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				EXCLUDED_SOURCE_FILE_NAMES = GCDWebServers.framework;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)",
+					"$(BUILT_PRODUCTS_DIR)",
 				);
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
@@ -787,6 +796,7 @@
 					"-isystem",
 					core/include,
 				);
+				OTHER_LDFLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = "io.realm.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
