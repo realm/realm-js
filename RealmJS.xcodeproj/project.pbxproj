@@ -298,6 +298,7 @@
 		0270BCCE1B7D066100010E03 /* RealmReact */ = {
 			isa = PBXGroup;
 			children = (
+				02EE6D781BD87E310016A82E /* ReactTests.xcodeproj */,
 				0270BCCF1B7D067300010E03 /* RealmReact.h */,
 				0270BCD01B7D067300010E03 /* RealmReact.mm */,
 			);
@@ -319,8 +320,6 @@
 		02B58CA71AE99CEB009B348C = {
 			isa = PBXGroup;
 			children = (
-				02A3C7841BC4317A00B1A7BE /* GCDWebServer.xcodeproj */,
-				02EE6D781BD87E310016A82E /* ReactTests.xcodeproj */,
 				02B58CCF1AE99D8C009B348C /* Frameworks */,
 				0270BC3D1B7CFBFD00010E03 /* RealmJS */,
 				02B58CC01AE99CEC009B348C /* RealmJSTests */,
@@ -366,6 +365,7 @@
 			children = (
 				02A3C7A41BC4341500B1A7BE /* libc++.tbd */,
 				02B58CCD1AE99D4D009B348C /* JavaScriptCore.framework */,
+				02A3C7841BC4317A00B1A7BE /* GCDWebServer.xcodeproj */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
