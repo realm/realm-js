@@ -10,8 +10,8 @@ static std::vector<std::string> valid_queries = {
     // true/false predicates
     "truepredicate",
     "falsepredicate",
-    "TRUEPREDICATE",
-    "FALSEPREDICATE",
+    " TRUEPREDICATE ",
+    " FALSEPREDICATE ",
 
     // characters/strings
     "\"\" = ''",
@@ -30,10 +30,27 @@ static std::vector<std::string> valid_queries = {
     "_ = a",
     "_a = _.aZ",
     "a09._br.z = __-__.Z-9",
-
-    // arguments
     "{0} = {19}",
     "{0} = {0}",
+
+    // operators
+    "0=0",
+    "0 = 0",
+    "0!=0",
+    "0 != 0",
+    "0==0",
+    "0 == 0",
+    "0>0",
+    "0 > 0",
+    "0>=0",
+    "0 >= 0",
+    "0<0",
+    "0 < 0",
+    "0<=0",
+    "0 <= 0",
+    "0 contains 0",
+    "0 BeGiNsWiTh 0",
+    "0 ENDSWITH 0",
 };
 
 static std::vector<std::string> invalid_queries = {
@@ -63,6 +80,11 @@ static std::vector<std::string> invalid_queries = {
     "{a} = {0}",
     "{ = }",
 
+    // operators
+    "0===>0",
+    "0 <> 0",
+    "0 contains1",
+    "endswith 0",
 
     "truepredicate &&",
     "truepredicate & truepredicate",
