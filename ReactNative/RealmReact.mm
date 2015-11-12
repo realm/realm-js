@@ -72,6 +72,7 @@ JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executor, bool cre
     
     Ivar executorIvar = class_getInstanceVariable([bridge class], "_javaScriptExecutor");
     id executor = object_getIvar(bridge, executorIvar);
+    bool chromeDebugMode = [executor isMemberOfClass:NSClassFromString(@"RCTWebSocketExecutor")];
 
 #if DEBUG
     static GCDWebServer *s_webServer;
@@ -86,8 +87,7 @@ JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executor, bool cre
     }
 
     // The executor could be a RCTWebSocketExecutor, in which case it won't have a JS context.
-
-    if ([executor isMemberOfClass:NSClassFromString(@"RCTWebSocketExecutor")]) {
+    if (chromeDebugMode) {
         [GCDWebServer setLogLevel:3];
         GCDWebServer *webServer = [[GCDWebServer alloc] init];
         rpcServer = new realm_js::RPCServer();
@@ -124,6 +124,10 @@ JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executor, bool cre
         return;
     }
 #endif
+
+    if (chromeDebugMode) {
+        @throw [NSException exceptionWithName:@"Invalid Executor" reason:@"Chrome debug mode not supported in Release builds" userInfo:nil];
+    }
 
     [executor executeBlockOnJavaScriptQueue:^{
         JSGlobalContextRef ctx = RealmReactGetJSGlobalContextForExecutor(executor, true);
