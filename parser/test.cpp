@@ -65,6 +65,15 @@ static std::vector<std::string> valid_queries = {
     "NOT(0=0)",
     "not (0=0)",
     "NOT (!0=0)",
+
+    // compound
+    "a==a && a==a",
+    "a==a || a==a",
+    "a==a&&a==a||a=a",
+    "a==a and a==a",
+    "a==a OR a==a",
+    "and=='AND'&&'or'=='||'",
+    "and == or && ORE > GRAND",
 };
 
 static std::vector<std::string> invalid_queries = {
@@ -108,6 +117,13 @@ static std::vector<std::string> invalid_queries = {
     "NOTNOT(0=0)",
     "(!!0=0)",
     "0=0 !",
+
+    // compound
+    "a==a & a==a",
+    "a==a | a==a",
+    "a==a &| a==a",
+    "a==a && OR a==a",
+    "a==aORa==a",
 
     "truepredicate &&",
     "truepredicate & truepredicate",
