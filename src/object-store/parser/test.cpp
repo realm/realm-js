@@ -30,8 +30,8 @@ static std::vector<std::string> valid_queries = {
     "_ = a",
     "_a = _.aZ",
     "a09._br.z = __-__.Z-9",
-    "{0} = {19}",
-    "{0} = {0}",
+    "$0 = $19",
+    "$0=$0",
 
     // operators
     "0=0",
@@ -75,10 +75,10 @@ static std::vector<std::string> invalid_queries = {
     "- = a",
     "a..b = a",
     "a$a = a",
-    "{} = {0}",
-    "{-1} = {0}",
-    "{a} = {0}",
-    "{ = }",
+    "{} = $0",
+    "$-1 = $0",
+    "$a = $0",
+    "$ = $",
 
     // operators
     "0===>0",
