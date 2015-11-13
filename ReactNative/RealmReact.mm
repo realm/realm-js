@@ -14,8 +14,8 @@ extern "C" {
 #import <GCDWebServers/GCDWebServers.h>
 #endif
 
-@interface NSObject (RCTJavaScriptContext)
-- (instancetype)initWithJSContext:(JSGlobalContextRef)context;
+@interface NSObject ()
+- (instancetype)initWithJSContext:(JSContext *)context NS_DESIGNATED_INITIALIZER;
 - (JSGlobalContextRef)ctx;
 @end
 
@@ -29,8 +29,9 @@ JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executor, bool cre
     if (!rctJSContext && create) {
         Class RCTJavaScriptContext = NSClassFromString(@"RCTJavaScriptContext");
         if (RCTJavaScriptContext) {
-            JSGlobalContextRef ctx = JSGlobalContextCreate(NULL);
-            rctJSContext = [[RCTJavaScriptContext alloc] initWithJSContext:ctx];
+            JSContext *context = [[JSContext alloc] init];
+            //JSGlobalContextRef ctx = JSGlobalContextCreate(NULL);
+            rctJSContext = [[RCTJavaScriptContext alloc] initWithJSContext:context];
             object_setIvar(executor, contextIvar, rctJSContext);
         }
         else {
