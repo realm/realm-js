@@ -15,7 +15,7 @@ extern "C" {
 #endif
 
 @interface NSObject ()
-- (instancetype)initWithJSContext:(JSContext *)context NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithJSContext:(void *)context;
 - (JSGlobalContextRef)ctx;
 @end
 
@@ -25,20 +25,24 @@ JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executor, bool cre
         return NULL;
     }
 
-    id rctJSContext = contextIvar ? object_getIvar(executor, contextIvar) : nil;
+    id rctJSContext = object_getIvar(executor, contextIvar);
     if (!rctJSContext && create) {
         Class RCTJavaScriptContext = NSClassFromString(@"RCTJavaScriptContext");
-        if (RCTJavaScriptContext) {
+        NSMethodSignature *signature = [RCTJavaScriptContext instanceMethodSignatureForSelector:@selector(initWithJSContext:)];
+        assert(signature);
+
+        if (!strcmp([signature getArgumentTypeAtIndex:2], "@")) {
             JSContext *context = [[JSContext alloc] init];
-            //JSGlobalContextRef ctx = JSGlobalContextCreate(NULL);
-            rctJSContext = [[RCTJavaScriptContext alloc] initWithJSContext:context];
-            object_setIvar(executor, contextIvar, rctJSContext);
+            rctJSContext = [[RCTJavaScriptContext alloc] initWithJSContext:(void *)context];
         }
         else {
-            NSLog(@"Failed to load RCTJavaScriptContext class");
+            JSGlobalContextRef ctx = JSGlobalContextCreate(NULL);
+            rctJSContext = [[RCTJavaScriptContext alloc] initWithJSContext:ctx];
         }
+
+        object_setIvar(executor, contextIvar, rctJSContext);
     }
-    
+
     return [rctJSContext ctx];
 }
 }
