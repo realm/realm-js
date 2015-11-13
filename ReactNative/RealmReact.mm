@@ -14,8 +14,8 @@ extern "C" {
 #import <GCDWebServers/GCDWebServers.h>
 #endif
 
-@interface NSObject (RCTJavaScriptContext)
-- (instancetype)initWithJSContext:(JSGlobalContextRef)context;
+@interface NSObject ()
+- (instancetype)initWithJSContext:(void *)context;
 - (JSGlobalContextRef)ctx;
 @end
 
@@ -25,19 +25,25 @@ JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executor, bool cre
         return NULL;
     }
 
-    id rctJSContext = contextIvar ? object_getIvar(executor, contextIvar) : nil;
+    id rctJSContext = object_getIvar(executor, contextIvar);
     if (!rctJSContext && create) {
         Class RCTJavaScriptContext = NSClassFromString(@"RCTJavaScriptContext");
-        if (RCTJavaScriptContext) {
-            JSGlobalContextRef ctx = JSGlobalContextCreate(NULL);
-            rctJSContext = [[RCTJavaScriptContext alloc] initWithJSContext:ctx];
-            object_setIvar(executor, contextIvar, rctJSContext);
+        NSMethodSignature *signature = [RCTJavaScriptContext instanceMethodSignatureForSelector:@selector(initWithJSContext:)];
+        assert(signature);
+
+        // React Native 0.14+ expects a JSContext here, but we also support 0.13.x, which takes a JSGlobalContextRef.
+        if (!strcmp([signature getArgumentTypeAtIndex:2], "@")) {
+            JSContext *context = [[JSContext alloc] init];
+            rctJSContext = [[RCTJavaScriptContext alloc] initWithJSContext:(void *)context];
         }
         else {
-            NSLog(@"Failed to load RCTJavaScriptContext class");
+            JSGlobalContextRef ctx = JSGlobalContextCreate(NULL);
+            rctJSContext = [[RCTJavaScriptContext alloc] initWithJSContext:ctx];
         }
+
+        object_setIvar(executor, contextIvar, rctJSContext);
     }
-    
+
     return [rctJSContext ctx];
 }
 }
