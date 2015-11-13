@@ -101,6 +101,10 @@ namespace realm {
         std::thread::id thread_id() const { return m_thread_id; }
         void verify_thread() const;
 
+        // Close this Realm and remove it from the cache. Continuing to use a
+        // Realm after closing it will produce undefined behavior.
+        void close();
+
         ~Realm();
 
       private:
