@@ -54,10 +54,10 @@ JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executor, bool cre
 @interface RealmReact () {
     GCDWebServer *_webServer;
     std::unique_ptr<realm_js::RPCServer> _rpcServer;
-    std::mutex _rpcMutex;
 }
 @end
 
+static std::mutex s_rpcMutex;
 static __weak RealmReact *s_currentRealmModule = nil;
 #endif
 
@@ -86,7 +86,7 @@ static __weak RealmReact *s_currentRealmModule = nil;
 
 #if DEBUG
 - (void)startRPC {
-    std::lock_guard<std::mutex> lock(_rpcMutex);
+    std::lock_guard<std::mutex> lock(s_rpcMutex);
 
     [GCDWebServer setLogLevel:3];
     _webServer = [[GCDWebServer alloc] init];
@@ -104,7 +104,7 @@ static __weak RealmReact *s_currentRealmModule = nil;
             dispatch_sync(dispatch_get_main_queue(), ^{
                 RealmReact *self = weakSelf;
                 if (self) {
-                    std::lock_guard<std::mutex> lock(_rpcMutex);
+                    std::lock_guard<std::mutex> lock(s_rpcMutex);
                     if (_rpcServer) {
                         realm_js::json args = realm_js::json::parse([[(GCDWebServerDataRequest *)request text] UTF8String]);
                         std::string responseText = _rpcServer->perform_request(request.path.UTF8String, args).dump();
@@ -133,7 +133,7 @@ static __weak RealmReact *s_currentRealmModule = nil;
 }
 
 - (void)shutdownRPC {
-    std::lock_guard<std::mutex> lock(_rpcMutex);
+    std::lock_guard<std::mutex> lock(s_rpcMutex);
     [_webServer stop];
     [_webServer removeAllHandlers];
     _webServer = nil;
