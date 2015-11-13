@@ -31,6 +31,7 @@ JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executor, bool cre
         NSMethodSignature *signature = [RCTJavaScriptContext instanceMethodSignatureForSelector:@selector(initWithJSContext:)];
         assert(signature);
 
+        // React Native 0.14+ expects a JSContext here, but we also support 0.13.x, which takes a JSGlobalContextRef.
         if (!strcmp([signature getArgumentTypeAtIndex:2], "@")) {
             JSContext *context = [[JSContext alloc] init];
             rctJSContext = [[RCTJavaScriptContext alloc] initWithJSContext:(void *)context];
