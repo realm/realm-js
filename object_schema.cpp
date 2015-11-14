@@ -17,16 +17,19 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #include "object_schema.hpp"
+
 #include "object_store.hpp"
+#include "property.hpp"
 
 #include <realm/group_shared.hpp>
 #include <realm/link_view.hpp>
 
 using namespace realm;
 
-ObjectSchema::ObjectSchema(Group *group, const std::string &name) : name(name) {
-    TableRef tableRef = ObjectStore::table_for_object_type(group, name);
-    Table *table = tableRef.get();
+ObjectSchema::~ObjectSchema() = default;
+
+ObjectSchema::ObjectSchema(const Group *group, const std::string &name) : name(name) {
+    ConstTableRef table = ObjectStore::table_for_object_type(group, name);
 
     size_t count = table->get_column_count();
     properties.reserve(count);
@@ -40,7 +43,7 @@ ObjectSchema::ObjectSchema(Group *group, const std::string &name) : name(name) {
         property.table_column = col;
         if (property.type == PropertyTypeObject || property.type == PropertyTypeArray) {
             // set link type for objects and arrays
-            realm::TableRef linkTable = table->get_link_target(col);
+            ConstTableRef linkTable = table->get_link_target(col);
             property.object_type = ObjectStore::object_type_for_table_name(linkTable->get_name().data());
         }
         properties.push_back(std::move(property));
@@ -56,12 +59,15 @@ ObjectSchema::ObjectSchema(Group *group, const std::string &name) : name(name) {
     }
 }
 
-Property *ObjectSchema::property_for_name(const std::string &name) {
-    for (auto& prop:properties) {
-        if (prop.name == name) {
+Property *ObjectSchema::property_for_name(StringData name) {
+    for (auto& prop : properties) {
+        if (StringData(prop.name) == name) {
             return &prop;
         }
     }
     return nullptr;
 }
 
+const Property *ObjectSchema::property_for_name(StringData name) const {
+    return const_cast<ObjectSchema *>(this)->property_for_name(name);
+}
