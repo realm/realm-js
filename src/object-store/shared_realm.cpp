@@ -287,8 +287,6 @@ void Realm::cancel_transaction()
 void Realm::invalidate()
 {
     verify_thread();
-    check_read_write(this);
-
     if (m_in_transaction) {
         cancel_transaction();
     }
@@ -382,6 +380,10 @@ void Realm::close()
 
     if (m_notifier) {
         m_notifier->remove_realm(this);
+    }
+
+    if (m_group) {
+        m_shared_group->end_read();
     }
 
     m_group = nullptr;

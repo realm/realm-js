@@ -58,12 +58,17 @@ JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executor, bool cre
 @end
 
 static std::mutex s_rpcMutex;
-static __weak RealmReact *s_currentRealmModule = nil;
 #endif
 
 
-@interface RealmReact () <RCTBridgeModule>
+@interface RealmReact () <RCTBridgeModule> {
+    __weak NSThread *_currentJSThread;
+    __weak NSRunLoop *_currentJSRunLoop;
+}
 @end
+
+static __weak RealmReact *s_currentRealmModule = nil;
+
 
 @implementation RealmReact
 
@@ -140,24 +145,41 @@ static __weak RealmReact *s_currentRealmModule = nil;
     _rpcServer.reset();
 }
 
-- (void)dealloc {
-    [self shutdownRPC];
-}
+
 #endif
+
+- (void)shutdown {
+    // block until JS thread exits
+    NSRunLoop *runLoop = _currentJSRunLoop;
+    if (runLoop) {
+        CFRunLoopStop([_currentJSRunLoop getCFRunLoop]);
+        while (_currentJSThread && !_currentJSThread.finished) {
+            [[NSRunLoop currentRunLoop] runMode:NSRunLoopCommonModes beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.01]];
+        }
+    }
+
+#if DEBUG
+    // shutdown rpc if in chrome debug mode
+    [self shutdownRPC];
+#endif
+}
+
+- (void)dealloc {
+    [self shutdown];
+}
 
 - (void)setBridge:(RCTBridge *)bridge {
     _bridge = bridge;
-    
+
+    // shutdown the last instance of this module
+    [s_currentRealmModule shutdown];
+    s_currentRealmModule = self;
+
     Ivar executorIvar = class_getInstanceVariable([bridge class], "_javaScriptExecutor");
     id executor = object_getIvar(bridge, executorIvar);
     bool isDebugExecutor = [executor isMemberOfClass:NSClassFromString(@"RCTWebSocketExecutor")];
 
 #if DEBUG
-    if (s_currentRealmModule) {
-        [s_currentRealmModule shutdownRPC];
-    }
-
-    s_currentRealmModule = self;
     if (isDebugExecutor) {
         [self startRPC];
         return;
@@ -169,6 +191,8 @@ static __weak RealmReact *s_currentRealmModule = nil;
     }
 
     [executor executeBlockOnJavaScriptQueue:^{
+        _currentJSThread = [NSThread currentThread];
+        _currentJSRunLoop = [NSRunLoop currentRunLoop];
         JSGlobalContextRef ctx = RealmReactGetJSGlobalContextForExecutor(executor, true);
         RJSInitializeInContext(ctx);
     }];
