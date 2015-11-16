@@ -130,6 +130,67 @@ template<> JSValueRef RJSAccessor::from_string(JSContextRef ctx, StringData s) {
     return RJSValueForString(ctx, s);
 }
 
+template<> std::string RJSAccessor::to_binary(JSContextRef ctx, JSValueRef &val) {
+    static JSStringRef arrayBufferString = JSStringCreateWithUTF8CString("ArrayBuffer");
+    static JSStringRef dataViewString = JSStringCreateWithUTF8CString("DataView");
+    static JSStringRef isViewString = JSStringCreateWithUTF8CString("isView");
+    static JSStringRef uint8ArrayString = JSStringCreateWithUTF8CString("Uint8Array");
+
+    switch (JSValueGetType(ctx, val)) {
+        case kJSTypeObject: {
+            // Allow value to be an ArrayBuffer instance.
+            JSObjectRef arrayBufferConstructor = RJSValidatedObjectProperty(ctx, JSContextGetGlobalObject(ctx), arrayBufferString);
+            if (JSValueIsInstanceOfConstructor(ctx, val, arrayBufferConstructor, NULL)) {
+                break;
+            }
+
+            // Check if value is a TypedArray by calling ArrayBuffer.isView(val), but *not* a DataView object.
+            JSObjectRef isViewMethod = RJSValidatedObjectProperty(ctx, arrayBufferConstructor, isViewString);
+            JSValueRef isView = JSObjectCallAsFunction(ctx, isViewMethod, arrayBufferConstructor, 1, &val, NULL);
+            if (isView && JSValueToBoolean(ctx, isView) && !RJSIsValueObjectOfType(ctx, val, dataViewString)) {
+                break;
+            }
+            // Fall through
+        }
+        default:
+            throw std::runtime_error("Can only convert ArrayBuffer and TypedArray objects to binary");
+    }
+
+    JSValueRef exception = NULL;
+    JSObjectRef uint8ArrayContructor = RJSValidatedObjectProperty(ctx, JSContextGetGlobalObject(ctx), uint8ArrayString);
+    JSObjectRef uint8Array = JSObjectCallAsConstructor(ctx, uint8ArrayContructor, 1, &val, &exception);
+
+    if (exception) {
+        throw RJSException(ctx, exception);
+    }
+
+    size_t byteCount = RJSValidatedListLength(ctx, uint8Array);
+    std::string bytes(byteCount, 0);
+
+    for (size_t i = 0; i < byteCount; i++) {
+        JSValueRef byteValue = JSObjectGetPropertyAtIndex(ctx, uint8Array, (unsigned)i, NULL);
+        bytes[i] = JSValueToNumber(ctx, byteValue, NULL);
+    }
+
+    return bytes;
+}
+template<> JSValueRef RJSAccessor::from_binary(JSContextRef ctx, BinaryData data) {
+    static JSStringRef bufferString = JSStringCreateWithUTF8CString("buffer");
+    static JSStringRef uint8ArrayString = JSStringCreateWithUTF8CString("Uint8Array");
+
+    size_t byteCount = data.size();
+    JSValueRef byteCountValue = JSValueMakeNumber(ctx, byteCount);
+    JSObjectRef uint8ArrayContructor = RJSValidatedObjectProperty(ctx, JSContextGetGlobalObject(ctx), uint8ArrayString);
+    JSObjectRef uint8Array = JSObjectCallAsConstructor(ctx, uint8ArrayContructor, 1, &byteCountValue, NULL);
+
+    for (size_t i = 0; i < byteCount; i++) {
+        JSValueRef num = JSValueMakeNumber(ctx, data[i]);
+        JSObjectSetPropertyAtIndex(ctx, uint8Array, (unsigned)i, num, NULL);
+    }
+
+    return RJSValidatedObjectProperty(ctx, uint8Array, bufferString);
+}
+
 template<> DateTime RJSAccessor::to_datetime(JSContextRef ctx, JSValueRef &val) {
     JSObjectRef object = RJSValidatedValueToDate(ctx, val);
     double utc = RJSValidatedValueToNumber(ctx, object);

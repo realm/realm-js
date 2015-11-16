@@ -112,17 +112,17 @@ module.exports = BaseTest.extend({
 
         // test upsert with all type and string primary object
         realm.write(function() {
-            var values = ['0', true, 1, 1.1, 1.11, '1', new Date(1), '1', [1], []];
+            var values = ['0', true, 1, 1.1, 1.11, '1', new Date(1), new ArrayBuffer(1), [1], []];
             var obj0 = realm.create('AllTypesObject', values);
 
             TestCase.assertThrows(function() {
                 realm.create('AllTypesObject', values);
             });
-            var obj1 = realm.create('AllTypesObject', ['1', false, 2, 2.2, 2.11, '2', new Date(2), '2', [0], [[2]]], true);
+            var obj1 = realm.create('AllTypesObject', ['1', false, 2, 2.2, 2.11, '2', new Date(2), new ArrayBuffer(2), [0], [[2]]], true);
             var objects = realm.objects('AllTypesObject');
             TestCase.assertEqual(objects.length, 2);
 
-            realm.create('AllTypesObject', ['0', false, 2, 2.2, 2.22, '2', new Date(2), '2', null, [[2]]], true);
+            realm.create('AllTypesObject', ['0', false, 2, 2.2, 2.22, '2', new Date(2), new ArrayBuffer(2), null, [[2]]], true);
             TestCase.assertEqual(objects.length, 2);
             TestCase.assertEqual(obj0.stringCol, '2');
             TestCase.assertEqual(obj0.boolCol, false);
@@ -130,7 +130,7 @@ module.exports = BaseTest.extend({
             TestCase.assertEqualWithTolerance(obj0.floatCol, 2.2, 0.000001);
             TestCase.assertEqual(obj0.doubleCol, 2.22);
             TestCase.assertEqual(obj0.dateCol.getTime(), 2);
-            TestCase.assertEqual(obj0.dataCol, '2');
+            TestCase.assertEqual(obj0.dataCol.byteLength, 2);
             TestCase.assertEqual(obj0.objectCol, null);
             TestCase.assertEqual(obj0.arrayCol.length, 1);
 
@@ -147,7 +147,7 @@ module.exports = BaseTest.extend({
             TestCase.assertEqualWithTolerance(obj0.floatCol, 2.2, 0.000001);
             TestCase.assertEqual(obj0.doubleCol, 2.22);
             TestCase.assertEqual(obj0.dateCol.getTime(), 2);
-            TestCase.assertEqual(obj0.dataCol, '2');
+            TestCase.assertEqual(obj0.dataCol.byteLength, 2);
             TestCase.assertEqual(obj0.objectCol.doubleCol, 0);
             TestCase.assertEqual(obj0.arrayCol.length, 1);
 
@@ -168,7 +168,7 @@ module.exports = BaseTest.extend({
             TestCase.assertEqual(obj.doubleCol, schemas.DefaultValues.properties[3].default);
             TestCase.assertEqual(obj.stringCol, schemas.DefaultValues.properties[4].default);
             TestCase.assertEqual(obj.dateCol.getTime(), schemas.DefaultValues.properties[5].default.getTime());
-            TestCase.assertEqual(obj.dataCol, schemas.DefaultValues.properties[6].default);
+            TestCase.assertEqual(obj.dataCol.byteLength, schemas.DefaultValues.properties[6].default.byteLength);
             TestCase.assertEqual(obj.objectCol.doubleCol, schemas.DefaultValues.properties[7].default[0]);
             TestCase.assertEqual(obj.nullObjectCol, null);
             TestCase.assertEqual(obj.arrayCol.length, schemas.DefaultValues.properties[9].default.length);

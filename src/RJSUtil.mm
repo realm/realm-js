@@ -92,6 +92,11 @@ bool RJSIsValueArray(JSContextRef ctx, JSValueRef value) {
     return RJSIsValueObjectOfType(ctx, value, arrayString);
 }
 
+bool RJSIsValueArrayBuffer(JSContextRef ctx, JSValueRef value) {
+    static JSStringRef arrayString = JSStringCreateWithUTF8CString("ArrayBuffer");
+    return RJSIsValueObjectOfType(ctx, value, arrayString);
+}
+
 bool RJSIsValueDate(JSContextRef ctx, JSValueRef value) {
     static JSStringRef dateString = JSStringCreateWithUTF8CString("Date");
     return RJSIsValueObjectOfType(ctx, value, dateString);

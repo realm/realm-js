@@ -35,6 +35,18 @@ module.exports = {
         }
     },
 
+    assertArraysEqual: function(val1, val2, errorMessage) {
+        if (val1.length !== val2.length) {
+            throw new TestFailureError(errorMessage || 'Arrays have different lengths');
+        }
+
+        for (var i = 0, len = val1.length; i < len; i++) {
+            if (val1[i] !== val2[i]) {
+                throw new TestFailureError(errorMessage || 'Array contents are not equal');
+            }
+        }
+    },
+
     assertThrows: function(func, errorMessage) {
         var caught = false;
         try {
@@ -46,13 +58,13 @@ module.exports = {
 
         if (!caught) {
             throw new TestFailureError(errorMessage || 'Expected exception not thrown');
-        };
+        }
     },
 
     assertTrue: function(condition, errorMessage) {
         if (!condition) {
             throw new TestFailureError(errorMessage || 'Condition expected to be true');
-        };
+        }
     },
 };
 
