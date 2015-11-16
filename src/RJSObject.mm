@@ -132,34 +132,41 @@ template<> JSValueRef RJSAccessor::from_string(JSContextRef ctx, StringData s) {
 
 template<> std::string RJSAccessor::to_binary(JSContextRef ctx, JSValueRef &val) {
     static JSStringRef arrayBufferString = JSStringCreateWithUTF8CString("ArrayBuffer");
-    static JSStringRef dataViewString = JSStringCreateWithUTF8CString("DataView");
+    static JSStringRef bufferString = JSStringCreateWithUTF8CString("buffer");
+    static JSStringRef byteLengthString = JSStringCreateWithUTF8CString("byteLength");
+    static JSStringRef byteOffsetString = JSStringCreateWithUTF8CString("byteOffset");
     static JSStringRef isViewString = JSStringCreateWithUTF8CString("isView");
     static JSStringRef uint8ArrayString = JSStringCreateWithUTF8CString("Uint8Array");
 
-    switch (JSValueGetType(ctx, val)) {
-        case kJSTypeObject: {
-            // Allow value to be an ArrayBuffer instance.
-            JSObjectRef arrayBufferConstructor = RJSValidatedObjectProperty(ctx, JSContextGetGlobalObject(ctx), arrayBufferString);
-            if (JSValueIsInstanceOfConstructor(ctx, val, arrayBufferConstructor, NULL)) {
-                break;
-            }
+    JSObjectRef arrayBufferConstructor = RJSValidatedObjectProperty(ctx, JSContextGetGlobalObject(ctx), arrayBufferString);
+    JSObjectRef uint8ArrayContructor = RJSValidatedObjectProperty(ctx, JSContextGetGlobalObject(ctx), uint8ArrayString);
+    JSValueRef uint8ArrayArguments[3];
+    size_t uint8ArrayArgumentsCount = 0;
 
-            // Check if value is a TypedArray by calling ArrayBuffer.isView(val), but *not* a DataView object.
-            JSObjectRef isViewMethod = RJSValidatedObjectProperty(ctx, arrayBufferConstructor, isViewString);
-            JSValueRef isView = JSObjectCallAsFunction(ctx, isViewMethod, arrayBufferConstructor, 1, &val, NULL);
-            if (isView && JSValueToBoolean(ctx, isView) && !RJSIsValueObjectOfType(ctx, val, dataViewString)) {
-                break;
-            }
-            // Fall through
+    // Value should either be an ArrayBuffer or ArrayBufferView (i.e. TypedArray or DataView).
+    if (JSValueIsInstanceOfConstructor(ctx, val, arrayBufferConstructor, NULL)) {
+        uint8ArrayArguments[0] = val;
+        uint8ArrayArgumentsCount = 1;
+    }
+    else if (JSObjectRef object = JSValueToObject(ctx, val, NULL)) {
+        // Check if value is an ArrayBufferView by calling ArrayBuffer.isView(val).
+        JSObjectRef isViewMethod = RJSValidatedObjectProperty(ctx, arrayBufferConstructor, isViewString);
+        JSValueRef isView = JSObjectCallAsFunction(ctx, isViewMethod, arrayBufferConstructor, 1, &val, NULL);
+
+        if (isView && JSValueToBoolean(ctx, isView)) {
+            uint8ArrayArguments[0] = RJSValidatedObjectProperty(ctx, object, bufferString);
+            uint8ArrayArguments[1] = RJSValidatedPropertyValue(ctx, object, byteOffsetString);
+            uint8ArrayArguments[2] = RJSValidatedPropertyValue(ctx, object, byteLengthString);
+            uint8ArrayArgumentsCount = 3;
         }
-        default:
-            throw std::runtime_error("Can only convert ArrayBuffer and TypedArray objects to binary");
+    }
+
+    if (!uint8ArrayArgumentsCount) {
+        throw std::runtime_error("Can only convert ArrayBuffer and TypedArray objects to binary");
     }
 
     JSValueRef exception = NULL;
-    JSObjectRef uint8ArrayContructor = RJSValidatedObjectProperty(ctx, JSContextGetGlobalObject(ctx), uint8ArrayString);
-    JSObjectRef uint8Array = JSObjectCallAsConstructor(ctx, uint8ArrayContructor, 1, &val, &exception);
-
+    JSObjectRef uint8Array = JSObjectCallAsConstructor(ctx, uint8ArrayContructor, uint8ArrayArgumentsCount, uint8ArrayArguments, &exception);
     if (exception) {
         throw RJSException(ctx, exception);
     }

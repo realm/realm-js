@@ -9,10 +9,9 @@ var BaseTest = require('./base-test');
 var TestCase = require('./asserts');
 var schemas = require('./schemas');
 
-// 31 random bytes (purposefully an odd number).
 var RANDOM_DATA = new Uint8Array([
-    0xd8, 0x21, 0xd6, 0xe8, 0x0c, 0x57, 0xbc, 0xb2, 0x6a, 0x15, 0x77, 0x30, 0xac, 0x77, 0x96, 0xd9,
-    0x67, 0x1e, 0x40, 0xa7, 0x6d, 0x52, 0x83, 0xda, 0x07, 0x29, 0x9c, 0x70, 0x38, 0x48, 0x4e,
+    0xd8, 0x21, 0xd6, 0xe8, 0x00, 0x57, 0xbc, 0xb2, 0x6a, 0x15, 0x77, 0x30, 0xac, 0x77, 0x96, 0xd9,
+    0x67, 0x1e, 0x40, 0xa7, 0x6d, 0x52, 0x83, 0xda, 0x07, 0x29, 0x9c, 0x70, 0x38, 0x48, 0x4e, 0xff,
 ]);
 
 module.exports = BaseTest.extend({
@@ -273,6 +272,49 @@ module.exports = BaseTest.extend({
         });
         TestCase.assertArraysEqual(new Uint8Array(object.dataCol), RANDOM_DATA);
 
+        // Should be to set a data property to a DataView.
+        realm.write(function() {
+            object.dataCol = new DataView(RANDOM_DATA.buffer);
+        });
+        TestCase.assertArraysEqual(new Uint8Array(object.dataCol), RANDOM_DATA);
+
+        // Test that a variety of size and slices of data still work.
+        [
+            [0, -1],
+            [0, -2],
+            [1, 0],
+            [1, -1],
+            [1, -2],
+            [2, 0],
+            [2, -1],
+            [2, -2],
+        ].forEach(function(range) {
+            var array = RANDOM_DATA.subarray(range[0], range[1]);
+            realm.write(function() {
+                // Use a partial "view" of the underlying ArrayBuffer.
+                object.dataCol = new Uint8Array(RANDOM_DATA.buffer, range[0], array.length);
+            });
+            TestCase.assertArraysEqual(new Uint8Array(object.dataCol), array, range.join('...'));
+        });
+
+        // Test other TypedArrays to make sure they all work for setting data properties.
+        [
+            Int8Array,
+            Uint8ClampedArray,
+            Int16Array,
+            Uint16Array,
+            Int32Array,
+            Uint32Array,
+            Float32Array,
+            Float64Array,
+        ].forEach(function(TypedArray) {
+            var array = new TypedArray(RANDOM_DATA.buffer);
+            realm.write(function() {
+                object.dataCol = array;
+            });
+            TestCase.assertArraysEqual(new TypedArray(object.dataCol), array, TypedArray.name);
+        });
+
         realm.write(function() {
             TestCase.assertThrows(function() {
                 object.dataCol = true;
@@ -285,9 +327,6 @@ module.exports = BaseTest.extend({
             });
             TestCase.assertThrows(function() {
                 object.dataCol = [1];
-            });
-            TestCase.assertThrows(function() {
-                object.dataCol = new DataView(RANDOM_DATA.buffer);
             });
         });
     }
