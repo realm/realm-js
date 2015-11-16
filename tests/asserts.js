@@ -9,7 +9,7 @@ module.exports = {
         if (val1 !== val2) {
             var message = "'" + val1 + "' does not equal expected value '" + val2 + "'";
             if (errorMessage) {
-                message = errorMessage + "\n" + message;
+                message = errorMessage + ' - ' + message;
             }
             throw new TestFailureError(message);
         }
@@ -19,7 +19,7 @@ module.exports = {
         if (val1 === val2) {
             var message = "'" + val1 + "' equals '" + val2 + "'";
             if (errorMessage) {
-                message = errorMessage + "\n" + message;
+                message = errorMessage + ' - ' + message;
             }
             throw new TestFailureError(message);
         }
@@ -29,20 +29,32 @@ module.exports = {
         if (val1 < val2 - tolerance || val1 > val2 + tolerance) {
             var message = "'" + val1 + "' does not equal '" + val2 + "' with tolerance '" + tolerance + "'";
             if (errorMessage) {
-                message = errorMessage + "\n" + message;
+                message = errorMessage + ' - ' + message;
             }
             throw new TestFailureError(message);
         }
     },
 
     assertArraysEqual: function(val1, val2, errorMessage) {
-        if (val1.length !== val2.length) {
-            throw new TestFailureError(errorMessage || 'Arrays have different lengths');
+        var len1 = val1.length;
+        var len2 = val2.length;
+        var message;
+
+        if (len1 !== len2) {
+            message = 'Arrays have different lengths (' + len1 + ' != ' + len2 + ')';
+            if (errorMessage) {
+                message = errorMessage + ' - ' + message;
+            }
+            throw new TestFailureError(message);
         }
 
-        for (var i = 0, len = val1.length; i < len; i++) {
+        for (var i = 0; i < len1; i++) {
             if (val1[i] !== val2[i]) {
-                throw new TestFailureError(errorMessage || 'Array contents are not equal');
+                message = 'Array contents not equal at index ' + i + ' (' + val1[i] + ' != ' + val2[i] + ')';
+                if (errorMessage) {
+                    message = errorMessage + ' - ' + message;
+                }
+                throw new TestFailureError(message);
             }
         }
     },
