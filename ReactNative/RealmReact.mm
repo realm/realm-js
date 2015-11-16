@@ -49,8 +49,11 @@ JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executor, bool cre
 }
 
 #if DEBUG
+
 #import <GCDWebServers/GCDWebServers.h>
 #import <RealmJS/RealmRPC.hpp>
+#import "shared_realm.hpp"
+
 @interface RealmReact () {
     GCDWebServer *_webServer;
     std::unique_ptr<realm_js::RPCServer> _rpcServer;
@@ -149,6 +152,11 @@ static __weak RealmReact *s_currentRealmModule = nil;
 #endif
 
 - (void)shutdown {
+#if DEBUG
+    // shutdown rpc if in chrome debug mode
+    [self shutdownRPC];
+#endif
+
     // block until JS thread exits
     NSRunLoop *runLoop = _currentJSRunLoop;
     if (runLoop) {
@@ -158,10 +166,7 @@ static __weak RealmReact *s_currentRealmModule = nil;
         }
     }
 
-#if DEBUG
-    // shutdown rpc if in chrome debug mode
-    [self shutdownRPC];
-#endif
+    realm::Realm::s_global_cache.clear();
 }
 
 - (void)dealloc {
@@ -177,25 +182,21 @@ static __weak RealmReact *s_currentRealmModule = nil;
 
     Ivar executorIvar = class_getInstanceVariable([bridge class], "_javaScriptExecutor");
     id executor = object_getIvar(bridge, executorIvar);
-    bool isDebugExecutor = [executor isMemberOfClass:NSClassFromString(@"RCTWebSocketExecutor")];
-
+    if ([executor isKindOfClass:NSClassFromString(@"RCTWebSocketExecutor")]) {
 #if DEBUG
-    if (isDebugExecutor) {
         [self startRPC];
-        return;
-    }
-#endif
-
-    if (isDebugExecutor) {
+#else
         @throw [NSException exceptionWithName:@"Invalid Executor" reason:@"Chrome debug mode not supported in Release builds" userInfo:nil];
+#endif
     }
-
-    [executor executeBlockOnJavaScriptQueue:^{
-        _currentJSThread = [NSThread currentThread];
-        _currentJSRunLoop = [NSRunLoop currentRunLoop];
-        JSGlobalContextRef ctx = RealmReactGetJSGlobalContextForExecutor(executor, true);
-        RJSInitializeInContext(ctx);
-    }];
+    else {
+        [executor executeBlockOnJavaScriptQueue:^{
+            _currentJSThread = [NSThread currentThread];
+            _currentJSRunLoop = [NSRunLoop currentRunLoop];
+            JSGlobalContextRef ctx = RealmReactGetJSGlobalContextForExecutor(executor, true);
+            RJSInitializeInContext(ctx);
+        }];
+    }
 }
 
 @end
