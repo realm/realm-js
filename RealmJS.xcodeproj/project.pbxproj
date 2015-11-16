@@ -64,6 +64,8 @@
 		F67191381BCE231100AD0939 /* GCDWebServers.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 02A3C7941BC4317A00B1A7BE /* GCDWebServers.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		F68A278C1BC2722A0063D40A /* RJSModuleLoader.m in Sources */ = {isa = PBXBuildFile; fileRef = F68A278B1BC2722A0063D40A /* RJSModuleLoader.m */; };
 		F68A278E1BC30F0A0063D40A /* index.js in Resources */ = {isa = PBXBuildFile; fileRef = F68A278D1BC30F0A0063D40A /* index.js */; };
+		F6BB7DF11BF681BC00D0A69E /* base64.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F6BB7DEF1BF681BC00D0A69E /* base64.cpp */; };
+		F6BB7DF21BF681BC00D0A69E /* base64.hpp in Headers */ = {isa = PBXBuildFile; fileRef = F6BB7DF01BF681BC00D0A69E /* base64.hpp */; };
 		F6F405F81BCF0C1A00A1E24F /* base-test.js in Resources */ = {isa = PBXBuildFile; fileRef = F6F405F71BCF0C1A00A1E24F /* base-test.js */; };
 /* End PBXBuildFile section */
 
@@ -202,7 +204,7 @@
 		029445921BDEDF40006D1617 /* transact_log_handler.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = transact_log_handler.hpp; path = "src/object-store/impl/transact_log_handler.hpp"; sourceTree = "<group>"; };
 		029445951BDEDF46006D1617 /* external_commit_helper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = external_commit_helper.cpp; path = "src/object-store/impl/apple/external_commit_helper.cpp"; sourceTree = "<group>"; };
 		029445961BDEDF46006D1617 /* external_commit_helper.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = external_commit_helper.hpp; path = "src/object-store/impl/apple/external_commit_helper.hpp"; sourceTree = "<group>"; };
-		02A3C7841BC4317A00B1A7BE /* GCDWebServer.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = GCDWebServer.xcodeproj; path = vendor/GCDWebServer/GCDWebServer.xcodeproj; sourceTree = "<group>"; };
+		02A3C7841BC4317A00B1A7BE /* GCDWebServer.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = GCDWebServer.xcodeproj; path = GCDWebServer/GCDWebServer.xcodeproj; sourceTree = "<group>"; };
 		02A3C7A41BC4341500B1A7BE /* libc++.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.tbd"; path = "usr/lib/libc++.tbd"; sourceTree = SDKROOT; };
 		02B29A161B7CF7C9008A7E6B /* RealmReact.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = RealmReact.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		02B58CB11AE99CEC009B348C /* RealmJS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = RealmJS.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -217,6 +219,9 @@
 		F68A278A1BC2722A0063D40A /* RJSModuleLoader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RJSModuleLoader.h; path = tests/RJSModuleLoader.h; sourceTree = SOURCE_ROOT; };
 		F68A278B1BC2722A0063D40A /* RJSModuleLoader.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = RJSModuleLoader.m; path = tests/RJSModuleLoader.m; sourceTree = SOURCE_ROOT; };
 		F68A278D1BC30F0A0063D40A /* index.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; name = index.js; path = tests/index.js; sourceTree = SOURCE_ROOT; };
+		F6BB7DEF1BF681BC00D0A69E /* base64.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = base64.cpp; sourceTree = "<group>"; };
+		F6BB7DF01BF681BC00D0A69E /* base64.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = base64.hpp; sourceTree = "<group>"; };
+		F6C3FBBC1BF680EC00E6FFD4 /* json.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = json.hpp; sourceTree = "<group>"; };
 		F6F405F71BCF0C1A00A1E24F /* base-test.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; name = "base-test.js"; path = "tests/base-test.js"; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
@@ -321,6 +326,7 @@
 			isa = PBXGroup;
 			children = (
 				02B58CCF1AE99D8C009B348C /* Frameworks */,
+				F6C3FBB41BF680D000E6FFD4 /* Vendor */,
 				0270BC3D1B7CFBFD00010E03 /* RealmJS */,
 				02B58CC01AE99CEC009B348C /* RealmJSTests */,
 				0270BCCE1B7D066100010E03 /* RealmReact */,
@@ -365,7 +371,6 @@
 			children = (
 				02A3C7A41BC4341500B1A7BE /* libc++.tbd */,
 				02B58CCD1AE99D4D009B348C /* JavaScriptCore.framework */,
-				02A3C7841BC4317A00B1A7BE /* GCDWebServer.xcodeproj */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -377,6 +382,18 @@
 				02EE6D8C1BD87E310016A82E /* RealmReactTests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		F6C3FBB41BF680D000E6FFD4 /* Vendor */ = {
+			isa = PBXGroup;
+			children = (
+				02A3C7841BC4317A00B1A7BE /* GCDWebServer.xcodeproj */,
+				F6BB7DF01BF681BC00D0A69E /* base64.hpp */,
+				F6BB7DEF1BF681BC00D0A69E /* base64.cpp */,
+				F6C3FBBC1BF680EC00E6FFD4 /* json.hpp */,
+			);
+			name = Vendor;
+			path = vendor;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -398,6 +415,7 @@
 				02601F0E1BA0F3A7007C91FF /* schema.hpp in Headers */,
 				0270BC6C1B7CFC1C00010E03 /* object_store.hpp in Headers */,
 				0270BC681B7CFC1C00010E03 /* object_accessor.hpp in Headers */,
+				F6BB7DF21BF681BC00D0A69E /* base64.hpp in Headers */,
 				029445941BDEDF40006D1617 /* transact_log_handler.hpp in Headers */,
 				0270BC711B7CFC1C00010E03 /* shared_realm.hpp in Headers */,
 				029445981BDEDF46006D1617 /* external_commit_helper.hpp in Headers */,
@@ -648,6 +666,7 @@
 				02C0864E1BCDB27000942F9C /* list.cpp in Sources */,
 				0270BC6B1B7CFC1C00010E03 /* object_store.cpp in Sources */,
 				0270BC701B7CFC1C00010E03 /* shared_realm.cpp in Sources */,
+				F6BB7DF11BF681BC00D0A69E /* base64.cpp in Sources */,
 				0270BC4E1B7CFC0D00010E03 /* RJSList.cpp in Sources */,
 				029445971BDEDF46006D1617 /* external_commit_helper.cpp in Sources */,
 				0270BC531B7CFC0D00010E03 /* RJSRealm.mm in Sources */,

@@ -14,10 +14,12 @@
 #include "RJSRealm.hpp"
 #include "RJSUtil.hpp"
 
+#include "base64.hpp"
 #include "object_accessor.hpp"
 #include "shared_realm.hpp"
 #include "results.hpp"
 
+using RJSAccessor = realm::NativeAccessor<JSValueRef, JSContextRef>;
 using namespace realm_js;
 
 static const char * const RealmObjectTypesFunction = "ObjectTypesFUNCTION";
@@ -247,6 +249,13 @@ json RPCServer::serialize_json_value(JSValueRef value) {
         }
         return {{"value", array}};
     }
+    else if (RJSIsValueArrayBuffer(m_context, value)) {
+        std::string data = RJSAccessor::to_binary(m_context, value);
+        return {
+            {"type", RJSTypeGet(realm::PropertyTypeData)},
+            {"value", base64_encode((unsigned char *)data.data(), data.size())},
+        };
+    }
     else if (RJSIsValueDate(m_context, value)) {
         return {
             {"type", RJSTypeGet(realm::PropertyTypeDate)},
@@ -289,6 +298,13 @@ JSValueRef RPCServer::deserialize_json_value(const json dict)
             JSStringRelease(js_body);
 
             return js_function;
+        }
+        else if (type_string == RJSTypeGet(realm::PropertyTypeData)) {
+            std::string bytes;
+            if (!base64_decode(value.get<std::string>(), &bytes)) {
+                throw std::runtime_error("Failed to decode base64 encoded data");
+            }
+            return RJSAccessor::from_binary(m_context, realm::BinaryData(bytes));
         }
         else if (type_string == RJSTypeGet(realm::PropertyTypeDate)) {
             JSValueRef exception = NULL;
