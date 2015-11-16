@@ -91,7 +91,7 @@ struct group_pred : if_must< one< '(' >, pad< pred, blank >, one< ')' > > {};
 struct true_pred : pegtl_istring_t("truepredicate") {};
 struct false_pred : pegtl_istring_t("falsepredicate") {};
 
-struct not_pre : seq< sor< one< '!' >, seq< pegtl_istring_t("not") >, star< blank > > > {};
+struct not_pre : seq< sor< one< '!' >, pegtl_istring_t("not") > > {};
 struct atom_pred : seq< opt< not_pre >, pad< sor< group_pred, true_pred, false_pred, comparison_pred >, blank > > {};
 
 struct and_op : pad< sor< two< '&' >, pegtl_istring_t("and") >, blank > {};
