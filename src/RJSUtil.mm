@@ -62,10 +62,10 @@ std::string RJSStringForValue(JSContextRef ctx, JSValueRef value) {
 std::string RJSValidatedStringForValue(JSContextRef ctx, JSValueRef value, const char * name) {
     if (!JSValueIsString(ctx, value)) {
         if (name) {
-            throw std::invalid_argument((std::string)"'" + name + "' must be of type 'STRING'");
+            throw std::invalid_argument((std::string)"'" + name + "' must be of type 'String'");
         }
         else {
-            throw std::invalid_argument("JSValue must be of type 'STRING'");
+            throw std::invalid_argument("JSValue must be of type 'String'");
         }
     }
 

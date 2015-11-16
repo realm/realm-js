@@ -8,6 +8,7 @@ exports.ArrayTests = require('./ArrayTests');
 exports.ObjectTests = require('./ObjectTests');
 exports.RealmTests = require('./RealmTests');
 exports.ResultsTests = require('./ResultsTests');
+exports.QueryTests = require('./QueryTests');
 
 var SPECIAL_METHODS = {
     beforeEach: true,
