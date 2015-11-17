@@ -81,7 +81,6 @@ void RJSInitializeInContext(JSContextRef ctx) {
 }
 
 void RJSClearTestState() {
-    realm::Realm::s_global_cache.close_all();
     realm::Realm::s_global_cache.clear();
 
     NSFileManager *manager = [NSFileManager defaultManager];

@@ -48,11 +48,26 @@ JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executor, bool cre
 }
 }
 
+#if DEBUG
+#import <GCDWebServers/GCDWebServers.h>
 #import <RealmJS/RealmRPC.hpp>
-#import <RealmJS/RJSUtil.hpp>
+#import "shared_realm.hpp"
 
-@interface RealmReact () <RCTBridgeModule>
+@interface RealmReact () {
+    GCDWebServer *_webServer;
+    std::unique_ptr<realm_js::RPCServer> _rpcServer;
+}
 @end
+#endif
+
+@interface RealmReact () <RCTBridgeModule> {
+    __weak NSThread *_currentJSThread;
+    __weak NSRunLoop *_currentJSRunLoop;
+}
+@end
+
+static __weak RealmReact *s_currentRealmModule = nil;
+
 
 @implementation RealmReact
 
@@ -73,72 +88,112 @@ JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executor, bool cre
     return @"Realm";
 }
 
-- (void)setBridge:(RCTBridge *)bridge {
-    _bridge = bridge;
-    
-    Ivar executorIvar = class_getInstanceVariable([bridge class], "_javaScriptExecutor");
-    id executor = object_getIvar(bridge, executorIvar);
-    bool chromeDebugMode = [executor isMemberOfClass:NSClassFromString(@"RCTWebSocketExecutor")];
-
 #if DEBUG
-    static GCDWebServer *s_webServer;
-    static realm_js::RPCServer *rpcServer;
+- (void)startRPC {
+    [GCDWebServer setLogLevel:3];
+    _webServer = [[GCDWebServer alloc] init];
+    _rpcServer = std::make_unique<realm_js::RPCServer>();
+    __weak __typeof__(self) weakSelf = self;
 
-    if (s_webServer) {
-        [s_webServer stop];
-        [s_webServer removeAllHandlers];
-        s_webServer = nil;
+    // Add a handler to respond to POST requests on any URL
+    [_webServer addDefaultHandlerForMethod:@"POST"
+                              requestClass:[GCDWebServerDataRequest class]
+                              processBlock:^GCDWebServerResponse *(GCDWebServerRequest* request) {
+        GCDWebServerResponse *response;
+        try {
+            // perform all realm ops on the main thread
+            __block NSData *responseData;
+            dispatch_sync(dispatch_get_main_queue(), ^{
+                RealmReact *self = weakSelf;
+                if (self) {
+                    if (_rpcServer) {
+                        realm_js::json args = realm_js::json::parse([[(GCDWebServerDataRequest *)request text] UTF8String]);
+                        std::string responseText = _rpcServer->perform_request(request.path.UTF8String, args).dump();
+                        responseData = [NSData dataWithBytes:responseText.c_str() length:responseText.length()];
+                        return;
+                    }
+                }
+                // we have been deallocated
+                responseData = [NSData data];
+            });
+            response = [[GCDWebServerDataResponse alloc] initWithData:responseData contentType:@"application/json"];
+        }
+        catch(std::exception &ex) {
+            NSLog(@"Invalid RPC request - %@", [(GCDWebServerDataRequest *)request text]);
+            response = [GCDWebServerErrorResponse responseWithClientError:kGCDWebServerHTTPStatusCode_UnprocessableEntity
+                                                          underlyingError:nil
+                                                                  message:@"Invalid RPC request"];
+        }
 
-        delete rpcServer;
-    }
+        [response setValue:@"http://localhost:8081" forAdditionalHeader:@"Access-Control-Allow-Origin"];
+        return response;
+    }];
 
-    // The executor could be a RCTWebSocketExecutor, in which case it won't have a JS context.
-    if (chromeDebugMode) {
-        [GCDWebServer setLogLevel:3];
-        GCDWebServer *webServer = [[GCDWebServer alloc] init];
-        rpcServer = new realm_js::RPCServer();
+    [_webServer startWithPort:8082 bonjourName:nil];
+    return;
+}
 
-        // Add a handler to respond to POST requests on any URL
-        [webServer addDefaultHandlerForMethod:@"POST"
-                                 requestClass:[GCDWebServerDataRequest class]
-                                 processBlock:^GCDWebServerResponse *(GCDWebServerRequest* request) {
-            GCDWebServerResponse *response;
-            try {
-                // perform all realm ops on the main thread
-                __block NSData *responseData;
-                dispatch_sync(dispatch_get_main_queue(), ^{
-                    realm_js::json args = realm_js::json::parse([[(GCDWebServerDataRequest *)request text] UTF8String]);
-                    std::string responseText = rpcServer->perform_request(request.path.UTF8String, args).dump();
-                    responseData = [NSData dataWithBytes:responseText.c_str() length:responseText.length()];
-                });
-                response = [[GCDWebServerDataResponse alloc] initWithData:responseData contentType:@"application/json"];
-            }
-            catch(std::exception &ex) {
-                NSLog(@"Invalid RPC request - %@", [(GCDWebServerDataRequest *)request text]);
-                response = [GCDWebServerErrorResponse responseWithClientError:kGCDWebServerHTTPStatusCode_UnprocessableEntity
-                                                              underlyingError:nil
-                                                                      message:@"Invalid RPC request"];
-            }
+- (void)shutdownRPC {
+    [_webServer stop];
+    [_webServer removeAllHandlers];
+    _webServer = nil;
+    _rpcServer.reset();
+}
 
-            [response setValue:@"http://localhost:8081" forAdditionalHeader:@"Access-Control-Allow-Origin"];
-            return response;
-        }];
 
-        [webServer startWithPort:8082 bonjourName:nil];
-
-        s_webServer = webServer;
-        return;
-    }
 #endif
 
-    if (chromeDebugMode) {
-        @throw [NSException exceptionWithName:@"Invalid Executor" reason:@"Chrome debug mode not supported in Release builds" userInfo:nil];
+- (void)shutdown {
+#if DEBUG
+    // shutdown rpc if in chrome debug mode
+    [self shutdownRPC];
+#endif
+
+    // block until JS thread exits
+    NSRunLoop *runLoop = _currentJSRunLoop;
+    if (runLoop) {
+        CFRunLoopStop([_currentJSRunLoop getCFRunLoop]);
+        while (_currentJSThread && !_currentJSThread.finished) {
+            [NSThread sleepForTimeInterval:0.01];
+        }
     }
 
-    [executor executeBlockOnJavaScriptQueue:^{
-        JSGlobalContextRef ctx = RealmReactGetJSGlobalContextForExecutor(executor, true);
-        RJSInitializeInContext(ctx);
-    }];
+    realm::Realm::s_global_cache.clear();
+}
+
+- (void)dealloc {
+    [self shutdown];
+}
+
+- (void)setBridge:(RCTBridge *)bridge {
+    _bridge = bridge;
+
+    // shutdown the last instance of this module
+    [s_currentRealmModule shutdown];
+    s_currentRealmModule = self;
+
+    Ivar executorIvar = class_getInstanceVariable([bridge class], "_javaScriptExecutor");
+    id executor = object_getIvar(bridge, executorIvar);
+    if ([executor isKindOfClass:NSClassFromString(@"RCTWebSocketExecutor")]) {
+#if DEBUG
+        [self startRPC];
+#else
+        @throw [NSException exceptionWithName:@"Invalid Executor" reason:@"Chrome debug mode not supported in Release builds" userInfo:nil];
+#endif
+    }
+    else {
+        __weak __typeof__(self) weakSelf = self;
+        [executor executeBlockOnJavaScriptQueue:^{
+            RealmReact *self = weakSelf;
+            if (!self) {
+                return;
+            }
+            self->_currentJSThread = [NSThread currentThread];
+            self->_currentJSRunLoop = [NSRunLoop currentRunLoop];
+            JSGlobalContextRef ctx = RealmReactGetJSGlobalContextForExecutor(executor, true);
+            RJSInitializeInContext(ctx);
+        }];
+    }
 }
 
 @end

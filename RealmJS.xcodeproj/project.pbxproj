@@ -12,7 +12,6 @@
 		02409DC21BCF11D6005F3B3E /* RealmJSCoreTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 02409DC11BCF11D6005F3B3E /* RealmJSCoreTests.m */; };
 		02601F081BA0F0CD007C91FF /* index_set.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02601F051BA0F0CD007C91FF /* index_set.cpp */; };
 		02601F091BA0F0CD007C91FF /* index_set.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 02601F061BA0F0CD007C91FF /* index_set.hpp */; };
-		02601F0A1BA0F0CD007C91FF /* realm_delegate.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 02601F071BA0F0CD007C91FF /* realm_delegate.hpp */; };
 		02601F0D1BA0F3A7007C91FF /* schema.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02601F0B1BA0F3A7007C91FF /* schema.cpp */; };
 		02601F0E1BA0F3A7007C91FF /* schema.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 02601F0C1BA0F3A7007C91FF /* schema.hpp */; };
 		0270BC4C1B7CFC0D00010E03 /* RealmJS.h in Headers */ = {isa = PBXBuildFile; fileRef = 0270BC3E1B7CFC0D00010E03 /* RealmJS.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -56,6 +55,7 @@
 		02B58CCE1AE99D4D009B348C /* JavaScriptCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 02B58CCD1AE99D4D009B348C /* JavaScriptCore.framework */; };
 		02C0864E1BCDB27000942F9C /* list.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02C0864C1BCDB27000942F9C /* list.cpp */; };
 		02C0864F1BCDB27000942F9C /* list.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 02C0864D1BCDB27000942F9C /* list.hpp */; };
+		02D0F23B1BF6C95200B4FC45 /* binding_context.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 02D0F23A1BF6C95200B4FC45 /* binding_context.hpp */; };
 		02D456DA1B7E59A500EE1299 /* ArrayTests.js in Resources */ = {isa = PBXBuildFile; fileRef = 02D456D91B7E59A500EE1299 /* ArrayTests.js */; };
 		02D8D1F71B601984006DB49D /* JavaScriptCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 02B58CCD1AE99D4D009B348C /* JavaScriptCore.framework */; };
 		F636F6C81BCDB3570023F35C /* RealmReact.h in Headers */ = {isa = PBXBuildFile; fileRef = 0270BCCF1B7D067300010E03 /* RealmReact.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -161,7 +161,6 @@
 		02409DC11BCF11D6005F3B3E /* RealmJSCoreTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = RealmJSCoreTests.m; path = tests/RealmJSCoreTests.m; sourceTree = SOURCE_ROOT; };
 		02601F051BA0F0CD007C91FF /* index_set.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = index_set.cpp; path = "src/object-store/index_set.cpp"; sourceTree = "<group>"; };
 		02601F061BA0F0CD007C91FF /* index_set.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = index_set.hpp; path = "src/object-store/index_set.hpp"; sourceTree = "<group>"; };
-		02601F071BA0F0CD007C91FF /* realm_delegate.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = realm_delegate.hpp; path = "src/object-store/realm_delegate.hpp"; sourceTree = "<group>"; };
 		02601F0B1BA0F3A7007C91FF /* schema.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = schema.cpp; path = "src/object-store/schema.cpp"; sourceTree = "<group>"; };
 		02601F0C1BA0F3A7007C91FF /* schema.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = schema.hpp; path = "src/object-store/schema.hpp"; sourceTree = "<group>"; };
 		0270BC3E1B7CFC0D00010E03 /* RealmJS.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RealmJS.h; path = src/RealmJS.h; sourceTree = "<group>"; };
@@ -211,6 +210,7 @@
 		02B58CCD1AE99D4D009B348C /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		02C0864C1BCDB27000942F9C /* list.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = list.cpp; path = "src/object-store/list.cpp"; sourceTree = "<group>"; };
 		02C0864D1BCDB27000942F9C /* list.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = list.hpp; path = "src/object-store/list.hpp"; sourceTree = "<group>"; };
+		02D0F23A1BF6C95200B4FC45 /* binding_context.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = binding_context.hpp; path = "src/object-store/binding_context.hpp"; sourceTree = "<group>"; };
 		02D456D91B7E59A500EE1299 /* ArrayTests.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; name = ArrayTests.js; path = tests/ArrayTests.js; sourceTree = SOURCE_ROOT; };
 		02EE6D781BD87E310016A82E /* ReactTests.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = ReactTests.xcodeproj; path = tests/ReactTests/ios/ReactTests.xcodeproj; sourceTree = "<group>"; };
 		F64E1EF01BC3510E00E0E150 /* util.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; name = util.js; path = tests/util.js; sourceTree = SOURCE_ROOT; };
@@ -263,13 +263,13 @@
 				0270BC641B7CFC1C00010E03 /* results.hpp */,
 				0270BC651B7CFC1C00010E03 /* shared_realm.cpp */,
 				0270BC661B7CFC1C00010E03 /* shared_realm.hpp */,
+				02D0F23A1BF6C95200B4FC45 /* binding_context.hpp */,
 				02601F051BA0F0CD007C91FF /* index_set.cpp */,
 				02601F061BA0F0CD007C91FF /* index_set.hpp */,
 				02C0864C1BCDB27000942F9C /* list.cpp */,
 				02C0864D1BCDB27000942F9C /* list.hpp */,
 				02601F0B1BA0F3A7007C91FF /* schema.cpp */,
 				02601F0C1BA0F3A7007C91FF /* schema.hpp */,
-				02601F071BA0F0CD007C91FF /* realm_delegate.hpp */,
 				029445911BDEDF40006D1617 /* transact_log_handler.cpp */,
 				029445921BDEDF40006D1617 /* transact_log_handler.hpp */,
 				029445951BDEDF46006D1617 /* external_commit_helper.cpp */,
@@ -390,13 +390,13 @@
 				02258FB31BC6E2D00075F13A /* RealmRPC.hpp in Headers */,
 				0270BC4F1B7CFC0D00010E03 /* RJSList.hpp in Headers */,
 				0270BC541B7CFC0D00010E03 /* RJSResults.hpp in Headers */,
+				02D0F23B1BF6C95200B4FC45 /* binding_context.hpp in Headers */,
 				0270BC581B7CFC0D00010E03 /* RJSUtil.hpp in Headers */,
 				0270BC561B7CFC0D00010E03 /* RJSSchema.hpp in Headers */,
 				0270BC521B7CFC0D00010E03 /* RJSRealm.hpp in Headers */,
 				0270BC501B7CFC0D00010E03 /* RJSObject.hpp in Headers */,
 				02601F0E1BA0F3A7007C91FF /* schema.hpp in Headers */,
 				0270BC6C1B7CFC1C00010E03 /* object_store.hpp in Headers */,
-				02601F0A1BA0F0CD007C91FF /* realm_delegate.hpp in Headers */,
 				0270BC681B7CFC1C00010E03 /* object_accessor.hpp in Headers */,
 				029445941BDEDF40006D1617 /* transact_log_handler.hpp in Headers */,
 				0270BC711B7CFC1C00010E03 /* shared_realm.hpp in Headers */,
@@ -617,7 +617,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = ": ${REALM_CORE_VERSION:=0.94.3} # set to \"current\" to always use the current build\n\necho \"Downloading dependency: core ${REALM_CORE_VERSION}\"\nTMP_DIR=\"$TMPDIR/core_bin\"\nmkdir -p \"${TMP_DIR}\"\nCORE_TMP_TAR=\"${TMP_DIR}/core-${REALM_CORE_VERSION}.tar.bz2.tmp\"\nCORE_TAR=\"${TMP_DIR}/core-${REALM_CORE_VERSION}.tar.bz2\"\nif [ ! -f \"${CORE_TAR}\" ]; then\ncurl -f -L -s \"http://static.realm.io/downloads/core/realm-core-${REALM_CORE_VERSION}.tar.bz2\" -o \"${CORE_TMP_TAR}\" ||\n(echo \"Downloading core failed. Please try again once you have an Internet connection.\" && exit 1)\nmv \"${CORE_TMP_TAR}\" \"${CORE_TAR}\"\nfi\n\n(\ncd \"${TMP_DIR}\"\nrm -rf core\ntar xjf \"${CORE_TAR}\"\nmv core core-${REALM_CORE_VERSION}\n)\n\nrm -rf core-${REALM_CORE_VERSION} core\nmv ${TMP_DIR}/core-${REALM_CORE_VERSION} .\nln -s core-${REALM_CORE_VERSION} core";
+			shellScript = ": ${REALM_CORE_VERSION:=0.94.4} # set to \"current\" to always use the current build\n\necho \"Downloading dependency: core ${REALM_CORE_VERSION}\"\nTMP_DIR=\"$TMPDIR/core_bin\"\nmkdir -p \"${TMP_DIR}\"\nCORE_TMP_TAR=\"${TMP_DIR}/core-${REALM_CORE_VERSION}.tar.bz2.tmp\"\nCORE_TAR=\"${TMP_DIR}/core-${REALM_CORE_VERSION}.tar.bz2\"\nif [ ! -f \"${CORE_TAR}\" ]; then\ncurl -f -L -s \"http://static.realm.io/downloads/core/realm-core-${REALM_CORE_VERSION}.tar.bz2\" -o \"${CORE_TMP_TAR}\" ||\n(echo \"Downloading core failed. Please try again once you have an Internet connection.\" && exit 1)\nmv \"${CORE_TMP_TAR}\" \"${CORE_TAR}\"\nfi\n\n(\ncd \"${TMP_DIR}\"\nrm -rf core\ntar xjf \"${CORE_TAR}\"\nmv core core-${REALM_CORE_VERSION}\n)\n\nrm -rf core-${REALM_CORE_VERSION} core\nmv ${TMP_DIR}/core-${REALM_CORE_VERSION} .\nln -s core-${REALM_CORE_VERSION} core";
 		};
 /* End PBXShellScriptBuildPhase section */
 

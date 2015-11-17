@@ -30,7 +30,7 @@ namespace realm {
     class ClientHistory;
     class Realm;
     class RealmCache;
-    class RealmDelegate;
+    class BindingContext;
     typedef std::shared_ptr<Realm> SharedRealm;
     typedef std::weak_ptr<Realm> WeakRealm;
 
@@ -97,10 +97,13 @@ namespace realm {
 
         void invalidate();
         bool compact();
-        void close();
 
         std::thread::id thread_id() const { return m_thread_id; }
         void verify_thread() const;
+
+        // Close this Realm and remove it from the cache. Continuing to use a
+        // Realm after closing it will produce undefined behavior.
+        void close();
 
         ~Realm();
 
@@ -121,7 +124,7 @@ namespace realm {
         std::shared_ptr<_impl::ExternalCommitHelper> m_notifier;
 
       public:
-        std::unique_ptr<RealmDelegate> m_delegate;
+        std::unique_ptr<BindingContext> m_binding_context;
 
         // FIXME private
         Group *read_group();
@@ -135,7 +138,6 @@ namespace realm {
         SharedRealm get_any_realm(const std::string &path);
         void remove(const std::string &path, std::thread::id thread_id);
         void cache_realm(SharedRealm &realm, std::thread::id thread_id = std::this_thread::get_id());
-        void close_all(std::thread::id thread_id = std::this_thread::get_id());
         void clear();
 
       private:
@@ -153,7 +155,7 @@ namespace realm {
             /** Thrown if the user does not have permission to open or create
              the specified file in the specified access mode when the realm is opened. */
             PermissionDenied,
-            /** Thrown if no_create was specified and the file did already exist when the realm is opened. */
+            /** Thrown if create_Always was specified and the file did already exist when the realm is opened. */
             Exists,
             /** Thrown if no_create was specified and the file was not found when the realm is opened. */
             NotFound,
@@ -162,11 +164,14 @@ namespace realm {
              architecture mismatch. */
             IncompatibleLockFile,
         };
-        RealmFileException(Kind kind, std::string message) : std::runtime_error(message), m_kind(kind) {}
+        RealmFileException(Kind kind, std::string path, std::string message) :
+            std::runtime_error(std::move(message)), m_kind(kind), m_path(std::move(path)) {}
         Kind kind() const { return m_kind; }
+        const std::string& path() const { return m_path; }
         
       private:
         Kind m_kind;
+        std::string m_path;
     };
 
     class MismatchedConfigException : public std::runtime_error
@@ -191,6 +196,12 @@ namespace realm {
     {
       public:
         UnitializedRealmException(std::string message) : std::runtime_error(message) {}
+    };
+
+    class ClosedRealmException : public std::runtime_error
+    {
+      public:
+        ClosedRealmException(std::string message) : std::runtime_error(message) {}
     };
 }
 

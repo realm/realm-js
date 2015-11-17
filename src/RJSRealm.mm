@@ -10,13 +10,13 @@
 
 #import "shared_realm.hpp"
 #import "object_accessor.hpp"
-#import "realm_delegate.hpp"
+#import "binding_context.hpp"
 
 #import <set>
 
 using namespace realm;
 
-class RJSRealmDelegate : public RealmDelegate {
+class RJSRealmDelegate : public BindingContext {
 public:
     virtual void changes_available() {
         assert(0);
@@ -96,11 +96,11 @@ public:
 };
 
 std::map<std::string, ObjectDefaults> &RJSDefaults(Realm *realm) {
-    return static_cast<RJSRealmDelegate *>(realm->m_delegate.get())->m_defaults;
+    return static_cast<RJSRealmDelegate *>(realm->m_binding_context.get())->m_defaults;
 }
 
 std::map<std::string, JSValueRef> &RJSPrototypes(Realm *realm) {
-    return static_cast<RJSRealmDelegate *>(realm->m_delegate.get())->m_prototypes;
+    return static_cast<RJSRealmDelegate *>(realm->m_binding_context.get())->m_prototypes;
 }
 
 std::string writeablePathForFile(const std::string &fileName) {
@@ -216,8 +216,8 @@ JSObjectRef RealmConstructor(JSContextRef ctx, JSObjectRef constructor, size_t a
         }
         ensureDirectoryForFile(config.path);
         SharedRealm realm = Realm::get_shared_realm(config);
-        if (!realm->m_delegate) {
-            realm->m_delegate = std::make_unique<RJSRealmDelegate>(realm, JSContextGetGlobalContext(ctx));
+        if (!realm->m_binding_context) {
+            realm->m_binding_context = std::make_unique<RJSRealmDelegate>(realm, JSContextGetGlobalContext(ctx));
         }
         RJSDefaults(realm.get()) = defaults;
         RJSPrototypes(realm.get()) = prototypes;
@@ -442,7 +442,7 @@ JSValueRef RealmAddListener(JSContextRef ctx, JSObjectRef function, JSObjectRef 
         JSObjectRef callback = RJSValidatedValueToFunction(ctx, arguments[1]);
 
         SharedRealm realm = *RJSGetInternal<SharedRealm *>(thisObject);
-        static_cast<RJSRealmDelegate *>(realm->m_delegate.get())->add_notification(callback);
+        static_cast<RJSRealmDelegate *>(realm->m_binding_context.get())->add_notification(callback);
         return NULL;
     }
     catch (std::exception &exp) {
@@ -460,7 +460,7 @@ JSValueRef RealmRemoveListener(JSContextRef ctx, JSObjectRef function, JSObjectR
         JSObjectRef callback = RJSValidatedValueToFunction(ctx, arguments[1]);
 
         SharedRealm realm = *RJSGetInternal<SharedRealm *>(thisObject);
-        static_cast<RJSRealmDelegate *>(realm->m_delegate.get())->remove_notification(callback);
+        static_cast<RJSRealmDelegate *>(realm->m_binding_context.get())->remove_notification(callback);
         return NULL;
     }
     catch (std::exception &exp) {
@@ -479,7 +479,7 @@ JSValueRef RealmRemoveAllListeners(JSContextRef ctx, JSObjectRef function, JSObj
         }
 
         SharedRealm realm = *RJSGetInternal<SharedRealm *>(thisObject);
-        static_cast<RJSRealmDelegate *>(realm->m_delegate.get())->remove_all_notifications();
+        static_cast<RJSRealmDelegate *>(realm->m_binding_context.get())->remove_all_notifications();
         return NULL;
     }
     catch (std::exception &exp) {

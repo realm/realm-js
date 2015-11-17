@@ -18,25 +18,23 @@
 
 #include "transact_log_handler.hpp"
 
-#include "realm_delegate.hpp"
+#include "../binding_context.hpp"
 
 #include <realm/commit_log.hpp>
 #include <realm/group_shared.hpp>
 #include <realm/lang_bind_helper.hpp>
 
-using namespace realm;
-
-namespace {
+namespace realm {
 class TransactLogHandler {
-    using ColumnInfo = RealmDelegate::ColumnInfo;
-    using ObserverState = RealmDelegate::ObserverState;
+    using ColumnInfo = BindingContext::ColumnInfo;
+    using ObserverState = BindingContext::ObserverState;
 
     // Observed table rows which need change information
     std::vector<ObserverState> m_observers;
     // Userdata pointers for rows which have been deleted
     std::vector<void *> invalidated;
     // Delegate to send change information to
-    RealmDelegate* m_delegate;
+    BindingContext* m_binding_context;
 
     // Index of currently selected table
     size_t m_current_table = 0;
@@ -84,33 +82,33 @@ class TransactLogHandler {
 
 public:
     template<typename Func>
-    TransactLogHandler(RealmDelegate* delegate, SharedGroup& sg, Func&& func)
-    : m_delegate(delegate)
+    TransactLogHandler(BindingContext* binding_context, SharedGroup& sg, Func&& func)
+    : m_binding_context(binding_context)
     {
-        if (!delegate) {
+        if (!binding_context) {
             func();
             return;
         }
 
-        m_observers = delegate->get_observed_rows();
+        m_observers = binding_context->get_observed_rows();
         if (m_observers.empty()) {
             auto old_version = sg.get_version_of_current_transaction();
             func();
             if (old_version != sg.get_version_of_current_transaction()) {
-                delegate->did_change({}, {});
+                binding_context->did_change({}, {});
             }
             return;
         }
 
         func(*this);
-        delegate->did_change(m_observers, invalidated);
+        binding_context->did_change(m_observers, invalidated);
     }
 
     // Called at the end of the transaction log immediately before the version
     // is advanced
     void parse_complete()
     {
-        m_delegate->will_change(m_observers, invalidated);
+        m_binding_context->will_change(m_observers, invalidated);
     }
 
     // These would require having an observer before schema init
@@ -175,7 +173,7 @@ public:
         return true;
     }
 
-    bool select_link_list(size_t col, size_t row)
+    bool select_link_list(size_t col, size_t row, size_t)
     {
         m_active_linklist = nullptr;
         for (auto& o : m_observers) {
@@ -303,43 +301,50 @@ public:
     bool set_date_time(size_t col, size_t row, DateTime) { return mark_dirty(row, col); }
     bool set_table(size_t col, size_t row) { return mark_dirty(row, col); }
     bool set_mixed(size_t col, size_t row, const Mixed&) { return mark_dirty(row, col); }
-    bool set_link(size_t col, size_t row, size_t) { return mark_dirty(row, col); }
+    bool set_link(size_t col, size_t row, size_t, size_t) { return mark_dirty(row, col); }
     bool set_null(size_t col, size_t row) { return mark_dirty(row, col); }
-    bool nullify_link(size_t col, size_t row) { return mark_dirty(row, col); }
+    bool nullify_link(size_t col, size_t row, size_t) { return mark_dirty(row, col); }
 
     // Doesn't change any data
     bool optimize_table() { return true; }
 
     // Used for subtables, which we currently don't support
     bool select_descriptor(int, const size_t*) { return false; }
+
+    // Not implemented
+    bool insert_substring(size_t, size_t, size_t, StringData) { return false; }
+    bool erase_substring(size_t, size_t, size_t, size_t) { return false; }
+    bool swap_rows(size_t, size_t) { return false; }
+    bool move_column(size_t, size_t) { return false; }
+    bool move_group_level_table(size_t, size_t) { return false; }
 };
 } // anonymous namespace
 
 namespace realm {
 namespace _impl {
 namespace transaction {
-void advance(SharedGroup& sg, ClientHistory& history, RealmDelegate* delegate) {
-    TransactLogHandler(delegate, sg, [&](auto&&... args) {
+void advance(SharedGroup& sg, ClientHistory& history, BindingContext* binding_context) {
+    TransactLogHandler(binding_context, sg, [&](auto&&... args) {
         LangBindHelper::advance_read(sg, history, std::move(args)...);
     });
 }
 
-void begin(SharedGroup& sg, ClientHistory& history, RealmDelegate* delegate) {
-    TransactLogHandler(delegate, sg, [&](auto&&... args) {
+void begin(SharedGroup& sg, ClientHistory& history, BindingContext* binding_context) {
+    TransactLogHandler(binding_context, sg, [&](auto&&... args) {
         LangBindHelper::promote_to_write(sg, history, std::move(args)...);
     });
 }
 
-void commit(SharedGroup& sg, ClientHistory&, RealmDelegate* delegate) {
+void commit(SharedGroup& sg, ClientHistory&, BindingContext* binding_context) {
     LangBindHelper::commit_and_continue_as_read(sg);
 
-    if (delegate) {
-        delegate->did_change({}, {});
+    if (binding_context) {
+        binding_context->did_change({}, {});
     }
 }
 
-void cancel(SharedGroup& sg, ClientHistory& history, RealmDelegate* delegate) {
-    TransactLogHandler(delegate, sg, [&](auto&&... args) {
+void cancel(SharedGroup& sg, ClientHistory& history, BindingContext* binding_context) {
+    TransactLogHandler(binding_context, sg, [&](auto&&... args) {
         LangBindHelper::rollback_and_continue_as_read(sg, history, std::move(args)...);
     });
 }
