@@ -49,7 +49,6 @@ JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executor, bool cre
 }
 
 #if DEBUG
-
 #import <GCDWebServers/GCDWebServers.h>
 #import <RealmJS/RealmRPC.hpp>
 #import "shared_realm.hpp"
@@ -59,15 +58,11 @@ JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executor, bool cre
     std::unique_ptr<realm_js::RPCServer> _rpcServer;
 }
 @end
-
-static std::mutex s_rpcMutex;
 #endif
 
-
-@interface RealmReact () <RCTBridgeModule> {
-    __weak NSThread *_currentJSThread;
-    __weak NSRunLoop *_currentJSRunLoop;
-}
+@interface RealmReact () <RCTBridgeModule>
+@property (weak) NSThread *currentJSThread;
+@property (weak) NSRunLoop *currentJSRunLoop;
 @end
 
 static __weak RealmReact *s_currentRealmModule = nil;
@@ -94,8 +89,6 @@ static __weak RealmReact *s_currentRealmModule = nil;
 
 #if DEBUG
 - (void)startRPC {
-    std::lock_guard<std::mutex> lock(s_rpcMutex);
-
     [GCDWebServer setLogLevel:3];
     _webServer = [[GCDWebServer alloc] init];
     _rpcServer = std::make_unique<realm_js::RPCServer>();
@@ -112,7 +105,6 @@ static __weak RealmReact *s_currentRealmModule = nil;
             dispatch_sync(dispatch_get_main_queue(), ^{
                 RealmReact *self = weakSelf;
                 if (self) {
-                    std::lock_guard<std::mutex> lock(s_rpcMutex);
                     if (_rpcServer) {
                         realm_js::json args = realm_js::json::parse([[(GCDWebServerDataRequest *)request text] UTF8String]);
                         std::string responseText = _rpcServer->perform_request(request.path.UTF8String, args).dump();
@@ -141,7 +133,6 @@ static __weak RealmReact *s_currentRealmModule = nil;
 }
 
 - (void)shutdownRPC {
-    std::lock_guard<std::mutex> lock(s_rpcMutex);
     [_webServer stop];
     [_webServer removeAllHandlers];
     _webServer = nil;
@@ -162,7 +153,7 @@ static __weak RealmReact *s_currentRealmModule = nil;
     if (runLoop) {
         CFRunLoopStop([_currentJSRunLoop getCFRunLoop]);
         while (_currentJSThread && !_currentJSThread.finished) {
-            [[NSRunLoop currentRunLoop] runMode:NSRunLoopCommonModes beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.01]];
+            [NSThread sleepForTimeInterval:0.01];
         }
     }
 
@@ -190,9 +181,10 @@ static __weak RealmReact *s_currentRealmModule = nil;
 #endif
     }
     else {
+        __weak __typeof__(self) weakSelf = self;
         [executor executeBlockOnJavaScriptQueue:^{
-            _currentJSThread = [NSThread currentThread];
-            _currentJSRunLoop = [NSRunLoop currentRunLoop];
+            weakSelf.currentJSThread = [NSThread currentThread];
+            weakSelf.currentJSRunLoop = [NSRunLoop currentRunLoop];
             JSGlobalContextRef ctx = RealmReactGetJSGlobalContextForExecutor(executor, true);
             RJSInitializeInContext(ctx);
         }];

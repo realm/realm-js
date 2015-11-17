@@ -21,7 +21,6 @@
 using namespace realm_js;
 
 static const char * const RealmObjectTypesFunction = "ObjectTypesFUNCTION";
-static const char * const RealmObjectTypesNotification = "ObjectTypesNOTIFICATION";
 static const char * const RealmObjectTypesResults = "ObjectTypesRESULTS";
 
 RPCServer::RPCServer() {
