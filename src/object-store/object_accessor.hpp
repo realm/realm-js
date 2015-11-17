@@ -62,6 +62,8 @@ namespace realm {
         static ValueType from_double(ContextType, double);
         static std::string to_string(ContextType, ValueType &);
         static ValueType from_string(ContextType, StringData);
+        static std::string to_binary(ContextType, ValueType &);
+        static ValueType from_binary(ContextType, BinaryData);
         static DateTime to_datetime(ContextType, ValueType &);
         static ValueType from_datetime(ContextType, DateTime);
 
@@ -164,7 +166,7 @@ namespace realm {
                 m_row.set_string(column, Accessor::to_string(ctx, value));
                 break;
             case PropertyTypeData:
-                m_row.set_binary(column, BinaryData(Accessor::to_string(ctx, value)));
+                m_row.set_binary(column, BinaryData(Accessor::to_binary(ctx, value)));
                 break;
             case PropertyTypeAny:
                 m_row.set_mixed(column, Accessor::to_mixed(ctx, value));
@@ -216,7 +218,7 @@ namespace realm {
             case PropertyTypeString:
                 return Accessor::from_string(ctx, m_row.get_string(column));
             case PropertyTypeData:
-                return Accessor::from_string(ctx, (std::string)m_row.get_binary(column));
+                return Accessor::from_binary(ctx, m_row.get_binary(column));
             case PropertyTypeAny:
                 throw "Any not supported";
             case PropertyTypeDate:

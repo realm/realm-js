@@ -84,6 +84,7 @@ JSValueRef RJSMakeError(JSContextRef ctx, std::exception &exp);
 JSValueRef RJSMakeError(JSContextRef ctx, const std::string &message);
 
 bool RJSIsValueArray(JSContextRef ctx, JSValueRef value);
+bool RJSIsValueArrayBuffer(JSContextRef ctx, JSValueRef value);
 bool RJSIsValueDate(JSContextRef ctx, JSValueRef value);
 
 static inline JSObjectRef RJSValidatedValueToObject(JSContextRef ctx, JSValueRef value, const char *message = NULL) {
