@@ -880,11 +880,6 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)",
-					"$(BUILT_PRODUCTS_DIR)",
-				);
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
 					"$(inherited)",
@@ -894,6 +889,7 @@
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
 					"$(SRCROOT)/vendor",
 					"$(SRCROOT)/vendor/GCDWebServer",
+					"$(SRCROOT)/../react-native/React/Base",
 					"$(SRCROOT)/tests/react-test-app/node_modules/react-native/React/Base",
 					"$(SRCROOT)/examples/ReactExample/node_modules/react-native/React/Base",
 				);
@@ -918,16 +914,12 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)",
-					"$(BUILT_PRODUCTS_DIR)",
-				);
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
 					"$(SRCROOT)/vendor",
 					"$(SRCROOT)/vendor/GCDWebServer",
+					"$(SRCROOT)/../react-native/React/Base",
 					"$(SRCROOT)/tests/react-test-app/node_modules/react-native/React/Base",
 					"$(SRCROOT)/examples/ReactExample/node_modules/react-native/React/Base",
 				);
@@ -951,16 +943,12 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)",
-					"$(BUILT_PRODUCTS_DIR)",
-				);
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
 					"$(SRCROOT)/vendor",
 					"$(SRCROOT)/vendor/GCDWebServer",
+					"$(SRCROOT)/../react-native/React/Base",
 					"$(SRCROOT)/tests/react-test-app/node_modules/react-native/React/Base",
 					"$(SRCROOT)/examples/ReactExample/node_modules/react-native/React/Base",
 				);
