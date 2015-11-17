@@ -60,9 +60,10 @@ JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executor, bool cre
 @end
 #endif
 
-@interface RealmReact () <RCTBridgeModule>
-@property (weak) NSThread *currentJSThread;
-@property (weak) NSRunLoop *currentJSRunLoop;
+@interface RealmReact () <RCTBridgeModule> {
+    __weak NSThread *_currentJSThread;
+    __weak NSRunLoop *_currentJSRunLoop;
+}
 @end
 
 static __weak RealmReact *s_currentRealmModule = nil;
@@ -183,8 +184,12 @@ static __weak RealmReact *s_currentRealmModule = nil;
     else {
         __weak __typeof__(self) weakSelf = self;
         [executor executeBlockOnJavaScriptQueue:^{
-            weakSelf.currentJSThread = [NSThread currentThread];
-            weakSelf.currentJSRunLoop = [NSRunLoop currentRunLoop];
+            RealmReact *self = weakSelf;
+            if (!self) {
+                return;
+            }
+            self->_currentJSThread = [NSThread currentThread];
+            self->_currentJSRunLoop = [NSRunLoop currentRunLoop];
             JSGlobalContextRef ctx = RealmReactGetJSGlobalContextForExecutor(executor, true);
             RJSInitializeInContext(ctx);
         }];
