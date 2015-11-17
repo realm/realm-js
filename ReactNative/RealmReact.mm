@@ -10,8 +10,6 @@ extern "C" {
 #import <objc/runtime.h>
 #import <dlfcn.h>
 
-#import "shared_realm.hpp"
-
 @interface NSObject ()
 - (instancetype)initWithJSContext:(void *)context;
 - (JSGlobalContextRef)ctx;
@@ -45,6 +43,8 @@ JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executor, bool cre
     return [rctJSContext ctx];
 }
 }
+
+#import "shared_realm.hpp"
 
 #if DEBUG
 #import <GCDWebServers/GCDWebServers.h>
