@@ -228,148 +228,41 @@ var testCases = {
         { "type": "StringObject", "value": ["A"] },
         { "type": "StringObject", "value": ["a"] },
         { "type": "StringObject", "value": ["a"] },
+        { "type": "StringObject", "value": ["C"] },
+        { "type": "StringObject", "value": ["c"] },
         { "type": "StringObject", "value": ["abc"] },
+        { "type": "StringObject", "value": ["ABC"] },
         { "type": "StringObject", "value": [""] },
         { "type": "StringObject", "value": ["\\\"\\n\\0\\r\\\\'"] },
     ],
     "tests": [
         ["QueryCount", 2, "StringObject", "stringCol == 'a'"],
+        ["QueryCount", 1, "StringObject", "'c' == stringCol"],
         ["QueryCount", 2, "StringObject", "stringCol == \"a\""],
-        ["QueryCount", 1, "StringObject", "stringCol == 'abc'"],
+        ["QueryCount", 1, "StringObject", "stringCol=='abc'"],
         ["QueryCount", 1, "StringObject", "stringCol == ''"],
+        ["QueryCount", 8, "StringObject", "stringCol != ''"],
         ["QueryCount", 1, "StringObject", "stringCol == \"\\\"\\n\\0\\r\\\\'\""],
+        ["QueryCount", 3, "StringObject", "stringCol BEGINSWITH 'a'"],
+        ["QueryCount", 1, "StringObject", "stringCol beginswith 'ab'"],
+        ["QueryCount", 0, "StringObject", "stringCol BEGINSWITH 'abcd'"],
+        ["QueryCount", 2, "StringObject", "stringCol BEGINSWITH 'A'"],
+        ["QueryCount", 2, "StringObject", "stringCol ENDSWITH 'c'"],
+        ["QueryCount", 1, "StringObject", "stringCol endswith 'bc'"],
+        ["QueryCount", 9, "StringObject", "stringCol ENDSWITH ''"],
+        ["QueryCount", 1, "StringObject", "stringCol CONTAINS 'b'"],
+        ["QueryCount", 2, "StringObject", "stringCol contains 'c'"],
+        ["QueryCount", 9, "StringObject", "stringCol CONTAINS ''"],
+
+        // ["QueryCount", 3, "StringObject", "stringCol ==[c] 'a'"],
+        // ["QueryCount", 5, "StringObject", "stringCol BEGINSWITH[c] 'A'"],
+        // ["QueryCount", 4, "StringObject", "stringCol ENDSWITH[c] 'c'"],
+        // ["QueryCount", 2, "StringObject", "stringCol CONTAINS[c] 'B'"],
     ]
 },
 
 };
 
-
-/*
-
-- (void)testStringBeginsWith
-{
-    RLMRealm *realm = [RLMRealm defaultRealm];
-
-    [realm beginWriteTransaction];
-    StringObject *so = [StringObject createInRealm:realm withValue:(@[@"abc"])];
-    [AllTypesObject createInRealm:realm withValue:@[@YES, @1, @1.0f, @1.0, @"a", [@"a" dataUsingEncoding:NSUTF8StringEncoding], NSDate.date, @YES, @1LL, @1, so]];
-    if (self.isNull) {
-        so = [StringObject createInRealm:realm withValue:@[NSNull.null]];
-        [AllTypesObject createInRealm:realm withValue:@[@YES, @1, @1.0f, @1.0, @"a", [@"a" dataUsingEncoding:NSUTF8StringEncoding], NSDate.date, @YES, @1LL, @1, so]];
-    }
-    [realm commitWriteTransaction];
-
-    XCTAssertEqual(1U, [StringObject objectsWhere:@"stringCol BEGINSWITH 'a'"].count);
-    XCTAssertEqual(1U, [StringObject objectsWhere:@"stringCol BEGINSWITH 'ab'"].count);
-    XCTAssertEqual(1U, [StringObject objectsWhere:@"stringCol BEGINSWITH 'abc'"].count);
-    XCTAssertEqual(0U, [StringObject objectsWhere:@"stringCol BEGINSWITH 'abcd'"].count);
-    XCTAssertEqual(0U, [StringObject objectsWhere:@"stringCol BEGINSWITH 'abd'"].count);
-    XCTAssertEqual(0U, [StringObject objectsWhere:@"stringCol BEGINSWITH 'c'"].count);
-    XCTAssertEqual(0U, [StringObject objectsWhere:@"stringCol BEGINSWITH 'A'"].count);
-    XCTAssertEqual(1U, [StringObject objectsWhere:@"stringCol BEGINSWITH[c] 'a'"].count);
-    XCTAssertEqual(1U, [StringObject objectsWhere:@"stringCol BEGINSWITH[c] 'A'"].count);
-
-    XCTAssertEqual(1U, [AllTypesObject objectsWhere:@"objectCol.stringCol BEGINSWITH 'a'"].count);
-    XCTAssertEqual(0U, [AllTypesObject objectsWhere:@"objectCol.stringCol BEGINSWITH 'c'"].count);
-    XCTAssertEqual(0U, [AllTypesObject objectsWhere:@"objectCol.stringCol BEGINSWITH 'A'"].count);
-    XCTAssertEqual(1U, [AllTypesObject objectsWhere:@"objectCol.stringCol BEGINSWITH[c] 'a'"].count);
-    XCTAssertEqual(1U, [AllTypesObject objectsWhere:@"objectCol.stringCol BEGINSWITH[c] 'A'"].count);
-}
-
-- (void)testStringEndsWith
-{
-    RLMRealm *realm = [RLMRealm defaultRealm];
-
-    [realm beginWriteTransaction];
-    StringObject *so = [StringObject createInRealm:realm withValue:(@[@"abc"])];
-    [AllTypesObject createInRealm:realm withValue:@[@YES, @1, @1.0f, @1.0, @"a", [@"a" dataUsingEncoding:NSUTF8StringEncoding], NSDate.date, @YES, @1LL, @1, so]];
-    if (self.isNull) {
-        so = [StringObject createInRealm:realm withValue:@[NSNull.null]];
-        [AllTypesObject createInRealm:realm withValue:@[@YES, @1, @1.0f, @1.0, @"a", [@"a" dataUsingEncoding:NSUTF8StringEncoding], NSDate.date, @YES, @1LL, @1, so]];
-    }
-    [realm commitWriteTransaction];
-
-    XCTAssertEqual(1U, [StringObject objectsWhere:@"stringCol ENDSWITH 'c'"].count);
-    XCTAssertEqual(1U, [StringObject objectsWhere:@"stringCol ENDSWITH 'bc'"].count);
-    XCTAssertEqual(1U, [StringObject objectsWhere:@"stringCol ENDSWITH 'abc'"].count);
-    XCTAssertEqual(0U, [StringObject objectsWhere:@"stringCol ENDSWITH 'aabc'"].count);
-    XCTAssertEqual(0U, [StringObject objectsWhere:@"stringCol ENDSWITH 'bbc'"].count);
-    XCTAssertEqual(0U, [StringObject objectsWhere:@"stringCol ENDSWITH 'a'"].count);
-    XCTAssertEqual(0U, [StringObject objectsWhere:@"stringCol ENDSWITH 'C'"].count);
-    XCTAssertEqual(1U, [StringObject objectsWhere:@"stringCol ENDSWITH[c] 'c'"].count);
-    XCTAssertEqual(1U, [StringObject objectsWhere:@"stringCol ENDSWITH[c] 'C'"].count);
-
-    XCTAssertEqual(1U, [AllTypesObject objectsWhere:@"objectCol.stringCol ENDSWITH 'c'"].count);
-    XCTAssertEqual(0U, [AllTypesObject objectsWhere:@"objectCol.stringCol ENDSWITH 'a'"].count);
-    XCTAssertEqual(0U, [AllTypesObject objectsWhere:@"objectCol.stringCol ENDSWITH 'C'"].count);
-    XCTAssertEqual(1U, [AllTypesObject objectsWhere:@"objectCol.stringCol ENDSWITH[c] 'c'"].count);
-    XCTAssertEqual(1U, [AllTypesObject objectsWhere:@"objectCol.stringCol ENDSWITH[c] 'C'"].count);
-}
-
-- (void)testStringContains
-{
-    RLMRealm *realm = [RLMRealm defaultRealm];
-
-    [realm beginWriteTransaction];
-    StringObject *so = [StringObject createInRealm:realm withValue:(@[@"abc"])];
-    [AllTypesObject createInRealm:realm withValue:@[@YES, @1, @1.0f, @1.0, @"a", [@"a" dataUsingEncoding:NSUTF8StringEncoding], NSDate.date, @YES, @1LL, @1, so]];
-    if (self.isNull) {
-        so = [StringObject createInRealm:realm withValue:@[NSNull.null]];
-        [AllTypesObject createInRealm:realm withValue:@[@YES, @1, @1.0f, @1.0, @"a", [@"a" dataUsingEncoding:NSUTF8StringEncoding], NSDate.date, @YES, @1LL, @1, so]];
-    }
-    [realm commitWriteTransaction];
-
-    XCTAssertEqual(1U, [StringObject objectsWhere:@"stringCol CONTAINS 'a'"].count);
-    XCTAssertEqual(1U, [StringObject objectsWhere:@"stringCol CONTAINS 'b'"].count);
-    XCTAssertEqual(1U, [StringObject objectsWhere:@"stringCol CONTAINS 'c'"].count);
-    XCTAssertEqual(1U, [StringObject objectsWhere:@"stringCol CONTAINS 'ab'"].count);
-    XCTAssertEqual(1U, [StringObject objectsWhere:@"stringCol CONTAINS 'bc'"].count);
-    XCTAssertEqual(1U, [StringObject objectsWhere:@"stringCol CONTAINS 'abc'"].count);
-    XCTAssertEqual(0U, [StringObject objectsWhere:@"stringCol CONTAINS 'd'"].count);
-    XCTAssertEqual(0U, [StringObject objectsWhere:@"stringCol CONTAINS 'aabc'"].count);
-    XCTAssertEqual(0U, [StringObject objectsWhere:@"stringCol CONTAINS 'bbc'"].count);
-
-    XCTAssertEqual(0U, [StringObject objectsWhere:@"stringCol CONTAINS 'C'"].count);
-    XCTAssertEqual(1U, [StringObject objectsWhere:@"stringCol CONTAINS[c] 'c'"].count);
-    XCTAssertEqual(1U, [StringObject objectsWhere:@"stringCol CONTAINS[c] 'C'"].count);
-
-    XCTAssertEqual(0U, [AllTypesObject objectsWhere:@"objectCol.stringCol CONTAINS 'd'"].count);
-    XCTAssertEqual(1U, [AllTypesObject objectsWhere:@"objectCol.stringCol CONTAINS 'c'"].count);
-    XCTAssertEqual(0U, [AllTypesObject objectsWhere:@"objectCol.stringCol CONTAINS 'C'"].count);
-    XCTAssertEqual(1U, [AllTypesObject objectsWhere:@"objectCol.stringCol CONTAINS[c] 'c'"].count);
-    XCTAssertEqual(1U, [AllTypesObject objectsWhere:@"objectCol.stringCol CONTAINS[c] 'C'"].count);
-}
-
-- (void)testStringEquality
-{
-    RLMRealm *realm = [RLMRealm defaultRealm];
-
-    [realm beginWriteTransaction];
-    StringObject *so = [StringObject createInRealm:realm withValue:(@[@"abc"])];
-    [AllTypesObject createInRealm:realm withValue:@[@YES, @1, @1.0f, @1.0, @"a", [@"a" dataUsingEncoding:NSUTF8StringEncoding], NSDate.date, @YES, @1LL, @1, so]];
-    [realm commitWriteTransaction];
-
-    XCTAssertEqual(1U, [StringObject objectsWhere:@"stringCol == 'abc'"].count);
-    XCTAssertEqual(1U, [StringObject objectsWhere:@"stringCol != 'def'"].count);
-    XCTAssertEqual(1U, [StringObject objectsWhere:@"stringCol ==[c] 'abc'"].count);
-    XCTAssertEqual(1U, [StringObject objectsWhere:@"stringCol ==[c] 'ABC'"].count);
-
-    XCTAssertEqual(0U, [StringObject objectsWhere:@"stringCol != 'abc'"].count);
-    XCTAssertEqual(0U, [StringObject objectsWhere:@"stringCol == 'def'"].count);
-    XCTAssertEqual(0U, [StringObject objectsWhere:@"stringCol == 'ABC'"].count);
-
-    XCTAssertEqual(1U, [AllTypesObject objectsWhere:@"objectCol.stringCol == 'abc'"].count);
-    XCTAssertEqual(1U, [AllTypesObject objectsWhere:@"objectCol.stringCol != 'def'"].count);
-
-    XCTAssertEqual(1U, [AllTypesObject objectsWhere:@"objectCol.stringCol ==[c] 'abc'"].count);
-    XCTAssertEqual(1U, [AllTypesObject objectsWhere:@"objectCol.stringCol ==[c] 'ABC'"].count);
-
-    XCTAssertEqual(0U, [AllTypesObject objectsWhere:@"objectCol.stringCol != 'abc'"].count);
-    XCTAssertEqual(0U, [AllTypesObject objectsWhere:@"objectCol.stringCol == 'def'"].count);
-    XCTAssertEqual(0U, [AllTypesObject objectsWhere:@"objectCol.stringCol == 'ABC'"].count);
-}
-
-*/
 module.exports = BaseTest.extend({
     testDateQueries: function() { 
         runQuerySuite(testCases.dateTests);
