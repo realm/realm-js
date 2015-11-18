@@ -23,7 +23,7 @@ function runQuerySuite(suite) {
 
         var converted = obj.value.map(function(propValue, index) {
             var converter = typeConverters[objSchema.properties[index].type];
-            return converter ? converter(obj.value[index]) : obj.value[index];
+            return converter ? converter(propValue) : propValue;
         });
 
         return { type: obj.type, value: converted };
@@ -79,19 +79,17 @@ var dateTests = {
         ["QueryCount", 3, "DateObject", "date >= $0", [0, 0]],
         ["QueryCount", 1, "DateObject", "date == $0", [0, 0]],
         ["QueryCount", 2, "DateObject", "date != $0", [0, 0]],
+
+        ["QueryThrows", "DateObject", "date == 'not a date'"],
+        ["QueryThrows", "DateObject", "date == 1"],
+        ["QueryThrows", "DateObject", "date == $0", 1],
     ]
 };
-
-module.exports = BaseTest.extend({
-    testDateQueries: function() { 
-        runQuerySuite(dateTests);
-    },
-});
 
 var boolTests = {
       "schema" : [{ 
         "name": "BoolObject",
-        "properties": [{ "name": "bool", "type": Realm.Types.BOOL }],
+        "properties": [{ "name": "boolCol", "type": Realm.Types.BOOL }],
     }],
     "objects": [
         { "type": "BoolObject", "value": [false] },
@@ -99,32 +97,65 @@ var boolTests = {
         { "type": "BoolObject", "value": [true] },
     ],
     "tests": [
-        ["QueryCount", 2, "BoolObject", "bool == true"],
-        ["QueryCount", 1, "BoolObject", "bool != true"],
-        ["QueryCount", 1, "BoolObject", "bool == false"],
-        ["QueryCount", 2, "BoolObject", "bool == TRUE"],
-        ["QueryCount", 1, "BoolObject", "bool == FALSE"],
-        ["QueryCount", 2, "BoolObject", "bool == $0", true],
-        ["QueryCount", 1, "BoolObject", "bool == $0", false],
-        ["QueryCount", 0, "BoolObject", "bool == true && bool == false"],
-        ["QueryCount", 3, "BoolObject", "bool == true || bool == false"],
+        ["QueryCount", 2, "BoolObject", "boolCol == true"],
+        ["QueryCount", 2, "BoolObject", "true == boolCol"],
+        ["QueryCount", 1, "BoolObject", "boolCol != true"],
+        ["QueryCount", 1, "BoolObject", "boolCol == false"],
+        ["QueryCount", 2, "BoolObject", "boolCol == TRUE"],
+        ["QueryCount", 1, "BoolObject", "boolCol == FALSE"],
+        ["QueryCount", 2, "BoolObject", "boolCol == $0", true],
+        ["QueryCount", 1, "BoolObject", "boolCol == $0", false],
+        ["QueryCount", 0, "BoolObject", "boolCol == true && boolCol == false"],
+        ["QueryCount", 3, "BoolObject", "boolCol == true || boolCol == false"],
 
-        ["QueryThrows", "BoolObject", "bool == 0"],
-        ["QueryThrows", "BoolObject", "bool == 1"],
-        ["QueryThrows", "BoolObject", "bool == 'not a bool'"],
-        ["QueryThrows", "BoolObject", "bool >  true"],
-        ["QueryThrows", "BoolObject", "bool >= true"],
-        ["QueryThrows", "BoolObject", "bool <  true"],
-        ["QueryThrows", "BoolObject", "bool <= true"],
-        ["QueryThrows", "BoolObject", "bool BEGINSWITH true"],
-        ["QueryThrows", "BoolObject", "bool CONTAINS true"],
-        ["QueryThrows", "BoolObject", "bool ENDSWITH true"],
+        ["QueryThrows", "BoolObject", "boolCol == 0"],
+        ["QueryThrows", "BoolObject", "boolCol == 1"],
+        ["QueryThrows", "BoolObject", "boolCol == 'not a bool'"],
+        ["QueryThrows", "BoolObject", "boolCol >  true"],
+        ["QueryThrows", "BoolObject", "boolCol >= true"],
+        ["QueryThrows", "BoolObject", "boolCol <  true"],
+        ["QueryThrows", "BoolObject", "boolCol <= true"],
+        ["QueryThrows", "BoolObject", "boolCol BEGINSWITH true"],
+        ["QueryThrows", "BoolObject", "boolCol CONTAINS true"],
+        ["QueryThrows", "BoolObject", "boolCol ENDSWITH true"],
     ]  
 }
 
+var intTests = {
+    "schema" : [{ 
+        "name": "IntObject",
+        "properties": [{ "name": "intCol", "type": Realm.Types.INT }],
+    }],
+    "objects": [
+        { "type": "IntObject", "value": [-1] },
+        { "type": "IntObject", "value": [0] },
+        { "type": "IntObject", "value": [100] },
+    ],
+    "tests": [
+        ["QueryCount", 1, "IntObject", "intCol == -1"],
+        ["QueryCount", 1, "IntObject", "intCol == 0"],
+        ["QueryCount", 0, "IntObject", "intCol == 1"],
+        ["QueryCount", 2, "IntObject", "intCol != 0"],
+        ["QueryCount", 2, "IntObject", "intCol > -1"],
+        ["QueryCount", 3, "IntObject", "intCol >= -1"],
+        ["QueryCount", 2, "IntObject", "intCol < 100"],
+        ["QueryCount", 3, "IntObject", "intCol <= 100"],
+
+        ["QueryThrows", "IntObject", "intCol BEGINSWITH 1"],
+        ["QueryThrows", "IntObject", "intCol CONTAINS 1"],
+        ["QueryThrows", "IntObject", "intCol ENDSWITH 1"],
+    ]
+};
+
 module.exports = BaseTest.extend({
+    testDateQueries: function() { 
+        runQuerySuite(dateTests);
+    },
     testBoolQueries: function() { 
         runQuerySuite(boolTests);
+    },
+    testIntQueries: function() { 
+        runQuerySuite(intTests);
     },
 });
 
@@ -593,80 +624,6 @@ module.exports = BaseTest.extend({
                                       @"Property type mismatch between float and string");
     RLMAssertThrowsWithReasonMatching([self.queryObjectClass objectsWhere:@"double1 < string1"],
                                       @"Property type mismatch between double and string");
-}
-
-- (void)testValidOperatorsInNumericComparison:(NSString *) comparisonType
-                              withProposition:(BOOL(^)(NSPredicateOperatorType)) proposition
-{
-    NSPredicateOperatorType validOps[] = {
-        NSLessThanPredicateOperatorType,
-        NSLessThanOrEqualToPredicateOperatorType,
-        NSGreaterThanPredicateOperatorType,
-        NSGreaterThanOrEqualToPredicateOperatorType,
-        NSEqualToPredicateOperatorType,
-        NSNotEqualToPredicateOperatorType
-    };
-
-    for (NSUInteger i = 0; i < sizeof(validOps) / sizeof(NSPredicateOperatorType); ++i)
-    {
-        XCTAssert(proposition(validOps[i]),
-                  @"%@ operator in %@ comparison.",
-                  [RLMPredicateUtil predicateOperatorTypeString:validOps[i]],
-                  comparisonType);
-    }
-}
-
-- (void)testValidOperatorsInNumericComparison
-{
-    [self testValidOperatorsInNumericComparison:@"integer"
-                                withProposition:[RLMPredicateUtil isEmptyIntColPredicate]];
-    [self testValidOperatorsInNumericComparison:@"float"
-                                withProposition:[RLMPredicateUtil isEmptyFloatColPredicate]];
-    [self testValidOperatorsInNumericComparison:@"double"
-                                withProposition:[RLMPredicateUtil isEmptyDoubleColPredicate]];
-    [self testValidOperatorsInNumericComparison:@"date"
-                                withProposition:[RLMPredicateUtil isEmptyDateColPredicate]];
-}
-
-- (void)testInvalidOperatorsInNumericComparison:(NSString *) comparisonType
-                                withProposition:(BOOL(^)(NSPredicateOperatorType)) proposition
-{
-    NSPredicateOperatorType invalidOps[] = {
-        NSMatchesPredicateOperatorType,
-        NSLikePredicateOperatorType,
-        NSBeginsWithPredicateOperatorType,
-        NSEndsWithPredicateOperatorType,
-        NSContainsPredicateOperatorType
-    };
-
-    for (NSUInteger i = 0; i < sizeof(invalidOps) / sizeof(NSPredicateOperatorType); ++i)
-    {
-        XCTAssertThrowsSpecificNamed(proposition(invalidOps[i]), NSException,
-                                     @"Invalid operator type",
-                                     @"%@ operator invalid in %@ comparison.",
-                                     [RLMPredicateUtil predicateOperatorTypeString:invalidOps[i]],
-                                     comparisonType);
-    }
-}
-
-- (void)testInvalidOperatorsInNumericComparison
-{
-    [self testInvalidOperatorsInNumericComparison:@"integer"
-                                  withProposition:[RLMPredicateUtil isEmptyIntColPredicate]];
-    [self testInvalidOperatorsInNumericComparison:@"float"
-                                  withProposition:[RLMPredicateUtil isEmptyFloatColPredicate]];
-    [self testInvalidOperatorsInNumericComparison:@"double"
-                                  withProposition:[RLMPredicateUtil isEmptyDoubleColPredicate]];
-    [self testInvalidOperatorsInNumericComparison:@"date"
-                                  withProposition:[RLMPredicateUtil isEmptyDateColPredicate]];
-}
-
-- (void)testCustomSelectorsInNumericComparison:(NSString *) comparisonType
-                               withProposition:(BOOL(^)()) proposition
-{
-    XCTAssertThrowsSpecificNamed(proposition(), NSException,
-                                 @"Invalid operator type",
-                                 @"Custom selector invalid in %@ comparison.", comparisonType);
 }
 
 - (void)testCustomSelectorsInNumericComparison
