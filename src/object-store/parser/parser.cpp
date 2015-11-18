@@ -288,17 +288,34 @@ template<> struct action< not_pre >
     }
 };
 
+template< typename Rule >
+struct error_message_control : pegtl::normal< Rule >
+{
+    static const std::string error_message;
+
+    template< typename Input, typename ... States >
+    static void raise( const Input & in, States && ... )
+    {
+        throw pegtl::parse_error( error_message, in );
+    }
+};
+
+template<>
+const std::string error_message_control< chars >::error_message = "Invalid characters in string constant.";
+
+template< typename Rule>
+const std::string error_message_control< Rule >::error_message = "Invalid predicate.";
+
 Predicate parse(const std::string &query)
 {
     analyze< pred >();
-    const std::string source = "user query";
 
     Predicate out_predicate(Predicate::Type::And);
 
     ParserState state;
     state.predicate_stack.push_back(&out_predicate);
 
-    pegtl::parse< must< pred, eof >, action >(query, source, state);
+    pegtl::parse< must< pred, eof >, action, error_message_control >(query, query, state);
     if (out_predicate.type == Predicate::Type::And && out_predicate.cpnd.sub_predicates.size() == 1) {
         return std::move(out_predicate.cpnd.sub_predicates.back());
     }

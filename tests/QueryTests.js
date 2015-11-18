@@ -158,7 +158,7 @@ var testCases = {
 "floatTests" : {
     "schema" : [{ 
         "name": "FloatObject",
-        "properties": [{ "name": "floatCol", "type": Realm.Types.Float }],
+        "properties": [{ "name": "floatCol", "type": Realm.Types.FLOAT }],
     }],
     "objects": [
         { "type": "FloatObject", "value": [-1.001] },
@@ -191,7 +191,7 @@ var testCases = {
 "doubleTests" : {
     "schema" : [{ 
         "name": "DoubleObject",
-        "properties": [{ "name": "doubleCol", "type": Realm.Types.Double }],
+        "properties": [{ "name": "doubleCol", "type": Realm.Types.DOUBLE }],
     }],
     "objects": [
         { "type": "DoubleObject", "value": [-1.001] },
@@ -221,16 +221,23 @@ var testCases = {
 
 "stringTests" : {
      "schema" : [{ 
-        "name": "DoubleObject",
-        "properties": [{ "name": "doubleCol", "type": Realm.Types.Double }],
+        "name": "StringObject",
+        "properties": [{ "name": "stringCol", "type": Realm.Types.STRING }],
     }],
     "objects": [
-        { "type": "DoubleObject", "value": [-1.001] },
-        { "type": "DoubleObject", "value": [0.0] },
-        { "type": "DoubleObject", "value": [100.2] },
+        { "type": "StringObject", "value": ["A"] },
+        { "type": "StringObject", "value": ["a"] },
+        { "type": "StringObject", "value": ["a"] },
+        { "type": "StringObject", "value": ["abc"] },
+        { "type": "StringObject", "value": [""] },
+        { "type": "StringObject", "value": ["\\\"\\n\\0\\r\\\\'"] },
     ],
     "tests": [
-        ["QueryCount", 1, "DoubleObject", "doubleCol == -1.001"],
+        ["QueryCount", 2, "StringObject", "stringCol == 'a'"],
+        ["QueryCount", 2, "StringObject", "stringCol == \"a\""],
+        ["QueryCount", 1, "StringObject", "stringCol == 'abc'"],
+        ["QueryCount", 1, "StringObject", "stringCol == ''"],
+        ["QueryCount", 1, "StringObject", "stringCol == \"\\\"\\n\\0\\r\\\\'\""],
     ]
 },
 
@@ -374,10 +381,13 @@ module.exports = BaseTest.extend({
         runQuerySuite(testCases.intTests);
     },
     testFloatQueries: function() { 
-        runQuerySuite(testCases.intTests);
+        runQuerySuite(testCases.floatTests);
     },
     testDoubleQueries: function() { 
-        runQuerySuite(testCases.intTests);
+        runQuerySuite(testCases.doubleTests);
+    },
+    testStringQueries: function() { 
+        runQuerySuite(testCases.stringTests);
     },
 });
 
