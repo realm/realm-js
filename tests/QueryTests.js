@@ -62,7 +62,9 @@ function runQuerySuite(suite) {
     }
 }
 
-var dateTests = {
+var testCases = {
+
+"dateTests": {
     "schema" : [{ 
         "name": "DateObject",
         "properties": [{ "name": "date", "type": Realm.Types.DATE }],
@@ -84,9 +86,9 @@ var dateTests = {
         ["QueryThrows", "DateObject", "date == 1"],
         ["QueryThrows", "DateObject", "date == $0", 1],
     ]
-};
+},
 
-var boolTests = {
+"boolTests" : {
       "schema" : [{ 
         "name": "BoolObject",
         "properties": [{ "name": "boolCol", "type": Realm.Types.BOOL }],
@@ -120,9 +122,9 @@ var boolTests = {
         ["QueryThrows", "BoolObject", "boolCol CONTAINS true"],
         ["QueryThrows", "BoolObject", "boolCol ENDSWITH true"],
     ]  
-}
+},
 
-var intTests = {
+"intTests" : {
     "schema" : [{ 
         "name": "IntObject",
         "properties": [{ "name": "intCol", "type": Realm.Types.INT }],
@@ -151,9 +153,9 @@ var intTests = {
         ["QueryThrows", "IntObject", "intCol CONTAINS 1"],
         ["QueryThrows", "IntObject", "intCol ENDSWITH 1"],
     ]
-};
+},
 
-var floatTests = {
+"floatTests" : {
     "schema" : [{ 
         "name": "FloatObject",
         "properties": [{ "name": "floatCol", "type": Realm.Types.Float }],
@@ -165,7 +167,7 @@ var floatTests = {
     ],
     "tests": [
         ["QueryCount", 1, "FloatObject", "floatCol == -1.001"],
-        ["QueryCount", 1, "FloatObject", "floatCol == 0"],
+        ["QueryCount", 1, "FloatObject", "floatCol = 0"],
         ["QueryCount", 0, "FloatObject", "1 == floatCol"],
         ["QueryCount", 2, "FloatObject", "floatCol != 0"],
         ["QueryCount", 2, "FloatObject", "floatCol > -1.001"],
@@ -181,11 +183,12 @@ var floatTests = {
         ["QueryThrows", "FloatObject", "floatCol BEGINSWITH 1"],
         ["QueryThrows", "FloatObject", "floatCol CONTAINS 1"],
         ["QueryThrows", "FloatObject", "floatCol ENDSWITH 1"],
+        //XCTAssertThrows(([[realm objects:[FloatObject className] where:@"floatCol = 3.5e+38"] count]), @"Too large to be a float");
+        //XCTAssertThrows(([[realm objects:[FloatObject className] where:@"floatCol = -3.5e+38"] count]), @"Too small to be a float");
     ]
-};
+},
 
-
-var doubleTests = {
+"doubleTests" : {
     "schema" : [{ 
         "name": "DoubleObject",
         "properties": [{ "name": "doubleCol", "type": Realm.Types.Double }],
@@ -214,24 +217,167 @@ var doubleTests = {
         ["QueryThrows", "DoubleObject", "doubleCol CONTAINS 1"],
         ["QueryThrows", "DoubleObject", "doubleCol ENDSWITH 1"],
     ]
+},
+
+"stringTests" : {
+     "schema" : [{ 
+        "name": "DoubleObject",
+        "properties": [{ "name": "doubleCol", "type": Realm.Types.Double }],
+    }],
+    "objects": [
+        { "type": "DoubleObject", "value": [-1.001] },
+        { "type": "DoubleObject", "value": [0.0] },
+        { "type": "DoubleObject", "value": [100.2] },
+    ],
+    "tests": [
+        ["QueryCount", 1, "DoubleObject", "doubleCol == -1.001"],
+    ]
+},
+
 };
 
 
+/*
+
+- (void)testStringBeginsWith
+{
+    RLMRealm *realm = [RLMRealm defaultRealm];
+
+    [realm beginWriteTransaction];
+    StringObject *so = [StringObject createInRealm:realm withValue:(@[@"abc"])];
+    [AllTypesObject createInRealm:realm withValue:@[@YES, @1, @1.0f, @1.0, @"a", [@"a" dataUsingEncoding:NSUTF8StringEncoding], NSDate.date, @YES, @1LL, @1, so]];
+    if (self.isNull) {
+        so = [StringObject createInRealm:realm withValue:@[NSNull.null]];
+        [AllTypesObject createInRealm:realm withValue:@[@YES, @1, @1.0f, @1.0, @"a", [@"a" dataUsingEncoding:NSUTF8StringEncoding], NSDate.date, @YES, @1LL, @1, so]];
+    }
+    [realm commitWriteTransaction];
+
+    XCTAssertEqual(1U, [StringObject objectsWhere:@"stringCol BEGINSWITH 'a'"].count);
+    XCTAssertEqual(1U, [StringObject objectsWhere:@"stringCol BEGINSWITH 'ab'"].count);
+    XCTAssertEqual(1U, [StringObject objectsWhere:@"stringCol BEGINSWITH 'abc'"].count);
+    XCTAssertEqual(0U, [StringObject objectsWhere:@"stringCol BEGINSWITH 'abcd'"].count);
+    XCTAssertEqual(0U, [StringObject objectsWhere:@"stringCol BEGINSWITH 'abd'"].count);
+    XCTAssertEqual(0U, [StringObject objectsWhere:@"stringCol BEGINSWITH 'c'"].count);
+    XCTAssertEqual(0U, [StringObject objectsWhere:@"stringCol BEGINSWITH 'A'"].count);
+    XCTAssertEqual(1U, [StringObject objectsWhere:@"stringCol BEGINSWITH[c] 'a'"].count);
+    XCTAssertEqual(1U, [StringObject objectsWhere:@"stringCol BEGINSWITH[c] 'A'"].count);
+
+    XCTAssertEqual(1U, [AllTypesObject objectsWhere:@"objectCol.stringCol BEGINSWITH 'a'"].count);
+    XCTAssertEqual(0U, [AllTypesObject objectsWhere:@"objectCol.stringCol BEGINSWITH 'c'"].count);
+    XCTAssertEqual(0U, [AllTypesObject objectsWhere:@"objectCol.stringCol BEGINSWITH 'A'"].count);
+    XCTAssertEqual(1U, [AllTypesObject objectsWhere:@"objectCol.stringCol BEGINSWITH[c] 'a'"].count);
+    XCTAssertEqual(1U, [AllTypesObject objectsWhere:@"objectCol.stringCol BEGINSWITH[c] 'A'"].count);
+}
+
+- (void)testStringEndsWith
+{
+    RLMRealm *realm = [RLMRealm defaultRealm];
+
+    [realm beginWriteTransaction];
+    StringObject *so = [StringObject createInRealm:realm withValue:(@[@"abc"])];
+    [AllTypesObject createInRealm:realm withValue:@[@YES, @1, @1.0f, @1.0, @"a", [@"a" dataUsingEncoding:NSUTF8StringEncoding], NSDate.date, @YES, @1LL, @1, so]];
+    if (self.isNull) {
+        so = [StringObject createInRealm:realm withValue:@[NSNull.null]];
+        [AllTypesObject createInRealm:realm withValue:@[@YES, @1, @1.0f, @1.0, @"a", [@"a" dataUsingEncoding:NSUTF8StringEncoding], NSDate.date, @YES, @1LL, @1, so]];
+    }
+    [realm commitWriteTransaction];
+
+    XCTAssertEqual(1U, [StringObject objectsWhere:@"stringCol ENDSWITH 'c'"].count);
+    XCTAssertEqual(1U, [StringObject objectsWhere:@"stringCol ENDSWITH 'bc'"].count);
+    XCTAssertEqual(1U, [StringObject objectsWhere:@"stringCol ENDSWITH 'abc'"].count);
+    XCTAssertEqual(0U, [StringObject objectsWhere:@"stringCol ENDSWITH 'aabc'"].count);
+    XCTAssertEqual(0U, [StringObject objectsWhere:@"stringCol ENDSWITH 'bbc'"].count);
+    XCTAssertEqual(0U, [StringObject objectsWhere:@"stringCol ENDSWITH 'a'"].count);
+    XCTAssertEqual(0U, [StringObject objectsWhere:@"stringCol ENDSWITH 'C'"].count);
+    XCTAssertEqual(1U, [StringObject objectsWhere:@"stringCol ENDSWITH[c] 'c'"].count);
+    XCTAssertEqual(1U, [StringObject objectsWhere:@"stringCol ENDSWITH[c] 'C'"].count);
+
+    XCTAssertEqual(1U, [AllTypesObject objectsWhere:@"objectCol.stringCol ENDSWITH 'c'"].count);
+    XCTAssertEqual(0U, [AllTypesObject objectsWhere:@"objectCol.stringCol ENDSWITH 'a'"].count);
+    XCTAssertEqual(0U, [AllTypesObject objectsWhere:@"objectCol.stringCol ENDSWITH 'C'"].count);
+    XCTAssertEqual(1U, [AllTypesObject objectsWhere:@"objectCol.stringCol ENDSWITH[c] 'c'"].count);
+    XCTAssertEqual(1U, [AllTypesObject objectsWhere:@"objectCol.stringCol ENDSWITH[c] 'C'"].count);
+}
+
+- (void)testStringContains
+{
+    RLMRealm *realm = [RLMRealm defaultRealm];
+
+    [realm beginWriteTransaction];
+    StringObject *so = [StringObject createInRealm:realm withValue:(@[@"abc"])];
+    [AllTypesObject createInRealm:realm withValue:@[@YES, @1, @1.0f, @1.0, @"a", [@"a" dataUsingEncoding:NSUTF8StringEncoding], NSDate.date, @YES, @1LL, @1, so]];
+    if (self.isNull) {
+        so = [StringObject createInRealm:realm withValue:@[NSNull.null]];
+        [AllTypesObject createInRealm:realm withValue:@[@YES, @1, @1.0f, @1.0, @"a", [@"a" dataUsingEncoding:NSUTF8StringEncoding], NSDate.date, @YES, @1LL, @1, so]];
+    }
+    [realm commitWriteTransaction];
+
+    XCTAssertEqual(1U, [StringObject objectsWhere:@"stringCol CONTAINS 'a'"].count);
+    XCTAssertEqual(1U, [StringObject objectsWhere:@"stringCol CONTAINS 'b'"].count);
+    XCTAssertEqual(1U, [StringObject objectsWhere:@"stringCol CONTAINS 'c'"].count);
+    XCTAssertEqual(1U, [StringObject objectsWhere:@"stringCol CONTAINS 'ab'"].count);
+    XCTAssertEqual(1U, [StringObject objectsWhere:@"stringCol CONTAINS 'bc'"].count);
+    XCTAssertEqual(1U, [StringObject objectsWhere:@"stringCol CONTAINS 'abc'"].count);
+    XCTAssertEqual(0U, [StringObject objectsWhere:@"stringCol CONTAINS 'd'"].count);
+    XCTAssertEqual(0U, [StringObject objectsWhere:@"stringCol CONTAINS 'aabc'"].count);
+    XCTAssertEqual(0U, [StringObject objectsWhere:@"stringCol CONTAINS 'bbc'"].count);
+
+    XCTAssertEqual(0U, [StringObject objectsWhere:@"stringCol CONTAINS 'C'"].count);
+    XCTAssertEqual(1U, [StringObject objectsWhere:@"stringCol CONTAINS[c] 'c'"].count);
+    XCTAssertEqual(1U, [StringObject objectsWhere:@"stringCol CONTAINS[c] 'C'"].count);
+
+    XCTAssertEqual(0U, [AllTypesObject objectsWhere:@"objectCol.stringCol CONTAINS 'd'"].count);
+    XCTAssertEqual(1U, [AllTypesObject objectsWhere:@"objectCol.stringCol CONTAINS 'c'"].count);
+    XCTAssertEqual(0U, [AllTypesObject objectsWhere:@"objectCol.stringCol CONTAINS 'C'"].count);
+    XCTAssertEqual(1U, [AllTypesObject objectsWhere:@"objectCol.stringCol CONTAINS[c] 'c'"].count);
+    XCTAssertEqual(1U, [AllTypesObject objectsWhere:@"objectCol.stringCol CONTAINS[c] 'C'"].count);
+}
+
+- (void)testStringEquality
+{
+    RLMRealm *realm = [RLMRealm defaultRealm];
+
+    [realm beginWriteTransaction];
+    StringObject *so = [StringObject createInRealm:realm withValue:(@[@"abc"])];
+    [AllTypesObject createInRealm:realm withValue:@[@YES, @1, @1.0f, @1.0, @"a", [@"a" dataUsingEncoding:NSUTF8StringEncoding], NSDate.date, @YES, @1LL, @1, so]];
+    [realm commitWriteTransaction];
+
+    XCTAssertEqual(1U, [StringObject objectsWhere:@"stringCol == 'abc'"].count);
+    XCTAssertEqual(1U, [StringObject objectsWhere:@"stringCol != 'def'"].count);
+    XCTAssertEqual(1U, [StringObject objectsWhere:@"stringCol ==[c] 'abc'"].count);
+    XCTAssertEqual(1U, [StringObject objectsWhere:@"stringCol ==[c] 'ABC'"].count);
+
+    XCTAssertEqual(0U, [StringObject objectsWhere:@"stringCol != 'abc'"].count);
+    XCTAssertEqual(0U, [StringObject objectsWhere:@"stringCol == 'def'"].count);
+    XCTAssertEqual(0U, [StringObject objectsWhere:@"stringCol == 'ABC'"].count);
+
+    XCTAssertEqual(1U, [AllTypesObject objectsWhere:@"objectCol.stringCol == 'abc'"].count);
+    XCTAssertEqual(1U, [AllTypesObject objectsWhere:@"objectCol.stringCol != 'def'"].count);
+
+    XCTAssertEqual(1U, [AllTypesObject objectsWhere:@"objectCol.stringCol ==[c] 'abc'"].count);
+    XCTAssertEqual(1U, [AllTypesObject objectsWhere:@"objectCol.stringCol ==[c] 'ABC'"].count);
+
+    XCTAssertEqual(0U, [AllTypesObject objectsWhere:@"objectCol.stringCol != 'abc'"].count);
+    XCTAssertEqual(0U, [AllTypesObject objectsWhere:@"objectCol.stringCol == 'def'"].count);
+    XCTAssertEqual(0U, [AllTypesObject objectsWhere:@"objectCol.stringCol == 'ABC'"].count);
+}
+
+*/
 module.exports = BaseTest.extend({
     testDateQueries: function() { 
-        runQuerySuite(dateTests);
+        runQuerySuite(testCases.dateTests);
     },
     testBoolQueries: function() { 
-        runQuerySuite(boolTests);
+        runQuerySuite(testCases.boolTests);
     },
     testIntQueries: function() { 
-        runQuerySuite(intTests);
+        runQuerySuite(testCases.intTests);
     },
     testFloatQueries: function() { 
-        runQuerySuite(intTests);
+        runQuerySuite(testCases.intTests);
     },
     testDoubleQueries: function() { 
-        runQuerySuite(intTests);
+        runQuerySuite(testCases.intTests);
     },
 });
 
@@ -485,23 +631,6 @@ module.exports = BaseTest.extend({
     XCTAssertEqual(3, [[[[desc objectsWhere:@"intCol >= 2"] objectsWhere:@"intCol < 4"] firstObject] intCol]);
 }
 
-- (void)testDynamicQueryInvalidClass
-{
-    RLMRealm *realm = [RLMRealm defaultRealm];
-
-    // class not derived from RLMObject
-    XCTAssertThrows([realm objects:@"NonRealmPersonObject" where:@"age > 25"], @"invalid object type");
-    XCTAssertThrows([[realm objects:@"NonRealmPersonObject" where:@"age > 25"] sortedResultsUsingProperty:@"age" ascending:YES], @"invalid object type");
-
-    // empty string for class name
-    XCTAssertThrows([realm objects:@"" where:@"age > 25"], @"missing class name");
-    XCTAssertThrows([[realm objects:@"" where:@"age > 25"] sortedResultsUsingProperty:@"age" ascending:YES], @"missing class name");
-
-    // nil class name
-    XCTAssertThrows([realm objects:nil where:@"age > 25"], @"nil class name");
-    XCTAssertThrows([[realm objects:nil where:@"age > 25"] sortedResultsUsingProperty:@"age" ascending:YES], @"nil class name");
-}
-
 - (void)testPredicateNotSupported
 {
     // These are things which are valid predicates, but which we do not support
@@ -702,182 +831,6 @@ module.exports = BaseTest.extend({
                                       @"Property type mismatch between double and string");
 }
 
-- (void)testCustomSelectorsInNumericComparison
-{
-    BOOL (^isEmpty)();
-
-    isEmpty = [RLMPredicateUtil alwaysEmptyIntColSelectorPredicate];
-    [self testCustomSelectorsInNumericComparison:@"integer" withProposition:isEmpty];
-
-    isEmpty = [RLMPredicateUtil alwaysEmptyFloatColSelectorPredicate];
-    [self testCustomSelectorsInNumericComparison:@"float" withProposition:isEmpty];
-
-    isEmpty = [RLMPredicateUtil alwaysEmptyDoubleColSelectorPredicate];
-    [self testCustomSelectorsInNumericComparison:@"double" withProposition:isEmpty];
-
-    isEmpty = [RLMPredicateUtil alwaysEmptyDateColSelectorPredicate];
-    [self testCustomSelectorsInNumericComparison:@"date" withProposition:isEmpty];
-}
-
-- (void)testBooleanPredicate
-{
-    XCTAssertEqual([BoolObject objectsWhere:@"boolCol == TRUE"].count,
-                   0U, @"== operator in bool predicate.");
-    XCTAssertEqual([BoolObject objectsWhere:@"boolCol != TRUE"].count,
-                   0U, @"== operator in bool predicate.");
-    if (self.isNull) {
-        XCTAssertEqual([BoolObject objectsWhere:@"boolCol == NULL"].count,
-                       0U, @"== operator in bool predicate.");
-        XCTAssertEqual([BoolObject objectsWhere:@"boolCol != NULL"].count,
-                       0U, @"== operator in bool predicate.");
-    }
-    else {
-        XCTAssertThrows([BoolObject objectsWhere:@"boolCol == NULL"]);
-        XCTAssertThrows([BoolObject objectsWhere:@"boolCol != NULL"]);
-    }
-
-    XCTAssertThrowsSpecificNamed([BoolObject objectsWhere:@"boolCol >= TRUE"],
-                                 NSException,
-                                 @"Invalid operator type",
-                                 @"Invalid operator in bool predicate.");
-}
-
-- (void)testStringBeginsWith
-{
-    RLMRealm *realm = [RLMRealm defaultRealm];
-
-    [realm beginWriteTransaction];
-    StringObject *so = [StringObject createInRealm:realm withValue:(@[@"abc"])];
-    [AllTypesObject createInRealm:realm withValue:@[@YES, @1, @1.0f, @1.0, @"a", [@"a" dataUsingEncoding:NSUTF8StringEncoding], NSDate.date, @YES, @1LL, @1, so]];
-    if (self.isNull) {
-        so = [StringObject createInRealm:realm withValue:@[NSNull.null]];
-        [AllTypesObject createInRealm:realm withValue:@[@YES, @1, @1.0f, @1.0, @"a", [@"a" dataUsingEncoding:NSUTF8StringEncoding], NSDate.date, @YES, @1LL, @1, so]];
-    }
-    [realm commitWriteTransaction];
-
-    XCTAssertEqual(1U, [StringObject objectsWhere:@"stringCol BEGINSWITH 'a'"].count);
-    XCTAssertEqual(1U, [StringObject objectsWhere:@"stringCol BEGINSWITH 'ab'"].count);
-    XCTAssertEqual(1U, [StringObject objectsWhere:@"stringCol BEGINSWITH 'abc'"].count);
-    XCTAssertEqual(0U, [StringObject objectsWhere:@"stringCol BEGINSWITH 'abcd'"].count);
-    XCTAssertEqual(0U, [StringObject objectsWhere:@"stringCol BEGINSWITH 'abd'"].count);
-    XCTAssertEqual(0U, [StringObject objectsWhere:@"stringCol BEGINSWITH 'c'"].count);
-    XCTAssertEqual(0U, [StringObject objectsWhere:@"stringCol BEGINSWITH 'A'"].count);
-    XCTAssertEqual(1U, [StringObject objectsWhere:@"stringCol BEGINSWITH[c] 'a'"].count);
-    XCTAssertEqual(1U, [StringObject objectsWhere:@"stringCol BEGINSWITH[c] 'A'"].count);
-
-    XCTAssertEqual(1U, [AllTypesObject objectsWhere:@"objectCol.stringCol BEGINSWITH 'a'"].count);
-    XCTAssertEqual(0U, [AllTypesObject objectsWhere:@"objectCol.stringCol BEGINSWITH 'c'"].count);
-    XCTAssertEqual(0U, [AllTypesObject objectsWhere:@"objectCol.stringCol BEGINSWITH 'A'"].count);
-    XCTAssertEqual(1U, [AllTypesObject objectsWhere:@"objectCol.stringCol BEGINSWITH[c] 'a'"].count);
-    XCTAssertEqual(1U, [AllTypesObject objectsWhere:@"objectCol.stringCol BEGINSWITH[c] 'A'"].count);
-}
-
-- (void)testStringEndsWith
-{
-    RLMRealm *realm = [RLMRealm defaultRealm];
-
-    [realm beginWriteTransaction];
-    StringObject *so = [StringObject createInRealm:realm withValue:(@[@"abc"])];
-    [AllTypesObject createInRealm:realm withValue:@[@YES, @1, @1.0f, @1.0, @"a", [@"a" dataUsingEncoding:NSUTF8StringEncoding], NSDate.date, @YES, @1LL, @1, so]];
-    if (self.isNull) {
-        so = [StringObject createInRealm:realm withValue:@[NSNull.null]];
-        [AllTypesObject createInRealm:realm withValue:@[@YES, @1, @1.0f, @1.0, @"a", [@"a" dataUsingEncoding:NSUTF8StringEncoding], NSDate.date, @YES, @1LL, @1, so]];
-    }
-    [realm commitWriteTransaction];
-
-    XCTAssertEqual(1U, [StringObject objectsWhere:@"stringCol ENDSWITH 'c'"].count);
-    XCTAssertEqual(1U, [StringObject objectsWhere:@"stringCol ENDSWITH 'bc'"].count);
-    XCTAssertEqual(1U, [StringObject objectsWhere:@"stringCol ENDSWITH 'abc'"].count);
-    XCTAssertEqual(0U, [StringObject objectsWhere:@"stringCol ENDSWITH 'aabc'"].count);
-    XCTAssertEqual(0U, [StringObject objectsWhere:@"stringCol ENDSWITH 'bbc'"].count);
-    XCTAssertEqual(0U, [StringObject objectsWhere:@"stringCol ENDSWITH 'a'"].count);
-    XCTAssertEqual(0U, [StringObject objectsWhere:@"stringCol ENDSWITH 'C'"].count);
-    XCTAssertEqual(1U, [StringObject objectsWhere:@"stringCol ENDSWITH[c] 'c'"].count);
-    XCTAssertEqual(1U, [StringObject objectsWhere:@"stringCol ENDSWITH[c] 'C'"].count);
-
-    XCTAssertEqual(1U, [AllTypesObject objectsWhere:@"objectCol.stringCol ENDSWITH 'c'"].count);
-    XCTAssertEqual(0U, [AllTypesObject objectsWhere:@"objectCol.stringCol ENDSWITH 'a'"].count);
-    XCTAssertEqual(0U, [AllTypesObject objectsWhere:@"objectCol.stringCol ENDSWITH 'C'"].count);
-    XCTAssertEqual(1U, [AllTypesObject objectsWhere:@"objectCol.stringCol ENDSWITH[c] 'c'"].count);
-    XCTAssertEqual(1U, [AllTypesObject objectsWhere:@"objectCol.stringCol ENDSWITH[c] 'C'"].count);
-}
-
-- (void)testStringContains
-{
-    RLMRealm *realm = [RLMRealm defaultRealm];
-
-    [realm beginWriteTransaction];
-    StringObject *so = [StringObject createInRealm:realm withValue:(@[@"abc"])];
-    [AllTypesObject createInRealm:realm withValue:@[@YES, @1, @1.0f, @1.0, @"a", [@"a" dataUsingEncoding:NSUTF8StringEncoding], NSDate.date, @YES, @1LL, @1, so]];
-    if (self.isNull) {
-        so = [StringObject createInRealm:realm withValue:@[NSNull.null]];
-        [AllTypesObject createInRealm:realm withValue:@[@YES, @1, @1.0f, @1.0, @"a", [@"a" dataUsingEncoding:NSUTF8StringEncoding], NSDate.date, @YES, @1LL, @1, so]];
-    }
-    [realm commitWriteTransaction];
-
-    XCTAssertEqual(1U, [StringObject objectsWhere:@"stringCol CONTAINS 'a'"].count);
-    XCTAssertEqual(1U, [StringObject objectsWhere:@"stringCol CONTAINS 'b'"].count);
-    XCTAssertEqual(1U, [StringObject objectsWhere:@"stringCol CONTAINS 'c'"].count);
-    XCTAssertEqual(1U, [StringObject objectsWhere:@"stringCol CONTAINS 'ab'"].count);
-    XCTAssertEqual(1U, [StringObject objectsWhere:@"stringCol CONTAINS 'bc'"].count);
-    XCTAssertEqual(1U, [StringObject objectsWhere:@"stringCol CONTAINS 'abc'"].count);
-    XCTAssertEqual(0U, [StringObject objectsWhere:@"stringCol CONTAINS 'd'"].count);
-    XCTAssertEqual(0U, [StringObject objectsWhere:@"stringCol CONTAINS 'aabc'"].count);
-    XCTAssertEqual(0U, [StringObject objectsWhere:@"stringCol CONTAINS 'bbc'"].count);
-
-    XCTAssertEqual(0U, [StringObject objectsWhere:@"stringCol CONTAINS 'C'"].count);
-    XCTAssertEqual(1U, [StringObject objectsWhere:@"stringCol CONTAINS[c] 'c'"].count);
-    XCTAssertEqual(1U, [StringObject objectsWhere:@"stringCol CONTAINS[c] 'C'"].count);
-
-    XCTAssertEqual(0U, [AllTypesObject objectsWhere:@"objectCol.stringCol CONTAINS 'd'"].count);
-    XCTAssertEqual(1U, [AllTypesObject objectsWhere:@"objectCol.stringCol CONTAINS 'c'"].count);
-    XCTAssertEqual(0U, [AllTypesObject objectsWhere:@"objectCol.stringCol CONTAINS 'C'"].count);
-    XCTAssertEqual(1U, [AllTypesObject objectsWhere:@"objectCol.stringCol CONTAINS[c] 'c'"].count);
-    XCTAssertEqual(1U, [AllTypesObject objectsWhere:@"objectCol.stringCol CONTAINS[c] 'C'"].count);
-}
-
-- (void)testStringEquality
-{
-    RLMRealm *realm = [RLMRealm defaultRealm];
-
-    [realm beginWriteTransaction];
-    StringObject *so = [StringObject createInRealm:realm withValue:(@[@"abc"])];
-    [AllTypesObject createInRealm:realm withValue:@[@YES, @1, @1.0f, @1.0, @"a", [@"a" dataUsingEncoding:NSUTF8StringEncoding], NSDate.date, @YES, @1LL, @1, so]];
-    [realm commitWriteTransaction];
-
-    XCTAssertEqual(1U, [StringObject objectsWhere:@"stringCol == 'abc'"].count);
-    XCTAssertEqual(1U, [StringObject objectsWhere:@"stringCol != 'def'"].count);
-    XCTAssertEqual(1U, [StringObject objectsWhere:@"stringCol ==[c] 'abc'"].count);
-    XCTAssertEqual(1U, [StringObject objectsWhere:@"stringCol ==[c] 'ABC'"].count);
-
-    XCTAssertEqual(0U, [StringObject objectsWhere:@"stringCol != 'abc'"].count);
-    XCTAssertEqual(0U, [StringObject objectsWhere:@"stringCol == 'def'"].count);
-    XCTAssertEqual(0U, [StringObject objectsWhere:@"stringCol == 'ABC'"].count);
-
-    XCTAssertEqual(1U, [AllTypesObject objectsWhere:@"objectCol.stringCol == 'abc'"].count);
-    XCTAssertEqual(1U, [AllTypesObject objectsWhere:@"objectCol.stringCol != 'def'"].count);
-
-    XCTAssertEqual(1U, [AllTypesObject objectsWhere:@"objectCol.stringCol ==[c] 'abc'"].count);
-    XCTAssertEqual(1U, [AllTypesObject objectsWhere:@"objectCol.stringCol ==[c] 'ABC'"].count);
-
-    XCTAssertEqual(0U, [AllTypesObject objectsWhere:@"objectCol.stringCol != 'abc'"].count);
-    XCTAssertEqual(0U, [AllTypesObject objectsWhere:@"objectCol.stringCol == 'def'"].count);
-    XCTAssertEqual(0U, [AllTypesObject objectsWhere:@"objectCol.stringCol == 'ABC'"].count);
-}
-
-- (void)testStringUnsupportedOperations
-{
-    XCTAssertThrows([StringObject objectsWhere:@"stringCol LIKE 'abc'"]);
-    XCTAssertThrows([StringObject objectsWhere:@"stringCol MATCHES 'abc'"]);
-    XCTAssertThrows([StringObject objectsWhere:@"stringCol BETWEEN {'a', 'b'}"]);
-    XCTAssertThrows([StringObject objectsWhere:@"stringCol < 'abc'"]);
-
-    XCTAssertThrows([AllTypesObject objectsWhere:@"objectCol.stringCol LIKE 'abc'"]);
-    XCTAssertThrows([AllTypesObject objectsWhere:@"objectCol.stringCol MATCHES 'abc'"]);
-    XCTAssertThrows([AllTypesObject objectsWhere:@"objectCol.stringCol BETWEEN {'a', 'b'}"]);
-    XCTAssertThrows([AllTypesObject objectsWhere:@"objectCol.stringCol < 'abc'"]);
-}
-
 - (void)testBinaryComparisonInPredicate
 {
     NSExpression *binary = [NSExpression expressionForConstantValue:[[NSData alloc] init]];
@@ -928,29 +881,6 @@ module.exports = BaseTest.extend({
     XCTAssertThrowsSpecificNamed([RLMPredicateUtil isEmptyIntColWithPredicate:predicate],
                                  NSException, @"Invalid predicate expressions",
                                  @"Key path in absent in an integer comparison.");
-}
-
-- (void)testFloatQuery
-{
-    RLMRealm *realm = [self realmWithTestPath];
-
-    [realm beginWriteTransaction];
-    [FloatObject createInRealm:realm withValue:@[@1.7f]];
-    [realm commitWriteTransaction];
-
-    XCTAssertEqual(([[realm objects:[FloatObject className] where:@"floatCol > 1"] count]), 1U, @"1 object expected");
-    XCTAssertEqual(([[realm objects:[FloatObject className] where:@"floatCol > %d", 1] count]), 1U, @"1 object expected");
-    XCTAssertEqual(([[realm objects:[FloatObject className] where:@"floatCol = 1.7"] count]), 1U, @"1 object expected");
-    XCTAssertEqual(([[realm objects:[FloatObject className] where:@"floatCol = %f", 1.7f] count]), 1U, @"1 object expected");
-    XCTAssertEqual(([[realm objects:[FloatObject className] where:@"floatCol > 1.0"] count]), 1U, @"1 object expected");
-    XCTAssertEqual(([[realm objects:[FloatObject className] where:@"floatCol >= 1.0"] count]), 1U, @"1 object expected");
-    XCTAssertEqual(([[realm objects:[FloatObject className] where:@"floatCol < 1.0"] count]), 0U, @"0 objects expected");
-    XCTAssertEqual(([[realm objects:[FloatObject className] where:@"floatCol <= 1.0"] count]), 0U, @"0 objects expected");
-    XCTAssertEqual(([[realm objects:[FloatObject className] where:@"floatCol BETWEEN %@", @[@1.0, @2.0]] count]), 1U, @"1 object expected");
-    XCTAssertEqual(([[realm objects:[FloatObject className] where:@"floatCol = %e", 1.7] count]), 1U, @"1 object expected");
-    XCTAssertEqual(([[realm objects:[FloatObject className] where:@"floatCol == %f", FLT_MAX] count]), 0U, @"0 objects expected");
-    XCTAssertThrows(([[realm objects:[FloatObject className] where:@"floatCol = 3.5e+38"] count]), @"Too large to be a float");
-    XCTAssertThrows(([[realm objects:[FloatObject className] where:@"floatCol = -3.5e+38"] count]), @"Too small to be a float");
 }
 
 - (void)testLiveQueriesInsideTransaction
