@@ -98,9 +98,9 @@ var boolTests = {
     ],
     "tests": [
         ["QueryCount", 2, "BoolObject", "boolCol == true"],
-        ["QueryCount", 2, "BoolObject", "true == boolCol"],
+        ["QueryCount", 1, "BoolObject", "boolCol==false"],
         ["QueryCount", 1, "BoolObject", "boolCol != true"],
-        ["QueryCount", 1, "BoolObject", "boolCol == false"],
+        ["QueryCount", 2, "BoolObject", "true == boolCol"],
         ["QueryCount", 2, "BoolObject", "boolCol == TRUE"],
         ["QueryCount", 1, "BoolObject", "boolCol == FALSE"],
         ["QueryCount", 2, "BoolObject", "boolCol == $0", true],
@@ -134,7 +134,7 @@ var intTests = {
     ],
     "tests": [
         ["QueryCount", 1, "IntObject", "intCol == -1"],
-        ["QueryCount", 1, "IntObject", "intCol == 0"],
+        ["QueryCount", 1, "IntObject", "intCol==0"],
         ["QueryCount", 0, "IntObject", "1 == intCol"],
         ["QueryCount", 2, "IntObject", "intCol != 0"],
         ["QueryCount", 2, "IntObject", "intCol > -1"],
@@ -153,6 +153,70 @@ var intTests = {
     ]
 };
 
+var floatTests = {
+    "schema" : [{ 
+        "name": "FloatObject",
+        "properties": [{ "name": "floatCol", "type": Realm.Types.Float }],
+    }],
+    "objects": [
+        { "type": "FloatObject", "value": [-1.001] },
+        { "type": "FloatObject", "value": [0.0] },
+        { "type": "FloatObject", "value": [100.2] },
+    ],
+    "tests": [
+        ["QueryCount", 1, "FloatObject", "floatCol == -1.001"],
+        ["QueryCount", 1, "FloatObject", "floatCol == 0"],
+        ["QueryCount", 0, "FloatObject", "1 == floatCol"],
+        ["QueryCount", 2, "FloatObject", "floatCol != 0"],
+        ["QueryCount", 2, "FloatObject", "floatCol > -1.001"],
+        ["QueryCount", 3, "FloatObject", "floatCol >= -1.001"],
+        ["QueryCount", 2, "FloatObject", "floatCol < 100.2"],
+        ["QueryCount", 3, "FloatObject", "floatCol <= 100.2"],
+        ["QueryCount", 1, "FloatObject", "floatCol > 0x1F"],
+        ["QueryCount", 1, "FloatObject", "floatCol == $0", 100.2],
+
+        ["QueryThrows", "FloatObject", "floatCol == 'not a float'"],
+        ["QueryThrows", "FloatObject", "floatCol == true"],
+        ["QueryThrows", "FloatObject", "floatCol == $0", "not a float"],
+        ["QueryThrows", "FloatObject", "floatCol BEGINSWITH 1"],
+        ["QueryThrows", "FloatObject", "floatCol CONTAINS 1"],
+        ["QueryThrows", "FloatObject", "floatCol ENDSWITH 1"],
+    ]
+};
+
+
+var doubleTests = {
+    "schema" : [{ 
+        "name": "DoubleObject",
+        "properties": [{ "name": "doubleCol", "type": Realm.Types.Double }],
+    }],
+    "objects": [
+        { "type": "DoubleObject", "value": [-1.001] },
+        { "type": "DoubleObject", "value": [0.0] },
+        { "type": "DoubleObject", "value": [100.2] },
+    ],
+    "tests": [
+        ["QueryCount", 1, "DoubleObject", "doubleCol == -1.001"],
+        ["QueryCount", 1, "DoubleObject", "doubleCol == 0"],
+        ["QueryCount", 0, "DoubleObject", "1 == doubleCol"],
+        ["QueryCount", 2, "DoubleObject", "doubleCol != 0"],
+        ["QueryCount", 2, "DoubleObject", "doubleCol > -1.001"],
+        ["QueryCount", 3, "DoubleObject", "doubleCol >= -1.001"],
+        ["QueryCount", 2, "DoubleObject", "doubleCol < 100.2"],
+        ["QueryCount", 3, "DoubleObject", "doubleCol <= 100.2"],
+        ["QueryCount", 1, "DoubleObject", "doubleCol > 0x1F"],
+        ["QueryCount", 1, "DoubleObject", "doubleCol == $0", 100.2],
+
+        ["QueryThrows", "DoubleObject", "doubleCol == 'not a double'"],
+        ["QueryThrows", "DoubleObject", "doubleCol == true"],
+        ["QueryThrows", "DoubleObject", "doubleCol == $0", "not a double"],
+        ["QueryThrows", "DoubleObject", "doubleCol BEGINSWITH 1"],
+        ["QueryThrows", "DoubleObject", "doubleCol CONTAINS 1"],
+        ["QueryThrows", "DoubleObject", "doubleCol ENDSWITH 1"],
+    ]
+};
+
+
 module.exports = BaseTest.extend({
     testDateQueries: function() { 
         runQuerySuite(dateTests);
@@ -161,6 +225,12 @@ module.exports = BaseTest.extend({
         runQuerySuite(boolTests);
     },
     testIntQueries: function() { 
+        runQuerySuite(intTests);
+    },
+    testFloatQueries: function() { 
+        runQuerySuite(intTests);
+    },
+    testDoubleQueries: function() { 
         runQuerySuite(intTests);
     },
 });
