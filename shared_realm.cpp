@@ -382,10 +382,6 @@ void Realm::close()
         m_notifier->remove_realm(this);
     }
 
-    if (m_group) {
-        m_shared_group->end_read();
-    }
-
     m_group = nullptr;
     m_shared_group = nullptr;
     m_history = nullptr;

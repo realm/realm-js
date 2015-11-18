@@ -297,6 +297,27 @@ namespace realm {
         }
         return object;
     }
+
+    //
+    // List implementation
+    //
+    template<typename ValueType, typename ContextType>
+    void List::add(ContextType ctx, ValueType value)
+    {
+        add(NativeAccessor<ValueType, ContextType>::to_object_index(ctx, m_realm, value, object_schema.name, false));
+    }
+
+    template<typename ValueType, typename ContextType>
+    void List::insert(ContextType ctx, ValueType value, size_t list_ndx)
+    {
+        insert(list_ndx, NativeAccessor<ValueType, ContextType>::to_object_index(ctx, m_realm, value, object_schema.name, false));
+    }
+
+    template<typename ValueType, typename ContextType>
+    void List::set(ContextType ctx, ValueType value, size_t list_ndx)
+    {
+        set(list_ndx, NativeAccessor<ValueType, ContextType>::to_object_index(ctx, m_realm, value, object_schema.name, false));
+    }
 }
 
 #endif /* defined(REALM_OBJECT_ACCESSOR_HPP) */

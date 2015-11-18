@@ -197,12 +197,6 @@ namespace realm {
       public:
         UnitializedRealmException(std::string message) : std::runtime_error(message) {}
     };
-
-    class ClosedRealmException : public std::runtime_error
-    {
-      public:
-        ClosedRealmException(std::string message) : std::runtime_error(message) {}
-    };
 }
 
 #endif /* defined(REALM_REALM_HPP) */
