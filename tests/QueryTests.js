@@ -13,40 +13,52 @@ var schemas = require('./schemas');
 var typeConverters = {};
 typeConverters[Realm.Types.DATE] = function(value) { return new Date(value); };
 
-function TestQueryCount(count, realm, type, query /*, queryArgs */) {
-    var results = realm.objects.apply(realm, Array.prototype.slice.call(arguments, 2));
-    TestCase.assertEqual(count, results.length, "Query '" + query + "' on type '" + type + "' expected " + count + " results, got " + results.length);
-}
-
-function RunQuerySuite(suite) {
+function runQuerySuite(suite) {
     var realm = new Realm({schema: suite.schema});
-    realm.write(function() {
-        for(var obj of suite.objects) {
-            var objSchema = suite.schema.find(function(el) { return el.name == obj.type });
-            if (!objSchema) {
-                throw "Object schema '" + obj.type + "' not found in test suite.";
-            }
+    var objects = suite.objects.map(function(obj) {
+        var objSchema = suite.schema.find(function(el) { return el.name == obj.type });
+        if (!objSchema) {
+            throw "Object schema '" + obj.type + "' not found in test suite.";
+        }
 
-            var converted = [];
-            for(var i in obj.value) {
-                var converter = typeConverters[objSchema.properties[i].type];
-                converted.push(converter ? converter(obj.value[i]) : obj.value[i]);
-            }
-            obj.value = converted;
-            realm.create(obj.type, converted);
+        var converted = obj.value.map(function(propValue, index) {
+            var converter = typeConverters[objSchema.properties[index].type];
+            return converter ? converter(obj.value[index]) : obj.value[index];
+        });
+
+        return { type: obj.type, value: converted };
+    });    
+
+    realm.write(function() {
+        for (var obj of objects) {
+            realm.create(obj.type, obj.value);
         }
     });
 
-    for(var test of suite.tests) {
-        var args = test.slice(0, 3);
-        args.splice(1, 0, realm);
-        for(var i = 3; i < test.length; i++) {
-            var arg = test[i];
-            if (Array.isArray(arg)) {
-                args.push(suite.objects[arg[0]].value[arg[1]]);
+    for (var test of suite.tests) {
+        if (test[0] == "QueryCount") {
+            var args = test.slice(2, 4);
+            for (var i = 4; i < test.length; i++) {
+                var arg = test[i];
+                if (Array.isArray(arg)) {
+                    args.push(objects[arg[0]].value[arg[1]]);
+                }
+                else {
+                    args.push(arg);
+                }
             }
+
+            var results = realm.objects.apply(realm, args);
+            TestCase.assertEqual(test[1], results.length, "Query '" + args[1] + "' on type '" + args[0] + "' expected " + test[1] + " results, got " + results.length);
         }
-        TestQueryCount.apply(undefined, args);
+        else if (test[0] == "QueryThrows") {
+            TestCase.assertThrows(function() {
+                realm.objects.apply(realm, test.slice(1));
+            });
+        }
+        else {
+            throw "Invalid query test '" + test[0] + "'";
+        }
     }
 }
 
@@ -61,20 +73,61 @@ var dateTests = {
         { "type": "DateObject", "value": [10002] },
     ],
     "tests": [
-        [2, "DateObject", "date <  $0", [2, 0]],
-        [3, "DateObject", "date <= $0", [2, 0]],
-        [2, "DateObject", "date >  $0", [0, 0]],
-        [3, "DateObject", "date >= $0", [0, 0]],
-        [1, "DateObject", "date == $0", [0, 0]],
-        [2, "DateObject", "date != $0", [0, 0]],
+        ["QueryCount", 2, "DateObject", "date <  $0", [2, 0]],
+        ["QueryCount", 3, "DateObject", "date <= $0", [2, 0]],
+        ["QueryCount", 2, "DateObject", "date >  $0", [0, 0]],
+        ["QueryCount", 3, "DateObject", "date >= $0", [0, 0]],
+        ["QueryCount", 1, "DateObject", "date == $0", [0, 0]],
+        ["QueryCount", 2, "DateObject", "date != $0", [0, 0]],
     ]
 };
 
 module.exports = BaseTest.extend({
     testDateQueries: function() { 
-        RunQuerySuite(dateTests);
+        runQuerySuite(dateTests);
     },
 });
+
+var boolTests = {
+      "schema" : [{ 
+        "name": "BoolObject",
+        "properties": [{ "name": "bool", "type": Realm.Types.BOOL }],
+    }],
+    "objects": [
+        { "type": "BoolObject", "value": [false] },
+        { "type": "BoolObject", "value": [true] },
+        { "type": "BoolObject", "value": [true] },
+    ],
+    "tests": [
+        ["QueryCount", 2, "BoolObject", "bool == true"],
+        ["QueryCount", 1, "BoolObject", "bool != true"],
+        ["QueryCount", 1, "BoolObject", "bool == false"],
+        ["QueryCount", 2, "BoolObject", "bool == TRUE"],
+        ["QueryCount", 1, "BoolObject", "bool == FALSE"],
+        ["QueryCount", 2, "BoolObject", "bool == $0", true],
+        ["QueryCount", 1, "BoolObject", "bool == $0", false],
+        ["QueryCount", 0, "BoolObject", "bool == true && bool == false"],
+        ["QueryCount", 3, "BoolObject", "bool == true || bool == false"],
+
+        ["QueryThrows", "BoolObject", "bool == 0"],
+        ["QueryThrows", "BoolObject", "bool == 1"],
+        ["QueryThrows", "BoolObject", "bool == 'not a bool'"],
+        ["QueryThrows", "BoolObject", "bool >  true"],
+        ["QueryThrows", "BoolObject", "bool >= true"],
+        ["QueryThrows", "BoolObject", "bool <  true"],
+        ["QueryThrows", "BoolObject", "bool <= true"],
+        ["QueryThrows", "BoolObject", "bool BEGINSWITH true"],
+        ["QueryThrows", "BoolObject", "bool CONTAINS true"],
+        ["QueryThrows", "BoolObject", "bool ENDSWITH true"],
+    ]  
+}
+
+module.exports = BaseTest.extend({
+    testBoolQueries: function() { 
+        runQuerySuite(boolTests);
+    },
+});
+
 
 /*
 -(void)testQueryBetween
@@ -340,33 +393,6 @@ module.exports = BaseTest.extend({
     // nil class name
     XCTAssertThrows([realm objects:nil where:@"age > 25"], @"nil class name");
     XCTAssertThrows([[realm objects:nil where:@"age > 25"] sortedResultsUsingProperty:@"age" ascending:YES], @"nil class name");
-}
-
-- (void)testPredicateValidUse
-{
-    RLMRealm *realm = [RLMRealm defaultRealm];
-
-    // boolean false
-    XCTAssertNoThrow([AllTypesObject objectsInRealm:realm where:@"boolCol == no"], @"== no");
-    XCTAssertNoThrow([AllTypesObject objectsInRealm:realm where:@"boolCol == No"], @"== No");
-    XCTAssertNoThrow([AllTypesObject objectsInRealm:realm where:@"boolCol == NO"], @"== NO");
-    XCTAssertNoThrow([AllTypesObject objectsInRealm:realm where:@"boolCol == false"], @"== false");
-    XCTAssertNoThrow([AllTypesObject objectsInRealm:realm where:@"boolCol == False"], @"== False");
-    XCTAssertNoThrow([AllTypesObject objectsInRealm:realm where:@"boolCol == FALSE"], @"== FALSE");
-    XCTAssertNoThrow([AllTypesObject objectsInRealm:realm where:@"boolCol == 0"], @"== 0");
-
-    // boolean true
-    XCTAssertNoThrow([AllTypesObject objectsInRealm:realm where:@"boolCol == yes"], @"== yes");
-    XCTAssertNoThrow([AllTypesObject objectsInRealm:realm where:@"boolCol == Yes"], @"== Yes");
-    XCTAssertNoThrow([AllTypesObject objectsInRealm:realm where:@"boolCol == YES"], @"== YES");
-    XCTAssertNoThrow([AllTypesObject objectsInRealm:realm where:@"boolCol == true"], @"== true");
-    XCTAssertNoThrow([AllTypesObject objectsInRealm:realm where:@"boolCol == True"], @"== True");
-    XCTAssertNoThrow([AllTypesObject objectsInRealm:realm where:@"boolCol == TRUE"], @"== TRUE");
-    XCTAssertNoThrow([AllTypesObject objectsInRealm:realm where:@"boolCol == 1"], @"== 1");
-
-    // inequality
-    XCTAssertNoThrow([AllTypesObject objectsInRealm:realm where:@"boolCol != YES"], @"!= YES");
-    XCTAssertNoThrow([AllTypesObject objectsInRealm:realm where:@"boolCol <> YES"], @"<> YES");
 }
 
 - (void)testPredicateNotSupported

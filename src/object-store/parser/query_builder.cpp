@@ -220,6 +220,9 @@ struct ValueGetter<bool, TableGetter> {
         if (value.type == parser::Expression::Type::Argument) {
             return args.bool_for_argument(std::stoi(value.s));
         }
+        if (value.type != parser::Expression::Type::True && value.type != parser::Expression::Type::False) {
+            throw std::runtime_error("Attempting to compare bool property to a non-bool value");
+        }
         return value.type == parser::Expression::Type::True;
     }
 };
