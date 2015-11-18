@@ -267,6 +267,9 @@ struct ValueGetter<String, TableGetter> {
         if (value.type == parser::Expression::Type::Argument) {
             return args.string_for_argument(std::stoi(value.s));
         }
+        if (value.type != parser::Expression::Type::String) {
+            throw std::runtime_error("Attempting to compare String property to a non-String value");
+        }
         return value.s;
     }
 };
