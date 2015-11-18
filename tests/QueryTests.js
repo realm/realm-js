@@ -10,37 +10,69 @@ var BaseTest = require('./base-test');
 var TestCase = require('./asserts');
 var schemas = require('./schemas');
 
+var typeConverters = {};
+typeConverters[Realm.Types.DATE] = function(value) { return new Date(value); };
+
 function TestQueryCount(count, realm, type, query /*, queryArgs */) {
     var results = realm.objects.apply(realm, Array.prototype.slice.call(arguments, 2));
     TestCase.assertEqual(count, results.length, "Query '" + query + "' on type '" + type + "' expected " + count + " results, got " + results.length);
 }
 
+function RunQuerySuite(suite) {
+    var realm = new Realm({schema: suite.schema});
+    realm.write(function() {
+        for(var obj of suite.objects) {
+            var objSchema = suite.schema.find(function(el) { return el.name == obj.type });
+            if (!objSchema) {
+                throw "Object schema '" + obj.type + "' not found in test suite.";
+            }
+
+            var converted = [];
+            for(var i in obj.value) {
+                var converter = typeConverters[objSchema.properties[i].type];
+                converted.push(converter ? converter(obj.value[i]) : obj.value[i]);
+            }
+            obj.value = converted;
+            realm.create(obj.type, converted);
+        }
+    });
+
+    for(var test of suite.tests) {
+        var args = test.slice(0, 3);
+        args.splice(1, 0, realm);
+        for(var i = 3; i < test.length; i++) {
+            var arg = test[i];
+            if (Array.isArray(arg)) {
+                args.push(suite.objects[arg[0]].value[arg[1]]);
+            }
+        }
+        TestQueryCount.apply(undefined, args);
+    }
+}
+
+var dateTests = {
+    "schema" : [{ 
+        "name": "DateObject",
+        "properties": [{ "name": "date", "type": Realm.Types.DATE }],
+    }],
+    "objects": [
+        { "type": "DateObject", "value": [10000] },
+        { "type": "DateObject", "value": [10001] },
+        { "type": "DateObject", "value": [10002] },
+    ],
+    "tests": [
+        [2, "DateObject", "date <  $0", [2, 0]],
+        [3, "DateObject", "date <= $0", [2, 0]],
+        [2, "DateObject", "date >  $0", [0, 0]],
+        [3, "DateObject", "date >= $0", [0, 0]],
+        [1, "DateObject", "date == $0", [0, 0]],
+        [2, "DateObject", "date != $0", [0, 0]],
+    ]
+};
+
 module.exports = BaseTest.extend({
-    testDateQueries: function() {
-        var DateObject = { 
-            name: 'DateObject',
-            properties: [
-                { name: 'date', type: Realm.Types.DATE }
-            ]
-        };
-            
-        var date1 = new Date(Date.now());
-        var date2 = new Date(date1.getTime() + 1);
-        var date3 = new Date(date1.getTime() + 2);
-
-        var realm = new Realm({schema: [DateObject]});
-        realm.write(function() {
-            realm.create('DateObject', { date: date1 });
-            realm.create('DateObject', { date: date2 });
-            realm.create('DateObject', { date: date3 });
-        });
-
-        TestQueryCount(2, realm, 'DateObject', "date <  $0", date3);
-        TestQueryCount(3, realm, 'DateObject', "date <= $0", date3);
-        TestQueryCount(2, realm, 'DateObject', "date >  $0", date1);
-        TestQueryCount(3, realm, 'DateObject', "date >= $0", date1);
-        TestQueryCount(1, realm, 'DateObject', "date == $0", date1);
-        TestQueryCount(2, realm, 'DateObject', "date != $0", date1);
+    testDateQueries: function() { 
+        RunQuerySuite(dateTests);
     },
 });
 
@@ -84,28 +116,6 @@ module.exports = BaseTest.extend({
     XCTAssertEqual(betweenResults.count, 2U, @"Should equal 2");
 }
 
-- (void)testDefaultRealmQuery
-{
-    RLMRealm *realm = [RLMRealm defaultRealm];
-
-    [realm beginWriteTransaction];
-    [PersonObject createInRealm:realm withValue:@[@"Fiel", @27]];
-    [PersonObject createInRealm:realm withValue:@[@"Tim", @29]];
-    [PersonObject createInRealm:realm withValue:@[@"Ari", @33]];
-    [realm commitWriteTransaction];
-
-    // query on class
-    RLMResults *all = [PersonObject allObjects];
-    XCTAssertEqual(all.count, 3U, @"Expecting 3 results");
-
-    RLMResults *results = [PersonObject objectsWhere:@"age == 27"];
-    XCTAssertEqual(results.count, 1U, @"Expecting 1 results");
-
-    // with order
-    results = [[PersonObject objectsWhere:@"age > 28"] sortedResultsUsingProperty:@"age" ascending:YES];
-    PersonObject *tim = results[0];
-    XCTAssertEqualObjects(tim.name, @"Tim", @"Tim should be first results");
-}
 
 - (void)testArrayQuery
 {
