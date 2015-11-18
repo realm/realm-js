@@ -52,9 +52,10 @@ function runQuerySuite(suite) {
             TestCase.assertEqual(test[1], results.length, "Query '" + args[1] + "' on type '" + args[0] + "' expected " + test[1] + " results, got " + results.length);
         }
         else if (test[0] == "QueryThrows") {
+            var args = test.slice(1);
             TestCase.assertThrows(function() {
-                realm.objects.apply(realm, test.slice(1));
-            });
+                realm.objects.apply(realm, args);
+            }, "Expected exception not thrown for query: " + JSON.stringify(args));
         }
         else {
             throw "Invalid query test '" + test[0] + "'";
@@ -253,6 +254,12 @@ var testCases = {
         ["QueryCount", 1, "StringObject", "stringCol CONTAINS 'b'"],
         ["QueryCount", 2, "StringObject", "stringCol contains 'c'"],
         ["QueryCount", 9, "StringObject", "stringCol CONTAINS ''"],
+        ["QueryCount", 2, "StringObject", "stringCol == $0", "a"],
+        ["QueryCount", 2, "StringObject", "stringCol ENDSWITH $0", "c"],
+
+        ["QueryThrows", "StringObject", "stringCol == true"],
+        ["QueryThrows", "StringObject", "stringCol == 123"],
+        ["QueryThrows", "StringObject", "stringCol CONTAINS $0", 1],
 
         // ["QueryCount", 3, "StringObject", "stringCol ==[c] 'a'"],
         // ["QueryCount", 5, "StringObject", "stringCol BEGINSWITH[c] 'A'"],
