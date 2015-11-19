@@ -50,35 +50,35 @@ static inline Property RJSParseProperty(JSContextRef ctx, JSObjectRef propertyOb
     }
 
     std::string type = RJSValidatedStringProperty(ctx, propertyObject, typeString);
-    if (type == "PropTypesBOOL") {
+    if (type == "bool") {
         prop.type = PropertyTypeBool;
     }
-    else if (type == "PropTypesINT") {
+    else if (type == "int") {
         prop.type = PropertyTypeInt;
     }
-    else if (type == "PropTypesFLOAT") {
+    else if (type == "float") {
         prop.type = PropertyTypeFloat;
     }
-    else if (type == "PropTypesDOUBLE") {
+    else if (type == "double") {
         prop.type = PropertyTypeDouble;
     }
-    else if (type == "PropTypesSTRING") {
+    else if (type == "string") {
         prop.type = PropertyTypeString;
     }
-    else if (type == "PropTypesDATE") {
+    else if (type == "date") {
         prop.type = PropertyTypeDate;
     }
-    else if (type == "PropTypesDATA") {
+    else if (type == "data") {
         prop.type = PropertyTypeData;
     }
-    else if (type == "PropTypesLIST") {
+    else if (type == "list") {
         prop.type = PropertyTypeArray;
         prop.object_type =  RJSValidatedStringProperty(ctx, propertyObject, objectTypeString);
     }
     else {
         prop.type = PropertyTypeObject;
         prop.is_nullable = true;
-        prop.object_type = type == "PropTypesOBJECT" ? RJSValidatedStringProperty(ctx, propertyObject, objectTypeString) : type;
+        prop.object_type = type == "object" ? RJSValidatedStringProperty(ctx, propertyObject, objectTypeString) : type;
     }
     return prop;
 }

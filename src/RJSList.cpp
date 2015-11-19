@@ -10,24 +10,10 @@
 using RJSAccessor = realm::NativeAccessor<JSValueRef, JSContextRef>;
 using namespace realm;
 
-static inline List * RJSVerifiedList(JSObjectRef object) {
-    List *list = RJSGetInternal<List *>(object);
-    list->verify_attached();
-    return list;
-}
-
-static inline List * RJSVerifiedMutableList(JSObjectRef object) {
-    List *list = RJSVerifiedList(object);
-    if (!list->realm()->is_in_transaction()) {
-        throw std::runtime_error("Can only mutate lists within a transaction.");
-    }
-    return list;
-}
-
 JSValueRef ListGetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef* jsException) {
     try {
         // index subscripting
-        List *list = RJSVerifiedList(object);
+        List *list = RJSGetInternal<List *>(object);
         size_t size = list->size();
 
         std::string indexStr = RJSStringForJSString(propertyName);
@@ -55,13 +41,13 @@ JSValueRef ListGetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef pro
 
 bool ListSetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef value, JSValueRef* jsException) {
     try {
-        List *list = RJSVerifiedMutableList(object);
+        List *list = RJSGetInternal<List *>(object);
         std::string indexStr = RJSStringForJSString(propertyName);
         if (indexStr == "length") {
             throw std::runtime_error("The 'length' property is readonly.");
         }
 
-        list->set(RJSValidatedPositiveIndex(indexStr), RJSAccessor::to_object_index(ctx, list->realm(), const_cast<JSValueRef &>(value), list->object_schema.name, false));
+        list->set(ctx, value, RJSValidatedPositiveIndex(indexStr));
         return true;
     }
     catch (std::invalid_argument &exp) {
@@ -77,7 +63,7 @@ bool ListSetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef propertyN
 }
 
 void ListPropertyNames(JSContextRef ctx, JSObjectRef object, JSPropertyNameAccumulatorRef propertyNames) {
-    List *list = RJSVerifiedList(object);
+    List *list = RJSGetInternal<List *>(object);
     size_t size = list->size();
     
     char str[32];
@@ -91,12 +77,12 @@ void ListPropertyNames(JSContextRef ctx, JSObjectRef object, JSPropertyNameAccum
 
 JSValueRef ListPush(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) {
     try {
-        List *array = RJSVerifiedMutableList(thisObject);
+        List *list = RJSGetInternal<List *>(thisObject);
         RJSValidateArgumentCountIsAtLeast(argumentCount, 1);
         for (size_t i = 0; i < argumentCount; i++) {
-            array->link_view()->add(RJSAccessor::to_object_index(ctx, array->realm(), const_cast<JSValueRef &>(arguments[i]), array->object_schema.name, false));
+            list->add(ctx, arguments[i]);
         }
-        return JSValueMakeNumber(ctx, array->link_view()->size());
+        return JSValueMakeNumber(ctx, list->size());
     }
     catch (std::exception &exp) {
         if (jsException) {
@@ -108,16 +94,17 @@ JSValueRef ListPush(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObje
 
 JSValueRef ListPop(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) {
     try {
-        List *list = RJSVerifiedMutableList(thisObject);
+        List *list = RJSGetInternal<List *>(thisObject);
         RJSValidateArgumentCount(argumentCount, 0);
 
         size_t size = list->size();
         if (size == 0) {
+            list->verify_in_tranaction();
             return JSValueMakeUndefined(ctx);
         }
         size_t index = size - 1;
         JSValueRef obj = RJSObjectCreate(ctx, Object(list->realm(), list->object_schema, list->get(index)));
-        list->link_view()->remove(index);
+        list->remove(index);
         return obj;
     }
     catch (std::exception &exp) {
@@ -130,12 +117,12 @@ JSValueRef ListPop(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObjec
 
 JSValueRef ListUnshift(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) {
     try {
-        List *array = RJSVerifiedMutableList(thisObject);
+        List *list = RJSGetInternal<List *>(thisObject);
         RJSValidateArgumentCountIsAtLeast(argumentCount, 1);
         for (size_t i = 0; i < argumentCount; i++) {
-            array->link_view()->insert(i, RJSAccessor::to_object_index(ctx, array->realm(), const_cast<JSValueRef &>(arguments[i]), array->object_schema.name, false));
+            list->insert(ctx, arguments[i], i);
         }
-        return JSValueMakeNumber(ctx, array->link_view()->size());
+        return JSValueMakeNumber(ctx, list->size());
     }
     catch (std::exception &exp) {
         if (jsException) {
@@ -147,13 +134,14 @@ JSValueRef ListUnshift(JSContextRef ctx, JSObjectRef function, JSObjectRef thisO
 
 JSValueRef ListShift(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) {
     try {
-        List *list = RJSVerifiedMutableList(thisObject);
+        List *list = RJSGetInternal<List *>(thisObject);
         RJSValidateArgumentCount(argumentCount, 0);
         if (list->size() == 0) {
+            list->verify_in_tranaction();
             return JSValueMakeUndefined(ctx);
         }
         JSValueRef obj = RJSObjectCreate(ctx, Object(list->realm(), list->object_schema, list->get(0)));
-        list->link_view()->remove(0);
+        list->remove(0);
         return obj;
     }
     catch (std::exception &exp) {
@@ -166,7 +154,7 @@ JSValueRef ListShift(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObj
 
 JSValueRef ListSplice(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) {
     try {
-        List *list = RJSVerifiedMutableList(thisObject);
+        List *list = RJSGetInternal<List *>(thisObject);
         size_t size = list->size();
 
         RJSValidateArgumentCountIsAtLeast(argumentCount, 2);
@@ -181,10 +169,10 @@ JSValueRef ListSplice(JSContextRef ctx, JSObjectRef function, JSObjectRef thisOb
         std::vector<JSObjectRef> removedObjects(remove);
         for (size_t i = 0; i < remove; i++) {
             removedObjects[i] = RJSObjectCreate(ctx, Object(list->realm(), list->object_schema, list->get(index)));
-            list->link_view()->remove(index);
+            list->remove(index);
         }
         for (size_t i = 2; i < argumentCount; i++) {
-            list->link_view()->insert(index + i - 2, RJSAccessor::to_object_index(ctx, list->realm(), const_cast<JSValueRef &>(arguments[i]), list->object_schema.name, false));
+            list->insert(ctx, arguments[i], index + i - 2);
         }
         return JSObjectMakeArray(ctx, remove, removedObjects.data(), jsException);
     }

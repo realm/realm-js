@@ -42,7 +42,6 @@ JSClassRef RJSCreateWrapperClass(const char * name, JSObjectGetPropertyCallback 
 }
 
 std::string RJSTypeGet(realm::PropertyType propertyType);
-std::string RJSTypeGet(std::string typeString);
 
 std::string RJSStringForJSString(JSStringRef jsString);
 std::string RJSStringForValue(JSContextRef ctx, JSValueRef value);

@@ -9,9 +9,12 @@
 #import "RJSSchema.hpp"
 
 #include "shared_realm.hpp"
+#include <algorithm>
 
 JSValueRef RJSTypeGet(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef* exception) {
-    return RJSValueForString(ctx, RJSTypeGet(RJSStringForJSString(propertyName)));
+    std::string str = RJSStringForJSString(propertyName);
+    std::transform(str.begin(), str.end(), str.begin(), ::tolower);
+    return RJSValueForString(ctx, str);
 }
 
 JSClassRef RJSRealmTypeClass() {

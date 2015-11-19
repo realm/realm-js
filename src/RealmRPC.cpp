@@ -228,7 +228,7 @@ json RPCServer::serialize_json_value(JSValueRef value) {
         return {
             {"type", RJSTypeGet(realm::PropertyTypeArray)},
             {"id", store_object(js_object)},
-            {"size", list->link_view()->size()},
+            {"size", list->size()},
             {"schema", serialize_object_schema(list->object_schema)}
          };
     }
