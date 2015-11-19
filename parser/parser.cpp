@@ -308,8 +308,6 @@ const std::string error_message_control< Rule >::error_message = "Invalid predic
 
 Predicate parse(const std::string &query)
 {
-    analyze< pred >();
-
     Predicate out_predicate(Predicate::Type::And);
 
     ParserState state;
