@@ -55,6 +55,7 @@
 		029445981BDEDF46006D1617 /* external_commit_helper.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 029445961BDEDF46006D1617 /* external_commit_helper.hpp */; };
 		0294465E1BF27DE6006D1617 /* query_builder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0294465C1BF27DE6006D1617 /* query_builder.cpp */; };
 		0294465F1BF27DE6006D1617 /* query_builder.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 0294465D1BF27DE6006D1617 /* query_builder.hpp */; };
+		02AAAEF01BFE72F2002DD081 /* queryTests.json in Resources */ = {isa = PBXBuildFile; fileRef = 02AAAEEF1BFE72F2002DD081 /* queryTests.json */; };
 		02B29A311B7CF86D008A7E6B /* RealmJS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 02B58CB11AE99CEC009B348C /* RealmJS.framework */; };
 		02B58CCE1AE99D4D009B348C /* JavaScriptCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 02B58CCD1AE99D4D009B348C /* JavaScriptCore.framework */; };
 		02C0864E1BCDB27000942F9C /* list.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02C0864C1BCDB27000942F9C /* list.cpp */; };
@@ -206,6 +207,7 @@
 		0294465D1BF27DE6006D1617 /* query_builder.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = query_builder.hpp; path = "src/object-store/parser/query_builder.hpp"; sourceTree = "<group>"; };
 		02A3C7841BC4317A00B1A7BE /* GCDWebServer.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = GCDWebServer.xcodeproj; path = GCDWebServer/GCDWebServer.xcodeproj; sourceTree = "<group>"; };
 		02A3C7A41BC4341500B1A7BE /* libc++.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.tbd"; path = "usr/lib/libc++.tbd"; sourceTree = SDKROOT; };
+		02AAAEEF1BFE72F2002DD081 /* queryTests.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; name = queryTests.json; path = tests/queryTests.json; sourceTree = SOURCE_ROOT; };
 		02B29A161B7CF7C9008A7E6B /* RealmReact.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = RealmReact.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		02B58CB11AE99CEC009B348C /* RealmJS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = RealmJS.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		02B58CBC1AE99CEC009B348C /* RealmJSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RealmJSTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -361,6 +363,7 @@
 				02D456D91B7E59A500EE1299 /* ArrayTests.js */,
 				0270BC791B7D020100010E03 /* ObjectTests.js */,
 				02E9A9F01BFA84F100939F86 /* QueryTests.js */,
+				02AAAEEF1BFE72F2002DD081 /* queryTests.json */,
 				0270BC7C1B7D020100010E03 /* RealmTests.js */,
 				0270BC7D1B7D020100010E03 /* ResultsTests.js */,
 				0270BC7A1B7D020100010E03 /* RealmJSTests.h */,
@@ -623,6 +626,7 @@
 				0270BC861B7D020100010E03 /* schemas.js in Resources */,
 				F6F405F81BCF0C1A00A1E24F /* base-test.js in Resources */,
 				F68A278E1BC30F0A0063D40A /* index.js in Resources */,
+				02AAAEF01BFE72F2002DD081 /* queryTests.json in Resources */,
 				0270BC831B7D020100010E03 /* RealmTests.js in Resources */,
 				0270BC841B7D020100010E03 /* ResultsTests.js in Resources */,
 			);
