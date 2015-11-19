@@ -31,8 +31,8 @@ namespace realm {
         SharedRealm realm() { return m_realm; }
 
         size_t size();
-        Row get(std::size_t row_ndx);
-        void set(std::size_t row_ndx, std::size_t target_row_ndx);
+        Row get(size_t row_ndx);
+        void set(size_t row_ndx, size_t target_row_ndx);
 
         void add(size_t target_row_ndx);
         void remove(size_t list_ndx);
@@ -47,7 +47,7 @@ namespace realm {
         template<typename ValueType, typename ContextType>
         void set(ContextType ctx, ValueType value, size_t list_ndx);
 
-        void verify_valid_row(std::size_t row_ndx, bool insertion = false);
+        void verify_valid_row(size_t row_ndx, bool insertion = false);
         void verify_attached();
         void verify_in_tranaction();
 
