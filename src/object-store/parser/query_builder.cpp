@@ -102,42 +102,81 @@ void add_bool_constraint_to_query(Query &query, Predicate::Operator operatorType
 void add_string_constraint_to_query(Query &query,
                                     Predicate::Operator op,
                                     Columns<String> &&column,
-                                    StringData value) {
+                                    std::string value) {
     bool case_sensitive = true;
-    StringData sd = value;
     switch (op) {
         case Predicate::Operator::BeginsWith:
-            query.and_query(column.begins_with(sd, case_sensitive));
+            query.and_query(column.begins_with(value, case_sensitive));
             break;
         case Predicate::Operator::EndsWith:
-            query.and_query(column.ends_with(sd, case_sensitive));
+            query.and_query(column.ends_with(value, case_sensitive));
             break;
         case Predicate::Operator::Contains:
-            query.and_query(column.contains(sd, case_sensitive));
+            query.and_query(column.contains(value, case_sensitive));
             break;
         case Predicate::Operator::Equal:
-            query.and_query(column.equal(sd, case_sensitive));
+            query.and_query(column.equal(value, case_sensitive));
             break;
         case Predicate::Operator::NotEqual:
-            query.and_query(column.not_equal(sd, case_sensitive));
+            query.and_query(column.not_equal(value, case_sensitive));
             break;
         default:
             throw std::runtime_error("Unsupported operator for string queries.");
     }
 }
 
-void add_string_constraint_to_query(realm::Query& query,
+void add_string_constraint_to_query(realm::Query &query,
                                     Predicate::Operator op,
-                                    StringData value,
+                                    std::string value,
                                     Columns<String> &&column) {
     bool case_sensitive = true;
-    StringData sd = value;
     switch (op) {
         case Predicate::Operator::Equal:
-            query.and_query(column.equal(sd, case_sensitive));
+            query.and_query(column.equal(value, case_sensitive));
             break;
         case Predicate::Operator::NotEqual:
-            query.and_query(column.not_equal(sd, case_sensitive));
+            query.and_query(column.not_equal(value, case_sensitive));
+            break;
+        default:
+            throw std::runtime_error("Substring comparison not supported for keypath substrings.");
+    }
+}
+
+void add_binary_constraint_to_query(Query &query,
+                                    Predicate::Operator op,
+                                    Columns<Binary> &&column,
+                                    std::string value) {
+    switch (op) {
+        case Predicate::Operator::BeginsWith:
+            query.begins_with(column.m_column, value);
+            break;
+        case Predicate::Operator::EndsWith:
+            query.ends_with(column.m_column, value);
+            break;
+        case Predicate::Operator::Contains:
+            query.contains(column.m_column, value);
+            break;
+        case Predicate::Operator::Equal:
+            query.equal(column.m_column, value);
+            break;
+        case Predicate::Operator::NotEqual:
+            query.not_equal(column.m_column, value);
+            break;
+        default:
+            throw std::runtime_error("Unsupported operator for binary queries.");
+    }
+}
+
+void add_binary_constraint_to_query(realm::Query &query,
+                                    Predicate::Operator op,
+                                    std::string value,
+                                    Columns<Binary> &&column) {
+    switch (op) {
+        case Predicate::Operator::Equal:
+            query.equal(column.m_column, value);
+            break;
+        case Predicate::Operator::NotEqual:
+            query.not_equal(column.m_column, value);
             break;
         default:
             throw std::runtime_error("Substring comparison not supported for keypath substrings.");
@@ -274,6 +313,17 @@ struct ValueGetter<String, TableGetter> {
     }
 };
 
+template <typename TableGetter>
+struct ValueGetter<Binary, TableGetter> {
+    static std::string convert(TableGetter&&, const parser::Expression & value, Arguments &args)
+    {
+        if (value.type == parser::Expression::Type::Argument) {
+            return args.binary_for_argument(std::stoi(value.s));
+        }
+        throw std::runtime_error("Binary properties must be compared against a binary argument.");
+    }
+};
+
 template <typename RetType, typename Value, typename TableGetter>
 auto value_of_type_for_query(TableGetter&& tables, Value&& value, Arguments &args)
 {
@@ -309,9 +359,12 @@ void do_add_comparison_to_query(Query &query, Schema &schema, ObjectSchema &obje
                                                        value_of_type_for_query<Int>(expr.table_getter, rhs, args));
             break;
         case PropertyTypeString:
-        case PropertyTypeData:
             add_string_constraint_to_query(query, op, value_of_type_for_query<String>(expr.table_getter, lhs, args),
                                                       value_of_type_for_query<String>(expr.table_getter, rhs, args));
+            break;
+        case PropertyTypeData:
+            add_binary_constraint_to_query(query, op, value_of_type_for_query<Binary>(expr.table_getter, lhs, args),
+                                                      value_of_type_for_query<Binary>(expr.table_getter, rhs, args));
             break;
         default: {
             throw std::runtime_error((std::string)"Object type " + string_for_property_type(type) + " not supported");
