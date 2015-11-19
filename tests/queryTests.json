@@ -202,6 +202,29 @@
         ["Disabled", "QueryCount", 4, "StringObject", "stringCol ENDSWITH[c] 'c'"],
         ["Disabled", "QueryCount", 2, "StringObject", "stringCol CONTAINS[c] 'B'"]
     ]
+},
+
+"binaryTests" : {
+    "schema" : [{ 
+        "name": "BinaryObject",
+        "properties": [{ "name": "binaryCol", "type": "data" }]
+    }],
+    "objects": [
+        { "type": "BinaryObject", "value": [[1, 100, 233, 255, 0]] },
+        { "type": "BinaryObject", "value": [[1, 100]] },
+        { "type": "BinaryObject", "value": [[100]] },
+        { "type": "BinaryObject", "value": [[]] },
+        { "type": "BinaryObject", "value": [[255, 0]] }
+    ],
+    "tests": [
+        ["QueryCount", 1, "BinaryObject", "binaryCol == $0", [1, 0]],
+        ["QueryCount", 1, "BinaryObject", "$0 == binaryCol", [2, 0]],
+        ["QueryCount", 4, "BinaryObject", "binaryCol != $0", [0, 0]],
+        ["QueryCount", 1, "BinaryObject", "binaryCol BEGINSWITH $0", [0, 0]],
+        ["QueryCount", 2, "BinaryObject", "binaryCol BEGINSWITH $0", [1, 0]],
+        ["QueryCount", 2, "BinaryObject", "binaryCol ENDSWITH $0", [4, 0]],
+        ["QueryCount", 3, "BinaryObject", "binaryCol CONTAINS $0", [2, 0]]
+    ]
 }
 
 }

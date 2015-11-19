@@ -13,6 +13,7 @@ var testCases = require('./queryTests.json');
 
 var typeConverters = {};
 typeConverters[Realm.Types.DATE] = function(value) { return new Date(value); };
+typeConverters[Realm.Types.DATA] = function(value) { return new Uint8Array(value); };
 
 function runQuerySuite(suite) {
     var realm = new Realm({schema: suite.schema});
@@ -83,6 +84,9 @@ module.exports = BaseTest.extend({
     },
     testStringQueries: function() { 
         runQuerySuite(testCases.stringTests);
+    },
+    testBinaryQueries: function() { 
+        runQuerySuite(testCases.binaryTests);
     },
 });
 

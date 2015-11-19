@@ -102,7 +102,7 @@ void add_bool_constraint_to_query(Query &query, Predicate::Operator operatorType
 void add_string_constraint_to_query(Query &query,
                                     Predicate::Operator op,
                                     Columns<String> &&column,
-                                    std::string value) {
+                                    std::string &&value) {
     bool case_sensitive = true;
     switch (op) {
         case Predicate::Operator::BeginsWith:
@@ -127,7 +127,7 @@ void add_string_constraint_to_query(Query &query,
 
 void add_string_constraint_to_query(realm::Query &query,
                                     Predicate::Operator op,
-                                    std::string value,
+                                    std::string &&value,
                                     Columns<String> &&column) {
     bool case_sensitive = true;
     switch (op) {
@@ -145,22 +145,22 @@ void add_string_constraint_to_query(realm::Query &query,
 void add_binary_constraint_to_query(Query &query,
                                     Predicate::Operator op,
                                     Columns<Binary> &&column,
-                                    std::string value) {
+                                    std::string &&value) {
     switch (op) {
         case Predicate::Operator::BeginsWith:
-            query.begins_with(column.m_column, value);
+            query.begins_with(column.m_column, BinaryData(value));
             break;
         case Predicate::Operator::EndsWith:
-            query.ends_with(column.m_column, value);
+            query.ends_with(column.m_column, BinaryData(value));
             break;
         case Predicate::Operator::Contains:
-            query.contains(column.m_column, value);
+            query.contains(column.m_column, BinaryData(value));
             break;
         case Predicate::Operator::Equal:
-            query.equal(column.m_column, value);
+            query.equal(column.m_column, BinaryData(value));
             break;
         case Predicate::Operator::NotEqual:
-            query.not_equal(column.m_column, value);
+            query.not_equal(column.m_column, BinaryData(value));
             break;
         default:
             throw std::runtime_error("Unsupported operator for binary queries.");
@@ -173,10 +173,10 @@ void add_binary_constraint_to_query(realm::Query &query,
                                     Columns<Binary> &&column) {
     switch (op) {
         case Predicate::Operator::Equal:
-            query.equal(column.m_column, value);
+            query.equal(column.m_column, BinaryData(value));
             break;
         case Predicate::Operator::NotEqual:
-            query.not_equal(column.m_column, value);
+            query.not_equal(column.m_column, BinaryData(value));
             break;
         default:
             throw std::runtime_error("Substring comparison not supported for keypath substrings.");
