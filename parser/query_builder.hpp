@@ -40,6 +40,7 @@ namespace realm {
             virtual float float_for_argument(size_t argument_index) = 0;
             virtual double double_for_argument(size_t argument_index) = 0;
             virtual std::string string_for_argument(size_t argument_index) = 0;
+            virtual std::string binary_for_argument(size_t argument_index) = 0;
             virtual DateTime datetime_for_argument(size_t argument_index) = 0;
             virtual size_t object_index_for_argument(size_t argument_index) = 0;
             virtual bool is_argument_null(size_t argument_index) = 0;
@@ -57,6 +58,7 @@ namespace realm {
             virtual float float_for_argument(size_t argument_index) { return Accessor::to_float(m_ctx, argument_at(argument_index)); }
             virtual double double_for_argument(size_t argument_index) { return Accessor::to_double(m_ctx, argument_at(argument_index)); }
             virtual std::string string_for_argument(size_t argument_index) { return Accessor::to_string(m_ctx, argument_at(argument_index)); }
+            virtual std::string binary_for_argument(size_t argument_index) { return Accessor::to_binary(m_ctx, argument_at(argument_index)); }
             virtual DateTime datetime_for_argument(size_t argument_index) { return Accessor::to_datetime(m_ctx, argument_at(argument_index)); }
             virtual size_t object_index_for_argument(size_t argument_index) { return Accessor::to_existing_object_index(m_ctx, argument_at(argument_index)); }
             virtual bool is_argument_null(size_t argument_index) { return Accessor::is_null(m_ctx, argument_at(argument_index)); }
