@@ -57,6 +57,4 @@ namespace realm {
     };
 }
 
-
-
 #endif /* REALM_LIST_HPP */
