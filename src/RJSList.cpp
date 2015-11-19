@@ -10,15 +10,10 @@
 using RJSAccessor = realm::NativeAccessor<JSValueRef, JSContextRef>;
 using namespace realm;
 
-static inline List * RJSVerifiedList(JSObjectRef object) {
-    List *list = RJSGetInternal<List *>(object);
-    return list;
-}
-
 JSValueRef ListGetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef* jsException) {
     try {
         // index subscripting
-        List *list = RJSVerifiedList(object);
+        List *list = RJSGetInternal<List *>(object);
         size_t size = list->size();
 
         std::string indexStr = RJSStringForJSString(propertyName);
@@ -46,7 +41,7 @@ JSValueRef ListGetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef pro
 
 bool ListSetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef value, JSValueRef* jsException) {
     try {
-        List *list = RJSVerifiedList(object);
+        List *list = RJSGetInternal<List *>(object);
         std::string indexStr = RJSStringForJSString(propertyName);
         if (indexStr == "length") {
             throw std::runtime_error("The 'length' property is readonly.");
@@ -68,7 +63,7 @@ bool ListSetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef propertyN
 }
 
 void ListPropertyNames(JSContextRef ctx, JSObjectRef object, JSPropertyNameAccumulatorRef propertyNames) {
-    List *list = RJSVerifiedList(object);
+    List *list = RJSGetInternal<List *>(object);
     size_t size = list->size();
     
     char str[32];
@@ -82,7 +77,7 @@ void ListPropertyNames(JSContextRef ctx, JSObjectRef object, JSPropertyNameAccum
 
 JSValueRef ListPush(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) {
     try {
-        List *list = RJSVerifiedList(thisObject);
+        List *list = RJSGetInternal<List *>(thisObject);
         RJSValidateArgumentCountIsAtLeast(argumentCount, 1);
         for (size_t i = 0; i < argumentCount; i++) {
             list->add(ctx, arguments[i]);
@@ -99,7 +94,7 @@ JSValueRef ListPush(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObje
 
 JSValueRef ListPop(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) {
     try {
-        List *list = RJSVerifiedList(thisObject);
+        List *list = RJSGetInternal<List *>(thisObject);
         RJSValidateArgumentCount(argumentCount, 0);
 
         size_t size = list->size();
@@ -122,12 +117,12 @@ JSValueRef ListPop(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObjec
 
 JSValueRef ListUnshift(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) {
     try {
-        List *array = RJSVerifiedList(thisObject);
+        List *list = RJSGetInternal<List *>(thisObject);
         RJSValidateArgumentCountIsAtLeast(argumentCount, 1);
         for (size_t i = 0; i < argumentCount; i++) {
-            array->insert(ctx, arguments[i], i);
+            list->insert(ctx, arguments[i], i);
         }
-        return JSValueMakeNumber(ctx, array->size());
+        return JSValueMakeNumber(ctx, list->size());
     }
     catch (std::exception &exp) {
         if (jsException) {
@@ -139,7 +134,7 @@ JSValueRef ListUnshift(JSContextRef ctx, JSObjectRef function, JSObjectRef thisO
 
 JSValueRef ListShift(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) {
     try {
-        List *list = RJSVerifiedList(thisObject);
+        List *list = RJSGetInternal<List *>(thisObject);
         RJSValidateArgumentCount(argumentCount, 0);
         if (list->size() == 0) {
             list->verify_in_tranaction();
@@ -159,7 +154,7 @@ JSValueRef ListShift(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObj
 
 JSValueRef ListSplice(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) {
     try {
-        List *list = RJSVerifiedList(thisObject);
+        List *list = RJSGetInternal<List *>(thisObject);
         size_t size = list->size();
 
         RJSValidateArgumentCountIsAtLeast(argumentCount, 2);
