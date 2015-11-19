@@ -26,40 +26,40 @@ size_t List::size() {
     return m_link_view->size();
 }
 
-Row List::get(std::size_t row_ndx) {
+Row List::get(size_t row_ndx) {
     verify_attached();
     verify_valid_row(row_ndx);
     return m_link_view->get(row_ndx);
 }
 
-void List::set(std::size_t row_ndx, std::size_t target_row_ndx) {
+void List::set(size_t row_ndx, size_t target_row_ndx) {
     verify_attached();
     verify_in_tranaction();
     verify_valid_row(row_ndx);
     m_link_view->set(row_ndx, target_row_ndx);
 }
 
-void List::add(std::size_t target_row_ndx) {
+void List::add(size_t target_row_ndx) {
     verify_attached();
     verify_in_tranaction();
     m_link_view->add(target_row_ndx);
 }
 
-void List::insert(std::size_t row_ndx, std::size_t target_row_ndx) {
+void List::insert(size_t row_ndx, size_t target_row_ndx) {
     verify_attached();
     verify_in_tranaction();
     verify_valid_row(row_ndx, true);
     m_link_view->insert(row_ndx, target_row_ndx);
 }
 
-void List::remove(std::size_t row_ndx) {
+void List::remove(size_t row_ndx) {
     verify_attached();
     verify_in_tranaction();
     verify_valid_row(row_ndx);
     m_link_view->remove(row_ndx);
 }
 
-void List::verify_valid_row(std::size_t row_ndx, bool insertion) {
+void List::verify_valid_row(size_t row_ndx, bool insertion) {
     size_t size = m_link_view->size();
     if (row_ndx > size || (!insertion && row_ndx == size)) {
         throw std::out_of_range(std::string("Index ") + std::to_string(row_ndx) + " is outside of range 0..." + std::to_string(size) + ".");
