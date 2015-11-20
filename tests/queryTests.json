@@ -11,12 +11,12 @@
         { "type": "DateObject", "value": [10002] }
     ],
     "tests": [
-        ["QueryCount", 2, "DateObject", "date <  $0", [2, 0]],
-        ["QueryCount", 3, "DateObject", "date <= $0", [2, 0]],
-        ["QueryCount", 2, "DateObject", "date >  $0", [0, 0]],
-        ["QueryCount", 3, "DateObject", "date >= $0", [0, 0]],
-        ["QueryCount", 1, "DateObject", "date == $0", [0, 0]],
-        ["QueryCount", 2, "DateObject", "date != $0", [0, 0]],
+        ["QueryCount", 2, "DateObject", "date <  $0", [2, "date"]],
+        ["QueryCount", 3, "DateObject", "date <= $0", [2, "date"]],
+        ["QueryCount", 2, "DateObject", "date >  $0", [0, "date"]],
+        ["QueryCount", 3, "DateObject", "date >= $0", [0, "date"]],
+        ["QueryCount", 1, "DateObject", "date == $0", [0, "date"]],
+        ["QueryCount", 2, "DateObject", "date != $0", [0, "date"]],
 
         ["QueryThrows", "DateObject", "date == 'not a date'"],
         ["QueryThrows", "DateObject", "date == 1"],
@@ -217,13 +217,33 @@
         { "type": "BinaryObject", "value": [[255, 0]] }
     ],
     "tests": [
-        ["QueryCount", 1, "BinaryObject", "binaryCol == $0", [1, 0]],
-        ["QueryCount", 1, "BinaryObject", "$0 == binaryCol", [2, 0]],
-        ["QueryCount", 4, "BinaryObject", "binaryCol != $0", [0, 0]],
-        ["QueryCount", 1, "BinaryObject", "binaryCol BEGINSWITH $0", [0, 0]],
-        ["QueryCount", 2, "BinaryObject", "binaryCol BEGINSWITH $0", [1, 0]],
-        ["QueryCount", 2, "BinaryObject", "binaryCol ENDSWITH $0", [4, 0]],
-        ["QueryCount", 3, "BinaryObject", "binaryCol CONTAINS $0", [2, 0]]
+        ["QueryCount", 1, "BinaryObject", "binaryCol == $0", [1, "binaryCol"]],
+        ["QueryCount", 1, "BinaryObject", "$0 == binaryCol", [2, "binaryCol"]],
+        ["QueryCount", 4, "BinaryObject", "binaryCol != $0", [0, "binaryCol"]],
+        ["QueryCount", 1, "BinaryObject", "binaryCol BEGINSWITH $0", [0, "binaryCol"]],
+        ["QueryCount", 2, "BinaryObject", "binaryCol BEGINSWITH $0", [1, "binaryCol"]],
+        ["QueryCount", 2, "BinaryObject", "binaryCol ENDSWITH $0", [4, "binaryCol"]],
+        ["QueryCount", 3, "BinaryObject", "binaryCol CONTAINS $0", [2, "binaryCol"]]
+    ]
+},
+
+"objectTests" : {
+    "schema" : [
+        { "name": "IntObject",  "properties": [{ "name": "intCol",  "type": "int" }] },
+        { "name": "LinkObject", "properties": [{ "name": "linkCol", "type": "IntObject" }] }
+    ],
+    "objects": [
+        { "type": "LinkObject", "value": [[1]] },
+        { "type": "LinkObject", "value": [[2]] },
+        { "type": "LinkObject", "value": [null] }
+    ],
+    "tests": [
+        ["QueryCount", 1, "LinkObject", "linkCol == $0", [0, "linkCol"]],
+        ["QueryCount", 1, "LinkObject", "$0 == linkCol", [1, "linkCol"]],
+        ["QueryCount", 2, "LinkObject", "linkCol != $0", [0, "linkCol"]],
+
+        ["QueryThrows", "LinkObject", "linkCol > $0", [0, "linkCol"]],
+        ["QueryThrows", "LinkObject", "intCol = $0", [0, "linkCol"]]
     ]
 }
 

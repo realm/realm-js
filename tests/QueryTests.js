@@ -29,11 +29,11 @@ function runQuerySuite(suite) {
         });
 
         return { type: obj.type, value: converted };
-    });    
+    });
 
     realm.write(function() {
-        for (var obj of objects) {
-            realm.create(obj.type, obj.value);
+        for (var i = 0; i < objects.length; i++) {
+            objects[i] = realm.create(objects[i].type, objects[i].value);
         }
     });
 
@@ -43,7 +43,8 @@ function runQuerySuite(suite) {
             for (var i = 4; i < test.length; i++) {
                 var arg = test[i];
                 if (Array.isArray(arg)) {
-                    args.push(objects[arg[0]].value[arg[1]]);
+                    // aray arguments correspond to [objectAtIndex, propertyName]
+                    args.push(objects[arg[0]][arg[1]]);
                 }
                 else {
                     args.push(arg);
@@ -88,6 +89,9 @@ module.exports = BaseTest.extend({
     testBinaryQueries: function() { 
         runQuerySuite(testCases.binaryTests);
     },
+    testObjectQueries: function() {
+        runQuerySuite(testCases.objectTests);
+    }
 });
 
 
@@ -540,34 +544,6 @@ module.exports = BaseTest.extend({
                                       @"Property type mismatch between double and string");
 }
 
-- (void)testBinaryComparisonInPredicate
-{
-    NSExpression *binary = [NSExpression expressionForConstantValue:[[NSData alloc] init]];
-
-    NSUInteger (^count)(NSPredicateOperatorType) = ^(NSPredicateOperatorType type) {
-        NSPredicate *pred = [RLMPredicateUtil comparisonWithKeyPath: @"binaryCol"
-                                                         expression: binary
-                                                       operatorType: type];
-        return [BinaryObject objectsWithPredicate: pred].count;
-    };
-
-    XCTAssertEqual(count(NSBeginsWithPredicateOperatorType), 0U,
-                   @"BEGINSWITH operator in binary comparison.");
-    XCTAssertEqual(count(NSEndsWithPredicateOperatorType), 0U,
-                   @"ENDSWITH operator in binary comparison.");
-    XCTAssertEqual(count(NSContainsPredicateOperatorType), 0U,
-                   @"CONTAINS operator in binary comparison.");
-    XCTAssertEqual(count(NSEqualToPredicateOperatorType), 0U,
-                   @"= or == operator in binary comparison.");
-    XCTAssertEqual(count(NSNotEqualToPredicateOperatorType), 0U,
-                   @"!= or <> operator in binary comparison.");
-
-    // Invalid operators.
-    XCTAssertThrowsSpecificNamed(count(NSLessThanPredicateOperatorType), NSException,
-                                 @"Invalid operator type",
-                                 @"Invalid operator in binary comparison.");
-}
-
 - (void)testKeyPathLocationInComparison
 {
     NSExpression *keyPath = [NSExpression expressionForKeyPath:@"intCol"];
@@ -944,55 +920,6 @@ module.exports = BaseTest.extend({
     XCTAssertThrows([CircleArrayObject objectsInRealm:realm where:@"ANY data.circles = '2'"]);
     XCTAssertThrows([CircleArrayObject objectsInRealm:realm where:@"circles.data = '2'"]);
     XCTAssertThrows([CircleArrayObject objectsInRealm:realm where:@"NONE data.circles = '2'"]);
-}
-
-- (void)testQueryWithObjects
-{
-    RLMRealm *realm = [RLMRealm defaultRealm];
-
-    NSDate *date1 = [NSDate date];
-    NSDate *date2 = [date1 dateByAddingTimeInterval:1];
-    NSDate *date3 = [date2 dateByAddingTimeInterval:1];
-
-    [realm beginWriteTransaction];
-
-    StringObject *stringObj0 = [StringObject createInRealm:realm withValue:@[@"string0"]];
-    StringObject *stringObj1 = [StringObject createInRealm:realm withValue:@[@"string1"]];
-    StringObject *stringObj2 = [StringObject createInRealm:realm withValue:@[@"string2"]];
-
-    AllTypesObject *obj0 = [AllTypesObject createInRealm:realm withValue:@[@YES, @1, @1.0f, @1.0, @"a", [@"a" dataUsingEncoding:NSUTF8StringEncoding], date1, @YES, @1LL, @1, stringObj0]];
-    AllTypesObject *obj1 = [AllTypesObject createInRealm:realm withValue:@[@YES, @2, @2.0f, @2.0, @"b", [@"b" dataUsingEncoding:NSUTF8StringEncoding], date2, @YES, @2LL, @"mixed", stringObj1]];
-    AllTypesObject *obj2 = [AllTypesObject createInRealm:realm withValue:@[@NO, @3, @3.0f, @3.0, @"c", [@"c" dataUsingEncoding:NSUTF8StringEncoding], date3, @YES, @3LL, @"mixed", stringObj0]];
-    AllTypesObject *obj3 = [AllTypesObject createInRealm:realm withValue:@[@NO, @3, @3.0f, @3.0, @"c", [@"c" dataUsingEncoding:NSUTF8StringEncoding], date3, @YES, @3LL, @"mixed", stringObj2]];
-    AllTypesObject *obj4 = [AllTypesObject createInRealm:realm withValue:@[@NO, @3, @3.0f, @3.0, @"c", [@"c" dataUsingEncoding:NSUTF8StringEncoding], date3, @YES, @34359738368LL, @"mixed", NSNull.null]];
-
-    [ArrayOfAllTypesObject createInDefaultRealmWithValue:@[@[obj0, obj1]]];
-    [ArrayOfAllTypesObject createInDefaultRealmWithValue:@[@[obj1]]];
-    [ArrayOfAllTypesObject createInDefaultRealmWithValue:@[@[obj0, obj2, obj3]]];
-    [ArrayOfAllTypesObject createInDefaultRealmWithValue:@[@[obj4]]];
-
-    [realm commitWriteTransaction];
-
-    // simple queries
-    XCTAssertEqual(2U, ([AllTypesObject objectsWhere:@"objectCol = %@", stringObj0].count));
-    XCTAssertEqual(1U, ([AllTypesObject objectsWhere:@"objectCol = %@", stringObj1].count));
-    XCTAssertEqual(1U, ([AllTypesObject objectsWhere:@"objectCol = nil"].count));
-    XCTAssertEqual(4U, ([AllTypesObject objectsWhere:@"objectCol != nil"].count));
-    XCTAssertEqual(3U, ([AllTypesObject objectsWhere:@"objectCol != %@", stringObj0].count));
-
-    NSPredicate *longPred = [NSPredicate predicateWithFormat:@"longCol = %lli", 34359738368];
-    XCTAssertEqual([AllTypesObject objectsWithPredicate:longPred].count, 1U, @"Count should be 1");
-
-    NSPredicate *longBetweenPred = [NSPredicate predicateWithFormat:@"longCol BETWEEN %@", @[@34359738367LL, @34359738369LL]];
-    XCTAssertEqual([AllTypesObject objectsWithPredicate:longBetweenPred].count, 1U, @"Count should be 1");
-
-    // check for ANY object in array
-    XCTAssertEqual(2U, ([ArrayOfAllTypesObject objectsWhere:@"ANY array = %@", obj0].count));
-    XCTAssertEqual(2U, ([ArrayOfAllTypesObject objectsWhere:@"ANY array != %@", obj1].count));
-    XCTAssertEqual(2U, ([ArrayOfAllTypesObject objectsWhere:@"NONE array = %@", obj0].count));
-    XCTAssertEqual(2U, ([ArrayOfAllTypesObject objectsWhere:@"NONE array != %@", obj1].count));
-    XCTAssertThrows(([ArrayOfAllTypesObject objectsWhere:@"array = %@", obj0].count));
-    XCTAssertThrows(([ArrayOfAllTypesObject objectsWhere:@"array != %@", obj0].count));
 }
 
 - (void)testCompoundOrQuery {

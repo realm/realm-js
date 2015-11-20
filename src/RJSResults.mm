@@ -109,8 +109,8 @@ JSObjectRef RJSResultsCreate(JSContextRef ctx, SharedRealm realm, std::string cl
     TableRef table = ObjectStore::table_for_object_type(realm->read_group(), className);
     Query query = table->where();
     Schema &schema = *realm->config().schema;
-    auto object_schema = realm->config().schema->find(className);
-    if (object_schema == realm->config().schema->end()) {
+    auto object_schema = schema.find(className);
+    if (object_schema == schema.end()) {
         throw std::runtime_error("Object type '" + className + "' not present in Realm.");
     }
     parser::Predicate predicate = parser::parse(queryString);
