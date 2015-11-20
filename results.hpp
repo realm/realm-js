@@ -60,6 +60,9 @@ public:
     // Get the object type which will be returned by get()
     StringData get_object_type() const noexcept { return object_schema.name; }
 
+    // Set whether the TableView should sync if needed before accessing results
+    void set_live(bool live);
+
     // Get the size of this results
     // Can be either O(1) or O(N) depending on the state of things
     size_t size();
@@ -153,6 +156,7 @@ private:
     TableView m_table_view;
     Table* m_table = nullptr;
     SortOrder m_sort;
+    bool m_live = true;
 
     Mode m_mode = Mode::Empty;
 

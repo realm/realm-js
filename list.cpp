@@ -59,6 +59,11 @@ void List::remove(size_t row_ndx) {
     m_link_view->remove(row_ndx);
 }
 
+Query List::get_query() {
+    verify_attached();
+    return m_link_view->get_target_table().where(m_link_view);
+}
+
 void List::verify_valid_row(size_t row_ndx, bool insertion) {
     size_t size = m_link_view->size();
     if (row_ndx > size || (!insertion && row_ndx == size)) {
