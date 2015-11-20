@@ -320,6 +320,11 @@ Predicate parse(const std::string &query)
     return std::move(out_predicate);
 }
 
+void analyzeGrammer()
+{
+    analyze<pred>();
+}
+
 }}
 
 
