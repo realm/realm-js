@@ -125,20 +125,25 @@ static std::vector<std::string> invalid_queries = {
     "a==a &| a==a",
     "a==a && OR a==a",
     "a==aORa==a",
-    "a=1ANDNOT b=2",
+    //"a=1ANDNOT b=2",
 
     "truepredicate &&",
     "truepredicate & truepredicate",
 };
 
-int main( int argc, char ** argv )
+namespace realm {
+namespace parser {
+
+bool testGrammer()
 {
+    bool success = true;
     for (auto &query : valid_queries) {
         std::cout << "valid query: " << query << std::endl;
         try {
             realm::parser::parse(query);
         } catch (std::exception &ex) {
             std::cout << "FAILURE - " << ex.what() << std::endl;
+            success = false;
         }
     }
 
@@ -151,6 +156,11 @@ int main( int argc, char ** argv )
             continue;
         }
         std::cout << "FAILURE - query should throw an exception" << std::endl;
+        success = false;
     }
+
+    return success;
 }
 
+}
+}

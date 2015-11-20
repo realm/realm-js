@@ -76,6 +76,9 @@ namespace realm {
         };
 
         Predicate parse(const std::string &query);
+        
+        void analyzeGrammer();
+        bool testGrammer();
     }
 }
 
