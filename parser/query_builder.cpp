@@ -53,6 +53,51 @@ struct FalseExpression : realm::Expression {
     const Table* get_table() const override { return nullptr; }
 };
 
+using KeyPath = std::vector<std::string>;
+KeyPath key_path_from_string(const std::string &s) {
+    std::stringstream ss(s);
+    std::string item;
+    KeyPath key_path;
+    while (std::getline(ss, item, '.')) {
+        key_path.push_back(item);
+    }
+    return key_path;
+}
+
+struct PropertyExpression
+{
+    Property *prop = nullptr;
+    std::vector<size_t> indexes;
+    std::function<Table *()> table_getter;
+
+    PropertyExpression(Query &query, Schema &schema, Schema::iterator desc, const std::string &key_path_string)
+    {
+        KeyPath key_path = key_path_from_string(key_path_string);
+        for (size_t index = 0; index < key_path.size(); index++) {
+            if (prop) {
+                precondition(prop->type == PropertyTypeObject || prop->type == PropertyTypeArray,
+                             (std::string)"Property '" + key_path[index] + "' is not a link in object of type '" + desc->name + "'");
+                indexes.push_back(prop->table_column);
+
+            }
+            prop = desc->property_for_name(key_path[index]);
+            precondition(prop != nullptr, "No property '" + key_path[index] + "' on object of type '" + desc->name + "'");
+
+            if (prop->object_type.size()) {
+                desc = schema.find(prop->object_type);
+            }
+        }
+
+        table_getter = [&] {
+            TableRef& tbl = query.get_table();
+            for (size_t col : indexes) {
+                tbl->link(col); // mutates m_link_chain on table
+            }
+            return tbl.get();
+        };
+    }
+};
+
 
 // add a clause for numeric constraints based on operator type
 template <typename A, typename B>
@@ -183,51 +228,48 @@ void add_binary_constraint_to_query(realm::Query &query,
     }
 }
 
-
-using KeyPath = std::vector<std::string>;
-KeyPath key_path_from_string(const std::string &s) {
-    std::stringstream ss(s);
-    std::string item;
-    KeyPath key_path;
-    while (std::getline(ss, item, '.')) {
-        key_path.push_back(item);
+void add_link_constraint_to_query(realm::Query &query,
+                                  Predicate::Operator op,
+                                  PropertyExpression &prop_expr,
+                                  size_t row_index) {
+    precondition(prop_expr.indexes.empty(), "KeyPath queries not supported for object comparisons.");
+    switch (op) {
+        case Predicate::Operator::NotEqual:
+            query.Not();
+        case Predicate::Operator::Equal:
+            query.links_to(prop_expr.prop->table_column, row_index);
+            break;
+        default:
+            throw std::runtime_error("Only 'equal' and 'not equal' operators supported for object comparison.");
     }
-    return key_path;
 }
 
-struct PropertyExpression
-{
-    Property *prop = nullptr;
-    std::vector<size_t> indexes;
-    std::function<Table *()> table_getter;
-
-    PropertyExpression(Query &query, Schema &schema, ObjectSchema &desc, const std::string &key_path_string)
-    {
-        KeyPath key_path = key_path_from_string(key_path_string);
-        for (size_t index = 0; index < key_path.size(); index++) {
-            if (prop) {
-                precondition(prop->type == PropertyTypeObject || prop->type == PropertyTypeArray,
-                             (std::string)"Property '" + key_path[index] + "' is not a link in object of type '" + desc.name + "'");
-                indexes.push_back(prop->table_column);
-
-            }
-            prop = desc.property_for_name(key_path[index]);
-            precondition(prop != nullptr, "No property '" + key_path[index] + "' on object of type '" + desc.name + "'");
-
-            if (prop->object_type.size()) {
-                desc = *schema.find(prop->object_type);
-            }
-        }
-
-        table_getter = [&] {
-            TableRef& tbl = query.get_table();
-            for (size_t col : indexes) {
-                tbl->link(col); // mutates m_link_chain on table
-            }
-            return tbl.get();
-        };
+void add_link_constraint_to_query(realm::Query &query,
+                                  Predicate::Operator op,
+                                  PropertyExpression &prop_expr,
+                                  realm::null) {
+    precondition(prop_expr.indexes.empty(), "KeyPath queries not supported for object comparisons.");
+    switch (op) {
+        case Predicate::Operator::NotEqual:
+            query.Not();
+        case Predicate::Operator::Equal:
+            query.and_query(query.get_table()->column<Link>(prop_expr.prop->table_column).is_null());
+            break;
+        default:
+            throw std::runtime_error("Only 'equal' and 'not equal' operators supported for object comparison.");
     }
-};
+}
+
+auto link_argument(PropertyExpression &propExpr, parser::Expression &argExpr, Arguments &args)
+{
+    return args.object_index_for_argument(std::stoi(argExpr.s));
+}
+
+auto link_argument(parser::Expression &argExpr, PropertyExpression &propExpr, Arguments &args)
+{
+    return args.object_index_for_argument(std::stoi(argExpr.s));
+}
+
 
 template <typename RetType, typename TableGetter>
 struct ColumnGetter {
@@ -366,30 +408,35 @@ void do_add_comparison_to_query(Query &query, Schema &schema, ObjectSchema &obje
             add_binary_constraint_to_query(query, op, value_of_type_for_query<Binary>(expr.table_getter, lhs, args),
                                                       value_of_type_for_query<Binary>(expr.table_getter, rhs, args));
             break;
+        case PropertyTypeObject:
+        case PropertyTypeArray:
+            add_link_constraint_to_query(query, op, expr, link_argument(lhs, rhs, args));
+            break;
         default: {
             throw std::runtime_error((std::string)"Object type " + string_for_property_type(type) + " not supported");
         }
     }
 }
 
-void add_comparison_to_query(Query &query, Predicate &pred, Arguments &args, Schema &schema, ObjectSchema &object_schema)
+void add_comparison_to_query(Query &query, Predicate &pred, Arguments &args, Schema &schema, const std::string &type)
 {
     Predicate::Comparison &cmpr = pred.cmpr;
     auto t0 = cmpr.expr[0].type, t1 = cmpr.expr[1].type;
+    auto object_schema = schema.find(type);
     if (t0 == parser::Expression::Type::KeyPath && t1 != parser::Expression::Type::KeyPath) {
         PropertyExpression expr(query, schema, object_schema, cmpr.expr[0].s);
-        do_add_comparison_to_query(query, schema, object_schema, cmpr.op, expr, expr, cmpr.expr[1], args);
+        do_add_comparison_to_query(query, schema, *object_schema, cmpr.op, expr, expr, cmpr.expr[1], args);
     }
     else if (t0 != parser::Expression::Type::KeyPath && t1 == parser::Expression::Type::KeyPath) {
         PropertyExpression expr(query, schema, object_schema, cmpr.expr[1].s);
-        do_add_comparison_to_query(query, schema, object_schema, cmpr.op, expr, cmpr.expr[0], expr, args);
+        do_add_comparison_to_query(query, schema, *object_schema, cmpr.op, expr, cmpr.expr[0], expr, args);
     }
     else {
         throw std::runtime_error("Predicate expressions must compare a keypath and another keypath or a constant value");
     }
 }
 
-void update_query_with_predicate(Query &query, Predicate &pred, Arguments &arguments, Schema &schema, ObjectSchema &object_schema)
+void update_query_with_predicate(Query &query, Predicate &pred, Arguments &arguments, Schema &schema, const std::string &type)
 {
     if (pred.negate) {
         query.Not();
@@ -399,7 +446,7 @@ void update_query_with_predicate(Query &query, Predicate &pred, Arguments &argum
         case Predicate::Type::And:
             query.group();
             for (auto &sub : pred.cpnd.sub_predicates) {
-                update_query_with_predicate(query, sub, arguments, schema, object_schema);
+                update_query_with_predicate(query, sub, arguments, schema, type);
             }
             if (!pred.cpnd.sub_predicates.size()) {
                 query.and_query(new TrueExpression);
@@ -411,7 +458,7 @@ void update_query_with_predicate(Query &query, Predicate &pred, Arguments &argum
             query.group();
             for (auto &sub : pred.cpnd.sub_predicates) {
                 query.Or();
-                update_query_with_predicate(query, sub, arguments, schema, object_schema);
+                update_query_with_predicate(query, sub, arguments, schema, type);
             }
             if (!pred.cpnd.sub_predicates.size()) {
                 query.and_query(new FalseExpression);
@@ -420,7 +467,7 @@ void update_query_with_predicate(Query &query, Predicate &pred, Arguments &argum
             break;
             
         case Predicate::Type::Comparison: {
-            add_comparison_to_query(query, pred, arguments, schema, object_schema);
+            add_comparison_to_query(query, pred, arguments, schema, type);
             break;
         }
         case Predicate::Type::True:
@@ -439,7 +486,7 @@ void update_query_with_predicate(Query &query, Predicate &pred, Arguments &argum
 
 void apply_predicate(Query &query, Predicate &predicate, Arguments &arguments, Schema &schema, std::string objectType)
 {
-    update_query_with_predicate(query, predicate, arguments, schema, *schema.find(objectType));
+    update_query_with_predicate(query, predicate, arguments, schema, objectType);
     
     // Test the constructed query in core
     std::string validateMessage = query.validate();
