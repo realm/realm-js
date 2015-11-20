@@ -328,6 +328,7 @@ bool ObjectStore::create_tables(Group *group, Schema &target_schema, bool update
                     case PropertyTypeObject:
                     case PropertyTypeArray: {
                         TableRef link_table = ObjectStore::table_for_object_type(group, target_prop.object_type);
+                        REALM_ASSERT(link_table);
                         target_prop.table_column = table->add_column_link(DataType(target_prop.type), target_prop.name, *link_table);
                         break;
                     }
@@ -525,8 +526,12 @@ DuplicatePrimaryKeyValueException::DuplicatePrimaryKeyValueException(std::string
     m_object_type(object_type), m_property(property)
 {
     m_what = "Primary key property '" + property.name + "' has duplicate values after migration.";
-};
+}
 
+DuplicatePrimaryKeyValueException::DuplicatePrimaryKeyValueException(std::string const& object_type, Property const& property, const std::string message) : m_object_type(object_type), m_property(property)
+{
+    m_what = message;
+}
 
 SchemaValidationException::SchemaValidationException(std::vector<ObjectSchemaValidationException> const& errors) :
     m_validation_errors(errors)
@@ -607,3 +612,4 @@ DuplicatePrimaryKeysException::DuplicatePrimaryKeysException(std::string const& 
 {
     m_what = "Duplicate primary keys for object '" + object_type + "'.";
 }
+

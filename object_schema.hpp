@@ -25,6 +25,7 @@
 #include <vector>
 
 namespace realm {
+    class Property;
     class Group;
     struct Property;
 

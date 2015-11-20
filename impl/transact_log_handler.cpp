@@ -18,25 +18,23 @@
 
 #include "transact_log_handler.hpp"
 
-#include "../realm_binding_context.hpp"
+#include "../binding_context.hpp"
 
 #include <realm/commit_log.hpp>
 #include <realm/group_shared.hpp>
 #include <realm/lang_bind_helper.hpp>
 
-using namespace realm;
-
-namespace {
+namespace realm {
 class TransactLogHandler {
-    using ColumnInfo = RealmBindingContext::ColumnInfo;
-    using ObserverState = RealmBindingContext::ObserverState;
+    using ColumnInfo = BindingContext::ColumnInfo;
+    using ObserverState = BindingContext::ObserverState;
 
     // Observed table rows which need change information
     std::vector<ObserverState> m_observers;
     // Userdata pointers for rows which have been deleted
     std::vector<void *> invalidated;
     // Delegate to send change information to
-    RealmBindingContext* m_binding_context;
+    BindingContext* m_binding_context;
 
     // Index of currently selected table
     size_t m_current_table = 0;
@@ -84,7 +82,7 @@ class TransactLogHandler {
 
 public:
     template<typename Func>
-    TransactLogHandler(RealmBindingContext* binding_context, SharedGroup& sg, Func&& func)
+    TransactLogHandler(BindingContext* binding_context, SharedGroup& sg, Func&& func)
     : m_binding_context(binding_context)
     {
         if (!binding_context) {
@@ -325,19 +323,19 @@ public:
 namespace realm {
 namespace _impl {
 namespace transaction {
-void advance(SharedGroup& sg, ClientHistory& history, RealmBindingContext* binding_context) {
+void advance(SharedGroup& sg, ClientHistory& history, BindingContext* binding_context) {
     TransactLogHandler(binding_context, sg, [&](auto&&... args) {
         LangBindHelper::advance_read(sg, history, std::move(args)...);
     });
 }
 
-void begin(SharedGroup& sg, ClientHistory& history, RealmBindingContext* binding_context) {
+void begin(SharedGroup& sg, ClientHistory& history, BindingContext* binding_context) {
     TransactLogHandler(binding_context, sg, [&](auto&&... args) {
         LangBindHelper::promote_to_write(sg, history, std::move(args)...);
     });
 }
 
-void commit(SharedGroup& sg, ClientHistory&, RealmBindingContext* binding_context) {
+void commit(SharedGroup& sg, ClientHistory&, BindingContext* binding_context) {
     LangBindHelper::commit_and_continue_as_read(sg);
 
     if (binding_context) {
@@ -345,7 +343,7 @@ void commit(SharedGroup& sg, ClientHistory&, RealmBindingContext* binding_contex
     }
 }
 
-void cancel(SharedGroup& sg, ClientHistory& history, RealmBindingContext* binding_context) {
+void cancel(SharedGroup& sg, ClientHistory& history, BindingContext* binding_context) {
     TransactLogHandler(binding_context, sg, [&](auto&&... args) {
         LangBindHelper::rollback_and_continue_as_read(sg, history, std::move(args)...);
     });

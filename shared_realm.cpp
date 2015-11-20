@@ -203,7 +203,9 @@ bool Realm::update_schema(std::unique_ptr<Schema> schema, uint64_t version)
     auto migration_function = [&](Group*,  Schema&) {
         SharedRealm old_realm(new Realm(old_config));
         auto updated_realm = shared_from_this();
-        m_config.migration_function(old_realm, updated_realm);
+        if (m_config.migration_function) {
+            m_config.migration_function(old_realm, updated_realm);
+        }
     };
 
     try {
@@ -285,8 +287,6 @@ void Realm::cancel_transaction()
 void Realm::invalidate()
 {
     verify_thread();
-    check_read_write(this);
-
     if (m_in_transaction) {
         cancel_transaction();
     }
