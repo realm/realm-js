@@ -60,6 +60,9 @@ ObjectSchema::ObjectSchema(const Group *group, const std::string &name) : name(n
 }
 
 Property *ObjectSchema::property_for_name(StringData name) {
+    if (!name.size()) {
+        return nullptr;
+    }
     for (auto& prop : properties) {
         if (StringData(prop.name) == name) {
             return &prop;

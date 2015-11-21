@@ -15,6 +15,32 @@
 using RJSAccessor = realm::NativeAccessor<JSValueRef, JSContextRef>;
 using namespace realm;
 
+bool ObjectIsCacheable(Object &object) {
+    return object.object_schema.primary_key.length() > 0;
+}
+
+JSObjectRef &ObjectGetCached(Object &object) {
+    ObjectSchema schema = object.object_schema;
+    const Property *property = schema.primary_key_property();
+    Row row = object.row();
+    size_t column = property->table_column;
+    std::string key;
+
+    switch (property->type) {
+        case PropertyTypeInt:
+            key = std::to_string(row.get_int(column));
+            break;
+        case PropertyTypeString:
+            key = row.get_string(column);
+            break;
+        default:
+            throw std::runtime_error("Unexpected primary key type:" + std::string(string_for_property_type(property->type)));
+    }
+
+    auto &objects = RJSObjects(object.realm().get(), schema.name);
+    return objects[key];
+}
+
 JSValueRef ObjectGetProperty(JSContextRef ctx, JSObjectRef jsObject, JSStringRef jsPropertyName, JSValueRef* exception) {
     try {
         Object *obj = RJSGetInternal<Object *>(jsObject);
@@ -46,14 +72,34 @@ void ObjectPropertyNames(JSContextRef ctx, JSObjectRef object, JSPropertyNameAcc
     return;
 }
 
+void ObjectFinalize(JSObjectRef jsObject) {
+    Object *obj = RJSGetInternal<Object *>(jsObject);
+
+    if (ObjectIsCacheable(*obj)) {
+        ObjectGetCached(*obj) = NULL;
+    }
+
+    RJSFinalize<Object *>(jsObject);
+}
+
 JSClassRef RJSObjectClass() {
-    static JSClassRef s_objectClass = RJSCreateWrapperClass<Object *>("RealmObject", ObjectGetProperty, ObjectSetProperty, NULL, ObjectPropertyNames);
+    static JSClassRef s_objectClass = RJSCreateWrapperClass<Object *>("RealmObject", ObjectGetProperty, ObjectSetProperty, NULL, ObjectPropertyNames, ObjectFinalize);
     return s_objectClass;
 }
 
 JSObjectRef RJSObjectCreate(JSContextRef ctx, Object object) {
+    bool cacheable = ObjectIsCacheable(object);
+
+    if (JSObjectRef jsObject = cacheable ? ObjectGetCached(object) : NULL) {
+        return jsObject;
+    }
+
     JSValueRef prototype = RJSPrototypes(object.realm().get())[object.object_schema.name];
     JSObjectRef jsObject = RJSWrapObject(ctx, RJSObjectClass(), new Object(object), prototype);
+
+    if (cacheable) {
+        ObjectGetCached(object) = jsObject;
+    }
     return jsObject;
 }
 

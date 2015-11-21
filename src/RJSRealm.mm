@@ -68,6 +68,7 @@ public:
     }
 
     std::map<std::string, ObjectDefaults> m_defaults;
+    std::map<std::string, std::map<std::string, JSObjectRef>>m_objects;
     std::map<std::string, JSValueRef> m_prototypes;
 
   private:
@@ -97,6 +98,11 @@ public:
 
 std::map<std::string, ObjectDefaults> &RJSDefaults(Realm *realm) {
     return static_cast<RJSRealmDelegate *>(realm->m_binding_context.get())->m_defaults;
+}
+
+std::map<std::string, JSObjectRef> &RJSObjects(Realm *realm, std::string type) {
+    auto &objects = static_cast<RJSRealmDelegate *>(realm->m_delegate.get())->m_objects;
+    return objects[type];
 }
 
 std::map<std::string, JSValueRef> &RJSPrototypes(Realm *realm) {

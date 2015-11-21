@@ -106,8 +106,9 @@ module.exports = BaseTest.extend({
             TestCase.assertEqual(obj0.valueCol, 'newVal0');
             TestCase.assertEqual(objects.length, 2);
 
-            realm.create('IntPrimaryObject', {primaryCol: 0}, true);
+            var newObj0 = realm.create('IntPrimaryObject', {primaryCol: 0}, true);
             TestCase.assertEqual(obj0.valueCol, 'newVal0');
+            TestCase.assertEqual(obj0, newObj0);
         });
 
         // test upsert with all type and string primary object
