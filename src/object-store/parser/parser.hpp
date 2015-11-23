@@ -82,7 +82,7 @@ namespace realm {
         Predicate parse(const std::string &query);
         
         void analyzeGrammar();
-        bool testGrammer();
+        bool testGrammar();
     }
 }
 

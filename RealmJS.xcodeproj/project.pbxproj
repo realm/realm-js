@@ -60,6 +60,7 @@
 		02C0864E1BCDB27000942F9C /* list.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02C0864C1BCDB27000942F9C /* list.cpp */; };
 		02C0864F1BCDB27000942F9C /* list.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 02C0864D1BCDB27000942F9C /* list.hpp */; };
 		02D0F23B1BF6C95200B4FC45 /* binding_context.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 02D0F23A1BF6C95200B4FC45 /* binding_context.hpp */; };
+		02D0F2D61C037C3400B4FC45 /* GCDWebServers.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 021CEA3C1BFD1BA000D69390 /* GCDWebServers.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		02D456DA1B7E59A500EE1299 /* ArrayTests.js in Resources */ = {isa = PBXBuildFile; fileRef = 02D456D91B7E59A500EE1299 /* ArrayTests.js */; };
 		02D8D1F71B601984006DB49D /* JavaScriptCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 02B58CCD1AE99D4D009B348C /* JavaScriptCore.framework */; };
 		02E9A9F11BFA84F100939F86 /* QueryTests.js in Resources */ = {isa = PBXBuildFile; fileRef = 02E9A9F01BFA84F100939F86 /* QueryTests.js */; };
@@ -140,6 +141,13 @@
 			remoteGlobalIDString = E2DDD18B1BE69404002CE867;
 			remoteInfo = "GCDWebServers (tvOS)";
 		};
+		02D0F2D41C037C1700B4FC45 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 02A3C7841BC4317A00B1A7BE /* GCDWebServer.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = CEE28CEE1AE0051F00F4023C;
+			remoteInfo = "GCDWebServers (iOS)";
+		};
 		02EE6D891BD87E310016A82E /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 02EE6D781BD87E310016A82E /* ReactTests.xcodeproj */;
@@ -154,13 +162,6 @@
 			remoteGlobalIDString = 00E356EE1AD99517003FC87E;
 			remoteInfo = RealmReactTests;
 		};
-		02EF76771BFFD506000D5BAD /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 02A3C7841BC4317A00B1A7BE /* GCDWebServer.xcodeproj */;
-			proxyType = 1;
-			remoteGlobalIDString = CEE28CEE1AE0051F00F4023C;
-			remoteInfo = "GCDWebServers (iOS)";
-		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -170,6 +171,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				02D0F2D61C037C3400B4FC45 /* GCDWebServers.framework in Embed Frameworks */,
 				F64426C51BCDB1E200A81210 /* RealmJS.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
@@ -490,7 +492,7 @@
 			buildRules = (
 			);
 			dependencies = (
-				02EF76781BFFD506000D5BAD /* PBXTargetDependency */,
+				02D0F2D51C037C1700B4FC45 /* PBXTargetDependency */,
 				02B29A301B7CF7ED008A7E6B /* PBXTargetDependency */,
 			);
 			name = RealmReact;
@@ -756,10 +758,10 @@
 			target = 02B58CB01AE99CEC009B348C /* RealmJS */;
 			targetProxy = 02B58CBE1AE99CEC009B348C /* PBXContainerItemProxy */;
 		};
-		02EF76781BFFD506000D5BAD /* PBXTargetDependency */ = {
+		02D0F2D51C037C1700B4FC45 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			name = "GCDWebServers (iOS)";
-			targetProxy = 02EF76771BFFD506000D5BAD /* PBXContainerItemProxy */;
+			targetProxy = 02D0F2D41C037C1700B4FC45 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
