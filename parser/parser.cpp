@@ -151,7 +151,7 @@ template<> struct action< and_ext >
         // if we were put into an OR group we need to rearrange
         auto &current = state.current();
         if (current.type == Predicate::Type::Or) {
-            auto &sub_preds = state.current().cpnd.sub_predicates;
+            auto &sub_preds = current.cpnd.sub_predicates;
             auto &second_last = sub_preds[sub_preds.size()-2];
             if (second_last.type == Predicate::Type::And) {
                 // if we are in an OR group and second to last predicate group is
@@ -320,7 +320,7 @@ Predicate parse(const std::string &query)
     return std::move(out_predicate);
 }
 
-void analyzeGrammer()
+void analyzeGrammar()
 {
     analyze<pred>();
 }

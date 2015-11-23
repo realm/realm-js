@@ -36,7 +36,8 @@ namespace realm {
 
         struct Predicate
         {
-            enum class Type {
+            enum class Type
+            {
                 Comparison,
                 Or,
                 And,
@@ -44,7 +45,8 @@ namespace realm {
                 False
             } type = Type::And;
 
-            enum class Operator {
+            enum class Operator
+            {
                 None,
                 Equal,
                 NotEqual,
@@ -57,13 +59,15 @@ namespace realm {
                 Contains
             };
 
-            struct Comparison {
+            struct Comparison
+            {
                 Operator op = Operator::None;
                 Expression expr[2];
                 ~Comparison() {}
             };
 
-            struct Compound {
+            struct Compound
+            {
                 std::vector<Predicate> sub_predicates;
             };
 
@@ -77,7 +81,7 @@ namespace realm {
 
         Predicate parse(const std::string &query);
         
-        void analyzeGrammer();
+        void analyzeGrammar();
         bool testGrammer();
     }
 }
