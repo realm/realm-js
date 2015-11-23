@@ -65,7 +65,7 @@
 		02E9A9F11BFA84F100939F86 /* QueryTests.js in Resources */ = {isa = PBXBuildFile; fileRef = 02E9A9F01BFA84F100939F86 /* QueryTests.js */; };
 		02EF76761BFFD41F000D5BAD /* queryTests.json in Resources */ = {isa = PBXBuildFile; fileRef = 02EF76751BFFD41F000D5BAD /* queryTests.json */; };
 		02EF76861BFFDE37000D5BAD /* test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02EF76851BFFDE37000D5BAD /* test.cpp */; };
-		02EF76881BFFDE9E000D5BAD /* GrammerTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = 02EF76871BFFDE9E000D5BAD /* GrammerTests.mm */; };
+		02EF76881BFFDE9E000D5BAD /* GrammarTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = 02EF76871BFFDE9E000D5BAD /* GrammarTests.mm */; };
 		F636F6C81BCDB3570023F35C /* RealmReact.h in Headers */ = {isa = PBXBuildFile; fileRef = 0270BCCF1B7D067300010E03 /* RealmReact.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		F64426C51BCDB1E200A81210 /* RealmJS.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 02B58CB11AE99CEC009B348C /* RealmJS.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		F64E1EF11BC3510E00E0E150 /* util.js in Resources */ = {isa = PBXBuildFile; fileRef = F64E1EF01BC3510E00E0E150 /* util.js */; };
@@ -125,6 +125,20 @@
 			proxyType = 1;
 			remoteGlobalIDString = 02B58CB01AE99CEC009B348C;
 			remoteInfo = RealmJS;
+		};
+		02D0F2A01C03775600B4FC45 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 02A3C7841BC4317A00B1A7BE /* GCDWebServer.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = E2DDD1C71BE698A8002CE867;
+			remoteInfo = "GCDWebServer (tvOS)";
+		};
+		02D0F2A21C03775600B4FC45 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 02A3C7841BC4317A00B1A7BE /* GCDWebServer.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = E2DDD18B1BE69404002CE867;
+			remoteInfo = "GCDWebServers (tvOS)";
 		};
 		02EE6D891BD87E310016A82E /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -228,7 +242,7 @@
 		02EE6D781BD87E310016A82E /* ReactTests.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = ReactTests.xcodeproj; path = tests/ReactTests/ios/ReactTests.xcodeproj; sourceTree = "<group>"; };
 		02EF76751BFFD41F000D5BAD /* queryTests.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; name = queryTests.json; path = "src/object-store/parser/queryTests.json"; sourceTree = SOURCE_ROOT; };
 		02EF76851BFFDE37000D5BAD /* test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = test.cpp; path = "src/object-store/parser/test.cpp"; sourceTree = SOURCE_ROOT; };
-		02EF76871BFFDE9E000D5BAD /* GrammerTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = GrammerTests.mm; path = tests/GrammerTests.mm; sourceTree = SOURCE_ROOT; };
+		02EF76871BFFDE9E000D5BAD /* GrammarTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = GrammarTests.mm; path = tests/GrammarTests.mm; sourceTree = SOURCE_ROOT; };
 		F64E1EF01BC3510E00E0E150 /* util.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; name = util.js; path = tests/util.js; sourceTree = SOURCE_ROOT; };
 		F68A278A1BC2722A0063D40A /* RJSModuleLoader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RJSModuleLoader.h; path = tests/RJSModuleLoader.h; sourceTree = SOURCE_ROOT; };
 		F68A278B1BC2722A0063D40A /* RJSModuleLoader.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = RJSModuleLoader.m; path = tests/RJSModuleLoader.m; sourceTree = SOURCE_ROOT; };
@@ -274,8 +288,10 @@
 			children = (
 				021CEA361BFD1BA000D69390 /* GCDWebServer */,
 				021CEA381BFD1BA000D69390 /* GCDWebServer.app */,
+				02D0F2A11C03775600B4FC45 /* GCDWebServer.app */,
 				021CEA3A1BFD1BA000D69390 /* GCDWebServers.framework */,
 				021CEA3C1BFD1BA000D69390 /* GCDWebServers.framework */,
+				02D0F2A31C03775600B4FC45 /* GCDWebServers.framework */,
 				021CEA3E1BFD1BA000D69390 /* Tests.xctest */,
 			);
 			name = Products;
@@ -382,7 +398,7 @@
 				02409DC11BCF11D6005F3B3E /* RealmJSCoreTests.m */,
 				F68A278A1BC2722A0063D40A /* RJSModuleLoader.h */,
 				F68A278B1BC2722A0063D40A /* RJSModuleLoader.m */,
-				02EF76871BFFDE9E000D5BAD /* GrammerTests.mm */,
+				02EF76871BFFDE9E000D5BAD /* GrammarTests.mm */,
 				02EF76851BFFDE37000D5BAD /* test.cpp */,
 			);
 			path = RealmJSTests;
@@ -604,6 +620,20 @@
 			remoteRef = 021CEA3D1BFD1BA000D69390 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
+		02D0F2A11C03775600B4FC45 /* GCDWebServer.app */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.application;
+			path = GCDWebServer.app;
+			remoteRef = 02D0F2A01C03775600B4FC45 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		02D0F2A31C03775600B4FC45 /* GCDWebServers.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = GCDWebServers.framework;
+			remoteRef = 02D0F2A21C03775600B4FC45 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
 		02EE6D8A1BD87E310016A82E /* ReactTests.app */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.application;
@@ -706,7 +736,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F68A278C1BC2722A0063D40A /* RJSModuleLoader.m in Sources */,
-				02EF76881BFFDE9E000D5BAD /* GrammerTests.mm in Sources */,
+				02EF76881BFFDE9E000D5BAD /* GrammarTests.mm in Sources */,
 				02EF76861BFFDE37000D5BAD /* test.cpp in Sources */,
 				0270BC821B7D020100010E03 /* RealmJSTests.mm in Sources */,
 				02409DC21BCF11D6005F3B3E /* RealmJSCoreTests.m in Sources */,

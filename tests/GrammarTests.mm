@@ -12,8 +12,8 @@
 @implementation GrammerTests
 
 - (void)testGrammer {
-    realm::parser::analyzeGrammer();
-    XCTAssertTrue(realm::parser::testGrammer());
+    realm::parser::analyzeGrammar();
+    XCTAssertTrue(realm::parser::testGrammar());
 }
 
 @end

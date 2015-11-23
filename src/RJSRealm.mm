@@ -269,7 +269,7 @@ JSValueRef RealmObjects(JSContextRef ctx, JSObjectRef function, JSObjectRef this
         else {
             std::string query = RJSValidatedStringForValue(ctx, arguments[1], "predicate");
             std::vector<JSValueRef> args;
-            for (size_t i =2; i < argumentCount; i++) {
+            for (size_t i = 2; i < argumentCount; i++) {
                 args.push_back(arguments[i]);
             }
             return RJSResultsCreate(ctx, sharedRealm, className, query, args);
