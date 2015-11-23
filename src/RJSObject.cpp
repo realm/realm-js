@@ -211,6 +211,13 @@ template<> JSValueRef RJSAccessor::from_datetime(JSContextRef ctx, DateTime dt) 
 
 extern JSObjectRef RJSDictForPropertyArray(JSContextRef ctx, ObjectSchema &object_schema, JSObjectRef array);
 
+template<> size_t RJSAccessor::to_existing_object_index(JSContextRef ctx, JSValueRef &val) {
+    JSObjectRef object = RJSValidatedValueToObject(ctx, val);
+    if (JSValueIsObjectOfClass(ctx, val, RJSObjectClass())) {
+        return RJSGetInternal<Object *>(object)->row().get_index();
+    }
+    throw std::runtime_error("object is not a Realm Object");
+}
 template<> size_t RJSAccessor::to_object_index(JSContextRef ctx, SharedRealm realm, JSValueRef &val, const std::string &type, bool try_update) {
     JSObjectRef object = RJSValidatedValueToObject(ctx, val);
     if (JSValueIsObjectOfClass(ctx, val, RJSObjectClass())) {

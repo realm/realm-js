@@ -12,5 +12,6 @@
 - (void)addGlobalModuleObject:(id)object forName:(NSString *)name;
 
 - (JSValue *)loadModuleFromURL:(NSURL *)url error:(NSError **)error;
+- (JSValue *)loadJSONFromURL:(NSURL *)url error:(NSError **)error;
 
 @end

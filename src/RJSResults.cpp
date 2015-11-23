@@ -6,6 +6,8 @@
 #import "RJSObject.hpp"
 #import "object_accessor.hpp"
 #import "results.hpp"
+#import "parser.hpp"
+#import "query_builder.hpp"
 
 using namespace realm;
 
@@ -103,22 +105,18 @@ JSObjectRef RJSResultsCreate(JSContextRef ctx, SharedRealm realm, std::string cl
 }
 
 
-void RLMUpdateQueryWithPredicate(realm::Query *query, NSPredicate *predicate, realm::Schema &schema, realm::ObjectSchema &objectSchema);
-
-JSObjectRef RJSResultsCreate(JSContextRef ctx, SharedRealm realm, std::string className, std::string queryString) {
+JSObjectRef RJSResultsCreate(JSContextRef ctx, SharedRealm realm, std::string className, std::string queryString, std::vector<JSValueRef> args) {
     TableRef table = ObjectStore::table_for_object_type(realm->read_group(), className);
     Query query = table->where();
     Schema &schema = *realm->config().schema;
-    auto object_schema = realm->config().schema->find(className);
-    if (object_schema == realm->config().schema->end()) {
+    auto object_schema = schema.find(className);
+    if (object_schema == schema.end()) {
         throw std::runtime_error("Object type '" + className + "' not present in Realm.");
     }
-    @try {
-        RLMUpdateQueryWithPredicate(&query, [NSPredicate predicateWithFormat:@(queryString.c_str())], schema, *object_schema);
-    }
-    @catch(NSException *ex) {
-        throw std::runtime_error(ex.description.UTF8String);
-    }
+    parser::Predicate predicate = parser::parse(queryString);
+    query_builder::ArgumentConverter<JSValueRef, JSContextRef> arguments(ctx, args);
+    query_builder::apply_predicate(query, predicate, arguments, schema, object_schema->name);
+
     return RJSWrapObject<Results *>(ctx, RJSResultsClass(), new Results(realm, *object_schema, std::move(query)));
 }
 

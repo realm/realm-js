@@ -235,12 +235,12 @@ module.exports = BaseTest.extend({
     },
 
     testRealmObjects: function() {
-        var realm = new Realm({schema: [schemas.PersonObject]});
+        var realm = new Realm({schema: [schemas.PersonObject, schemas.DefaultValues, schemas.TestObject]});
         realm.write(function() {
-            realm.create('PersonObject', ['Ari', 10]);
-            realm.create('PersonObject', ['Tim', 11]);
+            realm.create('PersonObject', ['Ari', 10, false]);
+            realm.create('PersonObject', ['Tim', 11, false]);
             realm.create('PersonObject', {'name': 'Bjarne', 'age': 12});
-            realm.create('PersonObject', {'name': 'Alex', 'age': 12});
+            realm.create('PersonObject', {'name': 'Alex', 'age': 12, 'married': true});
         });
 
         TestCase.assertThrows(function() { 
@@ -268,7 +268,25 @@ module.exports = BaseTest.extend({
         TestCase.assertEqual(realm.objects('PersonObject', 'age < 12').length, 2);
         TestCase.assertEqual(realm.objects('PersonObject', 'age > 10 && age < 13').length, 3);
         TestCase.assertEqual(realm.objects('PersonObject', 'age >= 11 && age < 13').length, 3);
+        TestCase.assertEqual(realm.objects('PersonObject', 'name = "Tim"').length, 1);
         TestCase.assertEqual(realm.objects('PersonObject', 'name = \'Tim\'').length, 1);
+        TestCase.assertEqual(realm.objects('PersonObject', 'married == TRUE').length, 1);
+        TestCase.assertEqual(realm.objects('PersonObject', 'married == false').length, 3);
+
+        TestCase.assertEqual(realm.objects('PersonObject', 'name = $0', 'Tim').length, 1);
+        TestCase.assertEqual(realm.objects('PersonObject', 'age > $1 && age < $0', 13, 10).length, 3);
+        TestCase.assertThrows(function() {
+            realm.objects('PersonObject', 'age > $2 && age < $0', 13, 10)
+        });
+
+        realm.write(function() {
+            realm.create('DefaultValuesObject', {'dateCol': new Date(3)});
+            realm.create('DefaultValuesObject', {'dateCol': new Date(4)});
+            realm.create('DefaultValuesObject', {'dateCol': new Date(5)});
+        });
+
+        TestCase.assertEqual(realm.objects('DefaultValuesObject', 'dateCol > $0', new Date(4)).length, 1);
+        TestCase.assertEqual(realm.objects('DefaultValuesObject', 'dateCol <= $0', new Date(4)).length, 2);
     },
 
     testNotifications: function() {

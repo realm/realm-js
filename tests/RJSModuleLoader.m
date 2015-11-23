@@ -42,14 +42,18 @@ static NSString * const RJSModuleLoaderErrorDomain = @"RJSModuleLoaderErrorDomai
     NSURL *url = [[NSURL URLWithString:name relativeToURL:baseURL] absoluteURL];
     BOOL isDirectory;
 
-    if ([[NSFileManager defaultManager] fileExistsAtPath:url.path isDirectory:&isDirectory]) {
-        if (!isDirectory) {
-            return nil;
-        }
-
+    if ([[NSFileManager defaultManager] fileExistsAtPath:url.path isDirectory:&isDirectory] && isDirectory) {
         url = [url URLByAppendingPathComponent:@"index.js"];
     } else {
-        url = [url URLByAppendingPathExtension:@"js"];
+        if ([[url pathExtension] isEqualToString:@"json"]) {
+            return [self loadJSONFromURL:url error:error];
+        }
+        else if ([[url pathExtension] length] == 0) {
+            url = [url URLByAppendingPathExtension:@"js"];
+        }
+        else {
+            return nil;
+        }
     }
 
     return [self loadModuleFromURL:url error:error];
@@ -134,6 +138,34 @@ static NSString * const RJSModuleLoaderErrorDomain = @"RJSModuleLoaderErrorDomai
     }
     
     return exports;
+}
+
+- (JSValue *)loadJSONFromURL:(NSURL *)url error:(NSError **)error {
+    url = url.absoluteURL;
+    url = url.standardizedURL ?: url;
+
+    NSString *path = url.path;
+    JSValue *exports = self.modules[path];
+    if (exports) {
+        return exports;
+    }
+
+    NSString *source = [NSString stringWithContentsOfURL:url usedEncoding:NULL error:error];
+    if (!source) {
+        return nil;
+    }
+
+    JSContext *context = self.context;
+    JSValueRef json = JSValueMakeFromJSONString(context.JSGlobalContextRef, JSStringCreateWithUTF8CString(source.UTF8String));
+    if (!json) {
+        *error = [NSError errorWithDomain:RJSModuleLoaderErrorDomain code:1 userInfo:@{
+            NSLocalizedDescriptionKey: @"Invalid JSON"
+        }];
+        return nil;
+    }
+
+    self.modules[path] = [JSValue valueWithJSValueRef:json inContext:context];
+    return self.modules[path];
 }
 
 - (JSValue *)loadGlobalModule:(NSString *)name relativeToURL:(NSURL *)baseURL error:(NSError **)error {

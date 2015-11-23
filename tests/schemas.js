@@ -17,8 +17,9 @@ function PersonObject() {}
 PersonObject.prototype.schema = {
   name: 'PersonObject',
   properties: [
-    {name: 'name', type: Realm.Types.STRING},
-    {name: 'age',  type: Realm.Types.DOUBLE},
+    {name: 'name',    type: Realm.Types.STRING},
+    {name: 'age',     type: Realm.Types.DOUBLE},
+    {name: 'married', type: Realm.Types.BOOL, default: false}
   ]
 };
 PersonObject.prototype.description = function() {
@@ -101,4 +102,36 @@ exports.DefaultValues = {
     {name: 'nullObjectCol', type: 'TestObject', default: null},
     {name: 'arrayCol',  type: Realm.Types.LIST, objectType: 'TestObject', default: [[2]]},
   ]
+};
+
+exports.QueryObject = {
+    name: 'QueryObject',
+    properties: [
+        {name: 'bool1',   type: Realm.Types.BOOL},
+        {name: 'bool2',   type: Realm.Types.BOOL},
+        {name: 'int1',    type: Realm.Types.INT},
+        {name: 'int2',    type: Realm.Types.INT},
+        {name: 'float1',  type: Realm.Types.FLOAT},
+        {name: 'float2',  type: Realm.Types.FLOAT},
+        {name: 'double1', type: Realm.Types.DOUBLE},
+        {name: 'double2', type: Realm.Types.DOUBLE},
+        {name: 'string1', type: Realm.Types.STRING},
+        {name: 'string2', type: Realm.Types.STRING},
+    ]
+};
+
+exports.NullQueryObject = {
+    name: 'NullQueryObject',
+    properties: [
+        {name: 'bool1',   type: Realm.Types.BOOL},
+        {name: 'bool2',   type: Realm.Types.BOOL},
+        {name: 'int1',    type: Realm.Types.INT},
+        {name: 'int2',    type: Realm.Types.INT},
+        {name: 'float1',  type: Realm.Types.FLOAT},
+        {name: 'float2',  type: Realm.Types.FLOAT},
+        {name: 'double1', type: Realm.Types.DOUBLE},
+        {name: 'double2', type: Realm.Types.DOUBLE},
+        {name: 'string1', type: Realm.Types.STRING},
+        {name: 'string2', type: Realm.Types.STRING},
+    ]
 };
