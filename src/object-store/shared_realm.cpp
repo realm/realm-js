@@ -47,6 +47,8 @@ Realm::Config::Config(const Config& c)
     }
 }
 
+Realm::Config::Config() = default;
+Realm::Config::Config(Config&&) = default;
 Realm::Config::~Config() = default;
 
 Realm::Config& Realm::Config::operator=(realm::Realm::Config const& c)
@@ -237,7 +239,14 @@ static void check_read_write(Realm *realm)
 void Realm::verify_thread() const
 {
     if (m_thread_id != std::this_thread::get_id()) {
-        throw IncorrectThreadException("Realm accessed from incorrect thread.");
+        throw IncorrectThreadException();
+    }
+}
+
+void Realm::verify_in_write() const
+{
+    if (!is_in_transaction()) {
+        throw InvalidTransactionException("Cannot modify persisted objects outside of a write transaction.");
     }
 }
 
