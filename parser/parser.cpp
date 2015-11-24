@@ -107,27 +107,37 @@ struct pred : seq< and_pred, star< or_ext > > {};
 struct ParserState
 {
     std::vector<Predicate *> predicate_stack;
-    Predicate &current() {
+    Predicate &current()
+    {
         return *predicate_stack.back();
     }
-
+    
+    bool current_is_compound()
+    {
+        return current().type == Predicate::Type::And || current().type == Predicate::Type::Or;
+    }
+    
     bool negate_next = false;
-
+    
     void addExpression(Expression && exp)
     {
-        if (current().type == Predicate::Type::Comparison) {
-            current().cmpr.expr[1] = std::move(exp);
+        Predicate &cur = current();
+        if (cur.type == Predicate::Type::Comparison) {
+            cur.cmpr.expr[1] = std::move(exp);
             predicate_stack.pop_back();
         }
         else {
+            assert(current_is_compound());
+
             Predicate p(Predicate::Type::Comparison);
             p.cmpr.expr[0] = std::move(exp);
             if (negate_next) {
                 p.negate = true;
                 negate_next = false;
             }
-            current().cpnd.sub_predicates.emplace_back(std::move(p));
-            predicate_stack.push_back(&current().cpnd.sub_predicates.back());
+            
+            cur.cpnd.sub_predicates.emplace_back(std::move(p));
+            predicate_stack.push_back(&cur.cpnd.sub_predicates.back());
         }
     }
 };
@@ -147,6 +157,7 @@ template<> struct action< and_ext >
     static void apply( const input & in, ParserState & state )
     {
         DEBUG_PRINT_TOKEN("<and>");
+        assert(state.current_is_compound());
 
         // if we were put into an OR group we need to rearrange
         auto &current = state.current();
@@ -177,6 +188,7 @@ template<> struct action< or_ext >
     static void apply( const input & in, ParserState & state )
     {
         DEBUG_PRINT_TOKEN("<or>");
+        assert(state.current_is_compound());
 
         // if already an OR group do nothing
         auto &current = state.current();
@@ -186,15 +198,17 @@ template<> struct action< or_ext >
 
         // if only two predicates in the group, then convert to OR
         auto &sub_preds = state.current().cpnd.sub_predicates;
-        if (sub_preds.size()) {
+        assert(sub_preds.size() > 1);
+        if (sub_preds.size() == 2) {
             current.type = Predicate::Type::Or;
             return;
         }
 
         // split the current group into to groups which are ORed together
         Predicate pred1(Predicate::Type::And), pred2(Predicate::Type::And);
-        pred1.cpnd.sub_predicates.insert(sub_preds.begin(), sub_preds.back());
-        pred2.cpnd.sub_predicates.push_back(std::move(sub_preds.back()));
+        std::vector<Predicate>::iterator second_last = sub_preds.end() - 2;
+        pred1.cpnd.sub_predicates.insert(pred1.cpnd.sub_predicates.begin(), sub_preds.begin(), second_last);
+        pred2.cpnd.sub_predicates.insert(pred2.cpnd.sub_predicates.begin(), second_last, sub_preds.end());
 
         current.type = Predicate::Type::Or;
         sub_preds.clear();
