@@ -610,7 +610,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "rm -rf ./node_modules/realm\nnpm install realm";
+			shellScript = "rm -rf ./node_modules/realm\n[ -s \"${HOME}/.nvm/nvm.sh\" ] && . \"${HOME}/.nvm/nvm.sh\"\nnpm install realm";
 		};
 /* End PBXShellScriptBuildPhase section */
 
