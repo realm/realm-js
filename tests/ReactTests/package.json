@@ -3,10 +3,10 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "start": "node_modules/react-native/packager/packager.sh"
+    "start": "react-native start"
   },
   "dependencies": {
-    "react-native": "0.14.2",
+    "react-native": "^0.14.2",
     "realm": "file:../../lib",
     "realm-tests": "file:.."
   }
