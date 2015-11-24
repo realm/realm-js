@@ -5,6 +5,8 @@
 #import "RealmJSTests.h"
 #import "RJSModuleLoader.h"
 
+#import <RealmJS/RealmJS.h>
+
 @interface RealmJSCoreTests : RealmJSTests
 
 @property (nonatomic, strong) JSValue *testObject;

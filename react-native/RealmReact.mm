@@ -6,7 +6,7 @@ extern "C" {
 #import "RealmReact.h"
 #import "Base/RCTBridge.h"
 
-#import <RealmJS/RealmJS.h>
+#import <RealmJS/js-init.hpp>
 #import <objc/runtime.h>
 #import <dlfcn.h>
 
@@ -48,7 +48,7 @@ JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executor, bool cre
 
 #if DEBUG
 #import <GCDWebServers/GCDWebServers.h>
-#import <RealmJS/RealmRPC.hpp>
+#import <RealmJS/rpc.hpp>
 
 @interface RealmReact () {
     GCDWebServer *_webServer;

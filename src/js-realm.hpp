@@ -2,7 +2,7 @@
  * Proprietary and Confidential
  */
 
-#import "RJSUtil.hpp"
+#import "js-util.hpp"
 #include <map>
 
 namespace realm {

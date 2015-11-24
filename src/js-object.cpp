@@ -2,12 +2,12 @@
  * Proprietary and Confidential
  */
 
-#import "RJSUtil.hpp"
-#import "RJSObject.hpp"
-#import "RJSResults.hpp"
-#import "RJSSchema.hpp"
-#import "RJSList.hpp"
-#import "RJSRealm.hpp"
+#import "js-util.hpp"
+#import "js-object.hpp"
+#import "js-results.hpp"
+#import "js-schema.hpp"
+#import "js-list.hpp"
+#import "js-realm.hpp"
 
 #import "object_store.hpp"
 #import "object_accessor.hpp"

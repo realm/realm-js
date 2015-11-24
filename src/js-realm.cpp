@@ -2,11 +2,12 @@
  * Proprietary and Confidential
  */
 
-#import "RJSRealm.hpp"
-#import "RJSObject.hpp"
-#import "RJSResults.hpp"
-#import "RJSList.hpp"
-#import "RJSSchema.hpp"
+#import "js-realm.hpp"
+#import "js-object.hpp"
+#import "js-results.hpp"
+#import "js-list.hpp"
+#import "js-schema.hpp"
+#import "platform.hpp"
 
 #import "shared_realm.hpp"
 #import "object_accessor.hpp"
@@ -103,46 +104,7 @@ std::map<std::string, JSValueRef> &RJSPrototypes(Realm *realm) {
     return static_cast<RJSRealmDelegate *>(realm->m_binding_context.get())->m_prototypes;
 }
 
-std::string writeablePathForFile(const std::string &fileName) {
-#if TARGET_OS_IPHONE
-    // On iOS the Documents directory isn't user-visible, so put files there
-    NSString *path = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES)[0];
-#else
-    // On OS X it is, so put files in Application Support. If we aren't running
-    // in a sandbox, put it in a subdirectory based on the bundle identifier
-    // to avoid accidentally sharing files between applications
-    NSString *path = NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, YES)[0];
-    if (![[NSProcessInfo processInfo] environment][@"APP_SANDBOX_CONTAINER_ID"]) {
-        NSString *identifier = [[NSBundle mainBundle] bundleIdentifier];
-        if ([identifier length] == 0) {
-            identifier = [[[NSBundle mainBundle] executablePath] lastPathComponent];
-        }
-        path = [path stringByAppendingPathComponent:identifier];
-
-        // create directory
-        [[NSFileManager defaultManager] createDirectoryAtPath:path
-                                  withIntermediateDirectories:YES
-                                                   attributes:nil
-                                                        error:nil];
-    }
-#endif
-    return std::string(path.UTF8String) + "/" + fileName;
-}
-
-void ensureDirectoryForFile(const std::string &fileName) {
-    NSString *docsDir = [[NSString stringWithUTF8String:fileName.c_str()] stringByDeletingLastPathComponent];
-    NSFileManager *manager = [NSFileManager defaultManager];
-
-    if (![manager fileExistsAtPath:docsDir]) {
-        NSError *error = nil;
-        [manager createDirectoryAtPath:docsDir withIntermediateDirectories:YES attributes:nil error:&error];
-        if (error) {
-            throw std::runtime_error([[error description] UTF8String]);
-        }
-    }
-}
-
-static std::string s_defaultPath = writeablePathForFile("default.realm");
+static std::string s_defaultPath = realm::default_realm_file_directory() + "/default.realm";
 std::string RJSDefaultPath() {
     return s_defaultPath;
 }
@@ -214,7 +176,7 @@ JSObjectRef RealmConstructor(JSContextRef ctx, JSObjectRef constructor, size_t a
                 *jsException = RJSMakeError(ctx, "Invalid arguments when constructing 'Realm'");
                 return NULL;
         }
-        ensureDirectoryForFile(config.path);
+        ensure_directory_exists_for_file(config.path);
         SharedRealm realm = Realm::get_shared_realm(config);
         if (!realm->m_binding_context) {
             realm->m_binding_context = std::make_unique<RJSRealmDelegate>(realm, JSContextGetGlobalContext(ctx));

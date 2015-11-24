@@ -2,7 +2,7 @@
  * Proprietary and Confidential
  */
 
-#import "RJSSchema.hpp"
+#import "js-schema.hpp"
 #import "object_store.hpp"
 
 namespace realm {

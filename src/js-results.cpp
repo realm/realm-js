@@ -2,8 +2,8 @@
  * Proprietary and Confidential
  */
 
-#import "RJSResults.hpp"
-#import "RJSObject.hpp"
+#import "js-results.hpp"
+#import "js-object.hpp"
 #import "object_accessor.hpp"
 #import "results.hpp"
 #import "parser.hpp"

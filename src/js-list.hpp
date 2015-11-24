@@ -2,7 +2,7 @@
  * Proprietary and Confidential
  */
 
-#import "RJSUtil.hpp"
+#import "js-util.hpp"
 #import "shared_realm.hpp"
 #import "list.hpp"
 

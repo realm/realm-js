@@ -2,14 +2,17 @@
  * Proprietary and Confidential
  */
 
-#import "RealmJS.h"
-#import "RJSRealm.hpp"
-#import "RJSObject.hpp"
-#import "RJSUtil.hpp"
-#import "RJSSchema.hpp"
+#import "js-init.hpp"
+#import "js-realm.hpp"
+#import "js-object.hpp"
+#import "js-util.hpp"
+#import "js-schema.hpp"
+#import "platform.hpp"
 
 #include "shared_realm.hpp"
 #include <algorithm>
+
+extern "C" {
 
 JSValueRef RJSTypeGet(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef* exception) {
     std::string str = RJSStringForJSString(propertyName);
@@ -34,15 +37,6 @@ JSClassRef RJSRealmTypeClass() {
     };
     realmTypesDefinition.staticValues = types;
     return JSClassCreate(&realmTypesDefinition);
-}
-
-NSString *RealmFileDirectory() {
-#if TARGET_OS_IPHONE
-    return NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES)[0];
-#else
-    NSString *path = NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, YES)[0];
-    return [path stringByAppendingPathComponent:[[[NSBundle mainBundle] executablePath] lastPathComponent]];
-#endif
 }
 
 static JSValueRef ClearTestState(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef *exception) {
@@ -85,12 +79,7 @@ void RJSInitializeInContext(JSContextRef ctx) {
 
 void RJSClearTestState() {
     realm::Realm::s_global_cache.clear();
+    realm::remvoe_realm_files_from_directory(realm::default_realm_file_directory());
+}
 
-    NSFileManager *manager = [NSFileManager defaultManager];
-    NSString *fileDir = RealmFileDirectory();
-    for (NSString *path in [manager enumeratorAtPath:fileDir]) {
-        if (![manager removeItemAtPath:[fileDir stringByAppendingPathComponent:path] error:nil]) {
-            @throw [NSException exceptionWithName:@"removeItemAtPath error" reason:@"Failed to delete file" userInfo:nil];
-        }
-    }
 }

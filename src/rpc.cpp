@@ -2,17 +2,17 @@
  * Proprietary and Confidential
  */
 
-#import "RealmRPC.hpp"
+#import "rpc.hpp"
 
 #include <dlfcn.h>
 #include <map>
 #include <string>
-#include "RealmJS.h"
-#include "RJSObject.hpp"
-#include "RJSResults.hpp"
-#include "RJSList.hpp"
-#include "RJSRealm.hpp"
-#include "RJSUtil.hpp"
+#include "js-init.hpp"
+#include "js-object.hpp"
+#include "js-results.hpp"
+#include "js-list.hpp"
+#include "js-realm.hpp"
+#include "js-util.hpp"
 
 #include "base64.hpp"
 #include "object_accessor.hpp"
