@@ -267,7 +267,8 @@
         ["ObjectSet", [0],      "IntObject", "intCol == 0 && NOT intCol != 0"],
         ["ObjectSet", [1],      "IntObject", "(intCol == 0 || intCol == 1) && intCol >= 1"],
         ["ObjectSet", [0, 1],   "IntObject", "intCol == 0 || (intCol == 1 && intCol >= 1)"],
-        ["ObjectSet", [0, 1],   "IntObject", "intCol == 0 || intCol == 1 && intCol >= 1"]
+        ["ObjectSet", [0, 1],   "IntObject", "intCol == 0 || intCol == 1 && intCol >= 1"],
+        ["ObjectSet", [0, 1],   "IntObject", "intCol == 1 && intCol >= 1 || intCol == 0"]
     ]
 }
 
