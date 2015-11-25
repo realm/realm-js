@@ -35,7 +35,7 @@ function runTests() {
             }
             catch (e) {
                 console.log('- ' + testName);
-                console.warn(e);
+                console.warn(e.message);
             }
             finally {
                 if (testSuite.afterEach) {

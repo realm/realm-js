@@ -42,8 +42,14 @@ bool ObjectSetProperty(JSContextRef ctx, JSObjectRef jsObject, JSStringRef jsPro
     return true;
 }
 
-void ObjectPropertyNames(JSContextRef ctx, JSObjectRef object, JSPropertyNameAccumulatorRef propertyNames) {
-    return;
+void ObjectPropertyNames(JSContextRef ctx, JSObjectRef jsObject, JSPropertyNameAccumulatorRef propertyNames) {
+    Object *obj = RJSGetInternal<Object *>(jsObject);
+
+    for (auto &prop : obj->object_schema.properties) {
+        JSStringRef propertyName = RJSStringForString(prop.name);
+        JSPropertyNameAccumulatorAddName(propertyNames, propertyName);
+        JSStringRelease(propertyName);
+    }
 }
 
 JSClassRef RJSObjectClass() {

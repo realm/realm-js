@@ -253,6 +253,24 @@ module.exports = BaseTest.extend({
         TestCase.assertEqual(obj.arrayCol[1].doubleCol, 1);
         TestCase.assertEqual(obj.arrayCol[2].doubleCol, 2);
     },
+    testEnumerablePropertyNames: function() {
+        var basicTypesValues = [true, 1, 1.1, 1.11, 'string', new Date(1), new ArrayBuffer()];
+        var realm = new Realm({schema: [schemas.BasicTypes]});
+        var object;
+
+        realm.write(function() {
+            object = realm.create('BasicTypesObject', basicTypesValues);
+        });
+
+        var propNames = schemas.BasicTypes.properties.map(function(prop) { return prop.name; });
+        TestCase.assertArraysEqual(Object.keys(object), propNames, 'Object.keys');
+
+        for (var key in object) {
+            TestCase.assertEqual(key, propNames.shift());
+        }
+
+        TestCase.assertEqual(propNames.length, 0);
+    },
     testDataProperties: function() {
         var realm = new Realm({schema: [schemas.DefaultValues, schemas.TestObject]});
         var object;
