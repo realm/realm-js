@@ -102,7 +102,7 @@ JSObjectRef RJSResultsCreate(JSContextRef ctx, SharedRealm realm, std::string cl
     if (object_schema == realm->config().schema->end()) {
         throw std::runtime_error("Object type '" + className + "' not present in Realm.");
     }
-    return RJSWrapObject<Results *>(ctx, RJSResultsClass(), new Results(realm, *object_schema, table->where()));
+    return RJSWrapObject<Results *>(ctx, RJSResultsClass(), new Results(realm, *object_schema, *table));
 }
 
 
