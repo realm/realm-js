@@ -154,20 +154,20 @@ struct ParserState
     
     void apply_or()
     {
-        Predicate &group = *group_stack.back();
-        if (group.type == Predicate::Type::Or) {
+        Predicate *group = current_group();
+        if (group->type == Predicate::Type::Or) {
             return;
         }
         
         // convert to OR
-        group.type = Predicate::Type::Or;
-        if (group.cpnd.sub_predicates.size() > 2) {
+        group->type = Predicate::Type::Or;
+        if (group->cpnd.sub_predicates.size() > 2) {
             // split the current group into an AND group ORed with the last subpredicate
             Predicate new_sub(Predicate::Type::And);
-            new_sub.cpnd.sub_predicates = std::move(group.cpnd.sub_predicates);
+            new_sub.cpnd.sub_predicates = std::move(group->cpnd.sub_predicates);
             
-            group.cpnd.sub_predicates = { new_sub, std::move(new_sub.cpnd.sub_predicates.back()) };
-            group.cpnd.sub_predicates[0].cpnd.sub_predicates.pop_back();
+            group->cpnd.sub_predicates = { new_sub, std::move(new_sub.cpnd.sub_predicates.back()) };
+            group->cpnd.sub_predicates[0].cpnd.sub_predicates.pop_back();
         }
     }
     
