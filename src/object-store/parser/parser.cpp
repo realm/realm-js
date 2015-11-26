@@ -179,9 +179,8 @@ struct ParserState
         
         auto &sub_preds = current_group()->cpnd.sub_predicates;
         auto second_last = sub_preds.end() - 2;
-        if (second_last->type == Predicate::Type::And) {
-            // if we are in an OR group and second to last predicate group is
-            // an AND group then move the last predicate inside
+        if (second_last->type == Predicate::Type::And && !second_last->negate) {
+            // make a new and group populated with the last two predicates
             second_last->cpnd.sub_predicates.push_back(std::move(sub_preds.back()));
             sub_preds.pop_back();
         }

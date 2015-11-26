@@ -942,30 +942,6 @@ module.exports = BaseTest.extend({
     XCTAssertThrows([CircleArrayObject objectsInRealm:realm where:@"NONE data.circles = '2'"]);
 }
 
-- (void)testCompoundOrQuery {
-    RLMRealm *realm = [RLMRealm defaultRealm];
-
-    [realm beginWriteTransaction];
-    [PersonObject createInRealm:realm withValue:@[@"Tim", @29]];
-    [PersonObject createInRealm:realm withValue:@[@"Ari", @33]];
-    [realm commitWriteTransaction];
-
-    XCTAssertEqual(2U, [[PersonObject objectsWhere:@"name == 'Ari' or age < 30"] count]);
-    XCTAssertEqual(1U, [[PersonObject objectsWhere:@"name == 'Ari' or age > 40"] count]);
-}
-
-- (void)testCompoundAndQuery {
-    RLMRealm *realm = [RLMRealm defaultRealm];
-
-    [realm beginWriteTransaction];
-    [PersonObject createInRealm:realm withValue:@[@"Tim", @29]];
-    [PersonObject createInRealm:realm withValue:@[@"Ari", @33]];
-    [realm commitWriteTransaction];
-
-    XCTAssertEqual(1U, [[PersonObject objectsWhere:@"name == 'Ari' and age > 30"] count]);
-    XCTAssertEqual(0U, [[PersonObject objectsWhere:@"name == 'Ari' and age > 40"] count]);
-}
-
 - (void)testClass:(Class)class
   withNormalCount:(NSUInteger)normalCount
          notCount:(NSUInteger)notCount
