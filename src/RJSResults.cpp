@@ -22,7 +22,9 @@ JSValueRef ResultsGetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef 
             return JSValueMakeNumber(ctx, size);
         }
 
-        return RJSObjectCreate(ctx, Object(results->realm, results->object_schema, results->get(RJSValidatedPositiveIndex(indexStr))));
+        return RJSObjectCreate(ctx, Object(results->get_realm(),
+                                           results->object_schema,
+                                           results->get(RJSValidatedPositiveIndex(indexStr))));
     }
     catch (std::out_of_range &exp) {
         // getters for nonexistent properties in JS should always return undefined
@@ -61,7 +63,7 @@ bool ResultsSetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef proper
 void ResultsPropertyNames(JSContextRef ctx, JSObjectRef object, JSPropertyNameAccumulatorRef propertyNames) {
     Results *results = RJSGetInternal<Results *>(object);
     char str[32];
-    for (int i = 0; i < results->table_view.size(); i++) {
+    for (int i = 0; i < results->size(); i++) {
         sprintf(str, "%i", i);
         JSStringRef name = JSStringCreateWithUTF8CString(str);
         JSPropertyNameAccumulatorAddName(propertyNames, name);
@@ -74,7 +76,7 @@ JSValueRef SortByProperty(JSContextRef ctx, JSObjectRef function, JSObjectRef th
         Results *results = RJSGetInternal<Results *>(thisObject);
         RJSValidateArgumentRange(argumentCount, 1, 2);
         std::string propName = RJSValidatedStringForValue(ctx, arguments[0]);
-        Property *prop = results->object_schema.property_for_name(propName);
+        const Property *prop = results->object_schema.property_for_name(propName);
         if (!prop) {
             throw std::runtime_error("Property '" + propName + "' does not exist on object type '" + results->object_schema.name + "'");
         }
@@ -84,8 +86,7 @@ JSValueRef SortByProperty(JSContextRef ctx, JSObjectRef function, JSObjectRef th
             ascending = JSValueToBoolean(ctx, arguments[1]);
         }
 
-        SortOrder sort = {{prop->table_column}, {ascending}};
-        results->setSort(sort);
+        *results = results->sort({{prop->table_column}, {ascending}});
     }
     catch (std::exception &exp) {
         if (jsException) {

@@ -7,6 +7,7 @@
 
 #include <string>
 #include "shared_realm.hpp"
+#include "schema.hpp"
 #include "list.hpp"
 
 namespace realm {

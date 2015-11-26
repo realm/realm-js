@@ -20,19 +20,21 @@ using namespace realm;
 #define REALM_FALLTHROUGH
 #endif
 
-Results::Results(SharedRealm r, Query q, SortOrder s)
+Results::Results(SharedRealm r, const ObjectSchema &o, Query q, SortOrder s)
 : m_realm(std::move(r))
 , m_query(std::move(q))
 , m_table(m_query.get_table().get())
 , m_sort(std::move(s))
 , m_mode(Mode::Query)
+, object_schema(o)
 {
 }
 
-Results::Results(SharedRealm r, Table& table)
+Results::Results(SharedRealm r, const ObjectSchema &o, Table& table)
 : m_realm(std::move(r))
 , m_table(&table)
 , m_mode(Mode::Table)
+, object_schema(o)
 {
 }
 
@@ -146,9 +148,9 @@ size_t Results::index_of(Row const& row)
         throw DetatchedAccessorException{};
     }
     if (m_table && row.get_table() != m_table) {
-        throw IncorrectTableException{
-            ObjectStore::object_type_for_table_name(m_table->get_name()),
-            ObjectStore::object_type_for_table_name(row.get_table()->get_name())};
+        throw IncorrectTableException(object_schema.name,
+            ObjectStore::object_type_for_table_name(row.get_table()->get_name()),
+            "Attempting to get the index of a Row of the wrong type");
     }
     return index_of(row.get_index());
 }
@@ -298,23 +300,18 @@ TableView Results::get_tableview()
     REALM_UNREACHABLE();
 }
 
-StringData Results::get_object_type() const noexcept
-{
-    return ObjectStore::object_type_for_table_name(m_table->get_name());
-}
-
 Results Results::sort(realm::SortOrder&& sort) const
 {
-    return Results(m_realm, get_query(), std::move(sort));
+    return Results(m_realm, object_schema, get_query(), std::move(sort));
 }
 
 Results Results::filter(Query&& q) const
 {
-    return Results(m_realm, get_query().and_query(std::move(q)), get_sort());
+    return Results(m_realm, object_schema, get_query().and_query(std::move(q)), get_sort());
 }
 
-Results::UnsupportedColumnTypeException::UnsupportedColumnTypeException(size_t column, const Table* table) {
-    column_index = column;
-    column_name = table->get_column_name(column);
-    column_type = table->get_column_type(column);
+Results::UnsupportedColumnTypeException::UnsupportedColumnTypeException(size_t column, const Table* table) :
+    column_index(column), column_name(table->get_column_name(column)), column_type(table->get_column_type(column)),
+    std::runtime_error((std::string)"Operation not supported on '" + table->get_column_name(column).data() + "' columns")
+{
 }
