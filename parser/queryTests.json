@@ -273,7 +273,8 @@
         ["ObjectSet", [0, 1],   "IntObject", "intCol == 0 || intCol == 1 && intCol >= 1"],
         ["ObjectSet", [0, 1, 2],"IntObject", "intCol == 0 || intCol == 1 || intCol <= 2"],
         ["ObjectSet", [0, 1],   "IntObject", "intCol == 1 && intCol >= 1 || intCol == 0"],
-        ["ObjectSet", [0, 1],   "IntObject", "intCol == 1 || intCol == 0 && intCol <= 0 && intCol >= 0"]
+        ["ObjectSet", [0, 1],   "IntObject", "intCol == 1 || intCol == 0 && intCol <= 0 && intCol >= 0"],
+        ["ObjectSet", [0, 1],   "IntObject", "intCol == 0 || NOT (intCol == 3 && intCol >= 0) && intCol == 1"]   
     ]
 }
 
