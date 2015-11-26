@@ -28,7 +28,7 @@ namespace realm {
     namespace parser {
         struct Expression
         {
-            enum class Type { Number, String, KeyPath, Argument, True, False, None } type = Type::None;
+            enum class Type { None, Number, String, KeyPath, Argument, True, False } type = Type::None;
             std::string s;
             Expression() {}
             Expression(Type t, std::string s) : type(t), s(s) {}
