@@ -105,10 +105,6 @@ namespace realm {
         // Realm after closing it will produce undefined behavior.
         void close();
 
-        // Close this Realm and remove it from the cache. Continuing to use a
-        // Realm after closing it will produce undefined behavior.
-        void close();
-
         ~Realm();
 
       private:
