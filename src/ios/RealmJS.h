@@ -5,6 +5,6 @@
 #ifndef REALM_JS_H
 #define REALM_JS_H
 
-#include <RealmJS/js-init.hpp>
+#include <RealmJS/js_init.hpp>
 
 #endif /* REALM_JS_H */

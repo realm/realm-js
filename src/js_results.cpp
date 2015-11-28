@@ -2,8 +2,8 @@
  * Proprietary and Confidential
  */
 
-#import "js-results.hpp"
-#import "js-object.hpp"
+#import "js_results.hpp"
+#import "js_object.hpp"
 #import "object_accessor.hpp"
 #import "results.hpp"
 #import "parser.hpp"

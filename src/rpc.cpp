@@ -7,12 +7,12 @@
 #include <dlfcn.h>
 #include <map>
 #include <string>
-#include "js-init.hpp"
-#include "js-object.hpp"
-#include "js-results.hpp"
-#include "js-list.hpp"
-#include "js-realm.hpp"
-#include "js-util.hpp"
+#include "js_init.hpp"
+#include "js_object.hpp"
+#include "js_results.hpp"
+#include "js_list.hpp"
+#include "js_realm.hpp"
+#include "js_util.hpp"
 
 #include "base64.hpp"
 #include "object_accessor.hpp"

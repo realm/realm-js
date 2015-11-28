@@ -32,20 +32,20 @@
 		0270BCD11B7D067300010E03 /* RealmReact.mm in Sources */ = {isa = PBXBuildFile; fileRef = 0270BCD01B7D067300010E03 /* RealmReact.mm */; };
 		02786E331BF1065100937061 /* parser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02786E311BF1065000937061 /* parser.cpp */; };
 		02786E341BF1065100937061 /* parser.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 02786E321BF1065000937061 /* parser.hpp */; };
-		029048111C0428DF00ABDED4 /* js-init.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 029048011C0428DF00ABDED4 /* js-init.cpp */; };
-		029048121C0428DF00ABDED4 /* js-init.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 029048021C0428DF00ABDED4 /* js-init.hpp */; settings = {ATTRIBUTES = (Public, ); }; };
-		029048131C0428DF00ABDED4 /* js-list.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 029048031C0428DF00ABDED4 /* js-list.cpp */; };
-		029048141C0428DF00ABDED4 /* js-list.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 029048041C0428DF00ABDED4 /* js-list.hpp */; };
-		029048151C0428DF00ABDED4 /* js-object.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 029048051C0428DF00ABDED4 /* js-object.cpp */; };
-		029048161C0428DF00ABDED4 /* js-object.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 029048061C0428DF00ABDED4 /* js-object.hpp */; };
-		029048171C0428DF00ABDED4 /* js-realm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 029048071C0428DF00ABDED4 /* js-realm.cpp */; };
-		029048181C0428DF00ABDED4 /* js-realm.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 029048081C0428DF00ABDED4 /* js-realm.hpp */; };
-		029048191C0428DF00ABDED4 /* js-results.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 029048091C0428DF00ABDED4 /* js-results.cpp */; };
-		0290481A1C0428DF00ABDED4 /* js-results.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 0290480A1C0428DF00ABDED4 /* js-results.hpp */; };
-		0290481B1C0428DF00ABDED4 /* js-schema.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0290480B1C0428DF00ABDED4 /* js-schema.cpp */; };
-		0290481C1C0428DF00ABDED4 /* js-schema.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 0290480C1C0428DF00ABDED4 /* js-schema.hpp */; };
-		0290481D1C0428DF00ABDED4 /* js-util.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0290480D1C0428DF00ABDED4 /* js-util.cpp */; };
-		0290481E1C0428DF00ABDED4 /* js-util.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 0290480E1C0428DF00ABDED4 /* js-util.hpp */; };
+		029048111C0428DF00ABDED4 /* js_init.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 029048011C0428DF00ABDED4 /* js_init.cpp */; };
+		029048121C0428DF00ABDED4 /* js_init.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 029048021C0428DF00ABDED4 /* js_init.hpp */; settings = {ATTRIBUTES = (Public, ); }; };
+		029048131C0428DF00ABDED4 /* js_list.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 029048031C0428DF00ABDED4 /* js_list.cpp */; };
+		029048141C0428DF00ABDED4 /* js_list.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 029048041C0428DF00ABDED4 /* js_list.hpp */; };
+		029048151C0428DF00ABDED4 /* js_object.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 029048051C0428DF00ABDED4 /* js_object.cpp */; };
+		029048161C0428DF00ABDED4 /* js_object.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 029048061C0428DF00ABDED4 /* js_object.hpp */; };
+		029048171C0428DF00ABDED4 /* js_realm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 029048071C0428DF00ABDED4 /* js_realm.cpp */; };
+		029048181C0428DF00ABDED4 /* js_realm.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 029048081C0428DF00ABDED4 /* js_realm.hpp */; };
+		029048191C0428DF00ABDED4 /* js_results.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 029048091C0428DF00ABDED4 /* js_results.cpp */; };
+		0290481A1C0428DF00ABDED4 /* js_results.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 0290480A1C0428DF00ABDED4 /* js_results.hpp */; };
+		0290481B1C0428DF00ABDED4 /* js_schema.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0290480B1C0428DF00ABDED4 /* js_schema.cpp */; };
+		0290481C1C0428DF00ABDED4 /* js_schema.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 0290480C1C0428DF00ABDED4 /* js_schema.hpp */; };
+		0290481D1C0428DF00ABDED4 /* js_util.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0290480D1C0428DF00ABDED4 /* js_util.cpp */; };
+		0290481E1C0428DF00ABDED4 /* js_util.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 0290480E1C0428DF00ABDED4 /* js_util.hpp */; };
 		0290481F1C0428DF00ABDED4 /* rpc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0290480F1C0428DF00ABDED4 /* rpc.cpp */; };
 		029048201C0428DF00ABDED4 /* rpc.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 029048101C0428DF00ABDED4 /* rpc.hpp */; settings = {ATTRIBUTES = (Public, ); }; };
 		029048371C042A3C00ABDED4 /* platform.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 029048351C042A3C00ABDED4 /* platform.hpp */; };
@@ -212,20 +212,20 @@
 		0270BCD01B7D067300010E03 /* RealmReact.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = RealmReact.mm; path = "react-native/RealmReact.mm"; sourceTree = "<group>"; };
 		02786E311BF1065000937061 /* parser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = parser.cpp; path = "src/object-store/parser/parser.cpp"; sourceTree = "<group>"; };
 		02786E321BF1065000937061 /* parser.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = parser.hpp; path = "src/object-store/parser/parser.hpp"; sourceTree = "<group>"; };
-		029048011C0428DF00ABDED4 /* js-init.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = "js-init.cpp"; path = "src/js-init.cpp"; sourceTree = "<group>"; };
-		029048021C0428DF00ABDED4 /* js-init.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = "js-init.hpp"; path = "src/js-init.hpp"; sourceTree = "<group>"; };
-		029048031C0428DF00ABDED4 /* js-list.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = "js-list.cpp"; path = "src/js-list.cpp"; sourceTree = "<group>"; };
-		029048041C0428DF00ABDED4 /* js-list.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = "js-list.hpp"; path = "src/js-list.hpp"; sourceTree = "<group>"; };
-		029048051C0428DF00ABDED4 /* js-object.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = "js-object.cpp"; path = "src/js-object.cpp"; sourceTree = "<group>"; };
-		029048061C0428DF00ABDED4 /* js-object.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = "js-object.hpp"; path = "src/js-object.hpp"; sourceTree = "<group>"; };
-		029048071C0428DF00ABDED4 /* js-realm.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = "js-realm.cpp"; path = "src/js-realm.cpp"; sourceTree = "<group>"; };
-		029048081C0428DF00ABDED4 /* js-realm.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = "js-realm.hpp"; path = "src/js-realm.hpp"; sourceTree = "<group>"; };
-		029048091C0428DF00ABDED4 /* js-results.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = "js-results.cpp"; path = "src/js-results.cpp"; sourceTree = "<group>"; };
-		0290480A1C0428DF00ABDED4 /* js-results.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = "js-results.hpp"; path = "src/js-results.hpp"; sourceTree = "<group>"; };
-		0290480B1C0428DF00ABDED4 /* js-schema.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = "js-schema.cpp"; path = "src/js-schema.cpp"; sourceTree = "<group>"; };
-		0290480C1C0428DF00ABDED4 /* js-schema.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = "js-schema.hpp"; path = "src/js-schema.hpp"; sourceTree = "<group>"; };
-		0290480D1C0428DF00ABDED4 /* js-util.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = "js-util.cpp"; path = "src/js-util.cpp"; sourceTree = "<group>"; };
-		0290480E1C0428DF00ABDED4 /* js-util.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = "js-util.hpp"; path = "src/js-util.hpp"; sourceTree = "<group>"; };
+		029048011C0428DF00ABDED4 /* js_init.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = js_init.cpp; path = src/js_init.cpp; sourceTree = "<group>"; };
+		029048021C0428DF00ABDED4 /* js_init.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = js_init.hpp; path = src/js_init.hpp; sourceTree = "<group>"; };
+		029048031C0428DF00ABDED4 /* js_list.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = js_list.cpp; path = src/js_list.cpp; sourceTree = "<group>"; };
+		029048041C0428DF00ABDED4 /* js_list.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = js_list.hpp; path = src/js_list.hpp; sourceTree = "<group>"; };
+		029048051C0428DF00ABDED4 /* js_object.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = js_object.cpp; path = src/js_object.cpp; sourceTree = "<group>"; };
+		029048061C0428DF00ABDED4 /* js_object.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = js_object.hpp; path = src/js_object.hpp; sourceTree = "<group>"; };
+		029048071C0428DF00ABDED4 /* js_realm.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = js_realm.cpp; path = src/js_realm.cpp; sourceTree = "<group>"; };
+		029048081C0428DF00ABDED4 /* js_realm.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = js_realm.hpp; path = src/js_realm.hpp; sourceTree = "<group>"; };
+		029048091C0428DF00ABDED4 /* js_results.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = js_results.cpp; path = src/js_results.cpp; sourceTree = "<group>"; };
+		0290480A1C0428DF00ABDED4 /* js_results.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = js_results.hpp; path = src/js_results.hpp; sourceTree = "<group>"; };
+		0290480B1C0428DF00ABDED4 /* js_schema.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = js_schema.cpp; path = src/js_schema.cpp; sourceTree = "<group>"; };
+		0290480C1C0428DF00ABDED4 /* js_schema.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = js_schema.hpp; path = src/js_schema.hpp; sourceTree = "<group>"; };
+		0290480D1C0428DF00ABDED4 /* js_util.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = js_util.cpp; path = src/js_util.cpp; sourceTree = "<group>"; };
+		0290480E1C0428DF00ABDED4 /* js_util.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = js_util.hpp; path = src/js_util.hpp; sourceTree = "<group>"; };
 		0290480F1C0428DF00ABDED4 /* rpc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = rpc.cpp; path = src/rpc.cpp; sourceTree = "<group>"; };
 		029048101C0428DF00ABDED4 /* rpc.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = rpc.hpp; path = src/rpc.hpp; sourceTree = "<group>"; };
 		029048351C042A3C00ABDED4 /* platform.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = platform.hpp; path = src/platform.hpp; sourceTree = "<group>"; };
@@ -318,20 +318,20 @@
 			isa = PBXGroup;
 			children = (
 				0290483A1C042EE200ABDED4 /* RealmJS.h */,
-				029048011C0428DF00ABDED4 /* js-init.cpp */,
-				029048021C0428DF00ABDED4 /* js-init.hpp */,
-				029048031C0428DF00ABDED4 /* js-list.cpp */,
-				029048041C0428DF00ABDED4 /* js-list.hpp */,
-				029048051C0428DF00ABDED4 /* js-object.cpp */,
-				029048061C0428DF00ABDED4 /* js-object.hpp */,
-				029048071C0428DF00ABDED4 /* js-realm.cpp */,
-				029048081C0428DF00ABDED4 /* js-realm.hpp */,
-				029048091C0428DF00ABDED4 /* js-results.cpp */,
-				0290480A1C0428DF00ABDED4 /* js-results.hpp */,
-				0290480B1C0428DF00ABDED4 /* js-schema.cpp */,
-				0290480C1C0428DF00ABDED4 /* js-schema.hpp */,
-				0290480D1C0428DF00ABDED4 /* js-util.cpp */,
-				0290480E1C0428DF00ABDED4 /* js-util.hpp */,
+				029048011C0428DF00ABDED4 /* js_init.cpp */,
+				029048021C0428DF00ABDED4 /* js_init.hpp */,
+				029048031C0428DF00ABDED4 /* js_list.cpp */,
+				029048041C0428DF00ABDED4 /* js_list.hpp */,
+				029048051C0428DF00ABDED4 /* js_object.cpp */,
+				029048061C0428DF00ABDED4 /* js_object.hpp */,
+				029048071C0428DF00ABDED4 /* js_realm.cpp */,
+				029048081C0428DF00ABDED4 /* js_realm.hpp */,
+				029048091C0428DF00ABDED4 /* js_results.cpp */,
+				0290480A1C0428DF00ABDED4 /* js_results.hpp */,
+				0290480B1C0428DF00ABDED4 /* js_schema.cpp */,
+				0290480C1C0428DF00ABDED4 /* js_schema.hpp */,
+				0290480D1C0428DF00ABDED4 /* js_util.cpp */,
+				0290480E1C0428DF00ABDED4 /* js_util.hpp */,
 				0290480F1C0428DF00ABDED4 /* rpc.cpp */,
 				029048101C0428DF00ABDED4 /* rpc.hpp */,
 				029048351C042A3C00ABDED4 /* platform.hpp */,
@@ -453,17 +453,17 @@
 			buildActionMask = 2147483647;
 			files = (
 				0290483B1C042EE200ABDED4 /* RealmJS.h in Headers */,
-				029048121C0428DF00ABDED4 /* js-init.hpp in Headers */,
+				029048121C0428DF00ABDED4 /* js_init.hpp in Headers */,
 				029048201C0428DF00ABDED4 /* rpc.hpp in Headers */,
 				0294465F1BF27DE6006D1617 /* query_builder.hpp in Headers */,
-				0290481E1C0428DF00ABDED4 /* js-util.hpp in Headers */,
+				0290481E1C0428DF00ABDED4 /* js_util.hpp in Headers */,
 				02D0F23B1BF6C95200B4FC45 /* binding_context.hpp in Headers */,
 				02601F0E1BA0F3A7007C91FF /* schema.hpp in Headers */,
 				0270BC6C1B7CFC1C00010E03 /* object_store.hpp in Headers */,
-				0290481A1C0428DF00ABDED4 /* js-results.hpp in Headers */,
-				029048181C0428DF00ABDED4 /* js-realm.hpp in Headers */,
+				0290481A1C0428DF00ABDED4 /* js_results.hpp in Headers */,
+				029048181C0428DF00ABDED4 /* js_realm.hpp in Headers */,
 				02786E341BF1065100937061 /* parser.hpp in Headers */,
-				029048141C0428DF00ABDED4 /* js-list.hpp in Headers */,
+				029048141C0428DF00ABDED4 /* js_list.hpp in Headers */,
 				0270BC681B7CFC1C00010E03 /* object_accessor.hpp in Headers */,
 				F6BB7DF21BF681BC00D0A69E /* base64.hpp in Headers */,
 				029445941BDEDF40006D1617 /* transact_log_handler.hpp in Headers */,
@@ -473,9 +473,9 @@
 				02601F091BA0F0CD007C91FF /* index_set.hpp in Headers */,
 				0270BC6D1B7CFC1C00010E03 /* property.hpp in Headers */,
 				02C0864F1BCDB27000942F9C /* list.hpp in Headers */,
-				0290481C1C0428DF00ABDED4 /* js-schema.hpp in Headers */,
+				0290481C1C0428DF00ABDED4 /* js_schema.hpp in Headers */,
 				0270BC6F1B7CFC1C00010E03 /* results.hpp in Headers */,
-				029048161C0428DF00ABDED4 /* js-object.hpp in Headers */,
+				029048161C0428DF00ABDED4 /* js_object.hpp in Headers */,
 				029048371C042A3C00ABDED4 /* platform.hpp in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -729,19 +729,19 @@
 				02601F081BA0F0CD007C91FF /* index_set.cpp in Sources */,
 				029445931BDEDF40006D1617 /* transact_log_handler.cpp in Sources */,
 				029048391C042A8F00ABDED4 /* platform.mm in Sources */,
-				029048131C0428DF00ABDED4 /* js-list.cpp in Sources */,
+				029048131C0428DF00ABDED4 /* js_list.cpp in Sources */,
 				02C0864E1BCDB27000942F9C /* list.cpp in Sources */,
-				029048171C0428DF00ABDED4 /* js-realm.cpp in Sources */,
+				029048171C0428DF00ABDED4 /* js_realm.cpp in Sources */,
 				0270BC6B1B7CFC1C00010E03 /* object_store.cpp in Sources */,
-				0290481D1C0428DF00ABDED4 /* js-util.cpp in Sources */,
+				0290481D1C0428DF00ABDED4 /* js_util.cpp in Sources */,
 				0294465E1BF27DE6006D1617 /* query_builder.cpp in Sources */,
-				029048111C0428DF00ABDED4 /* js-init.cpp in Sources */,
+				029048111C0428DF00ABDED4 /* js_init.cpp in Sources */,
 				0270BC701B7CFC1C00010E03 /* shared_realm.cpp in Sources */,
 				F6BB7DF11BF681BC00D0A69E /* base64.cpp in Sources */,
-				029048191C0428DF00ABDED4 /* js-results.cpp in Sources */,
-				029048151C0428DF00ABDED4 /* js-object.cpp in Sources */,
+				029048191C0428DF00ABDED4 /* js_results.cpp in Sources */,
+				029048151C0428DF00ABDED4 /* js_object.cpp in Sources */,
 				029445971BDEDF46006D1617 /* external_commit_helper.cpp in Sources */,
-				0290481B1C0428DF00ABDED4 /* js-schema.cpp in Sources */,
+				0290481B1C0428DF00ABDED4 /* js_schema.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

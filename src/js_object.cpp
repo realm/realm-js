@@ -2,12 +2,12 @@
  * Proprietary and Confidential
  */
 
-#import "js-util.hpp"
-#import "js-object.hpp"
-#import "js-results.hpp"
-#import "js-schema.hpp"
-#import "js-list.hpp"
-#import "js-realm.hpp"
+#import "js_util.hpp"
+#import "js_object.hpp"
+#import "js_results.hpp"
+#import "js_schema.hpp"
+#import "js_list.hpp"
+#import "js_realm.hpp"
 
 #import "object_store.hpp"
 #import "object_accessor.hpp"

@@ -2,9 +2,9 @@
  * Proprietary and Confidential
  */
 
-#include "js-list.hpp"
-#include "js-object.hpp"
-#include "js-util.hpp"
+#include "js_list.hpp"
+#include "js_object.hpp"
+#include "js_util.hpp"
 #include "object_accessor.hpp"
 
 using RJSAccessor = realm::NativeAccessor<JSValueRef, JSContextRef>;
