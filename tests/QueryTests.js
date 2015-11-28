@@ -12,23 +12,32 @@ var schemas = require('./schemas');
 var testCases = require('./queryTests.json');
 
 var typeConverters = {};
+
+function convertValue(value, schema, type) {
+    var objSchema = schema.find(function(el) { return el.name == type });
+    if (!objSchema) {
+        throw "Object schema '" + type + "' not found in test suite.";
+    }
+
+    return value.map(function(propValue, index) {
+        if (propValue == null) {
+            return null;
+        }
+        var property = objSchema.properties[index];
+        var converter = typeConverters[property.type];
+        var propType = property.objectType ? property.objectType : property.type;
+        return converter ? converter(propValue, schema, propType) : propValue;
+    });
+}
+
 typeConverters[Realm.Types.DATE] = function(value) { return new Date(value); };
 typeConverters[Realm.Types.DATA] = function(value) { return new Uint8Array(value); };
+typeConverters[Realm.Types.OBJECT] = convertValue;
 
 function runQuerySuite(suite) {
     var realm = new Realm({schema: suite.schema});
     var objects = suite.objects.map(function(obj) {
-        var objSchema = suite.schema.find(function(el) { return el.name == obj.type });
-        if (!objSchema) {
-            throw "Object schema '" + obj.type + "' not found in test suite.";
-        }
-
-        var converted = obj.value.map(function(propValue, index) {
-            var converter = typeConverters[objSchema.properties[index].type];
-            return converter ? converter(propValue) : propValue;
-        });
-
-        return { type: obj.type, value: converted };
+        return { type: obj.type, value: convertValue(obj.value, suite.schema, obj.type) };
     });
 
     realm.write(function() {
@@ -111,6 +120,9 @@ module.exports = BaseTest.extend({
     },
     testCompoundQueries: function() {
         runQuerySuite(testCases.compoundTests);
+    },
+    testKeyPathQueries: function() {
+        runQuerySuite(testCases.keyPathTests);
     }
 });
 
