@@ -229,8 +229,12 @@
 
 "objectTests" : {
     "schema" : [
-        { "name": "IntObject",  "properties": [{ "name": "intCol",  "type": "int" }] },
-        { "name": "LinkObject", "properties": [{ "name": "linkCol", "type": "IntObject" }] }
+        { "name": "IntObject",  "properties": [
+            { "name": "intCol",  "type": "int" }
+        ]},
+        { "name": "LinkObject", "properties": [
+            { "name": "linkCol", "type": "object", "objectType": "IntObject" }
+        ]}
     ],
     "objects": [
         { "type": "LinkObject", "value": [[1]] },
@@ -275,6 +279,43 @@
         ["ObjectSet", [0, 1],   "IntObject", "intCol == 1 && intCol >= 1 || intCol == 0"],
         ["ObjectSet", [0, 1],   "IntObject", "intCol == 1 || intCol == 0 && intCol <= 0 && intCol >= 0"],
         ["ObjectSet", [0, 1],   "IntObject", "intCol == 0 || NOT (intCol == 3 && intCol >= 0) && intCol == 1"]   
+    ]
+},
+
+"keyPathTests" : {
+    "schema" : [
+    { 
+        "name": "BasicTypesObject",  
+        "properties": [
+            { "name": "intCol",     "type": "int" },
+            { "name": "floatCol",   "type": "float" },
+            { "name": "doubleCol",  "type": "double" },
+            { "name": "stringCol",  "type": "string" },
+            { "name": "dateCol",    "type": "date" },
+            { "name": "dataCol",    "type": "data" }
+        ]
+    }, 
+    {
+        "name": "LinkTypesObject",
+        "primaryKey": "primaryKey",
+        "properties": [
+            { "name": "primaryKey", "type": "int" },
+            { "name": "basicLink",  "type": "object", "objectType": "BasicTypesObject" },
+            { "name": "linkLink",   "type": "object", "objectType": "LinkTypesObject" }
+        ]
+    }],
+    "objects": [
+        { "type": "LinkTypesObject", "value": [0, [1, 0.1, 0.001, "1", 1, [1, 10, 100]], null] },
+        { "type": "LinkTypesObject", "value": [1, null, [2, [1, 0.1, 0.001, "1", 1, [1, 10, 100]], null]] },
+        { "type": "LinkTypesObject", "value": [3, null, [4, [2, 0.2, 0.002, "2", 2, [2, 20, 200]], null]] }
+    ],
+    "tests": [
+        ["ObjectSet", [0, 2], "LinkTypesObject", "basicLink.intCol == 1"],
+        ["ObjectSet", [1],    "LinkTypesObject", "linkLink.basicLink.intCol == 1"],
+        ["ObjectSet", [1, 3], "LinkTypesObject", "linkLink.basicLink.intCol > 0"],
+        ["ObjectSet", [0, 2], "LinkTypesObject", "basicLink.floatCol == 0.1"],
+        ["ObjectSet", [1],    "LinkTypesObject", "linkLink.basicLink.floatCol == 0.1"],
+        ["ObjectSet", [1, 3], "LinkTypesObject", "linkLink.basicLink.floatCol > 0"]
     ]
 }
 
