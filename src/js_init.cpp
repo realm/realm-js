@@ -79,7 +79,7 @@ void RJSInitializeInContext(JSContextRef ctx) {
 
 void RJSClearTestState() {
     realm::Realm::s_global_cache.clear();
-    realm::remvoe_realm_files_from_directory(realm::default_realm_file_directory());
+    realm::remove_realm_files_from_directory(realm::default_realm_file_directory());
 }
 
 }

@@ -38,7 +38,7 @@ std::string default_realm_file_directory()
 
 void ensure_directory_exists_for_file(const std::string &fileName)
 {
-    NSString *docsDir = [[NSString stringWithUTF8String:fileName.c_str()] stringByDeletingLastPathComponent];
+    NSString *docsDir = [@(fileName.c_str()) stringByDeletingLastPathComponent];
     NSFileManager *manager = [NSFileManager defaultManager];
 
     if (![manager fileExistsAtPath:docsDir]) {
@@ -50,16 +50,15 @@ void ensure_directory_exists_for_file(const std::string &fileName)
     }
 }
 
-void remvoe_realm_files_from_directory(const std::string &directory)
+void remove_realm_files_from_directory(const std::string &directory)
 {
     NSFileManager *manager = [NSFileManager defaultManager];
     NSString *fileDir = @(directory.c_str());
     for (NSString *path in [manager enumeratorAtPath:fileDir]) {
         if (![manager removeItemAtPath:[fileDir stringByAppendingPathComponent:path] error:nil]) {
-            @throw [NSException exceptionWithName:@"removeItemAtPath error" reason:@"Failed to delete file" userInfo:nil];
+            throw std::runtime_error((std::string)"Failed to delete file at path " + path.UTF8String);
         }
     }
-
 }
     
 }

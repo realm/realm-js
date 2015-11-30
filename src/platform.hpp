@@ -22,7 +22,7 @@ std::string default_realm_file_directory();
 void ensure_directory_exists_for_file(const std::string &file);
 
 // remoave all realm files in the given directory
-void remvoe_realm_files_from_directory(const std::string &directory);
+void remove_realm_files_from_directory(const std::string &directory);
 
 }
 
