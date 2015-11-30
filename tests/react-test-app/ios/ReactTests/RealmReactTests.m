@@ -7,10 +7,10 @@
 #import "RCTBridge.h"
 #import "RCTDevMenu.h"
 
-@import ObjectiveC;
 @import RealmReact;
 
 extern void JSGlobalContextSetIncludesNativeCallStackWhenReportingExceptions(JSGlobalContextRef ctx, bool includesNativeCallStack);
+extern NSMutableArray *RCTGetModuleClasses(void);
 
 @interface RealmReactTests : RealmJSTests
 @end
@@ -21,9 +21,8 @@ extern void JSGlobalContextSetIncludesNativeCallStackWhenReportingExceptions(JSG
 @implementation RealmReactTests
 
 + (void)load {
-    // We don't want the RCTDevMenu from switching the executor class from underneath us.
-    IMP init = class_getMethodImplementation([NSObject class], @selector(init));
-    class_replaceMethod([RCTDevMenu class], @selector(init), init, NULL);
+    NSMutableArray *moduleClasses = RCTGetModuleClasses();
+    [moduleClasses removeObject:[RCTDevMenu class]];
 }
 
 + (Class)executorClass {
