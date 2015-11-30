@@ -7,7 +7,7 @@
 #include <dlfcn.h>
 #include <map>
 #include <string>
-#include "js_init.hpp"
+#include "js_init.h"
 #include "js_object.hpp"
 #include "js_results.hpp"
 #include "js_list.hpp"

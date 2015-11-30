@@ -3,7 +3,7 @@
  */
 
 #import <XCTest/XCTest.h>
-#import <RealmJS/js_init.hpp>
+#import <RealmJS/js_init.h>
 #import "parser.hpp"
 
 @interface GrammerTests : XCTestCase

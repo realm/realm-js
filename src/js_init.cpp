@@ -2,7 +2,7 @@
  * Proprietary and Confidential
  */
 
-#import "js_init.hpp"
+#import "js_init.h"
 #import "js_realm.hpp"
 #import "js_object.hpp"
 #import "js_util.hpp"

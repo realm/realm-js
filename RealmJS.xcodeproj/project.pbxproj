@@ -33,7 +33,7 @@
 		02786E331BF1065100937061 /* parser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02786E311BF1065000937061 /* parser.cpp */; };
 		02786E341BF1065100937061 /* parser.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 02786E321BF1065000937061 /* parser.hpp */; };
 		029048111C0428DF00ABDED4 /* js_init.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 029048011C0428DF00ABDED4 /* js_init.cpp */; };
-		029048121C0428DF00ABDED4 /* js_init.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 029048021C0428DF00ABDED4 /* js_init.hpp */; settings = {ATTRIBUTES = (Public, ); }; };
+		029048121C0428DF00ABDED4 /* js_init.h in Headers */ = {isa = PBXBuildFile; fileRef = 029048021C0428DF00ABDED4 /* js_init.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		029048131C0428DF00ABDED4 /* js_list.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 029048031C0428DF00ABDED4 /* js_list.cpp */; };
 		029048141C0428DF00ABDED4 /* js_list.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 029048041C0428DF00ABDED4 /* js_list.hpp */; };
 		029048151C0428DF00ABDED4 /* js_object.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 029048051C0428DF00ABDED4 /* js_object.cpp */; };
@@ -213,7 +213,7 @@
 		02786E311BF1065000937061 /* parser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = parser.cpp; path = "src/object-store/parser/parser.cpp"; sourceTree = "<group>"; };
 		02786E321BF1065000937061 /* parser.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = parser.hpp; path = "src/object-store/parser/parser.hpp"; sourceTree = "<group>"; };
 		029048011C0428DF00ABDED4 /* js_init.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = js_init.cpp; path = src/js_init.cpp; sourceTree = "<group>"; };
-		029048021C0428DF00ABDED4 /* js_init.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = js_init.hpp; path = src/js_init.hpp; sourceTree = "<group>"; };
+		029048021C0428DF00ABDED4 /* js_init.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = js_init.h; path = src/js_init.h; sourceTree = "<group>"; };
 		029048031C0428DF00ABDED4 /* js_list.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = js_list.cpp; path = src/js_list.cpp; sourceTree = "<group>"; };
 		029048041C0428DF00ABDED4 /* js_list.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = js_list.hpp; path = src/js_list.hpp; sourceTree = "<group>"; };
 		029048051C0428DF00ABDED4 /* js_object.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = js_object.cpp; path = src/js_object.cpp; sourceTree = "<group>"; };
@@ -319,7 +319,7 @@
 			children = (
 				0290483A1C042EE200ABDED4 /* RealmJS.h */,
 				029048011C0428DF00ABDED4 /* js_init.cpp */,
-				029048021C0428DF00ABDED4 /* js_init.hpp */,
+				029048021C0428DF00ABDED4 /* js_init.h */,
 				029048031C0428DF00ABDED4 /* js_list.cpp */,
 				029048041C0428DF00ABDED4 /* js_list.hpp */,
 				029048051C0428DF00ABDED4 /* js_object.cpp */,
@@ -453,7 +453,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				0290483B1C042EE200ABDED4 /* RealmJS.h in Headers */,
-				029048121C0428DF00ABDED4 /* js_init.hpp in Headers */,
+				029048121C0428DF00ABDED4 /* js_init.h in Headers */,
 				029048201C0428DF00ABDED4 /* rpc.hpp in Headers */,
 				0294465F1BF27DE6006D1617 /* query_builder.hpp in Headers */,
 				0290481E1C0428DF00ABDED4 /* js_util.hpp in Headers */,
