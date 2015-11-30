@@ -799,7 +799,7 @@
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
-					"$(SRCROOT)/examples/ReactExample/node_modules/react-native/React/",
+					"$(SRCROOT)/tests/react-test-app/node_modules/react-native/React/Base",
 					"$(SRCROOT)/tests/ReactTests/node_modules/react-native/React/",
 					"$(SRCROOT)/vendor",
 				);
@@ -839,7 +839,7 @@
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
-					"$(SRCROOT)/examples/ReactExample/node_modules/react-native/React/",
+					"$(SRCROOT)/tests/react-test-app/node_modules/react-native/React/Base",
 					"$(SRCROOT)/tests/ReactTests/node_modules/react-native/React/",
 					"$(SRCROOT)/vendor",
 				);
@@ -876,7 +876,7 @@
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
-					"$(SRCROOT)/examples/ReactExample/node_modules/react-native/React/",
+					"$(SRCROOT)/tests/react-test-app/node_modules/react-native/React/Base",
 					"$(SRCROOT)/tests/ReactTests/node_modules/react-native/React/",
 					"$(SRCROOT)/vendor",
 				);

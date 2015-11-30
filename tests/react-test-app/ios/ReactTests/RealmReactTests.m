@@ -3,9 +3,9 @@
  */
 
 #import "RealmJSTests.h"
-#import "Base/RCTJavaScriptExecutor.h"
-#import "Base/RCTBridge.h"
-#import "Modules/RCTDevMenu.h"
+#import "RCTJavaScriptExecutor.h"
+#import "RCTBridge.h"
+#import "RCTDevMenu.h"
 
 @import ObjectiveC;
 @import RealmReact;

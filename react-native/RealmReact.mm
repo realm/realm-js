@@ -4,7 +4,7 @@
 
 extern "C" {
 #import "RealmReact.h"
-#import "Base/RCTBridge.h"
+#import "RCTBridge.h"
 
 #import <RealmJS/js_init.h>
 #import <objc/runtime.h>
