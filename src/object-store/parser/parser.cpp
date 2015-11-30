@@ -106,28 +106,90 @@ struct pred : seq< and_pred, star< or_ext > > {};
 // state
 struct ParserState
 {
-    std::vector<Predicate *> predicate_stack;
-    Predicate &current() {
-        return *predicate_stack.back();
-    }
+    std::vector<Predicate *> group_stack;
 
-    bool negate_next = false;
-
-    void addExpression(Expression && exp)
+    Predicate *current_group()
     {
-        if (current().type == Predicate::Type::Comparison) {
-            current().cmpr.expr[1] = std::move(exp);
-            predicate_stack.pop_back();
+        return group_stack.back();
+    }
+    
+    Predicate *last_predicate()
+    {
+        Predicate *pred = current_group();
+        while (pred->type != Predicate::Type::Comparison && pred->cpnd.sub_predicates.size()) {
+            pred = &pred->cpnd.sub_predicates.back();
+        }
+        return pred;
+    }
+    
+    void add_predicate_to_current_group(Predicate::Type type)
+    {
+        current_group()->cpnd.sub_predicates.emplace_back(type, negate_next);
+        negate_next = false;
+        
+        if (current_group()->cpnd.sub_predicates.size() > 1) {
+            if (next_type == Predicate::Type::Or) {
+                apply_or();
+            }
+            else {
+                apply_and();
+            }
+        }
+    }
+    
+    bool negate_next = false;
+    Predicate::Type next_type = Predicate::Type::And;
+    
+    void add_expression(Expression && exp)
+    {
+        Predicate *current = last_predicate();
+        if (current->type == Predicate::Type::Comparison && current->cmpr.expr[1].type == parser::Expression::Type::None) {
+            current->cmpr.expr[1] = std::move(exp);
         }
         else {
-            Predicate p(Predicate::Type::Comparison);
-            p.cmpr.expr[0] = std::move(exp);
-            if (negate_next) {
-                p.negate = true;
-                negate_next = false;
-            }
-            current().cpnd.sub_predicates.emplace_back(std::move(p));
-            predicate_stack.push_back(&current().cpnd.sub_predicates.back());
+            add_predicate_to_current_group(Predicate::Type::Comparison);
+            last_predicate()->cmpr.expr[0] = std::move(exp);
+        }
+    }
+    
+    void apply_or()
+    {
+        Predicate *group = current_group();
+        if (group->type == Predicate::Type::Or) {
+            return;
+        }
+        
+        // convert to OR
+        group->type = Predicate::Type::Or;
+        if (group->cpnd.sub_predicates.size() > 2) {
+            // split the current group into an AND group ORed with the last subpredicate
+            Predicate new_sub(Predicate::Type::And);
+            new_sub.cpnd.sub_predicates = std::move(group->cpnd.sub_predicates);
+            
+            group->cpnd.sub_predicates = { new_sub, std::move(new_sub.cpnd.sub_predicates.back()) };
+            group->cpnd.sub_predicates[0].cpnd.sub_predicates.pop_back();
+        }
+    }
+    
+    void apply_and()
+    {
+        if (current_group()->type == Predicate::Type::And) {
+            return;
+        }
+        
+        auto &sub_preds = current_group()->cpnd.sub_predicates;
+        auto second_last = sub_preds.end() - 2;
+        if (second_last->type == Predicate::Type::And && !second_last->negate) {
+            // make a new and group populated with the last two predicates
+            second_last->cpnd.sub_predicates.push_back(std::move(sub_preds.back()));
+            sub_preds.pop_back();
+        }
+        else {
+            // otherwise combine last two into a new AND group
+            Predicate pred(Predicate::Type::And);
+            pred.cpnd.sub_predicates.insert(pred.cpnd.sub_predicates.begin(), second_last, sub_preds.end());
+            sub_preds.erase(second_last, sub_preds.end());
+            sub_preds.emplace_back(std::move(pred));
         }
     }
 };
@@ -142,64 +204,21 @@ struct action : nothing< Rule > {};
     #define DEBUG_PRINT_TOKEN(string)
 #endif
 
-template<> struct action< and_ext >
+template<> struct action< and_op >
 {
     static void apply( const input & in, ParserState & state )
     {
         DEBUG_PRINT_TOKEN("<and>");
-
-        // if we were put into an OR group we need to rearrange
-        auto &current = state.current();
-        if (current.type == Predicate::Type::Or) {
-            auto &sub_preds = current.cpnd.sub_predicates;
-            auto &second_last = sub_preds[sub_preds.size()-2];
-            if (second_last.type == Predicate::Type::And) {
-                // if we are in an OR group and second to last predicate group is
-                // an AND group then move the last predicate inside
-                second_last.cpnd.sub_predicates.push_back(std::move(sub_preds.back()));
-                sub_preds.pop_back();
-            }
-            else {
-                // otherwise combine last two into a new AND group
-                Predicate pred(Predicate::Type::And);
-                pred.cpnd.sub_predicates.emplace_back(std::move(second_last));
-                pred.cpnd.sub_predicates.emplace_back(std::move(sub_preds.back()));
-                sub_preds.pop_back();
-                sub_preds.pop_back();
-                sub_preds.push_back(std::move(pred));
-            }
-        }
+        state.next_type = Predicate::Type::And;
     }
 };
 
-template<> struct action< or_ext >
+template<> struct action< or_op >
 {
     static void apply( const input & in, ParserState & state )
     {
         DEBUG_PRINT_TOKEN("<or>");
-
-        // if already an OR group do nothing
-        auto &current = state.current();
-        if (current.type == Predicate::Type::Or) {
-            return;
-        }
-
-        // if only two predicates in the group, then convert to OR
-        auto &sub_preds = state.current().cpnd.sub_predicates;
-        if (sub_preds.size()) {
-            current.type = Predicate::Type::Or;
-            return;
-        }
-
-        // split the current group into to groups which are ORed together
-        Predicate pred1(Predicate::Type::And), pred2(Predicate::Type::And);
-        pred1.cpnd.sub_predicates.insert(sub_preds.begin(), sub_preds.back());
-        pred2.cpnd.sub_predicates.push_back(std::move(sub_preds.back()));
-
-        current.type = Predicate::Type::Or;
-        sub_preds.clear();
-        sub_preds.emplace_back(std::move(pred1));
-        sub_preds.emplace_back(std::move(pred2));
+        state.next_type = Predicate::Type::Or;
     }
 };
 
@@ -208,7 +227,7 @@ template<> struct action< or_ext >
 template<> struct action< rule > {                                  \
     static void apply( const input & in, ParserState & state ) {    \
         DEBUG_PRINT_TOKEN(in.string());                             \
-        state.addExpression(Expression(type, in.string())); }};
+        state.add_expression(Expression(type, in.string())); }};
 
 EXPRESSION_ACTION(dq_string_content, Expression::Type::String)
 EXPRESSION_ACTION(sq_string_content, Expression::Type::String)
@@ -224,7 +243,7 @@ template<> struct action< true_pred >
     static void apply( const input & in, ParserState & state )
     {
         DEBUG_PRINT_TOKEN(in.string());
-        state.current().cpnd.sub_predicates.emplace_back(Predicate::Type::True);
+        state.current_group()->cpnd.sub_predicates.emplace_back(Predicate::Type::True);
     }
 };
 
@@ -233,7 +252,7 @@ template<> struct action< false_pred >
     static void apply( const input & in, ParserState & state )
     {
         DEBUG_PRINT_TOKEN(in.string());
-        state.current().cpnd.sub_predicates.emplace_back(Predicate::Type::False);
+        state.current_group()->cpnd.sub_predicates.emplace_back(Predicate::Type::False);
     }
 };
 
@@ -241,7 +260,7 @@ template<> struct action< false_pred >
 template<> struct action< rule > {                                  \
     static void apply( const input & in, ParserState & state ) {    \
         DEBUG_PRINT_TOKEN(in.string());                             \
-        state.current().cmpr.op = oper; }};
+        state.last_predicate()->cmpr.op = oper; }};
 
 OPERATOR_ACTION(eq, Predicate::Operator::Equal)
 OPERATOR_ACTION(noteq, Predicate::Operator::NotEqual)
@@ -258,15 +277,8 @@ template<> struct action< one< '(' > >
     static void apply( const input & in, ParserState & state )
     {
         DEBUG_PRINT_TOKEN("<begin_group>");
-
-        Predicate group(Predicate::Type::And);
-        if (state.negate_next) {
-            group.negate = true;
-            state.negate_next = false;
-        }
-
-        state.current().cpnd.sub_predicates.emplace_back(std::move(group));
-        state.predicate_stack.push_back(&state.current().cpnd.sub_predicates.back());
+        state.add_predicate_to_current_group(Predicate::Type::And);
+        state.group_stack.push_back(state.last_predicate());
     }
 };
 
@@ -275,7 +287,7 @@ template<> struct action< group_pred >
     static void apply( const input & in, ParserState & state )
     {
         DEBUG_PRINT_TOKEN("<end_group>");
-        state.predicate_stack.pop_back();
+        state.group_stack.pop_back();
     }
 };
 
@@ -308,10 +320,12 @@ const std::string error_message_control< Rule >::error_message = "Invalid predic
 
 Predicate parse(const std::string &query)
 {
+    DEBUG_PRINT_TOKEN(query);
+
     Predicate out_predicate(Predicate::Type::And);
 
     ParserState state;
-    state.predicate_stack.push_back(&out_predicate);
+    state.group_stack.push_back(&out_predicate);
 
     pegtl::parse< must< pred, eof >, action, error_message_control >(query, query, state);
     if (out_predicate.type == Predicate::Type::And && out_predicate.cpnd.sub_predicates.size() == 1) {

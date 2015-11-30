@@ -37,27 +37,44 @@ function runQuerySuite(suite) {
         }
     });
 
+    var args;
+    function getArgs(startArg) {
+        args = test.slice(startArg, startArg + 2);
+        for (var i = startArg + 2; i < test.length; i++) {
+            var arg = test[i];
+            if (Array.isArray(arg)) {
+                // aray arguments correspond to [objectAtIndex, propertyName]
+                args.push(objects[arg[0]][arg[1]]);
+            }
+            else {
+                args.push(arg);
+            }
+        }
+        return args;
+    }
+
     for (var test of suite.tests) {
         if (test[0] == "QueryCount") {
-            var args = test.slice(2, 4);
-            for (var i = 4; i < test.length; i++) {
-                var arg = test[i];
-                if (Array.isArray(arg)) {
-                    // aray arguments correspond to [objectAtIndex, propertyName]
-                    args.push(objects[arg[0]][arg[1]]);
-                }
-                else {
-                    args.push(arg);
-                }
+            var length = realm.objects.apply(realm, getArgs(2)).length;
+            TestCase.assertEqual(test[1], length, "Query '" + args[1] + "' on type '" + args[0] + "' expected " + test[1] + " results, got " + length);
+        }
+        else if (test[0] == "ObjectSet") {
+            var results = realm.objects.apply(realm, getArgs(2));           
+            TestCase.assertEqual(test[1].length, results.length, "Query '" + args[1] + "' on type '" + args[0] + "' expected " + test[1].length + " results, got " + results.length);
+
+            var objSchema = suite.schema.find(function(el) { return el.name == args[0] });
+            var primary = objSchema.primaryKey;
+            if (!primary) {
+                throw "Primary key required for object comparison";
             }
 
-            var results = realm.objects.apply(realm, args);
-            TestCase.assertEqual(test[1], results.length, "Query '" + args[1] + "' on type '" + args[0] + "' expected " + test[1] + " results, got " + results.length);
+            TestCase.assertArraysEqual(test[1], Array.prototype.map.call(results,  function(el) { 
+                return el[primary] 
+            }));
         }
         else if (test[0] == "QueryThrows") {
-            var args = test.slice(1);
             TestCase.assertThrows(function() {
-                realm.objects.apply(realm, args);
+                realm.objects.apply(realm, getArgs(1));
             }, "Expected exception not thrown for query: " + JSON.stringify(args));
         }
         else if (test[0] != "Disabled") {
@@ -91,6 +108,9 @@ module.exports = BaseTest.extend({
     },
     testObjectQueries: function() {
         runQuerySuite(testCases.objectTests);
+    },
+    testCompoundQueries: function() {
+        runQuerySuite(testCases.compoundTests);
     }
 });
 
@@ -920,30 +940,6 @@ module.exports = BaseTest.extend({
     XCTAssertThrows([CircleArrayObject objectsInRealm:realm where:@"ANY data.circles = '2'"]);
     XCTAssertThrows([CircleArrayObject objectsInRealm:realm where:@"circles.data = '2'"]);
     XCTAssertThrows([CircleArrayObject objectsInRealm:realm where:@"NONE data.circles = '2'"]);
-}
-
-- (void)testCompoundOrQuery {
-    RLMRealm *realm = [RLMRealm defaultRealm];
-
-    [realm beginWriteTransaction];
-    [PersonObject createInRealm:realm withValue:@[@"Tim", @29]];
-    [PersonObject createInRealm:realm withValue:@[@"Ari", @33]];
-    [realm commitWriteTransaction];
-
-    XCTAssertEqual(2U, [[PersonObject objectsWhere:@"name == 'Ari' or age < 30"] count]);
-    XCTAssertEqual(1U, [[PersonObject objectsWhere:@"name == 'Ari' or age > 40"] count]);
-}
-
-- (void)testCompoundAndQuery {
-    RLMRealm *realm = [RLMRealm defaultRealm];
-
-    [realm beginWriteTransaction];
-    [PersonObject createInRealm:realm withValue:@[@"Tim", @29]];
-    [PersonObject createInRealm:realm withValue:@[@"Ari", @33]];
-    [realm commitWriteTransaction];
-
-    XCTAssertEqual(1U, [[PersonObject objectsWhere:@"name == 'Ari' and age > 30"] count]);
-    XCTAssertEqual(0U, [[PersonObject objectsWhere:@"name == 'Ari' and age > 40"] count]);
 }
 
 - (void)testClass:(Class)class

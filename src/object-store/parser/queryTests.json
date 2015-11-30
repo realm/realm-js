@@ -245,6 +245,37 @@
         ["QueryThrows", "LinkObject", "linkCol > $0", [0, "linkCol"]],
         ["QueryThrows", "LinkObject", "intCol = $0", [0, "linkCol"]]
     ]
+},
+
+"compoundTests" : {
+    "schema" : [
+        { "name": "IntObject",  
+          "properties": [{ "name": "intCol",  "type": "int" }],
+          "primaryKey" : "intCol" }
+    ],
+    "objects": [
+        { "type": "IntObject", "value": [0] },
+        { "type": "IntObject", "value": [1] },
+        { "type": "IntObject", "value": [2] },    
+        { "type": "IntObject", "value": [3] }
+    ],
+    "tests": [
+        ["ObjectSet", [],       "IntObject", "intCol == 0 && intCol == 1"],
+        ["ObjectSet", [0, 1],   "IntObject", "intCol == 0 || intCol == 1"],
+        ["ObjectSet", [0],      "IntObject", "intCol == 0 && intCol != 1"],
+        ["ObjectSet", [2, 3],   "IntObject", "intCol >= 2 && intCol < 4"],
+        ["ObjectSet", [0],      "IntObject", "intCol == 0 && NOT intCol != 0"],
+        ["ObjectSet", [0, 3],   "IntObject", "intCol == 0 || NOT (intCol == 1 || intCol == 2)"],
+        ["ObjectSet", [1],      "IntObject", "(intCol == 0 || intCol == 1) && intCol >= 1"],
+        ["ObjectSet", [1],      "IntObject", "intCol >= 1 && (intCol == 0 || intCol == 1)"],
+        ["ObjectSet", [0, 1],   "IntObject", "intCol == 0 || (intCol == 1 && intCol >= 1)"],
+        ["ObjectSet", [0, 1],   "IntObject", "(intCol == 1 && intCol >= 1) || intCol == 0"],
+        ["ObjectSet", [0, 1],   "IntObject", "intCol == 0 || intCol == 1 && intCol >= 1"],
+        ["ObjectSet", [0, 1, 2],"IntObject", "intCol == 0 || intCol == 1 || intCol <= 2"],
+        ["ObjectSet", [0, 1],   "IntObject", "intCol == 1 && intCol >= 1 || intCol == 0"],
+        ["ObjectSet", [0, 1],   "IntObject", "intCol == 1 || intCol == 0 && intCol <= 0 && intCol >= 0"],
+        ["ObjectSet", [0, 1],   "IntObject", "intCol == 0 || NOT (intCol == 3 && intCol >= 0) && intCol == 1"]   
+    ]
 }
 
 }
