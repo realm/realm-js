@@ -2,7 +2,7 @@
  * Proprietary and Confidential
  */
 
-#include <JavaScriptCore/JavaScriptCore.h>
+#include <JavaScriptCore/JSBase.h>
 #include <string>
 #include <stdexcept>
 #include "property.hpp"

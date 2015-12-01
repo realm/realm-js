@@ -5,7 +5,7 @@
 #pragma once
 
 #import "json.hpp"
-#import <JavaScriptCore/JavaScriptCore.h>
+#import <JavaScriptCore/JSBase.h>
 
 namespace realm {
     class ObjectSchema;
