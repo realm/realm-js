@@ -3,6 +3,7 @@
  */
 
 #include "js_util.hpp"
+#include <JavaScriptCore/JSStringRef.h>
 
 using namespace realm;
 

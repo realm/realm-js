@@ -2,7 +2,11 @@
  * Proprietary and Confidential
  */
 
+#pragma once
+
+#include <JavaScriptCore/JSContextRef.h>
 #include <JavaScriptCore/JSObjectRef.h>
+#include <JavaScriptCore/JSStringRef.h>
 
 #include <string>
 #include <stdexcept>

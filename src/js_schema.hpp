@@ -2,8 +2,10 @@
  * Proprietary and Confidential
  */
 
-#import "js_util.hpp"
-#import <map>
+#pragma once
+
+#include "js_util.hpp"
+#include <map>
 
 namespace realm {
     class Schema;

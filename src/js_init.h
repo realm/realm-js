@@ -2,6 +2,8 @@
  * Proprietary and Confidential
  */
 
+#pragma once
+
 #include <JavaScriptCore/JSBase.h>
 
 #ifdef __cplusplus

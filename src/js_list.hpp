@@ -2,9 +2,11 @@
  * Proprietary and Confidential
  */
 
-#import "js_util.hpp"
-#import "shared_realm.hpp"
-#import "list.hpp"
+#pragma once
+
+#include "js_util.hpp"
+#include "shared_realm.hpp"
+#include "list.hpp"
 
 JSClassRef RJSListClass();
 JSObjectRef RJSListCreate(JSContextRef ctx, realm::List &list);
