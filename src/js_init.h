@@ -2,7 +2,7 @@
  * Proprietary and Confidential
  */
 
-#import <JavaScriptCore/JavaScriptCore.h>
+#import <JavaScriptCore/JSBase.h>
 
 #ifdef __cplusplus
 extern "C" {
