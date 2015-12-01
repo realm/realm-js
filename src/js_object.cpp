@@ -2,15 +2,15 @@
  * Proprietary and Confidential
  */
 
-#import "js_util.hpp"
-#import "js_object.hpp"
-#import "js_results.hpp"
-#import "js_schema.hpp"
-#import "js_list.hpp"
-#import "js_realm.hpp"
+#include "js_util.hpp"
+#include "js_object.hpp"
+#include "js_results.hpp"
+#include "js_schema.hpp"
+#include "js_list.hpp"
+#include "js_realm.hpp"
 
-#import "object_store.hpp"
-#import "object_accessor.hpp"
+#include "object_store.hpp"
+#include "object_accessor.hpp"
 
 using RJSAccessor = realm::NativeAccessor<JSValueRef, JSContextRef>;
 using namespace realm;
