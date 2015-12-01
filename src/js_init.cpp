@@ -2,12 +2,12 @@
  * Proprietary and Confidential
  */
 
-#import "js_init.h"
-#import "js_realm.hpp"
-#import "js_object.hpp"
-#import "js_util.hpp"
-#import "js_schema.hpp"
-#import "platform.hpp"
+#include "js_init.h"
+#include "js_realm.hpp"
+#include "js_object.hpp"
+#include "js_util.hpp"
+#include "js_schema.hpp"
+#include "platform.hpp"
 
 #include "shared_realm.hpp"
 #include <algorithm>
