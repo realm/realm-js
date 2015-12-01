@@ -276,11 +276,12 @@ module.exports = BaseTest.extend({
 
     testDeletions: function() {
         var realm = new Realm({schema: [schemas.LinkTypes, schemas.TestObject]});
+        var object;
         var array;
 
         realm.write(function() {
-            var obj = realm.create('LinkTypesObject', [[1], [2], [[3], [4]]]);
-            array = obj.arrayCol;
+            object = realm.create('LinkTypesObject', [[1], [2], [[3], [4]]]);
+            array = object.arrayCol;
         });
 
         try {
@@ -296,6 +297,14 @@ module.exports = BaseTest.extend({
 
         TestCase.assertEqual(array.length, 2);
         TestCase.assertEqual(array[0].doubleCol, 3);
+
+        realm.write(function() {
+            realm.delete(object);
+        });
+
+        TestCase.assertThrows(function() {
+            array[0];
+        });
     },
 
     testLiveUpdatingResults: function() {
