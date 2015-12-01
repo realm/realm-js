@@ -2,18 +2,18 @@
  * Proprietary and Confidential
  */
 
-#import "js_realm.hpp"
-#import "js_object.hpp"
-#import "js_results.hpp"
-#import "js_list.hpp"
-#import "js_schema.hpp"
-#import "platform.hpp"
+#include "js_realm.hpp"
+#include "js_object.hpp"
+#include "js_results.hpp"
+#include "js_list.hpp"
+#include "js_schema.hpp"
+#include "platform.hpp"
 
-#import "shared_realm.hpp"
-#import "object_accessor.hpp"
-#import "binding_context.hpp"
+#include "shared_realm.hpp"
+#include "object_accessor.hpp"
+#include "binding_context.hpp"
 
-#import <set>
+#include <set>
 
 using namespace realm;
 

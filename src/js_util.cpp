@@ -2,7 +2,7 @@
  * Proprietary and Confidential
  */
 
-#import "js_util.hpp"
+#include "js_util.hpp"
 
 using namespace realm;
 
