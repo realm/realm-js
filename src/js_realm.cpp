@@ -14,6 +14,7 @@
 #include "binding_context.hpp"
 
 #include <set>
+#include <cassert>
 
 using namespace realm;
 

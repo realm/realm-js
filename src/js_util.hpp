@@ -12,8 +12,10 @@
 #include <string>
 
 #include <stdexcept>
+ #include <cmath>
 #include "property.hpp"
 #include "schema.hpp"
+
 
 template<typename T>
 inline void RJSFinalize(JSObjectRef object) {

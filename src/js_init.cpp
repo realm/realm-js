@@ -11,6 +11,7 @@
 
 #include "shared_realm.hpp"
 #include <algorithm>
+#include <cassert>
 
 extern "C" {
 

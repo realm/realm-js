@@ -18,7 +18,8 @@
 #include "object_accessor.hpp"
 #include "shared_realm.hpp"
 #include "results.hpp"
-
+#include <cassert>
+ 
 using RJSAccessor = realm::NativeAccessor<JSValueRef, JSContextRef>;
 using namespace realm_js;
 
@@ -263,6 +264,7 @@ json RPCServer::serialize_json_value(JSValueRef value) {
         };
     }
     assert(0);
+    return {};
 }
 
 json RPCServer::serialize_object_schema(const realm::ObjectSchema &object_schema) {
@@ -359,4 +361,5 @@ JSValueRef RPCServer::deserialize_json_value(const json dict)
     }
 
     assert(0);
+    return NULL;
 }
