@@ -20,6 +20,7 @@
 
 #include "realm_coordinator.hpp"
 
+#include <asl.h>
 #include <assert.h>
 #include <fcntl.h>
 #include <sstream>
@@ -138,7 +139,21 @@ ExternalCommitHelper::ExternalCommitHelper(RealmCoordinator& parent)
     m_shutdown_read_fd = pipeFd[0];
     m_shutdown_write_fd = pipeFd[1];
 
-    m_thread = std::async(std::launch::async, [=] { listen(); });
+    m_thread = std::async(std::launch::async, [=] {
+        try {
+            listen();
+        }
+        catch (std::exception const& e) {
+            fprintf(stderr, "uncaught exception in notifier thread: %s: %s\n", typeid(e).name(), e.what());
+            asl_log(nullptr, nullptr, ASL_LEVEL_ERR, "uncaught exception in notifier thread: %s: %s", typeid(e).name(), e.what());
+            throw;
+        }
+        catch (...) {
+            fprintf(stderr,  "uncaught exception in notifier thread\n");
+            asl_log(nullptr, nullptr, ASL_LEVEL_ERR, "uncaught exception in notifier thread");
+            throw;
+        }
+    });
 }
 
 ExternalCommitHelper::~ExternalCommitHelper()
