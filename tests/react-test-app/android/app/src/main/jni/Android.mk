@@ -19,6 +19,9 @@ CXX11_FLAGS := -std=c++11
 LOCAL_CFLAGS += $(CXX11_FLAGS)
 LOCAL_EXPORT_CPPFLAGS := $(CXX11_FLAGS)
 
+LOCAL_C_INCLUDES := ../../../../../../../vendor
+LOCAL_C_INCLUDES += ../../../../../../../core/include
+
 LOCAL_SHARED_LIBRARIES := libjsc
 
 include $(BUILD_SHARED_LIBRARY)

@@ -14,7 +14,7 @@ namespace realm {
 
     class Object {
     public:
-        Object(SharedRealm r, const ObjectSchema &s, Row o) : m_realm(r), object_schema(s), m_row(o) {}
+        Object(SharedRealm r, const ObjectSchema &s, Row o) : object_schema(s), m_realm(r), m_row(o) {}
 
         // property getter/setter
         template<typename ValueType, typename ContextType>
