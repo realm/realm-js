@@ -21,23 +21,18 @@ task createNativeDepsDirectories {
     thirdPartyNdkDir.mkdirs()
 }
 
-task downloadRealmCore(dependsOn: createNativeDepsDirectories, type: Download) {
-    // Use ZIP version as it's faster this way to selectively extract some parts of the archive
+task downloadRealmCore(type: Download) {
     src 'http://static.realm.io/downloads/core/realm-core-android-0.94.4.tar.gz'
     onlyIfNewer true
     overwrite false
     dest new File(downloadsDir, 'realm-core-android-0.94.4.tar.gz')
 }
 
-task prepareRealmCore(dependsOn: downloadRealmCore) {
-    inputs.files downloadRealmCore.dest
-    outputs.dir "$thirdPartyNdkDir/realm-core"
-    doLast {
-        copy {
-            from { tarTree(downloadRealmCore.dest) }
-            //include 'realm-core-android-0.94.4/*.so', 'realm-core-android-0.94.4/include/**/*.hpp'
-            into "$thirdPartyNdkDir/realm-core"
-        }
+task prepareRealmCore(dependsOn: downloadRealmCore) << {
+    copy {
+        from { tarTree(downloadRealmCore.dest) }
+        from 'src/main/jni/third-party/realm-core/Android.mk'
+        into "$thirdPartyNdkDir/realm-core";
     }
 }
 
