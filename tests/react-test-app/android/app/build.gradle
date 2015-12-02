@@ -183,7 +183,7 @@ def getNdkBuildFullPath() {
     return ndkBuildFullPath
 }
 
-task buildReactNdkLib(dependsOn: [prepareJSC, prepareBoost, prepareDoubleConversion, prepareFolly, prepareGlog], type: Exec) {
+task buildReactNdkLib(dependsOn: [prepareJSC, prepareDoubleConversion], type: Exec) {
     inputs.file('src/main/jni')
     outputs.dir("$buildDir/react-ndk/all")
     commandLine getNdkBuildFullPath(),

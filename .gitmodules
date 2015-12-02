@@ -3,4 +3,4 @@
 	url = https://github.com/swisspol/GCDWebServer.git
 [submodule "vendor/PEGTL"]
 	path = vendor/PEGTL
-	url = https://github.com/ColinH/PEGTL.git
+	url = https://github.com/alazier/PEGTL.git
