@@ -127,13 +127,6 @@
 			remoteGlobalIDString = 58B5119B1A9E6C1200147676;
 			remoteInfo = RCTText;
 		};
-		F6F405B71BCE55FB00A1E24F /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 027799061BBF3BB700C96559 /* RealmJS.xcodeproj */;
-			proxyType = 1;
-			remoteGlobalIDString = 02B29A151B7CF7C9008A7E6B;
-			remoteInfo = RealmReact;
-		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -382,7 +375,6 @@
 			buildRules = (
 			);
 			dependencies = (
-				F6F405B81BCE55FB00A1E24F /* PBXTargetDependency */,
 			);
 			name = ReactTestApp;
 			productName = "Hello World";
@@ -625,11 +617,6 @@
 			isa = PBXTargetDependency;
 			target = 13B07F861A680F5B00A75B9A /* ReactTestApp */;
 			targetProxy = 00E356F41AD99517003FC87E /* PBXContainerItemProxy */;
-		};
-		F6F405B81BCE55FB00A1E24F /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = RealmReact;
-			targetProxy = F6F405B71BCE55FB00A1E24F /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 

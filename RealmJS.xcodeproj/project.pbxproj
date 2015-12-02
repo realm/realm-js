@@ -130,13 +130,6 @@
 			remoteGlobalIDString = 00E356EE1AD99517003FC87E;
 			remoteInfo = RealmReactTests;
 		};
-		02B29A2F1B7CF7ED008A7E6B /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 02B58CA81AE99CEB009B348C /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 02B58CB01AE99CEC009B348C;
-			remoteInfo = RealmJS;
-		};
 		02B58CBE1AE99CEC009B348C /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 02B58CA81AE99CEB009B348C /* Project object */;
@@ -157,13 +150,6 @@
 			proxyType = 2;
 			remoteGlobalIDString = E2DDD18B1BE69404002CE867;
 			remoteInfo = "GCDWebServers (tvOS)";
-		};
-		02D0F2D41C037C1700B4FC45 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 02A3C7841BC4317A00B1A7BE /* GCDWebServer.xcodeproj */;
-			proxyType = 1;
-			remoteGlobalIDString = CEE28CEE1AE0051F00F4023C;
-			remoteInfo = "GCDWebServers (iOS)";
 		};
 /* End PBXContainerItemProxy section */
 
@@ -503,8 +489,6 @@
 			buildRules = (
 			);
 			dependencies = (
-				02D0F2D51C037C1700B4FC45 /* PBXTargetDependency */,
-				02B29A301B7CF7ED008A7E6B /* PBXTargetDependency */,
 			);
 			name = RealmReact;
 			productName = RealmReact;
@@ -760,20 +744,10 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		02B29A301B7CF7ED008A7E6B /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 02B58CB01AE99CEC009B348C /* RealmJS */;
-			targetProxy = 02B29A2F1B7CF7ED008A7E6B /* PBXContainerItemProxy */;
-		};
 		02B58CBF1AE99CEC009B348C /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 02B58CB01AE99CEC009B348C /* RealmJS */;
 			targetProxy = 02B58CBE1AE99CEC009B348C /* PBXContainerItemProxy */;
-		};
-		02D0F2D51C037C1700B4FC45 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = "GCDWebServers (iOS)";
-			targetProxy = 02D0F2D41C037C1700B4FC45 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
