@@ -28,15 +28,15 @@ LOCAL_C_INCLUDES := src/object-store
 LOCAL_C_INCLUDES += src/object-store/parser
 LOCAL_C_INCLUDES += ../../../../../../../vendor
 LOCAL_C_INCLUDES += ../../../../../../../vendor/PEGTL
-LOCAL_C_INCLUDES += ../../../../../../../core/include
 
 LOCAL_CFLAGS += -fexceptions -std=c++14 -frtti -Wno-extern-c-compat
 CXX11_FLAGS := -std=c++11
 LOCAL_CFLAGS += $(CXX11_FLAGS)
 LOCAL_EXPORT_CPPFLAGS := $(CXX11_FLAGS)
-LOCAL_SHARED_LIBRARIES := libjsc librealm
+LOCAL_SHARED_LIBRARIES := libjsc librealm-core
 
 include $(BUILD_SHARED_LIBRARY)
 
+$(call import-module,realm-core)
 $(call import-module,jsc)
 
