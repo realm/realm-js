@@ -48,7 +48,7 @@ std::string RJSStringForJSString(JSStringRef jsString) {
 }
 
 std::string RJSStringForValue(JSContextRef ctx, JSValueRef value) {
-    JSValueRef *exception;
+    JSValueRef *exception = nullptr;
     JSStringRef jsString = JSValueToStringCopy(ctx, value, exception);
     if (!jsString) {
         throw RJSException(ctx, *exception);

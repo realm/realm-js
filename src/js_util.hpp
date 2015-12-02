@@ -8,7 +8,9 @@
 #include <JavaScriptCore/JSObjectRef.h>
 #include <JavaScriptCore/JSStringRef.h>
 
+#include <math.h>
 #include <string>
+
 #include <stdexcept>
  #include <cmath>
 #include "property.hpp"

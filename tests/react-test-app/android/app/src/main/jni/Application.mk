@@ -7,11 +7,10 @@ APP_MK_DIR := $(dir $(lastword $(MAKEFILE_LIST)))
 
 NDK_MODULE_PATH := $(APP_MK_DIR)$(HOST_DIRSEP)$(THIRD_PARTY_NDK_DIR)$(HOST_DIRSEP)$(APP_MK_DIR)first-party
 
-APP_STL := c++_static
-APP_CFLAGS += -std=c++11
+APP_STL := c++_shared
 APP_CPPFLAGS += -frtti
 
 # Make sure every shared lib includes a .note.gnu.build-id header
 APP_LDFLAGS := -Wl,--build-id
 
-NDK_TOOLCHAIN_VERSION := clang
+NDK_TOOLCHAIN_VERSION := 4.8

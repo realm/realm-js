@@ -7,6 +7,8 @@
 #include "js_util.hpp"
 #include "object_accessor.hpp"
 
+#include <assert.h>
+
 using RJSAccessor = realm::NativeAccessor<JSValueRef, JSContextRef>;
 using namespace realm;
 
