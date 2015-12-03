@@ -19,8 +19,8 @@
 #ifndef REALM_LIST_HPP
 #define REALM_LIST_HPP
 
-#import "shared_realm.hpp"
-#import <realm/link_view.hpp>
+#include "shared_realm.hpp"
+#include <realm/link_view.hpp>
 
 namespace realm {
     class List {
