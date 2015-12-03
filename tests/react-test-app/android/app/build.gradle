@@ -28,12 +28,10 @@ task downloadRealmCore(type: Download) {
     dest new File(downloadsDir, 'realm-core-android-0.94.4.tar.gz')
 }
 
-task prepareRealmCore(dependsOn: downloadRealmCore) << {
-    copy {
-        from { tarTree(downloadRealmCore.dest) }
-        from 'src/main/jni/third-party/realm-core/Android.mk'
-        into "$thirdPartyNdkDir/realm-core";
-    }
+task prepareRealmCore(type:Copy) {
+    from tarTree(downloadRealmCore.dest)
+    from 'src/main/jni/third-party/realm-core/Android.mk'
+    into "$thirdPartyNdkDir/realm-core"
 }
 
 task downloadJSCHeaders(type: Download) {
@@ -120,7 +118,8 @@ task buildReactNdkLib(dependsOn: [prepareJSC, prepareRealmCore], type: Exec) {
             '-C', file('src/main/jni').absolutePath,
             '-B',
             'NDK_LOG=1',
-            '--jobs', Runtime.runtime.availableProcessors()
+            '--jobs', Runtime.runtime.availableProcessors(),
+            'V=1'
 }
 
 task cleanReactNdkLib(type: Exec) {
