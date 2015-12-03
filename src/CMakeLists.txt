@@ -21,6 +21,7 @@ set(HEADERS
     results.hpp
     schema.hpp
     shared_realm.hpp
+    impl/cached_realm_base.hpp
     impl/transact_log_handler.hpp
     parser/parser.hpp
     parser/query_builder.hpp)
