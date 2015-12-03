@@ -25,7 +25,7 @@
 namespace realm {
     class List {
       public:
-        List(SharedRealm &r, const ObjectSchema &s, LinkViewRef l) : m_realm(r), object_schema(s), m_link_view(l) {}
+        List(SharedRealm &r, const ObjectSchema &s, LinkViewRef l) : object_schema(s), m_realm(r), m_link_view(l) {}
 
         const ObjectSchema &object_schema;
         SharedRealm realm() { return m_realm; }
