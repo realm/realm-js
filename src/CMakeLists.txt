@@ -35,6 +35,13 @@ if(APPLE)
         impl/apple/cached_realm.hpp
         impl/apple/external_commit_helper.hpp)
     find_library(CF_LIBRARY CoreFoundation)
+else()
+    include_directories(impl/generic)
+    list(APPEND SOURCES
+        impl/generic/external_commit_helper.cpp)
+    list(APPEND HEADERS
+        impl/generic/cached_realm.hpp
+        impl/generic/external_commit_helper.hpp)
 endif()
 
 add_library(realm-object-store SHARED ${SOURCES} ${HEADERS})
