@@ -1,7 +1,12 @@
 LOCAL_PATH:= $(call my-dir)
 
 include $(CLEAR_VARS)
+LOCAL_MODULE := realm-android-$(TARGET_ARCH_ABI)
+LOCAL_EXPORT_C_INCLUDES := ../../../build/third-party-ndk/realm-core/include
+LOCAL_SRC_FILES := ../../../build/third-party-ndk/realm-core/librealm-android-$(TARGET_ARCH_ABI).a
+include $(PREBUILT_STATIC_LIBRARY)
 
+include $(CLEAR_VARS)
 LOCAL_MODULE := librealmreact
 
 LOCAL_SRC_FILES := \
@@ -30,13 +35,12 @@ LOCAL_C_INCLUDES += ../../../../../../../vendor
 LOCAL_C_INCLUDES += ../../../../../../../vendor/PEGTL
 LOCAL_C_INCLUDES += ../../../build/third-party-ndk/realm-core/include
 
-LOCAL_CFLAGS += -fexceptions -std=c++14 -frtti -Wno-extern-c-compat
-CXX11_FLAGS := -std=c++11
-LOCAL_CFLAGS += $(CXX11_FLAGS)
+CXX11_FLAGS := -std=c++14
+LOCAL_CFLAGS += -fexceptions $(CXX11_FLAGS) -frtti -Wno-extern-c-compat
 LOCAL_EXPORT_CPPFLAGS := $(CXX11_FLAGS)
-LOCAL_SHARED_LIBRARIES := libjsc
-LOCAL_STATIC_LIBRARIES := librealm-core
 
+LOCAL_STATIC_LIBRARIES := realm-android-$(TARGET_ARCH_ABI)
+LOCAL_SHARED_LIBRARIES := libjsc
 include $(BUILD_SHARED_LIBRARY)
 
 $(call import-module,jsc)
