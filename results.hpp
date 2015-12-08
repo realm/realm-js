@@ -133,8 +133,8 @@ public:
     struct OutOfBoundsIndexException : public std::out_of_range
     {
         OutOfBoundsIndexException(size_t r, size_t c) : requested(r), valid_count(c),
-            std::out_of_range((std::string)"Requested index " + std::to_string(r) +
-                              " greater than max " + std::to_string(c)) {}
+            std::out_of_range((std::string)"Requested index " + to_string(r) +
+                              " greater than max " + to_string(c)) {}
         const size_t requested;
         const size_t valid_count;
     };

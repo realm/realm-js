@@ -520,7 +520,7 @@ bool ObjectStore::is_empty(const Group *group) {
 InvalidSchemaVersionException::InvalidSchemaVersionException(uint64_t old_version, uint64_t new_version) :
     m_old_version(old_version), m_new_version(new_version)
 {
-    m_what = "Provided schema version " + std::to_string(old_version) + " is less than last set version " + std::to_string(new_version) + ".";
+    m_what = "Provided schema version " + to_string(old_version) + " is less than last set version " + to_string(new_version) + ".";
 }
 
 DuplicatePrimaryKeyValueException::DuplicatePrimaryKeyValueException(std::string const& object_type, Property const& property) :
@@ -589,7 +589,7 @@ MismatchedPropertiesException::MismatchedPropertiesException(std::string const& 
         m_what = "Target object type for property '" + old_property.name + "' do not match. Old type '" + old_property.object_type + "', new type '" + new_property.object_type + "'";
     }
     else if (new_property.is_nullable != old_property.is_nullable) {
-        m_what = "Nullability for property '" + old_property.name + "' has changed from '" + std::to_string(old_property.is_nullable) + "' to  '" + std::to_string(new_property.is_nullable) + "'.";
+        m_what = "Nullability for property '" + old_property.name + "' has changed from '" + to_string(old_property.is_nullable) + "' to  '" + to_string(new_property.is_nullable) + "'.";
     }
 }
 
