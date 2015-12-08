@@ -2,8 +2,8 @@ LOCAL_PATH:= $(call my-dir)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := realm-android-$(TARGET_ARCH_ABI)
-LOCAL_EXPORT_C_INCLUDES := ../../../build/third-party-ndk/realm-core/include
-LOCAL_SRC_FILES := ../../../build/third-party-ndk/realm-core/librealm-android-$(TARGET_ARCH_ABI).a
+LOCAL_EXPORT_C_INCLUDES := core/include
+LOCAL_SRC_FILES := core/librealm-android-$(TARGET_ARCH_ABI).a
 include $(PREBUILT_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
@@ -27,17 +27,20 @@ LOCAL_SRC_FILES := \
   src/object-store/shared_realm.cpp \
   src/object-store/parser/parser.cpp \
   src/object-store/parser/query_builder.cpp \
-  src/object-store/impl/transact_log_handler.cpp
+  src/object-store/impl/transact_log_handler.cpp \
+  ../../../../../../../vendor/base64.cpp
 
 LOCAL_C_INCLUDES := src/object-store
 LOCAL_C_INCLUDES += src/object-store/parser
 LOCAL_C_INCLUDES += ../../../../../../../vendor
 LOCAL_C_INCLUDES += ../../../../../../../vendor/PEGTL
-LOCAL_C_INCLUDES += ../../../build/third-party-ndk/realm-core/include
+LOCAL_C_INCLUDES += core/include
 
 CXX11_FLAGS := -std=c++14
-LOCAL_CFLAGS += -fexceptions $(CXX11_FLAGS) -frtti -Wno-extern-c-compat
+LOCAL_CFLAGS += -fexceptions $(CXX11_FLAGS) -frtti
 LOCAL_EXPORT_CPPFLAGS := $(CXX11_FLAGS)
+
+LOCAL_LDLIBS := -L$(SYSROOT)/usr/lib -llog
 
 LOCAL_STATIC_LIBRARIES := realm-android-$(TARGET_ARCH_ABI)
 LOCAL_SHARED_LIBRARIES := libjsc

@@ -63,6 +63,10 @@ JSObjectRef RJSObjectCreate(JSContextRef ctx, Object object) {
     return jsObject;
 }
 
+extern JSObjectRef RJSDictForPropertyArray(JSContextRef ctx, ObjectSchema &object_schema, JSObjectRef array);
+
+namespace realm {
+
 template<> bool RJSAccessor::dict_has_value_for_key(JSContextRef ctx, JSValueRef dict, const std::string &prop_name) {
     JSObjectRef object = RJSValidatedValueToObject(ctx, dict);
     JSStringRef propStr =JSStringCreateWithUTF8CString(prop_name.c_str());
@@ -215,8 +219,6 @@ template<> JSValueRef RJSAccessor::from_datetime(JSContextRef ctx, DateTime dt) 
     return JSObjectMakeDate(ctx, 1, &time, NULL);
 }
 
-extern JSObjectRef RJSDictForPropertyArray(JSContextRef ctx, const ObjectSchema &object_schema, JSObjectRef array);
-
 template<> size_t RJSAccessor::to_existing_object_index(JSContextRef ctx, JSValueRef &val) {
     JSObjectRef object = RJSValidatedValueToObject(ctx, val);
     if (JSValueIsObjectOfClass(ctx, val, RJSObjectClass())) {
@@ -250,4 +252,6 @@ template<> JSValueRef RJSAccessor::list_value_at_index(JSContextRef ctx, JSValue
 }
 template<> JSValueRef RJSAccessor::from_list(JSContextRef ctx, List list) {
     return RJSListCreate(ctx, list);
+}
+
 }

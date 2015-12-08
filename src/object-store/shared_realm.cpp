@@ -47,7 +47,7 @@ Realm::Config::Config(const Config& c)
 , migration_function(c.migration_function)
 {
     if (c.schema) {
-        schema = std::make_unique<Schema>(*c.schema);
+        schema.reset(new Schema(*c.schema));
     }
 }
 
@@ -68,14 +68,14 @@ Realm::Realm(Config config)
 {
     try {
         if (m_config.read_only) {
-            m_read_only_group = std::make_unique<Group>(m_config.path, m_config.encryption_key.data(), Group::mode_ReadOnly);
+            m_read_only_group.reset(new Group(m_config.path, m_config.encryption_key.data(), Group::mode_ReadOnly));
             m_group = m_read_only_group.get();
         }
         else {
             m_history = realm::make_client_history(m_config.path, m_config.encryption_key.data());
             SharedGroup::DurabilityLevel durability = m_config.in_memory ? SharedGroup::durability_MemOnly :
                                                                            SharedGroup::durability_Full;
-            m_shared_group = std::make_unique<SharedGroup>(*m_history, durability, m_config.encryption_key.data(), !m_config.disable_format_upgrade);
+            m_shared_group.reset(new SharedGroup(*m_history, durability, m_config.encryption_key.data()));
         }
     }
     catch (util::File::PermissionDenied const& ex) {
@@ -157,7 +157,7 @@ SharedRealm Realm::get_shared_realm(Config config)
     if (auto existing = s_global_cache.get_any_realm(realm->config().path)) {
         // if there is an existing realm at the current path steal its schema/column mapping
         // FIXME - need to validate that schemas match
-        realm->m_config.schema = std::make_unique<Schema>(*existing->m_config.schema);
+        realm->m_config.schema.reset(new Schema(*existing->m_config.schema));
 
 #if __APPLE__
         realm->m_notifier = existing->m_notifier;
@@ -170,7 +170,7 @@ SharedRealm Realm::get_shared_realm(Config config)
 #endif
 
         // otherwise get the schema from the group
-        realm->m_config.schema = std::make_unique<Schema>(ObjectStore::schema_from_group(realm->read_group()));
+        realm->m_config.schema.reset(new Schema(ObjectStore::schema_from_group(realm->read_group())));
 
         // if a target schema is supplied, verify that it matches or migrate to
         // it, as neeeded

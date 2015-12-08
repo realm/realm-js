@@ -21,6 +21,7 @@
 
 #include <cstdlib>
 #include <vector>
+#include <stddef.h>
 
 namespace realm {
 class IndexSet {

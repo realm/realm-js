@@ -159,7 +159,7 @@ JSObjectRef RealmConstructor(JSContextRef ctx, JSObjectRef constructor, size_t a
                     static JSStringRef schemaString = JSStringCreateWithUTF8CString("schema");
                     JSValueRef schemaValue = RJSValidatedPropertyValue(ctx, object, schemaString);
                     if (!JSValueIsUndefined(ctx, schemaValue)) {
-                        config.schema = make_unique<Schema>(RJSParseSchema(ctx, RJSValidatedValueToObject(ctx, schemaValue), defaults, prototypes));
+                        config.schema.reset(new Schema(RJSParseSchema(ctx, RJSValidatedValueToObject(ctx, schemaValue), defaults, prototypes)));
                     }
 
                     static JSStringRef schemaVersionString = JSStringCreateWithUTF8CString("schemaVersion");
@@ -180,7 +180,7 @@ JSObjectRef RealmConstructor(JSContextRef ctx, JSObjectRef constructor, size_t a
         ensure_directory_exists_for_file(config.path);
         SharedRealm realm = Realm::get_shared_realm(config);
         if (!realm->m_binding_context) {
-            realm->m_binding_context = make_unique<RJSRealmDelegate>(realm, JSContextGetGlobalContext(ctx));
+            realm->m_binding_context.reset(new RJSRealmDelegate(realm, JSContextGetGlobalContext(ctx)));
         }
         RJSDefaults(realm.get()) = defaults;
         RJSPrototypes(realm.get()) = prototypes;

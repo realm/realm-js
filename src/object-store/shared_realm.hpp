@@ -25,6 +25,7 @@
 #include <mutex>
 #include <thread>
 #include <vector>
+#include <mutex>
 
 namespace realm {
     class ClientHistory;

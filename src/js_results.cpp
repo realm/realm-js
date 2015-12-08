@@ -46,7 +46,7 @@ bool ResultsSetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef proper
     try {
         std::string indexStr = RJSStringForJSString(propertyName);
         if (indexStr != "length") {
-            std::stol(RJSStringForJSString(propertyName));
+            stot<long>(RJSStringForJSString(propertyName));
         }
 
         // attempts to assign to 'length' or an index should throw an exception
