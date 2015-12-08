@@ -18,6 +18,7 @@ LOCAL_SRC_FILES := \
   src/js_object.cpp \
   src/js_schema.cpp	\
   src/rpc.cpp \
+  src/android/platform.cpp \
   src/object-store/index_set.cpp \
   src/object-store/list.cpp \
   src/object-store/object_schema.cpp \
