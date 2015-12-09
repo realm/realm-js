@@ -4,11 +4,11 @@
 
 'use strict';
 
-exports.ArrayTests = require('./ArrayTests');
-exports.ObjectTests = require('./ObjectTests');
-exports.RealmTests = require('./RealmTests');
-exports.ResultsTests = require('./ResultsTests');
-exports.QueryTests = require('./QueryTests');
+exports.ListTests = require('./list-tests');
+exports.ObjectTests = require('./object-tests');
+exports.RealmTests = require('./realm-tests');
+exports.ResultsTests = require('./results-tests');
+exports.QueryTests = require('./query-tests');
 
 var SPECIAL_METHODS = {
     beforeEach: true,

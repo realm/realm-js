@@ -617,7 +617,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "[ -s \"${HOME}/.nvm/nvm.sh\" ] && . \"${HOME}/.nvm/nvm.sh\" \nrm -rf ../node_modules/realm ../node_modules/realm-tests\nnpm install realm realm-tests\ncp ../../../src/object-store/parser/queryTests.json ../node_modules/realm-tests\n";
+			shellScript = "[ -s \"${HOME}/.nvm/nvm.sh\" ] && . \"${HOME}/.nvm/nvm.sh\" \nrm -rf ../node_modules/realm ../node_modules/realm-tests\nnpm install realm realm-tests\ncp ../../../src/object-store/parser/queryTests.json ../node_modules/realm-tests/query-tests.json\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
