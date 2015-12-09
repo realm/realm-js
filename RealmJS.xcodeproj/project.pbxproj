@@ -892,10 +892,10 @@
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
-					"$(SRCROOT)/tests/react-test-app/node_modules/react-native/React/Base",
 					"$(SRCROOT)/vendor",
+					"$(SRCROOT)/vendor/GCDWebServer",
+					"$(SRCROOT)/tests/react-test-app/node_modules/react-native/React/Base",
 					"$(SRCROOT)/examples/ReactExample/node_modules/react-native/React/Base",
-					"$(SRCROOT)/tests/ReactTests/node_modules/react-native/React/Base",
 				);
 				INFOPLIST_FILE = src/ios/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
@@ -926,10 +926,10 @@
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
-					"$(SRCROOT)/tests/react-test-app/node_modules/react-native/React/Base",
 					"$(SRCROOT)/vendor",
+					"$(SRCROOT)/vendor/GCDWebServer",
+					"$(SRCROOT)/tests/react-test-app/node_modules/react-native/React/Base",
 					"$(SRCROOT)/examples/ReactExample/node_modules/react-native/React/Base",
-					"$(SRCROOT)/tests/ReactTests/node_modules/react-native/React/Base",
 				);
 				INFOPLIST_FILE = src/ios/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
@@ -959,10 +959,10 @@
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
-					"$(SRCROOT)/tests/react-test-app/node_modules/react-native/React/Base",
 					"$(SRCROOT)/vendor",
+					"$(SRCROOT)/vendor/GCDWebServer",
+					"$(SRCROOT)/tests/react-test-app/node_modules/react-native/React/Base",
 					"$(SRCROOT)/examples/ReactExample/node_modules/react-native/React/Base",
-					"$(SRCROOT)/tests/ReactTests/node_modules/react-native/React/Base",
 				);
 				INFOPLIST_FILE = src/ios/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
@@ -1394,6 +1394,7 @@
 				F63FF2B91C1241E500B3B8E0 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		F63FF2F51C16405D00B3B8E0 /* Build configuration list for PBXNativeTarget "GCDWebServers" */ = {
 			isa = XCConfigurationList;
@@ -1403,6 +1404,7 @@
 				F63FF2F81C16405D00B3B8E0 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

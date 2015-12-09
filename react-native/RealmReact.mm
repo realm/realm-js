@@ -47,7 +47,10 @@ JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executor, bool cre
 #import "shared_realm.hpp"
 
 #if DEBUG
-#import <GCDWebServers/GCDWebServers.h>
+#import <GCDWebServer/Core/GCDWebServer.h>
+#import <GCDWebServer/Requests/GCDWebServerDataRequest.h>
+#import <GCDWebServer/Responses/GCDWebServerDataResponse.h>
+#import <GCDWebServer/Responses/GCDWebServerErrorResponse.h>
 #import <RealmJS/rpc.hpp>
 
 @interface RealmReact () {
