@@ -1,13 +1,11 @@
 {
-  "name": "ReactTests",
+  "name": "Demo",
   "version": "0.0.1",
   "private": true,
   "scripts": {
     "start": "react-native start"
   },
   "dependencies": {
-    "react-native": "0.16.0",
-    "realm": "file:../../lib",
-    "realm-tests": "file:../lib"
+    "react-native": "^0.16.0"
   }
 }

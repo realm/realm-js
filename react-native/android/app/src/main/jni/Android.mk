@@ -30,12 +30,12 @@ LOCAL_SRC_FILES := \
   src/object-store/parser/parser.cpp \
   src/object-store/parser/query_builder.cpp \
   src/object-store/impl/transact_log_handler.cpp \
-  ../../../../../../../vendor/base64.cpp
+  vendor/base64.cpp
 
 LOCAL_C_INCLUDES := src/object-store
 LOCAL_C_INCLUDES += src/object-store/parser
-LOCAL_C_INCLUDES += ../../../../../../../vendor
-LOCAL_C_INCLUDES += ../../../../../../../vendor/PEGTL
+LOCAL_C_INCLUDES += vendor
+LOCAL_C_INCLUDES += vendor/PEGTL
 LOCAL_C_INCLUDES += core/include
 
 CXX11_FLAGS := -std=c++14

@@ -1,0 +1,195 @@
+// Copyright 2015-present Facebook. All Rights Reserved.
+
+apply plugin: 'com.android.library'
+apply plugin: 'maven'
+
+apply plugin: 'de.undercouch.download'
+
+import de.undercouch.gradle.tasks.download.Download
+import org.apache.tools.ant.taskdefs.condition.Os
+import org.apache.tools.ant.filters.ReplaceTokens
+
+// We download various C++ open-source dependencies into downloads.
+// We then copy both the downloaded code and our custom makefiles and headers into third-party-ndk.
+// After that we build native code from src/main/jni with module path pointing at third-party-ndk.
+
+def downloadsDir = new File("$buildDir/downloads")
+def thirdPartyNdkDir = new File("$buildDir/third-party-ndk")
+
+task createNativeDepsDirectories {
+    downloadsDir.mkdirs()
+    thirdPartyNdkDir.mkdirs()
+}
+
+task downloadRealmCore(type: Download) {
+    src 'http://static.realm.io/downloads/core/realm-core-android-0.94.4.tar.gz'
+    onlyIfNewer true
+    overwrite false
+    dest new File(downloadsDir, 'realm-core-android-0.94.4.tar.gz')
+}
+
+task prepareRealmCore(type:Copy) {
+    from tarTree(downloadRealmCore.dest)
+    from 'src/main/jni/third-party/realm-core/Android.mk'
+    into "$thirdPartyNdkDir/realm-core"
+}
+
+task downloadJSCHeaders(type: Download) {
+    def jscAPIBaseURL = 'https://svn.webkit.org/repository/webkit/!svn/bc/174650/trunk/Source/JavaScriptCore/API/'
+    def jscHeaderFiles = ['JSBase.h', 'JSContextRef.h', 'JSObjectRef.h', 'JSRetainPtr.h', 'JSStringRef.h', 'JSValueRef.h', 'WebKitAvailability.h', 'JavaScriptCore.h', 'JavaScript.h', 'JSStringRefCF.h']
+    def output = new File(downloadsDir, 'jsc')
+    output.mkdirs()
+    src(jscHeaderFiles.collect { headerName -> "$jscAPIBaseURL$headerName" })
+    onlyIfNewer true
+    overwrite false
+    dest output
+}
+
+// Create Android.mk library module based on so files from mvn + include headers fetched from webkit.org
+task prepareJSC(dependsOn: downloadJSCHeaders) << {
+    copy {
+        from zipTree(configurations.compile.fileCollection { dep -> dep.name == 'android-jsc' }.singleFile)
+        from {downloadJSCHeaders.dest}
+        from 'src/main/jni/third-party/jsc/Android.mk'
+        include 'jni/**/*.so', '*.h', 'Android.mk'
+        filesMatching('*.h', { fname -> fname.path = "JavaScriptCore/${fname.path}"})
+        into "$thirdPartyNdkDir/jsc";
+    }
+}
+
+def getNdkBuildName() {
+    if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+        return "ndk-build.cmd"
+    } else {
+        return "ndk-build"
+    }
+}
+
+def findNdkBuildFullPath() {
+    // we allow to provide full path to ndk-build tool
+    if (hasProperty('ndk.command')) {
+        return property('ndk.command')
+    }
+    // or just a path to the containing directory
+    if (hasProperty('ndk.path')) {
+        def ndkDir = property('ndk.path')
+        return new File(ndkDir, getNdkBuildName()).getAbsolutePath()
+    }
+    if (System.getenv('ANDROID_NDK') != null) {
+        def ndkDir = System.getenv('ANDROID_NDK')
+        return new File(ndkDir, getNdkBuildName()).getAbsolutePath()
+    }
+    def ndkDir = android.hasProperty('plugin') ? android.plugin.ndkFolder :
+            plugins.getPlugin('com.android.library').sdkHandler.getNdkFolder()
+    if (ndkDir) {
+        return new File(ndkDir, getNdkBuildName()).getAbsolutePath()
+    }
+    return null
+}
+
+def getNdkBuildFullPath() {
+    def ndkBuildFullPath = findNdkBuildFullPath()
+    if (ndkBuildFullPath == null) {
+        throw new GradleScriptException(
+            "ndk-build binary cannot be found, check if you've set " +
+            "\$ANDROID_NDK environment variable correctly or if ndk.dir is " +
+            "setup in local.properties",
+            null)
+    }
+    if (!new File(ndkBuildFullPath).canExecute()) {
+        throw new GradleScriptException(
+            "ndk-build binary " + ndkBuildFullPath + " doesn't exist or isn't executable.\n" +
+            "Check that the \$ANDROID_NDK environment variable, or ndk.dir in local.proerties, is set correctly.\n" +
+            "(On Windows, make sure you escape backslashes in local.properties or use forward slashes, e.g. C:\\\\ndk or C:/ndk rather than C:\\ndk)",
+            null)
+    }
+    return ndkBuildFullPath
+}
+
+task buildReactNdkLib(dependsOn: [prepareJSC], type: Exec) {
+    inputs.file('src/main/jni')
+    outputs.dir("$buildDir/react-ndk/all")
+    commandLine getNdkBuildFullPath(),
+            'NDK_PROJECT_PATH=null',
+            "NDK_APPLICATION_MK=$projectDir/src/main/jni/Application.mk",
+            'NDK_OUT=' + temporaryDir,
+            "NDK_LIBS_OUT=$buildDir/react-ndk/all",
+            "THIRD_PARTY_NDK_DIR=$buildDir/third-party-ndk",
+            '-C', file('src/main/jni').absolutePath,
+            '-B',
+            'NDK_LOG=1',
+            '--jobs', Runtime.runtime.availableProcessors(),
+            'V=1'
+}
+
+task cleanReactNdkLib(type: Exec) {
+    commandLine getNdkBuildFullPath(),
+            '-C', file('src/main/jni').absolutePath,
+            'clean'
+}
+
+task packageReactNdkLibs(dependsOn: buildReactNdkLib, type: Copy) {
+    from "$buildDir/react-ndk/all"
+    exclude '**/libjsc.so'
+    into "$buildDir/react-ndk/exported"
+}
+
+android {
+    compileSdkVersion 23
+    buildToolsVersion "23.0.1"
+
+    defaultConfig {
+        minSdkVersion 16
+        targetSdkVersion 22
+        versionCode 1
+        versionName "1.0"
+
+        ndk {
+            moduleName "reactnativejni"
+        }
+
+        buildConfigField 'boolean', 'IS_INTERNAL_BUILD', 'false'
+    }
+
+    sourceSets.main {
+        jni.srcDirs = []
+        jniLibs.srcDir "$buildDir/react-ndk/exported"
+        res.srcDirs = ['src/main/res/devsupport', 'src/main/res/shell']
+    }
+
+    tasks.withType(JavaCompile) {
+        compileTask -> compileTask.dependsOn packageReactNdkLibs
+    }
+
+    clean.dependsOn cleanReactNdkLib
+
+    lintOptions {
+        abortOnError false
+    }
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile 'com.android.support:appcompat-v7:23.0.1'
+    compile 'com.android.support:recyclerview-v7:23.0.1'
+    compile 'com.facebook.fresco:fresco:0.8.1'
+    compile 'com.facebook.fresco:imagepipeline-okhttp:0.8.1'
+    compile 'com.facebook.stetho:stetho:1.2.0'
+    compile 'com.facebook.stetho:stetho-okhttp:1.2.0'
+    compile 'com.fasterxml.jackson.core:jackson-core:2.2.3'
+    compile 'com.google.code.findbugs:jsr305:3.0.0'
+    compile 'com.squareup.okhttp:okhttp:2.5.0'
+    compile 'com.squareup.okhttp:okhttp-ws:2.5.0'
+    compile 'com.squareup.okio:okio:1.6.0'
+    compile 'org.webkit:android-jsc:r174650'
+
+    testCompile "junit:junit:${JUNIT_VERSION}"
+    testCompile "org.powermock:powermock-api-mockito:${POWERMOCK_VERSION}"
+    testCompile "org.powermock:powermock-module-junit4-rule:${POWERMOCK_VERSION}"
+    testCompile "org.powermock:powermock-classloading-xstream:${POWERMOCK_VERSION}"
+    testCompile "org.mockito:mockito-core:${MOCKITO_CORE_VERSION}"
+    testCompile "org.easytesting:fest-assert-core:${FEST_ASSERT_CORE_VERSION}"
+    testCompile("org.robolectric:robolectric:${ROBOLECTRIC_VERSION}")
+}
+
+apply from: 'release.gradle'
