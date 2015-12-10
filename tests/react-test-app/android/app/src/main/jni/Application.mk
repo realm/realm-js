@@ -7,7 +7,7 @@ APP_MK_DIR := $(dir $(lastword $(MAKEFILE_LIST)))
 
 NDK_MODULE_PATH := $(APP_MK_DIR)$(HOST_DIRSEP)$(THIRD_PARTY_NDK_DIR)$(HOST_DIRSEP)$(APP_MK_DIR)first-party
 
-APP_STL := gnustl_shared
+APP_STL := gnustl_static
 APP_CFLAGS += -std=c++14
 APP_CPPFLAGS += -frtti
 
