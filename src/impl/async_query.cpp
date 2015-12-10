@@ -28,58 +28,90 @@ AsyncQuery::AsyncQuery(Results& target)
 : m_target_results(&target)
 , m_realm(target.get_realm())
 , m_sort(target.get_sort())
-, m_version(Realm::Internal::get_shared_group(*m_realm).get_version_of_current_transaction())
+, m_sg_version(Realm::Internal::get_shared_group(*m_realm).get_version_of_current_transaction())
 {
     Query q = target.get_query();
     m_query_handover = Realm::Internal::get_shared_group(*m_realm).export_for_handover(q, MutableSourcePayload::Move);
 }
 
+AsyncQuery::~AsyncQuery()
+{
+    std::lock_guard<std::mutex> lock(m_target_mutex);
+    m_realm = nullptr;
+}
+
 size_t AsyncQuery::add_callback(std::function<void (std::exception_ptr)> callback)
 {
-    std::lock_guard<std::mutex> lock(m_callback_mutex);
+    m_realm->verify_thread();
 
-    size_t token = 0;
-    for (auto& callback : m_callbacks) {
-        if (token <= callback.token) {
-            token = callback.token + 1;
+    auto next_token = [=] {
+        size_t token = 0;
+        for (auto& callback : m_callbacks) {
+            if (token <= callback.token) {
+                token = callback.token + 1;
+            }
         }
+        return token;
+    };
+
+    std::lock_guard<std::mutex> lock(m_callback_mutex);
+    auto token = next_token();
+    m_callbacks.push_back({std::move(callback), token, -1ULL});
+    if (m_callback_index == npos) { // Don't need to wake up if we're already sending notifications
+        Realm::Internal::get_coordinator(*m_realm).send_commit_notifications();
+        m_have_callbacks = true;
     }
     return token;
 }
 
 void AsyncQuery::remove_callback(size_t token)
 {
-    std::lock_guard<std::mutex> lock(m_callback_mutex);
-    if (is_for_current_thread() &&  m_calling_callbacks) {
-        // Schedule the removal for after we're done calling callbacks
-        m_callbacks_to_remove.push_back(token);
-        return;
-    }
-    do_remove_callback(token);
-}
+    Callback old;
+    {
+        std::lock_guard<std::mutex> lock(m_callback_mutex);
+        REALM_ASSERT(m_error || m_callbacks.size() > 0);
 
-void AsyncQuery::do_remove_callback(size_t token) noexcept
-{
-    REALM_ASSERT(m_error || m_callbacks.size() > 0);
-    auto it = find_if(begin(m_callbacks), end(m_callbacks),
-                      [=](const auto& c) { return c.token == token; });
-    // We should only fail to find the callback if it was removed due to an error
-    REALM_ASSERT(m_error || it != end(m_callbacks));
-
-    if (it != end(m_callbacks)) {
-        if (it != prev(end(m_callbacks))) {
-            *it = std::move(m_callbacks.back());
+        auto it = find_if(begin(m_callbacks), end(m_callbacks),
+                          [=](const auto& c) { return c.token == token; });
+        // We should only fail to find the callback if it was removed due to an error
+        REALM_ASSERT(m_error || it != end(m_callbacks));
+        if (it == end(m_callbacks)) {
+            return;
         }
-        m_callbacks.pop_back();
+
+        size_t idx = distance(begin(m_callbacks), it);
+        if (m_callback_index != npos && m_callback_index >= idx) {
+            --m_callback_index;
+        }
+
+        old = std::move(*it);
+        m_callbacks.erase(it);
+
+        m_have_callbacks = !m_callbacks.empty();
     }
 }
 
 void AsyncQuery::unregister() noexcept
 {
     std::lock_guard<std::mutex> lock(m_target_mutex);
-    RealmCoordinator::unregister_query(*this);
     m_target_results = nullptr;
     m_realm = nullptr;
+}
+
+void AsyncQuery::release_query() noexcept
+{
+    {
+        std::lock_guard<std::mutex> lock(m_target_mutex);
+        REALM_ASSERT(!m_realm && !m_target_results);
+    }
+
+    m_query = nullptr;
+}
+
+bool AsyncQuery::is_alive() const noexcept
+{
+    std::lock_guard<std::mutex> lock(m_target_mutex);
+    return m_target_results != nullptr;
 }
 
 void AsyncQuery::run()
@@ -87,9 +119,9 @@ void AsyncQuery::run()
     REALM_ASSERT(m_sg);
 
     {
-        std::lock_guard<std::mutex> callback_lock(m_callback_mutex);
         std::lock_guard<std::mutex> target_lock(m_target_mutex);
-        if (!m_target_results || (m_callbacks.empty() && !m_target_results->wants_background_updates())) {
+        // Don't run the query if the results aren't actually going to be used
+        if (!m_target_results || (!m_have_callbacks && !m_target_results->wants_background_updates())) {
             m_skipped_running = true;
             return;
         }
@@ -100,7 +132,7 @@ void AsyncQuery::run()
     // may be called concurrently (as it'd be pretty bad for a running query to
     // block the main thread trying to pick up the previous results)
     if (m_tv.is_attached()) {
-        m_did_update = m_tv.sync_if_needed();
+        m_tv.sync_if_needed();
     }
     else {
         m_tv = m_query->find_all();
@@ -108,107 +140,111 @@ void AsyncQuery::run()
         if (m_sort) {
             m_tv.sort(m_sort.columnIndices, m_sort.ascending);
         }
-        m_did_update = true;
     }
 }
 
 void AsyncQuery::prepare_handover()
 {
     if (m_skipped_running) {
+        m_sg_version = SharedGroup::VersionID{};
         return;
     }
 
     REALM_ASSERT(m_tv.is_attached());
     REALM_ASSERT(m_tv.is_in_sync());
 
-    std::lock_guard<std::mutex> lock(m_callback_mutex);
-    m_version = m_sg->get_version_of_current_transaction();
+    m_sg_version = m_sg->get_version_of_current_transaction();
     m_initial_run_complete = true;
 
-    // Even if the TV didn't change, we need to re-export it if the previous
-    // export has not been consumed yet, as the old handover object is no longer
-    // usable due to the version not matching
-    if (m_did_update || (m_tv_handover && m_tv_handover->version != m_version)) {
-        m_tv_handover = m_sg->export_for_handover(m_tv, ConstSourcePayload::Copy);
-    }
-}
-
-void AsyncQuery::deliver(SharedGroup& sg, std::exception_ptr err)
-{
-    if (!is_for_current_thread()) {
+    auto table_version = m_tv.outside_version();
+    if (!m_tv_handover && table_version == m_handed_over_table_version) {
+        // We've already delivered the query results since the last time the
+        // table changed, so no need to do anything
         return;
     }
 
-    std::lock_guard<std::mutex> callback_lock(m_callback_mutex);
+    m_tv_handover = m_sg->export_for_handover(m_tv, ConstSourcePayload::Copy);
+    m_handed_over_table_version = table_version;
+}
+
+bool AsyncQuery::deliver(SharedGroup& sg, std::exception_ptr err)
+{
+    if (!is_for_current_thread()) {
+        return false;
+    }
+
     std::lock_guard<std::mutex> target_lock(m_target_mutex);
 
     // Target results being null here indicates that it was destroyed while we
     // were in the process of advancing the Realm version and preparing for
     // delivery, i.e. it was destroyed from the "wrong" thread
     if (!m_target_results) {
-        return;
+        return false;
     }
 
     // We can get called before the query has actually had the chance to run if
     // we're added immediately before a different set of async results are
     // delivered
     if (!m_initial_run_complete && !err) {
-        return;
+        return false;
     }
 
-    // Tell remove_callback() to defer actually removing them, so that calling it
-    // in the callback block works
-    m_calling_callbacks = true;
-
     if (err) {
-        m_error = true;
-        for (auto& callback : m_callbacks) {
-            callback.fn(err);
-        }
-
-        // Remove all the callbacks as we never need to call anything ever again
-        // after delivering an error
-        m_callbacks.clear();
-        m_callbacks_to_remove.clear();
-        m_calling_callbacks = false;
-        return;
+        m_error = err;
+        return m_have_callbacks;
     }
 
     REALM_ASSERT(!m_query_handover);
 
-    auto realm_version = Realm::Internal::get_shared_group(*m_realm).get_version_of_current_transaction();
-    if (m_version != realm_version) {
+    auto realm_sg_version = Realm::Internal::get_shared_group(*m_realm).get_version_of_current_transaction();
+    if (m_sg_version != realm_sg_version) {
         // Realm version can be newer if a commit was made on our thread or the
         // user manually called refresh(), or older if a commit was made on a
         // different thread and we ran *really* fast in between the check for
         // if the shared group has changed and when we pick up async results
-        return;
+        return false;
     }
 
-    // Cannot use m_did_update here as it is used unlocked in run()
-    bool did_update = false;
     if (m_tv_handover) {
+        m_tv_handover->version = m_sg_version;
         Results::AsyncFriend::set_table_view(*m_target_results,
                                              std::move(*sg.import_from_handover(std::move(m_tv_handover))));
+        m_delievered_table_version = m_handed_over_table_version;
 
-        did_update = true;
     }
     REALM_ASSERT(!m_tv_handover);
+    return m_have_callbacks;
+}
 
-    for (auto& callback : m_callbacks) {
-        if (did_update || callback.first_run) {
-            callback.fn(nullptr);
-            callback.first_run = false;
+void AsyncQuery::call_callbacks()
+{
+    REALM_ASSERT(is_for_current_thread());
+
+    while (auto fn = next_callback()) {
+        fn(m_error);
+    }
+
+    if (m_error) {
+        // Remove all the callbacks as we never need to call anything ever again
+        // after delivering an error
+        std::lock_guard<std::mutex> callback_lock(m_callback_mutex);
+        m_callbacks.clear();
+    }
+}
+
+std::function<void (std::exception_ptr)> AsyncQuery::next_callback()
+{
+    std::lock_guard<std::mutex> callback_lock(m_callback_mutex);
+    for (++m_callback_index; m_callback_index < m_callbacks.size(); ++m_callback_index) {
+        auto& callback = m_callbacks[m_callback_index];
+        if (m_error || callback.delivered_version != m_delievered_table_version) {
+            callback.delivered_version = m_delievered_table_version;
+            return callback.fn;
         }
     }
 
-    m_calling_callbacks = false;
-
-    // Actually remove any callbacks whose removal was requested during iteration
-    for (auto token : m_callbacks_to_remove) {
-        do_remove_callback(token);
-    }
-    m_callbacks_to_remove.clear();
+    m_callback_index = npos;
+    return nullptr;
 }
 
 void AsyncQuery::attach_to(realm::SharedGroup& sg)

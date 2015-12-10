@@ -246,37 +246,40 @@ void RealmCoordinator::register_query(std::shared_ptr<AsyncQuery> query)
         self.pin_version(version.version, version.index);
         self.m_new_queries.push_back(std::move(query));
     }
-
-    // Wake up the background worker threads by pretending we made a commit
-    self.m_notifier->notify_others();
 }
 
-void RealmCoordinator::unregister_query(AsyncQuery& query)
+void RealmCoordinator::clean_up_dead_queries()
 {
     auto swap_remove = [&](auto& container) {
-        auto it = std::find_if(container.begin(), container.end(),
-                               [&](auto const& ptr) { return ptr.get() == &query; });
-        if (it != container.end()) {
-            std::iter_swap(--container.end(), it);
+        bool did_remove = false;
+        for (size_t i = 0; i < container.size(); ++i) {
+            if (container[i]->is_alive())
+                continue;
+
+            // Ensure the query is destroyed here even if there's lingering refs
+            // to the async query elsewhere
+            container[i]->release_query();
+
+            if (container.size() > i + 1)
+                container[i] = std::move(container.back());
             container.pop_back();
-            return true;
+            --i;
+            did_remove = true;
         }
-        return false;
+        return did_remove;
     };
 
-    auto& self = Realm::Internal::get_coordinator(query.get_realm());
-    std::lock_guard<std::mutex> lock(self.m_query_mutex);
-    if (swap_remove(self.m_queries)) {
+    if (swap_remove(m_queries)) {
         // Make sure we aren't holding on to read versions needlessly if there
         // are no queries left, but don't close them entirely as opening shared
         // groups is expensive
-        if (!self.m_running_queries && self.m_queries.empty() && self.m_query_sg) {
-            self.m_query_sg->end_read();
+        if (m_queries.empty() && m_query_sg) {
+            m_query_sg->end_read();
         }
     }
-    else if (swap_remove(self.m_new_queries)) {
-        if (self.m_new_queries.empty() && self.m_advancer_sg) {
-            self.m_advancer_sg->end_read();
+    if (swap_remove(m_new_queries)) {
+        if (m_new_queries.empty() && m_advancer_sg) {
+            m_advancer_sg->end_read();
         }
     }
 }
@@ -295,6 +298,8 @@ void RealmCoordinator::run_async_queries()
 {
     std::unique_lock<std::mutex> lock(m_query_mutex);
 
+    clean_up_dead_queries();
+
     if (m_queries.empty() && m_new_queries.empty()) {
         return;
     }
@@ -310,10 +315,6 @@ void RealmCoordinator::run_async_queries()
 
     advance_helper_shared_group_to_latest();
 
-    // Tell other threads not to close the shared group as we need it even
-    // though we aren't holding the lock
-    m_running_queries = true;
-
     // Make a copy of the queries vector so that we can release the lock while
     // we run the queries
     auto queries_to_run = m_queries;
@@ -326,20 +327,13 @@ void RealmCoordinator::run_async_queries()
     // Reacquire the lock while updating the fields that are actually read on
     // other threads
     {
-        // Make sure we don't change the version while another thread is delivering
-        std::lock_guard<std::mutex> version_lock(m_query_version_mutex);
         lock.lock();
         for (auto& query : queries_to_run) {
             query->prepare_handover();
         }
     }
 
-    // Check if all queries were removed while we were running them, as if so
-    // the shared group didn't get closed by do_unregister_query()
-    m_running_queries = false;
-    if (m_queries.empty()) {
-        m_query_sg->end_read();
-    }
+    clean_up_dead_queries();
 }
 
 void RealmCoordinator::open_helper_shared_group()
@@ -413,7 +407,6 @@ void RealmCoordinator::advance_to_ready(Realm& realm)
     auto& sg = Realm::Internal::get_shared_group(realm);
     auto& history = Realm::Internal::get_history(realm);
 
-    std::lock_guard<std::mutex> lock(m_query_version_mutex);
     {
         std::lock_guard<std::mutex> lock(m_query_mutex);
 
@@ -436,25 +429,33 @@ void RealmCoordinator::advance_to_ready(Realm& realm)
         }
 
         transaction::advance(sg, history, realm.m_binding_context.get(), version);
-        queries = m_queries;
+
+        for (auto& query : m_queries) {
+            if (query->deliver(sg, m_async_error)) {
+                queries.push_back(query);
+            }
+        }
     }
 
     for (auto& query : queries) {
-        query->deliver(sg, m_async_error);
+        query->call_callbacks();
     }
 }
 
 void RealmCoordinator::process_available_async(Realm& realm)
 {
+    auto& sg = Realm::Internal::get_shared_group(realm);
     decltype(m_queries) queries;
     {
         std::lock_guard<std::mutex> lock(m_query_mutex);
-        queries = m_queries;
+        for (auto& query : m_queries) {
+            if (query->deliver(sg, m_async_error)) {
+                queries.push_back(query);
+            }
+        }
     }
 
-    auto& sg = Realm::Internal::get_shared_group(realm);
-    std::lock_guard<std::mutex> lock(m_query_version_mutex);
     for (auto& query : queries) {
-        query->deliver(sg, m_async_error);
+        query->call_callbacks();
     }
 }
