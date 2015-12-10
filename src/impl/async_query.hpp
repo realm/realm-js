@@ -34,18 +34,22 @@ namespace _impl {
 class AsyncQuery {
 public:
     AsyncQuery(Results& target);
+    ~AsyncQuery();
 
     size_t add_callback(std::function<void (std::exception_ptr)>);
     void remove_callback(size_t token);
 
     void unregister() noexcept;
+    void release_query() noexcept;
 
     // Run/rerun the query if needed
     void run();
     // Prepare the handover object if run() did update the TableView
     void prepare_handover();
-    // Update the target results from the handover and call callbacks
-    void deliver(SharedGroup& sg, std::exception_ptr err);
+    // Update the target results from the handover
+    // Returns if any callbacks need to be invoked
+    bool deliver(SharedGroup& sg, std::exception_ptr err);
+    void call_callbacks();
 
     // Attach the handed-over query to `sg`
     void attach_to(SharedGroup& sg);
@@ -55,11 +59,13 @@ public:
 
     Realm& get_realm() { return *m_target_results->get_realm(); }
     // Get the version of the current handover object
-    SharedGroup::VersionID version() const noexcept { return m_version; }
+    SharedGroup::VersionID version() const noexcept { return m_sg_version; }
+
+    bool is_alive() const noexcept;
 
 private:
     // Target Results to update and a mutex which guards it
-    std::mutex m_target_mutex;
+    mutable std::mutex m_target_mutex;
     Results* m_target_results;
 
     std::shared_ptr<Realm> m_realm;
@@ -77,13 +83,13 @@ private:
     // be non-null
     TableView m_tv;
     std::unique_ptr<SharedGroup::Handover<TableView>> m_tv_handover;
-    SharedGroup::VersionID m_version;
+    SharedGroup::VersionID m_sg_version;
+    std::exception_ptr m_error;
 
     struct Callback {
         std::function<void (std::exception_ptr)> fn;
-        std::unique_ptr<SharedGroup::Handover<TableView>> handover;
         size_t token;
-        bool first_run;
+        uint_fast64_t delivered_version;
     };
 
     // Currently registered callbacks and a mutex which must always be held
@@ -91,21 +97,27 @@ private:
     std::mutex m_callback_mutex;
     std::vector<Callback> m_callbacks;
 
-    // Callbacks which the user has asked to have removed whose removal has been
-    // deferred until after we're done looping over m_callbacks
-    std::vector<size_t> m_callbacks_to_remove;
-
     SharedGroup* m_sg = nullptr;
 
-    bool m_did_update = false;
+    uint_fast64_t m_handed_over_table_version = -1;
+    uint_fast64_t m_delievered_table_version = -1;
+
+    // Iteration variable for looping over callbacks
+    // remove_callback() updates this when needed
+    size_t m_callback_index = npos;
+
     bool m_skipped_running = false;
     bool m_initial_run_complete = false;
-    bool m_calling_callbacks = false;
-    bool m_error = false;
 
-    void do_remove_callback(size_t token) noexcept;
+    // Cached value for if m_callbacks is empty, needed to avoid deadlocks in
+    // run() due to lock-order inversion between m_callback_mutex and m_target_mutex
+    // It's okay if this value is stale as at worst it'll result in us doing
+    // some extra work.
+    std::atomic<bool> m_have_callbacks = {false};
 
     bool is_for_current_thread() const { return m_thread_id == std::this_thread::get_id(); }
+
+    std::function<void (std::exception_ptr)> next_callback();
 };
 
 } // namespace _impl
