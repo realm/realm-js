@@ -17,7 +17,7 @@ var RealmReactAndroid = require('NativeModules').RealmReactAndroid;
 
 var Demo = React.createClass({
   buttonClicked: function() {
-    RealmReactAndroid.show("Hello Zepp");
+    RealmReactAndroid.show("Hello Zepp", RealmReactAndroid.LONG);
   },
   render: function() {
     return (

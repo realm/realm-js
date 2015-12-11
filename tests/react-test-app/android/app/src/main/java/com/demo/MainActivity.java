@@ -23,7 +23,6 @@ import com.reacttests.RealmReactAndroid;
 
 public class MainActivity extends Activity implements DefaultHardwareBackBtnHandler {
 
-
     private ReactInstanceManager mReactInstanceManager;
     private ReactRootView mReactRootView;
 

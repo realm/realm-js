@@ -76,4 +76,5 @@ dependencies {
     compile "com.android.support:appcompat-v7:23.0.1"
     compile "com.facebook.react:react-native:0.16.+"
     compile 'com.reacttests:app-debug@aar'
+    compile 'com.github.KeepSafe:ReLinker:1.1'
 }

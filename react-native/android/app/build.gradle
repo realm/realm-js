@@ -183,7 +183,7 @@ dependencies {
     compile 'com.squareup.okio:okio:1.6.0'
     compile 'org.webkit:android-jsc:r174650'
     compile "com.facebook.react:react-native:0.16.+"
-
+    compile 'com.github.KeepSafe:ReLinker:1.1'
 
     testCompile "junit:junit:${JUNIT_VERSION}"
     testCompile "org.powermock:powermock-api-mockito:${POWERMOCK_VERSION}"
