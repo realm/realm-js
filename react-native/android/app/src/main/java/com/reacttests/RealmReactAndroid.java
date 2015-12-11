@@ -12,6 +12,7 @@ public class RealmReactAndroid extends ReactContextBaseJavaModule {
 
 	public RealmReactAndroid(ReactApplicationContext reactContext) {
 		super(reactContext);
+        getDefaultRealmFileDirectory();
     }
 
     @Override

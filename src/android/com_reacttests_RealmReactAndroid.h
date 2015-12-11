@@ -2,13 +2,13 @@
 #include <jni.h>
 /* Header for class com_reacttests_API */
 
-#ifndef _Included_com_reacttests_API
-#define _Included_com_reacttests_API
+#ifndef _Included_com_reacttests_RealmReactAndroid
+#define _Included_com_reacttests_RealmReactAndroid
 #ifdef __cplusplus
 extern "C" {
 #endif
 /*
- * Class:     com_reacttests_API
+ * Class:     com_reacttests_RealmReactAndroid
  * Method:    getDefaultRealmFileDirectory
  * Signature: ()Ljava/lang/String;
  */

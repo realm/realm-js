@@ -3,9 +3,9 @@
 /* Header for class com_reacttests_API */
 
 
-#include "com_reacttests_API.h"
+#include "com_reacttests_RealmReactAndroid.h"
 /*
- * Class:     com_reacttests_API
+ * Class:     com_reacttests_RealmReactAndroid
  * Method:    getDefaultRealmFileDirectory
  * Signature: ()Ljava/lang/String;
  */
