@@ -13,11 +13,11 @@ var {
   TouchableNativeFeedback,
 } = React;
 
-var JniToastAndroid = require('NativeModules').JniToastAndroid;
+var RealmReactAndroid = require('NativeModules').RealmReactAndroid;
 
 var Demo = React.createClass({
   buttonClicked: function() {
-    JniToastAndroid.show("Hello Zepp", JniToastAndroid.LONG);
+    RealmReactAndroid.show("Hello Zepp");
   },
   render: function() {
     return (

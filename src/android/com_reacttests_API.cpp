@@ -9,7 +9,7 @@
  * Method:    getDefaultRealmFileDirectory
  * Signature: ()Ljava/lang/String;
  */
-JNIEXPORT jstring JNICALL Java_com_reacttests_API_getDefaultRealmFileDirectory
+JNIEXPORT jstring JNICALL Java_com_reacttests_RealmReactAndroid_getDefaultRealmFileDirectory
   (JNIEnv *env, jclass) 
   {
 

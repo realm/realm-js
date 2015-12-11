@@ -182,6 +182,8 @@ dependencies {
     compile 'com.squareup.okhttp:okhttp-ws:2.5.0'
     compile 'com.squareup.okio:okio:1.6.0'
     compile 'org.webkit:android-jsc:r174650'
+    compile "com.facebook.react:react-native:0.16.+"
+
 
     testCompile "junit:junit:${JUNIT_VERSION}"
     testCompile "org.powermock:powermock-api-mockito:${POWERMOCK_VERSION}"

@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.view.KeyEvent;
 
-import com.demo.module.JniToastModule;
 import com.facebook.react.LifecycleState;
 import com.facebook.react.ReactInstanceManager;
 import com.facebook.react.ReactPackage;
@@ -19,6 +18,8 @@ import com.facebook.react.uimanager.ViewManager;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import com.reacttests.RealmReactAndroid;
 
 public class MainActivity extends Activity implements DefaultHardwareBackBtnHandler {
 
@@ -93,7 +94,7 @@ public class MainActivity extends Activity implements DefaultHardwareBackBtnHand
                 ReactApplicationContext reactContext) {
             List<NativeModule> modules = new ArrayList<>();
 
-            modules.add(new JniToastModule(reactContext));
+            modules.add(new RealmReactAndroid(reactContext));
 
             return modules;
         }
