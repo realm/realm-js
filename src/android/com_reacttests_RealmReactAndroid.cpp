@@ -4,6 +4,12 @@
 
 
 #include "com_reacttests_RealmReactAndroid.h"
+#include "JSCExecutor.h"
+#include "js_init.h"
+#include <unordered_map>
+
+extern std::unordered_map<JSContextRef, facebook::react::JSCExecutor*> s_globalContextRefToJSCExecutor;
+
 /*
  * Class:     com_reacttests_RealmReactAndroid
  * Method:    getDefaultRealmFileDirectory
@@ -12,7 +18,9 @@
 JNIEXPORT jstring JNICALL Java_com_reacttests_RealmReactAndroid_getDefaultRealmFileDirectory
   (JNIEnv *env, jclass) 
   {
-
-	 return env->NewStringUTF("Hello from JNI ! ");
+    for (auto pair : s_globalContextRefToJSCExecutor) {
+      RJSInitializeInContext(pair.first);
+    }
+    return env->NewStringUTF("Hello from JNI ! ");
   }
 
