@@ -27,7 +27,7 @@ namespace realm {
         template<typename ValueType, typename ContextType>
         static inline Object create(ContextType ctx, SharedRealm realm, ObjectSchema &object_schema, ValueType value, bool try_update);
 
-        const ObjectSchema &object_schema;
+        const ObjectSchema object_schema;
         SharedRealm realm() { return m_realm; }
         Row row() { return m_row; }
 
