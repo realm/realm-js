@@ -17,14 +17,20 @@ if [ "$TARGET" = "realmjs" ]; then
   xcodebuild -scheme RealmJS -configuration "$CONFIGURATION" -sdk iphonesimulator $DESTINATION build test 
 elif [ "$TARGET" = "react-tests" ]; then
   pushd tests/react-test-app
-  #unzip ../../target=node_modules/react_tests_node_modules.zip
+  if [ -f ../../target=node_modules/react_tests_node_modules.zip ]; then
+      unzip ../../target=node_modules/react_tests_node_modules.zip
+  fi
+  sh ../../scripts/npm_install_react_native.sh
   react-native start &
   popd
   
   xcodebuild -scheme RealmReact -configuration "$CONFIGURATION" -sdk iphonesimulator $DESTINATION build test
 elif [ "$TARGET" = "react-example" ]; then
   pushd examples/ReactExample
-  #unzip ../../target=node_modules/react_example_node_modules.zip
+  if [ -f ../../target=node_modules/react_example_node_modules.zip ]; then
+    unzip ../../target=node_modules/react_example_node_modules.zip
+  fi
+  sh ../../scripts/npm_install_react_native.sh
   react-native start &
   xcodebuild -scheme ReactExample -configuration "$CONFIGURATION" -sdk iphonesimulator build $DESTINATION
   popd
