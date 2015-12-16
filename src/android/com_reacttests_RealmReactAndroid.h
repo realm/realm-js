@@ -9,10 +9,10 @@ extern "C" {
 #endif
 /*
  * Class:     com_reacttests_RealmReactAndroid
- * Method:    getDefaultRealmFileDirectory
+ * Method:    injectRealmJsContext
  * Signature: ()Ljava/lang/String;
  */
-JNIEXPORT jstring JNICALL Java_com_reacttests_RealmReactAndroid_getDefaultRealmFileDirectory
+JNIEXPORT jstring JNICALL Java_com_reacttests_RealmReactAndroid_injectRealmJsContext
   (JNIEnv *, jclass);
 
 #ifdef __cplusplus

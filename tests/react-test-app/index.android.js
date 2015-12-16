@@ -16,23 +16,18 @@ var {
 var RealmReactAndroid = require('NativeModules').RealmReactAndroid;
 
 var Demo = React.createClass({
-  buttonClicked: function() {
-    RealmReactAndroid.show("Hello Zepp", RealmReactAndroid.LONG);
-  },
   render: function() {
     return (
     <View style={styles.container}>
       <Text style={styles.welcome}>
-        Calling JNI String from Javascript.
+        Trying to inject Realm JS Context:
+        {
+            RealmReactAndroid.resultOfJsContextInjection((msg) => {
+              RealmReactAndroid.show(msg, RealmReactAndroid.LONG)
+          })
+         }
       </Text>
-      <TouchableNativeFeedback
-        style={styles.button}
-        onPress={this.buttonClicked.bind(this)}>
-        <View style={{backgroundColor: 'red'}}>
-          <Text style={{margin: 5}}>Click Me :)</Text>
-        </View>
-      </TouchableNativeFeedback>        
-    </View>
+    </View>    
     );
   }
 });   

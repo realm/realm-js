@@ -9,6 +9,7 @@ import com.getkeepsafe.relinker.ReLinker;
 import java.util.Map;
 import java.util.HashMap;
 import android.widget.Toast;
+import com.facebook.react.bridge.Callback;
 
 public class RealmReactAndroid extends ReactContextBaseJavaModule {
 	private static final String DURATION_SHORT_KEY = "SHORT";
@@ -17,7 +18,6 @@ public class RealmReactAndroid extends ReactContextBaseJavaModule {
 	public RealmReactAndroid(ReactApplicationContext reactContext) {
 		super(reactContext);
 		ReLinker.loadLibrary(reactContext, "realmreact");
-        getDefaultRealmFileDirectory();
     }
 
     @Override
@@ -34,14 +34,15 @@ public class RealmReactAndroid extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void show(String message, int duration) {
-        StringBuilder sb = new StringBuilder("String from Java: ")
-                .append(message)
-                .append("\n")
-                .append("String from JNI: ")
-                .append(getDefaultRealmFileDirectory());
-        Toast.makeText(getReactApplicationContext(), sb.toString(), duration).show();
+    public void resultOfJsContextInjection(Callback successCallback) {
+        // Inject our JS Context
+        successCallback.invoke(injectRealmJsContext());
     }
 
-	public static native String getDefaultRealmFileDirectory();
+    @ReactMethod
+    public void show(String message, int duration) {
+        Toast.makeText(getReactApplicationContext(), message, duration).show();
+    }
+
+	private native String injectRealmJsContext();
 }

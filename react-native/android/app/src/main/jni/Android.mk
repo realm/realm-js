@@ -37,9 +37,9 @@ LOCAL_C_INCLUDES += src/object-store
 LOCAL_C_INCLUDES += src/object-store/parser
 LOCAL_C_INCLUDES += vendor
 LOCAL_C_INCLUDES += vendor/PEGTL
-LOCAL_C_INCLUDES += ../../../../../../../../react-native/ReactAndroid/src/main/jni/react
-LOCAL_C_INCLUDES += ../../../../../../../../react-native/ReactAndroid/src/main/jni/first-party
-LOCAL_C_INCLUDES += ../../../../../../../../react-native/ReactAndroid/src/main/jni/first-party/fb/include
+LOCAL_C_INCLUDES += ../../../../../../../react-native/ReactAndroid/src/main/jni/react
+LOCAL_C_INCLUDES += ../../../../../../../react-native/ReactAndroid/src/main/jni/first-party
+LOCAL_C_INCLUDES += ../../../../../../../react-native/ReactAndroid/src/main/jni/first-party/fb/include
 LOCAL_C_INCLUDES += $(JAVA_HOME)/include
 LOCAL_C_INCLUDES += $(JAVA_HOME)/include/darwin
 LOCAL_C_INCLUDES += core/include
@@ -48,7 +48,6 @@ CXX11_FLAGS := -std=c++14
 LOCAL_CFLAGS += -fexceptions $(CXX11_FLAGS) -frtti
 LOCAL_EXPORT_CPPFLAGS := $(CXX11_FLAGS)
 
-LOCAL_LDLIBS := -L$(SYSROOT)/usr/lib -llog /Users/ari/src/realm/realm-js/react-native/android/app/build/intermediates/exploded-aar/com.facebook.react/react-native/0.16.1/jni/$(TARGET_ARCH_ABI)/libreactnativejni.so
 
 LOCAL_STATIC_LIBRARIES := realm-android-$(TARGET_ARCH_ABI)
 LOCAL_SHARED_LIBRARIES := libjsc
