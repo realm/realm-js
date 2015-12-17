@@ -9,11 +9,40 @@ while pgrep -q Simulator; do
     pkill -9 Simulator 2>/dev/null || true
   done
 
-pkill node || true
 
 DESTINATION="-destination id=$(xcrun simctl list devices | grep -v unavailable | grep -m 1 -o '[0-9A-F\-]\{36\}')"
 TARGET=$1
 CONFIGURATION=${2:-"Debug"}
+PACKAGER_OUT="packager_out.txt"
+
+function start_packager()
+{
+  if [ -f $PACKAGER_OUT ]; then
+    rm $PACKAGER_OUT
+  fi
+  react-native start > packager_out.txt &
+  while :;
+  do
+  if grep -Fxq "React packager ready." packager_out.txt
+  then
+    break
+  else
+    echo "Waiting for packager."
+    sleep 1
+  fi  
+  done
+}
+
+function kill_packager()
+{
+  if [ -f $PACKAGER_OUT ]; then
+    rm $PACKAGER_OUT
+  fi
+
+  pkill node || true
+}
+
+kill_packager
 
 if [ "$TARGET" = "realmjs" ]; then
   xcodebuild -scheme RealmJS -configuration "$CONFIGURATION" -sdk iphonesimulator $DESTINATION build test 
@@ -23,7 +52,7 @@ elif [ "$TARGET" = "react-tests" ]; then
       unzip ../../target=node_modules/react_tests_node_modules.zip
   fi
   npm update react-native
-  react-native start &
+  start_packager
   popd
   
   xcodebuild -scheme RealmReact -configuration "$CONFIGURATION" -sdk iphonesimulator $DESTINATION build test
@@ -33,12 +62,13 @@ elif [ "$TARGET" = "react-example" ]; then
     unzip ../../target=node_modules/react_example_node_modules.zip
   fi
   npm update react-native
-  react-native start &
+  start_packager
+
   xcodebuild -scheme ReactExample -configuration "$CONFIGURATION" -sdk iphonesimulator build $DESTINATION
   popd
 else
   echo "Invalid target '${TARGET}'"
 fi
 
-pkill node || true
+kill_packager
 
