@@ -71,6 +71,20 @@
 			remoteGlobalIDString = 13B07F861A680F5B00A75B9A;
 			remoteInfo = ReactTests;
 		};
+		02002CCE1C20F20B00265A80 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 027799061BBF3BB700C96559 /* RealmJS.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = F63FF2F01C16405C00B3B8E0;
+			remoteInfo = GCDWebServers;
+		};
+		02002CD01C20F20B00265A80 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 027799061BBF3BB700C96559 /* RealmJS.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = F63FF2B11C1241E500B3B8E0;
+			remoteInfo = "RealmJS static";
+		};
 		027799161BBF3BB700C96559 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 027799061BBF3BB700C96559 /* RealmJS.xcodeproj */;
@@ -241,6 +255,8 @@
 		027799071BBF3BB700C96559 /* Products */ = {
 			isa = PBXGroup;
 			children = (
+				02002CCF1C20F20B00265A80 /* libGCDWebServers.a */,
+				02002CD11C20F20B00265A80 /* libRealmJS.a */,
 				027799171BBF3BB700C96559 /* RealmJS.framework */,
 				027799191BBF3BB700C96559 /* RealmJSTests.xctest */,
 				0277991B1BBF3BB700C96559 /* RealmReact.framework */,
@@ -497,6 +513,20 @@
 			remoteRef = 00C302E31ABCB9EE00DB3ED1 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
+		02002CCF1C20F20B00265A80 /* libGCDWebServers.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libGCDWebServers.a;
+			remoteRef = 02002CCE1C20F20B00265A80 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		02002CD11C20F20B00265A80 /* libRealmJS.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libRealmJS.a;
+			remoteRef = 02002CD01C20F20B00265A80 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
 		027799171BBF3BB700C96559 /* RealmJS.framework */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.framework;
@@ -587,7 +617,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "rm -rf ../node_modules/realm ../node_modules/realm-tests\n[ -s \"${HOME}/.nvm/nvm.sh\" ] && . \"${HOME}/.nvm/nvm.sh\"\nnpm install realm realm-tests\ncp ../../../src/object-store/parser/queryTests.json ../node_modules/realm-tests\n";
+			shellScript = "[ -s \"${HOME}/.nvm/nvm.sh\" ] && . \"${HOME}/.nvm/nvm.sh\" \nrm -rf ../node_modules/realm ../node_modules/realm-tests\nnpm install realm realm-tests\ncp ../../../src/object-store/parser/queryTests.json ../node_modules/realm-tests\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
