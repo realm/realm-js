@@ -109,7 +109,7 @@ JSObjectRef RJSResultsCreate(JSContextRef ctx, SharedRealm realm, std::string cl
 JSObjectRef RJSResultsCreate(JSContextRef ctx, SharedRealm realm, std::string className, std::string queryString, std::vector<JSValueRef> args) {
     TableRef table = ObjectStore::table_for_object_type(realm->read_group(), className);
     Query query = table->where();
-    Schema &schema = *realm->config().schema;
+    const Schema &schema = *realm->config().schema;
     auto object_schema = schema.find(className);
     if (object_schema == schema.end()) {
         throw std::runtime_error("Object type '" + className + "' not present in Realm.");

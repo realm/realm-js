@@ -30,7 +30,7 @@ namespace realm {
     namespace query_builder {
         class Arguments;
 
-        void apply_predicate(Query &query, parser::Predicate &predicate, Arguments &arguments, Schema &schema, std::string objectType);
+        void apply_predicate(Query &query, parser::Predicate &predicate, Arguments &arguments, const Schema &schema, std::string objectType);
 
         class Arguments
         {

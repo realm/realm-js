@@ -245,7 +245,7 @@ JSValueRef RealmObjects(JSContextRef ctx, JSObjectRef function, JSObjectRef this
     }
 }
 
-JSObjectRef RJSDictForPropertyArray(JSContextRef ctx, ObjectSchema &object_schema, JSObjectRef array) {
+JSObjectRef RJSDictForPropertyArray(JSContextRef ctx, const ObjectSchema &object_schema, JSObjectRef array) {
     // copy to dictionary
     if (object_schema.properties.size() != RJSValidatedListLength(ctx, array)) {
         throw std::runtime_error("Array must contain values for all object properties");
