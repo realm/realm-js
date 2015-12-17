@@ -9,6 +9,8 @@ while pgrep -q Simulator; do
     pkill -9 Simulator 2>/dev/null || true
   done
 
+pkill node || true
+
 DESTINATION="-destination id=$(xcrun simctl list devices | grep -v unavailable | grep -m 1 -o '[0-9A-F\-]\{36\}')"
 TARGET=$1
 CONFIGURATION=${2:-"Debug"}
@@ -20,7 +22,7 @@ elif [ "$TARGET" = "react-tests" ]; then
   if [ -f ../../target=node_modules/react_tests_node_modules.zip ]; then
       unzip ../../target=node_modules/react_tests_node_modules.zip
   fi
-  sh ../../scripts/npm_install_react_native.sh
+  npm update react-native
   react-native start &
   popd
   
@@ -30,10 +32,12 @@ elif [ "$TARGET" = "react-example" ]; then
   if [ -f ../../target=node_modules/react_example_node_modules.zip ]; then
     unzip ../../target=node_modules/react_example_node_modules.zip
   fi
-  sh ../../scripts/npm_install_react_native.sh
+  npm update react-native
   react-native start &
   xcodebuild -scheme ReactExample -configuration "$CONFIGURATION" -sdk iphonesimulator build $DESTINATION
   popd
+else
+  echo "Invalid target '${TARGET}'"
 fi
 
 pkill node || true
