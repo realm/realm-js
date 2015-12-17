@@ -20,7 +20,7 @@ function start_packager()
   if [ -f $PACKAGER_OUT ]; then
     rm $PACKAGER_OUT
   fi
-  react-native start > packager_out.txt &
+  sh ./node_modules/react-native/packager/packager.sh > packager_out.txt &
   while :;
   do
   if grep -Fxq "React packager ready." packager_out.txt
@@ -49,7 +49,7 @@ if [ "$TARGET" = "realmjs" ]; then
 elif [ "$TARGET" = "react-tests" ]; then
   pushd tests/react-test-app
   if [ -f ../../target=node_modules/react_tests_node_modules.zip ]; then
-      unzip ../../target=node_modules/react_tests_node_modules.zip
+      unzip -q ../../target=node_modules/react_tests_node_modules.zip
   fi
   npm update react-native
   start_packager
@@ -59,7 +59,7 @@ elif [ "$TARGET" = "react-tests" ]; then
 elif [ "$TARGET" = "react-example" ]; then
   pushd examples/ReactExample
   if [ -f ../../target=node_modules/react_example_node_modules.zip ]; then
-    unzip ../../target=node_modules/react_example_node_modules.zip
+    unzip -q ../../target=node_modules/react_example_node_modules.zip
   fi
   npm update react-native
   start_packager
