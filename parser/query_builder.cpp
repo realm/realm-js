@@ -66,11 +66,11 @@ KeyPath key_path_from_string(const std::string &s) {
 
 struct PropertyExpression
 {
-    Property *prop = nullptr;
+    const Property *prop = nullptr;
     std::vector<size_t> indexes;
     std::function<Table *()> table_getter;
 
-    PropertyExpression(Query &query, Schema &schema, Schema::iterator desc, const std::string &key_path_string)
+    PropertyExpression(Query &query, const Schema &schema, Schema::const_iterator desc, const std::string &key_path_string)
     {
         KeyPath key_path = key_path_from_string(key_path_string);
         for (size_t index = 0; index < key_path.size(); index++) {
@@ -375,7 +375,7 @@ auto value_of_type_for_query(TableGetter&& tables, Value&& value, Arguments &arg
 }
 
 template <typename A, typename B>
-void do_add_comparison_to_query(Query &query, Schema &schema, ObjectSchema &object_schema, Predicate::Operator op,
+void do_add_comparison_to_query(Query &query, const Schema &schema, const ObjectSchema &object_schema, Predicate::Operator op,
                                 PropertyExpression &expr, A &lhs, B &rhs, Arguments &args)
 {
     auto type = expr.prop->type;
@@ -418,7 +418,7 @@ void do_add_comparison_to_query(Query &query, Schema &schema, ObjectSchema &obje
     }
 }
 
-void add_comparison_to_query(Query &query, Predicate &pred, Arguments &args, Schema &schema, const std::string &type)
+void add_comparison_to_query(Query &query, Predicate &pred, Arguments &args, const Schema &schema, const std::string &type)
 {
     Predicate::Comparison &cmpr = pred.cmpr;
     auto t0 = cmpr.expr[0].type, t1 = cmpr.expr[1].type;
@@ -436,7 +436,7 @@ void add_comparison_to_query(Query &query, Predicate &pred, Arguments &args, Sch
     }
 }
 
-void update_query_with_predicate(Query &query, Predicate &pred, Arguments &arguments, Schema &schema, const std::string &type)
+void update_query_with_predicate(Query &query, Predicate &pred, Arguments &arguments, const Schema &schema, const std::string &type)
 {
     if (pred.negate) {
         query.Not();
@@ -484,7 +484,7 @@ void update_query_with_predicate(Query &query, Predicate &pred, Arguments &argum
     }
 }
 
-void apply_predicate(Query &query, Predicate &predicate, Arguments &arguments, Schema &schema, std::string objectType)
+void apply_predicate(Query &query, Predicate &predicate, Arguments &arguments, const Schema &schema, std::string objectType)
 {
     update_query_with_predicate(query, predicate, arguments, schema, objectType);
     

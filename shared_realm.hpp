@@ -50,7 +50,7 @@ namespace realm {
             bool cache = true;
             std::vector<char> encryption_key;
 
-            std::unique_ptr<Schema> schema;
+            std::unique_ptr<const Schema> schema;
             uint64_t schema_version = ObjectStore::NotVersioned;
 
             MigrationFunction migration_function;
@@ -78,7 +78,7 @@ namespace realm {
         // on the Config, and the resulting Schema and version with updated
         // column mappings are set on the realms config upon success.
         // returns if any changes were made
-        bool update_schema(std::unique_ptr<Schema> schema, uint64_t version);
+        bool update_schema(std::unique_ptr<const Schema> schema, uint64_t version);
 
         static uint64_t get_schema_version(Config const& config);
 

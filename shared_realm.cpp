@@ -165,7 +165,7 @@ SharedRealm Realm::get_shared_realm(Config config)
                     throw UnitializedRealmException("Can't open an un-initialized Realm without a Schema");
                 }
                 target_schema->validate();
-                ObjectStore::verify_schema(*realm->m_config.schema, *target_schema, true);
+                ObjectStore::verify_schema(*realm->m_config.schema, const_cast<Schema &>(*target_schema), true);
                 realm->m_config.schema = std::move(target_schema);
             }
             else {
@@ -180,13 +180,13 @@ SharedRealm Realm::get_shared_realm(Config config)
     return realm;
 }
 
-bool Realm::update_schema(std::unique_ptr<Schema> schema, uint64_t version)
+bool Realm::update_schema(std::unique_ptr<const Schema> schema, uint64_t version)
 {
     schema->validate();
 
     bool needs_update = !m_config.read_only && (m_config.schema_version != version || ObjectStore::needs_update(*m_config.schema, *schema));
     if (!needs_update) {
-        ObjectStore::verify_schema(*m_config.schema, *schema, m_config.read_only);
+        ObjectStore::verify_schema(*m_config.schema, const_cast<Schema &>(*schema), m_config.read_only);
         m_config.schema = std::move(schema);
         m_config.schema_version = version;
         return false;
@@ -198,9 +198,6 @@ bool Realm::update_schema(std::unique_ptr<Schema> schema, uint64_t version)
     Config old_config(m_config);
     old_config.read_only = true;
     old_config.schema = std::move(old_schema);
-
-    m_config.schema = std::move(schema);
-    m_config.schema_version = version;
 
     auto migration_function = [&](Group*,  Schema&) {
         SharedRealm old_realm(new Realm(old_config));
@@ -214,8 +211,9 @@ bool Realm::update_schema(std::unique_ptr<Schema> schema, uint64_t version)
         // update and migrate
         begin_transaction();
         bool changed = ObjectStore::update_realm_with_schema(read_group(), *old_config.schema,
-                                                             version, *m_config.schema,
-                                                             migration_function);
+                                                             version, const_cast<Schema &>(*schema), migration_function);
+        m_config.schema = std::move(schema);
+        m_config.schema_version = version;
         commit_transaction();
         return changed;
     }
