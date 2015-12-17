@@ -1,3 +1,5 @@
+#!/bin/bash
+
 set -o pipefail
 set -e
 
@@ -17,9 +19,7 @@ PACKAGER_OUT="packager_out.txt"
 
 function start_packager()
 {
-  if [ -f $PACKAGER_OUT ]; then
-    rm $PACKAGER_OUT
-  fi
+  rm -f $PACKAGER_OUT
   sh ./node_modules/react-native/packager/packager.sh > packager_out.txt &
   while :;
   do
@@ -28,17 +28,14 @@ function start_packager()
     break
   else
     echo "Waiting for packager."
-    sleep 1
+    sleep 2
   fi  
   done
 }
 
 function kill_packager()
 {
-  if [ -f $PACKAGER_OUT ]; then
-    rm $PACKAGER_OUT
-  fi
-
+  rm -f $PACKAGER_OUT
   pkill node || true
 }
 
