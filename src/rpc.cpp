@@ -238,7 +238,7 @@ json RPCServer::serialize_json_value(JSValueRef value) {
             {"type", RealmObjectTypesResults},
             {"id", store_object(js_object)},
             {"size", results->size()},
-            {"schema", serialize_object_schema(results->object_schema)}
+            {"schema", serialize_object_schema(results->object_schema())}
         };
     }
     else if (RJSIsValueArray(m_context, value)) {
