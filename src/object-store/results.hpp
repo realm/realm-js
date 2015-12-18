@@ -38,14 +38,14 @@ public:
     // Results is copyable and moveable
     Results(Results const&) = default;
     Results(Results&&) = default;
-    Results& operator=(Results const&) = default;
     Results& operator=(Results&&) = default;
+    Results& operator=(Results const&);
 
     // Get the Realm
     SharedRealm get_realm() const { return m_realm; }
     
     // Object schema describing the vendored object type
-    ObjectSchema object_schema;
+    const ObjectSchema &object_schema;
     
     // Get a query which will match the same rows as is contained in this Results
     // Returned query will not be valid if the current mode is Empty
