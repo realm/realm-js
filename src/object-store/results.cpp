@@ -41,9 +41,11 @@ Results::Results(SharedRealm r, const ObjectSchema &o, Table& table)
 Results& Results::operator=(Results const& r)
 {
     m_realm = r.m_realm;
-    const_cast<ObjectSchema &>(object_schema) = r.object_schema;
     m_query = r.get_query();
+    m_table = r.m_table;
     m_sort = r.get_sort();
+    m_mode = Mode::Query;
+    const_cast<ObjectSchema &>(object_schema) = r.object_schema;
     return *this;
 }
 
