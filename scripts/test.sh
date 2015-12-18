@@ -46,8 +46,9 @@ if [ "$TARGET" = "realmjs" ]; then
 elif [ "$TARGET" = "react-tests" ]; then
   pushd tests/react-test-app
 
-  ~/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome 2> /dev/null &
-  CHROME_PID=$!
+  if [ -d  ~/Applications/Google\ Chrome.app ]; then
+    open ~/Applications/Google\ Chrome.app
+  fi
 
   if [ -f ../../target=node_modules/react_tests_node_modules.zip ]; then
       unzip -q ../../target=node_modules/react_tests_node_modules.zip
@@ -57,7 +58,6 @@ elif [ "$TARGET" = "react-tests" ]; then
   popd
   
   xcodebuild -scheme RealmReact -configuration "$CONFIGURATION" -sdk iphonesimulator $DESTINATION build test
-  kill $CHROME_PID || true
 elif [ "$TARGET" = "react-example" ]; then
   pushd examples/ReactExample
   if [ -f ../../target=node_modules/react_example_node_modules.zip ]; then
