@@ -25,9 +25,9 @@ namespace realm {
 
         // create an Object from a native representation
         template<typename ValueType, typename ContextType>
-        static inline Object create(ContextType ctx, SharedRealm realm, ObjectSchema &object_schema, ValueType value, bool try_update);
+        static inline Object create(ContextType ctx, SharedRealm realm, const ObjectSchema &object_schema, ValueType value, bool try_update);
 
-        const ObjectSchema object_schema;
+        const ObjectSchema &object_schema;
         SharedRealm realm() { return m_realm; }
         Row row() { return m_row; }
 
@@ -243,7 +243,7 @@ namespace realm {
     }
 
     template<typename ValueType, typename ContextType>
-    inline Object Object::create(ContextType ctx, SharedRealm realm, ObjectSchema &object_schema, ValueType value, bool try_update)
+    inline Object Object::create(ContextType ctx, SharedRealm realm, const ObjectSchema &object_schema, ValueType value, bool try_update)
     {
         using Accessor = NativeAccessor<ValueType, ContextType>;
 
@@ -283,7 +283,7 @@ namespace realm {
 
         // populate
         Object object(realm, object_schema, table->get(row_index));
-        for (Property &prop : object_schema.properties) {
+        for (const Property &prop : object_schema.properties) {
             if (created || !prop.is_primary) {
                 if (Accessor::dict_has_value_for_key(ctx, value, prop.name)) {
                     object.set_property_value_impl(ctx, prop, Accessor::dict_value_for_key(ctx, value, prop.name), try_update);

@@ -215,7 +215,7 @@ template<> JSValueRef RJSAccessor::from_datetime(JSContextRef ctx, DateTime dt) 
     return JSObjectMakeDate(ctx, 1, &time, NULL);
 }
 
-extern JSObjectRef RJSDictForPropertyArray(JSContextRef ctx, ObjectSchema &object_schema, JSObjectRef array);
+extern JSObjectRef RJSDictForPropertyArray(JSContextRef ctx, const ObjectSchema &object_schema, JSObjectRef array);
 
 template<> size_t RJSAccessor::to_existing_object_index(JSContextRef ctx, JSValueRef &val) {
     JSObjectRef object = RJSValidatedValueToObject(ctx, val);

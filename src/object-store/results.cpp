@@ -38,6 +38,17 @@ Results::Results(SharedRealm r, const ObjectSchema &o, Table& table)
 {
 }
 
+Results& Results::operator=(Results const& r)
+{
+    m_realm = r.m_realm;
+    m_table = r.m_table;
+    m_sort = r.m_sort;
+    m_query = r.get_query();
+    m_mode = Mode::Query;
+    const_cast<ObjectSchema &>(object_schema) = r.object_schema;
+    return *this;
+}
+
 void Results::validate_read() const
 {
     if (m_realm)
