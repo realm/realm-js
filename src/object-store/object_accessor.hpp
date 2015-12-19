@@ -14,7 +14,7 @@ namespace realm {
 
     class Object {
     public:
-        Object(SharedRealm r, const ObjectSchema &s, Row o) : m_realm(r), object_schema(s), m_row(o) {}
+        Object(SharedRealm r, const ObjectSchema *s, Row o) : m_realm(r), m_object_schema(s), m_row(o) {}
 
         // property getter/setter
         template<typename ValueType, typename ContextType>
@@ -25,15 +25,16 @@ namespace realm {
 
         // create an Object from a native representation
         template<typename ValueType, typename ContextType>
-        static inline Object create(ContextType ctx, SharedRealm realm, const ObjectSchema &object_schema, ValueType value, bool try_update);
+        static inline Object create(ContextType ctx, SharedRealm realm, const ObjectSchema *object_schema, ValueType value, bool try_update);
 
-        const ObjectSchema &object_schema;
+        const ObjectSchema *object_schema() { return m_object_schema; }
         SharedRealm realm() { return m_realm; }
         Row row() { return m_row; }
 
     private:
         SharedRealm m_realm;
         Row m_row;
+        const ObjectSchema *m_object_schema;
 
         template<typename ValueType, typename ContextType>
         inline void set_property_value_impl(ContextType ctx, const Property &property, ValueType value, bool try_update);
@@ -50,8 +51,8 @@ namespace realm {
         static bool dict_has_value_for_key(ContextType ctx, ValueType dict, const std::string &prop_name);
         static ValueType dict_value_for_key(ContextType ctx, ValueType dict, const std::string &prop_name);
 
-        static bool has_default_value_for_property(ContextType ctx, Realm *realm, const ObjectSchema &object_schema, const std::string &prop_name);
-        static ValueType default_value_for_property(ContextType ctx, Realm *realm, const ObjectSchema &object_schema, const std::string &prop_name);
+        static bool has_default_value_for_property(ContextType ctx, Realm *realm, const ObjectSchema *object_schema, const std::string &prop_name);
+        static ValueType default_value_for_property(ContextType ctx, Realm *realm, const ObjectSchema *object_schema, const std::string &prop_name);
 
         static bool to_bool(ContextType, ValueType &);
         static ValueType from_bool(ContextType, bool);
@@ -119,10 +120,10 @@ namespace realm {
     template <typename ValueType, typename ContextType>
     inline void Object::set_property_value(ContextType ctx, std::string prop_name, ValueType value, bool try_update)
     {
-        const Property *prop = object_schema.property_for_name(prop_name);
+        const Property *prop = m_object_schema->property_for_name(prop_name);
         if (!prop) {
-            throw InvalidPropertyException(object_schema.name, prop_name,
-                "Setting invalid property '" + prop_name + "' on object '" + object_schema.name + "'.");
+            throw InvalidPropertyException(m_object_schema->name, prop_name,
+                "Setting invalid property '" + prop_name + "' on object '" + m_object_schema->name + "'.");
         }
         set_property_value_impl(ctx, *prop, value, try_update);
     };
@@ -130,10 +131,10 @@ namespace realm {
     template <typename ValueType, typename ContextType>
     inline ValueType Object::get_property_value(ContextType ctx, std::string prop_name)
     {
-        const Property *prop = object_schema.property_for_name(prop_name);
+        const Property *prop = m_object_schema->property_for_name(prop_name);
         if (!prop) {
-            throw InvalidPropertyException(object_schema.name, prop_name,
-                "Getting invalid property '" + prop_name + "' on object '" + object_schema.name + "'.");
+            throw InvalidPropertyException(m_object_schema->name, prop_name,
+                "Getting invalid property '" + prop_name + "' on object '" + m_object_schema->name + "'.");
         }
         return get_property_value_impl<ValueType>(ctx, *prop);
     };
@@ -233,17 +234,17 @@ namespace realm {
                 if (m_row.is_null_link(property.table_column)) {
                     return Accessor::null_value(ctx);
                 }
-                return Accessor::from_object(ctx, std::move(Object(m_realm, *linkObjectSchema, table->get(m_row.get_link(column)))));
+                return Accessor::from_object(ctx, std::move(Object(m_realm, &*linkObjectSchema, table->get(m_row.get_link(column)))));
             }
             case PropertyTypeArray: {
                 auto arrayObjectSchema = m_realm->config().schema->find(property.object_type);
-                return Accessor::from_list(ctx, std::move(List(m_realm, *arrayObjectSchema, static_cast<LinkViewRef>(m_row.get_linklist(column)))));
+                return Accessor::from_list(ctx, std::move(List(m_realm, &*arrayObjectSchema, static_cast<LinkViewRef>(m_row.get_linklist(column)))));
             }
         }
     }
 
     template<typename ValueType, typename ContextType>
-    inline Object Object::create(ContextType ctx, SharedRealm realm, const ObjectSchema &object_schema, ValueType value, bool try_update)
+    inline Object Object::create(ContextType ctx, SharedRealm realm, const ObjectSchema *object_schema, ValueType value, bool try_update)
     {
         using Accessor = NativeAccessor<ValueType, ContextType>;
 
@@ -256,11 +257,11 @@ namespace realm {
 
         // try to get existing row if updating
         size_t row_index = realm::not_found;
-        realm::TableRef table = ObjectStore::table_for_object_type(realm->read_group(), object_schema.name);
-        const Property *primary_prop = object_schema.primary_key_property();
+        realm::TableRef table = ObjectStore::table_for_object_type(realm->read_group(), object_schema->name);
+        const Property *primary_prop = object_schema->primary_key_property();
         if (primary_prop) {
             // search for existing object based on primary key type
-            ValueType primary_value = Accessor::dict_value_for_key(ctx, value, object_schema.primary_key);
+            ValueType primary_value = Accessor::dict_value_for_key(ctx, value, object_schema->primary_key);
             if (primary_prop->type == PropertyTypeString) {
                 row_index = table->find_first_string(primary_prop->table_column, Accessor::to_string(ctx, primary_value));
             }
@@ -269,8 +270,8 @@ namespace realm {
             }
 
             if (!try_update && row_index != realm::not_found) {
-                throw DuplicatePrimaryKeyValueException(object_schema.name, *primary_prop,
-                    "Attempting to create an object of type '" + object_schema.name + "' with an exising primary key value.");
+                throw DuplicatePrimaryKeyValueException(object_schema->name, *primary_prop,
+                    "Attempting to create an object of type '" + object_schema->name + "' with an exising primary key value.");
             }
         }
 
@@ -283,7 +284,7 @@ namespace realm {
 
         // populate
         Object object(realm, object_schema, table->get(row_index));
-        for (const Property &prop : object_schema.properties) {
+        for (const Property &prop : object_schema->properties) {
             if (created || !prop.is_primary) {
                 if (Accessor::dict_has_value_for_key(ctx, value, prop.name)) {
                     object.set_property_value_impl(ctx, prop, Accessor::dict_value_for_key(ctx, value, prop.name), try_update);
@@ -293,7 +294,7 @@ namespace realm {
                         object.set_property_value_impl(ctx, prop, Accessor::default_value_for_property(ctx, realm.get(), object_schema, prop.name), try_update);
                     }
                     else {
-                        throw MissingPropertyValueException(object_schema.name, prop.name,
+                        throw MissingPropertyValueException(object_schema->name, prop.name,
                             "Missing property value for property " + prop.name);
                     }
                 }
@@ -308,19 +309,19 @@ namespace realm {
     template<typename ValueType, typename ContextType>
     void List::add(ContextType ctx, ValueType value)
     {
-        add(NativeAccessor<ValueType, ContextType>::to_object_index(ctx, m_realm, value, object_schema.name, false));
+        add(NativeAccessor<ValueType, ContextType>::to_object_index(ctx, m_realm, value, m_object_schema->name, false));
     }
 
     template<typename ValueType, typename ContextType>
     void List::insert(ContextType ctx, ValueType value, size_t list_ndx)
     {
-        insert(list_ndx, NativeAccessor<ValueType, ContextType>::to_object_index(ctx, m_realm, value, object_schema.name, false));
+        insert(list_ndx, NativeAccessor<ValueType, ContextType>::to_object_index(ctx, m_realm, value, m_object_schema->name, false));
     }
 
     template<typename ValueType, typename ContextType>
     void List::set(ContextType ctx, ValueType value, size_t list_ndx)
     {
-        set(list_ndx, NativeAccessor<ValueType, ContextType>::to_object_index(ctx, m_realm, value, object_schema.name, false));
+        set(list_ndx, NativeAccessor<ValueType, ContextType>::to_object_index(ctx, m_realm, value, m_object_schema->name, false));
     }
 }
 

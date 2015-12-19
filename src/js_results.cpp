@@ -76,9 +76,9 @@ JSValueRef SortByProperty(JSContextRef ctx, JSObjectRef function, JSObjectRef th
         Results *results = RJSGetInternal<Results *>(thisObject);
         RJSValidateArgumentRange(argumentCount, 1, 2);
         std::string propName = RJSValidatedStringForValue(ctx, arguments[0]);
-        const Property *prop = results->object_schema().property_for_name(propName);
+        const Property *prop = results->object_schema()->property_for_name(propName);
         if (!prop) {
-            throw std::runtime_error("Property '" + propName + "' does not exist on object type '" + results->object_schema().name + "'");
+            throw std::runtime_error("Property '" + propName + "' does not exist on object type '" + results->object_schema()->name + "'");
         }
 
         bool ascending = true;

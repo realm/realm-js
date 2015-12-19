@@ -45,7 +45,7 @@ public:
     SharedRealm get_realm() const { return m_realm; }
     
     // Object schema describing the vendored object type
-    const ObjectSchema &object_schema() { return *m_object_schema; }
+    const ObjectSchema *object_schema() { return m_object_schema; }
     
     // Get a query which will match the same rows as is contained in this Results
     // Returned query will not be valid if the current mode is Empty

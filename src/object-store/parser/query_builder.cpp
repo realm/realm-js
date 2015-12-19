@@ -375,7 +375,7 @@ auto value_of_type_for_query(TableGetter&& tables, Value&& value, Arguments &arg
 }
 
 template <typename A, typename B>
-void do_add_comparison_to_query(Query &query, const Schema &schema, const ObjectSchema &object_schema, Predicate::Operator op,
+void do_add_comparison_to_query(Query &query, const Schema &schema, const ObjectSchema *object_schema, Predicate::Operator op,
                                 PropertyExpression &expr, A &lhs, B &rhs, Arguments &args)
 {
     auto type = expr.prop->type;
@@ -425,11 +425,11 @@ void add_comparison_to_query(Query &query, Predicate &pred, Arguments &args, con
     auto object_schema = schema.find(type);
     if (t0 == parser::Expression::Type::KeyPath && t1 != parser::Expression::Type::KeyPath) {
         PropertyExpression expr(query, schema, object_schema, cmpr.expr[0].s);
-        do_add_comparison_to_query(query, schema, *object_schema, cmpr.op, expr, expr, cmpr.expr[1], args);
+        do_add_comparison_to_query(query, schema, &*object_schema, cmpr.op, expr, expr, cmpr.expr[1], args);
     }
     else if (t0 != parser::Expression::Type::KeyPath && t1 == parser::Expression::Type::KeyPath) {
         PropertyExpression expr(query, schema, object_schema, cmpr.expr[1].s);
-        do_add_comparison_to_query(query, schema, *object_schema, cmpr.op, expr, cmpr.expr[0], expr, args);
+        do_add_comparison_to_query(query, schema, &*object_schema, cmpr.op, expr, cmpr.expr[0], expr, args);
     }
     else {
         throw std::runtime_error("Predicate expressions must compare a keypath and another keypath or a constant value");

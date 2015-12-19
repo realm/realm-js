@@ -25,10 +25,11 @@
 namespace realm {
     class List {
       public:
-        List(SharedRealm &r, const ObjectSchema &s, LinkViewRef l) : m_realm(r), object_schema(s), m_link_view(l) {}
+        List(SharedRealm &r, const ObjectSchema *s, LinkViewRef l) : m_realm(r), m_object_schema(s), m_link_view(l) {}
 
-        const ObjectSchema &object_schema;
         SharedRealm realm() { return m_realm; }
+        const ObjectSchema *object_schema() { return m_object_schema; }
+
 
         size_t size();
         Row get(size_t row_ndx);
@@ -54,6 +55,7 @@ namespace realm {
       private:
         SharedRealm m_realm;
         LinkViewRef m_link_view;
+        const ObjectSchema *m_object_schema;
     };
 }
 

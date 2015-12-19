@@ -45,7 +45,7 @@ bool ObjectSetProperty(JSContextRef ctx, JSObjectRef jsObject, JSStringRef jsPro
 void ObjectPropertyNames(JSContextRef ctx, JSObjectRef jsObject, JSPropertyNameAccumulatorRef propertyNames) {
     Object *obj = RJSGetInternal<Object *>(jsObject);
 
-    for (auto &prop : obj->object_schema.properties) {
+    for (auto &prop : obj->object_schema()->properties) {
         JSStringRef propertyName = RJSStringForString(prop.name);
         JSPropertyNameAccumulatorAddName(propertyNames, propertyName);
         JSStringRelease(propertyName);
@@ -58,7 +58,7 @@ JSClassRef RJSObjectClass() {
 }
 
 JSObjectRef RJSObjectCreate(JSContextRef ctx, Object object) {
-    JSValueRef prototype = RJSPrototypes(object.realm().get())[object.object_schema.name];
+    JSValueRef prototype = RJSPrototypes(object.realm().get())[object.object_schema()->name];
     JSObjectRef jsObject = RJSWrapObject(ctx, RJSObjectClass(), new Object(object), prototype);
     return jsObject;
 }
@@ -81,13 +81,13 @@ template<> JSValueRef RJSAccessor::dict_value_for_key(JSContextRef ctx, JSValueR
     return ret;
 }
 
-template<> bool RJSAccessor::has_default_value_for_property(JSContextRef ctx, Realm *realm, const ObjectSchema &object_schema, const std::string &prop_name) {
-    ObjectDefaults &defaults = RJSDefaults(realm)[object_schema.name];
+template<> bool RJSAccessor::has_default_value_for_property(JSContextRef ctx, Realm *realm, const ObjectSchema *object_schema, const std::string &prop_name) {
+    ObjectDefaults &defaults = RJSDefaults(realm)[object_schema->name];
     return defaults.find(prop_name) != defaults.end();
 }
 
-template<> JSValueRef RJSAccessor::default_value_for_property(JSContextRef ctx, Realm *realm, const ObjectSchema &object_schema, const std::string &prop_name) {
-    ObjectDefaults &defaults = RJSDefaults(realm)[object_schema.name];
+template<> JSValueRef RJSAccessor::default_value_for_property(JSContextRef ctx, Realm *realm, const ObjectSchema *object_schema, const std::string &prop_name) {
+    ObjectDefaults &defaults = RJSDefaults(realm)[object_schema->name];
     return defaults[prop_name];
 }
 
@@ -215,7 +215,7 @@ template<> JSValueRef RJSAccessor::from_datetime(JSContextRef ctx, DateTime dt) 
     return JSObjectMakeDate(ctx, 1, &time, NULL);
 }
 
-extern JSObjectRef RJSDictForPropertyArray(JSContextRef ctx, const ObjectSchema &object_schema, JSObjectRef array);
+extern JSObjectRef RJSDictForPropertyArray(JSContextRef ctx, const ObjectSchema *object_schema, JSObjectRef array);
 
 template<> size_t RJSAccessor::to_existing_object_index(JSContextRef ctx, JSValueRef &val) {
     JSObjectRef object = RJSValidatedValueToObject(ctx, val);
@@ -232,10 +232,10 @@ template<> size_t RJSAccessor::to_object_index(JSContextRef ctx, SharedRealm rea
 
     auto object_schema = realm->config().schema->find(type);
     if (RJSIsValueArray(ctx, object)) {
-        object = RJSDictForPropertyArray(ctx, *object_schema, object);
+        object = RJSDictForPropertyArray(ctx, &*object_schema, object);
     }
 
-    Object child = Object::create<JSValueRef>(ctx, realm, *object_schema, (JSValueRef)object, try_update);
+    Object child = Object::create<JSValueRef>(ctx, realm, &*object_schema, (JSValueRef)object, try_update);
     return child.row().get_index();
 }
 template<> JSValueRef RJSAccessor::from_object(JSContextRef ctx, Object object) {
