@@ -20,7 +20,7 @@ PACKAGER_OUT="packager_out.txt"
 function start_packager()
 {
   rm -f $PACKAGER_OUT
-  sh ./node_modules/react-native/packager/packager.sh > packager_out.txt &
+  sh ./node_modules/react-native/packager/packager.sh | tee packager_out.txt &
   while :;
   do
   if grep -Fxq "React packager ready." packager_out.txt
@@ -45,6 +45,11 @@ if [ "$TARGET" = "realmjs" ]; then
   xcodebuild -scheme RealmJS -configuration "$CONFIGURATION" -sdk iphonesimulator $DESTINATION build test 
 elif [ "$TARGET" = "react-tests" ]; then
   pushd tests/react-test-app
+
+  if [ -d  ~/Applications/Google\ Chrome.app ]; then
+    open ~/Applications/Google\ Chrome.app
+  fi
+
   if [ -f ../../target=node_modules/react_tests_node_modules.zip ]; then
       unzip -q ../../target=node_modules/react_tests_node_modules.zip
   fi
