@@ -178,11 +178,11 @@ SharedRealm Realm::get_shared_realm(Config config)
                 realm->update_schema(std::move(target_schema), target_schema_version);
             }
 
-            if (!m_config.read_only) {
+            if (!realm->m_config.read_only) {
                 // End the read transaction created to validation/update the
                 // schema to avoid pinning the version even if the user never
                 // actually reads data
-                invalidate();
+                realm->invalidate();
             }
         }
     }
