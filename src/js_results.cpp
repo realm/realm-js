@@ -23,7 +23,7 @@ JSValueRef ResultsGetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef 
         }
 
         return RJSObjectCreate(ctx, Object(results->get_realm(),
-                                           results->object_schema,
+                                           results->object_schema(),
                                            results->get(RJSValidatedPositiveIndex(indexStr))));
     }
     catch (std::out_of_range &exp) {
@@ -76,9 +76,9 @@ JSValueRef SortByProperty(JSContextRef ctx, JSObjectRef function, JSObjectRef th
         Results *results = RJSGetInternal<Results *>(thisObject);
         RJSValidateArgumentRange(argumentCount, 1, 2);
         std::string propName = RJSValidatedStringForValue(ctx, arguments[0]);
-        const Property *prop = results->object_schema.property_for_name(propName);
+        const Property *prop = results->object_schema()->property_for_name(propName);
         if (!prop) {
-            throw std::runtime_error("Property '" + propName + "' does not exist on object type '" + results->object_schema.name + "'");
+            throw std::runtime_error("Property '" + propName + "' does not exist on object type '" + results->object_schema()->name + "'");
         }
 
         bool ascending = true;
@@ -102,7 +102,7 @@ JSObjectRef RJSResultsCreate(JSContextRef ctx, SharedRealm realm, std::string cl
     if (object_schema == realm->config().schema->end()) {
         throw std::runtime_error("Object type '" + className + "' not present in Realm.");
     }
-    return RJSWrapObject<Results *>(ctx, RJSResultsClass(), new Results(realm, *object_schema, *table));
+    return RJSWrapObject<Results *>(ctx, RJSResultsClass(), new Results(realm, &*object_schema, *table));
 }
 
 
@@ -118,7 +118,7 @@ JSObjectRef RJSResultsCreate(JSContextRef ctx, SharedRealm realm, std::string cl
     query_builder::ArgumentConverter<JSValueRef, JSContextRef> arguments(ctx, args);
     query_builder::apply_predicate(query, predicate, arguments, schema, object_schema->name);
 
-    return RJSWrapObject<Results *>(ctx, RJSResultsClass(), new Results(realm, *object_schema, std::move(query)));
+    return RJSWrapObject<Results *>(ctx, RJSResultsClass(), new Results(realm, &*object_schema, std::move(query)));
 }
 
 static const JSStaticFunction RJSResultsFuncs[] = {

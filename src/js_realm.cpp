@@ -245,16 +245,16 @@ JSValueRef RealmObjects(JSContextRef ctx, JSObjectRef function, JSObjectRef this
     }
 }
 
-JSObjectRef RJSDictForPropertyArray(JSContextRef ctx, const ObjectSchema &object_schema, JSObjectRef array) {
+JSObjectRef RJSDictForPropertyArray(JSContextRef ctx, const ObjectSchema *object_schema, JSObjectRef array) {
     // copy to dictionary
-    if (object_schema.properties.size() != RJSValidatedListLength(ctx, array)) {
+    if (object_schema->properties.size() != RJSValidatedListLength(ctx, array)) {
         throw std::runtime_error("Array must contain values for all object properties");
     }
 
     JSValueRef exception = NULL;
     JSObjectRef dict = JSObjectMake(ctx, NULL, NULL);
-    for (unsigned int i = 0; i < object_schema.properties.size(); i++) {
-        JSStringRef nameStr = JSStringCreateWithUTF8CString(object_schema.properties[i].name.c_str());
+    for (unsigned int i = 0; i < object_schema->properties.size(); i++) {
+        JSStringRef nameStr = JSStringCreateWithUTF8CString(object_schema->properties[i].name.c_str());
         JSValueRef value = JSObjectGetPropertyAtIndex(ctx, array, i, &exception);
         if (exception) {
             throw RJSException(ctx, exception);
@@ -282,7 +282,7 @@ JSValueRef RealmCreateObject(JSContextRef ctx, JSObjectRef function, JSObjectRef
 
         JSObjectRef object = RJSValidatedValueToObject(ctx, arguments[1]);
         if (RJSIsValueArray(ctx, arguments[1])) {
-            object = RJSDictForPropertyArray(ctx, *object_schema, object);
+            object = RJSDictForPropertyArray(ctx, &*object_schema, object);
         }
 
         bool update = false;
@@ -290,7 +290,7 @@ JSValueRef RealmCreateObject(JSContextRef ctx, JSObjectRef function, JSObjectRef
             update = JSValueToBoolean(ctx, arguments[2]);
         }
 
-        return RJSObjectCreate(ctx, Object::create<JSValueRef>(ctx, sharedRealm, *object_schema, object, update));
+        return RJSObjectCreate(ctx, Object::create<JSValueRef>(ctx, sharedRealm, &*object_schema, object, update));
     }
     catch (std::exception &exp) {
         if (jsException) {
@@ -332,7 +332,7 @@ JSValueRef RealmDelete(JSContextRef ctx, JSObjectRef function, JSObjectRef thisO
             throw std::runtime_error("Can only delete objects within a transaction.");
         }
 
-        realm::TableRef table = ObjectStore::table_for_object_type(realm->read_group(), object->object_schema.name);
+        realm::TableRef table = ObjectStore::table_for_object_type(realm->read_group(), object->object_schema()->name);
         table->move_last_over(object->row().get_index());
 
         return NULL;
