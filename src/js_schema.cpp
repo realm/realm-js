@@ -115,8 +115,12 @@ static inline Property RJSParseProperty(JSContextRef ctx, JSValueRef propertyAtt
 }
 
 static inline ObjectSchema RJSParseObjectSchema(JSContextRef ctx, JSObjectRef objectSchemaObject, std::map<std::string, realm::ObjectDefaults> &defaults, std::map<std::string, JSValueRef> &prototypes) {
-    static JSStringRef schemaString = JSStringCreateWithUTF8CString("schema");
+    static JSStringRef nameString = JSStringCreateWithUTF8CString("name");
+    static JSStringRef primaryString = JSStringCreateWithUTF8CString("primaryKey");
     static JSStringRef prototypeString = JSStringCreateWithUTF8CString("prototype");
+    static JSStringRef propertiesString = JSStringCreateWithUTF8CString("properties");
+    static JSStringRef schemaString = JSStringCreateWithUTF8CString("schema");
+
     JSObjectRef prototypeObject = NULL;
     JSValueRef prototypeValue = RJSValidatedPropertyValue(ctx, objectSchemaObject, prototypeString);
 
@@ -131,14 +135,11 @@ static inline ObjectSchema RJSParseObjectSchema(JSContextRef ctx, JSObjectRef ob
         }
     }
 
-    static JSStringRef nameString = JSStringCreateWithUTF8CString("name");
-    static JSStringRef propertiesString = JSStringCreateWithUTF8CString("properties");
-    JSObjectRef propertiesObject = RJSValidatedObjectProperty(ctx, objectSchemaObject, propertiesString, "ObjectSchema must have a 'properties' object.");
-
     ObjectDefaults objectDefaults;
     ObjectSchema objectSchema;
     objectSchema.name = RJSValidatedStringProperty(ctx, objectSchemaObject, nameString);
 
+    JSObjectRef propertiesObject = RJSValidatedObjectProperty(ctx, objectSchemaObject, propertiesString, "ObjectSchema must have a 'properties' object.");
     JSPropertyNameArrayRef propertyNames = NULL;
     size_t propertyCount;
 
@@ -172,7 +173,6 @@ static inline ObjectSchema RJSParseObjectSchema(JSContextRef ctx, JSObjectRef ob
         JSPropertyNameArrayRelease(propertyNames);
     }
 
-    static JSStringRef primaryString = JSStringCreateWithUTF8CString("primaryKey");
     JSValueRef primaryValue = RJSValidatedPropertyValue(ctx, objectSchemaObject, primaryString);
     if (!JSValueIsUndefined(ctx, primaryValue)) {
         objectSchema.primary_key = RJSValidatedStringForValue(ctx, primaryValue);
@@ -183,7 +183,7 @@ static inline ObjectSchema RJSParseObjectSchema(JSContextRef ctx, JSObjectRef ob
         property->is_primary = true;
     }
 
-    // store prototype
+    // Store prototype so that objects of this type will have their prototype set to this prototype object.
     if (prototypeObject) {
         JSValueProtect(ctx, prototypeObject);
         prototypes[objectSchema.name] = std::move(prototypeObject);
