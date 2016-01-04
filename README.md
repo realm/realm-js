@@ -28,12 +28,12 @@ const Realm = require('realm');
 const personSchema = {
     name: 'Person',
     primaryKey: 'name',
-    properties: [
-        {name: 'name', type: Realm.Types.STRING},
-        {name: 'birthday', type: Realm.Types.DATE},
-        {name: 'friends', type: Realm.Types.LIST, objectType: 'Person'},
-        {name: 'points', type: Realm.Types.INT, default: 0},
-    ],
+    properties: {
+        name': 'string',
+        birthday: 'date',
+        friends: {type: 'list', objectType: 'Person'},
+        points: {type: 'int', default: 0},
+    },
 };
 
 const realm = new Realm({schema: [personSchema]});
@@ -101,26 +101,27 @@ The `realmConfig` passed to the constructor can contain the following:
 
 ### ObjectSchema
 - `name` – string used to refer to this object type
-- `properties` - array of property defitions (see below)
+- `properties` - object with property definitions (see below)
 - `primaryKey` – optional - name of `STRING` or `INT` property that should be unique
 
 ### Property Types
-When definining object `properties` in a `schema`, each should have a unique `name`, and the `type` of each property must be defined as either the name of an object type in the same schema **or** as one of the following:
+When defining object `properties` in a `schema`, the value for each property must either be the `type` **OR** an object with a `type` key along with other options detailed below. The `type` of each property must be defined as either the name of an object type in the same schema **or** as one of the following:
 
-- `Realm.Types.BOOL`
-- `Realm.Types.INT`
-- `Realm.Types.FLOAT`
-- `Realm.Types.DOUBLE`
-- `Realm.Types.STRING`
-- `Realm.Types.DATE`
-- `Realm.Types.DATA`
-- `Realm.Types.OBJECT` (requires `objectType`, is always `optional`)
-- `Realm.Types.LIST` (requires `objectType`, is never `optional`)
+- `Realm.Types.BOOL` (`"bool"`)
+- `Realm.Types.INT` (`"int"`)
+- `Realm.Types.FLOAT` (`"float"`)
+- `Realm.Types.DOUBLE` (`"double"`)
+- `Realm.Types.STRING` (`"string"`)
+- `Realm.Types.DATE` (`"date"`)
+- `Realm.Types.DATA` (`"data"`)
+- `Realm.Types.LIST` (`"list"` – requires `objectType` and cannot be `optional`)
 
 You _may_ specify these property options as well:
 
 - `default` – default value when property was not specified on creation
 - `optional` – boolean indicating if this property may be assigned `null` or `undefined`
+
+**Note:** When the `type` of a property is that of an object type in the same schema, it _always_ will be `optional`.
 
 ### `Realm` Instance Methods
 #### `create(type, props [, update])`
