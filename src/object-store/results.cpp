@@ -1,6 +1,20 @@
-/* Copyright 2015 Realm Inc - All Rights Reserved
- * Proprietary and Confidential
- */
+////////////////////////////////////////////////////////////////////////////
+//
+// Copyright 2015 Realm Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+////////////////////////////////////////////////////////////////////////////
 
 #include "results.hpp"
 
@@ -107,9 +121,8 @@ util::Optional<RowExpr> Results::first()
         case Mode::Table:
             return m_table->size() == 0 ? util::none : util::make_optional(m_table->front());
         case Mode::Query:
-            update_tableview();
-            REALM_FALLTHROUGH;
         case Mode::TableView:
+            update_tableview();
             return m_table_view.size() == 0 ? util::none : util::make_optional(m_table_view.front());
     }
     REALM_UNREACHABLE();
@@ -124,9 +137,8 @@ util::Optional<RowExpr> Results::last()
         case Mode::Table:
             return m_table->size() == 0 ? util::none : util::make_optional(m_table->back());
         case Mode::Query:
-            update_tableview();
-            REALM_FALLTHROUGH;
         case Mode::TableView:
+            update_tableview();
             return m_table_view.size() == 0 ? util::none : util::make_optional(m_table_view.back());
     }
     REALM_UNREACHABLE();
@@ -159,9 +171,9 @@ size_t Results::index_of(Row const& row)
         throw DetatchedAccessorException{};
     }
     if (m_table && row.get_table() != m_table) {
-        throw IncorrectTableException(object_schema.name,
-            ObjectStore::object_type_for_table_name(row.get_table()->get_name()),
-            "Attempting to get the index of a Row of the wrong type");
+        throw IncorrectTableException{
+            ObjectStore::object_type_for_table_name(m_table->get_name()),
+            ObjectStore::object_type_for_table_name(row.get_table()->get_name())};
     }
     return index_of(row.get_index());
 }
@@ -276,7 +288,7 @@ void Results::clear()
         case Mode::TableView:
             validate_write();
             update_tableview();
-            m_table_view.clear();
+            m_table_view.clear(RemoveMode::unordered);
             break;
     }
 }
@@ -311,6 +323,11 @@ TableView Results::get_tableview()
     REALM_UNREACHABLE();
 }
 
+StringData Results::get_object_type() const noexcept
+{
+    return ObjectStore::object_type_for_table_name(m_table->get_name());
+}
+
 Results Results::sort(realm::SortOrder&& sort) const
 {
     return Results(m_realm, object_schema, get_query(), std::move(sort));
@@ -321,8 +338,8 @@ Results Results::filter(Query&& q) const
     return Results(m_realm, object_schema, get_query().and_query(std::move(q)), get_sort());
 }
 
-Results::UnsupportedColumnTypeException::UnsupportedColumnTypeException(size_t column, const Table* table) :
-    column_index(column), column_name(table->get_column_name(column)), column_type(table->get_column_type(column)),
-    std::runtime_error((std::string)"Operation not supported on '" + table->get_column_name(column).data() + "' columns")
-{
+Results::UnsupportedColumnTypeException::UnsupportedColumnTypeException(size_t column, const Table* table) {
+    column_index = column;
+    column_name = table->get_column_name(column);
+    column_type = table->get_column_type(column);
 }
