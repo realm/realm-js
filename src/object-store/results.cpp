@@ -171,9 +171,10 @@ size_t Results::index_of(Row const& row)
         throw DetatchedAccessorException{};
     }
     if (m_table && row.get_table() != m_table) {
-        throw IncorrectTableException{
-            ObjectStore::object_type_for_table_name(m_table->get_name()),
-            ObjectStore::object_type_for_table_name(row.get_table()->get_name())};
+        throw IncorrectTableException(object_schema.name,
+            ObjectStore::object_type_for_table_name(row.get_table()->get_name()),
+            "Attempting to get the index of a Row of the wrong type"
+        );
     }
     return index_of(row.get_index());
 }
@@ -323,11 +324,6 @@ TableView Results::get_tableview()
     REALM_UNREACHABLE();
 }
 
-StringData Results::get_object_type() const noexcept
-{
-    return ObjectStore::object_type_for_table_name(m_table->get_name());
-}
-
 Results Results::sort(realm::SortOrder&& sort) const
 {
     return Results(m_realm, object_schema, get_query(), std::move(sort));
@@ -338,8 +334,10 @@ Results Results::filter(Query&& q) const
     return Results(m_realm, object_schema, get_query().and_query(std::move(q)), get_sort());
 }
 
-Results::UnsupportedColumnTypeException::UnsupportedColumnTypeException(size_t column, const Table* table) {
-    column_index = column;
-    column_name = table->get_column_name(column);
-    column_type = table->get_column_type(column);
+Results::UnsupportedColumnTypeException::UnsupportedColumnTypeException(size_t column, const Table* table)
+: column_index(column)
+, column_name(table->get_column_name(column))
+, column_type(table->get_column_type(column))
+, std::runtime_error((std::string)"Operation not supported on '" + table->get_column_name(column).data() + "' columns")
+{
 }
