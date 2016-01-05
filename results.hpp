@@ -53,13 +53,13 @@ public:
     Results(Results const&) = default;
     Results(Results&&) = default;
     Results& operator=(Results&&) = default;
-    Results& operator=(Results const&);
+    Results& operator=(Results const&) = default;
 
     // Get the Realm
     SharedRealm get_realm() const { return m_realm; }
     
     // Object schema describing the vendored object type
-    const ObjectSchema &object_schema;
+    const ObjectSchema &object_schema() const { return *m_object_schema; }
     
     // Get a query which will match the same rows as is contained in this Results
     // Returned query will not be valid if the current mode is Empty
@@ -72,7 +72,7 @@ public:
     TableView get_tableview();
 
     // Get the object type which will be returned by get()
-    StringData get_object_type() const noexcept { return object_schema.name; }
+    StringData get_object_type() const noexcept { return object_schema().name; }
 
     // Get the size of this results
     // Can be either O(1) or O(N) depending on the state of things
@@ -163,6 +163,7 @@ public:
 
 private:
     SharedRealm m_realm;
+    const ObjectSchema *m_object_schema;
     Query m_query;
     TableView m_table_view;
     Table* m_table = nullptr;
