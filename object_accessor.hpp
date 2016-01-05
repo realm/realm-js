@@ -14,7 +14,7 @@ namespace realm {
 
     class Object {
     public:
-        Object(SharedRealm r, const ObjectSchema &s, Row o) : m_realm(r), object_schema(s), m_row(o) {}
+        Object(SharedRealm r, const ObjectSchema &s, Row o) : m_realm(r), m_object_schema(&s), m_row(o) {}
 
         // property getter/setter
         template<typename ValueType, typename ContextType>
@@ -27,12 +27,13 @@ namespace realm {
         template<typename ValueType, typename ContextType>
         static inline Object create(ContextType ctx, SharedRealm realm, const ObjectSchema &object_schema, ValueType value, bool try_update);
 
-        const ObjectSchema &object_schema;
         SharedRealm realm() { return m_realm; }
+        const ObjectSchema &object_schema() { return *m_object_schema; }
         Row row() { return m_row; }
 
     private:
         SharedRealm m_realm;
+        const ObjectSchema *m_object_schema;
         Row m_row;
 
         template<typename ValueType, typename ContextType>
@@ -119,10 +120,10 @@ namespace realm {
     template <typename ValueType, typename ContextType>
     inline void Object::set_property_value(ContextType ctx, std::string prop_name, ValueType value, bool try_update)
     {
-        const Property *prop = object_schema.property_for_name(prop_name);
+        const Property *prop = m_object_schema->property_for_name(prop_name);
         if (!prop) {
-            throw InvalidPropertyException(object_schema.name, prop_name,
-                "Setting invalid property '" + prop_name + "' on object '" + object_schema.name + "'.");
+            throw InvalidPropertyException(m_object_schema->name, prop_name,
+                "Setting invalid property '" + prop_name + "' on object '" + m_object_schema->name + "'.");
         }
         set_property_value_impl(ctx, *prop, value, try_update);
     };
@@ -130,10 +131,10 @@ namespace realm {
     template <typename ValueType, typename ContextType>
     inline ValueType Object::get_property_value(ContextType ctx, std::string prop_name)
     {
-        const Property *prop = object_schema.property_for_name(prop_name);
+        const Property *prop = m_object_schema->property_for_name(prop_name);
         if (!prop) {
-            throw InvalidPropertyException(object_schema.name, prop_name,
-                "Getting invalid property '" + prop_name + "' on object '" + object_schema.name + "'.");
+            throw InvalidPropertyException(m_object_schema->name, prop_name,
+                "Getting invalid property '" + prop_name + "' on object '" + m_object_schema->name + "'.");
         }
         return get_property_value_impl<ValueType>(ctx, *prop);
     };
