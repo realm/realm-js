@@ -171,7 +171,7 @@ SharedRealm Realm::get_shared_realm(Config config)
                     throw UnitializedRealmException("Can't open an un-initialized Realm without a Schema");
                 }
                 target_schema->validate();
-                ObjectStore::verify_schema(*realm->m_config.schema, const_cast<Schema &>(*target_schema), true);
+                ObjectStore::verify_schema(*realm->m_config.schema, *target_schema, true);
                 realm->m_config.schema = std::move(target_schema);
             }
             else {
