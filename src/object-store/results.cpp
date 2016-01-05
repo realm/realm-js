@@ -40,7 +40,7 @@ Results::Results(SharedRealm r, const ObjectSchema &o, Query q, SortOrder s)
 , m_table(m_query.get_table().get())
 , m_sort(std::move(s))
 , m_mode(Mode::Query)
-, object_schema(o)
+, m_object_schema(&o)
 {
 }
 
@@ -48,19 +48,8 @@ Results::Results(SharedRealm r, const ObjectSchema &o, Table& table)
 : m_realm(std::move(r))
 , m_table(&table)
 , m_mode(Mode::Table)
-, object_schema(o)
+, m_object_schema(&o)
 {
-}
-
-Results& Results::operator=(Results const& r)
-{
-    m_realm = r.m_realm;
-    m_table = r.m_table;
-    m_sort = r.m_sort;
-    m_query = r.get_query();
-    m_mode = Mode::Query;
-    const_cast<ObjectSchema &>(object_schema) = r.object_schema;
-    return *this;
 }
 
 void Results::validate_read() const
@@ -171,7 +160,7 @@ size_t Results::index_of(Row const& row)
         throw DetatchedAccessorException{};
     }
     if (m_table && row.get_table() != m_table) {
-        throw IncorrectTableException(object_schema.name,
+        throw IncorrectTableException(m_object_schema->name,
             ObjectStore::object_type_for_table_name(row.get_table()->get_name()),
             "Attempting to get the index of a Row of the wrong type"
         );
@@ -326,12 +315,12 @@ TableView Results::get_tableview()
 
 Results Results::sort(realm::SortOrder&& sort) const
 {
-    return Results(m_realm, object_schema, get_query(), std::move(sort));
+    return Results(m_realm, object_schema(), get_query(), std::move(sort));
 }
 
 Results Results::filter(Query&& q) const
 {
-    return Results(m_realm, object_schema, get_query().and_query(std::move(q)), get_sort());
+    return Results(m_realm, object_schema(), get_query().and_query(std::move(q)), get_sort());
 }
 
 Results::UnsupportedColumnTypeException::UnsupportedColumnTypeException(size_t column, const Table* table)
