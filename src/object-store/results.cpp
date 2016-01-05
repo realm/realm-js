@@ -324,9 +324,9 @@ Results Results::filter(Query&& q) const
 }
 
 Results::UnsupportedColumnTypeException::UnsupportedColumnTypeException(size_t column, const Table* table)
-: column_index(column)
+: std::runtime_error((std::string)"Operation not supported on '" + table->get_column_name(column).data() + "' columns")
+, column_index(column)
 , column_name(table->get_column_name(column))
 , column_type(table->get_column_type(column))
-, std::runtime_error((std::string)"Operation not supported on '" + table->get_column_name(column).data() + "' columns")
 {
 }
