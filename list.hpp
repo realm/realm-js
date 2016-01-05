@@ -47,6 +47,8 @@ namespace realm {
         template<typename ValueType, typename ContextType>
         void set(ContextType ctx, ValueType value, size_t list_ndx);
 
+        Query get_query();
+
         void verify_valid_row(std::size_t row_ndx, bool insertion = false);
         void verify_attached();
         void verify_in_tranaction();

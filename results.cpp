@@ -67,6 +67,17 @@ void Results::validate_write() const
         throw InvalidTransactionException("Must be in a write transaction");
 }
 
+void Results::set_live(bool live)
+{
+    if (!live && m_mode == Mode::Table) {
+        m_query = m_table->where();
+        m_mode = Mode::Query;
+    }
+
+    update_tableview();
+    m_live = live;
+}
+
 size_t Results::size()
 {
     validate_read();
@@ -94,7 +105,7 @@ RowExpr Results::get(size_t row_ndx)
         case Mode::TableView:
             update_tableview();
             if (row_ndx < m_table_view.size())
-                return m_table_view.get(row_ndx);
+                return (!m_live && !m_table_view.is_row_attached(row_ndx)) ? RowExpr() : m_table_view.get(row_ndx);
             break;
     }
 
@@ -148,7 +159,9 @@ void Results::update_tableview()
             m_mode = Mode::TableView;
             break;
         case Mode::TableView:
-            m_table_view.sync_if_needed();
+            if (m_live) {
+                m_table_view.sync_if_needed();
+            }
             break;
     }
 }
