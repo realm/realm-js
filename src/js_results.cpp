@@ -23,7 +23,7 @@ JSValueRef ResultsGetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef 
         }
 
         auto row = results->get(RJSValidatedPositiveIndex(indexStr));
-        if (!row) {
+        if (!row.is_attached()) {
             return JSValueMakeNull(ctx);
         }
 
