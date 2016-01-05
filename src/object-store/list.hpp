@@ -27,7 +27,7 @@ namespace realm {
       public:
         List(SharedRealm &r, const ObjectSchema &s, LinkViewRef l) : m_realm(r), m_object_schema(&s), m_link_view(l) {}
 
-        const ObjectSchema &object_schema() const { return *m_object_schema; }
+        const ObjectSchema &get_object_schema() const { return *m_object_schema; }
         SharedRealm realm() { return m_realm; }
 
         size_t size();

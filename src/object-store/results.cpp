@@ -315,12 +315,12 @@ TableView Results::get_tableview()
 
 Results Results::sort(realm::SortOrder&& sort) const
 {
-    return Results(m_realm, object_schema(), get_query(), std::move(sort));
+    return Results(m_realm, get_object_schema(), get_query(), std::move(sort));
 }
 
 Results Results::filter(Query&& q) const
 {
-    return Results(m_realm, object_schema(), get_query().and_query(std::move(q)), get_sort());
+    return Results(m_realm, get_object_schema(), get_query().and_query(std::move(q)), get_sort());
 }
 
 Results::UnsupportedColumnTypeException::UnsupportedColumnTypeException(size_t column, const Table* table)

@@ -230,7 +230,7 @@ void add_binary_constraint_to_query(realm::Query &query,
 
 void add_link_constraint_to_query(realm::Query &query,
                                   Predicate::Operator op,
-                                  PropertyExpression &prop_expr,
+                                  const PropertyExpression &prop_expr,
                                   size_t row_index) {
     precondition(prop_expr.indexes.empty(), "KeyPath queries not supported for object comparisons.");
     switch (op) {
@@ -260,12 +260,12 @@ void add_link_constraint_to_query(realm::Query &query,
     }
 }
 
-auto link_argument(PropertyExpression &propExpr, parser::Expression &argExpr, Arguments &args)
+auto link_argument(const PropertyExpression &propExpr, const parser::Expression &argExpr, Arguments &args)
 {
     return args.object_index_for_argument(std::stoi(argExpr.s));
 }
 
-auto link_argument(parser::Expression &argExpr, PropertyExpression &propExpr, Arguments &args)
+auto link_argument(const parser::Expression &argExpr, const PropertyExpression &propExpr, Arguments &args)
 {
     return args.object_index_for_argument(std::stoi(argExpr.s));
 }
@@ -376,7 +376,7 @@ auto value_of_type_for_query(TableGetter&& tables, Value&& value, Arguments &arg
 
 template <typename A, typename B>
 void do_add_comparison_to_query(Query &query, const Schema &schema, const ObjectSchema &object_schema, Predicate::Operator op,
-                                PropertyExpression &expr, A &lhs, B &rhs, Arguments &args)
+                                const PropertyExpression &expr, A &lhs, B &rhs, Arguments &args)
 {
     auto type = expr.prop->type;
     switch (type) {
@@ -418,9 +418,9 @@ void do_add_comparison_to_query(Query &query, const Schema &schema, const Object
     }
 }
 
-void add_comparison_to_query(Query &query, Predicate &pred, Arguments &args, const Schema &schema, const std::string &type)
+void add_comparison_to_query(Query &query, const Predicate &pred, Arguments &args, const Schema &schema, const std::string &type)
 {
-    Predicate::Comparison &cmpr = pred.cmpr;
+    const Predicate::Comparison &cmpr = pred.cmpr;
     auto t0 = cmpr.expr[0].type, t1 = cmpr.expr[1].type;
     auto object_schema = schema.find(type);
     if (t0 == parser::Expression::Type::KeyPath && t1 != parser::Expression::Type::KeyPath) {
@@ -436,7 +436,7 @@ void add_comparison_to_query(Query &query, Predicate &pred, Arguments &args, con
     }
 }
 
-void update_query_with_predicate(Query &query, Predicate &pred, Arguments &arguments, const Schema &schema, const std::string &type)
+void update_query_with_predicate(Query &query, const Predicate &pred, Arguments &arguments, const Schema &schema, const std::string &type)
 {
     if (pred.negate) {
         query.Not();
@@ -484,7 +484,7 @@ void update_query_with_predicate(Query &query, Predicate &pred, Arguments &argum
     }
 }
 
-void apply_predicate(Query &query, Predicate &predicate, Arguments &arguments, const Schema &schema, std::string objectType)
+void apply_predicate(Query &query, const Predicate &predicate, Arguments &arguments, const Schema &schema, const std::string &objectType)
 {
     update_query_with_predicate(query, predicate, arguments, schema, objectType);
     
