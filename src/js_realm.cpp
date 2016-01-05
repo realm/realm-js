@@ -332,7 +332,7 @@ JSValueRef RealmDelete(JSContextRef ctx, JSObjectRef function, JSObjectRef thisO
             throw std::runtime_error("Can only delete objects within a transaction.");
         }
 
-        realm::TableRef table = ObjectStore::table_for_object_type(realm->read_group(), object->object_schema.name);
+        realm::TableRef table = ObjectStore::table_for_object_type(realm->read_group(), object->object_schema().name);
         table->move_last_over(object->row().get_index());
 
         return NULL;

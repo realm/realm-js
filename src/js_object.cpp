@@ -45,7 +45,7 @@ bool ObjectSetProperty(JSContextRef ctx, JSObjectRef jsObject, JSStringRef jsPro
 void ObjectPropertyNames(JSContextRef ctx, JSObjectRef jsObject, JSPropertyNameAccumulatorRef propertyNames) {
     Object *obj = RJSGetInternal<Object *>(jsObject);
 
-    for (auto &prop : obj->object_schema.properties) {
+    for (auto &prop : obj->object_schema().properties) {
         JSStringRef propertyName = RJSStringForString(prop.name);
         JSPropertyNameAccumulatorAddName(propertyNames, propertyName);
         JSStringRelease(propertyName);
@@ -58,7 +58,7 @@ JSClassRef RJSObjectClass() {
 }
 
 JSObjectRef RJSObjectCreate(JSContextRef ctx, Object object) {
-    JSValueRef prototype = RJSPrototypes(object.realm().get())[object.object_schema.name];
+    JSValueRef prototype = RJSPrototypes(object.realm().get())[object.object_schema().name];
     JSObjectRef jsObject = RJSWrapObject(ctx, RJSObjectClass(), new Object(object), prototype);
     return jsObject;
 }

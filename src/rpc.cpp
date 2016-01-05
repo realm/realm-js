@@ -220,7 +220,7 @@ json RPCServer::serialize_json_value(JSValueRef value) {
         return {
             {"type", RJSTypeGet(realm::PropertyTypeObject)},
             {"id", store_object(js_object)},
-            {"schema", serialize_object_schema(object->object_schema)}
+            {"schema", serialize_object_schema(object->object_schema())}
         };
     }
     else if (JSValueIsObjectOfClass(m_context, value, RJSListClass())) {
