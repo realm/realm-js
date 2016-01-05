@@ -23,67 +23,64 @@
 #include <string>
 
 namespace realm {
-    class Schema;
+class Schema;
 
-    namespace parser {
-        struct Expression
-        {
-            enum class Type { None, Number, String, KeyPath, Argument, True, False } type = Type::None;
-            std::string s;
-            Expression() {}
-            Expression(Type t, std::string s) : type(t), s(s) {}
-        };
+namespace parser {
+struct Expression
+{
+    enum class Type { None, Number, String, KeyPath, Argument, True, False } type = Type::None;
+    std::string s;
+};
 
-        struct Predicate
-        {
-            enum class Type
-            {
-                Comparison,
-                Or,
-                And,
-                True,
-                False
-            } type = Type::And;
+struct Predicate
+{
+    enum class Type
+    {
+        Comparison,
+        Or,
+        And,
+        True,
+        False
+    } type = Type::And;
 
-            enum class Operator
-            {
-                None,
-                Equal,
-                NotEqual,
-                LessThan,
-                LessThanOrEqual,
-                GreaterThan,
-                GreaterThanOrEqual,
-                BeginsWith,
-                EndsWith,
-                Contains
-            };
+    enum class Operator
+    {
+        None,
+        Equal,
+        NotEqual,
+        LessThan,
+        LessThanOrEqual,
+        GreaterThan,
+        GreaterThanOrEqual,
+        BeginsWith,
+        EndsWith,
+        Contains
+    };
 
-            struct Comparison
-            {
-                Operator op = Operator::None;
-                Expression expr[2];
-                ~Comparison() {}
-            };
+    struct Comparison
+    {
+        Operator op = Operator::None;
+        Expression expr[2];
+    };
 
-            struct Compound
-            {
-                std::vector<Predicate> sub_predicates;
-            };
+    struct Compound
+    {
+        std::vector<Predicate> sub_predicates;
+    };
 
-            Comparison cmpr;
-            Compound   cpnd;
+    Comparison cmpr;
+    Compound   cpnd;
 
-            bool negate = false;
+    bool negate = false;
 
-            Predicate(Type t, bool n = false) : type(t), negate(n) {}
-        };
+    Predicate(Type t, bool n = false) : type(t), negate(n) {}
+};
 
-        Predicate parse(const std::string &query);
-        
-        void analyzeGrammar();
-        bool testGrammar();
-    }
+Predicate parse(const std::string &query);
+
+void analyzeGrammar();
+bool testGrammar();
+}
 }
 
 #endif // REALM_PARSER_HPP
