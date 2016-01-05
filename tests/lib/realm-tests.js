@@ -66,6 +66,28 @@ module.exports = BaseTest.extend({
         TestCase.assertEqual(realm.objects('TestObject')[0].doubleCol, 1)
     },
 
+    testRealmConstructorSchemaValidation: function() {
+        TestCase.assertThrows(function() {
+            new Realm({schema: schemas.AllTypes});
+        }, 'The schema should be an array');
+
+        TestCase.assertThrows(function() {
+            new Realm({schema: ['SomeType']});
+        }, 'The schema should be an array of objects');
+
+        TestCase.assertThrows(function() {
+            new Realm({schema: [{}]});
+        }, 'The schema should be an array of ObjectSchema objects');
+
+        TestCase.assertThrows(function() {
+            new Realm({schema: [{name: 'SomeObject'}]});
+        }, 'The schema should be an array of ObjectSchema objects');
+
+        TestCase.assertThrows(function() {
+            new Realm({schema: [{properties: {intCol: Realm.Types.INT}}]});
+        }, 'The schema should be an array of ObjectSchema objects');
+    },
+
     testDefaultPath: function() {
         var defaultRealm = new Realm({schema: []});
         TestCase.assertEqual(defaultRealm.path, Realm.defaultPath);
