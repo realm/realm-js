@@ -20,7 +20,7 @@
     JSContext *context = [[JSContext alloc] init];
     JSValue *realmConstructor = [JSValue valueWithJSValueRef:RJSConstructorCreate(context.JSGlobalContextRef) inContext:context];
     RJSModuleLoader *moduleLoader = [[RJSModuleLoader alloc] initWithContext:context];
-    NSURL *scriptURL = [[NSBundle bundleForClass:self] URLForResource:@"index" withExtension:@"js"];
+    NSURL *scriptURL = [[NSBundle bundleForClass:self] URLForResource:@"index" withExtension:@"js" subdirectory:@"lib"];
 
     // Expose the Realm constructor as a global 'realm' CommonJS module.
     [moduleLoader addGlobalModuleObject:realmConstructor forName:@"realm"];
@@ -72,7 +72,12 @@
         JSValue *message = [exception hasProperty:@"message"] ? exception[@"message"] : exception;
         NSString *source = [exception hasProperty:@"sourceURL"] ? [exception[@"sourceURL"] toString] : nil;
         NSUInteger line = [exception hasProperty:@"line"] ? [exception[@"line"] toUInt32] - 1 : 0;
-        NSURL *sourceURL = source ? [NSURL URLWithString:source.lastPathComponent relativeToURL:[NSURL URLWithString:@(__FILE__)]] : nil;
+        NSURL *sourceURL = nil;
+
+        if (source) {
+            NSString *path = [NSString pathWithComponents:@[[@(__FILE__) stringByDeletingLastPathComponent], @"..", @"lib", source.lastPathComponent]];
+            sourceURL = [NSURL URLWithString:path];
+        }
 
         [self recordFailureWithDescription:message.description
                                     inFile:sourceURL ? sourceURL.absoluteString : @(__FILE__)
