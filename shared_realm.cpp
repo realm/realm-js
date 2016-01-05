@@ -212,6 +212,9 @@ bool Realm::update_schema(std::unique_ptr<Schema> schema, uint64_t version)
     old_config.read_only = true;
     old_config.schema = std::move(old_schema);
 
+    m_config.schema = std::move(schema);
+    m_config.schema_version = version;
+
     auto migration_function = [&](Group*,  Schema&) {
         SharedRealm old_realm(new Realm(old_config));
         auto updated_realm = shared_from_this();
@@ -224,9 +227,8 @@ bool Realm::update_schema(std::unique_ptr<Schema> schema, uint64_t version)
         // update and migrate
         begin_transaction();
         bool changed = ObjectStore::update_realm_with_schema(read_group(), *old_config.schema,
-                                                             version, const_cast<Schema &>(*schema), migration_function);
-        m_config.schema = std::move(schema);
-        m_config.schema_version = version;
+                                                             version, *m_config.schema,
+                                                             migration_function);
         commit_transaction();
         return changed;
     }
