@@ -28,7 +28,7 @@ namespace realm {
         static inline Object create(ContextType ctx, SharedRealm realm, const ObjectSchema &object_schema, ValueType value, bool try_update);
 
         SharedRealm realm() { return m_realm; }
-        const ObjectSchema &object_schema() { return *m_object_schema; }
+        const ObjectSchema &get_object_schema() { return *m_object_schema; }
         Row row() { return m_row; }
 
     private:
@@ -309,19 +309,19 @@ namespace realm {
     template<typename ValueType, typename ContextType>
     void List::add(ContextType ctx, ValueType value)
     {
-        add(NativeAccessor<ValueType, ContextType>::to_object_index(ctx, m_realm, value, object_schema().name, false));
+        add(NativeAccessor<ValueType, ContextType>::to_object_index(ctx, m_realm, value, get_object_schema().name, false));
     }
 
     template<typename ValueType, typename ContextType>
     void List::insert(ContextType ctx, ValueType value, size_t list_ndx)
     {
-        insert(list_ndx, NativeAccessor<ValueType, ContextType>::to_object_index(ctx, m_realm, value, object_schema().name, false));
+        insert(list_ndx, NativeAccessor<ValueType, ContextType>::to_object_index(ctx, m_realm, value, get_object_schema().name, false));
     }
 
     template<typename ValueType, typename ContextType>
     void List::set(ContextType ctx, ValueType value, size_t list_ndx)
     {
-        set(list_ndx, NativeAccessor<ValueType, ContextType>::to_object_index(ctx, m_realm, value, object_schema().name, false));
+        set(list_ndx, NativeAccessor<ValueType, ContextType>::to_object_index(ctx, m_realm, value, get_object_schema().name, false));
     }
 }
 

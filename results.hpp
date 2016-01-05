@@ -46,8 +46,8 @@ public:
     // or a wrapper around a query and a sort order which creates and updates
     // the tableview as needed
     Results() = default;
-    Results(SharedRealm r, const ObjectSchema &o, Table& table);
-    Results(SharedRealm r, const ObjectSchema &o, Query q, SortOrder s = {});
+    Results(SharedRealm r, const ObjectSchema& o, Table& table);
+    Results(SharedRealm r, const ObjectSchema& o, Query q, SortOrder s = {});
 
     // Results is copyable and moveable
     Results(Results const&) = default;
@@ -59,7 +59,7 @@ public:
     SharedRealm get_realm() const { return m_realm; }
     
     // Object schema describing the vendored object type
-    const ObjectSchema &object_schema() const { return *m_object_schema; }
+    const ObjectSchema &get_object_schema() const { return *m_object_schema; }
     
     // Get a query which will match the same rows as is contained in this Results
     // Returned query will not be valid if the current mode is Empty
@@ -72,7 +72,7 @@ public:
     TableView get_tableview();
 
     // Get the object type which will be returned by get()
-    StringData get_object_type() const noexcept { return object_schema().name; }
+    StringData get_object_type() const noexcept { return get_object_schema().name; }
 
     // Get the size of this results
     // Can be either O(1) or O(N) depending on the state of things
