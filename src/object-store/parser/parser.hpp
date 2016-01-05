@@ -30,8 +30,6 @@ namespace realm {
         {
             enum class Type { None, Number, String, KeyPath, Argument, True, False } type = Type::None;
             std::string s;
-            Expression() {}
-            Expression(Type t, std::string s) : type(t), s(s) {}
         };
 
         struct Predicate
@@ -63,7 +61,6 @@ namespace realm {
             {
                 Operator op = Operator::None;
                 Expression expr[2];
-                ~Comparison() {}
             };
 
             struct Compound
