@@ -1,0 +1,3 @@
+[submodule "external/pegtl"]
+	path = external/pegtl
+	url = https://github.com/ColinH/PEGTL
