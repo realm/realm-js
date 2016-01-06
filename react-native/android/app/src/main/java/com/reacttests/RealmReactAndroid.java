@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.HashMap;
 import android.widget.Toast;
 import com.facebook.react.bridge.Callback;
+import android.util.Log;
 
 public class RealmReactAndroid extends ReactContextBaseJavaModule {
 	private static final String DURATION_SHORT_KEY = "SHORT";
@@ -18,6 +19,11 @@ public class RealmReactAndroid extends ReactContextBaseJavaModule {
 	public RealmReactAndroid(ReactApplicationContext reactContext) {
 		super(reactContext);
 		ReLinker.loadLibrary(reactContext, "realmreact");
+    }
+
+    @Override
+    public void initialize() {
+        Log.w("RealmReactAndroid", injectRealmJsContext());
     }
 
     @Override

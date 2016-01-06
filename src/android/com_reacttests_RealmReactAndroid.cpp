@@ -33,14 +33,14 @@ JNIEXPORT jstring JNICALL Java_com_reacttests_RealmReactAndroid_injectRealmJsCon
 	  	std::unordered_map<JSContextRef, facebook::react::JSCExecutor*> s_globalContextRefToJSCExecutor = get_jsc_context();	
 	  	std::stringstream msg;
 	  	msg << "Got the globalContext map, size=" << s_globalContextRefToJSCExecutor.size();
+
+          for (auto pair : s_globalContextRefToJSCExecutor) {
+			  RJSInitializeInContext(pair.first);
+		  }
+
 	  	return env->NewStringUTF(msg.str().c_str());
 	  } else {
 	  	 return env->NewStringUTF("Cannot find symbol get_jsc_context");
 	  }
-
-    // for (auto pair : s_globalContextRefToJSCExecutor) {
-    //   RJSInitializeInContext(pair.first);
-    // }
-    
   }
 

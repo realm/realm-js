@@ -14,18 +14,15 @@ var {
 } = React;
 
 var RealmReactAndroid = require('NativeModules').RealmReactAndroid;
+//var Realm = require('realm');
+//var RealmTests = require('realm-tests');
 
 var Demo = React.createClass({
   render: function() {
     return (
     <View style={styles.container}>
       <Text style={styles.welcome}>
-        Trying to inject Realm JS Context:
-        {
-            RealmReactAndroid.resultOfJsContextInjection((msg) => {
-              RealmReactAndroid.show(msg, RealmReactAndroid.LONG)
-          })
-         }
+        Trying to inject Realm JS Context
       </Text>
     </View>    
     );
