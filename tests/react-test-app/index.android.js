@@ -14,8 +14,8 @@ var {
 } = React;
 
 var RealmReactAndroid = require('NativeModules').RealmReactAndroid;
-//var Realm = require('realm');
-//var RealmTests = require('realm-tests');
+var Realm = require('realm');
+var RealmTests = require('realm-tests');
 
 var Demo = React.createClass({
   render: function() {
