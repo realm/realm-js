@@ -10,3 +10,4 @@ rules.ninja
 
 # Build products
 librealm-object-store.dylib
+tests/tests
