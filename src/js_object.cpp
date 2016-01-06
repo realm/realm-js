@@ -63,7 +63,7 @@ JSObjectRef RJSObjectCreate(JSContextRef ctx, Object object) {
     return jsObject;
 }
 
-extern JSObjectRef RJSDictForPropertyArray(JSContextRef ctx, ObjectSchema &object_schema, JSObjectRef array);
+extern JSObjectRef RJSDictForPropertyArray(JSContextRef ctx, const ObjectSchema &object_schema, JSObjectRef array);
 
 namespace realm {
 

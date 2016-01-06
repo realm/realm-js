@@ -67,13 +67,11 @@ class ArgumentConverter : public Arguments
     std::vector<ValueType> m_arguments;
     ContextType m_ctx;
 
-            ValueType &argument_at(size_t index) {
-                if (index >= m_arguments.size()) {
-                    throw std::out_of_range((std::string)"Argument index " + to_string(index) + " out of range 0.." + to_string(m_arguments.size()-1));
-                }
-                return m_arguments[index];
-            }
-        };
+    ValueType &argument_at(size_t index) {
+        if (index >= m_arguments.size()) {
+            throw std::out_of_range((std::string)"Argument index " + to_string(index) + " out of range 0.." + to_string(m_arguments.size()-1));
+        }
+        return m_arguments[index];
     }
 };
 }
