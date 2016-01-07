@@ -1,22 +1,37 @@
 include(ExternalProject)
 
-function(download_realm_core realm_core_version)
-    set(core_url "https://static.realm.io/downloads/core/realm-core-${realm_core_version}.tar.bz2")
-    set(core_directory "${CMAKE_CURRENT_SOURCE_DIR}${CMAKE_FILES_DIRECTORY}/core-${realm_core_version}")
+function(download_realm_core core_version)
+    set(core_url "https://static.realm.io/downloads/core/realm-core-${core_version}.tar.bz2")
+    set(core_tarball_name "realm-core-${core_version}.tar.bz2")
+    set(core_temp_tarball "/tmp/${core_tarball_name}")
+    set(core_directory_parent "${CMAKE_CURRENT_SOURCE_DIR}${CMAKE_FILES_DIRECTORY}")
+    set(core_directory "${core_directory_parent}/realm-core-${core_version}")
+    set(core_tarball "${core_directory_parent}/${core_tarball_name}")
+
+    if (NOT EXISTS ${core_tarball})
+        if (NOT EXISTS ${core_temp_tarball})
+            message("Downloading core ${core_version} from  ${core_url}.")
+            file(DOWNLOAD ${core_url} ${core_temp_tarball}.tmp SHOW_PROGRESS)
+            file(RENAME ${core_temp_tarball}.tmp ${core_temp_tarball})
+        endif()
+        file(COPY ${core_temp_tarball} DESTINATION ${core_directory_parent})
+    endif()
 
     set(core_library_debug ${core_directory}/librealm-dbg.a)
     set(core_library_release ${core_directory}/librealm.a)
+    set(core_libraries ${core_library_debug} ${core_library_release})
 
-    ExternalProject_Add(realm-core
-        URL ${core_url}
-        PREFIX ${CMAKE_CURRENT_SOURCE_DIR}${CMAKE_FILES_DIRECTORY}/realm-core
-        DOWNLOAD_DIR ${CMAKE_CURRENT_SOURCE_DIR}${CMAKE_FILES_DIRECTORY}
-        SOURCE_DIR ${core_directory}
-        BUILD_BYPRODUCTS ${core_library_debug} ${core_library_release}
-        USES_TERMINAL_DOWNLOAD 1
-        CONFIGURE_COMMAND ""
-        BUILD_COMMAND ""
-        INSTALL_COMMAND "")
+    add_custom_command(
+        COMMENT "Extracting ${core_tarball_name}"
+        OUTPUT ${core_libraries}
+        DEPENDS ${core_temp_tarball}
+        COMMAND ${CMAKE_COMMAND} -E copy ${core_temp_tarball} ${core_directory_parent}
+        COMMAND ${CMAKE_COMMAND} -E tar xf ${core_tarball}
+        COMMAND ${CMAKE_COMMAND} -E remove_directory ${core_directory}
+        COMMAND ${CMAKE_COMMAND} -E rename core ${core_directory}
+        COMMAND ${CMAKE_COMMAND} -E touch_nocreate ${core_libraries})
+
+    add_custom_target(realm-core DEPENDS ${core_libraries})
 
     add_library(realm STATIC IMPORTED)
     add_dependencies(realm realm-core)
