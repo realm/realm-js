@@ -135,9 +135,10 @@ public:
     // The input index parameter was out of bounds
     struct OutOfBoundsIndexException : public std::out_of_range
     {
-        OutOfBoundsIndexException(size_t r, size_t c) : requested(r), valid_count(c),
+        OutOfBoundsIndexException(size_t r, size_t c) :
             std::out_of_range((std::string)"Requested index " + std::to_string(r) +
-                              " greater than max " + std::to_string(c)) {}
+                              " greater than max " + std::to_string(c)),
+            requested(r), valid_count(c) {}
         const size_t requested;
         const size_t valid_count;
     };
@@ -150,7 +151,7 @@ public:
     // The input Row object belongs to a different table
     struct IncorrectTableException : public std::runtime_error {
         IncorrectTableException(StringData e, StringData a, const std::string &error) :
-            expected(e), actual(a), std::runtime_error(error) {}
+            std::runtime_error(error), expected(e), actual(a) {}
         const StringData expected;
         const StringData actual;
     };

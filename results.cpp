@@ -36,19 +36,19 @@ using namespace realm;
 
 Results::Results(SharedRealm r, const ObjectSchema &o, Query q, SortOrder s)
 : m_realm(std::move(r))
+, m_object_schema(&o)
 , m_query(std::move(q))
 , m_table(m_query.get_table().get())
 , m_sort(std::move(s))
 , m_mode(Mode::Query)
-, m_object_schema(&o)
 {
 }
 
 Results::Results(SharedRealm r, const ObjectSchema &o, Table& table)
 : m_realm(std::move(r))
+, m_object_schema(&o)
 , m_table(&table)
 , m_mode(Mode::Table)
-, m_object_schema(&o)
 {
 }
 
