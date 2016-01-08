@@ -78,8 +78,8 @@ struct Predicate
 
 Predicate parse(const std::string &query);
 
-void analyzeGrammar();
-bool testGrammar();
+void analyze_grammar();
+bool test_grammar();
 }
 }
 
