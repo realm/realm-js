@@ -51,11 +51,10 @@ bool TransactionChangeInfo::row_did_change(Table const& table, size_t idx, int d
     for (size_t i = 0, count = table.get_column_count(); i < count; ++i) {
         auto type = table.get_column_type(i);
         if (type == type_Link) {
-            auto& target = *table.get_link_target(i);
-            if (target.is_null_link(i, idx))
+            if (table.is_null_link(i, idx))
                 continue;
             auto dst = table.get_link(i, idx);
-            return row_did_change(target, dst, depth + 1);
+            return row_did_change(*table.get_link_target(i), dst, depth + 1);
         }
         if (type != type_LinkList)
             continue;

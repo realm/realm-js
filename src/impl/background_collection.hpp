@@ -57,7 +57,7 @@ public:
     // SharedGroup
     void detach();
 
-    virtual void add_required_change_info(TransactionChangeInfo&) { }
+    void add_required_change_info(TransactionChangeInfo&);
 
     virtual void run() { }
     void prepare_handover();
@@ -70,12 +70,14 @@ protected:
     bool have_callbacks() const noexcept { return m_have_callbacks; }
     bool have_changes() const noexcept { return !m_accumulated_changes.empty(); }
     void add_changes(CollectionChangeIndices change) { m_accumulated_changes.merge(std::move(change)); }
+    void set_table(Table const& table);
 
 private:
     virtual void do_attach_to(SharedGroup&) = 0;
     virtual void do_detach_from(SharedGroup&) = 0;
     virtual bool do_prepare_handover(SharedGroup&) = 0;
     virtual bool do_deliver(SharedGroup&) = 0;
+    virtual void do_add_required_change_info(TransactionChangeInfo&) { }
 
     const std::thread::id m_thread_id = std::this_thread::get_id();
     bool is_for_current_thread() const { return m_thread_id == std::this_thread::get_id(); }
@@ -91,6 +93,9 @@ private:
     CollectionChangeIndices m_changes_to_deliver;
 
     uint_fast64_t m_results_version = 0;
+
+    // Tables which this collection needs change information for
+    std::vector<size_t> m_relevant_tables;
 
     struct Callback {
         CollectionChangeCallback fn;

@@ -311,3 +311,255 @@ void CollectionChangeIndices::verify()
         REALM_ASSERT(!modifications.contains(index));
 #endif
 }
+
+namespace {
+struct RowInfo {
+    size_t shifted_row_index;
+    size_t prev_tv_index;
+    size_t tv_index;
+};
+
+void calculate_moves_unsorted(std::vector<RowInfo>& new_rows, CollectionChangeIndices& changeset,
+                              std::function<bool (size_t)> row_did_change)
+{
+    std::sort(begin(new_rows), end(new_rows), [](auto& lft, auto& rgt) {
+        return lft.tv_index < rgt.tv_index;
+    });
+
+    IndexSet::IndexInterator ins = changeset.insertions.begin(), del = changeset.deletions.begin();
+    int shift = 0;
+    for (auto& row : new_rows) {
+        while (del != changeset.deletions.end() && *del <= row.tv_index) {
+            ++del;
+            ++shift;
+        }
+        while (ins != changeset.insertions.end() && *ins <= row.tv_index) {
+            ++ins;
+            --shift;
+        }
+        if (row.prev_tv_index == npos)
+            continue;
+
+        // For unsorted, non-LV queries a row can only move to an index before
+        // its original position due to a move_last_over
+        if (row.tv_index + shift != row.prev_tv_index) {
+            --shift;
+            changeset.moves.push_back({row.prev_tv_index, row.tv_index});
+        }
+        // FIXME: currently move implies modification, and so they're mutally exclusive
+        // this is correct for sorted, but for unsorted a row can move without actually changing
+        else if (row_did_change(row.shifted_row_index)) {
+            // FIXME: needlessly quadratic
+            if (!changeset.insertions.contains(row.tv_index))
+                changeset.modifications.add(row.tv_index);
+        }
+    }
+
+    // FIXME: this is required for merge(), but it would be nice if it wasn't
+    for (auto&& move : changeset.moves) {
+        changeset.insertions.add(move.to);
+        changeset.deletions.add(move.from);
+    }
+}
+
+using items = std::vector<std::pair<size_t, size_t>>;
+
+struct Match {
+    size_t i, j, size;
+};
+
+Match find_longest_match(items const& a, items const& b,
+                         size_t begin1, size_t end1, size_t begin2, size_t end2)
+{
+    Match best = {begin1, begin2, 0};
+    std::vector<size_t> len_from_j;
+    len_from_j.resize(end2 - begin2, 0);
+    std::vector<size_t> len_from_j_prev = len_from_j;
+
+    for (size_t i = begin1; i < end1; ++i) {
+        std::fill(begin(len_from_j), end(len_from_j), 0);
+
+        size_t ai = a[i].first;
+        auto it = lower_bound(begin(b), end(b), std::make_pair(size_t(0), ai),
+                              [](auto a, auto b) { return a.second < b.second; });
+        for (; it != end(b) && it->second == ai; ++it) {
+            size_t j = it->first;
+            if (j < begin2)
+                continue;
+            if (j >= end2)
+                break;
+
+            size_t off = j - begin2;
+            size_t size = off == 0 ? 1 : len_from_j_prev[off - 1] + 1;
+            len_from_j[off] = size;
+            if (size > best.size) {
+                best.i = i - size + 1;
+                best.j = j - size + 1;
+                best.size = size;
+            }
+        }
+        len_from_j.swap(len_from_j_prev);
+    }
+    return best;
+}
+
+void find_longest_matches(items const& a, items const& b_ndx,
+                          size_t begin1, size_t end1, size_t begin2, size_t end2, std::vector<Match>& ret)
+{
+    // FIXME: recursion could get too deep here
+    Match m = find_longest_match(a, b_ndx, begin1, end1, begin2, end2);
+    if (!m.size)
+        return;
+    if (m.i > begin1 && m.j > begin2)
+        find_longest_matches(a, b_ndx, begin1, m.i, begin2, m.j, ret);
+    ret.push_back(m);
+    if (m.i + m.size < end2 && m.j + m.size < end2)
+        find_longest_matches(a, b_ndx, m.i + m.size, end1, m.j + m.size, end2, ret);
+}
+
+void calculate_moves_sorted(std::vector<RowInfo>& new_rows, CollectionChangeIndices& changeset,
+                            std::function<bool (size_t)> row_did_change)
+{
+    std::vector<std::pair<size_t, size_t>> old_candidates;
+    std::vector<std::pair<size_t, size_t>> new_candidates;
+
+    std::sort(begin(new_rows), end(new_rows), [](auto& lft, auto& rgt) {
+        return lft.tv_index < rgt.tv_index;
+    });
+
+    IndexSet::IndexInterator ins = changeset.insertions.begin(), del = changeset.deletions.begin();
+    int shift = 0;
+    for (auto& row : new_rows) {
+        while (del != changeset.deletions.end() && *del <= row.tv_index) {
+            ++del;
+            ++shift;
+        }
+        while (ins != changeset.insertions.end() && *ins <= row.tv_index) {
+            ++ins;
+            --shift;
+        }
+        if (row.prev_tv_index == npos)
+            continue;
+
+        if (row_did_change(row.shifted_row_index)) {
+            // FIXME: needlessly quadratic
+            if (!changeset.insertions.contains(row.tv_index))
+                changeset.modifications.add(row.tv_index);
+        }
+            old_candidates.push_back({row.shifted_row_index, row.prev_tv_index});
+            new_candidates.push_back({row.shifted_row_index, row.tv_index});
+//        }
+    }
+
+    std::sort(begin(old_candidates), end(old_candidates), [](auto a, auto b) {
+        if (a.second != b.second)
+            return a.second < b.second;
+        return a.first < b.first;
+    });
+
+    // First check if the order of any of the rows actually changed
+    size_t first_difference = npos;
+    for (size_t i = 0; i < old_candidates.size(); ++i) {
+        if (old_candidates[i].first != new_candidates[i].first) {
+            first_difference = i;
+            break;
+        }
+    }
+    if (first_difference == npos)
+        return;
+
+    const auto b_ndx = [&]{
+        std::vector<std::pair<size_t, size_t>> ret;
+        ret.reserve(new_candidates.size());
+        for (size_t i = 0; i < new_candidates.size(); ++i)
+            ret.push_back(std::make_pair(i, new_candidates[i].first));
+        std::sort(begin(ret), end(ret), [](auto a, auto b) {
+            if (a.second != b.second)
+                return a.second < b.second;
+            return a.first < b.first;
+        });
+        return ret;
+    }();
+
+    std::vector<Match> longest_matches;
+    find_longest_matches(old_candidates, b_ndx,
+                         first_difference, old_candidates.size(),
+                         first_difference, new_candidates.size(),
+                         longest_matches);
+    longest_matches.push_back({old_candidates.size(), new_candidates.size(), 0});
+
+    size_t i = first_difference, j = first_difference;
+    for (auto match : longest_matches) {
+        for (; i < match.i; ++i)
+            changeset.deletions.add(old_candidates[i].second);
+        for (; j < match.j; ++j)
+            changeset.insertions.add(new_candidates[j].second);
+        i += match.size;
+        j += match.size;
+    }
+
+    // FIXME: needlessly suboptimal
+    changeset.modifications.remove(changeset.insertions);
+}
+} // Anonymous namespace
+
+CollectionChangeIndices CollectionChangeIndices::calculate(std::vector<size_t> const& prev_rows,
+                                                           std::vector<size_t> const& next_rows,
+                                                           std::function<bool (size_t)> row_did_change,
+                                                           bool sort)
+{
+    CollectionChangeIndices ret;
+
+    std::vector<RowInfo> old_rows;
+    for (size_t i = 0; i < prev_rows.size(); ++i) {
+        if (prev_rows[i] == npos)
+            ret.deletions.add(i);
+        else
+            old_rows.push_back({prev_rows[i], npos, i});
+    }
+    std::stable_sort(begin(old_rows), end(old_rows), [](auto& lft, auto& rgt) {
+        return lft.shifted_row_index < rgt.shifted_row_index;
+    });
+
+    std::vector<RowInfo> new_rows;
+    for (size_t i = 0; i < next_rows.size(); ++i) {
+        new_rows.push_back({next_rows[i], npos, i});
+    }
+    std::stable_sort(begin(new_rows), end(new_rows), [](auto& lft, auto& rgt) {
+        return lft.shifted_row_index < rgt.shifted_row_index;
+    });
+
+    size_t i = 0, j = 0;
+    while (i < old_rows.size() && j < new_rows.size()) {
+        auto old_index = old_rows[i];
+        auto new_index = new_rows[j];
+        if (old_index.shifted_row_index == new_index.shifted_row_index) {
+            new_rows[j].prev_tv_index = old_rows[i].tv_index;
+            ++i;
+            ++j;
+        }
+        else if (old_index.shifted_row_index < new_index.shifted_row_index) {
+            ret.deletions.add(old_index.tv_index);
+            ++i;
+        }
+        else {
+            ret.insertions.add(new_index.tv_index);
+            ++j;
+        }
+    }
+
+    for (; i < old_rows.size(); ++i)
+        ret.deletions.add(old_rows[i].tv_index);
+    for (; j < new_rows.size(); ++j)
+        ret.insertions.add(new_rows[j].tv_index);
+
+    if (sort) {
+        calculate_moves_sorted(new_rows, ret, row_did_change);
+    }
+    else {
+        calculate_moves_unsorted(new_rows, ret, row_did_change);
+    }
+    ret.verify();
+
+    return ret;
+}

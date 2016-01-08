@@ -47,7 +47,7 @@ private:
     void do_detach_from(SharedGroup& sg) override;
 
     void release_data() noexcept override;
-    void add_required_change_info(TransactionChangeInfo& info) override;
+    void do_add_required_change_info(TransactionChangeInfo& info) override;
 };
 }
 }

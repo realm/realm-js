@@ -46,6 +46,7 @@ Results::Results(SharedRealm r, const ObjectSchema &o, Query q, SortOrder s)
 , m_sort(std::move(s))
 , m_mode(Mode::Query)
 {
+    REALM_ASSERT(m_sort.column_indices.size() == m_sort.ascending.size());
 }
 
 Results::Results(SharedRealm r, const ObjectSchema &o, Table& table)
@@ -350,6 +351,7 @@ TableView Results::get_tableview()
 
 Results Results::sort(realm::SortOrder&& sort) const
 {
+    REALM_ASSERT(sort.column_indices.size() == sort.ascending.size());
     return Results(m_realm, get_object_schema(), get_query(), std::move(sort));
 }
 
@@ -378,6 +380,12 @@ NotificationToken Results::async(std::function<void (std::exception_ptr)> target
     prepare_async();
     auto wrap = [=](CollectionChangeIndices, std::exception_ptr e) { target(e); };
     return {m_background_query, m_background_query->add_callback(wrap)};
+}
+
+NotificationToken Results::add_notification_callback(CollectionChangeCallback cb)
+{
+    prepare_async();
+    return {m_background_query, m_background_query->add_callback(std::move(cb))};
 }
 
 void Results::Internal::set_table_view(Results& results, realm::TableView &&tv)

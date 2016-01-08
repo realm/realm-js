@@ -70,6 +70,11 @@ struct CollectionChangeIndices {
                             IndexSet modification = {},
                             std::vector<Move> moves = {});
 
+    static CollectionChangeIndices calculate(std::vector<size_t> const& old_rows,
+                                             std::vector<size_t> const& new_rows,
+                                             std::function<bool (size_t)> row_did_change,
+                                             bool sort);
+
     bool empty() const { return deletions.empty() && insertions.empty() && modifications.empty() && moves.empty(); }
 
     void merge(CollectionChangeIndices&&);

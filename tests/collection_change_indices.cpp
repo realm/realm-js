@@ -177,6 +177,71 @@ TEST_CASE("collection change indices") {
         }
     }
 
+    SECTION("calculate") {
+        auto all_modified = [](size_t) { return true; };
+        auto none_modified = [](size_t) { return false; };
+
+        SECTION("no changes") {
+            c = CollectionChangeIndices::calculate({1, 2, 3}, {1, 2, 3}, none_modified, false);
+            REQUIRE(c.empty());
+        }
+
+        SECTION("inserting from empty") {
+            c = CollectionChangeIndices::calculate({}, {1, 2, 3}, all_modified, false);
+            REQUIRE_INDICES(c.insertions, 0, 1, 2);
+        }
+
+        SECTION("deleting all existing") {
+            c = CollectionChangeIndices::calculate({1, 2, 3}, {}, all_modified, false);
+            REQUIRE_INDICES(c.deletions, 0, 1, 2);
+        }
+
+        SECTION("all rows modified without changing order") {
+            c = CollectionChangeIndices::calculate({1, 2, 3}, {1, 2, 3}, all_modified, false);
+            REQUIRE_INDICES(c.modifications, 0, 1, 2);
+        }
+
+        SECTION("single insertion in middle") {
+            c = CollectionChangeIndices::calculate({1, 3}, {1, 2, 3}, all_modified, false);
+            REQUIRE_INDICES(c.insertions, 1);
+        }
+
+        SECTION("single deletion in middle") {
+            c = CollectionChangeIndices::calculate({1, 2, 3}, {1, 3}, all_modified, false);
+            REQUIRE_INDICES(c.deletions, 1);
+        }
+
+        SECTION("unsorted reordering") {
+            auto calc = [&](std::vector<size_t> values) {
+                return CollectionChangeIndices::calculate({1, 2, 3}, values, none_modified, false);
+            };
+
+            // The commented-out permutations are not possible with
+            // move_last_over() and so are unhandled by unsorted mode
+            REQUIRE(calc({1, 2, 3}).empty());
+            REQUIRE_MOVES(calc({1, 3, 2}), {2, 1});
+//            REQUIRE_MOVES(calc({2, 1, 3}), {1, 0});
+//            REQUIRE_MOVES(calc({2, 3, 1}), {1, 0}, {2, 1});
+            REQUIRE_MOVES(calc({3, 1, 2}), {2, 0});
+            REQUIRE_MOVES(calc({3, 2, 1}), {2, 0}, {1, 1});
+        }
+
+        SECTION("sorted reordering") {
+            auto calc = [&](std::vector<size_t> values) {
+                return CollectionChangeIndices::calculate({1, 2, 3}, values, all_modified, true);
+            };
+
+            REQUIRE(calc({1, 2, 3}).moves.empty());
+            return;
+            // none of these actually work since it just does insert+delete
+            REQUIRE_MOVES(calc({1, 3, 2}), {2, 1});
+            REQUIRE_MOVES(calc({2, 1, 3}), {1, 0});
+            REQUIRE_MOVES(calc({2, 3, 1}), {1, 0}, {2, 1});
+            REQUIRE_MOVES(calc({3, 1, 2}), {2, 0});
+            REQUIRE_MOVES(calc({3, 2, 1}), {2, 0}, {1, 1});
+        }
+    }
+
     SECTION("merge") {
         SECTION("deletions are shifted by previous deletions") {
             c = {{5}, {}, {}, {}};

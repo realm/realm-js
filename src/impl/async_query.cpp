@@ -30,6 +30,7 @@ AsyncQuery::AsyncQuery(Results& target)
 , m_sort(target.get_sort())
 {
     Query q = target.get_query();
+    set_table(*q.get_table());
     m_query_handover = Realm::Internal::get_shared_group(get_realm()).export_for_handover(q, MutableSourcePayload::Move);
 }
 
@@ -62,8 +63,26 @@ void AsyncQuery::release_data() noexcept
 // destroyed while the background work is running, and to allow removing
 // callbacks from any thread.
 
+static bool map_moves(size_t& idx, CollectionChangeIndices const& changes)
+{
+    for (auto&& move : changes.moves) {
+        if (move.from == idx) {
+            idx = move.to;
+            return true;
+        }
+    }
+    return false;
+}
+
+void AsyncQuery::do_add_required_change_info(TransactionChangeInfo& info)
+{
+    REALM_ASSERT(m_query);
+    m_info = &info;
+}
+
 void AsyncQuery::run()
 {
+    REALM_ASSERT(m_info);
     m_did_change = false;
 
     {
@@ -75,6 +94,8 @@ void AsyncQuery::run()
     }
 
     REALM_ASSERT(!m_tv.is_attached());
+
+    size_t table_ndx = m_query->get_table()->get_index_in_group();
 
     // If we've run previously, check if we need to rerun
     if (m_initial_run_complete) {
@@ -88,6 +109,39 @@ void AsyncQuery::run()
     m_tv = m_query->find_all();
     if (m_sort) {
         m_tv.sort(m_sort.column_indices, m_sort.ascending);
+    }
+
+    if (m_initial_run_complete) {
+        auto changes = table_ndx < m_info->tables.size() ? &m_info->tables[table_ndx] : nullptr;
+
+        std::vector<size_t> next_rows;
+        next_rows.reserve(m_tv.size());
+        for (size_t i = 0; i < m_tv.size(); ++i)
+            next_rows.push_back(m_tv[i].get_index());
+
+        if (changes) {
+            for (auto& idx : m_previous_rows) {
+                if (changes->deletions.contains(idx))
+                    idx = npos;
+                else
+                    map_moves(idx, *changes);
+                REALM_ASSERT_DEBUG(!changes->insertions.contains(idx));
+            }
+        }
+
+        m_changes = CollectionChangeIndices::calculate(m_previous_rows, next_rows,
+                                                       [&](size_t row) { return m_info->row_did_change(*m_query->get_table(), row); },
+                                                       !!m_sort);
+        m_previous_rows = std::move(next_rows);
+        if (m_changes.empty()) {
+            m_tv = {};
+            return;
+        }
+    }
+    else {
+        m_previous_rows.resize(m_tv.size());
+        for (size_t i = 0; i < m_tv.size(); ++i)
+            m_previous_rows[i] = m_tv[i].get_index();
     }
 
     m_did_change = true;
@@ -105,9 +159,12 @@ bool AsyncQuery::do_prepare_handover(SharedGroup& sg)
     m_handed_over_table_version = m_tv.sync_if_needed();
     m_tv_handover = sg.export_for_handover(m_tv, MutableSourcePayload::Move);
 
+    add_changes(std::move(m_changes));
+    REALM_ASSERT(m_changes.empty());
+
     // detach the TableView as we won't need it again and keeping it around
     // makes advance_read() much more expensive
-    m_tv = TableView();
+    m_tv = {};
 
     return m_did_change;
 }

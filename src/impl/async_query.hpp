@@ -27,11 +27,14 @@
 #include <exception>
 #include <mutex>
 #include <functional>
+#include <set>
 #include <thread>
 #include <vector>
 
 namespace realm {
 namespace _impl {
+struct TransactionChangeInfo;
+
 class AsyncQuery : public BackgroundCollection {
 public:
     AsyncQuery(Results& target);
@@ -44,6 +47,8 @@ private:
     // Update the target results from the handover
     // Returns if any callbacks need to be invoked
     bool do_deliver(SharedGroup& sg) override;
+
+    void do_add_required_change_info(TransactionChangeInfo& info) override;
 
     void release_data() noexcept override;
     void do_attach_to(SharedGroup& sg) override;
@@ -64,8 +69,13 @@ private:
     TableView m_tv;
     std::unique_ptr<SharedGroup::Handover<TableView>> m_tv_handover;
 
+    CollectionChangeIndices m_changes;
+    TransactionChangeInfo* m_info = nullptr;
+
     uint_fast64_t m_handed_over_table_version = -1;
     bool m_did_change = false;
+
+    std::vector<size_t> m_previous_rows;
 
     bool m_initial_run_complete = false;
 };

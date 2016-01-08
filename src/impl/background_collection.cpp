@@ -102,6 +102,38 @@ bool BackgroundCollection::is_alive() const noexcept
     return m_realm != nullptr;
 }
 
+// Recursively add `table` and all tables it links to to `out`
+static void find_relevant_tables(std::vector<size_t>& out, Table const& table)
+{
+    auto table_ndx = table.get_index_in_group();
+    if (find(begin(out), end(out), table_ndx) != end(out))
+        return;
+    out.push_back(table_ndx);
+
+    for (size_t i = 0, count = table.get_column_count(); i != count; ++i) {
+        if (table.get_column_type(i) == type_Link || table.get_column_type(i) == type_LinkList) {
+            find_relevant_tables(out, *table.get_link_target(i));
+        }
+    }
+}
+
+void BackgroundCollection::set_table(Table const& table)
+{
+    find_relevant_tables(m_relevant_tables, table);
+}
+
+void BackgroundCollection::add_required_change_info(TransactionChangeInfo& info)
+{
+    auto max = *max_element(begin(m_relevant_tables), end(m_relevant_tables)) + 1;
+    if (max > info.tables_needed.size())
+        info.tables_needed.resize(max, false);
+    for (auto table_ndx : m_relevant_tables) {
+        info.tables_needed[table_ndx] = true;
+    }
+
+    do_add_required_change_info(info);
+}
+
 void BackgroundCollection::prepare_handover()
 {
     REALM_ASSERT(m_sg);

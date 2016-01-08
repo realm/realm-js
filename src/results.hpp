@@ -177,6 +177,7 @@ public:
     // The query will be run on a background thread and delivered to the callback,
     // and then rerun after each commit (if needed) and redelivered if it changed
     NotificationToken async(std::function<void (std::exception_ptr)> target);
+    NotificationToken add_notification_callback(CollectionChangeCallback cb);
 
     bool wants_background_updates() const { return m_wants_background_updates; }
 
