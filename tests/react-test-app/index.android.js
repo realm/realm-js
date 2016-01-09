@@ -17,13 +17,48 @@ var RealmReactAndroid = require('NativeModules').RealmReactAndroid;
 var Realm = require('realm');
 var RealmTests = require('realm-tests');
 
+function runTests() {
+    RealmTests.ObjectTests.testNullableBasicTypesPropertySetters();
+    let testNames = RealmTests.getTestNames();
+
+    for (let suiteName in testNames) {
+        let testSuite = RealmTests[suiteName];
+
+        console.log('Starting ' + suiteName);
+
+        var suiteTestNames = testNames[suiteName];
+        for (var index in suiteTestNames) {
+            var testName = suiteTestNames[index];
+            console.log('Starting ' + testName);
+
+            if (testSuite.beforeEach) {
+                testSuite.beforeEach();
+            }
+
+            try {
+                testSuite[testName]();
+                console.log('+ ' + testName);
+            }
+            catch (e) {
+                console.log('- ' + testName);
+                console.warn(e.message);
+            }
+            finally {
+                if (testSuite.afterEach) {
+                    testSuite.afterEach();
+                }
+            }
+        }
+    }
+}
+
 var Demo = React.createClass({
   render: function() {
     return (
     <View style={styles.container}>
-      <Text style={styles.welcome}>
-        Trying to inject Realm JS Context
-      </Text>
+        <Text style={styles.button} onPress={runTests}>
+            Tap to Run Tests
+        </Text>
     </View>    
     );
   }
