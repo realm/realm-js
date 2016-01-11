@@ -15,7 +15,10 @@ namespace realm {
 // separately for eadh platform
 //
 
-// return the directory in which realm files can/should be written to
+    // set the directory where realm files should be stored
+    void set_default_realm_file_directory(std::string dir);
+
+    // return the directory in which realm files can/should be written to
 std::string default_realm_file_directory();
 
 // create the directories for the given filename
