@@ -24,7 +24,7 @@
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
 		146834051AC3E58100842450 /* libReact.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 146834041AC3E56700842450 /* libReact.a */; };
 		832341BD1AAA6AB300B99B32 /* libRCTText.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 832341B51AAA6A8300B99B32 /* libRCTText.a */; };
-		F636F6E11BCDB71A0023F35C /* RealmReact.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 0270BCB31B7D04D700010E03 /* RealmReact.framework */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		F636F6E11BCDB71A0023F35C /* RealmReact.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 0270BCB31B7D04D700010E03 /* RealmReact.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -139,6 +139,13 @@
 			proxyType = 2;
 			remoteGlobalIDString = 58B5119B1A9E6C1200147676;
 			remoteInfo = RCTText;
+		};
+		F6FCFC691C44472800AAE541 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 146833FF1AC3E56700842450 /* React.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 83CBBA2D1A601D0E00E9B192;
+			remoteInfo = React;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -398,6 +405,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				F6FCFC6A1C44472800AAE541 /* PBXTargetDependency */,
 			);
 			name = ReactExample;
 			productName = "Hello World";
@@ -410,7 +418,7 @@
 		83CBB9F71A601CBA00E9B192 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0700;
+				LastUpgradeCheck = 0720;
 				ORGANIZATIONNAME = Realm;
 				TargetAttributes = {
 					027798451BBB2F1000C96559 = {
@@ -653,6 +661,11 @@
 			isa = PBXTargetDependency;
 			target = 13B07F861A680F5B00A75B9A /* ReactExample */;
 			targetProxy = 0277984B1BBB2F1000C96559 /* PBXContainerItemProxy */;
+		};
+		F6FCFC6A1C44472800AAE541 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = React;
+			targetProxy = F6FCFC691C44472800AAE541 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
