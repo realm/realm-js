@@ -2,7 +2,7 @@
   "env": {
     "commonjs": true,
     "browser": true,
-    "es6": true,
+    "es6": true
   },
   "ecmaFeatures": {
     "forOf": false
