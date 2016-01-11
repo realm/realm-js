@@ -16,13 +16,18 @@
  * Signature: ()Ljava/lang/String;
  */
 JNIEXPORT jstring JNICALL Java_com_reacttests_RealmReactAndroid_injectRealmJsContext
-  (JNIEnv *env, jclass) 
+  (JNIEnv *env, jclass, jstring fileDir) 
   {
   	
   	void* handle = dlopen ("libreactnativejni.so", RTLD_LAZY);
   	if (!handle) {
         return env->NewStringUTF("Cannot open library");
     }
+    
+    // Getting the internal storage path for the application
+    const char* strFileDir = env->GetStringUTFChars(fileDir , NULL);
+    std::string absoluteAppPath(strFileDir); 
+    env->ReleaseStringUTFChars(fileDir , strFileDir); 
 
     // load the symbol
 	typedef std::unordered_map<JSContextRef, facebook::react::JSCExecutor*> (*get_jsc_context_t)();
@@ -35,7 +40,7 @@ JNIEXPORT jstring JNICALL Java_com_reacttests_RealmReactAndroid_injectRealmJsCon
 	  	msg << "Got the globalContext map, size=" << s_globalContextRefToJSCExecutor.size();
 
           for (auto pair : s_globalContextRefToJSCExecutor) {
-			  RJSInitializeInContext(pair.first);
+			  RJSInitializeInContextUsingPath(pair.first, absoluteAppPath);
 		  }
 
 	  	return env->NewStringUTF(msg.str().c_str());

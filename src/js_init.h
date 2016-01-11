@@ -5,6 +5,7 @@
 #pragma once
 
 #include <JavaScriptCore/JSBase.h>
+#include <string>
 
 #ifdef __cplusplus
 extern "C" {
@@ -12,7 +13,10 @@ extern "C" {
 
 JSObjectRef RJSConstructorCreate(JSContextRef ctx);
 void RJSInitializeInContext(JSContextRef ctx);
+void RJSInitializeInContextUsingPath(JSContextRef ctx, std::string path);
 void RJSClearTestState(void);
+
+extern std::string appFilesDir;
 
 #ifdef __cplusplus
 }

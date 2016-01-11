@@ -78,6 +78,16 @@ void RJSInitializeInContext(JSContextRef ctx) {
     assert(!exception);
 }
 
+// The default (internal) storage for each application is unique
+// the only way to get this path is using the android.content.Context via the JNI
+// we set this path when we initialise the Realm by calling RJSConstructorCreate, as it's the
+// only contact between the JNI layer and the Realm JS API.
+std::string appFilesDir; 
+void RJSInitializeInContextUsingPath(JSContextRef ctx, std::string path) {
+    RJSInitializeInContext(ctx);
+    appFilesDir = path;
+}
+
 void RJSClearTestState() {
     realm::Realm::s_global_cache.clear();
     realm::remove_realm_files_from_directory(realm::default_realm_file_directory());

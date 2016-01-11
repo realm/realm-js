@@ -3,13 +3,15 @@
  */
 
 #include "../platform.hpp"
+ #include "../js_init.h"
 #include <string>
 
 namespace realm {
 
 std::string default_realm_file_directory()
 {
-    return std::string("/data/data/com.demo/files/");
+	// appFilesDir is defined in js_init.cpp
+	return appFilesDir;
 }
 
 void ensure_directory_exists_for_file(const std::string &fileName)
