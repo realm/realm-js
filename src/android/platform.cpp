@@ -9,7 +9,7 @@ namespace realm {
 
 std::string default_realm_file_directory()
 {
-    return std::string("");
+    return std::string("/data/data/com.demo/files/");
 }
 
 void ensure_directory_exists_for_file(const std::string &fileName)

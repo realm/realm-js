@@ -163,13 +163,15 @@ module.exports = BaseTest.extend({
         realm.write(function() {
             obj = realm.create('NullableBasicTypesObject', basicTypesValues);
             obj1 = realm.create('NullableBasicTypesObject', basicTypesValues);
-            for (var prop of schemas.NullableBasicTypes.properties) {
+            for (var index in schemas.NullableBasicTypes.properties) {
+                var prop = schemas.NullableBasicTypes.properties[index];
                 obj[prop.name] = null;
                 obj1[prop.name] = undefined;
             }
         });
 
-        for (var prop of schemas.NullableBasicTypes.properties) {
+        for (var index in schemas.NullableBasicTypes.properties) {
+            var prop = schemas.NullableBasicTypes.properties[index];
             TestCase.assertEqual(obj[prop.name], null);
             TestCase.assertEqual(obj1[prop.name], null);
         }

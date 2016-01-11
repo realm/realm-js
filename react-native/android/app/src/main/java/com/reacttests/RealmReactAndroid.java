@@ -36,6 +36,9 @@ public class RealmReactAndroid extends ReactContextBaseJavaModule {
         final Map<String, Object> constants = new HashMap<>();
         constants.put(DURATION_SHORT_KEY, Toast.LENGTH_SHORT);
         constants.put(DURATION_LONG_KEY, Toast.LENGTH_LONG);
+
+        Log.w("RealmReactAndroid", injectRealmJsContext());
+
         return constants;
     }
 
