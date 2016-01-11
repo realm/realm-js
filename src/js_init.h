@@ -13,10 +13,7 @@ extern "C" {
 
 JSObjectRef RJSConstructorCreate(JSContextRef ctx);
 void RJSInitializeInContext(JSContextRef ctx);
-void RJSInitializeInContextUsingPath(JSContextRef ctx, std::string path);
 void RJSClearTestState(void);
-
-extern std::string appFilesDir;
 
 #ifdef __cplusplus
 }

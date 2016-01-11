@@ -8,6 +8,7 @@
 #include "com_reacttests_RealmReactAndroid.h"
 #include "JSCExecutor.h"
 #include "js_init.h"
+#include "platform.hpp"
 #include <unordered_map>
 
 /*
@@ -27,7 +28,8 @@ JNIEXPORT jstring JNICALL Java_com_reacttests_RealmReactAndroid_injectRealmJsCon
     // Getting the internal storage path for the application
     const char* strFileDir = env->GetStringUTFChars(fileDir , NULL);
     std::string absoluteAppPath(strFileDir); 
-    env->ReleaseStringUTFChars(fileDir , strFileDir); 
+    env->ReleaseStringUTFChars(fileDir , strFileDir);
+      realm::set_default_realm_file_directory(absoluteAppPath);
 
     // load the symbol
 	typedef std::unordered_map<JSContextRef, facebook::react::JSCExecutor*> (*get_jsc_context_t)();
@@ -40,7 +42,7 @@ JNIEXPORT jstring JNICALL Java_com_reacttests_RealmReactAndroid_injectRealmJsCon
 	  	msg << "Got the globalContext map, size=" << s_globalContextRefToJSCExecutor.size();
 
           for (auto pair : s_globalContextRefToJSCExecutor) {
-			  RJSInitializeInContextUsingPath(pair.first, absoluteAppPath);
+			  RJSInitializeInContext(pair.first);
 		  }
 
 	  	return env->NewStringUTF(msg.str().c_str());
