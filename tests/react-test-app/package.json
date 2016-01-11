@@ -7,7 +7,7 @@
   },
   "dependencies": {
     "react-native": "^0.16.0",
-    "realm": "file:../..",
+    "realm": "file:../../lib",
     "realm-tests": "file:../lib"
   }
 }
