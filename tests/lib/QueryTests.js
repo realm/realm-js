@@ -62,7 +62,8 @@ function runQuerySuite(suite) {
         return args;
     }
 
-    for (var test of suite.tests) {
+    for (var index in suite.tests) {
+        var test = suite.tests[index];
         if (test[0] == "QueryCount") {
             var length = realm.objects.apply(realm, getArgs(2)).length;
             TestCase.assertEqual(test[1], length, "Query '" + args[1] + "' on type '" + args[0] + "' expected " + test[1] + " results, got " + length);
