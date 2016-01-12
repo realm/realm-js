@@ -18,7 +18,6 @@ var Realm = require('realm');
 var RealmTests = require('realm-tests');
 
 function runTests() {
-    RealmTests.ObjectTests.testNullableBasicTypesPropertySetters();
     let testNames = RealmTests.getTestNames();
 
     for (let suiteName in testNames) {

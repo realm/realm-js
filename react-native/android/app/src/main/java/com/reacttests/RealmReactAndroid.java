@@ -29,8 +29,9 @@ public class RealmReactAndroid extends ReactContextBaseJavaModule {
     }
 
     @Override
-    public void initialize() {
+    public Map<String, Object> getConstants() {
         Log.w("RealmReactAndroid", injectRealmJsContext(filesDirPath));
+        return new HashMap<>();
     }
 
     @Override
