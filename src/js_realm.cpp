@@ -108,7 +108,9 @@ std::map<std::string, JSValueRef> &RJSPrototypes(Realm *realm) {
 // static std::string s_defaultPath = realm::default_realm_file_directory() + "/default.realm";
 static std::string s_defaultPath = "";
 std::string RJSDefaultPath() {
-    s_defaultPath = realm::default_realm_file_directory() + "/default.realm";
+    if (s_defaultPath.size() == 0) {
+        s_defaultPath = realm::default_realm_file_directory() + "/default.realm";
+    }
     return s_defaultPath;
 }
 void RJSSetDefaultPath(std::string path) {
