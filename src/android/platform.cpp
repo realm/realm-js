@@ -6,12 +6,13 @@
  #include "../js_init.h"
 #include <string>
 
+std::string s_default_realm_directory;
+
 namespace realm {
 
-    static std::string s_default_realm_directory;
-    void set_default_realm_file_directory(std::string dir) {
-        s_default_realm_directory = dir;
-    }
+void set_default_realm_file_directory(std::string dir) {
+    s_default_realm_directory = dir;
+}
 
 std::string default_realm_file_directory()
 {

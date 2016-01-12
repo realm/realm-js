@@ -118,6 +118,7 @@ task buildReactNdkLib(dependsOn: [prepareJSC], type: Exec) {
             '-C', file('src/main/jni').absolutePath,
             '-B',
             'NDK_LOG=1',
+            'NDK_DEBUG=1',
             '--jobs', Runtime.runtime.availableProcessors(),
             'V=1'
 }

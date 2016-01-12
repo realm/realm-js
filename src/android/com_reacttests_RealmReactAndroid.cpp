@@ -10,6 +10,7 @@
 #include "js_init.h"
 #include "platform.hpp"
 #include <unordered_map>
+#include <android/log.h>
 
 /*
  * Class:     com_reacttests_RealmReactAndroid
@@ -19,7 +20,7 @@
 JNIEXPORT jstring JNICALL Java_com_reacttests_RealmReactAndroid_injectRealmJsContext
   (JNIEnv *env, jclass, jstring fileDir) 
   {
-  	
+  	__android_log_print(ANDROID_LOG_ERROR, "JSRealm", "Java_com_reacttests_RealmReactAndroid_injectRealmJsContext");
   	void* handle = dlopen ("libreactnativejni.so", RTLD_LAZY);
   	if (!handle) {
         return env->NewStringUTF("Cannot open library");
@@ -29,7 +30,9 @@ JNIEXPORT jstring JNICALL Java_com_reacttests_RealmReactAndroid_injectRealmJsCon
     const char* strFileDir = env->GetStringUTFChars(fileDir , NULL);
     std::string absoluteAppPath(strFileDir); 
     env->ReleaseStringUTFChars(fileDir , strFileDir);
+
       realm::set_default_realm_file_directory(absoluteAppPath);
+	__android_log_print(ANDROID_LOG_ERROR, "JSRealm", "Absolute path %s", realm::default_realm_file_directory().c_str());
 
     // load the symbol
 	typedef std::unordered_map<JSContextRef, facebook::react::JSCExecutor*> (*get_jsc_context_t)();

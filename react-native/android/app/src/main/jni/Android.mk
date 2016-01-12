@@ -47,7 +47,7 @@ LOCAL_C_INCLUDES += core/include
 CXX11_FLAGS := -std=c++14
 LOCAL_CFLAGS += -fexceptions $(CXX11_FLAGS) -frtti
 LOCAL_EXPORT_CPPFLAGS := $(CXX11_FLAGS)
-
+LOCAL_LDLIBS    := -llog
 
 LOCAL_STATIC_LIBRARIES := realm-android-$(TARGET_ARCH_ABI)
 LOCAL_SHARED_LIBRARIES := libjsc

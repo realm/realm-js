@@ -8,8 +8,9 @@
 
 #include <string>
 
-namespace realm {
+extern std::string s_default_realm_directory;
 
+namespace realm {
 //
 // These methods are used internally and must be implemented
 // separately for eadh platform

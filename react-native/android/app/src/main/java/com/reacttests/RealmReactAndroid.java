@@ -30,10 +30,6 @@ public class RealmReactAndroid extends ReactContextBaseJavaModule {
 
     @Override
     public void initialize() {
-        Exception exception = new Exception();
-        exception.fillInStackTrace();
-        exception.printStackTrace();
-
         Log.w("RealmReactAndroid", injectRealmJsContext(filesDirPath));
     }
 
@@ -42,28 +38,13 @@ public class RealmReactAndroid extends ReactContextBaseJavaModule {
         return "RealmReactAndroid";
     }
 
-	@Override
-    public Map<String, Object> getConstants() {
-        final Map<String, Object> constants = new HashMap<>();
-        constants.put(DURATION_SHORT_KEY, Toast.LENGTH_SHORT);
-        constants.put(DURATION_LONG_KEY, Toast.LENGTH_LONG);
-
-        Exception exception = new Exception();
-        exception.fillInStackTrace();
-        exception.printStackTrace();
-
-        Log.w("RealmReactAndroid", injectRealmJsContext(filesDirPath));
-
-        return constants;
-    }
-
     @ReactMethod
     public void resultOfJsContextInjection(Callback successCallback) {
         // Inject our JS Context
         Exception exception = new Exception();
         exception.fillInStackTrace();
         exception.printStackTrace();
-        
+
         successCallback.invoke(injectRealmJsContext(filesDirPath));
     }
 
