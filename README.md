@@ -157,6 +157,10 @@ You _may_ specify these property options as well:
 #### `close()`
 **WARNING:** This is only for advanced use cases and generally doesn't need to be used.
 
+## Conduct
+This project adheres to the Contributor Covenant [code of conduct](https://realm.io/conduct/).
+By participating, you are expected to uphold this code. Please report unacceptable behavior to [info[at]realm.io](mailto:info+conduct@realm.io).
+
 ## License
 Copyright 2015 Realm Inc - All Rights Reserved
 Proprietary and Confidential
