@@ -117,8 +117,11 @@ class TodoApp extends React.Component {
     }
 
     _setEditingRow(rowIndex) {
+        let listView = this.currentListView;
+
         // Update the state on the currently displayed TodoList to edit this new item.
-        this.currentListView.setState({editingRow: rowIndex});
+        listView.setState({editingRow: rowIndex});
+        listView.updateDataSource();
     }
 }
 

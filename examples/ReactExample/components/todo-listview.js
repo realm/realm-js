@@ -5,23 +5,34 @@
 'use strict';
 
 const React = require('react-native');
+const RealmReact = require('realm/react-native');
 const TodoListItem = require('./todo-list-item');
 const realm = require('./realm');
 const styles = require('./styles');
 
-const { ListView, Text, View } = React;
+const { Text, View } = React;
+const { ListView } = RealmReact;
 
 class TodoListView extends React.Component {
     constructor(props) {
         super(props);
 
-        this.dataSource = new ListView.DataSource({
-            sectionHeaderHasChanged: () => false,
-            rowHasChanged: (row1, row2) => row1 !== row2
+        let dataSource = new ListView.DataSource({
+            rowHasChanged(a, b) {
+                // Always re-render TodoList items.
+                return a.done !== b.done || a.text !== b.text || a.items || b.items;
+            }
         });
 
-        this.state = {};
+        this.state = {
+            dataSource: this._cloneDataSource(dataSource, props),
+        };
+
         this.renderRow = this.renderRow.bind(this);
+    }
+
+    componentWillReceiveProps(props) {
+        this.updateDataSource(props);
     }
 
     componentDidUpdate() {
@@ -43,19 +54,9 @@ class TodoListView extends React.Component {
     }
 
     render() {
-        // Clone the items into a new Array to prevent unexpected errors from changes in length.
-        let sections = [Array.from(this.props.items)];
-        let extraItems = this.props.extraItems;
-
-        if (extraItems && extraItems.length) {
-            sections.push(extraItems);
-        }
-
-        let dataSource = this.dataSource.cloneWithRowsAndSections(sections);
-
         return (
             <View style={styles.container}>
-                <ListView style={styles.listView} dataSource={dataSource} renderRow={this.renderRow} />
+                <ListView dataSource={this.state.dataSource} renderRow={this.renderRow} />
                 <Text style={styles.instructions}>
                     Press Cmd+R to reload,{'\n'}
                     Cmd+D for dev menu
@@ -85,6 +86,24 @@ class TodoListView extends React.Component {
         );
     }
 
+    updateDataSource(props=this.props) {
+        this.setState({
+            dataSource: this._cloneDataSource(this.state.dataSource, props),
+        });
+    }
+
+    _cloneDataSource(dataSource, props) {
+        let items = props.items;
+        let extraItems = props.extraItems;
+        let sections = [items ? items.snapshot() : []];
+
+        if (extraItems && extraItems.length) {
+            sections.push(extraItems);
+        }
+
+        return dataSource.cloneWithRowsAndSections(sections);
+    }
+
     _onPressRow(item, sectionIndex, rowIndex) {
         let onPressItem = this.props.onPressItem;
         if (onPressItem) {
@@ -100,12 +119,13 @@ class TodoListView extends React.Component {
 
     _onPressDeleteRow(item) {
         this._deleteItem(item);
-        this.forceUpdate();
+        this.updateDataSource();
     }
 
     _onEndEditingRow(item, rowIndex) {
-        this._deleteItemIfEmpty(item);
-
+        if (this._deleteItemIfEmpty(item)) {
+            this.updateDataSource();
+        }
         if (this.state.editingRow == rowIndex) {
             this.setState({editingRow: null});
         }
