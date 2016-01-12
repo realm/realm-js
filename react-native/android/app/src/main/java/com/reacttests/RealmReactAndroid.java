@@ -29,13 +29,14 @@ public class RealmReactAndroid extends ReactContextBaseJavaModule {
     }
 
     @Override
-    public void initialize() {
-        Log.w("RealmReactAndroid", injectRealmJsContext(filesDirPath));
+    public String getName() {
+        return "RealmReactAndroid";
     }
 
     @Override
-    public String getName() {
-        return "RealmReactAndroid";
+    public Map<String, Object> getConstants() {
+        Log.w("RealmReactAndroid", injectRealmJsContext(filesDirPath));
+        return new HashMap<>();
     }
 
     @ReactMethod

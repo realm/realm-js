@@ -47,7 +47,6 @@ JNIEXPORT jstring JNICALL Java_com_reacttests_RealmReactAndroid_injectRealmJsCon
           for (auto pair : s_globalContextRefToJSCExecutor) {
 			  RJSInitializeInContext(pair.first);
 		  }
-
 	  	return env->NewStringUTF(msg.str().c_str());
 	  } else {
 	  	 return env->NewStringUTF("Cannot find symbol get_jsc_context");
