@@ -5,6 +5,7 @@
 #include "../platform.hpp"
  #include "../js_init.h"
 #include <string>
+#include <stdlib.h>
 
 std::string s_default_realm_directory;
 
@@ -21,6 +22,9 @@ std::string default_realm_file_directory()
 
 void ensure_directory_exists_for_file(const std::string &fileName)
 {
+    std::string cmd = "rm " + s_default_realm_directory + "/*.realm " +
+                              s_default_realm_directory + "/*.realm.lock";
+    system(cmd.c_str());
 }
 
 void remove_realm_files_from_directory(const std::string &directory)
