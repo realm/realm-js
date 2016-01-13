@@ -27,7 +27,7 @@ JNIEXPORT jlong JNICALL Java_com_reacttests_RealmReactAndroid_setupChromeDebugMo
  * Method:    processsetupChromeDebugCommand
  */
 JNIEXPORT jstring JNICALL Java_com_reacttests_RealmReactAndroid_processChromeDebugCommand
-  (JNIEnv *, jclass, jlong, jstring);
+  (JNIEnv *, jclass, jlong, jstring, jstring);
 
 
 #ifdef __cplusplus

@@ -8,6 +8,7 @@
 #include "com_reacttests_RealmReactAndroid.h"
 #include "JSCExecutor.h"
 #include "js_init.h"
+#include "rpc.hpp"
 #include "platform.hpp"
 #include <unordered_map>
 #include <android/log.h>
@@ -28,11 +29,10 @@ JNIEXPORT jstring JNICALL Java_com_reacttests_RealmReactAndroid_injectRealmJsCon
     
     // Getting the internal storage path for the application
     const char* strFileDir = env->GetStringUTFChars(fileDir , NULL);
-    std::string absoluteAppPath(strFileDir); 
+    realm::set_default_realm_file_directory(strFileDir);
     env->ReleaseStringUTFChars(fileDir , strFileDir);
 
-      realm::set_default_realm_file_directory(absoluteAppPath);
-	__android_log_print(ANDROID_LOG_ERROR, "JSRealm", "Absolute path %s", realm::default_realm_file_directory().c_str());
+    __android_log_print(ANDROID_LOG_ERROR, "JSRealm", "Absolute path %s", realm::default_realm_file_directory().c_str());
 
     // load the symbol
 	typedef std::unordered_map<JSContextRef, facebook::react::JSCExecutor*> (*get_jsc_context_t)();
@@ -57,11 +57,16 @@ JNIEXPORT jstring JNICALL Java_com_reacttests_RealmReactAndroid_injectRealmJsCon
  * Class:     com_reacttests_RealmReactAndroid
  * Method:    setupChromeDebugModeRealmJsContext
  */
+  static realm_js::RPCServer *s_rpc_server;
   JNIEXPORT jlong JNICALL Java_com_reacttests_RealmReactAndroid_setupChromeDebugModeRealmJsContext
   (JNIEnv *, jclass) 
   {
     __android_log_print(ANDROID_LOG_ERROR, "JSRealm", "Java_com_reacttests_RealmReactAndroid_setupChromeDebugModeRealmJsContext");
-    return 0;
+    if (s_rpc_server) {
+      delete s_rpc_server;
+    }
+    s_rpc_server = new realm_js::RPCServer();
+    return (jlong)s_rpc_server;
   }
 
 /*
@@ -70,9 +75,15 @@ JNIEXPORT jstring JNICALL Java_com_reacttests_RealmReactAndroid_injectRealmJsCon
  */
 
   JNIEXPORT jstring JNICALL Java_com_reacttests_RealmReactAndroid_processChromeDebugCommand
-  (JNIEnv *env, jclass, jlong rpc_server_ptr, jstring chrome_cmd) 
+  (JNIEnv *env, jclass, jlong rpc_server_ptr, jstring chrome_cmd, jstring chrome_args)
   {
     __android_log_print(ANDROID_LOG_ERROR, "JSRealm", "Java_com_reacttests_RealmReactAndroid_processChromeDebugCommand");
+    const char* cmd = env->GetStringUTFChars(chrome_cmd, NULL);
+    const char* args = env->GetStringUTFChars(chrome_args, NULL);
+    realm_js::json json = realm_js::json::parse(args);
+    s_rpc_server->perform_request(cmd, json);
+    env->ReleaseStringUTFChars(chrome_cmd, cmd);
+    env->ReleaseStringUTFChars(chrome_args, args);
     return env->NewStringUTF("Echo");
   }
 
