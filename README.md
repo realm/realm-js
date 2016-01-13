@@ -2,7 +2,7 @@
 Realm is a mobile database that runs directly inside phones, tablets or wearables. This repository holds the source code for Realm's JavaScript bindings for integrating with mobile apps built using ReactNative and Apache Cordova (PhoneGap).
 
 ## Setup
-This repository uses submodules so you need to run `git submodule update --init --recursive` in the realm-js root directory before running any examples or including the project in your app.
+This repository uses submodules so you need to run `git submodule update --init --recursive` in the realm-js root directory before running any examples.
 
 ## ReactNative Example
 Make sure your environment is set up to run react native applications. Follow the instructions here https://facebook.github.io/react-native/docs/getting-started.html.
@@ -10,11 +10,13 @@ Make sure your environment is set up to run react native applications. Follow th
 The ReactNative example project is in the `examples/ReactExample` directory. You need to run `npm install` in this directory before running the example for the first time.
 
 ## ReactNative Project Setup
-- Create a new ReactNative project `react-native init <project-name>` and open the generated XCode project.
-- Drag `RealmJS.xcodeproj` into the `Libraries` folder in your project.
-- Drag `RealmReact.framework` from the `Products` directory under `RealmJS.xcodeproj` into the `Embedded Binaries` section in the `General` tab for your app's target settings. Make sure the checkbox under `Code Sign On Copy` is **not checked** because having it checked will cause issues when trying to run your app on a device.
-- In the `Build Phases` tab for your app's target settings, add `RealmReact.framework` to the `Link Binary with Library` build phases.
-- In your app's `package.json` file, add the `realm` dependency with a path to the `realm-js/lib` folder like this: `"realm": "file:path/to/realm-js/lib"` (symlinks are not yet supported by the React Native packager, see [issue #637](https://github.com/facebook/react-native/issues/637)).
+- Create a new ReactNative project: `react-native init <project-name>`
+- Change directories into the new project (`cd <project-name>`) and add the `realm` dependency: `npm install --save git+ssh://git@github.com/realm/realm-js.git#beta` (please note it's **essential** to leave the `#beta` at the end)
+- Open the generated Xcode project (`ios/<project-name>.xcodeproj`)
+- Making sure the top-level project is selected in the sidebar, change the `iOS Deployment Target` to at least `8.0` in the project settings.
+- Right-click the `Libraries` group in the sidebar and click `Add Files to “<project-name>”`. Select `node_modules/realm/RealmJS.xcodeproj` from the dialog.
+- Drag `RealmReact.framework` from the `Products` directory under `RealmJS.xcodeproj` into the `Embedded Binaries` section in the `General` tab for your app's target settings.
+- In the `Build Phases` tab for your app's target settings, make sure `RealmReact.framework` is added to the `Link Binary with Library` build phase.
 - You can now `require('realm')` in your app's JS to use Realm!
 
 ## Getting Started
@@ -154,6 +156,10 @@ You _may_ specify these property options as well:
 
 #### `close()`
 **WARNING:** This is only for advanced use cases and generally doesn't need to be used.
+
+## Conduct
+This project adheres to the Contributor Covenant [code of conduct](https://realm.io/conduct/).
+By participating, you are expected to uphold this code. Please report unacceptable behavior to [info[at]realm.io](mailto:info+conduct@realm.io).
 
 ## License
 Copyright 2015 Realm Inc - All Rights Reserved

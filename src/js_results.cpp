@@ -22,9 +22,12 @@ JSValueRef ResultsGetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef 
             return JSValueMakeNumber(ctx, size);
         }
 
-        return RJSObjectCreate(ctx, Object(results->get_realm(),
-                                           results->get_object_schema(),
-                                           results->get(RJSValidatedPositiveIndex(indexStr))));
+        auto row = results->get(RJSValidatedPositiveIndex(indexStr));
+        if (!row.is_attached()) {
+            return JSValueMakeNull(ctx);
+        }
+
+        return RJSObjectCreate(ctx, Object(results->get_realm(), results->get_object_schema(), row));
     }
     catch (std::out_of_range &exp) {
         // getters for nonexistent properties in JS should always return undefined
@@ -62,19 +65,40 @@ bool ResultsSetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef proper
 
 void ResultsPropertyNames(JSContextRef ctx, JSObjectRef object, JSPropertyNameAccumulatorRef propertyNames) {
     Results *results = RJSGetInternal<Results *>(object);
+    size_t size = results->size();
+
     char str[32];
-    for (int i = 0; i < results->size(); i++) {
-        sprintf(str, "%i", i);
+    for (size_t i = 0; i < size; i++) {
+        sprintf(str, "%zu", i);
         JSStringRef name = JSStringCreateWithUTF8CString(str);
         JSPropertyNameAccumulatorAddName(propertyNames, name);
         JSStringRelease(name);
     }
 }
 
-JSValueRef SortByProperty(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) {
+JSValueRef ResultsStaticCopy(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) {
+    try {
+        Results *results = RJSGetInternal<Results *>(thisObject);
+        RJSValidateArgumentCount(argumentCount, 0);
+
+        Results *copy = new Results(*results);
+        copy->set_live(false);
+
+        return RJSWrapObject<Results *>(ctx, RJSResultsClass(), copy);
+    }
+    catch (std::exception &exp) {
+        if (jsException) {
+            *jsException = RJSMakeError(ctx, exp);
+        }
+    }
+    return NULL;
+}
+
+JSValueRef ResultsSortByProperty(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) {
     try {
         Results *results = RJSGetInternal<Results *>(thisObject);
         RJSValidateArgumentRange(argumentCount, 1, 2);
+
         std::string propName = RJSValidatedStringForValue(ctx, arguments[0]);
         const Property *prop = results->get_object_schema().property_for_name(propName);
         if (!prop) {
@@ -105,7 +129,6 @@ JSObjectRef RJSResultsCreate(JSContextRef ctx, SharedRealm realm, std::string cl
     return RJSWrapObject<Results *>(ctx, RJSResultsClass(), new Results(realm, *object_schema, *table));
 }
 
-
 JSObjectRef RJSResultsCreate(JSContextRef ctx, SharedRealm realm, std::string className, std::string queryString, std::vector<JSValueRef> args) {
     TableRef table = ObjectStore::table_for_object_type(realm->read_group(), className);
     Query query = table->where();
@@ -121,8 +144,16 @@ JSObjectRef RJSResultsCreate(JSContextRef ctx, SharedRealm realm, std::string cl
     return RJSWrapObject<Results *>(ctx, RJSResultsClass(), new Results(realm, *object_schema, std::move(query)));
 }
 
+JSObjectRef RJSResultsCreate(JSContextRef ctx, SharedRealm realm, const ObjectSchema &objectSchema, const Query &query, bool live) {
+    Results *results = new Results(realm, objectSchema, query);
+    results->set_live(live);
+
+    return RJSWrapObject<Results *>(ctx, RJSResultsClass(), results);
+}
+
 static const JSStaticFunction RJSResultsFuncs[] = {
-    {"sortByProperty", SortByProperty, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
+    {"snapshot", ResultsStaticCopy, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
+    {"sortByProperty", ResultsSortByProperty, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
     {NULL, NULL},
 };
 

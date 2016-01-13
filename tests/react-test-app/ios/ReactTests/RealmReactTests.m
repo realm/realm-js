@@ -79,7 +79,7 @@ extern NSMutableArray *RCTGetModuleClasses(void);
     }
 
     NSError *error;
-    NSDictionary *testCaseNames = [self invokeMethod:@"getTestNames" inModule:@"index" error:&error];
+    NSDictionary *testCaseNames = [self invokeMethod:@"getTestNames" arguments:nil error:&error];
 
     if (error || !testCaseNames.count) {
         NSLog(@"Error from calling getTestNames() - %@", error ?: @"None returned");
@@ -128,14 +128,13 @@ extern NSMutableArray *RCTGetModuleClasses(void);
     }
 }
 
-+ (id)invokeMethod:(NSString *)method inModule:(NSString *)module error:(NSError * __strong *)outError {
++ (id)invokeMethod:(NSString *)method arguments:(NSArray *)arguments error:(NSError * __strong *)outError {
     id<RCTJavaScriptExecutor> executor = [self currentExecutor];
-    module = [NSString stringWithFormat:@"realm-tests/%@.js", module];
 
     __block BOOL condition = NO;
     __block id result;
 
-    [executor executeJSCall:module method:method arguments:@[] callback:^(id json, NSError *error) {
+    [executor executeJSCall:@"realm-tests/index.js" method:method arguments:(arguments ?: @[]) callback:^(id json, NSError *error) {
         // The React Native debuggerWorker.js very bizarrely returns an array five empty arrays to signify an error.
         if ([json isKindOfClass:[NSArray class]] && [json isEqualToArray:@[@[], @[], @[], @[], @[]]]) {
             json = nil;
@@ -169,7 +168,7 @@ extern NSMutableArray *RCTGetModuleClasses(void);
     }
 
     NSError *error;
-    [self.class invokeMethod:method inModule:module error:&error];
+    [self.class invokeMethod:@"runTest" arguments:@[module, method] error:&error];
 
     if (error) {
         // TODO: Parse and use localizedFailureReason info once we can source map the failure location in JS.

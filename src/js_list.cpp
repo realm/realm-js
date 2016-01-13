@@ -4,6 +4,7 @@
 
 #include "js_list.hpp"
 #include "js_object.hpp"
+#include "js_results.hpp"
 #include "js_util.hpp"
 #include "object_accessor.hpp"
 
@@ -186,6 +187,22 @@ JSValueRef ListSplice(JSContextRef ctx, JSObjectRef function, JSObjectRef thisOb
     return NULL;
 }
 
+JSValueRef ListStaticResults(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) {
+    try {
+        List *list = RJSGetInternal<List *>(thisObject);
+        RJSValidateArgumentCount(argumentCount, 0);
+
+        Query query = list->get_query();
+        return RJSResultsCreate(ctx, list->realm(), list->get_object_schema(), query, false);
+    }
+    catch (std::exception &exp) {
+        if (jsException) {
+            *jsException = RJSMakeError(ctx, exp);
+        }
+    }
+    return NULL;
+}
+
 JSObjectRef RJSListCreate(JSContextRef ctx, realm::List &list) {
     return RJSWrapObject<List *>(ctx, RJSListClass(), new List(list));
 }
@@ -196,6 +213,7 @@ static const JSStaticFunction RJSListFuncs[] = {
     {"shift", ListShift, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
     {"unshift", ListUnshift, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
     {"splice", ListSplice, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
+    {"snapshot", ListStaticResults, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
     {NULL, NULL},
 };
 

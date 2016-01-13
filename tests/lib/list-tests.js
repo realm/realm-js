@@ -341,4 +341,38 @@ module.exports = BaseTest.extend({
         TestCase.assertEqual(array.length, 2);
         TestCase.assertEqual(objects.length, 4);
     },
+
+    testStaticResults: function() {
+        var realm = new Realm({schema: [schemas.LinkTypes, schemas.TestObject]});
+        var objects = realm.objects('TestObject');
+        var array;
+
+        realm.write(function() {
+            var obj = realm.create('LinkTypesObject', [[1], [2], [[3], [4]]]);
+            array = obj.arrayCol;
+        });
+
+        var objectsCopy = objects.snapshot();
+        var arrayCopy = array.snapshot();
+
+        TestCase.assertEqual(objectsCopy.length, 4);
+        TestCase.assertEqual(arrayCopy.length, 2);
+
+        realm.write(function() {
+            array.push([5]);
+            TestCase.assertEqual(objectsCopy.length, 4);
+            TestCase.assertEqual(arrayCopy.length, 2);
+
+            TestCase.assertEqual(objectsCopy.snapshot().length, 4);
+            TestCase.assertEqual(arrayCopy.snapshot().length, 2);
+
+            TestCase.assertEqual(objects.snapshot().length, 5);
+            TestCase.assertEqual(array.snapshot().length, 3);
+
+            realm.delete(array[0]);
+            TestCase.assertEqual(objectsCopy.length, 4);
+            TestCase.assertEqual(arrayCopy.length, 2);
+            TestCase.assertEqual(arrayCopy[0], null);
+        });
+    },
 });

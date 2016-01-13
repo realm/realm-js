@@ -9,7 +9,7 @@ var Realm = require('realm');
 var BaseTest = require('./base-test');
 var TestCase = require('./asserts');
 var schemas = require('./schemas');
-var testCases = require('./queryTests.json');
+var testCases = require('./query-tests.json');
 
 var typeConverters = {};
 
