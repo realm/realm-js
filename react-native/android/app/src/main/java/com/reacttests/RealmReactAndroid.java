@@ -12,11 +12,17 @@ import android.widget.Toast;
 import com.facebook.react.bridge.Callback;
 import android.util.Log;
 import java.io.IOException;
+import java.util.Map;
+import fi.iki.elonen.NanoHTTPD;
 
 public class RealmReactAndroid extends ReactContextBaseJavaModule {
 	private static final String DURATION_SHORT_KEY = "SHORT";
     private static final String DURATION_LONG_KEY = "LONG";
     private String filesDirPath;
+
+    private static final int DEFAULT_PORT = 8082;
+    private AndroidWebServer webServer;
+    private long rpcServerPtr;
 
 	public RealmReactAndroid(ReactApplicationContext reactContext) {
 		super(reactContext);
@@ -36,24 +42,67 @@ public class RealmReactAndroid extends ReactContextBaseJavaModule {
     @Override
     public Map<String, Object> getConstants() {
         Log.w("RealmReactAndroid", injectRealmJsContext(filesDirPath));
+        startWebServer();
         return new HashMap<>();
     }
 
-    @ReactMethod
-    public void resultOfJsContextInjection(Callback successCallback) {
-        // Inject our JS Context
-        Exception exception = new Exception();
-        exception.fillInStackTrace();
-        exception.printStackTrace();
-
-        successCallback.invoke(injectRealmJsContext(filesDirPath));
+    @Override
+    public void onCatalystInstanceDestroy() {
+       if (webServer != null) {
+            Log.w("RealmReactAndroid", "Stopping the webserver");
+            webServer.stop();
+       }
+    }
+    // @ReactMethod
+    // public void setUpChromeDebugMode() {
+    //     startWebServer();
+    //     // setupChromeDebugModeRealmJsContext();
+    // }
+    ///FIXME find the right callback to call webServerstop
+    private void startWebServer() {
+        rpcServerPtr = setupChromeDebugModeRealmJsContext();
+        webServer = new AndroidWebServer(DEFAULT_PORT);
+        try {
+            webServer.start();
+            Log.w("RealmReactAndroid", "Starting WebServer, Host: " + webServer.getHostname() + " Port: " + webServer.getListeningPort());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
-    @ReactMethod
-    public void show(String message, int duration) {
-        Toast.makeText(getReactApplicationContext(), message, duration).show();
+    // WebServer
+    class AndroidWebServer extends NanoHTTPD {
+        public AndroidWebServer(int port) {
+            super(port);
+        }
+
+        public AndroidWebServer(String hostname, int port) {
+            super(hostname, port);
+        }
+
+        @Override
+        public Response serve(IHTTPSession session) {
+            String cmdUri = session.getUri();
+            Log.w("AndroidWebServer", "Session Uri: " + cmdUri + " Mehtod: " + session.getMethod().name());
+            // String msg = "<html><body><h1>Hello server</h1>\n";
+            // Map<String, String> parms = session.getParms();
+            // if (parms.get("username") == null) {
+            //     msg += "<form action='?' method='get'>\n  <p>Your name: <input type='text' name='username'></p>\n" + "</form>\n";
+            // } else {
+            //     msg += "<p>Hello, " + parms.get("username") + "!</p>";
+            // }
+            // return newFixedLengthResponse( msg + "</body></html>\n" );
+            String jsonResponse = processChromeDebugCommand(rpcServerPtr, cmdUri);
+            Response response = newFixedLengthResponse(jsonResponse);
+            response.addHeader("Access-Control-Allow-Origin", "http://localhost:8081");
+            return response;
+        }    
     }
 
     // fileDir: path of the internal storage of the application
 	private native String injectRealmJsContext(String fileDir);
+    // responsible for creating the rpcServer that will accept thw chrome Websocket command
+    private native long setupChromeDebugModeRealmJsContext();
+    // this receives one command from Chrome debug, & return the processing we should post back
+    private native String processChromeDebugCommand(long rpcServerPointer, String cmd);
 }

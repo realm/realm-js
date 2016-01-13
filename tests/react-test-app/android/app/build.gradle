@@ -78,6 +78,7 @@ dependencies {
     compile 'com.facebook.react:ReactAndroid-debug@aar'
     compile 'com.reacttests:app-debug@aar'
     compile 'com.github.KeepSafe:ReLinker:1.1'
+    compile 'org.nanohttpd:nanohttpd:2.2.0'
 
     compile 'com.google.code.findbugs:jsr305:3.0.0'
     compile 'com.facebook.stetho:stetho-okhttp:1.2.0'

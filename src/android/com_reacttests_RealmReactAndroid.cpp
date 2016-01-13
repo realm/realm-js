@@ -45,11 +45,35 @@ JNIEXPORT jstring JNICALL Java_com_reacttests_RealmReactAndroid_injectRealmJsCon
 	  	msg << "Got the globalContext map, size=" << s_globalContextRefToJSCExecutor.size();
 
           for (auto pair : s_globalContextRefToJSCExecutor) {
-			  RJSInitializeInContext(pair.first);
+			   RJSInitializeInContext(pair.first);
 		  }
 	  	return env->NewStringUTF(msg.str().c_str());
 	  } else {
 	  	 return env->NewStringUTF("Cannot find symbol get_jsc_context");
 	  }
   }
+
+/*
+ * Class:     com_reacttests_RealmReactAndroid
+ * Method:    setupChromeDebugModeRealmJsContext
+ */
+  JNIEXPORT jlong JNICALL Java_com_reacttests_RealmReactAndroid_setupChromeDebugModeRealmJsContext
+  (JNIEnv *, jclass) 
+  {
+    __android_log_print(ANDROID_LOG_ERROR, "JSRealm", "Java_com_reacttests_RealmReactAndroid_setupChromeDebugModeRealmJsContext");
+    return 0;
+  }
+
+/*
+ * Class:     com_reacttests_RealmReactAndroid
+ * Method:    processChromeDebugCommand
+ */
+
+  JNIEXPORT jstring JNICALL Java_com_reacttests_RealmReactAndroid_processChromeDebugCommand
+  (JNIEnv *env, jclass, jlong rpc_server_ptr, jstring chrome_cmd) 
+  {
+    __android_log_print(ANDROID_LOG_ERROR, "JSRealm", "Java_com_reacttests_RealmReactAndroid_processChromeDebugCommand");
+    return env->NewStringUTF("Echo");
+  }
+
 

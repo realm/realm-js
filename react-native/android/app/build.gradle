@@ -116,7 +116,6 @@ task buildReactNdkLib(dependsOn: [prepareJSC], type: Exec) {
             "NDK_LIBS_OUT=$buildDir/react-ndk/all",
             "THIRD_PARTY_NDK_DIR=$buildDir/third-party-ndk",
             '-C', file('src/main/jni').absolutePath,
-            '-B',
             'NDK_LOG=1',
             'NDK_DEBUG=1',
             '--jobs', Runtime.runtime.availableProcessors(),
@@ -185,6 +184,7 @@ dependencies {
     compile 'org.webkit:android-jsc:r174650'
     compile "com.facebook.react:react-native:0.16.+"
     compile 'com.github.KeepSafe:ReLinker:1.1'
+    compile 'org.nanohttpd:nanohttpd:2.2.0'
 
     testCompile "junit:junit:${JUNIT_VERSION}"
     testCompile "org.powermock:powermock-api-mockito:${POWERMOCK_VERSION}"

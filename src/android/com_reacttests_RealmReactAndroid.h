@@ -15,6 +15,21 @@ extern "C" {
 JNIEXPORT jstring JNICALL Java_com_reacttests_RealmReactAndroid_injectRealmJsContext
   (JNIEnv *, jclass, jstring);
 
+/*
+ * Class:     com_reacttests_RealmReactAndroid
+ * Method:    setupChromeDebugModeRealmJsContext
+ */
+JNIEXPORT jlong JNICALL Java_com_reacttests_RealmReactAndroid_setupChromeDebugModeRealmJsContext
+  (JNIEnv *, jclass);
+
+/*
+ * Class:     com_reacttests_RealmReactAndroid
+ * Method:    processsetupChromeDebugCommand
+ */
+JNIEXPORT jstring JNICALL Java_com_reacttests_RealmReactAndroid_processChromeDebugCommand
+  (JNIEnv *, jclass, jlong, jstring);
+
+
 #ifdef __cplusplus
 }
 #endif
