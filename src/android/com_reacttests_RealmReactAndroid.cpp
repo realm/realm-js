@@ -81,10 +81,10 @@ JNIEXPORT jstring JNICALL Java_com_reacttests_RealmReactAndroid_injectRealmJsCon
     const char* cmd = env->GetStringUTFChars(chrome_cmd, NULL);
     const char* args = env->GetStringUTFChars(chrome_args, NULL);
     realm_js::json json = realm_js::json::parse(args);
-    s_rpc_server->perform_request(cmd, json);
+    realm_js::json response = s_rpc_server->perform_request(cmd, json);
     env->ReleaseStringUTFChars(chrome_cmd, cmd);
     env->ReleaseStringUTFChars(chrome_args, args);
-    return env->NewStringUTF("Echo");
+    return env->NewStringUTF(response.dump().c_str());
   }
 
 
