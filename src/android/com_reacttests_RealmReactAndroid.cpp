@@ -18,13 +18,14 @@
  * Method:    injectRealmJsContext
  * Signature: ()Ljava/lang/String;
  */
-JNIEXPORT jstring JNICALL Java_com_reacttests_RealmReactAndroid_injectRealmJsContext
+JNIEXPORT jlong JNICALL Java_com_reacttests_RealmReactAndroid_injectRealmJsContext
   (JNIEnv *env, jclass, jstring fileDir) 
   {
   	__android_log_print(ANDROID_LOG_ERROR, "JSRealm", "Java_com_reacttests_RealmReactAndroid_injectRealmJsContext");
   	void* handle = dlopen ("libreactnativejni.so", RTLD_LAZY);
   	if (!handle) {
-        return env->NewStringUTF("Cannot open library");
+      return 0;
+        //return env->NewStringUTF("Cannot open library");
     }
     
     // Getting the internal storage path for the application
@@ -40,16 +41,17 @@ JNIEXPORT jstring JNICALL Java_com_reacttests_RealmReactAndroid_injectRealmJsCon
 	get_jsc_context_t get_jsc_context = (get_jsc_context_t) dlsym(handle, "get_jsc_context");
 
 	  if (get_jsc_context != NULL) {
-	  	std::unordered_map<JSContextRef, facebook::react::JSCExecutor*> s_globalContextRefToJSCExecutor = get_jsc_context();	
-	  	std::stringstream msg;
-	  	msg << "Got the globalContext map, size=" << s_globalContextRefToJSCExecutor.size();
-
-          for (auto pair : s_globalContextRefToJSCExecutor) {
-			   RJSInitializeInContext(pair.first);
-		  }
-	  	return env->NewStringUTF(msg.str().c_str());
+	  	std::unordered_map<JSContextRef, facebook::react::JSCExecutor*> s_globalContextRefToJSCExecutor = get_jsc_context();
+        for (auto pair : s_globalContextRefToJSCExecutor) {
+          RJSInitializeInContext(pair.first);
+        }
+        return s_globalContextRefToJSCExecutor.size();
+        //std::stringstream msg;
+        //msg << "Got the globalContext map, size=" << s_globalContextRefToJSCExecutor.size();
+        //return env->NewStringUTF(msg.str().c_str());
 	  } else {
-	  	 return env->NewStringUTF("Cannot find symbol get_jsc_context");
+        return 0;
+	  	// return env->NewStringUTF("Cannot find symbol get_jsc_context");
 	  }
   }
 

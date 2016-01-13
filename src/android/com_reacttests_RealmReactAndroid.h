@@ -12,7 +12,7 @@ extern "C" {
  * Method:    injectRealmJsContext
  * Signature: ()Ljava/lang/String;
  */
-JNIEXPORT jstring JNICALL Java_com_reacttests_RealmReactAndroid_injectRealmJsContext
+JNIEXPORT jlong JNICALL Java_com_reacttests_RealmReactAndroid_injectRealmJsContext
   (JNIEnv *, jclass, jstring);
 
 /*

@@ -41,8 +41,11 @@ public class RealmReactAndroid extends ReactContextBaseJavaModule {
 
     @Override
     public Map<String, Object> getConstants() {
-        Log.w("RealmReactAndroid", injectRealmJsContext(filesDirPath));
-        startWebServer();
+        long contexts = injectRealmJsContext(filesDirPath);
+        Log.w("RealmReactAndroid", "Initialized " + contexts + " contexts");
+        if (contexts == 0) {
+            startWebServer();
+        }
         return new HashMap<>();
     }
 
@@ -92,7 +95,16 @@ public class RealmReactAndroid extends ReactContextBaseJavaModule {
             //     msg += "<p>Hello, " + parms.get("username") + "!</p>";
             // }
             // return newFixedLengthResponse( msg + "</body></html>\n" );
-            String jsonResponse = processChromeDebugCommand(rpcServerPtr, cmdUri);
+            final HashMap<String, String> map = new HashMap<String, String>();
+            try {
+                session.parseBody(map);
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (ResponseException e) {
+                e.printStackTrace();
+            }
+            final String json = map.get("postData");
+            String jsonResponse = processChromeDebugCommand(rpcServerPtr, cmdUri, json);
             Response response = newFixedLengthResponse(jsonResponse);
             response.addHeader("Access-Control-Allow-Origin", "http://localhost:8081");
             return response;
@@ -100,9 +112,9 @@ public class RealmReactAndroid extends ReactContextBaseJavaModule {
     }
 
     // fileDir: path of the internal storage of the application
-	private native String injectRealmJsContext(String fileDir);
+	private native long injectRealmJsContext(String fileDir);
     // responsible for creating the rpcServer that will accept thw chrome Websocket command
     private native long setupChromeDebugModeRealmJsContext();
     // this receives one command from Chrome debug, & return the processing we should post back
-    private native String processChromeDebugCommand(long rpcServerPointer, String cmd);
+    private native String processChromeDebugCommand(long rpcServerPointer, String cmd, String args);
 }
