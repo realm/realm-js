@@ -2,20 +2,29 @@
  * Proprietary and Confidential
  */
 
-extern "C" {
 #import "RealmReact.h"
 #import "RCTBridge.h"
 
-#import <RealmJS/js_init.h>
+#import "js_init.h"
+#import "shared_realm.hpp"
+
 #import <objc/runtime.h>
 #import <dlfcn.h>
+
+#if DEBUG
+#import <GCDWebServer/Core/GCDWebServer.h>
+#import <GCDWebServer/Requests/GCDWebServerDataRequest.h>
+#import <GCDWebServer/Responses/GCDWebServerDataResponse.h>
+#import <GCDWebServer/Responses/GCDWebServerErrorResponse.h>
+#import "rpc.hpp"
+#endif
 
 @interface NSObject ()
 - (instancetype)initWithJSContext:(void *)context;
 - (JSGlobalContextRef)ctx;
 @end
 
-JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executor, bool create) {
+extern "C" JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executor, bool create) {
     Ivar contextIvar = class_getInstanceVariable([executor class], "_context");
     if (!contextIvar) {
         return NULL;
@@ -42,34 +51,20 @@ JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executor, bool cre
 
     return [rctJSContext ctx];
 }
-}
 
-#import "shared_realm.hpp"
-
-#if DEBUG
-#import <GCDWebServer/Core/GCDWebServer.h>
-#import <GCDWebServer/Requests/GCDWebServerDataRequest.h>
-#import <GCDWebServer/Responses/GCDWebServerDataResponse.h>
-#import <GCDWebServer/Responses/GCDWebServerErrorResponse.h>
-#import <RealmJS/rpc.hpp>
-
-@interface RealmReact () {
-    GCDWebServer *_webServer;
-    std::unique_ptr<realm_js::RPCServer> _rpcServer;
-}
+@interface RealmReact () <RCTBridgeModule>
 @end
-#endif
 
-@interface RealmReact () <RCTBridgeModule> {
+@implementation RealmReact {
+    NSMutableDictionary *_eventHandlers;
     __weak NSThread *_currentJSThread;
     __weak NSRunLoop *_currentJSRunLoop;
+
+#if DEBUG
+    GCDWebServer *_webServer;
+    std::unique_ptr<realm_js::RPCServer> _rpcServer;
+#endif
 }
-@end
-
-static __weak RealmReact *s_currentRealmModule = nil;
-
-
-@implementation RealmReact
 
 @synthesize bridge = _bridge;
 
@@ -86,6 +81,37 @@ static __weak RealmReact *s_currentRealmModule = nil;
 
 + (NSString *)moduleName {
     return @"Realm";
+}
+
+- (instancetype)init {
+    self = [super init];
+    if (self) {
+        _eventHandlers = [[NSMutableDictionary alloc] init];
+    }
+    return self;
+}
+
+- (dispatch_queue_t)methodQueue {
+    return dispatch_get_main_queue();
+}
+
+- (void)addListenerForEvent:(NSString *)eventName handler:(RealmReactEventHandler)handler {
+    NSMutableOrderedSet *handlers = _eventHandlers[eventName];
+    if (!handlers) {
+        handlers = _eventHandlers[eventName] = [[NSMutableOrderedSet alloc] init];
+    }
+    [handlers addObject:handler];
+}
+
+- (void)removeListenerForEvent:(NSString *)eventName handler:(RealmReactEventHandler)handler {
+    NSMutableOrderedSet *handlers = _eventHandlers[eventName];
+    [handlers removeObject:handler];
+}
+
+RCT_REMAP_METHOD(emit, emitEvent:(NSString *)eventName withObject:(id)object) {
+    for (RealmReactEventHandler handler in [_eventHandlers[eventName] copy]) {
+        handler(object);
+    }
 }
 
 #if DEBUG
@@ -139,11 +165,9 @@ static __weak RealmReact *s_currentRealmModule = nil;
     _webServer = nil;
     _rpcServer.reset();
 }
-
-
 #endif
 
-- (void)shutdown {
+- (void)invalidate {
 #if DEBUG
     // shutdown rpc if in chrome debug mode
     [self shutdownRPC];
@@ -152,7 +176,7 @@ static __weak RealmReact *s_currentRealmModule = nil;
     // block until JS thread exits
     NSRunLoop *runLoop = _currentJSRunLoop;
     if (runLoop) {
-        CFRunLoopStop([_currentJSRunLoop getCFRunLoop]);
+        CFRunLoopStop([runLoop getCFRunLoop]);
         while (_currentJSThread && !_currentJSThread.finished) {
             [NSThread sleepForTimeInterval:0.01];
         }
@@ -162,18 +186,18 @@ static __weak RealmReact *s_currentRealmModule = nil;
 }
 
 - (void)dealloc {
-    [self shutdown];
+    [self performSelectorOnMainThread:@selector(invalidate) withObject:nil waitUntilDone:YES];
 }
 
 - (void)setBridge:(RCTBridge *)bridge {
     _bridge = bridge;
 
-    // shutdown the last instance of this module
-    [s_currentRealmModule shutdown];
-    s_currentRealmModule = self;
+    static __weak RealmReact *s_currentModule = nil;
+    [s_currentModule invalidate];
+    s_currentModule = self;
 
-    Ivar executorIvar = class_getInstanceVariable([bridge class], "_javaScriptExecutor");
-    id executor = object_getIvar(bridge, executorIvar);
+    id<RCTJavaScriptExecutor> executor = [bridge valueForKey:@"javaScriptExecutor"];
+
     if ([executor isKindOfClass:NSClassFromString(@"RCTWebSocketExecutor")]) {
 #if DEBUG
         [self startRPC];
@@ -183,13 +207,16 @@ static __weak RealmReact *s_currentRealmModule = nil;
     }
     else {
         __weak __typeof__(self) weakSelf = self;
+
         [executor executeBlockOnJavaScriptQueue:^{
-            RealmReact *self = weakSelf;
+            __typeof__(self) self = weakSelf;
             if (!self) {
                 return;
             }
+
             self->_currentJSThread = [NSThread currentThread];
             self->_currentJSRunLoop = [NSRunLoop currentRunLoop];
+
             JSGlobalContextRef ctx = RealmReactGetJSGlobalContextForExecutor(executor, true);
             RJSInitializeInContext(ctx);
         }];

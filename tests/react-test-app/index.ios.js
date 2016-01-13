@@ -4,17 +4,36 @@
 
 'use strict';
 
-var React = require('react-native');
-var Realm = require('realm');
-var RealmTests = require('realm-tests');
+const React = require('react-native');
+const Realm = require('realm');
+const RealmTests = require('realm-tests');
 
-var {
+const {
     AppRegistry,
+    NativeAppEventEmitter,
+    NativeModules,
     StyleSheet,
     Text,
     TouchableHighlight,
     View,
 } = React;
+
+// Listen for event to run a particular test.
+NativeAppEventEmitter.addListener('realm-run-test', (test) => {
+    let error;
+    try {
+        RealmTests.runTest(test.suite, test.name);
+    } catch (e) {
+        error = '' + e;
+    }
+
+    NativeModules.Realm.emit('realm-test-finished', error);
+});
+
+// Inform the native test harness about the test suite once it's ready.
+setTimeout(() => {
+    NativeModules.Realm.emit('realm-test-names', RealmTests.getTestNames());
+}, 0);
 
 function runTests() {
     let testNames = RealmTests.getTestNames();
@@ -46,7 +65,7 @@ function runTests() {
     }
 }
 
-var ReactTests = React.createClass({
+class ReactTests extends React.Component {
     render() {
         return (
             <View style={styles.container}>
@@ -60,7 +79,7 @@ var ReactTests = React.createClass({
             </View>
         );
     }
-});
+}
 
 var styles = StyleSheet.create({
     container: {
