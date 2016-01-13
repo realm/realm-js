@@ -269,6 +269,7 @@ json RPCServer::serialize_json_value(JSValueRef value) {
         };
     }
     else {
+        // Serialize this JS object as a plain object since it doesn't match any known types above.
         JSPropertyNameArrayRef js_keys = JSObjectCopyPropertyNames(m_context, js_object);
         size_t count = JSPropertyNameArrayGetCount(js_keys);
         std::vector<std::string> keys;

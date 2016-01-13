@@ -140,36 +140,22 @@ static inline ObjectSchema RJSParseObjectSchema(JSContextRef ctx, JSObjectRef ob
     objectSchema.name = RJSValidatedStringProperty(ctx, objectSchemaObject, nameString);
 
     JSObjectRef propertiesObject = RJSValidatedObjectProperty(ctx, objectSchemaObject, propertiesString, "ObjectSchema must have a 'properties' object.");
-    JSPropertyNameArrayRef propertyNames = NULL;
-    size_t propertyCount;
-
     if (RJSIsValueArray(ctx, propertiesObject)) {
-        propertyCount = RJSValidatedListLength(ctx, propertiesObject);
-    }
-    else {
-        propertyNames = JSObjectCopyPropertyNames(ctx, propertiesObject);
-        propertyCount = JSPropertyNameArrayGetCount(propertyNames);
-    }
-
-    for (size_t i = 0; i < propertyCount; i++) {
-        Property property;
-
-        // Check if the properties were provided as an object.
-        if (propertyNames) {
-            JSStringRef propertyName = JSPropertyNameArrayGetNameAtIndex(propertyNames, i);
-            JSValueRef propertyValue = RJSValidatedPropertyValue(ctx, propertiesObject, propertyName);
-            property = RJSParseProperty(ctx, propertyValue, RJSStringForJSString(propertyName), objectDefaults);
-        }
-        else {
+        size_t propertyCount = RJSValidatedListLength(ctx, propertiesObject);
+        for (size_t i = 0; i < propertyCount; i++) {
             JSObjectRef propertyObject = RJSValidatedObjectAtIndex(ctx, propertiesObject, (unsigned int)i);
             std::string propertyName = RJSValidatedStringProperty(ctx, propertyObject, nameString);
-            property = RJSParseProperty(ctx, propertyObject, propertyName, objectDefaults);
+            objectSchema.properties.emplace_back(RJSParseProperty(ctx, propertyObject, propertyName, objectDefaults));
         }
-
-        objectSchema.properties.emplace_back(property);
     }
-
-    if (propertyNames) {
+    else {
+        JSPropertyNameArrayRef propertyNames = JSObjectCopyPropertyNames(ctx, propertiesObject);
+        size_t propertyCount = JSPropertyNameArrayGetCount(propertyNames);
+        for (size_t i = 0; i < propertyCount; i++) {
+            JSStringRef propertyName = JSPropertyNameArrayGetNameAtIndex(propertyNames, i);
+            JSValueRef propertyValue = RJSValidatedPropertyValue(ctx, propertiesObject, propertyName);
+            objectSchema.properties.emplace_back(RJSParseProperty(ctx, propertyValue, RJSStringForJSString(propertyName), objectDefaults));
+        }
         JSPropertyNameArrayRelease(propertyNames);
     }
 
