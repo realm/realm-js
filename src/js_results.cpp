@@ -91,7 +91,7 @@ JSValueRef ResultsStaticCopy(JSContextRef ctx, JSObjectRef function, JSObjectRef
     return NULL;
 }
 
-JSValueRef ResultsSortByProperty(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) {
+JSValueRef ResultsSorted(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) {
     try {
         Results *results = RJSGetInternal<Results *>(thisObject);
         RJSValidateArgumentRange(argumentCount, 1, 2);
@@ -104,10 +104,11 @@ JSValueRef ResultsSortByProperty(JSContextRef ctx, JSObjectRef function, JSObjec
 
         bool ascending = true;
         if (argumentCount == 2) {
-            ascending = JSValueToBoolean(ctx, arguments[1]);
+            ascending = !JSValueToBoolean(ctx, arguments[1]);
         }
 
-        *results = results->sort({{prop->table_column}, {ascending}});
+        results = new Results(results->sort({{prop->table_column}, {ascending}}));
+        return RJSWrapObject<Results *>(ctx, RJSResultsClass(), results);
     }
     catch (std::exception &exp) {
         if (jsException) {
@@ -181,7 +182,7 @@ JSObjectRef RJSResultsCreate(JSContextRef ctx, SharedRealm realm, const ObjectSc
 
 static const JSStaticFunction RJSResultsFuncs[] = {
     {"snapshot", ResultsStaticCopy, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
-    {"sortByProperty", ResultsSortByProperty, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
+    {"sortedBy", ResultsSorted, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
     {"filtered", ResultsFiltered, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
     {NULL, NULL},
 };
