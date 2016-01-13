@@ -143,6 +143,15 @@ static inline JSValueRef RJSValidatedPropertyValue(JSContextRef ctx, JSObjectRef
     return propertyValue;
 }
 
+static inline JSValueRef RJSValidatedPropertyAtIndex(JSContextRef ctx, JSObjectRef object, unsigned int index) {
+    JSValueRef exception = NULL;
+    JSValueRef propertyValue = JSObjectGetPropertyAtIndex(ctx, object, index, &exception);
+    if (exception) {
+        throw RJSException(ctx, exception);
+    }
+    return propertyValue;
+}
+
 static inline JSObjectRef RJSValidatedObjectProperty(JSContextRef ctx, JSObjectRef object, JSStringRef property, const char *err = NULL) {
     JSValueRef propertyValue = RJSValidatedPropertyValue(ctx, object, property);
     if (JSValueIsUndefined(ctx, propertyValue)) {
@@ -152,12 +161,7 @@ static inline JSObjectRef RJSValidatedObjectProperty(JSContextRef ctx, JSObjectR
 }
 
 static inline JSObjectRef RJSValidatedObjectAtIndex(JSContextRef ctx, JSObjectRef object, unsigned int index) {
-    JSValueRef exception = NULL;
-    JSValueRef objectValue = JSObjectGetPropertyAtIndex(ctx, object, index, &exception);
-    if (exception) {
-        throw RJSException(ctx, exception);
-    }
-    return RJSValidatedValueToObject(ctx, objectValue);
+    return RJSValidatedValueToObject(ctx, RJSValidatedPropertyAtIndex(ctx, object, index));
 }
 
 static inline std::string RJSValidatedStringProperty(JSContextRef ctx, JSObjectRef object, JSStringRef property) {

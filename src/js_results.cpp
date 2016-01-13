@@ -95,19 +95,50 @@ JSValueRef ResultsSorted(JSContextRef ctx, JSObjectRef function, JSObjectRef thi
     try {
         Results *results = RJSGetInternal<Results *>(thisObject);
         RJSValidateArgumentRange(argumentCount, 1, 2);
+        size_t prop_count;
+        std::vector<std::string> prop_names;
 
-        std::string propName = RJSValidatedStringForValue(ctx, arguments[0]);
-        const Property *prop = results->get_object_schema().property_for_name(propName);
-        if (!prop) {
-            throw std::runtime_error("Property '" + propName + "' does not exist on object type '" + results->get_object_schema().name + "'");
+        if (RJSIsValueArray(ctx, arguments[0])) {
+            JSObjectRef js_prop_names = RJSValidatedValueToObject(ctx, arguments[0]);
+            prop_count = RJSValidatedListLength(ctx, js_prop_names);
+            prop_names.resize(prop_count);
+
+            for (unsigned int i = 0; i < prop_count; i++) {
+                prop_names[i] = RJSValidatedStringForValue(ctx, RJSValidatedPropertyAtIndex(ctx, js_prop_names, i));
+            }
+        }
+        else {
+            prop_count = 1;
+            prop_names.push_back(RJSValidatedStringForValue(ctx, arguments[0]));
         }
 
-        bool ascending = true;
+        std::vector<size_t> columns(prop_count);
+        std::vector<bool> ascending(prop_count, true);
+        size_t index = 0;
+
+        for (std::string prop_name : prop_names) {
+            const Property *prop = results->get_object_schema().property_for_name(prop_name);
+            if (!prop) {
+                throw std::runtime_error("Property '" + prop_name + "' does not exist on object type '" + results->get_object_schema().name + "'");
+            }
+            columns[index++] = prop->table_column;
+        }
+
         if (argumentCount == 2) {
-            ascending = !JSValueToBoolean(ctx, arguments[1]);
+            if (RJSIsValueArray(ctx, arguments[1])) {
+                JSObjectRef js_reverse = RJSValidatedValueToObject(ctx, arguments[1]);
+                size_t js_reverse_count = std::min(RJSValidatedListLength(ctx, js_reverse), prop_count);
+
+                for (unsigned int i = 0; i < js_reverse_count; i++) {
+                    ascending[i] = !JSValueToBoolean(ctx, RJSValidatedPropertyAtIndex(ctx, js_reverse, i));
+                }
+            }
+            else if (JSValueToBoolean(ctx, arguments[1])) {
+                ascending.assign(prop_count, false);
+            }
         }
 
-        results = new Results(results->sort({{prop->table_column}, {ascending}}));
+        results = new Results(results->sort({std::move(columns), std::move(ascending)}));
         return RJSWrapObject<Results *>(ctx, RJSResultsClass(), results);
     }
     catch (std::exception &exp) {
