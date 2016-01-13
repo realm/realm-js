@@ -10,7 +10,7 @@ const TodoListView = require('./todo-listview');
 const realm = require('./realm');
 const styles = require('./styles');
 
-const { NavigatorIOS } = React;
+const { Navigator } = React;
 
 class TodoApp extends React.Component {
     constructor(props) {
@@ -40,7 +40,8 @@ class TodoApp extends React.Component {
         ];
 
         let route = {
-            title: 'My Todo Lists',
+            name: 'My Todo Lists',
+            index: 0,
             component: TodoListView,
             passProps: {
                 ref: 'listView',
@@ -54,7 +55,7 @@ class TodoApp extends React.Component {
         };
 
         return (
-            <NavigatorIOS ref="nav" initialRoute={route} style={styles.navigator} />
+            <Navigator ref="nav" initialRoute={route} style={styles.navigator} />
         );
     }
 
