@@ -42,7 +42,7 @@ public class RealmReactAndroid extends ReactContextBaseJavaModule {
     @Override
     public Map<String, Object> getConstants() {
         long contexts = injectRealmJsContext(filesDirPath);
-        Log.w("RealmReactAndroid", "Initialized " + contexts + " contexts");
+        Log.i("RealmReactAndroid", "Initialized " + contexts + " contexts");
         if (contexts == 0) {
             startWebServer();
         }
@@ -52,7 +52,7 @@ public class RealmReactAndroid extends ReactContextBaseJavaModule {
     @Override
     public void onCatalystInstanceDestroy() {
        if (webServer != null) {
-            Log.w("RealmReactAndroid", "Stopping the webserver");
+            Log.i("RealmReactAndroid", "Stopping the webserver");
             webServer.stop();
        }
     }
@@ -67,7 +67,7 @@ public class RealmReactAndroid extends ReactContextBaseJavaModule {
         webServer = new AndroidWebServer(DEFAULT_PORT);
         try {
             webServer.start();
-            Log.w("RealmReactAndroid", "Starting WebServer, Host: " + webServer.getHostname() + " Port: " + webServer.getListeningPort());
+            Log.i("RealmReactAndroid", "Starting WebServer, Host: " + webServer.getHostname() + " Port: " + webServer.getListeningPort());
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -86,7 +86,7 @@ public class RealmReactAndroid extends ReactContextBaseJavaModule {
         @Override
         public Response serve(IHTTPSession session) {
             String cmdUri = session.getUri();
-            Log.w("AndroidWebServer", "Session Uri: " + cmdUri + " Mehtod: " + session.getMethod().name());
+            Log.v("AndroidWebServer", "Session Uri: " + cmdUri + " Mehtod: " + session.getMethod().name());
             // String msg = "<html><body><h1>Hello server</h1>\n";
             // Map<String, String> parms = session.getParms();
             // if (parms.get("username") == null) {

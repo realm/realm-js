@@ -21,7 +21,7 @@
 JNIEXPORT jlong JNICALL Java_com_reacttests_RealmReactAndroid_injectRealmJsContext
   (JNIEnv *env, jclass, jstring fileDir) 
   {
-  	__android_log_print(ANDROID_LOG_ERROR, "JSRealm", "Java_com_reacttests_RealmReactAndroid_injectRealmJsContext");
+  	__android_log_print(ANDROID_LOG_DEBUG, "JSRealm", "Java_com_reacttests_RealmReactAndroid_injectRealmJsContext");
   	void* handle = dlopen ("libreactnativejni.so", RTLD_LAZY);
   	if (!handle) {
       return 0;
@@ -33,7 +33,7 @@ JNIEXPORT jlong JNICALL Java_com_reacttests_RealmReactAndroid_injectRealmJsConte
     realm::set_default_realm_file_directory(strFileDir);
     env->ReleaseStringUTFChars(fileDir , strFileDir);
 
-    __android_log_print(ANDROID_LOG_ERROR, "JSRealm", "Absolute path %s", realm::default_realm_file_directory().c_str());
+    __android_log_print(ANDROID_LOG_DEBUG, "JSRealm", "Absolute path %s", realm::default_realm_file_directory().c_str());
 
     // load the symbol
 	typedef std::unordered_map<JSContextRef, facebook::react::JSCExecutor*> (*get_jsc_context_t)();
@@ -63,7 +63,7 @@ JNIEXPORT jlong JNICALL Java_com_reacttests_RealmReactAndroid_injectRealmJsConte
   JNIEXPORT jlong JNICALL Java_com_reacttests_RealmReactAndroid_setupChromeDebugModeRealmJsContext
   (JNIEnv *, jclass) 
   {
-    __android_log_print(ANDROID_LOG_ERROR, "JSRealm", "Java_com_reacttests_RealmReactAndroid_setupChromeDebugModeRealmJsContext");
+    __android_log_print(ANDROID_LOG_VERBOSE, "JSRealm", "Java_com_reacttests_RealmReactAndroid_setupChromeDebugModeRealmJsContext");
     if (s_rpc_server) {
       delete s_rpc_server;
     }
@@ -79,7 +79,7 @@ JNIEXPORT jlong JNICALL Java_com_reacttests_RealmReactAndroid_injectRealmJsConte
   JNIEXPORT jstring JNICALL Java_com_reacttests_RealmReactAndroid_processChromeDebugCommand
   (JNIEnv *env, jclass, jlong rpc_server_ptr, jstring chrome_cmd, jstring chrome_args)
   {
-    __android_log_print(ANDROID_LOG_ERROR, "JSRealm", "Java_com_reacttests_RealmReactAndroid_processChromeDebugCommand");
+    __android_log_print(ANDROID_LOG_VERBOSE, "JSRealm", "Java_com_reacttests_RealmReactAndroid_processChromeDebugCommand");
     const char* cmd = env->GetStringUTFChars(chrome_cmd, NULL);
     const char* args = env->GetStringUTFChars(chrome_args, NULL);
     realm_js::json json = realm_js::json::parse(args);
