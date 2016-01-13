@@ -96,7 +96,10 @@ extern "C" JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executo
 }
 
 - (void)addListenerForEvent:(NSString *)eventName handler:(RealmReactEventHandler)handler {
-    NSMutableOrderedSet *handlers = _eventHandlers[eventName] ?: (_eventHandlers[eventName] = [[NSMutableOrderedSet alloc] init]);
+    NSMutableOrderedSet *handlers = _eventHandlers[eventName];
+    if (!handlers) {
+        handlers = _eventHandlers[eventName] = [[NSMutableOrderedSet alloc] init];
+    }
     [handlers addObject:handler];
 }
 
