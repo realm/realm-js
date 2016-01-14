@@ -29,7 +29,7 @@ const personSchema = {
     name: 'Person',
     primaryKey: 'name',
     properties: {
-        name': 'string',
+        name: 'string',
         birthday: 'date',
         friends: {type: 'list', objectType: 'Person'},
         points: {type: 'int', default: 0},
