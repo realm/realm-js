@@ -16,67 +16,105 @@ var RANDOM_DATA = new Uint8Array([
 
 module.exports = BaseTest.extend({
     testBasicTypesPropertyGetters: function() {
-        var basicTypesValues = [true, 1, 1.1, 1.11, 'string', new Date(1), RANDOM_DATA];
         var realm = new Realm({schema: [schemas.BasicTypes]});
         var object;
+
+        var basicTypesValues = {
+            boolCol:   true,
+            intCol:    1,
+            floatCol:  1.1,
+            doubleCol: 1.11,
+            stringCol: 'string',
+            dateCol:   new Date(1),
+            dataCol:   RANDOM_DATA,
+        };
 
         realm.write(function() {
             object = realm.create('BasicTypesObject', basicTypesValues);
         });
 
-        for (var i = 0; i < schemas.BasicTypes.properties.length; i++) {
-            var prop = schemas.BasicTypes.properties[i];
-            if (prop.type == Realm.Types.FLOAT) {
-                TestCase.assertEqualWithTolerance(object[prop.name], basicTypesValues[i], 0.000001);
+        for (var name in schemas.BasicTypes.properties) {
+            var prop = schemas.BasicTypes.properties[name];
+            var type = typeof prop == 'object' ? prop.type : prop;
+
+            if (type == Realm.Types.FLOAT || type == Realm.Types.DOUBLE) {
+                TestCase.assertEqualWithTolerance(object[name], basicTypesValues[name], 0.000001);
             }
-            else if (prop.type == Realm.Types.DATA) {
-                TestCase.assertArraysEqual(new Uint8Array(object[prop.name]), RANDOM_DATA);
+            else if (type == Realm.Types.DATA) {
+                TestCase.assertArraysEqual(new Uint8Array(object[name]), RANDOM_DATA);
             }
-            else if (prop.type == Realm.Types.DATE) {
-                TestCase.assertEqual(object[prop.name].getTime(), basicTypesValues[i].getTime());
+            else if (type == Realm.Types.DATE) {
+                TestCase.assertEqual(object[name].getTime(), basicTypesValues[name].getTime());
             }
             else {
-                TestCase.assertEqual(object[prop.name], basicTypesValues[i]);
+                TestCase.assertEqual(object[name], basicTypesValues[name]);
             }
         }
 
         TestCase.assertEqual(object.nonexistent, undefined);
     },
     testNullableBasicTypesPropertyGetters: function() {
-        var nullValues = [null, null, null, null, null, null, null];
-        var basicTypesValues = [true, 1, 1.1, 1.11, 'string', new Date(1), RANDOM_DATA];
-
         var realm = new Realm({schema: [schemas.NullableBasicTypes]});
-        var nullObject = null;
-        var object = null;
+        var object, nullObject;
+
+        var basicTypesValues = {
+            boolCol:   true,
+            intCol:    1,
+            floatCol:  1.1,
+            doubleCol: 1.11,
+            stringCol: 'string',
+            dateCol:   new Date(1),
+            dataCol:   RANDOM_DATA,
+        };
+
         realm.write(function() {
-            nullObject = realm.create('NullableBasicTypesObject', nullValues);
             object = realm.create('NullableBasicTypesObject', basicTypesValues);
+
+            nullObject = realm.create('NullableBasicTypesObject', {
+                boolCol:   null,
+                intCol:    null,
+                floatCol:  null,
+                doubleCol: null,
+                stringCol: null,
+                dateCol:   null,
+                dataCol:   null,
+            });
         });
 
-        for (var i = 0; i < schemas.BasicTypes.properties.length; i++) {
-            var prop = schemas.BasicTypes.properties[i];
-            TestCase.assertEqual(nullObject[prop.name], null);
+        for (var name in schemas.BasicTypes.properties) {
+            var prop = schemas.BasicTypes.properties[name];
+            var type = typeof prop == 'object' ? prop.type : prop;
 
-            if (prop.type == Realm.Types.FLOAT) {
-                TestCase.assertEqualWithTolerance(object[prop.name], basicTypesValues[i], 0.000001);
+            TestCase.assertEqual(nullObject[name], null);
+
+            if (type == Realm.Types.FLOAT || type == Realm.Types.DOUBLE) {
+                TestCase.assertEqualWithTolerance(object[name], basicTypesValues[name], 0.000001);
             }
-            else if (prop.type == Realm.Types.DATA) {
-                TestCase.assertArraysEqual(new Uint8Array(object[prop.name]), RANDOM_DATA);
+            else if (type == Realm.Types.DATA) {
+                TestCase.assertArraysEqual(new Uint8Array(object[name]), RANDOM_DATA);
             }
-            else if (prop.type == Realm.Types.DATE) {
-                TestCase.assertEqual(object[prop.name].getTime(), basicTypesValues[i].getTime());
+            else if (type == Realm.Types.DATE) {
+                TestCase.assertEqual(object[name].getTime(), basicTypesValues[name].getTime());
             }
             else {
-                TestCase.assertEqual(object[prop.name], basicTypesValues[i]);
+                TestCase.assertEqual(object[name], basicTypesValues[name]);
             }
         }
 
     },
     testBasicTypesPropertySetters: function() {
-        var basicTypesValues = [true, 1, 1.1, 1.11, 'string', new Date(1), new ArrayBuffer()];
         var realm = new Realm({schema: [schemas.BasicTypes]});
-        var obj = null;
+        var obj;
+
+        var basicTypesValues = {
+            boolCol:   true,
+            intCol:    1,
+            floatCol:  1.1,
+            doubleCol: 1.11,
+            stringCol: 'string',
+            dateCol:   new Date(1),
+            dataCol:   new ArrayBuffer(),
+        };
 
         realm.write(function() {
             obj = realm.create('BasicTypesObject', basicTypesValues);
@@ -92,7 +130,7 @@ module.exports = BaseTest.extend({
         TestCase.assertEqual(obj.boolCol, false, 'wrong bool value');
         TestCase.assertEqual(obj.intCol, 2, 'wrong int value');
         TestCase.assertEqualWithTolerance(obj.floatCol, 2.2, 0.000001, 'wrong float value');
-        TestCase.assertEqual(obj.doubleCol, 2.22, 'wrong double value');
+        TestCase.assertEqualWithTolerance(obj.doubleCol, 2.22, 0.000001, 'wrong double value');
         TestCase.assertEqual(obj.stringCol, 'STRING', 'wrong string value');
         TestCase.assertEqual(obj.dateCol.getTime(), 2, 'wrong date value');
         TestCase.assertArraysEqual(new Uint8Array(obj.dataCol), RANDOM_DATA, 'wrong data value');
@@ -156,24 +194,32 @@ module.exports = BaseTest.extend({
         TestCase.assertEqual(obj.boolCol, false, 'bool value changed outside transaction');
     },
     testNullableBasicTypesPropertySetters: function() {
-        var basicTypesValues = [true, 1, 1.1, 1.11, 'string', new Date(1), RANDOM_DATA];
         var realm = new Realm({schema: [schemas.NullableBasicTypes]});
         var obj, obj1;
+
+        var basicTypesValues = {
+            boolCol:   true,
+            intCol:    1,
+            floatCol:  1.1,
+            doubleCol: 1.11,
+            stringCol: 'string',
+            dateCol:   new Date(1),
+            dataCol:   RANDOM_DATA,
+        };
 
         realm.write(function() {
             obj = realm.create('NullableBasicTypesObject', basicTypesValues);
             obj1 = realm.create('NullableBasicTypesObject', basicTypesValues);
-            for (var index in schemas.NullableBasicTypes.properties) {
-                var prop = schemas.NullableBasicTypes.properties[index];
-                obj[prop.name] = null;
-                obj1[prop.name] = undefined;
+
+            for (var name in schemas.NullableBasicTypes.properties) {
+                obj[name] = null;
+                obj1[name] = undefined;
             }
         });
 
-        for (var index in schemas.NullableBasicTypes.properties) {
-            var prop = schemas.NullableBasicTypes.properties[index];
-            TestCase.assertEqual(obj[prop.name], null);
-            TestCase.assertEqual(obj1[prop.name], null);
+        for (var name in schemas.NullableBasicTypes.properties) {
+            TestCase.assertEqual(obj[name], null);
+            TestCase.assertEqual(obj1[name], null);
         }
 
         realm.write(function() {
@@ -192,8 +238,13 @@ module.exports = BaseTest.extend({
     testLinkTypesPropertyGetters: function() {
         var realm = new Realm({schema: [schemas.LinkTypes, schemas.TestObject]});
         var obj = null;
+
         realm.write(function() {
-            obj = realm.create('LinkTypesObject', [[1], null, [[3]]]);
+            obj = realm.create('LinkTypesObject', {
+                objectCol: {doubleCol: 1},
+                objectCol1: null,
+                arrayCol: [{doubleCol: 3}],
+            });
         });
 
         var objVal = obj.objectCol;
@@ -212,11 +263,16 @@ module.exports = BaseTest.extend({
     testLinkTypesPropertySetters: function() {
         var realm = new Realm({schema: [schemas.LinkTypes, schemas.TestObject]});
         var objects = realm.objects('TestObject');
-        var obj = null;
+        var obj;
 
         realm.write(function() {
-            obj = realm.create('LinkTypesObject', [[1], null, [[3]]]);
+            obj = realm.create('LinkTypesObject', {
+                objectCol: {doubleCol: 1},
+                objectCol1: null,
+                arrayCol: [{doubleCol: 3}],
+            });
         });
+
         TestCase.assertEqual(objects.length, 2);
 
         TestCase.assertThrows(function() {
@@ -240,15 +296,20 @@ module.exports = BaseTest.extend({
 
         // set object as JSON
         realm.write(function() {
-            obj.objectCol = { doubleCol: 1 };
+            obj.objectCol = {doubleCol: 1};
         });
         TestCase.assertEqual(obj.objectCol.doubleCol, 1);
         TestCase.assertEqual(objects.length, 3);
 
         // set array property
         realm.write(function() {
-            obj.arrayCol = [obj.arrayCol[0], obj.objectCol, realm.create('TestObject', [2])];
+            obj.arrayCol = [
+                obj.arrayCol[0],
+                obj.objectCol,
+                realm.create('TestObject', {doubleCol: 2}),
+            ];
         });
+
         TestCase.assertEqual(objects.length, 4);
         TestCase.assertEqual(obj.arrayCol.length, 3);
         TestCase.assertEqual(obj.arrayCol[0].doubleCol, 3);
@@ -256,15 +317,22 @@ module.exports = BaseTest.extend({
         TestCase.assertEqual(obj.arrayCol[2].doubleCol, 2);
     },
     testEnumerablePropertyNames: function() {
-        var basicTypesValues = [true, 1, 1.1, 1.11, 'string', new Date(1), new ArrayBuffer()];
         var realm = new Realm({schema: [schemas.BasicTypes]});
         var object;
 
         realm.write(function() {
-            object = realm.create('BasicTypesObject', basicTypesValues);
+            object = realm.create('BasicTypesObject', {
+                boolCol:   true,
+                intCol:    1,
+                floatCol:  1.1,
+                doubleCol: 1.11,
+                stringCol: 'string',
+                dateCol:   new Date(1),
+                dataCol:   RANDOM_DATA,
+            });
         });
 
-        var propNames = schemas.BasicTypes.properties.map(function(prop) { return prop.name; });
+        var propNames = Object.keys(schemas.BasicTypes.properties);
         TestCase.assertArraysEqual(Object.keys(object), propNames, 'Object.keys');
 
         for (var key in object) {

@@ -69,13 +69,16 @@ namespace realm {
 
 template<> bool RJSAccessor::dict_has_value_for_key(JSContextRef ctx, JSValueRef dict, const std::string &prop_name) {
     JSObjectRef object = RJSValidatedValueToObject(ctx, dict);
-    JSStringRef propStr =JSStringCreateWithUTF8CString(prop_name.c_str());
-    return JSObjectHasProperty(ctx, object, propStr);
+    JSStringRef propStr = RJSStringForString(prop_name);
+    bool ret = JSObjectHasProperty(ctx, object, propStr);
+
+    JSStringRelease(propStr);
+    return ret;
 }
 
 template<> JSValueRef RJSAccessor::dict_value_for_key(JSContextRef ctx, JSValueRef dict, const std::string &prop_name) {
     JSObjectRef object = RJSValidatedValueToObject(ctx, dict);
-    JSStringRef propStr =JSStringCreateWithUTF8CString(prop_name.c_str());
+    JSStringRef propStr = RJSStringForString(prop_name);
     JSValueRef ex = NULL;
     JSValueRef ret = JSObjectGetProperty(ctx, object, propStr, &ex);
     if (ex) {

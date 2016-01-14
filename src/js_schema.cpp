@@ -31,25 +31,34 @@ JSObjectRef RJSSchemaCreate(JSContextRef ctx, Schema &schema) {
     return RJSWrapObject(ctx, RJSSchemaClass(), wrapper);
 }
 
-static inline Property RJSParseProperty(JSContextRef ctx, JSObjectRef propertyObject) {
-    static JSStringRef nameString = JSStringCreateWithUTF8CString("name");
+static inline Property RJSParseProperty(JSContextRef ctx, JSValueRef propertyAttributes, std::string propertyName, ObjectDefaults &objectDefaults) {
+    static JSStringRef defaultString = JSStringCreateWithUTF8CString("default");
     static JSStringRef typeString = JSStringCreateWithUTF8CString("type");
     static JSStringRef objectTypeString = JSStringCreateWithUTF8CString("objectType");
     static JSStringRef optionalString = JSStringCreateWithUTF8CString("optional");
 
     Property prop;
-    prop.name = RJSValidatedStringProperty(ctx, propertyObject, nameString);
+    prop.name = propertyName;
 
-    prop.is_nullable = false;
-    JSValueRef optionalValue = JSObjectGetProperty(ctx, propertyObject, optionalString, NULL);
-    if (!JSValueIsUndefined(ctx, optionalValue)) {
-        if (!JSValueIsBoolean(ctx, optionalValue)) {
-            throw std::runtime_error("'optional' designation expected to be of type boolean");
+    JSObjectRef propertyObject = NULL;
+    std::string type;
+
+    if (JSValueIsObject(ctx, propertyAttributes)) {
+        propertyObject = RJSValidatedValueToObject(ctx, propertyAttributes);
+        type = RJSValidatedStringProperty(ctx, propertyObject, typeString);
+
+        JSValueRef optionalValue = JSObjectGetProperty(ctx, propertyObject, optionalString, NULL);
+        if (!JSValueIsUndefined(ctx, optionalValue)) {
+            if (!JSValueIsBoolean(ctx, optionalValue)) {
+                throw std::runtime_error("'optional' designation expected to be of type boolean");
+            }
+            prop.is_nullable = JSValueToBoolean(ctx, optionalValue);
         }
-        prop.is_nullable = JSValueToBoolean(ctx, optionalValue);
+    }
+    else {
+        type = RJSValidatedStringForValue(ctx, propertyAttributes);
     }
 
-    std::string type = RJSValidatedStringProperty(ctx, propertyObject, typeString);
     if (type == "bool") {
         prop.type = PropertyTypeBool;
     }
@@ -72,22 +81,49 @@ static inline Property RJSParseProperty(JSContextRef ctx, JSObjectRef propertyOb
         prop.type = PropertyTypeData;
     }
     else if (type == "list") {
+        if (!propertyObject) {
+            throw std::runtime_error("List property must specify 'objectType'");
+        }
         prop.type = PropertyTypeArray;
         prop.object_type =  RJSValidatedStringProperty(ctx, propertyObject, objectTypeString);
     }
     else {
         prop.type = PropertyTypeObject;
         prop.is_nullable = true;
-        prop.object_type = type == "object" ? RJSValidatedStringProperty(ctx, propertyObject, objectTypeString) : type;
+
+        // The type could either be 'object' or the name of another object type in the same schema.
+        if (type == "object") {
+            if (!propertyObject) {
+                throw std::runtime_error("Object property must specify 'objectType'");
+            }
+            prop.object_type = RJSValidatedStringProperty(ctx, propertyObject, objectTypeString);
+        }
+        else {
+            prop.object_type = type;
+        }
     }
+
+    if (propertyObject) {
+        JSValueRef defaultValue = RJSValidatedPropertyValue(ctx, propertyObject, defaultString);
+        if (!JSValueIsUndefined(ctx, defaultValue)) {
+            JSValueProtect(ctx, defaultValue);
+            objectDefaults.emplace(prop.name, defaultValue);
+        }
+    }
+
     return prop;
 }
 
 static inline ObjectSchema RJSParseObjectSchema(JSContextRef ctx, JSObjectRef objectSchemaObject, std::map<std::string, realm::ObjectDefaults> &defaults, std::map<std::string, JSValueRef> &prototypes) {
-    static JSStringRef schemaString = JSStringCreateWithUTF8CString("schema");
+    static JSStringRef nameString = JSStringCreateWithUTF8CString("name");
+    static JSStringRef primaryString = JSStringCreateWithUTF8CString("primaryKey");
     static JSStringRef prototypeString = JSStringCreateWithUTF8CString("prototype");
+    static JSStringRef propertiesString = JSStringCreateWithUTF8CString("properties");
+    static JSStringRef schemaString = JSStringCreateWithUTF8CString("schema");
+
     JSObjectRef prototypeObject = NULL;
     JSValueRef prototypeValue = RJSValidatedPropertyValue(ctx, objectSchemaObject, prototypeString);
+
     if (!JSValueIsUndefined(ctx, prototypeValue)) {
         prototypeObject = RJSValidatedValueToObject(ctx, prototypeValue);
         objectSchemaObject = RJSValidatedObjectProperty(ctx, prototypeObject, schemaString, "Realm object prototype must have a 'schema' property.");
@@ -99,29 +135,30 @@ static inline ObjectSchema RJSParseObjectSchema(JSContextRef ctx, JSObjectRef ob
         }
     }
 
-    static JSStringRef propertiesString = JSStringCreateWithUTF8CString("properties");
-    JSObjectRef propertiesObject = RJSValidatedObjectProperty(ctx, objectSchemaObject, propertiesString, "ObjectSchema object must have a 'properties' array.");
-
-    ObjectSchema objectSchema;
     ObjectDefaults objectDefaults;
-    static JSStringRef nameString = JSStringCreateWithUTF8CString("name");
+    ObjectSchema objectSchema;
     objectSchema.name = RJSValidatedStringProperty(ctx, objectSchemaObject, nameString);
 
-    size_t numProperties = RJSValidatedListLength(ctx, propertiesObject);
-    for (unsigned int p = 0; p < numProperties; p++) {
-        JSObjectRef property = RJSValidatedObjectAtIndex(ctx, propertiesObject, p);
-        objectSchema.properties.emplace_back(RJSParseProperty(ctx, property));
-
-        static JSStringRef defaultString = JSStringCreateWithUTF8CString("default");
-        JSValueRef defaultValue = JSObjectGetProperty(ctx, property, defaultString, NULL);
-        if (!JSValueIsUndefined(ctx, defaultValue)) {
-            JSValueProtect(ctx, defaultValue);
-            objectDefaults.emplace(objectSchema.properties.back().name, defaultValue);
+    JSObjectRef propertiesObject = RJSValidatedObjectProperty(ctx, objectSchemaObject, propertiesString, "ObjectSchema must have a 'properties' object.");
+    if (RJSIsValueArray(ctx, propertiesObject)) {
+        size_t propertyCount = RJSValidatedListLength(ctx, propertiesObject);
+        for (size_t i = 0; i < propertyCount; i++) {
+            JSObjectRef propertyObject = RJSValidatedObjectAtIndex(ctx, propertiesObject, (unsigned int)i);
+            std::string propertyName = RJSValidatedStringProperty(ctx, propertyObject, nameString);
+            objectSchema.properties.emplace_back(RJSParseProperty(ctx, propertyObject, propertyName, objectDefaults));
         }
     }
-    defaults.emplace(objectSchema.name, std::move(objectDefaults));
+    else {
+        JSPropertyNameArrayRef propertyNames = JSObjectCopyPropertyNames(ctx, propertiesObject);
+        size_t propertyCount = JSPropertyNameArrayGetCount(propertyNames);
+        for (size_t i = 0; i < propertyCount; i++) {
+            JSStringRef propertyName = JSPropertyNameArrayGetNameAtIndex(propertyNames, i);
+            JSValueRef propertyValue = RJSValidatedPropertyValue(ctx, propertiesObject, propertyName);
+            objectSchema.properties.emplace_back(RJSParseProperty(ctx, propertyValue, RJSStringForJSString(propertyName), objectDefaults));
+        }
+        JSPropertyNameArrayRelease(propertyNames);
+    }
 
-    static JSStringRef primaryString = JSStringCreateWithUTF8CString("primaryKey");
     JSValueRef primaryValue = RJSValidatedPropertyValue(ctx, objectSchemaObject, primaryString);
     if (!JSValueIsUndefined(ctx, primaryValue)) {
         objectSchema.primary_key = RJSValidatedStringForValue(ctx, primaryValue);
@@ -132,11 +169,13 @@ static inline ObjectSchema RJSParseObjectSchema(JSContextRef ctx, JSObjectRef ob
         property->is_primary = true;
     }
 
-    // store prototype
+    // Store prototype so that objects of this type will have their prototype set to this prototype object.
     if (prototypeObject) {
         JSValueProtect(ctx, prototypeObject);
         prototypes[objectSchema.name] = std::move(prototypeObject);
     }
+
+    defaults.emplace(objectSchema.name, std::move(objectDefaults));
 
     return objectSchema;
 }

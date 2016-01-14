@@ -16,7 +16,7 @@ module.exports = BaseTest.extend({
         TestCase.assertEqual(objects.length, 0);
 
         realm.write(function() {
-            realm.create('TestObject', [1]);
+            realm.create('TestObject', {doubleCol: 1});
             TestCase.assertEqual(objects.length, 1);
         });
         TestCase.assertEqual(objects.length, 1);
@@ -24,8 +24,8 @@ module.exports = BaseTest.extend({
     testResultsSubscript: function() {
         var realm = new Realm({schema: [schemas.PersonObject]});
         realm.write(function() {
-            realm.create('PersonObject', ['name1', 1, false]);
-            realm.create('PersonObject', ['name2', 2, false]);
+            realm.create('PersonObject', {name: 'name1', age: 1});
+            realm.create('PersonObject', {name: 'name2', age: 2});
         });
 
         var people = realm.objects('PersonObject');
@@ -41,17 +41,17 @@ module.exports = BaseTest.extend({
         var objects = realm.objects('TestObject');
 
         realm.write(function() {
-            realm.create('TestObject', [1]);
+            realm.create('TestObject', {doubleCol: 1});
         });
 
         TestCase.assertThrows(function() {
-            objects[-1] = [0];
+            objects[-1] = {doubleCol: 0};
         });
         TestCase.assertThrows(function() {
-            objects[0] = [0];
+            objects[0] = {doubleCol: 0};
         });
         TestCase.assertThrows(function() {
-            objects[1] = [0];
+            objects[1] = {doubleCol: 0};
         });
         TestCase.assertThrows(function() {
             objects.length = 0;
@@ -71,12 +71,13 @@ module.exports = BaseTest.extend({
     testResultsEnumerate: function() {
         var realm = new Realm({schema: [schemas.TestObject]});
         var objects = realm.objects('TestObject');
-        for (var object in objects) {
+
+        for (var index in objects) {
             TestCase.assertTrue(false, "No objects should have been enumerated");
         }
 
         realm.write(function() {
-            realm.create('TestObject', [1]);
+            realm.create('TestObject', {doubleCol: 1});
             TestCase.assertEqual(objects.length, 1);
         });
 
@@ -93,12 +94,13 @@ module.exports = BaseTest.extend({
     testSort: function() {
         var realm = new Realm({schema: [schemas.TestObject]});
         var objects = realm.objects('TestObject');
+
         realm.write(function() {
-            realm.create('TestObject', [2]);
-            realm.create('TestObject', [3]);
-            realm.create('TestObject', [1]);
-            realm.create('TestObject', [4]);
-            realm.create('TestObject', [0]);
+            realm.create('TestObject', {doubleCol: 2});
+            realm.create('TestObject', {doubleCol: 3});
+            realm.create('TestObject', {doubleCol: 1});
+            realm.create('TestObject', {doubleCol: 4});
+            realm.create('TestObject', {doubleCol: 0});
         });
 
         objects.sortByProperty('doubleCol');
