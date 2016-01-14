@@ -6,7 +6,11 @@
 
 const React = require('react-native');
 
-module.exports = React.StyleSheet.create({
+const { Navigator, StyleSheet } = React;
+
+const NAVBAR_HEIGHT = Navigator.NavigationBar.Styles.General.TotalNavHeight;
+
+module.exports = StyleSheet.create({
     container: {
         flex: 1,
         justifyContent: 'center',
@@ -16,8 +20,34 @@ module.exports = React.StyleSheet.create({
     navigator: {
         flex: 1,
     },
+    navBar: {
+        backgroundColor: '#f0727d',
+    },
+    navBarLeftArrow: {
+        fontSize: 36,
+        fontWeight: '200',
+        lineHeight: 26,
+        letterSpacing: 2,
+    },
+    navBarLeftButton: {
+        paddingLeft: 8,
+    },
+    navBarRightButton: {
+        paddingRight: 8,
+    },
+    navBarText: {
+        color: '#ffffff',
+        fontSize: 18,
+        marginVertical: 10,
+    },
+    navBarTitle: {
+        fontWeight: '500',
+    },
+    navScene: {
+        top: NAVBAR_HEIGHT,
+    },
     listItem: {
-        borderColor: "#c8c7cc",
+        borderColor: '#c8c7cc',
         borderBottomWidth: 0.5,
         alignItems: 'stretch',
         alignSelf: 'stretch',
