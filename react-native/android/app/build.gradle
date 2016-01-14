@@ -34,29 +34,6 @@ task prepareRealmCore(type:Copy) {
     into "$thirdPartyNdkDir/realm-core"
 }
 
-task downloadJSCHeaders(type: Download) {
-    def jscAPIBaseURL = 'https://svn.webkit.org/repository/webkit/!svn/bc/174650/trunk/Source/JavaScriptCore/API/'
-    def jscHeaderFiles = ['JSBase.h', 'JSContextRef.h', 'JSObjectRef.h', 'JSRetainPtr.h', 'JSStringRef.h', 'JSValueRef.h', 'WebKitAvailability.h', 'JavaScriptCore.h', 'JavaScript.h', 'JSStringRefCF.h']
-    def output = new File(downloadsDir, 'jsc')
-    output.mkdirs()
-    src(jscHeaderFiles.collect { headerName -> "$jscAPIBaseURL$headerName" })
-    onlyIfNewer true
-    overwrite false
-    dest output
-}
-
-// Create Android.mk library module based on so files from mvn + include headers fetched from webkit.org
-task prepareJSC(dependsOn: downloadJSCHeaders) << {
-    copy {
-        from zipTree(configurations.compile.fileCollection { dep -> dep.name == 'android-jsc' }.singleFile)
-        from {downloadJSCHeaders.dest}
-        from 'src/main/jni/third-party/jsc/Android.mk'
-        include 'jni/**/*.so', '*.h', 'Android.mk'
-        filesMatching('*.h', { fname -> fname.path = "JavaScriptCore/${fname.path}"})
-        into "$thirdPartyNdkDir/jsc";
-    }
-}
-
 def getNdkBuildName() {
     if (Os.isFamily(Os.FAMILY_WINDOWS)) {
         return "ndk-build.cmd"
@@ -106,7 +83,7 @@ def getNdkBuildFullPath() {
     return ndkBuildFullPath
 }
 
-task buildReactNdkLib(dependsOn: [prepareJSC], type: Exec) {
+task buildReactNdkLib(type: Exec) {
     inputs.file('src/main/jni')
     outputs.dir("$buildDir/react-ndk/all")
     commandLine getNdkBuildFullPath(),
@@ -170,29 +147,10 @@ android {
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile 'com.android.support:appcompat-v7:23.0.1'
-    compile 'com.android.support:recyclerview-v7:23.0.1'
-    compile 'com.facebook.fresco:fresco:0.8.1'
-    compile 'com.facebook.fresco:imagepipeline-okhttp:0.8.1'
-    compile 'com.facebook.stetho:stetho:1.2.0'
-    compile 'com.facebook.stetho:stetho-okhttp:1.2.0'
-    compile 'com.fasterxml.jackson.core:jackson-core:2.2.3'
-    compile 'com.google.code.findbugs:jsr305:3.0.0'
-    compile 'com.squareup.okhttp:okhttp:2.5.0'
-    compile 'com.squareup.okhttp:okhttp-ws:2.5.0'
-    compile 'com.squareup.okio:okio:1.6.0'
-    compile 'org.webkit:android-jsc:r174650'
-    compile "com.facebook.react:react-native:0.16.+"
     compile 'com.github.KeepSafe:ReLinker:1.1'
     compile 'org.nanohttpd:nanohttpd:2.2.0'
-
-    testCompile "junit:junit:${JUNIT_VERSION}"
-    testCompile "org.powermock:powermock-api-mockito:${POWERMOCK_VERSION}"
-    testCompile "org.powermock:powermock-module-junit4-rule:${POWERMOCK_VERSION}"
-    testCompile "org.powermock:powermock-classloading-xstream:${POWERMOCK_VERSION}"
-    testCompile "org.mockito:mockito-core:${MOCKITO_CORE_VERSION}"
-    testCompile "org.easytesting:fest-assert-core:${FEST_ASSERT_CORE_VERSION}"
-    testCompile("org.robolectric:robolectric:${ROBOLECTRIC_VERSION}")
+    compile project (':react-native')// this is the locally patched version of Facebook React Native
+    compile 'org.webkit:android-jsc:r174650'
 }
 
 apply from: 'release.gradle'
