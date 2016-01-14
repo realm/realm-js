@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import com.reactexample.RealmReactAndroid;
+import com.reacttests.RealmReactAndroid;
 
 public class MainActivity extends Activity implements DefaultHardwareBackBtnHandler {
 
