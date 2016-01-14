@@ -19,5 +19,8 @@ allprojects {
         jcenter {
             url "http://dl.bintray.com/mkonicek/maven"
         }
+        flatDir{
+            dirs 'lib'
+        }
     }
 }

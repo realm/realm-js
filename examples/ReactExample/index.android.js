@@ -4,6 +4,9 @@
 
 'use strict';
 
+var RealmReactAndroid = require('NativeModules').RealmReactAndroid;
+var Realm = require('realm');
+
 const React = require('react-native');
 const TodoApp = require('./components/todo-app');
 
