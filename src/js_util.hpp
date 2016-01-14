@@ -41,8 +41,6 @@ JSClassRef RJSCreateWrapperClass(const char * name, JSObjectGetPropertyCallback 
     return JSClassCreate(&classDefinition);
 }
 
-std::string RJSTypeGet(realm::PropertyType propertyType);
-
 std::string RJSStringForJSString(JSStringRef jsString);
 std::string RJSStringForValue(JSContextRef ctx, JSValueRef value);
 std::string RJSValidatedStringForValue(JSContextRef ctx, JSValueRef value, const char * name = nullptr);
@@ -138,7 +136,7 @@ static inline JSValueRef RJSValidatedPropertyValue(JSContextRef ctx, JSObjectRef
 static inline JSObjectRef RJSValidatedObjectProperty(JSContextRef ctx, JSObjectRef object, JSStringRef property, const char *err = NULL) {
     JSValueRef propertyValue = RJSValidatedPropertyValue(ctx, object, property);
     if (JSValueIsUndefined(ctx, propertyValue)) {
-        throw std::runtime_error(err ?: "Object property is undefined");
+        throw std::runtime_error(err ?: "Object property '" + RJSStringForJSString(property) + "' is undefined");
     }
     return RJSValidatedValueToObject(ctx, propertyValue, err);
 }
@@ -158,7 +156,7 @@ static inline std::string RJSValidatedStringProperty(JSContextRef ctx, JSObjectR
     if (exception) {
         throw RJSException(ctx, exception);
     }
-    return RJSValidatedStringForValue(ctx, propertyValue);
+    return RJSValidatedStringForValue(ctx, propertyValue, RJSStringForJSString(property).c_str());
 }
 
 static inline size_t RJSValidatedListLength(JSContextRef ctx, JSObjectRef object) {

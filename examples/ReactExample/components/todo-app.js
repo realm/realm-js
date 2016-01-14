@@ -19,7 +19,7 @@ class TodoApp extends React.Component {
         let todoLists = realm.objects('TodoList');
         if (todoLists.length < 1) {
             realm.write(() => {
-                realm.create('TodoList', {name: 'Todo List', items: []});
+                realm.create('TodoList', {name: 'Todo List'});
             });
         }
 
@@ -78,7 +78,7 @@ class TodoApp extends React.Component {
         }
 
         realm.write(() => {
-            realm.create('TodoList', {name: '', items: []});
+            realm.create('TodoList', {name: ''});
         });
 
         this._setEditingRow(items.length - 1);

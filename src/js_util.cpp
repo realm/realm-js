@@ -23,21 +23,6 @@ JSValueRef RJSMakeError(JSContextRef ctx, const std::string &message) {
     return JSObjectMakeError(ctx, 1, &value, NULL);
 }
 
-std::string RJSTypeGet(PropertyType propertyType) {
-    switch (propertyType) {
-        case PropertyTypeBool:  return "bool";
-        case PropertyTypeInt:   return "int";
-        case PropertyTypeFloat: return "float";
-        case PropertyTypeDouble:return "double";
-        case PropertyTypeString:return "string";
-        case PropertyTypeDate:  return "date";
-        case PropertyTypeData:  return "data";
-        case PropertyTypeObject:return "object";
-        case PropertyTypeArray: return "list";
-        default:                return nullptr;
-    }
-}
-
 std::string RJSStringForJSString(JSStringRef jsString) {
     std::string str;
     size_t maxSize = JSStringGetMaximumUTF8CStringSize(jsString);
@@ -47,10 +32,10 @@ std::string RJSStringForJSString(JSStringRef jsString) {
 }
 
 std::string RJSStringForValue(JSContextRef ctx, JSValueRef value) {
-    JSValueRef *exception;
-    JSStringRef jsString = JSValueToStringCopy(ctx, value, exception);
+    JSValueRef exception = NULL;
+    JSStringRef jsString = JSValueToStringCopy(ctx, value, &exception);
     if (!jsString) {
-        throw RJSException(ctx, *exception);
+        throw RJSException(ctx, exception);
     }
 
     std::string string = RJSStringForJSString(jsString);
@@ -97,4 +82,3 @@ bool RJSIsValueDate(JSContextRef ctx, JSValueRef value) {
     static JSStringRef dateString = JSStringCreateWithUTF8CString("Date");
     return RJSIsValueObjectOfType(ctx, value, dateString);
 }
-
