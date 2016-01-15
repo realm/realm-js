@@ -1,8 +1,5 @@
 {
   "name": "realm-tests",
   "version": "0.0.1",
-  "private": true,
-  "dependencies": {
-    "realm": "file:../lib"
-  }
+  "private": true
 }
