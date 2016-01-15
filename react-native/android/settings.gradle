@@ -1,3 +1,4 @@
 rootProject.name = 'ReactTests'
 
 include ':app'
+include ':react-native'

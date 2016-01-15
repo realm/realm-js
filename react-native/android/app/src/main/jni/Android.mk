@@ -7,6 +7,12 @@ LOCAL_SRC_FILES := core/librealm-android-$(TARGET_ARCH_ABI).a
 include $(PREBUILT_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
+LOCAL_MODULE:= jsc-$(TARGET_ARCH_ABI)
+LOCAL_SRC_FILES := jsc/jni/$(TARGET_ARCH_ABI)/libjsc.so
+LOCAL_EXPORT_C_INCLUDES := jsc
+include $(PREBUILT_SHARED_LIBRARY)
+
+include $(CLEAR_VARS)
 LOCAL_MODULE := librealmreact
 
 LOCAL_SRC_FILES := \
@@ -37,9 +43,6 @@ LOCAL_C_INCLUDES += src/object-store
 LOCAL_C_INCLUDES += src/object-store/parser
 LOCAL_C_INCLUDES += vendor
 LOCAL_C_INCLUDES += vendor/PEGTL
-LOCAL_C_INCLUDES += react-native/ReactAndroid/src/main/jni/react
-LOCAL_C_INCLUDES += react-native/ReactAndroid/src/main/jni/first-party
-LOCAL_C_INCLUDES += react-native/ReactAndroid/src/main/jni/first-party/fb/include
 LOCAL_C_INCLUDES += $(JAVA_HOME)/include
 LOCAL_C_INCLUDES += $(JAVA_HOME)/include/darwin
 LOCAL_C_INCLUDES += core/include
@@ -50,8 +53,5 @@ LOCAL_EXPORT_CPPFLAGS := $(CXX11_FLAGS)
 LOCAL_LDLIBS    := -llog
 
 LOCAL_STATIC_LIBRARIES := realm-android-$(TARGET_ARCH_ABI)
-LOCAL_SHARED_LIBRARIES := libjsc
+LOCAL_SHARED_LIBRARIES := jsc-$(TARGET_ARCH_ABI)
 include $(BUILD_SHARED_LIBRARY)
-
-$(call import-module,jsc)
-
