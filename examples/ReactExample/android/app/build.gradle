@@ -73,6 +73,6 @@ android {
 
 dependencies {
     compile 'com.android.support:appcompat-v7:23.0.1'
-    compile 'com.facebook.react:react-native:0.18.0_patched'
+    compile 'com.facebook.react:react-native:0.18.0-patched'
     compile 'io.realm.react:realm-react-native:0.0.1-SNAPSHOT'
 }
