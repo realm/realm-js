@@ -8,8 +8,8 @@ include $(PREBUILT_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE:= jsc-$(TARGET_ARCH_ABI)
-LOCAL_SRC_FILES := react-native/ReactAndroid/build/third-party-ndk/jsc/jni/$(TARGET_ARCH_ABI)/libjsc.so
-LOCAL_EXPORT_C_INCLUDES := react-native/ReactAndroid/build/third-party-ndk/jsc
+LOCAL_SRC_FILES := jsc/jni/$(TARGET_ARCH_ABI)/libjsc.so
+LOCAL_EXPORT_C_INCLUDES := jsc
 include $(PREBUILT_SHARED_LIBRARY)
 
 include $(CLEAR_VARS)
@@ -43,9 +43,6 @@ LOCAL_C_INCLUDES += src/object-store
 LOCAL_C_INCLUDES += src/object-store/parser
 LOCAL_C_INCLUDES += vendor
 LOCAL_C_INCLUDES += vendor/PEGTL
-LOCAL_C_INCLUDES += react-native/ReactAndroid/src/main/jni/react
-LOCAL_C_INCLUDES += react-native/ReactAndroid/src/main/jni/first-party
-LOCAL_C_INCLUDES += react-native/ReactAndroid/src/main/jni/first-party/fb/include
 LOCAL_C_INCLUDES += $(JAVA_HOME)/include
 LOCAL_C_INCLUDES += $(JAVA_HOME)/include/darwin
 LOCAL_C_INCLUDES += core/include

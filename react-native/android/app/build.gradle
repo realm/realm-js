@@ -149,7 +149,7 @@ dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile 'com.github.KeepSafe:ReLinker:1.1'
     compile 'org.nanohttpd:nanohttpd:2.2.0'
-    compile project (':react-native')// this is the locally patched version of Facebook React Native
+    compile 'com.facebook.react:react-native:0.18.0'
     compile 'org.webkit:android-jsc:r174650'
 }
 

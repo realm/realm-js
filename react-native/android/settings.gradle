@@ -2,4 +2,3 @@ rootProject.name = 'ReactTests'
 
 include ':app'
 include ':react-native'
-project(':react-native').projectDir = new File(rootProject.projectDir, '../../../react-native/ReactAndroid')

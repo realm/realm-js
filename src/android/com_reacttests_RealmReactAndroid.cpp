@@ -6,12 +6,17 @@
 #include <sstream>
 
 #include "com_reacttests_RealmReactAndroid.h"
-#include "JSCExecutor.h"
 #include "js_init.h"
 #include "rpc.hpp"
 #include "platform.hpp"
 #include <unordered_map>
 #include <android/log.h>
+
+namespace facebook {
+    namespace react {
+        class JSCExecutor;
+    }
+}
 
 /*
  * Class:     com_reacttests_RealmReactAndroid
