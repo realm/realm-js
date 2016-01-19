@@ -134,7 +134,7 @@ static std::vector<std::string> invalid_queries = {
 namespace realm {
 namespace parser {
 
-bool testGrammar()
+bool test_grammar()
 {
     bool success = true;
     for (auto &query : valid_queries) {
