@@ -34,8 +34,9 @@ using namespace realm;
 #define REALM_FALLTHROUGH
 #endif
 
-Results::Results(SharedRealm r, Query q, SortOrder s)
+Results::Results(SharedRealm r, const ObjectSchema &o, Query q, SortOrder s)
 : m_realm(std::move(r))
+, m_object_schema(&o)
 , m_query(std::move(q))
 , m_table(m_query.get_table().get())
 , m_sort(std::move(s))
@@ -43,8 +44,9 @@ Results::Results(SharedRealm r, Query q, SortOrder s)
 {
 }
 
-Results::Results(SharedRealm r, Table& table)
+Results::Results(SharedRealm r, const ObjectSchema &o, Table& table)
 : m_realm(std::move(r))
+, m_object_schema(&o)
 , m_table(&table)
 , m_mode(Mode::Table)
 {
@@ -63,6 +65,17 @@ void Results::validate_write() const
     validate_read();
     if (!m_realm || !m_realm->is_in_transaction())
         throw InvalidTransactionException("Must be in a write transaction");
+}
+
+void Results::set_live(bool live)
+{
+    if (!live && m_mode == Mode::Table) {
+        m_query = m_table->where();
+        m_mode = Mode::Query;
+    }
+
+    update_tableview();
+    m_live = live;
 }
 
 size_t Results::size()
@@ -92,7 +105,7 @@ RowExpr Results::get(size_t row_ndx)
         case Mode::TableView:
             update_tableview();
             if (row_ndx < m_table_view.size())
-                return m_table_view.get(row_ndx);
+                return (!m_live && !m_table_view.is_row_attached(row_ndx)) ? RowExpr() : m_table_view.get(row_ndx);
             break;
     }
 
@@ -146,7 +159,9 @@ void Results::update_tableview()
             m_mode = Mode::TableView;
             break;
         case Mode::TableView:
-            m_table_view.sync_if_needed();
+            if (m_live) {
+                m_table_view.sync_if_needed();
+            }
             break;
     }
 }
@@ -158,9 +173,10 @@ size_t Results::index_of(Row const& row)
         throw DetatchedAccessorException{};
     }
     if (m_table && row.get_table() != m_table) {
-        throw IncorrectTableException{
-            ObjectStore::object_type_for_table_name(m_table->get_name()),
-            ObjectStore::object_type_for_table_name(row.get_table()->get_name())};
+        throw IncorrectTableException(m_object_schema->name,
+            ObjectStore::object_type_for_table_name(row.get_table()->get_name()),
+            "Attempting to get the index of a Row of the wrong type"
+        );
     }
     return index_of(row.get_index());
 }
@@ -310,23 +326,20 @@ TableView Results::get_tableview()
     REALM_UNREACHABLE();
 }
 
-StringData Results::get_object_type() const noexcept
-{
-    return ObjectStore::object_type_for_table_name(m_table->get_name());
-}
-
 Results Results::sort(realm::SortOrder&& sort) const
 {
-    return Results(m_realm, get_query(), std::move(sort));
+    return Results(m_realm, get_object_schema(), get_query(), std::move(sort));
 }
 
 Results Results::filter(Query&& q) const
 {
-    return Results(m_realm, get_query().and_query(std::move(q)), get_sort());
+    return Results(m_realm, get_object_schema(), get_query().and_query(std::move(q)), get_sort());
 }
 
-Results::UnsupportedColumnTypeException::UnsupportedColumnTypeException(size_t column, const Table* table) {
-    column_index = column;
-    column_name = table->get_column_name(column);
-    column_type = table->get_column_type(column);
+Results::UnsupportedColumnTypeException::UnsupportedColumnTypeException(size_t column, const Table* table)
+: std::runtime_error((std::string)"Operation not supported on '" + table->get_column_name(column).data() + "' columns")
+, column_index(column)
+, column_name(table->get_column_name(column))
+, column_type(table->get_column_type(column))
+{
 }

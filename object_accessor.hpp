@@ -7,13 +7,14 @@
 
 #include <string>
 #include "shared_realm.hpp"
+#include "schema.hpp"
 #include "list.hpp"
 
 namespace realm {
 
     class Object {
     public:
-        Object(SharedRealm r, const ObjectSchema &s, Row o) : m_realm(r), object_schema(s), m_row(o) {}
+        Object(SharedRealm r, const ObjectSchema &s, Row o) : m_realm(r), m_object_schema(&s), m_row(o) {}
 
         // property getter/setter
         template<typename ValueType, typename ContextType>
@@ -24,14 +25,15 @@ namespace realm {
 
         // create an Object from a native representation
         template<typename ValueType, typename ContextType>
-        static inline Object create(ContextType ctx, SharedRealm realm, ObjectSchema &object_schema, ValueType value, bool try_update);
+        static inline Object create(ContextType ctx, SharedRealm realm, const ObjectSchema &object_schema, ValueType value, bool try_update);
 
-        const ObjectSchema &object_schema;
         SharedRealm realm() { return m_realm; }
+        const ObjectSchema &get_object_schema() { return *m_object_schema; }
         Row row() { return m_row; }
 
     private:
         SharedRealm m_realm;
+        const ObjectSchema *m_object_schema;
         Row m_row;
 
         template<typename ValueType, typename ContextType>
@@ -76,6 +78,9 @@ namespace realm {
         static size_t to_object_index(ContextType ctx, SharedRealm realm, ValueType &val, const std::string &type, bool try_update);
         static ValueType from_object(ContextType ctx, Object);
 
+        // object index for an existing object
+        static size_t to_existing_object_index(ContextType ctx, ValueType &val);
+
         // list value acessors
         static size_t list_size(ContextType ctx, ValueType &val);
         static ValueType list_value_at_index(ContextType ctx, ValueType &val, size_t index);
@@ -115,10 +120,10 @@ namespace realm {
     template <typename ValueType, typename ContextType>
     inline void Object::set_property_value(ContextType ctx, std::string prop_name, ValueType value, bool try_update)
     {
-        const Property *prop = object_schema.property_for_name(prop_name);
+        const Property *prop = m_object_schema->property_for_name(prop_name);
         if (!prop) {
-            throw InvalidPropertyException(object_schema.name, prop_name,
-                "Setting invalid property '" + prop_name + "' on object '" + object_schema.name + "'.");
+            throw InvalidPropertyException(m_object_schema->name, prop_name,
+                "Setting invalid property '" + prop_name + "' on object '" + m_object_schema->name + "'.");
         }
         set_property_value_impl(ctx, *prop, value, try_update);
     };
@@ -126,10 +131,10 @@ namespace realm {
     template <typename ValueType, typename ContextType>
     inline ValueType Object::get_property_value(ContextType ctx, std::string prop_name)
     {
-        const Property *prop = object_schema.property_for_name(prop_name);
+        const Property *prop = m_object_schema->property_for_name(prop_name);
         if (!prop) {
-            throw InvalidPropertyException(object_schema.name, prop_name,
-                "Getting invalid property '" + prop_name + "' on object '" + object_schema.name + "'.");
+            throw InvalidPropertyException(m_object_schema->name, prop_name,
+                "Getting invalid property '" + prop_name + "' on object '" + m_object_schema->name + "'.");
         }
         return get_property_value_impl<ValueType>(ctx, *prop);
     };
@@ -239,7 +244,7 @@ namespace realm {
     }
 
     template<typename ValueType, typename ContextType>
-    inline Object Object::create(ContextType ctx, SharedRealm realm, ObjectSchema &object_schema, ValueType value, bool try_update)
+    inline Object Object::create(ContextType ctx, SharedRealm realm, const ObjectSchema &object_schema, ValueType value, bool try_update)
     {
         using Accessor = NativeAccessor<ValueType, ContextType>;
 
@@ -279,7 +284,7 @@ namespace realm {
 
         // populate
         Object object(realm, object_schema, table->get(row_index));
-        for (Property &prop : object_schema.properties) {
+        for (const Property &prop : object_schema.properties) {
             if (created || !prop.is_primary) {
                 if (Accessor::dict_has_value_for_key(ctx, value, prop.name)) {
                     object.set_property_value_impl(ctx, prop, Accessor::dict_value_for_key(ctx, value, prop.name), try_update);
@@ -304,19 +309,19 @@ namespace realm {
     template<typename ValueType, typename ContextType>
     void List::add(ContextType ctx, ValueType value)
     {
-        add(NativeAccessor<ValueType, ContextType>::to_object_index(ctx, m_realm, value, object_schema.name, false));
+        add(NativeAccessor<ValueType, ContextType>::to_object_index(ctx, m_realm, value, get_object_schema().name, false));
     }
 
     template<typename ValueType, typename ContextType>
     void List::insert(ContextType ctx, ValueType value, size_t list_ndx)
     {
-        insert(list_ndx, NativeAccessor<ValueType, ContextType>::to_object_index(ctx, m_realm, value, object_schema.name, false));
+        insert(list_ndx, NativeAccessor<ValueType, ContextType>::to_object_index(ctx, m_realm, value, get_object_schema().name, false));
     }
 
     template<typename ValueType, typename ContextType>
     void List::set(ContextType ctx, ValueType value, size_t list_ndx)
     {
-        set(list_ndx, NativeAccessor<ValueType, ContextType>::to_object_index(ctx, m_realm, value, object_schema.name, false));
+        set(list_ndx, NativeAccessor<ValueType, ContextType>::to_object_index(ctx, m_realm, value, get_object_schema().name, false));
     }
 }
 

@@ -25,9 +25,9 @@
 namespace realm {
     class List {
       public:
-        List(SharedRealm &r, const ObjectSchema &s, LinkViewRef l) : object_schema(s), m_realm(r), m_link_view(l) {}
+        List(SharedRealm &r, const ObjectSchema &s, LinkViewRef l) : m_realm(r), m_object_schema(&s), m_link_view(l) {}
 
-        const ObjectSchema &object_schema;
+        const ObjectSchema &get_object_schema() const { return *m_object_schema; }
         SharedRealm realm() { return m_realm; }
 
         size_t size();
@@ -47,16 +47,17 @@ namespace realm {
         template<typename ValueType, typename ContextType>
         void set(ContextType ctx, ValueType value, size_t list_ndx);
 
+        Query get_query();
+
         void verify_valid_row(std::size_t row_ndx, bool insertion = false);
         void verify_attached();
         void verify_in_tranaction();
 
       private:
         SharedRealm m_realm;
+        const ObjectSchema *m_object_schema;
         LinkViewRef m_link_view;
     };
 }
-
-
 
 #endif /* REALM_LIST_HPP */

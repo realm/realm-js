@@ -46,15 +46,21 @@ public:
     // or a wrapper around a query and a sort order which creates and updates
     // the tableview as needed
     Results() = default;
-    Results(SharedRealm r, Table& table);
-    Results(SharedRealm r, Query q, SortOrder s = {});
+    Results(SharedRealm r, const ObjectSchema& o, Table& table);
+    Results(SharedRealm r, const ObjectSchema& o, Query q, SortOrder s = {});
 
     // Results is copyable and moveable
     Results(Results const&) = default;
     Results(Results&&) = default;
-    Results& operator=(Results const&) = default;
     Results& operator=(Results&&) = default;
+    Results& operator=(Results const&) = default;
 
+    // Get the Realm
+    SharedRealm get_realm() const { return m_realm; }
+    
+    // Object schema describing the vendored object type
+    const ObjectSchema &get_object_schema() const { return *m_object_schema; }
+    
     // Get a query which will match the same rows as is contained in this Results
     // Returned query will not be valid if the current mode is Empty
     Query get_query() const;
@@ -66,7 +72,10 @@ public:
     TableView get_tableview();
 
     // Get the object type which will be returned by get()
-    StringData get_object_type() const noexcept;
+    StringData get_object_type() const noexcept { return get_object_schema().name; }
+
+    // Set whether the TableView should sync if needed before accessing results
+    void set_live(bool live);
 
     // Get the size of this results
     // Can be either O(1) or O(N) depending on the state of things
@@ -118,25 +127,37 @@ public:
 
     // The Results object has been invalidated (due to the Realm being invalidated)
     // All non-noexcept functions can throw this
-    struct InvalidatedException {};
+    struct InvalidatedException : public std::runtime_error
+    {
+        InvalidatedException() : std::runtime_error("Access to invalidated Results objects") {}
+    };
 
     // The input index parameter was out of bounds
-    struct OutOfBoundsIndexException {
-        size_t requested;
-        size_t valid_count;
+    struct OutOfBoundsIndexException : public std::out_of_range
+    {
+        OutOfBoundsIndexException(size_t r, size_t c) :
+            std::out_of_range((std::string)"Requested index " + std::to_string(r) +
+                              " greater than max " + std::to_string(c)),
+            requested(r), valid_count(c) {}
+        const size_t requested;
+        const size_t valid_count;
     };
 
     // The input Row object is not attached
-    struct DetatchedAccessorException { };
+    struct DetatchedAccessorException : public std::runtime_error {
+        DetatchedAccessorException() : std::runtime_error("Atempting to access an invalid object") {}
+    };
 
     // The input Row object belongs to a different table
-    struct IncorrectTableException {
-        StringData expected;
-        StringData actual;
+    struct IncorrectTableException : public std::runtime_error {
+        IncorrectTableException(StringData e, StringData a, const std::string &error) :
+            std::runtime_error(error), expected(e), actual(a) {}
+        const StringData expected;
+        const StringData actual;
     };
 
     // The requested aggregate operation is not supported for the column type
-    struct UnsupportedColumnTypeException {
+    struct UnsupportedColumnTypeException : public std::runtime_error {
         size_t column_index;
         StringData column_name;
         DataType column_type;
@@ -146,10 +167,12 @@ public:
 
 private:
     SharedRealm m_realm;
+    const ObjectSchema *m_object_schema;
     Query m_query;
     TableView m_table_view;
     Table* m_table = nullptr;
     SortOrder m_sort;
+    bool m_live = true;
 
     Mode m_mode = Mode::Empty;
 

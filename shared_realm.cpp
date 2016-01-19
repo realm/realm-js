@@ -402,8 +402,6 @@ uint64_t Realm::get_schema_version(const realm::Realm::Config &config)
 
 void Realm::close()
 {
-    invalidate();
-
     if (m_notifier) {
         m_notifier->remove_realm(this);
     }
