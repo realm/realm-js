@@ -6,16 +6,17 @@
 
 const React = require('react-native');
 
-const { Navigator, StyleSheet } = React;
+const { Navigator, Platform, StyleSheet } = React;
+const { NavBarHeight, TotalNavHeight } = Navigator.NavigationBar.Styles.General;
 
-const NAVBAR_HEIGHT = Navigator.NavigationBar.Styles.General.TotalNavHeight;
+const iOS = (Platform.OS == 'ios');
 
 module.exports = StyleSheet.create({
     container: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'stretch',
-        backgroundColor: '#ffffff',
+        backgroundColor: '#fff',
     },
     navigator: {
         flex: 1,
@@ -23,11 +24,17 @@ module.exports = StyleSheet.create({
     navBar: {
         backgroundColor: '#f0727d',
     },
+    navBarView: {
+        alignItems: 'center',
+        flexDirection: 'row',
+        height: NavBarHeight,
+    },
     navBarLeftArrow: {
-        fontSize: 36,
+        color: '#fff',
+        fontSize: 40,
         fontWeight: '200',
-        lineHeight: 26,
         letterSpacing: 2,
+        marginTop: -6,
     },
     navBarLeftButton: {
         paddingLeft: 8,
@@ -36,21 +43,21 @@ module.exports = StyleSheet.create({
         paddingRight: 8,
     },
     navBarText: {
-        color: '#ffffff',
+        color: '#fff',
         fontSize: 18,
-        marginVertical: 10,
     },
-    navBarTitle: {
+    navBarTitleText: {
         fontWeight: '500',
     },
     navScene: {
-        top: NAVBAR_HEIGHT,
+        top: TotalNavHeight,
     },
     listItem: {
         borderColor: '#c8c7cc',
         borderBottomWidth: 0.5,
         alignItems: 'stretch',
         alignSelf: 'stretch',
+        justifyContent: 'center',
         flexDirection: 'row',
         flex: 1,
         height: 44,
@@ -64,20 +71,26 @@ module.exports = StyleSheet.create({
     listItemCheckbox: {
         borderColor: '#ccc',
         borderWidth: 1,
-        textAlign: 'center',
         width: 16,
         height: 16,
-        lineHeight: 14,
+    },
+    listItemCheckboxText: {
+        width: 14,
+        height: 14,
+        fontSize: iOS ? 14 : 10,
+        textAlign: 'center',
     },
     listItemCount: {
         borderColor: '#ccc',
         borderWidth: 1,
         borderRadius: 8,
-        textAlign: 'center',
-        fontSize: 12,
         width: 24,
         height: 18,
-        lineHeight: 16,
+    },
+    listItemCountText: {
+        backgroundColor: 'transparent',
+        fontSize: iOS ? 12 : 11,
+        textAlign: 'center',
     },
     listItemInput: {
         fontFamily: 'System',
@@ -86,16 +99,17 @@ module.exports = StyleSheet.create({
         flex: 1,
     },
     listItemText: {
+        alignSelf: 'center',
         fontFamily: 'System',
         fontSize: 15,
         flexDirection: 'column',
         flex: 1,
-        lineHeight: 30,
     },
     listItemTextSpecial: {
         fontStyle: 'italic',
     },
     listItemDelete: {
+        backgroundColor: 'transparent',
         paddingLeft: 12,
         paddingRight: 12,
         flexDirection: 'column',

@@ -12,8 +12,10 @@ const styles = require('./styles');
 
 const {
     Navigator,
+    StatusBarIOS,
     Text,
     TouchableOpacity,
+    View,
 } = React;
 
 class TodoApp extends React.Component {
@@ -41,6 +43,12 @@ class TodoApp extends React.Component {
     get currentListView() {
         let refs = this.refs.nav.refs;
         return refs.listItemView || refs.listView;
+    }
+
+    componentWillMount() {
+        if (StatusBarIOS) {
+            StatusBarIOS.setStyle('light-content');
+        }
     }
 
     render() {
@@ -155,13 +163,13 @@ const RouteMapper = {
 
         let prevRoute = navState.routeStack[index - 1];
         return (
-            <TouchableOpacity
-                onPress={() => navigator.pop()}
-                style={styles.navBarLeftButton}>
-                <Text style={styles.navBarText}>
+            <TouchableOpacity onPress={() => navigator.pop()}>
+                <View style={[styles.navBarView, styles.navBarLeftButton]}>
                     <Text style={styles.navBarLeftArrow}>‹</Text>
-                    {prevRoute.backButtonTitle || prevRoute.title || 'Back'}
-                </Text>
+                    <Text style={styles.navBarText}>
+                        {prevRoute.backButtonTitle || prevRoute.title || 'Back'}
+                    </Text>
+                </View>
             </TouchableOpacity>
         );
     },
@@ -172,21 +180,23 @@ const RouteMapper = {
         }
 
         return (
-            <TouchableOpacity
-                onPress={route.onRightButtonPress}
-                style={styles.navBarRightButton}>
-                <Text style={styles.navBarText}>
-                    {route.rightButtonTitle}
-                </Text>
+            <TouchableOpacity onPress={route.onRightButtonPress}>
+                <View style={[styles.navBarView, styles.navBarRightButton]}>
+                    <Text style={styles.navBarText}>
+                        {route.rightButtonTitle}
+                    </Text>
+                </View>
             </TouchableOpacity>
         );
     },
 
     Title(route) {
         return (
-            <Text style={[styles.navBarText, styles.navBarTitle]}>
-                {route.title}
-            </Text>
+            <View style={styles.navBarView}>
+                <Text style={[styles.navBarText, styles.navBarTitleText]}>
+                    {route.title}
+                </Text>
+            </View>
         );
     },
 };

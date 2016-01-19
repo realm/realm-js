@@ -142,9 +142,11 @@ class TodoListExtraItem extends TodoListItem {
     renderLeftSide() {
         return (
             <View style={styles.listItemLeftSide}>
-                <Text style={styles.listItemCount}>
-                    {this.props.item.items.length}
-                </Text>
+                <View style={styles.listItemCount}>
+                    <Text style={styles.listItemCountText}>
+                        {this.props.item.items.length}
+                    </Text>
+                </View>
             </View>
         );
     }
