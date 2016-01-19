@@ -18,7 +18,7 @@ static NSString * const RCTDevMenuKey = @"RCTDevMenu";
         NSMutableDictionary *settings = [([defaults dictionaryForKey:RCTDevMenuKey] ?: @{}) mutableCopy];
         NSMutableDictionary *domain = [[defaults volatileDomainForName:NSArgumentDomain] mutableCopy];
 
-        settings[@"executorClass"] = [defaults boolForKey:RealmReactEnableChromeDebuggingKey] ? @"RCTWebSocketExecutor" : @"RCTContextExecutor";
+        settings[@"executorClass"] = [defaults boolForKey:RealmReactEnableChromeDebuggingKey] ? @"RCTWebSocketExecutor" : @"RCTJSCExecutor";
         domain[RCTDevMenuKey] = settings;
 
         // Re-register the arguments domain (highest precedent and volatile) with our new overridden settings.
