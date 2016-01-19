@@ -382,7 +382,7 @@ auto value_of_type_for_query(TableGetter&& tables, Value&& value, Arguments &arg
 {
     const bool isColumn = std::is_same<PropertyExpression, typename std::remove_reference<Value>::type>::value;
     using helper = std::conditional_t<isColumn, ColumnGetter<RetType, TableGetter>, ValueGetter<RetType, TableGetter>>;
-    return helper::convert(std::forward<TableGetter>(tables), std::forward<Value>(value), args);
+    return helper::convert(tables, value, args);
 }
 
 template <typename A, typename B>
