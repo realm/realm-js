@@ -1,10 +1,8 @@
-
-#include "parser.hpp"
+#include "catch.hpp"
+#include "parser/parser.hpp"
 
 #include <vector>
 #include <string>
-#include <exception>
-#include <iostream>
 
 static std::vector<std::string> valid_queries = {
     // true/false predicates
@@ -131,36 +129,16 @@ static std::vector<std::string> invalid_queries = {
     "truepredicate & truepredicate",
 };
 
-namespace realm {
-namespace parser {
-
-bool test_grammar()
-{
-    bool success = true;
-    for (auto &query : valid_queries) {
-        std::cout << "valid query: " << query << std::endl;
-        try {
-            realm::parser::parse(query);
-        } catch (std::exception &ex) {
-            std::cout << "FAILURE - " << ex.what() << std::endl;
-            success = false;
-        }
+TEST_CASE("valid queries") {
+    for (auto& query : valid_queries) {
+        INFO("query: " << query);
+        CHECK_NOTHROW(realm::parser::parse(query));
     }
-
-    for (auto &query : invalid_queries) {
-        std::cout << "invalid query: " << query << std::endl;
-        try {
-            realm::parser::parse(query);
-        } catch (std::exception &ex) {
-            // std::cout << "message: " << ex.what() << std::endl;
-            continue;
-        }
-        std::cout << "FAILURE - query should throw an exception" << std::endl;
-        success = false;
-    }
-
-    return success;
 }
 
-}
+TEST_CASE("invalid queries") {
+    for (auto& query : invalid_queries) {
+        INFO("query: " << query);
+        CHECK_THROWS(realm::parser::parse(query));
+    }
 }
