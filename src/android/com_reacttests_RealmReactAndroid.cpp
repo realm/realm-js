@@ -9,6 +9,7 @@
 #include "js_init.h"
 #include "rpc.hpp"
 #include "platform.hpp"
+#include "shared_realm.hpp"
 #include <unordered_map>
 #include <android/log.h>
 
@@ -24,7 +25,7 @@ namespace facebook {
  * Signature: ()Ljava/lang/String;
  */
 JNIEXPORT jlong JNICALL Java_com_reacttests_RealmReactAndroid_injectRealmJsContext
-  (JNIEnv *env, jclass, jstring fileDir) 
+  (JNIEnv *env, jclass, jstring fileDir)
   {
   	__android_log_print(ANDROID_LOG_DEBUG, "JSRealm", "Java_com_reacttests_RealmReactAndroid_injectRealmJsContext");
   	void* handle = dlopen ("libreactnativejni.so", RTLD_LAZY);
@@ -32,7 +33,7 @@ JNIEXPORT jlong JNICALL Java_com_reacttests_RealmReactAndroid_injectRealmJsConte
       return 0;
         //return env->NewStringUTF("Cannot open library");
     }
-    
+
     // Getting the internal storage path for the application
     const char* strFileDir = env->GetStringUTFChars(fileDir , NULL);
     realm::set_default_realm_file_directory(strFileDir);
@@ -46,6 +47,8 @@ JNIEXPORT jlong JNICALL Java_com_reacttests_RealmReactAndroid_injectRealmJsConte
 	get_jsc_context_t get_jsc_context = (get_jsc_context_t) dlsym(handle, "get_jsc_context");
 
 	  if (get_jsc_context != NULL) {
+      // clearing previous instances
+      realm::Realm::s_global_cache.clear();
 	  	std::unordered_map<JSContextRef, facebook::react::JSCExecutor*> s_globalContextRefToJSCExecutor = get_jsc_context();
         for (auto pair : s_globalContextRefToJSCExecutor) {
           RJSInitializeInContext(pair.first);
@@ -66,7 +69,7 @@ JNIEXPORT jlong JNICALL Java_com_reacttests_RealmReactAndroid_injectRealmJsConte
  */
   static realm_js::RPCServer *s_rpc_server;
   JNIEXPORT jlong JNICALL Java_com_reacttests_RealmReactAndroid_setupChromeDebugModeRealmJsContext
-  (JNIEnv *, jclass) 
+  (JNIEnv *, jclass)
   {
     __android_log_print(ANDROID_LOG_VERBOSE, "JSRealm", "Java_com_reacttests_RealmReactAndroid_setupChromeDebugModeRealmJsContext");
     if (s_rpc_server) {
@@ -93,5 +96,3 @@ JNIEXPORT jlong JNICALL Java_com_reacttests_RealmReactAndroid_injectRealmJsConte
     env->ReleaseStringUTFChars(chrome_args, args);
     return env->NewStringUTF(response.dump().c_str());
   }
-
-
