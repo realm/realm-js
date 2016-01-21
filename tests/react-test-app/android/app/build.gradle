@@ -54,7 +54,7 @@ android {
     buildToolsVersion "23.0.1"
 
     defaultConfig {
-        applicationId "com.demo"
+        applicationId "io.realm.reactnative.testapp"
         minSdkVersion 16
         targetSdkVersion 22
         versionCode 1
