@@ -154,7 +154,9 @@ class ListView extends React.Component {
     }
 
     render() {
-        return <React.ListView {...this.props} renderRow={this.renderRow} />;
+        return (
+            <React.ListView {...this.props} ref="listView" renderRow={this.renderRow} />
+        );
     }
 
     renderRow(_, sectionId, rowId, ...args) {
@@ -163,6 +165,14 @@ class ListView extends React.Component {
 
         // The item could be null because our data is a snapshot and it was deleted.
         return item ? props.renderRow(item, sectionId, rowId, ...args) : null;
+    }
+
+    scrollTo(x, y, ...extra) {
+        this.refs.listView.scrollTo(x, y, ...extra);
+    }
+
+    setNativeProps(props) {
+        this.refs.listView.setNativeProps(props);
     }
 }
 
