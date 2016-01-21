@@ -12,11 +12,26 @@ set(SOURCES
     parser/parser.cpp
     parser/query_builder.cpp)
 
+set(HEADERS
+    index_set.hpp
+    list.hpp
+    object_schema.hpp
+    object_store.hpp
+    results.hpp
+    schema.hpp
+    shared_realm.hpp
+    impl/transact_log_handler.hpp
+    parser/parser.hpp
+    parser/query_builder.hpp)
+
 if(APPLE)
     include_directories(impl/apple)
-    list(APPEND SOURCES impl/apple/external_commit_helper.cpp)
+    list(APPEND SOURCES
+        impl/apple/external_commit_helper.cpp)
+    list(APPEND HEADERS
+        impl/apple/external_commit_helper.hpp)
     find_library(CF_LIBRARY CoreFoundation)
 endif()
 
-add_library(realm-object-store SHARED ${SOURCES})
+add_library(realm-object-store SHARED ${SOURCES} ${HEADERS})
 target_link_libraries(realm-object-store realm ${CF_LIBRARY})
