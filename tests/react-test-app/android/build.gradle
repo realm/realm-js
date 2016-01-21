@@ -19,6 +19,5 @@ allprojects {
         jcenter {
             url "http://dl.bintray.com/mkonicek/maven"
         }
-        maven { url "https://jitpack.io" }
     }
 }

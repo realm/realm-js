@@ -5,7 +5,6 @@ import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
-import com.getkeepsafe.relinker.ReLinker;
 import java.util.Map;
 import java.util.HashMap;
 import android.widget.Toast;
@@ -14,6 +13,10 @@ import android.util.Log;
 import java.io.IOException;
 import java.util.Map;
 import fi.iki.elonen.NanoHTTPD;
+import android.os.Handler;
+import android.os.Looper;
+import java.util.concurrent.CountDownLatch;
+import com.facebook.soloader.SoLoader;
 
 public class RealmReactAndroid extends ReactContextBaseJavaModule {
 	private static final String DURATION_SHORT_KEY = "SHORT";
@@ -23,6 +26,7 @@ public class RealmReactAndroid extends ReactContextBaseJavaModule {
     private static final int DEFAULT_PORT = 8082;
     private AndroidWebServer webServer;
     private long rpcServerPtr;
+		private Handler handler = new Handler(Looper.getMainLooper());
 
 	public RealmReactAndroid(ReactApplicationContext reactContext) {
 		super(reactContext);
@@ -31,7 +35,7 @@ public class RealmReactAndroid extends ReactContextBaseJavaModule {
         } catch (IOException e) {
             throw new IllegalStateException(e);
         }
-		ReLinker.loadLibrary(reactContext, "realmreact");
+			SoLoader.loadLibrary("realmreact");
     }
 
     @Override
@@ -43,7 +47,7 @@ public class RealmReactAndroid extends ReactContextBaseJavaModule {
     public Map<String, Object> getConstants() {
         long contexts = injectRealmJsContext(filesDirPath);
         Log.i("RealmReactAndroid", "Initialized " + contexts + " contexts");
-        if (contexts == 0) {
+        if (contexts == 0) {// we're running in Chrome debug mode
             startWebServer();
         }
         return new HashMap<>();
@@ -56,12 +60,6 @@ public class RealmReactAndroid extends ReactContextBaseJavaModule {
             webServer.stop();
        }
     }
-    // @ReactMethod
-    // public void setUpChromeDebugMode() {
-    //     startWebServer();
-    //     // setupChromeDebugModeRealmJsContext();
-    // }
-    ///FIXME find the right callback to call webServerstop
     private void startWebServer() {
         rpcServerPtr = setupChromeDebugModeRealmJsContext();
         webServer = new AndroidWebServer(DEFAULT_PORT);
@@ -85,16 +83,8 @@ public class RealmReactAndroid extends ReactContextBaseJavaModule {
 
         @Override
         public Response serve(IHTTPSession session) {
-            String cmdUri = session.getUri();
+            final String cmdUri = session.getUri();
             Log.v("AndroidWebServer", "Session Uri: " + cmdUri + " Mehtod: " + session.getMethod().name());
-            // String msg = "<html><body><h1>Hello server</h1>\n";
-            // Map<String, String> parms = session.getParms();
-            // if (parms.get("username") == null) {
-            //     msg += "<form action='?' method='get'>\n  <p>Your name: <input type='text' name='username'></p>\n" + "</form>\n";
-            // } else {
-            //     msg += "<p>Hello, " + parms.get("username") + "!</p>";
-            // }
-            // return newFixedLengthResponse( msg + "</body></html>\n" );
             final HashMap<String, String> map = new HashMap<String, String>();
             try {
                 session.parseBody(map);
@@ -104,11 +94,27 @@ public class RealmReactAndroid extends ReactContextBaseJavaModule {
                 e.printStackTrace();
             }
             final String json = map.get("postData");
-            String jsonResponse = processChromeDebugCommand(rpcServerPtr, cmdUri, json);
-            Response response = newFixedLengthResponse(jsonResponse);
-            response.addHeader("Access-Control-Allow-Origin", "http://localhost:8081");
-            return response;
-        }    
+						Log.v("AndroidWebServer", "Post Data: \n" + json + "\n Thread id: " + Thread.currentThread().getName());
+						final String[] jsonResponse = new String[1];
+						final CountDownLatch latch = new CountDownLatch(1);
+						// Process the command on the UI thread
+						handler.post(new Runnable() {
+		            @Override
+		            public void run() {
+		                	jsonResponse[0] = processChromeDebugCommand(rpcServerPtr, cmdUri, json);
+											latch.countDown();
+		            }
+		        });
+						try {
+		            latch.await();
+								Response response = newFixedLengthResponse(jsonResponse[0]);
+		            response.addHeader("Access-Control-Allow-Origin", "http://localhost:8081");
+		            return response;
+		        } catch (InterruptedException e) {
+		            e.printStackTrace();
+								return null;
+		        }
+        }
     }
 
     // fileDir: path of the internal storage of the application
