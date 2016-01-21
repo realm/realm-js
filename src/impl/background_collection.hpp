@@ -19,6 +19,8 @@
 #ifndef REALM_BACKGROUND_COLLECTION_HPP
 #define REALM_BACKGROUND_COLLECTION_HPP
 
+#include "collection_notifications.hpp"
+
 #include <realm/group_shared.hpp>
 
 #include <mutex>
@@ -29,9 +31,9 @@
 namespace realm {
 class Realm;
 
-using CollectionChangeCallback = std::function<void (std::exception_ptr)>;
-
 namespace _impl {
+struct TransactionChangeInfo;
+
 class BackgroundCollection {
 public:
     BackgroundCollection(std::shared_ptr<Realm>);
@@ -55,6 +57,8 @@ public:
     // SharedGroup
     void detach();
 
+    virtual void add_required_change_info(TransactionChangeInfo&) { }
+
     virtual void run() { }
     void prepare_handover();
     bool deliver(SharedGroup&, std::exception_ptr);
@@ -64,6 +68,8 @@ public:
 
 protected:
     bool have_callbacks() const noexcept { return m_have_callbacks; }
+    bool have_changes() const noexcept { return !m_accumulated_changes.empty(); }
+    void add_changes(CollectionChangeIndices change) { m_accumulated_changes.merge(std::move(change)); }
 
 private:
     virtual void do_attach_to(SharedGroup&) = 0;
@@ -81,6 +87,8 @@ private:
     SharedGroup* m_sg = nullptr;
 
     std::exception_ptr m_error;
+    CollectionChangeIndices m_accumulated_changes;
+    CollectionChangeIndices m_changes_to_deliver;
 
     uint_fast64_t m_results_version = 0;
 

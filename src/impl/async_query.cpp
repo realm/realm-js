@@ -87,7 +87,7 @@ void AsyncQuery::run()
 
     m_tv = m_query->find_all();
     if (m_sort) {
-        m_tv.sort(m_sort.columnIndices, m_sort.ascending);
+        m_tv.sort(m_sort.column_indices, m_sort.ascending);
     }
 
     m_did_change = true;

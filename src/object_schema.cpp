@@ -40,6 +40,7 @@ ASSERT_PROPERTY_TYPE_VALUE(Any, Mixed);
 ASSERT_PROPERTY_TYPE_VALUE(Object, Link);
 ASSERT_PROPERTY_TYPE_VALUE(Array, LinkList);
 
+ObjectSchema::ObjectSchema() = default;
 ObjectSchema::~ObjectSchema() = default;
 
 ObjectSchema::ObjectSchema(std::string name, std::string primary_key, std::initializer_list<Property> properties)

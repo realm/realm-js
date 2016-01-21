@@ -19,8 +19,8 @@
 #ifndef REALM_RESULTS_HPP
 #define REALM_RESULTS_HPP
 
+#include "collection_notifications.hpp"
 #include "shared_realm.hpp"
-#include "util/atomic_shared_ptr.hpp"
 
 #include <realm/table_view.hpp>
 #include <realm/table.hpp>
@@ -38,31 +38,11 @@ namespace _impl {
     class AsyncQuery;
 }
 
-// A token which keeps an asynchronous query alive
-struct AsyncQueryCancelationToken {
-    AsyncQueryCancelationToken() = default;
-    AsyncQueryCancelationToken(std::shared_ptr<_impl::AsyncQuery> query, size_t token);
-    ~AsyncQueryCancelationToken();
-
-    AsyncQueryCancelationToken(AsyncQueryCancelationToken&&);
-    AsyncQueryCancelationToken& operator=(AsyncQueryCancelationToken&&);
-
-    AsyncQueryCancelationToken(AsyncQueryCancelationToken const&) = delete;
-    AsyncQueryCancelationToken& operator=(AsyncQueryCancelationToken const&) = delete;
-
-private:
-    util::AtomicSharedPtr<_impl::AsyncQuery> m_query;
-    size_t m_token;
-};
-
 struct SortOrder {
-    std::vector<size_t> columnIndices;
+    std::vector<size_t> column_indices;
     std::vector<bool> ascending;
 
-    explicit operator bool() const
-    {
-        return !columnIndices.empty();
-    }
+    explicit operator bool() const { return !column_indices.empty(); }
 };
 
 class Results {
@@ -196,7 +176,7 @@ public:
     // Create an async query from this Results
     // The query will be run on a background thread and delivered to the callback,
     // and then rerun after each commit (if needed) and redelivered if it changed
-    AsyncQueryCancelationToken async(std::function<void (std::exception_ptr)> target);
+    NotificationToken async(std::function<void (std::exception_ptr)> target);
 
     bool wants_background_updates() const { return m_wants_background_updates; }
 
@@ -224,6 +204,8 @@ private:
 
     void validate_read() const;
     void validate_write() const;
+
+    void prepare_async();
 
     template<typename Int, typename Float, typename Double, typename Timestamp>
     util::Optional<Mixed> aggregate(size_t column, bool return_none_for_empty,

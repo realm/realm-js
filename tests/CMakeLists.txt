@@ -1,11 +1,14 @@
 include_directories(../external/catch/single_include .)
 
 set(HEADERS
+    util/index_helpers.hpp
     util/test_file.hpp
 )
 
 set(SOURCES
+    collection_change_indices.cpp
     index_set.cpp
+    list.cpp
     main.cpp
     parser.cpp
     results.cpp

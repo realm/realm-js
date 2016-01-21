@@ -43,6 +43,7 @@ namespace realm {
     namespace _impl {
         class AsyncQuery;
         class BackgroundCollection;
+        class ListNotifier;
         class RealmCoordinator;
     }
 
@@ -145,6 +146,7 @@ namespace realm {
         // without making it public to everyone
         class Internal {
             friend class _impl::AsyncQuery;
+            friend class _impl::ListNotifier;
             friend class _impl::BackgroundCollection;
             friend class _impl::RealmCoordinator;
 

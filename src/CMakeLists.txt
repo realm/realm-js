@@ -1,4 +1,5 @@
 set(SOURCES
+    collection_notifications.cpp
     index_set.cpp
     list.cpp
     object_schema.cpp
@@ -8,12 +9,14 @@ set(SOURCES
     shared_realm.cpp
     impl/async_query.cpp
     impl/background_collection.cpp
+    impl/list_notifier.cpp
     impl/realm_coordinator.cpp
     impl/transact_log_handler.cpp
     parser/parser.cpp
     parser/query_builder.cpp)
 
 set(HEADERS
+    collection_notifications.hpp
     index_set.hpp
     list.hpp
     object_schema.hpp
@@ -23,6 +26,8 @@ set(HEADERS
     shared_realm.hpp
     impl/background_collection.hpp
     impl/external_commit_helper.hpp
+    impl/list_notifier.hpp
+    impl/realm_coordinator.hpp
     impl/transact_log_handler.hpp
     impl/weak_realm_notifier.hpp
     impl/weak_realm_notifier_base.hpp

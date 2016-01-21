@@ -21,6 +21,7 @@
 #include "impl/async_query.hpp"
 #include "impl/weak_realm_notifier.hpp"
 #include "impl/external_commit_helper.hpp"
+#include "impl/list_notifier.hpp"
 #include "impl/transact_log_handler.hpp"
 #include "object_store.hpp"
 #include "schema.hpp"
@@ -32,10 +33,44 @@
 #include <realm/table_view.hpp>
 
 #include <cassert>
+#include <set>
 #include <unordered_map>
 
 using namespace realm;
 using namespace realm::_impl;
+
+bool TransactionChangeInfo::row_did_change(Table const& table, size_t idx, int depth) const
+{
+    if (depth > 16)  // arbitrary limit
+        return false;
+
+    size_t table_ndx = table.get_index_in_group();
+    if (table_ndx < tables.size() && tables[table_ndx].modifications.contains(idx))
+        return true;
+
+    for (size_t i = 0, count = table.get_column_count(); i < count; ++i) {
+        auto type = table.get_column_type(i);
+        if (type == type_Link) {
+            auto& target = *table.get_link_target(i);
+            if (target.is_null_link(i, idx))
+                continue;
+            auto dst = table.get_link(i, idx);
+            return row_did_change(target, dst, depth + 1);
+        }
+        if (type != type_LinkList)
+            continue;
+
+        auto& target = *table.get_link_target(i);
+        auto lvr = table.get_linklist(i, idx);
+        for (size_t j = 0; j < lvr->size(); ++j) {
+            size_t dst = lvr->get(j).get_index();
+            if (row_did_change(target, dst, depth + 1))
+                return true;
+        }
+    }
+
+    return false;
+}
 
 static std::mutex s_coordinator_mutex;
 static std::unordered_map<std::string, std::weak_ptr<RealmCoordinator>> s_coordinators_per_path;
@@ -247,7 +282,7 @@ void RealmCoordinator::pin_version(uint_fast64_t version, uint_fast32_t index)
     }
 }
 
-void RealmCoordinator::register_query(std::shared_ptr<AsyncQuery> query)
+void RealmCoordinator::register_query(std::shared_ptr<BackgroundCollection> query)
 {
     auto version = query->version();
     auto& self = Realm::Internal::get_coordinator(query->get_realm());
@@ -319,30 +354,116 @@ void RealmCoordinator::run_async_queries()
     }
 
     if (m_async_error) {
-        move_new_queries_to_main();
+        std::move(m_new_queries.begin(), m_new_queries.end(), std::back_inserter(m_queries));
+        m_new_queries.clear();
         return;
     }
 
-    advance_helper_shared_group_to_latest();
+    std::vector<TransactionChangeInfo> change_info;
+    SharedGroup::VersionID version;
 
-    // Make a copy of the queries vector so that we can release the lock while
-    // we run the queries
-    auto queries_to_run = m_queries;
+    auto new_queries = std::move(m_new_queries);
+    if (new_queries.empty()) {
+        change_info.resize(1);
+    }
+    else {
+        change_info.resize(2);
+
+        // Sort newly added queries by their source version so that we can pull them
+        // all forward to the latest version in a single pass over the transaction log
+        std::sort(new_queries.begin(), new_queries.end(),
+                  [](auto&& lft, auto&& rgt) { return lft->version() < rgt->version(); });
+        version = m_advancer_sg->get_version_of_current_transaction();
+        REALM_ASSERT(version == new_queries.front()->version());
+
+        TransactionChangeInfo* info = &change_info.back();
+
+        // Advance each of the new queries to the latest version, attaching them
+        // to the SG at their handover version. This requires a unique
+        // TransactionChangeInfo for each source version, so that things don't
+        // see changes from before the version they were handed over from.
+        // Each Info has all of the changes between that source version and the
+        // next source version, and they'll be merged together later after
+        // releasing the lock
+        for (auto& query : new_queries) {
+            if (version != query->version()) {
+                transaction::advance_and_observe_linkviews(*m_advancer_sg, *info, query->version());
+                change_info.push_back({{}, std::move(info->lists)});
+                info = &change_info.back();
+                version = query->version();
+            }
+            query->attach_to(*m_advancer_sg);
+            query->add_required_change_info(*info);
+        }
+
+        transaction::advance_and_observe_linkviews(*m_advancer_sg, *info);
+
+        for (auto& query : new_queries) {
+            query->detach();
+        }
+        version = m_advancer_sg->get_version_of_current_transaction();
+        m_advancer_sg->end_read();
+    }
+
+    // Make a copy of the queries vector and then release the lock to avoid
+    // blocking other threads trying to register or unregister queries while we run them
+    auto queries = m_queries;
     lock.unlock();
 
-    for (auto& query : queries_to_run) {
+    for (auto& query : queries) {
+        query->add_required_change_info(change_info[0]);
+    }
+
+    transaction::advance_and_observe_linkviews(*m_query_sg, change_info[0], version);
+
+    // Attach the new queries to the main SG and move them to the main list
+    for (auto& query : new_queries) {
+        query->attach_to(*m_query_sg);
+    }
+    std::move(new_queries.begin(), new_queries.end(), std::back_inserter(queries));
+
+    for (size_t i = change_info.size() - 1; i > 1; --i) {
+        auto& cur = change_info[i];
+        if (cur.tables.empty())
+            continue;
+        auto& prev = change_info[i - 1];
+        if (prev.tables.empty()) {
+            prev.tables = cur.tables;
+            continue;
+        }
+
+        for (size_t j = 0; j < prev.tables.size() && j < cur.tables.size(); ++j) {
+            prev.tables[j].merge(CollectionChangeIndices{cur.tables[j]});
+        }
+        prev.tables.reserve(cur.tables.size());
+        while (prev.tables.size() < cur.tables.size()) {
+            prev.tables.push_back(cur.tables[prev.tables.size()]);
+        }
+    }
+
+    // Copy the list change info if there's multiple LinkViews for the same LinkList
+    auto id = [](auto const& list) { return std::tie(list.table_ndx, list.col_ndx, list.row_ndx); };
+    for (auto& info : change_info) {
+        for (size_t i = 1; i < info.lists.size(); ++i) {
+            for (size_t j = i; j > 0; --j) {
+                if (id(info.lists[i]) == id(info.lists[j - 1])) {
+                    info.lists[j - 1].changes->merge(CollectionChangeIndices{*info.lists[i].changes});
+                }
+            }
+        }
+    }
+
+    for (auto& query : queries) {
         query->run();
     }
 
     // Reacquire the lock while updating the fields that are actually read on
     // other threads
-    {
-        lock.lock();
-        for (auto& query : queries_to_run) {
-            query->prepare_handover();
-        }
+    lock.lock();
+    for (auto& query : queries) {
+        query->prepare_handover();
     }
-
+    m_queries = std::move(queries);
     clean_up_dead_queries();
 }
 
@@ -372,39 +493,6 @@ void RealmCoordinator::move_new_queries_to_main()
     m_queries.reserve(m_queries.size() + m_new_queries.size());
     std::move(m_new_queries.begin(), m_new_queries.end(), std::back_inserter(m_queries));
     m_new_queries.clear();
-}
-
-void RealmCoordinator::advance_helper_shared_group_to_latest()
-{
-    if (m_new_queries.empty()) {
-        LangBindHelper::advance_read(*m_query_sg);
-        return;
-    }
-
-    // Sort newly added queries by their source version so that we can pull them
-    // all forward to the latest version in a single pass over the transaction log
-    std::sort(m_new_queries.begin(), m_new_queries.end(), [](auto const& lft, auto const& rgt) {
-        return lft->version() < rgt->version();
-    });
-
-    // Import all newly added queries to our helper SG
-    for (auto& query : m_new_queries) {
-        LangBindHelper::advance_read(*m_advancer_sg, query->version());
-        query->attach_to(*m_advancer_sg);
-    }
-
-    // Advance both SGs to the newest version
-    LangBindHelper::advance_read(*m_advancer_sg);
-    LangBindHelper::advance_read(*m_query_sg, m_advancer_sg->get_version_of_current_transaction());
-
-    // Transfer all new queries over to the main SG
-    for (auto& query : m_new_queries) {
-        query->detach();
-        query->attach_to(*m_query_sg);
-    }
-
-    move_new_queries_to_main();
-    m_advancer_sg->end_read();
 }
 
 void RealmCoordinator::advance_to_ready(Realm& realm)

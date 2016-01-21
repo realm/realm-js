@@ -19,6 +19,8 @@
 #ifndef REALM_LIST_HPP
 #define REALM_LIST_HPP
 
+#include "collection_notifications.hpp"
+
 #include <realm/link_view.hpp>
 
 #include <memory>
@@ -31,6 +33,10 @@ class ObjectSchema;
 class Realm;
 class Results;
 struct SortOrder;
+
+namespace _impl {
+    class BackgroundCollection;
+}
 
 class List {
 public:
@@ -64,6 +70,8 @@ public:
 
     bool operator==(List const& rgt) const noexcept;
 
+    NotificationToken add_notification_callback(CollectionChangeCallback cb);
+
     // These are implemented in object_accessor.hpp
     template <typename ValueType, typename ContextType>
     void add(ContextType ctx, ValueType value);
@@ -78,6 +86,7 @@ private:
     std::shared_ptr<Realm> m_realm;
     const ObjectSchema* m_object_schema;
     LinkViewRef m_link_view;
+    std::shared_ptr<_impl::BackgroundCollection> m_notifier;
 
     void verify_valid_row(size_t row_ndx, bool insertion = false) const;
 

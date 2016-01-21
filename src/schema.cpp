@@ -28,6 +28,8 @@ static bool compare_by_name(ObjectSchema const& lft, ObjectSchema const& rgt) {
     return lft.name < rgt.name;
 }
 
+Schema::Schema(std::initializer_list<ObjectSchema> types) : Schema(base(types)) { }
+
 Schema::Schema(base types) : base(std::move(types)) {
     std::sort(begin(), end(), compare_by_name);
 }

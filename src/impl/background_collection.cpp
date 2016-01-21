@@ -110,8 +110,7 @@ void BackgroundCollection::prepare_handover()
         ++m_results_version;
 }
 
-bool BackgroundCollection::deliver(SharedGroup& sg,
-                                 std::exception_ptr err)
+bool BackgroundCollection::deliver(SharedGroup& sg, std::exception_ptr err)
 {
     if (!is_for_current_thread()) {
         return false;
@@ -131,13 +130,15 @@ bool BackgroundCollection::deliver(SharedGroup& sg,
         return false;
     }
 
-    return do_deliver(sg);
+    bool ret = do_deliver(sg);
+    m_changes_to_deliver = std::move(m_accumulated_changes);
+    return ret;
 }
 
 void BackgroundCollection::call_callbacks()
 {
     while (auto fn = next_callback()) {
-        fn(m_error);
+        fn(m_changes_to_deliver, m_error);
     }
 
     if (m_error) {

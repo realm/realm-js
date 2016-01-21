@@ -19,22 +19,41 @@
 #ifndef REALM_COORDINATOR_HPP
 #define REALM_COORDINATOR_HPP
 
+#include "index_set.hpp"
 #include "shared_realm.hpp"
 
 #include <realm/string_data.hpp>
 
+#include <map>
+
 namespace realm {
-class AsyncQueryCallback;
 class Replication;
 class Results;
 class Schema;
 class SharedGroup;
-struct AsyncQueryCancelationToken;
+class Table;
+struct CollectionChangeIndices;
 
 namespace _impl {
 class BackgroundCollection;
 class ExternalCommitHelper;
+class ListNotifier;
 class WeakRealmNotifier;
+
+struct ListChangeInfo {
+    size_t table_ndx;
+    size_t row_ndx;
+    size_t col_ndx;
+    CollectionChangeIndices *changes;
+};
+
+struct TransactionChangeInfo {
+    std::vector<bool> tables_needed;
+    std::vector<ListChangeInfo> lists;
+    std::vector<CollectionChangeIndices> tables;
+
+    bool row_did_change(Table const& table, size_t row_ndx, int depth = 0) const;
+};
 
 // RealmCoordinator manages the weak cache of Realm instances and communication
 // between per-thread Realm instances for a given file
@@ -83,7 +102,7 @@ public:
     // Update the schema in the cached config
     void update_schema(Schema const& new_schema);
 
-    static void register_query(std::shared_ptr<AsyncQuery> query);
+    static void register_query(std::shared_ptr<BackgroundCollection> query);
 
     // Advance the Realm to the most recent transaction version which all async
     // work is complete for
