@@ -74,11 +74,11 @@ void Schema::validate() const
 
             // check nullablity
             if (prop.is_nullable) {
-                if (prop.type == PropertyTypeArray || prop.type == PropertyTypeAny) {
+                if (prop.type == PropertyType::Array || prop.type == PropertyType::Any) {
                     exceptions.emplace_back(InvalidNullabilityException(object.name, prop));
                 }
             }
-            else if (prop.type == PropertyTypeObject) {
+            else if (prop.type == PropertyType::Object) {
                 exceptions.emplace_back(InvalidNullabilityException(object.name, prop));
             }
 

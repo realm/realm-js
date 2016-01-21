@@ -23,17 +23,17 @@ TEST_CASE("Results") {
     config.automatic_change_notifications = false;
     config.schema = std::make_unique<Schema>(Schema{
         {"object", "", {
-            {"value", PropertyTypeInt},
-            {"link", PropertyTypeObject, "linked to object", false, false, true}
+            {"value", PropertyType::Int},
+            {"link", PropertyType::Object, "linked to object", false, false, true}
         }},
         {"other object", "", {
-            {"value", PropertyTypeInt}
+            {"value", PropertyType::Int}
         }},
         {"linking object", "", {
-            {"link", PropertyTypeObject, "object", false, false, true}
+            {"link", PropertyType::Object, "object", false, false, true}
         }},
         {"linked to object", "", {
-            {"value", PropertyTypeInt}
+            {"value", PropertyType::Int}
         }}
     });
 
@@ -426,7 +426,7 @@ TEST_CASE("Async Results error handling") {
     config.automatic_change_notifications = false;
     config.schema = std::make_unique<Schema>(Schema{
         {"object", "", {
-            {"value", PropertyTypeInt},
+            {"value", PropertyType::Int},
         }},
     });
 

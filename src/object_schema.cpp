@@ -27,7 +27,7 @@
 using namespace realm;
 
 #define ASSERT_PROPERTY_TYPE_VALUE(property, type) \
-    static_assert(static_cast<int>(PropertyType##property) == type_##type, \
+    static_assert(static_cast<int>(PropertyType::property) == type_##type, \
                   "PropertyType and DataType must have the same values")
 
 ASSERT_PROPERTY_TYPE_VALUE(Int, Int);
@@ -62,9 +62,9 @@ ObjectSchema::ObjectSchema(const Group *group, const std::string &name) : name(n
         property.type = (PropertyType)table->get_column_type(col);
         property.is_indexed = table->has_search_index(col);
         property.is_primary = false;
-        property.is_nullable = table->is_nullable(col) || property.type == PropertyTypeObject;
+        property.is_nullable = table->is_nullable(col) || property.type == PropertyType::Object;
         property.table_column = col;
-        if (property.type == PropertyTypeObject || property.type == PropertyTypeArray) {
+        if (property.type == PropertyType::Object || property.type == PropertyType::Array) {
             // set link type for objects and arrays
             ConstTableRef linkTable = table->get_link_target(col);
             property.object_type = ObjectStore::object_type_for_table_name(linkTable->get_name().data());

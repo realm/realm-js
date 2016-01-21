@@ -113,8 +113,8 @@ TEST_CASE("Transaction log parsing") {
     SECTION("schema change validation") {
         config.schema = std::make_unique<Schema>(Schema{
             {"table", "", {
-                {"unindexed", PropertyTypeInt},
-                {"indexed", PropertyTypeInt, "", false, true}
+                {"unindexed", PropertyType::Int},
+                {"indexed", PropertyType::Int, "", false, true}
             }},
         });
         auto r = Realm::get_shared_realm(config);
@@ -180,7 +180,7 @@ TEST_CASE("Transaction log parsing") {
     SECTION("table change information") {
         config.schema = std::make_unique<Schema>(Schema{
             {"table", "", {
-                {"value", PropertyTypeInt}
+                {"value", PropertyType::Int}
             }},
         });
 
@@ -269,10 +269,10 @@ TEST_CASE("Transaction log parsing") {
     SECTION("LinkView change information") {
         config.schema = std::make_unique<Schema>(Schema{
             {"origin", "", {
-                {"array", PropertyTypeArray, "target"}
+                {"array", PropertyType::Array, "target"}
             }},
             {"target", "", {
-                {"value", PropertyTypeInt}
+                {"value", PropertyType::Int}
             }},
         });
 
@@ -806,9 +806,9 @@ TEST_CASE("DeepChangeChecker") {
 
     config.schema = std::make_unique<Schema>(Schema{
         {"table", "", {
-            {"int", PropertyTypeInt},
-            {"link", PropertyTypeObject, "table", false, false, true},
-            {"array", PropertyTypeArray, "table"}
+            {"int", PropertyType::Int},
+            {"link", PropertyType::Object, "table", false, false, true},
+            {"array", PropertyType::Array, "table"}
         }},
     });
 

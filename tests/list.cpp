@@ -24,16 +24,16 @@ TEST_CASE("list") {
     config.cache = false;
     config.schema = std::make_unique<Schema>(Schema{
         {"origin", "", {
-            {"array", PropertyTypeArray, "target"}
+            {"array", PropertyType::Array, "target"}
         }},
         {"target", "", {
-            {"value", PropertyTypeInt}
+            {"value", PropertyType::Int}
         }},
         {"other_origin", "", {
-            {"array", PropertyTypeArray, "other_target"}
+            {"array", PropertyType::Array, "other_target"}
         }},
         {"other_target", "", {
-            {"value", PropertyTypeInt}
+            {"value", PropertyType::Int}
         }},
     });
 
