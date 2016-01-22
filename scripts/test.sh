@@ -20,10 +20,10 @@ PACKAGER_OUT="packager_out.txt"
 function start_packager()
 {
   rm -f $PACKAGER_OUT
-  sh ./node_modules/react-native/packager/packager.sh | tee packager_out.txt &
+  sh ./node_modules/react-native/packager/packager.sh | tee $PACKAGER_OUT &
   while :;
   do
-  if grep -Fxq "React packager ready." packager_out.txt
+  if grep -Fxq "React packager ready." $PACKAGER_OUT
   then
     break
   else
@@ -68,6 +68,37 @@ elif [ "$TARGET" = "react-example" ]; then
 
   xcodebuild -scheme ReactExample -configuration "$CONFIGURATION" -sdk iphonesimulator build $DESTINATION
   popd
+elif [ "$TARGET" = "react-tests-android" ]; then
+  pushd react-native/android
+  ./gradlew installarchives
+  popd
+
+  pushd tests/react-test-app
+
+  if [ -d  ~/Applications/Google\ Chrome.app ]; then
+    open ~/Applications/Google\ Chrome.app
+  fi
+
+  npm install
+  start_packager
+
+  sh run-android.sh
+ 
+  LOGCAT_OUT="logcat_out.txt"
+  rm -f $LOGCAT_OUT
+  adb logcat | tee $LOGCAT_OUT &
+  while :;
+  do
+  if grep -q "FILE WRITTEN!!" $LOGCAT_OUT
+  then
+    break
+  else
+    echo "Waiting for tests."
+    sleep 2
+  fi  
+  done 
+
+  adb pull /data/data/com.demo/files/tests.xml .
 else
   echo "Invalid target '${TARGET}'"
 fi
