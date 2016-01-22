@@ -67,6 +67,7 @@ elif [ "$TARGET" = "react-example" ]; then
   popd
 elif [ "$TARGET" = "react-tests-android" ]; then
   # Copy patched version of FB
+  rm -Rf ~/.m2/repository/com/facebook/react/react-native/
   mkdir -p ~/.m2/repository/com/facebook/react/react-native/
   tar xvf ./patched_bin/0.18.0-patched.tar.gz -C ~/.m2/repository/com/facebook/react/react-native/
   # update sdk tool
