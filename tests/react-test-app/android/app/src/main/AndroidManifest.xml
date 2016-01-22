@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.demo">
+    package="io.realm.reactnative.testapp">
 
     <uses-permission android:name="android.permission.INTERNET" />
 

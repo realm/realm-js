@@ -1,4 +1,4 @@
-rootProject.name = 'Demo'
+rootProject.name = 'ReactNative Test App'
 
 include ':app'
 include ':react-native-fs'
