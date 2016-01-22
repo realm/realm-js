@@ -34,13 +34,8 @@ function start_packager()
   done
 }
 
-function kill_packager()
-{
-  rm -f $PACKAGER_OUT
-  pkill node || true
-}
-
-kill_packager
+# kill old packagers
+pkill node || true
 
 if [ "$TARGET" = "realmjs" ]; then
   xcodebuild -scheme RealmJS -configuration "$CONFIGURATION" -sdk iphonesimulator $DESTINATION build test 
@@ -87,9 +82,9 @@ elif [ "$TARGET" = "react-tests-android" ]; then
  
   LOGCAT_OUT="logcat_out.txt"
   rm -f $LOGCAT_OUT
+
   adb logcat -c
   adb logcat | tee $LOGCAT_OUT &
-  LOGCAT_PID=$!
   while :;
   do
   if grep -q "FILE WRITTEN!!" $LOGCAT_OUT
@@ -100,12 +95,15 @@ elif [ "$TARGET" = "react-tests-android" ]; then
     sleep 2
   fi  
   done 
-  kill $LOGCAT_PID
 
-  adb pull /data/data/com.demo/files/tests.xml .
+  adb pull /data/data/com.demo/files/tests.xml . || true
 else
   echo "Invalid target '${TARGET}'"
 fi
 
-kill_packager
+# kill all children
+pkill -P $$
+pkill node || true
+rm -f $PACKAGER_OUT
+rm -f $LOGCAT_OUT
 
