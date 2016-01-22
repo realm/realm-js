@@ -3,6 +3,9 @@
 set -o pipefail
 set -e
 
+TARGET=$1
+CONFIGURATION=${2:-"Debug"}
+
 if [ "$TARGET" != "react-tests-android" ]; then
 while pgrep -q Simulator; do
     # Kill all the current simulator processes as they may be from a
@@ -13,10 +16,6 @@ while pgrep -q Simulator; do
   done
   DESTINATION="-destination id=$(xcrun simctl list devices | grep -v unavailable | grep -m 1 -o '[0-9A-F\-]\{36\}')"
 fi
-
-
-TARGET=$1
-CONFIGURATION=${2:-"Debug"}
 
 function start_packager()
 {
