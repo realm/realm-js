@@ -23,7 +23,7 @@ function start_packager()
   sh ./node_modules/react-native/packager/packager.sh | tee $PACKAGER_OUT &
   while :;
   do
-  if grep -Fxq "React packager ready." $PACKAGER_OUT
+  if grep -Fx "React packager ready." $PACKAGER_OUT
   then
     break
   else
@@ -90,7 +90,7 @@ elif [ "$TARGET" = "react-tests-android" ]; then
   adb logcat | tee $LOGCAT_OUT &
   while :;
   do
-  if grep -q "FILE WRITTEN!!" $LOGCAT_OUT
+  if grep "FILE WRITTEN!!" $LOGCAT_OUT
   then
     break
   else
