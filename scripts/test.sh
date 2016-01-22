@@ -70,15 +70,15 @@ elif [ "$TARGET" = "react-tests-android" ]; then
   rm -Rf ~/.m2/repository/com/facebook/react/react-native/
   mkdir -p ~/.m2/repository/com/facebook/react/react-native/
   tar xvf ./patched_bin/0.18.0-patched.tar.gz -C ~/.m2/repository/com/facebook/react/react-native/
-  # update sdk tool
-  expect -c '
-  set timeout -1;
-  spawn /opt/android-sdk-linux/tools/android update sdk -u -a -t "build-tools-23.0.1";
-  expect {
-      "Do you accept the license" { exp_send "y\r" ; exp_continue }
-      eof
-  }
-  '
+  # # update sdk tool
+  # expect -c '
+  # set timeout -1;
+  # spawn /opt/android-sdk-linux/tools/android update sdk -u -a -t "build-tools-23.0.1";
+  # expect {
+  #     "Do you accept the license" { exp_send "y\r" ; exp_continue }
+  #     eof
+  # }
+  # '
 
   pushd react-native/android
   ./gradlew installarchives
