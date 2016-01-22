@@ -62,6 +62,7 @@ elif [ "$TARGET" = "react-example" ]; then
   npm update react-native
   start_packager
 
+  pushd ios
   xcodebuild -scheme ReactExample -configuration "$CONFIGURATION" -sdk iphonesimulator build $DESTINATION
   popd
 elif [ "$TARGET" = "react-tests-android" ]; then
