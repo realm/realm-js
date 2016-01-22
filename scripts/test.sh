@@ -30,7 +30,7 @@ function start_packager()
   else
     echo "Waiting for packager."
     sleep 2
-  fi  
+  fi
   done
 }
 
@@ -38,7 +38,7 @@ function start_packager()
 pkill node || true
 
 if [ "$TARGET" = "realmjs" ]; then
-  xcodebuild -scheme RealmJS -configuration "$CONFIGURATION" -sdk iphonesimulator $DESTINATION build test 
+  xcodebuild -scheme RealmJS -configuration "$CONFIGURATION" -sdk iphonesimulator $DESTINATION build test
 elif [ "$TARGET" = "react-tests" ]; then
   pushd tests/react-test-app
 
@@ -52,7 +52,7 @@ elif [ "$TARGET" = "react-tests" ]; then
   npm update react-native
   start_packager
   popd
-  
+
   xcodebuild -scheme RealmReact -configuration "$CONFIGURATION" -sdk iphonesimulator $DESTINATION build test
 elif [ "$TARGET" = "react-example" ]; then
   pushd examples/ReactExample
@@ -66,6 +66,16 @@ elif [ "$TARGET" = "react-example" ]; then
   xcodebuild -scheme ReactExample -configuration "$CONFIGURATION" -sdk iphonesimulator build $DESTINATION
   popd
 elif [ "$TARGET" = "react-tests-android" ]; then
+  # update sdk tool
+  expect -c '
+  set timeout -1;
+  spawn /opt/android-sdk-linux/tools/android update sdk -u -a -t "build-tools-23.0.1";
+  expect {
+      "Do you accept the license" { exp_send "y\r" ; exp_continue }
+      eof
+  }
+  '
+
   pushd react-native/android
   ./gradlew installarchives
   popd
@@ -80,7 +90,7 @@ elif [ "$TARGET" = "react-tests-android" ]; then
   start_packager
 
   sh run-android.sh
- 
+
   LOGCAT_OUT="logcat_out.txt"
   rm -f $LOGCAT_OUT
 
@@ -94,8 +104,8 @@ elif [ "$TARGET" = "react-tests-android" ]; then
   else
     echo "Waiting for tests."
     sleep 2
-  fi  
-  done 
+  fi
+  done
 
   adb pull /data/data/com.demo/files/tests.xml . || true
 else
@@ -107,4 +117,3 @@ pkill -P $$ || true
 pkill node || true
 rm -f $PACKAGER_OUT
 rm -f $LOGCAT_OUT
-
