@@ -86,6 +86,7 @@ elif [ "$TARGET" = "react-tests-android" ]; then
  
   LOGCAT_OUT="logcat_out.txt"
   rm -f $LOGCAT_OUT
+  adb logcat -c
   adb logcat | tee $LOGCAT_OUT &
   while :;
   do
