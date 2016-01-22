@@ -8,6 +8,7 @@ var React = require('react-native');
 var {
   AppRegistry,
   StyleSheet,
+  Image,
   Text,
   View,
   TouchableNativeFeedback,
@@ -16,18 +17,33 @@ var {
 var RealmReactAndroid = require('NativeModules').RealmReactAndroid;
 var Realm = require('realm');
 var RealmTests = require('realm-tests');
+var builder = require('xmlbuilder');
+var RNFS = require('react-native-fs');
 
 function runTests() {
+    var rootXml = builder.create('testsuites');
+
+
     let testNames = RealmTests.getTestNames();
 
+
     for (let suiteName in testNames) {
+        var itemTestsuite = rootXml.ele('testsuite');
+        let nbrTests = 0;
+        let nbrFailures = 0;
+
         let testSuite = RealmTests[suiteName];
 
-        console.log('Starting ' + suiteName);
+        console.log('Starting suite ' + suiteName);
 
         var suiteTestNames = testNames[suiteName];
         for (var index in suiteTestNames) {
+            nbrTests++;
             var testName = suiteTestNames[index];
+
+            var itemTest = itemTestsuite.ele('testcase');
+            itemTest.att('name', testName);
+
             console.log('Starting ' + testName);
 
             if (testSuite.beforeEach) {
@@ -41,6 +57,9 @@ function runTests() {
             catch (e) {
                 console.log('- ' + testName);
                 console.warn(e.message);
+
+                itemTest.ele('error', {'message': ''}, e.message);
+                nbrFailures++;
             }
             finally {
                 if (testSuite.afterEach) {
@@ -48,20 +67,46 @@ function runTests() {
                 }
             }
         }
+
+        // update Junit XML report
+        itemTestsuite.att('name', suiteName);
+        itemTestsuite.att('tests', nbrTests);
+        itemTestsuite.att('failures', nbrFailures);
+        itemTestsuite.att('timestamp', "2016-01-22T14:40:44.874443-05:00");//TODO use real timestamp
+
     }
+    // export unit tests results
+    var xmlString = rootXml.end({ pretty: true, indent: '  ', newline: '\n' });
+    var path = RNFS.DocumentDirectoryPath + '/tests.xml';
+
+    // write the unit tests reports
+    RNFS.writeFile(path, xmlString , 'utf8')
+      .then((success) => {
+        console.log('FILE WRITTEN!!');
+      })
+      .catch((err) => {
+        console.log(err.message);
+      });
+
 }
 
 var Demo = React.createClass({
   render: function() {
     return (
-    <View style={styles.container}>
-        <Text style={styles.button} onPress={runTests}>
-            Tap to Run Tests
-        </Text>
-    </View>    
+      <View style={styles.container}>
+          <Text style={styles.button} onPress={runTests}>
+              Running Tests...
+          </Text>
+
+          <Image
+            style={styles.icon}
+            source={require('image!ic_launcher')}
+            onLoad={() => runTests()}
+          />
+      </View>
     );
   }
-});   
+});
 
 var styles = StyleSheet.create({
   container: {
