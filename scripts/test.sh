@@ -102,7 +102,7 @@ else
 fi
 
 # kill all children
-pkill -P $$
+pkill -P $$ || true
 pkill node || true
 rm -f $PACKAGER_OUT
 rm -f $LOGCAT_OUT
