@@ -17,9 +17,9 @@ while pgrep -q Simulator; do
   DESTINATION="-destination id=$(xcrun simctl list devices | grep -v unavailable | grep -m 1 -o '[0-9A-F\-]\{36\}')"
 fi
 
+PACKAGER_OUT="packager_out.txt"
 function start_packager()
 {
-  PACKAGER_OUT="packager_out.txt"
   rm -f $PACKAGER_OUT
   sh ./node_modules/react-native/packager/packager.sh | tee $PACKAGER_OUT &
   while :;
@@ -89,6 +89,7 @@ elif [ "$TARGET" = "react-tests-android" ]; then
   rm -f $LOGCAT_OUT
   adb logcat -c
   adb logcat | tee $LOGCAT_OUT &
+  LOGCAT_PID=$!
   while :;
   do
   if grep -q "FILE WRITTEN!!" $LOGCAT_OUT
@@ -99,6 +100,7 @@ elif [ "$TARGET" = "react-tests-android" ]; then
     sleep 2
   fi  
   done 
+  kill $LOGCAT_PID
 
   adb pull /data/data/com.demo/files/tests.xml .
 else
