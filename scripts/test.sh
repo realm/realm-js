@@ -3,22 +3,24 @@
 set -o pipefail
 set -e
 
-#while pgrep -q Simulator; do
+if [ "$TARGET" != "react-tests-android" ]; then
+while pgrep -q Simulator; do
     # Kill all the current simulator processes as they may be from a
     # different Xcode version
-#    pkill Simulator 2>/dev/null || true
+    pkill Simulator 2>/dev/null || true
     # CoreSimulatorService doesn't exit when sent SIGTERM
-#    pkill -9 Simulator 2>/dev/null || true
-#  done
+    pkill -9 Simulator 2>/dev/null || true
+  done
+  DESTINATION="-destination id=$(xcrun simctl list devices | grep -v unavailable | grep -m 1 -o '[0-9A-F\-]\{36\}')"
+fi
 
 
-DESTINATION="-destination id=$(xcrun simctl list devices | grep -v unavailable | grep -m 1 -o '[0-9A-F\-]\{36\}')"
 TARGET=$1
 CONFIGURATION=${2:-"Debug"}
-PACKAGER_OUT="packager_out.txt"
 
 function start_packager()
 {
+  PACKAGER_OUT="packager_out.txt"
   rm -f $PACKAGER_OUT
   sh ./node_modules/react-native/packager/packager.sh | tee $PACKAGER_OUT &
   while :;
