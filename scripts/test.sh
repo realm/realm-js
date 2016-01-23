@@ -84,6 +84,9 @@ elif [ "$TARGET" = "react-tests-android" ]; then
   # }
   # '
 
+  # run nvm
+  [ -s "${HOME}/.nvm/nvm.sh" ] && . "${HOME}/.nvm/nvm.sh" 
+
   pushd react-native/android
   ./gradlew installarchives
   popd
