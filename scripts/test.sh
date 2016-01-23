@@ -66,10 +66,14 @@ elif [ "$TARGET" = "react-example" ]; then
   xcodebuild -scheme ReactExample -configuration "$CONFIGURATION" -sdk iphonesimulator build $DESTINATION
   popd
 elif [ "$TARGET" = "react-tests-android" ]; then
+  chmod a+x /opt/android-sdk-linux/build-tools/23.0.1/aapt
+
   # Copy patched version of FB
   rm -Rf ~/.m2/repository/com/facebook/react/react-native/
   mkdir -p ~/.m2/repository/com/facebook/react/react-native/
   tar xvf ./patched_bin/0.18.0-patched.tar.gz -C ~/.m2/repository/com/facebook/react/react-native/
+  echo " Installed patched React Native in "
+  ls -l ~/.m2/repository/com/facebook/react/react-native/0.18.0-patched/
   # # update sdk tool
   # expect -c '
   # set timeout -1;
