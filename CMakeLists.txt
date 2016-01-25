@@ -1,3 +1,4 @@
+set(CMAKE_BUILD_TYPE Debug CACHE STRING "")
 project(realm-object-store)
 
 cmake_minimum_required(VERSION 3.2.0)
