@@ -1,5 +1,3 @@
-include_directories(impl)
-
 set(SOURCES
     index_set.cpp
     list.cpp
@@ -21,13 +19,14 @@ set(HEADERS
     results.hpp
     schema.hpp
     shared_realm.hpp
+    impl/cached_realm.hpp
     impl/cached_realm_base.hpp
+    impl/external_commit_helper.hpp
     impl/transact_log_handler.hpp
     parser/parser.hpp
     parser/query_builder.hpp)
 
 if(APPLE)
-    include_directories(impl/apple)
     list(APPEND SOURCES
         impl/apple/cached_realm.cpp
         impl/apple/external_commit_helper.cpp)
@@ -36,7 +35,6 @@ if(APPLE)
         impl/apple/external_commit_helper.hpp)
     find_library(CF_LIBRARY CoreFoundation)
 else()
-    include_directories(impl/generic)
     list(APPEND SOURCES
         impl/generic/external_commit_helper.cpp)
     list(APPEND HEADERS

@@ -16,9 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#include "external_commit_helper.hpp"
+#include "impl/external_commit_helper.hpp"
 
-#include "realm_coordinator.hpp"
+#include "impl/realm_coordinator.hpp"
 
 #include <asl.h>
 #include <assert.h>
