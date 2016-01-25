@@ -5,6 +5,7 @@ import android.os.Looper;
 import android.util.Log;
 
 import com.facebook.react.bridge.ReactApplicationContext;
+import com.facebook.react.bridge.ReactBridge;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.soloader.SoLoader;
 
@@ -54,16 +55,17 @@ public class RealmReactModule extends ReactContextBaseJavaModule {
     }
 
     @Override
-    public Map<String, Object> getConstants() {
-        if (!isContextInjected()) {
+    public void onReactBridgeInitialized(ReactBridge bridge) {
+        long jsContext = bridge.getJavaScriptContextNativePtrExperimental();
+        if (jsContext == 0) {
             startWebServer();
+        } else {
+            injectRealmJsContext(jsContext);
         }
-        return Collections.EMPTY_MAP;
     }
 
     @Override
     public void onCatalystInstanceDestroy() {
-        clearContextInjectedFlag();
         stopWebServer();
     }
 
@@ -128,14 +130,11 @@ public class RealmReactModule extends ReactContextBaseJavaModule {
         }
     }
 
-    // return true if the Realm API was injected (return false when running in Chrome Debug)
-    private native boolean isContextInjected();
-
-    // clear the flag set when injecting Realm API
-    private native void clearContextInjectedFlag();
-
     // fileDir: path of the internal storage of the application
     private native void setDefaultRealmFileDirectory(String fileDir);
+
+    // jsContext: the JSGlobalContextRef pointer
+    private native void injectRealmJsContext(long jsContext);
 
     // responsible for creating the rpcServer that will accept the chrome Websocket command
     private native long setupChromeDebugModeRealmJsContext();

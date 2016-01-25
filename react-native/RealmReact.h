@@ -25,8 +25,6 @@ extern "C" {
 
 typedef void (^RealmReactEventHandler)(id message);
 
-JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executor, bool create);
-
 @interface RealmReact : NSObject
 
 - (void)addListenerForEvent:(NSString *)eventName handler:(RealmReactEventHandler)handler;

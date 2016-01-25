@@ -20,11 +20,12 @@
 #include <android/log.h>
 
 #include "io_realm_react_RealmReactModule.h"
+#include "js_init.h"
+#include "shared_realm.hpp"
 #include "rpc.hpp"
 #include "platform.hpp"
 
 static realm_js::RPCServer *s_rpc_server;
-extern bool realmContextInjected;
 
 JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_setDefaultRealmFileDirectory
   (JNIEnv *env, jclass, jstring fileDir)
@@ -37,6 +38,17 @@ JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_setDefaultRealmFileD
     env->ReleaseStringUTFChars(fileDir, strFileDir);
 
     __android_log_print(ANDROID_LOG_DEBUG, "JSRealm", "Absolute path: %s", realm::default_realm_file_directory().c_str());
+}
+
+JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_injectRealmJsContext
+  (JNIEnv *, jclass, jlong jsContext)
+{
+    __android_log_print(ANDROID_LOG_VERBOSE, "JSRealm", "injectRealmJsContext");
+
+    // Clear cache from previous instances
+    realm::Realm::s_global_cache.clear();
+
+    RJSInitializeInContext((JSGlobalContextRef)jsContext);
 }
 
 JNIEXPORT jlong JNICALL Java_io_realm_react_RealmReactModule_setupChromeDebugModeRealmJsContext
@@ -60,16 +72,4 @@ JNIEXPORT jstring JNICALL Java_io_realm_react_RealmReactModule_processChromeDebu
     env->ReleaseStringUTFChars(chrome_cmd, cmd);
     env->ReleaseStringUTFChars(chrome_args, args);
     return env->NewStringUTF(response.dump().c_str());
-}
-
-JNIEXPORT jboolean JNICALL Java_io_realm_react_RealmReactModule_isContextInjected
-    (JNIEnv *env, jclass)
-{
-    return realmContextInjected;
-}
-
-JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_clearContextInjectedFlag
-  (JNIEnv *env, jclass)
-{
-    realmContextInjected = false;
 }

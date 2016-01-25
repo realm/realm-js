@@ -17,6 +17,13 @@ JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_setDefaultRealmFileD
 
 /*
  * Class:     io_realm_react_RealmReactModule
+ * Method:    injectRealmJsContext
+ */
+JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_injectRealmJsContext
+  (JNIEnv *, jclass, jlong);
+
+/*
+ * Class:     io_realm_react_RealmReactModule
  * Method:    setupChromeDebugModeRealmJsContext
  */
 JNIEXPORT jlong JNICALL Java_io_realm_react_RealmReactModule_setupChromeDebugModeRealmJsContext
@@ -28,21 +35,6 @@ JNIEXPORT jlong JNICALL Java_io_realm_react_RealmReactModule_setupChromeDebugMod
  */
 JNIEXPORT jstring JNICALL Java_io_realm_react_RealmReactModule_processChromeDebugCommand
   (JNIEnv *, jclass, jstring, jstring);
-
-/*
- * Class:     io_realm_react_RealmReactModule
- * Method:    isContextInjected
- */
-JNIEXPORT jboolean JNICALL Java_io_realm_react_RealmReactModule_isContextInjected
-    (JNIEnv *, jclass);
-
-/*
- * Class:     io_realm_react_RealmReactModule
- * Method:    clearContextInjectedFlag
- */
-JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_clearContextInjectedFlag
-  (JNIEnv *, jclass);
-
 
 #ifdef __cplusplus
 }
