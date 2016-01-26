@@ -18,9 +18,20 @@
 
 #include "list.hpp"
 
+#include "shared_realm.hpp"
+
 #include <stdexcept>
 
 using namespace realm;
+
+List::List(std::shared_ptr<Realm> r, const ObjectSchema& s, LinkViewRef l)
+: m_realm(std::move(r))
+, m_object_schema(&s)
+, m_link_view(std::move(l))
+{
+}
+
+List::~List() = default;
 
 size_t List::size()
 {

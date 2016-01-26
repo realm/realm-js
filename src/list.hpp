@@ -19,22 +19,21 @@
 #ifndef REALM_LIST_HPP
 #define REALM_LIST_HPP
 
-#include "shared_realm.hpp"
 #include <realm/link_view.hpp>
+
+#include <memory>
 
 namespace realm {
 class ObjectSchema;
+class Realm;
+
 class List {
 public:
-    List(SharedRealm& r, const ObjectSchema& s, LinkViewRef l)
-        : m_realm(r)
-        , m_object_schema(&s)
-        , m_link_view(l)
-    {
-    }
+    List(std::shared_ptr<Realm> r, const ObjectSchema& s, LinkViewRef l);
+    ~List();
 
     const ObjectSchema& get_object_schema() const { return *m_object_schema; }
-    SharedRealm realm() { return m_realm; }
+    const std::shared_ptr<Realm>& realm() { return m_realm; }
 
     size_t size();
     Row get(std::size_t row_ndx);
@@ -60,7 +59,7 @@ public:
     void verify_in_tranaction();
 
 private:
-    SharedRealm m_realm;
+    std::shared_ptr<Realm> m_realm;
     const ObjectSchema* m_object_schema;
     LinkViewRef m_link_view;
 };
