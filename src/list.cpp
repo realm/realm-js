@@ -97,6 +97,7 @@ void List::verify_attached()
     if (!m_link_view->is_attached()) {
         throw std::runtime_error("LinkView is not attached");
     }
+    m_realm->verify_thread();
 }
 
 void List::verify_in_tranaction()
