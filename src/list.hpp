@@ -29,20 +29,24 @@ class Realm;
 
 class List {
 public:
-    List(std::shared_ptr<Realm> r, const ObjectSchema& s, LinkViewRef l);
+    List(std::shared_ptr<Realm> r, const ObjectSchema& s, LinkViewRef l) noexcept;
     ~List();
 
     const ObjectSchema& get_object_schema() const { return *m_object_schema; }
-    const std::shared_ptr<Realm>& realm() { return m_realm; }
+    const std::shared_ptr<Realm>& realm() const { return m_realm; }
 
-    size_t size();
-    Row get(size_t row_ndx);
+    size_t size() const;
+    Row get(size_t row_ndx) const;
     void set(size_t row_ndx, size_t target_row_ndx);
 
     void add(size_t target_row_ndx);
     void remove(size_t list_ndx);
     void insert(size_t list_ndx, size_t target_row_ndx);
 
+    Query get_query() const;
+    void verify_in_tranaction() const;
+
+    // These are implemented in object_accessor.hpp
     template <typename ValueType, typename ContextType>
     void add(ContextType ctx, ValueType value);
 
@@ -52,16 +56,13 @@ public:
     template <typename ValueType, typename ContextType>
     void set(ContextType ctx, ValueType value, size_t list_ndx);
 
-    Query get_query();
-
-    void verify_valid_row(size_t row_ndx, bool insertion = false);
-    void verify_attached();
-    void verify_in_tranaction();
-
 private:
     std::shared_ptr<Realm> m_realm;
     const ObjectSchema* m_object_schema;
     LinkViewRef m_link_view;
+
+    void verify_valid_row(size_t row_ndx, bool insertion = false) const;
+    void verify_attached() const;
 };
 }
 

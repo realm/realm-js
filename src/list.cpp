@@ -24,7 +24,7 @@
 
 using namespace realm;
 
-List::List(std::shared_ptr<Realm> r, const ObjectSchema& s, LinkViewRef l)
+List::List(std::shared_ptr<Realm> r, const ObjectSchema& s, LinkViewRef l) noexcept
 : m_realm(std::move(r))
 , m_object_schema(&s)
 , m_link_view(std::move(l))
@@ -33,13 +33,13 @@ List::List(std::shared_ptr<Realm> r, const ObjectSchema& s, LinkViewRef l)
 
 List::~List() = default;
 
-size_t List::size()
+size_t List::size() const
 {
     verify_attached();
     return m_link_view->size();
 }
 
-Row List::get(size_t row_ndx)
+Row List::get(size_t row_ndx) const
 {
     verify_attached();
     verify_valid_row(row_ndx);
@@ -77,13 +77,13 @@ void List::remove(size_t row_ndx)
     m_link_view->remove(row_ndx);
 }
 
-Query List::get_query()
+Query List::get_query() const
 {
     verify_attached();
     return m_link_view->get_target_table().where(m_link_view);
 }
 
-void List::verify_valid_row(size_t row_ndx, bool insertion)
+void List::verify_valid_row(size_t row_ndx, bool insertion) const
 {
     size_t size = m_link_view->size();
     if (row_ndx > size || (!insertion && row_ndx == size)) {
@@ -92,7 +92,7 @@ void List::verify_valid_row(size_t row_ndx, bool insertion)
     }
 }
 
-void List::verify_attached()
+void List::verify_attached() const
 {
     if (!m_link_view->is_attached()) {
         throw std::runtime_error("LinkView is not attached");
@@ -100,7 +100,7 @@ void List::verify_attached()
     m_realm->verify_thread();
 }
 
-void List::verify_in_tranaction()
+void List::verify_in_tranaction() const
 {
     if (!m_realm->is_in_transaction()) {
         throw std::runtime_error("Can only mutate a list within a transaction.");
