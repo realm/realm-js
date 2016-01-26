@@ -3,7 +3,6 @@
  * https://github.com/facebook/react-native
  */
 'use strict';
-
 var React = require('react-native');
 var {
   AppRegistry,
@@ -77,12 +76,12 @@ function runTests() {
     }
     // export unit tests results
     var xmlString = rootXml.end({ pretty: true, indent: '  ', newline: '\n' });
-    var path = RNFS.DocumentDirectoryPath + '/tests.xml';
+    var path = '/sdcard/tests.xml';
 
     // write the unit tests reports
     RNFS.writeFile(path, xmlString , 'utf8')
       .then((success) => {
-        console.log('FILE WRITTEN!!');
+        console.log('__REALM_REACT_ANDROID_TESTS_COMPLETED__');
       })
       .catch((err) => {
         console.log(err.message);

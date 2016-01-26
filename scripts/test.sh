@@ -18,6 +18,7 @@ while pgrep -q Simulator; do
 fi
 
 PACKAGER_OUT="packager_out.txt"
+
 function start_packager()
 {
   rm -f $PACKAGER_OUT
@@ -32,6 +33,11 @@ function start_packager()
     sleep 2
   fi
   done
+}
+
+function unlock_device()
+{
+  adb shell input keyevent 82
 }
 
 # kill old packagers
@@ -66,27 +72,6 @@ elif [ "$TARGET" = "react-example" ]; then
   xcodebuild -scheme ReactExample -configuration "$CONFIGURATION" -sdk iphonesimulator build $DESTINATION
   popd
 elif [ "$TARGET" = "react-tests-android" ]; then
-  chmod a+x /opt/android-sdk-linux/build-tools/23.0.1/aapt
-
-  # Copy patched version of FB
-  rm -Rf ~/.m2/repository/com/facebook/react/react-native/
-  mkdir -p ~/.m2/repository/com/facebook/react/react-native/
-  tar xvf ./patched_bin/0.18.0-patched.tar.gz -C ~/.m2/repository/com/facebook/react/react-native/
-  echo " Installed patched React Native in "
-  ls -l ~/.m2/repository/com/facebook/react/react-native/0.18.0-patched/
-  # # update sdk tool
-  # expect -c '
-  # set timeout -1;
-  # spawn /opt/android-sdk-linux/tools/android update sdk -u -a -t "build-tools-23.0.1";
-  # expect {
-  #     "Do you accept the license" { exp_send "y\r" ; exp_continue }
-  #     eof
-  # }
-  # '
-
-  # run nvm
-  [ -s "${HOME}/.nvm/nvm.sh" ] && . "${HOME}/.nvm/nvm.sh" 
-
   pushd react-native/android
   ./gradlew installarchives
   popd
@@ -99,7 +84,7 @@ elif [ "$TARGET" = "react-tests-android" ]; then
 
   npm install
   start_packager
-
+  unlock_device
   sh run-android.sh
 
   LOGCAT_OUT="logcat_out.txt"
@@ -109,7 +94,7 @@ elif [ "$TARGET" = "react-tests-android" ]; then
   adb logcat | tee $LOGCAT_OUT &
   while :;
   do
-  if grep -q "FILE WRITTEN!!" $LOGCAT_OUT
+  if grep -q "__REALM_REACT_ANDROID_TESTS_COMPLETED__" $LOGCAT_OUT
   then
     break
   else
@@ -118,7 +103,10 @@ elif [ "$TARGET" = "react-tests-android" ]; then
   fi
   done
 
-  adb pull /data/data/com.demo/files/tests.xml . || true
+  adb pull /sdcard/tests.xml . || true
+  more "********* TESTS COMPLETED *********";
+  more "********* File location: `pwd`/tests.xml *********";
+  more tests.xml
 else
   echo "Invalid target '${TARGET}'"
 fi
