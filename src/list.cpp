@@ -97,7 +97,6 @@ void List::verify_attached()
     if (!m_link_view->is_attached()) {
         throw std::runtime_error("Tableview is not attached");
     }
-    m_link_view->sync_if_needed();
 }
 
 void List::verify_in_tranaction()
