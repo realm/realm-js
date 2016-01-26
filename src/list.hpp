@@ -33,7 +33,8 @@ public:
     ~List();
 
     const ObjectSchema& get_object_schema() const { return *m_object_schema; }
-    const std::shared_ptr<Realm>& realm() const { return m_realm; }
+    const std::shared_ptr<Realm>& get_realm() const { return m_realm; }
+    Query get_query() const;
 
     size_t size() const;
     Row get(size_t row_ndx) const;
@@ -43,7 +44,6 @@ public:
     void remove(size_t list_ndx);
     void insert(size_t list_ndx, size_t target_row_ndx);
 
-    Query get_query() const;
     void verify_in_tranaction() const;
 
     // These are implemented in object_accessor.hpp
