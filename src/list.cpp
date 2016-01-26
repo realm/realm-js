@@ -95,7 +95,7 @@ void List::verify_valid_row(size_t row_ndx, bool insertion)
 void List::verify_attached()
 {
     if (!m_link_view->is_attached()) {
-        throw std::runtime_error("Tableview is not attached");
+        throw std::runtime_error("LinkView is not attached");
     }
 }
 
