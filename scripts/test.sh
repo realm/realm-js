@@ -37,7 +37,7 @@ function start_packager()
 
 function unlock_device()
 {
-  adb shell input keyevent 82
+  /opt/android-sdk-linux/platform-tools/adb shell input keyevent 82
 }
 
 # kill old packagers
@@ -92,8 +92,8 @@ elif [ "$TARGET" = "react-tests-android" ]; then
   LOGCAT_OUT="logcat_out.txt"
   rm -f $LOGCAT_OUT
 
-  adb logcat -c
-  adb logcat | tee $LOGCAT_OUT &
+  /opt/android-sdk-linux/platform-tools/adb logcat -c
+  /opt/android-sdk-linux/platform-tools/adb logcat | tee $LOGCAT_OUT &
   while :;
   do
   if grep -q "__REALM_REACT_ANDROID_TESTS_COMPLETED__" $LOGCAT_OUT
@@ -105,7 +105,7 @@ elif [ "$TARGET" = "react-tests-android" ]; then
   fi
   done
 
-  adb pull /sdcard/tests.xml . || true
+  /opt/android-sdk-linux/platform-tools/adb pull /sdcard/tests.xml . || true
   more "********* TESTS COMPLETED *********";
   more "********* File location: `pwd`/tests.xml *********";
   more tests.xml
