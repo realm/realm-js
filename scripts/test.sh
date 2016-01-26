@@ -72,6 +72,8 @@ elif [ "$TARGET" = "react-example" ]; then
   xcodebuild -scheme ReactExample -configuration "$CONFIGURATION" -sdk iphonesimulator build $DESTINATION
   popd
 elif [ "$TARGET" = "react-tests-android" ]; then
+  nvm install 5.4.0
+  nvm use 5.4.0 
   pushd react-native/android
   ./gradlew installarchives
   popd
