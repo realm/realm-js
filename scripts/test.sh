@@ -106,8 +106,8 @@ elif [ "$TARGET" = "react-tests-android" ]; then
   done
 
   /opt/android-sdk-linux/platform-tools/adb pull /sdcard/tests.xml . || true
-  more "********* TESTS COMPLETED *********";
-  more "********* File location: `pwd`/tests.xml *********";
+  echo "********* TESTS COMPLETED *********";
+  echo "********* File location: `pwd`/tests.xml *********";
   more tests.xml
 else
   echo "Invalid target '${TARGET}'"
