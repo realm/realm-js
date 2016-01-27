@@ -32,9 +32,9 @@ class SharedGroup;
 struct AsyncQueryCancelationToken;
 
 namespace _impl {
-class AsyncQuery;
-class WeakRealmNotifier;
+class BackgroundCollection;
 class ExternalCommitHelper;
+class WeakRealmNotifier;
 
 // RealmCoordinator manages the weak cache of Realm instances and communication
 // between per-thread Realm instances for a given file
@@ -97,8 +97,8 @@ private:
     std::vector<WeakRealmNotifier> m_weak_realm_notifiers;
 
     std::mutex m_query_mutex;
-    std::vector<std::shared_ptr<_impl::AsyncQuery>> m_new_queries;
-    std::vector<std::shared_ptr<_impl::AsyncQuery>> m_queries;
+    std::vector<std::shared_ptr<_impl::BackgroundCollection>> m_new_queries;
+    std::vector<std::shared_ptr<_impl::BackgroundCollection>> m_queries;
 
     // SharedGroup used for actually running async queries
     // Will have a read transaction iff m_queries is non-empty

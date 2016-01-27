@@ -7,6 +7,7 @@ set(SOURCES
     schema.cpp
     shared_realm.cpp
     impl/async_query.cpp
+    impl/background_collection.cpp
     impl/realm_coordinator.cpp
     impl/transact_log_handler.cpp
     parser/parser.cpp
@@ -20,10 +21,11 @@ set(HEADERS
     results.hpp
     schema.hpp
     shared_realm.hpp
-    impl/weak_realm_notifier.hpp
-    impl/weak_realm_notifier_base.hpp
+    impl/background_collection.hpp
     impl/external_commit_helper.hpp
     impl/transact_log_handler.hpp
+    impl/weak_realm_notifier.hpp
+    impl/weak_realm_notifier_base.hpp
     parser/parser.hpp
     parser/query_builder.hpp
     util/atomic_shared_ptr.hpp)

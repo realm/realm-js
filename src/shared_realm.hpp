@@ -42,6 +42,7 @@ namespace realm {
 
     namespace _impl {
         class AsyncQuery;
+        class BackgroundCollection;
         class RealmCoordinator;
     }
 
@@ -144,15 +145,16 @@ namespace realm {
         // without making it public to everyone
         class Internal {
             friend class _impl::AsyncQuery;
+            friend class _impl::BackgroundCollection;
             friend class _impl::RealmCoordinator;
 
             // AsyncQuery needs access to the SharedGroup to be able to call the
             // handover functions, which are not very wrappable
             static SharedGroup& get_shared_group(Realm& realm) { return *realm.m_shared_group; }
 
-            // AsyncQuery needs to be able to access the owning coordinator to
-            // wake up the worker thread when a callback is added, and
-            // coordinators need to be able to get themselves from a Realm
+            // BackgroundCollection needs to be able to access the owning
+            // coordinator to wake up the worker thread when a callback is
+            // added, and coordinators need to be able to get themselves from a Realm
             static _impl::RealmCoordinator& get_coordinator(Realm& realm) { return *realm.m_coordinator; }
         };
 

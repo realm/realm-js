@@ -268,7 +268,7 @@ void RealmCoordinator::clean_up_dead_queries()
 
             // Ensure the query is destroyed here even if there's lingering refs
             // to the async query elsewhere
-            container[i]->release_query();
+            container[i]->release_data();
 
             if (container.size() > i + 1)
                 container[i] = std::move(container.back());
@@ -399,7 +399,7 @@ void RealmCoordinator::advance_helper_shared_group_to_latest()
 
     // Transfer all new queries over to the main SG
     for (auto& query : m_new_queries) {
-        query->detatch();
+        query->detach();
         query->attach_to(*m_query_sg);
     }
 
