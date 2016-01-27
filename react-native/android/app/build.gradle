@@ -14,12 +14,25 @@ import org.apache.tools.ant.filters.ReplaceTokens
 // After that we build native code from src/main/jni with module path pointing at third-party-ndk.
 
 def downloadsDir = new File("$buildDir/downloads")
+def jscDownloadDir = new File("$projectDir/src/main/jni/jsc")
 def thirdPartyNdkDir = new File("$buildDir/third-party-ndk")
 
 task createNativeDepsDirectories {
     downloadsDir.mkdirs()
     thirdPartyNdkDir.mkdirs()
 }
+
+task downloadJSCHeaders(type: Download) {
+     def jscAPIBaseURL = 'https://svn.webkit.org/repository/webkit/!svn/bc/174650/trunk/Source/JavaScriptCore/API/'
+     def jscHeaderFiles = ['JSBase.h', 'JSContextRef.h', 'JSObjectRef.h', 'JSRetainPtr.h', 'JSStringRef.h', 'JSValueRef.h', 'WebKitAvailability.h']
+
+     def output = new File(jscDownloadDir, 'JavaScriptCore')
+     output.mkdirs()
+     src(jscHeaderFiles.collect { headerName -> "$jscAPIBaseURL$headerName" })
+     onlyIfNewer true
+     overwrite false
+     dest output
+ }
 
 task downloadRealmCore(type: Download) {
     src 'http://static.realm.io/downloads/core/realm-core-android-0.94.4.tar.gz'
@@ -83,7 +96,7 @@ def getNdkBuildFullPath() {
     return ndkBuildFullPath
 }
 
-task buildReactNdkLib(type: Exec) {
+task buildReactNdkLib(dependsOn: downloadJSCHeaders, type: Exec) {
     inputs.file('src/main/jni')
     outputs.dir("$buildDir/react-ndk/all")
     commandLine getNdkBuildFullPath(),
