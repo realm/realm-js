@@ -22,7 +22,7 @@ PACKAGER_OUT="packager_out.txt"
 function start_packager()
 {
   rm -f $PACKAGER_OUT
-  sh ./node_modules/react-native/packager/packager.sh | tee $PACKAGER_OUT &
+  ./node_modules/react-native/packager/packager.sh | tee $PACKAGER_OUT &
   while :;
   do
   if grep -Fxq "React packager ready." $PACKAGER_OUT
@@ -87,7 +87,7 @@ elif [ "$TARGET" = "react-tests-android" ]; then
   npm install
   start_packager
   unlock_device
-  sh run-android.sh
+  ./run-android.sh
 
   LOGCAT_OUT="logcat_out.txt"
   rm -f $LOGCAT_OUT
