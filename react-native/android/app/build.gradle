@@ -133,12 +133,6 @@ android {
         targetSdkVersion 22
         versionCode 1
         versionName "1.0"
-
-        ndk {
-            moduleName "reactnativejni"
-        }
-
-        buildConfigField 'boolean', 'IS_INTERNAL_BUILD', 'false'
     }
 
     sourceSets.main {
@@ -162,7 +156,6 @@ dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile 'org.nanohttpd:nanohttpd:2.2.0'
     compile 'com.facebook.react:react-native:0.18.0-patched'
-    compile 'org.webkit:android-jsc:r174650'
 }
 
 apply from: 'release.gradle'
