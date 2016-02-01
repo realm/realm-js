@@ -21,6 +21,7 @@
 #include "impl/cached_realm.hpp"
 #include "impl/external_commit_helper.hpp"
 #include "object_store.hpp"
+#include "schema.hpp"
 
 #include <unordered_map>
 
@@ -96,7 +97,7 @@ std::shared_ptr<Realm> RealmCoordinator::get_realm(Realm::Config config)
         }
     }
 
-    auto realm = std::make_shared<Realm>(config);
+    auto realm = std::make_shared<Realm>(std::move(config));
     realm->init(shared_from_this());
     m_cached_realms.emplace_back(realm, m_config.cache);
     return realm;
@@ -105,6 +106,13 @@ std::shared_ptr<Realm> RealmCoordinator::get_realm(Realm::Config config)
 const Schema* RealmCoordinator::get_schema() const noexcept
 {
     return m_cached_realms.empty() ? nullptr : m_config.schema.get();
+}
+
+void RealmCoordinator::update_schema(Schema const& schema)
+{
+    // FIXME: this should probably be doing some sort of validation and
+    // notifying all Realm instances of the new schema in some way
+    m_config.schema = std::make_unique<Schema>(schema);
 }
 
 RealmCoordinator::RealmCoordinator() = default;

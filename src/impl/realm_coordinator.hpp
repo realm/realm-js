@@ -24,6 +24,8 @@
 #include <realm/string_data.hpp>
 
 namespace realm {
+class Schema;
+
 namespace _impl {
 class CachedRealm;
 class ExternalCommitHelper;
@@ -67,6 +69,9 @@ public:
 
     // Called by m_notifier when there's a new commit to send notifications for
     void on_change();
+
+    // Update the schema in the cached config
+    void update_schema(Schema const& new_schema);
 
 private:
     Realm::Config m_config;
