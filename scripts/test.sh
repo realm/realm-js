@@ -33,6 +33,10 @@ cleanup() {
   rm -f "$PACKAGER_OUT" "$LOGCAT_OUT"
 }
 
+have() {
+  type "$@" >/dev/null 2>&1
+}
+
 open_chrome() {
   local dir
   for dir in "$HOME/Applications" "/Applications"; do
@@ -44,8 +48,7 @@ open_chrome() {
 }
 
 start_packager() {
-  # Starting with --nonPersistent will avoid starting a file watcher.
-  ./node_modules/react-native/packager/packager.sh --nonPersistent | tee "$PACKAGER_OUT" &
+  ./node_modules/react-native/packager/packager.sh | tee "$PACKAGER_OUT" &
 
   while :; do
     if grep -Fxq "React packager ready." "$PACKAGER_OUT"; then
@@ -98,7 +101,7 @@ case "$TARGET" in
   ;;
 "react-tests-android")
   [ -s "${HOME}/.nvm/nvm.sh" ] && . "${HOME}/.nvm/nvm.sh"
-  nvm use 5.4.0
+  have nvm && nvm use 5.4.0
 
   pushd react-native/android
   ./gradlew installarchives
@@ -112,8 +115,9 @@ case "$TARGET" in
   unlock_device
   ./run-android.sh
 
+  # Despite the docs claiming -c to work, it doesn't, so `-T 1` alleviates that.
   adb logcat -c
-  adb logcat | tee "$LOGCAT_OUT" &
+  adb logcat -T 1 | tee "$LOGCAT_OUT" &
 
   while :; do
     if grep -q "__REALM_REACT_ANDROID_TESTS_COMPLETED__" "$LOGCAT_OUT"; then
@@ -124,11 +128,14 @@ case "$TARGET" in
     fi
   done
 
-  adb pull /sdcard/tests.xml . || true
+  rm -f tests.xml
+  adb pull /sdcard/tests.xml .
 
+  # Stop running child processes before printing results.
+  cleanup
   echo "********* TESTS COMPLETED *********";
   echo "********* File location: $(pwd)/tests.xml *********";
-  more tests.xml
+  cat tests.xml
   ;;
 *)
   echo "Invalid target '${TARGET}'"
