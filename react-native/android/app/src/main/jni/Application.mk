@@ -15,6 +15,6 @@ APP_CPPFLAGS += -DREALM_HAVE_CONFIG
 
 # Make sure every shared lib includes a .note.gnu.build-id header
 APP_LDFLAGS := -Wl,--build-id
+APP_LDFLAGS += -llog
 
 NDK_TOOLCHAIN_VERSION := 4.9
-APP_LDFLAGS := -llog
