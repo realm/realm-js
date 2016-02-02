@@ -16,4 +16,5 @@ use_realm_core(${REALM_CORE_VERSION})
 include_directories(${REALM_CORE_INCLUDE_DIR} src external/pegtl)
 
 add_subdirectory(src)
+add_subdirectory(fuzzer)
 add_subdirectory(tests)
