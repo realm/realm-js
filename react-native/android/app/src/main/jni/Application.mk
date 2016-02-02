@@ -11,6 +11,7 @@ APP_STL := gnustl_static
 APP_CPPFLAGS := -std=c++14
 APP_CPPFLAGS += -frtti
 APP_CPPFLAGS += -fexceptions
+APP_CPPFLAGS += -DREALM_HAVE_CONFIG
 
 # Make sure every shared lib includes a .note.gnu.build-id header
 APP_LDFLAGS := -Wl,--build-id
