@@ -111,8 +111,9 @@ case "$TARGET" in
 
   npm install
   open_chrome
+  react-native start
   unlock_device
-  ./run-android.sh # this will also start the packager 
+  ./run-android.sh
 
   # Despite the docs claiming -c to work, it doesn't, so `-T 1` alleviates that.
   adb logcat -c
