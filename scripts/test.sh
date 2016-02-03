@@ -111,7 +111,7 @@ case "$TARGET" in
 
   npm install
   open_chrome
-  react-native start
+  react-native start &
   unlock_device
   ./run-android.sh
 
