@@ -49,7 +49,7 @@ Row List::get(size_t row_ndx) const
 void List::set(size_t row_ndx, size_t target_row_ndx)
 {
     verify_attached();
-    verify_in_tranaction();
+    verify_in_transaction();
     verify_valid_row(row_ndx);
     m_link_view->set(row_ndx, target_row_ndx);
 }
@@ -57,14 +57,14 @@ void List::set(size_t row_ndx, size_t target_row_ndx)
 void List::add(size_t target_row_ndx)
 {
     verify_attached();
-    verify_in_tranaction();
+    verify_in_transaction();
     m_link_view->add(target_row_ndx);
 }
 
 void List::insert(size_t row_ndx, size_t target_row_ndx)
 {
     verify_attached();
-    verify_in_tranaction();
+    verify_in_transaction();
     verify_valid_row(row_ndx, true);
     m_link_view->insert(row_ndx, target_row_ndx);
 }
@@ -72,7 +72,7 @@ void List::insert(size_t row_ndx, size_t target_row_ndx)
 void List::remove(size_t row_ndx)
 {
     verify_attached();
-    verify_in_tranaction();
+    verify_in_transaction();
     verify_valid_row(row_ndx);
     m_link_view->remove(row_ndx);
 }
@@ -100,7 +100,7 @@ void List::verify_attached() const
     m_realm->verify_thread();
 }
 
-void List::verify_in_tranaction() const
+void List::verify_in_transaction() const
 {
     if (!m_realm->is_in_transaction()) {
         throw std::runtime_error("Can only mutate a list within a transaction.");

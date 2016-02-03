@@ -44,7 +44,7 @@ public:
     void remove(size_t list_ndx);
     void insert(size_t list_ndx, size_t target_row_ndx);
 
-    void verify_in_tranaction() const;
+    void verify_in_transaction() const;
 
     // These are implemented in object_accessor.hpp
     template <typename ValueType, typename ContextType>
