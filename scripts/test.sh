@@ -112,7 +112,6 @@ case "$TARGET" in
   npm install
   open_chrome
   react-native start &
-  unlock_device
   ./run-android.sh
 
   # Despite the docs claiming -c to work, it doesn't, so `-T 1` alleviates that.
