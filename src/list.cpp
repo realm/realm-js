@@ -24,14 +24,15 @@
 
 using namespace realm;
 
+List::List() noexcept = default;
+List::~List() = default;
+
 List::List(std::shared_ptr<Realm> r, const ObjectSchema& s, LinkViewRef l) noexcept
 : m_realm(std::move(r))
 , m_object_schema(&s)
 , m_link_view(std::move(l))
 {
 }
-
-List::~List() = default;
 
 size_t List::size() const
 {

@@ -32,6 +32,7 @@ class Realm;
 
 class List {
 public:
+    List() noexcept;
     List(std::shared_ptr<Realm> r, const ObjectSchema& s, LinkViewRef l) noexcept;
     ~List();
 
@@ -61,7 +62,7 @@ public:
 
 private:
     std::shared_ptr<Realm> m_realm;
-    const ObjectSchema* m_object_schema;
+    const ObjectSchema* m_object_schema = nullptr;
     LinkViewRef m_link_view;
 
     void verify_valid_row(size_t row_ndx, bool insertion = false) const;
