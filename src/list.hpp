@@ -24,6 +24,9 @@
 #include <memory>
 
 namespace realm {
+template<typename T> class BasicRowExpr;
+using RowExpr = BasicRowExpr<Table>;
+
 class ObjectSchema;
 class Realm;
 
@@ -37,7 +40,7 @@ public:
     Query get_query() const;
 
     size_t size() const;
-    Row get(size_t row_ndx) const;
+    RowExpr get(size_t row_ndx) const;
     void set(size_t row_ndx, size_t target_row_ndx);
 
     void add(size_t target_row_ndx);

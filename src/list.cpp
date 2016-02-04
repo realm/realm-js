@@ -39,7 +39,7 @@ size_t List::size() const
     return m_link_view->size();
 }
 
-Row List::get(size_t row_ndx) const
+RowExpr List::get(size_t row_ndx) const
 {
     verify_attached();
     verify_valid_row(row_ndx);
