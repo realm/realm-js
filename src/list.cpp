@@ -18,6 +18,7 @@
 
 #include "list.hpp"
 
+#include "results.hpp"
 #include "shared_realm.hpp"
 
 #include <stdexcept>
@@ -32,46 +33,6 @@ List::List(std::shared_ptr<Realm> r, const ObjectSchema& s, LinkViewRef l) noexc
 , m_object_schema(&s)
 , m_link_view(std::move(l))
 {
-}
-
-size_t List::size() const
-{
-    verify_attached();
-    return m_link_view->size();
-}
-
-RowExpr List::get(size_t row_ndx) const
-{
-    verify_attached();
-    verify_valid_row(row_ndx);
-    return m_link_view->get(row_ndx);
-}
-
-void List::set(size_t row_ndx, size_t target_row_ndx)
-{
-    verify_in_transaction();
-    verify_valid_row(row_ndx);
-    m_link_view->set(row_ndx, target_row_ndx);
-}
-
-void List::add(size_t target_row_ndx)
-{
-    verify_in_transaction();
-    m_link_view->add(target_row_ndx);
-}
-
-void List::insert(size_t row_ndx, size_t target_row_ndx)
-{
-    verify_in_transaction();
-    verify_valid_row(row_ndx, true);
-    m_link_view->insert(row_ndx, target_row_ndx);
-}
-
-void List::remove(size_t row_ndx)
-{
-    verify_in_transaction();
-    verify_valid_row(row_ndx);
-    m_link_view->remove(row_ndx);
 }
 
 Query List::get_query() const
@@ -89,18 +50,120 @@ void List::verify_valid_row(size_t row_ndx, bool insertion) const
     }
 }
 
+bool List::is_valid() const
+{
+    m_realm->verify_thread();
+    return m_link_view && m_link_view->is_attached();
+}
+
 void List::verify_attached() const
 {
-    if (!m_link_view->is_attached()) {
+    if (!is_valid()) {
         throw std::runtime_error("LinkView is not attached");
     }
-    m_realm->verify_thread();
 }
 
 void List::verify_in_transaction() const
 {
     verify_attached();
     if (!m_realm->is_in_transaction()) {
-        throw std::runtime_error("Can only mutate a list within a transaction.");
+        throw InvalidTransactionException("Must be in a write transaction");
     }
+}
+
+size_t List::size() const
+{
+    verify_attached();
+    return m_link_view->size();
+}
+
+RowExpr List::get(size_t row_ndx) const
+{
+    verify_attached();
+    verify_valid_row(row_ndx);
+    return m_link_view->get(row_ndx);
+}
+
+size_t List::find(ConstRow const& row) const
+{
+    verify_attached();
+
+    if (!row.is_attached() || row.get_table() != &m_link_view->get_target_table()) {
+        return not_found;
+    }
+
+    return m_link_view->find(row.get_index());
+}
+
+void List::add(size_t target_row_ndx)
+{
+    verify_in_transaction();
+    m_link_view->add(target_row_ndx);
+}
+
+void List::insert(size_t row_ndx, size_t target_row_ndx)
+{
+    verify_in_transaction();
+    verify_valid_row(row_ndx, true);
+    m_link_view->insert(row_ndx, target_row_ndx);
+}
+
+void List::move(size_t source_ndx, size_t dest_ndx)
+{
+    verify_in_transaction();
+    verify_valid_row(source_ndx);
+    verify_valid_row(dest_ndx); // Can't be one past end due to removing one earlier
+    m_link_view->move(source_ndx, dest_ndx);
+}
+
+void List::remove(size_t row_ndx)
+{
+    verify_in_transaction();
+    verify_valid_row(row_ndx);
+    m_link_view->remove(row_ndx);
+}
+
+void List::remove_all()
+{
+    verify_in_transaction();
+    m_link_view->clear();
+}
+
+void List::set(size_t row_ndx, size_t target_row_ndx)
+{
+    verify_in_transaction();
+    verify_valid_row(row_ndx);
+    m_link_view->set(row_ndx, target_row_ndx);
+}
+
+void List::swap(size_t ndx1, size_t ndx2)
+{
+    verify_in_transaction();
+    verify_valid_row(ndx1);
+    verify_valid_row(ndx2);
+    m_link_view->swap(ndx1, ndx2);
+}
+
+void List::delete_all()
+{
+    verify_in_transaction();
+    m_link_view->remove_all_target_rows();
+}
+
+Results List::sort(SortOrder order)
+{
+    return Results(m_realm, *m_object_schema, get_query(), std::move(order));
+}
+
+// These definitions rely on that LinkViews are interned by core
+bool List::operator==(List const& rgt) const noexcept
+{
+    return m_link_view.get() == rgt.m_link_view.get();
+}
+
+namespace std {
+size_t hash<realm::List>::operator()(realm::List const& list) const
+{
+    return std::hash<void*>()(list.m_link_view.get());
+}
 }

@@ -29,6 +29,8 @@ using RowExpr = BasicRowExpr<Table>;
 
 class ObjectSchema;
 class Realm;
+class Results;
+struct SortOrder;
 
 class List {
 public:
@@ -36,19 +38,31 @@ public:
     List(std::shared_ptr<Realm> r, const ObjectSchema& s, LinkViewRef l) noexcept;
     ~List();
 
-    const ObjectSchema& get_object_schema() const { return *m_object_schema; }
     const std::shared_ptr<Realm>& get_realm() const { return m_realm; }
     Query get_query() const;
+    const ObjectSchema& get_object_schema() const { return *m_object_schema; }
+
+    bool is_valid() const;
+    void verify_attached() const;
+    void verify_in_transaction() const;
 
     size_t size() const;
     RowExpr get(size_t row_ndx) const;
-    void set(size_t row_ndx, size_t target_row_ndx);
+    size_t find(ConstRow const& row) const;
 
     void add(size_t target_row_ndx);
-    void remove(size_t list_ndx);
     void insert(size_t list_ndx, size_t target_row_ndx);
+    void move(size_t source_ndx, size_t dest_ndx);
+    void remove(size_t list_ndx);
+    void remove_all();
+    void set(size_t row_ndx, size_t target_row_ndx);
+    void swap(size_t ndx1, size_t ndx2);
 
-    void verify_in_transaction() const;
+    void delete_all();
+
+    Results sort(SortOrder order);
+
+    bool operator==(List const& rgt) const noexcept;
 
     // These are implemented in object_accessor.hpp
     template <typename ValueType, typename ContextType>
@@ -62,11 +76,18 @@ public:
 
 private:
     std::shared_ptr<Realm> m_realm;
-    const ObjectSchema* m_object_schema = nullptr;
+    const ObjectSchema* m_object_schema;
     LinkViewRef m_link_view;
 
     void verify_valid_row(size_t row_ndx, bool insertion = false) const;
-    void verify_attached() const;
+
+    friend struct std::hash<List>;
+};
+} // namespace realm
+
+namespace std {
+template<> struct hash<realm::List> {
+    size_t operator()(realm::List const&) const;
 };
 }
 
