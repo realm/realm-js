@@ -1,4 +1,4 @@
-rootProject.name = 'ReactTests'
+rootProject.name = 'RealmReactNative'
 
 include ':app'
 include ':react-native'
