@@ -97,11 +97,11 @@ case "$TARGET" in
   ;;
 "react-tests-android")
   if [[ $CONFIGURATION == 'Debug' ]]; then
-     exit 0;
+     exit 0
   fi
 
   [ -s "${HOME}/.nvm/nvm.sh" ] && . "${HOME}/.nvm/nvm.sh"
-  if [[ $TARGET != *-android ]]; then
+  if [[ $TARGET == *-android ]]; then
       type npm >/dev/null 2>&1 && nvm use 5.4.0
   fi
 
