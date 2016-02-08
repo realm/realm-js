@@ -101,9 +101,7 @@ case "$TARGET" in
   fi
 
   [ -s "${HOME}/.nvm/nvm.sh" ] && . "${HOME}/.nvm/nvm.sh"
-  if [[ $TARGET == *-android ]]; then
-      type npm >/dev/null 2>&1 && nvm use 5.4.0
-  fi
+  nvm use 5.4.0 || true
 
   pushd react-native/android
   ./gradlew installarchives
