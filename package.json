@@ -12,6 +12,7 @@
     "RealmJS.xcodeproj"
   ],
   "scripts": {
-    "postinstall": "scripts/create-symlinks.sh"
+    "postinstall": "scripts/create-symlinks.sh",
+    "test": "scripts/test.sh"
   }
 }
