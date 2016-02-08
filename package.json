@@ -10,5 +10,8 @@
     "src",
     "vendor",
     "RealmJS.xcodeproj"
-  ]
+  ],
+  "scripts": {
+    "postinstall": "scripts/create-symlinks.sh"
+  }
 }
