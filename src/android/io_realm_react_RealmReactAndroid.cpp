@@ -1,3 +1,7 @@
+/* Copyright 2016 Realm Inc - All Rights Reserved
+ * Proprietary and Confidential
+ */
+
 #include <jni.h>
 #include <dlfcn.h>
 #include <iostream>
