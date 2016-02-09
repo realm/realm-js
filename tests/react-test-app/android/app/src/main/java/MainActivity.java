@@ -1,4 +1,4 @@
-package io.realm.reactnative.testapp;
+package io.realm.react.testapp;
 
 import android.app.Activity;
 import android.os.Bundle;
