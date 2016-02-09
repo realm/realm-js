@@ -3,7 +3,7 @@
  */
 
 /**
- * A Realm instance (also referred to as a realm) represents a Realm database.
+ * A Realm instance represents a Realm database.
  * ```js
  * const Realm = require('realm');
  * ```

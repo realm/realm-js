@@ -4,8 +4,7 @@
 
 
 /**
- * Instances of this class (herein referred to as “lists”) will be returned when accessing
- * object properties whose type is `"list"`
+ * Instances of this class will be returned when accessing object properties whose type is `"list"`
  * (see {@linkplain Realm~ObjectSchemaProperty ObjectSchemaProperty}).
  * The objects contained in a list are accessible through its index properties and may only be
  * modified inside a {@linkplain Realm#write write} transaction.

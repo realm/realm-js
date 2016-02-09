@@ -4,8 +4,8 @@
 
 
 /**
- * Instances of this class (herein referred to as “results”) are typically **live** collections
- * returned by {@link Realm#objects objects()} that will update as new objects are either
+ * Instances of this class are typically **live** collections returned by
+ * {@link Realm#objects objects()} that will update as new objects are either
  * added to or deleted from the Realm that match the underlying query. Results returned by
  * {@link Realm.Results#snapshot snapshot()}, however, are will **not** live update.
  * @memberof Realm
