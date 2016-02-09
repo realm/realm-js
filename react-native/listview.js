@@ -167,8 +167,12 @@ class ListView extends React.Component {
         return item ? props.renderRow(item, sectionId, rowId, ...args) : null;
     }
 
-    scrollTo(x, y, ...extra) {
-        this.refs.listView.scrollTo(x, y, ...extra);
+    getInnerViewNode() {
+        return this.refs.listView.getInnerViewNode();
+    }
+
+    scrollTo(...args) {
+        this.refs.listView.scrollTo(...args);
     }
 
     setNativeProps(props) {
