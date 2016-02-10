@@ -99,7 +99,7 @@ node_modules/
 npm-debug.log
 
 # Android/IJ
-#
+/android/
 .idea
 .gradle
 local.properties

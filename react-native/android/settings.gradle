@@ -1,4 +1,0 @@
-rootProject.name = 'RealmReactNative'
-
-include ':app'
-include ':react-native'

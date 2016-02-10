@@ -4,6 +4,7 @@
   "private": true,
   "main": "lib/index.js",
   "files": [
+    "android",
     "lib",
     "react-native",
     "scripts",
@@ -12,7 +13,7 @@
     "RealmJS.xcodeproj"
   ],
   "scripts": {
-    "postinstall": "scripts/create-symlinks.sh",
-    "test": "scripts/test.sh"
+    "test": "scripts/test.sh",
+    "prepublish": "rm -rf android && cd react-native/android && ./gradlew publishAndroid"
   }
 }
