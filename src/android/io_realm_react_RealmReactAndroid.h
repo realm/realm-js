@@ -7,12 +7,12 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
 /*
- * Class:     io_realm_react_RealmReactAndroid
- * Method:    injectRealmJsContext
- * Signature: ()Ljava/lang/String;
- */
-JNIEXPORT jlong JNICALL Java_io_realm_react_RealmReactAndroid_injectRealmJsContext
+* Class:      io_realm_react_RealmReactAndroid
+* Method:     setDefaultRealmFileDirectory
+*/
+JNIEXPORT void JNICALL Java_io_realm_react_RealmReactAndroid_setDefaultRealmFileDirectory
   (JNIEnv *, jclass, jstring);
 
 /*
@@ -24,11 +24,10 @@ JNIEXPORT jlong JNICALL Java_io_realm_react_RealmReactAndroid_setupChromeDebugMo
 
 /*
  * Class:     io_realm_react_RealmReactAndroid
- * Method:    processsetupChromeDebugCommand
+ * Method:    processChromeDebugCommand
  */
 JNIEXPORT jstring JNICALL Java_io_realm_react_RealmReactAndroid_processChromeDebugCommand
-  (JNIEnv *, jclass, jlong, jstring, jstring);
-
+  (JNIEnv *, jclass, jstring, jstring);
 
 #ifdef __cplusplus
 }

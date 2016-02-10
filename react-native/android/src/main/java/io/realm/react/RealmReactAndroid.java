@@ -21,19 +21,23 @@ public class RealmReactAndroid extends ReactContextBaseJavaModule {
     private static final int DEFAULT_PORT = 8082;
 
     private AndroidWebServer webServer;
-    private long rpcServerPtr;
-
-    private String filesDirPath;
     private Handler handler = new Handler(Looper.getMainLooper());
+
+    static {
+        SoLoader.loadLibrary("realmreact");
+    }
 
     public RealmReactAndroid(ReactApplicationContext reactContext) {
         super(reactContext);
+
+        String fileDir;
         try {
-            filesDirPath = getReactApplicationContext().getFilesDir().getCanonicalPath();
+            fileDir = reactContext.getFilesDir().getCanonicalPath();
         } catch (IOException e) {
             throw new IllegalStateException(e);
         }
-        SoLoader.loadLibrary("realmreact");
+
+        setDefaultRealmFileDirectory(fileDir);
     }
 
     @Override
@@ -43,31 +47,18 @@ public class RealmReactAndroid extends ReactContextBaseJavaModule {
 
     @Override
     public Map<String, Object> getConstants() {
-        long contexts = injectRealmJsContext(filesDirPath);
-
-        if (contexts == -1) {
-            Log.e("RealmReactAndroid", "Error during initializing Realm context");
-            throw new IllegalStateException("Error during initializing Realm context");
-        }
-
-        Log.i("RealmReactAndroid", "Initialized " + contexts + " contexts");
-
-        if (contexts == 0) {// we're running in Chrome debug mode
-            startWebServer();
-        }
+        // FIXME: Only start web server when in Chrome debug mode!
+        startWebServer();
         return Collections.EMPTY_MAP;
     }
 
     @Override
     public void onCatalystInstanceDestroy() {
-        if (webServer != null) {
-            Log.i("RealmReactAndroid", "Stopping the debugging Webserver");
-            webServer.stop();
-        }
+        stopWebServer();
     }
 
     private void startWebServer() {
-        rpcServerPtr = setupChromeDebugModeRealmJsContext();
+        setupChromeDebugModeRealmJsContext();
         webServer = new AndroidWebServer(DEFAULT_PORT);
         try {
             webServer.start();
@@ -77,7 +68,13 @@ public class RealmReactAndroid extends ReactContextBaseJavaModule {
         }
     }
 
-    // WebServer
+    private void stopWebServer() {
+        if (webServer != null) {
+             Log.i("RealmReactAndroid", "Stopping the webserver");
+             webServer.stop();
+        }
+    }
+
     class AndroidWebServer extends NanoHTTPD {
         public AndroidWebServer(int port) {
             super(port);
@@ -105,7 +102,7 @@ public class RealmReactAndroid extends ReactContextBaseJavaModule {
             handler.post(new Runnable() {
                 @Override
                 public void run() {
-                    jsonResponse[0] = processChromeDebugCommand(rpcServerPtr, cmdUri, json);
+                    jsonResponse[0] = processChromeDebugCommand(cmdUri, json);
                     latch.countDown();
                 }
             });
@@ -122,11 +119,11 @@ public class RealmReactAndroid extends ReactContextBaseJavaModule {
     }
 
     // fileDir: path of the internal storage of the application
-    private native long injectRealmJsContext(String fileDir);
+    private native void setDefaultRealmFileDirectory(String fileDir);
 
     // responsible for creating the rpcServer that will accept the chrome Websocket command
     private native long setupChromeDebugModeRealmJsContext();
 
     // this receives one command from Chrome debug then return the processing we should post back
-    private native String processChromeDebugCommand(long rpcServerPointer, String cmd, String args);
+    private native String processChromeDebugCommand(String cmd, String args);
 }
