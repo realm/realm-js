@@ -16,9 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#include "transact_log_handler.hpp"
+#include "impl/transact_log_handler.hpp"
 
-#include "../binding_context.hpp"
+#include "binding_context.hpp"
 
 #include <realm/commit_log.hpp>
 #include <realm/group_shared.hpp>
