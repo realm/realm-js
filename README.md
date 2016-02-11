@@ -12,12 +12,18 @@ The ReactNative example project is in the `examples/ReactExample` directory. You
 ## ReactNative Project Setup
 - Create a new ReactNative project: `react-native init <project-name>`
 - Change directories into the new project (`cd <project-name>`) and add the `realm` dependency: `npm install --save git+ssh://git@github.com/realm/realm-js.git#beta` (please note it's **essential** to leave the `#beta` at the end)
+
+### iOS
 - Open the generated Xcode project (`ios/<project-name>.xcodeproj`)
 - Making sure the top-level project is selected in the sidebar, change the `iOS Deployment Target` to at least `8.0` in the project settings.
 - Right-click the `Libraries` group in the sidebar and click `Add Files to “<project-name>”`. Select `node_modules/realm/RealmJS.xcodeproj` from the dialog.
 - Drag `RealmReact.framework` from the `Products` directory under `RealmJS.xcodeproj` into the `Embedded Binaries` section in the `General` tab for your app's target settings.
 - In the `Build Phases` tab for your app's target settings, make sure `RealmReact.framework` is added to the `Link Binary with Library` build phase.
-- You can now `require('realm')` in your app's JS to use Realm!
+- You can now `require('realm')` in your iOS app's JS to use Realm!
+
+### Android
+- Run this command from the project directory: `react-native link realm`
+- You can now `require('realm')` in your Android app's JS to use Realm!
 
 ## Getting Started
 Start with creating a `realm` by passing it an array of `objectSchema` (object types and their properties) for each type of object it will contain:
