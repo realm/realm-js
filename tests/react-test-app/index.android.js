@@ -21,10 +21,7 @@ var RNFS = require('react-native-fs');
 
 function runTests() {
     var rootXml = builder.create('testsuites');
-
-
     let testNames = RealmTests.getTestNames();
-
 
     for (let suiteName in testNames) {
         var itemTestsuite = rootXml.ele('testsuite');
@@ -89,8 +86,8 @@ function runTests() {
 
 }
 
-var Demo = React.createClass({
-  render: function() {
+class ReactTests extends React.Component {
+  render() {
     return (
       <View style={styles.container}>
           <Text style={styles.button} onPress={runTests}>
@@ -105,7 +102,7 @@ var Demo = React.createClass({
       </View>
     );
   }
-});
+}
 
 var styles = StyleSheet.create({
   container: {
@@ -126,4 +123,4 @@ var styles = StyleSheet.create({
   },
 });
 
-AppRegistry.registerComponent('Demo', () => Demo);
+AppRegistry.registerComponent('ReactTests', () => ReactTests);
