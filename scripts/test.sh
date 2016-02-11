@@ -20,7 +20,11 @@ if [[ $TARGET != *-android ]]; then
     # CoreSimulatorService doesn't exit when sent SIGTERM
     pkill -9 Simulator 2>/dev/null || true
   done
+
   DESTINATION="-destination id=$(xcrun simctl list devices | grep -v unavailable | grep -m 1 -o '[0-9A-F\-]\{36\}')"
+
+  # Inform the prepublish script to skip building Android modules.
+  export SKIP_ANDROID_BUILD=1
 fi
 
 PACKAGER_OUT="$SRCROOT/packager_out.txt"
