@@ -1,4 +1,3 @@
-// Copyright 2015-present Facebook. All Rights Reserved.
 buildscript {
     repositories {
         jcenter()
@@ -6,9 +5,6 @@ buildscript {
     dependencies {
         classpath 'com.android.tools.build:gradle:1.3.1'
         classpath 'de.undercouch:gradle-download-task:1.2'
-
-        // NOTE: Do not place your application dependencies here; they belong
-        // in the individual module build.gradle files
     }
 }
 
@@ -21,7 +17,7 @@ allprojects {
 
 apply plugin: 'com.android.library'
 apply plugin: 'maven'
-
+apply plugin: 'signing'
 apply plugin: 'de.undercouch.download'
 
 import de.undercouch.gradle.tasks.download.Download
@@ -32,50 +28,15 @@ import org.apache.tools.ant.filters.ReplaceTokens
 // We then copy both the downloaded code and our custom makefiles and headers into third-party-ndk.
 // After that we build native code from src/main/jni with module path pointing at third-party-ndk.
 
-def downloadsDir = new File("$buildDir/downloads")
+def downloadsDir = new File("$projectDir/downloads")
 def jscDownloadDir = new File("$projectDir/src/main/jni/jsc")
 def coreDownloadDir = new File("$projectDir/src/main/jni")
 ext.coreVersion = '0.95.6'
-def thirdPartyNdkDir = new File("$buildDir/third-party-ndk")
 def publishDir = new File("$projectDir/../../android/")
 
-task publishAndroid(dependsOn: assembleDebug, type: Copy) {
-    // Copy task can only have one top level
-    into "$publishDir"
-
-    // copy java source
-    into ('/src/main') {
-      from "$projectDir/src/main"
-      exclude '**/jni/**'
-    }
-
-    // add compiled shared object
-    into ('/src/main/jniLibs') {
-        from "$buildDir/intermediates/bundles/debug/jni/"
-    }
-
-    // copy gradle wrapper files
-    FileTree gradleWrapper = fileTree(projectDir).include('gradlew*').include('gradle/**')
-    into ('/') {
-        from gradleWrapper
-    }
-
-    // copy and rename template build.gradle
-
-    into ('/') {
-      from "$projectDir/publish_android_template"
-      rename { String fileName ->
-          'build.gradle'
-      }
-    }
-    // Use a closure to map the file name
-
-
-}
 
 task createNativeDepsDirectories {
     downloadsDir.mkdirs()
-    thirdPartyNdkDir.mkdirs()
 }
 
 task downloadJSCHeaders(type: Download) {
@@ -112,7 +73,6 @@ task prepareRealmCore(dependsOn: downloadRealmCore, type:Copy) {
       }
     }
 }
-
 
 def getNdkBuildName() {
     if (Os.isFamily(Os.FAMILY_WINDOWS)) {
@@ -165,16 +125,15 @@ def getNdkBuildFullPath() {
 
 task buildReactNdkLib(dependsOn: [downloadJSCHeaders,prepareRealmCore], type: Exec) {
     inputs.file('src/main/jni')
-    outputs.dir("$buildDir/react-ndk/all")
+    outputs.dir("$buildDir/realm-react-ndk/all")
     commandLine getNdkBuildFullPath(),
             'NDK_PROJECT_PATH=null',
             "NDK_APPLICATION_MK=$projectDir/src/main/jni/Application.mk",
             'NDK_OUT=' + temporaryDir,
-            "NDK_LIBS_OUT=$buildDir/react-ndk/all",
-            "THIRD_PARTY_NDK_DIR=$buildDir/third-party-ndk",
+            "NDK_LIBS_OUT=$buildDir/realm-react-ndk/all",
             '-C', file('src/main/jni').absolutePath,
             'NDK_LOG=1',
-            'NDK_DEBUG=1',
+            'NDK_DEBUG=' + (DEBUG_BUILD.toBoolean() ? '1' : '0'),
             '--jobs', Runtime.runtime.availableProcessors(),
             'V=1'
 }
@@ -186,9 +145,11 @@ task cleanReactNdkLib(type: Exec) {
 }
 
 task packageReactNdkLibs(dependsOn: buildReactNdkLib, type: Copy) {
-    from "$buildDir/react-ndk/all"
+    from "$buildDir/realm-react-ndk/all"
     exclude '**/libjsc.so'
-    into "$buildDir/react-ndk/exported"
+    exclude '**/gdbserver'
+    exclude '**/gdb.setup'
+    into "$buildDir/realm-react-ndk/exported"
 }
 
 android {
@@ -197,14 +158,14 @@ android {
 
     defaultConfig {
         minSdkVersion 16
-        targetSdkVersion 22
+        targetSdkVersion 23
         versionCode 1
         versionName "1.0"
     }
 
     sourceSets.main {
         jni.srcDirs = []
-        jniLibs.srcDir "$buildDir/react-ndk/exported"
+        jniLibs.srcDir "$buildDir/realm-react-ndk/exported"
         res.srcDirs = ['src/main/res/devsupport', 'src/main/res/shell']
     }
 
@@ -219,10 +180,110 @@ android {
     }
 }
 
+task publishAndroid(dependsOn: packageReactNdkLibs, type: Copy) {
+    // Copy task can only have one top level
+    into "$publishDir"
+
+    // copy java source
+    into ('/src/main') {
+      from "$projectDir/src/main"
+      exclude '**/jni/**'
+    }
+
+    // add compiled shared object
+    into ('/src/main/jniLibs') {
+        from "$buildDir/realm-react-ndk/exported/"
+    }
+
+    // copy gradle wrapper files
+    FileTree gradleWrapper = fileTree(projectDir).include('gradlew*').include('gradle/**')
+    into ('/') {
+        from gradleWrapper
+    }
+
+    // copy and rename template build.gradle
+
+    into ('/') {
+      from "$projectDir/publish_android_template"
+      rename { String fileName ->
+          'build.gradle'
+      }
+    }
+}
+
+// publishing into maven local
+
+def configureRealmReactNativePom(def pom) {
+    pom.project {
+        name POM_NAME
+        artifactId POM_ARTIFACT_ID
+        packaging POM_PACKAGING
+        description POM_DESCRIPTION
+        url 'https://github.com/realm/realm-js'
+
+        issueManagement {
+            system 'github'
+            url 'https://github.com/realm/realm-js/issues'
+        }
+
+        scm {
+            url 'scm:https://github.com/realm/realm-js'
+            connection 'scm:git@github.com:realm/realm-js.git'
+            developerConnection 'scm:git@github.com:realm/realm-js.git'
+        }
+
+        licenses {
+            license {
+                name 'The Apache Software License, Version 2.0'
+                url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                distribution 'repo'
+            }
+        }
+    }
+}
+
+afterEvaluate { project ->
+    task androidSourcesJar(type: Jar) {
+        classifier = 'sources'
+        from android.sourceSets.main.java.srcDirs
+        include '**/*.java'
+    }
+
+    android.libraryVariants.all { variant ->
+        def name = variant.name.capitalize()
+        task "jar${name}"(type: Jar, dependsOn: variant.javaCompile) {
+            from variant.javaCompile.destinationDir
+        }
+    }
+
+    artifacts {
+        archives androidSourcesJar
+    }
+
+    version = VERSION_NAME
+    group = GROUP
+
+    signing {
+        required { false }
+        sign configurations.archives
+    }
+
+    task installArchives(type: Upload) {
+        configuration = configurations.archives
+        repositories.mavenDeployer {
+            beforeDeployment {
+                MavenDeployment deployment -> signing.signPom(deployment)
+            }
+
+            repository url: "file://${System.properties['user.home']}/.m2/repository"
+            configureRealmReactNativePom pom
+        }
+    }
+}
+
+
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile 'org.nanohttpd:nanohttpd:2.2.0'
     compile 'com.facebook.react:react-native:0.18.0-patched'
 }
-
-apply from: 'release.gradle'
