@@ -102,7 +102,7 @@ You can see more examples of how to use these APIs in the [ReactExample](https:/
 The `realmConfig` passed to the constructor can contain the following:
 
 - `schema` – required when first accessing a realm - array of `ObjectSchema` or object constructors (see below)
-- `path` – optional - defaults to `Realm.defaultPath` (which initially is `'Documents/default.realm'`)
+- `path` – optional - defaults to `Realm.defaultPath` (which initially is `'Documents/default.realm'` for iOS and   inside the [internal storage](http://developer.android.com/reference/android/content/Context.html#getFilesDir()) `/data/data/<packagename>/files/` for Android)
 - `schemaVersion` – optional - defaults to `0` but must be specified and incremented after changing the schema
 
 ### ObjectSchema
