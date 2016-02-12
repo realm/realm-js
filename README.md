@@ -25,7 +25,7 @@ The ReactNative example project is in the `examples/ReactExample` directory. You
 - Run this command from the project directory: `react-native link realm`
 - Open `MainActivity.java` inside your project:
   - Add `import io.realm.react.RealmReactPackage;` under the other imports.
-  - Add `.addPackage(new RealmReactPackage())` directly under `.addPackage(new MainReactPackage())`
+  - Add `new RealmReactPackage()` to the list returned by the `getPackages()` method.
 - You can now `require('realm')` in your Android app's JS to use Realm!
 
 ## Getting Started
