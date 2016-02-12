@@ -24,6 +24,7 @@
 #include <realm/table_view.hpp>
 #include <realm/table.hpp>
 #include <realm/util/optional.hpp>
+#include "util.hpp"
 
 namespace realm {
 template<typename T> class BasicRowExpr;

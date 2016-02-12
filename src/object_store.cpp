@@ -27,6 +27,7 @@
 #include <realm/util/assert.hpp>
 
 #include <string.h>
+#include "util.hpp"
 
 using namespace realm;
 

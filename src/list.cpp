@@ -19,6 +19,7 @@
 #include "list.hpp"
 
 #include <stdexcept>
+#include "util.hpp"
 
 using namespace realm;
 

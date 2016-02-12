@@ -22,6 +22,7 @@
 #include "shared_realm.hpp"
 
 #include <realm/string_data.hpp>
+#include <mutex>
 
 namespace realm {
 class Schema;
