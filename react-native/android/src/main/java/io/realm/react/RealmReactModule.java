@@ -17,7 +17,7 @@ import java.util.concurrent.CountDownLatch;
 
 import fi.iki.elonen.NanoHTTPD;
 
-public class RealmReactAndroid extends ReactContextBaseJavaModule {
+public class RealmReactModule extends ReactContextBaseJavaModule {
     private static final int DEFAULT_PORT = 8082;
 
     private AndroidWebServer webServer;
@@ -27,7 +27,7 @@ public class RealmReactAndroid extends ReactContextBaseJavaModule {
         SoLoader.loadLibrary("realmreact");
     }
 
-    public RealmReactAndroid(ReactApplicationContext reactContext) {
+    public RealmReactModule(ReactApplicationContext reactContext) {
         super(reactContext);
 
         String fileDir;
@@ -42,7 +42,7 @@ public class RealmReactAndroid extends ReactContextBaseJavaModule {
 
     @Override
     public String getName() {
-        return "RealmReactAndroid";
+        return "Realm";
     }
 
     @Override
@@ -62,7 +62,7 @@ public class RealmReactAndroid extends ReactContextBaseJavaModule {
         webServer = new AndroidWebServer(DEFAULT_PORT);
         try {
             webServer.start();
-            Log.i("RealmReactAndroid", "Starting the debugging WebServer, Host: " + webServer.getHostname() + " Port: " + webServer.getListeningPort());
+            Log.i("Realm", "Starting the debugging WebServer, Host: " + webServer.getHostname() + " Port: " + webServer.getListeningPort());
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -70,7 +70,7 @@ public class RealmReactAndroid extends ReactContextBaseJavaModule {
 
     private void stopWebServer() {
         if (webServer != null) {
-             Log.i("RealmReactAndroid", "Stopping the webserver");
+             Log.i("Realm", "Stopping the webserver");
              webServer.stop();
         }
     }

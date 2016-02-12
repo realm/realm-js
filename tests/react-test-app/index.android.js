@@ -13,7 +13,6 @@ var {
   TouchableNativeFeedback,
 } = React;
 
-var RealmReactAndroid = require('NativeModules').RealmReactAndroid;
 var Realm = require('realm');
 var RealmTests = require('realm-tests');
 var builder = require('xmlbuilder');
