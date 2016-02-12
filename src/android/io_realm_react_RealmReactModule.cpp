@@ -5,13 +5,13 @@
 #include <jni.h>
 #include <android/log.h>
 
-#include "io_realm_react_RealmReactAndroid.h"
+#include "io_realm_react_RealmReactModule.h"
 #include "rpc.hpp"
 #include "platform.hpp"
 
 static realm_js::RPCServer *s_rpc_server;
 
-JNIEXPORT void JNICALL Java_io_realm_react_RealmReactAndroid_setDefaultRealmFileDirectory
+JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_setDefaultRealmFileDirectory
   (JNIEnv *env, jclass, jstring fileDir)
 {
     __android_log_print(ANDROID_LOG_VERBOSE, "JSRealm", "setDefaultRealmFileDirectory");
@@ -24,7 +24,7 @@ JNIEXPORT void JNICALL Java_io_realm_react_RealmReactAndroid_setDefaultRealmFile
     __android_log_print(ANDROID_LOG_DEBUG, "JSRealm", "Absolute path: %s", realm::default_realm_file_directory().c_str());
 }
 
-JNIEXPORT jlong JNICALL Java_io_realm_react_RealmReactAndroid_setupChromeDebugModeRealmJsContext
+JNIEXPORT jlong JNICALL Java_io_realm_react_RealmReactModule_setupChromeDebugModeRealmJsContext
   (JNIEnv *, jclass)
 {
     __android_log_print(ANDROID_LOG_VERBOSE, "JSRealm", "setupChromeDebugModeRealmJsContext");
@@ -35,7 +35,7 @@ JNIEXPORT jlong JNICALL Java_io_realm_react_RealmReactAndroid_setupChromeDebugMo
     return (jlong)s_rpc_server;
 }
 
-JNIEXPORT jstring JNICALL Java_io_realm_react_RealmReactAndroid_processChromeDebugCommand
+JNIEXPORT jstring JNICALL Java_io_realm_react_RealmReactModule_processChromeDebugCommand
   (JNIEnv *env, jclass, jstring chrome_cmd, jstring chrome_args)
 {
     __android_log_print(ANDROID_LOG_VERBOSE, "JSRealm", "processChromeDebugCommand");

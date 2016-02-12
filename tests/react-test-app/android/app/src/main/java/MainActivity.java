@@ -8,19 +8,12 @@ import com.facebook.react.LifecycleState;
 import com.facebook.react.ReactInstanceManager;
 import com.facebook.react.ReactPackage;
 import com.facebook.react.ReactRootView;
-import com.facebook.react.bridge.JavaScriptModule;
-import com.facebook.react.bridge.NativeModule;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.modules.core.DefaultHardwareBackBtnHandler;
 import com.facebook.react.shell.MainReactPackage;
-import com.facebook.react.uimanager.ViewManager;
 import com.rnfs.RNFSPackage;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
-import io.realm.react.RealmReactAndroid;
+import io.realm.react.RealmReactPackage;
 
 public class MainActivity extends Activity implements DefaultHardwareBackBtnHandler {
 
@@ -38,7 +31,7 @@ public class MainActivity extends Activity implements DefaultHardwareBackBtnHand
                 .setJSMainModuleName("index.android")
                 .addPackage(new MainReactPackage())
                 .addPackage(new RNFSPackage())
-                .addPackage(new AnExampleReactPackage())
+                .addPackage(new RealmReactPackage())
                 .setUseDeveloperSupport(BuildConfig.DEBUG)
                 .setInitialLifecycleState(LifecycleState.RESUMED)
                 .build();
@@ -86,28 +79,6 @@ public class MainActivity extends Activity implements DefaultHardwareBackBtnHand
 
         if (mReactInstanceManager != null) {
             mReactInstanceManager.onResume(this, this);
-        }
-    }
-
-    class AnExampleReactPackage implements ReactPackage {
-        @Override
-        public List<NativeModule> createNativeModules(
-                ReactApplicationContext reactContext) {
-            List<NativeModule> modules = new ArrayList<>();
-
-            modules.add(new RealmReactAndroid(reactContext));
-
-            return modules;
-        }
-
-        @Override
-        public List<Class<? extends JavaScriptModule>> createJSModules() {
-            return Collections.emptyList();
-        }
-
-        @Override
-        public List<ViewManager> createViewManagers(ReactApplicationContext reactContext) {
-            return Collections.emptyList();
         }
     }
 }
