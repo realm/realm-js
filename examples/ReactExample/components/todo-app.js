@@ -10,7 +10,13 @@ const TodoListView = require('./todo-listview');
 const realm = require('./realm');
 const styles = require('./styles');
 
-const { NavigatorIOS } = React;
+const {
+    Navigator,
+    StatusBarIOS,
+    Text,
+    TouchableOpacity,
+    View,
+} = React;
 
 class TodoApp extends React.Component {
     constructor(props) {
@@ -25,12 +31,24 @@ class TodoApp extends React.Component {
 
         // This is a Results object, which will live-update.
         this.todoLists = todoLists;
+
+        // Bind all the methods that we will be passing as props.
+        this.renderScene = this.renderScene.bind(this);
+        this._addNewTodoList = this._addNewTodoList.bind(this);
+        this._onPressTodoList = this._onPressTodoList.bind(this);
+
         this.state = {};
     }
 
     get currentListView() {
         let refs = this.refs.nav.refs;
         return refs.listItemView || refs.listView;
+    }
+
+    componentWillMount() {
+        if (StatusBarIOS) {
+            StatusBarIOS.setStyle('light-content');
+        }
     }
 
     render() {
@@ -46,16 +64,31 @@ class TodoApp extends React.Component {
                 ref: 'listView',
                 items: this.todoLists,
                 extraItems: extraItems,
-                onPressItem: (list) => this._onPressTodoList(list),
+                onPressItem: this._onPressTodoList,
             },
             backButtonTitle: 'Lists',
             rightButtonTitle: 'Add',
-            onRightButtonPress: () => this._addNewTodoList(),
+            onRightButtonPress: this._addNewTodoList,
         };
 
-        return (
-            <NavigatorIOS ref="nav" initialRoute={route} style={styles.navigator} />
+        let navigationBar = (
+            <Navigator.NavigationBar routeMapper={RouteMapper} style={styles.navBar} />
         );
+
+        return (
+            <Navigator
+                ref="nav"
+                initialRoute={route}
+                navigationBar={navigationBar}
+                renderScene={this.renderScene}
+                sceneStyle={styles.navScene}
+                style={styles.navigator}
+            />
+        );
+    }
+
+    renderScene(route) {
+        return <route.component {...route.passProps} />
     }
 
     _addNewTodoItem(list) {
@@ -121,5 +154,51 @@ class TodoApp extends React.Component {
         this.currentListView.setState({editingRow: rowIndex});
     }
 }
+
+const RouteMapper = {
+    LeftButton(route, navigator, index, navState) {
+        if (index == 0) {
+            return null;
+        }
+
+        let prevRoute = navState.routeStack[index - 1];
+        return (
+            <TouchableOpacity onPress={() => navigator.pop()}>
+                <View style={[styles.navBarView, styles.navBarLeftButton]}>
+                    <Text style={styles.navBarLeftArrow}>‹</Text>
+                    <Text style={styles.navBarText}>
+                        {prevRoute.backButtonTitle || prevRoute.title || 'Back'}
+                    </Text>
+                </View>
+            </TouchableOpacity>
+        );
+    },
+
+    RightButton(route) {
+        if (!route.rightButtonTitle) {
+            return null;
+        }
+
+        return (
+            <TouchableOpacity onPress={route.onRightButtonPress}>
+                <View style={[styles.navBarView, styles.navBarRightButton]}>
+                    <Text style={styles.navBarText}>
+                        {route.rightButtonTitle}
+                    </Text>
+                </View>
+            </TouchableOpacity>
+        );
+    },
+
+    Title(route) {
+        return (
+            <View style={styles.navBarView}>
+                <Text style={[styles.navBarText, styles.navBarTitleText]}>
+                    {route.title}
+                </Text>
+            </View>
+        );
+    },
+};
 
 module.exports = TodoApp;

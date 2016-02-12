@@ -95,9 +95,8 @@ module.exports = BaseTest.extend({
         var newPath = util.realmPathForFile('default2.realm');
         Realm.defaultPath = newPath;
         defaultRealm = new Realm({schema: []});
-        TestCase.assertEqual(defaultRealm.path, newPath);
-        TestCase.assertEqual(Realm.defaultPath, newPath);
-
+        TestCase.assertEqual(defaultRealm.path, newPath, "should use updated default realm path");
+        TestCase.assertEqual(Realm.defaultPath, newPath, "defaultPath should have been updated");
     },
 
     testRealmCreate: function() {

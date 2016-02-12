@@ -293,10 +293,12 @@ public:
 
     // Things that just mark the field as modified
     bool set_int(size_t col, size_t row, int_fast64_t) { return mark_dirty(row, col); }
+    bool set_int_unique(size_t col, size_t row, int_fast64_t) { return mark_dirty(row, col); }
     bool set_bool(size_t col, size_t row, bool) { return mark_dirty(row, col); }
     bool set_float(size_t col, size_t row, float) { return mark_dirty(row, col); }
     bool set_double(size_t col, size_t row, double) { return mark_dirty(row, col); }
     bool set_string(size_t col, size_t row, StringData) { return mark_dirty(row, col); }
+    bool set_string_unique(size_t col, size_t row, StringData) { return mark_dirty(row, col); }
     bool set_binary(size_t col, size_t row, BinaryData) { return mark_dirty(row, col); }
     bool set_date_time(size_t col, size_t row, DateTime) { return mark_dirty(row, col); }
     bool set_table(size_t col, size_t row) { return mark_dirty(row, col); }
@@ -304,8 +306,6 @@ public:
     bool set_link(size_t col, size_t row, size_t, size_t) { return mark_dirty(row, col); }
     bool set_null(size_t col, size_t row) { return mark_dirty(row, col); }
     bool nullify_link(size_t col, size_t row, size_t) { return mark_dirty(row, col); }
-    bool set_int_unique(size_t col, size_t row, int_fast64_t) { return mark_dirty(row, col); }
-    bool set_string_unique(size_t col, size_t row, StringData) { return mark_dirty(row, col); }
 
     // Doesn't change any data
     bool optimize_table() { return true; }

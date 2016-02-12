@@ -2,15 +2,15 @@
  * Proprietary and Confidential
  */
 
-#import "js_util.hpp"
-#import "js_object.hpp"
-#import "js_results.hpp"
-#import "js_schema.hpp"
-#import "js_list.hpp"
-#import "js_realm.hpp"
+#include "js_util.hpp"
+#include "js_object.hpp"
+#include "js_results.hpp"
+#include "js_schema.hpp"
+#include "js_list.hpp"
+#include "js_realm.hpp"
 
-#import "object_store.hpp"
-#import "object_accessor.hpp"
+#include "object_store.hpp"
+#include "object_accessor.hpp"
 
 using RJSAccessor = realm::NativeAccessor<JSValueRef, JSContextRef>;
 using namespace realm;
@@ -62,6 +62,10 @@ JSObjectRef RJSObjectCreate(JSContextRef ctx, Object object) {
     JSObjectRef jsObject = RJSWrapObject(ctx, RJSObjectClass(), new Object(object), prototype);
     return jsObject;
 }
+
+extern JSObjectRef RJSDictForPropertyArray(JSContextRef ctx, const ObjectSchema &object_schema, JSObjectRef array);
+
+namespace realm {
 
 template<> bool RJSAccessor::dict_has_value_for_key(JSContextRef ctx, JSValueRef dict, const std::string &prop_name) {
     JSObjectRef object = RJSValidatedValueToObject(ctx, dict);
@@ -218,8 +222,6 @@ template<> JSValueRef RJSAccessor::from_datetime(JSContextRef ctx, DateTime dt) 
     return JSObjectMakeDate(ctx, 1, &time, NULL);
 }
 
-extern JSObjectRef RJSDictForPropertyArray(JSContextRef ctx, const ObjectSchema &object_schema, JSObjectRef array);
-
 template<> size_t RJSAccessor::to_existing_object_index(JSContextRef ctx, JSValueRef &val) {
     JSObjectRef object = RJSValidatedValueToObject(ctx, val);
     if (JSValueIsObjectOfClass(ctx, val, RJSObjectClass())) {
@@ -253,4 +255,6 @@ template<> JSValueRef RJSAccessor::list_value_at_index(JSContextRef ctx, JSValue
 }
 template<> JSValueRef RJSAccessor::from_list(JSContextRef ctx, List list) {
     return RJSListCreate(ctx, list);
+}
+
 }

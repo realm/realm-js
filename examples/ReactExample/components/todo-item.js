@@ -38,9 +38,11 @@ class TodoItem extends TodoListItem {
         return (
             <TouchableWithoutFeedback onPress={this._onPressCheckbox}>
                 <View style={styles.listItemLeftSide}>
-                    <Text style={styles.listItemCheckbox}>
-                        {this.done ? '✓' : ''}
-                    </Text>
+                    <View style={styles.listItemCheckbox}>
+                        <Text style={styles.listItemCheckboxText}>
+                            {this.done ? '✓' : ''}
+                        </Text>
+                    </View>
                 </View>
             </TouchableWithoutFeedback>
         );

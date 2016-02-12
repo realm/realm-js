@@ -2,7 +2,7 @@
  * Proprietary and Confidential
  */
 
-#import "rpc.hpp"
+#include "rpc.hpp"
 
 #include <dlfcn.h>
 #include <map>
@@ -18,7 +18,8 @@
 #include "object_accessor.hpp"
 #include "shared_realm.hpp"
 #include "results.hpp"
-
+#include <cassert>
+ 
 using RJSAccessor = realm::NativeAccessor<JSValueRef, JSContextRef>;
 using namespace realm_js;
 

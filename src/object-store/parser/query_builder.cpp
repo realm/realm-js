@@ -29,28 +29,41 @@ namespace realm {
 namespace query_builder {
 using namespace parser;
 
+template<typename T>
+T stot(const std::string s) {
+    std::istringstream iss(s);
+    T value;
+    iss >> value;
+    if (iss.fail()) {
+        throw std::invalid_argument("Cannot convert string '" + s + "'");
+    }
+    return value;
+}
+
 // check a precondition and throw an exception if it is not met
 // this should be used iff the condition being false indicates a bug in the caller
 // of the function checking its preconditions
 #define precondition(condition, message) if (!__builtin_expect(condition, 1)) {  throw std::runtime_error(message); }
 
 // FIXME: TrueExpression and FalseExpression should be supported by core in some way
-struct TrueExpression : realm::Expression {
-    size_t find_first(size_t start, size_t end) const override
+class TrueExpression : public realm::Expression {
+  public:
+    virtual size_t find_first(size_t start, size_t end) const
     {
         if (start != end)
             return start;
 
         return not_found;
     }
-    void set_table() override {}
-    const Table* get_table() const override { return nullptr; }
+    virtual void set_table(const Table* table) {}
+    virtual const Table* get_table() const { return nullptr; }
 };
 
-struct FalseExpression : realm::Expression {
-    size_t find_first(size_t, size_t) const override { return not_found; }
-    void set_table() override {}
-    const Table* get_table() const override { return nullptr; }
+class FalseExpression : public realm::Expression {
+  public:
+    virtual size_t find_first(size_t, size_t) const { return not_found; }
+    virtual void set_table(const Table* table) {}
+    virtual const Table* get_table() const { return nullptr; }
 };
 
 using KeyPath = std::vector<std::string>;
@@ -262,12 +275,12 @@ void add_link_constraint_to_query(realm::Query &query,
 
 auto link_argument(const PropertyExpression &propExpr, const parser::Expression &argExpr, Arguments &args)
 {
-    return args.object_index_for_argument(std::stoi(argExpr.s));
+    return args.object_index_for_argument(stot<int>(argExpr.s));
 }
 
 auto link_argument(const parser::Expression &argExpr, const PropertyExpression &propExpr, Arguments &args)
 {
-    return args.object_index_for_argument(std::stoi(argExpr.s));
+    return args.object_index_for_argument(stot<int>(argExpr.s));
 }
 
 
@@ -289,7 +302,7 @@ struct ValueGetter<DateTime, TableGetter> {
         if (value.type != parser::Expression::Type::Argument) {
             throw std::runtime_error("You must pass in a date argument to compare");
         }
-        DateTime dt = args.datetime_for_argument(std::stoi(value.s));
+        DateTime dt = args.datetime_for_argument(stot<int>(value.s));
         return dt.get_datetime();
     }
 };
@@ -299,7 +312,7 @@ struct ValueGetter<bool, TableGetter> {
     static bool convert(TableGetter&&, const parser::Expression & value, Arguments &args)
     {
         if (value.type == parser::Expression::Type::Argument) {
-            return args.bool_for_argument(std::stoi(value.s));
+            return args.bool_for_argument(stot<int>(value.s));
         }
         if (value.type != parser::Expression::Type::True && value.type != parser::Expression::Type::False) {
             throw std::runtime_error("Attempting to compare bool property to a non-bool value");
@@ -313,9 +326,9 @@ struct ValueGetter<Double, TableGetter> {
     static Double convert(TableGetter&&, const parser::Expression & value, Arguments &args)
     {
         if (value.type == parser::Expression::Type::Argument) {
-            return args.double_for_argument(std::stoi(value.s));
+            return args.double_for_argument(stot<int>(value.s));
         }
-        return std::stod(value.s);
+        return stot<double>(value.s);
     }
 };
 
@@ -324,9 +337,9 @@ struct ValueGetter<Float, TableGetter> {
     static Float convert(TableGetter&&, const parser::Expression & value, Arguments &args)
     {
         if (value.type == parser::Expression::Type::Argument) {
-            return args.float_for_argument(std::stoi(value.s));
+            return args.float_for_argument(stot<int>(value.s));
         }
-        return std::stof(value.s);
+        return stot<float>(value.s);
     }
 };
 
@@ -335,9 +348,9 @@ struct ValueGetter<Int, TableGetter> {
     static Int convert(TableGetter&&, const parser::Expression & value, Arguments &args)
     {
         if (value.type == parser::Expression::Type::Argument) {
-            return args.long_for_argument(std::stoi(value.s));
+            return args.long_for_argument(stot<int>(value.s));
         }
-        return std::stoll(value.s);
+        return stot<long long>(value.s);
     }
 };
 
@@ -346,7 +359,7 @@ struct ValueGetter<String, TableGetter> {
     static std::string convert(TableGetter&&, const parser::Expression & value, Arguments &args)
     {
         if (value.type == parser::Expression::Type::Argument) {
-            return args.string_for_argument(std::stoi(value.s));
+            return args.string_for_argument(stot<int>(value.s));
         }
         if (value.type != parser::Expression::Type::String) {
             throw std::runtime_error("Attempting to compare String property to a non-String value");
@@ -360,7 +373,7 @@ struct ValueGetter<Binary, TableGetter> {
     static std::string convert(TableGetter&&, const parser::Expression & value, Arguments &args)
     {
         if (value.type == parser::Expression::Type::Argument) {
-            return args.binary_for_argument(std::stoi(value.s));
+            return args.binary_for_argument(stot<int>(value.s));
         }
         throw std::runtime_error("Binary properties must be compared against a binary argument.");
     }
@@ -371,7 +384,7 @@ auto value_of_type_for_query(TableGetter&& tables, Value&& value, Arguments &arg
 {
     const bool isColumn = std::is_same<PropertyExpression, typename std::remove_reference<Value>::type>::value;
     using helper = std::conditional_t<isColumn, ColumnGetter<RetType, TableGetter>, ValueGetter<RetType, TableGetter>>;
-    return helper::convert(std::forward<TableGetter>(tables), std::forward<Value>(value), args);
+    return helper::convert(tables, value, args);
 }
 
 template <typename A, typename B>

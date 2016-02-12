@@ -25,6 +25,7 @@
 #include <mutex>
 #include <thread>
 #include <vector>
+#include <mutex>
 
 namespace realm {
     class ClientHistory;
@@ -124,8 +125,10 @@ namespace realm {
 
         Group *m_group = nullptr;
 
+#if __APPLE__
         std::shared_ptr<_impl::ExternalCommitHelper> m_notifier;
-
+#endif
+        
       public:
         std::unique_ptr<BindingContext> m_binding_context;
 

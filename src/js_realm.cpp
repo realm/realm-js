@@ -2,18 +2,19 @@
  * Proprietary and Confidential
  */
 
-#import "js_realm.hpp"
-#import "js_object.hpp"
-#import "js_results.hpp"
-#import "js_list.hpp"
-#import "js_schema.hpp"
-#import "platform.hpp"
+#include "js_realm.hpp"
+#include "js_object.hpp"
+#include "js_results.hpp"
+#include "js_list.hpp"
+#include "js_schema.hpp"
+#include "platform.hpp"
 
-#import "shared_realm.hpp"
-#import "object_accessor.hpp"
-#import "binding_context.hpp"
+#include "shared_realm.hpp"
+#include "object_accessor.hpp"
+#include "binding_context.hpp"
 
-#import <set>
+#include <set>
+#include <cassert>
 
 using namespace realm;
 
@@ -104,8 +105,12 @@ std::map<std::string, JSValueRef> &RJSPrototypes(Realm *realm) {
     return static_cast<RJSRealmDelegate *>(realm->m_binding_context.get())->m_prototypes;
 }
 
-static std::string s_defaultPath = realm::default_realm_file_directory() + "/default.realm";
+// static std::string s_defaultPath = realm::default_realm_file_directory() + "/default.realm";
+static std::string s_defaultPath = "";
 std::string RJSDefaultPath() {
+    if (s_defaultPath.size() == 0) {
+        s_defaultPath = realm::default_realm_file_directory() + "/default.realm";
+    }
     return s_defaultPath;
 }
 void RJSSetDefaultPath(std::string path) {
@@ -158,7 +163,7 @@ JSObjectRef RealmConstructor(JSContextRef ctx, JSObjectRef constructor, size_t a
                     static JSStringRef schemaString = JSStringCreateWithUTF8CString("schema");
                     JSValueRef schemaValue = RJSValidatedPropertyValue(ctx, object, schemaString);
                     if (!JSValueIsUndefined(ctx, schemaValue)) {
-                        config.schema = std::make_unique<Schema>(RJSParseSchema(ctx, RJSValidatedValueToObject(ctx, schemaValue), defaults, prototypes));
+                        config.schema.reset(new Schema(RJSParseSchema(ctx, RJSValidatedValueToObject(ctx, schemaValue), defaults, prototypes)));
                     }
 
                     static JSStringRef schemaVersionString = JSStringCreateWithUTF8CString("schemaVersion");
@@ -179,7 +184,7 @@ JSObjectRef RealmConstructor(JSContextRef ctx, JSObjectRef constructor, size_t a
         ensure_directory_exists_for_file(config.path);
         SharedRealm realm = Realm::get_shared_realm(config);
         if (!realm->m_binding_context) {
-            realm->m_binding_context = std::make_unique<RJSRealmDelegate>(realm, JSContextGetGlobalContext(ctx));
+            realm->m_binding_context.reset(new RJSRealmDelegate(realm, JSContextGetGlobalContext(ctx)));
         }
         RJSDefaults(realm.get()) = defaults;
         RJSPrototypes(realm.get()) = prototypes;

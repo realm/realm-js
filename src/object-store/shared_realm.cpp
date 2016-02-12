@@ -18,10 +18,13 @@
 
 #include "shared_realm.hpp"
 
+#if __APPLE__
 #include "external_commit_helper.hpp"
+#endif
+
 #include "binding_context.hpp"
 #include "schema.hpp"
-#include "transact_log_handler.hpp"
+#include "impl/transact_log_handler.hpp"
 
 #include <realm/commit_log.hpp>
 #include <realm/group_shared.hpp>
@@ -84,6 +87,10 @@ Realm::Realm(Config config)
         throw RealmFileException(RealmFileException::Kind::Exists, ex.get_path(),
                                  "File at path '" + ex.get_path() + "' already exists.");
     }
+    catch (util::File::NotFound const& ex) {
+        throw RealmFileException(RealmFileException::Kind::NotFound, ex.get_path(),
+                                 "File at path '" + ex.get_path() + "' does not exist.");
+    }
     catch (util::File::AccessError const& ex) {
         throw RealmFileException(RealmFileException::Kind::AccessError, ex.get_path(),
                                  "Unable to open a realm at path '" + ex.get_path() + "'");
@@ -101,9 +108,11 @@ Realm::Realm(Config config)
 }
 
 Realm::~Realm() {
+#if __APPLE__
     if (m_notifier) { // might not exist yet if an error occurred during init
         m_notifier->remove_realm(this);
     }
+#endif
 }
 
 Group *Realm::read_group()
@@ -154,11 +163,15 @@ SharedRealm Realm::get_shared_realm(Config config)
         // FIXME - need to validate that schemas match
         realm->m_config.schema = std::make_unique<Schema>(*existing->m_config.schema);
 
+#if __APPLE__
         realm->m_notifier = existing->m_notifier;
         realm->m_notifier->add_realm(realm.get());
+#endif
     }
     else {
+#if __APPLE__
         realm->m_notifier = std::make_shared<ExternalCommitHelper>(realm.get());
+#endif
 
         // otherwise get the schema from the group
         realm->m_config.schema = std::make_unique<Schema>(ObjectStore::schema_from_group(realm->read_group()));
@@ -290,7 +303,9 @@ void Realm::commit_transaction()
 
     m_in_transaction = false;
     transaction::commit(*m_shared_group, *m_history, m_binding_context.get());
+#if __APPLE__
     m_notifier->notify_others();
+#endif
 }
 
 void Realm::cancel_transaction()
@@ -398,15 +413,17 @@ uint64_t Realm::get_schema_version(const realm::Realm::Config &config)
 
 void Realm::close()
 {
+#if __APPLE__
     if (m_notifier) {
         m_notifier->remove_realm(this);
     }
+    m_notifier = nullptr;
+#endif
 
     m_group = nullptr;
     m_shared_group = nullptr;
     m_history = nullptr;
     m_read_only_group = nullptr;
-    m_notifier = nullptr;
     m_binding_context = nullptr;
 }
 

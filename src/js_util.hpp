@@ -2,11 +2,21 @@
  * Proprietary and Confidential
  */
 
-#include <JavaScriptCore/JavaScriptCore.h>
+#pragma once
+
+#include <JavaScriptCore/JSContextRef.h>
+#include <JavaScriptCore/JSObjectRef.h>
+#include <JavaScriptCore/JSStringRef.h>
+
+#include <math.h>
 #include <string>
+#include <sstream>
+
 #include <stdexcept>
+#include <cmath>
 #include "property.hpp"
 #include "schema.hpp"
+
 
 template<typename T>
 inline void RJSFinalize(JSObjectRef object) {
@@ -173,8 +183,19 @@ static inline size_t RJSValidatedListLength(JSContextRef ctx, JSObjectRef object
     return RJSValidatedValueToNumber(ctx, lengthValue);
 }
 
+template<typename T>
+T stot(const std::string s) {
+    std::istringstream iss(s);
+    T value;
+    iss >> value;
+    if (iss.fail()) {
+        throw std::invalid_argument("Cannot convert string '" + s + "'");
+    }
+    return value;
+}
+
 static inline size_t RJSValidatedPositiveIndex(std::string indexStr) {
-    long index = std::stol(indexStr);
+    long index = stot<long>(indexStr);
     if (index < 0) {
         throw std::out_of_range(std::string("Index ") + indexStr + " cannot be less than zero.");
     }

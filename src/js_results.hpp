@@ -2,7 +2,10 @@
  * Proprietary and Confidential
  */
 
-#import "js_util.hpp"
+#pragma once
+
+#include "js_util.hpp"
+#include <memory>
 
 namespace realm {
     class Realm;

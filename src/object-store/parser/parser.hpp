@@ -30,6 +30,7 @@ struct Expression
 {
     enum class Type { None, Number, String, KeyPath, Argument, True, False } type = Type::None;
     std::string s;
+    Expression(Type t = Type::None, std::string s = "") : type(t), s(s) {}
 };
 
 struct Predicate
@@ -78,8 +79,8 @@ struct Predicate
 
 Predicate parse(const std::string &query);
 
-void analyzeGrammar();
-bool testGrammar();
+void analyze_grammar();
+bool test_grammar();
 }
 }
 

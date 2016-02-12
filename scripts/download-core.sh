@@ -3,7 +3,7 @@
 set -e
 set -o pipefail
 
-: ${REALM_CORE_VERSION:=0.95.5} # set to "current" to always use the current build
+: ${REALM_CORE_VERSION:=0.95.6} # set to "current" to always use the current build
 
 echo "Downloading dependency: core ${REALM_CORE_VERSION}"
 

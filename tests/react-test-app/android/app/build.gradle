@@ -1,3 +1,4 @@
+apply plugin: 'android-sdk-manager'
 apply plugin: "com.android.application"
 
 /**
@@ -54,7 +55,7 @@ android {
     buildToolsVersion "23.0.1"
 
     defaultConfig {
-        applicationId "com.reacttests"
+        applicationId "io.realm.react.testapp"
         minSdkVersion 16
         targetSdkVersion 22
         versionCode 1
@@ -72,7 +73,8 @@ android {
 }
 
 dependencies {
-    compile fileTree(dir: "libs", include: ["*.jar"])
-    compile "com.android.support:appcompat-v7:23.0.1"
-    compile "com.facebook.react:react-native:0.14.+"
+    compile 'com.android.support:appcompat-v7:23.0.1'
+    compile 'com.facebook.react:react-native:0.18.0'
+    compile project(':realm')
+    compile project(':react-native-fs')
 }
