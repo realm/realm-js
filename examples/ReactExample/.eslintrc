@@ -6,6 +6,18 @@
   "ecmaFeatures": {
     "jsx": true
   },
+  "globals": {
+    "cancelAnimationFrame": false,
+    "clearImmediate": false,
+    "clearInterval": false,
+    "clearTimeout": false,
+    "console": false,
+    "global": false,
+    "requestAnimationFrame": false,
+    "setImmediate": false,
+    "setInterval": false,
+    "setTimeout": false
+  },
   "parser": "babel-eslint",
   "plugins": [
     "react"
