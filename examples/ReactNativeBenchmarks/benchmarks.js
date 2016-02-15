@@ -37,7 +37,7 @@ const TestObjectListSchema = {
     }
 }
 
-const numTestObjects = 100;
+const numTestObjects = 2000;
 const numBatchTestObjects = numTestObjects * 100;
 const numRepeats = 1;
 const numQueryBuckets = 5;
@@ -84,11 +84,11 @@ class RealmTests extends Tests {
 
     async insertions() {
         var realm = this.realm;
-        realm.write(() => {
-            for (let i = 0; i < numTestObjects; i++) {
+        for (let i = 0; i < numTestObjects; i++) {
+            realm.write(() => {
                 realm.create("TestObject", { int: i % numQueryBuckets, double: i, date: new Date(i), string: "" + i });
-            }
-        });
+            });
+        }
     }
 
     async batchInsert(objects) {
@@ -226,6 +226,15 @@ class RNSqliteTests extends Tests {
     }
 
     async insertions() {
+        for (let i = 0; i < numTestObjects; i++) {
+            let values = ["" + i, i % numQueryBuckets, i, new Date(i).getTime()];
+            await this.db.transaction((tx) => {
+                tx.executeSql('INSERT INTO t1 (string, int, double, date) VALUES (?,?,?,?);', values);
+            });
+        }
+    }
+
+    async batchInsert(objects) {
         await this.db.transaction((tx) => {
             for (let i = 0; i < numTestObjects; i++) {
                 let values = ["" + i, i % numQueryBuckets, i, new Date(i).getTime()];
@@ -233,29 +242,6 @@ class RNSqliteTests extends Tests {
             }
         });
     }
-
-    async batchInsert(objects) {
-        await this.db.transaction((tx) => {
-            for (var obj of objects) {
-                let values = [obj.string, obj.int, obj.double, obj.date.getTime(), obj.string];
-                tx.executeSql('INSERT INTO t1 (string, int, double, date) VALUES (?,?,?,?);', values);
-            }
-        });
-    }
-
-/*
-        var allValues = [];
-        for (let i = 0; i < count; i++) {
-            var object = this.testObjects[i];
-            var values = Object.keys(object).map((key) => object[key]);
-            Array.prototype.push.apply(allValues, values);
-        }
-
-        await this.db.transaction((tx) => {
-            var sql = "INSERT INTO t1 SELECT ? AS string, ? AS int, ? AS double, ? AS date)" +
-                      "UNION ALL SELECT ?, ?, ?, ?".repeat(count - 1);
-            tx.executeSql(sql, allValues);
-        });*/
 
     async enumeration() {
         await this.db.readTransaction(async (tx) => {
@@ -337,7 +323,7 @@ class ReactNativeBenchmarks extends Component {
 
     _renderRow(rowData) {
         return (
-            <Text style={styles.item}>{rowData.join('\t')}</Text>
+            <Text style={styles.item}>{rowData.join('\t\t')}</Text>
         );
     }
 
@@ -360,6 +346,7 @@ class ReactNativeBenchmarks extends Component {
 
     async _runTestsAsync() {
         var data = [apiTests.map((api) => api.name)];
+        data[0].splice(0, 0, "\t\t");
         for (let test of tests) {
             data.push([test]);
             this.setState({
