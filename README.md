@@ -3,7 +3,7 @@
 Realm is a mobile database that runs directly inside phones, tablets or wearables.
 This repository holds the source code for Realm's JavaScript bindings for integrating with mobile apps built using React Native and Apache Cordova (PhoneGap).
 
-Currently Realm only supports React Native, but will expand to other Javascript solutions soon.  
+Currently this repository only supports React Native, but will expand to other Javascript solutions soon.  
 
 ## Features
 
