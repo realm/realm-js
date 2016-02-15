@@ -4,9 +4,9 @@
 
 'use strict';
 
-const Realm = require('realm');
+import Realm from 'realm';
 
-module.exports = new Realm({
+export default new Realm({
     schema: [
         {
             name: 'Todo',

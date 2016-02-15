@@ -4,21 +4,21 @@
 
 'use strict';
 
-const React = require('react-native');
-const TodoItem = require('./todo-item');
-const TodoListView = require('./todo-listview');
-const realm = require('./realm');
-const styles = require('./styles');
-
-const {
+import React, {
+    Component,
     Navigator,
     StatusBarIOS,
     Text,
     TouchableOpacity,
     View,
-} = React;
+} from 'react-native';
 
-class TodoApp extends React.Component {
+import TodoItem from './todo-item';
+import TodoListView from './todo-listview';
+import realm from './realm';
+import styles from './styles';
+
+export default class TodoApp extends Component {
     constructor(props) {
         super(props);
 
@@ -203,5 +203,3 @@ const RouteMapper = {
         );
     },
 };
-
-module.exports = TodoApp;

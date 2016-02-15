@@ -4,14 +4,17 @@
 
 'use strict';
 
-const React = require('react-native');
-const TodoListItem = require('./todo-list-item');
-const realm = require('./realm');
-const styles = require('./styles');
+import React, {
+    Text,
+    TouchableWithoutFeedback,
+    View,
+} from 'react-native';
 
-const { Text, TouchableWithoutFeedback, View } = React;
+import TodoListItem from './todo-list-item';
+import realm from './realm';
+import styles from './styles';
 
-class TodoItem extends TodoListItem {
+export default class TodoItem extends TodoListItem {
     constructor(props) {
         super(props);
 
@@ -56,5 +59,3 @@ class TodoItem extends TodoListItem {
         this.forceUpdate();
     }
 }
-
-module.exports = TodoItem;

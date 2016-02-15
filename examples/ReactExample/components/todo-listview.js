@@ -4,16 +4,17 @@
 
 'use strict';
 
-const React = require('react-native');
-const RealmReact = require('realm/react-native');
-const TodoListItem = require('./todo-list-item');
-const realm = require('./realm');
-const styles = require('./styles');
+import React, {
+    Text,
+    View,
+} from 'react-native';
 
-const { Text, View } = React;
-const { ListView } = RealmReact;
+import { ListView } from 'realm/react-native';
+import TodoListItem from './todo-list-item';
+import realm from './realm';
+import styles from './styles';
 
-class TodoListView extends React.Component {
+export default class TodoListView extends React.Component {
     constructor(props) {
         super(props);
 
@@ -175,5 +176,3 @@ class TodoListExtraItem extends TodoListItem {
         return null;
     }
 }
-
-module.exports = TodoListView;

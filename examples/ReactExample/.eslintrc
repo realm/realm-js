@@ -6,10 +6,12 @@
   "ecmaFeatures": {
     "jsx": true
   },
+  "parser": "babel-eslint",
   "plugins": [
     "react"
   ],
   "rules": {
+    "strict": 0,
     "react/jsx-no-duplicate-props": 2,
     "react/jsx-no-undef": 2,
     "react/jsx-uses-react": 2,
