@@ -10,12 +10,17 @@
 
 + (NSArray *)testSuitesFromDictionary:(NSDictionary *)testCaseNames {
     NSMutableArray *testSuites = [[NSMutableArray alloc] init];
+    NSSet *specialNames = [NSSet setWithObjects:@"beforeEach", @"afterEach", nil];
 
     for (NSString *suiteName in testCaseNames) {
         XCTestSuite *testSuite = [[XCTestSuite alloc] initWithName:suiteName];
         Class testClass = objc_allocateClassPair(self, suiteName.UTF8String, 0);
 
         for (NSString *testName in testCaseNames[suiteName]) {
+            if ([specialNames containsObject:testName]) {
+                continue;
+            }
+
             XCTestCase *testCase = [[testClass alloc] initWithTestName:testName];
             [testSuite addTest:testCase];
         }

@@ -7,6 +7,8 @@
 #import "RCTBridge.h"
 #import "RCTDevMenu.h"
 #import "RCTEventDispatcher.h"
+#import "RCTJavaScriptLoader.h"
+#import "RCTLog.h"
 
 @import RealmReact;
 
@@ -29,6 +31,10 @@ extern NSMutableArray *RCTGetModuleClasses(void);
 + (void)load {
     NSMutableArray *moduleClasses = RCTGetModuleClasses();
     [moduleClasses removeObject:[RCTDevMenu class]];
+
+    RCTAddLogFunction(^(RCTLogLevel level, RCTLogSource source, NSString *fileName, NSNumber *lineNumber, NSString *message) {
+        NSAssert(level < RCTLogLevelError, RCTFormatLog(nil, level, fileName, lineNumber, message));
+    });
 }
 
 + (Class)executorClass {
@@ -84,10 +90,7 @@ extern NSMutableArray *RCTGetModuleClasses(void);
     }
 
     NSDictionary *testCaseNames = [self waitForEvent:@"realm-test-names"];
-    if (!testCaseNames.count) {
-        NSLog(@"ERROR: No test names were provided by the JS");
-        exit(1);
-    }
+    NSAssert(testCaseNames.count, @"No test names were provided by the JS");
 
     NSString *nameSuffix = [self classNameSuffix];
     if (nameSuffix.length) {
@@ -115,25 +118,37 @@ extern NSMutableArray *RCTGetModuleClasses(void);
         notification = note;
     }];
 
-    [self waitForCondition:&condition];
-    [nc removeObserver:token];
+    @try {
+        [self waitForCondition:&condition description:notificationName];
+    } @finally {
+        [nc removeObserver:token];
+    }
 
     return notification;
 }
 
-+ (void)waitForCondition:(BOOL *)condition {
++ (void)waitForCondition:(BOOL *)condition description:(NSString *)description {
     NSRunLoop *runLoop = [NSRunLoop currentRunLoop];
+    NSDate *timeout = [NSDate dateWithTimeIntervalSinceNow:10.0];
 
     while (!*condition) {
+        if ([timeout timeIntervalSinceNow] < 0) {
+            @throw [NSException exceptionWithName:@"ConditionTimeout"
+                                           reason:[NSString stringWithFormat:@"Timed out waiting for: %@", description]
+                                         userInfo:nil];
+        }
+
         @autoreleasepool {
-            [runLoop runMode:NSDefaultRunLoopMode beforeDate:[NSDate distantFuture]];
+            [runLoop runMode:NSDefaultRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.1]];
+            [runLoop runMode:NSRunLoopCommonModes beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.1]];
+            [NSThread sleepForTimeInterval:0.01];  // Bad things may happen without some sleep.
         }
     }
 }
 
 + (id)waitForEvent:(NSString *)eventName {
     __weak RealmReact *realmModule = [[self currentBridge] moduleForClass:[RealmReact class]];
-    assert(realmModule);
+    NSAssert(realmModule, @"RealmReact module not found");
 
     __block BOOL condition = NO;
     __block id result;
@@ -148,8 +163,26 @@ extern NSMutableArray *RCTGetModuleClasses(void);
 
     [realmModule addListenerForEvent:eventName handler:handler];
 
-    [self waitForCondition:&condition];
+    [self waitForCondition:&condition description:eventName];
     return result;
+}
+
+- (void)invokeTest {
+    RCTLogFunction logFunction = RCTGetLogFunction();
+
+    // Fail when React Native logs an error.
+    RCTSetLogFunction(^(RCTLogLevel level, RCTLogSource source, NSString *fileName, NSNumber *lineNumber, NSString *message) {
+        RCTDefaultLogFunction(level, source, fileName, lineNumber, message);
+
+        if (level >= RCTLogLevelError) {
+            NSString *type = (source == RCTLogSourceJavaScript) ? @"JS" : @"Native";
+            XCTFail(@"%@ Error: %@", type, RCTFormatLog(nil, level, fileName, lineNumber, message));
+        }
+    });
+
+    [super invokeTest];
+
+    RCTSetLogFunction(logFunction);
 }
 
 - (void)invokeMethod:(NSString *)method {
@@ -163,7 +196,13 @@ extern NSMutableArray *RCTGetModuleClasses(void);
     RCTBridge *bridge = [self.class currentBridge];
     [bridge.eventDispatcher sendAppEventWithName:@"realm-run-test" body:@{@"suite": module, @"name": method}];
 
-    id error = [self.class waitForEvent:@"realm-test-finished"];
+    id error;
+    @try {
+        error = [self.class waitForEvent:@"realm-test-finished"];
+    } @catch (id exception) {
+        error = exception;
+    }
+
     if (error) {
         [self recordFailureWithDescription:[error description] inFile:@(__FILE__) atLine:__LINE__ expected:YES];
     }
