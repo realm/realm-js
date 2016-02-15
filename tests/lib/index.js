@@ -31,6 +31,12 @@ exports.getTestNames = function() {
     return testNames;
 };
 
+exports.registerTests = function(tests) {
+    for (var suiteName in tests) {
+        TESTS[suiteName] = tests[suiteName];
+    }
+};
+
 exports.runTest = function(suiteName, testName) {
     var testSuite = TESTS[suiteName];
     var testMethod = testSuite && testSuite[testName];

@@ -1,52 +1,49 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
+/* Copyright 2016 Realm Inc - All Rights Reserved
+ * Proprietary and Confidential
  */
 'use strict';
-var React = require('react-native');
-var {
-  AppRegistry,
-  StyleSheet,
-  Image,
-  Text,
-  View,
-  TouchableNativeFeedback,
+
+const React = require('react-native');
+const Realm = require('realm');
+const RealmTests = require('realm-tests');
+const builder = require('xmlbuilder');
+const RNFS = require('react-native-fs');
+
+const {
+    AppRegistry,
+    StyleSheet,
+    Image,
+    Text,
+    View,
+    TouchableNativeFeedback,
 } = React;
 
-var Realm = require('realm');
-var RealmTests = require('realm-tests');
-var builder = require('xmlbuilder');
-var RNFS = require('react-native-fs');
+RealmTests.registerTests({
+    ListViewTest: require('./tests/listview-test'),
+});
 
 function runTests() {
-    var rootXml = builder.create('testsuites');
+    let rootXml = builder.create('testsuites');
     let testNames = RealmTests.getTestNames();
 
     for (let suiteName in testNames) {
-        var itemTestsuite = rootXml.ele('testsuite');
+        let itemTestsuite = rootXml.ele('testsuite');
         let nbrTests = 0;
         let nbrFailures = 0;
 
-        let testSuite = RealmTests[suiteName];
-
         console.log('Starting suite ' + suiteName);
 
-        var suiteTestNames = testNames[suiteName];
-        for (var index in suiteTestNames) {
+        testNames[suiteName].forEach((testName) => {
             nbrTests++;
-            var testName = suiteTestNames[index];
 
-            var itemTest = itemTestsuite.ele('testcase');
+            let itemTest = itemTestsuite.ele('testcase');
             itemTest.att('name', testName);
 
             console.log('Starting ' + testName);
-
-            if (testSuite.beforeEach) {
-                testSuite.beforeEach();
-            }
+            RealmTests.runTest(suiteName, 'beforeEach');
 
             try {
-                testSuite[testName]();
+                RealmTests.runTest(suiteName, testName);
                 console.log('+ ' + testName);
             }
             catch (e) {
@@ -57,11 +54,9 @@ function runTests() {
                 nbrFailures++;
             }
             finally {
-                if (testSuite.afterEach) {
-                    testSuite.afterEach();
-                }
+                RealmTests.runTest(suiteName, 'afterEach');
             }
-        }
+        });
 
         // update Junit XML report
         itemTestsuite.att('name', suiteName);
