@@ -227,7 +227,7 @@ template<> struct action< or_op >
 template<> struct action< rule > {                                  \
     static void apply( const input & in, ParserState & state ) {    \
         DEBUG_PRINT_TOKEN(in.string());                             \
-        state.add_expression(Expression{type, in.string()}); }};
+        state.add_expression(Expression(type, in.string())); }};
 
 EXPRESSION_ACTION(dq_string_content, Expression::Type::String)
 EXPRESSION_ACTION(sq_string_content, Expression::Type::String)
@@ -334,7 +334,7 @@ Predicate parse(const std::string &query)
     return std::move(out_predicate);
 }
 
-void analyzeGrammar()
+void analyze_grammar()
 {
     analyze<pred>();
 }

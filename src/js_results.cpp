@@ -2,12 +2,12 @@
  * Proprietary and Confidential
  */
 
-#import "js_results.hpp"
-#import "js_object.hpp"
-#import "object_accessor.hpp"
-#import "results.hpp"
-#import "parser.hpp"
-#import "query_builder.hpp"
+#include "js_results.hpp"
+#include "js_object.hpp"
+#include "object_accessor.hpp"
+#include "results.hpp"
+#include "parser.hpp"
+#include "query_builder.hpp"
 
 using namespace realm;
 
@@ -46,7 +46,7 @@ bool ResultsSetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef proper
     try {
         std::string indexStr = RJSStringForJSString(propertyName);
         if (indexStr != "length") {
-            std::stol(RJSStringForJSString(propertyName));
+            stot<long>(RJSStringForJSString(propertyName));
         }
 
         // attempts to assign to 'length' or an index should throw an exception

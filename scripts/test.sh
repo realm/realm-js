@@ -3,7 +3,17 @@
 set -o pipefail
 set -e
 
-while pgrep -q Simulator; do
+TARGET="$1"
+CONFIGURATION="${2:-"Debug"}"
+DESTINATION=
+PATH="/opt/android-sdk-linux/platform-tools:$PATH"
+SRCROOT=$(cd "$(dirname "$0")/.." && pwd)
+
+# Start current working directory at the root of the project.
+cd "$SRCROOT"
+
+if [[ $TARGET != *-android ]]; then
+  while pgrep -q Simulator; do
     # Kill all the current simulator processes as they may be from a
     # different Xcode version
     pkill Simulator 2>/dev/null || true
@@ -11,66 +21,126 @@ while pgrep -q Simulator; do
     pkill -9 Simulator 2>/dev/null || true
   done
 
+  DESTINATION="-destination id=$(xcrun simctl list devices | grep -v unavailable | grep -m 1 -o '[0-9A-F\-]\{36\}')"
 
-DESTINATION="-destination id=$(xcrun simctl list devices | grep -v unavailable | grep -m 1 -o '[0-9A-F\-]\{36\}')"
-TARGET=$1
-CONFIGURATION=${2:-"Debug"}
-PACKAGER_OUT="packager_out.txt"
+  # Inform the prepublish script to skip building Android modules.
+  export SKIP_ANDROID_BUILD=1
+fi
 
-function start_packager()
-{
-  rm -f $PACKAGER_OUT
-  sh ./node_modules/react-native/packager/packager.sh | tee packager_out.txt &
-  while :;
-  do
-  if grep -Fxq "React packager ready." packager_out.txt
-  then
-    break
-  else
-    echo "Waiting for packager."
-    sleep 2
-  fi  
+PACKAGER_OUT="$SRCROOT/packager_out.txt"
+LOGCAT_OUT="$SRCROOT/logcat_out.txt"
+
+cleanup() {
+  # Kill all child processes.
+  pkill -P $$ || true
+  pkill node || true
+  rm -f "$PACKAGER_OUT" "$LOGCAT_OUT"
+}
+
+open_chrome() {
+  local dir
+  for dir in "$HOME/Applications" "/Applications"; do
+    if [ -d "$dir/Google Chrome.app" ]; then
+      open "$dir/Google Chrome.app"
+      break
+    fi
   done
 }
 
-function kill_packager()
-{
-  rm -f $PACKAGER_OUT
-  pkill node || true
+start_packager() {
+  ./node_modules/react-native/packager/packager.sh | tee "$PACKAGER_OUT" &
+
+  while :; do
+    if grep -Fxq "React packager ready." "$PACKAGER_OUT"; then
+      break
+    else
+      echo "Waiting for packager."
+      sleep 2
+    fi
+  done
 }
 
-kill_packager
+unlock_device() {
+  adb shell input keyevent 82
+}
 
-if [ "$TARGET" = "realmjs" ]; then
-  xcodebuild -scheme RealmJS -configuration "$CONFIGURATION" -sdk iphonesimulator $DESTINATION build test 
-elif [ "$TARGET" = "react-tests" ]; then
+# Cleanup now and also cleanup when this script exits.
+cleanup
+trap cleanup EXIT
+
+case "$TARGET" in
+"realmjs")
+  xcodebuild -scheme RealmJS -configuration "$CONFIGURATION" -sdk iphonesimulator $DESTINATION build test
+  ;;
+"react-tests")
   pushd tests/react-test-app
-
-  if [ -d  ~/Applications/Google\ Chrome.app ]; then
-    open ~/Applications/Google\ Chrome.app
-  fi
 
   if [ -f ../../target=node_modules/react_tests_node_modules.zip ]; then
       unzip -q ../../target=node_modules/react_tests_node_modules.zip
   fi
+
   npm update react-native
+  open_chrome
   start_packager
   popd
-  
+
   xcodebuild -scheme RealmReact -configuration "$CONFIGURATION" -sdk iphonesimulator $DESTINATION build test
-elif [ "$TARGET" = "react-example" ]; then
+  ;;
+"react-example")
   pushd examples/ReactExample
+
   if [ -f ../../target=node_modules/react_example_node_modules.zip ]; then
     unzip -q ../../target=node_modules/react_example_node_modules.zip
   fi
+
   npm update react-native
   start_packager
 
-  cd ios
+  pushd ios
   xcodebuild -scheme ReactExample -configuration "$CONFIGURATION" -sdk iphonesimulator build $DESTINATION
-  popd
-else
-  echo "Invalid target '${TARGET}'"
-fi
+  ;;
+"react-tests-android")
+  if [[ $CONFIGURATION == 'Debug' ]]; then
+     exit 0
+  fi
 
-kill_packager
+  [ -s "${HOME}/.nvm/nvm.sh" ] && . "${HOME}/.nvm/nvm.sh"
+  nvm use 5.4.0 || true
+
+  pushd react-native/android
+  ./gradlew installarchives
+  popd
+
+  pushd tests/react-test-app
+
+  npm install
+  open_chrome
+  start_packager
+  ./run-android.sh
+
+  # Despite the docs claiming -c to work, it doesn't, so `-T 1` alleviates that.
+  adb logcat -c
+  adb logcat -T 1 | tee "$LOGCAT_OUT" &
+
+  while :; do
+    if grep -q "__REALM_REACT_ANDROID_TESTS_COMPLETED__" "$LOGCAT_OUT"; then
+      break
+    else
+      echo "Waiting for tests."
+      sleep 2
+    fi
+  done
+
+  rm -f tests.xml
+  adb pull /sdcard/tests.xml .
+
+  # Stop running child processes before printing results.
+  cleanup
+  echo "********* TESTS COMPLETED *********";
+  echo "********* File location: $(pwd)/tests.xml *********";
+  cat tests.xml
+  ;;
+*)
+  echo "Invalid target '${TARGET}'"
+  exit 1
+esac

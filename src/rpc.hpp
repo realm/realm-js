@@ -4,8 +4,8 @@
 
 #pragma once
 
-#import "json.hpp"
-#import <JavaScriptCore/JavaScriptCore.h>
+#include "json.hpp"
+#include <JavaScriptCore/JSBase.h>
 
 namespace realm {
     class ObjectSchema;

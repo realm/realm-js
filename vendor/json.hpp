@@ -5743,7 +5743,9 @@ class basic_json
                     /// use integer array index as key
                     case (value_t::array):
                     {
-                        return std::to_string(array_index);
+                        std::ostringstream oss;
+                        oss << array_index;
+                        return oss.str();
                     }
 
                     /// use key from the object
@@ -6907,13 +6909,13 @@ basic_json_parser_59:
         long double get_number() const
         {
             // conversion
-            typename string_t::value_type* endptr;
-            const auto float_val = std::strtold(reinterpret_cast<typename string_t::const_pointer>(m_start),
-                                                &endptr);
-
-            // return float_val if the whole number was translated and NAN
-            // otherwise
-            return (reinterpret_cast<lexer_char_t*>(endptr) == m_cursor) ? float_val : NAN;
+            std::istringstream iss(reinterpret_cast<typename string_t::const_pointer>(m_start));
+            long double value;
+            iss >> value;
+            if (iss.fail()) {
+                return NAN;
+            }
+            return value;
         }
 
       private:

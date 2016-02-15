@@ -2,8 +2,8 @@
  * Proprietary and Confidential
  */
 
-#import "js_schema.hpp"
-#import "object_store.hpp"
+#include "js_schema.hpp"
+#include "object_store.hpp"
 
 namespace realm {
     struct SchemaWrapper {

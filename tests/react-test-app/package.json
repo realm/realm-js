@@ -7,6 +7,8 @@
   },
   "dependencies": {
     "react-native": "0.18.0",
+    "react-native-fs": "^1.1.0",
+    "xmlbuilder": "^4.2.1",
     "realm": "file:../..",
     "realm-tests": "file:../lib"
   }

@@ -8,7 +8,15 @@ const React = require('react-native');
 const realm = require('./realm');
 const styles = require('./styles');
 
-const { Text, TextInput, TouchableWithoutFeedback, View } = React;
+const {
+    Platform,
+    Text,
+    TextInput,
+    TouchableWithoutFeedback,
+    View,
+} = React;
+
+const iOS = (Platform.OS == 'ios');
 
 class TodoListItem extends React.Component {
     constructor(props) {
@@ -90,7 +98,7 @@ class TodoListItem extends React.Component {
         return (
             <TouchableWithoutFeedback onPress={this.props.onPressDelete}>
                 <View style={styles.listItemDelete}>
-                    <Text>𐄂</Text>
+                    <Text>{iOS ? '𐄂' : '×'}</Text>
                 </View>
             </TouchableWithoutFeedback>
         );
