@@ -43,11 +43,12 @@ void IndexSet::do_add(iterator it, size_t index)
     else if (more_before && (it - 1)->second == index) {
         // index is immediately after an existing range
         ++(it - 1)->second;
-    }
-    else if (more_before && valid && (it - 1)->second == it->first) {
-        // index joins two existing ranges
-        (it - 1)->second = it->second;
-        m_ranges.erase(it);
+
+        if (valid && (it - 1)->second == it->first) {
+            // index joins two existing ranges
+            (it - 1)->second = it->second;
+            m_ranges.erase(it);
+        }
     }
     else if (valid && it->first == index + 1) {
         // index is immediately before an existing range
