@@ -32,7 +32,7 @@ const TestObjectSchema = {
 
 const numTestObjects = 200;
 const numBatchTestObjects = numTestObjects * 1000;
-const numRepeats = 5;
+const numRepeats = 1;
 const numQueryBuckets = 10;
 
 const tests = ["insertions", "binsertions", "enumeration", "querycount", "queryenum"];
