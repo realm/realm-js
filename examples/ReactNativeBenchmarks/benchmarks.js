@@ -35,18 +35,18 @@ const numBatchTestObjects = numTestObjects * 100;
 const numRepeats = 1;
 const numQueryBuckets = 5;
 
-const tests = ["insertions", "enumeration", "binsertions", "querycount", "queryenum"];
+const tests = ["insertions", "binsertions", "enumeration", "querycount", "queryenum"];
 const expectedCounts = {
     insertions: numTestObjects, 
     binsertions: numBatchTestObjects, 
-    enumeration: numTestObjects, 
+    enumeration: numBatchTestObjects, 
     querycount: numBatchTestObjects, 
     queryenum: numBatchTestObjects
 };
 const expectedResults = {
     insertions: numTestObjects, 
     binsertions: numBatchTestObjects, 
-    enumeration: numTestObjects, 
+    enumeration: numBatchTestObjects, 
     querycount: numBatchTestObjects / (numQueryBuckets * 200), 
     queryenum: numBatchTestObjects / (numQueryBuckets * 200)
 };
