@@ -20,7 +20,7 @@ function createRealm() {
     let realm = new Realm({schema: [OBJECT_SCHEMA]});
 
     realm.write(() => {
-        for (let i = 0; i < 100; i++) {
+        for (let i = 0; i < 10; i++) {
             realm.create('UniqueObject', {id: i});
         }
     });
