@@ -256,7 +256,7 @@ class RNSqliteTests extends Tests {
 
     async querycount() {
         var len;
-        return await this.db.readTransaction(async (tx) => {
+        await this.db.readTransaction(async (tx) => {
             let [, results] = await tx.executeSql('SELECT * FROM t1 WHERE int = 0 AND double < ' + numTestObjects/2 + ';');            
             len = results.rows.length;
         });
