@@ -33,7 +33,7 @@ const TestObjectSchema = {
 const numTestObjects = 100;
 const numBatchTestObjects = numTestObjects * 1000;
 const numRepeats = 1;
-const numQueryBuckets = 10;
+const numQueryBuckets = 100;
 
 const tests = ["insertions", "binsertions", "enumeration", "querycount", "queryenum"];
 const expectedCounts = {
