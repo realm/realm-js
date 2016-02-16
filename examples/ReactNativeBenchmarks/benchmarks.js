@@ -84,9 +84,9 @@ class RealmTests extends Tests {
 
     async insertions() {
         var realm = this.realm;
-        for (let i = 0; i < numTestObjects; i++) {
+        for (var obj of this.testObjects(numTestObjects)) {
             realm.write(() => {
-                realm.create("TestObject", { int: i % numQueryBuckets, double: i, date: new Date(i), string: "" + i });
+                realm.create("TestObject", obj);
             });
         }
     }
