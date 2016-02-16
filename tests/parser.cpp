@@ -50,6 +50,7 @@ static std::vector<std::string> valid_queries = {
     "0 BeGiNsWiTh 0",
     "0 ENDSWITH 0",
     "contains contains 'contains'",
+    "NOT NOT != 'NOT'",
 
     // atoms/groups
     "(0=0)",
