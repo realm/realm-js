@@ -30,7 +30,7 @@ const TestObjectSchema = {
     }
 }
 
-const numTestObjects = 200;
+const numTestObjects = 100;
 const numBatchTestObjects = numTestObjects * 1000;
 const numRepeats = 1;
 const numQueryBuckets = 10;
@@ -100,7 +100,9 @@ class RealmTests extends Tests {
 
     async insertions() {
         var realm = this.realm;
-        for (var obj of this.testObjects(numTestObjects)) {
+        var objects = this.testObjects(numTestObjects);
+        for (var i = 0; i < objects.length; i++) {
+            var obj = objects[i];
             realm.write(() => {
                 realm.create("TestObject", obj);
             });
@@ -111,7 +113,8 @@ class RealmTests extends Tests {
     async batchInsert(objects) {
         var realm = this.realm;
         realm.write(() => {
-            for (var obj of objects) {
+            for (var i = 0; i < objects.length; i++) {
+                var obj = objects[i];
                 realm.create("TestObject", obj);
             }
         });
@@ -170,7 +173,9 @@ class RNStoreTests extends Tests {
     }
 
     async insertions() {
-        for (var obj of this.testObjects(numTestObjects)) {
+        var objects = this.testObjects(numTestObjects);
+        for (var i = 0; i < objects.length; i++) {
+            var obj = objects[i];
             obj.date = obj.date.getTime();
             await this.db.add(obj);
         }
@@ -179,7 +184,8 @@ class RNStoreTests extends Tests {
 
     async batchInsert(objects) {
         await this.db.multiAdd(objects);
-        for (var obj of this.testObjects(numTestObjects)) {
+        for (var i = 0; i < objects.length; i++) {
+            var obj = objects[i];
             obj.date = obj.date.getTime();
         }
         return objects.length;
@@ -258,7 +264,9 @@ class RNSqliteTests extends Tests {
     }
 
     async insertions() {
-        for (var obj of this.testObjects(numTestObjects)) {
+        var objects = this.testObjects(numTestObjects);
+        for (var i = 0; i < objects.length; i++) {
+            var obj = objects[i];
             let values = [obj.string, obj.int, obj.double, obj.date.getTime()];
             await this.db.transaction((tx) => {
                 tx.executeSql('INSERT INTO t1 (string, int, double, date) VALUES (?,?,?,?);', values);
@@ -269,7 +277,8 @@ class RNSqliteTests extends Tests {
 
     async batchInsert(objects) {
         await this.db.transaction((tx) => {
-            for (var obj of objects) {
+            for (var i = 0; i < objects.length; i++) {
+                var obj = objects[i];
                 let values = [obj.string, obj.int, obj.double, obj.date.getTime()];
                 tx.executeSql('INSERT INTO t1 (string, int, double, date) VALUES (?,?,?,?);', values);
             }
@@ -390,16 +399,18 @@ class ReactNativeBenchmarks extends Component {
     async _runTestsAsync() {
         var data = [apiTests.map((api) => api.name)];
         data[0].splice(0, 0, "\t\t");
-        for (let test of tests) {
+        for (var i = 0; i < tests.length; i++) {
+            var test = tests[i];
             data.push([test]);
             this.setState({
                 dataSource: this.state.dataSource.cloneWithRows(data),
             });
 
-            for (var apiTest of apiTests) {
+            for (var j = 0; j < apiTests.length; j++) {
+                var apiTest = apiTests[j];
                 var totalTime = 0;
                 console.log("Running " + apiTest.name + "." + test);
-                for (var i = 0; i < numRepeats; i++) {
+                for (var k = 0; k < numRepeats; k++) {
                     await apiTest.setup(test);
 
                     var startTime = Date.now();
