@@ -35,13 +35,34 @@ const numBatchTestObjects = numTestObjects * 100;
 const numRepeats = 1;
 const numQueryBuckets = 5;
 
+const tests = ["insertions", "enumeration", "binsertions", "querycount", "queryenum"];
+const expectedCounts = {
+    insertions: numTestObjects, 
+    binsertions: numBatchTestObjects, 
+    enumeration: numTestObjects, 
+    querycount: numBatchTestObjects, 
+    queryenum: numBatchTestObjects
+};
+const expectedResults = {
+    insertions: numTestObjects, 
+    binsertions: numBatchTestObjects, 
+    enumeration: numTestObjects, 
+    querycount: numBatchTestObjects / (numQueryBuckets * 200), 
+    queryenum: numBatchTestObjects / (numQueryBuckets * 200)
+};
+
 class Tests {
     async setup(testName) {
-        if (testName == 'enumeration') {
-            await this.batchInsert(this.testObjects(numTestObjects));
+        var count = await this.count();
+        if (testName == 'enumeration' || testName == 'querycount' || testName == 'queryenum') {
+            if (count != expectedCounts[testName]) {
+                throw "Incorrect count " + count + " for test " + testName;
+            }
         }
-        if (testName == 'querycount' || testName == 'queryenum') {
-            await this.batchInsert(this.testObjects(numBatchTestObjects));
+        else {
+            if (count !=  0) {
+                throw "Initial count should be 0 for insertion tests";
+            }
         }
     }
 
@@ -54,7 +75,7 @@ class Tests {
     }
 
     testObjects(count) {
-        let objects = [];
+        var objects = [];
         for (let i = 0; i < count; i++) {
             objects.push({ int: i % numQueryBuckets, double: i, date: new Date(i), string: "" + i });
         }
@@ -69,7 +90,9 @@ class RealmTests extends Tests {
     }
 
     async setup(testName) {
-        Realm.clearTestState();
+        if (testName == "insertions" || testName == "binsertions") {
+            Realm.clearTestState();
+        }
         this.realm = new Realm({schema: [TestObjectSchema]});
 
         await super.setup(testName);
@@ -125,6 +148,10 @@ class RealmTests extends Tests {
         }        
         return len;
     }
+
+    async count() {
+        return this.realm.objects('TestObject').length;
+    }
 }
 
 class RNStoreTests extends Tests {
@@ -135,7 +162,9 @@ class RNStoreTests extends Tests {
 
     async setup(testName) {
         this.db = Store.model('objects');
-        await this.db.destroy();
+        if (testName == "insertions" || testName == "binsertions") {
+            await this.db.destroy();
+        }
 
         await super.setup(testName);
     }
@@ -196,6 +225,11 @@ class RNStoreTests extends Tests {
         }
         return len
     }
+
+    async count() {
+        let objects = await this.db.find();
+        return objects != undefined ? objects.length : 0;
+    }
 }
 
 class RNSqliteTests extends Tests {
@@ -205,14 +239,15 @@ class RNSqliteTests extends Tests {
     }
 
     async setup(testName) {
-        try {
-            await SQLite.deleteDatabase('test.db');
-        } catch (e) {}
-
+        if (testName == "insertions" || testName == "binsertions") {
+            try {
+                await SQLite.deleteDatabase('test.db');
+            } catch (e) {}
+        }
         this.db = await SQLite.openDatabase("test.db", "1.0", "Test Database", 200000);
 
         await this.db.transaction((tx) => {
-            tx.executeSql('CREATE TABLE t1 (string VARCHAR(100), int INTEGER, double REAL, date INTEGER);');
+            tx.executeSql('CREATE TABLE IF NOT EXISTS t1 (string VARCHAR(100), int INTEGER, double REAL, date INTEGER);');
         });
 
         await super.setup(testName);
@@ -278,16 +313,17 @@ class RNSqliteTests extends Tests {
         });
         return len;
     }
+
+    async count() {
+        var len;
+        await this.db.readTransaction(async (tx) => {
+            let [, results] = await tx.executeSql('SELECT * FROM t1;')
+            len = results.rows.length;
+        });
+        return len;
+    }
 }
 
-const tests = ["insertions", "binsertions", "enumeration", "querycount", "queryenum"];
-const expectedCounts = {
-    insertions: numTestObjects, 
-    binsertions: numBatchTestObjects, 
-    enumeration: numTestObjects, 
-    querycount: numBatchTestObjects / (numQueryBuckets * 200), 
-    queryenum: numBatchTestObjects / (numQueryBuckets * 200)
-};
 const apiTests = [new RealmTests, new RNSqliteTests, new RNStoreTests];
 
 class ReactNativeBenchmarks extends Component {
@@ -363,8 +399,14 @@ class ReactNativeBenchmarks extends Component {
                     await apiTest.setup(test);
 
                     var startTime = Date.now();
-                    var count = await apiTest[test]();
+                    var result = await apiTest[test]();
                     var endTime = Date.now();
+
+                    if (result != expectedResults[test]) {
+                        throw "Incorrect result " + result + " for test " + apiTest.name + "." + test;
+                    }
+
+                    var count = await apiTest.count();
                     if (count != expectedCounts[test]) {
                         throw "Incorrect count " + count + " for test " + apiTest.name + "." + test;
                     }
