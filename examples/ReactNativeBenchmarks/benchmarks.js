@@ -30,10 +30,10 @@ const TestObjectSchema = {
     }
 }
 
-const numTestObjects = 5000;
-const numBatchTestObjects = numTestObjects * 100;
-const numRepeats = 1;
-const numQueryBuckets = 5;
+const numTestObjects = 200;
+const numBatchTestObjects = numTestObjects * 1000;
+const numRepeats = 5;
+const numQueryBuckets = 10;
 
 const tests = ["insertions", "binsertions", "enumeration", "querycount", "queryenum"];
 const expectedCounts = {
@@ -47,8 +47,8 @@ const expectedResults = {
     insertions: numTestObjects, 
     binsertions: numBatchTestObjects, 
     enumeration: numBatchTestObjects, 
-    querycount: numBatchTestObjects / (numQueryBuckets * 200), 
-    queryenum: numBatchTestObjects / (numQueryBuckets * 200)
+    querycount: numBatchTestObjects / (numQueryBuckets * 2), 
+    queryenum: numBatchTestObjects / (numQueryBuckets * 2)
 };
 
 class Tests {
@@ -132,12 +132,12 @@ class RealmTests extends Tests {
     }
 
     async querycount() {
-        let objects = this.realm.objects('TestObject', 'int = 0 and double < ' + numTestObjects / 2);
+        let objects = this.realm.objects('TestObject', 'int = 0 and double < ' + numBatchTestObjects / 2);
         return objects.length;
     }
 
     async queryenum() {
-        let objects = this.realm.objects('TestObject', 'int = 0 and double < ' + numTestObjects / 2);
+        let objects = this.realm.objects('TestObject', 'int = 0 and double < ' + numBatchTestObjects / 2);
         let len = objects.length;
         for (let i = 0; i < len; i++) {
             var obj = objects[i];
@@ -201,7 +201,7 @@ class RNStoreTests extends Tests {
     async querycount() {
         let objects = await this.db.find({
             where: {
-                and: [{ int: 0 }, { double: { lt: numTestObjects / 2 } }]
+                and: [{ int: 0 }, { double: { lt: numBatchTestObjects / 2 } }]
             },
             order: {
                 age: 'ASC',
@@ -213,7 +213,7 @@ class RNStoreTests extends Tests {
     async queryenum() {
         let objects = await this.db.find({
             where: {
-                and: [{ int: 0 }, { double: { lt: numTestObjects / 2 } }]
+                and: [{ int: 0 }, { double: { lt: numBatchTestObjects / 2 } }]
             },
             order: {
                 age: 'ASC',
@@ -296,7 +296,7 @@ class RNSqliteTests extends Tests {
     async querycount() {
         var len;
         await this.db.readTransaction(async (tx) => {
-            let [, results] = await tx.executeSql('SELECT * FROM t1 WHERE int = 0 AND double < ' + numTestObjects/2 + ';');            
+            let [, results] = await tx.executeSql('SELECT * FROM t1 WHERE int = 0 AND double < ' + numBatchTestObjects/2 + ';');            
             len = results.rows.length;
         });
         return len;
@@ -305,7 +305,7 @@ class RNSqliteTests extends Tests {
     async queryenum() {
         var len;
         await this.db.readTransaction(async (tx) => {
-            let [, results] = await tx.executeSql('SELECT * FROM t1 WHERE int = 0 AND double < ' + numTestObjects/2 + ';');            
+            let [, results] = await tx.executeSql('SELECT * FROM t1 WHERE int = 0 AND double < ' + numBatchTestObjects/2 + ';');            
             len = results.rows.length;
             for (let i = 0; i < len; i++) {
                 var row = results.rows.item(i);
