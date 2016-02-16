@@ -129,7 +129,7 @@ extern NSMutableArray *RCTGetModuleClasses(void);
 
 + (void)waitForCondition:(BOOL *)condition description:(NSString *)description {
     NSRunLoop *runLoop = [NSRunLoop currentRunLoop];
-    NSDate *timeout = [NSDate dateWithTimeIntervalSinceNow:10.0];
+    NSDate *timeout = [NSDate dateWithTimeIntervalSinceNow:30.0];
 
     while (!*condition) {
         if ([timeout timeIntervalSinceNow] < 0) {
