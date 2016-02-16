@@ -30,7 +30,7 @@ const TestObjectSchema = {
     }
 }
 
-const numTestObjects = 2000;
+const numTestObjects = 5000;
 const numBatchTestObjects = numTestObjects * 100;
 const numRepeats = 1;
 const numQueryBuckets = 5;
@@ -171,6 +171,7 @@ class RNStoreTests extends Tests {
 
     async insertions() {
         for (var obj of this.testObjects(numTestObjects)) {
+            obj.date = obj.date.getTime();
             await this.db.add(obj);
         }
         return numTestObjects;
@@ -178,6 +179,9 @@ class RNStoreTests extends Tests {
 
     async batchInsert(objects) {
         await this.db.multiAdd(objects);
+        for (var obj of this.testObjects(numTestObjects)) {
+            obj.date = obj.date.getTime();
+        }
         return objects.length;
     }
 
@@ -188,7 +192,7 @@ class RNStoreTests extends Tests {
             var obj = objects[i];
             obj.int;
             obj.double;
-            obj.date;
+            new Date(obj.date);
             obj.string;
         }
         return len;
