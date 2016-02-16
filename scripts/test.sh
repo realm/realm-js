@@ -69,6 +69,9 @@ cleanup
 trap cleanup EXIT
 
 case "$TARGET" in
+"jsdoc")
+  npm run jsdoc
+  ;;
 "realmjs")
   xcodebuild -scheme RealmJS -configuration "$CONFIGURATION" -sdk iphonesimulator $DESTINATION build test
   ;;

@@ -13,7 +13,11 @@
     "RealmJS.xcodeproj"
   ],
   "scripts": {
+    "jsdoc": "rm -rf docs/output && jsdoc -c docs/conf.json",
     "test": "scripts/test.sh",
     "prepublish": "scripts/prepublish.sh"
+  },
+  "devDependencies": {
+    "jsdoc": "^3.4.0"
   }
 }
