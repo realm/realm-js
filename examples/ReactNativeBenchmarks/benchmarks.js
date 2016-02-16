@@ -30,13 +30,6 @@ const TestObjectSchema = {
     }
 }
 
-const TestObjectListSchema = {
-    name: "TestObjectList",
-    properties: {
-        list: {type: "list", objectType: "TestObject", default: undefined}
-    }
-}
-
 const numTestObjects = 2000;
 const numBatchTestObjects = numTestObjects * 100;
 const numRepeats = 1;
@@ -53,7 +46,7 @@ class Tests {
     }
 
     async binsertions() {
-        await this.batchInsert(this.testObjects(numBatchTestObjects));
+        return await this.batchInsert(this.testObjects(numBatchTestObjects));
     }
 
     objectValues(object) {
@@ -77,7 +70,7 @@ class RealmTests extends Tests {
 
     async setup(testName) {
         Realm.clearTestState();
-        this.realm = new Realm({schema: [TestObjectSchema, TestObjectListSchema]});
+        this.realm = new Realm({schema: [TestObjectSchema]});
 
         await super.setup(testName);
     }
@@ -89,47 +82,48 @@ class RealmTests extends Tests {
                 realm.create("TestObject", obj);
             });
         }
+        return numTestObjects;
     }
 
     async batchInsert(objects) {
         var realm = this.realm;
         realm.write(() => {
-            realm.create("TestObjectList", { list: objects});
+            for (var obj of objects) {
+                realm.create("TestObject", obj);
+            }
         });
+        return objects.length;
     }
 
     async enumeration() {
         let objects = this.realm.objects('TestObject');
         let len = objects.length;
-        var obj;
         for (let i = 0; i < len; i++) {
-            obj = objects[i];
+            var obj = objects[i];
             obj.int;
             obj.double;
             obj.date;
             obj.string;
         }
-        console.log("Enumerated " + len + " last: ", this.objectValues(obj));
+        return len;
     }
 
     async querycount() {
         let objects = this.realm.objects('TestObject', 'int = 0 and double < ' + numTestObjects / 2);
-        let len = objects.length;
-        console.log("length: " + len + " last: ", this.objectValues(objects[len - 1]));
+        return objects.length;
     }
 
     async queryenum() {
         let objects = this.realm.objects('TestObject', 'int = 0 and double < ' + numTestObjects / 2);
-        var obj;
         let len = objects.length;
         for (let i = 0; i < len; i++) {
-            obj = objects[i];
+            var obj = objects[i];
             obj.int;
             obj.double;
             obj.date;
             obj.string;
         }        
-        console.log("Enumerated " + len + " last: ", this.objectValues(obj));
+        return len;
     }
 }
 
@@ -150,24 +144,25 @@ class RNStoreTests extends Tests {
         for (var obj of this.testObjects(numTestObjects)) {
             await this.db.add(obj);
         }
+        return numTestObjects;
     }
 
     async batchInsert(objects) {
         await this.db.multiAdd(objects);
+        return objects.length;
     }
 
     async enumeration() {
         let objects = await this.db.find();
         let len = objects.length;
-        var obj;
         for (let i = 0; i < len; i++) {
-            obj = objects[i];
+            var obj = objects[i];
             obj.int;
             obj.double;
             obj.date;
             obj.string;
         }
-        console.log("Enumerated " + len + " last: ", this.objectValues(obj));
+        return len;
     }
 
     async querycount() {
@@ -179,8 +174,7 @@ class RNStoreTests extends Tests {
                 age: 'ASC',
             }
         });
-        let len = objects.length;
-        console.log("length: " + len + " last: ", this.objectValues(objects[len - 1]));
+        return objects.length;
     }
 
     async queryenum() {
@@ -193,15 +187,14 @@ class RNStoreTests extends Tests {
             }
         });
         let len = objects.length;
-        var obj;
         for (let i = 0; i < len; i++) {
-            obj = objects[i];
+            var obj = objects[i];
             obj.int;
             obj.double;
             obj.date;
             obj.string;
         }
-        console.log("Enumerated " + len + " last: ", this.objectValues(obj));
+        return len
     }
 }
 
@@ -226,65 +219,75 @@ class RNSqliteTests extends Tests {
     }
 
     async insertions() {
-        for (let i = 0; i < numTestObjects; i++) {
-            let values = ["" + i, i % numQueryBuckets, i, new Date(i).getTime()];
+        for (var obj of this.testObjects(numTestObjects)) {
+            let values = [obj.string, obj.int, obj.double, obj.date.getTime()];
             await this.db.transaction((tx) => {
                 tx.executeSql('INSERT INTO t1 (string, int, double, date) VALUES (?,?,?,?);', values);
             });
         }
+        return numTestObjects;
     }
 
     async batchInsert(objects) {
         await this.db.transaction((tx) => {
-            for (let i = 0; i < numTestObjects; i++) {
-                let values = ["" + i, i % numQueryBuckets, i, new Date(i).getTime()];
+            for (var obj of objects) {
+                let values = [obj.string, obj.int, obj.double, obj.date.getTime()];
                 tx.executeSql('INSERT INTO t1 (string, int, double, date) VALUES (?,?,?,?);', values);
             }
         });
+        return objects.length;
     }
 
     async enumeration() {
+        var len;
         await this.db.readTransaction(async (tx) => {
             let [, results] = await tx.executeSql('SELECT * FROM t1;')
-            let len = results.rows.length;
-            var row;
+            len = results.rows.length;
             for (let i = 0; i < len; i++) {
-                row = results.rows.item(i);
+                var row = results.rows.item(i);
                 row.int;
                 row.double;
                 row.string;
                 new Date(row.date);
             }
-            console.log("length: " + len + " last: ", this.objectValues(row));
         });
+        return len;
     }
 
     async querycount() {
-        await this.db.readTransaction(async (tx) => {
+        var len;
+        return await this.db.readTransaction(async (tx) => {
             let [, results] = await tx.executeSql('SELECT * FROM t1 WHERE int = 0 AND double < ' + numTestObjects/2 + ';');            
-            let len = results.rows.length;
-            console.log("length: " + results.rows.length + " last: ", this.objectValues(results.rows.item(len - 1)));
+            len = results.rows.length;
         });
+        return len;
     }
 
     async queryenum() {
+        var len;
         await this.db.readTransaction(async (tx) => {
             let [, results] = await tx.executeSql('SELECT * FROM t1 WHERE int = 0 AND double < ' + numTestObjects/2 + ';');            
-            let len = results.rows.length;
-            var row;
+            len = results.rows.length;
             for (let i = 0; i < len; i++) {
-                row = results.rows.item(i);
+                var row = results.rows.item(i);
                 row.int;
                 row.double;
                 row.string;
                 new Date(row.date);
             }
-            console.log("length: " + len + " last: ", this.objectValues(row));
         });
+        return len;
     }
 }
 
 const tests = ["insertions", "binsertions", "enumeration", "querycount", "queryenum"];
+const expectedCounts = {
+    insertions: numTestObjects, 
+    binsertions: numBatchTestObjects, 
+    enumeration: numTestObjects, 
+    querycount: numBatchTestObjects / (numQueryBuckets * 200), 
+    queryenum: numBatchTestObjects / (numQueryBuckets * 200)
+};
 const apiTests = [new RealmTests, new RNSqliteTests, new RNStoreTests];
 
 class ReactNativeBenchmarks extends Component {
@@ -360,8 +363,11 @@ class ReactNativeBenchmarks extends Component {
                     await apiTest.setup(test);
 
                     var startTime = Date.now();
-                    await apiTest[test]();
+                    var count = await apiTest[test]();
                     var endTime = Date.now();
+                    if (count != expectedCounts[test]) {
+                        throw "Incorrect count " + count + " for test " + apiTest.name + "." + test;
+                    }
 
                     var time = endTime - startTime
                     console.log("finished in " + time);
