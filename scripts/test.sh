@@ -94,10 +94,11 @@ case "$TARGET" in
   fi
 
   npm update react-native
+  open_chrome
   start_packager
 
   pushd ios
-  xcodebuild -scheme ReactExample -configuration "$CONFIGURATION" -sdk iphonesimulator build $DESTINATION
+  xcodebuild -scheme ReactExample -configuration "$CONFIGURATION" -sdk iphonesimulator $DESTINATION build test
   ;;
 "react-tests-android")
   if [[ $CONFIGURATION == 'Debug' ]]; then
