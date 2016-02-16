@@ -49,6 +49,7 @@ static std::vector<std::string> valid_queries = {
     "0 contains 0",
     "0 BeGiNsWiTh 0",
     "0 ENDSWITH 0",
+    "contains contains 'contains'",
 
     // atoms/groups
     "(0=0)",
