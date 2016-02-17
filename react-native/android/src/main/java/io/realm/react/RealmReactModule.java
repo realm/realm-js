@@ -19,6 +19,7 @@ import fi.iki.elonen.NanoHTTPD;
 
 public class RealmReactModule extends ReactContextBaseJavaModule {
     private static final int DEFAULT_PORT = 8082;
+    private static boolean sentAnalytics = false;
 
     private AndroidWebServer webServer;
     private Handler handler = new Handler(Looper.getMainLooper());
@@ -38,6 +39,14 @@ public class RealmReactModule extends ReactContextBaseJavaModule {
         }
 
         setDefaultRealmFileDirectory(fileDir);
+
+        // Attempt to send analytics info only once, and only if allowed to do so.
+        if (!sentAnalytics && RealmAnalytics.shouldExecute()) {
+            sentAnalytics = true;
+
+            RealmAnalytics analytics = RealmAnalytics.getInstance(reactContext.getApplicationInfo());
+            analytics.execute();
+        }
     }
 
     @Override
