@@ -86,6 +86,8 @@
 		F63FF3311C16434400B3B8E0 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = F63FF3301C16434400B3B8E0 /* libz.tbd */; };
 		F68A278C1BC2722A0063D40A /* RJSModuleLoader.m in Sources */ = {isa = PBXBuildFile; fileRef = F68A278B1BC2722A0063D40A /* RJSModuleLoader.m */; };
 		F6BB7DF21BF681BC00D0A69E /* base64.hpp in Headers */ = {isa = PBXBuildFile; fileRef = F6BB7DF01BF681BC00D0A69E /* base64.hpp */; };
+		F6C74DF01C732CC500C9DDCD /* RealmAnalytics.h in Headers */ = {isa = PBXBuildFile; fileRef = F6C74DEE1C732CC500C9DDCD /* RealmAnalytics.h */; };
+		F6C74DF11C732CC500C9DDCD /* RealmAnalytics.mm in Sources */ = {isa = PBXBuildFile; fileRef = F6C74DEF1C732CC500C9DDCD /* RealmAnalytics.mm */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -247,6 +249,8 @@
 		F6BB7DEF1BF681BC00D0A69E /* base64.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = base64.cpp; sourceTree = "<group>"; };
 		F6BB7DF01BF681BC00D0A69E /* base64.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = base64.hpp; sourceTree = "<group>"; };
 		F6C3FBBC1BF680EC00E6FFD4 /* json.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = json.hpp; sourceTree = "<group>"; };
+		F6C74DEE1C732CC500C9DDCD /* RealmAnalytics.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RealmAnalytics.h; path = "react-native/RealmAnalytics.h"; sourceTree = "<group>"; };
+		F6C74DEF1C732CC500C9DDCD /* RealmAnalytics.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = RealmAnalytics.mm; path = "react-native/RealmAnalytics.mm"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -334,6 +338,8 @@
 				022D59301C043340001E25FE /* ReactTests.xcodeproj */,
 				0270BCCF1B7D067300010E03 /* RealmReact.h */,
 				0270BCD01B7D067300010E03 /* RealmReact.mm */,
+				F6C74DEE1C732CC500C9DDCD /* RealmAnalytics.h */,
+				F6C74DEF1C732CC500C9DDCD /* RealmAnalytics.mm */,
 			);
 			name = RealmReact;
 			sourceTree = "<group>";
@@ -550,6 +556,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F636F6C81BCDB3570023F35C /* RealmReact.h in Headers */,
+				F6C74DF01C732CC500C9DDCD /* RealmAnalytics.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -770,6 +777,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F6C74DF11C732CC500C9DDCD /* RealmAnalytics.mm in Sources */,
 				0270BCD11B7D067300010E03 /* RealmReact.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

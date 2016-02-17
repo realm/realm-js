@@ -3,6 +3,7 @@
  */
 
 #import "RealmReact.h"
+#import "RealmAnalytics.h"
 #import "RCTBridge.h"
 
 #import "js_init.h"
@@ -77,6 +78,14 @@ extern "C" JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executo
     else {
         NSLog(@"Failed to load RCTRegisterModule symbol - %s", dlerror());
     }
+}
+
++ (void)initialize {
+    if (self != [RealmReact class]) {
+        return;
+    }
+
+    RLMSendAnalytics();
 }
 
 + (NSString *)moduleName {
