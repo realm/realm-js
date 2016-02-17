@@ -123,5 +123,7 @@ dependencies {
     compile "com.facebook.react:react-native:0.19.+"
 
     compile project(":realm")
+    compile project(':react-native-sqlite-storage')
+
     compile fileTree(dir: "node_modules/realm/android/libs", include: ["*.jar"])
 }
