@@ -31,6 +31,7 @@
 //
 // Currently the following information is reported:
 // - What kind of JavaScript framework is being used (e.g. React Native).
+// - What kind of JavaScript VM is being used (e.g. JavaScriptCore or V8).
 // - What version of Realm is being used, and from which language (obj-c or Swift).
 // - What version of OS X it's running on (in case Xcode aggressively drops
 //   support for older versions again, we need to know what we need to support).
@@ -185,6 +186,7 @@ static NSDictionary *RLMAnalyticsPayload() {
             @"Binding": @"js",
             @"Language": @"js",
             @"Framework": @"react-native",
+            @"Virtual Machine": @"jsc",
             @"Realm Version": [[@(RealmReactVersionString) componentsSeparatedByString:@"-"] lastObject] ?: kUnknownString,
 #if TARGET_OS_MAC
             @"Target OS Type": @"osx",

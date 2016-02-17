@@ -42,6 +42,7 @@ import java.util.Set;
 //
 // Currently the following information is reported:
 // - What kind of JavaScript framework is being used (e.g. React Native)
+// - What kind of JavaScript VM is being used (e.g. JavaScriptCore or V8)
 // - What version of Realm is being used
 // - What OS you are running on
 // - An anonymized MAC address and bundle ID to aggregate the other information on.
@@ -63,7 +64,8 @@ public class RealmAnalytics {
             + "      \"Anonymized Bundle ID\": \"%APP_ID%\",\n"
             + "      \"Binding\": \"js\",\n"
             + "      \"Language\": \"js\",\n"
-            + "      \"Framework\": \"react-native\","
+            + "      \"Framework\": \"react-native\",\n"
+            + "      \"Virtual Machine\": \"jsc\",\n"
             + "      \"Realm Version\": \"%REALM_VERSION%\",\n"
             + "      \"Host OS Type\": \"%OS_TYPE%\",\n"
             + "      \"Host OS Version\": \"%OS_VERSION%\",\n"
