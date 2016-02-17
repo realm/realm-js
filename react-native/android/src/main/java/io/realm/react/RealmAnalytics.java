@@ -41,6 +41,7 @@ import java.util.Set;
 // better product for you.
 //
 // Currently the following information is reported:
+// - What kind of JavaScript framework is being used (e.g. React Native)
 // - What version of Realm is being used
 // - What OS you are running on
 // - An anonymized MAC address and bundle ID to aggregate the other information on.
