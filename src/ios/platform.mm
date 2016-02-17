@@ -54,7 +54,11 @@ void remove_realm_files_from_directory(const std::string &directory)
 {
     NSFileManager *manager = [NSFileManager defaultManager];
     NSString *fileDir = @(directory.c_str());
+
     for (NSString *path in [manager enumeratorAtPath:fileDir]) {
+        if (![path containsString:@".realm"]) {
+            continue;
+        }
         if (![manager removeItemAtPath:[fileDir stringByAppendingPathComponent:path] error:nil]) {
             throw std::runtime_error((std::string)"Failed to delete file at path " + path.UTF8String);
         }
