@@ -4,21 +4,21 @@
 
 'use strict';
 
-const React = require('react-native');
-const TodoItem = require('./todo-item');
-const TodoListView = require('./todo-listview');
-const realm = require('./realm');
-const styles = require('./styles');
-
-const {
+import React, {
+    Component,
     Navigator,
     StatusBarIOS,
     Text,
     TouchableOpacity,
     View,
-} = React;
+} from 'react-native';
 
-class TodoApp extends React.Component {
+import TodoItem from './todo-item';
+import TodoListView from './todo-listview';
+import realm from './realm';
+import styles from './styles';
+
+export default class TodoApp extends Component {
     constructor(props) {
         super(props);
 
@@ -150,8 +150,11 @@ class TodoApp extends React.Component {
     }
 
     _setEditingRow(rowIndex) {
+        let listView = this.currentListView;
+
         // Update the state on the currently displayed TodoList to edit this new item.
-        this.currentListView.setState({editingRow: rowIndex});
+        listView.setState({editingRow: rowIndex});
+        listView.updateDataSource();
     }
 }
 
@@ -200,5 +203,3 @@ const RouteMapper = {
         );
     },
 };
-
-module.exports = TodoApp;

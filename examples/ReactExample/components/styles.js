@@ -4,14 +4,16 @@
 
 'use strict';
 
-const React = require('react-native');
+import {
+    Navigator,
+    Platform,
+    StyleSheet
+} from 'react-native';
 
-const { Navigator, Platform, StyleSheet } = React;
 const { NavBarHeight, TotalNavHeight } = Navigator.NavigationBar.Styles.General;
-
 const iOS = (Platform.OS == 'ios');
 
-module.exports = StyleSheet.create({
+export default StyleSheet.create({
     container: {
         flex: 1,
         justifyContent: 'center',

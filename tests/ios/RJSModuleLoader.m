@@ -33,8 +33,7 @@ static NSString * const RJSModuleLoaderErrorDomain = @"RJSModuleLoaderErrorDomai
     self.globalModules[name] = [JSValue valueWithObject:object inContext:self.context];
 }
 
-- (JSValue *)loadModule:(NSString *)name relativeToURL:(NSURL *)baseURL error:(NSError **)error
-{
+- (JSValue *)loadModule:(NSString *)name relativeToURL:(NSURL *)baseURL error:(NSError **)error {
     if (![name hasPrefix:@"./"] && ![name hasPrefix:@"../"]) {
         return [self loadGlobalModule:name relativeToURL:baseURL error:error];
     }

@@ -13,13 +13,10 @@ using namespace realm;
 
 JSValueRef ResultsGetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef* jsException) {
     try {
-        // index subscripting
         Results *results = RJSGetInternal<Results *>(object);
-        size_t size = results->size();
-
         std::string indexStr = RJSStringForJSString(propertyName);
         if (indexStr == "length") {
-            return JSValueMakeNumber(ctx, size);
+            return JSValueMakeNumber(ctx, results->size());
         }
 
         auto row = results->get(RJSValidatedPositiveIndex(indexStr));

@@ -26,23 +26,15 @@
     [moduleLoader addGlobalModuleObject:realmConstructor forName:@"realm"];
 
     NSError *error;
-    JSValue *testObjects = [moduleLoader loadModuleFromURL:scriptURL error:&error];
+    JSValue *testObject = [moduleLoader loadModuleFromURL:scriptURL error:&error];
+    NSAssert(testObject, @"%@", error);
 
-    if (!testObjects) {
-        NSLog(@"%@", error);
-        exit(1);
-    }
-
-    NSDictionary *testCaseNames = [[testObjects invokeMethod:@"getTestNames" withArguments:nil] toDictionary];
-
-    if (!testCaseNames.count) {
-        NSLog(@"No test case names from getTestNames() JS method!");
-        exit(1);
-    }
+    NSDictionary *testCaseNames = [[testObject invokeMethod:@"getTestNames" withArguments:nil] toDictionary];
+    NSAssert(testCaseNames.count, @"No test names were provided by the JS");
 
     for (XCTestSuite *testSuite in [self testSuitesFromDictionary:testCaseNames]) {
         for (RealmJSCoreTests *test in testSuite.tests) {
-            test.testObject = testObjects[testSuite.name];
+            test.testObject = testObject;
         }
 
         [suite addTest:testSuite];
@@ -57,15 +49,10 @@
 
 - (void)invokeMethod:(NSString *)method {
     JSValue *testObject = self.testObject;
-
-    if (![testObject hasProperty:method]) {
-        return;
-    }
-
     JSContext *context = testObject.context;
     context.exception = nil;
 
-    [testObject invokeMethod:method withArguments:nil];
+    [testObject invokeMethod:@"runTest" withArguments:@[NSStringFromClass(self.class), method]];
 
     JSValue *exception = context.exception;
     if (exception) {

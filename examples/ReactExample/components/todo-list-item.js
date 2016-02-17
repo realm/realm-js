@@ -4,21 +4,20 @@
 
 'use strict';
 
-const React = require('react-native');
-const realm = require('./realm');
-const styles = require('./styles');
-
-const {
+import React, {
     Platform,
     Text,
     TextInput,
     TouchableWithoutFeedback,
     View,
-} = React;
+} from 'react-native';
+
+import realm from './realm';
+import styles from './styles';
 
 const iOS = (Platform.OS == 'ios');
 
-class TodoListItem extends React.Component {
+export default class TodoListItem extends React.Component {
     constructor(props) {
         super(props);
 
@@ -123,5 +122,3 @@ class TodoListItem extends React.Component {
         }
     }
 }
-
-module.exports = TodoListItem;
