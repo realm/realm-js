@@ -58,21 +58,21 @@ std::string RJSValidatedStringForValue(JSContextRef ctx, JSValueRef value, const
 JSStringRef RJSStringForString(const std::string &str);
 JSValueRef RJSValueForString(JSContextRef ctx, const std::string &str);
 
-inline void RJSValidateArgumentCount(size_t argumentCount, size_t expected) {
+inline void RJSValidateArgumentCount(size_t argumentCount, size_t expected, const char *message = NULL) {
     if (argumentCount != expected) {
-        throw std::invalid_argument("Invalid arguments");
+        throw std::invalid_argument(message ?: "Invalid arguments");
     }
 }
 
-inline void RJSValidateArgumentCountIsAtLeast(size_t argumentCount, size_t expected) {
+inline void RJSValidateArgumentCountIsAtLeast(size_t argumentCount, size_t expected, const char *message = NULL) {
     if (argumentCount < expected) {
-        throw std::invalid_argument("Invalid arguments");
+        throw std::invalid_argument(message ?: "Invalid arguments");
     }
 }
 
-inline void RJSValidateArgumentRange(size_t argumentCount, size_t min, size_t max) {
+inline void RJSValidateArgumentRange(size_t argumentCount, size_t min, size_t max, const char *message = NULL) {
     if (argumentCount < min || argumentCount > max) {
-        throw std::invalid_argument("Invalid arguments");
+        throw std::invalid_argument(message ?: "Invalid arguments");
     }
 }
 

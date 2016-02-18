@@ -101,7 +101,7 @@ JSValueRef ResultsSorted(JSContextRef ctx, JSObjectRef function, JSObjectRef thi
         std::vector<bool> ascending;
 
         if (RJSIsValueArray(ctx, arguments[0])) {
-            RJSValidateArgumentCount(argumentCount, 1);
+            RJSValidateArgumentCount(argumentCount, 1, "Second argument is not allowed if passed an array of sort descriptors");
 
             JSObjectRef js_prop_names = RJSValidatedValueToObject(ctx, arguments[0]);
             prop_count = RJSValidatedListLength(ctx, js_prop_names);
