@@ -6,7 +6,7 @@
     "start": "react-native start"
   },
   "dependencies": {
-    "react-native": "0.18.0",
+    "react-native": "^0.20.0",
     "react-native-fs": "^1.1.0",
     "xmlbuilder": "^4.2.1",
     "realm": "file:../..",
