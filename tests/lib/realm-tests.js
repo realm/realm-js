@@ -261,6 +261,49 @@ module.exports = BaseTest.extend({
         });
     },
 
+    testRealmCreateWithConstructor: function() {
+        var customCreated = 0;
+
+        function CustomObject() {
+            customCreated++;
+        }
+        CustomObject.schema = {
+            name: 'CustomObject',
+            properties: {
+                intCol: 'int'
+            }
+        }
+
+        function InvalidObject() {
+            return {};
+        }
+        TestCase.assertThrows(function() {
+            new Realm({schema: [InvalidObject]});
+        });
+
+        InvalidObject.schema = {
+            name: 'InvalidObject',
+            properties: {
+                intCol: 'int'
+            }
+        }
+
+        var realm = new Realm({schema: [CustomObject, InvalidObject]});
+
+        realm.write(function() {
+            var object = realm.create('CustomObject', {intCol: 1});
+            TestCase.assertTrue(object instanceof CustomObject);
+            TestCase.assertTrue(Object.getPrototypeOf(object) == CustomObject.prototype);
+            TestCase.assertEqual(customCreated, 1);
+        });
+
+        TestCase.assertThrows(function() {
+            realm.write(function() {
+                realm.create('InvalidObject', {intCol: 1});
+            });
+        });
+    },
+
     testRealmDelete: function() {
         var realm = new Realm({schema: [schemas.TestObject]});
 

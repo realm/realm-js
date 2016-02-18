@@ -58,8 +58,24 @@ JSClassRef RJSObjectClass() {
 }
 
 JSObjectRef RJSObjectCreate(JSContextRef ctx, Object object) {
-    JSValueRef prototype = RJSPrototypes(object.realm().get())[object.get_object_schema().name];
+    static JSStringRef prototypeString = JSStringCreateWithUTF8CString("prototype");
+
+    JSObjectRef constructor = RJSConstructors(object.realm().get())[object.get_object_schema().name];
+    JSObjectRef prototype = constructor ? RJSValidatedObjectProperty(ctx, constructor, prototypeString) : NULL;
     JSObjectRef jsObject = RJSWrapObject(ctx, RJSObjectClass(), new Object(object), prototype);
+
+    if (constructor) {
+        JSValueRef exception = NULL;
+        JSValueRef result = JSObjectCallAsFunction(ctx, constructor, jsObject, 0, NULL, &exception);
+
+        if (exception) {
+            throw RJSException(ctx, exception);
+        }
+        else if (result != jsObject && !JSValueIsNull(ctx, result) && !JSValueIsUndefined(ctx, result)) {
+            throw std::runtime_error("Realm object constructor must not return another value");
+        }
+    }
+
     return jsObject;
 }
 

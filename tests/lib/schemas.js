@@ -14,7 +14,7 @@ exports.TestObject = {
 };
 
 function PersonObject() {}
-PersonObject.prototype.schema = {
+PersonObject.schema = {
     name: 'PersonObject',
     properties: {
         name:    Realm.Types.STRING,
