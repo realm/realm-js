@@ -183,7 +183,7 @@ public class RealmAnalytics {
      * @throws UnsupportedEncodingException
      */
     private static String base64Encode(String data) throws UnsupportedEncodingException {
-        return Base64.encodeToString(data.getBytes("UTF-8"), Base64.DEFAULT);
+        return Base64.encodeToString(data.getBytes("UTF-8"), Base64.NO_WRAP);
     }
 
     /**
