@@ -160,7 +160,7 @@ JSObjectRef RJSResultsCreate(JSContextRef ctx, SharedRealm realm, std::string cl
 
 JSObjectRef RJSResultsCreate(JSContextRef ctx, realm::SharedRealm realm, const realm::ObjectSchema &objectSchema, realm::Query query, size_t argumentCount, const JSValueRef arguments[]) {
     std::string queryString = RJSValidatedStringForValue(ctx, arguments[0], "predicate");
-    std::vector<JSValueRef> args( argumentCount - 1 );
+    std::vector<JSValueRef> args(argumentCount - 1);
     for (size_t i = 1; i < argumentCount; i++) {
         args[i-1] = arguments[i];
     }

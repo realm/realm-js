@@ -130,6 +130,10 @@ module.exports = BaseTest.extend({
 
         TestCase.assertEqual(realm.objects('DefaultValuesObject').filtered('dateCol > $0', new Date(4)).length, 1);
         TestCase.assertEqual(realm.objects('DefaultValuesObject').filtered('dateCol <= $0', new Date(4)).length, 2);
+
+        TestCase.assertThrows(function() {
+            realm.objects('PersonObject').filtered("invalidQuery");
+        });
     },
     testSort: function() {
         var realm = new Realm({schema: [schemas.TestObject]});
