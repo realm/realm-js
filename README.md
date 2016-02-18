@@ -1,4 +1,4 @@
-![Realm](https://github.com/realm/realm-cocoa/raw/master/logo.png)
+![Realm](https://github.com/realm/realm-js/raw/master/logo.png)
 
 Realm is a mobile database that runs directly inside phones, tablets or wearables.
 This repository holds the source code for Realm's JavaScript bindings for integrating with mobile apps built using React Native.
