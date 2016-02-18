@@ -135,7 +135,7 @@ module.exports = BaseTest.extend({
             realm.objects('PersonObject').filtered("invalidQuery");
         });
     },
-    testSort: function() {
+    testResultsSorted: function() {
         var realm = new Realm({schema: [schemas.IntPrimary]});
         var objects = realm.objects('IntPrimaryObject');
 

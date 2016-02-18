@@ -191,6 +191,7 @@ JSValueRef ListStaticResults(JSContextRef ctx, JSObjectRef function, JSObjectRef
     try {
         List *list = RJSGetInternal<List *>(thisObject);
         RJSValidateArgumentCount(argumentCount, 0);
+
         return RJSResultsCreate(ctx, list->realm(), list->get_object_schema(), std::move(list->get_query()), false);
     }
     catch (std::exception &exp) {
@@ -204,10 +205,10 @@ JSValueRef ListStaticResults(JSContextRef ctx, JSObjectRef function, JSObjectRef
 JSValueRef ListFiltered(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) {
     try {
         List *list = RJSGetInternal<List *>(thisObject);
-        
         RJSValidateArgumentCountIsAtLeast(argumentCount, 1);
+
         SharedRealm sharedRealm = *RJSGetInternal<SharedRealm *>(thisObject);
-        return RJSResultsCreate(ctx, sharedRealm, list->get_object_schema(), std::move(list->get_query()), argumentCount, arguments);
+        return RJSResultsCreateFiltered(ctx, sharedRealm, list->get_object_schema(), std::move(list->get_query()), argumentCount, arguments);
     }
     catch (std::exception &exp) {
         if (jsException) {
@@ -217,7 +218,23 @@ JSValueRef ListFiltered(JSContextRef ctx, JSObjectRef function, JSObjectRef this
     return NULL;
 }
 
-JSObjectRef RJSListCreate(JSContextRef ctx, realm::List &list) {
+JSValueRef ListSorted(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) {
+    try {
+        List *list = RJSGetInternal<List *>(thisObject);
+        RJSValidateArgumentRange(argumentCount, 1, 2);
+
+        SharedRealm sharedRealm = *RJSGetInternal<SharedRealm *>(thisObject);
+        return RJSResultsCreateSorted(ctx, sharedRealm, list->get_object_schema(), std::move(list->get_query()), argumentCount, arguments);
+    }
+    catch (std::exception &exp) {
+        if (jsException) {
+            *jsException = RJSMakeError(ctx, exp);
+        }
+    }
+    return NULL;
+}
+
+JSObjectRef RJSListCreate(JSContextRef ctx, List &list) {
     return RJSWrapObject<List *>(ctx, RJSListClass(), new List(list));
 }
 
@@ -228,6 +245,7 @@ static const JSStaticFunction RJSListFuncs[] = {
     {"unshift", ListUnshift, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
     {"splice", ListSplice, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
     {"filtered", ListFiltered, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
+    {"sorted", ListSorted, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
     {"snapshot", ListStaticResults, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
     {NULL, NULL},
 };

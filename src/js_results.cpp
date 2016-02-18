@@ -96,54 +96,8 @@ JSValueRef ResultsSorted(JSContextRef ctx, JSObjectRef function, JSObjectRef thi
         Results *results = RJSGetInternal<Results *>(thisObject);
         RJSValidateArgumentRange(argumentCount, 1, 2);
 
-        size_t prop_count;
-        std::vector<std::string> prop_names;
-        std::vector<bool> ascending;
-
-        if (RJSIsValueArray(ctx, arguments[0])) {
-            RJSValidateArgumentCount(argumentCount, 1, "Second argument is not allowed if passed an array of sort descriptors");
-
-            JSObjectRef js_prop_names = RJSValidatedValueToObject(ctx, arguments[0]);
-            prop_count = RJSValidatedListLength(ctx, js_prop_names);
-            if (!prop_count) {
-                throw std::invalid_argument("Sort descriptor array must not be empty");
-            }
-
-            prop_names.resize(prop_count);
-            ascending.resize(prop_count);
-
-            for (unsigned int i = 0; i < prop_count; i++) {
-                JSValueRef val = RJSValidatedPropertyAtIndex(ctx, js_prop_names, i);
-
-                if (RJSIsValueArray(ctx, val)) {
-                    prop_names[i] = RJSValidatedStringForValue(ctx, RJSValidatedPropertyAtIndex(ctx, (JSObjectRef)val, 0));
-                    ascending[i] = !JSValueToBoolean(ctx, RJSValidatedPropertyAtIndex(ctx, (JSObjectRef)val, 1));
-                }
-                else {
-                    prop_names[i] = RJSValidatedStringForValue(ctx, val);
-                    ascending[i] = true;
-                }
-            }
-        }
-        else {
-            prop_count = 1;
-            prop_names.push_back(RJSValidatedStringForValue(ctx, arguments[0]));
-            ascending.push_back(argumentCount == 1 ? true : !JSValueToBoolean(ctx, arguments[1]));
-        }
-
-        std::vector<size_t> columns(prop_count);
-        size_t index = 0;
-
-        for (std::string prop_name : prop_names) {
-            const Property *prop = results->get_object_schema().property_for_name(prop_name);
-            if (!prop) {
-                throw std::runtime_error("Property '" + prop_name + "' does not exist on object type '" + results->get_object_schema().name + "'");
-            }
-            columns[index++] = prop->table_column;
-        }
-
-        results = new Results(results->sort({std::move(columns), std::move(ascending)}));
-        return RJSWrapObject<Results *>(ctx, RJSResultsClass(), results);
+        SharedRealm sharedRealm = *RJSGetInternal<SharedRealm *>(thisObject);
+        return RJSResultsCreateSorted(ctx, sharedRealm, results->get_object_schema(), std::move(results->get_query()), argumentCount, arguments);
     }
     catch (std::exception &exp) {
         if (jsException) {
@@ -153,14 +107,13 @@ JSValueRef ResultsSorted(JSContextRef ctx, JSObjectRef function, JSObjectRef thi
     return NULL;
 }
 
-
 JSValueRef ResultsFiltered(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) {
     try {
         Results *results = RJSGetInternal<Results *>(thisObject);
-
         RJSValidateArgumentCountIsAtLeast(argumentCount, 1);
+
         SharedRealm sharedRealm = *RJSGetInternal<SharedRealm *>(thisObject);
-        return RJSResultsCreate(ctx, sharedRealm, results->get_object_schema(), std::move(results->get_query()), argumentCount, arguments);
+        return RJSResultsCreateFiltered(ctx, sharedRealm, results->get_object_schema(), std::move(results->get_query()), argumentCount, arguments);
     }
     catch (std::exception &exp) {
         if (jsException) {
@@ -194,7 +147,14 @@ JSObjectRef RJSResultsCreate(JSContextRef ctx, SharedRealm realm, std::string cl
     return RJSWrapObject<Results *>(ctx, RJSResultsClass(), new Results(realm, *object_schema, std::move(query)));
 }
 
-JSObjectRef RJSResultsCreate(JSContextRef ctx, realm::SharedRealm realm, const realm::ObjectSchema &objectSchema, realm::Query query, size_t argumentCount, const JSValueRef arguments[]) {
+JSObjectRef RJSResultsCreate(JSContextRef ctx, SharedRealm realm, const ObjectSchema &objectSchema, Query query, bool live) {
+    Results *results = new Results(realm, objectSchema, std::move(query));
+    results->set_live(live);
+
+    return RJSWrapObject<Results *>(ctx, RJSResultsClass(), results);
+}
+
+JSObjectRef RJSResultsCreateFiltered(JSContextRef ctx, SharedRealm realm, const ObjectSchema &objectSchema, Query query, size_t argumentCount, const JSValueRef arguments[]) {
     std::string queryString = RJSValidatedStringForValue(ctx, arguments[0], "predicate");
     std::vector<JSValueRef> args(argumentCount - 1);
     for (size_t i = 1; i < argumentCount; i++) {
@@ -208,10 +168,56 @@ JSObjectRef RJSResultsCreate(JSContextRef ctx, realm::SharedRealm realm, const r
     return RJSResultsCreate(ctx, realm, objectSchema, std::move(query));
 }
 
-JSObjectRef RJSResultsCreate(JSContextRef ctx, SharedRealm realm, const ObjectSchema &objectSchema, Query query, bool live) {
-    Results *results = new Results(realm, objectSchema, std::move(query));
-    results->set_live(live);
+JSObjectRef RJSResultsCreateSorted(JSContextRef ctx, SharedRealm realm, const ObjectSchema &objectSchema, Query query, size_t argumentCount, const JSValueRef arguments[]) {
+    size_t prop_count;
+    std::vector<std::string> prop_names;
+    std::vector<bool> ascending;
 
+    if (RJSIsValueArray(ctx, arguments[0])) {
+        RJSValidateArgumentCount(argumentCount, 1, "Second argument is not allowed if passed an array of sort descriptors");
+
+        JSObjectRef js_prop_names = RJSValidatedValueToObject(ctx, arguments[0]);
+        prop_count = RJSValidatedListLength(ctx, js_prop_names);
+        if (!prop_count) {
+            throw std::invalid_argument("Sort descriptor array must not be empty");
+        }
+
+        prop_names.resize(prop_count);
+        ascending.resize(prop_count);
+
+        for (unsigned int i = 0; i < prop_count; i++) {
+            JSValueRef val = RJSValidatedPropertyAtIndex(ctx, js_prop_names, i);
+
+            if (RJSIsValueArray(ctx, val)) {
+                prop_names[i] = RJSValidatedStringForValue(ctx, RJSValidatedPropertyAtIndex(ctx, (JSObjectRef)val, 0));
+                ascending[i] = !JSValueToBoolean(ctx, RJSValidatedPropertyAtIndex(ctx, (JSObjectRef)val, 1));
+            }
+            else {
+                prop_names[i] = RJSValidatedStringForValue(ctx, val);
+                ascending[i] = true;
+            }
+        }
+    }
+    else {
+        RJSValidateArgumentRange(argumentCount, 1, 2);
+
+        prop_count = 1;
+        prop_names.push_back(RJSValidatedStringForValue(ctx, arguments[0]));
+        ascending.push_back(argumentCount == 1 ? true : !JSValueToBoolean(ctx, arguments[1]));
+    }
+
+    std::vector<size_t> columns(prop_count);
+    size_t index = 0;
+
+    for (std::string prop_name : prop_names) {
+        const Property *prop = objectSchema.property_for_name(prop_name);
+        if (!prop) {
+            throw std::runtime_error("Property '" + prop_name + "' does not exist on object type '" + objectSchema.name + "'");
+        }
+        columns[index++] = prop->table_column;
+    }
+
+    Results *results = new Results(realm, objectSchema, std::move(query), {std::move(columns), std::move(ascending)});
     return RJSWrapObject<Results *>(ctx, RJSResultsClass(), results);
 }
 
