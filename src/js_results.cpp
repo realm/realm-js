@@ -105,6 +105,10 @@ JSValueRef ResultsSorted(JSContextRef ctx, JSObjectRef function, JSObjectRef thi
 
             JSObjectRef js_prop_names = RJSValidatedValueToObject(ctx, arguments[0]);
             prop_count = RJSValidatedListLength(ctx, js_prop_names);
+            if (!prop_count) {
+                throw std::invalid_argument("Sort descriptor array must not be empty");
+            }
+
             prop_names.resize(prop_count);
             ascending.resize(prop_count);
 

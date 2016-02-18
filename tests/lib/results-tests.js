@@ -181,10 +181,16 @@ module.exports = BaseTest.extend({
         TestCase.assertArraysEqual(primaries(objects), [4, 0, 1, 3, 2]);
 
         TestCase.assertThrows(function() {
+            objects.sorted();
+        });
+        TestCase.assertThrows(function() {
             objects.sorted(1);
         });
         TestCase.assertThrows(function() {
             objects.sorted([1]);
+        });
+        TestCase.assertThrows(function() {
+            objects.sorted([]);
         });
         TestCase.assertThrows(function() {
             objects.sorted('fish');
