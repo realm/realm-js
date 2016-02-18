@@ -6,7 +6,10 @@
 #include "js_object.hpp"
 #include "js_results.hpp"
 #include "js_util.hpp"
+
 #include "object_accessor.hpp"
+#include "parser.hpp"
+#include "query_builder.hpp"
 
 #include <assert.h>
 
@@ -188,9 +191,23 @@ JSValueRef ListStaticResults(JSContextRef ctx, JSObjectRef function, JSObjectRef
     try {
         List *list = RJSGetInternal<List *>(thisObject);
         RJSValidateArgumentCount(argumentCount, 0);
+        return RJSResultsCreate(ctx, list->realm(), list->get_object_schema(), std::move(list->get_query()), false);
+    }
+    catch (std::exception &exp) {
+        if (jsException) {
+            *jsException = RJSMakeError(ctx, exp);
+        }
+    }
+    return NULL;
+}
 
-        Query query = list->get_query();
-        return RJSResultsCreate(ctx, list->realm(), list->get_object_schema(), query, false);
+JSValueRef ListFiltered(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) {
+    try {
+        List *list = RJSGetInternal<List *>(thisObject);
+        
+        RJSValidateArgumentCountIsAtLeast(argumentCount, 1);
+        SharedRealm sharedRealm = *RJSGetInternal<SharedRealm *>(thisObject);
+        return RJSResultsCreate(ctx, sharedRealm, list->get_object_schema(), std::move(list->get_query()), argumentCount, arguments);
     }
     catch (std::exception &exp) {
         if (jsException) {
@@ -210,6 +227,7 @@ static const JSStaticFunction RJSListFuncs[] = {
     {"shift", ListShift, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
     {"unshift", ListUnshift, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
     {"splice", ListSplice, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
+    {"filtered", ListFiltered, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
     {"snapshot", ListStaticResults, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
     {NULL, NULL},
 };

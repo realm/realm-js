@@ -285,5 +285,5 @@ afterEvaluate { project ->
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile 'org.nanohttpd:nanohttpd:2.2.0'
-    compile 'com.facebook.react:react-native:0.19.+'
+    compile 'com.facebook.react:react-native:0.20.+'
 }

@@ -52,9 +52,10 @@ export default class TodoApp extends Component {
     }
 
     render() {
+        let objects = realm.objects('Todo');
         let extraItems = [
-            {name: 'Complete', items: realm.objects('Todo', 'done = true')},
-            {name: 'Incomplete', items: realm.objects('Todo', 'done = false')},
+            {name: 'Complete', items: objects.filtered('done = true')},
+            {name: 'Incomplete', items: objects.filtered('done = false')},
         ];
 
         let route = {

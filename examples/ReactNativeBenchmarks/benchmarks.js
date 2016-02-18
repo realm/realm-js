@@ -135,12 +135,12 @@ class RealmTests extends Tests {
     }
 
     async querycount() {
-        let objects = this.realm.objects('TestObject', 'int = 0 and double < ' + numBatchTestObjects / 2);
+        let objects = this.realm.objects('TestObject').filtered('int = 0 and double < ' + numBatchTestObjects / 2);
         return objects.length;
     }
 
     async queryenum() {
-        let objects = this.realm.objects('TestObject', 'int = 0 and double < ' + numBatchTestObjects / 2);
+        let objects = this.realm.objects('TestObject').filtered('int = 0 and double < ' + numBatchTestObjects / 2);
         let len = objects.length;
         for (let i = 0; i < len; i++) {
             var obj = objects[i];
