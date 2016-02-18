@@ -443,4 +443,31 @@ module.exports = BaseTest.extend({
             TestCase.assertEqual(arrayCopy[0], null);
         });
     },
+
+    testListFiltered: function() {
+        var personListSchema = {
+            name: 'PersonList',
+            properties: {
+                list: {type: 'list', objectType: 'PersonObject'}
+            }
+        };
+        var realm = new Realm({schema: [schemas.PersonObject, personListSchema]});
+        var listObject;
+        realm.write(function() {
+            listObject = realm.create('PersonList', {list: [
+                {name: 'Ari', age: 10},
+                {name: 'Tim', age: 11},
+                {name: 'Bjarne', age: 12},
+                {name: 'Alex', age: 12, married: true}
+            ]});
+            realm.create('PersonObject', {name: 'NotInList', age: 10});
+        });
+
+        var list = listObject.list;
+        TestCase.assertEqual(list.filtered("truepredicate").length, 4);
+        TestCase.assertEqual(list.filtered('age = 11')[0].name, 'Tim');
+        TestCase.assertEqual(list.filtered('age = 12').length, 2);
+        TestCase.assertEqual(list.filtered('age > 10 && age < 13').length, 3);
+        TestCase.assertEqual(list.filtered('age > 10').filtered('age < 13').length, 3);
+    },
 });

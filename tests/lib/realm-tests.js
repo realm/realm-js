@@ -290,7 +290,7 @@ module.exports = BaseTest.extend({
             TestCase.assertEqual(objects[0].doubleCol, 7, "wrong property value");
             TestCase.assertEqual(objects[1].doubleCol, 8, "wrong property value");
 
-            var threeObjects = realm.objects('TestObject', "doubleCol < 5");
+            var threeObjects = realm.objects('TestObject').filtered("doubleCol < 5");
             TestCase.assertEqual(threeObjects.length, 3, "wrong results count");
             realm.delete(threeObjects);
             TestCase.assertEqual(objects.length, 4, 'wrong object count');
@@ -341,40 +341,8 @@ module.exports = BaseTest.extend({
             realm.objects('InvalidClass');
         });
         TestCase.assertThrows(function() { 
-            realm.objects('PersonObject', 'invalid query');
+            realm.objects('PersonObject', 'truepredicate');
         });
-        TestCase.assertThrows(function() { 
-            realm.objects('PersonObject', []);
-        });
-
-        TestCase.assertEqual(realm.objects('PersonObject', "truepredicate").length, 4);
-        TestCase.assertEqual(realm.objects('PersonObject').length, 4);
-        TestCase.assertEqual(realm.objects('PersonObject', 'age = 11').length, 1);
-        TestCase.assertEqual(realm.objects('PersonObject', 'age = 11')[0].name, 'Tim');
-        TestCase.assertEqual(realm.objects('PersonObject', 'age = 12').length, 2);
-        TestCase.assertEqual(realm.objects('PersonObject', 'age = 13').length, 0);
-        TestCase.assertEqual(realm.objects('PersonObject', 'age < 12').length, 2);
-        TestCase.assertEqual(realm.objects('PersonObject', 'age > 10 && age < 13').length, 3);
-        TestCase.assertEqual(realm.objects('PersonObject', 'age >= 11 && age < 13').length, 3);
-        TestCase.assertEqual(realm.objects('PersonObject', 'name = "Tim"').length, 1);
-        TestCase.assertEqual(realm.objects('PersonObject', 'name = \'Tim\'').length, 1);
-        TestCase.assertEqual(realm.objects('PersonObject', 'married == TRUE').length, 1);
-        TestCase.assertEqual(realm.objects('PersonObject', 'married == false').length, 3);
-
-        TestCase.assertEqual(realm.objects('PersonObject', 'name = $0', 'Tim').length, 1);
-        TestCase.assertEqual(realm.objects('PersonObject', 'age > $1 && age < $0', 13, 10).length, 3);
-        TestCase.assertThrows(function() {
-            realm.objects('PersonObject', 'age > $2 && age < $0', 13, 10)
-        });
-
-        realm.write(function() {
-            realm.create('DefaultValuesObject', {'dateCol': new Date(3)});
-            realm.create('DefaultValuesObject', {'dateCol': new Date(4)});
-            realm.create('DefaultValuesObject', {'dateCol': new Date(5)});
-        });
-
-        TestCase.assertEqual(realm.objects('DefaultValuesObject', 'dateCol > $0', new Date(4)).length, 1);
-        TestCase.assertEqual(realm.objects('DefaultValuesObject', 'dateCol <= $0', new Date(4)).length, 2);
     },
 
     testNotifications: function() {

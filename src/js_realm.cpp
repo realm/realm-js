@@ -226,21 +226,10 @@ JSValueRef RealmGetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef pr
 
 JSValueRef RealmObjects(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) {
     try {
-        RJSValidateArgumentCountIsAtLeast(argumentCount, 1);
+        RJSValidateArgumentCount(1, argumentCount);
         std::string className = RJSValidatedStringForValue(ctx, arguments[0], "objectType");
         SharedRealm sharedRealm = *RJSGetInternal<SharedRealm *>(thisObject);
-
-        if (argumentCount == 1) {
-            return RJSResultsCreate(ctx, sharedRealm, className);
-        }
-        else {
-            std::string query = RJSValidatedStringForValue(ctx, arguments[1], "predicate");
-            std::vector<JSValueRef> args;
-            for (size_t i = 2; i < argumentCount; i++) {
-                args.push_back(arguments[i]);
-            }
-            return RJSResultsCreate(ctx, sharedRealm, className, query, args);
-        }
+        return RJSResultsCreate(ctx, sharedRealm, className);
     }
     catch (std::exception &exp) {
         if (jsException) {
