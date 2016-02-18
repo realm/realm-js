@@ -24,8 +24,7 @@ function(download_realm_core core_version)
     add_custom_command(
         COMMENT "Extracting ${core_tarball_name}"
         OUTPUT ${core_libraries}
-        DEPENDS ${core_temp_tarball}
-        COMMAND ${CMAKE_COMMAND} -E copy ${core_temp_tarball} ${core_directory_parent}
+        DEPENDS ${core_tarball}
         COMMAND ${CMAKE_COMMAND} -E tar xf ${core_tarball}
         COMMAND ${CMAKE_COMMAND} -E remove_directory ${core_directory}
         COMMAND ${CMAKE_COMMAND} -E rename core ${core_directory}
