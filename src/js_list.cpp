@@ -8,6 +8,9 @@
 #include "js_util.hpp"
 #include "object_accessor.hpp"
 
+#include "parser.hpp"
+#include "query_builder.hpp"
+
 #include <assert.h>
 
 using RJSAccessor = realm::NativeAccessor<JSValueRef, JSContextRef>;
@@ -200,6 +203,34 @@ JSValueRef ListStaticResults(JSContextRef ctx, JSObjectRef function, JSObjectRef
     return NULL;
 }
 
+JSValueRef ListFiltered(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) {
+    try {
+        List *list = RJSGetInternal<List *>(thisObject);
+        
+        RJSValidateArgumentCountIsAtLeast(argumentCount, 1);
+        SharedRealm sharedRealm = *RJSGetInternal<SharedRealm *>(thisObject);
+        
+        std::string queryString = RJSValidatedStringForValue(ctx, arguments[0], "predicate");
+        std::vector<JSValueRef> args;
+        for (size_t i = 1; i < argumentCount; i++) {
+            args.push_back(arguments[i]);
+        }
+        
+        parser::Predicate predicate = parser::parse(queryString);
+        query_builder::ArgumentConverter<JSValueRef, JSContextRef> arguments(ctx, args);
+        Query query = list->get_query();
+        query_builder::apply_predicate(query, predicate, arguments, *sharedRealm->config().schema, list->get_object_schema().name);
+        
+        return RJSResultsCreate(ctx, sharedRealm, list->get_object_schema(), query);
+    }
+    catch (std::exception &exp) {
+        if (jsException) {
+            *jsException = RJSMakeError(ctx, exp);
+        }
+    }
+    return NULL;
+}
+
 JSObjectRef RJSListCreate(JSContextRef ctx, realm::List &list) {
     return RJSWrapObject<List *>(ctx, RJSListClass(), new List(list));
 }
@@ -210,6 +241,7 @@ static const JSStaticFunction RJSListFuncs[] = {
     {"shift", ListShift, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
     {"unshift", ListUnshift, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
     {"splice", ListSplice, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
+    {"filtered", ListFiltered, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
     {"snapshot", ListStaticResults, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
     {NULL, NULL},
 };
