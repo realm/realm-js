@@ -124,9 +124,7 @@ JSValueRef ResultsFiltered(JSContextRef ctx, JSObjectRef function, JSObjectRef t
 
         RJSValidateArgumentCountIsAtLeast(argumentCount, 1);
         SharedRealm sharedRealm = *RJSGetInternal<SharedRealm *>(thisObject);
-        
-        Query query = results->get_query();
-        return RJSResultsCreate(ctx, sharedRealm, results->get_object_schema(), query, argumentCount, arguments);
+        return RJSResultsCreate(ctx, sharedRealm, results->get_object_schema(), std::move(results->get_query()), argumentCount, arguments);
     }
     catch (std::exception &exp) {
         if (jsException) {
@@ -160,23 +158,22 @@ JSObjectRef RJSResultsCreate(JSContextRef ctx, SharedRealm realm, std::string cl
     return RJSWrapObject<Results *>(ctx, RJSResultsClass(), new Results(realm, *object_schema, std::move(query)));
 }
 
-JSObjectRef RJSResultsCreate(JSContextRef ctx, realm::SharedRealm realm, const realm::ObjectSchema &objectSchema, realm::Query &query, size_t argumentCount, const JSValueRef arguments[]) {
+JSObjectRef RJSResultsCreate(JSContextRef ctx, realm::SharedRealm realm, const realm::ObjectSchema &objectSchema, realm::Query query, size_t argumentCount, const JSValueRef arguments[]) {
     std::string queryString = RJSValidatedStringForValue(ctx, arguments[0], "predicate");
-    std::vector<JSValueRef> args(argumentCount-1);
+    std::vector<JSValueRef> args( argumentCount - 1 );
     for (size_t i = 1; i < argumentCount; i++) {
         args[i-1] = arguments[i];
     }
     
     parser::Predicate predicate = parser::parse(queryString);
     query_builder::ArgumentConverter<JSValueRef, JSContextRef> queryArgs(ctx, args);
-    query_builder::apply_predicate(query, predicate, queryArgs, *realm->config().schema,
-                                   objectSchema.name);
+    query_builder::apply_predicate(query, predicate, queryArgs, *realm->config().schema, objectSchema.name);
     
-    return RJSResultsCreate(ctx, realm, objectSchema, query);
+    return RJSResultsCreate(ctx, realm, objectSchema, std::move(query));
 }
 
-JSObjectRef RJSResultsCreate(JSContextRef ctx, SharedRealm realm, const ObjectSchema &objectSchema, const Query &query, bool live) {
-    Results *results = new Results(realm, objectSchema, query);
+JSObjectRef RJSResultsCreate(JSContextRef ctx, SharedRealm realm, const ObjectSchema &objectSchema, Query query, bool live) {
+    Results *results = new Results(realm, objectSchema, std::move(query));
     results->set_live(live);
 
     return RJSWrapObject<Results *>(ctx, RJSResultsClass(), results);

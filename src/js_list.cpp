@@ -191,9 +191,7 @@ JSValueRef ListStaticResults(JSContextRef ctx, JSObjectRef function, JSObjectRef
     try {
         List *list = RJSGetInternal<List *>(thisObject);
         RJSValidateArgumentCount(argumentCount, 0);
-
-        Query query = list->get_query();
-        return RJSResultsCreate(ctx, list->realm(), list->get_object_schema(), query, false);
+        return RJSResultsCreate(ctx, list->realm(), list->get_object_schema(), std::move(list->get_query()), false);
     }
     catch (std::exception &exp) {
         if (jsException) {
@@ -209,9 +207,7 @@ JSValueRef ListFiltered(JSContextRef ctx, JSObjectRef function, JSObjectRef this
         
         RJSValidateArgumentCountIsAtLeast(argumentCount, 1);
         SharedRealm sharedRealm = *RJSGetInternal<SharedRealm *>(thisObject);
-        
-        Query query = list->get_query();
-        return RJSResultsCreate(ctx, sharedRealm, list->get_object_schema(), query, argumentCount, arguments);
+        return RJSResultsCreate(ctx, sharedRealm, list->get_object_schema(), std::move(list->get_query()), argumentCount, arguments);
     }
     catch (std::exception &exp) {
         if (jsException) {
