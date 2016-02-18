@@ -135,30 +135,71 @@ module.exports = BaseTest.extend({
             realm.objects('PersonObject').filtered("invalidQuery");
         });
     },
-    testSort: function() {
-        var realm = new Realm({schema: [schemas.TestObject]});
-        var objects = realm.objects('TestObject');
+    testResultsSorted: function() {
+        var realm = new Realm({schema: [schemas.IntPrimary]});
+        var objects = realm.objects('IntPrimaryObject');
 
         realm.write(function() {
-            realm.create('TestObject', {doubleCol: 2});
-            realm.create('TestObject', {doubleCol: 3});
-            realm.create('TestObject', {doubleCol: 1});
-            realm.create('TestObject', {doubleCol: 4});
-            realm.create('TestObject', {doubleCol: 0});
+            realm.create('IntPrimaryObject', {primaryCol: 2, valueCol: 'a'});
+            realm.create('IntPrimaryObject', {primaryCol: 3, valueCol: 'a'});
+            realm.create('IntPrimaryObject', {primaryCol: 1, valueCol: 'b'});
+            realm.create('IntPrimaryObject', {primaryCol: 4, valueCol: 'c'});
+            realm.create('IntPrimaryObject', {primaryCol: 0, valueCol: 'c'});
         });
 
-        objects.sortByProperty('doubleCol');
-        TestCase.assertEqual(objects[0].doubleCol, 0);
-        TestCase.assertEqual(objects[1].doubleCol, 1);
-        TestCase.assertEqual(objects[2].doubleCol, 2);
-        TestCase.assertEqual(objects[3].doubleCol, 3);
-        TestCase.assertEqual(objects[4].doubleCol, 4);
+        var primaries = function(results, prop) {
+            return Array.prototype.map.call(results, function(object) {
+                return object.primaryCol;
+            });
+        };
 
-        objects.sortByProperty('doubleCol', false);
-        TestCase.assertEqual(objects[0].doubleCol, 4);
-        TestCase.assertEqual(objects[1].doubleCol, 3);
-        TestCase.assertEqual(objects[2].doubleCol, 2);
-        TestCase.assertEqual(objects[3].doubleCol, 1);
-        TestCase.assertEqual(objects[4].doubleCol, 0);
+        objects = objects.sorted('primaryCol');
+        TestCase.assertArraysEqual(primaries(objects), [0, 1, 2, 3, 4]);
+
+        objects = objects.sorted('primaryCol', true);
+        TestCase.assertArraysEqual(primaries(objects), [4, 3, 2, 1, 0]);
+
+        objects = objects.sorted(['primaryCol', 'valueCol']);
+        TestCase.assertArraysEqual(primaries(objects), [0, 1, 2, 3, 4]);
+
+        objects = objects.sorted([['primaryCol', true], ['valueCol', true]]);
+        TestCase.assertArraysEqual(primaries(objects), [4, 3, 2, 1, 0]);
+
+        objects = objects.sorted([['primaryCol', false], 'valueCol']);
+        TestCase.assertArraysEqual(primaries(objects), [0, 1, 2, 3, 4]);
+
+        objects = objects.sorted(['valueCol', 'primaryCol']);
+        TestCase.assertArraysEqual(primaries(objects), [2, 3, 1, 0, 4]);
+
+        objects = objects.sorted([['valueCol', false], ['primaryCol', true]]);
+        TestCase.assertArraysEqual(primaries(objects), [3, 2, 1, 4, 0]);
+
+        objects = objects.sorted([['valueCol', true], ['primaryCol', false]]);
+        TestCase.assertArraysEqual(primaries(objects), [0, 4, 1, 2, 3]);
+
+        objects = objects.sorted([['valueCol', true], ['primaryCol', true]]);
+        TestCase.assertArraysEqual(primaries(objects), [4, 0, 1, 3, 2]);
+
+        TestCase.assertThrows(function() {
+            objects.sorted();
+        });
+        TestCase.assertThrows(function() {
+            objects.sorted(1);
+        });
+        TestCase.assertThrows(function() {
+            objects.sorted([1]);
+        });
+        TestCase.assertThrows(function() {
+            objects.sorted([]);
+        });
+        TestCase.assertThrows(function() {
+            objects.sorted('fish');
+        });
+        TestCase.assertThrows(function() {
+            objects.sorted(['valueCol', 'fish']);
+        });
+        TestCase.assertThrows(function() {
+            objects.sorted(['valueCol', 'primaryCol'], true);
+        });
     },
 });

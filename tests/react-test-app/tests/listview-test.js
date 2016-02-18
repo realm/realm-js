@@ -41,9 +41,7 @@ module.exports = {
 
     testDataSource() {
         let realm = createRealm();
-        let objects = realm.objects('UniqueObject');
-        objects.sortByProperty('id');
-
+        let objects = realm.objects('UniqueObject').sorted('id');
         let dataSource = createDataSource().cloneWithRows(objects);
         let count = objects.length;
 

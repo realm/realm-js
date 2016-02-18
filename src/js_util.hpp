@@ -58,21 +58,21 @@ std::string RJSValidatedStringForValue(JSContextRef ctx, JSValueRef value, const
 JSStringRef RJSStringForString(const std::string &str);
 JSValueRef RJSValueForString(JSContextRef ctx, const std::string &str);
 
-inline void RJSValidateArgumentCount(size_t argumentCount, size_t expected) {
+inline void RJSValidateArgumentCount(size_t argumentCount, size_t expected, const char *message = NULL) {
     if (argumentCount != expected) {
-        throw std::invalid_argument("Invalid arguments");
+        throw std::invalid_argument(message ?: "Invalid arguments");
     }
 }
 
-inline void RJSValidateArgumentCountIsAtLeast(size_t argumentCount, size_t expected) {
+inline void RJSValidateArgumentCountIsAtLeast(size_t argumentCount, size_t expected, const char *message = NULL) {
     if (argumentCount < expected) {
-        throw std::invalid_argument("Invalid arguments");
+        throw std::invalid_argument(message ?: "Invalid arguments");
     }
 }
 
-inline void RJSValidateArgumentRange(size_t argumentCount, size_t min, size_t max) {
+inline void RJSValidateArgumentRange(size_t argumentCount, size_t min, size_t max, const char *message = NULL) {
     if (argumentCount < min || argumentCount > max) {
-        throw std::invalid_argument("Invalid arguments");
+        throw std::invalid_argument(message ?: "Invalid arguments");
     }
 }
 
@@ -143,6 +143,15 @@ static inline JSValueRef RJSValidatedPropertyValue(JSContextRef ctx, JSObjectRef
     return propertyValue;
 }
 
+static inline JSValueRef RJSValidatedPropertyAtIndex(JSContextRef ctx, JSObjectRef object, unsigned int index) {
+    JSValueRef exception = NULL;
+    JSValueRef propertyValue = JSObjectGetPropertyAtIndex(ctx, object, index, &exception);
+    if (exception) {
+        throw RJSException(ctx, exception);
+    }
+    return propertyValue;
+}
+
 static inline JSObjectRef RJSValidatedObjectProperty(JSContextRef ctx, JSObjectRef object, JSStringRef property, const char *err = NULL) {
     JSValueRef propertyValue = RJSValidatedPropertyValue(ctx, object, property);
     if (JSValueIsUndefined(ctx, propertyValue)) {
@@ -152,12 +161,7 @@ static inline JSObjectRef RJSValidatedObjectProperty(JSContextRef ctx, JSObjectR
 }
 
 static inline JSObjectRef RJSValidatedObjectAtIndex(JSContextRef ctx, JSObjectRef object, unsigned int index) {
-    JSValueRef exception = NULL;
-    JSValueRef objectValue = JSObjectGetPropertyAtIndex(ctx, object, index, &exception);
-    if (exception) {
-        throw RJSException(ctx, exception);
-    }
-    return RJSValidatedValueToObject(ctx, objectValue);
+    return RJSValidatedValueToObject(ctx, RJSValidatedPropertyAtIndex(ctx, object, index));
 }
 
 static inline std::string RJSValidatedStringProperty(JSContextRef ctx, JSObjectRef object, JSStringRef property) {

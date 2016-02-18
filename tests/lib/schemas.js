@@ -27,6 +27,13 @@ PersonObject.prototype.description = function() {
 };
 exports.PersonObject = PersonObject;
 
+exports.PersonList = {
+    name: 'PersonList',
+    properties: {
+        list: {type: 'list', objectType: 'PersonObject'},
+    }
+};
+
 exports.BasicTypes = {
     name: 'BasicTypesObject',
     properties: {

@@ -445,29 +445,54 @@ module.exports = BaseTest.extend({
     },
 
     testListFiltered: function() {
-        var personListSchema = {
-            name: 'PersonList',
-            properties: {
-                list: {type: 'list', objectType: 'PersonObject'}
-            }
-        };
-        var realm = new Realm({schema: [schemas.PersonObject, personListSchema]});
-        var listObject;
+        var realm = new Realm({schema: [schemas.PersonObject, schemas.PersonList]});
+        var list;
+
         realm.write(function() {
-            listObject = realm.create('PersonList', {list: [
+            var object = realm.create('PersonList', {list: [
                 {name: 'Ari', age: 10},
                 {name: 'Tim', age: 11},
                 {name: 'Bjarne', age: 12},
                 {name: 'Alex', age: 12, married: true}
             ]});
             realm.create('PersonObject', {name: 'NotInList', age: 10});
+
+            list = object.list;
         });
 
-        var list = listObject.list;
         TestCase.assertEqual(list.filtered("truepredicate").length, 4);
         TestCase.assertEqual(list.filtered('age = 11')[0].name, 'Tim');
         TestCase.assertEqual(list.filtered('age = 12').length, 2);
         TestCase.assertEqual(list.filtered('age > 10 && age < 13').length, 3);
         TestCase.assertEqual(list.filtered('age > 10').filtered('age < 13').length, 3);
+    },
+
+    testListSorted: function() {
+        var realm = new Realm({schema: [schemas.PersonObject, schemas.PersonList]});
+        var list;
+
+        realm.write(function() {
+            var object = realm.create('PersonList', {list: [
+                {name: 'Ari', age: 10},
+                {name: 'Tim', age: 11},
+                {name: 'Bjarne', age: 12},
+                {name: 'Alex', age: 12, married: true}
+            ]});
+            realm.create('PersonObject', {name: 'NotInList', age: 10});
+
+            list = object.list;
+        });
+
+        var names = function(results, prop) {
+            return Array.prototype.map.call(results, function(object) {
+                return object.name;
+            });
+        };
+
+        var objects = list.sorted('name', true);
+        TestCase.assertArraysEqual(names(objects), ['Tim', 'Bjarne', 'Ari', 'Alex']);
+
+        objects = list.sorted(['age', 'name']);
+        TestCase.assertArraysEqual(names(objects), ['Ari', 'Tim', 'Alex', 'Bjarne']);
     },
 });
