@@ -125,19 +125,8 @@ JSValueRef ResultsFiltered(JSContextRef ctx, JSObjectRef function, JSObjectRef t
         RJSValidateArgumentCountIsAtLeast(argumentCount, 1);
         SharedRealm sharedRealm = *RJSGetInternal<SharedRealm *>(thisObject);
         
-        std::string queryString = RJSValidatedStringForValue(ctx, arguments[0], "predicate");
-        std::vector<JSValueRef> args;
-        for (size_t i = 1; i < argumentCount; i++) {
-            args.push_back(arguments[i]);
-        }
-        
-        parser::Predicate predicate = parser::parse(queryString);
-        query_builder::ArgumentConverter<JSValueRef, JSContextRef> arguments(ctx, args);
         Query query = results->get_query();
-        query_builder::apply_predicate(query, predicate, arguments, *sharedRealm->config().schema,
-                                       results->get_object_schema().name);
-
-        return RJSResultsCreate(ctx, sharedRealm, results->get_object_schema(), query);
+        return RJSResultsCreate(ctx, sharedRealm, results->get_object_schema(), query, argumentCount, arguments);
     }
     catch (std::exception &exp) {
         if (jsException) {
@@ -169,6 +158,21 @@ JSObjectRef RJSResultsCreate(JSContextRef ctx, SharedRealm realm, std::string cl
     query_builder::apply_predicate(query, predicate, arguments, schema, object_schema->name);
 
     return RJSWrapObject<Results *>(ctx, RJSResultsClass(), new Results(realm, *object_schema, std::move(query)));
+}
+
+JSObjectRef RJSResultsCreate(JSContextRef ctx, realm::SharedRealm realm, const realm::ObjectSchema &objectSchema, realm::Query &query, size_t argumentCount, const JSValueRef arguments[]) {
+    std::string queryString = RJSValidatedStringForValue(ctx, arguments[0], "predicate");
+    std::vector<JSValueRef> args(argumentCount-1);
+    for (size_t i = 1; i < argumentCount; i++) {
+        args[i-1] = arguments[i];
+    }
+    
+    parser::Predicate predicate = parser::parse(queryString);
+    query_builder::ArgumentConverter<JSValueRef, JSContextRef> queryArgs(ctx, args);
+    query_builder::apply_predicate(query, predicate, queryArgs, *realm->config().schema,
+                                   objectSchema.name);
+    
+    return RJSResultsCreate(ctx, realm, objectSchema, query);
 }
 
 JSObjectRef RJSResultsCreate(JSContextRef ctx, SharedRealm realm, const ObjectSchema &objectSchema, const Query &query, bool live) {

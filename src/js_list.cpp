@@ -6,8 +6,8 @@
 #include "js_object.hpp"
 #include "js_results.hpp"
 #include "js_util.hpp"
-#include "object_accessor.hpp"
 
+#include "object_accessor.hpp"
 #include "parser.hpp"
 #include "query_builder.hpp"
 
@@ -210,18 +210,8 @@ JSValueRef ListFiltered(JSContextRef ctx, JSObjectRef function, JSObjectRef this
         RJSValidateArgumentCountIsAtLeast(argumentCount, 1);
         SharedRealm sharedRealm = *RJSGetInternal<SharedRealm *>(thisObject);
         
-        std::string queryString = RJSValidatedStringForValue(ctx, arguments[0], "predicate");
-        std::vector<JSValueRef> args;
-        for (size_t i = 1; i < argumentCount; i++) {
-            args.push_back(arguments[i]);
-        }
-        
-        parser::Predicate predicate = parser::parse(queryString);
-        query_builder::ArgumentConverter<JSValueRef, JSContextRef> arguments(ctx, args);
         Query query = list->get_query();
-        query_builder::apply_predicate(query, predicate, arguments, *sharedRealm->config().schema, list->get_object_schema().name);
-        
-        return RJSResultsCreate(ctx, sharedRealm, list->get_object_schema(), query);
+        return RJSResultsCreate(ctx, sharedRealm, list->get_object_schema(), query, argumentCount, arguments);
     }
     catch (std::exception &exp) {
         if (jsException) {
