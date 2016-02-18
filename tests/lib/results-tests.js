@@ -91,6 +91,44 @@ module.exports = BaseTest.extend({
         TestCase.assertEqual(count, 1);
         TestCase.assertEqual(keys.length, 1);
     },
+    testResultsFiltered: function() {
+        var realm = new Realm({schema: [schemas.PersonObject, schemas.DefaultValues, schemas.TestObject]});
+        realm.write(function() {
+            realm.create('PersonObject', {name: 'Ari', age: 10});
+            realm.create('PersonObject', {name: 'Tim', age: 11});
+            realm.create('PersonObject', {name: 'Bjarne', age: 12});
+            realm.create('PersonObject', {name: 'Alex', age: 12, married: true});
+        });
+
+        TestCase.assertEqual(realm.objects('PersonObject').filtered("truepredicate").length, 4);
+        TestCase.assertEqual(realm.objects('PersonObject').length, 4);
+        TestCase.assertEqual(realm.objects('PersonObject').filtered('age = 11').length, 1);
+        TestCase.assertEqual(realm.objects('PersonObject').filtered('age = 11')[0].name, 'Tim');
+        TestCase.assertEqual(realm.objects('PersonObject').filtered('age = 12').length, 2);
+        TestCase.assertEqual(realm.objects('PersonObject').filtered('age = 13').length, 0);
+        TestCase.assertEqual(realm.objects('PersonObject').filtered('age < 12').length, 2);
+        TestCase.assertEqual(realm.objects('PersonObject').filtered('age > 10 && age < 13').length, 3);
+        TestCase.assertEqual(realm.objects('PersonObject').filtered('age >= 11 && age < 13').length, 3);
+        TestCase.assertEqual(realm.objects('PersonObject').filtered('name = "Tim"').length, 1);
+        TestCase.assertEqual(realm.objects('PersonObject').filtered('name = \'Tim\'').length, 1);
+        TestCase.assertEqual(realm.objects('PersonObject').filtered('married == TRUE').length, 1);
+        TestCase.assertEqual(realm.objects('PersonObject').filtered('married == false').length, 3);
+
+        TestCase.assertEqual(realm.objects('PersonObject').filtered('name = $0', 'Tim').length, 1);
+        TestCase.assertEqual(realm.objects('PersonObject').filtered('age > $1 && age < $0', 13, 10).length, 3);
+        TestCase.assertThrows(function() {
+            realm.objects('PersonObject').filtered('age > $2 && age < $0', 13, 10)
+        });
+
+        realm.write(function() {
+            realm.create('DefaultValuesObject', {'dateCol': new Date(3)});
+            realm.create('DefaultValuesObject', {'dateCol': new Date(4)});
+            realm.create('DefaultValuesObject', {'dateCol': new Date(5)});
+        });
+
+        TestCase.assertEqual(realm.objects('DefaultValuesObject').filtered('dateCol > $0', new Date(4)).length, 1);
+        TestCase.assertEqual(realm.objects('DefaultValuesObject').filtered('dateCol <= $0', new Date(4)).length, 2);
+    },
     testSort: function() {
         var realm = new Realm({schema: [schemas.TestObject]});
         var objects = realm.objects('TestObject');

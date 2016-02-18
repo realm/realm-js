@@ -46,10 +46,9 @@ function runQuerySuite(suite) {
         }
     });
 
-    var args;
     function getArgs(startArg) {
-        args = test.slice(startArg, startArg + 2);
-        for (var i = startArg + 2; i < test.length; i++) {
+        var args = [test[startArg]];
+        for (var i = startArg + 1; i < test.length; i++) {
             var arg = test[i];
             if (Array.isArray(arg)) {
                 // aray arguments correspond to [objectAtIndex, propertyName]
@@ -65,14 +64,20 @@ function runQuerySuite(suite) {
     for (var index in suite.tests) {
         var test = suite.tests[index];
         if (test[0] == "QueryCount") {
-            var length = realm.objects.apply(realm, getArgs(2)).length;
-            TestCase.assertEqual(test[1], length, "Query '" + args[1] + "' on type '" + args[0] + "' expected " + test[1] + " results, got " + length);
+            var type = test[2];
+            var args = getArgs(3);
+            var objects = realm.objects(type);
+            var length = objects.filtered.apply(objects, args).length;
+            TestCase.assertEqual(test[1], length, "Query '" + args[0] + "' on type '" + type + "' expected " + test[1] + " results, got " + length);
         }
         else if (test[0] == "ObjectSet") {
-            var results = realm.objects.apply(realm, getArgs(2));           
-            TestCase.assertEqual(test[1].length, results.length, "Query '" + args[1] + "' on type '" + args[0] + "' expected " + test[1].length + " results, got " + results.length);
+            var type = test[2];
+            var args = getArgs(3);
+            var objects = realm.objects(type);
+            var results = objects.filtered.apply(objects, args);           
+            TestCase.assertEqual(test[1].length, results.length, "Query '" + args[0] + "' on type '" + type+ "' expected " + test[1].length + " results, got " + results.length);
 
-            var objSchema = suite.schema.find(function(el) { return el.name == args[0] });
+            var objSchema = suite.schema.find(function(el) { return el.name == type });
             var primary = objSchema.primaryKey;
             if (!primary) {
                 throw "Primary key required for object comparison";
@@ -84,7 +89,8 @@ function runQuerySuite(suite) {
         }
         else if (test[0] == "QueryThrows") {
             TestCase.assertThrows(function() {
-                realm.objects.apply(realm, getArgs(1));
+                var args = getArgs(2);
+                realm.objects.apply(realm, args);
             }, "Expected exception not thrown for query: " + JSON.stringify(args));
         }
         else if (test[0] != "Disabled") {

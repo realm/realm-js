@@ -117,6 +117,36 @@ JSValueRef ResultsSortByProperty(JSContextRef ctx, JSObjectRef function, JSObjec
     return NULL;
 }
 
+
+JSValueRef ResultsFiltered(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) {
+    try {
+        Results *results = RJSGetInternal<Results *>(thisObject);
+
+        RJSValidateArgumentCountIsAtLeast(argumentCount, 1);
+        SharedRealm sharedRealm = *RJSGetInternal<SharedRealm *>(thisObject);
+        
+        std::string queryString = RJSValidatedStringForValue(ctx, arguments[0], "predicate");
+        std::vector<JSValueRef> args;
+        for (size_t i = 1; i < argumentCount; i++) {
+            args.push_back(arguments[i]);
+        }
+        
+        parser::Predicate predicate = parser::parse(queryString);
+        query_builder::ArgumentConverter<JSValueRef, JSContextRef> arguments(ctx, args);
+        Query query = results->get_query();
+        query_builder::apply_predicate(query, predicate, arguments, *sharedRealm->config().schema,
+                                       results->get_object_schema().name);
+
+        return RJSResultsCreate(ctx, sharedRealm, results->get_object_schema(), query);
+    }
+    catch (std::exception &exp) {
+        if (jsException) {
+            *jsException = RJSMakeError(ctx, exp);
+        }
+    }
+    return NULL;
+}
+
 JSObjectRef RJSResultsCreate(JSContextRef ctx, SharedRealm realm, std::string className) {
     TableRef table = ObjectStore::table_for_object_type(realm->read_group(), className);
     auto object_schema = realm->config().schema->find(className);
@@ -151,6 +181,7 @@ JSObjectRef RJSResultsCreate(JSContextRef ctx, SharedRealm realm, const ObjectSc
 static const JSStaticFunction RJSResultsFuncs[] = {
     {"snapshot", ResultsStaticCopy, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
     {"sortByProperty", ResultsSortByProperty, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
+    {"filtered", ResultsFiltered, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
     {NULL, NULL},
 };
 
