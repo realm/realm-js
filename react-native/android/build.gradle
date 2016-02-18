@@ -27,13 +27,21 @@ import org.apache.tools.ant.filters.ReplaceTokens
 // We download various C++ open-source dependencies into downloads.
 // We then copy both the downloaded code and our custom makefiles and headers into third-party-ndk.
 // After that we build native code from src/main/jni with module path pointing at third-party-ndk.
+ext.coreVersion = '0.95.6'
 
+def currentVersion = "npm --silent run get-version".execute().text.trim()
 def downloadsDir = new File("$projectDir/downloads")
 def jscDownloadDir = new File("$projectDir/src/main/jni/jsc")
 def coreDownloadDir = new File("$projectDir/src/main/jni")
-ext.coreVersion = '0.95.6'
 def publishDir = new File("$projectDir/../../android/")
 
+
+task generateVersionClass(type: Copy) {
+    from 'src/main/templates/Version.java'
+    into 'build/generated-src/main/java/io/realm/react'
+    filter(ReplaceTokens, tokens: [version: currentVersion])
+    outputs.upToDateWhen { false }
+}
 
 task createNativeDepsDirectories {
     downloadsDir.mkdirs()
@@ -159,18 +167,17 @@ android {
     defaultConfig {
         minSdkVersion 16
         targetSdkVersion 23
-        versionCode 1
-        versionName "1.0"
     }
 
     sourceSets.main {
+        java.srcDir "$buildDir/generated-src/main/java"
         jni.srcDirs = []
         jniLibs.srcDir "$buildDir/realm-react-ndk/exported"
         res.srcDirs = ['src/main/res/devsupport', 'src/main/res/shell']
     }
 
     tasks.withType(JavaCompile) {
-        compileTask -> compileTask.dependsOn packageReactNdkLibs
+        compileTask -> compileTask.dependsOn generateVersionClass, packageReactNdkLibs
     }
 
     clean.dependsOn cleanReactNdkLib
@@ -180,14 +187,14 @@ android {
     }
 }
 
-task publishAndroid(dependsOn: packageReactNdkLibs, type: Copy) {
+task publishAndroid(dependsOn: [generateVersionClass, packageReactNdkLibs], type: Sync) {
     // Copy task can only have one top level
     into "$publishDir"
 
     // copy java source
     into ('/src/main') {
-      from "$projectDir/src/main"
-      exclude '**/jni/**'
+      from "$projectDir/src/main", "$buildDir/generated-src/main"
+      exclude '**/jni/**', '**/templates/**'
     }
 
     // add compiled shared object
@@ -202,7 +209,6 @@ task publishAndroid(dependsOn: packageReactNdkLibs, type: Copy) {
     }
 
     // copy and rename template build.gradle
-
     into ('/') {
       from "$projectDir/publish_android_template"
       rename { String fileName ->
@@ -260,7 +266,7 @@ afterEvaluate { project ->
         archives androidSourcesJar
     }
 
-    version = VERSION_NAME
+    version = currentVersion
     group = GROUP
 
     signing {
