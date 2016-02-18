@@ -14,7 +14,7 @@ Currently we only support React Native (both iOS & Android) but we are consideri
 
 ## Getting Started
 
-Please see the detailed instructions in our docs to use [Realm React Native](https://realm.io/docs/react-native/latest/#installation)
+Please see the detailed instructions in our docs to use [Realm React Native](https://realm.io/docs/react-native/latest/#installation).
 
 ## Documentation
 
@@ -58,7 +58,7 @@ To build for Android:
 ## Conduct
 
 This project adheres to the Contributor Covenant [code of conduct](https://realm.io/conduct/).
-By participating, you are expected to uphold this code. Please report unacceptable behavior to [info[at]realm.io](mailto:info+conduct@realm.io).
+By participating, you are expected to uphold this code. Please report unacceptable behavior to [info@realm.io](mailto:info+conduct@realm.io).
 
 ## Contributing
 
