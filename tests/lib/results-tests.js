@@ -153,44 +153,47 @@ module.exports = BaseTest.extend({
             });
         };
 
-        objects = objects.sortedBy('primaryCol');
+        objects = objects.sorted('primaryCol');
         TestCase.assertArraysEqual(primaries(objects), [0, 1, 2, 3, 4]);
 
-        objects = objects.sortedBy('primaryCol', true);
+        objects = objects.sorted('primaryCol', true);
         TestCase.assertArraysEqual(primaries(objects), [4, 3, 2, 1, 0]);
 
-        objects = objects.sortedBy(['primaryCol', 'valueCol']);
+        objects = objects.sorted(['primaryCol', 'valueCol']);
         TestCase.assertArraysEqual(primaries(objects), [0, 1, 2, 3, 4]);
 
-        objects = objects.sortedBy(['primaryCol', 'valueCol'], true);
+        objects = objects.sorted([['primaryCol', true], ['valueCol', true]]);
         TestCase.assertArraysEqual(primaries(objects), [4, 3, 2, 1, 0]);
 
-        objects = objects.sortedBy(['primaryCol', 'valueCol'], [false]);
+        objects = objects.sorted([['primaryCol', false], 'valueCol']);
         TestCase.assertArraysEqual(primaries(objects), [0, 1, 2, 3, 4]);
 
-        objects = objects.sortedBy(['valueCol', 'primaryCol']);
+        objects = objects.sorted(['valueCol', 'primaryCol']);
         TestCase.assertArraysEqual(primaries(objects), [2, 3, 1, 0, 4]);
 
-        objects = objects.sortedBy(['valueCol', 'primaryCol'], [false, true]);
+        objects = objects.sorted([['valueCol', false], ['primaryCol', true]]);
         TestCase.assertArraysEqual(primaries(objects), [3, 2, 1, 4, 0]);
 
-        objects = objects.sortedBy(['valueCol', 'primaryCol'], [true, false]);
+        objects = objects.sorted([['valueCol', true], ['primaryCol', false]]);
         TestCase.assertArraysEqual(primaries(objects), [0, 4, 1, 2, 3]);
 
-        objects = objects.sortedBy(['valueCol', 'primaryCol'], true);
+        objects = objects.sorted([['valueCol', true], ['primaryCol', true]]);
         TestCase.assertArraysEqual(primaries(objects), [4, 0, 1, 3, 2]);
 
         TestCase.assertThrows(function() {
-            objects.sortedBy(1);
+            objects.sorted(1);
         });
         TestCase.assertThrows(function() {
-            objects.sortedBy([1]);
+            objects.sorted([1]);
         });
         TestCase.assertThrows(function() {
-            objects.sortedBy('fish');
+            objects.sorted('fish');
         });
         TestCase.assertThrows(function() {
-            objects.sortedBy(['valueCol', 'fish']);
+            objects.sorted(['valueCol', 'fish']);
+        });
+        TestCase.assertThrows(function() {
+            objects.sorted(['valueCol', 'primaryCol'], true);
         });
     },
 });

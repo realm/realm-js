@@ -95,25 +95,39 @@ JSValueRef ResultsSorted(JSContextRef ctx, JSObjectRef function, JSObjectRef thi
     try {
         Results *results = RJSGetInternal<Results *>(thisObject);
         RJSValidateArgumentRange(argumentCount, 1, 2);
+
         size_t prop_count;
         std::vector<std::string> prop_names;
+        std::vector<bool> ascending;
 
         if (RJSIsValueArray(ctx, arguments[0])) {
+            RJSValidateArgumentCount(argumentCount, 1);
+
             JSObjectRef js_prop_names = RJSValidatedValueToObject(ctx, arguments[0]);
             prop_count = RJSValidatedListLength(ctx, js_prop_names);
             prop_names.resize(prop_count);
+            ascending.resize(prop_count);
 
             for (unsigned int i = 0; i < prop_count; i++) {
-                prop_names[i] = RJSValidatedStringForValue(ctx, RJSValidatedPropertyAtIndex(ctx, js_prop_names, i));
+                JSValueRef val = RJSValidatedPropertyAtIndex(ctx, js_prop_names, i);
+
+                if (RJSIsValueArray(ctx, val)) {
+                    prop_names[i] = RJSValidatedStringForValue(ctx, RJSValidatedPropertyAtIndex(ctx, (JSObjectRef)val, 0));
+                    ascending[i] = !JSValueToBoolean(ctx, RJSValidatedPropertyAtIndex(ctx, (JSObjectRef)val, 1));
+                }
+                else {
+                    prop_names[i] = RJSValidatedStringForValue(ctx, val);
+                    ascending[i] = true;
+                }
             }
         }
         else {
             prop_count = 1;
             prop_names.push_back(RJSValidatedStringForValue(ctx, arguments[0]));
+            ascending.push_back(argumentCount == 1 ? true : !JSValueToBoolean(ctx, arguments[1]));
         }
 
         std::vector<size_t> columns(prop_count);
-        std::vector<bool> ascending(prop_count, true);
         size_t index = 0;
 
         for (std::string prop_name : prop_names) {
@@ -122,20 +136,6 @@ JSValueRef ResultsSorted(JSContextRef ctx, JSObjectRef function, JSObjectRef thi
                 throw std::runtime_error("Property '" + prop_name + "' does not exist on object type '" + results->get_object_schema().name + "'");
             }
             columns[index++] = prop->table_column;
-        }
-
-        if (argumentCount == 2) {
-            if (RJSIsValueArray(ctx, arguments[1])) {
-                JSObjectRef js_reverse = RJSValidatedValueToObject(ctx, arguments[1]);
-                size_t js_reverse_count = std::min(RJSValidatedListLength(ctx, js_reverse), prop_count);
-
-                for (unsigned int i = 0; i < js_reverse_count; i++) {
-                    ascending[i] = !JSValueToBoolean(ctx, RJSValidatedPropertyAtIndex(ctx, js_reverse, i));
-                }
-            }
-            else if (JSValueToBoolean(ctx, arguments[1])) {
-                ascending.assign(prop_count, false);
-            }
         }
 
         results = new Results(results->sort({std::move(columns), std::move(ascending)}));
@@ -213,7 +213,7 @@ JSObjectRef RJSResultsCreate(JSContextRef ctx, SharedRealm realm, const ObjectSc
 
 static const JSStaticFunction RJSResultsFuncs[] = {
     {"snapshot", ResultsStaticCopy, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
-    {"sortedBy", ResultsSorted, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
+    {"sorted", ResultsSorted, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
     {"filtered", ResultsFiltered, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
     {NULL, NULL},
 };
