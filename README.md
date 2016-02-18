@@ -14,7 +14,7 @@ Currently we only support React Native (both iOS & Android) but we are consideri
 
 ## Getting Started
 
-Please see the detailed instructions in our docs to add [Realm React Native](https://realm.io/docs/react-native/latest/#installation)
+Please see the detailed instructions in our docs to use [Realm React Native](https://realm.io/docs/react-native/latest/#installation)
 
 ## Documentation
 
@@ -30,10 +30,30 @@ The API reference is located at [realm.io/docs/react-native/latest/api](https://
 - **Have a feature request?** [Open an issue](https://github.com/realm/realm-js/issues/new). Tell us what the feature should do, and why you want the feature.
 - Sign up for our [**Community Newsletter**](http://eepurl.com/VEKCn) to get regular tips, learn about other use-cases and get alerted of blog posts and tutorials about Realm.
 
-## Building Realm
-NEEDS TO BE EDITED!!
+## Building Realm JS
 
-![TBD](http://usaction.org/wp-content/uploads/2011/11/Work_That_Needs_Doing.png)
+In case you don't want to use the precompiled version on npm, you can build Realm JS yourself from source. You’ll need an Internet connection the first time you build in order to download the core library.
+
+Prerequisites:
+- Node 4.0+
+- Xcode 7.2+
+- Android SDK 23+
+- Android NDK 10e+
+
+`git clone https://github.com/realm/realm-js.git`
+
+In the cloned directory:
+`git submodule update --init --recursive`
+
+To build for iOS:
+- Open `RealmJS.xcodeproj`
+- Select `RealmReact.framework` as the build target
+- Build
+
+To build for Android:
+- `cd react-native/android`
+- `./gradlew publishAndroid`
+- The compiled version of the Android module is here: `<project-root>/android`
 
 ## Conduct
 
