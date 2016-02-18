@@ -42,7 +42,7 @@
 
 #import "RealmAnalytics.h"
 
-#if TARGET_IPHONE_SIMULATOR || TARGET_OS_MAC
+#if TARGET_IPHONE_SIMULATOR || !TARGET_OS_IPHONE
 #import <CommonCrypto/CommonDigest.h>
 #import <sys/socket.h>
 #import <sys/sysctl.h>
@@ -188,10 +188,10 @@ static NSDictionary *RLMAnalyticsPayload() {
             @"Framework": @"react-native",
             @"Virtual Machine": @"jsc",
             @"Realm Version": [[@(RealmReactVersionString) componentsSeparatedByString:@"-"] lastObject] ?: kUnknownString,
-#if TARGET_OS_MAC
-            @"Target OS Type": @"osx",
-#else
+#if TARGET_OS_IPHONE
             @"Target OS Type": @"ios",
+#else
+            @"Target OS Type": @"osx",
 #endif
             // Current OS version the app is targetting
             @"Target OS Version": [[NSProcessInfo processInfo] operatingSystemVersionString],
