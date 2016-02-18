@@ -266,6 +266,7 @@ module.exports = BaseTest.extend({
 
         function CustomObject() {
             customCreated++;
+            this.intCol *= 100;
         }
         CustomObject.schema = {
             name: 'CustomObject',
@@ -295,6 +296,9 @@ module.exports = BaseTest.extend({
             TestCase.assertTrue(object instanceof CustomObject);
             TestCase.assertTrue(Object.getPrototypeOf(object) == CustomObject.prototype);
             TestCase.assertEqual(customCreated, 1);
+
+            // Should have been multiplied by 100 in the constructor.
+            TestCase.assertEqual(object.intCol, 100);
         });
 
         TestCase.assertThrows(function() {
