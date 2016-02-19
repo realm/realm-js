@@ -82,7 +82,7 @@ case "$TARGET" in
       unzip -q ../../target=node_modules/react_tests_node_modules.zip
   fi
 
-  npm update react-native
+  npm install
   open_chrome
   start_packager
   popd
@@ -96,7 +96,7 @@ case "$TARGET" in
     unzip -q ../../target=node_modules/react_example_node_modules.zip
   fi
 
-  npm update react-native
+  npm install
   open_chrome
   start_packager
 
