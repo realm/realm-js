@@ -13,7 +13,7 @@ APP_CPPFLAGS += -frtti
 APP_CPPFLAGS += -fexceptions
 APP_CPPFLAGS += -DREALM_HAVE_CONFIG
 
-# adding falgs for non debug build
+# adding flags for non debug build
 ifneq ($(NDK_DEBUG),1)
 APP_CPPFLAGS += -fvisibility=hidden
 APP_CPPFLAGS += -ffunction-sections
