@@ -39,8 +39,8 @@ public:
     ~RJSRealmDelegate() {
         remove_all_notifications();
 
-        for (auto prototype : m_prototypes) {
-            JSValueUnprotect(m_context, prototype.second);
+        for (auto constructor : m_constructors) {
+            JSValueUnprotect(m_context, constructor.second);
         }
         for (auto objectDefaults : m_defaults) {
             for (auto value : objectDefaults.second) {
@@ -70,7 +70,7 @@ public:
     }
 
     std::map<std::string, ObjectDefaults> m_defaults;
-    std::map<std::string, JSValueRef> m_prototypes;
+    std::map<std::string, JSObjectRef> m_constructors;
 
   private:
     std::set<JSObjectRef> m_notifications;
@@ -101,8 +101,8 @@ std::map<std::string, ObjectDefaults> &RJSDefaults(Realm *realm) {
     return static_cast<RJSRealmDelegate *>(realm->m_binding_context.get())->m_defaults;
 }
 
-std::map<std::string, JSValueRef> &RJSPrototypes(Realm *realm) {
-    return static_cast<RJSRealmDelegate *>(realm->m_binding_context.get())->m_prototypes;
+std::map<std::string, JSObjectRef> &RJSConstructors(Realm *realm) {
+    return static_cast<RJSRealmDelegate *>(realm->m_binding_context.get())->m_constructors;
 }
 
 // static std::string s_defaultPath = realm::default_realm_file_directory() + "/default.realm";
@@ -137,7 +137,7 @@ JSObjectRef RealmConstructor(JSContextRef ctx, JSObjectRef constructor, size_t a
     try {
         Realm::Config config;
         std::map<std::string, realm::ObjectDefaults> defaults;
-        std::map<std::string, JSValueRef> prototypes;
+        std::map<std::string, JSObjectRef> constructors;
         switch (argumentCount) {
             case 0:
                 config.path = RJSDefaultPath();
@@ -163,7 +163,7 @@ JSObjectRef RealmConstructor(JSContextRef ctx, JSObjectRef constructor, size_t a
                     static JSStringRef schemaString = JSStringCreateWithUTF8CString("schema");
                     JSValueRef schemaValue = RJSValidatedPropertyValue(ctx, object, schemaString);
                     if (!JSValueIsUndefined(ctx, schemaValue)) {
-                        config.schema.reset(new Schema(RJSParseSchema(ctx, RJSValidatedValueToObject(ctx, schemaValue), defaults, prototypes)));
+                        config.schema.reset(new Schema(RJSParseSchema(ctx, RJSValidatedValueToObject(ctx, schemaValue), defaults, constructors)));
                     }
 
                     static JSStringRef schemaVersionString = JSStringCreateWithUTF8CString("schemaVersion");
@@ -187,7 +187,7 @@ JSObjectRef RealmConstructor(JSContextRef ctx, JSObjectRef constructor, size_t a
             realm->m_binding_context.reset(new RJSRealmDelegate(realm, JSContextGetGlobalContext(ctx)));
         }
         RJSDefaults(realm.get()) = defaults;
-        RJSPrototypes(realm.get()) = prototypes;
+        RJSConstructors(realm.get()) = constructors;
         return RJSWrapObject<SharedRealm *>(ctx, RJSRealmClass(), new SharedRealm(realm));
     }
     catch (std::exception &ex) {
