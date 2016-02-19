@@ -155,7 +155,7 @@ task cleanReactNdkLib(type: Exec) {
             'clean'
 }
 
-task copyDebugBuild(dependsOn: bulidReactNdkLibDebug, type: Sync) {
+task copyDebugBuild(dependsOn: bulidReactNdkLibDebug, type: Copy) {
   from "$buildDir/realm-react-ndk/all"
   exclude '**/libjsc.so'
   exclude '**/gdbserver'
@@ -163,7 +163,7 @@ task copyDebugBuild(dependsOn: bulidReactNdkLibDebug, type: Sync) {
   into "$buildDir/realm-react-ndk/exported"
 }
 
-task copyReleaseBuild(dependsOn: buildReactNdkLibRelease, type: Sync) {
+task copyReleaseBuild(dependsOn: buildReactNdkLibRelease, type: Copy) {
   from "$buildDir/realm-react-ndk/all"
   exclude '**/libjsc.so'
   exclude '**/gdbserver'
