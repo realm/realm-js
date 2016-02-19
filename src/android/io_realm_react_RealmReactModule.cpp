@@ -10,6 +10,7 @@
 #include "platform.hpp"
 
 static realm_js::RPCServer *s_rpc_server;
+extern bool realmContextInjected;
 
 JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_setDefaultRealmFileDirectory
   (JNIEnv *env, jclass, jstring fileDir)
@@ -19,7 +20,7 @@ JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_setDefaultRealmFileD
     // Setting the internal storage path for the application
     const char* strFileDir = env->GetStringUTFChars(fileDir, NULL);
     realm::set_default_realm_file_directory(strFileDir);
-    env->ReleaseStringUTFChars(fileDir , strFileDir);
+    env->ReleaseStringUTFChars(fileDir, strFileDir);
 
     __android_log_print(ANDROID_LOG_DEBUG, "JSRealm", "Absolute path: %s", realm::default_realm_file_directory().c_str());
 }
@@ -38,7 +39,6 @@ JNIEXPORT jlong JNICALL Java_io_realm_react_RealmReactModule_setupChromeDebugMod
 JNIEXPORT jstring JNICALL Java_io_realm_react_RealmReactModule_processChromeDebugCommand
   (JNIEnv *env, jclass, jstring chrome_cmd, jstring chrome_args)
 {
-    __android_log_print(ANDROID_LOG_VERBOSE, "JSRealm", "processChromeDebugCommand");
     const char* cmd = env->GetStringUTFChars(chrome_cmd, NULL);
     const char* args = env->GetStringUTFChars(chrome_args, NULL);
     realm_js::json json = realm_js::json::parse(args);
@@ -47,3 +47,16 @@ JNIEXPORT jstring JNICALL Java_io_realm_react_RealmReactModule_processChromeDebu
     env->ReleaseStringUTFChars(chrome_args, args);
     return env->NewStringUTF(response.dump().c_str());
 }
+
+JNIEXPORT jboolean JNICALL Java_io_realm_react_RealmReactModule_isContextInjected
+    (JNIEnv *env, jclass)
+    {
+      return realmContextInjected;
+    }
+
+JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_clearFlag
+  (JNIEnv *env, jclass)
+  {
+    realmContextInjected = false;//might not be needed
+
+  }
