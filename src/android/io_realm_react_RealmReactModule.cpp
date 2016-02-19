@@ -50,13 +50,12 @@ JNIEXPORT jstring JNICALL Java_io_realm_react_RealmReactModule_processChromeDebu
 
 JNIEXPORT jboolean JNICALL Java_io_realm_react_RealmReactModule_isContextInjected
     (JNIEnv *env, jclass)
-    {
-      return realmContextInjected;
-    }
+{
+    return realmContextInjected;
+}
 
-JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_clearFlag
+JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_clearContextInjectedFlag
   (JNIEnv *env, jclass)
-  {
-    realmContextInjected = false;//might not be needed
-
-  }
+{
+    realmContextInjected = false;
+}

@@ -58,13 +58,12 @@ public class RealmReactModule extends ReactContextBaseJavaModule {
         if (!isContextInjected()) {
             startWebServer();
         }
-        startWebServer();
         return Collections.EMPTY_MAP;
     }
 
     @Override
     public void onCatalystInstanceDestroy() {
-        clearFlag();
+        clearContextInjectedFlag();
         stopWebServer();
     }
 
@@ -133,7 +132,7 @@ public class RealmReactModule extends ReactContextBaseJavaModule {
     private native boolean isContextInjected();
 
     // clear the flag set when injecting Realm API
-    private native void clearFlag();
+    private native void clearContextInjectedFlag();
 
     // fileDir: path of the internal storage of the application
     private native void setDefaultRealmFileDirectory(String fileDir);

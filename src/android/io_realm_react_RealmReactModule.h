@@ -38,9 +38,9 @@ JNIEXPORT jboolean JNICALL Java_io_realm_react_RealmReactModule_isContextInjecte
 
 /*
  * Class:     io_realm_react_RealmReactModule
- * Method:    clearFlag
+ * Method:    clearContextInjectedFlag
  */
-JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_clearFlag
+JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_clearContextInjectedFlag
   (JNIEnv *, jclass);
 
 
