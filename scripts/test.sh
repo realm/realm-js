@@ -68,6 +68,12 @@ unlock_device() {
 cleanup
 trap cleanup EXIT
 
+# Use a consistent version of Node if possible.
+if [ -s "${HOME}/.nvm/nvm.sh" ]; then
+  . "${HOME}/.nvm/nvm.sh"
+  nvm use 5.4.0 || true
+fi
+
 case "$TARGET" in
 "jsdoc")
   npm run jsdoc
@@ -82,7 +88,7 @@ case "$TARGET" in
       unzip -q ../../target=node_modules/react_tests_node_modules.zip
   fi
 
-  npm update react-native
+  npm install
   open_chrome
   start_packager
   popd
@@ -96,7 +102,7 @@ case "$TARGET" in
     unzip -q ../../target=node_modules/react_example_node_modules.zip
   fi
 
-  npm update react-native
+  npm install
   open_chrome
   start_packager
 
@@ -107,13 +113,6 @@ case "$TARGET" in
   if [[ $CONFIGURATION == 'Debug' ]]; then
      exit 0
   fi
-
-  [ -s "${HOME}/.nvm/nvm.sh" ] && . "${HOME}/.nvm/nvm.sh"
-  nvm use 5.4.0 || true
-
-  pushd react-native/android
-  ./gradlew installarchives
-  popd
 
   pushd tests/react-test-app
 
