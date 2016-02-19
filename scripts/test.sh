@@ -114,10 +114,6 @@ case "$TARGET" in
      exit 0
   fi
 
-  pushd react-native/android
-  ./gradlew installarchives
-  popd
-
   pushd tests/react-test-app
 
   npm install
