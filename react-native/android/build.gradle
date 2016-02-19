@@ -132,7 +132,8 @@ def getNdkBuildFullPath() {
 }
 
 ['0', '1'].each { def buildType ->
-    task "buildReactNdkLib_$buildType" (dependsOn: [downloadJSCHeaders,prepareRealmCore], type: Exec) {
+    def taskName = (buildType == '0')?"bulidReactNdkLibDebug":"buildReactNdkLibRelease"
+    task "$taskName" (dependsOn: [downloadJSCHeaders,prepareRealmCore], type: Exec) {
       inputs.file('src/main/jni')
       outputs.dir("$buildDir/realm-react-ndk/all")
       commandLine getNdkBuildFullPath(),
@@ -154,7 +155,7 @@ task cleanReactNdkLib(type: Exec) {
             'clean'
 }
 
-task copyDebugBuild(dependsOn: buildReactNdkLib_1, type: Copy) {
+task copyDebugBuild(dependsOn: bulidReactNdkLibDebug, type: Sync) {
   from "$buildDir/realm-react-ndk/all"
   exclude '**/libjsc.so'
   exclude '**/gdbserver'
@@ -162,7 +163,7 @@ task copyDebugBuild(dependsOn: buildReactNdkLib_1, type: Copy) {
   into "$buildDir/realm-react-ndk/exported"
 }
 
-task copyReleaseBuild(dependsOn: buildReactNdkLib_0, type: Copy) {
+task copyReleaseBuild(dependsOn: buildReactNdkLibRelease, type: Sync) {
   from "$buildDir/realm-react-ndk/all"
   exclude '**/libjsc.so'
   exclude '**/gdbserver'
