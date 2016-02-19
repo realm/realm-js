@@ -635,7 +635,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "rm -rf ../node_modules/realm\n[ -s \"${HOME}/.nvm/nvm.sh\" ] && . \"${HOME}/.nvm/nvm.sh\"\nnpm install realm";
+			shellScript = "[ -s \"${HOME}/.nvm/nvm.sh\" ] && . \"${HOME}/.nvm/nvm.sh\"\nnpm install realm";
 		};
 		F6C465131C48706400E79896 /* Bundle React Native code and images */ = {
 			isa = PBXShellScriptBuildPhase;

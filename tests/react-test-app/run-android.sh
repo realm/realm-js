@@ -5,7 +5,6 @@ set -e
 
 PATH="/opt/android-sdk-linux/platform-tools:$PATH"
 
-rm -rf node_modules/realm node_modules/realm-tests
 npm install realm realm-tests
 
 cp ../../src/object-store/parser/queryTests.json node_modules/realm-tests/query-tests.json
