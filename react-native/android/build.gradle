@@ -210,7 +210,6 @@ task publishAndroid(dependsOn: [generateVersionClass, copyReleaseBuild, copyDebu
     // add compiled shared object
     into ('/src/main/jniLibs') {
         from "$buildDir/realm-react-ndk/exported/"
-        exclude '**/jni/**', '**/templates/**'
     }
 
     // copy gradle wrapper files
