@@ -3,7 +3,12 @@ LOCAL_PATH:= $(call my-dir)
 include $(CLEAR_VARS)
 LOCAL_MODULE := realm-android-$(TARGET_ARCH_ABI)
 LOCAL_EXPORT_C_INCLUDES := core/include
+ifeq ($(NDK_DEBUG),1)
+LOCAL_SRC_FILES := core/librealm-android-$(TARGET_ARCH_ABI)-dbg.a
+else
 LOCAL_SRC_FILES := core/librealm-android-$(TARGET_ARCH_ABI).a
+endif
+
 include $(PREBUILT_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
@@ -12,7 +17,12 @@ LOCAL_EXPORT_C_INCLUDES := jsc
 include $(BUILD_SHARED_LIBRARY)
 
 include $(CLEAR_VARS)
+ifeq ($(NDK_DEBUG),1)
+LOCAL_MODULE := librealmreact-dbg
+else
 LOCAL_MODULE := librealmreact
+endif
+
 
 LOCAL_SRC_FILES := \
   src/js_list.cpp \

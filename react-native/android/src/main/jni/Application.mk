@@ -13,7 +13,14 @@ APP_CPPFLAGS += -frtti
 APP_CPPFLAGS += -fexceptions
 APP_CPPFLAGS += -DREALM_HAVE_CONFIG
 
-# Make sure every shared lib includes a .note.gnu.build-id header
+# adding falgs for non debug build
+ifneq ($(NDK_DEBUG),1)
+APP_CPPFLAGS += -fvisibility=hidden
+APP_CPPFLAGS += -ffunction-sections
+APP_CPPFLAGS += -fdata-sections
+APP_CPPFLAGS += -flto
+endif
+
 APP_LDFLAGS := -Wl,--build-id
 APP_LDFLAGS += -llog
 

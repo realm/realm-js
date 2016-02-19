@@ -18,18 +18,22 @@ import java.util.concurrent.CountDownLatch;
 import fi.iki.elonen.NanoHTTPD;
 
 public class RealmReactModule extends ReactContextBaseJavaModule {
+    private static final String DEBUG_SHARED_OBJECT = "realmreact-dbg";
+    private static final String RELEASE_SHARED_OBJECT = "realmreact";
     private static final int DEFAULT_PORT = 8082;
     private static boolean sentAnalytics = false;
 
     private AndroidWebServer webServer;
     private Handler handler = new Handler(Looper.getMainLooper());
 
-    static {
-        SoLoader.loadLibrary("realmreact");
-    }
-
-    public RealmReactModule(ReactApplicationContext reactContext) {
+    public RealmReactModule(ReactApplicationContext reactContext, boolean debug) {
         super(reactContext);
+
+        if (debug) {
+            SoLoader.loadLibrary(DEBUG_SHARED_OBJECT);
+        } else {
+            SoLoader.loadLibrary(RELEASE_SHARED_OBJECT);
+        }
 
         String fileDir;
         try {
