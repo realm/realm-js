@@ -9,7 +9,6 @@ import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.soloader.SoLoader;
 
 import java.io.IOException;
-import java.lang.IllegalStateException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -56,13 +55,15 @@ public class RealmReactModule extends ReactContextBaseJavaModule {
 
     @Override
     public Map<String, Object> getConstants() {
-        // FIXME: Only start web server when in Chrome debug mode!
-        startWebServer();
+        if (!isContextInjected()) {
+            startWebServer();
+        }
         return Collections.EMPTY_MAP;
     }
 
     @Override
     public void onCatalystInstanceDestroy() {
+        clearContextInjectedFlag();
         stopWebServer();
     }
 
@@ -126,6 +127,12 @@ public class RealmReactModule extends ReactContextBaseJavaModule {
             }
         }
     }
+
+    // return true if the Realm API was injected (return false when running in Chrome Debug)
+    private native boolean isContextInjected();
+
+    // clear the flag set when injecting Realm API
+    private native void clearContextInjectedFlag();
 
     // fileDir: path of the internal storage of the application
     private native void setDefaultRealmFileDirectory(String fileDir);

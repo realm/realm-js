@@ -18,6 +18,8 @@
 #define HOOK_SIZE 5
 #endif
 
+bool realmContextInjected;
+
 static void swap_function() __attribute__((constructor));
 
 static JSGlobalContextRef create_context(JSContextGroupRef group, JSClassRef global_class)
@@ -36,6 +38,7 @@ static JSGlobalContextRef create_context(JSContextGroupRef group, JSClassRef glo
     realm::Realm::s_global_cache.clear();
 
     RJSInitializeInContext(ctx);
+    realmContextInjected = true;
     return ctx;
 }
 
