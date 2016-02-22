@@ -110,10 +110,9 @@ void RJSCopyFunctionsFromPrototype(JSContextRef ctx, JSObjectRef srcObject, JSOb
         JSStringRef jsName = JSStringCreateWithUTF8CString(name);
         JSObjectSetProperty(ctx, destPrototypeObject, jsName, RJSValidatedPropertyValue(ctx, srcPrototypeObject, jsName),
                             kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontDelete | kJSPropertyAttributeDontEnum, &exception);
+        JSStringRelease(jsName);
         if (exception) {
             throw RJSException(ctx, exception);
         }
-        
-        JSStringRelease(jsName);
     }
 }
