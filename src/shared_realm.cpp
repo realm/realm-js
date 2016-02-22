@@ -212,7 +212,6 @@ void Realm::update_schema(std::unique_ptr<Schema> schema, uint64_t version)
     read_group();
     transaction::begin(*m_shared_group, m_binding_context.get(),
                        /* error on schema changes */ false);
-    m_in_transaction = true;
 
     struct WriteTransactionGuard {
         Realm& realm;
@@ -288,12 +287,20 @@ void Realm::verify_in_write() const
     }
 }
 
+bool Realm::is_in_transaction() const noexcept
+{
+    if (!m_shared_group) {
+        return false;
+    }
+    return m_shared_group->get_transact_stage() == SharedGroup::transact_Writing;
+}
+
 void Realm::begin_transaction()
 {
     check_read_write(this);
     verify_thread();
 
-    if (m_in_transaction) {
+    if (is_in_transaction()) {
         throw InvalidTransactionException("The Realm is already in a write transaction");
     }
 
@@ -301,7 +308,6 @@ void Realm::begin_transaction()
     read_group();
 
     transaction::begin(*m_shared_group, m_binding_context.get());
-    m_in_transaction = true;
 }
 
 void Realm::commit_transaction()
@@ -309,11 +315,10 @@ void Realm::commit_transaction()
     check_read_write(this);
     verify_thread();
 
-    if (!m_in_transaction) {
+    if (!is_in_transaction()) {
         throw InvalidTransactionException("Can't commit a non-existing write transaction");
     }
 
-    m_in_transaction = false;
     transaction::commit(*m_shared_group, m_binding_context.get());
     m_coordinator->send_commit_notifications();
 }
@@ -323,18 +328,19 @@ void Realm::cancel_transaction()
     check_read_write(this);
     verify_thread();
 
-    if (!m_in_transaction) {
+    if (!is_in_transaction()) {
         throw InvalidTransactionException("Can't cancel a non-existing write transaction");
     }
 
-    m_in_transaction = false;
     transaction::cancel(*m_shared_group, m_binding_context.get());
 }
 
 void Realm::invalidate()
 {
     verify_thread();
-    if (m_in_transaction) {
+    check_read_write(this);
+
+    if (is_in_transaction()) {
         cancel_transaction();
     }
     if (!m_group) {
@@ -352,7 +358,7 @@ bool Realm::compact()
     if (m_config.read_only) {
         throw InvalidTransactionException("Can't compact a read-only Realm");
     }
-    if (m_in_transaction) {
+    if (is_in_transaction()) {
         throw InvalidTransactionException("Can't compact a Realm within a write transaction");
     }
 
@@ -394,7 +400,7 @@ bool Realm::refresh()
     check_read_write(this);
 
     // can't be any new changes if we're in a write transaction
-    if (m_in_transaction) {
+    if (is_in_transaction()) {
         return false;
     }
 
