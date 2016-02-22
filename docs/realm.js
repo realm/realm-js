@@ -60,18 +60,11 @@ class Realm {
     deleteAll() {}
 
     /**
-     * Returns all objects of the given `type` in the Realm, optionally filtered by the provided
-     * `query`.
-     * ```js
-     * let merlots = realm.objects('Wine', 'varietal == "Merlot" && vintage <= $0', maxYear);
-     * ```
+     * Returns all objects of the given `type` in the Realm.
      * @param {string} type - The type of object as specified by its `name` in the
      *   {@link Realm~ObjectSchema ObjectSchema} definition.
-     * @param {string} [query] - Query used to filter results.
-     * @param {...any} [arg] - Each subsequent argument is used by the placeholders
-     *   (e.g. `$0`, `$1`, `$2`, …) in the query.
-     * @throws {Error} If type, query, or any other argument passed into this method is invalid.
-     * @returns {Realm.Results}
+     * @throws {Error} If type passed into this method is invalid.
+     * @returns {Realm.Results} that will live-update as objects are created and destroyed.
      */
     objects(type, query, ...arg) {}
 

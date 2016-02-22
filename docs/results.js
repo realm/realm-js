@@ -25,26 +25,48 @@
  * @memberof Realm
  */
 class Results {
-   /**
-    * The number of objects in the results.
-    * @type {number}
-    * @readonly
-    */
-   get length() {}
+    /**
+     * The number of objects in the results.
+     * @type {number}
+     * @readonly
+     */
+    get length() {}
 
     /**
-     * Create a frozen snapshot of the list. This means changes to the list will not be
+     * Returns new results that are filtered by the provided query.
+     * ```js
+     * let merlots = wines.filtered('varietal == "Merlot" && vintage <= $0', maxYear);
+     * ```
+     * @param {string} query - Query used to filter results.
+     * @param {...any} [arg] - Each subsequent argument is used by the placeholders
+     *   (e.g. `$0`, `$1`, `$2`, …) in the query.
+     * @throws {Error} If the query or any other argument passed into this method is invalid.
+     * @returns {Realm.Results} filtered according to the provided query.
+     */
+    filtered(query, ...arg) {}
+
+    /**
+     * Returns new results that are sorted by the provided property (or properties) of each object.
+     * @param {string|Realm.Results~SortDescriptor[]} descriptor - The property name(s) to sort
+     *   results by.
+     * @param {boolean} [reverse=false] - May only be provided if `descriptor` is a string.
+     * @throws {Error} If a specified property does not exist.
+     * @returns {Realm.Results} sorted according to the arguments passed in
+     */
+    sorted(descriptor, reverse) {}
+
+    /**
+     * Create a frozen snapshot of the results. This means changes to the list will not be
      * reflected in the results returned by this method. However, deleted objects will become
      * `null` at their respective indices.
      * @returns {Realm.Results} which will **not** live update.
      */
     snapshot() {}
-
-    /**
-     * Modifies this collection to be sorted by the provided property of each object.
-     * @param {string} name - The property name to sort results by.
-     * @param {boolean} [ascending=true]
-     * @throws {Error} If the specified property does not exist.
-     */
-    sortByProperty(name, ascending) {}
 }
+
+/**
+ * The sort descriptors may either just be a string representing the property name, **or** an
+ * array with two items: `[propertyName, reverse]`
+ * @typedef Realm.Results~SortDescriptor
+ * @type {string|Array}
+ */
