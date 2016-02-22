@@ -97,3 +97,23 @@ bool RJSIsValueDate(JSContextRef ctx, JSValueRef value) {
     static JSStringRef dateString = JSStringCreateWithUTF8CString("Date");
     return RJSIsValueObjectOfType(ctx, value, dateString);
 }
+
+void RJSCopyFunctionsFromPrototype(JSContextRef ctx, JSObjectRef srcObject, JSObjectRef destObject, std::vector<const char *> names) {
+    JSValueRef destPrototypeValue = JSObjectGetPrototype(ctx, destObject);
+    JSObjectRef destPrototypeObject = RJSValidatedValueToObject(ctx, destPrototypeValue);
+
+    JSValueRef srcPrototypeValue = JSObjectGetPrototype(ctx, srcObject);
+    JSObjectRef srcPrototypeObject = RJSValidatedValueToObject(ctx, srcPrototypeValue);
+    
+    JSValueRef exception = NULL;
+    for (auto name : names) {
+        JSStringRef jsName = JSStringCreateWithUTF8CString(name);
+        JSObjectSetProperty(ctx, destPrototypeObject, jsName, RJSValidatedPropertyValue(ctx, srcPrototypeObject, jsName),
+                            kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontDelete | kJSPropertyAttributeDontEnum, &exception);
+        if (exception) {
+            throw RJSException(ctx, exception);
+        }
+        
+        JSStringRelease(jsName);
+    }
+}

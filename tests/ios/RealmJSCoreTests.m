@@ -32,7 +32,7 @@
 + (XCTestSuite *)defaultTestSuite {
     XCTestSuite *suite = [super defaultTestSuite];
     JSContext *context = [[JSContext alloc] init];
-    JSValue *realmConstructor = [JSValue valueWithJSValueRef:RJSConstructorCreate(context.JSGlobalContextRef) inContext:context];
+    JSValue *realmConstructor = [JSValue valueWithJSValueRef:RJSInitializeInContext(context.JSGlobalContextRef) inContext:context];
     RJSModuleLoader *moduleLoader = [[RJSModuleLoader alloc] initWithContext:context];
     NSURL *scriptURL = [[NSBundle bundleForClass:self] URLForResource:@"index" withExtension:@"js" subdirectory:@"lib"];
 
