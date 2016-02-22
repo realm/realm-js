@@ -12,7 +12,7 @@ This project hosts the JavaScript versions of [Realm](https://realm.io/). Curren
 
 ## Getting Started
 
-Please see the detailed instructions in our docs to use [Realm React Native](https://realm.io/docs/react-native/latest/#installation).
+Please see the detailed instructions in our docs to use [Realm React Native](https://realm.io/docs/react-native/latest/#getting-started).
 
 ## Documentation
 
