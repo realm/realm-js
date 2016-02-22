@@ -28,6 +28,8 @@ namespace realm {
 }
 
 JSClassRef RJSResultsClass();
+void RJSResultsInitialize(JSContextRef ctx);
+
 JSObjectRef RJSResultsCreate(JSContextRef ctx, realm::SharedRealm realm, std::string className);
 JSObjectRef RJSResultsCreate(JSContextRef ctx, realm::SharedRealm realm, std::string className, std::string query, std::vector<JSValueRef> args);
 JSObjectRef RJSResultsCreate(JSContextRef ctx, realm::SharedRealm realm, const realm::ObjectSchema &objectSchema, realm::Query query, bool live = true);

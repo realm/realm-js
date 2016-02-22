@@ -236,3 +236,5 @@ static inline bool RJSIsValueObjectOfType(JSContextRef ctx, JSValueRef value, JS
 
     return ret;
 }
+
+void RJSCopyFunctionsFromPrototype(JSContextRef ctx, JSObjectRef srcObject, JSObjectRef destObject, std::vector<const char *> names);

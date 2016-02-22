@@ -216,4 +216,30 @@ module.exports = BaseTest.extend({
             objects.sorted(['valueCol', 'primaryCol'], true);
         });
     },
+    testResultsSlice: function() {
+        var realm = new Realm({schema: [schemas.PersonObject]});
+        realm.write(function() {
+            realm.create('PersonObject', {name: 'name1', age: 1});
+            realm.create('PersonObject', {name: 'name2', age: 2});
+            realm.create('PersonObject', {name: 'name2', age: 3});
+        });
+
+        var people = realm.objects('PersonObject');
+        TestCase.assertEqual(people.slice().length, 3);
+        TestCase.assertEqual(people.slice(-1).length, 1);
+        TestCase.assertEqual(people.slice(-1)[0].age, 3);
+        TestCase.assertEqual(people.slice(1, 3).length, 2);
+        TestCase.assertEqual(people.slice(1, 3)[1].age, 3);
+    },
+    testResultsMap: function() {
+        var realm = new Realm({schema: [schemas.PersonObject]});
+        realm.write(function() {
+            realm.create('PersonObject', {name: 'name1', age: 1});
+            realm.create('PersonObject', {name: 'name2', age: 2});
+            realm.create('PersonObject', {name: 'name2', age: 3});
+        });
+
+        var ages = realm.objects('PersonObject').map(function(o) { return o.age; });
+        TestCase.assertArraysEqual(ages, [1, 2, 3]);
+    },
 });

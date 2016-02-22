@@ -242,6 +242,16 @@ static const JSStaticFunction RJSResultsFuncs[] = {
     {NULL, NULL},
 };
 
+void RJSResultsInitialize(JSContextRef ctx) {
+    JSValueRef exception = NULL;
+    JSObjectRef array = JSObjectMakeArray(ctx, 0, NULL, &exception);
+    if (exception) {
+        throw RJSException(ctx, exception);
+    }
+    
+    RJSCopyFunctionsFromPrototype(ctx, array, JSObjectMake(ctx, RJSResultsClass(), NULL), { "slice", "map" });
+}
+
 JSClassRef RJSResultsClass() {
     static JSClassRef s_objectClass = RJSCreateWrapperClass<Results *>("Results", ResultsGetProperty, ResultsSetProperty, RJSResultsFuncs, ResultsPropertyNames);
     return s_objectClass;

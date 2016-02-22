@@ -19,6 +19,8 @@
 #include "js_init.h"
 #include "js_realm.hpp"
 #include "js_object.hpp"
+#include "js_results.hpp"
+#include "js_list.hpp"
 #include "js_util.hpp"
 #include "js_schema.hpp"
 #include "platform.hpp"
@@ -79,7 +81,7 @@ JSObjectRef RJSConstructorCreate(JSContextRef ctx) {
     return realmObject;
 }
 
-void RJSInitializeInContext(JSContextRef ctx) {
+JSObjectRef RJSInitializeInContext(JSContextRef ctx) {
     JSObjectRef globalObject = JSContextGetGlobalObject(ctx);
     JSObjectRef realmObject = RJSConstructorCreate(ctx);
 
@@ -89,7 +91,13 @@ void RJSInitializeInContext(JSContextRef ctx) {
 
     JSObjectSetProperty(ctx, globalObject, nameString, realmObject, attributes, &exception);
     JSStringRelease(nameString);
+    
+    RJSResultsInitialize(ctx);
+    RJSListInitialize(ctx);
+
     assert(!exception);
+    
+    return realmObject;
 }
 
 void RJSClearTestState() {

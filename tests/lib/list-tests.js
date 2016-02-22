@@ -509,4 +509,43 @@ module.exports = BaseTest.extend({
         objects = list.sorted(['age', 'name']);
         TestCase.assertArraysEqual(names(objects), ['Ari', 'Tim', 'Alex', 'Bjarne']);
     },
+    testResultsSlice: function() {
+        var realm = new Realm({schema: [schemas.PersonObject, schemas.PersonList]});
+        var list;
+
+        realm.write(function() {
+            var object = realm.create('PersonList', {list: [
+                {name: 'Ari', age: 1},
+                {name: 'Tim', age: 2},
+                {name: 'Bjarne', age: 3},
+            ]});
+            realm.create('PersonObject', {name: 'NotInList', age: 10});
+
+            list = object.list;
+        });
+
+        TestCase.assertEqual(list.slice().length, 3);
+        TestCase.assertEqual(list.slice(-1).length, 1);
+        TestCase.assertEqual(list.slice(-1)[0].age, 3);
+        TestCase.assertEqual(list.slice(1, 3).length, 2);
+        TestCase.assertEqual(list.slice(1, 3)[1].age, 3);
+    },
+    testResultsMap: function() {
+        var realm = new Realm({schema: [schemas.PersonObject, schemas.PersonList]});
+        var list;
+
+        realm.write(function() {
+            var object = realm.create('PersonList', {list: [
+                {name: 'Ari', age: 1},
+                {name: 'Tim', age: 2},
+                {name: 'Bjarne', age: 3},
+            ]});
+            realm.create('PersonObject', {name: 'NotInList', age: 10});
+
+            list = object.list;
+        });
+
+        var ages = list.map(function(o) { return o.age; });
+        TestCase.assertArraysEqual(ages, [1, 2, 3]);
+    },
 });

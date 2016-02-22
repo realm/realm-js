@@ -24,8 +24,7 @@
 extern "C" {
 #endif
 
-JSObjectRef RJSConstructorCreate(JSContextRef ctx);
-void RJSInitializeInContext(JSContextRef ctx);
+JSObjectRef RJSInitializeInContext(JSContextRef ctx);
 void RJSClearTestState(void);
 
 #ifdef __cplusplus

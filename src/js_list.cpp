@@ -264,6 +264,17 @@ static const JSStaticFunction RJSListFuncs[] = {
     {NULL, NULL},
 };
 
+void RJSListInitialize(JSContextRef ctx) {
+    JSValueRef exception = NULL;
+    JSObjectRef array = JSObjectMakeArray(ctx, 0, NULL, &exception);
+    if (exception) {
+        throw RJSException(ctx, exception);
+    }
+    
+    RJSCopyFunctionsFromPrototype(ctx, array, JSObjectMake(ctx, RJSListClass(), NULL), { "slice", "map" });
+}
+
+
 JSClassRef RJSListClass() {
     static JSClassRef s_listClass = RJSCreateWrapperClass<List *>("RealmList", ListGetProperty, ListSetProperty, RJSListFuncs, ListPropertyNames);
     return s_listClass;

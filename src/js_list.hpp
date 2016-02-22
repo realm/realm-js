@@ -23,4 +23,5 @@
 #include "list.hpp"
 
 JSClassRef RJSListClass();
+void RJSListInitialize(JSContextRef ctx);
 JSObjectRef RJSListCreate(JSContextRef ctx, realm::List &list);
