@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2015 Realm Inc.
+// Copyright 2016 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,33 +16,15 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#include "impl/cached_realm_base.hpp"
+#ifndef REALM_WEAK_REALM_NOTIFIER_HPP
+#define REALM_WEAK_REALM_NOTIFIER_HPP
 
-#include <CoreFoundation/CFRunLoop.h>
+#include <realm/util/features.h>
 
-namespace realm {
-class Realm;
+#if REALM_PLATFORM_APPLE
+#include "impl/apple/weak_realm_notifier.hpp"
+#else
+#include "impl/generic/weak_realm_notifier.hpp"
+#endif
 
-namespace _impl {
-
-class CachedRealm : public CachedRealmBase {
-public:
-    CachedRealm(const std::shared_ptr<Realm>& realm, bool cache);
-    ~CachedRealm();
-
-    CachedRealm(CachedRealm&&);
-    CachedRealm& operator=(CachedRealm&&);
-
-    CachedRealm(const CachedRealm&) = delete;
-    CachedRealm& operator=(const CachedRealm&) = delete;
-
-    // Asynchronously call notify() on the Realm on the appropriate thread
-    void notify();
-
-private:
-    CFRunLoopRef m_runloop;
-    CFRunLoopSourceRef m_signal;
-};
-
-} // namespace _impl
-} // namespace realm
+#endif // REALM_WEAK_REALM_NOTIFIER_HPP

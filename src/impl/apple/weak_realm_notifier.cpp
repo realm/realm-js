@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#include "impl/cached_realm.hpp"
+#include "impl/weak_realm_notifier.hpp"
 
 #include "shared_realm.hpp"
 
@@ -25,8 +25,8 @@
 using namespace realm;
 using namespace realm::_impl;
 
-CachedRealm::CachedRealm(const std::shared_ptr<Realm>& realm, bool cache)
-: CachedRealmBase(realm, cache)
+WeakRealmNotifier::WeakRealmNotifier(const std::shared_ptr<Realm>& realm, bool cache)
+: WeakRealmNotifierBase(realm, cache)
 {
     struct RefCountedWeakPointer {
         std::weak_ptr<Realm> realm;
@@ -57,8 +57,8 @@ CachedRealm::CachedRealm(const std::shared_ptr<Realm>& realm, bool cache)
     CFRunLoopAddSource(m_runloop, m_signal, kCFRunLoopDefaultMode);
 }
 
-CachedRealm::CachedRealm(CachedRealm&& rgt)
-: CachedRealmBase(std::move(rgt))
+WeakRealmNotifier::WeakRealmNotifier(WeakRealmNotifier&& rgt)
+: WeakRealmNotifierBase(std::move(rgt))
 , m_runloop(rgt.m_runloop)
 , m_signal(rgt.m_signal)
 {
@@ -66,9 +66,9 @@ CachedRealm::CachedRealm(CachedRealm&& rgt)
     rgt.m_signal = nullptr;
 }
 
-CachedRealm& CachedRealm::operator=(CachedRealm&& rgt)
+WeakRealmNotifier& WeakRealmNotifier::operator=(WeakRealmNotifier&& rgt)
 {
-    CachedRealmBase::operator=(std::move(rgt));
+    WeakRealmNotifierBase::operator=(std::move(rgt));
     m_runloop = rgt.m_runloop;
     m_signal = rgt.m_signal;
     rgt.m_runloop = nullptr;
@@ -77,7 +77,7 @@ CachedRealm& CachedRealm::operator=(CachedRealm&& rgt)
     return *this;
 }
 
-CachedRealm::~CachedRealm()
+WeakRealmNotifier::~WeakRealmNotifier()
 {
     if (m_signal) {
         CFRunLoopSourceInvalidate(m_signal);
@@ -86,7 +86,7 @@ CachedRealm::~CachedRealm()
     }
 }
 
-void CachedRealm::notify()
+void WeakRealmNotifier::notify()
 {
     CFRunLoopSourceSignal(m_signal);
     // Signalling the source makes it run the next time the runloop gets
