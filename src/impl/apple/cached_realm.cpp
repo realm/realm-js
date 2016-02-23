@@ -30,11 +30,11 @@ CachedRealm::CachedRealm(const std::shared_ptr<Realm>& realm, bool cache)
 {
     struct RefCountedWeakPointer {
         std::weak_ptr<Realm> realm;
-        std::atomic<size_t> ref_count = {1};
+        std::atomic<size_t> ref_count;
     };
 
     CFRunLoopSourceContext ctx{};
-    ctx.info = new RefCountedWeakPointer{realm};
+    ctx.info = new RefCountedWeakPointer{realm, {1}};
     ctx.perform = [](void* info) {
         if (auto realm = static_cast<RefCountedWeakPointer*>(info)->realm.lock()) {
             realm->notify();
