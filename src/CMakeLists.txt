@@ -25,7 +25,8 @@ set(HEADERS
     impl/external_commit_helper.hpp
     impl/transact_log_handler.hpp
     parser/parser.hpp
-    parser/query_builder.hpp)
+    parser/query_builder.hpp
+    util/atomic_shared_ptr.hpp)
 
 if(APPLE)
     list(APPEND SOURCES

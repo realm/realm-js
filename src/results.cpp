@@ -409,23 +409,20 @@ AsyncQueryCancelationToken::~AsyncQueryCancelationToken()
     // This is needed despite the token not being thread-safe in general as
     // users find it very surpringing for obj-c objects to care about what
     // thread they are deallocated on.
-    if (auto query = std::atomic_load(&m_query)) {
+    if (auto query = m_query.exchange({})) {
         query->remove_callback(m_token);
     }
 }
 
-AsyncQueryCancelationToken::AsyncQueryCancelationToken(AsyncQueryCancelationToken&& rgt)
-: m_query(std::atomic_exchange(&rgt.m_query, {})), m_token(rgt.m_token)
-{
-}
+AsyncQueryCancelationToken::AsyncQueryCancelationToken(AsyncQueryCancelationToken&& rgt) = default;
 
 AsyncQueryCancelationToken& AsyncQueryCancelationToken::operator=(realm::AsyncQueryCancelationToken&& rgt)
 {
     if (this != &rgt) {
-        if (auto query = std::atomic_load(&m_query)) {
+        if (auto query = m_query.exchange({})) {
             query->remove_callback(m_token);
         }
-        std::atomic_store(&m_query, std::atomic_exchange(&rgt.m_query, {}));
+        m_query = std::move(rgt.m_query);
         m_token = rgt.m_token;
     }
     return *this;
