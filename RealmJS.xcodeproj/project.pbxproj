@@ -38,8 +38,6 @@
 		02B8C67F1C7536B600C8C58D /* parser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02B8C67B1C7536B600C8C58D /* parser.cpp */; };
 		02B8C6801C7536B600C8C58D /* query_builder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02B8C67D1C7536B600C8C58D /* query_builder.cpp */; };
 		02D8D1F71B601984006DB49D /* JavaScriptCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 02B58CCD1AE99D4D009B348C /* JavaScriptCore.framework */; };
-		02EF76861BFFDE37000D5BAD /* test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02EF76851BFFDE37000D5BAD /* test.cpp */; };
-		02EF76881BFFDE9E000D5BAD /* GrammarTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = 02EF76871BFFDE9E000D5BAD /* GrammarTests.mm */; };
 		F61378791C18EAC5008BFC51 /* js in Resources */ = {isa = PBXBuildFile; fileRef = F61378781C18EAAC008BFC51 /* js */; };
 		F636F6C81BCDB3570023F35C /* RealmReact.h in Headers */ = {isa = PBXBuildFile; fileRef = 0270BCCF1B7D067300010E03 /* RealmReact.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		F63FF2C61C12469E00B3B8E0 /* js_init.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 029048011C0428DF00ABDED4 /* js_init.cpp */; };
@@ -204,8 +202,6 @@
 		02B8C67C1C7536B600C8C58D /* parser.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = parser.hpp; path = src/parser/parser.hpp; sourceTree = "<group>"; };
 		02B8C67D1C7536B600C8C58D /* query_builder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = query_builder.cpp; path = src/parser/query_builder.cpp; sourceTree = "<group>"; };
 		02B8C67E1C7536B600C8C58D /* query_builder.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = query_builder.hpp; path = src/parser/query_builder.hpp; sourceTree = "<group>"; };
-		02EF76851BFFDE37000D5BAD /* test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = test.cpp; path = "src/object-store/parser/test.cpp"; sourceTree = SOURCE_ROOT; };
-		02EF76871BFFDE9E000D5BAD /* GrammarTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = GrammarTests.mm; path = ios/GrammarTests.mm; sourceTree = "<group>"; };
 		F61378781C18EAAC008BFC51 /* js */ = {isa = PBXFileReference; lastKnownFileType = folder; path = js; sourceTree = "<group>"; };
 		F63FF2B11C1241E500B3B8E0 /* libRealmJS.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libRealmJS.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		F63FF2DC1C15659A00B3B8E0 /* RealmJS.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = RealmJS.mm; sourceTree = "<group>"; };
@@ -379,8 +375,6 @@
 				02409DC11BCF11D6005F3B3E /* RealmJSCoreTests.m */,
 				F68A278A1BC2722A0063D40A /* RJSModuleLoader.h */,
 				F68A278B1BC2722A0063D40A /* RJSModuleLoader.m */,
-				02EF76871BFFDE9E000D5BAD /* GrammarTests.mm */,
-				02EF76851BFFDE37000D5BAD /* test.cpp */,
 			);
 			name = RealmJSTests;
 			path = tests;
@@ -784,8 +778,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				F68A278C1BC2722A0063D40A /* RJSModuleLoader.m in Sources */,
-				02EF76881BFFDE9E000D5BAD /* GrammarTests.mm in Sources */,
-				02EF76861BFFDE37000D5BAD /* test.cpp in Sources */,
 				0270BC821B7D020100010E03 /* RealmJSTests.mm in Sources */,
 				02409DC21BCF11D6005F3B3E /* RealmJSCoreTests.m in Sources */,
 			);
