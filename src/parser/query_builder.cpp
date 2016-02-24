@@ -41,16 +41,24 @@ struct TrueExpression : realm::Expression {
         if (start != end)
             return start;
 
-        return not_found;
+        return realm::not_found;
     }
-    void set_table() override {}
-    const Table* get_table() const override { return nullptr; }
+    void set_base_table(const Table*) override {}
+    const Table* get_base_table() const override { return nullptr; }
+    std::unique_ptr<Expression> clone(QueryNodeHandoverPatches*) const override
+    {
+        return std::unique_ptr<Expression>(new TrueExpression(*this));
+    }
 };
 
 struct FalseExpression : realm::Expression {
-    size_t find_first(size_t, size_t) const override { return not_found; }
-    void set_table() override {}
-    const Table* get_table() const override { return nullptr; }
+    size_t find_first(size_t, size_t) const override { return realm::not_found; }
+    void set_base_table(const Table*) override {}
+    const Table* get_base_table() const override { return nullptr; }
+    std::unique_ptr<Expression> clone(QueryNodeHandoverPatches*) const override
+    {
+        return std::unique_ptr<Expression>(new FalseExpression(*this));
+    }
 };
 
 using KeyPath = std::vector<std::string>;
@@ -236,9 +244,11 @@ void add_link_constraint_to_query(realm::Query &query,
     switch (op) {
         case Predicate::Operator::NotEqual:
             query.Not();
-        case Predicate::Operator::Equal:
-            query.links_to(prop_expr.prop->table_column, row_index);
+        case Predicate::Operator::Equal: {
+            size_t col = prop_expr.prop->table_column;
+            query.links_to(col, query.get_table()->get_link_target(col)->get(row_index));
             break;
+        }
         default:
             throw std::runtime_error("Only 'equal' and 'not equal' operators supported for object comparison.");
     }
@@ -449,7 +459,7 @@ void update_query_with_predicate(Query &query, const Predicate &pred, Arguments 
                 update_query_with_predicate(query, sub, arguments, schema, type);
             }
             if (!pred.cpnd.sub_predicates.size()) {
-                query.and_query(new TrueExpression);
+                query.and_query(std::unique_ptr<realm::Expression>(new TrueExpression));
             }
             query.end_group();
             break;
@@ -461,7 +471,7 @@ void update_query_with_predicate(Query &query, const Predicate &pred, Arguments 
                 update_query_with_predicate(query, sub, arguments, schema, type);
             }
             if (!pred.cpnd.sub_predicates.size()) {
-                query.and_query(new FalseExpression);
+                query.and_query(std::unique_ptr<realm::Expression>(new FalseExpression));
             }
             query.end_group();
             break;
@@ -471,16 +481,15 @@ void update_query_with_predicate(Query &query, const Predicate &pred, Arguments 
             break;
         }
         case Predicate::Type::True:
-            query.and_query(new TrueExpression);
+            query.and_query(std::unique_ptr<realm::Expression>(new TrueExpression));
             break;
             
         case Predicate::Type::False:
-            query.and_query(new FalseExpression);
+            query.and_query(std::unique_ptr<realm::Expression>(new FalseExpression));
             break;
             
         default:
             throw std::runtime_error("Invalid predicate type");
-            break;
     }
 }
 
