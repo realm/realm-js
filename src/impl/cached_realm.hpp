@@ -23,6 +23,8 @@
 
 #if REALM_PLATFORM_APPLE
 #include "impl/apple/cached_realm.hpp"
+#elif REALM_PLATFORM_ANDROID
+#include "impl/android/cached_realm.hpp"
 #else
 #include "impl/generic/cached_realm.hpp"
 #endif
