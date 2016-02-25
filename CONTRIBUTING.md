@@ -17,7 +17,7 @@ If you'd like to send us sensitive sample code to help troubleshoot your issue, 
 
 ## Contributing Enhancements
 
-We love contributions to Realm! If you'd like to contribute code, documentation, or any other improvements, please [file a Pull Request](https://github.com/realm/realm-js/pulls) on our GitHub repository. Make sure to accept our [CLA](#cla)
+We love contributions to Realm! If you'd like to contribute code, documentation, or any other improvements, please [file a Pull Request](https://github.com/realm/realm-js/pulls) on our GitHub repository. Make sure to accept our [CLA](#cla).
 
 ### Commit Messages
 
