@@ -7,7 +7,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMake")
 include(CompilerFlags)
 
 include(RealmCore)
-download_realm_core(0.95.5)
+download_realm_core(0.96.2)
 
 include_directories(${REALM_CORE_INCLUDE_DIR} src external/pegtl)
 

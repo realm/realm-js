@@ -331,7 +331,7 @@ Predicate parse(const std::string &query)
     if (out_predicate.type == Predicate::Type::And && out_predicate.cpnd.sub_predicates.size() == 1) {
         return std::move(out_predicate.cpnd.sub_predicates.back());
     }
-    return std::move(out_predicate);
+    return out_predicate;
 }
 
 void analyze_grammar()
