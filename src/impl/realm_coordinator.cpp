@@ -66,7 +66,7 @@ std::shared_ptr<Realm> RealmCoordinator::get_realm(Realm::Config config)
     std::lock_guard<std::mutex> lock(m_realm_mutex);
     if ((!m_config.read_only && !m_notifier) || (m_config.read_only && m_weak_realm_notifiers.empty())) {
         m_config = config;
-        if (!config.read_only && !m_notifier) {
+        if (!config.read_only && !m_notifier && config.automatic_change_notifications) {
             try {
                 m_notifier = std::make_unique<ExternalCommitHelper>(*this);
             }
@@ -202,7 +202,9 @@ void RealmCoordinator::clear_cache()
 void RealmCoordinator::send_commit_notifications()
 {
     REALM_ASSERT(!m_config.read_only);
-    m_notifier->notify_others();
+    if (m_notifier) {
+        m_notifier->notify_others();
+    }
 }
 
 void RealmCoordinator::pin_version(uint_fast64_t version, uint_fast32_t index)
