@@ -9,6 +9,7 @@ set(SOURCES
     main.cpp
     parser.cpp
     results.cpp
+    transaction_log_parsing.cpp
     util/test_file.cpp
 )
 
