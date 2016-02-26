@@ -8,6 +8,7 @@ set(SOURCES
     index_set.cpp
     main.cpp
     parser.cpp
+    results.cpp
     util/test_file.cpp
 )
 
