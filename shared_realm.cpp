@@ -72,6 +72,9 @@ Realm::Realm(Config config)
             m_group = m_read_only_group.get();
         }
         else {
+            if (m_config.encryption_key.data() && m_config.encryption_key.size() != 64) {
+                throw InvalidEncryptionKeyException();
+            }
             m_history = realm::make_client_history(m_config.path, m_config.encryption_key.data());
             SharedGroup::DurabilityLevel durability = m_config.in_memory ? SharedGroup::durability_MemOnly :
                                                                            SharedGroup::durability_Full;
