@@ -25,6 +25,11 @@ var schemas = require('./schemas');
 var util = require('./util');
 
 module.exports = BaseTest.extend({
+    testRealmConstructor: function() {
+        var realm = new Realm({schema: []});
+        TestCase.assertTrue(realm instanceof Realm);
+    },
+
     testRealmConstructorPath: function() {
         TestCase.assertThrows(function() {
             new Realm('/invalidpath');
