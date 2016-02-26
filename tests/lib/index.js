@@ -24,6 +24,7 @@ var TESTS = {
     RealmTests: require('./realm-tests'),
     ResultsTests: require('./results-tests'),
     QueryTests: require('./query-tests'),
+    QueryTests: require('./encryption-tests'),
 };
 
 var SPECIAL_METHODS = {
