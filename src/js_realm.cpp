@@ -31,6 +31,7 @@
 #include <cassert>
 
 using namespace realm;
+using RJSAccessor = realm::NativeAccessor<JSValueRef, JSContextRef>;
 
 class RJSRealmDelegate : public BindingContext {
 public:
@@ -152,48 +153,52 @@ JSObjectRef RealmConstructor(JSContextRef ctx, JSObjectRef constructor, size_t a
         Realm::Config config;
         std::map<std::string, realm::ObjectDefaults> defaults;
         std::map<std::string, JSObjectRef> constructors;
-        switch (argumentCount) {
-            case 0:
-                config.path = RJSDefaultPath();
-                break;
-            case 1: {
-                JSValueRef value = arguments[0];
-                if (JSValueIsString(ctx, value)) {
-                    config.path = RJSValidatedStringForValue(ctx, value, "path");
-                    break;
+        if (argumentCount == 0) {
+            config.path = RJSDefaultPath();
+        }
+        else if (argumentCount == 1) {
+            JSValueRef value = arguments[0];
+            if (JSValueIsString(ctx, value)) {
+                config.path = RJSValidatedStringForValue(ctx, value, "path");
+            }
+            else if (JSValueIsObject(ctx, value)) {
+                JSObjectRef object = RJSValidatedValueToObject(ctx, value);
+
+                static JSStringRef pathString = JSStringCreateWithUTF8CString("path");
+                JSValueRef pathValue = RJSValidatedPropertyValue(ctx, object, pathString);
+                if (!JSValueIsUndefined(ctx, pathValue)) {
+                    config.path = RJSValidatedStringForValue(ctx, pathValue, "path");
                 }
-                if (JSValueIsObject(ctx, value)) {
-                    JSObjectRef object = RJSValidatedValueToObject(ctx, value);
+                else {
+                    config.path = RJSDefaultPath();
+                }
 
-                    static JSStringRef pathString = JSStringCreateWithUTF8CString("path");
-                    JSValueRef pathValue = RJSValidatedPropertyValue(ctx, object, pathString);
-                    if (!JSValueIsUndefined(ctx, pathValue)) {
-                        config.path = RJSValidatedStringForValue(ctx, pathValue, "path");
-                    }
-                    else {
-                        config.path = RJSDefaultPath();
-                    }
+                static JSStringRef schemaString = JSStringCreateWithUTF8CString("schema");
+                JSValueRef schemaValue = RJSValidatedPropertyValue(ctx, object, schemaString);
+                if (!JSValueIsUndefined(ctx, schemaValue)) {
+                    config.schema.reset(new Schema(RJSParseSchema(ctx, RJSValidatedValueToObject(ctx, schemaValue), defaults, constructors)));
+                }
 
-                    static JSStringRef schemaString = JSStringCreateWithUTF8CString("schema");
-                    JSValueRef schemaValue = RJSValidatedPropertyValue(ctx, object, schemaString);
-                    if (!JSValueIsUndefined(ctx, schemaValue)) {
-                        config.schema.reset(new Schema(RJSParseSchema(ctx, RJSValidatedValueToObject(ctx, schemaValue), defaults, constructors)));
-                    }
-
-                    static JSStringRef schemaVersionString = JSStringCreateWithUTF8CString("schemaVersion");
-                    JSValueRef versionValue = RJSValidatedPropertyValue(ctx, object, schemaVersionString);
-                    if (JSValueIsNumber(ctx, versionValue)) {
-                        config.schema_version = RJSValidatedValueToNumber(ctx, versionValue);
-                    }
-                    else {
-                        config.schema_version = 0;
-                    }
-                    break;
+                static JSStringRef schemaVersionString = JSStringCreateWithUTF8CString("schemaVersion");
+                JSValueRef versionValue = RJSValidatedPropertyValue(ctx, object, schemaVersionString);
+                if (JSValueIsNumber(ctx, versionValue)) {
+                    config.schema_version = RJSValidatedValueToNumber(ctx, versionValue);
+                }
+                else {
+                    config.schema_version = 0;
+                }
+                
+                static JSStringRef encryptionKeyString = JSStringCreateWithUTF8CString("encryptionKey");
+                JSValueRef encryptionKeyValue = RJSValidatedPropertyValue(ctx, object, encryptionKeyString);
+                if (!JSValueIsUndefined(ctx, encryptionKeyValue)) {
+                    std::string encryptionKey = RJSAccessor::to_binary(ctx, encryptionKeyValue);
+                    config.encryption_key = std::vector<char>(encryptionKey.begin(), encryptionKey.end());;
                 }
             }
-            default:
-                *jsException = RJSMakeError(ctx, "Invalid arguments when constructing 'Realm'");
-                return NULL;
+        }
+        else {
+            *jsException = RJSMakeError(ctx, "Invalid arguments when constructing 'Realm'");
+            return NULL;
         }
         ensure_directory_exists_for_file(config.path);
         SharedRealm realm = Realm::get_shared_realm(config);
