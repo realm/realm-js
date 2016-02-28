@@ -24,7 +24,16 @@ var TestCase = require('./asserts');
 var schemas = require('./schemas');
 
 module.exports = BaseTest.extend({
-    testArrayLength: function() {
+    testListConstructor: function() {
+        var realm = new Realm({schema: [schemas.PersonObject, schemas.PersonList]});
+
+        realm.write(function() {
+            var obj = realm.create('PersonList', {list: []});
+            TestCase.assertTrue(obj.list instanceof Realm.List);
+        });
+    },
+
+    testListLength: function() {
         var realm = new Realm({schema: [schemas.LinkTypes, schemas.TestObject]});
         var array;
 
@@ -52,7 +61,7 @@ module.exports = BaseTest.extend({
         TestCase.assertEqual(array.length, 2);
     },
 
-    testArraySubscriptGetters: function() {
+    testListSubscriptGetters: function() {
         var realm = new Realm({schema: [schemas.LinkTypes, schemas.TestObject]});
         var array;
 
@@ -72,7 +81,7 @@ module.exports = BaseTest.extend({
         TestCase.assertEqual(array[-1], undefined);
     },
 
-    testArraySubscriptSetters: function() {
+    testListSubscriptSetters: function() {
         var realm = new Realm({schema: [schemas.LinkTypes, schemas.TestObject]});
         var array;
 
@@ -110,7 +119,7 @@ module.exports = BaseTest.extend({
         }, 'cannot set list item outside write transaction');
     },
 
-    testArrayInvalidProperty: function() {
+    testListInvalidProperty: function() {
         var realm = new Realm({schema: [schemas.LinkTypes, schemas.TestObject]});
         var array;
 
@@ -127,7 +136,7 @@ module.exports = BaseTest.extend({
         TestCase.assertEqual(undefined, array.ablasdf);
     },
 
-    testArrayEnumerate: function() {
+    testListEnumerate: function() {
         var realm = new Realm({schema: [schemas.LinkTypes, schemas.TestObject]});
         var obj;
 
@@ -160,7 +169,7 @@ module.exports = BaseTest.extend({
         TestCase.assertEqual(keys.length, 2);
     },
 
-    testPush: function() {
+    testListPush: function() {
         var realm = new Realm({schema: [schemas.LinkTypes, schemas.TestObject]});
         var array;
 
@@ -194,7 +203,7 @@ module.exports = BaseTest.extend({
         }, 'can only push in a write transaction');
     },
 
-    testPop: function() {
+    testListPop: function() {
         var realm = new Realm({schema: [schemas.LinkTypes, schemas.TestObject]});
         var array;
 
@@ -222,7 +231,7 @@ module.exports = BaseTest.extend({
         }, 'can only pop in a write transaction');
     },
 
-    testUnshift: function() {
+    testListUnshift: function() {
         var realm = new Realm({schema: [schemas.LinkTypes, schemas.TestObject]});
         var array;
 
@@ -252,7 +261,7 @@ module.exports = BaseTest.extend({
         }, 'can only unshift in a write transaction');
     },
 
-    testShift: function() {
+    testListShift: function() {
         var realm = new Realm({schema: [schemas.LinkTypes, schemas.TestObject]});
         var array;
 
@@ -280,7 +289,7 @@ module.exports = BaseTest.extend({
         }, 'can only shift in a write transaction');
     },
 
-    testSplice: function() {
+    testListSplice: function() {
         var realm = new Realm({schema: [schemas.LinkTypes, schemas.TestObject]});
         var array;
 
@@ -345,7 +354,7 @@ module.exports = BaseTest.extend({
         }, 'can only splice in a write transaction');
     },
 
-    testDeletions: function() {
+    testListDeletions: function() {
         var realm = new Realm({schema: [schemas.LinkTypes, schemas.TestObject]});
         var object;
         var array;
@@ -424,7 +433,7 @@ module.exports = BaseTest.extend({
         TestCase.assertEqual(objects.length, 4);
     },
 
-    testStaticResults: function() {
+    testListSnapshot: function() {
         var realm = new Realm({schema: [schemas.LinkTypes, schemas.TestObject]});
         var objects = realm.objects('TestObject');
         var array;
