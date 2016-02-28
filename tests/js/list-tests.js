@@ -31,6 +31,10 @@ module.exports = BaseTest.extend({
             var obj = realm.create('PersonList', {list: []});
             TestCase.assertTrue(obj.list instanceof Realm.List);
         });
+
+        TestCase.assertThrows(function() {
+            new Realm.List();
+        });
     },
 
     testListLength: function() {
