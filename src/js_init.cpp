@@ -56,7 +56,7 @@ JSClassRef RJSRealmTypeClass() {
     return JSClassCreate(&realmTypesDefinition);
 }
 
-static JSObjectRef InvalidConstructor(JSContextRef ctx, JSObjectRef constructor, size_t argumentCount, const JSValueRef arguments[], JSValueRef* exception) {
+static JSObjectRef UncallableConstructor(JSContextRef ctx, JSObjectRef constructor, size_t argumentCount, const JSValueRef arguments[], JSValueRef* exception) {
     *exception = RJSMakeError(ctx, "Illegal constructor");
     return NULL;
 }
@@ -75,10 +75,10 @@ JSObjectRef RJSConstructorCreate(JSContextRef ctx) {
     JSObjectRef realmObject = JSObjectMake(ctx, RJSRealmConstructorClass(), NULL);
     JSPropertyAttributes attributes = kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete;
 
-    JSObjectRef listConstructor = JSObjectMakeConstructor(ctx, RJSListClass(), InvalidConstructor);
+    JSObjectRef listConstructor = JSObjectMakeConstructor(ctx, RJSListClass(), UncallableConstructor);
     RJSObjectSetProperty(ctx, realmObject, listString, listConstructor, attributes);
 
-    JSObjectRef resultsContructor = JSObjectMakeConstructor(ctx, RJSResultsClass(), InvalidConstructor);
+    JSObjectRef resultsContructor = JSObjectMakeConstructor(ctx, RJSResultsClass(), UncallableConstructor);
     RJSObjectSetProperty(ctx, realmObject, resultsString, resultsContructor, attributes);
 
     JSObjectRef typesObject = JSObjectMake(ctx, RJSRealmTypeClass(), NULL);
