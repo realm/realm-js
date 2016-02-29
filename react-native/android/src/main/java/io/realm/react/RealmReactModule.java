@@ -9,8 +9,15 @@ import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.soloader.SoLoader;
 
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
@@ -58,13 +65,53 @@ public class RealmReactModule extends ReactContextBaseJavaModule {
         if (!isContextInjected()) {
             startWebServer();
         }
-        return Collections.EMPTY_MAP;
+
+        List<String> hosts;
+        if (RealmAnalytics.isRunningOnEmulator()) {
+            hosts = Arrays.asList(new String[]{"localhost"});
+        } else {
+            hosts = getIPAddresses();
+        }
+
+        HashMap<String, Object> constants = new HashMap<String, Object>();
+        constants.put("debugHosts", hosts);
+        constants.put("debugPort", DEFAULT_PORT);
+        return constants;
     }
 
     @Override
     public void onCatalystInstanceDestroy() {
         clearContextInjectedFlag();
         stopWebServer();
+    }
+
+    private List<String> getIPAddresses() {
+        ArrayList<String> ipAddresses = new ArrayList<String>();
+
+        try {
+            Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
+
+            while (networkInterfaces.hasMoreElements()) {
+                NetworkInterface networkInterface = networkInterfaces.nextElement();
+                if (networkInterface.isLoopback() || !networkInterface.isUp()) {
+                    continue;
+                }
+
+                Enumeration<InetAddress> addresses = networkInterface.getInetAddresses();
+                while (addresses.hasMoreElements()) {
+                    InetAddress address = addresses.nextElement();
+                    if (address.isLoopbackAddress() || address.isLinkLocalAddress() || address.isAnyLocalAddress()) {
+                        continue;
+                    }
+
+                    ipAddresses.add(address.getHostAddress());
+                }
+            }
+        } catch (SocketException e) {
+            e.printStackTrace();
+        }
+
+        return ipAddresses;
     }
 
     private void startWebServer() {
