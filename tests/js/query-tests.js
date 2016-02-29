@@ -97,8 +97,8 @@ function runQuerySuite(suite) {
                 throw "Primary key required for object comparison";
             }
 
-            TestCase.assertArraysEqual(test[1], Array.prototype.map.call(results,  function(el) { 
-                return el[primary] 
+            TestCase.assertArraysEqual(test[1], results.map(function(el) {
+                return el[primary];
             }));
         }
         else if (test[0] == "QueryThrows") {

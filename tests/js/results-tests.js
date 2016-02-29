@@ -180,7 +180,7 @@ module.exports = BaseTest.extend({
         });
 
         var primaries = function(results, prop) {
-            return Array.prototype.map.call(results, function(object) {
+            return results.map(function(object) {
                 return object.primaryCol;
             });
         };

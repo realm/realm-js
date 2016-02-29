@@ -39,6 +39,9 @@ PersonObject.schema = {
 PersonObject.prototype.description = function() {
     return this.name + ' ' + this.age;
 };
+PersonObject.prototype.toString = function() {
+    return this.name;
+};
 exports.PersonObject = PersonObject;
 
 exports.PersonList = {

@@ -511,7 +511,7 @@ module.exports = BaseTest.extend({
         });
 
         var names = function(results, prop) {
-            return Array.prototype.map.call(results, function(object) {
+            return results.map(function(object) {
                 return object.name;
             });
         };
@@ -521,5 +521,55 @@ module.exports = BaseTest.extend({
 
         objects = list.sorted(['age', 'name']);
         TestCase.assertArraysEqual(names(objects), ['Ari', 'Tim', 'Alex', 'Bjarne']);
+    },
+
+    testArrayMethods: function() {
+        var realm = new Realm({schema: [schemas.PersonObject, schemas.PersonList]});
+        var object;
+
+        realm.write(function() {
+            object = realm.create('PersonList', {list: [
+                {name: 'Ari', age: 10},
+                {name: 'Tim', age: 11},
+                {name: 'Bjarne', age: 12},
+            ]});
+        });
+
+        [
+            object.list,
+            realm.objects('PersonObject'),
+        ].forEach(function(list) {
+            TestCase.assertEqual(list.slice().length, 3);
+            TestCase.assertEqual(list.slice(-1).length, 1);
+            TestCase.assertEqual(list.slice(-1)[0].age, 12);
+            TestCase.assertEqual(list.slice(1, 3).length, 2);
+            TestCase.assertEqual(list.slice(1, 3)[1].age, 12);
+
+            TestCase.assertEqual(list.join(' '), 'Ari Tim Bjarne');
+
+            var count = 0;
+            list.forEach(function(p, i) {
+                TestCase.assertEqual(p.name, list[i].name);
+                count++;
+            });
+            TestCase.assertEqual(count, list.length);
+
+            TestCase.assertArraysEqual(list.map(function(p) {return p.age}), [10, 11, 12]);
+            TestCase.assertTrue(list.some(function(p) {return p.age > 10}));
+            TestCase.assertTrue(list.every(function(p) {return p.age > 0}));
+
+            var person = list.find(function(p) {return p.name == 'Tim'});
+            TestCase.assertEqual(person.name, 'Tim');
+
+            var index = list.findIndex(function(p) {return p.name == 'Tim'});
+            TestCase.assertEqual(index, 1);
+
+            TestCase.assertEqual(list.reduce(function(n, p) {return n + p.age}, 0), 33);
+            TestCase.assertEqual(list.reduceRight(function(n, p) {return n + p.age}, 0), 33);
+
+            TestCase.assertEqual(list.entries().next().value[1].name, 'Ari');
+            TestCase.assertEqual(list.keys().next().value, 0);
+            TestCase.assertEqual(list.values().next().value.name, 'Ari');
+        });
     },
 });
