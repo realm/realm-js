@@ -201,7 +201,7 @@ static inline size_t RJSValidatedListLength(JSContextRef ctx, JSObjectRef object
     return RJSValidatedValueToNumber(ctx, lengthValue);
 }
 
-static inline void RJSObjectSetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef value, JSPropertyAttributes attributes = 0) {
+static inline void RJSValidatedSetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef value, JSPropertyAttributes attributes = 0) {
     JSValueRef exception = NULL;
     JSObjectSetProperty(ctx, object, propertyName, value, attributes, &exception);
     if (exception) {

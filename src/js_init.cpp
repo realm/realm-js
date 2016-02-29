@@ -76,16 +76,16 @@ JSObjectRef RJSConstructorCreate(JSContextRef ctx) {
     JSPropertyAttributes attributes = kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete;
 
     JSObjectRef listConstructor = JSObjectMakeConstructor(ctx, RJSListClass(), UncallableConstructor);
-    RJSObjectSetProperty(ctx, realmObject, listString, listConstructor, attributes);
+    RJSValidatedSetProperty(ctx, realmObject, listString, listConstructor, attributes);
 
     JSObjectRef resultsContructor = JSObjectMakeConstructor(ctx, RJSResultsClass(), UncallableConstructor);
-    RJSObjectSetProperty(ctx, realmObject, resultsString, resultsContructor, attributes);
+    RJSValidatedSetProperty(ctx, realmObject, resultsString, resultsContructor, attributes);
 
     JSObjectRef typesObject = JSObjectMake(ctx, RJSRealmTypeClass(), NULL);
-    RJSObjectSetProperty(ctx, realmObject, typeString, typesObject, attributes);
+    RJSValidatedSetProperty(ctx, realmObject, typeString, typesObject, attributes);
 
     JSObjectRef clearTestStateFunction = JSObjectMakeFunctionWithCallback(ctx, clearTestStateString, ClearTestState);
-    RJSObjectSetProperty(ctx, realmObject, clearTestStateString, clearTestStateFunction, attributes);
+    RJSValidatedSetProperty(ctx, realmObject, clearTestStateString, clearTestStateFunction, attributes);
 
     return realmObject;
 }
