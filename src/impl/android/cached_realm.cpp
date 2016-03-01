@@ -19,9 +19,6 @@
 #include "cached_realm.hpp"
 
 #include <atomic>
-#include <sstream>
-
-#include "../../debug.hpp"
 
 namespace realm
 {
@@ -70,7 +67,6 @@ void CachedRealm::notify()
 {
     notify_handler(m_handler);
 }
-
 
 create_handler_function create_handler_for_current_thread = nullptr;
 notify_handler_function notify_handler = nullptr;

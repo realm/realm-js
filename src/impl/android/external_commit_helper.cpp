@@ -65,29 +65,6 @@ void ExternalCommitHelper::FdHolder::close()
     m_fd = -1;
 }
 
-// Inter-thread and inter-process notifications of changes are done using a
-// named pipe in the filesystem next to the Realm file. Everyone who wants to be
-// notified of commits waits for data to become available on the pipe, and anyone
-// who commits a write transaction writes data to the pipe after releasing the
-// write lock. Note that no one ever actually *reads* from the pipe: the data
-// actually written is meaningless, and trying to read from a pipe from multiple
-// processes at once is fraught with race conditions.
-
-// When a RLMRealm instance is created, we add a CFRunLoopSource to the current
-// thread's runloop. On each cycle of the run loop, the run loop checks each of
-// its sources for work to do, which in the case of CFRunLoopSource is just
-// checking if CFRunLoopSourceSignal has been called since the last time it ran,
-// and if so invokes the function pointer supplied when the source is created,
-// which in our case just invokes `[realm handleExternalChange]`.
-
-// Listening for external changes is done using kqueue() on a background thread.
-// kqueue() lets us efficiently wait until the amount of data which can be read
-// from one or more file descriptors has changed, and tells us which of the file
-// descriptors it was that changed. We use this to wait on both the shared named
-// pipe, and a local anonymous pipe. When data is written to the named pipe, we
-// signal the runloop source and wake up the target runloop, and when data is
-// written to the anonymous pipe the background thread removes the runloop
-// source from the runloop and and shuts down.
 ExternalCommitHelper::ExternalCommitHelper(RealmCoordinator& parent)
 : m_parent(parent)
 {
@@ -147,12 +124,10 @@ ExternalCommitHelper::ExternalCommitHelper(RealmCoordinator& parent)
         }
         catch (std::exception const& e) {
             fprintf(stderr, "uncaught exception in notifier thread: %s: %s\n", typeid(e).name(), e.what());
-            //asl_log(nullptr, nullptr, ASL_LEVEL_ERR, "uncaught exception in notifier thread: %s: %s", typeid(e).name(), e.what());
             throw;
         }
         catch (...) {
             fprintf(stderr,  "uncaught exception in notifier thread\n");
-            //asl_log(nullptr, nullptr, ASL_LEVEL_ERR, "uncaught exception in notifier thread");
             throw;
         }
     });
