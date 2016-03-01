@@ -26,6 +26,7 @@ using namespace realm::_impl;
 CachedRealm::CachedRealm(const std::shared_ptr<Realm>& realm, bool cache)
 : CachedRealmBase(realm, cache)
 {
+    // TODO: This logic should reside in enable_auto_refresh below.
     struct RefCountedWeakPointer {
         std::weak_ptr<Realm> realm;
         std::atomic<size_t> ref_count = {1};
@@ -83,6 +84,8 @@ CachedRealm::~CachedRealm()
         CFRelease(m_runloop);
     }
 }
+
+void CachedRealm::set_auto_refresh(bool auto_refresh) { /* noop for now */}
 
 void CachedRealm::notify()
 {

@@ -60,8 +60,9 @@ Realm::Config& Realm::Config::operator=(realm::Realm::Config const& c)
     return *this;
 }
 
-Realm::Realm(Config config)
+Realm::Realm(Config config, bool auto_refresh)
 : m_config(std::move(config))
+, m_auto_refresh(auto_refresh)
 {
     try {
         if (m_config.read_only) {
@@ -394,6 +395,12 @@ bool Realm::refresh()
     }
 
     return true;
+}
+
+void Realm::set_auto_refresh(bool auto_refresh)
+{
+    m_auto_refresh = auto_refresh; 
+    m_coordinator->set_auto_refresh_for(this, auto_refresh);
 }
 
 uint64_t Realm::get_schema_version(const realm::Realm::Config &config)

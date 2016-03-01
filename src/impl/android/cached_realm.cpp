@@ -18,3 +18,63 @@
 
 #include "cached_realm.hpp"
 
+#include <atomic>
+#include <sstream>
+
+#include "../../debug.hpp"
+
+namespace realm
+{
+namespace _impl
+{
+
+
+CachedRealm::CachedRealm(const std::shared_ptr<Realm>& realm, bool cache)
+: CachedRealmBase(realm, cache)
+{
+}
+
+CachedRealm::CachedRealm(CachedRealm&& rgt)
+: CachedRealmBase(std::move(rgt))
+, m_handler(rgt.m_handler)
+{
+    rgt.m_handler = nullptr;
+}
+
+CachedRealm& CachedRealm::operator=(CachedRealm&& rgt)
+{
+    CachedRealmBase::operator=(std::move(rgt));
+    m_handler = rgt.m_handler;
+    rgt.m_handler = nullptr;
+
+    return *this;
+}
+
+CachedRealm::~CachedRealm()
+{
+    if (m_handler) {
+        destroy_handler(m_handler);
+        m_handler = nullptr;
+    }
+}
+
+void CachedRealm::set_auto_refresh(bool auto_refresh)
+{
+    if (auto_refresh) {
+        auto locked_ptr = new std::shared_ptr<Realm> { m_realm };
+        m_handler = create_handler_for_current_thread(locked_ptr);
+    }
+}
+
+void CachedRealm::notify()
+{
+    notify_handler(m_handler);
+}
+
+
+create_handler_function create_handler_for_current_thread = nullptr;
+notify_handler_function notify_handler = nullptr;
+destroy_handler_function destroy_handler = nullptr;
+
+}
+}

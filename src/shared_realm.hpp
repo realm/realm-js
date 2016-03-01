@@ -96,7 +96,7 @@ namespace realm {
         bool is_in_read_transaction() const { return !!m_group; }
 
         bool refresh();
-        void set_auto_refresh(bool auto_refresh) { m_auto_refresh = auto_refresh; }
+        void set_auto_refresh(bool auto_refresh);
         bool auto_refresh() const { return m_auto_refresh; }
         void notify();
 
@@ -114,13 +114,13 @@ namespace realm {
         ~Realm();
 
         void init(std::shared_ptr<_impl::RealmCoordinator> coordinator);
-        Realm(Config config);
+        Realm(Config config, bool auto_refresh = true);
 
       private:
         Config m_config;
         std::thread::id m_thread_id = std::this_thread::get_id();
         bool m_in_transaction = false;
-        bool m_auto_refresh = true;
+        bool m_auto_refresh;
 
         std::unique_ptr<ClientHistory> m_history;
         std::unique_ptr<SharedGroup> m_shared_group;

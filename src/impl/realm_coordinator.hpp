@@ -51,6 +51,9 @@ public:
     const std::vector<char>& get_encryption_key() const noexcept { return m_config.encryption_key; }
     bool is_in_memory() const noexcept { return m_config.in_memory; }
 
+    // Enable or disable automatic refreshing by hooking into the runloop
+    void set_auto_refresh_for(Realm* realm, bool auto_refresh);
+
     // Asyncronously call notify() on every Realm instance for this coordinator's
     // path, including those in other processes
     void send_commit_notifications();

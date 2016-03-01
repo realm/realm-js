@@ -36,6 +36,9 @@ public:
     CachedRealm(const CachedRealm&) = delete;
     CachedRealm& operator=(const CachedRealm&) = delete;
 
+    // Register or unregister the handler on the looper so we will react to refresh notifications
+    void set_auto_refresh(bool auto_refresh);
+
     // Asyncronously call notify() on the Realm on the appropriate thread
     void notify();
 

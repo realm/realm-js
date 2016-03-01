@@ -186,11 +186,13 @@ void ExternalCommitHelper::listen()
       struct epoll_event ev;
       ret = epoll_wait(m_kq, &ev, 1, -1);
       assert(ret >= 0);
-      assert(ret >= 0);
       if (ret == 0) {
         // Spurious wakeup; just wait again
         continue;
       }
+
+      char buf[1];
+      read(ev.data.fd, &buf, 1);
 
       if (ev.data.u32 == (uint32_t)m_shutdown_read_fd) {
         return;
