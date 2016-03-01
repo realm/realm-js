@@ -32,14 +32,21 @@
 + (XCTestSuite *)defaultTestSuite {
     XCTestSuite *suite = [super defaultTestSuite];
     JSContext *context = [[JSContext alloc] init];
-    JSValue *realmConstructor = [JSValue valueWithJSValueRef:RJSConstructorCreate(context.JSGlobalContextRef) inContext:context];
     RJSModuleLoader *moduleLoader = [[RJSModuleLoader alloc] initWithContext:context];
-    NSURL *scriptURL = [[NSBundle bundleForClass:self] URLForResource:@"index" withExtension:@"js" subdirectory:@"lib"];
+    NSURL *realmURL = [[NSBundle bundleForClass:self] URLForResource:@"index" withExtension:@"js" subdirectory:@"lib"];
+    NSURL *scriptURL = [[NSBundle bundleForClass:self] URLForResource:@"index" withExtension:@"js" subdirectory:@"js"];
+    NSError *error;
+
+    // Create Realm constructor in the JS context.
+    RJSInitializeInContext(context.JSGlobalContextRef);
+
+    // Load the Realm module so additional functionality is exposed on Realm objects.
+    JSValue *realmConstructor = [moduleLoader loadModuleFromURL:realmURL error:&error];
+    NSAssert(realmConstructor, @"%@", error);
 
     // Expose the Realm constructor as a global 'realm' CommonJS module.
     [moduleLoader addGlobalModuleObject:realmConstructor forName:@"realm"];
 
-    NSError *error;
     JSValue *testObject = [moduleLoader loadModuleFromURL:scriptURL error:&error];
     NSAssert(testObject, @"%@", error);
 
@@ -76,7 +83,7 @@
         NSURL *sourceURL = nil;
 
         if (source) {
-            NSString *path = [NSString pathWithComponents:@[[@(__FILE__) stringByDeletingLastPathComponent], @"..", @"lib", source.lastPathComponent]];
+            NSString *path = [NSString pathWithComponents:@[[@(__FILE__) stringByDeletingLastPathComponent], @"..", @"js", source.lastPathComponent]];
             sourceURL = [NSURL URLWithString:path];
         }
 

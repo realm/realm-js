@@ -217,16 +217,22 @@ JSObjectRef RealmConstructor(JSContextRef ctx, JSObjectRef constructor, size_t a
     }
 }
 
+bool RealmHasInstance(JSContextRef ctx, JSObjectRef constructor, JSValueRef value, JSValueRef* exception) {
+    return JSValueIsObjectOfClass(ctx, value, RJSRealmClass());
+}
+
+static const JSStaticValue RealmStaticProperties[] = {
+    {"defaultPath", GetDefaultPath, SetDefaultPath, kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
+    {NULL, NULL}
+};
+
 JSClassRef RJSRealmConstructorClass() {
     JSClassDefinition realmConstructorDefinition = kJSClassDefinitionEmpty;
-    realmConstructorDefinition.className = "Realm";
+    realmConstructorDefinition.attributes = kJSClassAttributeNoAutomaticPrototype;
+    realmConstructorDefinition.className = "RealmConstructor";
     realmConstructorDefinition.callAsConstructor = RealmConstructor;
-
-    JSStaticValue realmStaticProperties[] = {
-        {"defaultPath", GetDefaultPath, SetDefaultPath, kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
-        {NULL, NULL}
-    };
-    realmConstructorDefinition.staticValues = realmStaticProperties;
+    realmConstructorDefinition.hasInstance = RealmHasInstance;
+    realmConstructorDefinition.staticValues = RealmStaticProperties;
     return JSClassCreate(&realmConstructorDefinition);
 }
 

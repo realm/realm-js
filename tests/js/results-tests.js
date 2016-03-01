@@ -24,6 +24,17 @@ var TestCase = require('./asserts');
 var schemas = require('./schemas');
 
 module.exports = BaseTest.extend({
+    testResultsConstructor: function() {
+        var realm = new Realm({schema: [schemas.TestObject]});
+        var objects = realm.objects('TestObject');
+
+        TestCase.assertTrue(objects instanceof Realm.Results);
+
+        TestCase.assertThrows(function() {
+            new Realm.Results();
+        });
+    },
+
     testResultsLength: function() {
         var realm = new Realm({schema: [schemas.TestObject]});
         var objects = realm.objects('TestObject');
@@ -35,6 +46,7 @@ module.exports = BaseTest.extend({
         });
         TestCase.assertEqual(objects.length, 1);
     },
+
     testResultsSubscript: function() {
         var realm = new Realm({schema: [schemas.PersonObject]});
         realm.write(function() {
@@ -50,6 +62,7 @@ module.exports = BaseTest.extend({
         TestCase.assertTrue(Object.getPrototypeOf(people[0]) === schemas.PersonObject.prototype);
         TestCase.assertTrue(people[0] instanceof schemas.PersonObject);
     },
+
     testResultsReadonly: function() {
         var realm = new Realm({schema: [schemas.TestObject]});
         var objects = realm.objects('TestObject');
@@ -71,17 +84,20 @@ module.exports = BaseTest.extend({
             objects.length = 0;
         });
     },
+
     testResultsInvalidProperty: function() {
         var realm = new Realm({schema: [schemas.TestObject]});
         var objects = realm.objects('TestObject');
         TestCase.assertEqual(undefined, objects.ablasdf);
     },
+
     testResultsInvalidObjectType: function() {
         var realm = new Realm({schema: [schemas.TestObject]});
         TestCase.assertThrows(function() {
             var objects = realm.objects('NotTestObject');
         });
     },
+
     testResultsEnumerate: function() {
         var realm = new Realm({schema: [schemas.TestObject]});
         var objects = realm.objects('TestObject');
@@ -105,6 +121,7 @@ module.exports = BaseTest.extend({
         TestCase.assertEqual(count, 1);
         TestCase.assertEqual(keys.length, 1);
     },
+
     testResultsFiltered: function() {
         var realm = new Realm({schema: [schemas.PersonObject, schemas.DefaultValues, schemas.TestObject]});
         realm.write(function() {
@@ -149,6 +166,7 @@ module.exports = BaseTest.extend({
             realm.objects('PersonObject').filtered("invalidQuery");
         });
     },
+
     testResultsSorted: function() {
         var realm = new Realm({schema: [schemas.IntPrimary]});
         var objects = realm.objects('IntPrimaryObject');
@@ -162,7 +180,7 @@ module.exports = BaseTest.extend({
         });
 
         var primaries = function(results, prop) {
-            return Array.prototype.map.call(results, function(object) {
+            return results.map(function(object) {
                 return object.primaryCol;
             });
         };
