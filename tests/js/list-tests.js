@@ -567,9 +567,16 @@ module.exports = BaseTest.extend({
             TestCase.assertEqual(list.reduce(function(n, p) {return n + p.age}, 0), 33);
             TestCase.assertEqual(list.reduceRight(function(n, p) {return n + p.age}, 0), 33);
 
-            TestCase.assertEqual(list.entries().next().value[1].name, 'Ari');
-            TestCase.assertEqual(list.keys().next().value, 0);
-            TestCase.assertEqual(list.values().next().value.name, 'Ari');
+            // Some of these may not be present in every environment.
+            if (list.entries) {
+                TestCase.assertEqual(list.entries().next().value[1].name, 'Ari');
+            }
+            if (list.keys) {
+                TestCase.assertEqual(list.keys().next().value, 0);
+            }
+            if (list.values) {
+                TestCase.assertEqual(list.values().next().value.name, 'Ari');
+            }
         });
     },
 });
