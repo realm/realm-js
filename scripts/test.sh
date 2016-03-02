@@ -75,6 +75,9 @@ if [ -s "${HOME}/.nvm/nvm.sh" ]; then
 fi
 
 case "$TARGET" in
+"eslint")
+  npm run lint .
+  ;;
 "jsdoc")
   npm run jsdoc
   ;;

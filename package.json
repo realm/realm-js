@@ -42,10 +42,14 @@
     "get-version": "echo $npm_package_version",
     "set-version": "scripts/set-version.sh",
     "jsdoc": "rm -rf docs/output && jsdoc -c docs/conf.json",
+    "lint": "eslint",
     "test": "scripts/test.sh",
     "prepublish": "scripts/prepublish.sh"
   },
   "devDependencies": {
+    "babel-eslint": "^5.0.0",
+    "eslint": "^2.2.0",
+    "eslint-plugin-react": "^4.1.0",
     "jsdoc": "^3.4.0"
   },
   "engines": {
