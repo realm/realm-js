@@ -104,7 +104,7 @@ std::shared_ptr<Realm> RealmCoordinator::get_realm(Realm::Config config)
     // As the realm has just been initialized, auto_refresh() only tells us that it *should* be set, but
     // we haven't actually enabled it yet. Do that now.
     if (realm->auto_refresh())
-      set_auto_refresh_for(realm.get(), true);
+        set_auto_refresh_for(realm.get(), true);
 
     return realm;
 }
