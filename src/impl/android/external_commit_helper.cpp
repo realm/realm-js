@@ -147,7 +147,7 @@ void ExternalCommitHelper::listen()
 
     struct epoll_event event[2];
 
-    event[0].events = EPOLLIN;
+    event[0].events = EPOLLIN | EPOLLET;
     event[0].data.fd = m_notify_fd;
     ret = epoll_ctl(m_kq, EPOLL_CTL_ADD, m_notify_fd, &event[0]);
     assert(ret == 0);
@@ -166,8 +166,6 @@ void ExternalCommitHelper::listen()
         continue;
       }
 
-      char buf[1];
-      read(ev.data.fd, &buf, 1);
 
       if (ev.data.u32 == (uint32_t)m_shutdown_read_fd) {
         return;
