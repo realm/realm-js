@@ -5,7 +5,8 @@ set -e
 
 PATH="/opt/android-sdk-linux/platform-tools:$PATH"
 
-npm install realm
+# Inform the prepublish script to build Android modules.
+REALM_BUILD_ANDROID=1 npm install realm
 
 adb reverse tcp:8081 tcp:8081
 

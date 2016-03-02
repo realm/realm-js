@@ -12,7 +12,10 @@ SRCROOT=$(cd "$(dirname "$0")/.." && pwd)
 # Start current working directory at the root of the project.
 cd "$SRCROOT"
 
-if [[ $TARGET != *-android ]]; then
+if [[ $TARGET = *-android ]]; then
+  # Inform the prepublish script to build Android modules.
+  export REALM_BUILD_ANDROID=1
+else
   while pgrep -q Simulator; do
     # Kill all the current simulator processes as they may be from a
     # different Xcode version
@@ -22,9 +25,6 @@ if [[ $TARGET != *-android ]]; then
   done
 
   DESTINATION="-destination id=$(xcrun simctl list devices | grep -v unavailable | grep -m 1 -o '[0-9A-F\-]\{36\}')"
-
-  # Inform the prepublish script to skip building Android modules.
-  export SKIP_ANDROID_BUILD=1
 fi
 
 PACKAGER_OUT="$SRCROOT/packager_out.txt"
