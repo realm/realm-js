@@ -20,6 +20,7 @@
 #define REALM_RESULTS_HPP
 
 #include "shared_realm.hpp"
+#include "util/atomic_shared_ptr.hpp"
 
 #include <realm/table_view.hpp>
 #include <realm/table.hpp>
@@ -29,6 +30,29 @@ namespace realm {
 template<typename T> class BasicRowExpr;
 using RowExpr = BasicRowExpr<Table>;
 class Mixed;
+class Results;
+class ObjectSchema;
+
+namespace _impl {
+    class AsyncQuery;
+}
+
+// A token which keeps an asynchronous query alive
+struct AsyncQueryCancelationToken {
+    AsyncQueryCancelationToken() = default;
+    AsyncQueryCancelationToken(std::shared_ptr<_impl::AsyncQuery> query, size_t token);
+    ~AsyncQueryCancelationToken();
+
+    AsyncQueryCancelationToken(AsyncQueryCancelationToken&&);
+    AsyncQueryCancelationToken& operator=(AsyncQueryCancelationToken&&);
+
+    AsyncQueryCancelationToken(AsyncQueryCancelationToken const&) = delete;
+    AsyncQueryCancelationToken& operator=(AsyncQueryCancelationToken const&) = delete;
+
+private:
+    util::AtomicSharedPtr<_impl::AsyncQuery> m_query;
+    size_t m_token;
+};
 
 struct SortOrder {
     std::vector<size_t> columnIndices;
@@ -48,6 +72,7 @@ public:
     Results() = default;
     Results(SharedRealm r, const ObjectSchema& o, Table& table);
     Results(SharedRealm r, const ObjectSchema& o, Query q, SortOrder s = {});
+    ~Results();
 
     // Results is copyable and moveable
     Results(Results const&) = default;
@@ -72,7 +97,7 @@ public:
     TableView get_tableview();
 
     // Get the object type which will be returned by get()
-    StringData get_object_type() const noexcept { return get_object_schema().name; }
+    StringData get_object_type() const noexcept;
 
     // Set whether the TableView should sync if needed before accessing results
     void set_live(bool live);
@@ -165,6 +190,22 @@ public:
         UnsupportedColumnTypeException(size_t column, const Table* table);
     };
 
+    void update_tableview();
+
+    // Create an async query from this Results
+    // The query will be run on a background thread and delivered to the callback,
+    // and then rerun after each commit (if needed) and redelivered if it changed
+    AsyncQueryCancelationToken async(std::function<void (std::exception_ptr)> target);
+
+    bool wants_background_updates() const { return m_wants_background_updates; }
+
+    // Helper type to let AsyncQuery update the tableview without giving access
+    // to any other privates or letting anyone else do so
+    class Internal {
+        friend class _impl::AsyncQuery;
+        static void set_table_view(Results& results, TableView&& tv);
+    };
+
 private:
     SharedRealm m_realm;
     const ObjectSchema *m_object_schema;
@@ -174,17 +215,21 @@ private:
     SortOrder m_sort;
     bool m_live = true;
 
+    std::shared_ptr<_impl::AsyncQuery> m_background_query;
+
     Mode m_mode = Mode::Empty;
+    bool m_has_used_table_view = false;
+    bool m_wants_background_updates = true;
 
     void validate_read() const;
     void validate_write() const;
-
-    void update_tableview();
 
     template<typename Int, typename Float, typename Double, typename DateTime>
     util::Optional<Mixed> aggregate(size_t column, bool return_none_for_empty,
                                     Int agg_int, Float agg_float,
                                     Double agg_double, DateTime agg_datetime);
+
+    void set_table_view(TableView&& tv);
 };
 }
 

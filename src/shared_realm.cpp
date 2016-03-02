@@ -35,13 +35,14 @@ using namespace realm::_impl;
 
 Realm::Config::Config(const Config& c)
 : path(c.path)
+, encryption_key(c.encryption_key)
+, schema_version(c.schema_version)
+, migration_function(c.migration_function)
 , read_only(c.read_only)
 , in_memory(c.in_memory)
 , cache(c.cache)
 , disable_format_upgrade(c.disable_format_upgrade)
-, encryption_key(c.encryption_key)
-, schema_version(c.schema_version)
-, migration_function(c.migration_function)
+, automatic_change_notifications(c.automatic_change_notifications)
 {
     if (c.schema) {
         schema = std::make_unique<Schema>(*c.schema);
@@ -63,22 +64,33 @@ Realm::Config& Realm::Config::operator=(realm::Realm::Config const& c)
 Realm::Realm(Config config)
 : m_config(std::move(config))
 {
+    open_with_config(m_config, m_history, m_shared_group, m_read_only_group);
+
+    if (m_read_only_group) {
+        m_group = m_read_only_group.get();
+    }
+}
+
+void Realm::open_with_config(const Config& config,
+                             std::unique_ptr<ClientHistory>& history,
+                             std::unique_ptr<SharedGroup>& shared_group,
+                             std::unique_ptr<Group>& read_only_group)
+{
     try {
-        if (m_config.read_only) {
-            m_read_only_group = std::make_unique<Group>(m_config.path, m_config.encryption_key.data(), Group::mode_ReadOnly);
-            m_group = m_read_only_group.get();
+        if (config.read_only) {
+            read_only_group = std::make_unique<Group>(config.path, config.encryption_key.data(), Group::mode_ReadOnly);
         }
         else {
-            m_history = realm::make_client_history(m_config.path, m_config.encryption_key.data());
-            SharedGroup::DurabilityLevel durability = m_config.in_memory ? SharedGroup::durability_MemOnly :
+            history = realm::make_client_history(config.path, config.encryption_key.data());
+            SharedGroup::DurabilityLevel durability = config.in_memory ? SharedGroup::durability_MemOnly :
                                                                            SharedGroup::durability_Full;
-            m_shared_group = std::make_unique<SharedGroup>(*m_history, durability, m_config.encryption_key.data(), !m_config.disable_format_upgrade);
+            shared_group = std::make_unique<SharedGroup>(*history, durability, config.encryption_key.data(), !config.disable_format_upgrade);
         }
     }
     catch (util::File::PermissionDenied const& ex) {
         throw RealmFileException(RealmFileException::Kind::PermissionDenied, ex.get_path(),
                                  "Unable to open a realm at path '" + ex.get_path() +
-                                 "'. Please use a path where your app has " + (m_config.read_only ? "read" : "read-write") + " permissions.");
+                                 "'. Please use a path where your app has " + (config.read_only ? "read" : "read-write") + " permissions.");
     }
     catch (util::File::Exists const& ex) {
         throw RealmFileException(RealmFileException::Kind::Exists, ex.get_path(),
@@ -93,12 +105,12 @@ Realm::Realm(Config config)
                                  "Unable to open a realm at path '" + ex.get_path() + "'");
     }
     catch (IncompatibleLockFile const& ex) {
-        throw RealmFileException(RealmFileException::Kind::IncompatibleLockFile, m_config.path,
+        throw RealmFileException(RealmFileException::Kind::IncompatibleLockFile, config.path,
                                  "Realm file is currently open in another process "
                                  "which cannot share access with this process. All processes sharing a single file must be the same architecture.");
     }
     catch (FileFormatUpgradeRequired const& ex) {
-        throw RealmFileException(RealmFileException::Kind::FormatUpgradeRequired, m_config.path,
+        throw RealmFileException(RealmFileException::Kind::FormatUpgradeRequired, config.path,
                                  "The Realm file format must be allowed to be upgraded "
                                  "in order to proceed.");
     }
@@ -361,12 +373,15 @@ void Realm::notify()
         }
         if (m_auto_refresh) {
             if (m_group) {
-                transaction::advance(*m_shared_group, *m_history, m_binding_context.get());
+                m_coordinator->advance_to_ready(*this);
             }
             else if (m_binding_context) {
                 m_binding_context->did_change({}, {});
             }
         }
+    }
+    else {
+        m_coordinator->process_available_async(*this);
     }
 }
 
@@ -387,10 +402,24 @@ bool Realm::refresh()
 
     if (m_group) {
         transaction::advance(*m_shared_group, *m_history, m_binding_context.get());
+        m_coordinator->process_available_async(*this);
     }
     else {
         // Create the read transaction
         read_group();
+    }
+
+    return true;
+}
+
+bool Realm::can_deliver_notifications() const noexcept
+{
+    if (m_config.read_only) {
+        return false;
+    }
+
+    if (m_binding_context && !m_binding_context->can_deliver_notifications()) {
+        return false;
     }
 
     return true;
