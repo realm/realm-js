@@ -20,6 +20,7 @@
 #define REALM_RESULTS_HPP
 
 #include "shared_realm.hpp"
+#include "util/atomic_shared_ptr.hpp"
 #include "object_store.hpp"
 
 #include <realm/table_view.hpp>
@@ -50,7 +51,7 @@ struct AsyncQueryCancelationToken {
     AsyncQueryCancelationToken& operator=(AsyncQueryCancelationToken const&) = delete;
 
 private:
-    std::shared_ptr<_impl::AsyncQuery> m_query;
+    util::AtomicSharedPtr<_impl::AsyncQuery> m_query;
     size_t m_token;
 };
 

@@ -20,6 +20,8 @@
 
 #include "shared_realm.hpp"
 
+#include <atomic>
+
 using namespace realm;
 using namespace realm::_impl;
 

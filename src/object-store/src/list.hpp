@@ -19,46 +19,76 @@
 #ifndef REALM_LIST_HPP
 #define REALM_LIST_HPP
 
-#include "shared_realm.hpp"
 #include <realm/link_view.hpp>
 
+#include <memory>
+
 namespace realm {
-    class ObjectSchema;
-    class List {
-      public:
-        List(SharedRealm &r, const ObjectSchema &s, LinkViewRef l) : m_realm(r), m_object_schema(&s), m_link_view(l) {}
+template<typename T> class BasicRowExpr;
+using RowExpr = BasicRowExpr<Table>;
 
-        const ObjectSchema &get_object_schema() const { return *m_object_schema; }
-        SharedRealm realm() { return m_realm; }
+class ObjectSchema;
+class Realm;
+class Results;
+struct SortOrder;
 
-        size_t size();
-        Row get(std::size_t row_ndx);
-        void set(std::size_t row_ndx, std::size_t target_row_ndx);
+class List {
+public:
+    List() noexcept;
+    List(std::shared_ptr<Realm> r, const ObjectSchema& s, LinkViewRef l) noexcept;
+    ~List();
 
-        void add(size_t target_row_ndx);
-        void remove(size_t list_ndx);
-        void insert(size_t list_ndx, size_t target_row_ndx);
+    const std::shared_ptr<Realm>& get_realm() const { return m_realm; }
+    Query get_query() const;
+    const ObjectSchema& get_object_schema() const { return *m_object_schema; }
 
-        template<typename ValueType, typename ContextType>
-        void add(ContextType ctx, ValueType value);
+    bool is_valid() const;
+    void verify_attached() const;
+    void verify_in_transaction() const;
 
-        template<typename ValueType, typename ContextType>
-        void insert(ContextType ctx, ValueType value, size_t list_ndx);
+    size_t size() const;
+    RowExpr get(size_t row_ndx) const;
+    size_t find(ConstRow const& row) const;
 
-        template<typename ValueType, typename ContextType>
-        void set(ContextType ctx, ValueType value, size_t list_ndx);
+    void add(size_t target_row_ndx);
+    void insert(size_t list_ndx, size_t target_row_ndx);
+    void move(size_t source_ndx, size_t dest_ndx);
+    void remove(size_t list_ndx);
+    void remove_all();
+    void set(size_t row_ndx, size_t target_row_ndx);
+    void swap(size_t ndx1, size_t ndx2);
 
-        Query get_query();
+    void delete_all();
 
-        void verify_valid_row(std::size_t row_ndx, bool insertion = false);
-        void verify_attached();
-        void verify_in_tranaction();
+    Results sort(SortOrder order);
 
-      private:
-        SharedRealm m_realm;
-        const ObjectSchema *m_object_schema;
-        LinkViewRef m_link_view;
-    };
+    bool operator==(List const& rgt) const noexcept;
+
+    // These are implemented in object_accessor.hpp
+    template <typename ValueType, typename ContextType>
+    void add(ContextType ctx, ValueType value);
+
+    template <typename ValueType, typename ContextType>
+    void insert(ContextType ctx, ValueType value, size_t list_ndx);
+
+    template <typename ValueType, typename ContextType>
+    void set(ContextType ctx, ValueType value, size_t list_ndx);
+
+private:
+    std::shared_ptr<Realm> m_realm;
+    const ObjectSchema* m_object_schema;
+    LinkViewRef m_link_view;
+
+    void verify_valid_row(size_t row_ndx, bool insertion = false) const;
+
+    friend struct std::hash<List>;
+};
+} // namespace realm
+
+namespace std {
+template<> struct hash<realm::List> {
+    size_t operator()(realm::List const&) const;
+};
 }
 
 #endif /* REALM_LIST_HPP */
