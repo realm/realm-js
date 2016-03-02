@@ -48,10 +48,8 @@ public:
     // Is this a CachedRealmBase for the given Realm instance?
     bool is_for_realm(Realm* realm) const { return realm == m_realm_key; }
 
-protected:
-    std::weak_ptr<Realm> m_realm;
-
 private:
+    std::weak_ptr<Realm> m_realm;
     std::thread::id m_thread_id = std::this_thread::get_id();
     void* m_realm_key;
     bool m_cache = false;
