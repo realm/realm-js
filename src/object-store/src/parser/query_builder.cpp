@@ -164,11 +164,11 @@ void add_bool_constraint_to_query(Query &query, Predicate::Operator operatorType
 }
 
 void add_string_constraint_to_query(Query &query,
-                                    Predicate::Operator op,
+                                    Predicate::Comparison cmp,
                                     Columns<String> &&column,
                                     std::string &&value) {
-    bool case_sensitive = true;
-    switch (op) {
+    bool case_sensitive = (cmp.option != Predicate::OperatorOption::CaseInsensitive);
+    switch (cmp.op) {
         case Predicate::Operator::BeginsWith:
             query.and_query(column.begins_with(value, case_sensitive));
             break;
@@ -190,11 +190,11 @@ void add_string_constraint_to_query(Query &query,
 }
 
 void add_string_constraint_to_query(realm::Query &query,
-                                    Predicate::Operator op,
+                                    Predicate::Comparison cmp,
                                     std::string &&value,
                                     Columns<String> &&column) {
-    bool case_sensitive = true;
-    switch (op) {
+    bool case_sensitive = (cmp.option != Predicate::OperatorOption::CaseInsensitive);
+    switch (cmp.op) {
         case Predicate::Operator::Equal:
             query.and_query(column.equal(value, case_sensitive));
             break;
@@ -396,42 +396,42 @@ auto value_of_type_for_query(TableGetter&& tables, Value&& value, Arguments &arg
 }
 
 template <typename A, typename B>
-void do_add_comparison_to_query(Query &query, const Schema &schema, const ObjectSchema &object_schema, Predicate::Operator op,
+void do_add_comparison_to_query(Query &query, const Schema &schema, const ObjectSchema &object_schema, Predicate::Comparison cmp,
                                 const PropertyExpression &expr, A &lhs, B &rhs, Arguments &args)
 {
     auto type = expr.prop->type;
     switch (type) {
         case PropertyTypeBool:
-            add_bool_constraint_to_query(query, op, value_of_type_for_query<bool>(expr.table_getter, lhs, args),
-                                                    value_of_type_for_query<bool>(expr.table_getter, rhs, args));
+            add_bool_constraint_to_query(query, cmp.op, value_of_type_for_query<bool>(expr.table_getter, lhs, args),
+                                                        value_of_type_for_query<bool>(expr.table_getter, rhs, args));
             break;
         case PropertyTypeDate:
-            add_numeric_constraint_to_query(query, op, value_of_type_for_query<DateTime>(expr.table_getter, lhs, args),
-                                                       value_of_type_for_query<DateTime>(expr.table_getter, rhs, args));
+            add_numeric_constraint_to_query(query, cmp.op, value_of_type_for_query<DateTime>(expr.table_getter, lhs, args),
+                                                           value_of_type_for_query<DateTime>(expr.table_getter, rhs, args));
             break;
         case PropertyTypeDouble:
-            add_numeric_constraint_to_query(query, op, value_of_type_for_query<Double>(expr.table_getter, lhs, args),
-                                                       value_of_type_for_query<Double>(expr.table_getter, rhs, args));
+            add_numeric_constraint_to_query(query, cmp.op, value_of_type_for_query<Double>(expr.table_getter, lhs, args),
+                                                           value_of_type_for_query<Double>(expr.table_getter, rhs, args));
             break;
         case PropertyTypeFloat:
-            add_numeric_constraint_to_query(query, op, value_of_type_for_query<Float>(expr.table_getter, lhs, args),
-                                                       value_of_type_for_query<Float>(expr.table_getter, rhs, args));
+            add_numeric_constraint_to_query(query, cmp.op, value_of_type_for_query<Float>(expr.table_getter, lhs, args),
+                                                           value_of_type_for_query<Float>(expr.table_getter, rhs, args));
             break;
         case PropertyTypeInt:
-            add_numeric_constraint_to_query(query, op, value_of_type_for_query<Int>(expr.table_getter, lhs, args),
-                                                       value_of_type_for_query<Int>(expr.table_getter, rhs, args));
+            add_numeric_constraint_to_query(query, cmp.op, value_of_type_for_query<Int>(expr.table_getter, lhs, args),
+                                                           value_of_type_for_query<Int>(expr.table_getter, rhs, args));
             break;
         case PropertyTypeString:
-            add_string_constraint_to_query(query, op, value_of_type_for_query<String>(expr.table_getter, lhs, args),
-                                                      value_of_type_for_query<String>(expr.table_getter, rhs, args));
+            add_string_constraint_to_query(query, cmp, value_of_type_for_query<String>(expr.table_getter, lhs, args),
+                                                       value_of_type_for_query<String>(expr.table_getter, rhs, args));
             break;
         case PropertyTypeData:
-            add_binary_constraint_to_query(query, op, value_of_type_for_query<Binary>(expr.table_getter, lhs, args),
-                                                      value_of_type_for_query<Binary>(expr.table_getter, rhs, args));
+            add_binary_constraint_to_query(query, cmp.op, value_of_type_for_query<Binary>(expr.table_getter, lhs, args),
+                                                          value_of_type_for_query<Binary>(expr.table_getter, rhs, args));
             break;
         case PropertyTypeObject:
         case PropertyTypeArray:
-            add_link_constraint_to_query(query, op, expr, link_argument(lhs, rhs, args));
+            add_link_constraint_to_query(query, cmp.op, expr, link_argument(lhs, rhs, args));
             break;
         default: {
             throw std::runtime_error((std::string)"Object type " + string_for_property_type(type) + " not supported");
@@ -446,11 +446,11 @@ void add_comparison_to_query(Query &query, const Predicate &pred, Arguments &arg
     auto object_schema = schema.find(type);
     if (t0 == parser::Expression::Type::KeyPath && t1 != parser::Expression::Type::KeyPath) {
         PropertyExpression expr(query, schema, object_schema, cmpr.expr[0].s);
-        do_add_comparison_to_query(query, schema, *object_schema, cmpr.op, expr, expr, cmpr.expr[1], args);
+        do_add_comparison_to_query(query, schema, *object_schema, cmpr, expr, expr, cmpr.expr[1], args);
     }
     else if (t0 != parser::Expression::Type::KeyPath && t1 == parser::Expression::Type::KeyPath) {
         PropertyExpression expr(query, schema, object_schema, cmpr.expr[1].s);
-        do_add_comparison_to_query(query, schema, *object_schema, cmpr.op, expr, cmpr.expr[0], expr, args);
+        do_add_comparison_to_query(query, schema, *object_schema, cmpr, expr, cmpr.expr[0], expr, args);
     }
     else {
         throw std::runtime_error("Predicate expressions must compare a keypath and another keypath or a constant value");

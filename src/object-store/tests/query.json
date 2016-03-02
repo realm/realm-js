@@ -197,10 +197,10 @@
         ["QueryThrows", "StringObject", "stringCol == 123"],
         ["QueryThrows", "StringObject", "stringCol CONTAINS $0", 1],
 
-        ["Disabled", "QueryCount", 3, "StringObject", "stringCol ==[c] 'a'"],
-        ["Disabled", "QueryCount", 5, "StringObject", "stringCol BEGINSWITH[c] 'A'"],
-        ["Disabled", "QueryCount", 4, "StringObject", "stringCol ENDSWITH[c] 'c'"],
-        ["Disabled", "QueryCount", 2, "StringObject", "stringCol CONTAINS[c] 'B'"]
+        ["QueryCount", 3, "StringObject", "stringCol ==[c] 'a'"],
+        ["QueryCount", 5, "StringObject", "stringCol BEGINSWITH[c] 'A'"],
+        ["QueryCount", 4, "StringObject", "stringCol ENDSWITH[c] 'c'"],
+        ["QueryCount", 2, "StringObject", "stringCol CONTAINS[c] 'B'"]
     ]
 },
 
