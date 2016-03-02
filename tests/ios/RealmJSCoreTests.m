@@ -1,6 +1,20 @@
-/* Copyright 2015 Realm Inc - All Rights Reserved
- * Proprietary and Confidential
- */
+////////////////////////////////////////////////////////////////////////////
+//
+// Copyright 2016 Realm Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+////////////////////////////////////////////////////////////////////////////
 
 #import "RealmJSTests.h"
 #import "RJSModuleLoader.h"
@@ -18,14 +32,21 @@
 + (XCTestSuite *)defaultTestSuite {
     XCTestSuite *suite = [super defaultTestSuite];
     JSContext *context = [[JSContext alloc] init];
-    JSValue *realmConstructor = [JSValue valueWithJSValueRef:RJSConstructorCreate(context.JSGlobalContextRef) inContext:context];
     RJSModuleLoader *moduleLoader = [[RJSModuleLoader alloc] initWithContext:context];
-    NSURL *scriptURL = [[NSBundle bundleForClass:self] URLForResource:@"index" withExtension:@"js" subdirectory:@"lib"];
+    NSURL *realmURL = [[NSBundle bundleForClass:self] URLForResource:@"index" withExtension:@"js" subdirectory:@"lib"];
+    NSURL *scriptURL = [[NSBundle bundleForClass:self] URLForResource:@"index" withExtension:@"js" subdirectory:@"js"];
+    NSError *error;
+
+    // Create Realm constructor in the JS context.
+    RJSInitializeInContext(context.JSGlobalContextRef);
+
+    // Load the Realm module so additional functionality is exposed on Realm objects.
+    JSValue *realmConstructor = [moduleLoader loadModuleFromURL:realmURL error:&error];
+    NSAssert(realmConstructor, @"%@", error);
 
     // Expose the Realm constructor as a global 'realm' CommonJS module.
     [moduleLoader addGlobalModuleObject:realmConstructor forName:@"realm"];
 
-    NSError *error;
     JSValue *testObject = [moduleLoader loadModuleFromURL:scriptURL error:&error];
     NSAssert(testObject, @"%@", error);
 
@@ -62,7 +83,7 @@
         NSURL *sourceURL = nil;
 
         if (source) {
-            NSString *path = [NSString pathWithComponents:@[[@(__FILE__) stringByDeletingLastPathComponent], @"..", @"lib", source.lastPathComponent]];
+            NSString *path = [NSString pathWithComponents:@[[@(__FILE__) stringByDeletingLastPathComponent], @"..", @"js", source.lastPathComponent]];
             sourceURL = [NSURL URLWithString:path];
         }
 

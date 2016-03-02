@@ -1,176 +1,86 @@
-# RealmJS
-Realm is a mobile database that runs directly inside phones, tablets or wearables. This repository holds the source code for Realm's JavaScript bindings for integrating with mobile apps built using ReactNative and Apache Cordova (PhoneGap).
+![Realm](https://github.com/realm/realm-js/raw/master/logo.png)
 
-## Setup
-This repository uses submodules so you need to run `git submodule update --init --recursive` in the realm-js root directory before running any examples.
+Realm is a mobile database that runs directly inside phones, tablets or wearables.
+This project hosts the JavaScript versions of [Realm](https://realm.io/). Currently we only support React Native (both iOS & Android) but we are considering adding support for Cordova/PhoneGap/Ionic as well as Node.js (V8) soon.
 
-## ReactNative Example
-Make sure your environment is set up to run react native applications. Follow the instructions here https://facebook.github.io/react-native/docs/getting-started.html.
+## Features
 
-The ReactNative example project is in the `examples/ReactExample` directory. You need to run `npm install` in this directory before running the example for the first time.
-
-## ReactNative Project Setup
-- Create a new ReactNative project: `react-native init <project-name>`
-- Change directories into the new project (`cd <project-name>`) and add the `realm` dependency: `npm install --save git+ssh://git@github.com/realm/realm-js.git#beta` (please note it's **essential** to leave the `#beta` at the end)
-
-### iOS
-- Open the generated Xcode project (`ios/<project-name>.xcodeproj`)
-- Making sure the top-level project is selected in the sidebar, change the `iOS Deployment Target` to at least `8.0` in the project settings.
-- Right-click the `Libraries` group in the sidebar and click `Add Files to “<project-name>”`. Select `node_modules/realm/RealmJS.xcodeproj` from the dialog.
-- Drag `RealmReact.framework` from the `Products` directory under `RealmJS.xcodeproj` into the `Embedded Binaries` section in the `General` tab for your app's target settings.
-- In the `Build Phases` tab for your app's target settings, make sure `RealmReact.framework` is added to the `Link Binary with Library` build phase.
-- You can now `require('realm')` in your iOS app's JS to use Realm!
-
-### Android
-- Run this command from the project directory: `react-native link realm`
-- Open `MainActivity.java` inside your project:
-  - Add `import io.realm.react.RealmReactPackage;` under the other imports.
-  - Add `new RealmReactPackage()` to the list returned by the `getPackages()` method.
-- You can now `require('realm')` in your Android app's JS to use Realm!
+* **Mobile-first:** Realm is the first database built from the ground up to run directly inside phones, tablets and wearables.
+* **Simple:** Data is directly [exposed as objects](https://realm.io/docs/react-native/latest/#models) and [queryable by code](https://realm.io/docs/react-native/latest/#queries), removing the need for ORM's riddled with performance & maintenance issues.
+* **Modern:** Realm supports relationships, generics, and vectorization.
+* **Fast:** Realm is faster than even raw SQLite on common operations, while maintaining an extremely rich feature set.
 
 ## Getting Started
-Start with creating a `realm` by passing it an array of `objectSchema` (object types and their properties) for each type of object it will contain:
 
-```js
-const Realm = require('realm');
-
-const personSchema = {
-    name: 'Person',
-    primaryKey: 'name',
-    properties: {
-        name: 'string',
-        birthday: 'date',
-        friends: {type: 'list', objectType: 'Person'},
-        points: {type: 'int', default: 0},
-    },
-};
-
-const realm = new Realm({schema: [personSchema]});
-```
-
-If you'd prefer your objects inherit from a prototype, you just need to define the `schema` on the `prototype` object and instead pass in the constructor when creating a `realm`:
-
-```js
-function Person() {}
-Person.prototype = {
-    schema: personSchema,
-    get age() {
-        return Math.floor((Date.now() - this.birthday.getTime()) / 31557600000);
-    },
-};
-
-const realm = new Realm({schema: [Person]});
-```
-
-You can now use the `realm` instance to create new objects. When using Realm, all mutations must take place inside of a write transaction:
-
-```js
-realm.write(() => {
-    ross = realm.create('Person', {
-        name: 'Ross Geller',
-        birthday: new Date(1967, 9, 18),
-        friends: [chandler, joey, monica, phoebe, rachel],
-    });
-});
-```
-
-When creating an object, values for all properties without default values need to be specified. In the example above, since the `points` property has a default property it can be omitted.
-
-Changes to object properties and object deletions also need to take place in a write transactions:
-
-```js
-realm.write(() => {
-    rachel.points++;
-    rachel.friends.push(ross);
-    realm.delete(janine);
-});
-```
-
-**Note:** If an uncaught exception occurs during a write transaction, then the write transaction will rollback and all object creations, deletions and modifications will be undone.
-
-You can query for existing objects by passing the object type and an optional query into the `realm.objects()` method:
-
-```js
-let characters = realm.objects('Person');
-let chandler = realm.objects('Person', 'name = "Chandler Bing"')[0];
-```
-
-Queries are live updating, so as change are made to a Realm queries are updated automatically to reflect those changes.
-
-You can see more examples of how to use these APIs in the [ReactExample](https://github.com/realm/realm-js/tree/master/examples/ReactExample) app and in the [JS test files](https://github.com/realm/realm-js/tree/master/tests).
+Please see the detailed instructions in our docs to use [Realm React Native](https://realm.io/docs/react-native/latest/#getting-started).
 
 ## Documentation
-### `Realm` Constructor Options
-#### `new Realm(realmConfig)`
-The `realmConfig` passed to the constructor can contain the following:
 
-- `schema` – required when first accessing a realm - array of `ObjectSchema` or object constructors (see below)
-- `path` – optional - defaults to `Realm.defaultPath` (which initially is `'Documents/default.realm'` for iOS and   inside the [internal storage](http://developer.android.com/reference/android/content/Context.html#getFilesDir()) `/data/data/<packagename>/files/` for Android)
-- `schemaVersion` – optional - defaults to `0` but must be specified and incremented after changing the schema
+### Realm React Native
 
-### ObjectSchema
-- `name` – string used to refer to this object type
-- `properties` - object with property definitions (see below)
-- `primaryKey` – optional - name of `STRING` or `INT` property that should be unique
+The documentation can be found at [realm.io/docs/react-native/latest](https://realm.io/docs/react-native/latest).  
+The API reference is located at [realm.io/docs/react-native/latest/api](https://realm.io/docs/react-native/latest/api).
 
-### Property Types
-When defining object `properties` in a `schema`, the value for each property must either be the `type` **OR** an object with a `type` key along with other options detailed below. The `type` of each property must be defined as either the name of an object type in the same schema **or** as one of the following:
+## Getting Help
 
-- `Realm.Types.BOOL` (`"bool"`)
-- `Realm.Types.INT` (`"int"`)
-- `Realm.Types.FLOAT` (`"float"`)
-- `Realm.Types.DOUBLE` (`"double"`)
-- `Realm.Types.STRING` (`"string"`)
-- `Realm.Types.DATE` (`"date"`)
-- `Realm.Types.DATA` (`"data"`)
-- `Realm.Types.LIST` (`"list"` – requires `objectType` and cannot be `optional`)
+- **Need help with your code?**: Look for previous questions on the  [#realm tag](https://stackoverflow.com/questions/tagged/realm?sort=newest) — or [ask a new question](https://stackoverflow.com/questions/ask?tags=realm). We actively monitor and answer questions on SO!
+- **Have a bug to report?** [Open an issue](https://github.com/realm/realm-js/issues/new). If possible, include the version of Realm, a full log, the Realm file, and a project that shows the issue.
+- **Have a feature request?** [Open an issue](https://github.com/realm/realm-js/issues/new). Tell us what the feature should do, and why you want the feature.
+- Sign up for our [**Community Newsletter**](http://eepurl.com/VEKCn) to get regular tips, learn about other use-cases and get alerted of blog posts and tutorials about Realm.
 
-You _may_ specify these property options as well:
+## Building Realm
 
-- `default` – default value when property was not specified on creation
-- `optional` – boolean indicating if this property may be assigned `null` or `undefined`
+In case you don't want to use the precompiled version on npm, you can build Realm yourself from source. You’ll need an Internet connection the first time you build in order to download the core library.
 
-**Note:** When the `type` of a property is that of an object type in the same schema, it _always_ will be `optional`.
+Prerequisites:
+- Node 4.0+
+- Xcode 7.2+
+- Android SDK 23+
+- Android NDK 10e+
 
-### `Realm` Instance Methods
-#### `create(type, props [, update])`
-- `type` – string matching object `name` in the `schema` definition
-- `props` – object with property values for all required properties without a default value
-- `update` – optional – boolean signaling that an existing object (matching primary key) should be updated – only the primary key property and properties which should be updated need to be specified for the `props` arguments (all missing property values will remain unchanged)
-- _Returns a new realm object instance_
+First clone this repository:
 
-#### `delete(object)`
-- `object` – realm object or array of realm objects (which can be a `List` or `Results` object)
+```
+git clone https://github.com/realm/realm-js.git
+```
 
-#### `deleteAll()`
-**WARNING:** This does what you think it does!
+Then in the cloned directory:
 
-#### `objects(type [, query])`
-- `type` - string matching object `name` in the `schema` definition
-- `query` – optional – string that defines a query to filter results (see tests for examples)
-- _Returns `Results` object_
+```
+git submodule update --init --recursive
+```
 
-#### `write(callback)`
-- `callback` – function that is synchronously called inside the write transaction
+To build for iOS:
+- Open `RealmJS.xcodeproj`
+- Select `RealmReact.framework` as the build target
+- Build
 
-#### `addListener(event, callback)`
-- `event` – string specifying the event name (only `'change'` is currently supported)
-- `callback` – function that is called when that event occurs
+To build for Android:
+- `cd react-native/android`
+- `./gradlew publishAndroid`
+- The compiled version of the Android module is here: `<project-root>/android`
 
-#### `removeListener(event, callback)`
-- `event` – string specifying the event name (only `'change'` is currently supported)
-- `callback` – function that was previously added a listener callback
+## Code of Conduct
 
-#### `removeAllListeners([event])`
-- `event` – optional – string specifying the event name (only `'change'` is currently supported)
-
-#### `close()`
-**WARNING:** This is only for advanced use cases and generally doesn't need to be used.
-
-## Conduct
 This project adheres to the Contributor Covenant [code of conduct](https://realm.io/conduct/).
-By participating, you are expected to uphold this code. Please report unacceptable behavior to [info[at]realm.io](mailto:info+conduct@realm.io).
+By participating, you are expected to uphold this code. Please report unacceptable behavior to [info@realm.io](mailto:info+conduct@realm.io).
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for more details!
 
 ## License
-Copyright 2015 Realm Inc - All Rights Reserved
-Proprietary and Confidential
+
+Realm JS is published under the Apache 2.0 license.
+The underlying core is available under the [Realm Core Binary License](https://github.com/realm/realm-cocoa/blob/master/LICENSE#L210-L243) while we [work to open-source it under the Apache 2.0 license](https://realm.io/docs/react-native/latest/#faq).
+
+**This product is not being made available to any person located in Cuba, Iran,
+North Korea, Sudan, Syria or the Crimea region, or to any other person that is
+not eligible to receive the product under U.S. law.**
+
+## Feedback
+
+**_If you use Realm and are happy with it, all we ask is that you please consider sending out a tweet mentioning [@realm](https://twitter.com/realm), or email [help@realm.io](mailto:help@realm.io) about your great apps!_**
+
+**_And if you don't like it, please let us know what you would like improved, so we can fix it!_**
+

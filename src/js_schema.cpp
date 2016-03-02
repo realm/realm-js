@@ -1,6 +1,20 @@
-/* Copyright 2015 Realm Inc - All Rights Reserved
- * Proprietary and Confidential
- */
+////////////////////////////////////////////////////////////////////////////
+//
+// Copyright 2016 Realm Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+////////////////////////////////////////////////////////////////////////////
 
 #include "js_schema.hpp"
 #include "object_store.hpp"
@@ -114,19 +128,17 @@ static inline Property RJSParseProperty(JSContextRef ctx, JSValueRef propertyAtt
     return prop;
 }
 
-static inline ObjectSchema RJSParseObjectSchema(JSContextRef ctx, JSObjectRef objectSchemaObject, std::map<std::string, realm::ObjectDefaults> &defaults, std::map<std::string, JSValueRef> &prototypes) {
+static inline ObjectSchema RJSParseObjectSchema(JSContextRef ctx, JSObjectRef objectSchemaObject, std::map<std::string, realm::ObjectDefaults> &defaults, std::map<std::string, JSObjectRef> &constructors) {
     static JSStringRef nameString = JSStringCreateWithUTF8CString("name");
     static JSStringRef primaryString = JSStringCreateWithUTF8CString("primaryKey");
-    static JSStringRef prototypeString = JSStringCreateWithUTF8CString("prototype");
     static JSStringRef propertiesString = JSStringCreateWithUTF8CString("properties");
     static JSStringRef schemaString = JSStringCreateWithUTF8CString("schema");
 
-    JSObjectRef prototypeObject = NULL;
-    JSValueRef prototypeValue = RJSValidatedPropertyValue(ctx, objectSchemaObject, prototypeString);
+    JSObjectRef objectConstructor = NULL;
 
-    if (!JSValueIsUndefined(ctx, prototypeValue)) {
-        prototypeObject = RJSValidatedValueToObject(ctx, prototypeValue);
-        objectSchemaObject = RJSValidatedObjectProperty(ctx, prototypeObject, schemaString, "Realm object prototype must have a 'schema' property.");
+    if (JSObjectIsFunction(ctx, objectSchemaObject) || JSObjectIsConstructor(ctx, objectSchemaObject)) {
+        objectConstructor = objectSchemaObject;
+        objectSchemaObject = RJSValidatedObjectProperty(ctx, objectConstructor, schemaString, "Realm object constructor must have a 'schema' property.");
     }
     else {
         JSValueRef subSchemaValue = RJSValidatedPropertyValue(ctx, objectSchemaObject, schemaString);
@@ -170,9 +182,9 @@ static inline ObjectSchema RJSParseObjectSchema(JSContextRef ctx, JSObjectRef ob
     }
 
     // Store prototype so that objects of this type will have their prototype set to this prototype object.
-    if (prototypeObject) {
-        JSValueProtect(ctx, prototypeObject);
-        prototypes[objectSchema.name] = std::move(prototypeObject);
+    if (objectConstructor) {
+        JSValueProtect(ctx, objectConstructor);
+        constructors[objectSchema.name] = std::move(objectConstructor);
     }
 
     defaults.emplace(objectSchema.name, std::move(objectDefaults));
@@ -180,12 +192,12 @@ static inline ObjectSchema RJSParseObjectSchema(JSContextRef ctx, JSObjectRef ob
     return objectSchema;
 }
 
-realm::Schema RJSParseSchema(JSContextRef ctx, JSObjectRef jsonObject, std::map<std::string, realm::ObjectDefaults> &defaults, std::map<std::string, JSValueRef> &prototypes) {
+realm::Schema RJSParseSchema(JSContextRef ctx, JSObjectRef jsonObject, std::map<std::string, realm::ObjectDefaults> &defaults, std::map<std::string, JSObjectRef> &constructors) {
     std::vector<ObjectSchema> schema;
     size_t length = RJSValidatedListLength(ctx, jsonObject);
     for (unsigned int i = 0; i < length; i++) {
         JSObjectRef jsonObjectSchema = RJSValidatedObjectAtIndex(ctx, jsonObject, i);
-        ObjectSchema objectSchema = RJSParseObjectSchema(ctx, jsonObjectSchema, defaults, prototypes);
+        ObjectSchema objectSchema = RJSParseObjectSchema(ctx, jsonObjectSchema, defaults, constructors);
         schema.emplace_back(std::move(objectSchema));
      }
 

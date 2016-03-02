@@ -1,6 +1,20 @@
-/* Copyright 2015 Realm Inc - All Rights Reserved
- * Proprietary and Confidential
- */
+////////////////////////////////////////////////////////////////////////////
+//
+// Copyright 2016 Realm Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+////////////////////////////////////////////////////////////////////////////
 
 'use strict';
 
@@ -10,7 +24,20 @@ var TestCase = require('./asserts');
 var schemas = require('./schemas');
 
 module.exports = BaseTest.extend({
-    testArrayLength: function() {
+    testListConstructor: function() {
+        var realm = new Realm({schema: [schemas.PersonObject, schemas.PersonList]});
+
+        realm.write(function() {
+            var obj = realm.create('PersonList', {list: []});
+            TestCase.assertTrue(obj.list instanceof Realm.List);
+        });
+
+        TestCase.assertThrows(function() {
+            new Realm.List();
+        });
+    },
+
+    testListLength: function() {
         var realm = new Realm({schema: [schemas.LinkTypes, schemas.TestObject]});
         var array;
 
@@ -38,7 +65,7 @@ module.exports = BaseTest.extend({
         TestCase.assertEqual(array.length, 2);
     },
 
-    testArraySubscriptGetters: function() {
+    testListSubscriptGetters: function() {
         var realm = new Realm({schema: [schemas.LinkTypes, schemas.TestObject]});
         var array;
 
@@ -58,7 +85,7 @@ module.exports = BaseTest.extend({
         TestCase.assertEqual(array[-1], undefined);
     },
 
-    testArraySubscriptSetters: function() {
+    testListSubscriptSetters: function() {
         var realm = new Realm({schema: [schemas.LinkTypes, schemas.TestObject]});
         var array;
 
@@ -96,7 +123,7 @@ module.exports = BaseTest.extend({
         }, 'cannot set list item outside write transaction');
     },
 
-    testArrayInvalidProperty: function() {
+    testListInvalidProperty: function() {
         var realm = new Realm({schema: [schemas.LinkTypes, schemas.TestObject]});
         var array;
 
@@ -113,7 +140,7 @@ module.exports = BaseTest.extend({
         TestCase.assertEqual(undefined, array.ablasdf);
     },
 
-    testArrayEnumerate: function() {
+    testListEnumerate: function() {
         var realm = new Realm({schema: [schemas.LinkTypes, schemas.TestObject]});
         var obj;
 
@@ -146,7 +173,7 @@ module.exports = BaseTest.extend({
         TestCase.assertEqual(keys.length, 2);
     },
 
-    testPush: function() {
+    testListPush: function() {
         var realm = new Realm({schema: [schemas.LinkTypes, schemas.TestObject]});
         var array;
 
@@ -180,7 +207,7 @@ module.exports = BaseTest.extend({
         }, 'can only push in a write transaction');
     },
 
-    testPop: function() {
+    testListPop: function() {
         var realm = new Realm({schema: [schemas.LinkTypes, schemas.TestObject]});
         var array;
 
@@ -208,7 +235,7 @@ module.exports = BaseTest.extend({
         }, 'can only pop in a write transaction');
     },
 
-    testUnshift: function() {
+    testListUnshift: function() {
         var realm = new Realm({schema: [schemas.LinkTypes, schemas.TestObject]});
         var array;
 
@@ -238,7 +265,7 @@ module.exports = BaseTest.extend({
         }, 'can only unshift in a write transaction');
     },
 
-    testShift: function() {
+    testListShift: function() {
         var realm = new Realm({schema: [schemas.LinkTypes, schemas.TestObject]});
         var array;
 
@@ -266,7 +293,7 @@ module.exports = BaseTest.extend({
         }, 'can only shift in a write transaction');
     },
 
-    testSplice: function() {
+    testListSplice: function() {
         var realm = new Realm({schema: [schemas.LinkTypes, schemas.TestObject]});
         var array;
 
@@ -331,7 +358,7 @@ module.exports = BaseTest.extend({
         }, 'can only splice in a write transaction');
     },
 
-    testDeletions: function() {
+    testListDeletions: function() {
         var realm = new Realm({schema: [schemas.LinkTypes, schemas.TestObject]});
         var object;
         var array;
@@ -410,7 +437,7 @@ module.exports = BaseTest.extend({
         TestCase.assertEqual(objects.length, 4);
     },
 
-    testStaticResults: function() {
+    testListSnapshot: function() {
         var realm = new Realm({schema: [schemas.LinkTypes, schemas.TestObject]});
         var objects = realm.objects('TestObject');
         var array;
@@ -445,29 +472,111 @@ module.exports = BaseTest.extend({
     },
 
     testListFiltered: function() {
-        var personListSchema = {
-            name: 'PersonList',
-            properties: {
-                list: {type: 'list', objectType: 'PersonObject'}
-            }
-        };
-        var realm = new Realm({schema: [schemas.PersonObject, personListSchema]});
-        var listObject;
+        var realm = new Realm({schema: [schemas.PersonObject, schemas.PersonList]});
+        var list;
+
         realm.write(function() {
-            listObject = realm.create('PersonList', {list: [
+            var object = realm.create('PersonList', {list: [
                 {name: 'Ari', age: 10},
                 {name: 'Tim', age: 11},
                 {name: 'Bjarne', age: 12},
                 {name: 'Alex', age: 12, married: true}
             ]});
             realm.create('PersonObject', {name: 'NotInList', age: 10});
+
+            list = object.list;
         });
 
-        var list = listObject.list;
         TestCase.assertEqual(list.filtered("truepredicate").length, 4);
         TestCase.assertEqual(list.filtered('age = 11')[0].name, 'Tim');
         TestCase.assertEqual(list.filtered('age = 12').length, 2);
         TestCase.assertEqual(list.filtered('age > 10 && age < 13').length, 3);
         TestCase.assertEqual(list.filtered('age > 10').filtered('age < 13').length, 3);
+    },
+
+    testListSorted: function() {
+        var realm = new Realm({schema: [schemas.PersonObject, schemas.PersonList]});
+        var list;
+
+        realm.write(function() {
+            var object = realm.create('PersonList', {list: [
+                {name: 'Ari', age: 10},
+                {name: 'Tim', age: 11},
+                {name: 'Bjarne', age: 12},
+                {name: 'Alex', age: 12, married: true}
+            ]});
+            realm.create('PersonObject', {name: 'NotInList', age: 10});
+
+            list = object.list;
+        });
+
+        var names = function(results, prop) {
+            return results.map(function(object) {
+                return object.name;
+            });
+        };
+
+        var objects = list.sorted('name', true);
+        TestCase.assertArraysEqual(names(objects), ['Tim', 'Bjarne', 'Ari', 'Alex']);
+
+        objects = list.sorted(['age', 'name']);
+        TestCase.assertArraysEqual(names(objects), ['Ari', 'Tim', 'Alex', 'Bjarne']);
+    },
+
+    testArrayMethods: function() {
+        var realm = new Realm({schema: [schemas.PersonObject, schemas.PersonList]});
+        var object;
+
+        realm.write(function() {
+            object = realm.create('PersonList', {list: [
+                {name: 'Ari', age: 10},
+                {name: 'Tim', age: 11},
+                {name: 'Bjarne', age: 12},
+            ]});
+        });
+
+        [
+            object.list,
+            realm.objects('PersonObject'),
+        ].forEach(function(list) {
+            TestCase.assertEqual(list.slice().length, 3);
+            TestCase.assertEqual(list.slice(-1).length, 1);
+            TestCase.assertEqual(list.slice(-1)[0].age, 12);
+            TestCase.assertEqual(list.slice(1, 3).length, 2);
+            TestCase.assertEqual(list.slice(1, 3)[1].age, 12);
+
+            TestCase.assertEqual(list.join(' '), 'Ari Tim Bjarne');
+
+            var count = 0;
+            list.forEach(function(p, i) {
+                TestCase.assertEqual(p.name, list[i].name);
+                count++;
+            });
+            TestCase.assertEqual(count, list.length);
+
+            TestCase.assertArraysEqual(list.map(function(p) {return p.age}), [10, 11, 12]);
+            TestCase.assertTrue(list.some(function(p) {return p.age > 10}));
+            TestCase.assertTrue(list.every(function(p) {return p.age > 0}));
+
+            var person = list.find(function(p) {return p.name == 'Tim'});
+            TestCase.assertEqual(person.name, 'Tim');
+
+            var index = list.findIndex(function(p) {return p.name == 'Tim'});
+            TestCase.assertEqual(index, 1);
+
+            TestCase.assertEqual(list.reduce(function(n, p) {return n + p.age}, 0), 33);
+            TestCase.assertEqual(list.reduceRight(function(n, p) {return n + p.age}, 0), 33);
+
+            // Some of these may not be present in every environment.
+            if (list.entries) {
+                TestCase.assertEqual(list.entries().next().value[1].name, 'Ari');
+            }
+            if (list.keys) {
+                TestCase.assertEqual(list.keys().next().value, 0);
+            }
+            if (list.values) {
+                TestCase.assertEqual(list.values().next().value.name, 'Ari');
+            }
+        });
     },
 });

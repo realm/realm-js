@@ -1,6 +1,20 @@
-/* Copyright 2016 Realm Inc - All Rights Reserved
- * Proprietary and Confidential
- */
+////////////////////////////////////////////////////////////////////////////
+//
+// Copyright 2016 Realm Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+////////////////////////////////////////////////////////////////////////////
 
 /**
  * A Realm instance represents a Realm database.
@@ -46,18 +60,11 @@ class Realm {
     deleteAll() {}
 
     /**
-     * Returns all objects of the given `type` in the Realm, optionally filtered by the provided
-     * `query`.
-     * ```js
-     * let merlots = realm.objects('Wine', 'varietal == "Merlot" && vintage <= $0', maxYear);
-     * ```
+     * Returns all objects of the given `type` in the Realm.
      * @param {string} type - The type of object as specified by its `name` in the
      *   {@link Realm~ObjectSchema ObjectSchema} definition.
-     * @param {string} [query] - Query used to filter results.
-     * @param {...any} [arg] - Each subsequent argument is used by the placeholders
-     *   (e.g. `$0`, `$1`, `$2`, …) in the query.
-     * @throws {Error} If type, query, or any other argument passed into this method is invalid.
-     * @returns {Realm.Results}
+     * @throws {Error} If type passed into this method is invalid.
+     * @returns {Realm.Results} that will live-update as objects are created and destroyed.
      */
     objects(type, query, ...arg) {}
 

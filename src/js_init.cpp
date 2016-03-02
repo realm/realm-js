@@ -1,10 +1,26 @@
-/* Copyright 2015 Realm Inc - All Rights Reserved
- * Proprietary and Confidential
- */
+////////////////////////////////////////////////////////////////////////////
+//
+// Copyright 2016 Realm Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+////////////////////////////////////////////////////////////////////////////
 
 #include "js_init.h"
 #include "js_realm.hpp"
 #include "js_object.hpp"
+#include "js_list.hpp"
+#include "js_results.hpp"
 #include "js_util.hpp"
 #include "js_schema.hpp"
 #include "platform.hpp"
@@ -41,27 +57,36 @@ JSClassRef RJSRealmTypeClass() {
     return JSClassCreate(&realmTypesDefinition);
 }
 
+static JSObjectRef UncallableConstructor(JSContextRef ctx, JSObjectRef constructor, size_t argumentCount, const JSValueRef arguments[], JSValueRef* exception) {
+    *exception = RJSMakeError(ctx, "Illegal constructor");
+    return NULL;
+}
+
 static JSValueRef ClearTestState(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef *exception) {
     RJSClearTestState();
     return NULL;
 }
 
 JSObjectRef RJSConstructorCreate(JSContextRef ctx) {
+    static JSStringRef clearTestStateString = JSStringCreateWithUTF8CString("clearTestState");
+    static JSStringRef listString = JSStringCreateWithUTF8CString("List");
+    static JSStringRef resultsString = JSStringCreateWithUTF8CString("Results");
+    static JSStringRef typeString = JSStringCreateWithUTF8CString("Types");
+
     JSObjectRef realmObject = JSObjectMake(ctx, RJSRealmConstructorClass(), NULL);
-    JSObjectRef typesObject = JSObjectMake(ctx, RJSRealmTypeClass(), NULL);
-
-    JSValueRef exception = NULL;
-    JSStringRef typeString = JSStringCreateWithUTF8CString("Types");
     JSPropertyAttributes attributes = kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete;
-    JSObjectSetProperty(ctx, realmObject, typeString, typesObject, attributes, &exception);
-    JSStringRelease(typeString);
-    assert(!exception);
 
-    JSStringRef clearTestStateString = JSStringCreateWithUTF8CString("clearTestState");
+    JSObjectRef listConstructor = JSObjectMakeConstructor(ctx, RJSListClass(), UncallableConstructor);
+    RJSValidatedSetProperty(ctx, realmObject, listString, listConstructor, attributes);
+
+    JSObjectRef resultsContructor = JSObjectMakeConstructor(ctx, RJSResultsClass(), UncallableConstructor);
+    RJSValidatedSetProperty(ctx, realmObject, resultsString, resultsContructor, attributes);
+
+    JSObjectRef typesObject = JSObjectMake(ctx, RJSRealmTypeClass(), NULL);
+    RJSValidatedSetProperty(ctx, realmObject, typeString, typesObject, attributes);
+
     JSObjectRef clearTestStateFunction = JSObjectMakeFunctionWithCallback(ctx, clearTestStateString, ClearTestState);
-    JSObjectSetProperty(ctx, realmObject, clearTestStateString, clearTestStateFunction, attributes, &exception);
-    JSStringRelease(clearTestStateString);
-    assert(!exception);
+    RJSValidatedSetProperty(ctx, realmObject, clearTestStateString, clearTestStateFunction, attributes);
 
     return realmObject;
 }

@@ -1,6 +1,20 @@
-/* Copyright 2015 Realm Inc - All Rights Reserved
- * Proprietary and Confidential
- */
+////////////////////////////////////////////////////////////////////////////
+//
+// Copyright 2016 Realm Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+////////////////////////////////////////////////////////////////////////////
 
 #pragma once
 
@@ -58,21 +72,21 @@ std::string RJSValidatedStringForValue(JSContextRef ctx, JSValueRef value, const
 JSStringRef RJSStringForString(const std::string &str);
 JSValueRef RJSValueForString(JSContextRef ctx, const std::string &str);
 
-inline void RJSValidateArgumentCount(size_t argumentCount, size_t expected) {
+inline void RJSValidateArgumentCount(size_t argumentCount, size_t expected, const char *message = NULL) {
     if (argumentCount != expected) {
-        throw std::invalid_argument("Invalid arguments");
+        throw std::invalid_argument(message ?: "Invalid arguments");
     }
 }
 
-inline void RJSValidateArgumentCountIsAtLeast(size_t argumentCount, size_t expected) {
+inline void RJSValidateArgumentCountIsAtLeast(size_t argumentCount, size_t expected, const char *message = NULL) {
     if (argumentCount < expected) {
-        throw std::invalid_argument("Invalid arguments");
+        throw std::invalid_argument(message ?: "Invalid arguments");
     }
 }
 
-inline void RJSValidateArgumentRange(size_t argumentCount, size_t min, size_t max) {
+inline void RJSValidateArgumentRange(size_t argumentCount, size_t min, size_t max, const char *message = NULL) {
     if (argumentCount < min || argumentCount > max) {
-        throw std::invalid_argument("Invalid arguments");
+        throw std::invalid_argument(message ?: "Invalid arguments");
     }
 }
 
@@ -143,6 +157,15 @@ static inline JSValueRef RJSValidatedPropertyValue(JSContextRef ctx, JSObjectRef
     return propertyValue;
 }
 
+static inline JSValueRef RJSValidatedPropertyAtIndex(JSContextRef ctx, JSObjectRef object, unsigned int index) {
+    JSValueRef exception = NULL;
+    JSValueRef propertyValue = JSObjectGetPropertyAtIndex(ctx, object, index, &exception);
+    if (exception) {
+        throw RJSException(ctx, exception);
+    }
+    return propertyValue;
+}
+
 static inline JSObjectRef RJSValidatedObjectProperty(JSContextRef ctx, JSObjectRef object, JSStringRef property, const char *err = NULL) {
     JSValueRef propertyValue = RJSValidatedPropertyValue(ctx, object, property);
     if (JSValueIsUndefined(ctx, propertyValue)) {
@@ -152,12 +175,7 @@ static inline JSObjectRef RJSValidatedObjectProperty(JSContextRef ctx, JSObjectR
 }
 
 static inline JSObjectRef RJSValidatedObjectAtIndex(JSContextRef ctx, JSObjectRef object, unsigned int index) {
-    JSValueRef exception = NULL;
-    JSValueRef objectValue = JSObjectGetPropertyAtIndex(ctx, object, index, &exception);
-    if (exception) {
-        throw RJSException(ctx, exception);
-    }
-    return RJSValidatedValueToObject(ctx, objectValue);
+    return RJSValidatedValueToObject(ctx, RJSValidatedPropertyAtIndex(ctx, object, index));
 }
 
 static inline std::string RJSValidatedStringProperty(JSContextRef ctx, JSObjectRef object, JSStringRef property) {
@@ -181,6 +199,14 @@ static inline size_t RJSValidatedListLength(JSContextRef ctx, JSObjectRef object
     }
 
     return RJSValidatedValueToNumber(ctx, lengthValue);
+}
+
+static inline void RJSValidatedSetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef value, JSPropertyAttributes attributes = 0) {
+    JSValueRef exception = NULL;
+    JSObjectSetProperty(ctx, object, propertyName, value, attributes, &exception);
+    if (exception) {
+        throw RJSException(ctx, exception);
+    }
 }
 
 template<typename T>

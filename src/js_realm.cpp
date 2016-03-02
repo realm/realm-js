@@ -1,6 +1,20 @@
-/* Copyright 2015 Realm Inc - All Rights Reserved
- * Proprietary and Confidential
- */
+////////////////////////////////////////////////////////////////////////////
+//
+// Copyright 2016 Realm Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+////////////////////////////////////////////////////////////////////////////
 
 #include "js_realm.hpp"
 #include "js_object.hpp"
@@ -18,6 +32,7 @@
 #include <cassert>
 
 using namespace realm;
+using RJSAccessor = realm::NativeAccessor<JSValueRef, JSContextRef>;
 
 class RJSRealmDelegate : public BindingContext {
 public:
@@ -40,8 +55,8 @@ public:
     ~RJSRealmDelegate() {
         remove_all_notifications();
 
-        for (auto prototype : m_prototypes) {
-            JSValueUnprotect(m_context, prototype.second);
+        for (auto constructor : m_constructors) {
+            JSValueUnprotect(m_context, constructor.second);
         }
         for (auto objectDefaults : m_defaults) {
             for (auto value : objectDefaults.second) {
@@ -71,7 +86,7 @@ public:
     }
 
     std::map<std::string, ObjectDefaults> m_defaults;
-    std::map<std::string, JSValueRef> m_prototypes;
+    std::map<std::string, JSObjectRef> m_constructors;
 
   private:
     std::set<JSObjectRef> m_notifications;
@@ -102,8 +117,8 @@ std::map<std::string, ObjectDefaults> &RJSDefaults(Realm *realm) {
     return static_cast<RJSRealmDelegate *>(realm->m_binding_context.get())->m_defaults;
 }
 
-std::map<std::string, JSValueRef> &RJSPrototypes(Realm *realm) {
-    return static_cast<RJSRealmDelegate *>(realm->m_binding_context.get())->m_prototypes;
+std::map<std::string, JSObjectRef> &RJSConstructors(Realm *realm) {
+    return static_cast<RJSRealmDelegate *>(realm->m_binding_context.get())->m_constructors;
 }
 
 // static std::string s_defaultPath = realm::default_realm_file_directory() + "/default.realm";
@@ -138,49 +153,53 @@ JSObjectRef RealmConstructor(JSContextRef ctx, JSObjectRef constructor, size_t a
     try {
         Realm::Config config;
         std::map<std::string, realm::ObjectDefaults> defaults;
-        std::map<std::string, JSValueRef> prototypes;
-        switch (argumentCount) {
-            case 0:
-                config.path = RJSDefaultPath();
-                break;
-            case 1: {
-                JSValueRef value = arguments[0];
-                if (JSValueIsString(ctx, value)) {
-                    config.path = RJSValidatedStringForValue(ctx, value, "path");
-                    break;
+        std::map<std::string, JSObjectRef> constructors;
+        if (argumentCount == 0) {
+            config.path = RJSDefaultPath();
+        }
+        else if (argumentCount == 1) {
+            JSValueRef value = arguments[0];
+            if (JSValueIsString(ctx, value)) {
+                config.path = RJSValidatedStringForValue(ctx, value, "path");
+            }
+            else if (JSValueIsObject(ctx, value)) {
+                JSObjectRef object = RJSValidatedValueToObject(ctx, value);
+
+                static JSStringRef pathString = JSStringCreateWithUTF8CString("path");
+                JSValueRef pathValue = RJSValidatedPropertyValue(ctx, object, pathString);
+                if (!JSValueIsUndefined(ctx, pathValue)) {
+                    config.path = RJSValidatedStringForValue(ctx, pathValue, "path");
                 }
-                if (JSValueIsObject(ctx, value)) {
-                    JSObjectRef object = RJSValidatedValueToObject(ctx, value);
+                else {
+                    config.path = RJSDefaultPath();
+                }
 
-                    static JSStringRef pathString = JSStringCreateWithUTF8CString("path");
-                    JSValueRef pathValue = RJSValidatedPropertyValue(ctx, object, pathString);
-                    if (!JSValueIsUndefined(ctx, pathValue)) {
-                        config.path = RJSValidatedStringForValue(ctx, pathValue, "path");
-                    }
-                    else {
-                        config.path = RJSDefaultPath();
-                    }
+                static JSStringRef schemaString = JSStringCreateWithUTF8CString("schema");
+                JSValueRef schemaValue = RJSValidatedPropertyValue(ctx, object, schemaString);
+                if (!JSValueIsUndefined(ctx, schemaValue)) {
+                    config.schema.reset(new Schema(RJSParseSchema(ctx, RJSValidatedValueToObject(ctx, schemaValue), defaults, constructors)));
+                }
 
-                    static JSStringRef schemaString = JSStringCreateWithUTF8CString("schema");
-                    JSValueRef schemaValue = RJSValidatedPropertyValue(ctx, object, schemaString);
-                    if (!JSValueIsUndefined(ctx, schemaValue)) {
-                        config.schema.reset(new Schema(RJSParseSchema(ctx, RJSValidatedValueToObject(ctx, schemaValue), defaults, prototypes)));
-                    }
-
-                    static JSStringRef schemaVersionString = JSStringCreateWithUTF8CString("schemaVersion");
-                    JSValueRef versionValue = RJSValidatedPropertyValue(ctx, object, schemaVersionString);
-                    if (JSValueIsNumber(ctx, versionValue)) {
-                        config.schema_version = RJSValidatedValueToNumber(ctx, versionValue);
-                    }
-                    else {
-                        config.schema_version = 0;
-                    }
-                    break;
+                static JSStringRef schemaVersionString = JSStringCreateWithUTF8CString("schemaVersion");
+                JSValueRef versionValue = RJSValidatedPropertyValue(ctx, object, schemaVersionString);
+                if (JSValueIsNumber(ctx, versionValue)) {
+                    config.schema_version = RJSValidatedValueToNumber(ctx, versionValue);
+                }
+                else {
+                    config.schema_version = 0;
+                }
+                
+                static JSStringRef encryptionKeyString = JSStringCreateWithUTF8CString("encryptionKey");
+                JSValueRef encryptionKeyValue = RJSValidatedPropertyValue(ctx, object, encryptionKeyString);
+                if (!JSValueIsUndefined(ctx, encryptionKeyValue)) {
+                    std::string encryptionKey = RJSAccessor::to_binary(ctx, encryptionKeyValue);
+                    config.encryption_key = std::vector<char>(encryptionKey.begin(), encryptionKey.end());;
                 }
             }
-            default:
-                *jsException = RJSMakeError(ctx, "Invalid arguments when constructing 'Realm'");
-                return NULL;
+        }
+        else {
+            *jsException = RJSMakeError(ctx, "Invalid arguments when constructing 'Realm'");
+            return NULL;
         }
         ensure_directory_exists_for_file(config.path);
         SharedRealm realm = Realm::get_shared_realm(config);
@@ -188,7 +207,7 @@ JSObjectRef RealmConstructor(JSContextRef ctx, JSObjectRef constructor, size_t a
             realm->m_binding_context.reset(new RJSRealmDelegate(realm, JSContextGetGlobalContext(ctx)));
         }
         RJSDefaults(realm.get()) = defaults;
-        RJSPrototypes(realm.get()) = prototypes;
+        RJSConstructors(realm.get()) = constructors;
         return RJSWrapObject<SharedRealm *>(ctx, RJSRealmClass(), new SharedRealm(realm));
     }
     catch (std::exception &ex) {
@@ -199,16 +218,22 @@ JSObjectRef RealmConstructor(JSContextRef ctx, JSObjectRef constructor, size_t a
     }
 }
 
+bool RealmHasInstance(JSContextRef ctx, JSObjectRef constructor, JSValueRef value, JSValueRef* exception) {
+    return JSValueIsObjectOfClass(ctx, value, RJSRealmClass());
+}
+
+static const JSStaticValue RealmStaticProperties[] = {
+    {"defaultPath", GetDefaultPath, SetDefaultPath, kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
+    {NULL, NULL}
+};
+
 JSClassRef RJSRealmConstructorClass() {
     JSClassDefinition realmConstructorDefinition = kJSClassDefinitionEmpty;
-    realmConstructorDefinition.className = "Realm";
+    realmConstructorDefinition.attributes = kJSClassAttributeNoAutomaticPrototype;
+    realmConstructorDefinition.className = "RealmConstructor";
     realmConstructorDefinition.callAsConstructor = RealmConstructor;
-
-    JSStaticValue realmStaticProperties[] = {
-        {"defaultPath", GetDefaultPath, SetDefaultPath, kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
-        {NULL, NULL}
-    };
-    realmConstructorDefinition.staticValues = realmStaticProperties;
+    realmConstructorDefinition.hasInstance = RealmHasInstance;
+    realmConstructorDefinition.staticValues = RealmStaticProperties;
     return JSClassCreate(&realmConstructorDefinition);
 }
 

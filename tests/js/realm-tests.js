@@ -1,6 +1,20 @@
-/* Copyright 2015 Realm Inc - All Rights Reserved
- * Proprietary and Confidential
- */
+////////////////////////////////////////////////////////////////////////////
+//
+// Copyright 2016 Realm Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+////////////////////////////////////////////////////////////////////////////
 
 'use strict';
 
@@ -11,6 +25,11 @@ var schemas = require('./schemas');
 var util = require('./util');
 
 module.exports = BaseTest.extend({
+    testRealmConstructor: function() {
+        var realm = new Realm({schema: []});
+        TestCase.assertTrue(realm instanceof Realm);
+    },
+
     testRealmConstructorPath: function() {
         TestCase.assertThrows(function() {
             new Realm('/invalidpath');
@@ -258,6 +277,53 @@ module.exports = BaseTest.extend({
             TestCase.assertEqual(obj.nullObjectCol, null);
             TestCase.assertEqual(obj.arrayCol.length, properties.arrayCol.default.length);
             TestCase.assertEqual(obj.arrayCol[0].doubleCol, properties.arrayCol.default[0].doubleCol);
+        });
+    },
+
+    testRealmCreateWithConstructor: function() {
+        var customCreated = 0;
+
+        function CustomObject() {
+            customCreated++;
+            this.intCol *= 100;
+        }
+        CustomObject.schema = {
+            name: 'CustomObject',
+            properties: {
+                intCol: 'int'
+            }
+        }
+
+        function InvalidObject() {
+            return {};
+        }
+        TestCase.assertThrows(function() {
+            new Realm({schema: [InvalidObject]});
+        });
+
+        InvalidObject.schema = {
+            name: 'InvalidObject',
+            properties: {
+                intCol: 'int'
+            }
+        }
+
+        var realm = new Realm({schema: [CustomObject, InvalidObject]});
+
+        realm.write(function() {
+            var object = realm.create('CustomObject', {intCol: 1});
+            TestCase.assertTrue(object instanceof CustomObject);
+            TestCase.assertTrue(Object.getPrototypeOf(object) == CustomObject.prototype);
+            TestCase.assertEqual(customCreated, 1);
+
+            // Should have been multiplied by 100 in the constructor.
+            TestCase.assertEqual(object.intCol, 100);
+        });
+
+        TestCase.assertThrows(function() {
+            realm.write(function() {
+                realm.create('InvalidObject', {intCol: 1});
+            });
         });
     },
 

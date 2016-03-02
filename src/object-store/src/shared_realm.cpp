@@ -80,6 +80,9 @@ void Realm::open_with_config(const Config& config,
             read_only_group = std::make_unique<Group>(config.path, config.encryption_key.data(), Group::mode_ReadOnly);
         }
         else {
+            if (config.encryption_key.data() && config.encryption_key.size() != 64) {
+                throw InvalidEncryptionKeyException();
+            }
             history = realm::make_client_history(config.path, config.encryption_key.data());
             SharedGroup::DurabilityLevel durability = config.in_memory ? SharedGroup::durability_MemOnly :
                                                                            SharedGroup::durability_Full;
