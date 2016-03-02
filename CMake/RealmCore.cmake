@@ -62,21 +62,7 @@ function(download_realm_core core_version)
     set(REALM_CORE_INCLUDE_DIR ${core_directory}/include PARENT_SCOPE)
 endfunction()
 
-function(clone_and_build_realm_core branch)
-    set(core_prefix_directory "${CMAKE_CURRENT_SOURCE_DIR}${CMAKE_FILES_DIRECTORY}/realm-core")
-    ExternalProject_Add(realm-core
-        GIT_REPOSITORY "git@github.com:realm/realm-core.git"
-        GIT_TAG ${branch}
-        PREFIX ${core_prefix_directory}
-        BUILD_IN_SOURCE 1
-        CONFIGURE_COMMAND ""
-        BUILD_COMMAND ${MAKE_EQUAL_MAKE} sh build.sh build
-        INSTALL_COMMAND ""
-        ${USES_TERMINAL_BUILD}
-        )
-
-    ExternalProject_Get_Property(realm-core SOURCE_DIR)
-    set(core_directory ${SOURCE_DIR})
+macro(define_built_realm_core_target core_directory)
     set(core_library_debug ${core_directory}/src/realm/librealm-dbg${CMAKE_SHARED_LIBRARY_SUFFIX})
     set(core_library_release ${core_directory}/src/realm/librealm${CMAKE_SHARED_LIBRARY_SUFFIX})
     set(core_libraries ${core_library_debug} ${core_library_release})
@@ -95,6 +81,23 @@ function(clone_and_build_realm_core branch)
     set_property(TARGET realm PROPERTY IMPORTED_LOCATION ${core_library_release})
 
     set(REALM_CORE_INCLUDE_DIR ${core_directory}/src PARENT_SCOPE)
+endmacro()
+
+function(clone_and_build_realm_core branch)
+    set(core_prefix_directory "${CMAKE_CURRENT_SOURCE_DIR}${CMAKE_FILES_DIRECTORY}/realm-core")
+    ExternalProject_Add(realm-core
+        GIT_REPOSITORY "git@github.com:realm/realm-core.git"
+        GIT_TAG ${branch}
+        PREFIX ${core_prefix_directory}
+        BUILD_IN_SOURCE 1
+        CONFIGURE_COMMAND ""
+        BUILD_COMMAND ${MAKE_EQUAL_MAKE} sh build.sh build
+        INSTALL_COMMAND ""
+        ${USES_TERMINAL_BUILD}
+        )
+
+    ExternalProject_Get_Property(realm-core SOURCE_DIR)
+    define_built_realm_core_target(${SOURCE_DIR})
 endfunction()
 
 function(build_existing_realm_core core_directory)
@@ -111,22 +114,5 @@ function(build_existing_realm_core core_directory)
         ${USES_TERMINAL_BUILD}
         )
 
-    set(core_library_debug ${core_directory}/src/realm/librealm-dbg${CMAKE_SHARED_LIBRARY_SUFFIX})
-    set(core_library_release ${core_directory}/src/realm/librealm${CMAKE_SHARED_LIBRARY_SUFFIX})
-    set(core_libraries ${core_library_debug} ${core_library_release})
-
-    ExternalProject_Add_Step(realm-core ensure-libraries
-        COMMAND ${CMAKE_COMMAND} -E touch_nocreate ${core_libraries}
-        OUTPUT ${core_libraries}
-        DEPENDEES build
-        )
-
-    add_library(realm SHARED IMPORTED)
-    add_dependencies(realm realm-core)
-
-    set_property(TARGET realm PROPERTY IMPORTED_LOCATION_DEBUG ${core_library_debug})
-    set_property(TARGET realm PROPERTY IMPORTED_LOCATION_RELEASE ${core_library_release})
-    set_property(TARGET realm PROPERTY IMPORTED_LOCATION ${core_library_release})
-
-    set(REALM_CORE_INCLUDE_DIR ${core_directory}/src PARENT_SCOPE)
+    define_built_realm_core_target(${core_directory})
 endfunction()
