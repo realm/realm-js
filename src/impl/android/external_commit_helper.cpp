@@ -20,21 +20,20 @@
 
 #include "impl/realm_coordinator.hpp"
 
-//#include <realm/commit_log.hpp>
-//#include <realm/replication.hpp>
 
 #include <assert.h>
 #include <fcntl.h>
 #include <sstream>
 #include <sys/epoll.h>
-//#include <sys/stat.h>
 #include <sys/time.h>
 #include <system_error>
 #include <unistd.h>
+#include <android/log.h>
 
 using namespace realm;
 using namespace realm::_impl;
 
+const char* log_tag = "REALM";
 namespace {
 // Write a byte to a pipe to notify anyone waiting for data on the pipe
 void notify_fd(int fd)
@@ -124,10 +123,12 @@ ExternalCommitHelper::ExternalCommitHelper(RealmCoordinator& parent)
         }
         catch (std::exception const& e) {
             fprintf(stderr, "uncaught exception in notifier thread: %s: %s\n", typeid(e).name(), e.what());
+            __android_log_print(ANDROID_LOG_ERROR, log_tag, "uncaught exception in notifier thread: %s: %s", typeid(e).name(), e.what());
             throw;
         }
         catch (...) {
             fprintf(stderr,  "uncaught exception in notifier thread\n");
+            __android_log_print(ANDROID_LOG_ERROR, log_tag, "uncaught exception in notifier thread");
             throw;
         }
     });
