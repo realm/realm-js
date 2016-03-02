@@ -19,7 +19,7 @@
 #include "impl/realm_coordinator.hpp"
 
 #include "impl/async_query.hpp"
-#include "impl/cached_realm.hpp"
+#include "impl/weak_realm_notifier.hpp"
 #include "impl/external_commit_helper.hpp"
 #include "impl/transact_log_handler.hpp"
 #include "object_store.hpp"
@@ -64,9 +64,9 @@ std::shared_ptr<RealmCoordinator> RealmCoordinator::get_existing_coordinator(Str
 std::shared_ptr<Realm> RealmCoordinator::get_realm(Realm::Config config)
 {
     std::lock_guard<std::mutex> lock(m_realm_mutex);
-    if ((!m_config.read_only && !m_notifier) || (m_config.read_only && m_cached_realms.empty())) {
+    if ((!m_config.read_only && !m_notifier) || (m_config.read_only && m_weak_realm_notifiers.empty())) {
         m_config = config;
-        if (!config.read_only && !m_notifier) {
+        if (!config.read_only && !m_notifier && config.automatic_change_notifications) {
             try {
                 m_notifier = std::make_unique<ExternalCommitHelper>(*this);
             }
@@ -100,7 +100,7 @@ std::shared_ptr<Realm> RealmCoordinator::get_realm(Realm::Config config)
     }
 
     if (config.cache) {
-        for (auto& cachedRealm : m_cached_realms) {
+        for (auto& cachedRealm : m_weak_realm_notifiers) {
             if (cachedRealm.is_cached_for_current_thread()) {
                 // can be null if we jumped in between ref count hitting zero and
                 // unregister_realm() getting the lock
@@ -113,7 +113,7 @@ std::shared_ptr<Realm> RealmCoordinator::get_realm(Realm::Config config)
 
     auto realm = std::make_shared<Realm>(std::move(config));
     realm->init(shared_from_this());
-    m_cached_realms.emplace_back(realm, m_config.cache);
+    m_weak_realm_notifiers.emplace_back(realm, m_config.cache);
     return realm;
 }
 
@@ -124,7 +124,7 @@ std::shared_ptr<Realm> RealmCoordinator::get_realm()
 
 const Schema* RealmCoordinator::get_schema() const noexcept
 {
-    return m_cached_realms.empty() ? nullptr : m_config.schema.get();
+    return m_weak_realm_notifiers.empty() ? nullptr : m_config.schema.get();
 }
 
 void RealmCoordinator::update_schema(Schema const& schema)
@@ -152,16 +152,16 @@ RealmCoordinator::~RealmCoordinator()
 void RealmCoordinator::unregister_realm(Realm* realm)
 {
     std::lock_guard<std::mutex> lock(m_realm_mutex);
-    for (size_t i = 0; i < m_cached_realms.size(); ++i) {
-        auto& cached_realm = m_cached_realms[i];
-        if (!cached_realm.expired() && !cached_realm.is_for_realm(realm)) {
+    for (size_t i = 0; i < m_weak_realm_notifiers.size(); ++i) {
+        auto& weak_realm_notifier = m_weak_realm_notifiers[i];
+        if (!weak_realm_notifier.expired() && !weak_realm_notifier.is_for_realm(realm)) {
             continue;
         }
 
-        if (i + 1 < m_cached_realms.size()) {
-            cached_realm = std::move(m_cached_realms.back());
+        if (i + 1 < m_weak_realm_notifiers.size()) {
+            weak_realm_notifier = std::move(m_weak_realm_notifiers.back());
         }
-        m_cached_realms.pop_back();
+        m_weak_realm_notifiers.pop_back();
     }
 }
 
@@ -180,8 +180,8 @@ void RealmCoordinator::clear_cache()
             coordinator->m_notifier = nullptr;
 
             // Gather a list of all of the realms which will be removed
-            for (auto& cached_realm : coordinator->m_cached_realms) {
-                if (auto realm = cached_realm.realm()) {
+            for (auto& weak_realm_notifier : coordinator->m_weak_realm_notifiers) {
+                if (auto realm = weak_realm_notifier.realm()) {
                     realms_to_close.push_back(realm);
                 }
             }
@@ -218,7 +218,9 @@ void RealmCoordinator::clear_all_caches()
 void RealmCoordinator::send_commit_notifications()
 {
     REALM_ASSERT(!m_config.read_only);
-    m_notifier->notify_others();
+    if (m_notifier) {
+        m_notifier->notify_others();
+    }
 }
 
 void RealmCoordinator::pin_version(uint_fast64_t version, uint_fast32_t index)
@@ -305,7 +307,7 @@ void RealmCoordinator::on_change()
     run_async_queries();
 
     std::lock_guard<std::mutex> lock(m_realm_mutex);
-    for (auto& realm : m_cached_realms) {
+    for (auto& realm : m_weak_realm_notifiers) {
         realm.notify();
     }
 }

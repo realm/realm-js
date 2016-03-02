@@ -33,7 +33,7 @@ struct AsyncQueryCancelationToken;
 
 namespace _impl {
 class AsyncQuery;
-class CachedRealm;
+class WeakRealmNotifier;
 class ExternalCommitHelper;
 
 // RealmCoordinator manages the weak cache of Realm instances and communication
@@ -44,7 +44,7 @@ public:
     static std::shared_ptr<RealmCoordinator> get_coordinator(StringData path);
     // Get the coordinator for the given path, or null if there is none
     static std::shared_ptr<RealmCoordinator> get_existing_coordinator(StringData path);
-    
+
     // Get a thread-local shared Realm with the given configuration
     // If the Realm is already open on another thread, validates that the given
     // configuration is compatible with the existing one
@@ -94,7 +94,7 @@ private:
     Realm::Config m_config;
 
     std::mutex m_realm_mutex;
-    std::vector<CachedRealm> m_cached_realms;
+    std::vector<WeakRealmNotifier> m_weak_realm_notifiers;
 
     std::mutex m_query_mutex;
     std::vector<std::shared_ptr<_impl::AsyncQuery>> m_new_queries;

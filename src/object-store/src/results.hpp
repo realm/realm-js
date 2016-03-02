@@ -21,7 +21,6 @@
 
 #include "shared_realm.hpp"
 #include "util/atomic_shared_ptr.hpp"
-#include "object_store.hpp"
 
 #include <realm/table_view.hpp>
 #include <realm/table.hpp>

@@ -20,8 +20,8 @@ set(HEADERS
     results.hpp
     schema.hpp
     shared_realm.hpp
-    impl/cached_realm.hpp
-    impl/cached_realm_base.hpp
+    impl/weak_realm_notifier.hpp
+    impl/weak_realm_notifier_base.hpp
     impl/external_commit_helper.hpp
     impl/transact_log_handler.hpp
     parser/parser.hpp
@@ -30,17 +30,17 @@ set(HEADERS
 
 if(APPLE)
     list(APPEND SOURCES
-        impl/apple/cached_realm.cpp
+        impl/apple/weak_realm_notifier.cpp
         impl/apple/external_commit_helper.cpp)
     list(APPEND HEADERS
-        impl/apple/cached_realm.hpp
+        impl/apple/weak_realm_notifier.hpp
         impl/apple/external_commit_helper.hpp)
     find_library(CF_LIBRARY CoreFoundation)
 else()
     list(APPEND SOURCES
         impl/generic/external_commit_helper.cpp)
     list(APPEND HEADERS
-        impl/generic/cached_realm.hpp
+        impl/generic/weak_realm_notifier.hpp
         impl/generic/external_commit_helper.hpp)
 endif()
 

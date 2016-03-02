@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2016 Realm Inc.
+// Copyright 2015 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,15 +16,21 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#ifndef REALM_CACHED_REALM_HPP
-#define REALM_CACHED_REALM_HPP
+#include "impl/weak_realm_notifier_base.hpp"
 
-#include <realm/util/features.h>
+namespace realm {
+class Realm;
 
-#if REALM_PLATFORM_APPLE
-#include "impl/apple/cached_realm.hpp"
-#else
-#include "impl/generic/cached_realm.hpp"
-#endif
+namespace _impl {
 
-#endif // REALM_CACHED_REALM_HPP
+class WeakRealmNotifier : public WeakRealmNotifierBase {
+public:
+    using WeakRealmNotifierBase::WeakRealmNotifierBase;
+
+    // Do nothing, as this can't be implemented portably
+    void notify() { }
+};
+
+} // namespace _impl
+} // namespace realm
+
