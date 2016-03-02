@@ -188,8 +188,7 @@ void RealmCoordinator::clear_cache()
 
 void RealmCoordinator::set_auto_refresh_for(Realm* realm, bool auto_refresh)
 {
-    for (size_t i = 0; i < m_cached_realms.size(); ++i) {
-        auto& cached_realm = m_cached_realms[i];
+    for (auto& cached_realm : m_cached_realms) {
         if (!cached_realm.expired() && !cached_realm.is_for_realm(realm)) {
             continue;
         }
