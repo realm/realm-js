@@ -168,8 +168,6 @@
 		02B58CB11AE99CEC009B348C /* RealmJS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = RealmJS.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		02B58CBC1AE99CEC009B348C /* RealmJSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RealmJSTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		02B58CCD1AE99D4D009B348C /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
-		02EF76851BFFDE37000D5BAD /* test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = test.cpp; path = "src/object-store/parser/test.cpp"; sourceTree = SOURCE_ROOT; };
-		02EF76871BFFDE9E000D5BAD /* GrammarTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = GrammarTests.mm; path = ios/GrammarTests.mm; sourceTree = "<group>"; };
 		02F59EAE1C88F17D007F774C /* binding_context.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = binding_context.hpp; path = src/binding_context.hpp; sourceTree = "<group>"; };
 		02F59EAF1C88F17D007F774C /* index_set.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = index_set.cpp; path = src/index_set.cpp; sourceTree = "<group>"; };
 		02F59EB01C88F17D007F774C /* index_set.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = index_set.hpp; path = src/index_set.hpp; sourceTree = "<group>"; };
@@ -377,8 +375,6 @@
 				02409DC11BCF11D6005F3B3E /* RealmJSCoreTests.m */,
 				F68A278A1BC2722A0063D40A /* RJSModuleLoader.h */,
 				F68A278B1BC2722A0063D40A /* RJSModuleLoader.m */,
-				02EF76871BFFDE9E000D5BAD /* GrammarTests.mm */,
-				02EF76851BFFDE37000D5BAD /* test.cpp */,
 			);
 			name = RealmJSTests;
 			path = tests;
