@@ -33,7 +33,6 @@
 		02F59EC51C88F17D007F774C /* shared_realm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02F59EBD1C88F17D007F774C /* shared_realm.cpp */; };
 		02F59ECA1C88F190007F774C /* parser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02F59EC61C88F190007F774C /* parser.cpp */; };
 		02F59ECB1C88F190007F774C /* query_builder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02F59EC81C88F190007F774C /* query_builder.cpp */; };
-		02F59ED31C88F1B6007F774C /* cached_realm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02F59ECD1C88F1B6007F774C /* cached_realm.cpp */; };
 		02F59ED41C88F1B6007F774C /* external_commit_helper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02F59ECF1C88F1B6007F774C /* external_commit_helper.cpp */; };
 		02F59ED51C88F1B6007F774C /* weak_realm_notifier.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02F59ED11C88F1B6007F774C /* weak_realm_notifier.cpp */; };
 		02F59EE11C88F2BB007F774C /* async_query.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02F59ED61C88F2BA007F774C /* async_query.cpp */; };
@@ -192,16 +191,12 @@
 		02F59EC71C88F190007F774C /* parser.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = parser.hpp; path = src/parser/parser.hpp; sourceTree = "<group>"; };
 		02F59EC81C88F190007F774C /* query_builder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = query_builder.cpp; path = src/parser/query_builder.cpp; sourceTree = "<group>"; };
 		02F59EC91C88F190007F774C /* query_builder.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = query_builder.hpp; path = src/parser/query_builder.hpp; sourceTree = "<group>"; };
-		02F59ECD1C88F1B6007F774C /* cached_realm.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = cached_realm.cpp; path = src/impl/apple/cached_realm.cpp; sourceTree = "<group>"; };
-		02F59ECE1C88F1B6007F774C /* cached_realm.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = cached_realm.hpp; path = src/impl/apple/cached_realm.hpp; sourceTree = "<group>"; };
 		02F59ECF1C88F1B6007F774C /* external_commit_helper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = external_commit_helper.cpp; path = src/impl/apple/external_commit_helper.cpp; sourceTree = "<group>"; };
 		02F59ED01C88F1B6007F774C /* external_commit_helper.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = external_commit_helper.hpp; path = src/impl/apple/external_commit_helper.hpp; sourceTree = "<group>"; };
 		02F59ED11C88F1B6007F774C /* weak_realm_notifier.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = weak_realm_notifier.cpp; path = src/impl/apple/weak_realm_notifier.cpp; sourceTree = "<group>"; };
 		02F59ED21C88F1B6007F774C /* weak_realm_notifier.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = weak_realm_notifier.hpp; path = src/impl/apple/weak_realm_notifier.hpp; sourceTree = "<group>"; };
 		02F59ED61C88F2BA007F774C /* async_query.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = async_query.cpp; path = src/impl/async_query.cpp; sourceTree = "<group>"; };
 		02F59ED71C88F2BA007F774C /* async_query.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = async_query.hpp; path = src/impl/async_query.hpp; sourceTree = "<group>"; };
-		02F59ED81C88F2BA007F774C /* cached_realm_base.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = cached_realm_base.hpp; path = src/impl/cached_realm_base.hpp; sourceTree = "<group>"; };
-		02F59ED91C88F2BA007F774C /* cached_realm.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = cached_realm.hpp; path = src/impl/cached_realm.hpp; sourceTree = "<group>"; };
 		02F59EDA1C88F2BA007F774C /* external_commit_helper.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = external_commit_helper.hpp; path = src/impl/external_commit_helper.hpp; sourceTree = "<group>"; };
 		02F59EDB1C88F2BA007F774C /* realm_coordinator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = realm_coordinator.cpp; path = src/impl/realm_coordinator.cpp; sourceTree = "<group>"; };
 		02F59EDC1C88F2BB007F774C /* realm_coordinator.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = realm_coordinator.hpp; path = src/impl/realm_coordinator.hpp; sourceTree = "<group>"; };
@@ -439,16 +434,12 @@
 				02F59EC71C88F190007F774C /* parser.hpp */,
 				02F59EC81C88F190007F774C /* query_builder.cpp */,
 				02F59EC91C88F190007F774C /* query_builder.hpp */,
-				02F59ECD1C88F1B6007F774C /* cached_realm.cpp */,
-				02F59ECE1C88F1B6007F774C /* cached_realm.hpp */,
 				02F59ECF1C88F1B6007F774C /* external_commit_helper.cpp */,
 				02F59ED01C88F1B6007F774C /* external_commit_helper.hpp */,
 				02F59ED11C88F1B6007F774C /* weak_realm_notifier.cpp */,
 				02F59ED21C88F1B6007F774C /* weak_realm_notifier.hpp */,
 				02F59ED61C88F2BA007F774C /* async_query.cpp */,
 				02F59ED71C88F2BA007F774C /* async_query.hpp */,
-				02F59ED81C88F2BA007F774C /* cached_realm_base.hpp */,
-				02F59ED91C88F2BA007F774C /* cached_realm.hpp */,
 				02F59EDA1C88F2BA007F774C /* external_commit_helper.hpp */,
 				02F59EDB1C88F2BA007F774C /* realm_coordinator.cpp */,
 				02F59EDC1C88F2BB007F774C /* realm_coordinator.hpp */,
@@ -812,7 +803,6 @@
 				02F59EC01C88F17D007F774C /* list.cpp in Sources */,
 				02F59EBF1C88F17D007F774C /* index_set.cpp in Sources */,
 				02F59ED51C88F1B6007F774C /* weak_realm_notifier.cpp in Sources */,
-				02F59ED31C88F1B6007F774C /* cached_realm.cpp in Sources */,
 				F63FF2C91C12469E00B3B8E0 /* js_realm.cpp in Sources */,
 				F63FF2CA1C12469E00B3B8E0 /* js_results.cpp in Sources */,
 				02F59EC51C88F17D007F774C /* shared_realm.cpp in Sources */,
