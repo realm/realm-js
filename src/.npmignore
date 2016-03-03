@@ -1,1 +1,7 @@
 *.orig
+
+object-store/external/catch
+object-store/external/pegtl/Makefile
+object-store/external/pegtl/examples
+object-store/external/pegtl/unit_tests
+object-store/tests

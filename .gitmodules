@@ -1,9 +1,12 @@
+[submodule "src/object-store/external/pegtl"]
+	path = src/object-store/external/pegtl
+	url = https://github.com/ColinH/PEGTL
+[submodule "src/object-store/external/catch"]
+	path = src/object-store/external/catch
+	url = https://github.com/philsquared/Catch
 [submodule "vendor/GCDWebServer"]
 	path = vendor/GCDWebServer
 	url = https://github.com/swisspol/GCDWebServer.git
-[submodule "vendor/PEGTL"]
-	path = vendor/PEGTL
-	url = https://github.com/ColinH/PEGTL.git
 [submodule "docs/jsdoc-template"]
 	path = docs/jsdoc-template
 	url = https://github.com/realm/realm-jsdoc.git

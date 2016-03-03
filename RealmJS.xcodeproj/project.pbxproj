@@ -1271,7 +1271,7 @@
 				);
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(SRCROOT)/vendor/PEGTL",
+					"$(SRCROOT)/src/object-store/external/pegtl",
 					"$(SRCROOT)/vendor",
 					"$(SRCROOT)/src/object-store/src",
 				);
@@ -1286,7 +1286,7 @@
 			buildSettings = {
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(SRCROOT)/vendor/PEGTL",
+					"$(SRCROOT)/src/object-store/external/pegtl",
 					"$(SRCROOT)/vendor",
 					"$(SRCROOT)/src/object-store/src",
 				);
@@ -1301,7 +1301,7 @@
 			buildSettings = {
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(SRCROOT)/vendor/PEGTL",
+					"$(SRCROOT)/src/object-store/external/pegtl",
 					"$(SRCROOT)/vendor",
 					"$(SRCROOT)/src/object-store/src",
 				);
