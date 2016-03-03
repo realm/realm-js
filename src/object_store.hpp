@@ -19,8 +19,7 @@
 #ifndef REALM_OBJECT_STORE_HPP
 #define REALM_OBJECT_STORE_HPP
 
-#include "object_schema.hpp"
-#include "property.hpp"
+#include "schema.hpp"
 
 #include <functional>
 
