@@ -24,6 +24,7 @@
 #include "platform.hpp"
 
 #include "shared_realm.hpp"
+#include "impl/realm_coordinator.hpp"
 #include "object_accessor.hpp"
 #include "binding_context.hpp"
 
@@ -480,8 +481,6 @@ JSValueRef RealmClose(JSContextRef ctx, JSObjectRef function, JSObjectRef thisOb
         RJSValidateArgumentCount(argumentCount, 0);
         SharedRealm realm = *RJSGetInternal<SharedRealm *>(thisObject);
         realm->close();
-        realm::Realm::s_global_cache.remove(realm->config().path, realm->thread_id());
-
     }
     catch (std::exception &exp) {
         if (jsException) {

@@ -25,6 +25,7 @@
 
 #include "js_init.h"
 #include "shared_realm.hpp"
+#include "realm_coordinator.hpp"
 
 #if __arm__
 #define HOOK_SIZE 8
@@ -49,7 +50,7 @@ static JSGlobalContextRef create_context(JSContextGroupRef group, JSClassRef glo
     swap_function();
 
     // Clear cache from previous instances.
-    realm::Realm::s_global_cache.clear();
+    realm::_impl::RealmCoordinator::clear_all_caches();
 
     RJSInitializeInContext(ctx);
     realmContextInjected = true;

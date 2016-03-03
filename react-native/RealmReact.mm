@@ -22,6 +22,7 @@
 
 #import "js_init.h"
 #import "shared_realm.hpp"
+#import "realm_coordinator.hpp"
 
 #import <objc/runtime.h>
 #import <dlfcn.h>
@@ -205,7 +206,7 @@ RCT_REMAP_METHOD(emit, emitEvent:(NSString *)eventName withObject:(id)object) {
         }
     }
 
-    realm::Realm::s_global_cache.clear();
+    realm::_impl::RealmCoordinator::clear_all_caches();
 }
 
 - (void)dealloc {

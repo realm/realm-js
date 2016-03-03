@@ -26,23 +26,27 @@ LOCAL_SRC_FILES := \
   src/android/platform.cpp \
   src/android/io_realm_react_RealmReactModule.cpp \
   src/android/jsc_override.cpp \
-  src/object-store/index_set.cpp \
-  src/object-store/list.cpp \
-  src/object-store/object_schema.cpp \
-  src/object-store/object_store.cpp \
-  src/object-store/results.cpp \
-  src/object-store/schema.cpp \
-  src/object-store/shared_realm.cpp \
-  src/object-store/parser/parser.cpp \
-  src/object-store/parser/query_builder.cpp \
-  src/object-store/impl/transact_log_handler.cpp \
+  src/object-store/src/index_set.cpp \
+  src/object-store/src/list.cpp \
+  src/object-store/src/object_schema.cpp \
+  src/object-store/src/object_store.cpp \
+  src/object-store/src/results.cpp \
+  src/object-store/src/schema.cpp \
+  src/object-store/src/shared_realm.cpp \
+  src/object-store/src/parser/parser.cpp \
+  src/object-store/src/parser/query_builder.cpp \
+  src/object-store/src/impl/transact_log_handler.cpp \
+  src/object-store/src/impl/async_query.cpp \
+  src/object-store/src/impl/realm_coordinator.cpp \
+  src/object-store/src/impl/generic/external_commit_helper.cpp \
   vendor/base64.cpp
 
 LOCAL_C_INCLUDES := src
-LOCAL_C_INCLUDES += src/object-store
-LOCAL_C_INCLUDES += src/object-store/parser
+LOCAL_C_INCLUDES += src/object-store/src
+LOCAL_C_INCLUDES += src/object-store/src/impl
+LOCAL_C_INCLUDES += src/object-store/src/parser
+LOCAL_C_INCLUDES += src/object-store/external/pegtl
 LOCAL_C_INCLUDES += vendor
-LOCAL_C_INCLUDES += vendor/PEGTL
 LOCAL_C_INCLUDES += $(JAVA_HOME)/include
 LOCAL_C_INCLUDES += $(JAVA_HOME)/include/darwin
 LOCAL_C_INCLUDES += core/include
