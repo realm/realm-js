@@ -22,7 +22,6 @@ var Realm = require('realm');
 var BaseTest = require('./base-test');
 var TestCase = require('./asserts');
 var schemas = require('./schemas');
-var util = require('./util');
 
 module.exports = BaseTest.extend({
     testRealmConstructor: function() {
@@ -35,7 +34,7 @@ module.exports = BaseTest.extend({
             new Realm('/invalidpath');
         }, 'Realm cannot be created with an invalid path');
         TestCase.assertThrows(function() {
-            new Realm(util.realmPathForFile('test1.realm'), 'invalidArgument');
+            new Realm('test1.realm', 'invalidArgument');
         }, 'Realm constructor can only have 0 or 1 argument(s)');
 
         var defaultRealm = new Realm({schema: []});
@@ -44,15 +43,16 @@ module.exports = BaseTest.extend({
         var defaultRealm2 = new Realm();
         TestCase.assertEqual(defaultRealm2.path, Realm.defaultPath);
 
-        var testPath = util.realmPathForFile('test1.realm');
+        var defaultDir = Realm.defaultPath.substring(0, Realm.defaultPath.lastIndexOf("/") + 1)
+        var testPath = 'test1.realm';
         var realm = new Realm({schema: [], path: testPath});
         //TestCase.assertTrue(realm instanceof Realm);
-        TestCase.assertEqual(realm.path, testPath);
+        TestCase.assertEqual(realm.path, defaultDir + testPath);
 
-        var testPath2 = util.realmPathForFile('test2.realm');
+        var testPath2 = 'test2.realm';
         var realm2 = new Realm({schema: [], path: testPath2});
         //TestCase.assertTrue(realm2 instanceof Realm);
-        TestCase.assertEqual(realm2.path, testPath2);
+        TestCase.assertEqual(realm2.path, defaultDir + testPath2);
     },
 
     testRealmConstructorSchemaVersion: function() {
@@ -66,8 +66,7 @@ module.exports = BaseTest.extend({
         TestCase.assertEqual(new Realm().schemaVersion, 0);
         TestCase.assertEqual(new Realm({schemaVersion: 0}).schemaVersion, 0);
 
-        var testPath = util.realmPathForFile('test1.realm');
-        var realm = new Realm({path: testPath, schema: [], schemaVersion: 1});
+        var realm = new Realm({path: 'test1.realm', schema: [], schemaVersion: 1});
         TestCase.assertEqual(realm.schemaVersion, 1);
         // FIXME - enable once Realm exposes a schema object
         //TestCase.assertEqual(realm.schema.length, 0);
@@ -78,7 +77,7 @@ module.exports = BaseTest.extend({
         //     realm = new Realm({path: testPath, schema: [schemas.TestObject], schemaVersion: 1});
         // }, "schema changes require updating the schema version");
 
-        realm = new Realm({path: testPath, schema: [schemas.TestObject], schemaVersion: 2});
+        realm = new Realm({path: 'test1.realm', schema: [schemas.TestObject], schemaVersion: 2});
         realm.write(function() {
             realm.create('TestObject', {doubleCol: 1});
         });
@@ -111,7 +110,7 @@ module.exports = BaseTest.extend({
         var defaultRealm = new Realm({schema: []});
         TestCase.assertEqual(defaultRealm.path, Realm.defaultPath);
 
-        var newPath = util.realmPathForFile('default2.realm');
+        var newPath = Realm.defaultPath.substring(0, Realm.defaultPath.lastIndexOf("/") + 1) + 'default2.realm';
         Realm.defaultPath = newPath;
         defaultRealm = new Realm({schema: []});
         TestCase.assertEqual(defaultRealm.path, newPath, "should use updated default realm path");

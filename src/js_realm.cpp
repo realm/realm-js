@@ -200,6 +200,11 @@ JSObjectRef RealmConstructor(JSContextRef ctx, JSObjectRef constructor, size_t a
             *jsException = RJSMakeError(ctx, "Invalid arguments when constructing 'Realm'");
             return NULL;
         }
+        
+        if (config.path.size() && config.path[0] != '/') {
+            config.path = default_realm_file_directory() + "/" + config.path;
+        }
+        
         ensure_directory_exists_for_file(config.path);
         SharedRealm realm = Realm::get_shared_realm(config);
         if (!realm->m_binding_context) {
