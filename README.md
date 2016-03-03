@@ -28,6 +28,14 @@ platforms when integrated into a binding.
     make
     ```
 
+If you wish to build against a local version of core you can invoke `cmake` like so:
+
+```
+cmake -DREALM_CORE_VERSION=/path/to/realm-core
+```
+
+The given core tree will be built as part of the object store build.
+
 ## Testing
 
 ```
