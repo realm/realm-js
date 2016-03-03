@@ -143,6 +143,12 @@ case "$TARGET" in
   echo "********* File location: $(pwd)/tests.xml *********";
   cat tests.xml
   ;;
+"object-store")
+  pushd src/object-store
+  brew install cmake
+  cmake .
+  make run-tests
+;;
 *)
   echo "Invalid target '${TARGET}'"
   exit 1
