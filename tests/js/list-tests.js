@@ -567,16 +567,39 @@ module.exports = BaseTest.extend({
             TestCase.assertEqual(list.reduce(function(n, p) {return n + p.age}, 0), 33);
             TestCase.assertEqual(list.reduceRight(function(n, p) {return n + p.age}, 0), 33);
 
-            // Some of these may not be present in every environment.
-            if (list.entries) {
-                TestCase.assertEqual(list.entries().next().value[1].name, 'Ari');
-            }
-            if (list.keys) {
-                TestCase.assertEqual(list.keys().next().value, 0);
-            }
-            if (list.values) {
-                TestCase.assertEqual(list.values().next().value.name, 'Ari');
-            }
+            [
+                'entries',
+                'keys',
+                'values',
+            ].forEach(function(methodName) {
+                var iterator = list[methodName]();
+                var count = 0;
+                var result;
+
+                while ((result = iterator.next()) && !result.done) {
+                    var value = result.value;
+
+                    switch (methodName) {
+                        case 'entries':
+                            TestCase.assertEqual(value.length, 2);
+                            TestCase.assertEqual(value[0], count);
+                            TestCase.assertEqual(value[1].name, list[count].name);
+                            break;
+                        case 'keys':
+                            TestCase.assertEqual(value, count);
+                            break;
+                        default:
+                            TestCase.assertEqual(value.name, list[count].name);
+                            break;
+                    }
+
+                    count++;
+                }
+
+                TestCase.assertEqual(result.done, true);
+                TestCase.assertEqual(result.value, undefined);
+                TestCase.assertEqual(count, list.length);
+            });
         });
     },
 });
