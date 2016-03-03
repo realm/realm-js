@@ -334,12 +334,12 @@ module.exports = BaseTest.extend({
         });
 
         // Only the original constructor should be valid.
-        function WrongCustomObject() {}
-        WrongCustomObject.schema = CustomObject.schema;
+        function InvalidCustomObject() {}
+        InvalidCustomObject.schema = CustomObject.schema;
 
         TestCase.assertThrows(function() {
             realm.write(function() {
-                realm.create(WrongCustomObject, {intCol: 1});
+                realm.create(InvalidCustomObject, {intCol: 1});
             });
         });
     },
@@ -419,8 +419,8 @@ module.exports = BaseTest.extend({
         var objects = realm.objects(schemas.PersonObject);
         TestCase.assertTrue(objects[0] instanceof schemas.PersonObject);
 
-        function WrongPerson() {}
-        WrongPerson.schema = schemas.PersonObject.schema;
+        function InvalidPerson() {}
+        InvalidPerson.schema = schemas.PersonObject.schema;
 
         TestCase.assertThrows(function() {
             realm.objects();
@@ -435,7 +435,7 @@ module.exports = BaseTest.extend({
             realm.objects('PersonObject', 'truepredicate');
         });
         TestCase.assertThrows(function() {
-            realm.objects(WrongPerson);
+            realm.objects(InvalidPerson);
         });
     },
 

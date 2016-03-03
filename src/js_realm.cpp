@@ -249,7 +249,7 @@ JSValueRef RealmGetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef pr
     return NULL;
 }
 
-std::string RealmObjectTypeForValue(SharedRealm &realm, JSContextRef ctx, JSValueRef value) {
+std::string RJSValidatedObjectTypeForValue(SharedRealm &realm, JSContextRef ctx, JSValueRef value) {
     if (JSValueIsObject(ctx, value) && JSObjectIsConstructor(ctx, (JSObjectRef)value)) {
         JSObjectRef constructor = (JSObjectRef)value;
 
@@ -270,7 +270,7 @@ JSValueRef RealmObjects(JSContextRef ctx, JSObjectRef function, JSObjectRef this
         RJSValidateArgumentCount(argumentCount, 1);
 
         SharedRealm sharedRealm = *RJSGetInternal<SharedRealm *>(thisObject);
-        std::string className = RealmObjectTypeForValue(sharedRealm, ctx, arguments[0]);
+        std::string className = RJSValidatedObjectTypeForValue(sharedRealm, ctx, arguments[0]);
         return RJSResultsCreate(ctx, sharedRealm, className);
     }
     catch (std::exception &exp) {
@@ -309,7 +309,7 @@ JSValueRef RealmCreateObject(JSContextRef ctx, JSObjectRef function, JSObjectRef
         RJSValidateArgumentRange(argumentCount, 2, 3);
 
         SharedRealm sharedRealm = *RJSGetInternal<SharedRealm *>(thisObject);
-        std::string className = RealmObjectTypeForValue(sharedRealm, ctx, arguments[0]);
+        std::string className = RJSValidatedObjectTypeForValue(sharedRealm, ctx, arguments[0]);
         auto &schema = sharedRealm->config().schema;
         auto object_schema = schema->find(className);
 
