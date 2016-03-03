@@ -571,7 +571,12 @@ module.exports = BaseTest.extend({
                 'entries',
                 'keys',
                 'values',
+                typeof Symbol != 'undefined' && Symbol.iterator, // eslint-disable-line no-undef
             ].forEach(function(methodName) {
+                if (!methodName) {
+                    return;
+                }
+
                 var iterator = list[methodName]();
                 var count = 0;
                 var result;
