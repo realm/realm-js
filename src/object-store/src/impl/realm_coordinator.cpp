@@ -199,6 +199,22 @@ void RealmCoordinator::clear_cache()
     }
 }
 
+void RealmCoordinator::clear_all_caches()
+{
+    std::vector<std::weak_ptr<RealmCoordinator>> to_clear;
+    {
+        std::lock_guard<std::mutex> lock(s_coordinator_mutex);
+        for (auto iter : s_coordinators_per_path) {
+            to_clear.push_back(iter.second);
+        }
+    }
+    for (auto weak_coordinator : to_clear) {
+        if (auto coordinator = weak_coordinator.lock()) {
+            coordinator->clear_cache();
+        }
+    }
+}
+
 void RealmCoordinator::send_commit_notifications()
 {
     REALM_ASSERT(!m_config.read_only);

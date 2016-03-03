@@ -26,6 +26,7 @@
 #include "platform.hpp"
 
 #include "shared_realm.hpp"
+#include "impl/realm_coordinator.hpp"
 #include <algorithm>
 #include <cassert>
 
@@ -104,7 +105,7 @@ void RJSInitializeInContext(JSContextRef ctx) {
 }
 
 void RJSClearTestState() {
-    realm::Realm::s_global_cache.clear();
+    realm::_impl::RealmCoordinator::clear_all_caches();
     realm::remove_realm_files_from_directory(realm::default_realm_file_directory());
 }
 

@@ -38,7 +38,7 @@ JSValueRef ListGetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef pro
             return JSValueMakeNumber(ctx, list->size());
         }
 
-        return RJSObjectCreate(ctx, Object(list->realm(), list->get_object_schema(), list->get(RJSValidatedPositiveIndex(indexStr))));
+        return RJSObjectCreate(ctx, Object(list->get_realm(), list->get_object_schema(), list->get(RJSValidatedPositiveIndex(indexStr))));
     }
     catch (std::out_of_range &exp) {
         // getters for nonexistent properties in JS should always return undefined
@@ -116,11 +116,11 @@ JSValueRef ListPop(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObjec
 
         size_t size = list->size();
         if (size == 0) {
-            list->verify_in_tranaction();
+            list->verify_in_transaction();
             return JSValueMakeUndefined(ctx);
         }
         size_t index = size - 1;
-        JSValueRef obj = RJSObjectCreate(ctx, Object(list->realm(), list->get_object_schema(), list->get(index)));
+        JSValueRef obj = RJSObjectCreate(ctx, Object(list->get_realm(), list->get_object_schema(), list->get(index)));
         list->remove(index);
         return obj;
     }
@@ -154,10 +154,10 @@ JSValueRef ListShift(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObj
         List *list = RJSGetInternal<List *>(thisObject);
         RJSValidateArgumentCount(argumentCount, 0);
         if (list->size() == 0) {
-            list->verify_in_tranaction();
+            list->verify_in_transaction();
             return JSValueMakeUndefined(ctx);
         }
-        JSValueRef obj = RJSObjectCreate(ctx, Object(list->realm(), list->get_object_schema(), list->get(0)));
+        JSValueRef obj = RJSObjectCreate(ctx, Object(list->get_realm(), list->get_object_schema(), list->get(0)));
         list->remove(0);
         return obj;
     }
@@ -185,7 +185,7 @@ JSValueRef ListSplice(JSContextRef ctx, JSObjectRef function, JSObjectRef thisOb
 
         std::vector<JSObjectRef> removedObjects(remove);
         for (size_t i = 0; i < remove; i++) {
-            removedObjects[i] = RJSObjectCreate(ctx, Object(list->realm(), list->get_object_schema(), list->get(index)));
+            removedObjects[i] = RJSObjectCreate(ctx, Object(list->get_realm(), list->get_object_schema(), list->get(index)));
             list->remove(index);
         }
         for (size_t i = 2; i < argumentCount; i++) {
@@ -206,7 +206,7 @@ JSValueRef ListStaticResults(JSContextRef ctx, JSObjectRef function, JSObjectRef
         List *list = RJSGetInternal<List *>(thisObject);
         RJSValidateArgumentCount(argumentCount, 0);
 
-        return RJSResultsCreate(ctx, list->realm(), list->get_object_schema(), std::move(list->get_query()), false);
+        return RJSResultsCreate(ctx, list->get_realm(), list->get_object_schema(), std::move(list->get_query()), false);
     }
     catch (std::exception &exp) {
         if (jsException) {

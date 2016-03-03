@@ -19,6 +19,8 @@
 #ifndef REALM_OBJECT_SCHEMA_HPP
 #define REALM_OBJECT_SCHEMA_HPP
 
+#include "property.hpp"
+
 #include <realm/string_data.hpp>
 
 #include <string>
@@ -26,7 +28,6 @@
 
 namespace realm {
     class Group;
-    struct Property;
 
     class ObjectSchema {
     public:

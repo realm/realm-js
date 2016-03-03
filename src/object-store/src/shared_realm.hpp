@@ -19,6 +19,8 @@
 #ifndef REALM_REALM_HPP
 #define REALM_REALM_HPP
 
+#include "object_store.hpp"
+
 #include <realm/handover_defs.hpp>
 
 #include <memory>
@@ -34,7 +36,6 @@ namespace realm {
     class Group;
     class Realm;
     class RealmDelegate;
-    class Schema;
     class SharedGroup;
     typedef std::shared_ptr<Realm> SharedRealm;
     typedef std::weak_ptr<Realm> WeakRealm;
