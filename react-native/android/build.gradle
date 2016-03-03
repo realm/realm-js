@@ -27,7 +27,7 @@ import org.apache.tools.ant.filters.ReplaceTokens
 // We download various C++ open-source dependencies into downloads.
 // We then copy both the downloaded code and our custom makefiles and headers into third-party-ndk.
 // After that we build native code from src/main/jni with module path pointing at third-party-ndk.
-ext.coreVersion = '0.95.6'
+ext.coreVersion = '0.96.2'
 
 def currentVersion = "npm --silent run get-version".execute().text.trim()
 def downloadsDir = new File("$projectDir/downloads")
