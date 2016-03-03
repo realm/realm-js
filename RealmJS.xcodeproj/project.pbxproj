@@ -1257,8 +1257,8 @@
 				);
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(SRCROOT)/vendor/PEGTL",
 					"$(SRCROOT)/vendor",
+					"$(SRCROOT)/src/object-store/external/pegtl",
 					"$(SRCROOT)/src/object-store/src",
 				);
 				PRODUCT_NAME = RealmJS;
@@ -1272,8 +1272,8 @@
 			buildSettings = {
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(SRCROOT)/vendor/PEGTL",
 					"$(SRCROOT)/vendor",
+					"$(SRCROOT)/src/object-store/external/pegtl",
 					"$(SRCROOT)/src/object-store/src",
 				);
 				PRODUCT_NAME = RealmJS;
@@ -1287,8 +1287,8 @@
 			buildSettings = {
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(SRCROOT)/vendor/PEGTL",
 					"$(SRCROOT)/vendor",
+					"$(SRCROOT)/src/object-store/external/pegtl",
 					"$(SRCROOT)/src/object-store/src",
 				);
 				PRODUCT_NAME = RealmJS;

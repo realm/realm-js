@@ -12,7 +12,3 @@ GCDWebServer/iOS
 GCDWebServer/Mac
 GCDWebServer/Tests
 GCDWebServer/tvOS
-
-PEGTL/Makefile
-PEGTL/examples
-PEGTL/unit_tests
