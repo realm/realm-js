@@ -1,4 +1,4 @@
-package com.reactnativebenchmarks;
+package io.realm.react.benchmarks;
 
 import com.facebook.react.ReactActivity;
 import com.facebook.react.ReactPackage;
