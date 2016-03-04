@@ -26,7 +26,7 @@
 
 namespace realm {
     class Group;
-    struct Property;
+    class Property;
 
     class ObjectSchema {
     public:

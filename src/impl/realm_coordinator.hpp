@@ -65,7 +65,10 @@ public:
     // Should only be called in test code, as continuing to use the previously
     // cached instances will have odd results
     static void clear_cache();
-
+    
+    // Clears all caches on existing coordinators
+    static void clear_all_caches();
+    
     // Explicit constructor/destructor needed for the unique_ptrs to forward-declared types
     RealmCoordinator();
     ~RealmCoordinator();

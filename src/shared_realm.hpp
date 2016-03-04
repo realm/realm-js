@@ -19,6 +19,8 @@
 #ifndef REALM_REALM_HPP
 #define REALM_REALM_HPP
 
+#include "schema.hpp"
+
 #include <realm/handover_defs.hpp>
 
 #include <memory>
@@ -26,6 +28,7 @@
 #include <string>
 #include <thread>
 #include <vector>
+#include <mutex>
 
 namespace realm {
     class BindingContext;
@@ -33,7 +36,6 @@ namespace realm {
     class Group;
     class Realm;
     class RealmDelegate;
-    class Schema;
     class SharedGroup;
     typedef std::shared_ptr<Realm> SharedRealm;
     typedef std::weak_ptr<Realm> WeakRealm;
@@ -228,6 +230,11 @@ namespace realm {
     class UnitializedRealmException : public std::runtime_error {
     public:
         UnitializedRealmException(std::string message) : std::runtime_error(message) {}
+    };
+    
+    class InvalidEncryptionKeyException : public std::runtime_error {
+    public:
+        InvalidEncryptionKeyException() : std::runtime_error("Encryption key must be 64 bytes.") {}
     };
 }
 

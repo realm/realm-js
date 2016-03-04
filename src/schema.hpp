@@ -19,6 +19,7 @@
 #ifndef REALM_SCHEMA_HPP
 #define REALM_SCHEMA_HPP
 
+#include "object_schema.hpp"
 #include "property.hpp"
 
 #include <string>

@@ -25,6 +25,7 @@
 #include <realm/table_view.hpp>
 #include <realm/table.hpp>
 #include <realm/util/optional.hpp>
+#include <realm/util/to_string.hpp>
 
 namespace realm {
 template<typename T> class BasicRowExpr;
@@ -161,8 +162,8 @@ public:
     struct OutOfBoundsIndexException : public std::out_of_range
     {
         OutOfBoundsIndexException(size_t r, size_t c) :
-            std::out_of_range((std::string)"Requested index " + std::to_string(r) +
-                              " greater than max " + std::to_string(c)),
+            std::out_of_range((std::string)"Requested index " + util::to_string(r) +
+                              " greater than max " + util::to_string(c)),
             requested(r), valid_count(c) {}
         const size_t requested;
         const size_t valid_count;
