@@ -46,9 +46,8 @@ T stot(const std::string s) {
 #define precondition(condition, message) if (!__builtin_expect(condition, 1)) {  throw std::runtime_error(message); }
 
 // FIXME: TrueExpression and FalseExpression should be supported by core in some way
-class TrueExpression : public realm::Expression {
-  public:
-    virtual size_t find_first(size_t start, size_t end) const
+struct TrueExpression : realm::Expression {
+    size_t find_first(size_t start, size_t end) const override
     {
         if (start != end)
             return start;
