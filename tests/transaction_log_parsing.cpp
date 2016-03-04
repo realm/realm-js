@@ -97,8 +97,11 @@ private:
             CHECK(m_initial[i] == m_linkview->get(i).get_int(0));
 
         // Verify that everything marked as a move actually is one
-        for (size_t i = 0; i < move_sources.size(); ++i)
-            CHECK(m_linkview->get(info.moves[i].to).get_int(0) == move_sources[i]);
+        for (size_t i = 0; i < move_sources.size(); ++i) {
+            if (!info.modifications.contains(info.moves[i].to)) {
+                CHECK(m_linkview->get(info.moves[i].to).get_int(0) == move_sources[i]);
+            }
+        }
     }
 };
 
@@ -386,14 +389,14 @@ TEST_CASE("Transaction log parsing") {
             REQUIRE(info.tables[2].deletions.empty());
         }
 
-        SECTION("modifying newly added rows is not reported as a modification") {
+        SECTION("modifying newly added rows is reported as a modification") {
             auto info = track_changes({false, false, true}, [&] {
                 table.add_empty_row();
                 table.set_int(0, 10, 10);
             });
             REQUIRE(info.tables.size() == 3);
             REQUIRE_INDICES(info.tables[2].insertions, 10);
-            REQUIRE(info.tables[2].modifications.empty());
+            REQUIRE_INDICES(info.tables[2].modifications, 10);
         }
 
         SECTION("move_last_over() does not shift rows other than the last one") {
@@ -402,7 +405,8 @@ TEST_CASE("Transaction log parsing") {
                 table.move_last_over(3);
             });
             REQUIRE(info.tables.size() == 3);
-            REQUIRE_INDICES(info.tables[2].deletions, 2, 3);
+            REQUIRE_INDICES(info.tables[2].deletions, 2, 3, 8, 9);
+            REQUIRE_INDICES(info.tables[2].insertions, 2, 3);
             REQUIRE_MOVES(info.tables[2], {9, 2}, {8, 3});
         }
     }
@@ -651,7 +655,7 @@ TEST_CASE("Transaction log parsing") {
                     lv->set(5, 1);
                 }
                 REQUIRE_INDICES(changes.insertions, 5);
-                REQUIRE(changes.modifications.size() == 0);
+                REQUIRE_INDICES(changes.modifications, 5);
 
                 VALIDATE_CHANGES(changes) {
                     lv->insert(5, 0);
@@ -808,7 +812,7 @@ TEST_CASE("Transaction log parsing") {
 
                 REQUIRE_INDICES(changes.deletions, 5);
                 REQUIRE_INDICES(changes.insertions, 0);
-                REQUIRE(changes.moves.empty());
+                REQUIRE_MOVES(changes, {5, 0});
             }
 
             SECTION("set after move is just insert+delete") {
@@ -819,7 +823,7 @@ TEST_CASE("Transaction log parsing") {
 
                 REQUIRE_INDICES(changes.deletions, 5);
                 REQUIRE_INDICES(changes.insertions, 0);
-                REQUIRE(changes.moves.empty());
+                REQUIRE_MOVES(changes, {5, 0});
             }
 
             SECTION("delete after move removes original row") {

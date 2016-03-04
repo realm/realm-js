@@ -39,10 +39,11 @@ TEST_CASE("collection change indices") {
             REQUIRE_INDICES(c.modifications, 3, 4);
         }
 
-        SECTION("modify() on an inserted row is a no-op") {
+        SECTION("modify() on an inserted row marks it as both inserted and modified") {
             c.insert(3);
             c.modify(3);
-            REQUIRE(c.modifications.empty());
+            REQUIRE_INDICES(c.insertions, 3);
+            REQUIRE_INDICES(c.modifications, 3);
         }
 
         SECTION("modify() doesn't interact with deleted rows") {
@@ -133,13 +134,13 @@ TEST_CASE("collection change indices") {
             REQUIRE_MOVES(c, {8, 5});
         }
 
-        SECTION("move_over() removes previous insertions for that row") {
-            c.insert(5);
+        SECTION("move_over() does not mark the old last row as moved if it was newly inserted") {
+            c.insert(8);
             c.move_over(5, 8);
-            REQUIRE(c.insertions.empty());
+            REQUIRE(c.moves.empty());
         }
 
-        SECTION("move_over() removes previous modifications for that row") {
+        SECTION("move_over() removes previous modifications for the removed row") {
             c.modify(5);
             c.move_over(5, 8);
             REQUIRE(c.modifications.empty());
@@ -160,7 +161,7 @@ TEST_CASE("collection change indices") {
         SECTION("move_over() removes moves to the target") {
             c.move(3, 5);
             c.move_over(5, 8);
-            REQUIRE(c.moves.empty());
+            REQUIRE_MOVES(c, {8, 5});
         }
 
         SECTION("move_over() updates moves to the source") {
@@ -172,7 +173,8 @@ TEST_CASE("collection change indices") {
         SECTION("move_over() is not shifted by previous calls to move_over()") {
             c.move_over(5, 10);
             c.move_over(6, 9);
-            REQUIRE_INDICES(c.deletions, 5, 6);
+            REQUIRE_INDICES(c.deletions, 5, 6, 9, 10);
+            REQUIRE_INDICES(c.insertions, 5, 6);
             REQUIRE_MOVES(c, {10, 5}, {9, 6});
         }
     }

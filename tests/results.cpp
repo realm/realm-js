@@ -204,12 +204,13 @@ TEST_CASE("Results") {
             REQUIRE_INDICES(change.deletions, 1);
         }
 
-        SECTION("modifying a non-matching row to match marks that row as inserted") {
+        SECTION("modifying a non-matching row to match marks that row as inserted, but not modified") {
             write([&] {
                 table->set_int(0, 7, 3);
             });
             REQUIRE(notification_calls == 2);
             REQUIRE_INDICES(change.insertions, 4);
+            REQUIRE(change.modifications.empty());
         }
 
         SECTION("deleting a matching row marks that row as deleted") {
