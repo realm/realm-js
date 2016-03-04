@@ -17,10 +17,9 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #include "list.hpp"
-
 #include "results.hpp"
-#include "shared_realm.hpp"
 
+#include <realm/util/to_string.hpp>
 #include <stdexcept>
 
 using namespace realm;
@@ -45,8 +44,8 @@ void List::verify_valid_row(size_t row_ndx, bool insertion) const
 {
     size_t size = m_link_view->size();
     if (row_ndx > size || (!insertion && row_ndx == size)) {
-        throw std::out_of_range("Index " + to_string(row_ndx) + " is outside of range 0..." +
-                                to_string(size) + ".");
+        throw std::out_of_range("Index " + util::to_string(row_ndx) + " is outside of range 0..." +
+                                util::to_string(size) + ".");
     }
 }
 

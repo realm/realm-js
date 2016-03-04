@@ -20,6 +20,7 @@
 #define REALM_QUERY_BUILDER_HPP
 
 #include <string>
+#include <realm/util/to_string.hpp>
 #include "parser.hpp"
 #include "object_accessor.hpp"
 
@@ -69,7 +70,7 @@ class ArgumentConverter : public Arguments
 
     ValueType &argument_at(size_t index) {
         if (index >= m_arguments.size()) {
-            throw std::out_of_range((std::string)"Argument index " + to_string(index) + " out of range 0.." + to_string(m_arguments.size()-1));
+            throw std::out_of_range((std::string)"Argument index " + util::to_string(index) + " out of range 0.." + util::to_string(m_arguments.size()-1));
         }
         return m_arguments[index];
     }
