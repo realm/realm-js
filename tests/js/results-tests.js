@@ -245,7 +245,7 @@ module.exports = BaseTest.extend({
             realm.create('BasicTypesObject', [false, 1, 1, 1, '1', new Date(1), new ArrayBuffer()]);
         });
 
-        var numberProps = ['intCol', 'floatCol', 'doubleCol'];
+        var numberProps = ['intCol', 'floatCol', 'doubleCol', 'stringCol'];
         for (var i = 0; i < numberProps.length; i++) {
             var prop = numberProps[i];
 
