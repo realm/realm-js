@@ -20,6 +20,7 @@
 #define REALM_RESULTS_HPP
 
 #include "shared_realm.hpp"
+#include "object_store.hpp"
 #include "util/atomic_shared_ptr.hpp"
 
 #include <realm/table_view.hpp>

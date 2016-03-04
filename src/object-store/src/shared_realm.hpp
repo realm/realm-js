@@ -19,7 +19,7 @@
 #ifndef REALM_REALM_HPP
 #define REALM_REALM_HPP
 
-#include "object_store.hpp"
+#include "schema.hpp"
 
 #include <realm/handover_defs.hpp>
 
