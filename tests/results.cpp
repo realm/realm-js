@@ -363,8 +363,28 @@ TEST_CASE("Async Results error handling") {
     auto coordinator = _impl::RealmCoordinator::get_existing_coordinator(config.path);
     Results results(r, *config.schema->find("object"), *r->read_group()->get_table("class_object"));
 
+    class OpenFileLimiter {
+    public:
+        OpenFileLimiter()
+        {
+            // Set the max open files to zero so that opening new files will fail
+            getrlimit(RLIMIT_NOFILE, &m_old);
+            rlimit rl = m_old;
+            rl.rlim_cur = 0;
+            setrlimit(RLIMIT_NOFILE, &rl);
+        }
+
+        ~OpenFileLimiter()
+        {
+            setrlimit(RLIMIT_NOFILE, &m_old);
+        }
+
+    private:
+        rlimit m_old;
+    };
+
     SECTION("error when opening the advancer SG") {
-        unlink(config.path.c_str());
+        OpenFileLimiter limiter;
 
         SECTION("error is delivered asynchronously") {
             bool called = false;
@@ -412,7 +432,7 @@ TEST_CASE("Async Results error handling") {
                 REQUIRE(err);
                 called = true;
             });
-            unlink(config.path.c_str());
+            OpenFileLimiter limiter;
 
             REQUIRE(!called);
             coordinator->on_change();
@@ -428,7 +448,7 @@ TEST_CASE("Async Results error handling") {
                 REQUIRE_FALSE(called);
                 called = true;
             });
-            unlink(config.path.c_str());
+            OpenFileLimiter limiter;
 
             coordinator->on_change();
             r->notify();
@@ -445,6 +465,5 @@ TEST_CASE("Async Results error handling") {
 
             REQUIRE(called2);
         }
-
     }
 }
