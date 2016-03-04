@@ -234,4 +234,46 @@ module.exports = BaseTest.extend({
             objects.sorted(['valueCol', 'primaryCol'], true);
         });
     },
+
+    testResultsSortedAllTypes: function() {
+        var realm = new Realm({schema: [schemas.BasicTypes]});
+        var objects = realm.objects('BasicTypesObject');
+
+        realm.write(function() {
+            realm.create('BasicTypesObject', [false, 0, 0, 0, '0', new Date(0), new ArrayBuffer()]);
+            realm.create('BasicTypesObject', [true, 2, 2, 2, '2', new Date(2), new ArrayBuffer()]);
+            realm.create('BasicTypesObject', [false, 1, 1, 1, '1', new Date(1), new ArrayBuffer()]);
+        });
+
+        var numberProps = ['intCol', 'floatCol', 'doubleCol'];
+        for (var i = 0; i < numberProps.length; i++) {
+            var prop = numberProps[i];
+
+            objects = objects.sorted(prop, false);
+            TestCase.assertEqual('' + objects[0][prop], '0', 'first element ascending for ' + prop);
+            TestCase.assertEqual('' + objects[2][prop], '2', 'second element ascending for ' + prop);
+
+            objects = objects.sorted(prop, true);
+            TestCase.assertEqual('' + objects[0][prop], '2', 'first element descending for ' + prop);
+            TestCase.assertEqual('' + objects[2][prop], '0', 'second element descending for ' + prop);
+        }
+
+        objects = objects.sorted('dateCol', false);
+        TestCase.assertEqual(objects[0].dateCol.getTime(), 0);
+        TestCase.assertEqual(objects[2].dateCol.getTime(), 2);
+
+        objects = objects.sorted('dateCol', true);
+        TestCase.assertEqual(objects[0].dateCol.getTime(), 2);
+        TestCase.assertEqual(objects[2].dateCol.getTime(), 0);
+
+        objects = objects.sorted('boolCol', false);
+        TestCase.assertEqual(objects[0].boolCol, false, 'first element ascending for boolCol');
+        TestCase.assertEqual(objects[0].boolCol, false, 'second element ascending for boolCol');
+        TestCase.assertEqual(objects[2].boolCol, true, 'third element ascending for boolCol');
+
+        objects = objects.sorted('boolCol', true);
+        TestCase.assertEqual(objects[0].boolCol, true, 'first element descending for boolCol');
+        TestCase.assertEqual(objects[1].boolCol, false, 'second element descending for boolCol');
+        TestCase.assertEqual(objects[2].boolCol, false, 'third element descending for boolCol');
+    }
 });
