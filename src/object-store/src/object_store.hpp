@@ -20,6 +20,7 @@
 #define REALM_OBJECT_STORE_HPP
 
 #include "schema.hpp"
+#include "property.hpp"
 
 #include <functional>
 
