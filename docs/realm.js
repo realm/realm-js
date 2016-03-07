@@ -27,9 +27,9 @@ class Realm {
      * Create a new `Realm` instance using the provided `config`. If a Realm does not yet exist
      * at `config.path` (or {@link Realm.defaultPath} if not provided), then this constructor
      * will create it with the provided `config.schema` (which is _required_ in this case).
-     * Otherwise, the instance will access the existing realm from the file at that path.
+     * Otherwise, the instance will access the existing Realm from the file at that path.
      * In this case, `config.schema` is _optional_ or not have changed, unless
-     * `config.schemaVersion` is incremented, in which case the realm will be automatically
+     * `config.schemaVersion` is incremented, in which case the Realm will be automatically
      * migrated to use the new schema.
      * @param {Realm~Configuration} [config] - **Required** when first creating the Realm.
      */
@@ -115,7 +115,7 @@ Realm.defaultPath;
  * @property {string} [path={@link Realm.defaultPath}] - The path to the file where the
  *   Realm database should be stored.
  * @property {Array<Realm~ObjectClass|Realm~ObjectSchema>} [schema] - Specifies all the
- *   object types in this Realm. **Required** when first creating realm at this `path`.
+ *   object types in this Realm. **Required** when first creating a Realm at this `path`.
  * @property {number} [schemaVersion] - **Required** (and must be incremented) after
  *   changing the `schema`.
  */
