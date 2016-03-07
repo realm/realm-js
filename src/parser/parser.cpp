@@ -112,7 +112,7 @@ struct ParserState
     {
         return group_stack.back();
     }
-    
+
     Predicate *last_predicate()
     {
         Predicate *pred = current_group();
@@ -121,12 +121,12 @@ struct ParserState
         }
         return pred;
     }
-    
+
     void add_predicate_to_current_group(Predicate::Type type)
     {
         current_group()->cpnd.sub_predicates.emplace_back(type, negate_next);
         negate_next = false;
-        
+
         if (current_group()->cpnd.sub_predicates.size() > 1) {
             if (next_type == Predicate::Type::Or) {
                 apply_or();
@@ -136,10 +136,10 @@ struct ParserState
             }
         }
     }
-    
+
     bool negate_next = false;
     Predicate::Type next_type = Predicate::Type::And;
-    
+
     void add_expression(Expression && exp)
     {
         Predicate *current = last_predicate();
@@ -151,32 +151,32 @@ struct ParserState
             last_predicate()->cmpr.expr[0] = std::move(exp);
         }
     }
-    
+
     void apply_or()
     {
         Predicate *group = current_group();
         if (group->type == Predicate::Type::Or) {
             return;
         }
-        
+
         // convert to OR
         group->type = Predicate::Type::Or;
         if (group->cpnd.sub_predicates.size() > 2) {
             // split the current group into an AND group ORed with the last subpredicate
             Predicate new_sub(Predicate::Type::And);
             new_sub.cpnd.sub_predicates = std::move(group->cpnd.sub_predicates);
-            
+
             group->cpnd.sub_predicates = { new_sub, std::move(new_sub.cpnd.sub_predicates.back()) };
             group->cpnd.sub_predicates[0].cpnd.sub_predicates.pop_back();
         }
     }
-    
+
     void apply_and()
     {
         if (current_group()->type == Predicate::Type::And) {
             return;
         }
-        
+
         auto &sub_preds = current_group()->cpnd.sub_predicates;
         auto second_last = sub_preds.end() - 2;
         if (second_last->type == Predicate::Type::And && !second_last->negate) {
