@@ -184,10 +184,12 @@ void CollectionChangeIndices::erase(size_t index)
 
 void CollectionChangeIndices::clear(size_t old_size)
 {
-    for (auto range : deletions)
-        old_size += range.second - range.first;
-    for (auto range : insertions)
-        old_size -= range.second - range.first;
+    if (old_size != std::numeric_limits<size_t>::max()) {
+        for (auto range : deletions)
+            old_size += range.second - range.first;
+        for (auto range : insertions)
+            old_size -= range.second - range.first;
+    }
 
     modifications.clear();
     insertions.clear();
