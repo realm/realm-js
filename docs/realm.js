@@ -27,9 +27,9 @@ class Realm {
      * Create a new `Realm` instance using the provided `config`. If a Realm does not yet exist
      * at `config.path` (or {@link Realm.defaultPath} if not provided), then this constructor
      * will create it with the provided `config.schema` (which is _required_ in this case).
-     * Otherwise, the instance will access the existing realm from the file at that path.
+     * Otherwise, the instance will access the existing Realm from the file at that path.
      * In this case, `config.schema` is _optional_ or not have changed, unless
-     * `config.schemaVersion` is incremented, in which case the realm will be automatically
+     * `config.schemaVersion` is incremented, in which case the Realm will be automatically
      * migrated to use the new schema.
      * @param {Realm~Configuration} [config] - **Required** when first creating the Realm.
      */
@@ -37,8 +37,7 @@ class Realm {
 
     /**
      * Create a new Realm object of the given type and with the specified properties.
-     * @param {string} type - The type of object as specified by its `name` in the
-     *   {@link Realm~ObjectSchema ObjectSchema} definition.
+     * @param {Realm~ObjectType} type - The type of Realm object to create.
      * @param {Object} properties - Property values for all required properties without a
      *   default value.
      * @param {boolean} [update=false] - Signals that an existing object with matching primary key
@@ -61,12 +60,11 @@ class Realm {
 
     /**
      * Returns all objects of the given `type` in the Realm.
-     * @param {string} type - The type of object as specified by its `name` in the
-     *   {@link Realm~ObjectSchema ObjectSchema} definition.
+     * @param {Realm~ObjectType} type - The type of Realm objects to retrieve.
      * @throws {Error} If type passed into this method is invalid.
      * @returns {Realm.Results} that will live-update as objects are created and destroyed.
      */
-    objects(type, query, ...arg) {}
+    objects(type) {}
 
     /**
      * Add a listener `callback` for the specified event `name`.
@@ -116,10 +114,18 @@ Realm.defaultPath;
  * @type {Object}
  * @property {string} [path={@link Realm.defaultPath}] - The path to the file where the
  *   Realm database should be stored.
- * @property {Realm~ObjectSchema[]} [schema] - Specifies all the object types in the realm.
- *   **Required** when first creating realm at this `path`.
+ * @property {Array<Realm~ObjectClass|Realm~ObjectSchema>} [schema] - Specifies all the
+ *   object types in this Realm. **Required** when first creating a Realm at this `path`.
  * @property {number} [schemaVersion] - **Required** (and must be incremented) after
  *   changing the `schema`.
+ */
+
+/**
+ * Realm objects will inherit methods, getters, and setters from the `prototype` of this
+ * constructor.
+ * @typedef Realm~ObjectClass
+ * @type {Class}
+ * @property {Realm~ObjectSchema} schema - Static property specifying object schema information.
  */
 
 /**
@@ -141,6 +147,14 @@ Realm.defaultPath;
  * @property {any} [default] - The default value for this property on creation when not
  *   otherwise specified.
  * @property {boolean} [optional] - Signals if this property may be assigned `null` or `undefined`.
+ */
+
+/**
+ * The type of an object may either be specified as a string equal to the `name` in a
+ * {@link Realm~ObjectSchema ObjectSchema} definition, **or** a constructor that was specified
+ * in the {@link Realm~Configuration configuration} `schema`.
+ * @typedef Realm~ObjectType
+ * @type {string|Realm~ObjectClass}
  */
 
 /**

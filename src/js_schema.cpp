@@ -136,15 +136,9 @@ static inline ObjectSchema RJSParseObjectSchema(JSContextRef ctx, JSObjectRef ob
 
     JSObjectRef objectConstructor = NULL;
 
-    if (JSObjectIsFunction(ctx, objectSchemaObject) || JSObjectIsConstructor(ctx, objectSchemaObject)) {
+    if (JSObjectIsConstructor(ctx, objectSchemaObject)) {
         objectConstructor = objectSchemaObject;
         objectSchemaObject = RJSValidatedObjectProperty(ctx, objectConstructor, schemaString, "Realm object constructor must have a 'schema' property.");
-    }
-    else {
-        JSValueRef subSchemaValue = RJSValidatedPropertyValue(ctx, objectSchemaObject, schemaString);
-        if (!JSValueIsUndefined(ctx, subSchemaValue)) {
-            objectSchemaObject = RJSValidatedValueToObject(ctx, subSchemaValue);
-        }
     }
 
     ObjectDefaults objectDefaults;

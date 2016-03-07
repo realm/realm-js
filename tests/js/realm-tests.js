@@ -317,11 +317,28 @@ module.exports = BaseTest.extend({
 
             // Should have been multiplied by 100 in the constructor.
             TestCase.assertEqual(object.intCol, 100);
+
+            // Should be able to create object by passing in constructor.
+            object = realm.create(CustomObject, {intCol: 2});
+            TestCase.assertTrue(object instanceof CustomObject);
+            TestCase.assertTrue(Object.getPrototypeOf(object) == CustomObject.prototype);
+            TestCase.assertEqual(customCreated, 2);
+            TestCase.assertEqual(object.intCol, 200);
         });
 
         TestCase.assertThrows(function() {
             realm.write(function() {
                 realm.create('InvalidObject', {intCol: 1});
+            });
+        });
+
+        // Only the original constructor should be valid.
+        function InvalidCustomObject() {}
+        InvalidCustomObject.schema = CustomObject.schema;
+
+        TestCase.assertThrows(function() {
+            realm.write(function() {
+                realm.create(InvalidCustomObject, {intCol: 1});
             });
         });
     },
@@ -389,6 +406,7 @@ module.exports = BaseTest.extend({
 
     testRealmObjects: function() {
         var realm = new Realm({schema: [schemas.PersonObject, schemas.DefaultValues, schemas.TestObject]});
+
         realm.write(function() {
             realm.create('PersonObject', {name: 'Ari', age: 10});
             realm.create('PersonObject', {name: 'Tim', age: 11});
@@ -396,17 +414,27 @@ module.exports = BaseTest.extend({
             realm.create('PersonObject', {name: 'Alex', age: 12, married: true});
         });
 
-        TestCase.assertThrows(function() { 
+        // Should be able to pass constructor for getting objects.
+        var objects = realm.objects(schemas.PersonObject);
+        TestCase.assertTrue(objects[0] instanceof schemas.PersonObject);
+
+        function InvalidPerson() {}
+        InvalidPerson.schema = schemas.PersonObject.schema;
+
+        TestCase.assertThrows(function() {
             realm.objects();
         });
-        TestCase.assertThrows(function() { 
+        TestCase.assertThrows(function() {
             realm.objects([]);
         });
-        TestCase.assertThrows(function() { 
+        TestCase.assertThrows(function() {
             realm.objects('InvalidClass');
         });
-        TestCase.assertThrows(function() { 
+        TestCase.assertThrows(function() {
             realm.objects('PersonObject', 'truepredicate');
+        });
+        TestCase.assertThrows(function() {
+            realm.objects(InvalidPerson);
         });
     },
 
