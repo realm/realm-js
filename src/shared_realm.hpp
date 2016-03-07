@@ -231,7 +231,7 @@ namespace realm {
     public:
         UnitializedRealmException(std::string message) : std::runtime_error(message) {}
     };
-    
+
     class InvalidEncryptionKeyException : public std::runtime_error {
     public:
         InvalidEncryptionKeyException() : std::runtime_error("Encryption key must be 64 bytes.") {}
