@@ -24,6 +24,7 @@ set(HEADERS
     results.hpp
     schema.hpp
     shared_realm.hpp
+    impl/async_query.hpp
     impl/background_collection.hpp
     impl/external_commit_helper.hpp
     impl/list_notifier.hpp
