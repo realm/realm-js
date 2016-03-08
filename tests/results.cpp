@@ -235,6 +235,8 @@ TEST_CASE("Results") {
             table->set_int(0, 0, 6);
             r->commit_transaction();
 
+            coordinator->on_change();
+
             r->begin_transaction();
             table->set_int(0, 1, 0);
             r->commit_transaction();
@@ -243,6 +245,24 @@ TEST_CASE("Results") {
             coordinator->on_change();
             r->notify();
             REQUIRE(notification_calls == 2);
+        }
+
+        SECTION("notifications are not delivered when collapsing transactions results in no net change") {
+            r->begin_transaction();
+            size_t ndx = table->add_empty_row();
+            table->set_int(0, ndx, 5);
+            r->commit_transaction();
+
+            coordinator->on_change();
+
+            r->begin_transaction();
+            table->move_last_over(ndx);
+            r->commit_transaction();
+
+            REQUIRE(notification_calls == 1);
+            coordinator->on_change();
+            r->notify();
+            REQUIRE(notification_calls == 1);
         }
     }
 
