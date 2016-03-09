@@ -54,7 +54,7 @@ inline T RJSGetInternal(JSObjectRef jsObject) {
 
 template<typename T>
 JSClassRef RJSCreateWrapperClass(const char * name, JSObjectGetPropertyCallback getter = NULL, JSObjectSetPropertyCallback setter = NULL, const JSStaticFunction *funcs = NULL,
-                                 JSObjectGetPropertyNamesCallback propertyNames = NULL) {
+                                 JSObjectGetPropertyNamesCallback propertyNames = NULL, JSClassRef parentClass = NULL) {
     JSClassDefinition classDefinition = kJSClassDefinitionEmpty;
     classDefinition.className = name;
     classDefinition.finalize = RJSFinalize<T>;
@@ -62,6 +62,7 @@ JSClassRef RJSCreateWrapperClass(const char * name, JSObjectGetPropertyCallback 
     classDefinition.setProperty = setter;
     classDefinition.staticFunctions = funcs;
     classDefinition.getPropertyNames = propertyNames;
+    classDefinition.parentClass = parentClass;
     return JSClassCreate(&classDefinition);
 }
 

@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #include "js_list.hpp"
+#include "js_collection.hpp"
 #include "js_object.hpp"
 #include "js_results.hpp"
 #include "js_util.hpp"
@@ -271,6 +272,6 @@ static const JSStaticFunction RJSListFuncs[] = {
 };
 
 JSClassRef RJSListClass() {
-    static JSClassRef s_listClass = RJSCreateWrapperClass<List *>("RealmList", ListGetProperty, ListSetProperty, RJSListFuncs, ListPropertyNames);
+    static JSClassRef s_listClass = RJSCreateWrapperClass<List *>("List", ListGetProperty, ListSetProperty, RJSListFuncs, ListPropertyNames, RJSCollectionClass());
     return s_listClass;
 }

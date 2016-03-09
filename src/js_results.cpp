@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #include "js_results.hpp"
+#include "js_collection.hpp"
 #include "js_object.hpp"
 #include "object_accessor.hpp"
 #include "results.hpp"
@@ -243,6 +244,6 @@ static const JSStaticFunction RJSResultsFuncs[] = {
 };
 
 JSClassRef RJSResultsClass() {
-    static JSClassRef s_objectClass = RJSCreateWrapperClass<Results *>("Results", ResultsGetProperty, ResultsSetProperty, RJSResultsFuncs, ResultsPropertyNames);
+    static JSClassRef s_objectClass = RJSCreateWrapperClass<Results *>("Results", ResultsGetProperty, ResultsSetProperty, RJSResultsFuncs, ResultsPropertyNames, RJSCollectionClass());
     return s_objectClass;
 }

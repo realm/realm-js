@@ -76,6 +76,8 @@
 		F6BCCFE21C8380A400FE31AE /* lib in Resources */ = {isa = PBXBuildFile; fileRef = F6BCCFDF1C83809A00FE31AE /* lib */; };
 		F6C74DF01C732CC500C9DDCD /* RealmAnalytics.h in Headers */ = {isa = PBXBuildFile; fileRef = F6C74DEE1C732CC500C9DDCD /* RealmAnalytics.h */; };
 		F6C74DF11C732CC500C9DDCD /* RealmAnalytics.mm in Sources */ = {isa = PBXBuildFile; fileRef = F6C74DEF1C732CC500C9DDCD /* RealmAnalytics.mm */; };
+		F6CB31001C8EDDAB0070EF3F /* js_collection.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F6CB30FC1C8EDD760070EF3F /* js_collection.cpp */; };
+		F6CB31011C8EDDBB0070EF3F /* js_collection.hpp in Headers */ = {isa = PBXBuildFile; fileRef = F6CB30FD1C8EDD760070EF3F /* js_collection.hpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -247,6 +249,8 @@
 		F6C3FBBC1BF680EC00E6FFD4 /* json.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = json.hpp; sourceTree = "<group>"; };
 		F6C74DEE1C732CC500C9DDCD /* RealmAnalytics.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RealmAnalytics.h; path = "react-native/RealmAnalytics.h"; sourceTree = "<group>"; };
 		F6C74DEF1C732CC500C9DDCD /* RealmAnalytics.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = RealmAnalytics.mm; path = "react-native/RealmAnalytics.mm"; sourceTree = "<group>"; };
+		F6CB30FC1C8EDD760070EF3F /* js_collection.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = js_collection.cpp; sourceTree = "<group>"; };
+		F6CB30FD1C8EDD760070EF3F /* js_collection.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = js_collection.hpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -309,6 +313,8 @@
 				F62A35141C18E783004A917D /* Object Store */,
 				029048011C0428DF00ABDED4 /* js_init.cpp */,
 				029048021C0428DF00ABDED4 /* js_init.h */,
+				F6CB30FC1C8EDD760070EF3F /* js_collection.cpp */,
+				F6CB30FD1C8EDD760070EF3F /* js_collection.hpp */,
 				029048031C0428DF00ABDED4 /* js_list.cpp */,
 				029048041C0428DF00ABDED4 /* js_list.hpp */,
 				029048051C0428DF00ABDED4 /* js_object.cpp */,
@@ -535,6 +541,7 @@
 				029048181C0428DF00ABDED4 /* js_realm.hpp in Headers */,
 				029048141C0428DF00ABDED4 /* js_list.hpp in Headers */,
 				F6BB7DF21BF681BC00D0A69E /* base64.hpp in Headers */,
+				F6CB31011C8EDDBB0070EF3F /* js_collection.hpp in Headers */,
 				0290481C1C0428DF00ABDED4 /* js_schema.hpp in Headers */,
 				029048161C0428DF00ABDED4 /* js_object.hpp in Headers */,
 				029048371C042A3C00ABDED4 /* platform.hpp in Headers */,
@@ -787,6 +794,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F6CB31001C8EDDAB0070EF3F /* js_collection.cpp in Sources */,
 				02F59EE31C88F2BB007F774C /* transact_log_handler.cpp in Sources */,
 				F63FF2E81C159C4B00B3B8E0 /* platform.mm in Sources */,
 				02F59EC31C88F17D007F774C /* results.cpp in Sources */,

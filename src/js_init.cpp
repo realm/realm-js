@@ -19,6 +19,7 @@
 #include "js_init.h"
 #include "js_realm.hpp"
 #include "js_object.hpp"
+#include "js_collection.hpp"
 #include "js_list.hpp"
 #include "js_results.hpp"
 #include "js_util.hpp"
@@ -69,12 +70,16 @@ static JSValueRef ClearTestState(JSContextRef ctx, JSObjectRef function, JSObjec
 
 JSObjectRef RJSConstructorCreate(JSContextRef ctx) {
     static JSStringRef clearTestStateString = JSStringCreateWithUTF8CString("clearTestState");
+    static JSStringRef collectionString = JSStringCreateWithUTF8CString("Collection");
     static JSStringRef listString = JSStringCreateWithUTF8CString("List");
     static JSStringRef resultsString = JSStringCreateWithUTF8CString("Results");
     static JSStringRef typeString = JSStringCreateWithUTF8CString("Types");
 
     JSObjectRef realmObject = JSObjectMake(ctx, RJSRealmConstructorClass(), NULL);
     JSPropertyAttributes attributes = kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete;
+
+    JSObjectRef collectionConstructor = JSObjectMakeConstructor(ctx, RJSCollectionClass(), UncallableConstructor);
+    RJSValidatedSetProperty(ctx, realmObject, collectionString, collectionConstructor, attributes);
 
     JSObjectRef listConstructor = JSObjectMakeConstructor(ctx, RJSListClass(), UncallableConstructor);
     RJSValidatedSetProperty(ctx, realmObject, listString, listConstructor, attributes);

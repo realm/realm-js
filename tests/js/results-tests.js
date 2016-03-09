@@ -29,6 +29,7 @@ module.exports = BaseTest.extend({
         var objects = realm.objects('TestObject');
 
         TestCase.assertTrue(objects instanceof Realm.Results);
+        TestCase.assertTrue(objects instanceof Realm.Collection);
 
         TestCase.assertThrows(function() {
             new Realm.Results();

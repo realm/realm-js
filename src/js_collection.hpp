@@ -16,21 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-'use strict';
+#pragma once
 
-import Collection, { createCollection } from './collections';
-import { objectTypes } from './constants';
-import { createMethods } from './util';
+#include "js_util.hpp"
 
-export default class Results extends Collection {
-}
-
-createMethods(Results.prototype, objectTypes.RESULTS, [
-    'filtered',
-    'sorted',
-    'snapshot',
-]);
-
-export function createResults(realmId, info) {
-    return createCollection(Results.prototype, realmId, info);
-}
+JSClassRef RJSCollectionClass();
