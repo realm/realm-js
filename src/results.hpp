@@ -197,7 +197,7 @@ private:
     SortOrder m_sort;
     bool m_live = true;
 
-    std::shared_ptr<_impl::ResultsNotifier> m_background_query;
+    std::shared_ptr<_impl::ResultsNotifier> m_notifier;
 
     Mode m_mode = Mode::Empty;
     bool m_has_used_table_view = false;
