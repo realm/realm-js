@@ -7,10 +7,10 @@ set(SOURCES
     results.cpp
     schema.cpp
     shared_realm.cpp
-    impl/async_query.cpp
     impl/background_collection.cpp
     impl/list_notifier.cpp
     impl/realm_coordinator.cpp
+    impl/results_notifier.cpp
     impl/transact_log_handler.cpp
     parser/parser.cpp
     parser/query_builder.cpp)
@@ -24,11 +24,11 @@ set(HEADERS
     results.hpp
     schema.hpp
     shared_realm.hpp
-    impl/async_query.hpp
     impl/background_collection.hpp
     impl/external_commit_helper.hpp
     impl/list_notifier.hpp
     impl/realm_coordinator.hpp
+    impl/results_notifier.hpp
     impl/transact_log_handler.hpp
     impl/weak_realm_notifier.hpp
     impl/weak_realm_notifier_base.hpp
