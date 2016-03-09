@@ -242,6 +242,29 @@ TEST_CASE("collection change indices") {
             REQUIRE_MOVES(calc({3, 1, 2}), {2, 0});
             REQUIRE_MOVES(calc({3, 2, 1}), {2, 0}, {1, 1});
         }
+
+        SECTION("merge can collapse insert -> move -> delete to no-op") {
+            auto four_modified = [](size_t ndx) { return ndx == 4; };
+            for (int insert_pos = 0; insert_pos < 4; ++insert_pos) {
+                for (int move_to_pos = 0; move_to_pos < 4; ++move_to_pos) {
+                    if (insert_pos == move_to_pos)
+                        continue;
+                    CAPTURE(insert_pos);
+                    CAPTURE(move_to_pos);
+
+                    std::vector<size_t> after_insert = {1, 2, 3};
+                    after_insert.insert(after_insert.begin() + insert_pos, 4);
+                    c = CollectionChangeIndices::calculate({1, 2, 3}, after_insert, four_modified, true);
+
+                    std::vector<size_t> after_move = {1, 2, 3};
+                    after_move.insert(after_move.begin() + move_to_pos, 4);
+                    c.merge(CollectionChangeIndices::calculate(after_insert, after_move, four_modified, true));
+
+                    c.merge(CollectionChangeIndices::calculate(after_move, {1, 2, 3}, four_modified, true));
+                    REQUIRE(c.empty());
+                }
+            }
+        }
     }
 
     SECTION("merge") {

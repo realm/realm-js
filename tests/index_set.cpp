@@ -7,6 +7,36 @@
 TEST_CASE("index set") {
     realm::IndexSet set;
 
+    SECTION("contains() returns if the index is in the set") {
+        set = {1, 2, 3, 5};
+        REQUIRE_FALSE(set.contains(0));
+        REQUIRE(set.contains(1));
+        REQUIRE(set.contains(2));
+        REQUIRE(set.contains(3));
+        REQUIRE_FALSE(set.contains(4));
+        REQUIRE(set.contains(5));
+        REQUIRE_FALSE(set.contains(6));
+    }
+
+    SECTION("count() returns the number of indices int he range in the set") {
+        set = {1, 2, 3, 5};
+        REQUIRE(set.count(0, 6) == 4);
+        REQUIRE(set.count(0, 5) == 3);
+        REQUIRE(set.count(0, 4) == 3);
+        REQUIRE(set.count(0, 3) == 2);
+        REQUIRE(set.count(0, 2) == 1);
+        REQUIRE(set.count(0, 1) == 0);
+        REQUIRE(set.count(0, 0) == 0);
+
+        REQUIRE(set.count(0, 6) == 4);
+        REQUIRE(set.count(1, 6) == 4);
+        REQUIRE(set.count(2, 6) == 3);
+        REQUIRE(set.count(3, 6) == 2);
+        REQUIRE(set.count(4, 6) == 1);
+        REQUIRE(set.count(5, 6) == 1);
+        REQUIRE(set.count(6, 6) == 0);
+    }
+
     SECTION("add() extends existing ranges") {
         set.add(1);
         REQUIRE_INDICES(set, 1);
