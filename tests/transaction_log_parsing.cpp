@@ -3,9 +3,8 @@
 #include "util/index_helpers.hpp"
 #include "util/test_file.hpp"
 
-#include "impl/realm_coordinator.hpp"
+#include "impl/background_collection.hpp"
 #include "impl/transact_log_handler.hpp"
-#include "collection_notifications.hpp"
 #include "property.hpp"
 #include "object_schema.hpp"
 #include "schema.hpp"
@@ -35,7 +34,7 @@ public:
     CollectionChangeIndices finish(size_t ndx) {
         m_realm->commit_transaction();
 
-        CollectionChangeIndices c;
+        _impl::CollectionChangeBuilder c;
         _impl::TransactionChangeInfo info;
         info.lists.push_back({ndx, 0, 0, &c});
         info.tables_needed.resize(m_group.size(), true);

@@ -6,7 +6,7 @@
 
 TEST_CASE("collection change indices") {
     using namespace realm;
-    CollectionChangeIndices c;
+    _impl::CollectionChangeBuilder c;
 
     SECTION("stuff") {
         SECTION("insert() adds the row to the insertions set") {
@@ -184,38 +184,38 @@ TEST_CASE("collection change indices") {
         auto none_modified = [](size_t) { return false; };
 
         SECTION("no changes") {
-            c = CollectionChangeIndices::calculate({1, 2, 3}, {1, 2, 3}, none_modified, false);
+            c = _impl::CollectionChangeBuilder::calculate({1, 2, 3}, {1, 2, 3}, none_modified, false);
             REQUIRE(c.empty());
         }
 
         SECTION("inserting from empty") {
-            c = CollectionChangeIndices::calculate({}, {1, 2, 3}, all_modified, false);
+            c = _impl::CollectionChangeBuilder::calculate({}, {1, 2, 3}, all_modified, false);
             REQUIRE_INDICES(c.insertions, 0, 1, 2);
         }
 
         SECTION("deleting all existing") {
-            c = CollectionChangeIndices::calculate({1, 2, 3}, {}, all_modified, false);
+            c = _impl::CollectionChangeBuilder::calculate({1, 2, 3}, {}, all_modified, false);
             REQUIRE_INDICES(c.deletions, 0, 1, 2);
         }
 
         SECTION("all rows modified without changing order") {
-            c = CollectionChangeIndices::calculate({1, 2, 3}, {1, 2, 3}, all_modified, false);
+            c = _impl::CollectionChangeBuilder::calculate({1, 2, 3}, {1, 2, 3}, all_modified, false);
             REQUIRE_INDICES(c.modifications, 0, 1, 2);
         }
 
         SECTION("single insertion in middle") {
-            c = CollectionChangeIndices::calculate({1, 3}, {1, 2, 3}, all_modified, false);
+            c = _impl::CollectionChangeBuilder::calculate({1, 3}, {1, 2, 3}, all_modified, false);
             REQUIRE_INDICES(c.insertions, 1);
         }
 
         SECTION("single deletion in middle") {
-            c = CollectionChangeIndices::calculate({1, 2, 3}, {1, 3}, all_modified, false);
+            c = _impl::CollectionChangeBuilder::calculate({1, 2, 3}, {1, 3}, all_modified, false);
             REQUIRE_INDICES(c.deletions, 1);
         }
 
         SECTION("unsorted reordering") {
             auto calc = [&](std::vector<size_t> values) {
-                return CollectionChangeIndices::calculate({1, 2, 3}, values, none_modified, false);
+                return _impl::CollectionChangeBuilder::calculate({1, 2, 3}, values, none_modified, false);
             };
 
             // The commented-out permutations are not possible with
@@ -230,7 +230,7 @@ TEST_CASE("collection change indices") {
 
         SECTION("sorted reordering") {
             auto calc = [&](std::vector<size_t> values) {
-                return CollectionChangeIndices::calculate({1, 2, 3}, values, all_modified, true);
+                return _impl::CollectionChangeBuilder::calculate({1, 2, 3}, values, all_modified, true);
             };
 
             REQUIRE(calc({1, 2, 3}).moves.empty());
@@ -254,13 +254,13 @@ TEST_CASE("collection change indices") {
 
                     std::vector<size_t> after_insert = {1, 2, 3};
                     after_insert.insert(after_insert.begin() + insert_pos, 4);
-                    c = CollectionChangeIndices::calculate({1, 2, 3}, after_insert, four_modified, true);
+                    c = _impl::CollectionChangeBuilder::calculate({1, 2, 3}, after_insert, four_modified, true);
 
                     std::vector<size_t> after_move = {1, 2, 3};
                     after_move.insert(after_move.begin() + move_to_pos, 4);
-                    c.merge(CollectionChangeIndices::calculate(after_insert, after_move, four_modified, true));
+                    c.merge(_impl::CollectionChangeBuilder::calculate(after_insert, after_move, four_modified, true));
 
-                    c.merge(CollectionChangeIndices::calculate(after_move, {1, 2, 3}, four_modified, true));
+                    c.merge(_impl::CollectionChangeBuilder::calculate(after_move, {1, 2, 3}, four_modified, true));
                     REQUIRE(c.empty());
                 }
             }
