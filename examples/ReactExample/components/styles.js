@@ -70,7 +70,7 @@ export default StyleSheet.create({
     },
     listItem: {
         borderColor: '#c8c7cc',
-        borderBottomWidth: 0.5,
+        borderBottomWidth: StyleSheet.hairlineWidth,
         alignItems: 'stretch',
         alignSelf: 'stretch',
         justifyContent: 'center',
