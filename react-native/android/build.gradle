@@ -12,6 +12,10 @@ allprojects {
     repositories {
         mavenLocal()
         jcenter()
+        maven {
+            // All of React Native (JS, Obj-C sources, Android binaries) is installed from npm
+            url "$projectDir/../../tests/react-test-app/node_modules/react-native/android"
+        }
     }
 }
 
@@ -287,9 +291,8 @@ afterEvaluate { project ->
     }
 }
 
-
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile 'org.nanohttpd:nanohttpd:2.2.0'
-    compile 'com.facebook.react:react-native:0.20.+'
+    compile 'com.facebook.react:react-native:+'  // From node_modules
 }
