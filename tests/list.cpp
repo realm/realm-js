@@ -61,8 +61,7 @@ TEST_CASE("list") {
             f();
             r->commit_transaction();
 
-            coordinator.on_change();
-            r->notify();
+            advance_and_notify(*r);
         };
 
         auto require_change = [&] {
@@ -199,8 +198,7 @@ TEST_CASE("list") {
             // Each of the Lists now has a different source version and state at
             // that version, so they should all see different changes despite
             // being for the same LinkList
-            coordinator.on_change();
-            r->notify();
+            advance_and_notify(*r);
 
             REQUIRE_INDICES(changes[0].insertions, 0, 1, 2);
             REQUIRE(changes[0].modifications.empty());
@@ -213,8 +211,7 @@ TEST_CASE("list") {
 
             // After making another change, they should all get the same notification
             change_list();
-            coordinator.on_change();
-            r->notify();
+            advance_and_notify(*r);
 
             for (int i = 0; i < 3; ++i) {
                 REQUIRE_INDICES(changes[i].insertions, 3);
