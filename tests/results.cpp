@@ -283,6 +283,16 @@ TEST_CASE("Results") {
             r->notify();
             REQUIRE(notification_calls == 1);
         }
+
+        SECTION("the first call of a notification always passes an empty change even if it previously ran for a different callback") {
+            auto token2 = results.add_notification_callback([&](CollectionChangeIndices c, std::exception_ptr) {
+                REQUIRE(c.empty());
+            });
+
+            write([&] {
+                table->set_int(0, table->add_empty_row(), 5);
+            });
+        }
     }
 
     // Sort in descending order
