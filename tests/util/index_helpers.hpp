@@ -2,6 +2,7 @@
     index_set.verify(); \
     std::initializer_list<size_t> expected = {__VA_ARGS__}; \
     auto actual = index_set.as_indexes(); \
+    INFO("Checking " #index_set); \
     REQUIRE(expected.size() == std::distance(actual.begin(), actual.end())); \
     auto begin = actual.begin(), end = actual.end(); \
     for (auto index : expected) { \

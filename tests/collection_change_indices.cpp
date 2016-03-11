@@ -8,7 +8,7 @@ TEST_CASE("collection change indices") {
     using namespace realm;
     _impl::CollectionChangeBuilder c;
 
-    SECTION("stuff") {
+    SECTION("basic mutation functions") {
         SECTION("insert() adds the row to the insertions set") {
             c.insert(5);
             c.insert(8);
@@ -220,6 +220,12 @@ TEST_CASE("collection change indices") {
             REQUIRE(c.moves.empty());
         }
 
+        SECTION("modifications are reported for moved rows") {
+            c = _impl::CollectionChangeBuilder::calculate({3, 5}, {5, 3}, all_modified, false);
+            REQUIRE_MOVES(c, {1, 0});
+            REQUIRE_INDICES(c.modifications, 0, 1);
+        }
+
         SECTION("unsorted reordering") {
             auto calc = [&](std::vector<size_t> values) {
                 return _impl::CollectionChangeBuilder::calculate({1, 2, 3}, values, none_modified, false);
@@ -372,11 +378,11 @@ TEST_CASE("collection change indices") {
             REQUIRE_INDICES(c.modifications, 2);
         }
 
-        SECTION("modifications are discarded for previous insertions") {
+        SECTION("modifications are not discarded for previous insertions") {
             c = {{}, {2}, {}, {}};
             c.merge({{}, {}, {1, 2, 3}});
             REQUIRE_INDICES(c.insertions, 2);
-            REQUIRE_INDICES(c.modifications, 1, 3);
+            REQUIRE_INDICES(c.modifications, 1, 2, 3);
         }
 
         SECTION("modifications are merged with previous modifications") {
@@ -385,10 +391,10 @@ TEST_CASE("collection change indices") {
             REQUIRE_INDICES(c.modifications, 1, 2, 3);
         }
 
-        SECTION("modifications are discarded for the destination of previous moves") {
+        SECTION("modifications are tracked for the destination of previous moves") {
             c = {{}, {}, {}, {{1, 2}}};
             c.merge({{}, {}, {2, 3}});
-            REQUIRE_INDICES(c.modifications, 3);
+            REQUIRE_INDICES(c.modifications, 2, 3);
         }
 
         SECTION("move sources are shifted for previous deletes and insertions") {
@@ -405,10 +411,10 @@ TEST_CASE("collection change indices") {
             REQUIRE_MOVES(c, {5, 10});
         }
 
-        SECTION("moves remove previous modifications to source") {
+        SECTION("moves update previous modifications to source") {
             c = {{}, {}, {1}, {}};
             c.merge({{}, {}, {}, {{1, 3}}});
-            REQUIRE(c.modifications.empty());
+            REQUIRE_INDICES(c.modifications, 3);
             REQUIRE_MOVES(c, {1, 3});
         }
 
@@ -459,6 +465,45 @@ TEST_CASE("collection change indices") {
             c = {{5}};
             c.merge({{}, {}, {}, {{6, 2}}});
             REQUIRE_MOVES(c, {7, 2});
+        }
+
+        SECTION("leapfrogging rows collapse to an empty changeset") {
+            c = {{1}, {0}, {}, {{1, 0}}};
+            c.merge({{1}, {0}, {}, {{1, 0}}});
+            REQUIRE(c.empty());
+        }
+
+        SECTION("modify -> move -> unmove leaves row marked as modified") {
+            c = {{}, {}, {1}};
+            c.merge({{1}, {2}, {}, {{1, 2}}});
+            c.merge({{1}});
+
+            REQUIRE_INDICES(c.deletions, 2);
+            REQUIRE(c.insertions.empty());
+            REQUIRE(c.moves.empty());
+            REQUIRE_INDICES(c.modifications, 1);
+        }
+
+        SECTION("modifying a previously moved row which stops being a move due to more deletions") {
+            // Make it stop being a move in the same transaction as the modify
+            c = {{1, 2}, {0, 1}, {}, {{1, 0}, {2, 1}}};
+            c.merge({{0, 2}, {1}, {0}, {}});
+
+            REQUIRE_INDICES(c.deletions, 0, 1);
+            REQUIRE_INDICES(c.insertions, 1);
+            REQUIRE_INDICES(c.modifications, 0);
+            REQUIRE(c.moves.empty());
+
+            // Same net change, but make it no longer a move in the transaction after the modify
+            c = {{1, 2}, {0, 1}, {}, {{1, 0}, {2, 1}}};
+            c.merge({{}, {}, {1}, {}});
+            c.merge({{0, 2}, {0}, {}, {{2, 0}}});
+            c.merge({{0}, {1}, {}, {}});
+
+            REQUIRE_INDICES(c.deletions, 0, 1);
+            REQUIRE_INDICES(c.insertions, 1);
+            REQUIRE_INDICES(c.modifications, 0);
+            REQUIRE(c.moves.empty());
         }
     }
 }

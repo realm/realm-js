@@ -247,6 +247,25 @@ TEST_CASE("Results") {
             REQUIRE(notification_calls == 2);
         }
 
+        SECTION("inserting a row then modifying it in a second transaction does not report it as modified") {
+            r->begin_transaction();
+            size_t ndx = table->add_empty_row();
+            table->set_int(0, ndx, 6);
+            r->commit_transaction();
+
+            coordinator->on_change();
+
+            r->begin_transaction();
+            table->set_int(0, ndx, 7);
+            r->commit_transaction();
+
+            advance_and_notify(*r);
+
+            REQUIRE(notification_calls == 2);
+            REQUIRE_INDICES(change.insertions, 4);
+            REQUIRE(change.modifications.empty());
+        }
+
         SECTION("notifications are not delivered when collapsing transactions results in no net change") {
             r->begin_transaction();
             size_t ndx = table->add_empty_row();
