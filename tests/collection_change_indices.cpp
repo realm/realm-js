@@ -213,6 +213,13 @@ TEST_CASE("collection change indices") {
             REQUIRE_INDICES(c.deletions, 1);
         }
 
+        SECTION("mixed insert and delete") {
+            c = _impl::CollectionChangeBuilder::calculate({3, 5}, {0, 3}, all_modified, false);
+            REQUIRE_INDICES(c.deletions, 1);
+            REQUIRE_INDICES(c.insertions, 0);
+            REQUIRE(c.moves.empty());
+        }
+
         SECTION("unsorted reordering") {
             auto calc = [&](std::vector<size_t> values) {
                 return _impl::CollectionChangeBuilder::calculate({1, 2, 3}, values, none_modified, false);
