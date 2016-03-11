@@ -22,6 +22,7 @@
 #include "io_realm_react_RealmReactModule.h"
 #include "js_init.h"
 #include "shared_realm.hpp"
+#include "realm_coordinator.hpp"
 #include "rpc.hpp"
 #include "platform.hpp"
 
@@ -46,7 +47,7 @@ JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_injectRealmJsContext
     __android_log_print(ANDROID_LOG_VERBOSE, "JSRealm", "injectRealmJsContext");
 
     // Clear cache from previous instances
-    realm::Realm::s_global_cache.clear();
+    realm::_impl::RealmCoordinator::clear_all_caches();
 
     RJSInitializeInContext((JSGlobalContextRef)jsContext);
 }
