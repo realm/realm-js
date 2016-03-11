@@ -38,7 +38,7 @@ public:
         _impl::TransactionChangeInfo info;
         info.lists.push_back({ndx, 0, 0, &c});
         info.tables_needed.resize(m_group.size(), true);
-        _impl::transaction::advance_and_observe_linkviews(m_sg, info);
+        _impl::transaction::advance(m_sg, info);
 
         if (info.lists.empty()) {
             REQUIRE(!m_linkview->is_attached());
@@ -204,7 +204,7 @@ TEST_CASE("Transaction log parsing") {
 
             _impl::TransactionChangeInfo info;
             info.tables_needed.resize(g.size(), true);
-            _impl::transaction::advance_and_observe_linkviews(sg, info);
+            _impl::transaction::advance(sg, info);
             return info;
         };
 
@@ -349,7 +349,7 @@ TEST_CASE("Transaction log parsing") {
 
             _impl::TransactionChangeInfo info;
             info.tables_needed = tables_needed;
-            _impl::transaction::advance_and_observe_linkviews(sg, info);
+            _impl::transaction::advance(sg, info);
             return info;
         };
 
