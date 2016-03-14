@@ -88,8 +88,8 @@ static void swap_function()
 
 #if __arm__
         if (orig_thumb) {
-            // LDR PC, [PC, #0]; BX PC;
-            memcpy(orig_func, "\x00\x4f\x38\x47", 4);
+            // LDR R3, [PC, #0]; BX R3;
+            memcpy(orig_func, "\x00\x4b\x18\x47", 4);
             memcpy(orig_func + 4, &new_func, 4);
         } else {
             // LDR PC, [PC, #0];
@@ -107,6 +107,20 @@ static void swap_function()
 
     s_swapped = !s_swapped;
 
+#if __arm__
+    // Clear ARM instruction cache.
+    {
+        register unsigned long begin __asm("a1") = (unsigned long)orig_func;
+        register unsigned long end __asm("a2") = (unsigned long)code_end;
+        register unsigned long flag __asm("a3") = 0;
+        register unsigned long scno __asm("r7") = 0xf0002;
+        __asm __volatile (
+            "swi 0 @ sys_cacheflush"
+            : "=r" (begin)
+            : "0" (begin), "r" (end), "r" (flag), "r" (scno)
+        );
+    };
+#endif
     // Return this region to no longer being writable.
     mprotect((void*)page_start, code_end - page_start, PROT_READ | PROT_EXEC);
 }
