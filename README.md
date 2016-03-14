@@ -22,7 +22,11 @@ platforms when integrated into a binding.
     cmake .
     ```
 
-3. Build:
+3. Download pegtl dependency 
+    ```
+    git submodule update --init
+    ```
+4. Build:
 
     ```
     make
