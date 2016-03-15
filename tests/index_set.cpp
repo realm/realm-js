@@ -186,7 +186,7 @@ TEST_CASE("index set") {
         REQUIRE_INDICES(set, 5, 7, 8, 11);
     }
 
-    SECTION("add_shifted_by() with an empty shifted by set is just bulka dd_shifted()") {
+    SECTION("add_shifted_by() with an empty shifted by set is just bulk add_shifted()") {
         set = {5};
         set.add_shifted_by({}, {6, 7});
         REQUIRE_INDICES(set, 5, 7, 8);
