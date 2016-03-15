@@ -10,6 +10,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * Support relative paths when opening realms
 
 ### Bugfixes
+* Fix for crash on Android when initializing the Realm module
 * Automatically forward port 8082 for Android
 * Fix broken iterator methods on Android
 * Don't download or unpack core libraries unnecessarily
