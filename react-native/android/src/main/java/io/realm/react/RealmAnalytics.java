@@ -101,8 +101,7 @@ public class RealmAnalytics {
     }
 
     public static boolean shouldExecute() {
-        return System.getenv("REALM_DISABLE_ANALYTICS") == null
-            && (isRunningOnGenymotion() || isRunningOnStockEmulator());
+        return System.getenv("REALM_DISABLE_ANALYTICS") == null && isRunningOnEmulator();
     }
 
     private void send() {
@@ -152,12 +151,9 @@ public class RealmAnalytics {
                 .replaceAll("%OS_VERSION%", System.getProperty("os.version"));
     }
 
-    private static boolean isRunningOnGenymotion() {
-        return Build.FINGERPRINT.contains("vbox");
-    }
-
-    private static boolean isRunningOnStockEmulator() {
-        return Build.FINGERPRINT.contains("generic");
+    public static boolean isRunningOnEmulator() {
+        // Check if running in Genymotion or on the stock emulator.
+        return Build.FINGERPRINT.contains("vbox") || Build.FINGERPRINT.contains("generic");
     }
 
     /**

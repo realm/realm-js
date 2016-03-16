@@ -25,7 +25,11 @@
 #import "realm_coordinator.hpp"
 
 #import <objc/runtime.h>
+#import <arpa/inet.h>
 #import <dlfcn.h>
+#import <ifaddrs.h>
+#import <netdb.h>
+#import <net/if.h>
 
 #if DEBUG
 #import <GCDWebServer/Core/GCDWebServer.h>
@@ -33,6 +37,8 @@
 #import <GCDWebServer/Responses/GCDWebServerDataResponse.h>
 #import <GCDWebServer/Responses/GCDWebServerErrorResponse.h>
 #import "rpc.hpp"
+
+#define WEB_SERVER_PORT 8082
 #endif
 
 @interface NSObject ()
@@ -119,6 +125,23 @@ extern "C" JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executo
     return dispatch_get_main_queue();
 }
 
+- (NSDictionary *)constantsToExport {
+#if DEBUG
+#if TARGET_IPHONE_SIMULATOR
+    NSArray *hosts = @[@"localhost"];
+#else
+    NSArray *hosts = [self getIPAddresses];
+#endif
+
+    return @{
+        @"debugHosts": hosts,
+        @"debugPort": @(WEB_SERVER_PORT),
+    };
+#else
+    return @{};
+#endif
+}
+
 - (void)addListenerForEvent:(NSString *)eventName handler:(RealmReactEventHandler)handler {
     NSMutableOrderedSet *handlers = _eventHandlers[eventName];
     if (!handlers) {
@@ -139,6 +162,60 @@ RCT_REMAP_METHOD(emit, emitEvent:(NSString *)eventName withObject:(id)object) {
 }
 
 #if DEBUG
+- (NSArray *)getIPAddresses {
+    static const char * const wifiInterface = "en0";
+
+    struct ifaddrs *ifaddrs;
+    if (getifaddrs(&ifaddrs)) {
+        NSLog(@"Failed to get interface addresses: %s", strerror(errno));
+        return @[];
+    }
+
+    NSMutableArray *ipAddresses = [[NSMutableArray alloc] init];
+    char host[INET6_ADDRSTRLEN];
+
+    for (struct ifaddrs *ifaddr = ifaddrs; ifaddr; ifaddr = ifaddr->ifa_next) {
+        if ((ifaddr->ifa_flags & IFF_LOOPBACK) || !(ifaddr->ifa_flags & IFF_UP)) {
+            // Ignore loopbacks and interfaces that aren't up.
+            continue;
+        }
+
+        struct sockaddr *addr = ifaddr->ifa_addr;
+        if (addr->sa_family == AF_INET) {
+            // Ignore link-local ipv4 addresses.
+            in_addr_t sin_addr = ((struct sockaddr_in *)addr)->sin_addr.s_addr;
+            if (IN_LOOPBACK(sin_addr) || IN_LINKLOCAL(sin_addr) || IN_ZERONET(sin_addr)) {
+                continue;
+            }
+        }
+        else if (addr->sa_family == AF_INET6) {
+            // Ignore link-local ipv6 addresses.
+            struct in6_addr *sin6_addr = &((struct sockaddr_in6 *)addr)->sin6_addr;
+            if (IN6_IS_ADDR_LOOPBACK(sin6_addr) || IN6_IS_ADDR_LINKLOCAL(sin6_addr) || IN6_IS_ADDR_UNSPECIFIED(sin6_addr)) {
+                continue;
+            }
+        }
+        else {
+            // Ignore addresses that are not ipv4 or ipv6.
+            continue;
+        }
+
+        if (strcmp(ifaddr->ifa_name, wifiInterface)) {
+            // Ignore non-wifi addresses.
+            continue;
+        }
+        if (int error = getnameinfo(addr, addr->sa_len, host, sizeof(host), NULL, 0, NI_NUMERICHOST)) {
+            NSLog(@"Couldn't resolve host name for address: %s", gai_strerror(error));
+            continue;
+        }
+
+        [ipAddresses addObject:@(host)];
+    }
+    
+    freeifaddrs(ifaddrs);
+    return [ipAddresses copy];
+}
+
 - (void)startRPC {
     [GCDWebServer setLogLevel:3];
     _webServer = [[GCDWebServer alloc] init];
@@ -179,7 +256,7 @@ RCT_REMAP_METHOD(emit, emitEvent:(NSString *)eventName withObject:(id)object) {
         return response;
     }];
 
-    [_webServer startWithPort:8082 bonjourName:nil];
+    [_webServer startWithPort:WEB_SERVER_PORT bonjourName:nil];
     return;
 }
 
