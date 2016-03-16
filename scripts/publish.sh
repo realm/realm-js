@@ -66,7 +66,7 @@ git fetch origin || die 'Failed to fetch from git origin.'
 for test in eslint jsdoc realmjs react-example react-tests react-tests-android; do
   echo "RUNNING TEST: $test"
   echo '----------------------------------------'
-  npm test "$test" || die "Test Failed: $test"
+  npm test "$test" Release || die "Test Failed: $test"
   echo
 done
 
