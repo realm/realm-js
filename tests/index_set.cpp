@@ -4,22 +4,33 @@
 
 #include "util/index_helpers.hpp"
 
-TEST_CASE("index set") {
-    realm::IndexSet set;
-
-    SECTION("contains() returns if the index is in the set") {
-        set = {1, 2, 3, 5};
+TEST_CASE("[index_set] contains()") {
+    SECTION("returns false if the index is before the first entry in the set") {
+        realm::IndexSet set = {1, 2, 5};
         REQUIRE_FALSE(set.contains(0));
-        REQUIRE(set.contains(1));
-        REQUIRE(set.contains(2));
-        REQUIRE(set.contains(3));
-        REQUIRE_FALSE(set.contains(4));
-        REQUIRE(set.contains(5));
+    }
+
+    SECTION("returns false if the index is after the last entry in the set") {
+        realm::IndexSet set = {1, 2, 5};
         REQUIRE_FALSE(set.contains(6));
     }
 
-    SECTION("count() returns the number of indices int he range in the set") {
-        set = {1, 2, 3, 5};
+    SECTION("returns false if the index is between ranges in the set") {
+        realm::IndexSet set = {1, 2, 5};
+        REQUIRE_FALSE(set.contains(4));
+    }
+
+    SECTION("returns true if the index is in the set") {
+        realm::IndexSet set = {1, 2, 5};
+        REQUIRE(set.contains(1));
+        REQUIRE(set.contains(2));
+        REQUIRE(set.contains(5));
+    }
+}
+
+TEST_CASE("[index_set] count()") {
+    SECTION("returns the number of indices in the set in the given range") {
+        realm::IndexSet set = {1, 2, 3, 5};
         REQUIRE(set.count(0, 6) == 4);
         REQUIRE(set.count(0, 5) == 3);
         REQUIRE(set.count(0, 4) == 3);
@@ -37,7 +48,21 @@ TEST_CASE("index set") {
         REQUIRE(set.count(6, 6) == 0);
     }
 
-    SECTION("add() extends existing ranges") {
+    SECTION("includes full ranges in the middle") {
+        realm::IndexSet set = {1, 3, 4, 5, 10};
+        REQUIRE(set.count(0, 11) == 5);
+    }
+
+    SECTION("truncates ranges at the beginning and end") {
+        realm::IndexSet set = {1, 2, 3, 5, 6, 7, 8, 9};
+        REQUIRE(set.count(3, 9) == 5);
+    }
+}
+
+TEST_CASE("[index_set] add()") {
+    realm::IndexSet set;
+
+    SECTION("extends existing ranges when next to an edge") {
         set.add(1);
         REQUIRE_INDICES(set, 1);
 
@@ -48,7 +73,7 @@ TEST_CASE("index set") {
         REQUIRE_INDICES(set, 0, 1, 2);
     }
 
-    SECTION("add() with gaps") {
+    SECTION("does not extend ranges over gaps") {
         set.add(0);
         REQUIRE_INDICES(set, 0);
 
@@ -56,143 +81,108 @@ TEST_CASE("index set") {
         REQUIRE_INDICES(set, 0, 2);
     }
 
-    SECTION("add() is idempotent") {
+    SECTION("does nothing when the index is already in the set") {
         set.add(0);
         set.add(0);
         REQUIRE_INDICES(set, 0);
     }
 
-    SECTION("add() merges existing ranges") {
+    SECTION("merges existing ranges when adding the index between them") {
         set = {0, 2, 4};
 
         set.add(1);
         REQUIRE_INDICES(set, 0, 1, 2, 4);
     }
 
-    SECTION("add() combines multiple index sets") {
+    SECTION("combines multiple index sets without any shifting") {
         set = {0, 2, 6};
 
         set.add({1, 4, 5});
         REQUIRE_INDICES(set, 0, 1, 2, 4, 5, 6);
     }
+}
 
-    SECTION("set() from empty") {
-        set.set(5);
-        REQUIRE_INDICES(set, 0, 1, 2, 3, 4);
-    }
+TEST_CASE("[index_set] add_shifted()") {
+    realm::IndexSet set;
 
-    SECTION("set() discards existing data") {
-        set = {8, 9};
-
-        set.set(5);
-        REQUIRE_INDICES(set, 0, 1, 2, 3, 4);
-    }
-
-    SECTION("insert_at() on an empty set is add()") {
-        set.insert_at(5);
-        REQUIRE_INDICES(set, 5);
-    }
-
-    SECTION("insert_at() extends ranges containing the target index") {
-        set = {5, 6};
-
-        set.insert_at(5);
-        REQUIRE_INDICES(set, 5, 6, 7);
-
-        set.insert_at(4);
-        REQUIRE_INDICES(set, 4, 6, 7, 8);
-
-        set.insert_at(9);
-        REQUIRE_INDICES(set, 4, 6, 7, 8, 9);
-    }
-
-    SECTION("insert_at() does not modify ranges entirely before it") {
-        set = {5, 6};
-        set.insert_at(8);
-        REQUIRE_INDICES(set, 5, 6, 8);
-    }
-
-    SECTION("insert_at() shifts ranges after it") {
-        set = {5, 6};
-        set.insert_at(3);
-        REQUIRE_INDICES(set, 3, 6, 7);
-    }
-
-    SECTION("insert_at() cannot join ranges") {
-        set = {5, 7};
-        set.insert_at(6);
-        REQUIRE_INDICES(set, 5, 6, 8);
-    }
-
-    SECTION("bulk insert_at() on an empty set is add()") {
-        set.insert_at({5, 6, 8});
-        REQUIRE_INDICES(set, 5, 6, 8);
-    }
-
-    SECTION("bulk insert_at() shifts existing ranges") {
-        set = {5, 10};
-        set.insert_at({3, 8, 14});
-        REQUIRE_INDICES(set, 3, 6, 8, 12, 14);
-    }
-
-    SECTION("bulk insert_at() does not join ranges") {
-        set = {5, 7};
-        set.insert_at({5, 6, 7});
-        REQUIRE_INDICES(set, 5, 6, 7, 8, 10);
-    }
-
-    SECTION("bulk insert_at() extends existing ranges") {
-        set = {5, 8};
-        set.insert_at({5, 9});
-        REQUIRE_INDICES(set, 5, 6, 9, 10);
-
-        set = {4, 5};
-        set.insert_at({5, 6});
-        REQUIRE_INDICES(set, 4, 5, 6, 7);
-    }
-
-    SECTION("add_shifted() on an empty set is just add()") {
+    SECTION("on an empty set is just add()") {
         set.add_shifted(5);
         REQUIRE_INDICES(set, 5);
     }
 
-    SECTION("add_shifted() before the first range is just add()") {
-        set.add(10);
+    SECTION("before the first range is just add()") {
+        set = {10};
         set.add_shifted(5);
         REQUIRE_INDICES(set, 5, 10);
     }
 
-    SECTION("add_shifted() on first index of range extends range") {
-        set.add(5);
+    SECTION("on first index of a range extends the range") {
+        set = {5};
+
         set.add_shifted(5);
         REQUIRE_INDICES(set, 5, 6);
 
         set.add_shifted(5);
         REQUIRE_INDICES(set, 5, 6, 7);
+    }
 
+    SECTION("in the middle of a range is shifted by that range") {
+        set = {5, 6, 7};
         set.add_shifted(6);
         REQUIRE_INDICES(set, 5, 6, 7, 9);
     }
 
-    SECTION("add_shifted() after ranges shifts by the size of those ranges") {
-        set.add(5);
+    SECTION("after the last range adds the total count to the index to be added") {
+        set = {5};
+
         set.add_shifted(6);
         REQUIRE_INDICES(set, 5, 7);
 
-        set.add_shifted(6); // bumped into second range
-        REQUIRE_INDICES(set, 5, 7, 8);
-
-        set.add_shifted(8);
-        REQUIRE_INDICES(set, 5, 7, 8, 11);
+        set.add_shifted(10);
+        REQUIRE_INDICES(set, 5, 7, 12);
     }
 
-    SECTION("add_shifted_by() with an empty shifted by set is just bulk add_shifted()") {
-        set = {5};
-        set.add_shifted_by({}, {6, 7});
+    SECTION("in between ranges can be bumped into the next range") {
+        set = {5, 7};
+        set.add_shifted(6);
         REQUIRE_INDICES(set, 5, 7, 8);
     }
+}
 
-    SECTION("add_shifted_by() shifts backwards for indices in the first set") {
+TEST_CASE("[index_set] add_shifted_by()") {
+    realm::IndexSet set;
+
+    SECTION("does nothing given an empty set to add") {
+        set = {5, 6, 7};
+        set.add_shifted_by({5, 6}, {});
+        REQUIRE_INDICES(set, 5, 6, 7);
+    }
+
+    SECTION("does nothing if values is a subset of shifted_by") {
+        set = {5, 6, 7};
+        set.add_shifted_by({3, 4}, {3, 4});
+        REQUIRE_INDICES(set, 5, 6, 7);
+    }
+
+    SECTION("just adds the indices when they are all before the old indices and the shifted-by set is empty") {
+        set = {5, 6};
+        set.add_shifted_by({}, {3, 4});
+        REQUIRE_INDICES(set, 3, 4, 5, 6);
+    }
+
+    SECTION("adds the indices shifted by the old count when they are all after the old indices and the shifted-by set is empty") {
+        set = {5, 6};
+        set.add_shifted_by({}, {7, 8});
+        REQUIRE_INDICES(set, 5, 6, 9, 10);
+    }
+
+    SECTION("acts like bulk add_shifted() when shifted_by is empty") {
+        set = {5, 10};
+        set.add_shifted_by({}, {4, 5, 11});
+        REQUIRE_INDICES(set, 4, 5, 6, 10, 13);
+    }
+
+    SECTION("shifts indices in values back by the number of indices in shifted_by before them") {
         set = {5};
         set.add_shifted_by({0, 2, 3}, {6});
         REQUIRE_INDICES(set, 3, 5);
@@ -202,97 +192,245 @@ TEST_CASE("index set") {
         REQUIRE_INDICES(set, 2, 5);
     }
 
-    SECTION("add_shifted_by() discards indices in the first set") {
+    SECTION("discards indices in both shifted_by and values") {
         set = {5};
-        set.add_shifted_by({3}, {3});
+        set.add_shifted_by({2}, {2, 4});
+        REQUIRE_INDICES(set, 3, 5);
+    }
+}
+
+TEST_CASE("[index_set] set()") {
+    realm::IndexSet set;
+
+    SECTION("clears the existing indices and replaces with the range [0, value)") {
+        set = {8, 9};
+        set.set(5);
+        REQUIRE_INDICES(set, 0, 1, 2, 3, 4);
+    }
+}
+
+TEST_CASE("[index_set] insert_at()") {
+    realm::IndexSet set;
+
+    SECTION("on an empty set is add()") {
+        set.insert_at(5);
         REQUIRE_INDICES(set, 5);
 
-        set = {5};
-        set.add_shifted_by({1, 3}, {3});
-        REQUIRE_INDICES(set, 5);
+        set = {};
+        set.insert_at({1, 3, 5});
+        REQUIRE_INDICES(set, 1, 3, 5);
     }
 
-    SECTION("shift_for_insert_at() does not modify ranges before it") {
-        set.add(5);
+    SECTION("with an empty set is a no-op") {
+        set = {5, 6};
+        set.insert_at(realm::IndexSet{});
+        REQUIRE_INDICES(set, 5, 6);
+    }
+
+    SECTION("extends ranges containing the target range") {
+        set = {5, 6};
+
+        set.insert_at(5);
+        REQUIRE_INDICES(set, 5, 6, 7);
+
+        set.insert_at(6, 2);
+        REQUIRE_INDICES(set, 5, 6, 7, 8, 9);
+
+        set.insert_at({5, 7, 11});
+        REQUIRE_INDICES(set, 5, 6, 7, 8, 9, 10, 11, 12);
+    }
+
+    SECTION("shifts ranges after the insertion point") {
+        set = {5, 6};
+
+        set.insert_at(3);
+        REQUIRE_INDICES(set, 3, 6, 7);
+
+        set.insert_at(0, 2);
+        REQUIRE_INDICES(set, 0, 1, 5, 8, 9);
+    }
+
+    SECTION("does not shift ranges before the insertion point") {
+        set = {5, 6};
+
+        set.insert_at(10);
+        REQUIRE_INDICES(set, 5, 6, 10);
+
+        set.insert_at({15, 16});
+        REQUIRE_INDICES(set, 5, 6, 10, 15, 16);
+    }
+
+    SECTION("can not join ranges") {
+        set = {5, 7};
+        set.insert_at(6);
+        REQUIRE_INDICES(set, 5, 6, 8);
+    }
+
+    SECTION("adds later ranges after shifting for previous insertions") {
+        set = {5, 10};
+        set.insert_at({5, 10});
+        REQUIRE_INDICES(set, 5, 6, 10, 12);
+    }
+}
+
+TEST_CASE("[index_set] shift_for_insert_at()") {
+    realm::IndexSet set;
+
+    SECTION("does nothing given an empty set of insertion points") {
+        set = {5, 8};
+        set.shift_for_insert_at(realm::IndexSet{});
+        REQUIRE_INDICES(set, 5, 8);
+    }
+
+    SECTION("does nothing when called on an empty set") {
+        set = {};
+        set.shift_for_insert_at({5, 8});
+        REQUIRE(set.empty());
+    }
+
+    SECTION("shifts indices at or after the insertion points") {
+        set = {5};
+
+        set.shift_for_insert_at(4);
+        REQUIRE_INDICES(set, 6);
+
+        set.shift_for_insert_at(6);
+        REQUIRE_INDICES(set, 7);
+
+        set.shift_for_insert_at({3, 8});
+        REQUIRE_INDICES(set, 9);
+    }
+
+    SECTION("shifts indices by the count specified") {
+        set = {5};
+        set.shift_for_insert_at(3, 10);
+        REQUIRE_INDICES(set, 15);
+    }
+
+    SECTION("does not shift indices before the insertion points") {
+        set = {5};
+
         set.shift_for_insert_at(6);
         REQUIRE_INDICES(set, 5);
-    }
 
-    SECTION("shift_for_insert_at() moves ranges at or after it back") {
-        set.add(5);
-        set.shift_for_insert_at(5);
+        set.shift_for_insert_at({3, 8});
         REQUIRE_INDICES(set, 6);
     }
 
-    SECTION("shift_for_insert_at() splits ranges containing the index") {
-        set.add(5);
-        set.add(6);
+    SECTION("splits ranges containing the insertion points") {
+        set = {5, 6, 7, 8};
+
         set.shift_for_insert_at(6);
-        REQUIRE_INDICES(set, 5, 7);
+        REQUIRE_INDICES(set, 5, 7, 8, 9);
+
+        set.shift_for_insert_at({8, 10, 12});
+        REQUIRE_INDICES(set, 5, 7, 9, 11);
+    }
+}
+
+TEST_CASE("[index_set] erase_at()") {
+    realm::IndexSet set;
+
+    SECTION("is a no-op on an empty set") {
+        set.erase_at(10);
+        REQUIRE(set.empty());
+
+        set.erase_at({1, 5, 8});
+        REQUIRE(set.empty());
     }
 
-    SECTION("bulk shift_for_insert_at() updates things") {
-        set = {5, 6};
-        set.shift_for_insert_at({3, 7, 10});
-        REQUIRE_INDICES(set, 6, 8);
-    }
-
-    SECTION("erase_at() shifts ranges after it back") {
-        set.add(5);
-        set.erase_at(4);
-        REQUIRE_INDICES(set, 4);
-    }
-
-    SECTION("erase_at() shrinks ranges containing the index") {
-        set = {5, 6, 7};
-
-        set.erase_at(6);
-        REQUIRE_INDICES(set, 5, 6);
-
-        set.erase_at(5);
+    SECTION("does nothing when given an empty set") {
+        set = {5};
+        set.erase_at(realm::IndexSet{});
         REQUIRE_INDICES(set, 5);
     }
 
-    SECTION("erase_at() removes one-element ranges") {
-        set = {3, 5, 7};
-
+    SECTION("removes the specified indices") {
+        set = {5};
         set.erase_at(5);
-        REQUIRE_INDICES(set, 3, 6);
+        REQUIRE(set.empty());
+
+        set = {4, 7};
+        set.erase_at({4, 7});
+        REQUIRE(set.empty());
     }
 
-    SECTION("erase_at() merges ranges when the gap between them is deleted") {
-        set.add(3);
-        set.add(5);
+    SECTION("does not modify indices before the removed one") {
+        set = {5, 8};
+        set.erase_at(8);
+        REQUIRE_INDICES(set, 5);
+
+        set = {5, 8, 9};
+        set.erase_at({8, 9});
+        REQUIRE_INDICES(set, 5);
+    }
+
+    SECTION("shifts indices after the removed one") {
+        set = {5, 8};
+        set.erase_at(5);
+        REQUIRE_INDICES(set, 7);
+
+        set = {5, 10, 15, 20};
+        set.erase_at({5, 10});
+        REQUIRE_INDICES(set, 13, 18);
+    }
+
+    SECTION("shrinks ranges when used on one of the edges of them") {
+        set = {5, 6, 7, 8};
+        set.erase_at(8);
+        REQUIRE_INDICES(set, 5, 6, 7);
+        set.erase_at(5);
+        REQUIRE_INDICES(set, 5, 6);
+
+        set = {5, 6, 7, 8};
+        set.erase_at({5, 8});
+        REQUIRE_INDICES(set, 5, 6);
+    }
+
+    SECTION("shrinks ranges when used in the middle of them") {
+        set = {5, 6, 7, 8};
+        set.erase_at(7);
+        REQUIRE_INDICES(set, 5, 6, 7);
+
+        set = {5, 6, 7, 8};
+        set.erase_at({6, 7});
+        REQUIRE_INDICES(set, 5, 6);
+    }
+
+    SECTION("merges ranges when the gap between them is deleted") {
+        set = {3, 5};
         set.erase_at(4);
         REQUIRE_INDICES(set, 3, 4);
-    }
 
-    SECTION("bulk erase_at() does things") {
-        set = {3, 5, 6, 7, 10, 12};
-        set.erase_at({3, 6, 11});
-        REQUIRE_INDICES(set, 4, 5, 8, 9);
+        set = {3, 5, 7};
+        set.erase_at({4, 6});
+        REQUIRE_INDICES(set, 3, 4, 5);
     }
+}
 
-    SECTION("erase_and_unshift() removes the given index") {
+TEST_CASE("[index_set] erase_and_unshfit()") {
+    realm::IndexSet set;
+
+    SECTION("removes the given index") {
         set = {1, 2};
         set.erase_and_unshift(2);
         REQUIRE_INDICES(set, 1);
     }
 
-    SECTION("erase_and_unshift() shifts indexes after the given index") {
+    SECTION("shifts indexes after the given index") {
         set = {1, 5};
         set.erase_and_unshift(2);
         REQUIRE_INDICES(set, 1, 4);
     }
 
-    SECTION("erase_and_unshift() returns npos for indices in the set") {
+    SECTION("returns npos for indices in the set") {
         set = {1, 3, 5};
         REQUIRE(realm::IndexSet(set).erase_and_unshift(1) == realm::IndexSet::npos);
         REQUIRE(realm::IndexSet(set).erase_and_unshift(3) == realm::IndexSet::npos);
         REQUIRE(realm::IndexSet(set).erase_and_unshift(5) == realm::IndexSet::npos);
     }
 
-    SECTION("erase_and_unshift() returns the same thing as unshift()") {
+    SECTION("returns the number of indices in the set before the index for ones not in the set") {
         set = {1, 3, 5, 6};
         REQUIRE(realm::IndexSet(set).erase_and_unshift(0) == 0);
         REQUIRE(realm::IndexSet(set).erase_and_unshift(2) == 1);
@@ -300,7 +438,84 @@ TEST_CASE("index set") {
         REQUIRE(realm::IndexSet(set).erase_and_unshift(7) == 3);
     }
 
-    SECTION("shift() adds the number of indexes before the given index in the set to the given index") {
+}
+
+TEST_CASE("[index_set] remove()") {
+    realm::IndexSet set;
+
+    SECTION("is a no-op if the set is empty") {
+        set.remove(4);
+        REQUIRE(set.empty());
+
+        set.remove({1, 2, 3});
+        REQUIRE(set.empty());
+    }
+
+    SECTION("is a no-op if the set to remove is empty") {
+        set = {5};
+        set.remove(realm::IndexSet{});
+        REQUIRE_INDICES(set, 5);
+    }
+
+    SECTION("is a no-op if the index to remove is not in the set") {
+        set = {5};
+        set.remove(4);
+        set.remove(6);
+        set.remove({4, 6});
+        REQUIRE_INDICES(set, 5);
+    }
+
+    SECTION("removes one-element ranges") {
+        set = {5};
+        set.remove(5);
+        REQUIRE(set.empty());
+
+        set = {5};
+        set.remove({3, 4, 5});
+        REQUIRE(set.empty());
+    }
+
+    SECTION("shrinks ranges beginning with the index") {
+        set = {5, 6, 7};
+        set.remove(5);
+        REQUIRE_INDICES(set, 6, 7);
+
+        set = {5, 6, 7};
+        set.remove({3, 5});
+        REQUIRE_INDICES(set, 6, 7);
+    }
+
+    SECTION("shrinks ranges ending with the index") {
+        set = {5, 6, 7};
+        set.remove(7);
+        REQUIRE_INDICES(set, 5, 6);
+
+        set = {5, 6, 7};
+        set.remove({3, 7});
+        REQUIRE_INDICES(set, 5, 6);
+    }
+
+    SECTION("splits ranges containing the index") {
+        set = {5, 6, 7};
+        set.remove(6);
+        REQUIRE_INDICES(set, 5, 7);
+
+        set = {5, 6, 7};
+        set.remove({3, 6});
+        REQUIRE_INDICES(set, 5, 7);
+    }
+
+    SECTION("does not shift other indices and uses unshifted positions") {
+        set = {5, 6, 7, 10, 11, 12, 13, 15};
+        set.remove({6, 11, 13});
+        REQUIRE_INDICES(set, 5, 7, 10, 12, 15);
+    }
+}
+
+TEST_CASE("[index_set] shift()") {
+    realm::IndexSet set;
+
+    SECTION("is ind + count(0, ind), but adds the count-so-far to the stop index") {
         set = {1, 3, 5, 6};
         REQUIRE(set.shift(0) == 0);
         REQUIRE(set.shift(1) == 2);
@@ -308,8 +523,12 @@ TEST_CASE("index set") {
         REQUIRE(set.shift(3) == 7);
         REQUIRE(set.shift(4) == 8);
     }
+}
 
-    SECTION("unshift() subtracts the number of indexes in the set before the given index from the index") {
+TEST_CASE("[index_set] unshift()") {
+    realm::IndexSet set;
+
+    SECTION("is index - count(0, index)") {
         set = {1, 3, 5, 6};
         REQUIRE(set.unshift(0) == 0);
         REQUIRE(set.unshift(2) == 1);
@@ -317,71 +536,14 @@ TEST_CASE("index set") {
         REQUIRE(set.unshift(7) == 3);
         REQUIRE(set.unshift(8) == 4);
     }
+}
 
-    SECTION("remove() does nothing if the index is not in the set") {
-        set = {5};
-        set.remove(4);
-        set.remove(6);
-        REQUIRE_INDICES(set, 5);
-    }
+TEST_CASE("[index_set] clear()") {
+    realm::IndexSet set;
 
-    SECTION("remove() removes one-element ranges") {
-        set = {5};
-        set.remove(5);
+    SECTION("removes all indices from the set") {
+        set = {1, 2, 3};
+        set.clear();
         REQUIRE(set.empty());
-    }
-
-    SECTION("remove() shrinks ranges beginning with the index") {
-        set = {5, 6, 7};
-        set.remove(5);
-        REQUIRE_INDICES(set, 6, 7);
-    }
-
-    SECTION("remove() shrinks ranges ending with the index") {
-        set = {5, 6, 7};
-        set.remove(7);
-        REQUIRE_INDICES(set, 5, 6);
-    }
-
-    SECTION("remove() splits ranges containing the index") {
-        set = {5, 6, 7};
-        set.remove(6);
-        REQUIRE_INDICES(set, 5, 7);
-    }
-
-    SECTION("bulk remove() does nothing if the indices are not in the set") {
-        set = {5};
-        set.remove({4, 6});
-        REQUIRE_INDICES(set, 5);
-    }
-
-    SECTION("bulk remove() removes one-element ranges") {
-        set = {5};
-        set.remove({5, 6});
-        REQUIRE(set.empty());
-    }
-
-    SECTION("bulk remove() shrinks ranges beginning with the indices") {
-        set = {5, 6, 7};
-        set.remove({4, 5});
-        REQUIRE_INDICES(set, 6, 7);
-    }
-
-    SECTION("bulk remove() shrinks ranges ending with the indices") {
-        set = {5, 6, 7};
-        set.remove({7, 8});
-        REQUIRE_INDICES(set, 5, 6);
-    }
-
-    SECTION("bulk remove() splits ranges containing the indices") {
-        set = {5, 6, 7};
-        set.remove({3, 6, 8});
-        REQUIRE_INDICES(set, 5, 7);
-    }
-
-    SECTION("bulk remove() correctly removes multiple indices") {
-        set = {5, 6, 7, 10, 11, 12, 13, 15};
-        set.remove({6, 11, 13});
-        REQUIRE_INDICES(set, 5, 7, 10, 12, 15);
     }
 }
