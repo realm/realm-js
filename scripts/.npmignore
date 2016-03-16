@@ -1,1 +1,6 @@
 *.orig
+
+/changelog-header.sh
+/publish.sh
+/set-version.sh
+/test.sh

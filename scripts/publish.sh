@@ -78,6 +78,9 @@ confirm "Are you sure you want to publish $VERSION?" || die "Aborted publishing 
 # This should fail if this tag already exists.
 git tag "v$VERSION"
 
+# Delete Android build directory so no stale files are accidentally included.
+rm -rf react-native/android/build
+
 # Publish to npm, informing the prepublish script to build Android modules.
 echo "Publishing $VERSION to npm..."
 PRERELEASE=$(grep -Eio '[a-z]+' <<< "$VERSION")
