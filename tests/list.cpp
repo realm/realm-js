@@ -221,6 +221,127 @@ TEST_CASE("list") {
         }
     }
 
+    SECTION("sorted add_notification_block()") {
+        List lst(r, *r->config().schema->find("origin"), lv);
+        Results results = lst.sort({{0}, {false}});
+
+        int notification_calls = 0;
+        CollectionChangeIndices change;
+        auto token = results.add_notification_callback([&](CollectionChangeIndices c, std::exception_ptr err) {
+            REQUIRE_FALSE(err);
+            change = c;
+            ++notification_calls;
+        });
+
+        advance_and_notify(*r);
+
+        auto write = [&](auto&& f) {
+            r->begin_transaction();
+            f();
+            r->commit_transaction();
+
+            advance_and_notify(*r);
+        };
+
+        SECTION("add duplicates") {
+            write([&] {
+                lst.add(5);
+                lst.add(5);
+                lst.add(5);
+            });
+            REQUIRE(notification_calls == 2);
+            REQUIRE_INDICES(change.insertions, 5, 6, 7);
+        }
+
+        SECTION("change order by modifying target") {
+            write([&] {
+                lst.get(5).set_int(0, 15);
+            });
+            REQUIRE(notification_calls == 2);
+            REQUIRE_INDICES(change.deletions, 4);
+            REQUIRE_INDICES(change.insertions, 0);
+        }
+
+        SECTION("swap") {
+            write([&] {
+                lst.swap(1, 2);
+            });
+            REQUIRE(notification_calls == 1);
+        }
+
+        SECTION("move") {
+            write([&] {
+                lst.move(5, 3);
+            });
+            REQUIRE(notification_calls == 1);
+        }
+    }
+
+    SECTION("filtered add_notification_block()") {
+        List lst(r, *r->config().schema->find("origin"), lv);
+        Results results = lst.filter(target->where().less(0, 9));
+
+        int notification_calls = 0;
+        CollectionChangeIndices change;
+        auto token = results.add_notification_callback([&](CollectionChangeIndices c, std::exception_ptr err) {
+            REQUIRE_FALSE(err);
+            change = c;
+            ++notification_calls;
+        });
+
+        advance_and_notify(*r);
+
+        auto write = [&](auto&& f) {
+            r->begin_transaction();
+            f();
+            r->commit_transaction();
+
+            advance_and_notify(*r);
+        };
+
+        SECTION("add duplicates") {
+            write([&] {
+                lst.add(5);
+                lst.add(5);
+                lst.add(5);
+            });
+            REQUIRE(notification_calls == 2);
+            REQUIRE_INDICES(change.insertions, 9, 10, 11);
+        }
+
+        SECTION("swap") {
+            write([&] {
+                lst.swap(1, 2);
+            });
+            REQUIRE(notification_calls == 2);
+            REQUIRE_INDICES(change.deletions, 2);
+            REQUIRE_INDICES(change.insertions, 1);
+
+            write([&] {
+                lst.swap(5, 8);
+            });
+            REQUIRE(notification_calls == 3);
+            REQUIRE_INDICES(change.deletions, 5, 8);
+            REQUIRE_INDICES(change.insertions, 5, 8);
+        }
+
+        SECTION("move") {
+            write([&] {
+                lst.move(5, 3);
+            });
+            REQUIRE(notification_calls == 2);
+            REQUIRE_INDICES(change.deletions, 5);
+            REQUIRE_INDICES(change.insertions, 3);
+        }
+
+        SECTION("move non-matching entry") {
+            write([&] {
+                lst.move(9, 3);
+            });
+            REQUIRE(notification_calls == 1);
+        }
+    }
+
     SECTION("sort()") {
         auto objectschema = &*r->config().schema->find("origin");
         List list(r, *objectschema, lv);
