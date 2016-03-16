@@ -64,10 +64,12 @@ git fetch origin || die 'Failed to fetch from git origin.'
 
 # Run all tests that must pass before publishing.
 for test in eslint jsdoc realmjs react-example react-tests react-tests-android; do
-  echo "RUNNING TEST: $test"
-  echo '----------------------------------------'
-  npm test "$test" Release || die "Test Failed: $test"
-  echo
+  for configuration in Debug Release; do
+    echo "RUNNING TEST: $test ($configuration)"
+    echo '----------------------------------------'
+    npm test "$test" "$configuration" || die "Test Failed: $test ($configuration)"
+    echo
+  done
 done
 
 # Double check before actually publishing.
