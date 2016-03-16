@@ -57,6 +57,21 @@ Results::Results(SharedRealm r, const ObjectSchema &o, Table& table)
 {
 }
 
+Results::Results(SharedRealm r, const ObjectSchema& o, LinkViewRef lv, util::Optional<Query> q, SortOrder s)
+: m_realm(std::move(r))
+, m_object_schema(&o)
+, m_link_view(lv)
+, m_table(&lv->get_target_table())
+, m_sort(std::move(s))
+, m_mode(Mode::LinkView)
+{
+    REALM_ASSERT(m_sort.column_indices.size() == m_sort.ascending.size());
+    if (q) {
+        m_query = std::move(*q);
+        m_mode = Mode::Query;
+    }
+}
+
 Results::~Results()
 {
     if (m_notifier) {
@@ -71,6 +86,8 @@ void Results::validate_read() const
     if (m_table && !m_table->is_attached())
         throw InvalidatedException();
     if (m_mode == Mode::TableView && !m_table_view.is_attached())
+        throw InvalidatedException();
+    if (m_mode == Mode::LinkView && !m_link_view->is_attached())
         throw InvalidatedException();
 }
 
@@ -96,9 +113,10 @@ size_t Results::size()
 {
     validate_read();
     switch (m_mode) {
-        case Mode::Empty: return 0;
-        case Mode::Table: return m_table->size();
-        case Mode::Query: return m_query.count();
+        case Mode::Empty:    return 0;
+        case Mode::Table:    return m_table->size();
+        case Mode::Query:    return m_query.count();
+        case Mode::LinkView: return m_link_view->size();
         case Mode::TableView:
             update_tableview();
             return m_table_view.size();
@@ -120,12 +138,21 @@ RowExpr Results::get(size_t row_ndx)
             if (row_ndx < m_table->size())
                 return m_table->get(row_ndx);
             break;
+        case Mode::LinkView:
+            if (update_linkview()) {
+               if (row_ndx < m_link_view->size())
+                   return m_link_view->get(row_ndx);
+                break;
+            }
+            REALM_FALLTHROUGH;
         case Mode::Query:
         case Mode::TableView:
             update_tableview();
-            if (row_ndx < m_table_view.size())
-                return (!m_live && !m_table_view.is_row_attached(row_ndx)) ? RowExpr() : m_table_view.get(row_ndx);
-            break;
+            if (row_ndx >= m_table_view.size())
+                break;
+            if (!m_live && !m_table_view.is_row_attached(row_ndx))
+                return {};
+            return m_table_view.get(row_ndx);
     }
 
     throw OutOfBoundsIndexException{row_ndx, size()};
@@ -139,6 +166,10 @@ util::Optional<RowExpr> Results::first()
             return none;
         case Mode::Table:
             return m_table->size() == 0 ? util::none : util::make_optional(m_table->front());
+        case Mode::LinkView:
+            if (update_linkview())
+                return m_link_view->size() == 0 ? util::none : util::make_optional(m_link_view->get(0));
+            REALM_FALLTHROUGH;
         case Mode::Query:
         case Mode::TableView:
             update_tableview();
@@ -155,6 +186,10 @@ util::Optional<RowExpr> Results::last()
             return none;
         case Mode::Table:
             return m_table->size() == 0 ? util::none : util::make_optional(m_table->back());
+        case Mode::LinkView:
+            if (update_linkview())
+                return m_link_view->size() == 0 ? util::none : util::make_optional(m_link_view->get(m_link_view->size() - 1));
+            REALM_FALLTHROUGH;
         case Mode::Query:
         case Mode::TableView:
             update_tableview();
@@ -163,12 +198,24 @@ util::Optional<RowExpr> Results::last()
     REALM_UNREACHABLE();
 }
 
+bool Results::update_linkview()
+{
+    if (m_sort) {
+        m_query = get_query();
+        m_mode = Mode::Query;
+        update_tableview();
+        return false;
+    }
+    return true;
+}
+
 void Results::update_tableview()
 {
     validate_read();
     switch (m_mode) {
         case Mode::Empty:
         case Mode::Table:
+        case Mode::LinkView:
             return;
         case Mode::Query:
             m_table_view = m_query.find_all();
@@ -214,6 +261,10 @@ size_t Results::index_of(size_t row_ndx)
             return not_found;
         case Mode::Table:
             return row_ndx;
+        case Mode::LinkView:
+            if (update_linkview())
+                return m_link_view->find(row_ndx);
+            REALM_FALLTHROUGH;
         case Mode::Query:
         case Mode::TableView:
             update_tableview();
@@ -241,6 +292,10 @@ util::Optional<Mixed> Results::aggregate(size_t column, bool return_none_for_emp
                 if (return_none_for_empty && m_table->size() == 0)
                     return none;
                 return util::Optional<Mixed>(getter(*m_table));
+            case Mode::LinkView:
+                m_query = get_query();
+                m_mode = Mode::Query;
+                REALM_FALLTHROUGH;
             case Mode::Query:
             case Mode::TableView:
                 this->update_tableview();
@@ -315,6 +370,10 @@ void Results::clear()
             update_tableview();
             m_table_view.clear(RemoveMode::unordered);
             break;
+        case Mode::LinkView:
+            validate_write();
+            m_link_view->remove_all_target_rows();
+            break;
     }
 }
 
@@ -327,6 +386,8 @@ Query Results::get_query() const
             return m_query;
         case Mode::TableView:
             return m_table_view.get_query();
+        case Mode::LinkView:
+            return m_table->where(m_link_view);
         case Mode::Table:
             return m_table->where();
     }
@@ -339,6 +400,10 @@ TableView Results::get_tableview()
     switch (m_mode) {
         case Mode::Empty:
             return {};
+        case Mode::LinkView:
+            if (update_linkview())
+                return m_table->where(m_link_view).find_all();
+            REALM_FALLTHROUGH;
         case Mode::Query:
         case Mode::TableView:
             update_tableview();
@@ -352,12 +417,16 @@ TableView Results::get_tableview()
 Results Results::sort(realm::SortOrder&& sort) const
 {
     REALM_ASSERT(sort.column_indices.size() == sort.ascending.size());
-    return Results(m_realm, get_object_schema(), get_query(), std::move(sort));
+    if (m_link_view)
+        return Results(m_realm, *m_object_schema, m_link_view, m_query, std::move(sort));
+    return Results(m_realm, *m_object_schema, get_query(), std::move(sort));
 }
 
 Results Results::filter(Query&& q) const
 {
-    return Results(m_realm, get_object_schema(), get_query().and_query(std::move(q)), get_sort());
+    if (m_link_view)
+        return Results(m_realm, *m_object_schema, m_link_view, get_query().and_query(std::move(q)), m_sort);
+    return Results(m_realm, *m_object_schema, get_query().and_query(std::move(q)), m_sort);
 }
 
 void Results::prepare_async()

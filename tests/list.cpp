@@ -5,8 +5,9 @@
 
 #include "binding_context.hpp"
 #include "list.hpp"
-#include "property.hpp"
 #include "object_schema.hpp"
+#include "property.hpp"
+#include "results.hpp"
 #include "schema.hpp"
 
 #include "impl/realm_coordinator.hpp"
@@ -217,6 +218,35 @@ TEST_CASE("list") {
                 REQUIRE_INDICES(changes[i].insertions, 3);
                 REQUIRE_INDICES(changes[i].modifications, 2);
             }
+        }
+    }
+
+    SECTION("sort()") {
+        auto objectschema = &*r->config().schema->find("origin");
+        List list(r, *objectschema, lv);
+        auto results = list.sort({{0}, {false}});
+
+        REQUIRE(&results.get_object_schema() == objectschema);
+        REQUIRE(results.get_mode() == Results::Mode::LinkView);
+        REQUIRE(results.size() == 10);
+        REQUIRE(results.sum(0) == 45);
+
+        for (size_t i = 0; i < 10; ++i) {
+            REQUIRE(results.get(i).get_index() == 9 - i);
+        }
+    }
+
+    SECTION("filter()") {
+        auto objectschema = &*r->config().schema->find("origin");
+        List list(r, *objectschema, lv);
+        auto results = list.filter(target->where().greater(0, 5));
+
+        REQUIRE(&results.get_object_schema() == objectschema);
+        REQUIRE(results.get_mode() == Results::Mode::Query);
+        REQUIRE(results.size() == 4);
+
+        for (size_t i = 0; i < 4; ++i) {
+            REQUIRE(results.get(i).get_index() == i + 6);
         }
     }
 }

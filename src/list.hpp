@@ -67,6 +67,7 @@ public:
     void delete_all();
 
     Results sort(SortOrder order);
+    Results filter(Query q);
 
     bool operator==(List const& rgt) const noexcept;
 

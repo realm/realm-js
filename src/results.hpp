@@ -53,6 +53,7 @@ public:
     Results() = default;
     Results(SharedRealm r, const ObjectSchema& o, Table& table);
     Results(SharedRealm r, const ObjectSchema& o, Query q, SortOrder s = {});
+    Results(SharedRealm r, const ObjectSchema& o, LinkViewRef lv, util::Optional<Query> q = {}, SortOrder s = {});
     ~Results();
 
     // Results is copyable and moveable
@@ -79,6 +80,9 @@ public:
 
     // Get the object type which will be returned by get()
     StringData get_object_type() const noexcept;
+
+    // Get the LinkView this Results is derived from, if any
+    LinkViewRef get_linkview() const { return m_link_view; }
 
     // Set whether the TableView should sync if needed before accessing results
     void set_live(bool live);
@@ -125,6 +129,7 @@ public:
         Empty, // Backed by nothing (for missing tables)
         Table, // Backed directly by a Table
         Query, // Backed by a query that has not yet been turned into a TableView
+        LinkView, // Backed directly by a LinkView
         TableView // Backed by a TableView created from a Query
     };
     // Get the currrent mode of the Results
@@ -171,8 +176,6 @@ public:
         UnsupportedColumnTypeException(size_t column, const Table* table);
     };
 
-    void update_tableview();
-
     // Create an async query from this Results
     // The query will be run on a background thread and delivered to the callback,
     // and then rerun after each commit (if needed) and redelivered if it changed
@@ -193,6 +196,7 @@ private:
     const ObjectSchema *m_object_schema;
     Query m_query;
     TableView m_table_view;
+    LinkViewRef m_link_view;
     Table* m_table = nullptr;
     SortOrder m_sort;
     bool m_live = true;
@@ -202,6 +206,9 @@ private:
     Mode m_mode = Mode::Empty;
     bool m_has_used_table_view = false;
     bool m_wants_background_updates = true;
+
+    void update_tableview();
+    bool update_linkview();
 
     void validate_read() const;
     void validate_write() const;
