@@ -40,34 +40,6 @@
 - (JSGlobalContextRef)ctx;
 @end
 
-extern "C" JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executor, bool create) {
-    Ivar contextIvar = class_getInstanceVariable([executor class], "_context");
-    if (!contextIvar) {
-        return NULL;
-    }
-
-    id rctJSContext = object_getIvar(executor, contextIvar);
-    if (!rctJSContext && create) {
-        Class RCTJavaScriptContext = NSClassFromString(@"RCTJavaScriptContext");
-        NSMethodSignature *signature = [RCTJavaScriptContext instanceMethodSignatureForSelector:@selector(initWithJSContext:)];
-        assert(signature);
-
-        // React Native 0.14+ expects a JSContext here, but we also support 0.13.x, which takes a JSGlobalContextRef.
-        if (!strcmp([signature getArgumentTypeAtIndex:2], "@")) {
-            JSContext *context = [[JSContext alloc] init];
-            rctJSContext = [[RCTJavaScriptContext alloc] initWithJSContext:(void *)context];
-        }
-        else {
-            JSGlobalContextRef ctx = JSGlobalContextCreate(NULL);
-            rctJSContext = [[RCTJavaScriptContext alloc] initWithJSContext:ctx];
-        }
-
-        object_setIvar(executor, contextIvar, rctJSContext);
-    }
-
-    return [rctJSContext ctx];
-}
-
 @interface RealmReact () <RCTBridgeModule>
 @end
 
@@ -111,12 +83,22 @@ extern "C" JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executo
     self = [super init];
     if (self) {
         _eventHandlers = [[NSMutableDictionary alloc] init];
+
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(javaScriptContextCreated:)
+                                                     name:@"RCTJavaScriptContextCreatedNotification"
+                                                   object:nil];
     }
     return self;
 }
 
 - (dispatch_queue_t)methodQueue {
     return dispatch_get_main_queue();
+}
+
+- (void)javaScriptContextCreated:(NSNotification *)note {
+    JSContext *context = note.object;
+    RJSInitializeInContext(context.JSGlobalContextRef);
 }
 
 - (void)addListenerForEvent:(NSString *)eventName handler:(RealmReactEventHandler)handler {
@@ -192,6 +174,8 @@ RCT_REMAP_METHOD(emit, emitEvent:(NSString *)eventName withObject:(id)object) {
 #endif
 
 - (void)invalidate {
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+
 #if DEBUG
     // shutdown rpc if in chrome debug mode
     [self shutdownRPC];
@@ -240,9 +224,6 @@ RCT_REMAP_METHOD(emit, emitEvent:(NSString *)eventName withObject:(id)object) {
 
             self->_currentJSThread = [NSThread currentThread];
             self->_currentJSRunLoop = [NSRunLoop currentRunLoop];
-
-            JSGlobalContextRef ctx = RealmReactGetJSGlobalContextForExecutor(executor, true);
-            RJSInitializeInContext(ctx);
         }];
     }
 }

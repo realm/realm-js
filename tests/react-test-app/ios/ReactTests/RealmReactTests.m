@@ -26,7 +26,6 @@
 
 @import RealmReact;
 
-extern void JSGlobalContextSetIncludesNativeCallStackWhenReportingExceptions(JSGlobalContextRef ctx, bool includesNativeCallStack);
 extern NSMutableArray *RCTGetModuleClasses(void);
 
 @interface RCTBridge ()
@@ -95,12 +94,6 @@ extern NSMutableArray *RCTGetModuleClasses(void);
     // The executor may be nil if the executorClass was not found (i.e. release build).
     if (!executor) {
         return suite;
-    }
-
-    // FIXME: Remove this nonsense once the crashes go away when a test fails!
-    JSGlobalContextRef ctx = RealmReactGetJSGlobalContextForExecutor(executor, false);
-    if (ctx) {
-        JSGlobalContextSetIncludesNativeCallStackWhenReportingExceptions(ctx, false);
     }
 
     NSDictionary *testCaseNames = [self waitForEvent:@"realm-test-names"];

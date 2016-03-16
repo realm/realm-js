@@ -25,7 +25,6 @@ LOCAL_SRC_FILES := \
   src/rpc.cpp \
   src/android/platform.cpp \
   src/android/io_realm_react_RealmReactModule.cpp \
-  src/android/jsc_override.cpp \
   src/object-store/src/index_set.cpp \
   src/object-store/src/list.cpp \
   src/object-store/src/object_schema.cpp \
