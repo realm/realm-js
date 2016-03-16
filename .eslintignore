@@ -1,0 +1,7 @@
+/core*/
+/docs/jsdoc-template/
+/docs/output/
+
+build/
+node_modules/
+vendor/

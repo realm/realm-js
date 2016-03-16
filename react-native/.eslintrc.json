@@ -3,22 +3,13 @@
     "commonjs": true,
     "es6": true
   },
-  "ecmaFeatures": {
-    "jsx": true
-  },
-  "globals": {
-    "cancelAnimationFrame": false,
-    "clearImmediate": false,
-    "clearInterval": false,
-    "clearTimeout": false,
-    "console": false,
-    "global": false,
-    "requestAnimationFrame": false,
-    "setImmediate": false,
-    "setInterval": false,
-    "setTimeout": false
-  },
   "parser": "babel-eslint",
+  "parserOptions": {
+    "ecmaFeatures": {
+      "forOf": false,
+      "jsx": true
+    }
+  },
   "plugins": [
     "react"
   ],
@@ -27,6 +18,7 @@
     "react/jsx-no-duplicate-props": 2,
     "react/jsx-no-undef": 2,
     "react/jsx-uses-react": 2,
+    "react/jsx-uses-vars": 2,
     "react/no-direct-mutation-state": 1,
     "react/prefer-es6-class": 1,
     "react/react-in-jsx-scope": 2

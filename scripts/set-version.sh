@@ -8,7 +8,7 @@ VERSION="$1"
 cd "$(dirname "$0")/.."
 
 # Check that the version looks semver compliant.
-if [[ ! $VERSION =~ ^[0-9].[0-9]{1,2}.[0-9]{1,2}$ ]]; then
+if ! node_modules/.bin/semver "$VERSION" > /dev/null; then
   echo "Invalid version number: $VERSION" >&2
   exit 1
 fi

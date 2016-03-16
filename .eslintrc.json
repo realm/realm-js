@@ -3,6 +3,7 @@
   "extends": "eslint:recommended",
   "rules": {
     "comma-dangle": 0,
+    "no-empty": 0,
     "no-unused-vars": 1,
     "strict": [2, "global"]
   }

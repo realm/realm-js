@@ -5,7 +5,8 @@ set -e
 
 PATH="/opt/android-sdk-linux/platform-tools:$PATH"
 
-npm install realm realm-tests
+# Inform the prepublish script to build Android modules.
+REALM_BUILD_ANDROID=1 npm install realm realm-tests
 
 cp ../../src/object-store/tests/query.json node_modules/realm-tests/query-tests.json
 
