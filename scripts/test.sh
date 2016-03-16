@@ -48,6 +48,7 @@ open_chrome() {
 }
 
 start_packager() {
+  watchman watch-del-all || true
   ./node_modules/react-native/packager/packager.sh | tee "$PACKAGER_OUT" &
 
   while :; do
