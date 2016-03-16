@@ -38,20 +38,25 @@ has_clean_worktree || die 'Publishing requires a clean working tree.'
 # Check if there are untracked files that may accidentally get published.
 has_no_untracked_files || die 'Publishing requires no untracked files.'
 
+# Make sure all npm modules are installed and updated.
+npm install > /dev/null
+
 # Get version in package.json and check if it looks semver compliant.
 VERSION=$(npm --silent run get-version)
-[[ $VERION =~ ^[0-9].[0-9]{1,2}.[0-9]{1,2}$ ]] || die "Invalid version number: $VERSION"
+node_modules/.bin/semver "$VERSION" > /dev/null || die "Invalid version number: $VERSION"
 
 # Update Xcode project to that version and make sure nothing changed.
-xcrun agvtool new-version "$VERSION" > /dev/null
-has_clean_worktree || die "Version ($VERSION) was not properly set."
+RELEASE_VERSION="${VERSION%%-*}"
+xcrun agvtool new-version "$RELEASE_VERSION" > /dev/null
+has_clean_worktree || die "Version $RELEASE_VERSION was not properly set on Xcode project."
 
 # Make sure the CHANGELOG has been updated.
-grep -iq "^${VERSION//./\.} Release notes" CHANGELOG.md || die 'CHANGELOG needs to be updated.'
+grep -iq "^${RELEASE_VERSION//./\.} Release notes" CHANGELOG.md || die 'CHANGELOG needs to be updated.'
 
 # Check that the current branch is valid.
 BRANCH=$(git rev-parse --abbrev-ref HEAD)
-[[ $BRANCH = 'master' || $BRANCH = "${VERSION%.*}.x" ]] || die "Must publish from master or ${VERSION%.*}.x branch."
+VERSION_BRANCH="${RELEASE_VERSION%.*}.x"
+[[ $BRANCH = 'master' || $BRANCH = $VERSION_BRANCH ]] || die "Must publish from master or $VERSION_BRANCH branch."
 
 # Check that this master branch is up to date with GitHub.
 git fetch origin || die 'Failed to fetch from git origin.'
@@ -73,7 +78,8 @@ git tag "v$VERSION"
 
 # Publish to npm, informing the prepublish script to build Android modules.
 echo "Publishing $VERSION to npm..."
-REALM_BUILD_ANDROID=1 npm publish .
+PRERELEASE=$(grep -Eio '[a-z]+' <<< "$VERSION")
+REALM_BUILD_ANDROID=1 npm publish ${PRERELEASE:+--tag $PRERELEASE}
 
 # Only push the tag to GitHub if the publish was successful.
 echo "Pushing v$VERSION tag to GitHub..."
