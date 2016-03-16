@@ -62,9 +62,12 @@ public class RealmReactModule extends ReactContextBaseJavaModule {
 
     @Override
     public Map<String, Object> getConstants() {
-        if (!isContextInjected()) {
-            startWebServer();
+        if (isContextInjected()) {
+            // No constants are needed if *not* running in Chrome debug mode.
+            return Collections.EMPTY_MAP;
         }
+
+        startWebServer();
 
         List<String> hosts;
         if (RealmAnalytics.isRunningOnEmulator()) {
