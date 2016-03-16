@@ -11,6 +11,7 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Bugfixes
 * Fix for crash on Android when initializing the Realm module
+* Fix for using Chrome debug mode from a device
 * Automatically forward port 8082 for Android
 * Fix broken iterator methods on Android
 * Don't download or unpack core libraries unnecessarily
@@ -20,4 +21,4 @@ x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
 
-* Initial Release.
+* Initial Release
