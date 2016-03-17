@@ -149,8 +149,7 @@ case "$TARGET" in
   ;;
 "object-store")
   pushd src/object-store
-  brew install cmake
-  cmake .
+  cmake -DCMAKE_BUILD_TYPE=$CONFIGURATION .
   make run-tests
 ;;
 *)
