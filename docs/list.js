@@ -21,55 +21,10 @@
  * (see {@linkplain Realm~ObjectSchemaProperty ObjectSchemaProperty}).
  * The objects contained in a list are accessible through its index properties and may only be
  * modified inside a {@linkplain Realm#write write} transaction.
+ * @extends Realm.Collection
  * @memberof Realm
  */
-class List {
-    /**
-     * The number of objects in the list.
-     * @type {number}
-     * @readonly
-     */
-    get length() {}
-
-    /**
-     * Returns new results that represent this list being filtered by the provided query.
-     * ```js
-     * let merlots = wines.filtered('varietal == "Merlot" && vintage <= $0', maxYear);
-     * ```
-     * @param {string} query - Query used to filter results.
-     * @param {...any} [arg] - Each subsequent argument is used by the placeholders
-     *   (e.g. `$0`, `$1`, `$2`, …) in the query.
-     * @throws {Error} If the query or any other argument passed into this method is invalid.
-     * @returns {Realm.Results} filtered according to the provided query.
-     */
-    filtered(query, ...arg) {}
-
-    /**
-     * Returns new results that represent this list being sorted by the provided property
-     *   (or properties) of each object.
-     * @param {string|Realm.Results~SortDescriptor[]} descriptor - The property name(s) to sort
-     *   results by.
-     * @param {boolean} [reverse=false] - May only be provided if `descriptor` is a string.
-     * @throws {Error} If a specified property does not exist.
-     * @returns {Realm.Results} sorted according to the arguments passed in
-     */
-    sorted(descriptor, reverse) {}
-
-    /**
-     * Create a frozen snapshot of the list. This means changes to the list will not be
-     * reflected in the results returned by this method. However, deleted objects will become
-     * `null` at their respective indices.
-     * @returns {Realm.Results} which will **not** live update.
-     */
-    snapshot() {}
-
-    /**
-     * Remove the **first** object from the list and return it.
-     * @throws {Error} If not inside a write transaction.
-     * @returns {Realm.Object|undefined} if the list is empty.
-     */
-    shift() {}
-
+class List extends Collection {
     /**
      * Remove the **last** object from the list and return it.
      * @throws {Error} If not inside a write transaction.
@@ -87,6 +42,13 @@ class List {
      *   after adding objects.
      */
     push(...object) {}
+
+    /**
+     * Remove the **first** object from the list and return it.
+     * @throws {Error} If not inside a write transaction.
+     * @returns {Realm.Object|undefined} if the list is empty.
+     */
+    shift() {}
 
     /**
      * Changes the contents of the list by removing objects and/or inserting new objects.
