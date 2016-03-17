@@ -67,7 +67,7 @@ By participating, you are expected to uphold this code. Please report unacceptab
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for more details!
+See [CONTRIBUTING.md](https://github.com/realm/realm-js/blob/master/CONTRIBUTING.md) for more details!
 
 ## License
 

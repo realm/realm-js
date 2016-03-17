@@ -32,6 +32,7 @@ class Realm {
      * `config.schemaVersion` is incremented, in which case the Realm will be automatically
      * migrated to use the new schema.
      * @param {Realm~Configuration} [config] - **Required** when first creating the Realm.
+     * @throws {Error} If anything in the provided `config` is invalid.
      */
     constructor(config) {}
 
@@ -112,6 +113,8 @@ Realm.defaultPath;
  * This describes the different options used to create a {@link Realm} instance.
  * @typedef Realm~Configuration
  * @type {Object}
+ * @property {ArrayBuffer|ArrayBufferView} [encryptionKey] - The 512-bit (64-byte) encryption
+ *   key used to encrypt and decrypt all data in the Realm.
  * @property {string} [path={@link Realm.defaultPath}] - The path to the file where the
  *   Realm database should be stored.
  * @property {Array<Realm~ObjectClass|Realm~ObjectSchema>} [schema] - Specifies all the
