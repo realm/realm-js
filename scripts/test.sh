@@ -4,7 +4,7 @@ set -o pipefail
 set -e
 
 TARGET="$1"
-CONFIGURATION="${2:-"Debug"}"
+CONFIGURATION="${2:-"Release"}"
 DESTINATION=
 PATH="/opt/android-sdk-linux/platform-tools:$PATH"
 SRCROOT=$(cd "$(dirname "$0")/.." && pwd)
@@ -77,9 +77,13 @@ fi
 
 case "$TARGET" in
 "eslint")
+  [[ $CONFIGURATION == 'Debug' ]] && exit 0
+  npm install
   npm run lint .
   ;;
 "jsdoc")
+  [[ $CONFIGURATION == 'Debug' ]] && exit 0
+  npm install
   npm run jsdoc
   ;;
 "realmjs")
@@ -114,9 +118,7 @@ case "$TARGET" in
   xcodebuild -scheme ReactExample -configuration "$CONFIGURATION" -sdk iphonesimulator $DESTINATION build test
   ;;
 "react-tests-android")
-  if [[ $CONFIGURATION == 'Debug' ]]; then
-     exit 0
-  fi
+  [[ $CONFIGURATION == 'Debug' ]] && exit 0
 
   pushd tests/react-test-app
 
@@ -149,8 +151,7 @@ case "$TARGET" in
   ;;
 "object-store")
   pushd src/object-store
-  brew install cmake
-  cmake .
+  cmake -DCMAKE_BUILD_TYPE=$CONFIGURATION .
   make run-tests
 ;;
 *)

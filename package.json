@@ -47,9 +47,9 @@
     "prepublish": "scripts/prepublish.sh"
   },
   "devDependencies": {
-    "babel-eslint": "^5.0.0",
-    "eslint": "^2.2.0",
-    "eslint-plugin-react": "^4.1.0",
+    "babel-eslint": "^6.0.0-beta.6",
+    "eslint": "^2.4.0",
+    "eslint-plugin-react": "^4.2.3",
     "jsdoc": "^3.4.0",
     "semver": "^5.1.0"
   },
