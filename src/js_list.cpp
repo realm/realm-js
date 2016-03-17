@@ -174,14 +174,20 @@ JSValueRef ListSplice(JSContextRef ctx, JSObjectRef function, JSObjectRef thisOb
         List *list = RJSGetInternal<List *>(thisObject);
         size_t size = list->size();
 
-        RJSValidateArgumentCountIsAtLeast(argumentCount, 2);
+        RJSValidateArgumentCountIsAtLeast(argumentCount, 1);
         long index = std::min<long>(RJSValidatedValueToNumber(ctx, arguments[0]), size);
         if (index < 0) {
             index = std::max<long>(size + index, 0);
         }
 
-        long remove = std::max<long>(RJSValidatedValueToNumber(ctx, arguments[1]), 0);
-        remove = std::min<long>(remove, size - index);
+        long remove;
+        if (argumentCount < 2) {
+            remove = size - index;
+        }
+        else {
+            remove = std::max<long>(RJSValidatedValueToNumber(ctx, arguments[1]), 0);
+            remove = std::min<long>(remove, size - index);
+        }
 
         std::vector<JSObjectRef> removedObjects(remove);
         for (size_t i = 0; i < remove; i++) {
