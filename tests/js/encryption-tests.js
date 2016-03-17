@@ -32,7 +32,7 @@ module.exports = BaseTest.extend({
 
         TestCase.assertThrows(function() {
             new Realm({schema: [Schemas.TestObject], encryptionKey: new Int8Array(63)});
-        }, "Encryption Key must be 64 byes");
+        }, "Encryption Key must be 64 bytes");
     },
     testEncryptionValidKey: function() {
         var key = new Int8Array(64);
