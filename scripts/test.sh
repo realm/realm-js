@@ -4,7 +4,7 @@ set -o pipefail
 set -e
 
 TARGET="$1"
-CONFIGURATION="${2:-"Debug"}"
+CONFIGURATION="${2:-"Release"}"
 DESTINATION=
 PATH="/opt/android-sdk-linux/platform-tools:$PATH"
 SRCROOT=$(cd "$(dirname "$0")/.." && pwd)
@@ -80,6 +80,9 @@ case "$TARGET" in
   npm run lint .
   ;;
 "jsdoc")
+  if [[ $CONFIGURATION == 'Debug' ]]; then
+     exit 0
+  fi
   npm run jsdoc
   ;;
 "realmjs")
