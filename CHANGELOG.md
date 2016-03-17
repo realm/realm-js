@@ -14,6 +14,7 @@
 * Fix for using Chrome debug mode from a device
 * Automatically forward port 8082 for Android
 * Fix broken iterator methods on Android
+* Fix for List splice method not accepting a single argument
 * Don't download or unpack core libraries unnecessarily
 
 
