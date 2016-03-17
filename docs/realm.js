@@ -104,6 +104,14 @@ class Realm {
 }
 
 /**
+ * Get the current schema version of the Realm at the given path.
+ * @param {string} path - The path to the file where the
+ *   Realm database is stored.
+ * @returns {number} version of the schema, or `-1` if no Realm exists at `path`.
+ */
+Realm.schemaVersion = function(path) {};
+
+/**
  * The default path where to create and access the Realm file.
  * @type {string}
  */
