@@ -94,7 +94,8 @@ class List {
      * @param {number} index - The start index. If greater than the length of the list,
      *   the start index will be set to the length instead. If negative, then the start index
      *   will be counted from the end of the list (e.g. `list.length - index`).
-     * @param {number} [count=length - start] - The number of objects to remove from the list.
+     * @param {number} [count] - The number of objects to remove from the list. If not provided,
+     *   then all objects from the start index through the end of the list will be removed.
      * @param {...Realm.Object} [object] - Objects to insert into the list starting at `index`.
      * @returns {Realm.Object[]} containing the objects that were removed from the list. The
      *   array is empty if no objects were removed.
