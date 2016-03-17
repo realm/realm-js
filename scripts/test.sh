@@ -77,12 +77,13 @@ fi
 
 case "$TARGET" in
 "eslint")
+  [[ $CONFIGURATION == 'Debug' ]] && exit 0
+  npm install
   npm run lint .
   ;;
 "jsdoc")
-  if [[ $CONFIGURATION == 'Debug' ]]; then
-     exit 0
-  fi
+  [[ $CONFIGURATION == 'Debug' ]] && exit 0
+  npm install
   npm run jsdoc
   ;;
 "realmjs")
@@ -117,9 +118,7 @@ case "$TARGET" in
   xcodebuild -scheme ReactExample -configuration "$CONFIGURATION" -sdk iphonesimulator $DESTINATION build test
   ;;
 "react-tests-android")
-  if [[ $CONFIGURATION == 'Debug' ]]; then
-     exit 0
-  fi
+  [[ $CONFIGURATION == 'Debug' ]] && exit 0
 
   pushd tests/react-test-app
 
