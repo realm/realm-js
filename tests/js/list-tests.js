@@ -344,6 +344,14 @@ module.exports = BaseTest.extend({
             TestCase.assertEqual(removed.length, 0);
             TestCase.assertEqual(array.length, 1);
 
+            removed = array.splice(1);
+            TestCase.assertEqual(removed.length, 0);
+            TestCase.assertEqual(array.length, 1);
+
+            removed = array.splice(0);
+            TestCase.assertEqual(removed.length, 1);
+            TestCase.assertEqual(array.length, 0);
+
             TestCase.assertThrows(function() {
                 array.splice('cat', 1);
             });

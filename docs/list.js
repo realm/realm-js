@@ -16,7 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-
 /**
  * Instances of this class will be returned when accessing object properties whose type is `"list"`
  * (see {@linkplain Realm~ObjectSchemaProperty ObjectSchemaProperty}).
@@ -88,6 +87,20 @@ class List {
      *   after adding objects.
      */
     push(...object) {}
+
+    /**
+     * Changes the contents of the list by removing objects and/or inserting new objects.
+     * @see {@linkcode https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/splice Array.prototype.splice}
+     * @param {number} index - The start index. If greater than the length of the list,
+     *   the start index will be set to the length instead. If negative, then the start index
+     *   will be counted from the end of the list (e.g. `list.length - index`).
+     * @param {number} [count] - The number of objects to remove from the list. If not provided,
+     *   then all objects from the start index through the end of the list will be removed.
+     * @param {...Realm.Object} [object] - Objects to insert into the list starting at `index`.
+     * @returns {Realm.Object[]} containing the objects that were removed from the list. The
+     *   array is empty if no objects were removed.
+     */
+    splice(index, count, ...object) {}
 
     /**
      * Add one or more objects to the _beginning_ of the list.
