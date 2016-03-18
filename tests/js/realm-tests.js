@@ -258,6 +258,52 @@ module.exports = BaseTest.extend({
         });
     },
 
+    testRealmWithIndexedProperties: function() {
+        var IndexedTypes = {
+            name: 'IndexedTypesObject',
+            properties: {
+                boolCol:   {type: 'bool', indexed: true},
+                intCol:    {type: 'int', indexed: true},
+                stringCol: {type: 'string', indexed: true},
+                dateCol:   {type: 'date', indexed: true},
+            }
+        };
+
+        var realm = new Realm({schema: [IndexedTypes]});
+        realm.write(function() {
+            realm.create('IndexedTypesObject', {boolCol: true, intCol: 1, stringCol: '1', dateCol: new Date(1)});
+        });
+
+        var NotIndexed = {
+            name: 'NotIndexedObject',
+            properties: {
+                floatCol: {type: 'float', indexed: false}
+            }
+        };
+
+        new Realm({schema: [NotIndexed], path: '1'});
+
+        TestCase.assertThrows(function() {
+            IndexedTypes.properties = { floatCol: {type: 'float', indexed: true} }
+            new Realm({schema: [IndexedTypes], path: '2'});
+        });
+
+        TestCase.assertThrows(function() {
+            IndexedTypes.properties = { doubleCol: {type: 'double', indexed: true} }
+            new Realm({schema: [IndexedTypes], path: '3'});
+        });
+
+        TestCase.assertThrows(function() {
+            IndexedTypes.properties = { dataCol: {type: 'data', indexed: true} }
+            new Realm({schema: [IndexedTypes], path: '4'});
+        });
+
+        // primary key
+        IndexedTypes.primaryKey = 'boolCol';
+        IndexedTypes.properties = { boolCol: {type: 'bool', indexed: true} }
+        new Realm({schema: [IndexedTypes], path: '5'});
+    },
+
     testRealmCreateWithDefaults: function() {
         var realm = new Realm({schema: [schemas.DefaultValues, schemas.TestObject]});
 
