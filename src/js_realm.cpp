@@ -239,10 +239,16 @@ static const JSStaticValue RealmStaticProperties[] = {
 
 JSValueRef RealmSchemaVersion(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) {
     try {
-        RJSValidateArgumentCount(argumentCount, 1);
+        RJSValidateArgumentRange(argumentCount, 1, 2);
         
         Realm::Config config;
         config.path = RJSNormalizePath(RJSValidatedStringForValue(ctx, arguments[0]));
+        if (argumentCount == 2) {
+            JSValueRef encryptionKeyValue = arguments[1];
+            std::string encryptionKey = RJSAccessor::to_binary(ctx, encryptionKeyValue);
+            config.encryption_key = std::vector<char>(encryptionKey.begin(), encryptionKey.end());
+        }
+
         auto version = Realm::get_schema_version(config);
         if (version == ObjectStore::NotVersioned) {
             return JSValueMakeNumber(ctx, -1);

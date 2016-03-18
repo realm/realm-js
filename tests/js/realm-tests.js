@@ -125,6 +125,17 @@ module.exports = BaseTest.extend({
 
         realm = new Realm({schema: [], schemaVersion: 2, path: 'another.realm'});
         TestCase.assertEqual(Realm.schemaVersion('another.realm'), 2);
+
+        var encryptionKey = new Int8Array(64);
+        realm = new Realm({schema: [], schemaVersion: 3, path: 'encrypted.realm', encryptionKey: encryptionKey});
+        TestCase.assertEqual(Realm.schemaVersion('encrypted.realm', encryptionKey), 3);
+
+        TestCase.assertThrows(function() {
+            Realm.schemaVersion('encrypted.realm', encryptionKey, 'extra');
+        });
+        TestCase.assertThrows(function() {
+            Realm.schemaVersion('encrypted.realm', 'asdf');
+        });
     },
 
     testRealmCreate: function() {
