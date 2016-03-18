@@ -118,7 +118,7 @@ module.exports = BaseTest.extend({
     },
 
     testRealmSchemaVersion: function() {
-        TestCase.assertEqual(Realm.schemaVersion(Realm.defaultPath), 0xFFFFFFFFFFFFFFFF);
+        TestCase.assertEqual(Realm.schemaVersion(Realm.defaultPath), -1);
         
         var realm = new Realm({schema: []});
         TestCase.assertEqual(Realm.schemaVersion(Realm.defaultPath), 0);

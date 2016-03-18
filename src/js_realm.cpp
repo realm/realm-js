@@ -243,7 +243,13 @@ JSValueRef RealmSchemaVersion(JSContextRef ctx, JSObjectRef function, JSObjectRe
         
         Realm::Config config;
         config.path = RJSNormalizePath(RJSValidatedStringForValue(ctx, arguments[0]));
-        return JSValueMakeNumber(ctx, Realm::get_schema_version(config));
+        auto version = Realm::get_schema_version(config);
+        if (version == ObjectStore::NotVersioned) {
+            return JSValueMakeNumber(ctx, -1);
+        }
+        else {
+            return JSValueMakeNumber(ctx, version);
+        }
     }
     catch (std::exception &exp) {
         if (jsException) {
