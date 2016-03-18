@@ -1,3 +1,6 @@
+#include "command_file.hpp"
+
+#include "list.hpp"
 #include "object_schema.hpp"
 #include "property.hpp"
 #include "results.hpp"
@@ -10,22 +13,15 @@
 #include <realm/link_view.hpp>
 
 #include <iostream>
-#include <set>
 #include <sstream>
-#include <strstream>
 #include <sys/types.h>
 #include <sys/uio.h>
 #include <unistd.h>
 
 using namespace realm;
 
-#define FUZZ_SORTED 1
-
-#if 0
-#define log(...) fprintf(stderr, __VA_ARGS__)
-#else
-#define log(...)
-#endif
+#define FUZZ_SORTED 0
+#define FUZZ_LINKVIEW 1
 
 // Read from a fd until eof into a string
 // Needs to use unbuffered i/o to work properly with afl
@@ -44,160 +40,32 @@ static void read_all(std::string& buffer, int fd)
     }
 }
 
-static std::vector<int64_t> read_initial_values(std::istream& input_stream)
+static Query query(fuzzer::RealmState& state)
 {
-    std::vector<int64_t> initial_values;
-    std::string line;
-    input_stream.seekg(0);
-    while (std::getline(input_stream, line) && !line.empty()) {
-        try {
-            initial_values.push_back(std::stoll(line));
-        }
-        catch (std::invalid_argument) {
-            // not an error
-        }
-        catch (std::out_of_range) {
-            // not an error
-        }
-    }
-    return initial_values;
+#if FUZZ_LINKVIEW
+    return state.table.where(state.lv);
+#else
+    return state.table.where().greater(1, 100).less(1, 50000);
+#endif
 }
 
-struct Change {
-    enum class Action {
-        Commit,
-        Add,
-        Modify,
-        Delete
-    } action;
-
-    size_t index = npos;
-    int64_t value = 0;
-};
-
-static std::vector<Change> read_changes(std::istream& input_stream)
+static TableView tableview(fuzzer::RealmState& state)
 {
-    std::vector<Change> ret;
-
-    while (!input_stream.eof()) {
-        char op = '\0';
-        input_stream >> op;
-        if (!input_stream.good())
-            break;
-        switch (op) {
-            case 'a': {
-                int64_t value = 0;
-                input_stream >> value;
-                if (input_stream.good())
-                    ret.push_back({Change::Action::Add, npos, value});
-                break;
-            }
-            case 'm': {
-                int64_t value;
-                size_t ndx;
-                input_stream >> ndx >> value;
-                if (input_stream.good())
-                    ret.push_back({Change::Action::Modify, ndx, value});
-                break;
-            }
-            case 'd': {
-                size_t ndx;
-                input_stream >> ndx;
-                if (input_stream.good())
-                    ret.push_back({Change::Action::Delete, ndx, 0});
-                break;
-            }
-            case 'c': {
-                ret.push_back({Change::Action::Commit, npos, 0});
-                break;
-            }
-            default:
-                return ret;
-
-        }
-    }
-    return ret;
-}
-
-static Query query(Table& table)
-{
-    return table.where().greater(1, 100).less(1, 50000);
-}
-
-static TableView tableview(Table& table)
-{
-    auto tv = table.where().greater(1, 100).less(1, 50000).find_all();
+    auto tv = query(state).find_all();
 #if FUZZ_SORTED
     tv.sort({1, 0}, {true, true});
 #endif
     return tv;
 }
 
-static int64_t id = 0;
-
-static void import_initial_values(SharedRealm& r, std::vector<int64_t>& initial_values)
-{
-    auto& table = *r->read_group()->get_table("class_object");
-
-    r->begin_transaction();
-    table.clear();
-    size_t ndx = table.add_empty_row(initial_values.size());
-    for (auto value : initial_values) {
-        table.set_int(0, ndx, id++);
-        table.set_int(1, ndx++, value);
-        log("%lld\n", value);
-    }
-    r->commit_transaction();
-}
-
 // Apply the changes from the command file and then return whether a change
 // notification should occur
-static bool apply_changes(Realm& r, std::istream& input_stream)
+static bool apply_changes(fuzzer::CommandFile& commands, fuzzer::RealmState& state)
 {
-    auto& table = *r.read_group()->get_table("class_object");
-    auto tv = tableview(table);
+    auto tv = tableview(state);
+    commands.run(state);
 
-    std::vector<int64_t> modified;
-
-    log("\n");
-    r.begin_transaction();
-    for (auto const& change : read_changes(input_stream)) {
-        switch (change.action) {
-            case Change::Action::Commit:
-                log("c\n");
-                r.commit_transaction();
-                _impl::RealmCoordinator::get_existing_coordinator(r.config().path)->on_change();
-                r.begin_transaction();
-                break;
-
-            case Change::Action::Add: {
-                log("a %lld\n", change.value);
-                size_t ndx = table.add_empty_row();
-                table.set_int(0, ndx, id++);
-                table.set_int(1, ndx, change.value);
-                break;
-            }
-
-            case Change::Action::Modify:
-                if (change.index < table.size()) {
-                    log("m %zu %lld\n", change.index, change.value);
-                    modified.push_back(table.get_int(0, change.index));
-                    table.set_int(1, change.index, change.value);
-                }
-                break;
-
-            case Change::Action::Delete:
-                if (change.index < table.size()) {
-                    log("d %zu\n", change.index);
-                    table.move_last_over(change.index);
-                }
-                break;
-        }
-    }
-    r.commit_transaction();
-    log("\n");
-
-    auto tv2 = tableview(table);
+    auto tv2 = tableview(state);
     if (tv.size() != tv2.size())
         return true;
 
@@ -206,16 +74,16 @@ static bool apply_changes(Realm& r, std::istream& input_stream)
             return true;
         if (tv.get_int(0, i) != tv2.get_int(0, i))
             return true;
-        if (find(begin(modified), end(modified), tv.get_int(0, i)) != end(modified))
+        if (find(begin(state.modified), end(state.modified), tv.get_int(0, i)) != end(state.modified))
             return true;
     }
 
     return false;
 }
 
-static void verify(CollectionChangeIndices const& changes, std::vector<int64_t> values, Table& table)
+static void verify(CollectionChangeIndices const& changes, std::vector<int64_t> values, fuzzer::RealmState& state)
 {
-    auto tv = tableview(table);
+    auto tv = tableview(state);
 
     // Apply the changes from the transaction log to our copy of the
     // initial, using UITableView's batching rules (i.e. delete, then
@@ -253,20 +121,41 @@ static void verify(CollectionChangeIndices const& changes, std::vector<int64_t> 
 
 static void test(Realm::Config const& config, SharedRealm& r, SharedRealm& r2, std::istream& input_stream)
 {
-    std::vector<int64_t> initial_values = read_initial_values(input_stream);
-    if (initial_values.empty()) {
+    fuzzer::RealmState state = {
+        *r,
+        *_impl::RealmCoordinator::get_existing_coordinator(r->config().path),
+        *r->read_group()->get_table("class_object"),
+        r->read_group()->get_table("class_linklist")->get_linklist(0, 0),
+        0,
+        {}
+    };
+
+    fuzzer::CommandFile command(input_stream);
+    if (command.initial_values.empty()) {
         return;
     }
-    import_initial_values(r, initial_values);
+    command.import(state);
 
-    auto& table = *r->read_group()->get_table("class_object");
-    auto results = Results(r, ObjectSchema(), query(table))
+    fuzzer::RealmState state2 = {
+        *r2,
+        state.coordinator,
+        *r2->read_group()->get_table("class_object"),
+        r2->read_group()->get_table("class_linklist")->get_linklist(0, 0),
+        state.uid,
+        {}
+    };
+
+#if FUZZ_LINKVIEW && !FUZZ_SORTED
+    auto results = List(r, ObjectSchema(), state.lv);
+#else
+    auto results = Results(r, ObjectSchema(), query(state))
 #if FUZZ_SORTED
         .sort({{1, 0}, {true, true}})
 #endif
         ;
+#endif // FUZZ_LINKVIEW
 
-    initial_values.clear();
+    std::vector<int64_t> initial_values;
     for (size_t i = 0; i < results.size(); ++i)
         initial_values.push_back(results.get(i).get_int(1));
 
@@ -279,20 +168,19 @@ static void test(Realm::Config const& config, SharedRealm& r, SharedRealm& r2, s
         ++notification_calls;
     });
 
-    auto& coordinator = *_impl::RealmCoordinator::get_existing_coordinator(config.path);
-    coordinator.on_change(); r->notify();
+    state.coordinator.on_change(); r->notify();
     if (notification_calls != 1) {
         abort();
     }
 
-    bool expect_notification = apply_changes(*r2, input_stream);
-    coordinator.on_change(); r->notify();
+    bool expect_notification = apply_changes(command, state2);
+    state.coordinator.on_change(); r->notify();
 
     if (notification_calls != 1 + expect_notification) {
         abort();
     }
 
-    verify(changes, initial_values, table);
+    verify(changes, initial_values, state);
 }
 
 int main(int argc, char** argv) {
@@ -311,6 +199,9 @@ int main(int argc, char** argv) {
         {"object", "", {
             {"id", PropertyTypeInt},
             {"value", PropertyTypeInt}
+        }},
+        {"linklist", "", {
+            {"list", PropertyTypeArray, "object"}
         }}
     };
 
@@ -321,9 +212,11 @@ int main(int argc, char** argv) {
     auto r2 = Realm::get_shared_realm(config);
     auto& coordinator = *_impl::RealmCoordinator::get_existing_coordinator(config.path);
 
-    auto test_on = [&](auto& buffer) {
-        id = 0;
+    r->begin_transaction();
+    r->read_group()->get_table("class_linklist")->add_empty_row();
+    r->commit_transaction();
 
+    auto test_on = [&](auto& buffer) {
         std::istringstream ss(buffer);
         test(config, r, r2, ss);
         if (r->is_in_transaction())
