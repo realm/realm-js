@@ -462,7 +462,7 @@ void update_query_with_predicate(Query &query, const Predicate &pred, Arguments 
     if (pred.negate) {
         query.Not();
     }
-    
+
     switch (pred.type) {
         case Predicate::Type::And:
             query.group();
@@ -474,7 +474,7 @@ void update_query_with_predicate(Query &query, const Predicate &pred, Arguments 
             }
             query.end_group();
             break;
-            
+
         case Predicate::Type::Or:
             query.group();
             for (auto &sub : pred.cpnd.sub_predicates) {
@@ -486,7 +486,7 @@ void update_query_with_predicate(Query &query, const Predicate &pred, Arguments 
             }
             query.end_group();
             break;
-            
+
         case Predicate::Type::Comparison: {
             add_comparison_to_query(query, pred, arguments, schema, type);
             break;
@@ -494,11 +494,11 @@ void update_query_with_predicate(Query &query, const Predicate &pred, Arguments 
         case Predicate::Type::True:
             query.and_query(std::unique_ptr<realm::Expression>(new TrueExpression));
             break;
-            
+
         case Predicate::Type::False:
             query.and_query(std::unique_ptr<realm::Expression>(new FalseExpression));
             break;
-            
+
         default:
             throw std::runtime_error("Invalid predicate type");
     }
@@ -507,7 +507,7 @@ void update_query_with_predicate(Query &query, const Predicate &pred, Arguments 
 void apply_predicate(Query &query, const Predicate &predicate, Arguments &arguments, const Schema &schema, const std::string &objectType)
 {
     update_query_with_predicate(query, predicate, arguments, schema, objectType);
-    
+
     // Test the constructed query in core
     std::string validateMessage = query.validate();
     precondition(validateMessage.empty(), validateMessage.c_str());
