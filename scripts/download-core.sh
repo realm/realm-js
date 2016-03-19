@@ -3,7 +3,7 @@
 set -e
 set -o pipefail
 
-: ${REALM_CORE_VERSION:=0.97.0} # set to "current" to always use the current build
+: ${REALM_CORE_VERSION:=0.97.1} # set to "current" to always use the current build
 
 # Start current working directory at the root of the project.
 cd "$(dirname "$0")/.."
