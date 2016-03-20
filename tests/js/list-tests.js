@@ -576,19 +576,23 @@ module.exports = BaseTest.extend({
             TestCase.assertEqual(list.reduce(function(n, p) {return n + p.age}, 0), 33);
             TestCase.assertEqual(list.reduceRight(function(n, p) {return n + p.age}, 0), 33);
 
-            [
-                'entries',
-                'keys',
-                'values',
-                typeof Symbol != 'undefined' && Symbol.iterator, // eslint-disable-line no-undef
-            ].forEach(function(methodName) {
-                if (!methodName) {
-                    return;
-                }
+            // eslint-disable-next-line no-undef
+            var iteratorSymbol = typeof Symbol != 'undefined' && Symbol.iterator;
+            var iteratorMethodNames = ['entries', 'keys', 'values'];
 
+            if (iteratorSymbol) {
+                iteratorMethodNames.push(iteratorSymbol);
+            }
+
+            iteratorMethodNames.forEach(function(methodName) {
                 var iterator = list[methodName]();
                 var count = 0;
                 var result;
+
+                if (iteratorSymbol) {
+                    // This iterator should itself be iterable.
+                    TestCase.assertEqual(iterator[iteratorSymbol](), iterator);
+                }
 
                 while ((result = iterator.next()) && !result.done) {
                     var value = result.value;
