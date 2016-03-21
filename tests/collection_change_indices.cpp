@@ -126,6 +126,17 @@ TEST_CASE("[collection_change] move_over()") {
         REQUIRE(c.moves.empty());
     }
 
+    SECTION("is just erase when row + 1 == last_row") {
+        c.move_over(0, 6);
+        c.move_over(4, 5);
+        c.move_over(0, 4);
+        c.move_over(2, 3);
+
+        REQUIRE_INDICES(c.deletions, 0, 2, 4, 5, 6);
+        REQUIRE_INDICES(c.insertions, 0);
+        REQUIRE_MOVES(c, {5, 0});
+    }
+
     SECTION("marks the old last row as moved") {
         c.move_over(5, 8);
         REQUIRE_MOVES(c, {8, 5});
