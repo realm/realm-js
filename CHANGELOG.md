@@ -5,6 +5,7 @@
 
 ### Enhancements
 * Support for encryption
+* List and Results now inherit from Realm.Collection
 * Add common Array methods to List and Results
 * Accept constructor in create() and objects() methods
 * Support relative paths when opening realms

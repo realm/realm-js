@@ -16,21 +16,15 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-'use strict';
+#include "js_collection.hpp"
 
-import Collection, { createCollection } from './collections';
-import { objectTypes } from './constants';
-import { createMethods } from './util';
-
-export default class Results extends Collection {
+static JSClassRef RJSCreateCollectionClass() {
+    JSClassDefinition classDefinition = kJSClassDefinitionEmpty;
+    classDefinition.className = "Collection";
+    return JSClassCreate(&classDefinition);
 }
 
-createMethods(Results.prototype, objectTypes.RESULTS, [
-    'filtered',
-    'sorted',
-    'snapshot',
-]);
-
-export function createResults(realmId, info) {
-    return createCollection(Results.prototype, realmId, info);
+JSClassRef RJSCollectionClass() {
+    static JSClassRef s_collectionClass = RJSCreateCollectionClass();
+    return s_collectionClass;
 }
