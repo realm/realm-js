@@ -15,6 +15,7 @@ include $(CLEAR_VARS)
 LOCAL_MODULE := librealmreact
 
 LOCAL_SRC_FILES := \
+  src/js_collection.cpp \
   src/js_list.cpp \
   src/js_results.cpp \
   src/js_init.cpp \
