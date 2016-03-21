@@ -151,7 +151,7 @@ Realm.defaultPath;
  *   otherwise specified.
  * @property {boolean} [optional] - Signals if this property may be assigned `null` or `undefined`.
  * @property {boolean} [indexed] - Signals if this property should be indexed. Only supported for
- *   `"string"`, `"int"`, `"bool"`, and `"date"` properties. 
+ *   `"string"`, `"int"`, and `"bool"` properties. 
  */
 
 /**
