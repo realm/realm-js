@@ -219,6 +219,28 @@ TEST_CASE("list") {
                 REQUIRE_INDICES(changes[i].modifications, 2);
             }
         }
+
+        SECTION("modifications are reported for rows that are moved and then moved back in a second transaction") {
+            auto token = require_change();
+
+            r->begin_transaction();
+            lv->get(5).set_int(0, 10);
+            lv->get(1).set_int(0, 10);
+            lv->move(5, 8);
+            lv->move(1, 2);
+            r->commit_transaction();
+
+            coordinator.on_change();
+
+            write([&]{
+                lv->move(8, 5);
+            });
+
+            REQUIRE_INDICES(change.deletions, 1);
+            REQUIRE_INDICES(change.insertions, 2);
+            REQUIRE_INDICES(change.modifications, 5);
+            REQUIRE_MOVES(change, {1, 2});
+        }
     }
 
     SECTION("sorted add_notification_block()") {

@@ -861,6 +861,14 @@ TEST_CASE("[collection_change] merge()") {
         REQUIRE_MOVES(c, {1, 3});
     }
 
+    SECTION("updates the row modified for chained moves") {
+        c = {{}, {}, {1}, {}};
+        c.merge({{}, {}, {}, {{1, 3}}});
+        c.merge({{}, {}, {}, {{3, 5}}});
+        REQUIRE_INDICES(c.modifications, 5);
+        REQUIRE_MOVES(c, {1, 5});
+    }
+
     SECTION("updates the row inserted for moves of previously new rows") {
         c = {{}, {1}, {}, {}};
         c.merge({{}, {}, {}, {{1, 3}}});
