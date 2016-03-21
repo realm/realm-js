@@ -301,6 +301,8 @@ module.exports = BaseTest.extend({
         // primary key
         IndexedTypes.primaryKey = 'boolCol';
         IndexedTypes.properties = { boolCol: {type: 'bool', indexed: true} }
+
+	// Test this doesn't throw
         new Realm({schema: [IndexedTypes], path: '5'});
     },
 
