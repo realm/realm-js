@@ -185,6 +185,15 @@ TEST_CASE("[collection_change] move_over()") {
         REQUIRE_INDICES(c.insertions, 5, 6);
         REQUIRE_MOVES(c, {10, 5}, {9, 6});
     }
+
+    SECTION("marks the moved-over row as deleted when chaining moves") {
+        c.move_over(5, 10);
+        c.move_over(0, 5);
+
+        REQUIRE_INDICES(c.deletions, 0, 5, 10);
+        REQUIRE_INDICES(c.insertions, 0);
+        REQUIRE_MOVES(c, {10, 0});
+    }
 }
 
 TEST_CASE("[collection_change] clear()") {
