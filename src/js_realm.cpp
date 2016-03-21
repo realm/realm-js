@@ -149,6 +149,13 @@ static bool SetDefaultPath(JSContextRef ctx, JSObjectRef object, JSStringRef pro
     return true;
 }
 
+inline std::string RJSNormalizePath(std::string path) {
+    if (path.size() && path[0] != '/') {
+        return default_realm_file_directory() + "/" + path;
+    }
+    return path;
+}
+
 JSObjectRef RealmConstructor(JSContextRef ctx, JSObjectRef constructor, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) {
     try {
         Realm::Config config;
@@ -202,9 +209,7 @@ JSObjectRef RealmConstructor(JSContextRef ctx, JSObjectRef constructor, size_t a
             return NULL;
         }
         
-        if (config.path.size() && config.path[0] != '/') {
-            config.path = default_realm_file_directory() + "/" + config.path;
-        }
+        config.path = RJSNormalizePath(config.path);
         
         ensure_directory_exists_for_file(config.path);
         SharedRealm realm = Realm::get_shared_realm(config);
@@ -232,6 +237,39 @@ static const JSStaticValue RealmStaticProperties[] = {
     {NULL, NULL}
 };
 
+JSValueRef RealmSchemaVersion(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) {
+    try {
+        RJSValidateArgumentRange(argumentCount, 1, 2);
+        
+        Realm::Config config;
+        config.path = RJSNormalizePath(RJSValidatedStringForValue(ctx, arguments[0]));
+        if (argumentCount == 2) {
+            JSValueRef encryptionKeyValue = arguments[1];
+            std::string encryptionKey = RJSAccessor::to_binary(ctx, encryptionKeyValue);
+            config.encryption_key = std::vector<char>(encryptionKey.begin(), encryptionKey.end());
+        }
+
+        auto version = Realm::get_schema_version(config);
+        if (version == ObjectStore::NotVersioned) {
+            return JSValueMakeNumber(ctx, -1);
+        }
+        else {
+            return JSValueMakeNumber(ctx, version);
+        }
+    }
+    catch (std::exception &exp) {
+        if (jsException) {
+            *jsException = RJSMakeError(ctx, exp);
+        }
+    }
+    return NULL;
+}
+
+static const JSStaticFunction RealmConstructorFuncs[] = {
+    {"schemaVersion", RealmSchemaVersion, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
+    {NULL, NULL},
+};
+
 JSClassRef RJSRealmConstructorClass() {
     JSClassDefinition realmConstructorDefinition = kJSClassDefinitionEmpty;
     realmConstructorDefinition.attributes = kJSClassAttributeNoAutomaticPrototype;
@@ -239,6 +277,7 @@ JSClassRef RJSRealmConstructorClass() {
     realmConstructorDefinition.callAsConstructor = RealmConstructor;
     realmConstructorDefinition.hasInstance = RealmHasInstance;
     realmConstructorDefinition.staticValues = RealmStaticProperties;
+    realmConstructorDefinition.staticFunctions = RealmConstructorFuncs;
     return JSClassCreate(&realmConstructorDefinition);
 }
 

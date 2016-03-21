@@ -117,6 +117,27 @@ module.exports = BaseTest.extend({
         TestCase.assertEqual(Realm.defaultPath, newPath, "defaultPath should have been updated");
     },
 
+    testRealmSchemaVersion: function() {
+        TestCase.assertEqual(Realm.schemaVersion(Realm.defaultPath), -1);
+        
+        var realm = new Realm({schema: []});
+        TestCase.assertEqual(Realm.schemaVersion(Realm.defaultPath), 0);
+
+        realm = new Realm({schema: [], schemaVersion: 2, path: 'another.realm'});
+        TestCase.assertEqual(Realm.schemaVersion('another.realm'), 2);
+
+        var encryptionKey = new Int8Array(64);
+        realm = new Realm({schema: [], schemaVersion: 3, path: 'encrypted.realm', encryptionKey: encryptionKey});
+        TestCase.assertEqual(Realm.schemaVersion('encrypted.realm', encryptionKey), 3);
+
+        TestCase.assertThrows(function() {
+            Realm.schemaVersion('encrypted.realm', encryptionKey, 'extra');
+        });
+        TestCase.assertThrows(function() {
+            Realm.schemaVersion('encrypted.realm', 'asdf');
+        });
+    },
+
     testRealmCreate: function() {
         var realm = new Realm({schema: [schemas.IntPrimary, schemas.AllTypes, schemas.TestObject]});
 

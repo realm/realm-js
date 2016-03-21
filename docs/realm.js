@@ -104,6 +104,17 @@ class Realm {
 }
 
 /**
+ * Get the current schema version of the Realm at the given path.
+ * @param {string} path - The path to the file where the
+ *   Realm database is stored.
+ * @param {ArrayBuffer|ArrayBufferView} [encryptionKey] - Required only when
+ *   accessing encrypted Realms.
+ * @throws {Error} When passing an invalid or non-matching encryption key.
+ * @returns {number} version of the schema, or `-1` if no Realm exists at `path`.
+ */
+Realm.schemaVersion = function(path, encryptionKey) {};
+
+/**
  * The default path where to create and access the Realm file.
  * @type {string}
  */

@@ -10,6 +10,7 @@
 * Support relative paths when opening realms
 * Support case insensitive queries
 * Support for indexed bool, string, and int properties
+* Added method to retrieve schemaVersion from an unopened Realm
 
 ### Bugfixes
 * Fix for crash on Android when initializing the Realm module
