@@ -102,9 +102,11 @@ function runQuerySuite(suite) {
             }));
         }
         else if (test[0] == "QueryThrows") {
+            var type = test[1];
+            var args = getArgs(2);
+            var objects = realm.objects(type);
             TestCase.assertThrows(function() {
-                var args = getArgs(2);
-                realm.objects.apply(realm, args);
+                objects.filtered.apply(objects, args);
             }, "Expected exception not thrown for query: " + JSON.stringify(args));
         }
         else if (test[0] != "Disabled") {
