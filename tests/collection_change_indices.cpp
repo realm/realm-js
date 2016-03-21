@@ -295,6 +295,13 @@ TEST_CASE("[collection_change] move()") {
         c.move(15, 10);
         REQUIRE_MOVES(c, {5, 11}, {15, 10});
     }
+
+    SECTION("collapses redundant swaps of adjacent rows to a no-op") {
+        c.move(7, 8);
+        c.move(7, 8);
+        c.clean_up_stale_moves();
+        REQUIRE(c.empty());
+    }
 }
 
 TEST_CASE("[collection_change] calculate() unsorted") {
