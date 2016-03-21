@@ -22,6 +22,7 @@ using namespace realm;
 
 #define FUZZ_SORTED 0
 #define FUZZ_LINKVIEW 1
+#define FUZZ_LOG 0
 
 // Read from a fd until eof into a string
 // Needs to use unbuffered i/o to work properly with afl
@@ -63,6 +64,11 @@ static TableView tableview(fuzzer::RealmState& state)
 static bool apply_changes(fuzzer::CommandFile& commands, fuzzer::RealmState& state)
 {
     auto tv = tableview(state);
+#if FUZZ_LOG
+    for (size_t i = 0; i < tv.size(); ++i)
+        fprintf(stderr, "pre: %lld\n", tv.get_int(0, i));
+#endif
+
     commands.run(state);
 
     auto tv2 = tableview(state);
@@ -70,6 +76,9 @@ static bool apply_changes(fuzzer::CommandFile& commands, fuzzer::RealmState& sta
         return true;
 
     for (size_t i = 0; i < tv.size(); ++i) {
+#if FUZZ_LOG
+        fprintf(stderr, "%lld %lld\n", tv.get_int(0, i), tv2.get_int(0, i));
+#endif
         if (!tv.is_row_attached(i))
             return true;
         if (tv.get_int(0, i) != tv2.get_int(0, i))
@@ -114,6 +123,9 @@ static void verify(CollectionChangeIndices const& changes, std::vector<int64_t> 
 
     for (size_t i = 0; i < values.size(); ++i) {
         if (values[i] != tv.get_int(1, i)) {
+#if FUZZ_LOG
+            fprintf(stderr, "%lld %lld\n", values[i], tv.get_int(1, i));
+#endif
             abort();
         }
     }

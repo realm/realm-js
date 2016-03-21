@@ -52,7 +52,7 @@ static void run_modify(RealmState& state, size_t index, int64_t value)
 static void run_delete(RealmState& state, size_t index)
 {
     if (index < state.table.size()) {
-        log("delete %zu\n", index);
+        log("delete %zu (%lld)\n", index, state.table.get_int(1, index));
         state.table.move_last_over(index);
     }
 }
