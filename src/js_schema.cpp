@@ -47,6 +47,7 @@ JSObjectRef RJSSchemaCreate(JSContextRef ctx, Schema &schema) {
 
 static inline Property RJSParseProperty(JSContextRef ctx, JSValueRef propertyAttributes, std::string propertyName, ObjectDefaults &objectDefaults) {
     static JSStringRef defaultString = JSStringCreateWithUTF8CString("default");
+    static JSStringRef indexedString = JSStringCreateWithUTF8CString("indexed");
     static JSStringRef typeString = JSStringCreateWithUTF8CString("type");
     static JSStringRef objectTypeString = JSStringCreateWithUTF8CString("objectType");
     static JSStringRef optionalString = JSStringCreateWithUTF8CString("optional");
@@ -122,6 +123,11 @@ static inline Property RJSParseProperty(JSContextRef ctx, JSValueRef propertyAtt
         if (!JSValueIsUndefined(ctx, defaultValue)) {
             JSValueProtect(ctx, defaultValue);
             objectDefaults.emplace(prop.name, defaultValue);
+        }
+        
+        JSValueRef indexedValue = RJSValidatedPropertyValue(ctx, propertyObject, indexedString);
+        if (!JSValueIsUndefined(ctx, indexedValue)) {
+            prop.is_indexed = JSValueToBoolean(ctx, indexedValue);
         }
     }
 

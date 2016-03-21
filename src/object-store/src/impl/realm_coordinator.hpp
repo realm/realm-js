@@ -25,7 +25,7 @@
 
 namespace realm {
 class AsyncQueryCallback;
-class ClientHistory;
+class Replication;
 class Results;
 class Schema;
 class SharedGroup;
@@ -65,10 +65,10 @@ public:
     // Should only be called in test code, as continuing to use the previously
     // cached instances will have odd results
     static void clear_cache();
-    
+
     // Clears all caches on existing coordinators
     static void clear_all_caches();
-    
+
     // Explicit constructor/destructor needed for the unique_ptrs to forward-declared types
     RealmCoordinator();
     ~RealmCoordinator();
@@ -102,13 +102,13 @@ private:
 
     // SharedGroup used for actually running async queries
     // Will have a read transaction iff m_queries is non-empty
-    std::unique_ptr<ClientHistory> m_query_history;
+    std::unique_ptr<Replication> m_query_history;
     std::unique_ptr<SharedGroup> m_query_sg;
 
     // SharedGroup used to advance queries in m_new_queries to the main shared
     // group's transaction version
     // Will have a read transaction iff m_new_queries is non-empty
-    std::unique_ptr<ClientHistory> m_advancer_history;
+    std::unique_ptr<Replication> m_advancer_history;
     std::unique_ptr<SharedGroup> m_advancer_sg;
     std::exception_ptr m_async_error;
 

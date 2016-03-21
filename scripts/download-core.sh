@@ -3,7 +3,7 @@
 set -e
 set -o pipefail
 
-: ${REALM_CORE_VERSION:=0.96.2} # set to "current" to always use the current build
+: ${REALM_CORE_VERSION:=0.97.1} # set to "current" to always use the current build
 
 # Start current working directory at the root of the project.
 cd "$(dirname "$0")/.."
@@ -45,6 +45,11 @@ download_core() {
 check_release_notes() {
     grep -Fqi "$REALM_CORE_VERSION RELEASE NOTES" "$@"
 }
+
+if [[ $1 = "--version" ]]; then
+    echo $REALM_CORE_VERSION
+    exit 0
+fi
 
 if [ ! -e core ]; then
     download_core

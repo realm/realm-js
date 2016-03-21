@@ -41,6 +41,7 @@
   "scripts": {
     "get-version": "echo $npm_package_version",
     "set-version": "scripts/set-version.sh",
+    "get-core-version": "scripts/download-core.sh --version",
     "jsdoc": "rm -rf docs/output && jsdoc -c docs/conf.json",
     "lint": "eslint",
     "test": "scripts/test.sh",
