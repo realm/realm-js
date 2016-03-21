@@ -284,6 +284,17 @@ TEST_CASE("[collection_change] move()") {
         c.move(6, 12);
         REQUIRE_INDICES(c.modifications, 9);
     }
+
+    SECTION("bumps previous moves to the same location") {
+        c.move(5, 10);
+        c.move(7, 10);
+        REQUIRE_MOVES(c, {5, 9}, {8, 10});
+
+        c = {};
+        c.move(5, 10);
+        c.move(15, 10);
+        REQUIRE_MOVES(c, {5, 11}, {15, 10});
+    }
 }
 
 TEST_CASE("[collection_change] calculate() unsorted") {
