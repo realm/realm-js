@@ -8,7 +8,8 @@
 * Add common Array methods to List and Results
 * Accept constructor in create() and objects() methods
 * Support relative paths when opening realms
-* Support for indexed bool, string, date, and int properties
+* Support case insensitive queries
+* Support for indexed bool, string, and int properties
 
 ### Bugfixes
 * Fix for crash on Android when initializing the Realm module
