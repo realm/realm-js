@@ -23,29 +23,29 @@
  */
 class Collection {
     /**
-     * The number of objects in the results.
+     * The number of objects in the collection.
      * @type {number}
      * @readonly
      */
     get length() {}
 
     /**
-     * Returns new results that represent this collection being filtered by the provided query.
-     * @param {string} query - Query used to filter results.
+     * Returns new _Results_ that represent this collection being filtered by the provided query.
+     * @param {string} query - Query used to filter objects from the collection.
      * @param {...any} [arg] - Each subsequent argument is used by the placeholders
      *   (e.g. `$0`, `$1`, `$2`, …) in the query.
      * @throws {Error} If the query or any other argument passed into this method is invalid.
      * @returns {Realm.Results} filtered according to the provided query.
      * @example
-     * let merlots = wines.filtered('varietal == "Merlot" && vintage <= $0', maxYear);
+     * let merlots = wines.filtered('variety == "Merlot" && vintage <= $0', maxYear);
      */
     filtered(query, ...arg) {}
 
     /**
-     * Returns new results that represent this collection being sorted by the provided property
+     * Returns new _Results_ that represent this collection being sorted by the provided property
      * (or properties) of each object.
      * @param {string|Realm.Results~SortDescriptor[]} descriptor - The property name(s) to sort
-     *   results by.
+     *   the objects in the collection.
      * @param {boolean} [reverse=false] - May only be provided if `descriptor` is a string.
      * @throws {Error} If a specified property does not exist.
      * @returns {Realm.Results} sorted according to the arguments passed in
@@ -54,7 +54,7 @@ class Collection {
 
     /**
      * Create a frozen snapshot of the collection. This means objects added to and removed from the
-     * original collection will not be reflected in the results returned by this method.
+     * original collection will not be reflected in the _Results_ returned by this method.
      * However, objects deleted from the Realm will become `null` at their respective indices.
      * This is **not** a _deep_ snapshot, meaning the objects contained in this snapshot will
      * continue to update as changes are made to them.
