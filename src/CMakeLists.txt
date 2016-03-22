@@ -21,6 +21,7 @@ set(HEADERS
     list.hpp
     object_schema.hpp
     object_store.hpp
+    property.hpp
     results.hpp
     schema.hpp
     shared_realm.hpp
