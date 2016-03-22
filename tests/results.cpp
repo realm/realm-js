@@ -385,6 +385,26 @@ TEST_CASE("Results") {
             advance_and_notify(*r);
             REQUIRE(notification_calls == 2);
         }
+
+        SECTION("moving a matching row by deleting all other rows") {
+            r->begin_transaction();
+            table->clear();
+            table->add_empty_row(2);
+            table->set_int(0, 0, 15);
+            table->set_int(0, 1, 5);
+            r->commit_transaction();
+            advance_and_notify(*r);
+
+            write([&] {
+                table->move_last_over(0);
+                table->add_empty_row();
+                table->set_int(0, 1, 3);
+            });
+
+            REQUIRE(notification_calls == 3);
+            REQUIRE(change.deletions.empty());
+            REQUIRE_INDICES(change.insertions, 1);
+        }
     }
 }
 

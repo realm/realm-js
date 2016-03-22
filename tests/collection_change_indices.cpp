@@ -131,6 +131,7 @@ TEST_CASE("[collection_change] move_over()") {
         c.move_over(4, 5);
         c.move_over(0, 4);
         c.move_over(2, 3);
+        c.clean_up_stale_moves();
 
         REQUIRE_INDICES(c.deletions, 0, 2, 4, 5, 6);
         REQUIRE_INDICES(c.insertions, 0);
