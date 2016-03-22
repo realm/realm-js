@@ -20,6 +20,8 @@
 
 #include <realm/util/assert.hpp>
 
+#include <algorithm>
+
 using namespace realm;
 
 const size_t IndexSet::npos;
@@ -138,7 +140,7 @@ void IndexSet::add_shifted_by(IndexSet const& shifted_by, IndexSet const& values
         copy(old_it, old_end, back_inserter(m_ranges));
     }
 
-    REALM_ASSERT_DEBUG(std::distance(as_indexes().begin(), as_indexes().end()) == expected);
+    REALM_ASSERT_DEBUG((size_t)std::distance(as_indexes().begin(), as_indexes().end()) == expected);
 }
 
 void IndexSet::set(size_t len)

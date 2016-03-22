@@ -4,7 +4,7 @@
     auto actual = index_set.as_indexes(); \
     INFO("Checking " #index_set); \
     REQUIRE(expected.size() == std::distance(actual.begin(), actual.end())); \
-    auto begin = actual.begin(), end = actual.end(); \
+    auto begin = actual.begin(); \
     for (auto index : expected) { \
         REQUIRE(*begin++ == index); \
     } \
@@ -14,7 +14,7 @@
     auto actual = (c); \
     std::initializer_list<CollectionChangeIndices::Move> expected = {__VA_ARGS__}; \
     REQUIRE(expected.size() == actual.moves.size()); \
-    auto begin = actual.moves.begin(), end = actual.moves.end(); \
+    auto begin = actual.moves.begin(); \
     for (auto move : expected) { \
         CHECK(begin->from == move.from); \
         CHECK(begin->to == move.to); \

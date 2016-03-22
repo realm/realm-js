@@ -4,6 +4,8 @@
 
 #include "util/index_helpers.hpp"
 
+#include <limits>
+
 using namespace realm;
 
 TEST_CASE("[collection_change] insert()") {
@@ -230,10 +232,10 @@ TEST_CASE("[collection_change] clear()") {
 
     SECTION("sets deletions SIZE_T_MAX if that if the given previous size") {
         c.insertions = {1, 2, 3};
-        c.clear(SIZE_T_MAX);
+        c.clear(std::numeric_limits<size_t>::max());
         REQUIRE(c.deletions.size() == 1);
         REQUIRE(c.deletions.begin()->first == 0);
-        REQUIRE(c.deletions.begin()->second == SIZE_T_MAX);
+        REQUIRE(c.deletions.begin()->second == std::numeric_limits<size_t>::max());
     }
 }
 

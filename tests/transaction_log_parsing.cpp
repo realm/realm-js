@@ -73,7 +73,8 @@ private:
         // Apply the changes from the transaction log to our copy of the
         // initial, using UITableView's batching rules (i.e. delete, then
         // insert, then update)
-        auto it = std::make_reverse_iterator(info.deletions.end()), end = std::make_reverse_iterator(info.deletions.begin());
+        auto it = util::make_reverse_iterator(info.deletions.end());
+        auto end = util::make_reverse_iterator(info.deletions.begin());
         for (; it != end; ++it) {
             m_initial.erase(m_initial.begin() + it->first, m_initial.begin() + it->second);
         }
@@ -92,7 +93,7 @@ private:
 
         // and make sure we end up with the same end result
         REQUIRE(m_initial.size() == m_linkview->size());
-        for (auto i = 0; i < m_initial.size(); ++i)
+        for (size_t i = 0; i < m_initial.size(); ++i)
             CHECK(m_initial[i] == m_linkview->get(i).get_int(0));
 
         // Verify that everything marked as a move actually is one

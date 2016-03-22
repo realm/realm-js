@@ -293,7 +293,7 @@ util::Optional<Mixed> Results::aggregate(size_t column, bool return_none_for_emp
                     return none;
                 return util::Optional<Mixed>(getter(*m_table));
             case Mode::LinkView:
-                m_query = get_query();
+                m_query = this->get_query();
                 m_mode = Mode::Query;
                 REALM_FALLTHROUGH;
             case Mode::Query:

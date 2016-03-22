@@ -21,7 +21,7 @@ struct RealmState {
 
     realm::Table& table;
     realm::LinkViewRef lv;
-    int64_t uid = 0;
+    int64_t uid;
     std::vector<int64_t> modified;
 };
 

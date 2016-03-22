@@ -52,6 +52,20 @@ namespace realm {
                 || type == PropertyTypeDate
                 || type == PropertyTypeString;
         }
+
+#if __GNUC__ < 5
+        // GCC 4.9 does not support C++14 braced-init with NSDMIs
+        Property(std::string name="", PropertyType type=PropertyTypeInt, std::string object_type="",
+                 bool is_primary=false, bool is_indexed=false, bool is_nullable=false)
+        : name(std::move(name))
+        , type(type)
+        , object_type(std::move(object_type))
+        , is_primary(is_primary)
+        , is_indexed(is_indexed)
+        , is_nullable(is_nullable)
+        {
+        }
+#endif
     };
 
     static inline const char *string_for_property_type(PropertyType type) {
@@ -76,6 +90,10 @@ namespace realm {
                 return "object";
             case PropertyTypeArray:
                 return "array";
+#if __GNUC__
+            default:
+                __builtin_unreachable();
+#endif
         }
     }
 }

@@ -155,6 +155,16 @@ private:
     // Add an index which must be greater than the largest index in the set
     void add_back(size_t index);
 };
+
+namespace util {
+// This was added in C++14 but is missing from libstdc++ 4.9
+template<typename Iterator>
+std::reverse_iterator<Iterator> make_reverse_iterator(Iterator it)
+{
+    return std::reverse_iterator<Iterator>(it);
+}
+} // namespace util
+
 } // namespace realm
 
 #endif // REALM_INDEX_SET_HPP

@@ -601,8 +601,8 @@ CollectionChangeBuilder CollectionChangeBuilder::calculate(std::vector<size_t> c
 #ifdef REALM_DEBUG
     { // Verify that applying the calculated change to prev_rows actually produces next_rows
         auto rows = prev_rows;
-        auto it = std::make_reverse_iterator(ret.deletions.end());
-        auto end = std::make_reverse_iterator(ret.deletions.begin());
+        auto it = util::make_reverse_iterator(ret.deletions.end());
+        auto end = util::make_reverse_iterator(ret.deletions.begin());
         for (; it != end; ++it) {
             rows.erase(rows.begin() + it->first, rows.begin() + it->second);
         }

@@ -97,7 +97,8 @@ static void verify(CollectionChangeIndices const& changes, std::vector<int64_t> 
     // Apply the changes from the transaction log to our copy of the
     // initial, using UITableView's batching rules (i.e. delete, then
     // insert, then update)
-    auto it = std::make_reverse_iterator(changes.deletions.end()), end = std::make_reverse_iterator(changes.deletions.begin());
+    auto it = util::make_reverse_iterator(changes.deletions.end());
+    auto end = util::make_reverse_iterator(changes.deletions.begin());
     for (; it != end; ++it) {
         values.erase(values.begin() + it->first, values.begin() + it->second);
     }
@@ -207,7 +208,7 @@ int main(int argc, char** argv) {
     config.in_memory = true;
     config.automatic_change_notifications = false;
 
-    Schema schema = {
+    Schema schema{
         {"object", "", {
             {"id", PropertyTypeInt},
             {"value", PropertyTypeInt}
