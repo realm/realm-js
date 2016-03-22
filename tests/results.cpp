@@ -276,9 +276,9 @@ TEST_CASE("Results") {
             REQUIRE(notification_calls == 1);
         }
 
-        SECTION("the first call of a notification always passes an empty change even if it previously ran for a different callback") {
+        SECTION("the first call of a notification can include changes if it previously ran for a different callback") {
             auto token2 = results.add_notification_callback([&](CollectionChangeIndices c, std::exception_ptr) {
-                REQUIRE(c.empty());
+                REQUIRE(!c.empty());
             });
 
             write([&] {

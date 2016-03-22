@@ -66,15 +66,21 @@ TEST_CASE("list") {
         };
 
         auto require_change = [&] {
-            return lst.add_notification_callback([&](CollectionChangeIndices c, std::exception_ptr err) {
+            auto token = lst.add_notification_callback([&](CollectionChangeIndices c, std::exception_ptr err) {
                 change = c;
             });
+            advance_and_notify(*r);
+            return token;
         };
 
         auto require_no_change = [&] {
-            return lst.add_notification_callback([&](CollectionChangeIndices c, std::exception_ptr err) {
-                REQUIRE(false);
+            bool first = true;
+            auto token = lst.add_notification_callback([&, first](CollectionChangeIndices c, std::exception_ptr err) mutable {
+                REQUIRE(first);
+                first = false;
             });
+            advance_and_notify(*r);
+            return token;
         };
 
         SECTION("modifying the list sends a change notifications") {
