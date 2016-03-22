@@ -34,18 +34,31 @@ extern NSMutableArray *RCTGetModuleClasses(void);
 - (void)setUp;
 @end
 
+@interface RCTDevMenuDisabler : RCTDevMenu
+@end
+
 @interface RealmReactTests : RealmJSTests
 @end
 
 @interface RealmReactChromeTests : RealmReactTests
 @end
 
+
+@implementation RCTDevMenuDisabler
+
++ (void)load {
+    // +[RCTDevMenu load] is guaranteed to have been called since it's the superclass.
+    // We remove it since it interferes with us fully controlling the executor class.
+    NSMutableArray *moduleClasses = RCTGetModuleClasses();
+    [moduleClasses removeObject:[RCTDevMenu class]];
+}
+
+@end
+
+
 @implementation RealmReactTests
 
 + (void)load {
-    NSMutableArray *moduleClasses = RCTGetModuleClasses();
-    [moduleClasses removeObject:[RCTDevMenu class]];
-
     RCTAddLogFunction(^(RCTLogLevel level, RCTLogSource source, NSString *fileName, NSNumber *lineNumber, NSString *message) {
         NSAssert(level < RCTLogLevelError, RCTFormatLog(nil, level, fileName, lineNumber, message));
     });
@@ -223,6 +236,7 @@ extern NSMutableArray *RCTGetModuleClasses(void);
 }
 
 @end
+
 
 @implementation RealmReactChromeTests
 
