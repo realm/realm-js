@@ -24,18 +24,16 @@
 #import "shared_realm.hpp"
 #import "realm_coordinator.hpp"
 
-#import <objc/runtime.h>
 #import <arpa/inet.h>
-#import <dlfcn.h>
 #import <ifaddrs.h>
 #import <netdb.h>
 #import <net/if.h>
 
 #if DEBUG
-#import <GCDWebServer/Core/GCDWebServer.h>
-#import <GCDWebServer/Requests/GCDWebServerDataRequest.h>
-#import <GCDWebServer/Responses/GCDWebServerDataResponse.h>
-#import <GCDWebServer/Responses/GCDWebServerErrorResponse.h>
+#import "GCDWebServer.h"
+#import "GCDWebServerDataRequest.h"
+#import "GCDWebServerDataResponse.h"
+#import "GCDWebServerErrorResponse.h"
 #import "rpc.hpp"
 
 #define WEB_SERVER_PORT 8082
@@ -90,16 +88,7 @@ extern "C" JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executo
 
 @synthesize bridge = _bridge;
 
-+ (void)load {
-    void (*RCTRegisterModule)(Class) = (void (*)(Class))dlsym(RTLD_DEFAULT, "RCTRegisterModule");
-
-    if (RCTRegisterModule) {
-        RCTRegisterModule(self);
-    }
-    else {
-        NSLog(@"Failed to load RCTRegisterModule symbol - %s", dlerror());
-    }
-}
+RCT_EXPORT_MODULE(Realm)
 
 + (void)initialize {
     if (self != [RealmReact class]) {
@@ -107,10 +96,6 @@ extern "C" JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executo
     }
 
     RLMSendAnalytics();
-}
-
-+ (NSString *)moduleName {
-    return @"Realm";
 }
 
 - (instancetype)init {

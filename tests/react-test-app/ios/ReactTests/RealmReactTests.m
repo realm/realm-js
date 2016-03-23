@@ -16,6 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+#import <RealmReact/RealmReact.h>
+
 #import "RealmJSTests.h"
 #import "RCTJavaScriptExecutor.h"
 #import "RCTBridge.h"
@@ -23,8 +25,6 @@
 #import "RCTEventDispatcher.h"
 #import "RCTJavaScriptLoader.h"
 #import "RCTLog.h"
-
-@import RealmReact;
 
 extern void JSGlobalContextSetIncludesNativeCallStackWhenReportingExceptions(JSGlobalContextRef ctx, bool includesNativeCallStack);
 extern NSMutableArray *RCTGetModuleClasses(void);
