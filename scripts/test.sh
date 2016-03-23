@@ -87,6 +87,7 @@ case "$TARGET" in
   npm run jsdoc
   ;;
 "realmjs")
+  pushd src/ios
   xcodebuild -scheme RealmJS -configuration "$CONFIGURATION" -sdk iphonesimulator $DESTINATION build test
   ;;
 "react-tests")
@@ -99,9 +100,9 @@ case "$TARGET" in
   npm install
   open_chrome
   start_packager
-  popd
 
-  xcodebuild -scheme RealmReact -configuration "$CONFIGURATION" -sdk iphonesimulator $DESTINATION build test
+  pushd ios
+  xcodebuild -scheme ReactTestApp -configuration "$CONFIGURATION" -sdk iphonesimulator $DESTINATION build test
   ;;
 "react-example")
   pushd examples/ReactExample

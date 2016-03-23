@@ -51,7 +51,7 @@ git submodule update --init --recursive
 ```
 
 To build for iOS:
-- Open `RealmJS.xcodeproj`
+- Open `react-native/ios/RealmReact.xcodeproj`
 - Select `RealmReact.framework` as the build target
 - Build
 

@@ -65,8 +65,8 @@
 #import <array>
 
 // This symbol is defined by the Apple Generic versioning system when building this project.
-// It confusingly looks like this: @(#)PROGRAM:RealmReact  PROJECT:RealmJS-0.0.1
-extern "C" const char RealmReactVersionString[];
+// It confusingly looks like this: @(#)PROGRAM:RealmJS  PROJECT:RealmJS-0.0.1
+extern "C" const char RealmJSVersionString[];
 
 // Wrapper for sysctl() that handles the memory management stuff
 static auto RLMSysCtl(int *mib, u_int mibSize, size_t *bufferSize) {
@@ -201,7 +201,7 @@ static NSDictionary *RLMAnalyticsPayload() {
             @"Language": @"js",
             @"Framework": @"react-native",
             @"Virtual Machine": @"jsc",
-            @"Realm Version": [[@(RealmReactVersionString) componentsSeparatedByString:@"-"] lastObject] ?: kUnknownString,
+            @"Realm Version": [[@(RealmJSVersionString) componentsSeparatedByString:@"-"] lastObject] ?: kUnknownString,
 #if TARGET_OS_IPHONE
             @"Target OS Type": @"ios",
 #else
