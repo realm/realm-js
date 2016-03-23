@@ -366,7 +366,7 @@ TEST_CASE("Transaction log parsing") {
             auto info = track_changes({false, false, false}, [&] {
                 table.set_int(0, 1, 2);
             });
-            REQUIRE(info.tables.size() == 0);
+            REQUIRE(info.tables.empty());
         }
 
         SECTION("new row additions are reported") {
@@ -678,7 +678,7 @@ TEST_CASE("Transaction log parsing") {
                     lv->remove(5);
                 }
                 REQUIRE_INDICES(changes.deletions, 5);
-                REQUIRE(changes.modifications.size() == 0);
+                REQUIRE(changes.modifications.empty());
 
                 VALIDATE_CHANGES(changes) {
                     lv->set(5, 0);
@@ -693,7 +693,7 @@ TEST_CASE("Transaction log parsing") {
                     lv->remove(4);
                 }
                 REQUIRE_INDICES(changes.deletions, 4, 5);
-                REQUIRE(changes.modifications.size() == 0);
+                REQUIRE(changes.modifications.empty());
             }
 
             SECTION("erase -> set") {
@@ -711,7 +711,7 @@ TEST_CASE("Transaction log parsing") {
                     lv->clear();
                 }
                 REQUIRE_INDICES(changes.deletions, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
-                REQUIRE(changes.insertions.size() == 0);
+                REQUIRE(changes.insertions.empty());
             }
 
             SECTION("set -> clear") {
@@ -720,7 +720,7 @@ TEST_CASE("Transaction log parsing") {
                     lv->clear();
                 }
                 REQUIRE_INDICES(changes.deletions, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
-                REQUIRE(changes.modifications.size() == 0);
+                REQUIRE(changes.modifications.empty());
             }
 
             SECTION("clear -> insert") {
@@ -737,8 +737,8 @@ TEST_CASE("Transaction log parsing") {
                     lv->add(0);
                     lv->remove(10);
                 }
-                REQUIRE(changes.insertions.size() == 0);
-                REQUIRE(changes.deletions.size() == 0);
+                REQUIRE(changes.insertions.empty());
+                REQUIRE(changes.deletions.empty());
 
                 VALIDATE_CHANGES(changes) {
                     lv->add(0);

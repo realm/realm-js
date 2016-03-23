@@ -382,9 +382,9 @@ public:
         }
 
         if (o->kind == ColumnInfo::Kind::Remove)
-            old_size += o->indices.size();
+            old_size += o->indices.count();
         else if (o->kind == ColumnInfo::Kind::Insert)
-            old_size -= o->indices.size();
+            old_size -= o->indices.count();
 
         o->indices.set(old_size);
 

@@ -57,6 +57,20 @@ TEST_CASE("[index_set] count()") {
         realm::IndexSet set = {1, 2, 3, 5, 6, 7, 8, 9};
         REQUIRE(set.count(3, 9) == 5);
     }
+
+    SECTION("handles full chunks well") {
+        size_t count = realm::_impl::ChunkedRangeVector::max_size * 4;
+        realm::IndexSet set;
+        for (size_t i = 0; i < count; ++i) {
+            set.add(i * 3);
+            set.add(i * 3 + 1);
+        }
+
+        for (size_t i = 0; i < count * 3; ++i) {
+            REQUIRE(set.count(i) == 2 * count - (i + 1) * 2 / 3);
+            REQUIRE(set.count(0, i) == (i + 1) / 3 + (i + 2) / 3);
+        }
+    }
 }
 
 TEST_CASE("[index_set] add()") {
@@ -99,6 +113,12 @@ TEST_CASE("[index_set] add()") {
 
         set.add({1, 4, 5});
         REQUIRE_INDICES(set, 0, 1, 2, 4, 5, 6);
+    }
+
+    SECTION("handles front additions of ranges") {
+        for (size_t i = 20; i > 0; i -= 2)
+            set.add(i);
+        REQUIRE_INDICES(set, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20);
     }
 }
 
@@ -172,14 +192,14 @@ TEST_CASE("[index_set] add_shifted_by()") {
 
     SECTION("adds the indices shifted by the old count when they are all after the old indices and the shifted-by set is empty") {
         set = {5, 6};
-        set.add_shifted_by({}, {7, 8});
-        REQUIRE_INDICES(set, 5, 6, 9, 10);
+        set.add_shifted_by({}, {7, 9, 11, 13});
+        REQUIRE_INDICES(set, 5, 6, 9, 11, 13, 15);
     }
 
     SECTION("acts like bulk add_shifted() when shifted_by is empty") {
-        set = {5, 10};
+        set = {5, 10, 15, 20, 25};
         set.add_shifted_by({}, {4, 5, 11});
-        REQUIRE_INDICES(set, 4, 5, 6, 10, 13);
+        REQUIRE_INDICES(set, 4, 5, 6, 10, 13, 15, 20, 25);
     }
 
     SECTION("shifts indices in values back by the number of indices in shifted_by before them") {
@@ -286,6 +306,18 @@ TEST_CASE("[index_set] shift_for_insert_at()") {
         set = {};
         set.shift_for_insert_at({5, 8});
         REQUIRE(set.empty());
+    }
+
+    SECTION("does nothing when the insertion points are all after the current indices") {
+        set = {10, 20};
+        set.shift_for_insert_at({30, 40});
+        REQUIRE_INDICES(set, 10, 20);
+    }
+
+    SECTION("does shift when the insertion points are all before the current indices") {
+        set = {10, 20};
+        set.shift_for_insert_at({2, 4});
+        REQUIRE_INDICES(set, 12, 22);
     }
 
     SECTION("shifts indices at or after the insertion points") {

@@ -233,7 +233,8 @@ TEST_CASE("[collection_change] clear()") {
     SECTION("sets deletions SIZE_T_MAX if that if the given previous size") {
         c.insertions = {1, 2, 3};
         c.clear(std::numeric_limits<size_t>::max());
-        REQUIRE(c.deletions.size() == 1);
+        REQUIRE(!c.deletions.empty());
+        REQUIRE(++c.deletions.begin() == c.deletions.end());
         REQUIRE(c.deletions.begin()->first == 0);
         REQUIRE(c.deletions.begin()->second == std::numeric_limits<size_t>::max());
     }
