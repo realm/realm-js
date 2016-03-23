@@ -35,8 +35,7 @@
     "react-native",
     "scripts",
     "src",
-    "vendor",
-    "RealmJS.xcodeproj"
+    "vendor"
   ],
   "scripts": {
     "get-version": "echo $npm_package_version",

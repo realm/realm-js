@@ -202,7 +202,7 @@
 		F68A278B1BC2722A0063D40A /* RJSModuleLoader.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = RJSModuleLoader.m; path = ios/RJSModuleLoader.m; sourceTree = "<group>"; };
 		F6BB7DEF1BF681BC00D0A69E /* base64.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = base64.cpp; sourceTree = "<group>"; };
 		F6BB7DF01BF681BC00D0A69E /* base64.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = base64.hpp; sourceTree = "<group>"; };
-		F6BCCFDF1C83809A00FE31AE /* lib */ = {isa = PBXFileReference; lastKnownFileType = folder; path = lib; sourceTree = SOURCE_ROOT; };
+		F6BCCFDF1C83809A00FE31AE /* lib */ = {isa = PBXFileReference; lastKnownFileType = folder; name = lib; path = ../../lib; sourceTree = SOURCE_ROOT; };
 		F6C3FBBC1BF680EC00E6FFD4 /* json.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = json.hpp; sourceTree = "<group>"; };
 		F6CB30FC1C8EDD760070EF3F /* js_collection.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = js_collection.cpp; sourceTree = "<group>"; };
 		F6CB30FD1C8EDD760070EF3F /* js_collection.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = js_collection.hpp; sourceTree = "<group>"; };
@@ -264,7 +264,7 @@
 				029048101C0428DF00ABDED4 /* rpc.hpp */,
 			);
 			name = RealmJS;
-			path = src;
+			path = ..;
 			sourceTree = "<group>";
 		};
 		02B58CA71AE99CEB009B348C = {
@@ -301,7 +301,7 @@
 				F68A278B1BC2722A0063D40A /* RJSModuleLoader.m */,
 			);
 			name = RealmJSTests;
-			path = tests;
+			path = ../../tests;
 			sourceTree = "<group>";
 		};
 		02B58CCF1AE99D8C009B348C /* Frameworks */ = {
@@ -441,7 +441,7 @@
 				F6C3FBBC1BF680EC00E6FFD4 /* json.hpp */,
 			);
 			name = Vendor;
-			path = vendor;
+			path = ../../vendor;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -615,7 +615,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "cp src/object-store/tests/query.json \"$TARGET_BUILD_DIR/$CONTENTS_FOLDER_PATH/js/query-tests.json\"";
+			shellScript = "cp ../object-store/tests/query.json \"$TARGET_BUILD_DIR/$CONTENTS_FOLDER_PATH/js/query-tests.json\"";
 		};
 		F63FF2C51C12462600B3B8E0 /* Download Core */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -629,7 +629,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "scripts/download-core.sh";
+			shellScript = "../../scripts/download-core.sh";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -760,13 +760,13 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
-				LIBRARY_SEARCH_PATHS = core;
+				LIBRARY_SEARCH_PATHS = ../../core;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(OTHER_CFLAGS)",
 					"-isystem",
-					core/include,
+					../../core/include,
 				);
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -812,12 +812,12 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
-				LIBRARY_SEARCH_PATHS = core;
+				LIBRARY_SEARCH_PATHS = ../../core;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(OTHER_CFLAGS)",
 					"-isystem",
-					core/include,
+					../../core/include,
 				);
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -835,7 +835,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 0.11.0;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				INFOPLIST_FILE = src/ios/Info.plist;
+				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				OTHER_LDFLAGS = (
@@ -857,7 +857,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 0.11.0;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				INFOPLIST_FILE = src/ios/Info.plist;
+				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				OTHER_LDFLAGS = (
@@ -874,13 +874,11 @@
 		02B58CCB1AE99CEC009B348C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
 					"$(inherited)",
 				);
-				HEADER_SEARCH_PATHS = "";
-				INFOPLIST_FILE = tests/ios/Info.plist;
+				INFOPLIST_FILE = ../../tests/ios/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				OTHER_CPLUSPLUSFLAGS = (
@@ -896,9 +894,7 @@
 		02B58CCC1AE99CEC009B348C /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
-				HEADER_SEARCH_PATHS = "";
-				INFOPLIST_FILE = tests/ios/Info.plist;
+				INFOPLIST_FILE = ../../tests/ios/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				OTHER_CPLUSPLUSFLAGS = (
@@ -951,13 +947,13 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
-				LIBRARY_SEARCH_PATHS = core;
+				LIBRARY_SEARCH_PATHS = ../../core;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(OTHER_CFLAGS)",
 					"-isystem",
-					core/include,
+					../../core/include,
 				);
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -974,7 +970,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 0.11.0;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				INFOPLIST_FILE = src/ios/Info.plist;
+				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				OTHER_LDFLAGS = (
@@ -991,13 +987,11 @@
 		02F9EE1E1B6BF66300C807E8 /* GCov_Build */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
 					"$(inherited)",
 				);
-				HEADER_SEARCH_PATHS = "";
-				INFOPLIST_FILE = tests/ios/Info.plist;
+				INFOPLIST_FILE = ../../tests/ios/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				OTHER_CPLUSPLUSFLAGS = (
@@ -1020,9 +1014,9 @@
 				);
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(SRCROOT)/src/object-store/external/pegtl",
-					"$(SRCROOT)/vendor",
-					"$(SRCROOT)/src/object-store/src",
+					"$(SRCROOT)/../object-store/external/pegtl",
+					"$(SRCROOT)/../object-store/src",
+					"$(SRCROOT)/../../vendor",
 				);
 				PRODUCT_NAME = RealmJS;
 				SKIP_INSTALL = YES;
@@ -1034,9 +1028,9 @@
 			buildSettings = {
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(SRCROOT)/src/object-store/external/pegtl",
-					"$(SRCROOT)/vendor",
-					"$(SRCROOT)/src/object-store/src",
+					"$(SRCROOT)/../object-store/external/pegtl",
+					"$(SRCROOT)/../object-store/src",
+					"$(SRCROOT)/../../vendor",
 				);
 				PRODUCT_NAME = RealmJS;
 				SKIP_INSTALL = YES;
@@ -1048,9 +1042,9 @@
 			buildSettings = {
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(SRCROOT)/src/object-store/external/pegtl",
-					"$(SRCROOT)/vendor",
-					"$(SRCROOT)/src/object-store/src",
+					"$(SRCROOT)/../object-store/external/pegtl",
+					"$(SRCROOT)/../object-store/src",
+					"$(SRCROOT)/../../vendor",
 				);
 				PRODUCT_NAME = RealmJS;
 				SKIP_INSTALL = YES;

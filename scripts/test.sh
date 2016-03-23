@@ -87,6 +87,7 @@ case "$TARGET" in
   npm run jsdoc
   ;;
 "realmjs")
+  pushd src/ios
   xcodebuild -scheme RealmJS -configuration "$CONFIGURATION" -sdk iphonesimulator $DESTINATION build test
   ;;
 "react-tests")

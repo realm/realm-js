@@ -77,7 +77,7 @@
 		F60690181CA2766F0003FB26 /* RealmReact.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = RealmReact.mm; sourceTree = "<group>"; };
 		F606901F1CA277410003FB26 /* RealmAnalytics.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RealmAnalytics.h; sourceTree = "<group>"; };
 		F60690201CA277410003FB26 /* RealmAnalytics.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = RealmAnalytics.mm; sourceTree = "<group>"; };
-		F60690231CA277CC0003FB26 /* RealmJS.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RealmJS.xcodeproj; path = ../../RealmJS.xcodeproj; sourceTree = "<group>"; };
+		F60690231CA277CC0003FB26 /* RealmJS.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RealmJS.xcodeproj; path = ../../src/ios/RealmJS.xcodeproj; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
