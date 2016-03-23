@@ -41,13 +41,12 @@ has_no_untracked_files || die 'Publishing requires no untracked files.'
 # Make sure all npm modules are installed and updated.
 npm install > /dev/null
 
-# Get version in package.json and check if it looks semver compliant.
+# Get version in package.json (stripping prerelease qualifier for the "release" version).
 VERSION=$(npm --silent run get-version)
-node_modules/.bin/semver "$VERSION" > /dev/null || die "Invalid version number: $VERSION"
+RELEASE_VERSION="${VERSION%%-*}"
 
 # Update Xcode project to that version and make sure nothing changed.
-RELEASE_VERSION="${VERSION%%-*}"
-xcrun agvtool new-version "$RELEASE_VERSION" > /dev/null
+npm --silent run set-version -- --force "$VERSION"
 has_clean_worktree || die "Version $RELEASE_VERSION was not properly set on Xcode project."
 
 # Make sure the CHANGELOG has been updated.
