@@ -408,34 +408,34 @@ TEST_CASE("[index_set] erase_at()") {
     }
 }
 
-TEST_CASE("[index_set] erase_and_unshfit()") {
+TEST_CASE("[index_set] erase_or_unshift()") {
     realm::IndexSet set;
 
     SECTION("removes the given index") {
         set = {1, 2};
-        set.erase_and_unshift(2);
+        set.erase_or_unshift(2);
         REQUIRE_INDICES(set, 1);
     }
 
     SECTION("shifts indexes after the given index") {
         set = {1, 5};
-        set.erase_and_unshift(2);
+        set.erase_or_unshift(2);
         REQUIRE_INDICES(set, 1, 4);
     }
 
     SECTION("returns npos for indices in the set") {
         set = {1, 3, 5};
-        REQUIRE(realm::IndexSet(set).erase_and_unshift(1) == realm::IndexSet::npos);
-        REQUIRE(realm::IndexSet(set).erase_and_unshift(3) == realm::IndexSet::npos);
-        REQUIRE(realm::IndexSet(set).erase_and_unshift(5) == realm::IndexSet::npos);
+        REQUIRE(realm::IndexSet(set).erase_or_unshift(1) == realm::IndexSet::npos);
+        REQUIRE(realm::IndexSet(set).erase_or_unshift(3) == realm::IndexSet::npos);
+        REQUIRE(realm::IndexSet(set).erase_or_unshift(5) == realm::IndexSet::npos);
     }
 
     SECTION("returns the number of indices in the set before the index for ones not in the set") {
         set = {1, 3, 5, 6};
-        REQUIRE(realm::IndexSet(set).erase_and_unshift(0) == 0);
-        REQUIRE(realm::IndexSet(set).erase_and_unshift(2) == 1);
-        REQUIRE(realm::IndexSet(set).erase_and_unshift(4) == 2);
-        REQUIRE(realm::IndexSet(set).erase_and_unshift(7) == 3);
+        REQUIRE(realm::IndexSet(set).erase_or_unshift(0) == 0);
+        REQUIRE(realm::IndexSet(set).erase_or_unshift(2) == 1);
+        REQUIRE(realm::IndexSet(set).erase_or_unshift(4) == 2);
+        REQUIRE(realm::IndexSet(set).erase_or_unshift(7) == 3);
     }
 
 }
