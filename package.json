@@ -47,12 +47,24 @@
     "test": "scripts/test.sh",
     "prepublish": "scripts/prepublish.sh"
   },
+  "dependencies": {
+    "rnpm": "1.5.2",
+    "xcode": "0.8.4"
+  },
   "devDependencies": {
     "babel-eslint": "^6.0.0-beta.6",
     "eslint": "^2.4.0",
     "eslint-plugin-react": "^4.2.3",
     "jsdoc": "^3.4.0",
     "semver": "^5.1.0"
+  },
+  "rnpm": {
+    "commands": {
+      "postlink": "node_modules/realm/scripts/rnpm-postlink.js"
+    },
+    "ios": {
+      "project": "react-native/ios/RealmReact.xcodeproj"
+    }
   },
   "engines": {
     "node": ">=4"
