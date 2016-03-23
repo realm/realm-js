@@ -21,7 +21,7 @@
 #include <future>
 
 namespace realm {
-class ClientHistory;
+class Replication;
 
 namespace _impl {
 class RealmCoordinator;
@@ -38,7 +38,7 @@ private:
     RealmCoordinator& m_parent;
 
     // A shared group used to listen for changes
-    std::unique_ptr<ClientHistory> m_history;
+    std::unique_ptr<Replication> m_history;
     SharedGroup m_sg;
 
     // The listener thread
