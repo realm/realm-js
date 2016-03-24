@@ -16,35 +16,35 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#include "cached_realm.hpp"
+#include "impl/weak_realm_notifier.hpp"
 
 #include <atomic>
 
 namespace realm {
 namespace _impl {
 
-CachedRealm::CachedRealm(const std::shared_ptr<Realm>& realm, bool cache)
-: CachedRealmBase(realm, cache)
+WeakRealmNotifier::WeakRealmNotifier(const std::shared_ptr<Realm>& realm, bool cache)
+: WeakRealmNotifierBase(realm, cache)
 {
 }
 
-CachedRealm::CachedRealm(CachedRealm&& rgt)
-: CachedRealmBase(std::move(rgt))
+WeakRealmNotifier::WeakRealmNotifier(WeakRealmNotifier&& rgt)
+: WeakRealmNotifierBase(std::move(rgt))
 , m_handler(rgt.m_handler)
 {
     rgt.m_handler = nullptr;
 }
 
-CachedRealm& CachedRealm::operator=(CachedRealm&& rgt)
+WeakRealmNotifier& WeakRealmNotifier::operator=(WeakRealmNotifier&& rgt)
 {
-    CachedRealmBase::operator=(std::move(rgt));
+    WeakRealmNotifierBase::operator=(std::move(rgt));
     m_handler = rgt.m_handler;
     rgt.m_handler = nullptr;
 
     return *this;
 }
 
-CachedRealm::~CachedRealm()
+WeakRealmNotifier::~WeakRealmNotifier()
 {
     if (m_handler) {
         destroy_handler(m_handler);
@@ -52,7 +52,7 @@ CachedRealm::~CachedRealm()
     }
 }
 
-void CachedRealm::set_auto_refresh(bool auto_refresh)
+void WeakRealmNotifier::set_auto_refresh(bool auto_refresh)
 {
     if (auto_refresh) {
         auto locked_ptr = new std::shared_ptr<Realm> {realm()};
@@ -60,7 +60,7 @@ void CachedRealm::set_auto_refresh(bool auto_refresh)
     }
 }
 
-void CachedRealm::notify()
+void WeakRealmNotifier::notify()
 {
     notify_handler(m_handler);
 }

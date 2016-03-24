@@ -205,7 +205,6 @@ void RealmCoordinator::clear_cache()
     }
 }
 
-<<<<<<< HEAD
 void RealmCoordinator::set_auto_refresh_for(Realm* realm, bool auto_refresh)
 {
     for (auto& cached_realm : m_cached_realms) {
@@ -214,7 +213,9 @@ void RealmCoordinator::set_auto_refresh_for(Realm* realm, bool auto_refresh)
         }
 
         cached_realm.set_auto_refresh(auto_refresh);
-=======
+    }
+}
+
 void RealmCoordinator::clear_all_caches()
 {
     std::vector<std::weak_ptr<RealmCoordinator>> to_clear;
@@ -228,7 +229,6 @@ void RealmCoordinator::clear_all_caches()
         if (auto coordinator = weak_coordinator.lock()) {
             coordinator->clear_cache();
         }
->>>>>>> master
     }
 }
 

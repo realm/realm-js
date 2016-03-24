@@ -16,23 +16,23 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#include "impl/cached_realm_base.hpp"
+#include "impl/weak_realm_notifier_base.hpp"
 
 namespace realm {
 class Realm;
 
 namespace _impl {
 
-class CachedRealm : public CachedRealmBase {
+class WeakRealmNotifier : public WeakRealmNotifierBase {
 public:
-    CachedRealm(const std::shared_ptr<Realm>& realm, bool cache);
-    ~CachedRealm();
+    WeakRealmNotifier(const std::shared_ptr<Realm>& realm, bool cache);
+    ~WeakRealmNotifier();
 
-    CachedRealm(CachedRealm&&);
-    CachedRealm& operator=(CachedRealm&&);
+    WeakRealmNotifier(WeakRealmNotifier&&);
+    WeakRealmNotifier& operator=(WeakRealmNotifier&&);
 
-    CachedRealm(const CachedRealm&) = delete;
-    CachedRealm& operator=(const CachedRealm&) = delete;
+    WeakRealmNotifier(const WeakRealmNotifier&) = delete;
+    WeakRealmNotifier& operator=(const WeakRealmNotifier&) = delete;
 
     // Register  or unregister the handler on the looper so we will react to refresh notifications
     void set_auto_refresh(bool auto_refresh);

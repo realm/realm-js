@@ -171,7 +171,7 @@ void ExternalCommitHelper::listen()
       if (ev.data.u32 == (uint32_t)m_shutdown_read_fd) {
         return;
       }
-      assert(ev.data == (uint32_t)m_notify_fd);
+      assert(ev.data.u32 == (uint32_t)m_notify_fd);
 
       m_parent.on_change();
     }
