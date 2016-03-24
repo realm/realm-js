@@ -49,6 +49,13 @@ static std::vector<std::string> valid_queries = {
     "0 contains 0",
     "0 BeGiNsWiTh 0",
     "0 ENDSWITH 0",
+    "contains contains 'contains'",
+    "beginswith beginswith 'beginswith'",
+    "endswith endswith 'endswith'",
+    "NOT NOT != 'NOT'",
+    "AND == 'AND' AND OR == 'OR'",
+    // FIXME - bug
+    // "truepredicate == 'falsepredicate' && truepredicate",
 
     // atoms/groups
     "(0=0)",

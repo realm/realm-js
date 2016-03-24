@@ -29,6 +29,17 @@ namespace realm {
 namespace query_builder {
 using namespace parser;
 
+template<typename T>
+T stot(const std::string s) {
+    std::istringstream iss(s);
+    T value;
+    iss >> value;
+    if (iss.fail()) {
+        throw std::invalid_argument("Cannot convert string '" + s + "'");
+    }
+    return value;
+}
+
 // check a precondition and throw an exception if it is not met
 // this should be used iff the condition being false indicates a bug in the caller
 // of the function checking its preconditions
@@ -272,12 +283,12 @@ void add_link_constraint_to_query(realm::Query &query,
 
 auto link_argument(const PropertyExpression &propExpr, const parser::Expression &argExpr, Arguments &args)
 {
-    return args.object_index_for_argument(std::stoi(argExpr.s));
+    return args.object_index_for_argument(stot<int>(argExpr.s));
 }
 
 auto link_argument(const parser::Expression &argExpr, const PropertyExpression &propExpr, Arguments &args)
 {
-    return args.object_index_for_argument(std::stoi(argExpr.s));
+    return args.object_index_for_argument(stot<int>(argExpr.s));
 }
 
 
@@ -299,7 +310,7 @@ struct ValueGetter<DateTime, TableGetter> {
         if (value.type != parser::Expression::Type::Argument) {
             throw std::runtime_error("You must pass in a date argument to compare");
         }
-        DateTime dt = args.datetime_for_argument(std::stoi(value.s));
+        DateTime dt = args.datetime_for_argument(stot<int>(value.s));
         return dt.get_datetime();
     }
 };
@@ -309,7 +320,7 @@ struct ValueGetter<bool, TableGetter> {
     static bool convert(TableGetter&&, const parser::Expression & value, Arguments &args)
     {
         if (value.type == parser::Expression::Type::Argument) {
-            return args.bool_for_argument(std::stoi(value.s));
+            return args.bool_for_argument(stot<int>(value.s));
         }
         if (value.type != parser::Expression::Type::True && value.type != parser::Expression::Type::False) {
             throw std::runtime_error("Attempting to compare bool property to a non-bool value");
@@ -323,9 +334,9 @@ struct ValueGetter<Double, TableGetter> {
     static Double convert(TableGetter&&, const parser::Expression & value, Arguments &args)
     {
         if (value.type == parser::Expression::Type::Argument) {
-            return args.double_for_argument(std::stoi(value.s));
+            return args.double_for_argument(stot<int>(value.s));
         }
-        return std::stod(value.s);
+        return stot<double>(value.s);
     }
 };
 
@@ -334,9 +345,9 @@ struct ValueGetter<Float, TableGetter> {
     static Float convert(TableGetter&&, const parser::Expression & value, Arguments &args)
     {
         if (value.type == parser::Expression::Type::Argument) {
-            return args.float_for_argument(std::stoi(value.s));
+            return args.float_for_argument(stot<int>(value.s));
         }
-        return std::stof(value.s);
+        return stot<float>(value.s);
     }
 };
 
@@ -345,9 +356,9 @@ struct ValueGetter<Int, TableGetter> {
     static Int convert(TableGetter&&, const parser::Expression & value, Arguments &args)
     {
         if (value.type == parser::Expression::Type::Argument) {
-            return args.long_for_argument(std::stoi(value.s));
+            return args.long_for_argument(stot<int>(value.s));
         }
-        return std::stoll(value.s);
+        return stot<long long>(value.s);
     }
 };
 
@@ -356,7 +367,7 @@ struct ValueGetter<String, TableGetter> {
     static std::string convert(TableGetter&&, const parser::Expression & value, Arguments &args)
     {
         if (value.type == parser::Expression::Type::Argument) {
-            return args.string_for_argument(std::stoi(value.s));
+            return args.string_for_argument(stot<int>(value.s));
         }
         if (value.type != parser::Expression::Type::String) {
             throw std::runtime_error("Attempting to compare String property to a non-String value");
@@ -370,7 +381,7 @@ struct ValueGetter<Binary, TableGetter> {
     static std::string convert(TableGetter&&, const parser::Expression & value, Arguments &args)
     {
         if (value.type == parser::Expression::Type::Argument) {
-            return args.binary_for_argument(std::stoi(value.s));
+            return args.binary_for_argument(stot<int>(value.s));
         }
         throw std::runtime_error("Binary properties must be compared against a binary argument.");
     }
@@ -451,7 +462,7 @@ void update_query_with_predicate(Query &query, const Predicate &pred, Arguments 
     if (pred.negate) {
         query.Not();
     }
-    
+
     switch (pred.type) {
         case Predicate::Type::And:
             query.group();
@@ -463,7 +474,7 @@ void update_query_with_predicate(Query &query, const Predicate &pred, Arguments 
             }
             query.end_group();
             break;
-            
+
         case Predicate::Type::Or:
             query.group();
             for (auto &sub : pred.cpnd.sub_predicates) {
@@ -475,7 +486,7 @@ void update_query_with_predicate(Query &query, const Predicate &pred, Arguments 
             }
             query.end_group();
             break;
-            
+
         case Predicate::Type::Comparison: {
             add_comparison_to_query(query, pred, arguments, schema, type);
             break;
@@ -483,11 +494,11 @@ void update_query_with_predicate(Query &query, const Predicate &pred, Arguments 
         case Predicate::Type::True:
             query.and_query(std::unique_ptr<realm::Expression>(new TrueExpression));
             break;
-            
+
         case Predicate::Type::False:
             query.and_query(std::unique_ptr<realm::Expression>(new FalseExpression));
             break;
-            
+
         default:
             throw std::runtime_error("Invalid predicate type");
     }
@@ -496,7 +507,7 @@ void update_query_with_predicate(Query &query, const Predicate &pred, Arguments 
 void apply_predicate(Query &query, const Predicate &predicate, Arguments &arguments, const Schema &schema, const std::string &objectType)
 {
     update_query_with_predicate(query, predicate, arguments, schema, objectType);
-    
+
     // Test the constructed query in core
     std::string validateMessage = query.validate();
     precondition(validateMessage.empty(), validateMessage.c_str());

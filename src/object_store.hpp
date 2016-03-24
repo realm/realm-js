@@ -19,13 +19,15 @@
 #ifndef REALM_OBJECT_STORE_HPP
 #define REALM_OBJECT_STORE_HPP
 
-#include "object_schema.hpp"
+#include "schema.hpp"
 #include "property.hpp"
 
 #include <functional>
 
 #include <realm/group.hpp>
 #include <realm/link_view.hpp>
+
+#include <sstream>
 
 namespace realm {
     class ObjectSchemaValidationException;
@@ -50,7 +52,7 @@ namespace realm {
         // determines if a realm with the given old schema needs non-migration
         // changes to make it compatible with the given target schema
         static bool needs_update(Schema const& old_schema, Schema const& schema);
-        
+
         // updates a Realm from old_schema to the given target schema, creating and updating tables as needed
         // passed in target schema is updated with the correct column mapping
         // optionally runs migration function if schema is out of date

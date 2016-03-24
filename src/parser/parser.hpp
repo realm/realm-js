@@ -28,8 +28,9 @@ class Schema;
 namespace parser {
 struct Expression
 {
-    enum class Type { None, Number, String, KeyPath, Argument, True, False } type = Type::None;
+    enum class Type { None, Number, String, KeyPath, Argument, True, False } type;
     std::string s;
+    Expression(Type t = Type::None, std::string s = "") : type(t), s(s) {}
 };
 
 struct Predicate
@@ -60,7 +61,7 @@ struct Predicate
     struct Comparison
     {
         Operator op = Operator::None;
-        Expression expr[2];
+        Expression expr[2] = {{Expression::Type::None, ""}, {Expression::Type::None, ""}};
     };
 
     struct Compound

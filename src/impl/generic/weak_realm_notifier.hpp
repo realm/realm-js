@@ -16,36 +16,22 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#include "impl/cached_realm_base.hpp"
-
-#include <CoreFoundation/CFRunLoop.h>
+#include "impl/weak_realm_notifier_base.hpp"
 
 namespace realm {
 class Realm;
 
 namespace _impl {
 
-class CachedRealm : public CachedRealmBase {
+class WeakRealmNotifier : public WeakRealmNotifierBase {
 public:
-    CachedRealm(const std::shared_ptr<Realm>& realm, bool cache);
-    ~CachedRealm();
+    using WeakRealmNotifierBase::WeakRealmNotifierBase;
 
-    CachedRealm(CachedRealm&&);
-    CachedRealm& operator=(CachedRealm&&);
-
-    CachedRealm(const CachedRealm&) = delete;
-    CachedRealm& operator=(const CachedRealm&) = delete;
-
-    // Noop for this implementation
+    // Do nothing, as these can't be implemented portably
     void set_auto_refresh(bool auto_refresh) { }
-
-    // Asyncronously call notify() on the Realm on the appropriate thread
-    void notify();
-
-private:
-    CFRunLoopRef m_runloop;
-    CFRunLoopSourceRef m_signal;
+    void notify() { }
 };
 
 } // namespace _impl
 } // namespace realm
+
