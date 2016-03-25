@@ -31,6 +31,26 @@
 using RJSAccessor = realm::NativeAccessor<JSValueRef, JSContextRef>;
 using namespace realm;
 
+
+void RJSSetReturnUndefined(JSContextRef ctx, JSValueRef &returnObject) {
+    returnObject = JSValueMakeUndefined(ctx);
+}
+
+template<typename T>
+void RJSSetReturnNumber(JSContextRef ctx, JSValueRef &returnObject, T number) {
+    returnObject = JSValueMakeNumber(ctx, number);
+}
+
+void RJSSetReturnArray(JSContextRef ctx, size_t count, const JSValueRef *objects, JSValueRef &returnObject) {
+    returnObject = JSObjectMakeArray(ctx, count, objects, NULL);
+}
+
+void RJSSetException(JSContextRef ctx, JSValueRef * &exceptionObject, std::exception &exception) {
+    if (exceptionObject) {
+        *exceptionObject = RJSMakeError(ctx, exception);
+    }
+}
+
 JSValueRef ListGetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef* jsException) {
     try {
         List *list = RJSGetInternal<List *>(object);
@@ -93,84 +113,80 @@ void ListPropertyNames(JSContextRef ctx, JSObjectRef object, JSPropertyNameAccum
     }
 }
 
-JSValueRef ListPush(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) {
+template<typename ContextType, typename ThisType, typename ArgumentsType, typename ReturnType, typename ExceptionType>
+void ListPush(ContextType ctx, ThisType thisObject, size_t argumentCount, const ArgumentsType &arguments, ReturnType &returnObject, ExceptionType &exceptionObject) {
     try {
         List *list = RJSGetInternal<List *>(thisObject);
         RJSValidateArgumentCountIsAtLeast(argumentCount, 1);
         for (size_t i = 0; i < argumentCount; i++) {
             list->add(ctx, arguments[i]);
         }
-        return JSValueMakeNumber(ctx, list->size());
+        RJSSetReturnNumber(ctx, returnObject, list->size());
     }
     catch (std::exception &exp) {
-        if (jsException) {
-            *jsException = RJSMakeError(ctx, exp);
-        }
+        RJSSetException(ctx, exceptionObject, exp);
     }
-    return NULL;
 }
 
-JSValueRef ListPop(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) {
+template<typename ContextType, typename ThisType, typename ArgumentsType, typename ReturnType, typename ExceptionType>
+void ListPop(ContextType ctx, ThisType thisObject, size_t argumentCount, const ArgumentsType &arguments, ReturnType &returnObject, ExceptionType &exceptionObject) {
     try {
         List *list = RJSGetInternal<List *>(thisObject);
         RJSValidateArgumentCount(argumentCount, 0);
-
+        
         size_t size = list->size();
         if (size == 0) {
             list->verify_in_transaction();
-            return JSValueMakeUndefined(ctx);
+            RJSSetReturnUndefined(ctx, returnObject);
         }
-        size_t index = size - 1;
-        JSValueRef obj = RJSObjectCreate(ctx, Object(list->get_realm(), list->get_object_schema(), list->get(index)));
-        list->remove(index);
-        return obj;
-    }
-    catch (std::exception &exp) {
-        if (jsException) {
-            *jsException = RJSMakeError(ctx, exp);
+        else {
+            size_t index = size - 1;
+            returnObject = RJSObjectCreate(ctx, Object(list->get_realm(), list->get_object_schema(), list->get(index)));
+            list->remove(index);
         }
     }
-    return NULL;
+    catch (std::exception &exception) {
+        RJSSetException(ctx, exceptionObject, exception);
+    }
 }
 
-JSValueRef ListUnshift(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) {
+
+template<typename ContextType, typename ThisType, typename ArgumentsType, typename ReturnType, typename ExceptionType>
+void ListUnshift(ContextType ctx, ThisType thisObject, size_t argumentCount, const ArgumentsType &arguments, ReturnType &returnObject, ExceptionType &exceptionObject) {
     try {
         List *list = RJSGetInternal<List *>(thisObject);
         RJSValidateArgumentCountIsAtLeast(argumentCount, 1);
         for (size_t i = 0; i < argumentCount; i++) {
             list->insert(ctx, arguments[i], i);
         }
-        return JSValueMakeNumber(ctx, list->size());
+        RJSSetReturnNumber(ctx, returnObject, list->size());
     }
     catch (std::exception &exp) {
-        if (jsException) {
-            *jsException = RJSMakeError(ctx, exp);
-        }
+        RJSSetException(ctx, exceptionObject, exp);
     }
-    return NULL;
 }
 
-JSValueRef ListShift(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) {
+template<typename ContextType, typename ThisType, typename ArgumentsType, typename ReturnType, typename ExceptionType>
+void ListShift(ContextType ctx, ThisType thisObject, size_t argumentCount, const ArgumentsType &arguments, ReturnType &returnObject, ExceptionType &exceptionObject) {
     try {
         List *list = RJSGetInternal<List *>(thisObject);
         RJSValidateArgumentCount(argumentCount, 0);
         if (list->size() == 0) {
             list->verify_in_transaction();
-            return JSValueMakeUndefined(ctx);
+            RJSSetReturnUndefined(ctx, returnObject);
         }
-        JSValueRef obj = RJSObjectCreate(ctx, Object(list->get_realm(), list->get_object_schema(), list->get(0)));
-        list->remove(0);
-        return obj;
+        else {
+            returnObject = RJSObjectCreate(ctx, Object(list->get_realm(), list->get_object_schema(), list->get(0)));
+            list->remove(0);
+        }
     }
     catch (std::exception &exp) {
-        if (jsException) {
-            *jsException = RJSMakeError(ctx, exp);
-        }
+        RJSSetException(ctx, exceptionObject, exp);
     }
-    return NULL;
 }
 
-JSValueRef ListSplice(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) {
+template<typename ContextType, typename ThisType, typename ArgumentsType, typename ReturnType, typename ExceptionType>
+void ListSplice(ContextType ctx, ThisType thisObject, size_t argumentCount, const ArgumentsType &arguments, ReturnType &returnObject, ExceptionType &exceptionObject) {
     try {
         List *list = RJSGetInternal<List *>(thisObject);
         size_t size = list->size();
@@ -190,7 +206,7 @@ JSValueRef ListSplice(JSContextRef ctx, JSObjectRef function, JSObjectRef thisOb
             remove = std::min<long>(remove, size - index);
         }
 
-        std::vector<JSObjectRef> removedObjects(remove);
+        std::vector<ReturnType> removedObjects(remove);
         for (size_t i = 0; i < remove; i++) {
             removedObjects[i] = RJSObjectCreate(ctx, Object(list->get_realm(), list->get_object_schema(), list->get(index)));
             list->remove(index);
@@ -198,62 +214,69 @@ JSValueRef ListSplice(JSContextRef ctx, JSObjectRef function, JSObjectRef thisOb
         for (size_t i = 2; i < argumentCount; i++) {
             list->insert(ctx, arguments[i], index + i - 2);
         }
-        return JSObjectMakeArray(ctx, remove, removedObjects.data(), jsException);
+        RJSSetReturnArray(ctx, remove, removedObjects.data(), returnObject);
     }
     catch (std::exception &exp) {
-        if (jsException) {
-            *jsException = RJSMakeError(ctx, exp);
-        }
+        RJSSetException(ctx, exceptionObject, exp);
     }
-    return NULL;
 }
 
-JSValueRef ListStaticResults(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) {
+
+template<typename ContextType, typename ThisType, typename ArgumentsType, typename ReturnType, typename ExceptionType>
+void ListStaticResults(ContextType ctx, ThisType thisObject, size_t argumentCount, const ArgumentsType &arguments, ReturnType &returnObject, ExceptionType &exceptionObject) {
     try {
         List *list = RJSGetInternal<List *>(thisObject);
         RJSValidateArgumentCount(argumentCount, 0);
-
-        return RJSResultsCreate(ctx, list->get_realm(), list->get_object_schema(), std::move(list->get_query()), false);
+        returnObject = RJSResultsCreate(ctx, list->get_realm(), list->get_object_schema(), std::move(list->get_query()), false);
     }
     catch (std::exception &exp) {
-        if (jsException) {
-            *jsException = RJSMakeError(ctx, exp);
-        }
+        RJSSetException(ctx, exceptionObject, exp);
     }
-    return NULL;
 }
 
-JSValueRef ListFiltered(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) {
+template<typename ContextType, typename ThisType, typename ArgumentsType, typename ReturnType, typename ExceptionType>
+void ListFiltered(ContextType ctx, ThisType thisObject, size_t argumentCount, const ArgumentsType &arguments, ReturnType &returnObject, ExceptionType &exceptionObject) {
     try {
         List *list = RJSGetInternal<List *>(thisObject);
         RJSValidateArgumentCountIsAtLeast(argumentCount, 1);
 
         SharedRealm sharedRealm = *RJSGetInternal<SharedRealm *>(thisObject);
-        return RJSResultsCreateFiltered(ctx, sharedRealm, list->get_object_schema(), std::move(list->get_query()), argumentCount, arguments);
+        returnObject = RJSResultsCreateFiltered(ctx, sharedRealm, list->get_object_schema(), std::move(list->get_query()), argumentCount, arguments);
     }
     catch (std::exception &exp) {
-        if (jsException) {
-            *jsException = RJSMakeError(ctx, exp);
-        }
+        RJSSetException(ctx, exceptionObject, exp);
     }
-    return NULL;
 }
 
-JSValueRef ListSorted(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) {
+template<typename ContextType, typename ThisType, typename ArgumentsType, typename ReturnType, typename ExceptionType>
+void ListSorted(ContextType ctx, ThisType thisObject, size_t argumentCount, const ArgumentsType &arguments, ReturnType &returnObject, ExceptionType &exceptionObject) {
     try {
         List *list = RJSGetInternal<List *>(thisObject);
         RJSValidateArgumentRange(argumentCount, 1, 2);
 
         SharedRealm sharedRealm = *RJSGetInternal<SharedRealm *>(thisObject);
-        return RJSResultsCreateSorted(ctx, sharedRealm, list->get_object_schema(), std::move(list->get_query()), argumentCount, arguments);
+        returnObject = RJSResultsCreateSorted(ctx, sharedRealm, list->get_object_schema(), std::move(list->get_query()), argumentCount, arguments);
     }
     catch (std::exception &exp) {
-        if (jsException) {
-            *jsException = RJSMakeError(ctx, exp);
-        }
+        RJSSetException(ctx, exceptionObject, exp);
     }
-    return NULL;
 }
+
+#define LIST_METHOD(METHOD_NAME) \
+JSValueRef METHOD_NAME(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) { \
+    JSValueRef returnObject = NULL; \
+    METHOD_NAME(ctx, thisObject, argumentCount, arguments, returnObject, jsException); \
+    return returnObject; \
+}
+
+LIST_METHOD(ListPush)
+LIST_METHOD(ListPop)
+LIST_METHOD(ListUnshift)
+LIST_METHOD(ListShift)
+LIST_METHOD(ListSplice)
+LIST_METHOD(ListStaticResults)
+LIST_METHOD(ListFiltered)
+LIST_METHOD(ListSorted)
 
 JSObjectRef RJSListCreate(JSContextRef ctx, List &list) {
     return RJSWrapObject<List *>(ctx, RJSListClass(), new List(list));
