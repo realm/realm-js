@@ -90,7 +90,7 @@ static bool apply_changes(fuzzer::CommandFile& commands, fuzzer::RealmState& sta
     return false;
 }
 
-static void verify(CollectionChangeIndices const& changes, std::vector<int64_t> values, fuzzer::RealmState& state)
+static auto verify(CollectionChangeIndices const& changes, std::vector<int64_t> values, fuzzer::RealmState& state)
 {
     auto tv = tableview(state);
 
@@ -130,6 +130,15 @@ static void verify(CollectionChangeIndices const& changes, std::vector<int64_t> 
             abort();
         }
     }
+
+    return values;
+}
+
+static void verify_no_op(CollectionChangeIndices const& changes, std::vector<int64_t> values, fuzzer::RealmState& state)
+{
+    auto new_values = verify(changes, values, state);
+    if (!std::equal(begin(values), end(values), begin(new_values), end(new_values)))
+        abort();
 }
 
 static void test(Realm::Config const& config, SharedRealm& r, SharedRealm& r2, std::istream& input_stream)
@@ -189,11 +198,15 @@ static void test(Realm::Config const& config, SharedRealm& r, SharedRealm& r2, s
     bool expect_notification = apply_changes(command, state2);
     state.coordinator.on_change(); r->notify();
 
-    if (notification_calls != 1 + expect_notification) {
-        abort();
+    if (expect_notification) {
+        if (notification_calls != 2)
+            abort();
+        verify(changes, initial_values, state);
     }
-
-    verify(changes, initial_values, state);
+    else {
+        if (notification_calls == 2)
+            verify_no_op(changes, initial_values, state);
+    }
 }
 
 int main(int argc, char** argv) {
