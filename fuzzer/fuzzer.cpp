@@ -20,8 +20,14 @@
 
 using namespace realm;
 
+#ifndef FUZZ_SORTED
 #define FUZZ_SORTED 0
-#define FUZZ_LINKVIEW 1
+#endif
+
+#ifndef FUZZ_LINKVIEW
+#define FUZZ_LINKVIEW 0
+#endif
+
 #define FUZZ_LOG 0
 
 // Read from a fd until eof into a string
