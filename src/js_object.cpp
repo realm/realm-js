@@ -20,7 +20,7 @@
 #include "js_object.hpp"
 #include "js_results.hpp"
 #include "js_schema.hpp"
-#include "js_list.hpp"
+#include "jsc_list.hpp"
 #include "js_realm.hpp"
 
 #include "object_store.hpp"
@@ -92,8 +92,6 @@ JSObjectRef RJSObjectCreate(JSContextRef ctx, Object object) {
 
     return jsObject;
 }
-
-extern JSObjectRef RJSDictForPropertyArray(JSContextRef ctx, const ObjectSchema &object_schema, JSObjectRef array);
 
 namespace realm {
 

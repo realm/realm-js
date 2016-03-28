@@ -20,6 +20,7 @@
 		029048201C0428DF00ABDED4 /* rpc.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 029048101C0428DF00ABDED4 /* rpc.hpp */; settings = {ATTRIBUTES = (Public, ); }; };
 		029048371C042A3C00ABDED4 /* platform.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 029048351C042A3C00ABDED4 /* platform.hpp */; };
 		0290483B1C042EE200ABDED4 /* RealmJS.h in Headers */ = {isa = PBXBuildFile; fileRef = 0290483A1C042EE200ABDED4 /* RealmJS.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		02AFE5891CA9B23400953DA3 /* jsc_list.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02AFE5871CA9B23400953DA3 /* jsc_list.cpp */; };
 		02B58CCE1AE99D4D009B348C /* JavaScriptCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 02B58CCD1AE99D4D009B348C /* JavaScriptCore.framework */; };
 		02D8D1F71B601984006DB49D /* JavaScriptCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 02B58CCD1AE99D4D009B348C /* JavaScriptCore.framework */; };
 		02F59EBF1C88F17D007F774C /* index_set.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02F59EAF1C88F17D007F774C /* index_set.cpp */; };
@@ -38,7 +39,6 @@
 		02F59EE31C88F2BB007F774C /* transact_log_handler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02F59EDD1C88F2BB007F774C /* transact_log_handler.cpp */; };
 		F61378791C18EAC5008BFC51 /* js in Resources */ = {isa = PBXBuildFile; fileRef = F61378781C18EAAC008BFC51 /* js */; };
 		F63FF2C61C12469E00B3B8E0 /* js_init.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 029048011C0428DF00ABDED4 /* js_init.cpp */; };
-		F63FF2C71C12469E00B3B8E0 /* js_list.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 029048031C0428DF00ABDED4 /* js_list.cpp */; };
 		F63FF2C81C12469E00B3B8E0 /* js_object.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 029048051C0428DF00ABDED4 /* js_object.cpp */; };
 		F63FF2C91C12469E00B3B8E0 /* js_realm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 029048071C0428DF00ABDED4 /* js_realm.cpp */; };
 		F63FF2CA1C12469E00B3B8E0 /* js_results.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 029048091C0428DF00ABDED4 /* js_results.cpp */; };
@@ -106,7 +106,6 @@
 		0270BC7B1B7D020100010E03 /* RealmJSTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = RealmJSTests.mm; path = ios/RealmJSTests.mm; sourceTree = "<group>"; };
 		029048011C0428DF00ABDED4 /* js_init.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = js_init.cpp; sourceTree = "<group>"; };
 		029048021C0428DF00ABDED4 /* js_init.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = js_init.h; sourceTree = "<group>"; };
-		029048031C0428DF00ABDED4 /* js_list.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = js_list.cpp; sourceTree = "<group>"; };
 		029048041C0428DF00ABDED4 /* js_list.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = js_list.hpp; sourceTree = "<group>"; };
 		029048051C0428DF00ABDED4 /* js_object.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = js_object.cpp; sourceTree = "<group>"; };
 		029048061C0428DF00ABDED4 /* js_object.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = js_object.hpp; sourceTree = "<group>"; };
@@ -124,6 +123,8 @@
 		029048381C042A8F00ABDED4 /* platform.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = platform.mm; sourceTree = "<group>"; };
 		0290483A1C042EE200ABDED4 /* RealmJS.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RealmJS.h; sourceTree = "<group>"; };
 		02A3C7A41BC4341500B1A7BE /* libc++.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.tbd"; path = "usr/lib/libc++.tbd"; sourceTree = SDKROOT; };
+		02AFE5871CA9B23400953DA3 /* jsc_list.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = jsc_list.cpp; path = jsc/jsc_list.cpp; sourceTree = "<group>"; };
+		02AFE5881CA9B23400953DA3 /* jsc_list.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = jsc_list.hpp; path = jsc/jsc_list.hpp; sourceTree = "<group>"; };
 		02B58CB11AE99CEC009B348C /* RealmJS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = RealmJS.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		02B58CBC1AE99CEC009B348C /* RealmJSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RealmJSTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		02B58CCD1AE99D4D009B348C /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
@@ -247,7 +248,6 @@
 				029048021C0428DF00ABDED4 /* js_init.h */,
 				F6CB30FC1C8EDD760070EF3F /* js_collection.cpp */,
 				F6CB30FD1C8EDD760070EF3F /* js_collection.hpp */,
-				029048031C0428DF00ABDED4 /* js_list.cpp */,
 				029048041C0428DF00ABDED4 /* js_list.hpp */,
 				029048051C0428DF00ABDED4 /* js_object.cpp */,
 				029048061C0428DF00ABDED4 /* js_object.hpp */,
@@ -259,6 +259,8 @@
 				0290480C1C0428DF00ABDED4 /* js_schema.hpp */,
 				0290480D1C0428DF00ABDED4 /* js_util.cpp */,
 				0290480E1C0428DF00ABDED4 /* js_util.hpp */,
+				02AFE5871CA9B23400953DA3 /* jsc_list.cpp */,
+				02AFE5881CA9B23400953DA3 /* jsc_list.hpp */,
 				029048351C042A3C00ABDED4 /* platform.hpp */,
 				0290480F1C0428DF00ABDED4 /* rpc.cpp */,
 				029048101C0428DF00ABDED4 /* rpc.hpp */,
@@ -652,10 +654,10 @@
 				02F59EE31C88F2BB007F774C /* transact_log_handler.cpp in Sources */,
 				F63FF2E81C159C4B00B3B8E0 /* platform.mm in Sources */,
 				02F59EC31C88F17D007F774C /* results.cpp in Sources */,
+				02AFE5891CA9B23400953DA3 /* jsc_list.cpp in Sources */,
 				F63FF2E21C15921A00B3B8E0 /* base64.cpp in Sources */,
 				F63FF2C61C12469E00B3B8E0 /* js_init.cpp in Sources */,
 				02F59ECA1C88F190007F774C /* parser.cpp in Sources */,
-				F63FF2C71C12469E00B3B8E0 /* js_list.cpp in Sources */,
 				F63FF2C81C12469E00B3B8E0 /* js_object.cpp in Sources */,
 				02F59EE11C88F2BB007F774C /* async_query.cpp in Sources */,
 				02F59EC01C88F17D007F774C /* list.cpp in Sources */,

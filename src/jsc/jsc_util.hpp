@@ -31,13 +31,8 @@
 #include "property.hpp"
 #include "schema.hpp"
 
-#define WRAP_METHOD(METHOD_NAME) \
-JSValueRef METHOD_NAME(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) { \
-    JSValueRef returnObject = NULL; \
-    METHOD_NAME(ctx, thisObject, argumentCount, arguments, returnObject, jsException); \
-    return returnObject; \
-}
-
+namespace realm {
+namespace js {
 
 template<typename T>
 inline void RJSFinalize(JSObjectRef object) {
@@ -156,13 +151,6 @@ static inline double RJSValidatedValueToNumber(JSContextRef ctx, JSValueRef valu
     return number;
 }
 
-static inline double RJSValidatedValueToBoolean(JSContextRef ctx, JSValueRef value) {
-    if (!JSValueIsBoolean(ctx, value)) {
-        throw std::invalid_argument("Value is not a boolean.");
-    }
-    return JSValueToBoolean(ctx, value);
-}
-
 static inline JSValueRef RJSValidatedPropertyValue(JSContextRef ctx, JSObjectRef object, JSStringRef property) {
     JSValueRef exception = NULL;
     JSValueRef propertyValue = JSObjectGetProperty(ctx, object, property, &exception);
@@ -259,58 +247,5 @@ static inline bool RJSIsValueObjectOfType(JSContextRef ctx, JSValueRef value, JS
 
     return ret;
 }
-
-static inline void RJSSetReturnUndefined(JSContextRef ctx, JSValueRef &returnObject) {
-    returnObject = JSValueMakeUndefined(ctx);
-}
-
-template<typename T>
-static inline void RJSSetReturnNumber(JSContextRef ctx, JSValueRef &returnObject, T number) {
-    returnObject = JSValueMakeNumber(ctx, number);
-}
-
-static inline void RJSSetReturnArray(JSContextRef ctx, size_t count, const JSValueRef *objects, JSValueRef &returnObject) {
-    returnObject = JSObjectMakeArray(ctx, count, objects, NULL);
-}
-
-static inline void RJSSetException(JSContextRef ctx, JSValueRef * &exceptionObject, std::exception &exception) {
-    if (exceptionObject) {
-        *exceptionObject = RJSMakeError(ctx, exception);
-    }
-}
-
-static JSObjectRef RJSDictForPropertyArray(JSContextRef ctx, const realm::ObjectSchema &object_schema, JSObjectRef array) {
-    // copy to dictionary
-    if (object_schema.properties.size() != RJSValidatedListLength(ctx, array)) {
-        throw std::runtime_error("Array must contain values for all object properties");
-    }
     
-    JSValueRef exception = NULL;
-    JSObjectRef dict = JSObjectMake(ctx, NULL, NULL);
-    for (unsigned int i = 0; i < object_schema.properties.size(); i++) {
-        JSStringRef nameStr = JSStringCreateWithUTF8CString(object_schema.properties[i].name.c_str());
-        JSValueRef value = JSObjectGetPropertyAtIndex(ctx, array, i, &exception);
-        if (exception) {
-            throw RJSException(ctx, exception);
-        }
-        JSObjectSetProperty(ctx, dict, nameStr, value, kJSPropertyAttributeNone, &exception);
-        if (exception) {
-            throw RJSException(ctx, exception);
-        }
-        JSStringRelease(nameStr);
-    }
-    return dict;
-}
-
-static void RJSCallFunction(JSContextRef ctx, JSObjectRef function, JSObjectRef object, size_t argumentCount, const JSValueRef *arguments) {
-    JSValueRef exception = NULL;
-    JSObjectCallAsFunction(ctx, function, object, argumentCount, arguments, &exception);
-    if (exception) {
-        throw RJSException(ctx, exception);
-    }
-}
-
-
-static bool RJSValueIsObjectOfClass(JSContextRef ctx, JSValueRef value, JSClassRef jsClass) {
-    return JSValueIsObjectOfClass(ctx, value, jsClass);
-}
+}}

@@ -24,7 +24,7 @@
 #include "js_init.h"
 #include "js_object.hpp"
 #include "js_results.hpp"
-#include "js_list.hpp"
+#include "jsc_list.hpp"
 #include "js_realm.hpp"
 #include "js_util.hpp"
 

@@ -20,7 +20,7 @@
 #include "js_realm.hpp"
 #include "js_object.hpp"
 #include "js_collection.hpp"
-#include "js_list.hpp"
+#include "jsc_list.hpp"
 #include "js_results.hpp"
 #include "js_util.hpp"
 #include "js_schema.hpp"
