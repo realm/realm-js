@@ -162,7 +162,11 @@ static void test(Realm::Config const& config, SharedRealm& r, SharedRealm& r2, s
         *r2,
         state.coordinator,
         *r2->read_group()->get_table("class_object"),
+#if FUZZ_LINKVIEW
         r2->read_group()->get_table("class_linklist")->get_linklist(0, 0),
+#else
+        {},
+#endif
         state.uid,
         {}
     };

@@ -67,6 +67,7 @@ static void run_commit(RealmState& state)
 
 static void run_lv_insert(RealmState& state, size_t pos, size_t target)
 {
+    if (!state.lv) return;
     if (target < state.table.size() && pos <= state.lv->size()) {
         log("lv insert %zu %zu\n", pos, target);
         state.lv->insert(pos, target);
@@ -75,6 +76,7 @@ static void run_lv_insert(RealmState& state, size_t pos, size_t target)
 
 static void run_lv_set(RealmState& state, size_t pos, size_t target)
 {
+    if (!state.lv) return;
     if (target < state.table.size() && pos < state.lv->size()) {
         log("lv set %zu %zu\n", pos, target);
         // We can't reliably detect self-assignment for verification, so don't do it
@@ -85,6 +87,7 @@ static void run_lv_set(RealmState& state, size_t pos, size_t target)
 
 static void run_lv_move(RealmState& state, size_t from, size_t to)
 {
+    if (!state.lv) return;
     if (from < state.lv->size() && to < state.lv->size()) {
         log("lv move %zu %zu\n", from, to);
         // FIXME: only do the move if it has an effect to avoid getting a
@@ -100,6 +103,7 @@ static void run_lv_move(RealmState& state, size_t from, size_t to)
 
 static void run_lv_swap(RealmState& state, size_t ndx1, size_t ndx2)
 {
+    if (!state.lv) return;
     if (ndx1 < state.lv->size() && ndx2 < state.lv->size()) {
         log("lv swap %zu %zu\n", ndx1, ndx2);
         if (state.lv->get(ndx1).get_index() != state.lv->get(ndx2).get_index()) {
@@ -114,6 +118,7 @@ static void run_lv_swap(RealmState& state, size_t ndx1, size_t ndx2)
 
 static void run_lv_remove(RealmState& state, size_t pos)
 {
+    if (!state.lv) return;
     if (pos < state.lv->size()) {
         log("lv remove %zu\n", pos);
         state.lv->remove(pos);
@@ -122,6 +127,7 @@ static void run_lv_remove(RealmState& state, size_t pos)
 
 static void run_lv_remove_target(RealmState& state, size_t pos)
 {
+    if (!state.lv) return;
     if (pos < state.lv->size()) {
         log("lv target remove %zu\n", pos);
         state.lv->remove_target_row(pos);
