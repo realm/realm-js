@@ -18,23 +18,21 @@
 
 'use strict';
 
-const React = require('react');
-const Realm = require('realm');
-const tests = require('./tests');
-
-const {
+import {
     AppRegistry,
     StyleSheet,
     Text,
-    TouchableHighlight,
     View,
-} = require('react-native');
+} from 'react-native';
+
+import React from 'react';
+import { runTests } from './tests';
 
 class ReactTests extends React.Component {
     render() {
         return (
             <View style={styles.container}>
-                <Text style={styles.button} onPress={tests.runTests}>
+                <Text style={styles.button} onPress={runTests}>
                     Tap to Run Tests
                 </Text>
                 <Text style={styles.instructions}>
@@ -46,7 +44,7 @@ class ReactTests extends React.Component {
     }
 }
 
-var styles = StyleSheet.create({
+const styles = StyleSheet.create({
     container: {
         flex: 1,
         justifyContent: 'center',
