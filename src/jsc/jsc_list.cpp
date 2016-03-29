@@ -97,7 +97,7 @@ WRAP_CLASS_METHOD(RJSList, Filtered)
 WRAP_CLASS_METHOD(RJSList, Sorted)
 
 JSObjectRef RJSListCreate(JSContextRef ctx, List &list) {
-    return RJSWrapObject<List *>(ctx, RJSListClass(), new List(list));
+    return realm::js::WrapObject<List *>(ctx, realm::js::ListClass(), new List(list));
 }
 
 static const JSStaticFunction RJSListFuncs[] = {
@@ -115,4 +115,10 @@ static const JSStaticFunction RJSListFuncs[] = {
 JSClassRef RJSListClass() {
     static JSClassRef s_listClass = RJSCreateWrapperClass<List *>("List", ListGetProperty, ListSetProperty, RJSListFuncs, ListPropertyNames, RJSCollectionClass());
     return s_listClass;
+}
+
+namespace realm {
+namespace js {
+JSClassRef ListClass() { return RJSListClass(); };
+}
 }

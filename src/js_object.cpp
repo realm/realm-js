@@ -74,9 +74,10 @@ JSClassRef RJSObjectClass() {
 JSObjectRef RJSObjectCreate(JSContextRef ctx, Object object) {
     static JSStringRef prototypeString = JSStringCreateWithUTF8CString("prototype");
 
-    JSObjectRef constructor = RJSConstructors(object.realm().get())[object.get_object_schema().name];
+    auto delegate = realm::js::get_delegate<jsc::Types>(object.realm().get());
+    JSObjectRef constructor = delegate->m_constructors[object.get_object_schema().name];
     JSObjectRef prototype = constructor ? RJSValidatedObjectProperty(ctx, constructor, prototypeString) : NULL;
-    JSObjectRef jsObject = RJSWrapObject(ctx, RJSObjectClass(), new Object(object), prototype);
+    JSObjectRef jsObject = realm::js::WrapObject(ctx, RJSObjectClass(), new Object(object), prototype);
 
     if (constructor) {
         JSValueRef exception = NULL;
@@ -117,12 +118,12 @@ template<> JSValueRef RJSAccessor::dict_value_for_key(JSContextRef ctx, JSValueR
 }
 
 template<> bool RJSAccessor::has_default_value_for_property(JSContextRef ctx, Realm *realm, const ObjectSchema &object_schema, const std::string &prop_name) {
-    ObjectDefaults &defaults = RJSDefaults(realm)[object_schema.name];
+    auto defaults = realm::js::get_delegate<jsc::Types>(realm)->m_defaults[object_schema.name];
     return defaults.find(prop_name) != defaults.end();
 }
 
 template<> JSValueRef RJSAccessor::default_value_for_property(JSContextRef ctx, Realm *realm, const ObjectSchema &object_schema, const std::string &prop_name) {
-    ObjectDefaults &defaults = RJSDefaults(realm)[object_schema.name];
+    auto defaults = realm::js::get_delegate<jsc::Types>(realm)->m_defaults[object_schema.name];
     return defaults[prop_name];
 }
 

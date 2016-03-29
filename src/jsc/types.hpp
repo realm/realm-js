@@ -27,6 +27,8 @@ namespace jsc {
  
 struct Types {
     using Context = JSContextRef;
+    using GlobalContext = JSGlobalContextRef;
+    using ObjectClass = JSClassRef;
     using Value = JSValueRef;
     using Object = JSObjectRef;
     using String = JSStringRef;

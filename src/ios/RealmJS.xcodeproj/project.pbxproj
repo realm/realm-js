@@ -100,6 +100,7 @@
 
 /* Begin PBXFileReference section */
 		02409DC11BCF11D6005F3B3E /* RealmJSCoreTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = RealmJSCoreTests.m; path = ios/RealmJSCoreTests.m; sourceTree = "<group>"; };
+		025678951CAB392000FB8501 /* types.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = types.hpp; path = jsc/types.hpp; sourceTree = "<group>"; };
 		0270BC5A1B7CFC1300010E03 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		0270BC781B7D020100010E03 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = ios/Info.plist; sourceTree = "<group>"; };
 		0270BC7A1B7D020100010E03 /* RealmJSTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RealmJSTests.h; path = ios/RealmJSTests.h; sourceTree = "<group>"; };
@@ -261,6 +262,7 @@
 				0290480D1C0428DF00ABDED4 /* js_util.cpp */,
 				0290480E1C0428DF00ABDED4 /* js_util.hpp */,
 				02AFE5B11CAB133500953DA3 /* js_compat.hpp */,
+				025678951CAB392000FB8501 /* types.hpp */,
 				02AFE5871CA9B23400953DA3 /* jsc_list.cpp */,
 				02AFE5881CA9B23400953DA3 /* jsc_list.hpp */,
 				029048351C042A3C00ABDED4 /* platform.hpp */,

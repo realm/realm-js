@@ -42,7 +42,7 @@ JSObjectRef RJSSchemaCreate(JSContextRef ctx, Schema &schema) {
     SchemaWrapper *wrapper = new SchemaWrapper();
     wrapper->schema = &schema;
     wrapper->owned = false;
-    return RJSWrapObject(ctx, RJSSchemaClass(), wrapper);
+    return js::WrapObject(ctx, RJSSchemaClass(), wrapper);
 }
 
 static inline Property RJSParseProperty(JSContextRef ctx, JSValueRef propertyAttributes, std::string propertyName, ObjectDefaults &objectDefaults) {

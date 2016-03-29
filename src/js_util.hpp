@@ -54,15 +54,6 @@ inline void RJSFinalize(JSObjectRef object) {
 }
 
 template<typename T>
-inline JSObjectRef RJSWrapObject(JSContextRef ctx, JSClassRef jsClass, T object, JSValueRef prototype = NULL) {
-    JSObjectRef ref = JSObjectMake(ctx, jsClass, (void *)object);
-    if (prototype) {
-        JSObjectSetPrototype(ctx, ref, prototype);
-    }
-    return ref;
-}
-
-template<typename T>
 inline T RJSGetInternal(JSObjectRef jsObject) {
     return static_cast<T>(JSObjectGetPrivate(jsObject));
 }

@@ -96,7 +96,7 @@ JSValueRef ResultsStaticCopy(JSContextRef ctx, JSObjectRef function, JSObjectRef
         Results *copy = new Results(*results);
         copy->set_live(false);
 
-        return RJSWrapObject<Results *>(ctx, RJSResultsClass(), copy);
+        return js::WrapObject<Results *>(ctx, RJSResultsClass(), copy);
     }
     catch (std::exception &exp) {
         if (jsException) {
@@ -144,7 +144,7 @@ JSObjectRef RJSResultsCreate(JSContextRef ctx, SharedRealm realm, std::string cl
     if (object_schema == realm->config().schema->end()) {
         throw std::runtime_error("Object type '" + className + "' not present in Realm.");
     }
-    return RJSWrapObject<Results *>(ctx, RJSResultsClass(), new Results(realm, *object_schema, *table));
+    return js::WrapObject<Results *>(ctx, RJSResultsClass(), new Results(realm, *object_schema, *table));
 }
 
 JSObjectRef RJSResultsCreate(JSContextRef ctx, SharedRealm realm, std::string className, std::string queryString, std::vector<JSValueRef> args) {
@@ -159,14 +159,14 @@ JSObjectRef RJSResultsCreate(JSContextRef ctx, SharedRealm realm, std::string cl
     query_builder::ArgumentConverter<JSValueRef, JSContextRef> arguments(ctx, args);
     query_builder::apply_predicate(query, predicate, arguments, schema, object_schema->name);
 
-    return RJSWrapObject<Results *>(ctx, RJSResultsClass(), new Results(realm, *object_schema, std::move(query)));
+    return js::WrapObject<Results *>(ctx, RJSResultsClass(), new Results(realm, *object_schema, std::move(query)));
 }
 
 JSObjectRef RJSResultsCreate(JSContextRef ctx, SharedRealm realm, const ObjectSchema &objectSchema, Query query, bool live) {
     Results *results = new Results(realm, objectSchema, std::move(query));
     results->set_live(live);
 
-    return RJSWrapObject<Results *>(ctx, RJSResultsClass(), results);
+    return js::WrapObject<Results *>(ctx, js::ResultsClass(), results);
 }
 
 JSObjectRef RJSResultsCreateFiltered(JSContextRef ctx, SharedRealm realm, const ObjectSchema &objectSchema, Query query, size_t argumentCount, const JSValueRef arguments[]) {
@@ -233,7 +233,7 @@ JSObjectRef RJSResultsCreateSorted(JSContextRef ctx, SharedRealm realm, const Ob
     }
 
     Results *results = new Results(realm, objectSchema, std::move(query), {std::move(columns), std::move(ascending)});
-    return RJSWrapObject<Results *>(ctx, RJSResultsClass(), results);
+    return js::WrapObject<Results *>(ctx, js::ResultsClass(), results);
 }
 
 static const JSStaticFunction RJSResultsFuncs[] = {
@@ -246,4 +246,10 @@ static const JSStaticFunction RJSResultsFuncs[] = {
 JSClassRef RJSResultsClass() {
     static JSClassRef s_objectClass = RJSCreateWrapperClass<Results *>("Results", ResultsGetProperty, ResultsSetProperty, RJSResultsFuncs, ResultsPropertyNames, RJSCollectionClass());
     return s_objectClass;
+}
+
+namespace realm {
+namespace js {
+JSClassRef ResultsClass() { return RJSResultsClass(); };
+}
 }

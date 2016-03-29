@@ -29,98 +29,11 @@
 #include "binding_context.hpp"
 #include "results.hpp"
 
-#include <set>
 #include <cassert>
+
 
 using namespace realm;
 using RJSAccessor = realm::NativeAccessor<JSValueRef, JSContextRef>;
-
-class RJSRealmDelegate : public BindingContext {
-public:
-    virtual void changes_available() {
-        assert(0);
-    }
-    virtual void did_change(std::vector<ObserverState> const& observers, std::vector<void*> const& invalidated) {
-        notify("change");
-    }
-    virtual std::vector<ObserverState> get_observed_rows() {
-        return std::vector<ObserverState>();
-    }
-    virtual void will_change(std::vector<ObserverState> const& observers,
-                             std::vector<void*> const& invalidated) {}
-
-    RJSRealmDelegate(WeakRealm realm, JSGlobalContextRef ctx) : m_context(ctx), m_realm(realm) {
-        JSGlobalContextRetain(m_context);
-    }
-
-    ~RJSRealmDelegate() {
-        remove_all_notifications();
-
-        for (auto constructor : m_constructors) {
-            JSValueUnprotect(m_context, constructor.second);
-        }
-        for (auto objectDefaults : m_defaults) {
-            for (auto value : objectDefaults.second) {
-                JSValueUnprotect(m_context, value.second);
-            }
-        }
-        JSGlobalContextRelease(m_context);
-    }
-
-    void add_notification(JSObjectRef notification) {
-        if (!m_notifications.count(notification)) {
-            JSValueProtect(m_context, notification);
-            m_notifications.insert(notification);
-        }
-    }
-    void remove_notification(JSObjectRef notification) {
-        if (m_notifications.count(notification)) {
-            JSValueUnprotect(m_context, notification);
-            m_notifications.erase(notification);
-        }
-    }
-    void remove_all_notifications() {
-        for (auto notification : m_notifications) {
-            JSValueUnprotect(m_context, notification);
-        }
-        m_notifications.clear();
-    }
-
-    std::map<std::string, ObjectDefaults> m_defaults;
-    std::map<std::string, JSObjectRef> m_constructors;
-
-  private:
-    std::set<JSObjectRef> m_notifications;
-    JSGlobalContextRef m_context;
-    WeakRealm m_realm;
-
-    void notify(const char *notification_name) {
-        JSValueRef arguments[2];
-        SharedRealm realm = m_realm.lock();
-        if (!realm) {
-            throw std::runtime_error("Realm no longer exists");
-        }
-        JSObjectRef realm_object = RJSWrapObject<SharedRealm *>(m_context, RJSRealmClass(), new SharedRealm(realm));
-        arguments[0] = realm_object;
-        arguments[1] = RJSValueForString(m_context, notification_name);
-
-        for (auto callback : m_notifications) {
-            JSValueRef ex = NULL;
-            JSObjectCallAsFunction(m_context, callback, realm_object, 2, arguments, &ex);
-            if (ex) {
-                throw RJSException(m_context, ex);
-            }
-        }
-    }
-};
-
-std::map<std::string, ObjectDefaults> &RJSDefaults(Realm *realm) {
-    return static_cast<RJSRealmDelegate *>(realm->m_binding_context.get())->m_defaults;
-}
-
-std::map<std::string, JSObjectRef> &RJSConstructors(Realm *realm) {
-    return static_cast<RJSRealmDelegate *>(realm->m_binding_context.get())->m_constructors;
-}
 
 // static std::string s_defaultPath = realm::default_realm_file_directory() + "/default.realm";
 static std::string s_defaultPath = "";
@@ -214,12 +127,13 @@ JSObjectRef RealmConstructor(JSContextRef ctx, JSObjectRef constructor, size_t a
         
         ensure_directory_exists_for_file(config.path);
         SharedRealm realm = Realm::get_shared_realm(config);
+        auto delegate = new js::RealmDelegate<jsc::Types>(realm, JSContextGetGlobalContext(ctx));
         if (!realm->m_binding_context) {
-            realm->m_binding_context.reset(new RJSRealmDelegate(realm, JSContextGetGlobalContext(ctx)));
+            realm->m_binding_context.reset(delegate);
         }
-        RJSDefaults(realm.get()) = defaults;
-        RJSConstructors(realm.get()) = constructors;
-        return RJSWrapObject<SharedRealm *>(ctx, RJSRealmClass(), new SharedRealm(realm));
+        delegate->m_defaults = defaults;
+        delegate->m_constructors = constructors;
+        return js::WrapObject(ctx, RJSRealmClass(), new SharedRealm(realm));
     }
     catch (std::exception &ex) {
         if (jsException) {
@@ -299,7 +213,8 @@ std::string RJSValidatedObjectTypeForValue(SharedRealm &realm, JSContextRef ctx,
     if (JSValueIsObject(ctx, value) && JSObjectIsConstructor(ctx, (JSObjectRef)value)) {
         JSObjectRef constructor = (JSObjectRef)value;
 
-        for (auto pair : RJSConstructors(realm.get())) {
+        auto delegate = js::get_delegate<jsc::Types>(realm.get());
+        for (auto pair : delegate->m_constructors) {
             if (pair.second == constructor) {
                 return pair.first;
             }
@@ -453,7 +368,7 @@ void RealmAddListener(ContextType ctx, ObjectType thisObject, size_t argumentCou
         auto callback = RJSValidatedValueToFunction(ctx, arguments[1]);
 
         SharedRealm realm = *RJSGetInternal<SharedRealm *>(thisObject);
-        static_cast<RJSRealmDelegate *>(realm->m_binding_context.get())->add_notification(callback);
+        static_cast<js::RealmDelegate<jsc::Types> *>(realm->m_binding_context.get())->add_notification(callback);
     }
     catch (std::exception &exp) {
         RJSSetException(ctx, exceptionObject, exp);
@@ -467,7 +382,7 @@ void RealmRemoveListener(ContextType ctx, ObjectType thisObject, size_t argument
         auto callback = RJSValidatedValueToFunction(ctx, arguments[1]);
 
         SharedRealm realm = *RJSGetInternal<SharedRealm *>(thisObject);
-        static_cast<RJSRealmDelegate *>(realm->m_binding_context.get())->remove_notification(callback);
+        static_cast<js::RealmDelegate<jsc::Types> *>(realm->m_binding_context.get())->remove_notification(callback);
     }
     catch (std::exception &exp) {
         RJSSetException(ctx, exceptionObject, exp);
@@ -482,7 +397,7 @@ void RealmRemoveAllListeners(ContextType ctx, ObjectType thisObject, size_t argu
         }
 
         SharedRealm realm = *RJSGetInternal<SharedRealm *>(thisObject);
-        static_cast<RJSRealmDelegate *>(realm->m_binding_context.get())->remove_all_notifications();
+        static_cast<js::RealmDelegate<jsc::Types> *>(realm->m_binding_context.get())->remove_all_notifications();
     }
     catch (std::exception &exp) {
         RJSSetException(ctx, exceptionObject, exp);
@@ -526,4 +441,11 @@ static const JSStaticFunction RJSRealmFuncs[] = {
 JSClassRef RJSRealmClass() {
     static JSClassRef s_realmClass = RJSCreateWrapperClass<SharedRealm *>("Realm", RealmGetProperty, NULL, RJSRealmFuncs);
     return s_realmClass;
+}
+
+
+namespace realm {
+namespace js {
+JSClassRef RealmClass() { return RJSRealmClass(); };
+}
 }
