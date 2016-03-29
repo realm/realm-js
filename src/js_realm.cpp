@@ -36,9 +36,6 @@ using RJSAccessor = realm::NativeAccessor<JSValueRef, JSContextRef>;
 
 class RJSRealmDelegate : public BindingContext {
 public:
-    virtual void changes_available() {
-        assert(0);
-    }
     virtual void did_change(std::vector<ObserverState> const& observers, std::vector<void*> const& invalidated) {
         notify("change");
     }
