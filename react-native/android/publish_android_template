@@ -17,7 +17,8 @@ allprojects {
 apply plugin: 'com.android.library'
 
 task forwardDebugPort(type: Exec) {
-    commandLine 'adb', 'forward', 'tcp:8082', 'tcp:8082'
+    def adb = android.getAdbExe()?.toString() ?: 'false'
+    commandLine adb, 'forward', 'tcp:8082', 'tcp:8082'
     ignoreExitValue true
     doLast {
         if (execResult.getExitValue() != 0) {
