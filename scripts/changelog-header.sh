@@ -1,14 +1,22 @@
-empty_section=$(cat <<EOS
+#!/bin/bash
+
+set -e
+set -o pipefail
+
+CHANGELOG=$(cat <<EOF
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
-### API breaking changes
-* None.
+### Breaking changes
+* None
+
 ### Enhancements
-* None.
+* None
+
 ### Bugfixes
-* None.
-EOS)
-changelog=$(cat CHANGELOG.md)
-echo "$empty_section" > CHANGELOG.md
-echo >> CHANGELOG.md
-echo "$changelog" >> CHANGELOG.md
+* None
+
+$(cat CHANGELOG.md)
+EOF
+)
+
+echo "$CHANGELOG" > CHANGELOG.md
