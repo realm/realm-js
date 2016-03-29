@@ -23,7 +23,7 @@
 #include <JavaScriptCore/JSStringRef.h>
 
 namespace realm {
-namespace js {
+namespace jsc {
  
 struct Types {
     using Context = JSContextRef;
@@ -32,6 +32,7 @@ struct Types {
     using String = JSStringRef;
     using Function = JSObjectRef;
     using Return = JSValueRef;
+    using Exception = JSValueRef;
 };
     
 }}

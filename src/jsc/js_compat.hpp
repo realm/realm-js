@@ -24,11 +24,11 @@
 namespace realm {
 namespace js {
     
-static bool ValueIsUndefined(Types::Context ctx, Types::Value value) { return JSValueIsUndefined(ctx, value); }
-static bool ValueIsNull(Types::Context ctx, Types::Value value) { return JSValueIsNull(ctx, value); }
-static bool ValueIsBoolean(Types::Context ctx, Types::Value value) { return JSValueIsBoolean(ctx, value); }
-static bool ValueIsNumber(Types::Context ctx, Types::Value value) { return JSValueIsNumber(ctx, value); }
-static bool ValueIsString(Types::Context ctx, Types::Value value) { return JSValueIsString(ctx, value); }
-static bool ValueIsObject(Types::Context ctx, Types::Value value) { return JSValueIsObject(ctx, value); }
+static bool ValueIsUndefined(jsc::Types::Context ctx, jsc::Types::Value value) { return JSValueIsUndefined(ctx, value); }
+static bool ValueIsNull(jsc::Types::Context ctx, jsc::Types::Value value) { return JSValueIsNull(ctx, value); }
+static bool ValueIsBoolean(jsc::Types::Context ctx, jsc::Types::Value value) { return JSValueIsBoolean(ctx, value); }
+static bool ValueIsNumber(jsc::Types::Context ctx, jsc::Types::Value value) { return JSValueIsNumber(ctx, value); }
+static bool ValueIsString(jsc::Types::Context ctx, jsc::Types::Value value) { return JSValueIsString(ctx, value); }
+static bool ValueIsObject(jsc::Types::Context ctx, jsc::Types::Value value) { return JSValueIsObject(ctx, value); }
 
 }}

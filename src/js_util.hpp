@@ -33,10 +33,17 @@
 #include "js_compat.hpp"
 #include "schema.hpp"
 
+#define WRAP_CLASS_METHOD(CLASS_NAME, METHOD_NAME) \
+JSValueRef CLASS_NAME ## METHOD_NAME(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) { \
+    JSValueRef returnObject = NULL; \
+    CLASS_NAME::METHOD_NAME(ctx, thisObject, argumentCount, arguments, returnObject, *jsException); \
+    return returnObject; \
+}
+
 #define WRAP_METHOD(METHOD_NAME) \
 JSValueRef METHOD_NAME(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) { \
     JSValueRef returnObject = NULL; \
-    METHOD_NAME(ctx, thisObject, argumentCount, arguments, returnObject, jsException); \
+    METHOD_NAME(ctx, thisObject, argumentCount, arguments, returnObject, *jsException); \
     return returnObject; \
 }
 
@@ -274,10 +281,8 @@ static inline void RJSSetReturnArray(JSContextRef ctx, size_t count, const JSVal
     returnObject = JSObjectMakeArray(ctx, count, objects, NULL);
 }
 
-static inline void RJSSetException(JSContextRef ctx, JSValueRef * &exceptionObject, std::exception &exception) {
-    if (exceptionObject) {
-        *exceptionObject = RJSMakeError(ctx, exception);
-    }
+static inline void RJSSetException(JSContextRef ctx, JSValueRef &exceptionObject, std::exception &exception) {
+    exceptionObject = RJSMakeError(ctx, exception);
 }
 
 static JSObjectRef RJSDictForPropertyArray(JSContextRef ctx, const realm::ObjectSchema &object_schema, JSObjectRef array) {

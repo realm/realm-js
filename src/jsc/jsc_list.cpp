@@ -86,28 +86,29 @@ void ListPropertyNames(JSContextRef ctx, JSObjectRef object, JSPropertyNameAccum
     }
 }
 
-WRAP_METHOD(ListPush)
-WRAP_METHOD(ListPop)
-WRAP_METHOD(ListUnshift)
-WRAP_METHOD(ListShift)
-WRAP_METHOD(ListSplice)
-WRAP_METHOD(ListStaticResults)
-WRAP_METHOD(ListFiltered)
-WRAP_METHOD(ListSorted)
+using RJSList = realm::js::List<realm::jsc::Types>;
+WRAP_CLASS_METHOD(RJSList, Push)
+WRAP_CLASS_METHOD(RJSList, Pop)
+WRAP_CLASS_METHOD(RJSList, Unshift)
+WRAP_CLASS_METHOD(RJSList, Shift)
+WRAP_CLASS_METHOD(RJSList, Splice)
+WRAP_CLASS_METHOD(RJSList, StaticResults)
+WRAP_CLASS_METHOD(RJSList, Filtered)
+WRAP_CLASS_METHOD(RJSList, Sorted)
 
 JSObjectRef RJSListCreate(JSContextRef ctx, List &list) {
     return RJSWrapObject<List *>(ctx, RJSListClass(), new List(list));
 }
 
 static const JSStaticFunction RJSListFuncs[] = {
-    {"push", ListPush, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
-    {"pop", ListPop, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
-    {"shift", ListShift, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
-    {"unshift", ListUnshift, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
-    {"splice", ListSplice, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
-    {"filtered", ListFiltered, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
-    {"sorted", ListSorted, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
-    {"snapshot", ListStaticResults, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
+    {"push", RJSListPush, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
+    {"pop", RJSListPop, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
+    {"shift", RJSListShift, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
+    {"unshift", RJSListUnshift, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
+    {"splice", RJSListSplice, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
+    {"filtered", RJSListFiltered, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
+    {"sorted", RJSListSorted, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
+    {"snapshot", RJSListStaticResults, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
     {NULL, NULL},
 };
 

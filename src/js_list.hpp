@@ -18,7 +18,6 @@
 
 #pragma once
 
-#include "js_list.hpp"
 #include "js_collection.hpp"
 #include "js_object.hpp"
 #include "js_results.hpp"
@@ -33,12 +32,31 @@
 #include <assert.h>
 
 using RJSAccessor = realm::NativeAccessor<JSValueRef, JSContextRef>;
-using namespace realm;
+namespace realm {
+namespace js {
 
-template<typename ContextType, typename ObjectType, typename ValueType, typename ReturnType, typename ExceptionType>
-void ListPush(ContextType ctx, ObjectType thisObject, size_t argumentCount, const ValueType arguments[], ReturnType &returnObject, ExceptionType &exceptionObject) {
+template<typename T>
+struct List {
+    using ContextType = typename T::Context;
+    using ObjectType = typename T::Object;
+    using ValueType = typename T::Value;
+    using ReturnType = typename T::Return;
+    using ExceptionType = typename T::Exception;
+
+    static void Push(ContextType ctx, ObjectType thisObject, size_t argCount, const ValueType args[], ReturnType &ret, ExceptionType &exception);
+    static void Pop(ContextType ctx, ObjectType thisObject, size_t argCount, const ValueType args[], ReturnType &ret, ExceptionType &exception);
+    static void Unshift(ContextType ctx, ObjectType thisObject, size_t argCount, const ValueType args[], ReturnType &ret, ExceptionType &exception);
+    static void Shift(ContextType ctx, ObjectType thisObject, size_t argCount, const ValueType args[], ReturnType &ret, ExceptionType &exception);
+    static void Splice(ContextType ctx, ObjectType thisObject, size_t argCount, const ValueType args[], ReturnType &ret, ExceptionType &exception);
+    static void StaticResults(ContextType ctx, ObjectType thisObject, size_t argCount, const ValueType args[], ReturnType &ret, ExceptionType &exception);
+    static void Filtered(ContextType ctx, ObjectType thisObject, size_t argCount, const ValueType args[], ReturnType &ret, ExceptionType &exception);
+    static void Sorted(ContextType ctx, ObjectType thisObject, size_t argCount, const ValueType args[], ReturnType &ret, ExceptionType &exception);
+};
+
+template<typename T>
+void List<T>::Push(ContextType ctx, ObjectType thisObject, size_t argumentCount, const ValueType arguments[], ReturnType &returnObject, ExceptionType &exceptionObject) {
     try {
-        List *list = RJSGetInternal<List *>(thisObject);
+        realm::List *list = RJSGetInternal<realm::List *>(thisObject);
         RJSValidateArgumentCountIsAtLeast(argumentCount, 1);
         for (size_t i = 0; i < argumentCount; i++) {
             list->add(ctx, arguments[i]);
@@ -50,10 +68,10 @@ void ListPush(ContextType ctx, ObjectType thisObject, size_t argumentCount, cons
     }
 }
 
-template<typename ContextType, typename ObjectType, typename ValueType, typename ReturnType, typename ExceptionType>
-void ListPop(ContextType ctx, ObjectType thisObject, size_t argumentCount, const ValueType arguments[], ReturnType &returnObject, ExceptionType &exceptionObject) {
+template<typename T>
+void List<T>::Pop(ContextType ctx, ObjectType thisObject, size_t argumentCount, const ValueType arguments[], ReturnType &returnObject, ExceptionType &exceptionObject) {
     try {
-        List *list = RJSGetInternal<List *>(thisObject);
+        realm::List *list = RJSGetInternal<realm::List *>(thisObject);
         RJSValidateArgumentCount(argumentCount, 0);
         
         size_t size = list->size();
@@ -73,10 +91,10 @@ void ListPop(ContextType ctx, ObjectType thisObject, size_t argumentCount, const
 }
 
 
-template<typename ContextType, typename ObjectType, typename ValueType, typename ReturnType, typename ExceptionType>
-void ListUnshift(ContextType ctx, ObjectType thisObject, size_t argumentCount, const ValueType arguments[], ReturnType &returnObject, ExceptionType &exceptionObject) {
+template<typename T>
+void List<T>::Unshift(ContextType ctx, ObjectType thisObject, size_t argumentCount, const ValueType arguments[], ReturnType &returnObject, ExceptionType &exceptionObject) {
     try {
-        List *list = RJSGetInternal<List *>(thisObject);
+        realm::List *list = RJSGetInternal<realm::List *>(thisObject);
         RJSValidateArgumentCountIsAtLeast(argumentCount, 1);
         for (size_t i = 0; i < argumentCount; i++) {
             list->insert(ctx, arguments[i], i);
@@ -88,10 +106,10 @@ void ListUnshift(ContextType ctx, ObjectType thisObject, size_t argumentCount, c
     }
 }
 
-template<typename ContextType, typename ObjectType, typename ValueType, typename ReturnType, typename ExceptionType>
-void ListShift(ContextType ctx, ObjectType thisObject, size_t argumentCount, const ValueType arguments[], ReturnType &returnObject, ExceptionType &exceptionObject) {
+template<typename T>
+void List<T>::Shift(ContextType ctx, ObjectType thisObject, size_t argumentCount, const ValueType arguments[], ReturnType &returnObject, ExceptionType &exceptionObject) {
     try {
-        List *list = RJSGetInternal<List *>(thisObject);
+        realm::List *list = RJSGetInternal<realm::List *>(thisObject);
         RJSValidateArgumentCount(argumentCount, 0);
         if (list->size() == 0) {
             list->verify_in_transaction();
@@ -107,10 +125,10 @@ void ListShift(ContextType ctx, ObjectType thisObject, size_t argumentCount, con
     }
 }
 
-template<typename ContextType, typename ObjectType, typename ValueType, typename ReturnType, typename ExceptionType>
-void ListSplice(ContextType ctx, ObjectType thisObject, size_t argumentCount, const ValueType arguments[], ReturnType &returnObject, ExceptionType &exceptionObject) {
+template<typename T>
+void List<T>::Splice(ContextType ctx, ObjectType thisObject, size_t argumentCount, const ValueType arguments[], ReturnType &returnObject, ExceptionType &exceptionObject) {
     try {
-        List *list = RJSGetInternal<List *>(thisObject);
+        realm::List *list = RJSGetInternal<realm::List *>(thisObject);
         size_t size = list->size();
         
         RJSValidateArgumentCountIsAtLeast(argumentCount, 1);
@@ -144,10 +162,10 @@ void ListSplice(ContextType ctx, ObjectType thisObject, size_t argumentCount, co
 }
 
 
-template<typename ContextType, typename ObjectType, typename ValueType, typename ReturnType, typename ExceptionType>
-void ListStaticResults(ContextType ctx, ObjectType thisObject, size_t argumentCount, const ValueType arguments[], ReturnType &returnObject, ExceptionType &exceptionObject) {
+template<typename T>
+void List<T>::StaticResults(ContextType ctx, ObjectType thisObject, size_t argumentCount, const ValueType arguments[], ReturnType &returnObject, ExceptionType &exceptionObject) {
     try {
-        List *list = RJSGetInternal<List *>(thisObject);
+        realm::List *list = RJSGetInternal<realm::List *>(thisObject);
         RJSValidateArgumentCount(argumentCount, 0);
         returnObject = RJSResultsCreate(ctx, list->get_realm(), list->get_object_schema(), std::move(list->get_query()), false);
     }
@@ -156,10 +174,10 @@ void ListStaticResults(ContextType ctx, ObjectType thisObject, size_t argumentCo
     }
 }
 
-template<typename ContextType, typename ObjectType, typename ValueType, typename ReturnType, typename ExceptionType>
-void ListFiltered(ContextType ctx, ObjectType thisObject, size_t argumentCount, const ValueType arguments[], ReturnType &returnObject, ExceptionType &exceptionObject) {
+template<typename T>
+void List<T>::Filtered(ContextType ctx, ObjectType thisObject, size_t argumentCount, const ValueType arguments[], ReturnType &returnObject, ExceptionType &exceptionObject) {
     try {
-        List *list = RJSGetInternal<List *>(thisObject);
+        realm::List *list = RJSGetInternal<realm::List *>(thisObject);
         RJSValidateArgumentCountIsAtLeast(argumentCount, 1);
         
         SharedRealm sharedRealm = *RJSGetInternal<SharedRealm *>(thisObject);
@@ -170,10 +188,10 @@ void ListFiltered(ContextType ctx, ObjectType thisObject, size_t argumentCount, 
     }
 }
 
-template<typename ContextType, typename ObjectType, typename ValueType, typename ReturnType, typename ExceptionType>
-void ListSorted(ContextType ctx, ObjectType thisObject, size_t argumentCount, const ValueType arguments[], ReturnType &returnObject, ExceptionType &exceptionObject) {
+template<typename T>
+void List<T>::Sorted(ContextType ctx, ObjectType thisObject, size_t argumentCount, const ValueType arguments[], ReturnType &returnObject, ExceptionType &exceptionObject) {
     try {
-        List *list = RJSGetInternal<List *>(thisObject);
+        realm::List *list = RJSGetInternal<realm::List *>(thisObject);
         RJSValidateArgumentRange(argumentCount, 1, 2);
         
         SharedRealm sharedRealm = *RJSGetInternal<SharedRealm *>(thisObject);
@@ -182,4 +200,7 @@ void ListSorted(ContextType ctx, ObjectType thisObject, size_t argumentCount, co
     catch (std::exception &exp) {
         RJSSetException(ctx, exceptionObject, exp);
     }
+}
+    
+}
 }
