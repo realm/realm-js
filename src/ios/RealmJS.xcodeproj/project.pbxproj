@@ -125,6 +125,7 @@
 		02A3C7A41BC4341500B1A7BE /* libc++.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.tbd"; path = "usr/lib/libc++.tbd"; sourceTree = SDKROOT; };
 		02AFE5871CA9B23400953DA3 /* jsc_list.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = jsc_list.cpp; path = jsc/jsc_list.cpp; sourceTree = "<group>"; };
 		02AFE5881CA9B23400953DA3 /* jsc_list.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = jsc_list.hpp; path = jsc/jsc_list.hpp; sourceTree = "<group>"; };
+		02AFE5B11CAB133500953DA3 /* js_compat.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = js_compat.hpp; path = jsc/js_compat.hpp; sourceTree = "<group>"; };
 		02B58CB11AE99CEC009B348C /* RealmJS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = RealmJS.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		02B58CBC1AE99CEC009B348C /* RealmJSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RealmJSTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		02B58CCD1AE99D4D009B348C /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
@@ -259,6 +260,7 @@
 				0290480C1C0428DF00ABDED4 /* js_schema.hpp */,
 				0290480D1C0428DF00ABDED4 /* js_util.cpp */,
 				0290480E1C0428DF00ABDED4 /* js_util.hpp */,
+				02AFE5B11CAB133500953DA3 /* js_compat.hpp */,
 				02AFE5871CA9B23400953DA3 /* jsc_list.cpp */,
 				02AFE5881CA9B23400953DA3 /* jsc_list.hpp */,
 				029048351C042A3C00ABDED4 /* platform.hpp */,

@@ -35,8 +35,8 @@
 using RJSAccessor = realm::NativeAccessor<JSValueRef, JSContextRef>;
 using namespace realm;
 
-template<typename ContextType, typename ThisType, typename ArgumentsType, typename ReturnType, typename ExceptionType>
-void ListPush(ContextType ctx, ThisType thisObject, size_t argumentCount, const ArgumentsType &arguments, ReturnType &returnObject, ExceptionType &exceptionObject) {
+template<typename ContextType, typename ObjectType, typename ValueType, typename ReturnType, typename ExceptionType>
+void ListPush(ContextType ctx, ObjectType thisObject, size_t argumentCount, const ValueType arguments[], ReturnType &returnObject, ExceptionType &exceptionObject) {
     try {
         List *list = RJSGetInternal<List *>(thisObject);
         RJSValidateArgumentCountIsAtLeast(argumentCount, 1);
@@ -50,8 +50,8 @@ void ListPush(ContextType ctx, ThisType thisObject, size_t argumentCount, const 
     }
 }
 
-template<typename ContextType, typename ThisType, typename ArgumentsType, typename ReturnType, typename ExceptionType>
-void ListPop(ContextType ctx, ThisType thisObject, size_t argumentCount, const ArgumentsType &arguments, ReturnType &returnObject, ExceptionType &exceptionObject) {
+template<typename ContextType, typename ObjectType, typename ValueType, typename ReturnType, typename ExceptionType>
+void ListPop(ContextType ctx, ObjectType thisObject, size_t argumentCount, const ValueType arguments[], ReturnType &returnObject, ExceptionType &exceptionObject) {
     try {
         List *list = RJSGetInternal<List *>(thisObject);
         RJSValidateArgumentCount(argumentCount, 0);
@@ -73,8 +73,8 @@ void ListPop(ContextType ctx, ThisType thisObject, size_t argumentCount, const A
 }
 
 
-template<typename ContextType, typename ThisType, typename ArgumentsType, typename ReturnType, typename ExceptionType>
-void ListUnshift(ContextType ctx, ThisType thisObject, size_t argumentCount, const ArgumentsType &arguments, ReturnType &returnObject, ExceptionType &exceptionObject) {
+template<typename ContextType, typename ObjectType, typename ValueType, typename ReturnType, typename ExceptionType>
+void ListUnshift(ContextType ctx, ObjectType thisObject, size_t argumentCount, const ValueType arguments[], ReturnType &returnObject, ExceptionType &exceptionObject) {
     try {
         List *list = RJSGetInternal<List *>(thisObject);
         RJSValidateArgumentCountIsAtLeast(argumentCount, 1);
@@ -88,8 +88,8 @@ void ListUnshift(ContextType ctx, ThisType thisObject, size_t argumentCount, con
     }
 }
 
-template<typename ContextType, typename ThisType, typename ArgumentsType, typename ReturnType, typename ExceptionType>
-void ListShift(ContextType ctx, ThisType thisObject, size_t argumentCount, const ArgumentsType &arguments, ReturnType &returnObject, ExceptionType &exceptionObject) {
+template<typename ContextType, typename ObjectType, typename ValueType, typename ReturnType, typename ExceptionType>
+void ListShift(ContextType ctx, ObjectType thisObject, size_t argumentCount, const ValueType arguments[], ReturnType &returnObject, ExceptionType &exceptionObject) {
     try {
         List *list = RJSGetInternal<List *>(thisObject);
         RJSValidateArgumentCount(argumentCount, 0);
@@ -107,8 +107,8 @@ void ListShift(ContextType ctx, ThisType thisObject, size_t argumentCount, const
     }
 }
 
-template<typename ContextType, typename ThisType, typename ArgumentsType, typename ReturnType, typename ExceptionType>
-void ListSplice(ContextType ctx, ThisType thisObject, size_t argumentCount, const ArgumentsType &arguments, ReturnType &returnObject, ExceptionType &exceptionObject) {
+template<typename ContextType, typename ObjectType, typename ValueType, typename ReturnType, typename ExceptionType>
+void ListSplice(ContextType ctx, ObjectType thisObject, size_t argumentCount, const ValueType arguments[], ReturnType &returnObject, ExceptionType &exceptionObject) {
     try {
         List *list = RJSGetInternal<List *>(thisObject);
         size_t size = list->size();
@@ -144,8 +144,8 @@ void ListSplice(ContextType ctx, ThisType thisObject, size_t argumentCount, cons
 }
 
 
-template<typename ContextType, typename ThisType, typename ArgumentsType, typename ReturnType, typename ExceptionType>
-void ListStaticResults(ContextType ctx, ThisType thisObject, size_t argumentCount, const ArgumentsType &arguments, ReturnType &returnObject, ExceptionType &exceptionObject) {
+template<typename ContextType, typename ObjectType, typename ValueType, typename ReturnType, typename ExceptionType>
+void ListStaticResults(ContextType ctx, ObjectType thisObject, size_t argumentCount, const ValueType arguments[], ReturnType &returnObject, ExceptionType &exceptionObject) {
     try {
         List *list = RJSGetInternal<List *>(thisObject);
         RJSValidateArgumentCount(argumentCount, 0);
@@ -156,8 +156,8 @@ void ListStaticResults(ContextType ctx, ThisType thisObject, size_t argumentCoun
     }
 }
 
-template<typename ContextType, typename ThisType, typename ArgumentsType, typename ReturnType, typename ExceptionType>
-void ListFiltered(ContextType ctx, ThisType thisObject, size_t argumentCount, const ArgumentsType &arguments, ReturnType &returnObject, ExceptionType &exceptionObject) {
+template<typename ContextType, typename ObjectType, typename ValueType, typename ReturnType, typename ExceptionType>
+void ListFiltered(ContextType ctx, ObjectType thisObject, size_t argumentCount, const ValueType arguments[], ReturnType &returnObject, ExceptionType &exceptionObject) {
     try {
         List *list = RJSGetInternal<List *>(thisObject);
         RJSValidateArgumentCountIsAtLeast(argumentCount, 1);
@@ -170,8 +170,8 @@ void ListFiltered(ContextType ctx, ThisType thisObject, size_t argumentCount, co
     }
 }
 
-template<typename ContextType, typename ThisType, typename ArgumentsType, typename ReturnType, typename ExceptionType>
-void ListSorted(ContextType ctx, ThisType thisObject, size_t argumentCount, const ArgumentsType &arguments, ReturnType &returnObject, ExceptionType &exceptionObject) {
+template<typename ContextType, typename ObjectType, typename ValueType, typename ReturnType, typename ExceptionType>
+void ListSorted(ContextType ctx, ObjectType thisObject, size_t argumentCount, const ValueType arguments[], ReturnType &returnObject, ExceptionType &exceptionObject) {
     try {
         List *list = RJSGetInternal<List *>(thisObject);
         RJSValidateArgumentRange(argumentCount, 1, 2);

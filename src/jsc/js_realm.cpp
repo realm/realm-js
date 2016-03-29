@@ -27,7 +27,6 @@
 #include "impl/realm_coordinator.hpp"
 #include "object_accessor.hpp"
 #include "binding_context.hpp"
-#include "results.hpp"
 
 #include <set>
 #include <cassert>
@@ -238,33 +237,33 @@ static const JSStaticValue RealmStaticProperties[] = {
     {NULL, NULL}
 };
 
-template<typename ContextType, typename ObjectType, typename ValueType, typename ReturnType, typename ExceptionType>
-void RealmSchemaVersion(ContextType ctx, ObjectType thisObject, size_t argumentCount, const ValueType arguments[], ReturnType &returnObject, ExceptionType &exceptionObject) {
+JSValueRef RealmSchemaVersion(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) {
     try {
         RJSValidateArgumentRange(argumentCount, 1, 2);
         
         Realm::Config config;
         config.path = RJSNormalizePath(RJSValidatedStringForValue(ctx, arguments[0]));
         if (argumentCount == 2) {
-            auto encryptionKeyValue = arguments[1];
+            JSValueRef encryptionKeyValue = arguments[1];
             std::string encryptionKey = RJSAccessor::to_binary(ctx, encryptionKeyValue);
             config.encryption_key = std::vector<char>(encryptionKey.begin(), encryptionKey.end());
         }
 
         auto version = Realm::get_schema_version(config);
         if (version == ObjectStore::NotVersioned) {
-            RJSSetReturnNumber(ctx, returnObject, -1);
+            return JSValueMakeNumber(ctx, -1);
         }
         else {
-            RJSSetReturnNumber(ctx, returnObject, version);
+            return JSValueMakeNumber(ctx, version);
         }
     }
     catch (std::exception &exp) {
-        RJSSetException(ctx, exceptionObject, exp);
+        if (jsException) {
+            *jsException = RJSMakeError(ctx, exp);
+        }
     }
+    return NULL;
 }
-
-WRAP_METHOD(RealmSchemaVersion)
 
 static const JSStaticFunction RealmConstructorFuncs[] = {
     {"schemaVersion", RealmSchemaVersion, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
@@ -311,21 +310,46 @@ std::string RJSValidatedObjectTypeForValue(SharedRealm &realm, JSContextRef ctx,
     return RJSValidatedStringForValue(ctx, value, "objectType");
 }
 
-template<typename ContextType, typename ObjectType, typename ValueType, typename ReturnType, typename ExceptionType>
-void RealmObjects(ContextType ctx, ObjectType thisObject, size_t argumentCount, const ValueType arguments[], ReturnType &returnObject, ExceptionType &exceptionObject) {    try {
+JSValueRef RealmObjects(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) {
+    try {
         RJSValidateArgumentCount(argumentCount, 1);
 
         SharedRealm sharedRealm = *RJSGetInternal<SharedRealm *>(thisObject);
         std::string className = RJSValidatedObjectTypeForValue(sharedRealm, ctx, arguments[0]);
-        returnObject = RJSResultsCreate(ctx, sharedRealm, className);
+        return RJSResultsCreate(ctx, sharedRealm, className);
     }
     catch (std::exception &exp) {
-        RJSSetException(ctx, exceptionObject, exp);
+        if (jsException) {
+            *jsException = RJSMakeError(ctx, exp);
+        }
+        return NULL;
     }
 }
 
-template<typename ContextType, typename ObjectType, typename ValueType, typename ReturnType, typename ExceptionType>
-void RealmCreateObject(ContextType ctx, ObjectType thisObject, size_t argumentCount, const ValueType arguments[], ReturnType &returnObject, ExceptionType &exceptionObject) {
+JSObjectRef RJSDictForPropertyArray(JSContextRef ctx, const ObjectSchema &object_schema, JSObjectRef array) {
+    // copy to dictionary
+    if (object_schema.properties.size() != RJSValidatedListLength(ctx, array)) {
+        throw std::runtime_error("Array must contain values for all object properties");
+    }
+
+    JSValueRef exception = NULL;
+    JSObjectRef dict = JSObjectMake(ctx, NULL, NULL);
+    for (unsigned int i = 0; i < object_schema.properties.size(); i++) {
+        JSStringRef nameStr = JSStringCreateWithUTF8CString(object_schema.properties[i].name.c_str());
+        JSValueRef value = JSObjectGetPropertyAtIndex(ctx, array, i, &exception);
+        if (exception) {
+            throw RJSException(ctx, exception);
+        }
+        JSObjectSetProperty(ctx, dict, nameStr, value, kJSPropertyAttributeNone, &exception);
+        if (exception) {
+            throw RJSException(ctx, exception);
+        }
+        JSStringRelease(nameStr);
+    }
+    return dict;
+}
+
+JSValueRef RealmCreateObject(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) {
     try {
         RJSValidateArgumentRange(argumentCount, 2, 3);
 
@@ -335,73 +359,77 @@ void RealmCreateObject(ContextType ctx, ObjectType thisObject, size_t argumentCo
         auto object_schema = schema->find(className);
 
         if (object_schema == schema->end()) {
-            throw std::runtime_error("Object type '" + className + "' not found in schema.");
+            *jsException = RJSMakeError(ctx, "Object type '" + className + "' not found in schema.");
+            return NULL;
         }
 
-        auto object = RJSValidatedValueToObject(ctx, arguments[1]);
+        JSObjectRef object = RJSValidatedValueToObject(ctx, arguments[1]);
         if (RJSIsValueArray(ctx, arguments[1])) {
             object = RJSDictForPropertyArray(ctx, *object_schema, object);
         }
 
         bool update = false;
         if (argumentCount == 3) {
-            update = RJSValidatedValueToBoolean(ctx, arguments[2]);
+            update = JSValueToBoolean(ctx, arguments[2]);
         }
 
-        returnObject = RJSObjectCreate(ctx, Object::create<ValueType>(ctx, sharedRealm, *object_schema, object, update));
+        return RJSObjectCreate(ctx, Object::create<JSValueRef>(ctx, sharedRealm, *object_schema, object, update));
     }
     catch (std::exception &exp) {
-        RJSSetException(ctx, exceptionObject, exp);
+        if (jsException) {
+            *jsException = RJSMakeError(ctx, exp);
+        }
+        return NULL;
     }
 }
 
-template<typename ContextType, typename ObjectType, typename ValueType, typename ReturnType, typename ExceptionType>
-void RealmDelete(ContextType ctx, ObjectType thisObject, size_t argumentCount, const ValueType arguments[], ReturnType &returnObject, ExceptionType &exceptionObject) {    try {
+JSValueRef RealmDelete(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) {
+    try {
         RJSValidateArgumentCount(argumentCount, 1);
-    
+
+        if (RJSIsValueArray(ctx, arguments[0]) ||
+            JSValueIsObjectOfClass(ctx, arguments[0], RJSResultsClass()) ||
+            JSValueIsObjectOfClass(ctx, arguments[0], RJSListClass()))
+        {
+            JSObjectRef array = RJSValidatedValueToObject(ctx, arguments[0]);
+            size_t length = RJSValidatedListLength(ctx, array);
+            for (long i = length-1; i >= 0; i--) {
+                JSValueRef object = RJSValidatedObjectAtIndex(ctx, array, (unsigned int)i);
+                RealmDelete(ctx, function, thisObject, 1, &object, jsException);
+                if (*jsException) {
+                    return NULL;
+                }
+            }
+            return NULL;
+        }
+
+        if (!JSValueIsObjectOfClass(ctx, arguments[0], RJSObjectClass())) {
+            throw std::runtime_error("Argument to 'delete' must be a Realm object or a collection of Realm objects.");
+        }
+
+        Object *object = RJSGetInternal<Object *>(RJSValidatedValueToObject(ctx, arguments[0]));
+
         SharedRealm realm = *RJSGetInternal<SharedRealm *>(thisObject);
+
         if (!realm->is_in_transaction()) {
             throw std::runtime_error("Can only delete objects within a transaction.");
         }
-    
-        auto arg = RJSValidatedValueToObject(ctx, arguments[0]);
-        if (RJSValueIsObjectOfClass(ctx, arg, RJSObjectClass())) {
-            Object *object = RJSGetInternal<Object *>(arg);
-            realm::TableRef table = ObjectStore::table_for_object_type(realm->read_group(), object->get_object_schema().name);
-            table->move_last_over(object->row().get_index());
-        }
-        else if (RJSIsValueArray(ctx, arg)) {
-            size_t length = RJSValidatedListLength(ctx, arg);
-            for (long i = length-1; i >= 0; i--) {
-                JSObjectRef jsObject = RJSValidatedValueToObject(ctx, RJSValidatedObjectAtIndex(ctx, arg, (unsigned int)i));
-                if (!RJSValueIsObjectOfClass(ctx, jsObject, RJSObjectClass())) {
-                    throw std::runtime_error("Argument to 'delete' must be a Realm object or a collection of Realm objects.");
-                }
-                
-                Object *object = RJSGetInternal<Object *>(jsObject);
-                realm::TableRef table = ObjectStore::table_for_object_type(realm->read_group(), object->get_object_schema().name);
-                table->move_last_over(object->row().get_index());
-            }
-        }
-        else if(RJSValueIsObjectOfClass(ctx, arg, RJSResultsClass())) {
-            Results *results = RJSGetInternal<Results *>(arg);
-            results->clear();
-        }
-        else if(RJSValueIsObjectOfClass(ctx, arg, RJSListClass())) {
-            List *list = RJSGetInternal<List *>(arg);
-            list->delete_all();
-        }
-        else {
-            throw std::runtime_error("Argument to 'delete' must be a Realm object or a collection of Realm objects.");
-        }
+
+        realm::TableRef table = ObjectStore::table_for_object_type(realm->read_group(), object->get_object_schema().name);
+        table->move_last_over(object->row().get_index());
+
+        return NULL;
     }
     catch (std::exception &exp) {
-        RJSSetException(ctx, exceptionObject, exp);
+        if (jsException) {
+            *jsException = RJSMakeError(ctx, exp);
+        }
+        return NULL;
     }
 }
 
-template<typename ContextType, typename ObjectType, typename ValueType, typename ReturnType, typename ExceptionType>
-void RealmDeleteAll(ContextType ctx, ObjectType thisObject, size_t argumentCount, const ValueType arguments[], ReturnType &returnObject, ExceptionType &exceptionObject) {    try {
+JSValueRef RealmDeleteAll(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) {
+    try {
         RJSValidateArgumentCount(argumentCount, 0);
 
         SharedRealm realm = *RJSGetInternal<SharedRealm *>(thisObject);
@@ -413,29 +441,39 @@ void RealmDeleteAll(ContextType ctx, ObjectType thisObject, size_t argumentCount
         for (auto objectSchema : *realm->config().schema) {
             ObjectStore::table_for_object_type(realm->read_group(), objectSchema.name)->clear();
         }
+        return NULL;
     }
     catch (std::exception &exp) {
-        RJSSetException(ctx, exceptionObject, exp);
+        if (jsException) {
+            *jsException = RJSMakeError(ctx, exp);
+        }
+        return NULL;
     }
 }
 
-template<typename ContextType, typename ObjectType, typename ValueType, typename ReturnType, typename ExceptionType>
-void RealmWrite(ContextType ctx, ObjectType thisObject, size_t argumentCount, const ValueType arguments[], ReturnType &returnObject, ExceptionType &exceptionObject) {
-    SharedRealm realm = *RJSGetInternal<SharedRealm *>(thisObject);
+JSValueRef RealmWrite(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) {
     try {
         RJSValidateArgumentCount(argumentCount, 1);
 
-        auto object = RJSValidatedValueToFunction(ctx, arguments[0]);
+        JSObjectRef object = RJSValidatedValueToFunction(ctx, arguments[0]);
+        SharedRealm realm = *RJSGetInternal<SharedRealm *>(thisObject);
         realm->begin_transaction();
-        RJSCallFunction(ctx, object, thisObject, 0, NULL);
-        realm->commit_transaction();
-    }
-    catch (std::exception &exp) {
-        if (realm->is_in_transaction()) {
+        JSObjectCallAsFunction(ctx, object, thisObject, 0, NULL, jsException);
+        if (*jsException) {
             realm->cancel_transaction();
         }
-        RJSSetException(ctx, exceptionObject, exp);
+        else {
+            realm->commit_transaction();
+        }
     }
+    catch (std::exception &exp) {
+        if (jsException) {
+            *jsException = RJSMakeError(ctx, exp);
+        }
+        return NULL;
+    }
+
+    return NULL;
 }
 
 std::string RJSValidatedNotificationName(JSContextRef ctx, JSValueRef value) {
@@ -446,36 +484,44 @@ std::string RJSValidatedNotificationName(JSContextRef ctx, JSValueRef value) {
     return name;
 }
 
-template<typename ContextType, typename ObjectType, typename ValueType, typename ReturnType, typename ExceptionType>
-void RealmAddListener(ContextType ctx, ObjectType thisObject, size_t argumentCount, const ValueType arguments[], ReturnType &returnObject, ExceptionType &exceptionObject) {    try {
+JSValueRef RealmAddListener(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) {
+    try {
         RJSValidateArgumentCount(argumentCount, 2);
         __unused std::string name = RJSValidatedNotificationName(ctx, arguments[0]);
-        auto callback = RJSValidatedValueToFunction(ctx, arguments[1]);
+        JSObjectRef callback = RJSValidatedValueToFunction(ctx, arguments[1]);
 
         SharedRealm realm = *RJSGetInternal<SharedRealm *>(thisObject);
         static_cast<RJSRealmDelegate *>(realm->m_binding_context.get())->add_notification(callback);
+        return NULL;
     }
     catch (std::exception &exp) {
-        RJSSetException(ctx, exceptionObject, exp);
+        if (jsException) {
+            *jsException = RJSMakeError(ctx, exp);
+        }
+        return NULL;
     }
 }
 
-template<typename ContextType, typename ObjectType, typename ValueType, typename ReturnType, typename ExceptionType>
-void RealmRemoveListener(ContextType ctx, ObjectType thisObject, size_t argumentCount, const ValueType arguments[], ReturnType &returnObject, ExceptionType &exceptionObject) {    try {
+JSValueRef RealmRemoveListener(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) {
+    try {
         RJSValidateArgumentCount(argumentCount, 2);
         __unused std::string name = RJSValidatedNotificationName(ctx, arguments[0]);
-        auto callback = RJSValidatedValueToFunction(ctx, arguments[1]);
+        JSObjectRef callback = RJSValidatedValueToFunction(ctx, arguments[1]);
 
         SharedRealm realm = *RJSGetInternal<SharedRealm *>(thisObject);
         static_cast<RJSRealmDelegate *>(realm->m_binding_context.get())->remove_notification(callback);
+        return NULL;
     }
     catch (std::exception &exp) {
-        RJSSetException(ctx, exceptionObject, exp);
+        if (jsException) {
+            *jsException = RJSMakeError(ctx, exp);
+        }
+        return NULL;
     }
 }
 
-template<typename ContextType, typename ObjectType, typename ValueType, typename ReturnType, typename ExceptionType>
-void RealmRemoveAllListeners(ContextType ctx, ObjectType thisObject, size_t argumentCount, const ValueType arguments[], ReturnType &returnObject, ExceptionType &exceptionObject) {    try {
+JSValueRef RealmRemoveAllListeners(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) {
+    try {
         RJSValidateArgumentRange(argumentCount, 0, 1);
         if (argumentCount) {
             RJSValidatedNotificationName(ctx, arguments[0]);
@@ -483,32 +529,29 @@ void RealmRemoveAllListeners(ContextType ctx, ObjectType thisObject, size_t argu
 
         SharedRealm realm = *RJSGetInternal<SharedRealm *>(thisObject);
         static_cast<RJSRealmDelegate *>(realm->m_binding_context.get())->remove_all_notifications();
+        return NULL;
     }
     catch (std::exception &exp) {
-        RJSSetException(ctx, exceptionObject, exp);
+        if (jsException) {
+            *jsException = RJSMakeError(ctx, exp);
+        }
+        return NULL;
     }
 }
 
-template<typename ContextType, typename ObjectType, typename ValueType, typename ReturnType, typename ExceptionType>
-void RealmClose(ContextType ctx, ObjectType thisObject, size_t argumentCount, const ValueType arguments[], ReturnType &returnObject, ExceptionType &exceptionObject) {    try {
+JSValueRef RealmClose(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) {
+    try {
         RJSValidateArgumentCount(argumentCount, 0);
         SharedRealm realm = *RJSGetInternal<SharedRealm *>(thisObject);
         realm->close();
     }
     catch (std::exception &exp) {
-        RJSSetException(ctx, exceptionObject, exp);
+        if (jsException) {
+            *jsException = RJSMakeError(ctx, exp);
+        }
     }
+    return NULL;
 }
-
-WRAP_METHOD(RealmObjects)
-WRAP_METHOD(RealmCreateObject)
-WRAP_METHOD(RealmDelete)
-WRAP_METHOD(RealmDeleteAll)
-WRAP_METHOD(RealmWrite)
-WRAP_METHOD(RealmAddListener)
-WRAP_METHOD(RealmRemoveListener)
-WRAP_METHOD(RealmRemoveAllListeners)
-WRAP_METHOD(RealmClose)
 
 static const JSStaticFunction RJSRealmFuncs[] = {
     {"objects", RealmObjects, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},

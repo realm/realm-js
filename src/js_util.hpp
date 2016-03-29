@@ -29,6 +29,8 @@
 #include <stdexcept>
 #include <cmath>
 #include "property.hpp"
+
+#include "js_compat.hpp"
 #include "schema.hpp"
 
 #define WRAP_METHOD(METHOD_NAME) \
@@ -37,7 +39,6 @@ JSValueRef METHOD_NAME(JSContextRef ctx, JSObjectRef function, JSObjectRef thisO
     METHOD_NAME(ctx, thisObject, argumentCount, arguments, returnObject, jsException); \
     return returnObject; \
 }
-
 
 template<typename T>
 inline void RJSFinalize(JSObjectRef object) {
@@ -314,3 +315,4 @@ static void RJSCallFunction(JSContextRef ctx, JSObjectRef function, JSObjectRef 
 static bool RJSValueIsObjectOfClass(JSContextRef ctx, JSValueRef value, JSClassRef jsClass) {
     return JSValueIsObjectOfClass(ctx, value, jsClass);
 }
+
