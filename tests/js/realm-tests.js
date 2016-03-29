@@ -138,6 +138,30 @@ module.exports = BaseTest.extend({
         });
     },
 
+    testRealmWrite: function() {
+        var realm = new Realm({schema: [schemas.IntPrimary, schemas.AllTypes, schemas.TestObject]});
+            
+        // exceptions should be propogated
+        TestCase.assertThrows(function() {
+            realm.write(function() {
+                realm.invalid();
+            });
+        });
+
+        // writes should be possible after caught exception
+        realm.write(function() {
+            realm.create('TestObject', {doubleCol: 1});
+        });
+        TestCase.assertEqual(1, realm.objects('TestObject').length);
+
+        realm.write(function() {
+            // nested transactions not supported
+            TestCase.assertThrows(function() {
+                realm.write(function() {});
+            });
+        });
+    },
+
     testRealmCreate: function() {
         var realm = new Realm({schema: [schemas.IntPrimary, schemas.AllTypes, schemas.TestObject]});
 
