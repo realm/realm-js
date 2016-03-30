@@ -117,8 +117,4 @@ JSClassRef RJSListClass() {
     return s_listClass;
 }
 
-namespace realm {
-namespace js {
-JSClassRef list_class() { return RJSListClass(); };
-}
-}
+JSClassRef realm::js::list_class() { return RJSListClass(); };

@@ -42,7 +42,7 @@ static JSValueRef GetDefaultPath(JSContextRef ctx, JSObjectRef object, JSStringR
 
 static bool SetDefaultPath(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef value, JSValueRef* jsException) {
     try {
-        realm::js::set_default_path(RJSValidatedStringForValue(ctx, value, "defaultPath"));
+        js::set_default_path(RJSValidatedStringForValue(ctx, value, "defaultPath"));
     }
     catch (std::exception &ex) {
         if (jsException) {

@@ -30,7 +30,10 @@ static inline bool ValueIsBoolean(jsc::Types::Context ctx, jsc::Types::Value val
 static inline bool ValueIsNumber(jsc::Types::Context ctx, jsc::Types::Value value) { return JSValueIsNumber(ctx, value); }
 static inline bool ValueIsString(jsc::Types::Context ctx, jsc::Types::Value value) { return JSValueIsString(ctx, value); }
 static inline bool ValueIsObject(jsc::Types::Context ctx, jsc::Types::Value value) { return JSValueIsObject(ctx, value); }
-
+static inline bool ValueIsConstructor(jsc::Types::Context ctx, jsc::Types::Value value) { return ValueIsObject(ctx, value) && JSObjectIsConstructor(ctx, (JSObjectRef)value); }
+    
+static inline jsc::Types::Object ValueToObject(jsc::Types::Context ctx, jsc::Types::Value value) { return (JSObjectRef)value; }
+    
 static inline void ValueProtect(jsc::Types::Context ctx, jsc::Types::Value value) { JSValueProtect(ctx, value); }
 static inline void ValueUnprotect(jsc::Types::Context ctx, jsc::Types::Value value) { JSValueUnprotect(ctx, value); }
 
@@ -42,7 +45,7 @@ static inline void GlobalContextProtect(jsc::Types::GlobalContext ctx) { JSGloba
 static inline void GlobalContextUnprotect(jsc::Types::GlobalContext ctx) { JSGlobalContextRelease(ctx); }
 
 template<class T>
-static jsc::Types::Object WrapObject(jsc::Types::Context ctx, jsc::Types::ObjectClass objectClass, T internal, jsc::Types::Object prototype = nullptr) {
+jsc::Types::Object WrapObject(jsc::Types::Context ctx, jsc::Types::ObjectClass objectClass, T internal, jsc::Types::Object prototype = nullptr) {
     JSObjectRef ref = JSObjectMake(ctx, objectClass, (void *)internal);
     if (prototype) {
         JSObjectSetPrototype(ctx, ref, prototype);
@@ -50,9 +53,9 @@ static jsc::Types::Object WrapObject(jsc::Types::Context ctx, jsc::Types::Object
     return ref;
 }
 
-static inline jsc::Types::ObjectClass realm_class();
-static inline jsc::Types::ObjectClass list_class();
-static inline jsc::Types::ObjectClass object_class();
-static inline jsc::Types::ObjectClass results_class();
+jsc::Types::ObjectClass realm_class();
+jsc::Types::ObjectClass list_class();
+jsc::Types::ObjectClass object_class();
+jsc::Types::ObjectClass results_class();
 
 }}

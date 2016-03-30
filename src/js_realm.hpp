@@ -111,31 +111,12 @@ private:
 };
 
 template<typename T>
-static RealmDelegate<T> *get_delegate(Realm *realm) {
+RealmDelegate<T> *get_delegate(Realm *realm) {
     return dynamic_cast<realm::js::RealmDelegate<T> *>(realm->m_binding_context.get());
 }
 
-static inline std::string default_path();
-static inline void set_default_path(std::string path);
-
-    
-std::string RJSValidatedObjectTypeForValue(SharedRealm &realm, JSContextRef ctx, JSValueRef value) {
-    if (JSValueIsObject(ctx, value) && JSObjectIsConstructor(ctx, (JSObjectRef)value)) {
-        JSObjectRef constructor = (JSObjectRef)value;
-
-        auto delegate = js::get_delegate<jsc::Types>(realm.get());
-        for (auto pair : delegate->m_constructors) {
-            if (pair.second == constructor) {
-                return pair.first;
-            }
-        }
-
-        throw std::runtime_error("Constructor was not registered in the schema for this Realm");
-    }
-
-    return RJSValidatedStringForValue(ctx, value, "objectType");
-}
-
+std::string default_path();
+void set_default_path(std::string path);
 
 template<typename T>
 class Realm : public BindingContext {
@@ -163,6 +144,24 @@ public:
         }
         return name;
     }
+    
+    // converts constructor object or type name to type name
+    static std::string validated_object_type_for_value(SharedRealm &realm, JSContextRef ctx, JSValueRef value) {
+        if (ValueIsObject(ctx, value) && ValueIsConstructor(ctx, value)) {
+            ObjectType constructor = ValueToObject(ctx, value);
+            
+            auto delegate = get_delegate<T>(realm.get());
+            for (auto pair : delegate->m_constructors) {
+                if (pair.second == constructor) {
+                    return pair.first;
+                }
+            }
+            throw std::runtime_error("Constructor was not registered in the schema for this Realm");
+        }
+        return RJSValidatedStringForValue(ctx, value, "objectType");
+    }
+    
+
 };
 
 template<typename T>
@@ -171,7 +170,7 @@ void Realm<T>::Objects(ContextType ctx, ObjectType thisObject, size_t argumentCo
         RJSValidateArgumentCount(argumentCount, 1);
 
         SharedRealm sharedRealm = *RJSGetInternal<SharedRealm *>(thisObject);
-        std::string className = RJSValidatedObjectTypeForValue(sharedRealm, ctx, arguments[0]);
+        std::string className = validated_object_type_for_value(sharedRealm, ctx, arguments[0]);
         returnObject = RJSResultsCreate(ctx, sharedRealm, className);
     }
     catch (std::exception &exp) {
@@ -185,7 +184,7 @@ void Realm<T>::Create(ContextType ctx, ObjectType thisObject, size_t argumentCou
         RJSValidateArgumentRange(argumentCount, 2, 3);
 
         SharedRealm sharedRealm = *RJSGetInternal<SharedRealm *>(thisObject);
-        std::string className = RJSValidatedObjectTypeForValue(sharedRealm, ctx, arguments[0]);
+        std::string className = validated_object_type_for_value(sharedRealm, ctx, arguments[0]);
         auto &schema = sharedRealm->config().schema;
         auto object_schema = schema->find(className);
 
@@ -221,7 +220,7 @@ void Realm<T>::Delete(ContextType ctx, ObjectType thisObject, size_t argumentCou
         }
 
         auto arg = RJSValidatedValueToObject(ctx, arguments[0]);
-        if (RJSValueIsObjectOfClass(ctx, arg, realm::js::results_class())) {
+        if (RJSValueIsObjectOfClass(ctx, arg, realm::js::object_class())) {
             Object *object = RJSGetInternal<Object *>(arg);
             realm::TableRef table = ObjectStore::table_for_object_type(realm->read_group(), object->get_object_schema().name);
             table->move_last_over(object->row().get_index());
@@ -243,7 +242,7 @@ void Realm<T>::Delete(ContextType ctx, ObjectType thisObject, size_t argumentCou
             Results *results = RJSGetInternal<Results *>(arg);
             results->clear();
         }
-        else if(RJSValueIsObjectOfClass(ctx, arg, list_class())) {
+        else if(RJSValueIsObjectOfClass(ctx, arg, realm::js::list_class())) {
             List *list = RJSGetInternal<List *>(arg);
             list->delete_all();
         }
