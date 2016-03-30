@@ -36,7 +36,8 @@
 #define WRAP_CLASS_METHOD(CLASS_NAME, METHOD_NAME) \
 JSValueRef CLASS_NAME ## METHOD_NAME(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) { \
     JSValueRef returnObject = NULL; \
-    CLASS_NAME::METHOD_NAME(ctx, thisObject, argumentCount, arguments, returnObject, *jsException); \
+    try { CLASS_NAME::METHOD_NAME(ctx, thisObject, argumentCount, arguments, returnObject); } \
+    catch(std::exception &ex) { RJSSetException(ctx, *jsException, ex); } \
     return returnObject; \
 }
 
