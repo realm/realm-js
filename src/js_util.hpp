@@ -123,19 +123,19 @@ std::string RJSValidatedStringForValue(JSContextRef ctx, JSValueRef value, const
 JSStringRef RJSStringForString(const std::string &str);
 JSValueRef RJSValueForString(JSContextRef ctx, const std::string &str);
 
-inline void RJSValidateArgumentCount(size_t argumentCount, size_t expected, const char *message = NULL) {
+inline void RJSValidateArgumentCount(size_t argumentCount, size_t expected, const char *message = nullptr) {
     if (argumentCount != expected) {
         throw std::invalid_argument(message ?: "Invalid arguments");
     }
 }
 
-inline void RJSValidateArgumentCountIsAtLeast(size_t argumentCount, size_t expected, const char *message = NULL) {
+inline void RJSValidateArgumentCountIsAtLeast(size_t argumentCount, size_t expected, const char *message = nullptr) {
     if (argumentCount < expected) {
         throw std::invalid_argument(message ?: "Invalid arguments");
     }
 }
 
-inline void RJSValidateArgumentRange(size_t argumentCount, size_t min, size_t max, const char *message = NULL) {
+inline void RJSValidateArgumentRange(size_t argumentCount, size_t min, size_t max, const char *message = nullptr) {
     if (argumentCount < min || argumentCount > max) {
         throw std::invalid_argument(message ?: "Invalid arguments");
     }
@@ -159,7 +159,7 @@ bool RJSIsValueArray(JSContextRef ctx, JSValueRef value);
 bool RJSIsValueArrayBuffer(JSContextRef ctx, JSValueRef value);
 bool RJSIsValueDate(JSContextRef ctx, JSValueRef value);
 
-static inline JSObjectRef RJSValidatedValueToObject(JSContextRef ctx, JSValueRef value, const char *message = NULL) {
+static inline JSObjectRef RJSValidatedValueToObject(JSContextRef ctx, JSValueRef value, const char *message = nullptr) {
     JSObjectRef object = JSValueToObject(ctx, value, NULL);
     if (!object) {
         throw std::runtime_error(message ?: "Value is not an object.");
@@ -167,7 +167,7 @@ static inline JSObjectRef RJSValidatedValueToObject(JSContextRef ctx, JSValueRef
     return object;
 }
 
-static inline JSObjectRef RJSValidatedValueToDate(JSContextRef ctx, JSValueRef value, const char *message = NULL) {
+static inline JSObjectRef RJSValidatedValueToDate(JSContextRef ctx, JSValueRef value, const char *message = nullptr) {
     JSObjectRef object = JSValueToObject(ctx, value, NULL);
     if (!object || !RJSIsValueDate(ctx, object)) {
         throw std::runtime_error(message ?: "Value is not a date.");
@@ -175,7 +175,7 @@ static inline JSObjectRef RJSValidatedValueToDate(JSContextRef ctx, JSValueRef v
     return object;
 }
 
-static inline JSObjectRef RJSValidatedValueToFunction(JSContextRef ctx, JSValueRef value, const char *message = NULL) {
+static inline JSObjectRef RJSValidatedValueToFunction(JSContextRef ctx, JSValueRef value, const char *message = nullptr) {
     JSObjectRef object = JSValueToObject(ctx, value, NULL);
     if (!object || !JSObjectIsFunction(ctx, object)) {
         throw std::runtime_error(message ?: "Value is not a function.");
@@ -199,9 +199,9 @@ static inline double RJSValidatedValueToNumber(JSContextRef ctx, JSValueRef valu
     return number;
 }
 
-static inline double RJSValidatedValueToBoolean(JSContextRef ctx, JSValueRef value) {
+static inline double RJSValidatedValueToBoolean(JSContextRef ctx, JSValueRef value, const char *err = nullptr) {
     if (!JSValueIsBoolean(ctx, value)) {
-        throw std::invalid_argument("Value is not a boolean.");
+        throw std::invalid_argument(err ?: "Value is not a boolean.");
     }
     return JSValueToBoolean(ctx, value);
 }
@@ -224,7 +224,7 @@ static inline JSValueRef RJSValidatedPropertyAtIndex(JSContextRef ctx, JSObjectR
     return propertyValue;
 }
 
-static inline JSObjectRef RJSValidatedObjectProperty(JSContextRef ctx, JSObjectRef object, JSStringRef property, const char *err = NULL) {
+static inline JSObjectRef RJSValidatedObjectProperty(JSContextRef ctx, JSObjectRef object, JSStringRef property, const char *err = nullptr) {
     JSValueRef propertyValue = RJSValidatedPropertyValue(ctx, object, property);
     if (JSValueIsUndefined(ctx, propertyValue)) {
         throw std::runtime_error(err ?: "Object property '" + RJSStringForJSString(property) + "' is undefined");

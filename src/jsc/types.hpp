@@ -28,6 +28,7 @@ namespace jsc {
 class String {
   public:
     String(const char * str) : m_str(JSStringCreateWithUTF8CString(str)) {}
+    String(const String &other) : m_str(JSStringRetain(other)) {}
     ~String() { JSStringRelease(m_str); }
     operator JSStringRef() const { return m_str; }
     

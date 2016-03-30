@@ -20,6 +20,7 @@
 
 #include "types.hpp"
 #include <string>
+#include <vector>
 
 namespace realm {
 namespace js {
@@ -33,10 +34,31 @@ static inline bool ValueIsObject(jsc::Types::Context ctx, jsc::Types::Value valu
 static inline bool ValueIsConstructor(jsc::Types::Context ctx, jsc::Types::Value value) { return ValueIsObject(ctx, value) && JSObjectIsConstructor(ctx, (JSObjectRef)value); }
     
 static inline jsc::Types::Object ValueToObject(jsc::Types::Context ctx, jsc::Types::Value value) { return (JSObjectRef)value; }
-    
+
 static inline void ValueProtect(jsc::Types::Context ctx, jsc::Types::Value value) { JSValueProtect(ctx, value); }
 static inline void ValueUnprotect(jsc::Types::Context ctx, jsc::Types::Value value) { JSValueUnprotect(ctx, value); }
 
+static inline std::string StringTypeToString(JSStringRef jsString) {
+    std::string str;
+    size_t maxSize = JSStringGetMaximumUTF8CStringSize(jsString);
+    str.resize(maxSize);
+    str.resize(JSStringGetUTF8CString(jsString, &str[0], maxSize) - 1);
+    return str;
+}
+    
+static inline std::vector<std::string> ObjectGetPropertyNames(jsc::Types::Context ctx, jsc::Types::Object object) {
+    JSPropertyNameArrayRef propertyNames = JSObjectCopyPropertyNames(ctx, object);
+    size_t propertyCount = JSPropertyNameArrayGetCount(propertyNames);
+    std::vector<std::string> outNames;
+    for (size_t i = 0; i < propertyCount; i++) {
+        outNames.push_back(StringTypeToString(JSPropertyNameArrayGetNameAtIndex(propertyNames, i)));
+    }
+    JSPropertyNameArrayRelease(propertyNames);
+    return outNames;
+}
+static inline jsc::Types::Value ObjectGetProperty(jsc::Types::Context ctx, jsc::Types::Object object, jsc::Types::String propertyName, jsc::Types::Exception *exception) {
+    return JSObjectGetProperty(ctx, object, propertyName, exception);
+}
 static inline void ObjectCallAsFunction(jsc::Types::Context ctx, jsc::Types::Object function, jsc::Types::Object thisObject, size_t argsCount, const jsc::Types::Value args[], jsc::Types::Exception &exception) {
     JSObjectCallAsFunction(ctx, function, thisObject, argsCount, args, &exception);
 }

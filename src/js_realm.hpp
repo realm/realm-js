@@ -20,11 +20,13 @@
 
 #include "js_util.hpp"
 #include "js_schema.hpp"
+
 #include "shared_realm.hpp"
 #include "binding_context.hpp"
 #include "object_accessor.hpp"
 #include "results.hpp"
 #include "platform.hpp"
+
 #include <map>
 #include <set>
 
@@ -191,8 +193,8 @@ void Realm<T>::Constructor(ContextType ctx, ObjectType constructor, size_t argum
     using StringType = typename T::String;
     
     realm::Realm::Config config;
-    std::map<std::string, ObjectDefaults> defaults;
-    std::map<std::string, ObjectType> constructors;
+    typename Schema<T>::ObjectDefaultsMap defaults;
+    typename Schema<T>::ConstructorMap constructors;
     if (argumentCount == 0) {
         config.path = default_path();
     }
@@ -215,8 +217,8 @@ void Realm<T>::Constructor(ContextType ctx, ObjectType constructor, size_t argum
             
             StringType schemaString("schema");
             ValueType schemaValue = RJSValidatedPropertyValue(ctx, object, schemaString);
-            if (!JSValueIsUndefined(ctx, schemaValue)) {
-                config.schema.reset(new Schema(RJSParseSchema(ctx, RJSValidatedValueToObject(ctx, schemaValue), defaults, constructors)));
+            if (!ValueIsUndefined(ctx, schemaValue)) {
+                config.schema.reset(new realm::Schema(Schema<T>::parse_schema(ctx, RJSValidatedValueToObject(ctx, schemaValue), defaults, constructors)));
             }
             
             StringType schemaVersionString("schemaVersion");
