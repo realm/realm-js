@@ -24,14 +24,24 @@
 
 namespace realm {
 namespace jsc {
- 
+    
+class String {
+  public:
+    String(const char * str) : m_str(JSStringCreateWithUTF8CString(str)) {}
+    ~String() { JSStringRelease(m_str); }
+    operator JSStringRef() const { return m_str; }
+    
+  private:
+    JSStringRef m_str;
+};
+    
 struct Types {
     using Context = JSContextRef;
     using GlobalContext = JSGlobalContextRef;
     using ObjectClass = JSClassRef;
     using Value = JSValueRef;
     using Object = JSObjectRef;
-    using String = JSStringRef;
+    using String = jsc::String;
     using Function = JSObjectRef;
     using Return = JSValueRef;
     using Exception = JSValueRef;

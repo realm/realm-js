@@ -188,7 +188,8 @@ public:
 template<typename T>
 void Realm<T>::Constructor(ContextType ctx, ObjectType constructor, size_t argumentCount, const ValueType arguments[], ObjectType &returnObject) {
     using RJSAccessor = realm::NativeAccessor<ValueType, ContextType>;
-
+    using StringType = typename T::String;
+    
     realm::Realm::Config config;
     std::map<std::string, ObjectDefaults> defaults;
     std::map<std::string, ObjectType> constructors;
@@ -201,10 +202,10 @@ void Realm<T>::Constructor(ContextType ctx, ObjectType constructor, size_t argum
             config.path = RJSValidatedStringForValue(ctx, value, "path");
         }
         else if (ValueIsObject(ctx, value)) {
-            JSObjectRef object = RJSValidatedValueToObject(ctx, value);
+            ObjectType object = RJSValidatedValueToObject(ctx, value);
             
-            static JSStringRef pathString = JSStringCreateWithUTF8CString("path");
-            JSValueRef pathValue = RJSValidatedPropertyValue(ctx, object, pathString);
+            StringType pathString("path");
+            ValueType pathValue = RJSValidatedPropertyValue(ctx, object, pathString);
             if (!JSValueIsUndefined(ctx, pathValue)) {
                 config.path = RJSValidatedStringForValue(ctx, pathValue, "path");
             }
@@ -212,14 +213,14 @@ void Realm<T>::Constructor(ContextType ctx, ObjectType constructor, size_t argum
                 config.path = js::default_path();
             }
             
-            static JSStringRef schemaString = JSStringCreateWithUTF8CString("schema");
-            JSValueRef schemaValue = RJSValidatedPropertyValue(ctx, object, schemaString);
+            StringType schemaString("schema");
+            ValueType schemaValue = RJSValidatedPropertyValue(ctx, object, schemaString);
             if (!JSValueIsUndefined(ctx, schemaValue)) {
                 config.schema.reset(new Schema(RJSParseSchema(ctx, RJSValidatedValueToObject(ctx, schemaValue), defaults, constructors)));
             }
             
-            static JSStringRef schemaVersionString = JSStringCreateWithUTF8CString("schemaVersion");
-            JSValueRef versionValue = RJSValidatedPropertyValue(ctx, object, schemaVersionString);
+            StringType schemaVersionString("schemaVersion");
+            ValueType versionValue = RJSValidatedPropertyValue(ctx, object, schemaVersionString);
             if (JSValueIsNumber(ctx, versionValue)) {
                 config.schema_version = RJSValidatedValueToNumber(ctx, versionValue);
             }
@@ -227,8 +228,8 @@ void Realm<T>::Constructor(ContextType ctx, ObjectType constructor, size_t argum
                 config.schema_version = 0;
             }
             
-            static JSStringRef encryptionKeyString = JSStringCreateWithUTF8CString("encryptionKey");
-            JSValueRef encryptionKeyValue = RJSValidatedPropertyValue(ctx, object, encryptionKeyString);
+            StringType encryptionKeyString("encryptionKey");
+            ValueType encryptionKeyValue = RJSValidatedPropertyValue(ctx, object, encryptionKeyString);
             if (!JSValueIsUndefined(ctx, encryptionKeyValue)) {
                 std::string encryptionKey = RJSAccessor::to_binary(ctx, encryptionKeyValue);
                 config.encryption_key = std::vector<char>(encryptionKey.begin(), encryptionKey.end());;
@@ -254,7 +255,7 @@ void Realm<T>::Constructor(ContextType ctx, ObjectType constructor, size_t argum
 
 template<typename T>
 void Realm<T>::SchemaVersion(ContextType ctx, ObjectType thisObject, size_t argumentCount, const ValueType arguments[], ReturnType &returnObject) {
-    using RJSAccessor = realm::NativeAccessor<JSValueRef, JSContextRef>;
+    using RJSAccessor = realm::NativeAccessor<ValueType, ContextType>;
 
     RJSValidateArgumentRange(argumentCount, 1, 2);
     
