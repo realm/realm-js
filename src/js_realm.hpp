@@ -19,10 +19,12 @@
 #pragma once
 
 #include "js_util.hpp"
+#include "js_schema.hpp"
 #include "shared_realm.hpp"
 #include "binding_context.hpp"
 #include "object_accessor.hpp"
 #include "results.hpp"
+#include "platform.hpp"
 #include <map>
 #include <set>
 
@@ -127,6 +129,7 @@ public:
     using ReturnType = typename T::Return;
     using ExceptionType = typename T::Exception;
 
+    // member methods
     static void Objects(ContextType ctx, ObjectType thisObject, size_t argumentCount, const ValueType arguments[], ReturnType &returnObject);
     static void Create(ContextType ctx, ObjectType thisObject, size_t argumentCount, const ValueType arguments[], ReturnType &returnObject);
     static void Delete(ContextType ctx, ObjectType thisObject, size_t argumentCount, const ValueType arguments[], ReturnType &returnObject);
@@ -136,6 +139,10 @@ public:
     static void RemoveListener(ContextType ctx, ObjectType thisObject, size_t argumentCount, const ValueType arguments[], ReturnType &returnObject);
     static void RemoveAllListeners(ContextType ctx, ObjectType thisObject, size_t argumentCount, const ValueType arguments[], ReturnType &returnObject);
     static void Close(ContextType ctx, ObjectType thisObject, size_t argumentCount, const ValueType arguments[], ReturnType &returnObject);
+    
+    // constructor methods
+    static void Constructor(ContextType ctx, ObjectType constructor, size_t argumentCount, const ValueType arguments[], ObjectType &returnObject);
+    static void SchemaVersion(ContextType ctx, ObjectType thisObject, size_t argumentCount, const ValueType arguments[], ReturnType &returnObject);
 
     static std::string validated_notification_name(JSContextRef ctx, JSValueRef value) {
         std::string name = RJSValidatedStringForValue(ctx, value);
@@ -161,8 +168,104 @@ public:
         return RJSValidatedStringForValue(ctx, value, "objectType");
     }
     
-
+    static std::string RJSNormalizePath(std::string path) {
+        if (path.size() && path[0] != '/') {
+            return default_realm_file_directory() + "/" + path;
+        }
+        return path;
+    }
 };
+    
+    
+template<typename T>
+void Realm<T>::Constructor(ContextType ctx, ObjectType constructor, size_t argumentCount, const ValueType arguments[], ObjectType &returnObject) {
+    using RJSAccessor = realm::NativeAccessor<ValueType, ContextType>;
+
+    realm::Realm::Config config;
+    std::map<std::string, ObjectDefaults> defaults;
+    std::map<std::string, ObjectType> constructors;
+    if (argumentCount == 0) {
+        config.path = default_path();
+    }
+    else if (argumentCount == 1) {
+        ValueType value = arguments[0];
+        if (ValueIsString(ctx, value)) {
+            config.path = RJSValidatedStringForValue(ctx, value, "path");
+        }
+        else if (ValueIsObject(ctx, value)) {
+            JSObjectRef object = RJSValidatedValueToObject(ctx, value);
+            
+            static JSStringRef pathString = JSStringCreateWithUTF8CString("path");
+            JSValueRef pathValue = RJSValidatedPropertyValue(ctx, object, pathString);
+            if (!JSValueIsUndefined(ctx, pathValue)) {
+                config.path = RJSValidatedStringForValue(ctx, pathValue, "path");
+            }
+            else {
+                config.path = js::default_path();
+            }
+            
+            static JSStringRef schemaString = JSStringCreateWithUTF8CString("schema");
+            JSValueRef schemaValue = RJSValidatedPropertyValue(ctx, object, schemaString);
+            if (!JSValueIsUndefined(ctx, schemaValue)) {
+                config.schema.reset(new Schema(RJSParseSchema(ctx, RJSValidatedValueToObject(ctx, schemaValue), defaults, constructors)));
+            }
+            
+            static JSStringRef schemaVersionString = JSStringCreateWithUTF8CString("schemaVersion");
+            JSValueRef versionValue = RJSValidatedPropertyValue(ctx, object, schemaVersionString);
+            if (JSValueIsNumber(ctx, versionValue)) {
+                config.schema_version = RJSValidatedValueToNumber(ctx, versionValue);
+            }
+            else {
+                config.schema_version = 0;
+            }
+            
+            static JSStringRef encryptionKeyString = JSStringCreateWithUTF8CString("encryptionKey");
+            JSValueRef encryptionKeyValue = RJSValidatedPropertyValue(ctx, object, encryptionKeyString);
+            if (!JSValueIsUndefined(ctx, encryptionKeyValue)) {
+                std::string encryptionKey = RJSAccessor::to_binary(ctx, encryptionKeyValue);
+                config.encryption_key = std::vector<char>(encryptionKey.begin(), encryptionKey.end());;
+            }
+        }
+    }
+    else {
+        throw std::runtime_error("Invalid arguments when constructing 'Realm'");
+    }
+    
+    config.path = RJSNormalizePath(config.path);
+    
+    ensure_directory_exists_for_file(config.path);
+    SharedRealm realm = realm::Realm::get_shared_realm(config);
+    auto delegate = new RealmDelegate<T>(realm, JSContextGetGlobalContext(ctx));
+    if (!realm->m_binding_context) {
+        realm->m_binding_context.reset(delegate);
+    }
+    delegate->m_defaults = defaults;
+    delegate->m_constructors = constructors;
+    returnObject = WrapObject(ctx, realm_class(), new SharedRealm(realm));
+}
+
+template<typename T>
+void Realm<T>::SchemaVersion(ContextType ctx, ObjectType thisObject, size_t argumentCount, const ValueType arguments[], ReturnType &returnObject) {
+    using RJSAccessor = realm::NativeAccessor<JSValueRef, JSContextRef>;
+
+    RJSValidateArgumentRange(argumentCount, 1, 2);
+    
+    realm::Realm::Config config;
+    config.path = RJSNormalizePath(RJSValidatedStringForValue(ctx, arguments[0]));
+    if (argumentCount == 2) {
+        auto encryptionKeyValue = arguments[1];
+        std::string encryptionKey = RJSAccessor::to_binary(ctx, encryptionKeyValue);
+        config.encryption_key = std::vector<char>(encryptionKey.begin(), encryptionKey.end());
+    }
+    
+    auto version = realm::Realm::get_schema_version(config);
+    if (version == ObjectStore::NotVersioned) {
+        RJSSetReturnNumber(ctx, returnObject, -1);
+    }
+    else {
+        RJSSetReturnNumber(ctx, returnObject, version);
+    }
+}
 
 template<typename T>
 void Realm<T>::Objects(ContextType ctx, ObjectType thisObject, size_t argumentCount, const ValueType arguments[], ReturnType &returnObject) {

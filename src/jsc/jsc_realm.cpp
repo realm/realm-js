@@ -52,86 +52,6 @@ static bool SetDefaultPath(JSContextRef ctx, JSObjectRef object, JSStringRef pro
     return true;
 }
 
-inline std::string RJSNormalizePath(std::string path) {
-    if (path.size() && path[0] != '/') {
-        return default_realm_file_directory() + "/" + path;
-    }
-    return path;
-}
-
-JSObjectRef RealmConstructor(JSContextRef ctx, JSObjectRef constructor, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) {
-    try {
-        Realm::Config config;
-        std::map<std::string, realm::ObjectDefaults> defaults;
-        std::map<std::string, JSObjectRef> constructors;
-        if (argumentCount == 0) {
-            config.path = js::default_path();
-        }
-        else if (argumentCount == 1) {
-            JSValueRef value = arguments[0];
-            if (JSValueIsString(ctx, value)) {
-                config.path = RJSValidatedStringForValue(ctx, value, "path");
-            }
-            else if (JSValueIsObject(ctx, value)) {
-                JSObjectRef object = RJSValidatedValueToObject(ctx, value);
-
-                static JSStringRef pathString = JSStringCreateWithUTF8CString("path");
-                JSValueRef pathValue = RJSValidatedPropertyValue(ctx, object, pathString);
-                if (!JSValueIsUndefined(ctx, pathValue)) {
-                    config.path = RJSValidatedStringForValue(ctx, pathValue, "path");
-                }
-                else {
-                    config.path = js::default_path();
-                }
-
-                static JSStringRef schemaString = JSStringCreateWithUTF8CString("schema");
-                JSValueRef schemaValue = RJSValidatedPropertyValue(ctx, object, schemaString);
-                if (!JSValueIsUndefined(ctx, schemaValue)) {
-                    config.schema.reset(new Schema(RJSParseSchema(ctx, RJSValidatedValueToObject(ctx, schemaValue), defaults, constructors)));
-                }
-
-                static JSStringRef schemaVersionString = JSStringCreateWithUTF8CString("schemaVersion");
-                JSValueRef versionValue = RJSValidatedPropertyValue(ctx, object, schemaVersionString);
-                if (JSValueIsNumber(ctx, versionValue)) {
-                    config.schema_version = RJSValidatedValueToNumber(ctx, versionValue);
-                }
-                else {
-                    config.schema_version = 0;
-                }
-                
-                static JSStringRef encryptionKeyString = JSStringCreateWithUTF8CString("encryptionKey");
-                JSValueRef encryptionKeyValue = RJSValidatedPropertyValue(ctx, object, encryptionKeyString);
-                if (!JSValueIsUndefined(ctx, encryptionKeyValue)) {
-                    std::string encryptionKey = RJSAccessor::to_binary(ctx, encryptionKeyValue);
-                    config.encryption_key = std::vector<char>(encryptionKey.begin(), encryptionKey.end());;
-                }
-            }
-        }
-        else {
-            *jsException = RJSMakeError(ctx, "Invalid arguments when constructing 'Realm'");
-            return NULL;
-        }
-        
-        config.path = RJSNormalizePath(config.path);
-        
-        ensure_directory_exists_for_file(config.path);
-        SharedRealm realm = Realm::get_shared_realm(config);
-        auto delegate = new js::RealmDelegate<jsc::Types>(realm, JSContextGetGlobalContext(ctx));
-        if (!realm->m_binding_context) {
-            realm->m_binding_context.reset(delegate);
-        }
-        delegate->m_defaults = defaults;
-        delegate->m_constructors = constructors;
-        return js::WrapObject(ctx, RJSRealmClass(), new SharedRealm(realm));
-    }
-    catch (std::exception &ex) {
-        if (jsException) {
-            *jsException = RJSMakeError(ctx, ex);
-        }
-        return NULL;
-    }
-}
-
 bool RealmHasInstance(JSContextRef ctx, JSObjectRef constructor, JSValueRef value, JSValueRef* exception) {
     return JSValueIsObjectOfClass(ctx, value, RJSRealmClass());
 }
@@ -141,36 +61,13 @@ static const JSStaticValue RealmStaticProperties[] = {
     {NULL, NULL}
 };
 
-template<typename ContextType, typename ObjectType, typename ValueType, typename ReturnType, typename ExceptionType>
-void RealmSchemaVersion(ContextType ctx, ObjectType thisObject, size_t argumentCount, const ValueType arguments[], ReturnType &returnObject, ExceptionType &exceptionObject) {
-    try {
-        RJSValidateArgumentRange(argumentCount, 1, 2);
-        
-        Realm::Config config;
-        config.path = RJSNormalizePath(RJSValidatedStringForValue(ctx, arguments[0]));
-        if (argumentCount == 2) {
-            auto encryptionKeyValue = arguments[1];
-            std::string encryptionKey = RJSAccessor::to_binary(ctx, encryptionKeyValue);
-            config.encryption_key = std::vector<char>(encryptionKey.begin(), encryptionKey.end());
-        }
 
-        auto version = Realm::get_schema_version(config);
-        if (version == ObjectStore::NotVersioned) {
-            RJSSetReturnNumber(ctx, returnObject, -1);
-        }
-        else {
-            RJSSetReturnNumber(ctx, returnObject, version);
-        }
-    }
-    catch (std::exception &exp) {
-        RJSSetException(ctx, exceptionObject, exp);
-    }
-}
-
-WRAP_METHOD(RealmSchemaVersion)
+using RJSRealm = realm::js::Realm<realm::jsc::Types>;
+WRAP_CONSTRUCTOR(RJSRealm, Constructor);
+WRAP_CLASS_METHOD(RJSRealm, SchemaVersion)
 
 static const JSStaticFunction RealmConstructorFuncs[] = {
-    {"schemaVersion", RealmSchemaVersion, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
+    {"schemaVersion", RJSRealmSchemaVersion, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
     {NULL, NULL},
 };
 
@@ -178,7 +75,7 @@ JSClassRef RJSRealmConstructorClass() {
     JSClassDefinition realmConstructorDefinition = kJSClassDefinitionEmpty;
     realmConstructorDefinition.attributes = kJSClassAttributeNoAutomaticPrototype;
     realmConstructorDefinition.className = "RealmConstructor";
-    realmConstructorDefinition.callAsConstructor = RealmConstructor;
+    realmConstructorDefinition.callAsConstructor = RJSRealmConstructor;
     realmConstructorDefinition.hasInstance = RealmHasInstance;
     realmConstructorDefinition.staticValues = RealmStaticProperties;
     realmConstructorDefinition.staticFunctions = RealmConstructorFuncs;
@@ -198,7 +95,6 @@ JSValueRef RealmGetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef pr
     return NULL;
 }
 
-using RJSRealm = realm::js::Realm<realm::jsc::Types>;
 WRAP_CLASS_METHOD(RJSRealm, Objects)
 WRAP_CLASS_METHOD(RJSRealm, Create)
 WRAP_CLASS_METHOD(RJSRealm, Delete)

@@ -33,18 +33,21 @@
 #include "js_compat.hpp"
 #include "schema.hpp"
 
+#define WRAP_EXCEPTION(METHOD, EXCEPTION, ARGS...)  \
+try { METHOD(ARGS); } \
+catch(std::exception &e) { RJSSetException(ctx, EXCEPTION, e); }
+
 #define WRAP_CLASS_METHOD(CLASS_NAME, METHOD_NAME) \
-JSValueRef CLASS_NAME ## METHOD_NAME(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) { \
+JSValueRef CLASS_NAME ## METHOD_NAME(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* ex) { \
     JSValueRef returnObject = NULL; \
-    try { CLASS_NAME::METHOD_NAME(ctx, thisObject, argumentCount, arguments, returnObject); } \
-    catch(std::exception &ex) { RJSSetException(ctx, *jsException, ex); } \
+    WRAP_EXCEPTION(CLASS_NAME::METHOD_NAME, *ex, ctx, thisObject, argumentCount, arguments, returnObject); \
     return returnObject; \
 }
 
-#define WRAP_METHOD(METHOD_NAME) \
-JSValueRef METHOD_NAME(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) { \
-    JSValueRef returnObject = NULL; \
-    METHOD_NAME(ctx, thisObject, argumentCount, arguments, returnObject, *jsException); \
+#define WRAP_CONSTRUCTOR(CLASS_NAME, METHOD_NAME) \
+JSObjectRef CLASS_NAME ## METHOD_NAME(JSContextRef ctx, JSObjectRef constructor, size_t argumentCount, const JSValueRef arguments[], JSValueRef* ex) { \
+    JSObjectRef returnObject = NULL; \
+    WRAP_EXCEPTION(CLASS_NAME::METHOD_NAME, *ex, ctx, constructor, argumentCount, arguments, returnObject); \
     return returnObject; \
 }
 
@@ -312,4 +315,5 @@ static void RJSCallFunction(JSContextRef ctx, JSObjectRef function, JSObjectRef 
 static bool RJSValueIsObjectOfClass(JSContextRef ctx, JSValueRef value, JSClassRef jsClass) {
     return JSValueIsObjectOfClass(ctx, value, jsClass);
 }
+
 
