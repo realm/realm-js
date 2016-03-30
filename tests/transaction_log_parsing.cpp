@@ -407,7 +407,7 @@ TEST_CASE("Transaction log parsing") {
             REQUIRE(info.tables.size() == 3);
             REQUIRE_INDICES(info.tables[2].deletions, 2, 3, 8, 9);
             REQUIRE_INDICES(info.tables[2].insertions, 2, 3);
-            REQUIRE_MOVES(info.tables[2], {9, 2}, {8, 3});
+            REQUIRE_MOVES(info.tables[2], {8, 3}, {9, 2});
         }
     }
 

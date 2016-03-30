@@ -133,6 +133,7 @@ TEST_CASE("[collection_change] move_over()") {
         c.move_over(4, 5);
         c.move_over(0, 4);
         c.move_over(2, 3);
+        c.parse_complete();
         c.clean_up_stale_moves();
 
         REQUIRE_INDICES(c.deletions, 0, 2, 4, 5, 6);
@@ -142,56 +143,65 @@ TEST_CASE("[collection_change] move_over()") {
 
     SECTION("marks the old last row as moved") {
         c.move_over(5, 8);
+        c.parse_complete();
         REQUIRE_MOVES(c, {8, 5});
     }
 
     SECTION("does not mark the old last row as moved if it was newly inserted") {
         c.insert(8);
         c.move_over(5, 8);
+        c.parse_complete();
         REQUIRE(c.moves.empty());
     }
 
     SECTION("removes previous modifications for the removed row") {
         c.modify(5);
         c.move_over(5, 8);
+        c.parse_complete();
         REQUIRE(c.modifications.empty());
     }
 
     SECTION("updates previous insertions for the old last row") {
         c.insert(5);
         c.move_over(3, 5);
+        c.parse_complete();
         REQUIRE_INDICES(c.insertions, 3);
     }
 
     SECTION("updates previous modifications for the old last row") {
         c.modify(5);
         c.move_over(3, 5);
+        c.parse_complete();
         REQUIRE_INDICES(c.modifications, 3);
     }
 
     SECTION("removes moves to the target") {
-        c.move(3, 5);
+        c.move_over(5, 10);
         c.move_over(5, 8);
+        c.parse_complete();
         REQUIRE_MOVES(c, {8, 5});
     }
 
     SECTION("updates moves to the source") {
-        c.move(3, 8);
+        c.move_over(8, 10);
         c.move_over(5, 8);
-        REQUIRE_MOVES(c, {3, 5});
+        c.parse_complete();
+        REQUIRE_MOVES(c, {10, 5});
     }
 
     SECTION("is not shifted by previous calls to move_over()") {
         c.move_over(5, 10);
         c.move_over(6, 9);
+        c.parse_complete();
         REQUIRE_INDICES(c.deletions, 5, 6, 9, 10);
         REQUIRE_INDICES(c.insertions, 5, 6);
-        REQUIRE_MOVES(c, {10, 5}, {9, 6});
+        REQUIRE_MOVES(c, {9, 6}, {10, 5});
     }
 
     SECTION("marks the moved-over row as deleted when chaining moves") {
         c.move_over(5, 10);
         c.move_over(0, 5);
+        c.parse_complete();
 
         REQUIRE_INDICES(c.deletions, 0, 5, 10);
         REQUIRE_INDICES(c.insertions, 0);
