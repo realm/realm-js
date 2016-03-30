@@ -39,9 +39,9 @@ catch(std::exception &e) { RJSSetException(ctx, EXCEPTION, e); }
 
 #define WRAP_CLASS_METHOD(CLASS_NAME, METHOD_NAME) \
 JSValueRef CLASS_NAME ## METHOD_NAME(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* ex) { \
-    JSValueRef returnObject = NULL; \
-    WRAP_EXCEPTION(CLASS_NAME::METHOD_NAME, *ex, ctx, thisObject, argumentCount, arguments, returnObject); \
-    return returnObject; \
+    JSValueRef returnValue = NULL; \
+    WRAP_EXCEPTION(CLASS_NAME::METHOD_NAME, *ex, ctx, thisObject, argumentCount, arguments, returnValue); \
+    return returnValue; \
 }
 
 #define WRAP_CONSTRUCTOR(CLASS_NAME, METHOD_NAME) \
@@ -50,6 +50,20 @@ JSObjectRef CLASS_NAME ## METHOD_NAME(JSContextRef ctx, JSObjectRef constructor,
     WRAP_EXCEPTION(CLASS_NAME::METHOD_NAME, *ex, ctx, constructor, argumentCount, arguments, returnObject); \
     return returnObject; \
 }
+
+#define WRAP_PROPERTY_GETTER(CLASS_NAME, METHOD_NAME) \
+JSValueRef CLASS_NAME ## METHOD_NAME(JSContextRef ctx, JSObjectRef object, JSStringRef property, JSValueRef* ex) { \
+    JSValueRef returnValue = NULL; \
+    WRAP_EXCEPTION(CLASS_NAME::METHOD_NAME, *ex, ctx, object, returnValue); \
+    return returnValue; \
+}
+
+#define WRAP_PROPERTY_SETTER(CLASS_NAME, METHOD_NAME) \
+bool CLASS_NAME ## METHOD_NAME(JSContextRef ctx, JSObjectRef object, JSStringRef property, JSValueRef value, JSValueRef* ex) { \
+    WRAP_EXCEPTION(CLASS_NAME::METHOD_NAME, *ex, ctx, object, value); \
+    return true; \
+}
+
 
 template<typename T>
 inline void RJSFinalize(JSObjectRef object) {
@@ -64,7 +78,7 @@ inline T RJSGetInternal(JSObjectRef jsObject) {
 
 template<typename T>
 JSClassRef RJSCreateWrapperClass(const char * name, JSObjectGetPropertyCallback getter = NULL, JSObjectSetPropertyCallback setter = NULL, const JSStaticFunction *funcs = NULL,
-                                 JSObjectGetPropertyNamesCallback propertyNames = NULL, JSClassRef parentClass = NULL) {
+                                 JSObjectGetPropertyNamesCallback propertyNames = NULL, JSClassRef parentClass = NULL, const JSStaticValue *values = NULL) {
     JSClassDefinition classDefinition = kJSClassDefinitionEmpty;
     classDefinition.className = name;
     classDefinition.finalize = RJSFinalize<T>;
@@ -73,6 +87,7 @@ JSClassRef RJSCreateWrapperClass(const char * name, JSObjectGetPropertyCallback 
     classDefinition.staticFunctions = funcs;
     classDefinition.getPropertyNames = propertyNames;
     classDefinition.parentClass = parentClass;
+    classDefinition.staticValues = values;
     return JSClassCreate(&classDefinition);
 }
 

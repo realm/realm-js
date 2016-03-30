@@ -35,36 +35,20 @@
 using namespace realm;
 using RJSAccessor = realm::NativeAccessor<JSValueRef, JSContextRef>;
 
-
-static JSValueRef GetDefaultPath(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef* jsException) {
-    return RJSValueForString(ctx, realm::js::default_path());
-}
-
-static bool SetDefaultPath(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef value, JSValueRef* jsException) {
-    try {
-        js::set_default_path(RJSValidatedStringForValue(ctx, value, "defaultPath"));
-    }
-    catch (std::exception &ex) {
-        if (jsException) {
-            *jsException = RJSMakeError(ctx, ex);
-        }
-    }
-    return true;
-}
-
 bool RealmHasInstance(JSContextRef ctx, JSObjectRef constructor, JSValueRef value, JSValueRef* exception) {
     return JSValueIsObjectOfClass(ctx, value, RJSRealmClass());
 }
 
-static const JSStaticValue RealmStaticProperties[] = {
-    {"defaultPath", GetDefaultPath, SetDefaultPath, kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
-    {NULL, NULL}
-};
-
-
 using RJSRealm = realm::js::Realm<realm::jsc::Types>;
 WRAP_CONSTRUCTOR(RJSRealm, Constructor);
 WRAP_CLASS_METHOD(RJSRealm, SchemaVersion)
+WRAP_PROPERTY_GETTER(RJSRealm, GetDefaultPath)
+WRAP_PROPERTY_SETTER(RJSRealm, SetDefaultPath)
+
+static const JSStaticValue RealmConstructorStaticProperties[] = {
+    {"defaultPath", RJSRealmGetDefaultPath, RJSRealmSetDefaultPath, kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
+    {NULL, NULL}
+};
 
 static const JSStaticFunction RealmConstructorFuncs[] = {
     {"schemaVersion", RJSRealmSchemaVersion, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
@@ -77,22 +61,9 @@ JSClassRef RJSRealmConstructorClass() {
     realmConstructorDefinition.className = "RealmConstructor";
     realmConstructorDefinition.callAsConstructor = RJSRealmConstructor;
     realmConstructorDefinition.hasInstance = RealmHasInstance;
-    realmConstructorDefinition.staticValues = RealmStaticProperties;
+    realmConstructorDefinition.staticValues = RealmConstructorStaticProperties;
     realmConstructorDefinition.staticFunctions = RealmConstructorFuncs;
     return JSClassCreate(&realmConstructorDefinition);
-}
-
-JSValueRef RealmGetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef* exception) {
-    static JSStringRef s_pathString = JSStringCreateWithUTF8CString("path");
-    if (JSStringIsEqual(propertyName, s_pathString)) {
-        return RJSValueForString(ctx, RJSGetInternal<SharedRealm *>(object)->get()->config().path);
-    }
-
-    static JSStringRef s_schemaVersion = JSStringCreateWithUTF8CString("schemaVersion");
-    if (JSStringIsEqual(propertyName, s_schemaVersion)) {
-        return JSValueMakeNumber(ctx, RJSGetInternal<SharedRealm *>(object)->get()->config().schema_version);
-    }
-    return NULL;
 }
 
 WRAP_CLASS_METHOD(RJSRealm, Objects)
@@ -104,6 +75,14 @@ WRAP_CLASS_METHOD(RJSRealm, AddListener)
 WRAP_CLASS_METHOD(RJSRealm, RemoveListener)
 WRAP_CLASS_METHOD(RJSRealm, RemoveAllListeners)
 WRAP_CLASS_METHOD(RJSRealm, Close)
+WRAP_PROPERTY_GETTER(RJSRealm, GetPath)
+WRAP_PROPERTY_GETTER(RJSRealm, GetSchemaVersion)
+
+static const JSStaticValue RealmStaticProperties[] = {
+    {"path", RJSRealmGetPath, RJSRealmSetDefaultPath, kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
+    {"schemaVersion", RJSRealmGetSchemaVersion, RJSRealmSetDefaultPath, kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
+    {NULL, NULL}
+};
 
 static const JSStaticFunction RJSRealmFuncs[] = {
     {"objects", RJSRealmObjects, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
@@ -119,10 +98,9 @@ static const JSStaticFunction RJSRealmFuncs[] = {
 };
 
 JSClassRef RJSRealmClass() {
-    static JSClassRef s_realmClass = RJSCreateWrapperClass<SharedRealm *>("Realm", RealmGetProperty, NULL, RJSRealmFuncs);
+    static JSClassRef s_realmClass = RJSCreateWrapperClass<SharedRealm *>("Realm", NULL, NULL, RJSRealmFuncs, NULL, NULL, RealmStaticProperties);
     return s_realmClass;
 }
-
 
 namespace realm {
 namespace js {

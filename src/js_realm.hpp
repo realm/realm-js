@@ -140,9 +140,17 @@ public:
     static void RemoveAllListeners(ContextType ctx, ObjectType thisObject, size_t argumentCount, const ValueType arguments[], ReturnType &returnObject);
     static void Close(ContextType ctx, ObjectType thisObject, size_t argumentCount, const ValueType arguments[], ReturnType &returnObject);
     
+    // properties
+    static void GetPath(ContextType ctx, ObjectType object, ReturnType &returnObject);
+    static void GetSchemaVersion(ContextType ctx, ObjectType object, ReturnType &returnObject);
+
     // constructor methods
     static void Constructor(ContextType ctx, ObjectType constructor, size_t argumentCount, const ValueType arguments[], ObjectType &returnObject);
     static void SchemaVersion(ContextType ctx, ObjectType thisObject, size_t argumentCount, const ValueType arguments[], ReturnType &returnObject);
+    
+    // static properties
+    static void GetDefaultPath(ContextType ctx, ObjectType object, ReturnType &returnObject);
+    static void SetDefaultPath(ContextType ctx, ObjectType object, ValueType value);
 
     static std::string validated_notification_name(JSContextRef ctx, JSValueRef value) {
         std::string name = RJSValidatedStringForValue(ctx, value);
@@ -267,6 +275,26 @@ void Realm<T>::SchemaVersion(ContextType ctx, ObjectType thisObject, size_t argu
     }
 }
 
+template<typename T>
+void Realm<T>::GetDefaultPath(ContextType ctx, ObjectType object, ReturnType &returnObject) {
+    returnObject = RJSValueForString(ctx, realm::js::default_path());
+}
+
+template<typename T>
+void Realm<T>::SetDefaultPath(ContextType ctx, ObjectType object, ValueType value) {
+    js::set_default_path(RJSValidatedStringForValue(ctx, value, "defaultPath"));
+}
+
+template<typename T>
+void Realm<T>::GetPath(ContextType ctx, ObjectType object, ReturnType &returnObject) {
+    returnObject = RJSValueForString(ctx, RJSGetInternal<SharedRealm *>(object)->get()->config().path);
+}
+    
+template<typename T>
+void Realm<T>::GetSchemaVersion(ContextType ctx, ObjectType object, ReturnType &returnObject) {
+    returnObject = JSValueMakeNumber(ctx, RJSGetInternal<SharedRealm *>(object)->get()->config().schema_version);
+}
+    
 template<typename T>
 void Realm<T>::Objects(ContextType ctx, ObjectType thisObject, size_t argumentCount, const ValueType arguments[], ReturnType &returnObject) {
     RJSValidateArgumentCount(argumentCount, 1);

@@ -24,14 +24,23 @@
 using RJSAccessor = realm::NativeAccessor<JSValueRef, JSContextRef>;
 using namespace realm;
 
+JSValueRef ListGetLength(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef* exception) {
+    try {
+        List *list = RJSGetInternal<List *>(object);
+        return JSValueMakeNumber(ctx, list->size());
+    }
+    catch (std::exception &exp) {
+        if (exception) {
+            *exception = RJSMakeError(ctx, exp);
+        }
+        return NULL;
+    }
+}
+
 JSValueRef ListGetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef* jsException) {
     try {
         List *list = RJSGetInternal<List *>(object);
         std::string indexStr = RJSStringForJSString(propertyName);
-        if (indexStr == "length") {
-            return JSValueMakeNumber(ctx, list->size());
-        }
-
         return RJSObjectCreate(ctx, Object(list->get_realm(), list->get_object_schema(), list->get(RJSValidatedPositiveIndex(indexStr))));
     }
     catch (std::out_of_range &exp) {
@@ -112,8 +121,13 @@ static const JSStaticFunction RJSListFuncs[] = {
     {NULL, NULL},
 };
 
+static const JSStaticValue RJSListProps[] = {
+    {"length", ListGetLength, nullptr, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
+    {NULL, NULL},
+};
+
 JSClassRef RJSListClass() {
-    static JSClassRef s_listClass = RJSCreateWrapperClass<List *>("List", ListGetProperty, ListSetProperty, RJSListFuncs, ListPropertyNames, RJSCollectionClass());
+    static JSClassRef s_listClass = RJSCreateWrapperClass<List *>("List", ListGetProperty, ListSetProperty, RJSListFuncs, ListPropertyNames, RJSCollectionClass(), RJSListProps);
     return s_listClass;
 }
 
