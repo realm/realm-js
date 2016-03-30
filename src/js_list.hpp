@@ -41,6 +41,10 @@ struct List {
     using ObjectType = typename T::Object;
     using ValueType = typename T::Value;
     using ReturnType = typename T::Return;
+    
+    static void GetLength(ContextType ctx, ObjectType thisObject, ReturnType &ret);
+    static void GetIndex(ContextType ctx, ObjectType thisObject, size_t index, ReturnType &ret);
+    static void SetIndex(ContextType ctx, ObjectType thisObject, size_t index, ValueType value);
 
     static void Push(ContextType ctx, ObjectType thisObject, size_t argCount, const ValueType args[], ReturnType &ret);
     static void Pop(ContextType ctx, ObjectType thisObject, size_t argCount, const ValueType args[], ReturnType &ret);
@@ -51,6 +55,24 @@ struct List {
     static void Filtered(ContextType ctx, ObjectType thisObject, size_t argCount, const ValueType args[], ReturnType &ret);
     static void Sorted(ContextType ctx, ObjectType thisObject, size_t argCount, const ValueType args[], ReturnType &ret);
 };
+    
+template<typename T>
+void List<T>::GetLength(ContextType ctx, ObjectType object, ReturnType &ret) {
+    realm::List *list = RJSGetInternal<realm::List *>(object);
+    RJSSetReturnNumber(ctx, ret, list->size());
+}
+    
+template<typename T>
+void List<T>::GetIndex(ContextType ctx, ObjectType object, size_t index, ReturnType &ret) {
+    realm::List *list = RJSGetInternal<realm::List *>(object);
+    ret = RJSObjectCreate(ctx, Object(list->get_realm(), list->get_object_schema(), list->get(index)));
+}
+
+template<typename T>
+void List<T>::SetIndex(ContextType ctx, ObjectType object, size_t index, ValueType value) {
+    realm::List *list = RJSGetInternal<realm::List *>(object);
+    list->set(ctx, value, index);
+}
 
 template<typename T>
 void List<T>::Push(ContextType ctx, ObjectType thisObject, size_t argumentCount, const ValueType arguments[], ReturnType &returnObject) {

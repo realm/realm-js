@@ -24,64 +24,6 @@
 using RJSAccessor = realm::NativeAccessor<JSValueRef, JSContextRef>;
 using namespace realm;
 
-JSValueRef ListGetLength(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef* exception) {
-    try {
-        List *list = RJSGetInternal<List *>(object);
-        return JSValueMakeNumber(ctx, list->size());
-    }
-    catch (std::exception &exp) {
-        if (exception) {
-            *exception = RJSMakeError(ctx, exp);
-        }
-        return NULL;
-    }
-}
-
-JSValueRef ListGetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef* jsException) {
-    try {
-        List *list = RJSGetInternal<List *>(object);
-        std::string indexStr = RJSStringForJSString(propertyName);
-        return RJSObjectCreate(ctx, Object(list->get_realm(), list->get_object_schema(), list->get(RJSValidatedPositiveIndex(indexStr))));
-    }
-    catch (std::out_of_range &exp) {
-        // getters for nonexistent properties in JS should always return undefined
-        return JSValueMakeUndefined(ctx);
-    }
-    catch (std::invalid_argument &exp) {
-        // for stol failure this could be another property that is handled externally, so ignore
-        return NULL;
-    }
-    catch (std::exception &exp) {
-        if (jsException) {
-            *jsException = RJSMakeError(ctx, exp);
-        }
-        return NULL;
-    }
-}
-
-bool ListSetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef value, JSValueRef* jsException) {
-    try {
-        List *list = RJSGetInternal<List *>(object);
-        std::string indexStr = RJSStringForJSString(propertyName);
-        if (indexStr == "length") {
-            throw std::runtime_error("The 'length' property is readonly.");
-        }
-
-        list->set(ctx, value, RJSValidatedPositiveIndex(indexStr));
-        return true;
-    }
-    catch (std::invalid_argument &exp) {
-        // for stol failure this could be another property that is handled externally, so ignore
-        return false;
-    }
-    catch (std::exception &exp) {
-        if (jsException) {
-            *jsException = RJSMakeError(ctx, exp);
-        }
-        return false;
-    }
-}
-
 void ListPropertyNames(JSContextRef ctx, JSObjectRef object, JSPropertyNameAccumulatorRef propertyNames) {
     List *list = RJSGetInternal<List *>(object);
     size_t size = list->size();
@@ -96,6 +38,9 @@ void ListPropertyNames(JSContextRef ctx, JSObjectRef object, JSPropertyNameAccum
 }
 
 using RJSList = realm::js::List<realm::jsc::Types>;
+WRAP_PROPERTY_GETTER(RJSList, GetLength)
+WRAP_INDEXED_GETTER(RJSList, GetIndex)
+WRAP_INDEXED_SETTER(RJSList, SetIndex)
 WRAP_CLASS_METHOD(RJSList, Push)
 WRAP_CLASS_METHOD(RJSList, Pop)
 WRAP_CLASS_METHOD(RJSList, Unshift)
@@ -122,12 +67,12 @@ static const JSStaticFunction RJSListFuncs[] = {
 };
 
 static const JSStaticValue RJSListProps[] = {
-    {"length", ListGetLength, nullptr, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
+    {"length", RJSListGetLength, nullptr, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
     {NULL, NULL},
 };
 
 JSClassRef RJSListClass() {
-    static JSClassRef s_listClass = RJSCreateWrapperClass<List *>("List", ListGetProperty, ListSetProperty, RJSListFuncs, ListPropertyNames, RJSCollectionClass(), RJSListProps);
+    static JSClassRef s_listClass = RJSCreateWrapperClass<List *>("List", RJSListGetIndex, RJSListSetIndex, RJSListFuncs, ListPropertyNames, RJSCollectionClass(), RJSListProps);
     return s_listClass;
 }
 

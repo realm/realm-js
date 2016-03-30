@@ -64,6 +64,31 @@ bool CLASS_NAME ## METHOD_NAME(JSContextRef ctx, JSObjectRef object, JSStringRef
     return true; \
 }
 
+// for stol failure (std::invalid_argument) this could be another property that is handled externally, so ignore
+#define WRAP_INDEXED_GETTER(CLASS_NAME, METHOD_NAME) \
+JSValueRef CLASS_NAME ## METHOD_NAME(JSContextRef ctx, JSObjectRef object, JSStringRef property, JSValueRef* ex) { \
+    JSValueRef returnValue = NULL; \
+    try { \
+        size_t index = RJSValidatedPositiveIndex(RJSStringForJSString(property)); \
+        CLASS_NAME::METHOD_NAME(ctx, object, index, returnValue); return returnValue; \
+    } \
+    catch (std::out_of_range &exp) { return JSValueMakeUndefined(ctx); } \
+    catch (std::invalid_argument &exp) { return NULL; } \
+    catch (std::exception &e) { RJSSetException(ctx, *ex, e); return NULL; } \
+}
+
+#define WRAP_INDEXED_SETTER(CLASS_NAME, METHOD_NAME) \
+bool CLASS_NAME ## METHOD_NAME(JSContextRef ctx, JSObjectRef object, JSStringRef property, JSValueRef value, JSValueRef* ex) { \
+    try { \
+        size_t index = RJSValidatedPositiveIndex(RJSStringForJSString(property)); \
+        { CLASS_NAME::METHOD_NAME(ctx, object, index, value); return true; } \
+    } \
+    catch (std::out_of_range &exp) { RJSSetException(ctx, *ex, exp); } \
+    catch (std::invalid_argument &exp) { *ex = RJSMakeError(ctx, "Invalid index"); } \
+    catch (std::exception &e) { RJSSetException(ctx, *ex, e); } \
+    return false; \
+}
+
 
 template<typename T>
 inline void RJSFinalize(JSObjectRef object) {
