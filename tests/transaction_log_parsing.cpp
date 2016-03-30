@@ -37,7 +37,8 @@ public:
         _impl::CollectionChangeBuilder c;
         _impl::TransactionChangeInfo info;
         info.lists.push_back({ndx, 0, 0, &c});
-        info.tables_needed.resize(m_group.size(), true);
+        info.table_modifications_needed.resize(m_group.size(), true);
+        info.table_moves_needed.resize(m_group.size(), true);
         _impl::transaction::advance(m_sg, info);
 
         if (info.lists.empty()) {
@@ -204,7 +205,8 @@ TEST_CASE("Transaction log parsing") {
             r->commit_transaction();
 
             _impl::TransactionChangeInfo info;
-            info.tables_needed.resize(g.size(), true);
+            info.table_modifications_needed.resize(g.size(), true);
+            info.table_moves_needed.resize(g.size(), true);
             _impl::transaction::advance(sg, info);
             return info;
         };
@@ -349,7 +351,8 @@ TEST_CASE("Transaction log parsing") {
             r->commit_transaction();
 
             _impl::TransactionChangeInfo info;
-            info.tables_needed = tables_needed;
+            info.table_modifications_needed = tables_needed;
+            info.table_moves_needed = tables_needed;
             _impl::transaction::advance(sg, info);
             return info;
         };
