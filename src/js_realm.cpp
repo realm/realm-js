@@ -16,7 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#include "js_realm.hpp"
 #include "platform.hpp"
 
 namespace realm {
@@ -34,4 +33,5 @@ void set_default_path(std::string path) {
     s_defaultPath = path;
 }
 
-}}
+} // js
+} // realm

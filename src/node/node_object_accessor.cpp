@@ -16,8 +16,21 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#pragma once
+#include "node_object_accessor.hpp"
 
-#include "js_util.hpp"
+using namespace realm;
+using namespace realm::node;
 
-JSClassRef RJSCollectionClass();
+using Accessor = js::NativeAccessor<Types>;
+
+template<>
+std::string Accessor::to_binary(v8::Isolate* isolate, v8::Local<v8::Value> &value) {
+    // TODO
+    return std::string();
+}
+
+template<>
+v8::Local<v8::Value> Accessor::from_binary(v8::Isolate* isolate, BinaryData data) {
+    // TODO
+    return v8::Local<v8::Value>();
+}

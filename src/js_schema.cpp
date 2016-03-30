@@ -19,6 +19,7 @@
 #include "js_schema.hpp"
 #include "object_store.hpp"
 
+/*
 namespace realm {
     struct SchemaWrapper {
         Schema *schema;
@@ -44,3 +45,4 @@ JSObjectRef RJSSchemaCreate(JSContextRef ctx, Schema &schema) {
     wrapper->owned = false;
     return js::WrapObject(ctx, RJSSchemaClass(), wrapper);
 }
+*/

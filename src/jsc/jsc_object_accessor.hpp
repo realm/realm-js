@@ -16,9 +16,15 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#ifndef REALM_JS_H
-#define REALM_JS_H
+#pragma once
 
-#include <RealmJS/jsc_init.h>
+#include "jsc_class.hpp"
+#include "js_object_accessor.hpp"
 
-#endif /* REALM_JS_H */
+namespace realm {
+
+// Specialize a native accessor class for JSC.
+template<>
+class NativeAccessor<jsc::Types::Value, jsc::Types::Context> : public js::NativeAccessor<jsc::Types> {};
+    
+} // realm

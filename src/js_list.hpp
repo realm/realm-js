@@ -18,20 +18,19 @@
 
 #pragma once
 
-#include "js_collection.hpp"
+#include <cassert>
+
+#include "js_class.hpp"
 #include "js_object.hpp"
-#include "js_results.hpp"
+// TODO: #include "js_results.hpp"
+#include "js_types.hpp"
 #include "js_util.hpp"
 
 #include "shared_realm.hpp"
 #include "list.hpp"
-#include "object_accessor.hpp"
 #include "parser.hpp"
 #include "query_builder.hpp"
 
-#include <assert.h>
-
-using RJSAccessor = realm::NativeAccessor<JSValueRef, JSContextRef>;
 namespace realm {
 namespace js {
 
@@ -40,148 +39,203 @@ struct List {
     using ContextType = typename T::Context;
     using ObjectType = typename T::Object;
     using ValueType = typename T::Value;
-    using ReturnType = typename T::Return;
-    
-    static void GetLength(ContextType ctx, ObjectType thisObject, ReturnType &ret);
-    static void GetIndex(ContextType ctx, ObjectType thisObject, size_t index, ReturnType &ret);
-    static void SetIndex(ContextType ctx, ObjectType thisObject, size_t index, ValueType value);
+    using Object = Object<T>;
+    using Value = Value<T>;
+    using ReturnValue = ReturnValue<T>;
 
-    static void Push(ContextType ctx, ObjectType thisObject, size_t argCount, const ValueType args[], ReturnType &ret);
-    static void Pop(ContextType ctx, ObjectType thisObject, size_t argCount, const ValueType args[], ReturnType &ret);
-    static void Unshift(ContextType ctx, ObjectType thisObject, size_t argCount, const ValueType args[], ReturnType &ret);
-    static void Shift(ContextType ctx, ObjectType thisObject, size_t argCount, const ValueType args[], ReturnType &ret);
-    static void Splice(ContextType ctx, ObjectType thisObject, size_t argCount, const ValueType args[], ReturnType &ret);
-    static void StaticResults(ContextType ctx, ObjectType thisObject, size_t argCount, const ValueType args[], ReturnType &ret);
-    static void Filtered(ContextType ctx, ObjectType thisObject, size_t argCount, const ValueType args[], ReturnType &ret);
-    static void Sorted(ContextType ctx, ObjectType thisObject, size_t argCount, const ValueType args[], ReturnType &ret);
+    static ObjectType create(ContextType, realm::List &);
+
+    static void GetLength(ContextType, ObjectType, ReturnValue &);
+    static void GetIndex(ContextType, ObjectType, uint32_t, ReturnValue &);
+    static bool SetIndex(ContextType, ObjectType, uint32_t, ValueType);
+
+    static void Push(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void Pop(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void Unshift(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void Shift(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void Splice(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void StaticResults(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void Filtered(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void Sorted(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
 };
-    
+
 template<typename T>
-void List<T>::GetLength(ContextType ctx, ObjectType object, ReturnType &ret) {
-    realm::List *list = RJSGetInternal<realm::List *>(object);
-    RJSSetReturnNumber(ctx, ret, list->size());
-}
-    
+struct ObjectClass<T, realm::List> : BaseObjectClass<T> {
+    using List = List<T>;
+
+    std::string const name = "List";
+
+    MethodMap<T> const methods = {
+        {"push", wrap<List::Push>},
+        {"pop", wrap<List::Pop>},
+        {"unshift", wrap<List::Unshift>},
+        {"shift", wrap<List::Shift>},
+        {"splice", wrap<List::Splice>},
+        {"snapshot", wrap<List::StaticResults>},
+        {"filtered", wrap<List::Filtered>},
+        {"sorted", wrap<List::Sorted>},
+    };
+
+    PropertyMap<T> const properties = {
+        {"length", {wrap<List::GetLength>}},
+    };
+
+    IndexPropertyType<T> const index_accessor = {wrap<List::GetIndex>, wrap<List::SetIndex>};
+};
+
 template<typename T>
-void List<T>::GetIndex(ContextType ctx, ObjectType object, size_t index, ReturnType &ret) {
-    realm::List *list = RJSGetInternal<realm::List *>(object);
-    ret = RJSObjectCreate(ctx, Object(list->get_realm(), list->get_object_schema(), list->get(index)));
+typename T::Object List<T>::create(ContextType ctx, realm::List &list) {
+    return create_object<T, realm::List>(ctx, new realm::List(list));
 }
 
 template<typename T>
-void List<T>::SetIndex(ContextType ctx, ObjectType object, size_t index, ValueType value) {
-    realm::List *list = RJSGetInternal<realm::List *>(object);
+void List<T>::GetLength(ContextType ctx, ObjectType object, ReturnValue &return_value) {
+    auto list = get_internal<T, realm::List>(object);
+    return_value.set((uint32_t)list->size());
+}
+
+template<typename T>
+void List<T>::GetIndex(ContextType ctx, ObjectType object, uint32_t index, ReturnValue &return_value) {
+    auto list = get_internal<T, realm::List>(object);
+    auto realm_object = realm::Object(list->get_realm(), list->get_object_schema(), list->get(index));
+
+    return_value.set(RealmObject<T>::create(ctx, realm_object));
+}
+
+template<typename T>
+bool List<T>::SetIndex(ContextType ctx, ObjectType object, uint32_t index, ValueType value) {
+    auto list = get_internal<T, realm::List>(object);
     list->set(ctx, value, index);
+    return true;
 }
 
 template<typename T>
-void List<T>::Push(ContextType ctx, ObjectType thisObject, size_t argumentCount, const ValueType arguments[], ReturnType &returnObject) {
-    realm::List *list = RJSGetInternal<realm::List *>(thisObject);
-    RJSValidateArgumentCountIsAtLeast(argumentCount, 1);
-    for (size_t i = 0; i < argumentCount; i++) {
+void List<T>::Push(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    validate_argument_count_at_least(argc, 1);
+
+    auto list = get_internal<T, realm::List>(this_object);
+    for (size_t i = 0; i < argc; i++) {
         list->add(ctx, arguments[i]);
     }
-    RJSSetReturnNumber(ctx, returnObject, list->size());
+
+    return_value.set((uint32_t)list->size());
 }
 
 template<typename T>
-void List<T>::Pop(ContextType ctx, ObjectType thisObject, size_t argumentCount, const ValueType arguments[], ReturnType &returnObject) {
-    realm::List *list = RJSGetInternal<realm::List *>(thisObject);
-    RJSValidateArgumentCount(argumentCount, 0);
-    
+void List<T>::Pop(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    validate_argument_count(argc, 0);
+
+    auto list = get_internal<T, realm::List>(this_object);
     size_t size = list->size();
     if (size == 0) {
         list->verify_in_transaction();
-        RJSSetReturnUndefined(ctx, returnObject);
+        return_value.set_undefined();
     }
     else {
         size_t index = size - 1;
-        returnObject = RJSObjectCreate(ctx, Object(list->get_realm(), list->get_object_schema(), list->get(index)));
+        auto realm_object = realm::Object(list->get_realm(), list->get_object_schema(), list->get(index));
+
+        return_value.set(RealmObject<T>::create(ctx, realm_object));
         list->remove(index);
     }
 }
 
-
 template<typename T>
-void List<T>::Unshift(ContextType ctx, ObjectType thisObject, size_t argumentCount, const ValueType arguments[], ReturnType &returnObject) {
-    realm::List *list = RJSGetInternal<realm::List *>(thisObject);
-    RJSValidateArgumentCountIsAtLeast(argumentCount, 1);
-    for (size_t i = 0; i < argumentCount; i++) {
+void List<T>::Unshift(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    validate_argument_count_at_least(argc, 1);
+
+    auto list = get_internal<T, realm::List>(this_object);
+    for (size_t i = 0; i < argc; i++) {
         list->insert(ctx, arguments[i], i);
     }
-    RJSSetReturnNumber(ctx, returnObject, list->size());
+
+    return_value.set((uint32_t)list->size());
 }
 
 template<typename T>
-void List<T>::Shift(ContextType ctx, ObjectType thisObject, size_t argumentCount, const ValueType arguments[], ReturnType &returnObject) {
-    realm::List *list = RJSGetInternal<realm::List *>(thisObject);
-    RJSValidateArgumentCount(argumentCount, 0);
+void List<T>::Shift(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    validate_argument_count(argc, 0);
+
+    auto list = get_internal<T, realm::List>(this_object);
     if (list->size() == 0) {
         list->verify_in_transaction();
-        RJSSetReturnUndefined(ctx, returnObject);
+        return_value.set_undefined();
     }
     else {
-        returnObject = RJSObjectCreate(ctx, Object(list->get_realm(), list->get_object_schema(), list->get(0)));
+        auto realm_object = realm::Object(list->get_realm(), list->get_object_schema(), list->get(0));
+
+        return_value.set(RealmObject<T>::create(ctx, realm_object));
         list->remove(0);
     }
 }
 
 template<typename T>
-void List<T>::Splice(ContextType ctx, ObjectType thisObject, size_t argumentCount, const ValueType arguments[], ReturnType &returnObject) {
-    realm::List *list = RJSGetInternal<realm::List *>(thisObject);
+void List<T>::Splice(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    validate_argument_count_at_least(argc, 1);
+
+    auto list = get_internal<T, realm::List>(this_object);
     size_t size = list->size();
-    
-    RJSValidateArgumentCountIsAtLeast(argumentCount, 1);
-    long index = std::min<long>(RJSValidatedValueToNumber(ctx, arguments[0]), size);
+    long index = std::min<long>(Value::validated_to_number(ctx, arguments[0]), size);
     if (index < 0) {
         index = std::max<long>(size + index, 0);
     }
     
     long remove;
-    if (argumentCount < 2) {
+    if (argc < 2) {
         remove = size - index;
     }
     else {
-        remove = std::max<long>(RJSValidatedValueToNumber(ctx, arguments[1]), 0);
+        remove = std::max<long>(Value::validated_to_number(ctx, arguments[1]), 0);
         remove = std::min<long>(remove, size - index);
     }
     
-    std::vector<ReturnType> removedObjects(remove);
+    std::vector<ValueType> removed_objects;
+    removed_objects.reserve(remove);
+
     for (size_t i = 0; i < remove; i++) {
-        removedObjects[i] = RJSObjectCreate(ctx, Object(list->get_realm(), list->get_object_schema(), list->get(index)));
+        auto realm_object = realm::Object(list->get_realm(), list->get_object_schema(), list->get(index));
+
+        removed_objects.push_back(RealmObject<T>::create(ctx, realm_object));
         list->remove(index);
     }
-    for (size_t i = 2; i < argumentCount; i++) {
+    for (size_t i = 2; i < argc; i++) {
         list->insert(ctx, arguments[i], index + i - 2);
     }
-    RJSSetReturnArray(ctx, remove, removedObjects.data(), returnObject);
-}
 
-
-template<typename T>
-void List<T>::StaticResults(ContextType ctx, ObjectType thisObject, size_t argumentCount, const ValueType arguments[], ReturnType &returnObject) {
-    realm::List *list = RJSGetInternal<realm::List *>(thisObject);
-    RJSValidateArgumentCount(argumentCount, 0);
-    returnObject = RJSResultsCreate(ctx, list->get_realm(), list->get_object_schema(), std::move(list->get_query()), false);
+    return_value.set(Object::create_array(ctx, removed_objects));
 }
 
 template<typename T>
-void List<T>::Filtered(ContextType ctx, ObjectType thisObject, size_t argumentCount, const ValueType arguments[], ReturnType &returnObject) {
-    realm::List *list = RJSGetInternal<realm::List *>(thisObject);
-    RJSValidateArgumentCountIsAtLeast(argumentCount, 1);
-    
-    SharedRealm sharedRealm = *RJSGetInternal<SharedRealm *>(thisObject);
-    returnObject = RJSResultsCreateFiltered(ctx, sharedRealm, list->get_object_schema(), std::move(list->get_query()), argumentCount, arguments);
+void List<T>::StaticResults(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    validate_argument_count(argc, 0);
+
+    auto list = get_internal<T, realm::List>(this_object);
+
+    // TODO: Results
+    // return_value = RJSResultsCreate(ctx, list->get_realm(), list->get_object_schema(), std::move(list->get_query()), false);
 }
 
 template<typename T>
-void List<T>::Sorted(ContextType ctx, ObjectType thisObject, size_t argumentCount, const ValueType arguments[], ReturnType &returnObject) {
-    realm::List *list = RJSGetInternal<realm::List *>(thisObject);
-    RJSValidateArgumentRange(argumentCount, 1, 2);
-    
-    SharedRealm sharedRealm = *RJSGetInternal<SharedRealm *>(thisObject);
-    returnObject = RJSResultsCreateSorted(ctx, sharedRealm, list->get_object_schema(), std::move(list->get_query()), argumentCount, arguments);
+void List<T>::Filtered(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    validate_argument_count_at_least(argc, 1);
+
+    auto list = get_internal<T, realm::List>(this_object);
+    auto sharedRealm = *get_internal<T, SharedRealm>(this_object);
+
+    // TODO: Results
+    // return_value = RJSResultsCreateFiltered(ctx, sharedRealm, list->get_object_schema(), std::move(list->get_query()), argc, arguments);
+}
+
+template<typename T>
+void List<T>::Sorted(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    validate_argument_count(argc, 1, 2);
+
+    auto list = get_internal<T, realm::List>(this_object);
+    auto sharedRealm = *get_internal<T, SharedRealm>(this_object);
+
+    // TODO: Results
+    // return_value = RJSResultsCreateSorted(ctx, sharedRealm, list->get_object_schema(), std::move(list->get_query()), argc, arguments);
 }
     
-}
-}
+} // js
+} // realm

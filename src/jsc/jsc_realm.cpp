@@ -16,12 +16,14 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+#include "jsc_class.hpp"
 #include "jsc_realm.hpp"
 #include "js_realm.hpp"
 #include "js_object.hpp"
 #include "js_results.hpp"
 #include "jsc_list.hpp"
 #include "js_schema.hpp"
+#include "jsc_util.hpp"
 #include "platform.hpp"
 
 #include "shared_realm.hpp"
@@ -79,8 +81,8 @@ WRAP_PROPERTY_GETTER(RJSRealm, GetPath)
 WRAP_PROPERTY_GETTER(RJSRealm, GetSchemaVersion)
 
 static const JSStaticValue RealmStaticProperties[] = {
-    {"path", RJSRealmGetPath, RJSRealmSetDefaultPath, kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
-    {"schemaVersion", RJSRealmGetSchemaVersion, RJSRealmSetDefaultPath, kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
+    {"path", RJSRealmGetPath, NULL, kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
+    {"schemaVersion", RJSRealmGetSchemaVersion, NULL, kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete},
     {NULL, NULL}
 };
 

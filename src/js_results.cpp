@@ -17,8 +17,9 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #include "js_results.hpp"
-#include "js_collection.hpp"
+#include "jsc_collection.hpp"
 #include "js_object.hpp"
+#include "jsc_util.hpp"
 #include "object_accessor.hpp"
 #include "results.hpp"
 #include "parser.hpp"
@@ -91,7 +92,7 @@ void ResultsPropertyNames(JSContextRef ctx, JSObjectRef object, JSPropertyNameAc
 JSValueRef ResultsStaticCopy(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) {
     try {
         Results *results = RJSGetInternal<Results *>(thisObject);
-        RJSValidateArgumentCount(argumentCount, 0);
+        validate_argument_count(argumentCount, 0);
 
         Results *copy = new Results(*results);
         copy->set_live(false);
@@ -109,7 +110,7 @@ JSValueRef ResultsStaticCopy(JSContextRef ctx, JSObjectRef function, JSObjectRef
 JSValueRef ResultsSorted(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) {
     try {
         Results *results = RJSGetInternal<Results *>(thisObject);
-        RJSValidateArgumentRange(argumentCount, 1, 2);
+        validate_argument_count(argumentCount, 1, 2);
 
         SharedRealm sharedRealm = *RJSGetInternal<SharedRealm *>(thisObject);
         return RJSResultsCreateSorted(ctx, sharedRealm, results->get_object_schema(), std::move(results->get_query()), argumentCount, arguments);
@@ -125,7 +126,7 @@ JSValueRef ResultsSorted(JSContextRef ctx, JSObjectRef function, JSObjectRef thi
 JSValueRef ResultsFiltered(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* jsException) {
     try {
         Results *results = RJSGetInternal<Results *>(thisObject);
-        RJSValidateArgumentCountIsAtLeast(argumentCount, 1);
+        validate_argument_count_at_least(argumentCount, 1);
 
         SharedRealm sharedRealm = *RJSGetInternal<SharedRealm *>(thisObject);
         return RJSResultsCreateFiltered(ctx, sharedRealm, results->get_object_schema(), std::move(results->get_query()), argumentCount, arguments);
@@ -189,7 +190,7 @@ JSObjectRef RJSResultsCreateSorted(JSContextRef ctx, SharedRealm realm, const Ob
     std::vector<bool> ascending;
 
     if (RJSIsValueArray(ctx, arguments[0])) {
-        RJSValidateArgumentCount(argumentCount, 1, "Second argument is not allowed if passed an array of sort descriptors");
+        validate_argument_count(argumentCount, 1, "Second argument is not allowed if passed an array of sort descriptors");
 
         JSObjectRef js_prop_names = RJSValidatedValueToObject(ctx, arguments[0]);
         prop_count = RJSValidatedListLength(ctx, js_prop_names);
@@ -214,7 +215,7 @@ JSObjectRef RJSResultsCreateSorted(JSContextRef ctx, SharedRealm realm, const Ob
         }
     }
     else {
-        RJSValidateArgumentRange(argumentCount, 1, 2);
+        validate_argument_count(argumentCount, 1, 2);
 
         prop_count = 1;
         prop_names.push_back(RJSValidatedStringForValue(ctx, arguments[0]));

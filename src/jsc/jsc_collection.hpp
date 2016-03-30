@@ -16,9 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#ifndef REALM_JS_H
-#define REALM_JS_H
+#pragma once
 
-#include <RealmJS/jsc_init.h>
+#include "jsc_types.hpp"
 
-#endif /* REALM_JS_H */
+JSClassRef RJSCollectionClass();

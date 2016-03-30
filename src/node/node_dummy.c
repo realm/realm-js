@@ -16,15 +16,4 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#include "js_collection.hpp"
-
-static JSClassRef RJSCreateCollectionClass() {
-    JSClassDefinition classDefinition = kJSClassDefinitionEmpty;
-    classDefinition.className = "Collection";
-    return JSClassCreate(&classDefinition);
-}
-
-JSClassRef RJSCollectionClass() {
-    static JSClassRef s_collectionClass = RJSCreateCollectionClass();
-    return s_collectionClass;
-}
+void node_module_register(void* mod) {}

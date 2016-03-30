@@ -16,9 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#ifndef REALM_JS_H
-#define REALM_JS_H
+#pragma once
 
-#include <RealmJS/jsc_init.h>
-
-#endif /* REALM_JS_H */
+#include "jsc_init.h"
+#include "jsc_object_accessor.hpp"

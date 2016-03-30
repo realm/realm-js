@@ -18,7 +18,13 @@
 
 #pragma once
 
+#include <map>
+#include <set>
+
+#include "js_class.hpp"
+#include "js_types.hpp"
 #include "js_util.hpp"
+#include "js_object.hpp"
 #include "js_schema.hpp"
 
 #include "shared_realm.hpp"
@@ -27,9 +33,6 @@
 #include "results.hpp"
 #include "platform.hpp"
 
-#include <map>
-#include <set>
-
 namespace realm {
 namespace js {
 
@@ -37,10 +40,13 @@ template<typename T>
 class RealmDelegate : public BindingContext {
   public:
     using GlobalContextType = typename T::GlobalContext;
-    using ObjectClassType = typename T::ObjectClass;
+    using FunctionType = typename T::Function;
     using ObjectType = typename T::Object;
     using ValueType = typename T::Value;
-    using ObjectDefaults = std::map<std::string, ValueType>;
+    using Value = Value<T>;
+
+    using ObjectDefaultsMap = typename Schema<T>::ObjectDefaultsMap;
+    using ConstructorMap = typename Schema<T>::ConstructorMap;
 
     virtual void did_change(std::vector<ObserverState> const& observers, std::vector<void*> const& invalidated) {
         notify("change");
@@ -50,74 +56,46 @@ class RealmDelegate : public BindingContext {
     }
     virtual void will_change(std::vector<ObserverState> const& observers, std::vector<void*> const& invalidated) {}
 
-    RealmDelegate(std::weak_ptr<Realm> realm, GlobalContextType ctx) : m_context(ctx), m_realm(realm) {
-        GlobalContextProtect(m_context);
-    }
+    RealmDelegate(std::weak_ptr<Realm> realm, GlobalContextType ctx) : m_context(ctx), m_realm(realm) {}
+
     ~RealmDelegate() {
         remove_all_notifications();
-
-        for (auto constructor : m_constructors) {
-            ValueUnprotect(m_context, constructor.second);
-        }
-        for (auto objectDefaults : m_defaults) {
-            for (auto value : objectDefaults.second) {
-                ValueUnprotect(m_context, value.second);
-            }
-        }
-        GlobalContextUnprotect(m_context);
     }
 
-    void add_notification(JSObjectRef notification) {
-        if (!m_notifications.count(notification)) {
-            ValueProtect(m_context, notification);
-            m_notifications.insert(notification);
-        }
+    void add_notification(FunctionType notification) {
+        m_notifications.insert(Protected<FunctionType>(m_context, notification));
     }
-    void remove_notification(JSObjectRef notification) {
-        if (m_notifications.count(notification)) {
-            ValueUnprotect(m_context, notification);
-            m_notifications.erase(notification);
-        }
+    void remove_notification(FunctionType notification) {
+        m_notifications.erase(Protected<FunctionType>(m_context, notification));
     }
     void remove_all_notifications() {
-        for (auto notification : m_notifications) {
-            ValueUnprotect(m_context, notification);
-        }
         m_notifications.clear();
     }
 
-    std::map<std::string, ObjectDefaults> m_defaults;
-    std::map<std::string, ObjectType> m_constructors;
+    ObjectDefaultsMap m_defaults;
+    ConstructorMap m_constructors;
 
-private:
-    std::set<ObjectType> m_notifications;
-    GlobalContextType m_context;
+  private:
+    Protected<GlobalContextType> m_context;
+    std::set<Protected<FunctionType>> m_notifications;
     std::weak_ptr<Realm> m_realm;
     
     void notify(const char *notification_name) {
-        JSValueRef arguments[2];
         SharedRealm realm = m_realm.lock();
         if (!realm) {
             throw std::runtime_error("Realm no longer exists");
         }
-        ObjectType realm_object = WrapObject<SharedRealm *>(m_context, realm::js::realm_class(), new SharedRealm(realm));
+
+        ObjectType realm_object = create_object<T, SharedRealm>(m_context, new SharedRealm(realm));
+        ValueType arguments[2];
         arguments[0] = realm_object;
-        arguments[1] = RJSValueForString(m_context, notification_name);
+        arguments[1] = Value::from_string(m_context, notification_name);
 
         for (auto callback : m_notifications) {
-            JSValueRef ex = NULL;
-            ObjectCallAsFunction(m_context, callback, realm_object, 2, arguments, ex);
-            if (ex) {
-                throw RJSException(m_context, ex);
-            }
+            Function<T>::call(m_context, callback, realm_object, 2, arguments);
         }
     }
 };
-
-template<typename T>
-RealmDelegate<T> *get_delegate(Realm *realm) {
-    return dynamic_cast<realm::js::RealmDelegate<T> *>(realm->m_binding_context.get());
-}
 
 std::string default_path();
 void set_default_path(std::string path);
@@ -126,36 +104,40 @@ template<typename T>
 class Realm : public BindingContext {
 public:
     using ContextType = typename T::Context;
+    using FunctionType = typename T::Function;
     using ObjectType = typename T::Object;
     using ValueType = typename T::Value;
-    using ReturnType = typename T::Return;
-    using ExceptionType = typename T::Exception;
+    using String = String<T>;
+    using Object = Object<T>;
+    using Value = Value<T>;
+    using ReturnValue = ReturnValue<T>;
+    using NativeAccessor = realm::NativeAccessor<ValueType, ContextType>;
 
     // member methods
-    static void Objects(ContextType ctx, ObjectType thisObject, size_t argumentCount, const ValueType arguments[], ReturnType &returnObject);
-    static void Create(ContextType ctx, ObjectType thisObject, size_t argumentCount, const ValueType arguments[], ReturnType &returnObject);
-    static void Delete(ContextType ctx, ObjectType thisObject, size_t argumentCount, const ValueType arguments[], ReturnType &returnObject);
-    static void DeleteAll(ContextType ctx, ObjectType thisObject, size_t argumentCount, const ValueType arguments[], ReturnType &returnObject);
-    static void Write(ContextType ctx, ObjectType thisObject, size_t argumentCount, const ValueType arguments[], ReturnType &returnObject);
-    static void AddListener(ContextType ctx, ObjectType thisObject, size_t argumentCount, const ValueType arguments[], ReturnType &returnObject);
-    static void RemoveListener(ContextType ctx, ObjectType thisObject, size_t argumentCount, const ValueType arguments[], ReturnType &returnObject);
-    static void RemoveAllListeners(ContextType ctx, ObjectType thisObject, size_t argumentCount, const ValueType arguments[], ReturnType &returnObject);
-    static void Close(ContextType ctx, ObjectType thisObject, size_t argumentCount, const ValueType arguments[], ReturnType &returnObject);
-    
+    static void Objects(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void Create(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void Delete(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void DeleteAll(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void Write(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void AddListener(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void RemoveListener(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void RemoveAllListeners(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void Close(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
+
     // properties
-    static void GetPath(ContextType ctx, ObjectType object, ReturnType &returnObject);
-    static void GetSchemaVersion(ContextType ctx, ObjectType object, ReturnType &returnObject);
+    static void GetPath(ContextType, ObjectType, ReturnValue &);
+    static void GetSchemaVersion(ContextType, ObjectType, ReturnValue &);
 
     // constructor methods
-    static void Constructor(ContextType ctx, ObjectType constructor, size_t argumentCount, const ValueType arguments[], ObjectType &returnObject);
-    static void SchemaVersion(ContextType ctx, ObjectType thisObject, size_t argumentCount, const ValueType arguments[], ReturnType &returnObject);
-    
-    // static properties
-    static void GetDefaultPath(ContextType ctx, ObjectType object, ReturnType &returnObject);
-    static void SetDefaultPath(ContextType ctx, ObjectType object, ValueType value);
+    static void Constructor(ContextType, ObjectType, size_t, const ValueType[]);
+    static void SchemaVersion(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
 
-    static std::string validated_notification_name(JSContextRef ctx, JSValueRef value) {
-        std::string name = RJSValidatedStringForValue(ctx, value);
+    // static properties
+    static void GetDefaultPath(ContextType, ObjectType, ReturnValue &);
+    static void SetDefaultPath(ContextType, ObjectType, ValueType value);
+
+    static std::string validated_notification_name(ContextType ctx, const ValueType &value) {
+        std::string name = Value::validated_to_string(ctx, value, "notification name");
         if (name != "change") {
             throw std::runtime_error("Only the 'change' notification name is supported.");
         }
@@ -163,9 +145,9 @@ public:
     }
     
     // converts constructor object or type name to type name
-    static std::string validated_object_type_for_value(SharedRealm &realm, JSContextRef ctx, JSValueRef value) {
-        if (ValueIsObject(ctx, value) && ValueIsConstructor(ctx, value)) {
-            ObjectType constructor = ValueToObject(ctx, value);
+    static std::string validated_object_type_for_value(SharedRealm &realm, ContextType ctx, const ValueType &value) {
+        if (Value::is_constructor(ctx, value)) {
+            FunctionType constructor = Value::to_constructor(ctx, value);
             
             auto delegate = get_delegate<T>(realm.get());
             for (auto pair : delegate->m_constructors) {
@@ -175,66 +157,91 @@ public:
             }
             throw std::runtime_error("Constructor was not registered in the schema for this Realm");
         }
-        return RJSValidatedStringForValue(ctx, value, "objectType");
+        return Value::validated_to_string(ctx, value, "objectType");
     }
     
-    static std::string RJSNormalizePath(std::string path) {
+    static std::string normalize_path(std::string path) {
         if (path.size() && path[0] != '/') {
             return default_realm_file_directory() + "/" + path;
         }
         return path;
     }
 };
-    
-    
+
 template<typename T>
-void Realm<T>::Constructor(ContextType ctx, ObjectType constructor, size_t argumentCount, const ValueType arguments[], ObjectType &returnObject) {
-    using RJSAccessor = realm::NativeAccessor<ValueType, ContextType>;
-    using StringType = typename T::String;
-    
+struct ObjectClass<T, SharedRealm> : BaseObjectClass<T> {
+    using Realm = Realm<T>;
+
+    std::string const name = "Realm";
+
+    ConstructorType<T>* const constructor = Realm::Constructor;
+
+    MethodMap<T> const methods = {
+        {"objects", wrap<Realm::Objects>},
+        {"create", wrap<Realm::Create>},
+        {"delete", wrap<Realm::Delete>},
+        {"deleteAll", wrap<Realm::DeleteAll>},
+        {"write", wrap<Realm::Write>},
+        {"addListener", wrap<Realm::AddListener>},
+        {"removeListener", wrap<Realm::RemoveListener>},
+        {"removeAllListeners", wrap<Realm::RemoveAllListeners>},
+        {"close", wrap<Realm::Close>},
+    };
+
+    PropertyMap<T> const properties = {
+        {"path", {wrap<Realm::GetPath>}},
+        {"schemaVersion", {wrap<Realm::GetSchemaVersion>}},
+    };
+};
+
+template<typename T>
+void Realm<T>::Constructor(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[]) {
+    static const String path_string = "path";
+    static const String schema_string = "schema";
+    static const String schema_version_string = "schemaVersion";
+    static const String encryption_key_string = "encryptionKey";
+
     realm::Realm::Config config;
     typename Schema<T>::ObjectDefaultsMap defaults;
     typename Schema<T>::ConstructorMap constructors;
-    if (argumentCount == 0) {
+
+    if (argc == 0) {
         config.path = default_path();
     }
-    else if (argumentCount == 1) {
+    else if (argc == 1) {
         ValueType value = arguments[0];
-        if (ValueIsString(ctx, value)) {
-            config.path = RJSValidatedStringForValue(ctx, value, "path");
+        if (Value::is_string(ctx, value)) {
+            config.path = Value::validated_to_string(ctx, value, "path");
         }
-        else if (ValueIsObject(ctx, value)) {
-            ObjectType object = RJSValidatedValueToObject(ctx, value);
-            
-            StringType pathString("path");
-            ValueType pathValue = RJSValidatedPropertyValue(ctx, object, pathString);
-            if (!JSValueIsUndefined(ctx, pathValue)) {
-                config.path = RJSValidatedStringForValue(ctx, pathValue, "path");
+        else if (Value::is_object(ctx, value)) {
+            ObjectType object = Value::validated_to_object(ctx, value);
+
+            ValueType pathValue = Object::get_property(ctx, object, path_string);
+            if (!Value::is_undefined(ctx, pathValue)) {
+                config.path = Value::validated_to_string(ctx, pathValue, "path");
             }
             else {
                 config.path = js::default_path();
             }
-            
-            StringType schemaString("schema");
-            ValueType schemaValue = RJSValidatedPropertyValue(ctx, object, schemaString);
-            if (!ValueIsUndefined(ctx, schemaValue)) {
-                config.schema.reset(new realm::Schema(Schema<T>::parse_schema(ctx, RJSValidatedValueToObject(ctx, schemaValue), defaults, constructors)));
+
+            ValueType schemaValue = Object::get_property(ctx, object, schema_string);
+            if (!Value::is_undefined(ctx, schemaValue)) {
+                ObjectType schemaObject = Value::validated_to_object(ctx, schemaValue, "schema");
+                config.schema.reset(new realm::Schema(Schema<T>::parse_schema(ctx, schemaObject, defaults, constructors)));
             }
-            
-            StringType schemaVersionString("schemaVersion");
-            ValueType versionValue = RJSValidatedPropertyValue(ctx, object, schemaVersionString);
-            if (JSValueIsNumber(ctx, versionValue)) {
-                config.schema_version = RJSValidatedValueToNumber(ctx, versionValue);
+
+            ValueType versionValue = Object::get_property(ctx, object, schema_version_string);
+            if (!Value::is_undefined(ctx, versionValue)) {
+                config.schema_version = Value::validated_to_number(ctx, versionValue, "schemaVersion");
             }
             else {
                 config.schema_version = 0;
             }
             
-            StringType encryptionKeyString("encryptionKey");
-            ValueType encryptionKeyValue = RJSValidatedPropertyValue(ctx, object, encryptionKeyString);
-            if (!JSValueIsUndefined(ctx, encryptionKeyValue)) {
-                std::string encryptionKey = RJSAccessor::to_binary(ctx, encryptionKeyValue);
-                config.encryption_key = std::vector<char>(encryptionKey.begin(), encryptionKey.end());;
+            ValueType encryptionKeyValue = Object::get_property(ctx, object, encryption_key_string);
+            if (!Value::is_undefined(ctx, encryptionKeyValue)) {
+                std::string encryptionKey = NativeAccessor::to_binary(ctx, encryptionKeyValue);
+                config.encryption_key = std::vector<char>(encryptionKey.begin(), encryptionKey.end());
             }
         }
     }
@@ -242,76 +249,81 @@ void Realm<T>::Constructor(ContextType ctx, ObjectType constructor, size_t argum
         throw std::runtime_error("Invalid arguments when constructing 'Realm'");
     }
     
-    config.path = RJSNormalizePath(config.path);
-    
+    config.path = normalize_path(config.path);
     ensure_directory_exists_for_file(config.path);
+
     SharedRealm realm = realm::Realm::get_shared_realm(config);
-    auto delegate = new RealmDelegate<T>(realm, JSContextGetGlobalContext(ctx));
+    auto delegate = new RealmDelegate<T>(realm, Context<T>::get_global_context(ctx));
+
     if (!realm->m_binding_context) {
         realm->m_binding_context.reset(delegate);
     }
+
     delegate->m_defaults = defaults;
     delegate->m_constructors = constructors;
-    returnObject = WrapObject(ctx, realm_class(), new SharedRealm(realm));
+
+    set_internal<T, SharedRealm>(this_object, new SharedRealm(realm));
 }
 
 template<typename T>
-void Realm<T>::SchemaVersion(ContextType ctx, ObjectType thisObject, size_t argumentCount, const ValueType arguments[], ReturnType &returnObject) {
-    using RJSAccessor = realm::NativeAccessor<ValueType, ContextType>;
-
-    RJSValidateArgumentRange(argumentCount, 1, 2);
+void Realm<T>::SchemaVersion(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    validate_argument_count(argc, 1, 2);
     
     realm::Realm::Config config;
-    config.path = RJSNormalizePath(RJSValidatedStringForValue(ctx, arguments[0]));
-    if (argumentCount == 2) {
+    config.path = normalize_path(Value::validated_to_string(ctx, arguments[0]));
+    if (argc == 2) {
         auto encryptionKeyValue = arguments[1];
-        std::string encryptionKey = RJSAccessor::to_binary(ctx, encryptionKeyValue);
+        std::string encryptionKey = NativeAccessor::to_binary(ctx, encryptionKeyValue);
         config.encryption_key = std::vector<char>(encryptionKey.begin(), encryptionKey.end());
     }
     
     auto version = realm::Realm::get_schema_version(config);
     if (version == ObjectStore::NotVersioned) {
-        RJSSetReturnNumber(ctx, returnObject, -1);
+        return_value.set(-1);
     }
     else {
-        RJSSetReturnNumber(ctx, returnObject, version);
+        return_value.set(version);
     }
 }
 
 template<typename T>
-void Realm<T>::GetDefaultPath(ContextType ctx, ObjectType object, ReturnType &returnObject) {
-    returnObject = RJSValueForString(ctx, realm::js::default_path());
+void Realm<T>::GetDefaultPath(ContextType ctx, ObjectType object, ReturnValue &return_value) {
+    return_value.set(realm::js::default_path());
 }
 
 template<typename T>
 void Realm<T>::SetDefaultPath(ContextType ctx, ObjectType object, ValueType value) {
-    js::set_default_path(RJSValidatedStringForValue(ctx, value, "defaultPath"));
+    js::set_default_path(Value::validated_to_string(ctx, value, "defaultPath"));
 }
 
 template<typename T>
-void Realm<T>::GetPath(ContextType ctx, ObjectType object, ReturnType &returnObject) {
-    returnObject = RJSValueForString(ctx, RJSGetInternal<SharedRealm *>(object)->get()->config().path);
+void Realm<T>::GetPath(ContextType ctx, ObjectType object, ReturnValue &return_value) {
+    std::string path = get_internal<T, SharedRealm>(object)->get()->config().path;
+    return_value.set(path);
 }
-    
-template<typename T>
-void Realm<T>::GetSchemaVersion(ContextType ctx, ObjectType object, ReturnType &returnObject) {
-    returnObject = JSValueMakeNumber(ctx, RJSGetInternal<SharedRealm *>(object)->get()->config().schema_version);
-}
-    
-template<typename T>
-void Realm<T>::Objects(ContextType ctx, ObjectType thisObject, size_t argumentCount, const ValueType arguments[], ReturnType &returnObject) {
-    RJSValidateArgumentCount(argumentCount, 1);
 
-    SharedRealm sharedRealm = *RJSGetInternal<SharedRealm *>(thisObject);
+template<typename T>
+void Realm<T>::GetSchemaVersion(ContextType ctx, ObjectType object, ReturnValue &return_value) {
+    double version = get_internal<T, SharedRealm>(object)->get()->config().schema_version;
+    return_value.set(version);
+}
+
+template<typename T>
+void Realm<T>::Objects(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    validate_argument_count(argc, 1);
+
+    SharedRealm sharedRealm = *get_internal<T, SharedRealm>(this_object);
     std::string className = validated_object_type_for_value(sharedRealm, ctx, arguments[0]);
-    returnObject = RJSResultsCreate(ctx, sharedRealm, className);
+
+    // TODO
+//    return_value = RJSResultsCreate(ctx, sharedRealm, className);
 }
 
 template<typename T>
-void Realm<T>::Create(ContextType ctx, ObjectType thisObject, size_t argumentCount, const ValueType arguments[], ReturnType &returnObject) {
-    RJSValidateArgumentRange(argumentCount, 2, 3);
+void Realm<T>::Create(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    validate_argument_count(argc, 2, 3);
 
-    SharedRealm sharedRealm = *RJSGetInternal<SharedRealm *>(thisObject);
+    SharedRealm sharedRealm = *get_internal<T, SharedRealm>(this_object);
     std::string className = validated_object_type_for_value(sharedRealm, ctx, arguments[0]);
     auto &schema = sharedRealm->config().schema;
     auto object_schema = schema->find(className);
@@ -320,53 +332,57 @@ void Realm<T>::Create(ContextType ctx, ObjectType thisObject, size_t argumentCou
         throw std::runtime_error("Object type '" + className + "' not found in schema.");
     }
 
-    auto object = RJSValidatedValueToObject(ctx, arguments[1]);
-    if (RJSIsValueArray(ctx, arguments[1])) {
-        object = RJSDictForPropertyArray(ctx, *object_schema, object);
+    ObjectType object = Value::validated_to_object(ctx, arguments[1], "properties");
+    if (Value::is_array(ctx, arguments[1])) {
+        object = Schema<T>::dict_for_property_array(ctx, *object_schema, object);
     }
 
     bool update = false;
-    if (argumentCount == 3) {
-        update = RJSValidatedValueToBoolean(ctx, arguments[2]);
+    if (argc == 3) {
+        update = Value::validated_to_boolean(ctx, arguments[2], "update");
     }
 
-    returnObject = RJSObjectCreate(ctx, Object::create<ValueType>(ctx, sharedRealm, *object_schema, object, update));
+    auto realm_object = realm::Object::create<ValueType>(ctx, sharedRealm, *object_schema, object, update);
+    return_value.set(RealmObject<T>::create(ctx, realm_object));
 }
 
 template<typename T>
-void Realm<T>::Delete(ContextType ctx, ObjectType thisObject, size_t argumentCount, const ValueType arguments[], ReturnType &returnObject) {
-    RJSValidateArgumentCount(argumentCount, 1);
+void Realm<T>::Delete(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    validate_argument_count(argc, 1);
 
-    SharedRealm realm = *RJSGetInternal<SharedRealm *>(thisObject);
+    SharedRealm realm = *get_internal<T, SharedRealm>(this_object);
     if (!realm->is_in_transaction()) {
         throw std::runtime_error("Can only delete objects within a transaction.");
     }
 
-    auto arg = RJSValidatedValueToObject(ctx, arguments[0]);
-    if (RJSValueIsObjectOfClass(ctx, arg, realm::js::object_class())) {
-        Object *object = RJSGetInternal<Object *>(arg);
+    ObjectType arg = Value::validated_to_object(ctx, arguments[0]);
+
+    // TODO: fix this template call
+    if (Object::template is_instance<realm::Object>(ctx, arg)) {
+        auto object = get_internal<T, realm::Object>(arg);
         realm::TableRef table = ObjectStore::table_for_object_type(realm->read_group(), object->get_object_schema().name);
         table->move_last_over(object->row().get_index());
     }
-    else if (RJSIsValueArray(ctx, arg)) {
-        size_t length = RJSValidatedListLength(ctx, arg);
-        for (long i = length-1; i >= 0; i--) {
-            JSObjectRef jsObject = RJSValidatedValueToObject(ctx, RJSValidatedObjectAtIndex(ctx, arg, (unsigned int)i));
-            if (!RJSValueIsObjectOfClass(ctx, jsObject, object_class())) {
+    else if (Value::is_array(ctx, arg)) {
+        uint32_t length = Object::validated_get_length(ctx, arg);
+        for (uint32_t i = length; i--;) {
+            ObjectType object = Object::validated_get_object(ctx, arg, i);
+
+            if (!Object::template is_instance<realm::Object>(ctx, object)) {
                 throw std::runtime_error("Argument to 'delete' must be a Realm object or a collection of Realm objects.");
             }
 
-            Object *object = RJSGetInternal<Object *>(jsObject);
-            realm::TableRef table = ObjectStore::table_for_object_type(realm->read_group(), object->get_object_schema().name);
-            table->move_last_over(object->row().get_index());
+            auto realm_object = get_internal<T, realm::Object>(object);
+            realm::TableRef table = ObjectStore::table_for_object_type(realm->read_group(), realm_object->get_object_schema().name);
+            table->move_last_over(realm_object->row().get_index());
         }
     }
-    else if(RJSValueIsObjectOfClass(ctx, arg, realm::js::results_class())) {
-        Results *results = RJSGetInternal<Results *>(arg);
-        results->clear();
-    }
-    else if(RJSValueIsObjectOfClass(ctx, arg, realm::js::list_class())) {
-        List *list = RJSGetInternal<List *>(arg);
+//    else if(RJSValueIsObjectOfClass(ctx, arg, realm::js::results_class())) {
+//        auto results = get_internal<T, realm::Results>(arg);
+//        results->clear();
+//    }
+    else if (Object::template is_instance<realm::List>(ctx, arg)) {
+        auto list = get_internal<T, realm::List>(arg);
         list->delete_all();
     }
     else {
@@ -375,10 +391,10 @@ void Realm<T>::Delete(ContextType ctx, ObjectType thisObject, size_t argumentCou
 }
 
 template<typename T>
-void Realm<T>::DeleteAll(ContextType ctx, ObjectType thisObject, size_t argumentCount, const ValueType arguments[], ReturnType &returnObject) {
-    RJSValidateArgumentCount(argumentCount, 0);
+void Realm<T>::DeleteAll(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    validate_argument_count(argc, 0);
 
-    SharedRealm realm = *RJSGetInternal<SharedRealm *>(thisObject);
+    SharedRealm realm = *get_internal<T, SharedRealm>(this_object);
 
     if (!realm->is_in_transaction()) {
         throw std::runtime_error("Can only delete objects within a transaction.");
@@ -390,14 +406,15 @@ void Realm<T>::DeleteAll(ContextType ctx, ObjectType thisObject, size_t argument
 }
 
 template<typename T>
-void Realm<T>::Write(ContextType ctx, ObjectType thisObject, size_t argumentCount, const ValueType arguments[], ReturnType &returnObject) {
-    RJSValidateArgumentCount(argumentCount, 1);
+void Realm<T>::Write(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    validate_argument_count(argc, 1);
 
-    SharedRealm realm = *RJSGetInternal<SharedRealm *>(thisObject);
-    auto object = RJSValidatedValueToFunction(ctx, arguments[0]);
+    SharedRealm realm = *get_internal<T, SharedRealm>(this_object);
+    FunctionType callback = Value::validated_to_function(ctx, arguments[0]);
+
     try {
         realm->begin_transaction();
-        RJSCallFunction(ctx, object, thisObject, 0, NULL);
+        Function<T>::call(ctx, callback, this_object, 0, nullptr);
         realm->commit_transaction();
     }
     catch (std::exception &exp) {
@@ -409,42 +426,45 @@ void Realm<T>::Write(ContextType ctx, ObjectType thisObject, size_t argumentCoun
 }
 
 template<typename T>
-void Realm<T>::AddListener(ContextType ctx, ObjectType thisObject, size_t argumentCount, const ValueType arguments[], ReturnType &returnObject) {
-    RJSValidateArgumentCount(argumentCount, 2);
-    __unused std::string name = validated_notification_name(ctx, arguments[0]);
-    auto callback = RJSValidatedValueToFunction(ctx, arguments[1]);
+void Realm<T>::AddListener(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    validate_argument_count(argc, 2);
 
-    SharedRealm realm = *RJSGetInternal<SharedRealm *>(thisObject);
-    static_cast<js::RealmDelegate<jsc::Types> *>(realm->m_binding_context.get())->add_notification(callback);
+    __unused std::string name = validated_notification_name(ctx, arguments[0]);
+    auto callback = Value::validated_to_function(ctx, arguments[1]);
+
+    SharedRealm realm = *get_internal<T, SharedRealm>(this_object);
+    get_delegate<T>(realm.get())->add_notification(callback);
 }
 
 template<typename T>
-void Realm<T>::RemoveListener(ContextType ctx, ObjectType thisObject, size_t argumentCount, const ValueType arguments[], ReturnType &returnObject) {
-    RJSValidateArgumentCount(argumentCount, 2);
-    __unused std::string name = validated_notification_name(ctx, arguments[0]);
-    auto callback = RJSValidatedValueToFunction(ctx, arguments[1]);
+void Realm<T>::RemoveListener(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    validate_argument_count(argc, 2);
 
-    SharedRealm realm = *RJSGetInternal<SharedRealm *>(thisObject);
-    static_cast<js::RealmDelegate<jsc::Types> *>(realm->m_binding_context.get())->remove_notification(callback);
+    __unused std::string name = validated_notification_name(ctx, arguments[0]);
+    auto callback = Value::validated_to_function(ctx, arguments[1]);
+
+    SharedRealm realm = *get_internal<T, SharedRealm>(this_object);
+    get_delegate<T>(realm.get())->remove_notification(callback);
 }
 
 template<typename T>
-void Realm<T>::RemoveAllListeners(ContextType ctx, ObjectType thisObject, size_t argumentCount, const ValueType arguments[], ReturnType &returnObject) {
-    RJSValidateArgumentRange(argumentCount, 0, 1);
-    if (argumentCount) {
+void Realm<T>::RemoveAllListeners(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    validate_argument_count(argc, 0, 1);
+    if (argc) {
         validated_notification_name(ctx, arguments[0]);
     }
 
-    SharedRealm realm = *RJSGetInternal<SharedRealm *>(thisObject);
-    static_cast<js::RealmDelegate<jsc::Types> *>(realm->m_binding_context.get())->remove_all_notifications();
+    SharedRealm realm = *get_internal<T, SharedRealm>(this_object);
+    get_delegate<T>(realm.get())->remove_all_notifications();
 }
 
 template<typename T>
-void Realm<T>::Close(ContextType ctx, ObjectType thisObject, size_t argumentCount, const ValueType arguments[], ReturnType &returnObject) {
-    RJSValidateArgumentCount(argumentCount, 0);
-    SharedRealm realm = *RJSGetInternal<SharedRealm *>(thisObject);
+void Realm<T>::Close(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    validate_argument_count(argc, 0);
+
+    SharedRealm realm = *get_internal<T, SharedRealm>(this_object);
     realm->close();
 }
 
-}
-}
+} // js
+} // realm

@@ -16,9 +16,15 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#ifndef REALM_JS_H
-#define REALM_JS_H
+#include "jsc_collection.hpp"
 
-#include <RealmJS/jsc_init.h>
+static JSClassRef RJSCreateCollectionClass() {
+    JSClassDefinition classDefinition = kJSClassDefinitionEmpty;
+    classDefinition.className = "Collection";
+    return JSClassCreate(&classDefinition);
+}
 
-#endif /* REALM_JS_H */
+JSClassRef RJSCollectionClass() {
+    static JSClassRef s_collectionClass = RJSCreateCollectionClass();
+    return s_collectionClass;
+}

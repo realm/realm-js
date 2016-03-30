@@ -18,10 +18,13 @@
 
 #pragma once
 
-#include "js_util.hpp"
 #include <memory>
+#include <vector>
+
+#include "jsc_types.hpp"
 
 namespace realm {
+    class ObjectSchema;
     class Realm;
     class Query;
     typedef std::shared_ptr<Realm> SharedRealm;

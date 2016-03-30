@@ -16,7 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+#include "jsc_class.hpp"
 #include "jsc_list.hpp"
+#include "jsc_collection.hpp"
+#include "jsc_util.hpp"
 #include "js_list.hpp"
 
 #include <assert.h>
@@ -25,7 +28,7 @@ using RJSAccessor = realm::NativeAccessor<JSValueRef, JSContextRef>;
 using namespace realm;
 
 void ListPropertyNames(JSContextRef ctx, JSObjectRef object, JSPropertyNameAccumulatorRef propertyNames) {
-    List *list = RJSGetInternal<List *>(object);
+    List *list = js::get_internal<jsc::Types, List>(object);
     size_t size = list->size();
     
     char str[32];
@@ -37,7 +40,7 @@ void ListPropertyNames(JSContextRef ctx, JSObjectRef object, JSPropertyNameAccum
     }
 }
 
-using RJSList = realm::js::List<realm::jsc::Types>;
+using RJSList = js::List<jsc::Types>;
 WRAP_PROPERTY_GETTER(RJSList, GetLength)
 WRAP_INDEXED_GETTER(RJSList, GetIndex)
 WRAP_INDEXED_SETTER(RJSList, SetIndex)

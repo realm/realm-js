@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "types.hpp"
+#include "jsc_types.hpp"
 
 JSClassRef RJSRealmClass();
 JSClassRef RJSRealmConstructorClass();

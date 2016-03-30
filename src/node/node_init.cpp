@@ -16,9 +16,24 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#ifndef REALM_JS_H
-#define REALM_JS_H
+#include "node_init.hpp"
+#include "js_realm.hpp"
+#include "js_list.hpp"
 
-#include <RealmJS/jsc_init.h>
+namespace realm {
+namespace node {
 
-#endif /* REALM_JS_H */
+static void init(v8::Local<v8::Object> exports) {
+    ObjectWrap<SharedRealm>::init(exports);
+    ObjectWrap<realm::List>::init(exports);
+//    RealmObjectWrap::Init(exports);
+//    RealmResultsWrap::Init(exports);
+//    RealmListWrap::Init(exports);
+//
+//    NODE_SET_METHOD(exports, "__clearCaches", ClearCaches);
+}
+
+} // node
+} // realm
+
+NODE_MODULE(Realm, realm::node::init);

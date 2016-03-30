@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "js_util.hpp"
+#include "jsc_types.hpp"
 #include "list.hpp"
 
 JSClassRef RJSListClass();

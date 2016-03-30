@@ -18,35 +18,78 @@
 
 #pragma once
 
-#include <JavaScriptCore/JSContextRef.h>
-#include <JavaScriptCore/JSObjectRef.h>
-#include <JavaScriptCore/JSStringRef.h>
-
 #include <math.h>
 #include <string>
 #include <sstream>
-
 #include <stdexcept>
 #include <cmath>
+
+#include "jsc_types.hpp"
+
 #include "property.hpp"
 #include "schema.hpp"
 
-namespace realm {
-namespace js {
+#define WRAP_EXCEPTION(METHOD, EXCEPTION, ARGS...)  \
+try { METHOD(ARGS); } \
+catch(std::exception &e) { RJSSetException(ctx, EXCEPTION, e); }
+
+#define WRAP_CLASS_METHOD(CLASS_NAME, METHOD_NAME) \
+JSValueRef CLASS_NAME ## METHOD_NAME(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* ex) { \
+    JSValueRef returnValue = NULL; \
+    WRAP_EXCEPTION(CLASS_NAME::METHOD_NAME, *ex, ctx, thisObject, argumentCount, arguments, returnValue); \
+    return returnValue; \
+}
+
+#define WRAP_CONSTRUCTOR(CLASS_NAME, METHOD_NAME) \
+JSObjectRef CLASS_NAME ## METHOD_NAME(JSContextRef ctx, JSObjectRef constructor, size_t argumentCount, const JSValueRef arguments[], JSValueRef* ex) { \
+    JSObjectRef returnObject = NULL; \
+    WRAP_EXCEPTION(CLASS_NAME::METHOD_NAME, *ex, ctx, constructor, argumentCount, arguments, returnObject); \
+    return returnObject; \
+}
+
+#define WRAP_PROPERTY_GETTER(CLASS_NAME, METHOD_NAME) \
+JSValueRef CLASS_NAME ## METHOD_NAME(JSContextRef ctx, JSObjectRef object, JSStringRef property, JSValueRef* ex) { \
+    JSValueRef returnValue = NULL; \
+    WRAP_EXCEPTION(CLASS_NAME::METHOD_NAME, *ex, ctx, object, property, returnValue); \
+    return returnValue; \
+}
+
+#define WRAP_PROPERTY_SETTER(CLASS_NAME, METHOD_NAME) \
+bool CLASS_NAME ## METHOD_NAME(JSContextRef ctx, JSObjectRef object, JSStringRef property, JSValueRef value, JSValueRef* ex) { \
+    WRAP_EXCEPTION(CLASS_NAME::METHOD_NAME, *ex, ctx, object, property, value); \
+    return true; \
+}
+
+// for stol failure (std::invalid_argument) this could be another property that is handled externally, so ignore
+#define WRAP_INDEXED_GETTER(CLASS_NAME, METHOD_NAME) \
+JSValueRef CLASS_NAME ## METHOD_NAME(JSContextRef ctx, JSObjectRef object, JSStringRef property, JSValueRef* ex) { \
+    JSValueRef returnValue = NULL; \
+    try { \
+        size_t index = RJSValidatedPositiveIndex(RJSStringForJSString(property)); \
+        CLASS_NAME::METHOD_NAME(ctx, object, index, returnValue); return returnValue; \
+    } \
+    catch (std::out_of_range &exp) { return JSValueMakeUndefined(ctx); } \
+    catch (std::invalid_argument &exp) { return NULL; } \
+    catch (std::exception &e) { RJSSetException(ctx, *ex, e); return NULL; } \
+}
+
+#define WRAP_INDEXED_SETTER(CLASS_NAME, METHOD_NAME) \
+bool CLASS_NAME ## METHOD_NAME(JSContextRef ctx, JSObjectRef object, JSStringRef property, JSValueRef value, JSValueRef* ex) { \
+    try { \
+        size_t index = RJSValidatedPositiveIndex(RJSStringForJSString(property)); \
+        { CLASS_NAME::METHOD_NAME(ctx, object, index, value); return true; } \
+    } \
+    catch (std::out_of_range &exp) { RJSSetException(ctx, *ex, exp); } \
+    catch (std::invalid_argument &exp) { *ex = RJSMakeError(ctx, "Invalid index"); } \
+    catch (std::exception &e) { RJSSetException(ctx, *ex, e); } \
+    return false; \
+}
+
 
 template<typename T>
 inline void RJSFinalize(JSObjectRef object) {
     delete static_cast<T>(JSObjectGetPrivate(object));
     JSObjectSetPrivate(object, NULL);
-}
-
-template<typename T>
-inline JSObjectRef RJSWrapObject(JSContextRef ctx, JSClassRef jsClass, T object, JSValueRef prototype = NULL) {
-    JSObjectRef ref = JSObjectMake(ctx, jsClass, (void *)object);
-    if (prototype) {
-        JSObjectSetPrototype(ctx, ref, prototype);
-    }
-    return ref;
 }
 
 template<typename T>
@@ -56,7 +99,7 @@ inline T RJSGetInternal(JSObjectRef jsObject) {
 
 template<typename T>
 JSClassRef RJSCreateWrapperClass(const char * name, JSObjectGetPropertyCallback getter = NULL, JSObjectSetPropertyCallback setter = NULL, const JSStaticFunction *funcs = NULL,
-                                 JSObjectGetPropertyNamesCallback propertyNames = NULL, JSClassRef parentClass = NULL) {
+                                 JSObjectGetPropertyNamesCallback propertyNames = NULL, JSClassRef parentClass = NULL, const JSStaticValue *values = NULL) {
     JSClassDefinition classDefinition = kJSClassDefinitionEmpty;
     classDefinition.className = name;
     classDefinition.finalize = RJSFinalize<T>;
@@ -65,6 +108,7 @@ JSClassRef RJSCreateWrapperClass(const char * name, JSObjectGetPropertyCallback 
     classDefinition.staticFunctions = funcs;
     classDefinition.getPropertyNames = propertyNames;
     classDefinition.parentClass = parentClass;
+    classDefinition.staticValues = values;
     return JSClassCreate(&classDefinition);
 }
 
@@ -74,24 +118,6 @@ std::string RJSValidatedStringForValue(JSContextRef ctx, JSValueRef value, const
 
 JSStringRef RJSStringForString(const std::string &str);
 JSValueRef RJSValueForString(JSContextRef ctx, const std::string &str);
-
-inline void RJSValidateArgumentCount(size_t argumentCount, size_t expected, const char *message = NULL) {
-    if (argumentCount != expected) {
-        throw std::invalid_argument(message ?: "Invalid arguments");
-    }
-}
-
-inline void RJSValidateArgumentCountIsAtLeast(size_t argumentCount, size_t expected, const char *message = NULL) {
-    if (argumentCount < expected) {
-        throw std::invalid_argument(message ?: "Invalid arguments");
-    }
-}
-
-inline void RJSValidateArgumentRange(size_t argumentCount, size_t min, size_t max, const char *message = NULL) {
-    if (argumentCount < min || argumentCount > max) {
-        throw std::invalid_argument(message ?: "Invalid arguments");
-    }
-}
 
 class RJSException : public std::runtime_error {
 public:
@@ -111,7 +137,7 @@ bool RJSIsValueArray(JSContextRef ctx, JSValueRef value);
 bool RJSIsValueArrayBuffer(JSContextRef ctx, JSValueRef value);
 bool RJSIsValueDate(JSContextRef ctx, JSValueRef value);
 
-static inline JSObjectRef RJSValidatedValueToObject(JSContextRef ctx, JSValueRef value, const char *message = NULL) {
+static inline JSObjectRef RJSValidatedValueToObject(JSContextRef ctx, JSValueRef value, const char *message = nullptr) {
     JSObjectRef object = JSValueToObject(ctx, value, NULL);
     if (!object) {
         throw std::runtime_error(message ?: "Value is not an object.");
@@ -119,7 +145,7 @@ static inline JSObjectRef RJSValidatedValueToObject(JSContextRef ctx, JSValueRef
     return object;
 }
 
-static inline JSObjectRef RJSValidatedValueToDate(JSContextRef ctx, JSValueRef value, const char *message = NULL) {
+static inline JSObjectRef RJSValidatedValueToDate(JSContextRef ctx, JSValueRef value, const char *message = nullptr) {
     JSObjectRef object = JSValueToObject(ctx, value, NULL);
     if (!object || !RJSIsValueDate(ctx, object)) {
         throw std::runtime_error(message ?: "Value is not a date.");
@@ -127,7 +153,7 @@ static inline JSObjectRef RJSValidatedValueToDate(JSContextRef ctx, JSValueRef v
     return object;
 }
 
-static inline JSObjectRef RJSValidatedValueToFunction(JSContextRef ctx, JSValueRef value, const char *message = NULL) {
+static inline JSObjectRef RJSValidatedValueToFunction(JSContextRef ctx, JSValueRef value, const char *message = nullptr) {
     JSObjectRef object = JSValueToObject(ctx, value, NULL);
     if (!object || !JSObjectIsFunction(ctx, object)) {
         throw std::runtime_error(message ?: "Value is not a function.");
@@ -151,6 +177,13 @@ static inline double RJSValidatedValueToNumber(JSContextRef ctx, JSValueRef valu
     return number;
 }
 
+static inline double RJSValidatedValueToBoolean(JSContextRef ctx, JSValueRef value, const char *err = nullptr) {
+    if (!JSValueIsBoolean(ctx, value)) {
+        throw std::invalid_argument(err ?: "Value is not a boolean.");
+    }
+    return JSValueToBoolean(ctx, value);
+}
+
 static inline JSValueRef RJSValidatedPropertyValue(JSContextRef ctx, JSObjectRef object, JSStringRef property) {
     JSValueRef exception = NULL;
     JSValueRef propertyValue = JSObjectGetProperty(ctx, object, property, &exception);
@@ -169,7 +202,7 @@ static inline JSValueRef RJSValidatedPropertyAtIndex(JSContextRef ctx, JSObjectR
     return propertyValue;
 }
 
-static inline JSObjectRef RJSValidatedObjectProperty(JSContextRef ctx, JSObjectRef object, JSStringRef property, const char *err = NULL) {
+static inline JSObjectRef RJSValidatedObjectProperty(JSContextRef ctx, JSObjectRef object, JSStringRef property, const char *err = nullptr) {
     JSValueRef propertyValue = RJSValidatedPropertyValue(ctx, object, property);
     if (JSValueIsUndefined(ctx, propertyValue)) {
         throw std::runtime_error(err ?: "Object property '" + RJSStringForJSString(property) + "' is undefined");
@@ -247,5 +280,24 @@ static inline bool RJSIsValueObjectOfType(JSContextRef ctx, JSValueRef value, JS
 
     return ret;
 }
-    
-}}
+
+static inline void RJSSetReturnUndefined(JSContextRef ctx, JSValueRef &returnObject) {
+    returnObject = JSValueMakeUndefined(ctx);
+}
+
+template<typename T>
+static inline void RJSSetReturnNumber(JSContextRef ctx, JSValueRef &returnObject, T number) {
+    returnObject = JSValueMakeNumber(ctx, number);
+}
+
+static inline void RJSSetReturnArray(JSContextRef ctx, size_t count, const JSValueRef *objects, JSValueRef &returnObject) {
+    returnObject = JSObjectMakeArray(ctx, count, objects, NULL);
+}
+
+static inline void RJSSetException(JSContextRef ctx, JSValueRef &exceptionObject, std::exception &exception) {
+    exceptionObject = RJSMakeError(ctx, exception);
+}
+
+static bool RJSValueIsObjectOfClass(JSContextRef ctx, JSValueRef value, JSClassRef jsClass) {
+    return JSValueIsObjectOfClass(ctx, value, jsClass);
+}
