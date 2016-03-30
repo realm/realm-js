@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		02409DC21BCF11D6005F3B3E /* RealmJSCoreTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 02409DC11BCF11D6005F3B3E /* RealmJSCoreTests.m */; };
+		025678981CAB478800FB8501 /* jsc_realm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 025678961CAB478800FB8501 /* jsc_realm.cpp */; };
 		0270BC821B7D020100010E03 /* RealmJSTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = 0270BC7B1B7D020100010E03 /* RealmJSTests.mm */; };
 		0270BC871B7D023200010E03 /* RealmJS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 02B58CB11AE99CEC009B348C /* RealmJS.framework */; };
 		029048121C0428DF00ABDED4 /* js_init.h in Headers */ = {isa = PBXBuildFile; fileRef = 029048021C0428DF00ABDED4 /* js_init.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -101,6 +102,8 @@
 /* Begin PBXFileReference section */
 		02409DC11BCF11D6005F3B3E /* RealmJSCoreTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = RealmJSCoreTests.m; path = ios/RealmJSCoreTests.m; sourceTree = "<group>"; };
 		025678951CAB392000FB8501 /* types.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = types.hpp; path = jsc/types.hpp; sourceTree = "<group>"; };
+		025678961CAB478800FB8501 /* jsc_realm.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = jsc_realm.cpp; path = jsc/jsc_realm.cpp; sourceTree = "<group>"; };
+		025678971CAB478800FB8501 /* jsc_realm.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = jsc_realm.hpp; path = jsc/jsc_realm.hpp; sourceTree = "<group>"; };
 		0270BC5A1B7CFC1300010E03 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		0270BC781B7D020100010E03 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = ios/Info.plist; sourceTree = "<group>"; };
 		0270BC7A1B7D020100010E03 /* RealmJSTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RealmJSTests.h; path = ios/RealmJSTests.h; sourceTree = "<group>"; };
@@ -265,6 +268,8 @@
 				025678951CAB392000FB8501 /* types.hpp */,
 				02AFE5871CA9B23400953DA3 /* jsc_list.cpp */,
 				02AFE5881CA9B23400953DA3 /* jsc_list.hpp */,
+				025678961CAB478800FB8501 /* jsc_realm.cpp */,
+				025678971CAB478800FB8501 /* jsc_realm.hpp */,
 				029048351C042A3C00ABDED4 /* platform.hpp */,
 				0290480F1C0428DF00ABDED4 /* rpc.cpp */,
 				029048101C0428DF00ABDED4 /* rpc.hpp */,
@@ -656,6 +661,7 @@
 			files = (
 				F6CB31001C8EDDAB0070EF3F /* js_collection.cpp in Sources */,
 				02F59EE31C88F2BB007F774C /* transact_log_handler.cpp in Sources */,
+				025678981CAB478800FB8501 /* jsc_realm.cpp in Sources */,
 				F63FF2E81C159C4B00B3B8E0 /* platform.mm in Sources */,
 				02F59EC31C88F17D007F774C /* results.cpp in Sources */,
 				02AFE5891CA9B23400953DA3 /* jsc_list.cpp in Sources */,

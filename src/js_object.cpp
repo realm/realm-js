@@ -71,6 +71,12 @@ JSClassRef RJSObjectClass() {
     return s_objectClass;
 }
 
+namespace realm {
+    namespace js {
+        JSClassRef object_class() { return RJSObjectClass(); };
+    }
+}
+
 JSObjectRef RJSObjectCreate(JSContextRef ctx, Object object) {
     static JSStringRef prototypeString = JSStringCreateWithUTF8CString("prototype");
 

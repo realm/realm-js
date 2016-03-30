@@ -18,19 +18,7 @@
 
 #pragma once
 
-#include "js_util.hpp"
-#include <map>
-
-namespace realm {
-    class Realm;
-    using ObjectDefaults = std::map<std::string, JSValueRef>;
-}
+#include "types.hpp"
 
 JSClassRef RJSRealmClass();
 JSClassRef RJSRealmConstructorClass();
-
-std::string RJSDefaultPath();
-void RJSSetDefaultPath(std::string path);
-
-std::map<std::string, realm::ObjectDefaults> &RJSDefaults(realm::Realm *realm);
-std::map<std::string, JSObjectRef> &RJSConstructors(realm::Realm *realm);

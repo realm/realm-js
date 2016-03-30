@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #include "js_init.h"
-#include "js_realm.hpp"
+#include "jsc_realm.hpp"
 #include "js_object.hpp"
 #include "js_collection.hpp"
 #include "jsc_list.hpp"
