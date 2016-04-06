@@ -565,11 +565,24 @@ MissingPropertyException::MissingPropertyException(std::string const& object_typ
 InvalidNullabilityException::InvalidNullabilityException(std::string const& object_type, Property const& property) :
     ObjectSchemaPropertyException(object_type, property)
 {
-    if (property.type == PropertyType::Object) {
-        m_what = util::format("'Object' property '%1' must be nullable.", property.name);
-    }
-    else {
-        m_what = util::format("Array or Mixed property '%1' cannot be nullable", property.name);
+    switch (property.type) {
+        case PropertyType::Object:
+            m_what = util::format("'Object' property '%1' must be nullable.", property.name);
+            break;
+        case PropertyType::Any:
+        case PropertyType::Array:
+        case PropertyType::LinkingObjects:
+            m_what = util::format("Property '%1' of type '%2' cannoy be nullable",
+                                  property.name, string_for_property_type(property.type));
+            break;
+        case PropertyType::Int:
+        case PropertyType::Bool:
+        case PropertyType::Data:
+        case PropertyType::Date:
+        case PropertyType::Float:
+        case PropertyType::Double:
+        case PropertyType::String:
+            REALM_ASSERT(false);
     }
 }
 
@@ -627,3 +640,24 @@ DuplicatePrimaryKeysException::DuplicatePrimaryKeysException(std::string const& 
     m_what = util::format("Duplicate primary keys for object '%1'.", object_type);
 }
 
+InvalidLinkingObjectsPropertyException::InvalidLinkingObjectsPropertyException(Type error_type, std::string const& object_type, Property const& property)
+: ObjectSchemaPropertyException(object_type, property)
+{
+    switch (error_type) {
+        case Type::OriginPropertyDoesNotExist:
+            m_what = util::format("Property '%1.%2' declared as origin of linking objects property '%3.%4' does not exist",
+                                  property.object_type, property.link_origin_property_name,
+                                  object_type, property.name);
+            break;
+        case Type::OriginPropertyIsNotALink:
+            m_what = util::format("Property '%1.%2' declared as origin of linking objects property '%3.%4' is not a link",
+                                  property.object_type, property.link_origin_property_name,
+                                  object_type, property.name);
+            break;
+        case Type::OriginPropertyInvalidLinkTarget:
+            m_what = util::format("Property '%1.%2' declared as origin of linking objects property '%3.%4' links to a different class",
+                                  property.object_type, property.link_origin_property_name,
+                                  object_type, property.name);
+            break;
+    }
+}
