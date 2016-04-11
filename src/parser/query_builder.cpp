@@ -435,7 +435,7 @@ void do_add_null_comparison_to_query(Query &query, Predicate::Operator op, const
             query.and_query(column == realm::null());
             break;
         default:
-            throw std::runtime_error("Only 'equal' and 'not equal' operators supported when comapring against 'null'.");
+            throw std::runtime_error("Only 'equal' and 'not equal' operators supported when comparing against 'null'.");
     }
 }
     
@@ -452,7 +452,7 @@ void do_add_null_comparison_to_query<Binary>(Query &query, Predicate::Operator o
             query.equal(expr.prop->table_column, realm::null());
             break;
         default:
-            throw std::runtime_error("Only 'equal' and 'not equal' operators supported when comapring against 'null'.");
+            throw std::runtime_error("Only 'equal' and 'not equal' operators supported when comparing against 'null'.");
     }
 }
     
