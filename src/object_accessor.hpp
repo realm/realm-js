@@ -25,7 +25,7 @@
 #include "schema.hpp"
 #include "shared_realm.hpp"
 
-#include <string>
+#include <realm/link_view.hpp>
 
 namespace realm {
 

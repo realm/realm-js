@@ -22,6 +22,7 @@
 #include "impl/realm_coordinator.hpp"
 #include "results.hpp"
 
+#include <realm/link_view.hpp>
 #include <realm/util/to_string.hpp>
 #include <stdexcept>
 
