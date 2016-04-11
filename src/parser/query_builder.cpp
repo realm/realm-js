@@ -430,6 +430,7 @@ void do_add_null_comparison_to_query(Query &query, Predicate::Operator op, const
     switch (op) {
         case Predicate::Operator::NotEqual:
             query.and_query(column != realm::null());
+            break;
         case Predicate::Operator::Equal:
             query.and_query(column == realm::null());
             break;
@@ -446,6 +447,7 @@ void do_add_null_comparison_to_query<Binary>(Query &query, Predicate::Operator o
     switch (op) {
         case Predicate::Operator::NotEqual:
             query.not_equal(expr.prop->table_column, realm::null());
+            break;
         case Predicate::Operator::Equal:
             query.equal(expr.prop->table_column, realm::null());
             break;
