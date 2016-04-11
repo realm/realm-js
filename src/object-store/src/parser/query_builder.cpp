@@ -426,36 +426,49 @@ void do_add_comparison_to_query(Query &query, const Schema &schema, const Object
 template<typename T>
 void do_add_null_comparison_to_query(Query &query, Predicate::Operator op, const PropertyExpression &expr, Arguments &args)
 {
-    static realm::null null = realm::null();
     Columns<T> column = expr.table_getter()->template column<T>(expr.prop->table_column);
-
     switch (op) {
         case Predicate::Operator::NotEqual:
-            query.and_query(column != null);
+            query.and_query(column != realm::null());
         case Predicate::Operator::Equal:
-            query.and_query(column == null);
+            query.and_query(column == realm::null());
             break;
         default:
-            throw std::runtime_error("Only 'equal' and 'not equal' operators supported for object comparison.");
+            throw std::runtime_error("Only 'equal' and 'not equal' operators supported when comapring against 'null'.");
     }
 }
     
 template<>
 void do_add_null_comparison_to_query<Binary>(Query &query, Predicate::Operator op, const PropertyExpression &expr, Arguments &args)
 {
-    static realm::null null = realm::null();
+    precondition(expr.indexes.empty(), "KeyPath queries not supported for data comparisons.");
     Columns<Binary> column = expr.table_getter()->template column<Binary>(expr.prop->table_column);
-    
     switch (op) {
         case Predicate::Operator::NotEqual:
-            query.not_equal(expr.prop->table_column, null);
+            query.not_equal(expr.prop->table_column, realm::null());
         case Predicate::Operator::Equal:
-            query.equal(expr.prop->table_column, null);
+            query.equal(expr.prop->table_column, realm::null());
+            break;
+        default:
+            throw std::runtime_error("Only 'equal' and 'not equal' operators supported when comapring against 'null'.");
+    }
+}
+    
+template<>
+void do_add_null_comparison_to_query<Link>(Query &query, Predicate::Operator op, const PropertyExpression &expr, Arguments &args)
+{
+    precondition(expr.indexes.empty(), "KeyPath queries not supported for object comparisons.");
+    switch (op) {
+        case Predicate::Operator::NotEqual:
+            query.Not();
+        case Predicate::Operator::Equal:
+            query.and_query(query.get_table()->column<Link>(expr.prop->table_column).is_null());
             break;
         default:
             throw std::runtime_error("Only 'equal' and 'not equal' operators supported for object comparison.");
     }
 }
+
 
 void do_add_null_comparison_to_query(Query &query, const Schema &schema, const ObjectSchema &object_schema, Predicate::Comparison cmp,
                                      const PropertyExpression &expr, Arguments &args)
@@ -481,20 +494,10 @@ void do_add_null_comparison_to_query(Query &query, const Schema &schema, const O
             do_add_null_comparison_to_query<String>(query, cmp.op, expr, args);
             break;
         case PropertyTypeData:
-            precondition(expr.indexes.empty(), "KeyPath queries not supported for data comparisons.");
             do_add_null_comparison_to_query<Binary>(query, cmp.op, expr, args);
             break;
         case PropertyTypeObject:
-            precondition(expr.indexes.empty(), "KeyPath queries not supported for object comparisons.");
-            switch (cmp.op) {
-                case Predicate::Operator::NotEqual:
-                    query.Not();
-                case Predicate::Operator::Equal:
-                    query.and_query(query.get_table()->column<Link>(expr.prop->table_column).is_null());
-                    break;
-                default:
-                    throw std::runtime_error("Only 'equal' and 'not equal' operators supported for object comparison.");
-            }
+            do_add_null_comparison_to_query<Link>(query, cmp.op, expr, args);
             break;
         case PropertyTypeArray:
             throw std::runtime_error((std::string)"Comparing Lists to 'null' is not supported");

@@ -146,6 +146,9 @@ module.exports = BaseTest.extend({
     },
     testKeyPathQueries: function() {
         runQuerySuite(testCases.keyPathTests);
+    },
+    testOptionalQueries: function() {
+        runQuerySuite(testCases.optionalTests);
     }
 });
 
