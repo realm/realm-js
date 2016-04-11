@@ -143,7 +143,7 @@ namespace realm {
                 "Setting invalid property '" + prop_name + "' on object '" + m_object_schema->name + "'.");
         }
         set_property_value_impl(ctx, *prop, value, try_update);
-    };
+    }
 
     template <typename ValueType, typename ContextType>
     inline ValueType Object::get_property_value(ContextType ctx, std::string prop_name)
@@ -154,7 +154,7 @@ namespace realm {
                 "Getting invalid property '" + prop_name + "' on object '" + m_object_schema->name + "'.");
         }
         return get_property_value_impl<ValueType>(ctx, *prop);
-    };
+    }
 
     template <typename ValueType, typename ContextType>
     inline void Object::set_property_value_impl(ContextType ctx, const Property &property, ValueType value, bool try_update)
