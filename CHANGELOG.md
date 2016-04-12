@@ -1,3 +1,14 @@
+x.x.x Release notes (yyyy-MM-dd)
+=============================================================
+### Breaking changes
+* None
+
+### Enhancements
+* Support for queries comparing optional properties to `null`
+
+### Bugfixes
+* None
+
 0.11.1 Release notes (2016-3-29)
 =============================================================
 ### Bugfixes
