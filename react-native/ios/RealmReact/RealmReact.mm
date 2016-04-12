@@ -20,7 +20,7 @@
 #import "RealmAnalytics.h"
 #import "RCTBridge.h"
 
-#import "js_init.h"
+#import "jsc_init.h"
 #import "shared_realm.hpp"
 #import "realm_coordinator.hpp"
 
@@ -38,6 +38,8 @@
 
 #define WEB_SERVER_PORT 8082
 #endif
+
+using namespace realm::rpc;
 
 @interface NSObject ()
 - (instancetype)initWithJSContext:(void *)context;
@@ -82,7 +84,7 @@ extern "C" JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executo
 
 #if DEBUG
     GCDWebServer *_webServer;
-    std::unique_ptr<realm_js::RPCServer> _rpcServer;
+    std::unique_ptr<RPCServer> _rpcServer;
 #endif
 }
 
@@ -204,7 +206,7 @@ RCT_REMAP_METHOD(emit, emitEvent:(NSString *)eventName withObject:(id)object) {
 - (void)startRPC {
     [GCDWebServer setLogLevel:3];
     _webServer = [[GCDWebServer alloc] init];
-    _rpcServer = std::make_unique<realm_js::RPCServer>();
+    _rpcServer = std::make_unique<RPCServer>();
     __weak __typeof__(self) weakSelf = self;
 
     // Add a handler to respond to POST requests on any URL
@@ -219,7 +221,7 @@ RCT_REMAP_METHOD(emit, emitEvent:(NSString *)eventName withObject:(id)object) {
                 RealmReact *self = weakSelf;
                 if (self) {
                     if (_rpcServer) {
-                        realm_js::json args = realm_js::json::parse([[(GCDWebServerDataRequest *)request text] UTF8String]);
+                        json args = json::parse([[(GCDWebServerDataRequest *)request text] UTF8String]);
                         std::string responseText = _rpcServer->perform_request(request.path.UTF8String, args).dump();
                         responseData = [NSData dataWithBytes:responseText.c_str() length:responseText.length()];
                         return;

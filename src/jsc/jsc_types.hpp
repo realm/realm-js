@@ -22,8 +22,6 @@
 #include <JavaScriptCore/JSObjectRef.h>
 #include <JavaScriptCore/JSStringRef.h>
 
-#include <realm/util/to_string.hpp>
-
 #include "js_types.hpp"
 
 namespace realm {
@@ -42,10 +40,11 @@ struct Types {
     using FunctionCallback = JSObjectCallAsFunctionCallback;
     using PropertyGetterCallback = JSObjectGetPropertyCallback;
     using PropertySetterCallback = JSObjectSetPropertyCallback;
-    using IndexPropertyGetterCallback = JSValueRef(JSContextRef, JSObjectRef, uint32_t, JSValueRef*);
-    using IndexPropertySetterCallback = bool(JSContextRef, JSObjectRef, uint32_t, JSValueRef, JSValueRef*);
+    using IndexPropertyGetterCallback = JSValueRef (*)(JSContextRef, JSObjectRef, uint32_t, JSValueRef*);
+    using IndexPropertySetterCallback = bool (*)(JSContextRef, JSObjectRef, uint32_t, JSValueRef, JSValueRef*);
     using StringPropertyGetterCallback = JSObjectGetPropertyCallback;
     using StringPropertySetterCallback = JSObjectSetPropertyCallback;
+    using StringPropertyEnumeratorCallback = JSObjectGetPropertyNamesCallback;
 };
 
 template<typename T>
@@ -92,14 +91,23 @@ namespace js {
 
 template<>
 class String<jsc::Types> {
-    const JSStringRef m_str;
+    using StringType = String<jsc::Types>;
+
+    JSStringRef m_str;
 
   public:
     String(const char *s) : m_str(JSStringCreateWithUTF8CString(s)) {}
     String(const JSStringRef &s) : m_str(JSStringRetain(s)) {}
-    String(JSStringRef &&s) : m_str(s) {}
     String(const std::string &str) : String(str.c_str()) {}
-    ~String() { JSStringRelease(m_str); }
+    String(const StringType &o) : String(o.m_str) {}
+    String(StringType &&o) : m_str(o.m_str) {
+        o.m_str = nullptr;
+    }
+    ~String() {
+        if (m_str) {
+            JSStringRelease(m_str);
+        }
+    }
 
     operator JSStringRef() const {
         return m_str;
@@ -180,7 +188,8 @@ class Protected<JSObjectRef> : public Protected<JSValueRef> {
     Protected(JSContextRef ctx, JSObjectRef object) : Protected<JSValueRef>(ctx, object) {}
 
     operator JSObjectRef() const {
-        return static_cast<JSObjectRef>(*this);
+        JSValueRef value = static_cast<JSValueRef>(*this);
+        return (JSObjectRef)value;
     }
 };
 
@@ -270,27 +279,27 @@ inline bool jsc::Value::is_valid(const JSValueRef &value) {
 }
 
 template<>
-JSValueRef jsc::Value::from_boolean(JSContextRef ctx, bool boolean) {
+inline JSValueRef jsc::Value::from_boolean(JSContextRef ctx, bool boolean) {
     return JSValueMakeBoolean(ctx, boolean);
 }
 
 template<>
-JSValueRef jsc::Value::from_null(JSContextRef ctx) {
+inline JSValueRef jsc::Value::from_null(JSContextRef ctx) {
     return JSValueMakeNull(ctx);
 }
 
 template<>
-JSValueRef jsc::Value::from_number(JSContextRef ctx, double number) {
+inline JSValueRef jsc::Value::from_number(JSContextRef ctx, double number) {
     return JSValueMakeNumber(ctx, number);
 }
 
 template<>
-JSValueRef jsc::Value::from_string(JSContextRef ctx, const jsc::String &string) {
+inline JSValueRef jsc::Value::from_string(JSContextRef ctx, const jsc::String &string) {
     return JSValueMakeString(ctx, string);
 }
 
 template<>
-JSValueRef jsc::Value::from_undefined(JSContextRef ctx) {
+inline JSValueRef jsc::Value::from_undefined(JSContextRef ctx) {
     return JSValueMakeUndefined(ctx);
 }
 
@@ -316,6 +325,10 @@ template<>
 inline jsc::String jsc::Value::to_string(JSContextRef ctx, const JSValueRef &value) {
     JSValueRef exception = nullptr;
     jsc::String string = JSValueToStringCopy(ctx, value, &exception);
+
+    // Since the string's retain value is +2 here, we need to manually release it before returning.
+    JSStringRelease(string);
+
     if (exception) {
         throw jsc::Exception(ctx, exception);
     }
@@ -353,7 +366,7 @@ inline JSObjectRef jsc::Value::to_function(JSContextRef ctx, const JSValueRef &v
 }
 
 template<>
-inline JSValueRef jsc::Function::call(JSContextRef ctx, const JSObjectRef &function, const JSObjectRef &this_object, uint32_t argc, const JSValueRef arguments[]) {
+inline JSValueRef jsc::Function::call(JSContextRef ctx, const JSObjectRef &function, const JSObjectRef &this_object, size_t argc, const JSValueRef arguments[]) {
     JSValueRef exception = nullptr;
     JSValueRef result = JSObjectCallAsFunction(ctx, function, this_object, argc, arguments, &exception);
     if (exception) {
@@ -363,7 +376,7 @@ inline JSValueRef jsc::Function::call(JSContextRef ctx, const JSObjectRef &funct
 }
 
 template<>
-inline JSObjectRef jsc::Function::construct(JSContextRef ctx, const JSObjectRef &function, uint32_t argc, const JSValueRef arguments[]) {
+inline JSObjectRef jsc::Function::construct(JSContextRef ctx, const JSObjectRef &function, size_t argc, const JSValueRef arguments[]) {
     JSValueRef exception = nullptr;
     JSObjectRef result = JSObjectCallAsConstructor(ctx, function, argc, arguments, &exception);
     if (exception) {

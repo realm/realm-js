@@ -43,7 +43,7 @@ struct RealmObject {
     static ObjectType create(ContextType, realm::Object &);
 
     static void GetProperty(ContextType, ObjectType, const String &, ReturnValue &);
-    static bool SetProperty(ContextType, ObjectType, const String &, ValueType, ReturnValue &);
+    static bool SetProperty(ContextType, ObjectType, const String &, ValueType);
     static std::vector<String> GetPropertyNames(ContextType, ObjectType);
 };
 
@@ -87,7 +87,7 @@ typename T::Object RealmObject<T>::create(ContextType ctx, realm::Object &realm_
 template<typename T>
 void RealmObject<T>::GetProperty(ContextType ctx, ObjectType object, const String &property, ReturnValue &return_value) {
     try {
-        auto realm_object = get_internal<realm::Object>(object);
+        auto realm_object = get_internal<T, realm::Object>(object);
         auto result = realm_object->template get_property_value<ValueType>(ctx, property);
         return_value.set(result);
     } catch (InvalidPropertyException &ex) {
@@ -96,21 +96,22 @@ void RealmObject<T>::GetProperty(ContextType ctx, ObjectType object, const Strin
 }
 
 template<typename T>
-bool RealmObject<T>::SetProperty(ContextType ctx, ObjectType object, const String &property, ValueType value, ReturnValue &return_value) {
-    auto realm_object = get_internal<realm::Object>(object);
+bool RealmObject<T>::SetProperty(ContextType ctx, ObjectType object, const String &property, ValueType value) {
+    auto realm_object = get_internal<T, realm::Object>(object);
     realm_object->set_property_value(ctx, property, value, true);
     return true;
 }
 
 template<typename T>
 std::vector<String<T>> RealmObject<T>::GetPropertyNames(ContextType ctx, ObjectType object) {
-    auto realm_object = get_internal<realm::Object>(object);
+    auto realm_object = get_internal<T, realm::Object>(object);
     auto &properties = realm_object->get_object_schema().properties;
-    std::vector<String> names(properties.size());
-    size_t index = 0;
+
+    std::vector<String> names;
+    names.reserve(properties.size());
 
     for (auto &prop : properties) {
-        names[index++] = prop.name;
+        names.push_back(prop.name);
     }
 
     return names;

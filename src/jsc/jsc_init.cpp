@@ -20,14 +20,7 @@
 #include <cassert>
 
 #include "jsc_init.hpp"
-#include "jsc_realm.hpp"
-#include "jsc_collection.hpp"
-#include "jsc_list.hpp"
-#include "jsc_util.hpp"
 #include "platform.hpp"
-
-#include "shared_realm.hpp"
-#include "impl/realm_coordinator.hpp"
 
 extern "C" {
 
@@ -59,55 +52,23 @@ JSClassRef RJSRealmTypeClass() {
     return JSClassCreate(&realmTypesDefinition);
 }
 
-static JSValueRef ClearTestState(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef *exception) {
-    RJSClearTestState();
-    return NULL;
-}
-
 JSObjectRef RJSConstructorCreate(JSContextRef ctx) {
-    static const String clearTestStateString = "clearTestState";
-    static const String collectionString = "Collection";
-    static const String listString = "List";
-    static const String resultsString = "Results";
-    static const String typeString = "Types";
+    JSObjectRef realm_constructor = js::Realm<Types>::create_constructor(ctx);
+    JSObjectRef types_object = JSObjectMake(ctx, RJSRealmTypeClass(), nullptr);
 
-    JSObjectRef realmObject = JSObjectMake(ctx, RJSRealmConstructorClass(), NULL);
-    js::PropertyAttributes attributes = js::PropertyAttributes(js::ReadOnly | js::DontEnum | js::DontDelete);
+    // TODO: Either remove this (preferable) or move implementation to JS.
+    jsc::Object::set_property(ctx, realm_constructor, "Types", types_object, js::PropertyAttributes(js::ReadOnly | js::DontEnum | js::DontDelete));
 
-//    JSObjectRef collectionConstructor = JSObjectMakeConstructor(ctx, RJSCollectionClass(), UncallableConstructor);
-//    RJSValidatedSetProperty(ctx, realmObject, collectionString, collectionConstructor, attributes);
-
-//    JSObjectRef listConstructor = JSObjectMakeConstructor(ctx, RJSListClass(), UncallableConstructor);
-//    RJSValidatedSetProperty(ctx, realmObject, listString, listConstructor, attributes);
-
-//    JSObjectRef resultsContructor = JSObjectMakeConstructor(ctx, RJSResultsClass(), UncallableConstructor);
-//    RJSValidatedSetProperty(ctx, realmObject, resultsString, resultsContructor, attributes);
-
-    JSObjectRef typesObject = JSObjectMake(ctx, RJSRealmTypeClass(), NULL);
-    RJSValidatedSetProperty(ctx, realmObject, typeString, typesObject, attributes);
-
-    JSObjectRef clearTestStateFunction = JSObjectMakeFunctionWithCallback(ctx, clearTestStateString, ClearTestState);
-    jsc::Object::set_property(ctx, realmObject, clearTestStateString, clearTestStateFunction, attributes);
-
-    return realmObject;
+    return realm_constructor;
 }
 
 void RJSInitializeInContext(JSContextRef ctx) {
-    static const String nameString = "Realm";
+    static const String realm_string = "Realm";
 
-    JSObjectRef globalObject = JSContextGetGlobalObject(ctx);
-    JSObjectRef realmObject = RJSConstructorCreate(ctx);
+    JSObjectRef global_object = JSContextGetGlobalObject(ctx);
+    JSObjectRef realm_constructor = RJSConstructorCreate(ctx);
 
-    JSValueRef exception = NULL;
-    JSPropertyAttributes attributes = kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum | kJSPropertyAttributeDontDelete;
-
-    JSObjectSetProperty(ctx, globalObject, nameString, realmObject, attributes, &exception);
-    assert(!exception);
+    jsc::Object::set_property(ctx, global_object, realm_string, realm_constructor, js::PropertyAttributes(js::ReadOnly | js::DontEnum | js::DontDelete));
 }
 
-void RJSClearTestState() {
-    realm::_impl::RealmCoordinator::clear_all_caches();
-    realm::remove_realm_files_from_directory(realm::default_realm_file_directory());
-}
-
-}
+} // extern "C"

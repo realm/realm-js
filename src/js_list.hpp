@@ -18,11 +18,9 @@
 
 #pragma once
 
-#include <cassert>
-
-#include "js_class.hpp"
+#include "js_collection.hpp"
 #include "js_object.hpp"
-// TODO: #include "js_results.hpp"
+#include "js_results.hpp"
 #include "js_types.hpp"
 #include "js_util.hpp"
 
@@ -60,7 +58,7 @@ struct List {
 };
 
 template<typename T>
-struct ObjectClass<T, realm::List> : BaseObjectClass<T> {
+struct ObjectClass<T, realm::List> : BaseObjectClass<T, Collection> {
     using List = List<T>;
 
     std::string const name = "List";
@@ -175,7 +173,7 @@ void List<T>::Splice(ContextType ctx, ObjectType this_object, size_t argc, const
 
     auto list = get_internal<T, realm::List>(this_object);
     size_t size = list->size();
-    long index = std::min<long>(Value::validated_to_number(ctx, arguments[0]), size);
+    long index = std::min<long>(Value::to_number(ctx, arguments[0]), size);
     if (index < 0) {
         index = std::max<long>(size + index, 0);
     }
@@ -185,7 +183,7 @@ void List<T>::Splice(ContextType ctx, ObjectType this_object, size_t argc, const
         remove = size - index;
     }
     else {
-        remove = std::max<long>(Value::validated_to_number(ctx, arguments[1]), 0);
+        remove = std::max<long>(Value::to_number(ctx, arguments[1]), 0);
         remove = std::min<long>(remove, size - index);
     }
     
@@ -210,9 +208,7 @@ void List<T>::StaticResults(ContextType ctx, ObjectType this_object, size_t argc
     validate_argument_count(argc, 0);
 
     auto list = get_internal<T, realm::List>(this_object);
-
-    // TODO: Results
-    // return_value = RJSResultsCreate(ctx, list->get_realm(), list->get_object_schema(), std::move(list->get_query()), false);
+    return_value.set(Results<T>::create(ctx, *list, false));
 }
 
 template<typename T>
@@ -220,10 +216,7 @@ void List<T>::Filtered(ContextType ctx, ObjectType this_object, size_t argc, con
     validate_argument_count_at_least(argc, 1);
 
     auto list = get_internal<T, realm::List>(this_object);
-    auto sharedRealm = *get_internal<T, SharedRealm>(this_object);
-
-    // TODO: Results
-    // return_value = RJSResultsCreateFiltered(ctx, sharedRealm, list->get_object_schema(), std::move(list->get_query()), argc, arguments);
+    return_value.set(Results<T>::create_filtered(ctx, *list, argc, arguments));
 }
 
 template<typename T>
@@ -231,10 +224,7 @@ void List<T>::Sorted(ContextType ctx, ObjectType this_object, size_t argc, const
     validate_argument_count(argc, 1, 2);
 
     auto list = get_internal<T, realm::List>(this_object);
-    auto sharedRealm = *get_internal<T, SharedRealm>(this_object);
-
-    // TODO: Results
-    // return_value = RJSResultsCreateSorted(ctx, sharedRealm, list->get_object_schema(), std::move(list->get_query()), argc, arguments);
+    return_value.set(Results<T>::create_sorted(ctx, *list, argc, arguments));
 }
     
 } // js

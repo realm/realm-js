@@ -311,9 +311,9 @@ inline v8::Local<v8::Function> node::Value::to_constructor(v8::Isolate* isolate,
 }
 
 template<>
-inline v8::Local<v8::Value> node::Function::call(v8::Isolate* isolate, const v8::Local<v8::Function> &function, const v8::Local<v8::Object> &this_object, uint32_t argc, const v8::Local<v8::Value> arguments[]) {
+inline v8::Local<v8::Value> node::Function::call(v8::Isolate* isolate, const v8::Local<v8::Function> &function, const v8::Local<v8::Object> &this_object, size_t argc, const v8::Local<v8::Value> arguments[]) {
     Nan::TryCatch trycatch;
-    auto result = Nan::Call(function, this_object, argc, const_cast<v8::Local<v8::Value>*>(arguments));
+    auto result = Nan::Call(function, this_object, (int)argc, const_cast<v8::Local<v8::Value>*>(arguments));
 
     if (trycatch.HasCaught()) {
         throw node::Exception(isolate, trycatch.Exception());
@@ -322,9 +322,9 @@ inline v8::Local<v8::Value> node::Function::call(v8::Isolate* isolate, const v8:
 }
 
 template<>
-inline v8::Local<v8::Object> node::Function::construct(v8::Isolate* isolate, const v8::Local<v8::Function> &function, uint32_t argc, const v8::Local<v8::Value> arguments[]) {
+inline v8::Local<v8::Object> node::Function::construct(v8::Isolate* isolate, const v8::Local<v8::Function> &function, size_t argc, const v8::Local<v8::Value> arguments[]) {
     Nan::TryCatch trycatch;
-    auto result = Nan::NewInstance(function, argc, const_cast<v8::Local<v8::Value>*>(arguments));
+    auto result = Nan::NewInstance(function, (int)argc, const_cast<v8::Local<v8::Value>*>(arguments));
 
     if (trycatch.HasCaught()) {
         throw node::Exception(isolate, trycatch.Exception());

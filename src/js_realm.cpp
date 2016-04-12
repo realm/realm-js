@@ -17,20 +17,27 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #include "platform.hpp"
+#include "realm_coordinator.hpp"
 
 namespace realm {
 namespace js {
 
-static std::string s_defaultPath = "";
+static std::string s_default_path = "";
+
 std::string default_path() {
-    if (s_defaultPath.size() == 0) {
-        s_defaultPath = realm::default_realm_file_directory() + "/default.realm";
+    if (s_default_path.size() == 0) {
+        s_default_path = realm::default_realm_file_directory() + "/default.realm";
     }
-    return s_defaultPath;
+    return s_default_path;
 }
 
 void set_default_path(std::string path) {
-    s_defaultPath = path;
+    s_default_path = path;
+}
+
+void clear_test_state() {
+    realm::_impl::RealmCoordinator::clear_all_caches();
+    realm::remove_realm_files_from_directory(realm::default_realm_file_directory());
 }
 
 } // js

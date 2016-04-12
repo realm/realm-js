@@ -16,15 +16,20 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#include "jsc_collection.hpp"
+#pragma once
 
-static JSClassRef RJSCreateCollectionClass() {
-    JSClassDefinition classDefinition = kJSClassDefinitionEmpty;
-    classDefinition.className = "Collection";
-    return JSClassCreate(&classDefinition);
-}
+#include "js_class.hpp"
 
-JSClassRef RJSCollectionClass() {
-    static JSClassRef s_collectionClass = RJSCreateCollectionClass();
-    return s_collectionClass;
-}
+namespace realm {
+namespace js {
+
+// Empty class that merely serves as useful type for now.
+class Collection {};
+
+template<typename T>
+struct ObjectClass<T, Collection> : BaseObjectClass<T> {
+    std::string const name = "Collection";
+};
+
+} // js
+} // realm

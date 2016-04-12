@@ -178,7 +178,7 @@ ObjectSchema Schema<T>::parse_object_schema(ContextType ctx, ObjectType objectSc
     }
     else {
         auto propertyNames = Object::get_property_names(ctx, propertiesObject);
-        for (auto propertyName : propertyNames) {
+        for (auto &propertyName : propertyNames) {
             ValueType propertyValue = Object::get_property(ctx, propertiesObject, propertyName);
             objectSchema.properties.emplace_back(parse_property(ctx, propertyValue, propertyName, objectDefaults));
         }

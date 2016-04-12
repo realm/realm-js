@@ -17,8 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #include "node_init.hpp"
-#include "js_realm.hpp"
-#include "js_list.hpp"
 
 namespace realm {
 namespace node {

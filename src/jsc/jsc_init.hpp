@@ -20,3 +20,4 @@
 
 #include "jsc_init.h"
 #include "jsc_object_accessor.hpp"
+#include "js_realm.hpp"

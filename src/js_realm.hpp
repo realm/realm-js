@@ -25,12 +25,13 @@
 #include "js_types.hpp"
 #include "js_util.hpp"
 #include "js_object.hpp"
+#include "js_list.hpp"
+#include "js_results.hpp"
 #include "js_schema.hpp"
 
 #include "shared_realm.hpp"
 #include "binding_context.hpp"
 #include "object_accessor.hpp"
-#include "results.hpp"
 #include "platform.hpp"
 
 namespace realm {
@@ -99,10 +100,10 @@ class RealmDelegate : public BindingContext {
 
 std::string default_path();
 void set_default_path(std::string path);
+void clear_test_state();
 
 template<typename T>
 class Realm : public BindingContext {
-public:
     using ContextType = typename T::Context;
     using FunctionType = typename T::Function;
     using ObjectType = typename T::Object;
@@ -113,6 +114,7 @@ public:
     using ReturnValue = ReturnValue<T>;
     using NativeAccessor = realm::NativeAccessor<ValueType, ContextType>;
 
+  public:
     // member methods
     static void Objects(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void Create(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
@@ -131,10 +133,25 @@ public:
     // constructor methods
     static void Constructor(ContextType, ObjectType, size_t, const ValueType[]);
     static void SchemaVersion(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void ClearTestState(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
 
     // static properties
     static void GetDefaultPath(ContextType, ObjectType, ReturnValue &);
     static void SetDefaultPath(ContextType, ObjectType, ValueType value);
+
+    static ObjectType create_constructor(ContextType ctx) {
+        ObjectType realm_constructor = ObjectWrap<T, SharedRealm>::create_constructor(ctx);
+        ObjectType collection_constructor = ObjectWrap<T, Collection>::create_constructor(ctx);
+        ObjectType list_constructor = ObjectWrap<T, realm::List>::create_constructor(ctx);
+        ObjectType results_constructor = ObjectWrap<T, realm::Results>::create_constructor(ctx);
+
+        PropertyAttributes attributes = PropertyAttributes(ReadOnly | DontEnum | DontDelete);
+        Object::set_property(ctx, realm_constructor, "Collection", collection_constructor, attributes);
+        Object::set_property(ctx, realm_constructor, "List", list_constructor, attributes);
+        Object::set_property(ctx, realm_constructor, "Results", results_constructor, attributes);
+
+        return realm_constructor;
+    }
 
     static std::string validated_notification_name(ContextType ctx, const ValueType &value) {
         std::string name = Value::validated_to_string(ctx, value, "notification name");
@@ -150,8 +167,8 @@ public:
             FunctionType constructor = Value::to_constructor(ctx, value);
             
             auto delegate = get_delegate<T>(realm.get());
-            for (auto pair : delegate->m_constructors) {
-                if (pair.second == constructor) {
+            for (auto &pair : delegate->m_constructors) {
+                if (FunctionType(pair.second) == constructor) {
                     return pair.first;
                 }
             }
@@ -175,6 +192,15 @@ struct ObjectClass<T, SharedRealm> : BaseObjectClass<T> {
     std::string const name = "Realm";
 
     ConstructorType<T>* const constructor = Realm::Constructor;
+
+    MethodMap<T> const static_methods = {
+        {"schemaVersion", wrap<Realm::SchemaVersion>},
+        {"clearTestState", wrap<Realm::ClearTestState>},
+    };
+
+    PropertyMap<T> const static_properties = {
+        {"defaultPath", {wrap<Realm::GetDefaultPath>, wrap<Realm::SetDefaultPath>}},
+    };
 
     MethodMap<T> const methods = {
         {"objects", wrap<Realm::Objects>},
@@ -259,8 +285,8 @@ void Realm<T>::Constructor(ContextType ctx, ObjectType this_object, size_t argc,
         realm->m_binding_context.reset(delegate);
     }
 
-    delegate->m_defaults = defaults;
-    delegate->m_constructors = constructors;
+    delegate->m_defaults = std::move(defaults);
+    delegate->m_constructors = std::move(constructors);
 
     set_internal<T, SharedRealm>(this_object, new SharedRealm(realm));
 }
@@ -282,8 +308,14 @@ void Realm<T>::SchemaVersion(ContextType ctx, ObjectType this_object, size_t arg
         return_value.set(-1);
     }
     else {
-        return_value.set(version);
+        return_value.set((double)version);
     }
+}
+
+template<typename T>
+void Realm<T>::ClearTestState(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    validate_argument_count(argc, 0);
+    clear_test_state();
 }
 
 template<typename T>
@@ -312,11 +344,10 @@ template<typename T>
 void Realm<T>::Objects(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 1);
 
-    SharedRealm sharedRealm = *get_internal<T, SharedRealm>(this_object);
-    std::string className = validated_object_type_for_value(sharedRealm, ctx, arguments[0]);
+    SharedRealm realm = *get_internal<T, SharedRealm>(this_object);
+    std::string type = validated_object_type_for_value(realm, ctx, arguments[0]);
 
-    // TODO
-//    return_value = RJSResultsCreate(ctx, sharedRealm, className);
+    return_value.set(Results<T>::create(ctx, realm, type));
 }
 
 template<typename T>
@@ -357,7 +388,6 @@ void Realm<T>::Delete(ContextType ctx, ObjectType this_object, size_t argc, cons
 
     ObjectType arg = Value::validated_to_object(ctx, arguments[0]);
 
-    // TODO: fix this template call
     if (Object::template is_instance<realm::Object>(ctx, arg)) {
         auto object = get_internal<T, realm::Object>(arg);
         realm::TableRef table = ObjectStore::table_for_object_type(realm->read_group(), object->get_object_schema().name);
@@ -377,10 +407,10 @@ void Realm<T>::Delete(ContextType ctx, ObjectType this_object, size_t argc, cons
             table->move_last_over(realm_object->row().get_index());
         }
     }
-//    else if(RJSValueIsObjectOfClass(ctx, arg, realm::js::results_class())) {
-//        auto results = get_internal<T, realm::Results>(arg);
-//        results->clear();
-//    }
+    else if (Object::template is_instance<realm::Results>(ctx, arg)) {
+        auto results = get_internal<T, realm::Results>(arg);
+        results->clear();
+    }
     else if (Object::template is_instance<realm::List>(ctx, arg)) {
         auto list = get_internal<T, realm::List>(arg);
         list->delete_all();

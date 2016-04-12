@@ -79,22 +79,29 @@ using MethodMap = std::map<std::string, typename T::FunctionCallback>;
 template<typename T>
 using PropertyMap = std::map<std::string, PropertyType<T>>;
 
-template<typename T>
-struct BaseObjectClass {
+template<typename T, typename U>
+struct ObjectClass {
+    // Every specialization *must* at least have a name.
     std::string name;
-    BaseObjectClass<T>* superclass;
+};
 
+template<typename T, typename U = void>
+struct BaseObjectClass {
+    // This pointer does not need to be set.
+    ObjectClass<T, U>* superclass;
+
+    // ObjectClass specializations should inherit from this class and override what's needed below.
     ConstructorType<T>* constructor;
-    MethodMap<T> static_methods = MethodMap<T>();
-    PropertyMap<T> static_properties = PropertyMap<T>();
-    MethodMap<T> methods = MethodMap<T>();
-    PropertyMap<T> properties = PropertyMap<T>();
-    IndexPropertyType<T> index_accessor = {};
-    StringPropertyType<T> string_accessor = {};
+    MethodMap<T> static_methods;
+    PropertyMap<T> static_properties;
+    MethodMap<T> methods;
+    PropertyMap<T> properties;
+    IndexPropertyType<T> index_accessor;
+    StringPropertyType<T> string_accessor;
 };
 
 template<typename T, typename U>
-struct ObjectClass;
+class ObjectWrap;
 
 } // js
 } // realm

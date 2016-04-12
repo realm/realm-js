@@ -22,6 +22,8 @@
 #include <string>
 #include <vector>
 
+#include <realm/util/to_string.hpp>
+
 #if defined(__GNUC__) && !(defined(DEBUG) && DEBUG)
 # define REALM_JS_INLINE inline __attribute__((always_inline))
 #elif defined(_MSC_VER) && !(defined(DEBUG) && DEBUG)
@@ -128,12 +130,12 @@ class Function {
     using ValueType = typename T::Value;
 
   public:
-    static ValueType call(ContextType, const FunctionType &, const ObjectType &, uint32_t, const ValueType[]);
+    static ValueType call(ContextType, const FunctionType &, const ObjectType &, size_t, const ValueType[]);
     static ValueType call(ContextType ctx, const FunctionType &function, const ObjectType &this_object, const std::vector<ValueType> &arguments) {
         return call(ctx, function, this_object, arguments.size(), arguments.data());
     }
 
-    static ObjectType construct(ContextType, const FunctionType &, uint32_t, const ValueType[]);
+    static ObjectType construct(ContextType, const FunctionType &, size_t, const ValueType[]);
     static ValueType construct(ContextType ctx, const FunctionType &function, const std::vector<ValueType> &arguments) {
         return construct(ctx, function, arguments.size(), arguments.data());
     }
@@ -147,6 +149,9 @@ class Object {
     using ValueType = typename T::Value;
 
   public:
+    static ValueType get_prototype(ContextType, const ObjectType &);
+    static void set_prototype(ContextType, const ObjectType &, const ValueType &);
+
     static bool has_property(ContextType, const ObjectType &, const String<T> &);
     static bool has_property(ContextType, const ObjectType &, uint32_t);
     static ValueType get_property(ContextType, const ObjectType &, const String<T> &);
@@ -155,8 +160,13 @@ class Object {
     static void set_property(ContextType, const ObjectType &, uint32_t, const ValueType &);
     static std::vector<String<T>> get_property_names(ContextType, const ObjectType &);
 
-    static ValueType get_prototype(ContextType, const ObjectType &);
-    static void set_prototype(ContextType, const ObjectType &, const ValueType &);
+    template<typename P>
+    static ValueType validated_get_property(ContextType ctx, const ObjectType &object, const P &property, const char *message = nullptr) {
+        if (!has_property(ctx, object, property)) {
+            throw std::out_of_range(message ?: "Object missing expected property: " + util::to_string(property));
+        }
+        return get_property(ctx, object, property);
+    }
 
     static uint32_t validated_get_length(ContextType ctx, const ObjectType &object) {
         static const String<T> length_string = "length";

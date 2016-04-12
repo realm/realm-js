@@ -19,3 +19,4 @@
 #pragma once
 
 #include "node_object_accessor.hpp"
+#include "js_realm.hpp"

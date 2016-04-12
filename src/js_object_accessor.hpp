@@ -84,7 +84,7 @@ class NativeAccessor {
         return Value::validated_to_string(ctx, value, "Property");
     }
     static ValueType from_string(ContextType ctx, StringData string) {
-        return Value::from_string(ctx, string);
+        return Value::from_string(ctx, string.data());
     }
     static DateTime to_datetime(ContextType ctx, ValueType &value) {
         ObjectType date = Value::validated_to_date(ctx, value, "Property");

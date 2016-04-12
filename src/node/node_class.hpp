@@ -178,6 +178,9 @@ template<typename T> Nan::Persistent<v8::FunctionTemplate> ObjectWrap<T>::s_temp
 
 namespace js {
 
+template<typename T>
+class ObjectWrap<node::Types, T> : public node::ObjectWrap<T> {};
+
 template<node::MethodType F>
 void wrap(Nan::NAN_METHOD_ARGS_TYPE info) {
     v8::Isolate* isolate = info.GetIsolate();
