@@ -462,6 +462,7 @@ void do_add_null_comparison_to_query<Link>(Query &query, Predicate::Operator op,
     precondition(expr.indexes.empty(), "KeyPath queries not supported for object comparisons.");
     switch (op) {
         case Predicate::Operator::NotEqual:
+            // for not equal we negate the query and then fallthrough
             query.Not();
         case Predicate::Operator::Equal:
             query.and_query(query.get_table()->column<Link>(expr.prop->table_column).is_null());
@@ -470,7 +471,6 @@ void do_add_null_comparison_to_query<Link>(Query &query, Predicate::Operator op,
             throw std::runtime_error("Only 'equal' and 'not equal' operators supported for object comparison.");
     }
 }
-
 
 void do_add_null_comparison_to_query(Query &query, const Schema &schema, const ObjectSchema &object_schema, Predicate::Comparison cmp,
                                      const PropertyExpression &expr, Arguments &args)
