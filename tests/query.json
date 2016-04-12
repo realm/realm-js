@@ -351,6 +351,7 @@
     ],
     "tests": [
         ["ObjectSet", [1], "OptionalTypesObject", "intCol == null"],
+        ["ObjectSet", [1], "OptionalTypesObject", "null == intCol"],
         ["ObjectSet", [0], "OptionalTypesObject", "intCol != null"],
         ["ObjectSet", [1], "OptionalTypesObject", "floatCol == null"],
         ["ObjectSet", [0], "OptionalTypesObject", "floatCol != null"],
@@ -361,7 +362,19 @@
         ["ObjectSet", [1], "OptionalTypesObject", "dateCol == null"],
         ["ObjectSet", [0], "OptionalTypesObject", "dateCol != null"],
         ["ObjectSet", [1], "OptionalTypesObject", "dataCol == null"],
-        ["ObjectSet", [0], "OptionalTypesObject", "dataCol != null"]
+        ["ObjectSet", [0], "OptionalTypesObject", "dataCol != null"],
+
+        ["ObjectSet", [1], "LinkTypesObject", "basicLink.intCol == null"],
+        ["ObjectSet", [0], "LinkTypesObject", "basicLink.intCol != null"],
+        ["ObjectSet", [1], "LinkTypesObject", "basicLink.floatCol == null"],
+        ["ObjectSet", [0], "LinkTypesObject", "basicLink.floatCol != null"],
+        ["ObjectSet", [1], "LinkTypesObject", "basicLink.doubleCol == null"],
+        ["ObjectSet", [0], "LinkTypesObject", "basicLink.doubleCol != null"],
+        ["ObjectSet", [1], "LinkTypesObject", "basicLink.stringCol == null"],
+        ["ObjectSet", [0], "LinkTypesObject", "basicLink.stringCol != null"],
+        ["ObjectSet", [1], "LinkTypesObject", "basicLink.dateCol == null"],
+        ["ObjectSet", [0], "LinkTypesObject", "basicLink.dateCol != null"],
+        ["QueryThrows", "LinkTypesObject", "basicLink.dataCol == null"]
     ]
 }
 
