@@ -31,7 +31,11 @@
 using namespace realm;
 using namespace realm::_impl;
 
-const char* log_tag = "REALM";
+#define LOG(fmt...) do { \
+    fprintf(stderr, fmt); \
+    __android_log_print(ANDROID_LOG_ERROR, "REALM", fmt); \
+} while (0)
+
 namespace {
 // Write a byte to a pipe to notify anyone waiting for data on the pipe
 void notify_fd(int fd)
@@ -124,13 +128,11 @@ ExternalCommitHelper::ExternalCommitHelper(RealmCoordinator& parent)
             listen();
         }
         catch (std::exception const& e) {
-            fprintf(stderr, "uncaught exception in notifier thread: %s: %s\n", typeid(e).name(), e.what());
-            __android_log_print(ANDROID_LOG_ERROR, log_tag, "uncaught exception in notifier thread: %s: %s", typeid(e).name(), e.what());
+            LOG("uncaught exception in notifier thread: %s: %s\n", typeid(e).name(), e.what());
             throw;
         }
         catch (...) {
-            fprintf(stderr,  "uncaught exception in notifier thread\n");
-            __android_log_print(ANDROID_LOG_ERROR, log_tag, "uncaught exception in notifier thread");
+            LOG("uncaught exception in notifier thread\n");
             throw;
         }
     });
