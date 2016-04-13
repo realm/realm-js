@@ -164,7 +164,6 @@ namespace realm {
       private:
         Config m_config;
         std::thread::id m_thread_id = std::this_thread::get_id();
-        bool m_in_transaction = false;
         bool m_auto_refresh = true;
 
         std::unique_ptr<Replication> m_history;
