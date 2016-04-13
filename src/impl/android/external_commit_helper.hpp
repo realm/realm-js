@@ -42,9 +42,9 @@ private:
         ~FdHolder() { close(); }
         operator int() const { return m_fd; }
 
-        FdHolder& operator=(int newFd) {
+        FdHolder& operator=(int new_fd) {
             close();
-            m_fd = newFd;
+            m_fd = new_fd;
             return *this;
         }
 
@@ -66,8 +66,8 @@ private:
     // Read-write file descriptor for the named pipe which is waited on for
     // changes and written to when a commit is made
     FdHolder m_notify_fd;
-    // File descriptor for the kqueue
-    FdHolder m_kq;
+    // File descriptor for epoll
+    FdHolder m_epfd;
     // The two ends of an anonymous pipe used to notify the kqueue() thread that
     // it should be shut down.
     FdHolder m_shutdown_read_fd;

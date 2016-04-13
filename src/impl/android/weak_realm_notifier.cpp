@@ -19,6 +19,7 @@
 #include "impl/weak_realm_notifier.hpp"
 
 #include <atomic>
+#include <assert.h>
 
 namespace realm {
 namespace _impl {
@@ -55,14 +56,20 @@ WeakRealmNotifier::~WeakRealmNotifier()
 void WeakRealmNotifier::set_auto_refresh(bool auto_refresh)
 {
     if (auto_refresh) {
-        auto locked_ptr = new std::shared_ptr<Realm> {realm()};
-        m_handler = create_handler_for_current_thread(locked_ptr);
+        m_handler = create_handler_for_current_thread();
+    }
+    else {
+        destroy_handler(m_handler);
+        m_handler = nullptr;
     }
 }
 
 void WeakRealmNotifier::notify()
 {
-    notify_handler(m_handler);
+    if (m_handler && realm().get()) {
+        auto realmPtr = new std::weak_ptr<Realm>(realm());
+        notify_handler(m_handler, realmPtr);
+    }
 }
 
 create_handler_function create_handler_for_current_thread = nullptr;

@@ -45,10 +45,10 @@ private:
     void* m_handler;
 };
 
-using create_handler_function = void*(*)(void* realm_ref);
+using create_handler_function = void*(*)();
 extern create_handler_function create_handler_for_current_thread;
 
-using notify_handler_function = void(*)(void* handler);
+using notify_handler_function = void(*)(void* handler, void* realm);
 extern notify_handler_function notify_handler;
 
 using destroy_handler_function = void(*)(void* handler);

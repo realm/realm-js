@@ -207,12 +207,12 @@ void RealmCoordinator::clear_cache()
 
 void RealmCoordinator::set_auto_refresh_for(Realm* realm, bool auto_refresh)
 {
-    for (auto& cached_realm : m_cached_realms) {
-        if (!cached_realm.expired() && !cached_realm.is_for_realm(realm)) {
+    for (auto& weak_realm_notifier : m_weak_realm_notifiers) {
+        if (!weak_realm_notifier.expired() && !weak_realm_notifier.is_for_realm(realm)) {
             continue;
         }
 
-        cached_realm.set_auto_refresh(auto_refresh);
+        weak_realm_notifier.set_auto_refresh(auto_refresh);
     }
 }
 
