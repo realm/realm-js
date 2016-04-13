@@ -47,7 +47,7 @@
     "prepublish": "scripts/prepublish.sh"
   },
   "dependencies": {
-    "rnpm": "1.5.2",
+    "rnpm": "1.6.1",
     "xcode": "0.8.4"
   },
   "devDependencies": {
