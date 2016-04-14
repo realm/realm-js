@@ -34,40 +34,29 @@ template<typename T>
 using MethodType = void(typename T::Context, typename T::Object, size_t, const typename T::Value[], ReturnValue<T> &);
 
 template<typename T>
-using PropertyGetterType = void(typename T::Context, typename T::Object, ReturnValue<T> &);
-
-template<typename T>
-using PropertySetterType = void(typename T::Context, typename T::Object, typename T::Value);
-
-template<typename T>
-using IndexPropertyGetterType = void(typename T::Context, typename T::Object, uint32_t, ReturnValue<T> &);
-
-template<typename T>
-using IndexPropertySetterType = bool(typename T::Context, typename T::Object, uint32_t, typename T::Value);
-
-template<typename T>
-using StringPropertyGetterType = void(typename T::Context, typename T::Object, const String<T> &, ReturnValue<T> &);
-
-template<typename T>
-using StringPropertySetterType = bool(typename T::Context, typename T::Object, const String<T> &, typename T::Value);
-
-template<typename T>
-using StringPropertyEnumeratorType = std::vector<String<T>>(typename T::Context, typename T::Object);
-
-template<typename T>
 struct PropertyType {
+    using GetterType = void(typename T::Context, typename T::Object, ReturnValue<T> &);
+    using SetterType = void(typename T::Context, typename T::Object, typename T::Value);
+    
     typename T::PropertyGetterCallback getter;
     typename T::PropertySetterCallback setter;
 };
 
 template<typename T>
 struct IndexPropertyType {
+    using GetterType = void(typename T::Context, typename T::Object, uint32_t, ReturnValue<T> &);
+    using SetterType = bool(typename T::Context, typename T::Object, uint32_t, typename T::Value);
+
     typename T::IndexPropertyGetterCallback getter;
     typename T::IndexPropertySetterCallback setter;
 };
 
 template<typename T>
 struct StringPropertyType {
+    using GetterType = void(typename T::Context, typename T::Object, const String<T> &, ReturnValue<T> &);
+    using SetterType = bool(typename T::Context, typename T::Object, const String<T> &, typename T::Value);
+    using EnumeratorType = std::vector<String<T>>(typename T::Context, typename T::Object);
+
     typename T::StringPropertyGetterCallback getter;
     typename T::StringPropertySetterCallback setter;
     typename T::StringPropertyEnumeratorCallback enumerator;

@@ -31,13 +31,9 @@ using ObjectClass = js::ObjectClass<Types, T>;
 using BaseObjectClass = js::BaseObjectClass<Types>;
 using ConstructorType = js::ConstructorType<Types>;
 using MethodType = js::MethodType<Types>;
-using PropertyGetterType = js::PropertyGetterType<Types>;
-using PropertySetterType = js::PropertySetterType<Types>;
-using IndexPropertyGetterType = js::IndexPropertyGetterType<Types>;
-using IndexPropertySetterType = js::IndexPropertySetterType<Types>;
-using StringPropertyGetterType = js::StringPropertyGetterType<Types>;
-using StringPropertySetterType = js::StringPropertySetterType<Types>;
-using StringPropertyEnumeratorType = js::StringPropertyEnumeratorType<Types>;
+using PropertyType = js::PropertyType<Types>;
+using IndexPropertyType = js::IndexPropertyType<Types>;
+using StringPropertyType = js::StringPropertyType<Types>;
 using MethodMap = js::MethodMap<Types>;
 using PropertyMap = js::PropertyMap<Types>;
 
@@ -314,7 +310,7 @@ JSValueRef wrap(JSContextRef ctx, JSObjectRef function, JSObjectRef this_object,
     return return_value;
 }
 
-template<jsc::PropertyGetterType F>
+template<jsc::PropertyType::GetterType F>
 JSValueRef wrap(JSContextRef ctx, JSObjectRef object, JSStringRef property, JSValueRef* exception) {
     jsc::ReturnValue return_value(ctx);
     try {
@@ -326,7 +322,7 @@ JSValueRef wrap(JSContextRef ctx, JSObjectRef object, JSStringRef property, JSVa
     return return_value;
 }
 
-template<jsc::PropertySetterType F>
+template<jsc::PropertyType::SetterType F>
 bool wrap(JSContextRef ctx, JSObjectRef object, JSStringRef property, JSValueRef value, JSValueRef* exception) {
     try {
         F(ctx, object, value);
@@ -338,7 +334,7 @@ bool wrap(JSContextRef ctx, JSObjectRef object, JSStringRef property, JSValueRef
     return false;
 }
 
-template<jsc::IndexPropertyGetterType F>
+template<jsc::IndexPropertyType::GetterType F>
 JSValueRef wrap(JSContextRef ctx, JSObjectRef object, uint32_t index, JSValueRef* exception) {
     jsc::ReturnValue return_value(ctx);
     try {
@@ -354,7 +350,7 @@ JSValueRef wrap(JSContextRef ctx, JSObjectRef object, uint32_t index, JSValueRef
     return return_value;
 }
 
-template<jsc::IndexPropertySetterType F>
+template<jsc::IndexPropertyType::SetterType F>
 bool wrap(JSContextRef ctx, JSObjectRef object, uint32_t index, JSValueRef value, JSValueRef* exception) {
     try {
         return F(ctx, object, index, value);
@@ -365,7 +361,7 @@ bool wrap(JSContextRef ctx, JSObjectRef object, uint32_t index, JSValueRef value
     return false;
 }
 
-template<jsc::StringPropertyGetterType F>
+template<jsc::StringPropertyType::GetterType F>
 JSValueRef wrap(JSContextRef ctx, JSObjectRef object, JSStringRef property, JSValueRef* exception) {
     jsc::ReturnValue return_value(ctx);
     try {
@@ -377,7 +373,7 @@ JSValueRef wrap(JSContextRef ctx, JSObjectRef object, JSStringRef property, JSVa
     return return_value;
 }
 
-template<jsc::StringPropertySetterType F>
+template<jsc::StringPropertyType::SetterType F>
 bool wrap(JSContextRef ctx, JSObjectRef object, JSStringRef property, JSValueRef value, JSValueRef* exception) {
     try {
         return F(ctx, object, property, value);
@@ -388,7 +384,7 @@ bool wrap(JSContextRef ctx, JSObjectRef object, JSStringRef property, JSValueRef
     return false;
 }
 
-template<jsc::StringPropertyEnumeratorType F>
+template<jsc::StringPropertyType::EnumeratorType F>
 void wrap(JSContextRef ctx, JSObjectRef object, JSPropertyNameAccumulatorRef accumulator) {
     auto names = F(ctx, object);
     for (auto &name : names) {

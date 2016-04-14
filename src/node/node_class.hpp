@@ -29,14 +29,9 @@ using ObjectClass = js::ObjectClass<Types, T>;
 
 using ConstructorType = js::ConstructorType<Types>;
 using MethodType = js::MethodType<Types>;
-using PropertyGetterType = js::PropertyGetterType<Types>;
-using PropertySetterType = js::PropertySetterType<Types>;
-using IndexPropertyGetterType = js::IndexPropertyGetterType<Types>;
-using IndexPropertySetterType = js::IndexPropertySetterType<Types>;
-using StringPropertyGetterType = js::StringPropertyGetterType<Types>;
-using StringPropertySetterType = js::StringPropertySetterType<Types>;
-using StringPropertyEnumeratorType = js::StringPropertyEnumeratorType<Types>;
 using PropertyType = js::PropertyType<Types>;
+using IndexPropertyType = js::IndexPropertyType<Types>;
+using StringPropertyType = js::StringPropertyType<Types>;
 
 static inline std::vector<v8::Local<v8::Value>> get_arguments(const Nan::FunctionCallbackInfo<v8::Value> &info) {
     int count = info.Length();
@@ -195,7 +190,7 @@ void wrap(Nan::NAN_METHOD_ARGS_TYPE info) {
     }
 }
 
-template<node::PropertyGetterType F>
+Type::template<node::PropertyType::GetterType F>
 void wrap(v8::Local<v8::String> property, Nan::NAN_GETTER_ARGS_TYPE info) {
     v8::Isolate* isolate = info.GetIsolate();
     node::ReturnValue return_value(info.GetReturnValue());
@@ -207,7 +202,7 @@ void wrap(v8::Local<v8::String> property, Nan::NAN_GETTER_ARGS_TYPE info) {
     }
 }
 
-template<node::PropertySetterType F>
+template<node::PropertyType::SetterType F>
 void wrap(v8::Local<v8::String> property, v8::Local<v8::Value> value, Nan::NAN_SETTER_ARGS_TYPE info) {
     v8::Isolate* isolate = info.GetIsolate();
     try {
@@ -218,7 +213,7 @@ void wrap(v8::Local<v8::String> property, v8::Local<v8::Value> value, Nan::NAN_S
     }
 }
 
-template<node::IndexPropertyGetterType F>
+template<node::IndexPropertyType::GetterType F>
 void wrap(uint32_t index, Nan::NAN_INDEX_GETTER_ARGS_TYPE info) {
     v8::Isolate* isolate = info.GetIsolate();
     node::ReturnValue return_value(info.GetReturnValue());
@@ -230,7 +225,7 @@ void wrap(uint32_t index, Nan::NAN_INDEX_GETTER_ARGS_TYPE info) {
     }
 }
 
-template<node::IndexPropertySetterType F>
+template<node::IndexPropertyType::SetterType F>
 void wrap(uint32_t index, v8::Local<v8::Value> value, Nan::NAN_INDEX_SETTER_ARGS_TYPE info) {
     v8::Isolate* isolate = info.GetIsolate();
     try {
@@ -241,7 +236,7 @@ void wrap(uint32_t index, v8::Local<v8::Value> value, Nan::NAN_INDEX_SETTER_ARGS
     }
 }
 
-template<node::StringPropertyGetterType F>
+template<node::StringPropertyType::GetterType F>
 void wrap(v8::Local<v8::String> property, Nan::NAN_PROPERTY_GETTER_ARGS_TYPE info) {
     v8::Isolate* isolate = info.GetIsolate();
     node::ReturnValue return_value(info.GetReturnValue());
@@ -253,7 +248,7 @@ void wrap(v8::Local<v8::String> property, Nan::NAN_PROPERTY_GETTER_ARGS_TYPE inf
     }
 }
 
-template<node::StringPropertySetterType F>
+template<node::StringPropertyType::SetterType F>
 void wrap(v8::Local<v8::String> property, v8::Local<v8::Value> value, Nan::NAN_PROPERTY_SETTER_ARGS_TYPE info) {
     v8::Isolate* isolate = info.GetIsolate();
     try {
@@ -264,7 +259,7 @@ void wrap(v8::Local<v8::String> property, v8::Local<v8::Value> value, Nan::NAN_P
     }
 }
 
-template<node::StringPropertyEnumeratorType F>
+template<node::StringPropertyType::EnumeratorType F>
 void wrap(Nan::NAN_PROPERTY_ENUMERATOR_ARGS_TYPE info) {
     auto names = F(info.GetIsolate(), info.This());
     int count = (int)names.size();

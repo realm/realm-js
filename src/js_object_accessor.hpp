@@ -26,14 +26,13 @@ namespace realm {
 namespace js {
 
 template<typename T>
-class NativeAccessor {
+struct NativeAccessor {
     using TContext = typename T::Context;
     using TObject = typename T::Object;
     using TValue = typename T::Value;
     using Object = Object<T>;
     using Value = Value<T>;
 
-  public:
     static bool dict_has_value_for_key(TContext ctx, TValue dict, const std::string &prop_name) {
         TObject object = Value::validated_to_object(ctx, dict);
         return Object::has_property(ctx, object, prop_name);
