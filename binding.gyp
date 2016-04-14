@@ -5,7 +5,6 @@
       "sources": [
         "src/js_realm.cpp",
         "src/node/node_init.cpp",
-        "src/node/node_object_accessor.cpp",
         "src/object-store/src/index_set.cpp",
         "src/object-store/src/list.cpp",
         "src/object-store/src/object_schema.cpp",

@@ -16,4 +16,15 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-void node_module_register(void* mod) {}
+// NOTE: This dummy file exists only to make Xcode build the Realm Node dynamic library.
+#include "node.h"
+
+extern "C" void node_module_register(void* mod) {}
+
+namespace node {
+namespace Buffer {
+    bool HasInstance(v8::Local<v8::Value> val) { return false; }
+    char* Data(v8::Local<v8::Value> val) { return nullptr; }
+    size_t Length(v8::Local<v8::Value> val) { return 0; }
+}
+}

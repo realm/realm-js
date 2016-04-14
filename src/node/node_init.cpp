@@ -22,13 +22,10 @@ namespace realm {
 namespace node {
 
 static void init(v8::Local<v8::Object> exports) {
-    ObjectWrap<SharedRealm>::init(exports);
-    ObjectWrap<realm::List>::init(exports);
-//    RealmObjectWrap::Init(exports);
-//    RealmResultsWrap::Init(exports);
-//    RealmListWrap::Init(exports);
-//
-//    NODE_SET_METHOD(exports, "__clearCaches", ClearCaches);
+    v8::Isolate* isolate = v8::Isolate::GetCurrent();
+    v8::Local<v8::Function> realm_constructor = js::Realm<Types>::create_constructor(isolate);
+
+    Nan::Set(exports, realm_constructor->GetName(), realm_constructor);
 }
 
 } // node

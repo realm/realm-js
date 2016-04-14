@@ -57,21 +57,6 @@ class Protected {
     operator T() const {
         return m_value;
     }
-    bool operator==(const T &other) const {
-        return m_value == other;
-    }
-    bool operator!=(const T &other) const {
-        return m_value != other;
-    }
-    bool operator==(const Protected<T> &other) const {
-        return m_value == other;
-    }
-    bool operator!=(const Protected<T> &other) const {
-        return m_value != other;
-    }
-    bool operator<(const Protected<T> &other) const {
-        return m_value < other.m_value;
-    }
 };
 
 template<typename T>
@@ -126,7 +111,7 @@ class ReturnValue<jsc::Types> {
     const JSContextRef m_context;
     JSValueRef m_value = nullptr;
 
-public:
+  public:
     ReturnValue(JSContextRef ctx) : m_context(ctx) {}
 
     void set(const JSValueRef &value) {

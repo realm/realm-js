@@ -18,8 +18,8 @@
 
 #pragma once
 
+#include <list>
 #include <map>
-#include <set>
 
 #include "js_class.hpp"
 #include "js_types.hpp"
@@ -67,10 +67,20 @@ class RealmDelegate : public BindingContext {
     }
 
     void add_notification(TFunction notification) {
-        m_notifications.insert(Protected<TFunction>(m_context, notification));
+        for (auto &handler : m_notifications) {
+            if (handler == notification) {
+                return;
+            }
+        }
+        m_notifications.emplace_back(m_context, notification);
     }
     void remove_notification(TFunction notification) {
-        m_notifications.erase(Protected<TFunction>(m_context, notification));
+        for (auto iter = m_notifications.begin(); iter != m_notifications.end(); ++iter) {
+            if (*iter == notification) {
+                m_notifications.erase(iter);
+                return;
+            }
+        }
     }
     void remove_all_notifications() {
         m_notifications.clear();
@@ -81,7 +91,7 @@ class RealmDelegate : public BindingContext {
 
   private:
     Protected<TGlobalContext> m_context;
-    std::set<Protected<TFunction>> m_notifications;
+    std::list<Protected<TFunction>> m_notifications;
     std::weak_ptr<Realm> m_realm;
     
     void notify(const char *notification_name) {
@@ -142,11 +152,11 @@ class Realm {
     static void GetDefaultPath(TContext, TObject, ReturnValue &);
     static void SetDefaultPath(TContext, TObject, TValue value);
 
-    static TObject create_constructor(TContext ctx) {
-        TObject realm_constructor = ObjectWrap<T, RealmClass<T>>::create_constructor(ctx);
-        TObject collection_constructor = ObjectWrap<T, CollectionClass<T>>::create_constructor(ctx);
-        TObject list_constructor = ObjectWrap<T, ListClass<T>>::create_constructor(ctx);
-        TObject results_constructor = ObjectWrap<T, ResultsClass<T>>::create_constructor(ctx);
+    static TFunction create_constructor(TContext ctx) {
+        TFunction realm_constructor = ObjectWrap<T, RealmClass<T>>::create_constructor(ctx);
+        TFunction collection_constructor = ObjectWrap<T, CollectionClass<T>>::create_constructor(ctx);
+        TFunction list_constructor = ObjectWrap<T, ListClass<T>>::create_constructor(ctx);
+        TFunction results_constructor = ObjectWrap<T, ResultsClass<T>>::create_constructor(ctx);
 
         PropertyAttributes attributes = PropertyAttributes(ReadOnly | DontEnum | DontDelete);
         Object::set_property(ctx, realm_constructor, "Collection", collection_constructor, attributes);

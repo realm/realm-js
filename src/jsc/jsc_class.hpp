@@ -40,30 +40,32 @@ template<typename ClassType>
 class ObjectWrap {
 public:
     using Internal = typename ClassType::Internal;
+
     operator Internal*() const {
         return m_object.get();
     }
+
     ObjectWrap<ClassType>& operator=(Internal* object) {
         if (m_object.get() != object) {
             m_object = std::unique_ptr<Internal>(object);
         }
         return *this;
     }
-    
+
     static JSClassRef get_class() {
         static JSClassRef js_class = create_class();
         return js_class;
     }
-    
+
     static JSClassRef get_constructor_class() {
         static JSClassRef js_class = create_constructor_class();
         return js_class;
     }
-    
+
     static JSObjectRef create_instance(JSContextRef ctx, Internal* internal = nullptr) {
         return JSObjectMake(ctx, get_class(), new ObjectWrap<ClassType>(internal));
     }
-    
+
     static JSObjectRef create_constructor(JSContextRef ctx) {
         if (JSClassRef constructor_class = get_constructor_class()) {
             return JSObjectMake(ctx, constructor_class, nullptr);
@@ -71,11 +73,11 @@ public:
         
         return JSObjectMakeConstructor(ctx, get_class(), construct);
     }
-    
+
     static bool has_instance(JSContextRef ctx, JSValueRef value) {
         return JSValueIsObjectOfClass(ctx, value, get_class());
     }
-    
+
 private:
     static ClassType s_class;
 
@@ -134,7 +136,7 @@ private:
                     return index_setter(ctx, object, index, value, exception);
                 }
                 else {
-                    *exception = Exception::value(ctx, std::string("Cannot assigned to read only index ") + util::to_string(index));
+                    *exception = Exception::value(ctx, std::string("Cannot assign to read only index ") + util::to_string(index));
                     return false;
                 }
             }
@@ -288,31 +290,7 @@ class ObjectWrap<void> {
 public:
     using Internal = void;
     
-    operator Internal*() const {
-        return nullptr;
-    }
-    
-    ObjectWrap<void>& operator=(Internal* object) {
-        return *this;
-    }
-    
     static JSClassRef get_class() {
-        return nullptr;
-    }
-    
-    static JSClassRef get_constructor_class() {
-        return nullptr;
-    }
-    
-    static JSObjectRef create_instance(JSContextRef ctx, Internal* internal = nullptr) {
-        return nullptr;
-    }
-    
-    static JSObjectRef create_constructor(JSContextRef ctx) {
-        return nullptr;
-    }
-    
-    static bool has_instance(JSContextRef ctx, JSValueRef value) {
         return nullptr;
     }
 };

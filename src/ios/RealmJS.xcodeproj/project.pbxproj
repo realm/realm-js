@@ -50,11 +50,10 @@
 		F60102DF1CBB96D300EC01BA /* async_query.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02F59ED61C88F2BA007F774C /* async_query.cpp */; };
 		F60102E01CBB96D900EC01BA /* realm_coordinator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02F59EDB1C88F2BA007F774C /* realm_coordinator.cpp */; };
 		F60102E11CBB96DD00EC01BA /* transact_log_handler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02F59EDD1C88F2BB007F774C /* transact_log_handler.cpp */; };
-		F60102E41CBBB19700EC01BA /* node_object_accessor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F60102E21CBBB19700EC01BA /* node_object_accessor.cpp */; };
 		F60102E51CBBB19700EC01BA /* node_object_accessor.hpp in Headers */ = {isa = PBXBuildFile; fileRef = F60102E31CBBB19700EC01BA /* node_object_accessor.hpp */; };
 		F60102E81CBBB36500EC01BA /* jsc_object_accessor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F60102E61CBBB36500EC01BA /* jsc_object_accessor.cpp */; };
 		F60102E91CBCAEC500EC01BA /* platform.mm in Sources */ = {isa = PBXBuildFile; fileRef = 029048381C042A8F00ABDED4 /* platform.mm */; };
-		F60102EA1CBCAFC300EC01BA /* node_dummy.c in Sources */ = {isa = PBXBuildFile; fileRef = F6267BCA1CADC49200AC36B1 /* node_dummy.c */; };
+		F60102EA1CBCAFC300EC01BA /* node_dummy.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F6267BCA1CADC49200AC36B1 /* node_dummy.cpp */; };
 		F61378791C18EAC5008BFC51 /* js in Resources */ = {isa = PBXBuildFile; fileRef = F61378781C18EAAC008BFC51 /* js */; };
 		F620F0581CB766DA0082977B /* node_init.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F620F0571CB766DA0082977B /* node_init.cpp */; };
 		F620F0751CB9F60C0082977B /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F620F0741CB9F60C0082977B /* CoreFoundation.framework */; };
@@ -174,7 +173,6 @@
 		02F59EE01C88F2BB007F774C /* weak_realm_notifier.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = weak_realm_notifier.hpp; path = src/impl/weak_realm_notifier.hpp; sourceTree = "<group>"; };
 		F60102CF1CBB814A00EC01BA /* node_init.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = node_init.hpp; sourceTree = "<group>"; };
 		F60102D11CBB865A00EC01BA /* jsc_init.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = jsc_init.hpp; sourceTree = "<group>"; };
-		F60102E21CBBB19700EC01BA /* node_object_accessor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = node_object_accessor.cpp; sourceTree = "<group>"; };
 		F60102E31CBBB19700EC01BA /* node_object_accessor.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = node_object_accessor.hpp; sourceTree = "<group>"; };
 		F60102E61CBBB36500EC01BA /* jsc_object_accessor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = jsc_object_accessor.cpp; sourceTree = "<group>"; };
 		F60102E71CBBB36500EC01BA /* jsc_object_accessor.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = jsc_object_accessor.hpp; sourceTree = "<group>"; };
@@ -187,7 +185,7 @@
 		F620F0591CB7B4C80082977B /* js_object_accessor.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = js_object_accessor.hpp; sourceTree = "<group>"; };
 		F620F0741CB9F60C0082977B /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk/System/Library/Frameworks/CoreFoundation.framework; sourceTree = DEVELOPER_DIR; };
 		F6267BC91CADC30000AC36B1 /* js_util.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = js_util.hpp; sourceTree = "<group>"; };
-		F6267BCA1CADC49200AC36B1 /* node_dummy.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = node_dummy.c; sourceTree = "<group>"; };
+		F6267BCA1CADC49200AC36B1 /* node_dummy.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = node_dummy.cpp; sourceTree = "<group>"; };
 		F62BF8FB1CAC71780022BCDC /* libRealmNode.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libRealmNode.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		F63FF2B11C1241E500B3B8E0 /* libRealmJS.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libRealmJS.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		F63FF2DC1C15659A00B3B8E0 /* RealmJS.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = RealmJS.mm; sourceTree = "<group>"; };
@@ -410,13 +408,12 @@
 		F62BF9001CAC72C40022BCDC /* Node */ = {
 			isa = PBXGroup;
 			children = (
-				F6267BCA1CADC49200AC36B1 /* node_dummy.c */,
+				F6267BCA1CADC49200AC36B1 /* node_dummy.cpp */,
 				F60102CF1CBB814A00EC01BA /* node_init.hpp */,
 				F620F0571CB766DA0082977B /* node_init.cpp */,
 				F620F0551CB655A50082977B /* node_class.hpp */,
 				F6874A351CAC792D00EEEE36 /* node_types.hpp */,
 				F60102E31CBBB19700EC01BA /* node_object_accessor.hpp */,
-				F60102E21CBBB19700EC01BA /* node_object_accessor.cpp */,
 			);
 			name = Node;
 			path = node;
@@ -707,7 +704,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "cp ../object-store/tests/query.json \"$TARGET_BUILD_DIR/$CONTENTS_FOLDER_PATH/js/query-tests.json\"";
+			shellScript = "cp -f ../object-store/tests/query.json \"$TARGET_BUILD_DIR/$CONTENTS_FOLDER_PATH/js/query-tests.json\"";
 		};
 		F63FF2C51C12462600B3B8E0 /* Download Core */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -741,7 +738,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				F60102D31CBB966E00EC01BA /* js_realm.cpp in Sources */,
-				F60102E41CBBB19700EC01BA /* node_object_accessor.cpp in Sources */,
 				F60102D61CBB96B400EC01BA /* object_schema.cpp in Sources */,
 				F60102D41CBB96AB00EC01BA /* index_set.cpp in Sources */,
 				F60102DB1CBB96C600EC01BA /* parser.cpp in Sources */,
@@ -752,7 +748,7 @@
 				F60102D71CBB96B800EC01BA /* object_store.cpp in Sources */,
 				F60102DA1CBB96C300EC01BA /* shared_realm.cpp in Sources */,
 				F60102E01CBB96D900EC01BA /* realm_coordinator.cpp in Sources */,
-				F60102EA1CBCAFC300EC01BA /* node_dummy.c in Sources */,
+				F60102EA1CBCAFC300EC01BA /* node_dummy.cpp in Sources */,
 				F60102D81CBB96BD00EC01BA /* results.cpp in Sources */,
 				F60102DE1CBB96CF00EC01BA /* weak_realm_notifier.cpp in Sources */,
 				F620F0581CB766DA0082977B /* node_init.cpp in Sources */,

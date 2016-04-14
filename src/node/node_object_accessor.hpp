@@ -27,4 +27,49 @@ namespace realm {
 template<>
 class NativeAccessor<node::Types::Value, node::Types::Context> : public js::NativeAccessor<node::Types> {};
 
+namespace js {
+
+template<>
+inline std::string NativeAccessor<node::Types>::to_binary(v8::Isolate* isolate, v8::Local<v8::Value> &value) {
+    if (Value::is_array_buffer(isolate, value)) {
+        // TODO: This probably needs some abstraction for older V8.
+#if REALM_V8_ARRAY_BUFFER_API
+        v8::Local<v8::ArrayBuffer> array_buffer = value.As<v8::ArrayBuffer>();
+        v8::ArrayBuffer::Contents contents = array_buffer->GetContents();
+
+        return std::string(static_cast<char*>(contents.Data()), contents.ByteLength());
+#else
+        // TODO: Implement this for older V8
+#endif
+    }
+    else if (Value::is_array_buffer_view(isolate, value)) {
+        Nan::TypedArrayContents<char> contents(value);
+
+        return std::string(*contents, contents.length());
+    }
+    else if (::node::Buffer::HasInstance(value)) {
+        return std::string(::node::Buffer::Data(value), ::node::Buffer::Length(value));
+    }
+
+    throw std::runtime_error("Can only convert Buffer, ArrayBuffer, and TypedArray objects to binary");
+}
+
+template<>
+inline v8::Local<v8::Value> NativeAccessor<node::Types>::from_binary(v8::Isolate* isolate, BinaryData data) {
+#if REALM_V8_ARRAY_BUFFER_API
+    size_t byte_count = data.size();
+    void* bytes = nullptr;
+
+    if (byte_count) {
+        bytes = memcpy(malloc(byte_count), data.data(), byte_count);
+    }
+
+    // An "internalized" ArrayBuffer will free the malloc'd memory when garbage collected.
+    return v8::ArrayBuffer::New(isolate, bytes, byte_count, v8::ArrayBufferCreationMode::kInternalized);
+#else
+    // TODO: Implement this for older V8
+#endif
+}
+
+} // js
 } // realm

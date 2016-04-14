@@ -27,6 +27,10 @@
 
 #include "js_types.hpp"
 
+#if defined(V8_MAJOR_VERSION) && (V8_MAJOR_VERSION > 4 || (V8_MAJOR_VERSION == 4 && defined(V8_MINOR_VERSION) && V8_MINOR_VERSION >= 3))
+#define REALM_V8_ARRAY_BUFFER_API 1
+#endif
+
 namespace realm {
 namespace node {
 
@@ -71,9 +75,6 @@ class Protected {
     }
     bool operator!=(const Protected<T> &other) const {
         return m_value != other.m_value;
-    }
-    bool operator<(const Protected<T> &other) const {
-        return *Nan::New(m_value) < *Nan::New(other.m_value);
     }
 };
 
@@ -188,7 +189,20 @@ inline bool node::Value::is_array(v8::Isolate* isolate, const v8::Local<v8::Valu
 
 template<>
 inline bool node::Value::is_array_buffer(v8::Isolate* isolate, const v8::Local<v8::Value> &value) {
+#if REALM_V8_ARRAY_BUFFER_API
     return value->IsArrayBuffer();
+#else
+    // TODO: Implement this!
+#endif
+}
+
+template<>
+inline bool node::Value::is_array_buffer_view(v8::Isolate* isolate, const v8::Local<v8::Value> &value) {
+#if REALM_V8_ARRAY_BUFFER_API
+    return value->IsArrayBufferView();
+#else
+    // TODO: Implement this!
+#endif
 }
 
 template<>
@@ -440,27 +454,27 @@ inline v8::Local<v8::Object> node::Object::create_date(v8::Isolate* isolate, dou
 }
 
 template<>
-template<typename U>
-inline v8::Local<v8::Object> node::Object::create_instance(v8::Isolate* isolate, U* internal) {
-    return node::ObjectWrap<U>::create_instance(isolate, internal);
+template<typename ClassType>
+inline v8::Local<v8::Object> node::Object::create_instance(v8::Isolate* isolate, typename ClassType::Internal* internal) {
+    return node::ObjectWrap<ClassType>::create_instance(isolate, internal);
 }
 
 template<>
-template<typename U>
+template<typename ClassType>
 inline bool node::Object::is_instance(v8::Isolate* isolate, const v8::Local<v8::Object> &object) {
-    return node::ObjectWrap<U>::has_instance(isolate, object);
+    return node::ObjectWrap<ClassType>::has_instance(isolate, object);
 }
 
 template<>
-template<typename U>
-inline U* node::Object::get_internal(const v8::Local<v8::Object> &object) {
-    return *Nan::ObjectWrap::Unwrap<node::ObjectWrap<U>>(object);
+template<typename ClassType>
+inline typename ClassType::Internal* node::Object::get_internal(const v8::Local<v8::Object> &object) {
+    return *Nan::ObjectWrap::Unwrap<node::ObjectWrap<ClassType>>(object);
 }
 
 template<>
-template<typename U>
-inline void node::Object::set_internal(const v8::Local<v8::Object> &object, U* ptr) {
-    auto wrap = Nan::ObjectWrap::Unwrap<node::ObjectWrap<U>>(object);
+template<typename ClassType>
+inline void node::Object::set_internal(const v8::Local<v8::Object> &object, typename ClassType::Internal* ptr) {
+    auto wrap = Nan::ObjectWrap::Unwrap<node::ObjectWrap<ClassType>>(object);
     *wrap = ptr;
 }
 

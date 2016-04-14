@@ -73,6 +73,7 @@ struct Value {
 
     static bool is_array(TContext, const TValue &);
     static bool is_array_buffer(TContext, const TValue &);
+    static bool is_array_buffer_view(TContext, const TValue &);
     static bool is_boolean(TContext, const TValue &);
     static bool is_constructor(TContext, const TValue &);
     static bool is_date(TContext, const TValue &);
@@ -239,7 +240,6 @@ class Protected {
     bool operator!=(const TValue &) const;
     bool operator==(const Protected<TValue> &) const;
     bool operator!=(const Protected<TValue> &) const;
-    bool operator<(const Protected<TValue> &) const;
 };
 
 template<typename T>
@@ -249,6 +249,8 @@ struct Exception : public std::runtime_error {
 
     const Protected<TValue> m_value;
 
+    Exception(TContext ctx, const std::string &message)
+        : std::runtime_error(message), m_value(value(ctx, message)) {}
     Exception(TContext ctx, const TValue &val)
         : std::runtime_error(std::string(Value<T>::to_string(ctx, val))), m_value(ctx, val) {}
 
