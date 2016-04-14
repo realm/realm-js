@@ -41,7 +41,7 @@ struct List {
     using Value = Value<T>;
     using ReturnValue = ReturnValue<T>;
 
-    static TObject create(TContext, realm::List &);
+    static TObject create_instance(TContext, realm::List &);
 
     static void GetLength(TContext, TObject, ReturnValue &);
     static void GetIndex(TContext, TObject, uint32_t, ReturnValue &);
@@ -82,7 +82,7 @@ struct ObjectClass<T, realm::List> : BaseObjectClass<T, Collection> {
 };
 
 template<typename T>
-typename T::Object List<T>::create(TContext ctx, realm::List &list) {
+typename T::Object List<T>::create_instance(TContext ctx, realm::List &list) {
     return create_object<T, realm::List>(ctx, new realm::List(list));
 }
 
@@ -97,7 +97,7 @@ void List<T>::GetIndex(TContext ctx, TObject object, uint32_t index, ReturnValue
     auto list = get_internal<T, realm::List>(object);
     auto realm_object = realm::Object(list->get_realm(), list->get_object_schema(), list->get(index));
 
-    return_value.set(RealmObject<T>::create(ctx, realm_object));
+    return_value.set(RealmObject<T>::create_instance(ctx, realm_object));
 }
 
 template<typename T>
@@ -133,7 +133,7 @@ void List<T>::Pop(TContext ctx, TObject this_object, size_t argc, const TValue a
         size_t index = size - 1;
         auto realm_object = realm::Object(list->get_realm(), list->get_object_schema(), list->get(index));
 
-        return_value.set(RealmObject<T>::create(ctx, realm_object));
+        return_value.set(RealmObject<T>::create_instance(ctx, realm_object));
         list->remove(index);
     }
 }
@@ -162,7 +162,7 @@ void List<T>::Shift(TContext ctx, TObject this_object, size_t argc, const TValue
     else {
         auto realm_object = realm::Object(list->get_realm(), list->get_object_schema(), list->get(0));
 
-        return_value.set(RealmObject<T>::create(ctx, realm_object));
+        return_value.set(RealmObject<T>::create_instance(ctx, realm_object));
         list->remove(0);
     }
 }
@@ -193,7 +193,7 @@ void List<T>::Splice(TContext ctx, TObject this_object, size_t argc, const TValu
     for (size_t i = 0; i < remove; i++) {
         auto realm_object = realm::Object(list->get_realm(), list->get_object_schema(), list->get(index));
 
-        removed_objects.push_back(RealmObject<T>::create(ctx, realm_object));
+        removed_objects.push_back(RealmObject<T>::create_instance(ctx, realm_object));
         list->remove(index);
     }
     for (size_t i = 2; i < argc; i++) {
@@ -208,7 +208,7 @@ void List<T>::StaticResults(TContext ctx, TObject this_object, size_t argc, cons
     validate_argument_count(argc, 0);
 
     auto list = get_internal<T, realm::List>(this_object);
-    return_value.set(Results<T>::create(ctx, *list, false));
+    return_value.set(Results<T>::create_instance(ctx, *list, false));
 }
 
 template<typename T>

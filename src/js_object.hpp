@@ -40,7 +40,7 @@ struct RealmObject {
     using Function = Function<T>;
     using ReturnValue = ReturnValue<T>;
 
-    static TObject create(TContext, realm::Object &);
+    static TObject create_instance(TContext, realm::Object &);
 
     static void GetProperty(TContext, TObject, const String &, ReturnValue &);
     static bool SetProperty(TContext, TObject, const String &, TValue);
@@ -61,7 +61,7 @@ struct ObjectClass<T, realm::Object> : BaseObjectClass<T> {
 };
 
 template<typename T>
-typename T::Object RealmObject<T>::create(TContext ctx, realm::Object &realm_object) {
+typename T::Object RealmObject<T>::create_instance(TContext ctx, realm::Object &realm_object) {
     static String s_prototype = "prototype";
 
     auto delegate = get_delegate<T>(realm_object.realm().get());

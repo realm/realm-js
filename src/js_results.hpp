@@ -38,10 +38,10 @@ struct Results {
     using Value = Value<T>;
     using ReturnValue = ReturnValue<T>;
 
-    static TObject create(TContext, const realm::Results &, bool live = true);
-    static TObject create(TContext, const realm::List &, bool live = true);
-    static TObject create(TContext, SharedRealm, const std::string &type, bool live = true);
-    static TObject create(TContext, SharedRealm, const ObjectSchema &, Query, bool live = true);
+    static TObject create_instance(TContext, const realm::Results &, bool live = true);
+    static TObject create_instance(TContext, const realm::List &, bool live = true);
+    static TObject create_instance(TContext, SharedRealm, const std::string &type, bool live = true);
+    static TObject create_instance(TContext, SharedRealm, const ObjectSchema &, Query, bool live = true);
 
     template<typename U>
     static TObject create_filtered(TContext, const U &, size_t, const TValue[]);
@@ -77,7 +77,7 @@ struct ObjectClass<T, realm::Results> : BaseObjectClass<T, Collection> {
 };
 
 template<typename T>
-typename T::Object Results<T>::create(TContext ctx, const realm::Results &results, bool live) {
+typename T::Object Results<T>::create_instance(TContext ctx, const realm::Results &results, bool live) {
     auto new_results = new realm::Results(results);
     new_results->set_live(live);
 
@@ -85,12 +85,12 @@ typename T::Object Results<T>::create(TContext ctx, const realm::Results &result
 }
 
 template<typename T>
-typename T::Object Results<T>::create(TContext ctx, const realm::List &list, bool live) {
-    return create(ctx, list.get_realm(), list.get_object_schema(), list.get_query(), live);
+typename T::Object Results<T>::create_instance(TContext ctx, const realm::List &list, bool live) {
+    return create_instance(ctx, list.get_realm(), list.get_object_schema(), list.get_query(), live);
 }
 
 template<typename T>
-typename T::Object Results<T>::create(TContext ctx, SharedRealm realm, const std::string &type, bool live) {
+typename T::Object Results<T>::create_instance(TContext ctx, SharedRealm realm, const std::string &type, bool live) {
     auto table = ObjectStore::table_for_object_type(realm->read_group(), type);
     auto &schema = realm->config().schema;
     auto object_schema = schema->find(type);
@@ -106,7 +106,7 @@ typename T::Object Results<T>::create(TContext ctx, SharedRealm realm, const std
 }
 
 template<typename T>
-typename T::Object Results<T>::create(TContext ctx, SharedRealm realm, const ObjectSchema &object_schema, Query query, bool live) {
+typename T::Object Results<T>::create_instance(TContext ctx, SharedRealm realm, const ObjectSchema &object_schema, Query query, bool live) {
     auto results = new realm::Results(realm, object_schema, std::move(query));
     results->set_live(live);
 
@@ -132,7 +132,7 @@ typename T::Object Results<T>::create_filtered(TContext ctx, const U &collection
     query_builder::ArgumentConverter<TValue, TContext> converter(ctx, args);
     query_builder::apply_predicate(query, predicate, converter, *realm->config().schema, object_schema.name);
 
-    return create(ctx, realm, object_schema, std::move(query));
+    return create_instance(ctx, realm, object_schema, std::move(query));
 }
 
 template<typename T>
@@ -211,7 +211,7 @@ void Results<T>::GetIndex(TContext ctx, TObject object, uint32_t index, ReturnVa
     }
 
     auto realm_object = realm::Object(results->get_realm(), results->get_object_schema(), results->get(index));
-    return_value.set(RealmObject<T>::create(ctx, realm_object));
+    return_value.set(RealmObject<T>::create_instance(ctx, realm_object));
 }
 
 template<typename T>
@@ -219,7 +219,7 @@ void Results<T>::StaticResults(TContext ctx, TObject this_object, size_t argc, c
     validate_argument_count(argc, 0);
 
     auto results = get_internal<T, realm::Results>(this_object);
-    return_value.set(Results<T>::create(ctx, *results, false));
+    return_value.set(Results<T>::create_instance(ctx, *results, false));
 }
 
 template<typename T>

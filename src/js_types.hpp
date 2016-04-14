@@ -220,7 +220,7 @@ struct Object {
     static TObject create_date(TContext, double);
 
     template<typename U>
-    static TObject create(TContext, U*);
+    static TObject create_instance(TContext, U*);
 
     template<typename U>
     static bool is_instance(TContext, const TObject &);
@@ -282,7 +282,7 @@ struct ReturnValue {
 
 template<typename T, typename U>
 REALM_JS_INLINE typename T::Object create_object(typename T::Context ctx, U* internal = nullptr) {
-    return Object<T>::template create<U>(ctx, internal);
+    return Object<T>::template create_instance<U>(ctx, internal);
 }
 
 template<typename T, typename U>

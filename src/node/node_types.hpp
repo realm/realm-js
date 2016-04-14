@@ -441,8 +441,8 @@ inline v8::Local<v8::Object> node::Object::create_date(v8::Isolate* isolate, dou
 
 template<>
 template<typename U>
-inline v8::Local<v8::Object> node::Object::create(v8::Isolate* isolate, U* internal) {
-    return node::ObjectWrap<U>::create(isolate, internal);
+inline v8::Local<v8::Object> node::Object::create_instance(v8::Isolate* isolate, U* internal) {
+    return node::ObjectWrap<U>::create_instance(isolate, internal);
 }
 
 template<>

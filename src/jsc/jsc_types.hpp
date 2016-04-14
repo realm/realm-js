@@ -482,8 +482,8 @@ inline JSObjectRef jsc::Object::create_date(JSContextRef ctx, double time) {
 
 template<>
 template<typename U>
-inline JSObjectRef jsc::Object::create(JSContextRef ctx, U* internal) {
-    return jsc::ObjectWrap<U>::create(ctx, internal);
+inline JSObjectRef jsc::Object::create_instance(JSContextRef ctx, U* internal) {
+    return jsc::ObjectWrap<U>::create_instance(ctx, internal);
 }
 
 template<>

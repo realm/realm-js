@@ -88,7 +88,7 @@ class ObjectWrap : public Nan::ObjectWrap {
         return *this;
     }
 
-    static v8::Local<v8::Object> create(v8::Isolate* isolate, T* internal = nullptr) {
+    static v8::Local<v8::Object> create_instance(v8::Isolate* isolate, T* internal = nullptr) {
         Nan::EscapableHandleScope scope;
 
         // TODO: Figure out why this template ends up being empty here.

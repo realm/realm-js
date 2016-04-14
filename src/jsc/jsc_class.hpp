@@ -51,7 +51,7 @@ class ObjectWrap {
             return nullptr;
         }
 
-        JSObjectRef this_object = ObjectWrap<T>::create(ctx);
+        JSObjectRef this_object = ObjectWrap<T>::create_instance(ctx);
         try {
             s_class.constructor(ctx, this_object, argc, arguments);
         }
@@ -265,7 +265,7 @@ class ObjectWrap {
         return js_class;
     }
 
-    static JSObjectRef create(JSContextRef ctx, T* internal = nullptr) {
+    static JSObjectRef create_instance(JSContextRef ctx, T* internal = nullptr) {
         return JSObjectMake(ctx, get_class(), new ObjectWrap<T>(internal));
     }
 

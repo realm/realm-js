@@ -122,7 +122,7 @@ struct NativeAccessor {
         throw std::runtime_error("object is not a Realm Object");
     }
     static TValue from_object(TContext ctx, realm::Object realm_object) {
-        return RealmObject<T>::create(ctx, realm_object);
+        return RealmObject<T>::create_instance(ctx, realm_object);
     }
 
     static size_t list_size(TContext ctx, TValue &value) {
@@ -132,7 +132,7 @@ struct NativeAccessor {
         return Object::validated_get_object(ctx, Value::validated_to_object(ctx, value), (uint32_t)index);
     }
     static TValue from_list(TContext ctx, realm::List list) {
-        return List<T>::create(ctx, list);
+        return List<T>::create_instance(ctx, list);
     }
 
     static Mixed to_mixed(TContext ctx, TValue &val) {

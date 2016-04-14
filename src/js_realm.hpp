@@ -347,7 +347,7 @@ void Realm<T>::Objects(TContext ctx, TObject this_object, size_t argc, const TVa
     SharedRealm realm = *get_internal<T, SharedRealm>(this_object);
     std::string type = validated_object_type_for_value(realm, ctx, arguments[0]);
 
-    return_value.set(Results<T>::create(ctx, realm, type));
+    return_value.set(Results<T>::create_instance(ctx, realm, type));
 }
 
 template<typename T>
@@ -374,7 +374,7 @@ void Realm<T>::Create(TContext ctx, TObject this_object, size_t argc, const TVal
     }
 
     auto realm_object = realm::Object::create<TValue>(ctx, sharedRealm, *object_schema, object, update);
-    return_value.set(RealmObject<T>::create(ctx, realm_object));
+    return_value.set(RealmObject<T>::create_instance(ctx, realm_object));
 }
 
 template<typename T>
