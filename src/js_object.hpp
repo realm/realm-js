@@ -30,21 +30,21 @@ namespace js {
 
 template<typename T>
 struct RealmObject {
-    using ContextType = typename T::Context;
-    using FunctionType = typename T::Function;
-    using ObjectType = typename T::Object;
-    using ValueType = typename T::Value;
+    using TContext = typename T::Context;
+    using TFunction = typename T::Function;
+    using TObject = typename T::Object;
+    using TValue = typename T::Value;
     using String = String<T>;
     using Value = Value<T>;
     using Object = Object<T>;
     using Function = Function<T>;
     using ReturnValue = ReturnValue<T>;
 
-    static ObjectType create(ContextType, realm::Object &);
+    static TObject create(TContext, realm::Object &);
 
-    static void GetProperty(ContextType, ObjectType, const String &, ReturnValue &);
-    static bool SetProperty(ContextType, ObjectType, const String &, ValueType);
-    static std::vector<String> GetPropertyNames(ContextType, ObjectType);
+    static void GetProperty(TContext, TObject, const String &, ReturnValue &);
+    static bool SetProperty(TContext, TObject, const String &, TValue);
+    static std::vector<String> GetPropertyNames(TContext, TObject);
 };
 
 template<typename T>
@@ -61,7 +61,7 @@ struct ObjectClass<T, realm::Object> : BaseObjectClass<T> {
 };
 
 template<typename T>
-typename T::Object RealmObject<T>::create(ContextType ctx, realm::Object &realm_object) {
+typename T::Object RealmObject<T>::create(TContext ctx, realm::Object &realm_object) {
     static String s_prototype = "prototype";
 
     auto delegate = get_delegate<T>(realm_object.realm().get());
@@ -72,11 +72,11 @@ typename T::Object RealmObject<T>::create(ContextType ctx, realm::Object &realm_
         return object;
     }
 
-    FunctionType constructor = delegate->m_constructors.at(name);
-    ObjectType prototype = Object::validated_get_object(ctx, constructor, s_prototype);
+    TFunction constructor = delegate->m_constructors.at(name);
+    TObject prototype = Object::validated_get_object(ctx, constructor, s_prototype);
     Object::set_prototype(ctx, object, prototype);
 
-    ValueType result = Function::call(ctx, constructor, object, 0, NULL);
+    TValue result = Function::call(ctx, constructor, object, 0, NULL);
     if (result != object && !Value::is_null(ctx, result) && !Value::is_undefined(ctx, result)) {
         throw std::runtime_error("Realm object constructor must not return another value");
     }
@@ -85,10 +85,10 @@ typename T::Object RealmObject<T>::create(ContextType ctx, realm::Object &realm_
 }
 
 template<typename T>
-void RealmObject<T>::GetProperty(ContextType ctx, ObjectType object, const String &property, ReturnValue &return_value) {
+void RealmObject<T>::GetProperty(TContext ctx, TObject object, const String &property, ReturnValue &return_value) {
     try {
         auto realm_object = get_internal<T, realm::Object>(object);
-        auto result = realm_object->template get_property_value<ValueType>(ctx, property);
+        auto result = realm_object->template get_property_value<TValue>(ctx, property);
         return_value.set(result);
     } catch (InvalidPropertyException &ex) {
         // getters for nonexistent properties in JS should always return undefined
@@ -96,14 +96,14 @@ void RealmObject<T>::GetProperty(ContextType ctx, ObjectType object, const Strin
 }
 
 template<typename T>
-bool RealmObject<T>::SetProperty(ContextType ctx, ObjectType object, const String &property, ValueType value) {
+bool RealmObject<T>::SetProperty(TContext ctx, TObject object, const String &property, TValue value) {
     auto realm_object = get_internal<T, realm::Object>(object);
     realm_object->set_property_value(ctx, property, value, true);
     return true;
 }
 
 template<typename T>
-std::vector<String<T>> RealmObject<T>::GetPropertyNames(ContextType ctx, ObjectType object) {
+std::vector<String<T>> RealmObject<T>::GetPropertyNames(TContext ctx, TObject object) {
     auto realm_object = get_internal<T, realm::Object>(object);
     auto &properties = realm_object->get_object_schema().properties;
 
