@@ -29,6 +29,12 @@ TEST_CASE("list") {
         {"target", "", {
             {"value", PropertyTypeInt}
         }},
+        {"other_origin", "", {
+            {"array", PropertyTypeArray, "other_target"}
+        }},
+        {"other_target", "", {
+            {"value", PropertyTypeInt}
+        }},
     });
 
     auto r = Realm::get_shared_realm(config);
@@ -224,6 +230,42 @@ TEST_CASE("list") {
                 REQUIRE_INDICES(changes[i].insertions, 3);
                 REQUIRE_INDICES(changes[i].modifications, 2);
             }
+        }
+
+        SECTION("tables-of-interest are tracked properly for multiple source versions") {
+            auto other_origin = r->read_group()->get_table("class_other_origin");
+            auto other_target = r->read_group()->get_table("class_other_target");
+
+            r->begin_transaction();
+            other_target->add_empty_row();
+            other_origin->add_empty_row();
+            LinkViewRef lv2 = other_origin->get_linklist(0, 0);
+            lv2->add(0);
+            r->commit_transaction();
+
+            List lst2(r, *r->config().schema->find("other_origin"), lv2);
+
+            // Add a callback for list1, advance the version, then add a
+            // callback for list2, so that the notifiers added at each source
+            // version have different tables watched for modifications
+            CollectionChangeIndices changes1, changes2;
+            auto token1 = lst.add_notification_callback([&](CollectionChangeIndices c, std::exception_ptr) {
+                changes1 = std::move(c);
+            });
+
+            r->begin_transaction(); r->commit_transaction();
+
+            auto token2 = lst2.add_notification_callback([&](CollectionChangeIndices c, std::exception_ptr) {
+                changes2 = std::move(c);
+            });
+
+            r->begin_transaction();
+            target->set_int(0, 0, 10);
+            r->commit_transaction();
+            advance_and_notify(*r);
+
+            REQUIRE_INDICES(changes1.modifications, 0);
+            REQUIRE(changes2.empty());
         }
 
         SECTION("modifications are reported for rows that are moved and then moved back in a second transaction") {
