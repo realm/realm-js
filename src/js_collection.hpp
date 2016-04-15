@@ -27,7 +27,7 @@ namespace js {
 class Collection {};
 
 template<typename T>
-struct ClassDefinition<T, Collection> : BaseClassDefinition<T> {
+struct CollectionClass : ClassDefinition<T, Collection>, BaseClassDefinition<T> {
     std::string const name = "Collection";
 };
 

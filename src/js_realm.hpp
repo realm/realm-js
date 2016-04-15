@@ -38,6 +38,9 @@ namespace realm {
 namespace js {
 
 template<typename T>
+struct RealmClass;
+
+template<typename T>
 class RealmDelegate : public BindingContext {
   public:
     using TGlobalContext = typename T::GlobalContext;
@@ -87,7 +90,7 @@ class RealmDelegate : public BindingContext {
             throw std::runtime_error("Realm no longer exists");
         }
 
-        TObject realm_object = create_object<T, SharedRealm>(m_context, new SharedRealm(realm));
+        TObject realm_object = create_object<T, RealmClass<T>>(m_context, new SharedRealm(realm));
         TValue arguments[2];
         arguments[0] = realm_object;
         arguments[1] = Value::from_string(m_context, notification_name);
@@ -140,10 +143,10 @@ class Realm {
     static void SetDefaultPath(TContext, TObject, TValue value);
 
     static TObject create_constructor(TContext ctx) {
-        TObject realm_constructor = ObjectWrap<T, SharedRealm>::create_constructor(ctx);
-        TObject collection_constructor = ObjectWrap<T, Collection>::create_constructor(ctx);
-        TObject list_constructor = ObjectWrap<T, realm::List>::create_constructor(ctx);
-        TObject results_constructor = ObjectWrap<T, realm::Results>::create_constructor(ctx);
+        TObject realm_constructor = ObjectWrap<T, RealmClass<T>>::create_constructor(ctx);
+        TObject collection_constructor = ObjectWrap<T, CollectionClass<T>>::create_constructor(ctx);
+        TObject list_constructor = ObjectWrap<T, ListClass<T>>::create_constructor(ctx);
+        TObject results_constructor = ObjectWrap<T, ResultsClass<T>>::create_constructor(ctx);
 
         PropertyAttributes attributes = PropertyAttributes(ReadOnly | DontEnum | DontDelete);
         Object::set_property(ctx, realm_constructor, "Collection", collection_constructor, attributes);
@@ -186,7 +189,7 @@ class Realm {
 };
 
 template<typename T>
-struct ClassDefinition<T, SharedRealm> : BaseClassDefinition<T> {
+struct RealmClass : ClassDefinition<T, SharedRealm>, BaseClassDefinition<T> {
     using Realm = Realm<T>;
 
     std::string const name = "Realm";
@@ -288,7 +291,7 @@ void Realm<T>::Constructor(TContext ctx, TObject this_object, size_t argc, const
     delegate->m_defaults = std::move(defaults);
     delegate->m_constructors = std::move(constructors);
 
-    set_internal<T, SharedRealm>(this_object, new SharedRealm(realm));
+    set_internal<T, RealmClass<T>>(this_object, new SharedRealm(realm));
 }
 
 template<typename T>
@@ -330,13 +333,13 @@ void Realm<T>::SetDefaultPath(TContext ctx, TObject object, TValue value) {
 
 template<typename T>
 void Realm<T>::GetPath(TContext ctx, TObject object, ReturnValue &return_value) {
-    std::string path = get_internal<T, SharedRealm>(object)->get()->config().path;
+    std::string path = get_internal<T, RealmClass<T>>(object)->get()->config().path;
     return_value.set(path);
 }
 
 template<typename T>
 void Realm<T>::GetSchemaVersion(TContext ctx, TObject object, ReturnValue &return_value) {
-    double version = get_internal<T, SharedRealm>(object)->get()->config().schema_version;
+    double version = get_internal<T, RealmClass<T>>(object)->get()->config().schema_version;
     return_value.set(version);
 }
 
@@ -344,7 +347,7 @@ template<typename T>
 void Realm<T>::Objects(TContext ctx, TObject this_object, size_t argc, const TValue arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 1);
 
-    SharedRealm realm = *get_internal<T, SharedRealm>(this_object);
+    SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
     std::string type = validated_object_type_for_value(realm, ctx, arguments[0]);
 
     return_value.set(Results<T>::create_instance(ctx, realm, type));
@@ -354,7 +357,7 @@ template<typename T>
 void Realm<T>::Create(TContext ctx, TObject this_object, size_t argc, const TValue arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 2, 3);
 
-    SharedRealm sharedRealm = *get_internal<T, SharedRealm>(this_object);
+    SharedRealm sharedRealm = *get_internal<T, RealmClass<T>>(this_object);
     std::string className = validated_object_type_for_value(sharedRealm, ctx, arguments[0]);
     auto &schema = sharedRealm->config().schema;
     auto object_schema = schema->find(className);
@@ -381,15 +384,15 @@ template<typename T>
 void Realm<T>::Delete(TContext ctx, TObject this_object, size_t argc, const TValue arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 1);
 
-    SharedRealm realm = *get_internal<T, SharedRealm>(this_object);
+    SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
     if (!realm->is_in_transaction()) {
         throw std::runtime_error("Can only delete objects within a transaction.");
     }
 
     TObject arg = Value::validated_to_object(ctx, arguments[0]);
 
-    if (Object::template is_instance<realm::Object>(ctx, arg)) {
-        auto object = get_internal<T, realm::Object>(arg);
+    if (Object::template is_instance<RealmObjectClass<T>>(ctx, arg)) {
+        auto object = get_internal<T, RealmObjectClass<T>>(arg);
         realm::TableRef table = ObjectStore::table_for_object_type(realm->read_group(), object->get_object_schema().name);
         table->move_last_over(object->row().get_index());
     }
@@ -398,21 +401,21 @@ void Realm<T>::Delete(TContext ctx, TObject this_object, size_t argc, const TVal
         for (uint32_t i = length; i--;) {
             TObject object = Object::validated_get_object(ctx, arg, i);
 
-            if (!Object::template is_instance<realm::Object>(ctx, object)) {
+            if (!Object::template is_instance<RealmObjectClass<T>>(ctx, object)) {
                 throw std::runtime_error("Argument to 'delete' must be a Realm object or a collection of Realm objects.");
             }
 
-            auto realm_object = get_internal<T, realm::Object>(object);
+            auto realm_object = get_internal<T, RealmObjectClass<T>>(object);
             realm::TableRef table = ObjectStore::table_for_object_type(realm->read_group(), realm_object->get_object_schema().name);
             table->move_last_over(realm_object->row().get_index());
         }
     }
-    else if (Object::template is_instance<realm::Results>(ctx, arg)) {
-        auto results = get_internal<T, realm::Results>(arg);
+    else if (Object::template is_instance<ResultsClass<T>>(ctx, arg)) {
+        auto results = get_internal<T, ResultsClass<T>>(arg);
         results->clear();
     }
-    else if (Object::template is_instance<realm::List>(ctx, arg)) {
-        auto list = get_internal<T, realm::List>(arg);
+    else if (Object::template is_instance<ListClass<T>>(ctx, arg)) {
+        auto list = get_internal<T, ListClass<T>>(arg);
         list->delete_all();
     }
     else {
@@ -424,7 +427,7 @@ template<typename T>
 void Realm<T>::DeleteAll(TContext ctx, TObject this_object, size_t argc, const TValue arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 0);
 
-    SharedRealm realm = *get_internal<T, SharedRealm>(this_object);
+    SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
 
     if (!realm->is_in_transaction()) {
         throw std::runtime_error("Can only delete objects within a transaction.");
@@ -439,7 +442,7 @@ template<typename T>
 void Realm<T>::Write(TContext ctx, TObject this_object, size_t argc, const TValue arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 1);
 
-    SharedRealm realm = *get_internal<T, SharedRealm>(this_object);
+    SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
     TFunction callback = Value::validated_to_function(ctx, arguments[0]);
 
     try {
@@ -462,7 +465,7 @@ void Realm<T>::AddListener(TContext ctx, TObject this_object, size_t argc, const
     __unused std::string name = validated_notification_name(ctx, arguments[0]);
     auto callback = Value::validated_to_function(ctx, arguments[1]);
 
-    SharedRealm realm = *get_internal<T, SharedRealm>(this_object);
+    SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
     get_delegate<T>(realm.get())->add_notification(callback);
 }
 
@@ -473,7 +476,7 @@ void Realm<T>::RemoveListener(TContext ctx, TObject this_object, size_t argc, co
     __unused std::string name = validated_notification_name(ctx, arguments[0]);
     auto callback = Value::validated_to_function(ctx, arguments[1]);
 
-    SharedRealm realm = *get_internal<T, SharedRealm>(this_object);
+    SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
     get_delegate<T>(realm.get())->remove_notification(callback);
 }
 
@@ -484,7 +487,7 @@ void Realm<T>::RemoveAllListeners(TContext ctx, TObject this_object, size_t argc
         validated_notification_name(ctx, arguments[0]);
     }
 
-    SharedRealm realm = *get_internal<T, SharedRealm>(this_object);
+    SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
     get_delegate<T>(realm.get())->remove_all_notifications();
 }
 
@@ -492,7 +495,7 @@ template<typename T>
 void Realm<T>::Close(TContext ctx, TObject this_object, size_t argc, const TValue arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 0);
 
-    SharedRealm realm = *get_internal<T, SharedRealm>(this_object);
+    SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
     realm->close();
 }
 

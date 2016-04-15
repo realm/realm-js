@@ -219,17 +219,17 @@ struct Object {
 
     static TObject create_date(TContext, double);
 
-    template<typename U>
-    static TObject create_instance(TContext, U*);
+    template<typename ClassType>
+    static TObject create_instance(TContext, typename ClassType::Internal*);
 
-    template<typename U>
+    template<typename ClassType>
     static bool is_instance(TContext, const TObject &);
 
-    template<typename U>
-    static U* get_internal(const TObject &);
+    template<typename ClassType>
+    static typename ClassType::Internal* get_internal(const TObject &);
 
-    template<typename U>
-    static void set_internal(const TObject &, U*);
+    template<typename ClassType>
+    static void set_internal(const TObject &, typename ClassType::Internal*);
 };
 
 template<typename TValue>
@@ -280,19 +280,19 @@ struct ReturnValue {
     void set_undefined();
 };
 
-template<typename T, typename U>
-REALM_JS_INLINE typename T::Object create_object(typename T::Context ctx, U* internal = nullptr) {
-    return Object<T>::template create_instance<U>(ctx, internal);
+template<typename T, typename ClassType>
+REALM_JS_INLINE typename T::Object create_object(typename T::Context ctx, typename ClassType::Internal* internal = nullptr) {
+    return Object<T>::template create_instance<ClassType>(ctx, internal);
 }
 
-template<typename T, typename U>
-REALM_JS_INLINE U* get_internal(const typename T::Object &object) {
-    return Object<T>::template get_internal<U>(object);
+template<typename T, typename ClassType>
+REALM_JS_INLINE typename ClassType::Internal* get_internal(const typename T::Object &object) {
+    return Object<T>::template get_internal<ClassType>(object);
 }
 
-template<typename T, typename U>
-REALM_JS_INLINE void set_internal(const typename T::Object &object, U* ptr) {
-    Object<T>::template set_internal<U>(object, ptr);
+template<typename T, typename ClassType>
+REALM_JS_INLINE void set_internal(const typename T::Object &object, typename ClassType::Internal* ptr) {
+    Object<T>::template set_internal<ClassType>(object, ptr);
 }
 
 } // js

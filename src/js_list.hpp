@@ -58,7 +58,7 @@ struct List {
 };
 
 template<typename T>
-struct ClassDefinition<T, realm::List> : BaseClassDefinition<T, Collection> {
+struct ListClass : ClassDefinition<T, realm::List>, BaseClassDefinition<T, CollectionClass<T>> {
     using List = List<T>;
 
     std::string const name = "List";
@@ -83,18 +83,18 @@ struct ClassDefinition<T, realm::List> : BaseClassDefinition<T, Collection> {
 
 template<typename T>
 typename T::Object List<T>::create_instance(TContext ctx, realm::List &list) {
-    return create_object<T, realm::List>(ctx, new realm::List(list));
+    return create_object<T, ListClass<T>>(ctx, new realm::List(list));
 }
 
 template<typename T>
 void List<T>::GetLength(TContext ctx, TObject object, ReturnValue &return_value) {
-    auto list = get_internal<T, realm::List>(object);
+    auto list = get_internal<T, ListClass<T>>(object);
     return_value.set((uint32_t)list->size());
 }
 
 template<typename T>
 void List<T>::GetIndex(TContext ctx, TObject object, uint32_t index, ReturnValue &return_value) {
-    auto list = get_internal<T, realm::List>(object);
+    auto list = get_internal<T, ListClass<T>>(object);
     auto realm_object = realm::Object(list->get_realm(), list->get_object_schema(), list->get(index));
 
     return_value.set(RealmObject<T>::create_instance(ctx, realm_object));
@@ -102,7 +102,7 @@ void List<T>::GetIndex(TContext ctx, TObject object, uint32_t index, ReturnValue
 
 template<typename T>
 bool List<T>::SetIndex(TContext ctx, TObject object, uint32_t index, TValue value) {
-    auto list = get_internal<T, realm::List>(object);
+    auto list = get_internal<T, ListClass<T>>(object);
     list->set(ctx, value, index);
     return true;
 }
@@ -111,7 +111,7 @@ template<typename T>
 void List<T>::Push(TContext ctx, TObject this_object, size_t argc, const TValue arguments[], ReturnValue &return_value) {
     validate_argument_count_at_least(argc, 1);
 
-    auto list = get_internal<T, realm::List>(this_object);
+    auto list = get_internal<T, ListClass<T>>(this_object);
     for (size_t i = 0; i < argc; i++) {
         list->add(ctx, arguments[i]);
     }
@@ -123,7 +123,7 @@ template<typename T>
 void List<T>::Pop(TContext ctx, TObject this_object, size_t argc, const TValue arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 0);
 
-    auto list = get_internal<T, realm::List>(this_object);
+    auto list = get_internal<T, ListClass<T>>(this_object);
     size_t size = list->size();
     if (size == 0) {
         list->verify_in_transaction();
@@ -142,7 +142,7 @@ template<typename T>
 void List<T>::Unshift(TContext ctx, TObject this_object, size_t argc, const TValue arguments[], ReturnValue &return_value) {
     validate_argument_count_at_least(argc, 1);
 
-    auto list = get_internal<T, realm::List>(this_object);
+    auto list = get_internal<T, ListClass<T>>(this_object);
     for (size_t i = 0; i < argc; i++) {
         list->insert(ctx, arguments[i], i);
     }
@@ -154,7 +154,7 @@ template<typename T>
 void List<T>::Shift(TContext ctx, TObject this_object, size_t argc, const TValue arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 0);
 
-    auto list = get_internal<T, realm::List>(this_object);
+    auto list = get_internal<T, ListClass<T>>(this_object);
     if (list->size() == 0) {
         list->verify_in_transaction();
         return_value.set_undefined();
@@ -171,7 +171,7 @@ template<typename T>
 void List<T>::Splice(TContext ctx, TObject this_object, size_t argc, const TValue arguments[], ReturnValue &return_value) {
     validate_argument_count_at_least(argc, 1);
 
-    auto list = get_internal<T, realm::List>(this_object);
+    auto list = get_internal<T, ListClass<T>>(this_object);
     size_t size = list->size();
     long index = std::min<long>(Value::to_number(ctx, arguments[0]), size);
     if (index < 0) {
@@ -207,7 +207,7 @@ template<typename T>
 void List<T>::StaticResults(TContext ctx, TObject this_object, size_t argc, const TValue arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 0);
 
-    auto list = get_internal<T, realm::List>(this_object);
+    auto list = get_internal<T, ListClass<T>>(this_object);
     return_value.set(Results<T>::create_instance(ctx, *list, false));
 }
 
@@ -215,7 +215,7 @@ template<typename T>
 void List<T>::Filtered(TContext ctx, TObject this_object, size_t argc, const TValue arguments[], ReturnValue &return_value) {
     validate_argument_count_at_least(argc, 1);
 
-    auto list = get_internal<T, realm::List>(this_object);
+    auto list = get_internal<T, ListClass<T>>(this_object);
     return_value.set(Results<T>::create_filtered(ctx, *list, argc, arguments));
 }
 
@@ -223,7 +223,7 @@ template<typename T>
 void List<T>::Sorted(TContext ctx, TObject this_object, size_t argc, const TValue arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 1, 2);
 
-    auto list = get_internal<T, realm::List>(this_object);
+    auto list = get_internal<T, ListClass<T>>(this_object);
     return_value.set(Results<T>::create_sorted(ctx, *list, argc, arguments));
 }
     

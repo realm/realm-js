@@ -481,27 +481,27 @@ inline JSObjectRef jsc::Object::create_date(JSContextRef ctx, double time) {
 }
 
 template<>
-template<typename U>
-inline JSObjectRef jsc::Object::create_instance(JSContextRef ctx, U* internal) {
-    return jsc::ObjectWrap<U>::create_instance(ctx, internal);
+template<typename ClassType>
+inline JSObjectRef jsc::Object::create_instance(JSContextRef ctx, typename ClassType::Internal* internal) {
+    return jsc::ObjectWrap<ClassType>::create_instance(ctx, internal);
 }
 
 template<>
-template<typename U>
+template<typename ClassType>
 inline bool jsc::Object::is_instance(JSContextRef ctx, const JSObjectRef &object) {
-    return jsc::ObjectWrap<U>::has_instance(ctx, object);
+    return jsc::ObjectWrap<ClassType>::has_instance(ctx, object);
 }
 
 template<>
-template<typename U>
-inline U* jsc::Object::get_internal(const JSObjectRef &object) {
-    return *static_cast<jsc::ObjectWrap<U> *>(JSObjectGetPrivate(object));
+template<typename ClassType>
+inline typename ClassType::Internal* jsc::Object::get_internal(const JSObjectRef &object) {
+    return *static_cast<jsc::ObjectWrap<ClassType> *>(JSObjectGetPrivate(object));
 }
 
 template<>
-template<typename U>
-inline void jsc::Object::set_internal(const JSObjectRef &object, U* ptr) {
-    auto wrap = static_cast<jsc::ObjectWrap<U> *>(JSObjectGetPrivate(object));
+template<typename ClassType>
+inline void jsc::Object::set_internal(const JSObjectRef &object, typename ClassType::Internal* ptr) {
+    auto wrap = static_cast<jsc::ObjectWrap<ClassType> *>(JSObjectGetPrivate(object));
     *wrap = ptr;
 }
 

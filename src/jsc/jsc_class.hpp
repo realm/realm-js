@@ -28,7 +28,6 @@ namespace jsc {
 template<typename T>
 using ClassDefinition = js::ClassDefinition<Types, T>;
 
-using BaseClassDefinition = js::BaseClassDefinition<Types>;
 using ConstructorType = js::ConstructorType<Types>;
 using MethodType = js::MethodType<Types>;
 using PropertyType = js::PropertyType<Types>;
@@ -37,15 +36,16 @@ using StringPropertyType = js::StringPropertyType<Types>;
 using MethodMap = js::MethodMap<Types>;
 using PropertyMap = js::PropertyMap<Types>;
 
-template<typename T>
+template<typename ClassType>
 class ObjectWrap {
 public:
-    operator T*() const {
+    using Internal = typename ClassType::Internal;
+    operator Internal*() const {
         return m_object.get();
     }
-    ObjectWrap<T>& operator=(T* object) {
+    ObjectWrap<ClassType>& operator=(Internal* object) {
         if (m_object.get() != object) {
-            m_object = std::unique_ptr<T>(object);
+            m_object = std::unique_ptr<Internal>(object);
         }
         return *this;
     }
@@ -60,8 +60,8 @@ public:
         return js_class;
     }
     
-    static JSObjectRef create_instance(JSContextRef ctx, T* internal = nullptr) {
-        return JSObjectMake(ctx, get_class(), new ObjectWrap<T>(internal));
+    static JSObjectRef create_instance(JSContextRef ctx, Internal* internal = nullptr) {
+        return JSObjectMake(ctx, get_class(), new ObjectWrap<ClassType>(internal));
     }
     
     static JSObjectRef create_constructor(JSContextRef ctx) {
@@ -77,11 +77,11 @@ public:
     }
     
 private:
-    static ClassDefinition<T> s_class;
+    static ClassType s_class;
 
-    std::unique_ptr<T> m_object;
+    std::unique_ptr<Internal> m_object;
 
-    ObjectWrap(T* object = nullptr) : m_object(object) {}
+    ObjectWrap(Internal* object = nullptr) : m_object(object) {}
 
     static JSObjectRef construct(JSContextRef ctx, JSObjectRef constructor, size_t argc, const JSValueRef arguments[], JSValueRef* exception) {
         if (!s_class.constructor) {
@@ -89,7 +89,7 @@ private:
             return nullptr;
         }
 
-        JSObjectRef this_object = ObjectWrap<T>::create_instance(ctx);
+        JSObjectRef this_object = ObjectWrap<ClassType>::create_instance(ctx);
         try {
             s_class.constructor(ctx, this_object, argc, arguments);
         }
@@ -178,7 +178,7 @@ private:
 
     static void finalize(JSObjectRef object) {
         // This is called for the most derived class before superclasses.
-        if (auto wrap = static_cast<ObjectWrap<T> *>(JSObjectGetPrivate(object))) {
+        if (auto wrap = static_cast<ObjectWrap<ClassType> *>(JSObjectGetPrivate(object))) {
             delete wrap;
             JSObjectSetPrivate(object, nullptr);
         }
@@ -283,14 +283,42 @@ private:
     }
 };
 
-// Make the top-level base class return a NULL JSClassRef.
 template<>
-inline JSClassRef ObjectWrap<void>::get_class() {
-    return nullptr;
-}
-
+class ObjectWrap<void> {
+public:
+    using Internal = void;
+    
+    operator Internal*() const {
+        return nullptr;
+    }
+    
+    ObjectWrap<void>& operator=(Internal* object) {
+        return *this;
+    }
+    
+    static JSClassRef get_class() {
+        return nullptr;
+    }
+    
+    static JSClassRef get_constructor_class() {
+        return nullptr;
+    }
+    
+    static JSObjectRef create_instance(JSContextRef ctx, Internal* internal = nullptr) {
+        return nullptr;
+    }
+    
+    static JSObjectRef create_constructor(JSContextRef ctx) {
+        return nullptr;
+    }
+    
+    static bool has_instance(JSContextRef ctx, JSValueRef value) {
+        return nullptr;
+    }
+};
+    
 // The declared static variables must be defined as well.
-template<typename T> ClassDefinition<T> ObjectWrap<T>::s_class;
+template<typename T> T ObjectWrap<T>::s_class;
 
 } // jsc
 

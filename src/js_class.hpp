@@ -70,6 +70,8 @@ using PropertyMap = std::map<std::string, PropertyType<T>>;
 
 template<typename T, typename U>
 struct ClassDefinition {
+    using Internal = U;
+    
     // Every specialization *must* at least have a name.
     std::string name;
 };
@@ -89,7 +91,7 @@ struct BaseClassDefinition {
     StringPropertyType<T> string_accessor;
 };
 
-template<typename T, typename U>
+template<typename T, typename ClassType>
 class ObjectWrap;
 
 } // js

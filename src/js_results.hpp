@@ -58,7 +58,7 @@ struct Results {
 };
 
 template<typename T>
-struct ClassDefinition<T, realm::Results> : BaseClassDefinition<T, Collection> {
+struct ResultsClass : ClassDefinition<T, realm::Results>, BaseClassDefinition<T, CollectionClass<T>> {
     using Results = Results<T>;
 
     std::string const name = "Results";
@@ -81,7 +81,7 @@ typename T::Object Results<T>::create_instance(TContext ctx, const realm::Result
     auto new_results = new realm::Results(results);
     new_results->set_live(live);
 
-    return create_object<T, realm::Results>(ctx, new_results);
+    return create_object<T, ResultsClass<T>>(ctx, new_results);
 }
 
 template<typename T>
@@ -102,7 +102,7 @@ typename T::Object Results<T>::create_instance(TContext ctx, SharedRealm realm, 
     auto results = new realm::Results(realm, *object_schema, *table);
     results->set_live(live);
 
-    return create_object<T, realm::Results>(ctx, results);
+    return create_object<T, ResultsClass<T>>(ctx, results);
 }
 
 template<typename T>
@@ -110,7 +110,7 @@ typename T::Object Results<T>::create_instance(TContext ctx, SharedRealm realm, 
     auto results = new realm::Results(realm, object_schema, std::move(query));
     results->set_live(live);
 
-    return create_object<T, realm::Results>(ctx, results);
+    return create_object<T, ResultsClass<T>>(ctx, results);
 }
 
 template<typename T>
@@ -190,18 +190,18 @@ typename T::Object Results<T>::create_sorted(TContext ctx, const U &collection, 
     }
 
     auto results = new realm::Results(realm, object_schema, collection.get_query(), {std::move(columns), std::move(ascending)});
-    return create_object<T, realm::Results>(ctx, results);
+    return create_object<T, ResultsClass<T>>(ctx, results);
 }
 
 template<typename T>
 void Results<T>::GetLength(TContext ctx, TObject object, ReturnValue &return_value) {
-    auto results = get_internal<T, realm::Results>(object);
+    auto results = get_internal<T, ResultsClass<T>>(object);
     return_value.set((uint32_t)results->size());
 }
 
 template<typename T>
 void Results<T>::GetIndex(TContext ctx, TObject object, uint32_t index, ReturnValue &return_value) {
-    auto results = get_internal<T, realm::Results>(object);
+    auto results = get_internal<T, ResultsClass<T>>(object);
     auto row = results->get(index);
 
     // Return null for deleted objects in a snapshot.
@@ -218,7 +218,7 @@ template<typename T>
 void Results<T>::StaticResults(TContext ctx, TObject this_object, size_t argc, const TValue arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 0);
 
-    auto results = get_internal<T, realm::Results>(this_object);
+    auto results = get_internal<T, ResultsClass<T>>(this_object);
     return_value.set(Results<T>::create_instance(ctx, *results, false));
 }
 
@@ -226,7 +226,7 @@ template<typename T>
 void Results<T>::Filtered(TContext ctx, TObject this_object, size_t argc, const TValue arguments[], ReturnValue &return_value) {
     validate_argument_count_at_least(argc, 1);
 
-    auto results = get_internal<T, realm::Results>(this_object);
+    auto results = get_internal<T, ResultsClass<T>>(this_object);
     return_value.set(create_filtered(ctx, *results, argc, arguments));
 }
 
@@ -234,7 +234,7 @@ template<typename T>
 void Results<T>::Sorted(TContext ctx, TObject this_object, size_t argc, const TValue arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 1, 2);
 
-    auto results = get_internal<T, realm::Results>(this_object);
+    auto results = get_internal<T, ResultsClass<T>>(this_object);
     return_value.set(create_sorted(ctx, *results, argc, arguments));
 }
 

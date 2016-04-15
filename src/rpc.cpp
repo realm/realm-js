@@ -24,6 +24,7 @@
 #include "rpc.hpp"
 
 #include "jsc_init.hpp"
+#include "jsc_types.hpp"
 #include "js_object.hpp"
 #include "js_results.hpp"
 #include "js_realm.hpp"
@@ -86,21 +87,21 @@ RPCServer::RPCServer() {
     };
     m_requests["/begin_transaction"] = [this](const json dict) {
         RPCObjectID realm_id = dict["realmId"].get<RPCObjectID>();
-        SharedRealm realm = *jsc::Object::get_internal<SharedRealm>(m_objects[realm_id]);
+        SharedRealm realm = *jsc::Object::get_internal<js::RealmClass<jsc::Types>>(m_objects[realm_id]);
 
         realm->begin_transaction();
         return json::object();
     };
     m_requests["/cancel_transaction"] = [this](const json dict) {
         RPCObjectID realm_id = dict["realmId"].get<RPCObjectID>();
-        SharedRealm realm = *jsc::Object::get_internal<SharedRealm>(m_objects[realm_id]);
+        SharedRealm realm = *jsc::Object::get_internal<js::RealmClass<jsc::Types>>(m_objects[realm_id]);
 
         realm->cancel_transaction();
         return json::object();
     };
     m_requests["/commit_transaction"] = [this](const json dict) {
         RPCObjectID realm_id = dict["realmId"].get<RPCObjectID>();
-        SharedRealm realm = *jsc::Object::get_internal<SharedRealm>(m_objects[realm_id]);
+        SharedRealm realm = *jsc::Object::get_internal<js::RealmClass<jsc::Types>>(m_objects[realm_id]);
 
         realm->commit_transaction();
         return json::object();
@@ -220,16 +221,16 @@ json RPCServer::serialize_json_value(JSValueRef js_value) {
 
     JSObjectRef js_object = jsc::Value::validated_to_object(m_context, js_value);
 
-    if (jsc::Object::is_instance<realm::Object>(m_context, js_object)) {
-        auto object = jsc::Object::get_internal<realm::Object>(js_object);
+    if (jsc::Object::is_instance<js::RealmObjectClass<jsc::Types>>(m_context, js_object)) {
+        auto object = jsc::Object::get_internal<js::RealmObjectClass<jsc::Types>>(js_object);
         return {
             {"type", RealmObjectTypesObject},
             {"id", store_object(js_object)},
             {"schema", serialize_object_schema(object->get_object_schema())}
         };
     }
-    else if (jsc::Object::is_instance<realm::List>(m_context, js_object)) {
-        auto list = jsc::Object::get_internal<realm::List>(js_object);
+    else if (jsc::Object::is_instance<js::ListClass<jsc::Types>>(m_context, js_object)) {
+        auto list = jsc::Object::get_internal<js::ListClass<jsc::Types>>(js_object);
         return {
             {"type", RealmObjectTypesList},
             {"id", store_object(js_object)},
@@ -237,8 +238,8 @@ json RPCServer::serialize_json_value(JSValueRef js_value) {
             {"schema", serialize_object_schema(list->get_object_schema())}
          };
     }
-    else if (jsc::Object::is_instance<realm::Results>(m_context, js_object)) {
-        auto results = jsc::Object::get_internal<realm::Results>(js_object);
+    else if (jsc::Object::is_instance<js::ResultsClass<jsc::Types>>(m_context, js_object)) {
+        auto results = jsc::Object::get_internal<js::ResultsClass<jsc::Types>>(js_object);
         return {
             {"type", RealmObjectTypesResults},
             {"id", store_object(js_object)},

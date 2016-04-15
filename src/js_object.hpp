@@ -48,7 +48,7 @@ struct RealmObject {
 };
 
 template<typename T>
-struct ClassDefinition<T, realm::Object> : BaseClassDefinition<T> {
+struct RealmObjectClass : ClassDefinition<T, realm::Object>, BaseClassDefinition<T> {
     using RealmObject = RealmObject<T>;
 
     const std::string name = "RealmObject";
@@ -66,7 +66,7 @@ typename T::Object RealmObject<T>::create_instance(TContext ctx, realm::Object &
 
     auto delegate = get_delegate<T>(realm_object.realm().get());
     auto name = realm_object.get_object_schema().name;
-    auto object = create_object<T, realm::Object>(ctx, new realm::Object(realm_object));
+    auto object = create_object<T, RealmObjectClass<T>>(ctx, new realm::Object(realm_object));
 
     if (!delegate->m_constructors.count(name)) {
         return object;
@@ -87,7 +87,7 @@ typename T::Object RealmObject<T>::create_instance(TContext ctx, realm::Object &
 template<typename T>
 void RealmObject<T>::GetProperty(TContext ctx, TObject object, const String &property, ReturnValue &return_value) {
     try {
-        auto realm_object = get_internal<T, realm::Object>(object);
+        auto realm_object = get_internal<T, RealmObjectClass<T>>(object);
         auto result = realm_object->template get_property_value<TValue>(ctx, property);
         return_value.set(result);
     } catch (InvalidPropertyException &ex) {
@@ -97,14 +97,14 @@ void RealmObject<T>::GetProperty(TContext ctx, TObject object, const String &pro
 
 template<typename T>
 bool RealmObject<T>::SetProperty(TContext ctx, TObject object, const String &property, TValue value) {
-    auto realm_object = get_internal<T, realm::Object>(object);
+    auto realm_object = get_internal<T, RealmObjectClass<T>>(object);
     realm_object->set_property_value(ctx, property, value, true);
     return true;
 }
 
 template<typename T>
 std::vector<String<T>> RealmObject<T>::GetPropertyNames(TContext ctx, TObject object) {
-    auto realm_object = get_internal<T, realm::Object>(object);
+    auto realm_object = get_internal<T, RealmObjectClass<T>>(object);
     auto &properties = realm_object->get_object_schema().properties;
 
     std::vector<String> names;

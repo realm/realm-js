@@ -102,8 +102,8 @@ struct NativeAccessor {
 
     static size_t to_object_index(TContext ctx, SharedRealm realm, TValue &value, const std::string &type, bool try_update) {
         TObject object = Value::validated_to_object(ctx, value);
-        if (Object::template is_instance<realm::Object>(ctx, object)) {
-            return get_internal<T, realm::Object>(object)->row().get_index();
+        if (Object::template is_instance<RealmObjectClass<T>>(ctx, object)) {
+            return get_internal<T, RealmObjectClass<T>>(object)->row().get_index();
         }
 
         auto object_schema = realm->config().schema->find(type);
@@ -116,8 +116,8 @@ struct NativeAccessor {
     }
     static size_t to_existing_object_index(TContext ctx, TValue &value) {
         TObject object = Value::validated_to_object(ctx, value);
-        if (Object::template is_instance<realm::Object>(ctx, object)) {
-            return get_internal<T, realm::Object>(object)->row().get_index();
+        if (Object::template is_instance<RealmObjectClass<T>>(ctx, object)) {
+            return get_internal<T, RealmObjectClass<T>>(object)->row().get_index();
         }
         throw std::runtime_error("object is not a Realm Object");
     }
