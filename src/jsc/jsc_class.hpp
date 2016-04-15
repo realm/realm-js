@@ -26,9 +26,9 @@ namespace realm {
 namespace jsc {
 
 template<typename T>
-using ObjectClass = js::ObjectClass<Types, T>;
+using ClassDefinition = js::ClassDefinition<Types, T>;
 
-using BaseObjectClass = js::BaseObjectClass<Types>;
+using BaseClassDefinition = js::BaseClassDefinition<Types>;
 using ConstructorType = js::ConstructorType<Types>;
 using MethodType = js::MethodType<Types>;
 using PropertyType = js::PropertyType<Types>;
@@ -39,7 +39,7 @@ using PropertyMap = js::PropertyMap<Types>;
 
 template<typename T>
 class ObjectWrap {
-    static ObjectClass<T> s_class;
+    static ClassDefinition<T> s_class;
 
     std::unique_ptr<T> m_object;
 
@@ -147,7 +147,7 @@ class ObjectWrap {
     }
 
     template<typename U>
-    static JSClassRef get_superclass(ObjectClass<U>*) {
+    static JSClassRef get_superclass(ClassDefinition<U>*) {
         return ObjectWrap<U>::get_class();
     }
 
@@ -289,7 +289,7 @@ inline JSClassRef ObjectWrap<void>::get_class() {
 }
 
 // The declared static variables must be defined as well.
-template<typename T> ObjectClass<T> ObjectWrap<T>::s_class;
+template<typename T> ClassDefinition<T> ObjectWrap<T>::s_class;
 
 } // jsc
 

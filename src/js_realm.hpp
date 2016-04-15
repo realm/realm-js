@@ -186,7 +186,7 @@ class Realm {
 };
 
 template<typename T>
-struct ObjectClass<T, SharedRealm> : BaseObjectClass<T> {
+struct ClassDefinition<T, SharedRealm> : BaseClassDefinition<T> {
     using Realm = Realm<T>;
 
     std::string const name = "Realm";

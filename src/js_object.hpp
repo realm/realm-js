@@ -48,7 +48,7 @@ struct RealmObject {
 };
 
 template<typename T>
-struct ObjectClass<T, realm::Object> : BaseObjectClass<T> {
+struct ClassDefinition<T, realm::Object> : BaseClassDefinition<T> {
     using RealmObject = RealmObject<T>;
 
     const std::string name = "RealmObject";

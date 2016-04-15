@@ -69,17 +69,17 @@ template<typename T>
 using PropertyMap = std::map<std::string, PropertyType<T>>;
 
 template<typename T, typename U>
-struct ObjectClass {
+struct ClassDefinition {
     // Every specialization *must* at least have a name.
     std::string name;
 };
 
 template<typename T, typename U = void>
-struct BaseObjectClass {
+struct BaseClassDefinition {
     // This pointer does not need to be set.
-    ObjectClass<T, U>* superclass;
+    ClassDefinition<T, U>* superclass;
 
-    // ObjectClass specializations should inherit from this class and override what's needed below.
+    // ClassDefinition specializations should inherit from this class and override what's needed below.
     ConstructorType<T>* constructor;
     MethodMap<T> static_methods;
     PropertyMap<T> static_properties;

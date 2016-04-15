@@ -25,7 +25,7 @@ namespace realm {
 namespace node {
 
 template<typename T>
-using ObjectClass = js::ObjectClass<Types, T>;
+using ClassDefinition = js::ClassDefinition<Types, T>;
 
 using ConstructorType = js::ConstructorType<Types>;
 using MethodType = js::MethodType<Types>;
@@ -69,7 +69,7 @@ static inline void setup_property(v8::Local<v8::ObjectTemplate> tpl, const std::
 
 template<typename T>
 class ObjectWrap : public Nan::ObjectWrap {
-    static ObjectClass<T> s_class;
+    static ClassDefinition<T> s_class;
     static Nan::Persistent<v8::Function> s_constructor;
     static Nan::Persistent<v8::FunctionTemplate> s_template;
 
@@ -165,7 +165,7 @@ class ObjectWrap : public Nan::ObjectWrap {
 };
 
 // The declared static variables must be defined as well.
-template<typename T> ObjectClass<T> ObjectWrap<T>::s_class;
+template<typename T> ClassDefinition<T> ObjectWrap<T>::s_class;
 template<typename T> Nan::Persistent<v8::Function> ObjectWrap<T>::s_constructor;
 template<typename T> Nan::Persistent<v8::FunctionTemplate> ObjectWrap<T>::s_template;
 
