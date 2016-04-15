@@ -72,6 +72,17 @@ Results::Results(SharedRealm r, const ObjectSchema& o, LinkViewRef lv, util::Opt
     }
 }
 
+Results::Results(SharedRealm r, const ObjectSchema& o, TableView tv, SortOrder s)
+: m_realm(std::move(r))
+, m_object_schema(&o)
+, m_table_view(std::move(tv))
+, m_table(&m_table_view.get_parent())
+, m_sort(std::move(s))
+, m_mode(Mode::TableView)
+{
+    REALM_ASSERT(m_sort.column_indices.size() == m_sort.ascending.size());
+}
+
 Results::~Results()
 {
     if (m_notifier) {
@@ -85,7 +96,7 @@ void Results::validate_read() const
         m_realm->verify_thread();
     if (m_table && !m_table->is_attached())
         throw InvalidatedException();
-    if (m_mode == Mode::TableView && !m_table_view.is_attached())
+    if (m_mode == Mode::TableView && (!m_table_view.is_attached() || m_table_view.depends_on_deleted_object()))
         throw InvalidatedException();
     if (m_mode == Mode::LinkView && !m_link_view->is_attached())
         throw InvalidatedException();
@@ -115,8 +126,10 @@ size_t Results::size()
     switch (m_mode) {
         case Mode::Empty:    return 0;
         case Mode::Table:    return m_table->size();
-        case Mode::Query:    return m_query.count();
         case Mode::LinkView: return m_link_view->size();
+        case Mode::Query:
+            m_query.sync_view_if_needed();
+            return m_query.count();
         case Mode::TableView:
             update_tableview();
             return m_table_view.size();
@@ -218,6 +231,7 @@ void Results::update_tableview()
         case Mode::LinkView:
             return;
         case Mode::Query:
+            m_query.sync_view_if_needed();
             m_table_view = m_query.find_all();
             if (m_sort) {
                 m_table_view.sort(m_sort.column_indices, m_sort.ascending);
@@ -384,8 +398,19 @@ Query Results::get_query() const
         case Mode::Empty:
         case Mode::Query:
             return m_query;
-        case Mode::TableView:
-            return m_table_view.get_query();
+        case Mode::TableView: {
+            // A TableView has an associated Query if it was produced by Query::find_all. This is indicated
+            // by TableView::get_query returning a Query with a non-null table.
+            Query query = m_table_view.get_query();
+            if (query.get_table()) {
+                return query;
+            }
+
+            // The TableView has no associated query so create one with no conditions that is restricted
+            // to the rows in the TableView.
+            m_table_view.sync_if_needed();
+            return Query(*m_table, std::make_unique<TableView>(m_table_view));
+        }
         case Mode::LinkView:
             return m_table->where(m_link_view);
         case Mode::Table:
@@ -417,15 +442,11 @@ TableView Results::get_tableview()
 Results Results::sort(realm::SortOrder&& sort) const
 {
     REALM_ASSERT(sort.column_indices.size() == sort.ascending.size());
-    if (m_link_view)
-        return Results(m_realm, *m_object_schema, m_link_view, m_query, std::move(sort));
     return Results(m_realm, *m_object_schema, get_query(), std::move(sort));
 }
 
 Results Results::filter(Query&& q) const
 {
-    if (m_link_view)
-        return Results(m_realm, *m_object_schema, m_link_view, get_query().and_query(std::move(q)), m_sort);
     return Results(m_realm, *m_object_schema, get_query().and_query(std::move(q)), m_sort);
 }
 
@@ -455,6 +476,21 @@ NotificationToken Results::add_notification_callback(CollectionChangeCallback cb
 {
     prepare_async();
     return {m_notifier, m_notifier->add_callback(std::move(cb))};
+}
+
+bool Results::is_in_table_order() const
+{
+    switch (m_mode) {
+        case Mode::Empty:
+        case Mode::Table:
+            return true;
+        case Mode::LinkView:
+            return false;
+        case Mode::Query:
+            return m_query.produces_results_in_table_order() && !m_sort;
+        case Mode::TableView:
+            return m_table_view.is_in_table_order();
+    }
 }
 
 void Results::Internal::set_table_view(Results& results, realm::TableView &&tv)

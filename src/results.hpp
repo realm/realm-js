@@ -51,6 +51,7 @@ public:
     Results() = default;
     Results(SharedRealm r, const ObjectSchema& o, Table& table);
     Results(SharedRealm r, const ObjectSchema& o, Query q, SortOrder s = {});
+    Results(SharedRealm r, const ObjectSchema& o, TableView tv, SortOrder s);
     Results(SharedRealm r, const ObjectSchema& o, LinkViewRef lv, util::Optional<Query> q = {}, SortOrder s = {});
     ~Results();
 
@@ -181,6 +182,9 @@ public:
     NotificationToken add_notification_callback(CollectionChangeCallback cb);
 
     bool wants_background_updates() const { return m_wants_background_updates; }
+
+    // Returns whether the rows are guaranteed to be in table order.
+    bool is_in_table_order() const;
 
     // Helper type to let ResultsNotifier update the tableview without giving access
     // to any other privates or letting anyone else do so
