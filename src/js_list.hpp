@@ -58,7 +58,7 @@ struct List {
 };
 
 template<typename T>
-struct ListClass : ClassDefinition<T, realm::List>, BaseClassDefinition<T, CollectionClass<T>> {
+struct ListClass : ClassDefinition<T, realm::List, CollectionClass<T>> {
     using List = List<T>;
 
     std::string const name = "List";

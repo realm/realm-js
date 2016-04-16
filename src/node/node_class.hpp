@@ -86,17 +86,13 @@ static inline void setup_property(v8::Local<TargetType> target, const std::strin
 template<typename ClassType>
 class ObjectWrap : public Nan::ObjectWrap {
     using Internal = typename ClassType::Internal;
+    using ParentClassType = typename ClassType::Parent;
 
     static ClassType s_class;
 
     std::unique_ptr<Internal> m_object;
 
     ObjectWrap(Internal* object = nullptr) : m_object(object) {}
-
-    template<typename U>
-    static v8::Local<v8::FunctionTemplate> get_superclass(ClassDefinition<U>*) {
-        return ObjectWrap<U>::get_template();
-    }
 
     static void get_nonexistent_property(v8::Local<v8::String> property, Nan::NAN_PROPERTY_GETTER_ARGS_TYPE info) {
         // Do nothing. This function exists only to prevent a crash where it is used.
@@ -149,7 +145,7 @@ class ObjectWrap : public Nan::ObjectWrap {
         tpl->SetClassName(name);
         instance_tpl->SetInternalFieldCount(1);
 
-        v8::Local<v8::FunctionTemplate> super_tpl = get_superclass(s_class.superclass);
+        v8::Local<v8::FunctionTemplate> super_tpl = ObjectWrap<ParentClassType>::get_template();
         if (!super_tpl.IsEmpty()) {
             tpl->Inherit(super_tpl);
         }

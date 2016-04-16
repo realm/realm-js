@@ -68,27 +68,22 @@ using MethodMap = std::map<std::string, typename T::FunctionCallback>;
 template<typename T>
 using PropertyMap = std::map<std::string, PropertyType<T>>;
 
-template<typename T, typename U>
+template<typename T, typename U, typename V = void>
 struct ClassDefinition {
     using Internal = U;
+    using Parent = V;
     
-    // Every specialization *must* at least have a name.
-    std::string name;
-};
-
-template<typename T, typename U = void>
-struct BaseClassDefinition {
-    // This pointer does not need to be set.
-    ClassDefinition<T, U>* superclass;
+    // Every subclass *must* at least have a name.
+    // std::string const name;
 
     // ClassDefinition specializations should inherit from this class and override what's needed below.
-    ConstructorType<T>* constructor;
-    MethodMap<T> static_methods;
-    PropertyMap<T> static_properties;
-    MethodMap<T> methods;
-    PropertyMap<T> properties;
-    IndexPropertyType<T> index_accessor;
-    StringPropertyType<T> string_accessor;
+    ConstructorType<T>* const constructor = nullptr;
+    MethodMap<T> const static_methods = {};
+    PropertyMap<T> const static_properties = {};
+    MethodMap<T> const methods = {};
+    PropertyMap<T> const properties = {};
+    IndexPropertyType<T> const index_accessor = {};
+    StringPropertyType<T> const string_accessor = {};
 };
 
 template<typename T, typename ClassType>

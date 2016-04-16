@@ -199,7 +199,7 @@ class Realm {
 };
 
 template<typename T>
-struct RealmClass : ClassDefinition<T, SharedRealm>, BaseClassDefinition<T> {
+struct RealmClass : ClassDefinition<T, SharedRealm> {
     using Realm = Realm<T>;
 
     std::string const name = "Realm";

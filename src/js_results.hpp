@@ -58,7 +58,7 @@ struct Results {
 };
 
 template<typename T>
-struct ResultsClass : ClassDefinition<T, realm::Results>, BaseClassDefinition<T, CollectionClass<T>> {
+struct ResultsClass : ClassDefinition<T, realm::Results, CollectionClass<T>> {
     using Results = Results<T>;
 
     std::string const name = "Results";

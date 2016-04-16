@@ -40,6 +40,7 @@ template<typename ClassType>
 class ObjectWrap {
 public:
     using Internal = typename ClassType::Internal;
+    using ParentClassType = typename ClassType::Parent;
 
     operator Internal*() const {
         return m_object.get();
@@ -186,11 +187,6 @@ private:
         }
     }
 
-    template<typename U>
-    static JSClassRef get_superclass(ClassDefinition<U>*) {
-        return ObjectWrap<U>::get_class();
-    }
-
     static std::vector<JSStaticFunction> get_methods(const MethodMap &methods) {
         std::vector<JSStaticFunction> functions;
         functions.reserve(methods.size() + 1);
@@ -227,7 +223,7 @@ private:
         std::vector<JSStaticFunction> methods;
         std::vector<JSStaticValue> properties;
 
-        definition.parentClass = get_superclass(s_class.superclass);
+        definition.parentClass = ObjectWrap<ParentClassType>::get_class();
         definition.className = s_class.name.c_str();
         definition.finalize = finalize;
 
