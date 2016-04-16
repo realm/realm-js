@@ -701,7 +701,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "cp -f ../object-store/tests/query.json \"$TARGET_BUILD_DIR/$CONTENTS_FOLDER_PATH/js/query-tests.json\"";
+			shellScript = "DEST=\"$TARGET_BUILD_DIR/$CONTENTS_FOLDER_PATH/js/query-tests.json\"\nrm -f \"$DEST\"\ncp ../object-store/tests/query.json \"$DEST\"";
 		};
 		F63FF2C51C12462600B3B8E0 /* Download Core */ = {
 			isa = PBXShellScriptBuildPhase;
