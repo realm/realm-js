@@ -84,6 +84,19 @@ module.exports = BaseTest.extend({
         TestCase.assertEqual(realm.objects('TestObject')[0].doubleCol, 1)
     },
 
+    testRealmConstructorDynamicSchema: function() {
+        var realm = new Realm({schema: [schemas.TestObject]});
+        realm.write(function() {
+            realm.create('TestObject', [1])
+        });
+        realm.close();
+
+        realm = new Realm();
+        var objects = realm.objects('TestObject');
+        TestCase.assertEqual(objects.length, 1);
+        TestCase.assertEqual(objects[0].doubleCol, 1.0);
+    },
+
     testRealmConstructorSchemaValidation: function() {
         TestCase.assertThrows(function() {
             new Realm({schema: schemas.AllTypes});
