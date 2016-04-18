@@ -1,3 +1,20 @@
+x.x.x Release notes (yyyy-MM-dd)
+=============================================================
+### Breaking changes
+* None
+
+### Enhancements
+* Support for queries comparing optional properties to `null`
+
+### Bugfixes
+* None
+
+0.11.1 Release notes (2016-3-29)
+=============================================================
+### Bugfixes
+* Fix for using Android Studio to build app using Realm
+* Fix for sharing Realm between JS and Objective-C/Swift
+
 0.11.0 Release notes (2016-3-24)
 =============================================================
 ### Breaking changes

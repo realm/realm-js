@@ -138,8 +138,32 @@ module.exports = BaseTest.extend({
         });
     },
 
-    testRealmCreate: function() {
+    testRealmWrite: function() {
         var realm = new Realm({schema: [schemas.IntPrimary, schemas.AllTypes, schemas.TestObject]});
+            
+        // exceptions should be propogated
+        TestCase.assertThrows(function() {
+            realm.write(function() {
+                realm.invalid();
+            });
+        });
+
+        // writes should be possible after caught exception
+        realm.write(function() {
+            realm.create('TestObject', {doubleCol: 1});
+        });
+        TestCase.assertEqual(1, realm.objects('TestObject').length);
+
+        realm.write(function() {
+            // nested transactions not supported
+            TestCase.assertThrows(function() {
+                realm.write(function() {});
+            });
+        });
+    },
+
+    testRealmCreate: function() {
+        var realm = new Realm({schema: [schemas.TestObject]});
 
         TestCase.assertThrows(function() {
             realm.create('TestObject', {doubleCol: 1});
@@ -154,8 +178,11 @@ module.exports = BaseTest.extend({
         TestCase.assertEqual(objects.length, 2, 'wrong object count');
         TestCase.assertEqual(objects[0].doubleCol, 1, 'wrong object property value');
         TestCase.assertEqual(objects[1].doubleCol, 2, 'wrong object property value');
+    },
 
-        // test int primary object
+    testRealmCreatePrimaryKey: function() {
+        var realm = new Realm({schema: [schemas.IntPrimary]});
+
         realm.write(function() {
             var obj0 = realm.create('IntPrimaryObject', {
                 primaryCol: 0,
@@ -188,8 +215,24 @@ module.exports = BaseTest.extend({
             realm.create('IntPrimaryObject', {primaryCol: 0}, true);
             TestCase.assertEqual(obj0.valueCol, 'newVal0');
         });
+    },
 
-        // test upsert with all type and string primary object
+    testRealmCreateOptionals: function() {
+        var realm = new Realm({schema: [schemas.NullableBasicTypes, schemas.LinkTypes, schemas.TestObject]});
+        var basic, links;
+        realm.write(function() {
+            basic = realm.create('NullableBasicTypesObject', {});
+            links = realm.create('LinkTypesObject', {});
+        });
+        for (var name in schemas.NullableBasicTypes.properties) {
+            TestCase.assertEqual(basic[name], null);            
+        }
+        TestCase.assertEqual(links.objectCol, null);
+        TestCase.assertEqual(links.arrayCol.length, 0);
+    },
+
+    testRealmCreateUpsert: function() {
+        var realm = new Realm({schema: [schemas.IntPrimary, schemas.AllTypes, schemas.TestObject]});
         realm.write(function() {
             var values = {
                 primaryCol: '0',

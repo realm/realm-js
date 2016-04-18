@@ -56,6 +56,7 @@ struct number : seq< minus, sor< float_num, hex_num, int_num > > {};
 
 struct true_value : pegtl_istring_t("true") {};
 struct false_value : pegtl_istring_t("false") {};
+struct null_value : pegtl_istring_t("null") {};
 
 // key paths
 struct key_path : list< seq< sor< alpha, one< '_' > >, star< sor< alnum, one< '_', '-' > > > >, one< '.' > > {};
@@ -65,7 +66,7 @@ struct argument_index : plus< digit > {};
 struct argument : seq< one< '$' >, must< argument_index > > {};
 
 // expressions and operators
-struct expr : sor< dq_string, sq_string, number, argument, true_value, false_value, key_path > {};
+struct expr : sor< dq_string, sq_string, number, argument, true_value, false_value, null_value, key_path > {};
 struct case_insensitive : pegtl_istring_t("[c]"){};
 
 struct eq : seq< sor< two< '=' >, one< '=' > >, opt< case_insensitive > >{};
@@ -236,6 +237,7 @@ EXPRESSION_ACTION(key_path, Expression::Type::KeyPath)
 EXPRESSION_ACTION(number, Expression::Type::Number)
 EXPRESSION_ACTION(true_value, Expression::Type::True)
 EXPRESSION_ACTION(false_value, Expression::Type::False)
+EXPRESSION_ACTION(null_value, Expression::Type::Null)
 EXPRESSION_ACTION(argument_index, Expression::Type::Argument)
     
 template<> struct action< true_pred >
