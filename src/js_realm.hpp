@@ -243,11 +243,12 @@ inline typename T::Function Realm<T>::create_constructor(ContextType ctx) {
 }
 
 template<typename T>
-void Realm<T>::constructor(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[]) {
+void Realm<T>::constructor(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[]) {    
     static const String path_string = "path";
     static const String schema_string = "schema";
     static const String schema_version_string = "schemaVersion";
     static const String encryption_key_string = "encryptionKey";
+    static const String migration_string = "migration";
 
     realm::Realm::Config config;
     typename Schema<T>::ObjectDefaultsMap defaults;
@@ -284,6 +285,18 @@ void Realm<T>::constructor(ContextType ctx, ObjectType this_object, size_t argc,
             }
             else {
                 config.schema_version = 0;
+            }
+            
+            ValueType migration_value = Object::get_property(ctx, object, migration_string);
+            if (!Value::is_undefined(ctx, migration_value)) {
+                FunctionType migration_function = Value::validated_to_function(ctx, migration_value);
+                config.migration_function = [=](SharedRealm old_realm, SharedRealm realm) {
+                    ValueType arguments[2] = {
+                        create_object<T, RealmClass<T>>(ctx, new SharedRealm(old_realm)),
+                        create_object<T, RealmClass<T>>(ctx, new SharedRealm(realm))
+                    };
+                    Function<T>::call(ctx, migration_function, nullptr, 2, arguments);
+                };
             }
             
             ValueType encryption_key_value = Object::get_property(ctx, object, encryption_key_string);

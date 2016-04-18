@@ -80,7 +80,7 @@ typename T::Object RealmObject<T>::create_instance(ContextType ctx, realm::Objec
     auto name = realm_object.get_object_schema().name;
     auto object = create_object<T, RealmObjectClass<T>>(ctx, new realm::Object(realm_object));
 
-    if (!delegate->m_constructors.count(name)) {
+    if (!delegate || !delegate->m_constructors.count(name)) {
         return object;
     }
 
