@@ -173,6 +173,22 @@
 		F60102E31CBBB19700EC01BA /* node_object_accessor.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = node_object_accessor.hpp; sourceTree = "<group>"; };
 		F60102E71CBBB36500EC01BA /* jsc_object_accessor.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = jsc_object_accessor.hpp; sourceTree = "<group>"; };
 		F60102F71CBDA6D400EC01BA /* js_collection.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = js_collection.hpp; sourceTree = "<group>"; };
+		F60103071CC4B3DF00EC01BA /* node_protected.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = node_protected.hpp; sourceTree = "<group>"; };
+		F60103081CC4B4F900EC01BA /* jsc_protected.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = jsc_protected.hpp; sourceTree = "<group>"; };
+		F60103091CC4B5E800EC01BA /* jsc_context.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = jsc_context.hpp; sourceTree = "<group>"; };
+		F601030A1CC4B64E00EC01BA /* node_context.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = node_context.hpp; sourceTree = "<group>"; };
+		F601030B1CC4B6C900EC01BA /* jsc_value.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = jsc_value.hpp; sourceTree = "<group>"; };
+		F601030C1CC4B72B00EC01BA /* node_value.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = node_value.hpp; sourceTree = "<group>"; };
+		F601030D1CC4B76F00EC01BA /* jsc_object.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = jsc_object.hpp; sourceTree = "<group>"; };
+		F601030E1CC4B7C900EC01BA /* node_object.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = node_object.hpp; sourceTree = "<group>"; };
+		F601030F1CC4B80800EC01BA /* jsc_function.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = jsc_function.hpp; sourceTree = "<group>"; };
+		F60103101CC4B86000EC01BA /* node_function.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = node_function.hpp; sourceTree = "<group>"; };
+		F60103111CC4BA6500EC01BA /* jsc_exception.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = jsc_exception.hpp; sourceTree = "<group>"; };
+		F60103121CC4CBF000EC01BA /* node_exception.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = node_exception.hpp; sourceTree = "<group>"; };
+		F60103131CC4CC4500EC01BA /* jsc_string.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = jsc_string.hpp; sourceTree = "<group>"; };
+		F60103141CC4CC8C00EC01BA /* jsc_return_value.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = jsc_return_value.hpp; sourceTree = "<group>"; };
+		F60103151CC4CCFD00EC01BA /* node_return_value.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = node_return_value.hpp; sourceTree = "<group>"; };
+		F60103161CC4CD2F00EC01BA /* node_string.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = node_string.hpp; sourceTree = "<group>"; };
 		F61378781C18EAAC008BFC51 /* js */ = {isa = PBXFileReference; lastKnownFileType = folder; path = js; sourceTree = "<group>"; };
 		F620F0521CAF0B600082977B /* js_class.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = js_class.hpp; sourceTree = "<group>"; };
 		F620F0531CAF2EF70082977B /* jsc_class.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = jsc_class.hpp; sourceTree = "<group>"; };
@@ -271,20 +287,17 @@
 			children = (
 				F6BCCFDF1C83809A00FE31AE /* lib */,
 				F62A35131C18E6E2004A917D /* iOS */,
+				F60103051CC4ADE500EC01BA /* JS */,
 				F6874A441CAD2ACD00EEEE36 /* JSC */,
 				F62BF9001CAC72C40022BCDC /* Node */,
 				F62A35141C18E783004A917D /* Object Store */,
 				F60102F71CBDA6D400EC01BA /* js_collection.hpp */,
 				029048041C0428DF00ABDED4 /* js_list.hpp */,
-				F620F0591CB7B4C80082977B /* js_object_accessor.hpp */,
 				029048061C0428DF00ABDED4 /* js_realm_object.hpp */,
 				029048071C0428DF00ABDED4 /* js_realm.cpp */,
 				029048081C0428DF00ABDED4 /* js_realm.hpp */,
 				0290480A1C0428DF00ABDED4 /* js_results.hpp */,
 				0290480C1C0428DF00ABDED4 /* js_schema.hpp */,
-				F620F0521CAF0B600082977B /* js_class.hpp */,
-				F6874A3E1CACA5A900EEEE36 /* js_types.hpp */,
-				F6267BC91CADC30000AC36B1 /* js_util.hpp */,
 				029048351C042A3C00ABDED4 /* platform.hpp */,
 				0290480F1C0428DF00ABDED4 /* rpc.cpp */,
 				029048101C0428DF00ABDED4 /* rpc.hpp */,
@@ -344,6 +357,17 @@
 				02B58CCD1AE99D4D009B348C /* JavaScriptCore.framework */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		F60103051CC4ADE500EC01BA /* JS */ = {
+			isa = PBXGroup;
+			children = (
+				F620F0521CAF0B600082977B /* js_class.hpp */,
+				F6874A3E1CACA5A900EEEE36 /* js_types.hpp */,
+				F6267BC91CADC30000AC36B1 /* js_util.hpp */,
+				F620F0591CB7B4C80082977B /* js_object_accessor.hpp */,
+			);
+			name = JS;
 			sourceTree = "<group>";
 		};
 		F62A35131C18E6E2004A917D /* iOS */ = {
@@ -408,6 +432,14 @@
 				F620F0571CB766DA0082977B /* node_init.cpp */,
 				F620F0551CB655A50082977B /* node_class.hpp */,
 				F6874A351CAC792D00EEEE36 /* node_types.hpp */,
+				F60103161CC4CD2F00EC01BA /* node_string.hpp */,
+				F601030A1CC4B64E00EC01BA /* node_context.hpp */,
+				F601030C1CC4B72B00EC01BA /* node_value.hpp */,
+				F601030E1CC4B7C900EC01BA /* node_object.hpp */,
+				F60103101CC4B86000EC01BA /* node_function.hpp */,
+				F60103121CC4CBF000EC01BA /* node_exception.hpp */,
+				F60103071CC4B3DF00EC01BA /* node_protected.hpp */,
+				F60103151CC4CCFD00EC01BA /* node_return_value.hpp */,
 				F60102E31CBBB19700EC01BA /* node_object_accessor.hpp */,
 			);
 			name = Node;
@@ -482,6 +514,14 @@
 				029048011C0428DF00ABDED4 /* jsc_init.cpp */,
 				F620F0531CAF2EF70082977B /* jsc_class.hpp */,
 				025678951CAB392000FB8501 /* jsc_types.hpp */,
+				F60103131CC4CC4500EC01BA /* jsc_string.hpp */,
+				F60103091CC4B5E800EC01BA /* jsc_context.hpp */,
+				F601030B1CC4B6C900EC01BA /* jsc_value.hpp */,
+				F601030D1CC4B76F00EC01BA /* jsc_object.hpp */,
+				F601030F1CC4B80800EC01BA /* jsc_function.hpp */,
+				F60103111CC4BA6500EC01BA /* jsc_exception.hpp */,
+				F60103081CC4B4F900EC01BA /* jsc_protected.hpp */,
+				F60103141CC4CC8C00EC01BA /* jsc_return_value.hpp */,
 				F60102E71CBBB36500EC01BA /* jsc_object_accessor.hpp */,
 			);
 			name = JSC;

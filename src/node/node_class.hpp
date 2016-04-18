@@ -19,6 +19,7 @@
 #pragma once
 
 #include "node_types.hpp"
+
 #include "js_class.hpp"
 #include "js_util.hpp"
 

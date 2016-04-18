@@ -18,14 +18,28 @@
 
 #pragma once
 
-#include "node_string.hpp"
-#include "node_protected.hpp"
-#include "node_context.hpp"
-#include "node_value.hpp"
-#include "node_object.hpp"
-#include "node_function.hpp"
-#include "node_exception.hpp"
-#include "node_return_value.hpp"
-#include "node_object_accessor.hpp"
+#include "node_types.hpp"
 
-#include "js_realm.hpp"
+namespace realm {
+namespace js {
+
+template<>
+class String<node::Types> {
+    std::string m_str;
+
+  public:
+    String(const char* s) : m_str(s) {}
+    String(const std::string &s) : m_str(s) {}
+    String(const v8::Local<v8::String> &s) : m_str(*Nan::Utf8String(s)) {}
+    String(v8::Local<v8::String> &&s) : String(s) {}
+
+    operator std::string() const {
+        return m_str;
+    }
+    operator v8::Local<v8::String>() const {
+        return Nan::New(m_str).ToLocalChecked();
+    }
+};
+
+} // js
+} // realm

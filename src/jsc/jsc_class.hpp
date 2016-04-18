@@ -19,6 +19,7 @@
 #pragma once
 
 #include "jsc_types.hpp"
+
 #include "js_class.hpp"
 #include "js_util.hpp"
 

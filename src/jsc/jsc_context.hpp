@@ -18,14 +18,15 @@
 
 #pragma once
 
-#include "node_string.hpp"
-#include "node_protected.hpp"
-#include "node_context.hpp"
-#include "node_value.hpp"
-#include "node_object.hpp"
-#include "node_function.hpp"
-#include "node_exception.hpp"
-#include "node_return_value.hpp"
-#include "node_object_accessor.hpp"
+#include "jsc_types.hpp"
 
-#include "js_realm.hpp"
+namespace realm {
+namespace js {
+
+template<>
+inline JSGlobalContextRef jsc::Context::get_global_context(JSContextRef ctx) {
+    return JSContextGetGlobalContext(ctx);
+}
+
+} // js
+} // realm

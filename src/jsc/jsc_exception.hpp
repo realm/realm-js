@@ -18,14 +18,16 @@
 
 #pragma once
 
-#include "node_string.hpp"
-#include "node_protected.hpp"
-#include "node_context.hpp"
-#include "node_value.hpp"
-#include "node_object.hpp"
-#include "node_function.hpp"
-#include "node_exception.hpp"
-#include "node_return_value.hpp"
-#include "node_object_accessor.hpp"
+#include "jsc_types.hpp"
 
-#include "js_realm.hpp"
+namespace realm {
+namespace js {
+
+template<>
+inline JSValueRef jsc::Exception::value(JSContextRef ctx, const std::string &message) {
+    JSValueRef value = jsc::Value::from_string(ctx, message);
+    return JSObjectMakeError(ctx, 1, &value, NULL);
+}
+    
+} // js
+} // realm
