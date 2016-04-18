@@ -259,32 +259,32 @@ void Realm<T>::constructor(TContext ctx, TObject this_object, size_t argc, const
         else if (Value::is_object(ctx, value)) {
             TObject object = Value::validated_to_object(ctx, value);
 
-            TValue pathValue = Object::get_property(ctx, object, path_string);
-            if (!Value::is_undefined(ctx, pathValue)) {
-                config.path = Value::validated_to_string(ctx, pathValue, "path");
+            TValue path_value = Object::get_property(ctx, object, path_string);
+            if (!Value::is_undefined(ctx, path_value)) {
+                config.path = Value::validated_to_string(ctx, path_value, "path");
             }
             else {
                 config.path = js::default_path();
             }
 
-            TValue schemaValue = Object::get_property(ctx, object, schema_string);
-            if (!Value::is_undefined(ctx, schemaValue)) {
-                TObject schemaObject = Value::validated_to_object(ctx, schemaValue, "schema");
-                config.schema.reset(new realm::Schema(Schema<T>::parse_schema(ctx, schemaObject, defaults, constructors)));
+            TValue schema_value = Object::get_property(ctx, object, schema_string);
+            if (!Value::is_undefined(ctx, schema_value)) {
+                TObject schema_object = Value::validated_to_object(ctx, schema_value, "schema");
+                config.schema.reset(new realm::Schema(Schema<T>::parse_schema(ctx, schema_object, defaults, constructors)));
             }
 
-            TValue versionValue = Object::get_property(ctx, object, schema_version_string);
-            if (!Value::is_undefined(ctx, versionValue)) {
-                config.schema_version = Value::validated_to_number(ctx, versionValue, "schemaVersion");
+            TValue version_value = Object::get_property(ctx, object, schema_version_string);
+            if (!Value::is_undefined(ctx, version_value)) {
+                config.schema_version = Value::validated_to_number(ctx, version_value, "schemaVersion");
             }
             else {
                 config.schema_version = 0;
             }
             
-            TValue encryptionKeyValue = Object::get_property(ctx, object, encryption_key_string);
-            if (!Value::is_undefined(ctx, encryptionKeyValue)) {
-                std::string encryptionKey = NativeAccessor::to_binary(ctx, encryptionKeyValue);
-                config.encryption_key = std::vector<char>(encryptionKey.begin(), encryptionKey.end());
+            TValue encryption_key_value = Object::get_property(ctx, object, encryption_key_string);
+            if (!Value::is_undefined(ctx, encryption_key_value)) {
+                std::string encryption_key = NativeAccessor::to_binary(ctx, encryption_key_value);
+                config.encryption_key = std::vector<char>(encryption_key.begin(), encryption_key.end());
             }
         }
     }
@@ -371,9 +371,9 @@ template<typename T>
 void Realm<T>::create(TContext ctx, TObject this_object, size_t argc, const TValue arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 2, 3);
 
-    SharedRealm sharedRealm = *get_internal<T, RealmClass<T>>(this_object);
-    std::string className = validated_object_type_for_value(sharedRealm, ctx, arguments[0]);
-    auto &schema = sharedRealm->config().schema;
+    SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
+    std::string className = validated_object_type_for_value(realm, ctx, arguments[0]);
+    auto &schema = realm->config().schema;
     auto object_schema = schema->find(className);
 
     if (object_schema == schema->end()) {
@@ -390,7 +390,7 @@ void Realm<T>::create(TContext ctx, TObject this_object, size_t argc, const TVal
         update = Value::validated_to_boolean(ctx, arguments[2], "update");
     }
 
-    auto realm_object = realm::Object::create<TValue>(ctx, sharedRealm, *object_schema, object, update);
+    auto realm_object = realm::Object::create<TValue>(ctx, realm, *object_schema, object, update);
     return_value.set(RealmObject<T>::create_instance(ctx, realm_object));
 }
 
