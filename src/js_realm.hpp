@@ -295,7 +295,7 @@ void Realm<T>::constructor(ContextType ctx, ObjectType this_object, size_t argc,
                         create_object<T, RealmClass<T>>(ctx, new SharedRealm(old_realm)),
                         create_object<T, RealmClass<T>>(ctx, new SharedRealm(realm))
                     };
-                    Function<T>::call(ctx, migration_function, nullptr, 2, arguments);
+                    Function<T>::call(ctx, migration_function, 2, arguments);
                 };
             }
             
