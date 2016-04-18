@@ -459,17 +459,17 @@ void Realm<T>::write(ContextType ctx, ObjectType this_object, size_t argc, const
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
     FunctionType callback = Value::validated_to_function(ctx, arguments[0]);
 
+    realm->begin_transaction();
+
     try {
-        realm->begin_transaction();
         Function<T>::call(ctx, callback, this_object, 0, nullptr);
-        realm->commit_transaction();
     }
-    catch (std::exception &exp) {
-        if (realm->is_in_transaction()) {
-            realm->cancel_transaction();
-        }
-        throw;
+    catch (std::exception &e) {
+        realm->cancel_transaction();
+        throw e;
     }
+
+    realm->commit_transaction();
 }
 
 template<typename T>
