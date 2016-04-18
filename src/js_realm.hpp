@@ -24,7 +24,7 @@
 #include "js_class.hpp"
 #include "js_types.hpp"
 #include "js_util.hpp"
-#include "js_object.hpp"
+#include "js_realm_object.hpp"
 #include "js_list.hpp"
 #include "js_results.hpp"
 #include "js_schema.hpp"

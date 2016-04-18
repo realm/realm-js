@@ -19,7 +19,7 @@
 #pragma once
 
 #include "js_collection.hpp"
-#include "js_object.hpp"
+#include "js_realm_object.hpp"
 
 #include "results.hpp"
 #include "list.hpp"

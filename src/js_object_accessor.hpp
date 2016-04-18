@@ -19,7 +19,7 @@
 #pragma once
 
 #include "js_list.hpp"
-#include "js_object.hpp"
+#include "js_realm_object.hpp"
 #include "js_schema.hpp"
 
 namespace realm {
