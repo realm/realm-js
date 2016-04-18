@@ -95,6 +95,7 @@ build/
 .rvmrc
 
 # node.js
+/binding.gyp
 node_modules/
 npm-debug.log
 
