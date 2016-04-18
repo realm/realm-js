@@ -239,7 +239,7 @@ inline void ObjectWrap<ClassType>::construct(Nan::NAN_METHOD_ARGS_TYPE info) {
         try {
             s_class.constructor(isolate, this_object, arguments.size(), arguments.data());
         }
-        catch(std::exception &e) {
+        catch (std::exception &e) {
             Nan::ThrowError(node::Exception::value(isolate, e));
         }
     }
@@ -303,7 +303,7 @@ void wrap(Nan::NAN_METHOD_ARGS_TYPE info) {
     try {
         F(isolate, info.This(), arguments.size(), arguments.data(), return_value);
     }
-    catch(std::exception &e) {
+    catch (std::exception &e) {
         Nan::ThrowError(node::Exception::value(isolate, e));
     }
 }
@@ -315,7 +315,7 @@ void wrap(v8::Local<v8::String> property, Nan::NAN_GETTER_ARGS_TYPE info) {
     try {
         F(isolate, info.This(), return_value);
     }
-    catch(std::exception &e) {
+    catch (std::exception &e) {
         Nan::ThrowError(node::Exception::value(isolate, e));
     }
 }
@@ -326,7 +326,7 @@ void wrap(v8::Local<v8::String> property, v8::Local<v8::Value> value, Nan::NAN_S
     try {
         F(isolate, info.This(), value);
     }
-    catch(std::exception &e) {
+    catch (std::exception &e) {
         Nan::ThrowError(node::Exception::value(isolate, e));
     }
 }
@@ -342,7 +342,7 @@ void wrap(uint32_t index, Nan::NAN_INDEX_GETTER_ARGS_TYPE info) {
         // Out-of-bounds index getters should just return undefined in JS.
         return_value.set_undefined();
     }
-    catch(std::exception &e) {
+    catch (std::exception &e) {
         Nan::ThrowError(node::Exception::value(isolate, e));
     }
 }
@@ -356,7 +356,7 @@ void wrap(uint32_t index, v8::Local<v8::Value> value, Nan::NAN_INDEX_SETTER_ARGS
             info.GetReturnValue().Set(value);
         }
     }
-    catch(std::exception &e) {
+    catch (std::exception &e) {
         Nan::ThrowError(node::Exception::value(isolate, e));
     }
 }
@@ -368,7 +368,7 @@ void wrap(v8::Local<v8::String> property, Nan::NAN_PROPERTY_GETTER_ARGS_TYPE inf
     try {
         F(isolate, info.This(), property, return_value);
     }
-    catch(std::exception &e) {
+    catch (std::exception &e) {
         Nan::ThrowError(node::Exception::value(isolate, e));
     }
 }
@@ -382,7 +382,7 @@ void wrap(v8::Local<v8::String> property, v8::Local<v8::Value> value, Nan::NAN_P
             info.GetReturnValue().Set(value);
         }
     }
-    catch(std::exception &e) {
+    catch (std::exception &e) {
         Nan::ThrowError(node::Exception::value(isolate, e));
     }
 }

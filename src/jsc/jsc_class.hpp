@@ -230,7 +230,7 @@ inline JSObjectRef ObjectWrap<ClassType>::construct(JSContextRef ctx, JSObjectRe
     try {
         s_class.constructor(ctx, this_object, argc, arguments);
     }
-    catch(std::exception &e) {
+    catch (std::exception &e) {
         *exception = jsc::Exception::value(ctx, e);
     }
     return this_object;
@@ -328,11 +328,12 @@ JSValueRef wrap(JSContextRef ctx, JSObjectRef function, JSObjectRef this_object,
     jsc::ReturnValue return_value(ctx);
     try {
         F(ctx, this_object, argc, arguments, return_value);
+        return return_value;
     }
-    catch(std::exception &e) {
+    catch (std::exception &e) {
         *exception = jsc::Exception::value(ctx, e);
+        return nullptr;
     }
-    return return_value;
 }
 
 template<jsc::PropertyType::GetterType F>
@@ -340,11 +341,12 @@ JSValueRef wrap(JSContextRef ctx, JSObjectRef object, JSStringRef property, JSVa
     jsc::ReturnValue return_value(ctx);
     try {
         F(ctx, object, return_value);
+        return return_value;
     }
-    catch(std::exception &e) {
+    catch (std::exception &e) {
         *exception = jsc::Exception::value(ctx, e);
+        return nullptr;
     }
-    return return_value;
 }
 
 template<jsc::PropertyType::SetterType F>
@@ -353,10 +355,10 @@ bool wrap(JSContextRef ctx, JSObjectRef object, JSStringRef property, JSValueRef
         F(ctx, object, value);
         return true;
     }
-    catch(std::exception &e) {
+    catch (std::exception &e) {
         *exception = jsc::Exception::value(ctx, e);
+        return false;
     }
-    return false;
 }
 
 template<jsc::IndexPropertyType::GetterType F>
@@ -364,15 +366,16 @@ JSValueRef wrap(JSContextRef ctx, JSObjectRef object, uint32_t index, JSValueRef
     jsc::ReturnValue return_value(ctx);
     try {
         F(ctx, object, index, return_value);
+        return return_value;
     }
     catch (std::out_of_range &) {
         // Out-of-bounds index getters should just return undefined in JS.
         return jsc::Value::from_undefined(ctx);
     }
-    catch(std::exception &e) {
+    catch (std::exception &e) {
         *exception = jsc::Exception::value(ctx, e);
+        return nullptr;
     }
-    return return_value;
 }
 
 template<jsc::IndexPropertyType::SetterType F>
@@ -380,10 +383,10 @@ bool wrap(JSContextRef ctx, JSObjectRef object, uint32_t index, JSValueRef value
     try {
         return F(ctx, object, index, value);
     }
-    catch(std::exception &e) {
+    catch (std::exception &e) {
         *exception = jsc::Exception::value(ctx, e);
+        return false;
     }
-    return false;
 }
 
 template<jsc::StringPropertyType::GetterType F>
@@ -391,11 +394,12 @@ JSValueRef wrap(JSContextRef ctx, JSObjectRef object, JSStringRef property, JSVa
     jsc::ReturnValue return_value(ctx);
     try {
         F(ctx, object, property, return_value);
+        return return_value;
     }
-    catch(std::exception &e) {
+    catch (std::exception &e) {
         *exception = jsc::Exception::value(ctx, e);
+        return nullptr;
     }
-    return return_value;
 }
 
 template<jsc::StringPropertyType::SetterType F>
@@ -403,10 +407,10 @@ bool wrap(JSContextRef ctx, JSObjectRef object, JSStringRef property, JSValueRef
     try {
         return F(ctx, object, property, value);
     }
-    catch(std::exception &e) {
+    catch (std::exception &e) {
         *exception = jsc::Exception::value(ctx, e);
+        return false;
     }
-    return false;
 }
 
 template<jsc::StringPropertyType::EnumeratorType F>

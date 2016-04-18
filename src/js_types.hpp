@@ -176,7 +176,7 @@ struct Object {
         try { \
             return Value<T>::validated_to_##type(ctx, get_property(ctx, object, key), std::string(key).c_str()); \
         } \
-        catch(std::invalid_argument &e) { \
+        catch (std::invalid_argument &e) { \
             throw message ? std::invalid_argument(message) : e; \
         } \
     } \
@@ -184,7 +184,7 @@ struct Object {
         try { \
             return Value<T>::validated_to_##type(ctx, get_property(ctx, object, index)); \
         } \
-        catch(std::invalid_argument &e) { \
+        catch (std::invalid_argument &e) { \
             throw message ? std::invalid_argument(message) : e; \
         } \
     }
