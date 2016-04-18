@@ -29,7 +29,7 @@ namespace realm {
 namespace js {
 
 template<typename T>
-struct RealmObject {
+class RealmObject {
     using TContext = typename T::Context;
     using TFunction = typename T::Function;
     using TObject = typename T::Object;
@@ -40,11 +40,12 @@ struct RealmObject {
     using Function = Function<T>;
     using ReturnValue = ReturnValue<T>;
 
+  public:
     static TObject create_instance(TContext, realm::Object &);
 
-    static void GetProperty(TContext, TObject, const String &, ReturnValue &);
-    static bool SetProperty(TContext, TObject, const String &, TValue);
-    static std::vector<String> GetPropertyNames(TContext, TObject);
+    static void get_property(TContext, TObject, const String &, ReturnValue &);
+    static bool set_property(TContext, TObject, const String &, TValue);
+    static std::vector<String> get_property_names(TContext, TObject);
 };
 
 template<typename T>
@@ -54,15 +55,15 @@ struct RealmObjectClass : ClassDefinition<T, realm::Object> {
     const std::string name = "RealmObject";
 
     const StringPropertyType<T> string_accessor = {
-        wrap<RealmObject::GetProperty>,
-        wrap<RealmObject::SetProperty>,
-        wrap<RealmObject::GetPropertyNames>,
+        wrap<RealmObject::get_property>,
+        wrap<RealmObject::set_property>,
+        wrap<RealmObject::get_property_names>,
     };
 };
 
 template<typename T>
 typename T::Object RealmObject<T>::create_instance(TContext ctx, realm::Object &realm_object) {
-    static String s_prototype = "prototype";
+    static String prototype_string = "prototype";
 
     auto delegate = get_delegate<T>(realm_object.realm().get());
     auto name = realm_object.get_object_schema().name;
@@ -73,7 +74,7 @@ typename T::Object RealmObject<T>::create_instance(TContext ctx, realm::Object &
     }
 
     TFunction constructor = delegate->m_constructors.at(name);
-    TObject prototype = Object::validated_get_object(ctx, constructor, s_prototype);
+    TObject prototype = Object::validated_get_object(ctx, constructor, prototype_string);
     Object::set_prototype(ctx, object, prototype);
 
     TValue result = Function::call(ctx, constructor, object, 0, NULL);
@@ -85,7 +86,7 @@ typename T::Object RealmObject<T>::create_instance(TContext ctx, realm::Object &
 }
 
 template<typename T>
-void RealmObject<T>::GetProperty(TContext ctx, TObject object, const String &property, ReturnValue &return_value) {
+void RealmObject<T>::get_property(TContext ctx, TObject object, const String &property, ReturnValue &return_value) {
     try {
         auto realm_object = get_internal<T, RealmObjectClass<T>>(object);
         auto result = realm_object->template get_property_value<TValue>(ctx, property);
@@ -96,14 +97,14 @@ void RealmObject<T>::GetProperty(TContext ctx, TObject object, const String &pro
 }
 
 template<typename T>
-bool RealmObject<T>::SetProperty(TContext ctx, TObject object, const String &property, TValue value) {
+bool RealmObject<T>::set_property(TContext ctx, TObject object, const String &property, TValue value) {
     auto realm_object = get_internal<T, RealmObjectClass<T>>(object);
     realm_object->set_property_value(ctx, property, value, true);
     return true;
 }
 
 template<typename T>
-std::vector<String<T>> RealmObject<T>::GetPropertyNames(TContext ctx, TObject object) {
+std::vector<String<T>> RealmObject<T>::get_property_names(TContext ctx, TObject object) {
     auto realm_object = get_internal<T, RealmObjectClass<T>>(object);
     auto &properties = realm_object->get_object_schema().properties;
 

@@ -35,7 +35,7 @@ void set_default_path(std::string path) {
     s_default_path = path;
 }
 
-void clear_test_state() {
+void delete_all_realms() {
     realm::_impl::RealmCoordinator::clear_all_caches();
     realm::remove_realm_files_from_directory(realm::default_realm_file_directory());
 }

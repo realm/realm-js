@@ -65,26 +65,26 @@ typename T::Object Schema<T>::dict_for_property_array(TContext ctx, const Object
 }
 
 template<typename T>
-Property Schema<T>::parse_property(TContext ctx, TValue attributes, std::string propertyName, ObjectDefaults &objectDefaults) {
-    static const String defaultString = "default";
-    static const String indexedString = "indexed";
-    static const String typeString = "type";
-    static const String objectTypeString = "objectType";
-    static const String optionalString = "optional";
+Property Schema<T>::parse_property(TContext ctx, TValue attributes, std::string property_name, ObjectDefaults &object_defaults) {
+    static const String default_string = "default";
+    static const String indexed_string = "indexed";
+    static const String type_string = "type";
+    static const String object_type_string = "objectType";
+    static const String optional_string = "optional";
     
     Property prop;
-    prop.name = propertyName;
+    prop.name = property_name;
     
-    TObject propertyObject = {};
+    TObject property_object = {};
     std::string type;
     
     if (Value::is_object(ctx, attributes)) {
-        propertyObject = Value::validated_to_object(ctx, attributes);
-        type = Object::validated_get_string(ctx, propertyObject, typeString);
+        property_object = Value::validated_to_object(ctx, attributes);
+        type = Object::validated_get_string(ctx, property_object, type_string);
         
-        TValue optionalValue = Object::get_property(ctx, propertyObject, optionalString);
-        if (!Value::is_undefined(ctx, optionalValue)) {
-            prop.is_nullable = Value::validated_to_boolean(ctx, optionalValue, "optional");
+        TValue optional_value = Object::get_property(ctx, property_object, optional_string);
+        if (!Value::is_undefined(ctx, optional_value)) {
+            prop.is_nullable = Value::validated_to_boolean(ctx, optional_value, "optional");
         }
     }
     else {
@@ -113,11 +113,11 @@ Property Schema<T>::parse_property(TContext ctx, TValue attributes, std::string 
         prop.type = PropertyTypeData;
     }
     else if (type == "list") {
-        if (!Value::is_valid(propertyObject)) {
+        if (!Value::is_valid(property_object)) {
             throw std::runtime_error("List property must specify 'objectType'");
         }
         prop.type = PropertyTypeArray;
-        prop.object_type = Object::validated_get_string(ctx, propertyObject, objectTypeString);
+        prop.object_type = Object::validated_get_string(ctx, property_object, object_type_string);
     }
     else {
         prop.type = PropertyTypeObject;
@@ -125,25 +125,25 @@ Property Schema<T>::parse_property(TContext ctx, TValue attributes, std::string 
         
         // The type could either be 'object' or the name of another object type in the same schema.
         if (type == "object") {
-            if (!Value::is_valid(propertyObject)) {
+            if (!Value::is_valid(property_object)) {
                 throw std::runtime_error("Object property must specify 'objectType'");
             }
-            prop.object_type = Object::validated_get_string(ctx, propertyObject, objectTypeString);
+            prop.object_type = Object::validated_get_string(ctx, property_object, object_type_string);
         }
         else {
             prop.object_type = type;
         }
     }
     
-    if (Value::is_valid(propertyObject)) {
-        TValue defaultValue = Object::get_property(ctx, propertyObject, defaultString);
-        if (!Value::is_undefined(ctx, defaultValue)) {
-            objectDefaults.emplace(prop.name, Protected<TValue>(ctx, defaultValue));
+    if (Value::is_valid(property_object)) {
+        TValue default_value = Object::get_property(ctx, property_object, default_string);
+        if (!Value::is_undefined(ctx, default_value)) {
+            object_defaults.emplace(prop.name, Protected<TValue>(ctx, default_value));
         }
         
-        TValue indexedValue = Object::get_property(ctx, propertyObject, indexedString);
-        if (!Value::is_undefined(ctx, indexedValue)) {
-            prop.is_indexed = Value::validated_to_boolean(ctx, indexedValue);
+        TValue indexed_value = Object::get_property(ctx, property_object, indexed_string);
+        if (!Value::is_undefined(ctx, indexed_value)) {
+            prop.is_indexed = Value::validated_to_boolean(ctx, indexed_value);
         }
     }
     
@@ -151,68 +151,68 @@ Property Schema<T>::parse_property(TContext ctx, TValue attributes, std::string 
 }
 
 template<typename T>
-ObjectSchema Schema<T>::parse_object_schema(TContext ctx, TObject objectSchemaObject, ObjectDefaultsMap &defaults, ConstructorMap &constructors) {
-    static const String nameString = "name";
-    static const String primaryString = "primaryKey";
-    static const String propertiesString = "properties";
-    static const String schemaString = "schema";
+ObjectSchema Schema<T>::parse_object_schema(TContext ctx, TObject object_schema_object, ObjectDefaultsMap &defaults, ConstructorMap &constructors) {
+    static const String name_string = "name";
+    static const String primary_string = "primaryKey";
+    static const String properties_string = "properties";
+    static const String schema_string = "schema";
     
-    TFunction objectConstructor = {};
-    if (Value::is_constructor(ctx, objectSchemaObject)) {
-        objectConstructor = Value::to_constructor(ctx, objectSchemaObject);
-        objectSchemaObject = Object::validated_get_object(ctx, objectConstructor, schemaString, "Realm object constructor must have a 'schema' property.");
+    TFunction object_constructor = {};
+    if (Value::is_constructor(ctx, object_schema_object)) {
+        object_constructor = Value::to_constructor(ctx, object_schema_object);
+        object_schema_object = Object::validated_get_object(ctx, object_constructor, schema_string, "Realm object constructor must have a 'schema' property.");
     }
     
-    ObjectDefaults objectDefaults;
-    ObjectSchema objectSchema;
-    objectSchema.name = Object::validated_get_string(ctx, objectSchemaObject, nameString);
+    ObjectDefaults object_defaults;
+    ObjectSchema object_schema;
+    object_schema.name = Object::validated_get_string(ctx, object_schema_object, name_string);
     
-    TObject propertiesObject = Object::validated_get_object(ctx, objectSchemaObject, propertiesString, "ObjectSchema must have a 'properties' object.");
-    if (Value::is_array(ctx, propertiesObject)) {
-        uint32_t length = Object::validated_get_length(ctx, propertiesObject);
+    TObject properties_object = Object::validated_get_object(ctx, object_schema_object, properties_string, "ObjectSchema must have a 'properties' object.");
+    if (Value::is_array(ctx, properties_object)) {
+        uint32_t length = Object::validated_get_length(ctx, properties_object);
         for (uint32_t i = 0; i < length; i++) {
-            TObject propertyObject = Object::validated_get_object(ctx, propertiesObject, i);
-            std::string propertyName = Object::validated_get_string(ctx, propertyObject, nameString);
-            objectSchema.properties.emplace_back(parse_property(ctx, propertyObject, propertyName, objectDefaults));
+            TObject property_object = Object::validated_get_object(ctx, properties_object, i);
+            std::string property_name = Object::validated_get_string(ctx, property_object, name_string);
+            object_schema.properties.emplace_back(parse_property(ctx, property_object, property_name, object_defaults));
         }
     }
     else {
-        auto propertyNames = Object::get_property_names(ctx, propertiesObject);
-        for (auto &propertyName : propertyNames) {
-            TValue propertyValue = Object::get_property(ctx, propertiesObject, propertyName);
-            objectSchema.properties.emplace_back(parse_property(ctx, propertyValue, propertyName, objectDefaults));
+        auto property_names = Object::get_property_names(ctx, properties_object);
+        for (auto &property_name : property_names) {
+            TValue property_value = Object::get_property(ctx, properties_object, property_name);
+            object_schema.properties.emplace_back(parse_property(ctx, property_value, property_name, object_defaults));
         }
     }
 
-    TValue primaryValue = Object::get_property(ctx, objectSchemaObject, primaryString);
-    if (!Value::is_undefined(ctx, primaryValue)) {
-        objectSchema.primary_key = Value::validated_to_string(ctx, primaryValue);
-        Property *property = objectSchema.primary_key_property();
+    TValue primary_value = Object::get_property(ctx, object_schema_object, primary_string);
+    if (!Value::is_undefined(ctx, primary_value)) {
+        object_schema.primary_key = Value::validated_to_string(ctx, primary_value);
+        Property *property = object_schema.primary_key_property();
         if (!property) {
-            throw std::runtime_error("Missing primary key property '" + objectSchema.primary_key + "'");
+            throw std::runtime_error("Missing primary key property '" + object_schema.primary_key + "'");
         }
         property->is_primary = true;
     }
     
     // Store prototype so that objects of this type will have their prototype set to this prototype object.
-    if (Value::is_valid(objectConstructor)) {
-        constructors.emplace(objectSchema.name, Protected<TFunction>(ctx, objectConstructor));
+    if (Value::is_valid(object_constructor)) {
+        constructors.emplace(object_schema.name, Protected<TFunction>(ctx, object_constructor));
     }
     
-    defaults.emplace(objectSchema.name, std::move(objectDefaults));
+    defaults.emplace(object_schema.name, std::move(object_defaults));
     
-    return objectSchema;
+    return object_schema;
 }
     
 template<typename T>
-realm::Schema Schema<T>::parse_schema(TContext ctx, TObject jsonObject, ObjectDefaultsMap &defaults, ConstructorMap &constructors) {
+realm::Schema Schema<T>::parse_schema(TContext ctx, TObject schema_object, ObjectDefaultsMap &defaults, ConstructorMap &constructors) {
     std::vector<ObjectSchema> schema;
-    uint32_t length = Object::validated_get_length(ctx, jsonObject);
+    uint32_t length = Object::validated_get_length(ctx, schema_object);
 
     for (uint32_t i = 0; i < length; i++) {
-        TObject jsonObjectSchema = Object::validated_get_object(ctx, jsonObject, i);
-        ObjectSchema objectSchema = parse_object_schema(ctx, jsonObjectSchema, defaults, constructors);
-        schema.emplace_back(std::move(objectSchema));
+        TObject object_schema_object = Object::validated_get_object(ctx, schema_object, i);
+        ObjectSchema object_schema = parse_object_schema(ctx, object_schema_object, defaults, constructors);
+        schema.emplace_back(std::move(object_schema));
     }
 
     return realm::Schema(schema);

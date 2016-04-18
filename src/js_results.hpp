@@ -30,7 +30,7 @@ namespace realm {
 namespace js {
 
 template<typename T>
-struct Results {
+class Results {
     using TContext = typename T::Context;
     using TObject = typename T::Object;
     using TValue = typename T::Value;
@@ -38,6 +38,7 @@ struct Results {
     using Value = Value<T>;
     using ReturnValue = ReturnValue<T>;
 
+  public:
     static TObject create_instance(TContext, const realm::Results &, bool live = true);
     static TObject create_instance(TContext, const realm::List &, bool live = true);
     static TObject create_instance(TContext, SharedRealm, const std::string &type, bool live = true);
@@ -49,12 +50,12 @@ struct Results {
     template<typename U>
     static TObject create_sorted(TContext, const U &, size_t, const TValue[]);
 
-    static void GetLength(TContext, TObject, ReturnValue &);
-    static void GetIndex(TContext, TObject, uint32_t, ReturnValue &);
+    static void get_length(TContext, TObject, ReturnValue &);
+    static void get_index(TContext, TObject, uint32_t, ReturnValue &);
 
-    static void StaticResults(TContext, TObject, size_t, const TValue[], ReturnValue &);
-    static void Filtered(TContext, TObject, size_t, const TValue[], ReturnValue &);
-    static void Sorted(TContext, TObject, size_t, const TValue[], ReturnValue &);
+    static void snapshot(TContext, TObject, size_t, const TValue[], ReturnValue &);
+    static void filtered(TContext, TObject, size_t, const TValue[], ReturnValue &);
+    static void sorted(TContext, TObject, size_t, const TValue[], ReturnValue &);
 };
 
 template<typename T>
@@ -64,16 +65,16 @@ struct ResultsClass : ClassDefinition<T, realm::Results, CollectionClass<T>> {
     std::string const name = "Results";
 
     MethodMap<T> const methods = {
-        {"snapshot", wrap<Results::StaticResults>},
-        {"filtered", wrap<Results::Filtered>},
-        {"sorted", wrap<Results::Sorted>},
+        {"snapshot", wrap<Results::snapshot>},
+        {"filtered", wrap<Results::filtered>},
+        {"sorted", wrap<Results::sorted>},
     };
     
     PropertyMap<T> const properties = {
-        {"length", {wrap<Results::GetLength>}},
+        {"length", {wrap<Results::get_length>, nullptr}},
     };
     
-    IndexPropertyType<T> const index_accessor = {wrap<Results::GetIndex>};
+    IndexPropertyType<T> const index_accessor = {wrap<Results::get_index>, nullptr};
 };
 
 template<typename T>
@@ -194,13 +195,13 @@ typename T::Object Results<T>::create_sorted(TContext ctx, const U &collection, 
 }
 
 template<typename T>
-void Results<T>::GetLength(TContext ctx, TObject object, ReturnValue &return_value) {
+void Results<T>::get_length(TContext ctx, TObject object, ReturnValue &return_value) {
     auto results = get_internal<T, ResultsClass<T>>(object);
     return_value.set((uint32_t)results->size());
 }
 
 template<typename T>
-void Results<T>::GetIndex(TContext ctx, TObject object, uint32_t index, ReturnValue &return_value) {
+void Results<T>::get_index(TContext ctx, TObject object, uint32_t index, ReturnValue &return_value) {
     auto results = get_internal<T, ResultsClass<T>>(object);
     auto row = results->get(index);
 
@@ -215,7 +216,7 @@ void Results<T>::GetIndex(TContext ctx, TObject object, uint32_t index, ReturnVa
 }
 
 template<typename T>
-void Results<T>::StaticResults(TContext ctx, TObject this_object, size_t argc, const TValue arguments[], ReturnValue &return_value) {
+void Results<T>::snapshot(TContext ctx, TObject this_object, size_t argc, const TValue arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 0);
 
     auto results = get_internal<T, ResultsClass<T>>(this_object);
@@ -223,7 +224,7 @@ void Results<T>::StaticResults(TContext ctx, TObject this_object, size_t argc, c
 }
 
 template<typename T>
-void Results<T>::Filtered(TContext ctx, TObject this_object, size_t argc, const TValue arguments[], ReturnValue &return_value) {
+void Results<T>::filtered(TContext ctx, TObject this_object, size_t argc, const TValue arguments[], ReturnValue &return_value) {
     validate_argument_count_at_least(argc, 1);
 
     auto results = get_internal<T, ResultsClass<T>>(this_object);
@@ -231,7 +232,7 @@ void Results<T>::Filtered(TContext ctx, TObject this_object, size_t argc, const 
 }
 
 template<typename T>
-void Results<T>::Sorted(TContext ctx, TObject this_object, size_t argc, const TValue arguments[], ReturnValue &return_value) {
+void Results<T>::sorted(TContext ctx, TObject this_object, size_t argc, const TValue arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 1, 2);
 
     auto results = get_internal<T, ResultsClass<T>>(this_object);

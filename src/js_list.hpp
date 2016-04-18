@@ -33,7 +33,7 @@ namespace realm {
 namespace js {
 
 template<typename T>
-struct List {
+class List {
     using TContext = typename T::Context;
     using TObject = typename T::Object;
     using TValue = typename T::Value;
@@ -41,20 +41,23 @@ struct List {
     using Value = Value<T>;
     using ReturnValue = ReturnValue<T>;
 
+  public:
     static TObject create_instance(TContext, realm::List &);
 
-    static void GetLength(TContext, TObject, ReturnValue &);
-    static void GetIndex(TContext, TObject, uint32_t, ReturnValue &);
-    static bool SetIndex(TContext, TObject, uint32_t, TValue);
+    // properties
+    static void get_length(TContext, TObject, ReturnValue &);
+    static void get_index(TContext, TObject, uint32_t, ReturnValue &);
+    static bool set_index(TContext, TObject, uint32_t, TValue);
 
-    static void Push(TContext, TObject, size_t, const TValue[], ReturnValue &);
-    static void Pop(TContext, TObject, size_t, const TValue[], ReturnValue &);
-    static void Unshift(TContext, TObject, size_t, const TValue[], ReturnValue &);
-    static void Shift(TContext, TObject, size_t, const TValue[], ReturnValue &);
-    static void Splice(TContext, TObject, size_t, const TValue[], ReturnValue &);
-    static void StaticResults(TContext, TObject, size_t, const TValue[], ReturnValue &);
-    static void Filtered(TContext, TObject, size_t, const TValue[], ReturnValue &);
-    static void Sorted(TContext, TObject, size_t, const TValue[], ReturnValue &);
+    // methods
+    static void push(TContext, TObject, size_t, const TValue[], ReturnValue &);
+    static void pop(TContext, TObject, size_t, const TValue[], ReturnValue &);
+    static void unshift(TContext, TObject, size_t, const TValue[], ReturnValue &);
+    static void shift(TContext, TObject, size_t, const TValue[], ReturnValue &);
+    static void splice(TContext, TObject, size_t, const TValue[], ReturnValue &);
+    static void snapshot(TContext, TObject, size_t, const TValue[], ReturnValue &);
+    static void filtered(TContext, TObject, size_t, const TValue[], ReturnValue &);
+    static void sorted(TContext, TObject, size_t, const TValue[], ReturnValue &);
 };
 
 template<typename T>
@@ -64,21 +67,21 @@ struct ListClass : ClassDefinition<T, realm::List, CollectionClass<T>> {
     std::string const name = "List";
 
     MethodMap<T> const methods = {
-        {"push", wrap<List::Push>},
-        {"pop", wrap<List::Pop>},
-        {"unshift", wrap<List::Unshift>},
-        {"shift", wrap<List::Shift>},
-        {"splice", wrap<List::Splice>},
-        {"snapshot", wrap<List::StaticResults>},
-        {"filtered", wrap<List::Filtered>},
-        {"sorted", wrap<List::Sorted>},
+        {"push", wrap<List::push>},
+        {"pop", wrap<List::pop>},
+        {"unshift", wrap<List::unshift>},
+        {"shift", wrap<List::shift>},
+        {"splice", wrap<List::splice>},
+        {"snapshot", wrap<List::snapshot>},
+        {"filtered", wrap<List::filtered>},
+        {"sorted", wrap<List::sorted>},
     };
 
     PropertyMap<T> const properties = {
-        {"length", {wrap<List::GetLength>}},
+        {"length", {wrap<List::get_length>, nullptr}},
     };
 
-    IndexPropertyType<T> const index_accessor = {wrap<List::GetIndex>, wrap<List::SetIndex>};
+    IndexPropertyType<T> const index_accessor = {wrap<List::get_index>, wrap<List::set_index>};
 };
 
 template<typename T>
@@ -87,13 +90,13 @@ typename T::Object List<T>::create_instance(TContext ctx, realm::List &list) {
 }
 
 template<typename T>
-void List<T>::GetLength(TContext ctx, TObject object, ReturnValue &return_value) {
+void List<T>::get_length(TContext ctx, TObject object, ReturnValue &return_value) {
     auto list = get_internal<T, ListClass<T>>(object);
     return_value.set((uint32_t)list->size());
 }
 
 template<typename T>
-void List<T>::GetIndex(TContext ctx, TObject object, uint32_t index, ReturnValue &return_value) {
+void List<T>::get_index(TContext ctx, TObject object, uint32_t index, ReturnValue &return_value) {
     auto list = get_internal<T, ListClass<T>>(object);
     auto realm_object = realm::Object(list->get_realm(), list->get_object_schema(), list->get(index));
 
@@ -101,14 +104,14 @@ void List<T>::GetIndex(TContext ctx, TObject object, uint32_t index, ReturnValue
 }
 
 template<typename T>
-bool List<T>::SetIndex(TContext ctx, TObject object, uint32_t index, TValue value) {
+bool List<T>::set_index(TContext ctx, TObject object, uint32_t index, TValue value) {
     auto list = get_internal<T, ListClass<T>>(object);
     list->set(ctx, value, index);
     return true;
 }
 
 template<typename T>
-void List<T>::Push(TContext ctx, TObject this_object, size_t argc, const TValue arguments[], ReturnValue &return_value) {
+void List<T>::push(TContext ctx, TObject this_object, size_t argc, const TValue arguments[], ReturnValue &return_value) {
     validate_argument_count_at_least(argc, 1);
 
     auto list = get_internal<T, ListClass<T>>(this_object);
@@ -120,7 +123,7 @@ void List<T>::Push(TContext ctx, TObject this_object, size_t argc, const TValue 
 }
 
 template<typename T>
-void List<T>::Pop(TContext ctx, TObject this_object, size_t argc, const TValue arguments[], ReturnValue &return_value) {
+void List<T>::pop(TContext ctx, TObject this_object, size_t argc, const TValue arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 0);
 
     auto list = get_internal<T, ListClass<T>>(this_object);
@@ -139,7 +142,7 @@ void List<T>::Pop(TContext ctx, TObject this_object, size_t argc, const TValue a
 }
 
 template<typename T>
-void List<T>::Unshift(TContext ctx, TObject this_object, size_t argc, const TValue arguments[], ReturnValue &return_value) {
+void List<T>::unshift(TContext ctx, TObject this_object, size_t argc, const TValue arguments[], ReturnValue &return_value) {
     validate_argument_count_at_least(argc, 1);
 
     auto list = get_internal<T, ListClass<T>>(this_object);
@@ -151,7 +154,7 @@ void List<T>::Unshift(TContext ctx, TObject this_object, size_t argc, const TVal
 }
 
 template<typename T>
-void List<T>::Shift(TContext ctx, TObject this_object, size_t argc, const TValue arguments[], ReturnValue &return_value) {
+void List<T>::shift(TContext ctx, TObject this_object, size_t argc, const TValue arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 0);
 
     auto list = get_internal<T, ListClass<T>>(this_object);
@@ -168,7 +171,7 @@ void List<T>::Shift(TContext ctx, TObject this_object, size_t argc, const TValue
 }
 
 template<typename T>
-void List<T>::Splice(TContext ctx, TObject this_object, size_t argc, const TValue arguments[], ReturnValue &return_value) {
+void List<T>::splice(TContext ctx, TObject this_object, size_t argc, const TValue arguments[], ReturnValue &return_value) {
     validate_argument_count_at_least(argc, 1);
 
     auto list = get_internal<T, ListClass<T>>(this_object);
@@ -177,8 +180,8 @@ void List<T>::Splice(TContext ctx, TObject this_object, size_t argc, const TValu
     if (index < 0) {
         index = std::max<long>(size + index, 0);
     }
-    
-    long remove;
+
+    size_t remove;
     if (argc < 2) {
         remove = size - index;
     }
@@ -204,7 +207,7 @@ void List<T>::Splice(TContext ctx, TObject this_object, size_t argc, const TValu
 }
 
 template<typename T>
-void List<T>::StaticResults(TContext ctx, TObject this_object, size_t argc, const TValue arguments[], ReturnValue &return_value) {
+void List<T>::snapshot(TContext ctx, TObject this_object, size_t argc, const TValue arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 0);
 
     auto list = get_internal<T, ListClass<T>>(this_object);
@@ -212,7 +215,7 @@ void List<T>::StaticResults(TContext ctx, TObject this_object, size_t argc, cons
 }
 
 template<typename T>
-void List<T>::Filtered(TContext ctx, TObject this_object, size_t argc, const TValue arguments[], ReturnValue &return_value) {
+void List<T>::filtered(TContext ctx, TObject this_object, size_t argc, const TValue arguments[], ReturnValue &return_value) {
     validate_argument_count_at_least(argc, 1);
 
     auto list = get_internal<T, ListClass<T>>(this_object);
@@ -220,7 +223,7 @@ void List<T>::Filtered(TContext ctx, TObject this_object, size_t argc, const TVa
 }
 
 template<typename T>
-void List<T>::Sorted(TContext ctx, TObject this_object, size_t argc, const TValue arguments[], ReturnValue &return_value) {
+void List<T>::sorted(TContext ctx, TObject this_object, size_t argc, const TValue arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 1, 2);
 
     auto list = get_internal<T, ListClass<T>>(this_object);

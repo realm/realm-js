@@ -25,9 +25,6 @@
 
 #include "jsc_init.hpp"
 #include "jsc_types.hpp"
-#include "js_object.hpp"
-#include "js_results.hpp"
-#include "js_realm.hpp"
 
 #include "base64.hpp"
 #include "object_accessor.hpp"
@@ -166,7 +163,7 @@ RPCServer::RPCServer() {
             m_objects.erase(object.first);
         }
         JSGarbageCollect(m_context);
-        js::clear_test_state();
+        js::delete_all_realms();
         return json::object();
     };
 }
