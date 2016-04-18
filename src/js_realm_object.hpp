@@ -30,10 +30,10 @@ namespace js {
 
 template<typename T>
 class RealmObject {
-    using TContext = typename T::Context;
-    using TFunction = typename T::Function;
-    using TObject = typename T::Object;
-    using TValue = typename T::Value;
+    using ContextType = typename T::Context;
+    using FunctionType = typename T::Function;
+    using ObjectType = typename T::Object;
+    using ValueType = typename T::Value;
     using String = String<T>;
     using Value = Value<T>;
     using Object = Object<T>;
@@ -41,11 +41,11 @@ class RealmObject {
     using ReturnValue = ReturnValue<T>;
 
   public:
-    static TObject create_instance(TContext, realm::Object &);
+    static ObjectType create_instance(ContextType, realm::Object &);
 
-    static void get_property(TContext, TObject, const String &, ReturnValue &);
-    static bool set_property(TContext, TObject, const String &, TValue);
-    static std::vector<String> get_property_names(TContext, TObject);
+    static void get_property(ContextType, ObjectType, const String &, ReturnValue &);
+    static bool set_property(ContextType, ObjectType, const String &, ValueType);
+    static std::vector<String> get_property_names(ContextType, ObjectType);
 };
 
 template<typename T>
@@ -62,7 +62,7 @@ struct RealmObjectClass : ClassDefinition<T, realm::Object> {
 };
 
 template<typename T>
-typename T::Object RealmObject<T>::create_instance(TContext ctx, realm::Object &realm_object) {
+typename T::Object RealmObject<T>::create_instance(ContextType ctx, realm::Object &realm_object) {
     static String prototype_string = "prototype";
 
     auto delegate = get_delegate<T>(realm_object.realm().get());
@@ -73,11 +73,11 @@ typename T::Object RealmObject<T>::create_instance(TContext ctx, realm::Object &
         return object;
     }
 
-    TFunction constructor = delegate->m_constructors.at(name);
-    TObject prototype = Object::validated_get_object(ctx, constructor, prototype_string);
+    FunctionType constructor = delegate->m_constructors.at(name);
+    ObjectType prototype = Object::validated_get_object(ctx, constructor, prototype_string);
     Object::set_prototype(ctx, object, prototype);
 
-    TValue result = Function::call(ctx, constructor, object, 0, NULL);
+    ValueType result = Function::call(ctx, constructor, object, 0, NULL);
     if (result != object && !Value::is_null(ctx, result) && !Value::is_undefined(ctx, result)) {
         throw std::runtime_error("Realm object constructor must not return another value");
     }
@@ -86,10 +86,10 @@ typename T::Object RealmObject<T>::create_instance(TContext ctx, realm::Object &
 }
 
 template<typename T>
-void RealmObject<T>::get_property(TContext ctx, TObject object, const String &property, ReturnValue &return_value) {
+void RealmObject<T>::get_property(ContextType ctx, ObjectType object, const String &property, ReturnValue &return_value) {
     try {
         auto realm_object = get_internal<T, RealmObjectClass<T>>(object);
-        auto result = realm_object->template get_property_value<TValue>(ctx, property);
+        auto result = realm_object->template get_property_value<ValueType>(ctx, property);
         return_value.set(result);
     } catch (InvalidPropertyException &ex) {
         // getters for nonexistent properties in JS should always return undefined
@@ -97,14 +97,14 @@ void RealmObject<T>::get_property(TContext ctx, TObject object, const String &pr
 }
 
 template<typename T>
-bool RealmObject<T>::set_property(TContext ctx, TObject object, const String &property, TValue value) {
+bool RealmObject<T>::set_property(ContextType ctx, ObjectType object, const String &property, ValueType value) {
     auto realm_object = get_internal<T, RealmObjectClass<T>>(object);
     realm_object->set_property_value(ctx, property, value, true);
     return true;
 }
 
 template<typename T>
-std::vector<String<T>> RealmObject<T>::get_property_names(TContext ctx, TObject object) {
+std::vector<String<T>> RealmObject<T>::get_property_names(ContextType ctx, ObjectType object) {
     auto realm_object = get_internal<T, RealmObjectClass<T>>(object);
     auto &properties = realm_object->get_object_schema().properties;
 

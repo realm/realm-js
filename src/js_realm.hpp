@@ -43,10 +43,10 @@ struct RealmClass;
 template<typename T>
 class RealmDelegate : public BindingContext {
   public:
-    using TGlobalContext = typename T::GlobalContext;
-    using TFunction = typename T::Function;
-    using TObject = typename T::Object;
-    using TValue = typename T::Value;
+    using GlobalContextType = typename T::GlobalContext;
+    using FunctionType = typename T::Function;
+    using ObjectType = typename T::Object;
+    using ValueType = typename T::Value;
     using Value = Value<T>;
 
     using ObjectDefaultsMap = typename Schema<T>::ObjectDefaultsMap;
@@ -60,13 +60,13 @@ class RealmDelegate : public BindingContext {
     }
     virtual void will_change(std::vector<ObserverState> const& observers, std::vector<void*> const& invalidated) {}
 
-    RealmDelegate(std::weak_ptr<Realm> realm, TGlobalContext ctx) : m_context(ctx), m_realm(realm) {}
+    RealmDelegate(std::weak_ptr<Realm> realm, GlobalContextType ctx) : m_context(ctx), m_realm(realm) {}
 
     ~RealmDelegate() {
         remove_all_notifications();
     }
 
-    void add_notification(TFunction notification) {
+    void add_notification(FunctionType notification) {
         for (auto &handler : m_notifications) {
             if (handler == notification) {
                 return;
@@ -74,7 +74,7 @@ class RealmDelegate : public BindingContext {
         }
         m_notifications.emplace_back(m_context, notification);
     }
-    void remove_notification(TFunction notification) {
+    void remove_notification(FunctionType notification) {
         for (auto iter = m_notifications.begin(); iter != m_notifications.end(); ++iter) {
             if (*iter == notification) {
                 m_notifications.erase(iter);
@@ -90,8 +90,8 @@ class RealmDelegate : public BindingContext {
     ConstructorMap m_constructors;
 
   private:
-    Protected<TGlobalContext> m_context;
-    std::list<Protected<TFunction>> m_notifications;
+    Protected<GlobalContextType> m_context;
+    std::list<Protected<FunctionType>> m_notifications;
     std::weak_ptr<Realm> m_realm;
     
     void notify(const char *notification_name) {
@@ -100,8 +100,8 @@ class RealmDelegate : public BindingContext {
             throw std::runtime_error("Realm no longer exists");
         }
 
-        TObject realm_object = create_object<T, RealmClass<T>>(m_context, new SharedRealm(realm));
-        TValue arguments[2];
+        ObjectType realm_object = create_object<T, RealmClass<T>>(m_context, new SharedRealm(realm));
+        ValueType arguments[2];
         arguments[0] = realm_object;
         arguments[1] = Value::from_string(m_context, notification_name);
 
@@ -117,45 +117,45 @@ void delete_all_realms();
 
 template<typename T>
 class Realm {
-    using TContext = typename T::Context;
-    using TFunction = typename T::Function;
-    using TObject = typename T::Object;
-    using TValue = typename T::Value;
+    using ContextType = typename T::Context;
+    using FunctionType = typename T::Function;
+    using ObjectType = typename T::Object;
+    using ValueType = typename T::Value;
     using String = String<T>;
     using Object = Object<T>;
     using Value = Value<T>;
     using ReturnValue = ReturnValue<T>;
-    using NativeAccessor = realm::NativeAccessor<TValue, TContext>;
+    using NativeAccessor = realm::NativeAccessor<ValueType, ContextType>;
 
   public:
-    static TFunction create_constructor(TContext);
+    static FunctionType create_constructor(ContextType);
 
     // methods
-    static void objects(TContext, TObject, size_t, const TValue[], ReturnValue &);
-    static void create(TContext, TObject, size_t, const TValue[], ReturnValue &);
-    static void delete_one(TContext, TObject, size_t, const TValue[], ReturnValue &);
-    static void delete_all(TContext, TObject, size_t, const TValue[], ReturnValue &);
-    static void write(TContext, TObject, size_t, const TValue[], ReturnValue &);
-    static void add_listener(TContext, TObject, size_t, const TValue[], ReturnValue &);
-    static void remove_listener(TContext, TObject, size_t, const TValue[], ReturnValue &);
-    static void remove_all_listeners(TContext, TObject, size_t, const TValue[], ReturnValue &);
-    static void close(TContext, TObject, size_t, const TValue[], ReturnValue &);
+    static void objects(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void create(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void delete_one(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void delete_all(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void write(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void add_listener(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void remove_listener(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void remove_all_listeners(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void close(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
 
     // properties
-    static void get_path(TContext, TObject, ReturnValue &);
-    static void get_schema_version(TContext, TObject, ReturnValue &);
+    static void get_path(ContextType, ObjectType, ReturnValue &);
+    static void get_schema_version(ContextType, ObjectType, ReturnValue &);
 
     // static methods
-    static void constructor(TContext, TObject, size_t, const TValue[]);
-    static void schema_version(TContext, TObject, size_t, const TValue[], ReturnValue &);
-    static void clear_test_state(TContext, TObject, size_t, const TValue[], ReturnValue &);
+    static void constructor(ContextType, ObjectType, size_t, const ValueType[]);
+    static void schema_version(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void clear_test_state(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
 
     // static properties
-    static void get_default_path(TContext, TObject, ReturnValue &);
-    static void set_default_path(TContext, TObject, TValue value);
+    static void get_default_path(ContextType, ObjectType, ReturnValue &);
+    static void set_default_path(ContextType, ObjectType, ValueType value);
 
   private:
-    static std::string validated_notification_name(TContext ctx, const TValue &value) {
+    static std::string validated_notification_name(ContextType ctx, const ValueType &value) {
         std::string name = Value::validated_to_string(ctx, value, "notification name");
         if (name != "change") {
             throw std::runtime_error("Only the 'change' notification name is supported.");
@@ -164,13 +164,13 @@ class Realm {
     }
     
     // converts constructor object or type name to type name
-    static std::string validated_object_type_for_value(SharedRealm &realm, TContext ctx, const TValue &value) {
+    static std::string validated_object_type_for_value(SharedRealm &realm, ContextType ctx, const ValueType &value) {
         if (Value::is_constructor(ctx, value)) {
-            TFunction constructor = Value::to_constructor(ctx, value);
+            FunctionType constructor = Value::to_constructor(ctx, value);
             
             auto delegate = get_delegate<T>(realm.get());
             for (auto &pair : delegate->m_constructors) {
-                if (TFunction(pair.second) == constructor) {
+                if (FunctionType(pair.second) == constructor) {
                     return pair.first;
                 }
             }
@@ -223,11 +223,11 @@ struct RealmClass : ClassDefinition<T, SharedRealm> {
 };
 
 template<typename T>
-inline typename T::Function Realm<T>::create_constructor(TContext ctx) {
-    TFunction realm_constructor = ObjectWrap<T, RealmClass<T>>::create_constructor(ctx);
-    TFunction collection_constructor = ObjectWrap<T, CollectionClass<T>>::create_constructor(ctx);
-    TFunction list_constructor = ObjectWrap<T, ListClass<T>>::create_constructor(ctx);
-    TFunction results_constructor = ObjectWrap<T, ResultsClass<T>>::create_constructor(ctx);
+inline typename T::Function Realm<T>::create_constructor(ContextType ctx) {
+    FunctionType realm_constructor = ObjectWrap<T, RealmClass<T>>::create_constructor(ctx);
+    FunctionType collection_constructor = ObjectWrap<T, CollectionClass<T>>::create_constructor(ctx);
+    FunctionType list_constructor = ObjectWrap<T, ListClass<T>>::create_constructor(ctx);
+    FunctionType results_constructor = ObjectWrap<T, ResultsClass<T>>::create_constructor(ctx);
 
     PropertyAttributes attributes = PropertyAttributes(ReadOnly | DontEnum | DontDelete);
     Object::set_property(ctx, realm_constructor, "Collection", collection_constructor, attributes);
@@ -238,7 +238,7 @@ inline typename T::Function Realm<T>::create_constructor(TContext ctx) {
 }
 
 template<typename T>
-void Realm<T>::constructor(TContext ctx, TObject this_object, size_t argc, const TValue arguments[]) {
+void Realm<T>::constructor(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[]) {
     static const String path_string = "path";
     static const String schema_string = "schema";
     static const String schema_version_string = "schemaVersion";
@@ -252,14 +252,14 @@ void Realm<T>::constructor(TContext ctx, TObject this_object, size_t argc, const
         config.path = default_path();
     }
     else if (argc == 1) {
-        TValue value = arguments[0];
+        ValueType value = arguments[0];
         if (Value::is_string(ctx, value)) {
             config.path = Value::validated_to_string(ctx, value, "path");
         }
         else if (Value::is_object(ctx, value)) {
-            TObject object = Value::validated_to_object(ctx, value);
+            ObjectType object = Value::validated_to_object(ctx, value);
 
-            TValue path_value = Object::get_property(ctx, object, path_string);
+            ValueType path_value = Object::get_property(ctx, object, path_string);
             if (!Value::is_undefined(ctx, path_value)) {
                 config.path = Value::validated_to_string(ctx, path_value, "path");
             }
@@ -267,13 +267,13 @@ void Realm<T>::constructor(TContext ctx, TObject this_object, size_t argc, const
                 config.path = js::default_path();
             }
 
-            TValue schema_value = Object::get_property(ctx, object, schema_string);
+            ValueType schema_value = Object::get_property(ctx, object, schema_string);
             if (!Value::is_undefined(ctx, schema_value)) {
-                TObject schema_object = Value::validated_to_object(ctx, schema_value, "schema");
+                ObjectType schema_object = Value::validated_to_object(ctx, schema_value, "schema");
                 config.schema.reset(new realm::Schema(Schema<T>::parse_schema(ctx, schema_object, defaults, constructors)));
             }
 
-            TValue version_value = Object::get_property(ctx, object, schema_version_string);
+            ValueType version_value = Object::get_property(ctx, object, schema_version_string);
             if (!Value::is_undefined(ctx, version_value)) {
                 config.schema_version = Value::validated_to_number(ctx, version_value, "schemaVersion");
             }
@@ -281,7 +281,7 @@ void Realm<T>::constructor(TContext ctx, TObject this_object, size_t argc, const
                 config.schema_version = 0;
             }
             
-            TValue encryption_key_value = Object::get_property(ctx, object, encryption_key_string);
+            ValueType encryption_key_value = Object::get_property(ctx, object, encryption_key_string);
             if (!Value::is_undefined(ctx, encryption_key_value)) {
                 std::string encryption_key = NativeAccessor::to_binary(ctx, encryption_key_value);
                 config.encryption_key = std::vector<char>(encryption_key.begin(), encryption_key.end());
@@ -309,7 +309,7 @@ void Realm<T>::constructor(TContext ctx, TObject this_object, size_t argc, const
 }
 
 template<typename T>
-void Realm<T>::schema_version(TContext ctx, TObject this_object, size_t argc, const TValue arguments[], ReturnValue &return_value) {
+void Realm<T>::schema_version(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 1, 2);
     
     realm::Realm::Config config;
@@ -330,35 +330,35 @@ void Realm<T>::schema_version(TContext ctx, TObject this_object, size_t argc, co
 }
 
 template<typename T>
-void Realm<T>::clear_test_state(TContext ctx, TObject this_object, size_t argc, const TValue arguments[], ReturnValue &return_value) {
+void Realm<T>::clear_test_state(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 0);
     delete_all_realms();
 }
 
 template<typename T>
-void Realm<T>::get_default_path(TContext ctx, TObject object, ReturnValue &return_value) {
+void Realm<T>::get_default_path(ContextType ctx, ObjectType object, ReturnValue &return_value) {
     return_value.set(realm::js::default_path());
 }
 
 template<typename T>
-void Realm<T>::set_default_path(TContext ctx, TObject object, TValue value) {
+void Realm<T>::set_default_path(ContextType ctx, ObjectType object, ValueType value) {
     js::set_default_path(Value::validated_to_string(ctx, value, "defaultPath"));
 }
 
 template<typename T>
-void Realm<T>::get_path(TContext ctx, TObject object, ReturnValue &return_value) {
+void Realm<T>::get_path(ContextType ctx, ObjectType object, ReturnValue &return_value) {
     std::string path = get_internal<T, RealmClass<T>>(object)->get()->config().path;
     return_value.set(path);
 }
 
 template<typename T>
-void Realm<T>::get_schema_version(TContext ctx, TObject object, ReturnValue &return_value) {
+void Realm<T>::get_schema_version(ContextType ctx, ObjectType object, ReturnValue &return_value) {
     double version = get_internal<T, RealmClass<T>>(object)->get()->config().schema_version;
     return_value.set(version);
 }
 
 template<typename T>
-void Realm<T>::objects(TContext ctx, TObject this_object, size_t argc, const TValue arguments[], ReturnValue &return_value) {
+void Realm<T>::objects(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 1);
 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
@@ -368,7 +368,7 @@ void Realm<T>::objects(TContext ctx, TObject this_object, size_t argc, const TVa
 }
 
 template<typename T>
-void Realm<T>::create(TContext ctx, TObject this_object, size_t argc, const TValue arguments[], ReturnValue &return_value) {
+void Realm<T>::create(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 2, 3);
 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
@@ -380,7 +380,7 @@ void Realm<T>::create(TContext ctx, TObject this_object, size_t argc, const TVal
         throw std::runtime_error("Object type '" + className + "' not found in schema.");
     }
 
-    TObject object = Value::validated_to_object(ctx, arguments[1], "properties");
+    ObjectType object = Value::validated_to_object(ctx, arguments[1], "properties");
     if (Value::is_array(ctx, arguments[1])) {
         object = Schema<T>::dict_for_property_array(ctx, *object_schema, object);
     }
@@ -390,12 +390,12 @@ void Realm<T>::create(TContext ctx, TObject this_object, size_t argc, const TVal
         update = Value::validated_to_boolean(ctx, arguments[2], "update");
     }
 
-    auto realm_object = realm::Object::create<TValue>(ctx, realm, *object_schema, object, update);
+    auto realm_object = realm::Object::create<ValueType>(ctx, realm, *object_schema, object, update);
     return_value.set(RealmObject<T>::create_instance(ctx, realm_object));
 }
 
 template<typename T>
-void Realm<T>::delete_one(TContext ctx, TObject this_object, size_t argc, const TValue arguments[], ReturnValue &return_value) {
+void Realm<T>::delete_one(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 1);
 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
@@ -403,7 +403,7 @@ void Realm<T>::delete_one(TContext ctx, TObject this_object, size_t argc, const 
         throw std::runtime_error("Can only delete objects within a transaction.");
     }
 
-    TObject arg = Value::validated_to_object(ctx, arguments[0]);
+    ObjectType arg = Value::validated_to_object(ctx, arguments[0]);
 
     if (Object::template is_instance<RealmObjectClass<T>>(ctx, arg)) {
         auto object = get_internal<T, RealmObjectClass<T>>(arg);
@@ -413,7 +413,7 @@ void Realm<T>::delete_one(TContext ctx, TObject this_object, size_t argc, const 
     else if (Value::is_array(ctx, arg)) {
         uint32_t length = Object::validated_get_length(ctx, arg);
         for (uint32_t i = length; i--;) {
-            TObject object = Object::validated_get_object(ctx, arg, i);
+            ObjectType object = Object::validated_get_object(ctx, arg, i);
 
             if (!Object::template is_instance<RealmObjectClass<T>>(ctx, object)) {
                 throw std::runtime_error("Argument to 'delete' must be a Realm object or a collection of Realm objects.");
@@ -438,7 +438,7 @@ void Realm<T>::delete_one(TContext ctx, TObject this_object, size_t argc, const 
 }
 
 template<typename T>
-void Realm<T>::delete_all(TContext ctx, TObject this_object, size_t argc, const TValue arguments[], ReturnValue &return_value) {
+void Realm<T>::delete_all(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 0);
 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
@@ -453,11 +453,11 @@ void Realm<T>::delete_all(TContext ctx, TObject this_object, size_t argc, const 
 }
 
 template<typename T>
-void Realm<T>::write(TContext ctx, TObject this_object, size_t argc, const TValue arguments[], ReturnValue &return_value) {
+void Realm<T>::write(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 1);
 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
-    TFunction callback = Value::validated_to_function(ctx, arguments[0]);
+    FunctionType callback = Value::validated_to_function(ctx, arguments[0]);
 
     try {
         realm->begin_transaction();
@@ -473,7 +473,7 @@ void Realm<T>::write(TContext ctx, TObject this_object, size_t argc, const TValu
 }
 
 template<typename T>
-void Realm<T>::add_listener(TContext ctx, TObject this_object, size_t argc, const TValue arguments[], ReturnValue &return_value) {
+void Realm<T>::add_listener(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 2);
 
     __unused std::string name = validated_notification_name(ctx, arguments[0]);
@@ -484,7 +484,7 @@ void Realm<T>::add_listener(TContext ctx, TObject this_object, size_t argc, cons
 }
 
 template<typename T>
-void Realm<T>::remove_listener(TContext ctx, TObject this_object, size_t argc, const TValue arguments[], ReturnValue &return_value) {
+void Realm<T>::remove_listener(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 2);
 
     __unused std::string name = validated_notification_name(ctx, arguments[0]);
@@ -495,7 +495,7 @@ void Realm<T>::remove_listener(TContext ctx, TObject this_object, size_t argc, c
 }
 
 template<typename T>
-void Realm<T>::remove_all_listeners(TContext ctx, TObject this_object, size_t argc, const TValue arguments[], ReturnValue &return_value) {
+void Realm<T>::remove_all_listeners(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 0, 1);
     if (argc) {
         validated_notification_name(ctx, arguments[0]);
@@ -506,7 +506,7 @@ void Realm<T>::remove_all_listeners(TContext ctx, TObject this_object, size_t ar
 }
 
 template<typename T>
-void Realm<T>::close(TContext ctx, TObject this_object, size_t argc, const TValue arguments[], ReturnValue &return_value) {
+void Realm<T>::close(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 0);
 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);

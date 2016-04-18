@@ -34,30 +34,30 @@ namespace js {
 
 template<typename T>
 class List {
-    using TContext = typename T::Context;
-    using TObject = typename T::Object;
-    using TValue = typename T::Value;
+    using ContextType = typename T::Context;
+    using ObjectType = typename T::Object;
+    using ValueType = typename T::Value;
     using Object = Object<T>;
     using Value = Value<T>;
     using ReturnValue = ReturnValue<T>;
 
   public:
-    static TObject create_instance(TContext, realm::List &);
+    static ObjectType create_instance(ContextType, realm::List &);
 
     // properties
-    static void get_length(TContext, TObject, ReturnValue &);
-    static void get_index(TContext, TObject, uint32_t, ReturnValue &);
-    static bool set_index(TContext, TObject, uint32_t, TValue);
+    static void get_length(ContextType, ObjectType, ReturnValue &);
+    static void get_index(ContextType, ObjectType, uint32_t, ReturnValue &);
+    static bool set_index(ContextType, ObjectType, uint32_t, ValueType);
 
     // methods
-    static void push(TContext, TObject, size_t, const TValue[], ReturnValue &);
-    static void pop(TContext, TObject, size_t, const TValue[], ReturnValue &);
-    static void unshift(TContext, TObject, size_t, const TValue[], ReturnValue &);
-    static void shift(TContext, TObject, size_t, const TValue[], ReturnValue &);
-    static void splice(TContext, TObject, size_t, const TValue[], ReturnValue &);
-    static void snapshot(TContext, TObject, size_t, const TValue[], ReturnValue &);
-    static void filtered(TContext, TObject, size_t, const TValue[], ReturnValue &);
-    static void sorted(TContext, TObject, size_t, const TValue[], ReturnValue &);
+    static void push(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void pop(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void unshift(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void shift(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void splice(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void snapshot(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void filtered(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void sorted(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
 };
 
 template<typename T>
@@ -85,18 +85,18 @@ struct ListClass : ClassDefinition<T, realm::List, CollectionClass<T>> {
 };
 
 template<typename T>
-typename T::Object List<T>::create_instance(TContext ctx, realm::List &list) {
+typename T::Object List<T>::create_instance(ContextType ctx, realm::List &list) {
     return create_object<T, ListClass<T>>(ctx, new realm::List(list));
 }
 
 template<typename T>
-void List<T>::get_length(TContext ctx, TObject object, ReturnValue &return_value) {
+void List<T>::get_length(ContextType ctx, ObjectType object, ReturnValue &return_value) {
     auto list = get_internal<T, ListClass<T>>(object);
     return_value.set((uint32_t)list->size());
 }
 
 template<typename T>
-void List<T>::get_index(TContext ctx, TObject object, uint32_t index, ReturnValue &return_value) {
+void List<T>::get_index(ContextType ctx, ObjectType object, uint32_t index, ReturnValue &return_value) {
     auto list = get_internal<T, ListClass<T>>(object);
     auto realm_object = realm::Object(list->get_realm(), list->get_object_schema(), list->get(index));
 
@@ -104,14 +104,14 @@ void List<T>::get_index(TContext ctx, TObject object, uint32_t index, ReturnValu
 }
 
 template<typename T>
-bool List<T>::set_index(TContext ctx, TObject object, uint32_t index, TValue value) {
+bool List<T>::set_index(ContextType ctx, ObjectType object, uint32_t index, ValueType value) {
     auto list = get_internal<T, ListClass<T>>(object);
     list->set(ctx, value, index);
     return true;
 }
 
 template<typename T>
-void List<T>::push(TContext ctx, TObject this_object, size_t argc, const TValue arguments[], ReturnValue &return_value) {
+void List<T>::push(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count_at_least(argc, 1);
 
     auto list = get_internal<T, ListClass<T>>(this_object);
@@ -123,7 +123,7 @@ void List<T>::push(TContext ctx, TObject this_object, size_t argc, const TValue 
 }
 
 template<typename T>
-void List<T>::pop(TContext ctx, TObject this_object, size_t argc, const TValue arguments[], ReturnValue &return_value) {
+void List<T>::pop(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 0);
 
     auto list = get_internal<T, ListClass<T>>(this_object);
@@ -142,7 +142,7 @@ void List<T>::pop(TContext ctx, TObject this_object, size_t argc, const TValue a
 }
 
 template<typename T>
-void List<T>::unshift(TContext ctx, TObject this_object, size_t argc, const TValue arguments[], ReturnValue &return_value) {
+void List<T>::unshift(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count_at_least(argc, 1);
 
     auto list = get_internal<T, ListClass<T>>(this_object);
@@ -154,7 +154,7 @@ void List<T>::unshift(TContext ctx, TObject this_object, size_t argc, const TVal
 }
 
 template<typename T>
-void List<T>::shift(TContext ctx, TObject this_object, size_t argc, const TValue arguments[], ReturnValue &return_value) {
+void List<T>::shift(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 0);
 
     auto list = get_internal<T, ListClass<T>>(this_object);
@@ -171,7 +171,7 @@ void List<T>::shift(TContext ctx, TObject this_object, size_t argc, const TValue
 }
 
 template<typename T>
-void List<T>::splice(TContext ctx, TObject this_object, size_t argc, const TValue arguments[], ReturnValue &return_value) {
+void List<T>::splice(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count_at_least(argc, 1);
 
     auto list = get_internal<T, ListClass<T>>(this_object);
@@ -190,7 +190,7 @@ void List<T>::splice(TContext ctx, TObject this_object, size_t argc, const TValu
         remove = std::min<long>(remove, size - index);
     }
     
-    std::vector<TValue> removed_objects;
+    std::vector<ValueType> removed_objects;
     removed_objects.reserve(remove);
 
     for (size_t i = 0; i < remove; i++) {
@@ -207,7 +207,7 @@ void List<T>::splice(TContext ctx, TObject this_object, size_t argc, const TValu
 }
 
 template<typename T>
-void List<T>::snapshot(TContext ctx, TObject this_object, size_t argc, const TValue arguments[], ReturnValue &return_value) {
+void List<T>::snapshot(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 0);
 
     auto list = get_internal<T, ListClass<T>>(this_object);
@@ -215,7 +215,7 @@ void List<T>::snapshot(TContext ctx, TObject this_object, size_t argc, const TVa
 }
 
 template<typename T>
-void List<T>::filtered(TContext ctx, TObject this_object, size_t argc, const TValue arguments[], ReturnValue &return_value) {
+void List<T>::filtered(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count_at_least(argc, 1);
 
     auto list = get_internal<T, ListClass<T>>(this_object);
@@ -223,7 +223,7 @@ void List<T>::filtered(TContext ctx, TObject this_object, size_t argc, const TVa
 }
 
 template<typename T>
-void List<T>::sorted(TContext ctx, TObject this_object, size_t argc, const TValue arguments[], ReturnValue &return_value) {
+void List<T>::sorted(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 1, 2);
 
     auto list = get_internal<T, ListClass<T>>(this_object);

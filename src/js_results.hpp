@@ -31,31 +31,31 @@ namespace js {
 
 template<typename T>
 class Results {
-    using TContext = typename T::Context;
-    using TObject = typename T::Object;
-    using TValue = typename T::Value;
+    using ContextType = typename T::Context;
+    using ObjectType = typename T::Object;
+    using ValueType = typename T::Value;
     using Object = Object<T>;
     using Value = Value<T>;
     using ReturnValue = ReturnValue<T>;
 
   public:
-    static TObject create_instance(TContext, const realm::Results &, bool live = true);
-    static TObject create_instance(TContext, const realm::List &, bool live = true);
-    static TObject create_instance(TContext, SharedRealm, const std::string &type, bool live = true);
-    static TObject create_instance(TContext, SharedRealm, const ObjectSchema &, Query, bool live = true);
+    static ObjectType create_instance(ContextType, const realm::Results &, bool live = true);
+    static ObjectType create_instance(ContextType, const realm::List &, bool live = true);
+    static ObjectType create_instance(ContextType, SharedRealm, const std::string &type, bool live = true);
+    static ObjectType create_instance(ContextType, SharedRealm, const ObjectSchema &, Query, bool live = true);
 
     template<typename U>
-    static TObject create_filtered(TContext, const U &, size_t, const TValue[]);
+    static ObjectType create_filtered(ContextType, const U &, size_t, const ValueType[]);
 
     template<typename U>
-    static TObject create_sorted(TContext, const U &, size_t, const TValue[]);
+    static ObjectType create_sorted(ContextType, const U &, size_t, const ValueType[]);
 
-    static void get_length(TContext, TObject, ReturnValue &);
-    static void get_index(TContext, TObject, uint32_t, ReturnValue &);
+    static void get_length(ContextType, ObjectType, ReturnValue &);
+    static void get_index(ContextType, ObjectType, uint32_t, ReturnValue &);
 
-    static void snapshot(TContext, TObject, size_t, const TValue[], ReturnValue &);
-    static void filtered(TContext, TObject, size_t, const TValue[], ReturnValue &);
-    static void sorted(TContext, TObject, size_t, const TValue[], ReturnValue &);
+    static void snapshot(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void filtered(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void sorted(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
 };
 
 template<typename T>
@@ -78,7 +78,7 @@ struct ResultsClass : ClassDefinition<T, realm::Results, CollectionClass<T>> {
 };
 
 template<typename T>
-typename T::Object Results<T>::create_instance(TContext ctx, const realm::Results &results, bool live) {
+typename T::Object Results<T>::create_instance(ContextType ctx, const realm::Results &results, bool live) {
     auto new_results = new realm::Results(results);
     new_results->set_live(live);
 
@@ -86,12 +86,12 @@ typename T::Object Results<T>::create_instance(TContext ctx, const realm::Result
 }
 
 template<typename T>
-typename T::Object Results<T>::create_instance(TContext ctx, const realm::List &list, bool live) {
+typename T::Object Results<T>::create_instance(ContextType ctx, const realm::List &list, bool live) {
     return create_instance(ctx, list.get_realm(), list.get_object_schema(), list.get_query(), live);
 }
 
 template<typename T>
-typename T::Object Results<T>::create_instance(TContext ctx, SharedRealm realm, const std::string &type, bool live) {
+typename T::Object Results<T>::create_instance(ContextType ctx, SharedRealm realm, const std::string &type, bool live) {
     auto table = ObjectStore::table_for_object_type(realm->read_group(), type);
     auto &schema = realm->config().schema;
     auto object_schema = schema->find(type);
@@ -107,7 +107,7 @@ typename T::Object Results<T>::create_instance(TContext ctx, SharedRealm realm, 
 }
 
 template<typename T>
-typename T::Object Results<T>::create_instance(TContext ctx, SharedRealm realm, const ObjectSchema &object_schema, Query query, bool live) {
+typename T::Object Results<T>::create_instance(ContextType ctx, SharedRealm realm, const ObjectSchema &object_schema, Query query, bool live) {
     auto results = new realm::Results(realm, object_schema, std::move(query));
     results->set_live(live);
 
@@ -116,13 +116,13 @@ typename T::Object Results<T>::create_instance(TContext ctx, SharedRealm realm, 
 
 template<typename T>
 template<typename U>
-typename T::Object Results<T>::create_filtered(TContext ctx, const U &collection, size_t argc, const TValue arguments[]) {
+typename T::Object Results<T>::create_filtered(ContextType ctx, const U &collection, size_t argc, const ValueType arguments[]) {
     auto query_string = Value::validated_to_string(ctx, arguments[0], "predicate");
     auto query = collection.get_query();
     auto const &realm = collection.get_realm();
     auto const &object_schema = collection.get_object_schema();
 
-    std::vector<TValue> args;
+    std::vector<ValueType> args;
     args.reserve(argc - 1);
 
     for (size_t i = 1; i < argc; i++) {
@@ -130,7 +130,7 @@ typename T::Object Results<T>::create_filtered(TContext ctx, const U &collection
     }
 
     parser::Predicate predicate = parser::parse(query_string);
-    query_builder::ArgumentConverter<TValue, TContext> converter(ctx, args);
+    query_builder::ArgumentConverter<ValueType, ContextType> converter(ctx, args);
     query_builder::apply_predicate(query, predicate, converter, *realm->config().schema, object_schema.name);
 
     return create_instance(ctx, realm, object_schema, std::move(query));
@@ -138,7 +138,7 @@ typename T::Object Results<T>::create_filtered(TContext ctx, const U &collection
 
 template<typename T>
 template<typename U>
-typename T::Object Results<T>::create_sorted(TContext ctx, const U &collection, size_t argc, const TValue arguments[]) {
+typename T::Object Results<T>::create_sorted(ContextType ctx, const U &collection, size_t argc, const ValueType arguments[]) {
     auto const &realm = collection.get_realm();
     auto const &object_schema = collection.get_object_schema();
     std::vector<std::string> prop_names;
@@ -148,7 +148,7 @@ typename T::Object Results<T>::create_sorted(TContext ctx, const U &collection, 
     if (Value::is_array(ctx, arguments[0])) {
         validate_argument_count(argc, 1, "Second argument is not allowed if passed an array of sort descriptors");
 
-        TObject js_prop_names = Value::validated_to_object(ctx, arguments[0]);
+        ObjectType js_prop_names = Value::validated_to_object(ctx, arguments[0]);
         prop_count = Object::validated_get_length(ctx, js_prop_names);
         if (!prop_count) {
             throw std::invalid_argument("Sort descriptor array must not be empty");
@@ -158,10 +158,10 @@ typename T::Object Results<T>::create_sorted(TContext ctx, const U &collection, 
         ascending.resize(prop_count);
 
         for (unsigned int i = 0; i < prop_count; i++) {
-            TValue value = Object::validated_get_property(ctx, js_prop_names, i);
+            ValueType value = Object::validated_get_property(ctx, js_prop_names, i);
 
             if (Value::is_array(ctx, value)) {
-                TObject array = Value::to_array(ctx, value);
+                ObjectType array = Value::to_array(ctx, value);
                 prop_names[i] = Object::validated_get_string(ctx, array, 0);
                 ascending[i] = !Object::validated_get_boolean(ctx, array, 1);
             }
@@ -195,13 +195,13 @@ typename T::Object Results<T>::create_sorted(TContext ctx, const U &collection, 
 }
 
 template<typename T>
-void Results<T>::get_length(TContext ctx, TObject object, ReturnValue &return_value) {
+void Results<T>::get_length(ContextType ctx, ObjectType object, ReturnValue &return_value) {
     auto results = get_internal<T, ResultsClass<T>>(object);
     return_value.set((uint32_t)results->size());
 }
 
 template<typename T>
-void Results<T>::get_index(TContext ctx, TObject object, uint32_t index, ReturnValue &return_value) {
+void Results<T>::get_index(ContextType ctx, ObjectType object, uint32_t index, ReturnValue &return_value) {
     auto results = get_internal<T, ResultsClass<T>>(object);
     auto row = results->get(index);
 
@@ -216,7 +216,7 @@ void Results<T>::get_index(TContext ctx, TObject object, uint32_t index, ReturnV
 }
 
 template<typename T>
-void Results<T>::snapshot(TContext ctx, TObject this_object, size_t argc, const TValue arguments[], ReturnValue &return_value) {
+void Results<T>::snapshot(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 0);
 
     auto results = get_internal<T, ResultsClass<T>>(this_object);
@@ -224,7 +224,7 @@ void Results<T>::snapshot(TContext ctx, TObject this_object, size_t argc, const 
 }
 
 template<typename T>
-void Results<T>::filtered(TContext ctx, TObject this_object, size_t argc, const TValue arguments[], ReturnValue &return_value) {
+void Results<T>::filtered(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count_at_least(argc, 1);
 
     auto results = get_internal<T, ResultsClass<T>>(this_object);
@@ -232,7 +232,7 @@ void Results<T>::filtered(TContext ctx, TObject this_object, size_t argc, const 
 }
 
 template<typename T>
-void Results<T>::sorted(TContext ctx, TObject this_object, size_t argc, const TValue arguments[], ReturnValue &return_value) {
+void Results<T>::sorted(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 1, 2);
 
     auto results = get_internal<T, ResultsClass<T>>(this_object);
