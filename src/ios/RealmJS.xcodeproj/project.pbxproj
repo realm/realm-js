@@ -58,7 +58,6 @@
 		F620F0751CB9F60C0082977B /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F620F0741CB9F60C0082977B /* CoreFoundation.framework */; };
 		F63FF2C61C12469E00B3B8E0 /* jsc_init.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 029048011C0428DF00ABDED4 /* jsc_init.cpp */; };
 		F63FF2C91C12469E00B3B8E0 /* js_realm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 029048071C0428DF00ABDED4 /* js_realm.cpp */; };
-		F63FF2CB1C12469E00B3B8E0 /* js_schema.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0290480B1C0428DF00ABDED4 /* js_schema.cpp */; };
 		F63FF2CD1C12469E00B3B8E0 /* rpc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0290480F1C0428DF00ABDED4 /* rpc.cpp */; };
 		F63FF2DE1C1565EA00B3B8E0 /* RealmJS.mm in Sources */ = {isa = PBXBuildFile; fileRef = F63FF2DC1C15659A00B3B8E0 /* RealmJS.mm */; };
 		F63FF2E11C1591EC00B3B8E0 /* libRealmJS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F63FF2B11C1241E500B3B8E0 /* libRealmJS.a */; };
@@ -125,7 +124,6 @@
 		029048071C0428DF00ABDED4 /* js_realm.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = js_realm.cpp; sourceTree = "<group>"; };
 		029048081C0428DF00ABDED4 /* js_realm.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = js_realm.hpp; sourceTree = "<group>"; };
 		0290480A1C0428DF00ABDED4 /* js_results.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = js_results.hpp; sourceTree = "<group>"; };
-		0290480B1C0428DF00ABDED4 /* js_schema.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = js_schema.cpp; sourceTree = "<group>"; };
 		0290480C1C0428DF00ABDED4 /* js_schema.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = js_schema.hpp; sourceTree = "<group>"; };
 		0290480F1C0428DF00ABDED4 /* rpc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = rpc.cpp; sourceTree = "<group>"; };
 		029048101C0428DF00ABDED4 /* rpc.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = rpc.hpp; sourceTree = "<group>"; };
@@ -283,7 +281,6 @@
 				029048071C0428DF00ABDED4 /* js_realm.cpp */,
 				029048081C0428DF00ABDED4 /* js_realm.hpp */,
 				0290480A1C0428DF00ABDED4 /* js_results.hpp */,
-				0290480B1C0428DF00ABDED4 /* js_schema.cpp */,
 				0290480C1C0428DF00ABDED4 /* js_schema.hpp */,
 				F620F0521CAF0B600082977B /* js_class.hpp */,
 				F6874A3E1CACA5A900EEEE36 /* js_types.hpp */,
@@ -771,7 +768,6 @@
 				02F59ED51C88F1B6007F774C /* weak_realm_notifier.cpp in Sources */,
 				F63FF2C91C12469E00B3B8E0 /* js_realm.cpp in Sources */,
 				02F59EC51C88F17D007F774C /* shared_realm.cpp in Sources */,
-				F63FF2CB1C12469E00B3B8E0 /* js_schema.cpp in Sources */,
 				02F59ECB1C88F190007F774C /* query_builder.cpp in Sources */,
 				02F59EE21C88F2BB007F774C /* realm_coordinator.cpp in Sources */,
 				02F59EC41C88F17D007F774C /* schema.cpp in Sources */,
