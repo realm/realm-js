@@ -51,8 +51,8 @@ TEST_CASE("Results") {
 
     SECTION("unsorted notifications") {
         int notification_calls = 0;
-        CollectionChangeIndices change;
-        auto token = results.add_notification_callback([&](CollectionChangeIndices c, std::exception_ptr err) {
+        CollectionChangeSet change;
+        auto token = results.add_notification_callback([&](CollectionChangeSet c, std::exception_ptr err) {
             REQUIRE_FALSE(err);
             change = c;
             ++notification_calls;
@@ -107,8 +107,8 @@ TEST_CASE("Results") {
         SECTION("notifications are delivered when a new callback is added from within a callback") {
             NotificationToken token2, token3;
             bool called = false;
-            token2 = results.add_notification_callback([&](CollectionChangeIndices, std::exception_ptr) {
-                token3 = results.add_notification_callback([&](CollectionChangeIndices, std::exception_ptr) {
+            token2 = results.add_notification_callback([&](CollectionChangeSet, std::exception_ptr) {
+                token3 = results.add_notification_callback([&](CollectionChangeSet, std::exception_ptr) {
                     called = true;
                 });
             });
@@ -119,10 +119,10 @@ TEST_CASE("Results") {
 
         SECTION("notifications are not delivered when a callback is removed from within a callback") {
             NotificationToken token2, token3;
-            token2 = results.add_notification_callback([&](CollectionChangeIndices, std::exception_ptr) {
+            token2 = results.add_notification_callback([&](CollectionChangeSet, std::exception_ptr) {
                 token3 = {};
             });
-            token3 = results.add_notification_callback([&](CollectionChangeIndices, std::exception_ptr) {
+            token3 = results.add_notification_callback([&](CollectionChangeSet, std::exception_ptr) {
                 REQUIRE(false);
             });
 
@@ -132,10 +132,10 @@ TEST_CASE("Results") {
         SECTION("removing the current callback does not stop later ones from being called") {
             NotificationToken token2, token3;
             bool called = false;
-            token2 = results.add_notification_callback([&](CollectionChangeIndices, std::exception_ptr) {
+            token2 = results.add_notification_callback([&](CollectionChangeSet, std::exception_ptr) {
                 token2 = {};
             });
-            token3 = results.add_notification_callback([&](CollectionChangeIndices, std::exception_ptr) {
+            token3 = results.add_notification_callback([&](CollectionChangeSet, std::exception_ptr) {
                 called = true;
             });
 
@@ -277,7 +277,7 @@ TEST_CASE("Results") {
         }
 
         SECTION("the first call of a notification can include changes if it previously ran for a different callback") {
-            auto token2 = results.add_notification_callback([&](CollectionChangeIndices c, std::exception_ptr) {
+            auto token2 = results.add_notification_callback([&](CollectionChangeSet c, std::exception_ptr) {
                 REQUIRE(!c.empty());
             });
 
@@ -292,8 +292,8 @@ TEST_CASE("Results") {
 
     SECTION("sorted notifications") {
         int notification_calls = 0;
-        CollectionChangeIndices change;
-        auto token = results.add_notification_callback([&](CollectionChangeIndices c, std::exception_ptr err) {
+        CollectionChangeSet change;
+        auto token = results.add_notification_callback([&](CollectionChangeSet c, std::exception_ptr err) {
             REQUIRE_FALSE(err);
             change = c;
             ++notification_calls;
@@ -447,7 +447,7 @@ TEST_CASE("Async Results error handling") {
 
         SECTION("error is delivered asynchronously") {
             bool called = false;
-            auto token = results.add_notification_callback([&](CollectionChangeIndices, std::exception_ptr err) {
+            auto token = results.add_notification_callback([&](CollectionChangeSet, std::exception_ptr err) {
                 REQUIRE(err);
                 called = true;
             });
@@ -461,7 +461,7 @@ TEST_CASE("Async Results error handling") {
 
         SECTION("adding another callback does not send the error again") {
             bool called = false;
-            auto token = results.add_notification_callback([&](CollectionChangeIndices, std::exception_ptr err) {
+            auto token = results.add_notification_callback([&](CollectionChangeSet, std::exception_ptr err) {
                 REQUIRE(err);
                 REQUIRE_FALSE(called);
                 called = true;
@@ -470,7 +470,7 @@ TEST_CASE("Async Results error handling") {
             advance_and_notify(*r);
 
             bool called2 = false;
-            auto token2 = results.add_notification_callback([&](CollectionChangeIndices, std::exception_ptr err) {
+            auto token2 = results.add_notification_callback([&](CollectionChangeSet, std::exception_ptr err) {
                 REQUIRE(err);
                 REQUIRE_FALSE(called2);
                 called2 = true;
@@ -484,7 +484,7 @@ TEST_CASE("Async Results error handling") {
     SECTION("error when opening the executor SG") {
         SECTION("error is delivered asynchronously") {
             bool called = false;
-            auto token = results.add_notification_callback([&](CollectionChangeIndices, std::exception_ptr err) {
+            auto token = results.add_notification_callback([&](CollectionChangeSet, std::exception_ptr err) {
                 REQUIRE(err);
                 called = true;
             });
@@ -499,7 +499,7 @@ TEST_CASE("Async Results error handling") {
 
         SECTION("adding another callback does not send the error again") {
             bool called = false;
-            auto token = results.add_notification_callback([&](CollectionChangeIndices, std::exception_ptr err) {
+            auto token = results.add_notification_callback([&](CollectionChangeSet, std::exception_ptr err) {
                 REQUIRE(err);
                 REQUIRE_FALSE(called);
                 called = true;
@@ -509,7 +509,7 @@ TEST_CASE("Async Results error handling") {
             advance_and_notify(*r);
 
             bool called2 = false;
-            auto token2 = results.add_notification_callback([&](CollectionChangeIndices, std::exception_ptr err) {
+            auto token2 = results.add_notification_callback([&](CollectionChangeSet, std::exception_ptr err) {
                 REQUIRE(err);
                 REQUIRE_FALSE(called2);
                 called2 = true;

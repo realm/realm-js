@@ -12,7 +12,7 @@
 
 #define REQUIRE_MOVES(c, ...) do { \
     auto actual = (c); \
-    std::initializer_list<CollectionChangeIndices::Move> expected = {__VA_ARGS__}; \
+    std::initializer_list<CollectionChangeSet::Move> expected = {__VA_ARGS__}; \
     REQUIRE(expected.size() == actual.moves.size()); \
     auto begin = actual.moves.begin(); \
     for (auto move : expected) { \

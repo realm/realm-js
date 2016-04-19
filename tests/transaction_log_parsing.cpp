@@ -31,7 +31,7 @@ public:
             m_initial.push_back(lv->get(i).get_int(0));
     }
 
-    CollectionChangeIndices finish(size_t ndx) {
+    CollectionChangeSet finish(size_t ndx) {
         m_realm->commit_transaction();
 
         _impl::CollectionChangeBuilder c;
@@ -61,7 +61,7 @@ private:
     LinkViewRef m_linkview;
     std::vector<int> m_initial;
 
-    void validate(CollectionChangeIndices const& info)
+    void validate(CollectionChangeSet const& info)
     {
         info.insertions.verify();
         info.deletions.verify();
@@ -445,7 +445,7 @@ TEST_CASE("Transaction log parsing") {
 #define VALIDATE_CHANGES(out) \
     for (CaptureHelper helper(config.path, r, lv); helper; out = helper.finish(origin->get_index_in_group()))
 
-        CollectionChangeIndices changes;
+        CollectionChangeSet changes;
         SECTION("single change type") {
             SECTION("add single") {
                 VALIDATE_CHANGES(changes) {

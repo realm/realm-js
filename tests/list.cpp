@@ -60,7 +60,7 @@ TEST_CASE("list") {
     r->commit_transaction();
 
     SECTION("add_notification_block()") {
-        CollectionChangeIndices change;
+        CollectionChangeSet change;
         List lst(r, *r->config().schema->find("origin"), lv);
 
         auto write = [&](auto&& f) {
@@ -72,7 +72,7 @@ TEST_CASE("list") {
         };
 
         auto require_change = [&] {
-            auto token = lst.add_notification_callback([&](CollectionChangeIndices c, std::exception_ptr err) {
+            auto token = lst.add_notification_callback([&](CollectionChangeSet c, std::exception_ptr err) {
                 change = c;
             });
             advance_and_notify(*r);
@@ -81,7 +81,7 @@ TEST_CASE("list") {
 
         auto require_no_change = [&] {
             bool first = true;
-            auto token = lst.add_notification_callback([&, first](CollectionChangeIndices c, std::exception_ptr err) mutable {
+            auto token = lst.add_notification_callback([&, first](CollectionChangeSet c, std::exception_ptr err) mutable {
                 REQUIRE(first);
                 first = false;
             });
@@ -198,11 +198,11 @@ TEST_CASE("list") {
 
             List lists[3];
             NotificationToken tokens[3];
-            CollectionChangeIndices changes[3];
+            CollectionChangeSet changes[3];
 
             for (int i = 0; i < 3; ++i) {
                 lists[i] = get_list();
-                tokens[i] = lists[i].add_notification_callback([i, &changes](CollectionChangeIndices c, std::exception_ptr) {
+                tokens[i] = lists[i].add_notification_callback([i, &changes](CollectionChangeSet c, std::exception_ptr) {
                     changes[i] = std::move(c);
                 });
                 change_list();
@@ -248,14 +248,14 @@ TEST_CASE("list") {
             // Add a callback for list1, advance the version, then add a
             // callback for list2, so that the notifiers added at each source
             // version have different tables watched for modifications
-            CollectionChangeIndices changes1, changes2;
-            auto token1 = lst.add_notification_callback([&](CollectionChangeIndices c, std::exception_ptr) {
+            CollectionChangeSet changes1, changes2;
+            auto token1 = lst.add_notification_callback([&](CollectionChangeSet c, std::exception_ptr) {
                 changes1 = std::move(c);
             });
 
             r->begin_transaction(); r->commit_transaction();
 
-            auto token2 = lst2.add_notification_callback([&](CollectionChangeIndices c, std::exception_ptr) {
+            auto token2 = lst2.add_notification_callback([&](CollectionChangeSet c, std::exception_ptr) {
                 changes2 = std::move(c);
             });
 
@@ -296,8 +296,8 @@ TEST_CASE("list") {
         Results results = lst.sort({{0}, {false}});
 
         int notification_calls = 0;
-        CollectionChangeIndices change;
-        auto token = results.add_notification_callback([&](CollectionChangeIndices c, std::exception_ptr err) {
+        CollectionChangeSet change;
+        auto token = results.add_notification_callback([&](CollectionChangeSet c, std::exception_ptr err) {
             REQUIRE_FALSE(err);
             change = c;
             ++notification_calls;
@@ -352,8 +352,8 @@ TEST_CASE("list") {
         Results results = lst.filter(target->where().less(0, 9));
 
         int notification_calls = 0;
-        CollectionChangeIndices change;
-        auto token = results.add_notification_callback([&](CollectionChangeIndices c, std::exception_ptr err) {
+        CollectionChangeSet change;
+        auto token = results.add_notification_callback([&](CollectionChangeSet c, std::exception_ptr err) {
             REQUIRE_FALSE(err);
             change = c;
             ++notification_calls;
