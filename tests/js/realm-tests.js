@@ -516,6 +516,22 @@ module.exports = BaseTest.extend({
         TestCase.assertEqual(realm.objects('IntPrimaryObject').length, 0);
     },
 
+    testIsValid: function() {
+        var realm = new Realm({schema: [schemas.TestObject]});
+        var obj;
+        realm.write(function() {
+            obj = realm.create('TestObject', {doubleCol: 1});
+            TestCase.assertEqual(realm.isValid(obj), true);
+            realm.delete(obj);
+            TestCase.assertEqual(realm.isValid(obj), false);
+        });
+
+        TestCase.assertEqual(realm.isValid(obj), false);
+        TestCase.assertThrows(function() {
+            obj.doubleCol;
+        });
+    },
+
     testRealmObjects: function() {
         var realm = new Realm({schema: [schemas.PersonObject, schemas.DefaultValues, schemas.TestObject]});
 
