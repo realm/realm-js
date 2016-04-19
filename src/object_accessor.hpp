@@ -342,8 +342,9 @@ namespace realm {
     
     inline void Object::verify_attached() {
         if (!m_row.is_attached()) {
-            throw InvalidatedObjectException("Accessing object of type " + m_object_schema->name + " which has been deleted",
-                                             m_object_schema->name);
+            throw InvalidatedObjectException(m_object_schema->name,
+                "Accessing object of type " + m_object_schema->name + " which has been deleted"
+            );
         }
     }
 
