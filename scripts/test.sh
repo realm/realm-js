@@ -12,6 +12,9 @@ SRCROOT=$(cd "$(dirname "$0")/.." && pwd)
 # Start current working directory at the root of the project.
 cd "$SRCROOT"
 
+# Add node_modules to PATH just in case we weren't called from `npm test`
+PATH="$PWD/node_modules/.bin:$PATH"
+
 if [[ $TARGET = *-android ]]; then
   # Inform the prepublish script to build Android modules.
   export REALM_BUILD_ANDROID=1
