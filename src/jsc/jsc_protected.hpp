@@ -21,52 +21,60 @@
 #include "jsc_types.hpp"
 
 namespace realm {
-namespace jsc {
-
-template<typename MemberType>
-class Protected {
-    const MemberType m_value;
-
-  public:
-    Protected(MemberType value) : m_value(value) {}
-
-    operator MemberType() const {
-        return m_value;
-    }
-};
-
-} // jsc
-
 namespace js {
 
 template<>
-class Protected<JSGlobalContextRef> : public jsc::Protected<JSGlobalContextRef> {
+class Protected<JSGlobalContextRef> {
+    JSGlobalContextRef m_context;
+
   public:
-    Protected(JSGlobalContextRef ctx) : jsc::Protected<JSGlobalContextRef>(ctx) {
-        JSGlobalContextRetain(*this);
+    Protected(const Protected<JSGlobalContextRef> &other) : Protected(other.m_context) {}
+    Protected(Protected<JSGlobalContextRef> &&other) : m_context(other.m_context) {
+        other.m_context = nullptr;
+    }
+    Protected(JSGlobalContextRef ctx) : m_context(ctx) {
+        JSGlobalContextRetain(m_context);
     }
     ~Protected() {
-        JSGlobalContextRelease(*this);
+        if (m_context) {
+            JSGlobalContextRelease(m_context);
+        }
+    }
+    operator JSGlobalContextRef() const {
+        return m_context;
     }
 };
 
 template<>
-class Protected<JSValueRef> : public jsc::Protected<JSValueRef> {
-    const JSGlobalContextRef m_context;
+class Protected<JSValueRef> {
+    JSGlobalContextRef m_context;
+    JSValueRef m_value;
 
   public:
-    Protected(JSContextRef ctx, JSValueRef value) : jsc::Protected<JSValueRef>(value), m_context(JSContextGetGlobalContext(ctx)) {
-        JSValueProtect(m_context, *this);
+    Protected(const Protected<JSValueRef> &other) : Protected(other.m_context, other.m_value) {}
+    Protected(Protected<JSValueRef> &&other) : m_context(other.m_context), m_value(other.m_value) {
+        other.m_context = nullptr;
+        other.m_value = nullptr;
+    }
+    Protected(JSContextRef ctx, JSValueRef value) : m_context(JSContextGetGlobalContext(ctx)), m_value(value) {
+        JSValueProtect(m_context, m_value);
     }
     ~Protected() {
-        JSValueUnprotect(m_context, *this);
+        if (m_value) {
+            JSValueUnprotect(m_context, m_value);
+        }
+    }
+    operator JSValueRef() const {
+        return m_value;
     }
 };
 
 template<>
 class Protected<JSObjectRef> : public Protected<JSValueRef> {
   public:
-    Protected(JSContextRef ctx, JSObjectRef object) : Protected<JSValueRef>(ctx, object) {}
+    Protected(const Protected<JSObjectRef> &other) : Protected<JSValueRef>(other) {}
+    Protected(Protected<JSObjectRef> &&other) : Protected<JSValueRef>(std::move(other)) {}
+    Protected(JSContextRef ctx, JSObjectRef value) : Protected<JSValueRef>(ctx, value) {}
 
     operator JSObjectRef() const {
         JSValueRef value = static_cast<JSValueRef>(*this);

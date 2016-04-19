@@ -105,7 +105,7 @@ class RealmDelegate : public BindingContext {
         arguments[0] = realm_object;
         arguments[1] = Value::from_string(m_context, notification_name);
 
-        for (auto callback : m_notifications) {
+        for (auto &callback : m_notifications) {
             Function<T>::call(m_context, callback, realm_object, 2, arguments);
         }
     }
