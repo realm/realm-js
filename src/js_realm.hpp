@@ -138,6 +138,7 @@ class Realm {
     static void create(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void delete_one(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void delete_all(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void is_object_valid(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void write(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void add_listener(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void remove_listener(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
@@ -212,6 +213,7 @@ struct RealmClass : ClassDefinition<T, SharedRealm> {
         {"create", wrap<Realm::create>},
         {"delete", wrap<Realm::delete_one>},
         {"deleteAll", wrap<Realm::delete_all>},
+        {"isValid", wrap<Realm::is_object_valid>},
         {"write", wrap<Realm::write>},
         {"addListener", wrap<Realm::add_listener>},
         {"removeListener", wrap<Realm::remove_listener>},
@@ -453,6 +455,18 @@ void Realm<T>::delete_all(ContextType ctx, ObjectType this_object, size_t argc, 
     for (auto objectSchema : *realm->config().schema) {
         ObjectStore::table_for_object_type(realm->read_group(), objectSchema.name)->clear();
     }
+}
+    
+template<typename T>
+void Realm<T>::is_object_valid(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    validate_argument_count(argc, 0);
+    
+    ObjectType arg = Value::validated_to_object(ctx, arguments[0]);
+    if (!Object::template is_instance<RealmObjectClass<T>>(ctx, arg)) {
+        throw std::runtime_error("Argument to Realm.isValid must be a 'RealmObject'");
+    }
+    auto object = get_internal<T, RealmObjectClass<T>>(arg);
+    return_value.set(object->is_valid());
 }
 
 template<typename T>
