@@ -26,6 +26,7 @@ const mockery = require('mockery');
 function runTests() {
     const RealmTests = require('./js');
     const testNames = RealmTests.getTestNames();
+    let passed = true;
 
     for (let suiteName in testNames) {
         console.log('Starting ' + suiteName);
@@ -40,12 +41,15 @@ function runTests() {
             catch (e) {
                 console.warn('- ' + testName);
                 console.error(e.message, e.stack);
+                passed = false;
             }
             finally {
                 RealmTests.runTest(suiteName, 'afterEach');
             }
         }
     }
+
+    return passed;
 }
 
 if (require.main == module) {
@@ -53,5 +57,7 @@ if (require.main == module) {
     mockery.warnOnUnregistered(false);
     mockery.registerMock('realm', require('..'));
 
-    runTests();
+    if (!runTests()) {
+        process.exit(1);
+    }
 }
