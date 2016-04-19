@@ -5,9 +5,11 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Enhancements
 * Support for queries comparing optional properties to `null`
+* `Realm.isValid(object)` has been added to enable checking if an object has been deleted
 
 ### Bugfixes
-* None
+* When accessing an empty Results `undefined` is returned rather than throwing an exception
+* Accessing a deleted object throws a javascript exception rather than crashing
 
 0.11.1 Release notes (2016-3-29)
 =============================================================
