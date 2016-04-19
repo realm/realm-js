@@ -3,7 +3,7 @@
 #include "util/index_helpers.hpp"
 #include "util/test_file.hpp"
 
-#include "impl/background_collection.hpp"
+#include "impl/collection_notifier.hpp"
 #include "impl/transact_log_handler.hpp"
 #include "property.hpp"
 #include "object_schema.hpp"

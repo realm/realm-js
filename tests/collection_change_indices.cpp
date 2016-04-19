@@ -1,6 +1,6 @@
 #include "catch.hpp"
 
-#include "impl/background_collection.hpp"
+#include "impl/collection_notifier.hpp"
 
 #include "util/index_helpers.hpp"
 

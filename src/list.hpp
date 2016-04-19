@@ -89,7 +89,7 @@ private:
     std::shared_ptr<Realm> m_realm;
     const ObjectSchema* m_object_schema;
     LinkViewRef m_link_view;
-    std::shared_ptr<_impl::BackgroundCollection> m_notifier;
+    std::shared_ptr<_impl::CollectionNotifier> m_notifier;
 
     void verify_valid_row(size_t row_ndx, bool insertion = false) const;
 
