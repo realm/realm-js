@@ -151,6 +151,8 @@ case "$TARGET" in
   cat tests.xml
   ;;
 "node")
+  npm install
+
   pushd src/node
   node-gyp configure
 
