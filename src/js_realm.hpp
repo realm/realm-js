@@ -459,14 +459,15 @@ void Realm<T>::delete_all(ContextType ctx, ObjectType this_object, size_t argc, 
     
 template<typename T>
 void Realm<T>::is_object_valid(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
-    validate_argument_count(argc, 0);
+    validate_argument_count(argc, 1);
     
     ObjectType arg = Value::validated_to_object(ctx, arguments[0]);
-    if (!Object::template is_instance<RealmObjectClass<T>>(ctx, arg)) {
-        throw std::runtime_error("Argument to Realm.isValid must be a 'RealmObject'");
+    if (Object::template is_instance<RealmObjectClass<T>>(ctx, arg)) {
+        return_value.set(get_internal<T, RealmObjectClass<T>>(arg)->is_valid());
     }
-    auto object = get_internal<T, RealmObjectClass<T>>(arg);
-    return_value.set(object->is_valid());
+    else {
+        throw std::runtime_error("Object is not a Realm Object");
+    }
 }
 
 template<typename T>

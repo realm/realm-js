@@ -23,6 +23,8 @@
 #include "js_class.hpp"
 #include "js_util.hpp"
 
+#include "results.hpp"
+
 namespace realm {
 namespace node {
 
@@ -339,6 +341,10 @@ void wrap(uint32_t index, Nan::NAN_INDEX_GETTER_ARGS_TYPE info) {
         F(isolate, info.This(), index, return_value);
     }
     catch (std::out_of_range &) {
+        // Out-of-bounds index getters should just return undefined in JS.
+        return_value.set_undefined();
+    }
+    catch (Results::OutOfBoundsIndexException &) {
         // Out-of-bounds index getters should just return undefined in JS.
         return_value.set_undefined();
     }

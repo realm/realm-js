@@ -23,6 +23,8 @@
 #include "js_class.hpp"
 #include "js_util.hpp"
 
+#include "results.hpp"
+
 namespace realm {
 namespace jsc {
 
@@ -273,6 +275,10 @@ inline JSValueRef ObjectWrap<ClassType>::get_property(JSContextRef ctx, JSObject
             return index_getter(ctx, object, index, exception);
         }
         catch (std::out_of_range &) {
+            // Out-of-bounds index getters should just return undefined in JS.
+            return Value::from_undefined(ctx);
+        }
+        catch (Results::OutOfBoundsIndexException &) {
             // Out-of-bounds index getters should just return undefined in JS.
             return Value::from_undefined(ctx);
         }
