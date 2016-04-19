@@ -23,7 +23,7 @@
 #include <mutex>
 #include <JavaScriptCore/JSContextRef.h>
 
-#include "js_init.h"
+#include "jsc_init.h"
 #include "shared_realm.hpp"
 #include "realm_coordinator.hpp"
 

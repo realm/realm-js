@@ -23,7 +23,9 @@
 #include "rpc.hpp"
 #include "platform.hpp"
 
-static realm_js::RPCServer *s_rpc_server;
+using namespace realm::rpc;
+
+static RPCServer *s_rpc_server;
 extern bool realmContextInjected;
 
 JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_setDefaultRealmFileDirectory
@@ -46,7 +48,7 @@ JNIEXPORT jlong JNICALL Java_io_realm_react_RealmReactModule_setupChromeDebugMod
     if (s_rpc_server) {
         delete s_rpc_server;
     }
-    s_rpc_server = new realm_js::RPCServer();
+    s_rpc_server = new RPCServer();
     return (jlong)s_rpc_server;
 }
 
@@ -55,8 +57,8 @@ JNIEXPORT jstring JNICALL Java_io_realm_react_RealmReactModule_processChromeDebu
 {
     const char* cmd = env->GetStringUTFChars(chrome_cmd, NULL);
     const char* args = env->GetStringUTFChars(chrome_args, NULL);
-    realm_js::json json = realm_js::json::parse(args);
-    realm_js::json response = s_rpc_server->perform_request(cmd, json);
+    json parsed_args = json::parse(args);
+    json response = s_rpc_server->perform_request(cmd, parsed_args);
     env->ReleaseStringUTFChars(chrome_cmd, cmd);
     env->ReleaseStringUTFChars(chrome_args, args);
     return env->NewStringUTF(response.dump().c_str());

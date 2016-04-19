@@ -32,9 +32,9 @@ struct Schema {
     using FunctionType = typename T::Function;
     using ObjectType = typename T::Object;
     using ValueType = typename T::Value;
-    using String = String<T>;
-    using Object = Object<T>;
-    using Value = Value<T>;
+    using String = js::String<T>;
+    using Object = js::Object<T>;
+    using Value = js::Value<T>;
 
     using ObjectDefaults = std::map<std::string, Protected<ValueType>>;
     using ObjectDefaultsMap = std::map<std::string, ObjectDefaults>;

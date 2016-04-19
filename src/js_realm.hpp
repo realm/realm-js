@@ -47,7 +47,7 @@ class RealmDelegate : public BindingContext {
     using FunctionType = typename T::Function;
     using ObjectType = typename T::Object;
     using ValueType = typename T::Value;
-    using Value = Value<T>;
+    using Value = js::Value<T>;
 
     using ObjectDefaultsMap = typename Schema<T>::ObjectDefaultsMap;
     using ConstructorMap = typename Schema<T>::ConstructorMap;
@@ -121,10 +121,10 @@ class Realm {
     using FunctionType = typename T::Function;
     using ObjectType = typename T::Object;
     using ValueType = typename T::Value;
-    using String = String<T>;
-    using Object = Object<T>;
-    using Value = Value<T>;
-    using ReturnValue = ReturnValue<T>;
+    using String = js::String<T>;
+    using Object = js::Object<T>;
+    using Value = js::Value<T>;
+    using ReturnValue = js::ReturnValue<T>;
     using NativeAccessor = realm::NativeAccessor<ValueType, ContextType>;
 
   public:
@@ -189,7 +189,7 @@ class Realm {
 
 template<typename T>
 struct RealmClass : ClassDefinition<T, SharedRealm> {
-    using Realm = Realm<T>;
+    using Realm = js::Realm<T>;
 
     std::string const name = "Realm";
 

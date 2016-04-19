@@ -34,11 +34,11 @@ class RealmObject {
     using FunctionType = typename T::Function;
     using ObjectType = typename T::Object;
     using ValueType = typename T::Value;
-    using String = String<T>;
-    using Value = Value<T>;
-    using Object = Object<T>;
-    using Function = Function<T>;
-    using ReturnValue = ReturnValue<T>;
+    using String = js::String<T>;
+    using Value = js::Value<T>;
+    using Object = js::Object<T>;
+    using Function = js::Function<T>;
+    using ReturnValue = js::ReturnValue<T>;
 
   public:
     static ObjectType create_instance(ContextType, realm::Object &);
@@ -50,7 +50,7 @@ class RealmObject {
 
 template<typename T>
 struct RealmObjectClass : ClassDefinition<T, realm::Object> {
-    using RealmObject = RealmObject<T>;
+    using RealmObject = js::RealmObject<T>;
 
     const std::string name = "RealmObject";
 

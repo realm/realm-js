@@ -37,9 +37,9 @@ class List {
     using ContextType = typename T::Context;
     using ObjectType = typename T::Object;
     using ValueType = typename T::Value;
-    using Object = Object<T>;
-    using Value = Value<T>;
-    using ReturnValue = ReturnValue<T>;
+    using Object = js::Object<T>;
+    using Value = js::Value<T>;
+    using ReturnValue = js::ReturnValue<T>;
 
   public:
     static ObjectType create_instance(ContextType, realm::List &);
@@ -62,7 +62,7 @@ class List {
 
 template<typename T>
 struct ListClass : ClassDefinition<T, realm::List, CollectionClass<T>> {
-    using List = List<T>;
+    using List = js::List<T>;
 
     std::string const name = "List";
 

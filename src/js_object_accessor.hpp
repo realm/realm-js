@@ -30,8 +30,8 @@ struct NativeAccessor {
     using ContextType = typename T::Context;
     using ObjectType = typename T::Object;
     using ValueType = typename T::Value;
-    using Object = Object<T>;
-    using Value = Value<T>;
+    using Object = js::Object<T>;
+    using Value = js::Value<T>;
 
     static bool dict_has_value_for_key(ContextType ctx, ValueType dict, const std::string &prop_name) {
         ObjectType object = Value::validated_to_object(ctx, dict);

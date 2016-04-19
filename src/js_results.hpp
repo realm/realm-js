@@ -34,9 +34,9 @@ class Results {
     using ContextType = typename T::Context;
     using ObjectType = typename T::Object;
     using ValueType = typename T::Value;
-    using Object = Object<T>;
-    using Value = Value<T>;
-    using ReturnValue = ReturnValue<T>;
+    using Object = js::Object<T>;
+    using Value = js::Value<T>;
+    using ReturnValue = js::ReturnValue<T>;
 
   public:
     static ObjectType create_instance(ContextType, const realm::Results &, bool live = true);
@@ -60,7 +60,7 @@ class Results {
 
 template<typename T>
 struct ResultsClass : ClassDefinition<T, realm::Results, CollectionClass<T>> {
-    using Results = Results<T>;
+    using Results = js::Results<T>;
 
     std::string const name = "Results";
 
