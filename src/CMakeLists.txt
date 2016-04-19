@@ -7,6 +7,7 @@ set(SOURCES
     results.cpp
     schema.cpp
     shared_realm.cpp
+    impl/collection_change_builder.cpp
     impl/collection_notifier.cpp
     impl/list_notifier.cpp
     impl/realm_coordinator.cpp
@@ -25,6 +26,7 @@ set(HEADERS
     results.hpp
     schema.hpp
     shared_realm.hpp
+    impl/collection_change_builder.hpp
     impl/collection_notifier.hpp
     impl/external_commit_helper.hpp
     impl/list_notifier.hpp
