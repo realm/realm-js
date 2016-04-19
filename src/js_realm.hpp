@@ -63,7 +63,10 @@ class RealmDelegate : public BindingContext {
     RealmDelegate(std::weak_ptr<Realm> realm, GlobalContextType ctx) : m_context(ctx), m_realm(realm) {}
 
     ~RealmDelegate() {
-        remove_all_notifications();
+        // All protected values need to be unprotected while the context is retained.
+        m_defaults.clear();
+        m_constructors.clear();
+        m_notifications.clear();
     }
 
     void add_notification(FunctionType notification) {

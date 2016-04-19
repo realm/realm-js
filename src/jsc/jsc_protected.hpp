@@ -32,7 +32,7 @@ class Protected<JSGlobalContextRef> {
     Protected(Protected<JSGlobalContextRef> &&other) : m_context(other.m_context) {
         other.m_context = nullptr;
     }
-    Protected(JSGlobalContextRef ctx) : m_context(ctx) {
+    explicit Protected(JSGlobalContextRef ctx) : m_context(ctx) {
         JSGlobalContextRetain(m_context);
     }
     ~Protected() {
