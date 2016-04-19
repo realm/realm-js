@@ -47,6 +47,8 @@ namespace realm {
         SharedRealm realm() { return m_realm; }
         const ObjectSchema &get_object_schema() { return *m_object_schema; }
         Row row() { return m_row; }
+        
+        bool is_valid() { return m_row.is_attached(); }
 
     private:
         SharedRealm m_realm;
@@ -57,6 +59,8 @@ namespace realm {
         inline void set_property_value_impl(ContextType ctx, const Property &property, ValueType value, bool try_update);
         template<typename ValueType, typename ContextType>
         inline ValueType get_property_value_impl(ContextType ctx, const Property &property);
+        
+        inline void verify_attached();
     };
 
     //
@@ -109,6 +113,13 @@ namespace realm {
         static Mixed to_mixed(ContextType ctx, ValueType &val) { throw std::runtime_error("'Any' type is unsupported"); }
     };
 
+    class InvalidatedObjectException : public std::runtime_error
+    {
+      public:
+        InvalidatedObjectException(const std::string object_type, const std::string message) : std::runtime_error(message), object_type(object_type) {}
+        const std::string object_type;
+    };
+    
     class InvalidPropertyException : public std::runtime_error
     {
       public:
@@ -137,6 +148,8 @@ namespace realm {
     template <typename ValueType, typename ContextType>
     inline void Object::set_property_value(ContextType ctx, std::string prop_name, ValueType value, bool try_update)
     {
+        verify_attached();
+        
         const Property *prop = m_object_schema->property_for_name(prop_name);
         if (!prop) {
             throw InvalidPropertyException(m_object_schema->name, prop_name,
@@ -148,6 +161,8 @@ namespace realm {
     template <typename ValueType, typename ContextType>
     inline ValueType Object::get_property_value(ContextType ctx, std::string prop_name)
     {
+        verify_attached();
+
         const Property *prop = m_object_schema->property_for_name(prop_name);
         if (!prop) {
             throw InvalidPropertyException(m_object_schema->name, prop_name,
@@ -323,6 +338,13 @@ namespace realm {
             }
         }
         return object;
+    }
+    
+    inline void Object::verify_attached() {
+        if (!m_row.is_attached()) {
+            throw InvalidatedObjectException("Accessing object of type " + m_object_schema->name + " which has been deleted",
+                                             m_object_schema->name);
+        }
     }
 
     //
