@@ -19,7 +19,6 @@
 'use strict';
 
 const React = require('react-native');
-const Realm = require('realm');
 const RealmTests = require('realm-tests');
 
 RealmTests.registerTests({
@@ -56,8 +55,6 @@ function runTests() {
     let testNames = RealmTests.getTestNames();
 
     for (let suiteName in testNames) {
-        let testSuite = RealmTests[suiteName];
-
         console.log('Starting ' + suiteName);
 
         for (let testName of testNames[suiteName]) {
