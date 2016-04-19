@@ -37,9 +37,9 @@
 #import "rpc.hpp"
 
 #define WEB_SERVER_PORT 8082
-#endif
 
 using namespace realm::rpc;
+#endif
 
 @interface NSObject ()
 - (instancetype)initWithJSContext:(void *)context;
