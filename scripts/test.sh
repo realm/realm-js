@@ -155,6 +155,7 @@ case "$TARGET" in
   ;;
 "node")
   npm install
+  scripts/download-core.sh
 
   pushd src/node
   node-gyp configure
