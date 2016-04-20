@@ -16,9 +16,30 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#ifndef REALM_JS_H
-#define REALM_JS_H
+#pragma once
 
-#include <RealmJS/jsc_init.h>
+#include "node_types.hpp"
 
-#endif /* REALM_JS_H */
+namespace realm {
+namespace js {
+
+template<>
+class String<node::Types> {
+    std::string m_str;
+
+  public:
+    String(const char* s) : m_str(s) {}
+    String(const std::string &s) : m_str(s) {}
+    String(const v8::Local<v8::String> &s) : m_str(*Nan::Utf8String(s)) {}
+    String(v8::Local<v8::String> &&s) : String(s) {}
+
+    operator std::string() const {
+        return m_str;
+    }
+    operator v8::Local<v8::String>() const {
+        return Nan::New(m_str).ToLocalChecked();
+    }
+};
+
+} // js
+} // realm

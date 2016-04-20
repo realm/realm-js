@@ -16,9 +16,17 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#ifndef REALM_JS_H
-#define REALM_JS_H
+#pragma once
 
-#include <RealmJS/jsc_init.h>
+#include "node_types.hpp"
 
-#endif /* REALM_JS_H */
+namespace realm {
+namespace js {
+
+template<>
+inline v8::Local<v8::Context> node::Context::get_global_context(v8::Isolate* isolate) {
+    return isolate->GetCurrentContext();
+}
+    
+} // js
+} // realm

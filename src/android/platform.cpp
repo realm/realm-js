@@ -16,10 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#include "../platform.hpp"
- #include "../js_init.h"
 #include <string>
 #include <stdlib.h>
+
+#include "../platform.hpp"
 
 std::string s_default_realm_directory;
 

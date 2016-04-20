@@ -16,43 +16,17 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+/* eslint-env es6, node */
+/* eslint-disable no-console */
+
 'use strict';
 
-const React = require('react-native');
-const RealmTests = require('realm-tests');
-
-RealmTests.registerTests({
-    ListViewTest: require('./listview-test'),
-});
-
-const {
-    NativeAppEventEmitter,
-    NativeModules,
-} = React;
-
-module.exports = {
-    runTests,
-};
-
-// Listen for event to run a particular test.
-NativeAppEventEmitter.addListener('realm-run-test', (test) => {
-    let error;
-    try {
-        RealmTests.runTest(test.suite, test.name);
-    } catch (e) {
-        error = '' + e;
-    }
-
-    NativeModules.Realm.emit('realm-test-finished', error);
-});
-
-// Inform the native test harness about the test suite once it's ready.
-setTimeout(() => {
-    NativeModules.Realm.emit('realm-test-names', RealmTests.getTestNames());
-}, 0);
+const mockery = require('mockery');
 
 function runTests() {
-    let testNames = RealmTests.getTestNames();
+    const RealmTests = require('./js');
+    const testNames = RealmTests.getTestNames();
+    let passed = true;
 
     for (let suiteName in testNames) {
         console.log('Starting ' + suiteName);
@@ -66,11 +40,24 @@ function runTests() {
             }
             catch (e) {
                 console.warn('- ' + testName);
-                console.warn(e.message);
+                console.error(e.message, e.stack);
+                passed = false;
             }
             finally {
                 RealmTests.runTest(suiteName, 'afterEach');
             }
         }
+    }
+
+    return passed;
+}
+
+if (require.main == module) {
+    mockery.enable();
+    mockery.warnOnUnregistered(false);
+    mockery.registerMock('realm', require('..'));
+
+    if (!runTests()) {
+        process.exit(1);
     }
 }

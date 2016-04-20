@@ -16,9 +16,18 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#ifndef REALM_JS_H
-#define REALM_JS_H
+#pragma once
 
-#include <RealmJS/jsc_init.h>
+#include "jsc_types.hpp"
 
-#endif /* REALM_JS_H */
+namespace realm {
+namespace js {
+
+template<>
+inline JSValueRef jsc::Exception::value(JSContextRef ctx, const std::string &message) {
+    JSValueRef value = jsc::Value::from_string(ctx, message);
+    return JSObjectMakeError(ctx, 1, &value, NULL);
+}
+    
+} // js
+} // realm

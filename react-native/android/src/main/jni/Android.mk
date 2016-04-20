@@ -15,15 +15,9 @@ include $(CLEAR_VARS)
 LOCAL_MODULE := librealmreact
 
 LOCAL_SRC_FILES := \
-  src/js_collection.cpp \
-  src/js_list.cpp \
-  src/js_results.cpp \
-  src/js_init.cpp \
   src/js_realm.cpp \
-  src/js_util.cpp \
-  src/js_object.cpp \
-  src/js_schema.cpp	\
   src/rpc.cpp \
+  src/jsc/jsc_init.cpp \
   src/android/platform.cpp \
   src/android/io_realm_react_RealmReactModule.cpp \
   src/android/jsc_override.cpp \
@@ -43,6 +37,7 @@ LOCAL_SRC_FILES := \
   vendor/base64.cpp
 
 LOCAL_C_INCLUDES := src
+LOCAL_C_INCLUDES += src/jsc
 LOCAL_C_INCLUDES += src/object-store/src
 LOCAL_C_INCLUDES += src/object-store/src/impl
 LOCAL_C_INCLUDES += src/object-store/src/parser

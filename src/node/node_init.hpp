@@ -18,11 +18,14 @@
 
 #pragma once
 
-#include "js_util.hpp"
+#include "node_string.hpp"
+#include "node_protected.hpp"
+#include "node_context.hpp"
+#include "node_value.hpp"
+#include "node_object.hpp"
+#include "node_function.hpp"
+#include "node_exception.hpp"
+#include "node_return_value.hpp"
+#include "node_object_accessor.hpp"
 
-namespace realm {
-    class Object;
-}
-
-JSClassRef RJSObjectClass();
-JSObjectRef RJSObjectCreate(JSContextRef ctx, realm::Object object);
+#include "js_realm.hpp"

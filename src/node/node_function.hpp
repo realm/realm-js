@@ -1,0 +1,49 @@
+////////////////////////////////////////////////////////////////////////////
+//
+// Copyright 2016 Realm Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+////////////////////////////////////////////////////////////////////////////
+
+#pragma once
+
+#include "node_types.hpp"
+
+namespace realm {
+namespace js {
+
+template<>
+inline v8::Local<v8::Value> node::Function::call(v8::Isolate* isolate, const v8::Local<v8::Function> &function, const v8::Local<v8::Object> &this_object, size_t argc, const v8::Local<v8::Value> arguments[]) {
+    Nan::TryCatch trycatch;
+    auto result = Nan::Call(function, this_object, (int)argc, const_cast<v8::Local<v8::Value>*>(arguments));
+
+    if (trycatch.HasCaught()) {
+        throw node::Exception(isolate, trycatch.Exception());
+    }
+    return result.ToLocalChecked();
+}
+
+template<>
+inline v8::Local<v8::Object> node::Function::construct(v8::Isolate* isolate, const v8::Local<v8::Function> &function, size_t argc, const v8::Local<v8::Value> arguments[]) {
+    Nan::TryCatch trycatch;
+    auto result = Nan::NewInstance(function, (int)argc, const_cast<v8::Local<v8::Value>*>(arguments));
+
+    if (trycatch.HasCaught()) {
+        throw node::Exception(isolate, trycatch.Exception());
+    }
+    return result.ToLocalChecked();
+}
+    
+} // js
+} // realm

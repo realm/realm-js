@@ -16,15 +16,17 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#include "js_collection.hpp"
+#pragma once
 
-static JSClassRef RJSCreateCollectionClass() {
-    JSClassDefinition classDefinition = kJSClassDefinitionEmpty;
-    classDefinition.className = "Collection";
-    return JSClassCreate(&classDefinition);
-}
+#include "node_types.hpp"
 
-JSClassRef RJSCollectionClass() {
-    static JSClassRef s_collectionClass = RJSCreateCollectionClass();
-    return s_collectionClass;
+namespace realm {
+namespace js {
+
+template<>
+inline v8::Local<v8::Value> node::Exception::value(v8::Isolate* isolate, const std::string &message) {
+    return Nan::Error(message.c_str());
 }
+    
+} // js
+} // realm

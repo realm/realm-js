@@ -16,9 +16,17 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#ifndef REALM_JS_H
-#define REALM_JS_H
+#pragma once
 
-#include <RealmJS/jsc_init.h>
+#include "jsc_types.hpp"
 
-#endif /* REALM_JS_H */
+namespace realm {
+namespace js {
+
+template<>
+inline JSGlobalContextRef jsc::Context::get_global_context(JSContextRef ctx) {
+    return JSContextGetGlobalContext(ctx);
+}
+
+} // js
+} // realm

@@ -16,9 +16,19 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#ifndef REALM_JS_H
-#define REALM_JS_H
+#include "node_init.hpp"
 
-#include <RealmJS/jsc_init.h>
+namespace realm {
+namespace node {
 
-#endif /* REALM_JS_H */
+static void init(v8::Local<v8::Object> exports) {
+    v8::Isolate* isolate = v8::Isolate::GetCurrent();
+    v8::Local<v8::Function> realm_constructor = js::Realm<Types>::create_constructor(isolate);
+
+    Nan::Set(exports, realm_constructor->GetName(), realm_constructor);
+}
+
+} // node
+} // realm
+
+NODE_MODULE(Realm, realm::node::init);

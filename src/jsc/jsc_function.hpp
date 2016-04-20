@@ -18,18 +18,30 @@
 
 #pragma once
 
-#include "js_class.hpp"
+#include "jsc_types.hpp"
 
 namespace realm {
 namespace js {
 
-// Empty class that merely serves as useful type for now.
-class Collection {};
+template<>
+inline JSValueRef jsc::Function::call(JSContextRef ctx, const JSObjectRef &function, const JSObjectRef &this_object, size_t argc, const JSValueRef arguments[]) {
+    JSValueRef exception = nullptr;
+    JSValueRef result = JSObjectCallAsFunction(ctx, function, this_object, argc, arguments, &exception);
+    if (exception) {
+        throw jsc::Exception(ctx, exception);
+    }
+    return result;
+}
 
-template<typename T>
-struct CollectionClass : ClassDefinition<T, Collection> {
-    std::string const name = "Collection";
-};
-
+template<>
+inline JSObjectRef jsc::Function::construct(JSContextRef ctx, const JSObjectRef &function, size_t argc, const JSValueRef arguments[]) {
+    JSValueRef exception = nullptr;
+    JSObjectRef result = JSObjectCallAsConstructor(ctx, function, argc, arguments, &exception);
+    if (exception) {
+        throw jsc::Exception(ctx, exception);
+    }
+    return result;
+}
+    
 } // js
 } // realm

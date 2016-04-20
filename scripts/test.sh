@@ -12,6 +12,9 @@ SRCROOT=$(cd "$(dirname "$0")/.." && pwd)
 # Start current working directory at the root of the project.
 cd "$SRCROOT"
 
+# Add node_modules to PATH just in case we weren't called from `npm test`
+PATH="$PWD/node_modules/.bin:$PATH"
+
 if [[ $TARGET = *-android ]]; then
   # Inform the prepublish script to build Android modules.
   export REALM_BUILD_ANDROID=1
@@ -150,11 +153,33 @@ case "$TARGET" in
   echo "********* File location: $(pwd)/tests.xml *********";
   cat tests.xml
   ;;
+"node")
+  npm install
+  scripts/download-core.sh
+
+  pushd src/node
+  node-gyp configure
+
+  # Being explicit about debug mode rather than relying on defaults.
+  if [[ $CONFIGURATION == 'Debug' ]]; then
+    node-gyp build --debug
+  else
+    node-gyp build --no-debug
+  fi
+
+  popd
+
+  # Link to the appropriate module in the build directory.
+  mkdir -p build
+  ln -fs "../src/node/build/$CONFIGURATION/realm.node" build
+
+  node tests
+  ;;
 "object-store")
   pushd src/object-store
   cmake -DCMAKE_BUILD_TYPE=$CONFIGURATION .
   make run-tests
-;;
+  ;;
 *)
   echo "Invalid target '${TARGET}'"
   exit 1

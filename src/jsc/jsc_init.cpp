@@ -16,9 +16,28 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#ifndef REALM_JS_H
-#define REALM_JS_H
+#include <algorithm>
+#include <cassert>
 
-#include <RealmJS/jsc_init.h>
+#include "jsc_init.hpp"
+#include "platform.hpp"
 
-#endif /* REALM_JS_H */
+extern "C" {
+
+using namespace realm;
+using namespace realm::jsc;
+
+JSObjectRef RJSConstructorCreate(JSContextRef ctx) {
+    return js::Realm<Types>::create_constructor(ctx);
+}
+
+void RJSInitializeInContext(JSContextRef ctx) {
+    static const String realm_string = "Realm";
+
+    JSObjectRef global_object = JSContextGetGlobalObject(ctx);
+    JSObjectRef realm_constructor = RJSConstructorCreate(ctx);
+
+    jsc::Object::set_property(ctx, global_object, realm_string, realm_constructor, js::PropertyAttributes(js::ReadOnly | js::DontEnum | js::DontDelete));
+}
+
+} // extern "C"

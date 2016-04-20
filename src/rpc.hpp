@@ -19,13 +19,13 @@
 #pragma once
 
 #include "json.hpp"
-#include <JavaScriptCore/JSBase.h>
+#include "jsc_types.hpp"
 
 namespace realm {
-    class ObjectSchema;
-}
 
-namespace realm_js {
+class ObjectSchema;
+
+namespace rpc {
 
 using json = nlohmann::json;
 using RPCObjectID = u_int64_t;
@@ -48,8 +48,8 @@ class RPCServer {
     json serialize_json_value(JSValueRef value);
     JSValueRef deserialize_json_value(const json dict);
 
-    json serialize_object_schema(const realm::ObjectSchema &objectSchema);
+    json serialize_object_schema(const ObjectSchema &objectSchema);
 };
 
-}
-
+} // rpc
+} // realm
