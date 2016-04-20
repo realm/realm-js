@@ -18,8 +18,6 @@
 
 #include "impl/weak_realm_notifier_base.hpp"
 
-#include <CoreFoundation/CFRunLoop.h>
-
 namespace realm {
 class Realm;
 
@@ -36,16 +34,25 @@ public:
     WeakRealmNotifier(const WeakRealmNotifier&) = delete;
     WeakRealmNotifier& operator=(const WeakRealmNotifier&) = delete;
 
-    // Noop for this implementation
-    void set_auto_refresh(bool auto_refresh) { }
+    // Register  or unregister the handler on the looper so we will react to refresh notifications
+    void set_auto_refresh(bool auto_refresh);
 
-    // Asynchronously call notify() on the Realm on the appropriate thread
+    // Asyncronously call notify() on the Realm on the appropriate thread
     void notify();
 
 private:
-    CFRunLoopRef m_runloop;
-    CFRunLoopSourceRef m_signal;
+    // Pointer to the handler, created by Java/C#.
+    void* m_handler;
 };
 
+using create_handler_function = void*(*)();
+extern create_handler_function create_handler_for_current_thread;
+
+using notify_handler_function = void(*)(void* handler, void* realm);
+extern notify_handler_function notify_handler;
+
+using destroy_handler_function = void(*)(void* handler);
+extern destroy_handler_function destroy_handler;
 } // namespace _impl
 } // namespace realm
+
