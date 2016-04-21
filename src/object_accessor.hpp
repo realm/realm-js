@@ -208,10 +208,12 @@ namespace realm {
             case PropertyTypeArray: {
                 realm::LinkViewRef link_view = m_row.get_linklist(column);
                 link_view->clear();
-                size_t count = Accessor::list_size(ctx, value);
-                for (size_t i = 0; i < count; i++) {
-                    ValueType element = Accessor::list_value_at_index(ctx, value, i);
-                    link_view->add(Accessor::to_object_index(ctx, m_realm, element, property.object_type, try_update));
+                if (!Accessor::is_null(ctx, value)) {
+                    size_t count = Accessor::list_size(ctx, value);
+                    for (size_t i = 0; i < count; i++) {
+                        ValueType element = Accessor::list_value_at_index(ctx, value, i);
+                        link_view->add(Accessor::to_object_index(ctx, m_realm, element, property.object_type, try_update));
+                    }
                 }
                 break;
             }
@@ -309,6 +311,9 @@ namespace realm {
                 else if (created) {
                     if (Accessor::has_default_value_for_property(ctx, realm.get(), object_schema, prop.name)) {
                         object.set_property_value_impl(ctx, prop, Accessor::default_value_for_property(ctx, realm.get(), object_schema, prop.name), try_update);
+                    }
+                    else if (prop.is_nullable || prop.type == PropertyTypeArray) {
+                        object.set_property_value_impl(ctx, prop, Accessor::null_value(ctx), try_update);
                     }
                     else {
                         throw MissingPropertyValueException(object_schema.name, prop.name,

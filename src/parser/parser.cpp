@@ -66,8 +66,9 @@ struct argument : seq< one< '$' >, must< argument_index > > {};
 
 // expressions and operators
 struct expr : sor< dq_string, sq_string, number, argument, true_value, false_value, key_path > {};
+struct case_insensitive : pegtl_istring_t("[c]"){};
 
-struct eq : sor< two< '=' >, one< '=' > > {};
+struct eq : seq< sor< two< '=' >, one< '=' > >, opt< case_insensitive > >{};
 struct noteq : pegtl::string< '!', '=' > {};
 struct lteq : pegtl::string< '<', '=' > {};
 struct lt : one< '<' > {};
@@ -80,7 +81,7 @@ struct ends : pegtl_istring_t("endswith") {};
 template<typename A, typename B>
 struct pad_plus : seq< plus< B >, A, plus< B > > {};
 
-struct padded_oper : pad_plus< sor< contains, begins, ends >, blank > {};
+struct padded_oper : pad_plus< seq< sor< contains, begins, ends>, opt< case_insensitive > >, blank > {};
 struct symbolic_oper : pad< sor< eq, noteq, lteq, lt, gteq, gt >, blank > {};
 
 // predicates
@@ -236,8 +237,7 @@ EXPRESSION_ACTION(number, Expression::Type::Number)
 EXPRESSION_ACTION(true_value, Expression::Type::True)
 EXPRESSION_ACTION(false_value, Expression::Type::False)
 EXPRESSION_ACTION(argument_index, Expression::Type::Argument)
-
-
+    
 template<> struct action< true_pred >
 {
     static void apply( const input & in, ParserState & state )
@@ -271,7 +271,16 @@ OPERATOR_ACTION(lt, Predicate::Operator::LessThan)
 OPERATOR_ACTION(begins, Predicate::Operator::BeginsWith)
 OPERATOR_ACTION(ends, Predicate::Operator::EndsWith)
 OPERATOR_ACTION(contains, Predicate::Operator::Contains)
-
+    
+template<> struct action< case_insensitive >
+{
+    static void apply( const input & in, ParserState & state )
+    {
+        DEBUG_PRINT_TOKEN(in.string());
+        state.last_predicate()->cmpr.option = Predicate::OperatorOption::CaseInsensitive;
+    }
+};
+    
 template<> struct action< one< '(' > >
 {
     static void apply( const input & in, ParserState & state )
