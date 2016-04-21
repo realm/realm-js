@@ -344,10 +344,6 @@ void wrap(uint32_t index, Nan::NAN_INDEX_GETTER_ARGS_TYPE info) {
         // Out-of-bounds index getters should just return undefined in JS.
         return_value.set_undefined();
     }
-    catch (Results::OutOfBoundsIndexException &) {
-        // Out-of-bounds index getters should just return undefined in JS.
-        return_value.set_undefined();
-    }
     catch (std::exception &e) {
         Nan::ThrowError(node::Exception::value(isolate, e));
     }

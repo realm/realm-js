@@ -278,10 +278,6 @@ inline JSValueRef ObjectWrap<ClassType>::get_property(JSContextRef ctx, JSObject
             // Out-of-bounds index getters should just return undefined in JS.
             return Value::from_undefined(ctx);
         }
-        catch (Results::OutOfBoundsIndexException &) {
-            // Out-of-bounds index getters should just return undefined in JS.
-            return Value::from_undefined(ctx);
-        }
         catch (std::invalid_argument &) {
             // Property is not a number.
         }
