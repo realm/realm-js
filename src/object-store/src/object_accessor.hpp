@@ -167,7 +167,12 @@ namespace realm {
 
         size_t column = property.table_column;
         if (property.is_nullable && Accessor::is_null(ctx, value)) {
-            m_row.set_null(column);
+            if (property.type == PropertyTypeObject) {
+                m_row.nullify_link(column);
+            }
+            else {
+                m_row.set_null(column);
+            }
             return;
         }
 
