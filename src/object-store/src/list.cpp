@@ -21,7 +21,6 @@
 
 #include <realm/util/to_string.hpp>
 #include <stdexcept>
-#include "util.hpp"
 
 using namespace realm;
 
