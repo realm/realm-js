@@ -26,14 +26,20 @@
 #include <sys/time.h>
 #include <system_error>
 #include <unistd.h>
+
+#ifdef __ANDROID__
 #include <android/log.h>
+#define ANDROID_LOG __android_log_print
+#else
+#define ANDROID_LOG(...)
+#endif
 
 using namespace realm;
 using namespace realm::_impl;
 
 #define LOG(fmt...) do { \
     fprintf(stderr, fmt); \
-    __android_log_print(ANDROID_LOG_ERROR, "REALM", fmt); \
+    ANDROID_LOG(ANDROID_LOG_ERROR, "REALM", fmt); \
 } while (0)
 
 namespace {

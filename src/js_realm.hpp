@@ -183,7 +183,7 @@ class Realm {
     }
     
     static std::string normalize_path(std::string path) {
-        if (path.size() && path[0] != '/') {
+        if (path.size() && path[0] != '/' && path[0] != '.') {
             return default_realm_file_directory() + "/" + path;
         }
         return path;
@@ -479,7 +479,7 @@ template<typename T>
 void Realm<T>::add_listener(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 2);
 
-    __unused std::string name = validated_notification_name(ctx, arguments[0]);
+    validated_notification_name(ctx, arguments[0]);
     auto callback = Value::validated_to_function(ctx, arguments[1]);
 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
@@ -490,7 +490,7 @@ template<typename T>
 void Realm<T>::remove_listener(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 2);
 
-    __unused std::string name = validated_notification_name(ctx, arguments[0]);
+    validated_notification_name(ctx, arguments[0]);
     auto callback = Value::validated_to_function(ctx, arguments[1]);
 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);

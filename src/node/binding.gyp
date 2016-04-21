@@ -4,8 +4,9 @@
       "target_name": "realm",
       "sources": [
         "node_init.cpp",
+        "platform.cpp",
+        "weak_realm_notifier.cpp",
         "../js_realm.cpp",
-        "../ios/platform.mm",
         "../object-store/src/index_set.cpp",
         "../object-store/src/list.cpp",
         "../object-store/src/object_schema.cpp",
@@ -16,8 +17,6 @@
         "../object-store/src/impl/async_query.cpp",
         "../object-store/src/impl/transact_log_handler.cpp",
         "../object-store/src/impl/realm_coordinator.cpp",
-        "../object-store/src/impl/apple/external_commit_helper.cpp",
-        "../object-store/src/impl/apple/weak_realm_notifier.cpp",
         "../object-store/src/parser/parser.cpp",
         "../object-store/src/parser/query_builder.cpp"
       ],
@@ -34,16 +33,35 @@
       "library_dirs": [
         "$(srcdir)/../../core"
       ],
-      "defines": ["REALM_HAVE_CONFIG"],
+      "defines": [
+        "REALM_HAVE_CONFIG",
+        "REALM_PLATFORM_NODE=1"
+      ],
       "cflags_cc": ["-fexceptions", "-frtti", "-std=c++14"],
-      "ldflags": ["-lrealm"],
+      "cflags": ["-fno-lto"],
+      "ldflags": ["-fno-lto", "-Wl,--build-id"],
+      "libraries": ["-lrealm"],
       "xcode_settings": {
         "CLANG_CXX_LANGUAGE_STANDARD": "c++14",
         "CLANG_CXX_LIBRARY": "libc++",
         "MACOSX_DEPLOYMENT_TARGET": "10.8",
         "OTHER_CPLUSPLUSFLAGS": ["-fexceptions", "-frtti"],
-        "OTHER_LDFLAGS": ["-lrealm", "-framework", "Foundation"]
+        "OTHER_LDFLAGS": ["-framework", "Foundation"]
       },
+      "conditions": [
+        [
+          "OS=='linux'", {
+            "sources": [
+              "../object-store/src/impl/android/external_commit_helper.cpp",
+            ]
+          }
+        ],
+        ["OS=='mac'", {
+          "sources": [
+            "../object-store/src/impl/apple/external_commit_helper.cpp"
+          ]
+        }]
+      ],
       "configurations": {
         "Debug": {
           "defines": ["DEBUG=1"]
