@@ -50,6 +50,9 @@
 		F620F0581CB766DA0082977B /* node_init.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F620F0571CB766DA0082977B /* node_init.cpp */; };
 		F620F0751CB9F60C0082977B /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F620F0741CB9F60C0082977B /* CoreFoundation.framework */; };
 		F63117F01CEB0D5F00ECB2DE /* weak_realm_notifier.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F63117EE1CEB0D5900ECB2DE /* weak_realm_notifier.cpp */; };
+		F63118471CEBA7B700ECB2DE /* external_commit_helper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F63118431CEBA7B700ECB2DE /* external_commit_helper.cpp */; };
+		F63118481CEBA7B700ECB2DE /* weak_realm_notifier.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F63118451CEBA7B700ECB2DE /* weak_realm_notifier.cpp */; };
+		F631184D1CEBA7D800ECB2DE /* external_commit_helper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F631184A1CEBA7D800ECB2DE /* external_commit_helper.cpp */; };
 		F63FF2C61C12469E00B3B8E0 /* jsc_init.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 029048011C0428DF00ABDED4 /* jsc_init.cpp */; };
 		F63FF2C91C12469E00B3B8E0 /* js_realm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 029048071C0428DF00ABDED4 /* js_realm.cpp */; };
 		F63FF2CD1C12469E00B3B8E0 /* rpc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0290480F1C0428DF00ABDED4 /* rpc.cpp */; };
@@ -197,6 +200,13 @@
 		F62BF8FB1CAC71780022BCDC /* libRealmNode.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libRealmNode.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		F63117EE1CEB0D5900ECB2DE /* weak_realm_notifier.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = weak_realm_notifier.cpp; sourceTree = "<group>"; };
 		F63117EF1CEB0D5900ECB2DE /* weak_realm_notifier.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = weak_realm_notifier.hpp; sourceTree = "<group>"; };
+		F63118431CEBA7B700ECB2DE /* external_commit_helper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = external_commit_helper.cpp; sourceTree = "<group>"; };
+		F63118441CEBA7B700ECB2DE /* external_commit_helper.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = external_commit_helper.hpp; sourceTree = "<group>"; };
+		F63118451CEBA7B700ECB2DE /* weak_realm_notifier.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = weak_realm_notifier.cpp; sourceTree = "<group>"; };
+		F63118461CEBA7B700ECB2DE /* weak_realm_notifier.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = weak_realm_notifier.hpp; sourceTree = "<group>"; };
+		F631184A1CEBA7D800ECB2DE /* external_commit_helper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = external_commit_helper.cpp; sourceTree = "<group>"; };
+		F631184B1CEBA7D800ECB2DE /* external_commit_helper.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = external_commit_helper.hpp; sourceTree = "<group>"; };
+		F631184C1CEBA7D800ECB2DE /* weak_realm_notifier.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = weak_realm_notifier.hpp; sourceTree = "<group>"; };
 		F63FF2B11C1241E500B3B8E0 /* libRealmJS.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libRealmJS.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		F63FF2F01C16405C00B3B8E0 /* libGCDWebServers.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libGCDWebServers.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		F63FF2FD1C1642BB00B3B8E0 /* GCDWebServer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GCDWebServer.h; sourceTree = "<group>"; };
@@ -442,7 +452,9 @@
 		F63117EA1CEB0BFA00ECB2DE /* impl */ = {
 			isa = PBXGroup;
 			children = (
+				F63118421CEBA7A100ECB2DE /* android */,
 				F63117EB1CEB0C1B00ECB2DE /* apple */,
+				F63118491CEBA7BD00ECB2DE /* generic */,
 				F63117ED1CEB0CC600ECB2DE /* node */,
 				02414B991CE6AAEF00A8669F /* collection_change_builder.cpp */,
 				02414B9A1CE6AAEF00A8669F /* collection_change_builder.hpp */,
@@ -494,6 +506,27 @@
 				F63117EF1CEB0D5900ECB2DE /* weak_realm_notifier.hpp */,
 			);
 			path = node;
+			sourceTree = "<group>";
+		};
+		F63118421CEBA7A100ECB2DE /* android */ = {
+			isa = PBXGroup;
+			children = (
+				F63118431CEBA7B700ECB2DE /* external_commit_helper.cpp */,
+				F63118441CEBA7B700ECB2DE /* external_commit_helper.hpp */,
+				F63118451CEBA7B700ECB2DE /* weak_realm_notifier.cpp */,
+				F63118461CEBA7B700ECB2DE /* weak_realm_notifier.hpp */,
+			);
+			path = android;
+			sourceTree = "<group>";
+		};
+		F63118491CEBA7BD00ECB2DE /* generic */ = {
+			isa = PBXGroup;
+			children = (
+				F631184A1CEBA7D800ECB2DE /* external_commit_helper.cpp */,
+				F631184B1CEBA7D800ECB2DE /* external_commit_helper.hpp */,
+				F631184C1CEBA7D800ECB2DE /* weak_realm_notifier.hpp */,
+			);
+			path = generic;
 			sourceTree = "<group>";
 		};
 		F63FF2FB1C1642BB00B3B8E0 /* GCDWebServer */ = {
@@ -846,6 +879,7 @@
 				F63FF31C1C1642BB00B3B8E0 /* GCDWebServerConnection.m in Sources */,
 				F63FF3201C1642BB00B3B8E0 /* GCDWebServerDataRequest.m in Sources */,
 				F63FF3221C1642BB00B3B8E0 /* GCDWebServerMultiPartFormRequest.m in Sources */,
+				F631184D1CEBA7D800ECB2DE /* external_commit_helper.cpp in Sources */,
 				F63FF3211C1642BB00B3B8E0 /* GCDWebServerFileRequest.m in Sources */,
 				F63FF31F1C1642BB00B3B8E0 /* GCDWebServerResponse.m in Sources */,
 				F63FF3261C1642BB00B3B8E0 /* GCDWebServerFileResponse.m in Sources */,
@@ -853,7 +887,9 @@
 				F63FF3241C1642BB00B3B8E0 /* GCDWebServerDataResponse.m in Sources */,
 				F63FF31B1C1642BB00B3B8E0 /* GCDWebServer.m in Sources */,
 				F63FF31D1C1642BB00B3B8E0 /* GCDWebServerFunctions.m in Sources */,
+				F63118481CEBA7B700ECB2DE /* weak_realm_notifier.cpp in Sources */,
 				F63FF3251C1642BB00B3B8E0 /* GCDWebServerErrorResponse.m in Sources */,
+				F63118471CEBA7B700ECB2DE /* external_commit_helper.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

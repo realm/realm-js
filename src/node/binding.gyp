@@ -20,7 +20,6 @@
         "../object-store/src/impl/realm_coordinator.cpp",
         "../object-store/src/impl/results_notifier.cpp",
         "../object-store/src/impl/transact_log_handler.cpp",
-        "../object-store/src/impl/apple/external_commit_helper.cpp",
         "../object-store/src/impl/node/weak_realm_notifier.cpp",
         "../object-store/src/parser/parser.cpp",
         "../object-store/src/parser/query_builder.cpp",
@@ -44,15 +43,36 @@
         "REALM_HAVE_CONFIG",
         "REALM_PLATFORM_NODE=1"
       ],
-      "cflags_cc": ["-fexceptions", "-frtti", "-std=c++14"],
+      "cflags_cc": [
+        "-fexceptions",
+        "-frtti",
+        "-std=c++14",
+        "-Wno-missing-field-initializers",
+        "-Wno-return-type"
+      ],
       "libraries": ["-lrealm"],
       "xcode_settings": {
         "CLANG_CXX_LANGUAGE_STANDARD": "c++14",
         "CLANG_CXX_LIBRARY": "libc++",
+        "GCC_ENABLE_CPP_EXCEPTIONS": "YES",
+        "GCC_ENABLE_CPP_RTTI": "YES",
         "MACOSX_DEPLOYMENT_TARGET": "10.8",
-        "OTHER_CPLUSPLUSFLAGS": ["-fexceptions", "-frtti"],
         "OTHER_LDFLAGS": ["-framework", "Foundation"]
       },
+      "conditions": [
+        [
+          "OS=='linux'", {
+            "sources": [
+              "../object-store/src/impl/android/external_commit_helper.cpp",
+            ]
+          }
+        ],
+        ["OS=='mac'", {
+          "sources": [
+            "../object-store/src/impl/apple/external_commit_helper.cpp"
+          ]
+        }]
+      ],
       "configurations": {
         "Debug": {
           "defines": ["DEBUG=1"]

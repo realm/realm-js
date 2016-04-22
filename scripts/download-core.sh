@@ -51,7 +51,9 @@ if [[ $1 = "--version" ]]; then
     exit 0
 fi
 
-if [ ! -e core ]; then
+if [ "$(uname)" != 'Darwin' ]; then
+    echo "Skipped downloading core on a non-Apple platform."
+elif [ ! -e core ]; then
     download_core
 elif [ -d core -a -d ../realm-core -a ! -L core ]; then
     # Allow newer versions than expected for local builds as testing

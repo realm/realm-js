@@ -444,7 +444,7 @@ public:
     LinkViewObserver(_impl::TransactionChangeInfo& info)
     : m_info(info) { }
 
-    void mark_dirty(size_t row, __unused size_t col)
+    void mark_dirty(size_t row, size_t)
     {
         if (auto change = get_change())
             change->modify(row);
