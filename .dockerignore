@@ -1,0 +1,13 @@
+**/build/
+**/node_modules/
+
+core*
+
+android/
+docs/
+examples/
+react-native/
+vendor/
+
+tests/ios/
+tests/react-test-app/
