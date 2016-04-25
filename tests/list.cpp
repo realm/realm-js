@@ -211,7 +211,8 @@ TEST_CASE("list") {
             // Each of the Lists now has a different source version and state at
             // that version, so they should all see different changes despite
             // being for the same LinkList
-            advance_and_notify(*r);
+            for (auto& list : lists)
+                advance_and_notify(*list.get_realm());
 
             REQUIRE_INDICES(changes[0].insertions, 0, 1, 2);
             REQUIRE(changes[0].modifications.empty());
@@ -224,7 +225,8 @@ TEST_CASE("list") {
 
             // After making another change, they should all get the same notification
             change_list();
-            advance_and_notify(*r);
+            for (auto& list : lists)
+                advance_and_notify(*list.get_realm());
 
             for (int i = 0; i < 3; ++i) {
                 REQUIRE_INDICES(changes[i].insertions, 3);
