@@ -79,8 +79,6 @@ extern "C" JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executo
 
 @implementation RealmReact {
     NSMutableDictionary *_eventHandlers;
-    __weak NSThread *_currentJSThread;
-    __weak NSRunLoop *_currentJSRunLoop;
 
 #if DEBUG
     GCDWebServer *_webServer;
@@ -261,17 +259,6 @@ RCT_REMAP_METHOD(emit, emitEvent:(NSString *)eventName withObject:(id)object) {
     // shutdown rpc if in chrome debug mode
     [self shutdownRPC];
 #endif
-
-    // block until JS thread exits
-    NSRunLoop *runLoop = _currentJSRunLoop;
-    if (runLoop) {
-        CFRunLoopStop([runLoop getCFRunLoop]);
-        while (_currentJSThread && !_currentJSThread.finished) {
-            [NSThread sleepForTimeInterval:0.01];
-        }
-    }
-
-    realm::_impl::RealmCoordinator::clear_all_caches();
 }
 
 - (void)dealloc {
@@ -296,15 +283,24 @@ RCT_REMAP_METHOD(emit, emitEvent:(NSString *)eventName withObject:(id)object) {
     }
     else {
         __weak __typeof__(self) weakSelf = self;
+        __weak __typeof__(executor) weakExecutor = executor;
 
         [executor executeBlockOnJavaScriptQueue:^{
             __typeof__(self) self = weakSelf;
-            if (!self) {
+            __typeof__(executor) executor = weakExecutor;
+            if (!self || !executor) {
                 return;
             }
 
-            self->_currentJSThread = [NSThread currentThread];
-            self->_currentJSRunLoop = [NSRunLoop currentRunLoop];
+            // Make sure the previous JS thread is completely finished before continuing.
+            static __weak NSThread *s_currentJSThread;
+            while (s_currentJSThread && !s_currentJSThread.finished) {
+                [NSThread sleepForTimeInterval:0.1];
+            }
+            s_currentJSThread = [NSThread currentThread];
+
+            // Close all cached Realms from the previous JS thread.
+            realm::_impl::RealmCoordinator::clear_all_caches();
 
             JSGlobalContextRef ctx = RealmReactGetJSGlobalContextForExecutor(executor, true);
             RJSInitializeInContext(ctx);

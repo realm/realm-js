@@ -78,23 +78,26 @@ extern NSMutableArray *RCTGetModuleClasses(void);
         return nil;
     }
 
-    RCTBridge *bridge = [RCTBridge currentBridge];
-    if (!bridge.valid) {
-        [self waitForNotification:RCTJavaScriptDidLoadNotification];
-        bridge = [RCTBridge currentBridge];
+    @autoreleasepool {
+        RCTBridge *bridge = [RCTBridge currentBridge];
+
+        if (!bridge.valid) {
+            [self waitForNotification:RCTJavaScriptDidLoadNotification];
+            bridge = [RCTBridge currentBridge];
+        }
+
+        if (bridge.executorClass != executorClass) {
+            bridge.executorClass = executorClass;
+
+            RCTBridge *parentBridge = [bridge valueForKey:@"parentBridge"];
+            [parentBridge invalidate];
+            [parentBridge setUp];
+
+            return [self currentBridge];
+        }
+
+        return bridge;
     }
-
-    if (bridge.executorClass != executorClass) {
-        bridge.executorClass = executorClass;
-
-        RCTBridge *parentBridge = [bridge valueForKey:@"parentBridge"];
-        [parentBridge invalidate];
-        [parentBridge setUp];
-
-        return [self currentBridge];
-    }
-
-    return bridge;
 }
 
 + (id<RCTJavaScriptExecutor>)currentExecutor {
@@ -102,37 +105,39 @@ extern NSMutableArray *RCTGetModuleClasses(void);
 }
 
 + (XCTestSuite *)defaultTestSuite {
-    XCTestSuite *suite = [super defaultTestSuite];
-    id<RCTJavaScriptExecutor> executor = [self currentExecutor];
+    @autoreleasepool {
+        XCTestSuite *suite = [super defaultTestSuite];
+        id<RCTJavaScriptExecutor> executor = [self currentExecutor];
 
-    // The executor may be nil if the executorClass was not found (i.e. release build).
-    if (!executor) {
+        // The executor may be nil if the executorClass was not found (i.e. release build).
+        if (!executor) {
+            return suite;
+        }
+
+        // FIXME: Remove this nonsense once the crashes go away when a test fails!
+        JSGlobalContextRef ctx = RealmReactGetJSGlobalContextForExecutor(executor, false);
+        if (ctx) {
+            JSGlobalContextSetIncludesNativeCallStackWhenReportingExceptions(ctx, false);
+        }
+
+        NSDictionary *testCaseNames = [self waitForEvent:@"realm-test-names"];
+        NSAssert(testCaseNames.count, @"No test names were provided by the JS");
+
+        NSString *nameSuffix = [self classNameSuffix];
+        if (nameSuffix.length) {
+            NSMutableDictionary *renamedTestCaseNames = [[NSMutableDictionary alloc] init];
+            for (NSString *name in testCaseNames) {
+                renamedTestCaseNames[[name stringByAppendingString:nameSuffix]] = testCaseNames[name];
+            }
+            testCaseNames = renamedTestCaseNames;
+        }
+
+        for (XCTestSuite *testSuite in [self testSuitesFromDictionary:testCaseNames]) {
+            [suite addTest:testSuite];
+        }
+
         return suite;
     }
-
-    // FIXME: Remove this nonsense once the crashes go away when a test fails!
-    JSGlobalContextRef ctx = RealmReactGetJSGlobalContextForExecutor(executor, false);
-    if (ctx) {
-        JSGlobalContextSetIncludesNativeCallStackWhenReportingExceptions(ctx, false);
-    }
-
-    NSDictionary *testCaseNames = [self waitForEvent:@"realm-test-names"];
-    NSAssert(testCaseNames.count, @"No test names were provided by the JS");
-
-    NSString *nameSuffix = [self classNameSuffix];
-    if (nameSuffix.length) {
-        NSMutableDictionary *renamedTestCaseNames = [[NSMutableDictionary alloc] init];
-        for (NSString *name in testCaseNames) {
-            renamedTestCaseNames[[name stringByAppendingString:nameSuffix]] = testCaseNames[name];
-        }
-        testCaseNames = renamedTestCaseNames;
-    }
-
-    for (XCTestSuite *testSuite in [self testSuitesFromDictionary:testCaseNames]) {
-        [suite addTest:testSuite];
-    }
-
-    return suite;
 }
 
 + (NSNotification *)waitForNotification:(NSString *)notificationName {
