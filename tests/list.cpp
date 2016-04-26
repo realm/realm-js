@@ -104,6 +104,11 @@ TEST_CASE("list") {
             auto token = require_change();
             write([&] { origin->move_last_over(0); });
             REQUIRE_INDICES(change.deletions, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
+
+            // Should not resend delete all notification after another commit
+            change = {};
+            write([&] { target->add_empty_row(); });
+            REQUIRE(change.empty());
         }
 
         SECTION("modifying one of the target rows sends a change notification") {
