@@ -124,7 +124,10 @@ TEST_CASE("[collection_change] move_over()") {
 
     SECTION("is just erase when row == last_row") {
         c.move_over(10, 10);
+        c.parse_complete();
+
         REQUIRE_INDICES(c.deletions, 10);
+        REQUIRE(c.insertions.empty());
         REQUIRE(c.moves.empty());
     }
 
@@ -187,6 +190,16 @@ TEST_CASE("[collection_change] move_over()") {
         c.move_over(5, 8);
         c.parse_complete();
         REQUIRE_MOVES(c, {10, 5});
+    }
+
+    SECTION("removes moves to the row when row == last_row") {
+        c.move_over(0, 1);
+        c.move_over(0, 0);
+        c.parse_complete();
+
+        REQUIRE_INDICES(c.deletions, 0, 1);
+        REQUIRE(c.insertions.empty());
+        REQUIRE(c.moves.empty());
     }
 
     SECTION("is not shifted by previous calls to move_over()") {
