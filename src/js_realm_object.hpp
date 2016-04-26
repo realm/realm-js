@@ -52,6 +52,10 @@ class RealmObject {
 
 template<typename T>
 struct RealmObjectClass : ClassDefinition<T, realm::Object> {
+    using ContextType = typename T::Context;
+    using ObjectType = typename T::Object;
+    using ValueType = typename T::Value;
+    using ReturnValue = js::ReturnValue<T>;
     using RealmObject = js::RealmObject<T>;
 
     const std::string name = "RealmObject";
@@ -61,12 +65,6 @@ struct RealmObjectClass : ClassDefinition<T, realm::Object> {
         wrap<RealmObject::set_property>,
         wrap<RealmObject::get_property_names>,
     };
-    
-    using ContextType = typename T::Context;
-    using ObjectType = typename T::Object;
-    using ValueType = typename T::Value;
-    using ReturnValue = js::ReturnValue<T>;
-
 
     MethodMap<T> const methods = {
         {"isValid", wrap<RealmObject::is_valid>},

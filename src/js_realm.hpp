@@ -237,7 +237,7 @@ inline typename T::Function Realm<T>::create_constructor(ContextType ctx) {
     Object::set_property(ctx, realm_constructor, "Collection", collection_constructor, attributes);
     Object::set_property(ctx, realm_constructor, "List", list_constructor, attributes);
     Object::set_property(ctx, realm_constructor, "Results", results_constructor, attributes);
-    Object::set_property(ctx, realm_constructor, "RealmObject", realm_object_constructor, attributes);
+    Object::set_property(ctx, realm_constructor, "Object", realm_object_constructor, attributes);
 
     return realm_constructor;
 }

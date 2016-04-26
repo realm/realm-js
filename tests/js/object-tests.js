@@ -437,7 +437,7 @@ module.exports = BaseTest.extend({
         var realm = new Realm({schema: [schemas.TestObject]});
         realm.write(function() {
             var obj = realm.create('TestObject', {doubleCol: 1});
-            TestCase.assertTrue(obj instanceof Realm.RealmObject);
+            TestCase.assertTrue(obj instanceof Realm.Object);
         });
     },
 

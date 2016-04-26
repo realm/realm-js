@@ -23,8 +23,6 @@
 #include "js_class.hpp"
 #include "js_util.hpp"
 
-#include "results.hpp"
-
 namespace realm {
 namespace jsc {
 

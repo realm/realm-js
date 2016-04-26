@@ -47,7 +47,7 @@ namespace realm {
         SharedRealm realm() { return m_realm; }
         const ObjectSchema &get_object_schema() { return *m_object_schema; }
         Row row() { return m_row; }
-        
+
         bool is_valid() const { return m_row.is_attached(); }
 
     private:
@@ -147,7 +147,7 @@ namespace realm {
     //
     template <typename ValueType, typename ContextType>
     inline void Object::set_property_value(ContextType ctx, std::string prop_name, ValueType value, bool try_update)
-    {        
+    {
         const Property *prop = m_object_schema->property_for_name(prop_name);
         if (!prop) {
             throw InvalidPropertyException(m_object_schema->name, prop_name,
