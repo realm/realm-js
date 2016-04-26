@@ -3,11 +3,15 @@
 
 core*
 
+.git/
 android/
 docs/
 examples/
 react-native/
 vendor/
+
+src/android/
+src/ios/
 
 tests/ios/
 tests/react-test-app/
