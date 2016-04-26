@@ -28,6 +28,11 @@ const mockery = require('mockery');
 function runTests() {
     const Realm = require('realm');
     const RealmTests = require('./js');
+
+    RealmTests.registerTests({
+        WorkerTests: require('./js/worker-tests'),
+    });
+
     const testNames = RealmTests.getTestNames();
     let passed = true;
 
