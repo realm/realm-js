@@ -138,7 +138,6 @@ class Realm {
     static void create(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void delete_one(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void delete_all(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
-    static void is_object_valid(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void write(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void add_listener(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void remove_listener(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
@@ -213,7 +212,6 @@ struct RealmClass : ClassDefinition<T, SharedRealm> {
         {"create", wrap<Realm::create>},
         {"delete", wrap<Realm::delete_one>},
         {"deleteAll", wrap<Realm::delete_all>},
-        {"isValid", wrap<Realm::is_object_valid>},
         {"write", wrap<Realm::write>},
         {"addListener", wrap<Realm::add_listener>},
         {"removeListener", wrap<Realm::remove_listener>},
@@ -233,11 +231,13 @@ inline typename T::Function Realm<T>::create_constructor(ContextType ctx) {
     FunctionType collection_constructor = ObjectWrap<T, CollectionClass<T>>::create_constructor(ctx);
     FunctionType list_constructor = ObjectWrap<T, ListClass<T>>::create_constructor(ctx);
     FunctionType results_constructor = ObjectWrap<T, ResultsClass<T>>::create_constructor(ctx);
+    FunctionType realm_object_constructor = ObjectWrap<T, RealmObjectClass<T>>::create_constructor(ctx);
 
     PropertyAttributes attributes = PropertyAttributes(ReadOnly | DontEnum | DontDelete);
     Object::set_property(ctx, realm_constructor, "Collection", collection_constructor, attributes);
     Object::set_property(ctx, realm_constructor, "List", list_constructor, attributes);
     Object::set_property(ctx, realm_constructor, "Results", results_constructor, attributes);
+    Object::set_property(ctx, realm_constructor, "RealmObject", realm_object_constructor, attributes);
 
     return realm_constructor;
 }
@@ -456,19 +456,6 @@ void Realm<T>::delete_all(ContextType ctx, ObjectType this_object, size_t argc, 
         ObjectStore::table_for_object_type(realm->read_group(), objectSchema.name)->clear();
     }
 }
-    
-template<typename T>
-void Realm<T>::is_object_valid(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
-    validate_argument_count(argc, 1);
-    
-    ObjectType arg = Value::validated_to_object(ctx, arguments[0]);
-    if (Object::template is_instance<RealmObjectClass<T>>(ctx, arg)) {
-        return_value.set(get_internal<T, RealmObjectClass<T>>(arg)->is_valid());
-    }
-    else {
-        throw std::runtime_error("Object is not a Realm Object");
-    }
-}
 
 template<typename T>
 void Realm<T>::write(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
@@ -484,7 +471,7 @@ void Realm<T>::write(ContextType ctx, ObjectType this_object, size_t argc, const
     }
     catch (std::exception &e) {
         realm->cancel_transaction();
-        throw e;
+        throw;
     }
 
     realm->commit_transaction();

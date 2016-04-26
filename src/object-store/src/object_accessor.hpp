@@ -48,7 +48,7 @@ namespace realm {
         const ObjectSchema &get_object_schema() { return *m_object_schema; }
         Row row() { return m_row; }
         
-        bool is_valid() { return m_row.is_attached(); }
+        bool is_valid() const { return m_row.is_attached(); }
 
     private:
         SharedRealm m_realm;
@@ -147,9 +147,7 @@ namespace realm {
     //
     template <typename ValueType, typename ContextType>
     inline void Object::set_property_value(ContextType ctx, std::string prop_name, ValueType value, bool try_update)
-    {
-        verify_attached();
-        
+    {        
         const Property *prop = m_object_schema->property_for_name(prop_name);
         if (!prop) {
             throw InvalidPropertyException(m_object_schema->name, prop_name,
@@ -161,8 +159,6 @@ namespace realm {
     template <typename ValueType, typename ContextType>
     inline ValueType Object::get_property_value(ContextType ctx, std::string prop_name)
     {
-        verify_attached();
-
         const Property *prop = m_object_schema->property_for_name(prop_name);
         if (!prop) {
             throw InvalidPropertyException(m_object_schema->name, prop_name,
@@ -175,6 +171,8 @@ namespace realm {
     inline void Object::set_property_value_impl(ContextType ctx, const Property &property, ValueType value, bool try_update)
     {
         using Accessor = NativeAccessor<ValueType, ContextType>;
+
+        verify_attached();
 
         if (!m_realm->is_in_transaction()) {
             throw MutationOutsideTransactionException("Can only set property values within a transaction.");
@@ -239,6 +237,8 @@ namespace realm {
     inline ValueType Object::get_property_value_impl(ContextType ctx, const Property &property)
     {
         using Accessor = NativeAccessor<ValueType, ContextType>;
+
+        verify_attached();
 
         size_t column = property.table_column;
         if (property.is_nullable && m_row.is_null(column)) {

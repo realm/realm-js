@@ -46,6 +46,8 @@ class RealmObject {
     static void get_property(ContextType, ObjectType, const String &, ReturnValue &);
     static bool set_property(ContextType, ObjectType, const String &, ValueType);
     static std::vector<String> get_property_names(ContextType, ObjectType);
+    
+    static void is_valid(ContextType, ObjectType, size_t, const ValueType [], ReturnValue &);
 };
 
 template<typename T>
@@ -59,8 +61,23 @@ struct RealmObjectClass : ClassDefinition<T, realm::Object> {
         wrap<RealmObject::set_property>,
         wrap<RealmObject::get_property_names>,
     };
+    
+    using ContextType = typename T::Context;
+    using ObjectType = typename T::Object;
+    using ValueType = typename T::Value;
+    using ReturnValue = js::ReturnValue<T>;
+
+
+    MethodMap<T> const methods = {
+        {"isValid", wrap<RealmObject::is_valid>},
+    };
 };
 
+template<typename T>
+void RealmObject<T>::is_valid(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    return_value.set(get_internal<T, RealmObjectClass<T>>(this_object)->is_valid());
+}
+    
 template<typename T>
 typename T::Object RealmObject<T>::create_instance(ContextType ctx, realm::Object &realm_object) {
     static String prototype_string = "prototype";
