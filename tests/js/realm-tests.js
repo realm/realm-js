@@ -345,29 +345,29 @@ module.exports = BaseTest.extend({
             }
         };
 
-        new Realm({schema: [NotIndexed], path: '1'});
+        new Realm({schema: [NotIndexed], path: '1.realm'});
 
         TestCase.assertThrows(function() {
             IndexedTypes.properties = { floatCol: {type: 'float', indexed: true} }
-            new Realm({schema: [IndexedTypes], path: '2'});
+            new Realm({schema: [IndexedTypes], path: '2.realm'});
         });
 
         TestCase.assertThrows(function() {
             IndexedTypes.properties = { doubleCol: {type: 'double', indexed: true} }
-            new Realm({schema: [IndexedTypes], path: '3'});
+            new Realm({schema: [IndexedTypes], path: '3.realm'});
         });
 
         TestCase.assertThrows(function() {
             IndexedTypes.properties = { dataCol: {type: 'data', indexed: true} }
-            new Realm({schema: [IndexedTypes], path: '4'});
+            new Realm({schema: [IndexedTypes], path: '4.realm'});
         });
 
         // primary key
         IndexedTypes.primaryKey = 'boolCol';
         IndexedTypes.properties = { boolCol: {type: 'bool', indexed: true} }
 
-	// Test this doesn't throw
-        new Realm({schema: [IndexedTypes], path: '5'});
+        // Test this doesn't throw
+        new Realm({schema: [IndexedTypes], path: '5.realm'});
     },
 
     testRealmCreateWithDefaults: function() {
