@@ -51,7 +51,7 @@ module.exports = BaseTest.extend({
     testResultsSubscript: function() {
         var realm = new Realm({schema: [schemas.PersonObject]});
         TestCase.assertEqual(realm.objects('PersonObject')[0], undefined);
-        
+
         realm.write(function() {
             realm.create('PersonObject', {name: 'name1', age: 1});
             realm.create('PersonObject', {name: 'name2', age: 2});
@@ -119,7 +119,7 @@ module.exports = BaseTest.extend({
         for (var index in objects) {
             TestCase.assertEqual(count++, +index);
             TestCase.assertEqual(keys[index], index);
-        } 
+        }
 
         TestCase.assertEqual(count, 1);
         TestCase.assertEqual(keys.length, 1);
@@ -278,5 +278,32 @@ module.exports = BaseTest.extend({
         TestCase.assertEqual(objects[0].boolCol, true, 'first element descending for boolCol');
         TestCase.assertEqual(objects[1].boolCol, false, 'second element descending for boolCol');
         TestCase.assertEqual(objects[2].boolCol, false, 'third element descending for boolCol');
+    },
+
+    testResultsInvalidation: function() {
+        var realm = new Realm({schema: [schemas.TestObject]});
+        var testObjects = realm.objects('TestObject');
+        var filteredObjects = testObjects.filtered('doubleCol > 1');
+        var sortedObjects = testObjects.sorted('doubleCol');
+        var snapshotObjects = testObjects.snapshot();
+
+        realm.close();
+
+        realm = new Realm({
+            schemaVersion: 1,
+            schema: [schemas.TestObject, schemas.BasicTypes]
+        });
+
+        [
+            testObjects,
+            filteredObjects,
+            sortedObjects,
+            snapshotObjects,
+        ].forEach(function(objects) {
+            TestCase.assertThrows(function() { objects[0]; });
+            TestCase.assertThrows(function() { objects.filtered('doubleCol < 42'); });
+            TestCase.assertThrows(function() { objects.sorted('doubleCol', true); });
+            TestCase.assertThrows(function() { objects.snapshot(); });
+        });
     }
 });
