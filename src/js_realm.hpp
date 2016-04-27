@@ -147,6 +147,7 @@ class Realm {
     // properties
     static void get_path(ContextType, ObjectType, ReturnValue &);
     static void get_schema_version(ContextType, ObjectType, ReturnValue &);
+    static void get_schema(ContextType, ObjectType, ReturnValue &);
 
     // static methods
     static void constructor(ContextType, ObjectType, size_t, const ValueType[]);
@@ -222,6 +223,7 @@ struct RealmClass : ClassDefinition<T, SharedRealm> {
     PropertyMap<T> const properties = {
         {"path", {wrap<Realm::get_path>, nullptr}},
         {"schemaVersion", {wrap<Realm::get_schema_version>, nullptr}},
+        {"schema", {wrap<Realm::get_schema>, nullptr}},
     };
 };
 
@@ -373,6 +375,12 @@ template<typename T>
 void Realm<T>::get_schema_version(ContextType ctx, ObjectType object, ReturnValue &return_value) {
     double version = get_internal<T, RealmClass<T>>(object)->get()->config().schema_version;
     return_value.set(version);
+}
+
+template<typename T>
+void Realm<T>::get_schema(ContextType ctx, ObjectType object, ReturnValue &return_value) {
+    auto schema = get_internal<T, RealmClass<T>>(object)->get()->config().schema.get();
+    return_value.set(Schema<T>::object_for_schema(ctx, *schema));
 }
 
 template<typename T>

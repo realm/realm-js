@@ -44,6 +44,10 @@ struct Schema {
     static Property parse_property(ContextType, ValueType, std::string, ObjectDefaults &);
     static ObjectSchema parse_object_schema(ContextType, ObjectType, ObjectDefaultsMap &, ConstructorMap &);
     static realm::Schema parse_schema(ContextType, ObjectType, ObjectDefaultsMap &, ConstructorMap &);
+
+    static ObjectType object_for_schema(ContextType, const realm::Schema &);
+    static ObjectType object_for_object_schema(ContextType, const ObjectSchema &);
+    static ObjectType object_for_property(ContextType, const Property &);
 };
 
 template<typename T>
@@ -216,6 +220,64 @@ realm::Schema Schema<T>::parse_schema(ContextType ctx, ObjectType schema_object,
     }
 
     return realm::Schema(schema);
+}
+
+template<typename T>
+typename T::Object Schema<T>::object_for_schema(ContextType ctx, const realm::Schema &schema) {
+    ObjectType object = Object::create_empty(ctx);
+    uint32_t count = 0;
+    for (auto object_schema : schema) {
+        Object::set_property(ctx, object, count++, object_for_object_schema(ctx, object_schema));
+    }
+    return object;
+}
+
+template<typename T>
+typename T::Object Schema<T>::object_for_object_schema(ContextType ctx, const ObjectSchema &object_schema) {
+    ObjectType object = Object::create_empty(ctx);
+    ObjectType properties = Object::create_empty(ctx);
+    for (auto property : object_schema.properties) {
+        Object::set_property(ctx, properties, property.name, object_for_property(ctx, property));
+    }
+
+    static const String properties_string = "properties";
+    Object::set_property(ctx, object, properties_string, properties);
+
+    static const String primary_key_string = "primary_key";
+    if (object_schema.primary_key.size()) {
+        Object::set_property(ctx, object, primary_key_string, Value::from_string(ctx, object_schema.primary_key));
+    }
+
+    return object;
+}
+
+template<typename T>
+typename T::Object Schema<T>::object_for_property(ContextType ctx, const Property &property) {
+    ObjectType object = Object::create_empty(ctx);
+
+    static const String name_string = "name";
+    Object::set_property(ctx, object, name_string, Value::from_string(ctx, property.name));
+
+    static const String type_string = "type";
+    const std::string type = property.type != PropertyTypeArray ? string_for_property_type(property.type) : "list";
+    Object::set_property(ctx, object, type_string, Value::from_string(ctx, type));
+
+    static const String object_type_string = "object_type";
+    if (property.object_type.size()) {
+        Object::set_property(ctx, object, object_type_string, Value::from_string(ctx, property.object_type));
+    }
+
+    static const String indexed_string = "indexed";
+    if (property.is_indexed) {
+        Object::set_property(ctx, object, indexed_string, Value::from_boolean(ctx, true));
+    }
+
+    static const String optional_string = "optional";
+    if (property.is_nullable) {
+        Object::set_property(ctx, object, optional_string, Value::from_boolean(ctx, true));
+    }
+
+    return object;
 }
 
 } // js
