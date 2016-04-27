@@ -50,6 +50,8 @@ module.exports = BaseTest.extend({
 
     testResultsSubscript: function() {
         var realm = new Realm({schema: [schemas.PersonObject]});
+        TestCase.assertEqual(realm.objects('PersonObject')[0], undefined);
+        
         realm.write(function() {
             realm.create('PersonObject', {name: 'name1', age: 1});
             realm.create('PersonObject', {name: 'name2', age: 2});

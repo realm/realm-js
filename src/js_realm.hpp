@@ -231,11 +231,13 @@ inline typename T::Function Realm<T>::create_constructor(ContextType ctx) {
     FunctionType collection_constructor = ObjectWrap<T, CollectionClass<T>>::create_constructor(ctx);
     FunctionType list_constructor = ObjectWrap<T, ListClass<T>>::create_constructor(ctx);
     FunctionType results_constructor = ObjectWrap<T, ResultsClass<T>>::create_constructor(ctx);
+    FunctionType realm_object_constructor = ObjectWrap<T, RealmObjectClass<T>>::create_constructor(ctx);
 
     PropertyAttributes attributes = PropertyAttributes(ReadOnly | DontEnum | DontDelete);
     Object::set_property(ctx, realm_constructor, "Collection", collection_constructor, attributes);
     Object::set_property(ctx, realm_constructor, "List", list_constructor, attributes);
     Object::set_property(ctx, realm_constructor, "Results", results_constructor, attributes);
+    Object::set_property(ctx, realm_constructor, "Object", realm_object_constructor, attributes);
 
     return realm_constructor;
 }
@@ -469,7 +471,7 @@ void Realm<T>::write(ContextType ctx, ObjectType this_object, size_t argc, const
     }
     catch (std::exception &e) {
         realm->cancel_transaction();
-        throw e;
+        throw;
     }
 
     realm->commit_transaction();

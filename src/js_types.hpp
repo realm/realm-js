@@ -104,7 +104,7 @@ struct Value {
     static return_t validated_to_##type(ContextType ctx, const ValueType &value, const char *name = nullptr) { \
         if (!is_##type(ctx, value)) { \
             std::string prefix = name ? std::string("'") + name + "'" : "JS value"; \
-            throw std::invalid_argument(prefix + " must be: " #type); \
+            throw std::invalid_argument(prefix + " must be of type: " #type); \
         } \
         return to_##type(ctx, value); \
     }
