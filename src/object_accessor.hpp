@@ -83,8 +83,8 @@ namespace realm {
         static ValueType from_string(ContextType, StringData);
         static std::string to_binary(ContextType, ValueType &);
         static ValueType from_binary(ContextType, BinaryData);
-        static DateTime to_datetime(ContextType, ValueType &);
-        static ValueType from_datetime(ContextType, DateTime);
+        static Timestamp to_timestamp(ContextType, ValueType &);
+        static ValueType from_timestamp(ContextType, Timestamp);
 
         static bool is_null(ContextType, ValueType &);
         static ValueType null_value(ContextType);
@@ -194,7 +194,7 @@ namespace realm {
                 m_row.set_mixed(column, Accessor::to_mixed(ctx, value));
                 break;
             case PropertyTypeDate:
-                m_row.set_datetime(column, Accessor::to_datetime(ctx, value));
+                m_row.set_timestamp(column, Accessor::to_timestamp(ctx, value));
                 break;
             case PropertyTypeObject: {
                 if (Accessor::is_null(ctx, value)) {
@@ -246,7 +246,7 @@ namespace realm {
             case PropertyTypeAny:
                 throw "Any not supported";
             case PropertyTypeDate:
-                return Accessor::from_datetime(ctx, m_row.get_datetime(column));
+                return Accessor::from_timestamp(ctx, m_row.get_timestamp(column));
             case PropertyTypeObject: {
                 auto linkObjectSchema = m_realm->config().schema->find(property.object_type);
                 TableRef table = ObjectStore::table_for_object_type(m_realm->read_group(), linkObjectSchema->name);

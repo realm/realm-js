@@ -9,7 +9,7 @@ include(CompilerFlags)
 include(Sanitizers)
 
 include(RealmCore)
-set(REALM_CORE_VERSION "0.97.0" CACHE STRING "")
+set(REALM_CORE_VERSION "0.100.1" CACHE STRING "")
 use_realm_core(${REALM_CORE_VERSION})
 
 include_directories(${REALM_CORE_INCLUDE_DIR} src external/pegtl)
