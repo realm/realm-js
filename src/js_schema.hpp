@@ -203,14 +203,14 @@ ObjectSchema Schema<T>::parse_object_schema(ContextType ctx, ObjectType object_s
     
     return object_schema;
 }
-    
+
 template<typename T>
 realm::Schema Schema<T>::parse_schema(ContextType ctx, ObjectType schema_object, ObjectDefaultsMap &defaults, ConstructorMap &constructors) {
     std::vector<ObjectSchema> schema;
     uint32_t length = Object::validated_get_length(ctx, schema_object);
 
     for (uint32_t i = 0; i < length; i++) {
-        ObjectType object_schema_object = Object::validated_get_object(ctx, schema_object, i);
+        ObjectType object_schema_object = Object::validated_get_object(ctx, schema_object, i, "ObjectSchema");
         ObjectSchema object_schema = parse_object_schema(ctx, object_schema_object, defaults, constructors);
         schema.emplace_back(std::move(object_schema));
     }
