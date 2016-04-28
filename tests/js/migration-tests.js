@@ -115,4 +115,44 @@ module.exports = BaseTest.extend({
         TestCase.assertEqual(objects[0].prop1, 1);
         TestCase.assertThrows(function() { newObjects[0].prop0; });
     },
+
+    testMigrationSchema: function() {
+        var realm = new Realm({schema: [{
+            name: 'TestObject',
+            properties: {
+                prop0: 'string',
+                prop1: 'int',
+            }
+        }]});
+        realm.close();
+
+        var realm = new Realm({
+            schema: [{
+                name: 'TestObject',
+                properties: {
+                    renamed: 'string',
+                    prop1: 'int',
+                }
+            }], 
+            schemaVersion: 1, 
+            migration: function(oldRealm, newRealm) {
+                var oldSchema = oldRealm.schema;
+                var newSchema = newRealm.schema;
+                TestCase.assertEqual(oldSchema.length, 1);
+                TestCase.assertEqual(newSchema.length, 1);
+
+                TestCase.assertEqual(oldSchema[0].name, 'TestObject');
+                TestCase.assertEqual(newSchema[0].name, 'TestObject');
+
+                TestCase.assertEqual(oldSchema[0].properties.prop0.type, 'string');
+                TestCase.assertEqual(newSchema[0].properties.prop0, undefined);
+
+                TestCase.assertEqual(oldSchema[0].properties.prop1.type, 'int');
+                TestCase.assertEqual(newSchema[0].properties.prop1.type, 'int');
+
+                TestCase.assertEqual(oldSchema[0].properties.renamed, undefined);
+                TestCase.assertEqual(newSchema[0].properties.renamed.type, 'string');
+            }
+        });
+    },
 });
