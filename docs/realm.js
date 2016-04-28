@@ -152,7 +152,8 @@ Realm.defaultPath;
 
 /**
  * Realm objects will inherit methods, getters, and setters from the `prototype` of this
- * constructor.
+ * constructor. It is **highly recommended** that this constructor inherit from
+ * {@link Realm.Object}.
  * @typedef Realm~ObjectClass
  * @type {Class}
  * @property {Realm~ObjectSchema} schema - Static property specifying object schema information.
