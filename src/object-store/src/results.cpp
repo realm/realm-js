@@ -82,6 +82,8 @@ void Results::validate_write() const
 
 void Results::set_live(bool live)
 {
+    validate_read();
+
     if (!live && m_mode == Mode::Table) {
         m_query = m_table->where();
         m_mode = Mode::Query;
