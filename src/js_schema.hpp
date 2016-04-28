@@ -224,7 +224,7 @@ realm::Schema Schema<T>::parse_schema(ContextType ctx, ObjectType schema_object,
 
 template<typename T>
 typename T::Object Schema<T>::object_for_schema(ContextType ctx, const realm::Schema &schema) {
-    ObjectType object = Object::create_empty(ctx);
+    ObjectType object = Object::create_array(ctx);
     uint32_t count = 0;
     for (auto object_schema : schema) {
         Object::set_property(ctx, object, count++, object_for_object_schema(ctx, object_schema));
@@ -235,6 +235,10 @@ typename T::Object Schema<T>::object_for_schema(ContextType ctx, const realm::Sc
 template<typename T>
 typename T::Object Schema<T>::object_for_object_schema(ContextType ctx, const ObjectSchema &object_schema) {
     ObjectType object = Object::create_empty(ctx);
+
+    static const String name_string = "name";
+    Object::set_property(ctx, object, name_string, Value::from_string(ctx, object_schema.name));
+
     ObjectType properties = Object::create_empty(ctx);
     for (auto property : object_schema.properties) {
         Object::set_property(ctx, properties, property.name, object_for_property(ctx, property));
