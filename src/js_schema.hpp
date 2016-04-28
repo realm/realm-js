@@ -247,7 +247,7 @@ typename T::Object Schema<T>::object_for_object_schema(ContextType ctx, const Ob
     static const String properties_string = "properties";
     Object::set_property(ctx, object, properties_string, properties);
 
-    static const String primary_key_string = "primary_key";
+    static const String primary_key_string = "primaryKey";
     if (object_schema.primary_key.size()) {
         Object::set_property(ctx, object, primary_key_string, Value::from_string(ctx, object_schema.primary_key));
     }
@@ -266,7 +266,7 @@ typename T::Object Schema<T>::object_for_property(ContextType ctx, const Propert
     const std::string type = property.type != PropertyTypeArray ? string_for_property_type(property.type) : "list";
     Object::set_property(ctx, object, type_string, Value::from_string(ctx, type));
 
-    static const String object_type_string = "object_type";
+    static const String object_type_string = "objectType";
     if (property.object_type.size()) {
         Object::set_property(ctx, object, object_type_string, Value::from_string(ctx, property.object_type));
     }

@@ -592,8 +592,8 @@ module.exports = BaseTest.extend({
     },
 
     testSchema: function() {
-        var originalSchema = [schemas.TestObject, schemas.BasicTypes, schemas.NullableBasicTypes, schemas.IntPrimary, 
-            schemas.IndexedTypes, schemas.PersonObject, schemas.LinkTypes];
+        var originalSchema = [schemas.TestObject, schemas.BasicTypes, schemas.NullableBasicTypes, schemas.IndexedTypes, schemas.IntPrimary, 
+            schemas.PersonObject, schemas.LinkTypes];
         
         var schemaMap = {};
         originalSchema.forEach(function(objectSchema) { schemaMap[objectSchema.name] = objectSchema; });
@@ -609,6 +609,10 @@ module.exports = BaseTest.extend({
 
         function verifyObjectSchema(returned) {
             var original = schemaMap[returned.name];
+            if (original.schema) {
+                original = original.schema;
+            }
+
             TestCase.assertEqual(returned.primaryKey, original.primaryKey);
             for (var propName in returned.properties) {
                 var prop1 = returned.properties[propName];
@@ -617,14 +621,14 @@ module.exports = BaseTest.extend({
                     TestCase.assertEqual(prop1.optional, true);
                 }
                 else if (prop1.type == 'list') {
-                    TestCase.assertEqual(prop1.optional, false);
+                    TestCase.assertEqual(prop1.optional, undefined);
                 }
                 else {
                     TestCase.assertEqual(prop1.type, isString(prop2) ? prop2 : prop2.type);    
                     TestCase.assertEqual(prop1.optional, prop2.optional || undefined);
                 }
 
-                TestCase.assertEqual(prop1.indexed, prop2.indexed || prop1.name == returned.primaryKey || undefined);
+                TestCase.assertEqual(prop1.indexed, prop2.indexed || undefined);
             }
         }
 
