@@ -99,9 +99,9 @@ module.exports = BaseTest.extend({
 
                 TestCase.assertEqual(oldObjects[0].prop0, 'stringValue');
                 TestCase.assertEqual(oldObjects[0].prop1, 1);
-                //TestCase.assertThrows(function() { oldObjects[0].renamed; });
+                TestCase.assertEqual(oldObjects[0].renamed, undefined);
 
-                //TestCase.assertThrows(function() { newObjects[0].prop0; });
+                TestCase.assertEqual(newObjects[0].prop0, undefined);
                 TestCase.assertEqual(newObjects[0].renamed, '');
                 TestCase.assertEqual(newObjects[0].prop1, 1);
 
@@ -113,7 +113,7 @@ module.exports = BaseTest.extend({
         TestCase.assertEqual(objects.length, 1);
         TestCase.assertEqual(objects[0].renamed, 'stringValue');
         TestCase.assertEqual(objects[0].prop1, 1);
-        TestCase.assertThrows(function() { newObjects[0].prop0; });
+        TestCase.assertEqual(objects[0].prop0, undefined);
     },
 
     testMigrationSchema: function() {

@@ -226,7 +226,7 @@ template<typename T>
 typename T::Object Schema<T>::object_for_schema(ContextType ctx, const realm::Schema &schema) {
     ObjectType object = Object::create_array(ctx);
     uint32_t count = 0;
-    for (auto object_schema : schema) {
+    for (auto& object_schema : schema) {
         Object::set_property(ctx, object, count++, object_for_object_schema(ctx, object_schema));
     }
     return object;
@@ -240,7 +240,7 @@ typename T::Object Schema<T>::object_for_object_schema(ContextType ctx, const Ob
     Object::set_property(ctx, object, name_string, Value::from_string(ctx, object_schema.name));
 
     ObjectType properties = Object::create_empty(ctx);
-    for (auto property : object_schema.properties) {
+    for (auto& property : object_schema.properties) {
         Object::set_property(ctx, properties, property.name, object_for_property(ctx, property));
     }
 
