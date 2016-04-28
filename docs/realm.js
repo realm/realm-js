@@ -24,6 +24,22 @@
  */
 class Realm {
     /**
+     * The path to the file where this Realm is stored.
+     * @type {string}
+     * @readonly
+     * @since 0.12.0
+     */
+    get path() {}
+
+   /**
+    * The current schema version of this Realm.
+    * @type {number}
+    * @readonly
+    * @since 0.12.0
+    */
+    get schemaVersion() {}
+
+    /**
      * Create a new `Realm` instance using the provided `config`. If a Realm does not yet exist
      * at `config.path` (or {@link Realm.defaultPath} if not provided), then this constructor
      * will create it with the provided `config.schema` (which is _required_ in this case).
