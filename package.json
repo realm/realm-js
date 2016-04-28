@@ -49,7 +49,8 @@
   "dependencies": {
     "bindings": "^1.2.1",
     "nan": "^2.3.3",
-    "node-gyp": "^3.3.1"
+    "node-gyp": "^3.3.1",
+    "sync-request": "^3.0.1"
   },
   "devDependencies": {
     "babel-eslint": "^6.0.4",

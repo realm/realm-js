@@ -4,7 +4,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * Please use `rnpm 1.9.0` or later to link your project. Older versions are no longer supported.
 
 ### Enhancements
-* None
+* Added support for debugging in Visual Studio Code.
 
 ### Bugfixes
 * None
