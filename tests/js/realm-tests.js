@@ -618,9 +618,11 @@ module.exports = BaseTest.extend({
                 var prop1 = returned.properties[propName];
                 var prop2 = original.properties[propName];
                 if (prop1.type == 'object') {
+                    TestCase.assertEqual(prop1.objectType, isString(prop2) ? prop2 : prop2.objectType);    
                     TestCase.assertEqual(prop1.optional, true);
                 }
                 else if (prop1.type == 'list') {
+                    TestCase.assertEqual(prop1.objectType, prop2.objectType);    
                     TestCase.assertEqual(prop1.optional, undefined);
                 }
                 else {
