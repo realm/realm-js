@@ -124,12 +124,14 @@ module.exports = BaseTest.extend({
         realm.write(function() {
             realm.create('TestObject', [1])
         });
+        TestCase.assertEqual(realm.readOnly, false);
         realm.close();
 
         realm = new Realm({readOnly: true, schema: [schemas.TestObject]});
         var objects = realm.objects('TestObject');
         TestCase.assertEqual(objects.length, 1);
         TestCase.assertEqual(objects[0].doubleCol, 1.0);
+        TestCase.assertEqual(realm.readOnly, true);
 
         TestCase.assertThrows(function() {
             realm.write(function() {});
@@ -138,6 +140,7 @@ module.exports = BaseTest.extend({
 
         realm = new Realm({readOnly: true});
         TestCase.assertEqual(realm.schema.length, 1);
+        TestCase.assertEqual(realm.readOnly, true);
     },
 
     testDefaultPath: function() {

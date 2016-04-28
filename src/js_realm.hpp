@@ -148,6 +148,7 @@ class Realm {
     static void get_path(ContextType, ObjectType, ReturnValue &);
     static void get_schema_version(ContextType, ObjectType, ReturnValue &);
     static void get_schema(ContextType, ObjectType, ReturnValue &);
+    static void get_read_only(ContextType, ObjectType, ReturnValue &);
 
     // static methods
     static void constructor(ContextType, ObjectType, size_t, const ValueType[]);
@@ -224,6 +225,7 @@ struct RealmClass : ClassDefinition<T, SharedRealm> {
         {"path", {wrap<Realm::get_path>, nullptr}},
         {"schemaVersion", {wrap<Realm::get_schema_version>, nullptr}},
         {"schema", {wrap<Realm::get_schema>, nullptr}},
+        {"readOnly", {wrap<Realm::get_read_only>, nullptr}},
     };
 };
 
@@ -385,6 +387,11 @@ template<typename T>
 void Realm<T>::get_schema(ContextType ctx, ObjectType object, ReturnValue &return_value) {
     auto schema = get_internal<T, RealmClass<T>>(object)->get()->config().schema.get();
     return_value.set(Schema<T>::object_for_schema(ctx, *schema));
+}
+
+template<typename T>
+void Realm<T>::get_read_only(ContextType ctx, ObjectType object, ReturnValue &return_value) {
+    return_value.set(get_internal<T, RealmClass<T>>(object)->get()->config().read_only);
 }
 
 template<typename T>
