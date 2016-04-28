@@ -84,6 +84,19 @@ module.exports = BaseTest.extend({
         TestCase.assertEqual(realm.objects('TestObject')[0].doubleCol, 1)
     },
 
+    testRealmConstructorDynamicSchema: function() {
+        var realm = new Realm({schema: [schemas.TestObject]});
+        realm.write(function() {
+            realm.create('TestObject', [1])
+        });
+        realm.close();
+
+        realm = new Realm();
+        var objects = realm.objects('TestObject');
+        TestCase.assertEqual(objects.length, 1);
+        TestCase.assertEqual(objects[0].doubleCol, 1.0);
+    },
+
     testRealmConstructorSchemaValidation: function() {
         TestCase.assertThrows(function() {
             new Realm({schema: schemas.AllTypes});
@@ -323,17 +336,7 @@ module.exports = BaseTest.extend({
     },
 
     testRealmWithIndexedProperties: function() {
-        var IndexedTypes = {
-            name: 'IndexedTypesObject',
-            properties: {
-                boolCol:   {type: 'bool', indexed: true},
-                intCol:    {type: 'int', indexed: true},
-                stringCol: {type: 'string', indexed: true},
-                dateCol:   {type: 'date', indexed: true},
-            }
-        };
-
-        var realm = new Realm({schema: [IndexedTypes]});
+        var realm = new Realm({schema: [schemas.IndexedTypes]});
         realm.write(function() {
             realm.create('IndexedTypesObject', {boolCol: true, intCol: 1, stringCol: '1', dateCol: new Date(1)});
         });
@@ -347,27 +350,30 @@ module.exports = BaseTest.extend({
 
         new Realm({schema: [NotIndexed], path: '1'});
 
+        var IndexedSchema = {
+            name: 'IndexedSchema',
+        };
         TestCase.assertThrows(function() {
-            IndexedTypes.properties = { floatCol: {type: 'float', indexed: true} }
-            new Realm({schema: [IndexedTypes], path: '2'});
+            IndexedSchema.properties = { floatCol: {type: 'float', indexed: true} };
+            new Realm({schema: [IndexedSchema], path: '2'});
         });
 
         TestCase.assertThrows(function() {
-            IndexedTypes.properties = { doubleCol: {type: 'double', indexed: true} }
-            new Realm({schema: [IndexedTypes], path: '3'});
+            IndexedSchema.properties = { doubleCol: {type: 'double', indexed: true} }
+            new Realm({schema: [IndexedSchema], path: '3'});
         });
 
         TestCase.assertThrows(function() {
-            IndexedTypes.properties = { dataCol: {type: 'data', indexed: true} }
-            new Realm({schema: [IndexedTypes], path: '4'});
+            IndexedSchema.properties = { dataCol: {type: 'data', indexed: true} }
+            new Realm({schema: [IndexedSchema], path: '4'});
         });
 
         // primary key
-        IndexedTypes.primaryKey = 'boolCol';
-        IndexedTypes.properties = { boolCol: {type: 'bool', indexed: true} }
+        IndexedSchema.properties = { boolCol: {type: 'bool', indexed: true} };
+        IndexedSchema.primaryKey = 'boolCol';
 
-	// Test this doesn't throw
-        new Realm({schema: [IndexedTypes], path: '5'});
+        // Test this doesn't throw
+        new Realm({schema: [IndexedSchema], path: '5'});
     },
 
     testRealmCreateWithDefaults: function() {
@@ -599,5 +605,53 @@ module.exports = BaseTest.extend({
         TestCase.assertThrows(function() {
             realm.write(function() {});
         });
+    },
+
+    testSchema: function() {
+        var originalSchema = [schemas.TestObject, schemas.BasicTypes, schemas.NullableBasicTypes, schemas.IndexedTypes, schemas.IntPrimary, 
+            schemas.PersonObject, schemas.LinkTypes];
+        
+        var schemaMap = {};
+        originalSchema.forEach(function(objectSchema) { schemaMap[objectSchema.name] = objectSchema; });
+
+        var realm = new Realm({schema: originalSchema});
+
+        var schema = realm.schema;
+        TestCase.assertEqual(schema.length, originalSchema.length);
+
+        function isString(val) {
+            return typeof val === 'string' || val instanceof String;
+        }
+
+        function verifyObjectSchema(returned) {
+            var original = schemaMap[returned.name];
+            if (original.schema) {
+                original = original.schema;
+            }
+
+            TestCase.assertEqual(returned.primaryKey, original.primaryKey);
+            for (var propName in returned.properties) {
+                var prop1 = returned.properties[propName];
+                var prop2 = original.properties[propName];
+                if (prop1.type == 'object') {
+                    TestCase.assertEqual(prop1.objectType, isString(prop2) ? prop2 : prop2.objectType);    
+                    TestCase.assertEqual(prop1.optional, true);
+                }
+                else if (prop1.type == 'list') {
+                    TestCase.assertEqual(prop1.objectType, prop2.objectType);    
+                    TestCase.assertEqual(prop1.optional, undefined);
+                }
+                else {
+                    TestCase.assertEqual(prop1.type, isString(prop2) ? prop2 : prop2.type);    
+                    TestCase.assertEqual(prop1.optional, prop2.optional || undefined);
+                }
+
+                TestCase.assertEqual(prop1.indexed, prop2.indexed || undefined);
+            }
+        }
+
+        for (var i = 0; i < originalSchema.length; i++) {
+            verifyObjectSchema(schema[i]);
+        }
     },
 });

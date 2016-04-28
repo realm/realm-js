@@ -129,6 +129,9 @@ struct Function {
     using ValueType = typename T::Value;
 
     static ValueType call(ContextType, const FunctionType &, const ObjectType &, size_t, const ValueType[]);
+    static ValueType call(ContextType ctx, const FunctionType &function, size_t argument_count, const ValueType arguments[]) {
+        return call(ctx, function, {}, argument_count, arguments);
+    }
     static ValueType call(ContextType ctx, const FunctionType &function, const ObjectType &this_object, const std::vector<ValueType> &arguments) {
         return call(ctx, function, this_object, arguments.size(), arguments.data());
     }

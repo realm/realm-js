@@ -147,6 +147,7 @@ class Realm {
     // properties
     static void get_path(ContextType, ObjectType, ReturnValue &);
     static void get_schema_version(ContextType, ObjectType, ReturnValue &);
+    static void get_schema(ContextType, ObjectType, ReturnValue &);
 
     // static methods
     static void constructor(ContextType, ObjectType, size_t, const ValueType[]);
@@ -222,6 +223,7 @@ struct RealmClass : ClassDefinition<T, SharedRealm> {
     PropertyMap<T> const properties = {
         {"path", {wrap<Realm::get_path>, nullptr}},
         {"schemaVersion", {wrap<Realm::get_schema_version>, nullptr}},
+        {"schema", {wrap<Realm::get_schema>, nullptr}},
     };
 };
 
@@ -248,6 +250,7 @@ void Realm<T>::constructor(ContextType ctx, ObjectType this_object, size_t argc,
     static const String schema_string = "schema";
     static const String schema_version_string = "schemaVersion";
     static const String encryption_key_string = "encryptionKey";
+    static const String migration_string = "migration";
 
     realm::Realm::Config config;
     typename Schema<T>::ObjectDefaultsMap defaults;
@@ -284,6 +287,18 @@ void Realm<T>::constructor(ContextType ctx, ObjectType this_object, size_t argc,
             }
             else {
                 config.schema_version = 0;
+            }
+            
+            ValueType migration_value = Object::get_property(ctx, object, migration_string);
+            if (!Value::is_undefined(ctx, migration_value)) {
+                FunctionType migration_function = Value::validated_to_function(ctx, migration_value, "migration");
+                config.migration_function = [=](SharedRealm old_realm, SharedRealm realm) {
+                    ValueType arguments[2] = {
+                        create_object<T, RealmClass<T>>(ctx, new SharedRealm(old_realm)),
+                        create_object<T, RealmClass<T>>(ctx, new SharedRealm(realm))
+                    };
+                    Function<T>::call(ctx, migration_function, 2, arguments);
+                };
             }
             
             ValueType encryption_key_value = Object::get_property(ctx, object, encryption_key_string);
@@ -360,6 +375,12 @@ template<typename T>
 void Realm<T>::get_schema_version(ContextType ctx, ObjectType object, ReturnValue &return_value) {
     double version = get_internal<T, RealmClass<T>>(object)->get()->config().schema_version;
     return_value.set(version);
+}
+
+template<typename T>
+void Realm<T>::get_schema(ContextType ctx, ObjectType object, ReturnValue &return_value) {
+    auto schema = get_internal<T, RealmClass<T>>(object)->get()->config().schema.get();
+    return_value.set(Schema<T>::object_for_schema(ctx, *schema));
 }
 
 template<typename T>
