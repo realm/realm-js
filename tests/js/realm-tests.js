@@ -350,27 +350,30 @@ module.exports = BaseTest.extend({
 
         new Realm({schema: [NotIndexed], path: '1'});
 
+        var IndexedSchema = {
+            name: 'IndexedSchema',
+        };
         TestCase.assertThrows(function() {
-            schemas.IndexedTypes.properties = { floatCol: {type: 'float', indexed: true} }
-            new Realm({schema: [schemas.IndexedTypes], path: '2'});
+            IndexedSchema.properties = { floatCol: {type: 'float', indexed: true} };
+            new Realm({schema: [IndexedSchema], path: '2'});
         });
 
         TestCase.assertThrows(function() {
-            schemas.IndexedTypes.properties = { doubleCol: {type: 'double', indexed: true} }
-            new Realm({schema: [schemas.IndexedTypes], path: '3'});
+            IndexedSchema.properties = { doubleCol: {type: 'double', indexed: true} }
+            new Realm({schema: [IndexedSchema], path: '3'});
         });
 
         TestCase.assertThrows(function() {
-            schemas.IndexedTypes.properties = { dataCol: {type: 'data', indexed: true} }
-            new Realm({schema: [schemas.IndexedTypes], path: '4'});
+            IndexedSchema.properties = { dataCol: {type: 'data', indexed: true} }
+            new Realm({schema: [IndexedSchema], path: '4'});
         });
 
         // primary key
-        schemas.IndexedTypes.primaryKey = 'boolCol';
-        schemas.IndexedTypes.properties = { boolCol: {type: 'bool', indexed: true} }
+        IndexedSchema.properties = { boolCol: {type: 'bool', indexed: true} };
+        IndexedSchema.primaryKey = 'boolCol';
 
-	// Test this doesn't throw
-        new Realm({schema: [schemas.IndexedTypes], path: '5'});
+        // Test this doesn't throw
+        new Realm({schema: [IndexedSchema], path: '5'});
     },
 
     testRealmCreateWithDefaults: function() {

@@ -106,6 +106,10 @@ module.exports = BaseTest.extend({
                 TestCase.assertEqual(newObjects[0].prop1, 1);
 
                 newObjects[0].renamed = oldObjects[0].prop0;
+
+                TestCase.assertThrows(function() {
+                    oldObjects[0].prop0 = 'throws';
+                });
             }
         });
 
