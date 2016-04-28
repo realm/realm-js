@@ -245,7 +245,7 @@ inline typename T::Function Realm<T>::create_constructor(ContextType ctx) {
 }
 
 template<typename T>
-void Realm<T>::constructor(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[]) {    
+void Realm<T>::constructor(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[]) {
     static const String path_string = "path";
     static const String schema_string = "schema";
     static const String schema_version_string = "schemaVersion";
@@ -291,7 +291,7 @@ void Realm<T>::constructor(ContextType ctx, ObjectType this_object, size_t argc,
             
             ValueType migration_value = Object::get_property(ctx, object, migration_string);
             if (!Value::is_undefined(ctx, migration_value)) {
-                FunctionType migration_function = Value::validated_to_function(ctx, migration_value);
+                FunctionType migration_function = Value::validated_to_function(ctx, migration_value, "migration");
                 config.migration_function = [=](SharedRealm old_realm, SharedRealm realm) {
                     ValueType arguments[2] = {
                         create_object<T, RealmClass<T>>(ctx, new SharedRealm(old_realm)),
