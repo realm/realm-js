@@ -177,154 +177,6 @@ TEST_CASE("Transaction log parsing") {
         }
     }
 
-    SECTION("row_did_change()") {
-        config.schema = std::make_unique<Schema>(Schema{
-            {"table", "", {
-                {"int", PropertyTypeInt},
-                {"link", PropertyTypeObject, "table", false, false, true},
-                {"array", PropertyTypeArray, "table"}
-            }},
-        });
-
-        auto r = Realm::get_shared_realm(config);
-        auto table = r->read_group()->get_table("class_table");
-
-        r->begin_transaction();
-        table->add_empty_row(10);
-        for (int i = 0; i < 10; ++i)
-            table->set_int(0, i, i);
-        r->commit_transaction();
-
-        auto track_changes = [&](auto&& f) {
-            auto history = make_client_history(config.path);
-            SharedGroup sg(*history, SharedGroup::durability_MemOnly);
-            Group const& g = sg.begin_read();
-
-            r->begin_transaction();
-            f();
-            r->commit_transaction();
-
-            _impl::TransactionChangeInfo info;
-            info.table_modifications_needed.resize(g.size(), true);
-            info.table_moves_needed.resize(g.size(), true);
-            _impl::transaction::advance(sg, info);
-            return info;
-        };
-
-        SECTION("direct changes are tracked") {
-            auto info = track_changes([&] {
-                table->set_int(0, 9, 10);
-            });
-
-            REQUIRE_FALSE(info.row_did_change(*table, 8));
-            REQUIRE(info.row_did_change(*table, 9));
-        }
-
-        SECTION("changes over links are tracked") {
-            r->begin_transaction();
-            for (int i = 0; i < 9; ++i)
-                table->set_link(1, i, i + 1);
-            r->commit_transaction();
-
-            auto info = track_changes([&] {
-                table->set_int(0, 9, 10);
-            });
-
-            REQUIRE(info.row_did_change(*table, 0));
-        }
-
-        SECTION("changes over linklists are tracked") {
-            r->begin_transaction();
-            for (int i = 0; i < 9; ++i)
-                table->get_linklist(2, i)->add(i + 1);
-            r->commit_transaction();
-
-            auto info = track_changes([&] {
-                table->set_int(0, 9, 10);
-            });
-
-            REQUIRE(info.row_did_change(*table, 0));
-        }
-
-        SECTION("cycles over links do not loop forever") {
-            r->begin_transaction();
-            table->set_link(1, 0, 0);
-            r->commit_transaction();
-
-            auto info = track_changes([&] {
-                table->set_int(0, 9, 10);
-            });
-            REQUIRE_FALSE(info.row_did_change(*table, 0));
-        }
-
-        SECTION("cycles over linklists do not loop forever") {
-            r->begin_transaction();
-            table->get_linklist(2, 0)->add(0);
-            r->commit_transaction();
-
-            auto info = track_changes([&] {
-                table->set_int(0, 9, 10);
-            });
-            REQUIRE_FALSE(info.row_did_change(*table, 0));
-        }
-
-        SECTION("targets moving is not a change") {
-            r->begin_transaction();
-            table->set_link(1, 0, 9);
-            table->get_linklist(2, 0)->add(9);
-            r->commit_transaction();
-
-            auto info = track_changes([&] {
-                table->move_last_over(5);
-            });
-            REQUIRE_FALSE(info.row_did_change(*table, 0));
-        }
-
-        SECTION("changes made before a row is moved are reported") {
-            r->begin_transaction();
-            table->set_link(1, 0, 9);
-            r->commit_transaction();
-
-            auto info = track_changes([&] {
-                table->set_int(0, 9, 5);
-                table->move_last_over(5);
-            });
-            REQUIRE(info.row_did_change(*table, 0));
-
-            r->begin_transaction();
-            table->get_linklist(2, 0)->add(8);
-            r->commit_transaction();
-
-            info = track_changes([&] {
-                table->set_int(0, 8, 5);
-                table->move_last_over(5);
-            });
-            REQUIRE(info.row_did_change(*table, 0));
-        }
-
-        SECTION("changes made after a row is moved are reported") {
-            r->begin_transaction();
-            table->set_link(1, 0, 9);
-            r->commit_transaction();
-
-            auto info = track_changes([&] {
-                table->move_last_over(5);
-                table->set_int(0, 5, 5);
-            });
-            REQUIRE(info.row_did_change(*table, 0));
-
-            r->begin_transaction();
-            table->get_linklist(2, 0)->add(8);
-            r->commit_transaction();
-
-            info = track_changes([&] {
-                table->move_last_over(5);
-                table->set_int(0, 5, 5);
-            });
-            REQUIRE(info.row_did_change(*table, 0));
-        }
-    }
-
     SECTION("table change information") {
         config.schema = std::make_unique<Schema>(Schema{
             {"table", "", {
@@ -945,5 +797,195 @@ TEST_CASE("Transaction log parsing") {
             REQUIRE(changes.deletions.empty());
             REQUIRE(changes.modifications.empty());
         }
+    }
+}
+
+TEST_CASE("DeepChangeChecker") {
+    InMemoryTestFile config;
+    config.automatic_change_notifications = false;
+
+    config.schema = std::make_unique<Schema>(Schema{
+        {"table", "", {
+            {"int", PropertyTypeInt},
+            {"link", PropertyTypeObject, "table", false, false, true},
+            {"array", PropertyTypeArray, "table"}
+        }},
+    });
+
+    auto r = Realm::get_shared_realm(config);
+    auto table = r->read_group()->get_table("class_table");
+
+    r->begin_transaction();
+    table->add_empty_row(10);
+    for (int i = 0; i < 10; ++i)
+        table->set_int(0, i, i);
+    r->commit_transaction();
+
+    auto track_changes = [&](auto&& f) {
+        auto history = make_client_history(config.path);
+        SharedGroup sg(*history, SharedGroup::durability_MemOnly);
+        Group const& g = sg.begin_read();
+
+        r->begin_transaction();
+        f();
+        r->commit_transaction();
+
+        _impl::TransactionChangeInfo info;
+        info.table_modifications_needed.resize(g.size(), true);
+        info.table_moves_needed.resize(g.size(), true);
+        _impl::transaction::advance(sg, info);
+        return info;
+    };
+
+    std::vector<_impl::DeepChangeChecker::RelatedTable> tables;
+    _impl::DeepChangeChecker::find_related_tables(tables, *table);
+
+    SECTION("direct changes are tracked") {
+        auto info = track_changes([&] {
+            table->set_int(0, 9, 10);
+        });
+
+        _impl::DeepChangeChecker checker(info, *table, tables);
+        REQUIRE_FALSE(checker(8));
+        REQUIRE(checker(9));
+    }
+
+    SECTION("changes over links are tracked") {
+        r->begin_transaction();
+        for (int i = 0; i < 9; ++i)
+            table->set_link(1, i, i + 1);
+        r->commit_transaction();
+
+        auto info = track_changes([&] {
+            table->set_int(0, 9, 10);
+        });
+
+        REQUIRE(_impl::DeepChangeChecker(info, *table, tables)(0));
+    }
+
+    SECTION("changes over linklists are tracked") {
+        r->begin_transaction();
+        for (int i = 0; i < 9; ++i)
+            table->get_linklist(2, i)->add(i + 1);
+        r->commit_transaction();
+
+        auto info = track_changes([&] {
+            table->set_int(0, 9, 10);
+        });
+
+        REQUIRE(_impl::DeepChangeChecker(info, *table, tables)(0));
+    }
+
+    SECTION("cycles over links do not loop forever") {
+        r->begin_transaction();
+        table->set_link(1, 0, 0);
+        r->commit_transaction();
+
+        auto info = track_changes([&] {
+            table->set_int(0, 9, 10);
+        });
+        REQUIRE_FALSE(_impl::DeepChangeChecker(info, *table, tables)(0));
+    }
+
+    SECTION("cycles over linklists do not loop forever") {
+        r->begin_transaction();
+        table->get_linklist(2, 0)->add(0);
+        r->commit_transaction();
+
+        auto info = track_changes([&] {
+            table->set_int(0, 9, 10);
+        });
+        REQUIRE_FALSE(_impl::DeepChangeChecker(info, *table, tables)(0));
+    }
+
+    SECTION("link chains are tracked up to 16 levels deep") {
+        r->begin_transaction();
+        table->add_empty_row(10);
+        for (int i = 0; i < 19; ++i)
+            table->set_link(1, i, i + 1);
+        r->commit_transaction();
+
+        auto info = track_changes([&] {
+            table->set_int(0, 19, -1);
+        });
+
+        _impl::DeepChangeChecker checker(info, *table, tables);
+        CHECK(checker(19));
+        CHECK(checker(18));
+        CHECK(checker(4));
+        CHECK_FALSE(checker(3));
+        CHECK_FALSE(checker(2));
+
+        // Check in other orders to make sure that the caching doesn't effect
+        // the results
+        _impl::DeepChangeChecker checker2(info, *table, tables);
+        CHECK_FALSE(checker2(2));
+        CHECK_FALSE(checker2(3));
+        CHECK(checker2(4));
+        CHECK(checker2(18));
+        CHECK(checker2(19));
+
+        _impl::DeepChangeChecker checker3(info, *table, tables);
+        CHECK(checker2(4));
+        CHECK_FALSE(checker2(3));
+        CHECK_FALSE(checker2(2));
+        CHECK(checker2(18));
+        CHECK(checker2(19));
+    }
+
+    SECTION("targets moving is not a change") {
+        r->begin_transaction();
+        table->set_link(1, 0, 9);
+        table->get_linklist(2, 0)->add(9);
+        r->commit_transaction();
+
+        auto info = track_changes([&] {
+            table->move_last_over(5);
+        });
+        REQUIRE_FALSE(_impl::DeepChangeChecker(info, *table, tables)(0));
+    }
+
+    SECTION("changes made before a row is moved are reported") {
+        r->begin_transaction();
+        table->set_link(1, 0, 9);
+        r->commit_transaction();
+
+        auto info = track_changes([&] {
+            table->set_int(0, 9, 5);
+            table->move_last_over(5);
+        });
+        REQUIRE(_impl::DeepChangeChecker(info, *table, tables)(0));
+
+        r->begin_transaction();
+        table->get_linklist(2, 0)->add(8);
+        r->commit_transaction();
+
+        info = track_changes([&] {
+            table->set_int(0, 8, 5);
+            table->move_last_over(5);
+        });
+        REQUIRE(_impl::DeepChangeChecker(info, *table, tables)(0));
+    }
+
+    SECTION("changes made after a row is moved are reported") {
+        r->begin_transaction();
+        table->set_link(1, 0, 9);
+        r->commit_transaction();
+
+        auto info = track_changes([&] {
+            table->move_last_over(5);
+            table->set_int(0, 5, 5);
+        });
+        REQUIRE(_impl::DeepChangeChecker(info, *table, tables)(0));
+
+        r->begin_transaction();
+        table->get_linklist(2, 0)->add(8);
+        r->commit_transaction();
+
+        info = track_changes([&] {
+            table->move_last_over(5);
+            table->set_int(0, 5, 5);
+        });
+        REQUIRE(_impl::DeepChangeChecker(info, *table, tables)(0));
     }
 }
