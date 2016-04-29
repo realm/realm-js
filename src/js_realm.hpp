@@ -292,7 +292,7 @@ void Realm<T>::constructor(ContextType ctx, ObjectType this_object, size_t argc,
                 config.schema_version = 0;
             }
 
-	    	static const String migration_string = "migration";
+            static const String migration_string = "migration";
             ValueType migration_value = Object::get_property(ctx, object, migration_string);
             if (!Value::is_undefined(ctx, migration_value)) {
                 FunctionType migration_function = Value::validated_to_function(ctx, migration_value, "migration");
