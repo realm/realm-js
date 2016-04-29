@@ -94,7 +94,7 @@ module.exports = {
         }
         catch (e) {
             caught = true;
-            if (e != expectedException) {
+            if (e.message != expectedException.message) {
                 throw new TestFailureError('Expected exception "' + expectedException + '" not thrown - instead caught: "' + e + '"');
             }
         }

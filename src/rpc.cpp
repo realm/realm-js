@@ -22,9 +22,7 @@
 #include <string>
 
 #include "rpc.hpp"
-
 #include "jsc_init.hpp"
-#include "jsc_types.hpp"
 
 #include "base64.hpp"
 #include "object_accessor.hpp"
@@ -43,10 +41,54 @@ static const char * const RealmObjectTypesFunction = "function";
 static const char * const RealmObjectTypesList = "list";
 static const char * const RealmObjectTypesObject = "object";
 static const char * const RealmObjectTypesResults = "results";
+static const char * const RealmObjectTypesRealm = "realm";
 static const char * const RealmObjectTypesUndefined = "undefined";
+
+static RPCServer*& get_rpc_server(JSGlobalContextRef ctx) {
+    static std::map<JSGlobalContextRef, RPCServer*> s_map;
+    return s_map[ctx];
+}
+
+RPCWorker::RPCWorker() {
+    m_thread = std::thread([this]() {
+        // TODO: Create ALooper/CFRunLoop to support async calls.
+        while (!m_stop) {
+            try_run_task();
+        }
+    });
+}
+
+RPCWorker::~RPCWorker() {
+    m_stop = true;
+    m_thread.join();
+}
+
+void RPCWorker::add_task(std::function<json()> task) {
+    m_tasks.push_back(std::packaged_task<json()>(task));
+}
+
+json RPCWorker::pop_task_result() {
+    auto future = m_futures.pop_back();
+    return future.get();
+}
+
+void RPCWorker::try_run_task() {
+    try {
+        // Use a 10 millisecond timeout to keep this thread unblocked.
+        auto task = m_tasks.pop_back(10);
+        task();
+
+        // Since this can be called recursively, it must be pushed to the front of the queue *after* running the task.
+        m_futures.push_front(task.get_future());
+    }
+    catch (ConcurrentDequeTimeout &) {
+        // We tried.
+    }
+}
 
 RPCServer::RPCServer() {
     m_context = JSGlobalContextCreate(NULL);
+    get_rpc_server(m_context) = this;
 
     // JavaScriptCore crashes when trying to walk up the native stack to print the stacktrace.
     // FIXME: Avoid having to do this!
@@ -173,20 +215,71 @@ RPCServer::~RPCServer() {
         JSValueUnprotect(m_context, item.second);
     }
 
+    get_rpc_server(m_context) = nullptr;
     JSGlobalContextRelease(m_context);
 }
 
-json RPCServer::perform_request(std::string name, json &args) {
-    try {
-        RPCRequest action = m_requests[name];
-        assert(action);
+void RPCServer::run_callback(JSContextRef ctx, JSObjectRef this_object, size_t argc, const JSValueRef arguments[], jsc::ReturnValue &return_value) {
+    RPCServer* server = get_rpc_server(JSContextGetGlobalContext(ctx));
+    if (!server) {
+        return;
+    }
 
-        if (name == "/create_session" || m_session_id == args["sessionId"].get<RPCObjectID>()) {
-            return action(args);
+    // The first argument was curried to be the callback id.
+    RPCObjectID callback_id = jsc::Value::to_number(ctx, arguments[0]);
+    JSObjectRef arguments_array = jsc::Object::create_array(ctx, argc - 1, argc == 1 ? nullptr : arguments + 1);
+    json arguments_json = server->serialize_json_value(arguments_array);
+
+    // The next task on the stack will instruct the JS to run this callback.
+    server->m_worker.add_task([&]() -> json {
+        return {
+            {"callback", callback_id},
+            {"arguments", arguments_json},
+        };
+    });
+
+    // Wait for the next callback result to come off the result stack.
+    while (server->m_callback_results.empty()) {
+        // This may recursively bring us into another callback, hence the callback results being a stack.
+        server->m_worker.try_run_task();
+    }
+
+    json results = server->m_callback_results.pop_back();
+    json error = results["error"];
+
+    // The callback id should be identical!
+    assert(callback_id == results["callback"].get<RPCObjectID>());
+
+    if (!error.is_null()) {
+        throw jsc::Exception(ctx, error.get<std::string>());
+    }
+
+    return_value.set(server->deserialize_json_value(results["result"]));
+}
+
+json RPCServer::perform_request(std::string name, const json &args) {
+    std::lock_guard<std::mutex> lock(m_request_mutex);
+
+    if (name == "/create_session" || m_session_id == args["sessionId"].get<RPCObjectID>()) {
+        if (name == "/callback_result") {
+            json results(args);
+            m_callback_results.push_back(std::move(results));
         }
         else {
-            return {{"error", "Invalid session ID"}};
+            RPCRequest action = m_requests[name];
+            assert(action);
+
+            m_worker.add_task([=] {
+                return action(args);
+            });
         }
+    }
+    else {
+        return {{"error", "Invalid session ID"}};
+    }
+
+    try {
+        return m_worker.pop_task_result();
     } catch (std::exception &exception) {
         return {{"error", exception.what()}};
     }
@@ -242,6 +335,12 @@ json RPCServer::serialize_json_value(JSValueRef js_value) {
             {"id", store_object(js_object)},
             {"size", results->size()},
             {"schema", serialize_object_schema(results->get_object_schema())}
+        };
+    }
+    else if (jsc::Object::is_instance<js::RealmClass<jsc::Types>>(m_context, js_object)) {
+        return {
+            {"type", RealmObjectTypesRealm},
+            {"id", store_object(js_object)},
         };
     }
     else if (jsc::Value::is_array(m_context, js_object)) {
@@ -313,8 +412,12 @@ JSValueRef RPCServer::deserialize_json_value(const json dict) {
         std::string type_string = type.get<std::string>();
 
         if (type_string == RealmObjectTypesFunction) {
-            // FIXME: Make this actually call the function by its id once we need it to.
-            return JSObjectMakeFunction(m_context, NULL, 0, NULL, jsc::String(""), NULL, 1, NULL);
+            RPCObjectID callback_id = value.get<RPCObjectID>();
+            JSObjectRef callback = JSObjectMakeFunctionWithCallback(m_context, nullptr, js::wrap<run_callback>);
+
+            // Curry the first argument to be the callback id.
+            JSValueRef bind_args[2] = {jsc::Value::from_null(m_context), jsc::Value::from_number(m_context, callback_id)};
+            return jsc::Object::call_method(m_context, callback, "bind", 2, bind_args);
         }
         else if (type_string == RealmObjectTypesDictionary) {
             JSObjectRef js_object = jsc::Object::create_empty(m_context);

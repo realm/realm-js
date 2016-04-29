@@ -1,7 +1,5 @@
 package io.realm.react;
 
-import android.os.Handler;
-import android.os.Looper;
 import android.util.Log;
 
 import com.facebook.react.bridge.ReactApplicationContext;
@@ -19,7 +17,6 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CountDownLatch;
 
 import fi.iki.elonen.NanoHTTPD;
 
@@ -28,7 +25,6 @@ public class RealmReactModule extends ReactContextBaseJavaModule {
     private static boolean sentAnalytics = false;
 
     private AndroidWebServer webServer;
-    private Handler handler = new Handler(Looper.getMainLooper());
 
     static {
         SoLoader.loadLibrary("realmreact");
@@ -156,25 +152,11 @@ public class RealmReactModule extends ReactContextBaseJavaModule {
                 e.printStackTrace();
             }
             final String json = map.get("postData");
-            final String[] jsonResponse = new String[1];
-            final CountDownLatch latch = new CountDownLatch(1);
-            // Process the command on the UI thread
-            handler.post(new Runnable() {
-                @Override
-                public void run() {
-                    jsonResponse[0] = processChromeDebugCommand(cmdUri, json);
-                    latch.countDown();
-                }
-            });
-            try {
-                latch.await();
-                Response response = newFixedLengthResponse(jsonResponse[0]);
-                response.addHeader("Access-Control-Allow-Origin", "http://localhost:8081");
-                return response;
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-                return null;
-            }
+            final String jsonResponse = processChromeDebugCommand(cmdUri, json);
+
+            Response response = newFixedLengthResponse(jsonResponse);
+            response.addHeader("Access-Control-Allow-Origin", "http://localhost:8081");
+            return response;
         }
     }
 

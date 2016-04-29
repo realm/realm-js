@@ -253,7 +253,7 @@ struct Exception : public std::runtime_error {
     const Protected<ValueType> m_value;
 
     Exception(ContextType ctx, const std::string &message)
-        : std::runtime_error(message), m_value(value(ctx, message)) {}
+        : std::runtime_error(message), m_value(ctx, value(ctx, message)) {}
     Exception(ContextType ctx, const ValueType &val)
         : std::runtime_error(std::string(Value<T>::to_string(ctx, val))), m_value(ctx, val) {}
 

@@ -18,6 +18,11 @@
 
 #pragma once
 
+#include <functional>
+#include <future>
+#include <thread>
+
+#include "concurrent_deque.hpp"
 #include "json.hpp"
 #include "jsc_types.hpp"
 
@@ -28,20 +33,42 @@ class ObjectSchema;
 namespace rpc {
 
 using json = nlohmann::json;
+
 using RPCObjectID = u_int64_t;
 using RPCRequest = std::function<json(const json)>;
+
+class RPCWorker {
+  public:
+    RPCWorker();
+    ~RPCWorker();
+
+    void add_task(std::function<json()>);
+    json pop_task_result();
+    void try_run_task();
+
+  private:
+    bool m_stop = false;
+    std::thread m_thread;
+    ConcurrentDeque<std::packaged_task<json()>> m_tasks;
+    ConcurrentDeque<std::future<json>> m_futures;
+};
 
 class RPCServer {
   public:
     RPCServer();
     ~RPCServer();
-    json perform_request(std::string name, json &args);
+    json perform_request(std::string name, const json &args);
 
   private:
     JSGlobalContextRef m_context;
+    std::mutex m_request_mutex;
     std::map<std::string, RPCRequest> m_requests;
     std::map<RPCObjectID, JSObjectRef> m_objects;
+    ConcurrentDeque<json> m_callback_results;
     RPCObjectID m_session_id;
+    RPCWorker m_worker;
+
+    static void run_callback(JSContextRef, JSObjectRef, size_t, const JSValueRef[], jsc::ReturnValue &);
 
     RPCObjectID store_object(JSObjectRef object);
 
