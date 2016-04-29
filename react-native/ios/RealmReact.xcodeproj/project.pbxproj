@@ -13,13 +13,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		027A23061CD3E212000543AE /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = F60690231CA277CC0003FB26 /* RealmJS.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = F62BF8FB1CAC71780022BCDC;
-			remoteInfo = RealmNode;
-		};
 		F606902C1CA277CD0003FB26 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = F60690231CA277CC0003FB26 /* RealmJS.xcodeproj */;
@@ -120,9 +113,7 @@
 		F60690241CA277CC0003FB26 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				F606902D1CA277CD0003FB26 /* liblibGCDWebServers.a */,
 				F606902F1CA277CD0003FB26 /* libRealmJS.a */,
-				027A23071CD3E212000543AE /* libRealmNode.dylib */,
 				F60690331CA277CD0003FB26 /* RealmJSTests.xctest */,
 			);
 			name = Products;
@@ -187,20 +178,6 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
-		027A23071CD3E212000543AE /* libRealmNode.dylib */ = {
-			isa = PBXReferenceProxy;
-			fileType = "compiled.mach-o.dylib";
-			path = libRealmNode.dylib;
-			remoteRef = 027A23061CD3E212000543AE /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		F606902D1CA277CD0003FB26 /* liblibGCDWebServers.a */ = {
-			isa = PBXReferenceProxy;
-			fileType = archive.ar;
-			path = liblibGCDWebServers.a;
-			remoteRef = F606902C1CA277CD0003FB26 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
 		F606902F1CA277CD0003FB26 /* libRealmJS.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
