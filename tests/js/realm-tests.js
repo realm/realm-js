@@ -119,6 +119,30 @@ module.exports = BaseTest.extend({
         }, 'The schema should be an array of ObjectSchema objects');
     },
 
+    testRealmConstructorReadOnly: function() {
+        var realm = new Realm({schema: [schemas.TestObject]});
+        realm.write(function() {
+            realm.create('TestObject', [1])
+        });
+        TestCase.assertEqual(realm.readOnly, false);
+        realm.close();
+
+        realm = new Realm({readOnly: true, schema: [schemas.TestObject]});
+        var objects = realm.objects('TestObject');
+        TestCase.assertEqual(objects.length, 1);
+        TestCase.assertEqual(objects[0].doubleCol, 1.0);
+        TestCase.assertEqual(realm.readOnly, true);
+
+        TestCase.assertThrows(function() {
+            realm.write(function() {});
+        });
+        realm.close();
+
+        realm = new Realm({readOnly: true});
+        TestCase.assertEqual(realm.schema.length, 1);
+        TestCase.assertEqual(realm.readOnly, true);
+    },
+
     testDefaultPath: function() {
         var defaultRealm = new Realm({schema: []});
         TestCase.assertEqual(defaultRealm.path, Realm.defaultPath);

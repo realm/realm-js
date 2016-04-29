@@ -275,7 +275,7 @@ json RPCServer::serialize_json_value(JSValueRef js_value) {
             JSValueRef js_value = jsc::Object::get_property(m_context, js_object, js_key);
 
             keys.push_back(js_key);
-            values.push_back(js_value);
+            values.push_back(serialize_json_value(js_value));
         }
 
         return {
