@@ -13,6 +13,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		027A23061CD3E212000543AE /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F60690231CA277CC0003FB26 /* RealmJS.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = F62BF8FB1CAC71780022BCDC;
+			remoteInfo = RealmNode;
+		};
 		F606902C1CA277CD0003FB26 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = F60690231CA277CC0003FB26 /* RealmJS.xcodeproj */;
@@ -26,13 +33,6 @@
 			proxyType = 2;
 			remoteGlobalIDString = F63FF2B11C1241E500B3B8E0;
 			remoteInfo = "RealmJS static";
-		};
-		F60690301CA277CD0003FB26 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = F60690231CA277CC0003FB26 /* RealmJS.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 02B58CB11AE99CEC009B348C;
-			remoteInfo = RealmJS;
 		};
 		F60690321CA277CD0003FB26 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -120,9 +120,9 @@
 		F60690241CA277CC0003FB26 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				F606902D1CA277CD0003FB26 /* libGCDWebServers.a */,
+				F606902D1CA277CD0003FB26 /* liblibGCDWebServers.a */,
 				F606902F1CA277CD0003FB26 /* libRealmJS.a */,
-				F60690311CA277CD0003FB26 /* RealmJS.framework */,
+				027A23071CD3E212000543AE /* libRealmNode.dylib */,
 				F60690331CA277CD0003FB26 /* RealmJSTests.xctest */,
 			);
 			name = Products;
@@ -187,10 +187,17 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
-		F606902D1CA277CD0003FB26 /* libGCDWebServers.a */ = {
+		027A23071CD3E212000543AE /* libRealmNode.dylib */ = {
+			isa = PBXReferenceProxy;
+			fileType = "compiled.mach-o.dylib";
+			path = libRealmNode.dylib;
+			remoteRef = 027A23061CD3E212000543AE /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		F606902D1CA277CD0003FB26 /* liblibGCDWebServers.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
-			path = libGCDWebServers.a;
+			path = liblibGCDWebServers.a;
 			remoteRef = F606902C1CA277CD0003FB26 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
@@ -199,13 +206,6 @@
 			fileType = archive.ar;
 			path = libRealmJS.a;
 			remoteRef = F606902E1CA277CD0003FB26 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		F60690311CA277CD0003FB26 /* RealmJS.framework */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.framework;
-			path = RealmJS.framework;
-			remoteRef = F60690301CA277CD0003FB26 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		F60690331CA277CD0003FB26 /* RealmJSTests.xctest */ = {
@@ -345,7 +345,7 @@
 					"$(SRCROOT)/../../tests/react-test-app/node_modules/react-native/React/**",
 					"$(SRCROOT)/../../examples/ReactExample/node_modules/react-native/React/**",
 				);
-				OTHER_LIBTOOLFLAGS = "$(SRCROOT)/../../core/librealm-ios-bitcode.a $(BUILT_PRODUCTS_DIR)/libRealmJS.a $(BUILT_PRODUCTS_DIR)/libGCDWebServers.a";
+				OTHER_LIBTOOLFLAGS = "$(BUILT_PRODUCTS_DIR)/libRealmJS.a $(BUILT_PRODUCTS_DIR)/libGCDWebServers.a";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 			};
@@ -363,7 +363,7 @@
 					"$(SRCROOT)/../../tests/react-test-app/node_modules/react-native/React/**",
 					"$(SRCROOT)/../../examples/ReactExample/node_modules/react-native/React/**",
 				);
-				OTHER_LIBTOOLFLAGS = "$(SRCROOT)/../../core/librealm-ios-bitcode.a $(BUILT_PRODUCTS_DIR)/libRealmJS.a";
+				OTHER_LIBTOOLFLAGS = "$(BUILT_PRODUCTS_DIR)/libRealmJS.a";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 			};
