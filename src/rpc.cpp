@@ -68,7 +68,10 @@ void RPCWorker::add_task(std::function<json()> task) {
 }
 
 json RPCWorker::pop_task_result() {
+    // This might block until a future has been added.
     auto future = m_futures.pop_back();
+
+    // This will block until a return value (or exception) is available.
     return future.get();
 }
 
@@ -231,6 +234,7 @@ void RPCServer::run_callback(JSContextRef ctx, JSObjectRef this_object, size_t a
     json arguments_json = server->serialize_json_value(arguments_array);
 
     // The next task on the stack will instruct the JS to run this callback.
+    // This captures references since it will be executed before exiting this function.
     server->m_worker.add_task([&]() -> json {
         return {
             {"callback", callback_id},
@@ -260,25 +264,27 @@ void RPCServer::run_callback(JSContextRef ctx, JSObjectRef this_object, size_t a
 json RPCServer::perform_request(std::string name, const json &args) {
     std::lock_guard<std::mutex> lock(m_request_mutex);
 
-    if (name == "/create_session" || m_session_id == args["sessionId"].get<RPCObjectID>()) {
-        if (name == "/callback_result") {
-            json results(args);
-            m_callback_results.push_back(std::move(results));
-        }
-        else {
-            RPCRequest action = m_requests[name];
-            assert(action);
-
-            m_worker.add_task([=] {
-                return action(args);
-            });
-        }
-    }
-    else {
+    // Only create_session is allowed without the correct session id (since it creates the session id).
+    if (name != "/create_session" && m_session_id != args["sessionId"].get<RPCObjectID>()) {
         return {{"error", "Invalid session ID"}};
     }
 
+    // The callback_result message contains the return value (or exception) of a callback ran by run_callback().
+    if (name == "/callback_result") {
+        json results(args);
+        m_callback_results.push_back(std::move(results));
+    }
+    else {
+        RPCRequest action = m_requests[name];
+        assert(action);
+
+        m_worker.add_task([=] {
+            return action(args);
+        });
+    }
+
     try {
+        // This will either be the return value (or exception) of the action perform, OR an instruction to run a callback.
         return m_worker.pop_task_result();
     } catch (std::exception &exception) {
         return {{"error", exception.what()}};
