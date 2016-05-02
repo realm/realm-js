@@ -11,6 +11,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * When accessing an empty Results `undefined` is returned rather than throwing an exception
 * Accessing a deleted object throws a JS exception rather than crashing
 * Accessing an invalidated Results snapshot throws a JS exception rather than crashing
+* Fix for error message when specifying properties with invalid object types
 
 0.11.1 Release notes (2016-3-29)
 =============================================================

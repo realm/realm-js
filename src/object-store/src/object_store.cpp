@@ -169,7 +169,7 @@ void ObjectStore::verify_schema(Schema const& actual_schema, Schema& target_sche
         errors.insert(errors.end(), more_errors.begin(), more_errors.end());
     }
     if (errors.size()) {
-        throw SchemaValidationException(errors);
+        throw SchemaUpdateValidationException(errors);
     }
 }
 
@@ -522,6 +522,16 @@ DuplicatePrimaryKeyValueException::DuplicatePrimaryKeyValueException(std::string
 SchemaValidationException::SchemaValidationException(std::vector<ObjectSchemaValidationException> const& errors) :
     m_validation_errors(errors)
 {
+    m_what ="The following errors were encountered during schema validation: ";
+    for (auto const& error : errors) {
+        m_what += std::string("\n- ") + error.what();
+    }
+}
+
+
+SchemaUpdateValidationException::SchemaUpdateValidationException(std::vector<ObjectSchemaValidationException> const& errors) :
+    SchemaValidationException(errors)
+{
     m_what ="Migration is required due to the following errors: ";
     for (auto const& error : errors) {
         m_what += std::string("\n- ") + error.what();
@@ -560,7 +570,7 @@ InvalidNullabilityException::InvalidNullabilityException(std::string const& obje
 MissingObjectTypeException::MissingObjectTypeException(std::string const& object_type, Property const& property) :
     ObjectSchemaPropertyException(object_type, property)
 {
-    m_what = "Target type '" + property.object_type + "' doesn't exist for property '" + property.name + "'.";
+    m_what = "Property '" + property.name + "' has an invalid type '" + property.object_type + "'.";
 }
 
 MismatchedPropertiesException::MismatchedPropertiesException(std::string const& object_type, Property const& old_property, Property const& new_property) :
