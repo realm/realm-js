@@ -28,6 +28,7 @@ class Protected<JSGlobalContextRef> {
     JSGlobalContextRef m_context;
 
   public:
+    Protected() : m_context(nullptr) {}
     Protected(const Protected<JSGlobalContextRef> &other) : Protected(other.m_context) {}
     Protected(Protected<JSGlobalContextRef> &&other) : m_context(other.m_context) {
         other.m_context = nullptr;
@@ -43,6 +44,9 @@ class Protected<JSGlobalContextRef> {
     operator JSGlobalContextRef() const {
         return m_context;
     }
+    operator bool() const {
+        return m_context != nullptr;
+    }
 };
 
 template<>
@@ -51,6 +55,7 @@ class Protected<JSValueRef> {
     JSValueRef m_value;
 
   public:
+    Protected() {}
     Protected(const Protected<JSValueRef> &other) : Protected(other.m_context, other.m_value) {}
     Protected(Protected<JSValueRef> &&other) : m_context(other.m_context), m_value(other.m_value) {
         other.m_context = nullptr;
@@ -67,11 +72,15 @@ class Protected<JSValueRef> {
     operator JSValueRef() const {
         return m_value;
     }
+    operator bool() const {
+        return m_value != nullptr;
+    }
 };
 
 template<>
 class Protected<JSObjectRef> : public Protected<JSValueRef> {
   public:
+    Protected() : Protected<JSValueRef>() {}
     Protected(const Protected<JSObjectRef> &other) : Protected<JSValueRef>(other) {}
     Protected(Protected<JSObjectRef> &&other) : Protected<JSValueRef>(std::move(other)) {}
     Protected(JSContextRef ctx, JSObjectRef value) : Protected<JSValueRef>(ctx, value) {}
