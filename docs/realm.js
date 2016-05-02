@@ -31,6 +31,14 @@ class Realm {
      */
     get path() {}
 
+    /**
+     * Indicates if this Realm was opened as read-only.
+     * @type {boolean}
+     * @readonly
+     * @since 0.12.0
+     */
+    get readOnly() {}
+
    /**
     * The current schema version of this Realm.
     * @type {number}
@@ -144,6 +152,7 @@ Realm.defaultPath;
  *   key used to encrypt and decrypt all data in the Realm.
  * @property {string} [path={@link Realm.defaultPath}] - The path to the file where the
  *   Realm database should be stored.
+ * @property {boolean} [readOnly=false] - Specifies if this Realm should be opened as read-only.
  * @property {Array<Realm~ObjectClass|Realm~ObjectSchema>} [schema] - Specifies all the
  *   object types in this Realm. **Required** when first creating a Realm at this `path`.
  * @property {number} [schemaVersion] - **Required** (and must be incremented) after
