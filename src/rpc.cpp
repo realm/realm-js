@@ -110,7 +110,7 @@ RPCServer::RPCServer() {
         return (json){{"result", m_session_id}};
     };
     m_requests["/create_realm"] = [this](const json dict) {
-        JSObjectRef realm_constructor = m_session_id ? m_objects[m_session_id] : NULL;
+        JSObjectRef realm_constructor = m_session_id ? JSObjectRef(m_objects[m_session_id]) : NULL;
         if (!realm_constructor) {
             throw std::runtime_error("Realm constructor not found!");
         }
@@ -126,27 +126,6 @@ RPCServer::RPCServer() {
         JSObjectRef realm_object = jsc::Function::construct(m_context, realm_constructor, arg_count, arg_values);
         RPCObjectID realm_id = store_object(realm_object);
         return (json){{"result", realm_id}};
-    };
-    m_requests["/begin_transaction"] = [this](const json dict) {
-        RPCObjectID realm_id = dict["realmId"].get<RPCObjectID>();
-        SharedRealm realm = *jsc::Object::get_internal<js::RealmClass<jsc::Types>>(m_objects[realm_id]);
-
-        realm->begin_transaction();
-        return json::object();
-    };
-    m_requests["/cancel_transaction"] = [this](const json dict) {
-        RPCObjectID realm_id = dict["realmId"].get<RPCObjectID>();
-        SharedRealm realm = *jsc::Object::get_internal<js::RealmClass<jsc::Types>>(m_objects[realm_id]);
-
-        realm->cancel_transaction();
-        return json::object();
-    };
-    m_requests["/commit_transaction"] = [this](const json dict) {
-        RPCObjectID realm_id = dict["realmId"].get<RPCObjectID>();
-        SharedRealm realm = *jsc::Object::get_internal<js::RealmClass<jsc::Types>>(m_objects[realm_id]);
-
-        realm->commit_transaction();
-        return json::object();
     };
     m_requests["/call_method"] = [this](const json dict) {
         JSObjectRef object = m_objects[dict["id"].get<RPCObjectID>()];
@@ -193,20 +172,17 @@ RPCServer::RPCServer() {
     };
     m_requests["/dispose_object"] = [this](const json dict) {
         RPCObjectID oid = dict["id"].get<RPCObjectID>();
-        JSValueUnprotect(m_context, m_objects[oid]);
         m_objects.erase(oid);
         return json::object();
     };
     m_requests["/clear_test_state"] = [this](const json dict) {
         for (auto object : m_objects) {
             // The session ID points to the Realm constructor object, which should remain.
-            if (object.first == m_session_id) {
-                continue;
+            if (object.first != m_session_id) {
+                m_objects.erase(object.first);
             }
-
-            JSValueUnprotect(m_context, object.second);
-            m_objects.erase(object.first);
         }
+        m_callbacks.clear();
         JSGarbageCollect(m_context);
         js::delete_all_realms();
         return json::object();
@@ -214,10 +190,6 @@ RPCServer::RPCServer() {
 }
 
 RPCServer::~RPCServer() {
-    for (auto item : m_objects) {
-        JSValueUnprotect(m_context, item.second);
-    }
-
     get_rpc_server(m_context) = nullptr;
     JSGlobalContextRelease(m_context);
 }
@@ -230,7 +202,7 @@ void RPCServer::run_callback(JSContextRef ctx, JSObjectRef this_object, size_t a
 
     // The first argument was curried to be the callback id.
     RPCObjectID callback_id = jsc::Value::to_number(ctx, arguments[0]);
-    JSObjectRef arguments_array = jsc::Object::create_array(ctx, argc - 1, argc == 1 ? nullptr : arguments + 1);
+    JSObjectRef arguments_array = jsc::Object::create_array(ctx, uint32_t(argc - 1), argc == 1 ? nullptr : arguments + 1);
     json arguments_json = server->serialize_json_value(arguments_array);
 
     // The next task on the stack will instruct the JS to run this callback.
@@ -293,9 +265,9 @@ json RPCServer::perform_request(std::string name, const json &args) {
 
 RPCObjectID RPCServer::store_object(JSObjectRef object) {
     static RPCObjectID s_next_id = 1;
+
     RPCObjectID next_id = s_next_id++;
-    JSValueProtect(m_context, object);
-    m_objects[next_id] = object;
+    m_objects.emplace(next_id, js::Protected<JSObjectRef>(m_context, object));
     return next_id;
 }
 
@@ -419,11 +391,19 @@ JSValueRef RPCServer::deserialize_json_value(const json dict) {
 
         if (type_string == RealmObjectTypesFunction) {
             RPCObjectID callback_id = value.get<RPCObjectID>();
-            JSObjectRef callback = JSObjectMakeFunctionWithCallback(m_context, nullptr, js::wrap<run_callback>);
 
-            // Curry the first argument to be the callback id.
-            JSValueRef bind_args[2] = {jsc::Value::from_null(m_context), jsc::Value::from_number(m_context, callback_id)};
-            return jsc::Object::call_method(m_context, callback, "bind", 2, bind_args);
+            if (!m_callbacks.count(callback_id)) {
+                JSObjectRef callback = JSObjectMakeFunctionWithCallback(m_context, nullptr, js::wrap<run_callback>);
+
+                // Curry the first argument to be the callback id.
+                JSValueRef bind_args[2] = {jsc::Value::from_null(m_context), jsc::Value::from_number(m_context, callback_id)};
+                JSValueRef bound_callback = jsc::Object::call_method(m_context, callback, "bind", 2, bind_args);
+
+                callback = jsc::Value::to_function(m_context, bound_callback);
+                m_callbacks.emplace(callback_id, js::Protected<JSObjectRef>(m_context, callback));
+            }
+
+            return m_callbacks.at(callback_id);
         }
         else if (type_string == RealmObjectTypesDictionary) {
             JSObjectRef js_object = jsc::Object::create_empty(m_context);

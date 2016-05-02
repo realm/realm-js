@@ -25,6 +25,7 @@
 #include "concurrent_deque.hpp"
 #include "json.hpp"
 #include "jsc_types.hpp"
+#include "jsc_protected.hpp"
 
 namespace realm {
 
@@ -63,7 +64,8 @@ class RPCServer {
     JSGlobalContextRef m_context;
     std::mutex m_request_mutex;
     std::map<std::string, RPCRequest> m_requests;
-    std::map<RPCObjectID, JSObjectRef> m_objects;
+    std::map<RPCObjectID, js::Protected<JSObjectRef>> m_objects;
+    std::map<RPCObjectID, js::Protected<JSObjectRef>> m_callbacks;
     ConcurrentDeque<json> m_callback_results;
     RPCObjectID m_session_id;
     RPCWorker m_worker;
