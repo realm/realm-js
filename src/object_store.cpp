@@ -570,7 +570,7 @@ InvalidNullabilityException::InvalidNullabilityException(std::string const& obje
 MissingObjectTypeException::MissingObjectTypeException(std::string const& object_type, Property const& property) :
     ObjectSchemaPropertyException(object_type, property)
 {
-    m_what = "Property '" + property.name + "' has an invalid type '" + property.object_type + "'.'";
+    m_what = "Property '" + property.name + "' has an invalid type '" + property.object_type + "'.";
 }
 
 MismatchedPropertiesException::MismatchedPropertiesException(std::string const& object_type, Property const& old_property, Property const& new_property) :
