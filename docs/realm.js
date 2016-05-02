@@ -150,6 +150,12 @@ Realm.defaultPath;
  * @type {Object}
  * @property {ArrayBuffer|ArrayBufferView} [encryptionKey] - The 512-bit (64-byte) encryption
  *   key used to encrypt and decrypt all data in the Realm.
+ * @property {function(Realm, Realm)} [migration] - The function to run if a migration is needed.
+ *   This function should provide all the logic for converting data models from previous schemas
+ *   to the new schema.
+ *   This function takes two arguments:
+ *   - `oldRealm` - The Realm before migration is performed.
+ *   - `newRealm` - The Realm that uses the latest `schema`, which should be modified as necessary.
  * @property {string} [path={@link Realm.defaultPath}] - The path to the file where the
  *   Realm database should be stored.
  * @property {boolean} [readOnly=false] - Specifies if this Realm should be opened as read-only.
