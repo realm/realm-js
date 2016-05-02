@@ -120,6 +120,17 @@ TEST_CASE("[index_set] add()") {
             set.add(i);
         REQUIRE_INDICES(set, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20);
     }
+
+    SECTION("merges ranges even when they are in different chunks") {
+        realm::IndexSet set2;
+        for (int i = 0; i < 20; ++i) {
+            set.add(i * 2);
+            set2.add(i);
+            set2.add(i * 2);
+        }
+        set.add(set2);
+        REQUIRE(set.count() == 30);
+    }
 }
 
 TEST_CASE("[index_set] add_shifted()") {
