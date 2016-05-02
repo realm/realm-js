@@ -48,7 +48,7 @@ module.exports = BaseTest.extend({
         });
 
         // migration function exceptions should propogate
-        var exception = 'expected exception';
+        var exception = new Error('expected exception');
         realm = undefined;
         TestCase.assertThrowsException(function() {
             realm = new Realm({schema: [], schemaVersion: 3, migration: function() {

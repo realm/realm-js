@@ -213,23 +213,24 @@ RCT_REMAP_METHOD(emit, emitEvent:(NSString *)eventName withObject:(id)object) {
     [_webServer addDefaultHandlerForMethod:@"POST"
                               requestClass:[GCDWebServerDataRequest class]
                               processBlock:^GCDWebServerResponse *(GCDWebServerRequest* request) {
+        __typeof__(self) self = weakSelf;
+        RPCServer *rpcServer = self ? self->_rpcServer.get() : nullptr;
         GCDWebServerResponse *response;
+
         try {
-            // perform all realm ops on the main thread
-            __block NSData *responseData;
-            dispatch_sync(dispatch_get_main_queue(), ^{
-                RealmReact *self = weakSelf;
-                if (self) {
-                    if (_rpcServer) {
-                        json args = json::parse([[(GCDWebServerDataRequest *)request text] UTF8String]);
-                        std::string responseText = _rpcServer->perform_request(request.path.UTF8String, args).dump();
-                        responseData = [NSData dataWithBytes:responseText.c_str() length:responseText.length()];
-                        return;
-                    }
-                }
+            NSData *responseData;
+
+            if (rpcServer) {
+                json args = json::parse([[(GCDWebServerDataRequest *)request text] UTF8String]);
+                std::string responseText = rpcServer->perform_request(request.path.UTF8String, args).dump();
+
+                responseData = [NSData dataWithBytes:responseText.c_str() length:responseText.length()];
+            }
+            else {
                 // we have been deallocated
                 responseData = [NSData data];
-            });
+            }
+
             response = [[GCDWebServerDataResponse alloc] initWithData:responseData contentType:@"application/json"];
         }
         catch(std::exception &ex) {

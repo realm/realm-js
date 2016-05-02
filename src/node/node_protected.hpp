@@ -29,10 +29,14 @@ class Protected {
     Nan::Persistent<MemberType, v8::CopyablePersistentTraits<MemberType>> m_value;
 
   public:
+    Protected() {}
     Protected(v8::Local<MemberType> value) : m_value(value) {}
 
     operator v8::Local<MemberType>() const {
         return Nan::New(m_value);
+    }
+    operator bool() const {
+        return m_value.isEmpty();
     }
     bool operator==(const v8::Local<MemberType> &other) const {
         return m_value == other;
@@ -55,6 +59,7 @@ namespace js {
 template<>
 class Protected<node::Types::GlobalContext> : public node::Protected<v8::Context> {
   public:
+    Protected() : node::Protected<v8::Context>() {}
     Protected(v8::Local<v8::Context> ctx) : node::Protected<v8::Context>(ctx) {}
 
     operator v8::Isolate*() const {
@@ -65,18 +70,21 @@ class Protected<node::Types::GlobalContext> : public node::Protected<v8::Context
 template<>
 class Protected<node::Types::Value> : public node::Protected<v8::Value> {
   public:
+    Protected() : node::Protected<v8::Value>() {}
     Protected(v8::Isolate* isolate, v8::Local<v8::Value> value) : node::Protected<v8::Value>(value) {}
 };
 
 template<>
 class Protected<node::Types::Object> : public node::Protected<v8::Object> {
   public:
+    Protected() : node::Protected<v8::Object>() {}
     Protected(v8::Isolate* isolate, v8::Local<v8::Object> object) : node::Protected<v8::Object>(object) {}
 };
 
 template<>
 class Protected<node::Types::Function> : public node::Protected<v8::Function> {
   public:
+    Protected() : node::Protected<v8::Function>() {}
     Protected(v8::Isolate* isolate, v8::Local<v8::Function> object) : node::Protected<v8::Function>(object) {}
 };
 
