@@ -258,6 +258,18 @@ TEST_CASE("Results") {
             REQUIRE(change.modifications.empty());
         }
 
+        SECTION("modification indices are pre-insert/delete") {
+            r->begin_transaction();
+            table->set_int(0, 2, 0);
+            table->set_int(0, 3, 6);
+            r->commit_transaction();
+            advance_and_notify(*r);
+
+            REQUIRE(notification_calls == 2);
+            REQUIRE_INDICES(change.deletions, 1);
+            REQUIRE_INDICES(change.modifications, 2);
+        }
+
         SECTION("notifications are not delivered when collapsing transactions results in no net change") {
             r->begin_transaction();
             size_t ndx = table->add_empty_row();
