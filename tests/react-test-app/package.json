@@ -7,7 +7,7 @@
   },
   "dependencies": {
     "react": "^0.14.5",
-    "react-native": "^0.22.0",
+    "react-native": "^0.24.1",
     "react-native-fs": "^1.1.0",
     "xmlbuilder": "^4.2.1",
     "realm": "file:../..",
