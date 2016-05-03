@@ -59,8 +59,7 @@ RPCWorker::RPCWorker() {
 }
 
 RPCWorker::~RPCWorker() {
-    m_stop = true;
-    m_thread.join();
+    stop();
 }
 
 void RPCWorker::add_task(std::function<json()> task) {
@@ -86,6 +85,13 @@ void RPCWorker::try_run_task() {
     }
     catch (ConcurrentDequeTimeout &) {
         // We tried.
+    }
+}
+
+void RPCWorker::stop() {
+    if (!m_stop) {
+        m_stop = true;
+        m_thread.join();
     }
 }
 
@@ -190,6 +196,8 @@ RPCServer::RPCServer() {
 }
 
 RPCServer::~RPCServer() {
+    m_worker.stop();
+
     // The protected values should be unprotected before releasing the context.
     m_objects.clear();
     m_callbacks.clear();

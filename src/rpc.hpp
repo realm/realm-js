@@ -46,6 +46,7 @@ class RPCWorker {
     void add_task(std::function<json()>);
     json pop_task_result();
     void try_run_task();
+    void stop();
 
   private:
     bool m_stop = false;
