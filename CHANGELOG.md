@@ -18,6 +18,7 @@
 * Accessing an invalidated Results snapshot throws a JS exception rather than crashing
 * Fix for error message when specifying properties with invalid object types
 * Fix memory leak when reloading an app in debug mode
+* Setting non-persisted properties now works as expected
 
 0.11.1 Release notes (2016-3-29)
 =============================================================
