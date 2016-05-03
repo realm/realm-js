@@ -191,7 +191,8 @@ Realm.defaultPath;
  * @property {string} [objectType] - **Required**  when `type` is `"list"`, and must match the
  *   type of an object in the same schema.
  * @property {any} [default] - The default value for this property on creation when not
- *   otherwise specified.
+ *   otherwise specified. This also may be a function that is called when objects are created,
+ *   and returns a default value to use.
  * @property {boolean} [optional] - Signals if this property may be assigned `null` or `undefined`.
  * @property {boolean} [indexed] - Signals if this property should be indexed. Only supported for
  *   `"string"`, `"int"`, and `"bool"` properties. 

@@ -421,6 +421,34 @@ module.exports = BaseTest.extend({
         });
     },
 
+    testRealmCreateWithFunctionalDefaults: function() {
+        var primaryDefault = 0;
+        var doubleDefault = 0;
+
+        var schema = {
+            name: 'AutoPrimaryObject',
+            primaryKey: 'primaryCol',
+            properties: {
+                primaryCol: {type: 'int', default: function() { return primaryDefault++; }},
+                doubleCol: {type: 'double', default: function() { return doubleDefault++; }},
+            },
+        };
+
+        var realm = new Realm({schema: [schema]});
+        var objects = realm.objects('AutoPrimaryObject');
+
+        realm.write(function() {
+            for (var i = 0; i < 10; i++) {
+                var object = realm.create('AutoPrimaryObject', {});
+
+                TestCase.assertEqual(object.primaryCol, i);
+                TestCase.assertEqual(object.doubleCol, i);
+            }
+        });
+
+        TestCase.assertEqual(objects.length, 10);
+    },
+
     testRealmCreateWithConstructor: function() {
         var customCreated = 0;
 
