@@ -456,4 +456,17 @@ module.exports = BaseTest.extend({
             obj.doubleCol;
         });
     },
+
+    testIgnoredProperties: function() {
+        var realm = new Realm({schema: [schemas.TestObject]});
+        var obj;
+        realm.write(function() {
+            obj = realm.create('TestObject', {doubleCol: 1, ignored: true});
+        });
+
+        TestCase.assertEqual(obj.doubleCol, 1);
+        TestCase.assertEqual(obj.ignored, undefined);
+        obj.ignored = true;
+        TestCase.assertEqual(obj.ignored, true);
+    }
 });

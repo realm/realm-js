@@ -110,7 +110,12 @@ void RealmObject<T>::get_property(ContextType ctx, ObjectType object, const Stri
 template<typename T>
 bool RealmObject<T>::set_property(ContextType ctx, ObjectType object, const String &property, ValueType value) {
     auto realm_object = get_internal<T, RealmObjectClass<T>>(object);
-    realm_object->set_property_value(ctx, property, value, true);
+    try {
+        realm_object->set_property_value(ctx, property, value, true);
+    }
+    catch (InvalidPropertyException &ex) {
+        return false;
+    }
     return true;
 }
 
