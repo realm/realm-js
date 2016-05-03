@@ -1,5 +1,7 @@
 *.orig
 
+**/build/
+
 /object-store/**/*.cmake
 /object-store/**/*.dylib
 /object-store/**/*.sh
