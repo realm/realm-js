@@ -39,6 +39,15 @@ class Realm {
      */
     get readOnly() {}
 
+    /**
+     * A normalized representation of the schema provided in the
+     * {@link Realm~Configuration Configuration} when this Realm was constructed.
+     * @type {Realm~ObjectSchema[]}
+     * @readonly
+     * @since 0.12.0
+     */
+    get schema() {}
+
    /**
     * The current schema version of this Realm.
     * @type {number}
