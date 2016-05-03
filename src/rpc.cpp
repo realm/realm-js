@@ -190,6 +190,10 @@ RPCServer::RPCServer() {
 }
 
 RPCServer::~RPCServer() {
+    // The protected values should be unprotected before releasing the context.
+    m_objects.clear();
+    m_callbacks.clear();
+
     get_rpc_server(m_context) = nullptr;
     JSGlobalContextRelease(m_context);
 }
