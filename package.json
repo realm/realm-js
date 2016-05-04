@@ -49,7 +49,7 @@
   "dependencies": {
     "bindings": "^1.2.1",
     "mockery": "^1.6.2",
-    "nan": "^2.2.1",
+    "nan": "^2.3.3",
     "node-gyp": "^3.3.1",
     "rnpm": "1.6.5",
     "xcode": "0.8.4"
