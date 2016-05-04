@@ -71,7 +71,7 @@ class Realm {
 
     /**
      * Closes this Realm so it may be re-opened with a newer schema version.
-     * All objects and collections in this Realm will no longer be valid until it is re-opened.
+     * All objects and collections from this Realm are no longer valid after calling this method.
      */
     close() {}
 
