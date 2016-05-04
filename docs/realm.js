@@ -70,6 +70,12 @@ class Realm {
     constructor(config) {}
 
     /**
+     * Closes this Realm so it may be re-opened with a newer schema version.
+     * All objects and collections in this Realm will no longer be valid until it is re-opened.
+     */
+    close() {}
+
+    /**
      * Create a new Realm object of the given type and with the specified properties.
      * @param {Realm~ObjectType} type - The type of Realm object to create.
      * @param {Object} properties - Property values for all required properties without a
