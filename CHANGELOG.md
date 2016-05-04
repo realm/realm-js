@@ -1,13 +1,24 @@
-x.x.x Release notes (yyyy-MM-dd)
+0.12.0 Release notes (2016-5-3)
 =============================================================
 ### Breaking changes
 * None
 
 ### Enhancements
 * Support for queries comparing optional properties to `null`
+* `object.isValid()` has been added to enable checking if an object has been deleted
+  - **Note:** Custom object classes can extend `Realm.Object` to inherit this method
+* Support opening a Realm as read-only with the `readOnly` configuration option
+* Support for providing a custom migration function (please see the docs for details)
+* Added `path`, `readOnly`, `schema`, and `schemaVersion` properties to `Realm` instances
+* Optional and list properties are no longer required when creating objects
 
 ### Bugfixes
-* None
+* When accessing an empty Results `undefined` is returned rather than throwing an exception
+* Accessing a deleted object throws a JS exception rather than crashing
+* Accessing an invalidated Results snapshot throws a JS exception rather than crashing
+* Fix for error message when specifying properties with invalid object types
+* Fix memory leak when reloading an app in debug mode
+* Setting non-persisted properties now works as expected
 
 0.11.1 Release notes (2016-3-29)
 =============================================================

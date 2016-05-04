@@ -19,7 +19,7 @@
 #import "RealmJSTests.h"
 #import "RJSModuleLoader.h"
 
-#import <RealmJS/RealmJS.h>
+#include "jsc_init.h"
 
 @interface RealmJSCoreTests : RealmJSTests
 

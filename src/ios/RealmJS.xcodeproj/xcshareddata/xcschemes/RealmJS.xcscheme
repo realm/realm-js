@@ -14,23 +14,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "02B58CB01AE99CEC009B348C"
-               BuildableName = "RealmJS.framework"
+               BlueprintIdentifier = "F63FF2B01C1241E500B3B8E0"
+               BuildableName = "libRealmJS.a"
                BlueprintName = "RealmJS"
-               ReferencedContainer = "container:RealmJS.xcodeproj">
-            </BuildableReference>
-         </BuildActionEntry>
-         <BuildActionEntry
-            buildForTesting = "YES"
-            buildForRunning = "YES"
-            buildForProfiling = "NO"
-            buildForArchiving = "NO"
-            buildForAnalyzing = "YES">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "02B58CBB1AE99CEC009B348C"
-               BuildableName = "RealmJSTests.xctest"
-               BlueprintName = "RealmJSTests"
                ReferencedContainer = "container:RealmJS.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -56,8 +42,8 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "02B58CB01AE99CEC009B348C"
-            BuildableName = "RealmJS.framework"
+            BlueprintIdentifier = "F63FF2B01C1241E500B3B8E0"
+            BuildableName = "libRealmJS.a"
             BlueprintName = "RealmJS"
             ReferencedContainer = "container:RealmJS.xcodeproj">
          </BuildableReference>
@@ -78,8 +64,8 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "02B58CB01AE99CEC009B348C"
-            BuildableName = "RealmJS.framework"
+            BlueprintIdentifier = "F63FF2B01C1241E500B3B8E0"
+            BuildableName = "libRealmJS.a"
             BlueprintName = "RealmJS"
             ReferencedContainer = "container:RealmJS.xcodeproj">
          </BuildableReference>
@@ -96,8 +82,8 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "02B58CB01AE99CEC009B348C"
-            BuildableName = "RealmJS.framework"
+            BlueprintIdentifier = "F63FF2B01C1241E500B3B8E0"
+            BuildableName = "libRealmJS.a"
             BlueprintName = "RealmJS"
             ReferencedContainer = "container:RealmJS.xcodeproj">
          </BuildableReference>

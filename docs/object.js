@@ -16,6 +16,17 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#import "RealmJS.h"
-
-// This file needs to exist for RealmJS.framework to build properly.
+/**
+ * Realm objects will automatically inherit from this class unless a {@link Realm~ObjectClass}
+ * was specified that does **not** inherit from this class.
+ * @memberof Realm
+ * @since 0.12.0
+ */
+class Object {
+    /**
+     * Checks if this object has not been deleted and is part of a valid Realm.
+     * @returns {boolean} indicating if the object can be safely accessed.
+     * @since 0.12.0
+     */
+    isValid() {}
+}

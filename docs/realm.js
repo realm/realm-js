@@ -24,6 +24,39 @@
  */
 class Realm {
     /**
+     * The path to the file where this Realm is stored.
+     * @type {string}
+     * @readonly
+     * @since 0.12.0
+     */
+    get path() {}
+
+    /**
+     * Indicates if this Realm was opened as read-only.
+     * @type {boolean}
+     * @readonly
+     * @since 0.12.0
+     */
+    get readOnly() {}
+
+    /**
+     * A normalized representation of the schema provided in the
+     * {@link Realm~Configuration Configuration} when this Realm was constructed.
+     * @type {Realm~ObjectSchema[]}
+     * @readonly
+     * @since 0.12.0
+     */
+    get schema() {}
+
+   /**
+    * The current schema version of this Realm.
+    * @type {number}
+    * @readonly
+    * @since 0.12.0
+    */
+    get schemaVersion() {}
+
+    /**
      * Create a new `Realm` instance using the provided `config`. If a Realm does not yet exist
      * at `config.path` (or {@link Realm.defaultPath} if not provided), then this constructor
      * will create it with the provided `config.schema` (which is _required_ in this case).
@@ -126,8 +159,15 @@ Realm.defaultPath;
  * @type {Object}
  * @property {ArrayBuffer|ArrayBufferView} [encryptionKey] - The 512-bit (64-byte) encryption
  *   key used to encrypt and decrypt all data in the Realm.
+ * @property {function(Realm, Realm)} [migration] - The function to run if a migration is needed.
+ *   This function should provide all the logic for converting data models from previous schemas
+ *   to the new schema.
+ *   This function takes two arguments:
+ *   - `oldRealm` - The Realm before migration is performed.
+ *   - `newRealm` - The Realm that uses the latest `schema`, which should be modified as necessary.
  * @property {string} [path={@link Realm.defaultPath}] - The path to the file where the
  *   Realm database should be stored.
+ * @property {boolean} [readOnly=false] - Specifies if this Realm should be opened as read-only.
  * @property {Array<Realm~ObjectClass|Realm~ObjectSchema>} [schema] - Specifies all the
  *   object types in this Realm. **Required** when first creating a Realm at this `path`.
  * @property {number} [schemaVersion] - **Required** (and must be incremented) after
@@ -136,7 +176,8 @@ Realm.defaultPath;
 
 /**
  * Realm objects will inherit methods, getters, and setters from the `prototype` of this
- * constructor.
+ * constructor. It is **highly recommended** that this constructor inherit from
+ * {@link Realm.Object}.
  * @typedef Realm~ObjectClass
  * @type {Class}
  * @property {Realm~ObjectSchema} schema - Static property specifying object schema information.

@@ -77,6 +77,17 @@ exports.NullableBasicTypes = {
     }
 };
 
+exports.IndexedTypes = {
+    name: 'IndexedTypesObject',
+    properties: {
+        boolCol:   {type: 'bool', indexed: true},
+        intCol:    {type: 'int', indexed: true},
+        stringCol: {type: 'string', indexed: true},
+        dateCol:   {type: 'date', indexed: true},
+    }
+};
+
+
 exports.LinkTypes = {
     name: 'LinkTypesObject',
     properties: {

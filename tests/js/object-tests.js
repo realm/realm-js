@@ -431,5 +431,42 @@ module.exports = BaseTest.extend({
                 object.dataCol = [1];
             });
         });
+    },
+
+    testObjectConstructor: function() {
+        var realm = new Realm({schema: [schemas.TestObject]});
+        realm.write(function() {
+            var obj = realm.create('TestObject', {doubleCol: 1});
+            TestCase.assertTrue(obj instanceof Realm.Object);
+        });
+    },
+
+    testIsValid: function() {
+        var realm = new Realm({schema: [schemas.TestObject]});
+        var obj;
+        realm.write(function() {
+            obj = realm.create('TestObject', {doubleCol: 1});
+            TestCase.assertEqual(obj.isValid(), true);
+            realm.delete(obj);
+            TestCase.assertEqual(obj.isValid(), false);
+        });
+
+        TestCase.assertEqual(obj.isValid(), false);
+        TestCase.assertThrows(function() {
+            obj.doubleCol;
+        });
+    },
+
+    testIgnoredProperties: function() {
+        var realm = new Realm({schema: [schemas.TestObject]});
+        var obj;
+        realm.write(function() {
+            obj = realm.create('TestObject', {doubleCol: 1, ignored: true});
+        });
+
+        TestCase.assertEqual(obj.doubleCol, 1);
+        TestCase.assertEqual(obj.ignored, undefined);
+        obj.ignored = true;
+        TestCase.assertEqual(obj.ignored, true);
     }
 });

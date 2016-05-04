@@ -87,6 +87,23 @@ module.exports = {
         }
     },
 
+    assertThrowsException: function(func, expectedException) {
+        var caught = false;
+        try {
+            func();
+        }
+        catch (e) {
+            caught = true;
+            if (e.message != expectedException.message) {
+                throw new TestFailureError('Expected exception "' + expectedException + '" not thrown - instead caught: "' + e + '"');
+            }
+        }
+
+        if (!caught) {
+            throw new TestFailureError('Expected exception not thrown');
+        }
+    },
+
     assertTrue: function(condition, errorMessage) {
         if (!condition) {
             throw new TestFailureError(errorMessage || 'Condition expected to be true');

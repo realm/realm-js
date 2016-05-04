@@ -25,6 +25,7 @@ var TESTS = {
     ResultsTests: require('./results-tests'),
     QueryTests: require('./query-tests'),
     EncryptionTests: require('./encryption-tests'),
+    MigrationTests: require('./migration-tests'),
 };
 
 var SPECIAL_METHODS = {

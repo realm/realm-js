@@ -14,10 +14,10 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "F63FF2B01C1241E500B3B8E0"
-               BuildableName = "libRealmJS.a"
-               BlueprintName = "RealmJS static"
-               ReferencedContainer = "container:RealmJS.xcodeproj">
+               BlueprintIdentifier = "F60690121CA2766F0003FB26"
+               BuildableName = "libRealmReact.a"
+               BlueprintName = "RealmReact"
+               ReferencedContainer = "container:RealmReact.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -28,7 +28,26 @@
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "YES">
       <Testables>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "00E356ED1AD99517003FC87E"
+               BuildableName = "RealmReactTests.xctest"
+               BlueprintName = "RealmReactTests"
+               ReferencedContainer = "container:../../tests/react-test-app/ios/ReactTests.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
       </Testables>
+      <MacroExpansion>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "F60690121CA2766F0003FB26"
+            BuildableName = "libRealmReact.a"
+            BlueprintName = "RealmReact"
+            ReferencedContainer = "container:RealmReact.xcodeproj">
+         </BuildableReference>
+      </MacroExpansion>
       <AdditionalOptions>
       </AdditionalOptions>
    </TestAction>
@@ -45,10 +64,10 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "F63FF2B01C1241E500B3B8E0"
-            BuildableName = "libRealmJS.a"
-            BlueprintName = "RealmJS static"
-            ReferencedContainer = "container:RealmJS.xcodeproj">
+            BlueprintIdentifier = "F60690121CA2766F0003FB26"
+            BuildableName = "libRealmReact.a"
+            BlueprintName = "RealmReact"
+            ReferencedContainer = "container:RealmReact.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
       <AdditionalOptions>
@@ -63,10 +82,10 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "F63FF2B01C1241E500B3B8E0"
-            BuildableName = "libRealmJS.a"
-            BlueprintName = "RealmJS static"
-            ReferencedContainer = "container:RealmJS.xcodeproj">
+            BlueprintIdentifier = "F60690121CA2766F0003FB26"
+            BuildableName = "libRealmReact.a"
+            BlueprintName = "RealmReact"
+            ReferencedContainer = "container:RealmReact.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
    </ProfileAction>

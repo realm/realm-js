@@ -147,6 +147,8 @@ class Realm {
     // properties
     static void get_path(ContextType, ObjectType, ReturnValue &);
     static void get_schema_version(ContextType, ObjectType, ReturnValue &);
+    static void get_schema(ContextType, ObjectType, ReturnValue &);
+    static void get_read_only(ContextType, ObjectType, ReturnValue &);
 
     // static methods
     static void constructor(ContextType, ObjectType, size_t, const ValueType[]);
@@ -222,6 +224,8 @@ struct RealmClass : ClassDefinition<T, SharedRealm> {
     PropertyMap<T> const properties = {
         {"path", {wrap<Realm::get_path>, nullptr}},
         {"schemaVersion", {wrap<Realm::get_schema_version>, nullptr}},
+        {"schema", {wrap<Realm::get_schema>, nullptr}},
+        {"readOnly", {wrap<Realm::get_read_only>, nullptr}},
     };
 };
 
@@ -231,22 +235,19 @@ inline typename T::Function Realm<T>::create_constructor(ContextType ctx) {
     FunctionType collection_constructor = ObjectWrap<T, CollectionClass<T>>::create_constructor(ctx);
     FunctionType list_constructor = ObjectWrap<T, ListClass<T>>::create_constructor(ctx);
     FunctionType results_constructor = ObjectWrap<T, ResultsClass<T>>::create_constructor(ctx);
+    FunctionType realm_object_constructor = ObjectWrap<T, RealmObjectClass<T>>::create_constructor(ctx);
 
     PropertyAttributes attributes = PropertyAttributes(ReadOnly | DontEnum | DontDelete);
     Object::set_property(ctx, realm_constructor, "Collection", collection_constructor, attributes);
     Object::set_property(ctx, realm_constructor, "List", list_constructor, attributes);
     Object::set_property(ctx, realm_constructor, "Results", results_constructor, attributes);
+    Object::set_property(ctx, realm_constructor, "Object", realm_object_constructor, attributes);
 
     return realm_constructor;
 }
 
 template<typename T>
 void Realm<T>::constructor(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[]) {
-    static const String path_string = "path";
-    static const String schema_string = "schema";
-    static const String schema_version_string = "schemaVersion";
-    static const String encryption_key_string = "encryptionKey";
-
     realm::Realm::Config config;
     typename Schema<T>::ObjectDefaultsMap defaults;
     typename Schema<T>::ConstructorMap constructors;
@@ -262,6 +263,7 @@ void Realm<T>::constructor(ContextType ctx, ObjectType this_object, size_t argc,
         else if (Value::is_object(ctx, value)) {
             ObjectType object = Value::validated_to_object(ctx, value);
 
+            static const String path_string = "path";
             ValueType path_value = Object::get_property(ctx, object, path_string);
             if (!Value::is_undefined(ctx, path_value)) {
                 config.path = Value::validated_to_string(ctx, path_value, "path");
@@ -269,13 +271,19 @@ void Realm<T>::constructor(ContextType ctx, ObjectType this_object, size_t argc,
             else {
                 config.path = js::default_path();
             }
+            
+            static const String read_only_string = "readOnly";
+            ValueType read_only_value = Object::get_property(ctx, object, read_only_string);
+            config.read_only = Value::is_undefined(ctx, read_only_value) ? false : Value::validated_to_boolean(ctx, read_only_value, "readOnly");
 
+            static const String schema_string = "schema";
             ValueType schema_value = Object::get_property(ctx, object, schema_string);
             if (!Value::is_undefined(ctx, schema_value)) {
                 ObjectType schema_object = Value::validated_to_object(ctx, schema_value, "schema");
                 config.schema.reset(new realm::Schema(Schema<T>::parse_schema(ctx, schema_object, defaults, constructors)));
             }
 
+            static const String schema_version_string = "schemaVersion";
             ValueType version_value = Object::get_property(ctx, object, schema_version_string);
             if (!Value::is_undefined(ctx, version_value)) {
                 config.schema_version = Value::validated_to_number(ctx, version_value, "schemaVersion");
@@ -283,7 +291,22 @@ void Realm<T>::constructor(ContextType ctx, ObjectType this_object, size_t argc,
             else {
                 config.schema_version = 0;
             }
+
+            static const String migration_string = "migration";
+            ValueType migration_value = Object::get_property(ctx, object, migration_string);
+            if (!Value::is_undefined(ctx, migration_value)) {
+                FunctionType migration_function = Value::validated_to_function(ctx, migration_value, "migration");
+                config.migration_function = [=](SharedRealm old_realm, SharedRealm realm) {
+                    ValueType arguments[2] = {
+                        create_object<T, RealmClass<T>>(ctx, new SharedRealm(old_realm)),
+                        create_object<T, RealmClass<T>>(ctx, new SharedRealm(realm))
+                    };
+                    Function<T>::call(ctx, migration_function, 2, arguments);
+                };
+            }
             
+
+            static const String encryption_key_string = "encryptionKey";
             ValueType encryption_key_value = Object::get_property(ctx, object, encryption_key_string);
             if (!Value::is_undefined(ctx, encryption_key_value)) {
                 std::string encryption_key = NativeAccessor::to_binary(ctx, encryption_key_value);
@@ -358,6 +381,17 @@ template<typename T>
 void Realm<T>::get_schema_version(ContextType ctx, ObjectType object, ReturnValue &return_value) {
     double version = get_internal<T, RealmClass<T>>(object)->get()->config().schema_version;
     return_value.set(version);
+}
+
+template<typename T>
+void Realm<T>::get_schema(ContextType ctx, ObjectType object, ReturnValue &return_value) {
+    auto schema = get_internal<T, RealmClass<T>>(object)->get()->config().schema.get();
+    return_value.set(Schema<T>::object_for_schema(ctx, *schema));
+}
+
+template<typename T>
+void Realm<T>::get_read_only(ContextType ctx, ObjectType object, ReturnValue &return_value) {
+    return_value.set(get_internal<T, RealmClass<T>>(object)->get()->config().read_only);
 }
 
 template<typename T>
@@ -469,7 +503,7 @@ void Realm<T>::write(ContextType ctx, ObjectType this_object, size_t argc, const
     }
     catch (std::exception &e) {
         realm->cancel_transaction();
-        throw e;
+        throw;
     }
 
     realm->commit_transaction();

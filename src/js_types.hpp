@@ -104,7 +104,7 @@ struct Value {
     static return_t validated_to_##type(ContextType ctx, const ValueType &value, const char *name = nullptr) { \
         if (!is_##type(ctx, value)) { \
             std::string prefix = name ? std::string("'") + name + "'" : "JS value"; \
-            throw std::invalid_argument(prefix + " must be: " #type); \
+            throw std::invalid_argument(prefix + " must be of type: " #type); \
         } \
         return to_##type(ctx, value); \
     }
@@ -129,6 +129,9 @@ struct Function {
     using ValueType = typename T::Value;
 
     static ValueType call(ContextType, const FunctionType &, const ObjectType &, size_t, const ValueType[]);
+    static ValueType call(ContextType ctx, const FunctionType &function, size_t argument_count, const ValueType arguments[]) {
+        return call(ctx, function, {}, argument_count, arguments);
+    }
     static ValueType call(ContextType ctx, const FunctionType &function, const ObjectType &this_object, const std::vector<ValueType> &arguments) {
         return call(ctx, function, this_object, arguments.size(), arguments.data());
     }
@@ -250,7 +253,7 @@ struct Exception : public std::runtime_error {
     const Protected<ValueType> m_value;
 
     Exception(ContextType ctx, const std::string &message)
-        : std::runtime_error(message), m_value(value(ctx, message)) {}
+        : std::runtime_error(message), m_value(ctx, value(ctx, message)) {}
     Exception(ContextType ctx, const ValueType &val)
         : std::runtime_error(std::string(Value<T>::to_string(ctx, val))), m_value(ctx, val) {}
 
