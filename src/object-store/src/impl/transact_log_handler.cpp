@@ -124,7 +124,8 @@ public:
     bool set_double(size_t, size_t, double) { return true; }
     bool set_string(size_t, size_t, StringData) { return true; }
     bool set_binary(size_t, size_t, BinaryData) { return true; }
-    bool set_date_time(size_t, size_t, DateTime) { return true; }
+    bool set_olddatetime(size_t, size_t, OldDateTime) { return true; }
+    bool set_timestamp(size_t, size_t, Timestamp) { return true; }
     bool set_table(size_t, size_t) { return true; }
     bool set_mixed(size_t, size_t, const Mixed&) { return true; }
     bool set_link(size_t, size_t, size_t, size_t) { return true; }
@@ -416,7 +417,8 @@ public:
     bool set_double(size_t col, size_t row, double) { return mark_dirty(row, col); }
     bool set_string(size_t col, size_t row, StringData) { return mark_dirty(row, col); }
     bool set_binary(size_t col, size_t row, BinaryData) { return mark_dirty(row, col); }
-    bool set_date_time(size_t col, size_t row, DateTime) { return mark_dirty(row, col); }
+    bool set_olddatetime(size_t col, size_t row, OldDateTime) { return mark_dirty(row, col); }
+    bool set_timestamp(size_t col, size_t row, Timestamp) { return mark_dirty(row, col); }
     bool set_table(size_t col, size_t row) { return mark_dirty(row, col); }
     bool set_mixed(size_t col, size_t row, const Mixed&) { return mark_dirty(row, col); }
     bool set_link(size_t col, size_t row, size_t, size_t) { return mark_dirty(row, col); }

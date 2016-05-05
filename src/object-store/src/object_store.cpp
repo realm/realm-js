@@ -21,7 +21,6 @@
 #include "schema.hpp"
 
 #include <realm/group.hpp>
-#include <realm/link_view.hpp>
 #include <realm/table.hpp>
 #include <realm/table_view.hpp>
 #include <realm/util/assert.hpp>
@@ -128,15 +127,18 @@ std::string ObjectStore::table_name_for_object_type(StringData object_type) {
 }
 
 TableRef ObjectStore::table_for_object_type(Group *group, StringData object_type) {
-    return group->get_table(table_name_for_object_type(object_type));
+    auto name = table_name_for_object_type(object_type);
+    return group->get_table(name);
 }
 
 ConstTableRef ObjectStore::table_for_object_type(const Group *group, StringData object_type) {
-    return group->get_table(table_name_for_object_type(object_type));
+    auto name = table_name_for_object_type(object_type);
+    return group->get_table(name);
 }
 
 TableRef ObjectStore::table_for_object_type_create_if_needed(Group *group, StringData object_type, bool &created) {
-    return group->get_or_add_table(table_name_for_object_type(object_type), &created);
+    auto name = table_name_for_object_type(object_type);
+    return group->get_or_add_table(name, &created);
 }
 
 static inline bool property_has_changed(Property const& p1, Property const& p2) {
@@ -241,7 +243,7 @@ static void copy_property_values(const Property& source, const Property& destina
             copy_property_values(source, destination, table, &Table::get_binary, &Table::set_binary);
             break;
         case PropertyTypeDate:
-            copy_property_values(source, destination, table, &Table::get_datetime, &Table::set_datetime);
+            copy_property_values(source, destination, table, &Table::get_timestamp, &Table::set_timestamp);
             break;
         default:
             break;

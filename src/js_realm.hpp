@@ -323,13 +323,9 @@ void Realm<T>::constructor(ContextType ctx, ObjectType this_object, size_t argc,
 
     SharedRealm realm = realm::Realm::get_shared_realm(config);
     auto delegate = new RealmDelegate<T>(realm, Context<T>::get_global_context(ctx));
-
-    if (!realm->m_binding_context) {
-        realm->m_binding_context.reset(delegate);
-    }
-
     delegate->m_defaults = std::move(defaults);
     delegate->m_constructors = std::move(constructors);
+    realm->m_binding_context.reset(delegate);
 
     set_internal<T, RealmClass<T>>(this_object, new SharedRealm(realm));
 }
