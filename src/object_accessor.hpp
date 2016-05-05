@@ -87,8 +87,8 @@ namespace realm {
         static ValueType from_string(ContextType, StringData);
         static std::string to_binary(ContextType, ValueType &);
         static ValueType from_binary(ContextType, BinaryData);
-        static DateTime to_datetime(ContextType, ValueType &);
-        static ValueType from_datetime(ContextType, DateTime);
+        static Timestamp to_timestamp(ContextType, ValueType &);
+        static ValueType from_timestamp(ContextType, Timestamp);
 
         static bool is_null(ContextType, ValueType &);
         static ValueType null_value(ContextType);
@@ -197,9 +197,11 @@ namespace realm {
             case PropertyTypeDouble:
                 m_row.set_double(column, Accessor::to_double(ctx, value));
                 break;
-            case PropertyTypeString:
-                m_row.set_string(column, Accessor::to_string(ctx, value));
+            case PropertyTypeString: {
+                auto string_value = Accessor::to_string(ctx, value);
+                m_row.set_string(column, string_value);
                 break;
+            }
             case PropertyTypeData:
                 m_row.set_binary(column, BinaryData(Accessor::to_binary(ctx, value)));
                 break;
@@ -207,7 +209,7 @@ namespace realm {
                 m_row.set_mixed(column, Accessor::to_mixed(ctx, value));
                 break;
             case PropertyTypeDate:
-                m_row.set_datetime(column, Accessor::to_datetime(ctx, value));
+                m_row.set_timestamp(column, Accessor::to_timestamp(ctx, value));
                 break;
             case PropertyTypeObject: {
                 if (Accessor::is_null(ctx, value)) {
@@ -261,7 +263,7 @@ namespace realm {
             case PropertyTypeAny:
                 throw "Any not supported";
             case PropertyTypeDate:
-                return Accessor::from_datetime(ctx, m_row.get_datetime(column));
+                return Accessor::from_timestamp(ctx, m_row.get_timestamp(column));
             case PropertyTypeObject: {
                 auto linkObjectSchema = m_realm->config().schema->find(property.object_type);
                 TableRef table = ObjectStore::table_for_object_type(m_realm->read_group(), linkObjectSchema->name);
@@ -297,7 +299,8 @@ namespace realm {
             // search for existing object based on primary key type
             ValueType primary_value = Accessor::dict_value_for_key(ctx, value, object_schema.primary_key);
             if (primary_prop->type == PropertyTypeString) {
-                row_index = table->find_first_string(primary_prop->table_column, Accessor::to_string(ctx, primary_value));
+                auto primary_string = Accessor::to_string(ctx, primary_value);
+                row_index = table->find_first_string(primary_prop->table_column, primary_string);
             }
             else {
                 row_index = table->find_first_int(primary_prop->table_column, Accessor::to_long(ctx, primary_value));

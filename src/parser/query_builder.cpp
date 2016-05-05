@@ -288,14 +288,13 @@ template <typename RequestedType, typename TableGetter>
 struct ValueGetter;
 
 template <typename TableGetter>
-struct ValueGetter<DateTime, TableGetter> {
-    static Int convert(TableGetter&&, const parser::Expression & value, Arguments &args)
+struct ValueGetter<Timestamp, TableGetter> {
+    static Timestamp convert(TableGetter&&, const parser::Expression & value, Arguments &args)
     {
         if (value.type != parser::Expression::Type::Argument) {
             throw std::runtime_error("You must pass in a date argument to compare");
         }
-        DateTime dt = args.datetime_for_argument(stot<int>(value.s));
-        return dt.get_datetime();
+        return args.timestamp_for_argument(stot<int>(value.s));
     }
 };
 
@@ -390,8 +389,8 @@ void do_add_comparison_to_query(Query &query, const Schema &schema, const Object
                                                         value_of_type_for_query<bool>(expr.table_getter, rhs, args));
             break;
         case PropertyTypeDate:
-            add_numeric_constraint_to_query(query, cmp.op, value_of_type_for_query<DateTime>(expr.table_getter, lhs, args),
-                                                           value_of_type_for_query<DateTime>(expr.table_getter, rhs, args));
+            add_numeric_constraint_to_query(query, cmp.op, value_of_type_for_query<Timestamp>(expr.table_getter, lhs, args),
+                                                           value_of_type_for_query<Timestamp>(expr.table_getter, rhs, args));
             break;
         case PropertyTypeDouble:
             add_numeric_constraint_to_query(query, cmp.op, value_of_type_for_query<Double>(expr.table_getter, lhs, args),
@@ -481,7 +480,7 @@ void do_add_null_comparison_to_query(Query &query, const Schema &schema, const O
             do_add_null_comparison_to_query<bool>(query, cmp.op, expr, args);
             break;
         case PropertyTypeDate:
-            do_add_null_comparison_to_query<DateTime>(query, cmp.op, expr, args);
+            do_add_null_comparison_to_query<Timestamp>(query, cmp.op, expr, args);
             break;
         case PropertyTypeDouble:
             do_add_null_comparison_to_query<Double>(query, cmp.op, expr, args);

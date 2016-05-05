@@ -134,7 +134,7 @@ public:
     // Get the min/max/average/sum of the given column
     // All but sum() returns none when there are zero matching rows
     // sum() returns 0, except for when it returns none
-    // Throws UnsupportedColumnTypeException for sum/average on datetime or non-numeric column
+    // Throws UnsupportedColumnTypeException for sum/average on timestamp or non-numeric column
     // Throws OutOfBoundsIndexException for an out-of-bounds column
     util::Optional<Mixed> max(size_t column);
     util::Optional<Mixed> min(size_t column);
@@ -225,10 +225,10 @@ private:
     void validate_read() const;
     void validate_write() const;
 
-    template<typename Int, typename Float, typename Double, typename DateTime>
+    template<typename Int, typename Float, typename Double, typename Timestamp>
     util::Optional<Mixed> aggregate(size_t column, bool return_none_for_empty,
                                     Int agg_int, Float agg_float,
-                                    Double agg_double, DateTime agg_datetime);
+                                    Double agg_double, Timestamp agg_timestamp);
 
     void set_table_view(TableView&& tv);
 };

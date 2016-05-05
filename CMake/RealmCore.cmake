@@ -4,6 +4,10 @@ if(${CMAKE_GENERATOR} STREQUAL "Unix Makefiles")
     set(MAKE_EQUAL_MAKE "MAKE=$(MAKE)")
 endif()
 
+if(SANITIZE_ADDRESS)
+  set(MAKEFLAGS "MAKEFLAGS=EXTRA_CFLAGS=-fsanitize=address EXTRA_LDFLAGS=-fsanitize=address")
+endif()
+
 if (${CMAKE_VERSION} VERSION_GREATER "3.4.0")
     set(USES_TERMINAL_BUILD USES_TERMINAL_BUILD 1)
 endif()
@@ -91,7 +95,7 @@ function(clone_and_build_realm_core branch)
         PREFIX ${core_prefix_directory}
         BUILD_IN_SOURCE 1
         CONFIGURE_COMMAND ""
-        BUILD_COMMAND ${MAKE_EQUAL_MAKE} sh build.sh build
+        BUILD_COMMAND export ${MAKEFLAGS} && ${MAKE_EQUAL_MAKE} sh build.sh build
         INSTALL_COMMAND ""
         ${USES_TERMINAL_BUILD}
         )
@@ -109,7 +113,7 @@ function(build_existing_realm_core core_directory)
         BUILD_IN_SOURCE 1
         BUILD_ALWAYS 1
         CONFIGURE_COMMAND ""
-        BUILD_COMMAND ${MAKE_EQUAL_MAKE} sh build.sh build
+        BUILD_COMMAND export ${MAKEFLAGS} && ${MAKE_EQUAL_MAKE} sh build.sh build
         INSTALL_COMMAND ""
         ${USES_TERMINAL_BUILD}
         )
