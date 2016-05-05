@@ -19,10 +19,10 @@
 #ifndef REALM_QUERY_BUILDER_HPP
 #define REALM_QUERY_BUILDER_HPP
 
-#include <string>
-#include <realm/util/to_string.hpp>
 #include "parser.hpp"
 #include "object_accessor.hpp"
+
+#include <realm/util/to_string.hpp>
 
 namespace realm {
 class Query;
@@ -31,10 +31,10 @@ class Schema;
 namespace query_builder {
 class Arguments;
 
-void apply_predicate(Query &query, const parser::Predicate &predicate, Arguments &arguments, const Schema &schema, const std::string &objectType);
+void apply_predicate(Query &query, const parser::Predicate &predicate, Arguments &arguments,
+                     const Schema &schema, const std::string &objectType);
 
-class Arguments
-{
+class Arguments {
   public:
     virtual bool bool_for_argument(size_t argument_index) = 0;
     virtual long long long_for_argument(size_t argument_index) = 0;
@@ -42,14 +42,13 @@ class Arguments
     virtual double double_for_argument(size_t argument_index) = 0;
     virtual std::string string_for_argument(size_t argument_index) = 0;
     virtual std::string binary_for_argument(size_t argument_index) = 0;
-    virtual DateTime datetime_for_argument(size_t argument_index) = 0;
+    virtual Timestamp timestamp_for_argument(size_t argument_index) = 0;
     virtual size_t object_index_for_argument(size_t argument_index) = 0;
     virtual bool is_argument_null(size_t argument_index) = 0;
 };
 
 template<typename ValueType, typename ContextType>
-class ArgumentConverter : public Arguments
-{
+class ArgumentConverter : public Arguments {
   public:
     ArgumentConverter(ContextType context, std::vector<ValueType> arguments) : m_arguments(arguments), m_ctx(context) {};
 
@@ -60,7 +59,7 @@ class ArgumentConverter : public Arguments
     virtual double double_for_argument(size_t argument_index) { return Accessor::to_double(m_ctx, argument_at(argument_index)); }
     virtual std::string string_for_argument(size_t argument_index) { return Accessor::to_string(m_ctx, argument_at(argument_index)); }
     virtual std::string binary_for_argument(size_t argument_index) { return Accessor::to_binary(m_ctx, argument_at(argument_index)); }
-    virtual DateTime datetime_for_argument(size_t argument_index) { return Accessor::to_datetime(m_ctx, argument_at(argument_index)); }
+    virtual Timestamp timestamp_for_argument(size_t argument_index) { return Accessor::to_timestamp(m_ctx, argument_at(argument_index)); }
     virtual size_t object_index_for_argument(size_t argument_index) { return Accessor::to_existing_object_index(m_ctx, argument_at(argument_index)); }
     virtual bool is_argument_null(size_t argument_index) { return Accessor::is_null(m_ctx, argument_at(argument_index)); }
 
