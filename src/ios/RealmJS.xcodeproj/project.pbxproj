@@ -246,7 +246,6 @@
 			children = (
 				F6BCCFDF1C83809A00FE31AE /* lib */,
 				F62A35131C18E6E2004A917D /* iOS */,
-				F60103051CC4ADE500EC01BA /* JS */,
 				F6874A441CAD2ACD00EEEE36 /* JSC */,
 				F62BF9001CAC72C40022BCDC /* Node */,
 				F62A35141C18E783004A917D /* Object Store */,
@@ -320,13 +319,6 @@
 				02B58CCD1AE99D4D009B348C /* JavaScriptCore.framework */,
 			);
 			name = Frameworks;
-			sourceTree = "<group>";
-		};
-		F60103051CC4ADE500EC01BA /* JS */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = JS;
 			sourceTree = "<group>";
 		};
 		F62A35131C18E6E2004A917D /* iOS */ = {

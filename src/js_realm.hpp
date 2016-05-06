@@ -337,6 +337,13 @@ void Realm<T>::constructor(ContextType ctx, ObjectType this_object, size_t argc,
     ensure_directory_exists_for_file(config.path);
 
     SharedRealm realm = realm::Realm::get_shared_realm(config);
+    
+    // Fix for datetime -> timestamp conversion
+    if (realm->config().upgrade_initial_version != realm->config().upgrade_final_version &&
+        realm->config().upgrade_initial_version < 5) {
+        assert(0);
+    }
+    
     auto delegate = new RealmDelegate<T>(realm, Context<T>::get_global_context(ctx));
     delegate->m_defaults = std::move(defaults);
     delegate->m_constructors = std::move(constructors);
