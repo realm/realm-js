@@ -38,6 +38,9 @@ namespace realm {
 namespace js {
 
 template<typename T>
+class Realm;
+
+template<typename T>
 struct RealmClass;
 
 template<typename T>
@@ -60,7 +63,7 @@ class RealmDelegate : public BindingContext {
     }
     virtual void will_change(std::vector<ObserverState> const& observers, std::vector<void*> const& invalidated) {}
 
-    RealmDelegate(std::weak_ptr<Realm> realm, GlobalContextType ctx) : m_context(ctx), m_realm(realm) {}
+    RealmDelegate(std::weak_ptr<realm::Realm> realm, GlobalContextType ctx) : m_context(ctx), m_realm(realm) {}
 
     ~RealmDelegate() {
         // All protected values need to be unprotected while the context is retained.
@@ -95,7 +98,7 @@ class RealmDelegate : public BindingContext {
   private:
     Protected<GlobalContextType> m_context;
     std::list<Protected<FunctionType>> m_notifications;
-    std::weak_ptr<Realm> m_realm;
+    std::weak_ptr<realm::Realm> m_realm;
     
     void notify(const char *notification_name) {
         SharedRealm realm = m_realm.lock();
@@ -112,6 +115,8 @@ class RealmDelegate : public BindingContext {
             Function<T>::call(m_context, callback, realm_object, 2, arguments);
         }
     }
+
+    friend class Realm<T>;
 };
 
 std::string default_path();
@@ -120,6 +125,7 @@ void delete_all_realms();
 
 template<typename T>
 class Realm {
+    using GlobalContextType = typename T::GlobalContext;
     using ContextType = typename T::Context;
     using FunctionType = typename T::Function;
     using ObjectType = typename T::Object;
@@ -251,6 +257,7 @@ void Realm<T>::constructor(ContextType ctx, ObjectType this_object, size_t argc,
     realm::Realm::Config config;
     typename Schema<T>::ObjectDefaultsMap defaults;
     typename Schema<T>::ConstructorMap constructors;
+    bool schema_updated = false;
 
     if (argc == 0) {
         config.path = default_path();
@@ -281,6 +288,7 @@ void Realm<T>::constructor(ContextType ctx, ObjectType this_object, size_t argc,
             if (!Value::is_undefined(ctx, schema_value)) {
                 ObjectType schema_object = Value::validated_to_object(ctx, schema_value, "schema");
                 config.schema.reset(new realm::Schema(Schema<T>::parse_schema(ctx, schema_object, defaults, constructors)));
+                schema_updated = true;
             }
 
             static const String schema_version_string = "schemaVersion";
@@ -304,7 +312,6 @@ void Realm<T>::constructor(ContextType ctx, ObjectType this_object, size_t argc,
                     Function<T>::call(ctx, migration_function, 2, arguments);
                 };
             }
-            
 
             static const String encryption_key_string = "encryptionKey";
             ValueType encryption_key_value = Object::get_property(ctx, object, encryption_key_string);
@@ -322,14 +329,23 @@ void Realm<T>::constructor(ContextType ctx, ObjectType this_object, size_t argc,
     ensure_directory_exists_for_file(config.path);
 
     SharedRealm realm = realm::Realm::get_shared_realm(config);
-    auto delegate = new RealmDelegate<T>(realm, Context<T>::get_global_context(ctx));
+    GlobalContextType global_context = Context<T>::get_global_context(ctx);
+    BindingContext *binding_context = realm->m_binding_context.get();
+    RealmDelegate<T> *js_binding_context = dynamic_cast<RealmDelegate<T> *>(binding_context);
 
-    if (!realm->m_binding_context) {
-        realm->m_binding_context.reset(delegate);
+    if (!binding_context) {
+        js_binding_context = new RealmDelegate<T>(realm, global_context);
+        realm->m_binding_context.reset(js_binding_context);
+    }
+    else if (!js_binding_context || js_binding_context->m_context != global_context) {
+        throw std::runtime_error("Realm is already open in another context on this thread: " + config.path);
     }
 
-    delegate->m_defaults = std::move(defaults);
-    delegate->m_constructors = std::move(constructors);
+    // If a new schema was provided, then use its defaults and constructors.
+    if (schema_updated) {
+        js_binding_context->m_defaults = std::move(defaults);
+        js_binding_context->m_constructors = std::move(constructors);
+    }
 
     set_internal<T, RealmClass<T>>(this_object, new SharedRealm(realm));
 }
