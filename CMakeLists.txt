@@ -5,6 +5,7 @@ project(realm-object-store)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMake")
 
+include(CodeCoverage)
 include(CompilerFlags)
 include(Sanitizers)
 
