@@ -43,13 +43,15 @@ Realm::Config::Config(const Config& c)
 , cache(c.cache)
 , disable_format_upgrade(c.disable_format_upgrade)
 , automatic_change_notifications(c.automatic_change_notifications)
+, upgrade_final_version(0)
+, upgrade_initial_version(0)
 {
     if (c.schema) {
         schema = std::make_unique<Schema>(*c.schema);
     }
 }
 
-Realm::Config::Config() : schema_version(ObjectStore::NotVersioned) { }
+Realm::Config::Config() : schema_version(ObjectStore::NotVersioned), upgrade_initial_version(0), upgrade_final_version(0) { }
 Realm::Config::Config(Config&&) = default;
 Realm::Config::~Config() = default;
 
@@ -71,7 +73,7 @@ Realm::Realm(Config config)
     }
 }
 
-void Realm::open_with_config(const Config& config,
+void Realm::open_with_config(Config& config,
                              std::unique_ptr<Replication>& history,
                              std::unique_ptr<SharedGroup>& shared_group,
                              std::unique_ptr<Group>& read_only_group)
@@ -85,9 +87,12 @@ void Realm::open_with_config(const Config& config,
                 throw InvalidEncryptionKeyException();
             }
             history = realm::make_client_history(config.path, config.encryption_key.data());
-            SharedGroup::DurabilityLevel durability = config.in_memory ? SharedGroup::durability_MemOnly :
-                                                                           SharedGroup::durability_Full;
-            shared_group = std::make_unique<SharedGroup>(*history, durability, config.encryption_key.data(), !config.disable_format_upgrade);
+            SharedGroup::DurabilityLevel durability = config.in_memory ? SharedGroup::durability_MemOnly : SharedGroup::durability_Full;
+            shared_group = std::make_unique<SharedGroup>(*history, durability, config.encryption_key.data(), !config.disable_format_upgrade,
+                                                         [&](int from_version, int to_version) {
+                config.upgrade_initial_version = from_version;
+                config.upgrade_final_version = to_version;
+            });
         }
     }
     catch (util::File::PermissionDenied const& ex) {

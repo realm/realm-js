@@ -82,7 +82,10 @@ namespace realm {
             // everything can be done deterministically on one thread, and
             // speeds up tests that don't need notifications.
             bool automatic_change_notifications = true;
-
+            // File format versions populated when a file format updrade takes place
+            // during realm opening
+            int upgrade_initial_version, upgrade_final_version;
+            
             Config();
             Config(Config&&);
             Config(const Config& c);
@@ -156,7 +159,7 @@ namespace realm {
             static _impl::RealmCoordinator& get_coordinator(Realm& realm) { return *realm.m_coordinator; }
         };
 
-        static void open_with_config(const Config& config,
+        static void open_with_config(Config& config,
                                      std::unique_ptr<Replication>& history,
                                      std::unique_ptr<SharedGroup>& shared_group,
                                      std::unique_ptr<Group>& read_only_group);
