@@ -46,12 +46,10 @@ module.exports = BaseTest.extend({
         var defaultDir = Realm.defaultPath.substring(0, Realm.defaultPath.lastIndexOf("/") + 1)
         var testPath = 'test1.realm';
         var realm = new Realm({schema: [], path: testPath});
-        //TestCase.assertTrue(realm instanceof Realm);
         TestCase.assertEqual(realm.path, defaultDir + testPath);
 
         var testPath2 = 'test2.realm';
         var realm2 = new Realm({schema: [], path: testPath2});
-        //TestCase.assertTrue(realm2 instanceof Realm);
         TestCase.assertEqual(realm2.path, defaultDir + testPath2);
     },
 
@@ -68,10 +66,9 @@ module.exports = BaseTest.extend({
 
         var realm = new Realm({path: 'test1.realm', schema: [], schemaVersion: 1});
         TestCase.assertEqual(realm.schemaVersion, 1);
-        // FIXME - enable once Realm exposes a schema object
-        //TestCase.assertEqual(realm.schema.length, 0);
- 
+        TestCase.assertEqual(realm.schema.length, 0);
         realm.close();
+
         // FIXME - enable once realm initialization supports schema comparison
         // TestCase.assertThrows(function() {
         //     realm = new Realm({path: testPath, schema: [schemas.TestObject], schemaVersion: 1});
@@ -81,7 +78,9 @@ module.exports = BaseTest.extend({
         realm.write(function() {
             realm.create('TestObject', {doubleCol: 1});
         });
-        TestCase.assertEqual(realm.objects('TestObject')[0].doubleCol, 1)
+        TestCase.assertEqual(realm.objects('TestObject')[0].doubleCol, 1);
+        TestCase.assertEqual(realm.schemaVersion, 2);
+        TestCase.assertEqual(realm.schema.length, 1);
     },
 
     testRealmConstructorDynamicSchema: function() {
@@ -403,7 +402,7 @@ module.exports = BaseTest.extend({
     testRealmCreateWithDefaults: function() {
         var realm = new Realm({schema: [schemas.DefaultValues, schemas.TestObject]});
 
-        realm.write(function() {
+        var writeCallback = function() {
             var obj = realm.create('DefaultValuesObject', {});
             var properties = schemas.DefaultValues.properties;
 
@@ -418,7 +417,36 @@ module.exports = BaseTest.extend({
             TestCase.assertEqual(obj.nullObjectCol, null);
             TestCase.assertEqual(obj.arrayCol.length, properties.arrayCol.default.length);
             TestCase.assertEqual(obj.arrayCol[0].doubleCol, properties.arrayCol.default[0].doubleCol);
-        });
+        };
+
+        realm.write(writeCallback);
+
+        // Defaults should still work when creating another Realm instance.
+        realm = new Realm();
+        realm.write(writeCallback);
+    },
+
+    testRealmCreateWithChangingDefaults: function() {
+        var objectSchema = {
+            name: 'IntObject',
+            properties: {
+                intCol: {type: 'int', default: 1},
+            }
+        };
+
+        var realm = new Realm({schema: [objectSchema]});
+
+        var writeCallback = function() {
+            var object = realm.create('IntObject', {});
+            TestCase.assertEqual(object.intCol, objectSchema.properties.intCol.default);
+        };
+
+        realm.write(writeCallback);
+
+        objectSchema.properties.intCol.default++;
+
+        realm = new Realm({schema: [objectSchema]});
+        realm.write(writeCallback);
     },
 
     testRealmCreateWithConstructor: function() {
@@ -426,7 +454,6 @@ module.exports = BaseTest.extend({
 
         function CustomObject() {
             customCreated++;
-            this.intCol *= 100;
         }
         CustomObject.schema = {
             name: 'CustomObject',
@@ -447,7 +474,7 @@ module.exports = BaseTest.extend({
             properties: {
                 intCol: 'int'
             }
-        }
+        };
 
         var realm = new Realm({schema: [CustomObject, InvalidObject]});
 
@@ -457,15 +484,11 @@ module.exports = BaseTest.extend({
             TestCase.assertTrue(Object.getPrototypeOf(object) == CustomObject.prototype);
             TestCase.assertEqual(customCreated, 1);
 
-            // Should have been multiplied by 100 in the constructor.
-            TestCase.assertEqual(object.intCol, 100);
-
             // Should be able to create object by passing in constructor.
             object = realm.create(CustomObject, {intCol: 2});
             TestCase.assertTrue(object instanceof CustomObject);
             TestCase.assertTrue(Object.getPrototypeOf(object) == CustomObject.prototype);
             TestCase.assertEqual(customCreated, 2);
-            TestCase.assertEqual(object.intCol, 200);
         });
 
         TestCase.assertThrows(function() {
@@ -482,6 +505,36 @@ module.exports = BaseTest.extend({
             realm.write(function() {
                 realm.create(InvalidCustomObject, {intCol: 1});
             });
+        });
+
+        // The constructor should still work when creating another Realm instance.
+        realm = new Realm();
+        TestCase.assertTrue(realm.objects('CustomObject')[0] instanceof CustomObject);
+        TestCase.assertTrue(realm.objects(CustomObject).length > 0);
+    },
+
+    testRealmCreateWithChangingConstructor: function() {
+        function CustomObject() {}
+        CustomObject.schema = {
+            name: 'CustomObject',
+            properties: {
+                intCol: 'int'
+            }
+        };
+
+        var realm = new Realm({schema: [CustomObject]});
+        realm.write(function() {
+            var object = realm.create('CustomObject', {intCol: 1});
+            TestCase.assertTrue(object instanceof CustomObject);
+        });
+
+        function NewCustomObject() {}
+        NewCustomObject.schema = CustomObject.schema;
+
+        realm = new Realm({schema: [NewCustomObject]});
+        realm.write(function() {
+            var object = realm.create('CustomObject', {intCol: 1});
+            TestCase.assertTrue(object instanceof NewCustomObject);
         });
     },
 
