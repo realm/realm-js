@@ -15,6 +15,6 @@ set(SOURCES
 add_executable(tests ${SOURCES} ${HEADERS})
 target_link_libraries(tests realm-object-store)
 
-setup_target_for_coverage(generate-coverage tests coverage)
+create_coverage_target(generate-coverage tests)
 
 add_custom_target(run-tests USES_TERMINAL DEPENDS tests COMMAND ./tests)
