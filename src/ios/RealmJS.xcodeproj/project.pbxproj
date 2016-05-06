@@ -257,6 +257,10 @@
 				029048081C0428DF00ABDED4 /* js_realm.hpp */,
 				0290480A1C0428DF00ABDED4 /* js_results.hpp */,
 				0290480C1C0428DF00ABDED4 /* js_schema.hpp */,
+				F620F0521CAF0B600082977B /* js_class.hpp */,
+				F6874A3E1CACA5A900EEEE36 /* js_types.hpp */,
+				F6267BC91CADC30000AC36B1 /* js_util.hpp */,
+				F620F0591CB7B4C80082977B /* js_object_accessor.hpp */,
 				029048351C042A3C00ABDED4 /* platform.hpp */,
 				0290480F1C0428DF00ABDED4 /* rpc.cpp */,
 				029048101C0428DF00ABDED4 /* rpc.hpp */,
@@ -321,10 +325,6 @@
 		F60103051CC4ADE500EC01BA /* JS */ = {
 			isa = PBXGroup;
 			children = (
-				F620F0521CAF0B600082977B /* js_class.hpp */,
-				F6874A3E1CACA5A900EEEE36 /* js_types.hpp */,
-				F6267BC91CADC30000AC36B1 /* js_util.hpp */,
-				F620F0591CB7B4C80082977B /* js_object_accessor.hpp */,
 			);
 			name = JS;
 			sourceTree = "<group>";

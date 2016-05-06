@@ -468,5 +468,23 @@ module.exports = BaseTest.extend({
         TestCase.assertEqual(obj.ignored, undefined);
         obj.ignored = true;
         TestCase.assertEqual(obj.ignored, true);
+    },
+
+    testCurrentDate: function() {
+        var DateSchema = {
+            name: 'Date',
+            properties: {
+                currentDate: 'date'
+            }
+        };
+
+        var realm = new Realm({schema: [DateSchema]});
+        var currentDate = new Date();
+        var object;
+        realm.write(function() {
+            object = realm.create('Date', { currentDate: currentDate });
+        });
+
+        TestCase.assertEqual(currentDate.getTime(), object.currentDate.getTime());
     }
 });
