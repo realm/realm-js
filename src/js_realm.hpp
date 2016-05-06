@@ -297,11 +297,26 @@ void Realm<T>::constructor(ContextType ctx, ObjectType this_object, size_t argc,
             if (!Value::is_undefined(ctx, migration_value)) {
                 FunctionType migration_function = Value::validated_to_function(ctx, migration_value, "migration");
                 config.migration_function = [=](SharedRealm old_realm, SharedRealm realm) {
+                    auto old_realm_ptr = new SharedRealm(old_realm);
+                    auto realm_ptr = new SharedRealm(realm);
                     ValueType arguments[2] = {
-                        create_object<T, RealmClass<T>>(ctx, new SharedRealm(old_realm)),
-                        create_object<T, RealmClass<T>>(ctx, new SharedRealm(realm))
+                        create_object<T, RealmClass<T>>(ctx, old_realm_ptr),
+                        create_object<T, RealmClass<T>>(ctx, realm_ptr)
                     };
-                    Function<T>::call(ctx, migration_function, 2, arguments);
+                    
+                    try {
+                        Function<T>::call(ctx, migration_function, 2, arguments);
+                    }
+                    catch (...) {
+                        old_realm->close();
+                        old_realm_ptr->reset();
+                        realm_ptr->reset();
+                        throw;
+                    }
+                    
+                    old_realm->close();
+                    old_realm_ptr->reset();
+                    realm_ptr->reset();
                 };
             }
             

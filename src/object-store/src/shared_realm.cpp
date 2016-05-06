@@ -247,6 +247,7 @@ void Realm::update_schema(std::unique_ptr<Schema> schema, uint64_t version)
         if (m_config.migration_function) {
             m_config.migration_function(old_realm, shared_from_this());
         }
+        m_config.migration_function = nullptr;
     };
 
     try {
