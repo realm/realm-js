@@ -82,9 +82,9 @@ namespace realm {
             // everything can be done deterministically on one thread, and
             // speeds up tests that don't need notifications.
             bool automatic_change_notifications = true;
-            // File format versions populated when a file format updrade takes place
+            // File format versions populated when a file format upgrade takes place
             // during realm opening
-            int upgrade_initial_version, upgrade_final_version;
+            int upgrade_initial_version = 0, upgrade_final_version = 0;
             
             Config();
             Config(Config&&);

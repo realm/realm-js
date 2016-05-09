@@ -43,15 +43,13 @@ Realm::Config::Config(const Config& c)
 , cache(c.cache)
 , disable_format_upgrade(c.disable_format_upgrade)
 , automatic_change_notifications(c.automatic_change_notifications)
-, upgrade_final_version(0)
-, upgrade_initial_version(0)
 {
     if (c.schema) {
         schema = std::make_unique<Schema>(*c.schema);
     }
 }
 
-Realm::Config::Config() : schema_version(ObjectStore::NotVersioned), upgrade_initial_version(0), upgrade_final_version(0) { }
+Realm::Config::Config() : schema_version(ObjectStore::NotVersioned) { }
 Realm::Config::Config(Config&&) = default;
 Realm::Config::~Config() = default;
 
