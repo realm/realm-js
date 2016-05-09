@@ -158,20 +158,8 @@ case "$TARGET" in
   scripts/download-core.sh
 
   pushd src/node
-  node-gyp configure
-
-  # Being explicit about debug mode rather than relying on defaults.
-  if [[ $CONFIGURATION == 'Debug' ]]; then
-    node-gyp build --debug
-  else
-    node-gyp build --no-debug
-  fi
-
+  bash build-node.sh $CONFIGURATION
   popd
-
-  # Link to the appropriate module in the build directory.
-  mkdir -p build
-  ln -fs "../src/node/build/$CONFIGURATION/realm.node" build
 
   node tests
   ;;

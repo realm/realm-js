@@ -13,4 +13,7 @@
    <FileRef
       location = "group:examples/ReactExample/ios/ReactExample.xcodeproj">
    </FileRef>
+   <FileRef
+      location = "group:examples/ReactExample/ios/../../../src/node/RealmNode.xcodeproj">
+   </FileRef>
 </Workspace>
