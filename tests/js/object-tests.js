@@ -481,12 +481,6 @@ module.exports = BaseTest.extend({
         };
 
         var realm = new Realm({path: 'dates-v3.realm', schema: [DateSchema]});
-        var currentDate = new Date();
-        var object;
-        realm.write(function() {
-            object = realm.create('Date', { currentDate: currentDate });
-        });
-
-        TestCase.assertEqual(currentDate.getTime(), object.currentDate.getTime());
+        TestCase.assertEqual(realm.objects('Date')[0].currentDate.getTime(), 1462500087955);
     }
 });
