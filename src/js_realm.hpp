@@ -154,7 +154,8 @@ class Realm {
     static void constructor(ContextType, ObjectType, size_t, const ValueType[]);
     static void schema_version(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void clear_test_state(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
-
+    static void copy_bundled_realm_files(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    
     // static properties
     static void get_default_path(ContextType, ObjectType, ReturnValue &);
     static void set_default_path(ContextType, ObjectType, ValueType value);
@@ -203,6 +204,7 @@ struct RealmClass : ClassDefinition<T, SharedRealm> {
     MethodMap<T> const static_methods = {
         {"schemaVersion", wrap<Realm::schema_version>},
         {"clearTestState", wrap<Realm::clear_test_state>},
+        {"copyBundledRealmFiles", wrap<Realm::copy_bundled_realm_files>},
     };
 
     PropertyMap<T> const static_properties = {
@@ -341,7 +343,25 @@ void Realm<T>::constructor(ContextType ctx, ObjectType this_object, size_t argc,
     // Fix for datetime -> timestamp conversion
     if (realm->config().upgrade_initial_version != realm->config().upgrade_final_version &&
         realm->config().upgrade_initial_version < 5) {
-        assert(0);
+        // any versions earlier than file format 5 are stored as milliseconds and need to be converted to the new format
+        for (auto object_schema : *realm->config().schema) {
+            auto table = ObjectStore::table_for_object_type(realm->read_group(), object_schema.name);
+            for (auto property : object_schema.properties) {
+                if (property.type == PropertyTypeDate) {
+                    if (!realm->is_in_transaction()) {
+                        realm->begin_transaction();
+                    }
+                    
+                    for (size_t row_index = 0; row_index < table->size(); row_index++) {
+                        auto milliseconds = table->get_timestamp(property.table_column, row_index).get_seconds();
+                        table->set_timestamp(property.table_column, row_index, Timestamp(milliseconds / 1000, (milliseconds % 1000) * 1000000));
+                    }
+                }
+            }
+            if (realm->is_in_transaction()) {
+                realm->commit_transaction();
+            }
+        }
     }
     
     auto delegate = new RealmDelegate<T>(realm, Context<T>::get_global_context(ctx));
@@ -377,6 +397,12 @@ template<typename T>
 void Realm<T>::clear_test_state(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 0);
     delete_all_realms();
+}
+    
+template<typename T>
+void Realm<T>::copy_bundled_realm_files(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    validate_argument_count(argc, 0);
+    realm::copy_bundled_realm_files();
 }
 
 template<typename T>

@@ -471,6 +471,8 @@ module.exports = BaseTest.extend({
     },
 
     testCurrentDate: function() {
+        Realm.copyBundledRealmFiles();
+
         var DateSchema = {
             name: 'Date',
             properties: {
@@ -478,7 +480,7 @@ module.exports = BaseTest.extend({
             }
         };
 
-        var realm = new Realm({schema: [DateSchema]});
+        var realm = new Realm({path: 'dates-v3.realm', schema: [DateSchema]});
         var currentDate = new Date();
         var object;
         realm.write(function() {

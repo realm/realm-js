@@ -64,6 +64,25 @@ void ensure_directory_exists_for_file(const std::string &fileName)
     }
 }
 
+void copy_bundled_realm_files()
+{
+    for (id bundle in [NSBundle allBundles]) {
+        NSString *resourcePath = [bundle resourcePath];
+        NSString *docsDir = @(default_realm_file_directory().c_str());
+        NSFileManager *manager = [NSFileManager defaultManager];
+        
+        for (NSString *path in [manager enumeratorAtPath:resourcePath]) {
+            if (![path containsString:@".realm"]) {
+                continue;
+            }
+            NSError *error;
+            if (![manager copyItemAtPath:[resourcePath stringByAppendingPathComponent:path] toPath:[docsDir stringByAppendingPathComponent:path] error:&error]) {
+                throw std::runtime_error((std::string)"Failed to copy file at path " + path.UTF8String);
+            }
+        }
+    }
+}
+    
 void remove_realm_files_from_directory(const std::string &directory)
 {
     NSFileManager *manager = [NSFileManager defaultManager];
