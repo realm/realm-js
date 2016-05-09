@@ -27,6 +27,9 @@ module.exports = BaseTest.extend({
     testRealmConstructor: function() {
         var realm = new Realm({schema: []});
         TestCase.assertTrue(realm instanceof Realm);
+
+        TestCase.assertEqual(typeof Realm, 'function');
+        TestCase.assertTrue(Realm instanceof Function);
     },
 
     testRealmConstructorPath: function() {
