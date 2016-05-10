@@ -402,7 +402,7 @@ module.exports = BaseTest.extend({
     testRealmCreateWithDefaults: function() {
         var realm = new Realm({schema: [schemas.DefaultValues, schemas.TestObject]});
 
-        var writeCallback = function() {
+        var createAndTestObject = function() {
             var obj = realm.create('DefaultValuesObject', {});
             var properties = schemas.DefaultValues.properties;
 
@@ -419,11 +419,11 @@ module.exports = BaseTest.extend({
             TestCase.assertEqual(obj.arrayCol[0].doubleCol, properties.arrayCol.default[0].doubleCol);
         };
 
-        realm.write(writeCallback);
+        realm.write(createAndTestObject);
 
         // Defaults should still work when creating another Realm instance.
         realm = new Realm();
-        realm.write(writeCallback);
+        realm.write(createAndTestObject);
     },
 
     testRealmCreateWithChangingDefaults: function() {
@@ -436,17 +436,17 @@ module.exports = BaseTest.extend({
 
         var realm = new Realm({schema: [objectSchema]});
 
-        var writeCallback = function() {
+        var createAndTestObject = function() {
             var object = realm.create('IntObject', {});
             TestCase.assertEqual(object.intCol, objectSchema.properties.intCol.default);
         };
 
-        realm.write(writeCallback);
+        realm.write(createAndTestObject);
 
         objectSchema.properties.intCol.default++;
 
         realm = new Realm({schema: [objectSchema]});
-        realm.write(writeCallback);
+        realm.write(createAndTestObject);
     },
 
     testRealmCreateWithConstructor: function() {
