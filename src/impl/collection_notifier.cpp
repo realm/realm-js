@@ -288,8 +288,9 @@ bool CollectionNotifier::deliver(Realm& realm, SharedGroup& sg, std::exception_p
     bool should_call_callbacks = do_deliver(sg);
     m_changes_to_deliver = std::move(m_accumulated_changes);
 
-    // FIXME: ugh
     // fixup modifications to be source rows rather than dest rows
+    // FIXME: the actual change calculations should be updated to just calculate
+    // the correct thing instead
     m_changes_to_deliver.modifications.erase_at(m_changes_to_deliver.insertions);
     m_changes_to_deliver.modifications.shift_for_insert_at(m_changes_to_deliver.deletions);
 
