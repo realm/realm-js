@@ -556,7 +556,7 @@ module.exports = BaseTest.extend({
 
             // A Node 6 regression in v8 causes an error when converting our objects to strings:
             // TypeError: Cannot convert a Symbol value to a string
-            if (typeof process != 'object' || ('' + process.version).indexOf('v6.') < 0) {
+            if (!TestCase.isNode6()) {
                 TestCase.assertEqual(list.join(' '), 'Ari Tim Bjarne');
             }
 
