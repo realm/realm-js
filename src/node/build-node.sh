@@ -3,6 +3,8 @@
 set -o pipefail
 set -e
 
+cd "$(dirname "$0")"
+
 CONFIGURATION="${1:-"Release"}"
 
 if [ -s "${HOME}/.nvm/nvm.sh" ]; then
@@ -21,4 +23,4 @@ fi
 
 # Link to the appropriate module in the build directory.
 mkdir -p ../../build
-ln -fs "../src/node/build/$CONFIGURATION/realm.node" ../../build
+ln -fs "build/$CONFIGURATION/realm.node" ../../build
