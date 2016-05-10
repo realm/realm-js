@@ -22,3 +22,5 @@ target_link_libraries(tests realm-object-store)
 create_coverage_target(generate-coverage tests)
 
 add_custom_target(run-tests USES_TERMINAL DEPENDS tests COMMAND ./tests)
+
+add_subdirectory(notifications-fuzzer)
