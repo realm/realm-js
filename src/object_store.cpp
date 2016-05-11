@@ -171,7 +171,7 @@ void ObjectStore::verify_schema(Schema const& actual_schema, Schema& target_sche
         errors.insert(errors.end(), more_errors.begin(), more_errors.end());
     }
     if (errors.size()) {
-        throw SchemaValidationException(errors);
+        throw SchemaMismatchException(errors);
     }
 }
 
@@ -524,7 +524,16 @@ DuplicatePrimaryKeyValueException::DuplicatePrimaryKeyValueException(std::string
 SchemaValidationException::SchemaValidationException(std::vector<ObjectSchemaValidationException> const& errors) :
     m_validation_errors(errors)
 {
-    m_what ="Migration is required due to the following errors: ";
+    m_what = "Schema validation failed due to the following errors: ";
+    for (auto const& error : errors) {
+        m_what += std::string("\n- ") + error.what();
+    }
+}
+
+SchemaMismatchException::SchemaMismatchException(std::vector<ObjectSchemaValidationException> const& errors) :
+m_validation_errors(errors)
+{
+    m_what = "Migration is required due to the following errors: ";
     for (auto const& error : errors) {
         m_what += std::string("\n- ") + error.what();
     }
