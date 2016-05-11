@@ -33,6 +33,9 @@ public class RealmReactModule extends ReactContextBaseJavaModule {
     public RealmReactModule(ReactApplicationContext reactContext) {
         super(reactContext);
 
+        // copy any embedded Realm files from assets to the internal storage
+        RealmReactPackage.copyRealmsFromAsset(reactContext);
+
         String fileDir;
         try {
             fileDir = reactContext.getFilesDir().getCanonicalPath();
