@@ -19,6 +19,7 @@
 #pragma once
 
 #include <string>
+#include <android/asset_manager.h>
 
 extern std::string s_default_realm_directory;
 
@@ -30,6 +31,9 @@ namespace realm {
 
 // set the directory where realm files should be stored
 void set_default_realm_file_directory(std::string dir);
+
+// set the AssetManager used to access bundled files within the APK
+void set_asset_manager(AAssetManager* assetManager);
 
 // return the directory in which realm files can/should be written to
 std::string default_realm_file_directory();

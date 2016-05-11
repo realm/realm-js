@@ -1,5 +1,6 @@
 package io.realm.react;
 
+import android.content.res.AssetManager;
 import android.util.Log;
 
 import com.facebook.react.bridge.ReactApplicationContext;
@@ -10,8 +11,8 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
-import java.util.Arrays;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -25,6 +26,11 @@ public class RealmReactModule extends ReactContextBaseJavaModule {
     private static boolean sentAnalytics = false;
 
     private AndroidWebServer webServer;
+    // used to create a native AssetManager in C++ in order to load file from APK
+    // Note: We keep a VM reference to the assetManager to prevent its being
+    //       garbage collected while the native object is in use.
+    //http://developer.android.com/ndk/reference/group___asset.html#gadfd6537af41577735bcaee52120127f4
+    private final AssetManager assetManager;
 
     static {
         SoLoader.loadLibrary("realmreact");
@@ -33,8 +39,7 @@ public class RealmReactModule extends ReactContextBaseJavaModule {
     public RealmReactModule(ReactApplicationContext reactContext) {
         super(reactContext);
 
-        // copy any embedded Realm files from assets to the internal storage
-        RealmReactPackage.copyRealmsFromAsset(reactContext);
+        assetManager = reactContext.getResources().getAssets();
 
         String fileDir;
         try {
@@ -43,7 +48,7 @@ public class RealmReactModule extends ReactContextBaseJavaModule {
             throw new IllegalStateException(e);
         }
 
-        setDefaultRealmFileDirectory(fileDir);
+        setDefaultRealmFileDirectory(fileDir, assetManager);
 
         // Attempt to send analytics info only once, and only if allowed to do so.
         if (!sentAnalytics && RealmAnalytics.shouldExecute()) {
@@ -170,7 +175,7 @@ public class RealmReactModule extends ReactContextBaseJavaModule {
     private native void clearContextInjectedFlag();
 
     // fileDir: path of the internal storage of the application
-    private native void setDefaultRealmFileDirectory(String fileDir);
+    private native void setDefaultRealmFileDirectory(String fileDir, AssetManager assets);
 
     // responsible for creating the rpcServer that will accept the chrome Websocket command
     private native long setupChromeDebugModeRealmJsContext();
