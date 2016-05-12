@@ -29,6 +29,11 @@ using namespace realm::rpc;
 static RPCServer *s_rpc_server;
 extern bool realmContextInjected;
 
+namespace realm {    
+    // set the AssetManager used to access bundled files within the APK
+    void set_asset_manager(AAssetManager* assetManager);
+}
+
 JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_setDefaultRealmFileDirectory
   (JNIEnv *env, jclass, jstring fileDir, jobject javaAssetManager)
 {

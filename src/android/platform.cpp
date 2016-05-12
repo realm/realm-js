@@ -64,28 +64,24 @@ namespace realm {
         AAssetDir* assetDir = AAssetManager_openDir(androidAssetManager, "");
 
         const char* filename = (const char*)NULL;
-        while ((filename = AAssetDir_getNextFileName(assetDir)) != NULL)
-        {
-          if (isRealmFile(filename))
-          {
-            AAsset* asset = AAssetManager_open(androidAssetManager, filename, AASSET_MODE_STREAMING);
+        while ((filename = AAssetDir_getNextFileName(assetDir)) != NULL) {
+            if (isRealmFile(filename)) {
+                AAsset* asset = AAssetManager_open(androidAssetManager, filename, AASSET_MODE_STREAMING);
 
-            char buf[BUFSIZ];
-            int nb_read = 0;
+                char buf[BUFSIZ];
+                int nb_read = 0;
 
-            const char* destFilename = (s_default_realm_directory + '/' + filename).c_str();
-            if(access(destFilename, F_OK ) == -1 ) {
-                // file doesn't exist, copy
-                FILE* out = fopen(destFilename, "w");
-                while ((nb_read = AAsset_read(asset, buf, BUFSIZ)) > 0)
-                {
-                  fwrite(buf, nb_read, 1, out);
+                const char* destFilename = (s_default_realm_directory + '/' + filename).c_str();
+                if (access(destFilename, F_OK ) == -1) {
+                    // file doesn't exist, copy
+                    FILE* out = fopen(destFilename, "w");
+                    while ((nb_read = AAsset_read(asset, buf, BUFSIZ)) > 0) {
+                        fwrite(buf, nb_read, 1, out);
+                    }
+                    fclose(out);
                 }
-                fclose(out);
+                AAsset_close(asset);
             }
-
-            AAsset_close(asset);
-          }
         }
         AAssetDir_close(assetDir);
     }
