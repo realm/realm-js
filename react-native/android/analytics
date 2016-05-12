@@ -55,13 +55,13 @@ class SendAnalyticsTask extends DefaultTask {
     String version = ''
 
     @TaskAction
-    def senAnalytics() {
+    def sendAnalytics() {
        try {
-         def env = System.getenv()
-         def disableAnalytics= env['REALM_DISABLE_ANALYTICS']
-         if (disableAnalytics == null || disableAnalytics != "true") {
-            send()
-         }
+            def env = System.getenv()
+            def disableAnalytics= env['REALM_DISABLE_ANALYTICS']
+            if (disableAnalytics == null || disableAnalytics != "true") {
+                send()
+            }
        } catch(all) {}
     }
 

@@ -61,7 +61,7 @@ String getAppId () {
     def appId = matcher.size() > 0 ? matcher[0].trim() - 'applicationId' - ~/\s/ : '';
     myappId = appId.replaceAll('"', '')
   } catch(all) {}
-    return myappId
+        return myappId
 }
 
 apply from: 'analytics.gradle'
