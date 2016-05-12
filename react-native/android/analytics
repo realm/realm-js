@@ -51,8 +51,8 @@ import java.security.NoSuchAlgorithmException;
 // - An anonymized MAC address and bundle ID to aggregate the other information on.
 
 class SendAnalyticsTask extends DefaultTask {
-    String applicationId = ''
-    String version = ''
+    String applicationId = 'UNKNOWN'
+    String version = 'UNKNOWN'
 
     @TaskAction
     def sendAnalytics() {
