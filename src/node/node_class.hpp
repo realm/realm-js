@@ -104,7 +104,7 @@ class ObjectWrap<void> {
     using Internal = void;
 
     static v8::Local<v8::FunctionTemplate> get_template() {
-        return v8::Local<v8::FunctionTemplate>();;
+        return v8::Local<v8::FunctionTemplate>();
     }
 };
 
@@ -195,22 +195,21 @@ inline v8::Local<v8::FunctionTemplate> ObjectWrap<ClassType>::create_template() 
 template<typename ClassType>
 inline void ObjectWrap<ClassType>::setup_method(v8::Local<v8::FunctionTemplate> tpl, const std::string &name, Nan::FunctionCallback callback) {
     v8::Local<v8::Signature> signature = Nan::New<v8::Signature>(tpl);
-    v8::Local<v8::FunctionTemplate> t = Nan::New<v8::FunctionTemplate>(callback, v8::Local<v8::Value>(), signature);
-    v8::Local<v8::Function> fn = Nan::GetFunction(t).ToLocalChecked();
+    v8::Local<v8::FunctionTemplate> fn_tpl = Nan::New<v8::FunctionTemplate>(callback, v8::Local<v8::Value>(), signature);
     v8::Local<v8::String> fn_name = Nan::New(name).ToLocalChecked();
 
     // The reason we use this rather than Nan::SetPrototypeMethod is DontEnum.
-    tpl->PrototypeTemplate()->Set(fn_name, fn, v8::PropertyAttribute::DontEnum);
-    fn->SetName(fn_name);
+    tpl->PrototypeTemplate()->Set(fn_name, fn_tpl, v8::PropertyAttribute::DontEnum);
+    fn_tpl->SetClassName(fn_name);
 }
 
 template<typename ClassType>
 inline void ObjectWrap<ClassType>::setup_static_method(v8::Local<v8::FunctionTemplate> tpl, const std::string &name, Nan::FunctionCallback callback) {
-    v8::Local<v8::Function> fn = Nan::GetFunction(Nan::New<v8::FunctionTemplate>(callback)).ToLocalChecked();
+    v8::Local<v8::FunctionTemplate> fn_tpl = Nan::New<v8::FunctionTemplate>(callback);
     v8::Local<v8::String> fn_name = Nan::New(name).ToLocalChecked();
 
-    tpl->Set(fn_name, fn, v8::PropertyAttribute::DontEnum);
-    fn->SetName(fn_name);
+    tpl->Set(fn_name, fn_tpl, v8::PropertyAttribute::DontEnum);
+    fn_tpl->SetClassName(fn_name);
 }
 
 template<typename ClassType>
