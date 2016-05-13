@@ -109,6 +109,14 @@ module.exports = {
             throw new TestFailureError(errorMessage || 'Condition expected to be true');
         }
     },
+
+    isNode: function() {
+        return typeof process == 'object' && Object.prototype.toString.call(process) == '[object process]';
+    },
+
+    isNode6: function() {
+        return this.isNode() && process.version.indexOf('v6.') == 0;
+    },
 };
 
 function TestFailureError(message) {
