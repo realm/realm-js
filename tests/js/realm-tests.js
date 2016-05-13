@@ -143,14 +143,19 @@ module.exports = BaseTest.extend({
     },
 
     testDefaultPath: function() {
+        var defaultPath = Realm.defaultPath;
         var defaultRealm = new Realm({schema: []});
         TestCase.assertEqual(defaultRealm.path, Realm.defaultPath);
-
-        var newPath = Realm.defaultPath.substring(0, Realm.defaultPath.lastIndexOf("/") + 1) + 'default2.realm';
-        Realm.defaultPath = newPath;
-        defaultRealm = new Realm({schema: []});
-        TestCase.assertEqual(defaultRealm.path, newPath, "should use updated default realm path");
-        TestCase.assertEqual(Realm.defaultPath, newPath, "defaultPath should have been updated");
+ 
+        try {
+            var newPath = Realm.defaultPath.substring(0, defaultPath.lastIndexOf('/') + 1) + 'default2.realm';
+            Realm.defaultPath = newPath;
+            defaultRealm = new Realm({schema: []});
+            TestCase.assertEqual(defaultRealm.path, newPath, "should use updated default realm path");
+            TestCase.assertEqual(Realm.defaultPath, newPath, "defaultPath should have been updated");
+        } finally {
+            Realm.defaultPath = defaultPath;
+        }
     },
 
     testRealmSchemaVersion: function() {
@@ -371,24 +376,24 @@ module.exports = BaseTest.extend({
             }
         };
 
-        new Realm({schema: [NotIndexed], path: '1'});
+        new Realm({schema: [NotIndexed], path: '1.realm'});
 
         var IndexedSchema = {
             name: 'IndexedSchema',
         };
         TestCase.assertThrows(function() {
             IndexedSchema.properties = { floatCol: {type: 'float', indexed: true} };
-            new Realm({schema: [IndexedSchema], path: '2'});
+            new Realm({schema: [IndexedSchema], path: '2.realm'});
         });
 
         TestCase.assertThrows(function() {
             IndexedSchema.properties = { doubleCol: {type: 'double', indexed: true} }
-            new Realm({schema: [IndexedSchema], path: '3'});
+            new Realm({schema: [IndexedSchema], path: '3.realm'});
         });
 
         TestCase.assertThrows(function() {
             IndexedSchema.properties = { dataCol: {type: 'data', indexed: true} }
-            new Realm({schema: [IndexedSchema], path: '4'});
+            new Realm({schema: [IndexedSchema], path: '4.realm'});
         });
 
         // primary key
@@ -396,7 +401,7 @@ module.exports = BaseTest.extend({
         IndexedSchema.primaryKey = 'boolCol';
 
         // Test this doesn't throw
-        new Realm({schema: [IndexedSchema], path: '5'});
+        new Realm({schema: [IndexedSchema], path: '5.realm'});
     },
 
     testRealmCreateWithDefaults: function() {

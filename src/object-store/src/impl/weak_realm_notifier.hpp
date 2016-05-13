@@ -21,7 +21,10 @@
 
 #include <realm/util/features.h>
 
-#if REALM_PLATFORM_APPLE
+// For Node, the "android" version is preferred for all platforms.
+#if REALM_PLATFORM_ANDROID || REALM_PLATFORM_NODE
+#include "impl/android/weak_realm_notifier.hpp"
+#elif REALM_PLATFORM_APPLE
 #include "impl/apple/weak_realm_notifier.hpp"
 #else
 #include "impl/generic/weak_realm_notifier.hpp"

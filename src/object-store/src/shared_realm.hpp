@@ -118,7 +118,7 @@ namespace realm {
         bool is_in_read_transaction() const { return !!m_group; }
 
         bool refresh();
-        void set_auto_refresh(bool auto_refresh) { m_auto_refresh = auto_refresh; }
+        void set_auto_refresh(bool auto_refresh);
         bool auto_refresh() const { return m_auto_refresh; }
         void notify();
 
@@ -138,7 +138,7 @@ namespace realm {
         ~Realm();
 
         void init(std::shared_ptr<_impl::RealmCoordinator> coordinator);
-        Realm(Config config);
+        Realm(Config config, bool auto_refresh = true);
 
         // Expose some internal functionality to other parts of the ObjectStore
         // without making it public to everyone
