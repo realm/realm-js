@@ -482,6 +482,6 @@ module.exports = BaseTest.extend({
 
         var realm = new Realm({path: 'dates-v3.realm', schema: [DateSchema]});
 
-        TestCase.assertEqual(realm.objects('Date')[0].currentDate.getTime(), 819867600000);
+        TestCase.assertEqual(realm.objects('Date')[0].currentDate.getTime(), 1462500087955);
     }
 });
