@@ -43,7 +43,6 @@
 		F60102E01CBB96D900EC01BA /* realm_coordinator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02F59EDB1C88F2BA007F774C /* realm_coordinator.cpp */; };
 		F60102E11CBB96DD00EC01BA /* transact_log_handler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02F59EDD1C88F2BB007F774C /* transact_log_handler.cpp */; };
 		F60102E51CBBB19700EC01BA /* node_object_accessor.hpp in Headers */ = {isa = PBXBuildFile; fileRef = F60102E31CBBB19700EC01BA /* node_object_accessor.hpp */; };
-		F60102E91CBCAEC500EC01BA /* platform.mm in Sources */ = {isa = PBXBuildFile; fileRef = 029048381C042A8F00ABDED4 /* platform.mm */; };
 		F60102EA1CBCAFC300EC01BA /* node_dummy.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F6267BCA1CADC49200AC36B1 /* node_dummy.cpp */; };
 		F61378791C18EAC5008BFC51 /* js in Resources */ = {isa = PBXBuildFile; fileRef = F61378781C18EAAC008BFC51 /* js */; };
 		F620F0581CB766DA0082977B /* node_init.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F620F0571CB766DA0082977B /* node_init.cpp */; };
@@ -66,6 +65,7 @@
 		F63FF3251C1642BB00B3B8E0 /* GCDWebServerErrorResponse.m in Sources */ = {isa = PBXBuildFile; fileRef = F63FF3161C1642BB00B3B8E0 /* GCDWebServerErrorResponse.m */; };
 		F63FF3261C1642BB00B3B8E0 /* GCDWebServerFileResponse.m in Sources */ = {isa = PBXBuildFile; fileRef = F63FF3181C1642BB00B3B8E0 /* GCDWebServerFileResponse.m */; };
 		F63FF3271C1642BB00B3B8E0 /* GCDWebServerStreamedResponse.m in Sources */ = {isa = PBXBuildFile; fileRef = F63FF31A1C1642BB00B3B8E0 /* GCDWebServerStreamedResponse.m */; };
+		F674784A1CC81F1900F9273C /* platform.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F67478481CC81F1300F9273C /* platform.cpp */; };
 		F68A278C1BC2722A0063D40A /* RJSModuleLoader.m in Sources */ = {isa = PBXBuildFile; fileRef = F68A278B1BC2722A0063D40A /* RJSModuleLoader.m */; };
 		F6BCCFE21C8380A400FE31AE /* lib in Resources */ = {isa = PBXBuildFile; fileRef = F6BCCFDF1C83809A00FE31AE /* lib */; };
 /* End PBXBuildFile section */
@@ -207,6 +207,7 @@
 		F63FF32C1C16432E00B3B8E0 /* CFNetwork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CFNetwork.framework; path = System/Library/Frameworks/CFNetwork.framework; sourceTree = SDKROOT; };
 		F63FF32E1C16433900B3B8E0 /* libxml2.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libxml2.tbd; path = usr/lib/libxml2.tbd; sourceTree = SDKROOT; };
 		F63FF3301C16434400B3B8E0 /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
+		F67478481CC81F1300F9273C /* platform.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = platform.cpp; sourceTree = "<group>"; };
 		F6874A351CAC792D00EEEE36 /* node_types.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = node_types.hpp; sourceTree = "<group>"; };
 		F6874A3E1CACA5A900EEEE36 /* js_types.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = js_types.hpp; sourceTree = "<group>"; };
 		F68A278A1BC2722A0063D40A /* RJSModuleLoader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RJSModuleLoader.h; path = ios/RJSModuleLoader.h; sourceTree = "<group>"; };
@@ -404,6 +405,7 @@
 				F60103071CC4B3DF00EC01BA /* node_protected.hpp */,
 				F60103151CC4CCFD00EC01BA /* node_return_value.hpp */,
 				F60102E31CBBB19700EC01BA /* node_object_accessor.hpp */,
+				F67478481CC81F1300F9273C /* platform.cpp */,
 			);
 			name = Node;
 			path = node;
@@ -702,9 +704,9 @@
 				F60102EA1CBCAFC300EC01BA /* node_dummy.cpp in Sources */,
 				F60102D81CBB96BD00EC01BA /* results.cpp in Sources */,
 				F60102DE1CBB96CF00EC01BA /* weak_realm_notifier.cpp in Sources */,
+				F674784A1CC81F1900F9273C /* platform.cpp in Sources */,
 				F620F0581CB766DA0082977B /* node_init.cpp in Sources */,
 				F60102D91CBB96C100EC01BA /* schema.cpp in Sources */,
-				F60102E91CBCAEC500EC01BA /* platform.mm in Sources */,
 				F60102DF1CBB96D300EC01BA /* async_query.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1003,6 +1005,7 @@
 				EXECUTABLE_PREFIX = lib;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
+					"REALM_PLATFORM_NODE=1",
 					"$(inherited)",
 				);
 				HEADER_SEARCH_PATHS = (
@@ -1016,6 +1019,7 @@
 				);
 				OTHER_LDFLAGS = (
 					"-lrealm",
+					"-luv",
 					"-lv8",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1029,6 +1033,10 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 0.12.0;
 				EXECUTABLE_PREFIX = lib;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"REALM_PLATFORM_NODE=1",
+					"$(inherited)",
+				);
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SRCROOT)/../../node_modules/nan",
@@ -1040,6 +1048,7 @@
 				);
 				OTHER_LDFLAGS = (
 					"-lrealm",
+					"-luv",
 					"-lv8",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1053,6 +1062,10 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 0.12.0;
 				EXECUTABLE_PREFIX = lib;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"REALM_PLATFORM_NODE=1",
+					"$(inherited)",
+				);
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SRCROOT)/../../node_modules/nan",
@@ -1064,6 +1077,7 @@
 				);
 				OTHER_LDFLAGS = (
 					"-lrealm",
+					"-luv",
 					"-lv8",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
