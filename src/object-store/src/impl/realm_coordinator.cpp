@@ -64,6 +64,9 @@ std::shared_ptr<RealmCoordinator> RealmCoordinator::get_existing_coordinator(Str
 std::shared_ptr<Realm> RealmCoordinator::get_realm(Realm::Config config)
 {
     std::lock_guard<std::mutex> lock(m_realm_mutex);
+
+    auto realm = std::make_shared<Realm>(std::move(config));
+
     if ((!m_config.read_only && !m_notifier) || (m_config.read_only && m_weak_realm_notifiers.empty())) {
         m_config = config;
         if (!config.read_only && !m_notifier && config.automatic_change_notifications) {
@@ -111,7 +114,6 @@ std::shared_ptr<Realm> RealmCoordinator::get_realm(Realm::Config config)
         }
     }
 
-    auto realm = std::make_shared<Realm>(std::move(config));
     realm->init(shared_from_this());
     m_weak_realm_notifiers.emplace_back(realm, m_config.cache);
     return realm;
