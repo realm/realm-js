@@ -731,4 +731,23 @@ module.exports = BaseTest.extend({
             verifyObjectSchema(schema[i]);
         }
     },
+
+    testCopyBundledRealmFiles: function() {
+        Realm.copyBundledRealmFiles();
+
+        var realm = new Realm({path: 'dates-v5.realm', schema: [schemas.DateObject]});
+        TestCase.assertEqual(realm.objects('Date').length, 1);
+        TestCase.assertEqual(realm.objects('Date')[0].currentDate.getTime(), 1462500087955);
+
+        var newDate = new Date(1);
+        realm.write(function() {
+            realm.objects('Date')[0].currentDate = newDate;
+        });
+        realm.close();
+
+        // copy should not overwrite existing files
+        Realm.copyBundledRealmFiles();
+        var realm = new Realm({path: 'dates-v5.realm', schema: [schemas.DateObject]});
+        TestCase.assertEqual(realm.objects('Date')[0].currentDate.getTime(), 1);
+    },
 });

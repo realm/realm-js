@@ -473,15 +473,12 @@ module.exports = BaseTest.extend({
     testCurrentDate: function() {
         Realm.copyBundledRealmFiles();
 
-        var DateSchema = {
-            name: 'Date',
-            properties: {
-                currentDate: 'date'
-            }
-        };
+        var realm_v3 = new Realm({path: 'dates-v3.realm', schema: [schemas.DateObject]});
+        TestCase.assertEqual(realm_v3.objects('Date').length, 1);
+        TestCase.assertEqual(realm_v3.objects('Date')[0].currentDate.getTime(), 1462500087955);
 
-        var realm = new Realm({path: 'dates-v3.realm', schema: [DateSchema]});
-
-        TestCase.assertEqual(realm.objects('Date')[0].currentDate.getTime(), 1462500087955);
+        var realm_v5 = new Realm({path: 'dates-v5.realm', schema: [schemas.DateObject]});
+        TestCase.assertEqual(realm_v5.objects('Date').length, 1);
+        TestCase.assertEqual(realm_v5.objects('Date')[0].currentDate.getTime(), 1462500087955);
     }
 });

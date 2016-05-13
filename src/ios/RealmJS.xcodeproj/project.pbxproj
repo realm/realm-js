@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		02409DC21BCF11D6005F3B3E /* RealmJSCoreTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 02409DC11BCF11D6005F3B3E /* RealmJSCoreTests.m */; };
+		02414B881CE68CA200A8669F /* dates-v5.realm in Resources */ = {isa = PBXBuildFile; fileRef = 02414B871CE68CA200A8669F /* dates-v5.realm */; };
 		0270BC821B7D020100010E03 /* RealmJSTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = 0270BC7B1B7D020100010E03 /* RealmJSTests.mm */; };
 		027A23131CD3E379000543AE /* libRealmJS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F63FF2B11C1241E500B3B8E0 /* libRealmJS.a */; };
 		02D041F71CE11159000E4250 /* dates-v3.realm in Resources */ = {isa = PBXBuildFile; fileRef = 02D041F61CE11159000E4250 /* dates-v3.realm */; };
@@ -83,6 +84,7 @@
 
 /* Begin PBXFileReference section */
 		02409DC11BCF11D6005F3B3E /* RealmJSCoreTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = RealmJSCoreTests.m; path = ios/RealmJSCoreTests.m; sourceTree = "<group>"; };
+		02414B871CE68CA200A8669F /* dates-v5.realm */ = {isa = PBXFileReference; lastKnownFileType = file; path = "dates-v5.realm"; sourceTree = "<group>"; };
 		025678951CAB392000FB8501 /* jsc_types.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = jsc_types.hpp; sourceTree = "<group>"; };
 		0270BC5A1B7CFC1300010E03 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		0270BC781B7D020100010E03 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = ios/Info.plist; sourceTree = "<group>"; };
@@ -328,6 +330,7 @@
 			isa = PBXGroup;
 			children = (
 				02D041F61CE11159000E4250 /* dates-v3.realm */,
+				02414B871CE68CA200A8669F /* dates-v5.realm */,
 			);
 			path = data;
 			sourceTree = "<group>";
@@ -632,6 +635,7 @@
 			files = (
 				02D041F71CE11159000E4250 /* dates-v3.realm in Resources */,
 				F6BCCFE21C8380A400FE31AE /* lib in Resources */,
+				02414B881CE68CA200A8669F /* dates-v5.realm in Resources */,
 				F61378791C18EAC5008BFC51 /* js in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

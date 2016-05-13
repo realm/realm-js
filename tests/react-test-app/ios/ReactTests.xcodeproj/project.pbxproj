@@ -14,6 +14,7 @@
 		00C302EA1ABCBA2D00DB3ED1 /* libRCTVibration.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 00C302E41ABCB9EE00DB3ED1 /* libRCTVibration.a */; };
 		022D592F1C0432F1001E25FE /* RealmJSTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = 022D592E1C0432F1001E25FE /* RealmJSTests.mm */; };
 		02414B4D1CE668BF00A8669F /* dates-v3.realm in Resources */ = {isa = PBXBuildFile; fileRef = 02414B4B1CE668BF00A8669F /* dates-v3.realm */; };
+		02414B8A1CE68CA900A8669F /* dates-v5.realm in Resources */ = {isa = PBXBuildFile; fileRef = 02414B891CE68CA900A8669F /* dates-v5.realm */; };
 		02DE87671C0CE46100A42BFC /* RealmReactTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 02DE87661C0CE46100A42BFC /* RealmReactTests.m */; };
 		133E29F31AD74F7200F7D852 /* libRCTLinking.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 78C398B91ACF4ADC00677621 /* libRCTLinking.a */; };
 		139105C61AF99C1200B5F7CC /* libRCTSettings.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 139105C11AF99BAD00B5F7CC /* libRCTSettings.a */; };
@@ -138,6 +139,7 @@
 		00E356EE1AD99517003FC87E /* RealmReactTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RealmReactTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		022D592E1C0432F1001E25FE /* RealmJSTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = RealmJSTests.mm; path = ../../ios/RealmJSTests.mm; sourceTree = "<group>"; };
 		02414B4B1CE668BF00A8669F /* dates-v3.realm */ = {isa = PBXFileReference; lastKnownFileType = file; path = "dates-v3.realm"; sourceTree = "<group>"; };
+		02414B891CE68CA900A8669F /* dates-v5.realm */ = {isa = PBXFileReference; lastKnownFileType = file; path = "dates-v5.realm"; sourceTree = "<group>"; };
 		02DE87661C0CE46100A42BFC /* RealmReactTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = RealmReactTests.m; path = ReactTests/RealmReactTests.m; sourceTree = "<group>"; };
 		02DE87711C0CE55100A42BFC /* RealmJSTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RealmJSTests.h; path = ../../ios/RealmJSTests.h; sourceTree = "<group>"; };
 		139105B61AF99BAD00B5F7CC /* RCTSettings.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RCTSettings.xcodeproj; path = "../node_modules/react-native/Libraries/Settings/RCTSettings.xcodeproj"; sourceTree = "<group>"; };
@@ -232,6 +234,7 @@
 			isa = PBXGroup;
 			children = (
 				02414B4B1CE668BF00A8669F /* dates-v3.realm */,
+				02414B891CE68CA900A8669F /* dates-v5.realm */,
 			);
 			name = data;
 			path = ../../data;
@@ -555,6 +558,7 @@
 			files = (
 				02414B4D1CE668BF00A8669F /* dates-v3.realm in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
+				02414B8A1CE68CA900A8669F /* dates-v5.realm in Resources */,
 				13B07FBD1A68108700A75B9A /* LaunchScreen.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
