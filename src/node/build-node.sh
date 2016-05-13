@@ -22,5 +22,6 @@ else
 fi
 
 # Link to the appropriate module in the build directory.
-mkdir -p ../../build
-ln -fs "build/$CONFIGURATION/realm.node" ../../build
+cd ../..
+mkdir -p build
+ln -fs "../src/node/build/$CONFIGURATION/realm.node" build/

@@ -18,16 +18,6 @@ PATH="$PWD/node_modules/.bin:$PATH"
 if [[ $TARGET = *-android ]]; then
   # Inform the prepublish script to build Android modules.
   export REALM_BUILD_ANDROID=1
-else
-  while pgrep -q Simulator; do
-    # Kill all the current simulator processes as they may be from a
-    # different Xcode version
-    pkill Simulator 2>/dev/null || true
-    # CoreSimulatorService doesn't exit when sent SIGTERM
-    pkill -9 Simulator 2>/dev/null || true
-  done
-
-  DESTINATION="-destination id=$(xcrun simctl list devices | grep -v unavailable | grep -m 1 -o '[0-9A-F\-]\{36\}')"
 fi
 
 PACKAGER_OUT="$SRCROOT/packager_out.txt"
@@ -38,6 +28,16 @@ cleanup() {
   pkill -P $$ || true
   pkill node || true
   rm -f "$PACKAGER_OUT" "$LOGCAT_OUT"
+}
+
+kill_ios_simulator() {
+  while pgrep -q Simulator; do
+    # Kill all the current simulator processes as they may be from a
+    # different Xcode version
+    pkill Simulator 2>/dev/null || true
+    # CoreSimulatorService doesn't exit when sent SIGTERM
+    pkill -9 Simulator 2>/dev/null || true
+  done
 }
 
 open_chrome() {
@@ -64,8 +64,11 @@ start_packager() {
   done
 }
 
-unlock_device() {
-  adb shell input keyevent 82
+xctest() {
+  kill_ios_simulator
+
+  local dest="$(xcrun simctl list devices | grep -v unavailable | grep -m 1 -o '[0-9A-F\-]\{36\}')"
+  xcodebuild -scheme "$1" -configuration "$CONFIGURATION" -sdk iphonesimulator -destination id="$dest" build test
 }
 
 # Cleanup now and also cleanup when this script exits.
@@ -91,7 +94,7 @@ case "$TARGET" in
   ;;
 "realmjs")
   pushd src/ios
-  xcodebuild -scheme RealmJS -configuration "$CONFIGURATION" -sdk iphonesimulator $DESTINATION build test
+  xctest RealmJS
   ;;
 "react-tests")
   pushd tests/react-test-app
@@ -105,7 +108,7 @@ case "$TARGET" in
   start_packager
 
   pushd ios
-  xcodebuild -scheme ReactTestApp -configuration "$CONFIGURATION" -sdk iphonesimulator $DESTINATION build test
+  xctest ReactTestApp
   ;;
 "react-example")
   pushd examples/ReactExample
@@ -119,7 +122,7 @@ case "$TARGET" in
   start_packager
 
   pushd ios
-  xcodebuild -scheme ReactExample -configuration "$CONFIGURATION" -sdk iphonesimulator $DESTINATION build test
+  xctest ReactExample
   ;;
 "react-tests-android")
   [[ $CONFIGURATION == 'Debug' ]] && exit 0
@@ -156,12 +159,13 @@ case "$TARGET" in
 "node")
   npm install
   scripts/download-core.sh
+  src/node/build-node.sh $CONFIGURATION
 
-  pushd src/node
-  bash build-node.sh $CONFIGURATION
-  popd
+  # Change to a temp directory.
+  cd "$(mktemp -q -d -t realm.node.XXXXXX)"
+  trap "rm -rf '$PWD'" EXIT
 
-  node tests
+  node "$SRCROOT/tests"
   ;;
 "object-store")
   pushd src/object-store

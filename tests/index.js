@@ -21,12 +21,34 @@
 
 'use strict';
 
+const fs = require('fs');
+const path = require('path');
 const mockery = require('mockery');
 
 function runTests() {
+    const Realm = require('realm');
     const RealmTests = require('./js');
     const testNames = RealmTests.getTestNames();
     let passed = true;
+
+    // Create this method with appropriate implementation for Node testing.
+    Realm.copyBundledRealmFiles = function() {
+        let sourceDir = path.join(__dirname, 'data');
+        let destinationDir = path.dirname(Realm.defaultPath);
+
+        for (let filename of fs.readdirSync(sourceDir)) {
+            let src = path.join(sourceDir, filename);
+            let dest = path.join(destinationDir, filename);
+
+            // If the destination file already exists, then don't overwrite it.
+            try {
+                fs.accessSync(dest);
+                continue;
+            } catch (e) {}
+
+            fs.writeFileSync(dest, fs.readFileSync(src));
+        }
+    };
 
     for (let suiteName in testNames) {
         console.log('Starting ' + suiteName);
