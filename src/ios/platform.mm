@@ -75,9 +75,14 @@ void copy_bundled_realm_files()
             if (![path containsString:@".realm"]) {
                 continue;
             }
-            NSError *error;
-            if (![manager copyItemAtPath:[resourcePath stringByAppendingPathComponent:path] toPath:[docsDir stringByAppendingPathComponent:path] error:&error]) {
-                throw std::runtime_error((std::string)"Failed to copy file at path " + path.UTF8String);
+            
+            NSString *docsPath = [docsDir stringByAppendingPathComponent:path];
+            if ([manager fileExistsAtPath:docsPath]) {
+                continue;
+            }
+            
+            if (![manager copyItemAtPath:[resourcePath stringByAppendingPathComponent:path] toPath:docsPath error:nil]) {
+                throw std::runtime_error((std::string)"Failed to copy file at path " + path.UTF8String + " to path " + docsPath.UTF8String);
             }
         }
     }
