@@ -20,8 +20,6 @@
 
 #include <string>
 
-extern std::string s_default_realm_directory;
-
 namespace realm {
 //
 // These methods are used internally and must be implemented

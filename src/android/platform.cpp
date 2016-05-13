@@ -20,14 +20,14 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <cstdio>
-#include <android/log.h>
 #include <android/asset_manager.h>
+
 #include "../platform.hpp"
 
 #define REALM_FILE_FILTER ".realm"
-#define REALM_FILE_FILTER_LEN strlen(REALM_FILE_FILTER)
-AAssetManager* androidAssetManager;
-inline bool isRealmFile(const char *str)
+#define REALM_FILE_FILTER_LEN 6
+
+static inline bool is_realm_file(const char* str)
 {
     size_t lenstr = strlen(str);
     if (REALM_FILE_FILTER_LEN > lenstr)
@@ -35,7 +35,8 @@ inline bool isRealmFile(const char *str)
     return strncmp(str + lenstr - REALM_FILE_FILTER_LEN, REALM_FILE_FILTER, REALM_FILE_FILTER_LEN) == 0;
 }
 
-std::string s_default_realm_directory;
+static AAssetManager* s_asset_manager;
+static std::string s_default_realm_directory;
 
 namespace realm {
 
@@ -44,9 +45,9 @@ namespace realm {
         s_default_realm_directory = dir;
     }
 
-    void set_asset_manager(AAssetManager* assetManager)
+    void set_asset_manager(AAssetManager* asset_manager)
     {
-        androidAssetManager = assetManager;
+        s_asset_manager = asset_manager;
     }
 
     std::string default_realm_file_directory()
@@ -61,20 +62,20 @@ namespace realm {
     
     void copy_bundled_realm_files()
     {
-        AAssetDir* assetDir = AAssetManager_openDir(androidAssetManager, "");
+        AAssetDir* assetDir = AAssetManager_openDir(s_asset_manager, "");
+        const char* filename = nullptr;
 
-        const char* filename = (const char*)NULL;
-        while ((filename = AAssetDir_getNextFileName(assetDir)) != NULL) {
-            if (isRealmFile(filename)) {
-                AAsset* asset = AAssetManager_open(androidAssetManager, filename, AASSET_MODE_STREAMING);
+        while ((filename = AAssetDir_getNextFileName(assetDir)) != nullptr) {
+            if (is_realm_file(filename)) {
+                AAsset* asset = AAssetManager_open(s_asset_manager, filename, AASSET_MODE_STREAMING);
 
                 char buf[BUFSIZ];
                 int nb_read = 0;
 
-                const char* destFilename = (s_default_realm_directory + '/' + filename).c_str();
-                if (access(destFilename, F_OK ) == -1) {
+                const char* dest_filename = (s_default_realm_directory + '/' + filename).c_str();
+                if (access(dest_filename, F_OK ) == -1) {
                     // file doesn't exist, copy
-                    FILE* out = fopen(destFilename, "w");
+                    FILE* out = fopen(dest_filename, "w");
                     while ((nb_read = AAsset_read(asset, buf, BUFSIZ)) > 0) {
                         fwrite(buf, nb_read, 1, out);
                     }
