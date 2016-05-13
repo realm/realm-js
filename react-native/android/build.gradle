@@ -135,19 +135,22 @@ def getNdkBuildFullPath() {
     return ndkBuildFullPath
 }
 
-task buildReactNdkLib(dependsOn: [downloadJSCHeaders,prepareRealmCore], type: Exec) {
-    inputs.file('src/main/jni')
-    outputs.dir("$buildDir/realm-react-ndk/all")
-    commandLine getNdkBuildFullPath(),
-            'NDK_PROJECT_PATH=null',
-            "NDK_APPLICATION_MK=$projectDir/src/main/jni/Application.mk",
-            'NDK_OUT=' + temporaryDir,
-            "NDK_LIBS_OUT=$buildDir/realm-react-ndk/all",
-            '-C', file('src/main/jni').absolutePath,
-            'NDK_LOG=1',
-            'NDK_DEBUG=' + (DEBUG_BUILD.toBoolean() ? '1' : '0'),
-            '--jobs', Runtime.runtime.availableProcessors(),
-            'V=1'
+['0', '1'].each { def buildType ->
+    def taskName = (buildType == '0')?"bulidReactNdkLibDebug":"buildReactNdkLibRelease"
+    task "$taskName" (dependsOn: [downloadJSCHeaders,prepareRealmCore], type: Exec) {
+      inputs.file('src/main/jni')
+      outputs.dir("$buildDir/realm-react-ndk/all")
+      commandLine getNdkBuildFullPath(),
+              'NDK_PROJECT_PATH=null',
+              "NDK_APPLICATION_MK=$projectDir/src/main/jni/Application.mk",
+              'NDK_OUT=' + temporaryDir,
+              "NDK_LIBS_OUT=$buildDir/realm-react-ndk/all",
+              '-C', file('src/main/jni').absolutePath,
+              'NDK_LOG=' + buildType,
+              'NDK_DEBUG='+ buildType,
+              '--jobs', Runtime.runtime.availableProcessors(),
+              'V=1'
+    }
 }
 
 task cleanReactNdkLib(type: Exec) {
@@ -156,12 +159,20 @@ task cleanReactNdkLib(type: Exec) {
             'clean'
 }
 
-task packageReactNdkLibs(dependsOn: buildReactNdkLib, type: Copy) {
-    from "$buildDir/realm-react-ndk/all"
-    exclude '**/libjsc.so'
-    exclude '**/gdbserver'
-    exclude '**/gdb.setup'
-    into "$buildDir/realm-react-ndk/exported"
+task copyDebugBuild(dependsOn: bulidReactNdkLibDebug, type: Copy) {
+  from "$buildDir/realm-react-ndk/all"
+  exclude '**/libjsc.so'
+  exclude '**/gdbserver'
+  exclude '**/gdb.setup'
+  into "$buildDir/realm-react-ndk/exported"
+}
+
+task copyReleaseBuild(dependsOn: buildReactNdkLibRelease, type: Copy) {
+  from "$buildDir/realm-react-ndk/all"
+  exclude '**/libjsc.so'
+  exclude '**/gdbserver'
+  exclude '**/gdb.setup'
+  into "$buildDir/realm-react-ndk/exported"
 }
 
 android {
@@ -181,7 +192,7 @@ android {
     }
 
     tasks.withType(JavaCompile) {
-        compileTask -> compileTask.dependsOn generateVersionClass, packageReactNdkLibs
+        compileTask -> compileTask.dependsOn generateVersionClass, copyReleaseBuild, copyDebugBuild
     }
 
     clean.dependsOn cleanReactNdkLib
@@ -191,7 +202,7 @@ android {
     }
 }
 
-task publishAndroid(dependsOn: [generateVersionClass, packageReactNdkLibs], type: Sync) {
+task publishAndroid(dependsOn: [generateVersionClass, copyReleaseBuild, copyDebugBuild], type: Sync) {
     // Copy task can only have one top level
     into "$publishDir"
 

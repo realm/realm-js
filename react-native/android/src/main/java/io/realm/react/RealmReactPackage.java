@@ -11,9 +11,20 @@ import com.facebook.react.bridge.JavaScriptModule;
 import com.facebook.react.uimanager.ViewManager;
 
 public class RealmReactPackage implements ReactPackage {
+    private final boolean useDebugLib;
+
+    public RealmReactPackage(boolean... debug) {
+        if (debug.length > 0 && debug[0]) {
+            useDebugLib = true;
+
+        } else {
+            useDebugLib = false;
+        }
+    }
+
     @Override
     public List<NativeModule> createNativeModules(ReactApplicationContext reactContext) {
-        return Collections.<NativeModule>singletonList(new RealmReactModule(reactContext));
+        return Collections.<NativeModule>singletonList(new RealmReactModule(reactContext, useDebugLib));
     }
 
     @Override
