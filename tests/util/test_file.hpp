@@ -12,4 +12,6 @@ struct InMemoryTestFile : TestFile {
     InMemoryTestFile();
 };
 
+void advance_and_notify(realm::Realm& realm);
+
 #endif

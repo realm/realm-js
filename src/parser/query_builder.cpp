@@ -94,7 +94,7 @@ struct PropertyExpression
         KeyPath key_path = key_path_from_string(key_path_string);
         for (size_t index = 0; index < key_path.size(); index++) {
             if (prop) {
-                precondition(prop->type == PropertyTypeObject || prop->type == PropertyTypeArray,
+                precondition(prop->type == PropertyType::Object || prop->type == PropertyType::Array,
                              (std::string)"Property '" + key_path[index] + "' is not a link in object of type '" + desc->name + "'");
                 indexes.push_back(prop->table_column);
 
@@ -384,36 +384,36 @@ void do_add_comparison_to_query(Query &query, const Schema &schema, const Object
 {
     auto type = expr.prop->type;
     switch (type) {
-        case PropertyTypeBool:
+        case PropertyType::Bool:
             add_bool_constraint_to_query(query, cmp.op, value_of_type_for_query<bool>(expr.table_getter, lhs, args),
                                                         value_of_type_for_query<bool>(expr.table_getter, rhs, args));
             break;
-        case PropertyTypeDate:
+        case PropertyType::Date:
             add_numeric_constraint_to_query(query, cmp.op, value_of_type_for_query<Timestamp>(expr.table_getter, lhs, args),
                                                            value_of_type_for_query<Timestamp>(expr.table_getter, rhs, args));
             break;
-        case PropertyTypeDouble:
+        case PropertyType::Double:
             add_numeric_constraint_to_query(query, cmp.op, value_of_type_for_query<Double>(expr.table_getter, lhs, args),
                                                            value_of_type_for_query<Double>(expr.table_getter, rhs, args));
             break;
-        case PropertyTypeFloat:
+        case PropertyType::Float:
             add_numeric_constraint_to_query(query, cmp.op, value_of_type_for_query<Float>(expr.table_getter, lhs, args),
                                                            value_of_type_for_query<Float>(expr.table_getter, rhs, args));
             break;
-        case PropertyTypeInt:
+        case PropertyType::Int:
             add_numeric_constraint_to_query(query, cmp.op, value_of_type_for_query<Int>(expr.table_getter, lhs, args),
                                                            value_of_type_for_query<Int>(expr.table_getter, rhs, args));
             break;
-        case PropertyTypeString:
+        case PropertyType::String:
             add_string_constraint_to_query(query, cmp, value_of_type_for_query<String>(expr.table_getter, lhs, args),
                                                        value_of_type_for_query<String>(expr.table_getter, rhs, args));
             break;
-        case PropertyTypeData:
+        case PropertyType::Data:
             add_binary_constraint_to_query(query, cmp.op, value_of_type_for_query<Binary>(expr.table_getter, lhs, args),
                                                           value_of_type_for_query<Binary>(expr.table_getter, rhs, args));
             break;
-        case PropertyTypeObject:
-        case PropertyTypeArray:
+        case PropertyType::Object:
+        case PropertyType::Array:
             add_link_constraint_to_query(query, cmp.op, expr, link_argument(lhs, rhs, args));
             break;
         default: {
@@ -476,31 +476,31 @@ void do_add_null_comparison_to_query(Query &query, const Schema &schema, const O
 {
     auto type = expr.prop->type;
     switch (type) {
-        case PropertyTypeBool:
+        case realm::PropertyType::Bool:
             do_add_null_comparison_to_query<bool>(query, cmp.op, expr, args);
             break;
-        case PropertyTypeDate:
+        case realm::PropertyType::Date:
             do_add_null_comparison_to_query<Timestamp>(query, cmp.op, expr, args);
             break;
-        case PropertyTypeDouble:
+        case realm::PropertyType::Double:
             do_add_null_comparison_to_query<Double>(query, cmp.op, expr, args);
             break;
-        case PropertyTypeFloat:
+        case realm::PropertyType::Float:
             do_add_null_comparison_to_query<Float>(query, cmp.op, expr, args);
             break;
-        case PropertyTypeInt:
+        case realm::PropertyType::Int:
             do_add_null_comparison_to_query<Int>(query, cmp.op, expr, args);
             break;
-        case PropertyTypeString:
+        case realm::PropertyType::String:
             do_add_null_comparison_to_query<String>(query, cmp.op, expr, args);
             break;
-        case PropertyTypeData:
+        case realm::PropertyType::Data:
             do_add_null_comparison_to_query<Binary>(query, cmp.op, expr, args);
             break;
-        case PropertyTypeObject:
+        case realm::PropertyType::Object:
             do_add_null_comparison_to_query<Link>(query, cmp.op, expr, args);
             break;
-        case PropertyTypeArray:
+        case realm::PropertyType::Array:
             throw std::runtime_error((std::string)"Comparing Lists to 'null' is not supported");
             break;
         default: {
