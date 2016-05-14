@@ -33,7 +33,7 @@ namespace realm {
 namespace js {
 
 template<typename T>
-class List {
+struct ListClass : ClassDefinition<T, realm::List, CollectionClass<T>> {
     using ContextType = typename T::Context;
     using ObjectType = typename T::Object;
     using ValueType = typename T::Value;
@@ -41,7 +41,6 @@ class List {
     using Value = js::Value<T>;
     using ReturnValue = js::ReturnValue<T>;
 
-  public:
     static ObjectType create_instance(ContextType, realm::List &);
 
     // properties
@@ -58,45 +57,40 @@ class List {
     static void snapshot(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void filtered(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void sorted(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
-};
-
-template<typename T>
-struct ListClass : ClassDefinition<T, realm::List, CollectionClass<T>> {
-    using List = js::List<T>;
-
+    
     std::string const name = "List";
 
     MethodMap<T> const methods = {
-        {"push", wrap<List::push>},
-        {"pop", wrap<List::pop>},
-        {"unshift", wrap<List::unshift>},
-        {"shift", wrap<List::shift>},
-        {"splice", wrap<List::splice>},
-        {"snapshot", wrap<List::snapshot>},
-        {"filtered", wrap<List::filtered>},
-        {"sorted", wrap<List::sorted>},
+        {"push", wrap<push>},
+        {"pop", wrap<pop>},
+        {"unshift", wrap<unshift>},
+        {"shift", wrap<shift>},
+        {"splice", wrap<splice>},
+        {"snapshot", wrap<snapshot>},
+        {"filtered", wrap<filtered>},
+        {"sorted", wrap<sorted>},
     };
 
     PropertyMap<T> const properties = {
-        {"length", {wrap<List::get_length>, nullptr}},
+        {"length", {wrap<get_length>, nullptr}},
     };
 
-    IndexPropertyType<T> const index_accessor = {wrap<List::get_index>, wrap<List::set_index>};
+    IndexPropertyType<T> const index_accessor = {wrap<get_index>, wrap<set_index>};
 };
 
 template<typename T>
-typename T::Object List<T>::create_instance(ContextType ctx, realm::List &list) {
+typename T::Object ListClass<T>::create_instance(ContextType ctx, realm::List &list) {
     return create_object<T, ListClass<T>>(ctx, new realm::List(list));
 }
 
 template<typename T>
-void List<T>::get_length(ContextType ctx, ObjectType object, ReturnValue &return_value) {
+void ListClass<T>::get_length(ContextType ctx, ObjectType object, ReturnValue &return_value) {
     auto list = get_internal<T, ListClass<T>>(object);
     return_value.set((uint32_t)list->size());
 }
 
 template<typename T>
-void List<T>::get_index(ContextType ctx, ObjectType object, uint32_t index, ReturnValue &return_value) {
+void ListClass<T>::get_index(ContextType ctx, ObjectType object, uint32_t index, ReturnValue &return_value) {
     auto list = get_internal<T, ListClass<T>>(object);
     auto realm_object = realm::Object(list->get_realm(), list->get_object_schema(), list->get(index));
 
@@ -104,14 +98,14 @@ void List<T>::get_index(ContextType ctx, ObjectType object, uint32_t index, Retu
 }
 
 template<typename T>
-bool List<T>::set_index(ContextType ctx, ObjectType object, uint32_t index, ValueType value) {
+bool ListClass<T>::set_index(ContextType ctx, ObjectType object, uint32_t index, ValueType value) {
     auto list = get_internal<T, ListClass<T>>(object);
     list->set(ctx, value, index);
     return true;
 }
 
 template<typename T>
-void List<T>::push(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+void ListClass<T>::push(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count_at_least(argc, 1);
 
     auto list = get_internal<T, ListClass<T>>(this_object);
@@ -123,7 +117,7 @@ void List<T>::push(ContextType ctx, ObjectType this_object, size_t argc, const V
 }
 
 template<typename T>
-void List<T>::pop(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+void ListClass<T>::pop(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 0);
 
     auto list = get_internal<T, ListClass<T>>(this_object);
@@ -142,7 +136,7 @@ void List<T>::pop(ContextType ctx, ObjectType this_object, size_t argc, const Va
 }
 
 template<typename T>
-void List<T>::unshift(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+void ListClass<T>::unshift(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count_at_least(argc, 1);
 
     auto list = get_internal<T, ListClass<T>>(this_object);
@@ -154,7 +148,7 @@ void List<T>::unshift(ContextType ctx, ObjectType this_object, size_t argc, cons
 }
 
 template<typename T>
-void List<T>::shift(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+void ListClass<T>::shift(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 0);
 
     auto list = get_internal<T, ListClass<T>>(this_object);
@@ -171,7 +165,7 @@ void List<T>::shift(ContextType ctx, ObjectType this_object, size_t argc, const 
 }
 
 template<typename T>
-void List<T>::splice(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+void ListClass<T>::splice(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count_at_least(argc, 1);
 
     auto list = get_internal<T, ListClass<T>>(this_object);
@@ -207,27 +201,27 @@ void List<T>::splice(ContextType ctx, ObjectType this_object, size_t argc, const
 }
 
 template<typename T>
-void List<T>::snapshot(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+void ListClass<T>::snapshot(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 0);
 
     auto list = get_internal<T, ListClass<T>>(this_object);
-    return_value.set(Results<T>::create_instance(ctx, *list, false));
+    return_value.set(ResultsClass<T>::create_instance(ctx, *list, false));
 }
 
 template<typename T>
-void List<T>::filtered(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+void ListClass<T>::filtered(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count_at_least(argc, 1);
 
     auto list = get_internal<T, ListClass<T>>(this_object);
-    return_value.set(Results<T>::create_filtered(ctx, *list, argc, arguments));
+    return_value.set(ResultsClass<T>::create_filtered(ctx, *list, argc, arguments));
 }
 
 template<typename T>
-void List<T>::sorted(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+void ListClass<T>::sorted(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 1, 2);
 
     auto list = get_internal<T, ListClass<T>>(this_object);
-    return_value.set(Results<T>::create_sorted(ctx, *list, argc, arguments));
+    return_value.set(ResultsClass<T>::create_sorted(ctx, *list, argc, arguments));
 }
     
 } // js

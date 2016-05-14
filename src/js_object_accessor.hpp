@@ -135,7 +135,7 @@ struct NativeAccessor {
         return Object::validated_get_object(ctx, Value::validated_to_object(ctx, value), (uint32_t)index);
     }
     static ValueType from_list(ContextType ctx, realm::List list) {
-        return List<T>::create_instance(ctx, list);
+        return ListClass<T>::create_instance(ctx, list);
     }
 
     static Mixed to_mixed(ContextType ctx, ValueType &val) {

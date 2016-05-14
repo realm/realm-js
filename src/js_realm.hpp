@@ -468,7 +468,7 @@ void Realm<T>::objects(ContextType ctx, ObjectType this_object, size_t argc, con
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
     std::string type = validated_object_type_for_value(realm, ctx, arguments[0]);
 
-    return_value.set(Results<T>::create_instance(ctx, realm, type));
+    return_value.set(ResultsClass<T>::create_instance(ctx, realm, type));
 }
 
 template<typename T>
