@@ -61,16 +61,20 @@ private:
     // The listener thread
     std::future<void> m_thread;
 
-    // Read-write file descriptor for the named pipe which is waited on for
-    // changes and written to when a commit is made
+    // Pipe which is waited on for changes and written to when there is a new
+    // commit to notify others of. When using a named pipe m_notify_fd is
+    // read-write and m_notify_fd_write is unused; when using an anonymous pipe
+    // (on tvOS) m_notify_fd is read-only and m_notify_fd_write is write-only.
     FdHolder m_notify_fd;
+    FdHolder m_notify_fd_write;
+
     // File descriptor for the kqueue
     FdHolder m_kq;
+
     // The two ends of an anonymous pipe used to notify the kqueue() thread that
     // it should be shut down.
     FdHolder m_shutdown_read_fd;
     FdHolder m_shutdown_write_fd;
 };
-
 } // namespace _impl
 } // namespace realm

@@ -22,14 +22,12 @@
 #include "schema.hpp"
 #include "property.hpp"
 
+#include <realm/table_ref.hpp>
+
 #include <functional>
 
-#include <realm/group.hpp>
-#include <realm/link_view.hpp>
-
-#include <sstream>
-
 namespace realm {
+    class Group;
     class ObjectSchemaValidationException;
     class Schema;
 
@@ -163,6 +161,14 @@ namespace realm {
     class SchemaUpdateValidationException : public SchemaValidationException {
       public:
         SchemaUpdateValidationException(std::vector<ObjectSchemaValidationException> const& errors);
+    };
+
+    class SchemaMismatchException : public ObjectStoreException {
+    public:
+        SchemaMismatchException(std::vector<ObjectSchemaValidationException> const& errors);
+        std::vector<ObjectSchemaValidationException> const& validation_errors() const { return m_validation_errors; }
+    private:
+        std::vector<ObjectSchemaValidationException> m_validation_errors;
     };
 
     class ObjectSchemaValidationException : public ObjectStoreException {

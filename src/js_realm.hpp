@@ -371,7 +371,7 @@ void Realm<T>::constructor(ContextType ctx, ObjectType this_object, size_t argc,
         for (auto object_schema : *realm->config().schema) {
             auto table = ObjectStore::table_for_object_type(realm->read_group(), object_schema.name);
             for (auto property : object_schema.properties) {
-                if (property.type == PropertyTypeDate) {
+                if (property.type == realm::PropertyType::Date) {
                     if (!realm->is_in_transaction()) {
                         realm->begin_transaction();
                     }

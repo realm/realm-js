@@ -96,35 +96,35 @@ Property Schema<T>::parse_property(ContextType ctx, ValueType attributes, std::s
     }
     
     if (type == "bool") {
-        prop.type = PropertyTypeBool;
+        prop.type = realm::PropertyType::Bool;
     }
     else if (type == "int") {
-        prop.type = PropertyTypeInt;
+        prop.type = realm::PropertyType::Int;
     }
     else if (type == "float") {
-        prop.type = PropertyTypeFloat;
+        prop.type = realm::PropertyType::Float;
     }
     else if (type == "double") {
-        prop.type = PropertyTypeDouble;
+        prop.type = realm::PropertyType::Double;
     }
     else if (type == "string") {
-        prop.type = PropertyTypeString;
+        prop.type = realm::PropertyType::String;
     }
     else if (type == "date") {
-        prop.type = PropertyTypeDate;
+        prop.type = realm::PropertyType::Date;
     }
     else if (type == "data") {
-        prop.type = PropertyTypeData;
+        prop.type = realm::PropertyType::Data;
     }
     else if (type == "list") {
         if (!Value::is_valid(property_object)) {
             throw std::runtime_error("List property must specify 'objectType'");
         }
-        prop.type = PropertyTypeArray;
+        prop.type = realm::PropertyType::Array;
         prop.object_type = Object::validated_get_string(ctx, property_object, object_type_string);
     }
     else {
-        prop.type = PropertyTypeObject;
+        prop.type = realm::PropertyType::Object;
         prop.is_nullable = true;
         
         // The type could either be 'object' or the name of another object type in the same schema.
@@ -263,7 +263,7 @@ typename T::Object Schema<T>::object_for_property(ContextType ctx, const Propert
     Object::set_property(ctx, object, name_string, Value::from_string(ctx, property.name));
 
     static const String type_string = "type";
-    const std::string type = property.type != PropertyTypeArray ? string_for_property_type(property.type) : "list";
+    const std::string type = property.type != realm::PropertyType::Array ? string_for_property_type(property.type) : "list";
     Object::set_property(ctx, object, type_string, Value::from_string(ctx, type));
 
     static const String object_type_string = "objectType";
