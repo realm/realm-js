@@ -28,7 +28,7 @@ using namespace realm;
 using namespace realm::jsc;
 
 JSObjectRef RJSConstructorCreate(JSContextRef ctx) {
-    return js::Realm<Types>::create_constructor(ctx);
+    return js::RealmClass<Types>::create_constructor(ctx);
 }
 
 void RJSInitializeInContext(JSContextRef ctx) {

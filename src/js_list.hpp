@@ -94,7 +94,7 @@ void ListClass<T>::get_index(ContextType ctx, ObjectType object, uint32_t index,
     auto list = get_internal<T, ListClass<T>>(object);
     auto realm_object = realm::Object(list->get_realm(), list->get_object_schema(), list->get(index));
 
-    return_value.set(RealmObject<T>::create_instance(ctx, realm_object));
+    return_value.set(RealmObjectClass<T>::create_instance(ctx, realm_object));
 }
 
 template<typename T>
@@ -130,7 +130,7 @@ void ListClass<T>::pop(ContextType ctx, ObjectType this_object, size_t argc, con
         size_t index = size - 1;
         auto realm_object = realm::Object(list->get_realm(), list->get_object_schema(), list->get(index));
 
-        return_value.set(RealmObject<T>::create_instance(ctx, realm_object));
+        return_value.set(RealmObjectClass<T>::create_instance(ctx, realm_object));
         list->remove(index);
     }
 }
@@ -159,7 +159,7 @@ void ListClass<T>::shift(ContextType ctx, ObjectType this_object, size_t argc, c
     else {
         auto realm_object = realm::Object(list->get_realm(), list->get_object_schema(), list->get(0));
 
-        return_value.set(RealmObject<T>::create_instance(ctx, realm_object));
+        return_value.set(RealmObjectClass<T>::create_instance(ctx, realm_object));
         list->remove(0);
     }
 }
@@ -190,7 +190,7 @@ void ListClass<T>::splice(ContextType ctx, ObjectType this_object, size_t argc, 
     for (size_t i = 0; i < remove; i++) {
         auto realm_object = realm::Object(list->get_realm(), list->get_object_schema(), list->get(index));
 
-        removed_objects.push_back(RealmObject<T>::create_instance(ctx, realm_object));
+        removed_objects.push_back(RealmObjectClass<T>::create_instance(ctx, realm_object));
         list->remove(index);
     }
     for (size_t i = 2; i < argc; i++) {
