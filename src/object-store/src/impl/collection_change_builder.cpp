@@ -19,6 +19,7 @@
 #include "impl/collection_change_builder.hpp"
 
 #include <realm/util/assert.hpp>
+#include <algorithm>
 
 using namespace realm;
 using namespace realm::_impl;

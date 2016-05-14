@@ -22,21 +22,21 @@ LOCAL_SRC_FILES := \
   src/android/io_realm_react_RealmReactModule.cpp \
   src/android/jsc_override.cpp \
   src/object-store/src/collection_notifications.cpp \
-  src/object-store/src/collection_change_builder.cpp \
-  src/object-store/src/collection_notifier.cpp \
   src/object-store/src/index_set.cpp \
   src/object-store/src/list.cpp \
-  src/object-store/src/list_notifier.cpp \
   src/object-store/src/object_schema.cpp \
   src/object-store/src/object_store.cpp \
   src/object-store/src/results.cpp \
-  src/object-store/src/results_notifier.cpp \
   src/object-store/src/schema.cpp \
   src/object-store/src/shared_realm.cpp \
   src/object-store/src/parser/parser.cpp \
   src/object-store/src/parser/query_builder.cpp \
-  src/object-store/src/impl/transact_log_handler.cpp \
+  src/object-store/src/impl/collection_change_builder.cpp \
+  src/object-store/src/impl/collection_notifier.cpp \
+  src/object-store/src/impl/list_notifier.cpp \
   src/object-store/src/impl/realm_coordinator.cpp \
+  src/object-store/src/impl/results_notifier.cpp \
+  src/object-store/src/impl/transact_log_handler.cpp \
   src/object-store/src/impl/generic/external_commit_helper.cpp \
   vendor/base64.cpp
 
