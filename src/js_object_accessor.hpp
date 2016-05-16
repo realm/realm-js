@@ -30,6 +30,7 @@ struct NativeAccessor {
     using ContextType = typename T::Context;
     using ObjectType = typename T::Object;
     using ValueType = typename T::Value;
+    using Function = js::Function<T>;
     using Object = js::Object<T>;
     using Value = js::Value<T>;
 
@@ -48,7 +49,13 @@ struct NativeAccessor {
     }
     static ValueType default_value_for_property(ContextType ctx, realm::Realm *realm, const ObjectSchema &object_schema, const std::string &prop_name) {
         auto defaults = get_delegate<T>(realm)->m_defaults[object_schema.name];
-        return defaults.at(prop_name);
+        auto value = defaults.at(prop_name);
+
+        if (Value::is_function(ctx, value)) {
+            return Function::call(ctx, Value::to_function(ctx, value));
+        }
+
+        return value;
     }
 
     // These must be implemented for each JS engine.
