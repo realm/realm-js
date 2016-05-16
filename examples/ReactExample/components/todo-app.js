@@ -18,10 +18,13 @@
 
 'use strict';
 
-import React, {
+import React from 'react';
+
+import {
     Component,
     Navigator,
-    StatusBarIOS,
+    Platform,
+    StatusBar,
     Text,
     TouchableOpacity,
     View,
@@ -60,8 +63,8 @@ export default class TodoApp extends Component {
     }
 
     componentWillMount() {
-        if (StatusBarIOS) {
-            StatusBarIOS.setStyle('light-content');
+        if (Platform.OS == 'ios') {
+            StatusBar.setBarStyle('light-content');
         }
     }
 
