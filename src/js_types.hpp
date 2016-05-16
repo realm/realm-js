@@ -35,12 +35,16 @@
 namespace realm {
 namespace js {
 
-enum PropertyAttributes {
+enum PropertyAttributes : unsigned {
     None       = 0,
     ReadOnly   = 1 << 0,
     DontEnum   = 1 << 1,
     DontDelete = 1 << 2
 };
+
+inline PropertyAttributes operator|(PropertyAttributes a, PropertyAttributes b) {
+    return PropertyAttributes(static_cast<unsigned>(a) | static_cast<unsigned>(b));
+}
 
 template<typename T>
 struct String {

@@ -18,7 +18,8 @@
 
 'use strict';
 
-const React = require('react-native');
+import React from 'react';
+import { ListView as BaseListView } from 'react-native';
 
 function hashObjects(array) {
     let hash = Object.create(null);
@@ -28,7 +29,7 @@ function hashObjects(array) {
     return hash;
 }
 
-class ListViewDataSource extends React.ListView.DataSource {
+class ListViewDataSource extends BaseListView.DataSource {
     cloneWithRowsAndSections(inputData, sectionIds, rowIds) {
         let data = {};
 
@@ -160,7 +161,7 @@ class ListViewDataSource extends React.ListView.DataSource {
     }
 }
 
-class ListView extends React.Component {
+export default class ListView extends React.Component {
     constructor(props) {
         super(props);
 
@@ -169,7 +170,7 @@ class ListView extends React.Component {
 
     render() {
         return (
-            <React.ListView {...this.props} ref="listView" renderRow={this.renderRow} />
+            <BaseListView {...this.props} ref="listView" renderRow={this.renderRow} />
         );
     }
 
@@ -200,5 +201,3 @@ ListView.propTypes = {
 };
 
 ListView.DataSource = ListViewDataSource;
-
-module.exports = ListView;

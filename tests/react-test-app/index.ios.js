@@ -18,7 +18,7 @@
 
 'use strict';
 
-const React = require('react-native');
+const React = require('react');
 const Realm = require('realm');
 const tests = require('./tests');
 
@@ -28,7 +28,7 @@ const {
     Text,
     TouchableHighlight,
     View,
-} = React;
+} = require('react-native');
 
 class ReactTests extends React.Component {
     render() {

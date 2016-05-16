@@ -66,11 +66,10 @@ void ensure_directory_exists_for_file(const std::string &fileName)
 
 void copy_bundled_realm_files()
 {
+    NSString *docsDir = @(default_realm_file_directory().c_str());
+    NSFileManager *manager = [NSFileManager defaultManager];
     for (id bundle in [NSBundle allBundles]) {
         NSString *resourcePath = [bundle resourcePath];
-        NSString *docsDir = @(default_realm_file_directory().c_str());
-        NSFileManager *manager = [NSFileManager defaultManager];
-        
         for (NSString *path in [manager enumeratorAtPath:resourcePath]) {
             if (![path containsString:@".realm"]) {
                 continue;

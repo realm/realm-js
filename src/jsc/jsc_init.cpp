@@ -37,7 +37,7 @@ void RJSInitializeInContext(JSContextRef ctx) {
     JSObjectRef global_object = JSContextGetGlobalObject(ctx);
     JSObjectRef realm_constructor = RJSConstructorCreate(ctx);
 
-    jsc::Object::set_property(ctx, global_object, realm_string, realm_constructor, js::PropertyAttributes(js::ReadOnly | js::DontEnum | js::DontDelete));
+    jsc::Object::set_property(ctx, global_object, realm_string, realm_constructor, js::ReadOnly | js::DontEnum | js::DontDelete);
 }
 
 } // extern "C"

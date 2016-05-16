@@ -48,10 +48,7 @@ class ObjectWrap {
     }
 
     static JSObjectRef create_constructor(JSContextRef ctx) {
-        if (JSClassRef constructor_class = get_constructor_class()) {
-            return JSObjectMake(ctx, constructor_class, nullptr);
-        }
-        return JSObjectMakeConstructor(ctx, get_class(), construct);
+        return JSObjectMake(ctx, get_constructor_class(), nullptr);
     }
 
     static JSClassRef get_class() {
@@ -92,7 +89,9 @@ class ObjectWrap {
     static std::vector<JSStaticFunction> get_methods(const MethodMap &);
     static std::vector<JSStaticValue> get_properties(const PropertyMap &);
 
+    static JSValueRef call(JSContextRef, JSObjectRef, JSObjectRef, size_t, const JSValueRef[], JSValueRef*);
     static JSObjectRef construct(JSContextRef, JSObjectRef, size_t, const JSValueRef[], JSValueRef*);
+    static void initialize_constructor(JSContextRef, JSObjectRef);
     static void finalize(JSObjectRef);
     static void get_property_names(JSContextRef, JSObjectRef, JSPropertyNameAccumulatorRef);
     static JSValueRef get_property(JSContextRef, JSObjectRef, JSStringRef, JSValueRef*);
@@ -104,7 +103,7 @@ class ObjectWrap {
     }
 
     static bool has_instance(JSContextRef ctx, JSObjectRef constructor, JSValueRef value, JSValueRef* exception) {
-        return JSValueIsObjectOfClass(ctx, value, get_class());
+        return has_instance(ctx, value);
     }
 };
 
@@ -158,18 +157,17 @@ inline JSClassRef ObjectWrap<ClassType>::create_class() {
 
 template<typename ClassType>
 inline JSClassRef ObjectWrap<ClassType>::create_constructor_class() {
-    // Skip creating a special constructor class if possible.
-    if (!s_class.constructor && s_class.static_methods.empty() && s_class.static_properties.empty()) {
-        return nullptr;
-    }
-
     JSClassDefinition definition = kJSClassDefinitionEmpty;
     std::vector<JSStaticFunction> methods;
     std::vector<JSStaticValue> properties;
 
     definition.attributes = kJSClassAttributeNoAutomaticPrototype;
-    definition.className = s_class.name.c_str();
+    definition.className = "Function";
+    definition.initialize = initialize_constructor;
     definition.hasInstance = has_instance;
+
+    // This must be set for `typeof constructor` to be 'function'.
+    definition.callAsFunction = call;
 
     if (s_class.constructor) {
         definition.callAsConstructor = construct;
@@ -220,20 +218,55 @@ inline std::vector<JSStaticValue> ObjectWrap<ClassType>::get_properties(const Pr
 }
 
 template<typename ClassType>
-inline JSObjectRef ObjectWrap<ClassType>::construct(JSContextRef ctx, JSObjectRef constructor, size_t argc, const JSValueRef arguments[], JSValueRef* exception) {
-    if (!s_class.constructor) {
-        *exception = jsc::Exception::value(ctx, "Illegal constructor");
+inline JSValueRef ObjectWrap<ClassType>::call(JSContextRef ctx, JSObjectRef function, JSObjectRef this_object, size_t argc, const JSValueRef arguments[], JSValueRef* exception) {
+    // This should only be called as a super() call in the constructor of a subclass.
+    if (!has_instance(ctx, this_object)) {
+        *exception = jsc::Exception::value(ctx, s_class.name + " cannot be called as a function");
         return nullptr;
     }
 
-    JSObjectRef this_object = ObjectWrap<ClassType>::create_instance(ctx);
+    // Classes without a constructor should still be subclassable.
+    if (s_class.constructor) {
+        try {
+            s_class.constructor(ctx, this_object, argc, arguments);
+        }
+        catch (std::exception &e) {
+            *exception = jsc::Exception::value(ctx, e);
+            return nullptr;
+        }
+    }
+
+    return JSValueMakeUndefined(ctx);
+}
+
+template<typename ClassType>
+inline JSObjectRef ObjectWrap<ClassType>::construct(JSContextRef ctx, JSObjectRef constructor, size_t argc, const JSValueRef arguments[], JSValueRef* exception) {
+    if (!s_class.constructor) {
+        *exception = jsc::Exception::value(ctx, s_class.name + " is not a constructor");
+        return nullptr;
+    }
+
+    JSObjectRef this_object = create_instance(ctx);
     try {
         s_class.constructor(ctx, this_object, argc, arguments);
     }
     catch (std::exception &e) {
         *exception = jsc::Exception::value(ctx, e);
+        return nullptr;
     }
     return this_object;
+}
+
+template<typename ClassType>
+inline void ObjectWrap<ClassType>::initialize_constructor(JSContextRef ctx, JSObjectRef constructor) {
+    static const String prototype_string = "prototype";
+
+    // Set the prototype of the constructor to be Function.prototype.
+    Object::set_prototype(ctx, constructor, Object::get_prototype(ctx, JSObjectMakeFunctionWithCallback(ctx, nullptr, call)));
+
+    // Set the constructor prototype to be the prototype generated from the instance JSClassRef.
+    JSObjectRef prototype = Object::validated_get_object(ctx, JSObjectMakeConstructor(ctx, get_class(), construct), prototype_string);
+    Object::set_property(ctx, constructor, prototype_string, prototype, js::ReadOnly | js::DontEnum | js::DontDelete);
 }
 
 template<typename ClassType>

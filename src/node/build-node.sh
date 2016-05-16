@@ -6,6 +6,7 @@ set -e
 cd "$(dirname "$0")"
 
 CONFIGURATION="${1:-"Release"}"
+PATH="$(cd ../../node_modules/.bin && pwd):$PATH"
 
 if [ -s "${HOME}/.nvm/nvm.sh" ]; then
   . "${HOME}/.nvm/nvm.sh"

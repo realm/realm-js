@@ -18,4 +18,6 @@
 
 'use strict';
 
-exports.ListView = require('./listview');
+import ListView from './listview';
+
+export { ListView };
