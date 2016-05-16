@@ -13,6 +13,7 @@
 *.zip
 *.realm
 *.realm.lock
+*.management/
 
 # core
 core

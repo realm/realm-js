@@ -254,7 +254,7 @@ inline typename T::Function Realm<T>::create_constructor(ContextType ctx) {
     return realm_constructor;
 }
     
-void convert_outdated_datetime_columns(SharedRealm realm) {
+static void convert_outdated_datetime_columns(SharedRealm realm) {
     if (realm->config().upgrade_initial_version != realm->config().upgrade_final_version &&
         realm->config().upgrade_initial_version < 5) {
         // any versions earlier than file format 5 are stored as milliseconds and need to be converted to the new format
