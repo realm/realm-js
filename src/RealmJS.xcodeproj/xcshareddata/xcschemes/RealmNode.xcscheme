@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "0720"
+   LastUpgradeVersion = "0730"
    version = "1.3">
    <BuildAction
       parallelizeBuildables = "YES"
@@ -14,10 +14,10 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "02D041FD1CE13739000E4250"
-               BuildableName = "RealmNode"
+               BlueprintIdentifier = "F62BF8FA1CAC71780022BCDC"
+               BuildableName = "libRealmNode.dylib"
                BlueprintName = "RealmNode"
-               ReferencedContainer = "container:RealmNode.xcodeproj">
+               ReferencedContainer = "container:RealmJS.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -38,27 +38,27 @@
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       launchStyle = "0"
       useCustomWorkingDirectory = "YES"
-      customWorkingDirectory = "$(SRCROOT)"
+      customWorkingDirectory = "$(TEMP_DIR)"
       ignoresPersistentStateOnLaunch = "NO"
       debugDocumentVersioning = "YES"
       debugServiceExtension = "internal"
       allowLocationSimulation = "YES">
       <PathRunnable
          runnableDebuggingMode = "0"
-         FilePath = "/Users/ari/.nvm/versions/node/v5.4.0/bin/node">
+         FilePath = "/usr/local/bin/node">
       </PathRunnable>
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "02D041FD1CE13739000E4250"
-            BuildableName = "RealmNode"
+            BlueprintIdentifier = "F62BF8FA1CAC71780022BCDC"
+            BuildableName = "libRealmNode.dylib"
             BlueprintName = "RealmNode"
-            ReferencedContainer = "container:RealmNode.xcodeproj">
+            ReferencedContainer = "container:RealmJS.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
       <CommandLineArguments>
          <CommandLineArgument
-            argument = "../../tests"
+            argument = "$(SRCROOT)/../tests"
             isEnabled = "YES">
          </CommandLineArgument>
       </CommandLineArguments>
@@ -74,10 +74,10 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "02D041FD1CE13739000E4250"
-            BuildableName = "RealmNode"
+            BlueprintIdentifier = "F62BF8FA1CAC71780022BCDC"
+            BuildableName = "libRealmNode.dylib"
             BlueprintName = "RealmNode"
-            ReferencedContainer = "container:RealmNode.xcodeproj">
+            ReferencedContainer = "container:RealmJS.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
    </ProfileAction>

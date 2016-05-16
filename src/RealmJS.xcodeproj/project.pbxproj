@@ -45,7 +45,6 @@
 		F60102DE1CBB96CF00EC01BA /* weak_realm_notifier.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02F59ED11C88F1B6007F774C /* weak_realm_notifier.cpp */; };
 		F60102E01CBB96D900EC01BA /* realm_coordinator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02F59EDB1C88F2BA007F774C /* realm_coordinator.cpp */; };
 		F60102E11CBB96DD00EC01BA /* transact_log_handler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02F59EDD1C88F2BB007F774C /* transact_log_handler.cpp */; };
-		F60102E51CBBB19700EC01BA /* node_object_accessor.hpp in Headers */ = {isa = PBXBuildFile; fileRef = F60102E31CBBB19700EC01BA /* node_object_accessor.hpp */; };
 		F60102EA1CBCAFC300EC01BA /* node_dummy.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F6267BCA1CADC49200AC36B1 /* node_dummy.cpp */; };
 		F61378791C18EAC5008BFC51 /* js in Resources */ = {isa = PBXBuildFile; fileRef = F61378781C18EAAC008BFC51 /* js */; };
 		F620F0581CB766DA0082977B /* node_init.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F620F0571CB766DA0082977B /* node_init.cpp */; };
@@ -225,7 +224,7 @@
 		F68A278B1BC2722A0063D40A /* RJSModuleLoader.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = RJSModuleLoader.m; path = ios/RJSModuleLoader.m; sourceTree = "<group>"; };
 		F6BB7DEF1BF681BC00D0A69E /* base64.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = base64.cpp; sourceTree = "<group>"; };
 		F6BB7DF01BF681BC00D0A69E /* base64.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = base64.hpp; sourceTree = "<group>"; };
-		F6BCCFDF1C83809A00FE31AE /* lib */ = {isa = PBXFileReference; lastKnownFileType = folder; name = lib; path = ../../lib; sourceTree = SOURCE_ROOT; };
+		F6BCCFDF1C83809A00FE31AE /* lib */ = {isa = PBXFileReference; lastKnownFileType = folder; name = lib; path = ../lib; sourceTree = SOURCE_ROOT; };
 		F6C3FBBC1BF680EC00E6FFD4 /* json.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = json.hpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -282,7 +281,6 @@
 				F6079B181CD3EB9000BD2401 /* concurrent_deque.hpp */,
 			);
 			name = RealmJS;
-			path = ..;
 			sourceTree = "<group>";
 		};
 		02B58CA71AE99CEB009B348C = {
@@ -320,7 +318,7 @@
 				F68A278B1BC2722A0063D40A /* RJSModuleLoader.m */,
 			);
 			name = RealmJSTests;
-			path = ../../tests;
+			path = ../tests;
 			sourceTree = "<group>";
 		};
 		02B58CCF1AE99D8C009B348C /* Frameworks */ = {
@@ -521,21 +519,10 @@
 				F6C3FBBC1BF680EC00E6FFD4 /* json.hpp */,
 			);
 			name = Vendor;
-			path = ../../vendor;
+			path = ../vendor;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
-
-/* Begin PBXHeadersBuildPhase section */
-		F62BF8F91CAC71780022BCDC /* Headers */ = {
-			isa = PBXHeadersBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				F60102E51CBBB19700EC01BA /* node_object_accessor.hpp in Headers */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
 		02B58CBB1AE99CEC009B348C /* RealmJSTests */ = {
@@ -562,7 +549,7 @@
 			buildPhases = (
 				F62BF8F71CAC71780022BCDC /* Sources */,
 				F62BF8F81CAC71780022BCDC /* Frameworks */,
-				F62BF8F91CAC71780022BCDC /* Headers */,
+				F63117A41CEA911000ECB2DE /* Build with node-gyp */,
 			);
 			buildRules = (
 			);
@@ -676,7 +663,21 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "DEST=\"$TARGET_BUILD_DIR/$CONTENTS_FOLDER_PATH/js/query-tests.json\"\nrm -f \"$DEST\"\ncp ../object-store/tests/query.json \"$DEST\"";
+			shellScript = "DEST=\"$TARGET_BUILD_DIR/$CONTENTS_FOLDER_PATH/js/query-tests.json\"\nrm -f \"$DEST\"\ncp object-store/tests/query.json \"$DEST\"";
+		};
+		F63117A41CEA911000ECB2DE /* Build with node-gyp */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Build with node-gyp";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "node/build-node.sh \"$CONFIGURATION\"";
 		};
 		F63FF2C51C12462600B3B8E0 /* Download Core */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -690,7 +691,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "../../scripts/download-core.sh";
+			shellScript = "../scripts/download-core.sh";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -822,18 +823,18 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
-					"$(SRCROOT)/../object-store/external/pegtl",
-					"$(SRCROOT)/../object-store/src",
-					"$(SRCROOT)/../../vendor",
+					"$(SRCROOT)/object-store/external/pegtl",
+					"$(SRCROOT)/object-store/src",
+					"$(SRCROOT)/../vendor",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
-				LIBRARY_SEARCH_PATHS = ../../core;
+				LIBRARY_SEARCH_PATHS = ../core;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(OTHER_CFLAGS)",
 					"-isystem",
-					../../core/include,
+					../core/include,
 					"-ftemplate-backtrace-limit=0",
 				);
 				SDKROOT = iphoneos;
@@ -880,17 +881,17 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
-					"$(SRCROOT)/../object-store/external/pegtl",
-					"$(SRCROOT)/../object-store/src",
-					"$(SRCROOT)/../../vendor",
+					"$(SRCROOT)/object-store/external/pegtl",
+					"$(SRCROOT)/object-store/src",
+					"$(SRCROOT)/../vendor",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
-				LIBRARY_SEARCH_PATHS = ../../core;
+				LIBRARY_SEARCH_PATHS = ../core;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(OTHER_CFLAGS)",
 					"-isystem",
-					../../core/include,
+					../core/include,
 					"-ftemplate-backtrace-limit=0",
 				);
 				SDKROOT = iphoneos;
@@ -908,7 +909,7 @@
 					"DEBUG=1",
 					"$(inherited)",
 				);
-				INFOPLIST_FILE = ../../tests/ios/Info.plist;
+				INFOPLIST_FILE = ../tests/ios/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				OTHER_CPLUSPLUSFLAGS = (
@@ -924,7 +925,7 @@
 		02B58CCC1AE99CEC009B348C /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				INFOPLIST_FILE = ../../tests/ios/Info.plist;
+				INFOPLIST_FILE = ../tests/ios/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				OTHER_CPLUSPLUSFLAGS = (
@@ -977,18 +978,18 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
-					"$(SRCROOT)/../object-store/external/pegtl",
-					"$(SRCROOT)/../object-store/src",
-					"$(SRCROOT)/../../vendor",
+					"$(SRCROOT)/object-store/external/pegtl",
+					"$(SRCROOT)/object-store/src",
+					"$(SRCROOT)/../vendor",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
-				LIBRARY_SEARCH_PATHS = ../../core;
+				LIBRARY_SEARCH_PATHS = ../core;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(OTHER_CFLAGS)",
 					"-isystem",
-					../../core/include,
+					../core/include,
 					"-ftemplate-backtrace-limit=0",
 				);
 				SDKROOT = iphoneos;
@@ -1005,7 +1006,7 @@
 					"DEBUG=1",
 					"$(inherited)",
 				);
-				INFOPLIST_FILE = ../../tests/ios/Info.plist;
+				INFOPLIST_FILE = ../tests/ios/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				OTHER_CPLUSPLUSFLAGS = (
@@ -1032,7 +1033,7 @@
 				);
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(SRCROOT)/../../node_modules/nan",
+					"$(SRCROOT)/../node_modules/nan",
 					/usr/local/include/node,
 				);
 				LIBRARY_SEARCH_PATHS = (
@@ -1061,7 +1062,7 @@
 				);
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(SRCROOT)/../../node_modules/nan",
+					"$(SRCROOT)/../node_modules/nan",
 					/usr/local/include/node,
 				);
 				LIBRARY_SEARCH_PATHS = (
@@ -1090,7 +1091,7 @@
 				);
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(SRCROOT)/../../node_modules/nan",
+					"$(SRCROOT)/../node_modules/nan",
 					/usr/local/include/node,
 				);
 				LIBRARY_SEARCH_PATHS = (
@@ -1115,7 +1116,7 @@
 					"DEBUG=1",
 					"$(inherited)",
 				);
-				OTHER_LIBTOOLFLAGS = "$(SRCROOT)/../../core/librealm-ios-bitcode.a";
+				OTHER_LIBTOOLFLAGS = "$(SRCROOT)/../core/librealm-ios-bitcode.a";
 				PRODUCT_NAME = RealmJS;
 				SKIP_INSTALL = YES;
 			};
@@ -1124,7 +1125,7 @@
 		F63FF2B81C1241E500B3B8E0 /* GCov_Build */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				OTHER_LIBTOOLFLAGS = "$(SRCROOT)/../../core/librealm-ios-bitcode.a";
+				OTHER_LIBTOOLFLAGS = "$(SRCROOT)/../core/librealm-ios-bitcode.a";
 				PRODUCT_NAME = RealmJS;
 				SKIP_INSTALL = YES;
 			};
@@ -1133,7 +1134,7 @@
 		F63FF2B91C1241E500B3B8E0 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				OTHER_LIBTOOLFLAGS = "$(SRCROOT)/../../core/librealm-ios-bitcode.a";
+				OTHER_LIBTOOLFLAGS = "$(SRCROOT)/../core/librealm-ios-bitcode.a";
 				PRODUCT_NAME = RealmJS;
 				SKIP_INSTALL = YES;
 			};

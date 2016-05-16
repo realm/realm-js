@@ -27,7 +27,7 @@ if ! $FORCE || [ "$VERSION" != "$(npm --silent run get-version)" ]; then
 fi
 
 # Update CURRENT_PROJECT_VERSION and DYLIB_CURRENT_VERSION in the Xcode project.
-(cd src/ios && xcrun agvtool new-version "$RELEASE_VERSION")
+(cd src && xcrun agvtool new-version "$RELEASE_VERSION")
 
 # Update CHANGELOG
 sed -i '' "1s/.*/$RELEASE_VERSION Release notes ($(date '+%Y-%-m-%-d'))/" CHANGELOG.md
