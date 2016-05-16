@@ -20,20 +20,22 @@
 
 import Realm from 'realm';
 
-class Todo {}
+class Todo extends Realm.Object {}
 Todo.schema = {
     name: 'Todo',
     properties: {
-        done: {type: Realm.Types.BOOL, default: false},
-        text: Realm.Types.STRING,
+        done: {type: 'bool', default: false},
+        text: 'string',
     },
 };
-class TodoList {}
+
+class TodoList extends Realm.Object {}
 TodoList.schema = {
     name: 'TodoList',
     properties: {
-        name: Realm.Types.STRING,
-        items: {type: Realm.Types.LIST, objectType: 'Todo', default: []},
+        name: 'string',
+        items: {type: 'list', objectType: 'Todo'},
     },
 };
+
 export default new Realm({schema: [Todo, TodoList]});

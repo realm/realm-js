@@ -435,10 +435,14 @@ module.exports = BaseTest.extend({
 
     testObjectConstructor: function() {
         var realm = new Realm({schema: [schemas.TestObject]});
+
         realm.write(function() {
             var obj = realm.create('TestObject', {doubleCol: 1});
             TestCase.assertTrue(obj instanceof Realm.Object);
         });
+
+        TestCase.assertEqual(typeof Realm.Object, 'function');
+        TestCase.assertTrue(Realm.Object instanceof Function);
     },
 
     testIsValid: function() {

@@ -34,6 +34,9 @@ module.exports = BaseTest.extend({
         TestCase.assertThrows(function() {
             new Realm.Results();
         });
+
+        TestCase.assertEqual(typeof Realm.Results, 'function');
+        TestCase.assertTrue(Realm.Results instanceof Function);
     },
 
     testResultsLength: function() {
