@@ -111,10 +111,12 @@ module.exports = {
     },
 
     isNode: function() {
+        // eslint-disable-next-line no-undef
         return typeof process == 'object' && Object.prototype.toString.call(process) == '[object process]';
     },
 
     isNode6: function() {
+        // eslint-disable-next-line no-undef
         return this.isNode() && process.version.indexOf('v6.') == 0;
     },
 };

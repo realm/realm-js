@@ -18,8 +18,9 @@
 
 'use strict';
 
+import React from 'react';
+
 import {
-    AppRegistry,
     Component,
     StyleSheet,
     Text,
