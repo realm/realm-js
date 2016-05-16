@@ -12,6 +12,10 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Bugfixes
 * Date properties are now stored in a format compatible with the Realm Browser and other bindings.
+* Fix for using `class MyObject extends Realm.Object` in a React Native project.
+* Fix a memory leak caused by constructing a Realm instance of an already opened Realm.
+* Fix for better supporting hot module reloading.
+* Fix for some warnings when using `ListView` with React Native 0.25+
 
 0.12.0 Release notes (2016-5-4)
 =============================================================
