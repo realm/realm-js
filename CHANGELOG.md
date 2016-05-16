@@ -1,4 +1,4 @@
-x.x.x Release notes (yyyy-MM-dd)
+0.13.0 Release notes (2016-5-16)
 =============================================================
 ### Breaking changes
 * With this release we have switched over to a new cross platform compatible date format.
