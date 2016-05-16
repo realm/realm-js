@@ -253,6 +253,31 @@ inline typename T::Function Realm<T>::create_constructor(ContextType ctx) {
 
     return realm_constructor;
 }
+    
+void convert_outdated_datetime_columns(SharedRealm realm) {
+    if (realm->config().upgrade_initial_version != realm->config().upgrade_final_version &&
+        realm->config().upgrade_initial_version < 5) {
+        // any versions earlier than file format 5 are stored as milliseconds and need to be converted to the new format
+        for (auto& object_schema : *realm->config().schema) {
+            auto table = ObjectStore::table_for_object_type(realm->read_group(), object_schema.name);
+            for (auto& property : object_schema.properties) {
+                if (property.type == PropertyTypeDate) {
+                    if (!realm->is_in_transaction()) {
+                        realm->begin_transaction();
+                    }
+                    
+                    for (size_t row_index = 0; row_index < table->size(); row_index++) {
+                        auto milliseconds = table->get_timestamp(property.table_column, row_index).get_seconds();
+                        table->set_timestamp(property.table_column, row_index, Timestamp(milliseconds / 1000, (milliseconds % 1000) * 1000000));
+                    }
+                }
+            }
+            if (realm->is_in_transaction()) {
+                realm->commit_transaction();
+            }
+        }
+    }
+}
 
 template<typename T>
 void Realm<T>::constructor(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[]) {
@@ -365,28 +390,7 @@ void Realm<T>::constructor(ContextType ctx, ObjectType this_object, size_t argc,
     }
     
     // Fix for datetime -> timestamp conversion
-    if (realm->config().upgrade_initial_version != realm->config().upgrade_final_version &&
-        realm->config().upgrade_initial_version < 5) {
-        // any versions earlier than file format 5 are stored as milliseconds and need to be converted to the new format
-        for (auto object_schema : *realm->config().schema) {
-            auto table = ObjectStore::table_for_object_type(realm->read_group(), object_schema.name);
-            for (auto property : object_schema.properties) {
-                if (property.type == PropertyTypeDate) {
-                    if (!realm->is_in_transaction()) {
-                        realm->begin_transaction();
-                    }
-                    
-                    for (size_t row_index = 0; row_index < table->size(); row_index++) {
-                        auto milliseconds = table->get_timestamp(property.table_column, row_index).get_seconds();
-                        table->set_timestamp(property.table_column, row_index, Timestamp(milliseconds / 1000, (milliseconds % 1000) * 1000000));
-                    }
-                }
-            }
-            if (realm->is_in_transaction()) {
-                realm->commit_transaction();
-            }
-        }
-    }
+    convert_outdated_datetime_columns(realm);
 
     set_internal<T, RealmClass<T>>(this_object, new SharedRealm(realm));
 }
