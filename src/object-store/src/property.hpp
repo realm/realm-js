@@ -23,25 +23,15 @@
 
 namespace realm {
     enum PropertyType {
-        /** Integer type: NSInteger, int, long, Int (Swift) */
         PropertyTypeInt    = 0,
-        /** Boolean type: BOOL, bool, Bool (Swift) */
         PropertyTypeBool   = 1,
-        /** Float type: CGFloat (32bit), float, Float (Swift) */
         PropertyTypeFloat  = 9,
-        /** Double type: CGFloat (64bit), double, Double (Swift) */
         PropertyTypeDouble = 10,
-        /** String type: NSString, String (Swift) */
         PropertyTypeString = 2,
-        /** Data type: NSData */
         PropertyTypeData   = 4,
-        /** Any type: id, **not supported in Swift** */
-        PropertyTypeAny    = 6,
-        /** Date type: NSDate */
-        PropertyTypeDate   = 7,
-        /** Object type. See [Realm Models](http://realm.io/docs/cocoa/latest/#models) */
+        PropertyTypeAny    = 6, // deprecated and will be removed in the future
+        PropertyTypeDate   = 8,
         PropertyTypeObject = 12,
-        /** Array type. See [Realm Models](http://realm.io/docs/cocoa/latest/#models) */
         PropertyTypeArray  = 13,
     };
 
@@ -55,7 +45,13 @@ namespace realm {
 
         size_t table_column = -1;
         bool requires_index() const { return is_primary || is_indexed; }
-        bool is_indexable() const { return type == PropertyTypeInt || type == PropertyTypeBool || type == PropertyTypeString || type == PropertyTypeDate; }
+        bool is_indexable() const
+        {
+            return type == PropertyTypeInt
+                || type == PropertyTypeBool
+                || type == PropertyTypeDate
+                || type == PropertyTypeString;
+        }
     };
 
     static inline const char *string_for_property_type(PropertyType type) {

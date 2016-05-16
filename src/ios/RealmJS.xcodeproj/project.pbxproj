@@ -8,8 +8,10 @@
 
 /* Begin PBXBuildFile section */
 		02409DC21BCF11D6005F3B3E /* RealmJSCoreTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 02409DC11BCF11D6005F3B3E /* RealmJSCoreTests.m */; };
+		02414B881CE68CA200A8669F /* dates-v5.realm in Resources */ = {isa = PBXBuildFile; fileRef = 02414B871CE68CA200A8669F /* dates-v5.realm */; };
 		0270BC821B7D020100010E03 /* RealmJSTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = 0270BC7B1B7D020100010E03 /* RealmJSTests.mm */; };
 		027A23131CD3E379000543AE /* libRealmJS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F63FF2B11C1241E500B3B8E0 /* libRealmJS.a */; };
+		02D041F71CE11159000E4250 /* dates-v3.realm in Resources */ = {isa = PBXBuildFile; fileRef = 02D041F61CE11159000E4250 /* dates-v3.realm */; };
 		02D8D1F71B601984006DB49D /* JavaScriptCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 02B58CCD1AE99D4D009B348C /* JavaScriptCore.framework */; };
 		02F59EBF1C88F17D007F774C /* index_set.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02F59EAF1C88F17D007F774C /* index_set.cpp */; };
 		02F59EC01C88F17D007F774C /* list.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02F59EB11C88F17D007F774C /* list.cpp */; };
@@ -41,7 +43,6 @@
 		F60102E01CBB96D900EC01BA /* realm_coordinator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02F59EDB1C88F2BA007F774C /* realm_coordinator.cpp */; };
 		F60102E11CBB96DD00EC01BA /* transact_log_handler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02F59EDD1C88F2BB007F774C /* transact_log_handler.cpp */; };
 		F60102E51CBBB19700EC01BA /* node_object_accessor.hpp in Headers */ = {isa = PBXBuildFile; fileRef = F60102E31CBBB19700EC01BA /* node_object_accessor.hpp */; };
-		F60102E91CBCAEC500EC01BA /* platform.mm in Sources */ = {isa = PBXBuildFile; fileRef = 029048381C042A8F00ABDED4 /* platform.mm */; };
 		F60102EA1CBCAFC300EC01BA /* node_dummy.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F6267BCA1CADC49200AC36B1 /* node_dummy.cpp */; };
 		F61378791C18EAC5008BFC51 /* js in Resources */ = {isa = PBXBuildFile; fileRef = F61378781C18EAAC008BFC51 /* js */; };
 		F620F0581CB766DA0082977B /* node_init.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F620F0571CB766DA0082977B /* node_init.cpp */; };
@@ -64,6 +65,7 @@
 		F63FF3251C1642BB00B3B8E0 /* GCDWebServerErrorResponse.m in Sources */ = {isa = PBXBuildFile; fileRef = F63FF3161C1642BB00B3B8E0 /* GCDWebServerErrorResponse.m */; };
 		F63FF3261C1642BB00B3B8E0 /* GCDWebServerFileResponse.m in Sources */ = {isa = PBXBuildFile; fileRef = F63FF3181C1642BB00B3B8E0 /* GCDWebServerFileResponse.m */; };
 		F63FF3271C1642BB00B3B8E0 /* GCDWebServerStreamedResponse.m in Sources */ = {isa = PBXBuildFile; fileRef = F63FF31A1C1642BB00B3B8E0 /* GCDWebServerStreamedResponse.m */; };
+		F674784A1CC81F1900F9273C /* platform.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F67478481CC81F1300F9273C /* platform.cpp */; };
 		F68A278C1BC2722A0063D40A /* RJSModuleLoader.m in Sources */ = {isa = PBXBuildFile; fileRef = F68A278B1BC2722A0063D40A /* RJSModuleLoader.m */; };
 		F6BCCFE21C8380A400FE31AE /* lib in Resources */ = {isa = PBXBuildFile; fileRef = F6BCCFDF1C83809A00FE31AE /* lib */; };
 /* End PBXBuildFile section */
@@ -82,6 +84,7 @@
 
 /* Begin PBXFileReference section */
 		02409DC11BCF11D6005F3B3E /* RealmJSCoreTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = RealmJSCoreTests.m; path = ios/RealmJSCoreTests.m; sourceTree = "<group>"; };
+		02414B871CE68CA200A8669F /* dates-v5.realm */ = {isa = PBXFileReference; lastKnownFileType = file; path = "dates-v5.realm"; sourceTree = "<group>"; };
 		025678951CAB392000FB8501 /* jsc_types.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = jsc_types.hpp; sourceTree = "<group>"; };
 		0270BC5A1B7CFC1300010E03 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		0270BC781B7D020100010E03 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = ios/Info.plist; sourceTree = "<group>"; };
@@ -102,6 +105,7 @@
 		02A3C7A41BC4341500B1A7BE /* libc++.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.tbd"; path = "usr/lib/libc++.tbd"; sourceTree = SDKROOT; };
 		02B58CBC1AE99CEC009B348C /* RealmJSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RealmJSTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		02B58CCD1AE99D4D009B348C /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
+		02D041F61CE11159000E4250 /* dates-v3.realm */ = {isa = PBXFileReference; lastKnownFileType = file; path = "dates-v3.realm"; sourceTree = "<group>"; };
 		02F59EAE1C88F17D007F774C /* binding_context.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = binding_context.hpp; path = src/binding_context.hpp; sourceTree = "<group>"; };
 		02F59EAF1C88F17D007F774C /* index_set.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = index_set.cpp; path = src/index_set.cpp; sourceTree = "<group>"; };
 		02F59EB01C88F17D007F774C /* index_set.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = index_set.hpp; path = src/index_set.hpp; sourceTree = "<group>"; };
@@ -203,6 +207,7 @@
 		F63FF32C1C16432E00B3B8E0 /* CFNetwork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CFNetwork.framework; path = System/Library/Frameworks/CFNetwork.framework; sourceTree = SDKROOT; };
 		F63FF32E1C16433900B3B8E0 /* libxml2.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libxml2.tbd; path = usr/lib/libxml2.tbd; sourceTree = SDKROOT; };
 		F63FF3301C16434400B3B8E0 /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
+		F67478481CC81F1300F9273C /* platform.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = platform.cpp; sourceTree = "<group>"; };
 		F6874A351CAC792D00EEEE36 /* node_types.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = node_types.hpp; sourceTree = "<group>"; };
 		F6874A3E1CACA5A900EEEE36 /* js_types.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = js_types.hpp; sourceTree = "<group>"; };
 		F68A278A1BC2722A0063D40A /* RJSModuleLoader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RJSModuleLoader.h; path = ios/RJSModuleLoader.h; sourceTree = "<group>"; };
@@ -246,7 +251,6 @@
 			children = (
 				F6BCCFDF1C83809A00FE31AE /* lib */,
 				F62A35131C18E6E2004A917D /* iOS */,
-				F60103051CC4ADE500EC01BA /* JS */,
 				F6874A441CAD2ACD00EEEE36 /* JSC */,
 				F62BF9001CAC72C40022BCDC /* Node */,
 				F62A35141C18E783004A917D /* Object Store */,
@@ -257,6 +261,10 @@
 				029048081C0428DF00ABDED4 /* js_realm.hpp */,
 				0290480A1C0428DF00ABDED4 /* js_results.hpp */,
 				0290480C1C0428DF00ABDED4 /* js_schema.hpp */,
+				F620F0521CAF0B600082977B /* js_class.hpp */,
+				F6874A3E1CACA5A900EEEE36 /* js_types.hpp */,
+				F6267BC91CADC30000AC36B1 /* js_util.hpp */,
+				F620F0591CB7B4C80082977B /* js_object_accessor.hpp */,
 				029048351C042A3C00ABDED4 /* platform.hpp */,
 				0290480F1C0428DF00ABDED4 /* rpc.cpp */,
 				029048101C0428DF00ABDED4 /* rpc.hpp */,
@@ -292,6 +300,7 @@
 			isa = PBXGroup;
 			children = (
 				F61378781C18EAAC008BFC51 /* js */,
+				02D041F51CE11159000E4250 /* data */,
 				0270BC781B7D020100010E03 /* Info.plist */,
 				0270BC7A1B7D020100010E03 /* RealmJSTests.h */,
 				0270BC7B1B7D020100010E03 /* RealmJSTests.mm */,
@@ -318,15 +327,13 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		F60103051CC4ADE500EC01BA /* JS */ = {
+		02D041F51CE11159000E4250 /* data */ = {
 			isa = PBXGroup;
 			children = (
-				F620F0521CAF0B600082977B /* js_class.hpp */,
-				F6874A3E1CACA5A900EEEE36 /* js_types.hpp */,
-				F6267BC91CADC30000AC36B1 /* js_util.hpp */,
-				F620F0591CB7B4C80082977B /* js_object_accessor.hpp */,
+				02D041F61CE11159000E4250 /* dates-v3.realm */,
+				02414B871CE68CA200A8669F /* dates-v5.realm */,
 			);
-			name = JS;
+			path = data;
 			sourceTree = "<group>";
 		};
 		F62A35131C18E6E2004A917D /* iOS */ = {
@@ -398,6 +405,7 @@
 				F60103071CC4B3DF00EC01BA /* node_protected.hpp */,
 				F60103151CC4CCFD00EC01BA /* node_return_value.hpp */,
 				F60102E31CBBB19700EC01BA /* node_object_accessor.hpp */,
+				F67478481CC81F1300F9273C /* platform.cpp */,
 			);
 			name = Node;
 			path = node;
@@ -627,7 +635,9 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				02D041F71CE11159000E4250 /* dates-v3.realm in Resources */,
 				F6BCCFE21C8380A400FE31AE /* lib in Resources */,
+				02414B881CE68CA200A8669F /* dates-v5.realm in Resources */,
 				F61378791C18EAC5008BFC51 /* js in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -694,9 +704,9 @@
 				F60102EA1CBCAFC300EC01BA /* node_dummy.cpp in Sources */,
 				F60102D81CBB96BD00EC01BA /* results.cpp in Sources */,
 				F60102DE1CBB96CF00EC01BA /* weak_realm_notifier.cpp in Sources */,
+				F674784A1CC81F1900F9273C /* platform.cpp in Sources */,
 				F620F0581CB766DA0082977B /* node_init.cpp in Sources */,
 				F60102D91CBB96C100EC01BA /* schema.cpp in Sources */,
-				F60102E91CBCAEC500EC01BA /* platform.mm in Sources */,
 				F60102DF1CBB96D300EC01BA /* async_query.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -995,6 +1005,7 @@
 				EXECUTABLE_PREFIX = lib;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
+					"REALM_PLATFORM_NODE=1",
 					"$(inherited)",
 				);
 				HEADER_SEARCH_PATHS = (
@@ -1008,6 +1019,7 @@
 				);
 				OTHER_LDFLAGS = (
 					"-lrealm",
+					"-luv",
 					"-lv8",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1021,6 +1033,10 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 0.12.0;
 				EXECUTABLE_PREFIX = lib;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"REALM_PLATFORM_NODE=1",
+					"$(inherited)",
+				);
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SRCROOT)/../../node_modules/nan",
@@ -1032,6 +1048,7 @@
 				);
 				OTHER_LDFLAGS = (
 					"-lrealm",
+					"-luv",
 					"-lv8",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1045,6 +1062,10 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 0.12.0;
 				EXECUTABLE_PREFIX = lib;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"REALM_PLATFORM_NODE=1",
+					"$(inherited)",
+				);
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SRCROOT)/../../node_modules/nan",
@@ -1056,6 +1077,7 @@
 				);
 				OTHER_LDFLAGS = (
 					"-lrealm",
+					"-luv",
 					"-lv8",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";

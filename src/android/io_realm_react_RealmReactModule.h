@@ -13,7 +13,7 @@ extern "C" {
 * Method:     setDefaultRealmFileDirectory
 */
 JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_setDefaultRealmFileDirectory
-  (JNIEnv *, jclass, jstring);
+  (JNIEnv *, jclass, jstring, jobject);
 
 /*
  * Class:     io_realm_react_RealmReactModule

@@ -71,7 +71,7 @@ Realm::Realm(Config config)
     }
 }
 
-void Realm::open_with_config(const Config& config,
+void Realm::open_with_config(Config& config,
                              std::unique_ptr<Replication>& history,
                              std::unique_ptr<SharedGroup>& shared_group,
                              std::unique_ptr<Group>& read_only_group)
@@ -85,9 +85,12 @@ void Realm::open_with_config(const Config& config,
                 throw InvalidEncryptionKeyException();
             }
             history = realm::make_client_history(config.path, config.encryption_key.data());
-            SharedGroup::DurabilityLevel durability = config.in_memory ? SharedGroup::durability_MemOnly :
-                                                                           SharedGroup::durability_Full;
-            shared_group = std::make_unique<SharedGroup>(*history, durability, config.encryption_key.data(), !config.disable_format_upgrade);
+            SharedGroup::DurabilityLevel durability = config.in_memory ? SharedGroup::durability_MemOnly : SharedGroup::durability_Full;
+            shared_group = std::make_unique<SharedGroup>(*history, durability, config.encryption_key.data(), !config.disable_format_upgrade,
+                                                         [&](int from_version, int to_version) {
+                config.upgrade_initial_version = from_version;
+                config.upgrade_final_version = to_version;
+            });
         }
     }
     catch (util::File::PermissionDenied const& ex) {
@@ -247,6 +250,7 @@ void Realm::update_schema(std::unique_ptr<Schema> schema, uint64_t version)
         if (m_config.migration_function) {
             m_config.migration_function(old_realm, shared_from_this());
         }
+        m_config.migration_function = nullptr;
     };
 
     try {

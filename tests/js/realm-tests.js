@@ -374,24 +374,24 @@ module.exports = BaseTest.extend({
             }
         };
 
-        new Realm({schema: [NotIndexed], path: '1'});
+        new Realm({schema: [NotIndexed], path: '1.realm'});
 
         var IndexedSchema = {
             name: 'IndexedSchema',
         };
         TestCase.assertThrows(function() {
             IndexedSchema.properties = { floatCol: {type: 'float', indexed: true} };
-            new Realm({schema: [IndexedSchema], path: '2'});
+            new Realm({schema: [IndexedSchema], path: '2.realm'});
         });
 
         TestCase.assertThrows(function() {
             IndexedSchema.properties = { doubleCol: {type: 'double', indexed: true} }
-            new Realm({schema: [IndexedSchema], path: '3'});
+            new Realm({schema: [IndexedSchema], path: '3.realm'});
         });
 
         TestCase.assertThrows(function() {
             IndexedSchema.properties = { dataCol: {type: 'data', indexed: true} }
-            new Realm({schema: [IndexedSchema], path: '4'});
+            new Realm({schema: [IndexedSchema], path: '4.realm'});
         });
 
         // primary key
@@ -399,7 +399,7 @@ module.exports = BaseTest.extend({
         IndexedSchema.primaryKey = 'boolCol';
 
         // Test this doesn't throw
-        new Realm({schema: [IndexedSchema], path: '5'});
+        new Realm({schema: [IndexedSchema], path: '5.realm'});
     },
 
     testRealmCreateWithDefaults: function() {
@@ -733,5 +733,24 @@ module.exports = BaseTest.extend({
         for (var i = 0; i < originalSchema.length; i++) {
             verifyObjectSchema(schema[i]);
         }
+    },
+
+    testCopyBundledRealmFiles: function() {
+        Realm.copyBundledRealmFiles();
+
+        var realm = new Realm({path: 'dates-v5.realm', schema: [schemas.DateObject]});
+        TestCase.assertEqual(realm.objects('Date').length, 1);
+        TestCase.assertEqual(realm.objects('Date')[0].currentDate.getTime(), 1462500087955);
+
+        var newDate = new Date(1);
+        realm.write(function() {
+            realm.objects('Date')[0].currentDate = newDate;
+        });
+        realm.close();
+
+        // copy should not overwrite existing files
+        Realm.copyBundledRealmFiles();
+        var realm = new Realm({path: 'dates-v5.realm', schema: [schemas.DateObject]});
+        TestCase.assertEqual(realm.objects('Date')[0].currentDate.getTime(), 1);
     },
 });

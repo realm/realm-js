@@ -20,8 +20,6 @@
 
 #include <string>
 
-extern std::string s_default_realm_directory;
-
 namespace realm {
 //
 // These methods are used internally and must be implemented
@@ -36,6 +34,9 @@ std::string default_realm_file_directory();
 
 // create the directories for the given filename
 void ensure_directory_exists_for_file(const std::string &file);
+
+// copy all realm files from resources directory to default realm dir
+void copy_bundled_realm_files();
 
 // remove all realm files in the given directory
 void remove_realm_files_from_directory(const std::string &directory);

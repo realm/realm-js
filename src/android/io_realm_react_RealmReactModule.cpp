@@ -18,6 +18,7 @@
 
 #include <jni.h>
 #include <android/log.h>
+#include <android/asset_manager_jni.h>
 
 #include "io_realm_react_RealmReactModule.h"
 #include "rpc.hpp"
@@ -28,10 +29,22 @@ using namespace realm::rpc;
 static RPCServer *s_rpc_server;
 extern bool realmContextInjected;
 
+namespace realm {    
+    // set the AssetManager used to access bundled files within the APK
+    void set_asset_manager(AAssetManager* assetManager);
+}
+
 JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_setDefaultRealmFileDirectory
-  (JNIEnv *env, jclass, jstring fileDir)
+  (JNIEnv *env, jclass, jstring fileDir, jobject javaAssetManager)
 {
     __android_log_print(ANDROID_LOG_VERBOSE, "JSRealm", "setDefaultRealmFileDirectory");
+
+    // Get the assetManager in case we want to copy files from the APK (assets)
+    AAssetManager *assetManager = AAssetManager_fromJava(env, javaAssetManager);
+    if (assetManager == NULL) {
+        __android_log_print(ANDROID_LOG_ERROR, "JSRealm", "Error loading the AssetManager");
+    }
+    realm::set_asset_manager(assetManager);
 
     // Setting the internal storage path for the application
     const char* strFileDir = env->GetStringUTFChars(fileDir, NULL);

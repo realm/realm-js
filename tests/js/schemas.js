@@ -170,3 +170,10 @@ exports.NullQueryObject = {
         {name: 'string2', type: Realm.Types.STRING},
     ]
 };
+
+exports.DateObject = {
+    name: 'Date',
+    properties: {
+        currentDate: 'date'
+    }
+};

@@ -160,7 +160,8 @@ class Realm {
     static void constructor(ContextType, ObjectType, size_t, const ValueType[]);
     static void schema_version(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void clear_test_state(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
-
+    static void copy_bundled_realm_files(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    
     // static properties
     static void get_default_path(ContextType, ObjectType, ReturnValue &);
     static void set_default_path(ContextType, ObjectType, ValueType value);
@@ -191,7 +192,7 @@ class Realm {
     }
     
     static std::string normalize_path(std::string path) {
-        if (path.size() && path[0] != '/') {
+        if (path.size() && path[0] != '/' && path[0] != '.') {
             return default_realm_file_directory() + "/" + path;
         }
         return path;
@@ -209,6 +210,7 @@ struct RealmClass : ClassDefinition<T, SharedRealm> {
     MethodMap<T> const static_methods = {
         {"schemaVersion", wrap<Realm::schema_version>},
         {"clearTestState", wrap<Realm::clear_test_state>},
+        {"copyBundledRealmFiles", wrap<Realm::copy_bundled_realm_files>},
     };
 
     PropertyMap<T> const static_properties = {
@@ -250,6 +252,31 @@ inline typename T::Function Realm<T>::create_constructor(ContextType ctx) {
     Object::set_property(ctx, realm_constructor, "Object", realm_object_constructor, attributes);
 
     return realm_constructor;
+}
+    
+static void convert_outdated_datetime_columns(const SharedRealm &realm) {
+    if (realm->config().upgrade_initial_version != realm->config().upgrade_final_version &&
+        realm->config().upgrade_initial_version < 5) {
+        // any versions earlier than file format 5 are stored as milliseconds and need to be converted to the new format
+        for (auto& object_schema : *realm->config().schema) {
+            auto table = ObjectStore::table_for_object_type(realm->read_group(), object_schema.name);
+            for (auto& property : object_schema.properties) {
+                if (property.type == PropertyTypeDate) {
+                    if (!realm->is_in_transaction()) {
+                        realm->begin_transaction();
+                    }
+                    
+                    for (size_t row_index = 0; row_index < table->size(); row_index++) {
+                        auto milliseconds = table->get_timestamp(property.table_column, row_index).get_seconds();
+                        table->set_timestamp(property.table_column, row_index, Timestamp(milliseconds / 1000, (milliseconds % 1000) * 1000000));
+                    }
+                }
+            }
+            if (realm->is_in_transaction()) {
+                realm->commit_transaction();
+            }
+        }
+    }
 }
 
 template<typename T>
@@ -305,11 +332,26 @@ void Realm<T>::constructor(ContextType ctx, ObjectType this_object, size_t argc,
             if (!Value::is_undefined(ctx, migration_value)) {
                 FunctionType migration_function = Value::validated_to_function(ctx, migration_value, "migration");
                 config.migration_function = [=](SharedRealm old_realm, SharedRealm realm) {
+                    auto old_realm_ptr = new SharedRealm(old_realm);
+                    auto realm_ptr = new SharedRealm(realm);
                     ValueType arguments[2] = {
-                        create_object<T, RealmClass<T>>(ctx, new SharedRealm(old_realm)),
-                        create_object<T, RealmClass<T>>(ctx, new SharedRealm(realm))
+                        create_object<T, RealmClass<T>>(ctx, old_realm_ptr),
+                        create_object<T, RealmClass<T>>(ctx, realm_ptr)
                     };
-                    Function<T>::call(ctx, migration_function, 2, arguments);
+                    
+                    try {
+                        Function<T>::call(ctx, migration_function, 2, arguments);
+                    }
+                    catch (...) {
+                        old_realm->close();
+                        old_realm_ptr->reset();
+                        realm_ptr->reset();
+                        throw;
+                    }
+                    
+                    old_realm->close();
+                    old_realm_ptr->reset();
+                    realm_ptr->reset();
                 };
             }
 
@@ -346,6 +388,9 @@ void Realm<T>::constructor(ContextType ctx, ObjectType this_object, size_t argc,
         js_binding_context->m_defaults = std::move(defaults);
         js_binding_context->m_constructors = std::move(constructors);
     }
+    
+    // Fix for datetime -> timestamp conversion
+    convert_outdated_datetime_columns(realm);
 
     set_internal<T, RealmClass<T>>(this_object, new SharedRealm(realm));
 }
@@ -375,6 +420,12 @@ template<typename T>
 void Realm<T>::clear_test_state(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 0);
     delete_all_realms();
+}
+    
+template<typename T>
+void Realm<T>::copy_bundled_realm_files(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    validate_argument_count(argc, 0);
+    realm::copy_bundled_realm_files();
 }
 
 template<typename T>
@@ -529,7 +580,7 @@ template<typename T>
 void Realm<T>::add_listener(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 2);
 
-    __unused std::string name = validated_notification_name(ctx, arguments[0]);
+    validated_notification_name(ctx, arguments[0]);
     auto callback = Value::validated_to_function(ctx, arguments[1]);
 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
@@ -540,7 +591,7 @@ template<typename T>
 void Realm<T>::remove_listener(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 2);
 
-    __unused std::string name = validated_notification_name(ctx, arguments[0]);
+    validated_notification_name(ctx, arguments[0]);
     auto callback = Value::validated_to_function(ctx, arguments[1]);
 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);

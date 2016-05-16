@@ -18,10 +18,25 @@
 
 #include <string>
 #include <stdlib.h>
+#include <unistd.h>
+#include <cstdio>
+#include <android/asset_manager.h>
 
 #include "../platform.hpp"
 
-std::string s_default_realm_directory;
+#define REALM_FILE_FILTER ".realm"
+#define REALM_FILE_FILTER_LEN 6
+
+static inline bool is_realm_file(const char* str)
+{
+    size_t lenstr = strlen(str);
+    if (REALM_FILE_FILTER_LEN > lenstr)
+        return false;
+    return strncmp(str + lenstr - REALM_FILE_FILTER_LEN, REALM_FILE_FILTER, REALM_FILE_FILTER_LEN) == 0;
+}
+
+static AAssetManager* s_asset_manager;
+static std::string s_default_realm_directory;
 
 namespace realm {
 
@@ -30,13 +45,46 @@ namespace realm {
         s_default_realm_directory = dir;
     }
 
+    void set_asset_manager(AAssetManager* asset_manager)
+    {
+        s_asset_manager = asset_manager;
+    }
+
     std::string default_realm_file_directory()
     {
         return s_default_realm_directory;
     }
 
-    void ensure_directory_exists_for_file(const std::string &fileName)
+    void ensure_directory_exists_for_file(const std::string &file)
     {
+
+    }
+    
+    void copy_bundled_realm_files()
+    {
+        AAssetDir* assetDir = AAssetManager_openDir(s_asset_manager, "");
+        const char* filename = nullptr;
+
+        while ((filename = AAssetDir_getNextFileName(assetDir)) != nullptr) {
+            if (is_realm_file(filename)) {
+                AAsset* asset = AAssetManager_open(s_asset_manager, filename, AASSET_MODE_STREAMING);
+
+                char buf[BUFSIZ];
+                int nb_read = 0;
+
+                const char* dest_filename = (s_default_realm_directory + '/' + filename).c_str();
+                if (access(dest_filename, F_OK ) == -1) {
+                    // file doesn't exist, copy
+                    FILE* out = fopen(dest_filename, "w");
+                    while ((nb_read = AAsset_read(asset, buf, BUFSIZ)) > 0) {
+                        fwrite(buf, nb_read, 1, out);
+                    }
+                    fclose(out);
+                }
+                AAsset_close(asset);
+            }
+        }
+        AAssetDir_close(assetDir);
     }
 
     void remove_realm_files_from_directory(const std::string &directory)

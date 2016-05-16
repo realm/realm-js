@@ -85,12 +85,15 @@ struct NativeAccessor {
     static ValueType from_string(ContextType ctx, StringData string) {
         return Value::from_string(ctx, string.data());
     }
-    static DateTime to_datetime(ContextType ctx, ValueType &value) {
+    static Timestamp to_timestamp(ContextType ctx, ValueType &value) {
         ObjectType date = Value::validated_to_date(ctx, value, "Property");
-        return DateTime(Value::to_number(ctx, date));
+        double milliseconds = Value::to_number(ctx, date);
+        u_int64_t seconds = milliseconds / 1000;
+        u_int32_t nanoseconds = ((u_int64_t)milliseconds % 1000) * 1000000;
+        return Timestamp(seconds, nanoseconds);
     }
-    static ValueType from_datetime(ContextType ctx, DateTime dt) {
-        return Object::create_date(ctx, dt.get_datetime());
+    static ValueType from_timestamp(ContextType ctx, Timestamp ts) {
+        return Object::create_date(ctx, ts.get_seconds() * 1000 + ts.get_nanoseconds() / 1000000);
     }
 
     static bool is_null(ContextType ctx, ValueType &value) {

@@ -192,7 +192,7 @@ module.exports = BaseTest.extend({
             });
             TestCase.assertThrows(function() {
                 obj.dateCol = undefined;
-            });          
+            });
             TestCase.assertThrows(function() {
                 obj.dataCol = null;
             });
@@ -472,5 +472,17 @@ module.exports = BaseTest.extend({
         TestCase.assertEqual(obj.ignored, undefined);
         obj.ignored = true;
         TestCase.assertEqual(obj.ignored, true);
+    },
+
+    testCurrentDate: function() {
+        Realm.copyBundledRealmFiles();
+
+        var realm_v3 = new Realm({path: 'dates-v3.realm', schema: [schemas.DateObject]});
+        TestCase.assertEqual(realm_v3.objects('Date').length, 1);
+        TestCase.assertEqual(realm_v3.objects('Date')[0].currentDate.getTime(), 1462500087955);
+
+        var realm_v5 = new Realm({path: 'dates-v5.realm', schema: [schemas.DateObject]});
+        TestCase.assertEqual(realm_v5.objects('Date').length, 1);
+        TestCase.assertEqual(realm_v5.objects('Date')[0].currentDate.getTime(), 1462500087955);
     }
 });
