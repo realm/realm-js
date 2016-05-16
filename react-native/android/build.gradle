@@ -222,7 +222,7 @@ task publishAndroid(dependsOn: [generateVersionClass, packageReactNdkLibs], type
 
     // copy analytics script
     into ('/') {
-      from "$projectDir/analytics"
+      from "$projectDir/analytics_template"
       rename { String fileName ->
           'analytics.gradle'
       }
