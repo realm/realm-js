@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 'use strict';
 
-const React = require('react-native');
+const React = require('react');
 const Realm = require('realm');
 const RealmTests = require('realm-tests');
 const builder = require('xmlbuilder');
@@ -30,7 +30,7 @@ const {
     Text,
     View,
     TouchableNativeFeedback,
-} = React;
+} = require('react-native');
 
 RealmTests.registerTests({
     ListViewTest: require('./tests/listview-test'),
