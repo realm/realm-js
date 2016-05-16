@@ -17,7 +17,8 @@
 ////////////////////////////////////////////////////////////////////////////
 
 'use strict';
-import React, {
+
+import {
     AppRegistry,
     Component,
     StyleSheet,
@@ -27,9 +28,9 @@ import React, {
     TouchableHighlight
 } from 'react-native';
 
-const Store = require('react-native-store');
-const SQLite = require('react-native-sqlite-storage');
-const Realm = require('realm');
+import Store from 'react-native-store';
+import SQLite from 'react-native-sqlite-storage';
+import Realm from 'realm';
 
 // Make SQLite module use Promises.
 SQLite.enablePromise(true);
@@ -353,7 +354,7 @@ class RNSqliteTests extends Tests {
 
 const apiTests = [new RealmTests, new RNSqliteTests, new RNStoreTests];
 
-class ReactNativeBenchmarks extends Component {
+export default class ReactNativeBenchmarks extends Component {
     constructor(props) {
         super(props);
 
@@ -497,5 +498,3 @@ const styles = StyleSheet.create({
         fontSize: 12
     }
 });
-
-module.exports = ReactNativeBenchmarks;
