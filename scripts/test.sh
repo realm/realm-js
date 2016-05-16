@@ -93,7 +93,7 @@ case "$TARGET" in
   npm run jsdoc
   ;;
 "realmjs")
-  pushd src/ios
+  pushd src
   xctest RealmJS
   ;;
 "react-tests")
