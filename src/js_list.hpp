@@ -57,7 +57,8 @@ struct ListClass : ClassDefinition<T, realm::List, CollectionClass<T>> {
     static void snapshot(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void filtered(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void sorted(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
-    
+    static void is_valid(ContextType, ObjectType, size_t, const ValueType [], ReturnValue &);
+
     std::string const name = "List";
 
     MethodMap<T> const methods = {
@@ -69,6 +70,7 @@ struct ListClass : ClassDefinition<T, realm::List, CollectionClass<T>> {
         {"snapshot", wrap<snapshot>},
         {"filtered", wrap<filtered>},
         {"sorted", wrap<sorted>},
+        {"isValid", wrap<is_valid>},
     };
 
     PropertyMap<T> const properties = {
@@ -224,5 +226,10 @@ void ListClass<T>::sorted(ContextType ctx, ObjectType this_object, size_t argc, 
     return_value.set(ResultsClass<T>::create_sorted(ctx, *list, argc, arguments));
 }
     
+template<typename T>
+void ListClass<T>::is_valid(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    return_value.set(get_internal<T, ListClass<T>>(this_object)->is_valid());
+}
+
 } // js
 } // realm

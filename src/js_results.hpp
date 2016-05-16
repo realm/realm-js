@@ -55,6 +55,7 @@ struct ResultsClass : ClassDefinition<T, realm::Results, CollectionClass<T>> {
     static void snapshot(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void filtered(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void sorted(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void is_valid(ContextType, ObjectType, size_t, const ValueType [], ReturnValue &);
 
     std::string const name = "Results";
 
@@ -62,6 +63,7 @@ struct ResultsClass : ClassDefinition<T, realm::Results, CollectionClass<T>> {
         {"snapshot", wrap<snapshot>},
         {"filtered", wrap<filtered>},
         {"sorted", wrap<sorted>},
+        {"isValid", wrap<is_valid>},
     };
     
     PropertyMap<T> const properties = {
@@ -231,6 +233,11 @@ void ResultsClass<T>::sorted(ContextType ctx, ObjectType this_object, size_t arg
 
     auto results = get_internal<T, ResultsClass<T>>(this_object);
     return_value.set(create_sorted(ctx, *results, argc, arguments));
+}
+
+template<typename T>
+void ResultsClass<T>::is_valid(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    return_value.set(get_internal<T, ResultsClass<T>>(this_object)->is_valid());
 }
 
 } // js

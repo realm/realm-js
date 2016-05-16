@@ -90,15 +90,23 @@ Results::~Results()
     }
 }
 
+bool Results::is_valid() const
+{
+    if (m_table && !m_table->is_attached())
+        return false;
+    if (m_mode == Mode::TableView && (!m_table_view.is_attached() || m_table_view.depends_on_deleted_object()))
+        return false;
+    if (m_mode == Mode::LinkView && !m_link_view->is_attached())
+        return false;
+    
+    return true;
+}
+
 void Results::validate_read() const
 {
     if (m_realm)
         m_realm->verify_thread();
-    if (m_table && !m_table->is_attached())
-        throw InvalidatedException();
-    if (m_mode == Mode::TableView && (!m_table_view.is_attached() || m_table_view.depends_on_deleted_object()))
-        throw InvalidatedException();
-    if (m_mode == Mode::LinkView && !m_link_view->is_attached())
+    if (!is_valid())
         throw InvalidatedException();
 }
 
