@@ -21,7 +21,7 @@
         "../object-store/src/impl/results_notifier.cpp",
         "../object-store/src/impl/transact_log_handler.cpp",
         "../object-store/src/impl/apple/external_commit_helper.cpp",
-        "../object-store/src/impl/apple/weak_realm_notifier.cpp",
+        "../object-store/src/impl/node/weak_realm_notifier.cpp",
         "../object-store/src/parser/parser.cpp",
         "../object-store/src/parser/query_builder.cpp"
       ],
