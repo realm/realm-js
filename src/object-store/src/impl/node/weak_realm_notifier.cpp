@@ -16,6 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+#include <nan.h>
+
 #include "impl/weak_realm_notifier.hpp"
 
 #include "shared_realm.hpp"
@@ -35,6 +37,8 @@ WeakRealmNotifier::WeakRealmNotifier(const std::shared_ptr<Realm>& realm, bool c
         auto realm = realm_weak_ptr->lock();
 
         if (realm) {
+            // The v8::Local handles need a "scope" to be present or will crash.
+            Nan::HandleScope scope;
             realm->notify();
         }
     });
