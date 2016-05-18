@@ -1,6 +1,7 @@
 package io.realm.react;
 
 import android.content.res.AssetManager;
+import android.os.Build;
 import android.util.Log;
 
 import com.facebook.react.bridge.ReactApplicationContext;
@@ -21,7 +22,7 @@ import java.util.Map;
 
 import fi.iki.elonen.NanoHTTPD;
 
-public class RealmReactModule extends ReactContextBaseJavaModule {
+class RealmReactModule extends ReactContextBaseJavaModule {
     private static final int DEFAULT_PORT = 8082;
     private static boolean sentAnalytics = false;
 
@@ -49,14 +50,6 @@ public class RealmReactModule extends ReactContextBaseJavaModule {
         }
 
         setDefaultRealmFileDirectory(fileDir, assetManager);
-
-        // Attempt to send analytics info only once, and only if allowed to do so.
-        if (!sentAnalytics && RealmAnalytics.shouldExecute()) {
-            sentAnalytics = true;
-
-            RealmAnalytics analytics = RealmAnalytics.getInstance(reactContext.getApplicationInfo());
-            analytics.execute();
-        }
     }
 
     @Override
@@ -74,7 +67,7 @@ public class RealmReactModule extends ReactContextBaseJavaModule {
         startWebServer();
 
         List<String> hosts;
-        if (RealmAnalytics.isRunningOnEmulator()) {
+        if (isRunningOnEmulator()) {
             hosts = Arrays.asList(new String[]{"localhost"});
         } else {
             hosts = getIPAddresses();
@@ -90,6 +83,11 @@ public class RealmReactModule extends ReactContextBaseJavaModule {
     public void onCatalystInstanceDestroy() {
         clearContextInjectedFlag();
         stopWebServer();
+    }
+
+    private static boolean isRunningOnEmulator() {
+        // Check if running in Genymotion or on the stock emulator.
+        return Build.FINGERPRINT.contains("vbox") || Build.FINGERPRINT.contains("generic");
     }
 
     private List<String> getIPAddresses() {
