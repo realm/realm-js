@@ -16,6 +16,7 @@
 * Fix a memory leak caused by constructing a Realm instance of an already opened Realm.
 * Fix for better supporting hot module reloading.
 * Fix for some warnings when using `ListView` with React Native 0.25+
+* Fix for queries that use a keypath starting with "not".
 
 0.12.0 Release notes (2016-5-4)
 =============================================================
