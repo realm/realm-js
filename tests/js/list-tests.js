@@ -627,4 +627,25 @@ module.exports = BaseTest.extend({
             });
         });
     },
+
+    testIsValid: function() {
+        var realm = new Realm({schema: [schemas.PersonObject, schemas.PersonList]});
+        var object;
+        var list;
+        realm.write(function() {
+            object = realm.create('PersonList', {list: [
+                {name: 'Ari', age: 10},
+                {name: 'Tim', age: 11},
+                {name: 'Bjarne', age: 12},
+            ]});
+            list = object.list;
+            TestCase.assertEqual(list.isValid(), true);
+            realm.delete(object);
+        });
+
+        TestCase.assertEqual(list.isValid(), false);
+        TestCase.assertThrows(function() {
+            list.length;
+        });
+    },
 });

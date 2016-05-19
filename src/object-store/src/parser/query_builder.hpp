@@ -50,7 +50,7 @@ class Arguments {
 template<typename ValueType, typename ContextType>
 class ArgumentConverter : public Arguments {
   public:
-    ArgumentConverter(ContextType context, std::vector<ValueType> arguments) : m_arguments(arguments), m_ctx(context) {};
+    ArgumentConverter(ContextType context, std::vector<ValueType> arguments) : m_arguments(arguments), m_ctx(context) {}
 
     using Accessor = realm::NativeAccessor<ValueType, ContextType>;
     virtual bool bool_for_argument(size_t argument_index) { return Accessor::to_bool(m_ctx, argument_at(argument_index)); }

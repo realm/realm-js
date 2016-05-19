@@ -35,7 +35,7 @@ using namespace realm::_impl;
 
 namespace {
 // Write a byte to a pipe to notify anyone waiting for data on the pipe
-void notify_fd(int fd)
+void notify_fd(int fd, int read_fd)
 {
     while (true) {
         char c = 0;
@@ -50,7 +50,7 @@ void notify_fd(int fd)
         // write.
         assert(ret == -1 && errno == EAGAIN);
         char buff[1024];
-        read(fd, buff, sizeof buff);
+        read(read_fd, buff, sizeof buff);
     }
 }
 } // anonymous namespace
@@ -94,6 +94,7 @@ ExternalCommitHelper::ExternalCommitHelper(RealmCoordinator& parent)
         throw std::system_error(errno, std::system_category());
     }
 
+#if !TARGET_OS_TV
     auto path = parent.get_path() + ".note";
 
     // Create and open the named pipe
@@ -129,15 +130,29 @@ ExternalCommitHelper::ExternalCommitHelper(RealmCoordinator& parent)
         throw std::system_error(errno, std::system_category());
     }
 
-    // Create the anonymous pipe
-    int pipeFd[2];
-    ret = pipe(pipeFd);
+#else // !TARGET_OS_TV
+
+    // tvOS does not support named pipes, so use an anonymous pipe instead
+    int notification_pipe[2];
+    int ret = pipe(notification_pipe);
     if (ret == -1) {
         throw std::system_error(errno, std::system_category());
     }
 
-    m_shutdown_read_fd = pipeFd[0];
-    m_shutdown_write_fd = pipeFd[1];
+    m_notify_fd = notification_pipe[0];
+    m_notify_fd_write = notification_pipe[1];
+
+#endif // TARGET_OS_TV
+
+    // Create the anonymous pipe for shutdown notifications
+    int shutdown_pipe[2];
+    ret = pipe(shutdown_pipe);
+    if (ret == -1) {
+        throw std::system_error(errno, std::system_category());
+    }
+
+    m_shutdown_read_fd = shutdown_pipe[0];
+    m_shutdown_write_fd = shutdown_pipe[1];
 
     m_thread = std::async(std::launch::async, [=] {
         try {
@@ -158,7 +173,7 @@ ExternalCommitHelper::ExternalCommitHelper(RealmCoordinator& parent)
 
 ExternalCommitHelper::~ExternalCommitHelper()
 {
-    notify_fd(m_shutdown_write_fd);
+    notify_fd(m_shutdown_write_fd, m_shutdown_read_fd);
     m_thread.wait(); // Wait for the thread to exit
 }
 
@@ -202,5 +217,10 @@ void ExternalCommitHelper::listen()
 
 void ExternalCommitHelper::notify_others()
 {
-    notify_fd(m_notify_fd);
+    if (m_notify_fd_write != -1) {
+        notify_fd(m_notify_fd_write, m_notify_fd);
+    }
+    else {
+        notify_fd(m_notify_fd, m_notify_fd);
+    }
 }

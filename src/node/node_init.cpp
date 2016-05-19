@@ -23,7 +23,7 @@ namespace node {
 
 static void init(v8::Local<v8::Object> exports) {
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    v8::Local<v8::Function> realm_constructor = js::Realm<Types>::create_constructor(isolate);
+    v8::Local<v8::Function> realm_constructor = js::RealmClass<Types>::create_constructor(isolate);
 
     Nan::Set(exports, realm_constructor->GetName(), realm_constructor);
 }

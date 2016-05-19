@@ -1,3 +1,14 @@
+x.x.x Release notes (yyyy-MM-dd)
+=============================================================
+### Breaking changes
+* None
+
+### Enhancements
+* Added `isValid()` method to `List` and `Results` to check for deleleted or invalidated objects
+
+### Bugfixes
+* None
+
 0.13.0 Release notes (2016-5-19)
 =============================================================
 ### Breaking changes

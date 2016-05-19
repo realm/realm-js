@@ -19,11 +19,10 @@
 #ifndef REALM_RESULTS_HPP
 #define REALM_RESULTS_HPP
 
+#include "collection_notifications.hpp"
 #include "shared_realm.hpp"
-#include "util/atomic_shared_ptr.hpp"
 
 #include <realm/table_view.hpp>
-#include <realm/table.hpp>
 #include <realm/util/optional.hpp>
 #include <realm/util/to_string.hpp>
 
@@ -31,38 +30,17 @@ namespace realm {
 template<typename T> class BasicRowExpr;
 using RowExpr = BasicRowExpr<Table>;
 class Mixed;
-class Results;
 class ObjectSchema;
 
 namespace _impl {
-    class AsyncQuery;
+    class ResultsNotifier;
 }
 
-// A token which keeps an asynchronous query alive
-struct AsyncQueryCancelationToken {
-    AsyncQueryCancelationToken() = default;
-    AsyncQueryCancelationToken(std::shared_ptr<_impl::AsyncQuery> query, size_t token);
-    ~AsyncQueryCancelationToken();
-
-    AsyncQueryCancelationToken(AsyncQueryCancelationToken&&);
-    AsyncQueryCancelationToken& operator=(AsyncQueryCancelationToken&&);
-
-    AsyncQueryCancelationToken(AsyncQueryCancelationToken const&) = delete;
-    AsyncQueryCancelationToken& operator=(AsyncQueryCancelationToken const&) = delete;
-
-private:
-    util::AtomicSharedPtr<_impl::AsyncQuery> m_query;
-    size_t m_token;
-};
-
 struct SortOrder {
-    std::vector<size_t> columnIndices;
+    std::vector<size_t> column_indices;
     std::vector<bool> ascending;
 
-    explicit operator bool() const
-    {
-        return !columnIndices.empty();
-    }
+    explicit operator bool() const { return !column_indices.empty(); }
 };
 
 class Results {
@@ -73,6 +51,8 @@ public:
     Results() = default;
     Results(SharedRealm r, const ObjectSchema& o, Table& table);
     Results(SharedRealm r, const ObjectSchema& o, Query q, SortOrder s = {});
+    Results(SharedRealm r, const ObjectSchema& o, TableView tv, SortOrder s);
+    Results(SharedRealm r, const ObjectSchema& o, LinkViewRef lv, util::Optional<Query> q = {}, SortOrder s = {});
     ~Results();
 
     // Results is copyable and moveable
@@ -99,6 +79,9 @@ public:
 
     // Get the object type which will be returned by get()
     StringData get_object_type() const noexcept;
+
+    // Get the LinkView this Results is derived from, if any
+    LinkViewRef get_linkview() const { return m_link_view; }
 
     // Set whether the TableView should sync if needed before accessing results
     void set_live(bool live);
@@ -145,6 +128,7 @@ public:
         Empty, // Backed by nothing (for missing tables)
         Table, // Backed directly by a Table
         Query, // Backed by a query that has not yet been turned into a TableView
+        LinkView, // Backed directly by a LinkView
         TableView // Backed by a TableView created from a Query
     };
     // Get the currrent mode of the Results
@@ -191,39 +175,50 @@ public:
         UnsupportedColumnTypeException(size_t column, const Table* table);
     };
 
-    void update_tableview();
-
     // Create an async query from this Results
     // The query will be run on a background thread and delivered to the callback,
     // and then rerun after each commit (if needed) and redelivered if it changed
-    AsyncQueryCancelationToken async(std::function<void (std::exception_ptr)> target);
+    NotificationToken async(std::function<void (std::exception_ptr)> target);
+    NotificationToken add_notification_callback(CollectionChangeCallback cb);
 
     bool wants_background_updates() const { return m_wants_background_updates; }
 
-    // Helper type to let AsyncQuery update the tableview without giving access
+    // Returns whether the rows are guaranteed to be in table order.
+    bool is_in_table_order() const;
+
+    // Helper type to let ResultsNotifier update the tableview without giving access
     // to any other privates or letting anyone else do so
     class Internal {
-        friend class _impl::AsyncQuery;
+        friend class _impl::ResultsNotifier;
         static void set_table_view(Results& results, TableView&& tv);
     };
 
+    // Returns if this Results class is still valid
+    bool is_valid() const;
+    
 private:
     SharedRealm m_realm;
     const ObjectSchema *m_object_schema;
     Query m_query;
     TableView m_table_view;
+    LinkViewRef m_link_view;
     Table* m_table = nullptr;
     SortOrder m_sort;
     bool m_live = true;
 
-    std::shared_ptr<_impl::AsyncQuery> m_background_query;
+    std::shared_ptr<_impl::ResultsNotifier> m_notifier;
 
     Mode m_mode = Mode::Empty;
     bool m_has_used_table_view = false;
     bool m_wants_background_updates = true;
 
+    void update_tableview();
+    bool update_linkview();
+
     void validate_read() const;
     void validate_write() const;
+
+    void prepare_async();
 
     template<typename Int, typename Float, typename Double, typename Timestamp>
     util::Optional<Mixed> aggregate(size_t column, bool return_none_for_empty,

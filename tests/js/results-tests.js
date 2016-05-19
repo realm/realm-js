@@ -285,28 +285,37 @@ module.exports = BaseTest.extend({
 
     testResultsInvalidation: function() {
         var realm = new Realm({schema: [schemas.TestObject]});
-        var testObjects = realm.objects('TestObject');
-        var filteredObjects = testObjects.filtered('doubleCol > 1');
-        var sortedObjects = testObjects.sorted('doubleCol');
-        var snapshotObjects = testObjects.snapshot();
+        realm.write(function() {
+            for (var i = 10; i > 0; i--) {
+                realm.create('TestObject', [i]);
+            }
+        });
 
+        var resultsVariants = [
+            realm.objects('TestObject'),
+            realm.objects('TestObject').filtered('doubleCol > 1'),
+            realm.objects('TestObject').filtered('doubleCol > 1').sorted('doubleCol'),
+            realm.objects('TestObject').filtered('doubleCol > 1').snapshot()
+        ];
+
+        // test isValid
+        resultsVariants.forEach(function(objects) {
+            TestCase.assertEqual(objects.isValid(), true);
+        });
+
+        // close and test invalidated accessors
         realm.close();
-
         realm = new Realm({
             schemaVersion: 1,
             schema: [schemas.TestObject, schemas.BasicTypes]
         });
 
-        [
-            testObjects,
-            filteredObjects,
-            sortedObjects,
-            snapshotObjects,
-        ].forEach(function(objects) {
+        resultsVariants.forEach(function(objects) {
+            TestCase.assertEqual(objects.isValid(), false);
             TestCase.assertThrows(function() { objects[0]; });
             TestCase.assertThrows(function() { objects.filtered('doubleCol < 42'); });
             TestCase.assertThrows(function() { objects.sorted('doubleCol', true); });
             TestCase.assertThrows(function() { objects.snapshot(); });
         });
-    }
+    },
 });

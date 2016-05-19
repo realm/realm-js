@@ -60,6 +60,7 @@ function(download_realm_core core_version)
     add_library(realm STATIC IMPORTED)
     add_dependencies(realm realm-core)
     set_property(TARGET realm PROPERTY IMPORTED_LOCATION_DEBUG ${core_library_debug})
+    set_property(TARGET realm PROPERTY IMPORTED_LOCATION_COVERAGE ${core_library_debug})
     set_property(TARGET realm PROPERTY IMPORTED_LOCATION_RELEASE ${core_library_release})
     set_property(TARGET realm PROPERTY IMPORTED_LOCATION ${core_library_release})
 
@@ -81,6 +82,7 @@ macro(define_built_realm_core_target core_directory)
     add_dependencies(realm realm-core)
 
     set_property(TARGET realm PROPERTY IMPORTED_LOCATION_DEBUG ${core_library_debug})
+    set_property(TARGET realm PROPERTY IMPORTED_LOCATION_COVERAGE ${core_library_debug})
     set_property(TARGET realm PROPERTY IMPORTED_LOCATION_RELEASE ${core_library_release})
     set_property(TARGET realm PROPERTY IMPORTED_LOCATION ${core_library_release})
 
