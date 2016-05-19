@@ -134,6 +134,9 @@ static std::vector<std::string> invalid_queries = {
     "a==a &| a==a",
     "a==a && OR a==a",
     "a==aORa==a",
+    "a==a ORa==a",
+    "a==a AND==a",
+    "a==a ANDa==a",
     "a=1ANDNOT b=2",
 
     "truepredicate &&",
