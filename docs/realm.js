@@ -233,8 +233,7 @@ Realm.defaultPath;
  * @property {number} "double" - Property may be assigned any number, and will have no loss
  *   of precision.
  * @property {string} "string" - Property value may be any arbitrary string.
- * @property {Date} "date" - Property may be assigned any `Date` instance, but will be stored
- *   with second-level precision (a fix for this is in progress).
+ * @property {Date} "date" - Property may be assigned any `Date` instance.
  * @property {ArrayBuffer} "data" - Property may either be assigned an `ArrayBuffer`
  *   or `ArrayBufferView` (e.g. `DataView`, `Int8Array`, `Float32Array`, etc.) instance,
  *   but will always be returned as an `ArrayBuffer`.
