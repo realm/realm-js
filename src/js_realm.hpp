@@ -125,7 +125,6 @@ void delete_all_realms();
 
 template<typename T>
 class RealmClass : public ClassDefinition<T, SharedRealm> {
-  public:
     using GlobalContextType = typename T::GlobalContext;
     using ContextType = typename T::Context;
     using FunctionType = typename T::Function;
@@ -137,6 +136,7 @@ class RealmClass : public ClassDefinition<T, SharedRealm> {
     using ReturnValue = js::ReturnValue<T>;
     using NativeAccessor = realm::NativeAccessor<ValueType, ContextType>;
 
+public:
     static FunctionType create_constructor(ContextType);
 
     // methods
