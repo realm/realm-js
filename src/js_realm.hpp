@@ -41,7 +41,7 @@ template<typename T>
 class Realm;
 
 template<typename T>
-struct RealmClass;
+class RealmClass;
 
 template<typename T>
 class RealmDelegate : public BindingContext {
