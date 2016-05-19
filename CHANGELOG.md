@@ -1,4 +1,4 @@
-0.13.0 Release notes (2016-5-16)
+0.13.0 Release notes (2016-5-19)
 =============================================================
 ### Breaking changes
 * With this release we have switched over to a new cross platform compatible date format.
