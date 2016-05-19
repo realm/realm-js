@@ -24,6 +24,7 @@
 #include <pegtl/analyze.hh>
 #include <pegtl/trace.hh>
 
+// String operators (e.g. AND, OR, NOT) can't be followed by [A-z0-9_].
 #define string_operator_t(s) seq< pegtl_istring_t(s), not_at< identifier_other > >
 
 using namespace pegtl;
