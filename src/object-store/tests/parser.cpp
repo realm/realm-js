@@ -66,6 +66,9 @@ static std::vector<std::string> valid_queries = {
     "!(0=0)",
     "! (0=0)",
     "NOT0=0",   // keypath NOT0
+    "NOT0.a=0", // keypath NOT0
+    "NOT0a.b=0", // keypath NOT0a
+    "not-1=1",
     "not 0=0",
     "NOT(0=0)",
     "not (0=0)",
@@ -121,6 +124,7 @@ static std::vector<std::string> invalid_queries = {
     "(0=0))",
     "! =0",
     "NOTNOT(0=0)",
+    "not.a=0",
     "(!!0=0)",
     "0=0 !",
 
@@ -130,7 +134,10 @@ static std::vector<std::string> invalid_queries = {
     "a==a &| a==a",
     "a==a && OR a==a",
     "a==aORa==a",
-    //"a=1ANDNOT b=2",
+    "a==a ORa==a",
+    "a==a AND==a",
+    "a==a ANDa==a",
+    "a=1ANDNOT b=2",
 
     "truepredicate &&",
     "truepredicate & truepredicate",

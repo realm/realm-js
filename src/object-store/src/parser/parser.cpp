@@ -24,6 +24,9 @@
 #include <pegtl/analyze.hh>
 #include <pegtl/trace.hh>
 
+// String operators (e.g. AND, OR, NOT) can't be followed by [A-z0-9_].
+#define string_operator_t(s) seq< pegtl_istring_t(s), not_at< identifier_other > >
+
 using namespace pegtl;
 
 namespace realm {
@@ -93,11 +96,11 @@ struct group_pred : if_must< one< '(' >, pad< pred, blank >, one< ')' > > {};
 struct true_pred : pegtl_istring_t("truepredicate") {};
 struct false_pred : pegtl_istring_t("falsepredicate") {};
 
-struct not_pre : seq< sor< one< '!' >, pegtl_istring_t("not") > > {};
+struct not_pre : seq< sor< one< '!' >, string_operator_t("not") > > {};
 struct atom_pred : seq< opt< not_pre >, pad< sor< group_pred, true_pred, false_pred, comparison_pred >, blank > > {};
 
-struct and_op : pad< sor< two< '&' >, pegtl_istring_t("and") >, blank > {};
-struct or_op : pad< sor< two< '|' >, pegtl_istring_t("or") >, blank > {};
+struct and_op : pad< sor< two< '&' >, string_operator_t("and") >, blank > {};
+struct or_op : pad< sor< two< '|' >, string_operator_t("or") >, blank > {};
 
 struct or_ext : if_must< or_op, pred > {};
 struct and_ext : if_must< and_op, pred > {};

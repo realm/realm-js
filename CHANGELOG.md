@@ -1,16 +1,4 @@
-x.x.x Release notes (yyyy-MM-dd)
-=============================================================
-### Breaking changes
-* None
-
-### Enhancements
-* Added `isValid()` method to `Results` and `List` to ensure objects have not been deleted or
-  invalidated
-
-### Bugfixes
-* None
-
-0.13.0 Release notes (2016-5-16)
+0.13.0 Release notes (2016-5-19)
 =============================================================
 ### Breaking changes
 * With this release we have switched over to a new cross platform compatible date format.
@@ -28,6 +16,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * Fix a memory leak caused by constructing a Realm instance of an already opened Realm.
 * Fix for better supporting hot module reloading.
 * Fix for some warnings when using `ListView` with React Native 0.25+
+* Fix for queries that use a keypath starting with "not".
 
 0.12.0 Release notes (2016-5-4)
 =============================================================
