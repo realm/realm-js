@@ -6,7 +6,7 @@
         "node_init.cpp",
         "platform.cpp",
         "../js_realm.cpp",
-	"../object-store/src/collection_notifications.cpp",
+        "../object-store/src/collection_notifications.cpp",
         "../object-store/src/index_set.cpp",
         "../object-store/src/list.cpp",
         "../object-store/src/object_schema.cpp",
