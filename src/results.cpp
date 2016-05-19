@@ -92,6 +92,8 @@ Results::~Results()
 
 bool Results::is_valid() const
 {
+    if (m_realm)
+        m_realm->verify_thread();
     if (m_table && !m_table->is_attached())
         return false;
     if (m_mode == Mode::TableView && (!m_table_view.is_attached() || m_table_view.depends_on_deleted_object()))
@@ -104,8 +106,6 @@ bool Results::is_valid() const
 
 void Results::validate_read() const
 {
-    if (m_realm)
-        m_realm->verify_thread();
     if (!is_valid())
         throw InvalidatedException();
 }
