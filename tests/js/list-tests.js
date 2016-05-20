@@ -480,6 +480,11 @@ module.exports = BaseTest.extend({
             TestCase.assertEqual(objectsCopy.length, 4);
             TestCase.assertEqual(arrayCopy.length, 2);
             TestCase.assertEqual(arrayCopy[0], null);
+
+            realm.deleteAll();
+            TestCase.assertEqual(objectsCopy.length, 4);
+            TestCase.assertEqual(arrayCopy.length, 2);
+            TestCase.assertEqual(arrayCopy[1], null);
         });
     },
 
