@@ -19,18 +19,17 @@
 #pragma once
 
 #include "js_class.hpp"
-#include "js_observable.hpp"
 
 namespace realm {
 namespace js {
 
 // Empty class that merely serves as useful type for now.
-class Collection {};
+class Observable {};
 
 template<typename T>
-struct CollectionClass : ClassDefinition<T, Collection, ObservableClass<T>> {
-    std::string const name = "Collection";
+struct ObservableClass : ClassDefinition<T, Observable> {
+    std::string const name = "Observable";
 };
-
+    
 } // js
 } // realm

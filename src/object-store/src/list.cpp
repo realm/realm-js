@@ -184,12 +184,27 @@ size_t hash<realm::List>::operator()(realm::List const& list) const
 }
 }
 
-NotificationToken List::add_notification_callback(CollectionChangeCallback cb)
+size_t List::add_notification_callback(CollectionChangeCallback cb, size_t token)
 {
     verify_attached();
     if (!m_notifier) {
         m_notifier = std::make_shared<ListNotifier>(m_link_view, m_realm);
         RealmCoordinator::register_notifier(m_notifier);
     }
-    return {m_notifier, m_notifier->add_callback(std::move(cb))};
+    return m_notifier->add_callback(std::move(cb), token);
+}
+
+NotificationToken List::add_notification_callback(CollectionChangeCallback cb)
+{
+    return {m_notifier, add_notification_callback(cb, 0)};
+}
+
+void List::remove_notification_callback(size_t token)
+{
+    m_notifier->remove_callback(token);
+}
+
+void List::remove_all_notification_callbacks()
+{
+    m_notifier->remove_all_callbacks();
 }

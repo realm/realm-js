@@ -48,6 +48,10 @@ export default class TodoApp extends Component {
 
         // This is a Results object, which will live-update.
         this.todoLists = todoLists;
+        todoLists.addListener(function() {
+            console.log("changed");
+        });
+        console.log("registered listener");
 
         // Bind all the methods that we will be passing as props.
         this.renderScene = this.renderScene.bind(this);

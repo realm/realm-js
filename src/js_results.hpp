@@ -34,6 +34,7 @@ struct ResultsClass : ClassDefinition<T, realm::Results, CollectionClass<T>> {
     using ContextType = typename T::Context;
     using ObjectType = typename T::Object;
     using ValueType = typename T::Value;
+    using FunctionType = typename T::Function;
     using Object = js::Object<T>;
     using Value = js::Value<T>;
     using ReturnValue = js::ReturnValue<T>;
@@ -57,6 +58,11 @@ struct ResultsClass : ClassDefinition<T, realm::Results, CollectionClass<T>> {
     static void sorted(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void is_valid(ContextType, ObjectType, size_t, const ValueType [], ReturnValue &);
 
+    // observable
+    static void add_listener(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void remove_listener(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void remove_all_listeners(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    
     std::string const name = "Results";
 
     MethodMap<T> const methods = {
@@ -64,6 +70,9 @@ struct ResultsClass : ClassDefinition<T, realm::Results, CollectionClass<T>> {
         {"filtered", wrap<filtered>},
         {"sorted", wrap<sorted>},
         {"isValid", wrap<is_valid>},
+        {"addListener", wrap<add_listener>},
+        {"removeListener", wrap<remove_listener>},
+        {"removeAllListeners", wrap<remove_all_listeners>},
     };
     
     PropertyMap<T> const properties = {
@@ -239,6 +248,41 @@ template<typename T>
 void ResultsClass<T>::is_valid(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     return_value.set(get_internal<T, ResultsClass<T>>(this_object)->is_valid());
 }
+    
+template<typename T>
+void ResultsClass<T>::add_listener(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    validate_argument_count(argc, 1);
+    
+    auto list = get_internal<T, ResultsClass<T>>(this_object);
+    auto callback = Value::validated_to_function(ctx, arguments[0]);
+    Protected<FunctionType> protected_callback(ctx, callback);
+    Protected<ObjectType> protected_this(ctx, this_object);
+    Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
+    
+    list->add_notification_callback([=](CollectionChangeSet change_set, std::exception_ptr exception) {
+        ValueType arguments[2];
+        arguments[0] = protected_this;
+        arguments[1] = Value::from_undefined(protected_ctx);
+        Function<T>::call(protected_ctx, protected_callback, protected_this, 2, arguments);
+    }, (size_t)(ValueType)callback);
+}
 
+template<typename T>
+void ResultsClass<T>::remove_listener(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    validate_argument_count(argc, 1);
+    
+    auto results = get_internal<T, ResultsClass<T>>(this_object);
+    auto callback = Value::validated_to_function(ctx, arguments[0]);
+    results->remove_notification_callback((size_t)(ValueType)callback);
+}
+
+template<typename T>
+void ResultsClass<T>::remove_all_listeners(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    validate_argument_count(argc, 0);
+    
+    auto results = get_internal<T, ResultsClass<T>>(this_object);
+    results->remove_all_notification_callbacks();
+}
+    
 } // js
 } // realm

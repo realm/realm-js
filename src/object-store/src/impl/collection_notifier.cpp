@@ -165,22 +165,19 @@ CollectionNotifier::~CollectionNotifier()
     unregister();
 }
 
-size_t CollectionNotifier::add_callback(CollectionChangeCallback callback)
+size_t CollectionNotifier::add_callback(CollectionChangeCallback callback, size_t token)
 {
     m_realm->verify_thread();
 
-    auto next_token = [=] {
-        size_t token = 0;
+    std::lock_guard<std::mutex> lock(m_callback_mutex);
+    if (token == 0) {
         for (auto& callback : m_callbacks) {
             if (token <= callback.token) {
                 token = callback.token + 1;
             }
         }
-        return token;
-    };
+    }
 
-    std::lock_guard<std::mutex> lock(m_callback_mutex);
-    auto token = next_token();
     m_callbacks.push_back({std::move(callback), token, false});
     if (m_callback_index == npos) { // Don't need to wake up if we're already sending notifications
         Realm::Internal::get_coordinator(*m_realm).send_commit_notifications();
@@ -214,6 +211,12 @@ void CollectionNotifier::remove_callback(size_t token)
 
         m_have_callbacks = !m_callbacks.empty();
     }
+}
+
+void CollectionNotifier::remove_all_callbacks()
+{
+    m_callbacks.clear();
+    m_have_callbacks = false;
 }
 
 void CollectionNotifier::unregister() noexcept
