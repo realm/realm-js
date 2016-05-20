@@ -19,11 +19,10 @@
 'use strict';
 
 var Realm = require('realm');
-var BaseTest = require('./base-test');
 var TestCase = require('./asserts');
 var schemas = require('./schemas');
 
-module.exports = BaseTest.extend({
+module.exports = {
     testRealmConstructor: function() {
         var realm = new Realm({schema: []});
         TestCase.assertTrue(realm instanceof Realm);
@@ -753,4 +752,4 @@ module.exports = BaseTest.extend({
         var realm = new Realm({path: 'dates-v5.realm', schema: [schemas.DateObject]});
         TestCase.assertEqual(realm.objects('Date')[0].currentDate.getTime(), 1);
     },
-});
+};

@@ -19,11 +19,10 @@
 'use strict';
 
 var Realm = require('realm');
-var BaseTest = require('./base-test');
 var TestCase = require('./asserts');
 var schemas = require('./schemas');
 
-module.exports = BaseTest.extend({
+module.exports = {
     testListConstructor: function() {
         var realm = new Realm({schema: [schemas.PersonObject, schemas.PersonList]});
 
@@ -653,4 +652,4 @@ module.exports = BaseTest.extend({
             list.length;
         });
     },
-});
+};

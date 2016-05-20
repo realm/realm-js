@@ -20,7 +20,6 @@
 'use strict';
 
 var Realm = require('realm');
-var BaseTest = require('./base-test');
 var TestCase = require('./asserts');
 var schemas = require('./schemas');
 var testCases = require('./query-tests.json');
@@ -116,7 +115,7 @@ function runQuerySuite(suite) {
 }
 
 
-module.exports = BaseTest.extend({
+module.exports = {
     testDateQueries: function() { 
         runQuerySuite(testCases.dateTests);
     },
@@ -150,4 +149,4 @@ module.exports = BaseTest.extend({
     testOptionalQueries: function() {
         runQuerySuite(testCases.optionalTests);
     }
-});
+};

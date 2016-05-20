@@ -19,7 +19,6 @@
 'use strict';
 
 var Realm = require('realm');
-var BaseTest = require('./base-test');
 var TestCase = require('./asserts');
 var schemas = require('./schemas');
 
@@ -28,7 +27,7 @@ var RANDOM_DATA = new Uint8Array([
     0x67, 0x1e, 0x40, 0xa7, 0x6d, 0x52, 0x83, 0xda, 0x07, 0x29, 0x9c, 0x70, 0x38, 0x48, 0x4e, 0xff,
 ]);
 
-module.exports = BaseTest.extend({
+module.exports = {
     testBasicTypesPropertyGetters: function() {
         var realm = new Realm({schema: [schemas.BasicTypes]});
         var object;
@@ -506,4 +505,4 @@ module.exports = BaseTest.extend({
         TestCase.assertEqual(realm.objects('Date')[2].currentDate.getTime(), 1000000000000);
         TestCase.assertEqual(realm.objects('Date')[3].currentDate.getTime(), -1000000000000);
     }
-});
+};

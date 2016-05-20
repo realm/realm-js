@@ -18,6 +18,8 @@
 
 'use strict';
 
+var Realm = require('realm');
+
 var TESTS = {
     ListTests: require('./list-tests'),
     ObjectTests: require('./object-tests'),
@@ -58,7 +60,14 @@ exports.runTest = function(suiteName, testName) {
     var testMethod = testSuite && testSuite[testName];
 
     if (testMethod) {
-        testMethod.call(testSuite);
+        // Start fresh in case of a crash in a previous run.
+        Realm.clearTestState();
+
+        try {
+            testMethod.call(testSuite);
+        } finally {
+            Realm.clearTestState();
+        }
     } else if (!testSuite || !(testName in SPECIAL_METHODS)) {
         throw new Error('Missing test: ' + suiteName + '.' + testName);
     }

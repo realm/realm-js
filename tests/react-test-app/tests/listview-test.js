@@ -49,10 +49,6 @@ function createDataSource() {
 }
 
 module.exports = {
-    afterEach() {
-        Realm.clearTestState();
-    },
-
     testDataSource() {
         let realm = createRealm();
         let objects = realm.objects('UniqueObject').sorted('id');

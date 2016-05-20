@@ -19,11 +19,10 @@
 'use strict';
 
 var Realm = require('realm');
-var BaseTest = require('./base-test');
 var TestCase = require('./asserts');
 var Schemas = require('./schemas');
 
-module.exports = BaseTest.extend({
+module.exports = {
     testEncryptedInvalidKeys: function() {
         // test failure with invalid keys
         TestCase.assertThrows(function() {
@@ -57,4 +56,4 @@ module.exports = BaseTest.extend({
         var realm = new Realm({schema: [Schemas.TestObject], encryptionKey: key});
         TestCase.assertEqual(realm.objects('TestObject').length, 1);
     },
-});
+};
