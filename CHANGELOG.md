@@ -8,6 +8,7 @@
 
 ### Bugfixes
 * Fix for crash when inserting dates from before the epoch
+* Fix for crash when using collection snapshot after realm.deleteAll()
 
 0.13.0 Release notes (2016-5-19)
 =============================================================

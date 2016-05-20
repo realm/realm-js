@@ -124,9 +124,12 @@ RowExpr Results::get(size_t row_ndx)
         case Mode::Query:
         case Mode::TableView:
             update_tableview();
-            if (row_ndx < m_table_view.size())
-                return (!m_live && !m_table_view.is_row_attached(row_ndx)) ? RowExpr() : m_table_view.get(row_ndx);
-            break;
+            if (row_ndx >= m_table_view.size())
+                break;
+            // FIXME: If clear() was called on the underlying Table, then is_row_attached(row_ndx) will still return true (core issue #1837).
+            if (!m_live && (m_table_view.get_parent().is_empty() || !m_table_view.is_row_attached(row_ndx)))
+                return {};
+            return m_table_view.get(row_ndx);
     }
 
     throw OutOfBoundsIndexException{row_ndx, size()};
@@ -314,7 +317,15 @@ void Results::clear()
         case Mode::TableView:
             validate_write();
             update_tableview();
-            m_table_view.clear(RemoveMode::unordered);
+
+            if (m_live) {
+                m_table_view.clear(RemoveMode::unordered);
+            }
+            else {
+                // Copy the TableView because a non-live Results shouldn't have let its size() change.
+                TableView table_view_copy = m_table_view;
+                table_view_copy.clear(RemoveMode::unordered);
+            }
             break;
     }
 }
