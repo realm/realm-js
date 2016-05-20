@@ -526,7 +526,7 @@ module.exports = {
             list = object.list;
         });
 
-        var names = function(results, prop) {
+        var names = function(results) {
             return results.map(function(object) {
                 return object.name;
             });

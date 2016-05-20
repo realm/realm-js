@@ -99,15 +99,16 @@ module.exports = {
     testResultsInvalidObjectType: function() {
         var realm = new Realm({schema: [schemas.TestObject]});
         TestCase.assertThrows(function() {
-            var objects = realm.objects('NotTestObject');
+            realm.objects('NotTestObject');
         });
     },
 
     testResultsEnumerate: function() {
         var realm = new Realm({schema: [schemas.TestObject]});
         var objects = realm.objects('TestObject');
+        var index;
 
-        for (var index in objects) {
+        for (index in objects) {
             TestCase.assertTrue(false, "No objects should have been enumerated");
         }
 
@@ -118,7 +119,7 @@ module.exports = {
 
         var count = 0;
         var keys = Object.keys(objects);
-        for (var index in objects) {
+        for (index in objects) {
             TestCase.assertEqual(count++, +index);
             TestCase.assertEqual(keys[index], index);
         }
@@ -184,7 +185,7 @@ module.exports = {
             realm.create('IntPrimaryObject', {primaryCol: 0, valueCol: 'c'});
         });
 
-        var primaries = function(results, prop) {
+        var primaries = function(results) {
             return results.map(function(object) {
                 return object.primaryCol;
             });

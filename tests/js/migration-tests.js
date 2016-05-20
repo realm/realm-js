@@ -81,7 +81,7 @@ module.exports = {
         });
         realm.close();
 
-        var realm = new Realm({
+        realm = new Realm({
             schema: [{
                 name: 'TestObject',
                 properties: {
@@ -129,7 +129,7 @@ module.exports = {
         }]});
         realm.close();
 
-        var realm = new Realm({
+        realm = new Realm({
             schema: [{
                 name: 'TestObject',
                 properties: {

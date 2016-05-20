@@ -53,7 +53,7 @@ module.exports = {
         });
 
         // test can reopen with original key
-        var realm = new Realm({schema: [Schemas.TestObject], encryptionKey: key});
+        realm = new Realm({schema: [Schemas.TestObject], encryptionKey: key});
         TestCase.assertEqual(realm.objects('TestObject').length, 1);
     },
 };

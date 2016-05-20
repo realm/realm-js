@@ -21,7 +21,6 @@
 
 var Realm = require('realm');
 var TestCase = require('./asserts');
-var schemas = require('./schemas');
 var testCases = require('./query-tests.json');
 
 var typeConverters = {};
@@ -76,18 +75,24 @@ function runQuerySuite(suite) {
 
     for (var index in suite.tests) {
         var test = suite.tests[index];
+        var type;
+        var args;
+        var results;
+
         if (test[0] == "QueryCount") {
-            var type = test[2];
-            var args = getArgs(3);
-            var objects = realm.objects(type);
-            var length = objects.filtered.apply(objects, args).length;
+            type = test[2];
+            args = getArgs(3);
+            results = realm.objects(type);
+
+            var length = results.filtered.apply(results, args).length;
             TestCase.assertEqual(test[1], length, "Query '" + args[0] + "' on type '" + type + "' expected " + test[1] + " results, got " + length);
         }
         else if (test[0] == "ObjectSet") {
-            var type = test[2];
-            var args = getArgs(3);
-            var objects = realm.objects(type);
-            var results = objects.filtered.apply(objects, args);           
+            type = test[2];
+            args = getArgs(3);
+            results = realm.objects(type);
+            results = results.filtered.apply(results, args);
+         
             TestCase.assertEqual(test[1].length, results.length, "Query '" + args[0] + "' on type '" + type+ "' expected " + test[1].length + " results, got " + results.length);
 
             var objSchema = suite.schema.find(function(el) { return el.name == type });
@@ -101,11 +106,12 @@ function runQuerySuite(suite) {
             }));
         }
         else if (test[0] == "QueryThrows") {
-            var type = test[1];
-            var args = getArgs(2);
-            var objects = realm.objects(type);
+            type = test[1];
+            args = getArgs(2);
+            results = realm.objects(type);
+
             TestCase.assertThrows(function() {
-                objects.filtered.apply(objects, args);
+                results.filtered.apply(results, args);
             }, "Expected exception not thrown for query: " + JSON.stringify(args));
         }
         else if (test[0] != "Disabled") {
