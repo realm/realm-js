@@ -22,17 +22,17 @@
 #include <string>
 
 namespace realm {
-    enum PropertyType {
-        PropertyTypeInt    = 0,
-        PropertyTypeBool   = 1,
-        PropertyTypeFloat  = 9,
-        PropertyTypeDouble = 10,
-        PropertyTypeString = 2,
-        PropertyTypeData   = 4,
-        PropertyTypeAny    = 6, // deprecated and will be removed in the future
-        PropertyTypeDate   = 8,
-        PropertyTypeObject = 12,
-        PropertyTypeArray  = 13,
+    enum class PropertyType {
+        Int    = 0,
+        Bool   = 1,
+        Float  = 9,
+        Double = 10,
+        String = 2,
+        Data   = 4,
+        Any    = 6, // deprecated and will be removed in the future
+        Date   = 8,
+        Object = 12,
+        Array  = 13,
     };
 
     struct Property {
@@ -47,35 +47,53 @@ namespace realm {
         bool requires_index() const { return is_primary || is_indexed; }
         bool is_indexable() const
         {
-            return type == PropertyTypeInt
-                || type == PropertyTypeBool
-                || type == PropertyTypeDate
-                || type == PropertyTypeString;
+            return type == PropertyType::Int
+                || type == PropertyType::Bool
+                || type == PropertyType::Date
+                || type == PropertyType::String;
         }
+
+#if __GNUC__ < 5
+        // GCC 4.9 does not support C++14 braced-init with NSDMIs
+        Property(std::string name="", PropertyType type=PropertyType::Int, std::string object_type="",
+                 bool is_primary=false, bool is_indexed=false, bool is_nullable=false)
+        : name(std::move(name))
+        , type(type)
+        , object_type(std::move(object_type))
+        , is_primary(is_primary)
+        , is_indexed(is_indexed)
+        , is_nullable(is_nullable)
+        {
+        }
+#endif
     };
 
     static inline const char *string_for_property_type(PropertyType type) {
         switch (type) {
-            case PropertyTypeString:
+            case PropertyType::String:
                 return "string";
-            case PropertyTypeInt:
+            case PropertyType::Int:
                 return "int";
-            case PropertyTypeBool:
+            case PropertyType::Bool:
                 return "bool";
-            case PropertyTypeDate:
+            case PropertyType::Date:
                 return "date";
-            case PropertyTypeData:
+            case PropertyType::Data:
                 return "data";
-            case PropertyTypeDouble:
+            case PropertyType::Double:
                 return "double";
-            case PropertyTypeFloat:
+            case PropertyType::Float:
                 return "float";
-            case PropertyTypeAny:
+            case PropertyType::Any:
                 return "any";
-            case PropertyTypeObject:
+            case PropertyType::Object:
                 return "object";
-            case PropertyTypeArray:
+            case PropertyType::Array:
                 return "array";
+#if __GNUC__
+            default:
+                __builtin_unreachable();
+#endif
         }
     }
 }

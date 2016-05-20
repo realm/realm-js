@@ -21,28 +21,25 @@
 
 #include "schema.hpp"
 
-#include <realm/handover_defs.hpp>
-
 #include <memory>
-#include <mutex>
 #include <string>
 #include <thread>
 #include <vector>
-#include <mutex>
 
 namespace realm {
     class BindingContext;
-    class Replication;
     class Group;
     class Realm;
-    class RealmDelegate;
+    class Replication;
     class SharedGroup;
     typedef std::shared_ptr<Realm> SharedRealm;
     typedef std::weak_ptr<Realm> WeakRealm;
 
     namespace _impl {
-        class AsyncQuery;
+        class CollectionNotifier;
+        class ListNotifier;
         class RealmCoordinator;
+        class ResultsNotifier;
     }
 
     class Realm : public std::enable_shared_from_this<Realm> {
@@ -66,7 +63,7 @@ namespace realm {
             bool in_memory = false;
 
             // The following are intended for internal/testing purposes and
-            // should not be publically exposed in binding APIs
+            // should not be publicly exposed in binding APIs
 
             // If false, always return a new Realm instance, and don't return
             // that Realm instance for other requests for a cached Realm. Useful
@@ -143,16 +140,18 @@ namespace realm {
         // Expose some internal functionality to other parts of the ObjectStore
         // without making it public to everyone
         class Internal {
-            friend class _impl::AsyncQuery;
+            friend class _impl::CollectionNotifier;
+            friend class _impl::ListNotifier;
             friend class _impl::RealmCoordinator;
+            friend class _impl::ResultsNotifier;
 
-            // AsyncQuery needs access to the SharedGroup to be able to call the
-            // handover functions, which are not very wrappable
+            // ResultsNotifier and ListNotifier need access to the SharedGroup
+            // to be able to call the handover functions, which are not very wrappable
             static SharedGroup& get_shared_group(Realm& realm) { return *realm.m_shared_group; }
 
-            // AsyncQuery needs to be able to access the owning coordinator to
-            // wake up the worker thread when a callback is added, and
-            // coordinators need to be able to get themselves from a Realm
+            // CollectionNotifier needs to be able to access the owning
+            // coordinator to wake up the worker thread when a callback is
+            // added, and coordinators need to be able to get themselves from a Realm
             static _impl::RealmCoordinator& get_coordinator(Realm& realm) { return *realm.m_coordinator; }
         };
 

@@ -1,4 +1,5 @@
 set(SOURCES
+    collection_notifications.cpp
     index_set.cpp
     list.cpp
     object_schema.cpp
@@ -6,24 +7,34 @@ set(SOURCES
     results.cpp
     schema.cpp
     shared_realm.cpp
-    impl/async_query.cpp
+    impl/collection_change_builder.cpp
+    impl/collection_notifier.cpp
+    impl/list_notifier.cpp
     impl/realm_coordinator.cpp
+    impl/results_notifier.cpp
     impl/transact_log_handler.cpp
     parser/parser.cpp
     parser/query_builder.cpp)
 
 set(HEADERS
+    collection_notifications.hpp
     index_set.hpp
     list.hpp
     object_schema.hpp
     object_store.hpp
+    property.hpp
     results.hpp
     schema.hpp
     shared_realm.hpp
+    impl/collection_change_builder.hpp
+    impl/collection_notifier.hpp
+    impl/external_commit_helper.hpp
+    impl/list_notifier.hpp
+    impl/realm_coordinator.hpp
+    impl/results_notifier.hpp
+    impl/transact_log_handler.hpp
     impl/weak_realm_notifier.hpp
     impl/weak_realm_notifier_base.hpp
-    impl/external_commit_helper.hpp
-    impl/transact_log_handler.hpp
     parser/parser.hpp
     parser/query_builder.hpp
     util/atomic_shared_ptr.hpp)

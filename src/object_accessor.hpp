@@ -25,7 +25,7 @@
 #include "schema.hpp"
 #include "shared_realm.hpp"
 
-#include <string>
+#include <realm/link_view.hpp>
 
 namespace realm {
 
@@ -143,7 +143,7 @@ namespace realm {
                 "Setting invalid property '" + prop_name + "' on object '" + m_object_schema->name + "'.");
         }
         set_property_value_impl(ctx, *prop, value, try_update);
-    };
+    }
 
     template <typename ValueType, typename ContextType>
     inline ValueType Object::get_property_value(ContextType ctx, std::string prop_name)
@@ -154,7 +154,7 @@ namespace realm {
                 "Getting invalid property '" + prop_name + "' on object '" + m_object_schema->name + "'.");
         }
         return get_property_value_impl<ValueType>(ctx, *prop);
-    };
+    }
 
     template <typename ValueType, typename ContextType>
     inline void Object::set_property_value_impl(ContextType ctx, const Property &property, ValueType value, bool try_update)
@@ -172,31 +172,31 @@ namespace realm {
         }
 
         switch (property.type) {
-            case PropertyTypeBool:
+            case PropertyType::Bool:
                 m_row.set_bool(column, Accessor::to_bool(ctx, value));
                 break;
-            case PropertyTypeInt:
+            case PropertyType::Int:
                 m_row.set_int(column, Accessor::to_long(ctx, value));
                 break;
-            case PropertyTypeFloat:
+            case PropertyType::Float:
                 m_row.set_float(column, Accessor::to_float(ctx, value));
                 break;
-            case PropertyTypeDouble:
+            case PropertyType::Double:
                 m_row.set_double(column, Accessor::to_double(ctx, value));
                 break;
-            case PropertyTypeString:
+            case PropertyType::String:
                 m_row.set_string(column, Accessor::to_string(ctx, value));
                 break;
-            case PropertyTypeData:
+            case PropertyType::Data:
                 m_row.set_binary(column, BinaryData(Accessor::to_binary(ctx, value)));
                 break;
-            case PropertyTypeAny:
+            case PropertyType::Any:
                 m_row.set_mixed(column, Accessor::to_mixed(ctx, value));
                 break;
-            case PropertyTypeDate:
+            case PropertyType::Date:
                 m_row.set_timestamp(column, Accessor::to_timestamp(ctx, value));
                 break;
-            case PropertyTypeObject: {
+            case PropertyType::Object: {
                 if (Accessor::is_null(ctx, value)) {
                     m_row.nullify_link(column);
                 }
@@ -205,7 +205,7 @@ namespace realm {
                 }
                 break;
             }
-            case PropertyTypeArray: {
+            case PropertyType::Array: {
                 realm::LinkViewRef link_view = m_row.get_linklist(column);
                 link_view->clear();
                 if (!Accessor::is_null(ctx, value)) {
@@ -231,23 +231,23 @@ namespace realm {
         }
 
         switch (property.type) {
-            case PropertyTypeBool:
+            case PropertyType::Bool:
                 return Accessor::from_bool(ctx, m_row.get_bool(column));
-            case PropertyTypeInt:
+            case PropertyType::Int:
                 return Accessor::from_long(ctx, m_row.get_int(column));
-            case PropertyTypeFloat:
+            case PropertyType::Float:
                 return Accessor::from_float(ctx, m_row.get_float(column));
-            case PropertyTypeDouble:
+            case PropertyType::Double:
                 return Accessor::from_double(ctx, m_row.get_double(column));
-            case PropertyTypeString:
+            case PropertyType::String:
                 return Accessor::from_string(ctx, m_row.get_string(column));
-            case PropertyTypeData:
+            case PropertyType::Data:
                 return Accessor::from_binary(ctx, m_row.get_binary(column));
-            case PropertyTypeAny:
+            case PropertyType::Any:
                 throw "Any not supported";
-            case PropertyTypeDate:
+            case PropertyType::Date:
                 return Accessor::from_timestamp(ctx, m_row.get_timestamp(column));
-            case PropertyTypeObject: {
+            case PropertyType::Object: {
                 auto linkObjectSchema = m_realm->config().schema->find(property.object_type);
                 TableRef table = ObjectStore::table_for_object_type(m_realm->read_group(), linkObjectSchema->name);
                 if (m_row.is_null_link(property.table_column)) {
@@ -255,7 +255,7 @@ namespace realm {
                 }
                 return Accessor::from_object(ctx, std::move(Object(m_realm, *linkObjectSchema, table->get(m_row.get_link(column)))));
             }
-            case PropertyTypeArray: {
+            case PropertyType::Array: {
                 auto arrayObjectSchema = m_realm->config().schema->find(property.object_type);
                 return Accessor::from_list(ctx, std::move(List(m_realm, *arrayObjectSchema, static_cast<LinkViewRef>(m_row.get_linklist(column)))));
             }
@@ -281,7 +281,7 @@ namespace realm {
         if (primary_prop) {
             // search for existing object based on primary key type
             ValueType primary_value = Accessor::dict_value_for_key(ctx, value, object_schema.primary_key);
-            if (primary_prop->type == PropertyTypeString) {
+            if (primary_prop->type == PropertyType::String) {
                 row_index = table->find_first_string(primary_prop->table_column, Accessor::to_string(ctx, primary_value));
             }
             else {
@@ -312,7 +312,7 @@ namespace realm {
                     if (Accessor::has_default_value_for_property(ctx, realm.get(), object_schema, prop.name)) {
                         object.set_property_value_impl(ctx, prop, Accessor::default_value_for_property(ctx, realm.get(), object_schema, prop.name), try_update);
                     }
-                    else if (prop.is_nullable || prop.type == PropertyTypeArray) {
+                    else if (prop.is_nullable || prop.type == PropertyType::Array) {
                         object.set_property_value_impl(ctx, prop, Accessor::null_value(ctx), try_update);
                     }
                     else {

@@ -20,21 +20,18 @@
 #define REALM_SCHEMA_HPP
 
 #include "object_schema.hpp"
-#include "property.hpp"
 
 #include <string>
 #include <vector>
 
 namespace realm {
-class ObjectSchema;
-
 class Schema : private std::vector<ObjectSchema> {
 private:
     using base = std::vector<ObjectSchema>;
 public:
     // Create a schema from a vector of ObjectSchema
     Schema(base types);
-    Schema(std::initializer_list<ObjectSchema> types) : Schema(base(types)) { }
+    Schema(std::initializer_list<ObjectSchema> types);
 
     // find an ObjectSchema by name
     iterator find(std::string const& name);
