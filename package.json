@@ -55,9 +55,9 @@
     "xcode": "0.8.4"
   },
   "devDependencies": {
-    "babel-eslint": "^6.0.0-beta.6",
-    "eslint": "^2.4.0",
-    "eslint-plugin-react": "^4.2.3",
+    "babel-eslint": "^6.0.4",
+    "eslint": "^2.10.2",
+    "eslint-plugin-react": "^5.1.1",
     "jsdoc": "^3.4.0",
     "semver": "^5.1.0"
   },
