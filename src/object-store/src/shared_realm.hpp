@@ -79,9 +79,6 @@ namespace realm {
             // everything can be done deterministically on one thread, and
             // speeds up tests that don't need notifications.
             bool automatic_change_notifications = true;
-            // File format versions populated when a file format upgrade takes place
-            // during realm opening
-            int upgrade_initial_version = 0, upgrade_final_version = 0;
             
             Config();
             Config(Config&&);
@@ -135,6 +132,9 @@ namespace realm {
         // Realm after closing it will produce undefined behavior.
         void close();
 
+        // returns the file format version upgraded from, or 0 if not upgraded
+        int file_format_upgraded_from_version() const;
+
         ~Realm();
 
         void init(std::shared_ptr<_impl::RealmCoordinator> coordinator);
@@ -161,7 +161,8 @@ namespace realm {
         static void open_with_config(Config& config,
                                      std::unique_ptr<Replication>& history,
                                      std::unique_ptr<SharedGroup>& shared_group,
-                                     std::unique_ptr<Group>& read_only_group);
+                                     std::unique_ptr<Group>& read_only_group,
+                                     Realm *realm = nullptr);
 
       private:
         Config m_config;
@@ -175,6 +176,9 @@ namespace realm {
         Group *m_group = nullptr;
 
         std::shared_ptr<_impl::RealmCoordinator> m_coordinator;
+
+        // File format versions populated when a file format upgrade takes place during realm opening
+        int upgrade_initial_version = 0, upgrade_final_version = 0;
 
       public:
         std::unique_ptr<BindingContext> m_binding_context;

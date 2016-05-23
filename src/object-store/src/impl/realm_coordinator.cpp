@@ -105,7 +105,7 @@ std::shared_ptr<Realm> RealmCoordinator::get_realm(Realm::Config config)
     
     auto realm = std::make_shared<Realm>(std::move(config));
     realm->init(shared_from_this());
-    
+
     if (!config.read_only && !m_notifier && config.automatic_change_notifications) {
         try {
             m_notifier = std::make_unique<ExternalCommitHelper>(*this);
