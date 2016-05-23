@@ -61,7 +61,7 @@ Realm::Config& Realm::Config::operator=(realm::Realm::Config const& c)
 Realm::Realm(Config config)
 : m_config(std::move(config))
 {
-    open_with_config(m_config, m_history, m_shared_group, m_read_only_group);
+    open_with_config(m_config, m_history, m_shared_group, m_read_only_group, this);
 
     if (m_read_only_group) {
         m_group = m_read_only_group.get();
@@ -71,7 +71,8 @@ Realm::Realm(Config config)
 void Realm::open_with_config(Config& config,
                              std::unique_ptr<Replication>& history,
                              std::unique_ptr<SharedGroup>& shared_group,
-                             std::unique_ptr<Group>& read_only_group)
+                             std::unique_ptr<Group>& read_only_group,
+                             Realm *realm)
 {
     try {
         if (config.read_only) {
@@ -85,8 +86,10 @@ void Realm::open_with_config(Config& config,
             SharedGroup::DurabilityLevel durability = config.in_memory ? SharedGroup::durability_MemOnly : SharedGroup::durability_Full;
             shared_group = std::make_unique<SharedGroup>(*history, durability, config.encryption_key.data(), !config.disable_format_upgrade,
                                                          [&](int from_version, int to_version) {
-                config.upgrade_initial_version = from_version;
-                config.upgrade_final_version = to_version;
+                if (realm) {
+                    realm->upgrade_initial_version = from_version;
+                    realm->upgrade_final_version = to_version;
+                }
             });
         }
     }
@@ -458,4 +461,12 @@ void Realm::close()
     m_read_only_group = nullptr;
     m_binding_context = nullptr;
     m_coordinator = nullptr;
+}
+
+int Realm::file_format_upgraded_from_version() const
+{
+    if (upgrade_initial_version != upgrade_final_version) {
+        return upgrade_initial_version;
+    }
+    return 0;
 }
