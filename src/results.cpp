@@ -173,7 +173,7 @@ RowExpr Results::get(size_t row_ndx)
             update_tableview();
             if (row_ndx >= m_table_view.size())
                 break;
-            // If clear() was called on the underlying Table, then is_row_attached(row_ndx) will still return true.
+            // FIXME: If clear() was called on the underlying Table, then is_row_attached(row_ndx) will still return true (core issue #1837).
             if (!m_live && (m_table_view.get_parent().is_empty() || !m_table_view.is_row_attached(row_ndx)))
                 return {};
             return m_table_view.get(row_ndx);
