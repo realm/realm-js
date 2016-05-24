@@ -1,4 +1,4 @@
-0.13.1 Release notes (yyyy-MM-dd)
+0.13.1 Release notes (2016-5-24)
 =============================================================
 ### Breaking changes
 * None
