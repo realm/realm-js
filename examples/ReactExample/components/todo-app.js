@@ -39,19 +39,18 @@ export default class TodoApp extends Component {
     constructor(props) {
         super(props);
 
-        let todoLists = realm.objects('TodoList');
-        if (todoLists.length < 1) {
+        // This is a Results object, which will live-update.
+        this.todoLists = realm.objects('TodoList');
+        this.todoLists.addListener(function(name, changes) {
+            console.log("changed: " + JSON.stringify(changes));
+        });
+        console.log("registered listener");
+
+        if (this.todoLists.length < 1) {
             realm.write(() => {
                 realm.create('TodoList', {name: 'Todo List'});
             });
         }
-
-        // This is a Results object, which will live-update.
-        this.todoLists = todoLists;
-        todoLists.addListener(function() {
-            console.log("changed");
-        });
-        console.log("registered listener");
 
         // Bind all the methods that we will be passing as props.
         this.renderScene = this.renderScene.bind(this);

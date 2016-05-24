@@ -262,7 +262,7 @@ void ResultsClass<T>::add_listener(ContextType ctx, ObjectType this_object, size
     list->add_notification_callback([=](CollectionChangeSet change_set, std::exception_ptr exception) {
         ValueType arguments[2];
         arguments[0] = protected_this;
-        arguments[1] = Value::from_undefined(protected_ctx);
+        arguments[1] = CollectionClass<T>::create_collection_change_set(protected_ctx, change_set);
         Function<T>::call(protected_ctx, protected_callback, protected_this, 2, arguments);
     }, (size_t)(ValueType)callback);
 }
