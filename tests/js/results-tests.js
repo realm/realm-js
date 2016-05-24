@@ -342,12 +342,30 @@ module.exports = BaseTest.extend({
 
         realm.write(function() {
             var objects = createTestObjects(10);
+            realm.deleteAll();
+
+            var snapshot = objects.snapshot();
+            TestCase.assertEqual(objects.length, 0);
+            TestCase.assertEqual(snapshot.length, 0);
+        });
+
+        realm.write(function() {
+            var objects = createTestObjects(10);
             var snapshot = objects.snapshot();
 
             realm.delete(snapshot);
             TestCase.assertEqual(objects.length, 0);
             TestCase.assertEqual(snapshot.length, 10);
             TestCase.assertEqual(snapshot[0], null);
+        });
+
+        realm.write(function() {
+            var objects = createTestObjects(10);
+            realm.delete(objects);
+
+            var snapshot = objects.snapshot();
+            TestCase.assertEqual(objects.length, 0);
+            TestCase.assertEqual(snapshot.length, 0);
         });
     }
 });
