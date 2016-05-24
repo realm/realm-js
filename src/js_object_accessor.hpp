@@ -89,7 +89,7 @@ struct NativeAccessor {
         ObjectType date = Value::validated_to_date(ctx, value, "Property");
         double milliseconds = Value::to_number(ctx, date);
         int64_t seconds = milliseconds / 1000;
-        int32_t nanoseconds = (milliseconds - seconds * 1000) * 1000000;
+        int32_t nanoseconds = ((int64_t)milliseconds % 1000) * 1000000;
         return Timestamp(seconds, nanoseconds);
     }
     static ValueType from_timestamp(ContextType ctx, Timestamp ts) {
