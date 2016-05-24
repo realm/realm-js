@@ -474,15 +474,30 @@ module.exports = BaseTest.extend({
         TestCase.assertEqual(obj.ignored, true);
     },
 
-    testCurrentDate: function() {
+    testDates: function() {
         Realm.copyBundledRealmFiles();
 
+        // test file format upgrade
         var realm_v3 = new Realm({path: 'dates-v3.realm', schema: [schemas.DateObject]});
         TestCase.assertEqual(realm_v3.objects('Date').length, 1);
         TestCase.assertEqual(realm_v3.objects('Date')[0].currentDate.getTime(), 1462500087955);
 
+        // get new file format is not upgraded
         var realm_v5 = new Realm({path: 'dates-v5.realm', schema: [schemas.DateObject]});
         TestCase.assertEqual(realm_v5.objects('Date').length, 1);
         TestCase.assertEqual(realm_v5.objects('Date')[0].currentDate.getTime(), 1462500087955);
+
+        // test different dates
+        var realm = new Realm({schema: [schemas.DateObject]});
+        realm.write(function() {
+            realm.create('Date', { currentDate: new Date(10000) });
+            realm.create('Date', { currentDate: new Date(-10000) });
+            realm.create('Date', { currentDate: new Date(1000000000000) });
+            realm.create('Date', { currentDate: new Date(-1000000000000) });
+        });
+        TestCase.assertEqual(realm.objects('Date')[0].currentDate.getTime(), 10000);
+        TestCase.assertEqual(realm.objects('Date')[1].currentDate.getTime(), -10000);
+        TestCase.assertEqual(realm.objects('Date')[2].currentDate.getTime(), 1000000000000);
+        TestCase.assertEqual(realm.objects('Date')[3].currentDate.getTime(), -1000000000000);
     }
 });

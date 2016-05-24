@@ -1,4 +1,4 @@
-x.x.x Release notes (yyyy-MM-dd)
+0.13.1 Release notes (yyyy-MM-dd)
 =============================================================
 ### Breaking changes
 * None
@@ -7,7 +7,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * Added `isValid()` method to `List` and `Results` to check for deleleted or invalidated objects
 
 ### Bugfixes
-* None
+* Fix for crash when inserting dates from before the epoch
 
 0.13.0 Release notes (2016-5-19)
 =============================================================
