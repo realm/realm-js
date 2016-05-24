@@ -1,3 +1,14 @@
+0.13.1 Release notes (yyyy-MM-dd)
+=============================================================
+### Breaking changes
+* None
+
+### Enhancements
+* None
+
+### Bugfixes
+* Fix for crash when inserting dates from before the epoch
+
 0.13.0 Release notes (2016-5-19)
 =============================================================
 ### Breaking changes
