@@ -318,4 +318,54 @@ module.exports = BaseTest.extend({
             TestCase.assertThrows(function() { objects.snapshot(); });
         });
     },
+
+    testResultsDeletedObjects: function() {
+        var realm = new Realm({schema: [schemas.TestObject]});
+
+        var createTestObjects = function(n) {
+            for (var i = 0; i < n; i++) {
+                realm.create('TestObject', {doubleCol: i});
+            }
+
+            return realm.objects('TestObject');
+        }
+
+        realm.write(function() {
+            var objects = createTestObjects(10);
+            var snapshot = objects.snapshot();
+
+            realm.deleteAll();
+            TestCase.assertEqual(objects.length, 0);
+            TestCase.assertEqual(snapshot.length, 10);
+            TestCase.assertEqual(snapshot[0], null);
+        });
+
+        realm.write(function() {
+            var objects = createTestObjects(10);
+            realm.deleteAll();
+
+            var snapshot = objects.snapshot();
+            TestCase.assertEqual(objects.length, 0);
+            TestCase.assertEqual(snapshot.length, 0);
+        });
+
+        realm.write(function() {
+            var objects = createTestObjects(10);
+            var snapshot = objects.snapshot();
+
+            realm.delete(snapshot);
+            TestCase.assertEqual(objects.length, 0);
+            TestCase.assertEqual(snapshot.length, 10);
+            TestCase.assertEqual(snapshot[0], null);
+        });
+
+        realm.write(function() {
+            var objects = createTestObjects(10);
+            realm.delete(objects);
+
+            var snapshot = objects.snapshot();
+            TestCase.assertEqual(objects.length, 0);
+            TestCase.assertEqual(snapshot.length, 0);
+        });
+    }
 });

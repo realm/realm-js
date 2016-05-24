@@ -96,7 +96,7 @@ bool Results::is_valid() const
         m_realm->verify_thread();
     if (m_table && !m_table->is_attached())
         return false;
-    if (m_mode == Mode::TableView && (!m_table_view.is_attached() || m_table_view.depends_on_deleted_object()))
+    if (m_mode == Mode::TableView && (!m_table_view.is_attached() || (m_live && m_table_view.depends_on_deleted_object())))
         return false;
     if (m_mode == Mode::LinkView && !m_link_view->is_attached())
         return false;
@@ -121,8 +121,8 @@ void Results::set_live(bool live)
 {
     validate_read();
 
-    if (!live && m_mode == Mode::Table) {
-        m_query = m_table->where();
+    if (!live && (m_mode == Mode::Table || m_mode == Mode::LinkView)) {
+        m_query = get_query();
         m_mode = Mode::Query;
     }
 
@@ -173,7 +173,8 @@ RowExpr Results::get(size_t row_ndx)
             update_tableview();
             if (row_ndx >= m_table_view.size())
                 break;
-            if (!m_live && !m_table_view.is_row_attached(row_ndx))
+            // FIXME: If clear() was called on the underlying Table, then is_row_attached(row_ndx) will still return true (core issue #1837).
+            if (!m_live && (m_table_view.get_parent().is_empty() || !m_table_view.is_row_attached(row_ndx)))
                 return {};
             return m_table_view.get(row_ndx);
     }
@@ -392,7 +393,15 @@ void Results::clear()
         case Mode::TableView:
             validate_write();
             update_tableview();
-            m_table_view.clear(RemoveMode::unordered);
+
+            if (m_live) {
+                m_table_view.clear(RemoveMode::unordered);
+            }
+            else {
+                // Copy the TableView because a non-live Results shouldn't have let its size() change.
+                TableView table_view_copy = m_table_view;
+                table_view_copy.clear(RemoveMode::unordered);
+            }
             break;
         case Mode::LinkView:
             validate_write();
