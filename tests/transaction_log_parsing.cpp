@@ -129,13 +129,13 @@ TEST_CASE("Transaction log parsing") {
     config.automatic_change_notifications = false;
 
     SECTION("schema change validation") {
-        config.schema = std::make_unique<Schema>(Schema{
-            {"table", "", {
+        auto r = Realm::get_shared_realm(config);
+        r->update_schema({
+            {"table", {
                 {"unindexed", PropertyType::Int},
                 {"indexed", PropertyType::Int, "", "", false, true}
             }},
         });
-        auto r = Realm::get_shared_realm(config);
         r->read_group();
 
         auto history = make_client_history(config.path);
@@ -196,14 +196,14 @@ TEST_CASE("Transaction log parsing") {
     }
 
     SECTION("table change information") {
-        config.schema = std::make_unique<Schema>(Schema{
-            {"table", "", {
+        auto r = Realm::get_shared_realm(config);
+        r->update_schema({
+            {"table", {
                 {"value", PropertyType::Int}
             }},
         });
 
-        auto r = Realm::get_shared_realm(config);
-        auto& table = *r->read_group()->get_table("class_table");
+        auto& table = *r->read_group().get_table("class_table");
 
         r->begin_transaction();
         table.add_empty_row(10);
@@ -285,19 +285,18 @@ TEST_CASE("Transaction log parsing") {
     }
 
     SECTION("LinkView change information") {
-        config.schema = std::make_unique<Schema>(Schema{
-            {"origin", "", {
+        auto r = Realm::get_shared_realm(config);
+        r->update_schema({
+            {"origin", {
                 {"array", PropertyType::Array, "target"}
             }},
-            {"target", "", {
+            {"target", {
                 {"value", PropertyType::Int}
             }},
         });
 
-        auto r = Realm::get_shared_realm(config);
-
-        auto origin = r->read_group()->get_table("class_origin");
-        auto target = r->read_group()->get_table("class_target");
+        auto origin = r->read_group().get_table("class_origin");
+        auto target = r->read_group().get_table("class_target");
 
         r->begin_transaction();
 
@@ -821,17 +820,15 @@ TEST_CASE("Transaction log parsing") {
 TEST_CASE("DeepChangeChecker") {
     InMemoryTestFile config;
     config.automatic_change_notifications = false;
-
-    config.schema = std::make_unique<Schema>(Schema{
-        {"table", "", {
+    auto r = Realm::get_shared_realm(config);
+    r->update_schema({
+        {"table", {
             {"int", PropertyType::Int},
             {"link", PropertyType::Object, "table", "", false, false, true},
             {"array", PropertyType::Array, "table"}
         }},
     });
-
-    auto r = Realm::get_shared_realm(config);
-    auto table = r->read_group()->get_table("class_table");
+    auto table = r->read_group().get_table("class_table");
 
     r->begin_transaction();
     table->add_empty_row(10);

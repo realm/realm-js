@@ -47,12 +47,25 @@ namespace realm {
 
         size_t table_column = -1;
         bool requires_index() const { return is_primary || is_indexed; }
+
         bool is_indexable() const
         {
             return type == PropertyType::Int
                 || type == PropertyType::Bool
                 || type == PropertyType::Date
                 || type == PropertyType::String;
+        }
+
+        bool type_is_nullable() const
+        {
+            return type == PropertyType::Int
+                || type == PropertyType::Bool
+                || type == PropertyType::Float
+                || type == PropertyType::Double
+                || type == PropertyType::Date
+                || type == PropertyType::String
+                || type == PropertyType::Data
+                || type == PropertyType::Object;
         }
 
 #if __GNUC__ < 5
@@ -72,7 +85,19 @@ namespace realm {
 #endif
     };
 
-    static inline const char *string_for_property_type(PropertyType type) {
+    inline bool operator==(Property const& lft, Property const& rgt)
+    {
+        // note: not checking table_column
+        return lft.name == rgt.name
+            && lft.type == rgt.type
+            && lft.object_type == rgt.object_type
+            && lft.is_primary == rgt.is_primary
+            && lft.requires_index() == rgt.requires_index()
+            && lft.is_nullable == rgt.is_nullable;
+    }
+
+    static inline const char *string_for_property_type(PropertyType type)
+    {
         switch (type) {
             case PropertyType::String:
                 return "string";

@@ -10,8 +10,10 @@ set(SOURCES
     index_set.cpp
     list.cpp
     main.cpp
+    migrations.cpp
     parser.cpp
     results.cpp
+    schema.cpp
     transaction_log_parsing.cpp
     util/test_file.cpp
 )
