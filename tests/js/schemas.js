@@ -174,6 +174,7 @@ exports.NullQueryObject = {
 exports.DateObject = {
     name: 'Date',
     properties: {
-        currentDate: 'date'
+        currentDate: 'date',
+        nullDate: { type: 'date', optional: true }
     }
 };
