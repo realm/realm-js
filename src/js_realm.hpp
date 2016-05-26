@@ -260,6 +260,9 @@ static inline void convert_outdated_datetime_columns(const SharedRealm &realm) {
                     }
                     
                     for (size_t row_index = 0; row_index < table->size(); row_index++) {
+                        if (table->is_null(property.table_column, row_index)) {
+                            continue;
+                        }
                         auto milliseconds = table->get_timestamp(property.table_column, row_index).get_seconds();
                         table->set_timestamp(property.table_column, row_index, Timestamp(milliseconds / 1000, (milliseconds % 1000) * 1000000));
                     }

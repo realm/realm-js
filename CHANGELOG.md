@@ -9,6 +9,17 @@ x.x.x Release notes (yyyy-MM-dd)
 ### Bugfixes
 * None
 
+0.13.2 Release notes (2016-5-26)
+=============================================================
+### Breaking changes
+* None
+
+### Enhancements
+* None
+
+### Bugfixes
+* Fix for crash when updating Realms with optional date properties to the new file format
+
 0.13.1 Release notes (2016-5-24)
 =============================================================
 ### Breaking changes
