@@ -82,11 +82,11 @@ struct contains : string_token_t("contains") {};
 struct begins : string_token_t("beginswith") {};
 struct ends : string_token_t("endswith") {};
 
-struct string_oper : pad< seq< sor< contains, begins, ends>, star< blank >, opt< case_insensitive > >, blank > {};
-struct symbolic_oper : pad< sor< eq, noteq, lteq, lt, gteq, gt >, blank > {};
+struct string_oper : seq< sor< contains, begins, ends>, star< blank >, opt< case_insensitive > > {};
+struct symbolic_oper : sor< eq, noteq, lteq, lt, gteq, gt > {};
 
 // predicates
-struct comparison_pred : seq< expr, sor< string_oper, symbolic_oper >, expr > {};
+struct comparison_pred : seq< expr, pad< sor< string_oper, symbolic_oper >, blank >, expr > {};
 
 struct pred;
 struct group_pred : if_must< one< '(' >, pad< pred, blank >, one< ')' > > {};
