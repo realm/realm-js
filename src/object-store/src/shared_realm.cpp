@@ -68,7 +68,7 @@ Realm::Realm(Config config)
     }
 }
 
-void Realm::open_with_config(Config& config,
+void Realm::open_with_config(const Config& config,
                              std::unique_ptr<Replication>& history,
                              std::unique_ptr<SharedGroup>& shared_group,
                              std::unique_ptr<Group>& read_only_group,
