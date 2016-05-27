@@ -19,11 +19,10 @@
 'use strict';
 
 var Realm = require('realm');
-var BaseTest = require('./base-test');
 var TestCase = require('./asserts');
 var schemas = require('./schemas');
 
-module.exports = BaseTest.extend({
+module.exports = {
     testRealmConstructor: function() {
         var realm = new Realm({schema: []});
         TestCase.assertTrue(realm instanceof Realm);
@@ -160,13 +159,16 @@ module.exports = BaseTest.extend({
         TestCase.assertEqual(Realm.schemaVersion(Realm.defaultPath), -1);
         
         var realm = new Realm({schema: []});
+        TestCase.assertEqual(realm.schemaVersion, 0);
         TestCase.assertEqual(Realm.schemaVersion(Realm.defaultPath), 0);
 
         realm = new Realm({schema: [], schemaVersion: 2, path: 'another.realm'});
+        TestCase.assertEqual(realm.schemaVersion, 2);
         TestCase.assertEqual(Realm.schemaVersion('another.realm'), 2);
 
         var encryptionKey = new Int8Array(64);
         realm = new Realm({schema: [], schemaVersion: 3, path: 'encrypted.realm', encryptionKey: encryptionKey});
+        TestCase.assertEqual(realm.schemaVersion, 3);
         TestCase.assertEqual(Realm.schemaVersion('encrypted.realm', encryptionKey), 3);
 
         TestCase.assertThrows(function() {
@@ -652,7 +654,7 @@ module.exports = BaseTest.extend({
         TestCase.assertEqual(notificationName, 'change');
 
         var secondNotificationCount = 0;
-        function secondNotification(realm, name) {
+        function secondNotification() {
             secondNotificationCount++;
         }
 
@@ -750,7 +752,7 @@ module.exports = BaseTest.extend({
 
         // copy should not overwrite existing files
         Realm.copyBundledRealmFiles();
-        var realm = new Realm({path: 'dates-v5.realm', schema: [schemas.DateObject]});
+        realm = new Realm({path: 'dates-v5.realm', schema: [schemas.DateObject]});
         TestCase.assertEqual(realm.objects('Date')[0].currentDate.getTime(), 1);
     },
-});
+};

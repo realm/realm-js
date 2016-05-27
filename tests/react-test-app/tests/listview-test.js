@@ -18,9 +18,9 @@
 
 'use strict';
 
-const Realm = require('realm');
-const { ListView } = require('realm/react-native');
-const { assertEqual, assertTrue } = require('realm-tests/asserts');
+import Realm from 'realm';
+import { ListView } from 'realm/react-native';
+import { assertEqual, assertTrue } from 'realm-tests/asserts';
 
 const OBJECT_SCHEMA = {
     name: 'UniqueObject',
@@ -48,11 +48,7 @@ function createDataSource() {
     });
 }
 
-module.exports = {
-    afterEach() {
-        Realm.clearTestState();
-    },
-
+export default {
     testDataSource() {
         let realm = createRealm();
         let objects = realm.objects('UniqueObject').sorted('id');

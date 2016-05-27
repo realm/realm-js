@@ -19,11 +19,10 @@
 'use strict';
 
 var Realm = require('realm');
-var BaseTest = require('./base-test');
 var TestCase = require('./asserts');
 var schemas = require('./schemas');
 
-module.exports = BaseTest.extend({
+module.exports = {
     testResultsConstructor: function() {
         var realm = new Realm({schema: [schemas.TestObject]});
         var objects = realm.objects('TestObject');
@@ -100,15 +99,16 @@ module.exports = BaseTest.extend({
     testResultsInvalidObjectType: function() {
         var realm = new Realm({schema: [schemas.TestObject]});
         TestCase.assertThrows(function() {
-            var objects = realm.objects('NotTestObject');
+            realm.objects('NotTestObject');
         });
     },
 
     testResultsEnumerate: function() {
         var realm = new Realm({schema: [schemas.TestObject]});
         var objects = realm.objects('TestObject');
+        var index;
 
-        for (var index in objects) {
+        for (index in objects) {
             TestCase.assertTrue(false, "No objects should have been enumerated");
         }
 
@@ -119,7 +119,7 @@ module.exports = BaseTest.extend({
 
         var count = 0;
         var keys = Object.keys(objects);
-        for (var index in objects) {
+        for (index in objects) {
             TestCase.assertEqual(count++, +index);
             TestCase.assertEqual(keys[index], index);
         }
@@ -185,7 +185,7 @@ module.exports = BaseTest.extend({
             realm.create('IntPrimaryObject', {primaryCol: 0, valueCol: 'c'});
         });
 
-        var primaries = function(results, prop) {
+        var primaries = function(results) {
             return results.map(function(object) {
                 return object.primaryCol;
             });
@@ -368,4 +368,4 @@ module.exports = BaseTest.extend({
             TestCase.assertEqual(snapshot.length, 0);
         });
     }
-});
+};

@@ -18,7 +18,6 @@
   "parser": "babel-eslint",
   "parserOptions": {
     "ecmaFeatures": {
-      "forOf": false,
       "jsx": true
     }
   },
