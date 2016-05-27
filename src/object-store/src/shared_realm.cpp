@@ -463,10 +463,10 @@ void Realm::close()
     m_coordinator = nullptr;
 }
 
-int Realm::file_format_upgraded_from_version() const
+util::Optional<int> Realm::file_format_upgraded_from_version() const
 {
     if (upgrade_initial_version != upgrade_final_version) {
         return upgrade_initial_version;
     }
-    return 0;
+    return util::Optional<int>();
 }

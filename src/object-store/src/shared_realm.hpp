@@ -133,7 +133,7 @@ namespace realm {
         void close();
 
         // returns the file format version upgraded from, or 0 if not upgraded
-        int file_format_upgraded_from_version() const;
+        util::Optional<int> file_format_upgraded_from_version() const;
 
         ~Realm();
 
