@@ -2,7 +2,7 @@
 <Workspace
    version = "1.0">
    <FileRef
-      location = "group:src/ios/RealmJS.xcodeproj">
+      location = "group:src/RealmJS.xcodeproj">
    </FileRef>
    <FileRef
       location = "group:react-native/ios/RealmReact.xcodeproj">
