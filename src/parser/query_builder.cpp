@@ -501,10 +501,9 @@ void do_add_null_comparison_to_query(Query &query, const Schema &schema, const O
             do_add_null_comparison_to_query<Link>(query, cmp.op, expr, args);
             break;
         case realm::PropertyType::Array:
-            throw std::runtime_error((std::string)"Comparing Lists to 'null' is not supported");
-            break;
+            throw std::runtime_error("Comparing Lists to 'null' is not supported");
         default: {
-            throw std::runtime_error((std::string)"Object type " + string_for_property_type(type) + " not supported");
+            throw std::runtime_error(std::string("Object type ") + string_for_property_type(type) + " not supported");
         }
     }
 }

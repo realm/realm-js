@@ -207,7 +207,7 @@ namespace realm {
                 auto string_value = Accessor::to_string(ctx, value);
                 m_row.set_string(column, string_value);
                 break;
-			}
+            }
             case PropertyType::Data:
                 m_row.set_binary(column, BinaryData(Accessor::to_binary(ctx, value)));
                 break;
