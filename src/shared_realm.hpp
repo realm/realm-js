@@ -132,7 +132,7 @@ namespace realm {
         // Realm after closing it will produce undefined behavior.
         void close();
 
-        // returns the file format version upgraded from, or 0 if not upgraded
+        // returns the file format version upgraded from if an upgrade took place
         util::Optional<int> file_format_upgraded_from_version() const;
 
         ~Realm();
