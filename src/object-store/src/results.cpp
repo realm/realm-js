@@ -497,22 +497,6 @@ NotificationToken Results::add_notification_callback(CollectionChangeCallback cb
     return {m_notifier, m_notifier->add_callback(std::move(cb))};
 }
 
-void Results::add_notification_callback(CollectionChangeCallback cb, size_t token)
-{
-    prepare_async();
-    m_notifier->add_callback(std::move(cb), token);
-}
-
-void Results::remove_notification_callback(size_t token)
-{
-    m_notifier->remove_callback(token);
-}
-
-void Results::remove_all_notification_callbacks()
-{
-    m_notifier->remove_all_callbacks();
-}
-
 bool Results::is_in_table_order() const
 {
     switch (m_mode) {

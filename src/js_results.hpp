@@ -30,7 +30,24 @@ namespace realm {
 namespace js {
 
 template<typename T>
-struct ResultsClass : ClassDefinition<T, realm::Results, CollectionClass<T>> {
+class Results : public realm::Results {
+  public:
+    Results(Results const&) : realm::Results(*this) {};
+    Results(Results&&) = default;
+    Results& operator=(Results&&) = default;
+    Results& operator=(Results const&) = default;
+    
+    Results() = default;
+    Results(SharedRealm r, const ObjectSchema& o, Table& table) : realm::Results(r, o, table) {}
+    Results(SharedRealm r, const ObjectSchema& o, Query q, SortOrder s = {}) : realm::Results(r, o, q, s) {}
+    Results(SharedRealm r, const ObjectSchema& o, TableView tv, SortOrder s) : realm::Results(r, o, tv, s) {}
+    Results(SharedRealm r, const ObjectSchema& o, LinkViewRef lv, util::Optional<Query> q = {}, SortOrder s = {}) : realm::Results(r, o, lv, q, s) {}
+    
+    std::map<typename FunctionComparator<T>::ComparableFunction, NotificationToken, FunctionComparator<T>> m_notification_tokens;
+};
+
+template<typename T>
+struct ResultsClass : ClassDefinition<T, realm::js::Results<T>, CollectionClass<T>> {
     using ContextType = typename T::Context;
     using ObjectType = typename T::Object;
     using ValueType = typename T::Value;
@@ -39,7 +56,7 @@ struct ResultsClass : ClassDefinition<T, realm::Results, CollectionClass<T>> {
     using Value = js::Value<T>;
     using ReturnValue = js::ReturnValue<T>;
 
-    static ObjectType create_instance(ContextType, const realm::Results &, bool live = true);
+    static ObjectType create_instance(ContextType, const realm::js::Results<T> &, bool live = true);
     static ObjectType create_instance(ContextType, const realm::List &, bool live = true);
     static ObjectType create_instance(ContextType, SharedRealm, const std::string &type, bool live = true);
     static ObjectType create_instance(ContextType, SharedRealm, const ObjectSchema &, Query, bool live = true);
@@ -83,8 +100,8 @@ struct ResultsClass : ClassDefinition<T, realm::Results, CollectionClass<T>> {
 };
 
 template<typename T>
-typename T::Object ResultsClass<T>::create_instance(ContextType ctx, const realm::Results &results, bool live) {
-    auto new_results = new realm::Results(results);
+typename T::Object ResultsClass<T>::create_instance(ContextType ctx, const realm::js::Results<T> &results, bool live) {
+    auto new_results = new realm::js::Results<T>(results);
     new_results->set_live(live);
 
     return create_object<T, ResultsClass<T>>(ctx, new_results);
@@ -105,7 +122,7 @@ typename T::Object ResultsClass<T>::create_instance(ContextType ctx, SharedRealm
         throw std::runtime_error("Object type '" + type + "' not present in Realm.");
     }
 
-    auto results = new realm::Results(realm, *object_schema, *table);
+    auto results = new realm::js::Results<T>(realm, *object_schema, *table);
     results->set_live(live);
 
     return create_object<T, ResultsClass<T>>(ctx, results);
@@ -113,7 +130,7 @@ typename T::Object ResultsClass<T>::create_instance(ContextType ctx, SharedRealm
 
 template<typename T>
 typename T::Object ResultsClass<T>::create_instance(ContextType ctx, SharedRealm realm, const ObjectSchema &object_schema, Query query, bool live) {
-    auto results = new realm::Results(realm, object_schema, std::move(query));
+    auto results = new realm::js::Results<T>(realm, object_schema, std::move(query));
     results->set_live(live);
 
     return create_object<T, ResultsClass<T>>(ctx, results);
@@ -195,7 +212,7 @@ typename T::Object ResultsClass<T>::create_sorted(ContextType ctx, const U &coll
         columns.push_back(prop->table_column);
     }
 
-    auto results = new realm::Results(realm, object_schema, collection.get_query(), {std::move(columns), std::move(ascending)});
+    auto results = new realm::js::Results<T>(realm, object_schema, collection.get_query(), {std::move(columns), std::move(ascending)});
     return create_object<T, ResultsClass<T>>(ctx, results);
 }
 
@@ -253,18 +270,19 @@ template<typename T>
 void ResultsClass<T>::add_listener(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 1);
     
-    auto list = get_internal<T, ResultsClass<T>>(this_object);
+    auto results = get_internal<T, ResultsClass<T>>(this_object);
     auto callback = Value::validated_to_function(ctx, arguments[0]);
     Protected<FunctionType> protected_callback(ctx, callback);
     Protected<ObjectType> protected_this(ctx, this_object);
     Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
     
-    list->add_notification_callback([=](CollectionChangeSet change_set, std::exception_ptr exception) {
+    auto token = results->add_notification_callback([=](CollectionChangeSet change_set, std::exception_ptr exception) {
         ValueType arguments[2];
         arguments[0] = protected_this;
         arguments[1] = CollectionClass<T>::create_collection_change_set(protected_ctx, change_set);
         Function<T>::call(protected_ctx, protected_callback, protected_this, 2, arguments);
-    }, (size_t)(ValueType)callback);
+    });
+    results->m_notification_tokens.emplace(std::make_pair(protected_ctx, protected_callback), std::move(token));
 }
 
 template<typename T>
@@ -273,7 +291,6 @@ void ResultsClass<T>::remove_listener(ContextType ctx, ObjectType this_object, s
     
     auto results = get_internal<T, ResultsClass<T>>(this_object);
     auto callback = Value::validated_to_function(ctx, arguments[0]);
-    results->remove_notification_callback((size_t)(ValueType)callback);
 }
 
 template<typename T>
@@ -281,7 +298,6 @@ void ResultsClass<T>::remove_all_listeners(ContextType ctx, ObjectType this_obje
     validate_argument_count(argc, 0);
     
     auto results = get_internal<T, ResultsClass<T>>(this_object);
-    results->remove_all_notification_callbacks();
 }
     
 } // js

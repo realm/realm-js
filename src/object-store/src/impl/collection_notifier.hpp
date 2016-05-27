@@ -109,7 +109,7 @@ public:
     // Add a callback to be called each time the collection changes
     // This can only be called from the target collection's thread
     // Returns a token which can be passed to remove_callback()
-    size_t add_callback(CollectionChangeCallback callback, size_t token = 0);
+    size_t add_callback(CollectionChangeCallback callback);
     // Remove a previously added token. The token is no longer valid after
     // calling this function and must not be used again. This function can be
     // called from any thread.

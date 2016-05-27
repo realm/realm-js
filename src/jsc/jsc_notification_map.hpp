@@ -18,16 +18,17 @@
 
 #pragma once
 
-#include "jsc_init.h"
-#include "jsc_string.hpp"
-#include "jsc_protected.hpp"
-#include "jsc_context.hpp"
-#include "jsc_value.hpp"
-#include "jsc_object.hpp"
-#include "jsc_function.hpp"
-#include "jsc_exception.hpp"
-#include "jsc_return_value.hpp"
-#include "jsc_object_accessor.hpp"
-#include "jsc_notification_map.hpp"
+#include "jsc_types.hpp"
 
-#include "js_realm.hpp"
+namespace realm {
+namespace js {
+   
+template<>
+bool FunctionComparator<jsc::Types>::operator()(const ComparableFunction& a, const ComparableFunction& b) const {
+    if ((JSGlobalContextRef)a.first != (JSGlobalContextRef)b.first) {
+        return false;
+    }
+    return JSValueIsStrictEqual(a.first, a.second, b.second);
+}
+    
+}}

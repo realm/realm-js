@@ -33,7 +33,16 @@ namespace realm {
 namespace js {
 
 template<typename T>
-struct ListClass : ClassDefinition<T, realm::List, CollectionClass<T>> {
+class List : public realm::List {
+  public:
+    List(std::shared_ptr<Realm> r, const ObjectSchema& s, LinkViewRef l) noexcept : realm::List(r, s, l) {}
+    List(const realm::List &l) : realm::List(l) {}
+    
+    std::map<typename FunctionComparator<T>::ComparableFunction, NotificationToken, FunctionComparator<T>> m_notification_tokens;
+};
+
+template<typename T>
+struct ListClass : ClassDefinition<T, realm::js::List<T>, CollectionClass<T>> {
     using ContextType = typename T::Context;
     using ObjectType = typename T::Object;
     using ValueType = typename T::Value;
@@ -91,7 +100,7 @@ struct ListClass : ClassDefinition<T, realm::List, CollectionClass<T>> {
 
 template<typename T>
 typename T::Object ListClass<T>::create_instance(ContextType ctx, realm::List &list) {
-    return create_object<T, ListClass<T>>(ctx, new realm::List(list));
+    return create_object<T, ListClass<T>>(ctx, new realm::js::List<T>(list));
 }
 
 template<typename T>
@@ -255,7 +264,7 @@ void ListClass<T>::add_listener(ContextType ctx, ObjectType this_object, size_t 
         arguments[0] = protected_this;
         arguments[1] = Value::from_undefined(protected_ctx);
         Function<T>::call(protected_ctx, protected_callback, protected_this, 2, arguments);
-    }, (size_t)(ValueType)callback);
+    });
 }
     
 template<typename T>
@@ -264,7 +273,6 @@ void ListClass<T>::remove_listener(ContextType ctx, ObjectType this_object, size
     
     auto list = get_internal<T, ListClass<T>>(this_object);
     auto callback = Value::validated_to_function(ctx, arguments[0]);
-    list->remove_notification_callback((size_t)(ValueType)callback);
 }
     
 template<typename T>
@@ -272,7 +280,6 @@ void ListClass<T>::remove_all_listeners(ContextType ctx, ObjectType this_object,
     validate_argument_count(argc, 0);
 
     auto list = get_internal<T, ListClass<T>>(this_object);
-    list->remove_all_notification_callbacks();
 }
 
 } // js

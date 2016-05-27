@@ -165,16 +165,15 @@ CollectionNotifier::~CollectionNotifier()
     unregister();
 }
 
-size_t CollectionNotifier::add_callback(CollectionChangeCallback callback, size_t token)
+size_t CollectionNotifier::add_callback(CollectionChangeCallback callback)
 {
     m_realm->verify_thread();
 
     std::lock_guard<std::mutex> lock(m_callback_mutex);
-    if (token == 0) {
-        for (auto& callback : m_callbacks) {
-            if (token <= callback.token) {
-                token = callback.token + 1;
-            }
+    size_t token = 0;
+    for (auto& callback : m_callbacks) {
+        if (token <= callback.token) {
+            token = callback.token + 1;
         }
     }
 

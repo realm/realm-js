@@ -180,10 +180,7 @@ public:
     // and then rerun after each commit (if needed) and redelivered if it changed
     NotificationToken async(std::function<void (std::exception_ptr)> target);
     NotificationToken add_notification_callback(CollectionChangeCallback cb);
-    void add_notification_callback(CollectionChangeCallback cb, size_t token);
-    void remove_notification_callback(size_t token);
-    void remove_all_notification_callbacks();
-    
+
     bool wants_background_updates() const { return m_wants_background_updates; }
 
     // Returns whether the rows are guaranteed to be in table order.

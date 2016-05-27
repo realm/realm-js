@@ -289,6 +289,12 @@ struct ReturnValue {
     void set_undefined();
 };
 
+template<typename T>
+struct FunctionComparator {
+    using ComparableFunction = std::pair<Protected<typename T::GlobalContext>, Protected<typename T::Function>>;
+    bool operator()(const ComparableFunction& a, const ComparableFunction& b) const;
+};
+    
 template<typename T, typename ClassType>
 REALM_JS_INLINE typename T::Object create_object(typename T::Context ctx, typename ClassType::Internal* internal = nullptr) {
     return Object<T>::template create_instance<ClassType>(ctx, internal);

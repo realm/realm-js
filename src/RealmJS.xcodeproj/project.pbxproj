@@ -98,6 +98,7 @@
 		02414B9F1CE6AAEF00A8669F /* results_notifier.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = results_notifier.cpp; path = src/impl/results_notifier.cpp; sourceTree = "<group>"; };
 		02414BA01CE6AAEF00A8669F /* results_notifier.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = results_notifier.hpp; path = src/impl/results_notifier.hpp; sourceTree = "<group>"; };
 		025678951CAB392000FB8501 /* jsc_types.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = jsc_types.hpp; sourceTree = "<group>"; };
+		026D72111CF8B23C00EF1DCC /* jsc_notification_map.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = jsc_notification_map.hpp; sourceTree = "<group>"; };
 		0270BC5A1B7CFC1300010E03 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		0270BC781B7D020100010E03 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = ios/Info.plist; sourceTree = "<group>"; };
 		0270BC7A1B7D020100010E03 /* RealmJSTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RealmJSTests.h; path = ios/RealmJSTests.h; sourceTree = "<group>"; };
@@ -507,6 +508,7 @@
 				F60103081CC4B4F900EC01BA /* jsc_protected.hpp */,
 				F60103141CC4CC8C00EC01BA /* jsc_return_value.hpp */,
 				F60102E71CBBB36500EC01BA /* jsc_object_accessor.hpp */,
+				026D72111CF8B23C00EF1DCC /* jsc_notification_map.hpp */,
 			);
 			name = JSC;
 			path = jsc;
