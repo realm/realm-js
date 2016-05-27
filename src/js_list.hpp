@@ -38,7 +38,7 @@ class List : public realm::List {
     List(std::shared_ptr<Realm> r, const ObjectSchema& s, LinkViewRef l) noexcept : realm::List(r, s, l) {}
     List(const realm::List &l) : realm::List(l) {}
     
-    std::map<typename FunctionComparator<T>::ComparableFunction, NotificationToken, FunctionComparator<T>> m_notification_tokens;
+    std::map<Protected<typename T::Function>, NotificationToken, Protected<typename T::Function>> m_notification_tokens;
 };
 
 template<typename T>

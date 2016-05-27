@@ -32,7 +32,7 @@ namespace js {
 template<typename T>
 class Results : public realm::Results {
   public:
-    Results(Results const&) : realm::Results(*this) {};
+    Results(Results const& r) : realm::Results(r) {};
     Results(Results&&) = default;
     Results& operator=(Results&&) = default;
     Results& operator=(Results const&) = default;
@@ -43,7 +43,7 @@ class Results : public realm::Results {
     Results(SharedRealm r, const ObjectSchema& o, TableView tv, SortOrder s) : realm::Results(r, o, tv, s) {}
     Results(SharedRealm r, const ObjectSchema& o, LinkViewRef lv, util::Optional<Query> q = {}, SortOrder s = {}) : realm::Results(r, o, lv, q, s) {}
     
-    std::map<typename FunctionComparator<T>::ComparableFunction, NotificationToken, FunctionComparator<T>> m_notification_tokens;
+    std::map<Protected<typename T::Function>, NotificationToken, Protected<typename T::Function>> m_notification_tokens;
 };
 
 template<typename T>
@@ -282,7 +282,7 @@ void ResultsClass<T>::add_listener(ContextType ctx, ObjectType this_object, size
         arguments[1] = CollectionClass<T>::create_collection_change_set(protected_ctx, change_set);
         Function<T>::call(protected_ctx, protected_callback, protected_this, 2, arguments);
     });
-    results->m_notification_tokens.emplace(std::make_pair(protected_ctx, protected_callback), std::move(token));
+    results->m_notification_tokens.emplace(protected_callback, std::move(token));
 }
 
 template<typename T>

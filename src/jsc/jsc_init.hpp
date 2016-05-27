@@ -28,6 +28,5 @@
 #include "jsc_exception.hpp"
 #include "jsc_return_value.hpp"
 #include "jsc_object_accessor.hpp"
-#include "jsc_notification_map.hpp"
 
 #include "js_realm.hpp"

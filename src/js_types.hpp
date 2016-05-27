@@ -247,6 +247,7 @@ class Protected {
     bool operator!=(const ValueType &) const;
     bool operator==(const Protected<ValueType> &) const;
     bool operator!=(const Protected<ValueType> &) const;
+    bool operator()(const Protected<ValueType>& a, const Protected<ValueType>& b) const;
 };
 
 template<typename T>
@@ -287,12 +288,6 @@ struct ReturnValue {
     void set(uint32_t);
     void set_null();
     void set_undefined();
-};
-
-template<typename T>
-struct FunctionComparator {
-    using ComparableFunction = std::pair<Protected<typename T::GlobalContext>, Protected<typename T::Function>>;
-    bool operator()(const ComparableFunction& a, const ComparableFunction& b) const;
 };
     
 template<typename T, typename ClassType>
