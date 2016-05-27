@@ -48,9 +48,11 @@ class Protected<JSGlobalContextRef> {
         return m_context != nullptr;
     }
     
-    bool operator() (const Protected<JSGlobalContextRef>& a, const Protected<JSGlobalContextRef>& b) const {
-        return a.m_context == b.m_context;
-    }
+    struct Comparator {
+        bool operator() (const Protected<JSGlobalContextRef>& a, const Protected<JSGlobalContextRef>& b) const {
+            return a.m_context == b.m_context;
+        }
+    };
 };
 
 template<>
@@ -79,12 +81,15 @@ class Protected<JSValueRef> {
     operator bool() const {
         return m_value != nullptr;
     }
-    bool operator() (const Protected<JSValueRef>& a, const Protected<JSValueRef>& b) const {
-        if (a.m_context != b.m_context) {
-            return false;
+    
+    struct Comparator {
+        bool operator() (const Protected<JSValueRef>& a, const Protected<JSValueRef>& b) const {
+            if (a.m_context != b.m_context) {
+                return false;
+            }
+            return JSValueIsStrictEqual(a.m_context, a.m_value, b.m_value);
         }
-        return JSValueIsStrictEqual(a.m_context, a.m_value, b.m_value);
-    }
+    };
 };
 
 template<>

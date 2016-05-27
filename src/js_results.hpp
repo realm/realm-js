@@ -43,7 +43,7 @@ class Results : public realm::Results {
     Results(SharedRealm r, const ObjectSchema& o, TableView tv, SortOrder s) : realm::Results(r, o, tv, s) {}
     Results(SharedRealm r, const ObjectSchema& o, LinkViewRef lv, util::Optional<Query> q = {}, SortOrder s = {}) : realm::Results(r, o, lv, q, s) {}
     
-    std::map<Protected<typename T::Function>, NotificationToken, Protected<typename T::Function>> m_notification_tokens;
+    std::map<Protected<typename T::Function>, NotificationToken, typename Protected<typename T::Function>::Comparator> m_notification_tokens;
 };
 
 template<typename T>
