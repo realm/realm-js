@@ -152,7 +152,7 @@ public:
     bool deliver(Realm&, SharedGroup&, std::exception_ptr);
 
 protected:
-    bool have_callbacks() const noexcept { return m_have_callbacks; }
+    bool have_callbacks() const noexcept { return m_callbacks.size() > 0; }
     void add_changes(CollectionChangeBuilder change) { m_accumulated_changes.merge(std::move(change)); }
     void set_table(Table const& table);
     std::unique_lock<std::mutex> lock_target();
@@ -188,18 +188,6 @@ private:
     // while doing anything with them or m_callback_index
     std::mutex m_callback_mutex;
     std::vector<Callback> m_callbacks;
-
-    // Cached value for if m_callbacks is empty, needed to avoid deadlocks in
-    // run() due to lock-order inversion between m_callback_mutex and m_target_mutex
-    // It's okay if this value is stale as at worst it'll result in us doing
-    // some extra work.
-    std::atomic<bool> m_have_callbacks = {false};
-
-    // Iteration variable for looping over callbacks
-    // remove_callback() updates this when needed
-    size_t m_callback_index = npos;
-
-    CollectionChangeCallback next_callback();
 };
 
 } // namespace _impl

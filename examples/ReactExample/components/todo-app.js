@@ -41,16 +41,18 @@ export default class TodoApp extends Component {
 
         // This is a Results object, which will live-update.
         this.todoLists = realm.objects('TodoList');
-        this.todoLists.addListener(function(name, changes) {
-            console.log("changed: " + JSON.stringify(changes));
-        });
-        console.log("registered listener");
-
         if (this.todoLists.length < 1) {
             realm.write(() => {
                 realm.create('TodoList', {name: 'Todo List'});
             });
         }
+
+        this.anotherList = realm.objects('TodoList');
+        this.anotherList.addListener(function(name, changes) {
+            console.log("changed: " + JSON.stringify(changes));
+        });
+        console.log("registered listener");
+
 
         // Bind all the methods that we will be passing as props.
         this.renderScene = this.renderScene.bind(this);
@@ -83,7 +85,6 @@ export default class TodoApp extends Component {
             component: TodoListView,
             passProps: {
                 ref: 'listView',
-                items: this.todoLists,
                 extraItems: extraItems,
                 onPressItem: this._onPressTodoList,
             },
@@ -109,7 +110,7 @@ export default class TodoApp extends Component {
     }
 
     renderScene(route) {
-        return <route.component {...route.passProps} />
+        return <route.component items={this.todoLists} {...route.passProps} />
     }
 
     _addNewTodoItem(list) {
