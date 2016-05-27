@@ -291,6 +291,7 @@ void ResultsClass<T>::remove_listener(ContextType ctx, ObjectType this_object, s
     
     auto results = get_internal<T, ResultsClass<T>>(this_object);
     auto callback = Value::validated_to_function(ctx, arguments[0]);
+    results->m_notification_tokens.erase(Protected<FunctionType>(ctx, callback));
 }
 
 template<typename T>
@@ -298,6 +299,7 @@ void ResultsClass<T>::remove_all_listeners(ContextType ctx, ObjectType this_obje
     validate_argument_count(argc, 0);
     
     auto results = get_internal<T, ResultsClass<T>>(this_object);
+    results->m_notification_tokens.clear();
 }
     
 } // js
