@@ -43,13 +43,14 @@ export default class TodoApp extends Component {
         this.todoLists = realm.objects('TodoList');
         if (this.todoLists.length < 1) {
             realm.write(() => {
-                realm.create('TodoList', {name: 'Todo List'});
+                realm.create('TodoList', {name: 'Todo List', creationDate: new Date()});
             });
         }
 
-        this.anotherList = realm.objects('TodoList');
+        this.anotherList = realm.objects('TodoList').sorted('creationDate');
         this.anotherList.addListener(function(name, changes) {
             console.log("changed: " + JSON.stringify(changes));
+            this.todoLists = this.anotherList;
         });
         console.log("registered listener");
 
@@ -110,6 +111,7 @@ export default class TodoApp extends Component {
     }
 
     renderScene(route) {
+        console.log(this.todoLists);
         return <route.component items={this.todoLists} {...route.passProps} />
     }
 
@@ -133,7 +135,7 @@ export default class TodoApp extends Component {
         }
 
         realm.write(() => {
-            realm.create('TodoList', {name: ''});
+            realm.create('TodoList', {name: '', creationDate: new Date()});
         });
 
         this._setEditingRow(items.length - 1);

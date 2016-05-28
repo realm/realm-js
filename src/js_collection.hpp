@@ -47,7 +47,7 @@ template<typename T>
 typename T::Value CollectionClass<T>::create_collection_change_set(ContextType ctx, const CollectionChangeSet &change_set)
 {
     ObjectType object = Object::create_empty(ctx);
-    std::vector<ValueType> deletions, insertions, modifications, moves;
+    std::vector<ValueType> deletions, insertions, modifications;
     for (auto index : change_set.deletions.as_indexes()) {
         deletions.push_back(Value::from_number(ctx, index));
     }
@@ -62,14 +62,6 @@ typename T::Value CollectionClass<T>::create_collection_change_set(ContextType c
         modifications.push_back(Value::from_number(ctx, index));
     }
     Object::set_property(ctx, object, "modifications", Object::create_array(ctx, modifications));
-
-    for (auto& move : change_set.moves) {
-        ObjectType move_object = Object::create_empty(ctx);
-        Object::set_property(ctx, move_object, "from", Value::from_number(ctx, move.from));
-        Object::set_property(ctx, move_object, "to", Value::from_number(ctx, move.to));
-        moves.push_back(move_object);
-    }
-    Object::set_property(ctx, object, "moves", Object::create_array(ctx, moves));
 
     return object;
 }
