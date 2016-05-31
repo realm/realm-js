@@ -30,12 +30,7 @@ using namespace realm;
 using namespace realm::_impl;
 
 List::List() noexcept = default;
-List::~List()
-{
-    if (m_notifier) {
-        m_notifier->unregister();
-    }
-}
+List::~List() = default;
 
 List::List(std::shared_ptr<Realm> r, const ObjectSchema& s, LinkViewRef l) noexcept
 : m_realm(std::move(r))
