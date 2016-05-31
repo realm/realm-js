@@ -125,7 +125,7 @@ struct NativeAccessor {
         throw std::runtime_error("object is not a Realm Object");
     }
     static ValueType from_object(ContextType ctx, realm::Object realm_object) {
-        return RealmObjectClass<T>::create_instance(ctx, realm_object);
+        return RealmObjectClass<T>::create_instance(ctx, std::move(realm_object));
     }
 
     static size_t list_size(ContextType ctx, ValueType &value) {
