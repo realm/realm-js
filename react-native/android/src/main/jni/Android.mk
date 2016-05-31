@@ -37,7 +37,8 @@ LOCAL_SRC_FILES := \
   src/object-store/src/impl/realm_coordinator.cpp \
   src/object-store/src/impl/results_notifier.cpp \
   src/object-store/src/impl/transact_log_handler.cpp \
-  src/object-store/src/impl/generic/external_commit_helper.cpp \
+  src/object-store/src/impl/android/external_commit_helper.cpp \
+  src/object-store/src/impl/android/weak_realm_notifier.cpp \
   vendor/base64.cpp
 
 LOCAL_C_INCLUDES := src
