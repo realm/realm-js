@@ -41,7 +41,7 @@ struct ListClass : ClassDefinition<T, realm::List, CollectionClass<T>> {
     using Value = js::Value<T>;
     using ReturnValue = js::ReturnValue<T>;
 
-    static ObjectType create_instance(ContextType, realm::List &);
+    static ObjectType create_instance(ContextType, realm::List);
 
     // properties
     static void get_length(ContextType, ObjectType, ReturnValue &);
@@ -81,8 +81,8 @@ struct ListClass : ClassDefinition<T, realm::List, CollectionClass<T>> {
 };
 
 template<typename T>
-typename T::Object ListClass<T>::create_instance(ContextType ctx, realm::List &list) {
-    return create_object<T, ListClass<T>>(ctx, new realm::List(list));
+typename T::Object ListClass<T>::create_instance(ContextType ctx, realm::List list) {
+    return create_object<T, ListClass<T>>(ctx, new realm::List(std::move(list)));
 }
 
 template<typename T>
