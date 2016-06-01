@@ -86,21 +86,7 @@ Results::Results(SharedRealm r, const ObjectSchema& o, TableView tv, SortOrder s
     REALM_ASSERT(m_sort.column_indices.size() == m_sort.ascending.size());
 }
 
-Results::Results(const Results& other)
-: m_realm(other.m_realm)
-, m_object_schema(other.m_object_schema)
-, m_query(other.m_query)
-, m_table_view(other.m_table_view)
-, m_link_view(other.m_link_view)
-, m_table(other.m_table)
-, m_sort(other.m_sort)
-, m_live(other.m_live)
-, m_notifier()
-, m_mode(other.m_mode)
-, m_has_used_table_view(false)
-, m_wants_background_updates(true)
-{
-}
+Results::Results(const Results& other) = default;
 
 #if 0
 // FIXME: TableViewBase::operator= is missing from the core static library.
@@ -538,6 +524,7 @@ void Results::prepare_async()
     }
 
     if (!m_notifier) {
+        m_wants_background_updates = true;
         m_notifier = std::make_shared<_impl::ResultsNotifier>(*this);
         _impl::RealmCoordinator::register_notifier(m_notifier);
     }
