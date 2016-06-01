@@ -68,8 +68,8 @@ function(download_realm_core core_version)
 endfunction()
 
 macro(define_built_realm_core_target core_directory)
-    set(core_library_debug ${core_directory}/src/realm/librealm-dbg${CMAKE_SHARED_LIBRARY_SUFFIX})
-    set(core_library_release ${core_directory}/src/realm/librealm${CMAKE_SHARED_LIBRARY_SUFFIX})
+    set(core_library_debug ${core_directory}/src/realm/librealm-dbg.a)
+    set(core_library_release ${core_directory}/src/realm/librealm.a)
     set(core_libraries ${core_library_debug} ${core_library_release})
 
     ExternalProject_Add_Step(realm-core ensure-libraries
@@ -78,7 +78,7 @@ macro(define_built_realm_core_target core_directory)
         DEPENDEES build
         )
 
-    add_library(realm SHARED IMPORTED)
+    add_library(realm STATIC IMPORTED)
     add_dependencies(realm realm-core)
 
     set_property(TARGET realm PROPERTY IMPORTED_LOCATION_DEBUG ${core_library_debug})
@@ -97,7 +97,7 @@ function(clone_and_build_realm_core branch)
         PREFIX ${core_prefix_directory}
         BUILD_IN_SOURCE 1
         CONFIGURE_COMMAND ""
-        BUILD_COMMAND export ${MAKEFLAGS} && ${MAKE_EQUAL_MAKE} sh build.sh build
+        BUILD_COMMAND export ${MAKEFLAGS} && make -C src/realm librealm.a librealm-dbg.a
         INSTALL_COMMAND ""
         ${USES_TERMINAL_BUILD}
         )
@@ -115,7 +115,7 @@ function(build_existing_realm_core core_directory)
         BUILD_IN_SOURCE 1
         BUILD_ALWAYS 1
         CONFIGURE_COMMAND ""
-        BUILD_COMMAND export ${MAKEFLAGS} && ${MAKE_EQUAL_MAKE} sh build.sh build
+        BUILD_COMMAND export ${MAKEFLAGS} && make -C src/realm librealm.a librealm-dbg.a
         INSTALL_COMMAND ""
         ${USES_TERMINAL_BUILD}
         )
