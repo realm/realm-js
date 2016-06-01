@@ -662,3 +662,52 @@ TEST_CASE("[migration] ReadOnly") {
         }
     }
 }
+
+TEST_CASE("[migration] ResetFile") {
+    TestFile config;
+    config.schema_mode = SchemaMode::ResetFile;
+
+    Schema initial_schema = {
+        {"object", {
+            {"value", PropertyType::Int, "", "", false, false, false},
+        }},
+    };
+
+    {
+        auto realm = Realm::get_shared_realm(config);
+        realm->update_schema(initial_schema);
+        realm->begin_transaction();
+        ObjectStore::table_for_object_type(realm->read_group(), "object")->add_empty_row();
+        realm->commit_transaction();
+    }
+    auto realm = Realm::get_shared_realm(config);
+
+    SECTION("file is reset when schema version increases") {
+        realm->update_schema(initial_schema, 1);
+        REQUIRE(ObjectStore::table_for_object_type(realm->read_group(), "object")->size() == 0);
+    }
+
+    SECTION("file is reset when an existing table is modified") {
+        realm->update_schema(add_property(initial_schema, "object",
+                                          {"value 2", PropertyType::Int, "", "", false, false, false}));
+        REQUIRE(ObjectStore::table_for_object_type(realm->read_group(), "object")->size() == 0);
+    }
+
+    SECTION("file is not reset when adding a new table") {
+        realm->update_schema(add_table(initial_schema, {"object 2", {
+            {"value", PropertyType::Int, "", "", false, false, false},
+        }}));
+        REQUIRE(ObjectStore::table_for_object_type(realm->read_group(), "object")->size() == 1);
+    }
+
+    SECTION("file is not reset when adding an index") {
+        realm->update_schema(set_indexed(initial_schema, "object", "value", true));
+        REQUIRE(ObjectStore::table_for_object_type(realm->read_group(), "object")->size() == 1);
+    }
+
+    SECTION("file is not reset when removing an index") {
+        realm->update_schema(set_indexed(initial_schema, "object", "value", true));
+        realm->update_schema(initial_schema);
+        REQUIRE(ObjectStore::table_for_object_type(realm->read_group(), "object")->size() == 1);
+    }
+}

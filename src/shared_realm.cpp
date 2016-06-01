@@ -187,6 +187,24 @@ bool Realm::update_schema_if_needed()
     return true;
 }
 
+void Realm::reset_file_if_needed(Schema const& schema, uint64_t version, std::vector<SchemaChange>& changes_required)
+{
+    if (m_schema_version == ObjectStore::NotVersioned)
+        return;
+    if (m_schema_version == version && !ObjectStore::needs_migration(changes_required))
+        return;
+
+    m_group = nullptr;
+    m_shared_group = nullptr;
+    m_history = nullptr;
+    util::File::remove(m_config.path);
+
+    open_with_config(m_config, m_history, m_shared_group, m_read_only_group, this);
+    m_schema = ObjectStore::schema_from_group(read_group());
+    m_schema_version = ObjectStore::get_schema_version(read_group());
+    changes_required = m_schema.compare(schema);
+}
+
 void Realm::update_schema(Schema schema, uint64_t version, MigrationFunction migration_function)
 {
     schema.validate();
@@ -200,6 +218,10 @@ void Realm::update_schema(Schema schema, uint64_t version, MigrationFunction mig
         ObjectStore::verify_no_migration_required(m_schema.compare(schema));
         set_schema(std::move(schema), version);
         return;
+    }
+
+    if (m_config.schema_mode == SchemaMode::ResetFile) {
+        reset_file_if_needed(schema, version, changes_required);
     }
 
     auto no_changes_required = [&] {

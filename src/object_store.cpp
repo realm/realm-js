@@ -351,6 +351,25 @@ void verify_no_errors(Verifier&& verifier, std::vector<SchemaChange> const& chan
 }
 } // anonymous namespace
 
+bool ObjectStore::needs_migration(std::vector<SchemaChange> const& changes)
+{
+    using namespace schema_change;
+    struct Visitor {
+        bool operator()(AddIndex) { return false; }
+        bool operator()(AddProperty) { return true; }
+        bool operator()(AddTable) { return false; }
+        bool operator()(ChangePrimaryKey) { return true; }
+        bool operator()(ChangePropertyType) { return true; }
+        bool operator()(MakePropertyNullable) { return true; }
+        bool operator()(MakePropertyRequired) { return true; }
+        bool operator()(RemoveIndex) { return false; }
+        bool operator()(RemoveProperty) { return true; }
+    };
+
+    return std::any_of(begin(changes), end(changes),
+                       [](auto&& change) { return change.visit(Visitor()); });
+}
+
 void ObjectStore::verify_no_migration_required(std::vector<SchemaChange> const& changes)
 {
     using namespace schema_change;

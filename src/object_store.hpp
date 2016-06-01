@@ -58,6 +58,8 @@ public:
                                      Schema const& target_schema, uint64_t target_schema_version,
                                      std::vector<SchemaChange> const& changes, std::function<void()> migration_function={});
 
+    static bool needs_migration(std::vector<SchemaChange> const& changes);
+
     // get a table for an object type
     static realm::TableRef table_for_object_type(Group& group, StringData object_type);
     static realm::ConstTableRef table_for_object_type(Group const& group, StringData object_type);
