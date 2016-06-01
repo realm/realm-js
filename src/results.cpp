@@ -88,30 +88,16 @@ Results::Results(SharedRealm r, const ObjectSchema& o, TableView tv, SortOrder s
 
 Results::Results(const Results& other) = default;
 
-#if 0
-// FIXME: TableViewBase::operator= is missing from the core static library.
+// Cannot be defaulted as TableViewBase::operator= is missing from the core static library.
+// Delegate to the copy constructor and move-assignment operators instead.
 Results& Results::operator=(const Results& other)
 {
-    if (this == &other) {
-        return *this;
+    if (this != &other) {
+        *this = Results(other);
     }
-
-    m_realm = other.m_realm;
-    m_object_schema = other.m_object_schema;
-    m_query = other.m_query;
-    m_table_view = other.m_table_view;
-    m_link_view = other.m_link_view;
-    m_table = other.m_table;
-    m_sort = other.m_sort;
-    m_live = other.m_live;
-    m_notifier.reset();
-    m_mode = other.m_mode;
-    m_has_used_table_view = false;
-    m_wants_background_updates = true;
 
     return *this;
 }
-#endif
 
 Results::Results(Results&& other)
 : m_realm(std::move(other.m_realm))
@@ -134,23 +120,8 @@ Results::Results(Results&& other)
 
 Results& Results::operator=(Results&& other)
 {
-    m_realm = std::move(other.m_realm);
-    m_object_schema = std::move(other.m_object_schema);
-    m_query = std::move(other.m_query);
-    m_table_view = std::move(other.m_table_view);
-    m_link_view = std::move(other.m_link_view);
-    m_table = other.m_table;
-    m_sort = std::move(other.m_sort);
-    m_live = other.m_live;
-    m_notifier = std::move(other.m_notifier);
-    m_mode = other.m_mode;
-    m_has_used_table_view = other.m_has_used_table_view;
-    m_wants_background_updates = other.m_wants_background_updates;
-
-    if (m_notifier) {
-        m_notifier->target_results_moved(other, *this);
-    }
-
+    this->~Results();
+    new (this) Results(std::move(other));
     return *this;
 }
 
