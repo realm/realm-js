@@ -491,7 +491,7 @@ void RealmClass<T>::create(ContextType ctx, ObjectType this_object, size_t argc,
     }
 
     auto realm_object = realm::Object::create<ValueType>(ctx, realm, *object_schema, object, update);
-    return_value.set(RealmObjectClass<T>::create_instance(ctx, realm_object));
+    return_value.set(RealmObjectClass<T>::create_instance(ctx, std::move(realm_object)));
 }
 
 template<typename T>

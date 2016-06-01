@@ -208,7 +208,7 @@ void ResultsClass<T>::get_index(ContextType ctx, ObjectType object, uint32_t ind
     }
 
     auto realm_object = realm::Object(results->get_realm(), results->get_object_schema(), results->get(index));
-    return_value.set(RealmObjectClass<T>::create_instance(ctx, realm_object));
+    return_value.set(RealmObjectClass<T>::create_instance(ctx, std::move(realm_object)));
 }
 
 template<typename T>
