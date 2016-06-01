@@ -70,6 +70,11 @@
 		F674784A1CC81F1900F9273C /* platform.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F67478481CC81F1300F9273C /* platform.cpp */; };
 		F68A278C1BC2722A0063D40A /* RJSModuleLoader.m in Sources */ = {isa = PBXBuildFile; fileRef = F68A278B1BC2722A0063D40A /* RJSModuleLoader.m */; };
 		F6BCCFE21C8380A400FE31AE /* lib in Resources */ = {isa = PBXBuildFile; fileRef = F6BCCFDF1C83809A00FE31AE /* lib */; };
+		F6E931BA1CFEAE170016AF14 /* collection_notifications.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02414B961CE6AADD00A8669F /* collection_notifications.cpp */; };
+		F6E931BB1CFEAE310016AF14 /* collection_change_builder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02414B991CE6AAEF00A8669F /* collection_change_builder.cpp */; };
+		F6E931BC1CFEAE340016AF14 /* collection_notifier.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02414B9B1CE6AAEF00A8669F /* collection_notifier.cpp */; };
+		F6E931BD1CFEAE370016AF14 /* list_notifier.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02414B9D1CE6AAEF00A8669F /* list_notifier.cpp */; };
+		F6E931BE1CFEAE3A0016AF14 /* results_notifier.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02414B9F1CE6AAEF00A8669F /* results_notifier.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -748,16 +753,21 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F6E931BA1CFEAE170016AF14 /* collection_notifications.cpp in Sources */,
 				F60102D31CBB966E00EC01BA /* js_realm.cpp in Sources */,
 				F60102D61CBB96B400EC01BA /* object_schema.cpp in Sources */,
 				F60102D41CBB96AB00EC01BA /* index_set.cpp in Sources */,
 				F60102DB1CBB96C600EC01BA /* parser.cpp in Sources */,
+				F6E931BB1CFEAE310016AF14 /* collection_change_builder.cpp in Sources */,
 				F60102D51CBB96AE00EC01BA /* list.cpp in Sources */,
+				F6E931BC1CFEAE340016AF14 /* collection_notifier.cpp in Sources */,
 				F60102DC1CBB96C900EC01BA /* query_builder.cpp in Sources */,
 				F60102DD1CBB96CC00EC01BA /* external_commit_helper.cpp in Sources */,
 				F63117F01CEB0D5F00ECB2DE /* weak_realm_notifier.cpp in Sources */,
 				F60102E11CBB96DD00EC01BA /* transact_log_handler.cpp in Sources */,
+				F6E931BE1CFEAE3A0016AF14 /* results_notifier.cpp in Sources */,
 				F60102D71CBB96B800EC01BA /* object_store.cpp in Sources */,
+				F6E931BD1CFEAE370016AF14 /* list_notifier.cpp in Sources */,
 				F60102DA1CBB96C300EC01BA /* shared_realm.cpp in Sources */,
 				F60102E01CBB96D900EC01BA /* realm_coordinator.cpp in Sources */,
 				F60102EA1CBCAFC300EC01BA /* node_dummy.cpp in Sources */,
