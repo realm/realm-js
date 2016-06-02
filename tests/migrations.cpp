@@ -17,6 +17,8 @@ using namespace realm;
         auto table = ObjectStore::table_for_object_type((r).read_group(), object_schema.name); \
         REQUIRE(table); \
         CAPTURE(object_schema.name) \
+        std::string primary_key = ObjectStore::get_primary_key_for_object((r).read_group(), object_schema.name); \
+        REQUIRE(primary_key == object_schema.primary_key); \
         for (auto&& prop : object_schema.persisted_properties) { \
             size_t col = table->get_column_index(prop.name); \
             CAPTURE(prop.name) \
@@ -24,6 +26,7 @@ using namespace realm;
             REQUIRE(col == prop.table_column); \
             REQUIRE(table->get_column_type(col) == static_cast<int>(prop.type)); \
             REQUIRE(table->has_search_index(col) == prop.requires_index()); \
+            REQUIRE(prop.is_primary == (prop.name == primary_key)); \
         } \
     } \
 } while (0)
@@ -582,6 +585,191 @@ TEST_CASE("[migration] Automatic") {
             auto& properties = schema2.find("object")->persisted_properties;
             std::swap(properties[0], properties[1]);
             VERIFY_SCHEMA_IN_MIGRATION(schema2);
+        }
+    }
+
+    SECTION("property renaming") {
+        InMemoryTestFile config;
+        config.schema_mode = SchemaMode::Automatic;
+        auto realm = Realm::get_shared_realm(config);
+
+        struct Rename {
+            StringData object_type;
+            StringData old_name;
+            StringData new_name;
+        };
+
+        auto apply_renames = [&](std::initializer_list<Rename> renames) -> Realm::MigrationFunction {
+            return [=](SharedRealm, SharedRealm realm, Schema& schema) {
+                for (auto rename : renames) {
+                    ObjectStore::rename_property(realm->read_group(), schema,
+                                                 rename.object_type, rename.old_name, rename.new_name);
+                }
+            };
+        };
+
+#define FAILED_RENAME(old_schema, new_schema, error, ...) do { \
+    realm->update_schema(old_schema, 1); \
+    REQUIRE_THROWS_WITH(realm->update_schema(new_schema, 2, apply_renames({__VA_ARGS__})), error); \
+} while (false)
+
+        Schema schema = {
+            {"object", {
+                {"value", PropertyType::Int, "", "", false, false, false},
+            }},
+        };
+
+        SECTION("table does not exist in old schema") {
+            auto schema2 = add_table(schema, {"object 2", {
+                {"value 2", PropertyType::Int, "", "", false, false, false},
+            }});
+            FAILED_RENAME(schema, schema2,
+                          "Cannot rename property 'object 2.value' because it does not exist.",
+                          {"object 2", "value", "value 2"});
+        }
+
+        SECTION("table does not exist in new schema") {
+            FAILED_RENAME(schema, {},
+                          "Cannot rename properties for type 'object' because it has been removed from the Realm.",
+                          {"object", "value", "value 2"});
+        }
+
+        SECTION("property does not exist in old schema") {
+            auto schema2 = add_property(schema, "object", {"new", PropertyType::Int, "", "", false, false, false});
+            FAILED_RENAME(schema, schema2,
+                          "Cannot rename property 'object.nonexistent' because it does not exist.",
+                          {"object", "nonexistent", "new"});
+        }
+
+        auto rename_value = [](Schema schema) {
+            schema.find("object")->property_for_name("value")->name = "new";
+            return schema;
+        };
+
+        SECTION("property does not exist in new schema") {
+            FAILED_RENAME(schema, rename_value(schema),
+                          "Renamed property 'object.nonexistent' does not exist.",
+                          {"object", "value", "nonexistent"});
+        }
+
+        SECTION("source propety still exists in the new schema") {
+            auto schema2 = add_property(schema, "object",
+                                        {"new", PropertyType::Int, "", "", false, false, false});
+            FAILED_RENAME(schema, schema2,
+                          "Cannot rename property 'object.value' to 'new' because the source property still exists.",
+                          {"object", "value", "new"});
+        }
+
+        SECTION("different type") {
+            auto schema2 = rename_value(set_type(schema, "object", "value", PropertyType::Date));
+            FAILED_RENAME(schema, schema2,
+                          "Cannot rename property 'object.value' to 'new' because it would change from type 'int' to 'date'.",
+                          {"object", "value", "new"});
+        }
+
+        SECTION("different link targets") {
+            Schema schema = {
+                {"target", {
+                    {"value", PropertyType::Int, "", "", false, false, false},
+                }},
+                {"origin", {
+                    {"link", PropertyType::Object, "target", "", false, false, true},
+                }},
+            };
+            auto schema2 = set_target(schema, "origin", "link", "origin");
+            schema2.find("origin")->property_for_name("link")->name = "new";
+            FAILED_RENAME(schema, schema2,
+                          "Cannot rename property 'origin.link' to 'new' because it would change from type '<target>' to '<origin>'.",
+                          {"origin", "link", "new"});
+        }
+
+        SECTION("different linklist targets") {
+            Schema schema = {
+                {"target", {
+                    {"value", PropertyType::Int, "", "", false, false, false},
+                }},
+                {"origin", {
+                    {"link", PropertyType::Array, "target", "", false, false, false},
+                }},
+            };
+            auto schema2 = set_target(schema, "origin", "link", "origin");
+            schema2.find("origin")->property_for_name("link")->name = "new";
+            FAILED_RENAME(schema, schema2,
+                          "Cannot rename property 'origin.link' to 'new' because it would change from type 'array<target>' to 'array<origin>'.",
+                          {"origin", "link", "new"});
+        }
+
+        SECTION("make required") {
+            schema = set_optional(schema, "object", "value", true);
+            auto schema2 = rename_value(set_optional(schema, "object", "value", false));
+            FAILED_RENAME(schema, schema2,
+                          "Cannot rename property 'object.value' to 'new' because it would change from optional to required.",
+                          {"object", "value", "new"});
+        }
+
+        auto init = [&](Schema const& old_schema) {
+            realm->update_schema(old_schema, 1);
+            realm->begin_transaction();
+            auto table = ObjectStore::table_for_object_type(realm->read_group(), "object");
+            table->add_empty_row();
+            table->set_int(0, 0, 10);
+            realm->commit_transaction();
+        };
+
+#define SUCCESSFUL_RENAME(old_schema, new_schema, ...) do { \
+    init(old_schema); \
+    REQUIRE_NOTHROW(realm->update_schema(new_schema, 2, apply_renames({__VA_ARGS__}))); \
+    REQUIRE(realm->schema() == new_schema); \
+    VERIFY_SCHEMA(*realm); \
+    REQUIRE(ObjectStore::table_for_object_type(realm->read_group(), "object")->get_int(0, 0) == 10); \
+} while (false)
+
+        SECTION("basic valid rename") {
+            auto schema2 = rename_value(schema);
+            SUCCESSFUL_RENAME(schema, schema2,
+                              {"object", "value", "new"});
+        }
+
+        SECTION("chained rename") {
+            auto schema2 = rename_value(schema);
+            SUCCESSFUL_RENAME(schema, schema2,
+                              {"object", "value", "a"},
+                              {"object", "a", "b"},
+                              {"object", "b", "new"});
+        }
+
+        SECTION("old is pk, new is not") {
+            auto schema2 = rename_value(schema);
+            schema = set_primary_key(schema, "object", "value");
+            SUCCESSFUL_RENAME(schema, schema2, {"object", "value", "new"});
+        }
+
+        SECTION("new is pk, old is not") {
+            auto schema2 = set_primary_key(rename_value(schema), "object", "new");
+            SUCCESSFUL_RENAME(schema, schema2, {"object", "value", "new"});
+        }
+
+        SECTION("both are pk") {
+            schema = set_primary_key(schema, "object", "value");
+            auto schema2 = set_primary_key(rename_value(schema), "object", "new");
+            SUCCESSFUL_RENAME(schema, schema2, {"object", "value", "new"});
+        }
+
+        SECTION("make optional") {
+            auto schema2 = rename_value(set_optional(schema, "object", "value", true));
+            SUCCESSFUL_RENAME(schema, schema2,
+                              {"object", "value", "new"});
+        }
+
+        SECTION("add index") {
+            auto schema2 = rename_value(set_indexed(schema, "object", "value", true));
+            SUCCESSFUL_RENAME(schema, schema2, {"object", "value", "new"});
+        }
+
+        SECTION("remove index") {
+            auto schema2 = rename_value(schema);
+            schema = set_indexed(schema, "object", "value", true);
+            SUCCESSFUL_RENAME(schema, schema2, {"object", "value", "new"});
         }
     }
 }

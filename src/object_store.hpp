@@ -75,13 +75,20 @@ public:
     // indicates if this group contains any objects
     static bool is_empty(Group const& group);
 
+    // renames the object_type's column of the old_name to the new name
+    static void rename_property(Group& group, Schema& schema, StringData object_type, StringData old_name, StringData new_name);
+
+    // get primary key property name for object type
+    static StringData get_primary_key_for_object(Group const& group, StringData object_type);
+
+    // sets primary key property for object type
+    // must be in write transaction to set
+    static void set_primary_key_for_object(Group& group, StringData object_type, StringData primary_key);
+
     static std::string table_name_for_object_type(StringData class_name);
     static StringData object_type_for_table_name(StringData table_name);
 
 private:
-    // get primary key property name for object type
-    static StringData get_primary_key_for_object(Group const& group, StringData object_type);
-
     friend class ObjectSchema;
 };
 

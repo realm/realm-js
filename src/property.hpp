@@ -36,6 +36,8 @@ namespace realm {
         LinkingObjects  = 14,
     };
 
+    static const char *string_for_property_type(PropertyType type);
+
     struct Property {
         std::string name;
         PropertyType type;
@@ -68,6 +70,20 @@ namespace realm {
                 || type == PropertyType::Object;
         }
 
+        std::string type_string() const
+        {
+            switch (type) {
+                case PropertyType::Object:
+                    return "<" + object_type + ">";
+                case PropertyType::Array:
+                    return "array<" + object_type + ">";
+                case PropertyType::LinkingObjects:
+                    return "linking objects<" + object_type + ">";
+                default:
+                    return string_for_property_type(type);
+            }
+        }
+
 #if __GNUC__ < 5
         // GCC 4.9 does not support C++14 braced-init with NSDMIs
         Property(std::string name="", PropertyType type=PropertyType::Int,
@@ -96,7 +112,7 @@ namespace realm {
             && lft.is_nullable == rgt.is_nullable;
     }
 
-    static inline const char *string_for_property_type(PropertyType type)
+    static const char *string_for_property_type(PropertyType type)
     {
         switch (type) {
             case PropertyType::String:
