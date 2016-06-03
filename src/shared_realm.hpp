@@ -79,7 +79,7 @@ namespace realm {
             // everything can be done deterministically on one thread, and
             // speeds up tests that don't need notifications.
             bool automatic_change_notifications = true;
-            
+
             Config();
             Config(Config&&);
             Config(const Config& c);
