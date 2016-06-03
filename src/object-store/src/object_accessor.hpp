@@ -45,6 +45,9 @@ namespace realm {
         template<typename ValueType, typename ContextType>
         static inline Object create(ContextType ctx, SharedRealm realm, const ObjectSchema &object_schema, ValueType value, bool try_update);
 
+        template<typename ValueType, typename ContextType>
+        static Object get_for_primary_key(ContextType ctx, SharedRealm realm, const ObjectSchema &object_schema, ValueType primary_value);
+
         SharedRealm realm() { return m_realm; }
         const ObjectSchema &get_object_schema() { return *m_object_schema; }
         Row row() { return m_row; }
@@ -60,6 +63,9 @@ namespace realm {
         inline void set_property_value_impl(ContextType ctx, const Property &property, ValueType value, bool try_update);
         template<typename ValueType, typename ContextType>
         inline ValueType get_property_value_impl(ContextType ctx, const Property &property);
+
+        template<typename ValueType, typename ContextType>
+        static size_t get_for_primary_key_impl(ContextType ctx, const ConstTableRef &table, const Property &primary_prop, ValueType primary_value);
         
         inline void verify_attached();
     };
@@ -135,6 +141,13 @@ namespace realm {
         MissingPropertyValueException(const std::string object_type, const std::string property_name, const std::string message) : std::runtime_error(message), object_type(object_type), property_name(property_name) {}
         const std::string object_type;
         const std::string property_name;
+    };
+
+    class MissingPrimaryKeyException : public std::runtime_error
+    {
+    public:
+        MissingPrimaryKeyException(const std::string object_type, const std::string message) : std::runtime_error(message), object_type(object_type) {}
+        const std::string object_type;
     };
 
     class MutationOutsideTransactionException : public std::runtime_error
@@ -301,16 +314,11 @@ namespace realm {
         size_t row_index = realm::not_found;
         realm::TableRef table = ObjectStore::table_for_object_type(realm->read_group(), object_schema.name);
         const Property *primary_prop = object_schema.primary_key_property();
+
         if (primary_prop) {
             // search for existing object based on primary key type
             ValueType primary_value = Accessor::dict_value_for_key(ctx, value, object_schema.primary_key);
-            if (primary_prop->type == PropertyType::String) {
-                auto primary_string = Accessor::to_string(ctx, primary_value);
-                row_index = table->find_first_string(primary_prop->table_column, primary_string);
-            }
-            else {
-                row_index = table->find_first_int(primary_prop->table_column, Accessor::to_long(ctx, primary_value));
-            }
+            row_index = get_for_primary_key_impl(ctx, table, *primary_prop, primary_value);
 
             if (!try_update && row_index != realm::not_found) {
                 throw DuplicatePrimaryKeyValueException(object_schema.name, *primary_prop,
@@ -348,7 +356,34 @@ namespace realm {
         }
         return object;
     }
-    
+
+    template<typename ValueType, typename ContextType>
+    inline Object Object::get_for_primary_key(ContextType ctx, SharedRealm realm, const ObjectSchema &object_schema, ValueType primary_value)
+    {
+        auto primary_prop = object_schema.primary_key_property();
+        if (!primary_prop) {
+            throw MissingPrimaryKeyException(object_schema.name, object_schema.name + " does not have a primary key");
+        }
+
+        auto table = ObjectStore::table_for_object_type(realm->read_group(), object_schema.name);
+        auto row_index = get_for_primary_key_impl(ctx, table, *primary_prop, primary_value);
+
+        return Object(realm, object_schema, row_index == realm::not_found ? Row() : table->get(row_index));
+    }
+
+    template<typename ValueType, typename ContextType>
+    inline size_t Object::get_for_primary_key_impl(ContextType ctx, const ConstTableRef &table, const Property &primary_prop, ValueType primary_value) {
+        using Accessor = NativeAccessor<ValueType, ContextType>;
+
+        if (primary_prop.type == PropertyType::String) {
+            auto primary_string = Accessor::to_string(ctx, primary_value);
+            return table->find_first_string(primary_prop.table_column, primary_string);
+        }
+        else {
+            return table->find_first_int(primary_prop.table_column, Accessor::to_long(ctx, primary_value));
+        }
+    }
+
     inline void Object::verify_attached() {
         if (!m_row.is_attached()) {
             throw InvalidatedObjectException(m_object_schema->name,

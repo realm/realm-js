@@ -106,6 +106,15 @@ exports.IntPrimary = {
     }
 };
 
+exports.StringPrimary = {
+    name: 'StringPrimaryObject',
+    primaryKey: 'primaryCol',
+    properties: {
+        primaryCol: Realm.Types.STRING,
+        valueCol:   Realm.Types.INT,
+    }
+};
+
 exports.AllTypes = {
     name: 'AllTypesObject',
     primaryKey: 'primaryCol',
