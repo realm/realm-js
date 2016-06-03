@@ -206,6 +206,19 @@ void validate_primary_column_uniqueness(Group const& group)
                                            pk_table->get_string(c_primaryKeyPropertyNameColumnIndex, i));
     }
 }
+
+void add_index(Table& table, size_t col)
+{
+    try {
+        table.add_search_index(col);
+    }
+    catch (LogicError const&) {
+        throw std::logic_error(util::format("Cannot index property '%1.%2': indexing properties of type '%3' is not yet implemented.",
+                                            ObjectStore::object_type_for_table_name(table.get_name()),
+                                            table.get_column_name(col),
+                                            string_for_property_type((PropertyType)table.get_column_type(col))));
+    }
+}
 } // anonymous namespace
 
 uint64_t ObjectStore::get_schema_version(Group const& group) {
@@ -298,26 +311,6 @@ struct MigrationChecker {
     }
 };
 
-struct IndexUpdater {
-    Group& group;
-
-    void operator()(schema_change::AddIndex op) const
-    {
-        try {
-            table_for_object_schema(group, *op.object)->add_search_index(op.property->table_column);
-        }
-        catch (LogicError const&) {
-            throw std::logic_error(util::format("Cannot index property '%1.%2': indexing properties of type '%3' is not yet implemented.",
-                                                op.object->name, op.property->name, string_for_property_type(op.property->type)));
-        }
-    }
-
-    void operator()(schema_change::RemoveIndex op) const
-    {
-        table_for_object_schema(group, *op.object)->remove_search_index(op.property->table_column);
-    }
-};
-
 class TableHelper {
 public:
     TableHelper(Group& g) : m_group(g) { }
@@ -378,49 +371,53 @@ void ObjectStore::verify_no_migration_required(std::vector<SchemaChange> const& 
         void operator()(AddIndex) { }
         void operator()(RemoveIndex) { }
     } verifier;
+    verify_no_errors<SchemaMismatchException>(verifier, changes);
+}
 
-    for (auto& change : changes) {
-        change.visit(verifier);
-    }
-
-    if (!verifier.errors.empty()) {
-        throw SchemaMismatchException(verifier.errors);
-    }
+void ObjectStore::verify_valid_additive_changes(std::vector<SchemaChange> const& changes)
+{
+    using namespace schema_change;
+    struct Verifier : MigrationChecker {
+        using MigrationChecker::operator();
+        void operator()(AddProperty) { }
+        void operator()(AddIndex) { }
+        void operator()(RemoveIndex) { }
+    } verifier;
+    verify_no_errors<InvalidSchemaChangeException>(verifier, changes);
 }
 
 static void apply_non_migration_changes(Group& group, std::vector<SchemaChange> const& changes)
 {
     using namespace schema_change;
-    struct Applier : MigrationChecker, IndexUpdater {
-        Applier(Group& group) : IndexUpdater{group} { }
-        using IndexUpdater::operator();
+    struct Applier : MigrationChecker {
+        Applier(Group& group) : group{group}, table{group} { }
+        Group& group;
+        TableHelper table;
+
         using MigrationChecker::operator();
         void operator()(AddTable op) { create_table(group, *op.object); }
+        void operator()(AddIndex op) { add_index(table(op.object), op.property->table_column); }
+        void operator()(RemoveIndex op) { table(op.object).remove_search_index(op.property->table_column); }
     } applier{group};
-
-    for (auto& change : changes) {
-        change.visit(applier);
-    }
-
-    if (!applier.errors.empty()) {
-        throw SchemaMismatchException(applier.errors);
-    }
+    verify_no_errors<SchemaMismatchException>(applier, changes);
 }
 
 static void create_initial_tables(Group& group, std::vector<SchemaChange> const& changes)
 {
     using namespace schema_change;
-    struct Applier : IndexUpdater {
-        Applier(Group& group) : IndexUpdater{group}, table{group} { }
+    struct Applier {
+        Applier(Group& group) : group{group}, table{group} { }
+        Group& group;
         TableHelper table;
 
-        using IndexUpdater::operator();
         void operator()(AddTable op) { create_table(group, *op.object); }
         void operator()(AddProperty op) { add_column(group, table(op.object), *op.property); }
         void operator()(RemoveProperty op) { table(op.object).remove_column(op.property->table_column); }
         void operator()(MakePropertyNullable op) { make_property_optional(group, table(op.object), *op.property); }
         void operator()(MakePropertyRequired op) { make_property_required(group, table(op.object), *op.property); }
         void operator()(ChangePrimaryKey op) { set_primary_key_for_object(group, op.object->name, op.property->name); }
+        void operator()(AddIndex op) { add_index(table(op.object), op.property->table_column); }
+        void operator()(RemoveIndex op) { table(op.object).remove_search_index(op.property->table_column); }
 
         void operator()(ChangePropertyType op)
         {
@@ -434,14 +431,41 @@ static void create_initial_tables(Group& group, std::vector<SchemaChange> const&
     }
 }
 
+static void apply_additive_changes(Group& group, std::vector<SchemaChange> const& changes, bool update_indexes)
+{
+    using namespace schema_change;
+    struct Applier {
+        Applier(Group& group, bool update_indexes) : group{group}, table{group}, update_indexes{update_indexes} { }
+        Group& group;
+        TableHelper table;
+        bool update_indexes;
+
+        void operator()(AddTable op) { create_table(group, *op.object); }
+        void operator()(AddProperty op) { add_column(group, table(op.object), *op.property); }
+        void operator()(AddIndex op) { if (update_indexes) add_index(table(op.object), op.property->table_column); }
+        void operator()(RemoveIndex op) { if (update_indexes) table(op.object).remove_search_index(op.property->table_column); }
+
+        // No need for errors for these, as we've already verified that they aren't present
+        void operator()(ChangePrimaryKey) { }
+        void operator()(ChangePropertyType) { }
+        void operator()(MakePropertyNullable) { }
+        void operator()(MakePropertyRequired) { }
+        void operator()(RemoveProperty) { }
+    } applier{group, update_indexes};
+
+    for (auto& change : changes) {
+        change.visit(applier);
+    }
+}
+
 static void apply_pre_migration_changes(Group& group, std::vector<SchemaChange> const& changes)
 {
     using namespace schema_change;
-    struct Applier : IndexUpdater {
-        Applier(Group& group) : IndexUpdater{group}, table{group} { }
+    struct Applier {
+        Applier(Group& group) : group{group}, table{group} { }
+        Group& group;
         TableHelper table;
 
-        using IndexUpdater::operator();
         void operator()(AddTable op) { create_table(group, *op.object); }
         void operator()(AddProperty op) { add_column(group, table(op.object), *op.property); }
         void operator()(RemoveProperty) { /* delayed until after the migration */ }
@@ -449,6 +473,8 @@ static void apply_pre_migration_changes(Group& group, std::vector<SchemaChange> 
         void operator()(MakePropertyNullable op) { make_property_optional(group, table(op.object), *op.property); }
         void operator()(MakePropertyRequired op) { make_property_required(group, table(op.object), *op.property); }
         void operator()(ChangePrimaryKey op) { set_primary_key_for_object(group, op.object->name, op.property ? op.property->name : ""); }
+        void operator()(AddIndex op) { add_index(table(op.object), op.property->table_column); }
+        void operator()(RemoveIndex op) { table(op.object).remove_search_index(op.property->table_column); }
     } applier{group};
 
     for (auto& change : changes) {
@@ -459,11 +485,11 @@ static void apply_pre_migration_changes(Group& group, std::vector<SchemaChange> 
 static void apply_post_migration_changes(Group& group, std::vector<SchemaChange> const& changes, Schema const& initial_schema)
 {
     using namespace schema_change;
-    struct Applier : IndexUpdater {
-        Applier(Group& group, Schema const& initial_schema) : IndexUpdater{group}, initial_schema(initial_schema) { }
-        using IndexUpdater::operator();
-
+    struct Applier {
+        Applier(Group& group, Schema const& initial_schema) : group{group}, initial_schema(initial_schema), table(group) { }
+        Group& group;
         Schema const& initial_schema;
+        TableHelper table;
 
         void operator()(RemoveProperty op)
         {
@@ -481,6 +507,8 @@ static void apply_post_migration_changes(Group& group, std::vector<SchemaChange>
         }
 
         void operator()(AddTable op) { create_table(group, *op.object); }
+        void operator()(AddIndex op) { add_index(table(op.object), op.property->table_column); }
+        void operator()(RemoveIndex op) { table(op.object).remove_search_index(op.property->table_column); }
 
         void operator()(ChangePropertyType) { }
         void operator()(MakePropertyNullable) { }
@@ -495,24 +523,35 @@ static void apply_post_migration_changes(Group& group, std::vector<SchemaChange>
 
 void ObjectStore::apply_schema_changes(Group& group, Schema& schema, uint64_t& schema_version,
                                        Schema const& target_schema, uint64_t target_schema_version,
-                                       std::vector<SchemaChange> const& changes, std::function<void()> migration_function)
+                                       bool additive_mode, std::vector<SchemaChange> const& changes,
+                                       std::function<void()> migration_function)
 {
-    if (schema_version > target_schema_version && schema_version != ObjectStore::NotVersioned) {
-        throw InvalidSchemaVersionException(schema_version, target_schema_version);
-    }
     create_metadata_tables(group);
-
-    if (schema_version == target_schema_version) {
-        apply_non_migration_changes(group, changes);
-        schema = target_schema;
-        set_schema_columns(group, schema);
-        return;
-    }
 
     if (schema_version == ObjectStore::NotVersioned) {
         create_initial_tables(group, changes);
         set_schema_version(group, target_schema_version);
         schema_version = target_schema_version;
+        schema = target_schema;
+        set_schema_columns(group, schema);
+        return;
+    }
+
+    if (additive_mode) {
+        apply_additive_changes(group, changes, schema_version < target_schema_version);
+
+        if (schema_version < target_schema_version) {
+            schema_version = target_schema_version;
+            set_schema_version(group, target_schema_version);
+        }
+
+        schema = target_schema;
+        set_schema_columns(group, schema);
+        return;
+    }
+
+    if (schema_version == target_schema_version) {
+        apply_non_migration_changes(group, changes);
         schema = target_schema;
         set_schema_columns(group, schema);
         return;
@@ -686,6 +725,17 @@ SchemaValidationException::SchemaValidationException(std::vector<ObjectSchemaVal
 SchemaMismatchException::SchemaMismatchException(std::vector<ObjectSchemaValidationException> const& errors)
 : std::logic_error([&] {
     std::string message = "Migration is required due to the following errors:";
+    for (auto const& error : errors) {
+        message += std::string("\n- ") + error.what();
+    }
+    return message;
+}())
+{
+}
+
+InvalidSchemaChangeException::InvalidSchemaChangeException(std::vector<ObjectSchemaValidationException> const& errors)
+: std::logic_error([&] {
+    std::string message = "The following changes cannot be made in additive-only schema mode:";
     for (auto const& error : errors) {
         message += std::string("\n- ") + error.what();
     }

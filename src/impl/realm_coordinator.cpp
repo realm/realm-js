@@ -86,7 +86,7 @@ std::shared_ptr<Realm> RealmCoordinator::get_realm(Realm::Config config)
         // Realm::update_schema() handles complaining about schema mismatches
     }
 
-    if (config.schema_mode > SchemaMode::ResetFile)
+    if (config.schema_mode > SchemaMode::Additive)
         throw "not implemented";
 
     if (config.cache) {

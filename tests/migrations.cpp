@@ -899,3 +899,97 @@ TEST_CASE("[migration] ResetFile") {
         REQUIRE(ObjectStore::table_for_object_type(realm->read_group(), "object")->size() == 1);
     }
 }
+
+TEST_CASE("[migration] Additive") {
+    TestFile config;
+    config.schema_mode = SchemaMode::Additive;
+    auto realm = Realm::get_shared_realm(config);
+
+    Schema initial_schema = {
+        {"object", {
+            {"value", PropertyType::Int, "", "", false, true, false},
+            {"value 2", PropertyType::Int, "", "", false, false, true},
+        }},
+    };
+    realm->update_schema(initial_schema);
+
+    SECTION("can add new properties to existing tables") {
+        REQUIRE_NOTHROW(realm->update_schema(add_property(initial_schema, "object",
+                                                          {"value 3", PropertyType::Int, "", "", false, false, false})));
+        REQUIRE(ObjectStore::table_for_object_type(realm->read_group(), "object")->get_column_count() == 3);
+    }
+
+    SECTION("can add new tables") {
+        REQUIRE_NOTHROW(realm->update_schema(add_table(initial_schema, {"object 2", {
+            {"value", PropertyType::Int, "", "", false, false, false},
+        }})));
+        REQUIRE(ObjectStore::table_for_object_type(realm->read_group(), "object"));
+        REQUIRE(ObjectStore::table_for_object_type(realm->read_group(), "object 2"));
+    }
+
+    SECTION("indexes are updated when schema version is bumped") {
+        auto table = ObjectStore::table_for_object_type(realm->read_group(), "object");
+        REQUIRE(table->has_search_index(0));
+        REQUIRE(!table->has_search_index(1));
+
+        REQUIRE_NOTHROW(realm->update_schema(set_indexed(initial_schema, "object", "value", false), 1));
+        REQUIRE(!table->has_search_index(0));
+
+        REQUIRE_NOTHROW(realm->update_schema(set_indexed(initial_schema, "object", "value 2", true), 2));
+        REQUIRE(table->has_search_index(1));
+    }
+
+    SECTION("indexes are not updated when schema version is not bumped") {
+        auto table = ObjectStore::table_for_object_type(realm->read_group(), "object");
+        REQUIRE(table->has_search_index(0));
+        REQUIRE(!table->has_search_index(1));
+
+        REQUIRE_NOTHROW(realm->update_schema(set_indexed(initial_schema, "object", "value", false)));
+        REQUIRE(table->has_search_index(0));
+
+        REQUIRE_NOTHROW(realm->update_schema(set_indexed(initial_schema, "object", "value 2", true)));
+        REQUIRE(!table->has_search_index(1));
+    }
+
+    SECTION("cannot remove properties from existing tables") {
+        REQUIRE_THROWS(realm->update_schema(remove_property(initial_schema, "object", "value")));
+    }
+
+    SECTION("cannot change existing property types") {
+        REQUIRE_THROWS(realm->update_schema(set_type(initial_schema, "object", "value", PropertyType::Float)));
+    }
+
+    SECTION("cannot change existing property nullability") {
+        REQUIRE_THROWS(realm->update_schema(set_optional(initial_schema, "object", "value", true)));
+        REQUIRE_THROWS(realm->update_schema(set_optional(initial_schema, "object", "value 2", false)));
+    }
+
+    SECTION("cannot change existing link targets") {
+        REQUIRE_NOTHROW(realm->update_schema(add_table(initial_schema, {"object 2", {
+            {"link", PropertyType::Object, "object", "", false, false, true},
+        }})));
+        REQUIRE_THROWS(realm->update_schema(set_target(realm->schema(), "object 2", "link", "object 2")));
+    }
+
+    SECTION("cannot change primary keys") {
+        REQUIRE_THROWS(realm->update_schema(set_primary_key(initial_schema, "object", "value")));
+
+        REQUIRE_NOTHROW(realm->update_schema(add_table(initial_schema, {"object 2", {
+            {"pk", PropertyType::Int, "", "", true, false, false},
+        }})));
+
+        REQUIRE_THROWS(realm->update_schema(set_primary_key(realm->schema(), "object 2", "")));
+    }
+
+    SECTION("schema version is allowed to go down") {
+        REQUIRE_NOTHROW(realm->update_schema(initial_schema, 1));
+        REQUIRE(realm->schema_version() == 1);
+        REQUIRE_NOTHROW(realm->update_schema(initial_schema, 0));
+        REQUIRE(realm->schema_version() == 1);
+    }
+
+    SECTION("migration function is not used") {
+        REQUIRE_NOTHROW(realm->update_schema(initial_schema, 1,
+                                             [&](SharedRealm, SharedRealm, Schema&) { REQUIRE(false); }));
+    }
+}
