@@ -5,6 +5,7 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Enhancements
 * Added `isValid()` method to `List` and `Results` to check for deleleted or invalidated objects
+* Added `objectForPrimaryKey(type, key)` method to `Realm`
 
 ### Bugfixes
 * None
