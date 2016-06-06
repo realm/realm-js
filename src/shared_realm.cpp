@@ -211,41 +211,50 @@ void Realm::update_schema(Schema schema, uint64_t version, MigrationFunction mig
     update_schema_if_needed();
     auto changes_required = m_schema.compare(schema);
 
-    // For read-only Realms just verify that the schema is compatible
-    if (m_config.read_only()) {
-        if (version != m_schema_version)
-            throw InvalidSchemaVersionException(m_schema_version, version);
-        ObjectStore::verify_no_migration_required(m_schema.compare(schema));
-        set_schema(std::move(schema), version);
-        return;
-    }
-
-    if (m_config.schema_mode == SchemaMode::ResetFile) {
-        reset_file_if_needed(schema, version, changes_required);
-    }
-
-    bool additive = m_config.schema_mode == SchemaMode::Additive;
     auto no_changes_required = [&] {
-        if (additive) {
-            if (changes_required.empty()) {
-                set_schema(std::move(schema), version);
-                return version == m_schema_version;
-            }
-            ObjectStore::verify_valid_additive_changes(changes_required);
-            return false;
-        }
+        switch (m_config.schema_mode) {
+            case SchemaMode::Automatic:
+                if (version < m_schema_version && m_schema_version != ObjectStore::NotVersioned) {
+                    throw InvalidSchemaVersionException(m_schema_version, version);
+                }
+                if (version == m_schema_version) {
+                    if (changes_required.empty()) {
+                        set_schema(std::move(schema), version);
+                        return true;
+                    }
+                    ObjectStore::verify_no_migration_required(changes_required);
+                }
+                return false;
 
-        if (version < m_schema_version && m_schema_version != ObjectStore::NotVersioned) {
-            throw InvalidSchemaVersionException(m_schema_version, version);
-        }
-        if (version == m_schema_version) {
-            if (changes_required.empty()) {
+            case SchemaMode::ReadOnly:
+                if (version != m_schema_version)
+                    throw InvalidSchemaVersionException(m_schema_version, version);
+                ObjectStore::verify_no_migration_required(m_schema.compare(schema));
                 set_schema(std::move(schema), version);
                 return true;
-            }
-            ObjectStore::verify_no_migration_required(changes_required);
+
+            case SchemaMode::ResetFile:
+                reset_file_if_needed(schema, version, changes_required);
+                return changes_required.empty();
+
+            case SchemaMode::Additive:
+                if (changes_required.empty()) {
+                    set_schema(std::move(schema), version);
+                    return version == m_schema_version;
+                }
+                ObjectStore::verify_valid_additive_changes(changes_required);
+                return false;
+
+            case SchemaMode::Manual:
+                if (version < m_schema_version && m_schema_version != ObjectStore::NotVersioned) {
+                    throw InvalidSchemaVersionException(m_schema_version, version);
+                }
+                if (version == m_schema_version) {
+                    ObjectStore::verify_no_changes_required(changes_required);
+                    return true;
+                }
+                return false;
         }
-        return false;
     };
 
     if (no_changes_required())
@@ -271,6 +280,7 @@ void Realm::update_schema(Schema schema, uint64_t version, MigrationFunction mig
             return;
     }
 
+    bool additive = m_config.schema_mode == SchemaMode::Additive;
     if (migration_function && !additive) {
         auto wrapper = [&] {
             SharedRealm old_realm(new Realm(m_config, m_coordinator));
@@ -281,11 +291,11 @@ void Realm::update_schema(Schema schema, uint64_t version, MigrationFunction mig
             migration_function(old_realm, shared_from_this(), m_schema);
         };
         ObjectStore::apply_schema_changes(read_group(), m_schema, m_schema_version,
-                                          schema, version, false, changes_required, wrapper);
+                                          schema, version, m_config.schema_mode, changes_required, wrapper);
     }
     else {
         ObjectStore::apply_schema_changes(read_group(), m_schema, m_schema_version,
-                                          schema, version, additive, changes_required);
+                                          schema, version, m_config.schema_mode, changes_required);
         REALM_ASSERT_DEBUG(additive || (changes_required = ObjectStore::schema_from_group(read_group()).compare(schema)).empty());
     }
 

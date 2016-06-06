@@ -100,8 +100,6 @@ enum class SchemaMode : uint8_t {
     //
     // This mode requires that all threads and processes which open a
     // file use identical schemata.
-    //
-    // This mode is not yet implemented.
     Manual
 };
 

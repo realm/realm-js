@@ -20,6 +20,7 @@
 
 #include "object_schema.hpp"
 #include "schema.hpp"
+#include "shared_realm.hpp"
 #include "util/format.hpp"
 
 #include <realm/group.hpp>
@@ -70,27 +71,6 @@ void set_schema_version(Group& group, uint64_t version) {
     table->set_int(c_versionColumnIndex, c_zeroRowIndex, version);
 }
 
-void set_primary_key_for_object(Group& group, StringData object_type, StringData primary_key) {
-    TableRef table = group.get_table(c_primaryKeyTableName);
-
-    // get row or create if new object and populate
-    size_t row = table->find_first_string(c_primaryKeyObjectClassColumnIndex, object_type);
-    if (row == not_found && primary_key.size()) {
-        row = table->add_empty_row();
-        table->set_string(c_primaryKeyObjectClassColumnIndex, row, object_type);
-    }
-
-    // set if changing, or remove if setting to nil
-    if (primary_key.size() == 0) {
-        if (row != not_found) {
-            table->remove(row);
-        }
-    }
-    else {
-        table->set_string(c_primaryKeyPropertyNameColumnIndex, row, primary_key);
-    }
-}
-
 template<typename Group>
 auto table_for_object_schema(Group& group, ObjectSchema const& object_schema)
 {
@@ -134,7 +114,7 @@ TableRef create_table(Group& group, ObjectSchema const& object_schema)
         add_column(group, *table, prop);
     }
 
-    set_primary_key_for_object(group, object_schema.name, object_schema.primary_key);
+    ObjectStore::set_primary_key_for_object(group, object_schema.name, object_schema.primary_key);
 
     return table;
 }
@@ -239,6 +219,27 @@ StringData ObjectStore::get_primary_key_for_object(Group const& group, StringDat
         return "";
     }
     return table->get_string(c_primaryKeyPropertyNameColumnIndex, row);
+}
+
+void ObjectStore::set_primary_key_for_object(Group& group, StringData object_type, StringData primary_key) {
+    TableRef table = group.get_table(c_primaryKeyTableName);
+
+    // get row or create if new object and populate
+    size_t row = table->find_first_string(c_primaryKeyObjectClassColumnIndex, object_type);
+    if (row == not_found && primary_key.size()) {
+        row = table->add_empty_row();
+        table->set_string(c_primaryKeyObjectClassColumnIndex, row, object_type);
+    }
+
+    // set if changing, or remove if setting to nil
+    if (primary_key.size() == 0) {
+        if (row != not_found) {
+            table->remove(row);
+        }
+    }
+    else {
+        table->set_string(c_primaryKeyPropertyNameColumnIndex, row, primary_key);
+    }
 }
 
 StringData ObjectStore::object_type_for_table_name(StringData table_name) {
@@ -363,6 +364,30 @@ bool ObjectStore::needs_migration(std::vector<SchemaChange> const& changes)
                        [](auto&& change) { return change.visit(Visitor()); });
 }
 
+void ObjectStore::verify_no_changes_required(std::vector<SchemaChange> const& changes)
+{
+    using namespace schema_change;
+    struct Verifier : MigrationChecker {
+        using MigrationChecker::operator();
+
+        void operator()(AddTable op)
+        {
+            errors.emplace_back("Class '%1' has been added.", op.object->name);
+        }
+
+        void operator()(AddIndex op)
+        {
+            errors.emplace_back("Property '%1.%2' has been made indexed.", op.object->name, op.property->name);
+        }
+
+        void operator()(RemoveIndex op)
+        {
+            errors.emplace_back("Property '%1.%2' has been made unindexed.", op.object->name, op.property->name);
+        }
+    } verifier;
+    verify_no_errors<SchemaMismatchException>(verifier, changes);
+}
+
 void ObjectStore::verify_no_migration_required(std::vector<SchemaChange> const& changes)
 {
     using namespace schema_change;
@@ -415,7 +440,7 @@ static void create_initial_tables(Group& group, std::vector<SchemaChange> const&
         void operator()(RemoveProperty op) { table(op.object).remove_column(op.property->table_column); }
         void operator()(MakePropertyNullable op) { make_property_optional(group, table(op.object), *op.property); }
         void operator()(MakePropertyRequired op) { make_property_required(group, table(op.object), *op.property); }
-        void operator()(ChangePrimaryKey op) { set_primary_key_for_object(group, op.object->name, op.property->name); }
+        void operator()(ChangePrimaryKey op) { ObjectStore::set_primary_key_for_object(group, op.object->name, op.property->name); }
         void operator()(AddIndex op) { add_index(table(op.object), op.property->table_column); }
         void operator()(RemoveIndex op) { table(op.object).remove_search_index(op.property->table_column); }
 
@@ -472,7 +497,7 @@ static void apply_pre_migration_changes(Group& group, std::vector<SchemaChange> 
         void operator()(ChangePropertyType op) { replace_column(group, table(op.object), *op.old_property, *op.new_property); }
         void operator()(MakePropertyNullable op) { make_property_optional(group, table(op.object), *op.property); }
         void operator()(MakePropertyRequired op) { make_property_required(group, table(op.object), *op.property); }
-        void operator()(ChangePrimaryKey op) { set_primary_key_for_object(group, op.object->name, op.property ? op.property->name : ""); }
+        void operator()(ChangePrimaryKey op) { ObjectStore::set_primary_key_for_object(group, op.object->name, op.property ? op.property->name : ""); }
         void operator()(AddIndex op) { add_index(table(op.object), op.property->table_column); }
         void operator()(RemoveIndex op) { table(op.object).remove_search_index(op.property->table_column); }
     } applier{group};
@@ -523,7 +548,7 @@ static void apply_post_migration_changes(Group& group, std::vector<SchemaChange>
 
 void ObjectStore::apply_schema_changes(Group& group, Schema& schema, uint64_t& schema_version,
                                        Schema const& target_schema, uint64_t target_schema_version,
-                                       bool additive_mode, std::vector<SchemaChange> const& changes,
+                                       SchemaMode mode, std::vector<SchemaChange> const& changes,
                                        std::function<void()> migration_function)
 {
     create_metadata_tables(group);
@@ -537,7 +562,7 @@ void ObjectStore::apply_schema_changes(Group& group, Schema& schema, uint64_t& s
         return;
     }
 
-    if (additive_mode) {
+    if (mode == SchemaMode::Additive) {
         apply_additive_changes(group, changes, schema_version < target_schema_version);
 
         if (schema_version < target_schema_version) {
@@ -547,6 +572,31 @@ void ObjectStore::apply_schema_changes(Group& group, Schema& schema, uint64_t& s
 
         schema = target_schema;
         set_schema_columns(group, schema);
+        return;
+    }
+
+    if (mode == SchemaMode::Manual) {
+        // Have to update the schema on the Realm before calling the migration
+        // function as the migration will need it
+        auto old_version = schema_version;
+        auto old_schema = schema;
+        schema_version = target_schema_version;
+        schema = target_schema;
+        set_schema_columns(group, schema);
+
+        try {
+            migration_function();
+            verify_no_changes_required(schema_from_group(group).compare(schema));
+            validate_primary_column_uniqueness(group);
+        }
+        catch (...) {
+            schema = move(old_schema);
+            schema_version = old_version;
+            throw;
+        }
+
+        set_schema_columns(group, schema);
+        set_schema_version(group, target_schema_version);
         return;
     }
 
@@ -618,7 +668,7 @@ void ObjectStore::set_schema_columns(Group const& group, Schema& schema)
 void ObjectStore::delete_data_for_object(Group& group, StringData object_type) {
     if (TableRef table = table_for_object_type(group, object_type)) {
         group.remove_table(table->get_index_in_group());
-        set_primary_key_for_object(group, object_type, "");
+        ObjectStore::set_primary_key_for_object(group, object_type, "");
     }
 }
 
