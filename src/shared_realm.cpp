@@ -492,3 +492,6 @@ void Realm::close()
     m_binding_context = nullptr;
     m_coordinator = nullptr;
 }
+
+MismatchedConfigException::MismatchedConfigException(StringData message, StringData path)
+: std::runtime_error(util::format(message.data(), path)) { }
