@@ -106,7 +106,10 @@ struct NativeAccessor {
     static size_t to_object_index(ContextType ctx, SharedRealm realm, ValueType &value, const std::string &type, bool try_update) {
         ObjectType object = Value::validated_to_object(ctx, value);
         if (Object::template is_instance<RealmObjectClass<T>>(ctx, object)) {
-            return get_internal<T, RealmObjectClass<T>>(object)->row().get_index();
+            auto realm_object = get_internal<T, RealmObjectClass<T>>(object);
+            if (realm_object->realm() == realm) {
+                return realm_object->row().get_index();
+            }
         }
 
         auto object_schema = realm->config().schema->find(type);

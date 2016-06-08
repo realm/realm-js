@@ -7,7 +7,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * Added `isValid()` method to `List` and `Results` to check for deleleted or invalidated objects
 
 ### Bugfixes
-* None
+* Fix for crash when setting object properties to objects from other Realms
 
 0.13.2 Release notes (2016-5-26)
 =============================================================
