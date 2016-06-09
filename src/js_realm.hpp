@@ -208,7 +208,6 @@ public:
         return name;
     }
     
-    // converts constructor object or type name to type name
     static const ObjectSchema& validated_object_schema_for_value(ContextType ctx, const SharedRealm &realm, const ValueType &value) {
         std::string object_type;
 
