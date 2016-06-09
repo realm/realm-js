@@ -70,50 +70,50 @@ public:
 };
 
 namespace schema_change {
-    struct AddTable {
-        const ObjectSchema* object;
-    };
+struct AddTable {
+    const ObjectSchema* object;
+};
 
-    struct AddProperty {
-        const ObjectSchema* object;
-        const Property* property;
-    };
+struct AddProperty {
+    const ObjectSchema* object;
+    const Property* property;
+};
 
-    struct RemoveProperty {
-        const ObjectSchema* object;
-        const Property* property;
-    };
+struct RemoveProperty {
+    const ObjectSchema* object;
+    const Property* property;
+};
 
-    struct ChangePropertyType {
-        const ObjectSchema* object;
-        const Property* old_property;
-        const Property* new_property;
-    };
+struct ChangePropertyType {
+    const ObjectSchema* object;
+    const Property* old_property;
+    const Property* new_property;
+};
 
-    struct MakePropertyNullable {
-        const ObjectSchema* object;
-        const Property* property;
-    };
+struct MakePropertyNullable {
+    const ObjectSchema* object;
+    const Property* property;
+};
 
-    struct MakePropertyRequired {
-        const ObjectSchema* object;
-        const Property* property;
-    };
+struct MakePropertyRequired {
+    const ObjectSchema* object;
+    const Property* property;
+};
 
-    struct AddIndex {
-        const ObjectSchema* object;
-        const Property* property;
-    };
+struct AddIndex {
+    const ObjectSchema* object;
+    const Property* property;
+};
 
-    struct RemoveIndex {
-        const ObjectSchema* object;
-        const Property* property;
-    };
+struct RemoveIndex {
+    const ObjectSchema* object;
+    const Property* property;
+};
 
-    struct ChangePrimaryKey {
-        const ObjectSchema* object;
-        const Property* property;
-    };
+struct ChangePrimaryKey {
+    const ObjectSchema* object;
+    const Property* property;
+};
 }
 
 #define REALM_FOR_EACH_SCHEMA_CHANGE_TYPE(macro) \
