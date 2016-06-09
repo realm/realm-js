@@ -120,10 +120,14 @@ struct NativeAccessor {
         auto child = realm::Object::create<ValueType>(ctx, realm, *object_schema, static_cast<ValueType>(object), try_update);
         return child.row().get_index();
     }
-    static size_t to_existing_object_index(ContextType ctx, ValueType &value) {
+    static size_t to_existing_object_index(ContextType ctx, SharedRealm realm, ValueType &value) {
         ObjectType object = Value::validated_to_object(ctx, value);
         if (Object::template is_instance<RealmObjectClass<T>>(ctx, object)) {
-            return get_internal<T, RealmObjectClass<T>>(object)->row().get_index();
+            auto realm_object = get_internal<T, RealmObjectClass<T>>(object);
+            if (realm_object->realm() == realm) {
+                return realm_object->row().get_index();
+            }
+            throw std::runtime_error("Realm object is from another Realm");
         }
         throw std::runtime_error("object is not a Realm Object");
     }

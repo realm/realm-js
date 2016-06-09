@@ -130,6 +130,7 @@ module.exports = {
 
     testResultsFiltered: function() {
         var realm = new Realm({schema: [schemas.PersonObject, schemas.DefaultValues, schemas.TestObject]});
+
         realm.write(function() {
             realm.create('PersonObject', {name: 'Ari', age: 10});
             realm.create('PersonObject', {name: 'Tim', age: 11});
@@ -155,8 +156,12 @@ module.exports = {
 
         TestCase.assertEqual(realm.objects('PersonObject').filtered('name = $0', 'Tim').length, 1);
         TestCase.assertEqual(realm.objects('PersonObject').filtered('age > $1 && age < $0', 13, 10).length, 3);
+
         TestCase.assertThrows(function() {
             realm.objects('PersonObject').filtered('age > $2 && age < $0', 13, 10)
+        });
+        TestCase.assertThrows(function() {
+            realm.objects('PersonObject').filtered("invalidQuery");
         });
 
         realm.write(function() {
@@ -167,9 +172,19 @@ module.exports = {
 
         TestCase.assertEqual(realm.objects('DefaultValuesObject').filtered('dateCol > $0', new Date(4)).length, 1);
         TestCase.assertEqual(realm.objects('DefaultValuesObject').filtered('dateCol <= $0', new Date(4)).length, 2);
+    },
+
+    testResultsFilteredByForeignObject: function() {
+        var realm = new Realm({schema: [schemas.LinkTypes, schemas.TestObject]});
+        var realm2 = new Realm({path: '2.realm', schema: realm.schema});
+        var object;
+
+        realm2.write(function() {
+            object = realm2.create('TestObject', {doubleCol: 1});
+        });
 
         TestCase.assertThrows(function() {
-            realm.objects('PersonObject').filtered("invalidQuery");
+            realm.objects('LinkTypesObject').filtered('objectCol = $0', object);
         });
     },
 
