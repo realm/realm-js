@@ -120,7 +120,7 @@ Schema set_primary_key(Schema schema, StringData object_name, StringData new_pri
 }
 } // anonymous namespace
 
-TEST_CASE("[migration] Automatic") {
+TEST_CASE("migration: Automatic") {
     InMemoryTestFile config;
     config.automatic_change_notifications = false;
 
@@ -774,7 +774,7 @@ TEST_CASE("[migration] Automatic") {
     }
 }
 
-TEST_CASE("[migration] ReadOnly") {
+TEST_CASE("migration: ReadOnly") {
     TestFile config;
 
     auto realm_with_schema = [&](Schema schema) {
@@ -851,7 +851,7 @@ TEST_CASE("[migration] ReadOnly") {
     }
 }
 
-TEST_CASE("[migration] ResetFile") {
+TEST_CASE("migration: ResetFile") {
     TestFile config;
     config.schema_mode = SchemaMode::ResetFile;
 
@@ -900,7 +900,7 @@ TEST_CASE("[migration] ResetFile") {
     }
 }
 
-TEST_CASE("[migration] Additive") {
+TEST_CASE("migration: Additive") {
     InMemoryTestFile config;
     config.schema_mode = SchemaMode::Additive;
     auto realm = Realm::get_shared_realm(config);
@@ -994,7 +994,7 @@ TEST_CASE("[migration] Additive") {
     }
 }
 
-TEST_CASE("[migration] Manual") {
+TEST_CASE("migration: Manual") {
     TestFile config;
     config.schema_mode = SchemaMode::Manual;
     auto realm = Realm::get_shared_realm(config);

@@ -36,7 +36,7 @@
 
 using namespace realm;
 
-TEST_CASE("[results] notifications") {
+TEST_CASE("results: notifications") {
     InMemoryTestFile config;
     config.cache = false;
     config.automatic_change_notifications = false;
@@ -440,7 +440,7 @@ TEST_CASE("[results] notifications") {
     }
 }
 
-TEST_CASE("[results] async error handling") {
+TEST_CASE("results: async error handling") {
     InMemoryTestFile config;
     config.cache = false;
     config.automatic_change_notifications = false;
@@ -555,7 +555,7 @@ TEST_CASE("[results] async error handling") {
     }
 }
 
-TEST_CASE("[results] notifications after move") {
+TEST_CASE("results: notifications after move") {
     InMemoryTestFile config;
     config.cache = false;
     config.automatic_change_notifications = false;
@@ -607,7 +607,7 @@ TEST_CASE("[results] notifications after move") {
     }
 }
 
-TEST_CASE("[results] error messages") {
+TEST_CASE("results: error messages") {
     InMemoryTestFile config;
     config.schema = Schema{
         {"object", {

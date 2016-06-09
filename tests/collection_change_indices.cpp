@@ -26,7 +26,7 @@
 
 using namespace realm;
 
-TEST_CASE("[collection_change] insert()") {
+TEST_CASE("collection_change: insert()") {
     _impl::CollectionChangeBuilder c;
 
     SECTION("adds the row to the insertions set") {
@@ -60,7 +60,7 @@ TEST_CASE("[collection_change] insert()") {
     }
 }
 
-TEST_CASE("[collection_change] modify()") {
+TEST_CASE("collection_change: modify()") {
     _impl::CollectionChangeBuilder c;
 
     SECTION("marks the row as modified") {
@@ -83,7 +83,7 @@ TEST_CASE("[collection_change] modify()") {
     }
 }
 
-TEST_CASE("[collection_change] erase()") {
+TEST_CASE("collection_change: erase()") {
     _impl::CollectionChangeBuilder c;
 
     SECTION("adds the row to the deletions set") {
@@ -137,7 +137,7 @@ TEST_CASE("[collection_change] erase()") {
     }
 }
 
-TEST_CASE("[collection_change] move_over()") {
+TEST_CASE("collection_change: move_over()") {
     _impl::CollectionChangeBuilder c;
 
     SECTION("is just erase when row == last_row") {
@@ -240,7 +240,7 @@ TEST_CASE("[collection_change] move_over()") {
     }
 }
 
-TEST_CASE("[collection_change] clear()") {
+TEST_CASE("collection_change: clear()") {
     _impl::CollectionChangeBuilder c;
 
     SECTION("removes all insertions") {
@@ -281,7 +281,7 @@ TEST_CASE("[collection_change] clear()") {
     }
 }
 
-TEST_CASE("[collection_change] move()") {
+TEST_CASE("collection_change: move()") {
     _impl::CollectionChangeBuilder c;
 
     SECTION("adds the move to the list of moves") {
@@ -349,7 +349,7 @@ TEST_CASE("[collection_change] move()") {
     }
 }
 
-TEST_CASE("[collection_change] calculate() unsorted") {
+TEST_CASE("collection_change: calculate() unsorted") {
     _impl::CollectionChangeBuilder c;
 
     auto all_modified = [](size_t) { return true; };
@@ -440,7 +440,7 @@ TEST_CASE("[collection_change] calculate() unsorted") {
     }
 }
 
-TEST_CASE("[collection_change] calculate() sorted") {
+TEST_CASE("collection_change: calculate() sorted") {
     _impl::CollectionChangeBuilder c;
 
     auto all_modified = [](size_t) { return true; };
@@ -749,7 +749,7 @@ TEST_CASE("[collection_change] calculate() sorted") {
     }
 }
 
-TEST_CASE("[collection_change] merge()") {
+TEST_CASE("collection_change: merge()") {
     _impl::CollectionChangeBuilder c;
 
     SECTION("is a no-op if the new set is empty") {
