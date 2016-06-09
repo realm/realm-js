@@ -104,12 +104,14 @@ namespace realm {
     inline bool operator==(Property const& lft, Property const& rgt)
     {
         // note: not checking table_column
-        return lft.name == rgt.name
-            && lft.type == rgt.type
-            && lft.object_type == rgt.object_type
+        // ordered roughly by the cost of the check
+        return lft.type == rgt.type
             && lft.is_primary == rgt.is_primary
+            && lft.is_nullable == rgt.is_nullable
             && lft.requires_index() == rgt.requires_index()
-            && lft.is_nullable == rgt.is_nullable;
+            && lft.name == rgt.name
+            && lft.object_type == rgt.object_type
+            && lft.link_origin_property_name == rgt.link_origin_property_name;
     }
 
     static const char *string_for_property_type(PropertyType type)
