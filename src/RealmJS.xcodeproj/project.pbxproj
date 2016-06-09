@@ -189,6 +189,7 @@
 		F620F0571CB766DA0082977B /* node_init.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = node_init.cpp; sourceTree = "<group>"; };
 		F620F0591CB7B4C80082977B /* js_object_accessor.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = js_object_accessor.hpp; sourceTree = "<group>"; };
 		F620F0741CB9F60C0082977B /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk/System/Library/Frameworks/CoreFoundation.framework; sourceTree = DEVELOPER_DIR; };
+		F6242B291D08EE9600BE1E03 /* thread_id.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = thread_id.hpp; sourceTree = "<group>"; };
 		F6267BC91CADC30000AC36B1 /* js_util.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = js_util.hpp; sourceTree = "<group>"; };
 		F6267BCA1CADC49200AC36B1 /* node_dummy.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = node_dummy.cpp; sourceTree = "<group>"; };
 		F62BF8FB1CAC71780022BCDC /* libRealmNode.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libRealmNode.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -363,6 +364,7 @@
 				02E008D11D10AB1B00F3AA37 /* atomic_shared_ptr.hpp */,
 				02E008D21D10AB1B00F3AA37 /* format.cpp */,
 				02E008D31D10AB1B00F3AA37 /* format.hpp */,
+				F6242B291D08EE9600BE1E03 /* thread_id.hpp */,
 			);
 			name = util;
 			path = src/util;
