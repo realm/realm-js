@@ -77,6 +77,19 @@ auto table_for_object_schema(Group& group, ObjectSchema const& object_schema)
     return ObjectStore::table_for_object_type(group, object_schema.name);
 }
 
+void add_index(Table& table, size_t col)
+{
+    try {
+        table.add_search_index(col);
+    }
+    catch (LogicError const&) {
+        throw std::logic_error(util::format("Cannot index property '%1.%2': indexing properties of type '%3' is not yet implemented.",
+                                            ObjectStore::object_type_for_table_name(table.get_name()),
+                                            table.get_column_name(col),
+                                            string_for_property_type((PropertyType)table.get_column_type(col))));
+    }
+}
+
 void insert_column(Group& group, Table& table, Property const& property, size_t col_ndx)
 {
     if (property.type == PropertyType::Object || property.type == PropertyType::Array) {
@@ -87,7 +100,7 @@ void insert_column(Group& group, Table& table, Property const& property, size_t 
     else {
         table.insert_column(col_ndx, DataType(property.type), property.name, property.is_nullable);
         if (property.requires_index())
-            table.add_search_index(col_ndx);
+            add_index(table, col_ndx);
     }
 }
 
@@ -184,19 +197,6 @@ void validate_primary_column_uniqueness(Group const& group)
         validate_primary_column_uniqueness(group,
                                            pk_table->get_string(c_primaryKeyObjectClassColumnIndex, i),
                                            pk_table->get_string(c_primaryKeyPropertyNameColumnIndex, i));
-    }
-}
-
-void add_index(Table& table, size_t col)
-{
-    try {
-        table.add_search_index(col);
-    }
-    catch (LogicError const&) {
-        throw std::logic_error(util::format("Cannot index property '%1.%2': indexing properties of type '%3' is not yet implemented.",
-                                            ObjectStore::object_type_for_table_name(table.get_name()),
-                                            table.get_column_name(col),
-                                            string_for_property_type((PropertyType)table.get_column_type(col))));
     }
 }
 } // anonymous namespace
