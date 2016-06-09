@@ -264,10 +264,13 @@ ConstTableRef ObjectStore::table_for_object_type(Group const& group, StringData 
 }
 
 namespace {
-struct MigrationChecker {
+struct SchemaDifferenceExplainer {
     std::vector<ObjectSchemaValidationException> errors;
 
-    void operator()(schema_change::AddTable) { }
+    void operator()(schema_change::AddTable op)
+    {
+        errors.emplace_back("Class '%1' has been added.", op.object->name);
+    }
 
     void operator()(schema_change::AddProperty op)
     {
@@ -309,6 +312,16 @@ struct MigrationChecker {
         else {
             errors.emplace_back("Primary Key for class '%1 has been removed.", op.object->name);
         }
+    }
+
+    void operator()(schema_change::AddIndex op)
+    {
+        errors.emplace_back("Property '%1.%2' has been made indexed.", op.object->name, op.property->name);
+    }
+
+    void operator()(schema_change::RemoveIndex op)
+    {
+        errors.emplace_back("Property '%1.%2' has been made unindexed.", op.object->name, op.property->name);
     }
 };
 
@@ -366,33 +379,18 @@ bool ObjectStore::needs_migration(std::vector<SchemaChange> const& changes)
 
 void ObjectStore::verify_no_changes_required(std::vector<SchemaChange> const& changes)
 {
-    using namespace schema_change;
-    struct Verifier : MigrationChecker {
-        using MigrationChecker::operator();
-
-        void operator()(AddTable op)
-        {
-            errors.emplace_back("Class '%1' has been added.", op.object->name);
-        }
-
-        void operator()(AddIndex op)
-        {
-            errors.emplace_back("Property '%1.%2' has been made indexed.", op.object->name, op.property->name);
-        }
-
-        void operator()(RemoveIndex op)
-        {
-            errors.emplace_back("Property '%1.%2' has been made unindexed.", op.object->name, op.property->name);
-        }
-    } verifier;
-    verify_no_errors<SchemaMismatchException>(verifier, changes);
+    verify_no_errors<SchemaMismatchException>(SchemaDifferenceExplainer(), changes);
 }
 
 void ObjectStore::verify_no_migration_required(std::vector<SchemaChange> const& changes)
 {
     using namespace schema_change;
-    struct Verifier : MigrationChecker {
-        using MigrationChecker::operator();
+    struct Verifier : SchemaDifferenceExplainer {
+        using SchemaDifferenceExplainer::operator();
+
+        // Adding a table or adding/removing indexes can be done automatically.
+        // All other changes require migrations.
+        void operator()(AddTable) { }
         void operator()(AddIndex) { }
         void operator()(RemoveIndex) { }
     } verifier;
@@ -402,8 +400,11 @@ void ObjectStore::verify_no_migration_required(std::vector<SchemaChange> const& 
 void ObjectStore::verify_valid_additive_changes(std::vector<SchemaChange> const& changes)
 {
     using namespace schema_change;
-    struct Verifier : MigrationChecker {
-        using MigrationChecker::operator();
+    struct Verifier : SchemaDifferenceExplainer {
+        using SchemaDifferenceExplainer::operator();
+
+        // Additive mode allows adding things and adding/removing indexes
+        void operator()(AddTable) { }
         void operator()(AddProperty) { }
         void operator()(AddIndex) { }
         void operator()(RemoveIndex) { }
@@ -414,12 +415,15 @@ void ObjectStore::verify_valid_additive_changes(std::vector<SchemaChange> const&
 static void apply_non_migration_changes(Group& group, std::vector<SchemaChange> const& changes)
 {
     using namespace schema_change;
-    struct Applier : MigrationChecker {
+    struct Applier : SchemaDifferenceExplainer {
         Applier(Group& group) : group{group}, table{group} { }
         Group& group;
         TableHelper table;
 
-        using MigrationChecker::operator();
+        // Produce an exception listing the unsupported schema changes for
+        // everything but the explicitly supported ones
+        using SchemaDifferenceExplainer::operator();
+
         void operator()(AddTable op) { create_table(group, *op.object); }
         void operator()(AddIndex op) { add_index(table(op.object), op.property->table_column); }
         void operator()(RemoveIndex op) { table(op.object).remove_search_index(op.property->table_column); }
@@ -436,6 +440,12 @@ static void create_initial_tables(Group& group, std::vector<SchemaChange> const&
         TableHelper table;
 
         void operator()(AddTable op) { create_table(group, *op.object); }
+
+        // Note that in normal operation none of these will be hit, as if we're
+        // creating the initial tables there shouldn't be anything to update.
+        // Implementing these makes us better able to handle weird
+        // not-quite-correct files produced by other things and has no obvious
+        // downside.
         void operator()(AddProperty op) { add_column(group, table(op.object), *op.property); }
         void operator()(RemoveProperty op) { table(op.object).remove_column(op.property->table_column); }
         void operator()(MakePropertyNullable op) { make_property_optional(group, table(op.object), *op.property); }

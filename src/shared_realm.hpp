@@ -247,9 +247,9 @@ public:
     void set_schema(Schema schema, uint64_t version);
     void reset_file_if_needed(Schema const& schema, uint64_t version, std::vector<SchemaChange>& changes_required);
 
-    // Ensure that m_schema nd m_schema_version match that of the current version
-    // of the file, and return true if it changed
-    bool update_schema_if_needed();
+    // Ensure that m_schema and m_schema_version match that of the current
+    // version of the file, and return true if it changed
+    bool read_schema_from_group_if_needed();
 
   public:
     std::unique_ptr<BindingContext> m_binding_context;

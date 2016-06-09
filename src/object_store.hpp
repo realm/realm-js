@@ -47,9 +47,12 @@ public:
     // get the last set schema version
     static uint64_t get_schema_version(Group const& group);
 
-    // check if any of the schema changes in the list require a migration, and
-    // if any do throw an exception
+    // check if all of the changes in the list can be applied automatically, or
+    // throw if any of them require a schema version bump and migration function
     static void verify_no_migration_required(std::vector<SchemaChange> const& changes);
+
+    // Similar to above, but returns a bool rather than throwing/not throwing
+    static bool needs_migration(std::vector<SchemaChange> const& changes);
 
     // check if any of the schema changes in the list are forbidden in
     // additive-only mode, and if any are throw an exception
@@ -66,8 +69,6 @@ public:
                                      Schema const& target_schema, uint64_t target_schema_version,
                                      SchemaMode mode, std::vector<SchemaChange> const& changes,
                                      std::function<void()> migration_function={});
-
-    static bool needs_migration(std::vector<SchemaChange> const& changes);
 
     // get a table for an object type
     static realm::TableRef table_for_object_type(Group& group, StringData object_type);
