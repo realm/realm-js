@@ -23,9 +23,60 @@
 
 #include <atomic>
 
+#if __has_feature(tls) || __has_feature(cxx_thread_local)
+#define REALM_HAS_THREAD_LOCAL 1
+#else
+#define REALM_HAS_THREAD_LOCAL 0
+#include <pthread.h>
+#endif
+
 namespace realm {
 
 using thread_id_t = std::size_t;
+
+namespace _impl {
+
+#if !REALM_HAS_THREAD_LOCAL
+template<typename T>
+class ThreadLocal {
+  public:
+    ThreadLocal() : m_initial_value() {
+        init_key();
+    }
+    ThreadLocal(const T &value) : m_initial_value(value) {
+        init_key();
+    }
+    ~ThreadLocal() {
+        pthread_key_delete(m_key);
+    }
+
+    operator T&() {
+        void* ptr = pthread_getspecific(m_key);
+        if (!ptr) {
+            ptr = new T(m_initial_value);
+            pthread_setspecific(m_key, ptr);
+        }
+        return *static_cast<T*>(ptr);
+    }
+    T& operator=(const T &value) {
+        T& value_ref = operator T&();
+        value_ref = value;
+        return value_ref;
+    }
+
+  private:
+    T m_initial_value;
+    pthread_key_t m_key;
+
+    void init_key() {
+        pthread_key_create(&m_key, [](void* ptr) {
+            delete static_cast<T*>(ptr);
+        });
+    }
+};
+#endif
+
+} // namespace _impl
 
 namespace util {
 
@@ -33,7 +84,12 @@ namespace util {
 // an atomically incremented, thread-local identifier instead.
 inline thread_id_t get_thread_id() {
     static std::atomic<thread_id_t> id_counter;
+
+#if REALM_HAS_THREAD_LOCAL
     static REALM_THREAD_LOCAL thread_id_t thread_id = 0;
+#else
+    static _impl::ThreadLocal<thread_id_t> thread_id = 0;
+#endif
 
     if (REALM_UNLIKELY(!thread_id)) {
         thread_id = ++id_counter;
