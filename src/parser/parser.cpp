@@ -201,14 +201,14 @@ template< typename Rule >
 struct action : nothing< Rule > {};
 
 #ifdef REALM_PARSER_PRINT_TOKENS
-    #define DEBUG_PRINT_TOKEN(string) std::cout << string << std::endl
+    #define DEBUG_PRINT_TOKEN(string) do { std::cout << string << std::endl; while (0)
 #else
-    #define DEBUG_PRINT_TOKEN(string)
+    #define DEBUG_PRINT_TOKEN(string) do { static_cast<void>(string); } while (0)
 #endif
 
 template<> struct action< and_op >
 {
-    static void apply( const input & in, ParserState & state )
+    static void apply(const input&, ParserState& state)
     {
         DEBUG_PRINT_TOKEN("<and>");
         state.next_type = Predicate::Type::And;
@@ -217,7 +217,7 @@ template<> struct action< and_op >
 
 template<> struct action< or_op >
 {
-    static void apply( const input & in, ParserState & state )
+    static void apply(const input&, ParserState & state)
     {
         DEBUG_PRINT_TOKEN("<or>");
         state.next_type = Predicate::Type::Or;
@@ -227,7 +227,7 @@ template<> struct action< or_op >
 
 #define EXPRESSION_ACTION(rule, type)                               \
 template<> struct action< rule > {                                  \
-    static void apply( const input & in, ParserState & state ) {    \
+    static void apply(const input& in, ParserState& state) {        \
         DEBUG_PRINT_TOKEN(in.string());                             \
         state.add_expression(Expression(type, in.string())); }};
 
@@ -239,10 +239,10 @@ EXPRESSION_ACTION(true_value, Expression::Type::True)
 EXPRESSION_ACTION(false_value, Expression::Type::False)
 EXPRESSION_ACTION(null_value, Expression::Type::Null)
 EXPRESSION_ACTION(argument_index, Expression::Type::Argument)
-    
+
 template<> struct action< true_pred >
 {
-    static void apply( const input & in, ParserState & state )
+    static void apply(const input& in, ParserState & state)
     {
         DEBUG_PRINT_TOKEN(in.string());
         state.current_group()->cpnd.sub_predicates.emplace_back(Predicate::Type::True);
@@ -251,7 +251,7 @@ template<> struct action< true_pred >
 
 template<> struct action< false_pred >
 {
-    static void apply( const input & in, ParserState & state )
+    static void apply(const input& in, ParserState & state)
     {
         DEBUG_PRINT_TOKEN(in.string());
         state.current_group()->cpnd.sub_predicates.emplace_back(Predicate::Type::False);
@@ -260,7 +260,7 @@ template<> struct action< false_pred >
 
 #define OPERATOR_ACTION(rule, oper)                                 \
 template<> struct action< rule > {                                  \
-    static void apply( const input & in, ParserState & state ) {    \
+    static void apply(const input& in, ParserState& state) {        \
         DEBUG_PRINT_TOKEN(in.string());                             \
         state.last_predicate()->cmpr.op = oper; }};
 
@@ -273,19 +273,19 @@ OPERATOR_ACTION(lt, Predicate::Operator::LessThan)
 OPERATOR_ACTION(begins, Predicate::Operator::BeginsWith)
 OPERATOR_ACTION(ends, Predicate::Operator::EndsWith)
 OPERATOR_ACTION(contains, Predicate::Operator::Contains)
-    
+
 template<> struct action< case_insensitive >
 {
-    static void apply( const input & in, ParserState & state )
+    static void apply(const input& in, ParserState & state)
     {
         DEBUG_PRINT_TOKEN(in.string());
         state.last_predicate()->cmpr.option = Predicate::OperatorOption::CaseInsensitive;
     }
 };
-    
+
 template<> struct action< one< '(' > >
 {
-    static void apply( const input & in, ParserState & state )
+    static void apply(const input&, ParserState & state)
     {
         DEBUG_PRINT_TOKEN("<begin_group>");
         state.add_predicate_to_current_group(Predicate::Type::And);
@@ -295,7 +295,7 @@ template<> struct action< one< '(' > >
 
 template<> struct action< group_pred >
 {
-    static void apply( const input & in, ParserState & state )
+    static void apply(const input&, ParserState & state)
     {
         DEBUG_PRINT_TOKEN("<end_group>");
         state.group_stack.pop_back();
@@ -304,7 +304,7 @@ template<> struct action< group_pred >
 
 template<> struct action< not_pre >
 {
-    static void apply( const input & in, ParserState & state )
+    static void apply(const input&, ParserState & state)
     {
         DEBUG_PRINT_TOKEN("<not>");
         state.negate_next = true;
@@ -317,9 +317,9 @@ struct error_message_control : pegtl::normal< Rule >
     static const std::string error_message;
 
     template< typename Input, typename ... States >
-    static void raise( const Input & in, States && ... )
+    static void raise(const Input& in, States&&...)
     {
-        throw pegtl::parse_error( error_message, in );
+        throw pegtl::parse_error(error_message, in);
     }
 };
 
@@ -351,5 +351,3 @@ void analyze_grammar()
 }
 
 }}
-
-

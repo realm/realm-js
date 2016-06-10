@@ -26,10 +26,11 @@
 #include <realm.hpp>
 #include <assert.h>
 
-namespace realm {
-namespace query_builder {
+using namespace realm;
 using namespace parser;
+using namespace query_builder;
 
+namespace {
 template<typename T>
 T stot(std::string const& s) {
     std::istringstream iss(s);
@@ -267,12 +268,12 @@ void add_link_constraint_to_query(realm::Query &query,
     }
 }
 
-auto link_argument(const PropertyExpression &propExpr, const parser::Expression &argExpr, Arguments &args)
+auto link_argument(const PropertyExpression&, const parser::Expression &argExpr, Arguments &args)
 {
     return args.object_index_for_argument(stot<int>(argExpr.s));
 }
 
-auto link_argument(const parser::Expression &argExpr, const PropertyExpression &propExpr, Arguments &args)
+auto link_argument(const parser::Expression &argExpr, const PropertyExpression&, Arguments &args)
 {
     return args.object_index_for_argument(stot<int>(argExpr.s));
 }
@@ -280,7 +281,7 @@ auto link_argument(const parser::Expression &argExpr, const PropertyExpression &
 
 template <typename RetType, typename TableGetter>
 struct ColumnGetter {
-    static Columns<RetType> convert(TableGetter&& table, const PropertyExpression & expr, Arguments &args)
+    static Columns<RetType> convert(TableGetter&& table, const PropertyExpression& expr, Arguments&)
     {
         return table()->template column<RetType>(expr.prop->table_column);
     }
@@ -381,7 +382,7 @@ auto value_of_type_for_query(TableGetter&& tables, Value&& value, Arguments &arg
 }
 
 template <typename A, typename B>
-void do_add_comparison_to_query(Query &query, const Schema &schema, const ObjectSchema &object_schema, Predicate::Comparison cmp,
+void do_add_comparison_to_query(Query &query, Predicate::Comparison cmp,
                                 const PropertyExpression &expr, A &lhs, B &rhs, Arguments &args)
 {
     auto type = expr.prop->type;
@@ -424,7 +425,7 @@ void do_add_comparison_to_query(Query &query, const Schema &schema, const Object
 }
   
 template<typename T>
-void do_add_null_comparison_to_query(Query &query, Predicate::Operator op, const PropertyExpression &expr, Arguments &args)
+void do_add_null_comparison_to_query(Query &query, Predicate::Operator op, const PropertyExpression &expr)
 {
     Columns<T> column = expr.table_getter()->template column<T>(expr.prop->table_column);
     switch (op) {
@@ -440,7 +441,7 @@ void do_add_null_comparison_to_query(Query &query, Predicate::Operator op, const
 }
     
 template<>
-void do_add_null_comparison_to_query<Binary>(Query &query, Predicate::Operator op, const PropertyExpression &expr, Arguments &args)
+void do_add_null_comparison_to_query<Binary>(Query &query, Predicate::Operator op, const PropertyExpression &expr)
 {
     precondition(expr.indexes.empty(), "KeyPath queries not supported for data comparisons.");
     Columns<Binary> column = expr.table_getter()->template column<Binary>(expr.prop->table_column);
@@ -457,7 +458,7 @@ void do_add_null_comparison_to_query<Binary>(Query &query, Predicate::Operator o
 }
     
 template<>
-void do_add_null_comparison_to_query<Link>(Query &query, Predicate::Operator op, const PropertyExpression &expr, Arguments &args)
+void do_add_null_comparison_to_query<Link>(Query &query, Predicate::Operator op, const PropertyExpression &expr)
 {
     precondition(expr.indexes.empty(), "KeyPath queries not supported for object comparisons.");
     switch (op) {
@@ -472,40 +473,38 @@ void do_add_null_comparison_to_query<Link>(Query &query, Predicate::Operator op,
     }
 }
 
-void do_add_null_comparison_to_query(Query &query, const Schema &schema, const ObjectSchema &object_schema, Predicate::Comparison cmp,
-                                     const PropertyExpression &expr, Arguments &args)
+void do_add_null_comparison_to_query(Query &query, Predicate::Comparison cmp, const PropertyExpression &expr)
 {
     auto type = expr.prop->type;
     switch (type) {
         case realm::PropertyType::Bool:
-            do_add_null_comparison_to_query<bool>(query, cmp.op, expr, args);
+            do_add_null_comparison_to_query<bool>(query, cmp.op, expr);
             break;
         case realm::PropertyType::Date:
-            do_add_null_comparison_to_query<Timestamp>(query, cmp.op, expr, args);
+            do_add_null_comparison_to_query<Timestamp>(query, cmp.op, expr);
             break;
         case realm::PropertyType::Double:
-            do_add_null_comparison_to_query<Double>(query, cmp.op, expr, args);
+            do_add_null_comparison_to_query<Double>(query, cmp.op, expr);
             break;
         case realm::PropertyType::Float:
-            do_add_null_comparison_to_query<Float>(query, cmp.op, expr, args);
+            do_add_null_comparison_to_query<Float>(query, cmp.op, expr);
             break;
         case realm::PropertyType::Int:
-            do_add_null_comparison_to_query<Int>(query, cmp.op, expr, args);
+            do_add_null_comparison_to_query<Int>(query, cmp.op, expr);
             break;
         case realm::PropertyType::String:
-            do_add_null_comparison_to_query<String>(query, cmp.op, expr, args);
+            do_add_null_comparison_to_query<String>(query, cmp.op, expr);
             break;
         case realm::PropertyType::Data:
-            do_add_null_comparison_to_query<Binary>(query, cmp.op, expr, args);
+            do_add_null_comparison_to_query<Binary>(query, cmp.op, expr);
             break;
         case realm::PropertyType::Object:
-            do_add_null_comparison_to_query<Link>(query, cmp.op, expr, args);
+            do_add_null_comparison_to_query<Link>(query, cmp.op, expr);
             break;
         case realm::PropertyType::Array:
             throw std::runtime_error("Comparing Lists to 'null' is not supported");
-        default: {
-            throw std::runtime_error(std::string("Object type ") + string_for_property_type(type) + " not supported");
-        }
+        default:
+            throw std::runtime_error(util::format("Object type '%1' not supported", string_for_property_type(type)));
     }
 }
     
@@ -527,19 +526,19 @@ void add_comparison_to_query(Query &query, const Predicate &pred, Arguments &arg
     if (t0 == parser::Expression::Type::KeyPath && t1 != parser::Expression::Type::KeyPath) {
         PropertyExpression expr(query, schema, object_schema, cmpr.expr[0].s);
         if (expression_is_null(cmpr.expr[1], args)) {
-            do_add_null_comparison_to_query(query, schema, *object_schema, cmpr, expr, args);
+            do_add_null_comparison_to_query(query, cmpr, expr);
         }
         else {
-            do_add_comparison_to_query(query, schema, *object_schema, cmpr, expr, expr, cmpr.expr[1], args);
+            do_add_comparison_to_query(query, cmpr, expr, expr, cmpr.expr[1], args);
         }
     }
     else if (t0 != parser::Expression::Type::KeyPath && t1 == parser::Expression::Type::KeyPath) {
         PropertyExpression expr(query, schema, object_schema, cmpr.expr[1].s);
         if (expression_is_null(cmpr.expr[0], args)) {
-            do_add_null_comparison_to_query(query, schema, *object_schema, cmpr, expr, args);
+            do_add_null_comparison_to_query(query, cmpr, expr);
         }
         else {
-            do_add_comparison_to_query(query, schema, *object_schema, cmpr, expr, cmpr.expr[0], expr, args);
+            do_add_comparison_to_query(query, cmpr, expr, cmpr.expr[0], expr, args);
         }
     }
     else {
@@ -593,6 +592,10 @@ void update_query_with_predicate(Query &query, const Predicate &pred, Arguments 
             throw std::runtime_error("Invalid predicate type");
     }
 }
+} // anonymous namespace
+
+namespace realm {
+namespace query_builder {
 
 void apply_predicate(Query &query, const Predicate &predicate, Arguments &arguments, const Schema &schema, const std::string &objectType)
 {
@@ -603,4 +606,5 @@ void apply_predicate(Query &query, const Predicate &predicate, Arguments &argume
     precondition(validateMessage.empty(), validateMessage.c_str());
 }
 
-}}
+}
+}
