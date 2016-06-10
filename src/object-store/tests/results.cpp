@@ -549,7 +549,7 @@ TEST_CASE("[results] notifications after move") {
     auto results = std::make_unique<Results>(r, *config.schema->find("object"), *table);
 
     int notification_calls = 0;
-    auto token = results->add_notification_callback([&](CollectionChangeSet c, std::exception_ptr err) {
+    auto token = results->add_notification_callback([&](CollectionChangeSet, std::exception_ptr err) {
         REQUIRE_FALSE(err);
         ++notification_calls;
     });

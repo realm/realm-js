@@ -123,7 +123,7 @@ namespace realm {
         //
         // Deprecated
         //
-        static Mixed to_mixed(ContextType ctx, ValueType &val) { throw std::runtime_error("'Any' type is unsupported"); }
+        static Mixed to_mixed(ContextType, ValueType&) { throw std::runtime_error("'Any' type is unsupported"); }
     };
 
     class InvalidatedObjectException : public std::runtime_error
