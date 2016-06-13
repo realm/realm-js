@@ -141,6 +141,7 @@ public:
 
     // methods
     static void objects(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void object_for_primary_key(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void create(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void delete_one(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void delete_all(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
@@ -180,6 +181,7 @@ public:
     
     MethodMap<T> const methods = {
         {"objects", wrap<objects>},
+        {"objectForPrimaryKey", wrap<object_for_primary_key>},
         {"create", wrap<create>},
         {"delete", wrap<delete_one>},
         {"deleteAll", wrap<delete_all>},
@@ -206,20 +208,35 @@ public:
         return name;
     }
     
-    // converts constructor object or type name to type name
-    static std::string validated_object_type_for_value(SharedRealm &realm, ContextType ctx, const ValueType &value) {
+    static const ObjectSchema& validated_object_schema_for_value(ContextType ctx, const SharedRealm &realm, const ValueType &value) {
+        std::string object_type;
+
         if (Value::is_constructor(ctx, value)) {
             FunctionType constructor = Value::to_constructor(ctx, value);
             
             auto delegate = get_delegate<T>(realm.get());
             for (auto &pair : delegate->m_constructors) {
                 if (FunctionType(pair.second) == constructor) {
-                    return pair.first;
+                    object_type = pair.first;
+                    break;
                 }
             }
-            throw std::runtime_error("Constructor was not registered in the schema for this Realm");
+
+            if (object_type.empty()) {
+                throw std::runtime_error("Constructor was not registered in the schema for this Realm");
+            }
         }
-        return Value::validated_to_string(ctx, value, "objectType");
+        else {
+            object_type = Value::validated_to_string(ctx, value, "objectType");
+        }
+
+        auto &schema = realm->config().schema;
+        auto object_schema = schema->find(object_type);
+
+        if (object_schema == schema->end()) {
+            throw std::runtime_error("Object type '" + object_type + "' not found in schema.");
+        }
+        return *object_schema;
     }
     
     static std::string normalize_path(std::string path) {
@@ -462,9 +479,25 @@ void RealmClass<T>::objects(ContextType ctx, ObjectType this_object, size_t argc
     validate_argument_count(argc, 1);
 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
-    std::string type = validated_object_type_for_value(realm, ctx, arguments[0]);
+    auto &object_schema = validated_object_schema_for_value(ctx, realm, arguments[0]);
 
-    return_value.set(ResultsClass<T>::create_instance(ctx, realm, type));
+    return_value.set(ResultsClass<T>::create_instance(ctx, realm, object_schema));
+}
+
+template<typename T>
+void RealmClass<T>::object_for_primary_key(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    validate_argument_count(argc, 2);
+
+    SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
+    auto &object_schema = validated_object_schema_for_value(ctx, realm, arguments[0]);
+    auto realm_object = realm::Object::get_for_primary_key(ctx, realm, object_schema, arguments[1]);
+
+    if (realm_object.is_valid()) {
+        return_value.set(RealmObjectClass<T>::create_instance(ctx, std::move(realm_object)));
+    }
+    else {
+        return_value.set_undefined();
+    }
 }
 
 template<typename T>
@@ -472,17 +505,11 @@ void RealmClass<T>::create(ContextType ctx, ObjectType this_object, size_t argc,
     validate_argument_count(argc, 2, 3);
 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
-    std::string className = validated_object_type_for_value(realm, ctx, arguments[0]);
-    auto &schema = realm->config().schema;
-    auto object_schema = schema->find(className);
-
-    if (object_schema == schema->end()) {
-        throw std::runtime_error("Object type '" + className + "' not found in schema.");
-    }
+    auto &object_schema = validated_object_schema_for_value(ctx, realm, arguments[0]);
 
     ObjectType object = Value::validated_to_object(ctx, arguments[1], "properties");
     if (Value::is_array(ctx, arguments[1])) {
-        object = Schema<T>::dict_for_property_array(ctx, *object_schema, object);
+        object = Schema<T>::dict_for_property_array(ctx, object_schema, object);
     }
 
     bool update = false;
@@ -490,7 +517,7 @@ void RealmClass<T>::create(ContextType ctx, ObjectType this_object, size_t argc,
         update = Value::validated_to_boolean(ctx, arguments[2], "update");
     }
 
-    auto realm_object = realm::Object::create<ValueType>(ctx, realm, *object_schema, object, update);
+    auto realm_object = realm::Object::create<ValueType>(ctx, realm, object_schema, object, update);
     return_value.set(RealmObjectClass<T>::create_instance(ctx, std::move(realm_object)));
 }
 

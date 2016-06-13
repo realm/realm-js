@@ -638,6 +638,43 @@ module.exports = {
         });
     },
 
+    testRealmObjectForPrimaryKey: function() {
+        var realm = new Realm({schema: [schemas.IntPrimary, schemas.StringPrimary, schemas.TestObject]});
+
+        realm.write(function() {
+            realm.create('IntPrimaryObject', {primaryCol: 0, valueCol: 'val0'});
+            realm.create('IntPrimaryObject', {primaryCol: 1, valueCol: 'val1'});
+
+            realm.create('StringPrimaryObject', {primaryCol: '', valueCol: -1});
+            realm.create('StringPrimaryObject', {primaryCol: 'val0', valueCol: 0});
+            realm.create('StringPrimaryObject', {primaryCol: 'val1', valueCol: 1});
+
+            realm.create('TestObject', {doubleCol: 0});
+        });
+
+        TestCase.assertEqual(realm.objectForPrimaryKey('IntPrimaryObject', -1), undefined);
+        TestCase.assertEqual(realm.objectForPrimaryKey('IntPrimaryObject', 0).valueCol, 'val0');
+        TestCase.assertEqual(realm.objectForPrimaryKey('IntPrimaryObject', 1).valueCol, 'val1');
+
+        TestCase.assertEqual(realm.objectForPrimaryKey('StringPrimaryObject', 'invalid'), undefined);
+        TestCase.assertEqual(realm.objectForPrimaryKey('StringPrimaryObject', '').valueCol, -1);
+        TestCase.assertEqual(realm.objectForPrimaryKey('StringPrimaryObject', 'val0').valueCol, 0);
+        TestCase.assertEqual(realm.objectForPrimaryKey('StringPrimaryObject', 'val1').valueCol, 1);
+
+        TestCase.assertThrows(function() {
+            realm.objectForPrimaryKey('TestObject', 0);
+        });
+        TestCase.assertThrows(function() {
+            realm.objectForPrimaryKey();
+        });
+        TestCase.assertThrows(function() {
+            realm.objectForPrimaryKey('IntPrimary');
+        });
+        TestCase.assertThrows(function() {
+            realm.objectForPrimaryKey('InvalidClass', 0);
+        });
+    },
+
     testNotifications: function() {
         var realm = new Realm({schema: []});
         var notificationCount = 0;
