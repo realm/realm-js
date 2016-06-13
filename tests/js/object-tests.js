@@ -328,6 +328,17 @@ module.exports = {
         TestCase.assertEqual(obj.arrayCol[0].doubleCol, 3);
         TestCase.assertEqual(obj.arrayCol[1].doubleCol, 1);
         TestCase.assertEqual(obj.arrayCol[2].doubleCol, 2);
+
+        // set object from another realm
+        var another = new Realm({path: 'another.realm', schema: realm.schema});
+        var anotherObj;
+        another.write(function() {
+            anotherObj = another.create('TestObject', {doubleCol: 3});
+        });
+        realm.write(function() {
+            obj.objectCol = anotherObj;
+        });
+        TestCase.assertEqual(obj.objectCol.doubleCol, 3);
     },
     testEnumerablePropertyNames: function() {
         var realm = new Realm({schema: [schemas.BasicTypes]});

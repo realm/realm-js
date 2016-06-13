@@ -106,7 +106,10 @@ struct NativeAccessor {
     static size_t to_object_index(ContextType ctx, SharedRealm realm, ValueType &value, const std::string &type, bool try_update) {
         ObjectType object = Value::validated_to_object(ctx, value);
         if (Object::template is_instance<RealmObjectClass<T>>(ctx, object)) {
-            return get_internal<T, RealmObjectClass<T>>(object)->row().get_index();
+            auto realm_object = get_internal<T, RealmObjectClass<T>>(object);
+            if (realm_object->realm() == realm) {
+                return realm_object->row().get_index();
+            }
         }
 
         auto object_schema = realm->config().schema->find(type);
@@ -117,12 +120,18 @@ struct NativeAccessor {
         auto child = realm::Object::create<ValueType>(ctx, realm, *object_schema, static_cast<ValueType>(object), try_update);
         return child.row().get_index();
     }
-    static size_t to_existing_object_index(ContextType ctx, ValueType &value) {
+    static size_t to_existing_object_index(ContextType ctx, SharedRealm realm, ValueType &value) {
         ObjectType object = Value::validated_to_object(ctx, value);
-        if (Object::template is_instance<RealmObjectClass<T>>(ctx, object)) {
-            return get_internal<T, RealmObjectClass<T>>(object)->row().get_index();
+        if (!Object::template is_instance<RealmObjectClass<T>>(ctx, object)) {
+            throw std::runtime_error("object is not a Realm Object");
         }
-        throw std::runtime_error("object is not a Realm Object");
+        
+        auto realm_object = get_internal<T, RealmObjectClass<T>>(object);
+        if (realm_object->realm() != realm) {
+            throw std::runtime_error("Realm object is from another Realm");
+
+        }
+        return realm_object->row().get_index();
     }
     static ValueType from_object(ContextType ctx, realm::Object realm_object) {
         return RealmObjectClass<T>::create_instance(ctx, std::move(realm_object));

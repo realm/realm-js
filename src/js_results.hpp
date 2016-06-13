@@ -119,7 +119,7 @@ typename T::Object ResultsClass<T>::create_filtered(ContextType ctx, const U &co
     }
 
     parser::Predicate predicate = parser::parse(query_string);
-    query_builder::ArgumentConverter<ValueType, ContextType> converter(ctx, args);
+    query_builder::ArgumentConverter<ValueType, ContextType> converter(ctx, realm, args);
     query_builder::apply_predicate(query, predicate, converter, *realm->config().schema, object_schema.name);
 
     return create_instance(ctx, realm, object_schema, std::move(query));
