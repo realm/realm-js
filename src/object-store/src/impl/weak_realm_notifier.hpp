@@ -25,6 +25,8 @@
 #include "impl/node/weak_realm_notifier.hpp"
 #elif REALM_PLATFORM_APPLE
 #include "impl/apple/weak_realm_notifier.hpp"
+#elif REALM_ANDROID
+#include "impl/android/weak_realm_notifier.hpp"
 #else
 #include "impl/generic/weak_realm_notifier.hpp"
 #endif
