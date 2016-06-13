@@ -273,7 +273,7 @@ module.exports = {
     },
 
     testRealmCreateUpsert: function() {
-        var realm = new Realm({schema: [schemas.IntPrimary, schemas.AllTypes, schemas.TestObject]});
+        var realm = new Realm({schema: [schemas.IntPrimary, schemas.StringPrimary, schemas.AllTypes, schemas.TestObject]});
         realm.write(function() {
             var values = {
                 primaryCol: '0',
@@ -360,6 +360,19 @@ module.exports = {
             realm.create('AllTypesObject', {primaryCol: '1', objectCol: null}, true);
             TestCase.assertEqual(obj0.objectCol, null);
             TestCase.assertEqual(obj1.objectCol, null);
+
+            // test with string primaries
+            var obj =realm.create('StringPrimaryObject', {
+                primaryCol: '0',
+                valueCol: 0
+            });
+            TestCase.assertEqual(obj.valueCol, 0);
+
+            realm.create('StringPrimaryObject', {
+                primaryCol: '0',
+                valueCol: 1
+            }, true);
+            TestCase.assertEqual(obj.valueCol, 1);
         });
     },
 

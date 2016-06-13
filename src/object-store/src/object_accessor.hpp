@@ -322,7 +322,7 @@ namespace realm {
 
             if (!try_update && row_index != realm::not_found) {
                 throw DuplicatePrimaryKeyValueException(object_schema.name, *primary_prop,
-                    "Attempting to create an object of type '" + object_schema.name + "' with an exising primary key value.");
+                    "Attempting to create an object of type '" + object_schema.name + "' with an existing primary key value.");
             }
         }
 
