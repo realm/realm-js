@@ -52,14 +52,22 @@ export function getTestNames() {
 
 export async function runTests() {
     let testNames = getTestNames();
+    let passed = true;
 
     for (let suiteName in testNames) {
         console.log('Starting ' + suiteName);
 
         for (let testName of testNames[suiteName]) {
-            await runTest(suiteName, testName);
+            try {
+                await runTest(suiteName, testName);
+            }
+            catch (e) {
+                passed = false;
+            }
         }
     }
+
+    return passed;
 }
 
 export async function runTest(suiteName, testName) {
