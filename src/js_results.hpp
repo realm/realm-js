@@ -40,7 +40,7 @@ struct ResultsClass : ClassDefinition<T, realm::Results, CollectionClass<T>> {
 
     static ObjectType create_instance(ContextType, const realm::Results &, bool live = true);
     static ObjectType create_instance(ContextType, const realm::List &, bool live = true);
-    static ObjectType create_instance(ContextType, SharedRealm, const std::string &type, bool live = true);
+    static ObjectType create_instance(ContextType, SharedRealm, const ObjectSchema &, bool live = true);
     static ObjectType create_instance(ContextType, SharedRealm, const ObjectSchema &, Query, bool live = true);
 
     template<typename U>
@@ -87,16 +87,9 @@ typename T::Object ResultsClass<T>::create_instance(ContextType ctx, const realm
 }
 
 template<typename T>
-typename T::Object ResultsClass<T>::create_instance(ContextType ctx, SharedRealm realm, const std::string &type, bool live) {
-    auto table = ObjectStore::table_for_object_type(realm->read_group(), type);
-    auto &schema = realm->config().schema;
-    auto object_schema = schema->find(type);
-
-    if (object_schema == schema->end()) {
-        throw std::runtime_error("Object type '" + type + "' not present in Realm.");
-    }
-
-    auto results = new realm::Results(realm, *object_schema, *table);
+typename T::Object ResultsClass<T>::create_instance(ContextType ctx, SharedRealm realm, const ObjectSchema &object_schema, bool live) {
+    auto table = ObjectStore::table_for_object_type(realm->read_group(), object_schema.name);
+    auto results = new realm::Results(realm, object_schema, *table);
     results->set_live(live);
 
     return create_object<T, ResultsClass<T>>(ctx, results);
@@ -126,7 +119,7 @@ typename T::Object ResultsClass<T>::create_filtered(ContextType ctx, const U &co
     }
 
     parser::Predicate predicate = parser::parse(query_string);
-    query_builder::ArgumentConverter<ValueType, ContextType> converter(ctx, args);
+    query_builder::ArgumentConverter<ValueType, ContextType> converter(ctx, realm, args);
     query_builder::apply_predicate(query, predicate, converter, *realm->config().schema, object_schema.name);
 
     return create_instance(ctx, realm, object_schema, std::move(query));
@@ -208,7 +201,7 @@ void ResultsClass<T>::get_index(ContextType ctx, ObjectType object, uint32_t ind
     }
 
     auto realm_object = realm::Object(results->get_realm(), results->get_object_schema(), results->get(index));
-    return_value.set(RealmObjectClass<T>::create_instance(ctx, realm_object));
+    return_value.set(RealmObjectClass<T>::create_instance(ctx, std::move(realm_object)));
 }
 
 template<typename T>

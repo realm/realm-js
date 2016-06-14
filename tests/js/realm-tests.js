@@ -145,14 +145,19 @@ module.exports = {
     },
 
     testDefaultPath: function() {
+        var defaultPath = Realm.defaultPath;
         var defaultRealm = new Realm({schema: []});
         TestCase.assertEqual(defaultRealm.path, Realm.defaultPath);
 
-        var newPath = Realm.defaultPath.substring(0, Realm.defaultPath.lastIndexOf("/") + 1) + 'default2.realm';
-        Realm.defaultPath = newPath;
-        defaultRealm = new Realm({schema: []});
-        TestCase.assertEqual(defaultRealm.path, newPath, "should use updated default realm path");
-        TestCase.assertEqual(Realm.defaultPath, newPath, "defaultPath should have been updated");
+        try {
+            var newPath = Realm.defaultPath.substring(0, defaultPath.lastIndexOf('/') + 1) + 'default2.realm';
+            Realm.defaultPath = newPath;
+            defaultRealm = new Realm({schema: []});
+            TestCase.assertEqual(defaultRealm.path, newPath, "should use updated default realm path");
+            TestCase.assertEqual(Realm.defaultPath, newPath, "defaultPath should have been updated");
+        } finally {
+            Realm.defaultPath = defaultPath;
+        }
     },
 
     testRealmSchemaVersion: function() {
@@ -273,7 +278,7 @@ module.exports = {
     },
 
     testRealmCreateUpsert: function() {
-        var realm = new Realm({schema: [schemas.IntPrimary, schemas.AllTypes, schemas.TestObject]});
+        var realm = new Realm({schema: [schemas.IntPrimary, schemas.StringPrimary, schemas.AllTypes, schemas.TestObject]});
         realm.write(function() {
             var values = {
                 primaryCol: '0',
@@ -360,6 +365,19 @@ module.exports = {
             realm.create('AllTypesObject', {primaryCol: '1', objectCol: null}, true);
             TestCase.assertEqual(obj0.objectCol, null);
             TestCase.assertEqual(obj1.objectCol, null);
+
+            // test with string primaries
+            var obj =realm.create('StringPrimaryObject', {
+                primaryCol: '0',
+                valueCol: 0
+            });
+            TestCase.assertEqual(obj.valueCol, 0);
+
+            realm.create('StringPrimaryObject', {
+                primaryCol: '0',
+                valueCol: 1
+            }, true);
+            TestCase.assertEqual(obj.valueCol, 1);
         });
     },
 
@@ -635,6 +653,43 @@ module.exports = {
         });
         TestCase.assertThrows(function() {
             realm.objects(InvalidPerson);
+        });
+    },
+
+    testRealmObjectForPrimaryKey: function() {
+        var realm = new Realm({schema: [schemas.IntPrimary, schemas.StringPrimary, schemas.TestObject]});
+
+        realm.write(function() {
+            realm.create('IntPrimaryObject', {primaryCol: 0, valueCol: 'val0'});
+            realm.create('IntPrimaryObject', {primaryCol: 1, valueCol: 'val1'});
+
+            realm.create('StringPrimaryObject', {primaryCol: '', valueCol: -1});
+            realm.create('StringPrimaryObject', {primaryCol: 'val0', valueCol: 0});
+            realm.create('StringPrimaryObject', {primaryCol: 'val1', valueCol: 1});
+
+            realm.create('TestObject', {doubleCol: 0});
+        });
+
+        TestCase.assertEqual(realm.objectForPrimaryKey('IntPrimaryObject', -1), undefined);
+        TestCase.assertEqual(realm.objectForPrimaryKey('IntPrimaryObject', 0).valueCol, 'val0');
+        TestCase.assertEqual(realm.objectForPrimaryKey('IntPrimaryObject', 1).valueCol, 'val1');
+
+        TestCase.assertEqual(realm.objectForPrimaryKey('StringPrimaryObject', 'invalid'), undefined);
+        TestCase.assertEqual(realm.objectForPrimaryKey('StringPrimaryObject', '').valueCol, -1);
+        TestCase.assertEqual(realm.objectForPrimaryKey('StringPrimaryObject', 'val0').valueCol, 0);
+        TestCase.assertEqual(realm.objectForPrimaryKey('StringPrimaryObject', 'val1').valueCol, 1);
+
+        TestCase.assertThrows(function() {
+            realm.objectForPrimaryKey('TestObject', 0);
+        });
+        TestCase.assertThrows(function() {
+            realm.objectForPrimaryKey();
+        });
+        TestCase.assertThrows(function() {
+            realm.objectForPrimaryKey('IntPrimary');
+        });
+        TestCase.assertThrows(function() {
+            realm.objectForPrimaryKey('InvalidClass', 0);
         });
     },
 

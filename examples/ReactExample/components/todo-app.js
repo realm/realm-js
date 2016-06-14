@@ -21,7 +21,6 @@
 import React from 'react';
 
 import {
-    Component,
     Navigator,
     Platform,
     StatusBar,
@@ -35,7 +34,7 @@ import TodoListView from './todo-listview';
 import realm from './realm';
 import styles from './styles';
 
-export default class TodoApp extends Component {
+export default class TodoApp extends React.Component {
     constructor(props) {
         super(props);
 

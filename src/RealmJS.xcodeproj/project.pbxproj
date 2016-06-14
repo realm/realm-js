@@ -19,7 +19,6 @@
 		02D041F71CE11159000E4250 /* dates-v3.realm in Resources */ = {isa = PBXBuildFile; fileRef = 02D041F61CE11159000E4250 /* dates-v3.realm */; };
 		02D8D1F71B601984006DB49D /* JavaScriptCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 02B58CCD1AE99D4D009B348C /* JavaScriptCore.framework */; };
 		02E008D51D10ABB600F3AA37 /* format.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E008D21D10AB1B00F3AA37 /* format.cpp */; };
-		02E008D61D10AC6B00F3AA37 /* format.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E008D21D10AB1B00F3AA37 /* format.cpp */; };
 		02F59EBF1C88F17D007F774C /* index_set.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02F59EAF1C88F17D007F774C /* index_set.cpp */; };
 		02F59EC01C88F17D007F774C /* list.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02F59EB11C88F17D007F774C /* list.cpp */; };
 		02F59EC11C88F17D007F774C /* object_schema.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02F59EB41C88F17D007F774C /* object_schema.cpp */; };
@@ -72,6 +71,11 @@
 		F674784A1CC81F1900F9273C /* platform.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F67478481CC81F1300F9273C /* platform.cpp */; };
 		F68A278C1BC2722A0063D40A /* RJSModuleLoader.m in Sources */ = {isa = PBXBuildFile; fileRef = F68A278B1BC2722A0063D40A /* RJSModuleLoader.m */; };
 		F6BCCFE21C8380A400FE31AE /* lib in Resources */ = {isa = PBXBuildFile; fileRef = F6BCCFDF1C83809A00FE31AE /* lib */; };
+		F6E931BA1CFEAE170016AF14 /* collection_notifications.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02414B961CE6AADD00A8669F /* collection_notifications.cpp */; };
+		F6E931BB1CFEAE310016AF14 /* collection_change_builder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02414B991CE6AAEF00A8669F /* collection_change_builder.cpp */; };
+		F6E931BC1CFEAE340016AF14 /* collection_notifier.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02414B9B1CE6AAEF00A8669F /* collection_notifier.cpp */; };
+		F6E931BD1CFEAE370016AF14 /* list_notifier.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02414B9D1CE6AAEF00A8669F /* list_notifier.cpp */; };
+		F6E931BE1CFEAE3A0016AF14 /* results_notifier.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02414B9F1CE6AAEF00A8669F /* results_notifier.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -766,16 +770,21 @@
 			buildActionMask = 2147483647;
 			files = (
 				02E008D61D10AC6B00F3AA37 /* format.cpp in Sources */,
+				F6E931BA1CFEAE170016AF14 /* collection_notifications.cpp in Sources */,
 				F60102D31CBB966E00EC01BA /* js_realm.cpp in Sources */,
 				F60102D61CBB96B400EC01BA /* object_schema.cpp in Sources */,
 				F60102D41CBB96AB00EC01BA /* index_set.cpp in Sources */,
 				F60102DB1CBB96C600EC01BA /* parser.cpp in Sources */,
+				F6E931BB1CFEAE310016AF14 /* collection_change_builder.cpp in Sources */,
 				F60102D51CBB96AE00EC01BA /* list.cpp in Sources */,
+				F6E931BC1CFEAE340016AF14 /* collection_notifier.cpp in Sources */,
 				F60102DC1CBB96C900EC01BA /* query_builder.cpp in Sources */,
 				F60102DD1CBB96CC00EC01BA /* external_commit_helper.cpp in Sources */,
 				F63117F01CEB0D5F00ECB2DE /* weak_realm_notifier.cpp in Sources */,
 				F60102E11CBB96DD00EC01BA /* transact_log_handler.cpp in Sources */,
+				F6E931BE1CFEAE3A0016AF14 /* results_notifier.cpp in Sources */,
 				F60102D71CBB96B800EC01BA /* object_store.cpp in Sources */,
+				F6E931BD1CFEAE370016AF14 /* list_notifier.cpp in Sources */,
 				F60102DA1CBB96C300EC01BA /* shared_realm.cpp in Sources */,
 				F60102E01CBB96D900EC01BA /* realm_coordinator.cpp in Sources */,
 				F60102EA1CBCAFC300EC01BA /* node_dummy.cpp in Sources */,
@@ -995,87 +1004,6 @@
 			};
 			name = Release;
 		};
-		02F9EE1C1B6BF66300C807E8 /* GCov_Build */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
-				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
-				CLANG_CXX_LIBRARY = "libc++";
-				CLANG_ENABLE_MODULES = YES;
-				CLANG_ENABLE_OBJC_ARC = YES;
-				CLANG_WARN_BOOL_CONVERSION = YES;
-				CLANG_WARN_CONSTANT_CONVERSION = YES;
-				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
-				CLANG_WARN_EMPTY_BODY = YES;
-				CLANG_WARN_ENUM_CONVERSION = YES;
-				CLANG_WARN_INT_CONVERSION = YES;
-				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
-				CLANG_WARN_UNREACHABLE_CODE = YES;
-				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 0.13.2;
-				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				GCC_C_LANGUAGE_STANDARD = gnu99;
-				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_GENERATE_TEST_COVERAGE_FILES = YES;
-				GCC_INSTRUMENT_PROGRAM_FLOW_ARCS = YES;
-				GCC_NO_COMMON_BLOCKS = YES;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					REALM_HAVE_CONFIG,
-					__ASSERTMACROS__,
-				);
-				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
-				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
-				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
-				GCC_WARN_UNDECLARED_SELECTOR = YES;
-				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
-				GCC_WARN_UNUSED_FUNCTION = YES;
-				GCC_WARN_UNUSED_VARIABLE = YES;
-				HEADER_SEARCH_PATHS = (
-					"$(SRCROOT)/object-store/external/pegtl",
-					"$(SRCROOT)/object-store/src",
-					"$(SRCROOT)/../vendor",
-				);
-				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
-				LIBRARY_SEARCH_PATHS = ../core;
-				MTL_ENABLE_DEBUG_INFO = YES;
-				ONLY_ACTIVE_ARCH = YES;
-				OTHER_CPLUSPLUSFLAGS = (
-					"$(OTHER_CFLAGS)",
-					"-isystem",
-					../core/include,
-					"-ftemplate-backtrace-limit=0",
-				);
-				SDKROOT = iphoneos;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				VERSIONING_SYSTEM = "apple-generic";
-				VERSION_INFO_PREFIX = "";
-			};
-			name = GCov_Build;
-		};
-		02F9EE1E1B6BF66300C807E8 /* GCov_Build */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"DEBUG=1",
-					"$(inherited)",
-				);
-				INFOPLIST_FILE = ../tests/ios/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				OTHER_CPLUSPLUSFLAGS = (
-					"$(OTHER_CFLAGS)",
-					"-isystem",
-					core/include,
-				);
-				PRODUCT_BUNDLE_IDENTIFIER = "io.realm.$(PRODUCT_NAME:rfc1034identifier)";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-			};
-			name = GCov_Build;
-		};
 		F62BF8FC1CAC71780022BCDC /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -1106,35 +1034,6 @@
 				SDKROOT = macosx;
 			};
 			name = Debug;
-		};
-		F62BF8FD1CAC71780022BCDC /* GCov_Build */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				DYLIB_COMPATIBILITY_VERSION = 1;
-				DYLIB_CURRENT_VERSION = 0.13.2;
-				EXECUTABLE_PREFIX = lib;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"REALM_PLATFORM_NODE=1",
-					"$(inherited)",
-				);
-				HEADER_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(SRCROOT)/../node_modules/nan",
-					/usr/local/include/node,
-				);
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					/usr/local/lib,
-				);
-				OTHER_LDFLAGS = (
-					"-lrealm",
-					"-luv",
-					"-lv8",
-				);
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = macosx;
-			};
-			name = GCov_Build;
 		};
 		F62BF8FE1CAC71780022BCDC /* Release */ = {
 			isa = XCBuildConfiguration;
@@ -1179,15 +1078,6 @@
 			};
 			name = Debug;
 		};
-		F63FF2B81C1241E500B3B8E0 /* GCov_Build */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				OTHER_LIBTOOLFLAGS = "$(SRCROOT)/../core/librealm-ios-bitcode.a";
-				PRODUCT_NAME = RealmJS;
-				SKIP_INSTALL = YES;
-			};
-			name = GCov_Build;
-		};
 		F63FF2B91C1241E500B3B8E0 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -1212,16 +1102,6 @@
 			};
 			name = Debug;
 		};
-		F63FF2F71C16405D00B3B8E0 /* GCov_Build */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				HEADER_SEARCH_PATHS = "";
-				OTHER_LDFLAGS = "-ObjC";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SKIP_INSTALL = YES;
-			};
-			name = GCov_Build;
-		};
 		F63FF2F81C16405D00B3B8E0 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -1239,7 +1119,6 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				02B58CC51AE99CEC009B348C /* Debug */,
-				02F9EE1C1B6BF66300C807E8 /* GCov_Build */,
 				02B58CC61AE99CEC009B348C /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
@@ -1249,7 +1128,6 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				02B58CCB1AE99CEC009B348C /* Debug */,
-				02F9EE1E1B6BF66300C807E8 /* GCov_Build */,
 				02B58CCC1AE99CEC009B348C /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
@@ -1259,7 +1137,6 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				F62BF8FC1CAC71780022BCDC /* Debug */,
-				F62BF8FD1CAC71780022BCDC /* GCov_Build */,
 				F62BF8FE1CAC71780022BCDC /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
@@ -1269,7 +1146,6 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				F63FF2B71C1241E500B3B8E0 /* Debug */,
-				F63FF2B81C1241E500B3B8E0 /* GCov_Build */,
 				F63FF2B91C1241E500B3B8E0 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
@@ -1279,7 +1155,6 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				F63FF2F61C16405D00B3B8E0 /* Debug */,
-				F63FF2F71C16405D00B3B8E0 /* GCov_Build */,
 				F63FF2F81C16405D00B3B8E0 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;

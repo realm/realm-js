@@ -21,7 +21,6 @@
 import React from 'react';
 
 import {
-    Component,
     StyleSheet,
     Text,
     View,
@@ -355,7 +354,7 @@ class RNSqliteTests extends Tests {
 
 const apiTests = [new RealmTests, new RNSqliteTests, new RNStoreTests];
 
-export default class ReactNativeBenchmarks extends Component {
+export default class ReactNativeBenchmarks extends React.Component {
     constructor(props) {
         super(props);
 

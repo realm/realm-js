@@ -48,7 +48,8 @@ class Arguments {
 template<typename ValueType, typename ContextType>
 class ArgumentConverter : public Arguments {
   public:
-    ArgumentConverter(ContextType context, std::vector<ValueType> arguments) : m_arguments(arguments), m_ctx(context) {}
+    ArgumentConverter(ContextType context, SharedRealm realm, std::vector<ValueType> arguments)
+        : m_arguments(arguments), m_ctx(context), m_realm(std::move(realm)) {}
 
     using Accessor = realm::NativeAccessor<ValueType, ContextType>;
     virtual bool bool_for_argument(size_t argument_index) { return Accessor::to_bool(m_ctx, argument_at(argument_index)); }
@@ -58,12 +59,13 @@ class ArgumentConverter : public Arguments {
     virtual std::string string_for_argument(size_t argument_index) { return Accessor::to_string(m_ctx, argument_at(argument_index)); }
     virtual std::string binary_for_argument(size_t argument_index) { return Accessor::to_binary(m_ctx, argument_at(argument_index)); }
     virtual Timestamp timestamp_for_argument(size_t argument_index) { return Accessor::to_timestamp(m_ctx, argument_at(argument_index)); }
-    virtual size_t object_index_for_argument(size_t argument_index) { return Accessor::to_existing_object_index(m_ctx, argument_at(argument_index)); }
+    virtual size_t object_index_for_argument(size_t argument_index) { return Accessor::to_existing_object_index(m_ctx, m_realm, argument_at(argument_index)); }
     virtual bool is_argument_null(size_t argument_index) { return Accessor::is_null(m_ctx, argument_at(argument_index)); }
 
   private:
     std::vector<ValueType> m_arguments;
     ContextType m_ctx;
+    SharedRealm m_realm;
 
     ValueType &argument_at(size_t index) {
         return m_arguments.at(index);
