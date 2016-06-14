@@ -179,13 +179,13 @@ void Realm::init(std::shared_ptr<RealmCoordinator> coordinator)
             else {
                 update_schema(std::move(target_schema), target_schema_version);
             }
+        }
 
-            if (!m_config.read_only) {
-                // End the read transaction created to validation/update the
-                // schema to avoid pinning the version even if the user never
-                // actually reads data
-                invalidate();
-            }
+        // End the read transaction created to validation/update the
+        // schema to avoid pinning the version even if the user never
+        // actually reads data
+        if (!m_config.read_only) {
+            invalidate();
         }
     }
     catch (...) {
