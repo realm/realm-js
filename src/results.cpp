@@ -21,6 +21,7 @@
 #include "impl/realm_coordinator.hpp"
 #include "impl/results_notifier.hpp"
 #include "object_store.hpp"
+#include "util/format.hpp"
 
 #include <stdexcept>
 
@@ -37,6 +38,9 @@ using namespace realm;
 #else
 #define REALM_FALLTHROUGH
 #endif
+
+Results::Results() = default;
+Results::~Results() = default;
 
 Results::Results(SharedRealm r, const ObjectSchema &o, Query q, SortOrder s)
 : m_realm(std::move(r))
@@ -83,11 +87,43 @@ Results::Results(SharedRealm r, const ObjectSchema& o, TableView tv, SortOrder s
     REALM_ASSERT(m_sort.column_indices.size() == m_sort.ascending.size());
 }
 
-Results::~Results()
+Results::Results(const Results&) = default;
+
+// Cannot be defaulted as TableViewBase::operator= is missing from the core static library.
+// Delegate to the copy constructor and move-assignment operators instead.
+Results& Results::operator=(const Results& other)
+{
+    if (this != &other) {
+        *this = Results(other);
+    }
+
+    return *this;
+}
+
+Results::Results(Results&& other)
+: m_realm(std::move(other.m_realm))
+, m_object_schema(std::move(other.m_object_schema))
+, m_query(std::move(other.m_query))
+, m_table_view(std::move(other.m_table_view))
+, m_link_view(std::move(other.m_link_view))
+, m_table(other.m_table)
+, m_sort(std::move(other.m_sort))
+, m_live(other.m_live)
+, m_notifier(std::move(other.m_notifier))
+, m_mode(other.m_mode)
+, m_has_used_table_view(other.m_has_used_table_view)
+, m_wants_background_updates(other.m_wants_background_updates)
 {
     if (m_notifier) {
-        m_notifier->unregister();
+        m_notifier->target_results_moved(other, *this);
     }
+}
+
+Results& Results::operator=(Results&& other)
+{
+    this->~Results();
+    new (this) Results(std::move(other));
+    return *this;
 }
 
 bool Results::is_valid() const
@@ -300,6 +336,7 @@ size_t Results::index_of(size_t row_ndx)
 
 template<typename Int, typename Float, typename Double, typename Timestamp>
 util::Optional<Mixed> Results::aggregate(size_t column, bool return_none_for_empty,
+                                         const char* name,
                                          Int agg_int, Float agg_float,
                                          Double agg_double, Timestamp agg_timestamp)
 {
@@ -338,13 +375,13 @@ util::Optional<Mixed> Results::aggregate(size_t column, bool return_none_for_emp
         case type_Float: return do_agg(agg_float);
         case type_Int: return do_agg(agg_int);
         default:
-            throw UnsupportedColumnTypeException{column, m_table};
+            throw UnsupportedColumnTypeException{column, m_table, name};
     }
 }
 
 util::Optional<Mixed> Results::max(size_t column)
 {
-    return aggregate(column, true,
+    return aggregate(column, true, "max",
                      [=](auto const& table) { return table.maximum_int(column); },
                      [=](auto const& table) { return table.maximum_float(column); },
                      [=](auto const& table) { return table.maximum_double(column); },
@@ -353,7 +390,7 @@ util::Optional<Mixed> Results::max(size_t column)
 
 util::Optional<Mixed> Results::min(size_t column)
 {
-    return aggregate(column, true,
+    return aggregate(column, true, "min",
                      [=](auto const& table) { return table.minimum_int(column); },
                      [=](auto const& table) { return table.minimum_float(column); },
                      [=](auto const& table) { return table.minimum_double(column); },
@@ -362,20 +399,20 @@ util::Optional<Mixed> Results::min(size_t column)
 
 util::Optional<Mixed> Results::sum(size_t column)
 {
-    return aggregate(column, false,
+    return aggregate(column, false, "sum",
                      [=](auto const& table) { return table.sum_int(column); },
                      [=](auto const& table) { return table.sum_float(column); },
                      [=](auto const& table) { return table.sum_double(column); },
-                     [=](auto const&) -> util::None { throw UnsupportedColumnTypeException{column, m_table}; });
+                     [=](auto const&) -> util::None { throw UnsupportedColumnTypeException{column, m_table, "sum"}; });
 }
 
 util::Optional<Mixed> Results::average(size_t column)
 {
-    return aggregate(column, true,
+    return aggregate(column, true, "average",
                      [=](auto const& table) { return table.average_int(column); },
                      [=](auto const& table) { return table.average_float(column); },
                      [=](auto const& table) { return table.average_double(column); },
-                     [=](auto const&) -> util::None { throw UnsupportedColumnTypeException{column, m_table}; });
+                     [=](auto const&) -> util::None { throw UnsupportedColumnTypeException{column, m_table, "average"}; });
 }
 
 void Results::clear()
@@ -479,6 +516,7 @@ void Results::prepare_async()
     }
 
     if (!m_notifier) {
+        m_wants_background_updates = true;
         m_notifier = std::make_shared<_impl::ResultsNotifier>(*this);
         _impl::RealmCoordinator::register_notifier(m_notifier);
     }
@@ -510,6 +548,7 @@ bool Results::is_in_table_order() const
         case Mode::TableView:
             return m_table_view.is_in_table_order();
     }
+    REALM_UNREACHABLE(); // keep gcc happy
 }
 
 void Results::Internal::set_table_view(Results& results, realm::TableView &&tv)
@@ -527,8 +566,14 @@ void Results::Internal::set_table_view(Results& results, realm::TableView &&tv)
     REALM_ASSERT(results.m_table_view.is_attached());
 }
 
-Results::UnsupportedColumnTypeException::UnsupportedColumnTypeException(size_t column, const Table* table)
-: std::runtime_error((std::string)"Operation not supported on '" + table->get_column_name(column).data() + "' columns")
+Results::OutOfBoundsIndexException::OutOfBoundsIndexException(size_t r, size_t c)
+: std::out_of_range(util::format("Requested index %1 greater than max %2", r, c))
+, requested(r), valid_count(c) {}
+
+Results::UnsupportedColumnTypeException::UnsupportedColumnTypeException(size_t column, const Table* table, const char* operation)
+: std::runtime_error(util::format("Cannot %1 property '%2': operation not supported for '%3' properties",
+                                  operation, table->get_column_name(column),
+                                  string_for_property_type(static_cast<PropertyType>(table->get_column_type(column)))))
 , column_index(column)
 , column_name(table->get_column_name(column))
 , column_type(table->get_column_type(column))
