@@ -16,9 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#include <uv.h>
-
 #include "impl/weak_realm_notifier_base.hpp"
+
+typedef struct uv_async_s uv_async_t;
 
 namespace realm {
 class Realm;
