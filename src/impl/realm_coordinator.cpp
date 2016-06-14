@@ -31,6 +31,7 @@
 #include <realm/string_data.hpp>
 
 #include <unordered_map>
+#include <algorithm>
 
 using namespace realm;
 using namespace realm::_impl;
@@ -64,14 +65,6 @@ std::shared_ptr<Realm> RealmCoordinator::get_realm(Realm::Config config)
     std::lock_guard<std::mutex> lock(m_realm_mutex);
     if ((!m_config.read_only && !m_notifier) || (m_config.read_only && m_weak_realm_notifiers.empty())) {
         m_config = config;
-        if (!config.read_only && !m_notifier && config.automatic_change_notifications) {
-            try {
-                m_notifier = std::make_unique<ExternalCommitHelper>(*this);
-            }
-            catch (std::system_error const& ex) {
-                throw RealmFileException(RealmFileException::Kind::AccessError, config.path, ex.code().message(), "");
-            }
-        }
     }
     else {
         if (m_config.read_only != config.read_only) {
@@ -111,6 +104,16 @@ std::shared_ptr<Realm> RealmCoordinator::get_realm(Realm::Config config)
 
     auto realm = std::make_shared<Realm>(std::move(config));
     realm->init(shared_from_this());
+
+    if (!config.read_only && !m_notifier && config.automatic_change_notifications) {
+        try {
+            m_notifier = std::make_unique<ExternalCommitHelper>(*this);
+        }
+        catch (std::system_error const& ex) {
+            throw RealmFileException(RealmFileException::Kind::AccessError, config.path, ex.code().message(), "");
+        }
+    }
+
     m_weak_realm_notifiers.emplace_back(realm, m_config.cache);
     return realm;
 }
