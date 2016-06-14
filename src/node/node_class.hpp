@@ -226,7 +226,7 @@ inline void ObjectWrap<ClassType>::construct(Nan::NAN_METHOD_ARGS_TYPE info) {
     if (!info.IsConstructCall()) {
         Nan::ThrowError("Constructor must be called with new");
     }
-    if (s_class.constructor) {
+    if (reinterpret_cast<void*>(s_class.constructor)) {
         auto isolate = info.GetIsolate();
         auto arguments = get_arguments(info);
         v8::Local<v8::Object> this_object = info.This();

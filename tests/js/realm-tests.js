@@ -145,14 +145,19 @@ module.exports = {
     },
 
     testDefaultPath: function() {
+        var defaultPath = Realm.defaultPath;
         var defaultRealm = new Realm({schema: []});
         TestCase.assertEqual(defaultRealm.path, Realm.defaultPath);
 
-        var newPath = Realm.defaultPath.substring(0, Realm.defaultPath.lastIndexOf("/") + 1) + 'default2.realm';
-        Realm.defaultPath = newPath;
-        defaultRealm = new Realm({schema: []});
-        TestCase.assertEqual(defaultRealm.path, newPath, "should use updated default realm path");
-        TestCase.assertEqual(Realm.defaultPath, newPath, "defaultPath should have been updated");
+        try {
+            var newPath = Realm.defaultPath.substring(0, defaultPath.lastIndexOf('/') + 1) + 'default2.realm';
+            Realm.defaultPath = newPath;
+            defaultRealm = new Realm({schema: []});
+            TestCase.assertEqual(defaultRealm.path, newPath, "should use updated default realm path");
+            TestCase.assertEqual(Realm.defaultPath, newPath, "defaultPath should have been updated");
+        } finally {
+            Realm.defaultPath = defaultPath;
+        }
     },
 
     testRealmSchemaVersion: function() {

@@ -48,7 +48,7 @@ async function runTests() {
             itemTest.att('name', testName);
 
             try {
-                runTest(suiteName, testName);
+                await runTest(suiteName, testName);
             }
             catch (e) {
                 itemTest.ele('error', {'message': ''}, e.message);
