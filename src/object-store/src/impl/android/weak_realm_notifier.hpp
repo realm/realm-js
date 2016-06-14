@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2015 Realm Inc.
+// Copyright 2016 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@
 
 #include "impl/weak_realm_notifier_base.hpp"
 
-#include <CoreFoundation/CFRunLoop.h>
+#include <atomic>
 
 namespace realm {
 class Realm;
@@ -28,7 +28,7 @@ namespace _impl {
 class WeakRealmNotifier : public WeakRealmNotifierBase {
 public:
     WeakRealmNotifier(const std::shared_ptr<Realm>& realm, bool cache);
-    ~WeakRealmNotifier();
+    ~WeakRealmNotifier() { close(); }
 
     WeakRealmNotifier(WeakRealmNotifier&&);
     WeakRealmNotifier& operator=(WeakRealmNotifier&&);
@@ -36,15 +36,23 @@ public:
     WeakRealmNotifier(const WeakRealmNotifier&) = delete;
     WeakRealmNotifier& operator=(const WeakRealmNotifier&) = delete;
 
-    // Asynchronously call notify() on the Realm on the appropriate thread
+    // Asyncronously call notify() on the Realm on the appropriate thread
     void notify();
 
 private:
-    void invalidate();
+    void close();
+    
+    static int looper_callback(int fd, int events, void* data); 
 
-    CFRunLoopRef m_runloop;
-    CFRunLoopSourceRef m_signal;
+    std::atomic<bool> m_thread_has_looper;
+
+    // pipe file descriptor pair we use to signal ALooper
+    struct {
+      int read = -1;
+      int write = -1;
+    } m_message_pipe;
 };
 
 } // namespace _impl
 } // namespace realm
+

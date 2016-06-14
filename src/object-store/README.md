@@ -11,18 +11,23 @@ Cross-platform code used accross bindings. Binding developers can choose to use 
 The object store's build system currently only suports building for OS X. The object store itself can build for all Apple
 platforms when integrated into a binding.
 
-1. Install CMake. You can download an installer for OS X from the [CMake download page](https://cmake.org/download/), or install via [Homebrew](http://brew.sh):
+1. Download PEGTL dependency
+    ```
+    git submodule update --init
+    ```
+
+2. Install CMake. You can download an installer for OS X from the [CMake download page](https://cmake.org/download/), or install via [Homebrew](http://brew.sh):
     ```
     brew install cmake
     ```
 
-2. Generate build files:
+3. Generate build files:
 
     ```
     cmake .
     ```
 
-3. Build:
+4. Build:
 
     ```
     make

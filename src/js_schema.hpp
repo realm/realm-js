@@ -52,7 +52,7 @@ struct Schema {
 
 template<typename T>
 typename T::Object Schema<T>::dict_for_property_array(ContextType ctx, const ObjectSchema &object_schema, ObjectType array) {
-    size_t count = object_schema.properties.size();
+    size_t count = object_schema.persisted_properties.size();
     
     if (count != Object::validated_get_length(ctx, array)) {
         throw std::runtime_error("Array must contain values for all object properties");
@@ -62,7 +62,7 @@ typename T::Object Schema<T>::dict_for_property_array(ContextType ctx, const Obj
 
     for (uint32_t i = 0; i < count; i++) {
         ValueType value = Object::get_property(ctx, array, i);
-        Object::set_property(ctx, dict, object_schema.properties[i].name, value);
+        Object::set_property(ctx, dict, object_schema.persisted_properties[i].name, value);
     }
 
     return dict;
@@ -177,14 +177,14 @@ ObjectSchema Schema<T>::parse_object_schema(ContextType ctx, ObjectType object_s
         for (uint32_t i = 0; i < length; i++) {
             ObjectType property_object = Object::validated_get_object(ctx, properties_object, i);
             std::string property_name = Object::validated_get_string(ctx, property_object, name_string);
-            object_schema.properties.emplace_back(parse_property(ctx, property_object, property_name, object_defaults));
+            object_schema.persisted_properties.emplace_back(parse_property(ctx, property_object, property_name, object_defaults));
         }
     }
     else {
         auto property_names = Object::get_property_names(ctx, properties_object);
         for (auto &property_name : property_names) {
             ValueType property_value = Object::get_property(ctx, properties_object, property_name);
-            object_schema.properties.emplace_back(parse_property(ctx, property_value, property_name, object_defaults));
+            object_schema.persisted_properties.emplace_back(parse_property(ctx, property_value, property_name, object_defaults));
         }
     }
 
@@ -240,7 +240,7 @@ typename T::Object Schema<T>::object_for_object_schema(ContextType ctx, const Ob
     Object::set_property(ctx, object, name_string, Value::from_string(ctx, object_schema.name));
 
     ObjectType properties = Object::create_empty(ctx);
-    for (auto& property : object_schema.properties) {
+    for (auto& property : object_schema.persisted_properties) {
         Object::set_property(ctx, properties, property.name, object_for_property(ctx, property));
     }
 
