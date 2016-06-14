@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #include <nan.h>
+#include <uv.h>
 
 #include "impl/weak_realm_notifier.hpp"
 
@@ -46,6 +47,7 @@ WeakRealmNotifier::WeakRealmNotifier(const std::shared_ptr<Realm>& realm, bool c
 
 WeakRealmNotifier::WeakRealmNotifier(WeakRealmNotifier&& rgt)
 : WeakRealmNotifierBase(std::move(rgt))
+, m_handle(rgt.m_handle)
 {
     rgt.m_handle = nullptr;
 }
@@ -53,8 +55,7 @@ WeakRealmNotifier::WeakRealmNotifier(WeakRealmNotifier&& rgt)
 WeakRealmNotifier& WeakRealmNotifier::operator=(WeakRealmNotifier&& rgt)
 {
     WeakRealmNotifierBase::operator=(std::move(rgt));
-    m_handle = rgt.m_handle;
-    rgt.m_handle = nullptr;
+    std::swap(m_handle, rgt.m_handle);
 
     return *this;
 }
