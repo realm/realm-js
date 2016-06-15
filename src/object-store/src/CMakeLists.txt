@@ -14,7 +14,8 @@ set(SOURCES
     impl/results_notifier.cpp
     impl/transact_log_handler.cpp
     parser/parser.cpp
-    parser/query_builder.cpp)
+    parser/query_builder.cpp
+    util/format.cpp)
 
 set(HEADERS
     collection_notifications.hpp
@@ -37,7 +38,8 @@ set(HEADERS
     impl/weak_realm_notifier_base.hpp
     parser/parser.hpp
     parser/query_builder.hpp
-    util/atomic_shared_ptr.hpp)
+    util/atomic_shared_ptr.hpp
+    util/format.hpp)
 
 if(APPLE)
     list(APPEND SOURCES
@@ -69,6 +71,6 @@ target_include_directories(realm-object-store-static PUBLIC ${INCLUDE_DIRS})
 target_link_libraries(realm-object-store-static PUBLIC realm ${CF_LIBRARY})
 
 # A dynamic library, linking together the prebuilt object files.
-add_library(realm-object-store SHARED $<TARGET_OBJECTS:realm-object-store-objects>)
+add_library(realm-object-store SHARED $<TARGET_OBJECTS:realm-object-store-objects> placeholder.cpp)
 target_include_directories(realm-object-store PUBLIC ${INCLUDE_DIRS})
 target_link_libraries(realm-object-store PRIVATE realm ${CF_LIBRARY})

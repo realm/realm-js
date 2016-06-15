@@ -18,6 +18,7 @@
 		027A23131CD3E379000543AE /* libRealmJS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F63FF2B11C1241E500B3B8E0 /* libRealmJS.a */; };
 		02D041F71CE11159000E4250 /* dates-v3.realm in Resources */ = {isa = PBXBuildFile; fileRef = 02D041F61CE11159000E4250 /* dates-v3.realm */; };
 		02D8D1F71B601984006DB49D /* JavaScriptCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 02B58CCD1AE99D4D009B348C /* JavaScriptCore.framework */; };
+		02E008D51D10ABB600F3AA37 /* format.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E008D21D10AB1B00F3AA37 /* format.cpp */; };
 		02F59EBF1C88F17D007F774C /* index_set.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02F59EAF1C88F17D007F774C /* index_set.cpp */; };
 		02F59EC01C88F17D007F774C /* list.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02F59EB11C88F17D007F774C /* list.cpp */; };
 		02F59EC11C88F17D007F774C /* object_schema.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02F59EB41C88F17D007F774C /* object_schema.cpp */; };
@@ -67,6 +68,7 @@
 		F63FF3251C1642BB00B3B8E0 /* GCDWebServerErrorResponse.m in Sources */ = {isa = PBXBuildFile; fileRef = F63FF3161C1642BB00B3B8E0 /* GCDWebServerErrorResponse.m */; };
 		F63FF3261C1642BB00B3B8E0 /* GCDWebServerFileResponse.m in Sources */ = {isa = PBXBuildFile; fileRef = F63FF3181C1642BB00B3B8E0 /* GCDWebServerFileResponse.m */; };
 		F63FF3271C1642BB00B3B8E0 /* GCDWebServerStreamedResponse.m in Sources */ = {isa = PBXBuildFile; fileRef = F63FF31A1C1642BB00B3B8E0 /* GCDWebServerStreamedResponse.m */; };
+		F64A059B1D10D928004ACDBE /* format.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E008D21D10AB1B00F3AA37 /* format.cpp */; };
 		F674784A1CC81F1900F9273C /* platform.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F67478481CC81F1300F9273C /* platform.cpp */; };
 		F68A278C1BC2722A0063D40A /* RJSModuleLoader.m in Sources */ = {isa = PBXBuildFile; fileRef = F68A278B1BC2722A0063D40A /* RJSModuleLoader.m */; };
 		F6BCCFE21C8380A400FE31AE /* lib in Resources */ = {isa = PBXBuildFile; fileRef = F6BCCFDF1C83809A00FE31AE /* lib */; };
@@ -123,6 +125,9 @@
 		02B58CBC1AE99CEC009B348C /* RealmJSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RealmJSTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		02B58CCD1AE99D4D009B348C /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		02D041F61CE11159000E4250 /* dates-v3.realm */ = {isa = PBXFileReference; lastKnownFileType = file; path = "dates-v3.realm"; sourceTree = "<group>"; };
+		02E008D11D10AB1B00F3AA37 /* atomic_shared_ptr.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = atomic_shared_ptr.hpp; sourceTree = "<group>"; };
+		02E008D21D10AB1B00F3AA37 /* format.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = format.cpp; sourceTree = "<group>"; };
+		02E008D31D10AB1B00F3AA37 /* format.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = format.hpp; sourceTree = "<group>"; };
 		02F59EAE1C88F17D007F774C /* binding_context.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = binding_context.hpp; path = src/binding_context.hpp; sourceTree = "<group>"; };
 		02F59EAF1C88F17D007F774C /* index_set.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = index_set.cpp; path = src/index_set.cpp; sourceTree = "<group>"; };
 		02F59EB01C88F17D007F774C /* index_set.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = index_set.hpp; path = src/index_set.hpp; sourceTree = "<group>"; };
@@ -352,6 +357,17 @@
 			path = data;
 			sourceTree = "<group>";
 		};
+		02E008D01D10AB1B00F3AA37 /* util */ = {
+			isa = PBXGroup;
+			children = (
+				02E008D11D10AB1B00F3AA37 /* atomic_shared_ptr.hpp */,
+				02E008D21D10AB1B00F3AA37 /* format.cpp */,
+				02E008D31D10AB1B00F3AA37 /* format.hpp */,
+			);
+			name = util;
+			path = src/util;
+			sourceTree = "<group>";
+		};
 		F62A35131C18E6E2004A917D /* iOS */ = {
 			isa = PBXGroup;
 			children = (
@@ -365,6 +381,7 @@
 		F62A35141C18E783004A917D /* Object Store */ = {
 			isa = PBXGroup;
 			children = (
+				02E008D01D10AB1B00F3AA37 /* util */,
 				F63117EA1CEB0BFA00ECB2DE /* impl */,
 				F63117EC1CEB0C8100ECB2DE /* parser */,
 				02414B961CE6AADD00A8669F /* collection_notifications.cpp */,
@@ -759,6 +776,7 @@
 				F60102D41CBB96AB00EC01BA /* index_set.cpp in Sources */,
 				F60102DB1CBB96C600EC01BA /* parser.cpp in Sources */,
 				F6E931BB1CFEAE310016AF14 /* collection_change_builder.cpp in Sources */,
+				F64A059B1D10D928004ACDBE /* format.cpp in Sources */,
 				F60102D51CBB96AE00EC01BA /* list.cpp in Sources */,
 				F6E931BC1CFEAE340016AF14 /* collection_notifier.cpp in Sources */,
 				F60102DC1CBB96C900EC01BA /* query_builder.cpp in Sources */,
@@ -782,6 +800,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				02E008D51D10ABB600F3AA37 /* format.cpp in Sources */,
 				02414BA51CE6ABCF00A8669F /* collection_change_builder.cpp in Sources */,
 				02414BA61CE6ABCF00A8669F /* collection_notifier.cpp in Sources */,
 				02414BA71CE6ABCF00A8669F /* list_notifier.cpp in Sources */,
@@ -860,6 +879,8 @@
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					REALM_DEBUG,
 					REALM_HAVE_CONFIG,
 					__ASSERTMACROS__,
 				);
@@ -953,10 +974,6 @@
 		02B58CCB1AE99CEC009B348C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"DEBUG=1",
-					"$(inherited)",
-				);
 				INFOPLIST_FILE = ../tests/ios/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
@@ -994,7 +1011,6 @@
 				DYLIB_CURRENT_VERSION = 0.13.2;
 				EXECUTABLE_PREFIX = lib;
 				GCC_PREPROCESSOR_DEFINITIONS = (
-					"DEBUG=1",
 					"REALM_PLATFORM_NODE=1",
 					"$(inherited)",
 				);
@@ -1050,11 +1066,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"DEBUG=1",
-					"$(inherited)",
-				);
-				OTHER_LIBTOOLFLAGS = "$(SRCROOT)/../core/librealm-ios-bitcode.a";
+				OTHER_LIBTOOLFLAGS = "$(SRCROOT)/../core/librealm-ios-dbg.a";
 				PRODUCT_NAME = RealmJS;
 				SKIP_INSTALL = YES;
 			};
@@ -1063,7 +1075,7 @@
 		F63FF2B91C1241E500B3B8E0 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				OTHER_LIBTOOLFLAGS = "$(SRCROOT)/../core/librealm-ios-bitcode.a";
+				OTHER_LIBTOOLFLAGS = "$(SRCROOT)/../core/librealm-ios.a";
 				PRODUCT_NAME = RealmJS;
 				SKIP_INSTALL = YES;
 			};
@@ -1073,10 +1085,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"DEBUG=1",
-					"$(inherited)",
-				);
 				HEADER_SEARCH_PATHS = "";
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";

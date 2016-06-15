@@ -22,11 +22,14 @@
 #include "list.hpp"
 #include "object_schema.hpp"
 #include "object_store.hpp"
+#include "results.hpp"
 #include "schema.hpp"
 #include "shared_realm.hpp"
+#include "util/format.hpp"
 
 #include <string>
 #include <realm/link_view.hpp>
+#include <realm/table_view.hpp>
 
 namespace realm {
 
@@ -109,10 +112,13 @@ namespace realm {
         // object index for an existing object
         static size_t to_existing_object_index(ContextType ctx, SharedRealm realm, ValueType &val);
 
-        // list value acessors
+        // list value accessors
         static size_t list_size(ContextType ctx, ValueType &val);
         static ValueType list_value_at_index(ContextType ctx, ValueType &val, size_t index);
         static ValueType from_list(ContextType ctx, List);
+
+        // results value accessors
+        static ValueType from_results(ContextType ctx, Results);
 
         //
         // Deprecated
@@ -150,9 +156,16 @@ namespace realm {
         const std::string object_type;
     };
 
-    class MutationOutsideTransactionException : public std::runtime_error
-    {
-      public:
+    class ReadOnlyPropertyValueException : public std::runtime_error {
+    public:
+        ReadOnlyPropertyValueException(const std::string& object_type, const std::string& property_name, const std::string& message)
+        : std::runtime_error(message), object_type(object_type), property_name(property_name) {}
+        const std::string object_type;
+        const std::string property_name;
+    };
+
+    class MutationOutsideTransactionException : public std::runtime_error {
+    public:
         MutationOutsideTransactionException(std::string message) : std::runtime_error(message) {}
     };
 
@@ -220,7 +233,7 @@ namespace realm {
                 auto string_value = Accessor::to_string(ctx, value);
                 m_row.set_string(column, string_value);
                 break;
-			}
+            }
             case PropertyType::Data:
                 m_row.set_binary(column, BinaryData(Accessor::to_binary(ctx, value)));
                 break;
@@ -251,6 +264,10 @@ namespace realm {
                 }
                 break;
             }
+            case PropertyType::LinkingObjects:
+                throw ReadOnlyPropertyValueException(m_object_schema->name, property.name,
+                                                     util::format("Cannot modify read-only property '%1.%2'",
+                                                                  m_object_schema->name, property.name));
         }
     }
 
@@ -295,6 +312,14 @@ namespace realm {
                 auto arrayObjectSchema = m_realm->config().schema->find(property.object_type);
                 return Accessor::from_list(ctx, std::move(List(m_realm, *arrayObjectSchema, static_cast<LinkViewRef>(m_row.get_linklist(column)))));
             }
+            case PropertyType::LinkingObjects: {
+                auto target_object_schema = m_realm->config().schema->find(property.object_type);
+                auto link_property = target_object_schema->property_for_name(property.link_origin_property_name);
+                TableRef table = ObjectStore::table_for_object_type(m_realm->read_group(), target_object_schema->name);
+                auto tv = m_row.get_table()->get_backlink_view(m_row.get_index(), table.get(), link_property->table_column);
+                Results results(m_realm, *m_object_schema, std::move(tv), {});
+                return Accessor::from_results(ctx, std::move(results));
+            }
         }
     }
 
@@ -335,7 +360,7 @@ namespace realm {
 
         // populate
         Object object(realm, object_schema, table->get(row_index));
-        for (const Property &prop : object_schema.properties) {
+        for (const Property& prop : object_schema.persisted_properties) {
             if (created || !prop.is_primary) {
                 if (Accessor::dict_has_value_for_key(ctx, value, prop.name)) {
                     object.set_property_value_impl(ctx, prop, Accessor::dict_value_for_key(ctx, value, prop.name), try_update);

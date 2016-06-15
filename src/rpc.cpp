@@ -382,7 +382,7 @@ json RPCServer::serialize_json_value(JSValueRef js_value) {
 json RPCServer::serialize_object_schema(const realm::ObjectSchema &object_schema) {
     std::vector<std::string> properties;
 
-    for (auto &prop : object_schema.properties) {
+    for (auto &prop : object_schema.persisted_properties) {
         properties.push_back(prop.name);
     }
 

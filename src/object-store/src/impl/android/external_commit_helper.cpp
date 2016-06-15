@@ -23,6 +23,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <sstream>
+#include <stdlib.h>
 #include <sys/epoll.h>
 #include <sys/time.h>
 #include <sys/stat.h>

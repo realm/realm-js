@@ -116,7 +116,7 @@ bool RealmObjectClass<T>::set_property(ContextType ctx, ObjectType object, const
 template<typename T>
 std::vector<String<T>> RealmObjectClass<T>::get_property_names(ContextType ctx, ObjectType object) {
     auto realm_object = get_internal<T, RealmObjectClass<T>>(object);
-    auto &properties = realm_object->get_object_schema().properties;
+    auto &properties = realm_object->get_object_schema().persisted_properties;
 
     std::vector<String> names;
     names.reserve(properties.size());

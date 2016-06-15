@@ -157,11 +157,6 @@ namespace realm {
       private:
         std::vector<ObjectSchemaValidationException> m_validation_errors;
     };
-    
-    class SchemaUpdateValidationException : public SchemaValidationException {
-      public:
-        SchemaUpdateValidationException(std::vector<ObjectSchemaValidationException> const& errors);
-    };
 
     class SchemaMismatchException : public ObjectStoreException {
     public:
@@ -244,6 +239,16 @@ namespace realm {
         std::string primary_key() const { return m_primary_key; }
       private:
         std::string m_primary_key;
+    };
+
+    class InvalidLinkingObjectsPropertyException : public ObjectSchemaPropertyException {
+    public:
+        enum class Type {
+            OriginPropertyDoesNotExist,
+            OriginPropertyIsNotALink,
+            OriginPropertyInvalidLinkTarget,
+        };
+        InvalidLinkingObjectsPropertyException(Type error_type, std::string const& object_type, Property const& property);
     };
 }
 
