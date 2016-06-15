@@ -68,6 +68,7 @@
 		F63FF3251C1642BB00B3B8E0 /* GCDWebServerErrorResponse.m in Sources */ = {isa = PBXBuildFile; fileRef = F63FF3161C1642BB00B3B8E0 /* GCDWebServerErrorResponse.m */; };
 		F63FF3261C1642BB00B3B8E0 /* GCDWebServerFileResponse.m in Sources */ = {isa = PBXBuildFile; fileRef = F63FF3181C1642BB00B3B8E0 /* GCDWebServerFileResponse.m */; };
 		F63FF3271C1642BB00B3B8E0 /* GCDWebServerStreamedResponse.m in Sources */ = {isa = PBXBuildFile; fileRef = F63FF31A1C1642BB00B3B8E0 /* GCDWebServerStreamedResponse.m */; };
+		F64A059B1D10D928004ACDBE /* format.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E008D21D10AB1B00F3AA37 /* format.cpp */; };
 		F674784A1CC81F1900F9273C /* platform.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F67478481CC81F1300F9273C /* platform.cpp */; };
 		F68A278C1BC2722A0063D40A /* RJSModuleLoader.m in Sources */ = {isa = PBXBuildFile; fileRef = F68A278B1BC2722A0063D40A /* RJSModuleLoader.m */; };
 		F6BCCFE21C8380A400FE31AE /* lib in Resources */ = {isa = PBXBuildFile; fileRef = F6BCCFDF1C83809A00FE31AE /* lib */; };
@@ -769,13 +770,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				02E008D61D10AC6B00F3AA37 /* format.cpp in Sources */,
 				F6E931BA1CFEAE170016AF14 /* collection_notifications.cpp in Sources */,
 				F60102D31CBB966E00EC01BA /* js_realm.cpp in Sources */,
 				F60102D61CBB96B400EC01BA /* object_schema.cpp in Sources */,
 				F60102D41CBB96AB00EC01BA /* index_set.cpp in Sources */,
 				F60102DB1CBB96C600EC01BA /* parser.cpp in Sources */,
 				F6E931BB1CFEAE310016AF14 /* collection_change_builder.cpp in Sources */,
+				F64A059B1D10D928004ACDBE /* format.cpp in Sources */,
 				F60102D51CBB96AE00EC01BA /* list.cpp in Sources */,
 				F6E931BC1CFEAE340016AF14 /* collection_notifier.cpp in Sources */,
 				F60102DC1CBB96C900EC01BA /* query_builder.cpp in Sources */,
