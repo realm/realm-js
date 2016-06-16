@@ -1,9 +1,32 @@
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED on)
 set(CMAKE_CXX_EXTENSIONS off)
-add_compile_options(-Wall -DREALM_HAVE_CONFIG)
 add_compile_options("$<$<CONFIG:DEBUG>:-DREALM_DEBUG>")
 add_compile_options("$<$<CONFIG:COVERAGE>:-DREALM_DEBUG>")
+add_compile_options(
+    -DREALM_HAVE_CONFIG
+    -Wall
+    -Wextra
+    -Wno-missing-field-initializers
+    -Wempty-body
+    -Wparentheses
+    -Wunknown-pragmas
+    -Wunreachable-code
+)
+
+if(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
+    add_compile_options(
+        -Wassign-enum
+        -Wbool-conversion
+        -Wconditional-uninitialized
+        -Wconstant-conversion
+        -Wenum-conversion
+        -Wint-conversion
+        -Wmissing-prototypes
+        -Wnewline-eof
+        -Wshorten-64-to-32
+    )
+endif()
 
 if(${CMAKE_GENERATOR} STREQUAL "Ninja")
     if(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
