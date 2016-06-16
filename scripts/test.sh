@@ -158,7 +158,7 @@ case "$TARGET" in
   ;;
 "node")
   npm install
-  scripts/download-core.sh
+  scripts/download-core.sh node
   src/node/build-node.sh $CONFIGURATION
 
   # Change to a temp directory.

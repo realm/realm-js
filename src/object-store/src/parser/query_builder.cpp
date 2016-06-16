@@ -25,6 +25,7 @@
 
 #include <realm.hpp>
 #include <assert.h>
+#include <sstream>
 
 namespace realm {
 namespace query_builder {

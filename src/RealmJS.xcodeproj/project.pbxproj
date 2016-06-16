@@ -648,6 +648,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = F62BF8FF1CAC71780022BCDC /* Build configuration list for PBXNativeTarget "RealmNode" */;
 			buildPhases = (
+				F64A05B71D140311004ACDBE /* Download Core */,
 				F62BF8F71CAC71780022BCDC /* Sources */,
 				F62BF8F81CAC71780022BCDC /* Frameworks */,
 				F63117A41CEA911000ECB2DE /* Build with node-gyp */,
@@ -793,6 +794,20 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "../scripts/download-core.sh";
+		};
+		F64A05B71D140311004ACDBE /* Download Core */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Download Core";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "../scripts/download-core.sh node";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -943,13 +958,10 @@
 					"$(SRCROOT)/../vendor",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
-				LIBRARY_SEARCH_PATHS = ../core;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(OTHER_CFLAGS)",
-					"-isystem",
-					../core/include,
 					"-ftemplate-backtrace-limit=0",
 				);
 				SDKROOT = iphoneos;
@@ -1001,12 +1013,9 @@
 					"$(SRCROOT)/../vendor",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
-				LIBRARY_SEARCH_PATHS = ../core;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(OTHER_CFLAGS)",
-					"-isystem",
-					../core/include,
 					"-ftemplate-backtrace-limit=0",
 				);
 				SDKROOT = iphoneos;
@@ -1024,9 +1033,9 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				OTHER_CPLUSPLUSFLAGS = (
-					"$(OTHER_CFLAGS)",
+					"$(inherited)",
 					"-isystem",
-					core/include,
+					../core/include,
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "io.realm.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1040,9 +1049,9 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				OTHER_CPLUSPLUSFLAGS = (
-					"$(OTHER_CFLAGS)",
+					"$(inherited)",
 					"-isystem",
-					core/include,
+					../core/include,
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "io.realm.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1066,11 +1075,16 @@
 					/usr/local/include/node,
 				);
 				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
 					/usr/local/lib,
+					"../core-node",
+				);
+				OTHER_CPLUSPLUSFLAGS = (
+					"$(inherited)",
+					"-isystem",
+					"../core-node/include",
 				);
 				OTHER_LDFLAGS = (
-					"-lrealm",
+					"-lrealm-node-dbg",
 					"-luv",
 					"-lv8",
 				);
@@ -1095,11 +1109,16 @@
 					/usr/local/include/node,
 				);
 				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
 					/usr/local/lib,
+					"../core-node",
+				);
+				OTHER_CPLUSPLUSFLAGS = (
+					"$(inherited)",
+					"-isystem",
+					"../core-node/include",
 				);
 				OTHER_LDFLAGS = (
-					"-lrealm",
+					"-lrealm-node",
 					"-luv",
 					"-lv8",
 				);
@@ -1112,6 +1131,11 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				DEBUG_INFORMATION_FORMAT = dwarf;
+				OTHER_CPLUSPLUSFLAGS = (
+					"$(inherited)",
+					"-isystem",
+					../core/include,
+				);
 				OTHER_LIBTOOLFLAGS = "$(SRCROOT)/../core/librealm-ios-dbg.a";
 				PRODUCT_NAME = RealmJS;
 				SKIP_INSTALL = YES;
@@ -1121,6 +1145,11 @@
 		F63FF2B91C1241E500B3B8E0 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				OTHER_CPLUSPLUSFLAGS = (
+					"$(inherited)",
+					"-isystem",
+					../core/include,
+				);
 				OTHER_LIBTOOLFLAGS = "$(SRCROOT)/../core/librealm-ios.a";
 				PRODUCT_NAME = RealmJS;
 				SKIP_INSTALL = YES;

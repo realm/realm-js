@@ -14,8 +14,11 @@ WORKDIR /usr/src/app
 COPY package.json .
 RUN npm install
 
+# Make sure core is downloaded.
+COPY scripts/download-core.sh scripts/
+RUN scripts/download-core.sh node
+
 # Copy only what we need to build.
-ADD realm-core-linux-0.100.3.tar.gz core/
 COPY src/ src/
 
 # Build the Debug version of the module.

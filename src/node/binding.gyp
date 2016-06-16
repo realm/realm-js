@@ -33,11 +33,11 @@
         "../object-store/src/impl/apple",
         "../object-store/src/parser",
         "../object-store/external/pegtl",
-        "../../core/include",
+        "../../core-node/include",
         "../../node_modules/nan"
       ],
       "library_dirs": [
-        "$(srcdir)/../../core"
+        "$(srcdir)/../../core-node"
       ],
       "defines": [
         "REALM_HAVE_CONFIG",
@@ -50,7 +50,7 @@
         "-Wno-missing-field-initializers",
         "-Wno-return-type"
       ],
-      "libraries": ["-lrealm"],
+      "libraries": ["-lrealm-node"],
       "xcode_settings": {
         "CLANG_CXX_LANGUAGE_STANDARD": "c++14",
         "CLANG_CXX_LIBRARY": "libc++",
