@@ -66,7 +66,8 @@
       "postlink": "node_modules/realm/scripts/rnpm-postlink.js"
     },
     "ios": {
-      "project": "react-native/ios/RealmReact.xcodeproj"
+      "project": "react-native/ios/RealmReact.xcodeproj",
+      "sharedLibraries": ["libc++", "libz"]
     }
   },
   "engines": {
