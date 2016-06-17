@@ -15,7 +15,8 @@ set(SOURCES
     impl/transact_log_handler.cpp
     parser/parser.cpp
     parser/query_builder.cpp
-    util/format.cpp)
+    util/format.cpp
+    util/thread_id.cpp)
 
 set(HEADERS
     collection_notifications.hpp
@@ -39,7 +40,9 @@ set(HEADERS
     parser/parser.hpp
     parser/query_builder.hpp
     util/atomic_shared_ptr.hpp
-    util/format.hpp)
+    util/format.hpp
+    util/thread_id.hpp
+    util/thread_local.hpp)
 
 if(APPLE)
     list(APPEND SOURCES

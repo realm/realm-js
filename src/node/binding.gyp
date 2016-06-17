@@ -24,7 +24,8 @@
         "../object-store/src/impl/node/weak_realm_notifier.cpp",
         "../object-store/src/parser/parser.cpp",
         "../object-store/src/parser/query_builder.cpp",
-        "../object-store/src/util/format.cpp"
+        "../object-store/src/util/format.cpp",
+        "../object-store/src/util/thread_id.cpp"
       ],
       "include_dirs": [
         "..",

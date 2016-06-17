@@ -19,8 +19,9 @@
 #ifndef REALM_WEAK_REALM_NOTIFIER_BASE_HPP
 #define REALM_WEAK_REALM_NOTIFIER_BASE_HPP
 
+#include "util/thread_id.hpp"
+
 #include <memory>
-#include <thread>
 
 namespace realm {
 class Realm;
@@ -48,11 +49,11 @@ public:
     // Is this a WeakRealmNotifierBase for the given Realm instance?
     bool is_for_realm(Realm* realm) const { return realm == m_realm_key; }
 
-    bool is_for_current_thread() const { return m_thread_id == std::this_thread::get_id(); }
+    bool is_for_current_thread() const { return m_thread_id == util::get_thread_id(); }
 
 private:
     std::weak_ptr<Realm> m_realm;
-    std::thread::id m_thread_id = std::this_thread::get_id();
+    thread_id_t m_thread_id = util::get_thread_id();
     void* m_realm_key;
     bool m_cache = false;
 };
