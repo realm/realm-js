@@ -49,9 +49,7 @@
   "dependencies": {
     "bindings": "^1.2.1",
     "nan": "^2.3.3",
-    "node-gyp": "^3.3.1",
-    "rnpm": "1.6.5",
-    "xcode": "0.8.4"
+    "node-gyp": "^3.3.1"
   },
   "devDependencies": {
     "babel-eslint": "^6.0.4",
@@ -62,9 +60,6 @@
     "semver": "^5.1.0"
   },
   "rnpm": {
-    "commands": {
-      "postlink": "node_modules/realm/scripts/rnpm-postlink.js"
-    },
     "ios": {
       "project": "react-native/ios/RealmReact.xcodeproj",
       "sharedLibraries": [
