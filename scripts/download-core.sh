@@ -36,7 +36,7 @@ die() {
 download_core() {
     echo "Downloading dependency: $CORE_DIR $REALM_CORE_VERSION"
 
-    local TMP_DIR="$TMPDIR/core_bin"
+    local TMP_DIR="${TMPDIR:-/tmp}/core_bin"
     local CORE_TAR="$TMP_DIR/$CORE_DOWNLOAD_FILE"
     local CORE_TMP_TAR="$CORE_TAR.tmp"
 
