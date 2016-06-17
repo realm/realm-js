@@ -50,9 +50,6 @@
 		F620F0581CB766DA0082977B /* node_init.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F620F0571CB766DA0082977B /* node_init.cpp */; };
 		F620F0751CB9F60C0082977B /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F620F0741CB9F60C0082977B /* CoreFoundation.framework */; };
 		F63117F01CEB0D5F00ECB2DE /* weak_realm_notifier.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F63117EE1CEB0D5900ECB2DE /* weak_realm_notifier.cpp */; };
-		F63118471CEBA7B700ECB2DE /* external_commit_helper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F63118431CEBA7B700ECB2DE /* external_commit_helper.cpp */; };
-		F63118481CEBA7B700ECB2DE /* weak_realm_notifier.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F63118451CEBA7B700ECB2DE /* weak_realm_notifier.cpp */; };
-		F631184D1CEBA7D800ECB2DE /* external_commit_helper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F631184A1CEBA7D800ECB2DE /* external_commit_helper.cpp */; };
 		F63FF2C61C12469E00B3B8E0 /* jsc_init.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 029048011C0428DF00ABDED4 /* jsc_init.cpp */; };
 		F63FF2C91C12469E00B3B8E0 /* js_realm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 029048071C0428DF00ABDED4 /* js_realm.cpp */; };
 		F63FF2CD1C12469E00B3B8E0 /* rpc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0290480F1C0428DF00ABDED4 /* rpc.cpp */; };
@@ -894,7 +891,6 @@
 				F63FF31C1C1642BB00B3B8E0 /* GCDWebServerConnection.m in Sources */,
 				F63FF3201C1642BB00B3B8E0 /* GCDWebServerDataRequest.m in Sources */,
 				F63FF3221C1642BB00B3B8E0 /* GCDWebServerMultiPartFormRequest.m in Sources */,
-				F631184D1CEBA7D800ECB2DE /* external_commit_helper.cpp in Sources */,
 				F63FF3211C1642BB00B3B8E0 /* GCDWebServerFileRequest.m in Sources */,
 				F63FF31F1C1642BB00B3B8E0 /* GCDWebServerResponse.m in Sources */,
 				F63FF3261C1642BB00B3B8E0 /* GCDWebServerFileResponse.m in Sources */,
@@ -902,9 +898,7 @@
 				F63FF3241C1642BB00B3B8E0 /* GCDWebServerDataResponse.m in Sources */,
 				F63FF31B1C1642BB00B3B8E0 /* GCDWebServer.m in Sources */,
 				F63FF31D1C1642BB00B3B8E0 /* GCDWebServerFunctions.m in Sources */,
-				F63118481CEBA7B700ECB2DE /* weak_realm_notifier.cpp in Sources */,
 				F63FF3251C1642BB00B3B8E0 /* GCDWebServerErrorResponse.m in Sources */,
-				F63118471CEBA7B700ECB2DE /* external_commit_helper.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
