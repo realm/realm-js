@@ -1,7 +1,7 @@
 {
   "name": "realm",
   "description": "Realm is a mobile database: an alternative to SQLite and key-value stores",
-  "version": "0.13.2",
+  "version": "0.14.0-rc",
   "license": "Apache-2.0",
   "homepage": "https://realm.io",
   "keywords": [
@@ -67,7 +67,10 @@
     },
     "ios": {
       "project": "react-native/ios/RealmReact.xcodeproj",
-      "sharedLibraries": ["libc++", "libz"]
+      "sharedLibraries": [
+        "libc++",
+        "libz"
+      ]
     }
   },
   "engines": {
