@@ -4,11 +4,12 @@ x.x.x Release notes (yyyy-MM-dd)
 * None
 
 ### Enhancements
-* Added `isValid()` method to `List` and `Results` to check for deleleted or invalidated objects
+* Added `isValid()` method to `List` and `Results` to check for deleted or invalidated objects
 * Added `objectForPrimaryKey(type, key)` method to `Realm`
 
 ### Bugfixes
 * Fix for crash when setting object properties to objects from other Realms
+* Fix for exception sometimes thrown when reloading in Chrome debug mode
 
 0.13.2 Release notes (2016-5-26)
 =============================================================
