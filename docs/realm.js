@@ -113,6 +113,7 @@ class Realm {
      * @throws {Error} If type passed into this method is invalid or if the object type did
      *   not have a `primaryKey` specified in its {@link Realm~ObjectSchema ObjectSchema}.
      * @returns {Realm.Object|undefined} if no object is found.
+     * @since 0.14.0
      */
     objectForPrimaryKey(type, key) {}
 
