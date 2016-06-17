@@ -16,22 +16,22 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#ifndef REALM_THREAD_ID_HPP
-#define REALM_THREAD_ID_HPP
+#include "thread_id.hpp"
+#include "thread_local.hpp"
 
-#include <cstddef>
+#include <atomic>
 
-namespace realm {
-
-using thread_id_t = std::size_t;
-
-namespace util {
+using namespace realm;
 
 // Since std::thread::id may be reused after a thread is destroyed, we use
 // an atomically incremented, thread-local identifier instead.
-thread_id_t get_thread_id();
+thread_id_t realm::util::get_thread_id() {
+    static std::atomic<thread_id_t> id_counter;
+    static REALM_THREAD_LOCAL_TYPE(thread_id_t) thread_id = 0;
 
-} // namespace util
-} // namespace realm
+    if (REALM_UNLIKELY(!thread_id)) {
+        thread_id = ++id_counter;
+    }
 
-#endif // REALM_THREAD_ID_HPP
+    return thread_id;
+}
