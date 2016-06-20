@@ -19,7 +19,7 @@
 #include <dirent.h>
 #include <string.h>
 #include <sys/stat.h>
-#include <unistd.h>
+#include <stdlib.h>
 
 #include <system_error>
 
@@ -58,24 +58,8 @@ void copy_bundled_realm_files()
 
 void remove_realm_files_from_directory(const std::string &dir_path)
 {
-    DIR *dir = opendir(dir_path.c_str());
-    if (!dir) {
-        return;
-    }
-
-    while (struct dirent *entry = readdir(dir)) {
-        if (strstr(entry->d_name, ".realm")) {
-            // Intentionally not complaining if there was an error.
-            if (entry->d_type == DT_DIR) {
-                rmdir(entry->d_name);
-            }
-            else {
-                unlink(entry->d_name);
-            }
-        }
-    }
-
-    closedir(dir);
+    std::string delete_realms = "rm -rf " + dir_path + "/*.realm*";
+    system(delete_realms.c_str());
 }
 
 } // realm
