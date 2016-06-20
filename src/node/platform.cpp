@@ -58,7 +58,7 @@ void copy_bundled_realm_files()
 
 void remove_realm_files_from_directory(const std::string &dir_path)
 {
-    std::string delete_realms = "rm -rf " + dir_path + "/*.realm*";
+    std::string delete_realms = "rm -rf '" + dir_path + "'/*.realm*";
     system(delete_realms.c_str());
 }
 
