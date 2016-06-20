@@ -66,7 +66,12 @@ void remove_realm_files_from_directory(const std::string &dir_path)
     while (struct dirent *entry = readdir(dir)) {
         if (strstr(entry->d_name, ".realm")) {
             // Intentionally not complaining if there was an error.
-            unlink(entry->d_name);
+            if (entry->d_type == DT_DIR) {
+                rmdir(entry->d_name);
+            }
+            else {
+                unlink(entry->d_name);
+            }
         }
     }
 
