@@ -20,6 +20,7 @@
 
 #include "impl/realm_coordinator.hpp"
 #include "impl/results_notifier.hpp"
+#include "object_schema.hpp"
 #include "object_store.hpp"
 #include "util/format.hpp"
 
@@ -130,18 +131,16 @@ bool Results::is_valid() const
 {
     if (m_realm)
         m_realm->verify_thread();
+
     if (m_table && !m_table->is_attached())
         return false;
-    if (m_mode == Mode::TableView && (!m_table_view.is_attached() || (m_live && m_table_view.depends_on_deleted_object())))
-        return false;
-    if (m_mode == Mode::LinkView && !m_link_view->is_attached())
-        return false;
-    
+
     return true;
 }
 
 void Results::validate_read() const
 {
+    // is_valid ensures that we're on the correct thread.
     if (!is_valid())
         throw InvalidatedException();
 }
@@ -199,8 +198,8 @@ RowExpr Results::get(size_t row_ndx)
             break;
         case Mode::LinkView:
             if (update_linkview()) {
-               if (row_ndx < m_link_view->size())
-                   return m_link_view->get(row_ndx);
+                if (row_ndx < m_link_view->size())
+                    return m_link_view->get(row_ndx);
                 break;
             }
             REALM_FALLTHROUGH;

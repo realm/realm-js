@@ -21,6 +21,7 @@
 #include "binding_context.hpp"
 #include "impl/realm_coordinator.hpp"
 #include "impl/transact_log_handler.hpp"
+#include "object_schema.hpp"
 #include "object_store.hpp"
 #include "schema.hpp"
 #include "util/format.hpp"
@@ -82,12 +83,12 @@ REALM_NOINLINE static void translate_file_exception(StringData path, bool read_o
     }
     catch (util::File::Exists const& ex) {
         throw RealmFileException(RealmFileException::Kind::Exists, ex.get_path(),
-                                 util::format("File at path '%1' already exists", ex.get_path()),
+                                 util::format("File at path '%1' already exists.", ex.get_path()),
                                  ex.what());
     }
     catch (util::File::NotFound const& ex) {
         throw RealmFileException(RealmFileException::Kind::NotFound, ex.get_path(),
-                                 util::format("Directory at path '%1' does not exists", ex.get_path()), ex.what());
+                                 util::format("Directory at path '%1' does not exist.", ex.get_path()), ex.what());
     }
     catch (util::File::AccessError const& ex) {
         // Errors for `open()` include the path, but other errors don't. We
@@ -100,7 +101,7 @@ REALM_NOINLINE static void translate_file_exception(StringData path, bool read_o
             underlying.replace(pos - 1, ex.get_path().size() + 2, "");
         }
         throw RealmFileException(RealmFileException::Kind::AccessError, ex.get_path(),
-                                 util::format("Unable to open a realm at path '%1': %2", ex.get_path(), underlying), ex.what());
+                                 util::format("Unable to open a realm at path '%1': %2.", ex.get_path(), underlying), ex.what());
     }
     catch (IncompatibleLockFile const& ex) {
         throw RealmFileException(RealmFileException::Kind::IncompatibleLockFile, path,
@@ -314,7 +315,7 @@ void Realm::verify_thread() const
 void Realm::verify_in_write() const
 {
     if (!is_in_transaction()) {
-        throw InvalidTransactionException("Cannot modify persisted objects outside of a write transaction.");
+        throw InvalidTransactionException("Cannot modify managed objects outside of a write transaction.");
     }
 }
 
