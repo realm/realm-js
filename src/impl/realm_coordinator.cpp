@@ -22,6 +22,7 @@
 #include "impl/external_commit_helper.hpp"
 #include "impl/transact_log_handler.hpp"
 #include "impl/weak_realm_notifier.hpp"
+#include "object_schema.hpp"
 #include "object_store.hpp"
 #include "schema.hpp"
 

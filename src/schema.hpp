@@ -19,12 +19,12 @@
 #ifndef REALM_SCHEMA_HPP
 #define REALM_SCHEMA_HPP
 
-#include "object_schema.hpp"
-
 #include <string>
 #include <vector>
 
 namespace realm {
+class ObjectSchema;
+
 class Schema : private std::vector<ObjectSchema> {
 private:
     using base = std::vector<ObjectSchema>;

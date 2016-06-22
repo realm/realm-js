@@ -94,6 +94,8 @@ namespace realm {
                 return "object";
             case PropertyType::Array:
                 return "array";
+            case PropertyType::LinkingObjects:
+                return "linking objects";
 #if __GNUC__
             default:
                 __builtin_unreachable();

@@ -18,8 +18,8 @@
 
 #include "schema.hpp"
 
+#include "object_schema.hpp"
 #include "object_store.hpp"
-#include "property.hpp"
 
 #include <algorithm>
 
@@ -118,10 +118,8 @@ void Schema::validate() const
             }
 
             // check indexable
-            if (prop.is_indexed) {
-                if (!prop.is_indexable()) {
-                    exceptions.emplace_back(PropertyTypeNotIndexableException(object.name, prop));
-                }
+            if (prop.is_indexed && !prop.is_indexable()) {
+                exceptions.emplace_back(PropertyTypeNotIndexableException(object.name, prop));
             }
         }
     }
