@@ -21,7 +21,8 @@
 
 #include <realm/util/features.h>
 
-#if !defined(__clang__) || REALM_HAVE_CLANG_FEATURE(tls) || REALM_HAVE_CLANG_FEATURE(cxx_thread_local)
+#if (!defined(__clang__) || REALM_HAVE_CLANG_FEATURE(tls) || REALM_HAVE_CLANG_FEATURE(cxx_thread_local)) && \
+    (!REALM_PLATFORM_APPLE || __IPHONE_OS_VERSION_MIN_REQUIRED >= 80000 || MAC_OS_X_VERSION_MIN_REQUIRED >= 1070)
 
 #define REALM_THREAD_LOCAL_TYPE(type) REALM_THREAD_LOCAL type
 

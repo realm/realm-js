@@ -13,13 +13,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		F606902C1CA277CD0003FB26 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = F60690231CA277CC0003FB26 /* RealmJS.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = F63FF2F01C16405C00B3B8E0;
-			remoteInfo = GCDWebServers;
-		};
 		F606902E1CA277CD0003FB26 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = F60690231CA277CC0003FB26 /* RealmJS.xcodeproj */;
@@ -47,6 +40,20 @@
 			proxyType = 1;
 			remoteGlobalIDString = F63FF2EF1C16405C00B3B8E0;
 			remoteInfo = GCDWebServers;
+		};
+		F68759FA1D21949A007471AB /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F60690231CA277CC0003FB26 /* RealmJS.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = F63FF2F01C16405C00B3B8E0;
+			remoteInfo = GCDWebServers;
+		};
+		F68759FC1D21949A007471AB /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F60690231CA277CC0003FB26 /* RealmJS.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = F62BF8FB1CAC71780022BCDC;
+			remoteInfo = RealmNode;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -113,7 +120,9 @@
 		F60690241CA277CC0003FB26 /* Products */ = {
 			isa = PBXGroup;
 			children = (
+				F68759FB1D21949A007471AB /* libGCDWebServers.a */,
 				F606902F1CA277CD0003FB26 /* libRealmJS.a */,
+				F68759FD1D21949A007471AB /* libRealmNode.dylib */,
 				F60690331CA277CD0003FB26 /* RealmJSTests.xctest */,
 			);
 			name = Products;
@@ -192,6 +201,20 @@
 			remoteRef = F60690321CA277CD0003FB26 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
+		F68759FB1D21949A007471AB /* libGCDWebServers.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libGCDWebServers.a;
+			remoteRef = F68759FA1D21949A007471AB /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		F68759FD1D21949A007471AB /* libRealmNode.dylib */ = {
+			isa = PBXReferenceProxy;
+			fileType = "compiled.mach-o.dylib";
+			path = libRealmNode.dylib;
+			remoteRef = F68759FC1D21949A007471AB /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
 /* End PBXReferenceProxy section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -256,7 +279,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CPLUSPLUSFLAGS = (
@@ -298,7 +321,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(OTHER_CFLAGS)",
