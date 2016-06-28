@@ -1,4 +1,4 @@
-x.x.x Release notes (yyyy-MM-dd)
+0.14.1 Release notes (2016-6-28)
 =============================================================
 ### Breaking changes
 * Please use `rnpm 1.9.0` or later to link your project. Older versions are no longer supported.
