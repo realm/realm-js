@@ -8,6 +8,7 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Bugfixes
 * Fix linker error when building for minimum target version of iOS 7.
+* Fix for failure in `strip` command when building an archive.
 
 0.14.0 Release notes (2016-6-22)
 =============================================================
