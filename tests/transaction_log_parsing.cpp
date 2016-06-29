@@ -35,12 +35,13 @@ using namespace realm;
 
 class CaptureHelper {
 public:
-    CaptureHelper(std::string const& path, SharedRealm const& r, LinkViewRef lv)
+    CaptureHelper(std::string const& path, SharedRealm const& r, LinkViewRef lv, size_t table_ndx)
     : m_history(make_client_history(path))
     , m_sg(*m_history, SharedGroup::durability_MemOnly)
     , m_realm(r)
     , m_group(m_sg.begin_read())
     , m_linkview(lv)
+    , m_table_ndx(table_ndx)
     {
         m_realm->begin_transaction();
 
@@ -49,12 +50,12 @@ public:
             m_initial.push_back(lv->get(i).get_int(0));
     }
 
-    CollectionChangeSet finish(size_t ndx) {
+    CollectionChangeSet finish() {
         m_realm->commit_transaction();
 
         _impl::CollectionChangeBuilder c;
         _impl::TransactionChangeInfo info;
-        info.lists.push_back({ndx, 0, 0, &c});
+        info.lists.push_back({m_table_ndx, 0, 0, &c});
         info.table_modifications_needed.resize(m_group.size(), true);
         info.table_moves_needed.resize(m_group.size(), true);
         _impl::transaction::advance(m_sg, info);
@@ -78,6 +79,7 @@ private:
 
     LinkViewRef m_linkview;
     std::vector<int_fast64_t> m_initial;
+    size_t m_table_ndx;
 
     void validate(CollectionChangeSet const& info)
     {
@@ -124,11 +126,11 @@ private:
     }
 };
 
-TEST_CASE("Transaction log parsing") {
+TEST_CASE("Transaction log parsing: schema change validation") {
     InMemoryTestFile config;
     config.automatic_change_notifications = false;
 
-    SECTION("schema change validation") {
+    SECTION("Automatic") {
         auto r = Realm::get_shared_realm(config);
         r->update_schema({
             {"table", {
@@ -168,7 +170,7 @@ TEST_CASE("Transaction log parsing") {
             REQUIRE_NOTHROW(r->refresh());
         }
 
-        SECTION("adding a column to an existing table is not allowed (but eventually should be)") {
+        SECTION("adding a column to an existing table is not allowed") {
             WriteTransaction wt(sg);
             TableRef table = wt.get_table("class_table");
             table->add_column(type_String, "new col");
@@ -193,7 +195,124 @@ TEST_CASE("Transaction log parsing") {
 
             REQUIRE_THROWS(r->refresh());
         }
+
+        SECTION("the realm is left in a useable state after a rejected change") {
+            r->begin_transaction();
+            TableRef table = r->read_group().get_table("class_table");
+            table->add_empty_row();
+            r->commit_transaction();
+
+            {
+                WriteTransaction wt(sg);
+                TableRef table = wt.get_table("class_table");
+                table->insert_column(0, type_String, "new col");
+                wt.commit();
+            }
+
+            REQUIRE_THROWS(r->refresh());
+            REQUIRE(table->get_int(0, 0) == 0);
+        }
     }
+
+    SECTION("Additive") {
+        config.schema_mode = SchemaMode::Additive;
+        auto r = Realm::get_shared_realm(config);
+        r->update_schema({
+            {"table", {
+                {"unindexed", PropertyType::Int},
+                {"indexed", PropertyType::Int, "", "", false, true}
+            }},
+        });
+        r->read_group();
+
+        auto history = make_client_history(config.path);
+        SharedGroup sg(*history, SharedGroup::durability_MemOnly);
+
+        SECTION("adding a table is allowed") {
+            WriteTransaction wt(sg);
+            TableRef table = wt.add_table("new table");
+            table->add_column(type_String, "new col");
+            wt.commit();
+
+            REQUIRE_NOTHROW(r->refresh());
+        }
+
+        SECTION("adding an index to an existing column is allowed") {
+            WriteTransaction wt(sg);
+            TableRef table = wt.get_table("class_table");
+            table->add_search_index(0);
+            wt.commit();
+
+            REQUIRE_NOTHROW(r->refresh());
+        }
+
+        SECTION("removing an index from an existing column is allowed") {
+            WriteTransaction wt(sg);
+            TableRef table = wt.get_table("class_table");
+            table->remove_search_index(1);
+            wt.commit();
+
+            REQUIRE_NOTHROW(r->refresh());
+        }
+
+        SECTION("adding a column at the end of an existing table is allowed") {
+            WriteTransaction wt(sg);
+            TableRef table = wt.get_table("class_table");
+            table->add_column(type_String, "new col");
+            wt.commit();
+
+            REQUIRE_NOTHROW(r->refresh());
+        }
+
+        SECTION("adding a column at the beginning of an existing table is allowed") {
+            WriteTransaction wt(sg);
+            TableRef table = wt.get_table("class_table");
+            table->insert_column(0, type_String, "new col");
+            wt.commit();
+
+            REQUIRE_NOTHROW(r->refresh());
+        }
+
+        SECTION("moving columns is allowed") {
+            WriteTransaction wt(sg);
+            TableRef table = wt.get_table("class_table");
+            _impl::TableFriend::move_column(*table->get_descriptor(), 0, 1);
+            wt.commit();
+
+            REQUIRE_NOTHROW(r->refresh());
+        }
+
+        SECTION("moving tables is allowed") {
+            WriteTransaction wt(sg);
+            // FIXME: Workaround for https://github.com/realm/realm-core/pull/1939
+            wt.get_table(0);
+            wt.get_group().move_table(2, 0);
+            wt.commit();
+            REQUIRE_NOTHROW(r->refresh());
+        }
+
+        SECTION("removing a column is not allowed") {
+            WriteTransaction wt(sg);
+            TableRef table = wt.get_table("class_table");
+            table->remove_column(1);
+            wt.commit();
+
+            REQUIRE_THROWS(r->refresh());
+        }
+
+        SECTION("removing a table is not allowed") {
+            WriteTransaction wt(sg);
+            wt.get_group().remove_table("class_table");
+            wt.commit();
+
+            REQUIRE_THROWS(r->refresh());
+        }
+    }
+}
+
+TEST_CASE("Transaction log parsing: changeset calcuation") {
+    InMemoryTestFile config;
+    config.automatic_change_notifications = false;
 
     SECTION("table change information") {
         auto r = Realm::get_shared_realm(config);
@@ -282,6 +401,28 @@ TEST_CASE("Transaction log parsing") {
             REQUIRE_INDICES(info.tables[2].insertions, 2, 3);
             REQUIRE_MOVES(info.tables[2], {8, 3}, {9, 2});
         }
+
+        SECTION("inserting new tables does not distrupt change tracking") {
+            auto info = track_changes({false, false, true}, [&] {
+                table.add_empty_row();
+                r->read_group().insert_table(0, "new table");
+                table.add_empty_row();
+            });
+            REQUIRE(info.tables.size() == 4);
+            REQUIRE_INDICES(info.tables[3].insertions, 10, 11);
+        }
+
+        SECTION("reordering tables does not distrupt change tracking") {
+            auto info = track_changes({false, false, true}, [&] {
+                table.add_empty_row();
+                r->read_group().move_table(2, 0);
+                table.add_empty_row();
+                r->read_group().move_table(0, 1);
+                table.add_empty_row();
+            });
+            REQUIRE(info.tables.size() == 3);
+            REQUIRE_INDICES(info.tables[1].insertions, 10, 11, 12);
+        }
     }
 
     SECTION("LinkView change information") {
@@ -312,7 +453,7 @@ TEST_CASE("Transaction log parsing") {
         r->commit_transaction();
 
 #define VALIDATE_CHANGES(out) \
-    for (CaptureHelper helper(config.path, r, lv); helper; out = helper.finish(origin->get_index_in_group()))
+    for (CaptureHelper helper(config.path, r, lv, origin->get_index_in_group()); helper; out = helper.finish())
 
         CollectionChangeSet changes;
         SECTION("single change type") {
@@ -813,6 +954,50 @@ TEST_CASE("Transaction log parsing") {
             REQUIRE(changes.insertions.empty());
             REQUIRE(changes.deletions.empty());
             REQUIRE(changes.modifications.empty());
+        }
+
+        SECTION("inserting new tables does not distrupt change tracking") {
+            VALIDATE_CHANGES(changes) {
+                lv->add(0);
+                r->read_group().insert_table(0, "new table");
+                lv->add(0);
+            }
+            REQUIRE_INDICES(changes.insertions, 10, 11);
+        }
+
+        SECTION("reordering tables does not distrupt change tracking") {
+            VALIDATE_CHANGES(changes) {
+                lv->add(0);
+                r->read_group().move_table(2, 0);
+                lv->add(0);
+                r->read_group().move_table(0, 3);
+                lv->add(0);
+            }
+            REQUIRE_INDICES(changes.insertions, 10, 11, 12);
+        }
+
+        SECTION("inserting new columns does not distrupt change tracking") {
+            VALIDATE_CHANGES(changes) {
+                lv->add(0);
+                origin->insert_column(0, type_Int, "new column");
+                lv->add(0);
+            }
+            REQUIRE_INDICES(changes.insertions, 10, 11);
+        }
+
+        SECTION("reordering columns does not distrupt change tracking") {
+            VALIDATE_CHANGES(changes) {
+                origin->insert_column(1, type_Int, "new column 1");
+                origin->insert_column(2, type_Int, "new column 2");
+                origin->insert_column(3, type_Int, "new column 3");
+
+                lv->add(0);
+                _impl::TableFriend::move_column(*origin->get_descriptor(), 0, 3);
+                lv->add(0);
+                _impl::TableFriend::move_column(*origin->get_descriptor(), 3, 1);
+                lv->add(0);
+            }
+            REQUIRE_INDICES(changes.insertions, 10, 11, 12);
         }
     }
 }

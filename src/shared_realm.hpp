@@ -251,6 +251,8 @@ public:
     // version of the file, and return true if it changed
     bool read_schema_from_group_if_needed();
 
+    void add_schema_change_handler();
+
   public:
     std::unique_ptr<BindingContext> m_binding_context;
 

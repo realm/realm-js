@@ -7,6 +7,7 @@
 #include "property.hpp"
 #include "schema.hpp"
 
+#include <realm/descriptor.hpp>
 #include <realm/group.hpp>
 #include <realm/table.hpp>
 
@@ -903,6 +904,7 @@ TEST_CASE("migration: ResetFile") {
 TEST_CASE("migration: Additive") {
     InMemoryTestFile config;
     config.schema_mode = SchemaMode::Additive;
+    config.cache = false;
     auto realm = Realm::get_shared_realm(config);
 
     Schema schema = {
@@ -991,6 +993,49 @@ TEST_CASE("migration: Additive") {
     SECTION("migration function is not used") {
         REQUIRE_NOTHROW(realm->update_schema(schema, 1,
                                              [&](SharedRealm, SharedRealm, Schema&) { REQUIRE(false); }));
+    }
+
+    SECTION("add new columns at end from different SG") {
+        auto realm2 = Realm::get_shared_realm(config);
+        auto& group = realm2->read_group();
+        realm2->begin_transaction();
+        auto table = ObjectStore::table_for_object_type(group, "object");
+        table->add_column(type_Int, "new column");
+        realm2->commit_transaction();
+
+        REQUIRE_NOTHROW(realm->refresh());
+        REQUIRE(realm->schema() == schema);
+        REQUIRE(realm->schema().find("object")->persisted_properties[0].table_column == 0);
+        REQUIRE(realm->schema().find("object")->persisted_properties[1].table_column == 1);
+    }
+
+    SECTION("add new columns at beginning from different SG") {
+        auto realm2 = Realm::get_shared_realm(config);
+        auto& group = realm2->read_group();
+        realm2->begin_transaction();
+        auto table = ObjectStore::table_for_object_type(group, "object");
+        table->insert_column(0, type_Int, "new column");
+        realm2->commit_transaction();
+
+        REQUIRE_NOTHROW(realm->refresh());
+        REQUIRE(realm->schema() == schema);
+        REQUIRE(realm->schema().find("object")->persisted_properties[0].table_column == 1);
+        REQUIRE(realm->schema().find("object")->persisted_properties[1].table_column == 2);
+    }
+
+    SECTION("rearrange columns at beginning from different SG") {
+        auto realm2 = Realm::get_shared_realm(config);
+        auto& group = realm2->read_group();
+        realm2->begin_transaction();
+        auto table = ObjectStore::table_for_object_type(group, "object");
+        // There currently isn't actually any way to produce a column move from the public API
+        _impl::TableFriend::move_column(*table->get_descriptor(), 1, 0);
+        realm2->commit_transaction();
+
+        REQUIRE_NOTHROW(realm->refresh());
+        REQUIRE(realm->schema() == schema);
+        REQUIRE(realm->schema().find("object")->persisted_properties[0].table_column == 1);
+        REQUIRE(realm->schema().find("object")->persisted_properties[1].table_column == 0);
     }
 }
 

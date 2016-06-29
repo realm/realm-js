@@ -153,6 +153,7 @@ Group& Realm::read_group()
 {
     if (!m_group) {
         m_group = &const_cast<Group&>(m_shared_group->begin_read());
+        add_schema_change_handler();
     }
     return *m_group;
 }
@@ -263,10 +264,11 @@ void Realm::update_schema(Schema schema, uint64_t version, MigrationFunction mig
 
     if (no_changes_required())
         return;
-
     // Either the schema version has changed or we need to do non-migration changes
-    transaction::begin(*m_shared_group, m_binding_context.get(),
-                       /* error on schema changes */ false);
+
+    m_group->set_schema_change_notification_handler(nullptr);
+    transaction::begin_without_validation(*m_shared_group);
+    add_schema_change_handler();
 
     // Cancel the write transaction if we exit this function before committing it
     struct WriteTransactionGuard {
@@ -305,6 +307,18 @@ void Realm::update_schema(Schema schema, uint64_t version, MigrationFunction mig
 
     commit_transaction();
     m_coordinator->update_schema(m_schema, version);
+}
+
+void Realm::add_schema_change_handler()
+{
+    if (m_config.schema_mode == SchemaMode::Additive) {
+        m_group->set_schema_change_notification_handler([&] {
+            auto new_schema = ObjectStore::schema_from_group(read_group());
+            auto required_changes = m_schema.compare(new_schema);
+            ObjectStore::verify_valid_additive_changes(required_changes);
+            m_schema.copy_table_columns_from(new_schema);
+        });
+    }
 }
 
 static void check_read_write(Realm *realm)
@@ -348,7 +362,7 @@ void Realm::begin_transaction()
     // make sure we have a read transaction
     read_group();
 
-    transaction::begin(*m_shared_group, m_binding_context.get());
+    transaction::begin(*m_shared_group, m_binding_context.get(), m_config.schema_mode);
 }
 
 void Realm::commit_transaction()
@@ -467,7 +481,7 @@ bool Realm::refresh()
     }
 
     if (m_group) {
-        transaction::advance(*m_shared_group, m_binding_context.get());
+        transaction::advance(*m_shared_group, m_binding_context.get(), m_config.schema_mode);
         m_coordinator->process_available_async(*this);
     }
     else {
