@@ -9,6 +9,18 @@ x.x.x Release notes (yyyy-MM-dd)
 ### Bugfixes
 * None
 
+0.14.1 Release notes (2016-6-28)
+=============================================================
+### Breaking changes
+* None
+
+### Enhancements
+* None
+
+### Bugfixes
+* Fix linker error when building for minimum target version of iOS 7.
+* Fix for failure in `strip` command when building an archive.
+
 0.14.0 Release notes (2016-6-22)
 =============================================================
 ### Breaking changes
