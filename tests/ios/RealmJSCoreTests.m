@@ -31,11 +31,22 @@
 
 + (XCTestSuite *)defaultTestSuite {
     XCTestSuite *suite = [super defaultTestSuite];
-    JSContext *context = [[JSContext alloc] init];
+
+    // We need a JS context from a UIWebView so it has setTimeout, Promise, etc.
+    UIWebView *webView = [[UIWebView alloc] init];
+    JSContext *context = [webView valueForKeyPath:@"documentView.webView.mainFrame.javaScriptContext"];
     RJSModuleLoader *moduleLoader = [[RJSModuleLoader alloc] initWithContext:context];
     NSURL *realmURL = [[NSBundle bundleForClass:self] URLForResource:@"index" withExtension:@"js" subdirectory:@"lib"];
     NSURL *scriptURL = [[NSBundle bundleForClass:self] URLForResource:@"index" withExtension:@"js" subdirectory:@"js"];
     NSError *error;
+
+    // The ES6 global Promise constructor was added in iOS 8.
+    if (![context[@"Promise"] isObject]) {
+        JSValue *promiseModule = [moduleLoader loadGlobalModule:@"es6-promise" relativeToURL:scriptURL error:&error];
+        NSAssert(promiseModule, @"%@", error);
+
+        context[@"Promise"] = promiseModule[@"Promise"];
+    }
 
     // Create Realm constructor in the JS context.
     RJSInitializeInContext(context.JSGlobalContextRef);
@@ -73,25 +84,46 @@
     JSContext *context = testObject.context;
     context.exception = nil;
 
-    [testObject invokeMethod:@"runTest" withArguments:@[NSStringFromClass(self.class), method]];
+    JSValue *promise = [testObject invokeMethod:@"runTest" withArguments:@[NSStringFromClass(self.class), method]];
 
-    JSValue *exception = context.exception;
-    if (exception) {
-        JSValue *message = [exception hasProperty:@"message"] ? exception[@"message"] : exception;
-        NSString *source = [exception hasProperty:@"sourceURL"] ? [exception[@"sourceURL"] toString] : nil;
-        NSUInteger line = [exception hasProperty:@"line"] ? [exception[@"line"] toUInt32] - 1 : 0;
-        NSURL *sourceURL = nil;
-
-        if (source) {
-            NSString *path = [NSString pathWithComponents:@[[@(__FILE__) stringByDeletingLastPathComponent], @"..", @"js", source.lastPathComponent]];
-            sourceURL = [NSURL URLWithString:path];
-        }
-
-        [self recordFailureWithDescription:message.description
-                                    inFile:sourceURL ? sourceURL.absoluteString : @(__FILE__)
-                                    atLine:sourceURL ? line : __LINE__
-                                  expected:YES];
+    if (context.exception) {
+        [self recordException:context.exception];
+        return;
     }
+
+    if ([promise isObject]) {
+        XCTestExpectation *expectation = [self expectationWithDescription:@"Promise resolved or rejected"];
+
+        JSValue *onFulfilled = [JSValue valueWithObject:^() {
+            [expectation fulfill];
+        } inContext:context];
+
+        JSValue *onRejected = [JSValue valueWithObject:^(JSValue *error) {
+            [self recordException:error];
+            [expectation fulfill];
+        } inContext:context];
+
+        [promise invokeMethod:@"then" withArguments:@[onFulfilled, onRejected]];
+
+        [self waitForExpectationsWithTimeout:5.0 handler:NULL];
+    }
+}
+
+- (void)recordException:(JSValue *)exception {
+    JSValue *message = [exception hasProperty:@"message"] ? exception[@"message"] : exception;
+    NSString *source = [exception hasProperty:@"sourceURL"] ? [exception[@"sourceURL"] toString] : nil;
+    NSUInteger line = [exception hasProperty:@"line"] ? [exception[@"line"] toUInt32] - 1 : 0;
+    NSURL *sourceURL = nil;
+
+    if (source) {
+        NSString *path = [NSString pathWithComponents:@[[@(__FILE__) stringByDeletingLastPathComponent], @"..", @"js", source.lastPathComponent]];
+        sourceURL = [NSURL URLWithString:path];
+    }
+
+    [self recordFailureWithDescription:message.description
+                                inFile:sourceURL ? sourceURL.absoluteString : @(__FILE__)
+                                atLine:sourceURL ? line : __LINE__
+                              expected:YES];
 }
 
 @end
