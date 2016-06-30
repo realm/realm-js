@@ -50,6 +50,12 @@ Query List::get_query() const
     return m_link_view->get_target_table().where(m_link_view);
 }
 
+const Table* List::get_table() const
+{
+    verify_attached();
+    return &m_link_view->get_target_table();
+}
+
 size_t List::get_origin_row_index() const
 {
     verify_attached();
@@ -169,13 +175,13 @@ void List::delete_all()
     m_link_view->remove_all_target_rows();
 }
 
-Results List::sort(SortOrder order)
+Results List::sort(SortOrder order) const
 {
     verify_attached();
     return Results(m_realm, *m_object_schema, m_link_view, util::none, std::move(order));
 }
 
-Results List::filter(Query q)
+Results List::filter(Query q) const
 {
     verify_attached();
     return Results(m_realm, *m_object_schema, m_link_view, get_query().and_query(std::move(q)));
