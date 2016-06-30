@@ -16,21 +16,32 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-'use strict';
+#include "impl/weak_realm_notifier_base.hpp"
 
-var Realm = require('realm');
+typedef struct uv_async_s uv_async_t;
 
-var prototype = exports.prototype = {};
+namespace realm {
+class Realm;
 
-exports.extend = function(object) {
-    object.__proto__ = prototype;
-    return object;
+namespace _impl {
+
+class WeakRealmNotifier : public WeakRealmNotifierBase {
+public:
+    WeakRealmNotifier(const std::shared_ptr<Realm>& realm, bool cache);
+    ~WeakRealmNotifier();
+
+    WeakRealmNotifier(WeakRealmNotifier&&);
+    WeakRealmNotifier& operator=(WeakRealmNotifier&&);
+
+    WeakRealmNotifier(const WeakRealmNotifier&) = delete;
+    WeakRealmNotifier& operator=(const WeakRealmNotifier&) = delete;
+
+    // Asynchronously call notify() on the Realm on the main thread.
+    void notify();
+
+private:
+    uv_async_t* m_handle;
 };
 
-Object.defineProperties(prototype, {
-    afterEach: {
-        value: function() {
-            Realm.clearTestState();
-        }
-    }
-});
+} // namespace _impl
+} // namespace realm

@@ -18,6 +18,8 @@
 
 'use strict';
 
+var Realm = require('realm');
+
 var TESTS = {
     ListTests: require('./list-tests'),
     ObjectTests: require('./object-tests'),
@@ -58,7 +60,28 @@ exports.runTest = function(suiteName, testName) {
     var testMethod = testSuite && testSuite[testName];
 
     if (testMethod) {
-        testMethod.call(testSuite);
+        // Start fresh in case of a crash in a previous run.
+        Realm.clearTestState();
+
+        var promise;
+        try {
+            promise = testMethod.call(testSuite);
+
+            // If the test returns a promise, then clear state on success or failure.
+            if (promise) {
+                promise.then(
+                    function() { Realm.clearTestState(); },
+                    function() { Realm.clearTestState(); }
+                );
+            }
+
+            return promise;
+        } finally {
+            // Synchronously clear state if the test is not async.
+            if (!promise) {
+                Realm.clearTestState();
+            }
+        }
     } else if (!testSuite || !(testName in SPECIAL_METHODS)) {
         throw new Error('Missing test: ' + suiteName + '.' + testName);
     }

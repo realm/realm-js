@@ -151,6 +151,9 @@ public:
     void prepare_handover();
     bool deliver(Realm&, SharedGroup&, std::exception_ptr);
 
+    template <typename T>
+    class Handle;
+
 protected:
     bool have_callbacks() const noexcept { return m_callbacks.size() > 0; }
     void add_changes(CollectionChangeBuilder change) { m_accumulated_changes.merge(std::move(change)); }
@@ -188,6 +191,43 @@ private:
     // while doing anything with them or m_callback_index
     std::mutex m_callback_mutex;
     std::vector<Callback> m_callbacks;
+};
+
+// A smart pointer to a CollectionNotifier that unregisters the notifier when
+// the pointer is destroyed. Movable. Copying will produce a null Handle.
+template <typename T>
+class CollectionNotifier::Handle : public std::shared_ptr<T> {
+public:
+    using std::shared_ptr<T>::shared_ptr;
+
+    Handle() = default;
+    ~Handle() { reset(); }
+
+    // Copying a Handle produces a null Handle.
+    Handle(const Handle&) : Handle() { }
+    Handle& operator=(const Handle& other)
+    {
+        if (this != &other) {
+            reset();
+        }
+        return *this;
+    }
+
+    Handle(Handle&&) = default;
+    Handle& operator=(Handle&& other)
+    {
+        reset();
+        std::shared_ptr<T>::shared_ptr::operator=(std::move(other));
+        return *this;
+    }
+
+    void reset()
+    {
+        if (*this) {
+            this->get()->unregister();
+            std::shared_ptr<T>::reset();
+        }
+    }
 };
 
 } // namespace _impl

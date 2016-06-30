@@ -19,7 +19,6 @@
 'use strict';
 
 var Realm = require('realm');
-var BaseTest = require('./base-test');
 var TestCase = require('./asserts');
 var schemas = require('./schemas');
 
@@ -28,7 +27,7 @@ var RANDOM_DATA = new Uint8Array([
     0x67, 0x1e, 0x40, 0xa7, 0x6d, 0x52, 0x83, 0xda, 0x07, 0x29, 0x9c, 0x70, 0x38, 0x48, 0x4e, 0xff,
 ]);
 
-module.exports = BaseTest.extend({
+module.exports = {
     testBasicTypesPropertyGetters: function() {
         var realm = new Realm({schema: [schemas.BasicTypes]});
         var object;
@@ -329,6 +328,17 @@ module.exports = BaseTest.extend({
         TestCase.assertEqual(obj.arrayCol[0].doubleCol, 3);
         TestCase.assertEqual(obj.arrayCol[1].doubleCol, 1);
         TestCase.assertEqual(obj.arrayCol[2].doubleCol, 2);
+
+        // set object from another realm
+        var another = new Realm({path: 'another.realm', schema: realm.schema});
+        var anotherObj;
+        another.write(function() {
+            anotherObj = another.create('TestObject', {doubleCol: 3});
+        });
+        realm.write(function() {
+            obj.objectCol = anotherObj;
+        });
+        TestCase.assertEqual(obj.objectCol.doubleCol, 3);
     },
     testEnumerablePropertyNames: function() {
         var realm = new Realm({schema: [schemas.BasicTypes]});
@@ -479,14 +489,20 @@ module.exports = BaseTest.extend({
 
         // test file format upgrade
         var realm_v3 = new Realm({path: 'dates-v3.realm', schema: [schemas.DateObject]});
-        TestCase.assertEqual(realm_v3.objects('Date').length, 1);
+        TestCase.assertEqual(realm_v3.objects('Date').length, 2);
         TestCase.assertEqual(realm_v3.objects('Date')[0].currentDate.getTime(), 1462500087955);
+        TestCase.assertEqual(realm_v3.objects('Date')[0].nullDate.getTime(), 1462500087955);
+        TestCase.assertEqual(realm_v3.objects('Date')[1].currentDate.getTime(), -10000);
+        TestCase.assertEqual(realm_v3.objects('Date')[1].nullDate, null);
 
         // get new file format is not upgraded
         var realm_v5 = new Realm({path: 'dates-v5.realm', schema: [schemas.DateObject]});
-        TestCase.assertEqual(realm_v5.objects('Date').length, 1);
-        TestCase.assertEqual(realm_v5.objects('Date')[0].currentDate.getTime(), 1462500087955);
-
+        TestCase.assertEqual(realm_v5.objects('Date').length, 2);
+        TestCase.assertEqual(realm_v3.objects('Date')[0].currentDate.getTime(), 1462500087955);
+        TestCase.assertEqual(realm_v3.objects('Date')[0].nullDate.getTime(), 1462500087955);
+        TestCase.assertEqual(realm_v3.objects('Date')[1].currentDate.getTime(), -10000);
+        TestCase.assertEqual(realm_v3.objects('Date')[1].nullDate, null);
+        
         // test different dates
         var realm = new Realm({schema: [schemas.DateObject]});
         realm.write(function() {
@@ -500,4 +516,4 @@ module.exports = BaseTest.extend({
         TestCase.assertEqual(realm.objects('Date')[2].currentDate.getTime(), 1000000000000);
         TestCase.assertEqual(realm.objects('Date')[3].currentDate.getTime(), -1000000000000);
     }
-});
+};

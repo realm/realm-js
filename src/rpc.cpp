@@ -182,15 +182,18 @@ RPCServer::RPCServer() {
         return json::object();
     };
     m_requests["/clear_test_state"] = [this](const json dict) {
-        for (auto object : m_objects) {
-            // The session ID points to the Realm constructor object, which should remain.
-            if (object.first != m_session_id) {
-                m_objects.erase(object.first);
-            }
+        // The session ID points to the Realm constructor object, which should remain.
+        auto realm_constructor = m_objects[m_session_id];
+        m_objects.clear();
+
+        if (realm_constructor) {
+            m_objects.emplace(m_session_id, realm_constructor);
         }
+
         m_callbacks.clear();
         JSGarbageCollect(m_context);
         js::delete_all_realms();
+
         return json::object();
     };
 }
@@ -379,7 +382,7 @@ json RPCServer::serialize_json_value(JSValueRef js_value) {
 json RPCServer::serialize_object_schema(const realm::ObjectSchema &object_schema) {
     std::vector<std::string> properties;
 
-    for (auto &prop : object_schema.properties) {
+    for (auto &prop : object_schema.persisted_properties) {
         properties.push_back(prop.name);
     }
 

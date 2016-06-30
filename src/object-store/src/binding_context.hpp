@@ -80,7 +80,7 @@ public:
 
     struct ObserverState;
 
-    // Override this function if you want to recieve detailed information about
+    // Override this function if you want to receive detailed information about
     // external changes to a specific set of objects.
     // This is called before each operation which may advance the read
     // transaction to include

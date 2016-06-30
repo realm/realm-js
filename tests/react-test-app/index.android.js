@@ -17,60 +17,44 @@
 ////////////////////////////////////////////////////////////////////////////
 'use strict';
 
-const React = require('react');
-const Realm = require('realm');
-const RealmTests = require('realm-tests');
-const builder = require('xmlbuilder');
-const RNFS = require('react-native-fs');
-
-const {
+import {
     AppRegistry,
     StyleSheet,
     Image,
     Text,
     View,
-    TouchableNativeFeedback,
-} = require('react-native');
+} from 'react-native';
 
-RealmTests.registerTests({
-    ListViewTest: require('./tests/listview-test'),
-});
+import builder from 'xmlbuilder';
+import React from 'react';
+import RNFS from 'react-native-fs';
+import { getTestNames, runTest } from './tests';
 
-function runTests() {
+async function runTests() {
+    let testNames = getTestNames();
     let rootXml = builder.create('testsuites');
-    let testNames = RealmTests.getTestNames();
 
     for (let suiteName in testNames) {
         let itemTestsuite = rootXml.ele('testsuite');
         let nbrTests = 0;
         let nbrFailures = 0;
 
-        console.log('Starting suite ' + suiteName);
+        console.log('Starting ' + suiteName);
 
-        testNames[suiteName].forEach((testName) => {
+        for (let testName of testNames[suiteName]) {
             nbrTests++;
 
             let itemTest = itemTestsuite.ele('testcase');
             itemTest.att('name', testName);
 
-            console.log('Starting ' + testName);
-            RealmTests.runTest(suiteName, 'beforeEach');
-
             try {
-                RealmTests.runTest(suiteName, testName);
-                console.log('+ ' + testName);
+                await runTest(suiteName, testName);
             }
             catch (e) {
-                console.log('- ' + testName);
-                console.warn(e.message);
-
                 itemTest.ele('error', {'message': ''}, e.message);
                 nbrFailures++;
             }
-            finally {
-                RealmTests.runTest(suiteName, 'afterEach');
-            }
-        });
+        }
 
         // update Junit XML report
         itemTestsuite.att('name', suiteName);
@@ -80,55 +64,57 @@ function runTests() {
 
     }
     // export unit tests results
-    var xmlString = rootXml.end({ pretty: true, indent: '  ', newline: '\n' });
-    var path = '/sdcard/tests.xml';
+    let xmlString = rootXml.end({
+        pretty: true,
+        indent: '  ',
+        newline: '\n',
+    });
 
     // write the unit tests reports
-    RNFS.writeFile(path, xmlString , 'utf8')
-      .then((success) => {
+    try {
+        await RNFS.writeFile('/sdcard/tests.xml', xmlString, 'utf8');
         console.log('__REALM_REACT_ANDROID_TESTS_COMPLETED__');
-      })
-      .catch((err) => {
-        console.log(err.message);
-      });
-
+    }
+    catch (e) {
+        console.error(e);
+    }
 }
 
 class ReactTests extends React.Component {
-  render() {
-    return (
-      <View style={styles.container}>
-          <Text style={styles.button} onPress={runTests}>
-              Running Tests...
-          </Text>
+    render() {
+        return (
+            <View style={styles.container}>
+                <Text style={styles.button} onPress={runTests}>
+                    Running Tests...
+                </Text>
 
-          <Image
-            style={styles.icon}
-            source={require('image!ic_launcher')}
-            onLoad={() => runTests()}
-          />
-      </View>
-    );
-  }
+                <Image
+                    style={styles.icon}
+                    source={require('image!ic_launcher')}
+                    onLoad={() => runTests()}
+                />
+            </View>
+        );
+    }
 }
 
-var styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F5FCFF',
-  },
-  welcome: {
-    fontSize: 20,
-    textAlign: 'center',
-    margin: 10,
-  },
-  instructions: {
-    textAlign: 'center',
-    color: '#333333',
-    marginBottom: 5,
-  },
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#F5FCFF',
+    },
+    welcome: {
+        fontSize: 20,
+        textAlign: 'center',
+        margin: 10,
+    },
+    instructions: {
+        textAlign: 'center',
+        color: '#333333',
+        marginBottom: 5,
+    },
 });
 
 AppRegistry.registerComponent('ReactTests', () => ReactTests);

@@ -18,11 +18,11 @@
 
 'use strict';
 
-import React from 'react-native';
+import React from 'react';
 
 const rootComponentPromise = new Promise((resolve) => {
     // Require internal module here so the promise is rejected if there is an error.
-    let Mount = require('react-native/Libraries/ReactNative/ReactNativeMount');
+    let Mount = require('react/lib/ReactNativeMount');
     let renderComponent = Mount.renderComponent;
 
     Mount.renderComponent = function() {

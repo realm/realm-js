@@ -19,11 +19,10 @@
 'use strict';
 
 var Realm = require('realm');
-var BaseTest = require('./base-test');
 var TestCase = require('./asserts');
 var schemas = require('./schemas');
 
-module.exports = BaseTest.extend({
+module.exports = {
     testResultsConstructor: function() {
         var realm = new Realm({schema: [schemas.TestObject]});
         var objects = realm.objects('TestObject');
@@ -100,15 +99,16 @@ module.exports = BaseTest.extend({
     testResultsInvalidObjectType: function() {
         var realm = new Realm({schema: [schemas.TestObject]});
         TestCase.assertThrows(function() {
-            var objects = realm.objects('NotTestObject');
+            realm.objects('NotTestObject');
         });
     },
 
     testResultsEnumerate: function() {
         var realm = new Realm({schema: [schemas.TestObject]});
         var objects = realm.objects('TestObject');
+        var index;
 
-        for (var index in objects) {
+        for (index in objects) {
             TestCase.assertTrue(false, "No objects should have been enumerated");
         }
 
@@ -119,7 +119,7 @@ module.exports = BaseTest.extend({
 
         var count = 0;
         var keys = Object.keys(objects);
-        for (var index in objects) {
+        for (index in objects) {
             TestCase.assertEqual(count++, +index);
             TestCase.assertEqual(keys[index], index);
         }
@@ -130,6 +130,7 @@ module.exports = BaseTest.extend({
 
     testResultsFiltered: function() {
         var realm = new Realm({schema: [schemas.PersonObject, schemas.DefaultValues, schemas.TestObject]});
+
         realm.write(function() {
             realm.create('PersonObject', {name: 'Ari', age: 10});
             realm.create('PersonObject', {name: 'Tim', age: 11});
@@ -155,8 +156,12 @@ module.exports = BaseTest.extend({
 
         TestCase.assertEqual(realm.objects('PersonObject').filtered('name = $0', 'Tim').length, 1);
         TestCase.assertEqual(realm.objects('PersonObject').filtered('age > $1 && age < $0', 13, 10).length, 3);
+
         TestCase.assertThrows(function() {
             realm.objects('PersonObject').filtered('age > $2 && age < $0', 13, 10)
+        });
+        TestCase.assertThrows(function() {
+            realm.objects('PersonObject').filtered("invalidQuery");
         });
 
         realm.write(function() {
@@ -167,9 +172,19 @@ module.exports = BaseTest.extend({
 
         TestCase.assertEqual(realm.objects('DefaultValuesObject').filtered('dateCol > $0', new Date(4)).length, 1);
         TestCase.assertEqual(realm.objects('DefaultValuesObject').filtered('dateCol <= $0', new Date(4)).length, 2);
+    },
+
+    testResultsFilteredByForeignObject: function() {
+        var realm = new Realm({schema: [schemas.LinkTypes, schemas.TestObject]});
+        var realm2 = new Realm({path: '2.realm', schema: realm.schema});
+        var object;
+
+        realm2.write(function() {
+            object = realm2.create('TestObject', {doubleCol: 1});
+        });
 
         TestCase.assertThrows(function() {
-            realm.objects('PersonObject').filtered("invalidQuery");
+            realm.objects('LinkTypesObject').filtered('objectCol = $0', object);
         });
     },
 
@@ -185,7 +200,7 @@ module.exports = BaseTest.extend({
             realm.create('IntPrimaryObject', {primaryCol: 0, valueCol: 'c'});
         });
 
-        var primaries = function(results, prop) {
+        var primaries = function(results) {
             return results.map(function(object) {
                 return object.primaryCol;
             });
@@ -368,4 +383,4 @@ module.exports = BaseTest.extend({
             TestCase.assertEqual(snapshot.length, 0);
         });
     }
-});
+};

@@ -169,7 +169,7 @@ inline JSClassRef ObjectWrap<ClassType>::create_constructor_class() {
     // This must be set for `typeof constructor` to be 'function'.
     definition.callAsFunction = call;
 
-    if (s_class.constructor) {
+    if (reinterpret_cast<void*>(s_class.constructor)) {
         definition.callAsConstructor = construct;
     }
     if (!s_class.static_methods.empty()) {
@@ -226,7 +226,7 @@ inline JSValueRef ObjectWrap<ClassType>::call(JSContextRef ctx, JSObjectRef func
     }
 
     // Classes without a constructor should still be subclassable.
-    if (s_class.constructor) {
+    if (reinterpret_cast<void*>(s_class.constructor)) {
         try {
             s_class.constructor(ctx, this_object, argc, arguments);
         }
@@ -241,7 +241,7 @@ inline JSValueRef ObjectWrap<ClassType>::call(JSContextRef ctx, JSObjectRef func
 
 template<typename ClassType>
 inline JSObjectRef ObjectWrap<ClassType>::construct(JSContextRef ctx, JSObjectRef constructor, size_t argc, const JSValueRef arguments[], JSValueRef* exception) {
-    if (!s_class.constructor) {
+    if (!reinterpret_cast<void*>(s_class.constructor)) {
         *exception = jsc::Exception::value(ctx, s_class.name + " is not a constructor");
         return nullptr;
     }

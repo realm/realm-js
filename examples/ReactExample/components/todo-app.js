@@ -21,7 +21,6 @@
 import React from 'react';
 
 import {
-    Component,
     Navigator,
     Platform,
     StatusBar,
@@ -35,22 +34,19 @@ import TodoListView from './todo-listview';
 import realm from './realm';
 import styles from './styles';
 
-export default class TodoApp extends Component {
+export default class TodoApp extends React.Component {
     constructor(props) {
         super(props);
 
         // This is a Results object, which will live-update.
-        this.todoLists = realm.objects('TodoList');
+        this.todoLists = realm.objects('TodoList').sorted('creationDate');
         if (this.todoLists.length < 1) {
             realm.write(() => {
                 realm.create('TodoList', {name: 'Todo List', creationDate: new Date()});
             });
         }
-
-        this.anotherList = realm.objects('TodoList').sorted('creationDate');
-        this.anotherList.addListener(function(name, changes) {
+        this.todoLists.addListener((name, changes) => {
             console.log("changed: " + JSON.stringify(changes));
-            this.todoLists = this.anotherList;
         });
         console.log("registered listener");
 

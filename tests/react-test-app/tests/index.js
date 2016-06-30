@@ -18,27 +18,19 @@
 
 'use strict';
 
-const React = require('react-native');
-const RealmTests = require('realm-tests');
+import { NativeAppEventEmitter, NativeModules } from 'react-native';
+import * as RealmTests from 'realm-tests';
+import ListViewTest from './listview-test';
 
 RealmTests.registerTests({
-    ListViewTest: require('./listview-test'),
+    ListViewTest,
 });
 
-const {
-    NativeAppEventEmitter,
-    NativeModules,
-} = React;
-
-module.exports = {
-    runTests,
-};
-
 // Listen for event to run a particular test.
-NativeAppEventEmitter.addListener('realm-run-test', (test) => {
+NativeAppEventEmitter.addListener('realm-run-test', async ({suite, name}) => {
     let error;
     try {
-        RealmTests.runTest(test.suite, test.name);
+        await RealmTests.runTest(suite, name);
     } catch (e) {
         error = '' + e;
     }
@@ -48,29 +40,49 @@ NativeAppEventEmitter.addListener('realm-run-test', (test) => {
 
 // Inform the native test harness about the test suite once it's ready.
 setTimeout(() => {
-    NativeModules.Realm.emit('realm-test-names', RealmTests.getTestNames());
+    // The emit() method only exists on iOS, for now.
+    if (NativeModules.Realm.emit) {
+        NativeModules.Realm.emit('realm-test-names', getTestNames());
+    }
 }, 0);
 
-function runTests() {
-    let testNames = RealmTests.getTestNames();
+export function getTestNames() {
+    return RealmTests.getTestNames();
+}
+
+export async function runTests() {
+    let testNames = getTestNames();
+    let passed = true;
 
     for (let suiteName in testNames) {
         console.log('Starting ' + suiteName);
 
         for (let testName of testNames[suiteName]) {
-            RealmTests.runTest(suiteName, 'beforeEach');
-
             try {
-                RealmTests.runTest(suiteName, testName);
-                console.log('+ ' + testName);
+                await runTest(suiteName, testName);
             }
             catch (e) {
-                console.warn('- ' + testName);
-                console.warn(e.message);
-            }
-            finally {
-                RealmTests.runTest(suiteName, 'afterEach');
+                passed = false;
             }
         }
+    }
+
+    return passed;
+}
+
+export async function runTest(suiteName, testName) {
+    await RealmTests.runTest(suiteName, 'beforeEach');
+
+    try {
+        await RealmTests.runTest(suiteName, testName);
+        console.log('+ ' + testName);
+    }
+    catch (e) {
+        console.warn('- ' + testName);
+        console.warn(e.message || e);
+        throw e;
+    }
+    finally {
+        await RealmTests.runTest(suiteName, 'afterEach');
     }
 }

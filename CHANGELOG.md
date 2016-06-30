@@ -1,13 +1,49 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Breaking changes
-* None
+* Please use `rnpm 1.9.0` or later to link your project. Older versions are no longer supported.
 
 ### Enhancements
-* Added `isValid()` method to `List` and `Results` to check for deleleted or invalidated objects
+* None
 
 ### Bugfixes
 * None
+
+0.14.1 Release notes (2016-6-28)
+=============================================================
+### Breaking changes
+* None
+
+### Enhancements
+* None
+
+### Bugfixes
+* Fix linker error when building for minimum target version of iOS 7.
+* Fix for failure in `strip` command when building an archive.
+
+0.14.0 Release notes (2016-6-22)
+=============================================================
+### Breaking changes
+* None
+
+### Enhancements
+* Added `isValid()` method to `List` and `Results` to check for deleted or invalidated objects
+* Added `objectForPrimaryKey(type, key)` method to `Realm`
+
+### Bugfixes
+* Fix for crash when setting object properties to objects from other Realms
+* Fix for exception sometimes thrown when reloading in Chrome debug mode
+
+0.13.2 Release notes (2016-5-26)
+=============================================================
+### Breaking changes
+* None
+
+### Enhancements
+* None
+
+### Bugfixes
+* Fix for crash when updating Realms with optional date properties to the new file format
 
 0.13.1 Release notes (2016-5-24)
 =============================================================

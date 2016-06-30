@@ -28,6 +28,11 @@ const mockery = require('mockery');
 function runTests() {
     const Realm = require('realm');
     const RealmTests = require('./js');
+
+    RealmTests.registerTests({
+        WorkerTests: require('./js/worker-tests'),
+    });
+
     const testNames = RealmTests.getTestNames();
     let passed = true;
 
@@ -50,28 +55,27 @@ function runTests() {
         }
     };
 
-    for (let suiteName in testNames) {
-        console.log('Starting ' + suiteName);
+    return Object.keys(testNames).reduce((suitePromiseChain, suiteName) => {
+        return suitePromiseChain.then(() => {
+            console.log('Starting ' + suiteName);
 
-        for (let testName of testNames[suiteName]) {
-            RealmTests.runTest(suiteName, 'beforeEach');
-
-            try {
-                RealmTests.runTest(suiteName, testName);
-                console.log('+ ' + testName);
-            }
-            catch (e) {
-                console.warn('- ' + testName);
-                console.error(e.message, e.stack);
-                passed = false;
-            }
-            finally {
-                RealmTests.runTest(suiteName, 'afterEach');
-            }
-        }
-    }
-
-    return passed;
+            return testNames[suiteName].reduce((testPromiseChain, testName) => {
+                return testPromiseChain.then(() => {
+                    return RealmTests.runTest(suiteName, 'beforeEach');
+                }).then(() => {
+                    return RealmTests.runTest(suiteName, testName);
+                }).then(() => {
+                    console.log('+ ' + testName);
+                }, (err) => {
+                    console.warn('- ' + testName);
+                    console.warn(err.message || err);
+                    passed = false;
+                }).then(() => {
+                    return RealmTests.runTest(suiteName, 'afterEach');
+                });
+            }, Promise.resolve());
+        });
+    }, Promise.resolve()).then(() => passed);
 }
 
 if (require.main == module) {
@@ -79,7 +83,15 @@ if (require.main == module) {
     mockery.warnOnUnregistered(false);
     mockery.registerMock('realm', require('..'));
 
-    if (!runTests()) {
-        process.exit(1);
-    }
+    runTests().then(
+        (passed) => {
+            if (!passed) {
+                process.exit(1);
+            }
+        },
+        (err) => {
+            console.error(err);
+            process.exit(1);
+        }
+    );
 }

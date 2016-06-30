@@ -17,20 +17,20 @@
 
 using namespace realm;
 
-TEST_CASE("Results") {
+TEST_CASE("[results] notifications") {
     InMemoryTestFile config;
     config.cache = false;
     config.automatic_change_notifications = false;
     config.schema = std::make_unique<Schema>(Schema{
         {"object", "", {
             {"value", PropertyType::Int},
-            {"link", PropertyType::Object, "linked to object", false, false, true}
+            {"link", PropertyType::Object, "linked to object", "", false, false, true}
         }},
         {"other object", "", {
             {"value", PropertyType::Int}
         }},
         {"linking object", "", {
-            {"link", PropertyType::Object, "object", false, false, true}
+            {"link", PropertyType::Object, "object", "", false, false, true}
         }},
         {"linked to object", "", {
             {"value", PropertyType::Int}
@@ -420,7 +420,7 @@ TEST_CASE("Results") {
     }
 }
 
-TEST_CASE("Async Results error handling") {
+TEST_CASE("[results] async error handling") {
     InMemoryTestFile config;
     config.cache = false;
     config.automatic_change_notifications = false;
@@ -531,5 +531,81 @@ TEST_CASE("Async Results error handling") {
 
             REQUIRE(called2);
         }
+    }
+}
+
+TEST_CASE("[results] notifications after move") {
+    InMemoryTestFile config;
+    config.cache = false;
+    config.automatic_change_notifications = false;
+    config.schema = std::make_unique<Schema>(Schema{
+        {"object", "", {
+            {"value", PropertyType::Int},
+        }},
+    });
+
+    auto r = Realm::get_shared_realm(config);
+    auto table = r->read_group()->get_table("class_object");
+    auto results = std::make_unique<Results>(r, *config.schema->find("object"), *table);
+
+    int notification_calls = 0;
+    auto token = results->add_notification_callback([&](CollectionChangeSet c, std::exception_ptr err) {
+        REQUIRE_FALSE(err);
+        ++notification_calls;
+    });
+
+    advance_and_notify(*r);
+
+    auto write = [&](auto&& f) {
+        r->begin_transaction();
+        f();
+        r->commit_transaction();
+        advance_and_notify(*r);
+    };
+
+    SECTION("notifications continue to work after Results is moved (move-constructor)") {
+        Results r(std::move(*results));
+        results.reset();
+
+        write([&] {
+            table->set_int(0, table->add_empty_row(), 1);
+        });
+        REQUIRE(notification_calls == 2);
+    }
+
+    SECTION("notifications continue to work after Results is moved (move-assignment)") {
+        Results r;
+        r = std::move(*results);
+        results.reset();
+
+        write([&] {
+            table->set_int(0, table->add_empty_row(), 1);
+        });
+        REQUIRE(notification_calls == 2);
+    }
+}
+
+TEST_CASE("[results] error messages") {
+    InMemoryTestFile config;
+    config.schema = std::make_unique<Schema>(Schema{
+        {"object", "", {
+            {"value", PropertyType::String},
+        }},
+    });
+
+    auto r = Realm::get_shared_realm(config);
+    auto table = r->read_group()->get_table("class_object");
+    Results results(r, *config.schema->find("object"), *table);
+
+    r->begin_transaction();
+    table->add_empty_row();
+    r->commit_transaction();
+
+    SECTION("out of bounds access") {
+        REQUIRE_THROWS_WITH(results.get(5), "Requested index 5 greater than max 1");
+    }
+
+    SECTION("unsupported aggregate operation") {
+        REQUIRE_THROWS_WITH(results.sum(0), "Cannot sum property 'value': operation not supported for 'string' properties");
     }
 }

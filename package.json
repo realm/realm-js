@@ -1,7 +1,7 @@
 {
   "name": "realm",
   "description": "Realm is a mobile database: an alternative to SQLite and key-value stores",
-  "version": "0.13.1",
+  "version": "0.14.1",
   "license": "Apache-2.0",
   "homepage": "https://realm.io",
   "keywords": [
@@ -48,25 +48,24 @@
   },
   "dependencies": {
     "bindings": "^1.2.1",
-    "mockery": "^1.6.2",
     "nan": "^2.3.3",
-    "node-gyp": "^3.3.1",
-    "rnpm": "1.6.5",
-    "xcode": "0.8.4"
+    "node-gyp": "^3.3.1"
   },
   "devDependencies": {
-    "babel-eslint": "^6.0.0-beta.6",
-    "eslint": "^2.4.0",
-    "eslint-plugin-react": "^4.2.3",
+    "babel-eslint": "^6.0.4",
+    "eslint": "^2.10.2",
+    "eslint-plugin-react": "^5.1.1",
     "jsdoc": "^3.4.0",
+    "mockery": "^1.7.0",
     "semver": "^5.1.0"
   },
   "rnpm": {
-    "commands": {
-      "postlink": "node_modules/realm/scripts/rnpm-postlink.js"
-    },
     "ios": {
-      "project": "react-native/ios/RealmReact.xcodeproj"
+      "project": "react-native/ios/RealmReact.xcodeproj",
+      "sharedLibraries": [
+        "libc++",
+        "libz"
+      ]
     }
   },
   "engines": {

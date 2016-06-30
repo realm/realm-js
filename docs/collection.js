@@ -30,6 +30,13 @@ class Collection {
     get length() {}
 
     /**
+     * Checks if this collection has not been deleted and is part of a valid Realm.
+     * @returns {boolean} indicating if the collection can be safely accessed.
+     * @since 0.14.0
+     */
+    isValid() {}
+
+    /**
      * Returns new _Results_ that represent this collection being filtered by the provided query.
      * @param {string} query - Query used to filter objects from the collection.
      * @param {...any} [arg] - Each subsequent argument is used by the placeholders

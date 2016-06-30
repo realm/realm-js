@@ -19,11 +19,10 @@
 'use strict';
 
 var Realm = require('realm');
-var BaseTest = require('./base-test');
 var TestCase = require('./asserts');
 var Schemas = require('./schemas');
 
-module.exports = BaseTest.extend({
+module.exports = {
     testMigrationFunction: function() {
         var count = 0;
         function migrationFunction(oldRealm, newRealm) {
@@ -82,7 +81,7 @@ module.exports = BaseTest.extend({
         });
         realm.close();
 
-        var realm = new Realm({
+        realm = new Realm({
             schema: [{
                 name: 'TestObject',
                 properties: {
@@ -130,7 +129,7 @@ module.exports = BaseTest.extend({
         }]});
         realm.close();
 
-        var realm = new Realm({
+        realm = new Realm({
             schema: [{
                 name: 'TestObject',
                 properties: {
@@ -159,4 +158,4 @@ module.exports = BaseTest.extend({
             }
         });
     },
-});
+};

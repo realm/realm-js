@@ -19,11 +19,10 @@
 'use strict';
 
 var Realm = require('realm');
-var BaseTest = require('./base-test');
 var TestCase = require('./asserts');
 var schemas = require('./schemas');
 
-module.exports = BaseTest.extend({
+module.exports = {
     testRealmConstructor: function() {
         var realm = new Realm({schema: []});
         TestCase.assertTrue(realm instanceof Realm);
@@ -146,27 +145,35 @@ module.exports = BaseTest.extend({
     },
 
     testDefaultPath: function() {
+        var defaultPath = Realm.defaultPath;
         var defaultRealm = new Realm({schema: []});
         TestCase.assertEqual(defaultRealm.path, Realm.defaultPath);
 
-        var newPath = Realm.defaultPath.substring(0, Realm.defaultPath.lastIndexOf("/") + 1) + 'default2.realm';
-        Realm.defaultPath = newPath;
-        defaultRealm = new Realm({schema: []});
-        TestCase.assertEqual(defaultRealm.path, newPath, "should use updated default realm path");
-        TestCase.assertEqual(Realm.defaultPath, newPath, "defaultPath should have been updated");
+        try {
+            var newPath = Realm.defaultPath.substring(0, defaultPath.lastIndexOf('/') + 1) + 'default2.realm';
+            Realm.defaultPath = newPath;
+            defaultRealm = new Realm({schema: []});
+            TestCase.assertEqual(defaultRealm.path, newPath, "should use updated default realm path");
+            TestCase.assertEqual(Realm.defaultPath, newPath, "defaultPath should have been updated");
+        } finally {
+            Realm.defaultPath = defaultPath;
+        }
     },
 
     testRealmSchemaVersion: function() {
         TestCase.assertEqual(Realm.schemaVersion(Realm.defaultPath), -1);
         
         var realm = new Realm({schema: []});
+        TestCase.assertEqual(realm.schemaVersion, 0);
         TestCase.assertEqual(Realm.schemaVersion(Realm.defaultPath), 0);
 
         realm = new Realm({schema: [], schemaVersion: 2, path: 'another.realm'});
+        TestCase.assertEqual(realm.schemaVersion, 2);
         TestCase.assertEqual(Realm.schemaVersion('another.realm'), 2);
 
         var encryptionKey = new Int8Array(64);
         realm = new Realm({schema: [], schemaVersion: 3, path: 'encrypted.realm', encryptionKey: encryptionKey});
+        TestCase.assertEqual(realm.schemaVersion, 3);
         TestCase.assertEqual(Realm.schemaVersion('encrypted.realm', encryptionKey), 3);
 
         TestCase.assertThrows(function() {
@@ -271,7 +278,7 @@ module.exports = BaseTest.extend({
     },
 
     testRealmCreateUpsert: function() {
-        var realm = new Realm({schema: [schemas.IntPrimary, schemas.AllTypes, schemas.TestObject]});
+        var realm = new Realm({schema: [schemas.IntPrimary, schemas.StringPrimary, schemas.AllTypes, schemas.TestObject]});
         realm.write(function() {
             var values = {
                 primaryCol: '0',
@@ -358,6 +365,19 @@ module.exports = BaseTest.extend({
             realm.create('AllTypesObject', {primaryCol: '1', objectCol: null}, true);
             TestCase.assertEqual(obj0.objectCol, null);
             TestCase.assertEqual(obj1.objectCol, null);
+
+            // test with string primaries
+            var obj =realm.create('StringPrimaryObject', {
+                primaryCol: '0',
+                valueCol: 0
+            });
+            TestCase.assertEqual(obj.valueCol, 0);
+
+            realm.create('StringPrimaryObject', {
+                primaryCol: '0',
+                valueCol: 1
+            }, true);
+            TestCase.assertEqual(obj.valueCol, 1);
         });
     },
 
@@ -636,6 +656,43 @@ module.exports = BaseTest.extend({
         });
     },
 
+    testRealmObjectForPrimaryKey: function() {
+        var realm = new Realm({schema: [schemas.IntPrimary, schemas.StringPrimary, schemas.TestObject]});
+
+        realm.write(function() {
+            realm.create('IntPrimaryObject', {primaryCol: 0, valueCol: 'val0'});
+            realm.create('IntPrimaryObject', {primaryCol: 1, valueCol: 'val1'});
+
+            realm.create('StringPrimaryObject', {primaryCol: '', valueCol: -1});
+            realm.create('StringPrimaryObject', {primaryCol: 'val0', valueCol: 0});
+            realm.create('StringPrimaryObject', {primaryCol: 'val1', valueCol: 1});
+
+            realm.create('TestObject', {doubleCol: 0});
+        });
+
+        TestCase.assertEqual(realm.objectForPrimaryKey('IntPrimaryObject', -1), undefined);
+        TestCase.assertEqual(realm.objectForPrimaryKey('IntPrimaryObject', 0).valueCol, 'val0');
+        TestCase.assertEqual(realm.objectForPrimaryKey('IntPrimaryObject', 1).valueCol, 'val1');
+
+        TestCase.assertEqual(realm.objectForPrimaryKey('StringPrimaryObject', 'invalid'), undefined);
+        TestCase.assertEqual(realm.objectForPrimaryKey('StringPrimaryObject', '').valueCol, -1);
+        TestCase.assertEqual(realm.objectForPrimaryKey('StringPrimaryObject', 'val0').valueCol, 0);
+        TestCase.assertEqual(realm.objectForPrimaryKey('StringPrimaryObject', 'val1').valueCol, 1);
+
+        TestCase.assertThrows(function() {
+            realm.objectForPrimaryKey('TestObject', 0);
+        });
+        TestCase.assertThrows(function() {
+            realm.objectForPrimaryKey();
+        });
+        TestCase.assertThrows(function() {
+            realm.objectForPrimaryKey('IntPrimary');
+        });
+        TestCase.assertThrows(function() {
+            realm.objectForPrimaryKey('InvalidClass', 0);
+        });
+    },
+
     testNotifications: function() {
         var realm = new Realm({schema: []});
         var notificationCount = 0;
@@ -652,7 +709,7 @@ module.exports = BaseTest.extend({
         TestCase.assertEqual(notificationName, 'change');
 
         var secondNotificationCount = 0;
-        function secondNotification(realm, name) {
+        function secondNotification() {
             secondNotificationCount++;
         }
 
@@ -739,7 +796,7 @@ module.exports = BaseTest.extend({
         Realm.copyBundledRealmFiles();
 
         var realm = new Realm({path: 'dates-v5.realm', schema: [schemas.DateObject]});
-        TestCase.assertEqual(realm.objects('Date').length, 1);
+        TestCase.assertEqual(realm.objects('Date').length, 2);
         TestCase.assertEqual(realm.objects('Date')[0].currentDate.getTime(), 1462500087955);
 
         var newDate = new Date(1);
@@ -750,7 +807,7 @@ module.exports = BaseTest.extend({
 
         // copy should not overwrite existing files
         Realm.copyBundledRealmFiles();
-        var realm = new Realm({path: 'dates-v5.realm', schema: [schemas.DateObject]});
+        realm = new Realm({path: 'dates-v5.realm', schema: [schemas.DateObject]});
         TestCase.assertEqual(realm.objects('Date')[0].currentDate.getTime(), 1);
     },
-});
+};

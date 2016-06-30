@@ -106,6 +106,15 @@ exports.IntPrimary = {
     }
 };
 
+exports.StringPrimary = {
+    name: 'StringPrimaryObject',
+    primaryKey: 'primaryCol',
+    properties: {
+        primaryCol: Realm.Types.STRING,
+        valueCol:   Realm.Types.INT,
+    }
+};
+
 exports.AllTypes = {
     name: 'AllTypesObject',
     primaryKey: 'primaryCol',
@@ -174,6 +183,7 @@ exports.NullQueryObject = {
 exports.DateObject = {
     name: 'Date',
     properties: {
-        currentDate: 'date'
+        currentDate: 'date',
+        nullDate: { type: 'date', optional: true }
     }
 };

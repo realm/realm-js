@@ -40,7 +40,7 @@ struct RealmObjectClass : ClassDefinition<T, realm::Object> {
     using Function = js::Function<T>;
     using ReturnValue = js::ReturnValue<T>;
 
-    static ObjectType create_instance(ContextType, realm::Object &);
+    static ObjectType create_instance(ContextType, realm::Object);
 
     static void get_property(ContextType, ObjectType, const String &, ReturnValue &);
     static bool set_property(ContextType, ObjectType, const String &, ValueType);
@@ -67,12 +67,12 @@ void RealmObjectClass<T>::is_valid(ContextType ctx, ObjectType this_object, size
 }
     
 template<typename T>
-typename T::Object RealmObjectClass<T>::create_instance(ContextType ctx, realm::Object &realm_object) {
+typename T::Object RealmObjectClass<T>::create_instance(ContextType ctx, realm::Object realm_object) {
     static String prototype_string = "prototype";
 
     auto delegate = get_delegate<T>(realm_object.realm().get());
     auto name = realm_object.get_object_schema().name;
-    auto object = create_object<T, RealmObjectClass<T>>(ctx, new realm::Object(realm_object));
+    auto object = create_object<T, RealmObjectClass<T>>(ctx, new realm::Object(std::move(realm_object)));
 
     if (!delegate || !delegate->m_constructors.count(name)) {
         return object;
@@ -116,7 +116,7 @@ bool RealmObjectClass<T>::set_property(ContextType ctx, ObjectType object, const
 template<typename T>
 std::vector<String<T>> RealmObjectClass<T>::get_property_names(ContextType ctx, ObjectType object) {
     auto realm_object = get_internal<T, RealmObjectClass<T>>(object);
-    auto &properties = realm_object->get_object_schema().properties;
+    auto &properties = realm_object->get_object_schema().persisted_properties;
 
     std::vector<String> names;
     names.reserve(properties.size());
