@@ -25,6 +25,7 @@
 
 #include <realm.hpp>
 #include <assert.h>
+#include <sstream>
 
 using namespace realm;
 using namespace parser;
