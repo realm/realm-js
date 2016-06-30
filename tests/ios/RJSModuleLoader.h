@@ -27,5 +27,6 @@
 
 - (JSValue *)loadModuleFromURL:(NSURL *)url error:(NSError **)error;
 - (JSValue *)loadJSONFromURL:(NSURL *)url error:(NSError **)error;
+- (JSValue *)loadGlobalModule:(NSString *)name relativeToURL:(NSURL *)url error:(NSError **)error;
 
 @end
