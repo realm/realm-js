@@ -247,12 +247,12 @@ class Protected {
     bool operator!=(const ValueType &) const;
     bool operator==(const Protected<ValueType> &) const;
     bool operator!=(const Protected<ValueType> &) const;
-    
+
     struct Comparator {
         bool operator()(const Protected<ValueType>& a, const Protected<ValueType>& b) const;
     };
 };
-    
+
 template<typename T>
 struct Exception : public std::runtime_error {
     using ContextType = typename T::Context;
@@ -292,7 +292,7 @@ struct ReturnValue {
     void set_null();
     void set_undefined();
 };
-    
+
 template<typename T, typename ClassType>
 REALM_JS_INLINE typename T::Object create_object(typename T::Context ctx, typename ClassType::Internal* internal = nullptr) {
     return Object<T>::template create_instance<ClassType>(ctx, internal);

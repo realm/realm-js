@@ -273,6 +273,7 @@ void ListClass<T>::remove_listener(ContextType ctx, ObjectType this_object, size
     
     auto list = get_internal<T, ListClass<T>>(this_object);
     auto callback = Value::validated_to_function(ctx, arguments[0]);
+    list->m_notification_tokens.erase(Protected<FunctionType>(ctx, callback));
 }
     
 template<typename T>
@@ -280,6 +281,7 @@ void ListClass<T>::remove_all_listeners(ContextType ctx, ObjectType this_object,
     validate_argument_count(argc, 0);
 
     auto list = get_internal<T, ListClass<T>>(this_object);
+    list->m_notification_tokens.clear();
 }
 
 } // js
