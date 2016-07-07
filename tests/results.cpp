@@ -48,7 +48,7 @@ TEST_CASE("[results] notifications") {
         table->set_int(0, i, i * 2);
     r->commit_transaction();
 
-    Results results(r, *config.schema->find("object"), table->where().greater(0, 0).less(0, 10));
+    Results results(r, table->where().greater(0, 0).less(0, 10));
 
     SECTION("unsorted notifications") {
         int notification_calls = 0;
@@ -433,7 +433,7 @@ TEST_CASE("[results] async error handling") {
 
     auto r = Realm::get_shared_realm(config);
     auto coordinator = _impl::RealmCoordinator::get_existing_coordinator(config.path);
-    Results results(r, *config.schema->find("object"), *r->read_group()->get_table("class_object"));
+    Results results(r, *r->read_group()->get_table("class_object"));
 
     class OpenFileLimiter {
     public:
@@ -547,7 +547,7 @@ TEST_CASE("[results] notifications after move") {
 
     auto r = Realm::get_shared_realm(config);
     auto table = r->read_group()->get_table("class_object");
-    auto results = std::make_unique<Results>(r, *config.schema->find("object"), *table);
+    auto results = std::make_unique<Results>(r, *table);
 
     int notification_calls = 0;
     auto token = results->add_notification_callback([&](CollectionChangeSet, std::exception_ptr err) {
@@ -596,7 +596,7 @@ TEST_CASE("[results] error messages") {
 
     auto r = Realm::get_shared_realm(config);
     auto table = r->read_group()->get_table("class_object");
-    Results results(r, *config.schema->find("object"), *table);
+    Results results(r, *table);
 
     r->begin_transaction();
     table->add_empty_row();
@@ -642,7 +642,7 @@ TEST_CASE("results: snapshots") {
 
     SECTION("snapshot of Results based on Table") {
         auto table = r->read_group()->get_table("class_object");
-        Results results(r, *config.schema->find("object"), *table);
+        Results results(r, *table);
 
         {
             // A newly-added row should not appear in the snapshot.
@@ -688,7 +688,7 @@ TEST_CASE("results: snapshots") {
         });
 
         LinkViewRef lv = object->get_linklist(1, 0);
-        Results results(r, *config.schema->find("linked to object"), lv);
+        Results results(r, lv);
 
         {
             // A newly-added row should not appear in the snapshot.
@@ -734,7 +734,7 @@ TEST_CASE("results: snapshots") {
     SECTION("snapshot of Results based on Query") {
         auto table = r->read_group()->get_table("class_object");
         Query q = table->column<Int>(0) > 0;
-        Results results(r, *config.schema->find("object"), std::move(q));
+        Results results(r, std::move(q));
 
         {
             // A newly-added row should not appear in the snapshot.
@@ -780,7 +780,7 @@ TEST_CASE("results: snapshots") {
     SECTION("snapshot of Results based on TableView from query") {
         auto table = r->read_group()->get_table("class_object");
         Query q = table->column<Int>(0) > 0;
-        Results results(r, *config.schema->find("object"), q.find_all(), {});
+        Results results(r, q.find_all(), {});
 
         {
             // A newly-added row should not appear in the snapshot.
@@ -832,7 +832,7 @@ TEST_CASE("results: snapshots") {
         });
 
         TableView backlinks = linked_to->get_backlink_view(0, object.get(), 1);
-        Results results(r, *config.schema->find("object"), std::move(backlinks), {});
+        Results results(r, std::move(backlinks), {});
 
         auto lv = object->get_linklist(1, object->add_empty_row());
 
@@ -882,7 +882,7 @@ TEST_CASE("results: snapshots") {
     SECTION("snapshot of Results with notification callback registered") {
         auto table = r->read_group()->get_table("class_object");
         Query q = table->column<Int>(0) > 0;
-        Results results(r, *config.schema->find("object"), q.find_all(), {});
+        Results results(r, q.find_all(), {});
 
         auto token = results.add_notification_callback([&](CollectionChangeSet, std::exception_ptr err) {
             REQUIRE_FALSE(err);
@@ -909,7 +909,7 @@ TEST_CASE("results: snapshots") {
     SECTION("adding notification callback to snapshot throws") {
         auto table = r->read_group()->get_table("class_object");
         Query q = table->column<Int>(0) > 0;
-        Results results(r, *config.schema->find("object"), q.find_all(), {});
+        Results results(r, q.find_all(), {});
         auto snapshot = results.snapshot();
         CHECK_THROWS(snapshot.add_notification_callback([](CollectionChangeSet, std::exception_ptr) {}));
     }
