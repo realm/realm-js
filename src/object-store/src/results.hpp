@@ -49,10 +49,10 @@ public:
     // or a wrapper around a query and a sort order which creates and updates
     // the tableview as needed
     Results();
-    Results(SharedRealm r, const ObjectSchema& o, Table& table);
-    Results(SharedRealm r, const ObjectSchema& o, Query q, SortOrder s = {});
-    Results(SharedRealm r, const ObjectSchema& o, TableView tv, SortOrder s);
-    Results(SharedRealm r, const ObjectSchema& o, LinkViewRef lv, util::Optional<Query> q = {}, SortOrder s = {});
+    Results(SharedRealm r, Table& table);
+    Results(SharedRealm r, Query q, SortOrder s = {});
+    Results(SharedRealm r, TableView tv, SortOrder s);
+    Results(SharedRealm r, LinkViewRef lv, util::Optional<Query> q = {}, SortOrder s = {});
     ~Results();
 
     // Results is copyable and moveable
@@ -65,7 +65,7 @@ public:
     SharedRealm get_realm() const { return m_realm; }
 
     // Object schema describing the vendored object type
-    const ObjectSchema &get_object_schema() const { return *m_object_schema; }
+    const ObjectSchema &get_object_schema() const;
 
     // Get a query which will match the same rows as is contained in this Results
     // Returned query will not be valid if the current mode is Empty
@@ -199,7 +199,7 @@ private:
     };
 
     SharedRealm m_realm;
-    const ObjectSchema *m_object_schema;
+    mutable const ObjectSchema *m_object_schema = nullptr;
     Query m_query;
     TableView m_table_view;
     LinkViewRef m_link_view;
