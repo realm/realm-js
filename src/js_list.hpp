@@ -261,7 +261,7 @@ void ListClass<T>::add_listener(ContextType ctx, ObjectType this_object, size_t 
 
     list->add_notification_callback([=](CollectionChangeSet change_set, std::exception_ptr exception) {
         ValueType arguments[2];
-        arguments[0] = protected_this;
+        arguments[0] = static_cast<ObjectType>(protected_this);
         arguments[1] = Value::from_undefined(protected_ctx);
         Function<T>::call(protected_ctx, protected_callback, protected_this, 2, arguments);
     });
