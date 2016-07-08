@@ -16,27 +16,20 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-'use strict';
+#pragma once
 
-import Realm from 'realm';
+#include "js_class.hpp"
 
-class Todo extends Realm.Object {}
-Todo.schema = {
-    name: 'Todo',
-    properties: {
-        done: {type: 'bool', default: false},
-        text: 'string',
-    },
+namespace realm {
+namespace js {
+
+// Empty class that merely serves as useful type for now.
+class Observable {};
+
+template<typename T>
+struct ObservableClass : ClassDefinition<T, Observable> {
+    std::string const name = "Observable";
 };
-
-class TodoList extends Realm.Object {}
-TodoList.schema = {
-    name: 'TodoList',
-    properties: {
-        name: 'string',
-        creationDate: 'date',
-        items: {type: 'list', objectType: 'Todo'},
-    },
-};
-
-export default new Realm({schema: [Todo, TodoList]});
+    
+} // js
+} // realm

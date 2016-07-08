@@ -33,10 +33,20 @@ namespace realm {
 namespace js {
 
 template<typename T>
-struct ListClass : ClassDefinition<T, realm::List, CollectionClass<T>> {
+class List : public realm::List {
+  public:
+    List(std::shared_ptr<Realm> r, const ObjectSchema& s, LinkViewRef l) noexcept : realm::List(r, s, l) {}
+    List(const realm::List &l) : realm::List(l) {}
+    
+    std::map<Protected<typename T::Function>, NotificationToken, typename Protected<typename T::Function>::Comparator> m_notification_tokens;
+};
+
+template<typename T>
+struct ListClass : ClassDefinition<T, realm::js::List<T>, CollectionClass<T>> {
     using ContextType = typename T::Context;
     using ObjectType = typename T::Object;
     using ValueType = typename T::Value;
+    using FunctionType = typename T::Function;
     using Object = js::Object<T>;
     using Value = js::Value<T>;
     using ReturnValue = js::ReturnValue<T>;
@@ -58,7 +68,12 @@ struct ListClass : ClassDefinition<T, realm::List, CollectionClass<T>> {
     static void filtered(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void sorted(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void is_valid(ContextType, ObjectType, size_t, const ValueType [], ReturnValue &);
-
+    
+    // observable
+    static void add_listener(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void remove_listener(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void remove_all_listeners(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    
     std::string const name = "List";
 
     MethodMap<T> const methods = {
@@ -71,6 +86,9 @@ struct ListClass : ClassDefinition<T, realm::List, CollectionClass<T>> {
         {"filtered", wrap<filtered>},
         {"sorted", wrap<sorted>},
         {"isValid", wrap<is_valid>},
+        {"addListener", wrap<add_listener>},
+        {"removeListener", wrap<remove_listener>},
+        {"removeAllListeners", wrap<remove_all_listeners>},
     };
 
     PropertyMap<T> const properties = {
@@ -82,7 +100,7 @@ struct ListClass : ClassDefinition<T, realm::List, CollectionClass<T>> {
 
 template<typename T>
 typename T::Object ListClass<T>::create_instance(ContextType ctx, realm::List list) {
-    return create_object<T, ListClass<T>>(ctx, new realm::List(std::move(list)));
+    return create_object<T, ListClass<T>>(ctx, new realm::js::List<T>(std::move(list)));
 }
 
 template<typename T>
@@ -229,6 +247,41 @@ void ListClass<T>::sorted(ContextType ctx, ObjectType this_object, size_t argc, 
 template<typename T>
 void ListClass<T>::is_valid(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     return_value.set(get_internal<T, ListClass<T>>(this_object)->is_valid());
+}
+    
+template<typename T>
+void ListClass<T>::add_listener(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    validate_argument_count(argc, 1);
+    
+    auto list = get_internal<T, ListClass<T>>(this_object);
+    auto callback = Value::validated_to_function(ctx, arguments[0]);
+    Protected<FunctionType> protected_callback(ctx, callback);
+    Protected<ObjectType> protected_this(ctx, this_object);
+    Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
+
+    list->add_notification_callback([=](CollectionChangeSet change_set, std::exception_ptr exception) {
+        ValueType arguments[2];
+        arguments[0] = static_cast<ObjectType>(protected_this);
+        arguments[1] = Value::from_undefined(protected_ctx);
+        Function<T>::call(protected_ctx, protected_callback, protected_this, 2, arguments);
+    });
+}
+    
+template<typename T>
+void ListClass<T>::remove_listener(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    validate_argument_count(argc, 1);
+    
+    auto list = get_internal<T, ListClass<T>>(this_object);
+    auto callback = Value::validated_to_function(ctx, arguments[0]);
+    list->m_notification_tokens.erase(Protected<FunctionType>(ctx, callback));
+}
+    
+template<typename T>
+void ListClass<T>::remove_all_listeners(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    validate_argument_count(argc, 0);
+
+    auto list = get_internal<T, ListClass<T>>(this_object);
+    list->m_notification_tokens.clear();
 }
 
 } // js

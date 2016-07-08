@@ -169,23 +169,17 @@ size_t CollectionNotifier::add_callback(CollectionChangeCallback callback)
 {
     m_realm->verify_thread();
 
-    auto next_token = [=] {
-        size_t token = 0;
-        for (auto& callback : m_callbacks) {
-            if (token <= callback.token) {
-                token = callback.token + 1;
-            }
-        }
-        return token;
-    };
-
     std::lock_guard<std::mutex> lock(m_callback_mutex);
-    auto token = next_token();
-    m_callbacks.push_back({std::move(callback), token, false});
-    if (m_callback_index == npos) { // Don't need to wake up if we're already sending notifications
-        Realm::Internal::get_coordinator(*m_realm).send_commit_notifications();
-        m_have_callbacks = true;
+    size_t token = 0;
+    for (auto& callback : m_callbacks) {
+        if (token <= callback.token) {
+            token = callback.token + 1;
+        }
     }
+
+    m_callbacks.push_back({std::move(callback), token, false});
+    Realm::Internal::get_coordinator(*m_realm).send_commit_notifications();
+
     return token;
 }
 
@@ -204,16 +198,13 @@ void CollectionNotifier::remove_callback(size_t token)
             return;
         }
 
-        size_t idx = distance(begin(m_callbacks), it);
-        if (m_callback_index != npos && m_callback_index >= idx) {
-            --m_callback_index;
-        }
-
-        old = std::move(*it);
         m_callbacks.erase(it);
-
-        m_have_callbacks = !m_callbacks.empty();
     }
+}
+
+void CollectionNotifier::remove_all_callbacks()
+{
+    m_callbacks.clear();
 }
 
 void CollectionNotifier::unregister() noexcept
@@ -299,8 +290,8 @@ bool CollectionNotifier::deliver(Realm& realm, SharedGroup& sg, std::exception_p
 
 void CollectionNotifier::call_callbacks()
 {
-    while (auto fn = next_callback()) {
-        fn(m_changes_to_deliver, m_error);
+    for (auto &callback : m_callbacks) {
+        callback.fn(m_changes_to_deliver, m_error);
     }
 
     if (m_error) {
@@ -309,23 +300,6 @@ void CollectionNotifier::call_callbacks()
         std::lock_guard<std::mutex> callback_lock(m_callback_mutex);
         m_callbacks.clear();
     }
-}
-
-CollectionChangeCallback CollectionNotifier::next_callback()
-{
-    std::lock_guard<std::mutex> callback_lock(m_callback_mutex);
-
-    for (++m_callback_index; m_callback_index < m_callbacks.size(); ++m_callback_index) {
-        auto& callback = m_callbacks[m_callback_index];
-        if (!m_error && callback.initial_delivered && m_changes_to_deliver.empty()) {
-            continue;
-        }
-        callback.initial_delivered = true;
-        return callback.fn;
-    }
-
-    m_callback_index = npos;
-    return nullptr;
 }
 
 void CollectionNotifier::attach_to(SharedGroup& sg)

@@ -28,6 +28,7 @@
 #include "js_list.hpp"
 #include "js_results.hpp"
 #include "js_schema.hpp"
+#include "js_observable.hpp"
 
 #include "shared_realm.hpp"
 #include "binding_context.hpp"
@@ -124,7 +125,7 @@ void set_default_path(std::string path);
 void delete_all_realms();
 
 template<typename T>
-class RealmClass : public ClassDefinition<T, SharedRealm> {
+class RealmClass : public ClassDefinition<T, SharedRealm, ObservableClass<T>> {
     using GlobalContextType = typename T::GlobalContext;
     using ContextType = typename T::Context;
     using FunctionType = typename T::Function;
