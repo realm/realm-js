@@ -38,7 +38,7 @@ public:
 
     // create object schema from existing table
     // if no table is provided it is looked up in the group
-    ObjectSchema(Group const& group, const std::string &name);
+    ObjectSchema(Group const& group, StringData name, size_t index=-1);
 
     std::string name;
     std::vector<Property> persisted_properties;

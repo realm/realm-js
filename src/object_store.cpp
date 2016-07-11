@@ -653,10 +653,11 @@ void ObjectStore::apply_schema_changes(Group& group, Schema& schema, uint64_t& s
 
 Schema ObjectStore::schema_from_group(Group const& group) {
     std::vector<ObjectSchema> schema;
+    schema.reserve(group.size());
     for (size_t i = 0; i < group.size(); i++) {
-        std::string object_type = object_type_for_table_name(group.get_table_name(i));
-        if (object_type.length()) {
-            schema.emplace_back(group, object_type);
+        auto object_type = object_type_for_table_name(group.get_table_name(i));
+        if (object_type.size()) {
+            schema.emplace_back(group, object_type, i);
         }
     }
     return schema;

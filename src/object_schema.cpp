@@ -25,6 +25,7 @@
 #include "util/format.hpp"
 
 #include <realm/data_type.hpp>
+#include <realm/group.hpp>
 #include <realm/table.hpp>
 
 using namespace realm;
@@ -57,8 +58,14 @@ ObjectSchema::ObjectSchema(std::string name, std::initializer_list<Property> per
     }
 }
 
-ObjectSchema::ObjectSchema(Group const& group, const std::string &name) : name(name) {
-    ConstTableRef table = ObjectStore::table_for_object_type(group, name);
+ObjectSchema::ObjectSchema(Group const& group, StringData name, size_t index) : name(name) {
+    ConstTableRef table;
+    if (index < group.size()) {
+        table = group.get_table(index);
+    }
+    else {
+        table = ObjectStore::table_for_object_type(group, name);
+    }
 
     size_t count = table->get_column_count();
     persisted_properties.reserve(count);
