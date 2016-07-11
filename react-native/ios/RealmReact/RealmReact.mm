@@ -42,7 +42,8 @@ using namespace realm::rpc;
 #endif
 
 @interface NSObject ()
-- (instancetype)initWithJSContext:(void *)context;
+- (instancetype)initWithJSContext:(JSContext *)context;
+- (instancetype)initWithJSContext:(JSContext *)context onThread:(NSThread *)thread;
 - (JSGlobalContextRef)ctx;
 @end
 
@@ -55,20 +56,21 @@ extern "C" JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executo
     id rctJSContext = object_getIvar(executor, contextIvar);
     if (!rctJSContext && create) {
         Class RCTJavaScriptContext = NSClassFromString(@"RCTJavaScriptContext");
-        NSMethodSignature *signature = [RCTJavaScriptContext instanceMethodSignatureForSelector:@selector(initWithJSContext:)];
-        assert(signature);
 
-        // React Native 0.14+ expects a JSContext here, but we also support 0.13.x, which takes a JSGlobalContextRef.
-        if (!strcmp([signature getArgumentTypeAtIndex:2], "@")) {
-            JSContext *context = [[JSContext alloc] init];
-            rctJSContext = [[RCTJavaScriptContext alloc] initWithJSContext:(void *)context];
+        NSMethodSignature *signature = [RCTJavaScriptContext instanceMethodSignatureForSelector:@selector(initWithJSContext:onThread:)];
+        if (signature) {
+            // for RN 0.28.0+
+            rctJSContext = [executor context];
         }
         else {
-            JSGlobalContextRef ctx = JSGlobalContextCreate(NULL);
-            rctJSContext = [[RCTJavaScriptContext alloc] initWithJSContext:ctx];
+            // for RN < 0.28.0
+            NSMethodSignature *oldSignature = [RCTJavaScriptContext instanceMethodSignatureForSelector:@selector(initWithJSContext:)];
+            assert(oldSignature);
+
+            rctJSContext = [[RCTJavaScriptContext alloc] initWithJSContext:[[JSContext alloc] init]];
+            object_setIvar(executor, contextIvar, rctJSContext);
         }
 
-        object_setIvar(executor, contextIvar, rctJSContext);
     }
 
     return [rctJSContext ctx];
