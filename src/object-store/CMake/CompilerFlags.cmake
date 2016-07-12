@@ -25,6 +25,7 @@ if(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
         -Wmissing-prototypes
         -Wnewline-eof
         -Wshorten-64-to-32
+        -Wimplicit-fallthrough
     )
 endif()
 
