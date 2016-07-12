@@ -109,9 +109,9 @@ Results::Results(Results&& other)
 , m_link_view(std::move(other.m_link_view))
 , m_table(other.m_table)
 , m_sort(std::move(other.m_sort))
-, m_live(other.m_live)
 , m_notifier(std::move(other.m_notifier))
 , m_mode(other.m_mode)
+, m_update_policy(other.m_update_policy)
 , m_has_used_table_view(other.m_has_used_table_view)
 , m_wants_background_updates(other.m_wants_background_updates)
 {
@@ -150,19 +150,6 @@ void Results::validate_write() const
     validate_read();
     if (!m_realm || !m_realm->is_in_transaction())
         throw InvalidTransactionException("Must be in a write transaction");
-}
-
-void Results::set_live(bool live)
-{
-    validate_read();
-
-    if (!live && (m_mode == Mode::Table || m_mode == Mode::LinkView)) {
-        m_query = get_query();
-        m_mode = Mode::Query;
-    }
-
-    update_tableview();
-    m_live = live;
 }
 
 size_t Results::size()
@@ -208,7 +195,7 @@ RowExpr Results::get(size_t row_ndx)
             update_tableview();
             if (row_ndx >= m_table_view.size())
                 break;
-            if (!m_live && !m_table_view.is_row_attached(row_ndx))
+            if (m_update_policy == UpdatePolicy::Never && !m_table_view.is_row_attached(row_ndx))
                 return {};
             return m_table_view.get(row_ndx);
     }
@@ -258,6 +245,8 @@ util::Optional<RowExpr> Results::last()
 
 bool Results::update_linkview()
 {
+    REALM_ASSERT(m_update_policy == UpdatePolicy::Auto);
+
     if (m_sort) {
         m_query = get_query();
         m_mode = Mode::Query;
@@ -267,9 +256,13 @@ bool Results::update_linkview()
     return true;
 }
 
-void Results::update_tableview()
+void Results::update_tableview(bool wants_notifications)
 {
-    validate_read();
+    if (m_update_policy == UpdatePolicy::Never) {
+        REALM_ASSERT(m_mode == Mode::TableView);
+        return;
+    }
+
     switch (m_mode) {
         case Mode::Empty:
         case Mode::Table:
@@ -284,10 +277,7 @@ void Results::update_tableview()
             m_mode = Mode::TableView;
             break;
         case Mode::TableView:
-            if (!m_live) {
-                return;
-            }
-            if (!m_notifier && !m_realm->is_in_transaction() && m_realm->can_deliver_notifications()) {
+            if (wants_notifications && !m_notifier && !m_realm->is_in_transaction() && m_realm->can_deliver_notifications()) {
                 m_notifier = std::make_shared<_impl::ResultsNotifier>(*this);
                 _impl::RealmCoordinator::register_notifier(m_notifier);
             }
@@ -429,13 +419,16 @@ void Results::clear()
             validate_write();
             update_tableview();
 
-            if (m_live) {
-                m_table_view.clear(RemoveMode::unordered);
-            }
-            else {
-                // Copy the TableView because a non-live Results shouldn't have let its size() change.
-                TableView table_view_copy = m_table_view;
-                table_view_copy.clear(RemoveMode::unordered);
+            switch (m_update_policy) {
+                case UpdatePolicy::Auto:
+                    m_table_view.clear(RemoveMode::unordered);
+                    break;
+                case UpdatePolicy::Never: {
+                    // Copy the TableView because a frozen Results shouldn't let its size() change.
+                    TableView copy(m_table_view);
+                    copy.clear(RemoveMode::unordered);
+                    break;
+                }
             }
             break;
         case Mode::LinkView:
@@ -462,7 +455,9 @@ Query Results::get_query() const
 
             // The TableView has no associated query so create one with no conditions that is restricted
             // to the rows in the TableView.
-            m_table_view.sync_if_needed();
+            if (m_update_policy == UpdatePolicy::Auto) {
+                m_table_view.sync_if_needed();
+            }
             return Query(*m_table, std::unique_ptr<TableViewBase>(new TableView(m_table_view)));
         }
         case Mode::LinkView:
@@ -504,6 +499,37 @@ Results Results::filter(Query&& q) const
     return Results(m_realm, *m_object_schema, get_query().and_query(std::move(q)), m_sort);
 }
 
+Results Results::snapshot() const &
+{
+    validate_read();
+
+    return Results(*this).snapshot();
+}
+
+Results Results::snapshot() &&
+{
+    validate_read();
+
+    switch (m_mode) {
+        case Mode::Empty:
+            return Results();
+
+        case Mode::Table:
+        case Mode::LinkView:
+            m_query = get_query();
+            m_mode = Mode::Query;
+
+            REALM_FALLTHROUGH;
+        case Mode::Query:
+        case Mode::TableView:
+            update_tableview(false);
+            m_notifier.reset();
+            m_update_policy = UpdatePolicy::Never;
+            return std::move(*this);
+    }
+    REALM_UNREACHABLE();
+}
+
 void Results::prepare_async()
 {
     if (m_realm->config().read_only) {
@@ -511,6 +537,9 @@ void Results::prepare_async()
     }
     if (m_realm->is_in_transaction()) {
         throw InvalidTransactionException("Cannot create asynchronous query while in a write transaction");
+    }
+    if (m_update_policy == UpdatePolicy::Never) {
+        throw std::logic_error("Cannot create asynchronous query for snapshotted Results.");
     }
 
     if (!m_notifier) {
@@ -551,6 +580,7 @@ bool Results::is_in_table_order() const
 
 void Results::Internal::set_table_view(Results& results, realm::TableView &&tv)
 {
+    REALM_ASSERT(results.m_update_policy != UpdatePolicy::Never);
     // If the previous TableView was never actually used, then stop generating
     // new ones until the user actually uses the Results object again
     if (results.m_mode == Mode::TableView) {

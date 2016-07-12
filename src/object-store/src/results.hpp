@@ -83,9 +83,6 @@ public:
     // Get the LinkView this Results is derived from, if any
     LinkViewRef get_linkview() const { return m_link_view; }
 
-    // Set whether the TableView should sync if needed before accessing results
-    void set_live(bool live);
-
     // Get the size of this results
     // Can be either O(1) or O(N) depending on the state of things
     size_t size();
@@ -114,6 +111,10 @@ public:
     Results filter(Query&& q) const;
     Results sort(SortOrder&& sort) const;
 
+    // Return a snapshot of this Results that never updates to reflect changes in the underlying data.
+    Results snapshot() const &;
+    Results snapshot() &&;
+
     // Get the min/max/average/sum of the given column
     // All but sum() returns none when there are zero matching rows
     // sum() returns 0, except for when it returns none
@@ -128,8 +129,8 @@ public:
         Empty, // Backed by nothing (for missing tables)
         Table, // Backed directly by a Table
         Query, // Backed by a query that has not yet been turned into a TableView
-        LinkView, // Backed directly by a LinkView
-        TableView // Backed by a TableView created from a Query
+        LinkView,  // Backed directly by a LinkView
+        TableView, // Backed by a TableView created from a Query
     };
     // Get the currrent mode of the Results
     // Ideally this would not be public but it's needed for some KVO stuff
@@ -192,6 +193,11 @@ public:
     };
     
 private:
+    enum class UpdatePolicy {
+        Auto,  // Update automatically to reflect changes in the underlying data.
+        Never, // Never update.
+    };
+
     SharedRealm m_realm;
     const ObjectSchema *m_object_schema;
     Query m_query;
@@ -199,15 +205,15 @@ private:
     LinkViewRef m_link_view;
     Table* m_table = nullptr;
     SortOrder m_sort;
-    bool m_live = true;
 
     _impl::CollectionNotifier::Handle<_impl::ResultsNotifier> m_notifier;
 
     Mode m_mode = Mode::Empty;
+    UpdatePolicy m_update_policy = UpdatePolicy::Auto;
     bool m_has_used_table_view = false;
     bool m_wants_background_updates = true;
 
-    void update_tableview();
+    void update_tableview(bool wants_notifications = true);
     bool update_linkview();
 
     void validate_read() const;

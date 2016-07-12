@@ -447,4 +447,35 @@ TEST_CASE("list") {
             REQUIRE(results.get(i).get_index() == i + 6);
         }
     }
+
+    SECTION("snapshot()") {
+        auto objectschema = &*r->config().schema->find("origin");
+        List list(r, *objectschema, lv);
+
+        auto snapshot = list.snapshot();
+        REQUIRE(&snapshot.get_object_schema() == objectschema);
+        REQUIRE(snapshot.get_mode() == Results::Mode::TableView);
+        REQUIRE(snapshot.size() == 10);
+
+        r->begin_transaction();
+        for (size_t i = 0; i < 5; ++i) {
+            list.remove(0);
+        }
+        REQUIRE(snapshot.size() == 10);
+        for (size_t i = 0; i < snapshot.size(); ++i) {
+            REQUIRE(snapshot.get(i).is_attached());
+        }
+        for (size_t i = 0; i < 5; ++i) {
+            target->move_last_over(i);
+        }
+        REQUIRE(snapshot.size() == 10);
+        for (size_t i = 0; i < 5; ++i) {
+            REQUIRE(!snapshot.get(i).is_attached());
+        }
+        for (size_t i = 5; i < 10; ++i) {
+            REQUIRE(snapshot.get(i).is_attached());
+        }
+        list.add(0);
+        REQUIRE(snapshot.size() == 10);
+    }
 }
