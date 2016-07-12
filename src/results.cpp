@@ -23,22 +23,11 @@
 #include "object_schema.hpp"
 #include "object_store.hpp"
 #include "util/format.hpp"
+#include "util/compiler.hpp"
 
 #include <stdexcept>
 
 using namespace realm;
-
-#ifdef __has_cpp_attribute
-#define REALM_HAS_CCP_ATTRIBUTE(attr) __has_cpp_attribute(attr)
-#else
-#define REALM_HAS_CCP_ATTRIBUTE(attr) 0
-#endif
-
-#if REALM_HAS_CCP_ATTRIBUTE(clang::fallthrough)
-#define REALM_FALLTHROUGH [[clang::fallthrough]]
-#else
-#define REALM_FALLTHROUGH
-#endif
 
 Results::Results() = default;
 Results::~Results() = default;
