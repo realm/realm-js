@@ -953,8 +953,13 @@ TEST_CASE("migration: Additive") {
         REQUIRE(!table->has_search_index(1));
     }
 
-    SECTION("cannot remove properties from existing tables") {
-        REQUIRE_THROWS(realm->update_schema(remove_property(schema, "object", "value")));
+    SECTION("can remove properties from existing tables, but column is not removed") {
+        auto table = ObjectStore::table_for_object_type(realm->read_group(), "object");
+        REQUIRE_NOTHROW(realm->update_schema(remove_property(schema, "object", "value")));
+        REQUIRE(ObjectStore::table_for_object_type(realm->read_group(), "object")->get_column_count() == 2);
+        auto const& properties = realm->schema().find("object")->persisted_properties;
+        REQUIRE(properties.size() == 1);
+        REQUIRE(properties[0].table_column == 1);
     }
 
     SECTION("cannot change existing property types") {

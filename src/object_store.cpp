@@ -403,9 +403,10 @@ void ObjectStore::verify_valid_additive_changes(std::vector<SchemaChange> const&
     struct Verifier : SchemaDifferenceExplainer {
         using SchemaDifferenceExplainer::operator();
 
-        // Additive mode allows adding things and adding/removing indexes
+        // Additive mode allows adding things, extra columns, and adding/removing indexes
         void operator()(AddTable) { }
         void operator()(AddProperty) { }
+        void operator()(RemoveProperty) { }
         void operator()(AddIndex) { }
         void operator()(RemoveIndex) { }
     } verifier;
@@ -479,13 +480,13 @@ static void apply_additive_changes(Group& group, std::vector<SchemaChange> const
         void operator()(AddProperty op) { add_column(group, table(op.object), *op.property); }
         void operator()(AddIndex op) { if (update_indexes) add_index(table(op.object), op.property->table_column); }
         void operator()(RemoveIndex op) { if (update_indexes) table(op.object).remove_search_index(op.property->table_column); }
+        void operator()(RemoveProperty) { }
 
         // No need for errors for these, as we've already verified that they aren't present
         void operator()(ChangePrimaryKey) { }
         void operator()(ChangePropertyType) { }
         void operator()(MakePropertyNullable) { }
         void operator()(MakePropertyRequired) { }
-        void operator()(RemoveProperty) { }
     } applier{group, update_indexes};
 
     for (auto& change : changes) {
