@@ -12,6 +12,7 @@
 #include <condition_variable>
 #include <functional>
 #include <thread>
+#include <map>
 #endif
 
 TestFile::TestFile()
@@ -60,6 +61,12 @@ public:
             if (value == 2)
                 return;
 
+            if (value & 1) {
+                // Synchronize on the first handover of a given coordinator.
+                value &= ~1;
+                m_signal.load();
+            }
+
             auto c = reinterpret_cast<realm::_impl::RealmCoordinator *>(value);
             c->on_change();
             m_signal.store(1, std::memory_order_relaxed);
@@ -72,20 +79,29 @@ public:
         m_thread.join();
     }
 
-    void on_change(realm::_impl::RealmCoordinator* c)
+    void on_change(const std::shared_ptr<realm::_impl::RealmCoordinator>& c)
     {
-        m_signal.store(reinterpret_cast<uintptr_t>(c), std::memory_order_relaxed);
+        auto& it = m_published_coordinators[c.get()];
+        if (it.lock()) {
+            m_signal.store(reinterpret_cast<uintptr_t>(c.get()), std::memory_order_relaxed);
+        } else {
+            // Synchronize on the first handover of a given coordinator.
+            it = c;
+            m_signal = reinterpret_cast<uintptr_t>(c.get()) | 1;
+        }
+
         while (m_signal.load(std::memory_order_relaxed) != 1) ;
     }
 
 private:
     std::atomic<uintptr_t> m_signal{0};
     std::thread m_thread;
+    std::map<realm::_impl::RealmCoordinator*, std::weak_ptr<realm::_impl::RealmCoordinator>> m_published_coordinators;
 } s_worker;
 
 void advance_and_notify(realm::Realm& realm)
 {
-    s_worker.on_change(realm::_impl::RealmCoordinator::get_existing_coordinator(realm.config().path).get());
+    s_worker.on_change(realm::_impl::RealmCoordinator::get_existing_coordinator(realm.config().path));
     realm.notify();
 }
 
