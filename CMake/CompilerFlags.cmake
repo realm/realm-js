@@ -14,7 +14,7 @@ add_compile_options(
     -Wunreachable-code
 )
 
-if(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
+if(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
     add_compile_options(
         -Wassign-enum
         -Wbool-conversion
@@ -29,7 +29,7 @@ if(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
 endif()
 
 if(${CMAKE_GENERATOR} STREQUAL "Ninja")
-    if(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
+    if(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fcolor-diagnostics")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fcolor-diagnostics")
     elseif(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
