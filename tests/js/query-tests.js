@@ -42,9 +42,9 @@ function convertValue(value, schema, type) {
     });
 }
 
-typeConverters[Realm.Types.DATE] = function(value) { return new Date(value); };
-typeConverters[Realm.Types.DATA] = function(value) { return new Uint8Array(value); };
-typeConverters[Realm.Types.OBJECT] = convertValue;
+typeConverters['date'] = function(value) { return new Date(value); };
+typeConverters['data'] = function(value) { return new Uint8Array(value); };
+typeConverters['object'] = convertValue;
 
 function runQuerySuite(suite) {
     var realm = new Realm({schema: suite.schema});
