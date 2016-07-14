@@ -60,17 +60,17 @@ extern "C" JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executo
         NSMethodSignature *signature = [RCTJavaScriptContext instanceMethodSignatureForSelector:@selector(initWithJSContext:onThread:)];
         if (signature) {
             // for RN 0.28.0+
-            rctJSContext = [executor context];
+            rctJSContext = [[RCTJavaScriptContext alloc] initWithJSContext:[JSContext new] onThread:[NSThread currentThread]];
         }
         else {
             // for RN < 0.28.0
             NSMethodSignature *oldSignature = [RCTJavaScriptContext instanceMethodSignatureForSelector:@selector(initWithJSContext:)];
             assert(oldSignature);
 
-            rctJSContext = [[RCTJavaScriptContext alloc] initWithJSContext:[[JSContext alloc] init]];
-            object_setIvar(executor, contextIvar, rctJSContext);
+            rctJSContext = [[RCTJavaScriptContext alloc] initWithJSContext:[JSContext new]];
         }
 
+        object_setIvar(executor, contextIvar, rctJSContext);
     }
 
     return [rctJSContext ctx];
@@ -303,7 +303,7 @@ RCT_REMAP_METHOD(emit, emitEvent:(NSString *)eventName withObject:(id)object) {
 
             // Close all cached Realms from the previous JS thread.
             realm::_impl::RealmCoordinator::clear_all_caches();
-
+            
             JSGlobalContextRef ctx = RealmReactGetJSGlobalContextForExecutor(executor, true);
             RJSInitializeInContext(ctx);
         }];
