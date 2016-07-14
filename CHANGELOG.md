@@ -1,4 +1,4 @@
-0.14.2 Release notes (2016-7-13)
+0.14.2 Release notes (2016-7-14)
 =============================================================
 ### Breaking changes
 * No longer support react-native versions earlier than v0.18.0 
