@@ -1,10 +1,10 @@
-0.14.1 Release notes (2016-6-28)
+0.14.2 Release notes (2016-7-13)
 =============================================================
 ### Breaking changes
-* None
+* No longer support react-native versions earlier than v0.18.0 
 
 ### Enhancements
-* None
+* Support for react-native versions v0.28.0+
 
 ### Bugfixes
 * Fix linker error when building for minimum target version of iOS 7.
