@@ -22,6 +22,7 @@
 #include "impl/results_notifier.hpp"
 #include "object_schema.hpp"
 #include "object_store.hpp"
+#include "schema.hpp"
 #include "util/format.hpp"
 #include "util/compiler.hpp"
 
@@ -32,9 +33,8 @@ using namespace realm;
 Results::Results() = default;
 Results::~Results() = default;
 
-Results::Results(SharedRealm r, const ObjectSchema &o, Query q, SortOrder s)
+Results::Results(SharedRealm r, Query q, SortOrder s)
 : m_realm(std::move(r))
-, m_object_schema(&o)
 , m_query(std::move(q))
 , m_table(m_query.get_table().get())
 , m_sort(std::move(s))
@@ -43,17 +43,15 @@ Results::Results(SharedRealm r, const ObjectSchema &o, Query q, SortOrder s)
     REALM_ASSERT(m_sort.column_indices.size() == m_sort.ascending.size());
 }
 
-Results::Results(SharedRealm r, const ObjectSchema &o, Table& table)
+Results::Results(SharedRealm r, Table& table)
 : m_realm(std::move(r))
-, m_object_schema(&o)
 , m_table(&table)
 , m_mode(Mode::Table)
 {
 }
 
-Results::Results(SharedRealm r, const ObjectSchema& o, LinkViewRef lv, util::Optional<Query> q, SortOrder s)
+Results::Results(SharedRealm r, LinkViewRef lv, util::Optional<Query> q, SortOrder s)
 : m_realm(std::move(r))
-, m_object_schema(&o)
 , m_link_view(lv)
 , m_table(&lv->get_target_table())
 , m_sort(std::move(s))
@@ -66,9 +64,8 @@ Results::Results(SharedRealm r, const ObjectSchema& o, LinkViewRef lv, util::Opt
     }
 }
 
-Results::Results(SharedRealm r, const ObjectSchema& o, TableView tv, SortOrder s)
+Results::Results(SharedRealm r, TableView tv, SortOrder s)
 : m_realm(std::move(r))
-, m_object_schema(&o)
 , m_table_view(std::move(tv))
 , m_table(&m_table_view.get_parent())
 , m_sort(std::move(s))
@@ -158,9 +155,28 @@ size_t Results::size()
     REALM_UNREACHABLE();
 }
 
+const ObjectSchema& Results::get_object_schema() const
+{
+    validate_read();
+
+    if (!m_object_schema) {
+        REALM_ASSERT(m_realm);
+        auto it = m_realm->config().schema->find(get_object_type());
+        REALM_ASSERT(it != m_realm->config().schema->end());
+        m_object_schema = &*it;
+    }
+
+    return *m_object_schema;
+}
+
+
 StringData Results::get_object_type() const noexcept
 {
-    return get_object_schema().name;
+    if (!m_table) {
+        return StringData();
+    }
+
+    return ObjectStore::object_type_for_table_name(m_table->get_name());
 }
 
 RowExpr Results::get(size_t row_ndx)
@@ -480,12 +496,12 @@ TableView Results::get_tableview()
 Results Results::sort(realm::SortOrder&& sort) const
 {
     REALM_ASSERT(sort.column_indices.size() == sort.ascending.size());
-    return Results(m_realm, *m_object_schema, get_query(), std::move(sort));
+    return Results(m_realm, get_query(), std::move(sort));
 }
 
 Results Results::filter(Query&& q) const
 {
-    return Results(m_realm, *m_object_schema, get_query().and_query(std::move(q)), m_sort);
+    return Results(m_realm, get_query().and_query(std::move(q)), m_sort);
 }
 
 Results Results::snapshot() const &
