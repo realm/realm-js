@@ -39,6 +39,7 @@ set(HEADERS
     parser/parser.hpp
     parser/query_builder.hpp
     util/atomic_shared_ptr.hpp
+    util/compiler.hpp
     util/format.hpp)
 
 if(APPLE)
