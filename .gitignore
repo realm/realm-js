@@ -105,3 +105,6 @@ npm-debug.log
 .gradle
 local.properties
 
+# Visual Studio Code
+.vscode
+tsconfig.json
