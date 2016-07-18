@@ -38,10 +38,8 @@ struct ResultsClass : ClassDefinition<T, realm::Results, CollectionClass<T>> {
     using Value = js::Value<T>;
     using ReturnValue = js::ReturnValue<T>;
 
-    static ObjectType create_instance(ContextType, const realm::Results &, bool live = true);
-    static ObjectType create_instance(ContextType, const realm::List &, bool live = true);
-    static ObjectType create_instance(ContextType, SharedRealm, const ObjectSchema &, bool live = true);
-    static ObjectType create_instance(ContextType, SharedRealm, const ObjectSchema &, Query, bool live = true);
+    static ObjectType create_instance(ContextType, realm::Results);
+    static ObjectType create_instance(ContextType, SharedRealm, const ObjectSchema &);
 
     template<typename U>
     static ObjectType create_filtered(ContextType, const U &, size_t, const ValueType[]);
@@ -74,33 +72,14 @@ struct ResultsClass : ClassDefinition<T, realm::Results, CollectionClass<T>> {
 };
 
 template<typename T>
-typename T::Object ResultsClass<T>::create_instance(ContextType ctx, const realm::Results &results, bool live) {
-    auto new_results = new realm::Results(results);
-    new_results->set_live(live);
-
-    return create_object<T, ResultsClass<T>>(ctx, new_results);
+typename T::Object ResultsClass<T>::create_instance(ContextType ctx, realm::Results results) {
+    return create_object<T, ResultsClass<T>>(ctx, new realm::Results(std::move(results)));
 }
 
 template<typename T>
-typename T::Object ResultsClass<T>::create_instance(ContextType ctx, const realm::List &list, bool live) {
-    return create_instance(ctx, list.get_realm(), list.get_object_schema(), list.get_query(), live);
-}
-
-template<typename T>
-typename T::Object ResultsClass<T>::create_instance(ContextType ctx, SharedRealm realm, const ObjectSchema &object_schema, bool live) {
+typename T::Object ResultsClass<T>::create_instance(ContextType ctx, SharedRealm realm, const ObjectSchema &object_schema) {
     auto table = ObjectStore::table_for_object_type(realm->read_group(), object_schema.name);
-    auto results = new realm::Results(realm, object_schema, *table);
-    results->set_live(live);
-
-    return create_object<T, ResultsClass<T>>(ctx, results);
-}
-
-template<typename T>
-typename T::Object ResultsClass<T>::create_instance(ContextType ctx, SharedRealm realm, const ObjectSchema &object_schema, Query query, bool live) {
-    auto results = new realm::Results(realm, object_schema, std::move(query));
-    results->set_live(live);
-
-    return create_object<T, ResultsClass<T>>(ctx, results);
+    return create_object<T, ResultsClass<T>>(ctx, new realm::Results(realm, *table));
 }
 
 template<typename T>
@@ -111,18 +90,13 @@ typename T::Object ResultsClass<T>::create_filtered(ContextType ctx, const U &co
     auto const &realm = collection.get_realm();
     auto const &object_schema = collection.get_object_schema();
 
-    std::vector<ValueType> args;
-    args.reserve(argc - 1);
-
-    for (size_t i = 1; i < argc; i++) {
-        args.push_back(arguments[i]);
-    }
+    std::vector<ValueType> args(&arguments[1], &arguments[argc]);
 
     parser::Predicate predicate = parser::parse(query_string);
     query_builder::ArgumentConverter<ValueType, ContextType> converter(ctx, realm, args);
     query_builder::apply_predicate(query, predicate, converter, *realm->config().schema, object_schema.name);
 
-    return create_instance(ctx, realm, object_schema, std::move(query));
+    return create_instance(ctx, realm::Results(realm, std::move(query)));
 }
 
 template<typename T>
@@ -179,7 +153,7 @@ typename T::Object ResultsClass<T>::create_sorted(ContextType ctx, const U &coll
         columns.push_back(prop->table_column);
     }
 
-    auto results = new realm::Results(realm, object_schema, collection.get_query(), {std::move(columns), std::move(ascending)});
+    auto results = new realm::Results(realm, collection.get_query(), {std::move(columns), std::move(ascending)});
     return create_object<T, ResultsClass<T>>(ctx, results);
 }
 
@@ -209,7 +183,7 @@ void ResultsClass<T>::snapshot(ContextType ctx, ObjectType this_object, size_t a
     validate_argument_count(argc, 0);
 
     auto results = get_internal<T, ResultsClass<T>>(this_object);
-    return_value.set(ResultsClass<T>::create_instance(ctx, *results, false));
+    return_value.set(ResultsClass<T>::create_instance(ctx, results->snapshot()));
 }
 
 template<typename T>
