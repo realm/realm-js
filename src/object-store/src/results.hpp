@@ -74,6 +74,9 @@ public:
     // Get the currently applied sort order for this Results
     SortOrder const& get_sort() const noexcept { return m_sort; }
 
+    // Get the table targeted by this Results
+    const Table* get_table() const;
+
     // Get a tableview containing the same rows as this Results
     TableView get_tableview();
 

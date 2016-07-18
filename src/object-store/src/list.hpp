@@ -51,6 +51,7 @@ public:
     const std::shared_ptr<Realm>& get_realm() const { return m_realm; }
     Query get_query() const;
     const ObjectSchema& get_object_schema() const { return *m_object_schema; }
+    const Table* get_table() const;
     size_t get_origin_row_index() const;
 
     bool is_valid() const;
@@ -72,8 +73,8 @@ public:
 
     void delete_all();
 
-    Results sort(SortOrder order);
-    Results filter(Query q);
+    Results sort(SortOrder order) const;
+    Results filter(Query q) const;
 
     bool operator==(List const& rgt) const noexcept;
 

@@ -38,10 +38,9 @@ struct ResultsClass : ClassDefinition<T, realm::Results, CollectionClass<T>> {
     using Value = js::Value<T>;
     using ReturnValue = js::ReturnValue<T>;
 
-    static ObjectType create_instance(ContextType, const realm::Results &, bool live = true);
+    static ObjectType create_instance(ContextType, realm::Results, bool live = true);
     static ObjectType create_instance(ContextType, const realm::List &, bool live = true);
     static ObjectType create_instance(ContextType, SharedRealm, const ObjectSchema &, bool live = true);
-    static ObjectType create_instance(ContextType, SharedRealm, const ObjectSchema &, Query, bool live = true);
 
     template<typename U>
     static ObjectType create_filtered(ContextType, const U &, size_t, const ValueType[]);
@@ -74,8 +73,8 @@ struct ResultsClass : ClassDefinition<T, realm::Results, CollectionClass<T>> {
 };
 
 template<typename T>
-typename T::Object ResultsClass<T>::create_instance(ContextType ctx, const realm::Results &results, bool live) {
-    auto new_results = new realm::Results(results);
+typename T::Object ResultsClass<T>::create_instance(ContextType ctx, realm::Results results, bool live) {
+    auto new_results = new realm::Results(std::move(results));
     new_results->set_live(live);
 
     return create_object<T, ResultsClass<T>>(ctx, new_results);
@@ -83,7 +82,7 @@ typename T::Object ResultsClass<T>::create_instance(ContextType ctx, const realm
 
 template<typename T>
 typename T::Object ResultsClass<T>::create_instance(ContextType ctx, const realm::List &list, bool live) {
-    return create_instance(ctx, list.get_realm(), list.get_object_schema(), list.get_query(), live);
+    return create_instance(ctx, list.sort({}), live);
 }
 
 template<typename T>
@@ -96,20 +95,13 @@ typename T::Object ResultsClass<T>::create_instance(ContextType ctx, SharedRealm
 }
 
 template<typename T>
-typename T::Object ResultsClass<T>::create_instance(ContextType ctx, SharedRealm realm, const ObjectSchema &object_schema, Query query, bool live) {
-    auto results = new realm::Results(realm, object_schema, std::move(query));
-    results->set_live(live);
-
-    return create_object<T, ResultsClass<T>>(ctx, results);
-}
-
-template<typename T>
 template<typename U>
 typename T::Object ResultsClass<T>::create_filtered(ContextType ctx, const U &collection, size_t argc, const ValueType arguments[]) {
-    auto query_string = Value::validated_to_string(ctx, arguments[0], "predicate");
-    auto query = collection.get_query();
     auto const &realm = collection.get_realm();
     auto const &object_schema = collection.get_object_schema();
+    auto query = collection.get_table()->where();
+    auto query_string = Value::validated_to_string(ctx, arguments[0], "predicate");
+    auto predicate = parser::parse(query_string);
 
     std::vector<ValueType> args;
     args.reserve(argc - 1);
@@ -118,17 +110,15 @@ typename T::Object ResultsClass<T>::create_filtered(ContextType ctx, const U &co
         args.push_back(arguments[i]);
     }
 
-    parser::Predicate predicate = parser::parse(query_string);
     query_builder::ArgumentConverter<ValueType, ContextType> converter(ctx, realm, args);
     query_builder::apply_predicate(query, predicate, converter, *realm->config().schema, object_schema.name);
 
-    return create_instance(ctx, realm, object_schema, std::move(query));
+    return create_instance(ctx, collection.filter(std::move(query)));
 }
 
 template<typename T>
 template<typename U>
 typename T::Object ResultsClass<T>::create_sorted(ContextType ctx, const U &collection, size_t argc, const ValueType arguments[]) {
-    auto const &realm = collection.get_realm();
     auto const &object_schema = collection.get_object_schema();
     std::vector<std::string> prop_names;
     std::vector<bool> ascending;
@@ -179,8 +169,7 @@ typename T::Object ResultsClass<T>::create_sorted(ContextType ctx, const U &coll
         columns.push_back(prop->table_column);
     }
 
-    auto results = new realm::Results(realm, object_schema, collection.get_query(), {std::move(columns), std::move(ascending)});
-    return create_object<T, ResultsClass<T>>(ctx, results);
+    return create_instance(ctx, collection.sort({std::move(columns), std::move(ascending)}));
 }
 
 template<typename T>

@@ -475,6 +475,12 @@ Query Results::get_query() const
     REALM_UNREACHABLE();
 }
 
+const Table* Results::get_table() const
+{
+    validate_read();
+    return m_table;
+}
+
 TableView Results::get_tableview()
 {
     validate_read();
