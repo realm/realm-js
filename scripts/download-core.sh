@@ -22,7 +22,7 @@ if [ "$1" = 'node' ]; then
     fi
 else
     CORE_DIR='core'
-    CORE_DOWNLOAD_FILE="realm-core-$REALM_CORE_VERSION.tar.bz2"
+    CORE_DOWNLOAD_FILE="realm-core-$REALM_CORE_VERSION.tar.xz"
 fi
 
 # Start current working directory at the root of the project.
