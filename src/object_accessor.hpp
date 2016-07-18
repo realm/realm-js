@@ -298,7 +298,7 @@ namespace realm {
                 auto link_property = target_object_schema->property_for_name(property.link_origin_property_name);
                 TableRef table = ObjectStore::table_for_object_type(m_realm->read_group(), target_object_schema->name);
                 auto tv = m_row.get_table()->get_backlink_view(m_row.get_index(), table.get(), link_property->table_column);
-                Results results(m_realm, std::move(tv), {});
+                Results results(m_realm, std::move(tv));
                 return Accessor::from_results(ctx, std::move(results));
             }
         }
