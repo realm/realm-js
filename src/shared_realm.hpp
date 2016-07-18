@@ -198,7 +198,8 @@ public:
 
     ~Realm();
 
-    Realm(Config config, std::shared_ptr<_impl::RealmCoordinator> coordinator);
+    Realm(Config config);
+    void init(std::shared_ptr<_impl::RealmCoordinator> coordinator);
 
     // Expose some internal functionality to other parts of the ObjectStore
     // without making it public to everyone
@@ -224,7 +225,7 @@ public:
                                  std::unique_ptr<Group>& read_only_group,
                                  Realm* realm);
 
-  private:
+private:
     Config m_config;
     std::thread::id m_thread_id = std::this_thread::get_id();
     bool m_auto_refresh = true;
@@ -253,7 +254,7 @@ public:
 
     void add_schema_change_handler();
 
-  public:
+public:
     std::unique_ptr<BindingContext> m_binding_context;
 
     // FIXME private

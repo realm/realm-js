@@ -98,7 +98,9 @@ std::shared_ptr<Realm> RealmCoordinator::get_realm(Realm::Config config)
         }
     }
 
-    auto realm = std::make_shared<Realm>(std::move(config), shared_from_this());
+    auto realm = std::make_shared<Realm>(std::move(config));
+    realm->init(shared_from_this());
+
     if (!config.read_only() && !m_notifier && config.automatic_change_notifications) {
         try {
             m_notifier = std::make_unique<ExternalCommitHelper>(*this);
@@ -109,13 +111,6 @@ std::shared_ptr<Realm> RealmCoordinator::get_realm(Realm::Config config)
     }
 
     m_weak_realm_notifiers.emplace_back(realm, m_config.cache);
-
-    if (realm->config().schema) {
-        realm->update_schema(std::move(*realm->config().schema),
-                             realm->config().schema_version,
-                             std::move(realm->config().migration_function));
-    }
-
     return realm;
 }
 

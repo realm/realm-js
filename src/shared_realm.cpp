@@ -32,7 +32,7 @@
 using namespace realm;
 using namespace realm::_impl;
 
-Realm::Realm(Config config, std::shared_ptr<RealmCoordinator> coordinator)
+Realm::Realm(Config config)
 : m_config(std::move(config))
 {
     open_with_config(m_config, m_history, m_shared_group, m_read_only_group, this);
@@ -40,7 +40,10 @@ Realm::Realm(Config config, std::shared_ptr<RealmCoordinator> coordinator)
     if (m_read_only_group) {
         m_group = m_read_only_group.get();
     }
+}
 
+void Realm::init(std::shared_ptr<_impl::RealmCoordinator> coordinator)
+{
     // if there is an existing realm at the current path steal its schema/column mapping
     if (auto existing = coordinator ? coordinator->get_schema() : nullptr) {
         m_schema = *existing;
@@ -58,9 +61,21 @@ Realm::Realm(Config config, std::shared_ptr<RealmCoordinator> coordinator)
         }
     }
 
-    // Needs to be at the end or we'll deadlock if any of the things above
-    // throw
     m_coordinator = std::move(coordinator);
+
+    if (m_config.schema) {
+        try {
+            auto schema = std::move(*m_config.schema);
+            m_config.schema = util::none;
+            update_schema(std::move(schema), m_config.schema_version,
+                          std::move(m_config.migration_function));
+        }
+        catch (...) {
+            m_coordinator = nullptr; // don't try to unregister in the destructor as it'll deadlock
+            throw;
+        }
+    }
+
 }
 
 REALM_NOINLINE static void translate_file_exception(StringData path, bool read_only=false)
@@ -289,7 +304,8 @@ void Realm::update_schema(Schema schema, uint64_t version, MigrationFunction mig
     bool additive = m_config.schema_mode == SchemaMode::Additive;
     if (migration_function && !additive) {
         auto wrapper = [&] {
-            SharedRealm old_realm(new Realm(m_config, m_coordinator));
+            SharedRealm old_realm(new Realm(m_config));
+            old_realm->init(nullptr);
             // Need to open in read-write mode so that it uses a SharedGroup, but
             // users shouldn't actually be able to write via the old realm
             old_realm->m_config.schema_mode = SchemaMode::ReadOnly;
@@ -512,7 +528,7 @@ uint64_t Realm::get_schema_version(const realm::Realm::Config &config)
         return coordinator->get_schema_version();
     }
 
-    return ObjectStore::get_schema_version(Realm(config, nullptr).read_group());
+    return ObjectStore::get_schema_version(Realm(config).read_group());
 }
 
 void Realm::close()
