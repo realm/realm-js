@@ -22,7 +22,7 @@
 #include <string>
 
 namespace realm {
-    enum class PropertyType {
+    enum class PropertyType : unsigned char {
         Int    = 0,
         Bool   = 1,
         Float  = 9,
@@ -94,6 +94,8 @@ namespace realm {
                 return "object";
             case PropertyType::Array:
                 return "array";
+            case PropertyType::LinkingObjects:
+                return "linking objects";
 #if __GNUC__
             default:
                 __builtin_unreachable();

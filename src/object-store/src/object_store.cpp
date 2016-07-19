@@ -18,6 +18,7 @@
 
 #include "object_store.hpp"
 
+#include "object_schema.hpp"
 #include "schema.hpp"
 #include "util/format.hpp"
 
@@ -123,7 +124,7 @@ StringData ObjectStore::object_type_for_table_name(StringData table_name) {
 }
 
 std::string ObjectStore::table_name_for_object_type(StringData object_type) {
-    return std::string(c_object_table_prefix) + object_type.data();
+    return std::string(c_object_table_prefix) + static_cast<std::string>(object_type);
 }
 
 TableRef ObjectStore::table_for_object_type(Group *group, StringData object_type) {
@@ -507,7 +508,7 @@ bool ObjectStore::is_empty(const Group *group) {
 InvalidSchemaVersionException::InvalidSchemaVersionException(uint64_t old_version, uint64_t new_version) :
     m_old_version(old_version), m_new_version(new_version)
 {
-    m_what = util::format("Provided schema version %1 is less than last set version %2.", old_version, new_version);
+    m_what = util::format("Provided schema version %1 is less than last set version %2.", new_version, old_version);
 }
 
 DuplicatePrimaryKeyValueException::DuplicatePrimaryKeyValueException(std::string const& object_type, Property const& property) :
@@ -527,16 +528,16 @@ DuplicatePrimaryKeyValueException::DuplicatePrimaryKeyValueException(std::string
 SchemaValidationException::SchemaValidationException(std::vector<ObjectSchemaValidationException> const& errors)
 : m_validation_errors(errors)
 {
-    m_what = "Schema validation failed due to the following errors: ";
+    m_what = "Schema validation failed due to the following errors:";
     for (auto const& error : errors) {
         m_what += std::string("\n- ") + error.what();
     }
 }
 
 SchemaMismatchException::SchemaMismatchException(std::vector<ObjectSchemaValidationException> const& errors) :
-m_validation_errors(errors)
+    m_validation_errors(errors)
 {
-    m_what = "Migration is required due to the following errors: ";
+    m_what = "Migration is required due to the following errors:";
     for (auto const& error : errors) {
         m_what += std::string("\n- ") + error.what();
     }
@@ -546,7 +547,7 @@ PropertyTypeNotIndexableException::PropertyTypeNotIndexableException(std::string
                                                                      Property const& property)
 : ObjectSchemaPropertyException(object_type, property)
 {
-    m_what = util::format("Can't index property %1.%2: indexing a property of type '%3' is currently not supported",
+    m_what = util::format("Can't index property %1.%2: indexing a property of type '%3' is currently not supported.",
                           object_type, property.name, string_for_property_type(property.type));
 }
 
@@ -572,7 +573,7 @@ InvalidNullabilityException::InvalidNullabilityException(std::string const& obje
         case PropertyType::Any:
         case PropertyType::Array:
         case PropertyType::LinkingObjects:
-            m_what = util::format("Property '%1' of type '%2' cannoy be nullable",
+            m_what = util::format("Property '%1' of type '%2' cannot be nullable.",
                                   property.name, string_for_property_type(property.type));
             break;
         case PropertyType::Int:
@@ -599,17 +600,17 @@ MismatchedPropertiesException::MismatchedPropertiesException(std::string const& 
     ObjectSchemaValidationException(object_type), m_old_property(old_property), m_new_property(new_property)
 {
     if (new_property.type != old_property.type) {
-        m_what = util::format("Property types for '%1' property doe not match. Old type '%2', new type '%3'",
+        m_what = util::format("Property types for '%1' property do not match. Old type '%2', new type '%3'.",
                               old_property.name,
                               string_for_property_type(old_property.type),
                               string_for_property_type(new_property.type));
     }
     else if (new_property.object_type != old_property.object_type) {
-        m_what = util::format("Target object type for property '%1' do not match. Old type '%2', new type '%3'",
+        m_what = util::format("Target object type for property '%1' do not match. Old type '%2', new type '%3'.",
                               old_property.name, old_property.object_type, new_property.object_type);
     }
     else if (new_property.is_nullable != old_property.is_nullable) {
-        m_what = util::format("Nullability for property '%1' has been changed from %2 to %3",
+        m_what = util::format("Nullability for property '%1' has been changed from %2 to %3.",
                               old_property.name,
                               old_property.is_nullable, new_property.is_nullable);
     }
@@ -645,17 +646,17 @@ InvalidLinkingObjectsPropertyException::InvalidLinkingObjectsPropertyException(T
 {
     switch (error_type) {
         case Type::OriginPropertyDoesNotExist:
-            m_what = util::format("Property '%1.%2' declared as origin of linking objects property '%3.%4' does not exist",
+            m_what = util::format("Property '%1.%2' declared as origin of linking objects property '%3.%4' does not exist.",
                                   property.object_type, property.link_origin_property_name,
                                   object_type, property.name);
             break;
         case Type::OriginPropertyIsNotALink:
-            m_what = util::format("Property '%1.%2' declared as origin of linking objects property '%3.%4' is not a link",
+            m_what = util::format("Property '%1.%2' declared as origin of linking objects property '%3.%4' is not a link.",
                                   property.object_type, property.link_origin_property_name,
                                   object_type, property.name);
             break;
         case Type::OriginPropertyInvalidLinkTarget:
-            m_what = util::format("Property '%1.%2' declared as origin of linking objects property '%3.%4' links to a different class",
+            m_what = util::format("Property '%1.%2' declared as origin of linking objects property '%3.%4' links to a different class.",
                                   property.object_type, property.link_origin_property_name,
                                   object_type, property.name);
             break;

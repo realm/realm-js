@@ -40,7 +40,7 @@ struct SortOrder;
 class List {
 public:
     List() noexcept;
-    List(std::shared_ptr<Realm> r, const ObjectSchema& s, LinkViewRef l) noexcept;
+    List(std::shared_ptr<Realm> r, LinkViewRef l) noexcept;
     ~List();
 
     List(const List&);
@@ -50,7 +50,7 @@ public:
 
     const std::shared_ptr<Realm>& get_realm() const { return m_realm; }
     Query get_query() const;
-    const ObjectSchema& get_object_schema() const { return *m_object_schema; }
+    const ObjectSchema& get_object_schema() const;
     size_t get_origin_row_index() const;
 
     bool is_valid() const;
@@ -75,6 +75,9 @@ public:
     Results sort(SortOrder order);
     Results filter(Query q);
 
+    // Return a Results representing a snapshot of this List.
+    Results snapshot() const;
+
     bool operator==(List const& rgt) const noexcept;
 
     NotificationToken add_notification_callback(CollectionChangeCallback cb);
@@ -92,8 +95,8 @@ public:
     // The List object has been invalidated (due to the Realm being invalidated,
     // or the containing object being deleted)
     // All non-noexcept functions can throw this
-    struct InvalidatedException : public std::runtime_error {
-        InvalidatedException() : std::runtime_error("Access to invalidated List object") {}
+    struct InvalidatedException : public std::logic_error {
+        InvalidatedException() : std::logic_error("Access to invalidated List object") {}
     };
 
     // The input index parameter was out of bounds
@@ -105,7 +108,7 @@ public:
 
 private:
     std::shared_ptr<Realm> m_realm;
-    const ObjectSchema* m_object_schema;
+    mutable const ObjectSchema* m_object_schema = nullptr;
     LinkViewRef m_link_view;
     _impl::CollectionNotifier::Handle<_impl::CollectionNotifier> m_notifier;
 

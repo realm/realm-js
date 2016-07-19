@@ -123,50 +123,43 @@ namespace realm {
         //
         // Deprecated
         //
-        static Mixed to_mixed(ContextType ctx, ValueType &val) { throw std::runtime_error("'Any' type is unsupported"); }
+        static Mixed to_mixed(ContextType, ValueType&) { throw std::logic_error("'Any' type is unsupported"); }
     };
 
-    class InvalidatedObjectException : public std::runtime_error
-    {
-      public:
-        InvalidatedObjectException(const std::string object_type, const std::string message) : std::runtime_error(message), object_type(object_type) {}
+    struct InvalidatedObjectException : public std::logic_error {
+        InvalidatedObjectException(const std::string& object_type, const std::string& message) :
+            std::logic_error(message), object_type(object_type) {}
         const std::string object_type;
     };
     
-    class InvalidPropertyException : public std::runtime_error
-    {
-      public:
-        InvalidPropertyException(const std::string object_type, const std::string property_name, const std::string message) : std::runtime_error(message), object_type(object_type), property_name(property_name) {}
+    struct InvalidPropertyException : public std::logic_error {
+        InvalidPropertyException(const std::string& object_type, const std::string& property_name, const std::string& message) :
+            std::logic_error(message), object_type(object_type), property_name(property_name) {}
         const std::string object_type;
         const std::string property_name;
     };
 
-    class MissingPropertyValueException : public std::runtime_error
-    {
-    public:
-        MissingPropertyValueException(const std::string object_type, const std::string property_name, const std::string message) : std::runtime_error(message), object_type(object_type), property_name(property_name) {}
+    struct MissingPropertyValueException : public std::logic_error {
+        MissingPropertyValueException(const std::string& object_type, const std::string& property_name, const std::string& message) :
+            std::logic_error(message), object_type(object_type), property_name(property_name) {}
         const std::string object_type;
         const std::string property_name;
     };
 
-    class MissingPrimaryKeyException : public std::runtime_error
-    {
-    public:
-        MissingPrimaryKeyException(const std::string object_type, const std::string message) : std::runtime_error(message), object_type(object_type) {}
+    struct MissingPrimaryKeyException : public std::logic_error {
+        MissingPrimaryKeyException(const std::string& object_type, const std::string& message) : std::logic_error(message), object_type(object_type) {}
         const std::string object_type;
     };
 
-    class ReadOnlyPropertyValueException : public std::runtime_error {
-    public:
-        ReadOnlyPropertyValueException(const std::string& object_type, const std::string& property_name, const std::string& message)
-        : std::runtime_error(message), object_type(object_type), property_name(property_name) {}
+    struct ReadOnlyPropertyException : public std::logic_error {
+        ReadOnlyPropertyException(const std::string& object_type, const std::string& property_name, const std::string& message) :
+            std::logic_error(message), object_type(object_type), property_name(property_name) {}
         const std::string object_type;
         const std::string property_name;
     };
 
-    class MutationOutsideTransactionException : public std::runtime_error {
-    public:
-        MutationOutsideTransactionException(std::string message) : std::runtime_error(message) {}
+    struct MutationOutsideTransactionException : public std::logic_error {
+        MutationOutsideTransactionException(const std::string& message) : std::logic_error(message) {}
     };
 
     //
@@ -265,9 +258,9 @@ namespace realm {
                 break;
             }
             case PropertyType::LinkingObjects:
-                throw ReadOnlyPropertyValueException(m_object_schema->name, property.name,
-                                                     util::format("Cannot modify read-only property '%1.%2'",
-                                                                  m_object_schema->name, property.name));
+                throw ReadOnlyPropertyException(m_object_schema->name, property.name,
+                                                util::format("Cannot modify read-only property '%1.%2'",
+                                                             m_object_schema->name, property.name));
         }
     }
 
@@ -309,15 +302,14 @@ namespace realm {
                 return Accessor::from_object(ctx, std::move(Object(m_realm, *linkObjectSchema, table->get(m_row.get_link(column)))));
             }
             case PropertyType::Array: {
-                auto arrayObjectSchema = m_realm->config().schema->find(property.object_type);
-                return Accessor::from_list(ctx, std::move(List(m_realm, *arrayObjectSchema, static_cast<LinkViewRef>(m_row.get_linklist(column)))));
+                return Accessor::from_list(ctx, std::move(List(m_realm, static_cast<LinkViewRef>(m_row.get_linklist(column)))));
             }
             case PropertyType::LinkingObjects: {
                 auto target_object_schema = m_realm->config().schema->find(property.object_type);
                 auto link_property = target_object_schema->property_for_name(property.link_origin_property_name);
                 TableRef table = ObjectStore::table_for_object_type(m_realm->read_group(), target_object_schema->name);
                 auto tv = m_row.get_table()->get_backlink_view(m_row.get_index(), table.get(), link_property->table_column);
-                Results results(m_realm, *m_object_schema, std::move(tv), {});
+                Results results(m_realm, std::move(tv), {});
                 return Accessor::from_results(ctx, std::move(results));
             }
         }

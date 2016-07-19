@@ -207,7 +207,7 @@ void ListClass<T>::snapshot(ContextType ctx, ObjectType this_object, size_t argc
     validate_argument_count(argc, 0);
 
     auto list = get_internal<T, ListClass<T>>(this_object);
-    return_value.set(ResultsClass<T>::create_instance(ctx, *list, false));
+    return_value.set(ResultsClass<T>::create_instance(ctx, list->snapshot()));
 }
 
 template<typename T>

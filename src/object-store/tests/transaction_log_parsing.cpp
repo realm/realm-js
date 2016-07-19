@@ -59,7 +59,7 @@ private:
     Group const& m_group;
 
     LinkViewRef m_linkview;
-    std::vector<int> m_initial;
+    std::vector<int_fast64_t> m_initial;
 
     void validate(CollectionChangeSet const& info)
     {

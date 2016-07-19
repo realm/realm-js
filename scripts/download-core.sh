@@ -4,7 +4,7 @@ set -e
 set -o pipefail
 
 # Set to "latest" for the latest build.
-: ${REALM_CORE_VERSION:=1.1.2}
+: ${REALM_CORE_VERSION:=1.4.0}
 
 if [ "$1" = '--version' ]; then
     echo "$REALM_CORE_VERSION"
@@ -22,7 +22,7 @@ if [ "$1" = 'node' ]; then
     fi
 else
     CORE_DIR='core'
-    CORE_DOWNLOAD_FILE="realm-core-$REALM_CORE_VERSION.tar.bz2"
+    CORE_DOWNLOAD_FILE="realm-core-$REALM_CORE_VERSION.tar.xz"
 fi
 
 # Start current working directory at the root of the project.

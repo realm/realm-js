@@ -20,7 +20,9 @@
 
 #include "impl/list_notifier.hpp"
 #include "impl/realm_coordinator.hpp"
+#include "object_store.hpp"
 #include "results.hpp"
+#include "schema.hpp"
 #include "shared_realm.hpp"
 #include "util/format.hpp"
 
@@ -37,11 +39,23 @@ List& List::operator=(const List&) = default;
 List::List(List&&) = default;
 List& List::operator=(List&&) = default;
 
-List::List(std::shared_ptr<Realm> r, const ObjectSchema& s, LinkViewRef l) noexcept
+List::List(std::shared_ptr<Realm> r, LinkViewRef l) noexcept
 : m_realm(std::move(r))
-, m_object_schema(&s)
 , m_link_view(std::move(l))
 {
+}
+
+const ObjectSchema& List::get_object_schema() const
+{
+    verify_attached();
+
+    if (!m_object_schema) {
+        auto object_type = ObjectStore::object_type_for_table_name(m_link_view->get_target_table().get_name());
+        auto it = m_realm->config().schema->find(object_type);
+        REALM_ASSERT(it != m_realm->config().schema->end());
+        m_object_schema = &*it;
+    }
+    return *m_object_schema;
 }
 
 Query List::get_query() const
@@ -73,7 +87,7 @@ bool List::is_valid() const
 void List::verify_attached() const
 {
     if (!is_valid()) {
-        throw InvalidatedException{};
+        throw InvalidatedException();
     }
 }
 
@@ -172,13 +186,19 @@ void List::delete_all()
 Results List::sort(SortOrder order)
 {
     verify_attached();
-    return Results(m_realm, *m_object_schema, m_link_view, util::none, std::move(order));
+    return Results(m_realm, m_link_view, util::none, std::move(order));
 }
 
 Results List::filter(Query q)
 {
     verify_attached();
-    return Results(m_realm, *m_object_schema, m_link_view, get_query().and_query(std::move(q)));
+    return Results(m_realm, m_link_view, get_query().and_query(std::move(q)));
+}
+
+Results List::snapshot() const
+{
+    verify_attached();
+    return Results(m_realm, m_link_view).snapshot();
 }
 
 // These definitions rely on that LinkViews are interned by core

@@ -147,7 +147,7 @@ struct NativeAccessor {
         return ListClass<T>::create_instance(ctx, std::move(list));
     }
     static ValueType from_results(ContextType ctx, realm::Results results) {
-        return ResultsClass<T>::create_instance(ctx, results);
+        return ResultsClass<T>::create_instance(ctx, std::move(results));
     }
     static Mixed to_mixed(ContextType ctx, ValueType &val) {
         throw std::runtime_error("'Any' type is unsupported");

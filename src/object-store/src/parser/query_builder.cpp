@@ -21,16 +21,18 @@
 
 #include "object_store.hpp"
 #include "schema.hpp"
+#include "util/compiler.hpp"
 #include "util/format.hpp"
 
 #include <realm.hpp>
 #include <assert.h>
 #include <sstream>
 
-namespace realm {
-namespace query_builder {
+using namespace realm;
 using namespace parser;
+using namespace query_builder;
 
+namespace {
 template<typename T>
 T stot(std::string const& s) {
     std::istringstream iss(s);
@@ -45,7 +47,7 @@ T stot(std::string const& s) {
 // check a precondition and throw an exception if it is not met
 // this should be used iff the condition being false indicates a bug in the caller
 // of the function checking its preconditions
-#define precondition(condition, message) if (!__builtin_expect(condition, 1)) {  throw std::runtime_error(message); }
+#define precondition(condition, message) if (!__builtin_expect(condition, 1)) {  throw std::logic_error(message); }
 
 // FIXME: TrueExpression and FalseExpression should be supported by core in some way
 struct TrueExpression : realm::Expression {
@@ -148,7 +150,7 @@ void add_numeric_constraint_to_query(Query& query,
             query.and_query(lhs != rhs);
             break;
         default:
-            throw std::runtime_error("Unsupported operator for numeric queries.");
+            throw std::logic_error("Unsupported operator for numeric queries.");
     }
 }
 
@@ -162,7 +164,7 @@ void add_bool_constraint_to_query(Query &query, Predicate::Operator operatorType
             query.and_query(lhs != rhs);
             break;
         default:
-            throw std::runtime_error("Unsupported operator for numeric queries.");
+            throw std::logic_error("Unsupported operator for numeric queries.");
     }
 }
 
@@ -188,7 +190,7 @@ void add_string_constraint_to_query(Query &query,
             query.and_query(column.not_equal(value, case_sensitive));
             break;
         default:
-            throw std::runtime_error("Unsupported operator for string queries.");
+            throw std::logic_error("Unsupported operator for string queries.");
     }
 }
 
@@ -205,7 +207,7 @@ void add_string_constraint_to_query(realm::Query &query,
             query.and_query(column.not_equal(value, case_sensitive));
             break;
         default:
-            throw std::runtime_error("Substring comparison not supported for keypath substrings.");
+            throw std::logic_error("Substring comparison not supported for keypath substrings.");
     }
 }
 
@@ -230,7 +232,7 @@ void add_binary_constraint_to_query(Query &query,
             query.not_equal(column.m_column, BinaryData(value));
             break;
         default:
-            throw std::runtime_error("Unsupported operator for binary queries.");
+            throw std::logic_error("Unsupported operator for binary queries.");
     }
 }
 
@@ -246,7 +248,7 @@ void add_binary_constraint_to_query(realm::Query &query,
             query.not_equal(column.m_column, BinaryData(value));
             break;
         default:
-            throw std::runtime_error("Substring comparison not supported for keypath substrings.");
+            throw std::logic_error("Substring comparison not supported for keypath substrings.");
     }
 }
 
@@ -258,22 +260,23 @@ void add_link_constraint_to_query(realm::Query &query,
     switch (op) {
         case Predicate::Operator::NotEqual:
             query.Not();
+            REALM_FALLTHROUGH;
         case Predicate::Operator::Equal: {
             size_t col = prop_expr.prop->table_column;
             query.links_to(col, query.get_table()->get_link_target(col)->get(row_index));
             break;
         }
         default:
-            throw std::runtime_error("Only 'equal' and 'not equal' operators supported for object comparison.");
+            throw std::logic_error("Only 'equal' and 'not equal' operators supported for object comparison.");
     }
 }
 
-auto link_argument(const PropertyExpression &propExpr, const parser::Expression &argExpr, Arguments &args)
+auto link_argument(const PropertyExpression&, const parser::Expression &argExpr, Arguments &args)
 {
     return args.object_index_for_argument(stot<int>(argExpr.s));
 }
 
-auto link_argument(const parser::Expression &argExpr, const PropertyExpression &propExpr, Arguments &args)
+auto link_argument(const parser::Expression &argExpr, const PropertyExpression&, Arguments &args)
 {
     return args.object_index_for_argument(stot<int>(argExpr.s));
 }
@@ -281,7 +284,7 @@ auto link_argument(const parser::Expression &argExpr, const PropertyExpression &
 
 template <typename RetType, typename TableGetter>
 struct ColumnGetter {
-    static Columns<RetType> convert(TableGetter&& table, const PropertyExpression & expr, Arguments &args)
+    static Columns<RetType> convert(TableGetter&& table, const PropertyExpression& expr, Arguments&)
     {
         return table()->template column<RetType>(expr.prop->table_column);
     }
@@ -295,7 +298,7 @@ struct ValueGetter<Timestamp, TableGetter> {
     static Timestamp convert(TableGetter&&, const parser::Expression & value, Arguments &args)
     {
         if (value.type != parser::Expression::Type::Argument) {
-            throw std::runtime_error("You must pass in a date argument to compare");
+            throw std::logic_error("You must pass in a date argument to compare");
         }
         return args.timestamp_for_argument(stot<int>(value.s));
     }
@@ -309,7 +312,7 @@ struct ValueGetter<bool, TableGetter> {
             return args.bool_for_argument(stot<int>(value.s));
         }
         if (value.type != parser::Expression::Type::True && value.type != parser::Expression::Type::False) {
-            throw std::runtime_error("Attempting to compare bool property to a non-bool value");
+            throw std::logic_error("Attempting to compare bool property to a non-bool value");
         }
         return value.type == parser::Expression::Type::True;
     }
@@ -356,7 +359,7 @@ struct ValueGetter<String, TableGetter> {
             return args.string_for_argument(stot<int>(value.s));
         }
         if (value.type != parser::Expression::Type::String) {
-            throw std::runtime_error("Attempting to compare String property to a non-String value");
+            throw std::logic_error("Attempting to compare String property to a non-String value");
         }
         return value.s;
     }
@@ -369,7 +372,7 @@ struct ValueGetter<Binary, TableGetter> {
         if (value.type == parser::Expression::Type::Argument) {
             return args.binary_for_argument(stot<int>(value.s));
         }
-        throw std::runtime_error("Binary properties must be compared against a binary argument.");
+        throw std::logic_error("Binary properties must be compared against a binary argument.");
     }
 };
 
@@ -382,7 +385,7 @@ auto value_of_type_for_query(TableGetter&& tables, Value&& value, Arguments &arg
 }
 
 template <typename A, typename B>
-void do_add_comparison_to_query(Query &query, const Schema &schema, const ObjectSchema &object_schema, Predicate::Comparison cmp,
+void do_add_comparison_to_query(Query &query, Predicate::Comparison cmp,
                                 const PropertyExpression &expr, A &lhs, B &rhs, Arguments &args)
 {
     auto type = expr.prop->type;
@@ -420,12 +423,12 @@ void do_add_comparison_to_query(Query &query, const Schema &schema, const Object
             add_link_constraint_to_query(query, cmp.op, expr, link_argument(lhs, rhs, args));
             break;
         default:
-            throw std::runtime_error(util::format("Object type '%1' not supported", string_for_property_type(type)));
+            throw std::logic_error(util::format("Object type '%1' not supported", string_for_property_type(type)));
     }
 }
   
 template<typename T>
-void do_add_null_comparison_to_query(Query &query, Predicate::Operator op, const PropertyExpression &expr, Arguments &args)
+void do_add_null_comparison_to_query(Query &query, Predicate::Operator op, const PropertyExpression &expr)
 {
     Columns<T> column = expr.table_getter()->template column<T>(expr.prop->table_column);
     switch (op) {
@@ -436,12 +439,12 @@ void do_add_null_comparison_to_query(Query &query, Predicate::Operator op, const
             query.and_query(column == realm::null());
             break;
         default:
-            throw std::runtime_error("Only 'equal' and 'not equal' operators supported when comparing against 'null'.");
+            throw std::logic_error("Only 'equal' and 'not equal' operators supported when comparing against 'null'.");
     }
 }
     
 template<>
-void do_add_null_comparison_to_query<Binary>(Query &query, Predicate::Operator op, const PropertyExpression &expr, Arguments &args)
+void do_add_null_comparison_to_query<Binary>(Query &query, Predicate::Operator op, const PropertyExpression &expr)
 {
     precondition(expr.indexes.empty(), "KeyPath queries not supported for data comparisons.");
     Columns<Binary> column = expr.table_getter()->template column<Binary>(expr.prop->table_column);
@@ -453,60 +456,58 @@ void do_add_null_comparison_to_query<Binary>(Query &query, Predicate::Operator o
             query.equal(expr.prop->table_column, realm::null());
             break;
         default:
-            throw std::runtime_error("Only 'equal' and 'not equal' operators supported when comparing against 'null'.");
+            throw std::logic_error("Only 'equal' and 'not equal' operators supported when comparing against 'null'.");
     }
 }
     
 template<>
-void do_add_null_comparison_to_query<Link>(Query &query, Predicate::Operator op, const PropertyExpression &expr, Arguments &args)
+void do_add_null_comparison_to_query<Link>(Query &query, Predicate::Operator op, const PropertyExpression &expr)
 {
     precondition(expr.indexes.empty(), "KeyPath queries not supported for object comparisons.");
     switch (op) {
         case Predicate::Operator::NotEqual:
-            // for not equal we negate the query and then fallthrough
             query.Not();
+            REALM_FALLTHROUGH;
         case Predicate::Operator::Equal:
             query.and_query(query.get_table()->column<Link>(expr.prop->table_column).is_null());
             break;
         default:
-            throw std::runtime_error("Only 'equal' and 'not equal' operators supported for object comparison.");
+            throw std::logic_error("Only 'equal' and 'not equal' operators supported for object comparison.");
     }
 }
 
-void do_add_null_comparison_to_query(Query &query, const Schema &schema, const ObjectSchema &object_schema, Predicate::Comparison cmp,
-                                     const PropertyExpression &expr, Arguments &args)
+void do_add_null_comparison_to_query(Query &query, Predicate::Comparison cmp, const PropertyExpression &expr)
 {
     auto type = expr.prop->type;
     switch (type) {
         case realm::PropertyType::Bool:
-            do_add_null_comparison_to_query<bool>(query, cmp.op, expr, args);
+            do_add_null_comparison_to_query<bool>(query, cmp.op, expr);
             break;
         case realm::PropertyType::Date:
-            do_add_null_comparison_to_query<Timestamp>(query, cmp.op, expr, args);
+            do_add_null_comparison_to_query<Timestamp>(query, cmp.op, expr);
             break;
         case realm::PropertyType::Double:
-            do_add_null_comparison_to_query<Double>(query, cmp.op, expr, args);
+            do_add_null_comparison_to_query<Double>(query, cmp.op, expr);
             break;
         case realm::PropertyType::Float:
-            do_add_null_comparison_to_query<Float>(query, cmp.op, expr, args);
+            do_add_null_comparison_to_query<Float>(query, cmp.op, expr);
             break;
         case realm::PropertyType::Int:
-            do_add_null_comparison_to_query<Int>(query, cmp.op, expr, args);
+            do_add_null_comparison_to_query<Int>(query, cmp.op, expr);
             break;
         case realm::PropertyType::String:
-            do_add_null_comparison_to_query<String>(query, cmp.op, expr, args);
+            do_add_null_comparison_to_query<String>(query, cmp.op, expr);
             break;
         case realm::PropertyType::Data:
-            do_add_null_comparison_to_query<Binary>(query, cmp.op, expr, args);
+            do_add_null_comparison_to_query<Binary>(query, cmp.op, expr);
             break;
         case realm::PropertyType::Object:
-            do_add_null_comparison_to_query<Link>(query, cmp.op, expr, args);
+            do_add_null_comparison_to_query<Link>(query, cmp.op, expr);
             break;
         case realm::PropertyType::Array:
-            throw std::runtime_error("Comparing Lists to 'null' is not supported");
-        default: {
-            throw std::runtime_error(std::string("Object type ") + string_for_property_type(type) + " not supported");
-        }
+            throw std::logic_error("Comparing Lists to 'null' is not supported");
+        default:
+            throw std::logic_error(util::format("Object type '%1' not supported", string_for_property_type(type)));
     }
 }
     
@@ -528,23 +529,23 @@ void add_comparison_to_query(Query &query, const Predicate &pred, Arguments &arg
     if (t0 == parser::Expression::Type::KeyPath && t1 != parser::Expression::Type::KeyPath) {
         PropertyExpression expr(query, schema, object_schema, cmpr.expr[0].s);
         if (expression_is_null(cmpr.expr[1], args)) {
-            do_add_null_comparison_to_query(query, schema, *object_schema, cmpr, expr, args);
+            do_add_null_comparison_to_query(query, cmpr, expr);
         }
         else {
-            do_add_comparison_to_query(query, schema, *object_schema, cmpr, expr, expr, cmpr.expr[1], args);
+            do_add_comparison_to_query(query, cmpr, expr, expr, cmpr.expr[1], args);
         }
     }
     else if (t0 != parser::Expression::Type::KeyPath && t1 == parser::Expression::Type::KeyPath) {
         PropertyExpression expr(query, schema, object_schema, cmpr.expr[1].s);
         if (expression_is_null(cmpr.expr[0], args)) {
-            do_add_null_comparison_to_query(query, schema, *object_schema, cmpr, expr, args);
+            do_add_null_comparison_to_query(query, cmpr, expr);
         }
         else {
-            do_add_comparison_to_query(query, schema, *object_schema, cmpr, expr, cmpr.expr[0], expr, args);
+            do_add_comparison_to_query(query, cmpr, expr, cmpr.expr[0], expr, args);
         }
     }
     else {
-        throw std::runtime_error("Predicate expressions must compare a keypath and another keypath or a constant value");
+        throw std::logic_error("Predicate expressions must compare a keypath and another keypath or a constant value");
     }
 }
 
@@ -591,9 +592,13 @@ void update_query_with_predicate(Query &query, const Predicate &pred, Arguments 
             break;
 
         default:
-            throw std::runtime_error("Invalid predicate type");
+            throw std::logic_error("Invalid predicate type");
     }
 }
+} // anonymous namespace
+
+namespace realm {
+namespace query_builder {
 
 void apply_predicate(Query &query, const Predicate &predicate, Arguments &arguments, const Schema &schema, const std::string &objectType)
 {
@@ -604,4 +609,5 @@ void apply_predicate(Query &query, const Predicate &predicate, Arguments &argume
     precondition(validateMessage.empty(), validateMessage.c_str());
 }
 
-}}
+}
+}
