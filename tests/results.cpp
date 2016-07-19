@@ -780,7 +780,7 @@ TEST_CASE("results: snapshots") {
     SECTION("snapshot of Results based on TableView from query") {
         auto table = r->read_group()->get_table("class_object");
         Query q = table->column<Int>(0) > 0;
-        Results results(r, q.find_all(), {});
+        Results results(r, q.find_all());
 
         {
             // A newly-added row should not appear in the snapshot.
@@ -832,7 +832,7 @@ TEST_CASE("results: snapshots") {
         });
 
         TableView backlinks = linked_to->get_backlink_view(0, object.get(), 1);
-        Results results(r, std::move(backlinks), {});
+        Results results(r, std::move(backlinks));
 
         auto lv = object->get_linklist(1, object->add_empty_row());
 
@@ -882,7 +882,7 @@ TEST_CASE("results: snapshots") {
     SECTION("snapshot of Results with notification callback registered") {
         auto table = r->read_group()->get_table("class_object");
         Query q = table->column<Int>(0) > 0;
-        Results results(r, q.find_all(), {});
+        Results results(r, q.find_all());
 
         auto token = results.add_notification_callback([&](CollectionChangeSet, std::exception_ptr err) {
             REQUIRE_FALSE(err);
@@ -909,7 +909,7 @@ TEST_CASE("results: snapshots") {
     SECTION("adding notification callback to snapshot throws") {
         auto table = r->read_group()->get_table("class_object");
         Query q = table->column<Int>(0) > 0;
-        Results results(r, q.find_all(), {});
+        Results results(r, q.find_all());
         auto snapshot = results.snapshot();
         CHECK_THROWS(snapshot.add_notification_callback([](CollectionChangeSet, std::exception_ptr) {}));
     }

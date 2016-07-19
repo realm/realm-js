@@ -23,8 +23,8 @@
 #include "object_schema.hpp"
 #include "object_store.hpp"
 #include "schema.hpp"
-#include "util/format.hpp"
 #include "util/compiler.hpp"
+#include "util/format.hpp"
 
 #include <stdexcept>
 
@@ -289,7 +289,8 @@ size_t Results::index_of(Row const& row)
         throw DetatchedAccessorException{};
     }
     if (m_table && row.get_table() != m_table) {
-        throw IncorrectTableException(m_object_schema->name,
+        throw IncorrectTableException(
+            ObjectStore::object_type_for_table_name(m_table->get_name()),
             ObjectStore::object_type_for_table_name(row.get_table()->get_name()),
             "Attempting to get the index of a Row of the wrong type"
         );

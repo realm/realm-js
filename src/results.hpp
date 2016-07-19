@@ -51,7 +51,7 @@ public:
     Results();
     Results(SharedRealm r, Table& table);
     Results(SharedRealm r, Query q, SortOrder s = {});
-    Results(SharedRealm r, TableView tv, SortOrder s);
+    Results(SharedRealm r, TableView tv, SortOrder s = {});
     Results(SharedRealm r, LinkViewRef lv, util::Optional<Query> q = {}, SortOrder s = {});
     ~Results();
 
