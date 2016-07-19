@@ -127,8 +127,8 @@ struct ObjectSchemaValidationException : public std::logic_error {
     ObjectSchemaValidationException(std::string message) : logic_error(std::move(message)) {}
 
     template<typename... Args>
-    ObjectSchemaValidationException(Args&&... args)
-    : std::logic_error(util::format(std::forward<Args>(args)...)) { }
+    ObjectSchemaValidationException(const char* fmt, Args&&... args)
+    : std::logic_error(util::format(fmt, std::forward<Args>(args)...)) { }
 };
 
 struct SchemaValidationException : public std::logic_error {

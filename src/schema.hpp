@@ -141,6 +141,7 @@ public:
         REALM_FOR_EACH_SCHEMA_CHANGE_TYPE(REALM_SWITCH_CASE)
 #undef REALM_SWITCH_CASE
         }
+        __builtin_unreachable();
     }
 
     friend bool operator==(SchemaChange const& lft, SchemaChange const& rgt);

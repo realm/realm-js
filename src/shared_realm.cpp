@@ -275,6 +275,7 @@ void Realm::update_schema(Schema schema, uint64_t version, MigrationFunction mig
                 }
                 return false;
         }
+        __builtin_unreachable();
     };
 
     if (no_changes_required())
