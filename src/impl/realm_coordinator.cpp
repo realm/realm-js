@@ -99,8 +99,6 @@ std::shared_ptr<Realm> RealmCoordinator::get_realm(Realm::Config config)
     }
 
     auto realm = std::make_shared<Realm>(std::move(config));
-    realm->init(shared_from_this());
-
     if (!config.read_only() && !m_notifier && config.automatic_change_notifications) {
         try {
             m_notifier = std::make_unique<ExternalCommitHelper>(*this);
@@ -109,6 +107,7 @@ std::shared_ptr<Realm> RealmCoordinator::get_realm(Realm::Config config)
             throw RealmFileException(RealmFileException::Kind::AccessError, config.path, ex.code().message(), "");
         }
     }
+    realm->init(shared_from_this());
 
     m_weak_realm_notifiers.emplace_back(realm, m_config.cache);
     return realm;
