@@ -803,6 +803,12 @@ TEST_CASE("migration: ReadOnly") {
             };
             REQUIRE_NOTHROW(realm->update_schema(schema));
             REQUIRE(realm->schema() == schema);
+
+            for (auto& object_schema : realm->schema()) {
+                for (size_t i = 0; i < object_schema.persisted_properties.size(); ++i) {
+                    REQUIRE(i == object_schema.persisted_properties[i].table_column);
+                }
+            }
         }
 
         SECTION("missing tables") {
@@ -821,6 +827,14 @@ TEST_CASE("migration: ReadOnly") {
             };
             REQUIRE_NOTHROW(realm->update_schema(schema));
             REQUIRE(realm->schema() == schema);
+
+            auto object_schema = realm->schema().find("object");
+            REQUIRE(object_schema->persisted_properties.size() == 1);
+            REQUIRE(object_schema->persisted_properties[0].table_column == 0);
+
+            object_schema = realm->schema().find("second object");
+            REQUIRE(object_schema->persisted_properties.size() == 1);
+            REQUIRE(object_schema->persisted_properties[0].table_column == size_t(-1));
         }
     }
 

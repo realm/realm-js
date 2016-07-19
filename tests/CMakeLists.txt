@@ -12,6 +12,7 @@ set(SOURCES
     main.cpp
     migrations.cpp
     parser.cpp
+    realm.cpp
     results.cpp
     schema.cpp
     transaction_log_parsing.cpp
