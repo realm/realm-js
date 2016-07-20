@@ -1,10 +1,12 @@
 # Realm Object Store
 
-Cross-platform code used across bindings. Bindings may use some or all of the included functionality:
-- `object_store`/`schema`/`object_schema`/`property` - contains the structures and logic used to setup and modify realm files and their schema.
-- `shared_realm` - wraps the `object_store` APIs to provide transactions, notifications, realm caching, migrations, and other higher level functionality.
+The object store contains cross-platform abstractions that are used by the Realm bindings. Bindings may use some or all of the included functionality.
+
+The object store consists of the following components:
+- `object_store`/`schema`/`object_schema`/`property` - contains the structures and logic used to setup and modify Realm files and their schema.
+- `shared_realm` - wraps the `object_store` APIs to provide transactions, notifications, Realm caching, migrations, and other higher level functionality.
 - `object_accessor`/`results`/`list` - accessor classes, object creation/update pipeline, and helpers for creating platform specific property getters and setters.
-- `parser`/`query_builder` - cross platform query parser and query builder - requires and object_accessor specialization for argument support. Depends on https://github.com/ColinH/PEGTL
+- `parser`/`query_builder` - cross platform query parser and query builder - requires an `object_accessor` specialization for argument support. Depends on https://github.com/ColinH/PEGTL
 
 ## Supported Platforms
 
