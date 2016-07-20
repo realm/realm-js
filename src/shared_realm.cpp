@@ -418,6 +418,10 @@ void Realm::write_copy(StringData path, BinaryData key)
 
 void Realm::notify()
 {
+    if (is_closed()) {
+        return;
+    }
+
     verify_thread();
 
     if (m_shared_group->has_changed()) { // Throws

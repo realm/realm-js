@@ -116,9 +116,7 @@ int WeakRealmNotifier::looper_callback(int fd, int events, void* data)
         std::weak_ptr<Realm>* realm_ptr = nullptr;
         while (read(fd, &realm_ptr, sizeof(realm_ptr)) == sizeof(realm_ptr)) {
             if (auto realm = realm_ptr->lock()) {
-                if (!realm->is_closed()) {
-                    realm->notify();
-                }
+                realm->notify();
             }
 
             delete realm_ptr;
