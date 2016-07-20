@@ -54,3 +54,13 @@ If you have installed Clang as an external Xcode toolchain (using the `install-x
 ```
 make run-tests
 ```
+
+## License
+
+Realm Object Store is published under the Apache 2.0 license. The underlying core is available under the
+[Realm Core Binary License](https://github.com/realm/realm-object-store/blob/master/LICENSE#L210-L243)
+while we work to open-source it under the Apache 2.0 license.
+
+**This product is not being made available to any person located in Cuba, Iran,
+North Korea, Sudan, Syria or the Crimea region, or to any other person that is
+not eligible to receive the product under U.S. law.**
