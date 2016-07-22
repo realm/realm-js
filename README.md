@@ -1,6 +1,6 @@
 # Realm Object Store
 
-The object store contains cross-platform abstractions that are used by the Realm bindings. It is not intended to be used directly.
+The object store contains cross-platform abstractions used in Realm products. It is not intended to be used directly.
 
 The object store consists of the following components:
 - `object_store`/`schema`/`object_schema`/`property` - contains the structures and logic used to setup and modify Realm files and their schema.
@@ -8,7 +8,7 @@ The object store consists of the following components:
 - `object_accessor`/`results`/`list` - accessor classes, object creation/update pipeline, and helpers for creating platform specific property getters and setters.
 - `parser`/`query_builder` - cross platform query parser and query builder - requires an `object_accessor` specialization for argument support.
 
-Bindings may use only a subset of the provided components depending on their needs.
+Each Realm product may use only a subset of the provided components depending on its needs.
 
 ## Reporting Bugs
 
@@ -25,7 +25,7 @@ Please report bugs against the Realm product that you're using:
 The object store's CMake build system currently only suports building for OS X and Linux. Building for Linux requires
 [building against a local version of core](#building-against-a-local-version-of-core).
 
-The object store code supports being built for all Apple platforms, Linux and Android when integrated into a binding and using the binding's build system.
+The object store code supports being built for all Apple platforms, Linux and Android when used along with the relevant Realm product's build system.
 
 ## Building
 
