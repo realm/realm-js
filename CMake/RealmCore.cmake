@@ -22,10 +22,8 @@ if(${CMAKE_GENERATOR} STREQUAL "Unix Makefiles")
     set(MAKE_EQUAL_MAKE "MAKE=$(MAKE)")
 endif()
 
-if(SANITIZE_ADDRESS)
-  set(EXPORT_MAKEFLAGS export MAKEFLAGS='EXTRA_CFLAGS=-fsanitize=address EXTRA_LDFLAGS=-fsanitize=address')
-else()
-  set(EXPORT_MAKEFLAGS true)
+if(SANITIZER_FLAGS)
+  set(MAKE_FLAGS "EXTRA_CFLAGS=${SANITIZER_FLAGS}" "EXTRA_LDFLAGS=${SANITIZER_FLAGS}")
 endif()
 
 if (${CMAKE_VERSION} VERSION_GREATER "3.4.0")
@@ -117,7 +115,7 @@ function(clone_and_build_realm_core branch)
         PREFIX ${core_prefix_directory}
         BUILD_IN_SOURCE 1
         CONFIGURE_COMMAND ""
-        BUILD_COMMAND ${EXPORT_MAKEFLAGS} && make -C src/realm librealm.a librealm-dbg.a
+        BUILD_COMMAND make -C src/realm librealm.a librealm-dbg.a ${MAKE_FLAGS}
         INSTALL_COMMAND ""
         ${USES_TERMINAL_BUILD}
         )
@@ -135,7 +133,7 @@ function(build_existing_realm_core core_directory)
         BUILD_IN_SOURCE 1
         BUILD_ALWAYS 1
         CONFIGURE_COMMAND ""
-        BUILD_COMMAND ${EXPORT_MAKEFLAGS} && make -C src/realm librealm.a librealm-dbg.a
+        BUILD_COMMAND make -C src/realm librealm.a librealm-dbg.a ${MAKE_FLAGS}
         INSTALL_COMMAND ""
         ${USES_TERMINAL_BUILD}
         )
