@@ -21,6 +21,7 @@
 #include "binding_context.hpp"
 #include "impl/collection_notifier.hpp"
 #include "index_set.hpp"
+#include "shared_realm.hpp"
 
 #include <realm/group_shared.hpp>
 #include <realm/lang_bind_helper.hpp>
@@ -71,16 +72,21 @@ class TransactLogValidationMixin {
     // the current set of modifications
     bool schema_error_unless_new_table()
     {
-        if (std::find(begin(m_new_tables), end(m_new_tables), m_current_table) == end(m_new_tables)) {
-            schema_error();
+        if (schema_mode == SchemaMode::Additive) {
+            return true;
         }
-        return true;
+        if (std::find(begin(m_new_tables), end(m_new_tables), m_current_table) != end(m_new_tables)) {
+            return true;
+        }
+        schema_error();
     }
 
 protected:
     size_t current_table() const noexcept { return m_current_table; }
 
 public:
+    SchemaMode schema_mode;
+
     // Schema changes which don't involve a change in the schema version are
     // allowed
     bool add_search_index(size_t) { return true; }
@@ -97,11 +103,14 @@ public:
                 ++table;
         }
         m_new_tables.push_back(table_ndx);
+        m_current_table = table_ndx;
         return true;
     }
     bool insert_column(size_t, DataType, StringData, bool) { return schema_error_unless_new_table(); }
     bool insert_link_column(size_t, DataType, StringData, size_t, size_t) { return schema_error_unless_new_table(); }
     bool set_link_type(size_t, LinkType) { return schema_error_unless_new_table(); }
+    bool move_column(size_t, size_t) { return schema_error_unless_new_table(); }
+    bool move_group_level_table(size_t, size_t) { return schema_error_unless_new_table(); }
 
     // Removing or renaming things while a Realm is open is never supported
     bool erase_group_level_table(size_t, size_t) { schema_error(); }
@@ -109,8 +118,6 @@ public:
     bool erase_column(size_t) { schema_error(); }
     bool erase_link_column(size_t, size_t, size_t) { schema_error(); }
     bool rename_column(size_t, StringData) { schema_error(); }
-    bool move_column(size_t, size_t) { schema_error(); }
-    bool move_group_level_table(size_t, size_t) { schema_error(); }
 
     bool select_descriptor(int levels, const size_t*)
     {
@@ -147,8 +154,44 @@ public:
 // A transaction log handler that just validates that all operations made are
 // ones supported by the object store
 struct TransactLogValidator : public TransactLogValidationMixin, public MarkDirtyMixin<TransactLogValidator> {
+    TransactLogValidator(SchemaMode schema_mode) { this->schema_mode = schema_mode; }
     void mark_dirty(size_t, size_t) { }
 };
+
+// Move the value at container[from] to container[to], shifting everything in
+// between, or do nothing if either are out of bounds
+template<typename Container>
+void rotate(Container& container, size_t from, size_t to)
+{
+    REALM_ASSERT(from != to);
+    if (from >= container.size() && to >= container.size())
+        return;
+    if (from >= container.size() || to >= container.size())
+        container.resize(std::max(from, to) + 1);
+    if (from < to)
+        std::rotate(begin(container) + from, begin(container) + to, begin(container) + to + 1);
+    else
+        std::rotate(begin(container) + to, begin(container) + from, begin(container) + from + 1);
+}
+
+// Insert a default-initialized value at pos if there is anything after pos in the container.
+template<typename Container>
+void insert_empty_at(Container& container, size_t pos)
+{
+    if (pos < container.size())
+        container.insert(container.begin() + pos, typename Container::value_type{});
+}
+
+// Shift `value` to reflect a move from `from` to `to`
+void adjust_for_move(size_t& value, size_t from, size_t to)
+{
+    if (value == from)
+        value = to;
+    else if (value > from && value < to)
+        --value;
+    else if (value < from && value > to)
+        ++value;
+}
 
 // Extends TransactLogValidator to also track changes and report it to the
 // binding context if any properties are being observed
@@ -166,28 +209,22 @@ class TransactLogObserver : public TransactLogValidationMixin, public MarkDirtyM
     // Change information for the currently selected LinkList, if any
     ColumnInfo* m_active_linklist = nullptr;
 
-    // Tables which were created during the transaction being processed, which
-    // can have columns inserted without a schema version bump
-    std::vector<size_t> m_new_tables;
-
     // Get the change info for the given column, creating it if needed
     static ColumnInfo& get_change(ObserverState& state, size_t i)
     {
-        if (state.changes.size() <= i) {
-            state.changes.resize(std::max(state.changes.size() * 2, i + 1));
-        }
+        expand_to(state, i);
         return state.changes[i];
     }
 
-    // Loop over the columns which were changed in an observer state
-    template<typename Func>
-    static void for_each(ObserverState& state, Func&& f)
+    static void expand_to(ObserverState& state, size_t i)
     {
-        for (size_t i = 0; i < state.changes.size(); ++i) {
-            auto const& change = state.changes[i];
-            if (change.changed) {
-                f(i, change);
-            }
+        auto old_size = state.changes.size();
+        if (old_size <= i) {
+            auto new_size = std::max(state.changes.size() * 2, i + 1);
+            state.changes.resize(new_size);
+            size_t base = old_size == 0 ? 0 : state.changes[old_size - 1].initial_column_index + 1;
+            for (size_t i = old_size; i < new_size; ++i)
+                state.changes[i].initial_column_index = i - old_size + base;
         }
     }
 
@@ -201,29 +238,21 @@ class TransactLogObserver : public TransactLogValidationMixin, public MarkDirtyM
 
 public:
     template<typename Func>
-    TransactLogObserver(BindingContext* context, SharedGroup& sg, Func&& func, bool validate_schema_changes)
+    TransactLogObserver(BindingContext* context, SharedGroup& sg, Func&& func, util::Optional<SchemaMode> schema_mode)
     : m_context(context)
     {
-        if (!context) {
-            if (validate_schema_changes) {
-                func(TransactLogValidator());
-            }
-            else {
-                func();
-            }
-            return;
+        auto old_version = sg.get_version_of_current_transaction();
+        if (context) {
+            m_observers = context->get_observed_rows();
         }
-
-        m_observers = context->get_observed_rows();
         if (m_observers.empty()) {
-            auto old_version = sg.get_version_of_current_transaction();
-            if (validate_schema_changes) {
-                func(TransactLogValidator());
+            if (schema_mode) {
+                func(TransactLogValidator(*schema_mode));
             }
             else {
                 func();
             }
-            if (old_version != sg.get_version_of_current_transaction()) {
+            if (context && old_version != sg.get_version_of_current_transaction()) {
                 context->did_change({}, {});
             }
             return;
@@ -238,7 +267,7 @@ public:
     {
         auto it = lower_bound(begin(m_observers), end(m_observers), ObserverState{current_table(), row_ndx, nullptr});
         if (it != end(m_observers) && it->table_ndx == current_table() && it->row_ndx == row_ndx) {
-            get_change(*it, col_ndx).changed = true;
+            get_change(*it, col_ndx).kind = ColumnInfo::Kind::Set;
         }
     }
 
@@ -259,9 +288,14 @@ public:
         return true;
     }
 
-    bool insert_empty_rows(size_t, size_t, size_t, bool)
+    bool insert_empty_rows(size_t row_ndx, size_t num_rows, size_t prior_size, bool)
     {
-        // rows are only inserted at the end, so no need to do anything
+        if (row_ndx != prior_size) {
+            for (auto& observer : m_observers) {
+                if (observer.row_ndx >= row_ndx)
+                    observer.row_ndx += num_rows;
+            }
+        }
         return true;
     }
 
@@ -320,7 +354,6 @@ public:
 
         if (o->kind == ColumnInfo::Kind::None) {
             o->kind = kind;
-            o->changed = true;
             o->indices.add(index);
         }
         else if (o->kind == kind) {
@@ -388,7 +421,6 @@ public:
         o->indices.set(old_size);
 
         o->kind = ColumnInfo::Kind::Remove;
-        o->changed = true;
         return true;
     }
 
@@ -404,7 +436,6 @@ public:
 
         if (o->kind == ColumnInfo::Kind::None) {
             o->kind = ColumnInfo::Kind::Set;
-            o->changed = true;
         }
         if (o->kind == ColumnInfo::Kind::Set) {
             for (size_t i = from; i <= to; ++i)
@@ -416,6 +447,39 @@ public:
         }
         return true;
     }
+
+    bool insert_column(size_t ndx, DataType, StringData, bool)
+    {
+        for (auto& observer : m_observers) {
+            if (observer.table_ndx == current_table()) {
+                expand_to(observer, ndx);
+                insert_empty_at(observer.changes, ndx);
+            }
+        }
+        return true;
+    }
+
+    bool move_column(size_t from, size_t to)
+    {
+        for (auto& observer : m_observers) {
+            if (observer.table_ndx == current_table()) {
+                // have to initialize the columns one past the moved one so that
+                // we can later initialize any more columns after that
+                expand_to(observer, std::max(from, to) + 1);
+                rotate(observer.changes, from, to);
+            }
+        }
+        return true;
+    }
+
+    bool move_group_level_table(size_t from, size_t to)
+    {
+        for (auto& observer : m_observers)
+            adjust_for_move(observer.table_ndx, from, to);
+        return true;
+    }
+
+    bool insert_link_column(size_t ndx, DataType type, StringData name, size_t, size_t) { return insert_column(ndx, type, name, false); }
 };
 
 // Extends TransactLogValidator to track changes made to LinkViews
@@ -566,24 +630,71 @@ public:
             change->clear(std::numeric_limits<size_t>::max());
         return true;
     }
+
+    bool insert_column(size_t ndx, DataType, StringData, bool)
+    {
+        for (auto& list : m_info.lists) {
+            if (list.table_ndx == current_table() && list.col_ndx >= ndx)
+                ++list.col_ndx;
+        }
+        return true;
+    }
+
+    bool insert_group_level_table(size_t ndx, size_t, StringData)
+    {
+        for (auto& list : m_info.lists) {
+            if (list.table_ndx >= ndx)
+                ++list.table_ndx;
+        }
+        insert_empty_at(m_info.tables, ndx);
+        insert_empty_at(m_info.table_moves_needed, ndx);
+        insert_empty_at(m_info.table_modifications_needed, ndx);
+        return true;
+    }
+
+    bool move_column(size_t from, size_t to)
+    {
+        for (auto& list : m_info.lists) {
+            if (list.table_ndx == current_table())
+                adjust_for_move(list.col_ndx, from, to);
+        }
+        return true;
+    }
+
+    bool move_group_level_table(size_t from, size_t to)
+    {
+        for (auto& list : m_info.lists)
+            adjust_for_move(list.table_ndx, from, to);
+        rotate(m_info.tables, from, to);
+        rotate(m_info.table_modifications_needed, from, to);
+        rotate(m_info.table_moves_needed, from, to);
+        return true;
+    }
+
+    bool insert_link_column(size_t ndx, DataType type, StringData name, size_t, size_t) { return insert_column(ndx, type, name, false); }
 };
 } // anonymous namespace
 
 namespace realm {
 namespace _impl {
 namespace transaction {
-void advance(SharedGroup& sg, BindingContext* context, SharedGroup::VersionID version)
+void advance(SharedGroup& sg, BindingContext* context, SchemaMode schema_mode, SharedGroup::VersionID version)
 {
     TransactLogObserver(context, sg, [&](auto&&... args) {
         LangBindHelper::advance_read(sg, std::move(args)..., version);
-    }, true);
+    }, schema_mode);
 }
 
-void begin(SharedGroup& sg, BindingContext* context, bool validate_schema_changes)
+void begin_without_validation(SharedGroup& sg)
+{
+    LangBindHelper::promote_to_write(sg);
+}
+
+void begin(SharedGroup& sg, BindingContext* context, SchemaMode schema_mode)
 {
     TransactLogObserver(context, sg, [&](auto&&... args) {
         LangBindHelper::promote_to_write(sg, std::move(args)...);
-    }, validate_schema_changes);
+    }, schema_mode);
 }
 
 void commit(SharedGroup& sg, BindingContext* context)
@@ -599,7 +710,7 @@ void cancel(SharedGroup& sg, BindingContext* context)
 {
     TransactLogObserver(context, sg, [&](auto&&... args) {
         LangBindHelper::rollback_and_continue_as_read(sg, std::move(args)...);
-    }, false);
+    }, util::none);
 }
 
 void advance(SharedGroup& sg,

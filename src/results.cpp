@@ -151,8 +151,8 @@ const ObjectSchema& Results::get_object_schema() const
 
     if (!m_object_schema) {
         REALM_ASSERT(m_realm);
-        auto it = m_realm->config().schema->find(get_object_type());
-        REALM_ASSERT(it != m_realm->config().schema->end());
+        auto it = m_realm->schema().find(get_object_type());
+        REALM_ASSERT(it != m_realm->schema().end());
         m_object_schema = &*it;
     }
 
@@ -528,7 +528,7 @@ Results Results::snapshot() &&
 
 void Results::prepare_async()
 {
-    if (m_realm->config().read_only) {
+    if (m_realm->config().read_only()) {
         throw InvalidTransactionException("Cannot create asynchronous query for read-only Realms");
     }
     if (m_realm->is_in_transaction()) {
