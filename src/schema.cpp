@@ -34,10 +34,6 @@ bool operator==(Schema const& a, Schema const& b)
 }
 }
 
-static bool compare_by_name(ObjectSchema const& lft, ObjectSchema const& rgt) {
-    return lft.name < rgt.name;
-}
-
 Schema::Schema() = default;
 Schema::~Schema() = default;
 Schema::Schema(Schema const&) = default;
@@ -49,28 +45,30 @@ Schema::Schema(std::initializer_list<ObjectSchema> types) : Schema(base(types)) 
 
 Schema::Schema(base types) : base(std::move(types))
 {
-    std::sort(begin(), end(), compare_by_name);
+    std::sort(begin(), end(), [](ObjectSchema const& lft, ObjectSchema const& rgt) {
+        return lft.name < rgt.name;
+    });
 }
 
-Schema::iterator Schema::find(std::string const& name)
+Schema::iterator Schema::find(StringData name)
 {
-    ObjectSchema cmp;
-    cmp.name = name;
-    return find(cmp);
+    auto it = std::lower_bound(begin(), end(), name, [](ObjectSchema const& lft, StringData rgt) {
+        return lft.name < rgt;
+    });
+    if (it != end() && it->name != name) {
+        it = end();
+    }
+    return it;
 }
 
-Schema::const_iterator Schema::find(std::string const& name) const
+Schema::const_iterator Schema::find(StringData name) const
 {
     return const_cast<Schema *>(this)->find(name);
 }
 
 Schema::iterator Schema::find(ObjectSchema const& object) noexcept
 {
-    auto it = std::lower_bound(begin(), end(), object, compare_by_name);
-    if (it != end() && it->name != object.name) {
-        it = end();
-    }
-    return it;
+    return find(object.name);
 }
 
 Schema::const_iterator Schema::find(ObjectSchema const& object) const noexcept

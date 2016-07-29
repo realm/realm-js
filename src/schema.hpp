@@ -23,8 +23,9 @@
 #include <vector>
 
 namespace realm {
-class SchemaChange;
 class ObjectSchema;
+class SchemaChange;
+class StringData;
 struct Property;
 
 class Schema : private std::vector<ObjectSchema> {
@@ -43,8 +44,8 @@ public:
     Schema& operator=(Schema&&);
 
     // find an ObjectSchema by name
-    iterator find(std::string const& name);
-    const_iterator find(std::string const& name) const;
+    iterator find(StringData name);
+    const_iterator find(StringData name) const;
 
     // find an ObjectSchema with the same name as the passed in one
     iterator find(ObjectSchema const& object) noexcept;
