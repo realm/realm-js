@@ -34,7 +34,7 @@
         "../object-store/src/parser",
         "../object-store/external/pegtl",
         "../../core-node/include",
-        "../../node_modules/nan"
+        "<!(node -e 'require(\"nan\")')"
       ],
       "library_dirs": [
         "$(srcdir)/../../core-node"
