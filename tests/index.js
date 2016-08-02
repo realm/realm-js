@@ -30,7 +30,7 @@ function runTests() {
     const RealmTests = require('./js');
 
     RealmTests.registerTests({
-        WorkerTests: require('./js/worker-tests'),
+        AsyncTests: require('./js/async-tests'),
     });
 
     const testNames = RealmTests.getTestNames();
