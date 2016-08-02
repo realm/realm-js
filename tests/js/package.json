@@ -1,5 +1,8 @@
 {
   "name": "realm-tests",
   "version": "0.0.1",
-  "private": true
+  "private": true,
+  "dependencies": {
+    "es6-promise": "^3.2.1"
+  }
 }

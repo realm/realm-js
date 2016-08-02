@@ -30,10 +30,29 @@ namespace realm {
 namespace js {
 
 template<typename T>
-struct ResultsClass : ClassDefinition<T, realm::Results, CollectionClass<T>> {
+class Results : public realm::Results {
+  public:
+    Results(Results const& r) : realm::Results(r) {};
+    Results(realm::Results const& r) : realm::Results(r) {};
+    Results(Results&&) = default;
+    Results& operator=(Results&&) = default;
+    Results& operator=(Results const&) = default;
+    
+    Results() = default;
+    Results(SharedRealm r, Table& table) : realm::Results(r, table) {}
+    Results(SharedRealm r, Query q, SortOrder s = {}) : realm::Results(r, q, s) {}
+    Results(SharedRealm r, TableView tv, SortOrder s) : realm::Results(r, tv, s) {}
+    Results(SharedRealm r, LinkViewRef lv, util::Optional<Query> q = {}, SortOrder s = {}) : realm::Results(r, lv, q, s) {}
+    
+    std::map<Protected<typename T::Function>, NotificationToken, typename Protected<typename T::Function>::Comparator> m_notification_tokens;
+};
+
+template<typename T>
+struct ResultsClass : ClassDefinition<T, realm::js::Results<T>, CollectionClass<T>> {
     using ContextType = typename T::Context;
     using ObjectType = typename T::Object;
     using ValueType = typename T::Value;
+    using FunctionType = typename T::Function;
     using Object = js::Object<T>;
     using Value = js::Value<T>;
     using ReturnValue = js::ReturnValue<T>;
@@ -55,6 +74,11 @@ struct ResultsClass : ClassDefinition<T, realm::Results, CollectionClass<T>> {
     static void sorted(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void is_valid(ContextType, ObjectType, size_t, const ValueType [], ReturnValue &);
 
+    // observable
+    static void add_listener(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void remove_listener(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void remove_all_listeners(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    
     std::string const name = "Results";
 
     MethodMap<T> const methods = {
@@ -62,6 +86,9 @@ struct ResultsClass : ClassDefinition<T, realm::Results, CollectionClass<T>> {
         {"filtered", wrap<filtered>},
         {"sorted", wrap<sorted>},
         {"isValid", wrap<is_valid>},
+        {"addListener", wrap<add_listener>},
+        {"removeListener", wrap<remove_listener>},
+        {"removeAllListeners", wrap<remove_all_listeners>},
     };
     
     PropertyMap<T> const properties = {
@@ -73,13 +100,13 @@ struct ResultsClass : ClassDefinition<T, realm::Results, CollectionClass<T>> {
 
 template<typename T>
 typename T::Object ResultsClass<T>::create_instance(ContextType ctx, realm::Results results) {
-    return create_object<T, ResultsClass<T>>(ctx, new realm::Results(std::move(results)));
+    return create_object<T, ResultsClass<T>>(ctx, new realm::js::Results<T>(std::move(results)));
 }
 
 template<typename T>
 typename T::Object ResultsClass<T>::create_instance(ContextType ctx, SharedRealm realm, const ObjectSchema &object_schema) {
     auto table = ObjectStore::table_for_object_type(realm->read_group(), object_schema.name);
-    return create_object<T, ResultsClass<T>>(ctx, new realm::Results(realm, *table));
+    return create_object<T, ResultsClass<T>>(ctx, new realm::js::Results<T>(realm, *table));
 }
 
 template<typename T>
@@ -153,7 +180,7 @@ typename T::Object ResultsClass<T>::create_sorted(ContextType ctx, const U &coll
         columns.push_back(prop->table_column);
     }
 
-    auto results = new realm::Results(realm, collection.get_query(), {std::move(columns), std::move(ascending)});
+    auto results = new realm::js::Results<T>(realm, collection.get_query(), {std::move(columns), std::move(ascending)});
     return create_object<T, ResultsClass<T>>(ctx, results);
 }
 
@@ -206,6 +233,42 @@ template<typename T>
 void ResultsClass<T>::is_valid(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     return_value.set(get_internal<T, ResultsClass<T>>(this_object)->is_valid());
 }
+    
+template<typename T>
+void ResultsClass<T>::add_listener(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    validate_argument_count(argc, 1);
+    
+    auto results = get_internal<T, ResultsClass<T>>(this_object);
+    auto callback = Value::validated_to_function(ctx, arguments[0]);
+    Protected<FunctionType> protected_callback(ctx, callback);
+    Protected<ObjectType> protected_this(ctx, this_object);
+    Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
+    
+    auto token = results->add_notification_callback([=](CollectionChangeSet change_set, std::exception_ptr exception) {
+        ValueType arguments[2];
+        arguments[0] = static_cast<ObjectType>(protected_this);
+        arguments[1] = CollectionClass<T>::create_collection_change_set(protected_ctx, change_set);
+        Function<T>::call(protected_ctx, protected_callback, protected_this, 2, arguments);
+    });
+    results->m_notification_tokens.emplace(protected_callback, std::move(token));
+}
 
+template<typename T>
+void ResultsClass<T>::remove_listener(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    validate_argument_count(argc, 1);
+    
+    auto results = get_internal<T, ResultsClass<T>>(this_object);
+    auto callback = Value::validated_to_function(ctx, arguments[0]);
+    results->m_notification_tokens.erase(Protected<FunctionType>(ctx, callback));
+}
+
+template<typename T>
+void ResultsClass<T>::remove_all_listeners(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    validate_argument_count(argc, 0);
+    
+    auto results = get_internal<T, ResultsClass<T>>(this_object);
+    results->m_notification_tokens.clear();
+}
+    
 } // js
 } // realm
