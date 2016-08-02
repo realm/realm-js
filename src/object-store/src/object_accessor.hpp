@@ -294,22 +294,21 @@ namespace realm {
             case PropertyType::Date:
                 return Accessor::from_timestamp(ctx, m_row.get_timestamp(column));
             case PropertyType::Object: {
-                auto linkObjectSchema = m_realm->config().schema->find(property.object_type);
+                auto linkObjectSchema = m_realm->schema().find(property.object_type);
                 TableRef table = ObjectStore::table_for_object_type(m_realm->read_group(), linkObjectSchema->name);
                 if (m_row.is_null_link(property.table_column)) {
                     return Accessor::null_value(ctx);
                 }
                 return Accessor::from_object(ctx, std::move(Object(m_realm, *linkObjectSchema, table->get(m_row.get_link(column)))));
             }
-            case PropertyType::Array: {
-                return Accessor::from_list(ctx, std::move(List(m_realm, static_cast<LinkViewRef>(m_row.get_linklist(column)))));
-            }
+            case PropertyType::Array:
+                return Accessor::from_list(ctx, List(m_realm, static_cast<LinkViewRef>(m_row.get_linklist(column))));
             case PropertyType::LinkingObjects: {
-                auto target_object_schema = m_realm->config().schema->find(property.object_type);
+                auto target_object_schema = m_realm->schema().find(property.object_type);
                 auto link_property = target_object_schema->property_for_name(property.link_origin_property_name);
                 TableRef table = ObjectStore::table_for_object_type(m_realm->read_group(), target_object_schema->name);
                 auto tv = m_row.get_table()->get_backlink_view(m_row.get_index(), table.get(), link_property->table_column);
-                Results results(m_realm, std::move(tv), {});
+                Results results(m_realm, std::move(tv));
                 return Accessor::from_results(ctx, std::move(results));
             }
         }
@@ -338,8 +337,7 @@ namespace realm {
             row_index = get_for_primary_key_impl(ctx, table, *primary_prop, primary_value);
 
             if (!try_update && row_index != realm::not_found) {
-                throw DuplicatePrimaryKeyValueException(object_schema.name, *primary_prop,
-                    "Attempting to create an object of type '" + object_schema.name + "' with an existing primary key value.");
+                throw std::logic_error("Attempting to create an object of type '" + object_schema.name + "' with an existing primary key value.");
             }
         }
 

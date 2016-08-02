@@ -1,13 +1,31 @@
+###########################################################################
+#
+# Copyright 2016 Realm Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+###########################################################################
+
 include(ExternalProject)
 
 if(${CMAKE_GENERATOR} STREQUAL "Unix Makefiles")
     set(MAKE_EQUAL_MAKE "MAKE=$(MAKE)")
 endif()
 
-if(SANITIZE_ADDRESS)
-  set(EXPORT_MAKEFLAGS export MAKEFLAGS='EXTRA_CFLAGS=-fsanitize=address EXTRA_LDFLAGS=-fsanitize=address')
-else()
-  set(EXPORT_MAKEFLAGS true)
+set(MAKE_FLAGS "REALM_HAVE_CONFIG=1")
+
+if(SANITIZER_FLAGS)
+  set(MAKE_FLAGS ${MAKE_FLAGS} "EXTRA_CFLAGS=${SANITIZER_FLAGS}" "EXTRA_LDFLAGS=${SANITIZER_FLAGS}")
 endif()
 
 if (${CMAKE_VERSION} VERSION_GREATER "3.4.0")
@@ -99,7 +117,7 @@ function(clone_and_build_realm_core branch)
         PREFIX ${core_prefix_directory}
         BUILD_IN_SOURCE 1
         CONFIGURE_COMMAND ""
-        BUILD_COMMAND ${EXPORT_MAKEFLAGS} && make -C src/realm librealm.a librealm-dbg.a
+        BUILD_COMMAND make -C src/realm librealm.a librealm-dbg.a ${MAKE_FLAGS}
         INSTALL_COMMAND ""
         ${USES_TERMINAL_BUILD}
         )
@@ -117,7 +135,7 @@ function(build_existing_realm_core core_directory)
         BUILD_IN_SOURCE 1
         BUILD_ALWAYS 1
         CONFIGURE_COMMAND ""
-        BUILD_COMMAND ${EXPORT_MAKEFLAGS} && make -C src/realm librealm.a librealm-dbg.a
+        BUILD_COMMAND make -C src/realm librealm.a librealm-dbg.a ${MAKE_FLAGS}
         INSTALL_COMMAND ""
         ${USES_TERMINAL_BUILD}
         )

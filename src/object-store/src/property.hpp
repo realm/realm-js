@@ -36,6 +36,8 @@ namespace realm {
         LinkingObjects  = 14,
     };
 
+    static const char *string_for_property_type(PropertyType type);
+
     struct Property {
         std::string name;
         PropertyType type;
@@ -47,12 +49,39 @@ namespace realm {
 
         size_t table_column = -1;
         bool requires_index() const { return is_primary || is_indexed; }
+
         bool is_indexable() const
         {
             return type == PropertyType::Int
                 || type == PropertyType::Bool
                 || type == PropertyType::Date
                 || type == PropertyType::String;
+        }
+
+        bool type_is_nullable() const
+        {
+            return type == PropertyType::Int
+                || type == PropertyType::Bool
+                || type == PropertyType::Float
+                || type == PropertyType::Double
+                || type == PropertyType::Date
+                || type == PropertyType::String
+                || type == PropertyType::Data
+                || type == PropertyType::Object;
+        }
+
+        std::string type_string() const
+        {
+            switch (type) {
+                case PropertyType::Object:
+                    return "<" + object_type + ">";
+                case PropertyType::Array:
+                    return "array<" + object_type + ">";
+                case PropertyType::LinkingObjects:
+                    return "linking objects<" + object_type + ">";
+                default:
+                    return string_for_property_type(type);
+            }
         }
 
 #if __GNUC__ < 5
@@ -72,7 +101,21 @@ namespace realm {
 #endif
     };
 
-    static inline const char *string_for_property_type(PropertyType type) {
+    inline bool operator==(Property const& lft, Property const& rgt)
+    {
+        // note: not checking table_column
+        // ordered roughly by the cost of the check
+        return lft.type == rgt.type
+            && lft.is_primary == rgt.is_primary
+            && lft.is_nullable == rgt.is_nullable
+            && lft.requires_index() == rgt.requires_index()
+            && lft.name == rgt.name
+            && lft.object_type == rgt.object_type
+            && lft.link_origin_property_name == rgt.link_origin_property_name;
+    }
+
+    static const char *string_for_property_type(PropertyType type)
+    {
         switch (type) {
             case PropertyType::String:
                 return "string";

@@ -1,3 +1,21 @@
+////////////////////////////////////////////////////////////////////////////
+//
+// Copyright 2016 Realm Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+////////////////////////////////////////////////////////////////////////////
+
 #include "catch.hpp"
 
 #include "util/index_helpers.hpp"
@@ -18,29 +36,30 @@
 
 using namespace realm;
 
-TEST_CASE("[results] notifications") {
+TEST_CASE("results: notifications") {
     InMemoryTestFile config;
     config.cache = false;
     config.automatic_change_notifications = false;
-    config.schema = std::make_unique<Schema>(Schema{
-        {"object", "", {
+
+    auto r = Realm::get_shared_realm(config);
+    r->update_schema({
+        {"object", {
             {"value", PropertyType::Int},
             {"link", PropertyType::Object, "linked to object", "", false, false, true}
         }},
-        {"other object", "", {
+        {"other object", {
             {"value", PropertyType::Int}
         }},
-        {"linking object", "", {
+        {"linking object", {
             {"link", PropertyType::Object, "object", "", false, false, true}
         }},
-        {"linked to object", "", {
+        {"linked to object", {
             {"value", PropertyType::Int}
         }}
     });
 
-    auto r = Realm::get_shared_realm(config);
     auto coordinator = _impl::RealmCoordinator::get_existing_coordinator(config.path);
-    auto table = r->read_group()->get_table("class_object");
+    auto table = r->read_group().get_table("class_object");
 
     r->begin_transaction();
     table->add_empty_row(10);
@@ -147,21 +166,21 @@ TEST_CASE("[results] notifications") {
 
         SECTION("modifications to unrelated tables do not send notifications") {
             write([&] {
-                r->read_group()->get_table("class_other object")->add_empty_row();
+                r->read_group().get_table("class_other object")->add_empty_row();
             });
             REQUIRE(notification_calls == 1);
         }
 
         SECTION("irrelevant modifications to linked tables do not send notifications") {
             write([&] {
-                r->read_group()->get_table("class_linked to object")->add_empty_row();
+                r->read_group().get_table("class_linked to object")->add_empty_row();
             });
             REQUIRE(notification_calls == 1);
         }
 
         SECTION("irrelevant modifications to linking tables do not send notifications") {
             write([&] {
-                r->read_group()->get_table("class_linking object")->add_empty_row();
+                r->read_group().get_table("class_linking object")->add_empty_row();
             });
             REQUIRE(notification_calls == 1);
         }
@@ -421,19 +440,20 @@ TEST_CASE("[results] notifications") {
     }
 }
 
-TEST_CASE("[results] async error handling") {
+TEST_CASE("results: async error handling") {
     InMemoryTestFile config;
     config.cache = false;
     config.automatic_change_notifications = false;
-    config.schema = std::make_unique<Schema>(Schema{
-        {"object", "", {
+
+    auto r = Realm::get_shared_realm(config);
+    r->update_schema({
+        {"object", {
             {"value", PropertyType::Int},
         }},
     });
 
-    auto r = Realm::get_shared_realm(config);
     auto coordinator = _impl::RealmCoordinator::get_existing_coordinator(config.path);
-    Results results(r, *r->read_group()->get_table("class_object"));
+    Results results(r, *r->read_group().get_table("class_object"));
 
     class OpenFileLimiter {
     public:
@@ -535,18 +555,19 @@ TEST_CASE("[results] async error handling") {
     }
 }
 
-TEST_CASE("[results] notifications after move") {
+TEST_CASE("results: notifications after move") {
     InMemoryTestFile config;
     config.cache = false;
     config.automatic_change_notifications = false;
-    config.schema = std::make_unique<Schema>(Schema{
-        {"object", "", {
+
+    auto r = Realm::get_shared_realm(config);
+    r->update_schema({
+        {"object", {
             {"value", PropertyType::Int},
         }},
     });
 
-    auto r = Realm::get_shared_realm(config);
-    auto table = r->read_group()->get_table("class_object");
+    auto table = r->read_group().get_table("class_object");
     auto results = std::make_unique<Results>(r, *table);
 
     int notification_calls = 0;
@@ -586,16 +607,16 @@ TEST_CASE("[results] notifications after move") {
     }
 }
 
-TEST_CASE("[results] error messages") {
+TEST_CASE("results: error messages") {
     InMemoryTestFile config;
-    config.schema = std::make_unique<Schema>(Schema{
-        {"object", "", {
+    config.schema = Schema{
+        {"object", {
             {"value", PropertyType::String},
         }},
-    });
+    };
 
     auto r = Realm::get_shared_realm(config);
-    auto table = r->read_group()->get_table("class_object");
+    auto table = r->read_group().get_table("class_object");
     Results results(r, *table);
 
     r->begin_transaction();
@@ -615,15 +636,15 @@ TEST_CASE("results: snapshots") {
     InMemoryTestFile config;
     config.cache = false;
     config.automatic_change_notifications = false;
-    config.schema = std::make_unique<Schema>(Schema{
-        {"object", "", {
+    config.schema = Schema{
+        {"object", {
             {"value", PropertyType::Int},
             {"array", PropertyType::Array, "linked to object"}
         }},
-        {"linked to object", "", {
+        {"linked to object", {
             {"value", PropertyType::Int}
         }}
-    });
+    };
 
     auto r = Realm::get_shared_realm(config);
 
@@ -641,7 +662,7 @@ TEST_CASE("results: snapshots") {
     }
 
     SECTION("snapshot of Results based on Table") {
-        auto table = r->read_group()->get_table("class_object");
+        auto table = r->read_group().get_table("class_object");
         Results results(r, *table);
 
         {
@@ -680,8 +701,8 @@ TEST_CASE("results: snapshots") {
     }
 
     SECTION("snapshot of Results based on LinkView") {
-        auto object = r->read_group()->get_table("class_object");
-        auto linked_to = r->read_group()->get_table("class_linked to object");
+        auto object = r->read_group().get_table("class_object");
+        auto linked_to = r->read_group().get_table("class_linked to object");
 
         write([=]{
             object->add_empty_row();
@@ -732,7 +753,7 @@ TEST_CASE("results: snapshots") {
     }
 
     SECTION("snapshot of Results based on Query") {
-        auto table = r->read_group()->get_table("class_object");
+        auto table = r->read_group().get_table("class_object");
         Query q = table->column<Int>(0) > 0;
         Results results(r, std::move(q));
 
@@ -778,9 +799,9 @@ TEST_CASE("results: snapshots") {
     }
 
     SECTION("snapshot of Results based on TableView from query") {
-        auto table = r->read_group()->get_table("class_object");
+        auto table = r->read_group().get_table("class_object");
         Query q = table->column<Int>(0) > 0;
-        Results results(r, q.find_all(), {});
+        Results results(r, q.find_all());
 
         {
             // A newly-added row should not appear in the snapshot.
@@ -824,15 +845,15 @@ TEST_CASE("results: snapshots") {
     }
 
     SECTION("snapshot of Results based on TableView from backlinks") {
-        auto object = r->read_group()->get_table("class_object");
-        auto linked_to = r->read_group()->get_table("class_linked to object");
+        auto object = r->read_group().get_table("class_object");
+        auto linked_to = r->read_group().get_table("class_linked to object");
 
         write([=]{
             linked_to->add_empty_row();
         });
 
         TableView backlinks = linked_to->get_backlink_view(0, object.get(), 1);
-        Results results(r, std::move(backlinks), {});
+        Results results(r, std::move(backlinks));
 
         auto lv = object->get_linklist(1, object->add_empty_row());
 
@@ -880,9 +901,9 @@ TEST_CASE("results: snapshots") {
     }
 
     SECTION("snapshot of Results with notification callback registered") {
-        auto table = r->read_group()->get_table("class_object");
+        auto table = r->read_group().get_table("class_object");
         Query q = table->column<Int>(0) > 0;
-        Results results(r, q.find_all(), {});
+        Results results(r, q.find_all());
 
         auto token = results.add_notification_callback([&](CollectionChangeSet, std::exception_ptr err) {
             REQUIRE_FALSE(err);
@@ -907,9 +928,9 @@ TEST_CASE("results: snapshots") {
     }
 
     SECTION("adding notification callback to snapshot throws") {
-        auto table = r->read_group()->get_table("class_object");
+        auto table = r->read_group().get_table("class_object");
         Query q = table->column<Int>(0) > 0;
-        Results results(r, q.find_all(), {});
+        Results results(r, q.find_all());
         auto snapshot = results.snapshot();
         CHECK_THROWS(snapshot.add_notification_callback([](CollectionChangeSet, std::exception_ptr) {}));
     }

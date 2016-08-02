@@ -1,3 +1,21 @@
+////////////////////////////////////////////////////////////////////////////
+//
+// Copyright 2015 Realm Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+////////////////////////////////////////////////////////////////////////////
+
 #include "catch.hpp"
 
 #include "util/test_file.hpp"
@@ -22,26 +40,26 @@ TEST_CASE("list") {
     InMemoryTestFile config;
     config.automatic_change_notifications = false;
     config.cache = false;
-    config.schema = std::make_unique<Schema>(Schema{
-        {"origin", "", {
+    auto r = Realm::get_shared_realm(config);
+    r->update_schema({
+        {"origin", {
             {"array", PropertyType::Array, "target"}
         }},
-        {"target", "", {
+        {"target", {
             {"value", PropertyType::Int}
         }},
-        {"other_origin", "", {
+        {"other_origin", {
             {"array", PropertyType::Array, "other_target"}
         }},
-        {"other_target", "", {
+        {"other_target", {
             {"value", PropertyType::Int}
         }},
     });
 
-    auto r = Realm::get_shared_realm(config);
     auto& coordinator = *_impl::RealmCoordinator::get_existing_coordinator(config.path);
 
-    auto origin = r->read_group()->get_table("class_origin");
-    auto target = r->read_group()->get_table("class_target");
+    auto origin = r->read_group().get_table("class_origin");
+    auto target = r->read_group().get_table("class_target");
 
     r->begin_transaction();
 
@@ -189,7 +207,7 @@ TEST_CASE("list") {
 
             auto get_list = [&] {
                 auto r = Realm::get_shared_realm(config);
-                auto lv = r->read_group()->get_table("class_origin")->get_linklist(0, 0);
+                auto lv = r->read_group().get_table("class_origin")->get_linklist(0, 0);
                 return List(r, lv);
             };
             auto change_list = [&] {
@@ -240,8 +258,8 @@ TEST_CASE("list") {
         }
 
         SECTION("tables-of-interest are tracked properly for multiple source versions") {
-            auto other_origin = r->read_group()->get_table("class_other_origin");
-            auto other_target = r->read_group()->get_table("class_other_target");
+            auto other_origin = r->read_group().get_table("class_other_origin");
+            auto other_target = r->read_group().get_table("class_other_target");
 
             r->begin_transaction();
             other_target->add_empty_row();
@@ -420,7 +438,7 @@ TEST_CASE("list") {
     }
 
     SECTION("sort()") {
-        auto objectschema = &*r->config().schema->find("target");
+        auto objectschema = &*r->schema().find("target");
         List list(r, lv);
         auto results = list.sort({{0}, {false}});
 
@@ -435,7 +453,7 @@ TEST_CASE("list") {
     }
 
     SECTION("filter()") {
-        auto objectschema = &*r->config().schema->find("target");
+        auto objectschema = &*r->schema().find("target");
         List list(r, lv);
         auto results = list.filter(target->where().greater(0, 5));
 
@@ -449,7 +467,7 @@ TEST_CASE("list") {
     }
 
     SECTION("snapshot()") {
-        auto objectschema = &*r->config().schema->find("target");
+        auto objectschema = &*r->schema().find("target");
         List list(r, lv);
 
         auto snapshot = list.snapshot();
@@ -481,7 +499,7 @@ TEST_CASE("list") {
 
     SECTION("get_object_schema()") {
         List list(r, lv);
-        auto objectschema = &*r->config().schema->find("target");
+        auto objectschema = &*r->schema().find("target");
         REQUIRE(&list.get_object_schema() == objectschema);
     }
 }

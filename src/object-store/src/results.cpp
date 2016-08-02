@@ -23,8 +23,8 @@
 #include "object_schema.hpp"
 #include "object_store.hpp"
 #include "schema.hpp"
-#include "util/format.hpp"
 #include "util/compiler.hpp"
+#include "util/format.hpp"
 
 #include <stdexcept>
 
@@ -75,17 +75,7 @@ Results::Results(SharedRealm r, TableView tv, SortOrder s)
 }
 
 Results::Results(const Results&) = default;
-
-// Cannot be defaulted as TableViewBase::operator= is missing from the core static library.
-// Delegate to the copy constructor and move-assignment operators instead.
-Results& Results::operator=(const Results& other)
-{
-    if (this != &other) {
-        *this = Results(other);
-    }
-
-    return *this;
-}
+Results& Results::operator=(const Results&) = default;
 
 Results::Results(Results&& other)
 : m_realm(std::move(other.m_realm))
@@ -161,8 +151,8 @@ const ObjectSchema& Results::get_object_schema() const
 
     if (!m_object_schema) {
         REALM_ASSERT(m_realm);
-        auto it = m_realm->config().schema->find(get_object_type());
-        REALM_ASSERT(it != m_realm->config().schema->end());
+        auto it = m_realm->schema().find(get_object_type());
+        REALM_ASSERT(it != m_realm->schema().end());
         m_object_schema = &*it;
     }
 
@@ -299,7 +289,8 @@ size_t Results::index_of(Row const& row)
         throw DetatchedAccessorException{};
     }
     if (m_table && row.get_table() != m_table) {
-        throw IncorrectTableException(m_object_schema->name,
+        throw IncorrectTableException(
+            ObjectStore::object_type_for_table_name(m_table->get_name()),
             ObjectStore::object_type_for_table_name(row.get_table()->get_name()),
             "Attempting to get the index of a Row of the wrong type"
         );
@@ -537,7 +528,7 @@ Results Results::snapshot() &&
 
 void Results::prepare_async()
 {
-    if (m_realm->config().read_only) {
+    if (m_realm->config().read_only()) {
         throw InvalidTransactionException("Cannot create asynchronous query for read-only Realms");
     }
     if (m_realm->is_in_transaction()) {
