@@ -654,6 +654,10 @@ module.exports = {
         TestCase.assertThrows(function() {
             realm.objects(InvalidPerson);
         });
+        TestCase.assertThrows(function() {
+            realm.close();
+            realm.objects('PersonObject');
+        });
     },
 
     testRealmObjectForPrimaryKey: function() {

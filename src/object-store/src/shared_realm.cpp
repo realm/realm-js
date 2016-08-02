@@ -206,6 +206,8 @@ Realm::~Realm()
 
 Group *Realm::read_group()
 {
+    verify_open();
+
     if (!m_group) {
         m_group = &const_cast<Group&>(m_shared_group->begin_read());
     }
@@ -316,6 +318,13 @@ void Realm::verify_in_write() const
 {
     if (!is_in_transaction()) {
         throw InvalidTransactionException("Cannot modify managed objects outside of a write transaction.");
+    }
+}
+
+void Realm::verify_open() const
+{
+    if (is_closed()) {
+        throw InvalidTransactionException("Can't read a Realm that was closed.");
     }
 }
 

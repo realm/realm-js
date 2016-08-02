@@ -133,6 +133,7 @@ namespace realm {
         thread_id_t thread_id() const { return m_thread_id; }
         void verify_thread() const;
         void verify_in_write() const;
+        void verify_open() const;
 
         bool can_deliver_notifications() const noexcept;
 
@@ -140,7 +141,7 @@ namespace realm {
         // Realm after closing it will produce undefined behavior.
         void close();
 
-        bool is_closed() { return !m_read_only_group && !m_shared_group; }
+        bool is_closed() const { return !m_read_only_group && !m_shared_group; }
 
         // returns the file format version upgraded from if an upgrade took place
         util::Optional<int> file_format_upgraded_from_version() const;
