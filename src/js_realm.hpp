@@ -230,10 +230,10 @@ public:
             object_type = Value::validated_to_string(ctx, value, "objectType");
         }
 
-        auto &schema = realm->config().schema;
-        auto object_schema = schema->find(object_type);
+        auto &schema = realm->schema();
+        auto object_schema = schema.find(object_type);
 
-        if (object_schema == schema->end()) {
+        if (object_schema == schema.end()) {
             throw std::runtime_error("Object type '" + object_type + "' not found in schema.");
         }
         return *object_schema;
@@ -268,7 +268,7 @@ static inline void convert_outdated_datetime_columns(const SharedRealm &realm) {
     realm::util::Optional<int> old_file_format_version = realm->file_format_upgraded_from_version();
     if (old_file_format_version && old_file_format_version < 5) {
         // any versions earlier than file format 5 are stored as milliseconds and need to be converted to the new format
-        for (auto& object_schema : *realm->config().schema) {
+        for (auto& object_schema : realm->schema()) {
             auto table = ObjectStore::table_for_object_type(realm->read_group(), object_schema.name);
             for (auto& property : object_schema.persisted_properties) {
                 if (property.type == realm::PropertyType::Date) {
@@ -321,13 +321,15 @@ void RealmClass<T>::constructor(ContextType ctx, ObjectType this_object, size_t 
             
             static const String read_only_string = "readOnly";
             ValueType read_only_value = Object::get_property(ctx, object, read_only_string);
-            config.read_only = Value::is_undefined(ctx, read_only_value) ? false : Value::validated_to_boolean(ctx, read_only_value, "readOnly");
+            if (!Value::is_undefined(ctx, read_only_value) && Value::validated_to_boolean(ctx, read_only_value, "readOnly")) {
+                config.schema_mode = SchemaMode::ReadOnly;
+            }
 
             static const String schema_string = "schema";
             ValueType schema_value = Object::get_property(ctx, object, schema_string);
             if (!Value::is_undefined(ctx, schema_value)) {
                 ObjectType schema_object = Value::validated_to_object(ctx, schema_value, "schema");
-                config.schema.reset(new realm::Schema(Schema<T>::parse_schema(ctx, schema_object, defaults, constructors)));
+                config.schema.emplace(Schema<T>::parse_schema(ctx, schema_object, defaults, constructors));
                 schema_updated = true;
             }
 
@@ -344,7 +346,7 @@ void RealmClass<T>::constructor(ContextType ctx, ObjectType this_object, size_t 
             ValueType migration_value = Object::get_property(ctx, object, migration_string);
             if (!Value::is_undefined(ctx, migration_value)) {
                 FunctionType migration_function = Value::validated_to_function(ctx, migration_value, "migration");
-                config.migration_function = [=](SharedRealm old_realm, SharedRealm realm) {
+                config.migration_function = [=](SharedRealm old_realm, SharedRealm realm, realm::Schema&) {
                     auto old_realm_ptr = new SharedRealm(old_realm);
                     auto realm_ptr = new SharedRealm(realm);
                     ValueType arguments[2] = {
@@ -459,19 +461,19 @@ void RealmClass<T>::get_path(ContextType ctx, ObjectType object, ReturnValue &re
 
 template<typename T>
 void RealmClass<T>::get_schema_version(ContextType ctx, ObjectType object, ReturnValue &return_value) {
-    double version = get_internal<T, RealmClass<T>>(object)->get()->config().schema_version;
+    double version = get_internal<T, RealmClass<T>>(object)->get()->schema_version();
     return_value.set(version);
 }
 
 template<typename T>
 void RealmClass<T>::get_schema(ContextType ctx, ObjectType object, ReturnValue &return_value) {
-    auto schema = get_internal<T, RealmClass<T>>(object)->get()->config().schema.get();
-    return_value.set(Schema<T>::object_for_schema(ctx, *schema));
+    auto& schema = get_internal<T, RealmClass<T>>(object)->get()->schema();
+    return_value.set(Schema<T>::object_for_schema(ctx, schema));
 }
 
 template<typename T>
 void RealmClass<T>::get_read_only(ContextType ctx, ObjectType object, ReturnValue &return_value) {
-    return_value.set(get_internal<T, RealmClass<T>>(object)->get()->config().read_only);
+    return_value.set(get_internal<T, RealmClass<T>>(object)->get()->config().read_only());
 }
 
 template<typename T>
@@ -574,7 +576,7 @@ void RealmClass<T>::delete_all(ContextType ctx, ObjectType this_object, size_t a
         throw std::runtime_error("Can only delete objects within a transaction.");
     }
 
-    for (auto objectSchema : *realm->config().schema) {
+    for (auto objectSchema : realm->schema()) {
         ObjectStore::table_for_object_type(realm->read_group(), objectSchema.name)->clear();
     }
 }
