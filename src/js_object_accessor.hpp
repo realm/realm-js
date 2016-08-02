@@ -112,7 +112,7 @@ struct NativeAccessor {
             }
         }
 
-        auto object_schema = realm->config().schema->find(type);
+        auto object_schema = realm->schema().find(type);
         if (Value::is_array(ctx, object)) {
             object = Schema<T>::dict_for_property_array(ctx, *object_schema, object);
         }

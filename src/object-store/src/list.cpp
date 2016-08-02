@@ -51,8 +51,8 @@ const ObjectSchema& List::get_object_schema() const
 
     if (!m_object_schema) {
         auto object_type = ObjectStore::object_type_for_table_name(m_link_view->get_target_table().get_name());
-        auto it = m_realm->config().schema->find(object_type);
-        REALM_ASSERT(it != m_realm->config().schema->end());
+        auto it = m_realm->schema().find(object_type);
+        REALM_ASSERT(it != m_realm->schema().end());
         m_object_schema = &*it;
     }
     return *m_object_schema;
