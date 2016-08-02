@@ -56,17 +56,13 @@ extern "C" JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executo
     id rctJSContext = object_getIvar(executor, contextIvar);
     if (!rctJSContext && create) {
         Class RCTJavaScriptContext = NSClassFromString(@"RCTJavaScriptContext");
-
-        NSMethodSignature *signature = [RCTJavaScriptContext instanceMethodSignatureForSelector:@selector(initWithJSContext:onThread:)];
-        if (signature) {
+        if ([RCTJavaScriptContext instancesRespondToSelector:@selector(initWithJSContext:onThread:)]) {
             // for RN 0.28.0+
             rctJSContext = [[RCTJavaScriptContext alloc] initWithJSContext:[JSContext new] onThread:[NSThread currentThread]];
         }
         else {
             // for RN < 0.28.0
-            NSMethodSignature *oldSignature = [RCTJavaScriptContext instanceMethodSignatureForSelector:@selector(initWithJSContext:)];
-            assert(oldSignature);
-
+            assert([RCTJavaScriptContext instancesRespondToSelector:@selector(initWithJSContext:)]);
             rctJSContext = [[RCTJavaScriptContext alloc] initWithJSContext:[JSContext new]];
         }
 
