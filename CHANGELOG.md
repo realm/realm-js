@@ -1,13 +1,15 @@
-x.x.x Release notes (yyyy-MM-dd)
+0.14.2 Release notes (2016-7-11)
 =============================================================
 ### Breaking changes
 * Please use `rnpm 1.9.0` or later to link your project. Older versions are no longer supported.
+* ReactNative versions older than v0.14.0 are no longer supported
 
 ### Enhancements
+* Support for ReactNative versions v0.28.0+
 * Added support for debugging in Visual Studio Code.
 
 ### Bugfixes
-* None
+* Fix linker error when building for minimum target version of iOS 7.
 
 0.14.1 Release notes (2016-6-28)
 =============================================================

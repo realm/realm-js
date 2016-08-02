@@ -42,7 +42,8 @@ using namespace realm::rpc;
 #endif
 
 @interface NSObject ()
-- (instancetype)initWithJSContext:(void *)context;
+- (instancetype)initWithJSContext:(JSContext *)context;
+- (instancetype)initWithJSContext:(JSContext *)context onThread:(NSThread *)thread;
 - (JSGlobalContextRef)ctx;
 @end
 
@@ -55,17 +56,14 @@ extern "C" JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executo
     id rctJSContext = object_getIvar(executor, contextIvar);
     if (!rctJSContext && create) {
         Class RCTJavaScriptContext = NSClassFromString(@"RCTJavaScriptContext");
-        NSMethodSignature *signature = [RCTJavaScriptContext instanceMethodSignatureForSelector:@selector(initWithJSContext:)];
-        assert(signature);
-
-        // React Native 0.14+ expects a JSContext here, but we also support 0.13.x, which takes a JSGlobalContextRef.
-        if (!strcmp([signature getArgumentTypeAtIndex:2], "@")) {
-            JSContext *context = [[JSContext alloc] init];
-            rctJSContext = [[RCTJavaScriptContext alloc] initWithJSContext:(void *)context];
+        if ([RCTJavaScriptContext instancesRespondToSelector:@selector(initWithJSContext:onThread:)]) {
+            // for RN 0.28.0+
+            rctJSContext = [[RCTJavaScriptContext alloc] initWithJSContext:[JSContext new] onThread:[NSThread currentThread]];
         }
         else {
-            JSGlobalContextRef ctx = JSGlobalContextCreate(NULL);
-            rctJSContext = [[RCTJavaScriptContext alloc] initWithJSContext:ctx];
+            // for RN < 0.28.0
+            assert([RCTJavaScriptContext instancesRespondToSelector:@selector(initWithJSContext:)]);
+            rctJSContext = [[RCTJavaScriptContext alloc] initWithJSContext:[JSContext new]];
         }
 
         object_setIvar(executor, contextIvar, rctJSContext);
@@ -301,7 +299,7 @@ RCT_REMAP_METHOD(emit, emitEvent:(NSString *)eventName withObject:(id)object) {
 
             // Close all cached Realms from the previous JS thread.
             realm::_impl::RealmCoordinator::clear_all_caches();
-
+            
             JSGlobalContextRef ctx = RealmReactGetJSGlobalContextForExecutor(executor, true);
             RJSInitializeInContext(ctx);
         }];
