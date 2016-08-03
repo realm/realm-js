@@ -25,7 +25,7 @@ const TestCase = require('./asserts');
 const schemas = require('./schemas');
 const Worker = require('./worker');
 
-function createNotificationTest(config, getObservable, registerListener, messages) {
+function createNotificationTest(config, getObservable, addListener, removeListener, messages) {
     return new Promise((resolve, reject) => {
         let realm = new Realm(config);
         let observable = getObservable(realm);
@@ -33,6 +33,7 @@ function createNotificationTest(config, getObservable, registerListener, message
 
         // Test will fail if it does not receive a change event within a second.
         let timer = setTimeout(() => {
+            worker.terminate();
             reject(new Error('Timed out waiting for change notification'));
         }, 1000);
 
@@ -41,44 +42,54 @@ function createNotificationTest(config, getObservable, registerListener, message
             worker.terminate();
         };
 
-        registerListener(observable, resolve, reject, cleanup);
+        addListener(observable, resolve, reject, cleanup);
 
         worker.onmessage = (message) => {
             if (message.error) {
                 cleanup();
                 reject(message.error);
             }
+            else if (message.result == 'resolve') {
+                cleanup();
+                resolve();
+            }
+            else if (message.result == 'removeListener') {
+                removeListener(observable);
+            }
         };
 
         for (let message of messages) {
             worker.postMessage(message);
         }
+        worker.postMessage(['echo', 'resolve']);
     });
 };
 
-function createCollectionChangeTest(config, createCollection, messages, expected) {
+function createCollectionChangeTest(config, createCollection, messages, expected, removeAll) {
+    var notificationCount = 0;
+    var listener;
+
     return createNotificationTest(
         config, 
         createCollection, 
         (collection, resolve, reject, cleanup) => {
-            var notificationCount = 0;
-            collection.addListener((object, changes) => {
+            listener = (object, changes) => {
+                //console.log(JSON.stringify(changes));
                 try {
                     TestCase.assertArraysEqual(changes.insertions, expected[notificationCount][0]);
                     TestCase.assertArraysEqual(changes.deletions, expected[notificationCount][1]);
                     TestCase.assertArraysEqual(changes.modifications, expected[notificationCount][2]);
 
                     notificationCount++;
-                    if (notificationCount >= expected.length) {
-                        resolve();
-                        cleanup();
-                    }
                 } catch (e) {
                     reject(e);
                     cleanup();
                 } 
-            });
+            };
+            collection.addListener(listener);
         },
+        removeAll ? (observable) => observable.removeAllListeners() :
+                    (observable) => observable.removeListener(listener),
         messages
     );
 };
@@ -108,13 +119,12 @@ module.exports = {
                     var objects = realm.objects('TestObject');
                     TestCase.assertEqual(objects.length, 1);
                     TestCase.assertEqual(objects[0].doubleCol, 42);
-                    resolve();
                 } catch (e) {
                     reject(e);
-                } finally {
                     cleanup();
                 }
             }),
+            undefined,
             [[config, 'create', 'TestObject', [{doubleCol: 42}]]]
         );
     },
@@ -123,9 +133,7 @@ module.exports = {
         var config = { schema: [schemas.TestObject] };
         return createCollectionChangeTest(
             config,
-            function(realm) {
-                return realm.objects('TestObject');
-            },
+            (realm) => realm.objects('TestObject'),
             [
                 [config, 'create', 'TestObject', [{ doubleCol: 1 }]],
                 [config, 'create', 'TestObject', [{ doubleCol: 2 }, { doubleCol: 3 }]]
@@ -135,6 +143,41 @@ module.exports = {
                 [[0], [], []],
                 [[1, 2], [], []]
             ]
+        );
+    },
+
+    testResultsRemoveNotifications() {
+        var config = { schema: [schemas.TestObject] };
+        return createCollectionChangeTest(
+            config,
+            (realm) => realm.objects('TestObject'),
+            [
+                [config, 'create', 'TestObject', [{ doubleCol: 1 }]],
+                ['echo', 'removeListener'],
+                [config, 'create', 'TestObject', [{ doubleCol: 2 }, { doubleCol: 3 }]]
+            ],
+            [
+                [[], [], []],
+                [[0], [], []],
+            ]
+        );
+    },
+
+    testResultsRemoveAllNotifications() {
+        var config = { schema: [schemas.TestObject] };
+        return createCollectionChangeTest(
+            config,
+            (realm) => realm.objects('TestObject'),
+            [
+                [config, 'create', 'TestObject', [{ doubleCol: 1 }]],
+                ['echo', 'removeListener'],
+                [config, 'create', 'TestObject', [{ doubleCol: 2 }, { doubleCol: 3 }]]
+            ],
+            [
+                [[], [], []],
+                [[0], [], []],
+            ],
+            true
         );
     },
 
@@ -163,9 +206,7 @@ module.exports = {
         var config = { schema: [schemas.IntPrimary] };
         return createCollectionChangeTest(
             config,
-            function(realm) {
-                return realm.objects('IntPrimaryObject');
-            },
+            (realm) => realm.objects('IntPrimaryObject'),
             [
                 [config, 'create', 'IntPrimaryObject', [[0, '0'], [1, '1'], [2, '2']]],
                 [config, 'update', 'IntPrimaryObject', [[0, '00'], [2, '22']]]
@@ -196,6 +237,53 @@ module.exports = {
                 [[], [], []],
                 [[0, 1], [], []]
             ]
+        );
+    },
+
+    testListRemoveNotifications() {
+        var config = { schema: [schemas.TestObject, ListObject] };
+        return createCollectionChangeTest(
+            config,
+            function(realm) {
+                let listObject;
+                realm.write(() => {
+                    listObject = realm.create('ListObject', {list: []})
+                });
+                return listObject.list;
+            },
+            [
+                [config, 'list_method', 'ListObject', 'list', 'push', {doubleCol: 0}, {doubleCol: 1}],
+                ['echo', 'removeListener'],
+                [config, 'list_method', 'ListObject', 'list', 'push', {doubleCol: 0}, {doubleCol: 1}],
+            ],
+            [
+                [[], [], []],
+                [[0, 1], [], []]
+            ]
+        );
+    },
+
+    testListRemoveAllNotifications() {
+        var config = { schema: [schemas.TestObject, ListObject] };
+        return createCollectionChangeTest(
+            config,
+            function(realm) {
+                let listObject;
+                realm.write(() => {
+                    listObject = realm.create('ListObject', {list: []})
+                });
+                return listObject.list;
+            },
+            [
+                [config, 'list_method', 'ListObject', 'list', 'push', {doubleCol: 0}, {doubleCol: 1}],
+                ['echo', 'removeListener'],
+                [config, 'list_method', 'ListObject', 'list', 'push', {doubleCol: 0}, {doubleCol: 1}],
+            ],
+            [
+                [[], [], []],
+                [[0, 1], [], []]
+            ],
+            true
         );
     },
 

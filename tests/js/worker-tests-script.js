@@ -29,6 +29,9 @@ process.on('message', (message) => {
 
 function handleMessage(message) {
     let error, result;
+    if (message[0] == 'echo') {
+        return {result: message[1]}
+    }
 
     try {
         let realm = new Realm(message[0]);
