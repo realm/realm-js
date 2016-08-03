@@ -259,12 +259,13 @@ void ListClass<T>::add_listener(ContextType ctx, ObjectType this_object, size_t 
     Protected<ObjectType> protected_this(ctx, this_object);
     Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
 
-    list->add_notification_callback([=](CollectionChangeSet change_set, std::exception_ptr exception) {
+    auto token = list->add_notification_callback([=](CollectionChangeSet change_set, std::exception_ptr exception) {
         ValueType arguments[2];
         arguments[0] = static_cast<ObjectType>(protected_this);
-        arguments[1] = Value::from_undefined(protected_ctx);
+        arguments[1] = CollectionClass<T>::create_collection_change_set(protected_ctx, change_set);
         Function<T>::call(protected_ctx, protected_callback, protected_this, 2, arguments);
     });
+    list->m_notification_tokens.emplace(protected_callback, std::move(token));
 }
     
 template<typename T>

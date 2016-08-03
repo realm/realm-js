@@ -163,5 +163,34 @@ module.exports = {
                 [[], [], [0, 2]]
             ]
         );
-    }
+    },
+
+    testListAddNotifications() {
+        let ListObject = {
+            name: 'ListObject',
+            primaryKey: 'id',
+            properties: {
+                id: 'int',
+                list: {type: 'list', objectType: 'TestObject'},
+            }
+        };
+        var config = { schema: [schemas.TestObject, ListObject] };
+        return createCollectionChangeTest(
+            config,
+            function(realm) {
+                let listObject;
+                realm.write(() => {
+                    listObject = realm.create('ListObject', {id: 0, list: []})
+                });
+                return listObject.list;
+            },
+            [
+                [config, 'list_method', 'ListObject', 'list', 'push', {doubleCol: 0}, {doubleCol: 1}]
+            ],
+            [
+                [[], [], []],
+                [[0, 1], [], []]
+            ]
+        );
+    },
 };

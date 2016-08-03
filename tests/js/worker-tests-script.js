@@ -44,6 +44,11 @@ function handleMessage(message) {
             else if (message[1] == 'update') {
                 result = message[3].map((value) => realm.create(message[2], value, true));
             }
+            else if (message[1] == 'list_method') {
+                var listObject = realm.objects(message[2])[0];
+                var list = listObject[message[3]];
+                result = list[message[4]].apply(list, message.slice(5));
+            }
             else {
                 throw new Error('Unknown realm method: ' + message[1]);
             }
