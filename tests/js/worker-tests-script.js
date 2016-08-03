@@ -33,9 +33,18 @@ function handleMessage(message) {
     try {
         let realm = new Realm(message[0]);
         realm.write(() => {
-            var method = realm[message[1]];
-            if (method) {
-                result = method.apply(realm, message.slice(2));
+            if (message[1] == 'create') {
+                result = message[3].map((value) => realm.create(message[2], value));
+            }
+            else if (message[1] == 'delete') {
+                let objects = realm.objects(message[2]);
+                objects = message[3].map((index) => objects[index]);
+                realm.delete(objects);
+            }
+            else if (message[1] == 'update') {
+                let objects = realm.objects(message[2]);
+                objects = message[3].map((index) => objects[index]);
+                realm.delete(objects);
             }
             else {
                 throw new Error('Unknown realm method: ' + message[1]);

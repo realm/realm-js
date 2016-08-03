@@ -25,10 +25,10 @@ const TestCase = require('./asserts');
 const schemas = require('./schemas');
 const Worker = require('./worker');
 
-function createCollectionChangePromise(config, createCollection, messages, expected) {
+function createNotificationTest(config, getObservable, registerListener, messages) {
     return new Promise((resolve, reject) => {
         let realm = new Realm(config);
-        let collection = createCollection(realm);
+        let observable = getObservable(realm);
         let worker = new Worker(__dirname + '/worker-tests-script.js');
 
         // Test will fail if it does not receive a change event within a second.
@@ -41,24 +41,7 @@ function createCollectionChangePromise(config, createCollection, messages, expec
             worker.terminate();
         };
 
-        // Test will pass if it receives a change event and the Realm changed.
-        var notificationCount = 0;
-        collection.addListener((name, changes) => {
-            try {
-                TestCase.assertArraysEqual(changes.insertions, expected[notificationCount][0]);
-                TestCase.assertArraysEqual(changes.deletions, expected[notificationCount][1]);
-                TestCase.assertArraysEqual(changes.modifications, expected[notificationCount][2]);
-
-                notificationCount++;
-                if (notificationCount >= expected.length) {
-                    resolve();
-                    cleanup();
-                }
-            } catch (e) {
-                reject(e);
-                cleanup();
-            } 
-        });
+        registerListener(observable, resolve, reject, cleanup);
 
         worker.onmessage = (message) => {
             if (message.error) {
@@ -73,27 +56,43 @@ function createCollectionChangePromise(config, createCollection, messages, expec
     });
 };
 
+function createCollectionChangeTest(config, createCollection, messages, expected) {
+    return createNotificationTest(
+        config, 
+        createCollection, 
+        (collection, resolve, reject, cleanup) => {
+            var notificationCount = 0;
+            collection.addListener((object, changes) => {
+                console.log(JSON.stringify(changes));
+                try {
+                    TestCase.assertArraysEqual(changes.insertions, expected[notificationCount][0]);
+                    TestCase.assertArraysEqual(changes.deletions, expected[notificationCount][1]);
+                    TestCase.assertArraysEqual(changes.modifications, expected[notificationCount][2]);
+
+                    notificationCount++;
+                    if (notificationCount >= expected.length) {
+                        resolve();
+                        cleanup();
+                    }
+                } catch (e) {
+                    reject(e);
+                    cleanup();
+                } 
+            });
+        },
+        messages
+    );
+};
+
 module.exports = {
     testChangeNotifications() {
-        return new Promise((resolve, reject) => {
-            let config = {schema: [schemas.TestObject]};
-            let realm = new Realm(config);
-            let objects = realm.objects('TestObject');
-            let worker = new Worker(__dirname + '/worker-tests-script.js');
-
-            // Test will fail if it does not receive a change event within a second.
-            let timer = setTimeout(() => {
-                reject(new Error('Timed out waiting for change notification'));
-            }, 1000);
-
-            let cleanup = () => {
-                clearTimeout(timer);
-                worker.terminate();
-            };
-
-            // Test will pass if it receives a change event and the Realm changed.
-            realm.addListener('change', () => {
+        var config = { schema: [schemas.TestObject] };
+        return createNotificationTest(
+            config, 
+            (realm) => realm, 
+            (realm, resolve, reject, cleanup) => realm.addListener('change', () => {
                 try {
+                    var objects = realm.objects('TestObject');
                     TestCase.assertEqual(objects.length, 1);
                     TestCase.assertEqual(objects[0].doubleCol, 42);
                     resolve();
@@ -102,83 +101,48 @@ module.exports = {
                 } finally {
                     cleanup();
                 }
-            });
-
-            worker.onmessage = (message) => {
-                if (message.error) {
-                    cleanup();
-                    reject(message.error);
-                }
-            };
-
-            worker.postMessage([config, 'create', 'TestObject', { doubleCol: 42 }]);
-        });
+            }),
+            [[config, 'create', 'TestObject', [{doubleCol: 42}]]]
+        );
     },
-    testResultsChangeNotifications() {
+
+    testResultsAddNotifications() {
         var config = { schema: [schemas.TestObject] };
-        return createCollectionChangePromise(
+        return createCollectionChangeTest(
             config,
             function(realm) {
                 return realm.objects('TestObject');
             },
             [
-                [config, 'create', 'TestObject', { doubleCol: 42 }]
+                [config, 'create', 'TestObject', [{ doubleCol: 1 }]],
+                [config, 'create', 'TestObject', [{ doubleCol: 2 }, { doubleCol: 3 }]]
             ],
             [
                 [[], [], []],
-                [[0], [], []]
+                [[0], [], []],
+                [[1, 2], [], []]
             ]
         );
-        /*
-        return new Promise((resolve, reject) => {
-            let config = {schema: [schemas.TestObject]};
-            let realm = new Realm(config);
-            let objects = realm.objects('TestObject');
-            let worker = new Worker(__dirname + '/worker-tests-script.js');
+    },
 
-            // Test will fail if it does not receive a change event within a second.
-            let timer = setTimeout(() => {
-                reject(new Error('Timed out waiting for change notification'));
-            }, 1000);
-
-            let cleanup = () => {
-                clearTimeout(timer);
-                worker.terminate();
-            };
-
-            // Test will pass if it receives a change event and the Realm changed.
-            var first = true;
-            objects.addListener((name, changes) => {
-                if (first) {
-                    TestCase.assertArraysEqual(changes.insertions, []);
-                    TestCase.assertArraysEqual(changes.deletions, []);
-                    TestCase.assertArraysEqual(changes.modifications, []);
-
-                    first = false;
-                    return;
-                }
-
-                try {
-                    TestCase.assertEqual(objects.length, 1);
-                    TestCase.assertArraysEqual(changes.insertions, [0]);
-                    TestCase.assertArraysEqual(changes.deletions, []);
-                    TestCase.assertArraysEqual(changes.modifications, []);
-                    resolve();
-                } catch (e) {
-                    reject(e);
-                } finally {
-                    cleanup();
-                }
-            });
-
-            worker.onmessage = (message) => {
-                if (message.error) {
-                    cleanup();
-                    reject(message.error);
-                }
-            };
-
-            worker.postMessage([config, 'create', 'TestObject', { doubleCol: 42 }]);
-        });*/
+    testResultsDeleteNotifications() {
+        var config = { schema: [schemas.TestObject] };
+        return createCollectionChangeTest(
+            config,
+            function(realm) {
+                return realm.objects('TestObject');
+            },
+            [
+                [config, 'create', 'TestObject', [[0], [1], [2], [3], [4]]],
+                [config, 'delete', 'TestObject', [4]],
+                [config, 'delete', 'TestObject', [0, 2]]
+            ],
+            [
+                [[], [], []],
+                [[0, 1, 2, 3, 4], [], []],
+                [[], [4], []],
+                [[0], [0, 2, 3], []]
+            ]
+        );
     }
 };
