@@ -42,9 +42,7 @@ function handleMessage(message) {
                 realm.delete(objects);
             }
             else if (message[1] == 'update') {
-                let objects = realm.objects(message[2]);
-                objects = message[3].map((index) => objects[index]);
-                realm.delete(objects);
+                result = message[3].map((value) => realm.create(message[2], value, true));
             }
             else {
                 throw new Error('Unknown realm method: ' + message[1]);

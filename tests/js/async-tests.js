@@ -144,5 +144,24 @@ module.exports = {
                 [[0], [0, 2, 3], []]
             ]
         );
+    },
+
+    testResultsUpdateNotifications() {
+        var config = { schema: [schemas.IntPrimary] };
+        return createCollectionChangeTest(
+            config,
+            function(realm) {
+                return realm.objects('IntPrimaryObject');
+            },
+            [
+                [config, 'create', 'IntPrimaryObject', [[0, '0'], [1, '1'], [2, '2']]],
+                [config, 'update', 'IntPrimaryObject', [[0, '00'], [2, '22']]]
+            ],
+            [
+                [[], [], []],
+                [[0, 1, 2], [], []],
+                [[], [], [0, 2]]
+            ]
+        );
     }
 };
