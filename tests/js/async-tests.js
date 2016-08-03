@@ -84,6 +84,20 @@ function createCollectionChangeTest(config, createCollection, messages, expected
     );
 };
 
+const ListObject = {
+    name: 'ListObject',
+    properties: {
+        list: {type: 'list', objectType: 'TestObject'},
+    }
+};
+
+const PrimaryListObject = {
+    name: 'PrimaryListObject',
+    properties: {
+        list: {type: 'list', objectType: 'IntPrimaryObject'},
+    }
+};
+
 module.exports = {
     testChangeNotifications() {
         var config = { schema: [schemas.TestObject] };
@@ -166,21 +180,13 @@ module.exports = {
     },
 
     testListAddNotifications() {
-        let ListObject = {
-            name: 'ListObject',
-            primaryKey: 'id',
-            properties: {
-                id: 'int',
-                list: {type: 'list', objectType: 'TestObject'},
-            }
-        };
         var config = { schema: [schemas.TestObject, ListObject] };
         return createCollectionChangeTest(
             config,
             function(realm) {
                 let listObject;
                 realm.write(() => {
-                    listObject = realm.create('ListObject', {id: 0, list: []})
+                    listObject = realm.create('ListObject', {list: []})
                 });
                 return listObject.list;
             },
@@ -190,6 +196,69 @@ module.exports = {
             [
                 [[], [], []],
                 [[0, 1], [], []]
+            ]
+        );
+    },
+
+    testListDeleteNotifications() {
+        var config = { schema: [schemas.TestObject, ListObject] };
+        return createCollectionChangeTest(
+            config,
+            function(realm) {
+                let listObject;
+                realm.write(() => {
+                    listObject = realm.create('ListObject', {list: [[0], [1], [2]]})
+                });
+                return listObject.list;
+            },
+            [
+                [config, 'list_method', 'ListObject', 'list', 'splice', 1, 2]
+            ],
+            [
+                [[], [], []],
+                [[], [1, 2], []]
+            ]
+        );
+    },
+
+    testListSpliceNotifications() {
+        var config = { schema: [schemas.TestObject, ListObject] };
+        return createCollectionChangeTest(
+            config,
+            function(realm) {
+                let listObject;
+                realm.write(() => {
+                    listObject = realm.create('ListObject', {list: [[0], [1], [2]]})
+                });
+                return listObject.list;
+            },
+            [
+                [config, 'list_method', 'ListObject', 'list', 'splice', 1, 1, [2]]
+            ],
+            [
+                [[], [], []],
+                [[1], [1], []]
+            ]
+        );
+    },
+
+    testListUpdateNotifications() {
+        var config = { schema: [schemas.IntPrimary, PrimaryListObject] };
+        return createCollectionChangeTest(
+            config,
+            function(realm) {
+                let listObject;
+                realm.write(() => {
+                    listObject = realm.create('PrimaryListObject', {list: [[0, '0'], [1, '1']]})
+                });
+                return listObject.list;
+            },
+            [
+                [config, 'update', 'IntPrimaryObject', [[1, '11']]]
+            ],
+            [
+                [[], [], []],
+                [[], [], [1]]
             ]
         );
     },
