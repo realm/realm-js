@@ -261,16 +261,12 @@ void ResultsClass<T>::remove_listener(ContextType ctx, ObjectType this_object, s
     auto callback = Value::validated_to_function(ctx, arguments[0]);
     auto protected_function = Protected<FunctionType>(ctx, callback);
     
-    auto iter = results->m_notification_tokens.begin();
     typename Protected<FunctionType>::Comparator compare;
-    while (iter != results->m_notification_tokens.end()) {
-        if(compare(iter->first, protected_function)) {
-            iter = results->m_notification_tokens.erase(iter);
-        }
-        else {
-            iter++;
-        }
-    }
+    results->m_notification_tokens.erase(
+        std::remove_if(results->m_notification_tokens.begin(),
+                       results->m_notification_tokens.end(),
+                       [&](const auto & o) { return compare(o.first, protected_function); }),
+        results->m_notification_tokens.end());
 }
 
 template<typename T>

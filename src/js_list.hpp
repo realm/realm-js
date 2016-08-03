@@ -274,18 +274,14 @@ void ListClass<T>::remove_listener(ContextType ctx, ObjectType this_object, size
     
     auto list = get_internal<T, ListClass<T>>(this_object);
     auto callback = Value::validated_to_function(ctx, arguments[0]);
+    
     auto protected_function = Protected<FunctionType>(ctx, callback);
-
-    auto iter = list->m_notification_tokens.begin();
     typename Protected<FunctionType>::Comparator compare;
-    while (iter != list->m_notification_tokens.end()) {
-        if(compare(iter->first, protected_function)) {
-            iter = list->m_notification_tokens.erase(iter);
-        }
-        else {
-            iter++;
-        }
-    }
+    list->m_notification_tokens.erase(
+        std::remove_if(list->m_notification_tokens.begin(),
+                       list->m_notification_tokens.end(),
+                       [&](const auto & o) { return compare(o.first, protected_function); }),
+        list->m_notification_tokens.end());
 }
     
 template<typename T>
