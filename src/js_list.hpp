@@ -38,7 +38,7 @@ class List : public realm::List {
     List(std::shared_ptr<Realm> r, const ObjectSchema& s, LinkViewRef l) noexcept : realm::List(r, l) {}
     List(const realm::List &l) : realm::List(l) {}
     
-    std::map<Protected<typename T::Function>, NotificationToken, typename Protected<typename T::Function>::Comparator> m_notification_tokens;
+    std::vector<std::pair<Protected<typename T::Function>, NotificationToken>> m_notification_tokens;
 };
 
 template<typename T>
@@ -265,7 +265,7 @@ void ListClass<T>::add_listener(ContextType ctx, ObjectType this_object, size_t 
         arguments[1] = CollectionClass<T>::create_collection_change_set(protected_ctx, change_set);
         Function<T>::call(protected_ctx, protected_callback, protected_this, 2, arguments);
     });
-    list->m_notification_tokens.emplace(protected_callback, std::move(token));
+    list->m_notification_tokens.emplace_back(protected_callback, std::move(token));
 }
     
 template<typename T>
@@ -274,7 +274,18 @@ void ListClass<T>::remove_listener(ContextType ctx, ObjectType this_object, size
     
     auto list = get_internal<T, ListClass<T>>(this_object);
     auto callback = Value::validated_to_function(ctx, arguments[0]);
-    list->m_notification_tokens.erase(Protected<FunctionType>(ctx, callback));
+    auto protected_function = Protected<FunctionType>(ctx, callback);
+
+    auto iter = list->m_notification_tokens.begin();
+    typename Protected<FunctionType>::Comparator compare;
+    while (iter != list->m_notification_tokens.end()) {
+        if(compare(iter->first, protected_function)) {
+            iter = list->m_notification_tokens.erase(iter);
+        }
+        else {
+            iter++;
+        }
+    }
 }
     
 template<typename T>

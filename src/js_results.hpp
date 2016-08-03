@@ -44,7 +44,7 @@ class Results : public realm::Results {
     Results(SharedRealm r, TableView tv, SortOrder s) : realm::Results(r, tv, s) {}
     Results(SharedRealm r, LinkViewRef lv, util::Optional<Query> q = {}, SortOrder s = {}) : realm::Results(r, lv, q, s) {}
     
-    std::map<Protected<typename T::Function>, NotificationToken, typename Protected<typename T::Function>::Comparator> m_notification_tokens;
+    std::vector<std::pair<Protected<typename T::Function>, NotificationToken>> m_notification_tokens;
 };
 
 template<typename T>
@@ -250,7 +250,7 @@ void ResultsClass<T>::add_listener(ContextType ctx, ObjectType this_object, size
         arguments[1] = CollectionClass<T>::create_collection_change_set(protected_ctx, change_set);
         Function<T>::call(protected_ctx, protected_callback, protected_this, 2, arguments);
     });
-    results->m_notification_tokens.emplace(protected_callback, std::move(token));
+    results->m_notification_tokens.emplace_back(protected_callback, std::move(token));
 }
 
 template<typename T>
@@ -259,7 +259,18 @@ void ResultsClass<T>::remove_listener(ContextType ctx, ObjectType this_object, s
     
     auto results = get_internal<T, ResultsClass<T>>(this_object);
     auto callback = Value::validated_to_function(ctx, arguments[0]);
-    results->m_notification_tokens.erase(Protected<FunctionType>(ctx, callback));
+    auto protected_function = Protected<FunctionType>(ctx, callback);
+    
+    auto iter = results->m_notification_tokens.begin();
+    typename Protected<FunctionType>::Comparator compare;
+    while (iter != results->m_notification_tokens.end()) {
+        if(compare(iter->first, protected_function)) {
+            iter = results->m_notification_tokens.erase(iter);
+        }
+        else {
+            iter++;
+        }
+    }
 }
 
 template<typename T>
