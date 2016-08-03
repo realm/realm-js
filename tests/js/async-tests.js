@@ -25,7 +25,7 @@ const TestCase = require('./asserts');
 const schemas = require('./schemas');
 const Worker = require('./worker');
 
-function createNotificationTest(config, getObservable, addListener, removeListener, messages) {
+function createNotificationTest(config, getObservable, addListener, removeListener, messages, expectedCount) {
     return new Promise((resolve, reject) => {
         let realm = new Realm(config);
         let observable = getObservable(realm);
@@ -33,64 +33,69 @@ function createNotificationTest(config, getObservable, addListener, removeListen
 
         // Test will fail if it does not receive a change event within a second.
         let timer = setTimeout(() => {
-            worker.terminate();
             reject(new Error('Timed out waiting for change notification'));
-        }, 1000);
+        }, 5000);
 
         let cleanup = () => {
             clearTimeout(timer);
             worker.terminate();
         };
 
-        addListener(observable, resolve, reject, cleanup);
+        var count = 0;
+        var listener = addListener(observable, () => count++, resolve, reject, cleanup);
+
+        messages.push(['echo', 'resolve']);
+        var messageIndex = 0;
 
         worker.onmessage = (message) => {
             if (message.error) {
-                cleanup();
                 reject(message.error);
+                cleanup();
             }
             else if (message.result == 'resolve') {
+                if (count != expectedCount) {
+                    reject('Notification count ' + count + ' not equal to expected count ' + expectedCount);
+                }
+                else {
+                    resolve();
+                }
                 cleanup();
-                resolve();
             }
-            else if (message.result == 'removeListener') {
-                removeListener(observable);
+            else {
+                if (message.result == 'removeListener') {
+                    removeListener(observable, listener);
+                }
+                worker.postMessage(messages[messageIndex++]);
             }
         };
 
-        for (let message of messages) {
-            worker.postMessage(message);
-        }
-        worker.postMessage(['echo', 'resolve']);
+        worker.postMessage(messages[messageIndex++]);
     });
 };
 
 function createCollectionChangeTest(config, createCollection, messages, expected, removeAll) {
-    var notificationCount = 0;
-    var listener;
-
     return createNotificationTest(
         config, 
         createCollection, 
-        (collection, resolve, reject, cleanup) => {
-            listener = (object, changes) => {
-                //console.log(JSON.stringify(changes));
+        (collection, increment, resolve, reject, cleanup) => {
+            var listener = (object, changes) => {
                 try {
+                    var notificationCount = increment();
                     TestCase.assertArraysEqual(changes.insertions, expected[notificationCount][0]);
                     TestCase.assertArraysEqual(changes.deletions, expected[notificationCount][1]);
                     TestCase.assertArraysEqual(changes.modifications, expected[notificationCount][2]);
-
-                    notificationCount++;
                 } catch (e) {
                     reject(e);
                     cleanup();
                 } 
             };
             collection.addListener(listener);
+            return listener;
         },
         removeAll ? (observable) => observable.removeAllListeners() :
-                    (observable) => observable.removeListener(listener),
-        messages
+                    (observable, listener) => observable.removeListener(listener),
+        messages,
+        expected.length
     );
 };
 
@@ -114,18 +119,20 @@ module.exports = {
         return createNotificationTest(
             config, 
             (realm) => realm, 
-            (realm, resolve, reject, cleanup) => realm.addListener('change', () => {
+            (realm, increment, resolve, reject, cleanup) => realm.addListener('change', () => {
                 try {
                     var objects = realm.objects('TestObject');
                     TestCase.assertEqual(objects.length, 1);
                     TestCase.assertEqual(objects[0].doubleCol, 42);
+                    increment();
                 } catch (e) {
                     reject(e);
                     cleanup();
                 }
             }),
             undefined,
-            [[config, 'create', 'TestObject', [{doubleCol: 42}]]]
+            [[config, 'create', 'TestObject', [{doubleCol: 42}]]],
+            1
         );
     },
 
@@ -141,7 +148,7 @@ module.exports = {
             [
                 [[], [], []],
                 [[0], [], []],
-                [[1, 2], [], []]
+                [[1, 2], [], []],
             ]
         );
     },
