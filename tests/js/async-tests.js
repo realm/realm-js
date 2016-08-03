@@ -63,7 +63,6 @@ function createCollectionChangeTest(config, createCollection, messages, expected
         (collection, resolve, reject, cleanup) => {
             var notificationCount = 0;
             collection.addListener((object, changes) => {
-                console.log(JSON.stringify(changes));
                 try {
                     TestCase.assertArraysEqual(changes.insertions, expected[notificationCount][0]);
                     TestCase.assertArraysEqual(changes.deletions, expected[notificationCount][1]);
