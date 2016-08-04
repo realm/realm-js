@@ -20,7 +20,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * Added support for debugging in Visual Studio Code.
 
 ### Bugfixes
-* Fix linker error when building for minimum target version of iOS 7.
+* None
 
 0.14.1 Release notes (2016-6-28)
 =============================================================
