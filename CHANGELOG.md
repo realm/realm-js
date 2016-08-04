@@ -1,3 +1,14 @@
+x.x.x Release notes (yyyy-MM-dd)
+=============================================================
+### Breaking changes
+* Deprecate `Realm.Types`. Please specify the type name as lowercase string instead.
+
+### Enhancements
+* None
+
+### Bugfixes
+* None
+
 0.14.2 Release notes (2016-7-11)
 =============================================================
 ### Breaking changes
