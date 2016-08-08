@@ -30,16 +30,6 @@ cleanup() {
   rm -f "$PACKAGER_OUT" "$LOGCAT_OUT"
 }
 
-kill_ios_simulator() {
-  while pgrep -q Simulator; do
-    # Kill all the current simulator processes as they may be from a
-    # different Xcode version
-    pkill Simulator 2>/dev/null || true
-    # CoreSimulatorService doesn't exit when sent SIGTERM
-    pkill -9 Simulator 2>/dev/null || true
-  done
-}
-
 open_chrome() {
   local dir
   for dir in "$HOME/Applications" "/Applications"; do
@@ -65,7 +55,7 @@ start_packager() {
 }
 
 xctest() {
-  kill_ios_simulator
+  ${SRCROOT}/scripts/reset-simulators.sh 
 
   local dest="$(xcrun simctl list devices | grep -v unavailable | grep -m 1 -o '[0-9A-F\-]\{36\}')"
   xcodebuild -scheme "$1" -configuration "$CONFIGURATION" -sdk iphonesimulator -destination id="$dest" build test
