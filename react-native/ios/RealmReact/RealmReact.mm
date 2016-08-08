@@ -46,7 +46,7 @@ using namespace realm::rpc;
 @interface NSObject ()
 - (instancetype)initWithJSContext:(JSContext *)context;
 - (instancetype)initWithJSContext:(JSContext *)context onThread:(NSThread *)thread;
-- (JSGlobalContextRef)ctx;
+- (JSContext *)context;
 @end
 
 extern "C" JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executor, bool create) {
@@ -71,7 +71,7 @@ extern "C" JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executo
         object_setIvar(executor, contextIvar, rctJSContext);
     }
 
-    return [rctJSContext ctx];
+    return [rctJSContext context].JSGlobalContextRef;
 }
 
 @interface RealmReact () <RCTBridgeModule>
