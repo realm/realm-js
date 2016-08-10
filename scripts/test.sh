@@ -157,6 +157,18 @@ case "$TARGET" in
 
   node "$SRCROOT/tests"
   ;;
+"test-runners")
+  npm install
+  scripts/download-core.sh node
+  src/node/build-node.sh $CONFIGURATION
+
+  for runner in ava mocha; do
+    pushd "$SRCROOT/tests/test-runners/$runner"
+    npm install
+    npm test
+    popd
+  done
+  ;;
 "object-store")
   pushd src/object-store
   cmake -DCMAKE_BUILD_TYPE=$CONFIGURATION .
