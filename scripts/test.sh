@@ -162,7 +162,7 @@ case "$TARGET" in
   scripts/download-core.sh node
   src/node/build-node.sh $CONFIGURATION
 
-  for runner in ava mocha; do
+  for runner in ava mocha jest; do
     pushd "$SRCROOT/tests/test-runners/$runner"
     npm install
     npm test
