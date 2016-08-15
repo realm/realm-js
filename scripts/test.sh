@@ -147,9 +147,11 @@ case "$TARGET" in
   cat tests.xml
   ;;
 "node")
-  npm install
-  scripts/download-core.sh node
-  src/node/build-node.sh $CONFIGURATION
+  if [[ $CONFIGURATION == 'Debug' ]]; then
+    REALMJS_USE_DEBUG_CORE=true npm install --debug
+  else
+    npm install --no-debug
+  fi
 
   # Change to a temp directory.
   cd "$(mktemp -q -d -t realm.node.XXXXXX)"

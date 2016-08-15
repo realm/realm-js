@@ -12,21 +12,16 @@ WORKDIR /usr/src/app
 
 # Get the node_modules setup before anything else.
 COPY package.json .
-RUN npm install
-
-# Make sure core is downloaded.
-COPY scripts/download-core.sh scripts/
-RUN scripts/download-core.sh node
 
 # Copy only what we need to build.
+COPY scripts/ scripts/
 COPY src/ src/
 
 # Build the Debug version of the module.
-RUN src/node/build-node.sh Debug
+RUN npm install --debug
 
 # Copy everything else needed to run tests.
 COPY lib/ lib/
-COPY scripts/ scripts/
 COPY tests/ tests/
 
 # Switch to the non-root user.
