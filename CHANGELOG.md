@@ -1,3 +1,14 @@
+x.x.x Release notes (yyyy-MM-dd)
+=============================================================
+### Breaking changes
+* None
+
+### Enhancements
+* None
+
+### Bugfixes
+* None
+
 0.14.3 Release notes (2016-8-8)
 =============================================================
 ### Breaking changes
