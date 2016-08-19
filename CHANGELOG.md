@@ -1,6 +1,28 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Breaking changes
+* None
+
+### Enhancements
+* None
+
+### Bugfixes
+* None
+
+0.14.3 Release notes (2016-8-8)
+=============================================================
+### Breaking changes
+* None
+
+### Enhancements
+* None
+
+### Bugfixes
+* Support for react-native v0.31.0 
+
+0.14.2 Release notes (2016-8-3)
+=============================================================
+### Breaking changes
 * Deprecate `Realm.Types`. Please specify the type name as lowercase string instead.
 
 ### Enhancements
@@ -20,7 +42,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * Added support for debugging in Visual Studio Code.
 
 ### Bugfixes
-* Fix linker error when building for minimum target version of iOS 7.
+* None
 
 0.14.1 Release notes (2016-6-28)
 =============================================================
