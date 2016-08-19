@@ -116,7 +116,7 @@ module.exports = {
         }, 'The schema should be an array of ObjectSchema objects');
 
         TestCase.assertThrows(function() {
-            new Realm({schema: [{properties: {intCol: Realm.Types.INT}}]});
+            new Realm({schema: [{properties: {intCol: 'int'}}]});
         }, 'The schema should be an array of ObjectSchema objects');
     },
 

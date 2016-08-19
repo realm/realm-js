@@ -32,6 +32,10 @@
 		02F59ED51C88F1B6007F774C /* weak_realm_notifier.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02F59ED11C88F1B6007F774C /* weak_realm_notifier.cpp */; };
 		02F59EE21C88F2BB007F774C /* realm_coordinator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02F59EDB1C88F2BA007F774C /* realm_coordinator.cpp */; };
 		02F59EE31C88F2BB007F774C /* transact_log_handler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02F59EDD1C88F2BB007F774C /* transact_log_handler.cpp */; };
+		5DC74A781D623C9800D77A4F /* handover.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5DC74A751D623C8700D77A4F /* handover.cpp */; };
+		5DC74A791D623CA200D77A4F /* handover.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5DC74A751D623C8700D77A4F /* handover.cpp */; };
+		5DC74A7A1D623CA800D77A4F /* thread_confined.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5DC74A721D623C7A00D77A4F /* thread_confined.cpp */; };
+		5DC74A7B1D623CA800D77A4F /* thread_confined.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5DC74A721D623C7A00D77A4F /* thread_confined.cpp */; };
 		F60102D31CBB966E00EC01BA /* js_realm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 029048071C0428DF00ABDED4 /* js_realm.cpp */; };
 		F60102D41CBB96AB00EC01BA /* index_set.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02F59EAF1C88F17D007F774C /* index_set.cpp */; };
 		F60102D51CBB96AE00EC01BA /* list.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02F59EB11C88F17D007F774C /* list.cpp */; };
@@ -163,6 +167,11 @@
 		02F59EDE1C88F2BB007F774C /* transact_log_handler.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = transact_log_handler.hpp; sourceTree = "<group>"; };
 		02F59EDF1C88F2BB007F774C /* weak_realm_notifier_base.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = weak_realm_notifier_base.hpp; sourceTree = "<group>"; };
 		02F59EE01C88F2BB007F774C /* weak_realm_notifier.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = weak_realm_notifier.hpp; sourceTree = "<group>"; };
+		5DC74A721D623C7A00D77A4F /* thread_confined.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = thread_confined.cpp; path = src/thread_confined.cpp; sourceTree = "<group>"; };
+		5DC74A731D623C7A00D77A4F /* thread_confined.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = thread_confined.hpp; path = src/thread_confined.hpp; sourceTree = "<group>"; };
+		5DC74A751D623C8700D77A4F /* handover.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = handover.cpp; sourceTree = "<group>"; };
+		5DC74A761D623C8700D77A4F /* handover.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = handover.hpp; sourceTree = "<group>"; };
+		5DC74A7C1D623CED00D77A4F /* compiler.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = compiler.hpp; sourceTree = "<group>"; };
 		F60102CF1CBB814A00EC01BA /* node_init.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = node_init.hpp; sourceTree = "<group>"; };
 		F60102D11CBB865A00EC01BA /* jsc_init.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = jsc_init.hpp; sourceTree = "<group>"; };
 		F60102E31CBBB19700EC01BA /* node_object_accessor.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = node_object_accessor.hpp; sourceTree = "<group>"; };
@@ -375,6 +384,7 @@
 			isa = PBXGroup;
 			children = (
 				02E008D11D10AB1B00F3AA37 /* atomic_shared_ptr.hpp */,
+				5DC74A7C1D623CED00D77A4F /* compiler.hpp */,
 				02E008D21D10AB1B00F3AA37 /* format.cpp */,
 				02E008D31D10AB1B00F3AA37 /* format.hpp */,
 				F6242B291D08EE9600BE1E03 /* thread_id.hpp */,
@@ -420,6 +430,8 @@
 				02F59EBC1C88F17D007F774C /* schema.hpp */,
 				02F59EBD1C88F17D007F774C /* shared_realm.cpp */,
 				02F59EBE1C88F17D007F774C /* shared_realm.hpp */,
+				5DC74A721D623C7A00D77A4F /* thread_confined.cpp */,
+				5DC74A731D623C7A00D77A4F /* thread_confined.hpp */,
 			);
 			name = "Object Store";
 			path = "object-store";
@@ -459,6 +471,8 @@
 				02414B9A1CE6AAEF00A8669F /* collection_change_builder.hpp */,
 				02414B9B1CE6AAEF00A8669F /* collection_notifier.cpp */,
 				02414B9C1CE6AAEF00A8669F /* collection_notifier.hpp */,
+				5DC74A751D623C8700D77A4F /* handover.cpp */,
+				5DC74A761D623C8700D77A4F /* handover.hpp */,
 				02414B9D1CE6AAEF00A8669F /* list_notifier.cpp */,
 				02414B9E1CE6AAEF00A8669F /* list_notifier.hpp */,
 				02414B9F1CE6AAEF00A8669F /* results_notifier.cpp */,
@@ -832,6 +846,7 @@
 				F60102DB1CBB96C600EC01BA /* parser.cpp in Sources */,
 				F6E931BB1CFEAE310016AF14 /* collection_change_builder.cpp in Sources */,
 				F64A059B1D10D928004ACDBE /* format.cpp in Sources */,
+				5DC74A7B1D623CA800D77A4F /* thread_confined.cpp in Sources */,
 				F60102D51CBB96AE00EC01BA /* list.cpp in Sources */,
 				F6E931BC1CFEAE340016AF14 /* collection_notifier.cpp in Sources */,
 				F60102DC1CBB96C900EC01BA /* query_builder.cpp in Sources */,
@@ -848,6 +863,7 @@
 				F60102D81CBB96BD00EC01BA /* results.cpp in Sources */,
 				F674784A1CC81F1900F9273C /* platform.cpp in Sources */,
 				F620F0581CB766DA0082977B /* node_init.cpp in Sources */,
+				5DC74A791D623CA200D77A4F /* handover.cpp in Sources */,
 				F60102D91CBB96C100EC01BA /* schema.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -857,6 +873,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				02E008D51D10ABB600F3AA37 /* format.cpp in Sources */,
+				5DC74A7A1D623CA800D77A4F /* thread_confined.cpp in Sources */,
 				02414BA51CE6ABCF00A8669F /* collection_change_builder.cpp in Sources */,
 				02414BA61CE6ABCF00A8669F /* collection_notifier.cpp in Sources */,
 				F64A059D1D13710C004ACDBE /* thread_id.cpp in Sources */,
@@ -864,6 +881,7 @@
 				02414BA81CE6ABCF00A8669F /* results_notifier.cpp in Sources */,
 				02414BA91CE6ABCF00A8669F /* collection_notifications.cpp in Sources */,
 				02F59EE31C88F2BB007F774C /* transact_log_handler.cpp in Sources */,
+				5DC74A781D623C9800D77A4F /* handover.cpp in Sources */,
 				F63FF2E81C159C4B00B3B8E0 /* platform.mm in Sources */,
 				02F59EC31C88F17D007F774C /* results.cpp in Sources */,
 				F63FF2E21C15921A00B3B8E0 /* base64.cpp in Sources */,

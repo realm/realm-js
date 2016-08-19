@@ -23,6 +23,7 @@
 
 #include "results.hpp"
 #include "list.hpp"
+#include "object_store.hpp"
 #include "parser.hpp"
 #include "query_builder.hpp"
 
@@ -40,9 +41,9 @@ class Results : public realm::Results {
     
     Results() = default;
     Results(SharedRealm r, Table& table) : realm::Results(r, table) {}
-    Results(SharedRealm r, Query q, SortOrder s = {}) : realm::Results(r, q, s) {}
-    Results(SharedRealm r, TableView tv, SortOrder s) : realm::Results(r, tv, s) {}
-    Results(SharedRealm r, LinkViewRef lv, util::Optional<Query> q = {}, SortOrder s = {}) : realm::Results(r, lv, q, s) {}
+    Results(SharedRealm r, Query q, SortDescriptor s = {}) : realm::Results(r, q, s) {}
+    Results(SharedRealm r, TableView tv, SortDescriptor s) : realm::Results(r, tv, s) {}
+    Results(SharedRealm r, LinkViewRef lv, util::Optional<Query> q = {}, SortDescriptor s = {}) : realm::Results(r, lv, q, s) {}
     
     std::vector<std::pair<Protected<typename T::Function>, NotificationToken>> m_notification_tokens;
 };
@@ -169,7 +170,7 @@ typename T::Object ResultsClass<T>::create_sorted(ContextType ctx, const U &coll
         ascending.push_back(argc == 1 ? true : !Value::to_boolean(ctx, arguments[1]));
     }
 
-    std::vector<size_t> columns;
+    std::vector<std::vector<size_t>> columns;
     columns.reserve(prop_count);
 
     for (std::string &prop_name : prop_names) {
@@ -177,10 +178,12 @@ typename T::Object ResultsClass<T>::create_sorted(ContextType ctx, const U &coll
         if (!prop) {
             throw std::runtime_error("Property '" + prop_name + "' does not exist on object type '" + object_schema.name + "'");
         }
-        columns.push_back(prop->table_column);
+        columns.push_back({prop->table_column});
     }
 
-    auto results = new realm::js::Results<T>(realm, collection.get_query(), {std::move(columns), std::move(ascending)});
+    auto table = realm::ObjectStore::table_for_object_type(realm->read_group(), object_schema.name);
+    auto results = new realm::js::Results<T>(realm, collection.get_query(),
+                                      		 {*table, std::move(columns), std::move(ascending)});
     return create_object<T, ResultsClass<T>>(ctx, results);
 }
 

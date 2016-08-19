@@ -50,13 +50,13 @@ module.exports = {
             var prop = schemas.BasicTypes.properties[name];
             var type = typeof prop == 'object' ? prop.type : prop;
 
-            if (type == Realm.Types.FLOAT || type == Realm.Types.DOUBLE) {
+            if (type == 'float' || type == 'double') {
                 TestCase.assertEqualWithTolerance(object[name], basicTypesValues[name], 0.000001);
             }
-            else if (type == Realm.Types.DATA) {
+            else if (type == 'data') {
                 TestCase.assertArraysEqual(new Uint8Array(object[name]), RANDOM_DATA);
             }
-            else if (type == Realm.Types.DATE) {
+            else if (type == 'date') {
                 TestCase.assertEqual(object[name].getTime(), basicTypesValues[name].getTime());
             }
             else {
@@ -100,13 +100,13 @@ module.exports = {
 
             TestCase.assertEqual(nullObject[name], null);
 
-            if (type == Realm.Types.FLOAT || type == Realm.Types.DOUBLE) {
+            if (type == 'float' || type == 'double') {
                 TestCase.assertEqualWithTolerance(object[name], basicTypesValues[name], 0.000001);
             }
-            else if (type == Realm.Types.DATA) {
+            else if (type == 'data') {
                 TestCase.assertArraysEqual(new Uint8Array(object[name]), RANDOM_DATA);
             }
-            else if (type == Realm.Types.DATE) {
+            else if (type == 'date') {
                 TestCase.assertEqual(object[name].getTime(), basicTypesValues[name].getTime());
             }
             else {
