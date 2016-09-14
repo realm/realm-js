@@ -22,7 +22,7 @@
         "../object-store/src/impl/realm_coordinator.cpp",
         "../object-store/src/impl/results_notifier.cpp",
         "../object-store/src/impl/transact_log_handler.cpp",
-        "../object-store/src/impl/node/weak_realm_notifier.cpp",
+        "../object-store/src/impl/weak_realm_notifier.cpp",
         "../object-store/src/parser/parser.cpp",
         "../object-store/src/parser/query_builder.cpp",
         "../object-store/src/util/format.cpp",

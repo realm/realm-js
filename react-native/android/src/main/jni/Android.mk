@@ -29,16 +29,18 @@ LOCAL_SRC_FILES := \
   src/object-store/src/results.cpp \
   src/object-store/src/schema.cpp \
   src/object-store/src/shared_realm.cpp \
-  src/object-store/src/parser/parser.cpp \
-  src/object-store/src/parser/query_builder.cpp \
+  src/object-store/src/thread_confined.cpp \
   src/object-store/src/impl/collection_change_builder.cpp \
   src/object-store/src/impl/collection_notifier.cpp \
+  src/object-store/src/impl/handover.cpp \
   src/object-store/src/impl/list_notifier.cpp \
   src/object-store/src/impl/realm_coordinator.cpp \
   src/object-store/src/impl/results_notifier.cpp \
   src/object-store/src/impl/transact_log_handler.cpp \
+  src/object-store/src/impl/weak_realm_notifier.cpp \
   src/object-store/src/impl/android/external_commit_helper.cpp \
-  src/object-store/src/impl/android/weak_realm_notifier.cpp \
+  src/object-store/src/parser/parser.cpp \
+  src/object-store/src/parser/query_builder.cpp \
   src/object-store/src/util/format.cpp \
   src/object-store/src/util/thread_id.cpp \
   vendor/base64.cpp
