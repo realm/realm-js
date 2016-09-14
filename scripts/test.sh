@@ -3,6 +3,9 @@
 set -o pipefail
 set -e
 
+export TEST_SCRIPT=1
+export NPM_CONFIG_PROGRESS=false
+
 TARGET="$1"
 CONFIGURATION="${2:-"Release"}"
 DESTINATION=
@@ -58,7 +61,11 @@ xctest() {
   ${SRCROOT}/scripts/reset-simulators.sh 
 
   local dest="$(xcrun simctl list devices | grep -v unavailable | grep -m 1 -o '[0-9A-F\-]\{36\}')"
-  xcodebuild -scheme "$1" -configuration "$CONFIGURATION" -sdk iphonesimulator -destination id="$dest" build test
+  if [ -n "$XCPRETTY" ]; then
+    xcodebuild -scheme "$1" -configuration "$CONFIGURATION" -sdk iphonesimulator -destination id="$dest" test | xcpretty -c --no-utf --report junit --output build/reports/junit.xml
+  else
+    xcodebuild -scheme "$1" -configuration "$CONFIGURATION" -sdk iphonesimulator -destination id="$dest" test
+  fi
 }
 
 # Cleanup now and also cleanup when this script exits.
