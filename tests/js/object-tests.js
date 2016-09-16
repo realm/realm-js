@@ -515,5 +515,30 @@ module.exports = {
         TestCase.assertEqual(realm.objects('Date')[1].currentDate.getTime(), -10000);
         TestCase.assertEqual(realm.objects('Date')[2].currentDate.getTime(), 1000000000000);
         TestCase.assertEqual(realm.objects('Date')[3].currentDate.getTime(), -1000000000000);
+    },
+    
+    testInheritance: function() {
+        // the equivalent of `class InheritingObject extends Realm.Object`
+        function InheritingObject() {
+            Realm.Object.apply(this, arguments);
+            this.foo = 'bar';
+        }
+
+        InheritingObject.__proto__ = Realm.Object;
+        InheritingObject.prototype.__proto__ = Realm.Object.prototype;
+        InheritingObject.schema = {
+            name: 'InheritingObject',
+            properties: {
+                foo: { type: 'string', optional: true }
+            }
+        };
+        
+        var realm = new Realm({schema: [InheritingObject]});
+        var obj;
+        realm.write(function() { obj = realm.create('InheritingObject', {})});
+        
+        TestCase.assertTrue(obj instanceof InheritingObject);
+        TestCase.assertTrue(obj instanceof Realm.Object);
+        TestCase.assertEqual(obj.foo, 'bar');
     }
 };

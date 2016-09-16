@@ -29,7 +29,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * None
 
 ### Bugfixes
-* None
+* Fix subclassing `Realm.Object` when running in Node.js
 
 0.14.2 Release notes (2016-7-11)
 =============================================================

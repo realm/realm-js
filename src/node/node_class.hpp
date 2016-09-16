@@ -223,17 +223,17 @@ inline void ObjectWrap<ClassType>::setup_property(v8::Local<TargetType> target, 
 
 template<typename ClassType>
 inline void ObjectWrap<ClassType>::construct(Nan::NAN_METHOD_ARGS_TYPE info) {
-    if (!info.IsConstructCall()) {
-        Nan::ThrowError("Constructor must be called with new");
-    }
     if (reinterpret_cast<void*>(s_class.constructor)) {
         auto isolate = info.GetIsolate();
         auto arguments = get_arguments(info);
         v8::Local<v8::Object> this_object = info.This();
         info.GetReturnValue().Set(this_object);
 
-        auto wrap = new ObjectWrap<ClassType>();
-        wrap->Wrap(this_object);
+        // only initialize this if this is a direct construct call, not a super() call
+        if (info.IsConstructCall()) {
+            auto wrap = new ObjectWrap<ClassType>();
+            wrap->Wrap(this_object);
+        }
 
         try {
             s_class.constructor(isolate, this_object, arguments.size(), arguments.data());
@@ -242,7 +242,7 @@ inline void ObjectWrap<ClassType>::construct(Nan::NAN_METHOD_ARGS_TYPE info) {
             Nan::ThrowError(node::Exception::value(isolate, e));
         }
     }
-    else {
+    else if (info.IsConstructCall()) {
         Nan::ThrowError("Illegal constructor");
     }
 }
