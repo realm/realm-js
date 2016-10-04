@@ -98,6 +98,7 @@ build/
 # node.js
 node_modules/
 npm-debug.log
+/compiled/
 
 # Android/IJ
 /android/

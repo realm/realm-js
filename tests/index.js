@@ -23,14 +23,13 @@
 
 const fs = require('fs');
 const path = require('path');
-const mockery = require('mockery');
 
 function runTests() {
     const Realm = require('realm');
     const RealmTests = require('./js');
 
     RealmTests.registerTests({
-        WorkerTests: require('./js/worker-tests'),
+        AsyncTests: require('./js/async-tests'),
     });
 
     const testNames = RealmTests.getTestNames();
@@ -79,10 +78,6 @@ function runTests() {
 }
 
 if (require.main == module) {
-    mockery.enable();
-    mockery.warnOnUnregistered(false);
-    mockery.registerMock('realm', require('..'));
-
     runTests().then(
         (passed) => {
             if (!passed) {

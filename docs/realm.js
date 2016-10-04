@@ -189,6 +189,10 @@ Realm.defaultPath;
  *   object types in this Realm. **Required** when first creating a Realm at this `path`.
  * @property {number} [schemaVersion] - **Required** (and must be incremented) after
  *   changing the `schema`.
+ * @property {Object} [sync] - Sync configuration parameters with the following 
+ *   child properties:
+ *   - `user` - A `User` object obtained by calling `Realm.Sync.User.login`
+ *   - `url` - A `string` which contains a valid Realm Sync url   
  */
 
 /**

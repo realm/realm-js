@@ -154,21 +154,16 @@ case "$TARGET" in
   cat tests.xml
   ;;
 "node")
-  npm install
-  scripts/download-core.sh node
-  src/node/build-node.sh $CONFIGURATION
-
   # Change to a temp directory.
   cd "$(mktemp -q -d -t realm.node.XXXXXX)"
   trap "rm -rf '$PWD'" EXIT
 
-  node "$SRCROOT/tests"
+  pushd "$SRCROOT/tests"
+  npm install
+  npm test
+  popd
   ;;
 "test-runners")
-  npm install
-  scripts/download-core.sh node
-  src/node/build-node.sh $CONFIGURATION
-
   for runner in ava mocha jest; do
     pushd "$SRCROOT/tests/test-runners/$runner"
     npm install
@@ -180,6 +175,27 @@ case "$TARGET" in
   pushd src/object-store
   cmake -DCMAKE_BUILD_TYPE=$CONFIGURATION .
   make run-tests
+  ;;
+"download-object-server")
+  . dependencies.list
+
+  object_server_bundle="realm-object-server-bundled_node_darwin-$REALM_OBJECT_SERVER_VERSION.tar.gz"
+  curl -f -L "https://static.realm.io/downloads/object-server/$object_server_bundle" -o "$object_server_bundle"
+  rm -rf tests/sync-bundle
+  mkdir -p tests/sync-bundle
+  tar -C tests/sync-bundle -xf "$object_server_bundle"
+  rm "$object_server_bundle"
+
+  echo -e "enterprise:\n  skip_setup: true\n" >> "tests/sync-bundle/object-server/configuration.yml"
+  touch "tests/sync-bundle/object-server/do_not_open_browser"
+  ;;
+"object-server-integration")
+  echo -e "yes\n" | ./tests/sync-bundle/reset-server-realms.command 
+
+  pushd "$SRCROOT/tests"
+  npm install
+  npm run test-sync
+  popd
   ;;
 *)
   echo "Invalid target '${TARGET}'"

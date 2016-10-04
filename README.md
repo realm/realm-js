@@ -41,7 +41,7 @@ Prerequisites:
 First clone this repository:
 
 ```
-git clone https://github.com/realm/realm-js.git
+git clone https://github.com/realm/realm-js-private.git
 ```
 
 Then in the cloned directory:
@@ -59,6 +59,15 @@ To build for Android:
 - `cd react-native/android`
 - `./gradlew publishAndroid`
 - The compiled version of the Android module is here: `<project-root>/android`
+
+To build for Node:
+- `REALM_CORE_PREFIX=/path/to/realm-core REALM_SYNC_PREFIX=/path/to/realm-sync npm install`
+
+The `REALM_*_PREFIX` paths need to be absolute. Make sure to run `sh build.sh build-node` in both core and sync. Optionally export `REALMJS_USE_DEBUG_CORE=true` to link against the debug version of the realm binaries.
+
+To build the Developer Edition of the module, pass `--developer_edition` to `npm install` or change the default value in `binding.gyp`.
+
+`node-pre-gyp` is used for packaging. Run `scripts/build-node-pre-gyp.sh` with the same arguments and environment variables as `npm install` on all platforms (e.g. Linux and Darwin). Then, edit `package.json` to remove the `--build-from-source` option from the install script and run `npm pack`. Lastly, either create a fat package by merging all the tarballs created so far into one, or upload the `node-pre-gyp` tarballs to the CDN the `binary` section of `package.json` points to.
 
 ## Code of Conduct
 

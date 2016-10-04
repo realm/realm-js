@@ -34,6 +34,7 @@ struct Types {
     using Object = JSObjectRef;
     using String = JSStringRef;
     using Function = JSObjectRef;
+    using HandleScope = void *;
 
     using ConstructorCallback = JSObjectCallAsConstructorCallback;
     using FunctionCallback = JSObjectCallAsFunctionCallback;

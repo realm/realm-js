@@ -1,0 +1,16 @@
+{
+  "name": "realm-tests-jasmine",
+  "version": "0.0.1",
+  "private": true,
+  "dependencies": {
+    "es6-promise": "^3.2.1",
+    "jasmine": "^2.5.1",
+    "jasmine-console-reporter": "^1.2.7",
+    "jasmine-reporters": "^2.2.0"
+  },
+  "scripts": {
+      "test": "jasmine spec/unit_tests.js",
+      "test-sync": "jasmine spec/sync_integration_tests.js",
+      "postinstall": "rm -f node_modules/realm && ln -s ../.. node_modules/realm"
+  }
+}

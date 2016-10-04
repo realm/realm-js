@@ -28,6 +28,36 @@ import {
 import React from 'react';
 import { runTests } from './tests';
 
+const Realm = require('realm');
+
+Realm.Sync.setLogLevel('error');
+var realm;
+Realm.Sync.User.login('http://127.0.0.1:9080/', 'ari', 'aaa', function(error, user) {
+    console.log(user);
+
+    realm = new Realm({
+        sync: {
+            user: user, 
+            url: 'realm://127.0.0.1:9080/~/demo/realm1'
+        }, 
+        schema: [{
+            name: 'IntObject',
+            properties: {
+                int: 'int'
+            }
+        }]
+    });
+
+    realm.addListener('change', () => {
+        console.log(realm.objects('IntObject'));
+    });
+
+    realm.write(() => {
+        realm.create('IntObject', {int: realm.objects('IntObject').length});
+    });
+});
+
+
 class ReactTests extends React.Component {
     render() {
         return (

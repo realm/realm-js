@@ -16,31 +16,20 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-/* eslint-env es6, node */
+#pragma once
 
-'use strict';
+#include "js_class.hpp"
 
-class Worker {
-    constructor(script) {
-        this._process = require('child_process').fork(script);
+namespace realm {
+namespace js {
 
-        this._process.on('message', (message) => {
-            if (this.onmessage) {
-                this.onmessage(message);
-            }
-        });
-    }
-    postMessage(message) {
-        if (this._process) {
-            this._process.send(message);
-        }
-    }
-    terminate() {
-        if (this._process) {
-            this._process.kill();
-            delete this._process;
-        }
-    }
-}
+// Empty class that merely serves as useful type for now.
+class Observable {};
 
-module.exports = Worker;
+template<typename T>
+struct ObservableClass : ClassDefinition<T, Observable> {
+    std::string const name = "Observable";
+};
+    
+} // js
+} // realm

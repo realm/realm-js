@@ -41,6 +41,7 @@ struct Types {
     using Object = v8::Local<v8::Object>;
     using String = v8::Local<v8::String>;
     using Function = v8::Local<v8::Function>;
+    using HandleScope = Nan::HandleScope;
 
     using ConstructorCallback = Nan::FunctionCallback;
     using FunctionCallback = Nan::FunctionCallback;

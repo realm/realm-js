@@ -28,11 +28,14 @@
 #include "js_list.hpp"
 #include "js_results.hpp"
 #include "js_schema.hpp"
+#include "js_observable.hpp"
+#include "js_sync.hpp"
 
 #include "shared_realm.hpp"
 #include "binding_context.hpp"
 #include "object_accessor.hpp"
 #include "platform.hpp"
+#include "sync_config.hpp"
 
 namespace realm {
 namespace js {
@@ -99,8 +102,10 @@ class RealmDelegate : public BindingContext {
     Protected<GlobalContextType> m_context;
     std::list<Protected<FunctionType>> m_notifications;
     std::weak_ptr<realm::Realm> m_realm;
-    
+
     void notify(const char *notification_name) {
+        typename T::HandleScope scope;
+
         SharedRealm realm = m_realm.lock();
         if (!realm) {
             throw std::runtime_error("Realm no longer exists");
@@ -124,7 +129,7 @@ void set_default_path(std::string path);
 void delete_all_realms();
 
 template<typename T>
-class RealmClass : public ClassDefinition<T, SharedRealm> {
+class RealmClass : public ClassDefinition<T, SharedRealm, ObservableClass<T>> {
     using GlobalContextType = typename T::GlobalContext;
     using ContextType = typename T::Context;
     using FunctionType = typename T::Function;
@@ -162,7 +167,7 @@ public:
     static void schema_version(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void clear_test_state(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void copy_bundled_realm_files(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
-    
+
     // static properties
     static void get_default_path(ContextType, ObjectType, ReturnValue &);
     static void set_default_path(ContextType, ObjectType, ValueType value);
@@ -254,12 +259,14 @@ inline typename T::Function RealmClass<T>::create_constructor(ContextType ctx) {
     FunctionType list_constructor = ObjectWrap<T, ListClass<T>>::create_constructor(ctx);
     FunctionType results_constructor = ObjectWrap<T, ResultsClass<T>>::create_constructor(ctx);
     FunctionType realm_object_constructor = ObjectWrap<T, RealmObjectClass<T>>::create_constructor(ctx);
+    FunctionType sync_constructor = SyncClass<T>::create_constructor(ctx);
 
     PropertyAttributes attributes = ReadOnly | DontEnum | DontDelete;
     Object::set_property(ctx, realm_constructor, "Collection", collection_constructor, attributes);
     Object::set_property(ctx, realm_constructor, "List", list_constructor, attributes);
     Object::set_property(ctx, realm_constructor, "Results", results_constructor, attributes);
     Object::set_property(ctx, realm_constructor, "Object", realm_object_constructor, attributes);
+    Object::set_property(ctx, realm_constructor, "Sync", sync_constructor, attributes);
 
     return realm_constructor;
 }
@@ -376,6 +383,8 @@ void RealmClass<T>::constructor(ContextType ctx, ObjectType this_object, size_t 
                 std::string encryption_key = NativeAccessor::to_binary(ctx, encryption_key_value);
                 config.encryption_key = std::vector<char>(encryption_key.begin(), encryption_key.end());
             }
+
+            SyncClass<T>::populate_sync_config(ctx, object, config);
         }
     }
     else {

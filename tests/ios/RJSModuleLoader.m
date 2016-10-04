@@ -195,6 +195,18 @@ static NSString * const RJSModuleLoaderErrorDomain = @"RJSModuleLoaderErrorDomai
         BOOL isDirectory;
 
         if ([fileManager fileExistsAtPath:moduleURL.path isDirectory:&isDirectory] && isDirectory) {
+            NSURL *packageURL = [moduleURL URLByAppendingPathComponent:@"package.json"];
+            NSDictionary *package;
+
+            if ([fileManager fileExistsAtPath:packageURL.path]) {
+                NSError *error;
+                NSData *data = [NSData dataWithContentsOfURL:packageURL options:0 error:&error];
+
+                package = data ? [NSJSONSerialization JSONObjectWithData:data options:0 error:&error] : nil;
+                NSAssert(package, @"%@", error);
+            }
+
+            moduleURL = [moduleURL URLByAppendingPathComponent:package[@"main"] ?: @"index.js"];
             return [self loadModuleFromURL:moduleURL error:error];
         }
 

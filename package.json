@@ -1,7 +1,7 @@
 {
   "name": "realm",
   "description": "Realm is a mobile database: an alternative to SQLite and key-value stores",
-  "version": "0.14.3",
+  "version": "0.14.3-6",
   "license": "Apache-2.0",
   "homepage": "https://realm.io",
   "keywords": [
@@ -35,7 +35,8 @@
     "react-native",
     "scripts",
     "src",
-    "vendor"
+    "vendor",
+    "binding.gyp"
   ],
   "scripts": {
     "get-version": "echo $npm_package_version",
@@ -44,20 +45,20 @@
     "jsdoc": "rm -rf docs/output && jsdoc -c docs/conf.json",
     "lint": "eslint",
     "test": "scripts/test.sh",
-    "prepublish": "scripts/prepublish.sh"
+    "install": "node-pre-gyp install --build-from-source"
   },
   "dependencies": {
-    "bindings": "^1.2.1",
     "nan": "^2.3.3",
-    "node-gyp": "^3.3.1",
-    "sync-request": "^3.0.1"
+    "node-pre-gyp": "^0.6.30",
+    "request": "^2.74.0",
+    "sync-request": "^3.0.1",
+    "url": "^0.11.0"
   },
   "devDependencies": {
     "babel-eslint": "^6.0.4",
     "eslint": "^2.10.2",
     "eslint-plugin-react": "^5.1.1",
     "jsdoc": "^3.4.0",
-    "mockery": "^1.7.0",
     "semver": "^5.1.0"
   },
   "rnpm": {
@@ -71,5 +72,11 @@
   },
   "engines": {
     "node": ">=4"
+  },
+  "binary": {
+    "module_name": "realm",
+    "module_path": "./compiled/{node_abi}_{platform}_{arch}/",
+    "host": "https://static.realm.io",
+    "remote_path": "/node-pre-gyp"
   }
 }
