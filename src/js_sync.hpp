@@ -34,7 +34,7 @@
 #include "node/node_sync_logger.hpp"
 #endif
 
-#if !REALM_DEVELOPER_EDITION
+#if REALM_ENTERPRISE_EDITION
 #include "js_enterprise.hpp"
 #endif
 
@@ -137,7 +137,7 @@ inline typename T::Function SyncClass<T>::create_constructor(ContextType ctx) {
     });
 #endif
 
-#if !REALM_DEVELOPER_EDITION
+#if REALM_ENTERPRISE_EDITION
     SyncEnterpriseClass<T>::add_methods(ctx, sync_constructor);
 #endif
 
@@ -215,10 +215,10 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType config_objec
 
 template<typename T>
 void SyncClass<T>::get_is_developer_edition(ContextType ctx, ObjectType object, ReturnValue &return_value) {
-#if REALM_DEVELOPER_EDITION
-    return_value.set(true);
-#else
+#if REALM_ENTERPRISE_EDITION
     return_value.set(false);
+#else
+    return_value.set(true);
 #endif
 }
 

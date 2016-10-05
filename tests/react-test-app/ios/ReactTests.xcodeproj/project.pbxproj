@@ -73,6 +73,13 @@
 			remoteGlobalIDString = 13B07F861A680F5B00A75B9A;
 			remoteInfo = ReactTests;
 		};
+		02022A7E1DA47F06000F0C4F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F60690521CA2831E0003FB26 /* RealmReact.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = F60690121CA2766F0003FB26;
+			remoteInfo = RealmReact;
+		};
 		139105C01AF99BAD00B5F7CC /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 139105B61AF99BAD00B5F7CC /* RCTSettings.xcodeproj */;
@@ -378,6 +385,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				02022A7F1DA47F06000F0C4F /* PBXTargetDependency */,
 			);
 			name = ReactTestApp;
 			productName = "Hello World";
@@ -390,7 +398,7 @@
 		83CBB9F71A601CBA00E9B192 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0710;
+				LastUpgradeCheck = 0800;
 				ORGANIZATIONNAME = Realm;
 				TargetAttributes = {
 					00E356ED1AD99517003FC87E = {
@@ -578,7 +586,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "[ -s \"${HOME}/.nvm/nvm.sh\" ] && . \"${HOME}/.nvm/nvm.sh\" \nif [ -z \"$TEST_SCRIPT\" ]; then\n  npm install realm realm-tests\nfi\ncp ../../../src/object-store/tests/query.json ../node_modules/realm-tests/query-tests.json\n";
+			shellScript = "[ -s \"${HOME}/.nvm/nvm.sh\" ] && . \"${HOME}/.nvm/nvm.sh\" \nif [ -z \"$TEST_SCRIPT\" ]; then\n #npm install realm realm-tests\n echo a\nfi\ncp ../../../src/object-store/tests/query.json ../node_modules/realm-tests/query-tests.json\n";
 		};
 		F6EDE5BF1C49007200B1085F /* Bundle React Native code and images */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -622,6 +630,11 @@
 			isa = PBXTargetDependency;
 			target = 13B07F861A680F5B00A75B9A /* ReactTestApp */;
 			targetProxy = 00E356F41AD99517003FC87E /* PBXContainerItemProxy */;
+		};
+		02022A7F1DA47F06000F0C4F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = RealmReact;
+			targetProxy = 02022A7E1DA47F06000F0C4F /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -713,8 +726,10 @@
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
@@ -723,6 +738,7 @@
 				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
@@ -741,7 +757,7 @@
 					"$(SRCROOT)/../node_modules/react-native/React/Base/**",
 					"$(SRCROOT)/../node_modules/react-native/React/Modules",
 				);
-				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = "io.realm.$(PRODUCT_NAME:rfc1034identifier)";
@@ -762,8 +778,10 @@
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
@@ -771,6 +789,7 @@
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
@@ -783,7 +802,7 @@
 					"$(SRCROOT)/../node_modules/react-native/React/Base/**",
 					"$(SRCROOT)/../node_modules/react-native/React/Modules",
 				);
-				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				PRODUCT_BUNDLE_IDENTIFIER = "io.realm.$(PRODUCT_NAME:rfc1034identifier)";
 				SDKROOT = iphoneos;
