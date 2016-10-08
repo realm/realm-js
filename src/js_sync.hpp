@@ -34,10 +34,6 @@
 #include "node/node_sync_logger.hpp"
 #endif
 
-#if REALM_ENTERPRISE_EDITION
-#include "js_enterprise.hpp"
-#endif
-
 namespace realm {
 namespace js {
 
@@ -81,10 +77,6 @@ public:
 #if REALM_PLATFORM_NODE
         {"setSyncLogger", wrap<set_sync_logger>},
 #endif
-    };
-
-    PropertyMap<T> const static_properties {
-        {"isDeveloperEdition", {wrap<get_is_developer_edition>, nullptr}}
     };
 };
 
@@ -137,10 +129,6 @@ inline typename T::Function SyncClass<T>::create_constructor(ContextType ctx) {
     });
 #endif
 
-#if REALM_ENTERPRISE_EDITION
-    SyncEnterpriseClass<T>::add_methods(ctx, sync_constructor);
-#endif
-
     return sync_constructor;
 }
 
@@ -165,7 +153,7 @@ void SyncClass<T>::set_verify_servers_ssl_certificate(ContextType ctx, ObjectTyp
     realm::SyncManager::shared().set_client_should_validate_ssl(verify_servers_ssl_certificate);
 }
 
-#if REALM_HAVE_NODE_SYNC_LOGGER
+#if REALM_PLATFORM_NODE
 template<typename T>
 void SyncClass<T>::set_sync_logger(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 1);
@@ -211,15 +199,6 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType config_objec
         );
         config.schema_mode = SchemaMode::Additive;
     }
-}
-
-template<typename T>
-void SyncClass<T>::get_is_developer_edition(ContextType ctx, ObjectType object, ReturnValue &return_value) {
-#if REALM_ENTERPRISE_EDITION
-    return_value.set(false);
-#else
-    return_value.set(true);
-#endif
 }
 
 } // js

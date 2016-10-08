@@ -3,7 +3,9 @@
     "variables": {
       "warning-flags": [
         "-Wno-missing-field-initializers",
-        "-Wno-return-type"
+        "-Wno-return-type",
+        "-Wno-unused-result",
+        "-Wundef"
       ]
     },
     "cflags_cc!": [ # turn off default flags on older nodes on linux

@@ -23,7 +23,10 @@
 #include <map>
 #include <string>
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wundef"
 #include <nan.h>
+#pragma GCC diagnostic pop
 
 #include "js_types.hpp"
 

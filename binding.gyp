@@ -5,9 +5,6 @@
   ],
   "targets": [
     {
-      "variables": {
-        "developer_edition%": "0"
-      },
       "target_name": "realm",
       "dependencies": [
         "object-store"
@@ -21,14 +18,13 @@
       "include_dirs": [
         "src"
       ],
-      "defines": [ "REALM_DEVELOPER_EDITION=<(developer_edition)" ],
       "link_settings": {
         "ldflags": [
-          "-Wl,--exclude-libs=ALL"
+          "-Wl,--whole-archive,-lrealm-node,--no-whole-archive"
         ]
       },
       "xcode_settings": {
-        "OTHER_LDFLAGS": [ "-Xlinker -unexported_symbol -Xlinker '*'" ]
+        "OTHER_LDFLAGS": [ "-all_load", "-lrealm-node" ]
       }
     },
     {
