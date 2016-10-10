@@ -5,6 +5,7 @@
         "-Wno-missing-field-initializers",
         "-Wno-return-type",
         "-Wno-unused-result",
+        "-Wno-deprecated-declarations",
         "-Wundef"
       ]
     },
