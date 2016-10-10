@@ -29,13 +29,16 @@
 #include "js_results.hpp"
 #include "js_schema.hpp"
 #include "js_observable.hpp"
+
+#if REALM_ENABLE_SYNC
 #include "js_sync.hpp"
+#include "sync_config.hpp"
+#endif
 
 #include "shared_realm.hpp"
 #include "binding_context.hpp"
 #include "object_accessor.hpp"
 #include "platform.hpp"
-#include "sync_config.hpp"
 
 namespace realm {
 namespace js {
@@ -259,14 +262,17 @@ inline typename T::Function RealmClass<T>::create_constructor(ContextType ctx) {
     FunctionType list_constructor = ObjectWrap<T, ListClass<T>>::create_constructor(ctx);
     FunctionType results_constructor = ObjectWrap<T, ResultsClass<T>>::create_constructor(ctx);
     FunctionType realm_object_constructor = ObjectWrap<T, RealmObjectClass<T>>::create_constructor(ctx);
-    FunctionType sync_constructor = SyncClass<T>::create_constructor(ctx);
 
     PropertyAttributes attributes = ReadOnly | DontEnum | DontDelete;
     Object::set_property(ctx, realm_constructor, "Collection", collection_constructor, attributes);
     Object::set_property(ctx, realm_constructor, "List", list_constructor, attributes);
     Object::set_property(ctx, realm_constructor, "Results", results_constructor, attributes);
     Object::set_property(ctx, realm_constructor, "Object", realm_object_constructor, attributes);
+
+#if REALM_ENABLE_SYNC
+    FunctionType sync_constructor = SyncClass<T>::create_constructor(ctx);
     Object::set_property(ctx, realm_constructor, "Sync", sync_constructor, attributes);
+#endif
 
     return realm_constructor;
 }
@@ -383,8 +389,9 @@ void RealmClass<T>::constructor(ContextType ctx, ObjectType this_object, size_t 
                 std::string encryption_key = NativeAccessor::to_binary(ctx, encryption_key_value);
                 config.encryption_key = std::vector<char>(encryption_key.begin(), encryption_key.end());
             }
-
+#if REALM_ENABLE_SYNC
             SyncClass<T>::populate_sync_config(ctx, object, config);
+#endif
         }
     }
     else {
