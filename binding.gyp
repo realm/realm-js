@@ -27,11 +27,6 @@
           "sources": [
             "src/node/node_init.cpp"
           ]
-        }],
-        ["realm_enable_sync", {
-          "sources": [
-            "src/node/node_sync_logger.cpp"
-          ]
         }]
       ]
     },

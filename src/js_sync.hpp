@@ -30,10 +30,6 @@
 #include "realm/util/logger.hpp"
 #include "realm/util/uri.hpp"
 
-#if REALM_PLATFORM_NODE
-#include "node/node_sync_logger.hpp"
-#endif
-
 namespace realm {
 namespace js {
 
@@ -59,10 +55,6 @@ public:
     static void set_sync_log_level(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void set_verify_servers_ssl_certificate(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
 
-#if REALM_PLATFORM_NODE
-    static void set_sync_logger(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
-#endif
-
     // private
     static void refresh_access_token(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void populate_sync_config(ContextType, ObjectType config_object, Realm::Config&);
@@ -73,10 +65,7 @@ public:
     MethodMap<T> const static_methods = {
         {"refreshAccessToken", wrap<refresh_access_token>},
         {"setLogLevel", wrap<set_sync_log_level>},
-        {"setVerifyServersSslCertificate", wrap<set_verify_servers_ssl_certificate>},
-#if REALM_PLATFORM_NODE
-        {"setSyncLogger", wrap<set_sync_logger>},
-#endif
+        {"setVerifyServersSslCertificate", wrap<set_verify_servers_ssl_certificate>}
     };
 };
 
@@ -152,16 +141,6 @@ void SyncClass<T>::set_verify_servers_ssl_certificate(ContextType ctx, ObjectTyp
     bool verify_servers_ssl_certificate = Value::validated_to_boolean(ctx, arguments[0]);
     realm::SyncManager::shared().set_client_should_validate_ssl(verify_servers_ssl_certificate);
 }
-
-#if REALM_PLATFORM_NODE
-template<typename T>
-void SyncClass<T>::set_sync_logger(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
-    validate_argument_count(argc, 1);
-    auto callback = Value::validated_to_function(ctx, arguments[0]);
-    node::SyncLoggerFactory *factory = new node::SyncLoggerFactory(ctx, this_object, callback); // Throws
-    realm::SyncManager::shared().set_logger_factory(*factory);
-}
-#endif
 
 template<typename T>
 void SyncClass<T>::refresh_access_token(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
