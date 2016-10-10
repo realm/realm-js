@@ -22,11 +22,6 @@
     "include_dirs": [
       "<!(node -e \"require('nan')\")"
     ],
-    "configurations": {
-      "Debug": {
-        "defines": ["DEBUG=1"]
-      }
-    },
     "conditions": [
       ["OS=='mac'", {
         "xcode_settings": {

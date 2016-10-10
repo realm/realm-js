@@ -1,4 +1,7 @@
 {
+  "variables": {
+    "realm_node_build_as_library%": "0"
+  },
   "includes": [
     "src/node/gyp/target_defaults.gypi",
     "src/node/gyp/realm.gyp"
@@ -10,37 +13,39 @@
         "object-store"
       ],
       "sources": [
-        "src/node/node_sync_logger.cpp",
-        "src/node/node_init.cpp",
         "src/node/platform.cpp",
         "src/js_realm.cpp"
       ],
       "include_dirs": [
         "src"
       ],
-      "link_settings": {
-        "ldflags": [
-          "-Wl,--whole-archive,-lrealm-node,--no-whole-archive"
-        ]
-      },
-      "xcode_settings": {
-        "OTHER_LDFLAGS": [ "-all_load", "-lrealm-node" ]
-      }
+      "conditions": [
+        ["realm_node_build_as_library", {
+          "type": "static_library",
+          "export_dependent_settings": [ "object-store" ]
+        }, {
+          "sources": [
+            "src/node/node_init.cpp"
+          ]
+        }],
+        ["realm_enable_sync", {
+          "sources": [
+            "src/node/node_sync_logger.cpp"
+          ]
+        }]
+      ]
     },
     {
-      "variables": {
-        "object-store-include-dirs": [
-          "src/object-store/src",
-          "src/object-store/src/impl",
-          "src/object-store/src/impl/apple",
-          "src/object-store/src/parser",
-          "src/object-store/external/pegtl"
-        ]
-      },
       "target_name": "object-store",
-      "dependencies": [ "realm-sync" ], # sync also includes core
+      "dependencies": [ "realm-core" ],
       "type": "static_library",
-      "include_dirs": [ "<@(object-store-include-dirs)" ],
+      "include_dirs": [
+        "src/object-store/src",
+        "src/object-store/src/impl",
+        "src/object-store/src/impl/apple",
+        "src/object-store/src/parser",
+        "src/object-store/external/pegtl"
+      ],
       "sources": [
         "src/object-store/src/collection_notifications.cpp",
         "src/object-store/src/index_set.cpp",
@@ -50,10 +55,7 @@
         "src/object-store/src/results.cpp",
         "src/object-store/src/schema.cpp",
         "src/object-store/src/shared_realm.cpp",
-        "src/object-store/src/sync_manager.cpp",
-        "src/object-store/src/sync_session.cpp",
         "src/object-store/src/thread_confined.cpp",
-        "src/object-store/src/global_notifier.cpp",
         "src/object-store/src/impl/collection_change_builder.cpp",
         "src/object-store/src/impl/collection_notifier.cpp",
         "src/object-store/src/impl/handover.cpp",
@@ -77,25 +79,44 @@
           "sources": [
             "src/object-store/src/impl/apple/external_commit_helper.cpp"
           ]
+        }],
+        ["realm_enable_sync", {
+          "dependencies": [ "realm-sync" ],
+          "sources": [
+            "src/object-store/src/sync_manager.cpp",
+            "src/object-store/src/sync_session.cpp"
+          ]
         }]
       ],
       "all_dependent_settings": {
-        "include_dirs": [ "<@(object-store-include-dirs)" ]
+        "include_dirs": [ 
+          "src/object-store/src",
+          "src/object-store/src/impl",
+          "src/object-store/src/impl/apple",
+          "src/object-store/src/parser",
+          "src/object-store/external/pegtl"
+        ]
       },
       "export_dependent_settings": [
         "<@(_dependencies)" # re-export settings related to linking the realm binaries
       ]
-    },
-    {
-      "target_name": "action_after_build",
-      "type": "none",
-      "dependencies": [ "<(module_name)" ],
-      "copies": [
+    }
+  ],
+  "conditions": [
+    ["not realm_node_build_as_library", {
+      "targets": [
         {
-          "files": [ "<(PRODUCT_DIR)/<(module_name).node" ],
-          "destination": "<(module_path)"
+          "target_name": "action_after_build",
+          "type": "none",
+          "dependencies": [ "<(module_name)" ],
+          "copies": [
+            {
+              "files": [ "<(PRODUCT_DIR)/<(module_name).node" ],
+              "destination": "<(module_path)"
+            }
+          ]
         }
       ]
-    }
+    }]
   ]
 }
