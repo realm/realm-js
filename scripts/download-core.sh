@@ -15,7 +15,6 @@ fi
 # The 'node' argument will result in realm-node build being downloaded.
 if [ "$1" = 'node' ]; then
     CORE_DIR="core-node"
-    SYNC_DIR="sync-node"
 
     if [ "$(uname)" = 'Darwin' ]; then
         PLATFORM_TAG="node-osx-"
@@ -29,10 +28,9 @@ else
     SYNC_DIR='sync'
     PLATFORM_TAG=""
     SYNC_PLATFORM_TAG="cocoa-"
+    CORE_DOWNLOAD_FILE="realm-core-$PLATFORM_TAG$REALM_CORE_VERSION.tar.xz"
+    SYNC_DOWNLOAD_FILE="realm-sync-$SYNC_PLATFORM_TAG$REALM_SYNC_VERSION.tar.xz"
 fi
-
-CORE_DOWNLOAD_FILE="realm-core-$PLATFORM_TAG$REALM_CORE_VERSION.tar.xz"
-SYNC_DOWNLOAD_FILE="realm-sync-$SYNC_PLATFORM_TAG$REALM_SYNC_VERSION.tar.xz"
 
 # Start current working directory at the root of the project.
 cd "$(dirname "$0")/.."
@@ -105,6 +103,7 @@ else
     echo "The core library seems to be up to date."
 fi
 
+[ -z "$SYNC_DIR" ] && exit 0 # not downloading sync
 
 if [ ! -e "vendor/$SYNC_DIR" ]; then
     download_core $SYNC_DIR $REALM_SYNC_VERSION $SYNC_DOWNLOAD_FILE sync
