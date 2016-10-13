@@ -24,7 +24,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const Realm = require('../..');
+const Realm = require('realm');
 const RealmTests = require('../js');
 
 // Create this method with appropriate implementation for Node testing.
