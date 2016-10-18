@@ -351,9 +351,6 @@ void RealmClass<T>::constructor(ContextType ctx, ObjectType this_object, size_t 
             if (!Value::is_undefined(ctx, version_value)) {
                 config.schema_version = Value::validated_to_number(ctx, version_value, "schemaVersion");
             }
-            else {
-                config.schema_version = 0;
-            }
 
             static const String migration_string = "migration";
             ValueType migration_value = Object::get_property(ctx, object, migration_string);
