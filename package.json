@@ -45,7 +45,7 @@
     "jsdoc": "rm -rf docs/output && jsdoc -c docs/conf.json",
     "lint": "eslint",
     "test": "scripts/test.sh",
-    "install": "node-pre-gyp install --build-from-source"
+    "install": "node-pre-gyp install --fallback-to-build"
   },
   "dependencies": {
     "nan": "^2.3.3",

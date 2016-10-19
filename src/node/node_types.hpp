@@ -23,7 +23,10 @@
 #include <map>
 #include <string>
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wundef"
 #include <nan.h>
+#pragma GCC diagnostic pop
 
 #include "js_types.hpp"
 
@@ -43,15 +46,15 @@ struct Types {
     using Function = v8::Local<v8::Function>;
     using HandleScope = Nan::HandleScope;
 
-    using ConstructorCallback = Nan::FunctionCallback;
-    using FunctionCallback = Nan::FunctionCallback;
-    using PropertyGetterCallback = Nan::GetterCallback;
-    using PropertySetterCallback = Nan::SetterCallback;
-    using IndexPropertyGetterCallback = Nan::IndexGetterCallback;
-    using IndexPropertySetterCallback = Nan::IndexSetterCallback;
-    using StringPropertyGetterCallback = Nan::PropertyGetterCallback;
-    using StringPropertySetterCallback = Nan::PropertySetterCallback;
-    using StringPropertyEnumeratorCallback = Nan::PropertyEnumeratorCallback;
+    using ConstructorCallback = v8::FunctionCallback;
+    using FunctionCallback = v8::FunctionCallback;
+    using PropertyGetterCallback = v8::AccessorGetterCallback;
+    using PropertySetterCallback = v8::AccessorSetterCallback;
+    using IndexPropertyGetterCallback = v8::IndexedPropertyGetterCallback;
+    using IndexPropertySetterCallback = v8::IndexedPropertySetterCallback;
+    using StringPropertyGetterCallback = v8::NamedPropertyGetterCallback;
+    using StringPropertySetterCallback = v8::NamedPropertySetterCallback;
+    using StringPropertyEnumeratorCallback = v8::NamedPropertyEnumeratorCallback;
 };
 
 template<typename ClassType>

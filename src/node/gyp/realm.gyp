@@ -1,6 +1,7 @@
 {
   "variables": {
     "use_realm_debug": "<!(echo $REALMJS_USE_DEBUG_CORE)",
+    "realm_enable_sync%": "0"
   },
   "targets": [
     {
@@ -17,7 +18,7 @@
         ]
       },
       "all_dependent_settings": {
-        "defines": [ "REALM_HAVE_CONFIG", "REALM_PLATFORM_NODE=1", "REALM_ENABLE_SYNC" ]
+        "defines": [ "REALM_HAVE_CONFIG", "REALM_PLATFORM_NODE=1", "REALM_ENABLE_SYNC=<(realm_enable_sync)" ]
       },
       "variables": {
         "prefix": "<!(echo $REALM_CORE_PREFIX)"
@@ -31,11 +32,7 @@
             "library_dirs": [ "<(prefix)/src/realm" ]
           }
         }, {
-          "conditions": [
-            ["OS=='mac'", {
-              "dependencies": [ "vendored-realm" ]
-            }]
-          ]
+          "dependencies": [ "vendored-realm" ]
         }]
       ]
     },
@@ -64,26 +61,39 @@
           "direct_dependent_settings": {
             "library_dirs": [ "<(prefix)/src/realm" ]
           }
-        },
-        {
-          "conditions": [
-            ["OS=='mac'", {
-              "dependencies": [ "vendored-realm" ]
-            }]
-          ]
+        }, {
+          "dependencies": [ "vendored-realm" ]
         }]
       ],
     },
     {
       "variables": {
-        "realm_vendor_dir%": "<(module_root_dir)/vendor",
+        "vendor_dir%": "<(module_root_dir)/vendor",
       },
       "target_name": "vendored-realm",
       "type": "none",
-      "all_dependent_settings": {
-        "include_dirs": [ "<(realm_vendor_dir)/realm-sync/include" ],
-        "library_dirs": [ "<(realm_vendor_dir)/realm-sync/osx" ]
-      }
+      "conditions": [
+        ["realm_enable_sync", {
+          "all_dependent_settings": {
+            "include_dirs": [ "<(module_root_dir)/vendor/realm-sync/include" ],
+            "library_dirs": [ "<(module_root_dir)/vendor/realm-sync/osx" ]
+          }
+        }, {
+          "all_dependent_settings": {
+            "include_dirs": [ "<(module_root_dir)/vendor/core-node/include" ],
+            "library_dirs": [ "<(module_root_dir)/vendor/core-node" ]
+          },
+          "actions": [
+            {
+              "action_name": "download-realm",
+               "inputs": [ ],
+               "outputs": [ "<(module_root_dir)/vendor/core-node" ],
+               "action": [ "<(module_root_dir)/scripts/download-core.sh", "node" ]
+            }
+          ]
+        }]
+      ]
+      
     }
   ]
 }

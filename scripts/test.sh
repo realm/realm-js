@@ -154,6 +154,8 @@ case "$TARGET" in
   cat tests.xml
   ;;
 "node")
+  npm install --build-from-source
+
   # Change to a temp directory.
   cd "$(mktemp -q -d -t realm.node.XXXXXX)"
   trap "rm -rf '$PWD'" EXIT
@@ -164,6 +166,8 @@ case "$TARGET" in
   popd
   ;;
 "test-runners")
+  npm install --build-from-source
+
   for runner in ava mocha jest; do
     pushd "$SRCROOT/tests/test-runners/$runner"
     npm install

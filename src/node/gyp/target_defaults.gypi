@@ -3,7 +3,10 @@
     "variables": {
       "warning-flags": [
         "-Wno-missing-field-initializers",
-        "-Wno-return-type"
+        "-Wno-return-type",
+        "-Wno-unused-result",
+        "-Wno-deprecated-declarations",
+        "-Wundef"
       ]
     },
     "cflags_cc!": [ # turn off default flags on older nodes on linux
@@ -20,11 +23,6 @@
     "include_dirs": [
       "<!(node -e \"require('nan')\")"
     ],
-    "configurations": {
-      "Debug": {
-        "defines": ["DEBUG=1"]
-      }
-    },
     "conditions": [
       ["OS=='mac'", {
         "xcode_settings": {
