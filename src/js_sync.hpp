@@ -80,6 +80,11 @@ public:
         {"all", {wrap<all_users>, nullptr}},
     };
 
+    static void logout(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
+
+    MethodMap<T> const methods = {
+        {"logout", wrap<logout>}
+    };
 };
 
 template<typename T>
@@ -109,10 +114,11 @@ template<typename T>
 void UserClass<T>::create_user(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 3, 4);
 
-    SharedUser *user = new SharedUser(SyncManager::shared().get_user(Value::validated_to_string(ctx, arguments[1]),
-                                                                     Value::validated_to_string(ctx, arguments[2]),
-                                                                     (std::string)Value::validated_to_string(ctx, arguments[0]),
-                                                                     Value::validated_to_boolean(ctx, arguments[3])));
+    SharedUser *user = new SharedUser(SyncManager::shared().get_user(
+        Value::validated_to_string(ctx, arguments[1]),
+        Value::validated_to_string(ctx, arguments[2]),
+        (std::string)Value::validated_to_string(ctx, arguments[0]),
+        Value::validated_to_boolean(ctx, arguments[3])));
     return_value.set(create_object<T, UserClass<T>>(ctx, user));
 }
 
@@ -123,6 +129,11 @@ void UserClass<T>::all_users(ContextType ctx, ObjectType object, ReturnValue &re
         user_vector.push_back(create_object<T, UserClass<T>>(ctx, new SharedUser(user)));
     }
     return_value.set(Object::create_array(ctx, user_vector));
+}
+
+template<typename T>
+void UserClass<T>::logout(ContextType ctx, ObjectType object, size_t, const ValueType[], ReturnValue &) {
+    get_internal<T, UserClass<T>>(object)->get()->log_out();
 }
 
 template<typename T>
