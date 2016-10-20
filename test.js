@@ -26,9 +26,8 @@ const wildcard = require('wildcard');
 var notifier_dir = './notifier';
 mkdirp.sync(notifier_dir);
 
-var access_token = 'ewoJImlkZW50aXR5IjogImFkbWluIiwKCSJhY2Nlc3MiOiBbInVwbG9hZCIsICJkb3dubG9hZCIsICJtYW5hZ2UiXQp9Cg==:DlFksxA+cJyEOc9bu6JwBUfDi4fJCagjAcIPPsoisjqfmOzSrk5Omuw0IkxCRU534p2+CAAj5IOH47DfObPtAA8q2DHguYDOKWYxyktS/6doPCqDHYN7k9EgUHdPTkESNkuPZbaVfXZTGzocB8m7+MaEXJde7FGPbh1sBz/+sPldnlAhnOqO5QbWzIEyoGHiOSg3V7UCh2H8kalr3tef7fkE2X65OBMgcarPvM5M6sPijOx2N5zrVrjL2wvguP9zS+g2ybFPUqV3DGv3S8cnGA+wVId/jCfGc2ujNhecunJdENH+/pL+0BTYHCFEWkY1WP1NUyti60FwRaXAtcYxeA==';
+// var access_token = 'ewoJImlkZW50aXR5IjogImFkbWluIiwKCSJhY2Nlc3MiOiBbInVwbG9hZCIsICJkb3dubG9hZCIsICJtYW5hZ2UiXQp9Cg==:DlFksxA+cJyEOc9bu6JwBUfDi4fJCagjAcIPPsoisjqfmOzSrk5Omuw0IkxCRU534p2+CAAj5IOH47DfObPtAA8q2DHguYDOKWYxyktS/6doPCqDHYN7k9EgUHdPTkESNkuPZbaVfXZTGzocB8m7+MaEXJde7FGPbh1sBz/+sPldnlAhnOqO5QbWzIEyoGHiOSg3V7UCh2H8kalr3tef7fkE2X65OBMgcarPvM5M6sPijOx2N5zrVrjL2wvguP9zS+g2ybFPUqV3DGv3S8cnGA+wVId/jCfGc2ujNhecunJdENH+/pL+0BTYHCFEWkY1WP1NUyti60FwRaXAtcYxeA==';
 // var admin_user = new Realm.Sync.User.adminUser('http://127.0.0.1:9080/', access_token);
-// Realm.Sync.setLogLevel('error');
 // Realm.Sync.setGlobalListener(notifier_dir, 'realm://127.0.0.1:9080', admin_user,
 //     (name) => {
 //         console.log('filter: ' + name); 
@@ -40,6 +39,8 @@ var access_token = 'ewoJImlkZW50aXR5IjogImFkbWluIiwKCSJhY2Nlc3MiOiBbInVwbG9hZCIs
 //     }
 // );
 // console.log('global notifier listening...');
+
+Realm.Sync.setLogLevel('error');
 
 function createObjects(error, user) {
     console.log(user.server);
@@ -76,7 +77,6 @@ function createObjects(error, user) {
     prompt.get(['int'], create);
 }
 
-console.log(Realm.Sync.User.all);
 if (Realm.Sync.User.all.length) {
     console.log('Using persisted user');
     createObjects(undefined, Realm.Sync.User.all[0]);

@@ -84,7 +84,7 @@ public:
 
 template<typename T>
 void UserClass<T>::get_server(ContextType ctx, ObjectType object, ReturnValue &return_value) {
-    std::string server = get_internal<T, UserClass<T>>(object)->get()->server_url;
+    std::string server = get_internal<T, UserClass<T>>(object)->get()->server_url();
     return_value.set(server);
 }
 
@@ -111,8 +111,8 @@ void UserClass<T>::create_user(ContextType ctx, ObjectType this_object, size_t a
 
     SharedUser *user = new SharedUser(SyncManager::shared().get_user(Value::validated_to_string(ctx, arguments[1]),
                                                                      Value::validated_to_string(ctx, arguments[2]),
+                                                                     (std::string)Value::validated_to_string(ctx, arguments[0]),
                                                                      Value::validated_to_boolean(ctx, arguments[3])));
-    user->get()->server_url = Value::validated_to_string(ctx, arguments[0]);
     return_value.set(create_object<T, UserClass<T>>(ctx, user));
 }
 
