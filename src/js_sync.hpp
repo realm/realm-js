@@ -73,6 +73,13 @@ public:
     MethodMap<T> const static_methods = {
         {"createUser", wrap<create_user>}
     };
+
+    static void all_users(ContextType ctx, ObjectType object, ReturnValue &return_value);
+
+    PropertyMap<T> const static_properties = {
+        {"all", {wrap<all_users>, nullptr}},
+    };
+
 };
 
 template<typename T>
@@ -107,6 +114,15 @@ void UserClass<T>::create_user(ContextType ctx, ObjectType this_object, size_t a
                                                                      Value::validated_to_boolean(ctx, arguments[3])));
     user->get()->server_url = Value::validated_to_string(ctx, arguments[0]);
     return_value.set(create_object<T, UserClass<T>>(ctx, user));
+}
+
+template<typename T>
+void UserClass<T>::all_users(ContextType ctx, ObjectType object, ReturnValue &return_value) {
+    std::vector<ValueType> user_vector;
+    for (auto user : SyncManager::shared().all_users()) {
+        user_vector.push_back(create_object<T, UserClass<T>>(ctx, new SharedUser(user)));
+    }
+    return_value.set(Object::create_array(ctx, user_vector));
 }
 
 template<typename T>
