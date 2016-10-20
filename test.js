@@ -36,21 +36,19 @@ var access_token = 'ewoJImlkZW50aXR5IjogImFkbWluIiwKCSJhY2Nlc3MiOiBbInVwbG9hZCIs
 var admin_user = new Realm.Sync.User.adminUser('http://127.0.0.1:9080/', access_token);
 
 Realm.Sync.setLogLevel('error');
-Realm.Sync.setGlobalListener(notifier_dir, 'realm://127.0.0.1:9080', admin_user,
-    (name) => {
-        console.log('filter: ' + name); 
-        return true; 
-    },    
-    (name, realm, changes) => { 
-        console.log('change: ' + name); 
-        console.log(changes); 
-    }
-);
-console.log('global notifier listening...');
+// Realm.Sync.setGlobalListener(notifier_dir, 'realm://127.0.0.1:9080', admin_user,
+//     (name) => {
+//         console.log('filter: ' + name); 
+//         return true; 
+//     },    
+//     (name, realm, changes) => { 
+//         console.log('change: ' + name); 
+//         console.log(changes); 
+//     }
+// );
+// console.log('global notifier listening...');
 
 Realm.Sync.User.login('http://127.0.0.1:9080/', 'ari', 'aaa', function(error, user) {
-    console.log(user);
-
     var realm = new Realm({
         sync: {
             user: user, 

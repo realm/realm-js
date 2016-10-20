@@ -586,7 +586,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "[ -s \"${HOME}/.nvm/nvm.sh\" ] && . \"${HOME}/.nvm/nvm.sh\" \nif [ -z \"$TEST_SCRIPT\" ]; then\n #npm install realm realm-tests\n echo a\nfi\ncp ../../../src/object-store/tests/query.json ../node_modules/realm-tests/query-tests.json\n";
+			shellScript = "[ -s \"${HOME}/.nvm/nvm.sh\" ] && . \"${HOME}/.nvm/nvm.sh\" \nif [ -z \"$TEST_SCRIPT\" ]; then\n #npm install realm realm-tests\n echo a\nfi\ncp \"${SRCROOT}/../../../src/object-store/tests/query.json\" \"${SRCROOT}/../node_modules/realm-tests/query-tests.json\"\n";
 		};
 		F6EDE5BF1C49007200B1085F /* Bundle React Native code and images */ = {
 			isa = PBXShellScriptBuildPhase;

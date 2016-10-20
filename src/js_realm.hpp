@@ -32,7 +32,7 @@
 
 #if REALM_ENABLE_SYNC
 #include "js_sync.hpp"
-#include "sync_config.hpp"
+#include "sync/sync_config.hpp"
 #endif
 
 #include "shared_realm.hpp"
@@ -146,6 +146,7 @@ class RealmClass : public ClassDefinition<T, SharedRealm, ObservableClass<T>> {
 
 public:
     static FunctionType create_constructor(ContextType);
+    static Protected<FunctionType> s_constructor;
 
     // methods
     static void objects(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
@@ -256,6 +257,9 @@ public:
 };
 
 template<typename T>
+Protected<typename T::Function> RealmClass<T>::s_constructor;
+
+template<typename T>
 inline typename T::Function RealmClass<T>::create_constructor(ContextType ctx) {
     FunctionType realm_constructor = ObjectWrap<T, RealmClass<T>>::create_constructor(ctx);
     FunctionType collection_constructor = ObjectWrap<T, CollectionClass<T>>::create_constructor(ctx);
@@ -274,6 +278,7 @@ inline typename T::Function RealmClass<T>::create_constructor(ContextType ctx) {
     Object::set_property(ctx, realm_constructor, "Sync", sync_constructor, attributes);
 #endif
 
+    s_constructor = Protected<FunctionType>(ctx, realm_constructor);
     return realm_constructor;
 }
     
@@ -390,7 +395,7 @@ void RealmClass<T>::constructor(ContextType ctx, ObjectType this_object, size_t 
                 config.encryption_key = std::vector<char>(encryption_key.begin(), encryption_key.end());
             }
 #if REALM_ENABLE_SYNC
-            SyncClass<T>::populate_sync_config(ctx, object, config);
+            SyncClass<T>::populate_sync_config(ctx, s_constructor, object, config);
 #endif
         }
     }
