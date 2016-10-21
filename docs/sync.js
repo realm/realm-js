@@ -49,6 +49,24 @@ Sync.setLogLevel = function(log_level) {};
  */
 
 /**
+ * Class that describes authentication errors in the Realm Object Server
+ * @memberof Realm.Sync
+ */
+class AuthError extends Error {
+    /**
+     * The numerical code for this error.
+     * @type {number}
+     */
+    get code() {}
+
+    /**
+     * The unique help URI that describes this error.
+     * @type {string}
+     */
+    get type() {}
+}
+
+/**
  * Class for logging in and managing Sync users.
  * @memberof Realm.Sync
  */
