@@ -6,5 +6,5 @@
 	url = https://github.com/realm/realm-jsdoc.git
 [submodule "src/object-store"]
 	path = src/object-store
-	url = git@github.com:realm/realm-object-store-private.git
-	branch = js-sync
+	url = https://github.com/realm/realm-object-store.git
+	branch = js
