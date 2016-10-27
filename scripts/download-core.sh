@@ -5,7 +5,7 @@ set -o pipefail
 
 # Set to "latest" for the latest build.
 : ${REALM_CORE_VERSION:=2.1.0}
-: ${REALM_SYNC_VERSION:=1.0.0-BETA-2.0}
+: ${REALM_SYNC_VERSION:=1.0.0-BETA-3.3}
 
 if [ "$1" = '--version' ]; then
     echo "$REALM_CORE_VERSION"
@@ -15,7 +15,6 @@ fi
 # The 'node' argument will result in realm-node build being downloaded.
 if [ "$1" = 'node' ]; then
     CORE_DIR="core-node"
-    SYNC_DIR="sync-node"
 
     if [ "$(uname)" = 'Darwin' ]; then
         PLATFORM_TAG="node-osx-"
@@ -26,10 +25,11 @@ if [ "$1" = 'node' ]; then
     fi
 else
     CORE_DIR='core'
-    SYNC_DIR='sync'
     PLATFORM_TAG=""
-    SYNC_PLATFORM_TAG="cocoa-"
 fi
+
+SYNC_DIR='sync'
+SYNC_PLATFORM_TAG="cocoa-"
 
 CORE_DOWNLOAD_FILE="realm-core-$PLATFORM_TAG$REALM_CORE_VERSION.tar.xz"
 SYNC_DOWNLOAD_FILE="realm-sync-$SYNC_PLATFORM_TAG$REALM_SYNC_VERSION.tar.xz"
@@ -56,6 +56,7 @@ download_core() {
     mkdir -p "$TMP_DIR"
 
     if [ ! -f "$TAR" ]; then
+	echo  "https://static.realm.io/downloads/$SERVER_DIR/$DOWNLOAD_FILE" 
         curl -f -L -s "https://static.realm.io/downloads/$SERVER_DIR/$DOWNLOAD_FILE" -o "$TMP_TAR" ||
             die "Downloading $DIR failed. Please try again once you have an Internet connection."
         mv "$TMP_TAR" "$TAR"
