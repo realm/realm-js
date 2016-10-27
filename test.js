@@ -23,33 +23,29 @@ const prompt = require('prompt');
 const mkdirp  = require('mkdirp');
 const wildcard = require('wildcard');
 
-// User.loginWithProvider('http://127.0.0.1:8080/', 'debug', 'abcd', function(error, user) {
-//    console.log(user);
-// });
-
-Realm.Sync.User.create('http://127.0.0.1:9080/', 'ari', 'aaa', function(error, user) {
-
 var notifier_dir = './notifier';
 mkdirp.sync(notifier_dir);
 
-var access_token = 'ewoJImlkZW50aXR5IjogImFkbWluIiwKCSJhY2Nlc3MiOiBbInVwbG9hZCIsICJkb3dubG9hZCIsICJtYW5hZ2UiXQp9Cg==:DlFksxA+cJyEOc9bu6JwBUfDi4fJCagjAcIPPsoisjqfmOzSrk5Omuw0IkxCRU534p2+CAAj5IOH47DfObPtAA8q2DHguYDOKWYxyktS/6doPCqDHYN7k9EgUHdPTkESNkuPZbaVfXZTGzocB8m7+MaEXJde7FGPbh1sBz/+sPldnlAhnOqO5QbWzIEyoGHiOSg3V7UCh2H8kalr3tef7fkE2X65OBMgcarPvM5M6sPijOx2N5zrVrjL2wvguP9zS+g2ybFPUqV3DGv3S8cnGA+wVId/jCfGc2ujNhecunJdENH+/pL+0BTYHCFEWkY1WP1NUyti60FwRaXAtcYxeA==';
-var admin_user = new Realm.Sync.User.adminUser('http://127.0.0.1:9080/', access_token);
+// var access_token = 'ewoJImlkZW50aXR5IjogImFkbWluIiwKCSJhY2Nlc3MiOiBbInVwbG9hZCIsICJkb3dubG9hZCIsICJtYW5hZ2UiXQp9Cg==:DlFksxA+cJyEOc9bu6JwBUfDi4fJCagjAcIPPsoisjqfmOzSrk5Omuw0IkxCRU534p2+CAAj5IOH47DfObPtAA8q2DHguYDOKWYxyktS/6doPCqDHYN7k9EgUHdPTkESNkuPZbaVfXZTGzocB8m7+MaEXJde7FGPbh1sBz/+sPldnlAhnOqO5QbWzIEyoGHiOSg3V7UCh2H8kalr3tef7fkE2X65OBMgcarPvM5M6sPijOx2N5zrVrjL2wvguP9zS+g2ybFPUqV3DGv3S8cnGA+wVId/jCfGc2ujNhecunJdENH+/pL+0BTYHCFEWkY1WP1NUyti60FwRaXAtcYxeA==';
+// var admin_user = new Realm.Sync.User.adminUser('http://127.0.0.1:9080/', access_token);
+// Realm.Sync.setGlobalListener(notifier_dir, 'realm://127.0.0.1:9080', admin_user,
+//     (name) => {
+//         console.log('filter: ' + name); 
+//         return true; 
+//     },    
+//     (name, realm, changes) => { 
+//         console.log('change: ' + name); 
+//         console.log(changes); 
+//     }
+// );
+// console.log('global notifier listening...');
 
 Realm.Sync.setLogLevel('error');
-Realm.Sync.setGlobalListener(notifier_dir, 'realm://127.0.0.1:9080', admin_user,
-    (name) => {
-        console.log('filter: ' + name); 
-        return true; 
-    },    
-    (name, realm, changes) => { 
-        console.log('change: ' + name); 
-        console.log(changes); 
-    }
-);
-console.log('global notifier listening...');
 
-Realm.Sync.User.login('http://127.0.0.1:9080/', 'ari', 'aaa', function(error, user) {
-    console.log(user);
+function createObjects(error, user) {
+    console.log(user.server);
+    console.log(user.token);
+    console.log(user.identity);
 
     var realm = new Realm({
         sync: {
@@ -79,7 +75,15 @@ Realm.Sync.User.login('http://127.0.0.1:9080/', 'ari', 'aaa', function(error, us
     }
     prompt.start();
     prompt.get(['int'], create);
-});
+}
 
-});
-
+if (Realm.Sync.User.all.length) {
+    console.log('Using persisted user');
+    createObjects(undefined, Realm.Sync.User.all[0]);
+    //Realm.Sync.User.login('http://127.0.0.1:9080/', 'ari', 'aaa', createObjects);
+}
+else {
+    console.log('Logging in');
+    Realm.Sync.User.login('http://127.0.0.1:9080/', 'ari', 'aaa', createObjects);
+    //Realm.Sync.User.create('http://127.0.0.1:9080/', 'ari', 'aaa', createObjects);
+}

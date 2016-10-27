@@ -32,7 +32,7 @@
     },
     {
       "target_name": "object-store",
-      "dependencies": [ "realm-core" ],
+      "dependencies": [ "realm-core", "realm-sync" ],
       "type": "static_library",
       "include_dirs": [
         "src/object-store/src",
@@ -62,7 +62,13 @@
         "src/object-store/src/parser/parser.cpp",
         "src/object-store/src/parser/query_builder.cpp",
         "src/object-store/src/util/format.cpp",
-        "src/object-store/src/util/thread_id.cpp"
+        "src/object-store/src/util/thread_id.cpp",
+        "src/object-store/src/sync/sync_manager.cpp",
+        "src/object-store/src/sync/sync_user.cpp",
+        "src/object-store/src/sync/sync_session.cpp",
+        "src/object-store/src/sync/impl/sync_file.cpp",
+        "src/object-store/src/sync/impl/sync_metadata.cpp",
+        "src/object-store/src/impl/apple/keychain_helper.cpp"
       ],
       "conditions": [
         ["OS=='linux'", {
@@ -73,13 +79,6 @@
         ["OS=='mac'", {
           "sources": [
             "src/object-store/src/impl/apple/external_commit_helper.cpp"
-          ]
-        }],
-        ["realm_enable_sync", {
-          "dependencies": [ "realm-sync" ],
-          "sources": [
-            "src/object-store/src/sync_manager.cpp",
-            "src/object-store/src/sync_session.cpp"
           ]
         }]
       ],

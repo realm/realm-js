@@ -49,10 +49,9 @@
   },
   "dependencies": {
     "nan": "^2.3.3",
+    "needle": "^1.3.0",
     "node-pre-gyp": "^0.6.30",
-    "request": "^2.74.0",
-    "sync-request": "^3.0.1",
-    "url": "^0.11.0"
+    "sync-request": "^3.0.1"
   },
   "devDependencies": {
     "babel-eslint": "^6.0.4",
