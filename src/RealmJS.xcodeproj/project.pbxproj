@@ -23,8 +23,10 @@
 		02414BA91CE6ABCF00A8669F /* collection_notifications.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02414B961CE6AADD00A8669F /* collection_notifications.cpp */; };
 		0270BC821B7D020100010E03 /* RealmJSTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = 0270BC7B1B7D020100010E03 /* RealmJSTests.mm */; };
 		027A23131CD3E379000543AE /* libRealmJS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F63FF2B11C1241E500B3B8E0 /* libRealmJS.a */; };
+		02879D8C1DC29D5600777A5D /* package.json in Resources */ = {isa = PBXBuildFile; fileRef = 02879D8B1DC29D5600777A5D /* package.json */; };
 		02D041F71CE11159000E4250 /* dates-v3.realm in Resources */ = {isa = PBXBuildFile; fileRef = 02D041F61CE11159000E4250 /* dates-v3.realm */; };
 		02D8D1F71B601984006DB49D /* JavaScriptCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 02B58CCD1AE99D4D009B348C /* JavaScriptCore.framework */; };
+		02E265691DC1896100BBDB04 /* request in Resources */ = {isa = PBXBuildFile; fileRef = 02E265681DC1896100BBDB04 /* request */; };
 		02E315C91DB80DDD00555337 /* sync_manager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E315C31DB80DDD00555337 /* sync_manager.cpp */; };
 		02E315CA1DB80DDD00555337 /* sync_session.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E315C51DB80DDD00555337 /* sync_session.cpp */; };
 		02E315CB1DB80DDD00555337 /* sync_user.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E315C71DB80DDD00555337 /* sync_user.cpp */; };
@@ -139,6 +141,7 @@
 		0270BC781B7D020100010E03 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = ios/Info.plist; sourceTree = "<group>"; };
 		0270BC7A1B7D020100010E03 /* RealmJSTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RealmJSTests.h; path = ios/RealmJSTests.h; sourceTree = "<group>"; };
 		0270BC7B1B7D020100010E03 /* RealmJSTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = RealmJSTests.mm; path = ios/RealmJSTests.mm; sourceTree = "<group>"; };
+		02879D8B1DC29D5600777A5D /* package.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; name = package.json; path = ../package.json; sourceTree = "<group>"; };
 		029048011C0428DF00ABDED4 /* jsc_init.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = jsc_init.cpp; sourceTree = "<group>"; };
 		029048021C0428DF00ABDED4 /* jsc_init.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = jsc_init.h; sourceTree = "<group>"; };
 		029048041C0428DF00ABDED4 /* js_list.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = js_list.hpp; sourceTree = "<group>"; };
@@ -156,6 +159,7 @@
 		02B58CBC1AE99CEC009B348C /* RealmJSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RealmJSTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		02B58CCD1AE99D4D009B348C /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		02D041F61CE11159000E4250 /* dates-v3.realm */ = {isa = PBXFileReference; lastKnownFileType = file; path = "dates-v3.realm"; sourceTree = "<group>"; };
+		02E265681DC1896100BBDB04 /* request */ = {isa = PBXFileReference; lastKnownFileType = folder; name = request; path = "../tests/react-test-app/node_modules/request"; sourceTree = "<group>"; };
 		02E315C21DB80DDD00555337 /* sync_config.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = sync_config.hpp; path = src/sync/sync_config.hpp; sourceTree = "<group>"; };
 		02E315C31DB80DDD00555337 /* sync_manager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = sync_manager.cpp; path = src/sync/sync_manager.cpp; sourceTree = "<group>"; };
 		02E315C41DB80DDD00555337 /* sync_manager.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = sync_manager.hpp; path = src/sync/sync_manager.hpp; sourceTree = "<group>"; };
@@ -363,6 +367,7 @@
 			isa = PBXGroup;
 			children = (
 				F6BCCFDF1C83809A00FE31AE /* lib */,
+				02879D8B1DC29D5600777A5D /* package.json */,
 				F62A35131C18E6E2004A917D /* iOS */,
 				F6874A441CAD2ACD00EEEE36 /* JSC */,
 				F62BF9001CAC72C40022BCDC /* Node */,
@@ -391,6 +396,7 @@
 		02B58CA71AE99CEB009B348C = {
 			isa = PBXGroup;
 			children = (
+				02E265681DC1896100BBDB04 /* request */,
 				02B58CCF1AE99D8C009B348C /* Frameworks */,
 				F6C3FBB41BF680D000E6FFD4 /* Vendor */,
 				0270BC3D1B7CFBFD00010E03 /* RealmJS */,
@@ -710,6 +716,7 @@
 				02B58CB91AE99CEC009B348C /* Frameworks */,
 				02B58CBA1AE99CEC009B348C /* Resources */,
 				F613787A1C18F003008BFC51 /* Copy Query Tests */,
+				02879D8D1DC29F2000777A5D /* Install Node Modules */,
 			);
 			buildRules = (
 			);
@@ -821,7 +828,9 @@
 			files = (
 				02D041F71CE11159000E4250 /* dates-v3.realm in Resources */,
 				F6BCCFE21C8380A400FE31AE /* lib in Resources */,
+				02879D8C1DC29D5600777A5D /* package.json in Resources */,
 				02414B881CE68CA200A8669F /* dates-v5.realm in Resources */,
+				02E265691DC1896100BBDB04 /* request in Resources */,
 				F61378791C18EAC5008BFC51 /* js in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -829,6 +838,20 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		02879D8D1DC29F2000777A5D /* Install Node Modules */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Install Node Modules";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "cd \"$TARGET_BUILD_DIR/$CONTENTS_FOLDER_PATH\"\nyarn install ";
+		};
 		F613787A1C18F003008BFC51 /* Copy Query Tests */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;

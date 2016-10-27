@@ -74,9 +74,11 @@ public:
         {"createUser", wrap<create_user>}
     };
 
+    static void current_user(ContextType ctx, ObjectType object, ReturnValue &return_value);
     static void all_users(ContextType ctx, ObjectType object, ReturnValue &return_value);
 
     PropertyMap<T> const static_properties = {
+        {"current", {wrap<current_user>, nullptr}},
         {"all", {wrap<all_users>, nullptr}},
     };
 
@@ -129,6 +131,15 @@ void UserClass<T>::all_users(ContextType ctx, ObjectType object, ReturnValue &re
         user_vector.push_back(create_object<T, UserClass<T>>(ctx, new SharedUser(user)));
     }
     return_value.set(Object::create_array(ctx, user_vector));
+}
+
+template<typename T>
+void UserClass<T>::current_user(ContextType ctx, ObjectType object, ReturnValue &return_value) {
+    auto users = SyncManager::shared().all_users();
+    if (users.size() != 1) {
+        throw std::runtime_error("No current user");
+    }
+    return_value.set(create_object<T, UserClass<T>>(ctx, new SharedUser(users[0])));
 }
 
 template<typename T>

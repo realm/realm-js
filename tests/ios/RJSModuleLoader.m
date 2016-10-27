@@ -75,6 +75,9 @@ static NSString * const RJSModuleLoaderErrorDomain = @"RJSModuleLoaderErrorDomai
 - (JSValue *)loadModuleFromURL:(NSURL *)url error:(NSError **)error {
     url = url.absoluteURL;
     url = url.standardizedURL ?: url;
+    if (url.pathExtension.length == 0) {
+        url = [url URLByAppendingPathExtension:@"js"];
+    }
 
     NSString *path = url.path;
     JSValue *exports = self.modules[path];
@@ -156,7 +159,10 @@ static NSString * const RJSModuleLoaderErrorDomain = @"RJSModuleLoaderErrorDomai
 - (JSValue *)loadJSONFromURL:(NSURL *)url error:(NSError **)error {
     url = url.absoluteURL;
     url = url.standardizedURL ?: url;
-
+    if (url.pathExtension.length == 0) {
+        url = [url URLByAppendingPathExtension:@"js"];
+    }
+    
     NSString *path = url.path;
     JSValue *exports = self.modules[path];
     if (exports) {
