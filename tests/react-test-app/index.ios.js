@@ -32,7 +32,7 @@ const Realm = require('realm');
 
 Realm.Sync.setLogLevel('error');
 var realm;
-Realm.Sync.User.login('http://127.0.0.1:9080/', 'ari', 'aaa', function(error, user) {
+Realm.Sync.User.register('http://127.0.0.1:9080/', 'ari', 'aaa', function(error, user) {
     console.log(user);
 
     realm = new Realm({

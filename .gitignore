@@ -99,6 +99,7 @@ build/
 node_modules/
 npm-debug.log
 /compiled/
+*.lock
 
 # Android/IJ
 /android/

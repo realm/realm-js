@@ -26,12 +26,12 @@ if [ "$1" = 'node' ]; then
 else
     CORE_DIR='core'
     PLATFORM_TAG=""
+    CORE_DOWNLOAD_FILE="realm-core-$PLATFORM_TAG$REALM_CORE_VERSION.tar.xz"
 fi
 
 SYNC_DIR='sync'
 SYNC_PLATFORM_TAG="cocoa-"
 
-CORE_DOWNLOAD_FILE="realm-core-$PLATFORM_TAG$REALM_CORE_VERSION.tar.xz"
 SYNC_DOWNLOAD_FILE="realm-sync-$SYNC_PLATFORM_TAG$REALM_SYNC_VERSION.tar.xz"
 
 # Start current working directory at the root of the project.
