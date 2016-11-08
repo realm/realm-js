@@ -33,6 +33,7 @@
 #if REALM_ENABLE_SYNC
 #include "js_sync.hpp"
 #include "sync/sync_config.hpp"
+#include "sync/sync_manager.hpp"
 #endif
 
 #include "shared_realm.hpp"
@@ -455,9 +456,12 @@ void RealmClass<T>::schema_version(ContextType ctx, ObjectType this_object, size
 template<typename T>
 void RealmClass<T>::clear_test_state(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 0);
+    for(auto &user : SyncManager::shared().all_users()) {
+        user->log_out();
+    }
     delete_all_realms();
 }
-    
+
 template<typename T>
 void RealmClass<T>::copy_bundled_realm_files(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 0);

@@ -76,5 +76,29 @@ module.exports = {
             });
         });
     },
+
+    testLogin() {
+        var username = uuid();
+        return new Promise((resolve, reject) => {
+            Realm.Sync.User.register('http://localhost:9080', username, 'password', (error, user) => {
+                user.logout();
+                //TestCase.assertEqual(Realm.Sync.User.all.length, 0);
+
+                Realm.Sync.User.login('http://localhost:9080', username, 'password', (error, user) => {
+                    TestCase.assertEqual(typeof user, 'object');
+                    TestCase.assertEqual(typeof user.token, 'string');
+                    TestCase.assertEqual(typeof user.identity, 'string');
+                    TestCase.assertEqual(user.isAdmin, false);
+
+                    var realm = new Realm({sync: {user: user, url: 'realm://localhost:9080/~/test'}});
+                    TestCase.assertNotEqual(realm instanceof Realm);
+
+                    //TestCase.assertEqual(Realm.Sync.User.all.length, 1);
+
+                    resolve();
+                });
+            });
+        });
+    },
 };
 
