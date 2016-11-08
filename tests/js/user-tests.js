@@ -53,7 +53,6 @@ module.exports = {
         return new Promise((resolve, reject) => {
             Realm.Sync.User.register('http://localhost:9080', username, 'password', (error, user) => {
                 TestCase.assertEqual(typeof user, 'object');
-
                 Realm.Sync.User.register('http://localhost:9080', username, 'password', (error, user) => {
                     TestCase.assertTrue(error instanceof Realm.Sync.AuthError);
                     TestCase.assertEqual(error.code, 613);
@@ -69,15 +68,11 @@ module.exports = {
         var username = uuid();
         return new Promise((resolve, reject) => {
             Realm.Sync.User.register('http://localhost:9080', undefined, 'password', (error, user) => {
-                TestCase.assertEqual(typeof user, 'object');
-
-                Realm.Sync.User.register('http://localhost:9080', username, 'password', (error, user) => {
-                    TestCase.assertTrue(error instanceof Realm.Sync.AuthError);
-                    TestCase.assertEqual(error.code, 602);
-                    TestCase.assertEqual(error.type, 'https://realm.io/docs/object-server/problems/missing-parameters');
-                    TestCase.assertEqual(user, undefined);
-                    resolve();
-                });
+                TestCase.assertTrue(error instanceof Realm.Sync.AuthError);
+                TestCase.assertEqual(error.code, 602);
+                TestCase.assertEqual(error.type, 'https://realm.io/docs/object-server/problems/missing-parameters');
+                TestCase.assertEqual(user, undefined);
+                resolve();
             });
         });
     },
