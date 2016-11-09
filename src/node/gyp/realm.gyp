@@ -1,8 +1,18 @@
 {
   "variables": {
-    "use_realm_debug": "<!(echo $REALMJS_USE_DEBUG_CORE)",
-    "realm_enable_sync%": "0"
+    "use_realm_debug": "<!(echo $REALMJS_USE_DEBUG_CORE)"
   },
+  "conditions": [
+    ["OS=='mac'", {
+      "variables": {
+        "realm_enable_sync%": "1"
+      }
+    }, {
+      "variables": {
+        "realm_enable_sync%": "0"
+      }
+    }]
+  ],
   "targets": [
     {
       "target_name": "realm-core",
@@ -18,7 +28,7 @@
         ]
       },
       "all_dependent_settings": {
-        "defines": [ "REALM_HAVE_CONFIG", "REALM_PLATFORM_NODE=1", "REALM_ENABLE_SYNC=1" ]
+        "defines": [ "REALM_HAVE_CONFIG", "REALM_PLATFORM_NODE=1", "REALM_ENABLE_SYNC=<(realm_enable_sync)" ]
       },
       "variables": {
         "prefix": "<!(echo $REALM_CORE_PREFIX)"
@@ -72,28 +82,29 @@
       },
       "target_name": "vendored-realm",
       "type": "none",
+      "actions": [
+        {
+          "action_name": "download-realm",
+           "inputs": [ ],
+           "outputs": [ "<(module_root_dir)/vendor/core-node" ],
+           "action": [ "<(module_root_dir)/scripts/download-core.sh", "node" ]
+        }
+      ],
       "conditions": [
         ["realm_enable_sync", {
           "all_dependent_settings": {
-            "include_dirs": [ "<(module_root_dir)/vendor/realm-sync/include" ],
-            "library_dirs": [ "<(module_root_dir)/vendor/realm-sync/osx" ]
+            "include_dirs": [ "<(module_root_dir)/vendor/sync/include" ],
+            "library_dirs": [ "<(module_root_dir)/vendor/sync/osx" ]
           }
         }, {
           "all_dependent_settings": {
             "include_dirs": [ "<(module_root_dir)/vendor/core-node/include" ],
             "library_dirs": [ "<(module_root_dir)/vendor/core-node" ]
           },
-          "actions": [
-            {
-              "action_name": "download-realm",
-               "inputs": [ ],
-               "outputs": [ "<(module_root_dir)/vendor/core-node" ],
-               "action": [ "<(module_root_dir)/scripts/download-core.sh", "node" ]
-            }
-          ]
+
         }]
       ]
-      
+
     }
   ]
 }

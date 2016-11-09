@@ -217,7 +217,7 @@ case "$TARGET" in
   touch "tests/sync-bundle/object-server/do_not_open_browser"
   ;;
 "object-server-integration")
-  echo -e "yes\n" | ./tests/sync-bundle/reset-server-realms.command 
+  echo -e "yes\n" | ./tests/sync-bundle/reset-server-realms.command
 
   pushd "$SRCROOT/tests"
   npm install
