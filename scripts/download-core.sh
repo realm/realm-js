@@ -69,7 +69,7 @@ download_core() {
     (
         cd "$TMP_DIR"
         rm -rf "$DIR"
-        "$UNTAR" "$TAR"
+        eval "$UNTAR" "$TAR"
         mv "$UNTARRED_DIR" "$DIR-$VERSION"
     )
 
