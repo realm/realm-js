@@ -176,8 +176,7 @@ case "$TARGET" in
 "node")
   download_server
   start_server
-  bash "$SRCROOT/scripts/download-core.sh"
-  npm install --build-from-source --realm_enable_sync
+  npm install --build-from-source
 
   # Change to a temp directory.
   cd "$(mktemp -q -d -t realm.node.XXXXXX)"
