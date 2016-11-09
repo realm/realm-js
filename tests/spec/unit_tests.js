@@ -76,18 +76,3 @@ describe('AsyncTests', () => {
 
     afterEach(() => Realm.clearTestState());
 });
-
-const wn = require("child_process").spawn;
-const terminate = require("terminate");
-const readline = require("readline");
-const tmp = require("tmp");
-
-const userTests = require('../js/user-tests');
-describe('SyncTests', () => {
-    beforeEach(() => Realm.clearTestState());
-    afterEach(() => Realm.clearTestState());
-
-    for (const testName in userTests) {
-        it(testName, (done) => userTests[testName]().catch((e) => fail(e)).then(done));
-    }
-});

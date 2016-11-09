@@ -184,9 +184,21 @@ case "$TARGET" in
 
   pushd "$SRCROOT/tests"
   npm install
-  npm test
+  npm run test
   popd
   stop_server
+  ;;
+"node-nosync")
+  npm install --build-from-source
+
+  # Change to a temp directory.
+  cd "$(mktemp -q -d -t realm.node.XXXXXX)"
+  trap "rm -rf '$PWD'" EXIT
+
+  pushd "$SRCROOT/tests"
+  npm install
+  npm run test-nosync
+  popd
   ;;
 "test-runners")
   npm install --build-from-source
@@ -221,7 +233,7 @@ case "$TARGET" in
 
   pushd "$SRCROOT/tests"
   npm install
-  npm run test-sync
+  npm run test-sync-integration
   popd
   ;;
 *)
