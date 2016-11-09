@@ -23,12 +23,34 @@ if [[ $TARGET = *-android ]]; then
   export REALM_BUILD_ANDROID=1
 fi
 
+SERVER_PID=0
 PACKAGER_OUT="$SRCROOT/packager_out.txt"
 LOGCAT_OUT="$SRCROOT/logcat_out.txt"
 
+
+download_server() {
+  sh ./scripts/download-object-server.sh
+}
+
+start_server() {
+  sh ./object-server-for-testing/start-object-server.command &
+  SERVER_PID=$!
+}
+
+stop_server() {
+  if [[ ${SERVER_PID} > 0 ]] ; then
+    kill ${SERVER_PID}
+  fi
+}
+
 cleanup() {
-  # Kill all child processes.
+  # Kill started object server
+  stop_server
+
+  # Kill all other child processes.
   pkill -P $$ || true
+
+  # Kill react native packager
   pkill node || true
   rm -f "$PACKAGER_OUT" "$LOGCAT_OUT"
 }
@@ -58,8 +80,6 @@ start_packager() {
 }
 
 xctest() {
-  ${SRCROOT}/scripts/reset-simulators.sh 
-
   local dest="$(xcrun simctl list devices | grep -v unavailable | grep -m 1 -o '[0-9A-F\-]\{36\}')"
   if [ -n "$XCPRETTY" ]; then
     xcodebuild -scheme "$1" -configuration "$CONFIGURATION" -sdk iphonesimulator -destination id="$dest" test | xcpretty -c --no-utf --report junit --output build/reports/junit.xml
@@ -75,7 +95,7 @@ trap cleanup EXIT
 # Use a consistent version of Node if possible.
 if [ -s "${HOME}/.nvm/nvm.sh" ]; then
   . "${HOME}/.nvm/nvm.sh"
-  nvm use 5.4.0 || true
+  nvm use 4.4.7 || true
 fi
 
 case "$TARGET" in
@@ -154,6 +174,8 @@ case "$TARGET" in
   cat tests.xml
   ;;
 "node")
+  download_server
+  start_server
   npm install --build-from-source
 
   # Change to a temp directory.
@@ -164,6 +186,7 @@ case "$TARGET" in
   npm install
   npm test
   popd
+  stop_server
   ;;
 "test-runners")
   npm install --build-from-source

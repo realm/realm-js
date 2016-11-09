@@ -83,7 +83,7 @@ const readline = require("readline");
 const tmp = require("tmp");
 
 const userTests = require('../js/user-tests');
-fdescribe('SyncTests', () => {
+describe('SyncTests', () => {
     beforeEach(() => Realm.clearTestState());
     afterEach(() => Realm.clearTestState());
 
