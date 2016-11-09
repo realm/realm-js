@@ -176,7 +176,7 @@ case "$TARGET" in
 "node")
   download_server
   start_server
-  npm install --build-from-source
+  npm install --build-from-source --realm_enable_sync
 
   # Change to a temp directory.
   cd "$(mktemp -q -d -t realm.node.XXXXXX)"
@@ -217,7 +217,7 @@ case "$TARGET" in
   touch "tests/sync-bundle/object-server/do_not_open_browser"
   ;;
 "object-server-integration")
-  echo -e "yes\n" | ./tests/sync-bundle/reset-server-realms.command 
+  echo -e "yes\n" | ./tests/sync-bundle/reset-server-realms.command
 
   pushd "$SRCROOT/tests"
   npm install
