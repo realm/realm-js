@@ -18,7 +18,7 @@
         ]
       },
       "all_dependent_settings": {
-        "defines": [ "REALM_HAVE_CONFIG", "REALM_PLATFORM_NODE=1", "REALM_ENABLE_SYNC=1" ]
+        "defines": [ "REALM_HAVE_CONFIG", "REALM_PLATFORM_NODE=1", "REALM_ENABLE_SYNC=<(realm_enable_sync)" ]
       },
       "variables": {
         "prefix": "<!(echo $REALM_CORE_PREFIX)"
@@ -93,7 +93,7 @@
           ]
         }]
       ]
-      
+
     }
   ]
 }

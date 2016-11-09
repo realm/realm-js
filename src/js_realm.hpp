@@ -178,17 +178,17 @@ public:
     static void set_default_path(ContextType, ObjectType, ValueType value);
 
     std::string const name = "Realm";
-    
+
     MethodMap<T> const static_methods = {
         {"schemaVersion", wrap<schema_version>},
         {"clearTestState", wrap<clear_test_state>},
         {"copyBundledRealmFiles", wrap<copy_bundled_realm_files>},
     };
-    
+
     PropertyMap<T> const static_properties = {
         {"defaultPath", {wrap<get_default_path>, wrap<set_default_path>}},
     };
-    
+
     MethodMap<T> const methods = {
         {"objects", wrap<objects>},
         {"objectForPrimaryKey", wrap<object_for_primary_key>},
@@ -201,14 +201,14 @@ public:
         {"removeAllListeners", wrap<remove_all_listeners>},
         {"close", wrap<close>},
     };
-    
+
     PropertyMap<T> const properties = {
         {"path", {wrap<get_path>, nullptr}},
         {"schemaVersion", {wrap<get_schema_version>, nullptr}},
         {"schema", {wrap<get_schema>, nullptr}},
         {"readOnly", {wrap<get_read_only>, nullptr}},
     };
-    
+
   private:
     static std::string validated_notification_name(ContextType ctx, const ValueType &value) {
         std::string name = Value::validated_to_string(ctx, value, "notification name");
@@ -217,13 +217,13 @@ public:
         }
         return name;
     }
-    
+
     static const ObjectSchema& validated_object_schema_for_value(ContextType ctx, const SharedRealm &realm, const ValueType &value) {
         std::string object_type;
 
         if (Value::is_constructor(ctx, value)) {
             FunctionType constructor = Value::to_constructor(ctx, value);
-            
+
             auto delegate = get_delegate<T>(realm.get());
             for (auto &pair : delegate->m_constructors) {
                 if (FunctionType(pair.second) == constructor) {
@@ -248,7 +248,7 @@ public:
         }
         return *object_schema;
     }
-    
+
     static std::string normalize_path(std::string path) {
         if (path.size() && path[0] != '/' && path[0] != '.') {
             return default_realm_file_directory() + "/" + path;
@@ -282,7 +282,7 @@ inline typename T::Function RealmClass<T>::create_constructor(ContextType ctx) {
     s_constructor = Protected<FunctionType>(ctx, realm_constructor);
     return realm_constructor;
 }
-    
+
 static inline void convert_outdated_datetime_columns(const SharedRealm &realm) {
     realm::util::Optional<int> old_file_format_version = realm->file_format_upgraded_from_version();
     if (old_file_format_version && old_file_format_version < 5) {
@@ -294,7 +294,7 @@ static inline void convert_outdated_datetime_columns(const SharedRealm &realm) {
                     if (!realm->is_in_transaction()) {
                         realm->begin_transaction();
                     }
-                    
+
                     for (size_t row_index = 0; row_index < table->size(); row_index++) {
                         if (table->is_null(property.table_column, row_index)) {
                             continue;
@@ -337,7 +337,7 @@ void RealmClass<T>::constructor(ContextType ctx, ObjectType this_object, size_t 
             else {
                 config.path = js::default_path();
             }
-            
+
             static const String read_only_string = "readOnly";
             ValueType read_only_value = Object::get_property(ctx, object, read_only_string);
             if (!Value::is_undefined(ctx, read_only_value) && Value::validated_to_boolean(ctx, read_only_value, "readOnly")) {
@@ -372,7 +372,7 @@ void RealmClass<T>::constructor(ContextType ctx, ObjectType this_object, size_t 
                         create_object<T, RealmClass<T>>(ctx, old_realm_ptr),
                         create_object<T, RealmClass<T>>(ctx, realm_ptr)
                     };
-                    
+
                     try {
                         Function<T>::call(ctx, migration_function, 2, arguments);
                     }
@@ -382,7 +382,7 @@ void RealmClass<T>::constructor(ContextType ctx, ObjectType this_object, size_t 
                         realm_ptr->reset();
                         throw;
                     }
-                    
+
                     old_realm->close();
                     old_realm_ptr->reset();
                     realm_ptr->reset();
@@ -403,7 +403,7 @@ void RealmClass<T>::constructor(ContextType ctx, ObjectType this_object, size_t 
     else {
         throw std::runtime_error("Invalid arguments when constructing 'Realm'");
     }
-    
+
     config.path = normalize_path(config.path);
     ensure_directory_exists_for_file(config.path);
 
@@ -425,7 +425,7 @@ void RealmClass<T>::constructor(ContextType ctx, ObjectType this_object, size_t 
         js_binding_context->m_defaults = std::move(defaults);
         js_binding_context->m_constructors = std::move(constructors);
     }
-    
+
     // Fix for datetime -> timestamp conversion
     convert_outdated_datetime_columns(realm);
 
@@ -435,7 +435,7 @@ void RealmClass<T>::constructor(ContextType ctx, ObjectType this_object, size_t 
 template<typename T>
 void RealmClass<T>::schema_version(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 1, 2);
-    
+
     realm::Realm::Config config;
     config.path = normalize_path(Value::validated_to_string(ctx, arguments[0]));
     if (argc == 2) {
@@ -443,7 +443,7 @@ void RealmClass<T>::schema_version(ContextType ctx, ObjectType this_object, size
         std::string encryptionKey = NativeAccessor::to_binary(ctx, encryptionKeyValue);
         config.encryption_key = std::vector<char>(encryptionKey.begin(), encryptionKey.end());
     }
-    
+
     auto version = realm::Realm::get_schema_version(config);
     if (version == ObjectStore::NotVersioned) {
         return_value.set(-1);
@@ -453,12 +453,15 @@ void RealmClass<T>::schema_version(ContextType ctx, ObjectType this_object, size
     }
 }
 
+
 template<typename T>
 void RealmClass<T>::clear_test_state(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 0);
+#if REALM_ENABLE_SYNC
     for(auto &user : SyncManager::shared().all_users()) {
         user->log_out();
     }
+#endif
     delete_all_realms();
 }
 
