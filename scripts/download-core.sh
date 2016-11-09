@@ -30,9 +30,9 @@ else
 fi
 
 SYNC_DIR='sync'
-SYNC_PLATFORM_TAG="cocoa-"
+SYNC_PLATFORM_TAG="node-cocoa-"
 
-SYNC_DOWNLOAD_FILE="realm-sync-$SYNC_PLATFORM_TAG$REALM_SYNC_VERSION.tar.xz"
+SYNC_DOWNLOAD_FILE="realm-sync-$SYNC_PLATFORM_TAG$REALM_SYNC_VERSION.zip"
 
 # Start current working directory at the root of the project.
 cd "$(dirname "$0")/.."
@@ -47,6 +47,8 @@ download_core() {
     local VERSION=$2
     local DOWNLOAD_FILE=$3
     local SERVER_DIR=$4
+    local UNTAR=$5
+    local UNTARRED_DIR=$6
     echo "Downloading dependency: $DIR $VERSION"
 
     local TMP_DIR="${TMPDIR:-/tmp}/$DIR"
@@ -56,7 +58,7 @@ download_core() {
     mkdir -p "$TMP_DIR"
 
     if [ ! -f "$TAR" ]; then
-	echo  "https://static.realm.io/downloads/$SERVER_DIR/$DOWNLOAD_FILE" 
+	echo  "https://static.realm.io/downloads/$SERVER_DIR/$DOWNLOAD_FILE"
         curl -f -L -s "https://static.realm.io/downloads/$SERVER_DIR/$DOWNLOAD_FILE" -o "$TMP_TAR" ||
             die "Downloading $DIR failed. Please try again once you have an Internet connection."
         mv "$TMP_TAR" "$TAR"
@@ -67,8 +69,8 @@ download_core() {
     (
         cd "$TMP_DIR"
         rm -rf "$DIR"
-        tar -xzf "$TAR"
-        mv core "$DIR-$VERSION"
+        "$UNTAR" "$TAR"
+        mv "$UNTARRED_DIR" "$DIR-$VERSION"
     )
 
     (
@@ -84,7 +86,7 @@ check_release_notes() {
 }
 
 if [ ! -e "vendor/$CORE_DIR" ]; then
-    download_core $CORE_DIR $REALM_CORE_VERSION $CORE_DOWNLOAD_FILE core
+    download_core $CORE_DIR $REALM_CORE_VERSION $CORE_DOWNLOAD_FILE core "tar -xzf" core
 elif [ -d "vendor/$CORE_DIR" -a -d ../realm-core -a ! -L "vendor/$CORE_DIR" ]; then
     # Allow newer versions than expected for local builds as testing
     # with unreleased versions is one of the reasons to use a local build
@@ -96,19 +98,19 @@ elif [ -d "vendor/$CORE_DIR" -a -d ../realm-core -a ! -L "vendor/$CORE_DIR" ]; t
 elif [ ! -L "vendor/$CORE_DIR" ]; then
     echo "vendor/$CORE_DIR is not a symlink. Deleting..."
     rm -rf "vendor/$CORE_DIR"
-    download_core $CORE_DIR $REALM_CORE_VERSION $CORE_DOWNLOAD_FILE core
+    download_core $CORE_DIR $REALM_CORE_VERSION $CORE_DOWNLOAD_FILE core "tar -xzf" core
 # With a prebuilt version we only want to check the first non-empty
 # line so that checking out an older commit will download the
 # appropriate version of core if the already-present version is too new
 elif ! grep -m 1 . "vendor/$CORE_DIR/CHANGELOG.txt" | check_release_notes; then
-    download_core $CORE_DIR $REALM_CORE_VERSION $CORE_DOWNLOAD_FILE core
+    download_core $CORE_DIR $REALM_CORE_VERSION $CORE_DOWNLOAD_FILE core "tar -xzf" core
 else
     echo "The core library seems to be up to date."
 fi
 
 
 if [ ! -e "vendor/$SYNC_DIR" ]; then
-    download_core $SYNC_DIR $REALM_SYNC_VERSION $SYNC_DOWNLOAD_FILE sync
+    download_core $SYNC_DIR $REALM_SYNC_VERSION $SYNC_DOWNLOAD_FILE sync "unzip" realm-sync-node-cocoa-$REALM_SYNC_VERSION
 elif [ -d "vendor/$SYNC_DIR" -a -d ../realm-sync -a ! -L "vendor/$SYNC_DIR" ]; then
     # Allow newer versions than expected for local builds as testing
     # with unreleased versions is one of the reasons to use a local build
@@ -120,12 +122,12 @@ elif [ -d "vendor/$SYNC_DIR" -a -d ../realm-sync -a ! -L "vendor/$SYNC_DIR" ]; t
 elif [ ! -L "vendor/$SYNC_DIR" ]; then
     echo "vendor/$SYNC_DIR is not a symlink. Deleting..."
     rm -rf "vendor/$SYNC_DIR"
-    download_core $SYNC_DIR $REALM_SYNC_VERSION $SYNC_DOWNLOAD_FILE sync
+    download_core $SYNC_DIR $REALM_SYNC_VERSION $SYNC_DOWNLOAD_FILE sync "unzip" realm-sync-node-cocoa-$REALM_SYNC_VERSION
 # With a prebuilt version we only want to check the first non-empty
 # line so that checking out an older commit will download the
 # appropriate version of core if the already-present version is too new
 elif ! grep -m 1 . "vendor/$SYNC_DIR/version.txt" | check_release_notes; then
-    download_core $SYNC_DIR $REALM_SYNC_VERSION $SYNC_DOWNLOAD_FILE sync
+    download_core $SYNC_DIR $REALM_SYNC_VERSION $SYNC_DOWNLOAD_FILE sync "unzip" realm-sync-node-cocoa-$REALM_SYNC_VERSION
 else
     echo "The sync library seems to be up to date."
 fi

@@ -75,8 +75,8 @@
       "conditions": [
         ["realm_enable_sync", {
           "all_dependent_settings": {
-            "include_dirs": [ "<(module_root_dir)/vendor/realm-sync/include" ],
-            "library_dirs": [ "<(module_root_dir)/vendor/realm-sync/osx" ]
+            "include_dirs": [ "<(module_root_dir)/vendor/sync/include" ],
+            "library_dirs": [ "<(module_root_dir)/vendor/sync/osx" ]
           }
         }, {
           "all_dependent_settings": {
