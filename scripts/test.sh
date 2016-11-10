@@ -110,6 +110,8 @@ case "$TARGET" in
   npm run jsdoc
   ;;
 "realmjs")
+  #HACK
+  brew install yarn
   pushd src
   xctest RealmJS
   ;;
