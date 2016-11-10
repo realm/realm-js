@@ -37,7 +37,7 @@
     "src",
     "vendor",
     "binding.gyp",
-    "dependencies.list",
+    "dependencies.list"
   ],
   "scripts": {
     "get-version": "echo $npm_package_version",
