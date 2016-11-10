@@ -81,6 +81,10 @@ start_packager() {
 }
 
 xctest() {
+  if ! [ -z "${JENKINS_HOME}" ]; then
+    ${SRCROOT}/scripts/reset-simulators.sh 
+  fi
+
   local dest="$(xcrun simctl list devices | grep -v unavailable | grep -m 1 -o '[0-9A-F\-]\{36\}')"
   if [ -n "$XCPRETTY" ]; then
     mkdir -p build
