@@ -8,7 +8,7 @@ set -e
 
 ./scripts/docker_build_wrapper.sh ci/realm-js:build .
 
-exec docker run -it --rm \
+exec docker run --rm \
   -u $(id -u) \
   -e HOME=/tmp \
   -v $(pwd):/source \
