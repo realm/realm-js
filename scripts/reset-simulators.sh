@@ -35,6 +35,8 @@ echo "$devices" | ruby -rjson -e 'puts JSON.parse($stdin.read)["devices"].flat_m
 done
 wait
 
+xcrun simctl boot "iPhone 5" # React Native seems to want to test with this device
+
 if [[ -a "${DEVELOPER_DIR}/Applications/Simulator.app" ]]; then
     open "${DEVELOPER_DIR}/Applications/Simulator.app"
 fi
