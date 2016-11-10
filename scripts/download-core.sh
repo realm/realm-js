@@ -23,12 +23,14 @@ if [ "$1" = 'node' ]; then
         PLATFORM_TAG="node-osx-"
         SYNC_PLATFORM_TAG="node-cocoa-"
         CORE_DOWNLOAD_FILE="realm-core-node-osx-$REALM_CORE_VERSION.tar.gz"
+        SYNC_DOWNLOAD_FILE="realm-sync-$SYNC_PLATFORM_TAG$REALM_SYNC_VERSION.zip"
     else
         PLATFORM_TAG="node-linux-"
         SYNC_PLATFORM_TAG="node-cocoa-"
         CORE_DOWNLOAD_FILE="realm-core-node-linux-$REALM_CORE_VERSION.tar.gz"
+        SYNC_DOWNLOAD_FILE=""
     fi
-    SYNC_DOWNLOAD_FILE="realm-sync-$SYNC_PLATFORM_TAG$REALM_SYNC_VERSION.zip"
+
     SYNC_EXTRACT="unzip"
     EXTRACTED_DIR="realm-sync-node-cocoa-$REALM_SYNC_VERSION"
 else
@@ -115,26 +117,27 @@ else
     echo "The core library seems to be up to date."
 fi
 
-
-if [ ! -e "vendor/$SYNC_DIR" ]; then
-    download_core $SYNC_DIR $REALM_SYNC_VERSION $SYNC_DOWNLOAD_FILE sync "$SYNC_EXTRACT" $EXTRACTED_DIR
-elif [ -d "vendor/$SYNC_DIR" -a -d ../realm-sync -a ! -L "vendor/$SYNC_DIR" ]; then
-    # Allow newer versions than expected for local builds as testing
-    # with unreleased versions is one of the reasons to use a local build
-    if ! check_release_notes "vendor/$SYNC_DIR/version.txt"; then
-        die "Local build of sync is out of date."
+if [ -n "$SYNC_DOWNLOAD_FILE" ];then
+    if [ ! -e "vendor/$SYNC_DIR" ]; then
+        download_core $SYNC_DIR $REALM_SYNC_VERSION $SYNC_DOWNLOAD_FILE sync "$SYNC_EXTRACT" $EXTRACTED_DIR
+    elif [ -d "vendor/$SYNC_DIR" -a -d ../realm-sync -a ! -L "vendor/$SYNC_DIR" ]; then
+        # Allow newer versions than expected for local builds as testing
+        # with unreleased versions is one of the reasons to use a local build
+        if ! check_release_notes "vendor/$SYNC_DIR/version.txt"; then
+            die "Local build of sync is out of date."
+        else
+            echo "The sync library seems to be up to date."
+        fi
+    elif [ ! -L "vendor/$SYNC_DIR" ]; then
+        echo "vendor/$SYNC_DIR is not a symlink. Deleting..."
+        rm -rf "vendor/$SYNC_DIR"
+        download_core $SYNC_DIR $REALM_SYNC_VERSION $SYNC_DOWNLOAD_FILE sync "$SYNC_EXTRACT" $EXTRACTED_DIR
+    # With a prebuilt version we only want to check the first non-empty
+    # line so that checking out an older commit will download the
+    # appropriate version of core if the already-present version is too new
+    elif ! grep -m 1 . "vendor/$SYNC_DIR/version.txt" | check_release_notes; then
+        download_core $SYNC_DIR $REALM_SYNC_VERSION $SYNC_DOWNLOAD_FILE sync "$SYNC_EXTRACT" $EXTRACTED_DIR
     else
         echo "The sync library seems to be up to date."
     fi
-elif [ ! -L "vendor/$SYNC_DIR" ]; then
-    echo "vendor/$SYNC_DIR is not a symlink. Deleting..."
-    rm -rf "vendor/$SYNC_DIR"
-    download_core $SYNC_DIR $REALM_SYNC_VERSION $SYNC_DOWNLOAD_FILE sync "$SYNC_EXTRACT" $EXTRACTED_DIR
-# With a prebuilt version we only want to check the first non-empty
-# line so that checking out an older commit will download the
-# appropriate version of core if the already-present version is too new
-elif ! grep -m 1 . "vendor/$SYNC_DIR/version.txt" | check_release_notes; then
-    download_core $SYNC_DIR $REALM_SYNC_VERSION $SYNC_DOWNLOAD_FILE sync "$SYNC_EXTRACT" $EXTRACTED_DIR
-else
-    echo "The sync library seems to be up to date."
 fi
