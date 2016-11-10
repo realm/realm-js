@@ -27,7 +27,12 @@ const userTests = require('../js/user-tests');
 describe('SyncTests', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = 30000;
     beforeEach(() => Realm.clearTestState());
-    afterEach(() => Realm.clearTestState());
+    afterEach(() => {
+        Realm.clearTestState();
+        Realm.Sync.User.all.forEach((user) => {
+            user.logout();
+        });
+    });
 
     for (const testName in userTests) {
         it(testName, (done) => userTests[testName]().catch((e) => fail(e)).then(done));

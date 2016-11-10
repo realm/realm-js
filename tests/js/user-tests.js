@@ -41,6 +41,13 @@ function assertIsUser(user, isAdmin) {
   }
 }
 
+function assertIsSameUser(value, user) {
+  assertIsUser(value);
+  TestCase.assertEqual(value.token, user.token);
+  TestCase.assertEqual(value.identity, user.identity);
+  TestCase.assertEqual(value.isAdmin, user.isAdmin);
+}
+
 function assertIsError(error, code) {
   TestCase.assertInstanceOf(error, Error, 'The API should return an Error');
   if (code) {
@@ -59,6 +66,7 @@ function assertIsAuthError(error, code, type) {
 }
 
 module.exports = {
+
   testRegisterUser() {
     var username = uuid();
     return new Promise((resolve, reject) => {
@@ -183,6 +191,47 @@ module.exports = {
         assertIsError(error, 'ECONNRESET');
         TestCase.assertUndefined(user);
         resolve();
+      });
+    });
+  },
+
+  testAll() {
+    return new Promise((resolve, reject) => {
+      let all;
+      all = Realm.Sync.User.all;
+      TestCase.assertArrayLength(all, 0);
+
+      Realm.Sync.User.register('http://localhost:9080', uuid(), 'password', (error, user1) => {
+        all = Realm.Sync.User.all;
+        TestCase.assertArrayLength(all, 1);
+        assertIsSameUser(all[0], user1);
+
+        Realm.Sync.User.register('http://localhost:9080', uuid(), 'password', (error, user2) => {
+          all = Realm.Sync.User.all;
+          TestCase.assertArrayLength(all, 2);
+          // NOTE: the list of users is in latest-first order.
+          assertIsSameUser(all[0], user2);
+          assertIsSameUser(all[1], user1);
+          resolve();
+        });
+      });
+    });
+  },
+
+  testCurrent() {
+    return new Promise((resolve, reject) => {
+      let current;
+      current = Realm.Sync.User.current;
+      TestCase.assertUndefined(current);
+
+      Realm.Sync.User.register('http://localhost:9080', uuid(), 'password', (error, user1) => {
+        current = Realm.Sync.User.current;
+        assertIsSameUser(current, user1);
+
+        Realm.Sync.User.register('http://localhost:9080', uuid(), 'password', (error, user2) => {
+          TestCase.assertThrows(() => Realm.Sync.User.current, 'We expect Realm.Sync.User.current to throw if > 1 user.');
+          resolve();
+        });
       });
     });
   },

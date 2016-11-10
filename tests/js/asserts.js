@@ -49,6 +49,19 @@ module.exports = {
         }
     },
 
+    assertArray: function(value, length, errorMessage) {
+        if (!Array.isArray(value)) {
+            throw new TestFailureError(errorMessage || `Value ${value} is not an array`);
+        }
+    },
+
+    assertArrayLength: function(value, length, errorMessage) {
+        this.assertArray(value);
+        if (value.length !== length) {
+            throw new TestFailureError(errorMessage || `Value ${value} is not an array of length ${length}`);
+        }
+    },
+
     assertArraysEqual: function(val1, val2, errorMessage) {
         var len1 = val1.length;
         var len2 = val2.length;

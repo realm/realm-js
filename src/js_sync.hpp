@@ -127,19 +127,33 @@ void UserClass<T>::create_user(ContextType ctx, ObjectType this_object, size_t a
 template<typename T>
 void UserClass<T>::all_users(ContextType ctx, ObjectType object, ReturnValue &return_value) {
     std::vector<ValueType> user_vector;
+    // TODO: This method should return a dictionary of shape {userid->user}
     for (auto user : SyncManager::shared().all_users()) {
-        user_vector.push_back(create_object<T, UserClass<T>>(ctx, new SharedUser(user)));
+        if (user->state() == SyncUser::State::Active) {
+            user_vector.push_back(create_object<T, UserClass<T>>(ctx, new SharedUser(user)));
+        }
     }
     return_value.set(Object::create_array(ctx, user_vector));
 }
 
 template<typename T>
 void UserClass<T>::current_user(ContextType ctx, ObjectType object, ReturnValue &return_value) {
-    auto users = SyncManager::shared().all_users();
-    if (users.size() != 1) {
-        throw std::runtime_error("No current user");
+    SharedUser *current = nullptr;
+    for (auto user : SyncManager::shared().all_users()) {
+        if (user->state() == SyncUser::State::Active) {
+            if (current != nullptr) {
+                throw std::runtime_error("More than one user logged in currently.");
+            }
+            current = new SharedUser(user);
+        }
     }
-    return_value.set(create_object<T, UserClass<T>>(ctx, new SharedUser(users[0])));
+
+    if (current != nullptr) {
+        return_value.set(create_object<T, UserClass<T>>(ctx, current));
+    }
+    else {
+        return_value.set_undefined();
+    }
 }
 
 template<typename T>
