@@ -185,8 +185,13 @@ case "$TARGET" in
   cat tests.xml
   ;;
 "node")
-  download_server
-  start_server
+  if [ "$(uname)" = 'Darwin' ]; then
+    download_server
+    start_server
+    npm_tests_cmd="npm run test"
+  else
+    npm_tests_cmd="npm run test-nosync"
+  fi
   npm install --build-from-source
 
   # Change to a temp directory.
@@ -195,7 +200,7 @@ case "$TARGET" in
 
   pushd "$SRCROOT/tests"
   npm install
-  npm run test
+  eval $npm_tests_cmd
   popd
   stop_server
   ;;
