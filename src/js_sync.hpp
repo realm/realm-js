@@ -126,14 +126,13 @@ void UserClass<T>::create_user(ContextType ctx, ObjectType this_object, size_t a
 
 template<typename T>
 void UserClass<T>::all_users(ContextType ctx, ObjectType object, ReturnValue &return_value) {
-    std::vector<ValueType> user_vector;
-    // TODO: This method should return a dictionary of shape {userid->user}
+    auto users = Object::create_empty(ctx);
     for (auto user : SyncManager::shared().all_users()) {
         if (user->state() == SyncUser::State::Active) {
-            user_vector.push_back(create_object<T, UserClass<T>>(ctx, new SharedUser(user)));
+            Object::set_property(ctx, users, user->identity(), create_object<T, UserClass<T>>(ctx, new SharedUser(user)), ReadOnly | DontDelete);
         }
     }
-    return_value.set(Object::create_array(ctx, user_vector));
+    return_value.set(users);
 }
 
 template<typename T>

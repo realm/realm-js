@@ -29,8 +29,9 @@ describe('SyncTests', () => {
     beforeEach(() => Realm.clearTestState());
     afterEach(() => {
         Realm.clearTestState();
-        Realm.Sync.User.all.forEach((user) => {
-            user.logout();
+        let users = Realm.Sync.User.all;
+        Object.keys(users).forEach((identity) => {
+            users[identity].logout();
         });
     });
 

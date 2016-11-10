@@ -199,19 +199,19 @@ module.exports = {
     return new Promise((resolve, reject) => {
       let all;
       all = Realm.Sync.User.all;
-      TestCase.assertArrayLength(all, 0);
+      TestCase.assertArrayLength(Object.keys(all), 0);
 
       Realm.Sync.User.register('http://localhost:9080', uuid(), 'password', (error, user1) => {
         all = Realm.Sync.User.all;
-        TestCase.assertArrayLength(all, 1);
-        assertIsSameUser(all[0], user1);
+        TestCase.assertArrayLength(Object.keys(all), 1);
+        assertIsSameUser(all[user1.identity], user1);
 
         Realm.Sync.User.register('http://localhost:9080', uuid(), 'password', (error, user2) => {
           all = Realm.Sync.User.all;
-          TestCase.assertArrayLength(all, 2);
+          TestCase.assertArrayLength(Object.keys(all), 2);
           // NOTE: the list of users is in latest-first order.
-          assertIsSameUser(all[0], user2);
-          assertIsSameUser(all[1], user1);
+          assertIsSameUser(all[user2.identity], user2);
+          assertIsSameUser(all[user1.identity], user1);
           resolve();
         });
       });
