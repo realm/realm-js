@@ -119,5 +119,12 @@ class Protected<JSObjectRef> : public Protected<JSValueRef> {
     }
 };
 
+template<>
+class Global<JSObjectRef> : public Protected<JSObjectRef> {
+  public:
+    Global() : Protected<JSObjectRef>() {}
+    Global(JSContextRef ctx, JSObjectRef value) : Protected<JSObjectRef>(ctx, value) {}
+};
+
 } // js
 } // realm

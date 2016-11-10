@@ -258,6 +258,11 @@ class Protected {
     };
 };
 
+template<typename ValueType>
+class Global {
+    operator ValueType() const;
+};
+
 template<typename T>
 struct Exception : public std::runtime_error {
     using ContextType = typename T::Context;

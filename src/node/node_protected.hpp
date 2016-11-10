@@ -94,5 +94,27 @@ class Protected<node::Types::Function> : public node::Protected<v8::Function> {
     Protected(v8::Isolate* isolate, v8::Local<v8::Function> object) : node::Protected<v8::Function>(object) {}
 };
 
+template<typename T>
+struct GlobalCopyablePersistentTraits {
+    typedef v8::Persistent<T, GlobalCopyablePersistentTraits<T>> CopyablePersistent;
+    static const bool kResetInDestructor = false;
+    template<typename S, typename M>
+    static inline void Copy(const v8::Persistent<S, M> &source, CopyablePersistent *dest) {}
+};
+
+template<>
+class Global<node::Types::Function> {
+    // TODO: Figure out why Nan::CopyablePersistentTraits causes a build failure.
+    Nan::Persistent<v8::Function, GlobalCopyablePersistentTraits<v8::Function>> m_value;
+
+public:
+    Global() {}
+    Global(v8::Isolate* isolate, v8::Local<v8::Function> value) : m_value(value) {}
+
+    operator v8::Local<v8::Function>() const {
+        return Nan::New(m_value);
+    }
+};
+
 } // js
 } // realm

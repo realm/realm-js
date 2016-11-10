@@ -147,7 +147,7 @@ class RealmClass : public ClassDefinition<T, SharedRealm, ObservableClass<T>> {
 
 public:
     static FunctionType create_constructor(ContextType);
-    static Protected<FunctionType> s_constructor;
+    static Global<FunctionType> s_constructor;
 
     // methods
     static void objects(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
@@ -258,7 +258,7 @@ public:
 };
 
 template<typename T>
-Protected<typename T::Function> RealmClass<T>::s_constructor;
+Global<typename T::Function> RealmClass<T>::s_constructor;
 
 template<typename T>
 inline typename T::Function RealmClass<T>::create_constructor(ContextType ctx) {
@@ -279,7 +279,7 @@ inline typename T::Function RealmClass<T>::create_constructor(ContextType ctx) {
     Object::set_property(ctx, realm_constructor, "Sync", sync_constructor, attributes);
 #endif
 
-    s_constructor = Protected<FunctionType>(ctx, realm_constructor);
+    s_constructor = Global<FunctionType>(ctx, realm_constructor);
     return realm_constructor;
 }
 
