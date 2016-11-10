@@ -106,8 +106,22 @@ module.exports = {
 
     assertTrue: function(condition, errorMessage) {
         if (!condition) {
-            throw new TestFailureError(errorMessage || 'Condition expected to be true');
+            throw new TestFailureError(errorMessage || `Condition ${condition} expected to be true`);
         }
+    },
+
+    assertInstanceOf: function(object, type, errorMessage) {
+        if (!(object instanceof type)) {
+            throw new TestFailureError(errorMessage || `Object ${object} expected to be of type ${type}`);
+        }
+    },
+
+    assertType: function(value, type) {
+        this.assertEqual(typeof value, type, `Value ${value} expected to be of type ${type}`);
+    },
+
+    assertUndefined: function(value) {
+        this.assertEqual(value, undefined, `Value ${value} expected to be undefined`);
     },
 
     isNode: function() {
