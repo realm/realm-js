@@ -711,7 +711,6 @@
 				02B58CB81AE99CEC009B348C /* Sources */,
 				02B58CB91AE99CEC009B348C /* Frameworks */,
 				02B58CBA1AE99CEC009B348C /* Resources */,
-				F613787A1C18F003008BFC51 /* Copy Query Tests */,
 				02879D8D1DC29F2000777A5D /* Install Node Modules */,
 			);
 			buildRules = (
@@ -845,20 +844,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "cd \"$TARGET_BUILD_DIR/$CONTENTS_FOLDER_PATH\"\nyarn add needle url-parse";
-		};
-		F613787A1C18F003008BFC51 /* Copy Query Tests */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "Copy Query Tests";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "DEST=\"$TARGET_BUILD_DIR/$CONTENTS_FOLDER_PATH/js/query-tests.json\"\nrm -f \"$DEST\"\ncp object-store/tests/query.json \"$DEST\"";
 		};
 		F63117A41CEA911000ECB2DE /* Build with node-gyp */ = {
 			isa = PBXShellScriptBuildPhase;
