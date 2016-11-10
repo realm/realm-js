@@ -26,7 +26,6 @@
 		02879D8C1DC29D5600777A5D /* package.json in Resources */ = {isa = PBXBuildFile; fileRef = 02879D8B1DC29D5600777A5D /* package.json */; };
 		02D041F71CE11159000E4250 /* dates-v3.realm in Resources */ = {isa = PBXBuildFile; fileRef = 02D041F61CE11159000E4250 /* dates-v3.realm */; };
 		02D8D1F71B601984006DB49D /* JavaScriptCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 02B58CCD1AE99D4D009B348C /* JavaScriptCore.framework */; };
-		02E265691DC1896100BBDB04 /* request in Resources */ = {isa = PBXBuildFile; fileRef = 02E265681DC1896100BBDB04 /* request */; };
 		02E315C91DB80DDD00555337 /* sync_manager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E315C31DB80DDD00555337 /* sync_manager.cpp */; };
 		02E315CA1DB80DDD00555337 /* sync_session.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E315C51DB80DDD00555337 /* sync_session.cpp */; };
 		02E315CB1DB80DDD00555337 /* sync_user.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E315C71DB80DDD00555337 /* sync_user.cpp */; };
@@ -159,7 +158,6 @@
 		02B58CBC1AE99CEC009B348C /* RealmJSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RealmJSTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		02B58CCD1AE99D4D009B348C /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		02D041F61CE11159000E4250 /* dates-v3.realm */ = {isa = PBXFileReference; lastKnownFileType = file; path = "dates-v3.realm"; sourceTree = "<group>"; };
-		02E265681DC1896100BBDB04 /* request */ = {isa = PBXFileReference; lastKnownFileType = folder; name = request; path = "../tests/react-test-app/node_modules/request"; sourceTree = "<group>"; };
 		02E315C21DB80DDD00555337 /* sync_config.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = sync_config.hpp; path = src/sync/sync_config.hpp; sourceTree = "<group>"; };
 		02E315C31DB80DDD00555337 /* sync_manager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = sync_manager.cpp; path = src/sync/sync_manager.cpp; sourceTree = "<group>"; };
 		02E315C41DB80DDD00555337 /* sync_manager.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = sync_manager.hpp; path = src/sync/sync_manager.hpp; sourceTree = "<group>"; };
@@ -396,7 +394,6 @@
 		02B58CA71AE99CEB009B348C = {
 			isa = PBXGroup;
 			children = (
-				02E265681DC1896100BBDB04 /* request */,
 				02B58CCF1AE99D8C009B348C /* Frameworks */,
 				F6C3FBB41BF680D000E6FFD4 /* Vendor */,
 				0270BC3D1B7CFBFD00010E03 /* RealmJS */,
@@ -830,7 +827,6 @@
 				F6BCCFE21C8380A400FE31AE /* lib in Resources */,
 				02879D8C1DC29D5600777A5D /* package.json in Resources */,
 				02414B881CE68CA200A8669F /* dates-v5.realm in Resources */,
-				02E265691DC1896100BBDB04 /* request in Resources */,
 				F61378791C18EAC5008BFC51 /* js in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
