@@ -11,6 +11,7 @@ CONFIGURATION="${2:-"Release"}"
 DESTINATION=
 PATH="/opt/android-sdk-linux/platform-tools:$PATH"
 SRCROOT=$(cd "$(dirname "$0")/.." && pwd)
+XCPRETTY=true
 
 # Start current working directory at the root of the project.
 cd "$SRCROOT"
