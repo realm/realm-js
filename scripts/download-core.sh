@@ -3,9 +3,11 @@
 set -e
 set -o pipefail
 
+source_root="$(dirname "$0")"
+
 # Set to "latest" for the latest build.
-: ${REALM_CORE_VERSION:=2.1.4}
-: ${REALM_SYNC_VERSION:=1.0.0-BETA-3.3}
+: ${REALM_CORE_VERSION:=$(sed -n 's/^REALM_CORE_VERSION=\(.*\)$/\1/p' ${source_root}/../dependencies.list)}
+: ${REALM_SYNC_VERSION:=$(sed -n 's/^REALM_SYNC_VERSION=\(.*\)$/\1/p' ${source_root}/../dependencies.list)}
 
 if [ "$1" = '--version' ]; then
     echo "$REALM_CORE_VERSION"
