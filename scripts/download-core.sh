@@ -135,7 +135,7 @@ if [ -n "$SYNC_DOWNLOAD_FILE" ];then
     # With a prebuilt version we only want to check the first non-empty
     # line so that checking out an older commit will download the
     # appropriate version of core if the already-present version is too new
-    elif ! grep -m 1 . "vendor/$SYNC_DIR/version.txt" | check_release_notes; then
+    elif ! grep -m 1 . "vendor/$SYNC_DIR/version.txt"; then
         download_core $SYNC_DIR $REALM_SYNC_VERSION $SYNC_DOWNLOAD_FILE sync "$SYNC_EXTRACT" $EXTRACTED_DIR
     else
         echo "The sync library seems to be up to date."
