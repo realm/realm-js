@@ -109,8 +109,9 @@ module.exports = {
       TestCase.assertUndefined(Realm.Sync.User.current);
 
       // Can we open a realm with the registered user?
-      var realm = new Realm({sync: {user: user, url: 'realm://localhost:9080/~/test'}});
-      TestCase.assertUndefined(realm);
+      TestCase.assertThrows(function() {
+        var realm = new Realm({sync: {user: user, url: 'realm://localhost:9080/~/test'}});
+      });
     })
   },
 

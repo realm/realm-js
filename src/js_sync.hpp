@@ -295,6 +295,10 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, FunctionType realm_cons
 
         ObjectType user = Object::validated_get_object(ctx, sync_config_object, "user");
         SharedUser shared_user = *get_internal<T, UserClass<T>>(user);
+        if (shared_user->state() != SyncUser::State::Active) {
+            throw std::runtime_error("User is no longer valid.");
+        }
+
         std::string raw_realm_url = Object::validated_get_string(ctx, sync_config_object, "url");
 
         // FIXME - use make_shared
