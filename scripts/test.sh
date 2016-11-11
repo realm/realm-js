@@ -11,7 +11,7 @@ CONFIGURATION="${2:-"Release"}"
 DESTINATION=
 PATH="/opt/android-sdk-linux/platform-tools:$PATH"
 SRCROOT=$(cd "$(dirname "$0")/.." && pwd)
-#XCPRETTY=true
+XCPRETTY=true
 
 # Start current working directory at the root of the project.
 cd "$SRCROOT"
@@ -133,7 +133,7 @@ case "$TARGET" in
   start_packager
 
   pushd ios
-  xctest ReactTestApp
+  xctest ReactTestApp || xctest ReactTestApp
   ;;
 "react-example")
   pushd examples/ReactExample
