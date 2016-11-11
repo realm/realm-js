@@ -107,6 +107,9 @@ if [ -s "${HOME}/.nvm/nvm.sh" ]; then
   nvm use 4.4.7 || true
 fi
 
+# Remove cached packages
+rm -rf ~/.yarn-cache/npm-realm-*
+
 case "$TARGET" in
 "eslint")
   [[ $CONFIGURATION == 'Debug' ]] && exit 0
@@ -131,7 +134,7 @@ case "$TARGET" in
       unzip -q ../../target=node_modules/react_tests_node_modules.zip
   fi
 
-  npm install
+  yarn install
   open_chrome
   start_packager
 
