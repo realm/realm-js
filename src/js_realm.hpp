@@ -108,7 +108,7 @@ class RealmDelegate : public BindingContext {
     std::weak_ptr<realm::Realm> m_realm;
 
     void notify(const char *notification_name) {
-        typename T::HandleScope scope;
+        HANDLESCOPE
 
         SharedRealm realm = m_realm.lock();
         if (!realm) {

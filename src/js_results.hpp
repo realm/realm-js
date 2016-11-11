@@ -244,7 +244,7 @@ void ResultsClass<T>::add_listener(ContextType ctx, ObjectType this_object, size
     Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
     
     auto token = results->add_notification_callback([=](CollectionChangeSet change_set, std::exception_ptr exception) {
-        typename T::HandleScope scope;
+        HANDLESCOPE
 
         ValueType arguments[2];
         arguments[0] = static_cast<ObjectType>(protected_this);

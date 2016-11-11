@@ -269,7 +269,7 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, FunctionType realm_cons
         Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
 
         auto handler = [=](const std::string& path, const realm::SyncConfig& config, std::shared_ptr<SyncSession>) {
-            typename T::HandleScope handle_scope;
+            HANDLESCOPE
             if (config.user->is_admin()) {
                 // FIXME: This log-in callback is called while the object store still holds some sync-related locks.
                 // Notify the object store of the access token asynchronously to avoid the deadlock that would result
