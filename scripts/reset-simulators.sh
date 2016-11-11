@@ -3,10 +3,7 @@
 set -o pipefail
 set -e
 
-export REALM_SWIFT_VERSION=3.0.1
-if [[ -z "$DEVELOPER_DIR" ]]; then
-    export DEVELOPER_DIR="$(xcode-select -p)"
-fi
+source "$(dirname "$0")/swift-version.sh"
 
 while pgrep -q Simulator; do
     # Kill all the current simulator processes as they may be from a
