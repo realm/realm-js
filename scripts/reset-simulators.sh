@@ -3,10 +3,7 @@
 set -o pipefail
 set -e
 
-export REALM_SWIFT_VERSION=3.0.1
-if [[ -z "$DEVELOPER_DIR" ]]; then
-    export DEVELOPER_DIR="$(xcode-select -p)"
-fi
+source "$(dirname "$0")/swift-version.sh"
 
 while pgrep -q Simulator; do
     # Kill all the current simulator processes as they may be from a
@@ -34,8 +31,6 @@ echo "$devices" | ruby -rjson -e 'puts JSON.parse($stdin.read)["devices"].flat_m
     xcrun simctl erase $udid &
 done
 wait
-
-xcrun simctl boot "iPhone 5" # React Native seems to want to test with this device
 
 if [[ -a "${DEVELOPER_DIR}/Applications/Simulator.app" ]]; then
     open "${DEVELOPER_DIR}/Applications/Simulator.app"
