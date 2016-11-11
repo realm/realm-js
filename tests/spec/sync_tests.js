@@ -36,6 +36,10 @@ describe('SyncTests', () => {
     });
 
     for (const testName in userTests) {
-        it(testName, (done) => userTests[testName]().catch((e) => fail(e)).then(done));
+        it(testName, (done) => {
+            userTests[testName]()
+              .catch((e) => fail(e))
+              .then(done);
+        });
     }
 });

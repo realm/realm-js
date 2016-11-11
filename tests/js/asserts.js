@@ -133,8 +133,10 @@ module.exports = {
         this.assertEqual(typeof value, type, `Value ${value} expected to be of type ${type}`);
     },
 
-    assertUndefined: function(value) {
-        this.assertEqual(value, undefined, `Value ${value} expected to be undefined`);
+    assertUndefined: function(value, errorMessage) {
+        if (value !== undefined) {
+            throw new TestFailureError(errorMessage || `Value ${value} expected to be undefined`);
+        }
     },
 
     isNode: function() {
