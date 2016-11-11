@@ -65,12 +65,6 @@ function assertIsAuthError(error, code, type) {
   }
 }
 
-function rejectOnError(error, reject) {
-  if (error) {
-    reject(error);
-  }
-}
-
 function failOnError(error) {
   if (error) {
     throw new Error(`Error ${error} was not expected`);
@@ -221,14 +215,14 @@ module.exports = {
       TestCase.assertArrayLength(Object.keys(all), 0);
 
       callbackTest((callback) => Realm.Sync.User.register('http://localhost:9080', uuid(), 'password', callback), (error, user1) => {
-        rejectOnError(error, reject);
+        failOnError(error);
 
         all = Realm.Sync.User.all;
         TestCase.assertArrayLength(Object.keys(all), 1);
         assertIsSameUser(all[user1.identity], user1);
 
         Realm.Sync.User.register('http://localhost:9080', uuid(), 'password', (error, user2) => {
-          rejectOnError(error, reject);
+          failOnError(error);
 
           all = Realm.Sync.User.all;
           TestCase.assertArrayLength(Object.keys(all), 2);
@@ -256,11 +250,11 @@ module.exports = {
       TestCase.assertUndefined(Realm.Sync.User.current);
 
       callbackTest((callback) => Realm.Sync.User.register('http://localhost:9080', uuid(), 'password', callback), (error, user1) => {
-        rejectOnError(error, reject);
+        failOnError(error);
         assertIsSameUser(Realm.Sync.User.current, user1);
 
         Realm.Sync.User.register('http://localhost:9080', uuid(), 'password', (error, user2) => {
-          rejectOnError(error, reject);
+          failOnError(error);
           TestCase.assertThrows(() => Realm.Sync.User.current, 'We expect Realm.Sync.User.current to throw if > 1 user.');
           user2.logout();
 

@@ -81,6 +81,7 @@ class User {
 	 *   - `user` - a valid User object on success
 	 */
 	login(server, username, password, callback) {}
+
 	/**
 	 * Login a sync user using an external login provider.
 	 * @param {string} server - authentication server
@@ -91,6 +92,7 @@ class User {
 	 *   - `user` - a valid User object on success
 	 */
 	loginWithProvider(server, provider, providerToken, callback) {}
+
 	/**
 	 * Create a new user using the username/password provider
 	 * @param {string} server - authentication server
@@ -101,6 +103,7 @@ class User {
 	 *   - `user` - a valid User object on success
 	 */
 	create(server, username, password, callback) {}
+
 	/**
 	 * Create an admin user for the given authentication server with an existing token
 	 * @param {string} server - authentication server
@@ -108,4 +111,18 @@ class User {
 	 * @return {User} - admin user populated with the given token and server
 	 */
 	adminUser(server, adminToken) {}
+
+	/**
+	 * A dictionary containing users that are currently logged in.
+	 * The keys in the dictionary are user identities, values are corresponding User objects.
+	 * @type {object}
+	 */
+	get all() {};
+
+	/**
+	 * Get the currently logged in user.
+	 * Throws error if > 1 user logged in, returns undefined if no users logged in.
+	 * @type {User}
+	 */
+	get current() {};
 }
