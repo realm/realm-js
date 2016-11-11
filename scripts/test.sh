@@ -122,19 +122,13 @@ case "$TARGET" in
   npm run jsdoc
   ;;
 "realmjs")
-  #HACK
-  brew install yarn
   pushd src
   xctest RealmJS
   ;;
 "react-tests")
   pushd tests/react-test-app
 
-  if [ -f ../../target=node_modules/react_tests_node_modules.zip ]; then
-      unzip -q ../../target=node_modules/react_tests_node_modules.zip
-  fi
-
-  yarn install
+  npm install
   open_chrome
   start_packager
 
@@ -143,10 +137,6 @@ case "$TARGET" in
   ;;
 "react-example")
   pushd examples/ReactExample
-
-  if [ -f ../../target=node_modules/react_example_node_modules.zip ]; then
-    unzip -q ../../target=node_modules/react_example_node_modules.zip
-  fi
 
   npm install
   open_chrome
