@@ -88,12 +88,12 @@ xctest() {
   local dest="$(xcrun simctl list devices | grep -v unavailable | grep -m 1 -o '[0-9A-F\-]\{36\}')"
   if [ -n "$XCPRETTY" ]; then
     mkdir -p build
-    xcodebuild -scheme "$1" -configuration "$CONFIGURATION" -sdk iphonesimulator -destination id="$dest" test | tee build/build.log | xcpretty -c --no-utf --report junit --output build/reports/junit.xml || {
+    xcodebuild -scheme "$1" -configuration "$CONFIGURATION" -sdk iphonesimulator -destination id="$dest" build test | tee build/build.log | xcpretty -c --no-utf --report junit --output build/reports/junit.xml || {
         echo "The raw xcodebuild output is available in build/build.log"
         exit 1
     }
   else
-    xcodebuild -scheme "$1" -configuration "$CONFIGURATION" -sdk iphonesimulator -destination id="$dest" test
+    xcodebuild -scheme "$1" -configuration "$CONFIGURATION" -sdk iphonesimulator -destination id="$dest" build test
   fi
 }
 
