@@ -184,7 +184,7 @@ public:
 
     // private
     static void refresh_access_token(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
-    static void populate_sync_config(ContextType, FunctionType realm_constructor, ObjectType config_object, Realm::Config&);
+    static void populate_sync_config(ContextType, ObjectType realm_constructor, ObjectType config_object, Realm::Config&);
 
     // static properties
     static void get_is_developer_edition(ContextType, ObjectType, ReturnValue &);
@@ -258,7 +258,7 @@ void SyncClass<T>::refresh_access_token(ContextType ctx, ObjectType this_object,
 }
 
 template<typename T>
-void SyncClass<T>::populate_sync_config(ContextType ctx, FunctionType realm_constructor, ObjectType config_object, Realm::Config& config) {
+void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constructor, ObjectType config_object, Realm::Config& config) {
     ValueType sync_config_value = Object::get_property(ctx, config_object, "sync");
     if (!Value::is_undefined(ctx, sync_config_value)) {
         auto sync_config_object = Value::validated_to_object(ctx, sync_config_value);

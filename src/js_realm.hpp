@@ -148,7 +148,9 @@ class RealmClass : public ClassDefinition<T, SharedRealm, ObservableClass<T>> {
 
 public:
     static FunctionType create_constructor(ContextType);
+#if REALM_PLATFORM_NODE
     static Global<FunctionType> s_constructor;
+#endif
 
     // methods
     static void objects(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
@@ -258,8 +260,10 @@ public:
     }
 };
 
+#if REALM_PLATFORM_NODE
 template<typename T>
 Global<typename T::Function> RealmClass<T>::s_constructor;
+#endif
 
 template<typename T>
 inline typename T::Function RealmClass<T>::create_constructor(ContextType ctx) {
@@ -280,7 +284,10 @@ inline typename T::Function RealmClass<T>::create_constructor(ContextType ctx) {
     Object::set_property(ctx, realm_constructor, "Sync", sync_constructor, attributes);
 #endif
 
+#if REALM_PLATFORM_NODE
     s_constructor = Global<FunctionType>(ctx, realm_constructor);
+#endif
+
     return realm_constructor;
 }
 
@@ -397,7 +404,11 @@ void RealmClass<T>::constructor(ContextType ctx, ObjectType this_object, size_t 
                 config.encryption_key = std::vector<char>(encryption_key.begin(), encryption_key.end());
             }
 #if REALM_ENABLE_SYNC
+#if REALM_PLATFORM_NODE
             SyncClass<T>::populate_sync_config(ctx, s_constructor, object, config);
+#else
+            SyncClass<T>::populate_sync_config(ctx, Value::validated_to_object(ctx, Object::get_prototype(ctx, this_object)), object, config);
+#endif
 #endif
         }
     }
