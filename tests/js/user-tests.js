@@ -269,5 +269,64 @@ module.exports = {
     });
   },
 
+  testSynchronizeChangesWithTwoClientsAndOneUser() {
+    // Test Schema
+    class Foo {}
+    Foo.schema = {
+      name:       'Foo',
+      properties: {
+        string: 'string',
+        bars:   { type: 'list', objectType: 'Bar' },
+      },
+    };
+
+    class Bar {}
+    Bar.schema = {
+      name:       'Bar',
+      properties: { integer: 'int' },
+    };
+
+    const schema = [Foo.schema, Bar.schema];
+    
+    // Create a user, open two clients at different local paths, synchronize changes
+    const username = uuid();
+    return new Promise((resolve) => {
+      Realm.Sync.User.register('http://localhost:9080', username, 'password', (error ,user) => {
+        failOnError(error);
+        
+        const clientA = new Realm({
+          path:   'testSynchronizeChangesWithTwoClientsAndOneUser_clientA.realm',
+          schema: schema,
+          sync:   {
+            user: user,
+            url:  'http://localhost:9080/~/test',
+          },
+        });
+        
+        const clientB = new Realm({
+          path:   'testSynchronizeChangesWithTwoClientsAndOneUser_clientB.realm',
+          schema: schema,
+          sync:   {
+            user: user,
+            url:  'http://localhost:9080/~/test',
+          },
+        });
+        
+        clientB.addListener('change', () => {
+          const foos = clientB.objects('Foo');
+          if (foos.length > 0) {
+            TestCase.assertEqual(foos.length, 1);
+            TestCase.assertEqual(foos[0].string, 'Hello, World!');
+            resolve();
+          }
+        });
+        
+        clientA.write(() => {
+          clientA.create('Foo', { string: 'Hello, World!' });
+        });
+      });
+    });
+  },
+
 };
 
