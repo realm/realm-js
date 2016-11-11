@@ -405,7 +405,7 @@ void RealmClass<T>::constructor(ContextType ctx, ObjectType this_object, size_t 
             }
 #if REALM_ENABLE_SYNC
 #if REALM_PLATFORM_NODE
-            SyncClass<T>::populate_sync_config(ctx, s_constructor, object, config);
+            SyncClass<T>::populate_sync_config(ctx, FunctionType(s_constructor), object, config);
 #else
             SyncClass<T>::populate_sync_config(ctx, Value::validated_to_object(ctx, Object::get_prototype(ctx, this_object)), object, config);
 #endif
