@@ -82,14 +82,6 @@
       },
       "target_name": "vendored-realm",
       "type": "none",
-      "actions": [
-        {
-          "action_name": "download-realm",
-           "inputs": [ ],
-           "outputs": [ "<(module_root_dir)/vendor/core-node" ],
-           "action": [ "<(module_root_dir)/scripts/download-core.sh", "node" ]
-        }
-      ],
       "conditions": [
         ["realm_enable_sync", {
           "all_dependent_settings": {
@@ -102,9 +94,18 @@
             "library_dirs": [ "<(module_root_dir)/vendor/core-node" ]
           },
 
+        }],
+        ["realm_download_binaries", {
+          "actions": [
+            {
+              "action_name": "download-realm",
+              "inputs": [ ],
+              "outputs": [ "<(module_root_dir)/vendor/core-node" ],
+              "action": [ "<(module_root_dir)/scripts/download-core.sh", "node", "<(realm_enable_sync)" ]
+            }
+          ]
         }]
       ]
-
     }
   ]
 }
