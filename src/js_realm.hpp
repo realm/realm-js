@@ -458,6 +458,8 @@ void RealmClass<T>::clear_test_state(ContextType ctx, ObjectType this_object, si
     for(auto &user : SyncManager::shared().all_users()) {
         user->log_out();
     }
+    SyncManager::shared().reset_for_testing();
+    SyncManager::shared().configure_file_system(default_realm_file_directory(), SyncManager::MetadataMode::NoEncryption);
 #endif
     delete_all_realms();
 }
