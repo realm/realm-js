@@ -203,7 +203,7 @@ module.exports = {
     var username = uuid();
       // Because it waits for answer this takes some time..
     return callbackTest((callback) => Realm.Sync.User.register('http://fake_host.local', username, 'password', callback), (error, user) => {
-      assertIsError(error, 'ECONNRESET');
+      assertIsError(error);
       TestCase.assertUndefined(user);
     });
   },
