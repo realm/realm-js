@@ -65,6 +65,7 @@ task downloadJSCHeaders(type: Download) {
 
 task downloadRealmCore(type: Download) {
     src "https://static.realm.io/downloads/core/realm-core-android-${project.coreVersion}.tar.gz"
+    // src "https://static.realm.io/downloads/sync/realm-sync-android-${project.coreVersion}.tar.gz"
     onlyIfNewer true
     overwrite false
     dest new File(downloadsDir, "realm-core-android-${project.coreVersion}.tar.gz")
