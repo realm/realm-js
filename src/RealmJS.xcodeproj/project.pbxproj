@@ -42,23 +42,8 @@
 		02F59EE31C88F2BB007F774C /* transact_log_handler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02F59EDD1C88F2BB007F774C /* transact_log_handler.cpp */; };
 		5D25F5A11D6284FD00EBBB30 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = F63FF3301C16434400B3B8E0 /* libz.tbd */; };
 		5DC74A781D623C9800D77A4F /* handover.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5DC74A751D623C8700D77A4F /* handover.cpp */; };
-		5DC74A791D623CA200D77A4F /* handover.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5DC74A751D623C8700D77A4F /* handover.cpp */; };
 		5DC74A7A1D623CA800D77A4F /* thread_confined.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5DC74A721D623C7A00D77A4F /* thread_confined.cpp */; };
-		5DC74A7B1D623CA800D77A4F /* thread_confined.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5DC74A721D623C7A00D77A4F /* thread_confined.cpp */; };
-		F60102D31CBB966E00EC01BA /* js_realm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 029048071C0428DF00ABDED4 /* js_realm.cpp */; };
-		F60102D41CBB96AB00EC01BA /* index_set.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02F59EAF1C88F17D007F774C /* index_set.cpp */; };
-		F60102D51CBB96AE00EC01BA /* list.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02F59EB11C88F17D007F774C /* list.cpp */; };
-		F60102D61CBB96B400EC01BA /* object_schema.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02F59EB41C88F17D007F774C /* object_schema.cpp */; };
-		F60102D71CBB96B800EC01BA /* object_store.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02F59EB61C88F17D007F774C /* object_store.cpp */; };
-		F60102D81CBB96BD00EC01BA /* results.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02F59EB91C88F17D007F774C /* results.cpp */; };
-		F60102D91CBB96C100EC01BA /* schema.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02F59EBB1C88F17D007F774C /* schema.cpp */; };
-		F60102DA1CBB96C300EC01BA /* shared_realm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02F59EBD1C88F17D007F774C /* shared_realm.cpp */; };
-		F60102E01CBB96D900EC01BA /* realm_coordinator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02F59EDB1C88F2BA007F774C /* realm_coordinator.cpp */; };
-		F60102E11CBB96DD00EC01BA /* transact_log_handler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02F59EDD1C88F2BB007F774C /* transact_log_handler.cpp */; };
-		F60102EA1CBCAFC300EC01BA /* node_dummy.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F6267BCA1CADC49200AC36B1 /* node_dummy.cpp */; };
 		F61378791C18EAC5008BFC51 /* js in Resources */ = {isa = PBXBuildFile; fileRef = F61378781C18EAAC008BFC51 /* js */; };
-		F620F0581CB766DA0082977B /* node_init.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F620F0571CB766DA0082977B /* node_init.cpp */; };
-		F620F0751CB9F60C0082977B /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F620F0741CB9F60C0082977B /* CoreFoundation.framework */; };
 		F63FF2C61C12469E00B3B8E0 /* jsc_init.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 029048011C0428DF00ABDED4 /* jsc_init.cpp */; };
 		F63FF2C91C12469E00B3B8E0 /* js_realm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 029048071C0428DF00ABDED4 /* js_realm.cpp */; };
 		F63FF2CD1C12469E00B3B8E0 /* rpc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0290480F1C0428DF00ABDED4 /* rpc.cpp */; };
@@ -77,14 +62,8 @@
 		F63FF3251C1642BB00B3B8E0 /* GCDWebServerErrorResponse.m in Sources */ = {isa = PBXBuildFile; fileRef = F63FF3161C1642BB00B3B8E0 /* GCDWebServerErrorResponse.m */; };
 		F63FF3261C1642BB00B3B8E0 /* GCDWebServerFileResponse.m in Sources */ = {isa = PBXBuildFile; fileRef = F63FF3181C1642BB00B3B8E0 /* GCDWebServerFileResponse.m */; };
 		F63FF3271C1642BB00B3B8E0 /* GCDWebServerStreamedResponse.m in Sources */ = {isa = PBXBuildFile; fileRef = F63FF31A1C1642BB00B3B8E0 /* GCDWebServerStreamedResponse.m */; };
-		F674784A1CC81F1900F9273C /* platform.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F67478481CC81F1300F9273C /* platform.cpp */; };
 		F68A278C1BC2722A0063D40A /* RJSModuleLoader.m in Sources */ = {isa = PBXBuildFile; fileRef = F68A278B1BC2722A0063D40A /* RJSModuleLoader.m */; };
 		F6BCCFE21C8380A400FE31AE /* lib in Resources */ = {isa = PBXBuildFile; fileRef = F6BCCFDF1C83809A00FE31AE /* lib */; };
-		F6E931BA1CFEAE170016AF14 /* collection_notifications.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02414B961CE6AADD00A8669F /* collection_notifications.cpp */; };
-		F6E931BB1CFEAE310016AF14 /* collection_change_builder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02414B991CE6AAEF00A8669F /* collection_change_builder.cpp */; };
-		F6E931BC1CFEAE340016AF14 /* collection_notifier.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02414B9B1CE6AAEF00A8669F /* collection_notifier.cpp */; };
-		F6E931BD1CFEAE370016AF14 /* list_notifier.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02414B9D1CE6AAEF00A8669F /* list_notifier.cpp */; };
-		F6E931BE1CFEAE3A0016AF14 /* results_notifier.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02414B9F1CE6AAEF00A8669F /* results_notifier.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -228,7 +207,6 @@
 		F620F0741CB9F60C0082977B /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk/System/Library/Frameworks/CoreFoundation.framework; sourceTree = DEVELOPER_DIR; };
 		F6267BC91CADC30000AC36B1 /* js_util.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = js_util.hpp; sourceTree = "<group>"; };
 		F6267BCA1CADC49200AC36B1 /* node_dummy.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = node_dummy.cpp; sourceTree = "<group>"; };
-		F62BF8FB1CAC71780022BCDC /* libRealmNode.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libRealmNode.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		F63118431CEBA7B700ECB2DE /* external_commit_helper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = external_commit_helper.cpp; sourceTree = "<group>"; };
 		F63118441CEBA7B700ECB2DE /* external_commit_helper.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = external_commit_helper.hpp; sourceTree = "<group>"; };
 		F631184A1CEBA7D800ECB2DE /* external_commit_helper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = external_commit_helper.cpp; sourceTree = "<group>"; };
@@ -287,14 +265,6 @@
 				5D25F5A11D6284FD00EBBB30 /* libz.tbd in Frameworks */,
 				027A23131CD3E379000543AE /* libRealmJS.a in Frameworks */,
 				02D8D1F71B601984006DB49D /* JavaScriptCore.framework in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		F62BF8F81CAC71780022BCDC /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				F620F0751CB9F60C0082977B /* CoreFoundation.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -407,7 +377,6 @@
 				02B58CBC1AE99CEC009B348C /* RealmJSTests.xctest */,
 				F63FF2B11C1241E500B3B8E0 /* libRealmJS.a */,
 				F63FF2F01C16405C00B3B8E0 /* libGCDWebServers.a */,
-				F62BF8FB1CAC71780022BCDC /* libRealmNode.dylib */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -722,24 +691,6 @@
 			productReference = 02B58CBC1AE99CEC009B348C /* RealmJSTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
-		F62BF8FA1CAC71780022BCDC /* RealmNode */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = F62BF8FF1CAC71780022BCDC /* Build configuration list for PBXNativeTarget "RealmNode" */;
-			buildPhases = (
-				F64A05B71D140311004ACDBE /* Download Core */,
-				F62BF8F71CAC71780022BCDC /* Sources */,
-				F62BF8F81CAC71780022BCDC /* Frameworks */,
-				F63117A41CEA911000ECB2DE /* Build with node-gyp */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			name = RealmNode;
-			productName = RealmNode;
-			productReference = F62BF8FB1CAC71780022BCDC /* libRealmNode.dylib */;
-			productType = "com.apple.product-type.library.dynamic";
-		};
 		F63FF2B01C1241E500B3B8E0 /* RealmJS */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = F63FF2C41C1241E500B3B8E0 /* Build configuration list for PBXNativeTarget "RealmJS" */;
@@ -785,9 +736,6 @@
 					02B58CBB1AE99CEC009B348C = {
 						CreatedOnToolsVersion = 6.3.1;
 					};
-					F62BF8FA1CAC71780022BCDC = {
-						CreatedOnToolsVersion = 7.3;
-					};
 					F63FF2B01C1241E500B3B8E0 = {
 						CreatedOnToolsVersion = 7.1.1;
 					};
@@ -810,7 +758,6 @@
 			targets = (
 				F63FF2EF1C16405C00B3B8E0 /* GCDWebServers */,
 				F63FF2B01C1241E500B3B8E0 /* RealmJS */,
-				F62BF8FA1CAC71780022BCDC /* RealmNode */,
 				02B58CBB1AE99CEC009B348C /* RealmJSTests */,
 			);
 		};
@@ -845,20 +792,6 @@
 			shellPath = /bin/sh;
 			shellScript = "cd \"$TARGET_BUILD_DIR/$CONTENTS_FOLDER_PATH\"\nyarn add needle url-parse";
 		};
-		F63117A41CEA911000ECB2DE /* Build with node-gyp */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "Build with node-gyp";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "node/build-node.sh \"$CONFIGURATION\"";
-		};
 		F63FF2C51C12462600B3B8E0 /* Download Core */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -873,20 +806,6 @@
 			shellPath = /bin/sh;
 			shellScript = "../scripts/download-core.sh";
 		};
-		F64A05B71D140311004ACDBE /* Download Core */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "Download Core";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "../scripts/download-core.sh node";
-		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -897,33 +816,6 @@
 				F68A278C1BC2722A0063D40A /* RJSModuleLoader.m in Sources */,
 				0270BC821B7D020100010E03 /* RealmJSTests.mm in Sources */,
 				02409DC21BCF11D6005F3B3E /* RealmJSCoreTests.m in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		F62BF8F71CAC71780022BCDC /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				F6E931BA1CFEAE170016AF14 /* collection_notifications.cpp in Sources */,
-				F60102D31CBB966E00EC01BA /* js_realm.cpp in Sources */,
-				F60102D61CBB96B400EC01BA /* object_schema.cpp in Sources */,
-				F60102D41CBB96AB00EC01BA /* index_set.cpp in Sources */,
-				F6E931BB1CFEAE310016AF14 /* collection_change_builder.cpp in Sources */,
-				5DC74A7B1D623CA800D77A4F /* thread_confined.cpp in Sources */,
-				F60102D51CBB96AE00EC01BA /* list.cpp in Sources */,
-				F6E931BC1CFEAE340016AF14 /* collection_notifier.cpp in Sources */,
-				F60102E11CBB96DD00EC01BA /* transact_log_handler.cpp in Sources */,
-				F6E931BE1CFEAE3A0016AF14 /* results_notifier.cpp in Sources */,
-				F60102D71CBB96B800EC01BA /* object_store.cpp in Sources */,
-				F6E931BD1CFEAE370016AF14 /* list_notifier.cpp in Sources */,
-				F60102DA1CBB96C300EC01BA /* shared_realm.cpp in Sources */,
-				F60102E01CBB96D900EC01BA /* realm_coordinator.cpp in Sources */,
-				F60102EA1CBCAFC300EC01BA /* node_dummy.cpp in Sources */,
-				F60102D81CBB96BD00EC01BA /* results.cpp in Sources */,
-				F674784A1CC81F1900F9273C /* platform.cpp in Sources */,
-				F620F0581CB766DA0082977B /* node_init.cpp in Sources */,
-				5DC74A791D623CA200D77A4F /* handover.cpp in Sources */,
-				F60102D91CBB96C100EC01BA /* schema.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1144,75 +1036,6 @@
 			};
 			name = Release;
 		};
-		F62BF8FC1CAC71780022BCDC /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				DEBUG_INFORMATION_FORMAT = dwarf;
-				DYLIB_COMPATIBILITY_VERSION = 1;
-				DYLIB_CURRENT_VERSION = 0.14.3;
-				EXECUTABLE_PREFIX = lib;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"REALM_PLATFORM_NODE=1",
-					"$(inherited)",
-				);
-				HEADER_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(SRCROOT)/../node_modules/nan",
-					/usr/local/include/node,
-				);
-				LIBRARY_SEARCH_PATHS = (
-					/usr/local/lib,
-					"../core-node",
-				);
-				OTHER_CPLUSPLUSFLAGS = (
-					"$(inherited)",
-					"-isystem",
-					"../core-node/include",
-				);
-				OTHER_LDFLAGS = (
-					"-lrealm-node-dbg",
-					"-luv",
-					"-lv8",
-				);
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = macosx;
-			};
-			name = Debug;
-		};
-		F62BF8FE1CAC71780022BCDC /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				DYLIB_COMPATIBILITY_VERSION = 1;
-				DYLIB_CURRENT_VERSION = 0.14.3;
-				EXECUTABLE_PREFIX = lib;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"REALM_PLATFORM_NODE=1",
-					"$(inherited)",
-				);
-				HEADER_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(SRCROOT)/../node_modules/nan",
-					/usr/local/include/node,
-				);
-				LIBRARY_SEARCH_PATHS = (
-					/usr/local/lib,
-					"../core-node",
-				);
-				OTHER_CPLUSPLUSFLAGS = (
-					"$(inherited)",
-					"-isystem",
-					"../core-node/include",
-				);
-				OTHER_LDFLAGS = (
-					"-lrealm-node",
-					"-luv",
-					"-lv8",
-				);
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = macosx;
-			};
-			name = Release;
-		};
 		F63FF2B71C1241E500B3B8E0 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -1296,15 +1119,6 @@
 			buildConfigurations = (
 				02B58CCB1AE99CEC009B348C /* Debug */,
 				02B58CCC1AE99CEC009B348C /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		F62BF8FF1CAC71780022BCDC /* Build configuration list for PBXNativeTarget "RealmNode" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				F62BF8FC1CAC71780022BCDC /* Debug */,
-				F62BF8FE1CAC71780022BCDC /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

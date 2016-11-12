@@ -170,6 +170,9 @@ struct Object {
     static void set_property(ContextType, const ObjectType &, uint32_t, const ValueType &);
     static std::vector<String<T>> get_property_names(ContextType, const ObjectType &);
 
+    static void set_global(ContextType, const String<T> &, const ValueType &);
+    static ValueType get_global(ContextType, const String<T> &);
+
     template<typename P>
     static ValueType validated_get_property(ContextType ctx, const ObjectType &object, const P &property, const char *message = nullptr) {
         if (!has_property(ctx, object, property)) {
@@ -256,11 +259,6 @@ class Protected {
     struct Comparator {
         bool operator()(const Protected<ValueType>& a, const Protected<ValueType>& b) const;
     };
-};
-
-template<typename ValueType>
-class Global {
-    operator ValueType() const;
 };
 
 template<typename T>

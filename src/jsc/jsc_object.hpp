@@ -143,5 +143,17 @@ inline void jsc::Object::set_internal(const JSObjectRef &object, typename ClassT
     *wrap = ptr;
 }
 
+template<>
+inline void jsc::Object::set_global(JSContextRef ctx, const jsc::String &key, const JSValueRef &value) {
+    JSObjectRef global_object = JSContextGetGlobalObject(ctx);
+    jsc::Object::set_property(ctx, global_object, key, value, js::ReadOnly | js::DontEnum | js::DontDelete);
+}
+
+template<>
+inline JSValueRef jsc::Object::get_global(JSContextRef ctx, const jsc::String &key) {
+    JSObjectRef global_object = JSContextGetGlobalObject(ctx);
+    return jsc::Object::get_property(ctx, global_object, key);
+}
+    
 } // js
 } // realm
