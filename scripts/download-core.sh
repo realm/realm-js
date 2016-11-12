@@ -16,6 +16,7 @@ fi
 
 # The 'node' argument will result in realm-node build being downloaded.
 if [ "$1" = 'node' ]; then
+    ENABLE_SYNC="$2"
     CORE_DIR="core-node"
     SYNC_DIR='node-sync'
 
@@ -34,6 +35,8 @@ if [ "$1" = 'node' ]; then
     SYNC_EXTRACT="unzip"
     EXTRACTED_DIR="realm-sync-node-cocoa-$REALM_SYNC_VERSION"
 else
+    ENABLE_SYNC="yes" # FIXME: This means that both core and sync will be downloaded for non "node" targets.
+    # Should be 0 or 1. We do not need to download both
     CORE_DIR='core'
     PLATFORM_TAG=""
     SYNC_DIR='sync'
@@ -94,7 +97,19 @@ check_release_notes() {
     grep -Fqi "$REALM_CORE_VERSION RELEASE NOTES" "$@"
 }
 
-if [ -z "$REALM_CORE_PREFIX" ]; then
+DOWNLOAD_CORE=1
+
+if ! [ -z "$REALM_CORE_PREFIX" ]; then
+DOWNLOAD_CORE=0
+echo "Skipping the core download because REALM_CORE_PREFIX is defined."
+fi
+
+if [ "$ENABLE_SYNC" == 1 ]; then
+DOWNLOAD_CORE=0
+echo "Skipping the core download because ENABLE_SYNC is true."
+fi
+
+if [ "$DOWNLOAD_CORE" == 1 ]; then
     if [ ! -e "vendor/$CORE_DIR" ]; then
         download_core $CORE_DIR $REALM_CORE_VERSION $CORE_DOWNLOAD_FILE core "tar -xzf" core
     elif [ -d "vendor/$CORE_DIR" -a -d ../realm-core -a ! -L "vendor/$CORE_DIR" ]; then
@@ -117,11 +132,20 @@ if [ -z "$REALM_CORE_PREFIX" ]; then
     else
         echo "The core library seems to be up to date."
     fi
-else
-    echo "Skipping core the download because REALM_CORE_PREFIX is defined."
 fi
 
-if [ -z "$REALM_SYNC_PREFIX" ]; then
+DOWNLOAD_SYNC=1
+if ! [ -z "$REALM_SYNC_PREFIX" ]; then
+DOWNLOAD_SYNC=0
+echo "Skipping the sync download because REALM_SYNC_PREFIX is defined."
+fi
+
+if [ "$ENABLE_SYNC" == 0 ]; then
+DOWNLOAD_SYNC=0
+echo "Skipping the sync download because ENABLE_SYNC is false."
+fi
+
+if [ "$DOWNLOAD_SYNC" == 1 ]; then
     if [ -n "$SYNC_DOWNLOAD_FILE" ];then
         if [ ! -e "vendor/$SYNC_DIR" ]; then
             download_core $SYNC_DIR $REALM_SYNC_VERSION $SYNC_DOWNLOAD_FILE sync "$SYNC_EXTRACT" $EXTRACTED_DIR
@@ -146,6 +170,4 @@ if [ -z "$REALM_SYNC_PREFIX" ]; then
             echo "The sync library seems to be up to date."
         fi
     fi
-else
-    echo "Skipping the sync download because REALM_SYNC_PREFIX is defined."
 fi

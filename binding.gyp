@@ -1,6 +1,7 @@
 {
   "variables": {
-    "realm_node_build_as_library%": "0"
+    "realm_node_build_as_library%": "0",
+    "realm_download_binaries%": "1"
   },
   "includes": [
     "src/node/gyp/target_defaults.gypi",
