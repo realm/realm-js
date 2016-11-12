@@ -147,7 +147,7 @@ case "$TARGET" in
   start_packager
 
   pushd ios
-  xctest ReactExample
+  xctest ReactExample || xctest ReactExample
   ;;
 "react-tests-android")
   [[ $CONFIGURATION == 'Debug' ]] && exit 0
