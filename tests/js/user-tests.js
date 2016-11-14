@@ -22,7 +22,6 @@
 
 const Realm = require('realm');
 const TestCase = require('./asserts');
-const schemas = require('./schemas');
 
 function uuid() {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
@@ -104,7 +103,7 @@ module.exports = {
 
       // Can we open a realm with the registered user?
       TestCase.assertThrows(function() {
-        var realm = new Realm({sync: {user: user, url: 'realm://localhost:9080/~/test'}});
+        var _realm = new Realm({sync: {user: user, url: 'realm://localhost:9080/~/test'}});
       });
     })
   },
@@ -209,7 +208,7 @@ module.exports = {
   },
 
   testAll() {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve, _reject) => {
       let all;
       all = Realm.Sync.User.all;
       TestCase.assertArrayLength(Object.keys(all), 0);
@@ -246,7 +245,7 @@ module.exports = {
   },
 
   testCurrent() {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve, _reject) => {
       TestCase.assertUndefined(Realm.Sync.User.current);
 
       callbackTest((callback) => Realm.Sync.User.register('http://localhost:9080', uuid(), 'password', callback), (error, user1) => {

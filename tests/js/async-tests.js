@@ -71,7 +71,7 @@ function createNotificationTest(config, getObservable, addListener, removeListen
 
         worker.postMessage(messages[messageIndex++]);
     });
-};
+}
 
 function createCollectionChangeTest(config, createCollection, messages, expected, removeAll) {
     return createNotificationTest(
@@ -97,7 +97,7 @@ function createCollectionChangeTest(config, createCollection, messages, expected
         messages,
         expected.length
     );
-};
+}
 
 const ListObject = {
     name: 'ListObject',

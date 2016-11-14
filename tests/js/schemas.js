@@ -18,8 +18,6 @@
 
 'use strict';
 
-var Realm = require('realm');
-
 exports.TestObject = {
     name: 'TestObject',
     properties: {

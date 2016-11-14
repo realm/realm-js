@@ -1,7 +1,9 @@
 {
   "env": {
-    "commonjs": true
+    "jasmine": true
   },
+  "plugins": ["jasmine"],
+  "extends": "plugin:jasmine/recommended",
   "globals": {
     "ArrayBuffer": false,
     "DataView": false,
@@ -14,5 +16,12 @@
     "Uint32Array": false,
     "Uint8Array": false,
     "Uint8ClampedArray": false
+  },
+  "rules": {
+    "no-invalid-this": "off",
+    "no-magic-numbers": "off",
+    "jasmine/no-spec-dupes": ["error", "branch"],
+    "jasmine/no-suite-dupes": ["error", "branch"],
+    "no-console": "off"
   }
 }

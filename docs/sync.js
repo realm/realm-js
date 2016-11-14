@@ -20,28 +20,29 @@
  * @memberof Realm
  */
 class Sync {
+
+	/**
+	 * Set a global listener function.
+	 * @param {string} local_path - The path to the directory where realm files are stored [deprecated]
+	 * @param {string} server_url - The sync server to listen to
+	 * @param {SyncUser} admin_user - An admin user obtained by calling `new Realm.Sync.User.Admin`
+	 * @param {function(realm_name)} filter_callback - Return true to recieve changes for the given realm
+	 * @param {function(realm_name, realm, change_set)} change_callback - called on any realm changes with
+	 *  the following arguments:
+	 *   - `realm_name` - path of the Realm on which changes occurred
+	 *   - `realm` - a `Realm` object for the changed Realm
+	 *   - `change_set` - a dictionary of object names to arays of indexes indicating the indexes of objects of each type
+	 *   which have been added, removed, or modified
+	 */
+	static setGlobalListener(local_path, server_url, admin_user, filter_callback, change_callback) {}
+
+	/**
+	 * Set the sync log level.
+	 * @param {string} log_level
+	 */
+	static setLogLevel(log_level) {}
+
 }
-
-/**
- * Set a global listener function.
- * @param {string} local_path - The path to the directory where realm files are stored [deprecated]
- * @param {string} server_url - The sync server to listen to
- * @param {SyncUser} admin_user - An admin user obtained by calling `new Realm.Sync.User.Admin`
- * @param {function(realm_name)} filter_callback - Return true to recieve changes for the given realm
- * @param {function(realm_name, realm, change_set)} change_callback - called on any realm changes with 
- *  the following arguments:
- *   - `realm_name` - path of the Realm on which changes occurred
- *   - `realm` - a `Realm` object for the changed Realm
- *   - `change_set` - a dictionary of object names to arays of indexes indicating the indexes of objects of each type
- *   which have been added, removed, or modified
- */
-Sync.setGlobalListener = function(local_path, server_url, admin_user, filter_callback, change_callback) {};
-
-/**
- * Set the sync log level.
- * @param {string} log_level
- */
-Sync.setLogLevel = function(log_level) {};
 
 /**
  * @typedef Realm.Sync~LogLevel
@@ -117,12 +118,12 @@ class User {
 	 * The keys in the dictionary are user identities, values are corresponding User objects.
 	 * @type {object}
 	 */
-	get all() {};
+	get all() {}
 
 	/**
 	 * Get the currently logged in user.
 	 * Throws error if > 1 user logged in, returns undefined if no users logged in.
 	 * @type {User}
 	 */
-	get current() {};
+	get current() {}
 }

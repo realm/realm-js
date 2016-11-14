@@ -28,8 +28,6 @@ import {
 import React from 'react';
 import { runTests } from './tests';
 
-const Realm = require('realm');
-
 class ReactTests extends React.Component {
     render() {
         return (

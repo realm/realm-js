@@ -14,7 +14,8 @@
     "sqlite",
     "asyncstorage",
     "rocksdb",
-    "leveldb"
+    "leveldb",
+    "realm"
   ],
   "author": {
     "name": "Realm",
@@ -57,8 +58,9 @@
   },
   "devDependencies": {
     "babel-eslint": "^6.0.4",
-    "eslint": "^2.10.2",
-    "eslint-plugin-react": "^5.1.1",
+    "eslint": "^3.2.2",
+    "eslint-plugin-jasmine": "^2.1.0",
+    "eslint-plugin-react": "^6.7.0",
     "jsdoc": "^3.4.0",
     "semver": "^5.1.0"
   },
