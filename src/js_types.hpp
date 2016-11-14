@@ -247,6 +247,10 @@ class Protected {
     bool operator!=(const ValueType &) const;
     bool operator==(const Protected<ValueType> &) const;
     bool operator!=(const Protected<ValueType> &) const;
+
+    struct Comparator {
+        bool operator()(const Protected<ValueType>& a, const Protected<ValueType>& b) const;
+    };
 };
 
 template<typename T>

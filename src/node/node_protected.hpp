@@ -50,6 +50,12 @@ class Protected {
     bool operator!=(const Protected<MemberType> &other) const {
         return m_value != other.m_value;
     }
+
+    struct Comparator {
+        bool operator()(const Protected<MemberType>& a, const Protected<MemberType>& b) const {
+            return Nan::New(a.m_value)->StrictEquals(Nan::New(b.m_value));
+        }
+    };
 };
 
 } // node

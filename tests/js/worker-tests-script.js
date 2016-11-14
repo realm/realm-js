@@ -23,30 +23,39 @@
 
 const Realm = require('../..');
 
-const handlers = {
-    create(options) {
-        let realm = new Realm(options.config);
-
-        realm.write(() => {
-            realm.create(options.type, options.properties);
-        });
-    }
-};
-
 process.on('message', (message) => {
     process.send(handleMessage(message));
 });
 
 function handleMessage(message) {
     let error, result;
+    if (message[0] == 'echo') {
+        return {result: message[1]}
+    }
 
     try {
-        let handler = handlers[message.action];
-        if (handler) {
-            result = handler(message);
-        } else {
-            throw new Error('Unknown worker action: ' + message.action);
-        }
+        let realm = new Realm(message[0]);
+        realm.write(() => {
+            if (message[1] == 'create') {
+                result = message[3].map((value) => realm.create(message[2], value));
+            }
+            else if (message[1] == 'delete') {
+                let objects = realm.objects(message[2]);
+                objects = message[3].map((index) => objects[index]);
+                realm.delete(objects);
+            }
+            else if (message[1] == 'update') {
+                result = message[3].map((value) => realm.create(message[2], value, true));
+            }
+            else if (message[1] == 'list_method') {
+                var listObject = realm.objects(message[2])[0];
+                var list = listObject[message[3]];
+                result = list[message[4]].apply(list, message.slice(5));
+            }
+            else {
+                throw new Error('Unknown realm method: ' + message[1]);
+            }
+        });
     } catch (e) {
         console.warn(e);
         error = e.message;
