@@ -73,7 +73,8 @@
         }],
         ["OS=='mac'", {
           "sources": [
-            "src/object-store/src/impl/apple/external_commit_helper.cpp"
+            "src/object-store/src/impl/apple/external_commit_helper.cpp",
+            "src/object-store/src/impl/apple/keychain_helper.cpp"
           ]
         }],
         ["realm_enable_sync", {
@@ -83,8 +84,7 @@
             "src/object-store/src/sync/sync_user.cpp",
             "src/object-store/src/sync/sync_session.cpp",
             "src/object-store/src/sync/impl/sync_file.cpp",
-            "src/object-store/src/sync/impl/sync_metadata.cpp",
-            "src/object-store/src/impl/apple/keychain_helper.cpp"
+            "src/object-store/src/sync/impl/sync_metadata.cpp"
           ],
         }]
       ],
