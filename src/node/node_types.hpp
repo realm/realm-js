@@ -23,13 +23,18 @@
 #include <map>
 #include <string>
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wundef"
 #include <nan.h>
+#pragma GCC diagnostic pop
 
 #include "js_types.hpp"
 
 #if defined(V8_MAJOR_VERSION) && (V8_MAJOR_VERSION > 4 || (V8_MAJOR_VERSION == 4 && defined(V8_MINOR_VERSION) && V8_MINOR_VERSION >= 3))
 #define REALM_V8_ARRAY_BUFFER_API 1
 #endif
+
+#define HANDLESCOPE Nan::HandleScope handle_scope;
 
 namespace realm {
 namespace node {
@@ -42,15 +47,15 @@ struct Types {
     using String = v8::Local<v8::String>;
     using Function = v8::Local<v8::Function>;
 
-    using ConstructorCallback = Nan::FunctionCallback;
-    using FunctionCallback = Nan::FunctionCallback;
-    using PropertyGetterCallback = Nan::GetterCallback;
-    using PropertySetterCallback = Nan::SetterCallback;
-    using IndexPropertyGetterCallback = Nan::IndexGetterCallback;
-    using IndexPropertySetterCallback = Nan::IndexSetterCallback;
-    using StringPropertyGetterCallback = Nan::PropertyGetterCallback;
-    using StringPropertySetterCallback = Nan::PropertySetterCallback;
-    using StringPropertyEnumeratorCallback = Nan::PropertyEnumeratorCallback;
+    using ConstructorCallback = v8::FunctionCallback;
+    using FunctionCallback = v8::FunctionCallback;
+    using PropertyGetterCallback = v8::AccessorGetterCallback;
+    using PropertySetterCallback = v8::AccessorSetterCallback;
+    using IndexPropertyGetterCallback = v8::IndexedPropertyGetterCallback;
+    using IndexPropertySetterCallback = v8::IndexedPropertySetterCallback;
+    using StringPropertyGetterCallback = v8::NamedPropertyGetterCallback;
+    using StringPropertySetterCallback = v8::NamedPropertySetterCallback;
+    using StringPropertyEnumeratorCallback = v8::NamedPropertyEnumeratorCallback;
 };
 
 template<typename ClassType>

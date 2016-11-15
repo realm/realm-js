@@ -34,6 +34,7 @@ TodoList.schema = {
     name: 'TodoList',
     properties: {
         name: 'string',
+        creationDate: 'date',
         items: {type: 'list', objectType: 'Todo'},
     },
 };

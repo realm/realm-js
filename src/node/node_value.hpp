@@ -129,7 +129,7 @@ inline bool node::Value::to_boolean(v8::Isolate* isolate, const v8::Local<v8::Va
 template<>
 inline double node::Value::to_number(v8::Isolate* isolate, const v8::Local<v8::Value> &value) {
     double number = Nan::To<double>(value).FromMaybe(NAN);
-    if (isnan(number)) {
+    if (std::isnan(number)) {
         throw std::invalid_argument("Value not convertible to a number.");
     }
     return number;

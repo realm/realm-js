@@ -18,6 +18,10 @@
 # core
 core
 core-*
+sync
+sync-*
+node-sync
+node-sync-*
 
 # sh build.sh config
 /Realm/config.mk
@@ -98,6 +102,8 @@ build/
 # node.js
 node_modules/
 npm-debug.log
+/compiled/
+*.lock
 
 # Android/IJ
 /android/
@@ -108,3 +114,9 @@ local.properties
 # Visual Studio Code
 .vscode
 tsconfig.json
+
+# Tests
+object-server-for-testing/
+tests/realm-object-server/
+vendor/sync
+vendor/sync*

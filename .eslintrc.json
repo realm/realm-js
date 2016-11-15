@@ -1,10 +1,19 @@
 {
   "root": true,
+  "env": {
+    "es6": true,
+    "node": true
+  },
   "extends": "eslint:recommended",
   "rules": {
     "comma-dangle": 0,
     "no-empty": 0,
-    "no-unused-vars": 1,
+    "no-unused-vars": [
+      "warn", {
+        "varsIgnorePattern": "^_",
+        "argsIgnorePattern": "^_"
+      }
+    ],
     "strict": [2, "global"]
   }
 }

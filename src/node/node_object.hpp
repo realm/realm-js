@@ -154,6 +154,16 @@ inline void node::Object::set_internal(const v8::Local<v8::Object> &object, type
     auto wrap = Nan::ObjectWrap::Unwrap<node::ObjectWrap<ClassType>>(object);
     *wrap = ptr;
 }
-    
+
+template<>
+inline void node::Object::set_global(v8::Isolate* isolate, const node::String &key, const v8::Local<v8::Value> &value) {
+    Object::set_property(isolate, isolate->GetCurrentContext()->Global(), key, value);
+}
+
+template<>
+inline v8::Local<v8::Value> node::Object::get_global(v8::Isolate* isolate, const node::String &key) {
+    return Object::get_property(isolate, isolate->GetCurrentContext()->Global(), key);
+}
+
 } // js
 } // realm

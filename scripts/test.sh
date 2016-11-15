@@ -11,6 +11,7 @@ CONFIGURATION="${2:-"Release"}"
 DESTINATION=
 PATH="/opt/android-sdk-linux/platform-tools:$PATH"
 SRCROOT=$(cd "$(dirname "$0")/.." && pwd)
+XCPRETTY=true
 
 # Start current working directory at the root of the project.
 cd "$SRCROOT"
@@ -23,12 +24,34 @@ if [[ $TARGET = *-android ]]; then
   export REALM_BUILD_ANDROID=1
 fi
 
+SERVER_PID=0
 PACKAGER_OUT="$SRCROOT/packager_out.txt"
 LOGCAT_OUT="$SRCROOT/logcat_out.txt"
 
+
+download_server() {
+  sh ./scripts/download-object-server.sh
+}
+
+start_server() {
+  sh ./object-server-for-testing/start-object-server.command &
+  SERVER_PID=$!
+}
+
+stop_server() {
+  if [[ ${SERVER_PID} > 0 ]] ; then
+    kill ${SERVER_PID}
+  fi
+}
+
 cleanup() {
-  # Kill all child processes.
+  # Kill started object server
+  stop_server
+
+  # Kill all other child processes.
   pkill -P $$ || true
+
+  # Kill react native packager
   pkill node || true
   rm -f "$PACKAGER_OUT" "$LOGCAT_OUT"
 }
@@ -58,13 +81,15 @@ start_packager() {
 }
 
 xctest() {
-  ${SRCROOT}/scripts/reset-simulators.sh 
-
   local dest="$(xcrun simctl list devices | grep -v unavailable | grep -m 1 -o '[0-9A-F\-]\{36\}')"
   if [ -n "$XCPRETTY" ]; then
-    xcodebuild -scheme "$1" -configuration "$CONFIGURATION" -sdk iphonesimulator -destination id="$dest" test | xcpretty -c --no-utf --report junit --output build/reports/junit.xml
+    mkdir -p build
+    xcodebuild -scheme "$1" -configuration "$CONFIGURATION" -sdk iphonesimulator -destination id="$dest" build test | tee build/build.log | xcpretty -c --no-utf --report junit --output build/reports/junit.xml || {
+        echo "The raw xcodebuild output is available in build/build.log"
+        exit 1
+    }
   else
-    xcodebuild -scheme "$1" -configuration "$CONFIGURATION" -sdk iphonesimulator -destination id="$dest" test
+    xcodebuild -scheme "$1" -configuration "$CONFIGURATION" -sdk iphonesimulator -destination id="$dest" build test
   fi
 }
 
@@ -75,8 +100,11 @@ trap cleanup EXIT
 # Use a consistent version of Node if possible.
 if [ -s "${HOME}/.nvm/nvm.sh" ]; then
   . "${HOME}/.nvm/nvm.sh"
-  nvm use 5.4.0 || true
+  nvm use 4.4.7 || true
 fi
+
+# Remove cached packages
+rm -rf ~/.yarn-cache/npm-realm-*
 
 case "$TARGET" in
 "eslint")
@@ -94,35 +122,36 @@ case "$TARGET" in
   xctest RealmJS
   ;;
 "react-tests")
+  if ! [ -z "${JENKINS_HOME}" ]; then
+    ${SRCROOT}/scripts/reset-simulators.sh
+  fi
+
   pushd tests/react-test-app
 
-  if [ -f ../../target=node_modules/react_tests_node_modules.zip ]; then
-      unzip -q ../../target=node_modules/react_tests_node_modules.zip
-  fi
-
   npm install
   open_chrome
   start_packager
 
   pushd ios
-  xctest ReactTestApp
+  xctest ReactTestApp || xctest ReactTestApp
   ;;
 "react-example")
-  pushd examples/ReactExample
-
-  if [ -f ../../target=node_modules/react_example_node_modules.zip ]; then
-    unzip -q ../../target=node_modules/react_example_node_modules.zip
+  if ! [ -z "${JENKINS_HOME}" ]; then
+    ${SRCROOT}/scripts/reset-simulators.sh
   fi
+
+  pushd examples/ReactExample
 
   npm install
   open_chrome
   start_packager
 
   pushd ios
-  xctest ReactExample
+  xctest ReactExample || xctest ReactExample
   ;;
 "react-tests-android")
   [[ $CONFIGURATION == 'Debug' ]] && exit 0
+  XCPRETTY=false
 
   pushd tests/react-test-app
 
@@ -154,20 +183,40 @@ case "$TARGET" in
   cat tests.xml
   ;;
 "node")
-  npm install
-  scripts/download-core.sh node
-  src/node/build-node.sh $CONFIGURATION
+  if [ "$(uname)" = 'Darwin' ]; then
+    download_server
+    start_server
+    npm_tests_cmd="npm run test"
+    npm install --build-from-source --realm_enable_sync
+  else
+    npm_tests_cmd="npm run test-nosync"
+    npm install --build-from-source
+  fi
 
   # Change to a temp directory.
   cd "$(mktemp -q -d -t realm.node.XXXXXX)"
   trap "rm -rf '$PWD'" EXIT
 
-  node "$SRCROOT/tests"
+  pushd "$SRCROOT/tests"
+  npm install
+  eval $npm_tests_cmd
+  popd
+  stop_server
+  ;;
+"node-nosync")
+  npm install --build-from-source
+
+  # Change to a temp directory.
+  cd "$(mktemp -q -d -t realm.node.XXXXXX)"
+  trap "rm -rf '$PWD'" EXIT
+
+  pushd "$SRCROOT/tests"
+  npm install
+  npm run test-nosync
+  popd
   ;;
 "test-runners")
-  npm install
-  scripts/download-core.sh node
-  src/node/build-node.sh $CONFIGURATION
+  npm install --build-from-source
 
   for runner in ava mocha jest; do
     pushd "$SRCROOT/tests/test-runners/$runner"
@@ -180,6 +229,27 @@ case "$TARGET" in
   pushd src/object-store
   cmake -DCMAKE_BUILD_TYPE=$CONFIGURATION .
   make run-tests
+  ;;
+"download-object-server")
+  . dependencies.list
+
+  object_server_bundle="realm-object-server-bundled_node_darwin-$REALM_OBJECT_SERVER_VERSION.tar.gz"
+  curl -f -L "https://static.realm.io/downloads/object-server/$object_server_bundle" -o "$object_server_bundle"
+  rm -rf tests/sync-bundle
+  mkdir -p tests/sync-bundle
+  tar -C tests/sync-bundle -xf "$object_server_bundle"
+  rm "$object_server_bundle"
+
+  echo -e "enterprise:\n  skip_setup: true\n" >> "tests/sync-bundle/object-server/configuration.yml"
+  touch "tests/sync-bundle/object-server/do_not_open_browser"
+  ;;
+"object-server-integration")
+  echo -e "yes\n" | ./tests/sync-bundle/reset-server-realms.command
+
+  pushd "$SRCROOT/tests"
+  npm install
+  npm run test-sync-integration
+  popd
   ;;
 *)
   echo "Invalid target '${TARGET}'"

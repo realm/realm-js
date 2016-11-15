@@ -35,7 +35,7 @@ class Protected {
     operator v8::Local<MemberType>() const {
         return Nan::New(m_value);
     }
-    operator bool() const {
+    explicit operator bool() const {
         return m_value.isEmpty();
     }
     bool operator==(const v8::Local<MemberType> &other) const {
@@ -50,6 +50,12 @@ class Protected {
     bool operator!=(const Protected<MemberType> &other) const {
         return m_value != other.m_value;
     }
+
+    struct Comparator {
+        bool operator()(const Protected<MemberType>& a, const Protected<MemberType>& b) const {
+            return Nan::New(a.m_value)->StrictEquals(Nan::New(b.m_value));
+        }
+    };
 };
 
 } // node
@@ -86,6 +92,14 @@ class Protected<node::Types::Function> : public node::Protected<v8::Function> {
   public:
     Protected() : node::Protected<v8::Function>() {}
     Protected(v8::Isolate* isolate, v8::Local<v8::Function> object) : node::Protected<v8::Function>(object) {}
+};
+
+template<typename T>
+struct GlobalCopyablePersistentTraits {
+    typedef v8::Persistent<T, GlobalCopyablePersistentTraits<T>> CopyablePersistent;
+    static const bool kResetInDestructor = false;
+    template<typename S, typename M>
+    static inline void Copy(const v8::Persistent<S, M> &source, CopyablePersistent *dest) {}
 };
 
 } // js

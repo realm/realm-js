@@ -38,15 +38,18 @@ export default class TodoApp extends React.Component {
     constructor(props) {
         super(props);
 
-        let todoLists = realm.objects('TodoList');
-        if (todoLists.length < 1) {
+        // This is a Results object, which will live-update.
+        this.todoLists = realm.objects('TodoList').sorted('creationDate');
+        if (this.todoLists.length < 1) {
             realm.write(() => {
-                realm.create('TodoList', {name: 'Todo List'});
+                realm.create('TodoList', {name: 'Todo List', creationDate: new Date()});
             });
         }
+        this.todoLists.addListener((name, changes) => {
+            console.log("changed: " + JSON.stringify(changes));
+        });
+        console.log("registered listener");
 
-        // This is a Results object, which will live-update.
-        this.todoLists = todoLists;
 
         // Bind all the methods that we will be passing as props.
         this.renderScene = this.renderScene.bind(this);
@@ -79,7 +82,6 @@ export default class TodoApp extends React.Component {
             component: TodoListView,
             passProps: {
                 ref: 'listView',
-                items: this.todoLists,
                 extraItems: extraItems,
                 onPressItem: this._onPressTodoList,
             },
@@ -105,7 +107,8 @@ export default class TodoApp extends React.Component {
     }
 
     renderScene(route) {
-        return <route.component {...route.passProps} />
+        console.log(this.todoLists);
+        return <route.component items={this.todoLists} {...route.passProps} />
     }
 
     _addNewTodoItem(list) {
@@ -128,7 +131,7 @@ export default class TodoApp extends React.Component {
         }
 
         realm.write(() => {
-            realm.create('TodoList', {name: ''});
+            realm.create('TodoList', {name: '', creationDate: new Date()});
         });
 
         this._setEditingRow(items.length - 1);
