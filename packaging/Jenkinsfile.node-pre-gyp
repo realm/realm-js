@@ -54,7 +54,7 @@ def doBuildLinux(dependencies) {
 
       dir('packaging/out/node-pre-gyp') {
         stash includes: "realm-*", name: "npm-linux"
-        archiveArtifacts "out/realm-*"
+        archiveArtifacts "realm-*"
       }
     }
   }
