@@ -31,5 +31,4 @@ setup_source "/tmp/build"
 
 nvm use 4.4.7
 
-output=$(npm pack | tail -n 1)
-cp $output /out
+cp out/* /out/
