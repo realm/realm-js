@@ -122,7 +122,9 @@ case "$TARGET" in
   xctest RealmJS
   ;;
 "react-tests")
-  ${SRCROOT}/scripts/reset-simulators.sh
+  if ! [ -z "${JENKINS_HOME}" ]; then
+    ${SRCROOT}/scripts/reset-simulators.sh
+  fi
 
   pushd tests/react-test-app
 
@@ -134,7 +136,9 @@ case "$TARGET" in
   xctest ReactTestApp || xctest ReactTestApp
   ;;
 "react-example")
-  ${SRCROOT}/scripts/reset-simulators.sh
+  if ! [ -z "${JENKINS_HOME}" ]; then
+    ${SRCROOT}/scripts/reset-simulators.sh
+  fi
 
   pushd examples/ReactExample
 
