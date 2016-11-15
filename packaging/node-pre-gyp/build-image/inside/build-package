@@ -12,8 +12,8 @@ trap 'chown -R --reference /inside/build-package /out/' EXIT
 REALM_CORE_VERSION=$(echo ${REALM_CORE_VERSION} | sed 's/-\([^g]\)/_\1/g')
 
 yum install -y \
-  realm-core-devel-${REALM_CORE_VERSION} \
-  realm-core-node-devel-${REALM_CORE_VERSION}
+  realm-devel-${REALM_CORE_VERSION} \
+  realm-node-devel-${REALM_CORE_VERSION}
 
 export NPM_CONFIG_UNSAFE_PERM=true # because we're running as root
 
