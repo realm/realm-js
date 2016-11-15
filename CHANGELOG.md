@@ -4,7 +4,8 @@
 * None
 
 ### Enhancements
-* Support for fine grained notifications
+* Node.js support
+* Support for fine grained notifications on `List` and `Results` objects
 * Updated test and examples for react-natve v0.37.0
 
 ### Bugfixes
