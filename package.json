@@ -1,7 +1,7 @@
 {
   "name": "realm",
   "description": "Realm is a mobile database: an alternative to SQLite and key-value stores",
-  "version": "0.15.0-rc",
+  "version": "0.15.0",
   "license": "Apache-2.0",
   "homepage": "https://realm.io",
   "keywords": [
@@ -44,10 +44,12 @@
     "get-version": "echo $npm_package_version",
     "set-version": "scripts/set-version.sh",
     "get-core-version": "scripts/download-core.sh --version",
+    "get-sync-version": "scripts/download-core.sh --versionSync",
     "jsdoc": "rm -rf docs/output && jsdoc -c docs/conf.json",
     "lint": "eslint",
     "test": "scripts/test.sh",
-    "install": "node-pre-gyp install --fallback-to-build"
+    "install": "node-pre-gyp install --fallback-to-build",
+    "prepublish": "scripts/prepublish.sh"
   },
   "dependencies": {
     "nan": "^2.3.3",

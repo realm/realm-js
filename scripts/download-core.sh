@@ -12,6 +12,9 @@ source_root="$(dirname "$0")"
 if [ "$1" = '--version' ]; then
     echo "$REALM_CORE_VERSION"
     exit 0
+elif [ "$1" = '--versionSync' ]; then
+    echo "$REALM_SYNC_VERSION"
+    exit 0
 fi
 
 # The 'node' argument will result in realm-node build being downloaded.

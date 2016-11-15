@@ -151,6 +151,7 @@ case "$TARGET" in
   ;;
 "react-tests-android")
   [[ $CONFIGURATION == 'Debug' ]] && exit 0
+  XCPRETTY=false
 
   pushd tests/react-test-app
 
