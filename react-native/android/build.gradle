@@ -33,12 +33,14 @@ import org.apache.tools.ant.filters.ReplaceTokens
 // After that we build native code from src/main/jni with module path pointing at third-party-ndk.
 
 ext.coreVersion = "npm --silent run get-core-version".execute().text.trim()
+ext.syncVersion = "npm --silent run get-sync-version".execute().text.trim()
 def currentVersion = "npm --silent run get-version".execute().text.trim()
 def downloadsDir = new File("$projectDir/downloads")
 def jscDownloadDir = new File("$projectDir/src/main/jni/jsc")
 def coreDownloadDir = new File("$projectDir/src/main/jni")
 def publishDir = new File("$projectDir/../../android/")
-
+// to build with sync run: ./gradlew assembleDebug -PbuildWithSync=true
+ext.buildSync = project.hasProperty('buildWithSync') ? project.getProperty('buildWithSync').toBoolean() : false
 
 task generateVersionClass(type: Copy) {
     from 'src/main/templates/Version.java'
@@ -64,10 +66,18 @@ task downloadJSCHeaders(type: Download) {
  }
 
 task downloadRealmCore(type: Download) {
-    src "https://static.realm.io/downloads/core/realm-core-android-${project.coreVersion}.tar.gz"
+    if (project.buildSync) {
+        src "https://static.realm.io/downloads/sync/realm-sync-android-${project.syncVersion}.tar.gz"
+    } else {
+        src "https://static.realm.io/downloads/core/realm-core-android-${project.coreVersion}.tar.gz"
+    }
     onlyIfNewer true
-    overwrite false
-    dest new File(downloadsDir, "realm-core-android-${project.coreVersion}.tar.gz")
+    overwrite true
+    if (project.buildSync) {
+        dest new File(downloadsDir, "realm-core-android-${project.syncVersion}.tar.gz")
+    } else {
+        dest new File(downloadsDir, "realm-core-android-${project.coreVersion}.tar.gz")
+    }
 }
 
 task prepareRealmCore(dependsOn: downloadRealmCore, type:Copy) {
@@ -139,6 +149,8 @@ task buildReactNdkLib(dependsOn: [downloadJSCHeaders,prepareRealmCore], type: Ex
     inputs.file('src/main/jni')
     outputs.dir("$buildDir/realm-react-ndk/all")
     commandLine getNdkBuildFullPath(),
+            '-e',
+            project.buildSync ? 'BUILD_TYPE_SYNC=1' : 'BUILD_TYPE_SYNC=0',
             'NDK_PROJECT_PATH=null',
             "NDK_APPLICATION_MK=$projectDir/src/main/jni/Application.mk",
             'NDK_OUT=' + temporaryDir,

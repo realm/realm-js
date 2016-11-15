@@ -259,6 +259,39 @@ class Collection {
      * @since 0.11.0
      */
     reduceRight(callback, initialValue) {}
+
+    /**
+     * Add a listener `callback` which will be called when a **live** collection instance changes.
+     * @param {function(collection, changes)} callback - A function to be called when changes occur.
+     *   The callback function is called with two arguments:
+     *   - `collection`: the collection instance that changed,
+     *   - `changes`: a dictionary with keys `insertions`, `modifications` and `deletions`,
+     *      each containing a list of indices that were inserted, updated or deleted respectively.
+     * @throws {Error} If `callback` is not a function.
+     * @example
+     * wines.addListener((collection, changes) => {
+     *  // collection === wines
+     *  console.log(`${changes.insertions.length} insertions`);
+     *  console.log(`${changes.modifications.length} modifications`);
+     *  console.log(`${changes.deletions.length} deletions`);
+     *  console.log(`new size of collection: ${collection.length}`);
+     * });
+     */
+    addListener(callback) {}
+
+    /**
+     * Remove the listener `callback` from the collection instance.
+     * @param {function(collection, changes)} callback - Callback function that was previously
+ *       added as a listener through the {@link Collection#addListener addListener} method.
+     * @throws {Error} If `callback` is not a function.
+     */
+    removeListener(callback) {}
+
+    /**
+     * Remove all `callback` listeners from the collection instance.
+     */
+    removeAllListeners(name) {}
+
 }
 
 /**

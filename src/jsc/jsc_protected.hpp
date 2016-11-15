@@ -57,6 +57,7 @@ class Protected<JSGlobalContextRef> {
 
 template<>
 class Protected<JSValueRef> {
+  protected:
     JSGlobalContextRef m_context;
     JSValueRef m_value;
 
@@ -112,7 +113,8 @@ class Protected<JSObjectRef> : public Protected<JSValueRef> {
     }
     
     Protected<JSObjectRef>& operator=(Protected<JSObjectRef> other) {
-        std::swap(*this, other);
+        std::swap(m_context, other.m_context);
+        std::swap(m_value, other.m_value);
         return *this;
     }
 };

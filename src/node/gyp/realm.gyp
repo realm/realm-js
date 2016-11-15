@@ -1,8 +1,18 @@
 {
   "variables": {
-    "use_realm_debug": "<!(echo $REALMJS_USE_DEBUG_CORE)",
-    "realm_enable_sync%": "0"
+    "use_realm_debug": "<!(echo $REALMJS_USE_DEBUG_CORE)"
   },
+  "conditions": [
+    ["OS=='mac'", {
+      "variables": {
+        "realm_enable_sync%": "0"
+      }
+    }, {
+      "variables": {
+        "realm_enable_sync%": "0"
+      }
+    }]
+  ],
   "targets": [
     {
       "target_name": "realm-core",
@@ -75,25 +85,27 @@
       "conditions": [
         ["realm_enable_sync", {
           "all_dependent_settings": {
-            "include_dirs": [ "<(module_root_dir)/vendor/realm-sync/include" ],
-            "library_dirs": [ "<(module_root_dir)/vendor/realm-sync/osx" ]
+            "include_dirs": [ "<(module_root_dir)/vendor/node-sync/include" ],
+            "library_dirs": [ "<(module_root_dir)/vendor/node-sync/osx" ]
           }
         }, {
           "all_dependent_settings": {
             "include_dirs": [ "<(module_root_dir)/vendor/core-node/include" ],
             "library_dirs": [ "<(module_root_dir)/vendor/core-node" ]
           },
+
+        }],
+        ["realm_download_binaries", {
           "actions": [
             {
               "action_name": "download-realm",
-               "inputs": [ ],
-               "outputs": [ "<(module_root_dir)/vendor/core-node" ],
-               "action": [ "<(module_root_dir)/scripts/download-core.sh", "node" ]
+              "inputs": [ ],
+              "outputs": [ "<(module_root_dir)/vendor/core-node" ],
+              "action": [ "<(module_root_dir)/scripts/download-core.sh", "node", "<(realm_enable_sync)" ]
             }
           ]
         }]
       ]
-      
     }
   ]
 }

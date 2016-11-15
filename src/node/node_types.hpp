@@ -34,6 +34,8 @@
 #define REALM_V8_ARRAY_BUFFER_API 1
 #endif
 
+#define HANDLESCOPE Nan::HandleScope handle_scope;
+
 namespace realm {
 namespace node {
 
@@ -44,7 +46,6 @@ struct Types {
     using Object = v8::Local<v8::Object>;
     using String = v8::Local<v8::String>;
     using Function = v8::Local<v8::Function>;
-    using HandleScope = Nan::HandleScope;
 
     using ConstructorCallback = v8::FunctionCallback;
     using FunctionCallback = v8::FunctionCallback;

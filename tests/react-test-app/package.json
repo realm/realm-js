@@ -6,8 +6,8 @@
     "start": "react-native start"
   },
   "dependencies": {
-    "react": "~15.3.1",
-    "react-native": "^0.34.0",
+    "react": "15.3.2",
+    "react-native": "^0.37.0",
     "react-native-fs": "^1.1.0",
     "realm": "file:../..",
     "realm-tests": "file:../js",

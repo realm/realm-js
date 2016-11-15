@@ -1,7 +1,7 @@
 {
   "name": "realm",
   "description": "Realm is a mobile database: an alternative to SQLite and key-value stores",
-  "version": "0.14.3-6",
+  "version": "0.15.0-rc",
   "license": "Apache-2.0",
   "homepage": "https://realm.io",
   "keywords": [
@@ -14,7 +14,8 @@
     "sqlite",
     "asyncstorage",
     "rocksdb",
-    "leveldb"
+    "leveldb",
+    "realm"
   ],
   "author": {
     "name": "Realm",
@@ -36,28 +37,32 @@
     "scripts",
     "src",
     "vendor",
-    "binding.gyp"
+    "binding.gyp",
+    "dependencies.list"
   ],
   "scripts": {
     "get-version": "echo $npm_package_version",
     "set-version": "scripts/set-version.sh",
     "get-core-version": "scripts/download-core.sh --version",
+    "get-sync-version": "scripts/download-core.sh --versionSync",
     "jsdoc": "rm -rf docs/output && jsdoc -c docs/conf.json",
     "lint": "eslint",
     "test": "scripts/test.sh",
-    "install": "node-pre-gyp install --fallback-to-build"
+    "install": "node-pre-gyp install --fallback-to-build",
+    "prepublish": "scripts/prepublish.sh"
   },
   "dependencies": {
     "nan": "^2.3.3",
+    "needle": "^1.3.0",
     "node-pre-gyp": "^0.6.30",
-    "request": "^2.74.0",
     "sync-request": "^3.0.1",
-    "url": "^0.11.0"
+    "url-parse": "^1.1.7"
   },
   "devDependencies": {
     "babel-eslint": "^6.0.4",
-    "eslint": "^2.10.2",
-    "eslint-plugin-react": "^5.1.1",
+    "eslint": "^3.2.2",
+    "eslint-plugin-jasmine": "^2.1.0",
+    "eslint-plugin-react": "^6.7.0",
     "jsdoc": "^3.4.0",
     "semver": "^5.1.0"
   },

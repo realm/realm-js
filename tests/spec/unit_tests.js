@@ -59,7 +59,6 @@ for (const suiteName in tests) {
                 catch (e) {
                     fail(e);
                 }
-
             });
         }
 

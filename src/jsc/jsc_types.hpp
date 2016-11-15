@@ -24,6 +24,8 @@
 
 #include "js_types.hpp"
 
+#define HANDLESCOPE
+
 namespace realm {
 namespace jsc {
 
@@ -34,7 +36,6 @@ struct Types {
     using Object = JSObjectRef;
     using String = JSStringRef;
     using Function = JSObjectRef;
-    using HandleScope = void *;
 
     using ConstructorCallback = JSObjectCallAsConstructorCallback;
     using FunctionCallback = JSObjectCallAsFunctionCallback;

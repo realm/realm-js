@@ -1,6 +1,7 @@
 {
   "variables": {
-    "realm_node_build_as_library%": "0"
+    "realm_node_build_as_library%": "0",
+    "realm_download_binaries%": "1"
   },
   "includes": [
     "src/node/gyp/target_defaults.gypi",
@@ -62,7 +63,7 @@
         "src/object-store/src/parser/parser.cpp",
         "src/object-store/src/parser/query_builder.cpp",
         "src/object-store/src/util/format.cpp",
-        "src/object-store/src/util/thread_id.cpp"
+        "src/object-store/src/util/thread_id.cpp",
       ],
       "conditions": [
         ["OS=='linux'", {
@@ -72,19 +73,23 @@
         }],
         ["OS=='mac'", {
           "sources": [
-            "src/object-store/src/impl/apple/external_commit_helper.cpp"
+            "src/object-store/src/impl/apple/external_commit_helper.cpp",
+            "src/object-store/src/impl/apple/keychain_helper.cpp"
           ]
         }],
         ["realm_enable_sync", {
           "dependencies": [ "realm-sync" ],
           "sources": [
-            "src/object-store/src/sync_manager.cpp",
-            "src/object-store/src/sync_session.cpp"
-          ]
+            "src/object-store/src/sync/sync_manager.cpp",
+            "src/object-store/src/sync/sync_user.cpp",
+            "src/object-store/src/sync/sync_session.cpp",
+            "src/object-store/src/sync/impl/sync_file.cpp",
+            "src/object-store/src/sync/impl/sync_metadata.cpp"
+          ],
         }]
       ],
       "all_dependent_settings": {
-        "include_dirs": [ 
+        "include_dirs": [
           "src/object-store/src",
           "src/object-store/src/impl",
           "src/object-store/src/impl/apple",

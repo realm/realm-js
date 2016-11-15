@@ -16,17 +16,24 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#pragma once
+/* eslint-env es6, node */
+/* eslint-disable no-console */
 
-#include <JavaScriptCore/JSBase.h>
+'use strict';
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+const Realm = require('realm');
 
-JSObjectRef RJSConstructorCreate(JSContextRef ctx);
-void RJSInitializeInContext(JSContextRef ctx);
+const userTests = require('../js/user-tests');
+describe('SyncTests', () => {
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = 30000;
+    beforeEach(() => Realm.clearTestState());
+    afterEach(() => Realm.clearTestState());
 
-#ifdef __cplusplus
-}
-#endif
+    for (const testName in userTests) {
+        it(testName, (done) => {
+            userTests[testName]()
+              .catch((e) => fail(e))
+              .then(done);
+        });
+    }
+});

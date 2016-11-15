@@ -6,11 +6,16 @@
     "es6-promise": "^3.2.1",
     "jasmine": "^2.5.1",
     "jasmine-console-reporter": "^1.2.7",
-    "jasmine-reporters": "^2.2.0"
+    "jasmine-reporters": "^2.2.0",
+    "needle": "^1.3.0",
+    "terminate": "^1.0.8",
+    "tmp": "^0.0.30",
+    "url-parse": "^1.1.7"
   },
   "scripts": {
-      "test": "jasmine spec/unit_tests.js",
-      "test-sync": "jasmine spec/sync_integration_tests.js",
-      "postinstall": "rm -f node_modules/realm && ln -s ../.. node_modules/realm"
+    "test": "jasmine spec/unit_tests.js spec/sync_tests.js",
+    "test-nosync": "jasmine spec/unit_tests.js",
+    "test-sync-integration": "jasmine spec/sync_integration_tests.js",
+    "postinstall": "rm -f node_modules/realm && ln -s ../.. node_modules/realm"
   }
 }
