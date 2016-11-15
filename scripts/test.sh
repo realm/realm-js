@@ -123,7 +123,7 @@ case "$TARGET" in
   ;;
 "react-tests")
   if ! [ -z "${JENKINS_HOME}" ]; then
-    ${SRCROOT}/scripts/reset-simulators.sh 
+    ${SRCROOT}/scripts/reset-simulators.sh
   fi
 
   pushd tests/react-test-app
@@ -137,9 +137,9 @@ case "$TARGET" in
   ;;
 "react-example")
   if ! [ -z "${JENKINS_HOME}" ]; then
-    ${SRCROOT}/scripts/reset-simulators.sh 
+    ${SRCROOT}/scripts/reset-simulators.sh
   fi
-  
+
   pushd examples/ReactExample
 
   npm install
@@ -186,10 +186,11 @@ case "$TARGET" in
     download_server
     start_server
     npm_tests_cmd="npm run test"
+    npm install --build-from-source --realm_enable_sync
   else
     npm_tests_cmd="npm run test-nosync"
+    npm install --build-from-source
   fi
-  npm install --build-from-source
 
   # Change to a temp directory.
   cd "$(mktemp -q -d -t realm.node.XXXXXX)"
