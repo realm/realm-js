@@ -46,7 +46,7 @@ def doBuildLinux(dependencies) {
 
       docker.withRegistry("https://${env.DOCKER_REGISTRY}", "ecr:eu-west-1:aws-ci-user") {
         withCredentials([[$class: 'StringBinding', credentialsId: 'packagecloud-sync-devel-master-token', variable: 'PACKAGECLOUD_MASTER_TOKEN']]) {
-          withEnv(["EXTRA_NPM_ARGUMENTS='--realm_download_binaries=0'"]) {
+          withEnv(["EXTRA_NPM_ARGUMENTS=--realm_download_binaries=0"]) {
             sh 'sh packaging/package.sh node-pre-gyp'
           }
         }
