@@ -5,7 +5,7 @@
   "conditions": [
     ["OS=='mac'", {
       "variables": {
-        "realm_enable_sync%": "1"
+        "realm_enable_sync%": "0"
       }
     }, {
       "variables": {
