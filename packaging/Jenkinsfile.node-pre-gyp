@@ -2,12 +2,40 @@
 
 repoName = 'realm-js' // This is a global variable
 
+def setBuildName(newBuildName) {
+  currentBuild.displayName = "${currentBuild.displayName} - ${newBuildName}"
+}
+
 def unstashSources() {
   sshagent(['realm-ci-ssh']) {
     sh 'rm -rf * .git'
     checkout scm
     sh 'git clean -ffdx -e .????????'
     sh 'git submodule update --init --recursive'
+  }
+}
+
+def readGitTag() {
+  sh "git describe --exact-match --tags HEAD | tail -n 1 > tag.txt 2>&1 || true"
+  def tag = readFile('tag.txt').trim()
+  return tag
+}
+
+def readGitSha() {
+  sh "git rev-parse HEAD | cut -b1-8 > sha.txt"
+  def sha = readFile('sha.txt').readLines().last().trim()
+  return sha
+}
+
+def getVersion(){
+  def dependencies = readProperties file: 'dependencies.list'
+  def gitTag = readGitTag()
+  def gitSha = readGitSha()
+  if (gitTag == "") {
+    return "${dependencies.VERSION}-g${gitSha}"
+  }
+  else {
+    return dependencies.VERSION
   }
 }
 
