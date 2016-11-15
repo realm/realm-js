@@ -1,0 +1,86 @@
+#!groovy
+
+repoName = 'realm-js' // This is a global variable
+
+def unstashSources() {
+  sshagent(['realm-ci-ssh']) {
+    sh 'rm -rf * .git'
+    checkout scm
+    sh 'git clean -ffdx -e .????????'
+    sh 'git submodule update --init --recursive'
+  }
+}
+
+def doBuildLinux(dependencies) {
+  return {
+    node('docker') {
+      unstashSources()
+
+      docker.withRegistry("https://${env.DOCKER_REGISTRY}", "ecr:eu-west-1:aws-ci-user") {
+        withCredentials([[$class: 'StringBinding', credentialsId: 'packagecloud-sync-devel-master-token', variable: 'PACKAGECLOUD_MASTER_TOKEN']]) {
+          sh 'sh packaging/package.sh node-pre-gyp'
+        }
+      }
+
+      dir('packaging/out/node-pre-gyp') {
+        stash includes: "realm-*", name: "npm-linux"
+        archiveArtifacts "out/realm-*"
+      }
+    }
+  }
+}
+
+def doBuildMac(dependencies) {
+  return {
+    node('osx_vegas') {
+      unstashSources()
+          sh '''
+            ./scripts/build-node-pre-gyp.sh
+            tar cvfz darwin-compiled.tgz compiled/
+          '''
+      stash includes: 'out/realm-*', name: "compiled-mac"
+      archiveArtifacts "out/realm-*"
+    }
+  }
+}
+
+def doBuild(dependencies) {
+    parallel(
+      "build_mac": doBuildMac(dependencies),
+      "build_linux": doBuildLinux(dependencies)
+    )
+}
+
+def gitTag
+def gitSha
+def dependencies
+def version
+
+stage 'check'
+node('docker') {
+  unstashSources()
+  dependencies = readProperties file: 'dependencies.list'
+  echo "VERSION: ${dependencies.VERSION}"
+  echo "NODEJS_REALM_VERSION: ${dependencies.NODEJS_REALM_VERSION}"
+  echo "NODEJS_REALM_SERVER_VERSION: ${dependencies.NODEJS_REALM_SERVER_VERSION}"
+
+  gitTag = readGitTag()
+  gitSha = readGitSha()
+  version = getVersion()
+  echo "tag: ${gitTag}"
+  if (gitTag == "") {
+    echo "No tag given for this build"
+    setBuildName("${gitSha}")
+  } else {
+    if (gitTag != "v${dependencies.VERSION}") {
+      echo "Git tag '${gitTag}' does not match v${dependencies.VERSION}"
+    } else {
+      echo "Building release: '${gitTag}'"
+      setBuildName("Tag ${gitTag}")
+    }
+  }
+
+  echo "version: ${version}"
+}
+
+doBuild(dependencies)
