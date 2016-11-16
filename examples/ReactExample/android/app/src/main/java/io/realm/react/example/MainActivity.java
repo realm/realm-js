@@ -13,12 +13,4 @@ public class MainActivity extends ReactActivity {
         return "ReactExample";
     }
 
-    /**
-     * Returns whether dev mode should be enabled.
-     * This enables e.g. the dev menu.
-     */
-    @Override
-    protected boolean getUseDeveloperSupport() {
-        return BuildConfig.DEBUG;
-    }
 }

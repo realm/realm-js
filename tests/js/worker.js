@@ -31,7 +31,9 @@ class Worker {
         });
     }
     postMessage(message) {
-        this._process.send(message);
+        if (this._process) {
+            this._process.send(message);
+        }
     }
     terminate() {
         if (this._process) {

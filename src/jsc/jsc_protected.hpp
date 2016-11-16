@@ -47,10 +47,17 @@ class Protected<JSGlobalContextRef> {
     operator bool() const {
         return m_context != nullptr;
     }
+    
+    struct Comparator {
+        bool operator() (const Protected<JSGlobalContextRef>& a, const Protected<JSGlobalContextRef>& b) const {
+            return a.m_context == b.m_context;
+        }
+    };
 };
 
 template<>
 class Protected<JSValueRef> {
+  protected:
     JSGlobalContextRef m_context;
     JSValueRef m_value;
 
@@ -75,6 +82,21 @@ class Protected<JSValueRef> {
     operator bool() const {
         return m_value != nullptr;
     }
+    
+    struct Comparator {
+        bool operator() (const Protected<JSValueRef>& a, const Protected<JSValueRef>& b) const {
+            if (a.m_context != b.m_context) {
+                return false;
+            }
+            return JSValueIsStrictEqual(a.m_context, a.m_value, b.m_value);
+        }
+    };
+    
+    Protected<JSValueRef>& operator=(Protected<JSValueRef> other) {
+        std::swap(m_context, other.m_context);
+        std::swap(m_value, other.m_value);
+        return *this;
+    }
 };
 
 template<>
@@ -88,6 +110,12 @@ class Protected<JSObjectRef> : public Protected<JSValueRef> {
     operator JSObjectRef() const {
         JSValueRef value = static_cast<JSValueRef>(*this);
         return (JSObjectRef)value;
+    }
+    
+    Protected<JSObjectRef>& operator=(Protected<JSObjectRef> other) {
+        std::swap(m_context, other.m_context);
+        std::swap(m_value, other.m_value);
+        return *this;
     }
 };
 

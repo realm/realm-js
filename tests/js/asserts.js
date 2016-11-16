@@ -49,6 +49,19 @@ module.exports = {
         }
     },
 
+    assertArray: function(value, length, errorMessage) {
+        if (!Array.isArray(value)) {
+            throw new TestFailureError(errorMessage || `Value ${value} is not an array`);
+        }
+    },
+
+    assertArrayLength: function(value, length, errorMessage) {
+        this.assertArray(value);
+        if (value.length !== length) {
+            throw new TestFailureError(errorMessage || `Value ${value} is not an array of length ${length}`);
+        }
+    },
+
     assertArraysEqual: function(val1, val2, errorMessage) {
         var len1 = val1.length;
         var len2 = val2.length;
@@ -106,7 +119,23 @@ module.exports = {
 
     assertTrue: function(condition, errorMessage) {
         if (!condition) {
-            throw new TestFailureError(errorMessage || 'Condition expected to be true');
+            throw new TestFailureError(errorMessage || `Condition ${condition} expected to be true`);
+        }
+    },
+
+    assertInstanceOf: function(object, type, errorMessage) {
+        if (!(object instanceof type)) {
+            throw new TestFailureError(errorMessage || `Object ${object} expected to be of type ${type}`);
+        }
+    },
+
+    assertType: function(value, type) {
+        this.assertEqual(typeof value, type, `Value ${value} expected to be of type ${type}`);
+    },
+
+    assertUndefined: function(value, errorMessage) {
+        if (value !== undefined) {
+            throw new TestFailureError(errorMessage || `Value ${value} expected to be undefined`);
         }
     },
 

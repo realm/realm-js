@@ -133,6 +133,11 @@ struct Function {
     using ValueType = typename T::Value;
 
     static ValueType call(ContextType, const FunctionType &, const ObjectType &, size_t, const ValueType[]);
+    template<size_t N> static ValueType call(ContextType ctx, const FunctionType &function,
+                                             const ObjectType &this_object, const ValueType (&arguments)[N])
+    {
+        return call(ctx, function, this_object, N, arguments);
+    }
     static ValueType call(ContextType ctx, const FunctionType &function, size_t argument_count, const ValueType arguments[]) {
         return call(ctx, function, {}, argument_count, arguments);
     }
@@ -164,6 +169,9 @@ struct Object {
     static void set_property(ContextType, const ObjectType &, const String<T> &, const ValueType &, PropertyAttributes attributes = None);
     static void set_property(ContextType, const ObjectType &, uint32_t, const ValueType &);
     static std::vector<String<T>> get_property_names(ContextType, const ObjectType &);
+
+    static void set_global(ContextType, const String<T> &, const ValueType &);
+    static ValueType get_global(ContextType, const String<T> &);
 
     template<typename P>
     static ValueType validated_get_property(ContextType ctx, const ObjectType &object, const P &property, const char *message = nullptr) {
@@ -247,6 +255,10 @@ class Protected {
     bool operator!=(const ValueType &) const;
     bool operator==(const Protected<ValueType> &) const;
     bool operator!=(const Protected<ValueType> &) const;
+
+    struct Comparator {
+        bool operator()(const Protected<ValueType>& a, const Protected<ValueType>& b) const;
+    };
 };
 
 template<typename T>

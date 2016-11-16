@@ -75,6 +75,9 @@ static NSString * const RJSModuleLoaderErrorDomain = @"RJSModuleLoaderErrorDomai
 - (JSValue *)loadModuleFromURL:(NSURL *)url error:(NSError **)error {
     url = url.absoluteURL;
     url = url.standardizedURL ?: url;
+    if (url.pathExtension.length == 0) {
+        url = [url URLByAppendingPathExtension:@"js"];
+    }
 
     NSString *path = url.path;
     JSValue *exports = self.modules[path];
@@ -156,7 +159,10 @@ static NSString * const RJSModuleLoaderErrorDomain = @"RJSModuleLoaderErrorDomai
 - (JSValue *)loadJSONFromURL:(NSURL *)url error:(NSError **)error {
     url = url.absoluteURL;
     url = url.standardizedURL ?: url;
-
+    if (url.pathExtension.length == 0) {
+        url = [url URLByAppendingPathExtension:@"js"];
+    }
+    
     NSString *path = url.path;
     JSValue *exports = self.modules[path];
     if (exports) {
@@ -195,6 +201,18 @@ static NSString * const RJSModuleLoaderErrorDomain = @"RJSModuleLoaderErrorDomai
         BOOL isDirectory;
 
         if ([fileManager fileExistsAtPath:moduleURL.path isDirectory:&isDirectory] && isDirectory) {
+            NSURL *packageURL = [moduleURL URLByAppendingPathComponent:@"package.json"];
+            NSDictionary *package;
+
+            if ([fileManager fileExistsAtPath:packageURL.path]) {
+                NSError *error;
+                NSData *data = [NSData dataWithContentsOfURL:packageURL options:0 error:&error];
+
+                package = data ? [NSJSONSerialization JSONObjectWithData:data options:0 error:&error] : nil;
+                NSAssert(package, @"%@", error);
+            }
+
+            moduleURL = [moduleURL URLByAppendingPathComponent:package[@"main"] ?: @"index.js"];
             return [self loadModuleFromURL:moduleURL error:error];
         }
 

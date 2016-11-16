@@ -8,5 +8,5 @@ cd "$(dirname "$0")/.."
 
 if [ -n "$REALM_BUILD_ANDROID" ]; then
   rm -rf android
-  (cd react-native/android && ./gradlew publishAndroid)
+  (cd react-native/android && ./gradlew publishAndroid -PbuildWithSync=true)
 fi

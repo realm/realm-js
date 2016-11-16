@@ -1,7 +1,7 @@
 {
   "env": {
-    "es6": true,
-    "worker": true
+    "worker": true,
+    "node": false
   },
   "globals": {
     "global": true

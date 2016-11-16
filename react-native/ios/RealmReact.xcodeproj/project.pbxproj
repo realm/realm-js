@@ -247,6 +247,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CC = "$(SRCROOT)/../../scripts/ccache-clang.sh";
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
 				CLANG_CXX_LIBRARY = "libc++";
@@ -263,6 +264,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
+				CXX = "$(SRCROOT)/../../scripts/ccache-clang++.sh";
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
@@ -296,6 +298,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CC = "$(SRCROOT)/../../scripts/ccache-clang.sh";
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
 				CLANG_CXX_LIBRARY = "libc++";
@@ -312,6 +315,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
+				CXX = "$(SRCROOT)/../../scripts/ccache-clang++.sh";
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
@@ -341,11 +345,12 @@
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SRCROOT)/../../src/**",
-					"$(SRCROOT)/../../vendor",
+					"$(SRCROOT)/../../vendor/core/include",
 					"$(SRCROOT)/../../vendor/GCDWebServer/GCDWebServer/**",
 					"$(SRCROOT)/../../../react-native/React/**",
 					"$(SRCROOT)/../../tests/react-test-app/node_modules/react-native/React/**",
 					"$(SRCROOT)/../../examples/ReactExample/node_modules/react-native/React/**",
+					"$(SRCROOT)/../../vendor",
 				);
 				OTHER_LIBTOOLFLAGS = "$(BUILT_PRODUCTS_DIR)/libRealmJS.a $(BUILT_PRODUCTS_DIR)/libGCDWebServers.a";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -359,11 +364,12 @@
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SRCROOT)/../../src/**",
-					"$(SRCROOT)/../../vendor",
+					"$(SRCROOT)/../../vendor/core/include",
 					"$(SRCROOT)/../../vendor/GCDWebServer/GCDWebServer/**",
 					"$(SRCROOT)/../../../react-native/React/**",
 					"$(SRCROOT)/../../tests/react-test-app/node_modules/react-native/React/**",
 					"$(SRCROOT)/../../examples/ReactExample/node_modules/react-native/React/**",
+					"$(SRCROOT)/../../vendor",
 				);
 				OTHER_LIBTOOLFLAGS = "$(BUILT_PRODUCTS_DIR)/libRealmJS.a";
 				PRODUCT_NAME = "$(TARGET_NAME)";

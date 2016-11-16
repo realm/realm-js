@@ -28,6 +28,13 @@
 #include "js_list.hpp"
 #include "js_results.hpp"
 #include "js_schema.hpp"
+#include "js_observable.hpp"
+
+#if REALM_ENABLE_SYNC
+#include "js_sync.hpp"
+#include "sync/sync_config.hpp"
+#include "sync/sync_manager.hpp"
+#endif
 
 #include "shared_realm.hpp"
 #include "binding_context.hpp"
@@ -99,8 +106,10 @@ class RealmDelegate : public BindingContext {
     Protected<GlobalContextType> m_context;
     std::list<Protected<FunctionType>> m_notifications;
     std::weak_ptr<realm::Realm> m_realm;
-    
+
     void notify(const char *notification_name) {
+        HANDLESCOPE
+
         SharedRealm realm = m_realm.lock();
         if (!realm) {
             throw std::runtime_error("Realm no longer exists");
@@ -111,7 +120,8 @@ class RealmDelegate : public BindingContext {
         arguments[0] = realm_object;
         arguments[1] = Value::from_string(m_context, notification_name);
 
-        for (auto &callback : m_notifications) {
+        std::list<Protected<FunctionType>> notifications_copy(m_notifications);
+        for (auto &callback : notifications_copy) {
             Function<T>::call(m_context, callback, realm_object, 2, arguments);
         }
     }
@@ -124,7 +134,7 @@ void set_default_path(std::string path);
 void delete_all_realms();
 
 template<typename T>
-class RealmClass : public ClassDefinition<T, SharedRealm> {
+class RealmClass : public ClassDefinition<T, SharedRealm, ObservableClass<T>> {
     using GlobalContextType = typename T::GlobalContext;
     using ContextType = typename T::Context;
     using FunctionType = typename T::Function;
@@ -162,23 +172,23 @@ public:
     static void schema_version(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void clear_test_state(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void copy_bundled_realm_files(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
-    
+
     // static properties
     static void get_default_path(ContextType, ObjectType, ReturnValue &);
     static void set_default_path(ContextType, ObjectType, ValueType value);
 
     std::string const name = "Realm";
-    
+
     MethodMap<T> const static_methods = {
         {"schemaVersion", wrap<schema_version>},
         {"clearTestState", wrap<clear_test_state>},
         {"copyBundledRealmFiles", wrap<copy_bundled_realm_files>},
     };
-    
+
     PropertyMap<T> const static_properties = {
         {"defaultPath", {wrap<get_default_path>, wrap<set_default_path>}},
     };
-    
+
     MethodMap<T> const methods = {
         {"objects", wrap<objects>},
         {"objectForPrimaryKey", wrap<object_for_primary_key>},
@@ -191,14 +201,14 @@ public:
         {"removeAllListeners", wrap<remove_all_listeners>},
         {"close", wrap<close>},
     };
-    
+
     PropertyMap<T> const properties = {
         {"path", {wrap<get_path>, nullptr}},
         {"schemaVersion", {wrap<get_schema_version>, nullptr}},
         {"schema", {wrap<get_schema>, nullptr}},
         {"readOnly", {wrap<get_read_only>, nullptr}},
     };
-    
+
   private:
     static std::string validated_notification_name(ContextType ctx, const ValueType &value) {
         std::string name = Value::validated_to_string(ctx, value, "notification name");
@@ -207,13 +217,13 @@ public:
         }
         return name;
     }
-    
+
     static const ObjectSchema& validated_object_schema_for_value(ContextType ctx, const SharedRealm &realm, const ValueType &value) {
         std::string object_type;
 
         if (Value::is_constructor(ctx, value)) {
             FunctionType constructor = Value::to_constructor(ctx, value);
-            
+
             auto delegate = get_delegate<T>(realm.get());
             for (auto &pair : delegate->m_constructors) {
                 if (FunctionType(pair.second) == constructor) {
@@ -238,7 +248,7 @@ public:
         }
         return *object_schema;
     }
-    
+
     static std::string normalize_path(std::string path) {
         if (path.size() && path[0] != '/' && path[0] != '.') {
             return default_realm_file_directory() + "/" + path;
@@ -261,9 +271,15 @@ inline typename T::Function RealmClass<T>::create_constructor(ContextType ctx) {
     Object::set_property(ctx, realm_constructor, "Results", results_constructor, attributes);
     Object::set_property(ctx, realm_constructor, "Object", realm_object_constructor, attributes);
 
+#if REALM_ENABLE_SYNC
+    FunctionType sync_constructor = SyncClass<T>::create_constructor(ctx);
+    Object::set_property(ctx, realm_constructor, "Sync", sync_constructor, attributes);
+#endif
+
+    Object::set_global(ctx, "Realm", realm_constructor);
     return realm_constructor;
 }
-    
+
 static inline void convert_outdated_datetime_columns(const SharedRealm &realm) {
     realm::util::Optional<int> old_file_format_version = realm->file_format_upgraded_from_version();
     if (old_file_format_version && old_file_format_version < 5) {
@@ -275,7 +291,7 @@ static inline void convert_outdated_datetime_columns(const SharedRealm &realm) {
                     if (!realm->is_in_transaction()) {
                         realm->begin_transaction();
                     }
-                    
+
                     for (size_t row_index = 0; row_index < table->size(); row_index++) {
                         if (table->is_null(property.table_column, row_index)) {
                             continue;
@@ -318,7 +334,7 @@ void RealmClass<T>::constructor(ContextType ctx, ObjectType this_object, size_t 
             else {
                 config.path = js::default_path();
             }
-            
+
             static const String read_only_string = "readOnly";
             ValueType read_only_value = Object::get_property(ctx, object, read_only_string);
             if (!Value::is_undefined(ctx, read_only_value) && Value::validated_to_boolean(ctx, read_only_value, "readOnly")) {
@@ -338,7 +354,7 @@ void RealmClass<T>::constructor(ContextType ctx, ObjectType this_object, size_t 
             if (!Value::is_undefined(ctx, version_value)) {
                 config.schema_version = Value::validated_to_number(ctx, version_value, "schemaVersion");
             }
-            else {
+            else if (schema_updated) {
                 config.schema_version = 0;
             }
 
@@ -353,7 +369,7 @@ void RealmClass<T>::constructor(ContextType ctx, ObjectType this_object, size_t 
                         create_object<T, RealmClass<T>>(ctx, old_realm_ptr),
                         create_object<T, RealmClass<T>>(ctx, realm_ptr)
                     };
-                    
+
                     try {
                         Function<T>::call(ctx, migration_function, 2, arguments);
                     }
@@ -363,7 +379,7 @@ void RealmClass<T>::constructor(ContextType ctx, ObjectType this_object, size_t 
                         realm_ptr->reset();
                         throw;
                     }
-                    
+
                     old_realm->close();
                     old_realm_ptr->reset();
                     realm_ptr->reset();
@@ -376,12 +392,15 @@ void RealmClass<T>::constructor(ContextType ctx, ObjectType this_object, size_t 
                 std::string encryption_key = NativeAccessor::to_binary(ctx, encryption_key_value);
                 config.encryption_key = std::vector<char>(encryption_key.begin(), encryption_key.end());
             }
+#if REALM_ENABLE_SYNC
+            SyncClass<T>::populate_sync_config(ctx, Value::validated_to_object(ctx, Object::get_global(ctx, "Realm")), object, config);
+#endif
         }
     }
     else {
         throw std::runtime_error("Invalid arguments when constructing 'Realm'");
     }
-    
+
     config.path = normalize_path(config.path);
     ensure_directory_exists_for_file(config.path);
 
@@ -403,7 +422,7 @@ void RealmClass<T>::constructor(ContextType ctx, ObjectType this_object, size_t 
         js_binding_context->m_defaults = std::move(defaults);
         js_binding_context->m_constructors = std::move(constructors);
     }
-    
+
     // Fix for datetime -> timestamp conversion
     convert_outdated_datetime_columns(realm);
 
@@ -413,7 +432,7 @@ void RealmClass<T>::constructor(ContextType ctx, ObjectType this_object, size_t 
 template<typename T>
 void RealmClass<T>::schema_version(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 1, 2);
-    
+
     realm::Realm::Config config;
     config.path = normalize_path(Value::validated_to_string(ctx, arguments[0]));
     if (argc == 2) {
@@ -421,7 +440,7 @@ void RealmClass<T>::schema_version(ContextType ctx, ObjectType this_object, size
         std::string encryptionKey = NativeAccessor::to_binary(ctx, encryptionKeyValue);
         config.encryption_key = std::vector<char>(encryptionKey.begin(), encryptionKey.end());
     }
-    
+
     auto version = realm::Realm::get_schema_version(config);
     if (version == ObjectStore::NotVersioned) {
         return_value.set(-1);
@@ -431,12 +450,20 @@ void RealmClass<T>::schema_version(ContextType ctx, ObjectType this_object, size
     }
 }
 
+
 template<typename T>
 void RealmClass<T>::clear_test_state(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 0);
+#if REALM_ENABLE_SYNC
+    for(auto &user : SyncManager::shared().all_users()) {
+        user->log_out();
+    }
+    SyncManager::shared().reset_for_testing();
+    SyncManager::shared().configure_file_system(default_realm_file_directory(), SyncManager::MetadataMode::NoEncryption);
+#endif
     delete_all_realms();
 }
-    
+
 template<typename T>
 void RealmClass<T>::copy_bundled_realm_files(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 0);

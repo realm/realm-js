@@ -33,7 +33,7 @@ module.exports = {
 
     testRealmConstructorPath: function() {
         TestCase.assertThrows(function() {
-            new Realm('/invalidpath');
+            new Realm('');
         }, 'Realm cannot be created with an invalid path');
         TestCase.assertThrows(function() {
             new Realm('test1.realm', 'invalidArgument');

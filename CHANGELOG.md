@@ -1,10 +1,12 @@
-x.x.x Release notes (yyyy-MM-dd)
+0.15.0 Release notes (2016-11-15)
 =============================================================
 ### Breaking changes
 * None
 
 ### Enhancements
-* None
+* Node.js support
+* Support for fine grained notifications on `List` and `Results` objects
+* Updated test and examples for react-natve v0.37.0
 
 ### Bugfixes
 * None

@@ -20,7 +20,9 @@
  * Instances of this class are typically **live** collections returned by
  * {@link Realm#objects objects()} that will update as new objects are either
  * added to or deleted from the Realm that match the underlying query. Results returned by
- * {@link Realm.Results#snapshot snapshot()}, however, are will **not** live update.
+ * {@link Realm.Results#snapshot snapshot()}, however, will **not** live update
+ * (and listener callbacks added through {@link Realm.Results#addListener addListener()}
+ * will thus never be called).
  * @extends Realm.Collection
  * @memberof Realm
  */
