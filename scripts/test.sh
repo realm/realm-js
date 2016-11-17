@@ -112,6 +112,11 @@ case "$TARGET" in
   npm install
   npm run lint .
   ;;
+"eslint-ci")
+  [[ $CONFIGURATION == 'Debug' ]] && exit 0
+  npm install
+  ./node_modules/.bin/eslint -f checkstyle . > eslint.xml || true
+  ;;
 "jsdoc")
   [[ $CONFIGURATION == 'Debug' ]] && exit 0
   npm install
