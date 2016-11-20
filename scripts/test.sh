@@ -11,7 +11,7 @@ CONFIGURATION="${2:-"Release"}"
 DESTINATION=
 PATH="/opt/android-sdk-linux/platform-tools:$PATH"
 SRCROOT=$(cd "$(dirname "$0")/.." && pwd)
-XCPRETTY=true
+XCPRETTY=`which xcpretty || true`
 
 # Start current working directory at the root of the project.
 cd "$SRCROOT"
@@ -84,7 +84,7 @@ xctest() {
   local dest="$(xcrun simctl list devices | grep -v unavailable | grep -m 1 -o '[0-9A-F\-]\{36\}')"
   if [ -n "$XCPRETTY" ]; then
     mkdir -p build
-    xcodebuild -scheme "$1" -configuration "$CONFIGURATION" -sdk iphonesimulator -destination id="$dest" build test | tee build/build.log | xcpretty -c --no-utf --report junit --output build/reports/junit.xml || {
+    xcodebuild -scheme "$1" -configuration "$CONFIGURATION" -sdk iphonesimulator -destination id="$dest" build test | tee build/build.log | "$XCPRETTY" -c --no-utf --report junit --output build/reports/junit.xml || {
         echo "The raw xcodebuild output is available in build/build.log"
         exit 1
     }
@@ -151,7 +151,7 @@ case "$TARGET" in
   ;;
 "react-tests-android")
   [[ $CONFIGURATION == 'Debug' ]] && exit 0
-  XCPRETTY=false
+  XCPRETTY=''
 
   pushd tests/react-test-app
 
