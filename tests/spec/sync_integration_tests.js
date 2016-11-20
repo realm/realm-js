@@ -21,8 +21,7 @@ describe('Sync Integration', () => {
         this.rl.on("line", (line) => {
             var match;
             if ((match = line.match(/Connection\[1\]: Session\[1\]: Received: BIND\(server_path='\/(.+)',/))) {
-                var adminUser = Realm.Sync.User.adminUser('http://127.0.0.1:9080/',
-                    fs.readFileSync("sync-bundle/admin_token.base64", "utf-8"));
+                var adminUser = Realm.Sync.User.adminUser(fs.readFileSync("sync-bundle/admin_token.base64", "utf-8"));
                 this.adminRealmPath = match[1];
                 this.adminRealm = new Realm({
                     path: "__admin.realm",
