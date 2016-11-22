@@ -82,16 +82,16 @@ def reportStatus(target, state, message) {
 
 def doInside(script, target, postStep = null) {
   try {
-    reportStatus(target, 'PENDING')
+    reportStatus(target, 'PENDING', 'Build has started')
     getSourceArchive()
     sh "bash ${script} ${target}"
     if(postStep) {
        postStep.call()
     }
 
-    reportStatus(target, 'SUCCESS')
+    reportStatus(target, 'SUCCESS', 'Success!')
   } catch(Exception e) {
-    reportStatus(target, 'FAILURE')
+    reportStatus(target, 'FAILURE', 'Build has failed')
     currentBuild.rawBuild.setResult(Result.FAILURE)
   }
 }
