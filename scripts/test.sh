@@ -83,13 +83,21 @@ start_packager() {
 xctest() {
   local dest="$(xcrun simctl list devices | grep -v unavailable | grep -m 1 -o '[0-9A-F\-]\{36\}')"
   if [ -n "$XCPRETTY" ]; then
-    mkdir -p build
-    xcodebuild -scheme "$1" -configuration "$CONFIGURATION" -sdk iphonesimulator -destination id="$dest" build test | tee build/build.log | "$XCPRETTY" -c --no-utf --report junit --output build/reports/junit.xml || {
-        echo "The raw xcodebuild output is available in build/build.log"
-        exit 1
+    LOGTEMP=`mktemp build.log.XXXXXX`
+    trap "rm $LOGTEMP" EXIT
+    xcodebuild -scheme "$1" -configuration "$CONFIGURATION" -sdk iphonesimulator -destination id="$dest" build test 2>&1 | tee "$LOGTEMP" | "$XCPRETTY" -c --no-utf --report junit --output build/reports/junit.xml || {
+	    EXITCODE=$?
+        printf "*** Xcode Failure (exit code $EXITCODE). The full xcode log follows: ***\n\n"
+        cat "$LOGTEMP"
+        printf "\n\n*** End Xcode Failure ***\n"
+        exit $EXITCODE
     }
   else
-    xcodebuild -scheme "$1" -configuration "$CONFIGURATION" -sdk iphonesimulator -destination id="$dest" build test
+    xcodebuild -scheme "$1" -configuration "$CONFIGURATION" -sdk iphonesimulator -destination id="$dest" build test || {
+	    EXITCODE=$?
+        echo "*** Failure (exit code $EXITCODE). ***"
+        exit $EXITCODE
+	}
   fi
 }
 
