@@ -69,30 +69,45 @@ stage('check') {
   }
 }
 
+def reportStatus(target, state, message) {
+  step([
+    $class: 'GitHubCommitStatusSetter',
+    contextSource: [$class: 'ManuallyEnteredCommitContextSource', context: target],
+    statusResultSource: [$class: 'ConditionalStatusResultSource', results: [[
+      $class: 'AnyBuildResult', message: message, state: state]]
+    ],
+    reposSource: [$class: 'ManuallyEnteredRepositorySource', url: 'https://github.com/realm/realm-js']
+  ])
+}
+
+def doInside(script, target, postStep = null) {
+  try {
+    reportStatus(target, 'PENDING', 'Build has started')
+    getSourceArchive()
+    sh "bash ${script} ${target}"
+    if(postStep) {
+       postStep.call()
+    }
+
+    reportStatus(target, 'SUCCESS', 'Success!')
+  } catch(Exception e) {
+    reportStatus(target, 'FAILURE', e.toString())
+    currentBuild.rawBuild.setResult(Result.FAILURE)
+  }
+}
+
 def doDockerBuild(target, postStep = null) {
   return {
-    timeout(50) { // minutes
-      node('docker') {
-        getSourceArchive()
-        sh "bash scripts/docker-test.sh ${target}"
-        if(postStep) {
-          postStep.call()
-        }
-      }
+    node('docker') {
+      doInside('scripts/docker-test.sh', target, postStep)
     }
   }
 }
 
 def doBuild(nodeSpec, target, postStep = null) {
   return {
-    timeout(50) { // minutes
-      node(nodeSpec) {
-        getSourceArchive()
-        sh "bash scripts/test.sh ${target}"
-        if(postStep) {
-          postStep.call()
-        }
-      }
+    node(nodeSpec) {
+      doInside('scripts/test.sh', target, postStep)
     }
   }
 }
