@@ -92,7 +92,7 @@ def doInside(script, target, postStep = null) {
     sh "false"
     reportStatus(target, 'SUCCESS', 'Success!')
   } catch(Exception e) {
-    reportStatus(target, 'FAILURE', e)
+    reportStatus(target, 'FAILURE', e.toString())
     currentBuild.rawBuild.setResult(Result.FAILURE)
   }
 }
