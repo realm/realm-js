@@ -41,7 +41,7 @@ Prerequisites:
 First clone this repository:
 
 ```
-git clone https://github.com/realm/realm-js-private.git
+git clone https://github.com/realm/realm-js.git
 ```
 
 Then in the cloned directory:
