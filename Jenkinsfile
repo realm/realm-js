@@ -69,6 +69,17 @@ stage('check') {
   }
 }
 
+def reporStatus(target) {
+  step([
+    $class: 'GitHubCommitStatusSetter',
+    contextSource: [$class: 'ManuallyEnteredCommitContextSource', context: target],
+    statusResultSource: [$class: 'ConditionalStatusResultSource', results: [[
+      $class: 'AnyBuildResult', message: 'Success!', state: 'SUCCESS']]
+    ],
+    reposSource: [$class: 'ManuallyEnteredRepositorySource', url: 'https://github.com/realm/realm-js']
+  ])
+}
+
 def doDockerBuild(target, postStep = null) {
   return {
     timeout(50) { // minutes
@@ -78,7 +89,7 @@ def doDockerBuild(target, postStep = null) {
         if(postStep) {
         //  postStep.call()
         }
-        step([$class: 'GitHubCommitStatusSetter', contextSource: [$class: 'ManuallyEnteredCommitContextSource', context: target], statusResultSource: [$class: 'ConditionalStatusResultSource', results: [[$class: 'AnyBuildResult', message: 'Success!', state: 'SUCCESS']]]])
+        reportStatus(target)
         
       }
     }
@@ -94,9 +105,7 @@ def doBuild(nodeSpec, target, postStep = null) {
         if(postStep) {
         //  postStep.call()
         }
-        
-        step([$class: 'GitHubCommitStatusSetter', contextSource: [$class: 'ManuallyEnteredCommitContextSource', context: target], statusResultSource: [$class: 'ConditionalStatusResultSource', results: [[$class: 'AnyBuildResult', message: 'Success!', state: 'SUCCESS']]]])
-        
+        reportStatus(target)
       }
     }
   }
