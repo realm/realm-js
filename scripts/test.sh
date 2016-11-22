@@ -108,7 +108,7 @@ trap cleanup EXIT
 # Use a consistent version of Node if possible.
 if [ -s "${HOME}/.nvm/nvm.sh" ]; then
   . "${HOME}/.nvm/nvm.sh"
-  nvm use 4.4.7 || true
+  nvm use 5.12 || true
 fi
 
 # Remove cached packages
