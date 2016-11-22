@@ -82,7 +82,6 @@ def reportStatus(target, state, message) {
 
 def doInside(script, target, postStep = null) {
   try {
-    reportStatus(target, 'PENDING', 'Build has started')
     getSourceArchive()
     sh "bash ${script} ${target}"
     if(postStep) {
@@ -93,10 +92,12 @@ def doInside(script, target, postStep = null) {
   } catch(Exception e) {
     reportStatus(target, 'FAILURE', e.toString())
     currentBuild.rawBuild.setResult(Result.FAILURE)
+    throw e
   }
 }
 
 def doDockerBuild(target, postStep = null) {
+  reportStatus(target, 'PENDING', 'Build has started')
   return {
     node('docker') {
       doInside('scripts/docker-test.sh', target, postStep)
@@ -105,6 +106,7 @@ def doDockerBuild(target, postStep = null) {
 }
 
 def doBuild(nodeSpec, target, postStep = null) {
+  reportStatus(target, 'PENDING', 'Build has started')
   return {
     node(nodeSpec) {
       doInside('scripts/test.sh', target, postStep)
