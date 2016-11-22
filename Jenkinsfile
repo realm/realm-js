@@ -69,7 +69,7 @@ stage('check') {
   }
 }
 
-def reporStatus(target) {
+def reportStatus(target) {
   step([
     $class: 'GitHubCommitStatusSetter',
     contextSource: [$class: 'ManuallyEnteredCommitContextSource', context: target],
