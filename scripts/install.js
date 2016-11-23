@@ -1,10 +1,13 @@
+/* eslint-disable no-console */
+'use strict';
+
 var spawn = require('child_process').spawn;
 
 var isReactNative = false;
 
 try {
-  var package = require("../../../package.json");
-  isReactNative = !!package.dependencies["react-native"];
+  var pkg = require("../../../package.json");
+  isReactNative = !!pkg.dependencies["react-native"];
 } catch(e) {}
 
 // Not a React Native install. Must be either Node or Electron.
