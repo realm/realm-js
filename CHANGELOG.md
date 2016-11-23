@@ -1,3 +1,14 @@
+0.15.1 Release notes (2016-11-22)
+=============================================================
+### Breaking changes
+* None
+
+### Enhancements
+* None
+
+### Bugfixes
+* Fix compile error for collection notification in chrome debug mode
+
 0.15.0 Release notes (2016-11-15)
 =============================================================
 ### Breaking changes
