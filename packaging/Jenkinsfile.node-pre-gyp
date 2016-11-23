@@ -1,5 +1,6 @@
 #!groovy
 
+// parameter: PUBLISH
 repoName = 'realm-js' // This is a global variable
 
 def setBuildName(newBuildName) {
@@ -53,7 +54,7 @@ def doBuildLinux(dependencies) {
       }
 
       dir('packaging/out/node-pre-gyp') {
-        stash includes: "realm-*", name: "npm-linux"
+        stash includes: "realm-*", name: "compiled-linux"
         archiveArtifacts "realm-*"
       }
     }
@@ -68,8 +69,11 @@ def doBuildMac(dependencies) {
             ./scripts/build-node-pre-gyp.sh
             tar cvfz darwin-compiled.tgz compiled/
           '''
-      stash includes: 'out/realm-*', name: "compiled-mac"
-      archiveArtifacts "out/realm-*"
+      dir('out') {
+        stash includes: 'realm-*', name: "compiled-mac"
+        archiveArtifacts "realm-*"
+      }
+
     }
   }
 }
@@ -79,6 +83,20 @@ def doBuild(dependencies) {
       "build_mac": doBuildMac(dependencies),
       "build_linux": doBuildLinux(dependencies)
     )
+}
+
+def doPublish() {
+  node('aws') {
+    sh 'rm -rf *''
+    unstash 'compiled-mac'
+    unstash 'compiled-osx'
+    withCredentials([[$class: 'FileBinding', credentialsId: 'c0cc8f9e-c3f1-4e22-b22f-6568392e26ae', variable: 's3cfg_config_file']]) {
+      sh """
+        s3cmd -c \$s3cfg_config_file put realm-* 's3://static.realm.io/node-pre-gyp/'
+        rm -rf *
+      """
+    }
+  }
 }
 
 def gitTag
@@ -114,3 +132,7 @@ node('docker') {
 }
 
 doBuild(dependencies)
+
+if (PUBLISH == 'true') {
+  doPublish()
+}
