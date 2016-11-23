@@ -1,11 +1,16 @@
-var package = require("../../../package.json");
 var spawn = require('child_process').spawn;
 
-var reactNative = !!package.dependencies["react-native"];
+var isReactNative = false;
 
-if (!reactNative) {
-  // Not a React Native install. Must be either Node or Electron.
+try {
+  var package = require("../../../package.json");
+  isReactNative = !!package.dependencies["react-native"];
+} catch(e) {}
 
+// Not a React Native install. Must be either Node or Electron.
+var isNode = !isReactNative;
+
+if (isNode) {
   if (process.platform === 'win32') {
     console.error('ERROR: Realm is not yet supported on Windows');
     process.exit(-1);
