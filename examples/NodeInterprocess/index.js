@@ -18,23 +18,28 @@
 
 'use strict';
 
-import Collection, { createCollection } from './collections';
-import { objectTypes } from './constants';
-import { createMethods } from './util';
+var express = require('express'),
+    winston = require('winston'),
+    RealmWinston = require('./winston-realm').Realm;
 
-export default class Results extends Collection {
-}
+var app = express();
 
-createMethods(Results.prototype, objectTypes.RESULTS, [
-    'filtered',
-    'sorted',
-    'snapshot',
-    'isValid',
-    'addListener',
-    'removeListener',
-    'removeAllListeners',
-]);
+// Use custom Winston transport: RealmWinston
+// Writes log data to winston.realm
+winston.add(RealmWinston, {});
 
-export function createResults(realmId, info) {
-    return createCollection(Results.prototype, realmId, info);
-}
+app.get('/', function (req, res) {
+  res.send('Hello World!');
+  winston.info('Handled Hello World');
+});
+
+app.use(function (req, res) {
+  res.status(404).send('Sorry can not find that!');
+  winston.error('404 Error at: ' + req.url);
+})
+
+app.listen(3000, function () {
+  // eslint-disable-next-line no-console
+  console.log('Example app listening on port 3000!');
+});
+

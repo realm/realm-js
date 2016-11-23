@@ -18,23 +18,19 @@
 
 'use strict';
 
-import Collection, { createCollection } from './collections';
-import { objectTypes } from './constants';
-import { createMethods } from './util';
+var Realm = require('realm');
 
-export default class Results extends Collection {
-}
+let winstonRealm = new Realm({
+  path: 'winston.realm'
+});
 
-createMethods(Results.prototype, objectTypes.RESULTS, [
-    'filtered',
-    'sorted',
-    'snapshot',
-    'isValid',
-    'addListener',
-    'removeListener',
-    'removeAllListeners',
-]);
+// Register listener to print out log messages at error level
+winstonRealm.objects('Log').filtered('level = "error"').addListener((logs, changes) => {
+  changes.insertions.map((index) => {
+    let log = logs[index];
 
-export function createResults(realmId, info) {
-    return createCollection(Results.prototype, realmId, info);
-}
+    // eslint-disable-next-line no-console
+    console.log(log.message);
+  })
+});
+
