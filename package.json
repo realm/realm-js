@@ -49,7 +49,7 @@
     "jsdoc": "rm -rf docs/output && jsdoc -c docs/conf.json",
     "lint": "eslint",
     "test": "scripts/test.sh",
-    "install": "node-pre-gyp install --fallback-to-build",
+    "install": "node scripts/install.js",
     "prepublish": "scripts/prepublish.sh"
   },
   "dependencies": {
