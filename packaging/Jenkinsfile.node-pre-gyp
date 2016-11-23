@@ -89,7 +89,7 @@ def doPublish() {
   node('aws') {
     sh 'rm -rf *'
     unstash 'compiled-mac'
-    unstash 'compiled-osx'
+    unstash 'compiled-linux'
     withCredentials([[$class: 'FileBinding', credentialsId: 'c0cc8f9e-c3f1-4e22-b22f-6568392e26ae', variable: 's3cfg_config_file']]) {
       sh """
         s3cmd -c \$s3cfg_config_file put realm-* 's3://static.realm.io/node-pre-gyp/'
@@ -131,8 +131,10 @@ node('docker') {
   echo "version: ${version}"
 }
 
+stage 'build'
 doBuild(dependencies)
 
 if (PUBLISH == 'true') {
+  stage 'publish'
   doPublish()
 }
