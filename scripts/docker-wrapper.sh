@@ -1,6 +1,9 @@
 #!/bin/sh
-# This is a wrapper script which uses docker.  It allows you to run commands
-# in a docker environment.
+# This is a wrapper script which uses docker.  It is used in CI, but can also
+# be used locally.
+# 
+# ./scripts/docker-wrapper.sh ./scripts/test.sh node
+#
 
 set -e
 

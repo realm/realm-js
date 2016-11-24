@@ -97,18 +97,28 @@ def doInside(script, target, postStep = null) {
   }
 }
 
-def doDockerBuild(target, postStep = null) {
+def doAndroidBuild(target, postStep = null) {
   return {
-    node('docker') {
-      doInside('scripts/docker-test.sh', target, postStep)
+    node('docker && android') {
+      lock("${env.NODE_NAME}-android") {
+        doInside("./scripts/docker-wrapper.sh ./scripts/test.sh", target, postStep)
+      }
     }
   }
 }
 
-def doBuild(nodeSpec, target, postStep = null) {
+def doDockerBuild(target, postStep = null) {
   return {
-    node(nodeSpec) {
-      doInside('scripts/test.sh', target, postStep)
+    node('docker') {
+      doInside("./scripts/docker-wrapper.sh ./scripts/test.sh", target, postStep)
+    }
+  }
+}
+
+def doMacBuild(target, postStep = null) {
+  return {
+    node('osx_vegas') {
+      doInside("./scripts/test.sh", target, postStep)
     }
   }
 }
@@ -124,18 +134,17 @@ stage('build') {
     linux_node_debug: doDockerBuild('node Debug'),
     linux_node_release: doDockerBuild('node Release'),
     linux_test_runners: doDockerBuild('test-runners'),
-    macos_node_debug: doBuild('osx_vegas', 'node Debug'),
-    macos_node_release: doBuild('osx_vegas', 'node Release'),
-    macos_realmjs_debug: doBuild('osx_vegas', 'realmjs Debug'),
-    macos_realmjs_release: doBuild('osx_vegas', 'realmjs Release'),
-    macos_react_tests_debug: doBuild('osx_vegas', 'react-tests Debug'),
-    macos_react_tests_release: doBuild('osx_vegas', 'react-tests Release', {
+    macos_node_debug: doMacBuild('osx_vegas', 'node Debug'),
+    macos_node_release: doMacBuild('node Release'),
+    macos_realmjs_debug: doMacBuild('realmjs Debug'),
+    macos_realmjs_release: doMacBuild('realmjs Release'),
+    macos_react_tests_debug: doMacBuild('react-tests Debug'),
+    macos_react_tests_release: doMacBuild('react-tests Release', {
       junit 'build/reports/junit.xml'
     }),
-    macos_react_example_debug: doBuild('osx_vegas', 'react-example Debug'),
-    macos_react_example_release: doBuild('osx_vegas', 'react-example Release'),
-    android_react_tests: doBuild('FastLinux', 'react-tests-android', {
-      sh "cat tests/react-test-app/tests.xml"
+    macos_react_example_debug: doMacBuild('react-example Debug'),
+    macos_react_example_release: doMacBuild('react-example Release'),
+    android_react_tests: doAndroidBuild('react-tests-android', {
       junit 'tests/react-test-app/tests.xml'
     })
   )
