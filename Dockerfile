@@ -1,7 +1,8 @@
 FROM ubuntu:xenial
 
 # Install the JDK
-# We are going to need some 32 bit binaries because apt requires it
+# We are going to need some 32 bit binaries because aapt (Android Asset
+# Packaging Tool) requires it
 # file is need by the script that creates NDK toolchains
 ENV DEBIAN_FRONTEND noninteractive
 RUN dpkg --add-architecture i386 && \
