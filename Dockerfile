@@ -54,9 +54,9 @@ ENV ANDROID_HOME /opt/android-sdk-linux
 ENV PATH ${PATH}:${ANDROID_HOME}/tools:${ANDROID_HOME}/platform-tools
 RUN echo y | android update sdk --no-ui --all --filter tools > /dev/null && \
     echo y | android update sdk --no-ui --all --filter platform-tools | grep 'package installed' && \
-    echo y | android update sdk --no-ui --all --filter build-tools-24.0.0 | grep 'package installed' && \
+    echo y | android update sdk --no-ui --all --filter build-tools-23.0.1 | grep 'package installed' && \
     echo y | android update sdk --no-ui --all --filter extra-android-m2repository | grep 'package installed' && \
-    echo y | android update sdk --no-ui --all --filter android-24 | grep 'package installed'
+    echo y | android update sdk --no-ui --all --filter android-23 | grep 'package installed'
 
 # Install the Android NDK
 ENV ANDROID_NDK_VERSION r10e
