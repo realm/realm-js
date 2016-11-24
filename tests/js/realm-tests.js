@@ -595,6 +595,12 @@ module.exports = {
             realm.delete(threeObjects);
             TestCase.assertEqual(objects.length, 4, 'wrong object count');
             TestCase.assertEqual(threeObjects.length, 0, 'threeObject should have been deleted');
+
+            var o = objects[0];
+            realm.delete(o);
+            TestCase.assertThrows(function() {
+                realm.delete(o);
+            });
         });
     },
 
