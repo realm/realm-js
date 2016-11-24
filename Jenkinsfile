@@ -66,6 +66,12 @@ stage('check') {
       }
     }
     echo "version: ${version}"
+
+    if (['ajl/jenkinsfile', 'master'].contains(env.BRANCH_NAME)) {
+      // If we're on master, instruct the docker image builds to push to the
+      // cache registry
+      env.DOCKER_PUSH = "1"
+    }
   }
 }
 
@@ -97,11 +103,17 @@ def doInside(script, target, postStep = null) {
   }
 }
 
+def doDockerInside(script, target, postStep = null) {
+  docker.withRegistry("https://${env.DOCKER_REGISTRY}", "ecr:eu-west-1:aws-ci-user") {
+    doInside("./scripts/docker-wrapper.sh ${script}", target, postStep)
+  }
+}
+
 def doAndroidBuild(target, postStep = null) {
   return {
     node('docker && android') {
       lock("${env.NODE_NAME}-android") {
-        doInside("./scripts/docker-wrapper.sh ./scripts/test.sh", target, postStep)
+        doDockerInside("./scripts/test.sh", target, postStep)
       }
     }
   }
@@ -110,7 +122,7 @@ def doAndroidBuild(target, postStep = null) {
 def doDockerBuild(target, postStep = null) {
   return {
     node('docker') {
-      doInside("./scripts/docker-wrapper.sh ./scripts/test.sh", target, postStep)
+      doDockerInside("./scripts/test.sh", target, postStep)
     }
   }
 }
