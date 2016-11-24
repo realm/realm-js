@@ -10,7 +10,7 @@ set -e
 
 ./scripts/docker_build_wrapper.sh ci/realm-js:build .
 
-exec docker run --rm -it \
+exec docker run --rm \
   -u $(id -u) \
   --privileged \
   --net=host \
