@@ -105,7 +105,7 @@ def doInside(script, target, postStep = null) {
 
 def doDockerInside(script, target, postStep = null) {
   docker.withRegistry("https://${env.DOCKER_REGISTRY}", "ecr:eu-west-1:aws-ci-user") {
-    doInside("./scripts/docker-wrapper.sh ${script}", target, postStep)
+    doInside(script, target, postStep)
   }
 }
 
@@ -113,7 +113,7 @@ def doAndroidBuild(target, postStep = null) {
   return {
     node('docker && android') {
       lock("${env.NODE_NAME}-android") {
-        doDockerInside("./scripts/test.sh", target, postStep)
+        doDockerInside("./scripts/docker-android-wrapper.sh ./scripts/test.sh", target, postStep)
       }
     }
   }
@@ -122,7 +122,7 @@ def doAndroidBuild(target, postStep = null) {
 def doDockerBuild(target, postStep = null) {
   return {
     node('docker') {
-      doDockerInside("./scripts/test.sh", target, postStep)
+      doDockerInside("./scripts/docker-wrapper.sh ./scripts/test.sh", target, postStep)
     }
   }
 }
