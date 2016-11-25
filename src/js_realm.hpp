@@ -564,7 +564,7 @@ void RealmClass<T>::delete_one(ContextType ctx, ObjectType this_object, size_t a
     if (Object::template is_instance<RealmObjectClass<T>>(ctx, arg)) {
         auto object = get_internal<T, RealmObjectClass<T>>(arg);
         if (!object->is_valid()) {
-            throw std::runtime_error("Object is invalid. Was it already deleted?");
+            throw std::runtime_error("Object is invalid. Either it has been previously deleted or the Realm it belongs to has been closed.");
         }
         
         realm::TableRef table = ObjectStore::table_for_object_type(realm->read_group(), object->get_object_schema().name);
