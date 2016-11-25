@@ -11,7 +11,7 @@ CONFIGURATION="${2:-"Release"}"
 DESTINATION=
 PATH="/opt/android-sdk-linux/platform-tools:$PATH"
 SRCROOT=$(cd "$(dirname "$0")/.." && pwd)
-XCPRETTY=true
+XCPRETTY=`which xcpretty || true`
 
 # Start current working directory at the root of the project.
 cd "$SRCROOT"
@@ -83,13 +83,21 @@ start_packager() {
 xctest() {
   local dest="$(xcrun simctl list devices | grep -v unavailable | grep -m 1 -o '[0-9A-F\-]\{36\}')"
   if [ -n "$XCPRETTY" ]; then
-    mkdir -p build
-    xcodebuild -scheme "$1" -configuration "$CONFIGURATION" -sdk iphonesimulator -destination id="$dest" build test | tee build/build.log | xcpretty -c --no-utf --report junit --output build/reports/junit.xml || {
-        echo "The raw xcodebuild output is available in build/build.log"
-        exit 1
+    LOGTEMP=`mktemp build.log.XXXXXX`
+    trap "rm $LOGTEMP" EXIT
+    xcodebuild -scheme "$1" -configuration "$CONFIGURATION" -sdk iphonesimulator -destination id="$dest" build test 2>&1 | tee "$LOGTEMP" | "$XCPRETTY" -c --no-utf --report junit --output build/reports/junit.xml || {
+	    EXITCODE=$?
+        printf "*** Xcode Failure (exit code $EXITCODE). The full xcode log follows: ***\n\n"
+        cat "$LOGTEMP"
+        printf "\n\n*** End Xcode Failure ***\n"
+        exit $EXITCODE
     }
   else
-    xcodebuild -scheme "$1" -configuration "$CONFIGURATION" -sdk iphonesimulator -destination id="$dest" build test
+    xcodebuild -scheme "$1" -configuration "$CONFIGURATION" -sdk iphonesimulator -destination id="$dest" build test || {
+	    EXITCODE=$?
+        echo "*** Failure (exit code $EXITCODE). ***"
+        exit $EXITCODE
+	}
   fi
 }
 
@@ -100,7 +108,7 @@ trap cleanup EXIT
 # Use a consistent version of Node if possible.
 if [ -s "${HOME}/.nvm/nvm.sh" ]; then
   . "${HOME}/.nvm/nvm.sh"
-  nvm use 4.4.7 || true
+  nvm use 5.12 || true
 fi
 
 # Remove cached packages
@@ -156,7 +164,7 @@ case "$TARGET" in
   ;;
 "react-tests-android")
   [[ $CONFIGURATION == 'Debug' ]] && exit 0
-  XCPRETTY=false
+  XCPRETTY=''
 
   pushd tests/react-test-app
 

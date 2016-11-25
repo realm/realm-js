@@ -1,0 +1,34 @@
+#!/bin/bash
+
+set -e
+
+# we should always set proper ownership before exiting, otherwise
+# the created packages will have root:root ownership and we'll be unable
+# to delete them from our host.
+trap 'chown -R --reference /inside/build-package /out/' EXIT
+
+. $NVM_DIR/nvm.sh
+
+REALM_CORE_VERSION=$(echo ${REALM_CORE_VERSION} | sed 's/-\([^g]\)/_\1/g')
+
+yum install -y \
+  realm-devel-${REALM_CORE_VERSION} \
+  realm-node-devel-${REALM_CORE_VERSION}
+
+export NPM_CONFIG_UNSAFE_PERM=true # because we're running as root
+
+setup_source() {
+  path=$1
+  cp -a /source $path
+  cd $path
+  json=$(jq ".version = \"${VERSION}\"" package.json)
+  echo $json > package.json
+  rm -rf compiled node_modules .nvm
+}
+
+setup_source "/tmp/build"
+./scripts/build-node-pre-gyp.sh
+
+nvm use 4.4.7
+
+cp out/* /out/

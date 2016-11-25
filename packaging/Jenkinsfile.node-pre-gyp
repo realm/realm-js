@@ -1,0 +1,140 @@
+#!groovy
+
+// parameter: PUBLISH
+repoName = 'realm-js' // This is a global variable
+
+def setBuildName(newBuildName) {
+  currentBuild.displayName = "${currentBuild.displayName} - ${newBuildName}"
+}
+
+def unstashSources() {
+  sshagent(['realm-ci-ssh']) {
+    sh 'rm -rf * .git'
+    checkout scm
+    sh 'git clean -ffdx -e .????????'
+    sh 'git submodule update --init --recursive'
+  }
+}
+
+def readGitTag() {
+  sh "git describe --exact-match --tags HEAD | tail -n 1 > tag.txt 2>&1 || true"
+  def tag = readFile('tag.txt').trim()
+  return tag
+}
+
+def readGitSha() {
+  sh "git rev-parse HEAD | cut -b1-8 > sha.txt"
+  def sha = readFile('sha.txt').readLines().last().trim()
+  return sha
+}
+
+def getVersion(){
+  def dependencies = readProperties file: 'dependencies.list'
+  def gitTag = readGitTag()
+  def gitSha = readGitSha()
+  if (gitTag == "") {
+    return "${dependencies.VERSION}-g${gitSha}"
+  }
+  else {
+    return dependencies.VERSION
+  }
+}
+
+def doBuildLinux(dependencies) {
+  return {
+    node('docker') {
+      unstashSources()
+
+      docker.withRegistry("https://${env.DOCKER_REGISTRY}", "ecr:eu-west-1:aws-ci-user") {
+        withCredentials([[$class: 'StringBinding', credentialsId: 'packagecloud-sync-devel-master-token', variable: 'PACKAGECLOUD_MASTER_TOKEN']]) {
+          withEnv(["EXTRA_NPM_ARGUMENTS=--realm_download_binaries=0"]) {
+            sh 'sh packaging/package.sh node-pre-gyp'
+          }
+        }
+      }
+
+      dir('packaging/out/node-pre-gyp') {
+        stash includes: "realm-*", name: "compiled-linux"
+        archiveArtifacts "realm-*"
+      }
+    }
+  }
+}
+
+def doBuildMac(dependencies) {
+  return {
+    node('osx_vegas') {
+      unstashSources()
+          sh '''
+            ./scripts/build-node-pre-gyp.sh
+            tar cvfz darwin-compiled.tgz compiled/
+          '''
+      dir('out') {
+        stash includes: 'realm-*', name: "compiled-mac"
+        archiveArtifacts "realm-*"
+      }
+
+    }
+  }
+}
+
+def doBuild(dependencies) {
+    parallel(
+      "build_mac": doBuildMac(dependencies),
+      "build_linux": doBuildLinux(dependencies)
+    )
+}
+
+def doPublish() {
+  node('aws') {
+    sh 'rm -rf *'
+    unstash 'compiled-mac'
+    unstash 'compiled-linux'
+    withCredentials([[$class: 'FileBinding', credentialsId: 'c0cc8f9e-c3f1-4e22-b22f-6568392e26ae', variable: 's3cfg_config_file']]) {
+      sh """
+        s3cmd -c \$s3cfg_config_file put realm-* 's3://static.realm.io/node-pre-gyp/'
+        rm -rf *
+      """
+    }
+  }
+}
+
+def gitTag
+def gitSha
+def dependencies
+def version
+
+stage 'check'
+node('docker') {
+  unstashSources()
+  dependencies = readProperties file: 'dependencies.list'
+  echo "VERSION: ${dependencies.VERSION}"
+  echo "NODEJS_REALM_VERSION: ${dependencies.NODEJS_REALM_VERSION}"
+  echo "NODEJS_REALM_SERVER_VERSION: ${dependencies.NODEJS_REALM_SERVER_VERSION}"
+
+  gitTag = readGitTag()
+  gitSha = readGitSha()
+  version = getVersion()
+  echo "tag: ${gitTag}"
+  if (gitTag == "") {
+    echo "No tag given for this build"
+    setBuildName("${gitSha}")
+  } else {
+    if (gitTag != "v${dependencies.VERSION}") {
+      echo "Git tag '${gitTag}' does not match v${dependencies.VERSION}"
+    } else {
+      echo "Building release: '${gitTag}'"
+      setBuildName("Tag ${gitTag}")
+    }
+  }
+
+  echo "version: ${version}"
+}
+
+stage 'build'
+doBuild(dependencies)
+
+if (PUBLISH == 'true') {
+  stage 'publish'
+  doPublish()
+}

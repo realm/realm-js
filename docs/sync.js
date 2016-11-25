@@ -107,11 +107,10 @@ class User {
 
 	/**
 	 * Create an admin user for the given authentication server with an existing token
-	 * @param {string} server - authentication server
 	 * @param {string} adminToken - existing admin token
 	 * @return {User} - admin user populated with the given token and server
 	 */
-	adminUser(server, adminToken) {}
+	adminUser(adminToken) {}
 
 	/**
 	 * A dictionary containing users that are currently logged in.

@@ -1,0 +1,14 @@
+#!/bin/bash
+
+set -e
+
+# we should always set proper ownership before exiting, otherwise
+# the created logs will have root:root ownership and we'll be unable
+# to delete them from our host.
+trap 'chown -R --reference $0 /test-logs/' EXIT
+
+. $NVM_DIR/nvm.sh
+
+ls -la /out
+
+nvm use 4.4.7
