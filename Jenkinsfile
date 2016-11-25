@@ -67,7 +67,7 @@ stage('check') {
     }
     echo "version: ${version}"
 
-    if (['ajl/jenkinsfile', 'master'].contains(env.BRANCH_NAME)) {
+    if (['master'].contains(env.BRANCH_NAME)) {
       // If we're on master, instruct the docker image builds to push to the
       // cache registry
       env.DOCKER_PUSH = "1"
@@ -151,9 +151,7 @@ stage('build') {
     macos_realmjs_debug: doMacBuild('realmjs Debug'),
     macos_realmjs_release: doMacBuild('realmjs Release'),
     macos_react_tests_debug: doMacBuild('react-tests Debug'),
-    macos_react_tests_release: doMacBuild('react-tests Release', {
-      junit 'build/reports/junit.xml'
-    }),
+    macos_react_tests_release: doMacBuild('react-tests Release'),
     macos_react_example_debug: doMacBuild('react-example Debug'),
     macos_react_example_release: doMacBuild('react-example Release'),
     android_react_tests: doAndroidBuild('react-tests-android', {
