@@ -4,10 +4,10 @@
 var spawn = require('child_process').spawn;
 
 var isReactNative = false;
-
 try {
-  var pkg = require("../../../package.json");
-  isReactNative = !!pkg.dependencies["react-native"];
+  require.resolve('react-native');
+  // If the above opeation didn't throw, this project has react native as a dependency.
+  isReactNative = true;
 } catch(e) {}
 
 // Not a React Native install. Must be either Node or Electron.
