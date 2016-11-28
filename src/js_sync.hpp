@@ -302,8 +302,7 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
         std::string raw_realm_url = Object::validated_get_string(ctx, sync_config_object, "url");
 
         // FIXME - use make_shared
-        config.sync_config = std::shared_ptr<SyncConfig>(
-                                                         new SyncConfig({shared_user, raw_realm_url, SyncSessionStopPolicy::AfterChangesUploaded, handler, [=](int error_code, std::string message, SyncSessionError) {}})
+        config.sync_config = std::shared_ptr<SyncConfig>(new SyncConfig{shared_user, raw_realm_url, SyncSessionStopPolicy::AfterChangesUploaded, handler, [=](int error_code, std::string message, SyncSessionError) {}}
         );
         config.schema_mode = SchemaMode::Additive;
         config.path = realm::SyncManager::shared().path_for_realm(shared_user->identity(), raw_realm_url);
