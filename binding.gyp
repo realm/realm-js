@@ -68,7 +68,7 @@
       "conditions": [
         ["OS=='linux'", {
           "sources": [
-            "src/object-store/src/impl/android/external_commit_helper.cpp",
+            "src/object-store/src/impl/epoll/external_commit_helper.cpp",
           ]
         }],
         ["OS=='mac'", {
