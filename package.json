@@ -36,6 +36,7 @@
     "react-native",
     "scripts",
     "src",
+    "tests",
     "vendor",
     "binding.gyp",
     "dependencies.list"
