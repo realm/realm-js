@@ -62,7 +62,9 @@ class RealmDelegate : public BindingContext {
     using ObjectDefaultsMap = typename Schema<T>::ObjectDefaultsMap;
     using ConstructorMap = typename Schema<T>::ConstructorMap;
 
-    virtual void did_change(std::vector<ObserverState> const& observers, std::vector<void*> const& invalidated) {
+    virtual void did_change(std::vector<ObserverState> const& observers,
+                            std::vector<void*> const& invalidated,
+                            bool version_changed=true) {
         notify("change");
     }
     virtual std::vector<ObserverState> get_observed_rows() {
