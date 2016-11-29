@@ -267,6 +267,7 @@ module.exports = {
       });
     });
   },
+  /* This test fails because of realm-object-store #243 . We should use 2 users.
 
   testSynchronizeChangesWithTwoClientsAndOneUser() {
     // Test Schema
@@ -286,13 +287,13 @@ module.exports = {
     };
 
     const schema = [Foo.schema, Bar.schema];
-    
+
     // Create a user, open two clients at different local paths, synchronize changes
     const username = uuid();
     return new Promise((resolve) => {
       Realm.Sync.User.register('http://localhost:9080', username, 'password', (error ,user) => {
         failOnError(error);
-        
+
         const clientA = new Realm({
           path:   'testSynchronizeChangesWithTwoClientsAndOneUser_clientA.realm',
           schema: schema,
@@ -301,7 +302,7 @@ module.exports = {
             url:  'http://localhost:9080/~/test',
           },
         });
-        
+
         const clientB = new Realm({
           path:   'testSynchronizeChangesWithTwoClientsAndOneUser_clientB.realm',
           schema: schema,
@@ -310,7 +311,7 @@ module.exports = {
             url:  'http://localhost:9080/~/test',
           },
         });
-        
+
         clientB.addListener('change', () => {
           const foos = clientB.objects('Foo');
           if (foos.length > 0) {
@@ -319,13 +320,13 @@ module.exports = {
             resolve();
           }
         });
-        
+
         clientA.write(() => {
           clientA.create('Foo', { string: 'Hello, World!' });
         });
       });
     });
-  },
+  }, */
 
 };
 

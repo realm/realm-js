@@ -328,12 +328,16 @@ void RealmClass<T>::constructor(ContextType ctx, ObjectType this_object, size_t 
         else if (Value::is_object(ctx, value)) {
             ObjectType object = Value::validated_to_object(ctx, value);
 
+#if REALM_ENABLE_SYNC
+            SyncClass<T>::populate_sync_config(ctx, Value::validated_to_object(ctx, Object::get_global(ctx, "Realm")), object, config);
+#endif
+
             static const String path_string = "path";
             ValueType path_value = Object::get_property(ctx, object, path_string);
             if (!Value::is_undefined(ctx, path_value)) {
                 config.path = Value::validated_to_string(ctx, path_value, "path");
             }
-            else {
+            else if (config.path.empty()) {
                 config.path = js::default_path();
             }
 
@@ -394,9 +398,6 @@ void RealmClass<T>::constructor(ContextType ctx, ObjectType this_object, size_t 
                 std::string encryption_key = NativeAccessor::to_binary(ctx, encryption_key_value);
                 config.encryption_key = std::vector<char>(encryption_key.begin(), encryption_key.end());
             }
-#if REALM_ENABLE_SYNC
-            SyncClass<T>::populate_sync_config(ctx, Value::validated_to_object(ctx, Object::get_global(ctx, "Realm")), object, config);
-#endif
         }
     }
     else {
