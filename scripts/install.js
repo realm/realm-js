@@ -23,6 +23,6 @@ if (isNode) {
   var pregyp = spawn('node-pre-gyp', ['install', '--fallback-to-build']);
   pregyp.stdout.on('data', function (data) { console.log(data.toString()); });
   pregyp.stderr.on('data', function (data) { console.error(data.toString()); });
-  pregyp.on('exit', function (code) { process.exit(code); }
+  pregyp.on('exit', function (code) { process.exit(code); });
 }
 
