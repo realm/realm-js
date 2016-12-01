@@ -102,6 +102,8 @@ start_packager() {
 }
 
 xctest() {
+  # note: the DEVELOPER_DIR and IOS_SIM_DEVICE sections sould be kept in sync with setup_ios_simulator
+  
   # - Ensure one version of xcode is chosen by all tools
   if [[ -z "$DEVELOPER_DIR" ]]; then
     export DEVELOPER_DIR="$(xcode-select -p)"
@@ -118,11 +120,12 @@ xctest() {
     exit 1
   fi
   
-  # Wait until the simulator is fully booted by waiting for it to launch SpringBoard
-  echo "Waiting for springboard to ensure device is ready"
+  # - Wait until the simulator is fully booted by waiting for it to launch SpringBoard
+  printf "Waiting for springboard to ensure device is ready..."
   xcrun simctl launch "$IOS_SIM_DEVICE" com.apple.springboard >/dev/null 2>&1 || true
+  echo "  done"
   
-  # run the build and test
+  # - Run the build and test
   if [ -n "$XCPRETTY" ]; then
     log_temp=`mktemp build.log.XXXXXX`
     if [ -e "$log_temp" ]; then
