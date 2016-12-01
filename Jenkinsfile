@@ -47,7 +47,8 @@ def version
 stage('check') {
   node('docker') {
     getSourceArchive()
-
+    stash name: 'inital checkout'
+    
     dependencies = readProperties file: 'dependencies.list'
 
     gitTag = readGitTag()
@@ -89,7 +90,7 @@ def reportStatus(target, state, message) {
 def doInside(script, target, postStep = null) {
   try {
     reportStatus(target, 'PENDING', 'Build has started')
-    getSourceArchive()
+    unstash 'initial checkout'
     sh "bash ${script} ${target}"
     if(postStep) {
        postStep.call()
