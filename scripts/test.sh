@@ -6,9 +6,13 @@ set -e
 export TEST_SCRIPT=1
 export NPM_CONFIG_PROGRESS=false
 
-TARGET="$1"
-CONFIGURATION="${2:-"Release"}"
-DESTINATION=
+TARGET=$1
+CONFIGURATION=${2:-Release}
+
+IOS_SIM_DEVICE=${IOS_SIM_DEVICE:-} # use preferentially, otherwise will be set and re-exported
+ios_sim_default_device_type=${IOS_SIM_DEVICE_TYPE:-iPhone 5s}
+ios_sim_default_ios_version=${IOS_SIM_OS:-iOS 10.1}
+
 PATH="/opt/android-sdk-linux/platform-tools:$PATH"
 SRCROOT=$(cd "$(dirname "$0")/.." && pwd)
 XCPRETTY=`which xcpretty || true`
@@ -44,16 +48,33 @@ stop_server() {
   fi
 }
 
+startedSimulator=false
+log_temp=
+test_temp_dir=
 cleanup() {
   # Kill started object server
-  stop_server
-
+  stop_server || true
+  
+  # Give the simulator a chance to go down gracefully
+  if $startedSimulator; then
+    osascript -e 'tell app "Simulator" to quit without saving' || true
+    sleep 0.25 # otherwise the pkill following will get it
+  fi
+  
   # Kill all other child processes.
   pkill -P $$ || true
 
   # Kill react native packager
   pkill node || true
   rm -f "$PACKAGER_OUT" "$LOGCAT_OUT"
+  
+  # Cleanup temp files
+  if [ -n "$log_temp" ] && [ -e "$log_temp" ]; then
+    rm "$log_temp" || true
+  fi
+  if [ -n "$test_temp_dir" ] && [ -e "$test_temp_dir" ]; then
+    rm -rf "$test_temp_dir" || true
+  fi
 }
 
 open_chrome() {
@@ -81,24 +102,113 @@ start_packager() {
 }
 
 xctest() {
-  local dest="$(xcrun simctl list devices | grep -v unavailable | grep -m 1 -o '[0-9A-F\-]\{36\}')"
+  # - Ensure one version of xcode is chosen by all tools
+  if [[ -z "$DEVELOPER_DIR" ]]; then
+    export DEVELOPER_DIR="$(xcode-select -p)"
+  fi
+  
+  # - Choose a device, if it has not already been chosen
+  local deadline=$((SECONDS+5))
+  while [ -z "$IOS_SIM_DEVICE" ] && [ $SECONDS -lt $deadline ]; do
+    IOS_SIM_DEVICE=`ruby -rjson -e "puts JSON.parse(%x{xcrun simctl list devices --json})['devices'].each{|os,group| group.each{|dev| dev['os'] = os}}.flat_map{|x| x[1]}.select{|x| x['availability'] == '(available)'}.each{|x| x['score'] = (x['name'] == '$ios_sim_default_device_type' ? 1 : 0) + (x['os'] == '$ios_sim_default_ios_version' ? 1 : 0)}.sort_by!{|x| [x['score'], x['name']]}.reverse![0]['udid']"`
+    export IOS_SIM_DEVICE
+  done
+  if [ -z "$IOS_SIM_DEVICE" ]; then
+    echo "*** Failed to determine the iOS Simulator device to use ***"
+    exit 1
+  fi
+  
+  # Wait until the simulator is fully booted by waiting for it to launch SpringBoard
+  echo "Waiting for springboard to ensure device is ready"
+  xcrun simctl launch "$IOS_SIM_DEVICE" com.apple.springboard >/dev/null 2>&1 || true
+  
+  # run the build and test
   if [ -n "$XCPRETTY" ]; then
-    LOGTEMP=`mktemp build.log.XXXXXX`
-    trap "rm $LOGTEMP" EXIT
-    xcodebuild -scheme "$1" -configuration "$CONFIGURATION" -sdk iphonesimulator -destination id="$dest" build test 2>&1 | tee "$LOGTEMP" | "$XCPRETTY" -c --no-utf --report junit --output build/reports/junit.xml || {
+    log_temp=`mktemp build.log.XXXXXX`
+    if [ -e "$log_temp" ]; then
+      rm "$log_temp"
+    fi
+    xcrun xcodebuild -scheme "$1" -configuration "$CONFIGURATION" -sdk iphonesimulator -destination name="iPhone 5s" build test 2>&1 | tee "$log_temp" | "$XCPRETTY" -c --no-utf --report junit --output build/reports/junit.xml || {
 	    EXITCODE=$?
         printf "*** Xcode Failure (exit code $EXITCODE). The full xcode log follows: ***\n\n"
-        cat "$LOGTEMP"
+        cat "$log_temp"
         printf "\n\n*** End Xcode Failure ***\n"
         exit $EXITCODE
     }
+    rm "$log_temp"
   else
-    xcodebuild -scheme "$1" -configuration "$CONFIGURATION" -sdk iphonesimulator -destination id="$dest" build test || {
+    xcrun xcodebuild -scheme "$1" -configuration "$CONFIGURATION" -sdk iphonesimulator -destination id="$IOS_SIM_DEVICE" build test || {
 	    EXITCODE=$?
         echo "*** Failure (exit code $EXITCODE). ***"
         exit $EXITCODE
-	}
+	  }
   fi
+}
+
+setup_ios_simulator() {
+  # - Ensure one version of xcode is chosen by all tools
+  
+  if [[ -z "$DEVELOPER_DIR" ]]; then
+    export DEVELOPER_DIR="$(xcode-select -p)"
+  fi
+  
+  # - Kill the Simulator to ensure we are running the correct one
+  
+  echo "Resetting simulator using toolchain from: $DEVELOPER_DIR"
+  
+  # quit Simulator.app
+  local deadline=$((SECONDS+5))
+  while pgrep -qx Simulator && [ $SECONDS -lt $deadline ]; do
+    osascript -e 'tell app "Simulator" to quit without saving' || true
+    sleep 0.25 # the 
+  done
+  
+  # stop CoreSimulatorService
+  launchctl remove com.apple.CoreSimulator.CoreSimulatorService 2>/dev/null || true
+  sleep 0.25 # launchtl can take a small moment to kill services
+  
+  # kill them with fire
+  while pgrep -qx Simulator com.apple.CoreSimulator.CoreSimulatorService; do
+    pkill -9 -x Simulator com.apple.CoreSimulator.CoreSimulatorService || true
+    sleep 0.05
+  done
+  
+  # - Prod `simctl` a few times to make sure it is ready to go
+  local deadline=$((SECONDS+5))
+  while [ -z "`xcrun simctl list devices 2>/dev/null`" ] && [ $SECONDS -lt $deadline ]; do
+    : # nothing to see here
+  done
+  
+  # - Choose a device, if it has not already been chosen
+  local deadline=$((SECONDS+5))
+  while [ -z "$IOS_SIM_DEVICE" ] && [ $SECONDS -lt $deadline ]; do
+    IOS_SIM_DEVICE=`ruby -rjson -e "puts JSON.parse(%x{xcrun simctl list devices --json})['devices'].each{|os,group| group.each{|dev| dev['os'] = os}}.flat_map{|x| x[1]}.select{|x| x['availability'] == '(available)'}.each{|x| x['score'] = (x['name'] == '$ios_sim_default_device_type' ? 1 : 0) + (x['os'] == '$ios_sim_default_ios_version' ? 1 : 0)}.sort_by!{|x| [x['score'], x['name']]}.reverse![0]['udid']"`
+    export IOS_SIM_DEVICE
+  done
+  if [ -z "$IOS_SIM_DEVICE" ]; then
+    echo "*** Failed to determine the iOS Simulator device to use ***"
+    exit 1
+  fi
+  
+  # - Reset the device we will be using
+  
+  xcrun simctl shutdown "$IOS_SIM_DEVICE" 1>/dev/null 2>/dev/null || true # sometimes simctl gets confused
+  xcrun simctl erase "$IOS_SIM_DEVICE"
+  
+  # - Start the target in Simulator.app
+  # Note: as of Xcode 7.3.1 `simctl` can not completely boot a simulator, specifically it can not bring up backboard, so GUI apps can not run.
+  #       This is fixed in version 8 of Xcode, but we still need the compatibility
+  
+  "$DEVELOPER_DIR/Applications/Simulator.app/Contents/MacOS/Simulator" -CurrentDeviceUDID "$IOS_SIM_DEVICE" & # will get killed with all other children at exit
+  startedSimulator=true
+  
+  # Wait until the boot completes
+  printf "  waiting for simulator ($IOS_SIM_DEVICE) to boot..."
+  until ruby -rjson -e 'exit JSON.parse(`xcrun simctl list devices -j `)["devices"].flat_map { |d| d[1] }.any? { |d| d["availability"] == "(available)" && d["state"] == "Booted" }'; do
+    sleep 0.25
+  done
+  echo " done"
+  echo "It will take some time before the simulator is fully ready, continuing on to other work"
 }
 
 # Cleanup now and also cleanup when this script exits.
@@ -131,12 +241,16 @@ case "$TARGET" in
   npm run jsdoc
   ;;
 "realmjs")
+  if [ -n "${JENKINS_HOME}" ]; then
+    setup_ios_simulator
+  fi
+  
   pushd src
   xctest RealmJS
   ;;
 "react-tests")
-  if ! [ -z "${JENKINS_HOME}" ]; then
-    ${SRCROOT}/scripts/reset-simulators.sh
+  if [ -n "${JENKINS_HOME}" ]; then
+    setup_ios_simulator
   fi
 
   pushd tests/react-test-app
@@ -146,11 +260,11 @@ case "$TARGET" in
   start_packager
 
   pushd ios
-  xctest ReactTestApp || xctest ReactTestApp
+  xctest ReactTestApp
   ;;
 "react-example")
-  if ! [ -z "${JENKINS_HOME}" ]; then
-    ${SRCROOT}/scripts/reset-simulators.sh
+  if [ -n "${JENKINS_HOME}" ]; then
+    setup_ios_simulator
   fi
 
   pushd examples/ReactExample
@@ -160,7 +274,7 @@ case "$TARGET" in
   start_packager
 
   pushd ios
-  xctest ReactExample || xctest ReactExample
+  xctest ReactExample
   ;;
 "react-tests-android")
   [[ $CONFIGURATION == 'Debug' ]] && exit 0
@@ -208,7 +322,7 @@ case "$TARGET" in
 
   # Change to a temp directory.
   cd "$(mktemp -q -d -t realm.node.XXXXXX)"
-  trap "rm -rf '$PWD'" EXIT
+  test_temp_dir=$PWD # set it to be cleaned at exit
 
   pushd "$SRCROOT/tests"
   npm install
@@ -221,7 +335,7 @@ case "$TARGET" in
 
   # Change to a temp directory.
   cd "$(mktemp -q -d -t realm.node.XXXXXX)"
-  trap "rm -rf '$PWD'" EXIT
+  test_temp_dir=$PWD # set it to be cleaned at exit
 
   pushd "$SRCROOT/tests"
   npm install
