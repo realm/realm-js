@@ -90,7 +90,7 @@ def reportStatus(target, state, message) {
 def doInside(script, target, postStep = null) {
   try {
     reportStatus(target, 'PENDING', 'Build has started')
-    unstash 'initial checkout'
+    unstash 'inital checkout'
     sh "bash ${script} ${target}"
     if(postStep) {
        postStep.call()
