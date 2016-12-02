@@ -47,7 +47,7 @@ def version
 stage('check') {
   node('docker') {
     getSourceArchive()
-    stash name: 'inital checkout'
+    stash name: 'inital checkout' useDefaultExcludes: false
     
     dependencies = readProperties file: 'dependencies.list'
 
