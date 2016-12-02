@@ -4,12 +4,13 @@ import groovy.json.JsonOutput
 repoName = 'realm-js' // This is a global variable
 
 def getSourceArchive() {
-  3.times {
+  // retry checkout up to three times to mitigate network and contention issues
+  for (i = 0; i < 3; i++) {
     try {
       checkout scm
       break
     } catch(Exception err) {
-      if (it == 3) {
+      if (i >= 2) {
         throw err
       }
     }
@@ -100,12 +101,13 @@ def doInside(script, target, postStep = null) {
   try {
     reportStatus(target, 'PENDING', 'Build has started')
     
-    3.times {
+    // retry unstash up to three times to mitigate network and contention 
+    for (i = 0; i < 3; i++) {
       try {
         unstash 'inital checkout'
         break
       } catch(Exception err) {
-        if (it == 3) {
+        if (i >= 2) {
           throw err
         }
       }
