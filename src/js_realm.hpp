@@ -457,14 +457,15 @@ void RealmClass<T>::schema_version(ContextType ctx, ObjectType this_object, size
 template<typename T>
 void RealmClass<T>::clear_test_state(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 0);
+
+    delete_all_realms();
 #if REALM_ENABLE_SYNC
-    for(auto &user : SyncManager::shared().all_users()) {
+    for(auto &user : SyncManager::shared().all_logged_in_users()) {
         user->log_out();
     }
     SyncManager::shared().reset_for_testing();
     SyncManager::shared().configure_file_system(default_realm_file_directory(), SyncManager::MetadataMode::NoEncryption);
 #endif
-    delete_all_realms();
 }
 
 template<typename T>
