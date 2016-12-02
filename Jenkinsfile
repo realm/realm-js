@@ -11,7 +11,10 @@ def getSourceArchive() {
       break
     } catch(Exception err) {
       if (i >= 2) {
+      	echo "Checking out repository failed on attemp ${i}, failing the build"
         throw err
+      } else {
+        echo "Checking out repository failed on attemp ${i}"
       }
     }
   }
@@ -108,7 +111,10 @@ def doInside(script, target, postStep = null) {
         break
       } catch(Exception err) {
         if (i >= 2) {
+          echo "Unstashing repository failed on attemp ${i}, failing the build"
           throw err
+        } else {
+          echo "Unstashing repository failed on attemp ${i}"
         }
       }
     }  
