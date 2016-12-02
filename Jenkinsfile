@@ -4,7 +4,16 @@ import groovy.json.JsonOutput
 repoName = 'realm-js' // This is a global variable
 
 def getSourceArchive() {
-  checkout scm
+  3.times {
+    try {
+      checkout scm
+      break
+    } catch(Exception err) {
+      if (it == 3) {
+        throw err
+      }
+    }
+  }
   sh 'git clean -ffdx -e .????????'
   sshagent(['realm-ci-ssh']) {
     sh 'git submodule update --init --recursive'
@@ -90,7 +99,18 @@ def reportStatus(target, state, message) {
 def doInside(script, target, postStep = null) {
   try {
     reportStatus(target, 'PENDING', 'Build has started')
-    unstash 'inital checkout'
+    
+    3.times {
+      try {
+        unstash 'inital checkout'
+        break
+      } catch(Exception err) {
+        if (it == 3) {
+          throw err
+        }
+      }
+    }  
+    
     sh "bash ${script} ${target}"
     if(postStep) {
        postStep.call()
