@@ -90,14 +90,22 @@ stage('check') {
 }
 
 def reportStatus(target, state, message) {
-  step([
-    $class: 'GitHubCommitStatusSetter',
-    contextSource: [$class: 'ManuallyEnteredCommitContextSource', context: target],
-    statusResultSource: [$class: 'ConditionalStatusResultSource', results: [[
-      $class: 'AnyBuildResult', message: message, state: state]]
-    ],
-    reposSource: [$class: 'ManuallyEnteredRepositorySource', url: 'https://github.com/realm/realm-js']
-  ])
+  echo "Reporting Status ${state} to GitHub: " + ((message) ?: message.toString()).toString()
+  if (message && message.length() > 140) {
+    message = message.substring(0, 137) + '...' # GitHub API only allows for 140 characters
+  }
+  try:
+    step([
+      $class: 'GitHubCommitStatusSetter',
+      contextSource: [$class: 'ManuallyEnteredCommitContextSource', context: target],
+      statusResultSource: [$class: 'ConditionalStatusResultSource', results: [[
+        $class: 'AnyBuildResult', message: message, state: state]]
+      ],
+      reposSource: [$class: 'ManuallyEnteredRepositorySource', url: 'https://github.com/realm/realm-js']
+    ])
+  } catch(Exception e) {
+    echo "Error posting to GitHub: " + err.toString()
+  }
 }
 
 def doInside(script, target, postStep = null) {
@@ -126,7 +134,7 @@ def doInside(script, target, postStep = null) {
 
     reportStatus(target, 'SUCCESS', 'Success!')
   } catch(Exception e) {
-    reportStatus(target, 'FAILURE', e.toString())
+  	reportStatus(target, 'FAILURE', e.toString())
     currentBuild.rawBuild.setResult(Result.FAILURE)
     throw e
   }
