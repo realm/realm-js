@@ -92,7 +92,7 @@ stage('check') {
 def reportStatus(target, state, message) {
   echo "Reporting Status ${state} to GitHub: " + ((message) ?: message.toString()).toString()
   if (message && message.length() > 140) {
-    message = message.substring(0, 137) + '...' # GitHub API only allows for 140 characters
+    message = message.substring(0, 137) + '...' // GitHub API only allows for 140 characters
   }
   try:
     step([
