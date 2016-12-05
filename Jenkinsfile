@@ -94,7 +94,7 @@ def reportStatus(target, state, message) {
   if (message && message.length() > 140) {
     message = message.substring(0, 137) + '...' // GitHub API only allows for 140 characters
   }
-  try:
+  try {
     step([
       $class: 'GitHubCommitStatusSetter',
       contextSource: [$class: 'ManuallyEnteredCommitContextSource', context: target],
