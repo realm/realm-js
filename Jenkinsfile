@@ -11,10 +11,10 @@ def getSourceArchive() {
       break
     } catch(Exception err) {
       if (i >= 2) {
-      	echo "Checking out repository failed on attemp ${i}, failing the build"
+      	echo "Checking out repository failed on attempt ${i + 1}, failing the build"
         throw err
       } else {
-        echo "Checking out repository failed on attemp ${i}"
+        echo "Checking out repository failed on attempt ${i + 1}: " + err.toString()
       }
     }
   }
@@ -119,10 +119,10 @@ def doInside(script, target, postStep = null) {
         break
       } catch(Exception err) {
         if (i >= 2) {
-          echo "Unstashing repository failed on attemp ${i}, failing the build"
+          echo "Unstashing repository failed on attempt ${i + 1}, failing the build"
           throw err
         } else {
-          echo "Unstashing repository failed on attemp ${i}"
+          echo "Unstashing repository failed on attempt ${i + 1}: " + err.toString()
         }
       }
     }  
@@ -136,6 +136,7 @@ def doInside(script, target, postStep = null) {
   } catch(Exception e) {
   	reportStatus(target, 'FAILURE', e.toString())
     currentBuild.rawBuild.setResult(Result.FAILURE)
+    e.printStackTrace()
     throw e
   }
 }
