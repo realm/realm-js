@@ -657,6 +657,8 @@ module.exports = {
 
         var person = realm.objects('PersonObject')[0];
 
+        // The tests below assert that everthing throws when
+        // operating on a closed realm
         realm.close();
 
         TestCase.assertThrows(function() {
@@ -666,6 +668,28 @@ module.exports = {
         TestCase.assertThrows(function() {
             realm.objects('PersonObject');
         });
+
+        TestCase.assertThrows(function() {
+            realm.addListener('change', () => {});
+        });
+
+        TestCase.assertThrows(function() {
+            realm.create('PersonObject', {name: 'Ari', age: 10});
+        });
+
+        TestCase.assertThrows(function() {
+            realm.delete(person);
+        });
+
+        TestCase.assertThrows(function() {
+            realm.deleteAll();
+        });
+
+        TestCase.assertThrows(function() {
+            realm.write(() => {});
+        });
+
+
     },
 
     testRealmObjectForPrimaryKey: function() {

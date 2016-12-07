@@ -638,6 +638,9 @@ void RealmClass<T>::add_listener(ContextType ctx, ObjectType this_object, size_t
     auto callback = Value::validated_to_function(ctx, arguments[1]);
 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
+    if (realm->is_closed()) {
+        throw ClosedRealmException();
+    }
     get_delegate<T>(realm.get())->add_notification(callback);
 }
 
