@@ -38,7 +38,7 @@ class Sync {
 	 * @param {string} regex - the regular expression previously used to register the listener
      * @param {string} name - The event name
      *   _Currently only the 'change' event is supported_
-	 * @param {function(change_object)} change_callback - the previously registered callback to be removed
+	 * @param {function(change_event)} change_callback - the previously registered callback to be removed
 	 */
 	static removeListener(regex, name, change_callback) {}
 
