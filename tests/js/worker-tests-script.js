@@ -21,7 +21,7 @@
 
 'use strict';
 
-const Realm = require('realm');
+const Realm = require(process.argv[1]);
 
 process.on('message', (message) => {
     process.send(handleMessage(message));

@@ -21,8 +21,8 @@
 'use strict';
 
 class Worker {
-    constructor(script) {
-        this._process = require('child_process').fork(script);
+    constructor(script, args) {
+        this._process = require('child_process').fork(script, args);
 
         this._process.on('message', (message) => {
             if (this.onmessage) {
