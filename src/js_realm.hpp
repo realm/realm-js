@@ -652,6 +652,9 @@ void RealmClass<T>::remove_listener(ContextType ctx, ObjectType this_object, siz
     auto callback = Value::validated_to_function(ctx, arguments[1]);
 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
+    if (realm->is_closed()) {
+        throw ClosedRealmException();
+    }
     get_delegate<T>(realm.get())->remove_notification(callback);
 }
 
@@ -663,6 +666,9 @@ void RealmClass<T>::remove_all_listeners(ContextType ctx, ObjectType this_object
     }
 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
+    if (realm->is_closed()) {
+        throw ClosedRealmException();
+    }
     get_delegate<T>(realm.get())->remove_all_notifications();
 }
 

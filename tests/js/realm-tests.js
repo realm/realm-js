@@ -656,6 +656,8 @@ module.exports = {
         });
 
         var person = realm.objects('PersonObject')[0];
+        var listenerCallback = () => {};
+        realm.addListener('change', listenerCallback);
 
         // The tests below assert that everthing throws when
         // operating on a closed realm
@@ -689,7 +691,13 @@ module.exports = {
             realm.write(() => {});
         });
 
+        TestCase.assertThrows(function() {
+            realm.removeListener('change', listenerCallback);
+        });
 
+        TestCase.assertThrows(function() {
+            realm.removeAllListeners();
+        });
     },
 
     testRealmObjectForPrimaryKey: function() {
