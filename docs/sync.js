@@ -28,7 +28,7 @@ class Sync {
 	 *  Use `.*` to match all all Realms
 	 * @param {string} name - The name of event that should cause the callback to be called
      *   _Currently only the 'change' event is supported_
-	 * @param {function(change_object)} change_callback - called on when changes are made to any Realm which
+	 * @param {function(change_event)} change_callback - called when changes are made to any Realm which
 	 *  match the given regular expression
 	 */
 	static addListener(server_url, admin_user, regex, name, change_callback) {}
