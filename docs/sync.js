@@ -20,21 +20,28 @@
  * @memberof Realm
  */
 class Sync {
+	/**
+	 * Add a sync listener to listen to changes across multiple Realms
+	 * @param {string} server_url - the sync server to listen to
+	 * @param {SyncUser} admin_user - an admin user obtained by calling `new Realm.Sync.User.adminUser`
+	 * @param {string} regex - a regular expression used to determine which cahnged Realms should trigger events -
+	 *  Use `.*` to match all all Realms
+	 * @param {function(change_object)} change_callback - called on when changes are made to any Realm which
+	 *  match the given regular expression
+	 */
+	static addListener(server_url, admin_user, regex, change_callback) {}
 
 	/**
-	 * Set a global listener function.
-	 * @param {string} local_path - The path to the directory where realm files are stored [deprecated]
-	 * @param {string} server_url - The sync server to listen to
-	 * @param {SyncUser} admin_user - An admin user obtained by calling `new Realm.Sync.User.Admin`
-	 * @param {function(realm_name)} filter_callback - Return true to recieve changes for the given realm
-	 * @param {function(realm_name, realm, change_set)} change_callback - called on any realm changes with
-	 *  the following arguments:
-	 *   - `realm_name` - path of the Realm on which changes occurred
-	 *   - `realm` - a `Realm` object for the changed Realm
-	 *   - `change_set` - a dictionary of object names to arays of indexes indicating the indexes of objects of each type
-	 *   which have been added, removed, or modified
+	 * Remove a previously registered sync listener
+	 * @param {string} regex - the regular expression previously used to register the listener
+	 * @param {function(change_object)} change_callback - the previously registered callback to be removed
 	 */
-	static setGlobalListener(local_path, server_url, admin_user, filter_callback, change_callback) {}
+	static removeListener(regex, change_callback) {}
+
+	/**
+	 * Remove all previously regiestered listeners
+	 */
+	static removeAllListeners() {}
 
 	/**
 	 * Set the sync log level.
@@ -42,6 +49,47 @@ class Sync {
 	 */
 	static setLogLevel(log_level) {}
 
+}
+
+/**
+ * Object passed
+ * @memberof Realm.Sync
+ */
+class ChangeObject {
+    /**
+     * The path of the changed Realm
+     * @type {string}
+     */
+    get path() {}
+
+    /**
+     * The changed realm
+     * @type {Realm}
+     */
+    get realm() {}
+
+    /**
+     * The changed Realm at the old state before the changes were applied
+     * @type {Realm}
+     */
+    get oldRealm() {}
+
+    /**
+     * The change indexes for all added, removed, and modified objects in the changed Realm.
+     * This object is a hashmap of object types to arrays of indexes for all changed objects:
+     * @example
+     * { 
+     *   object_type_1: { 
+     *     insertions:    [indexes...],
+     *     deletions:     [indexes...],
+     *     modifications: [indexes...]
+     *   },
+     *   object_type_2:
+     *     ...
+     * }
+     * @type {object}
+     */
+    get changes() {}
 }
 
 /**

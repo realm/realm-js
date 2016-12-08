@@ -62,9 +62,7 @@ class RealmDelegate : public BindingContext {
     using ObjectDefaultsMap = typename Schema<T>::ObjectDefaultsMap;
     using ConstructorMap = typename Schema<T>::ConstructorMap;
 
-    virtual void did_change(std::vector<ObserverState> const& observers,
-                            std::vector<void*> const& invalidated,
-                            bool version_changed=true) {
+    virtual void did_change(std::vector<ObserverState> const& observers, std::vector<void*> const& invalidated, bool version_changed) {
         notify("change");
     }
     virtual std::vector<ObserverState> get_observed_rows() {
@@ -457,14 +455,15 @@ void RealmClass<T>::schema_version(ContextType ctx, ObjectType this_object, size
 template<typename T>
 void RealmClass<T>::clear_test_state(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 0);
+
+    delete_all_realms();
 #if REALM_ENABLE_SYNC
-    for(auto &user : SyncManager::shared().all_users()) {
+    for(auto &user : SyncManager::shared().all_logged_in_users()) {
         user->log_out();
     }
     SyncManager::shared().reset_for_testing();
     SyncManager::shared().configure_file_system(default_realm_file_directory(), SyncManager::MetadataMode::NoEncryption);
 #endif
-    delete_all_realms();
 }
 
 template<typename T>
@@ -639,6 +638,9 @@ void RealmClass<T>::add_listener(ContextType ctx, ObjectType this_object, size_t
     auto callback = Value::validated_to_function(ctx, arguments[1]);
 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
+    if (realm->is_closed()) {
+        throw ClosedRealmException();
+    }
     get_delegate<T>(realm.get())->add_notification(callback);
 }
 
@@ -650,6 +652,9 @@ void RealmClass<T>::remove_listener(ContextType ctx, ObjectType this_object, siz
     auto callback = Value::validated_to_function(ctx, arguments[1]);
 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
+    if (realm->is_closed()) {
+        throw ClosedRealmException();
+    }
     get_delegate<T>(realm.get())->remove_notification(callback);
 }
 
@@ -661,6 +666,9 @@ void RealmClass<T>::remove_all_listeners(ContextType ctx, ObjectType this_object
     }
 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
+    if (realm->is_closed()) {
+        throw ClosedRealmException();
+    }
     get_delegate<T>(realm.get())->remove_all_notifications();
 }
 

@@ -40,7 +40,7 @@ start_server() {
 
 stop_server() {
   if [[ ${SERVER_PID} > 0 ]] ; then
-    kill ${SERVER_PID}
+    kill -9 ${SERVER_PID}
   fi
 }
 

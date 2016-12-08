@@ -127,7 +127,7 @@ module.exports = {
       assertIsUser(user);
 
       Realm.Sync.User.register('http://localhost:9080', username, 'password', (error, user) => {
-        assertIsAuthError(error, 613, 'https://realm.io/docs/object-server/problems/existing-account');
+        assertIsAuthError(error, 611, 'https://realm.io/docs/object-server/problems/invalid-credentials');
         TestCase.assertUndefined(user);
       });
     });
@@ -193,7 +193,7 @@ module.exports = {
 
   testLoginNonExistingUser() {
     return callbackTest((callback) => Realm.Sync.User.login('http://localhost:9080', 'does_not', 'exist', callback), (error, user) => {
-      assertIsAuthError(error, 612, 'https://realm.io/docs/object-server/problems/unknown-account');
+      assertIsAuthError(error, 611, 'https://realm.io/docs/object-server/problems/invalid-credentials');
       TestCase.assertUndefined(user);
     });
   },
