@@ -29,7 +29,7 @@ function createNotificationTest(config, getObservable, addListener, removeListen
     return new Promise((resolve, reject) => {
         let realm = new Realm(config);
         let observable = getObservable(realm);
-        let worker = new Worker(__dirname + '/worker-tests-script.js');
+        let worker = new Worker(__dirname + '/worker-tests-script.js', [require.resolve('realm')]);
 
         // Test will fail if it does not receive a change event within a second.
         let timer = setTimeout(() => {
@@ -75,8 +75,8 @@ function createNotificationTest(config, getObservable, addListener, removeListen
 
 function createCollectionChangeTest(config, createCollection, messages, expected, removeAll) {
     return createNotificationTest(
-        config, 
-        createCollection, 
+        config,
+        createCollection,
         (collection, increment, resolve, reject, cleanup) => {
             var listener = (object, changes) => {
                 try {
@@ -87,7 +87,7 @@ function createCollectionChangeTest(config, createCollection, messages, expected
                 } catch (e) {
                     reject(e);
                     cleanup();
-                } 
+                }
             };
             collection.addListener(listener);
             return listener;
@@ -117,8 +117,8 @@ module.exports = {
     testChangeNotifications() {
         var config = { schema: [schemas.TestObject] };
         return createNotificationTest(
-            config, 
-            (realm) => realm, 
+            config,
+            (realm) => realm,
             (realm, increment, resolve, reject, cleanup) => realm.addListener('change', () => {
                 try {
                     var objects = realm.objects('TestObject');
