@@ -8,8 +8,6 @@ module.exports = function(realmModulePath) {
 
     global.REALM_MODULE_PATH = realmModulePath;
 
-    console.log('MOCK REAM');
-
     mockery.enable({
         warnOnReplace: false,
         warnOnUnregistered: false
