@@ -15,7 +15,6 @@
   "scripts": {
     "test": "jasmine spec/unit_tests.js spec/sync_tests.js",
     "test-nosync": "jasmine spec/unit_tests.js",
-    "test-sync-integration": "jasmine spec/sync_integration_tests.js",
-    "postinstall": "rm -f node_modules/realm && ln -s ../.. node_modules/realm"
+    "test-sync-integration": "jasmine spec/sync_integration_tests.js"
   }
 }
