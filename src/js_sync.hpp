@@ -35,25 +35,6 @@
 namespace realm {
 namespace js {
 
-static std::string s_sync_directory;
-
-static void set_sync_directory(std::string dir) {
-    if (s_sync_directory.length()) {
-        throw std::runtime_error("Sync directory can only be set once before using any Sync apis");
-    }
-    s_sync_directory = dir;
-
-    // setup synced realmFile paths
-    ensure_directory_exists_for_file(dir);
-    SyncManager::shared().configure_file_system(dir, SyncManager::MetadataMode::NoEncryption);
-}
-
-static void ensure_sync_directory() {
-    if (s_sync_directory.length() == 0) {
-        set_sync_directory(default_realm_file_directory());
-    }
-}
-
 using SharedUser =  std::shared_ptr<realm::SyncUser>;
 
 template<typename T>
@@ -134,8 +115,6 @@ void UserClass<T>::is_admin(ContextType ctx, ObjectType object, ReturnValue &ret
 template<typename T>
 void UserClass<T>::create_user(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 3, 4);
-    ensure_sync_directory();
-
     SharedUser *user = new SharedUser(SyncManager::shared().get_user(
         Value::validated_to_string(ctx, arguments[1]),
         Value::validated_to_string(ctx, arguments[2]),
@@ -146,8 +125,6 @@ void UserClass<T>::create_user(ContextType ctx, ObjectType this_object, size_t a
 
 template<typename T>
 void UserClass<T>::all_users(ContextType ctx, ObjectType object, ReturnValue &return_value) {
-    ensure_sync_directory();
-
     auto users = Object::create_empty(ctx);
     for (auto user : SyncManager::shared().all_logged_in_users()) {
         if (!user->is_admin()) {
@@ -159,8 +136,6 @@ void UserClass<T>::all_users(ContextType ctx, ObjectType object, ReturnValue &re
 
 template<typename T>
 void UserClass<T>::current_user(ContextType ctx, ObjectType object, ReturnValue &return_value) {
-    ensure_sync_directory();
-
     SharedUser *current = nullptr;
     for (auto user : SyncManager::shared().all_logged_in_users()) {
         if (!user->is_admin()) {
@@ -204,8 +179,6 @@ public:
     static FunctionType create_constructor(ContextType);
 
     static void set_sync_log_level(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
-    static void set_sync_directory(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
-    static void ensure_sync_directory(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void set_verify_servers_ssl_certificate(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
 
     // private
@@ -218,8 +191,6 @@ public:
     MethodMap<T> const static_methods = {
         {"refreshAccessToken", wrap<refresh_access_token>},
         {"setLogLevel", wrap<set_sync_log_level>},
-        {"setSyncDirectory", wrap<set_sync_directory>},
-        {"ensureSyncDirectory", wrap<ensure_sync_directory>},
         {"setVerifyServersSslCertificate", wrap<set_verify_servers_ssl_certificate>}
     };
 };
@@ -231,6 +202,10 @@ inline typename T::Function SyncClass<T>::create_constructor(ContextType ctx) {
     PropertyAttributes attributes = ReadOnly | DontEnum | DontDelete;
     Object::set_property(ctx, sync_constructor, "User", ObjectWrap<T, UserClass<T>>::create_constructor(ctx), attributes);
 
+    // setup synced realmFile paths
+    ensure_directory_exists_for_file(default_realm_file_directory());
+    SyncManager::shared().configure_file_system(default_realm_file_directory(), SyncManager::MetadataMode::NoEncryption);
+
     realm::SyncManager::shared().set_error_handler([=](int error_code, std::string message) {
         std::cout << error_code << " " << message << std::endl;
     });
@@ -241,7 +216,6 @@ inline typename T::Function SyncClass<T>::create_constructor(ContextType ctx) {
 template<typename T>
 void SyncClass<T>::set_sync_log_level(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 1);
-    realm::js::ensure_sync_directory();
     std::string log_level = Value::validated_to_string(ctx, arguments[0]);
     std::istringstream in(log_level); // Throws
     in.imbue(std::locale::classic()); // Throws
@@ -254,22 +228,8 @@ void SyncClass<T>::set_sync_log_level(ContextType ctx, ObjectType this_object, s
 }
 
 template<typename T>
-void SyncClass<T>::set_sync_directory(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
-    validate_argument_count(argc, 1);
-    realm::js::set_sync_directory(Value::validated_to_string(ctx, arguments[0]));
-}
-
-template<typename T>
-void SyncClass<T>::ensure_sync_directory(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
-    validate_argument_count(argc, 0);
-    realm::js::ensure_sync_directory();
-}
-
-template<typename T>
 void SyncClass<T>::set_verify_servers_ssl_certificate(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 1);
-    realm::js::ensure_sync_directory();
-
     bool verify_servers_ssl_certificate = Value::validated_to_boolean(ctx, arguments[0]);
     realm::SyncManager::shared().set_client_should_validate_ssl(verify_servers_ssl_certificate);
 }
@@ -301,8 +261,6 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
 {
     ValueType sync_config_value = Object::get_property(ctx, config_object, "sync");
     if (!Value::is_undefined(ctx, sync_config_value)) {
-        realm::js::ensure_sync_directory();
-
         auto sync_config_object = Value::validated_to_object(ctx, sync_config_value);
 
         ObjectType sync_constructor = Object::validated_get_object(ctx, realm_constructor, std::string("Sync"));
