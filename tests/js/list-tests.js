@@ -260,7 +260,7 @@ module.exports = {
             TestCase.assertEqual(array.length, 4);
             TestCase.assertEqual(array[0].doubleCol, 1);
             TestCase.assertEqual(array[1].doubleCol, 2);
-        });   
+        });
 
         TestCase.assertEqual(array.length, 4);
         TestCase.assertThrows(function() {
@@ -588,22 +588,18 @@ module.exports = {
             TestCase.assertEqual(list.reduceRight(function(n, p) {return n + p.age}, 0), 33);
 
             // eslint-disable-next-line no-undef
-            var iteratorSymbol = typeof Symbol != 'undefined' && Symbol.iterator;
             var iteratorMethodNames = ['entries', 'keys', 'values'];
 
-            if (iteratorSymbol) {
-                iteratorMethodNames.push(iteratorSymbol);
-            }
+            iteratorMethodNames.push(Symbol.iterator);
 
             iteratorMethodNames.forEach(function(methodName) {
                 var iterator = list[methodName]();
                 var count = 0;
                 var result;
 
-                if (iteratorSymbol) {
-                    // This iterator should itself be iterable.
-                    TestCase.assertEqual(iterator[iteratorSymbol](), iterator);
-                }
+                // This iterator should itself be iterable.
+                // TestCase.assertEqual(iterator[iteratorSymbol](), iterator);
+                TestCase.assertEqual(iterator[Symbol.iterator](), iterator);
 
                 while ((result = iterator.next()) && !result.done) {
                     var value = result.value;
