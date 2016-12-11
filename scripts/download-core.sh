@@ -27,7 +27,7 @@ if [ "$1" = 'node' ]; then
         PLATFORM_TAG="node-osx-"
         SYNC_PLATFORM_TAG="node-cocoa-"
         CORE_DOWNLOAD_FILE="realm-core-node-osx-$REALM_CORE_VERSION.tar.gz"
-        SYNC_DOWNLOAD_FILE="realm-sync-$SYNC_PLATFORM_TAG$REALM_SYNC_VERSION.zip"
+        SYNC_DOWNLOAD_FILE="realm-sync-$SYNC_PLATFORM_TAG$REALM_SYNC_VERSION.tar.gz"
     else
         PLATFORM_TAG="node-linux-"
         SYNC_PLATFORM_TAG="node-cocoa-"
@@ -35,7 +35,7 @@ if [ "$1" = 'node' ]; then
         SYNC_DOWNLOAD_FILE=""
     fi
 
-    SYNC_EXTRACT="unzip"
+    SYNC_EXTRACT="tar -xvf"
     EXTRACTED_DIR="realm-sync-node-cocoa-$REALM_SYNC_VERSION"
 else
     ENABLE_SYNC="yes" # FIXME: This means that both core and sync will be downloaded for non "node" targets.

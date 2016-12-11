@@ -654,6 +654,50 @@ module.exports = {
         TestCase.assertThrows(function() {
             realm.objects(InvalidPerson);
         });
+
+        var person = realm.objects('PersonObject')[0];
+        var listenerCallback = () => {};
+        realm.addListener('change', listenerCallback);
+
+        // The tests below assert that everthing throws when
+        // operating on a closed realm
+        realm.close();
+
+        TestCase.assertThrows(function() {
+            console.log("Name: ", person.name);
+        });
+
+        TestCase.assertThrows(function() {
+            realm.objects('PersonObject');
+        });
+
+        TestCase.assertThrows(function() {
+            realm.addListener('change', () => {});
+        });
+
+        TestCase.assertThrows(function() {
+            realm.create('PersonObject', {name: 'Ari', age: 10});
+        });
+
+        TestCase.assertThrows(function() {
+            realm.delete(person);
+        });
+
+        TestCase.assertThrows(function() {
+            realm.deleteAll();
+        });
+
+        TestCase.assertThrows(function() {
+            realm.write(() => {});
+        });
+
+        TestCase.assertThrows(function() {
+            realm.removeListener('change', listenerCallback);
+        });
+
+        TestCase.assertThrows(function() {
+            realm.removeAllListeners();
+        });
     },
 
     testRealmObjectForPrimaryKey: function() {
