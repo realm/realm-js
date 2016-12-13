@@ -118,12 +118,17 @@ def reportStatus(target, state, message) {
 def doInside(script, target, postStep = null) {
   try {
     reportStatus(target, 'PENDING', 'Build has started')
-    unstash 'source'
-    sh "bash ${script} ${target}"
+    retry(3) { // retry in case of networking hiccups on macOS
+      deleteDir()
+      unstash 'source'
+    }
+    wrap([$class: 'AnsiColorBuildWrapper']) {
+      sh "bash ${script} ${target}"
+    }
     if(postStep) {
      postStep.call()
    }
-
+   deleteDir()
    reportStatus(target, 'SUCCESS', 'Success!')
    } catch(Exception e) {
     reportStatus(target, 'FAILURE', e.toString())
@@ -149,10 +154,7 @@ def doAndroidBuild(target, postStep = null) {
 def doDockerBuild(target, postStep = null) {
   return {
     node('docker') {
-      wrap([$class: 'AnsiColorBuildWrapper']) {
-        doDockerInside("./scripts/docker-wrapper.sh ./scripts/test.sh", target, postStep)
-        deleteDir()
-      }
+      doDockerInside("./scripts/docker-wrapper.sh ./scripts/test.sh", target, postStep)
     }
   }
 }
@@ -160,10 +162,7 @@ def doDockerBuild(target, postStep = null) {
 def doMacBuild(target, postStep = null) {
   return {
     node('osx_vegas') {
-      wrap([$class: 'AnsiColorBuildWrapper']) {
-        doInside("./scripts/test.sh", target, postStep)
-        deleteDir()
-      }
+      doInside("./scripts/test.sh", target, postStep)
     }
   }
 }
