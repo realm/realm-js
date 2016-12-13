@@ -156,7 +156,7 @@ def doInside(script, target, postStep = null) {
     currentBuild.rawBuild.setResult(Result.FAILURE)
     e.printStackTrace()
     throw e
-  } finaly {
+  } finally {
     dir(env.WORKSPACE) {
       deleteDir() // solving realm/realm-js#734
     }
