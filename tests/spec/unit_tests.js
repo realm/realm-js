@@ -46,15 +46,27 @@ Realm.copyBundledRealmFiles = function() {
     }
 };
 
+RealmTests.registerTests(require('../js/async-tests'));
 const tests = RealmTests.getTestNames();
+
 for (const suiteName in tests) {
     describe(suiteName, () => {
-        beforeEach(() => RealmTests.runTest(suiteName, 'beforeEach'));
+        beforeEach(() => {
+            var beforeEach = tests[suiteName].beforeEach;
+            if (beforeEach)
+                beforeEach.call(tests[suiteName]);
+        });
 
         for (const testName of tests[suiteName]) {
-            it(testName, () => {
+            it(testName, (done) => {
                 try {
-                    RealmTests.runTest(suiteName, testName)
+                    var promise = RealmTests.runTest(suiteName, testName)
+                    if (promise) {
+                        promise.then(done, (e) => {fail(e); done();}).catch((e) => fail(e).then(done));
+                    }
+                    else {
+                        done();
+                    }
                 }
                 catch (e) {
                     fail(e);
@@ -62,17 +74,11 @@ for (const suiteName in tests) {
             });
         }
 
-        afterEach(() => RealmTests.runTest(suiteName, 'afterEach'));
+        afterEach(() => {
+            var afterEach = tests[suiteName].afterEach;
+            if (afterEach)
+                afterEach.call(tests[suiteName]);
+        });
     });
 }
 
-const asyncTests = require('../js/async-tests');
-describe('AsyncTests', () => {
-    beforeEach(() => Realm.clearTestState());
-
-    for (const testName in asyncTests) {
-        it(testName, (done) => asyncTests[testName]().catch((e) => fail(e)).then(done));
-    }
-
-    afterEach(() => Realm.clearTestState());
-});
