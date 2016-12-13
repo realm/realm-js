@@ -6,7 +6,10 @@ repoName = 'realm-js' // This is a global variable
 def getSourceArchive() {
   for (i = 0; i < 3; i++) { // retry checkout up to three times to mitigate network and contention issues
     try {
-      checkout scm
+      dir(env.WORKSPACE) {
+        deleteDir
+        checkout scm
+      }
       break
     } catch(Exception err) {
       if (i >= 2) {
