@@ -153,6 +153,7 @@ def doDockerBuild(target, postStep = null) {
     node('docker') {
       wrap([$class: 'AnsiColorBuildWrapper']) {
         doDockerInside("./scripts/docker-wrapper.sh ./scripts/test.sh", target, postStep)
+        deleteDir()
       }
     }
   }
@@ -163,6 +164,7 @@ def doMacBuild(target, postStep = null) {
     node('osx_vegas') {
       wrap([$class: 'AnsiColorBuildWrapper']) {
         doInside("./scripts/test.sh", target, postStep)
+        deleteDir()
       }
     }
   }
