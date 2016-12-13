@@ -10,10 +10,10 @@ def getSourceArchive() {
       break
     } catch(Exception err) {
       if (i >= 2) {
-      	printf("Checking out repository failed on attempt ${i + 1}, failing the build")
+      	println("Checking out repository failed on attempt ${i + 1}, failing the build")
         throw err
       } else {
-        printf("Checking out repository failed on attempt ${i + 1}: " + err.toString())
+        println("Checking out repository failed on attempt ${i + 1}: " + err.toString())
       }
     }
   }
@@ -121,10 +121,10 @@ def doInside(script, target, postStep = null) {
         break
       } catch(Exception err) {
         if (i >= 2) {
-          printf("Unstashing repository failed on attempt ${i + 1}, failing the build")
+          println("Unstashing repository failed on attempt ${i + 1}, failing the build")
           throw err
         } else {
-          printf("Unstashing repository failed on attempt ${i + 1}: " + err.toString())
+          println("Unstashing repository failed on attempt ${i + 1}: " + err.toString())
         }
       }
     }  
