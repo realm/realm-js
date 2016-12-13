@@ -3,34 +3,6 @@ import groovy.json.JsonOutput
 
 repoName = 'realm-js' // This is a global variable
 
-def getSourceArchive() {
-  for (i = 0; i < 3; i++) { // retry checkout up to three times to mitigate network and contention issues
-    try {
-      dir(env.WORKSPACE) {
-        checkout([
-          $class: 'GitSCM',
-          branches: scm.branches,
-          gitTool: 'native git',
-          extensions: scm.extensions + [[$class: 'CleanCheckout']],
-          userRemoteConfigs: scm.userRemoteConfigs
-        ])
-      }
-      break
-    } catch(Exception err) {
-      if (i >= 2) {
-      	println("Checking out repository failed on attempt ${i + 1}, failing the build")
-        throw err
-      } else {
-        println("Checking out repository failed on attempt ${i + 1}: " + err.toString())
-      }
-    }
-  }
-  sh 'git clean -ffdx -e .????????'
-  sshagent(['realm-ci-ssh']) {
-    sh 'git submodule update --init --recursive'
-  }
-}
-
 def readGitTag() {
   sh "git describe --exact-match --tags HEAD | tail -n 1 > tag.txt 2>&1 || true"
   def tag = readFile('tag.txt').trim()
@@ -66,32 +38,68 @@ def version
 
 stage('check') {
   node('docker') {
-    getSourceArchive()
-    stash name: 'inital checkout', useDefaultExcludes: false
-    
-    dependencies = readProperties file: 'dependencies.list'
-
-    gitTag = readGitTag()
-    gitSha = readGitSha()
-    version = getVersion()
-    echo "tag: ${gitTag}"
-    if (gitTag == "") {
-      echo "No tag given for this build"
-      setBuildName("${gitSha}")
-    } else {
-      if (gitTag != "v${dependencies.VERSION}") {
-        echo "Git tag '${gitTag}' does not match v${dependencies.VERSION}"
-      } else {
-        echo "Building release: '${gitTag}'"
-        setBuildName("Tag ${gitTag}")
+    try {
+      // - checkout the source
+      for (i = 0; i < 3; i++) { // retry checkout up to three times to mitigate network and contention issues
+        try {
+          dir(env.WORKSPACE) {
+            sshagent(['realm-ci-ssh']) {
+              checkout([
+                $class: 'GitSCM',
+                branches: scm.branches,
+                gitTool: 'native git',
+                extensions: scm.extensions + [
+                  [$class: 'CleanCheckout'],
+                  [$class: 'SubmoduleOption', recursiveSubmodules: true]
+                ],
+                userRemoteConfigs: scm.userRemoteConfigs
+              ])
+            }
+          }
+          break
+        } catch(Exception err) {
+          if (i >= 2) {
+            println("Checking out repository failed on attempt ${i + 1}, failing the build")
+            throw err
+          } else {
+            println("Checking out repository failed on attempt ${i + 1}: " + err.toString())
+          }
+        }
       }
-    }
-    echo "version: ${version}"
-
-    if (['master'].contains(env.BRANCH_NAME)) {
-      // If we're on master, instruct the docker image builds to push to the
-      // cache registry
-      env.DOCKER_PUSH = "1"
+      
+      stash name: 'inital checkout', useDefaultExcludes: false
+      
+      dependencies = readProperties file: 'dependencies.list'
+  
+      gitTag = readGitTag()
+      gitSha = readGitSha()
+      version = getVersion()
+      echo "tag: ${gitTag}"
+      if (gitTag == "") {
+        echo "No tag given for this build"
+        setBuildName("${gitSha}")
+      } else {
+        if (gitTag != "v${dependencies.VERSION}") {
+          echo "Git tag '${gitTag}' does not match v${dependencies.VERSION}"
+        } else {
+          echo "Building release: '${gitTag}'"
+          setBuildName("Tag ${gitTag}")
+        }
+      }
+      echo "version: ${version}"
+  
+      if (['master'].contains(env.BRANCH_NAME)) {
+        // If we're on master, instruct the docker image builds to push to the
+        // cache registry
+        env.DOCKER_PUSH = "1"
+      }
+    } finally {
+      // delete the folder if working on a PR per realm/realm-js#734
+      if (env.GIT_BRANCH.startsWith('PR-')) {
+        dir(env.WORKSPACE) {
+          deleteDir()
+        }
+      }
     }
   }
 }
@@ -148,6 +156,10 @@ def doInside(script, target, postStep = null) {
     currentBuild.rawBuild.setResult(Result.FAILURE)
     e.printStackTrace()
     throw e
+  } finaly {
+    dir(env.WORKSPACE) {
+      deleteDir() // solving realm/realm-js#734
+    }
   }
 }
 
@@ -170,7 +182,9 @@ def doAndroidBuild(target, postStep = null) {
 def doDockerBuild(target, postStep = null) {
   return {
     node('docker') {
-      doDockerInside("./scripts/docker-wrapper.sh ./scripts/test.sh", target, postStep)
+      wrap([$class: 'AnsiColorBuildWrapper']) {
+        doDockerInside("./scripts/docker-wrapper.sh ./scripts/test.sh", target, postStep)
+      }
     }
   }
 }
@@ -178,7 +192,9 @@ def doDockerBuild(target, postStep = null) {
 def doMacBuild(target, postStep = null) {
   return {
     node('osx_vegas') {
-      doInside("./scripts/test.sh", target, postStep)
+      wrap([$class: 'AnsiColorBuildWrapper']) {
+        doInside("./scripts/test.sh", target, postStep)
+      }
     }
   }
 }
