@@ -43,18 +43,16 @@ stage('check') {
       for (i = 0; i < 3; i++) { // retry checkout up to three times to mitigate network and contention issues
         try {
           dir(env.WORKSPACE) {
-            sshagent(['realm-ci-ssh']) {
-              checkout([
-                $class: 'GitSCM',
-                branches: scm.branches,
-                gitTool: 'native git',
-                extensions: scm.extensions + [
-                  [$class: 'CleanCheckout'],
-                  [$class: 'SubmoduleOption', recursiveSubmodules: true]
-                ],
-                userRemoteConfigs: scm.userRemoteConfigs
-              ])
-            }
+            checkout([
+              $class: 'GitSCM',
+              branches: scm.branches,
+              gitTool: 'native git',
+              extensions: scm.extensions + [
+                [$class: 'CleanCheckout'],
+                [$class: 'SubmoduleOption', recursiveSubmodules: true]
+              ],
+              userRemoteConfigs: scm.userRemoteConfigs
+            ])
           }
           break
         } catch(Exception err) {
@@ -67,7 +65,7 @@ stage('check') {
         }
       }
       
-      stash name: 'inital checkout', useDefaultExcludes: false
+      stash name: 'source', useDefaultExcludes: false
       
       dependencies = readProperties file: 'dependencies.list'
   
@@ -132,7 +130,7 @@ def doInside(script, target, postStep = null) {
       try {
         dir(env.WORKSPACE) {
           deleteDir()
-          unstash 'inital checkout'
+          unstash 'source'
         }
         break
       } catch(Exception err) {
