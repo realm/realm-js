@@ -46,7 +46,7 @@ Realm.copyBundledRealmFiles = function() {
     }
 };
 
-RealmTests.registerTests(require('../js/async-tests'));
+RealmTests.registerTests({ InterprocessTests: require('../js/async-tests') });
 const tests = RealmTests.getTestNames();
 
 for (const suiteName in tests) {

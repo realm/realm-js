@@ -25,7 +25,7 @@ const TestCase = require('./asserts');
 const schemas = require('./schemas');
 
 function createNotificationTest(config, getObservable, addListener, removeListener, messages, expectedCount) {
-    return new Promise((resolve, reject) => {
+    return new Promise((promiseResolve, promiseReject) => {
         let realm = new Realm(config);
         let observable = getObservable(realm);
 
@@ -34,12 +34,12 @@ function createNotificationTest(config, getObservable, addListener, removeListen
             reject(new Error('Timed out waiting for change notification'));
         }, 5000);
 
-        let cleanup = () => {
+        function reject(e) {
             clearTimeout(timer);
-        };
+            promiseReject(e);
+        }
 
         var messageIndex = 0;
-        var count = 0;
         var listener;
 
         function processNextMessage() {
@@ -68,49 +68,63 @@ function createNotificationTest(config, getObservable, addListener, removeListen
                     }
                     else {
                         reject(new Error('Unknown realm method: ' + message[1]));
-                        cleanup();
                     }
                 });
             }
             catch(error) {
                 reject(error);
-                cleanup();
             }
         }
-
-        listener = addListener(observable, () => {
-            count++;
+        
+        function nextMessage() {
             if (messageIndex < messages.length) {
                 setTimeout(processNextMessage, 0);
             }
-            return count;
-        }, resolve, reject, cleanup);
+        }
+
+        function tryResolve() {
+            if (messageIndex < messages.length) {
+                // if we still have other messages left but have recieved
+                // all notificaitons then fire them and then
+                // wait to make sure we don't get unexpected notifications
+                nextMessage();
+                setTimeout(tryResolve, 100);
+            }
+            else {
+                clearTimeout(timer);
+                promiseResolve();
+            }
+        }
+
+        listener = addListener(observable, nextMessage, tryResolve, reject);
     });
 }
 
 function createCollectionChangeTest(config, createCollection, messages, expected, removeAll) {
+    var notificationIndex = 0;
     return createNotificationTest(
         config,
         createCollection,
-        (collection, increment, resolve, reject, cleanup) => {
+        (collection, nextMessage, resolve, reject) => {
             var listener = (object, changes) => {
                 try {
-                    var notificationCount = increment();
-                    if (notificationCount > expected.length) {
+                    if (notificationIndex >= expected.length) {
                         throw new Error('Too many notifications');
                     }
 
-                    var notificationIndex = notificationCount - 1;
                     TestCase.assertArraysEqual(changes.insertions, expected[notificationIndex][0]);
                     TestCase.assertArraysEqual(changes.deletions, expected[notificationIndex][1]);
                     TestCase.assertArraysEqual(changes.modifications, expected[notificationIndex][2]);
-                    if (notificationCount == expected.length) {
+
+                    notificationIndex++;
+                    if (notificationIndex == expected.length) {
                         resolve();
-                        cleanup();
+                    }
+                    else {
+                        nextMessage();
                     }
                 } catch (e) {
                     reject(e);
-                    cleanup();
                 }
             };
             collection.addListener(listener);
