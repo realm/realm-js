@@ -4,17 +4,16 @@ import groovy.json.JsonOutput
 repoName = 'realm-js' // This is a global variable
 
 def getSourceArchive() {
-  // retry checkout up to three times to mitigate network and contention issues
-  for (i = 0; i < 3; i++) {
+  for (i = 0; i < 3; i++) { // retry checkout up to three times to mitigate network and contention issues
     try {
       checkout scm
       break
     } catch(Exception err) {
       if (i >= 2) {
-      	echo "Checking out repository failed on attempt ${i + 1}, failing the build"
+      	printf("Checking out repository failed on attempt ${i + 1}, failing the build")
         throw err
       } else {
-        echo "Checking out repository failed on attempt ${i + 1}: " + err.toString()
+        printf("Checking out repository failed on attempt ${i + 1}: " + err.toString())
       }
     }
   }
@@ -115,14 +114,17 @@ def doInside(script, target, postStep = null) {
     // retry unstash up to three times to mitigate network and contention 
     for (i = 0; i < 3; i++) {
       try {
-        unstash 'inital checkout'
+        dir(env.WORKSPACE) {
+          deleteDir
+          unstash 'inital checkout'
+        }
         break
       } catch(Exception err) {
         if (i >= 2) {
-          echo "Unstashing repository failed on attempt ${i + 1}, failing the build"
+          printf("Unstashing repository failed on attempt ${i + 1}, failing the build")
           throw err
         } else {
-          echo "Unstashing repository failed on attempt ${i + 1}: " + err.toString()
+          printf("Unstashing repository failed on attempt ${i + 1}: " + err.toString())
         }
       }
     }  
