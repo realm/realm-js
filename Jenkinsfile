@@ -7,8 +7,13 @@ def getSourceArchive() {
   for (i = 0; i < 3; i++) { // retry checkout up to three times to mitigate network and contention issues
     try {
       dir(env.WORKSPACE) {
-        deleteDir
-        checkout scm
+        checkout([
+          $class: 'GitSCM',
+          branches: scm.branches,
+          gitTool: 'native git',
+          extensions: scm.extensions + [[$class: 'CleanCheckout']],
+          userRemoteConfigs: scm.userRemoteConfigs
+        ])
       }
       break
     } catch(Exception err) {
@@ -118,7 +123,7 @@ def doInside(script, target, postStep = null) {
     for (i = 0; i < 3; i++) {
       try {
         dir(env.WORKSPACE) {
-          deleteDir
+          deleteDir()
           unstash 'inital checkout'
         }
         break
