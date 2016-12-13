@@ -33,17 +33,17 @@ stage('check') {
     if (gitTag == "") {
       echo "No tag given for this build"
       setBuildName("${gitSha}")
+    } else {
+      if (gitTag != "v${dependencies.VERSION}") {
+        echo "Git tag '${gitTag}' does not match v${dependencies.VERSION}"
       } else {
-        if (gitTag != "v${dependencies.VERSION}") {
-          echo "Git tag '${gitTag}' does not match v${dependencies.VERSION}"
-          } else {
-            echo "Building release: '${gitTag}'"
-            setBuildName("Tag ${gitTag}")
-          }
-        }
-        echo "version: ${version}"
+          echo "Building release: '${gitTag}'"
+          setBuildName("Tag ${gitTag}")
+      }
+    }
+    echo "version: ${version}"
 
-        if (['master'].contains(env.BRANCH_NAME)) {
+    if (['master'].contains(env.BRANCH_NAME)) {
       // If we're on master, instruct the docker image builds to push to the
       // cache registry
       env.DOCKER_PUSH = "1"
@@ -151,7 +151,9 @@ def doAndroidBuild(target, postStep = null) {
 def doDockerBuild(target, postStep = null) {
   return {
     node('docker') {
-      doDockerInside("./scripts/docker-wrapper.sh ./scripts/test.sh", target, postStep)
+      wrap([$class: 'AnsiColorBuildWrapper']) {
+        doDockerInside("./scripts/docker-wrapper.sh ./scripts/test.sh", target, postStep)
+      }
     }
   }
 }
@@ -159,7 +161,9 @@ def doDockerBuild(target, postStep = null) {
 def doMacBuild(target, postStep = null) {
   return {
     node('osx_vegas') {
-      doInside("./scripts/test.sh", target, postStep)
+      wrap([$class: 'AnsiColorBuildWrapper']) {
+        doInside("./scripts/test.sh", target, postStep)
+      }
     }
   }
 }
