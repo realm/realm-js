@@ -93,7 +93,7 @@ stage('check') {
       }
     } finally {
       // delete the folder if working on a PR per realm/realm-js#734
-      if (env.GIT_BRANCH.startsWith('PR-')) {
+      if (env.CHANGE_TARGET) {
         dir(env.WORKSPACE) {
           deleteDir()
         }
