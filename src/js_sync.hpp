@@ -115,7 +115,6 @@ void UserClass<T>::is_admin(ContextType ctx, ObjectType object, ReturnValue &ret
 template<typename T>
 void UserClass<T>::create_user(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 3, 4);
-
     SharedUser *user = new SharedUser(SyncManager::shared().get_user(
         Value::validated_to_string(ctx, arguments[1]),
         Value::validated_to_string(ctx, arguments[2]),
@@ -127,8 +126,8 @@ void UserClass<T>::create_user(ContextType ctx, ObjectType this_object, size_t a
 template<typename T>
 void UserClass<T>::all_users(ContextType ctx, ObjectType object, ReturnValue &return_value) {
     auto users = Object::create_empty(ctx);
-    for (auto user : SyncManager::shared().all_users()) {
-        if (user->state() == SyncUser::State::Active) {
+    for (auto user : SyncManager::shared().all_logged_in_users()) {
+        if (!user->is_admin()) {
             Object::set_property(ctx, users, user->identity(), create_object<T, UserClass<T>>(ctx, new SharedUser(user)), ReadOnly | DontDelete);
         }
     }
@@ -138,8 +137,8 @@ void UserClass<T>::all_users(ContextType ctx, ObjectType object, ReturnValue &re
 template<typename T>
 void UserClass<T>::current_user(ContextType ctx, ObjectType object, ReturnValue &return_value) {
     SharedUser *current = nullptr;
-    for (auto user : SyncManager::shared().all_users()) {
-        if (user->state() == SyncUser::State::Active) {
+    for (auto user : SyncManager::shared().all_logged_in_users()) {
+        if (!user->is_admin()) {
             if (current != nullptr) {
                 throw std::runtime_error("More than one user logged in currently.");
             }
@@ -198,14 +197,14 @@ public:
 
 template<typename T>
 inline typename T::Function SyncClass<T>::create_constructor(ContextType ctx) {
-    // setup synced realmFile paths
-    ensure_directory_exists_for_file(default_realm_file_directory());
-    SyncManager::shared().configure_file_system(default_realm_file_directory(), SyncManager::MetadataMode::NoEncryption);
-
     FunctionType sync_constructor = ObjectWrap<T, SyncClass<T>>::create_constructor(ctx);
 
     PropertyAttributes attributes = ReadOnly | DontEnum | DontDelete;
     Object::set_property(ctx, sync_constructor, "User", ObjectWrap<T, UserClass<T>>::create_constructor(ctx), attributes);
+
+    // setup synced realmFile paths
+    ensure_directory_exists_for_file(default_realm_file_directory());
+    SyncManager::shared().configure_file_system(default_realm_file_directory(), SyncManager::MetadataMode::NoEncryption);
 
     realm::SyncManager::shared().set_error_handler([=](int error_code, std::string message) {
         std::cout << error_code << " " << message << std::endl;
@@ -258,7 +257,8 @@ void SyncClass<T>::refresh_access_token(ContextType ctx, ObjectType this_object,
 }
 
 template<typename T>
-void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constructor, ObjectType config_object, Realm::Config& config) {
+void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constructor, ObjectType config_object, Realm::Config& config)
+{
     ValueType sync_config_value = Object::get_property(ctx, config_object, "sync");
     if (!Value::is_undefined(ctx, sync_config_value)) {
         auto sync_config_object = Value::validated_to_object(ctx, sync_config_value);
@@ -302,8 +302,7 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
         std::string raw_realm_url = Object::validated_get_string(ctx, sync_config_object, "url");
 
         // FIXME - use make_shared
-        config.sync_config = std::shared_ptr<SyncConfig>(
-            new SyncConfig(shared_user, raw_realm_url, SyncSessionStopPolicy::AfterChangesUploaded, handler)
+        config.sync_config = std::shared_ptr<SyncConfig>(new SyncConfig{shared_user, raw_realm_url, SyncSessionStopPolicy::AfterChangesUploaded, handler, [=](auto, int error_code, std::string message, SyncSessionError) {}}
         );
         config.schema_mode = SchemaMode::Additive;
         config.path = realm::SyncManager::shared().path_for_realm(shared_user->identity(), raw_realm_url);

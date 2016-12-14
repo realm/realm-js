@@ -62,7 +62,7 @@ class RealmDelegate : public BindingContext {
     using ObjectDefaultsMap = typename Schema<T>::ObjectDefaultsMap;
     using ConstructorMap = typename Schema<T>::ConstructorMap;
 
-    virtual void did_change(std::vector<ObserverState> const& observers, std::vector<void*> const& invalidated) {
+    virtual void did_change(std::vector<ObserverState> const& observers, std::vector<void*> const& invalidated, bool version_changed) {
         notify("change");
     }
     virtual std::vector<ObserverState> get_observed_rows() {
@@ -326,12 +326,16 @@ void RealmClass<T>::constructor(ContextType ctx, ObjectType this_object, size_t 
         else if (Value::is_object(ctx, value)) {
             ObjectType object = Value::validated_to_object(ctx, value);
 
+#if REALM_ENABLE_SYNC
+            SyncClass<T>::populate_sync_config(ctx, Value::validated_to_object(ctx, Object::get_global(ctx, "Realm")), object, config);
+#endif
+
             static const String path_string = "path";
             ValueType path_value = Object::get_property(ctx, object, path_string);
             if (!Value::is_undefined(ctx, path_value)) {
                 config.path = Value::validated_to_string(ctx, path_value, "path");
             }
-            else {
+            else if (config.path.empty()) {
                 config.path = js::default_path();
             }
 
@@ -392,9 +396,6 @@ void RealmClass<T>::constructor(ContextType ctx, ObjectType this_object, size_t 
                 std::string encryption_key = NativeAccessor::to_binary(ctx, encryption_key_value);
                 config.encryption_key = std::vector<char>(encryption_key.begin(), encryption_key.end());
             }
-#if REALM_ENABLE_SYNC
-            SyncClass<T>::populate_sync_config(ctx, Value::validated_to_object(ctx, Object::get_global(ctx, "Realm")), object, config);
-#endif
         }
     }
     else {
@@ -454,14 +455,15 @@ void RealmClass<T>::schema_version(ContextType ctx, ObjectType this_object, size
 template<typename T>
 void RealmClass<T>::clear_test_state(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 0);
+
+    delete_all_realms();
 #if REALM_ENABLE_SYNC
-    for(auto &user : SyncManager::shared().all_users()) {
+    for(auto &user : SyncManager::shared().all_logged_in_users()) {
         user->log_out();
     }
     SyncManager::shared().reset_for_testing();
     SyncManager::shared().configure_file_system(default_realm_file_directory(), SyncManager::MetadataMode::NoEncryption);
 #endif
-    delete_all_realms();
 }
 
 template<typename T>
@@ -640,6 +642,9 @@ void RealmClass<T>::add_listener(ContextType ctx, ObjectType this_object, size_t
     auto callback = Value::validated_to_function(ctx, arguments[1]);
 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
+    if (realm->is_closed()) {
+        throw ClosedRealmException();
+    }
     get_delegate<T>(realm.get())->add_notification(callback);
 }
 
@@ -651,6 +656,9 @@ void RealmClass<T>::remove_listener(ContextType ctx, ObjectType this_object, siz
     auto callback = Value::validated_to_function(ctx, arguments[1]);
 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
+    if (realm->is_closed()) {
+        throw ClosedRealmException();
+    }
     get_delegate<T>(realm.get())->remove_notification(callback);
 }
 
@@ -662,6 +670,9 @@ void RealmClass<T>::remove_all_listeners(ContextType ctx, ObjectType this_object
     }
 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
+    if (realm->is_closed()) {
+        throw ClosedRealmException();
+    }
     get_delegate<T>(realm.get())->remove_all_notifications();
 }
 

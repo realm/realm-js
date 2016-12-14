@@ -40,7 +40,7 @@ start_server() {
 
 stop_server() {
   if [[ ${SERVER_PID} > 0 ]] ; then
-    kill ${SERVER_PID}
+    kill -9 ${SERVER_PID}
   fi
 }
 
@@ -119,6 +119,11 @@ case "$TARGET" in
   [[ $CONFIGURATION == 'Debug' ]] && exit 0
   npm install
   npm run lint .
+  ;;
+"eslint-ci")
+  [[ $CONFIGURATION == 'Debug' ]] && exit 0
+  npm install
+  ./node_modules/.bin/eslint -f checkstyle . > eslint.xml || true
   ;;
 "jsdoc")
   [[ $CONFIGURATION == 'Debug' ]] && exit 0

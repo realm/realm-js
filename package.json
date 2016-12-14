@@ -36,6 +36,7 @@
     "react-native",
     "scripts",
     "src",
+    "tests",
     "vendor",
     "binding.gyp",
     "dependencies.list"
@@ -65,6 +66,7 @@
     "eslint-plugin-jasmine": "^2.1.0",
     "eslint-plugin-react": "^6.7.0",
     "jsdoc": "^3.4.0",
+    "mockery": "^2.0.0",
     "semver": "^5.1.0"
   },
   "rnpm": {

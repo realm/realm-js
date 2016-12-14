@@ -7,7 +7,7 @@
   },
   "source": {
     "include": ["docs"],
-    "exclude": ["docs/jsdoc-template", "docs/output", "docs/sync.js"]
+    "exclude": ["docs/jsdoc-template", "docs/output"]
   },
   "tags": {
     "allowUnknownTags": false
