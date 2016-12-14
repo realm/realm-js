@@ -23,9 +23,9 @@ stage('check') {
       ],
       userRemoteConfigs: scm.userRemoteConfigs
     ])
-    
-    stash name: 'source', includes:'**/*'
-    
+
+    stash name: 'source', includes:'**/*', excludes:'react-native/android/src/main/jni/src/object-store/.dockerignore'
+
     dependencies = readProperties file: 'dependencies.list'
 
     gitTag = readGitTag()
@@ -130,13 +130,13 @@ def reportStatus(target, state, String message) {
 def doInside(script, target, postStep = null) {
   try {
     reportStatus(target, 'PENDING', 'Build has started')
-    
+
     retry(3) { // retry unstash up to three times to mitigate network and contention
       dir(env.WORKSPACE) {
         deleteDir()
         unstash 'source'
       }
-    }  
+    }
     wrap([$class: 'AnsiColorBuildWrapper']) {
       sh "bash ${script} ${target}"
     }
