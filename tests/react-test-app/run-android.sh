@@ -15,8 +15,7 @@ adb uninstall io.realm.react.testapp || true
 echo "Reversing port for physical device"
 adb reverse tcp:8081 tcp:8081
 
-ls -alh ../../react-native/android/src/main/jni/src/object-store/.dockerignore
-react-native run-android --debug
+react-native run-android
 
 echo "Unlocking device"
 # sometimes on CI the application is not on the foreground
