@@ -9,5 +9,5 @@ cd "$(dirname "$0")/.."
 if [ -n "$REALM_BUILD_ANDROID" ]; then
   rm -rf android
   ls -alh react-native/android/src/main/jni/src/object-store/.dockerignore
-  (cd react-native/android && ./gradlew --debug publishAndroid -PbuildWithSync=true)
+  (cd react-native/android && ./gradlew --stacktrace publishAndroid -PbuildWithSync=true)
 fi
