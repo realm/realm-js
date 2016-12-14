@@ -382,5 +382,24 @@ module.exports = {
             TestCase.assertEqual(objects.length, 0);
             TestCase.assertEqual(snapshot.length, 0);
         });
+    },
+
+    testAddListener: function() {
+        var realm = new Realm({schema: [schemas.TestObject]});
+
+        realm.write(() => {
+            realm.create('TestObject', { doubleCol: 1 });
+            realm.create('TestObject', { doubleCol: 2 });
+            realm.create('TestObject', { doubleCol: 3 });
+        });
+
+        realm.objects('TestObject').addListener((testObjects) => {
+            console.log("HEYO!");
+        });
+
+        realm.write(() => {
+            realm.create('TestObject', { doubleCol: 1 });
+        });
+
     }
 };
