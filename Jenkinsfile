@@ -21,9 +21,8 @@ stage('check') {
       ],
       userRemoteConfigs: scm.userRemoteConfigs
     ])
-    //TODO: FIX this. react-tests-android fails because of this symbolic link
-    sh "rm -f react-native/android/src/main/jni/src/object-store/.dockerignore"
-    stash includes:'**/*', name:'source'
+
+    stash includes:'**/*', name:'source', excludes:'react-native/android/src/main/jni/src/object-store/.dockerignore'
 
     dependencies = readProperties file: 'dependencies.list'
 
