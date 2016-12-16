@@ -169,13 +169,13 @@ case "$TARGET" in
   pushd tests/react-test-app
 
   npm install
-  open_chrome
-  start_packager
   ./run-android.sh
 
   # Despite the docs claiming -c to work, it doesn't, so `-T 1` alleviates that.
   adb logcat -c
   adb logcat -T 1 | tee "$LOGCAT_OUT" &
+
+  sleep 2
 
   while :; do
     if grep -q "__REALM_REACT_ANDROID_TESTS_COMPLETED__" "$LOGCAT_OUT"; then
