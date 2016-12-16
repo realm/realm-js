@@ -18,8 +18,6 @@
 
 'use strict';
 
-throw new Error("We're actually hitting this. Good.")
-
 import {
     NativeAppEventEmitter,
     NativeModules,
