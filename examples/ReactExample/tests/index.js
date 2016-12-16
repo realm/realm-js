@@ -18,6 +18,8 @@
 
 'use strict';
 
+throw new Error("We're actually hitting this. Good.")
+
 import {
     NativeAppEventEmitter,
     NativeModules,
@@ -65,6 +67,5 @@ function getTestNames() {
         let testSuite = TESTS[suiteName];
         testNames[suiteName] = Object.keys(testSuite);
     }
-
     return testNames;
 }
