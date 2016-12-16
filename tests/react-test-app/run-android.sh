@@ -15,13 +15,14 @@ adb uninstall io.realm.react.testapp || true
 echo "Reversing port for physical device"
 adb reverse tcp:8081 tcp:8081
 
-react-native run-android
+echo "Building Release APK"
+cd android && ./gradlew assembleRelease
 
-echo "Unlocking device"
-# sometimes on CI the application is not on the foreground
-adb shell input keyevent 82
-adb shell input text 1234 && adb shell input keyevent 66
+echo "Installing APK"
+adb install app/build/outputs/apk/app-release.apk
 
-sleep 1
 echo "Starting the Main Activity"
 adb shell am start -n io.realm.react.testapp/.MainActivity
+
+echo "Unlocking device"
+adb shell input keyevent 82
