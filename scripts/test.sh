@@ -172,8 +172,8 @@ case "$TARGET" in
   ./run-android.sh
 
   # Despite the docs claiming -c to work, it doesn't, so `-T 1` alleviates that.
-  adb logcat -c
-  adb logcat -T 1 | tee "$LOGCAT_OUT" &
+  adb -e logcat -c
+  adb -e logcat -T 1 | tee "$LOGCAT_OUT" &
 
   sleep 2
 
@@ -187,7 +187,7 @@ case "$TARGET" in
   done
 
   rm -f tests.xml
-  adb pull /sdcard/tests.xml .
+  adb -e pull /sdcard/tests.xml .
 
   # Stop running child processes before printing results.
   cleanup
