@@ -56,7 +56,9 @@ RUN echo y | android update sdk --no-ui --all --filter tools > /dev/null && \
     echo y | android update sdk --no-ui --all --filter platform-tools | grep 'package installed' && \
     echo y | android update sdk --no-ui --all --filter build-tools-23.0.1 | grep 'package installed' && \
     echo y | android update sdk --no-ui --all --filter extra-android-m2repository | grep 'package installed' && \
-    echo y | android update sdk --no-ui --all --filter android-23 | grep 'package installed'
+    echo y | android update sdk --no-ui --all --filter android-23 | grep 'package installed' \
+    echo y | android update sdk -a --no-ui --filter sys-img-armeabi-v7a-google_apis-23
+    echo no | android create avd --name react_native_tests_23 -t "android-23" --abi "google_apis/armeabi-v7a"
 
 # Install the Android NDK
 ENV ANDROID_NDK_VERSION r10e
