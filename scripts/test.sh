@@ -172,10 +172,18 @@ case "$TARGET" in
   ./run-android.sh
 
   # Despite the docs claiming -c to work, it doesn't, so `-T 1` alleviates that.
-  adb -e logcat -c
-  adb -e logcat -T 1 | tee "$LOGCAT_OUT" &
+  adb logcat -c
+  adb logcat -T 1 | tee "$LOGCAT_OUT" &
+
+  sleep 8
+
+  echo "Going Back Home"
+  adb shell input keyevent KEYCODE_BACK
 
   sleep 2
+
+  echo "Starting the Main Activity Again"
+  adb shell am start -n io.realm.react.testapp/.MainActivity
 
   while :; do
     if grep -q "__REALM_REACT_ANDROID_TESTS_COMPLETED__" "$LOGCAT_OUT"; then
@@ -187,7 +195,7 @@ case "$TARGET" in
   done
 
   rm -f tests.xml
-  adb -e pull /sdcard/tests.xml .
+  adb pull /sdcard/tests.xml .
 
   # Stop running child processes before printing results.
   cleanup
