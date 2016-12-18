@@ -11,7 +11,7 @@ REALM_BUILD_ANDROID=1 npm install realm realm-tests
 cp ../../src/object-store/tests/query.json node_modules/realm-tests/query-tests.json
 
 echo "Start Emulator"
-emulator -verbose -avd react_native_tests_23 &
+emulator -force-32bit -verbose -avd react_native_tests_23 &
 
 sleep 10
 
