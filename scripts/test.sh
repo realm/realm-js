@@ -169,21 +169,23 @@ case "$TARGET" in
   pushd tests/react-test-app
 
   npm install
-  ./run-android.sh
 
+  echo "Resetting logcat and start listening for test completion"
   # Despite the docs claiming -c to work, it doesn't, so `-T 1` alleviates that.
   adb logcat -c
   adb logcat -T 1 | tee "$LOGCAT_OUT" &
 
-  sleep 8
+  ./run-android.sh
 
-  echo "Going Back Home"
-  adb shell input keyevent KEYCODE_BACK
+  # sleep 8
 
-  sleep 2
+  # echo "Going Back Home"
+  # adb shell input keyevent KEYCODE_BACK
 
-  echo "Starting the Main Activity Again"
-  adb shell am start -n io.realm.react.testapp/.MainActivity
+  # sleep 2
+
+  # echo "Starting the Main Activity Again"
+  # adb shell am start -n io.realm.react.testapp/.MainActivity
 
   while :; do
     if grep -q "__REALM_REACT_ANDROID_TESTS_COMPLETED__" "$LOGCAT_OUT"; then
