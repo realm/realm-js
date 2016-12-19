@@ -18,7 +18,6 @@
 'use strict';
 
 import {
-    DeviceEventEmitter,
     AppRegistry,
     StyleSheet,
     Image,
@@ -81,14 +80,8 @@ async function runTests() {
     }
 }
 
-// Listen for the Catalyst to be active & load the Realm module before running the tests.
-DeviceEventEmitter.addListener('REALM_MODULE_LOADED', function(e: Event) {
-    // runTests();
-  });
-
 class ReactTests extends React.Component {
     render() {
-        console.log(">>>>>>>>>>>>>> STARTING TESTS");
         runTests();
         return (
             <View style={styles.container}>
