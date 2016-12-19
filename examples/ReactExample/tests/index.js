@@ -55,9 +55,8 @@ NativeAppEventEmitter.addListener('realm-run-test', async ({suite, name}) => {
 
 // Inform the native test harness about the test suite once it's ready.
 setTimeout(() => {
-    throw new Error("We reach the scope of setTimeout()");
     NativeModules.Realm.emit('realm-test-names', getTestNames());
-}, 0);
+}, 1000);
 
 function getTestNames() {
     let testNames = {};
