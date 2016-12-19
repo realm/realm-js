@@ -177,6 +177,8 @@ case "$TARGET" in
 
   ./run-android.sh
 
+  echo "Start listening for Test completion"
+
   while :; do
     if grep -q "__REALM_REACT_ANDROID_TESTS_COMPLETED__" "$LOGCAT_OUT"; then
       break

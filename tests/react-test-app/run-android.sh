@@ -5,8 +5,14 @@ set -e
 
 PATH="/opt/android-sdk-linux/platform-tools:$PATH"
 
-# Inform the prepublish script to build Android modules.
-REALM_BUILD_ANDROID=1 npm install realm realm-tests
+if [ -n "$REALM_BUILD_ANDROID" ]; then
+    echo "Realm is already installed" # by inoking test.sh previously for example
+
+else
+    # Inform the prepublish script to build Android modules.
+    REALM_BUILD_ANDROID=1 npm install realm realm-tests
+fi
+
 
 cp ../../src/object-store/tests/query.json node_modules/realm-tests/query-tests.json
 
