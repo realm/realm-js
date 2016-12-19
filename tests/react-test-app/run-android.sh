@@ -22,8 +22,6 @@ pushd android && ./gradlew assembleRelease
 echo "Installing APK"
 adb install app/build/outputs/apk/app-release.apk
 
-sleep 10
-
 echo "Starting the Main Activity"
 adb shell am start -n io.realm.react.testapp/.MainActivity
 

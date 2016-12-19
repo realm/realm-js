@@ -177,16 +177,6 @@ case "$TARGET" in
 
   ./run-android.sh
 
-  # sleep 8
-
-  # echo "Going Back Home"
-  # adb shell input keyevent KEYCODE_BACK
-
-  # sleep 2
-
-  # echo "Starting the Main Activity Again"
-  # adb shell am start -n io.realm.react.testapp/.MainActivity
-
   while :; do
     if grep -q "__REALM_REACT_ANDROID_TESTS_COMPLETED__" "$LOGCAT_OUT"; then
       break
