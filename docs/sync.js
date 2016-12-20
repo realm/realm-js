@@ -26,22 +26,28 @@ class Sync {
 	 * @param {SyncUser} admin_user - an admin user obtained by calling `new Realm.Sync.User.adminUser`
 	 * @param {string} regex - a regular expression used to determine which cahnged Realms should trigger events -
 	 *  Use `.*` to match all all Realms
-	 * @param {function(change_object)} change_callback - called on when changes are made to any Realm which
+	 * @param {string} name - The name of event that should cause the callback to be called
+     *   _Currently only the 'change' event is supported_
+	 * @param {function(change_event)} change_callback - called when changes are made to any Realm which
 	 *  match the given regular expression
 	 */
-	static addListener(server_url, admin_user, regex, change_callback) {}
+	static addListener(server_url, admin_user, regex, name, change_callback) {}
 
 	/**
 	 * Remove a previously registered sync listener
 	 * @param {string} regex - the regular expression previously used to register the listener
-	 * @param {function(change_object)} change_callback - the previously registered callback to be removed
+     * @param {string} name - The event name
+     *   _Currently only the 'change' event is supported_
+	 * @param {function(change_event)} change_callback - the previously registered callback to be removed
 	 */
-	static removeListener(regex, change_callback) {}
+	static removeListener(regex, name, change_callback) {}
 
 	/**
 	 * Remove all previously regiestered listeners
+	 * @param {string} [name] - The name of the event whose listeners should be removed.
+     *   _Currently only the 'change' event is supported_
 	 */
-	static removeAllListeners() {}
+	static removeAllListeners(name) {}
 
 	/**
 	 * Set the sync log level.
@@ -52,10 +58,10 @@ class Sync {
 }
 
 /**
- * Object passed
+ * Change info passed when receiving sync 'change' events
  * @memberof Realm.Sync
  */
-class ChangeObject {
+class ChangeEvent {
     /**
      * The path of the changed Realm
      * @type {string}
