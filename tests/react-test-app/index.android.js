@@ -82,17 +82,12 @@ async function runTests() {
 
 class ReactTests extends React.Component {
     render() {
+        runTests();
         return (
             <View style={styles.container}>
                 <Text style={styles.button} onPress={runTests}>
-                    Running Tests...
+                    Click To Run Tests Again.
                 </Text>
-
-                <Image
-                    style={styles.icon}
-                    source={require('image!ic_launcher')}
-                    onLoad={() => runTests()}
-                />
             </View>
         );
     }
