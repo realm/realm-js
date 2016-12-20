@@ -25,6 +25,7 @@
 #import "RCTEventDispatcher.h"
 #import "RCTJavaScriptLoader.h"
 #import "RCTLog.h"
+#import "RunTestsEventEmitter.h"
 
 extern void JSGlobalContextSetIncludesNativeCallStackWhenReportingExceptions(JSGlobalContextRef ctx, bool includesNativeCallStack);
 extern NSMutableArray *RCTGetModuleClasses(void);
@@ -38,6 +39,9 @@ extern NSMutableArray *RCTGetModuleClasses(void);
 @end
 
 @interface RealmReactTests : RealmJSTests
+
+@property (nonatomic, strong) RunTestsEventEmitter *eventEmitter;
+
 @end
 
 @interface RealmReactChromeTests : RealmReactTests
@@ -220,13 +224,18 @@ extern NSMutableArray *RCTGetModuleClasses(void);
 - (void)invokeMethod:(NSString *)method {
     NSString *module = NSStringFromClass(self.class);
     NSString *suffix = [self.class classNameSuffix];
+    
+    if (!self.eventEmitter) {
+        self.eventEmitter = [[RunTestsEventEmitter alloc] init];
+    }
 
     if (suffix.length && [module hasSuffix:suffix]) {
         module = [module substringToIndex:(module.length - suffix.length)];
     }
 
     RCTBridge *bridge = [self.class currentBridge];
-    [bridge.eventDispatcher sendAppEventWithName:@"realm-run-test" body:@{@"suite": module, @"name": method}];
+    [self.eventEmitter sendEventWithName:@"realm-run-test" body:@{@"suite": module, @"name": method}];
+    //[bridge.eventDispatcher sendAppEventWithName:@"realm-run-test" body:@{@"suite": module, @"name": method}];
 
     id error;
     @try {
