@@ -163,7 +163,7 @@ def doDockerInside(script, target, postStep = null) {
 
 def doAndroidBuild(target, postStep = null) {
   return {
-    node('docker') {
+    node('docker && android') {
       doDockerInside("./scripts/docker-android-wrapper.sh ./scripts/test.sh", target, postStep)
     }
   }
