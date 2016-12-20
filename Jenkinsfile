@@ -163,10 +163,8 @@ def doDockerInside(script, target, postStep = null) {
 
 def doAndroidBuild(target, postStep = null) {
   return {
-    node('docker && android && nexus-5x') {
-      timeout(time: 60, unit: 'MINUTES') {
-        doDockerInside("./scripts/docker-android-wrapper.sh ./scripts/test.sh", target, postStep)
-      }
+    node('docker') {
+      doDockerInside("./scripts/docker-android-wrapper.sh ./scripts/test.sh", target, postStep)
     }
   }
 }

@@ -170,7 +170,7 @@ case "$TARGET" in
 
   npm install
 
-  echo "Resetting logcat and start listening for test completion"
+  echo "Resetting logcat"
   # Despite the docs claiming -c to work, it doesn't, so `-T 1` alleviates that.
   adb logcat -c
   adb logcat -T 1 | tee "$LOGCAT_OUT" &
