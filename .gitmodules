@@ -7,4 +7,4 @@
 [submodule "src/object-store"]
 	path = src/object-store
 	url = https://github.com/realm/realm-object-store.git
-	branch = js
+	branch = master
