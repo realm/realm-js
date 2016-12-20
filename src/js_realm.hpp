@@ -405,18 +405,17 @@ void RealmClass<T>::constructor(ContextType ctx, ObjectType this_object, size_t 
     config.path = normalize_path(config.path);
     ensure_directory_exists_for_file(config.path);
 
+    config.execution_context = reinterpret_cast<AbstractExecutionContextID>(Context<T>::get_execution_context_id(ctx));
+
     SharedRealm realm = realm::Realm::get_shared_realm(config);
     GlobalContextType global_context = Context<T>::get_global_context(ctx);
-    BindingContext *binding_context = realm->m_binding_context.get();
-    RealmDelegate<T> *js_binding_context = dynamic_cast<RealmDelegate<T> *>(binding_context);
+    if (!realm->m_binding_context) {
+        realm->m_binding_context.reset(new RealmDelegate<T>(realm, global_context));
+    }
 
-    if (!binding_context) {
-        js_binding_context = new RealmDelegate<T>(realm, global_context);
-        realm->m_binding_context.reset(js_binding_context);
-    }
-    else if (!js_binding_context || js_binding_context->m_context != global_context) {
-        throw std::runtime_error("Realm is already open in another context on this thread: " + config.path);
-    }
+    RealmDelegate<T> *js_binding_context = dynamic_cast<RealmDelegate<T> *>(realm->m_binding_context.get());
+    REALM_ASSERT(js_binding_context);
+    REALM_ASSERT(js_binding_context->m_context == global_context);
 
     // If a new schema was provided, then use its defaults and constructors.
     if (schema_updated) {
