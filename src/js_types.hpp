@@ -145,6 +145,8 @@ struct Function {
         return call(ctx, function, this_object, arguments.size(), arguments.data());
     }
 
+    static ValueType make_callback(ContextType ctx, const FunctionType &function, const ObjectType &this_object, size_t argument_count, const ValueType arguments[]);
+
     static ObjectType construct(ContextType, const FunctionType &, size_t, const ValueType[]);
     static ValueType construct(ContextType ctx, const FunctionType &function, const std::vector<ValueType> &arguments) {
         return construct(ctx, function, arguments.size(), arguments.data());

@@ -33,6 +33,17 @@ inline JSValueRef jsc::Function::call(JSContextRef ctx, const JSObjectRef &funct
     return result;
 }
 
+// This implementation just makes a regular call. It's specialized in V8.
+template<>
+inline JSValueRef jsc::Function::make_callback(JSContextRef ctx, const JSObjectRef &function, const JSObjectRef &this_object, size_t argc, const JSValueRef arguments[]) {
+    JSValueRef exception = nullptr;
+    JSValueRef result = JSObjectCallAsFunction(ctx, function, this_object, argc, arguments, &exception);
+    if (exception) {
+        throw jsc::Exception(ctx, exception);
+    }
+    return result;
+}
+
 template<>
 inline JSObjectRef jsc::Function::construct(JSContextRef ctx, const JSObjectRef &function, size_t argc, const JSValueRef arguments[]) {
     JSValueRef exception = nullptr;
