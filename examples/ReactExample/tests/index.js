@@ -56,7 +56,7 @@ NativeAppEventEmitter.addListener('realm-run-test', async ({suite, name}) => {
 // Inform the native test harness about the test suite once it's ready.
 setTimeout(() => {
     NativeModules.Realm.emit('realm-test-names', getTestNames());
-}, 0);
+}, 1000);
 
 function getTestNames() {
     let testNames = {};
@@ -65,6 +65,5 @@ function getTestNames() {
         let testSuite = TESTS[suiteName];
         testNames[suiteName] = Object.keys(testSuite);
     }
-
     return testNames;
 }
