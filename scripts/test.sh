@@ -110,7 +110,7 @@ xctest() {
   
   # - Wait until the simulator is fully booted by waiting for it to launch SpringBoard
   printf "Waiting for springboard to ensure device is ready..."
-  xcrun simctl launch "$IOS_SIM_DEVICE" com.apple.springboard >/dev/null 2>&1 || true
+  xcrun simctl launch "$IOS_SIM_DEVICE" com.apple.springboard 1>/dev/null 2>/dev/null || true
   echo "  done"
   
   # - Run the build and test
