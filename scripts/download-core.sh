@@ -100,6 +100,10 @@ check_release_notes() {
     grep -Fqi "$REALM_CORE_VERSION RELEASE NOTES" "$@"
 }
 
+check_sync_version() {
+    grep -Fqi "$REALM_SYNC_VERSION" "$@"
+}
+
 DOWNLOAD_CORE=1
 
 if ! [ -z "$REALM_CORE_PREFIX" ]; then
@@ -167,7 +171,7 @@ if [ "$DOWNLOAD_SYNC" == 1 ]; then
         # With a prebuilt version we only want to check the first non-empty
         # line so that checking out an older commit will download the
         # appropriate version of core if the already-present version is too new
-        elif ! grep -m 1 . "vendor/$SYNC_DIR/version.txt"; then
+        elif ! grep -m 1 . "vendor/$SYNC_DIR/version.txt" | check_sync_version; then
             download_core $SYNC_DIR $REALM_SYNC_VERSION $SYNC_DOWNLOAD_FILE sync "$SYNC_EXTRACT" $EXTRACTED_DIR
         else
             echo "The sync library seems to be up to date."
