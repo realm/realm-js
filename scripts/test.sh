@@ -16,6 +16,10 @@ ios_sim_default_ios_version=${IOS_SIM_OS:-iOS 10.1}
 PATH="/opt/android-sdk-linux/platform-tools:$PATH"
 SRCROOT=$(cd "$(dirname "$0")/.." && pwd)
 XCPRETTY=`which xcpretty || true`
+CI_RUN=false
+if [ -n "${JENKINS_HOME}" ]; then
+  CI_RUN=true
+fi
 
 # Start current working directory at the root of the project.
 cd "$SRCROOT"
@@ -55,14 +59,14 @@ cleanup() {
   # Kill started object server
   stop_server || true
   
-  # Give the simulator a chance to go down gracefully
+  # Quit Simulator.app to give it a chance to go down gracefully
   if $startedSimulator; then
     osascript -e 'tell app "Simulator" to quit without saving' || true
-    sleep 0.25 # otherwise the pkill following will get it
+    sleep 0.25 # otherwise the pkill following will get it too early
   fi
   
-  # Kill all other child processes.
-  pkill -P $$ || true
+  # Kill all child processes.
+  pkill -9 -P $$ || true
 
   # Kill react native packager
   pkill node || true
@@ -102,23 +106,7 @@ start_packager() {
 }
 
 xctest() {
-  # note: the DEVELOPER_DIR and IOS_SIM_DEVICE sections sould be kept in sync with setup_ios_simulator
-  
-  # - Ensure one version of xcode is chosen by all tools
-  if [[ -z "$DEVELOPER_DIR" ]]; then
-    export DEVELOPER_DIR="$(xcode-select -p)"
-  fi
-  
-  # - Choose a device, if it has not already been chosen
-  local deadline=$((SECONDS+5))
-  while [ -z "$IOS_SIM_DEVICE" ] && [ $SECONDS -lt $deadline ]; do
-    IOS_SIM_DEVICE=`ruby -rjson -e "puts JSON.parse(%x{xcrun simctl list devices --json})['devices'].each{|os,group| group.each{|dev| dev['os'] = os}}.flat_map{|x| x[1]}.select{|x| x['availability'] == '(available)'}.each{|x| x['score'] = (x['name'] == '$ios_sim_default_device_type' ? 1 : 0) + (x['os'] == '$ios_sim_default_ios_version' ? 1 : 0)}.sort_by!{|x| [x['score'], x['name']]}.reverse![0]['udid']"`
-    export IOS_SIM_DEVICE
-  done
-  if [ -z "$IOS_SIM_DEVICE" ]; then
-    echo "*** Failed to determine the iOS Simulator device to use ***"
-    exit 1
-  fi
+  setup_ios_simulator
   
   # - Wait until the simulator is fully booted by waiting for it to launch SpringBoard
   printf "Waiting for springboard to ensure device is ready..."
@@ -150,60 +138,74 @@ xctest() {
 
 setup_ios_simulator() {
   # - Ensure one version of xcode is chosen by all tools
-  
   if [[ -z "$DEVELOPER_DIR" ]]; then
     export DEVELOPER_DIR="$(xcode-select -p)"
   fi
   
-  # - Kill the Simulator to ensure we are running the correct one
+  # -- Ensure that the simulator is ready
   
-  echo "Resetting simulator using toolchain from: $DEVELOPER_DIR"
+  if [ $CI_RUN == true ]; then
+	# - Kill the Simulator to ensure we are running the correct one, only when running in CI
+	echo "Resetting simulator using toolchain from: $DEVELOPER_DIR"
+	
+	# Quit Simulator.app to give it a chance to go down gracefully
+	local deadline=$((SECONDS+5))
+	while pgrep -qx Simulator && [ $SECONDS -lt $deadline ]; do
+	  osascript -e 'tell app "Simulator" to quit without saving' || true
+	  sleep 0.25 # otherwise the pkill following will get it too early 
+	done
+	
+	# stop CoreSimulatorService
+	launchctl remove com.apple.CoreSimulator.CoreSimulatorService 2>/dev/null || true
+	sleep 0.25 # launchtl can take a small moment to kill services
+	
+	# kill them with fire
+	while pgrep -qx Simulator com.apple.CoreSimulator.CoreSimulatorService; do
+	  pkill -9 -x Simulator com.apple.CoreSimulator.CoreSimulatorService || true
+	  sleep 0.05
+	done
+	
+	# - Prod `simctl` a few times as sometimes it fails the first couple of times after switching XCode vesions
+	local deadline=$((SECONDS+5))
+	while [ -z "`xcrun simctl list devices 2>/dev/null`" ] && [ $SECONDS -lt $deadline ]; do
+	  : # nothing to see here, will stop cycling on the first successful run
+	done
+    
+    # - Choose a device, if it has not already been chosen
+    local deadline=$((SECONDS+5))
+    while [ -z "$IOS_SIM_DEVICE" ] && [ $SECONDS -lt $deadline ]; do
+      export IOS_SIM_DEVICE=`ruby -rjson -e "puts JSON.parse(%x{xcrun simctl list devices --json})['devices'].each{|os,group| group.each{|dev| dev['os'] = os}}.flat_map{|x| x[1]}.select{|x| x['availability'] == '(available)'}.each{|x| x['score'] = (x['name'] == '$ios_sim_default_device_type' ? 1 : 0) + (x['os'] == '$ios_sim_default_ios_version' ? 1 : 0)}.sort_by!{|x| [x['score'], x['name']]}.reverse![0]['udid']"`
+    done
+    if [ -z "$IOS_SIM_DEVICE" ]; then
+      echo "*** Failed to determine the iOS Simulator device to use ***"
+      exit 1
+    fi
+    
+    # - Reset the device we will be using if running in CI
+    xcrun simctl shutdown "$IOS_SIM_DEVICE" 1>/dev/null 2>/dev/null || true # sometimes simctl gets confused
+    xcrun simctl erase "$IOS_SIM_DEVICE"
+    
+    # - Start the target in Simulator.app
+    # Note: as of Xcode 7.3.1 `simctl` can not completely boot a simulator, specifically it can not bring up backboard, so GUI apps can not run.
+    #       This is fixed in version 8 of Xcode, but we still need the compatibility
+    
+    "$DEVELOPER_DIR/Applications/Simulator.app/Contents/MacOS/Simulator" -CurrentDeviceUDID "$IOS_SIM_DEVICE" & # will get killed with all other children at exit
+    startedSimulator=true
   
-  # quit Simulator.app
-  local deadline=$((SECONDS+5))
-  while pgrep -qx Simulator && [ $SECONDS -lt $deadline ]; do
-    osascript -e 'tell app "Simulator" to quit without saving' || true
-    sleep 0.25 # the 
-  done
-  
-  # stop CoreSimulatorService
-  launchctl remove com.apple.CoreSimulator.CoreSimulatorService 2>/dev/null || true
-  sleep 0.25 # launchtl can take a small moment to kill services
-  
-  # kill them with fire
-  while pgrep -qx Simulator com.apple.CoreSimulator.CoreSimulatorService; do
-    pkill -9 -x Simulator com.apple.CoreSimulator.CoreSimulatorService || true
-    sleep 0.05
-  done
-  
-  # - Prod `simctl` a few times to make sure it is ready to go
-  local deadline=$((SECONDS+5))
-  while [ -z "`xcrun simctl list devices 2>/dev/null`" ] && [ $SECONDS -lt $deadline ]; do
-    : # nothing to see here
-  done
-  
-  # - Choose a device, if it has not already been chosen
-  local deadline=$((SECONDS+5))
-  while [ -z "$IOS_SIM_DEVICE" ] && [ $SECONDS -lt $deadline ]; do
-    IOS_SIM_DEVICE=`ruby -rjson -e "puts JSON.parse(%x{xcrun simctl list devices --json})['devices'].each{|os,group| group.each{|dev| dev['os'] = os}}.flat_map{|x| x[1]}.select{|x| x['availability'] == '(available)'}.each{|x| x['score'] = (x['name'] == '$ios_sim_default_device_type' ? 1 : 0) + (x['os'] == '$ios_sim_default_ios_version' ? 1 : 0)}.sort_by!{|x| [x['score'], x['name']]}.reverse![0]['udid']"`
-    export IOS_SIM_DEVICE
-  done
-  if [ -z "$IOS_SIM_DEVICE" ]; then
-    echo "*** Failed to determine the iOS Simulator device to use ***"
-    exit 1
+  else
+  	# - ensure that the simulator is running on a developer's workstation
+    open "$DEVELOPER_DIR/Applications/Simulator.app"
+    
+    # - Select the first device booted in the simulator, since it will boot something for us
+    local deadline=$((SECONDS+10))
+    while [ -z "$IOS_SIM_DEVICE" ] && [ $SECONDS -lt $deadline ]; do
+      export IOS_SIM_DEVICE=`ruby -rjson -e "puts JSON.parse(%x{xcrun simctl list devices --json})['devices'].each{|os,group| group.each{|dev| dev['os'] = os}}.flat_map{|x| x[1]}.select{|x| x['state'] == 'Booted'}[0]['udid']"`
+    done
+    if [ -z "$IOS_SIM_DEVICE" ]; then
+      echo "*** Failed to determine the iOS Simulator device in use ***"
+      exit 1
+    fi
   fi
-  
-  # - Reset the device we will be using
-  
-  xcrun simctl shutdown "$IOS_SIM_DEVICE" 1>/dev/null 2>/dev/null || true # sometimes simctl gets confused
-  xcrun simctl erase "$IOS_SIM_DEVICE"
-  
-  # - Start the target in Simulator.app
-  # Note: as of Xcode 7.3.1 `simctl` can not completely boot a simulator, specifically it can not bring up backboard, so GUI apps can not run.
-  #       This is fixed in version 8 of Xcode, but we still need the compatibility
-  
-  "$DEVELOPER_DIR/Applications/Simulator.app/Contents/MacOS/Simulator" -CurrentDeviceUDID "$IOS_SIM_DEVICE" & # will get killed with all other children at exit
-  startedSimulator=true
   
   # Wait until the boot completes
   printf "  waiting for simulator ($IOS_SIM_DEVICE) to boot..."
@@ -244,20 +246,11 @@ case "$TARGET" in
   npm run jsdoc
   ;;
 "realmjs")
-  if [ -n "${JENKINS_HOME}" ]; then
-    setup_ios_simulator
-  fi
-  
   pushd src
   xctest RealmJS
   ;;
 "react-tests")
-  if [ -n "${JENKINS_HOME}" ]; then
-    setup_ios_simulator
-  fi
-
   pushd tests/react-test-app
-
   npm install
   open_chrome
   start_packager
@@ -266,10 +259,6 @@ case "$TARGET" in
   xctest ReactTestApp
   ;;
 "react-example")
-  if [ -n "${JENKINS_HOME}" ]; then
-    setup_ios_simulator
-  fi
-
   pushd examples/ReactExample
 
   npm install
