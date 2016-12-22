@@ -120,3 +120,5 @@ object-server-for-testing/
 tests/realm-object-server/
 vendor/sync
 vendor/sync*
+packager_out.txt
+build.log.*
