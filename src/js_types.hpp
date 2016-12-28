@@ -18,6 +18,8 @@
 
 #pragma once
 
+#include "execution_context_id.hpp"
+
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -66,6 +68,7 @@ struct Context {
     using GlobalContextType = typename T::GlobalContext;
 
     static GlobalContextType get_global_context(ContextType);
+    static AbstractExecutionContextID get_execution_context_id(ContextType);
 };
 
 template<typename T>

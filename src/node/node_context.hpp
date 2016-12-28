@@ -27,6 +27,12 @@ template<>
 inline v8::Local<v8::Context> node::Context::get_global_context(v8::Isolate* isolate) {
     return isolate->GetCurrentContext();
 }
-    
+
+template<>
+inline AbstractExecutionContextID node::Context::get_execution_context_id(v8::Isolate* isolate)
+{
+    return reinterpret_cast<AbstractExecutionContextID>(isolate);
+}
+
 } // js
 } // realm

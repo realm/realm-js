@@ -28,5 +28,11 @@ inline JSGlobalContextRef jsc::Context::get_global_context(JSContextRef ctx) {
     return JSContextGetGlobalContext(ctx);
 }
 
+template<>
+inline AbstractExecutionContextID jsc::Context::get_execution_context_id(JSContextRef ctx)
+{
+    return reinterpret_cast<AbstractExecutionContextID>(get_global_context(ctx));
+}
+
 } // js
 } // realm
