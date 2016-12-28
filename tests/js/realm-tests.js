@@ -799,7 +799,13 @@ module.exports = {
             schemas.PersonObject, schemas.LinkTypes];
         
         var schemaMap = {};
-        originalSchema.forEach(function(objectSchema) { schemaMap[objectSchema.name] = objectSchema; });
+        originalSchema.forEach(function(objectSchema) {
+            if (objectSchema.schema) { // for PersonObject
+                schemaMap[objectSchema.schema.name] = objectSchema;
+            } else {
+                schemaMap[objectSchema.name] = objectSchema;
+            }
+        });
 
         var realm = new Realm({schema: originalSchema});
 
