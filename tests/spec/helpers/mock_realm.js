@@ -12,5 +12,5 @@ module.exports = function(realmModulePath) {
         warnOnReplace: false,
         warnOnUnregistered: false
     });
-    mockery.registerSubstitute('realm', REALM_MODULE_PATH);
+    mockery.registerSubstitute('realm', REALM_MODULE_PATH); // eslint-disable-line no-undef
 }
