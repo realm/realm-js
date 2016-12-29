@@ -1,3 +1,16 @@
+0.15.2 Release notes (2016-12-29)
+=============================================================
+### Breaking changes
+* None
+
+### Enhancements
+* More explicit handling of missing constructor (#742)
+
+### Bugfixes
+* Realm open on another thread (#473)
+* symbol() variable not found (#761)
+
+
 0.15.1 Release notes (2016-11-22)
 =============================================================
 ### Breaking changes
