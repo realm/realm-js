@@ -445,7 +445,7 @@ module.exports = {
         realm.write(createAndTestObject);
 
         // Defaults should still work when creating another Realm instance.
-        realm = new Realm();
+        realm = new Realm({schema: [schemas.DefaultValues, schemas.TestObject]});
         realm.write(createAndTestObject);
     },
 
@@ -531,7 +531,7 @@ module.exports = {
         });
 
         // The constructor should still work when creating another Realm instance.
-        realm = new Realm();
+        realm = new Realm({schema: [CustomObject, InvalidObject]});
         TestCase.assertTrue(realm.objects('CustomObject')[0] instanceof CustomObject);
         TestCase.assertTrue(realm.objects(CustomObject).length > 0);
     },
