@@ -341,6 +341,10 @@ case "$TARGET" in
   popd
   ;;
 "test-runners")
+  # Create a fake realm module that points to the source root so that test-runner tests can require('realm')
+  rm -rf "$SRCROOT/tests/test-runners/node-modules/realm"
+  ln -s "$SRCROOT" "$SRCROOT/tests/test-runners/node-modules/realm"
+
   npm install --build-from-source
 
   for runner in ava mocha jest; do
