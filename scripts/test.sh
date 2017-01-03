@@ -212,7 +212,7 @@ setup_ios_simulator() {
 
   # Wait until the boot completes
   printf "  waiting for simulator (%s) to boot..." "$IOS_SIM_DEVICE"
-  until ruby -rjson -e "exit JSON.parse($(xcrun simctl list devices -j ))[\"devices\"].flat_map { |d| d[1] }.any? { |d| d[\"availability\"] == \"(available)\" && d[\"state\"] == \"Booted\" }"; do
+  until ruby -rjson -e "exit JSON.parse(%x{xcrun simctl list devices --json})['devices'].flat_map { |d| d[1] }.any? { |d| d['availability'] == '(available)' && d['state'] == 'Booted' }"; do
     sleep 0.25
   done
   echo " done"
