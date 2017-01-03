@@ -343,7 +343,8 @@ case "$TARGET" in
 "test-runners")
   # Create a fake realm module that points to the source root so that test-runner tests can require('realm')
   rm -rf "$SRCROOT/tests/test-runners/node-modules/realm"
-  ln -s "$SRCROOT/tests/test-runners/node-modules/realm" "$SRCROOT"
+  mkdir -p "$SRCROOT/tests/test-runners/node-modules"
+  ln -s "$SRCROOT" "$SRCROOT/tests/test-runners/node-modules/realm"
 
   npm install --build-from-source
 
