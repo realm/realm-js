@@ -311,6 +311,7 @@ static inline void convert_outdated_datetime_columns(const SharedRealm &realm) {
 template<typename T>
 void RealmClass<T>::constructor(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[]) {
     realm::Realm::Config config;
+    config.cache = false;
     typename Schema<T>::ObjectDefaultsMap defaults;
     typename Schema<T>::ConstructorMap constructors;
     bool schema_updated = false;
