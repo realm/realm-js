@@ -39,7 +39,7 @@
 		02F59EC51C88F17D007F774C /* shared_realm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02F59EBD1C88F17D007F774C /* shared_realm.cpp */; };
 		02F59EE21C88F2BB007F774C /* realm_coordinator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02F59EDB1C88F2BA007F774C /* realm_coordinator.cpp */; };
 		02F59EE31C88F2BB007F774C /* transact_log_handler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02F59EDD1C88F2BB007F774C /* transact_log_handler.cpp */; };
-		5D02C77B1E1C83650048C13E /* thread_safe_reference.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5D02C7791E1C83650048C13E /* thread_safe_reference.cpp */; };
+		50C671001E1D2D31003CB63C /* thread_safe_reference.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5D02C7791E1C83650048C13E /* thread_safe_reference.cpp */; };
 		5D25F5A11D6284FD00EBBB30 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = F63FF3301C16434400B3B8E0 /* libz.tbd */; };
 		F61378791C18EAC5008BFC51 /* js in Resources */ = {isa = PBXBuildFile; fileRef = F61378781C18EAAC008BFC51 /* js */; };
 		F63FF2C61C12469E00B3B8E0 /* jsc_init.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 029048011C0428DF00ABDED4 /* jsc_init.cpp */; };
@@ -827,6 +827,7 @@
 				02414BA91CE6ABCF00A8669F /* collection_notifications.cpp in Sources */,
 				02F59EE31C88F2BB007F774C /* transact_log_handler.cpp in Sources */,
 				F63FF2E81C159C4B00B3B8E0 /* platform.mm in Sources */,
+				50C671001E1D2D31003CB63C /* thread_safe_reference.cpp in Sources */,
 				02E315CA1DB80DDD00555337 /* sync_session.cpp in Sources */,
 				02F59EC31C88F17D007F774C /* results.cpp in Sources */,
 				F63FF2E21C15921A00B3B8E0 /* base64.cpp in Sources */,
@@ -859,7 +860,6 @@
 				F63FF3211C1642BB00B3B8E0 /* GCDWebServerFileRequest.m in Sources */,
 				F63FF31F1C1642BB00B3B8E0 /* GCDWebServerResponse.m in Sources */,
 				F63FF3261C1642BB00B3B8E0 /* GCDWebServerFileResponse.m in Sources */,
-				5D02C77B1E1C83650048C13E /* thread_safe_reference.cpp in Sources */,
 				F63FF3271C1642BB00B3B8E0 /* GCDWebServerStreamedResponse.m in Sources */,
 				F63FF3241C1642BB00B3B8E0 /* GCDWebServerDataResponse.m in Sources */,
 				F63FF31B1C1642BB00B3B8E0 /* GCDWebServer.m in Sources */,
