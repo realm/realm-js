@@ -39,9 +39,8 @@
 		02F59EC51C88F17D007F774C /* shared_realm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02F59EBD1C88F17D007F774C /* shared_realm.cpp */; };
 		02F59EE21C88F2BB007F774C /* realm_coordinator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02F59EDB1C88F2BA007F774C /* realm_coordinator.cpp */; };
 		02F59EE31C88F2BB007F774C /* transact_log_handler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02F59EDD1C88F2BB007F774C /* transact_log_handler.cpp */; };
+		50C671001E1D2D31003CB63C /* thread_safe_reference.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5D02C7791E1C83650048C13E /* thread_safe_reference.cpp */; };
 		5D25F5A11D6284FD00EBBB30 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = F63FF3301C16434400B3B8E0 /* libz.tbd */; };
-		5DC74A781D623C9800D77A4F /* handover.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5DC74A751D623C8700D77A4F /* handover.cpp */; };
-		5DC74A7A1D623CA800D77A4F /* thread_confined.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5DC74A721D623C7A00D77A4F /* thread_confined.cpp */; };
 		F61378791C18EAC5008BFC51 /* js in Resources */ = {isa = PBXBuildFile; fileRef = F61378781C18EAAC008BFC51 /* js */; };
 		F63FF2C61C12469E00B3B8E0 /* jsc_init.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 029048011C0428DF00ABDED4 /* jsc_init.cpp */; };
 		F63FF2C91C12469E00B3B8E0 /* js_realm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 029048071C0428DF00ABDED4 /* js_realm.cpp */; };
@@ -168,10 +167,9 @@
 		02F59EDC1C88F2BB007F774C /* realm_coordinator.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = realm_coordinator.hpp; sourceTree = "<group>"; };
 		02F59EDD1C88F2BB007F774C /* transact_log_handler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = transact_log_handler.cpp; sourceTree = "<group>"; };
 		02F59EDE1C88F2BB007F774C /* transact_log_handler.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = transact_log_handler.hpp; sourceTree = "<group>"; };
-		5DC74A721D623C7A00D77A4F /* thread_confined.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = thread_confined.cpp; path = src/thread_confined.cpp; sourceTree = "<group>"; };
-		5DC74A731D623C7A00D77A4F /* thread_confined.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = thread_confined.hpp; path = src/thread_confined.hpp; sourceTree = "<group>"; };
-		5DC74A751D623C8700D77A4F /* handover.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = handover.cpp; sourceTree = "<group>"; };
-		5DC74A761D623C8700D77A4F /* handover.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = handover.hpp; sourceTree = "<group>"; };
+		5D02C7781E1C83650048C13E /* execution_context_id.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = execution_context_id.hpp; path = src/execution_context_id.hpp; sourceTree = "<group>"; };
+		5D02C7791E1C83650048C13E /* thread_safe_reference.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = thread_safe_reference.cpp; path = src/thread_safe_reference.cpp; sourceTree = "<group>"; };
+		5D02C77A1E1C83650048C13E /* thread_safe_reference.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = thread_safe_reference.hpp; path = src/thread_safe_reference.hpp; sourceTree = "<group>"; };
 		F60102CF1CBB814A00EC01BA /* node_init.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = node_init.hpp; sourceTree = "<group>"; };
 		F60102D11CBB865A00EC01BA /* jsc_init.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = jsc_init.hpp; sourceTree = "<group>"; };
 		F60102E31CBBB19700EC01BA /* node_object_accessor.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = node_object_accessor.hpp; sourceTree = "<group>"; };
@@ -450,9 +448,10 @@
 				02022A6B1DA47EC8000F0C4F /* util */,
 				F63117EA1CEB0BFA00ECB2DE /* impl */,
 				F63117EC1CEB0C8100ECB2DE /* parser */,
+				02F59EAE1C88F17D007F774C /* binding_context.hpp */,
 				02414B961CE6AADD00A8669F /* collection_notifications.cpp */,
 				02414B971CE6AADD00A8669F /* collection_notifications.hpp */,
-				02F59EAE1C88F17D007F774C /* binding_context.hpp */,
+				5D02C7781E1C83650048C13E /* execution_context_id.hpp */,
 				02F59EAF1C88F17D007F774C /* index_set.cpp */,
 				02F59EB01C88F17D007F774C /* index_set.hpp */,
 				02F59EB11C88F17D007F774C /* list.cpp */,
@@ -470,8 +469,8 @@
 				02F59EBC1C88F17D007F774C /* schema.hpp */,
 				02F59EBD1C88F17D007F774C /* shared_realm.cpp */,
 				02F59EBE1C88F17D007F774C /* shared_realm.hpp */,
-				5DC74A721D623C7A00D77A4F /* thread_confined.cpp */,
-				5DC74A731D623C7A00D77A4F /* thread_confined.hpp */,
+				5D02C7791E1C83650048C13E /* thread_safe_reference.cpp */,
+				5D02C77A1E1C83650048C13E /* thread_safe_reference.hpp */,
 			);
 			name = "Object Store";
 			path = "object-store";
@@ -510,8 +509,6 @@
 				02414B9A1CE6AAEF00A8669F /* collection_change_builder.hpp */,
 				02414B9B1CE6AAEF00A8669F /* collection_notifier.cpp */,
 				02414B9C1CE6AAEF00A8669F /* collection_notifier.hpp */,
-				5DC74A751D623C8700D77A4F /* handover.cpp */,
-				5DC74A761D623C8700D77A4F /* handover.hpp */,
 				02414B9D1CE6AAEF00A8669F /* list_notifier.cpp */,
 				02414B9E1CE6AAEF00A8669F /* list_notifier.hpp */,
 				02414B9F1CE6AAEF00A8669F /* results_notifier.cpp */,
@@ -823,15 +820,14 @@
 				02022A581DA476CD000F0C4F /* external_commit_helper.cpp in Sources */,
 				02022A5A1DA476CD000F0C4F /* weak_realm_notifier.cpp in Sources */,
 				02022A5B1DA476CD000F0C4F /* placeholder.cpp in Sources */,
-				5DC74A7A1D623CA800D77A4F /* thread_confined.cpp in Sources */,
 				02414BA51CE6ABCF00A8669F /* collection_change_builder.cpp in Sources */,
 				02414BA61CE6ABCF00A8669F /* collection_notifier.cpp in Sources */,
 				02414BA71CE6ABCF00A8669F /* list_notifier.cpp in Sources */,
 				02414BA81CE6ABCF00A8669F /* results_notifier.cpp in Sources */,
 				02414BA91CE6ABCF00A8669F /* collection_notifications.cpp in Sources */,
 				02F59EE31C88F2BB007F774C /* transact_log_handler.cpp in Sources */,
-				5DC74A781D623C9800D77A4F /* handover.cpp in Sources */,
 				F63FF2E81C159C4B00B3B8E0 /* platform.mm in Sources */,
+				50C671001E1D2D31003CB63C /* thread_safe_reference.cpp in Sources */,
 				02E315CA1DB80DDD00555337 /* sync_session.cpp in Sources */,
 				02F59EC31C88F17D007F774C /* results.cpp in Sources */,
 				F63FF2E21C15921A00B3B8E0 /* base64.cpp in Sources */,
@@ -922,6 +918,7 @@
 					"$(SRCROOT)/object-store/external/pegtl",
 					"$(SRCROOT)/object-store/src",
 					"$(SRCROOT)/../vendor",
+					"$(SRCROOT)/../vendor/core/include",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				MTL_ENABLE_DEBUG_INFO = YES;
@@ -980,6 +977,7 @@
 					"$(SRCROOT)/object-store/external/pegtl",
 					"$(SRCROOT)/object-store/src",
 					"$(SRCROOT)/../vendor",
+					"$(SRCROOT)/../vendor/core/include",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
@@ -1077,7 +1075,11 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				HEADER_SEARCH_PATHS = "";
+				HEADER_SEARCH_PATHS = (
+					"$(SRCROOT)/object-store/src",
+					"$(SRCROOT)/../vendor",
+					"$(SRCROOT)/../vendor/core/include",
+				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -1087,7 +1089,11 @@
 		F63FF2F81C16405D00B3B8E0 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				HEADER_SEARCH_PATHS = "";
+				HEADER_SEARCH_PATHS = (
+					"$(SRCROOT)/object-store/src",
+					"$(SRCROOT)/../vendor",
+					"$(SRCROOT)/../vendor/core/include",
+				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;

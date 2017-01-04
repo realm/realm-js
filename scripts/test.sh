@@ -69,7 +69,7 @@ cleanup() {
   pkill -9 -P $$ || true
 
   # Kill react native packager
-  pkill node || true
+  pkill -x node || true
   rm -f "$PACKAGER_OUT" "$LOGCAT_OUT"
 
   # Cleanup temp files
