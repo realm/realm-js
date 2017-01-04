@@ -60,7 +60,7 @@ module.exports = {
         TestCase.assertEqual(defaultRealm.schemaVersion, 0);
 
         TestCase.assertThrows(function() {
-            new Realm({schemaVersion: 1});
+            new Realm({schemaVersion: 1, schema: []});
         }, "Realm already opened at a different schema version");
         
         TestCase.assertEqual(new Realm().schemaVersion, 0);
