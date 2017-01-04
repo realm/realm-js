@@ -31,7 +31,6 @@ LOCAL_SRC_FILES += src/android/jsc_override.cpp
 LOCAL_SRC_FILES += src/android/platform.cpp
 LOCAL_SRC_FILES += src/object-store/src/impl/collection_change_builder.cpp
 LOCAL_SRC_FILES += src/object-store/src/impl/collection_notifier.cpp
-LOCAL_SRC_FILES += src/object-store/src/impl/handover.cpp
 LOCAL_SRC_FILES += src/object-store/src/impl/list_notifier.cpp
 LOCAL_SRC_FILES += src/object-store/src/impl/realm_coordinator.cpp
 LOCAL_SRC_FILES += src/object-store/src/impl/results_notifier.cpp
@@ -50,7 +49,7 @@ LOCAL_SRC_FILES += src/object-store/src/placeholder.cpp
 LOCAL_SRC_FILES += src/object-store/src/results.cpp
 LOCAL_SRC_FILES += src/object-store/src/schema.cpp
 LOCAL_SRC_FILES += src/object-store/src/shared_realm.cpp
-LOCAL_SRC_FILES += src/object-store/src/thread_confined.cpp
+LOCAL_SRC_FILES += src/object-store/src/thread_safe_reference.cpp
 ifeq ($(strip $(BUILD_TYPE_SYNC)),1)
 LOCAL_SRC_FILES += src/object-store/src/sync/sync_manager.cpp
 LOCAL_SRC_FILES += src/object-store/src/sync/sync_session.cpp

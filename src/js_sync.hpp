@@ -206,10 +206,6 @@ inline typename T::Function SyncClass<T>::create_constructor(ContextType ctx) {
     ensure_directory_exists_for_file(default_realm_file_directory());
     SyncManager::shared().configure_file_system(default_realm_file_directory(), SyncManager::MetadataMode::NoEncryption);
 
-    realm::SyncManager::shared().set_error_handler([=](int error_code, std::string message) {
-        std::cout << error_code << " " << message << std::endl;
-    });
-
     return sync_constructor;
 }
 
@@ -302,8 +298,9 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
         std::string raw_realm_url = Object::validated_get_string(ctx, sync_config_object, "url");
 
         // FIXME - use make_shared
-        config.sync_config = std::shared_ptr<SyncConfig>(new SyncConfig{shared_user, raw_realm_url, SyncSessionStopPolicy::AfterChangesUploaded, handler, [=](auto, int error_code, std::string message, SyncSessionError) {}}
-        );
+        config.sync_config = std::shared_ptr<SyncConfig>(new SyncConfig{shared_user, raw_realm_url,
+                                                                        SyncSessionStopPolicy::AfterChangesUploaded,
+                                                                        handler, [=](auto, SyncError) {}});
         config.schema_mode = SchemaMode::Additive;
         config.path = realm::SyncManager::shared().path_for_realm(shared_user->identity(), raw_realm_url);
     }
