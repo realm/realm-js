@@ -866,4 +866,21 @@ module.exports = {
         realm = new Realm({path: 'dates-v5.realm', schema: [schemas.DateObject]});
         TestCase.assertEqual(realm.objects('Date')[0].currentDate.getTime(), 1);
     },
+
+    testErrorMessageFromInvalidWrite: function() {
+        var realm = new Realm({schema: [schemas.PersonObject]});
+        
+        TestCase.assertThrowsException(function() {
+            realm.write(function () {
+                var p1 = realm.create('PersonObject', { name: 'Ari', age: 10 });
+                p1.age = "Ten";
+            });
+        }, new Error("PersonObject.age must be of type: number"));
+
+        //TestCase.assertThrowsException(function() {
+        //    realm.write(function () {
+        //        realm.create('PersonObject', { name: 42, age: 10 });
+        //    });
+        //}, new Error("PersonObject.name must be of type: string"));
+    }
 };
