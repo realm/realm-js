@@ -875,6 +875,6 @@ module.exports = {
                 var p1 = realm.create('PersonObject', { name: 'Ari', age: 10 });
                 p1.age = "Ten";
             });
-        }, new TypeError("PersonObject.age must be of type: number"));
+        }, new Error("PersonObject.age must be of type: number"));
     }
 };
