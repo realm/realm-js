@@ -875,12 +875,6 @@ module.exports = {
                 var p1 = realm.create('PersonObject', { name: 'Ari', age: 10 });
                 p1.age = "Ten";
             });
-        }, new Error("PersonObject.age must be of type: number"));
-
-        //TestCase.assertThrowsException(function() {
-        //    realm.write(function () {
-        //        realm.create('PersonObject', { name: 42, age: 10 });
-        //    });
-        //}, new Error("PersonObject.name must be of type: string"));
+        }, new TypeError("PersonObject.age must be of type: number"));
     }
 };
