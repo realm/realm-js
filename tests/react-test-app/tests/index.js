@@ -44,7 +44,7 @@ setTimeout(() => {
     if (NativeModules.Realm.emit) {
         NativeModules.Realm.emit('realm-test-names', getTestNames());
     }
-}, 0);
+}, 500);
 
 export function getTestNames() {
     return RealmTests.getTestNames();

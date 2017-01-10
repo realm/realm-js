@@ -16,15 +16,20 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+#import <React/RCTLog.h>
+#import <React/RCTRootView.h>
+
 #import <RealmReact/RealmReact.h>
 
+#import <React/RCTLog.h>
+#import <React/RCTRootView.h>
+#import <React/RCTJavaScriptExecutor.h>
+#import <React/RCTBridge.h>
+#import <React/RCTDevMenu.h>
+#import <React/RCTEventDispatcher.h>
+#import <React/RCTJavaScriptLoader.h>
+
 #import "RealmJSTests.h"
-#import "RCTJavaScriptExecutor.h"
-#import "RCTBridge.h"
-#import "RCTDevMenu.h"
-#import "RCTEventDispatcher.h"
-#import "RCTJavaScriptLoader.h"
-#import "RCTLog.h"
 
 extern void JSGlobalContextSetIncludesNativeCallStackWhenReportingExceptions(JSGlobalContextRef ctx, bool includesNativeCallStack);
 extern NSMutableArray *RCTGetModuleClasses(void);

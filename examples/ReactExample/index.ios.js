@@ -18,6 +18,4 @@
 
 'use strict';
 
-// Allow our test harness to test this app.
-import './tests';
 import './main';
