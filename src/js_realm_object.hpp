@@ -107,6 +107,9 @@ bool RealmObjectClass<T>::set_property(ContextType ctx, ObjectType object, const
     try {
         realm_object->set_property_value(ctx, property, value, true);
     }
+    catch (TypeErrorException &ex) {
+        throw TypeErrorException(realm_object->get_object_schema().name + "." + std::string(property), ex.type());
+    }
     catch (InvalidPropertyException &ex) {
         return false;
     }

@@ -71,6 +71,22 @@ struct Context {
     static AbstractExecutionContextID get_execution_context_id(ContextType);
 };
 
+class TypeErrorException : public std::invalid_argument {
+public:
+    std::string const& prefix() const { return m_prefix; }
+    std::string const& type() const { return m_type; }
+
+    TypeErrorException(std::string prefix, std::string type) : 
+        std::invalid_argument(prefix + " must be of type: " + type),
+        m_prefix(std::move(prefix)),
+        m_type(std::move(type)) 
+        {}
+
+private:
+    std::string m_prefix;
+    std::string m_type;
+};
+
 template<typename T>
 struct Value {
     using ContextType = typename T::Context;
@@ -111,7 +127,7 @@ struct Value {
     static return_t validated_to_##type(ContextType ctx, const ValueType &value, const char *name = nullptr) { \
         if (!is_##type(ctx, value)) { \
             std::string prefix = name ? std::string("'") + name + "'" : "JS value"; \
-            throw std::invalid_argument(prefix + " must be of type: " #type); \
+            throw TypeErrorException(prefix, #type); \
         } \
         return to_##type(ctx, value); \
     }
