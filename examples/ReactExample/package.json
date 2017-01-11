@@ -1,6 +1,6 @@
 {
   "name": "ReactExample",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "private": true,
   "scripts": {
     "start": "react-native start"
@@ -8,6 +8,7 @@
   "dependencies": {
     "react": "15.3.2",
     "react-native": "^0.37.0",
+    "uuid": "3.0.1",
     "realm": "file:../.."
   }
 }

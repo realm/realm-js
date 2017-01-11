@@ -20,23 +20,44 @@
 
 import Realm from 'realm';
 
-class Todo extends Realm.Object {}
-Todo.schema = {
-    name: 'Todo',
+class Task extends Realm.Object {}
+Task.schema = {
+    name: 'Task',
     properties: {
-        done: {type: 'bool', default: false},
+        completed: {type: 'bool', default: false},
         text: 'string',
     },
 };
 
-class TodoList extends Realm.Object {}
-TodoList.schema = {
-    name: 'TodoList',
+class TaskList extends Realm.Object {}
+TaskList.schema = {
+    name: 'TaskList',
     properties: {
-        name: 'string',
-        creationDate: 'date',
-        items: {type: 'list', objectType: 'Todo'},
+        id: 'string',
+        text: 'string',
+        completed: {type: 'bool', default: false},
+        items: {type: 'list', objectType: 'Task'},
     },
+    primaryKey: 'id'
 };
 
-export default new Realm({schema: [Todo, TodoList]});
+
+class TaskListList extends Realm.Object {}
+TaskListList.schema = {
+    name: 'TaskListList',
+    properties: {
+        id: 'int',
+        items: {type: 'list', objectType: 'TaskList'},
+    },
+    primaryKey: 'id'
+};
+
+var adminToken = "ewoJImlkZW50aXR5IjogImFkbWluIiwKCSJhY2Nlc3MiOiBbInVwbG9hZCIsICJkb3dubG9hZCIsICJtYW5hZ2UiXQp9Cg==:I1mEfddNdQo4wS/7dVgEIEm9pv7pLEyyx3zmGgWMCxkEHOxz8DxLjm/yLD8OD7iE9XcCHy4xs6SOu2ZbbRysezssyY+3z/anrz7u/EBDvyfHPRakaw3rTpD6RcTb4SaAeLBagtDP7YqycneZrGd3oUXofvJdWg4YpDOvr/+1zwntt3DGg5D1ghKzSWcF7FnosswjiqGk91t2hbZbPYNEPEJKwkCPj0exOZqQ73627rD9Jzbr3CcHpp0V4U1BEhVfgZyo9dchWYT9Qw0rkqjqc5ylvR73Ihpa9hN9+wKxhU1K6nNzsbhrD0sMfOOlxsuduWHrhiT8vkTL/WFOO4vC1Q==";
+var adminUser = Realm.Sync.User.adminUser(adminToken);
+export default new Realm({
+                         schema: [Task, TaskList, TaskListList],
+                         sync: {
+                            user: adminUser,
+                            url: "realm://192.168.157.64:9080/a46feb0c3959646acb7540971c411269/realmtasks"
+                         }
+                         });

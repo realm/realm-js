@@ -37,12 +37,12 @@ export default class TodoItem extends TodoListItem {
         this._onPressCheckbox = this._onPressCheckbox.bind(this);
     }
 
-    get done() {
-        return this.props.item.done;
+    get completed() {
+        return this.props.item.completed;
     }
 
-    set done(done) {
-        this.props.item.done = done;
+    set completed(done) {
+        this.props.item.completed = done;
     }
 
     get text() {
@@ -59,7 +59,7 @@ export default class TodoItem extends TodoListItem {
                 <View style={styles.listItemLeftSide}>
                     <View style={styles.listItemCheckbox}>
                         <Text style={styles.listItemCheckboxText}>
-                            {this.done ? '✓' : ''}
+                            {this.completed ? '✓' : ''}
                         </Text>
                     </View>
                 </View>
@@ -69,7 +69,7 @@ export default class TodoItem extends TodoListItem {
 
     _onPressCheckbox() {
         realm.write(() => {
-            this.done = !this.done;
+            this.completed = !this.completed;
         });
 
         this.forceUpdate();
