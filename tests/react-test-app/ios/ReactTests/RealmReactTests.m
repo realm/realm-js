@@ -125,6 +125,7 @@ extern NSMutableArray *RCTGetModuleClasses(void);
             JSGlobalContextSetIncludesNativeCallStackWhenReportingExceptions(ctx, false);
         }
 
+        [self.currentBridge.eventDispatcher sendAppEventWithName:@"realm-test-names" body:nil];
         NSDictionary *testCaseNames = [self waitForEvent:@"realm-test-names"];
         NSAssert(testCaseNames.count, @"No test names were provided by the JS");
 

@@ -224,11 +224,14 @@ cleanup
 trap cleanup EXIT
 
 # Use a consistent version of Node if possible.
-if [ -s "${HOME}/.nvm/nvm.sh" ]; then
-  # shellcheck disable=SC1090
-  . "${HOME}/.nvm/nvm.sh"
-  nvm use 5.12 || true
+if [ -f "$NVM_DIR/nvm.sh" ]; then
+  . "$NVM_DIR/nvm.sh"
+elif [ -x "$(command -v brew)" ] && [ -f "$(brew --prefix nvm)/nvm.sh" ]; then
+  # we must be on mac and nvm was installed with brew
+  # TODO: change the mac slaves to use manual nvm installation
+  . "$(brew --prefix nvm)/nvm.sh"
 fi
+[[ "$(command -v nvm)" ]] && nvm use 6.5.0 || true
 
 # Remove cached packages
 rm -rf ~/.yarn-cache/npm-realm-*
