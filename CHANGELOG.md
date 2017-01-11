@@ -1,3 +1,15 @@
+0.15.4 Release notes (2017-1-11)
+=============================================================
+### Breaking changes
+* None
+
+### Enhancements
+* None
+
+### Bug fixes
+* Always download Node binaries except on Windows, for unit testing (#789)
+
+
 0.15.3 Release notes (2017-1-10)
 =============================================================
 ### Breaking changes
