@@ -59,5 +59,6 @@ export default new Realm({
                          sync: {
                             user: adminUser,
                             url: "realm://192.168.10.41:9080/a46feb0c3959646acb7540971c411269/realmtasks"
-                         }
+                         },
+                         path: "tasks.realm"
                          });
