@@ -41,7 +41,7 @@ export default class TodoApp extends React.Component {
 
         // This is a Results object, which will live-update.
         this.todoLists = realm.objects('TaskList').sorted('text');
-        if (this.todoLists.length < 1) {
+        if (this.todoLists.length < 1) { // FIXME async?!!
             realm.write(() => {
                 realm.create('TaskList', {text: 'My coolest tasks', id: uuidV4()});
             });
@@ -172,7 +172,7 @@ export default class TodoApp extends React.Component {
         let editingItem = editingRow != null && items[editingRow];
 
         // Don't allow adding a new item if the one being edited is empty.
-        return !editingItem || !!editingItem.text || !!editingItem.name;
+        return !editingItem || !!editingItem.text;
     }
 
     _setEditingRow(rowIndex) {

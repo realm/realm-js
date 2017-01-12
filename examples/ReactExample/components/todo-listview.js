@@ -97,6 +97,7 @@ export default class TodoListView extends React.Component {
             <RowClass
                 item={item}
                 editing={editing}
+                index={rowIndex}
                 onPress={() => this._onPressRow(item, sectionIndex, rowIndex)}
                 onPressDelete={() => this._onPressDeleteRow(item)}
                 onEndEditing={() => this._onEndEditingRow(item, rowIndex)} />

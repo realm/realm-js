@@ -62,9 +62,11 @@ export default class TodoListItem extends React.Component {
         this._focusInputIfNecessary();
     }
 
+
     render() {
+        const i8 = this.props.index<7 ? this.props.index : 6;
         return (
-            <View style={styles.listItem}>
+            <View style={ [ styles.listItem, styles['realmColor'+i8] ] }>
                 {this.renderLeftSide()}
                 {this.renderText()}
                 {this.renderRightSide()}
