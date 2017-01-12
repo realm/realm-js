@@ -48,6 +48,7 @@ export default class TodoApp extends React.Component {
         }
         this.todoLists.addListener((name, changes) => {
             console.log("changed: " + JSON.stringify(changes));
+            this.forceUpdate();
         });
         console.log("registered listener");
 
