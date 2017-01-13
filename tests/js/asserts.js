@@ -107,6 +107,9 @@ module.exports = {
         }
         catch (e) {
             caught = true;
+            if (e.name !== expectedException.name) {
+                throw new TestFailureError('Expected a ' + expectedException.name + ' exception but caught a ' + e.name + ' instead. Message was: ' + e.message);
+            }
             if (e.message != expectedException.message) {
                 throw new TestFailureError('Expected exception "' + expectedException + '" not thrown - instead caught: "' + e + '"');
             }

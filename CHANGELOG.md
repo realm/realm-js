@@ -1,3 +1,27 @@
+0.15.4 Release notes (2017-1-11)
+=============================================================
+### Breaking changes
+* None
+
+### Enhancements
+* None
+
+### Bug fixes
+* Always download Node binaries except on Windows, for unit testing (#789)
+
+
+0.15.3 Release notes (2017-1-10)
+=============================================================
+### Breaking changes
+* None
+
+### Enhancements
+* More specific error message when setting a property to a wrong type (#730)
+
+### Bug fixes
+* Fix chrome debugging on React Native 0.39 and up (#766)
+
+
 0.15.2 Release notes (2016-12-29)
 =============================================================
 ### Breaking changes

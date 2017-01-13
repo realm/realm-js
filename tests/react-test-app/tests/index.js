@@ -26,6 +26,11 @@ RealmTests.registerTests({
     ListViewTest,
 });
 
+// Listen for event signalling native is ready to receive test names
+NativeAppEventEmitter.addListener('realm-test-names', () => {
+    NativeModules.Realm.emit('realm-test-names', getTestNames());
+});
+
 // Listen for event to run a particular test.
 NativeAppEventEmitter.addListener('realm-run-test', async ({suite, name}) => {
     let error;
@@ -37,14 +42,6 @@ NativeAppEventEmitter.addListener('realm-run-test', async ({suite, name}) => {
 
     NativeModules.Realm.emit('realm-test-finished', error);
 });
-
-// Inform the native test harness about the test suite once it's ready.
-setTimeout(() => {
-    // The emit() method only exists on iOS, for now.
-    if (NativeModules.Realm.emit) {
-        NativeModules.Realm.emit('realm-test-names', getTestNames());
-    }
-}, 0);
 
 export function getTestNames() {
     return RealmTests.getTestNames();

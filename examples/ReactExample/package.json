@@ -1,14 +1,25 @@
 {
-  "name": "ReactExample",
-  "version": "0.0.2",
-  "private": true,
-  "scripts": {
-    "start": "react-native start"
-  },
-  "dependencies": {
-    "react": "15.3.2",
-    "react-native": "^0.37.0",
-    "uuid": "3.0.1",
-    "realm": "file:../.."
-  }
+	"name": "ReactExample",
+	"version": "0.0.1",
+	"private": true,
+	"scripts": {
+		"start": "node node_modules/react-native/local-cli/cli.js start",
+		"test": "jest"
+	},
+	"dependencies": {
+		"react": "~15.4.0-rc.4",
+		"react-native": "0.40.0",
+    		"uuid": "3.0.1",
+		"realm": "file:../.."
+	},
+	"devDependencies": {
+		"babel-jest": "18.0.0",
+		"babel-preset-react-native": "1.9.1",
+		"jest": "18.1.0",
+		"react-test-renderer": "~15.4.0-rc.4",
+		"invariant": "^2.2.2"
+	},
+	"jest": {
+		"preset": "react-native"
+	}
 }
