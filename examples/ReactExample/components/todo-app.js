@@ -42,8 +42,9 @@ export default class TodoApp extends React.Component {
         // This is a Results object, which will live-update.
         this.todoLists = realm.objects('TaskList').sorted('text');
         if (this.todoLists.length < 1) { // FIXME async?!!
+          console.log(this.todoLists.length, this.todoLists);
             realm.write(() => {
-                realm.create('TaskList', {text: 'My coolest tasks', id: uuidV4()});
+                realm.create('TaskList', {text: 'My tasks', id: uuidV4()});
             });
         }
         this.todoLists.addListener((name, changes) => {
@@ -75,8 +76,8 @@ export default class TodoApp extends React.Component {
     render() {
         let objects = realm.objects('Task');
         let extraItems = [
-            {name: 'Complete', items: objects.filtered('completed = true')},
-            {name: 'Incomplete', items: objects.filtered('completed = false')},
+            // {name: 'Complete', items: objects.filtered('completed = true')},
+            // {name: 'Incomplete', items: objects.filtered('completed = false')},
         ];
 
         let route = {
@@ -109,7 +110,7 @@ export default class TodoApp extends React.Component {
     }
 
     renderScene(route) {
-        console.log(this.todoLists);
+        console.log('RENDER', this.todoLists);
         return <route.component items={this.todoLists} {...route.passProps} />
     }
 

@@ -136,28 +136,80 @@ export default StyleSheet.create({
         marginBottom: 5,
     },
     realmColor0: {
-      backgroundColor:"#fcc397",
+        backgroundColor:"#fcc397",
     },
     realmColor1: {
-      backgroundColor:"#fc9f95",
+        backgroundColor:"#fc9f95",
     },
     realmColor2: {
-      backgroundColor:"#f77c88",
+        backgroundColor:"#f77c88",
     },
     realmColor3: {
-      backgroundColor:"#f25192",
+        backgroundColor:"#f25192",
     },
     realmColor4: {
-      backgroundColor:"#d34ca3",
+        backgroundColor:"#d34ca3",
     },
     realmColor5: {
-      backgroundColor:"#9a50a5",
+        backgroundColor:"#9a50a5",
     },
     realmColor6: {
-      backgroundColor:"#59569e",
+        backgroundColor:"#59569e",
     },
     realmColor7: {
-      backgroundColor:  "#39477f",
+        backgroundColor:  "#39477f",
     },
-
+    loginView: {
+        flex: 1,
+        alignItems: 'stretch',
+        backgroundColor: '#39477f',
+        justifyContent: 'center',
+        padding: 20,
+    },
+    loginRow: {
+    },
+    loginInput: {
+        fontSize: 18,
+        padding: 10,
+    },
+    loginTitle: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        textAlign: 'center',
+        padding: 10,
+        backgroundColor: "#f77c88",
+    },
+    loginLabel1: {
+        fontSize: 18,
+        padding: 10,
+        height: 40,
+        backgroundColor: "#f25192",
+    },
+    loginInput1: {
+        fontSize: 18,
+        padding: 10,
+        height: 40,
+        backgroundColor: "#d34ca3",
+        textAlign: 'right',
+    },
+    loginLabel2: {
+        fontSize: 18,
+        height: 40,
+        padding: 10,
+        backgroundColor: "#9a50a5",
+    },
+    loginInput2: {
+        fontSize: 18,
+        padding: 10,
+        height: 40,
+        backgroundColor: "#59569e",
+        textAlign: 'right',
+    },
+    loginErrorLabel: {
+        fontSize: 18,
+        height: 40,
+        padding: 10,
+        backgroundColor: "#39477f",
+        color: "red",
+    },
 });
