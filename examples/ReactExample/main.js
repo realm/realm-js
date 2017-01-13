@@ -20,5 +20,6 @@
 
 import { AppRegistry } from 'react-native';
 import TodoApp from './components/todo-app';
+import LoginScreen from './components/login';
 
-AppRegistry.registerComponent('ReactExample', () => TodoApp);
+AppRegistry.registerComponent('ReactExample', () => LoginScreen); //TodoApp);

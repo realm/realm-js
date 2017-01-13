@@ -4,6 +4,8 @@ import React from 'react';
 import { AsyncStorage, Text, TextInput, View } from 'react-native';
 import Realm from 'realm';
 import styles from './styles';
+import TodoApp from './todo-app';
+
 
 export default class LoginScreen extends React.Component {
 
@@ -41,6 +43,11 @@ export default class LoginScreen extends React.Component {
                     AsyncStorage.setItem('creds', JSON.stringify(this.state));
 
                     console.log('BINGO');
+                    this.setState({
+                        login:      this.state.login,
+                        password:   this.state.password,
+                        done:       true
+                    });
 
                 }
             }
@@ -48,6 +55,8 @@ export default class LoginScreen extends React.Component {
     }
 
     render () {
+        if (this.state.done)
+            return <TodoApp/>;
         return (
             <View style={[styles.loginView]}>
                 <View style={[styles.loginRow]}>
