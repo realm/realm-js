@@ -46,6 +46,7 @@
         "src/object-store/src/collection_notifications.cpp",
         "src/object-store/src/index_set.cpp",
         "src/object-store/src/list.cpp",
+        "src/object-store/src/object.cpp",
         "src/object-store/src/object_schema.cpp",
         "src/object-store/src/object_store.cpp",
         "src/object-store/src/results.cpp",
