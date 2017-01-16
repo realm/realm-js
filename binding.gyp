@@ -56,6 +56,7 @@
         "src/object-store/src/impl/collection_change_builder.cpp",
         "src/object-store/src/impl/collection_notifier.cpp",
         "src/object-store/src/impl/list_notifier.cpp",
+        "src/object-store/src/impl/object_notifier.cpp",
         "src/object-store/src/impl/realm_coordinator.cpp",
         "src/object-store/src/impl/results_notifier.cpp",
         "src/object-store/src/impl/transact_log_handler.cpp",
