@@ -42,6 +42,7 @@
 		502B07E41E2CD201007A84ED /* object.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 502B07E31E2CD1FA007A84ED /* object.cpp */; };
 		50C671001E1D2D31003CB63C /* thread_safe_reference.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5D02C7791E1C83650048C13E /* thread_safe_reference.cpp */; };
 		5D25F5A11D6284FD00EBBB30 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = F63FF3301C16434400B3B8E0 /* libz.tbd */; };
+		8507156E1E2CFCD000E548DB /* object_notifier.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8507156B1E2CFC0100E548DB /* object_notifier.cpp */; };
 		F61378791C18EAC5008BFC51 /* js in Resources */ = {isa = PBXBuildFile; fileRef = F61378781C18EAAC008BFC51 /* js */; };
 		F63FF2C61C12469E00B3B8E0 /* jsc_init.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 029048011C0428DF00ABDED4 /* jsc_init.cpp */; };
 		F63FF2C91C12469E00B3B8E0 /* js_realm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 029048071C0428DF00ABDED4 /* js_realm.cpp */; };
@@ -170,10 +171,11 @@
 		02F59EDE1C88F2BB007F774C /* transact_log_handler.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = transact_log_handler.hpp; sourceTree = "<group>"; };
 		502B07E31E2CD1FA007A84ED /* object.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = object.cpp; path = src/object.cpp; sourceTree = "<group>"; };
 		502B07E51E2CD20D007A84ED /* object.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = object.hpp; path = src/object.hpp; sourceTree = "<group>"; };
-		502B07E61E2CD21A007A84ED /* object_accessor.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = object_accessor.hpp; path = src/object_accessor.hpp; sourceTree = "<group>"; };
 		5D02C7781E1C83650048C13E /* execution_context_id.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = execution_context_id.hpp; path = src/execution_context_id.hpp; sourceTree = "<group>"; };
 		5D02C7791E1C83650048C13E /* thread_safe_reference.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = thread_safe_reference.cpp; path = src/thread_safe_reference.cpp; sourceTree = "<group>"; };
 		5D02C77A1E1C83650048C13E /* thread_safe_reference.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = thread_safe_reference.hpp; path = src/thread_safe_reference.hpp; sourceTree = "<group>"; };
+		8507156B1E2CFC0100E548DB /* object_notifier.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = object_notifier.cpp; sourceTree = "<group>"; };
+		8507156C1E2CFC0100E548DB /* object_notifier.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = object_notifier.hpp; sourceTree = "<group>"; };
 		F60102CF1CBB814A00EC01BA /* node_init.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = node_init.hpp; sourceTree = "<group>"; };
 		F60102D11CBB865A00EC01BA /* jsc_init.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = jsc_init.hpp; sourceTree = "<group>"; };
 		F60102E31CBBB19700EC01BA /* node_object_accessor.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = node_object_accessor.hpp; sourceTree = "<group>"; };
@@ -458,11 +460,10 @@
 				5D02C7781E1C83650048C13E /* execution_context_id.hpp */,
 				02F59EAF1C88F17D007F774C /* index_set.cpp */,
 				02F59EB01C88F17D007F774C /* index_set.hpp */,
+				02F59EB11C88F17D007F774C /* list.cpp */,
+				02F59EB21C88F17D007F774C /* list.hpp */,
 				502B07E31E2CD1FA007A84ED /* object.cpp */,
 				502B07E51E2CD20D007A84ED /* object.hpp */,
-				02F59EB11C88F17D007F774C /* list.cpp */,
-				502B07E61E2CD21A007A84ED /* object_accessor.hpp */,
-				02F59EB21C88F17D007F774C /* list.hpp */,
 				02F59EB31C88F17D007F774C /* object_accessor.hpp */,
 				02F59EB41C88F17D007F774C /* object_schema.cpp */,
 				02F59EB51C88F17D007F774C /* object_schema.hpp */,
@@ -518,6 +519,8 @@
 				02414B9C1CE6AAEF00A8669F /* collection_notifier.hpp */,
 				02414B9D1CE6AAEF00A8669F /* list_notifier.cpp */,
 				02414B9E1CE6AAEF00A8669F /* list_notifier.hpp */,
+				8507156B1E2CFC0100E548DB /* object_notifier.cpp */,
+				8507156C1E2CFC0100E548DB /* object_notifier.hpp */,
 				02414B9F1CE6AAEF00A8669F /* results_notifier.cpp */,
 				02414BA01CE6AAEF00A8669F /* results_notifier.hpp */,
 				02F59EDA1C88F2BA007F774C /* external_commit_helper.hpp */,
@@ -836,6 +839,7 @@
 				02F59EE31C88F2BB007F774C /* transact_log_handler.cpp in Sources */,
 				F63FF2E81C159C4B00B3B8E0 /* platform.mm in Sources */,
 				50C671001E1D2D31003CB63C /* thread_safe_reference.cpp in Sources */,
+				8507156E1E2CFCD000E548DB /* object_notifier.cpp in Sources */,
 				02E315CA1DB80DDD00555337 /* sync_session.cpp in Sources */,
 				02F59EC31C88F17D007F774C /* results.cpp in Sources */,
 				F63FF2E21C15921A00B3B8E0 /* base64.cpp in Sources */,
