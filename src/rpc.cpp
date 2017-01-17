@@ -42,6 +42,7 @@ static const char * const RealmObjectTypesList = "list";
 static const char * const RealmObjectTypesObject = "object";
 static const char * const RealmObjectTypesResults = "results";
 static const char * const RealmObjectTypesRealm = "realm";
+static const char * const RealmObjectTypesUser = "user";
 static const char * const RealmObjectTypesUndefined = "undefined";
 
 static RPCServer*& get_rpc_server(JSGlobalContextRef ctx) {
@@ -130,6 +131,28 @@ RPCServer::RPCServer() {
         }
 
         JSObjectRef realm_object = jsc::Function::construct(m_context, realm_constructor, arg_count, arg_values);
+        RPCObjectID realm_id = store_object(realm_object);
+        return (json){{"result", realm_id}};
+    };
+    m_requests["/create_user"] = [this](const json dict) {
+        JSObjectRef realm_constructor = m_session_id ? JSObjectRef(m_objects[m_session_id]) : NULL;
+        if (!realm_constructor) {
+            throw std::runtime_error("Realm constructor not found!");
+        }
+        
+        JSObjectRef sync_constructor = jsc::Object::get_property(m_context, realm_constructor, "Sync");
+        JSObjectRef user_constructor = jsc::Object::get_property(m_context, sync_constructor, "User");
+        JSObjectRef create_user_method = jsc::Object::get_property(m_context, user_constructor, "createUser");
+        
+        json::array_t args = dict["arguments"];
+        size_t arg_count = args.size();
+        JSValueRef arg_values[arg_count];
+        
+        for (size_t i = 0; i < arg_count; i++) {
+            arg_values[i] = deserialize_json_value(args[i]);
+        }
+
+        JSObjectRef user_object = jsc::Function::call(m_context, create_user_method, arg_count, arg_values);
         RPCObjectID realm_id = store_object(realm_object);
         return (json){{"result", realm_id}};
     };
@@ -334,6 +357,17 @@ json RPCServer::serialize_json_value(JSValueRef js_value) {
         return {
             {"type", RealmObjectTypesRealm},
             {"id", store_object(js_object)},
+        };
+    }
+    else if (jsc::Object::is_instance<js::UserClass<jsc::Types>>(m_context, js_object)) {
+        auto user = *jsc::Object::get_internal<js::UserClass<jsc::Types>>(js_object);
+        return {
+            {"type", RealmObjectTypesUser},
+            {"id", store_object(js_object)},
+            {"identity", user->identity()},
+            {"token", user->refresh_token()},
+            {"serverUrl", user->server_url()},
+            {"isAdmin", user->is_admin()}
         };
     }
     else if (jsc::Value::is_array(m_context, js_object)) {
