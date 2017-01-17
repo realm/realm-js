@@ -74,11 +74,11 @@ public:
         {"createUser", wrap<create_user>}
     };
 
-    static void current_user(ContextType ctx, ObjectType object, ReturnValue &return_value);
+    /*static void current_user(ContextType ctx, ObjectType object, ReturnValue &return_value);*/
     static void all_users(ContextType ctx, ObjectType object, ReturnValue &return_value);
 
     PropertyMap<T> const static_properties = {
-        {"current", {wrap<current_user>, nullptr}},
+        /*{"current", {wrap<current_user>, nullptr}},*/
         {"all", {wrap<all_users>, nullptr}},
     };
 
