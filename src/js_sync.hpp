@@ -134,6 +134,7 @@ void UserClass<T>::all_users(ContextType ctx, ObjectType object, ReturnValue &re
     return_value.set(users);
 }
 
+/*
 template<typename T>
 void UserClass<T>::current_user(ContextType ctx, ObjectType object, ReturnValue &return_value) {
     SharedUser *current = nullptr;
@@ -153,6 +154,7 @@ void UserClass<T>::current_user(ContextType ctx, ObjectType object, ReturnValue 
         return_value.set_undefined();
     }
 }
+*/
 
 template<typename T>
 void UserClass<T>::logout(ContextType ctx, ObjectType object, size_t, const ValueType[], ReturnValue &) {
