@@ -1,5 +1,13 @@
 ![Realm](https://github.com/realm/realm-js/raw/master/logo.png)
 
+## BETA release
+
+**This beta release includes sync for React Native, with a few known issues and possibly some unknown ones.**
+ - Chrome debugging doesn't work (#791)
+ - Session API is still missing, meaning that you have no way of subscribing to error events (#792)
+
+----------
+
 Realm is a mobile database that runs directly inside phones, tablets or wearables.
 This project hosts the JavaScript versions of [Realm](https://realm.io/). Currently we only support React Native (both iOS & Android) and Node.js (on MacOS and Linux) but we are considering adding support for Cordova/PhoneGap/Ionic as well.
 
