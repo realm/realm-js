@@ -24,7 +24,8 @@
 
 #include "util/event_loop_signal.hpp"
 
-namespace __apply_polyfill {
+// FIXME: remove once we switch to C++ 17 where we can use std::apply
+namespace _apply_polyfill {
 template <class Tuple, class F, size_t... Is>
 constexpr auto apply_impl(Tuple t, F f, std::index_sequence<Is...>) {
     return f(std::get<Is>(t)...);
@@ -64,7 +65,7 @@ private:
                 std::unique_lock<std::mutex> lock(state->m_mutex);
                 while (!state->m_invocations.empty()) {
                     auto& tuple = state->m_invocations.front();
-                    ::__apply_polyfill::apply(tuple, state->m_func);
+                    ::_apply_polyfill::apply(tuple, state->m_func);
                     state->m_invocations.pop();
                 }
             }
