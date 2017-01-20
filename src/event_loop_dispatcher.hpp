@@ -71,6 +71,8 @@ private:
     };
     const std::shared_ptr<EventLoopSignal<Callback>> m_signal;
     
+    const std::thread::id m_thread = std::this_thread::get_id();
+    
 public:
     EventLoopDispatcher(std::function<void(Args...)> func)
     : m_state(std::make_shared<State>(func))
@@ -81,6 +83,11 @@ public:
     
     void operator()(Args... args)
     {
+        if (m_thread == std::this_thread::get_id()) {
+            m_state->m_func(args...);
+            return;
+        }
+        
         {
             std::unique_lock<std::mutex> lock(m_state->m_mutex);
             m_state->m_invocations.push(std::make_tuple(args...));
