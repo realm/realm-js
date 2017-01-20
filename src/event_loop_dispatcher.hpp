@@ -56,18 +56,16 @@ private:
     const std::shared_ptr<State> m_state;
     
     struct Callback {
-        std::weak_ptr<State> m_state;
+        std::shared_ptr<State> m_state;
         
     public:
         void operator()()
         {
-            if (auto state = m_state.lock()) {
-                std::unique_lock<std::mutex> lock(state->m_mutex);
-                while (!state->m_invocations.empty()) {
-                    auto& tuple = state->m_invocations.front();
-                    ::_apply_polyfill::apply(tuple, state->m_func);
-                    state->m_invocations.pop();
-                }
+            std::unique_lock<std::mutex> lock(m_state->m_mutex);
+            while (!m_state->m_invocations.empty()) {
+                auto& tuple = m_state->m_invocations.front();
+                ::_apply_polyfill::apply(tuple, m_state->m_func);
+                m_state->m_invocations.pop();
             }
         }
     };
