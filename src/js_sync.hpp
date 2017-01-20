@@ -267,14 +267,14 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
 
         EventLoopDispatcher<SyncBindSessionHandler> bind([=](const std::string& path, const realm::SyncConfig& config, std::shared_ptr<SyncSession>) {
             HANDLESCOPE
-            ObjectType user_constructor = Object::validated_get_object(ctx, protected_sync, std::string("User"));
-            FunctionType authenticate = Object::validated_get_function(ctx, user_constructor, std::string("_authenticateRealm"));
+            ObjectType user_constructor = Object::validated_get_object(protected_ctx, protected_sync, std::string("User"));
+            FunctionType authenticate = Object::validated_get_function(protected_ctx, user_constructor, std::string("_authenticateRealm"));
 
             ValueType arguments[3];
             arguments[0] = Value::from_string(protected_ctx, path.c_str());
             arguments[1] = Value::from_string(protected_ctx, config.realm_url.c_str());
             arguments[2] = refresh;
-            ObjectType user = create_object<T, UserClass<T>>(ctx, new SharedUser(config.user));
+            ObjectType user = create_object<T, UserClass<T>>(protected_ctx, new SharedUser(config.user));
             Function::call(protected_ctx, authenticate, user, 3, arguments);
         });
 
