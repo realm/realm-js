@@ -1,5 +1,13 @@
+0.15.5-rmp-beta.1 Release notes (2017-1-20)
+=============================================================
+## BETA release of Realm React Native with sync
+
+This version is for preview only.
+
+
 0.15.4 Release notes (2017-1-11)
 =============================================================
+
 ### Breaking changes
 * None
 
