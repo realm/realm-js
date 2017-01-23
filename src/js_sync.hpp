@@ -22,6 +22,7 @@
 #include <map>
 #include <set>
 
+#include "event_loop_dispatcher.hpp"
 #include "platform.hpp"
 #include "js_class.hpp"
 #include "js_collection.hpp"
@@ -264,30 +265,18 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
         Protected<ObjectType> protected_sync(ctx, sync_constructor);
         Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
 
-        auto handler = [=](const std::string& path, const realm::SyncConfig& config, std::shared_ptr<SyncSession>) {
+        EventLoopDispatcher<SyncBindSessionHandler> bind([=](const std::string& path, const realm::SyncConfig& config, std::shared_ptr<SyncSession>) {
             HANDLESCOPE
-            if (config.user->is_admin()) {
-                // FIXME: This log-in callback is called while the object store still holds some sync-related locks.
-                // Notify the object store of the access token asynchronously to avoid the deadlock that would result
-                // from reentering the object store here.
-                auto thread = std::thread([path, config]{
-                    auto session = SyncManager::shared().get_existing_active_session(path);
-                    session->refresh_access_token(config.user->refresh_token(), config.realm_url);
-                });
-                thread.detach();
-            }
-            else {
-                ObjectType user_constructor = Object::validated_get_object(ctx, protected_sync, std::string("User"));
-                FunctionType authenticate = Object::validated_get_function(ctx, user_constructor, std::string("_authenticateRealm"));
+            ObjectType user_constructor = Object::validated_get_object(protected_ctx, protected_sync, std::string("User"));
+            FunctionType authenticate = Object::validated_get_function(protected_ctx, user_constructor, std::string("_authenticateRealm"));
 
-                ValueType arguments[3];
-                arguments[0] = Value::from_string(protected_ctx, path.c_str());
-                arguments[1] = Value::from_string(protected_ctx, config.realm_url.c_str());
-                arguments[2] = refresh;
-                ObjectType user = create_object<T, UserClass<T>>(ctx, new SharedUser(config.user));
-                Function::call(protected_ctx, authenticate, user, 3, arguments);
-            }
-        };
+            ValueType arguments[3];
+            arguments[0] = Value::from_string(protected_ctx, path.c_str());
+            arguments[1] = Value::from_string(protected_ctx, config.realm_url.c_str());
+            arguments[2] = refresh;
+            ObjectType user = create_object<T, UserClass<T>>(protected_ctx, new SharedUser(config.user));
+            Function::call(protected_ctx, authenticate, user, 3, arguments);
+        });
 
         ObjectType user = Object::validated_get_object(ctx, sync_config_object, "user");
         SharedUser shared_user = *get_internal<T, UserClass<T>>(user);
@@ -300,7 +289,7 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
         // FIXME - use make_shared
         config.sync_config = std::shared_ptr<SyncConfig>(new SyncConfig{shared_user, raw_realm_url,
                                                                         SyncSessionStopPolicy::AfterChangesUploaded,
-                                                                        handler, [=](auto, SyncError) {}});
+                                                                        std::move(bind), [=](auto, SyncError) {}});
         config.schema_mode = SchemaMode::Additive;
         config.path = realm::SyncManager::shared().path_for_realm(shared_user->identity(), raw_realm_url);
     }
