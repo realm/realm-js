@@ -282,12 +282,12 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
                 ObjectType user_constructor = Object::validated_get_object(ctx, protected_sync, std::string("User"));
                 FunctionType authenticate = Object::validated_get_function(ctx, user_constructor, std::string("_authenticateRealm"));
 
-                ValueType arguments[3];
-                arguments[0] = Value::from_string(protected_ctx, path.c_str());
-                arguments[1] = Value::from_string(protected_ctx, config.realm_url.c_str());
-                arguments[2] = refresh;
-                ObjectType user = create_object<T, UserClass<T>>(ctx, new SharedUser(config.user));
-                Function::call(protected_ctx, authenticate, user, 3, arguments);
+                ValueType arguments[4];
+                arguments[0] = create_object<T, UserClass<T>>(ctx, new SharedUser(config.user));
+                arguments[1] = Value::from_string(protected_ctx, path.c_str());
+                arguments[2] = Value::from_string(protected_ctx, config.realm_url.c_str());
+                arguments[3] = refresh;
+                Function::call(protected_ctx, authenticate, 4, arguments);
             }
         };
 
