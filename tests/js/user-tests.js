@@ -160,20 +160,23 @@ module.exports = {
   },
 
   testLogin() {
-    var username = uuid();
-    // Create user, logout the new user, then login
-    return callbackTest((callback) => Realm.Sync.User.register('http://localhost:9080', username, 'password', callback), (error, user) => {
-      failOnError(error);
-      user.logout();
-
-      Realm.Sync.User.login('http://localhost:9080', username, 'password', (error, user) => {
+    return new Promise((resolve, _reject) => {
+      var username = uuid();
+      // Create user, logout the new user, then login
+      callbackTest((callback) => Realm.Sync.User.register('http://localhost:9080', username, 'password', callback), (error, user) => {
         failOnError(error);
-        assertIsUser(user);
+        user.logout();
 
-        // Can we open a realm with the logged-in user?
-        var realm = new Realm({sync: {user: user, url: 'realm://localhost:9080/~/test'}});
-        TestCase.assertInstanceOf(realm, Realm);
-        realm.close();
+        Realm.Sync.User.login('http://localhost:9080', username, 'password', (error, user) => {
+          failOnError(error);
+          assertIsUser(user);
+
+          // Can we open a realm with the logged-in user?
+          var realm = new Realm({ sync: { user: user, url: 'realm://localhost:9080/~/test' } });
+          TestCase.assertInstanceOf(realm, Realm);
+          realm.close();
+          resolve();
+        });
       });
     });
   },
@@ -202,16 +205,17 @@ module.exports = {
 
   testLoginServerOffline() {
     var username = uuid();
-      // Because it waits for answer this takes some time..
+
+    // Because it waits for answer this takes some time..
     return new Promise((resolve, reject) => {
       Realm.Sync.User.register('http://fake_host.local', username, 'password', (error, user) => {
         try {
-      assertIsError(error);
-      TestCase.assertUndefined(user);
-      resolve();
+          assertIsError(error);
+          TestCase.assertUndefined(user);
+          resolve();
         }
-        catch (e) { reject(e)}
-    });
+        catch (e) { reject(e) }
+      });
     });
   },
 
