@@ -29,6 +29,7 @@ var TESTS = {
     EncryptionTests: require('./encryption-tests'),
     MigrationTests: require('./migration-tests'),
     UserTests: require('./user-tests'),
+    AsyncTests: require('./async-tests')
 };
 
 var SPECIAL_METHODS = {

@@ -52,9 +52,14 @@ for (const suiteName in tests) {
         beforeEach(() => RealmTests.runTest(suiteName, 'beforeEach'));
 
         for (const testName of tests[suiteName]) {
-            it(testName, () => {
+            it(testName, (done) => {
                 try {
-                    RealmTests.runTest(suiteName, testName)
+                    let result = RealmTests.runTest(suiteName, testName);
+                    if (result instanceof Promise) {
+                        result.then(done, fail);
+                    } else {
+                        done();
+                    }
                 }
                 catch (e) {
                     fail(e);
@@ -65,14 +70,3 @@ for (const suiteName in tests) {
         afterEach(() => RealmTests.runTest(suiteName, 'afterEach'));
     });
 }
-
-const asyncTests = require('../js/async-tests');
-describe('AsyncTests', () => {
-    beforeEach(() => Realm.clearTestState());
-
-    for (const testName in asyncTests) {
-        it(testName, (done) => asyncTests[testName]().catch((e) => fail(e)).then(done));
-    }
-
-    afterEach(() => Realm.clearTestState());
-});
