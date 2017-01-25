@@ -231,7 +231,7 @@ RPCServer::RPCServer() {
 
         m_callbacks.clear();
         JSGarbageCollect(m_context);
-        js::delete_all_realms();
+        js::clear_test_state();
 
         return json::object();
     };
@@ -377,13 +377,16 @@ json RPCServer::serialize_json_value(JSValueRef js_value) {
     }
     else if (jsc::Object::is_instance<js::UserClass<jsc::Types>>(m_context, js_object)) {
         auto user = *jsc::Object::get_internal<js::UserClass<jsc::Types>>(js_object);
+        json user_dict {
+            {"identity", user->identity()},
+            {"token", user->refresh_token()},
+            {"server", user->server_url()},
+            {"isAdmin", user->is_admin()}
+        };
         return {
             {"type", RealmObjectTypesUser},
             {"id", store_object(js_object)},
-            {"identity", user->identity()},
-            {"token", user->refresh_token()},
-            {"serverUrl", user->server_url()},
-            {"isAdmin", user->is_admin()}
+            {"data", user_dict}
         };
     }
     else if (jsc::Value::is_array(m_context, js_object)) {
