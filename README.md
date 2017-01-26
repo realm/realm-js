@@ -48,6 +48,7 @@ Then in the cloned directory:
 
 ```
 git submodule update --init --recursive
+npm install
 ```
 
 To build for iOS:
