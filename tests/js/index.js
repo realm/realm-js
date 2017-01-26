@@ -28,8 +28,8 @@ var TESTS = {
     QueryTests: require('./query-tests'),
     EncryptionTests: require('./encryption-tests'),
     MigrationTests: require('./migration-tests'),
-    UserTests: require('./user-tests'),
-    AsyncTests: require('./async-tests')
+    UserTests: require('./user-tests')
+    /*AsyncTests: require('./async-tests')*/
 };
 
 var SPECIAL_METHODS = {
