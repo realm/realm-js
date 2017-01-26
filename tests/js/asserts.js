@@ -68,7 +68,7 @@ module.exports = {
         var message;
 
         if (len1 !== len2) {
-            message = 'Arrays have different lengths (' + len1 + ' != ' + len2 + ')';
+            message = 'Arrays have different lengths (' + len1 + ' != ' + len2 + ') for arrays ' + val1 + ' ' + val2;
             if (errorMessage) {
                 message = errorMessage + ' - ' + message;
             }
@@ -77,7 +77,7 @@ module.exports = {
 
         for (var i = 0; i < len1; i++) {
             if (val1[i] !== val2[i]) {
-                message = 'Array contents not equal at index ' + i + ' (' + val1[i] + ' != ' + val2[i] + ')';
+                message = 'Array contents not equal at index ' + i + ' (' + val1[i] + ' != ' + val2[i] + ') for arrays ' + val1 + ' ' + val2;
                 if (errorMessage) {
                     message = errorMessage + ' - ' + message;
                 }

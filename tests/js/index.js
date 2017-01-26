@@ -21,6 +21,7 @@
 var Realm = require('realm');
 
 var TESTS = {
+    CollectionNotificationTests: require('./collection-notification-tests'),
     ListTests: require('./list-tests'),
     ObjectTests: require('./object-tests'),
     RealmTests: require('./realm-tests'),
