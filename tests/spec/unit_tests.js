@@ -27,6 +27,8 @@ const path = require('path');
 const Realm = require('realm');
 const RealmTests = require('../js');
 
+jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+
 // Create this method with appropriate implementation for Node testing.
 Realm.copyBundledRealmFiles = function() {
     let sourceDir = path.join(__dirname, '../data');
