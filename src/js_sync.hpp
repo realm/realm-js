@@ -36,7 +36,8 @@
 namespace realm {
 namespace js {
 
-using SharedUser =  std::shared_ptr<realm::SyncUser>;
+using SharedUser = std::shared_ptr<realm::SyncUser>;
+using WeakSession = std::weak_ptr<realm::SyncSession>;
 
 template<typename T>
 class UserClass : public ClassDefinition<T, SharedUser> {
@@ -163,6 +164,79 @@ void UserClass<T>::logout(ContextType ctx, ObjectType object, size_t, const Valu
 }
 
 template<typename T>
+class SessionClass : public ClassDefinition<T, WeakSession> {
+    using ContextType = typename T::Context;
+    using FunctionType = typename T::Function;
+    using ObjectType = typename T::Object;
+    using String = js::String<T>;
+    using Object = js::Object<T>;
+    using Value = js::Value<T>;
+    using ReturnValue = js::ReturnValue<T>;
+    
+public:
+    std::string const name = "Session";
+
+    static FunctionType create_constructor(ContextType);
+    
+    static void get_config(ContextType, ObjectType, ReturnValue &);
+    static void get_user(ContextType, ObjectType, ReturnValue &);
+    static void get_url(ContextType, ObjectType, ReturnValue &);
+    static void get_state(ContextType, ObjectType, ReturnValue &);
+    
+    PropertyMap<T> const properties = {
+        {"config", {wrap<get_config>, nullptr}},
+        {"user", {wrap<get_user>, nullptr}},
+        {"url", {wrap<get_url>, nullptr}},
+        {"state", {wrap<get_state>, nullptr}}
+    };
+};
+    
+template<typename T>
+void SessionClass<T>::get_config(ContextType ctx, ObjectType object, ReturnValue &return_value) {
+    if (auto session = get_internal<T, SessionClass<T>>(object)->lock()) {
+        ObjectType config = Object::create_empty(ctx);
+        Object::set_property(ctx, config, "user", create_object<T, UserClass<T>>(ctx, new SharedUser(session->config().user)));
+        Object::set_property(ctx, config, "url", Value::from_string(ctx, session->config().realm_url));
+        return_value.set(config);
+    } else {
+        return_value.set_undefined();
+    }
+}
+
+template<typename T>
+void SessionClass<T>::get_user(ContextType ctx, ObjectType object, ReturnValue &return_value) {
+    if (auto session = get_internal<T, SessionClass<T>>(object)->lock()) {
+        return_value.set(create_object<T, UserClass<T>>(ctx, new SharedUser(session->config().user)));
+    } else {
+        return_value.set_undefined();
+    }
+}
+
+template<typename T>
+void SessionClass<T>::get_url(ContextType ctx, ObjectType object, ReturnValue &return_value) {
+    if (auto session = get_internal<T, SessionClass<T>>(object)->lock()) {
+        if (util::Optional<std::string> url = session->full_realm_url()) {
+            return_value.set(*url);
+        }
+    } else {
+        return_value.set_undefined();
+    }
+}
+
+template<typename T>
+void SessionClass<T>::get_state(ContextType ctx, ObjectType object, ReturnValue &return_value) {
+    return_value.set("invalid");
+    
+    if (auto session = get_internal<T, SessionClass<T>>(object)->lock()) {
+        if (session->state() == SyncSession::PublicState::Inactive) {
+            return_value.set("inactive");
+        } else if (session->state() != SyncSession::PublicState::Error) {
+            return_value.set("active");
+        }
+    }
+}
+    
+template<typename T>
 class SyncClass : public ClassDefinition<T, void *> {
     using GlobalContextType = typename T::GlobalContext;
     using ContextType = typename T::Context;
@@ -204,7 +278,8 @@ inline typename T::Function SyncClass<T>::create_constructor(ContextType ctx) {
 
     PropertyAttributes attributes = ReadOnly | DontEnum | DontDelete;
     Object::set_property(ctx, sync_constructor, "User", ObjectWrap<T, UserClass<T>>::create_constructor(ctx), attributes);
-
+    Object::set_property(ctx, sync_constructor, "Session", ObjectWrap<T, SessionClass<T>>::create_constructor(ctx), attributes);
+    
     // setup synced realmFile paths
     ensure_directory_exists_for_file(default_realm_file_directory());
     SyncManager::shared().configure_file_system(default_realm_file_directory(), SyncManager::MetadataMode::NoEncryption);

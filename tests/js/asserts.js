@@ -142,6 +142,12 @@ module.exports = {
         }
     },
 
+    assertNull: function(value, errorMessage) {
+        if (value !== null) {
+            throw new TestFailureError(errorMessage || `Value ${value} expected to be null`);
+        }
+    },
+
     isNode: function() {
         // eslint-disable-next-line no-undef
         return typeof process == 'object' && Object.prototype.toString.call(process) == '[object process]';
