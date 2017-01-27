@@ -367,6 +367,33 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
             }
         });
 
+        std::function<SyncSessionErrorHandler> error_handler;
+        ValueType error_func = Object::get_property(ctx, sync_config_object, "error");
+        if (!Value::is_undefined(ctx, error_func)) {
+            Protected<FunctionType> protected_error_func(ctx, Value::validated_to_function(ctx, error_func));
+            error_handler = EventLoopDispatcher<SyncSessionErrorHandler>([=](auto session, auto error) {
+                HANDLESCOPE
+                
+                ObjectType error_object = Object::create_empty(protected_ctx);
+                Object::set_property(protected_ctx, error_object, "message", Value::from_string(protected_ctx, error.message));
+                Object::set_property(protected_ctx, error_object, "isFatal", Value::from_boolean(protected_ctx, error.is_fatal));
+                Object::set_property(protected_ctx, error_object, "category", Value::from_string(protected_ctx, error.error_code.category().name()));
+                Object::set_property(protected_ctx, error_object, "code", Value::from_number(protected_ctx, error.error_code.value()));
+                
+                ObjectType user_info = Object::create_empty(protected_ctx);
+                for (auto& kvp : error.user_info) {
+                    Object::set_property(protected_ctx, user_info, kvp.first, Value::from_string(protected_ctx, kvp.second));
+                }
+                Object::set_property(protected_ctx, error_object, "userInfo", user_info);
+                
+                ValueType arguments[2];
+                arguments[0] = create_object<T, SessionClass<T>>(protected_ctx, new WeakSession(session));
+                arguments[1] = error_object;
+                
+                Function::call(protected_ctx, protected_error_func, 2, arguments);
+            });
+        }
+        
         ObjectType user = Object::validated_get_object(ctx, sync_config_object, "user");
         SharedUser shared_user = *get_internal<T, UserClass<T>>(user);
         if (shared_user->state() != SyncUser::State::Active) {
@@ -378,7 +405,7 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
         // FIXME - use make_shared
         config.sync_config = std::shared_ptr<SyncConfig>(new SyncConfig{shared_user, raw_realm_url,
                                                                         SyncSessionStopPolicy::AfterChangesUploaded,
-                                                                        std::move(bind), [=](auto, SyncError) {}});
+                                                                        std::move(bind), std::move(error_handler)});
         config.schema_mode = SchemaMode::Additive;
         config.path = realm::SyncManager::shared().path_for_realm(shared_user->identity(), raw_realm_url);
     }
