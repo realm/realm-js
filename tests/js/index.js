@@ -28,9 +28,12 @@ var TESTS = {
     QueryTests: require('./query-tests'),
     EncryptionTests: require('./encryption-tests'),
     MigrationTests: require('./migration-tests'),
-    UserTests: require('./user-tests')
     /*AsyncTests: require('./async-tests')*/
 };
+
+if (Realm.Sync) {
+    TESTS.UserTests = require('./user-tests');
+}
 
 var SPECIAL_METHODS = {
     beforeEach: true,
