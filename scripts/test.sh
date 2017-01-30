@@ -282,8 +282,8 @@ case "$TARGET" in
   xctest ReactExample
   ;;
 "react-tests-android")
-  download_server
-  start_server
+  # download_server
+  # start_server
   [[ $CONFIGURATION == 'Debug' ]] && exit 0
   XCPRETTY=''
 
@@ -317,7 +317,7 @@ case "$TARGET" in
   echo "********* TESTS COMPLETED *********";
   echo "********* File location: $(pwd)/tests.xml *********";
   cat tests.xml
-  stop_server
+  # stop_server
   ;;
 "node")
   if [ "$(uname)" = 'Darwin' ]; then
