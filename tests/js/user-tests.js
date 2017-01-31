@@ -276,9 +276,21 @@ module.exports = {
         });
       });
     });
-  }, 
-  /* This test fails because of realm-object-store #243 . We should use 2 users.
+  },
 
+  testManagementRealm() {
+    return callbackTest((callback) => Realm.Sync.User.register('http://localhost:9080', uuid(), 'password', callback), (error, user) => {
+      failOnError(error);
+
+      let realm = user.openManagementRealm();
+      TestCase.assertInstanceOf(realm, Realm);
+
+      let objectSchemaNames = realm.schema.map(o => o.name);
+      TestCase.assertArraysEqual(objectSchemaNames, [ 'PermissionChange', 'PermissionOffer', 'PermissionOfferResponse' ]);
+    });
+  },
+
+  /* This test fails because of realm-object-store #243 . We should use 2 users.
   testSynchronizeChangesWithTwoClientsAndOneUser() {
     // Test Schema
     class Foo {}
