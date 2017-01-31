@@ -47,10 +47,10 @@ function assertIsSameUser(value, user) {
   TestCase.assertEqual(value.isAdmin, user.isAdmin);
 }
 
-function assertIsError(error, code) {
+function assertIsError(error, message) {
   TestCase.assertInstanceOf(error, Error, 'The API should return an Error');
-  if (code) {
-    TestCase.assertEqual(error.code, code);
+  if (message) {
+    TestCase.assertEqual(error.message, message);
   }
 }
 
@@ -87,8 +87,8 @@ function callbackTest(requestFunc, callback) {
   });
 }
 
-
 module.exports = {
+  
   testLogout() {
     var username = uuid();
     return callbackTest((callback) => Realm.Sync.User.register('http://localhost:9080', username, 'password', callback), (error, user) => {
@@ -131,7 +131,7 @@ module.exports = {
         TestCase.assertUndefined(user);
       });
     });
-  },
+  }, 
 
   testRegisterMissingUsername() {
     return callbackTest((callback) => Realm.Sync.User.register('http://localhost:9080', undefined, 'password', callback), (error, user) => {
@@ -152,26 +152,29 @@ module.exports = {
     var username = uuid();
     // Because it waits for answer this takes some time..
     return callbackTest((callback) => Realm.Sync.User.register('http://fake_host.local', username, 'password', callback), (error, user) => {
-      assertIsError(error, 'ECONNRESET');
+      assertIsError(error);
       TestCase.assertUndefined(user);
     });
   },
 
   testLogin() {
-    var username = uuid();
-    // Create user, logout the new user, then login
-    return callbackTest((callback) => Realm.Sync.User.register('http://localhost:9080', username, 'password', callback), (error, user) => {
-      failOnError(error);
-      user.logout();
-
-      Realm.Sync.User.login('http://localhost:9080', username, 'password', (error, user) => {
+    return new Promise((resolve, _reject) => {
+      var username = uuid();
+      // Create user, logout the new user, then login
+      callbackTest((callback) => Realm.Sync.User.register('http://localhost:9080', username, 'password', callback), (error, user) => {
         failOnError(error);
-        assertIsUser(user);
+        user.logout();
 
-        // Can we open a realm with the logged-in user?
-        var realm = new Realm({sync: {user: user, url: 'realm://localhost:9080/~/test'}});
-        TestCase.assertInstanceOf(realm, Realm);
-        realm.close();
+        Realm.Sync.User.login('http://localhost:9080', username, 'password', (error, user) => {
+          failOnError(error);
+          assertIsUser(user);
+
+          // Can we open a realm with the logged-in user?
+          var realm = new Realm({ sync: { user: user, url: 'realm://localhost:9080/~/test' } });
+          TestCase.assertInstanceOf(realm, Realm);
+          realm.close();
+          resolve();
+        });
       });
     });
   },
@@ -200,10 +203,17 @@ module.exports = {
 
   testLoginServerOffline() {
     var username = uuid();
-      // Because it waits for answer this takes some time..
-    return callbackTest((callback) => Realm.Sync.User.register('http://fake_host.local', username, 'password', callback), (error, user) => {
-      assertIsError(error);
-      TestCase.assertUndefined(user);
+
+    // Because it waits for answer this takes some time..
+    return new Promise((resolve, reject) => {
+      Realm.Sync.User.register('http://fake_host.local', username, 'password', (error, user) => {
+        try {
+          assertIsError(error);
+          TestCase.assertUndefined(user);
+          resolve();
+        }
+        catch (e) { reject(e) }
+      });
     });
   },
 
@@ -266,7 +276,7 @@ module.exports = {
         });
       });
     });
-  },
+  }, 
   /* This test fails because of realm-object-store #243 . We should use 2 users.
 
   testSynchronizeChangesWithTwoClientsAndOneUser() {

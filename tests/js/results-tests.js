@@ -382,5 +382,30 @@ module.exports = {
             TestCase.assertEqual(objects.length, 0);
             TestCase.assertEqual(snapshot.length, 0);
         });
+    },
+
+    testAddListener: function() {
+        return new Promise((resolve, _reject) => {
+            var realm = new Realm({ schema: [schemas.TestObject] });
+
+            realm.write(() => {
+                realm.create('TestObject', { doubleCol: 1 });
+                realm.create('TestObject', { doubleCol: 2 });
+                realm.create('TestObject', { doubleCol: 3 });
+            });
+
+            realm.objects('TestObject').addListener((testObjects, changes) => {
+                // TODO: First notification is empty, so perform these
+                // assertions on the second call. However, there is a race condition
+                // in React Native, so find a way to do this in a robust way.
+                //TestCase.assertEqual(testObjects.length, 4);
+                //TestCase.assertEqual(changes.insertions.length, 1);
+                resolve();
+            });
+
+            realm.write(() => {
+                realm.create('TestObject', { doubleCol: 1 });
+            });
+        })
     }
 };

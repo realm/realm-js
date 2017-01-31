@@ -27,8 +27,20 @@ var TESTS = {
     ResultsTests: require('./results-tests'),
     QueryTests: require('./query-tests'),
     EncryptionTests: require('./encryption-tests'),
-    MigrationTests: require('./migration-tests'),
+    MigrationTests: require('./migration-tests')
 };
+
+// If sync is enabled, run the user tests
+if (Realm.Sync) {
+    TESTS.UserTests = require('./user-tests');
+}
+
+function node_require(module) { return require(module); }
+
+// If on node, run the async tests
+if (typeof process === 'object' && process + '' === '[object process]') {
+    TESTS.AsyncTests = node_require('./async-tests');
+}
 
 var SPECIAL_METHODS = {
     beforeEach: true,

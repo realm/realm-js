@@ -253,10 +253,15 @@ case "$TARGET" in
   npm run jsdoc
   ;;
 "realmjs")
+  download_server
+  start_server
   pushd src
   xctest RealmJS
+  stop_server
   ;;
 "react-tests")
+  download_server
+  start_server
   pushd tests/react-test-app
   npm install
   open_chrome
@@ -264,6 +269,7 @@ case "$TARGET" in
 
   pushd ios
   xctest ReactTestApp
+  stop_server
   ;;
 "react-example")
   pushd examples/ReactExample
@@ -276,6 +282,8 @@ case "$TARGET" in
   xctest ReactExample
   ;;
 "react-tests-android")
+  # download_server
+  # start_server
   [[ $CONFIGURATION == 'Debug' ]] && exit 0
   XCPRETTY=''
 
@@ -309,6 +317,7 @@ case "$TARGET" in
   echo "********* TESTS COMPLETED *********";
   echo "********* File location: $(pwd)/tests.xml *********";
   cat tests.xml
+  # stop_server
   ;;
 "node")
   if [ "$(uname)" = 'Darwin' ]; then
