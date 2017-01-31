@@ -135,7 +135,7 @@ class User {
 	 *   - `error` - an Error object is provided on failure
 	 *   - `user` - a valid User object on success
 	 */
-	login(server, username, password, callback) {}
+	static login(server, username, password, callback) {}
 
 	/**
 	 * Login a sync user using an external login provider.
@@ -146,7 +146,7 @@ class User {
 	 *   - `error` - an Error object is provided on failure
 	 *   - `user` - a valid User object on success
 	 */
-	loginWithProvider(server, provider, providerToken, callback) {}
+	static loginWithProvider(server, provider, providerToken, callback) {}
 
 	/**
 	 * Create a new user using the username/password provider
@@ -157,26 +157,34 @@ class User {
 	 *   - `error` - an Error object is provided on failure
 	 *   - `user` - a valid User object on success
 	 */
-	create(server, username, password, callback) {}
+	static create(server, username, password, callback) {}
 
 	/**
 	 * Create an admin user for the given authentication server with an existing token
 	 * @param {string} adminToken - existing admin token
 	 * @return {User} - admin user populated with the given token and server
 	 */
-	adminUser(adminToken) {}
+	static adminUser(adminToken) {}
 
 	/**
 	 * A dictionary containing users that are currently logged in.
 	 * The keys in the dictionary are user identities, values are corresponding User objects.
 	 * @type {object}
 	 */
-	get all() {}
+	static get all() {}
 
 	/**
 	 * Get the currently logged in user.
 	 * Throws error if > 1 user logged in, returns undefined if no users logged in.
 	 * @type {User}
 	 */
-	get current() {}
+	static get current() {}
+	
+	/**
+	 * Returns an instance of the Management Realm owned by the user.
+	 * This Realm can be used to control access and permissions for Realms owned by the user. This includes
+	 * giving other users access to Realms.
+	 * @returns {Realm}
+	 */
+	openAdminRealm() {}
 }
