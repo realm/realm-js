@@ -184,7 +184,7 @@ class User {
 	 * Returns an instance of the Management Realm owned by the user.
 	 * This Realm can be used to control access and permissions for Realms owned by the user. This includes
 	 * giving other users access to Realms.
-	 * @type {Realm}
+	 * @returns {Realm}
 	 */
 	openAdminRealm() {}
 }
