@@ -290,7 +290,7 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
                 arguments[3] = refresh;
                 Function::call(protected_ctx, authenticate, 4, arguments);
             }
-        };
+        });
 
         ObjectType user = Object::validated_get_object(ctx, sync_config_object, "user");
         SharedUser shared_user = *get_internal<T, UserClass<T>>(user);
