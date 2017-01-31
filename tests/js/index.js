@@ -35,9 +35,11 @@ if (Realm.Sync) {
     TESTS.UserTests = require('./user-tests');
 }
 
+function node_require(module) { return require(module); }
+
 // If on node, run the async tests
 if (typeof process === 'object' && process + '' === '[object process]') {
-    TESTS.AsyncTests = require('./async-tests');
+    TESTS.AsyncTests = node_require('./async-tests');
 }
 
 var SPECIAL_METHODS = {
