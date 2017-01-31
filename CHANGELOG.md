@@ -1,3 +1,14 @@
+vNext  Release Notes (TBA)
+=============================================================
+### Breaking changes
+* None
+
+### Enhancements
+* Add the Management Realm accessor on the User class, and its schema (#779)
+
+### Bug fixes
+* None
+
 0.15.4 Release notes (2017-1-11)
 =============================================================
 ### Breaking changes
