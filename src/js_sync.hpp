@@ -22,6 +22,7 @@
 #include <map>
 #include <set>
 
+#include "event_loop_dispatcher.hpp"
 #include "platform.hpp"
 #include "js_class.hpp"
 #include "js_collection.hpp"
@@ -266,7 +267,7 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
         Protected<ObjectType> protected_sync(ctx, sync_constructor);
         Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
 
-        auto handler = [=](const std::string& path, const realm::SyncConfig& config, std::shared_ptr<SyncSession>) {
+        EventLoopDispatcher<SyncBindSessionHandler> bind([=](const std::string& path, const realm::SyncConfig& config, std::shared_ptr<SyncSession>) {
             HANDLESCOPE
             if (config.user->is_admin()) {
                 // FIXME: This log-in callback is called while the object store still holds some sync-related locks.
@@ -302,7 +303,7 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
         // FIXME - use make_shared
         config.sync_config = std::shared_ptr<SyncConfig>(new SyncConfig{shared_user, raw_realm_url,
                                                                         SyncSessionStopPolicy::AfterChangesUploaded,
-                                                                        handler, [=](auto, SyncError) {}});
+                                                                        std::move(bind), [=](auto, SyncError) {}});
         config.schema_mode = SchemaMode::Additive;
         config.path = realm::SyncManager::shared().path_for_realm(shared_user->identity(), raw_realm_url);
     }
