@@ -53,8 +53,7 @@ module.exports = {
     },
 
     testProperties() {
-        let username = uuid();
-        return promisifiedRegister('http://localhost:9080', username, 'password').then(user => {
+        return promisifiedRegister('http://localhost:9080', uuid(), 'password').then(user => {
             let config = { sync: { user, url: 'realm://localhost:9080/~/myrealm' } };
             let realm = new Realm(config);
             let session = realm.syncSession;
@@ -63,12 +62,33 @@ module.exports = {
             TestCase.assertEqual(session.user.identity, user.identity);
             TestCase.assertEqual(session.config.url, config.sync.url);
             TestCase.assertEqual(session.config.user.identity, config.sync.user.identity);
-            TestCase.assertNull(session.url);
+            TestCase.assertUndefined(session.url);
             TestCase.assertEqual(session.state, 'active');
 
             // give the session enough time to refresh its access token and bind itself
             return wait(500).then(() => {
                 TestCase.assertEqual(session.url, `realm://localhost:9080/${user.identity}/myrealm`);
+            });
+        });
+    },
+
+    testErrorHandling() {
+        return promisifiedRegister('http://localhost:9080', uuid(), 'password').then(user => {
+            let errors = [];
+            let config = { sync: { user,
+                url: 'realm://localhost:9080/~/myrealm',
+                error: (sender, error) => errors.push([sender, error])
+            } };
+            let realm = new Realm(config);
+            let session = realm.syncSession;
+
+            session._simulateError(123, 'simulated error');
+
+            return wait(100).then(() => {
+                TestCase.assertArrayLength(errors, 1);
+                TestCase.assertEqual(errors[0][0].config.url, session.config.url);
+                TestCase.assertEqual(errors[0][1].message, 'simulated error');
+                TestCase.assertEqual(errors[0][1].code, 123);
             });
         });
     }

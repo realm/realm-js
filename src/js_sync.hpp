@@ -168,6 +168,7 @@ class SessionClass : public ClassDefinition<T, WeakSession> {
     using ContextType = typename T::Context;
     using FunctionType = typename T::Function;
     using ObjectType = typename T::Object;
+    using ValueType = typename T::Value;
     using String = js::String<T>;
     using Object = js::Object<T>;
     using Value = js::Value<T>;
@@ -182,12 +183,18 @@ public:
     static void get_user(ContextType, ObjectType, ReturnValue &);
     static void get_url(ContextType, ObjectType, ReturnValue &);
     static void get_state(ContextType, ObjectType, ReturnValue &);
-    
+
+    static void simulate_error(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
+
     PropertyMap<T> const properties = {
         {"config", {wrap<get_config>, nullptr}},
         {"user", {wrap<get_user>, nullptr}},
         {"url", {wrap<get_url>, nullptr}},
         {"state", {wrap<get_state>, nullptr}}
+    };
+
+    MethodMap<T> const methods = {
+        {"_simulateError", wrap<simulate_error>}
     };
 };
     
@@ -217,25 +224,42 @@ void SessionClass<T>::get_url(ContextType ctx, ObjectType object, ReturnValue &r
     if (auto session = get_internal<T, SessionClass<T>>(object)->lock()) {
         if (util::Optional<std::string> url = session->full_realm_url()) {
             return_value.set(*url);
+            return;
         }
-    } else {
-        return_value.set_undefined();
     }
+    
+    return_value.set_undefined();
 }
 
 template<typename T>
 void SessionClass<T>::get_state(ContextType ctx, ObjectType object, ReturnValue &return_value) {
-    return_value.set("invalid");
-    
+    static const std::string invalid("invalid");
+    static const std::string inactive("inactive");
+    static const std::string active("active"); 
+
+    return_value.set(invalid);
+
     if (auto session = get_internal<T, SessionClass<T>>(object)->lock()) {
         if (session->state() == SyncSession::PublicState::Inactive) {
-            return_value.set("inactive");
+            return_value.set(inactive);
         } else if (session->state() != SyncSession::PublicState::Error) {
-            return_value.set("active");
+            return_value.set(active);
         }
     }
 }
-    
+
+template<typename T>
+void SessionClass<T>::simulate_error(ContextType ctx, ObjectType object, size_t argc, const ValueType arguments[], ReturnValue &) {
+    validate_argument_count(argc, 2);
+
+    if (auto session = get_internal<T, SessionClass<T>>(object)->lock()) {
+        SyncError error;
+        error.error_code = std::error_code(Value::validated_to_number(ctx, arguments[0]), realm::sync::protocol_error_category());
+        error.message = Value::validated_to_string(ctx, arguments[1]);
+        SyncSession::OnlyForTesting::handle_error(*session, std::move(error));
+    }
+}
+
 template<typename T>
 class SyncClass : public ClassDefinition<T, void *> {
     using GlobalContextType = typename T::GlobalContext;
