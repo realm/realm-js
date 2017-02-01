@@ -43,6 +43,7 @@ static const char * const RealmObjectTypesObject = "object";
 static const char * const RealmObjectTypesResults = "results";
 static const char * const RealmObjectTypesRealm = "realm";
 static const char * const RealmObjectTypesUser = "user";
+static const char * const RealmObjectTypesSession = "session";
 static const char * const RealmObjectTypesUndefined = "undefined";
 
 static RPCServer*& get_rpc_server(JSGlobalContextRef ctx) {
@@ -387,6 +388,17 @@ json RPCServer::serialize_json_value(JSValueRef js_value) {
             {"type", RealmObjectTypesUser},
             {"id", store_object(js_object)},
             {"data", user_dict}
+        };
+    }
+    else if (jsc::Object::is_instance<js::SessionClass<jsc::Types>>(m_context, js_object)) {
+        json session_dict {
+            {"user", serialize_json_value(jsc::Object::get_property(m_context, js_object, "user"))},
+            {"config", serialize_json_value(jsc::Object::get_property(m_context, js_object, "config"))}
+        };
+        return {
+            {"type", RealmObjectTypesSession},
+            {"id", store_object(js_object)},
+            {"data", session_dict}
         };
     }
     else if (jsc::Value::is_array(m_context, js_object)) {
