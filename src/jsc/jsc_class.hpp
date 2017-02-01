@@ -48,7 +48,10 @@ class ObjectWrap {
     }
 
     static JSObjectRef create_constructor(JSContextRef ctx) {
-        return JSObjectMake(ctx, get_constructor_class(), nullptr);
+        JSObjectRef constructor = JSObjectMake(ctx, get_constructor_class(), nullptr);
+        JSObjectRef prototype = (JSObjectRef)Object::get_property(ctx, constructor, "prototype");
+        Object::set_property(ctx, prototype, "constructor", constructor);
+        return constructor;
     }
 
     static JSClassRef get_class() {
