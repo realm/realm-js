@@ -55,6 +55,7 @@ class Sync {
 	 */
 	static setLogLevel(log_level) {}
 
+
 }
 
 /**
@@ -149,15 +150,15 @@ class User {
 	static loginWithProvider(server, provider, providerToken, callback) {}
 
 	/**
-	 * Create a new user using the username/password provider
+	 * Register a sync user with username and password.
 	 * @param {string} server - authentication server
 	 * @param {string} username
 	 * @param {string} password
-	 * @param {function(error, User)} callback - called with the following arguments:
+	 * @param {function(error, user)} callback - called with the following arguments:
 	 *   - `error` - an Error object is provided on failure
 	 *   - `user` - a valid User object on success
 	 */
-	static create(server, username, password, callback) {}
+	static register(server, username, password, callback) {}
 
 	/**
 	 * Create an admin user for the given authentication server with an existing token
@@ -181,10 +182,79 @@ class User {
 	static get current() {}
 	
 	/**
-	 * Returns an instance of the Management Realm owned by the user.
-	 * This Realm can be used to control access and permissions for Realms owned by the user. This includes
-	 * giving other users access to Realms.
+	 * Gets the server URL that was used for authentication.
+	 * @type {string}
+	 */
+	get server() {}
+
+	/**
+	 * Gets the identity of this user on the Realm Object Server. 
+	 * The identity is a guaranteed to be unique among all users on the Realm Object Server.
+	 * @type {string}
+	 */
+	get identity() {}
+
+	/**
+	 * Gets this user's refresh token. This is the user's credential for accessing the Realm 
+	 * Object Server and should be treated as sensitive data.
+	 * @type {string}
+	 */
+	get token() {}
+
+	/**
+	 * Returns true if this user is an administrator
+	 * @type {bool}
+	 */
+	get isAdmin() {}
+
+	/**
+	 * Logs out the user from the Realm Object Server.
+	 */
+	logout() {}
+
+	/**
+	 * Get the management realm for this User.
+	 * This Realm can be used to control access and permissions for Realms owned by the user.
+	 * This includes giving others access to the Realms.
 	 * @returns {Realm}
 	 */
-	openAdminRealm() {}
+	openManagementRealm() {}
+}
+
+/**
+ * An object encapsulating a Realm Object Server session. Sessions represent the communication between the 
+ * client (and a local Realm file on disk), and the server (and a remote Realm at a given URL stored on a Realm Object Server).
+ * Sessions are always created by the SDK and vended out through various APIs. The lifespans of sessions 
+ * associated with Realms are managed automatically.
+ * @memberof Realm.Sync
+ */
+class Session {
+	/**
+	 * Gets the Sync-part of the configuration that the corresponding Realm was
+	 * constructed with.
+	 * @type {object}
+	 */
+	get config() {}
+
+	/**
+	 * Gets the User that this session was created with.
+	 * @type {User}
+	 */
+	get user() {}
+
+	/**
+	 * Gets the URL of the Realm Object Server that this session is connected to.
+	 * @type {string}
+	 */
+	get url() {}
+
+	/**
+	 * Gets the current state of the session.
+	 * Can be either:
+	 *  - "active": The session is connected to the Realm Object Server and is actively transferring data.
+	 *  - "inactive": The session is not currently communicating with the Realm Object Server.
+	 *  - "invalid": A non-recoverable error has occurred, and this session is semantically invalid. A new session should be created.
+	 * @type {string}
+	 */
+	get state() {}
 }
