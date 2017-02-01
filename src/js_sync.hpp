@@ -85,9 +85,11 @@ public:
     };
 
     static void logout(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void session_for_on_disk_path(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
 
     MethodMap<T> const methods = {
-        {"logout", wrap<logout>}
+        {"logout", wrap<logout>},
+        {"_sessionForOnDiskPath", wrap<session_for_on_disk_path>}
     };
 };
 
@@ -185,6 +187,7 @@ public:
     static void get_state(ContextType, ObjectType, ReturnValue &);
 
     static void simulate_error(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void refresh_access_token(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
 
     PropertyMap<T> const properties = {
         {"config", {wrap<get_config>, nullptr}},
@@ -194,10 +197,21 @@ public:
     };
 
     MethodMap<T> const methods = {
-        {"_simulateError", wrap<simulate_error>}
+        {"_simulateError", wrap<simulate_error>},
+        {"_refreshAccessToken", wrap<refresh_access_token>}
     };
 };
-    
+
+template<typename T>
+void UserClass<T>::session_for_on_disk_path(ContextType ctx, ObjectType object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    auto user = *get_internal<T, UserClass<T>>(object);
+    if (auto session = user->session_for_on_disk_path(Value::validated_to_string(ctx, arguments[0]))) {
+        return_value.set(create_object<T, SessionClass<T>>(ctx, new WeakSession(session)));
+    } else {
+        return_value.set_undefined();
+    }
+}
+
 template<typename T>
 void SessionClass<T>::get_config(ContextType ctx, ObjectType object, ReturnValue &return_value) {
     if (auto session = get_internal<T, SessionClass<T>>(object)->lock()) {
@@ -227,7 +241,7 @@ void SessionClass<T>::get_url(ContextType ctx, ObjectType object, ReturnValue &r
             return;
         }
     }
-    
+
     return_value.set_undefined();
 }
 
@@ -261,6 +275,17 @@ void SessionClass<T>::simulate_error(ContextType ctx, ObjectType object, size_t 
 }
 
 template<typename T>
+void SessionClass<T>::refresh_access_token(ContextType ctx, ObjectType object, size_t argc, const ValueType arguments[], ReturnValue &) {
+    validate_argument_count(argc, 2);
+
+    if (auto session = get_internal<T, SessionClass<T>>(object)->lock()) {
+        std::string access_token = Value::validated_to_string(ctx, arguments[0], "accessToken");
+        std::string realm_url = Value::validated_to_string(ctx, arguments[1], "realmUrl");
+        session->refresh_access_token(std::move(access_token), std::move(realm_url));
+    }
+}
+
+template<typename T>
 class SyncClass : public ClassDefinition<T, void *> {
     using GlobalContextType = typename T::GlobalContext;
     using ContextType = typename T::Context;
@@ -283,14 +308,12 @@ public:
     static void set_verify_servers_ssl_certificate(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
 
     // private
-    static void refresh_access_token(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void populate_sync_config(ContextType, ObjectType realm_constructor, ObjectType config_object, Realm::Config&);
 
     // static properties
     static void get_is_developer_edition(ContextType, ObjectType, ReturnValue &);
 
     MethodMap<T> const static_methods = {
-        {"refreshAccessToken", wrap<refresh_access_token>},
         {"setLogLevel", wrap<set_sync_log_level>},
         {"setVerifyServersSslCertificate", wrap<set_verify_servers_ssl_certificate>}
     };
@@ -333,28 +356,6 @@ void SyncClass<T>::set_verify_servers_ssl_certificate(ContextType ctx, ObjectTyp
 }
 
 template<typename T>
-void SyncClass<T>::refresh_access_token(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
-    validate_argument_count(argc, 2);
-
-    static const String token_string = "token";
-    static const String file_url_string = "file_url";
-    static const String realm_url_string = "resolved_realm_url";
-
-    ObjectType json_arguments = Value::validated_to_object(ctx, arguments[1]);
-    std::string token = Object::validated_get_string(ctx, json_arguments, token_string);
-    std::string file_url = Object::validated_get_string(ctx, json_arguments, file_url_string);
-    std::string realm_url = Object::validated_get_string(ctx, json_arguments, realm_url_string);
-
-    if (auto session = SyncManager::shared().get_existing_active_session(file_url)) {
-        session->refresh_access_token(token, realm_url);
-        return_value.set(true);
-    }
-    else {
-        return_value.set(false);
-    }
-}
-
-template<typename T>
 void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constructor, ObjectType config_object, Realm::Config& config)
 {
     ValueType sync_config_value = Object::get_property(ctx, config_object, "sync");
@@ -362,7 +363,6 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
         auto sync_config_object = Value::validated_to_object(ctx, sync_config_value);
 
         ObjectType sync_constructor = Object::validated_get_object(ctx, realm_constructor, std::string("Sync"));
-        Protected<ValueType> refresh(ctx, Object::validated_get_function(ctx, sync_constructor, std::string("refreshAccessToken")));
         Protected<ObjectType> protected_sync(ctx, sync_constructor);
         Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
 
@@ -382,12 +382,11 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
                 ObjectType user_constructor = Object::validated_get_object(ctx, protected_sync, std::string("User"));
                 FunctionType authenticate = Object::validated_get_function(ctx, user_constructor, std::string("_authenticateRealm"));
 
-                ValueType arguments[4];
+                ValueType arguments[3];
                 arguments[0] = create_object<T, UserClass<T>>(ctx, new SharedUser(config.user));
                 arguments[1] = Value::from_string(protected_ctx, path.c_str());
                 arguments[2] = Value::from_string(protected_ctx, config.realm_url.c_str());
-                arguments[3] = refresh;
-                Function::call(protected_ctx, authenticate, 4, arguments);
+                Function::call(protected_ctx, authenticate, 3, arguments);
             }
         });
 
