@@ -167,6 +167,9 @@ public:
     static void get_schema_version(ContextType, ObjectType, ReturnValue &);
     static void get_schema(ContextType, ObjectType, ReturnValue &);
     static void get_read_only(ContextType, ObjectType, ReturnValue &);
+#if REALM_ENABLE_SYNC
+    static void get_sync_session(ContextType, ObjectType, ReturnValue &);
+#endif
 
     // static methods
     static void constructor(ContextType, ObjectType, size_t, const ValueType[]);
@@ -208,6 +211,9 @@ public:
         {"schemaVersion", {wrap<get_schema_version>, nullptr}},
         {"schema", {wrap<get_schema>, nullptr}},
         {"readOnly", {wrap<get_read_only>, nullptr}},
+#if REALM_ENABLE_SYNC
+        {"syncSession", {wrap<get_sync_session>, nullptr}},
+#endif
     };
 
   private:
@@ -498,6 +504,19 @@ void RealmClass<T>::get_read_only(ContextType ctx, ObjectType object, ReturnValu
     return_value.set(get_internal<T, RealmClass<T>>(object)->get()->config().read_only());
 }
 
+#if REALM_ENABLE_SYNC
+template<typename T>
+void RealmClass<T>::get_sync_session(ContextType ctx, ObjectType object, ReturnValue &return_value) {
+    auto realm = *get_internal<T, RealmClass<T>>(object);
+    if (std::shared_ptr<SyncSession> session = SyncManager::shared().get_existing_active_session(realm->config().path)) {
+        return_value.set(create_object<T, SessionClass<T>>(ctx, new WeakSession(session)));
+    } else {
+        return_value.set_null();
+    }
+    
+}
+#endif
+    
 template<typename T>
 void RealmClass<T>::objects(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 1);

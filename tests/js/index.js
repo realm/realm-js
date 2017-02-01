@@ -33,6 +33,7 @@ var TESTS = {
 // If sync is enabled, run the user tests
 if (Realm.Sync) {
     TESTS.UserTests = require('./user-tests');
+    TESTS.SessionTests = require('./session-tests');
 }
 
 function node_require(module) { return require(module); }
