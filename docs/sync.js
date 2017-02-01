@@ -161,17 +161,6 @@ class User {
 	static register(server, username, password, callback) {}
 
 	/**
-	 * Create a new user using the username/password provider
-	 * @param {string} server - authentication server
-	 * @param {string} username
-	 * @param {string} password
-	 * @param {function(error, User)} callback - called with the following arguments:
-	 *   - `error` - an Error object is provided on failure
-	 *   - `user` - a valid User object on success
-	 */
-	static create(server, username, password, callback) {}
-
-	/**
 	 * Create an admin user for the given authentication server with an existing token
 	 * @param {string} adminToken - existing admin token
 	 * @return {User} - admin user populated with the given token and server
