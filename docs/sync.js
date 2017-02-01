@@ -1,3 +1,4 @@
+import {createUser} from '../lib/browser/user';
 ////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
@@ -54,6 +55,7 @@ class Sync {
 	 * @param {string} log_level
 	 */
 	static setLogLevel(log_level) {}
+
 
 }
 
@@ -181,10 +183,78 @@ class User {
 	static get current() {}
 	
 	/**
-	 * Returns an instance of the Management Realm owned by the user.
-	 * This Realm can be used to control access and permissions for Realms owned by the user. This includes
-	 * giving other users access to Realms.
+	 * Gets the server URL that was used for authentication.
+	 * @type {string}
+	 */
+	get server() {}
+
+	/**
+	 * Gets the identity of this user on the Realm Object Server. 
+	 * The identity is a guaranteed to be unique among all users on the Realm Object Server.
+	 * @type {string}
+	 */
+	get identity() {}
+
+	/**
+	 * Gets this user's refresh token. This is the user's credential for accessing the Realm 
+	 * Object Server and should be treated as sensitive data.
+	 * @type {string}
+	 */
+	get token() {}
+
+	/**
+	 * Returns true if this user is an administrator
+	 * @type {bool}
+	 */
+	get isAdmin() {}
+
+	/**
+	 * Logs out the user from the Realm Object Server.
+	 */
+	logout() {}
+
+	/**
+	 * Get the management realm for this User.
+	 * This Realm can be used to control access and permissions for Realms owned by the user.
+	 * This includes giving others access to the Realms.
 	 * @returns {Realm}
 	 */
-	openAdminRealm() {}
+	openManagementRealm() {}
+}
+
+/**
+ * An object encapsulating a Realm Object Server session. Sessions represent the communication between the 
+ * client (and a local Realm file on disk), and the server (and a remote Realm at a given URL stored on a Realm Object Server).
+ * Sessions are always created by the SDK and vended out through various APIs. The lifespans of sessions 
+ * associated with Realms are managed automatically.
+ */
+class Session {
+	/**
+	 * Gets the Sync-part of the configuration that the corresponding Realm was
+	 * constructed with.
+	 * @type {object}
+	 */
+	get config() {}
+
+	/**
+	 * Gets the User that this session was created with.
+	 * @type {User}
+	 */
+	get user() {}
+
+	/**
+	 * Gets the URL of the Realm Object Server that this session is connected to.
+	 * @type {string}
+	 */
+	get url() {}
+
+	/**
+	 * Gets the current state of the session.
+	 * Can be either:
+	 *  - "active": The session is connected to the Realm Object Server and is actively transferring data.
+	 *  - "inactive": The session is not currently communicating with the Realm Object Server.
+	 *  - "invalid": A non-recoverable error has occurred, and this session is semantically invalid. A new session should be created.
+	 * @type {string}
+	 */
+	get state() {}
 }
