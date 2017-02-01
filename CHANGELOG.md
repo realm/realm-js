@@ -68,7 +68,7 @@ vNext  Release Notes (TBA)
 * Updated test and examples for react-natve v0.37.0
 
 ### Bugfixes
-* None
+* Fix for crash when updating Realms with optional date properties to the new file format
 
 0.14.3 Release notes (2016-8-8)
 =============================================================
