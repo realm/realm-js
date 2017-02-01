@@ -150,6 +150,17 @@ class User {
 	static loginWithProvider(server, provider, providerToken, callback) {}
 
 	/**
+	 * Register a sync user with username and password.
+	 * @param {string} server - authentication server
+	 * @param {string} username
+	 * @param {string} password
+	 * @param {function(error, user)} callback - called with the following arguments:
+	 *   - `error` - an Error object is provided on failure
+	 *   - `user` - a valid User object on success
+	 */
+	static register(server, username, password, callback) {}
+
+	/**
 	 * Create a new user using the username/password provider
 	 * @param {string} server - authentication server
 	 * @param {string} username
@@ -226,6 +237,7 @@ class User {
  * client (and a local Realm file on disk), and the server (and a remote Realm at a given URL stored on a Realm Object Server).
  * Sessions are always created by the SDK and vended out through various APIs. The lifespans of sessions 
  * associated with Realms are managed automatically.
+ * @memberof Realm.Sync
  */
 class Session {
 	/**

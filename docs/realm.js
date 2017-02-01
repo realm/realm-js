@@ -57,6 +57,12 @@ class Realm {
     get schemaVersion() {}
 
     /**
+     * Gets the sync session if this is a synced Realm
+     * @type {Session}
+     */
+    get syncSession() {}
+
+    /**
      * Create a new `Realm` instance using the provided `config`. If a Realm does not yet exist
      * at `config.path` (or {@link Realm.defaultPath} if not provided), then this constructor
      * will create it with the provided `config.schema` (which is _required_ in this case).
