@@ -66,7 +66,11 @@ module.exports = {
             TestCase.assertEqual(session.state, 'active');
 
             // give the session enough time to refresh its access token and bind itself
-            return wait(500).then(() => {
+            let timeout = 500;
+            if (typeof window !== 'undefined') {
+                timeout = 2500; // need a longer timeout under React Native because remote debugging
+            }
+            return wait(timeout).then(() => {
                 TestCase.assertEqual(session.url, `realm://localhost:9080/${user.identity}/myrealm`);
             });
         });
