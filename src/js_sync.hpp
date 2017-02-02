@@ -366,7 +366,7 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
         Protected<ObjectType> protected_sync(ctx, sync_constructor);
         Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
 
-        EventLoopDispatcher<SyncBindSessionHandler> bind([=](const std::string& path, const realm::SyncConfig& config, std::shared_ptr<SyncSession>) {
+        EventLoopDispatcher<SyncBindSessionHandler> bind([protected_ctx, protected_sync](const std::string& path, const realm::SyncConfig& config, std::shared_ptr<SyncSession>) {
             HANDLESCOPE
             if (config.user->is_admin()) {
                 // FIXME: This log-in callback is called while the object store still holds some sync-related locks.
@@ -379,11 +379,11 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
                 thread.detach();
             }
             else {
-                ObjectType user_constructor = Object::validated_get_object(ctx, protected_sync, std::string("User"));
-                FunctionType authenticate = Object::validated_get_function(ctx, user_constructor, std::string("_authenticateRealm"));
+                ObjectType user_constructor = Object::validated_get_object(protected_ctx, protected_sync, std::string("User"));
+                FunctionType authenticate = Object::validated_get_function(protected_ctx, user_constructor, std::string("_authenticateRealm"));
 
                 ValueType arguments[3];
-                arguments[0] = create_object<T, UserClass<T>>(ctx, new SharedUser(config.user));
+                arguments[0] = create_object<T, UserClass<T>>(protected_ctx, new SharedUser(config.user));
                 arguments[1] = Value::from_string(protected_ctx, path.c_str());
                 arguments[2] = Value::from_string(protected_ctx, config.realm_url.c_str());
                 Function::call(protected_ctx, authenticate, 3, arguments);
