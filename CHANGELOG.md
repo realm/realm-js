@@ -1,4 +1,4 @@
-vNext  Release Notes (TBA)
+1.0.0 Release notes (2017-2-2)
 =============================================================
 ### Breaking changes
 * None
