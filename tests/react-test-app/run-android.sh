@@ -22,6 +22,9 @@ adb uninstall io.realm.react.testapp || true
 echo "Reversing port for physical device"
 adb reverse tcp:8081 tcp:8081
 
+echo "Reversing port for Realm Object Server"
+adb reverse tcp:9080 tcp:9080
+
 echo "Building Release APK"
 pushd android && ./gradlew assembleRelease
 
