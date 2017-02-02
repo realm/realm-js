@@ -1,3 +1,14 @@
+1.0.1 Release notes (2017-2-2)
+=============================================================
+### Breaking changes
+* None
+
+### Enhancements
+* None
+
+### Bug fixes
+* Fix crash when the sync user token expires (#839)
+
 1.0.0 Release notes (2017-2-2)
 =============================================================
 ### Breaking changes
