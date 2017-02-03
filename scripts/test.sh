@@ -13,6 +13,8 @@ IOS_SIM_DEVICE=${IOS_SIM_DEVICE:-} # use preferentially, otherwise will be set a
 ios_sim_default_device_type=${IOS_SIM_DEVICE_TYPE:-iPhone 5s}
 ios_sim_default_ios_version=${IOS_SIM_OS:-iOS 10.1}
 
+ACCEPTED_LICENSES='MIT, ISC, BSD, Apache-2.0, BSD-2-Clause, BSD-3-Clause, WTFPL, Unlicense, (MIT AND CC-BY-3.0)'
+
 PATH="/opt/android-sdk-linux/platform-tools:$PATH"
 SRCROOT=$(cd "$(dirname "$0")/.." && pwd)
 XCPRETTY=$(which xcpretty || true)
@@ -246,6 +248,17 @@ case "$TARGET" in
   [[ $CONFIGURATION == 'Debug' ]] && exit 0
   npm install
   ./node_modules/.bin/eslint -f checkstyle . > eslint.xml || true
+  ;;
+"license-check")
+  [[ $CONFIGURATION == 'Debug' ]] && exit 0
+  licenses=$(node_modules/.bin/license-checker --exclude "$ACCEPTED_LICENSES");
+  if [[ $licenses ]]; then
+    echo "Unknown license detected in dependency:"
+    node_modules/.bin/license-checker --exclude "$ACCEPTED_LICENSES"
+    exit 1
+  else
+    echo "All licenses are accepted"
+  fi
   ;;
 "jsdoc")
   [[ $CONFIGURATION == 'Debug' ]] && exit 0
