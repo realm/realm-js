@@ -113,11 +113,11 @@ RPCServer::RPCServer() {
 
         jsc::String realm_string = "Realm";
         JSObjectRef realm_constructor = jsc::Object::validated_get_constructor(m_context, JSContextGetGlobalObject(m_context), realm_string);
-        JSValueRef authenticateRealm = deserialize_json_value(dict["authenticateRealm"]);
+        JSValueRef refreshAccessTokenCallback = deserialize_json_value(dict["refreshAccessToken"]);
 
         JSObjectRef sync_constructor = (JSObjectRef)jsc::Object::get_property(m_context, realm_constructor, "Sync");
         JSObjectRef user_constructor = (JSObjectRef)jsc::Object::get_property(m_context, sync_constructor, "User");
-        jsc::Object::set_property(m_context, user_constructor, "_authenticateRealm", authenticateRealm);
+        jsc::Object::set_property(m_context, user_constructor, "_refreshAccessToken", refreshAccessTokenCallback);
 
         m_session_id = store_object(realm_constructor);
         return (json){{"result", m_session_id}};

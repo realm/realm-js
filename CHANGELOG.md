@@ -1,3 +1,14 @@
+vNext Release notes (TBA)
+=============================================================
+### Breaking changes
+* None
+
+### Enhancements
+* None
+
+### Bug fixes
+* Proactively refresh sync user tokens to avoid a reconnect delay (#840)
+
 1.0.1 Release notes (2017-2-2)
 =============================================================
 ### Breaking changes
