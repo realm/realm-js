@@ -31,7 +31,7 @@ template<typename T>
 using ConstructorType = void(typename T::Context, typename T::Object, size_t, const typename T::Value[]);
 
 template<typename T>
-using MethodType = void(typename T::Context, typename T::Object, size_t, const typename T::Value[], ReturnValue<T> &);
+using MethodType = void(typename T::Context, typename T::Function, typename T::Object, size_t, const typename T::Value[], ReturnValue<T> &);
 
 template<typename T>
 struct PropertyType {

@@ -71,7 +71,7 @@ class RPCServer {
     RPCObjectID m_session_id;
     RPCWorker m_worker;
 
-    static void run_callback(JSContextRef, JSObjectRef, size_t, const JSValueRef[], jsc::ReturnValue &);
+    static void run_callback(JSContextRef, JSObjectRef, JSObjectRef, size_t, const JSValueRef[], jsc::ReturnValue &);
 
     RPCObjectID store_object(JSObjectRef object);
 

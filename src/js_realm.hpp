@@ -151,16 +151,16 @@ public:
     static FunctionType create_constructor(ContextType);
 
     // methods
-    static void objects(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
-    static void object_for_primary_key(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
-    static void create(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
-    static void delete_one(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
-    static void delete_all(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
-    static void write(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
-    static void add_listener(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
-    static void remove_listener(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
-    static void remove_all_listeners(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
-    static void close(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void objects(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void object_for_primary_key(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void create(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void delete_one(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void delete_all(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void write(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void add_listener(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void remove_listener(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void remove_all_listeners(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void close(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
 
     // properties
     static void get_path(ContextType, ObjectType, ReturnValue &);
@@ -173,9 +173,9 @@ public:
 
     // static methods
     static void constructor(ContextType, ObjectType, size_t, const ValueType[]);
-    static void schema_version(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
-    static void clear_test_state(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
-    static void copy_bundled_realm_files(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void schema_version(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void clear_test_state(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void copy_bundled_realm_files(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
 
     // static properties
     static void get_default_path(ContextType, ObjectType, ReturnValue &);
@@ -437,7 +437,7 @@ void RealmClass<T>::constructor(ContextType ctx, ObjectType this_object, size_t 
 }
 
 template<typename T>
-void RealmClass<T>::schema_version(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+void RealmClass<T>::schema_version(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 1, 2);
 
     realm::Realm::Config config;
@@ -459,14 +459,14 @@ void RealmClass<T>::schema_version(ContextType ctx, ObjectType this_object, size
 
 
 template<typename T>
-void RealmClass<T>::clear_test_state(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+void RealmClass<T>::clear_test_state(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 0);
 
     js::clear_test_state();
 }
 
 template<typename T>
-void RealmClass<T>::copy_bundled_realm_files(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+void RealmClass<T>::copy_bundled_realm_files(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 0);
     realm::copy_bundled_realm_files();
 }
@@ -518,7 +518,7 @@ void RealmClass<T>::get_sync_session(ContextType ctx, ObjectType object, ReturnV
 #endif
     
 template<typename T>
-void RealmClass<T>::objects(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+void RealmClass<T>::objects(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 1);
 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
@@ -528,7 +528,7 @@ void RealmClass<T>::objects(ContextType ctx, ObjectType this_object, size_t argc
 }
 
 template<typename T>
-void RealmClass<T>::object_for_primary_key(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+void RealmClass<T>::object_for_primary_key(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 2);
 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
@@ -544,7 +544,7 @@ void RealmClass<T>::object_for_primary_key(ContextType ctx, ObjectType this_obje
 }
 
 template<typename T>
-void RealmClass<T>::create(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+void RealmClass<T>::create(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 2, 3);
 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
@@ -565,7 +565,7 @@ void RealmClass<T>::create(ContextType ctx, ObjectType this_object, size_t argc,
 }
 
 template<typename T>
-void RealmClass<T>::delete_one(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+void RealmClass<T>::delete_one(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 1);
 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
@@ -612,7 +612,7 @@ void RealmClass<T>::delete_one(ContextType ctx, ObjectType this_object, size_t a
 }
 
 template<typename T>
-void RealmClass<T>::delete_all(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+void RealmClass<T>::delete_all(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 0);
 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
@@ -627,7 +627,7 @@ void RealmClass<T>::delete_all(ContextType ctx, ObjectType this_object, size_t a
 }
 
 template<typename T>
-void RealmClass<T>::write(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+void RealmClass<T>::write(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 1);
 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
@@ -647,7 +647,7 @@ void RealmClass<T>::write(ContextType ctx, ObjectType this_object, size_t argc, 
 }
 
 template<typename T>
-void RealmClass<T>::add_listener(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+void RealmClass<T>::add_listener(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 2);
 
     validated_notification_name(ctx, arguments[0]);
@@ -661,7 +661,7 @@ void RealmClass<T>::add_listener(ContextType ctx, ObjectType this_object, size_t
 }
 
 template<typename T>
-void RealmClass<T>::remove_listener(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+void RealmClass<T>::remove_listener(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 2);
 
     validated_notification_name(ctx, arguments[0]);
@@ -675,7 +675,7 @@ void RealmClass<T>::remove_listener(ContextType ctx, ObjectType this_object, siz
 }
 
 template<typename T>
-void RealmClass<T>::remove_all_listeners(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+void RealmClass<T>::remove_all_listeners(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 0, 1);
     if (argc) {
         validated_notification_name(ctx, arguments[0]);
@@ -689,7 +689,7 @@ void RealmClass<T>::remove_all_listeners(ContextType ctx, ObjectType this_object
 }
 
 template<typename T>
-void RealmClass<T>::close(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+void RealmClass<T>::close(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 0);
 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);

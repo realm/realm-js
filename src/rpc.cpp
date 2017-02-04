@@ -249,7 +249,7 @@ RPCServer::~RPCServer() {
     JSGlobalContextRelease(m_context);
 }
 
-void RPCServer::run_callback(JSContextRef ctx, JSObjectRef this_object, size_t argc, const JSValueRef arguments[], jsc::ReturnValue &return_value) {
+void RPCServer::run_callback(JSContextRef ctx, JSObjectRef function, JSObjectRef this_object, size_t argc, const JSValueRef arguments[], jsc::ReturnValue &return_value) {
     RPCServer* server = get_rpc_server(JSContextGetGlobalContext(ctx));
     if (!server) {
         return;

@@ -66,15 +66,15 @@ struct ResultsClass : ClassDefinition<T, realm::js::Results<T>, CollectionClass<
     static void get_length(ContextType, ObjectType, ReturnValue &);
     static void get_index(ContextType, ObjectType, uint32_t, ReturnValue &);
 
-    static void snapshot(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
-    static void filtered(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
-    static void sorted(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
-    static void is_valid(ContextType, ObjectType, size_t, const ValueType [], ReturnValue &);
+    static void snapshot(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void filtered(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void sorted(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void is_valid(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
 
     // observable
-    static void add_listener(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
-    static void remove_listener(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
-    static void remove_all_listeners(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void add_listener(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void remove_listener(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void remove_all_listeners(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
     
     std::string const name = "Results";
 
@@ -205,7 +205,7 @@ void ResultsClass<T>::get_index(ContextType ctx, ObjectType object, uint32_t ind
 }
 
 template<typename T>
-void ResultsClass<T>::snapshot(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+void ResultsClass<T>::snapshot(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 0);
 
     auto results = get_internal<T, ResultsClass<T>>(this_object);
@@ -213,7 +213,7 @@ void ResultsClass<T>::snapshot(ContextType ctx, ObjectType this_object, size_t a
 }
 
 template<typename T>
-void ResultsClass<T>::filtered(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+void ResultsClass<T>::filtered(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count_at_least(argc, 1);
 
     auto results = get_internal<T, ResultsClass<T>>(this_object);
@@ -221,7 +221,7 @@ void ResultsClass<T>::filtered(ContextType ctx, ObjectType this_object, size_t a
 }
 
 template<typename T>
-void ResultsClass<T>::sorted(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+void ResultsClass<T>::sorted(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 1, 2);
 
     auto results = get_internal<T, ResultsClass<T>>(this_object);
@@ -229,12 +229,12 @@ void ResultsClass<T>::sorted(ContextType ctx, ObjectType this_object, size_t arg
 }
 
 template<typename T>
-void ResultsClass<T>::is_valid(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+void ResultsClass<T>::is_valid(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     return_value.set(get_internal<T, ResultsClass<T>>(this_object)->is_valid());
 }
     
 template<typename T>
-void ResultsClass<T>::add_listener(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+void ResultsClass<T>::add_listener(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 1);
     
     auto results = get_internal<T, ResultsClass<T>>(this_object);
@@ -255,7 +255,7 @@ void ResultsClass<T>::add_listener(ContextType ctx, ObjectType this_object, size
 }
 
 template<typename T>
-void ResultsClass<T>::remove_listener(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+void ResultsClass<T>::remove_listener(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 1);
     
     auto results = get_internal<T, ResultsClass<T>>(this_object);
@@ -275,7 +275,7 @@ void ResultsClass<T>::remove_listener(ContextType ctx, ObjectType this_object, s
 }
 
 template<typename T>
-void ResultsClass<T>::remove_all_listeners(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+void ResultsClass<T>::remove_all_listeners(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 0);
     
     auto results = get_internal<T, ResultsClass<T>>(this_object);
