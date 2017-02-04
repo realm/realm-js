@@ -86,7 +86,7 @@ module.exports = {
             let realm = new Realm(config);
             let session = realm.syncSession;
 
-            TestCase.assertEqual(session._errorHandler, config.sync.error);
+            TestCase.assertEqual(session.config.error, config.sync.error);
             session._simulateError(123, 'simulated error');
 
             return wait(100).then(() => {

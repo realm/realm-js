@@ -185,7 +185,6 @@ public:
     static void get_user(ContextType, ObjectType, ReturnValue &);
     static void get_url(ContextType, ObjectType, ReturnValue &);
     static void get_state(ContextType, ObjectType, ReturnValue &);
-    static void get_error_handler(ContextType, ObjectType, ReturnValue &);
 
     static void simulate_error(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void refresh_access_token(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
@@ -194,8 +193,7 @@ public:
         {"config", {wrap<get_config>, nullptr}},
         {"user", {wrap<get_user>, nullptr}},
         {"url", {wrap<get_url>, nullptr}},
-        {"state", {wrap<get_state>, nullptr}},
-        {"_errorHandler", {wrap<get_error_handler>, nullptr}}
+        {"state", {wrap<get_state>, nullptr}}
     };
 
     MethodMap<T> const methods = {
@@ -256,6 +254,10 @@ void SessionClass<T>::get_config(ContextType ctx, ObjectType object, ReturnValue
         ObjectType config = Object::create_empty(ctx);
         Object::set_property(ctx, config, "user", create_object<T, UserClass<T>>(ctx, new SharedUser(session->config().user)));
         Object::set_property(ctx, config, "url", Value::from_string(ctx, session->config().realm_url));
+        if (auto* dispatcher = session->config().error_handler.template target<EventLoopDispatcher<SyncSessionErrorHandler>>()) {
+            auto& handler = *dispatcher->func().template target<SyncSessionErrorHandlerFunctor<T>>();
+            Object::set_property(ctx, config, "error", handler.func());
+        }
         return_value.set(config);
     } else {
         return_value.set_undefined();
@@ -296,18 +298,6 @@ void SessionClass<T>::get_state(ContextType ctx, ObjectType object, ReturnValue 
             return_value.set(inactive);
         } else if (session->state() != SyncSession::PublicState::Error) {
             return_value.set(active);
-        }
-    }
-}
-
-template<typename T>
-void SessionClass<T>::get_error_handler(ContextType ctx, ObjectType object, ReturnValue &return_value) {
-    return_value.set_undefined();
-
-    if (auto session = get_internal<T, SessionClass<T>>(object)->lock()) {
-        if (auto* dispatcher = session->config().error_handler.template target<EventLoopDispatcher<SyncSessionErrorHandler>>()) {
-            auto& handler = *dispatcher->func().template target<SyncSessionErrorHandlerFunctor<T>>();
-            return_value.set(handler.func());
         }
     }
 }
