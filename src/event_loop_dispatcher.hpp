@@ -80,7 +80,9 @@ public:
     {
         
     }
-    
+
+    const std::function<void(Args...)>& func() const { return m_state->m_func; }
+
     void operator()(Args... args)
     {
         if (m_thread == std::this_thread::get_id()) {

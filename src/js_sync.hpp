@@ -185,6 +185,7 @@ public:
     static void get_user(ContextType, ObjectType, ReturnValue &);
     static void get_url(ContextType, ObjectType, ReturnValue &);
     static void get_state(ContextType, ObjectType, ReturnValue &);
+    static void get_error_handler(ContextType, ObjectType, ReturnValue &);
 
     static void simulate_error(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void refresh_access_token(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
@@ -193,13 +194,50 @@ public:
         {"config", {wrap<get_config>, nullptr}},
         {"user", {wrap<get_user>, nullptr}},
         {"url", {wrap<get_url>, nullptr}},
-        {"state", {wrap<get_state>, nullptr}}
+        {"state", {wrap<get_state>, nullptr}},
+        {"_errorHandler", {wrap<get_error_handler>, nullptr}}
     };
 
     MethodMap<T> const methods = {
         {"_simulateError", wrap<simulate_error>},
         {"_refreshAccessToken", wrap<refresh_access_token>}
     };
+};
+
+template<typename T>
+class SyncSessionErrorHandlerFunctor {
+public:
+    SyncSessionErrorHandlerFunctor(typename T::Context ctx, typename T::Function error_func)
+    : m_ctx(Context<T>::get_global_context(ctx))
+    , m_func(ctx, error_func)
+    { }
+
+    typename T::Function func() const { return m_func; }
+
+    void operator()(std::shared_ptr<SyncSession> session, SyncError error) {
+        HANDLESCOPE
+
+        auto error_object = Object<T>::create_empty(m_ctx);
+        Object<T>::set_property(m_ctx, error_object, "message", Value<T>::from_string(m_ctx, error.message));
+        Object<T>::set_property(m_ctx, error_object, "isFatal", Value<T>::from_boolean(m_ctx, error.is_fatal));
+        Object<T>::set_property(m_ctx, error_object, "category", Value<T>::from_string(m_ctx, error.error_code.category().name()));
+        Object<T>::set_property(m_ctx, error_object, "code", Value<T>::from_number(m_ctx, error.error_code.value()));
+
+        auto user_info = Object<T>::create_empty(m_ctx);
+        for (auto& kvp : error.user_info) {
+            Object<T>::set_property(m_ctx, user_info, kvp.first, Value<T>::from_string(m_ctx, kvp.second));
+        }
+        Object<T>::set_property(m_ctx, error_object, "userInfo", user_info);
+
+        typename T::Value arguments[2];
+        arguments[0] = create_object<T, SessionClass<T>>(m_ctx, new WeakSession(session));
+        arguments[1] = error_object;
+
+        Function<T>::call(m_ctx, m_func, 2, arguments);
+    }
+private:
+    const Protected<typename T::GlobalContext> m_ctx;
+    const Protected<typename T::Function> m_func;
 };
 
 template<typename T>
@@ -258,6 +296,18 @@ void SessionClass<T>::get_state(ContextType ctx, ObjectType object, ReturnValue 
             return_value.set(inactive);
         } else if (session->state() != SyncSession::PublicState::Error) {
             return_value.set(active);
+        }
+    }
+}
+
+template<typename T>
+void SessionClass<T>::get_error_handler(ContextType ctx, ObjectType object, ReturnValue &return_value) {
+    return_value.set_undefined();
+
+    if (auto session = get_internal<T, SessionClass<T>>(object)->lock()) {
+        if (auto* dispatcher = session->config().error_handler.template target<EventLoopDispatcher<SyncSessionErrorHandler>>()) {
+            auto& handler = *dispatcher->func().template target<SyncSessionErrorHandlerFunctor<T>>();
+            return_value.set(handler.func());
         }
     }
 }
@@ -393,28 +443,7 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
         std::function<SyncSessionErrorHandler> error_handler;
         ValueType error_func = Object::get_property(ctx, sync_config_object, "error");
         if (!Value::is_undefined(ctx, error_func)) {
-            Protected<FunctionType> protected_error_func(ctx, Value::validated_to_function(ctx, error_func));
-            error_handler = EventLoopDispatcher<SyncSessionErrorHandler>([=](auto session, auto error) {
-                HANDLESCOPE
-                
-                ObjectType error_object = Object::create_empty(protected_ctx);
-                Object::set_property(protected_ctx, error_object, "message", Value::from_string(protected_ctx, error.message));
-                Object::set_property(protected_ctx, error_object, "isFatal", Value::from_boolean(protected_ctx, error.is_fatal));
-                Object::set_property(protected_ctx, error_object, "category", Value::from_string(protected_ctx, error.error_code.category().name()));
-                Object::set_property(protected_ctx, error_object, "code", Value::from_number(protected_ctx, error.error_code.value()));
-                
-                ObjectType user_info = Object::create_empty(protected_ctx);
-                for (auto& kvp : error.user_info) {
-                    Object::set_property(protected_ctx, user_info, kvp.first, Value::from_string(protected_ctx, kvp.second));
-                }
-                Object::set_property(protected_ctx, error_object, "userInfo", user_info);
-                
-                ValueType arguments[2];
-                arguments[0] = create_object<T, SessionClass<T>>(protected_ctx, new WeakSession(session));
-                arguments[1] = error_object;
-                
-                Function::call(protected_ctx, protected_error_func, 2, arguments);
-            });
+            error_handler = EventLoopDispatcher<SyncSessionErrorHandler>(SyncSessionErrorHandlerFunctor<T>(ctx, Value::validated_to_function(ctx, error_func)));
         }
         
         ObjectType user = Object::validated_get_object(ctx, sync_config_object, "user");
