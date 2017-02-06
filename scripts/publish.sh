@@ -62,7 +62,7 @@ git fetch origin || die 'Failed to fetch from git origin.'
 [ -z "$(git rev-list origin/$BRANCH..HEAD)" ] || die 'Local commits are not pushed to origin.'
 
 # Run all tests that must pass before publishing.
-for test in eslint jsdoc realmjs react-example react-tests react-tests-android; do
+for test in eslint jsdoc license-check realmjs react-example react-tests react-tests-android; do
   for configuration in Debug Release; do
     echo "RUNNING TEST: $test ($configuration)"
     echo '----------------------------------------'
