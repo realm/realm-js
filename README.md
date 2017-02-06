@@ -12,14 +12,14 @@ This project hosts the JavaScript versions of [Realm](https://realm.io/). Curren
 
 ## Getting Started
 
-Please see the detailed instructions in our docs to use [Realm React Native](https://realm.io/docs/react-native/latest/#getting-started).
+Please see the detailed instructions in our docs to use [Realm Javascript](https://realm.io/docs/javascript/latest/#getting-started).
 
 ## Documentation
 
 ### Realm React Native and Node.js
 
-The documentation can be found at [realm.io/docs/react-native/latest](https://realm.io/docs/react-native/latest).  
-The API reference is located at [realm.io/docs/react-native/latest/api](https://realm.io/docs/react-native/latest/api).
+The documentation can be found at [realm.io/docs/javascript/latest](https://realm.io/docs/javascript/latest).  
+The API reference is located at [realm.io/docs/javscript/latest/api](https://realm.io/docs/javascript/latest/api).
 
 ## Getting Help
 
