@@ -67,11 +67,15 @@ class RPCServer {
     std::map<std::string, RPCRequest> m_requests;
     std::map<RPCObjectID, js::Protected<JSObjectRef>> m_objects;
     std::map<RPCObjectID, js::Protected<JSObjectRef>> m_callbacks;
+    // The key here is the same as the value in m_callbacks. We use the raw pointer as a key here,
+    // because protecting the value in m_callbacks pins the function object and prevents it from being moved
+    // by the garbage collector upon compaction.
+    std::map<JSObjectRef, RPCObjectID> m_callback_ids;
     ConcurrentDeque<json> m_callback_results;
     RPCObjectID m_session_id;
     RPCWorker m_worker;
 
-    static void run_callback(JSContextRef, JSObjectRef, size_t, const JSValueRef[], jsc::ReturnValue &);
+    static void run_callback(JSContextRef, JSObjectRef, JSObjectRef, size_t, const JSValueRef[], jsc::ReturnValue &);
 
     RPCObjectID store_object(JSObjectRef object);
 

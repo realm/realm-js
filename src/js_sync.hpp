@@ -70,7 +70,7 @@ public:
         {"isAdmin", {wrap<is_admin>, nullptr}},
     };
 
-    static void create_user(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void create_user(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
 
     MethodMap<T> const static_methods = {
         {"createUser", wrap<create_user>}
@@ -84,8 +84,8 @@ public:
         {"all", {wrap<all_users>, nullptr}},
     };
 
-    static void logout(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
-    static void session_for_on_disk_path(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void logout(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void session_for_on_disk_path(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
 
     MethodMap<T> const methods = {
         {"logout", wrap<logout>},
@@ -117,7 +117,7 @@ void UserClass<T>::is_admin(ContextType ctx, ObjectType object, ReturnValue &ret
 }
 
 template<typename T>
-void UserClass<T>::create_user(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+void UserClass<T>::create_user(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 3, 4);
     SharedUser *user = new SharedUser(SyncManager::shared().get_user(
         Value::validated_to_string(ctx, arguments[1]),
@@ -161,8 +161,8 @@ void UserClass<T>::current_user(ContextType ctx, ObjectType object, ReturnValue 
 */
 
 template<typename T>
-void UserClass<T>::logout(ContextType ctx, ObjectType object, size_t, const ValueType[], ReturnValue &) {
-    get_internal<T, UserClass<T>>(object)->get()->log_out();
+void UserClass<T>::logout(ContextType ctx, FunctionType, ObjectType this_object, size_t, const ValueType[], ReturnValue &) {
+    get_internal<T, UserClass<T>>(this_object)->get()->log_out();
 }
 
 template<typename T>
@@ -186,8 +186,8 @@ public:
     static void get_url(ContextType, ObjectType, ReturnValue &);
     static void get_state(ContextType, ObjectType, ReturnValue &);
 
-    static void simulate_error(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
-    static void refresh_access_token(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void simulate_error(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void refresh_access_token(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
 
     PropertyMap<T> const properties = {
         {"config", {wrap<get_config>, nullptr}},
@@ -203,8 +203,44 @@ public:
 };
 
 template<typename T>
-void UserClass<T>::session_for_on_disk_path(ContextType ctx, ObjectType object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
-    auto user = *get_internal<T, UserClass<T>>(object);
+class SyncSessionErrorHandlerFunctor {
+public:
+    SyncSessionErrorHandlerFunctor(typename T::Context ctx, typename T::Function error_func)
+    : m_ctx(Context<T>::get_global_context(ctx))
+    , m_func(ctx, error_func)
+    { }
+
+    typename T::Function func() const { return m_func; }
+
+    void operator()(std::shared_ptr<SyncSession> session, SyncError error) {
+        HANDLESCOPE
+
+        auto error_object = Object<T>::create_empty(m_ctx);
+        Object<T>::set_property(m_ctx, error_object, "message", Value<T>::from_string(m_ctx, error.message));
+        Object<T>::set_property(m_ctx, error_object, "isFatal", Value<T>::from_boolean(m_ctx, error.is_fatal));
+        Object<T>::set_property(m_ctx, error_object, "category", Value<T>::from_string(m_ctx, error.error_code.category().name()));
+        Object<T>::set_property(m_ctx, error_object, "code", Value<T>::from_number(m_ctx, error.error_code.value()));
+
+        auto user_info = Object<T>::create_empty(m_ctx);
+        for (auto& kvp : error.user_info) {
+            Object<T>::set_property(m_ctx, user_info, kvp.first, Value<T>::from_string(m_ctx, kvp.second));
+        }
+        Object<T>::set_property(m_ctx, error_object, "userInfo", user_info);
+
+        typename T::Value arguments[2];
+        arguments[0] = create_object<T, SessionClass<T>>(m_ctx, new WeakSession(session));
+        arguments[1] = error_object;
+
+        Function<T>::call(m_ctx, m_func, 2, arguments);
+    }
+private:
+    const Protected<typename T::GlobalContext> m_ctx;
+    const Protected<typename T::Function> m_func;
+};
+
+template<typename T>
+void UserClass<T>::session_for_on_disk_path(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    auto user = *get_internal<T, UserClass<T>>(this_object);
     if (auto session = user->session_for_on_disk_path(Value::validated_to_string(ctx, arguments[0]))) {
         return_value.set(create_object<T, SessionClass<T>>(ctx, new WeakSession(session)));
     } else {
@@ -218,6 +254,10 @@ void SessionClass<T>::get_config(ContextType ctx, ObjectType object, ReturnValue
         ObjectType config = Object::create_empty(ctx);
         Object::set_property(ctx, config, "user", create_object<T, UserClass<T>>(ctx, new SharedUser(session->config().user)));
         Object::set_property(ctx, config, "url", Value::from_string(ctx, session->config().realm_url));
+        if (auto* dispatcher = session->config().error_handler.template target<EventLoopDispatcher<SyncSessionErrorHandler>>()) {
+            auto& handler = *dispatcher->func().template target<SyncSessionErrorHandlerFunctor<T>>();
+            Object::set_property(ctx, config, "error", handler.func());
+        }
         return_value.set(config);
     } else {
         return_value.set_undefined();
@@ -263,10 +303,10 @@ void SessionClass<T>::get_state(ContextType ctx, ObjectType object, ReturnValue 
 }
 
 template<typename T>
-void SessionClass<T>::simulate_error(ContextType ctx, ObjectType object, size_t argc, const ValueType arguments[], ReturnValue &) {
+void SessionClass<T>::simulate_error(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &) {
     validate_argument_count(argc, 2);
 
-    if (auto session = get_internal<T, SessionClass<T>>(object)->lock()) {
+    if (auto session = get_internal<T, SessionClass<T>>(this_object)->lock()) {
         SyncError error;
         error.error_code = std::error_code(Value::validated_to_number(ctx, arguments[0]), realm::sync::protocol_error_category());
         error.message = Value::validated_to_string(ctx, arguments[1]);
@@ -275,10 +315,10 @@ void SessionClass<T>::simulate_error(ContextType ctx, ObjectType object, size_t 
 }
 
 template<typename T>
-void SessionClass<T>::refresh_access_token(ContextType ctx, ObjectType object, size_t argc, const ValueType arguments[], ReturnValue &) {
+void SessionClass<T>::refresh_access_token(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &) {
     validate_argument_count(argc, 2);
 
-    if (auto session = get_internal<T, SessionClass<T>>(object)->lock()) {
+    if (auto session = get_internal<T, SessionClass<T>>(this_object)->lock()) {
         std::string access_token = Value::validated_to_string(ctx, arguments[0], "accessToken");
         std::string realm_url = Value::validated_to_string(ctx, arguments[1], "realmUrl");
         session->refresh_access_token(std::move(access_token), std::move(realm_url));
@@ -304,8 +344,8 @@ public:
 
     static FunctionType create_constructor(ContextType);
 
-    static void set_sync_log_level(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
-    static void set_verify_servers_ssl_certificate(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void set_sync_log_level(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void set_verify_servers_ssl_certificate(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
 
     // private
     static void populate_sync_config(ContextType, ObjectType realm_constructor, ObjectType config_object, Realm::Config&);
@@ -335,7 +375,7 @@ inline typename T::Function SyncClass<T>::create_constructor(ContextType ctx) {
 }
 
 template<typename T>
-void SyncClass<T>::set_sync_log_level(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+void SyncClass<T>::set_sync_log_level(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 1);
     std::string log_level = Value::validated_to_string(ctx, arguments[0]);
     std::istringstream in(log_level); // Throws
@@ -349,7 +389,7 @@ void SyncClass<T>::set_sync_log_level(ContextType ctx, ObjectType this_object, s
 }
 
 template<typename T>
-void SyncClass<T>::set_verify_servers_ssl_certificate(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+void SyncClass<T>::set_verify_servers_ssl_certificate(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 1);
     bool verify_servers_ssl_certificate = Value::validated_to_boolean(ctx, arguments[0]);
     realm::SyncManager::shared().set_client_should_validate_ssl(verify_servers_ssl_certificate);
@@ -393,28 +433,7 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
         std::function<SyncSessionErrorHandler> error_handler;
         ValueType error_func = Object::get_property(ctx, sync_config_object, "error");
         if (!Value::is_undefined(ctx, error_func)) {
-            Protected<FunctionType> protected_error_func(ctx, Value::validated_to_function(ctx, error_func));
-            error_handler = EventLoopDispatcher<SyncSessionErrorHandler>([=](auto session, auto error) {
-                HANDLESCOPE
-                
-                ObjectType error_object = Object::create_empty(protected_ctx);
-                Object::set_property(protected_ctx, error_object, "message", Value::from_string(protected_ctx, error.message));
-                Object::set_property(protected_ctx, error_object, "isFatal", Value::from_boolean(protected_ctx, error.is_fatal));
-                Object::set_property(protected_ctx, error_object, "category", Value::from_string(protected_ctx, error.error_code.category().name()));
-                Object::set_property(protected_ctx, error_object, "code", Value::from_number(protected_ctx, error.error_code.value()));
-                
-                ObjectType user_info = Object::create_empty(protected_ctx);
-                for (auto& kvp : error.user_info) {
-                    Object::set_property(protected_ctx, user_info, kvp.first, Value::from_string(protected_ctx, kvp.second));
-                }
-                Object::set_property(protected_ctx, error_object, "userInfo", user_info);
-                
-                ValueType arguments[2];
-                arguments[0] = create_object<T, SessionClass<T>>(protected_ctx, new WeakSession(session));
-                arguments[1] = error_object;
-                
-                Function::call(protected_ctx, protected_error_func, 2, arguments);
-            });
+            error_handler = EventLoopDispatcher<SyncSessionErrorHandler>(SyncSessionErrorHandlerFunctor<T>(ctx, Value::validated_to_function(ctx, error_func)));
         }
         
         ObjectType user = Object::validated_get_object(ctx, sync_config_object, "user");

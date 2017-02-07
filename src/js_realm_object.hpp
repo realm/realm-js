@@ -46,7 +46,7 @@ struct RealmObjectClass : ClassDefinition<T, realm::Object> {
     static bool set_property(ContextType, ObjectType, const String &, ValueType);
     static std::vector<String> get_property_names(ContextType, ObjectType);
     
-    static void is_valid(ContextType, ObjectType, size_t, const ValueType [], ReturnValue &);
+    static void is_valid(ContextType, FunctionType, ObjectType, size_t, const ValueType [], ReturnValue &);
 
     const std::string name = "RealmObject";
 
@@ -62,7 +62,7 @@ struct RealmObjectClass : ClassDefinition<T, realm::Object> {
 };
 
 template<typename T>
-void RealmObjectClass<T>::is_valid(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+void RealmObjectClass<T>::is_valid(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     return_value.set(get_internal<T, RealmObjectClass<T>>(this_object)->is_valid());
 }
     

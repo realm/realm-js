@@ -231,6 +231,7 @@ RPCServer::RPCServer() {
         }
 
         m_callbacks.clear();
+        m_callback_ids.clear();
         JSGarbageCollect(m_context);
         js::clear_test_state();
 
@@ -249,22 +250,24 @@ RPCServer::~RPCServer() {
     JSGlobalContextRelease(m_context);
 }
 
-void RPCServer::run_callback(JSContextRef ctx, JSObjectRef this_object, size_t argc, const JSValueRef arguments[], jsc::ReturnValue &return_value) {
+void RPCServer::run_callback(JSContextRef ctx, JSObjectRef function, JSObjectRef this_object, size_t argc, const JSValueRef arguments[], jsc::ReturnValue &return_value) {
     RPCServer* server = get_rpc_server(JSContextGetGlobalContext(ctx));
     if (!server) {
         return;
     }
 
     // The first argument was curried to be the callback id.
-    RPCObjectID callback_id = jsc::Value::to_number(ctx, arguments[0]);
-    JSObjectRef arguments_array = jsc::Object::create_array(ctx, uint32_t(argc - 1), argc == 1 ? nullptr : arguments + 1);
+    RPCObjectID callback_id = server->m_callback_ids[function];
+    JSObjectRef arguments_array = jsc::Object::create_array(ctx, uint32_t(argc), arguments);
     json arguments_json = server->serialize_json_value(arguments_array);
+    json this_json = server->serialize_json_value(this_object);
 
     // The next task on the stack will instruct the JS to run this callback.
     // This captures references since it will be executed before exiting this function.
     server->m_worker.add_task([&]() -> json {
         return {
             {"callback", callback_id},
+            {"this", this_json},
             {"arguments", arguments_json},
         };
     });
@@ -422,6 +425,15 @@ json RPCServer::serialize_json_value(JSValueRef js_value) {
             {"value", jsc::Value::to_number(m_context, js_object)},
         };
     }
+    else if (jsc::Value::is_function(m_context, js_object)) {
+        auto it = m_callback_ids.find(js_object);
+        if (it != m_callback_ids.end()) {
+            return {
+                {"type", RealmObjectTypesFunction},
+                {"value", it->second}
+            };
+        }
+    }
     else {
         // Serialize this JS object as a plain object since it doesn't match any known types above.
         std::vector<jsc::String> js_keys = jsc::Object::get_property_names(m_context, js_object);
@@ -474,13 +486,8 @@ JSValueRef RPCServer::deserialize_json_value(const json dict) {
 
             if (!m_callbacks.count(callback_id)) {
                 JSObjectRef callback = JSObjectMakeFunctionWithCallback(m_context, nullptr, js::wrap<run_callback>);
-
-                // Curry the first argument to be the callback id.
-                JSValueRef bind_args[2] = {jsc::Value::from_null(m_context), jsc::Value::from_number(m_context, callback_id)};
-                JSValueRef bound_callback = jsc::Object::call_method(m_context, callback, "bind", 2, bind_args);
-
-                callback = jsc::Value::to_function(m_context, bound_callback);
                 m_callbacks.emplace(callback_id, js::Protected<JSObjectRef>(m_context, callback));
+                m_callback_ids.emplace(callback, callback_id);
             }
 
             return m_callbacks.at(callback_id);

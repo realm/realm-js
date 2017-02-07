@@ -59,20 +59,20 @@ struct ListClass : ClassDefinition<T, realm::js::List<T>, CollectionClass<T>> {
     static bool set_index(ContextType, ObjectType, uint32_t, ValueType);
 
     // methods
-    static void push(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
-    static void pop(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
-    static void unshift(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
-    static void shift(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
-    static void splice(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
-    static void snapshot(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
-    static void filtered(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
-    static void sorted(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
-    static void is_valid(ContextType, ObjectType, size_t, const ValueType [], ReturnValue &);
+    static void push(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void pop(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void unshift(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void shift(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void splice(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void snapshot(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void filtered(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void sorted(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void is_valid(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
     
     // observable
-    static void add_listener(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
-    static void remove_listener(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
-    static void remove_all_listeners(ContextType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void add_listener(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void remove_listener(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void remove_all_listeners(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
     
     std::string const name = "List";
 
@@ -125,7 +125,7 @@ bool ListClass<T>::set_index(ContextType ctx, ObjectType object, uint32_t index,
 }
 
 template<typename T>
-void ListClass<T>::push(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+void ListClass<T>::push(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count_at_least(argc, 1);
 
     auto list = get_internal<T, ListClass<T>>(this_object);
@@ -137,7 +137,7 @@ void ListClass<T>::push(ContextType ctx, ObjectType this_object, size_t argc, co
 }
 
 template<typename T>
-void ListClass<T>::pop(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+void ListClass<T>::pop(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 0);
 
     auto list = get_internal<T, ListClass<T>>(this_object);
@@ -156,7 +156,7 @@ void ListClass<T>::pop(ContextType ctx, ObjectType this_object, size_t argc, con
 }
 
 template<typename T>
-void ListClass<T>::unshift(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+void ListClass<T>::unshift(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count_at_least(argc, 1);
 
     auto list = get_internal<T, ListClass<T>>(this_object);
@@ -168,7 +168,7 @@ void ListClass<T>::unshift(ContextType ctx, ObjectType this_object, size_t argc,
 }
 
 template<typename T>
-void ListClass<T>::shift(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+void ListClass<T>::shift(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 0);
 
     auto list = get_internal<T, ListClass<T>>(this_object);
@@ -185,7 +185,7 @@ void ListClass<T>::shift(ContextType ctx, ObjectType this_object, size_t argc, c
 }
 
 template<typename T>
-void ListClass<T>::splice(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+void ListClass<T>::splice(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count_at_least(argc, 1);
 
     auto list = get_internal<T, ListClass<T>>(this_object);
@@ -221,7 +221,7 @@ void ListClass<T>::splice(ContextType ctx, ObjectType this_object, size_t argc, 
 }
 
 template<typename T>
-void ListClass<T>::snapshot(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+void ListClass<T>::snapshot(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 0);
 
     auto list = get_internal<T, ListClass<T>>(this_object);
@@ -229,7 +229,7 @@ void ListClass<T>::snapshot(ContextType ctx, ObjectType this_object, size_t argc
 }
 
 template<typename T>
-void ListClass<T>::filtered(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+void ListClass<T>::filtered(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count_at_least(argc, 1);
 
     auto list = get_internal<T, ListClass<T>>(this_object);
@@ -237,7 +237,7 @@ void ListClass<T>::filtered(ContextType ctx, ObjectType this_object, size_t argc
 }
 
 template<typename T>
-void ListClass<T>::sorted(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+void ListClass<T>::sorted(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 1, 2);
 
     auto list = get_internal<T, ListClass<T>>(this_object);
@@ -245,12 +245,12 @@ void ListClass<T>::sorted(ContextType ctx, ObjectType this_object, size_t argc, 
 }
     
 template<typename T>
-void ListClass<T>::is_valid(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+void ListClass<T>::is_valid(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     return_value.set(get_internal<T, ListClass<T>>(this_object)->is_valid());
 }
     
 template<typename T>
-void ListClass<T>::add_listener(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+void ListClass<T>::add_listener(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 1);
     
     auto list = get_internal<T, ListClass<T>>(this_object);
@@ -271,7 +271,7 @@ void ListClass<T>::add_listener(ContextType ctx, ObjectType this_object, size_t 
 }
     
 template<typename T>
-void ListClass<T>::remove_listener(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+void ListClass<T>::remove_listener(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 1);
     
     auto list = get_internal<T, ListClass<T>>(this_object);
@@ -291,7 +291,7 @@ void ListClass<T>::remove_listener(ContextType ctx, ObjectType this_object, size
 }
     
 template<typename T>
-void ListClass<T>::remove_all_listeners(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+void ListClass<T>::remove_all_listeners(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 0);
 
     auto list = get_internal<T, ListClass<T>>(this_object);

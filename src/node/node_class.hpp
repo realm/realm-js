@@ -301,7 +301,7 @@ void wrap(const v8::FunctionCallbackInfo<v8::Value>& info) {
     auto arguments = node::get_arguments(info);
 
     try {
-        F(isolate, info.This(), arguments.size(), arguments.data(), return_value);
+        F(isolate, info.Callee(), info.This(), arguments.size(), arguments.data(), return_value);
     }
     catch (std::exception &e) {
         Nan::ThrowError(node::Exception::value(isolate, e));
