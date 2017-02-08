@@ -66,7 +66,7 @@ module.exports = {
             TestCase.assertEqual(session.state, 'active');
 
             // give the session enough time to refresh its access token and bind itself
-            let timeout = 500;
+            let timeout = 1500;
             if (typeof window !== 'undefined') {
                 timeout = 2500; // need a longer timeout under React Native because remote debugging
             }
