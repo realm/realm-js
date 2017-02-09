@@ -67,7 +67,7 @@ module.exports = {
 
             // give the session enough time to refresh its access token and bind itself
             // TODO: Use an event to discover when the session is bound
-            let timeout = 3000;
+            let timeout = 4000;
 
             return wait(timeout).then(() => {
                 TestCase.assertEqual(session.url, `realm://localhost:9080/${user.identity}/myrealm`);
@@ -88,7 +88,7 @@ module.exports = {
             TestCase.assertEqual(session.config.error, config.sync.error);
             session._simulateError(123, 'simulated error');
 
-            return wait(100).then(() => {
+            return wait(1000).then(() => {
                 TestCase.assertArrayLength(errors, 1);
                 TestCase.assertEqual(errors[0][0].config.url, session.config.url);
                 TestCase.assertEqual(errors[0][1].message, 'simulated error');
