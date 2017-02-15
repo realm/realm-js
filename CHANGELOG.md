@@ -1,3 +1,17 @@
+1.0.3 Release notes
+=============================================================
+### Breaking changes
+* None
+
+### Enhancements
+* None
+
+### Bug fixes
+* Fixed an error when installing Realm React Native module on windows (#799).
+
+### Credits
+* Thanks David Howell (@dbhowell) to for adding a fix to Windows install (#849).
+
 1.0.2 Release notes (2017-2-7)
 =============================================================
 ### Breaking changes
@@ -101,7 +115,7 @@
 * None
 
 ### Bugfixes
-* Support for react-native v0.31.0 
+* Support for react-native v0.31.0
 
 0.14.2 Release notes (2016-8-3)
 =============================================================
