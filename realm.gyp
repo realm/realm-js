@@ -1,6 +1,6 @@
 {
   "variables": {
-    "use_realm_debug": "<!(echo $REALMJS_USE_DEBUG_CORE)"
+    "use_realm_debug%": "0"
   },
   "conditions": [
     ["OS=='mac'", {
@@ -11,6 +11,15 @@
       "variables": {
         "realm_enable_sync%": "0"
       }
+    }],
+    ["OS=='win'", {
+      "variables": {
+        "realm_library_suffix": ""
+      }
+    }, {
+      "variables": {
+        "realm_library_suffix": "-node"
+      }
     }]
   ],
   "targets": [
@@ -19,19 +28,17 @@
       "type": "none",
       "direct_dependent_settings": {
         "conditions": [
-          ["use_realm_debug!=''", {
-            "libraries": [ "-lrealm-node-dbg" ],
+          ["use_realm_debug", {
             "defines": [ "REALM_DEBUG=1" ]
-          }, {
-            "libraries": [ "-lrealm-node" ]
           }]
-        ]
+        ],
+        "libraries": [ "-lrealm<(realm_library_suffix)" ]
       },
       "all_dependent_settings": {
-        "defines": [ "REALM_HAVE_CONFIG", "REALM_PLATFORM_NODE=1", "REALM_ENABLE_SYNC=<(realm_enable_sync)" ]
+        "defines": [ "REALM_PLATFORM_NODE=1", "REALM_ENABLE_SYNC=<(realm_enable_sync)" ]
       },
       "variables": {
-        "prefix": "<!(echo $REALM_CORE_PREFIX)"
+        "prefix": ""
       },
       "conditions": [
         ["prefix!=''", {
@@ -43,6 +50,11 @@
           }
         }, {
           "dependencies": [ "vendored-realm" ]
+        }],
+        ["OS=='win'", {
+          "all_dependent_settings": {
+            "defines": [ "PTW32_STATIC_LIB" ]
+          }
         }]
       ]
     },
@@ -51,17 +63,11 @@
       "type": "none",
       "dependencies": [ "realm-core" ], # sync headers include core headers
       "direct_dependent_settings": {
-        "conditions": [
-          ["use_realm_debug!=''", {
-            "libraries": [ "-lrealm-sync-node-dbg" ]
-          }, {
-            "libraries": [ "-lrealm-sync-node" ]
-          }]
-        ]
+        "libraries": [ "-lrealm-sync<(realm_library_suffix)" ]
       },
       "export_dependent_settings": [ "realm-core" ], # depending on sync is tantamount to depending on core
       "variables": {
-        "prefix": "<!(echo $REALM_SYNC_PREFIX)"
+        "prefix": ""
       },
       "conditions": [
         ["prefix!=''", {
@@ -78,29 +84,35 @@
     },
     {
       "variables": {
-        "vendor_dir%": "<(module_root_dir)/vendor",
+        "vendor_dir%": "<(module_root_dir)/vendor"
       },
       "target_name": "vendored-realm",
       "type": "none",
+      "all_dependent_settings": {
+        "include_dirs": [ "<(module_root_dir)/vendor/realm-node/include" ],
+        "library_dirs": [ 
+          "<(module_root_dir)/vendor/realm-node/",
+          "<(module_root_dir)/vendor/realm-node/lib",
+          "<(module_root_dir)/vendor/realm-node/osx"
+        ]
+      },
       "conditions": [
-        ["realm_enable_sync", {
-          "all_dependent_settings": {
-            "include_dirs": [ "<(module_root_dir)/vendor/node-sync/include" ],
-            "library_dirs": [ "<(module_root_dir)/vendor/node-sync/osx" ]
-          }
-        }, {
-          "all_dependent_settings": {
-            "include_dirs": [ "<(module_root_dir)/vendor/core-node/include" ],
-            "library_dirs": [ "<(module_root_dir)/vendor/core-node" ]
-          },
-
+        ["realm_download_binaries and OS=='win'", {
+          "actions": [
+            {
+              "action_name": "download-realm",
+              "inputs": [ "<(module_root_dir)/scripts/download-realm.js" ],
+              "outputs": [ "<(module_root_dir)/vendor/realm-node" ],
+              "action": [ "node", "<(module_root_dir)/scripts/download-realm.js", "node", "<(use_realm_debug)" ]
+            }
+          ]
         }],
-        ["realm_download_binaries", {
+        ["realm_download_binaries and OS!='win'", {
           "actions": [
             {
               "action_name": "download-realm",
               "inputs": [ ],
-              "outputs": [ "<(module_root_dir)/vendor/core-node" ],
+              "outputs": [ "<(module_root_dir)/vendor/realm-node" ],
               "action": [ "<(module_root_dir)/scripts/download-core.sh", "node", "<(realm_enable_sync)" ]
             }
           ]

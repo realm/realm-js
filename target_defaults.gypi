@@ -24,6 +24,9 @@
       "<!(node -e \"require('nan')\")"
     ],
     "conditions": [
+      ["OS=='win'", {
+        "defines": [ "_UNICODE", "UNICODE", "WIN32=1" ]
+      }],
       ["OS=='mac'", {
         "xcode_settings": {
           "CLANG_CXX_LANGUAGE_STANDARD": "c++14",
@@ -35,6 +38,31 @@
           "WARNING_CFLAGS": [ "<@(warning-flags)" ]
         }
       }]
-    ]
+    ],
+    # windows stuff
+    "configurations": {
+      "Debug": {
+        "msvs_settings": {
+          "VCCLCompilerTool": {
+            "RuntimeTypeInfo": "true",
+            "AdditionalOptions": [ "/MDd" ]
+          },
+        }
+      },
+      "Release": {
+        "msvs_settings": {
+          "VCCLCompilerTool": {
+            "RuntimeTypeInfo": "true",
+            "AdditionalOptions": [ "/MD" ]
+          },
+        }
+      }
+    },
+    "msvs_settings": {
+      "VCCLCompilerTool": {
+        "ExceptionHandling": 1
+      }
+    },
+    "msvs_disabled_warnings": [ 4068, 4101, 4244, 4996 ],
   }
 }

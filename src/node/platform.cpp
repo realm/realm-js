@@ -16,7 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#include <dirent.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <stdlib.h>
@@ -24,6 +23,15 @@
 #include <system_error>
 
 #include "../platform.hpp"
+
+#ifdef WIN32
+#include <direct.h>
+static inline int mkdir(const char* path, unsigned short) {
+    return _mkdir(path);
+}
+#else
+#include <dirent.h>
+#endif
 
 namespace realm {
 
@@ -58,6 +66,7 @@ void copy_bundled_realm_files()
 
 void remove_realm_files_from_directory(const std::string &dir_path)
 {
+	// FIXME: this is awfully platform-dependent
     std::string delete_realms = "rm -rf '" + dir_path + "'/*.realm*";
     system(delete_realms.c_str());
 }

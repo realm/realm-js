@@ -428,7 +428,7 @@ void RealmClass<T>::constructor(ContextType ctx, ObjectType this_object, size_t 
 template<typename T>
 SharedRealm RealmClass<T>::create_shared_realm(ContextType ctx, realm::Realm::Config config, bool schema_updated,
                                         ObjectDefaultsMap && defaults, ConstructorMap && constructors) {
-    config.execution_context = reinterpret_cast<AbstractExecutionContextID>(Context<T>::get_execution_context_id(ctx));
+    config.execution_context = Context<T>::get_execution_context_id(ctx);
 
     SharedRealm realm = realm::Realm::get_shared_realm(config);
 

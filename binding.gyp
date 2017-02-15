@@ -4,8 +4,8 @@
     "realm_download_binaries%": "1"
   },
   "includes": [
-    "src/node/gyp/target_defaults.gypi",
-    "src/node/gyp/realm.gyp"
+    "target_defaults.gypi",
+    "realm.gyp"
   ],
   "targets": [
     {
@@ -66,6 +66,11 @@
         "src/object-store/src/util/format.cpp",
       ],
       "conditions": [
+        ["OS=='win'", {
+          "sources": [
+            "src/object-store/src/impl/windows/external_commit_helper.cpp",
+          ]
+        }],
         ["OS=='linux'", {
           "sources": [
             "src/object-store/src/impl/epoll/external_commit_helper.cpp",
