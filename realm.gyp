@@ -55,6 +55,10 @@
           "all_dependent_settings": {
             "defines": [ "PTW32_STATIC_LIB" ]
           }
+        }, {
+          "all_dependent_settings": {
+            "defines": [ "REALM_HAVE_CONFIG" ]
+          }
         }]
       ]
     },
