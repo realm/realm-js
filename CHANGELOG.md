@@ -10,7 +10,7 @@
 * Fixed an error when installing Realm React Native module on Windows (#799).
 
 ### Credits
-* Thanks David Howell (@dbhowell) to for adding a fix to Windows install (#849).
+* Thanks to David Howell (@dbhowell) for adding a fix to Windows install (#849).
 
 1.0.2 Release notes (2017-2-7)
 =============================================================
