@@ -13,9 +13,17 @@
       }
     }],
     ["OS=='win'", {
-      "variables": {
-        "realm_library_suffix": ""
-      }
+      "conditions": [
+        ["target_arch == 'ia32'", {
+          "variables": {
+            "realm_library_suffix": "-x86"
+          }
+        }, {
+          "variables": {
+            "realm_library_suffix": "-<(target_arch)"
+          }
+        }]
+      ]
     }, {
       "variables": {
         "realm_library_suffix": "-node"
@@ -29,10 +37,12 @@
       "direct_dependent_settings": {
         "conditions": [
           ["use_realm_debug", {
-            "defines": [ "REALM_DEBUG=1" ]
+            "defines": [ "REALM_DEBUG=1" ],
+            "libraries": [ "-lrealm<(realm_library_suffix)-dbg" ]
+          }, {
+            "libraries": [ "-lrealm<(realm_library_suffix)" ]
           }]
-        ],
-        "libraries": [ "-lrealm<(realm_library_suffix)" ]
+        ]
       },
       "all_dependent_settings": {
         "defines": [ "REALM_PLATFORM_NODE=1", "REALM_ENABLE_SYNC=<(realm_enable_sync)" ]
