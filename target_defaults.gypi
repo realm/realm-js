@@ -60,7 +60,7 @@
     },
     "msvs_settings": {
       "VCCLCompilerTool": {
-        "ExceptionHandling": 1
+        "ExceptionHandling": 2
       }
     },
     "msvs_disabled_warnings": [ 4068, 4101, 4244, 4996 ],

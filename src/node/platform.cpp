@@ -24,6 +24,16 @@
 
 namespace realm {
 
+class UVException : public std::runtime_error {
+public:
+    UVException(uv_errno_t error)
+    : std::runtime_error(uv_strerror(error))
+    , m_error(error)
+    { }
+
+    const uv_errno_t m_error;
+};
+
 struct FileSystemRequest : uv_fs_t {
     ~FileSystemRequest() {
         uv_fs_req_cleanup(this);
@@ -55,7 +65,7 @@ void ensure_directory_exists_for_file(const std::string &file_path)
         std::string dir_path = file_path.substr(0, pos++);
         FileSystemRequest req;
         if (uv_fs_mkdir(uv_default_loop(), &req, dir_path.c_str(), 0755, nullptr) < 0 && req.result != UV_EEXIST) {
-            throw std::system_error(req.sys_errno_, std::system_category(), uv_strerror(req.result));
+            throw UVException(static_cast<uv_errno_t>(req.result));
         }
     }
 }
@@ -65,34 +75,30 @@ void copy_bundled_realm_files()
     throw std::runtime_error("Realm for Node does not support this method.");
 }
 
+inline bool ends_with(const std::string& str, const std::string& suffix) {
+    return str.size() > suffix.size() && str.compare(str.size() - suffix.size(), suffix.size(), suffix) == 0;
+}
+
 void remove_realm_files_from_directory(const std::string &dir_path)
 {
     FileSystemRequest scandir_req;
-
     if (uv_fs_scandir(uv_default_loop(), &scandir_req, dir_path.c_str(), 0, nullptr) < 0) {
-        throw std::system_error(scandir_req.sys_errno_, std::system_category(), uv_strerror(scandir_req.result));
+        throw UVException(static_cast<uv_errno_t>(scandir_req.result));
     }
-
-    std::vector<std::string> to_delete;
 
     uv_dirent_t entry;
     while (uv_fs_scandir_next(&scandir_req, &entry) != UV_EOF) {
         if (entry.type == UV_DIRENT_FILE) {
-            std::string path(entry.name);
+            std::string path(dir_path + '/' + entry.name);
 
-            static std::string suffix(".realm");
-            if (path.size() > suffix.size() && path.compare(path.size() - suffix.size(), suffix.size(), suffix) == 0) {
-                to_delete.push_back(path);
+            static std::string realm_extension(".realm");
+            if (ends_with(path, realm_extension)) {
+                FileSystemRequest delete_req;
+                if (uv_fs_unlink(uv_default_loop(), &delete_req, path.c_str(), nullptr) != 0) {
+                    throw UVException(static_cast<uv_errno_t>(delete_req.result));
+                }
             }
         }
-    }
-
-    FileSystemRequest close_req;
-    uv_fs_close(uv_default_loop(), &close_req, scandir_req.file.fd, nullptr);
-
-    for (auto& path : to_delete) {
-        FileSystemRequest delete_req;
-        uv_fs_unlink(uv_default_loop(), &delete_req, path.c_str(), nullptr);
     }
 }
 
