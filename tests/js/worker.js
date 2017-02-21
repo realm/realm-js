@@ -35,10 +35,17 @@ class Worker {
             this._process.send(message);
         }
     }
-    terminate() {
+    terminate(cb) {
+        if (!cb) {
+            cb = function() { };
+        }
+
         if (this._process) {
+            this._process.once('close', cb);
             this._process.kill();
             delete this._process;
+        } else {
+            cb();
         }
     }
 }
