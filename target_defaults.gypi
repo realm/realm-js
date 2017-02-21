@@ -25,7 +25,7 @@
     ],
     "conditions": [
       ["OS=='win'", {
-        "defines": [ "_UNICODE", "UNICODE", "WIN32=1" ]
+        "defines": [ "_UNICODE", "UNICODE", "WIN32=1", "_HAS_EXCEPTIONS=1" ]
       }],
       ["OS=='mac'", {
         "xcode_settings": {
@@ -60,7 +60,7 @@
     },
     "msvs_settings": {
       "VCCLCompilerTool": {
-        "ExceptionHandling": 2
+        "ExceptionHandling": 1
       }
     },
     "msvs_disabled_warnings": [ 4068, 4101, 4244, 4996 ],
