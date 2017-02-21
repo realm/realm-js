@@ -264,11 +264,12 @@ public:
     static std::string normalize_path(std::string path) {
 #if defined(WIN32) && WIN32
         if (path.size() > 1 && path[0] != '\\' && path[1] != ':') {
-            return default_realm_file_directory() + "\\" + path;
+            path = default_realm_file_directory() + "\\" + path;
         }
+        std::replace(path.begin(), path.end(), '/', '\\');
 #else
         if (path.size() && path[0] != '/' && path[0] != '.') {
-            return default_realm_file_directory() + "/" + path;
+            path = default_realm_file_directory() + "/" + path;
         }
 #endif
         return path;

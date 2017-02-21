@@ -30,8 +30,14 @@ namespace js {
 static std::string s_default_path = "";
 
 std::string default_path() {
-    if (s_default_path.size() == 0) {
-        s_default_path = realm::default_realm_file_directory() + "/default.realm";
+    if (s_default_path.empty()) {
+        s_default_path = realm::default_realm_file_directory() +
+#if defined(WIN32) && WIN32
+            '\\'
+#else       
+            '/'
+#endif
+            + "default.realm";
     }
     return s_default_path;
 }
