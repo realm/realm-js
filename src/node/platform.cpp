@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #include <vector>
-#include <system_error>
 #include <uv.h>
 
 #include "../platform.hpp"
@@ -42,13 +41,16 @@ struct FileSystemRequest : uv_fs_t {
 
 std::string default_realm_file_directory()
 {
-    char buffer[MAX_PATH];
-    size_t size = MAX_PATH;
-    if (uv_cwd(buffer, &size) == 0) {
-        return std::string(buffer, size);
+    std::vector<char> buffer;
+    size_t size = 64;
+
+    buffer.resize(size);
+    if (uv_cwd(buffer.data(), &size) == UV_ENOBUFS) {
+        buffer.resize(size);
+        uv_cwd(buffer.data(), &size);
     }
 
-    return ".";
+    return std::string(buffer.data(), size);
 }
 
 void ensure_directory_exists_for_file(const std::string &file_path)
