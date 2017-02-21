@@ -16,28 +16,28 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#include <string.h>
-#include <sys/stat.h>
-#include <stdlib.h>
-
+#include <vector>
 #include <system_error>
+#include <uv.h>
 
 #include "../platform.hpp"
 
-#ifdef WIN32
-#include <direct.h>
-static inline int mkdir(const char* path, unsigned short) {
-    return _mkdir(path);
-}
-#else
-#include <dirent.h>
-#endif
-
 namespace realm {
+
+struct FileSystemRequest : uv_fs_t {
+    ~FileSystemRequest() {
+        uv_fs_req_cleanup(this);
+    }
+};
 
 std::string default_realm_file_directory()
 {
-    // Relative paths should always be relative to the current working directory.
+    char buffer[MAX_PATH];
+    size_t size = MAX_PATH;
+    if (uv_cwd(buffer, &size) == 0) {
+        return std::string(buffer, size);
+    }
+
     return ".";
 }
 
@@ -53,8 +53,9 @@ void ensure_directory_exists_for_file(const std::string &file_path)
         }
 
         std::string dir_path = file_path.substr(0, pos++);
-        if (mkdir(dir_path.c_str(), 0755) != 0 && errno != EEXIST) {
-            throw std::system_error(errno, std::system_category());
+        FileSystemRequest req;
+        if (uv_fs_mkdir(uv_default_loop(), &req, dir_path.c_str(), 0755, nullptr) < 0 && req.result != UV_EEXIST) {
+            throw std::system_error(req.sys_errno_, std::system_category(), uv_strerror(req.result));
         }
     }
 }
@@ -66,9 +67,33 @@ void copy_bundled_realm_files()
 
 void remove_realm_files_from_directory(const std::string &dir_path)
 {
-	// FIXME: this is awfully platform-dependent
-    std::string delete_realms = "rm -rf '" + dir_path + "'/*.realm*";
-    system(delete_realms.c_str());
+    FileSystemRequest scandir_req;
+
+    if (uv_fs_scandir(uv_default_loop(), &scandir_req, dir_path.c_str(), 0, nullptr) < 0) {
+        throw std::system_error(scandir_req.sys_errno_, std::system_category(), uv_strerror(scandir_req.result));
+    }
+
+    std::vector<std::string> to_delete;
+
+    uv_dirent_t entry;
+    while (uv_fs_scandir_next(&scandir_req, &entry) != UV_EOF) {
+        if (entry.type == UV_DIRENT_FILE) {
+            std::string path(entry.name);
+
+            static std::string suffix(".realm");
+            if (path.size() > suffix.size() && path.compare(path.size() - suffix.size(), suffix.size(), suffix) == 0) {
+                to_delete.push_back(path);
+            }
+        }
+    }
+
+    FileSystemRequest close_req;
+    uv_fs_close(uv_default_loop(), &close_req, scandir_req.file.fd, nullptr);
+
+    for (auto& path : to_delete) {
+        FileSystemRequest delete_req;
+        uv_fs_unlink(uv_default_loop(), &delete_req, path.c_str(), nullptr);
+    }
 }
 
 } // realm
