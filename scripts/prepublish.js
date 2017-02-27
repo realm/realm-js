@@ -18,6 +18,11 @@
 
 'use strict';
 
+const npmCommand = getNpmCommand();
+if (npmCommand !== 'publish' && npmCommand !== 'pack') {
+    process.exit(0);
+}
+
 const fs = require('fs');
 const path = require('path');
 const ini = require('ini').parse;
@@ -32,4 +37,13 @@ if ('REALM_BUILD_ANDROID' in process.env) {
     const androidPath = path.resolve(__dirname, '../react-native/android');
 
     exec(`${androidPath}/${gradlew}`, ['publishAndroid', '-PbuildWithSync=true'], { cwd: androidPath, stdio: 'inherit' });
+}
+
+function getNpmCommand() {
+    if (`npm_config_argv` in process.env) {
+        const npmInvocation = JSON.parse(process.env.npm_config_argv);
+        return npmInvocation.cooked[0];
+    }
+
+    return null;
 }
