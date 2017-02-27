@@ -205,13 +205,12 @@ def doReactBuild(target, postStep = null) {
 def doWindowsBuild() {
   return {
     node('windows') {
+      unstash 'source'
       try {
         bat 'npm install --build-from-source'
         dir('tests') {
-          bat '''
-            npm install
-            npm run test-nosync
-          '''
+          bat 'npm install'
+          bat 'npm run test-nosync'
           junit 'junitresults-*.xml'
         }
       } finally {
