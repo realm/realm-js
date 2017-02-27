@@ -50,7 +50,7 @@
     "lint": "eslint",
     "test": "scripts/test.sh",
     "install": "node-pre-gyp install --fallback-to-build",
-    "prepublish": "scripts/prepublish.sh"
+    "prepublish": "node scripts/prepublish.js"
   },
   "dependencies": {
     "extract-zip": "^1.6.0",
