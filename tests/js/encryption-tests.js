@@ -56,4 +56,17 @@ module.exports = {
         realm = new Realm({schema: [Schemas.TestObject], encryptionKey: key});
         TestCase.assertEqual(realm.objects('TestObject').length, 1);
     },
+    testRealmSchemaVersion: function() {
+        var encryptionKey = new Int8Array(64);
+        var realm = new Realm({schema: [], schemaVersion: 3, path: 'encrypted.realm', encryptionKey: encryptionKey});
+        TestCase.assertEqual(realm.schemaVersion, 3);
+        TestCase.assertEqual(Realm.schemaVersion('encrypted.realm', encryptionKey), 3);
+
+        TestCase.assertThrows(function() {
+            Realm.schemaVersion('encrypted.realm', encryptionKey, 'extra');
+        });
+        TestCase.assertThrows(function() {
+            Realm.schemaVersion('encrypted.realm', 'asdf');
+        });
+    },
 };
