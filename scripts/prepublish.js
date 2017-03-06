@@ -18,14 +18,8 @@
 
 'use strict';
 
-const npmCommand = getNpmCommand();
-if (npmCommand !== 'publish' && npmCommand !== 'pack') {
-    process.exit(0);
-}
-
 const fs = require('fs');
 const path = require('path');
-const ini = require('ini').parse;
 const exec = require('child_process').execFileSync;
 
 const dependencies = ini(fs.readFileSync(path.resolve(__dirname, '../dependencies.list'), 'utf8'));
@@ -39,11 +33,12 @@ if ('REALM_BUILD_ANDROID' in process.env) {
     exec(`${androidPath}/${gradlew}`, ['publishAndroid', '-PbuildWithSync=true'], { cwd: androidPath, stdio: 'inherit' });
 }
 
-function getNpmCommand() {
-    if (`npm_config_argv` in process.env) {
-        const npmInvocation = JSON.parse(process.env.npm_config_argv);
-        return npmInvocation.cooked[0];
+function ini(string) {
+    const result = Object.create(null);
+    for (const line of string.split(/\r?\n/)) {
+        const parts = line.split('=');
+        result[parts[0]] = parts[1];
     }
 
-    return null;
+    return result;
 }
