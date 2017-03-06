@@ -39,6 +39,8 @@
     "tests",
     "vendor",
     "binding.gyp",
+    "realm.gyp",
+    "target_defaults.gypi",
     "dependencies.list"
   ],
   "scripts": {
