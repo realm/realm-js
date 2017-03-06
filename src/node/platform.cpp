@@ -40,18 +40,23 @@ struct FileSystemRequest : uv_fs_t {
     }
 };
 
+// taken from Node.js: function Cwd in node.cc
 std::string default_realm_file_directory()
 {
-    std::vector<char> buffer;
-    size_t size = 64;
-
-    buffer.resize(size);
-    if (uv_cwd(buffer.data(), &size) == UV_ENOBUFS) {
-        buffer.resize(size);
-        uv_cwd(buffer.data(), &size);
+#ifdef _WIN32
+  /* MAX_PATH is in characters, not bytes. Make sure we have enough headroom. */
+  char buf[MAX_PATH * 4];
+#else
+  char buf[PATH_MAX];
+#endif
+    
+    size_t cwd_len = sizeof(buf);
+    int err = uv_cwd(buf, &cwd_len);
+    if (err) {
+        throw UVException(static_cast<uv_errno_t>(err));
     }
 
-    return std::string(buffer.data(), size);
+    return std::string(buf, cwd_len);
 }
 
 void ensure_directory_exists_for_file(const std::string &file_path)
