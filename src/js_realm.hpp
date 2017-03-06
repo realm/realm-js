@@ -148,6 +148,9 @@ class RealmClass : public ClassDefinition<T, SharedRealm, ObservableClass<T>> {
     using NativeAccessor = realm::NativeAccessor<ValueType, ContextType>;
 
 public:
+    using ObjectDefaultsMap = typename Schema<T>::ObjectDefaultsMap;
+    using ConstructorMap = typename Schema<T>::ConstructorMap;
+
     static FunctionType create_constructor(ContextType);
 
     // methods
@@ -173,6 +176,8 @@ public:
 
     // static methods
     static void constructor(ContextType, ObjectType, size_t, const ValueType[]);
+    static SharedRealm create_shared_realm(ContextType, realm::Realm::Config, bool, ObjectDefaultsMap &&, ConstructorMap &&);
+
     static void schema_version(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void clear_test_state(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void copy_bundled_realm_files(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
@@ -318,8 +323,8 @@ static inline void convert_outdated_datetime_columns(const SharedRealm &realm) {
 template<typename T>
 void RealmClass<T>::constructor(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[]) {
     realm::Realm::Config config;
-    typename Schema<T>::ObjectDefaultsMap defaults;
-    typename Schema<T>::ConstructorMap constructors;
+    ObjectDefaultsMap defaults;
+    ConstructorMap constructors;
     bool schema_updated = false;
 
     if (argc == 0) {
@@ -412,9 +417,21 @@ void RealmClass<T>::constructor(ContextType ctx, ObjectType this_object, size_t 
     config.path = normalize_path(config.path);
     ensure_directory_exists_for_file(config.path);
 
+    auto realm = create_shared_realm(ctx, config, schema_updated, std::move(defaults), std::move(constructors));
+
+    // Fix for datetime -> timestamp conversion
+    convert_outdated_datetime_columns(realm);
+
+    set_internal<T, RealmClass<T>>(this_object, new SharedRealm(realm));
+}
+
+template<typename T>
+SharedRealm RealmClass<T>::create_shared_realm(ContextType ctx, realm::Realm::Config config, bool schema_updated,
+                                        ObjectDefaultsMap && defaults, ConstructorMap && constructors) {
     config.execution_context = reinterpret_cast<AbstractExecutionContextID>(Context<T>::get_execution_context_id(ctx));
 
     SharedRealm realm = realm::Realm::get_shared_realm(config);
+
     GlobalContextType global_context = Context<T>::get_global_context(ctx);
     if (!realm->m_binding_context) {
         realm->m_binding_context.reset(new RealmDelegate<T>(realm, global_context));
@@ -430,10 +447,7 @@ void RealmClass<T>::constructor(ContextType ctx, ObjectType this_object, size_t 
         js_binding_context->m_constructors = std::move(constructors);
     }
 
-    // Fix for datetime -> timestamp conversion
-    convert_outdated_datetime_columns(realm);
-
-    set_internal<T, RealmClass<T>>(this_object, new SharedRealm(realm));
+    return realm;
 }
 
 template<typename T>
