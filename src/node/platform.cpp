@@ -96,11 +96,35 @@ void remove_realm_files_from_directory(const std::string &dir_path)
 
     uv_dirent_t entry;
     while (uv_fs_scandir_next(&scandir_req, &entry) != UV_EOF) {
-        if (entry.type == UV_DIRENT_FILE) {
-            std::string path(dir_path + '/' + entry.name);
+        std::string path(dir_path + '/' + entry.name);
 
+        if (entry.type == UV_DIRENT_DIR) {
+            static std::string realm_management_extension(".realm.management");
+            if (ends_with(path, realm_management_extension)) {
+                uv_dirent_t management_entry;
+                FileSystemRequest management_scandir_req;
+                if (uv_fs_scandir(uv_default_loop(), &management_scandir_req, path.c_str(), 0, nullptr) < 0) {
+                    throw UVException(static_cast<uv_errno_t>(scandir_req.result));
+                }
+
+                while (uv_fs_scandir_next(&management_scandir_req, &management_entry) != UV_EOF) {
+                    std::string management_entry_path = path + '/' + management_entry.name;
+                    FileSystemRequest delete_req;
+                    if (uv_fs_unlink(uv_default_loop(), &delete_req, management_entry_path.c_str(), nullptr) != 0) {
+                        throw UVException(static_cast<uv_errno_t>(delete_req.result));
+                    }
+                }
+
+                FileSystemRequest management_rmdir_req;
+                if (uv_fs_rmdir(uv_default_loop(), &management_rmdir_req, path.c_str(), nullptr)) {
+                    throw UVException(static_cast<uv_errno_t>(management_rmdir_req.result));
+                }
+            }
+        } else {
             static std::string realm_extension(".realm");
-            if (ends_with(path, realm_extension)) {
+            static std::string realm_note_extension(".realm.note");
+            static std::string realm_lock_extension(".realm.lock");
+            if (ends_with(path, realm_extension) || ends_with(path, realm_note_extension) || ends_with(path, realm_lock_extension)) {
                 FileSystemRequest delete_req;
                 if (uv_fs_unlink(uv_default_loop(), &delete_req, path.c_str(), nullptr) != 0) {
                     throw UVException(static_cast<uv_errno_t>(delete_req.result));
