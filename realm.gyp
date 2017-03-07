@@ -1,6 +1,6 @@
 {
   "variables": {
-    "use_realm_debug%": "0"
+    "use_realm_debug%": "<!(node -p \"'REALMJS_USE_DEBUG_CORE' in process.env ? 1 : 0\")"
   },
   "conditions": [
     ["OS=='mac'", {
@@ -48,7 +48,7 @@
         "defines": [ "REALM_PLATFORM_NODE=1", "REALM_ENABLE_SYNC=<(realm_enable_sync)" ]
       },
       "variables": {
-        "prefix": ""
+        "prefix": "<!(node -p \"process.env.REALM_CORE_PREFIX || String()\")"
       },
       "conditions": [
         ["prefix!=''", {
@@ -77,11 +77,17 @@
       "type": "none",
       "dependencies": [ "realm-core" ], # sync headers include core headers
       "direct_dependent_settings": {
-        "libraries": [ "-lrealm-sync<(realm_library_suffix)" ]
+        "conditions": [
+          ["use_realm_debug", {
+            "libraries": [ "-lrealm-sync<(realm_library_suffix)-dbg" ]
+          }, {
+            "libraries": [ "-lrealm-sync<(realm_library_suffix)" ]
+          }]
+        ]
       },
       "export_dependent_settings": [ "realm-core" ], # depending on sync is tantamount to depending on core
       "variables": {
-        "prefix": ""
+        "prefix": "<!(node -p \"process.env.REALM_SYNC_PREFIX || String()\")"
       },
       "conditions": [
         ["prefix!=''", {
