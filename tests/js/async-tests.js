@@ -36,9 +36,9 @@ function createNotificationTest(config, getObservable, addListener, removeListen
             reject(new Error('Timed out waiting for change notification'));
         }, 5000);
 
-        let cleanup = () => {
+        let cleanup = (cb) => {
             clearTimeout(timer);
-            worker.terminate();
+            worker.terminate(cb);
         };
 
         var count = 0;
@@ -49,17 +49,17 @@ function createNotificationTest(config, getObservable, addListener, removeListen
 
         worker.onmessage = (message) => {
             if (message.error) {
-                reject(message.error);
-                cleanup();
+                cleanup(() => reject(message.error));
             }
             else if (message.result == 'resolve') {
-                if (count != expectedCount) {
-                    reject('Notification count ' + count + ' not equal to expected count ' + expectedCount);
-                }
-                else {
-                    resolve();
-                }
-                cleanup();
+                cleanup(() => {
+                    if (count !== expectedCount) {
+                        reject('Notification count ' + count + ' not equal to expected count ' + expectedCount);
+                    }
+                    else {
+                        resolve();
+                    }
+                });
             }
             else {
                 if (message.result == 'removeListener') {

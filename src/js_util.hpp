@@ -31,7 +31,7 @@ template<typename T>
 class RealmDelegate;
 
 template<typename T>
-static inline RealmDelegate<T> *get_delegate(Realm *realm) {
+static inline RealmDelegate<T> *get_delegate(realm::Realm *realm) {
     return static_cast<RealmDelegate<T> *>(realm->m_binding_context.get());
 }
 
@@ -59,19 +59,19 @@ static inline uint32_t validated_positive_index(std::string string) {
 
 static inline void validate_argument_count(size_t count, size_t expected, const char *message = nullptr) {
     if (count != expected) {
-        throw std::invalid_argument(message ?: "Invalid arguments");
+        throw std::invalid_argument(message ? message : "Invalid arguments");
     }
 }
 
 static inline void validate_argument_count(size_t count, size_t min, size_t max, const char *message = nullptr) {
     if (count < min || count > max) {
-        throw std::invalid_argument(message ?: "Invalid arguments");
+        throw std::invalid_argument(message ? message : "Invalid arguments");
     }
 }
 
 static inline void validate_argument_count_at_least(size_t count, size_t expected, const char *message = nullptr) {
     if (count < expected) {
-        throw std::invalid_argument(message ?: "Invalid arguments");
+        throw std::invalid_argument(message ? message : "Invalid arguments");
     }
 }
 

@@ -35,7 +35,7 @@ namespace js {
 template<typename T>
 class List : public realm::List {
   public:
-    List(std::shared_ptr<Realm> r, const ObjectSchema& s, LinkViewRef l) noexcept : realm::List(r, l) {}
+    List(std::shared_ptr<realm::Realm> r, const ObjectSchema& s, LinkViewRef l) noexcept : realm::List(r, l) {}
     List(const realm::List &l) : realm::List(l) {}
     
     std::vector<std::pair<Protected<typename T::Function>, NotificationToken>> m_notification_tokens;

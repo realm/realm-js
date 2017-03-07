@@ -20,8 +20,8 @@ fi
 # The 'node' argument will result in realm-node build being downloaded.
 if [ "$1" = 'node' ]; then
     ENABLE_SYNC="$2"
-    CORE_DIR="core-node"
-    SYNC_DIR='node-sync'
+    CORE_DIR="realm-node"
+    SYNC_DIR='realm-node'
 
     if [ "$(uname)" = 'Darwin' ]; then
         PLATFORM_TAG="node-osx-"

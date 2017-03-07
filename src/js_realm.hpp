@@ -262,9 +262,16 @@ public:
     }
 
     static std::string normalize_path(std::string path) {
-        if (path.size() && path[0] != '/' && path[0] != '.') {
-            return default_realm_file_directory() + "/" + path;
+#if defined(WIN32) && WIN32
+        if (path.size() > 1 && path[0] != '\\' && path[1] != ':') {
+            path = default_realm_file_directory() + "\\" + path;
         }
+        std::replace(path.begin(), path.end(), '/', '\\');
+#else
+        if (path.size() && path[0] != '/' && path[0] != '.') {
+            path = default_realm_file_directory() + "/" + path;
+        }
+#endif
         return path;
     }
 };
@@ -428,7 +435,7 @@ void RealmClass<T>::constructor(ContextType ctx, ObjectType this_object, size_t 
 template<typename T>
 SharedRealm RealmClass<T>::create_shared_realm(ContextType ctx, realm::Realm::Config config, bool schema_updated,
                                         ObjectDefaultsMap && defaults, ConstructorMap && constructors) {
-    config.execution_context = reinterpret_cast<AbstractExecutionContextID>(Context<T>::get_execution_context_id(ctx));
+    config.execution_context = Context<T>::get_execution_context_id(ctx);
 
     SharedRealm realm = realm::Realm::get_shared_realm(config);
 

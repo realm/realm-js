@@ -22,6 +22,11 @@ var Realm = require('realm');
 var TestCase = require('./asserts');
 var schemas = require('./schemas');
 
+let pathSeparator = '/';
+if (typeof process === 'object' && process.platform === 'win32') {
+    pathSeparator = '\\';
+}
+
 module.exports = {
     testRealmConstructor: function() {
         var realm = new Realm({schema: []});
@@ -45,7 +50,7 @@ module.exports = {
         var defaultRealm2 = new Realm();
         TestCase.assertEqual(defaultRealm2.path, Realm.defaultPath);
 
-        var defaultDir = Realm.defaultPath.substring(0, Realm.defaultPath.lastIndexOf("/") + 1)
+        var defaultDir = Realm.defaultPath.substring(0, Realm.defaultPath.lastIndexOf(pathSeparator) + 1)
         var testPath = 'test1.realm';
         var realm = new Realm({schema: [], path: testPath});
         TestCase.assertEqual(realm.path, defaultDir + testPath);
@@ -150,7 +155,7 @@ module.exports = {
         TestCase.assertEqual(defaultRealm.path, Realm.defaultPath);
 
         try {
-            var newPath = Realm.defaultPath.substring(0, defaultPath.lastIndexOf('/') + 1) + 'default2.realm';
+            var newPath = Realm.defaultPath.substring(0, defaultPath.lastIndexOf(pathSeparator) + 1) + 'default2.realm';
             Realm.defaultPath = newPath;
             defaultRealm = new Realm({schema: []});
             TestCase.assertEqual(defaultRealm.path, newPath, "should use updated default realm path");
@@ -170,18 +175,6 @@ module.exports = {
         realm = new Realm({schema: [], schemaVersion: 2, path: 'another.realm'});
         TestCase.assertEqual(realm.schemaVersion, 2);
         TestCase.assertEqual(Realm.schemaVersion('another.realm'), 2);
-
-        var encryptionKey = new Int8Array(64);
-        realm = new Realm({schema: [], schemaVersion: 3, path: 'encrypted.realm', encryptionKey: encryptionKey});
-        TestCase.assertEqual(realm.schemaVersion, 3);
-        TestCase.assertEqual(Realm.schemaVersion('encrypted.realm', encryptionKey), 3);
-
-        TestCase.assertThrows(function() {
-            Realm.schemaVersion('encrypted.realm', encryptionKey, 'extra');
-        });
-        TestCase.assertThrows(function() {
-            Realm.schemaVersion('encrypted.realm', 'asdf');
-        });
     },
 
     testRealmWrite: function() {

@@ -74,7 +74,8 @@ stage('build') {
     macos_react_example_release: doMacBuild('react-example Release'),
     //android_react_tests: doAndroidBuild('react-tests-android', {
     //  junit 'tests/react-test-app/tests.xml'
-    //})
+    //}),
+    windows_node: doWindowsBuild()
   )
 }
 
@@ -193,6 +194,24 @@ def doReactBuild(target, postStep = null) {
       try {
         lock("${env.NODE_NAME} iOS Simulator") {
           doInside("./scripts/test.sh", target, postStep)
+        }
+      } finally {
+        deleteDir()
+      }
+    }
+  }
+}
+
+def doWindowsBuild() {
+  return {
+    node('windows') {
+      unstash 'source'
+      try {
+        bat 'npm install --build-from-source'
+        dir('tests') {
+          bat 'npm install'
+          bat 'npm run test-nosync'
+          junit 'junitresults-*.xml'
         }
       } finally {
         deleteDir()

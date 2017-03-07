@@ -26,9 +26,13 @@ var TESTS = {
     RealmTests: require('./realm-tests'),
     ResultsTests: require('./results-tests'),
     QueryTests: require('./query-tests'),
-    EncryptionTests: require('./encryption-tests'),
     MigrationTests: require('./migration-tests')
 };
+
+// encryption is not supported on windows
+if (!(typeof process === 'object' && process.platform === 'win32')) {
+    TESTS.EncryptionTests = require('./encryption-tests');
+}
 
 // If sync is enabled, run the user tests
 if (Realm.Sync) {

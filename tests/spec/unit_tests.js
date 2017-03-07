@@ -58,13 +58,13 @@ for (const suiteName in tests) {
                 try {
                     let result = RealmTests.runTest(suiteName, testName);
                     if (result instanceof Promise) {
-                        result.then(done, fail);
+                        result.then(done, done.fail.bind(done));
                     } else {
                         done();
                     }
                 }
                 catch (e) {
-                    fail(e);
+                    done.fail(e);
                 }
             });
         }

@@ -1,3 +1,14 @@
+X.Y.Z Release notes
+=============================================================
+### Breaking changes
+* None
+
+### Enhancements
+* Add support for Node.js on Windows
+
+### Bug fixes
+* None
+
 1.0.3 Release notes
 =============================================================
 ### Breaking changes

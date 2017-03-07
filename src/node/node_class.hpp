@@ -182,12 +182,12 @@ inline v8::Local<v8::FunctionTemplate> ObjectWrap<ClassType>::create_template() 
 
     if (s_class.index_accessor.getter) {
         auto &index_accessor = s_class.index_accessor;
-        instance_tpl->SetIndexedPropertyHandler(index_accessor.getter, index_accessor.setter ?: set_readonly_index, 0, 0, get_indexes);
+        instance_tpl->SetIndexedPropertyHandler(index_accessor.getter, index_accessor.setter ? index_accessor.setter : set_readonly_index, 0, 0, get_indexes);
     }
     if (s_class.string_accessor.getter || s_class.index_accessor.getter || s_class.index_accessor.setter) {
         // Use our own wrapper for the setter since we want to throw for negative indices.
         auto &string_accessor = s_class.string_accessor;
-        instance_tpl->SetNamedPropertyHandler(string_accessor.getter ?: get_nonexistent_property, set_property, 0, 0, string_accessor.enumerator);
+        instance_tpl->SetNamedPropertyHandler(string_accessor.getter ? string_accessor.getter : get_nonexistent_property, set_property, 0, 0, string_accessor.enumerator);
     }
 
     return scope.Escape(tpl);
@@ -219,7 +219,7 @@ inline void ObjectWrap<ClassType>::setup_property(v8::Local<TargetType> target, 
     v8::Local<v8::String> prop_name = Nan::New(name).ToLocalChecked();
     v8::PropertyAttribute attributes = v8::PropertyAttribute(v8::DontEnum | v8::DontDelete);
 
-    target->SetAccessor(prop_name, property.getter, property.setter ?: set_readonly_property, v8::Local<v8::Value>(), v8::DEFAULT, attributes);
+    target->SetAccessor(prop_name, property.getter, property.setter ? property.setter : set_readonly_property, v8::Local<v8::Value>(), v8::DEFAULT, attributes);
 }
 
 template<typename ClassType>

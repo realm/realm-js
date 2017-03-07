@@ -22,6 +22,7 @@ sync
 sync-*
 node-sync
 node-sync-*
+vendor/realm-node*
 
 # sh build.sh config
 /Realm/config.mk

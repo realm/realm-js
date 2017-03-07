@@ -195,7 +195,7 @@ struct Object {
     template<typename P>
     static ValueType validated_get_property(ContextType ctx, const ObjectType &object, const P &property, const char *message = nullptr) {
         if (!has_property(ctx, object, property)) {
-            throw std::out_of_range(message ?: "Object missing expected property: " + util::to_string(property));
+            throw std::out_of_range(message ? message : "Object missing expected property: " + util::to_string(property));
         }
         return get_property(ctx, object, property);
     }
