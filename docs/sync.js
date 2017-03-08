@@ -147,7 +147,7 @@ class User {
 	 *   - `error` - an Error object is provided on failure
 	 *   - `user` - a valid User object on success
 	 */
-	static loginWithProvider(server, provider, providerToken, callback) {}
+	static registerWithProvider(server, provider, providerToken, callback) {}
 
 	/**
 	 * Register a sync user with username and password.
