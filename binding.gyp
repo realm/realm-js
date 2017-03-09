@@ -5,7 +5,7 @@
   },
   "includes": [
     "target_defaults.gypi",
-    "realm.gyp"
+    "realm.gypi"
   ],
   "targets": [
     {
