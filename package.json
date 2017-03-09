@@ -39,7 +39,7 @@
     "tests",
     "vendor",
     "binding.gyp",
-    "realm.gyp",
+    "realm.gypi",
     "target_defaults.gypi",
     "dependencies.list"
   ],
