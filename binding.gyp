@@ -43,7 +43,7 @@
         "src/object-store/external/pegtl"
       ],
       "sources": [
-	"src/object-store/src/binding_callback_thread_observer.cpp",
+        "src/object-store/src/binding_callback_thread_observer.cpp",
         "src/object-store/src/collection_notifications.cpp",
         "src/object-store/src/index_set.cpp",
         "src/object-store/src/list.cpp",
