@@ -1,21 +1,10 @@
-X.Y.Z Release notes
+1.1.0 Release notes (2017-3-9)
 =============================================================
 ### Breaking changes
 * None
 
 ### Enhancements
-* Add support for Node.js on Windows
-
-### Bug fixes
-* None
-
-1.0.3 Release notes
-=============================================================
-### Breaking changes
-* None
-
-### Enhancements
-* None
+* Add support for Node.js on Windows (#863).
 
 ### Bug fixes
 * Fixed an error when installing Realm React Native module on Windows (#799).
