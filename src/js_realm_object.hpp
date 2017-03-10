@@ -104,14 +104,17 @@ void RealmObjectClass<T>::get_property(ContextType ctx, ObjectType object, const
 template<typename T>
 bool RealmObjectClass<T>::set_property(ContextType ctx, ObjectType object, const String &property, ValueType value) {
     auto realm_object = get_internal<T, RealmObjectClass<T>>(object);
+
+    std::string property_name = property;
+    if (!realm_object->get_object_schema().property_for_name(property_name)) {
+        return false;
+    }
+
     try {
-        realm_object->set_property_value(ctx, property, value, true);
+        realm_object->set_property_value(ctx, property_name, value, true);
     }
     catch (TypeErrorException &ex) {
-        throw TypeErrorException(realm_object->get_object_schema().name + "." + std::string(property), ex.type());
-    }
-    catch (InvalidPropertyException &ex) {
-        return false;
+        throw TypeErrorException(realm_object->get_object_schema().name + "." + property_name, ex.type());
     }
     return true;
 }

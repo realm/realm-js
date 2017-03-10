@@ -13,6 +13,7 @@
 		02022A671DA47BD7000F0C4F /* parser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02022A611DA47B8B000F0C4F /* parser.cpp */; };
 		02022A681DA47BD7000F0C4F /* query_builder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02022A631DA47B8B000F0C4F /* query_builder.cpp */; };
 		02022A7C1DA47EC8000F0C4F /* format.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02022A731DA47EC8000F0C4F /* format.cpp */; };
+		022BF1021E7266DF00F382F1 /* binding_callback_thread_observer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 022BF0FF1E7266C800F382F1 /* binding_callback_thread_observer.cpp */; };
 		02409DC21BCF11D6005F3B3E /* RealmJSCoreTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 02409DC11BCF11D6005F3B3E /* RealmJSCoreTests.m */; };
 		02414B881CE68CA200A8669F /* dates-v5.realm in Resources */ = {isa = PBXBuildFile; fileRef = 02414B871CE68CA200A8669F /* dates-v5.realm */; };
 		02414BA51CE6ABCF00A8669F /* collection_change_builder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02414B991CE6AAEF00A8669F /* collection_change_builder.cpp */; };
@@ -43,7 +44,6 @@
 		50C671001E1D2D31003CB63C /* thread_safe_reference.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5D02C7791E1C83650048C13E /* thread_safe_reference.cpp */; };
 		5D25F5A11D6284FD00EBBB30 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = F63FF3301C16434400B3B8E0 /* libz.tbd */; };
 		8507156E1E2CFCD000E548DB /* object_notifier.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8507156B1E2CFC0100E548DB /* object_notifier.cpp */; };
-		850715AF1E32366B00E548DB /* event_loop_dispatcher.hpp in Sources */ = {isa = PBXBuildFile; fileRef = 850715AE1E32366B00E548DB /* event_loop_dispatcher.hpp */; };
 		F61378791C18EAC5008BFC51 /* js in Resources */ = {isa = PBXBuildFile; fileRef = F61378781C18EAAC008BFC51 /* js */; };
 		F63FF2C61C12469E00B3B8E0 /* jsc_init.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 029048011C0428DF00ABDED4 /* jsc_init.cpp */; };
 		F63FF2C91C12469E00B3B8E0 /* js_realm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 029048071C0428DF00ABDED4 /* js_realm.cpp */; };
@@ -98,6 +98,8 @@
 		02022A741DA47EC8000F0C4F /* format.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = format.hpp; sourceTree = "<group>"; };
 		02022A761DA47EC8000F0C4F /* event_loop_signal.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = event_loop_signal.hpp; sourceTree = "<group>"; };
 		02022A781DA47EC8000F0C4F /* event_loop_signal.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = event_loop_signal.hpp; sourceTree = "<group>"; };
+		022BF0FF1E7266C800F382F1 /* binding_callback_thread_observer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = binding_callback_thread_observer.cpp; path = src/binding_callback_thread_observer.cpp; sourceTree = "<group>"; };
+		022BF1001E7266C800F382F1 /* binding_callback_thread_observer.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = binding_callback_thread_observer.hpp; path = src/binding_callback_thread_observer.hpp; sourceTree = "<group>"; };
 		02409DC11BCF11D6005F3B3E /* RealmJSCoreTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = RealmJSCoreTests.m; path = ios/RealmJSCoreTests.m; sourceTree = "<group>"; };
 		02414B871CE68CA200A8669F /* dates-v5.realm */ = {isa = PBXFileReference; lastKnownFileType = file; path = "dates-v5.realm"; sourceTree = "<group>"; };
 		02414B961CE6AADD00A8669F /* collection_notifications.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = collection_notifications.cpp; path = src/collection_notifications.cpp; sourceTree = "<group>"; };
@@ -457,6 +459,8 @@
 				02022A6B1DA47EC8000F0C4F /* util */,
 				F63117EA1CEB0BFA00ECB2DE /* impl */,
 				F63117EC1CEB0C8100ECB2DE /* parser */,
+				022BF1001E7266C800F382F1 /* binding_callback_thread_observer.hpp */,
+				022BF0FF1E7266C800F382F1 /* binding_callback_thread_observer.cpp */,
 				02F59EAE1C88F17D007F774C /* binding_context.hpp */,
 				02414B961CE6AADD00A8669F /* collection_notifications.cpp */,
 				02414B971CE6AADD00A8669F /* collection_notifications.hpp */,
@@ -855,6 +859,7 @@
 				02F59EC41C88F17D007F774C /* schema.cpp in Sources */,
 				F63FF2CD1C12469E00B3B8E0 /* rpc.cpp in Sources */,
 				02E315D21DB80DF200555337 /* sync_file.cpp in Sources */,
+				022BF1021E7266DF00F382F1 /* binding_callback_thread_observer.cpp in Sources */,
 				02F59EC21C88F17D007F774C /* object_store.cpp in Sources */,
 				02022A7C1DA47EC8000F0C4F /* format.cpp in Sources */,
 				02E315CB1DB80DDD00555337 /* sync_user.cpp in Sources */,
