@@ -83,16 +83,8 @@ task downloadRealmCore(type: Download) {
 task prepareRealmCore(dependsOn: downloadRealmCore, type:Copy) {
     from tarTree(downloadRealmCore.dest)
     into "$coreDownloadDir/core"
-    //Fixing Core file naming 'arm-*' to 'armeabi-*'
-    doLast {
-      exec {
-        workingDir = "$coreDownloadDir/core"
-            commandLine = [
-                    "bash",
-                    "-c",
-                    "find . -name \"*-arm-*\" -exec sh -c \"echo {} | sed -e s/arm/armeabi/g | xargs mv {} \" \\;"
-            ]
-      }
+    rename { String fileName ->
+        fileName.replace("-arm-", "-armeabi-")
     }
 }
 
