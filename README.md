@@ -60,6 +60,46 @@ To build for Android:
 - `./gradlew publishAndroid`
 - The compiled version of the Android module is here: `<project-root>/android`
 
+To build for nodejs:
+
+```
+npm install --build-from-souce
+```
+
+ - On Windows you will need to setup the environment for node-gyp
+
+    - Option 1: Install windows-build-tools node package
+
+         - Open an elevated command prompt (As Administrator)
+
+            ```
+            npm install -g --production windows-build-tools
+            ```  
+
+    * Option 2: Manually install and configure
+
+        - Check [node-gyp](https://github.com/nodejs/node-gyp) manual for custom installation procedure for Windows
+
+
+## Running the tests
+
+You can use scripts/tests.sh to run the various tests.
+You will need yarn installed on the machine.
+
+test.sh options
+
+ * eslint - lints the sources
+ * realmjs - runs all tests on quick simulated environment 
+ * react-tests - runs all React Native tests on iOS Simulator
+ * react-tests-android runs all React Native Android tests on Android emulator
+ * node - runs all tests for node
+ * node-nosync - runs all tests for node withouit sync support
+ * test-runners - checks supported tests runners are working correctly
+
+
+
+
+
 ## Code of Conduct
 
 This project adheres to the Contributor Covenant [code of conduct](https://realm.io/conduct/).
