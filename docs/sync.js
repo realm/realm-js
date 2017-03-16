@@ -142,10 +142,10 @@ class User {
 	/**
 	 * Register/login a sync user using an external login provider.
 	 * @param {string} server - authentication server
-     * @param {object} options - options, containing the following:
+   * @param {object} options - options, containing the following:
 	 * @param {string} options.provider - The provider type
 	 * @param {string} options.providerToken - The access token for the given provider
-     * @param {object} [options.userInfo] - A map containing additional data required by the provider
+   * @param {object} [options.userInfo] - A map containing additional data required by the provider
 	 * @param {function(error, User)} callback - called with the following arguments:
 	 *   - `error` - an Error object is provided on failure
 	 *   - `user` - a valid User object on success
