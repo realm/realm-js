@@ -97,8 +97,11 @@ test.sh options
  * test-runners - checks supported tests runners are working correctly
 
 
+You can attach a debugger to react-native tests by passing "Debug" to the tests.sh script. A Chrome browser will open and connect to the react native application. Use the built-in Chrome Debugger to debug the code.
 
-
+```
+./tests.sh react-tests Debug
+```
 
 ## Code of Conduct
 
