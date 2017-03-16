@@ -48,7 +48,7 @@
     "set-version": "scripts/set-version.sh",
     "get-core-version": "scripts/download-core.sh --version",
     "get-sync-version": "scripts/download-core.sh --versionSync",
-    "jsdoc": "rm -rf docs/output && jsdoc -c docs/conf.json",
+    "jsdoc": "rm -rf docs/output && jsdoc -u docs/tutorials -p package.json -c docs/conf.json",
     "lint": "eslint",
     "test": "scripts/test.sh",
     "install": "node-pre-gyp install --fallback-to-build",
