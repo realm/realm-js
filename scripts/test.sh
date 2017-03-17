@@ -9,6 +9,10 @@ export NPM_CONFIG_PROGRESS=false
 TARGET=$1
 CONFIGURATION=${2:-Release}
 
+if echo $CONFIGURATION | grep -i "^Debug$" > /dev/null ; then
+  CONFIGURATION="Debug"
+fi
+
 IOS_SIM_DEVICE=${IOS_SIM_DEVICE:-} # use preferentially, otherwise will be set and re-exported
 ios_sim_default_device_type=${IOS_SIM_DEVICE_TYPE:-iPhone 5s}
 ios_sim_default_ios_version=${IOS_SIM_OS:-iOS 10.1}
