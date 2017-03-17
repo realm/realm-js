@@ -35,6 +35,13 @@ Example:
 let puppies = realm.objects('Dog').filtered('age < 2');
 ```
 
+Note that for boolean properties, you should test against the expected keyword.
+
+Example:
+```JS
+let women = realm.objects('Person').filtered('isMale == false');
+```
+
 ### String operators
 With strings, besides from the normal equality operators, you can use `BEGINSWITH`, `ENDSWITH` and `CONTAINS`.
 
