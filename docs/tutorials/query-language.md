@@ -14,12 +14,26 @@ Example:
 let johnsDogs = realm.Object('Dog').filtered('owner.name == "John"');
 ```
 
+You can use numbered (`$0`, `$1`, ...) placeholders in your query string, using the succeeding parameters as the values.
+Named placeholders are **not** yet supported.
+
+Example:
+```JS
+let merlots = wines.filtered('variety == $0 && vintage <= $1', 'Merlot', maxYear);
+```
+
+
 ### Relational operators
 You can use equality comparison on all property types: 
 `==` and `!=` 
 
 Furthermore, the following can be used on numerical types:
 `<`, `<=`, `>`, `>=`
+
+Example:
+```JS
+let puppies = realm.objects('Dog').filtered('age < 2');
+```
 
 ### String operators
 With strings, besides from the normal equality operators, you can use `BEGINSWITH`, `ENDSWITH` and `CONTAINS`.
@@ -33,5 +47,5 @@ let Johns = realm.objects('Person').filtered('name ==[c] "john"');
 ```
 
 ### Composition
-You can use parentheses and the `AND` and `OR` operators to compose queries.
+You can use parentheses and the `&&`/`AND` and `||`/`OR` operators to compose queries. You can negate a predicate with `!`/`NOT`.
 
