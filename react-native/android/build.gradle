@@ -40,7 +40,7 @@ def jscDownloadDir = new File("$projectDir/src/main/jni/jsc")
 def coreDownloadDir = new File("$projectDir/src/main/jni")
 def publishDir = new File("$projectDir/../../android/")
 // to build with sync run: ./gradlew assembleDebug -PbuildWithSync=true
-ext.buildSync = project.hasProperty('buildWithSync') ? project.getProperty('buildWithSync').toBoolean() : false
+ext.buildSync = project.hasProperty('buildWithSync') ? project.getProperty('buildWithSync').toBoolean() : true
 
 task generateVersionClass(type: Copy) {
     from 'src/main/templates/Version.java'
