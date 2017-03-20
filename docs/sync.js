@@ -314,49 +314,49 @@ class Adapter {
  * that will exist in the instruction object.
  * @typedef Realm.Sync.Adapter~Instruction
  * @type {(INSERT|SET|DELETE|CLEAR|CHANGE_IDENTITY|LIST_SET|LIST_INSERT|LIST_ERASE|LIST_CLEAR|ADD_TYPE|ADD_PROPERTY)}
- * @property {INSERT} - insert a new object 
+ * @property INSERT - insert a new object 
  * - `object_type` - type of the object being inserted
  * - `identity` - primary key value or row index for the object
  * - `values` - map of property names and property values for the object to insert
- * @property {SET} - set property values for an existing object
+ * @property SET - set property values for an existing object
  * - `object_type` - type of the object
  * - `identity` - primary key value or row index for the object
  * - `values` - map of property names and property values to update for the object
- * @property {DELETE} - delete an exising object
+ * @property DELETE - delete an exising object
  * - `object_type` - type of the object
  * - `identity` - primary key value or row index for the object
- * @property {CLEAR} - delete all objects of a given type
+ * @property CLEAR - delete all objects of a given type
  * - `object_type` - type of the object
- * @property {LIST_SET} - set the object at a given list index to an object 
+ * @property LIST_SET - set the object at a given list index to an object 
  * - `object_type` - type of the object
  * - `identity` - primary key for the object
  * - `property` - property name for the list property to mutate
  * - `list_index` - list index to set
  * - `object_identity` - primary key or row number of the object being set
- * @property {LIST_INSERT} - insert an object in the list at the given index
+ * @property LIST_INSERT - insert an object in the list at the given index
  * - `object_type` - type of the object
  * - `identity` - primary key for the object
  * - `property` - property name for the list property to mutate
  * - `list_index` - list index at which to insert
  * - `object_identity` - primary key or row number of the object to insert
- * @property {LIST_ERASE} - erase an object in the list at the given index - this removes the object
+ * @property LIST_ERASE - erase an object in the list at the given index - this removes the object
  * from the list but the object will still exist in the Realm
  * - `object_type` - type of the object
  * - `identity` - primary key for the object
  * - `property` - property name for the list property to mutate
  * - `list_index` - list index which should be erased
- * @property {LIST_CLEAR} - clear a list removing all objects - objects are not deleted from the Realm
+ * @property LIST_CLEAR - clear a list removing all objects - objects are not deleted from the Realm
  * - `object_type` - type of the object
  * - `identity` - primary key for the object
  * - `property` - property name for the list property to clear
- * @property {ADD_TYPE} - add a new type
+ * @property ADD_TYPE - add a new type
  * - `object_type` - name of the type
  * - `primary_key` - name of primary key property for this type
  * - `properties` - Property map as described in {@link Realm~ObjectSchema}
- * @property {ADD_PROPERTIES} - add properties to an existing type
+ * @property ADD_PROPERTIES - add properties to an existing type
  * - `object_type` - name of the type
  * - `properties` - Property map as described in {@link Realm~ObjectSchema}
- * @property {CHANGE_IDENTITY} - change the row index for an existing object - not called for objects
+ * @property CHANGE_IDENTITY - change the row index for an existing object - not called for objects
  * with primary keys
  * - `object_type` - type fo the object
  * - `identity` - old row value for the object
