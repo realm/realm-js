@@ -134,17 +134,21 @@ module.exports = {
   }, 
 
   testRegisterMissingUsername() {
-    return callbackTest((callback) => Realm.Sync.User.register('http://localhost:9080', undefined, 'password', callback), (error, user) => {
-      assertIsAuthError(error, 602, 'https://realm.io/docs/object-server/problems/missing-parameters');
-      TestCase.assertUndefined(user);
+    return new Promise((resolve, _reject) => {
+        TestCase.assertThrows(() => {
+            Realm.Sync.User.register('http://localhost:9080', undefined, 'password', () => {});
+        });
+        resolve();
     });
   },
 
   testRegisterMissingPassword() {
     var username = uuid();
-    return callbackTest((callback) => Realm.Sync.User.register('http://localhost:9080', username, undefined, callback), (error, user) => {
-      assertIsAuthError(error, 602, 'https://realm.io/docs/object-server/problems/missing-parameters');
-      TestCase.assertUndefined(user);
+    return new Promise((resolve, _reject) => {
+        TestCase.assertThrows(() => {
+            Realm.Sync.User.register('http://localhost:9080', username, undefined, () => {});
+        });
+        resolve();
     });
   },
 
@@ -180,17 +184,21 @@ module.exports = {
   },
 
   testLoginMissingUsername() {
-    return callbackTest((callback) => Realm.Sync.User.login('http://localhost:9080', undefined, 'password', callback), (error, user) => {
-      assertIsAuthError(error, 602, 'https://realm.io/docs/object-server/problems/missing-parameters');
-      TestCase.assertUndefined(user);
+    return new Promise((resolve, _reject) => {
+        TestCase.assertThrows(() => {
+            Realm.Sync.User.login('http://localhost:9080', undefined, 'password', () => {});
+        });
+        resolve();
     });
   },
 
   testLoginMissingPassword() {
     var username = uuid();
-    return callbackTest((callback) => Realm.Sync.User.login('http://localhost:9080', username, undefined, callback), (error, user) => {
-      assertIsAuthError(error, 602, 'https://realm.io/docs/object-server/problems/missing-parameters');
-      TestCase.assertUndefined(user);
+    return new Promise((resolve, _reject) => {
+        TestCase.assertThrows(() => {
+            Realm.Sync.User.login('http://localhost:9080', username, undefined, () => {});
+        });
+        resolve();
     });
   },
 
