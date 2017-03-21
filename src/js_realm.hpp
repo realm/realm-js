@@ -181,6 +181,7 @@ public:
     static void schema_version(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void clear_test_state(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void copy_bundled_realm_files(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static std::string normalize_path(std::string path);
 
     // static properties
     static void get_default_path(ContextType, ObjectType, ReturnValue &);
@@ -259,20 +260,6 @@ public:
             throw std::runtime_error("Object type '" + object_type + "' not found in schema.");
         }
         return *object_schema;
-    }
-
-    static std::string normalize_path(std::string path) {
-#if defined(WIN32) && WIN32
-        if (path.size() > 1 && path[0] != '\\' && path[1] != ':') {
-            path = default_realm_file_directory() + "\\" + path;
-        }
-        std::replace(path.begin(), path.end(), '/', '\\');
-#else
-        if (path.size() && path[0] != '/' && path[0] != '.') {
-            path = default_realm_file_directory() + "/" + path;
-        }
-#endif
-        return path;
     }
 };
 
@@ -503,6 +490,21 @@ void RealmClass<T>::set_default_path(ContextType ctx, ObjectType object, ValueTy
 }
 
 template<typename T>
+std::string RealmClass<T>::normalize_path(std::string path) {
+#if defined(WIN32) && WIN32
+        if (path.size() > 1 && path[0] != '\\' && path[1] != ':') {
+            path = default_realm_file_directory() + "\\" + path;
+        }
+        std::replace(path.begin(), path.end(), '/', '\\');
+#else
+        if (path.size() && path[0] != '/' && path[0] != '.') {
+            path = default_realm_file_directory() + "/" + path;
+        }
+#endif
+        return path;
+    }
+
+template<typename T>
 void RealmClass<T>::get_path(ContextType ctx, ObjectType object, ReturnValue &return_value) {
     std::string path = get_internal<T, RealmClass<T>>(object)->get()->config().path;
     return_value.set(path);
@@ -534,10 +536,10 @@ void RealmClass<T>::get_sync_session(ContextType ctx, ObjectType object, ReturnV
     } else {
         return_value.set_null();
     }
-    
+
 }
 #endif
-    
+
 template<typename T>
 void RealmClass<T>::objects(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 1);
@@ -601,7 +603,7 @@ void RealmClass<T>::delete_one(ContextType ctx, FunctionType, ObjectType this_ob
         if (!object->is_valid()) {
             throw std::runtime_error("Object is invalid. Either it has been previously deleted or the Realm it belongs to has been closed.");
         }
-        
+
         realm::TableRef table = ObjectStore::table_for_object_type(realm->read_group(), object->get_object_schema().name);
         table->move_last_over(object->row().get_index());
     }
