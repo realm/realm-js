@@ -28,6 +28,7 @@
 #include "js_collection.hpp"
 #include "sync/sync_manager.hpp"
 #include "sync/sync_config.hpp"
+#include "sync/sync_permission.hpp"
 #include "sync/sync_session.hpp"
 #include "sync/sync_user.hpp"
 #include "realm/util/logger.hpp"
@@ -85,11 +86,15 @@ public:
     };
 
     static void logout(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void set_permission(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void delete_permission(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void session_for_on_disk_path(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
 
     MethodMap<T> const methods = {
         {"logout", wrap<logout>},
-        {"_sessionForOnDiskPath", wrap<session_for_on_disk_path>}
+        {"deletePermission", wrap<delete_permission>},
+        {"setPermission", wrap<set_permission>},
+        {"_sessionForOnDiskPath", wrap<session_for_on_disk_path>},
     };
 };
 
@@ -163,6 +168,31 @@ void UserClass<T>::current_user(ContextType ctx, ObjectType object, ReturnValue 
 template<typename T>
 void UserClass<T>::logout(ContextType ctx, FunctionType, ObjectType this_object, size_t, const ValueType[], ReturnValue &) {
     get_internal<T, UserClass<T>>(this_object)->get()->log_out();
+}
+
+template<typename T>
+void UserClass<T>::set_permission(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType args[], ReturnValue &) {
+    validate_argument_count(argc, 4);
+    Permission::AccessLevel access;
+    std::string url = Value::validated_to_string(ctx, args[0], "url");
+    std::string str_access = Value::validated_to_string(ctx, args[1], "access");
+    std::string user_id = Value::validated_to_string(ctx, args[2], "userId");
+
+    if (str_access == "Read") access = Permission::AccessLevel::Read;
+    else if (str_access == "Write") access = Permission::AccessLevel::Write;
+    else if (str_access == "Admin") access = Permission::AccessLevel::Admin;
+    else throw std::runtime_error("Invalid access level");
+
+    Permissions::set_permission(*get_internal<T, UserClass<T>>(this_object), { url, access, { .user_id = user_id } }, [](auto ex) { throw ex; });
+}
+
+template<typename T>
+void UserClass<T>::delete_permission(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType args[], ReturnValue &) {
+    validate_argument_count(argc, 3);
+    std::string url = Value::validated_to_string(ctx, args[0], "url");
+    std::string user_id = Value::validated_to_string(ctx, args[1], "userId");
+
+    Permissions::delete_permission(*get_internal<T, UserClass<T>>(this_object), { url, Permission::AccessLevel::None, { .user_id = user_id } }, [](auto ex) { throw  ex; });
 }
 
 template<typename T>
