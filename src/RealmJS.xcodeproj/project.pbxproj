@@ -23,6 +23,7 @@
 		02414BA91CE6ABCF00A8669F /* collection_notifications.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02414B961CE6AADD00A8669F /* collection_notifications.cpp */; };
 		0270BC821B7D020100010E03 /* RealmJSTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = 0270BC7B1B7D020100010E03 /* RealmJSTests.mm */; };
 		027A23131CD3E379000543AE /* libRealmJS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F63FF2B11C1241E500B3B8E0 /* libRealmJS.a */; };
+		02BC108E1E81C641003C2326 /* sync_permission.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02BC108C1E81C640003C2326 /* sync_permission.cpp */; };
 		02D041F71CE11159000E4250 /* dates-v3.realm in Resources */ = {isa = PBXBuildFile; fileRef = 02D041F61CE11159000E4250 /* dates-v3.realm */; };
 		02D8D1F71B601984006DB49D /* JavaScriptCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 02B58CCD1AE99D4D009B348C /* JavaScriptCore.framework */; };
 		02E315C91DB80DDD00555337 /* sync_manager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E315C31DB80DDD00555337 /* sync_manager.cpp */; };
@@ -139,6 +140,10 @@
 		02A3C7A41BC4341500B1A7BE /* libc++.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.tbd"; path = "usr/lib/libc++.tbd"; sourceTree = SDKROOT; };
 		02B58CBC1AE99CEC009B348C /* RealmJSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RealmJSTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		02B58CCD1AE99D4D009B348C /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
+		02BC108A1E81BA90003C2326 /* any.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = any.hpp; sourceTree = "<group>"; };
+		02BC108B1E81BAA1003C2326 /* object_accessor_impl.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = object_accessor_impl.hpp; sourceTree = "<group>"; };
+		02BC108C1E81C640003C2326 /* sync_permission.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = sync_permission.cpp; path = src/sync/sync_permission.cpp; sourceTree = "<group>"; };
+		02BC108D1E81C640003C2326 /* sync_permission.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = sync_permission.hpp; path = src/sync/sync_permission.hpp; sourceTree = "<group>"; };
 		02D041F61CE11159000E4250 /* dates-v3.realm */ = {isa = PBXFileReference; lastKnownFileType = file; path = "dates-v3.realm"; sourceTree = "<group>"; };
 		02E315C21DB80DDD00555337 /* sync_config.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = sync_config.hpp; path = src/sync/sync_config.hpp; sourceTree = "<group>"; };
 		02E315C31DB80DDD00555337 /* sync_manager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = sync_manager.cpp; path = src/sync/sync_manager.cpp; sourceTree = "<group>"; };
@@ -301,6 +306,7 @@
 			children = (
 				02022A6C1DA47EC8000F0C4F /* android */,
 				02022A6E1DA47EC8000F0C4F /* apple */,
+				02BC108A1E81BA90003C2326 /* any.hpp */,
 				02022A701DA47EC8000F0C4F /* atomic_shared_ptr.hpp */,
 				02022A711DA47EC8000F0C4F /* compiler.hpp */,
 				02022A721DA47EC8000F0C4F /* event_loop_signal.hpp */,
@@ -449,6 +455,8 @@
 				02E315C21DB80DDD00555337 /* sync_config.hpp */,
 				02E315C31DB80DDD00555337 /* sync_manager.cpp */,
 				02E315C41DB80DDD00555337 /* sync_manager.hpp */,
+				02BC108C1E81C640003C2326 /* sync_permission.cpp */,
+				02BC108D1E81C640003C2326 /* sync_permission.hpp */,
 				02E315C51DB80DDD00555337 /* sync_session.cpp */,
 				02E315C61DB80DDD00555337 /* sync_session.hpp */,
 				02E315C71DB80DDD00555337 /* sync_user.cpp */,
@@ -567,6 +575,7 @@
 				02414B9C1CE6AAEF00A8669F /* collection_notifier.hpp */,
 				02414B9D1CE6AAEF00A8669F /* list_notifier.cpp */,
 				02414B9E1CE6AAEF00A8669F /* list_notifier.hpp */,
+				02BC108B1E81BAA1003C2326 /* object_accessor_impl.hpp */,
 				8507156B1E2CFC0100E548DB /* object_notifier.cpp */,
 				8507156C1E2CFC0100E548DB /* object_notifier.hpp */,
 				02414B9F1CE6AAEF00A8669F /* results_notifier.cpp */,
@@ -926,6 +935,7 @@
 				F63FF31F1C1642BB00B3B8E0 /* GCDWebServerResponse.m in Sources */,
 				F63FF3261C1642BB00B3B8E0 /* GCDWebServerFileResponse.m in Sources */,
 				F63FF3271C1642BB00B3B8E0 /* GCDWebServerStreamedResponse.m in Sources */,
+				02BC108E1E81C641003C2326 /* sync_permission.cpp in Sources */,
 				F63FF3241C1642BB00B3B8E0 /* GCDWebServerDataResponse.m in Sources */,
 				F63FF31B1C1642BB00B3B8E0 /* GCDWebServer.m in Sources */,
 				F63FF31D1C1642BB00B3B8E0 /* GCDWebServerFunctions.m in Sources */,

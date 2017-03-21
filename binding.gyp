@@ -89,6 +89,7 @@
           "dependencies": [ "realm-sync" ],
           "sources": [
             "src/object-store/src/sync/sync_manager.cpp",
+            "src/object-store/src/sync/sync_permission.cpp",
             "src/object-store/src/sync/sync_user.cpp",
             "src/object-store/src/sync/sync_session.cpp",
             "src/object-store/src/sync/impl/sync_file.cpp",
@@ -102,7 +103,8 @@
           "src/object-store/src/impl",
           "src/object-store/src/impl/apple",
           "src/object-store/src/parser",
-          "src/object-store/external/pegtl"
+          "src/object-store/external/pegtl",
+          "src/object-store/external"
         ]
       },
       "export_dependent_settings": [
