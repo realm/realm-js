@@ -40,7 +40,8 @@
         "src/object-store/src/impl",
         "src/object-store/src/impl/apple",
         "src/object-store/src/parser",
-        "src/object-store/external/pegtl"
+        "src/object-store/external/pegtl",
+        "src/object-store/external/sole"
       ],
       "sources": [
         "src/object-store/src/binding_callback_thread_observer.cpp",
@@ -104,7 +105,7 @@
           "src/object-store/src/impl/apple",
           "src/object-store/src/parser",
           "src/object-store/external/pegtl",
-          "src/object-store/external"
+          "src/object-store/external/sole"
         ]
       },
       "export_dependent_settings": [
