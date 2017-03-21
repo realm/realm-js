@@ -44,6 +44,20 @@
 namespace realm {
 namespace js {
 
+static std::string normalize_realm_path(std::string path) {
+#if defined(WIN32) && WIN32
+    if (path.size() > 1 && path[0] != '\\' && path[1] != ':') {
+        path = default_realm_file_directory() + "\\" + path;
+    }
+    std::replace(path.begin(), path.end(), '/', '\\');
+#else
+    if (path.size() && path[0] != '/' && path[0] != '.') {
+        path = default_realm_file_directory() + "/" + path;
+    }
+#endif
+    return path;
+}
+
 template<typename T>
 class Realm;
 
@@ -260,20 +274,6 @@ public:
         }
         return *object_schema;
     }
-
-    static std::string normalize_path(std::string path) {
-#if defined(WIN32) && WIN32
-        if (path.size() > 1 && path[0] != '\\' && path[1] != ':') {
-            path = default_realm_file_directory() + "\\" + path;
-        }
-        std::replace(path.begin(), path.end(), '/', '\\');
-#else
-        if (path.size() && path[0] != '/' && path[0] != '.') {
-            path = default_realm_file_directory() + "/" + path;
-        }
-#endif
-        return path;
-    }
 };
 
 template<typename T>
@@ -421,7 +421,7 @@ void RealmClass<T>::constructor(ContextType ctx, ObjectType this_object, size_t 
         throw std::runtime_error("Invalid arguments when constructing 'Realm'");
     }
 
-    config.path = normalize_path(config.path);
+    config.path = normalize_realm_path(config.path);
     ensure_directory_exists_for_file(config.path);
 
     auto realm = create_shared_realm(ctx, config, schema_updated, std::move(defaults), std::move(constructors));
@@ -462,7 +462,7 @@ void RealmClass<T>::schema_version(ContextType ctx, FunctionType, ObjectType thi
     validate_argument_count(argc, 1, 2);
 
     realm::Realm::Config config;
-    config.path = normalize_path(Value::validated_to_string(ctx, arguments[0]));
+    config.path = normalize_realm_path(Value::validated_to_string(ctx, arguments[0]));
     if (argc == 2) {
         auto encryptionKeyValue = arguments[1];
         std::string encryptionKey = NativeAccessor::to_binary(ctx, encryptionKeyValue);
@@ -534,10 +534,10 @@ void RealmClass<T>::get_sync_session(ContextType ctx, ObjectType object, ReturnV
     } else {
         return_value.set_null();
     }
-    
+
 }
 #endif
-    
+
 template<typename T>
 void RealmClass<T>::objects(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 1);
@@ -601,7 +601,7 @@ void RealmClass<T>::delete_one(ContextType ctx, FunctionType, ObjectType this_ob
         if (!object->is_valid()) {
             throw std::runtime_error("Object is invalid. Either it has been previously deleted or the Realm it belongs to has been closed.");
         }
-        
+
         realm::TableRef table = ObjectStore::table_for_object_type(realm->read_group(), object->get_object_schema().name);
         table->move_last_over(object->row().get_index());
     }
