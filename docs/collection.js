@@ -43,6 +43,8 @@ class Collection {
      *   (e.g. `$0`, `$1`, `$2`, …) in the query.
      * @throws {Error} If the query or any other argument passed into this method is invalid.
      * @returns {Realm.Results} filtered according to the provided query.
+     * 
+     * See {@tutorial query-language} for details about the query language.
      * @example
      * let merlots = wines.filtered('variety == "Merlot" && vintage <= $0', maxYear);
      */
