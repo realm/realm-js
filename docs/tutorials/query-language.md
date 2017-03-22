@@ -1,20 +1,20 @@
 The Realm JavaScript SDK supports querying based on a language inspired by [NSPredicate](https://realm.io/news/nspredicate-cheatsheet/). 
 
-You query your Realm using the {@link Realm.Collection#filtered Collection.filtered()} method:
+The {@link Realm.Collection#filtered Collection.filtered()} method is used to query a Realm:
 
 ```JS
-let dogs = realm.objects('Dog');
-let tanDogs = dogs.filtered('color == "tan" AND name BEGINSWITH "B"');
+let contacts = realm.objects('Contact');
+let friendsPage2 = contacts.filtered('type == "friend" AND name BEGINSWITH "B"');
 ```
 
-You can filter by linked or child objects with a keypath.
+It's possible to filter by linked or child objects with a keypath.
 
 Example:
 ```JS
-let johnsDogs = realm.Object('Dog').filtered('owner.name == "John"');
+let johnsChildren = realm.Object('Contact').filtered('father.name == "John"');
 ```
 
-You can use numbered (`$0`, `$1`, ...) placeholders in your query string, using the succeeding parameters as the values.
+Query strings can use numbered (`$0`, `$1`, ...) placeholders. The succeeding parameters contain the values.
 Named placeholders are **not** yet supported.
 
 Example:
@@ -32,27 +32,27 @@ Furthermore, the following can be used on numerical types:
 
 Example:
 ```JS
-let puppies = realm.objects('Dog').filtered('age < 2');
+let oldContacts = realm.objects('Contact').filtered('age > 2');
 ```
 
 Note that for boolean properties, you should test against the expected keyword.
 
 Example:
 ```JS
-let women = realm.objects('Person').filtered('isMale == false');
+let women = realm.objects('Contact').filtered('isMale == false');
 ```
 
 ### String operators
-With strings, besides from the normal equality operators, you can use `BEGINSWITH`, `ENDSWITH` and `CONTAINS`.
+For string properties, prefix, suffix, and substring queries are supported by using the `BEGINSWITH`, `ENDSWITH`, and `CONTAINS` operators.
 
-For any string operation, you can append `[c]` to the operator to make it case insensitive.
+For any string operation you can append `[c]` to the operator to make it case insensitive.
 
 Example:
 ```JS
-let peopleWhoseNameContainsA = realm.objects('Person').filtered('name CONTAINS[c] "a"');
-let Johns = realm.objects('Person').filtered('name ==[c] "john"');
+let peopleWhoseNameContainsA = realm.objects('Contact').filtered('name CONTAINS[c] "a"');
+let Johns = realm.objects('Contact').filtered('name ==[c] "john"');
 ```
 
 ### Composition
-You can use parentheses and the `&&`/`AND` and `||`/`OR` operators to compose queries. You can negate a predicate with `!`/`NOT`.
+Use parentheses and the `&&`/`AND` and `||`/`OR` operators to compose queries. You can negate a predicate with `!`/`NOT`.
 

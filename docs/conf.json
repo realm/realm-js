@@ -14,7 +14,7 @@
   },
   "plugins": ["plugins/markdown"],
   "templates": {
-		"applicationName": "Realm JavaScript",
+    "applicationName": "Realm JavaScript",
     "cleverLinks": true,
     "default": {
       "outputSourceFiles": false,
