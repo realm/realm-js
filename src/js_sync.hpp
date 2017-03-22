@@ -99,6 +99,61 @@ public:
 };
 
 template<typename T>
+void populate_sync_config_impl(typename T::Context ctx, Realm::Config& config, SharedUser shared_user, std::string url, bool client_validate_ssl,
+                               util::Optional<std::string> ssl_trust_certificate_path, std::function<SyncSessionErrorHandler> error_handler)
+{
+    using GlobalContextType = typename T::GlobalContext;
+    using ContextType = typename T::Context;
+    using FunctionType = typename T::Function;
+    using ObjectType = typename T::Object;
+    using ValueType = typename T::Value;
+    using String = js::String<T>;
+    using Object = js::Object<T>;
+    using Value = js::Value<T>;
+    using Function = js::Function<T>;
+    using ReturnValue = js::ReturnValue<T>;
+    using NativeAccessor = realm::NativeAccessor<ValueType, ContextType>;
+
+    ObjectType realm_constructor = Value::validated_to_object(ctx, Object::get_global(ctx, "Realm"));
+    ObjectType sync_constructor = Object::validated_get_object(ctx, realm_constructor, std::string("Sync"));
+    Protected<ObjectType> protected_sync(ctx, sync_constructor);
+    Protected<GlobalContextType> protected_ctx(Context<T>::get_global_context(ctx));
+
+    EventLoopDispatcher<SyncBindSessionHandler> bind([protected_ctx, protected_sync](const std::string& path, const realm::SyncConfig& config, std::shared_ptr<SyncSession>) {
+        HANDLESCOPE
+        if (config.user->is_admin()) {
+            // FIXME: This log-in callback is called while the object store still holds some sync-related locks.
+            // Notify the object store of the access token asynchronously to avoid the deadlock that would result
+            // from reentering the object store here.
+            auto thread = std::thread([path, config]{
+                auto session = SyncManager::shared().get_existing_active_session(path);
+                session->refresh_access_token(config.user->refresh_token(), config.realm_url);
+            });
+            thread.detach();
+        }
+        else {
+            ObjectType user_constructor = Object::validated_get_object(protected_ctx, protected_sync, std::string("User"));
+            FunctionType refreshAccessToken = Object::validated_get_function(protected_ctx, user_constructor, std::string("_refreshAccessToken"));
+
+            ValueType arguments[3];
+            arguments[0] = create_object<T, UserClass<T>>(protected_ctx, new SharedUser(config.user));
+            arguments[1] = Value::from_string(protected_ctx, path.c_str());
+            arguments[2] = Value::from_string(protected_ctx, config.realm_url.c_str());
+            Function::call(protected_ctx, refreshAccessToken, 3, arguments);
+        }
+    });
+
+    // FIXME - use make_shared
+    config.sync_config = std::shared_ptr<SyncConfig>(new SyncConfig{shared_user, url,
+                                                                    SyncSessionStopPolicy::AfterChangesUploaded,
+                                                                    std::move(bind), std::move(error_handler),
+                                                                    nullptr, util::none,
+                                                                    client_validate_ssl, ssl_trust_certificate_path});
+    config.schema_mode = SchemaMode::Additive;
+    config.path = realm::SyncManager::shared().path_for_realm(shared_user->identity(), url);
+}
+
+template<typename T>
 void UserClass<T>::get_server(ContextType ctx, ObjectType object, ReturnValue &return_value) {
     std::string server = get_internal<T, UserClass<T>>(object)->get()->server_url();
     return_value.set(server);
@@ -177,13 +232,34 @@ void UserClass<T>::set_permission(ContextType ctx, FunctionType, ObjectType this
     std::string url = Value::validated_to_string(ctx, args[0], "url");
     std::string str_access = Value::validated_to_string(ctx, args[1], "access");
     std::string user_id = Value::validated_to_string(ctx, args[2], "userId");
+    FunctionType callback = Value::validated_to_function(ctx, args[3], "callback");
 
     if (str_access == "Read") access = Permission::AccessLevel::Read;
     else if (str_access == "Write") access = Permission::AccessLevel::Write;
     else if (str_access == "Admin") access = Permission::AccessLevel::Admin;
     else throw std::runtime_error("Invalid access level");
 
-    Permissions::set_permission(*get_internal<T, UserClass<T>>(this_object), { url, access, { .user_id = user_id } }, [](auto ex) { throw ex; });
+    Protected<GlobalContextType> protected_ctx(Context<T>::get_global_context(ctx));
+    Protected<FunctionType> protected_callback(ctx, callback);
+    Permissions::set_permission(*get_internal<T, UserClass<T>>(this_object),
+        { url, access, user_id },
+        [protected_ctx, protected_callback](auto ex) {
+            HANDLESCOPE
+            ValueType error;
+            try {
+                if (ex) std::rethrow_exception(ex);
+                error = Value::from_undefined(protected_ctx);
+            } catch(const std::exception& e) {
+                error = Value::from_string(protected_ctx, e.what());
+            }
+            Function::call(protected_ctx, protected_callback, 1, &error);
+        },
+        [ctx] (auto &user, auto url) {
+            Realm::Config config;
+            populate_sync_config_impl<T>(ctx, config, user, url, false, util::none, [](auto, auto) {});
+            return config;
+        }
+    );
 }
 
 template<typename T>
@@ -191,8 +267,29 @@ void UserClass<T>::delete_permission(ContextType ctx, FunctionType, ObjectType t
     validate_argument_count(argc, 3);
     std::string url = Value::validated_to_string(ctx, args[0], "url");
     std::string user_id = Value::validated_to_string(ctx, args[1], "userId");
+    FunctionType callback = Value::validated_to_function(ctx, args[2], "callback");
 
-    Permissions::delete_permission(*get_internal<T, UserClass<T>>(this_object), { url, Permission::AccessLevel::None, { .user_id = user_id } }, [](auto ex) { throw  ex; });
+    Protected<GlobalContextType> protected_ctx(Context<T>::get_global_context(ctx));
+    Protected<FunctionType> protected_callback(ctx, callback);
+    Permissions::delete_permission(*get_internal<T, UserClass<T>>(this_object),
+        { url, Permission::AccessLevel::None, user_id },
+        [protected_ctx, protected_callback](auto ex) {
+            HANDLESCOPE
+            ValueType error;
+            try {
+                if (ex) std::rethrow_exception(ex);
+                error = Value::from_undefined(protected_ctx);
+            } catch(const std::exception& e) {
+                error = Value::from_string(protected_ctx, e.what());
+            }
+            Function::call(protected_ctx, protected_callback, 1, &error);
+        },
+        [protected_ctx] (auto &user, auto url) {
+            Realm::Config config;
+            populate_sync_config_impl<T>(protected_ctx, config, user, url, false, util::none. [](auto, auto) {});
+            return config;
+        }
+    );
 }
 
 template<typename T>
@@ -425,34 +522,6 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
     } else if (!Value::is_undefined(ctx, sync_config_value)) {
         auto sync_config_object = Value::validated_to_object(ctx, sync_config_value);
 
-        ObjectType sync_constructor = Object::validated_get_object(ctx, realm_constructor, std::string("Sync"));
-        Protected<ObjectType> protected_sync(ctx, sync_constructor);
-        Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
-
-        EventLoopDispatcher<SyncBindSessionHandler> bind([protected_ctx, protected_sync](const std::string& path, const realm::SyncConfig& config, std::shared_ptr<SyncSession>) {
-            HANDLESCOPE
-            if (config.user->is_admin()) {
-                // FIXME: This log-in callback is called while the object store still holds some sync-related locks.
-                // Notify the object store of the access token asynchronously to avoid the deadlock that would result
-                // from reentering the object store here.
-                auto thread = std::thread([path, config]{
-                    auto session = SyncManager::shared().get_existing_active_session(path);
-                    session->refresh_access_token(config.user->refresh_token(), config.realm_url);
-                });
-                thread.detach();
-            }
-            else {
-                ObjectType user_constructor = Object::validated_get_object(protected_ctx, protected_sync, std::string("User"));
-                FunctionType refreshAccessToken = Object::validated_get_function(protected_ctx, user_constructor, std::string("_refreshAccessToken"));
-
-                ValueType arguments[3];
-                arguments[0] = create_object<T, UserClass<T>>(protected_ctx, new SharedUser(config.user));
-                arguments[1] = Value::from_string(protected_ctx, path.c_str());
-                arguments[2] = Value::from_string(protected_ctx, config.realm_url.c_str());
-                Function::call(protected_ctx, refreshAccessToken, 3, arguments);
-            }
-        });
-
         std::function<SyncSessionErrorHandler> error_handler;
         ValueType error_func = Object::get_property(ctx, sync_config_object, "error");
         if (!Value::is_undefined(ctx, error_func)) {
@@ -475,26 +544,14 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
 
         util::Optional<std::string> ssl_trust_certificate_path;
         ValueType trust_certificate_path_temp = Object::get_property(ctx, sync_config_object, "ssl_trust_certificate_path");
-         if (!Value::is_undefined(ctx, trust_certificate_path_temp)) {
+        if (!Value::is_undefined(ctx, trust_certificate_path_temp)) {
             ssl_trust_certificate_path = std::string(Value::validated_to_string(ctx, trust_certificate_path_temp, "ssl_trust_certificate_path"));
         }
         else {
             ssl_trust_certificate_path = util::none;
         }
 
-        // FIXME - use make_shared
-        config.sync_config = std::shared_ptr<SyncConfig>(new SyncConfig{shared_user, raw_realm_url,
-                                                                        SyncSessionStopPolicy::AfterChangesUploaded,
-                                                                        std::move(bind), std::move(error_handler),
-                                                                        nullptr, util::none,
-                                                                        client_validate_ssl, ssl_trust_certificate_path});
-        config.schema_mode = SchemaMode::Additive;
-        config.path = realm::SyncManager::shared().path_for_realm(shared_user->identity(), raw_realm_url);
-
-        if (!config.encryption_key.empty()) {
-            config.sync_config->realm_encryption_key = std::array<char, 64>();
-            std::copy_n(config.encryption_key.begin(), config.sync_config->realm_encryption_key->size(), config.sync_config->realm_encryption_key->begin());
-        }
+        populate_sync_config_impl<T>(ctx, config, shared_user, raw_realm_url, client_validate_ssl, ssl_trust_certificate_path, error_handler);
     }
 }
 
