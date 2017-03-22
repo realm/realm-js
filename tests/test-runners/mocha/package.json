@@ -3,6 +3,7 @@
     "test": "mocha"
   },
   "devDependencies": {
-    "mocha": "^3.0.2"
+    "mocha": "^3.0.2",
+    "realm": "../../.."
   }
 }
