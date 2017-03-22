@@ -35,10 +35,11 @@ if (!(typeof process === 'object' && process.platform === 'win32')) {
 }
 
 // If sync is enabled, run the user tests
-if (Realm.Sync) {
+try {
+    Realm.Sync; // This will throw if Sync is disabled.
     TESTS.UserTests = require('./user-tests');
     TESTS.SessionTests = require('./session-tests');
-}
+} catch (e) {}
 
 function node_require(module) { return require(module); }
 
