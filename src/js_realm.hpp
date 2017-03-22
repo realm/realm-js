@@ -195,6 +195,7 @@ public:
     static void schema_version(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void clear_test_state(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void copy_bundled_realm_files(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static std::string normalize_path(std::string path);
 
     // static properties
     static void get_default_path(ContextType, ObjectType, ReturnValue &);
@@ -501,6 +502,21 @@ template<typename T>
 void RealmClass<T>::set_default_path(ContextType ctx, ObjectType object, ValueType value) {
     js::set_default_path(Value::validated_to_string(ctx, value, "defaultPath"));
 }
+
+template<typename T>
+std::string RealmClass<T>::normalize_path(std::string path) {
+#if defined(WIN32) && WIN32
+        if (path.size() > 1 && path[0] != '\\' && path[1] != ':') {
+            path = default_realm_file_directory() + "\\" + path;
+        }
+        std::replace(path.begin(), path.end(), '/', '\\');
+#else
+        if (path.size() && path[0] != '/' && path[0] != '.') {
+            path = default_realm_file_directory() + "/" + path;
+        }
+#endif
+        return path;
+    }
 
 template<typename T>
 void RealmClass<T>::get_path(ContextType ctx, ObjectType object, ReturnValue &return_value) {
