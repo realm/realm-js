@@ -253,7 +253,7 @@ void UserClass<T>::set_permission(ContextType ctx, FunctionType, ObjectType this
                 if (ex) std::rethrow_exception(ex);
                 error = Value::from_undefined(protected_ctx);
             } catch(const std::exception& e) {
-                error = Value::from_string(protected_ctx, e.what());
+                error = Exception<T>::value(protected_ctx, e.what());
             }
             Function::call(protected_ctx, protected_callback, 1, &error);
         },
@@ -283,7 +283,7 @@ void UserClass<T>::delete_permission(ContextType ctx, FunctionType, ObjectType t
                 if (ex) std::rethrow_exception(ex);
                 error = Value::from_undefined(protected_ctx);
             } catch(const std::exception& e) {
-                error = Value::from_string(protected_ctx, e.what());
+                error = Exception<T>::value(protected_ctx, e.what());
             }
             Function::call(protected_ctx, protected_callback, 1, &error);
         },
