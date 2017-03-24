@@ -54,26 +54,30 @@ module.exports = {
 
     testProperties() {
         return promisifiedRegister('http://localhost:9080', uuid(), 'password').then(user => {
-            let config = { sync: { user, url: 'realm://localhost:9080/~/myrealm' } };
-            let realm = new Realm(config);
-            let session = realm.syncSession;
+            return new Promise((resolve, _reject) => {
+                const accessTokenRefreshed = Symbol();
+                let session;
 
-            TestCase.assertInstanceOf(session, Realm.Sync.Session);
-            TestCase.assertEqual(session.user.identity, user.identity);
-            TestCase.assertEqual(session.config.url, config.sync.url);
-            TestCase.assertEqual(session.config.user.identity, config.sync.user.identity);
-            TestCase.assertUndefined(session.url);
-            TestCase.assertEqual(session.state, 'active');
+                let postTokenRefreshChecks = (sender, error) => {
+                    TestCase.assertEqual(error, accessTokenRefreshed);
+                    TestCase.assertEqual(session.url, `realm://localhost:9080/${user.identity}/myrealm`);
+                    resolve();
+                };
 
-            /* disable until the sporadic failures are resolved
-            // give the session enough time to refresh its access token and bind itself
-            // TODO: Use an event to discover when the session is bound
-            let timeout = 4000;
+                // Let the error handler trigger our checks when the access token was refreshed.
+                postTokenRefreshChecks._notifyOnAccessTokenRefreshed = accessTokenRefreshed;
 
-            return wait(timeout).then(() => {
-                TestCase.assertEqual(session.url, `realm://localhost:9080/${user.identity}/myrealm`);
+                const config = { sync: { user, url: 'realm://localhost:9080/~/myrealm', error: postTokenRefreshChecks } };
+                const realm = new Realm(config);
+                session = realm.syncSession;
+
+                TestCase.assertInstanceOf(session, Realm.Sync.Session);
+                TestCase.assertEqual(session.user.identity, user.identity);
+                TestCase.assertEqual(session.config.url, config.sync.url);
+                TestCase.assertEqual(session.config.user.identity, config.sync.user.identity);
+                TestCase.assertUndefined(session.url);
+                TestCase.assertEqual(session.state, 'active');
             });
-            */
         });
     },
 
