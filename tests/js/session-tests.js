@@ -90,7 +90,7 @@ module.exports = {
             TestCase.assertEqual(session.config.error, config.sync.error);
             session._simulateError(123, 'simulated error');
 
-            return wait(1000).then(() => {
+            return wait(2000).then(() => {
                 TestCase.assertArrayLength(errors, 1);
                 TestCase.assertEqual(errors[0][0].config.url, session.config.url);
                 TestCase.assertEqual(errors[0][1].message, 'simulated error');
