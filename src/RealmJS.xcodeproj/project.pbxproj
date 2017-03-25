@@ -23,7 +23,7 @@
 		02414BA91CE6ABCF00A8669F /* collection_notifications.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02414B961CE6AADD00A8669F /* collection_notifications.cpp */; };
 		0270BC821B7D020100010E03 /* RealmJSTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = 0270BC7B1B7D020100010E03 /* RealmJSTests.mm */; };
 		027A23131CD3E379000543AE /* libRealmJS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F63FF2B11C1241E500B3B8E0 /* libRealmJS.a */; };
-		02BC108E1E81C641003C2326 /* sync_permission.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02BC108C1E81C640003C2326 /* sync_permission.cpp */; };
+		027DB4061E85EF7C00CCE4B2 /* sync_permission.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02BC108C1E81C640003C2326 /* sync_permission.cpp */; };
 		02D041F71CE11159000E4250 /* dates-v3.realm in Resources */ = {isa = PBXBuildFile; fileRef = 02D041F61CE11159000E4250 /* dates-v3.realm */; };
 		02D8D1F71B601984006DB49D /* JavaScriptCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 02B58CCD1AE99D4D009B348C /* JavaScriptCore.framework */; };
 		02E315C91DB80DDD00555337 /* sync_manager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E315C31DB80DDD00555337 /* sync_manager.cpp */; };
@@ -882,6 +882,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				027DB4061E85EF7C00CCE4B2 /* sync_permission.cpp in Sources */,
 				02E315C91DB80DDD00555337 /* sync_manager.cpp in Sources */,
 				02022A671DA47BD7000F0C4F /* parser.cpp in Sources */,
 				02022A681DA47BD7000F0C4F /* query_builder.cpp in Sources */,
@@ -937,7 +938,6 @@
 				F63FF31F1C1642BB00B3B8E0 /* GCDWebServerResponse.m in Sources */,
 				F63FF3261C1642BB00B3B8E0 /* GCDWebServerFileResponse.m in Sources */,
 				F63FF3271C1642BB00B3B8E0 /* GCDWebServerStreamedResponse.m in Sources */,
-				02BC108E1E81C641003C2326 /* sync_permission.cpp in Sources */,
 				F63FF3241C1642BB00B3B8E0 /* GCDWebServerDataResponse.m in Sources */,
 				F63FF31B1C1642BB00B3B8E0 /* GCDWebServer.m in Sources */,
 				F63FF31D1C1642BB00B3B8E0 /* GCDWebServerFunctions.m in Sources */,
@@ -1114,6 +1114,13 @@
 					__ASSERTMACROS__,
 					REALM_ENABLE_SYNC,
 				);
+				HEADER_SEARCH_PATHS = (
+					"$(SRCROOT)/object-store/external/pegtl",
+					"$(SRCROOT)/object-store/external/sole",
+					"$(SRCROOT)/object-store/src",
+					"$(SRCROOT)/../vendor",
+					"$(SRCROOT)/../vendor/core/include",
+				);
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(inherited)",
 					"-isystem",
@@ -1134,6 +1141,13 @@
 					REALM_HAVE_CONFIG,
 					__ASSERTMACROS__,
 					REALM_ENABLE_SYNC,
+				);
+				HEADER_SEARCH_PATHS = (
+					"$(SRCROOT)/object-store/external/pegtl",
+					"$(SRCROOT)/object-store/external/sole",
+					"$(SRCROOT)/object-store/src",
+					"$(SRCROOT)/../vendor",
+					"$(SRCROOT)/../vendor/core/include",
 				);
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(inherited)",
