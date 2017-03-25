@@ -295,57 +295,46 @@ module.exports = {
     });
   },
 
-  testSetPermission() {
-    var user1, user2, user3;
-    return new Promise((resolve, _reject) => Realm.Sync.User.register('http://localhost:9080', uuid(), 'password', (error, user) => {
+  testSetPermission(done) {
+    return new Promise((resolve, _reject) => Realm.Sync.User.register('http://localhost:9080', uuid(), 'password', (error, user1) => {
       failOnError(error);
-      var realm = new Realm({sync: {user: user, url: 'realm://localhost:9080/~/test'}});
+      var realm = new Realm({sync: {user: user1, url: 'realm://localhost:9080/~/test'}});
       TestCase.assertTrue(realm !== undefined);
       realm.close();
-      user1 = user;
-      resolve();
-    })).then(() => new Promise((resolve) => Realm.Sync.User.register('http://localhost:9080', uuid(), 'password', (error, user) => {
+
+      Realm.Sync.User.register('http://localhost:9080', uuid(), 'password', (error, user2) => {
       failOnError(error);
-      TestCase.assertThrows(() => new Realm({sync: {user: user2, url: `realm://localhost:9080/${user1.identity}/test`}}));
-      user2 = user;
-      resolve();
-    }))).then(() => new Promise((resolve) => user1.setPermission(`/${user1.identity}/test`, 'Read', user2.identity, (error, user) => {
+//      TestCase.assertThrows(() => new Realm({sync: {user: user2, url: `realm://localhost:9080/${user1.identity}/test`}}));
+
+      user1.setPermission(`/${user1.identity}/test`, 'Read', user2.identity, (error) => {
       // Give read permissions to user 2
       failOnError(error);
       var realm = new Realm({sync: {user: user2, url: `realm://localhost:9080/${user1.identity}/test`}});
       TestCase.assertTrue(realm !== undefined);
       realm.close();
-      resolve();
-    }))).then(() => new Promise((resolve) => Realm.Sync.User.register('http://localhost:9080', uuid(), 'password', (error, user) => {
+    
+      Realm.Sync.User.register('http://localhost:9080', uuid(), 'password', (error, user3) => {
       failOnError(error);
-      TestCase.assertThrows(() => new Realm({sync: {user: user3, url: `realm://localhost:9080/${user1.identity}/test`}}));
-      user3 = user;
-      resolve();
-    }))).then(() => new Promise((resolve) => user2.setPermission(`/${user1.identity}/test`, 'Read', user3.identity, (error, user) => {
+//      TestCase.assertThrows(() => new Realm({sync: {user: user3, url: `realm://localhost:9080/${user1.identity}/test`}}));
+
+      user2.setPermission(`/${user1.identity}/test`, 'Read', user3.identity, (error) => {
       // user2 is not admin so can't change permissions
+      console.log(error);
       assertIsError(error);
-      TestCase.assertUndefined(user);
-      resolve('asdfasd');
-      console.log('resolved');
-    }))).then(() => new Promise((resolve) => user1.setPermission(`/${user1.identity}/test`, 'Admin', user2.identity, (error, user) => {
-      console.log(user);
+
+      user1.setPermission(`/${user1.identity}/test`, 'Admin', user2.identity, (error) => {
       console.log(error);
       // make user2 admin
       failOnError(error);
-      resolve();
-    }))).then(() => new Promise((resolve) => user2.setPermission(`/${user1.identity}/test`, 'Read', user3.identity, (error, user) => {
+      
+      user2.setPermission(`/${user1.identity}/test`, 'Read', user3.identity, (error) => {
       // user2 can change permissions once admin
       failOnError(error);
       var realm = new Realm({sync: {user: user3, url: `realm://localhost:9080/${user1.identity}/test`}});
       TestCase.assertTrue(realm !== undefined);
       realm.close();
       resolve();
-    }))).then(() => new Promise((resolve) => user2.deletePermission(`/${user1.identity}/test`, user3.identity, (error, user) => {
-      // user2 deletes user3 permissions
-      failOnError(error);
-      TestCase.assertThrows(() => new Realm({sync: {user: user2, url: `realm://localhost:9080/${user1.identity}/test`}}));
-      resolve();
-    }))).catch((e) => fail(e));
+    })})})})})})}));
   }
 
   /* This test fails because of realm-object-store #243 . We should use 2 users.
