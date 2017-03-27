@@ -87,6 +87,38 @@ function callbackTest(requestFunc, callback) {
   });
 }
 
+function getAndCheckPermission(user, expected, callback) {
+  user.getPermissions((error, permissions) => {
+    setTimeout(() => {
+      failOnError(error);
+
+      TestCase.assertEqual(expected.length, permissions.length);
+      for (var i = 0; i < expected.length; i++) {
+        TestCase.assertEqual(expected[i].userId, permissions[i].userId);
+        TestCase.assertEqual(expected[i].path, permissions[i].path);
+        TestCase.assertEqual(expected[i].access, permissions[i].access);
+      }
+
+      callback();
+    }, 100);
+  });
+}
+
+function createUsers(numUsers, callback, users) {
+  if (!users) users = [];
+  Realm.Sync.User.register('http://localhost:9080', uuid(), 'password', (error, user) => {
+    failOnError(error);
+    users.push(user);
+
+    numUsers--;
+    if (!numUsers) 
+      callback(users);
+    else 
+      createUsers(numUsers, callback, users);
+  });
+}
+
+
 module.exports = {
   
   testLogout() {
@@ -295,78 +327,75 @@ module.exports = {
     });
   },
 
-  testSetPermission(done) {
-    return new Promise((resolve, _reject) => Realm.Sync.User.register('http://localhost:9080', uuid(), 'password', (error, user1) => {
-      failOnError(error);
-      var realm = new Realm({sync: {user: user1, url: 'realm://localhost:9080/~/test'}});
+  testSetPermission() {
+    return new Promise((resolve, _reject) => createUsers(3, (users) => {
+      var realm = new Realm({sync: {user: users[0], url: 'realm://localhost:9080/~/test'}});
       TestCase.assertTrue(realm !== undefined);
       realm.close();
 
-      Realm.Sync.User.register('http://localhost:9080', uuid(), 'password', (error, user2) => {
-      failOnError(error);
-//      TestCase.assertThrows(() => new Realm({sync: {user: user2, url: `realm://localhost:9080/${user1.identity}/test`}}));
-
-      user1.setPermission(`/${user1.identity}/test`, 'Read', user2.identity, (error) => {
+      users[0].setPermission(`/${users[0].identity}/test`, 'Read', users[1].identity, (error) => {
       // Give read permissions to user 2
       failOnError(error);
-      var realm = new Realm({sync: {user: user2, url: `realm://localhost:9080/${user1.identity}/test`}});
+      var realm = new Realm({sync: {user: users[1], url: `realm://localhost:9080/${users[0].identity}/test`}});
       TestCase.assertTrue(realm !== undefined);
       realm.close();
-    
-      Realm.Sync.User.register('http://localhost:9080', uuid(), 'password', (error, user3) => {
-      failOnError(error);
-//      TestCase.assertThrows(() => new Realm({sync: {user: user3, url: `realm://localhost:9080/${user1.identity}/test`}}));
 
-      user2.setPermission(`/${user1.identity}/test`, 'Read', user3.identity, (error) => {
+      users[1].setPermission(`/${users[0].identity}/test`, 'Read', users[2].identity, (error) => {
       // user2 is not admin so can't change permissions
       console.log(error);
       assertIsError(error);
 
-      user1.setPermission(`/${user1.identity}/test`, 'Admin', user2.identity, (error) => {
+      users[0].setPermission(`/${users[0].identity}/test`, 'Admin', users[1].identity, (error) => {
       console.log(error);
       // make user2 admin
       failOnError(error);
       
-      user2.setPermission(`/${user1.identity}/test`, 'Read', user3.identity, (error) => {
+      users[1].setPermission(`/${users[0].identity}/test`, 'Read', users[2].identity, (error) => {
       // user2 can change permissions once admin
       failOnError(error);
-      var realm = new Realm({sync: {user: user3, url: `realm://localhost:9080/${user1.identity}/test`}});
+      var realm = new Realm({sync: {user: users[2], url: `realm://localhost:9080/${users[0].identity}/test`}});
       TestCase.assertTrue(realm !== undefined);
       realm.close();
       resolve();
-    })})})})})})}));
-  },
-
-  testGetPermissions(done) {
-    return new Promise((resolve, _reject) => Realm.Sync.User.register('http://localhost:9080', uuid(), 'password', (error, user1) => {
-      failOnError(error);
-      var realm = new Realm({sync: {user: user1, url: 'realm://localhost:9080/~/test'}});
-      TestCase.assertTrue(realm !== undefined);
-      realm.close();
-
-      Realm.Sync.User.register('http://localhost:9080', uuid(), 'password', (error, user2) => {
-      failOnError(error);
-
-      user1.getPermissions((error, permissions) => {
-      TestCase.assertEqual(permissions.length, 0);
-
-      user1.setPermission(`/${user1.identity}/test`, 'Read', user2.identity, (error) => {
-      // Give read permissions to user 2
-      failOnError(error);
-
-      user2.getPermissions((error, permissions) => {
-      setTimeout(() => {
-      console.log(permissions);
-      failOnError(error);
-      TestCase.assertEqual(permissions.length, 1);
-      TestCase.assertEqual(permissions[0].access, 'Read');
-      TestCase.assertEqual(permissions[0].path, `/${user1.identity}/test`);
-
-      resolve(); }, 100);
     })})})})}));
   },
 
+  testGetPermissions() {
+    return new Promise((resolve, _reject) => createUsers(2, (users) => {      
+      var realm = new Realm({sync: {user: users[0], url: 'realm://localhost:9080/~/test'}});
+      TestCase.assertTrue(realm !== undefined);
+      realm.close();
 
+      getAndCheckPermission(users[0], [], () => {
+        users[0].setPermission(`/${users[0].identity}/test`, 'Read', users[1].identity, (error) => {
+          // Give read permissions to user 2
+          failOnError(error);
+          getAndCheckPermission(users[1], [{path: `/${users[0].identity}/test`, userId: users[1].identity, access: 'Read'}], resolve);
+        });
+      });
+    }));
+  },
+
+  testDeletePermissions() {
+    return new Promise((resolve, _reject) => createUsers(2, (users) => {      
+      var realm = new Realm({sync: {user: users[0], url: 'realm://localhost:9080/~/test'}});
+      TestCase.assertTrue(realm !== undefined);
+      realm.close();
+
+      getAndCheckPermission(users[0], [], () => {
+        users[0].setPermission(`/${users[0].identity}/test`, 'Read', users[1].identity, (error) => {
+          // Give read permissions to user 2
+          failOnError(error);
+          getAndCheckPermission(users[1], [{path: `/${users[0].identity}/test`, userId: users[1].identity, access: 'Read'}], resolve);
+
+          users[0].deletePermission(`/${users[0].identity}/test`, users[1].identity, (error) => {
+            failOnError(error);
+            getAndCheckPermission(users[1], [], resolve);
+          });
+        });
+      });
+    }));
+  },
   /* This test fails because of realm-object-store #243 . We should use 2 users.
   testSynchronizeChangesWithTwoClientsAndOneUser() {
     // Test Schema
