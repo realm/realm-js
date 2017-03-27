@@ -89,7 +89,10 @@ function callbackTest(requestFunc, callback) {
 
 function getAndCheckPermission(user, expected, callback) {
   user.getPermissions((error, permissions) => {
+    failOnError(error);
     setTimeout(() => {
+      console.log(permissions);
+
       failOnError(error);
 
       TestCase.assertEqual(expected.length, permissions.length);
@@ -386,16 +389,17 @@ module.exports = {
         users[0].setPermission(`/${users[0].identity}/test`, 'Read', users[1].identity, (error) => {
           // Give read permissions to user 2
           failOnError(error);
-          getAndCheckPermission(users[1], [{path: `/${users[0].identity}/test`, userId: users[1].identity, access: 'Read'}], resolve);
-
-          users[0].deletePermission(`/${users[0].identity}/test`, users[1].identity, (error) => {
-            failOnError(error);
-            getAndCheckPermission(users[1], [], resolve);
+          getAndCheckPermission(users[1], [{path: `/${users[0].identity}/test`, userId: users[1].identity, access: 'Read'}], () => {
+            users[0].deletePermission(`/${users[0].identity}/test`, users[1].identity, (error) => {
+              failOnError(error);
+              getAndCheckPermission(users[1], [], resolve);
+            });
           });
         });
       });
     }));
   },
+
   /* This test fails because of realm-object-store #243 . We should use 2 users.
   testSynchronizeChangesWithTwoClientsAndOneUser() {
     // Test Schema
