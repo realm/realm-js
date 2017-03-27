@@ -335,7 +335,37 @@ module.exports = {
       realm.close();
       resolve();
     })})})})})})}));
-  }
+  },
+
+  testGetPermissions(done) {
+    return new Promise((resolve, _reject) => Realm.Sync.User.register('http://localhost:9080', uuid(), 'password', (error, user1) => {
+      failOnError(error);
+      var realm = new Realm({sync: {user: user1, url: 'realm://localhost:9080/~/test'}});
+      TestCase.assertTrue(realm !== undefined);
+      realm.close();
+
+      Realm.Sync.User.register('http://localhost:9080', uuid(), 'password', (error, user2) => {
+      failOnError(error);
+
+      user1.getPermissions((error, permissions) => {
+      TestCase.assertEqual(permissions.length, 0);
+
+      user1.setPermission(`/${user1.identity}/test`, 'Read', user2.identity, (error) => {
+      // Give read permissions to user 2
+      failOnError(error);
+
+      user2.getPermissions((error, permissions) => {
+      setTimeout(() => {
+      console.log(permissions);
+      failOnError(error);
+      TestCase.assertEqual(permissions.length, 2);
+      TestCase.assertEqual(permissions[1].access, 'Read');
+      TestCase.assertEqual(permissions[1].path, `/${user1.identity}/test`);
+
+      resolve(); }, 100);
+    })})})})}));
+  },
+
 
   /* This test fails because of realm-object-store #243 . We should use 2 users.
   testSynchronizeChangesWithTwoClientsAndOneUser() {
