@@ -244,6 +244,7 @@ rm -rf ~/.yarn-cache/npm-realm-*
 
 case "$TARGET" in
 "eslint")
+  [[ $CONFIGURATION == 'Debug' ]] && exit 0
   npm run eslint
   ;;
 "eslint-ci")
@@ -252,6 +253,7 @@ case "$TARGET" in
   ./node_modules/.bin/eslint -f checkstyle . > eslint.xml || true
   ;;
 "license-check")
+  [[ $CONFIGURATION == 'Debug' ]] && exit 0
   npm run license-check
   ;;
 "jsdoc")
