@@ -358,9 +358,9 @@ module.exports = {
       setTimeout(() => {
       console.log(permissions);
       failOnError(error);
-      TestCase.assertEqual(permissions.length, 2);
-      TestCase.assertEqual(permissions[1].access, 'Read');
-      TestCase.assertEqual(permissions[1].path, `/${user1.identity}/test`);
+      TestCase.assertEqual(permissions.length, 1);
+      TestCase.assertEqual(permissions[0].access, 'Read');
+      TestCase.assertEqual(permissions[0].path, `/${user1.identity}/test`);
 
       resolve(); }, 100);
     })})})})}));
