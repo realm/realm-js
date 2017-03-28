@@ -41,6 +41,7 @@ LOCAL_SRC_FILES += src/object-store/src/impl/epoll/external_commit_helper.cpp
 LOCAL_SRC_FILES += src/object-store/src/parser/parser.cpp
 LOCAL_SRC_FILES += src/object-store/src/parser/query_builder.cpp
 LOCAL_SRC_FILES += src/object-store/src/util/format.cpp
+LOCAL_SRC_FILES += src/object-store/src/binding_callback_thread_observer.cpp
 LOCAL_SRC_FILES += src/object-store/src/collection_notifications.cpp
 LOCAL_SRC_FILES += src/object-store/src/index_set.cpp
 LOCAL_SRC_FILES += src/object-store/src/list.cpp
