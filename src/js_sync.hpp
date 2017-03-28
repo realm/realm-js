@@ -450,6 +450,11 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
                                                                         std::move(bind), std::move(error_handler)});
         config.schema_mode = SchemaMode::Additive;
         config.path = realm::SyncManager::shared().path_for_realm(shared_user->identity(), raw_realm_url);
+
+        if (!config.encryption_key.empty()) {
+            config.sync_config->realm_encryption_key = std::array<char, 64>();
+            std::copy_n(config.encryption_key.begin(), config.sync_config->realm_encryption_key->size(), config.sync_config->realm_encryption_key->begin());
+        }
     }
 }
 

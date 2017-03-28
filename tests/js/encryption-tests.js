@@ -70,3 +70,16 @@ module.exports = {
         });
     },
 };
+
+try {
+    Realm.Sync; // this will throw is sync is disabled
+    module.exports.testEncryptionWithSync = function() {
+        new Realm({
+            encryptionKey: new Int8Array(64),
+            sync: {
+                user: Realm.Sync.User.adminUser('fake-token'),
+                url: 'realm://fake-server'
+            }
+        });
+    };
+} catch(e) { }

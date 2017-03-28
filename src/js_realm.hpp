@@ -345,6 +345,13 @@ void RealmClass<T>::constructor(ContextType ctx, ObjectType this_object, size_t 
         else if (Value::is_object(ctx, value)) {
             ObjectType object = Value::validated_to_object(ctx, value);
 
+            static const String encryption_key_string = "encryptionKey";
+            ValueType encryption_key_value = Object::get_property(ctx, object, encryption_key_string);
+            if (!Value::is_undefined(ctx, encryption_key_value)) {
+                std::string encryption_key = NativeAccessor::to_binary(ctx, encryption_key_value);
+                config.encryption_key = std::vector<char>(encryption_key.begin(), encryption_key.end());
+            }
+
 #if REALM_ENABLE_SYNC
             SyncClass<T>::populate_sync_config(ctx, Value::validated_to_object(ctx, Object::get_global(ctx, "Realm")), object, config);
 #endif
@@ -407,13 +414,6 @@ void RealmClass<T>::constructor(ContextType ctx, ObjectType this_object, size_t 
                     old_realm_ptr->reset();
                     realm_ptr->reset();
                 };
-            }
-
-            static const String encryption_key_string = "encryptionKey";
-            ValueType encryption_key_value = Object::get_property(ctx, object, encryption_key_string);
-            if (!Value::is_undefined(ctx, encryption_key_value)) {
-                std::string encryption_key = NativeAccessor::to_binary(ctx, encryption_key_value);
-                config.encryption_key = std::vector<char>(encryption_key.begin(), encryption_key.end());
             }
         }
     }

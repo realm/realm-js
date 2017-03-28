@@ -1,3 +1,14 @@
+x.y.z Release notes (TBD)
+=============================================================
+### Breaking changes
+* This version is not compatible with versions of the Realm Object Server lower than 1.3.0.
+
+### Enhancements
+* None.
+
+### Bug fixes
+* Fixed bug where opening synced realms with an encryption key would fail.
+
 1.1.1 Release notes (2017-3-9)
 =============================================================
 ### Breaking changes
