@@ -44,15 +44,26 @@
     "dependencies.list"
   ],
   "scripts": {
-    "get-version": "echo $npm_package_version",
+    "get-version": "node -p process.env.npm_package_version",
     "set-version": "scripts/set-version.sh",
     "get-core-version": "scripts/download-core.sh --version",
     "get-sync-version": "scripts/download-core.sh --versionSync",
-    "jsdoc": "rm -rf docs/output && jsdoc -u docs/tutorials -p package.json -c docs/conf.json",
     "lint": "eslint",
     "test": "scripts/test.sh",
     "install": "node-pre-gyp install --fallback-to-build",
-    "prepublish": "node scripts/prepublish.js"
+    "prepublish": "node scripts/prepublish.js",
+    "eslint": "npm install && npm run lint .",
+    "license-check": "npm install && license-checker --exclude \"MIT,ISC,BSD,Apache-2.0,BSD-2-Clause,BSD-3-Clause,WTFPL,Unlicense,(MIT AND CC-BY-3.0)\" | node scripts/handle-license-check.js",
+    "jsdoc:clean": "rimraf ./docs/output",
+    "jsdoc": "npm install && npm run jsdoc:clean && jsdoc -c docs/conf.json",
+    "node-tests": "npm install --build-from-source && cd tests && npm install && npm run test-nosync && cd ..",
+    "node-nosync-tests": "npm install --build-from-source && cd tests && npm install && npm run test-nosync && cd ..",
+    "test-runner:ava" :"cd tests/test-runners/ava && npm install && npm test",
+    "test-runner:mocha" :"cd tests/test-runners/mocha && npm install && npm test",
+    "test-runner:jest" :"cd tests/test-runners/jest && npm install && npm test",
+    "test-runners" : "npm run test-runner:ava && npm run test-runner:mocha && npm run test-runner:jest",
+    "isMac" : "node -p \"if (process.platform == 'darwin') { process.exit(0); } else { process.exit(-1); }\"",
+    "testMac" : "npm run isMac -s && echo this is mac || echo . "
   },
   "dependencies": {
     "extract-zip": "^1.6.0",
@@ -72,6 +83,7 @@
     "jsdoc": "^3.4.0",
     "license-checker": "^8.0.3",
     "mockery": "^2.0.0",
+    "rimraf": "^2.6.1",
     "semver": "^5.1.0"
   },
   "rnpm": {

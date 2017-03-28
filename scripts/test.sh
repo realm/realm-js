@@ -245,8 +245,7 @@ rm -rf ~/.yarn-cache/npm-realm-*
 case "$TARGET" in
 "eslint")
   [[ $CONFIGURATION == 'Debug' ]] && exit 0
-  npm install
-  npm run lint .
+  npm run eslint
   ;;
 "eslint-ci")
   [[ $CONFIGURATION == 'Debug' ]] && exit 0
@@ -255,18 +254,10 @@ case "$TARGET" in
   ;;
 "license-check")
   [[ $CONFIGURATION == 'Debug' ]] && exit 0
-  licenses=$(node_modules/.bin/license-checker --exclude "$ACCEPTED_LICENSES");
-  if [[ $licenses ]]; then
-    echo "Unknown license detected in dependency:"
-    node_modules/.bin/license-checker --exclude "$ACCEPTED_LICENSES"
-    exit 1
-  else
-    echo "All licenses are accepted"
-  fi
+  npm run license-check
   ;;
 "jsdoc")
   [[ $CONFIGURATION == 'Debug' ]] && exit 0
-  npm install
   npm run jsdoc
   ;;
 "realmjs")
@@ -378,18 +369,8 @@ case "$TARGET" in
   ;;
 "test-runners")
   # Create a fake realm module that points to the source root so that test-runner tests can require('realm')
-  rm -rf "$SRCROOT/tests/test-runners/node_modules/realm"
-  mkdir -p "$SRCROOT/tests/test-runners/node_modules"
-  ln -s "../../.." "$SRCROOT/tests/test-runners/node_modules/realm"
-
   npm install --build-from-source
-
-  for runner in ava mocha jest; do
-    pushd "$SRCROOT/tests/test-runners/$runner"
-    npm install
-    npm test
-    popd
-  done
+  npm run test-runners
   ;;
 "object-store")
   pushd src/object-store
