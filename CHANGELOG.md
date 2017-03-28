@@ -1,4 +1,4 @@
-x.y.z Release notes (TBD)
+1.2.0 Release notes (2017-3-28)
 =============================================================
 ### Breaking changes
 * This version is not compatible with versions of the Realm Object Server lower than 1.3.0.
