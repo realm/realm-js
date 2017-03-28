@@ -257,9 +257,9 @@ void UserClass<T>::set_permission(ContextType ctx, FunctionType, ObjectType this
             }
             Function::call(protected_ctx, protected_callback, 1, &error);
         },
-        [ctx] (auto &user, auto url) {
+        [ctx] (auto user, auto url) {
             Realm::Config config;
-            populate_sync_config_impl<T>(ctx, config, user, url, false, util::none, [](auto, auto) {});
+            populate_sync_config_impl<T>(ctx, config, std::move(user), url, false, util::none, [](auto, auto) {});
             return config;
         }
     );
@@ -287,9 +287,9 @@ void UserClass<T>::delete_permission(ContextType ctx, FunctionType, ObjectType t
             }
             Function::call(protected_ctx, protected_callback, 1, &error);
         },
-        [protected_ctx] (auto &user, auto url) {
+        [protected_ctx] (auto user, auto url) {
             Realm::Config config;
-            populate_sync_config_impl<T>(protected_ctx, config, user, url, false, util::none. [](auto, auto) {});
+            populate_sync_config_impl<T>(protected_ctx, config, std::move(user), url, [](auto, auto) {});
             return config;
         }
     );
@@ -316,9 +316,9 @@ void UserClass<T>::get_permissions(ContextType ctx, FunctionType, ObjectType thi
             }
             Function::call(protected_ctx, protected_callback, 2, args);
          },
-         [protected_ctx] (auto &user, auto url) {
+         [protected_ctx] (auto user, auto url) {
             Realm::Config config;
-            populate_sync_config_impl<T>(protected_ctx, config, user, url, [](auto, auto) {});
+            populate_sync_config_impl<T>(protected_ctx, config, std::move(user), url, [](auto, auto) {});
             return config;
          }
     );
@@ -567,23 +567,7 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
         }
 
         std::string raw_realm_url = Object::validated_get_string(ctx, sync_config_object, "url");
-
-        bool client_validate_ssl = true;
-        ValueType validate_ssl_temp = Object::get_property(ctx, sync_config_object, "validate_ssl");
-        if (!Value::is_undefined(ctx, validate_ssl_temp)) {
-            client_validate_ssl = Value::validated_to_boolean(ctx, validate_ssl_temp, "validate_ssl");
-        }
-
-        util::Optional<std::string> ssl_trust_certificate_path;
-        ValueType trust_certificate_path_temp = Object::get_property(ctx, sync_config_object, "ssl_trust_certificate_path");
-        if (!Value::is_undefined(ctx, trust_certificate_path_temp)) {
-            ssl_trust_certificate_path = std::string(Value::validated_to_string(ctx, trust_certificate_path_temp, "ssl_trust_certificate_path"));
-        }
-        else {
-            ssl_trust_certificate_path = util::none;
-        }
-
-        populate_sync_config_impl<T>(ctx, config, shared_user, raw_realm_url, client_validate_ssl, ssl_trust_certificate_path, error_handler);
+        populate_sync_config_impl<T>(ctx, config, std::move(shared_user), raw_realm_url, error_handler);
     }
 }
 
