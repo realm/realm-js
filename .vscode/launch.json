@@ -1,0 +1,50 @@
+{
+    // Use IntelliSense to learn about possible Node.js debug attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Debug Node Unit Tests (rebuild)",
+            "preLaunchTask": "rebuild-node-tests",
+            "cwd": "${workspaceRoot}/tests",
+            "program": "${workspaceRoot}/tests/node_modules/jasmine/bin/jasmine.js",
+            "args": [
+                "spec/unit_tests.js"
+            ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Debug Node Unit Tests",
+            "cwd": "${workspaceRoot}/tests",
+            "program": "${workspaceRoot}/tests/node_modules/jasmine/bin/jasmine.js",
+            "args": [
+                "spec/unit_tests.js"
+            ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Debug Node Sync Unit Tests (rebuild)",
+            "preLaunchTask": "rebuild-node-tests",
+            "cwd": "${workspaceRoot}/tests",
+            "program": "${workspaceRoot}/tests/node_modules/jasmine/bin/jasmine.js",
+            "args": [
+                "spec/sync_tests.js"
+            ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Debug Node Sync Unit Tests",
+            "cwd": "${workspaceRoot}/tests",
+            "program": "${workspaceRoot}/tests/node_modules/jasmine/bin/jasmine.js",
+            "args": [
+                "spec/sync_tests.js"
+            ]
+        }
+    ]
+}
