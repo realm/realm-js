@@ -295,7 +295,6 @@ void UserClass<T>::delete_permission(ContextType ctx, FunctionType, ObjectType t
     );
 }
 
-
 template<typename T>
 void UserClass<T>::get_permissions(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType args[], ReturnValue &) {
     validate_argument_count(argc, 1);
@@ -304,23 +303,23 @@ void UserClass<T>::get_permissions(ContextType ctx, FunctionType, ObjectType thi
     Protected<GlobalContextType> protected_ctx(Context<T>::get_global_context(ctx));
     Protected<FunctionType> protected_callback(ctx, callback);
     Permissions::get_permissions(*get_internal<T, UserClass<T>>(this_object),
-        [protected_ctx, protected_callback](std::unique_ptr<PermissionResults> pres, std::exception_ptr ex) {
+        [protected_ctx, protected_callback](std::unique_ptr<realm::PermissionResults> pres, std::exception_ptr ex) {
             HANDLESCOPE
             ValueType args[2];
             try {
                 if (ex) std::rethrow_exception(ex);
                 args[0] = Value::from_undefined(protected_ctx);
-                args[1] = PermissionResultsClass<T>::create_instance(protected_ctx, pres.release());
+                args[1] = PermissionResultsClass<T>::create_instance(protected_ctx, new PermissionResults<T>(std::move(*pres)));
             } catch(const std::exception& e) {
                 args[0] = Value::from_string(protected_ctx, e.what());
             }
             Function::call(protected_ctx, protected_callback, 2, args);
-         },
-         [protected_ctx] (auto user, auto url) {
+        },
+        [protected_ctx] (auto user, auto url) {
             Realm::Config config;
             populate_sync_config_impl<T>(protected_ctx, config, std::move(user), url, [](auto, auto) {});
             return config;
-         }
+        }
     );
 }
 
