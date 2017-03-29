@@ -1,3 +1,13 @@
+### Breaking changes
+* Files written by Realm this version cannot be read by earlier versions of Realm.
+Old files can still be opened and files open in read-only mode will not be modified.
+
+### Enhancements
+* None
+
+### Bug fixes
+* None
+
 1.2.0 Release notes (2017-3-28)
 =============================================================
 ### Breaking changes
