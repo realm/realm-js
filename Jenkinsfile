@@ -210,7 +210,7 @@ def doWindowsBuild() {
         bat 'npm install --build-from-source'
         dir('tests') {
           bat 'npm install'
-          bat 'npm run test-nosync'
+          bat 'npm run test'
           junit 'junitresults-*.xml'
         }
       } finally {

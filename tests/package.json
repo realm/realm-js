@@ -13,8 +13,7 @@
     "url-parse": "^1.1.7"
   },
   "scripts": {
-    "test": "jasmine spec/unit_tests.js spec/sync_tests.js",
-    "test-nosync": "jasmine spec/unit_tests.js",
+    "test": "jasmine spec/unit_tests.js",
     "test-sync-integration": "jasmine spec/sync_integration_tests.js"
   }
 }

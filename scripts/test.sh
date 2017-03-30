@@ -341,7 +341,7 @@ case "$TARGET" in
     npm_tests_cmd="npm run test"
     npm install --build-from-source --realm_enable_sync
   else
-    npm_tests_cmd="npm run test-nosync"
+    npm_tests_cmd="npm run test"
     npm install --build-from-source
   fi
 
@@ -354,18 +354,6 @@ case "$TARGET" in
   eval "$npm_tests_cmd"
   popd
   stop_server
-  ;;
-"node-nosync")
-  npm install --build-from-source
-
-  # Change to a temp directory.
-  cd "$(mktemp -q -d -t realm.node.XXXXXX)"
-  test_temp_dir=$PWD # set it to be cleaned at exit
-
-  pushd "$SRCROOT/tests"
-  npm install
-  npm run test-nosync
-  popd
   ;;
 "test-runners")
   # Create a fake realm module that points to the source root so that test-runner tests can require('realm')

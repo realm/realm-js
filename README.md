@@ -93,15 +93,26 @@ test.sh options
  * react-tests - runs all React Native tests on iOS Simulator
  * react-tests-android runs all React Native Android tests on Android emulator
  * node - runs all tests for node
- * node-nosync - runs all tests for node without sync support
  * test-runners - checks supported tests runners are working correctly
 
+On Windows some of these targets are available as npm commands.
+```
+npm run eslint
+npm run node-tests
+npm run test-runners
+```
+
+## Debugging the tests
 
 You can attach a debugger to react-native tests by passing "Debug" to the tests.sh script. A Chrome browser will open and connect to the react native application. Use the built-in Chrome Debugger to debug the code.
 
 ```
 ./tests.sh react-tests Debug
 ```
+
+Using Visual Studio Code
+
+You can debug node tests using Visual Studio Code. Just use one of the launch configurations.
 
 ## Code of Conduct
 
