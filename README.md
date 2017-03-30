@@ -93,7 +93,6 @@ test.sh options
  * react-tests - runs all React Native tests on iOS Simulator
  * react-tests-android runs all React Native Android tests on Android emulator
  * node - runs all tests for node
- * node-nosync - runs all tests for node without sync support
  * test-runners - checks supported tests runners are working correctly
 
 
