@@ -63,7 +63,7 @@ To build for Android:
 To build for nodejs:
 
 ```
-npm install --build-from-souce
+npm install --build-from-source
 ```
 
  - On Windows you will need to setup the environment for node-gyp
