@@ -31,10 +31,17 @@ import org.apache.tools.ant.filters.ReplaceTokens
 // We download various C++ open-source dependencies into downloads.
 // We then copy both the downloaded code and our custom makefiles and headers into third-party-ndk.
 // After that we build native code from src/main/jni with module path pointing at third-party-ndk.
+def npmExecutable = 'npm';
 
-ext.coreVersion = "npm --silent run get-core-version".execute().text.trim()
-ext.syncVersion = "npm --silent run get-sync-version".execute().text.trim()
-def currentVersion = "npm --silent run get-version".execute().text.trim()
+if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+        npmExecutable = 'npm.cmd'
+}
+ext.coreVersion = "$npmExecutable --silent run get-core-version".execute().text.trim()
+ext.syncVersion = "$npmExecutable --silent run get-sync-version".execute().text.trim()
+println "Realm Core Version: $ext.coreVersion"
+println "Realm Sync Version: $ext.syncVersion"
+
+def currentVersion = "$npmExecutable --silent run get-version".execute().text.trim()
 def downloadsDir = new File("$projectDir/downloads")
 def jscDownloadDir = new File("$projectDir/src/main/jni/jsc")
 def coreDownloadDir = new File("$projectDir/src/main/jni")

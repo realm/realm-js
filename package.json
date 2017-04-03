@@ -46,8 +46,8 @@
   "scripts": {
     "get-version": "node -p process.env.npm_package_version",
     "set-version": "scripts/set-version.sh",
-    "get-core-version": "scripts/download-core.sh --version",
-    "get-sync-version": "scripts/download-core.sh --versionSync",
+    "get-core-version": "env-cmd ./dependencies.list node -p process.env.REALM_CORE_VERSION",
+    "get-sync-version": "env-cmd ./dependencies.list node -p process.env.REALM_SYNC_VERSION",
     "lint": "eslint",
     "test": "scripts/test.sh",
     "install": "node-pre-gyp install --fallback-to-build",
@@ -63,7 +63,17 @@
     "test-runner:jest": "cd tests/test-runners/jest && npm install && npm test",
     "test-runners": "npm run test-runner:ava && npm run test-runner:mocha && npm run test-runner:jest",
     "isMac": "node -p \"if (process.platform == 'darwin') { process.exit(0); } else { process.exit(-1); }\"",
-    "testMac": "npm run isMac -s && echo this is mac || echo . "
+    "testMac": "npm run isMac -s && echo this is mac || echo . ",
+    "isWin": "node -p \"if (process.platform == 'win32') { process.exit(0); } else { process.exit(-1); }\"",
+    "prealias:win:apply" : "git config alias.apply-win-symlink-aliases \"!f() { $(scripts/git-win-symlink-aliases); }; f\"",
+    "alias:win:apply" : "git apply-win-symlink-aliases",
+    "postalias:win:apply" : "git config --unset alias.apply-win-symlink-aliases",
+    "alias:win:revert" : "git config alias.rm-symlink \"\" && git config alias.rm-symlinks \"\" && git config alias.checkout-symlinks \"\"",
+    "win-fix-symlinks" : "npm run isWin -s && npm run alias:win:apply || echo . ",
+    "win-revert-symlinks" : "npm run isWin -s && npm run alias:win:revert || echo .",
+    "prereact-tests-android": "npm run isWin -s && npm run win-fix-symlinks && git checkout-symlinks && git rm-symlinks || echo . ",
+    "react-tests-android": "node scripts/react-tests-android.js || npm run postreact-tests-android",
+    "postreact-tests-android": "git checkout-symlinks || echo . && npm run win-revert-symlinks"
   },
   "dependencies": {
     "extract-zip": "^1.6.0",
@@ -77,6 +87,7 @@
   },
   "devDependencies": {
     "babel-eslint": "^6.0.4",
+    "env-cmd": "^5.0.0",
     "eslint": "^3.2.2",
     "eslint-plugin-jasmine": "^2.1.0",
     "eslint-plugin-react": "^6.7.0",
@@ -84,7 +95,9 @@
     "license-checker": "^8.0.3",
     "mockery": "^2.0.0",
     "rimraf": "^2.6.1",
-    "semver": "^5.1.0"
+    "semver": "^5.1.0",
+    "shelljs": "^0.7.7",
+    "shx": "^0.2.2"
   },
   "rnpm": {
     "ios": {
