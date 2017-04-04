@@ -81,7 +81,6 @@ module.exports = {
             return new Promise((resolve) => {
                 const config = { sync: { user, url: 'realm://localhost:9080/~/myrealm' } };
                 config.sync.error = (sender, error) => {
-                    TestCase.assertEqual(sender.config.url, config.sync.url);
                     TestCase.assertEqual(error.message, 'simulated error');
                     TestCase.assertEqual(error.code, 123);
                     resolve();
