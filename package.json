@@ -69,11 +69,11 @@
     "alias:win:apply" : "git apply-win-symlink-aliases",
     "postalias:win:apply" : "git config --unset alias.apply-win-symlink-aliases",
     "alias:win:revert" : "git config alias.rm-symlink \"\" && git config alias.rm-symlinks \"\" && git config alias.checkout-symlinks \"\"",
-    "win-fix-symlinks" : "npm run isWin -s && npm run alias:win:apply || echo . ",
-    "win-revert-symlinks" : "npm run isWin -s && npm run alias:win:revert || echo .",
-    "prereact-tests-android": "npm run isWin -s && npm run win-fix-symlinks && git checkout-symlinks && git rm-symlinks || echo . ",
+    "win-fix-symlinks" : "npm run isWin -s && npm run alias:win:apply && git checkout-symlinks && git rm-symlinks || echo . ",
+    "win-revert-symlinks" : "npm run isWin -s &&  npm run alias:win:apply && git checkout-symlinks && npm run alias:win:revert || echo .",
+    "prereact-tests-android": "npm run isWin -s && npm run win-fix-symlinks || echo . ",
     "react-tests-android": "node scripts/react-tests-android.js || npm run postreact-tests-android",
-    "postreact-tests-android": "git checkout-symlinks || echo . && npm run win-revert-symlinks"
+    "postreact-tests-android": "npm run win-revert-symlinks"
   },
   "dependencies": {
     "extract-zip": "^1.6.0",

@@ -14,7 +14,8 @@ if (shell.env["REALM_BUILD_ANDROID"]) {
     shell.echo("Realm is already installed");
 } else {
     shell.env["REALM_BUILD_ANDROID"] = 1;
-    shell.exec("npm install realm realm-tests");
+    shell.exec("npm install realm");
+    shell.exec("npm install realm-tests");
 }
 
 shell.cp("../../src/object-store/tests/query.json", "node_modules/realm-tests/query-tests.json");

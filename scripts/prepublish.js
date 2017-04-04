@@ -30,7 +30,7 @@ if ('REALM_BUILD_ANDROID' in process.env) {
     const gradlew = process.platform === 'win32' ? 'gradlew.bat' : 'gradlew';
     const androidPath = path.resolve(__dirname, '../react-native/android');
 
-    exec(`${androidPath}/${gradlew}`, ['publishAndroid', '-PbuildWithSync=true'], { cwd: androidPath, stdio: 'inherit' });
+    exec(`${androidPath}/${gradlew}`, ['publishAndroid'], { cwd: androidPath, stdio: 'inherit' });
 }
 
 function ini(string) {
