@@ -55,7 +55,7 @@ struct ResultsClass : ClassDefinition<T, realm::js::Results<T>, CollectionClass<
     using ReturnValue = js::ReturnValue<T>;
 
     static ObjectType create_instance(ContextType, realm::Results);
-    static ObjectType create_instance(ContextType, SharedRealm, const ObjectSchema &);
+    static ObjectType create_instance(ContextType, SharedRealm, const std::string &object_type);
 
     template<typename U>
     static ObjectType create_filtered(ContextType, const U &, size_t, const ValueType[]);
@@ -101,8 +101,11 @@ typename T::Object ResultsClass<T>::create_instance(ContextType ctx, realm::Resu
 }
 
 template<typename T>
-typename T::Object ResultsClass<T>::create_instance(ContextType ctx, SharedRealm realm, const ObjectSchema &object_schema) {
-    auto table = ObjectStore::table_for_object_type(realm->read_group(), object_schema.name);
+typename T::Object ResultsClass<T>::create_instance(ContextType ctx, SharedRealm realm, const std::string &object_type) {
+    auto table = ObjectStore::table_for_object_type(realm->read_group(), object_type);
+    if (!table) {
+        throw std::runtime_error("Table does not exist. Object type: " + object_type);
+    }
     return create_object<T, ResultsClass<T>>(ctx, new realm::js::Results<T>(realm, *table));
 }
 
