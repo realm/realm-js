@@ -176,7 +176,6 @@ module.exports = {
           var realm = new Realm({ sync: { user: user, url: 'realm://localhost:9080/~/test' } });
           TestCase.assertInstanceOf(realm, Realm);
           realm.close();
-          resolve();
         });
       });
   },
@@ -224,11 +223,12 @@ module.exports = {
   },
 
   testAll() {
+    return new Promise((resolve, reject) => {
       let all;
       all = Realm.Sync.User.all;
       TestCase.assertArrayLength(Object.keys(all), 0);
 
-      return callbackTest((callback) => Realm.Sync.User.register('http://localhost:9080', uuid(), 'password', callback), (error, user1) => {
+      callbackTest((callback) => Realm.Sync.User.register('http://localhost:9080', uuid(), 'password', callback), (error, user1) => {
         failOnError(error);
 
         all = Realm.Sync.User.all;
@@ -252,32 +252,35 @@ module.exports = {
           user1.logout();
           all = Realm.Sync.User.all;
           TestCase.assertArrayLength(Object.keys(all), 0);
-
           resolve();
         });
-      });
+      }).catch(e => reject(e));
+    });
   },
 
   testCurrent() {
-      TestCase.assertUndefined(Realm.Sync.User.current);
+      return new Promise((resolve, reject) => {
+        TestCase.assertUndefined(Realm.Sync.User.current);
 
-      return callbackTest((callback) => Realm.Sync.User.register('http://localhost:9080', uuid(), 'password', callback), (error, user1) => {
-        failOnError(error);
-        assertIsSameUser(Realm.Sync.User.current, user1);
-
-        Realm.Sync.User.register('http://localhost:9080', uuid(), 'password', (error, user2) => {
+        callbackTest((callback) => Realm.Sync.User.register('http://localhost:9080', uuid(), 'password', callback), (error, user1) => {
           failOnError(error);
-          TestCase.assertThrows(() => Realm.Sync.User.current, 'We expect Realm.Sync.User.current to throw if > 1 user.');
-          user2.logout();
-
           assertIsSameUser(Realm.Sync.User.current, user1);
 
-          user1.logout();
-          TestCase.assertUndefined(Realm.Sync.User.current);
+          Realm.Sync.User.register('http://localhost:9080', uuid(), 'password', (error, user2) => {
+            failOnError(error);
+            TestCase.assertThrows(() => Realm.Sync.User.current, 'We expect Realm.Sync.User.current to throw if > 1 user.');
+            user2.logout();
 
-          resolve();
+            assertIsSameUser(Realm.Sync.User.current, user1);
+
+            user1.logout();
+            TestCase.assertUndefined(Realm.Sync.User.current);
+
+            resolve();
+
+          });
         });
-      });
+      }).catch(e => reject(e));
   },
 
   testManagementRealm() {
