@@ -279,8 +279,8 @@ module.exports = {
             resolve();
 
           });
-        });
-      }).catch(e => reject(e));
+        }).catch(e => reject(e));
+      });
   },
 
   testManagementRealm() {
