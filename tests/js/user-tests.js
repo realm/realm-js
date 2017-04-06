@@ -162,10 +162,9 @@ module.exports = {
   },
 
   testLogin() {
-    return new Promise((resolve, _reject) => {
       var username = uuid();
       // Create user, logout the new user, then login
-      callbackTest((callback) => Realm.Sync.User.register('http://localhost:9080', username, 'password', callback), (error, user) => {
+      return callbackTest((callback) => Realm.Sync.User.register('http://localhost:9080', username, 'password', callback), (error, user) => {
         failOnError(error);
         user.logout();
 
@@ -180,7 +179,6 @@ module.exports = {
           resolve();
         });
       });
-    });
   },
 
   testLoginMissingUsername() {
@@ -226,12 +224,11 @@ module.exports = {
   },
 
   testAll() {
-    return new Promise((resolve, _reject) => {
       let all;
       all = Realm.Sync.User.all;
       TestCase.assertArrayLength(Object.keys(all), 0);
 
-      callbackTest((callback) => Realm.Sync.User.register('http://localhost:9080', uuid(), 'password', callback), (error, user1) => {
+      return callbackTest((callback) => Realm.Sync.User.register('http://localhost:9080', uuid(), 'password', callback), (error, user1) => {
         failOnError(error);
 
         all = Realm.Sync.User.all;
@@ -259,14 +256,12 @@ module.exports = {
           resolve();
         });
       });
-    });
   },
 
   testCurrent() {
-    return new Promise((resolve, _reject) => {
       TestCase.assertUndefined(Realm.Sync.User.current);
 
-      callbackTest((callback) => Realm.Sync.User.register('http://localhost:9080', uuid(), 'password', callback), (error, user1) => {
+      return callbackTest((callback) => Realm.Sync.User.register('http://localhost:9080', uuid(), 'password', callback), (error, user1) => {
         failOnError(error);
         assertIsSameUser(Realm.Sync.User.current, user1);
 
@@ -283,7 +278,6 @@ module.exports = {
           resolve();
         });
       });
-    });
   },
 
   testManagementRealm() {
