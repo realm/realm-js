@@ -321,6 +321,7 @@ void UserClass<T>::get_permissions(ContextType ctx, FunctionType, ObjectType thi
             Function::call(protected_ctx, protected_callback, 2, args);
         },
         [protected_ctx] (auto user, auto url) {
+            HANDLESCOPE
             Realm::Config config;
             populate_sync_config_impl<T>(protected_ctx, config, std::move(user), url, [](auto, auto) {});
             return config;

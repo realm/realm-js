@@ -66,6 +66,7 @@
         "src/object-store/src/parser/parser.cpp",
         "src/object-store/src/parser/query_builder.cpp",
         "src/object-store/src/util/format.cpp",
+        "src/object-store/src/util/uuid.cpp",
       ],
       "conditions": [
         ["OS=='win'", {
