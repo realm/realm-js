@@ -152,6 +152,11 @@ void populate_sync_config_impl(typename T::Context ctx, Realm::Config& config, S
                                                                     std::move(bind), std::move(error_handler),
                                                                     nullptr, util::none,
                                                                     client_validate_ssl, ssl_trust_certificate_path});
+    if (!config.encryption_key.empty()) {
+        auto& key = config.sync_config->realm_encryption_key;
+        key = std::array<char, 64>();
+        std::copy_n(config.encryption_key.begin(), 64, key->begin());
+    }
     config.schema_mode = SchemaMode::Additive;
     config.path = realm::SyncManager::shared().path_for_realm(shared_user->identity(), url);
 }
