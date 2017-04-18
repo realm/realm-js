@@ -244,9 +244,7 @@ public:
         return name;
     }
 
-    static const ObjectSchema& validated_object_schema_for_value(ContextType ctx, const SharedRealm &realm, const ValueType &value) {
-        std::string object_type;
-
+    static const ObjectSchema& validated_object_schema_for_value(ContextType ctx, const SharedRealm &realm, const ValueType &value, std::string& object_type) {
         if (Value::is_constructor(ctx, value)) {
             FunctionType constructor = Value::to_constructor(ctx, value);
 
@@ -264,6 +262,9 @@ public:
         }
         else {
             object_type = Value::validated_to_string(ctx, value, "objectType");
+            if (object_type.empty()) {
+                throw std::runtime_error("objectType cannot be empty");
+            }
         }
 
         auto &schema = realm->schema();
@@ -543,9 +544,10 @@ void RealmClass<T>::objects(ContextType ctx, FunctionType, ObjectType this_objec
     validate_argument_count(argc, 1);
 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
-    auto &object_schema = validated_object_schema_for_value(ctx, realm, arguments[0]);
+    std::string object_type;
+    validated_object_schema_for_value(ctx, realm, arguments[0], object_type);
 
-    return_value.set(ResultsClass<T>::create_instance(ctx, realm, object_schema));
+    return_value.set(ResultsClass<T>::create_instance(ctx, realm, object_type));
 }
 
 template<typename T>
@@ -553,7 +555,8 @@ void RealmClass<T>::object_for_primary_key(ContextType ctx, FunctionType, Object
     validate_argument_count(argc, 2);
 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
-    auto &object_schema = validated_object_schema_for_value(ctx, realm, arguments[0]);
+    std::string object_type;
+    auto &object_schema = validated_object_schema_for_value(ctx, realm, arguments[0], object_type);
     auto realm_object = realm::Object::get_for_primary_key(ctx, realm, object_schema, arguments[1]);
 
     if (realm_object.is_valid()) {
@@ -569,7 +572,8 @@ void RealmClass<T>::create(ContextType ctx, FunctionType, ObjectType this_object
     validate_argument_count(argc, 2, 3);
 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
-    auto &object_schema = validated_object_schema_for_value(ctx, realm, arguments[0]);
+    std::string object_type;
+    auto &object_schema = validated_object_schema_for_value(ctx, realm, arguments[0], object_type);
 
     ObjectType object = Value::validated_to_object(ctx, arguments[1], "properties");
     if (Value::is_array(ctx, arguments[1])) {
