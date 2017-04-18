@@ -123,7 +123,7 @@ void UserClass<T>::create_user(ContextType ctx, FunctionType, ObjectType this_ob
         Value::validated_to_string(ctx, arguments[1]),
         Value::validated_to_string(ctx, arguments[2]),
         (std::string)Value::validated_to_string(ctx, arguments[0]),
-        Value::validated_to_boolean(ctx, arguments[3])));
+        Value::validated_to_boolean(ctx, arguments[3]) ? SyncUser::TokenType::Admin : SyncUser::TokenType::Normal));
     return_value.set(create_object<T, UserClass<T>>(ctx, user));
 }
 
