@@ -32,21 +32,6 @@ import org.apache.tools.ant.filters.ReplaceTokens
 // We then copy both the downloaded code and our custom makefiles and headers into third-party-ndk.
 // After that we build native code from src/main/jni with module path pointing at third-party-ndk.
 
-def getDependenciesVersion(keyName) {
-    def inputFile = new File(buildscript.sourceFile.getParent() + "/../../dependencies.list")
-    def line
-    inputFile.withReader { reader ->
-        while ((line = reader.readLine())!=null) {
-            def (key, value) = line.tokenize('=')
-            if (keyName == key) {
-                return value
-            }
-        }
-
-        throw new GradleException("${keyName} not found in dependencies.list.")
-    }
-}
-
 ext.coreVersion = getDependenciesVersion("REALM_CORE_VERSION").trim()
 ext.syncVersion = getDependenciesVersion("REALM_SYNC_VERSION").trim()
 def currentVersion = getDependenciesVersion("VERSION").trim()
@@ -100,6 +85,21 @@ task prepareRealmCore(dependsOn: downloadRealmCore, type:Copy) {
     into "$coreDownloadDir/core"
     rename { String fileName ->
         fileName.replace("-arm-", "-armeabi-")
+    }
+}
+
+def getDependenciesVersion(keyName) {
+    def inputFile = new File(buildscript.sourceFile.getParent() + "/../../dependencies.list")
+    def line
+    inputFile.withReader { reader ->
+        while ((line = reader.readLine())!=null) {
+            def (key, value) = line.tokenize('=')
+            if (keyName == key) {
+                return value
+            }
+        }
+
+        throw new GradleException("${keyName} not found in dependencies.list.")
     }
 }
 
