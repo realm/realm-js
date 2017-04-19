@@ -32,9 +32,24 @@ import org.apache.tools.ant.filters.ReplaceTokens
 // We then copy both the downloaded code and our custom makefiles and headers into third-party-ndk.
 // After that we build native code from src/main/jni with module path pointing at third-party-ndk.
 
-ext.coreVersion = "npm --silent run get-core-version".execute().text.trim()
-ext.syncVersion = "npm --silent run get-sync-version".execute().text.trim()
-def currentVersion = "npm --silent run get-version".execute().text.trim()
+def getDependenciesVersion(keyName) {
+    def inputFile = new File(buildscript.sourceFile.getParent() + "/../../dependencies.list")
+    def line
+    inputFile.withReader { reader ->
+        while ((line = reader.readLine())!=null) {
+            def (key, value) = line.tokenize('=')
+            if (keyName == key) {
+                return value
+            }
+        }
+
+        throw new GradleException("${keyName} not found in dependencies.list.")
+    }
+}
+
+ext.coreVersion = getDependenciesVersion("REALM_CORE_VERSION").trim()
+ext.syncVersion = getDependenciesVersion("REALM_SYNC_VERSION").trim()
+def currentVersion = getDependenciesVersion("VERSION").trim()
 def downloadsDir = new File("$projectDir/downloads")
 def jscDownloadDir = new File("$projectDir/src/main/jni/jsc")
 def coreDownloadDir = new File("$projectDir/src/main/jni")
