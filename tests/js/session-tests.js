@@ -79,7 +79,7 @@ module.exports = {
                 TestCase.assertUndefined(session.url);
                 TestCase.assertEqual(session.state, 'active');
             });
-        })
+        });
     },
 
     testErrorHandling() {
