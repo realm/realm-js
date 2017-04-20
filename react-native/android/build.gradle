@@ -32,9 +32,13 @@ import org.apache.tools.ant.filters.ReplaceTokens
 // We then copy both the downloaded code and our custom makefiles and headers into third-party-ndk.
 // After that we build native code from src/main/jni with module path pointing at third-party-ndk.
 
+
 ext.coreVersion = getDependenciesVersion("REALM_CORE_VERSION").trim()
 ext.syncVersion = getDependenciesVersion("REALM_SYNC_VERSION").trim()
 def currentVersion = getDependenciesVersion("VERSION").trim()
+println "Realm Core Version: $ext.coreVersion"
+println "Realm Sync Version: $ext.syncVersion"
+
 def downloadsDir = new File("$projectDir/downloads")
 def jscDownloadDir = new File("$projectDir/src/main/jni/jsc")
 def coreDownloadDir = new File("$projectDir/src/main/jni")

@@ -42,10 +42,6 @@ function promisifiedRegister(server, username, password) {
     });
 }
 
-function wait(delay) {
-    return new Promise((resolve, reject) => setTimeout(resolve, delay));
-}
-
 module.exports = {
     testLocalRealmHasNoSession() {
         let realm = new Realm();
@@ -55,13 +51,17 @@ module.exports = {
     testProperties() {
         return promisifiedRegister('http://localhost:9080', uuid(), 'password').then(user => {
             return new Promise((resolve, _reject) => {
-                const accessTokenRefreshed = Symbol();
-                let session;
+                const accessTokenRefreshed = this;
 
-                let postTokenRefreshChecks = (sender, error) => {
-                    TestCase.assertEqual(error, accessTokenRefreshed);
-                    TestCase.assertEqual(session.url, `realm://localhost:9080/${user.identity}/myrealm`);
-                    resolve();
+                function postTokenRefreshChecks(sender, error) {
+                    try {
+                        TestCase.assertEqual(error, accessTokenRefreshed);
+                        TestCase.assertEqual(sender.url, `realm://localhost:9080/${user.identity}/myrealm`);
+                        resolve();
+                    }
+                    catch (e) {
+                        _reject(e)
+                    }
                 };
 
                 // Let the error handler trigger our checks when the access token was refreshed.
@@ -69,7 +69,8 @@ module.exports = {
 
                 const config = { sync: { user, url: 'realm://localhost:9080/~/myrealm', error: postTokenRefreshChecks } };
                 const realm = new Realm(config);
-                session = realm.syncSession;
+                const session = realm.syncSession;
+
 
                 TestCase.assertInstanceOf(session, Realm.Sync.Session);
                 TestCase.assertEqual(session.user.identity, user.identity);
@@ -83,22 +84,23 @@ module.exports = {
 
     testErrorHandling() {
         return promisifiedRegister('http://localhost:9080', uuid(), 'password').then(user => {
-            let errors = [];
-            let config = { sync: { user,
-                url: 'realm://localhost:9080/~/myrealm',
-                error: (sender, error) => errors.push([sender, error])
-            } };
-            let realm = new Realm(config);
-            let session = realm.syncSession;
+            return new Promise((resolve, _reject) => {
+                const config = { sync: { user, url: 'realm://localhost:9080/~/myrealm' } };
+                config.sync.error = (sender, error) => {
+                    try {
+                        TestCase.assertEqual(error.message, 'simulated error');
+                        TestCase.assertEqual(error.code, 123);
+                        resolve();
+                    }
+                    catch (e) {
+                        _reject(e);
+                    }
+                };
+                const realm = new Realm(config);
+                const session = realm.syncSession;
 
-            TestCase.assertEqual(session.config.error, config.sync.error);
-            session._simulateError(123, 'simulated error');
-
-            return wait(2000).then(() => {
-                TestCase.assertArrayLength(errors, 1);
-                TestCase.assertEqual(errors[0][0].config.url, session.config.url);
-                TestCase.assertEqual(errors[0][1].message, 'simulated error');
-                TestCase.assertEqual(errors[0][1].code, 123);
+                TestCase.assertEqual(session.config.error, config.sync.error);
+                session._simulateError(123, 'simulated error');
             });
         });
     }
