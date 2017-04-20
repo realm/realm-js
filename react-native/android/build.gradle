@@ -31,17 +31,14 @@ import org.apache.tools.ant.filters.ReplaceTokens
 // We download various C++ open-source dependencies into downloads.
 // We then copy both the downloaded code and our custom makefiles and headers into third-party-ndk.
 // After that we build native code from src/main/jni with module path pointing at third-party-ndk.
-def npmExecutable = 'npm';
 
-if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-        npmExecutable = 'npm.cmd'
-}
-ext.coreVersion = "$npmExecutable --silent run get-core-version".execute().text.trim()
-ext.syncVersion = "$npmExecutable --silent run get-sync-version".execute().text.trim()
+
+ext.coreVersion = getDependenciesVersion("REALM_CORE_VERSION").trim()
+ext.syncVersion = getDependenciesVersion("REALM_SYNC_VERSION").trim()
+def currentVersion = getDependenciesVersion("VERSION").trim()
 println "Realm Core Version: $ext.coreVersion"
 println "Realm Sync Version: $ext.syncVersion"
 
-def currentVersion = "$npmExecutable --silent run get-version".execute().text.trim()
 def downloadsDir = new File("$projectDir/downloads")
 def jscDownloadDir = new File("$projectDir/src/main/jni/jsc")
 def coreDownloadDir = new File("$projectDir/src/main/jni")
@@ -92,6 +89,21 @@ task prepareRealmCore(dependsOn: downloadRealmCore, type:Copy) {
     into "$coreDownloadDir/core"
     rename { String fileName ->
         fileName.replace("-arm-", "-armeabi-")
+    }
+}
+
+def getDependenciesVersion(keyName) {
+    def inputFile = new File(buildscript.sourceFile.getParent() + "/../../dependencies.list")
+    def line
+    inputFile.withReader { reader ->
+        while ((line = reader.readLine())!=null) {
+            def (key, value) = line.tokenize('=')
+            if (keyName == key) {
+                return value
+            }
+        }
+
+        throw new GradleException("${keyName} not found in dependencies.list.")
     }
 }
 
