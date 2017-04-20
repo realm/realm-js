@@ -54,9 +54,14 @@ module.exports = {
                 const accessTokenRefreshed = this;
 
                 function postTokenRefreshChecks(sender, error) {
-                    TestCase.assertEqual(error, accessTokenRefreshed);
-                    TestCase.assertEqual(sender.url, `realm://localhost:9080/${user.identity}/myrealm`);
-                    resolve();
+                    try {
+                        TestCase.assertEqual(error, accessTokenRefreshed);
+                        TestCase.assertEqual(sender.url, `realm://localhost:9080/${user.identity}/myrealm`);
+                        resolve();
+                    }
+                    catch (e) {
+                        _reject(e)
+                    }
                 };
 
                 // Let the error handler trigger our checks when the access token was refreshed.
@@ -66,6 +71,7 @@ module.exports = {
                 const realm = new Realm(config);
                 const session = realm.syncSession;
 
+
                 TestCase.assertInstanceOf(session, Realm.Sync.Session);
                 TestCase.assertEqual(session.user.identity, user.identity);
                 TestCase.assertEqual(session.config.url, config.sync.url);
@@ -73,17 +79,22 @@ module.exports = {
                 TestCase.assertUndefined(session.url);
                 TestCase.assertEqual(session.state, 'active');
             });
-        });
+        })
     },
 
     testErrorHandling() {
         return promisifiedRegister('http://localhost:9080', uuid(), 'password').then(user => {
-            return new Promise((resolve) => {
+            return new Promise((resolve, _reject) => {
                 const config = { sync: { user, url: 'realm://localhost:9080/~/myrealm' } };
                 config.sync.error = (sender, error) => {
-                    TestCase.assertEqual(error.message, 'simulated error');
-                    TestCase.assertEqual(error.code, 123);
-                    resolve();
+                    try {
+                        TestCase.assertEqual(error.message, 'simulated error');
+                        TestCase.assertEqual(error.code, 123);
+                        resolve();
+                    }
+                    catch (e) {
+                        _reject(e);
+                    }
                 };
                 const realm = new Realm(config);
                 const session = realm.syncSession;
