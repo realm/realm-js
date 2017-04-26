@@ -79,10 +79,6 @@ class RealmDelegate : public BindingContext {
     virtual void did_change(std::vector<ObserverState> const& observers, std::vector<void*> const& invalidated, bool version_changed) {
         notify("change");
     }
-    virtual std::vector<ObserverState> get_observed_rows() {
-        return std::vector<ObserverState>();
-    }
-    virtual void will_change(std::vector<ObserverState> const& observers, std::vector<void*> const& invalidated) {}
 
     RealmDelegate(std::weak_ptr<realm::Realm> realm, GlobalContextType ctx) : m_context(ctx), m_realm(realm) {}
 
@@ -159,7 +155,7 @@ class RealmClass : public ClassDefinition<T, SharedRealm, ObservableClass<T>> {
     using Object = js::Object<T>;
     using Value = js::Value<T>;
     using ReturnValue = js::ReturnValue<T>;
-    using NativeAccessor = realm::NativeAccessor<ValueType, ContextType>;
+    using NativeAccessor = realm::js::NativeAccessor<T>;
 
 public:
     using ObjectDefaultsMap = typename Schema<T>::ObjectDefaultsMap;
@@ -353,8 +349,9 @@ void RealmClass<T>::constructor(ContextType ctx, ObjectType this_object, size_t 
             static const String encryption_key_string = "encryptionKey";
             ValueType encryption_key_value = Object::get_property(ctx, object, encryption_key_string);
             if (!Value::is_undefined(ctx, encryption_key_value)) {
-                std::string encryption_key = NativeAccessor::to_binary(ctx, encryption_key_value);
-                config.encryption_key = std::vector<char>(encryption_key.begin(), encryption_key.end());
+                NativeAccessor accessor(ctx);
+                auto encryption_key = accessor.template unbox<BinaryData>(encryption_key_value);
+                config.encryption_key.assign(encryption_key.data(), encryption_key.data() + encryption_key.size());
             }
 
 #if REALM_ENABLE_SYNC
@@ -469,9 +466,9 @@ void RealmClass<T>::schema_version(ContextType ctx, FunctionType, ObjectType thi
     realm::Realm::Config config;
     config.path = normalize_realm_path(Value::validated_to_string(ctx, arguments[0]));
     if (argc == 2) {
-        auto encryptionKeyValue = arguments[1];
-        std::string encryptionKey = NativeAccessor::to_binary(ctx, encryptionKeyValue);
-        config.encryption_key = std::vector<char>(encryptionKey.begin(), encryptionKey.end());
+        NativeAccessor accessor(ctx);
+        auto encryption_key = accessor.template unbox<BinaryData>(arguments[1]);
+        config.encryption_key.assign(encryption_key.data(), encryption_key.data() + encryption_key.size());
     }
 
     auto version = realm::Realm::get_schema_version(config);
@@ -634,7 +631,8 @@ void RealmClass<T>::object_for_primary_key(ContextType ctx, FunctionType, Object
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
     std::string object_type;
     auto &object_schema = validated_object_schema_for_value(ctx, realm, arguments[0], object_type);
-    auto realm_object = realm::Object::get_for_primary_key(ctx, realm, object_schema, arguments[1]);
+    NativeAccessor accessor(ctx, realm);
+    auto realm_object = realm::Object::get_for_primary_key(accessor, realm, object_schema, arguments[1]);
 
     if (realm_object.is_valid()) {
         return_value.set(RealmObjectClass<T>::create_instance(ctx, std::move(realm_object)));
@@ -662,7 +660,8 @@ void RealmClass<T>::create(ContextType ctx, FunctionType, ObjectType this_object
         update = Value::validated_to_boolean(ctx, arguments[2], "update");
     }
 
-    auto realm_object = realm::Object::create<ValueType>(ctx, realm, object_schema, object, update);
+    NativeAccessor accessor(ctx, realm);
+    auto realm_object = realm::Object::create<ValueType>(accessor, realm, object_schema, object, update);
     return_value.set(RealmObjectClass<T>::create_instance(ctx, std::move(realm_object)));
 }
 

@@ -19,6 +19,7 @@
 #pragma once
 
 #include "js_collection.hpp"
+#include "js_object_accessor.hpp"
 #include "js_realm_object.hpp"
 #include "js_results.hpp"
 #include "js_types.hpp"
@@ -32,12 +33,15 @@
 namespace realm {
 namespace js {
 
+template<typename JSEngine>
+class NativeAccessor;
+
 template<typename T>
 class List : public realm::List {
   public:
     List(std::shared_ptr<realm::Realm> r, const ObjectSchema& s, LinkViewRef l) noexcept : realm::List(r, l) {}
     List(const realm::List &l) : realm::List(l) {}
-    
+
     std::vector<std::pair<Protected<typename T::Function>, NotificationToken>> m_notification_tokens;
 };
 
@@ -104,7 +108,7 @@ typename T::Object ListClass<T>::create_instance(ContextType ctx, realm::List li
 }
 
 template<typename T>
-void ListClass<T>::get_length(ContextType ctx, ObjectType object, ReturnValue &return_value) {
+void ListClass<T>::get_length(ContextType, ObjectType object, ReturnValue &return_value) {
     auto list = get_internal<T, ListClass<T>>(object);
     return_value.set((uint32_t)list->size());
 }
@@ -120,7 +124,8 @@ void ListClass<T>::get_index(ContextType ctx, ObjectType object, uint32_t index,
 template<typename T>
 bool ListClass<T>::set_index(ContextType ctx, ObjectType object, uint32_t index, ValueType value) {
     auto list = get_internal<T, ListClass<T>>(object);
-    list->set(ctx, value, index);
+    NativeAccessor<T> accessor(ctx, list->get_realm(), &list->get_object_schema());
+    list->set(accessor, index, value);
     return true;
 }
 
@@ -129,8 +134,9 @@ void ListClass<T>::push(ContextType ctx, FunctionType, ObjectType this_object, s
     validate_argument_count_at_least(argc, 1);
 
     auto list = get_internal<T, ListClass<T>>(this_object);
+    NativeAccessor<T> accessor(ctx, list->get_realm(), &list->get_object_schema());
     for (size_t i = 0; i < argc; i++) {
-        list->add(ctx, arguments[i]);
+        list->add(accessor, arguments[i]);
     }
 
     return_value.set((uint32_t)list->size());
@@ -160,8 +166,9 @@ void ListClass<T>::unshift(ContextType ctx, FunctionType, ObjectType this_object
     validate_argument_count_at_least(argc, 1);
 
     auto list = get_internal<T, ListClass<T>>(this_object);
+    NativeAccessor<T> accessor(ctx, list->get_realm(), &list->get_object_schema());
     for (size_t i = 0; i < argc; i++) {
-        list->insert(ctx, arguments[i], i);
+        list->insert(accessor, i, arguments[i]);
     }
 
     return_value.set((uint32_t)list->size());
@@ -207,6 +214,7 @@ void ListClass<T>::splice(ContextType ctx, FunctionType, ObjectType this_object,
     std::vector<ValueType> removed_objects;
     removed_objects.reserve(remove);
 
+    NativeAccessor<T> accessor(ctx, list->get_realm(), &list->get_object_schema());
     for (size_t i = 0; i < remove; i++) {
         auto realm_object = realm::Object(list->get_realm(), list->get_object_schema(), list->get(index));
 
@@ -214,7 +222,7 @@ void ListClass<T>::splice(ContextType ctx, FunctionType, ObjectType this_object,
         list->remove(index);
     }
     for (size_t i = 2; i < argc; i++) {
-        list->insert(ctx, arguments[i], index + i - 2);
+        list->insert(accessor, index + i - 2, arguments[i]);
     }
 
     return_value.set(Object::create_array(ctx, removed_objects));

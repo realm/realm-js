@@ -30,6 +30,9 @@
 namespace realm {
 namespace js {
 
+template<typename>
+class NativeAccessor;
+
 template<typename T>
 class Results : public realm::Results {
   public:
@@ -117,10 +120,9 @@ typename T::Object ResultsClass<T>::create_filtered(ContextType ctx, const U &co
     auto const &realm = collection.get_realm();
     auto const &object_schema = collection.get_object_schema();
 
-    std::vector<ValueType> args(&arguments[1], &arguments[argc]);
-
     parser::Predicate predicate = parser::parse(query_string);
-    query_builder::ArgumentConverter<ValueType, ContextType> converter(ctx, realm, args);
+    NativeAccessor<T> accessor(ctx, realm);
+    query_builder::ArgumentConverter<ValueType, NativeAccessor<T>> converter(accessor, &arguments[1], argc - 1);
     query_builder::apply_predicate(query, predicate, converter, realm->schema(), object_schema.name);
 
     return create_instance(ctx, realm::Results(realm, std::move(query)));

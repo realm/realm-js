@@ -32,7 +32,7 @@
 using namespace realm;
 using namespace realm::rpc;
 
-using Accessor = NativeAccessor<JSValueRef, JSContextRef>;
+using Accessor = realm::js::NativeAccessor<jsc::Types>;
 
 static const char * const RealmObjectTypesData = "data";
 static const char * const RealmObjectTypesDate = "date";
@@ -413,7 +413,8 @@ json RPCServer::serialize_json_value(JSValueRef js_value) {
         return {{"value", array}};
     }
     else if (jsc::Value::is_array_buffer(m_context, js_object)) {
-        std::string data = Accessor::to_binary(m_context, js_value);
+        Accessor accessor(m_context);
+        auto data = accessor.unbox<realm::BinaryData>(js_value);
         return {
             {"type", RealmObjectTypesData},
             {"value", base64_encode((unsigned char *)data.data(), data.size())},
@@ -511,7 +512,7 @@ JSValueRef RPCServer::deserialize_json_value(const json dict) {
             if (!base64_decode(value.get<std::string>(), &bytes)) {
                 throw std::runtime_error("Failed to decode base64 encoded data");
             }
-            return Accessor::from_binary(m_context, realm::BinaryData(bytes));
+            return Accessor(m_context).box(realm::BinaryData(bytes.data(), bytes.size()));
         }
         else if (type_string == RealmObjectTypesDate) {
             return jsc::Object::create_date(m_context, value.get<double>());
