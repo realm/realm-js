@@ -48,8 +48,14 @@ typename T::Value CollectionClass<T>::create_collection_change_set(ContextType c
 {
     ObjectType object = Object::create_empty(ctx);
     std::vector<ValueType> deletions, insertions, modifications;
-    for (auto index : change_set.deletions.as_indexes()) {
-        deletions.push_back(Value::from_number(ctx, index));
+    
+    if (change_set.deletions.count() == std::numeric_limits<size_t>::max()) {
+        deletions.push_back(Value::from_null(ctx));
+    }
+    else {
+        for (auto index : change_set.deletions.as_indexes()) {
+            deletions.push_back(Value::from_number(ctx, index));
+        }
     }
     Object::set_property(ctx, object, "deletions", Object::create_array(ctx, deletions));
     
