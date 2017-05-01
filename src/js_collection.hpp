@@ -50,7 +50,7 @@ typename T::Value CollectionClass<T>::create_collection_change_set(ContextType c
     std::vector<ValueType> deletions, insertions, modifications;
     
     if (change_set.deletions.count() == std::numeric_limits<size_t>::max()) {
-        deletions.push_back(Value::from_undefined(ctx));
+        deletions.push_back(Value::from_null(ctx));
     }
     else {
         for (auto index : change_set.deletions.as_indexes()) {
