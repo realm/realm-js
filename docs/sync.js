@@ -31,6 +31,9 @@ class Sync {
      *   _Currently only the 'change' event is supported_
      * @param {function(change_event)} change_callback - called when changes are made to any Realm which
      *  match the given regular expression
+     * @param {bool} validate_ssl=true - Validate the server's SSL chertificate.
+     * @param {string} ssl_trust_certificate_path=None - Path to  a trust/anchor certificate used by the
+     *  client to verify the server certificate.
      */
     static addListener(server_url, admin_user, regex, name, change_callback) {}
 
@@ -86,8 +89,8 @@ class ChangeEvent {
      * The change indexes for all added, removed, and modified objects in the changed Realm.
      * This object is a hashmap of object types to arrays of indexes for all changed objects:
      * @example
-     * { 
-     *   object_type_1: { 
+     * {
+     *   object_type_1: {
      *     insertions:    [indexes...],
      *     deletions:     [indexes...],
      *     modifications: [indexes...]
@@ -183,7 +186,7 @@ class User {
      * @type {User}
      */
     static get current() {}
-    
+
     /**
      * Gets the server URL that was used for authentication.
      * @type {string}
@@ -191,14 +194,14 @@ class User {
     get server() {}
 
     /**
-     * Gets the identity of this user on the Realm Object Server. 
+     * Gets the identity of this user on the Realm Object Server.
      * The identity is a guaranteed to be unique among all users on the Realm Object Server.
      * @type {string}
      */
     get identity() {}
 
     /**
-     * Gets this user's refresh token. This is the user's credential for accessing the Realm 
+     * Gets this user's refresh token. This is the user's credential for accessing the Realm
      * Object Server and should be treated as sensitive data.
      * @type {string}
      */
@@ -225,9 +228,9 @@ class User {
 }
 
 /**
- * An object encapsulating a Realm Object Server session. Sessions represent the communication between the 
+ * An object encapsulating a Realm Object Server session. Sessions represent the communication between the
  * client (and a local Realm file on disk), and the server (and a remote Realm at a given URL stored on a Realm Object Server).
- * Sessions are always created by the SDK and vended out through various APIs. The lifespans of sessions 
+ * Sessions are always created by the SDK and vended out through various APIs. The lifespans of sessions
  * associated with Realms are managed automatically.
  * @memberof Realm.Sync
  */

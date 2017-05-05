@@ -390,8 +390,6 @@ template<typename T>
 void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constructor, ObjectType config_object, Realm::Config& config)
 {
     ValueType sync_config_value = Object::get_property(ctx, config_object, "sync");
-    bool client_validate_ssl = true;
-    util::Optional<std::string> ssl_trust_certificate_path = util::none;
     if (Value::is_boolean(ctx, sync_config_value)) {
         config.force_sync_history = Value::to_boolean(ctx, sync_config_value);
     } else if (!Value::is_undefined(ctx, sync_config_value)) {
@@ -438,6 +436,21 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
         }
 
         std::string raw_realm_url = Object::validated_get_string(ctx, sync_config_object, "url");
+
+        bool client_validate_ssl = true;
+        ValueType validate_ssl_temp = Object::get_property(ctx, sync_config_object, "validate_ssl");
+        if (!Value::is_undefined(ctx, validate_ssl_temp)) {
+            client_validate_ssl = Value::validated_to_boolean(ctx, validate_ssl_temp, "validate_ssl");
+        }
+
+        util::Optional<std::string> ssl_trust_certificate_path;
+        ValueType trust_certificate_path_temp = Object::get_property(ctx, sync_config_object, "ssl_trust_certificate_path");
+         if (!Value::is_undefined(ctx, trust_certificate_path_temp)) {
+            ssl_trust_certificate_path = std::string(Value::validated_to_string(ctx, trust_certificate_path_temp, "ssl_trust_certificate_path"));
+        }
+        else {
+            ssl_trust_certificate_path = util::none;
+        }
 
         // FIXME - use make_shared
         config.sync_config = std::shared_ptr<SyncConfig>(new SyncConfig{shared_user, raw_realm_url,
