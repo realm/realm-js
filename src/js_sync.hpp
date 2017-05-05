@@ -175,12 +175,12 @@ class SessionClass : public ClassDefinition<T, WeakSession> {
     using Object = js::Object<T>;
     using Value = js::Value<T>;
     using ReturnValue = js::ReturnValue<T>;
-    
+
 public:
     std::string const name = "Session";
 
     static FunctionType create_constructor(ContextType);
-    
+
     static void get_config(ContextType, ObjectType, ReturnValue &);
     static void get_user(ContextType, ObjectType, ReturnValue &);
     static void get_url(ContextType, ObjectType, ReturnValue &);
@@ -289,7 +289,7 @@ template<typename T>
 void SessionClass<T>::get_state(ContextType ctx, ObjectType object, ReturnValue &return_value) {
     static const std::string invalid("invalid");
     static const std::string inactive("inactive");
-    static const std::string active("active"); 
+    static const std::string active("active");
 
     return_value.set(invalid);
 
@@ -345,7 +345,6 @@ public:
     static FunctionType create_constructor(ContextType);
 
     static void set_sync_log_level(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
-    static void set_verify_servers_ssl_certificate(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
 
     // private
     static void populate_sync_config(ContextType, ObjectType realm_constructor, ObjectType config_object, Realm::Config&);
@@ -355,7 +354,6 @@ public:
 
     MethodMap<T> const static_methods = {
         {"setLogLevel", wrap<set_sync_log_level>},
-        {"setVerifyServersSslCertificate", wrap<set_verify_servers_ssl_certificate>}
     };
 };
 
@@ -366,7 +364,7 @@ inline typename T::Function SyncClass<T>::create_constructor(ContextType ctx) {
     PropertyAttributes attributes = ReadOnly | DontEnum | DontDelete;
     Object::set_property(ctx, sync_constructor, "User", ObjectWrap<T, UserClass<T>>::create_constructor(ctx), attributes);
     Object::set_property(ctx, sync_constructor, "Session", ObjectWrap<T, SessionClass<T>>::create_constructor(ctx), attributes);
-    
+
     // setup synced realmFile paths
     ensure_directory_exists_for_file(default_realm_file_directory());
     SyncManager::shared().configure_file_system(default_realm_file_directory(), SyncManager::MetadataMode::NoEncryption);
@@ -389,16 +387,11 @@ void SyncClass<T>::set_sync_log_level(ContextType ctx, FunctionType, ObjectType 
 }
 
 template<typename T>
-void SyncClass<T>::set_verify_servers_ssl_certificate(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
-    validate_argument_count(argc, 1);
-    bool verify_servers_ssl_certificate = Value::validated_to_boolean(ctx, arguments[0]);
-    realm::SyncManager::shared().set_client_should_validate_ssl(verify_servers_ssl_certificate);
-}
-
-template<typename T>
 void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constructor, ObjectType config_object, Realm::Config& config)
 {
     ValueType sync_config_value = Object::get_property(ctx, config_object, "sync");
+    bool client_validate_ssl = true;
+    util::Optional<std::string> ssl_trust_certificate_path = util::none;
     if (Value::is_boolean(ctx, sync_config_value)) {
         config.force_sync_history = Value::to_boolean(ctx, sync_config_value);
     } else if (!Value::is_undefined(ctx, sync_config_value)) {
@@ -437,7 +430,7 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
         if (!Value::is_undefined(ctx, error_func)) {
             error_handler = EventLoopDispatcher<SyncSessionErrorHandler>(SyncSessionErrorHandlerFunctor<T>(ctx, Value::validated_to_function(ctx, error_func)));
         }
-        
+
         ObjectType user = Object::validated_get_object(ctx, sync_config_object, "user");
         SharedUser shared_user = *get_internal<T, UserClass<T>>(user);
         if (shared_user->state() != SyncUser::State::Active) {
@@ -449,7 +442,9 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
         // FIXME - use make_shared
         config.sync_config = std::shared_ptr<SyncConfig>(new SyncConfig{shared_user, raw_realm_url,
                                                                         SyncSessionStopPolicy::AfterChangesUploaded,
-                                                                        std::move(bind), std::move(error_handler)});
+                                                                        std::move(bind), std::move(error_handler),
+                                                                        nullptr, util::none,
+                                                                        client_validate_ssl, ssl_trust_certificate_path});
         config.schema_mode = SchemaMode::Additive;
         config.path = realm::SyncManager::shared().path_for_realm(shared_user->identity(), raw_realm_url);
 
