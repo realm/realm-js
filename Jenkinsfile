@@ -123,7 +123,7 @@ def reportStatus(target, state, String message) {
       ],
       reposSource: [$class: 'ManuallyEnteredRepositorySource', url: 'https://github.com/realm/realm-js']
     ])
-  } catch(Exception e) {
+  } catch(Exception err) {
     echo "Error posting to GitHub: ${err}"
   }
 }
