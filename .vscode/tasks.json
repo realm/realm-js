@@ -2,15 +2,33 @@
     // See https://go.microsoft.com/fwlink/?LinkId=733558
     // for the documentation about the tasks.json format
     "version": "0.1.0",
-    "command": "npm",
-    "isShellCommand": true,
-    "showOutput": "always",
-    "suppressTaskName": true,
     "tasks": [
         {
-            "taskName": "rebuild-node-tests",
-
-            "args": ["run", "prenode-tests"]
+            "taskName": "Rebuild Node Tests",
+            "command": "npm",
+            "isShellCommand": true,
+            "showOutput": "always",
+            "suppressTaskName": true,
+            "args": ["run", "rebuild-changes"],
+            "isBuildCommand": false
+        },
+        {
+            "taskName": "Build Node Tests",
+            "command": "npm",
+            "isShellCommand": true,
+            "showOutput": "always",
+            "suppressTaskName": true,
+            "args": ["run", "build-changes"],
+            "isBuildCommand": true
+        },
+        {
+            "taskName": "Download and Start Server",
+            "command": "${workspaceRoot}/scripts/download_and_start_server.sh",
+            "isShellCommand": true,
+            "showOutput": "always",
+            "echoCommand": true,
+            "isBackground": true,
+            "suppressTaskName": true
         }
     ]
 }
