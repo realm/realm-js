@@ -50,7 +50,11 @@ private:
 
     struct State {
     public:
-        State(std::function<void(Args...)> func) : m_func(func), m_signal(nullptr) { }
+        State(std::function<void(Args...)> func) : 
+            m_func(func),
+            m_signal(nullptr) 
+        { 
+        }
         
         const std::function<void(Args...)> m_func;
         std::queue<Tuple> m_invocations;
@@ -71,7 +75,7 @@ private:
                 ::_apply_polyfill::apply(tuple, m_state->m_func);
                 m_state->m_invocations.pop();
             }
-            m_state->m_signal = nullptr;
+            m_state->m_signal.reset();
         }
     };
     const std::shared_ptr<EventLoopSignal<Callback>> m_signal;
