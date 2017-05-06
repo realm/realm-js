@@ -164,6 +164,8 @@ class RealmClass : public ClassDefinition<T, SharedRealm, ObservableClass<T>> {
 public:
     using ObjectDefaultsMap = typename Schema<T>::ObjectDefaultsMap;
     using ConstructorMap = typename Schema<T>::ConstructorMap;
+    
+    using WaitHandler = void();
 
     static FunctionType create_constructor(ContextType);
 
@@ -175,6 +177,7 @@ public:
     static void delete_all(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void write(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void add_listener(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void wait_for_download_completion(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void remove_listener(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void remove_all_listeners(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void close(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
@@ -220,6 +223,7 @@ public:
         {"deleteAll", wrap<delete_all>},
         {"write", wrap<write>},
         {"addListener", wrap<add_listener>},
+        {"wait", wrap<wait_for_download_completion>},
         {"removeListener", wrap<remove_listener>},
         {"removeAllListeners", wrap<remove_all_listeners>},
         {"close", wrap<close>},
@@ -537,6 +541,40 @@ void RealmClass<T>::get_sync_session(ContextType ctx, ObjectType object, ReturnV
     }
 
 }
+
+template<typename T>
+void RealmClass<T>::wait_for_download_completion(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    validate_argument_count(argc, 1);
+    auto callback = Value::validated_to_function(ctx, arguments[0]);
+
+    SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
+
+    Protected<FunctionType> protected_callback(ctx, callback);
+    Protected<ObjectType> protected_this(ctx, this_object);
+    Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
+
+    EventLoopDispatcher<WaitHandler> wait_handler([=]() {
+        HANDLESCOPE
+        //Function<T>::call(protected_ctx, protected_callback, protected_this, 0, nullptr);
+        Function<T>::callback(protected_ctx, protected_callback, protected_this, 0, nullptr);
+
+        //::node::MakeCallback(context->GetIsolate(), context->Global(), callback, 1, arguments);
+        //::v8::Isolate::GetCurrent()->RunMicrotasks();
+    });
+    std::function<WaitHandler> waitFunc = std::move(wait_handler);
+
+    if (std::shared_ptr<SyncSession> session = SyncManager::shared().get_existing_active_session(realm->config().path)) {
+        session->wait_for_download_completion([=](std::error_code error_code) {
+          waitFunc();
+        });
+       return;
+    }
+   
+   ValueType callback_arguments[1];
+   callback_arguments[0] = Value::from_null(ctx);
+   Function<T>::call(ctx, callback, this_object, 1, callback_arguments);
+}
+
 #endif
 
 template<typename T>

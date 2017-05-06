@@ -5,7 +5,7 @@ Old files can still be opened and files open in read-only mode will not be modif
 * The SyncConfig now gets two more optional parameters, `validate_ssl` and `ssl_trust_certificate_path`.
 
 ### Enhancements
-* None
+* Add Realm open async API support.
 
 ### Bug fixes
 * None
