@@ -50,17 +50,25 @@ module.exports = {
 
     testProperties() {
         return promisifiedRegister('http://localhost:9080', uuid(), 'password').then(user => {
-            return new Promise((resolve, _reject) => {
+            return new Promise((resolve, reject) => {
+                
                 const accessTokenRefreshed = this;
+                let successCounter = 0;
+                function checkSuccess() {
+                    successCounter++;
+                    if (successCounter == 2) {
+                        resolve();
+                    }
+                }
 
                 function postTokenRefreshChecks(sender, error) {
                     try {
                         TestCase.assertEqual(error, accessTokenRefreshed);
                         TestCase.assertEqual(sender.url, `realm://localhost:9080/${user.identity}/myrealm`);
-                        resolve();
+                        checkSuccess();
                     }
                     catch (e) {
-                        _reject(e)
+                        reject(e)
                     }
                 };
 
@@ -70,14 +78,106 @@ module.exports = {
                 const config = { sync: { user, url: 'realm://localhost:9080/~/myrealm', error: postTokenRefreshChecks } };
                 const realm = new Realm(config);
                 const session = realm.syncSession;
-
-
                 TestCase.assertInstanceOf(session, Realm.Sync.Session);
                 TestCase.assertEqual(session.user.identity, user.identity);
                 TestCase.assertEqual(session.config.url, config.sync.url);
                 TestCase.assertEqual(session.config.user.identity, config.sync.user.identity);
                 TestCase.assertUndefined(session.url);
                 TestCase.assertEqual(session.state, 'active');
+                checkSuccess();
+            });
+        });
+    },
+
+    testPropertiesWithOpen() {
+        return promisifiedRegister('http://localhost:9080', uuid(), 'password').then(user => {
+            return new Promise((resolve, reject) => {
+
+                const accessTokenRefreshed = this;
+                let successCounter = 0;
+
+                function checkSuccess() {
+                    successCounter++;
+                    if (successCounter == 2) {
+                        resolve();
+                    }
+                }
+
+                function postTokenRefreshChecks(sender, error) {
+                    try {
+                        TestCase.assertEqual(error, accessTokenRefreshed);
+                        TestCase.assertEqual(sender.url, `realm://localhost:9080/${user.identity}/myrealm`);
+                        checkSuccess();
+                    }
+                    catch (e) {
+                        reject(e)
+                    }
+                };
+
+                // Let the error handler trigger our checks when the access token was refreshed.
+                postTokenRefreshChecks._notifyOnAccessTokenRefreshed = accessTokenRefreshed;
+
+                const config = { sync: { user, url: 'realm://localhost:9080/~/myrealm', error: postTokenRefreshChecks } };
+                Realm.open(config)
+                    .then(realm => {
+                        const session = realm.syncSession;
+                        TestCase.assertInstanceOf(session, Realm.Sync.Session);
+                        TestCase.assertEqual(session.user.identity, user.identity);
+                        TestCase.assertEqual(session.config.url, config.sync.url);
+                        TestCase.assertEqual(session.config.user.identity, config.sync.user.identity);
+                        TestCase.assertEqual(session.state, 'active');
+                        checkSuccess();
+                    })
+                    .catch(e => reject(e));
+            });
+        });
+    },
+
+     
+     testPropertiesWithOpenAsync() {
+        return promisifiedRegister('http://localhost:9080', uuid(), 'password').then(user => {
+            return new Promise((resolve, reject) => {
+                
+                const accessTokenRefreshed = this;
+                let successCounter = 0;
+
+                function checkSuccess() {
+                    successCounter++;
+                    if (successCounter == 2) {
+                         resolve();
+                    }
+                }
+                 
+                function postTokenRefreshChecks(sender, error) {
+                    try {
+                        TestCase.assertEqual(error, accessTokenRefreshed);
+                        TestCase.assertEqual(sender.url, `realm://localhost:9080/${user.identity}/myrealm`);
+                        checkSuccess();
+                    }
+                    catch (e) {
+                        reject(e)
+                    }
+                };
+
+                // Let the error handler trigger our checks when the access token was refreshed.
+                postTokenRefreshChecks._notifyOnAccessTokenRefreshed = accessTokenRefreshed;
+
+                const config = { sync: { user, url: 'realm://localhost:9080/~/myrealm', error: postTokenRefreshChecks } };
+                Realm.openAsync(config, (error, realm) => {
+                    if (error) {
+                        reject(error);
+                        return;
+                    }
+
+                    const session = realm.syncSession;
+                    TestCase.assertInstanceOf(session, Realm.Sync.Session);
+                    TestCase.assertEqual(session.user.identity, user.identity);
+                    TestCase.assertEqual(session.config.url, config.sync.url);
+                    TestCase.assertEqual(session.config.user.identity, config.sync.user.identity);
+                    TestCase.assertEqual(session.state, 'active');
+                    
+                    checkSuccess();
+                });
             });
         });
     },
