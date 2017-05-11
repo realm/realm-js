@@ -239,7 +239,19 @@ void UserClass<T>::set_permission(ContextType ctx, FunctionType, ObjectType this
     Permission::AccessLevel access;
     std::string url = Value::validated_to_string(ctx, args[0], "url");
     std::string str_access = Value::validated_to_string(ctx, args[1], "access");
-    std::string user_id = Value::validated_to_string(ctx, args[2], "userId");
+
+    Permission::Condition condition;    
+    if (Value::is_object(ctx, args[2])) {
+        auto object = Value::validated_to_object(ctx, args[2], "PermissionCondition");
+        condition = Permission::Condition(
+            Object::validated_get_string(ctx, object, "key"),
+            Object::validated_get_string(ctx, object, "value")
+        );
+    }
+    else {
+        condition = Permission::Condition(Value::validated_to_string(ctx, args[2], "userId"));
+    }
+
     FunctionType callback = Value::validated_to_function(ctx, args[3], "callback");
 
     if (str_access == "Read") access = Permission::AccessLevel::Read;
@@ -250,7 +262,7 @@ void UserClass<T>::set_permission(ContextType ctx, FunctionType, ObjectType this
     Protected<GlobalContextType> protected_ctx(Context<T>::get_global_context(ctx));
     Protected<FunctionType> protected_callback(ctx, callback);
     Permissions::set_permission(*get_internal<T, UserClass<T>>(this_object),
-        { url, access, user_id },
+        { url, access, condition },
         [protected_ctx, protected_callback](auto ex) {
             HANDLESCOPE
             ValueType error;

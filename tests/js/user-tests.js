@@ -107,17 +107,20 @@ function getAndCheckPermission(user, expected, callback) {
   });
 }
 
-function createUsers(numUsers, callback, users) {
+function createUsers(numUsers, callback, users, userIds) {
   if (!users) users = [];
-  Realm.Sync.User.register('http://localhost:9080', uuid(), 'password', (error, user) => {
+  if (!userIds) userIds = [];
+  var userId = uuid();
+  Realm.Sync.User.register('http://localhost:9080', userId, 'password', (error, user) => {
     failOnError(error);
     users.push(user);
+    userIds.push(userId);
 
     numUsers--;
     if (!numUsers) 
-      callback(users);
+      callback(users, userIds);
     else 
-      createUsers(numUsers, callback, users);
+      createUsers(numUsers, callback, users, userIds);
   });
 }
 
@@ -354,6 +357,39 @@ module.exports = {
       failOnError(error);
       
       users[1].setPermission(`/${users[0].identity}/test`, 'Read', users[2].identity, (error) => {
+      // user2 can change permissions once admin
+      failOnError(error);
+      var realm = new Realm({sync: {user: users[2], url: `realm://localhost:9080/${users[0].identity}/test`}});
+      TestCase.assertTrue(realm !== undefined);
+      realm.close();
+      resolve();
+    })})})})}));
+  },
+
+  testSetPermissionByEmail() {
+    return new Promise((resolve, _reject) => createUsers(3, (users, userIds) => {
+      var realm = new Realm({sync: {user: users[0], url: 'realm://localhost:9080/~/test'}});
+      TestCase.assertTrue(realm !== undefined);
+      realm.close();
+
+      users[0].setPermission(`/${users[0].identity}/test`, 'Read', { key: 'email', value: userIds[1] }, (error) => {
+      // Give read permissions to user 2
+      failOnError(error);
+      var realm = new Realm({sync: {user: users[1], url: `realm://localhost:9080/${users[0].identity}/test`}});
+      TestCase.assertTrue(realm !== undefined);
+      realm.close();
+
+      users[1].setPermission(`/${users[0].identity}/test`, 'Read', { key: 'email', value: userIds[2] }, (error) => {
+      // user2 is not admin so can't change permissions
+      console.log(error);
+      assertIsError(error);
+
+      users[0].setPermission(`/${users[0].identity}/test`, 'Admin', { key: 'email', value: userIds[1] }, (error) => {
+      console.log(error);
+      // make user2 admin
+      failOnError(error);
+      
+      users[1].setPermission(`/${users[0].identity}/test`, 'Read', { key: 'email', value: userIds[2] }, (error) => {
       // user2 can change permissions once admin
       failOnError(error);
       var realm = new Realm({sync: {user: users[2], url: `realm://localhost:9080/${users[0].identity}/test`}});
