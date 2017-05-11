@@ -63,51 +63,51 @@ function promisifiedLogin(server, username, password) {
 
 module.exports = {
 
-    // testLocalRealmHasNoSession() {
-    //     let realm = new Realm();
-    //     TestCase.assertNull(realm.syncSession);
-    // },
+    testLocalRealmHasNoSession() {
+        let realm = new Realm();
+        TestCase.assertNull(realm.syncSession);
+    },
 
-    // testProperties() {
-    //     return promisifiedRegister('http://localhost:9080', uuid(), 'password').then(user => {
-    //         return new Promise((resolve, reject) => {
+    testProperties() {
+        return promisifiedRegister('http://localhost:9080', uuid(), 'password').then(user => {
+            return new Promise((resolve, reject) => {
 
-    //             const accessTokenRefreshed = this;
-    //             let successCounter = 0;
-    //             function checkSuccess() {
-    //                 successCounter++;
-    //                 if (successCounter == 2) {
-    //                     resolve();
-    //                 }
-    //             }
+                const accessTokenRefreshed = this;
+                let successCounter = 0;
+                function checkSuccess() {
+                    successCounter++;
+                    if (successCounter == 2) {
+                        resolve();
+                    }
+                }
 
-    //             function postTokenRefreshChecks(sender, error) {
-    //                 try {
-    //                     TestCase.assertEqual(error, accessTokenRefreshed);
-    //                     TestCase.assertEqual(sender.url, `realm://localhost:9080/${user.identity}/myrealm`);
-    //                     checkSuccess();
-    //                 }
-    //                 catch (e) {
-    //                     reject(e)
-    //                 }
-    //             };
+                function postTokenRefreshChecks(sender, error) {
+                    try {
+                        TestCase.assertEqual(error, accessTokenRefreshed);
+                        TestCase.assertEqual(sender.url, `realm://localhost:9080/${user.identity}/myrealm`);
+                        checkSuccess();
+                    }
+                    catch (e) {
+                        reject(e)
+                    }
+                };
 
-    //             // Let the error handler trigger our checks when the access token was refreshed.
-    //             postTokenRefreshChecks._notifyOnAccessTokenRefreshed = accessTokenRefreshed;
+                // Let the error handler trigger our checks when the access token was refreshed.
+                postTokenRefreshChecks._notifyOnAccessTokenRefreshed = accessTokenRefreshed;
 
-    //             const config = { sync: { user, url: 'realm://localhost:9080/~/myrealm', error: postTokenRefreshChecks } };
-    //             const realm = new Realm(config);
-    //             const session = realm.syncSession;
-    //             TestCase.assertInstanceOf(session, Realm.Sync.Session);
-    //             TestCase.assertEqual(session.user.identity, user.identity);
-    //             TestCase.assertEqual(session.config.url, config.sync.url);
-    //             TestCase.assertEqual(session.config.user.identity, config.sync.user.identity);
-    //             TestCase.assertUndefined(session.url);
-    //             TestCase.assertEqual(session.state, 'active');
-    //             checkSuccess();
-    //         });
-    //     });
-    // },
+                const config = { sync: { user, url: 'realm://localhost:9080/~/myrealm', error: postTokenRefreshChecks } };
+                const realm = new Realm(config);
+                const session = realm.syncSession;
+                TestCase.assertInstanceOf(session, Realm.Sync.Session);
+                TestCase.assertEqual(session.user.identity, user.identity);
+                TestCase.assertEqual(session.config.url, config.sync.url);
+                TestCase.assertEqual(session.config.user.identity, config.sync.user.identity);
+                TestCase.assertUndefined(session.url);
+                TestCase.assertEqual(session.state, 'active');
+                checkSuccess();
+            });
+        });
+    },
 
     testRealmOpen() {
         const isNodeProccess = typeof process === 'object';
@@ -115,7 +115,7 @@ module.exports = {
         if (!isNodeProccess) {
             return Promise.resolve();
         }
-        
+
         const username = uuid();
         const username2 = uuid();
         const realmName = uuid();
@@ -124,7 +124,7 @@ module.exports = {
         let tmpDir = tmp.dirSync();
         let content = fs.readFileSync(__dirname + '/download-api-helper.js', 'utf8');
         let tmpFile = tmp.fileSync({ dir: tmpDir.name });
-        fs.appendFileSync(tmpFile.fd, content, { encoding : 'utf8' });
+        fs.appendFileSync(tmpFile.fd, content, { encoding: 'utf8' });
 
         return new Promise((resolve, reject) => {
             const child = execFile('node', [tmpFile.name, username, realmName, REALM_MODULE_PATH], { cwd: tmpDir.name }, (error, stdout, stderr) => {
@@ -134,104 +134,117 @@ module.exports = {
                 resolve();
             });
         })
-        .then(() => {
-            return promisifiedLogin('http://localhost:9080', username, 'password').then(user => {
-                return new Promise((resolve, reject) => {
-                    const accessTokenRefreshed = this;
-                    let successCounter = 0;
+            .then(() => {
+                return promisifiedLogin('http://localhost:9080', username, 'password').then(user => {
+                    return new Promise((resolve, reject) => {
+                        const accessTokenRefreshed = this;
+                        let successCounter = 0;
 
-                    let config = {
-                        sync: { user, url: `realm://localhost:9080/~/${realmName}` },
-                        schema: [{ name: 'Dog', properties: { name: 'string' } }],
-                    };
+                        let config = {
+                            sync: { user, url: `realm://localhost:9080/~/${realmName}` },
+                            schema: [{ name: 'Dog', properties: { name: 'string' } }],
+                        };
 
-                    Realm.open(config)
-                        .then(realm => {
-                            let actualObjectsCount = realm.objects('Dog').length;
-                            TestCase.assertEqual(actualObjectsCount, expectedObjectsCount, "Synced realm does not contain the expected objects count");
+                        Realm.open(config)
+                            .then(realm => {
+                                let actualObjectsCount = realm.objects('Dog').length;
+                                TestCase.assertEqual(actualObjectsCount, expectedObjectsCount, "Synced realm does not contain the expected objects count");
 
-                            const session = realm.syncSession;
-                            TestCase.assertInstanceOf(session, Realm.Sync.Session);
-                            TestCase.assertEqual(session.user.identity, user.identity);
-                            TestCase.assertEqual(session.config.url, config.sync.url);
-                            TestCase.assertEqual(session.config.user.identity, config.sync.user.identity);
-                            TestCase.assertEqual(session.state, 'active');
-                            resolve();
-                        }).catch(e => { reject(e)});
+                                const session = realm.syncSession;
+                                TestCase.assertInstanceOf(session, Realm.Sync.Session);
+                                TestCase.assertEqual(session.user.identity, user.identity);
+                                TestCase.assertEqual(session.config.url, config.sync.url);
+                                TestCase.assertEqual(session.config.user.identity, config.sync.user.identity);
+                                TestCase.assertEqual(session.state, 'active');
+                                resolve();
+                            }).catch(e => { reject(e) });
+                    });
                 });
+            });
+    },
+
+    testRealmOpenAsync() {
+        const isNodeProccess = typeof process === 'object';
+
+        if (!isNodeProccess) {
+            return Promise.resolve();
+        }
+
+        const username = uuid();
+        const username2 = uuid();
+        const realmName = uuid();
+        const expectedObjectsCount = 3;
+
+        let tmpDir = tmp.dirSync();
+        let content = fs.readFileSync(__dirname + '/download-api-helper.js', 'utf8');
+        let tmpFile = tmp.fileSync({ dir: tmpDir.name });
+        fs.appendFileSync(tmpFile.fd, content, { encoding: 'utf8' });
+
+        return new Promise((resolve, reject) => {
+            const child = execFile('node', [tmpFile.name, username, realmName, REALM_MODULE_PATH], { cwd: tmpDir.name }, (error, stdout, stderr) => {
+                if (error) {
+                    reject(new Error('Error executing download api helper' + error));
+                }
+                resolve();
+            });
+        })
+            .then(() => {
+                return promisifiedLogin('http://localhost:9080', username, 'password').then(user => {
+                    return new Promise((resolve, reject) => {
+                        const accessTokenRefreshed = this;
+                        let successCounter = 0;
+
+                        let config = {
+                            sync: { user, url: `realm://localhost:9080/~/${realmName}` },
+                            schema: [{ name: 'Dog', properties: { name: 'string' } }],
+                        };
+
+                        Realm.openAsync(config, (error, realm) => {
+                            try {
+                                if (error) {
+                                    reject(error);
+                                }
+
+                                let actualObjectsCount = realm.objects('Dog').length;
+                                TestCase.assertEqual(actualObjectsCount, expectedObjectsCount, "Synced realm does not contain the expected objects count");
+
+                                const session = realm.syncSession;
+                                TestCase.assertInstanceOf(session, Realm.Sync.Session);
+                                TestCase.assertEqual(session.user.identity, user.identity);
+                                TestCase.assertEqual(session.config.url, config.sync.url);
+                                TestCase.assertEqual(session.config.user.identity, config.sync.user.identity);
+                                TestCase.assertEqual(session.state, 'active');
+                                resolve();
+                            }
+                            catch (e) {
+                                reject(e);
+                            }
+                        });
+                    });
+                });
+            });
+    },
+
+    testErrorHandling() {
+        return promisifiedRegister('http://localhost:9080', uuid(), 'password').then(user => {
+            return new Promise((resolve, _reject) => {
+                const config = { sync: { user, url: 'realm://localhost:9080/~/myrealm' } };
+                config.sync.error = (sender, error) => {
+                    try {
+                        TestCase.assertEqual(error.message, 'simulated error');
+                        TestCase.assertEqual(error.code, 123);
+                        resolve();
+                    }
+                    catch (e) {
+                        _reject(e);
+                    }
+                };
+                const realm = new Realm(config);
+                const session = realm.syncSession;
+
+                TestCase.assertEqual(session.config.error, config.sync.error);
+                session._simulateError(123, 'simulated error');
             });
         });
     }
-
-
-    //  testPropertiesWithOpenAsync() {
-    //     return promisifiedRegister('http://localhost:9080', uuid(), 'password').then(user => {
-    //         return new Promise((resolve, reject) => {
-
-    //             const accessTokenRefreshed = this;
-    //             let successCounter = 0;
-
-    //             function checkSuccess() {
-    //                 successCounter++;
-    //                 if (successCounter == 2) {
-    //                      resolve();
-    //                 }
-    //             }
-
-    //             function postTokenRefreshChecks(sender, error) { 
-    //                 try {
-    //                     TestCase.assertEqual(error, accessTokenRefreshed);
-    //                     TestCase.assertEqual(sender.url, `realm://localhost:9080/${user.identity}/myrealm`);
-    //                     checkSuccess();
-    //                 }
-    //                 catch (e) {
-    //                     reject(e)
-    //                 }
-    //             };
-
-    //             // Let the error handler trigger our checks when the access token was refreshed.
-    //             postTokenRefreshChecks._notifyOnAccessTokenRefreshed = accessTokenRefreshed;
-
-    //             const config = { sync: { user, url: 'realm://localhost:9080/~/myrealm', error: postTokenRefreshChecks } };
-    //             Realm.openAsync(config, (error, realm) => {
-    //                 if (error) {
-    //                     reject(error);
-    //                     return;
-    //                 }
-
-    //                 const session = realm.syncSession;
-    //                 TestCase.assertInstanceOf(session, Realm.Sync.Session);
-    //                 TestCase.assertEqual(session.user.identity, user.identity);
-    //                 TestCase.assertEqual(session.config.url, config.sync.url);
-    //                 TestCase.assertEqual(session.config.user.identity, config.sync.user.identity);
-    //                 TestCase.assertEqual(session.state, 'active');
-
-    //                 checkSuccess();
-    //             });
-    //         });
-    //     });
-    // },
-
-    // testErrorHandling() {
-    //     return promisifiedRegister('http://localhost:9080', uuid(), 'password').then(user => {
-    //         return new Promise((resolve, _reject) => {
-    //             const config = { sync: { user, url: 'realm://localhost:9080/~/myrealm' } };
-    //             config.sync.error = (sender, error) => {
-    //                 try {
-    //                     TestCase.assertEqual(error.message, 'simulated error');
-    //                     TestCase.assertEqual(error.code, 123);
-    //                     resolve();
-    //                 }
-    //                 catch (e) {
-    //                     _reject(e);
-    //                 }
-    //             };
-    //             const realm = new Realm(config);
-    //             const session = realm.syncSession;
-
-    //             TestCase.assertEqual(session.config.error, config.sync.error);
-    //             session._simulateError(123, 'simulated error');
-    //         });
-    //     });
-    // }
 }
