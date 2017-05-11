@@ -1,3 +1,17 @@
+vnext
+=============================================================
+### Breaking changes
+* None
+
+### Enhancements
+* None
+
+### Bug fixes
+* None
+
+
+1.3.0 Release notes (2017-5-11)
+=============================================================
 ### Breaking changes
 * Files written by Realm this version cannot be read by earlier versions of Realm.
 Old files can still be opened and files open in read-only mode will not be modified.
