@@ -209,6 +209,7 @@ public:
         {"schemaVersion", wrap<schema_version>},
         {"clearTestState", wrap<clear_test_state>},
         {"copyBundledRealmFiles", wrap<copy_bundled_realm_files>},
+        {"_waitForDownload", wrap<wait_for_download_completion>},
     };
 
     PropertyMap<T> const static_properties = {
@@ -223,7 +224,6 @@ public:
         {"deleteAll", wrap<delete_all>},
         {"write", wrap<write>},
         {"addListener", wrap<add_listener>},
-        {"wait", wrap<wait_for_download_completion>},
         {"removeListener", wrap<remove_listener>},
         {"removeAllListeners", wrap<remove_all_listeners>},
         {"close", wrap<close>},
@@ -544,35 +544,55 @@ void RealmClass<T>::get_sync_session(ContextType ctx, ObjectType object, ReturnV
 
 template<typename T>
 void RealmClass<T>::wait_for_download_completion(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
-    validate_argument_count(argc, 1);
-    auto callback = Value::validated_to_function(ctx, arguments[0]);
+    validate_argument_count(argc, 2);
+    auto config_object = Value::validated_to_object(ctx, arguments[0]);
+    auto callback_function = Value::validated_to_function(ctx, arguments[1]);
 
-    SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
+    ValueType sync_config_value = Object::get_property(ctx, config_object, "sync");
+    if (!Value::is_undefined(ctx, sync_config_value))
+    {
+        realm::Realm::Config config;
+        static const String encryption_key_string = "encryptionKey";
+        ValueType encryption_key_value = Object::get_property(ctx, config_object, encryption_key_string);
+        if (!Value::is_undefined(ctx, encryption_key_value))
+        {
+            std::string encryption_key = NativeAccessor::to_binary(ctx, encryption_key_value);
+            config.encryption_key = std::vector<char>(encryption_key.begin(), encryption_key.end());
+        }
+        
+        Protected<ObjectType> thiz(ctx, this_object);
+        SyncClass<T>::populate_sync_config(ctx, thiz, config_object, config);
 
-    Protected<FunctionType> protected_callback(ctx, callback);
-    Protected<ObjectType> protected_this(ctx, this_object);
-    Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
+        Protected<FunctionType> protected_callback(ctx, callback_function);
+        Protected<ObjectType> protected_this(ctx, this_object);
+        Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
 
-    EventLoopDispatcher<WaitHandler> wait_handler([=]() {
-        HANDLESCOPE
-        //Function<T>::call(protected_ctx, protected_callback, protected_this, 0, nullptr);
-        Function<T>::callback(protected_ctx, protected_callback, protected_this, 0, nullptr);
-
-        //::node::MakeCallback(context->GetIsolate(), context->Global(), callback, 1, arguments);
-        //::v8::Isolate::GetCurrent()->RunMicrotasks();
-    });
-    std::function<WaitHandler> waitFunc = std::move(wait_handler);
-
-    if (std::shared_ptr<SyncSession> session = SyncManager::shared().get_existing_active_session(realm->config().path)) {
-        session->wait_for_download_completion([=](std::error_code error_code) {
-          waitFunc();
+        EventLoopDispatcher<WaitHandler> wait_handler([=]() {
+            HANDLESCOPE
+            Function<T>::callback(protected_ctx, protected_callback, protected_this, 0, nullptr);
         });
-       return;
+        std::function<WaitHandler> waitFunc = std::move(wait_handler);
+
+        auto realm = realm::Realm::get_shared_realm(config);
+        if (auto sync_config = config.sync_config)
+        {
+            std::shared_ptr<SyncUser> user = sync_config->user;
+            if (user && user->state() != SyncUser::State::Error)
+            {
+                auto session = user->session_for_on_disk_path(config.path);
+                session->wait_for_download_completion([=](std::error_code error_code) {
+                    realm->config();
+                    waitFunc();
+                });
+                return;
+            }
+        }
+    
     }
-   
-   ValueType callback_arguments[1];
-   callback_arguments[0] = Value::from_null(ctx);
-   Function<T>::call(ctx, callback, this_object, 1, callback_arguments);
+
+    ValueType callback_arguments[1];
+    callback_arguments[0] = Value::from_null(ctx);
+    Function<T>::call(ctx, callback_function, this_object, 1, callback_arguments);
 }
 
 #endif
