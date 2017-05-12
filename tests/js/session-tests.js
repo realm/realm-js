@@ -22,11 +22,24 @@
 
 const Realm = require('realm');
 const TestCase = require('./asserts');
-const tmp = require('tmp');
-const fs = require('fs');
-const execFile = require('child_process').execFile;
 
-tmp.setGracefulCleanup();
+const isNodeProccess = (typeof process === 'object' && process + '' === '[object process]');
+console.log("isnode " + isNodeProccess + " typeof " + typeof process === 'object');
+function node_require(module) {
+    return require(module);
+}  
+
+let tmp;
+let fs;
+let execFile;
+
+if (isNodeProccess) {
+    tmp = node_require('tmp');
+    fs = node_require('fs');
+    execFile = node_require('child_process').execFile;
+    tmp.setGracefulCleanup();
+}
+
 
 function uuid() {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
@@ -110,8 +123,6 @@ module.exports = {
     },
 
     testRealmOpen() {
-        const isNodeProccess = typeof process === 'object';
-
         if (!isNodeProccess) {
             return Promise.resolve();
         }
@@ -164,8 +175,6 @@ module.exports = {
     },
 
     testRealmOpenAsync() {
-        const isNodeProccess = typeof process === 'object';
-
         if (!isNodeProccess) {
             return Promise.resolve();
         }
