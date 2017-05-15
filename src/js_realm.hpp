@@ -549,13 +549,11 @@ void RealmClass<T>::wait_for_download_completion(ContextType ctx, FunctionType, 
     auto callback_function = Value::validated_to_function(ctx, arguments[1]);
 
     ValueType sync_config_value = Object::get_property(ctx, config_object, "sync");
-    if (!Value::is_undefined(ctx, sync_config_value))
-    {
+    if (!Value::is_undefined(ctx, sync_config_value)) {
         realm::Realm::Config config;
         static const String encryption_key_string = "encryptionKey";
         ValueType encryption_key_value = Object::get_property(ctx, config_object, encryption_key_string);
-        if (!Value::is_undefined(ctx, encryption_key_value))
-        {
+        if (!Value::is_undefined(ctx, encryption_key_value)) {
             std::string encryption_key = NativeAccessor::to_binary(ctx, encryption_key_value);
             config.encryption_key = std::vector<char>(encryption_key.begin(), encryption_key.end());
         }
@@ -587,13 +585,10 @@ void RealmClass<T>::wait_for_download_completion(ContextType ctx, FunctionType, 
         std::function<WaitHandler> waitFunc = std::move(wait_handler);
 
         auto realm = realm::Realm::get_shared_realm(config);
-        if (auto sync_config = config.sync_config)
-        {
+        if (auto sync_config = config.sync_config) {
             std::shared_ptr<SyncUser> user = sync_config->user;
-            if (user && user->state() != SyncUser::State::Error)
-            {
-                if (auto session = user->session_for_on_disk_path(config.path))
-                {
+            if (user && user->state() != SyncUser::State::Error) {
+                if (auto session = user->session_for_on_disk_path(config.path)) {
                     session->wait_for_download_completion([=](std::error_code error_code) {
                         realm->config(); //capture and keep realm instance for till here
                         waitFunc(error_code);
@@ -611,7 +606,6 @@ void RealmClass<T>::wait_for_download_completion(ContextType ctx, FunctionType, 
             Function<T>::call(protected_ctx, protected_callback, protected_this, 1, callback_arguments);
             return;
         }
-    
     }
 
     ValueType callback_arguments[1];

@@ -1,3 +1,6 @@
+/*
+This script creates 3 new objects into a new realm. These are objects are validated to exists by the download api tests.
+*/
 'use strict';
 
 const username = process.argv[2];
