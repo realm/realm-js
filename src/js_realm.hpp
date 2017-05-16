@@ -567,7 +567,7 @@ void RealmClass<T>::wait_for_download_completion(ContextType ctx, FunctionType, 
 
         EventLoopDispatcher<WaitHandler> wait_handler([=](std::error_code error_code) {
             HANDLESCOPE
-            if (error_code == std::error_code{}) {
+            if (!error_code) {
                 //success
                 Function<T>::callback(protected_ctx, protected_callback, protected_this, 0, nullptr);
             }
