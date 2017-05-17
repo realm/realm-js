@@ -151,7 +151,6 @@ struct Function {
     using ObjectType = typename T::Object;
     using ValueType = typename T::Value;
 
-    static ValueType callback(ContextType, const FunctionType &, const ObjectType &, size_t, const ValueType[]);
     static ValueType call(ContextType, const FunctionType &, const ObjectType &, size_t, const ValueType[]);
     template<size_t N> static ValueType call(ContextType ctx, const FunctionType &function,
                                              const ObjectType &this_object, const ValueType (&arguments)[N])
