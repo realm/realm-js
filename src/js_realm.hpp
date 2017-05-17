@@ -165,6 +165,9 @@ public:
     using ObjectDefaultsMap = typename Schema<T>::ObjectDefaultsMap;
     using ConstructorMap = typename Schema<T>::ConstructorMap;
 
+    
+    using WaitHandler = void(std::error_code);
+
     static FunctionType create_constructor(ContextType);
 
     // methods
@@ -175,6 +178,7 @@ public:
     static void delete_all(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void write(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void add_listener(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void wait_for_download_completion(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void remove_listener(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void remove_all_listeners(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void close(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
@@ -206,6 +210,7 @@ public:
         {"schemaVersion", wrap<schema_version>},
         {"clearTestState", wrap<clear_test_state>},
         {"copyBundledRealmFiles", wrap<copy_bundled_realm_files>},
+        {"_waitForDownload", wrap<wait_for_download_completion>},
     };
 
     PropertyMap<T> const static_properties = {
@@ -538,6 +543,79 @@ void RealmClass<T>::get_sync_session(ContextType ctx, ObjectType object, ReturnV
 
 }
 #endif
+
+template<typename T>
+void RealmClass<T>::wait_for_download_completion(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    validate_argument_count(argc, 2);
+    auto config_object = Value::validated_to_object(ctx, arguments[0]);
+    auto callback_function = Value::validated_to_function(ctx, arguments[1]);
+
+#if REALM_ENABLE_SYNC
+    ValueType sync_config_value = Object::get_property(ctx, config_object, "sync");
+    if (!Value::is_undefined(ctx, sync_config_value)) {
+        realm::Realm::Config config;
+        static const String encryption_key_string = "encryptionKey";
+        ValueType encryption_key_value = Object::get_property(ctx, config_object, encryption_key_string);
+        if (!Value::is_undefined(ctx, encryption_key_value)) {
+            std::string encryption_key = NativeAccessor::to_binary(ctx, encryption_key_value);
+            config.encryption_key = std::vector<char>(encryption_key.begin(), encryption_key.end());
+        }
+        
+        Protected<ObjectType> thiz(ctx, this_object);
+        SyncClass<T>::populate_sync_config(ctx, thiz, config_object, config);
+
+        Protected<FunctionType> protected_callback(ctx, callback_function);
+        Protected<ObjectType> protected_this(ctx, this_object);
+        Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
+
+        EventLoopDispatcher<WaitHandler> wait_handler([=](std::error_code error_code) {
+            HANDLESCOPE
+            if (!error_code) {
+                //success
+                Function<T>::callback(protected_ctx, protected_callback, protected_this, 0, nullptr);
+            }
+            else {
+                //fail
+                ObjectType object = Object::create_empty(protected_ctx);
+                Object::set_property(protected_ctx, object, "message", Value::from_string(protected_ctx, error_code.message()));
+                Object::set_property(protected_ctx, object, "errorCode", Value::from_number(protected_ctx, error_code.value()));
+
+                ValueType callback_arguments[1];
+                callback_arguments[0] = object;
+                Function<T>::callback(protected_ctx, protected_callback, protected_this, 1, callback_arguments);
+            }
+        });
+        std::function<WaitHandler> waitFunc = std::move(wait_handler);
+
+        auto realm = realm::Realm::get_shared_realm(config);
+        if (auto sync_config = config.sync_config) {
+            std::shared_ptr<SyncUser> user = sync_config->user;
+            if (user && user->state() != SyncUser::State::Error) {
+                if (auto session = user->session_for_on_disk_path(config.path)) {
+                    session->wait_for_download_completion([=](std::error_code error_code) {
+                        realm->config(); //capture and keep realm instance for till here
+                        waitFunc(error_code);
+                    });
+                    return;
+                }
+            }
+
+            ObjectType object = Object::create_empty(protected_ctx);
+            Object::set_property(protected_ctx, object, "message", Value::from_string(protected_ctx, "Cannot asynchronously open synced Realm, because the associated session previously experienced a fatal error"));
+            Object::set_property(protected_ctx, object, "errorCode", Value::from_number(protected_ctx, 1));
+
+            ValueType callback_arguments[1];
+            callback_arguments[0] = object;
+            Function<T>::call(protected_ctx, protected_callback, protected_this, 1, callback_arguments);
+            return;
+        }
+    }
+#endif
+
+    ValueType callback_arguments[1];
+    callback_arguments[0] = Value::from_null(ctx);
+    Function<T>::call(ctx, callback_function, this_object, 1, callback_arguments);
+}
 
 template<typename T>
 void RealmClass<T>::objects(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
