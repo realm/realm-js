@@ -28,6 +28,10 @@ const Realm = require('realm');
 const RealmTests = require('../js');
 
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 30000;
+const isDebuggerAttached = typeof v8debug === 'object';
+if (isDebuggerAttached) {
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = 3000000;
+}
 
 // Create this method with appropriate implementation for Node testing.
 Realm.copyBundledRealmFiles = function() {
