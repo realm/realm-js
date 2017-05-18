@@ -80,7 +80,6 @@ class Realm {
      * synchronized before it is available.
      * @param {Realm~Configuration} config 
      * @returns {Promise} - a promise that will be resolved with the realm instance when it's available.
-     * @throws {Error} If anything in the provided `config` is invalid.
      */
     static open(config) {}
 
