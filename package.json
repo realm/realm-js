@@ -46,9 +46,7 @@
   "scripts": {
     "get-version": "node -p process.env.npm_package_version",
     "set-version": "scripts/set-version.sh",
-    "get-core-version": "env-cmd ./dependencies.list node -p process.env.REALM_CORE_VERSION",
-    "get-sync-version": "env-cmd ./dependencies.list node -p process.env.REALM_SYNC_VERSION",
-    "lint": "eslint", 
+    "lint": "eslint",
     "test": "scripts/test.sh",
     "install": "node-pre-gyp install --fallback-to-build",
     "build-changes": "node-pre-gyp build --fallback-to-build --debug --build-from-source",
@@ -89,7 +87,6 @@
   },
   "devDependencies": {
     "babel-eslint": "^6.0.4",
-    "env-cmd": "^5.0.0",
     "eslint": "^3.2.2",
     "eslint-plugin-jasmine": "^2.1.0",
     "eslint-plugin-react": "^6.7.0",
