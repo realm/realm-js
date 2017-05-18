@@ -76,6 +76,25 @@ class Realm {
     constructor(config) {}
 
     /**
+     * Open a realm asynchronuously with a promise. If the realm is synced, it will be fully 
+     * synchronized before it is available.
+     * @param {Realm~Configuration} config 
+     * @param {function(error, realm)} callback - will be called when the realm is ready.
+     * @returns {Promise} - a promise that will be resolved with the realm instance when it's available.
+     * @throws {Error} If anything in the provided `config` is invalid.
+     */
+    static open(config) {}
+
+    /**
+     * Open a realm asynchronuously with a callback. If the realm is synced, it will be fully 
+     * synchronized before it is available.
+     * @param {Realm~Configuration} config 
+     * @param {function(error, realm)} callback - will be called when the realm is ready.
+     * @throws {Error} If anything in the provided `config` is invalid.
+     */
+    static openAsync(config, callback) {}
+
+    /**
      * Closes this Realm so it may be re-opened with a newer schema version.
      * All objects and collections from this Realm are no longer valid after calling this method.
      */
