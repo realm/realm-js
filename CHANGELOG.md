@@ -1,9 +1,25 @@
+vnext
+=============================================================
 ### Breaking changes
-* Files written by Realm this version cannot be read by earlier versions of Realm.
-Old files can still be opened and files open in read-only mode will not be modified.
+* None
 
 ### Enhancements
 * None
+
+### Bug fixes
+* None
+
+
+1.3.0 Release notes (2017-5-11)
+=============================================================
+### Breaking changes
+* Files written by Realm this version cannot be read by earlier versions of Realm.
+Old files can still be opened and files open in read-only mode will not be modified.
+* The `setVerifyServersSslCertificate` method has been deleted
+* The SyncConfig now gets two more optional parameters, `validate_ssl` and `ssl_trust_certificate_path`.
+
+### Enhancements
+* Add Realm open async API support.
 
 ### Bug fixes
 * None

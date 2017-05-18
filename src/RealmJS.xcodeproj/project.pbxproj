@@ -41,6 +41,10 @@
 		02F59EE21C88F2BB007F774C /* realm_coordinator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02F59EDB1C88F2BA007F774C /* realm_coordinator.cpp */; };
 		02F59EE31C88F2BB007F774C /* transact_log_handler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02F59EDD1C88F2BB007F774C /* transact_log_handler.cpp */; };
 		502B07E41E2CD201007A84ED /* object.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 502B07E31E2CD1FA007A84ED /* object.cpp */; };
+		504CF85E1EBCAE3600A9A4B6 /* network_reachability_observer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 504CF8541EBCAE3600A9A4B6 /* network_reachability_observer.cpp */; };
+		504CF85F1EBCAE3600A9A4B6 /* system_configuration.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 504CF8561EBCAE3600A9A4B6 /* system_configuration.cpp */; };
+		504CF8601EBCAE3600A9A4B6 /* sync_file.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 504CF85A1EBCAE3600A9A4B6 /* sync_file.cpp */; };
+		504CF8611EBCAE3600A9A4B6 /* sync_metadata.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 504CF85C1EBCAE3600A9A4B6 /* sync_metadata.cpp */; };
 		50C671001E1D2D31003CB63C /* thread_safe_reference.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5D02C7791E1C83650048C13E /* thread_safe_reference.cpp */; };
 		5D25F5A11D6284FD00EBBB30 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = F63FF3301C16434400B3B8E0 /* libz.tbd */; };
 		8507156E1E2CFCD000E548DB /* object_notifier.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8507156B1E2CFC0100E548DB /* object_notifier.cpp */; };
@@ -174,6 +178,16 @@
 		02F59EDE1C88F2BB007F774C /* transact_log_handler.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = transact_log_handler.hpp; sourceTree = "<group>"; };
 		502B07E31E2CD1FA007A84ED /* object.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = object.cpp; path = src/object.cpp; sourceTree = "<group>"; };
 		502B07E51E2CD20D007A84ED /* object.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = object.hpp; path = src/object.hpp; sourceTree = "<group>"; };
+		504CF8541EBCAE3600A9A4B6 /* network_reachability_observer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = network_reachability_observer.cpp; sourceTree = "<group>"; };
+		504CF8551EBCAE3600A9A4B6 /* network_reachability_observer.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = network_reachability_observer.hpp; sourceTree = "<group>"; };
+		504CF8561EBCAE3600A9A4B6 /* system_configuration.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = system_configuration.cpp; sourceTree = "<group>"; };
+		504CF8571EBCAE3600A9A4B6 /* system_configuration.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = system_configuration.hpp; sourceTree = "<group>"; };
+		504CF8581EBCAE3600A9A4B6 /* network_reachability.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = network_reachability.hpp; sourceTree = "<group>"; };
+		504CF8591EBCAE3600A9A4B6 /* sync_client.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = sync_client.hpp; sourceTree = "<group>"; };
+		504CF85A1EBCAE3600A9A4B6 /* sync_file.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = sync_file.cpp; sourceTree = "<group>"; };
+		504CF85B1EBCAE3600A9A4B6 /* sync_file.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = sync_file.hpp; sourceTree = "<group>"; };
+		504CF85C1EBCAE3600A9A4B6 /* sync_metadata.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = sync_metadata.cpp; sourceTree = "<group>"; };
+		504CF85D1EBCAE3600A9A4B6 /* sync_metadata.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = sync_metadata.hpp; sourceTree = "<group>"; };
 		5D02C7781E1C83650048C13E /* execution_context_id.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = execution_context_id.hpp; path = src/execution_context_id.hpp; sourceTree = "<group>"; };
 		5D02C7791E1C83650048C13E /* thread_safe_reference.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = thread_safe_reference.cpp; path = src/thread_safe_reference.cpp; sourceTree = "<group>"; };
 		5D02C77A1E1C83650048C13E /* thread_safe_reference.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = thread_safe_reference.hpp; path = src/thread_safe_reference.hpp; sourceTree = "<group>"; };
@@ -426,6 +440,7 @@
 		02E315CC1DB80DE000555337 /* sync */ = {
 			isa = PBXGroup;
 			children = (
+				504CF8521EBCAE3600A9A4B6 /* impl */,
 				02E315CD1DB80DF200555337 /* sync_client.hpp */,
 				02E315CE1DB80DF200555337 /* sync_file.cpp */,
 				02E315CF1DB80DF200555337 /* sync_file.hpp */,
@@ -440,6 +455,32 @@
 				02E315C81DB80DDD00555337 /* sync_user.hpp */,
 			);
 			name = sync;
+			sourceTree = "<group>";
+		};
+		504CF8521EBCAE3600A9A4B6 /* impl */ = {
+			isa = PBXGroup;
+			children = (
+				504CF8531EBCAE3600A9A4B6 /* apple */,
+				504CF8581EBCAE3600A9A4B6 /* network_reachability.hpp */,
+				504CF8591EBCAE3600A9A4B6 /* sync_client.hpp */,
+				504CF85A1EBCAE3600A9A4B6 /* sync_file.cpp */,
+				504CF85B1EBCAE3600A9A4B6 /* sync_file.hpp */,
+				504CF85C1EBCAE3600A9A4B6 /* sync_metadata.cpp */,
+				504CF85D1EBCAE3600A9A4B6 /* sync_metadata.hpp */,
+			);
+			name = impl;
+			path = src/sync/impl;
+			sourceTree = "<group>";
+		};
+		504CF8531EBCAE3600A9A4B6 /* apple */ = {
+			isa = PBXGroup;
+			children = (
+				504CF8541EBCAE3600A9A4B6 /* network_reachability_observer.cpp */,
+				504CF8551EBCAE3600A9A4B6 /* network_reachability_observer.hpp */,
+				504CF8561EBCAE3600A9A4B6 /* system_configuration.cpp */,
+				504CF8571EBCAE3600A9A4B6 /* system_configuration.hpp */,
+			);
+			path = apple;
 			sourceTree = "<group>";
 		};
 		F62A35131C18E6E2004A917D /* iOS */ = {
@@ -837,10 +878,13 @@
 				02022A581DA476CD000F0C4F /* external_commit_helper.cpp in Sources */,
 				02022A5A1DA476CD000F0C4F /* weak_realm_notifier.cpp in Sources */,
 				02022A5B1DA476CD000F0C4F /* placeholder.cpp in Sources */,
+				504CF8611EBCAE3600A9A4B6 /* sync_metadata.cpp in Sources */,
 				502B07E41E2CD201007A84ED /* object.cpp in Sources */,
 				02414BA51CE6ABCF00A8669F /* collection_change_builder.cpp in Sources */,
 				02414BA61CE6ABCF00A8669F /* collection_notifier.cpp in Sources */,
+				504CF85F1EBCAE3600A9A4B6 /* system_configuration.cpp in Sources */,
 				02414BA71CE6ABCF00A8669F /* list_notifier.cpp in Sources */,
+				504CF8601EBCAE3600A9A4B6 /* sync_file.cpp in Sources */,
 				02414BA81CE6ABCF00A8669F /* results_notifier.cpp in Sources */,
 				02414BA91CE6ABCF00A8669F /* collection_notifications.cpp in Sources */,
 				02F59EE31C88F2BB007F774C /* transact_log_handler.cpp in Sources */,
@@ -855,6 +899,7 @@
 				02F59EBF1C88F17D007F774C /* index_set.cpp in Sources */,
 				F63FF2C91C12469E00B3B8E0 /* js_realm.cpp in Sources */,
 				02F59EC51C88F17D007F774C /* shared_realm.cpp in Sources */,
+				504CF85E1EBCAE3600A9A4B6 /* network_reachability_observer.cpp in Sources */,
 				02F59EE21C88F2BB007F774C /* realm_coordinator.cpp in Sources */,
 				02F59EC41C88F17D007F774C /* schema.cpp in Sources */,
 				F63FF2CD1C12469E00B3B8E0 /* rpc.cpp in Sources */,
@@ -911,7 +956,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 1.2.0;
+				CURRENT_PROJECT_VERSION = 1.3.0;
 				CXX = "$(SRCROOT)/../scripts/ccache-clang++.sh";
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -975,7 +1020,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 1.2.0;
+				CURRENT_PROJECT_VERSION = 1.3.0;
 				CXX = "$(SRCROOT)/../scripts/ccache-clang++.sh";
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
