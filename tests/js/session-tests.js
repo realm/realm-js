@@ -234,6 +234,71 @@ module.exports = {
             });
     },
 
+    testRealmOpenAsyncNoSchema() {
+        if (!isNodeProccess) {
+            return Promise.resolve();
+        }
+
+        const username = uuid();
+        const realmName = uuid();
+        const expectedObjectsCount = 3;
+
+        let tmpDir = tmp.dirSync();
+        let content = fs.readFileSync(__dirname + '/download-api-helper.js', 'utf8');
+        let tmpFile = tmp.fileSync({ dir: tmpDir.name });
+        fs.appendFileSync(tmpFile.fd, content, { encoding: 'utf8' });
+
+        return new Promise((resolve, reject) => {
+            //execute download-api-helper which inserts predefined number of objects into the synced realm.
+            const child = execFile('node', [tmpFile.name, username, realmName, REALM_MODULE_PATH], { cwd: tmpDir.name }, (error, stdout, stderr) => {
+                if (error) {
+                    reject(new Error('Error executing download api helper' + error));
+                }
+                resolve();
+            });
+        })
+            .then(() => {
+                return promisifiedLogin('http://localhost:9080', username, 'password').then(user => {
+                    return new Promise((resolve, reject) => {
+                        const accessTokenRefreshed = this;
+                        let successCounter = 0;
+
+                        let config = {
+                            sync: { user, url: `realm://localhost:9080/~/${realmName}` }
+                        };
+
+                        Realm.openAsync(config, (error, realm) => {
+                            try {
+                                if (error) {
+                                    reject(error);
+                                }
+
+                                let actualObjectsCount = realm.objects('Dog').length;
+                                TestCase.assertEqual(actualObjectsCount, expectedObjectsCount, "Synced realm does not contain the expected objects count");
+
+                                let firstDog = realm.objects('Dog')[0];
+                                TestCase.assertTrue(({}).hasOwnProperty.call(firstDog, 'name'), "Synced realm does not have an inffered schema");
+                                TestCase.assertTrue(firstDog.name, "Synced realm object's property should have a value");
+                                TestCase.assertTrue(firstDog.name.indexOf('Lassy') !== -1, "Synced realm object's property should contain the actual written value");
+
+
+                                const session = realm.syncSession;
+                                TestCase.assertInstanceOf(session, Realm.Sync.Session);
+                                TestCase.assertEqual(session.user.identity, user.identity);
+                                TestCase.assertEqual(session.config.url, config.sync.url);
+                                TestCase.assertEqual(session.config.user.identity, config.sync.user.identity);
+                                TestCase.assertEqual(session.state, 'active');
+                                resolve();
+                            }
+                            catch (e) {
+                                reject(e);
+                            }
+                        });
+                    });
+                });
+            });
+    },
+
     testErrorHandling() {
         return promisifiedRegister('http://localhost:9080', uuid(), 'password').then(user => {
             return new Promise((resolve, _reject) => {
