@@ -1,7 +1,7 @@
 {
   "name": "realm",
   "description": "Realm is a mobile database: an alternative to SQLite and key-value stores",
-  "version": "1.3.0",
+  "version": "1.3.1",
   "license": "Apache-2.0",
   "homepage": "https://realm.io",
   "keywords": [
@@ -46,12 +46,12 @@
   "scripts": {
     "get-version": "node -p process.env.npm_package_version",
     "set-version": "scripts/set-version.sh",
-    "get-core-version": "env-cmd ./dependencies.list node -p process.env.REALM_CORE_VERSION",
-    "get-sync-version": "env-cmd ./dependencies.list node -p process.env.REALM_SYNC_VERSION",
     "lint": "eslint",
     "test": "scripts/test.sh",
     "install": "node-pre-gyp install --fallback-to-build",
-    "prepublish": "node scripts/prepublish.js",
+    "build-changes": "node-pre-gyp build --fallback-to-build --debug --build-from-source",
+    "rebuild-changes": "node-pre-gyp install --fallback-to-build --debug --build-from-source && cd tests && npm install",
+    "prepublish": "echo prepublishing && node scripts/prepublish.js",
     "eslint": "npm install && npm run lint .",
     "license-check": "npm install && license-checker --exclude \"MIT,ISC,BSD,Apache-2.0,BSD-2-Clause,BSD-3-Clause,WTFPL,Unlicense,(MIT AND CC-BY-3.0)\" | node scripts/handle-license-check.js",
     "jsdoc:clean": "rimraf ./docs/output",
@@ -87,7 +87,6 @@
   },
   "devDependencies": {
     "babel-eslint": "^6.0.4",
-    "env-cmd": "^5.0.0",
     "eslint": "^3.2.2",
     "eslint-plugin-jasmine": "^2.1.0",
     "eslint-plugin-react": "^6.7.0",

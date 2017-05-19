@@ -1,10 +1,10 @@
-vnext
+1.3.1 Release notes (2017-5-18)
 =============================================================
 ### Breaking changes
 * None
 
 ### Enhancements
-* None
+* Add Realm open async API support.
 
 ### Bug fixes
 * None

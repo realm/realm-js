@@ -45,13 +45,21 @@ template <typename... Args>
 class EventLoopDispatcher<void(Args...)> {
     using Tuple = std::tuple<typename std::remove_reference<Args>::type...>;
 private:
+    
+    struct Callback;
+
     struct State {
     public:
-        State(std::function<void(Args...)> func) : m_func(func) { }
+        State(std::function<void(Args...)> func) : 
+            m_func(func),
+            m_signal(nullptr) 
+        { 
+        }
         
         const std::function<void(Args...)> m_func;
         std::queue<Tuple> m_invocations;
         std::mutex m_mutex;
+        std::shared_ptr<EventLoopSignal<Callback>> m_signal;
     };
     const std::shared_ptr<State> m_state;
     
@@ -67,6 +75,7 @@ private:
                 ::_apply_polyfill::apply(tuple, m_state->m_func);
                 m_state->m_invocations.pop();
             }
+            m_state->m_signal.reset();
         }
     };
     const std::shared_ptr<EventLoopSignal<Callback>> m_signal;
@@ -92,6 +101,7 @@ public:
         
         {
             std::unique_lock<std::mutex> lock(m_state->m_mutex);
+            m_state->m_signal = m_signal;
             m_state->m_invocations.push(std::make_tuple(args...));
         }
         m_signal->notify();
