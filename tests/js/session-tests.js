@@ -299,6 +299,69 @@ module.exports = {
             });
     },
 
+    testRealmOpenLocalRealm() {
+        const username = uuid();
+        const expectedObjectsCount = 3;
+
+
+        return new Promise((resolve, reject) => {
+            const accessTokenRefreshed = this;
+            let successCounter = 0;
+
+            let config = {
+                schema: [{ name: 'Dog', properties: { name: 'string' } }],
+            };
+
+            Realm.open(config).then(realm => {
+                realm.write(() => {
+                    for (let i = 1; i <= 3; i++) {
+                        realm.create('Dog', { name: `Lassy ${i}` });
+                    }
+                });
+
+                let actualObjectsCount = realm.objects('Dog').length;
+                TestCase.assertEqual(actualObjectsCount, expectedObjectsCount, "Local realm does not contain the expected objects count");
+                resolve();
+            }).catch(error => reject(error));
+        });
+    },
+
+    testRealmOpenAsyncLocalRealm() {
+        const username = uuid();
+        const expectedObjectsCount = 3;
+
+
+        return new Promise((resolve, reject) => {
+            const accessTokenRefreshed = this;
+            let successCounter = 0;
+
+            let config = {
+                schema: [{ name: 'Dog', properties: { name: 'string' } }],
+            };
+
+            Realm.openAsync(config, (error, realm) => {
+                try {
+                    if (error) {
+                        reject(error);
+                    }
+
+                    realm.write(() => {
+                        for (let i = 1; i <= 3; i++) {
+                            realm.create('Dog', { name: `Lassy ${i}` });
+                        }
+                    });
+
+                    let actualObjectsCount = realm.objects('Dog').length;
+                    TestCase.assertEqual(actualObjectsCount, expectedObjectsCount, "Local realm does not contain the expected objects count");
+                    resolve();
+                }
+                catch (e) {
+                    reject(e);
+                }
+            });
+        });
+    },
+
     testErrorHandling() {
         return promisifiedRegister('http://localhost:9080', uuid(), 'password').then(user => {
             return new Promise((resolve, _reject) => {
