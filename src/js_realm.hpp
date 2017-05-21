@@ -167,6 +167,9 @@ public:
     
     using WaitHandler = void(std::error_code);
 
+    
+    using WaitHandler = void(std::error_code);
+
     static FunctionType create_constructor(ContextType);
 
     // methods
