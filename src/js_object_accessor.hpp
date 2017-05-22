@@ -70,7 +70,7 @@ public:
     }
 
     template<typename T>
-    T unbox(ValueType const& value, bool create = false, bool update = false);
+    T unbox(ValueType value, bool create = false, bool update = false);
 
     ValueType box(bool boolean)      { return Value::from_boolean(m_ctx, boolean); }
     ValueType box(long long number)  { return Value::from_number(m_ctx, number); }
@@ -193,7 +193,7 @@ struct Unbox<JSEngine, StringData> {
 // Need separate implementations per-engine
 template<typename JSEngine>
 struct Unbox<JSEngine, BinaryData> {
-    static BinaryData call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, bool, bool);
+    static BinaryData call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value value, bool, bool);
 };
 
 template<typename JSEngine>
@@ -248,8 +248,8 @@ struct Unbox<JSEngine, RowExpr> {
 
 template<typename T>
 template<typename U>
-U NativeAccessor<T>::unbox(ValueType const& value, bool create, bool update) {
-    return _impl::Unbox<T, U>::call(this, value, create, update);
+U NativeAccessor<T>::unbox(ValueType value, bool create, bool update) {
+    return _impl::Unbox<T, U>::call(this, std::move(value), create, update);
 }
 
 

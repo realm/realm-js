@@ -29,7 +29,7 @@ namespace js {
 
 template<>
 template<>
-inline BinaryData NativeAccessor<jsc::Types>::unbox(ValueType const& value, bool, bool) {
+inline BinaryData NativeAccessor<jsc::Types>::unbox(ValueType value, bool, bool) {
     static jsc::String s_array_buffer = "ArrayBuffer";
     static jsc::String s_buffer = "buffer";
     static jsc::String s_byte_length = "byteLength";

@@ -28,7 +28,7 @@ namespace js {
 
 template<>
 template<>
-inline BinaryData NativeAccessor<node::Types>::unbox(ValueType const& value, bool, bool) {
+inline BinaryData NativeAccessor<node::Types>::unbox(ValueType value, bool, bool) {
     if (Value::is_array_buffer(m_ctx, value)) {
         // TODO: This probably needs some abstraction for older V8.
 #if REALM_V8_ARRAY_BUFFER_API
