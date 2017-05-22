@@ -1,10 +1,10 @@
-vnext
+1.3.1 Release notes (2017-5-18)
 =============================================================
 ### Breaking changes
 * None
 
 ### Enhancements
-* None
+* Add Realm open async API support.
 
 ### Bug fixes
 * None
@@ -19,7 +19,7 @@ Old files can still be opened and files open in read-only mode will not be modif
 * The SyncConfig now gets two more optional parameters, `validate_ssl` and `ssl_trust_certificate_path`.
 
 ### Enhancements
-* Add Realm open async API support.
+* None
 
 ### Bug fixes
 * None
