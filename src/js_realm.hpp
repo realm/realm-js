@@ -553,8 +553,9 @@ void RealmClass<T>::wait_for_download_completion(ContextType ctx, FunctionType, 
         static const String encryption_key_string = "encryptionKey";
         ValueType encryption_key_value = Object::get_property(ctx, config_object, encryption_key_string);
         if (!Value::is_undefined(ctx, encryption_key_value)) {
-            std::string encryption_key = NativeAccessor::to_binary(ctx, encryption_key_value);
-            config.encryption_key = std::vector<char>(encryption_key.begin(), encryption_key.end());
+            NativeAccessor accessor(ctx);
+            auto encryption_key = accessor.template unbox<BinaryData>(encryption_key_value);
+            config.encryption_key.assign(encryption_key.data(), encryption_key.data() + encryption_key.size());
         }
         
         Protected<ObjectType> thiz(ctx, this_object);
