@@ -73,7 +73,7 @@ public:
     T unbox(ValueType value, bool create = false, bool update = false);
 
     ValueType box(bool boolean)      { return Value::from_boolean(m_ctx, boolean); }
-    ValueType box(long long number)  { return Value::from_number(m_ctx, number); }
+    ValueType box(int64_t number)    { return Value::from_number(m_ctx, number); }
     ValueType box(float number)      { return Value::from_number(m_ctx, number); }
     ValueType box(double number)     { return Value::from_number(m_ctx, number); }
     ValueType box(StringData string) { return Value::from_string(m_ctx, string.data()); }
@@ -134,8 +134,8 @@ struct Unbox<JSEngine, bool> {
 };
 
 template<typename JSEngine>
-struct Unbox<JSEngine, long long> {
-    static long long call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, bool, bool) {
+struct Unbox<JSEngine, int64_t> {
+    static int64_t call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, bool, bool) {
         return js::Value<JSEngine>::validated_to_number(ctx->m_ctx, value, "Property");
     }
 };
@@ -162,8 +162,8 @@ struct Unbox<JSEngine, util::Optional<bool>> {
 };
 
 template<typename JSEngine>
-struct Unbox<JSEngine, util::Optional<long long>> {
-    static util::Optional<long long> call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, bool, bool) {
+struct Unbox<JSEngine, util::Optional<int64_t>> {
+    static util::Optional<int64_t> call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, bool, bool) {
         return js::Value<JSEngine>::validated_to_number(ctx->m_ctx, value, "Property");
 }
 };
