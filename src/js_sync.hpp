@@ -51,7 +51,6 @@ class UserClass : public ClassDefinition<T, SharedUser> {
     using Value = js::Value<T>;
     using Function = js::Function<T>;
     using ReturnValue = js::ReturnValue<T>;
-    using NativeAccessor = realm::NativeAccessor<ValueType, ContextType>;
 
 public:
     std::string const name = "User";
@@ -337,7 +336,6 @@ class SyncClass : public ClassDefinition<T, void *> {
     using Value = js::Value<T>;
     using Function = js::Function<T>;
     using ReturnValue = js::ReturnValue<T>;
-    using NativeAccessor = realm::NativeAccessor<ValueType, ContextType>;
 
 public:
     std::string const name = "Sync";

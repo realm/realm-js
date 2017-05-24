@@ -28,6 +28,8 @@
 namespace realm {
 namespace js {
 
+template<typename> class NativeAccessor;
+
 template<typename T>
 struct RealmObjectClass : ClassDefinition<T, realm::Object> {
     using ContextType = typename T::Context;
@@ -94,7 +96,9 @@ template<typename T>
 void RealmObjectClass<T>::get_property(ContextType ctx, ObjectType object, const String &property, ReturnValue &return_value) {
     try {
         auto realm_object = get_internal<T, RealmObjectClass<T>>(object);
-        auto result = realm_object->template get_property_value<ValueType>(ctx, property);
+        NativeAccessor<T> accessor(ctx);
+        std::string name = property;
+        auto result = realm_object->template get_property_value<ValueType>(accessor, name);
         return_value.set(result);
     } catch (InvalidPropertyException &ex) {
         // getters for nonexistent properties in JS should always return undefined
@@ -111,7 +115,8 @@ bool RealmObjectClass<T>::set_property(ContextType ctx, ObjectType object, const
     }
 
     try {
-        realm_object->set_property_value(ctx, property_name, value, true);
+        NativeAccessor<T> accessor(ctx, realm_object->realm());
+        realm_object->set_property_value(accessor, property_name, value, true);
     }
     catch (TypeErrorException &ex) {
         throw TypeErrorException(realm_object->get_object_schema().name + "." + property_name, ex.type());

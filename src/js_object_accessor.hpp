@@ -23,136 +23,235 @@
 #include "js_schema.hpp"
 
 namespace realm {
+class List;
+class Object;
+class ObjectSchema;
+class Realm;
+class Results;
+struct Property;
+
 namespace js {
+namespace _impl {
+template<typename JSEngine, typename T>
+struct Unbox;
+}
 
-template<typename T>
-struct NativeAccessor {
-    using ContextType = typename T::Context;
-    using ObjectType = typename T::Object;
-    using ValueType = typename T::Value;
-    using Object = js::Object<T>;
-    using Value = js::Value<T>;
+template<typename JSEngine>
+class NativeAccessor {
+public:
+    using ContextType = typename JSEngine::Context;
+    using ObjectType = typename JSEngine::Object;
+    using ValueType = typename JSEngine::Value;
+    using Object = js::Object<JSEngine>;
+    using Value = js::Value<JSEngine>;
+    using OptionalValue = util::Optional<ValueType>;
 
-    static bool dict_has_value_for_key(ContextType ctx, ValueType dict, const std::string &prop_name) {
-        ObjectType object = Value::validated_to_object(ctx, dict);
-        return Object::has_property(ctx, object, prop_name);
-    }
-    static ValueType dict_value_for_key(ContextType ctx, ValueType dict, const std::string &prop_name) {
-        ObjectType object = Value::validated_to_object(ctx, dict);
-        return Object::get_property(ctx, object, prop_name);
+    NativeAccessor(ContextType ctx, std::shared_ptr<Realm> realm=nullptr, const ObjectSchema* object_schema=nullptr)
+    : m_ctx(ctx), m_realm(std::move(realm)), m_object_schema(object_schema) { }
+
+    NativeAccessor(NativeAccessor& parent, const Property& prop)
+    : m_ctx(parent.m_ctx)
+    , m_realm(parent.m_realm)
+    , m_object_schema(&*m_realm->schema().find(prop.object_type))
+    { }
+
+    OptionalValue value_for_property(ValueType dict, std::string const& prop_name, size_t) {
+        ObjectType object = Value::validated_to_object(m_ctx, dict);
+        if (!Object::has_property(m_ctx, object, prop_name)) {
+            return util::none;
+        }
+        return Object::get_property(m_ctx, object, prop_name);
     }
 
-    static bool has_default_value_for_property(ContextType ctx, realm::Realm *realm, const ObjectSchema &object_schema, const std::string &prop_name) {
-        auto defaults = get_delegate<T>(realm)->m_defaults[object_schema.name];
-        return defaults.count(prop_name) != 0;
-    }
-    static ValueType default_value_for_property(ContextType ctx, realm::Realm *realm, const ObjectSchema &object_schema, const std::string &prop_name) {
-        auto defaults = get_delegate<T>(realm)->m_defaults[object_schema.name];
-        return defaults.at(prop_name);
+    OptionalValue default_value_for_property(const ObjectSchema &object_schema, const std::string &prop_name) {
+        auto defaults = get_delegate<JSEngine>(m_realm.get())->m_defaults[object_schema.name];
+        auto it = defaults.find(prop_name);
+        return it != defaults.end() ? util::make_optional(ValueType(it->second)) : util::none;
     }
 
-    // These must be implemented for each JS engine.
-    static std::string to_binary(ContextType, ValueType &);
-    static ValueType from_binary(ContextType, BinaryData);
+    template<typename T>
+    T unbox(ValueType value, bool create = false, bool update = false);
 
-    static bool to_bool(ContextType ctx, ValueType &value) {
-        return Value::validated_to_boolean(ctx, value, "Property");
+    ValueType box(bool boolean)      { return Value::from_boolean(m_ctx, boolean); }
+    ValueType box(int64_t number)    { return Value::from_number(m_ctx, number); }
+    ValueType box(float number)      { return Value::from_number(m_ctx, number); }
+    ValueType box(double number)     { return Value::from_number(m_ctx, number); }
+    ValueType box(StringData string) { return Value::from_string(m_ctx, string.data()); }
+    ValueType box(Mixed)             { throw std::runtime_error("'Any' type is unsupported"); }
+
+    ValueType box(BinaryData);
+    ValueType box(Timestamp ts) {
+        return Object::create_date(m_ctx, ts.get_seconds() * 1000 + ts.get_nanoseconds() / 1000000);
     }
-    static ValueType from_bool(ContextType ctx, bool boolean) {
-        return Value::from_boolean(ctx, boolean);
+    ValueType box(realm::Object realm_object) {
+        return RealmObjectClass<JSEngine>::create_instance(m_ctx, std::move(realm_object));
     }
-    static long long to_long(ContextType ctx, ValueType &value) {
-        return Value::validated_to_number(ctx, value, "Property");
+    ValueType box(realm::List list) {
+        return ListClass<JSEngine>::create_instance(m_ctx, std::move(list));
     }
-    static ValueType from_long(ContextType ctx, long long number) {
-        return Value::from_number(ctx, number);
+    ValueType box(realm::Results results) {
+        return ResultsClass<JSEngine>::create_instance(m_ctx, std::move(results));
     }
-    static float to_float(ContextType ctx, ValueType &value) {
-        return Value::validated_to_number(ctx, value, "Property");
+
+    bool is_null(ValueType const& value) {
+        return Value::is_null(m_ctx, value) || Value::is_undefined(m_ctx, value);
     }
-    static ValueType from_float(ContextType ctx, float number) {
-        return Value::from_number(ctx, number);
+    ValueType null_value() {
+        return Value::from_null(m_ctx);
     }
-    static double to_double(ContextType ctx, ValueType &value) {
-        return Value::validated_to_number(ctx, value, "Property");
+
+    template<typename Fn>
+    void enumerate_list(ValueType& value, Fn&& func) {
+        auto obj = Value::validated_to_object(m_ctx, value);
+        uint32_t size = Object::validated_get_length(m_ctx, obj);
+        for (uint32_t i = 0; i < size; ++i) {
+            func(Object::validated_get_object(m_ctx, obj, i));
+        }
     }
-    static ValueType from_double(ContextType ctx, double number) {
-        return Value::from_number(ctx, number);
+
+    bool allow_missing(ValueType const&) const noexcept { return false; }
+    void will_change(realm::Object&, realm::Property const&) { }
+    void did_change() { }
+
+    std::string print(ValueType const&) { return "not implemented"; }
+
+private:
+    ContextType m_ctx;
+    std::shared_ptr<Realm> m_realm;
+    const ObjectSchema* m_object_schema = nullptr;
+    std::string m_string_buffer;
+
+    template<typename, typename>
+    friend struct _impl::Unbox;
+};
+
+namespace _impl {
+template<typename JSEngine>
+struct Unbox<JSEngine, bool> {
+    static bool call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, bool, bool) {
+        return js::Value<JSEngine>::validated_to_boolean(ctx->m_ctx, value, "Property");
     }
-    static std::string to_string(ContextType ctx, ValueType &value) {
-        return Value::validated_to_string(ctx, value, "Property");
+};
+
+template<typename JSEngine>
+struct Unbox<JSEngine, int64_t> {
+    static int64_t call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, bool, bool) {
+        return js::Value<JSEngine>::validated_to_number(ctx->m_ctx, value, "Property");
     }
-    static ValueType from_string(ContextType ctx, StringData string) {
-        return Value::from_string(ctx, string.data());
+};
+
+template<typename JSEngine>
+struct Unbox<JSEngine, float> {
+    static float call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, bool, bool) {
+        return js::Value<JSEngine>::validated_to_number(ctx->m_ctx, value, "Property");
     }
-    static Timestamp to_timestamp(ContextType ctx, ValueType &value) {
-        ObjectType date = Value::validated_to_date(ctx, value, "Property");
-        double milliseconds = Value::to_number(ctx, date);
+};
+
+template<typename JSEngine>
+struct Unbox<JSEngine, double> {
+    static double call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, bool, bool) {
+        return js::Value<JSEngine>::validated_to_number(ctx->m_ctx, value, "Property");
+    }
+};
+
+template<typename JSEngine>
+struct Unbox<JSEngine, util::Optional<bool>> {
+    static util::Optional<bool> call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, bool, bool) {
+        return js::Value<JSEngine>::validated_to_boolean(ctx->m_ctx, value, "Property");
+}
+};
+
+template<typename JSEngine>
+struct Unbox<JSEngine, util::Optional<int64_t>> {
+    static util::Optional<int64_t> call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, bool, bool) {
+        return js::Value<JSEngine>::validated_to_number(ctx->m_ctx, value, "Property");
+}
+};
+
+template<typename JSEngine>
+struct Unbox<JSEngine, util::Optional<float>> {
+    static util::Optional<float> call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, bool, bool) {
+        return js::Value<JSEngine>::validated_to_number(ctx->m_ctx, value, "Property");
+}
+};
+
+template<typename JSEngine>
+struct Unbox<JSEngine, util::Optional<double>> {
+    static util::Optional<double> call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, bool, bool) {
+        return js::Value<JSEngine>::validated_to_number(ctx->m_ctx, value, "Property");
+}
+};
+
+template<typename JSEngine>
+struct Unbox<JSEngine, StringData> {
+    static StringData call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, bool, bool) {
+        ctx->m_string_buffer = js::Value<JSEngine>::validated_to_string(ctx->m_ctx, value, "Property");
+        return ctx->m_string_buffer;
+    }
+};
+
+// Need separate implementations per-engine
+template<typename JSEngine>
+struct Unbox<JSEngine, BinaryData> {
+    static BinaryData call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value value, bool, bool);
+};
+
+template<typename JSEngine>
+struct Unbox<JSEngine, Mixed> {
+    static Mixed call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, bool, bool) {
+        throw std::runtime_error("'Any' type is unsupported");
+    }
+};
+
+template<typename JSEngine>
+struct Unbox<JSEngine, Timestamp> {
+    static Timestamp call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, bool, bool) {
+        auto date = js::Value<JSEngine>::validated_to_date(ctx->m_ctx, value, "Property");
+        double milliseconds = js::Value<JSEngine>::to_number(ctx->m_ctx, date);
         int64_t seconds = milliseconds / 1000;
         int32_t nanoseconds = ((int64_t)milliseconds % 1000) * 1000000;
         return Timestamp(seconds, nanoseconds);
     }
-    static ValueType from_timestamp(ContextType ctx, Timestamp ts) {
-        return Object::create_date(ctx, ts.get_seconds() * 1000 + ts.get_nanoseconds() / 1000000);
-    }
+};
 
-    static bool is_null(ContextType ctx, ValueType &value) {
-        return Value::is_null(ctx, value) || Value::is_undefined(ctx, value);
-    }
-    static ValueType null_value(ContextType ctx) {
-        return Value::from_null(ctx);
-    }
+template<typename JSEngine>
+struct Unbox<JSEngine, RowExpr> {
+    static RowExpr call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, bool create, bool try_update) {
+        using Value = js::Value<JSEngine>;
+        using ValueType = typename JSEngine::Value;
 
-    static size_t to_object_index(ContextType ctx, SharedRealm realm, ValueType &value, const std::string &type, bool try_update) {
-        ObjectType object = Value::validated_to_object(ctx, value);
-        if (Object::template is_instance<RealmObjectClass<T>>(ctx, object)) {
-            auto realm_object = get_internal<T, RealmObjectClass<T>>(object);
-            if (realm_object->realm() == realm) {
-                return realm_object->row().get_index();
+        auto object = Value::validated_to_object(ctx->m_ctx, value);
+        if (js::Object<JSEngine>::template is_instance<RealmObjectClass<JSEngine>>(ctx->m_ctx, object)) {
+            auto realm_object = get_internal<JSEngine, RealmObjectClass<JSEngine>>(object);
+            if (realm_object->realm() == ctx->m_realm) {
+                return realm_object->row();
+            }
+            if (!create) {
+                throw std::runtime_error("Realm object is from another Realm");
             }
         }
-
-        auto object_schema = realm->schema().find(type);
-        if (Value::is_array(ctx, object)) {
-            object = Schema<T>::dict_for_property_array(ctx, *object_schema, object);
-        }
-
-        auto child = realm::Object::create<ValueType>(ctx, realm, *object_schema, static_cast<ValueType>(object), try_update);
-        return child.row().get_index();
-    }
-    static size_t to_existing_object_index(ContextType ctx, SharedRealm realm, ValueType &value) {
-        ObjectType object = Value::validated_to_object(ctx, value);
-        if (!Object::template is_instance<RealmObjectClass<T>>(ctx, object)) {
+        else if (!create) {
             throw std::runtime_error("object is not a Realm Object");
         }
-        
-        auto realm_object = get_internal<T, RealmObjectClass<T>>(object);
-        if (realm_object->realm() != realm) {
-            throw std::runtime_error("Realm object is from another Realm");
 
+        if (Value::is_array(ctx->m_ctx, object)) {
+            object = Schema<JSEngine>::dict_for_property_array(ctx->m_ctx, *ctx->m_object_schema, object);
         }
-        return realm_object->row().get_index();
-    }
-    static ValueType from_object(ContextType ctx, realm::Object realm_object) {
-        return RealmObjectClass<T>::create_instance(ctx, std::move(realm_object));
-    }
 
-    static size_t list_size(ContextType ctx, ValueType &value) {
-        return Object::validated_get_length(ctx, Value::validated_to_object(ctx, value));
-    }
-    static ValueType list_value_at_index(ContextType ctx, ValueType &value, size_t index) {
-        return Object::validated_get_object(ctx, Value::validated_to_object(ctx, value), (uint32_t)index);
-    }
-    static ValueType from_list(ContextType ctx, realm::List list) {
-        return ListClass<T>::create_instance(ctx, std::move(list));
-    }
-    static ValueType from_results(ContextType ctx, realm::Results results) {
-        return ResultsClass<T>::create_instance(ctx, std::move(results));
-    }
-    static Mixed to_mixed(ContextType ctx, ValueType &val) {
-        throw std::runtime_error("'Any' type is unsupported");
+        auto child = realm::Object::create<ValueType>(*ctx, ctx->m_realm,
+                                                      *ctx->m_object_schema,
+                                                      static_cast<ValueType>(object), try_update);
+        return child.row();
     }
 };
+} // namespace _impl
+
+template<typename T>
+template<typename U>
+U NativeAccessor<T>::unbox(ValueType value, bool create, bool update) {
+    return _impl::Unbox<T, U>::call(this, std::move(value), create, update);
+}
+
 
 } // js
 } // realm
