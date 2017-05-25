@@ -114,7 +114,6 @@ local.properties
 
 # Visual Studio Code
 .vscode
-tsconfig.json
 
 # Tests
 object-server-for-testing/
