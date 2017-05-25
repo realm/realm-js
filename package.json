@@ -75,6 +75,7 @@
     "react-tests-android": "node scripts/react-tests-android.js || npm run postreact-tests-android",
     "postreact-tests-android": "npm run win-revert-symlinks"
   },
+  "typings": "./index.d.ts",
   "dependencies": {
     "extract-zip": "^1.6.0",
     "ini": "^1.3.4",
