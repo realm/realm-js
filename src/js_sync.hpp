@@ -114,7 +114,6 @@ void populate_sync_config_impl(typename T::Context ctx, Realm::Config& config, S
     using Value = js::Value<T>;
     using Function = js::Function<T>;
     using ReturnValue = js::ReturnValue<T>;
-    using NativeAccessor = realm::NativeAccessor<ValueType, ContextType>;
 
     ObjectType realm_constructor = Value::validated_to_object(ctx, Object::get_global(ctx, "Realm"));
     ObjectType sync_constructor = Object::validated_get_object(ctx, realm_constructor, std::string("Sync"));
