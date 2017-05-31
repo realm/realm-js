@@ -87,7 +87,7 @@ class Realm {
      * Open a realm asynchronously with a callback. If the realm is synced, it will be fully 
      * synchronized before it is available.
      * @param {Realm~Configuration} config 
-     * @param {function(error, realm)} callback - will be called when the realm is ready.
+     * @param  {callback(error, realm)} - will be called when the realm is ready.
      * @throws {Error} If anything in the provided `config` is invalid.
      */
     static openAsync(config, callback) {}
@@ -144,7 +144,7 @@ class Realm {
      * Add a listener `callback` for the specified event `name`.
      * @param {string} name - The name of event that should cause the callback to be called.
      *   _Currently, only the "change" event supported_.
-     * @param {function(Realm, string)} callback - Function to be called when the event occurs.
+     * @param {callback(Realm, string)} callback - Function to be called when the event occurs.
      *   Each callback will only be called once per event, regardless of the number of times
      *   it was added.
      * @throws {Error} If an invalid event `name` is supplied, or if `callback` is not a function.
@@ -155,7 +155,7 @@ class Realm {
     * Remove the listener `callback` for the specfied event `name`.
     * @param {string} name - The event name.
     *   _Currently, only the "change" event supported_.
-    * @param {function(Realm, string)} callback - Function that was previously added as a
+    * @param {callback(Realm, string)} callback - Function that was previously added as a
     *   listener for this event through the {@link Realm#addListener addListener} method.
     * @throws {Error} If an invalid event `name` is supplied, or if `callback` is not a function.
     */
@@ -199,7 +199,7 @@ Realm.defaultPath;
  * @type {Object}
  * @property {ArrayBuffer|ArrayBufferView} [encryptionKey] - The 512-bit (64-byte) encryption
  *   key used to encrypt and decrypt all data in the Realm.
- * @property {function(Realm, Realm)} [migration] - The function to run if a migration is needed.
+ * @property {callback(Realm, Realm)} [migration] - The function to run if a migration is needed.
  *   This function should provide all the logic for converting data models from previous schemas
  *   to the new schema.
  *   This function takes two arguments:
