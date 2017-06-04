@@ -33,20 +33,23 @@ import TodoItem from './todo-item';
 import TodoListView from './todo-listview';
 import realm from './realm';
 import styles from './styles';
+const uuidV4 = require('uuid/v4');
 
 export default class TodoApp extends React.Component {
     constructor(props) {
         super(props);
 
         // This is a Results object, which will live-update.
-        this.todoLists = realm.objects('TodoList').sorted('creationDate');
-        if (this.todoLists.length < 1) {
+        this.todoLists = realm.objects('TaskList').sorted('text');
+        if (this.todoLists.length < 1) { // FIXME async?!!
+          console.log(this.todoLists.length, this.todoLists);
             realm.write(() => {
-                realm.create('TodoList', {name: 'Todo List', creationDate: new Date()});
+                realm.create('TaskList', {text: 'My tasks', id: uuidV4()});
             });
         }
         this.todoLists.addListener((name, changes) => {
             console.log("changed: " + JSON.stringify(changes));
+            this.forceUpdate();
         });
         console.log("registered listener");
 
@@ -71,10 +74,10 @@ export default class TodoApp extends React.Component {
     }
 
     render() {
-        let objects = realm.objects('Todo');
+        let objects = realm.objects('Task');
         let extraItems = [
-            {name: 'Complete', items: objects.filtered('done = true')},
-            {name: 'Incomplete', items: objects.filtered('done = false')},
+            // {name: 'Complete', items: objects.filtered('completed = true')},
+            // {name: 'Incomplete', items: objects.filtered('completed = false')},
         ];
 
         let route = {
@@ -107,7 +110,7 @@ export default class TodoApp extends React.Component {
     }
 
     renderScene(route) {
-        console.log(this.todoLists);
+        console.log('RENDER', this.todoLists);
         return <route.component items={this.todoLists} {...route.passProps} />
     }
 
@@ -130,18 +133,23 @@ export default class TodoApp extends React.Component {
             return;
         }
 
+        const uuid = uuidV4();
+
         realm.write(() => {
-            realm.create('TodoList', {name: '', creationDate: new Date()});
+                    realm.create('TaskList', { text: 'new task list', id: uuid, completed: false });
         });
 
-        this._setEditingRow(items.length - 1);
+        const i = this.todoLists.findIndex( l => l.id==uuid );
+        console.log("UUID", uuid, i);
+
+        this._setEditingRow(i);
     }
 
     _onPressTodoList(list) {
         let items = list.items;
 
         let route = {
-            title: list.name,
+            title: list.text,
             component: TodoListView,
             passProps: {
                 ref: 'listItemView',
@@ -166,7 +174,7 @@ export default class TodoApp extends React.Component {
         let editingItem = editingRow != null && items[editingRow];
 
         // Don't allow adding a new item if the one being edited is empty.
-        return !editingItem || !!editingItem.text || !!editingItem.name;
+        return !editingItem || !!editingItem.text;
     }
 
     _setEditingRow(rowIndex) {

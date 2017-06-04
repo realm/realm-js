@@ -37,7 +37,7 @@ export default class TodoListView extends React.Component {
         let dataSource = new ListView.DataSource({
             rowHasChanged(a, b) {
                 // Always re-render TodoList items.
-                return a.done !== b.done || a.text !== b.text || a.items || b.items;
+                return a.completed !== b.completed || a.text !== b.text || a.items || b.items;
             }
         });
 
@@ -97,6 +97,7 @@ export default class TodoListView extends React.Component {
             <RowClass
                 item={item}
                 editing={editing}
+                index={rowIndex}
                 onPress={() => this._onPressRow(item, sectionIndex, rowIndex)}
                 onPressDelete={() => this._onPressDeleteRow(item)}
                 onEndEditing={() => this._onEndEditingRow(item, rowIndex)} />
@@ -163,7 +164,7 @@ export default class TodoListView extends React.Component {
 
     _deleteItemIfEmpty(item) {
         // The item could be a TodoList or a Todo.
-        if (!item.name && !item.text) {
+        if (!item.text) {
             this._deleteItem(item);
             return true;
         }

@@ -40,17 +40,17 @@ export default class TodoListItem extends React.Component {
         this._onChangeText = this._onChangeText.bind(this);
     }
 
-    get done() {
+    get completed() {
         let items = this.props.item.items;
-        return items.length > 0 && items.every((item) => item.done);
+        return items.length > 0 && items.every((item) => item.completed);
     }
 
     get text() {
-        return this.props.item.name;
+        return this.props.item.text;
     }
 
     set text(text) {
-        this.props.item.name = text;
+        this.props.item.text = text;
     }
 
     componentDidMount() {
@@ -62,9 +62,11 @@ export default class TodoListItem extends React.Component {
         this._focusInputIfNecessary();
     }
 
+
     render() {
+        const i8 = this.props.index<7 ? this.props.index : 6;
         return (
-            <View style={styles.listItem}>
+            <View style={ [ styles.listItem, styles['realmColor'+i8] ] }>
                 {this.renderLeftSide()}
                 {this.renderText()}
                 {this.renderRightSide()}
@@ -75,7 +77,7 @@ export default class TodoListItem extends React.Component {
     renderLeftSide() {
         return (
             <View style={styles.listItemLeftSide}>
-                <Text>{this.done ? '✓' : '⁃'}</Text>
+                <Text>{this.completed ? '✓' : '⁃'}</Text>
             </View>
         );
     }

@@ -32,13 +32,13 @@ export default StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'stretch',
-        backgroundColor: '#fff',
+        backgroundColor: '#39477f',
     },
     navigator: {
         flex: 1,
     },
     navBar: {
-        backgroundColor: '#f0727d',
+        backgroundColor: '#E7A776',
     },
     navBarView: {
         alignItems: 'center',
@@ -69,8 +69,7 @@ export default StyleSheet.create({
         top: TotalNavHeight,
     },
     listItem: {
-        borderColor: '#c8c7cc',
-        borderBottomWidth: StyleSheet.hairlineWidth,
+        borderBottomWidth: 0,
         alignItems: 'stretch',
         alignSelf: 'stretch',
         justifyContent: 'center',
@@ -135,5 +134,82 @@ export default StyleSheet.create({
         textAlign: 'center',
         color: '#333333',
         marginBottom: 5,
-    }
+    },
+    realmColor0: {
+        backgroundColor:"#fcc397",
+    },
+    realmColor1: {
+        backgroundColor:"#fc9f95",
+    },
+    realmColor2: {
+        backgroundColor:"#f77c88",
+    },
+    realmColor3: {
+        backgroundColor:"#f25192",
+    },
+    realmColor4: {
+        backgroundColor:"#d34ca3",
+    },
+    realmColor5: {
+        backgroundColor:"#9a50a5",
+    },
+    realmColor6: {
+        backgroundColor:"#59569e",
+    },
+    realmColor7: {
+        backgroundColor:  "#39477f",
+    },
+    loginView: {
+        flex: 1,
+        alignItems: 'stretch',
+        backgroundColor: '#39477f',
+        justifyContent: 'center',
+        padding: 20,
+    },
+    loginRow: {
+    },
+    loginInput: {
+        fontSize: 18,
+        padding: 10,
+    },
+    loginTitle: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        textAlign: 'center',
+        padding: 10,
+        backgroundColor: "#f77c88",
+    },
+    loginLabel1: {
+        fontSize: 18,
+        padding: 10,
+        height: 40,
+        backgroundColor: "#f25192",
+    },
+    loginInput1: {
+        fontSize: 18,
+        padding: 10,
+        height: 40,
+        backgroundColor: "#d34ca3",
+        textAlign: 'right',
+    },
+    loginLabel2: {
+        fontSize: 18,
+        height: 40,
+        padding: 10,
+        backgroundColor: "#9a50a5",
+    },
+    loginInput2: {
+        fontSize: 18,
+        padding: 10,
+        height: 40,
+        backgroundColor: "#59569e",
+        textAlign: 'right',
+    },
+    loginErrorLabel: {
+        fontSize: 18,
+        height: 40,
+        padding: 10,
+        backgroundColor: "#39477f",
+        color: "red",
+    },
 });
