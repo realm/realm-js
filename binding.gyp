@@ -40,7 +40,8 @@
         "src/object-store/src/impl",
         "src/object-store/src/impl/apple",
         "src/object-store/src/parser",
-        "src/object-store/external/pegtl"
+        "src/object-store/external/pegtl",
+        "src/object-store/external/sole"
       ],
       "sources": [
         "src/object-store/src/binding_callback_thread_observer.cpp",
@@ -65,6 +66,7 @@
         "src/object-store/src/parser/parser.cpp",
         "src/object-store/src/parser/query_builder.cpp",
         "src/object-store/src/util/format.cpp",
+        "src/object-store/src/util/uuid.cpp",
       ],
       "conditions": [
         ["OS=='win'", {
@@ -89,10 +91,12 @@
           "dependencies": [ "realm-sync" ],
           "sources": [
             "src/object-store/src/sync/sync_manager.cpp",
+            "src/object-store/src/sync/sync_permission.cpp",
             "src/object-store/src/sync/sync_user.cpp",
             "src/object-store/src/sync/sync_session.cpp",
             "src/object-store/src/sync/impl/sync_file.cpp",
-            "src/object-store/src/sync/impl/sync_metadata.cpp"
+            "src/object-store/src/sync/impl/sync_metadata.cpp",
+            "src/object-store/src/util/uuid.cpp"
           ],
         }]
       ],
@@ -102,7 +106,8 @@
           "src/object-store/src/impl",
           "src/object-store/src/impl/apple",
           "src/object-store/src/parser",
-          "src/object-store/external/pegtl"
+          "src/object-store/external/pegtl",
+          "src/object-store/external/sole"
         ]
       },
       "export_dependent_settings": [

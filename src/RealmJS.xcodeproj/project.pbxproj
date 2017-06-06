@@ -23,6 +23,7 @@
 		02414BA91CE6ABCF00A8669F /* collection_notifications.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02414B961CE6AADD00A8669F /* collection_notifications.cpp */; };
 		0270BC821B7D020100010E03 /* RealmJSTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = 0270BC7B1B7D020100010E03 /* RealmJSTests.mm */; };
 		027A23131CD3E379000543AE /* libRealmJS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F63FF2B11C1241E500B3B8E0 /* libRealmJS.a */; };
+		027DB4061E85EF7C00CCE4B2 /* sync_permission.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02BC108C1E81C640003C2326 /* sync_permission.cpp */; };
 		02D041F71CE11159000E4250 /* dates-v3.realm in Resources */ = {isa = PBXBuildFile; fileRef = 02D041F61CE11159000E4250 /* dates-v3.realm */; };
 		02D8D1F71B601984006DB49D /* JavaScriptCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 02B58CCD1AE99D4D009B348C /* JavaScriptCore.framework */; };
 		02E315C91DB80DDD00555337 /* sync_manager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E315C31DB80DDD00555337 /* sync_manager.cpp */; };
@@ -40,6 +41,7 @@
 		02F59EC51C88F17D007F774C /* shared_realm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02F59EBD1C88F17D007F774C /* shared_realm.cpp */; };
 		02F59EE21C88F2BB007F774C /* realm_coordinator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02F59EDB1C88F2BA007F774C /* realm_coordinator.cpp */; };
 		02F59EE31C88F2BB007F774C /* transact_log_handler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02F59EDD1C88F2BB007F774C /* transact_log_handler.cpp */; };
+		1A877BD61E9D8341001BEC40 /* uuid.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1A877BD31E9D8336001BEC40 /* uuid.cpp */; };
 		502B07E41E2CD201007A84ED /* object.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 502B07E31E2CD1FA007A84ED /* object.cpp */; };
 		504CF85E1EBCAE3600A9A4B6 /* network_reachability_observer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 504CF8541EBCAE3600A9A4B6 /* network_reachability_observer.cpp */; };
 		504CF85F1EBCAE3600A9A4B6 /* system_configuration.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 504CF8561EBCAE3600A9A4B6 /* system_configuration.cpp */; };
@@ -122,6 +124,7 @@
 		0270BC781B7D020100010E03 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = ios/Info.plist; sourceTree = "<group>"; };
 		0270BC7A1B7D020100010E03 /* RealmJSTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RealmJSTests.h; path = ios/RealmJSTests.h; sourceTree = "<group>"; };
 		0270BC7B1B7D020100010E03 /* RealmJSTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = RealmJSTests.mm; path = ios/RealmJSTests.mm; sourceTree = "<group>"; };
+		027E50C41E832CC4006FAA61 /* js_permission_results.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = js_permission_results.hpp; sourceTree = "<group>"; };
 		02879D8B1DC29D5600777A5D /* package.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; name = package.json; path = ../package.json; sourceTree = "<group>"; };
 		029048011C0428DF00ABDED4 /* jsc_init.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = jsc_init.cpp; sourceTree = "<group>"; };
 		029048021C0428DF00ABDED4 /* jsc_init.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = jsc_init.h; sourceTree = "<group>"; };
@@ -139,6 +142,10 @@
 		02A3C7A41BC4341500B1A7BE /* libc++.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.tbd"; path = "usr/lib/libc++.tbd"; sourceTree = SDKROOT; };
 		02B58CBC1AE99CEC009B348C /* RealmJSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RealmJSTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		02B58CCD1AE99D4D009B348C /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
+		02BC108A1E81BA90003C2326 /* any.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = any.hpp; sourceTree = "<group>"; };
+		02BC108B1E81BAA1003C2326 /* object_accessor_impl.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = object_accessor_impl.hpp; sourceTree = "<group>"; };
+		02BC108C1E81C640003C2326 /* sync_permission.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = sync_permission.cpp; path = src/sync/sync_permission.cpp; sourceTree = "<group>"; };
+		02BC108D1E81C640003C2326 /* sync_permission.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = sync_permission.hpp; path = src/sync/sync_permission.hpp; sourceTree = "<group>"; };
 		02D041F61CE11159000E4250 /* dates-v3.realm */ = {isa = PBXFileReference; lastKnownFileType = file; path = "dates-v3.realm"; sourceTree = "<group>"; };
 		02E315C21DB80DDD00555337 /* sync_config.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = sync_config.hpp; path = src/sync/sync_config.hpp; sourceTree = "<group>"; };
 		02E315C31DB80DDD00555337 /* sync_manager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = sync_manager.cpp; path = src/sync/sync_manager.cpp; sourceTree = "<group>"; };
@@ -176,6 +183,8 @@
 		02F59EDC1C88F2BB007F774C /* realm_coordinator.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = realm_coordinator.hpp; sourceTree = "<group>"; };
 		02F59EDD1C88F2BB007F774C /* transact_log_handler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = transact_log_handler.cpp; sourceTree = "<group>"; };
 		02F59EDE1C88F2BB007F774C /* transact_log_handler.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = transact_log_handler.hpp; sourceTree = "<group>"; };
+		1A877BD31E9D8336001BEC40 /* uuid.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = uuid.cpp; sourceTree = "<group>"; };
+		1A877BD41E9D8336001BEC40 /* uuid.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = uuid.hpp; sourceTree = "<group>"; };
 		502B07E31E2CD1FA007A84ED /* object.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = object.cpp; path = src/object.cpp; sourceTree = "<group>"; };
 		502B07E51E2CD20D007A84ED /* object.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = object.hpp; path = src/object.hpp; sourceTree = "<group>"; };
 		504CF8541EBCAE3600A9A4B6 /* network_reachability_observer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = network_reachability_observer.cpp; sourceTree = "<group>"; };
@@ -301,11 +310,14 @@
 			children = (
 				02022A6C1DA47EC8000F0C4F /* android */,
 				02022A6E1DA47EC8000F0C4F /* apple */,
+				02BC108A1E81BA90003C2326 /* any.hpp */,
 				02022A701DA47EC8000F0C4F /* atomic_shared_ptr.hpp */,
 				02022A711DA47EC8000F0C4F /* compiler.hpp */,
 				02022A721DA47EC8000F0C4F /* event_loop_signal.hpp */,
 				02022A731DA47EC8000F0C4F /* format.cpp */,
 				02022A741DA47EC8000F0C4F /* format.hpp */,
+				1A877BD31E9D8336001BEC40 /* uuid.cpp */,
+				1A877BD41E9D8336001BEC40 /* uuid.hpp */,
 				02022A751DA47EC8000F0C4F /* generic */,
 				02022A771DA47EC8000F0C4F /* node */,
 			);
@@ -358,6 +370,7 @@
 				0290934A1CEFA9170009769E /* js_observable.hpp */,
 				F60102F71CBDA6D400EC01BA /* js_collection.hpp */,
 				029048041C0428DF00ABDED4 /* js_list.hpp */,
+				027E50C41E832CC4006FAA61 /* js_permission_results.hpp */,
 				029048061C0428DF00ABDED4 /* js_realm_object.hpp */,
 				029048071C0428DF00ABDED4 /* js_realm.cpp */,
 				029048081C0428DF00ABDED4 /* js_realm.hpp */,
@@ -449,6 +462,8 @@
 				02E315C21DB80DDD00555337 /* sync_config.hpp */,
 				02E315C31DB80DDD00555337 /* sync_manager.cpp */,
 				02E315C41DB80DDD00555337 /* sync_manager.hpp */,
+				02BC108C1E81C640003C2326 /* sync_permission.cpp */,
+				02BC108D1E81C640003C2326 /* sync_permission.hpp */,
 				02E315C51DB80DDD00555337 /* sync_session.cpp */,
 				02E315C61DB80DDD00555337 /* sync_session.hpp */,
 				02E315C71DB80DDD00555337 /* sync_user.cpp */,
@@ -567,6 +582,7 @@
 				02414B9C1CE6AAEF00A8669F /* collection_notifier.hpp */,
 				02414B9D1CE6AAEF00A8669F /* list_notifier.cpp */,
 				02414B9E1CE6AAEF00A8669F /* list_notifier.hpp */,
+				02BC108B1E81BAA1003C2326 /* object_accessor_impl.hpp */,
 				8507156B1E2CFC0100E548DB /* object_notifier.cpp */,
 				8507156C1E2CFC0100E548DB /* object_notifier.hpp */,
 				02414B9F1CE6AAEF00A8669F /* results_notifier.cpp */,
@@ -871,7 +887,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				027DB4061E85EF7C00CCE4B2 /* sync_permission.cpp in Sources */,
 				02E315C91DB80DDD00555337 /* sync_manager.cpp in Sources */,
+				1A877BD61E9D8341001BEC40 /* uuid.cpp in Sources */,
 				02022A671DA47BD7000F0C4F /* parser.cpp in Sources */,
 				02022A681DA47BD7000F0C4F /* query_builder.cpp in Sources */,
 				02E315E01DB8233E00555337 /* keychain_helper.cpp in Sources */,
@@ -1102,6 +1120,13 @@
 					__ASSERTMACROS__,
 					REALM_ENABLE_SYNC,
 				);
+				HEADER_SEARCH_PATHS = (
+					"$(SRCROOT)/object-store/external/pegtl",
+					"$(SRCROOT)/object-store/external/sole",
+					"$(SRCROOT)/object-store/src",
+					"$(SRCROOT)/../vendor",
+					"$(SRCROOT)/../vendor/core/include",
+				);
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(inherited)",
 					"-isystem",
@@ -1122,6 +1147,13 @@
 					REALM_HAVE_CONFIG,
 					__ASSERTMACROS__,
 					REALM_ENABLE_SYNC,
+				);
+				HEADER_SEARCH_PATHS = (
+					"$(SRCROOT)/object-store/external/pegtl",
+					"$(SRCROOT)/object-store/external/sole",
+					"$(SRCROOT)/object-store/src",
+					"$(SRCROOT)/../vendor",
+					"$(SRCROOT)/../vendor/core/include",
 				);
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(inherited)",

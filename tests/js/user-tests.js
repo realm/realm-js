@@ -87,6 +87,41 @@ function callbackTest(requestFunc, callback) {
   });
 }
 
+function getAndCheckPermission(user, expected, callback) {
+  user.getPermissions((error, permissions) => {
+    failOnError(error);
+    setTimeout(() => {
+      console.log(permissions);
+
+      failOnError(error);
+
+      TestCase.assertEqual(expected.length, permissions.length);
+      for (var i = 0; i < expected.length; i++) {
+        TestCase.assertEqual(expected[i].userId, permissions[i].userId);
+        TestCase.assertEqual(expected[i].path, permissions[i].path);
+        TestCase.assertEqual(expected[i].access, permissions[i].access);
+      }
+
+      callback();
+    }, 100);
+  });
+}
+
+function createUsers(numUsers, callback, users) {
+  if (!users) users = [];
+  Realm.Sync.User.register('http://localhost:9080', uuid(), 'password', (error, user) => {
+    failOnError(error);
+    users.push(user);
+
+    numUsers--;
+    if (!numUsers) 
+      callback(users);
+    else 
+      createUsers(numUsers, callback, users);
+  });
+}
+
+
 module.exports = {
   
   testLogout() {
@@ -295,6 +330,109 @@ module.exports = {
     });
   },
 
+  testSetPermission() {
+    return new Promise((resolve, _reject) => createUsers(3, (users) => {
+      var realm = new Realm({sync: {user: users[0], url: 'realm://localhost:9080/~/test'}});
+      TestCase.assertTrue(realm !== undefined);
+      realm.close();
+
+      users[0].setPermission(`/${users[0].identity}/test`, 'Read', users[1].identity, (error) => {
+      // Give read permissions to user 2
+      failOnError(error);
+      var realm = new Realm({sync: {user: users[1], url: `realm://localhost:9080/${users[0].identity}/test`}});
+      TestCase.assertTrue(realm !== undefined);
+      realm.close();
+
+      users[1].setPermission(`/${users[0].identity}/test`, 'Read', users[2].identity, (error) => {
+      // user2 is not admin so can't change permissions
+      console.log(error);
+      assertIsError(error);
+
+      users[0].setPermission(`/${users[0].identity}/test`, 'Admin', users[1].identity, (error) => {
+      console.log(error);
+      // make user2 admin
+      failOnError(error);
+      
+      users[1].setPermission(`/${users[0].identity}/test`, 'Read', users[2].identity, (error) => {
+      // user2 can change permissions once admin
+      failOnError(error);
+      var realm = new Realm({sync: {user: users[2], url: `realm://localhost:9080/${users[0].identity}/test`}});
+      TestCase.assertTrue(realm !== undefined);
+      realm.close();
+      resolve();
+    })})})})}));
+  },
+
+  testGetPermissions() {
+    return new Promise((resolve, _reject) => createUsers(2, (users) => {      
+      var realm = new Realm({sync: {user: users[0], url: 'realm://localhost:9080/~/test'}});
+      TestCase.assertTrue(realm !== undefined);
+      realm.close();
+
+      getAndCheckPermission(users[0], [], () => {
+        users[0].setPermission(`/${users[0].identity}/test`, 'Read', users[1].identity, (error) => {
+          // Give read permissions to user 2
+          failOnError(error);
+          getAndCheckPermission(users[1], [{path: `/${users[0].identity}/test`, userId: users[1].identity, access: 'Read'}], resolve);
+        });
+      });
+    }));
+  },
+
+  testDeletePermissions() {
+    return new Promise((resolve, _reject) => createUsers(2, (users) => {      
+      var realm = new Realm({sync: {user: users[0], url: 'realm://localhost:9080/~/test'}});
+      TestCase.assertTrue(realm !== undefined);
+      realm.close();
+
+      getAndCheckPermission(users[0], [], () => {
+        users[0].setPermission(`/${users[0].identity}/test`, 'Read', users[1].identity, (error) => {
+          // Give read permissions to user 2
+          failOnError(error);
+          getAndCheckPermission(users[1], [{path: `/${users[0].identity}/test`, userId: users[1].identity, access: 'Read'}], () => {
+            users[0].deletePermission(`/${users[0].identity}/test`, users[1].identity, (error) => {
+              failOnError(error);
+              getAndCheckPermission(users[1], [], resolve);
+            });
+          });
+        });
+      });
+    }));
+  },
+
+ testPermissionNotification(done) {
+    return new Promise((resolve, _reject) => createUsers(3, (users) => {
+      var realm = new Realm({sync: {user: users[0], url: 'realm://localhost:9080/~/test'}});
+      TestCase.assertTrue(realm !== undefined);
+      realm.close();
+
+      users[0].setPermission(`/${users[0].identity}/test`, 'Read', users[1].identity, (error) => {
+      // Give read permissions to user 2
+      failOnError(error);
+
+      users[1].getPermissions((error, results) => {
+        failOnError(error);
+
+        TestCase.assertEqual(results.length, 1);
+        results.addListener(() => {
+          //TestCase.assertEqual(results.length, 2);
+          if (results.length == 2) {
+            console.log(results);
+            setTimeout(resolve, 0);
+          }
+        });
+  
+        var realm = new Realm({sync: {user: users[2], url: 'realm://localhost:9080/~/test'}});
+        TestCase.assertTrue(realm !== undefined);
+        realm.close();
+
+        users[2].setPermission(`/${users[2].identity}/test`, 'Read', users[1].identity, (error) => {
+          // Give read permissions to user 2
+          failOnError(error);
+        });
+      });
+    })}));
+  },
   /* This test fails because of realm-object-store #243 . We should use 2 users.
   testSynchronizeChangesWithTwoClientsAndOneUser() {
     // Test Schema
