@@ -118,8 +118,9 @@ bool RealmObjectClass<T>::set_property(ContextType ctx, ObjectType object, const
         NativeAccessor<T> accessor(ctx, realm_object->realm());
         realm_object->set_property_value(accessor, property_name, value, true);
     }
-    catch (TypeErrorException &ex) {
-        throw TypeErrorException(realm_object->get_object_schema().name + "." + property_name, ex.type());
+    catch (InvalidPropertyException &ex) {
+        auto propertyType = ex.object_type;
+        throw TypeErrorException(realm_object->get_object_schema().name + "." + property_name, propertyType);
     }
     return true;
 }

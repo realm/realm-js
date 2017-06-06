@@ -254,7 +254,7 @@ U NativeAccessor<T>::unbox(ValueType value, bool create, bool update) {
     }
     catch (TypeErrorException &ex) {
         auto propertyType = ex.type();
-        throw InvalidPropertyException(propertyType, "unkonwn property name");
+        throw InvalidPropertyException(propertyType, "unkonwn_property_name");
     }
 }
 
