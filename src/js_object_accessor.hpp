@@ -249,7 +249,13 @@ struct Unbox<JSEngine, RowExpr> {
 template<typename T>
 template<typename U>
 U NativeAccessor<T>::unbox(ValueType value, bool create, bool update) {
-    return _impl::Unbox<T, U>::call(this, std::move(value), create, update);
+    try {
+        return _impl::Unbox<T, U>::call(this, std::move(value), create, update);
+    }
+    catch (TypeErrorException &ex) {
+        auto propertyType = ex.type();
+        throw InvalidPropertyException(propertyType, "unkonwn property name");
+    }
 }
 
 

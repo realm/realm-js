@@ -662,8 +662,15 @@ void RealmClass<T>::create(ContextType ctx, FunctionType, ObjectType this_object
     }
 
     NativeAccessor accessor(ctx, realm);
-    auto realm_object = realm::Object::create<ValueType>(accessor, realm, object_schema, object, update);
-    return_value.set(RealmObjectClass<T>::create_instance(ctx, std::move(realm_object)));
+    try {
+        auto realm_object = realm::Object::create<ValueType>(accessor, realm, object_schema, object, update);
+        return_value.set(RealmObjectClass<T>::create_instance(ctx, std::move(realm_object)));
+    }
+    catch (InvalidPropertyException &ex) {
+        auto propertyType = ex.object_type;
+        auto propertyName = ex.property_name;
+        throw TypeErrorException(object_schema.name + "." + propertyName, propertyType);
+    }
 }
 
 template<typename T>
