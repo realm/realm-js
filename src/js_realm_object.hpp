@@ -49,6 +49,8 @@ struct RealmObjectClass : ClassDefinition<T, realm::Object> {
     static std::vector<String> get_property_names(ContextType, ObjectType);
     
     static void is_valid(ContextType, FunctionType, ObjectType, size_t, const ValueType [], ReturnValue &);
+    
+    static void get_object_schema(ContextType, ObjectType, ReturnValue &);
 
     const std::string name = "RealmObject";
 
@@ -60,12 +62,19 @@ struct RealmObjectClass : ClassDefinition<T, realm::Object> {
 
     MethodMap<T> const methods = {
         {"isValid", wrap<is_valid>},
+        {"objectSchema", wrap<get_object_schema>},
     };
 };
 
 template<typename T>
 void RealmObjectClass<T>::is_valid(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     return_value.set(get_internal<T, RealmObjectClass<T>>(this_object)->is_valid());
+}
+    
+template<typename T>
+void RealmObjectClass<T>::get_object_schema(ContextType ctx, ObjectType this_object, ReturnValue &return_value) {
+    auto object = get_internal<T, RealmObjectClass<T>>(this_object);
+    return_value.set(object->get_object_schema());
 }
     
 template<typename T>

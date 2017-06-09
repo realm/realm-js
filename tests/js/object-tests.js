@@ -470,6 +470,14 @@ module.exports = {
             obj.doubleCol;
         });
     },
+    
+    testObjectSchema: function() {
+        var realm = new Realm({schema: [schemas.TestObject]});
+        realm.write(function() {
+            var obj = realm.create('TestObject', {doubleCol: 1});
+            TestCase.assertEqual(obj.objectSchema(), schemas.TestObject);
+        });
+    }
 
     testIgnoredProperties: function() {
         var realm = new Realm({schema: [schemas.TestObject]});
