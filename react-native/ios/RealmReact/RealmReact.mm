@@ -49,6 +49,12 @@ using namespace realm::rpc;
 - (JSContext *)context;
 @end
 
+// the part of the RCTCxxBridge private class we care about
+@interface RCTBridge (RCTCxxBridge)
+- (JSGlobalContextRef)jsContextRef;
+- (void)executeBlockOnJavaScriptThread:(dispatch_block_t)block;
+@end
+
 extern "C" JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executor, bool create) {
     Ivar contextIvar = class_getInstanceVariable([executor class], "_context");
     if (!contextIvar) {
@@ -299,15 +305,15 @@ void _initializeOnJSThread(JSContextRefExtractor jsContextExtractor) {
 
         __weak __typeof__(self) weakSelf = self;
         __weak __typeof__(bridge) weakBridge = bridge;
-        [bridge performSelector:@selector(executeBlockOnJavaScriptThread:) withObject:^{
+        [bridge executeBlockOnJavaScriptThread:^{
             __typeof__(self) self = weakSelf;
             __typeof__(bridge) bridge = weakBridge;
             if (!self || !bridge) {
                 return;
             }
 
-            _initializeOnJSThread(^ {
-                return (__bridge JSGlobalContextRef)[bridge performSelector:@selector(jsContextRef)];
+            _initializeOnJSThread(^{
+                return [bridge jsContextRef];
             });
         }];
         return;
