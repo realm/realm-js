@@ -50,6 +50,8 @@ Then in the cloned directory:
 git submodule update --init --recursive
 ```
 
+```Note: If you have cloned the repo previously make sure you remove your node_modules directory since it may contain stale dependencies which may cause the build to fail.```
+
 To build for iOS:
 - Open `react-native/ios/RealmReact.xcodeproj`
 - Select `RealmReact.framework` as the build target
