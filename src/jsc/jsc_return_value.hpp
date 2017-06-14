@@ -19,6 +19,7 @@
 #pragma once
 
 #include "jsc_types.hpp"
+#include "jsc_string.hpp"
 
 namespace realm {
 namespace js {

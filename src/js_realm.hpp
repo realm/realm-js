@@ -349,8 +349,7 @@ void RealmClass<T>::constructor(ContextType ctx, ObjectType this_object, size_t 
             static const String encryption_key_string = "encryptionKey";
             ValueType encryption_key_value = Object::get_property(ctx, object, encryption_key_string);
             if (!Value::is_undefined(ctx, encryption_key_value)) {
-                NativeAccessor accessor(ctx);
-                auto encryption_key = accessor.template unbox<BinaryData>(encryption_key_value);
+                auto encryption_key = Value::validated_to_binary(ctx, encryption_key_value, "encryptionKey");
                 config.encryption_key.assign(encryption_key.data(), encryption_key.data() + encryption_key.size());
             }
 
@@ -466,8 +465,7 @@ void RealmClass<T>::schema_version(ContextType ctx, FunctionType, ObjectType thi
     realm::Realm::Config config;
     config.path = normalize_realm_path(Value::validated_to_string(ctx, arguments[0]));
     if (argc == 2) {
-        NativeAccessor accessor(ctx);
-        auto encryption_key = accessor.template unbox<BinaryData>(arguments[1]);
+        auto encryption_key = Value::validated_to_binary(ctx, arguments[1], "encryptionKey");
         config.encryption_key.assign(encryption_key.data(), encryption_key.data() + encryption_key.size());
     }
 
@@ -553,8 +551,7 @@ void RealmClass<T>::wait_for_download_completion(ContextType ctx, FunctionType, 
         static const String encryption_key_string = "encryptionKey";
         ValueType encryption_key_value = Object::get_property(ctx, config_object, encryption_key_string);
         if (!Value::is_undefined(ctx, encryption_key_value)) {
-            NativeAccessor accessor(ctx);
-            auto encryption_key = accessor.template unbox<BinaryData>(encryption_key_value);
+            auto encryption_key = Value::validated_to_binary(ctx, encryption_key_value, "encryptionKey");
             config.encryption_key.assign(encryption_key.data(), encryption_key.data() + encryption_key.size());
         }
         

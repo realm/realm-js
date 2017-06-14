@@ -77,9 +77,9 @@ public:
     ValueType box(float number)      { return Value::from_number(m_ctx, number); }
     ValueType box(double number)     { return Value::from_number(m_ctx, number); }
     ValueType box(StringData string) { return Value::from_string(m_ctx, string.data()); }
+    ValueType box(BinaryData data)   { return Value::from_binary(m_ctx, data); }
     ValueType box(Mixed)             { throw std::runtime_error("'Any' type is unsupported"); }
 
-    ValueType box(BinaryData);
     ValueType box(Timestamp ts) {
         return Object::create_date(m_ctx, ts.get_seconds() * 1000 + ts.get_nanoseconds() / 1000000);
     }
@@ -120,6 +120,7 @@ private:
     std::shared_ptr<Realm> m_realm;
     const ObjectSchema* m_object_schema = nullptr;
     std::string m_string_buffer;
+    OwnedBinaryData m_owned_binary_data;
 
     template<typename, typename>
     friend struct _impl::Unbox;
@@ -190,10 +191,12 @@ struct Unbox<JSEngine, StringData> {
     }
 };
 
-// Need separate implementations per-engine
 template<typename JSEngine>
 struct Unbox<JSEngine, BinaryData> {
-    static BinaryData call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value value, bool, bool);
+    static BinaryData call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value value, bool, bool) {
+        ctx->m_owned_binary_data = js::Value<JSEngine>::validated_to_binary(ctx->m_ctx, value, "Property");
+        return ctx->m_owned_binary_data.get();
+    }
 };
 
 template<typename JSEngine>

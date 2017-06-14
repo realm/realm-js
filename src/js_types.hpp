@@ -24,6 +24,7 @@
 #include <string>
 #include <vector>
 
+#include <realm/binary_data.hpp>
 #include <realm/util/to_string.hpp>
 
 #if defined(__GNUC__) && !(defined(DEBUG) && DEBUG)
@@ -106,12 +107,14 @@ struct Value {
     static bool is_object(ContextType, const ValueType &);
     static bool is_string(ContextType, const ValueType &);
     static bool is_undefined(ContextType, const ValueType &);
+    static bool is_binary(ContextType, const ValueType &);
     static bool is_valid(const ValueType &);
 
     static ValueType from_boolean(ContextType, bool);
     static ValueType from_null(ContextType);
     static ValueType from_number(ContextType, double);
     static ValueType from_string(ContextType, const String<T> &);
+    static ValueType from_binary(ContextType, BinaryData);
     static ValueType from_undefined(ContextType);
 
     static ObjectType to_array(ContextType, const ValueType &);
@@ -122,6 +125,7 @@ struct Value {
     static double to_number(ContextType, const ValueType &);
     static ObjectType to_object(ContextType, const ValueType &);
     static String<T> to_string(ContextType, const ValueType &);
+    static OwnedBinaryData to_binary(ContextType, ValueType);
 
 #define VALIDATED(return_t, type) \
     static return_t validated_to_##type(ContextType ctx, const ValueType &value, const char *name = nullptr) { \
@@ -140,6 +144,7 @@ struct Value {
     VALIDATED(double, number)
     VALIDATED(ObjectType, object)
     VALIDATED(String<T>, string)
+    VALIDATED(OwnedBinaryData, binary)
 
 #undef VALIDATED
 };
