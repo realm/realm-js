@@ -24,6 +24,7 @@
 
 #include "object_accessor.hpp"
 #include "object_store.hpp"
+#include "util/format.hpp"
 
 namespace realm {
 namespace js {
@@ -96,7 +97,7 @@ template<typename T>
 void RealmObjectClass<T>::get_property(ContextType ctx, ObjectType object, const String &property, ReturnValue &return_value) {
     try {
         auto realm_object = get_internal<T, RealmObjectClass<T>>(object);
-        NativeAccessor<T> accessor(ctx);
+        NativeAccessor<T> accessor(ctx, realm_object->realm(), realm_object->get_object_schema());
         std::string name = property;
         auto result = realm_object->template get_property_value<ValueType>(accessor, name);
         return_value.set(result);
@@ -110,17 +111,18 @@ bool RealmObjectClass<T>::set_property(ContextType ctx, ObjectType object, const
     auto realm_object = get_internal<T, RealmObjectClass<T>>(object);
 
     std::string property_name = property;
-    if (!realm_object->get_object_schema().property_for_name(property_name)) {
+    const Property* prop = realm_object->get_object_schema().property_for_name(property_name);
+    if (!prop) {
         return false;
     }
 
-    try {
-        NativeAccessor<T> accessor(ctx, realm_object->realm());
-        realm_object->set_property_value(accessor, property_name, value, true);
+    if (!Value::is_valid_for_property(ctx, value, *prop)) {
+        throw TypeErrorException(util::format("%1.%2", realm_object->get_object_schema().name, property_name),
+                                 js_type_name_for_property_type(prop->type));
     }
-    catch (TypeErrorException &ex) {
-        throw TypeErrorException(realm_object->get_object_schema().name + "." + property_name, ex.type());
-    }
+
+    NativeAccessor<T> accessor(ctx, realm_object->realm(), realm_object->get_object_schema());
+    realm_object->set_property_value(accessor, property_name, value, true);
     return true;
 }
 

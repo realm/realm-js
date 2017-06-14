@@ -21,6 +21,7 @@
 #include "js_list.hpp"
 #include "js_realm_object.hpp"
 #include "js_schema.hpp"
+#include "util/format.hpp"
 
 namespace realm {
 class List;
@@ -46,21 +47,27 @@ public:
     using Value = js::Value<JSEngine>;
     using OptionalValue = util::Optional<ValueType>;
 
-    NativeAccessor(ContextType ctx, std::shared_ptr<Realm> realm=nullptr, const ObjectSchema* object_schema=nullptr)
+    NativeAccessor(ContextType ctx, std::shared_ptr<Realm> realm, const ObjectSchema& object_schema)
     : m_ctx(ctx), m_realm(std::move(realm)), m_object_schema(object_schema) { }
 
     NativeAccessor(NativeAccessor& parent, const Property& prop)
     : m_ctx(parent.m_ctx)
     , m_realm(parent.m_realm)
-    , m_object_schema(&*m_realm->schema().find(prop.object_type))
+    , m_object_schema(*m_realm->schema().find(prop.object_type))
     { }
 
-    OptionalValue value_for_property(ValueType dict, std::string const& prop_name, size_t) {
+    OptionalValue value_for_property(ValueType dict, std::string const& prop_name, size_t prop_index) {
         ObjectType object = Value::validated_to_object(m_ctx, dict);
         if (!Object::has_property(m_ctx, object, prop_name)) {
             return util::none;
         }
-        return Object::get_property(m_ctx, object, prop_name);
+        ValueType value = Object::get_property(m_ctx, object, prop_name);
+        const auto& prop = m_object_schema.persisted_properties[prop_index];
+        if (!Value::is_valid_for_property(m_ctx, value, prop)) {
+            throw TypeErrorException(util::format("%1.%2", m_object_schema.name, prop.name),
+                                     js_type_name_for_property_type(prop.type));
+        }
+        return value;
     }
 
     OptionalValue default_value_for_property(const ObjectSchema &object_schema, const std::string &prop_name) {
@@ -118,7 +125,7 @@ public:
 private:
     ContextType m_ctx;
     std::shared_ptr<Realm> m_realm;
-    const ObjectSchema* m_object_schema = nullptr;
+    const ObjectSchema& m_object_schema;
     std::string m_string_buffer;
     OwnedBinaryData m_owned_binary_data;
 
@@ -238,11 +245,10 @@ struct Unbox<JSEngine, RowExpr> {
         }
 
         if (Value::is_array(ctx->m_ctx, object)) {
-            object = Schema<JSEngine>::dict_for_property_array(ctx->m_ctx, *ctx->m_object_schema, object);
+            object = Schema<JSEngine>::dict_for_property_array(ctx->m_ctx, ctx->m_object_schema, object);
         }
 
-        auto child = realm::Object::create<ValueType>(*ctx, ctx->m_realm,
-                                                      *ctx->m_object_schema,
+        auto child = realm::Object::create<ValueType>(*ctx, ctx->m_realm, ctx->m_object_schema,
                                                       static_cast<ValueType>(object), try_update);
         return child.row();
     }

@@ -629,7 +629,7 @@ void RealmClass<T>::object_for_primary_key(ContextType ctx, FunctionType, Object
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
     std::string object_type;
     auto &object_schema = validated_object_schema_for_value(ctx, realm, arguments[0], object_type);
-    NativeAccessor accessor(ctx, realm);
+    NativeAccessor accessor(ctx, realm, object_schema);
     auto realm_object = realm::Object::get_for_primary_key(accessor, realm, object_schema, arguments[1]);
 
     if (realm_object.is_valid()) {
@@ -658,7 +658,7 @@ void RealmClass<T>::create(ContextType ctx, FunctionType, ObjectType this_object
         update = Value::validated_to_boolean(ctx, arguments[2], "update");
     }
 
-    NativeAccessor accessor(ctx, realm);
+    NativeAccessor accessor(ctx, realm, object_schema);
     auto realm_object = realm::Object::create<ValueType>(accessor, realm, object_schema, object, update);
     return_value.set(RealmObjectClass<T>::create_instance(ctx, std::move(realm_object)));
 }
