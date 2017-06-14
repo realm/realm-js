@@ -294,7 +294,7 @@ void _initializeOnJSThread(JSContextRefExtractor jsContextExtractor) {
     [s_currentModule invalidate];
     s_currentModule = self;
 
-    if ([bridge executorClass] == objc_lookUpClass("RCTWebSocketExecutor")) {
+    if (objc_lookUpClass("RCTWebSocketExecutor") && [bridge executorClass] == objc_lookUpClass("RCTWebSocketExecutor")) {
 #if DEBUG
         [self startRPC];
 #else
