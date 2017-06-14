@@ -1,3 +1,14 @@
+vNext Release notes (TBD)
+=============================================================
+### Breaking changes
+* None
+
+### Enhancements
+* None
+
+### Bug fixes
+* Fix crash when used with the React Native C++ bridge
+
 1.3.1 Release notes (2017-5-18)
 =============================================================
 ### Breaking changes
