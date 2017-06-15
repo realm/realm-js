@@ -1,13 +1,15 @@
-vNext Release notes (TBD)
+1.8.0 Release notes (2017-6-15)
 =============================================================
 ### Breaking changes
 * None
 
 ### Enhancements
-* None
+* Updated core and sync dependencies
+* Unified packaging
 
 ### Bug fixes
 * Fix crash when used with the React Native C++ bridge
+* Fix `Realm.open` and `Realm.asyncOpen` missing when in the React Native debugger
 
 1.3.1 Release notes (2017-5-18)
 =============================================================
