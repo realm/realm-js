@@ -1,8 +1,8 @@
-// Type definitions for realm-js 1.3.1
+// Type definitions for realm-js 1.8.0
 // Project: https://github.com/realm/realm-js
-// Definitions by: Akim <https://github.com/Akim95> & Maximilian Alexander <https://github.com/mbalex99> 
+// Definitions by: Maximilian Alexander <https://github.com/mbalex99>
 // Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-// TypeScript Version: 2.1
+// TypeScript Version: 2.3.2
 
 declare namespace Realm {
     /**
@@ -32,7 +32,7 @@ declare namespace Realm {
      * ObjectSchema
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.html#~ObjectSchema }
      */
-    interface ObjectSchema extends Object {
+    interface ObjectSchema {
         name: string;
         primaryKey?: string;
         properties: PropertiesTypes;
@@ -116,14 +116,14 @@ declare namespace Realm {
         snapshot(): Results<T>;
 
         /**
-         * @returns Iterator<[number, T]>
+         * @returns Iterator<any>
          */
         entries(): Iterator<[number, T]>;
 
         /**
          * @returns Iterator<any>
          */
-        keys(): Iterator<string | number>;
+        keys(): Iterator<any>;
 
         /**
          * @returns Iterator<any>
@@ -270,6 +270,8 @@ declare namespace Realm {
      */
     type Results<T> = Collection<T>;
 
+
+
     /**
      * LogLevel
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.Sync.html#~LogLevel }
@@ -343,6 +345,7 @@ declare namespace Realm.Sync {
     function removeAllListeners(name?: string[]): void;
     function removeListener(regex: string, name: string, changeCallback: () => void): void;
     function setLogLevel(logLevel: LogLevelType): void;
+    function setAccessToken(accessToken: string): void;
 
     type Instruction = {
         type: 'INSERT' | 'SET' | 'DELETE' | 'CLEAR' | 'LIST_SET' | 'LIST_INSERT' | 'LIST_ERASE' | 'LIST_CLEAR' | 'ADD_TYPE' | 'ADD_PROPERTIES'
@@ -464,6 +467,5 @@ declare class Realm {
 }
 
 declare module 'realm' {
-    export = Realm;
+    export = Realm
 }
-
