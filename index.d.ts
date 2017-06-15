@@ -32,7 +32,7 @@ declare namespace Realm {
      * ObjectSchema
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.html#~ObjectSchema }
      */
-    interface ObjectSchema extends Object {
+    interface ObjectSchema {
         name: string;
         primaryKey?: string;
         properties: PropertiesTypes;
@@ -116,14 +116,14 @@ declare namespace Realm {
         snapshot(): Results<T>;
 
         /**
-         * @returns Iterator<[number, T]>
+         * @returns Iterator<any>
          */
         entries(): Iterator<[number, T]>;
 
         /**
          * @returns Iterator<any>
          */
-        keys(): Iterator<string | number>;
+        keys(): Iterator<any>;
 
         /**
          * @returns Iterator<any>
@@ -269,6 +269,8 @@ declare namespace Realm {
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.Results.html }
      */
     type Results<T> = Collection<T>;
+
+
 
     /**
      * LogLevel
@@ -466,4 +468,8 @@ declare class Realm {
 
 declare module 'realm' {
     export = Realm
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 0167dc99... updating to ts 2.3.2 and fixing inheritance for ObjectSchema
