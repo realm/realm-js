@@ -32,7 +32,7 @@ declare namespace Realm {
      * ObjectSchema
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.html#~ObjectSchema }
      */
-    interface ObjectSchema {
+    interface ObjectSchema extends Object {
         name: string;
         primaryKey?: string;
         properties: PropertiesTypes;
@@ -116,14 +116,14 @@ declare namespace Realm {
         snapshot(): Results<T>;
 
         /**
-         * @returns Iterator<any>
+         * @returns Iterator<[number, T]>
          */
         entries(): Iterator<[number, T]>;
 
         /**
          * @returns Iterator<any>
          */
-        keys(): Iterator<any>;
+        keys(): Iterator<string | number>;
 
         /**
          * @returns Iterator<any>
@@ -269,8 +269,6 @@ declare namespace Realm {
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.Results.html }
      */
     type Results<T> = Collection<T>;
-
-
 
     /**
      * LogLevel
