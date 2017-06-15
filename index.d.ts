@@ -468,8 +468,4 @@ declare class Realm {
 
 declare module 'realm' {
     export = Realm
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> 0167dc99... updating to ts 2.3.2 and fixing inheritance for ObjectSchema
