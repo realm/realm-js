@@ -1,7 +1,3 @@
-// Type definitions for realm-js 1.8.0
-// Project: https://github.com/realm/realm-js
-// Definitions by: Maximilian Alexander <https://github.com/mbalex99>
-// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
 // TypeScript Version: 2.3.2
 
 declare namespace Realm {
