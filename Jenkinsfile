@@ -208,7 +208,7 @@ def doWindowsBuild() {
       unstash 'source'
       try {
         bat 'npm install --build-from-source'
-        bat 'scripts\build-node-pre-gyp.ps1'
+        bat 'scripts\\build-node-pre-gyp.ps1'
         dir('tests') {
           bat 'npm install'
           bat 'npm run test'
