@@ -89,18 +89,39 @@ declare namespace Realm {
     }
 
     /**
+     * Object
+     * @see { @link https://realm.io/docs/javascript/latest/api/Realm.Object.html }
+     */
+    interface Object {
+        /**
+         * @returns boolean
+         */
+        isValid(): boolean;
+    }
+
+    const Object: {
+        readonly prototype: Object;
+    }
+
+    /**
      * SortDescriptor
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.Collection.html#~SortDescriptor }
      */
     type SortDescriptor = string | [string, boolean] | any[];
 
+    interface CollectionChangeSet {
+        insertions: number[];
+        deletions: number[];
+        modifications: number[];
+    }
+
+    type CollectionChangeCallback<T> = (collection: Collection<T>, change: CollectionChangeSet) => void;
+
     /**
      * Collection
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.Collection.html }
      */
-    class Collection<T> implements ReadonlyArray<T> {
-        readonly length: number;
-
+    interface Collection<T> extends ReadonlyArray<T> {
         /**
          * @returns boolean
          */
@@ -121,69 +142,15 @@ declare namespace Realm {
         sorted(descriptor: string | SortDescriptor, reverse?: boolean): Results<T>;
 
         /**
-         * @returns Iterator
-         */
-        [Symbol.iterator](): IterableIterator<T>;
-
-        /**
          * @returns Results
          */
         snapshot(): Results<T>;
 
         /**
-         * @returns Iterator<any>
-         */
-        entries(): IterableIterator<[number, T]>;
-
-        /**
-         * @returns Iterator<any>
-         */
-        keys(): IterableIterator<number>;
-
-        /**
-         * @returns Iterator<any>
-         */
-        values(): IterableIterator<T>;
-
-        /**
-         * @param  {string[]} separator?
-         * @returns string
-         */
-        join(separator?: string): string;
-
-        /**
-         * @param  {number} start?
-         * @param  {number} end?
-         * @returns T
-         */
-        slice(start?: number, end?: number): T[];
-
-        /**
-         * @param  {(object:any,index?:any,collection?:any)=>void} callback
-         * @param  {any} thisArg?
-         * @returns T
-         */
-        find(callback: (object: T, index?: any, collection?: any) => void, thisArg?: any): T | null | undefined;
-
-        /**
-         * @param  {(object:T,index?:number,collection?:any)=>void} callback
-         * @param  {any} thisArg?
-         * @returns void
-         */
-        forEach(callback: (object: T, index?: number, collection?: any) => void, thisArg?: any): void;
-
-        /**
-         * @param  {(previousValue:T,object?:T,index?:any,collection?:any)=>void} callback
-         * @param  {any} initialValue?
-         * @returns any
-         */
-        reduceRight(callback: (previousValue: T, object?: T, index?: any, collection?: any) => void, initialValue?: any): any;
-
-        /**
          * @param  {(collection:any,changes:any)=>void} callback
          * @returns void
          */
-        addListener(callback: (collection: any, changes: any) => void): void;
+        addListener(callback: CollectionChangeCallback<T>): void;
 
         /**
          * @returns void
@@ -194,25 +161,18 @@ declare namespace Realm {
          * @param  {()=>void} callback this is the callback to remove
          * @returns void
          */
-        removeListener(callback: () => void): void;
+        removeListener(callback: CollectionChangeCallback<T>): void;
     }
 
-    /**
-     * Object
-     * @see { @link https://realm.io/docs/javascript/latest/api/Realm.Object.html }
-     */
-    class Object {
-        /**
-         * @returns boolean
-         */
-        isValid(): boolean;
-    }
+    const Collection: {
+        readonly prototype: Collection<any>;
+    };
 
     /**
      * List
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.List.html }
      */
-    class List<T> implements Collection<T> {
+    interface List<T> extends Collection<T> {
         /**
          * @returns T
          */
@@ -244,13 +204,21 @@ declare namespace Realm {
         unshift(object: T): number;
     }
 
+    const List: {
+        readonly prototype: List<any>;
+    };
+
     /**
      * Results
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.Results.html }
      */
-    type Results<T> = Collection<T>;
+    interface Results<T> extends Collection<T> {
 
+    }
 
+    const Results: {
+        readonly prototype: Results<any>;
+    };
 
     /**
      * LogLevel
@@ -317,7 +285,7 @@ declare namespace Realm.Sync {
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.Sync.ChangeEvent.html }
      */
     interface ChangeEvent {
-        readonly changes: { [object_type: string]: { insertions: number[], deletions: number[], modifications: number[] } };
+        readonly changes: { [object_type: string]: CollectionChangeSet };
         readonly oldRealm: Realm;
         readonly path: string;
         readonly realm: Realm;
