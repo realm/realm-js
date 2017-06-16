@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2016 Realm Inc.
+// Copyright 2017 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 // TypeScript Version: 2.3.2
+// With great contributions to @akim95 on github
 
 declare namespace Realm {
     /**
