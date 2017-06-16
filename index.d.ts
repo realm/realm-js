@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 // TypeScript Version: 2.3.2
+// With great contributions to @akim95 on github
 
 declare namespace Realm {
     /**
