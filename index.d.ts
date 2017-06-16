@@ -73,8 +73,8 @@ declare namespace Realm {
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.html#~Configuration }
      */
     interface Configuration {
-        encryptionKey?: any;
-        migration?: any;
+        encryptionKey?: ArrayBuffer | ArrayBufferView | Int8Array;
+        migration?: (oldRealm: Realm, newRealm: Realm) => void;
         path?: string;
         readOnly?: boolean;
         schema?: ObjectClass[] | ObjectSchema[];
@@ -97,7 +97,7 @@ declare namespace Realm {
      * Collection
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.Collection.html }
      */
-    interface Collection<T> {
+    class Collection<T> implements ReadonlyArray<T> {
         readonly length: number;
 
         /**
@@ -132,12 +132,12 @@ declare namespace Realm {
         /**
          * @returns Iterator<any>
          */
-        entries(): Iterator<[number, T]>;
+        entries(): IterableIterator<[number, T]>;
 
         /**
          * @returns Iterator<any>
          */
-        keys(): Iterator<any>;
+        keys(): IterableIterator<number>;
 
         /**
          * @returns Iterator<any>
@@ -148,7 +148,7 @@ declare namespace Realm {
          * @param  {string[]} separator?
          * @returns string
          */
-        join(separator?: string[]): string;
+        join(separator?: string): string;
 
         /**
          * @param  {number} start?
@@ -165,46 +165,11 @@ declare namespace Realm {
         find(callback: (object: T, index?: any, collection?: any) => void, thisArg?: any): T | null | undefined;
 
         /**
-         * @param  {(object:any,index?:number,collection?:any)=>void} callback
-         * @param  {any} thisArg?
-         * @returns number
-         */
-        findIndex(callback: (object: any, index?: number, collection?: any) => void, thisArg?: any): number;
-
-        /**
          * @param  {(object:T,index?:number,collection?:any)=>void} callback
          * @param  {any} thisArg?
          * @returns void
          */
         forEach(callback: (object: T, index?: number, collection?: any) => void, thisArg?: any): void;
-
-        /**
-         * @param  {(object:T,index?:number,collection?:any)=>void} callback
-         * @param  {any} thisArg?
-         * @returns boolean
-         */
-        every(callback: (object: T, index?: number, collection?: any) => void, thisArg?: any): boolean;
-
-        /**
-         * @param  {(object:T,index?:number,collection?:any)=>void} callback
-         * @param  {any} thisArg?
-         * @returns boolean
-         */
-        some(callback: (object: T, index?: number, collection?: any) => void, thisArg?: any): boolean;
-
-        /**
-         * @param  {(object:T,index?:number,collection?:any)=>void} callback
-         * @param  {any} thisArg?
-         * @returns any
-         */
-        map(callback: (object: T, index?: number, collection?: any) => void, thisArg?: any): any[];
-
-        /**
-         * @param  {(previousValue:T,object?:T,index?:number,collection?:any)=>void} callback
-         * @param  {any} initialValue?
-         * @returns any
-         */
-        reduce(callback: (previousValue: T, object?: T, index?: number, collection?: any) => void, initialValue?: any): any;
 
         /**
          * @param  {(previousValue:T,object?:T,index?:any,collection?:any)=>void} callback
@@ -225,7 +190,7 @@ declare namespace Realm {
         removeAllListeners(): void;
 
         /**
-         * @param  {()=>void} callback
+         * @param  {()=>void} callback this is the callback to remove
          * @returns void
          */
         removeListener(callback: () => void): void;
@@ -235,7 +200,7 @@ declare namespace Realm {
      * Object
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.Object.html }
      */
-    interface Object {
+    class Object {
         /**
          * @returns boolean
          */
@@ -246,7 +211,7 @@ declare namespace Realm {
      * List
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.List.html }
      */
-    interface List<T> extends Collection<T> {
+    class List<T> implements Collection<T> {
         /**
          * @returns T
          */
@@ -322,15 +287,17 @@ declare namespace Realm.Sync {
     interface SyncConfiguration {
         user: User;
         url: string;
+        validate_ssl: boolean;
+        ssl_trust_certificate_path: string;
     }
 
     /**
     * Session
     * @see { @link https://realm.io/docs/javascript/latest/api/Realm.Sync.Session.html }
     */
-    interface Session {
-        readonly config: any;
-        readonly state: string;
+    class Session {
+        readonly config: SyncConfiguration;
+        readonly state: 'invalid' | 'valid' | 'inactive';
         readonly url: string;
         readonly user: User;
     }
@@ -339,7 +306,7 @@ declare namespace Realm.Sync {
     * AuthError
     * @see { @link https://realm.io/docs/javascript/latest/api/Realm.Sync.AuthError.html }
     */
-    interface AuthError {
+    class AuthError {
         readonly code: number;
         readonly type: string;
     }
@@ -355,10 +322,10 @@ declare namespace Realm.Sync {
         readonly realm: Realm;
     }
 
-    function addListener(serverURL: string, adminUser: Realm.Sync.User, regex: string, name: string, changeCallback: () => void): void;
-    function removeAllListeners(name?: string[]): void;
-    function removeListener(regex: string, name: string, changeCallback: () => void): void;
-    function setLogLevel(logLevel: LogLevelType): void;
+    function addListener(serverURL: string, adminUser: Realm.Sync.User, regex: string, name: string, changeCallback: (changeEvent: ChangeEvent) => void): void;
+    function removeAllListeners(name?: string): void;
+    function removeListener(regex: string, name: string, changeCallback: (changeEvent: ChangeEvent) => void): void;
+    function setLogLevel(logLevel: 'error' | 'info' | 'debug'): void;
     function setAccessToken(accessToken: string): void;
 
     type Instruction = {
@@ -402,9 +369,10 @@ declare class Realm {
     readonly schema: Realm.ObjectSchema[];
     readonly schemaVersion: number;
 
-    syncSession: Realm.Sync.Session;
+    syncSession: Realm.Sync.Session | null;
 
     /**
+     * Get the current schema version of the Realm at the given path.
      * @param  {string} path
      * @param  {any} encryptionKey?
      * @returns number
@@ -412,9 +380,27 @@ declare class Realm {
     static schemaVersion(path: string, encryptionKey?: any): number;
 
     /**
+     * Open a realm asynchronously with a promise. If the realm is synced, it will be fully synchronized before it is available.
+     * @param {Configuration} config 
+     */
+    static open(config: Realm.Configuration): Promise<Realm>
+    /**
+     * Open a realm asynchronously with a callback. If the realm is synced, it will be fully synchronized before it is available.
+     * @param {Configuration} config 
+     * @param {Function} callback will be called when the realm is ready.
+     */
+    static openAsync(config: Realm.Configuration, callback: ((realm: Realm) => void))
+
+    /**
      * @param  {Realm.Configuration} config?
      */
     constructor(config?: Realm.Configuration);
+
+    /**
+     * @param  {Realm.Configuration} config
+     * @param  {string} path
+     */
+    constructor(config?: Realm.Configuration, path?: string);
 
     /**
      * @returns void
@@ -422,12 +408,12 @@ declare class Realm {
     close(): void;
 
     /**
-     * @param  {string|Realm.ObjectType} type
+     * @param  {string|Realm.ObjectType|Function} type
      * @param  {T&Realm.ObjectPropsType} properties
      * @param  {boolean} update?
      * @returns T
      */
-    create<T>(type: string | Realm.ObjectType, properties: T & Realm.ObjectPropsType, update?: boolean): T;
+    create<T>(type: string | Realm.ObjectType | Function, properties: T & Realm.ObjectPropsType, update?: boolean): T;
 
     /**
      * @param  {Realm.Object|Realm.Object[]|Realm.List<any>|Realm.Results<any>|any} object
@@ -441,37 +427,37 @@ declare class Realm {
     deleteAll(): void;
 
     /**
-     * @param  {string|Realm.ObjectType} type
+     * @param  {string|Realm.ObjectType|Function} type
      * @param  {number|string} key
      * @returns T
      */
-    objectForPrimaryKey<T>(type: string | Realm.ObjectType, key: number | string): T | void;
+    objectForPrimaryKey<T>(type: string | Realm.ObjectType | Function, key: number | string): T | void;
 
     /**
-     * @param  {string|Realm.ObjectType} type
+     * @param  {string|Realm.ObjectType|Function} type
      * @returns Realm
      */
-    objects<T>(type: string | Realm.ObjectType): Realm.ObjectType & Realm.Results<T>;
+    objects<T>(type: string | Realm.ObjectType | Function): Realm.ObjectType & Realm.Results<T>;
 
     /**
      * @param  {string} name
      * @param  {()=>void} callback
      * @returns void
      */
-    addListener(name: string, callback: () => void): void;
+    addListener(name: string, callback: (sender: Realm, event: 'change') => void): void;
 
     /**
      * @param  {string} name
      * @param  {()=>void} callback
      * @returns void
      */
-    removeListener(name: string, callback: () => void): void;
+    removeListener(name: string, callback: (sender: Realm, event: 'change') => void): void;
 
     /**
-     * @param  {string[]} name?
+     * @param  {string} name?
      * @returns void
      */
-    removeAllListeners(name?: string[]): void;
+    removeAllListeners(name?: string): void;
 
     /**
      * @param  {()=>void} callback
