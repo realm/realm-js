@@ -20,10 +20,10 @@ New-Item .\out -ItemType "directory"
 npm install --ignore-scripts
 
 foreach ($arch in "ia32", "x64") {
-    foreach ($version in "4.0.0", "5.0.0", "6.0.0", "7.0.0") {
+    foreach ($version in "4.0.0", "5.0.0", "6.0.0", "7.0.0", "8.0.0") {
         Remove-Item .\build, .\compiled -Recurse -Force -ErrorAction Ignore
         .\node_modules\node-pre-gyp\bin\node-pre-gyp.cmd rebuild --target_arch=$arch --target=$version
         .\node_modules\node-pre-gyp\bin\node-pre-gyp.cmd package --target_arch=$arch --target=$version
-        Copy-Item .\build\stage\node-pre-gyp\*.tar.gz -Destination .\out
+        Copy-Item .\build\stage\node-pre-gyp\**\*.tar.gz -Destination .\out
     }
 }
