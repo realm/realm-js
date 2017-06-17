@@ -117,12 +117,16 @@ void UserClass<T>::is_admin(ContextType ctx, ObjectType object, ReturnValue &ret
 
 template<typename T>
 void UserClass<T>::create_user(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
-    validate_argument_count(argc, 3, 4);
+    validate_argument_count(argc, 3, 5);
     SharedUser *user = new SharedUser(SyncManager::shared().get_user(
-        Value::validated_to_string(ctx, arguments[1]),
-        Value::validated_to_string(ctx, arguments[2]),
-        (std::string)Value::validated_to_string(ctx, arguments[0]),
-        Value::validated_to_boolean(ctx, arguments[3]) ? SyncUser::TokenType::Admin : SyncUser::TokenType::Normal));
+        Value::validated_to_string(ctx, arguments[1], "identity"),
+        Value::validated_to_string(ctx, arguments[2], "refreshToken"),
+        (std::string)Value::validated_to_string(ctx, arguments[0], "authServerUrl"),
+        Value::validated_to_boolean(ctx, arguments[3], "isAdminToken") ? SyncUser::TokenType::Admin : SyncUser::TokenType::Normal));
+
+    if (argc == 5) {
+        (*user)->set_is_admin(Value::validated_to_boolean(ctx, arguments[4], "isAdmin"));
+    }
     return_value.set(create_object<T, UserClass<T>>(ctx, user));
 }
 

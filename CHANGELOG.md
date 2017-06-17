@@ -1,3 +1,14 @@
+vNext Release notes (TBD)
+=============================================================
+### Breaking changes
+* None
+
+### Enhancements
+* None
+
+### Bug fixes
+* Fix `Realm.Sync.User.prototype.isAdmin` returning `false` for logged-in admin users. 
+
 1.8.0 Release notes (2017-6-15)
 =============================================================
 ### Breaking changes
