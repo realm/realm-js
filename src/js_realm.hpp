@@ -550,6 +550,7 @@ void RealmClass<T>::wait_for_download_completion(ContextType ctx, FunctionType, 
     ValueType sync_config_value = Object::get_property(ctx, config_object, "sync");
     if (!Value::is_undefined(ctx, sync_config_value)) {
         realm::Realm::Config config;
+        config.cache = false;
         static const String encryption_key_string = "encryptionKey";
         ValueType encryption_key_value = Object::get_property(ctx, config_object, encryption_key_string);
         if (!Value::is_undefined(ctx, encryption_key_value)) {
@@ -590,7 +591,7 @@ void RealmClass<T>::wait_for_download_completion(ContextType ctx, FunctionType, 
             if (user && user->state() != SyncUser::State::Error) {
                 if (auto session = user->session_for_on_disk_path(config.path)) {
                     session->wait_for_download_completion([=](std::error_code error_code) {
-                        realm->config(); //capture and keep realm instance for till here
+                        realm->close(); //capture and keep realm instance for till here
                         waitFunc(error_code);
                     });
                     return;
