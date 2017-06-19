@@ -234,7 +234,7 @@ public:
         arguments[0] = create_object<T, SessionClass<T>>(m_ctx, new WeakSession(session));
         arguments[1] = error_object;
 
-        Function<T>::call(m_ctx, m_func, 2, arguments);
+        Function<T>::callback(m_ctx, m_func, typename T::Object(), 2, arguments);
     }
 private:
     const Protected<typename T::GlobalContext> m_ctx;

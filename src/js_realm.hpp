@@ -132,7 +132,7 @@ class RealmDelegate : public BindingContext {
 
         std::list<Protected<FunctionType>> notifications_copy(m_notifications);
         for (auto &callback : notifications_copy) {
-            Function<T>::call(m_context, callback, realm_object, 2, arguments);
+            Function<T>::callback(m_context, callback, realm_object, 2, arguments);
         }
     }
 
@@ -603,7 +603,7 @@ void RealmClass<T>::wait_for_download_completion(ContextType ctx, FunctionType, 
 
             ValueType callback_arguments[1];
             callback_arguments[0] = object;
-            Function<T>::call(protected_ctx, protected_callback, protected_this, 1, callback_arguments);
+            Function<T>::callback(protected_ctx, protected_callback, protected_this, 1, callback_arguments);
             return;
         }
     }
@@ -611,7 +611,7 @@ void RealmClass<T>::wait_for_download_completion(ContextType ctx, FunctionType, 
 
     ValueType callback_arguments[1];
     callback_arguments[0] = Value::from_null(ctx);
-    Function<T>::call(ctx, callback_function, this_object, 1, callback_arguments);
+    Function<T>::callback(ctx, callback_function, this_object, 1, callback_arguments);
 }
 
 template<typename T>
