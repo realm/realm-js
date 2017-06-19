@@ -147,29 +147,26 @@ module.exports = {
         })
         .then(() => {
             return promisifiedLogin('http://localhost:9080', username, 'password').then(user => {
-                return new Promise((resolve, reject) => {
-                    const accessTokenRefreshed = this;
-                    let successCounter = 0;
+                const accessTokenRefreshed = this;
+                let successCounter = 0;
 
-                    let config = {
-                        sync: { user, url: `realm://localhost:9080/~/${realmName}` },
-                        schema: [{ name: 'Dog', properties: { name: 'string' } }],
-                    };
+                let config = {
+                    sync: { user, url: `realm://localhost:9080/~/${realmName}` },
+                    schema: [{ name: 'Dog', properties: { name: 'string' } }],
+                };
 
-                    Realm.open(config)
-                        .then(realm => {
-                            let actualObjectsCount = realm.objects('Dog').length;
-                            TestCase.assertEqual(actualObjectsCount, expectedObjectsCount, "Synced realm does not contain the expected objects count");
-
-                            const session = realm.syncSession;
-                            TestCase.assertInstanceOf(session, Realm.Sync.Session);
-                            TestCase.assertEqual(session.user.identity, user.identity);
-                            TestCase.assertEqual(session.config.url, config.sync.url);
-                            TestCase.assertEqual(session.config.user.identity, config.sync.user.identity);
-                            TestCase.assertEqual(session.state, 'active');
-                            resolve();
-                        }).catch(e => { reject(e) });
-                });
+                return Realm.open(config)
+                            .then(realm => {
+                                let actualObjectsCount = realm.objects('Dog').length;
+                                TestCase.assertEqual(actualObjectsCount, expectedObjectsCount, "Synced realm does not contain the expected objects count");
+                                return realm.syncSession;
+                            }).then(session => {
+                                TestCase.assertInstanceOf(session, Realm.Sync.Session);
+                                TestCase.assertEqual(session.user.identity, user.identity);
+                                TestCase.assertEqual(session.config.url, config.sync.url);
+                                TestCase.assertEqual(session.config.user.identity, config.sync.user.identity);
+                                TestCase.assertEqual(session.state, 'active');
+                            });
             });
         });
     },
@@ -217,13 +214,19 @@ module.exports = {
                                 let actualObjectsCount = realm.objects('Dog').length;
                                 TestCase.assertEqual(actualObjectsCount, expectedObjectsCount, "Synced realm does not contain the expected objects count");
 
-                                const session = realm.syncSession;
-                                TestCase.assertInstanceOf(session, Realm.Sync.Session);
-                                TestCase.assertEqual(session.user.identity, user.identity);
-                                TestCase.assertEqual(session.config.url, config.sync.url);
-                                TestCase.assertEqual(session.config.user.identity, config.sync.user.identity);
-                                TestCase.assertEqual(session.state, 'active');
-                                resolve();
+                                setTimeout(() => {
+                                    try {
+                                        const session = realm.syncSession;
+                                        TestCase.assertInstanceOf(session, Realm.Sync.Session);
+                                        TestCase.assertEqual(session.user.identity, user.identity);
+                                        TestCase.assertEqual(session.config.url, config.sync.url);
+                                        TestCase.assertEqual(session.config.user.identity, config.sync.user.identity);
+                                        TestCase.assertEqual(session.state, 'active');
+                                        resolve();
+                                    } catch (e) {
+                                        reject(e);
+                                    }
+                                }, 50);
                             }
                             catch (e) {
                                 reject(e);
