@@ -351,6 +351,7 @@ inline bool Value<T>::is_valid_for_property(ContextType context, const ValueType
         return true;
     }
 
+    using PropertyType = realm::PropertyType;
     switch (prop.type) {
         case PropertyType::Int:
         case PropertyType::Float:
@@ -374,6 +375,9 @@ inline bool Value<T>::is_valid_for_property(ContextType context, const ValueType
         case PropertyType::LinkingObjects:
             return false;
     }
+
+    REALM_UNREACHABLE();
+    return false;
 }
 
 inline std::string js_type_name_for_property_type(PropertyType type)
@@ -401,6 +405,9 @@ inline std::string js_type_name_for_property_type(PropertyType type)
         case PropertyType::LinkingObjects:
             throw std::runtime_error("LinkingObjects' type is not supported");
     }
+
+    REALM_UNREACHABLE();
+    return "<unknown>";
 }
 
 } // js

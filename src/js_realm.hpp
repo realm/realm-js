@@ -59,9 +59,6 @@ static std::string normalize_realm_path(std::string path) {
 }
 
 template<typename T>
-class Realm;
-
-template<typename T>
 class RealmClass;
 
 template<typename T>
