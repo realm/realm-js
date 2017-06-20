@@ -18,7 +18,9 @@
 
 #pragma once
 
+#include "jsc_protected.hpp"
 #include "jsc_types.hpp"
+#include "jsc_string.hpp"
 
 namespace realm {
 namespace js {
@@ -94,6 +96,9 @@ inline bool jsc::Value::is_string(JSContextRef ctx, const JSValueRef &value) {
 }
 
 template<>
+bool jsc::Value::is_binary(JSContextRef ctx, const JSValueRef &value);
+
+template<>
 inline bool jsc::Value::is_undefined(JSContextRef ctx, const JSValueRef &value) {
     return JSValueIsUndefined(ctx, value);
 }
@@ -127,6 +132,9 @@ template<>
 inline JSValueRef jsc::Value::from_undefined(JSContextRef ctx) {
     return JSValueMakeUndefined(ctx);
 }
+
+template<>
+JSValueRef jsc::Value::from_binary(JSContextRef ctx, BinaryData data);
 
 template<>
 inline bool jsc::Value::to_boolean(JSContextRef ctx, const JSValueRef &value) {
@@ -189,6 +197,9 @@ template<>
 inline JSObjectRef jsc::Value::to_function(JSContextRef ctx, const JSValueRef &value) {
     return to_object(ctx, value);
 }
-    
+
+template<>
+OwnedBinaryData jsc::Value::to_binary(JSContextRef ctx, JSValueRef value);
+
 } // js
 } // realm

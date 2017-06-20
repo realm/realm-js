@@ -412,9 +412,8 @@ json RPCServer::serialize_json_value(JSValueRef js_value) {
         }
         return {{"value", array}};
     }
-    else if (jsc::Value::is_array_buffer(m_context, js_object)) {
-        Accessor accessor(m_context);
-        auto data = accessor.unbox<realm::BinaryData>(js_value);
+    else if (jsc::Value::is_binary(m_context, js_object)) {
+        auto data = jsc::Value::to_binary(m_context, js_object);
         return {
             {"type", RealmObjectTypesData},
             {"value", base64_encode((unsigned char *)data.data(), data.size())},
@@ -512,7 +511,7 @@ JSValueRef RPCServer::deserialize_json_value(const json dict) {
             if (!base64_decode(value.get<std::string>(), &bytes)) {
                 throw std::runtime_error("Failed to decode base64 encoded data");
             }
-            return Accessor(m_context).box(realm::BinaryData(bytes.data(), bytes.size()));
+            return jsc::Value::from_binary(m_context, realm::BinaryData(bytes.data(), bytes.size()));
         }
         else if (type_string == RealmObjectTypesDate) {
             return jsc::Object::create_date(m_context, value.get<double>());

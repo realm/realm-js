@@ -124,7 +124,7 @@ void ListClass<T>::get_index(ContextType ctx, ObjectType object, uint32_t index,
 template<typename T>
 bool ListClass<T>::set_index(ContextType ctx, ObjectType object, uint32_t index, ValueType value) {
     auto list = get_internal<T, ListClass<T>>(object);
-    NativeAccessor<T> accessor(ctx, list->get_realm(), &list->get_object_schema());
+    NativeAccessor<T> accessor(ctx, list->get_realm(), list->get_object_schema());
     list->set(accessor, index, value);
     return true;
 }
@@ -134,7 +134,7 @@ void ListClass<T>::push(ContextType ctx, FunctionType, ObjectType this_object, s
     validate_argument_count_at_least(argc, 1);
 
     auto list = get_internal<T, ListClass<T>>(this_object);
-    NativeAccessor<T> accessor(ctx, list->get_realm(), &list->get_object_schema());
+    NativeAccessor<T> accessor(ctx, list->get_realm(), list->get_object_schema());
     for (size_t i = 0; i < argc; i++) {
         list->add(accessor, arguments[i]);
     }
@@ -166,7 +166,7 @@ void ListClass<T>::unshift(ContextType ctx, FunctionType, ObjectType this_object
     validate_argument_count_at_least(argc, 1);
 
     auto list = get_internal<T, ListClass<T>>(this_object);
-    NativeAccessor<T> accessor(ctx, list->get_realm(), &list->get_object_schema());
+    NativeAccessor<T> accessor(ctx, list->get_realm(), list->get_object_schema());
     for (size_t i = 0; i < argc; i++) {
         list->insert(accessor, i, arguments[i]);
     }
@@ -214,7 +214,7 @@ void ListClass<T>::splice(ContextType ctx, FunctionType, ObjectType this_object,
     std::vector<ValueType> removed_objects;
     removed_objects.reserve(remove);
 
-    NativeAccessor<T> accessor(ctx, list->get_realm(), &list->get_object_schema());
+    NativeAccessor<T> accessor(ctx, list->get_realm(), list->get_object_schema());
     for (size_t i = 0; i < remove; i++) {
         auto realm_object = realm::Object(list->get_realm(), list->get_object_schema(), list->get(index));
 

@@ -26,6 +26,7 @@ LOCAL_SRC_FILES := vendor/base64.cpp
 LOCAL_SRC_FILES += src/js_realm.cpp
 LOCAL_SRC_FILES += src/rpc.cpp
 LOCAL_SRC_FILES += src/jsc/jsc_init.cpp
+LOCAL_SRC_FILES += src/jsc/jsc_value.cpp
 LOCAL_SRC_FILES += src/android/io_realm_react_RealmReactModule.cpp
 LOCAL_SRC_FILES += src/android/jsc_override.cpp
 LOCAL_SRC_FILES += src/android/platform.cpp
