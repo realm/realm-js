@@ -4,6 +4,7 @@ vNext Release notes (TBD)
 * None
 
 ### Enhancements
+* Better error messages when creating objects.
 * Added bundled TypeScript declarations of the Realm API.
 
 ### Bug fixes
