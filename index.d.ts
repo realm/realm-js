@@ -97,6 +97,11 @@ declare namespace Realm {
          * @returns boolean
          */
         isValid(): boolean;
+
+        /**
+         * @returns ObjectSchema
+         */
+        objectSchema(): ObjectSchema;
     }
 
     const Object: {
@@ -173,6 +178,8 @@ declare namespace Realm {
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.List.html }
      */
     interface List<T> extends Collection<T> {
+        [n: number]: T;
+
         /**
          * @returns T
          */
@@ -219,12 +226,6 @@ declare namespace Realm {
     const Results: {
         readonly prototype: Results<any>;
     };
-
-    /**
-     * LogLevel
-     * @see { @link https://realm.io/docs/javascript/latest/api/Realm.Sync.html#~LogLevel }
-     */
-    type LogLevelType = 'error' | 'info' | 'debug';
 }
 
 /**
@@ -266,7 +267,7 @@ declare namespace Realm.Sync {
     */
     class Session {
         readonly config: SyncConfiguration;
-        readonly state: 'invalid' | 'valid' | 'inactive';
+        readonly state: 'invalid' | 'active' | 'inactive';
         readonly url: string;
         readonly user: User;
     }
@@ -338,7 +339,7 @@ declare class Realm {
     readonly schema: Realm.ObjectSchema[];
     readonly schemaVersion: number;
 
-    syncSession: Realm.Sync.Session | null;
+    readonly syncSession: Realm.Sync.Session | null;
 
     /**
      * Get the current schema version of the Realm at the given path.
@@ -346,7 +347,7 @@ declare class Realm {
      * @param  {any} encryptionKey?
      * @returns number
      */
-    static schemaVersion(path: string, encryptionKey?: any): number;
+    static schemaVersion(path: string, encryptionKey?: ArrayBuffer | ArrayBufferView): number;
 
     /**
      * Open a realm asynchronously with a promise. If the realm is synced, it will be fully synchronized before it is available.
@@ -358,7 +359,7 @@ declare class Realm {
      * @param {Configuration} config 
      * @param {Function} callback will be called when the realm is ready.
      */
-    static openAsync(config: Realm.Configuration, callback: ((realm: Realm) => void))
+    static openAsync(config: Realm.Configuration, callback: (error: any, realm: Realm) => void): void
 
     /**
      * @param  {Realm.Configuration} config?
@@ -366,10 +367,9 @@ declare class Realm {
     constructor(config?: Realm.Configuration);
 
     /**
-     * @param  {Realm.Configuration} config
      * @param  {string} path
      */
-    constructor(config?: Realm.Configuration, path?: string);
+    constructor(path?: string);
 
     /**
      * @returns void
@@ -377,12 +377,12 @@ declare class Realm {
     close(): void;
 
     /**
-     * @param  {string|Realm.ObjectType|Function} type
+     * @param  {string|Realm.ObjectClass|Function} type
      * @param  {T&Realm.ObjectPropsType} properties
      * @param  {boolean} update?
      * @returns T
      */
-    create<T>(type: string | Realm.ObjectType | Function, properties: T & Realm.ObjectPropsType, update?: boolean): T;
+    create<T>(type: string | Realm.ObjectClass | Function, properties: T & Realm.ObjectPropsType, update?: boolean): T;
 
     /**
      * @param  {Realm.Object|Realm.Object[]|Realm.List<any>|Realm.Results<any>|any} object
@@ -396,17 +396,17 @@ declare class Realm {
     deleteAll(): void;
 
     /**
-     * @param  {string|Realm.ObjectType|Function} type
+     * @param  {string|Realm.ObjectSchema|Function} type
      * @param  {number|string} key
      * @returns T
      */
-    objectForPrimaryKey<T>(type: string | Realm.ObjectType | Function, key: number | string): T | void;
+    objectForPrimaryKey<T>(type: string | Realm.ObjectSchema | Function, key: number | string): T | null;
 
     /**
      * @param  {string|Realm.ObjectType|Function} type
      * @returns Realm
      */
-    objects<T>(type: string | Realm.ObjectType | Function): Realm.ObjectType & Realm.Results<T>;
+    objects<T>(type: string | Realm.ObjectSchema | Function): Realm.Results<T>;
 
     /**
      * @param  {string} name
