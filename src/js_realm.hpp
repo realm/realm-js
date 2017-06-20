@@ -129,7 +129,7 @@ class RealmDelegate : public BindingContext {
 
         std::list<Protected<FunctionType>> notifications_copy(m_notifications);
         for (auto &callback : notifications_copy) {
-            Function<T>::call(m_context, callback, realm_object, 2, arguments);
+            Function<T>::callback(m_context, callback, realm_object, 2, arguments);
         }
     }
 
@@ -545,6 +545,7 @@ void RealmClass<T>::wait_for_download_completion(ContextType ctx, FunctionType, 
     ValueType sync_config_value = Object::get_property(ctx, config_object, "sync");
     if (!Value::is_undefined(ctx, sync_config_value)) {
         realm::Realm::Config config;
+        config.cache = false;
         static const String encryption_key_string = "encryptionKey";
         ValueType encryption_key_value = Object::get_property(ctx, config_object, encryption_key_string);
         if (!Value::is_undefined(ctx, encryption_key_value)) {
@@ -584,7 +585,7 @@ void RealmClass<T>::wait_for_download_completion(ContextType ctx, FunctionType, 
             if (user && user->state() != SyncUser::State::Error) {
                 if (auto session = user->session_for_on_disk_path(config.path)) {
                     session->wait_for_download_completion([=](std::error_code error_code) {
-                        realm->config(); //capture and keep realm instance for till here
+                        realm->close(); //capture and keep realm instance for till here
                         waitFunc(error_code);
                     });
                     return;
@@ -597,7 +598,7 @@ void RealmClass<T>::wait_for_download_completion(ContextType ctx, FunctionType, 
 
             ValueType callback_arguments[1];
             callback_arguments[0] = object;
-            Function<T>::call(protected_ctx, protected_callback, protected_this, 1, callback_arguments);
+            Function<T>::callback(protected_ctx, protected_callback, protected_this, 1, callback_arguments);
             return;
         }
     }
@@ -605,7 +606,7 @@ void RealmClass<T>::wait_for_download_completion(ContextType ctx, FunctionType, 
 
     ValueType callback_arguments[1];
     callback_arguments[0] = Value::from_null(ctx);
-    Function<T>::call(ctx, callback_function, this_object, 1, callback_arguments);
+    Function<T>::callback(ctx, callback_function, this_object, 1, callback_arguments);
 }
 
 template<typename T>

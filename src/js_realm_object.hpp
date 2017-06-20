@@ -18,13 +18,14 @@
 
 #pragma once
 
-#include "js_class.hpp"
-#include "js_types.hpp"
-#include "js_util.hpp"
-
 #include "object_accessor.hpp"
 #include "object_store.hpp"
 #include "util/format.hpp"
+
+#include "js_class.hpp"
+#include "js_types.hpp"
+#include "js_util.hpp"
+#include "js_schema.hpp"
 
 namespace realm {
 namespace js {
@@ -50,6 +51,7 @@ struct RealmObjectClass : ClassDefinition<T, realm::Object> {
     static std::vector<String> get_property_names(ContextType, ObjectType);
     
     static void is_valid(ContextType, FunctionType, ObjectType, size_t, const ValueType [], ReturnValue &);
+    static void get_object_schema(ContextType, FunctionType, ObjectType, size_t, const ValueType [], ReturnValue &);
 
     const std::string name = "RealmObject";
 
@@ -61,12 +63,19 @@ struct RealmObjectClass : ClassDefinition<T, realm::Object> {
 
     MethodMap<T> const methods = {
         {"isValid", wrap<is_valid>},
+        {"objectSchema", wrap<get_object_schema>},
     };
 };
 
 template<typename T>
 void RealmObjectClass<T>::is_valid(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     return_value.set(get_internal<T, RealmObjectClass<T>>(this_object)->is_valid());
+}
+    
+template<typename T>
+void RealmObjectClass<T>::get_object_schema(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    auto object = get_internal<T, RealmObjectClass<T>>(this_object);
+    return_value.set(Schema<T>::object_for_object_schema(ctx, object->get_object_schema()));
 }
     
 template<typename T>

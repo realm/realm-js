@@ -273,7 +273,7 @@ void ListClass<T>::add_listener(ContextType ctx, FunctionType, ObjectType this_o
         ValueType arguments[2];
         arguments[0] = static_cast<ObjectType>(protected_this);
         arguments[1] = CollectionClass<T>::create_collection_change_set(protected_ctx, change_set);
-        Function<T>::call(protected_ctx, protected_callback, protected_this, 2, arguments);
+        Function<T>::callback(protected_ctx, protected_callback, protected_this, 2, arguments);
     });
     list->m_notification_tokens.emplace_back(protected_callback, std::move(token));
 }
