@@ -1,4 +1,4 @@
-vNext Release notes (TBD)
+1.8.1 Release notes (2017-6-20)
 =============================================================
 ### Breaking changes
 * None
@@ -7,6 +7,7 @@ vNext Release notes (TBD)
 * Accessing `Realm.Sync` when sync is not enabled will no longer throw, but return `undefined`.
 * Better error messages when creating objects.
 * Added bundled TypeScript declarations of the Realm API.
+* Added `objectSchema()` method on `Realm.Object` that returns the schema for the object.
 
 ### Bug fixes
 * Fix `Realm.Sync.User.prototype.isAdmin` returning `false` for logged-in admin users. 
