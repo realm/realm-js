@@ -4,7 +4,7 @@ vNext Release notes (TBD)
 * None
 
 ### Enhancements
-* None
+* Added bundled TypeScript declarations of the Realm API.
 
 ### Bug fixes
 * Fix `Realm.Sync.User.prototype.isAdmin` returning `false` for logged-in admin users. 
