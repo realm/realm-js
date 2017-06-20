@@ -71,8 +71,7 @@ module.exports = {
     },
 };
 
-try {
-    Realm.Sync; // this will throw is sync is disabled
+if (Realm.Sync) {
     module.exports.testEncryptionWithSync = function() {
         new Realm({
             encryptionKey: new Int8Array(64),
@@ -82,4 +81,4 @@ try {
             }
         });
     };
-} catch(e) { }
+}
