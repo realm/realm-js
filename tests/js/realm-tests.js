@@ -123,6 +123,43 @@ module.exports = {
         TestCase.assertThrows(function() {
             new Realm({schema: [{properties: {intCol: 'int'}}]});
         }, 'The schema should be an array of ObjectSchema objects');
+
+        // linkingObjects property where the source property is missing
+        TestCase.assertThrows(function() {
+            new Realm({schema: [{
+                name: 'InvalidObject',
+                properties: {
+                    linkingObjects: {type:'linkingObjects', objectType: 'InvalidObject', property: 'nosuchproperty'}
+                }
+            }]});
+        }, "Property 'InvalidObject.nosuchproperty' declared as origin of linking objects property 'InvalidObject.linkingObjects' does not exist");
+
+        // linkingObjects property where the source property is not a link
+        TestCase.assertThrows(function() {
+            new Realm({schema: [{
+                name: 'InvalidObject',
+                properties: {
+                    integer: 'int',
+                    linkingObjects: {type:'linkingObjects', objectType: 'InvalidObject', property: 'integer'}
+                }
+            }]});
+        }, "Property 'InvalidObject.integer' declared as origin of linking objects property 'InvalidObject.linkingObjects' is not a link")
+        
+        // linkingObjects property where the source property links elsewhere
+        TestCase.assertThrows(function() {
+            new Realm({schema: [{
+                name: 'InvalidObject',
+                properties: {
+                    link: 'IntObject',
+                    linkingObjects: {type:'linkingObjects', objectType: 'InvalidObject', property: 'link'}
+                }
+            }, {
+                name: 'IntObject',
+                properties: {
+                    integer: 'int'
+                }
+            }]});
+        }, "Property 'InvalidObject.link' declared as origin of linking objects property 'InvalidObject.linkingObjects' links to type 'IntObject'")
     },
 
     testRealmConstructorReadOnly: function() {
@@ -178,7 +215,7 @@ module.exports = {
     },
 
     testRealmWrite: function() {
-        var realm = new Realm({schema: [schemas.IntPrimary, schemas.AllTypes, schemas.TestObject]});
+        var realm = new Realm({schema: [schemas.IntPrimary, schemas.AllTypes, schemas.TestObject, schemas.LinkToAllTypes]});
             
         // exceptions should be propogated
         TestCase.assertThrows(function() {
@@ -271,7 +308,7 @@ module.exports = {
     },
 
     testRealmCreateUpsert: function() {
-        var realm = new Realm({schema: [schemas.IntPrimary, schemas.StringPrimary, schemas.AllTypes, schemas.TestObject]});
+        var realm = new Realm({schema: [schemas.IntPrimary, schemas.StringPrimary, schemas.AllTypes, schemas.TestObject, schemas.LinkToAllTypes]});
         realm.write(function() {
             var values = {
                 primaryCol: '0',
@@ -789,7 +826,7 @@ module.exports = {
 
     testSchema: function() {
         var originalSchema = [schemas.TestObject, schemas.BasicTypes, schemas.NullableBasicTypes, schemas.IndexedTypes, schemas.IntPrimary, 
-            schemas.PersonObject, schemas.LinkTypes];
+            schemas.PersonObject, schemas.LinkTypes, schemas.LinkingObjectsObject];
         
         var schemaMap = {};
         originalSchema.forEach(function(objectSchema) {
@@ -825,6 +862,11 @@ module.exports = {
                 }
                 else if (prop1.type == 'list') {
                     TestCase.assertEqual(prop1.objectType, prop2.objectType);    
+                    TestCase.assertEqual(prop1.optional, undefined);
+                }
+                else if (prop1.type == 'linking objects') {
+                    TestCase.assertEqual(prop1.objectType, prop2.objectType);
+                    TestCase.assertEqual(prop1.property, prop2.property);
                     TestCase.assertEqual(prop1.optional, undefined);
                 }
                 else {

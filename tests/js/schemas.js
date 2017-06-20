@@ -117,18 +117,26 @@ exports.AllTypes = {
     name: 'AllTypesObject',
     primaryKey: 'primaryCol',
     properties: {
-        primaryCol: 'string',
-        boolCol:    'bool',
-        intCol:     'int',
-        floatCol:   'float',
-        doubleCol:  'double',
-        stringCol:  'string',
-        dateCol:    'date',
-        dataCol:    'data',
-        objectCol:  'TestObject',
-        arrayCol:   {type: 'list', objectType: 'TestObject'},
+        primaryCol:        'string',
+        boolCol:           'bool',
+        intCol:            'int',
+        floatCol:          'float',
+        doubleCol:         'double',
+        stringCol:         'string',
+        dateCol:           'date',
+        dataCol:           'data',
+        objectCol:         'TestObject',
+        arrayCol:          {type: 'list', objectType: 'TestObject'},
+        linkingObjectsCol: {type: 'linkingObjects', objectType: 'LinkToAllTypesObject', property: 'allTypesCol'},
     }
 };
+
+exports.LinkToAllTypes = {
+    name: 'LinkToAllTypesObject',
+    properties: {
+        allTypesCol: 'AllTypesObject',
+    }
+}
 
 exports.DefaultValues = {
     name: 'DefaultValuesObject',
@@ -185,3 +193,12 @@ exports.DateObject = {
         nullDate: { type: 'date', optional: true }
     }
 };
+
+exports.LinkingObjectsObject = {
+    name: 'LinkingObjectsObject',
+    properties: {
+        value:          'int',
+        links:          {type: 'list', objectType: 'LinkingObjectsObject'},
+        linkingObjects: {type: 'linkingObjects', objectType: 'LinkingObjectsObject', property: 'links'}
+    }
+}
