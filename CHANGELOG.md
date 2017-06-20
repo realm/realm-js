@@ -5,6 +5,7 @@ vNext Release notes (TBD)
 
 ### Enhancements
 * Accessing `Realm.Sync` when sync is not enabled will no longer throw, but return `undefined`.
+* Added bundled TypeScript declarations of the Realm API.
 
 ### Bug fixes
 * Fix `Realm.Sync.User.prototype.isAdmin` returning `false` for logged-in admin users. 
