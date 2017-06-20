@@ -34,14 +34,8 @@ if (!(typeof process === 'object' && process.platform === 'win32')) {
     TESTS.EncryptionTests = require('./encryption-tests');
 }
 
-// If sync is enabled, run the user tests
-let hasSync = false;
-try {
-    Realm.Sync; // This will throw if Sync is disabled.
-    hasSync = true;
-} catch (e) { }
-
-if (hasSync) {
+// If sync is enabled, run the sync tests
+if (Realm.Sync) {
     TESTS.UserTests = require('./user-tests');
     TESTS.SessionTests = require('./session-tests');
 }
