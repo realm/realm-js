@@ -121,7 +121,7 @@ typename T::Object ResultsClass<T>::create_filtered(ContextType ctx, const U &co
     auto const &object_schema = collection.get_object_schema();
 
     parser::Predicate predicate = parser::parse(query_string);
-    NativeAccessor<T> accessor(ctx, realm);
+    NativeAccessor<T> accessor(ctx, realm, object_schema);
     query_builder::ArgumentConverter<ValueType, NativeAccessor<T>> converter(accessor, &arguments[1], argc - 1);
     query_builder::apply_predicate(query, predicate, converter, realm->schema(), object_schema.name);
 

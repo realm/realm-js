@@ -19,11 +19,13 @@
 #pragma once
 
 #include "execution_context_id.hpp"
+#include "property.hpp"
 
 #include <stdexcept>
 #include <string>
 #include <vector>
 
+#include <realm/binary_data.hpp>
 #include <realm/util/to_string.hpp>
 
 #if defined(__GNUC__) && !(defined(DEBUG) && DEBUG)
@@ -106,12 +108,16 @@ struct Value {
     static bool is_object(ContextType, const ValueType &);
     static bool is_string(ContextType, const ValueType &);
     static bool is_undefined(ContextType, const ValueType &);
+    static bool is_binary(ContextType, const ValueType &);
     static bool is_valid(const ValueType &);
+
+    static bool is_valid_for_property(ContextType, const ValueType&, const Property&);
 
     static ValueType from_boolean(ContextType, bool);
     static ValueType from_null(ContextType);
     static ValueType from_number(ContextType, double);
     static ValueType from_string(ContextType, const String<T> &);
+    static ValueType from_binary(ContextType, BinaryData);
     static ValueType from_undefined(ContextType);
 
     static ObjectType to_array(ContextType, const ValueType &);
@@ -122,6 +128,7 @@ struct Value {
     static double to_number(ContextType, const ValueType &);
     static ObjectType to_object(ContextType, const ValueType &);
     static String<T> to_string(ContextType, const ValueType &);
+    static OwnedBinaryData to_binary(ContextType, ValueType);
 
 #define VALIDATED(return_t, type) \
     static return_t validated_to_##type(ContextType ctx, const ValueType &value, const char *name = nullptr) { \
@@ -140,6 +147,7 @@ struct Value {
     VALIDATED(double, number)
     VALIDATED(ObjectType, object)
     VALIDATED(String<T>, string)
+    VALIDATED(OwnedBinaryData, binary)
 
 #undef VALIDATED
 };
@@ -334,6 +342,72 @@ REALM_JS_INLINE typename ClassType::Internal* get_internal(const typename T::Obj
 template<typename T, typename ClassType>
 REALM_JS_INLINE void set_internal(const typename T::Object &object, typename ClassType::Internal* ptr) {
     Object<T>::template set_internal<ClassType>(object, ptr);
+}
+
+template<typename T>
+inline bool Value<T>::is_valid_for_property(ContextType context, const ValueType &value, const Property& prop)
+{
+    if (prop.is_nullable && (is_null(context, value) || is_undefined(context, value))) {
+        return true;
+    }
+
+    using PropertyType = realm::PropertyType;
+    switch (prop.type) {
+        case PropertyType::Int:
+        case PropertyType::Float:
+        case PropertyType::Double:
+            return is_number(context, value);
+        case PropertyType::Bool:
+            return is_boolean(context, value);
+        case PropertyType::String:
+            return is_string(context, value);
+        case PropertyType::Data:
+            return is_binary(context, value);
+        case PropertyType::Date:
+            return is_date(context, value);
+        case PropertyType::Object:
+            return true;
+        case PropertyType::Array:
+            // FIXME: Do we need to validate the types of the contained objects?
+            return is_array(context, value);
+
+        case PropertyType::Any:
+        case PropertyType::LinkingObjects:
+            return false;
+    }
+
+    REALM_UNREACHABLE();
+    return false;
+}
+
+inline std::string js_type_name_for_property_type(PropertyType type)
+{
+    switch (type) {
+        case PropertyType::Int:
+        case PropertyType::Float:
+        case PropertyType::Double:
+            return "number";
+        case PropertyType::Bool:
+            return "boolean";
+        case PropertyType::String:
+            return "string";
+        case PropertyType::Date:
+            return "date";
+        case PropertyType::Data:
+            return "binary";
+        case PropertyType::Object:
+            return "object";
+        case PropertyType::Array:
+            return "array";
+
+        case PropertyType::Any:
+            throw std::runtime_error("'Any' type is not supported");
+        case PropertyType::LinkingObjects:
+            throw std::runtime_error("LinkingObjects' type is not supported");
+    }
+
+    REALM_UNREACHABLE();
+    return "<unknown>";
 }
 
 } // js

@@ -46,6 +46,7 @@
 		504CF8601EBCAE3600A9A4B6 /* sync_file.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 504CF85A1EBCAE3600A9A4B6 /* sync_file.cpp */; };
 		504CF8611EBCAE3600A9A4B6 /* sync_metadata.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 504CF85C1EBCAE3600A9A4B6 /* sync_metadata.cpp */; };
 		50C671001E1D2D31003CB63C /* thread_safe_reference.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5D02C7791E1C83650048C13E /* thread_safe_reference.cpp */; };
+		5D1BF0571EF1DB4800B7DC87 /* jsc_value.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5D1BF0561EF1DB4800B7DC87 /* jsc_value.cpp */; };
 		5D25F5A11D6284FD00EBBB30 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = F63FF3301C16434400B3B8E0 /* libz.tbd */; };
 		8507156E1E2CFCD000E548DB /* object_notifier.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8507156B1E2CFC0100E548DB /* object_notifier.cpp */; };
 		F61378791C18EAC5008BFC51 /* js in Resources */ = {isa = PBXBuildFile; fileRef = F61378781C18EAAC008BFC51 /* js */; };
@@ -191,13 +192,12 @@
 		5D02C7781E1C83650048C13E /* execution_context_id.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = execution_context_id.hpp; path = src/execution_context_id.hpp; sourceTree = "<group>"; };
 		5D02C7791E1C83650048C13E /* thread_safe_reference.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = thread_safe_reference.cpp; path = src/thread_safe_reference.cpp; sourceTree = "<group>"; };
 		5D02C77A1E1C83650048C13E /* thread_safe_reference.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = thread_safe_reference.hpp; path = src/thread_safe_reference.hpp; sourceTree = "<group>"; };
+		5D1BF0561EF1DB4800B7DC87 /* jsc_value.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = jsc_value.cpp; sourceTree = "<group>"; };
 		8507156B1E2CFC0100E548DB /* object_notifier.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = object_notifier.cpp; sourceTree = "<group>"; };
 		8507156C1E2CFC0100E548DB /* object_notifier.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = object_notifier.hpp; sourceTree = "<group>"; };
 		850715AE1E32366B00E548DB /* event_loop_dispatcher.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = event_loop_dispatcher.hpp; sourceTree = "<group>"; };
 		F60102CF1CBB814A00EC01BA /* node_init.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = node_init.hpp; sourceTree = "<group>"; };
 		F60102D11CBB865A00EC01BA /* jsc_init.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = jsc_init.hpp; sourceTree = "<group>"; };
-		F60102E31CBBB19700EC01BA /* node_object_accessor.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = node_object_accessor.hpp; sourceTree = "<group>"; };
-		F60102E71CBBB36500EC01BA /* jsc_object_accessor.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = jsc_object_accessor.hpp; sourceTree = "<group>"; };
 		F60102F71CBDA6D400EC01BA /* js_collection.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = js_collection.hpp; sourceTree = "<group>"; };
 		F60103071CC4B3DF00EC01BA /* node_protected.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = node_protected.hpp; sourceTree = "<group>"; };
 		F60103081CC4B4F900EC01BA /* jsc_protected.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = jsc_protected.hpp; sourceTree = "<group>"; };
@@ -548,7 +548,6 @@
 				F60103121CC4CBF000EC01BA /* node_exception.hpp */,
 				F60103071CC4B3DF00EC01BA /* node_protected.hpp */,
 				F60103151CC4CCFD00EC01BA /* node_return_value.hpp */,
-				F60102E31CBBB19700EC01BA /* node_object_accessor.hpp */,
 				F67478481CC81F1300F9273C /* platform.cpp */,
 			);
 			name = Node;
@@ -695,12 +694,12 @@
 				F60103131CC4CC4500EC01BA /* jsc_string.hpp */,
 				F60103091CC4B5E800EC01BA /* jsc_context.hpp */,
 				F601030B1CC4B6C900EC01BA /* jsc_value.hpp */,
+				5D1BF0561EF1DB4800B7DC87 /* jsc_value.cpp */,
 				F601030D1CC4B76F00EC01BA /* jsc_object.hpp */,
 				F601030F1CC4B80800EC01BA /* jsc_function.hpp */,
 				F60103111CC4BA6500EC01BA /* jsc_exception.hpp */,
 				F60103081CC4B4F900EC01BA /* jsc_protected.hpp */,
 				F60103141CC4CC8C00EC01BA /* jsc_return_value.hpp */,
-				F60102E71CBBB36500EC01BA /* jsc_object_accessor.hpp */,
 			);
 			name = JSC;
 			path = jsc;
@@ -905,6 +904,7 @@
 				F63FF2CD1C12469E00B3B8E0 /* rpc.cpp in Sources */,
 				02E315D21DB80DF200555337 /* sync_file.cpp in Sources */,
 				022BF1021E7266DF00F382F1 /* binding_callback_thread_observer.cpp in Sources */,
+				5D1BF0571EF1DB4800B7DC87 /* jsc_value.cpp in Sources */,
 				02F59EC21C88F17D007F774C /* object_store.cpp in Sources */,
 				02022A7C1DA47EC8000F0C4F /* format.cpp in Sources */,
 				02E315CB1DB80DDD00555337 /* sync_user.cpp in Sources */,

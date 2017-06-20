@@ -22,6 +22,8 @@
 #include "js_realm_object.hpp"
 #include "js_schema.hpp"
 
+#include "util/format.hpp"
+
 namespace realm {
 class List;
 class Object;
@@ -46,21 +48,27 @@ public:
     using Value = js::Value<JSEngine>;
     using OptionalValue = util::Optional<ValueType>;
 
-    NativeAccessor(ContextType ctx, std::shared_ptr<Realm> realm=nullptr, const ObjectSchema* object_schema=nullptr)
+    NativeAccessor(ContextType ctx, std::shared_ptr<Realm> realm, const ObjectSchema& object_schema)
     : m_ctx(ctx), m_realm(std::move(realm)), m_object_schema(object_schema) { }
 
     NativeAccessor(NativeAccessor& parent, const Property& prop)
     : m_ctx(parent.m_ctx)
     , m_realm(parent.m_realm)
-    , m_object_schema(&*m_realm->schema().find(prop.object_type))
+    , m_object_schema(*m_realm->schema().find(prop.object_type))
     { }
 
-    OptionalValue value_for_property(ValueType dict, std::string const& prop_name, size_t) {
+    OptionalValue value_for_property(ValueType dict, std::string const& prop_name, size_t prop_index) {
         ObjectType object = Value::validated_to_object(m_ctx, dict);
         if (!Object::has_property(m_ctx, object, prop_name)) {
             return util::none;
         }
-        return Object::get_property(m_ctx, object, prop_name);
+        ValueType value = Object::get_property(m_ctx, object, prop_name);
+        const auto& prop = m_object_schema.persisted_properties[prop_index];
+        if (!Value::is_valid_for_property(m_ctx, value, prop)) {
+            throw TypeErrorException(util::format("%1.%2", m_object_schema.name, prop.name),
+                                     js_type_name_for_property_type(prop.type));
+        }
+        return value;
     }
 
     OptionalValue default_value_for_property(const ObjectSchema &object_schema, const std::string &prop_name) {
@@ -77,9 +85,9 @@ public:
     ValueType box(float number)      { return Value::from_number(m_ctx, number); }
     ValueType box(double number)     { return Value::from_number(m_ctx, number); }
     ValueType box(StringData string) { return Value::from_string(m_ctx, string.data()); }
+    ValueType box(BinaryData data)   { return Value::from_binary(m_ctx, data); }
     ValueType box(Mixed)             { throw std::runtime_error("'Any' type is unsupported"); }
 
-    ValueType box(BinaryData);
     ValueType box(Timestamp ts) {
         return Object::create_date(m_ctx, ts.get_seconds() * 1000 + ts.get_nanoseconds() / 1000000);
     }
@@ -118,8 +126,9 @@ public:
 private:
     ContextType m_ctx;
     std::shared_ptr<Realm> m_realm;
-    const ObjectSchema* m_object_schema = nullptr;
+    const ObjectSchema& m_object_schema;
     std::string m_string_buffer;
+    OwnedBinaryData m_owned_binary_data;
 
     template<typename, typename>
     friend struct _impl::Unbox;
@@ -190,10 +199,12 @@ struct Unbox<JSEngine, StringData> {
     }
 };
 
-// Need separate implementations per-engine
 template<typename JSEngine>
 struct Unbox<JSEngine, BinaryData> {
-    static BinaryData call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value value, bool, bool);
+    static BinaryData call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value value, bool, bool) {
+        ctx->m_owned_binary_data = js::Value<JSEngine>::validated_to_binary(ctx->m_ctx, value, "Property");
+        return ctx->m_owned_binary_data.get();
+    }
 };
 
 template<typename JSEngine>
@@ -235,11 +246,10 @@ struct Unbox<JSEngine, RowExpr> {
         }
 
         if (Value::is_array(ctx->m_ctx, object)) {
-            object = Schema<JSEngine>::dict_for_property_array(ctx->m_ctx, *ctx->m_object_schema, object);
+            object = Schema<JSEngine>::dict_for_property_array(ctx->m_ctx, ctx->m_object_schema, object);
         }
 
-        auto child = realm::Object::create<ValueType>(*ctx, ctx->m_realm,
-                                                      *ctx->m_object_schema,
+        auto child = realm::Object::create<ValueType>(*ctx, ctx->m_realm, ctx->m_object_schema,
                                                       static_cast<ValueType>(object), try_update);
         return child.row();
     }

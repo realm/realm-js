@@ -5,6 +5,7 @@ vNext Release notes (TBD)
 
 ### Enhancements
 * Accessing `Realm.Sync` when sync is not enabled will no longer throw, but return `undefined`.
+* Better error messages when creating objects.
 * Added bundled TypeScript declarations of the Realm API.
 
 ### Bug fixes

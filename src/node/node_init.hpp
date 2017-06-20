@@ -26,4 +26,7 @@
 #include "node_function.hpp"
 #include "node_exception.hpp"
 #include "node_return_value.hpp"
-#include "node_object_accessor.hpp"
+#include "node_class.hpp"
+
+// FIXME: js_object_accessor.hpp includes js_list.hpp which includes js_object_accessor.hpp.
+#include "js_object_accessor.hpp"
