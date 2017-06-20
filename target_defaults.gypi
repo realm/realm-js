@@ -5,8 +5,7 @@
         "-Wno-missing-field-initializers",
         "-Wno-return-type",
         "-Wno-unused-result",
-        "-Wno-deprecated-declarations",
-        "-Wundef"
+        "-Wno-deprecated-declarations"
       ]
     },
     "cflags_cc!": [ # turn off default flags on older nodes on linux
