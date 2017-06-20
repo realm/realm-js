@@ -4,7 +4,7 @@ vNext Release notes (TBD)
 * None
 
 ### Enhancements
-* None
+* Accessing `Realm.Sync` when sync is not enabled will no longer throw, but return `undefined`.
 
 ### Bug fixes
 * Fix `Realm.Sync.User.prototype.isAdmin` returning `false` for logged-in admin users. 
