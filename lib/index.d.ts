@@ -257,8 +257,8 @@ declare namespace Realm.Sync {
     interface SyncConfiguration {
         user: User;
         url: string;
-        validate_ssl: boolean;
-        ssl_trust_certificate_path: string;
+        validate_ssl?: boolean;
+        ssl_trust_certificate_path?: string;
     }
 
     /**
