@@ -164,6 +164,15 @@ class Collection {
      */
     findIndex(callback, thisArg) {}
 
+   /**
+    Finds the index of the given object in the collection.
+    * @param {Realm.Object} [object] - The object to search for in the collection..
+    * @returns {number} representing the index where the object was found, or `-1`
+    *   if not in collection.
+    * @since 0.11.0
+    */
+   findIndexOfObject(object) {}
+
     /**
      * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/forEach Array.prototype.forEach}
      * @param {function} callback - Function to execute on each object in the collection.

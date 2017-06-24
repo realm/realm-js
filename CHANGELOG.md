@@ -1,3 +1,12 @@
+1.8.x Release notes ()
+=============================================================
+### Breaking changes
+
+### Enhancements
+* Added `findIndexOfObject()` method on `Realm.Results` that returns the index of the object in the collection.
+
+### Bug fixes
+
 1.8.1 Release notes (2017-6-20)
 =============================================================
 ### Breaking changes
