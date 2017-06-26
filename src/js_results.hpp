@@ -74,7 +74,7 @@ struct ResultsClass : ClassDefinition<T, realm::js::Results<T>, CollectionClass<
     static void sorted(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void is_valid(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
 
-    static void find_index_of_object(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void index_of(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
     
     // observable
     static void add_listener(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
@@ -91,7 +91,7 @@ struct ResultsClass : ClassDefinition<T, realm::js::Results<T>, CollectionClass<
         {"addListener", wrap<add_listener>},
         {"removeListener", wrap<remove_listener>},
         {"removeAllListeners", wrap<remove_all_listeners>},
-        {"findIndexOfObject", wrap<find_index_of_object>},
+        {"indexOf", wrap<index_of>},
     };
     
     PropertyMap<T> const properties = {
@@ -242,7 +242,7 @@ void ResultsClass<T>::is_valid(ContextType ctx, FunctionType, ObjectType this_ob
 }
     
 template<typename T>
-void ResultsClass<T>::find_index_of_object(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+void ResultsClass<T>::index_of(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 1);
     
     ObjectType arg = Value::validated_to_object(ctx, arguments[0]);
@@ -269,7 +269,7 @@ void ResultsClass<T>::find_index_of_object(ContextType ctx, FunctionType, Object
         }
     }
     else {
-        throw std::runtime_error("Argument to 'findIndexOfObject' must be a Realm object.");
+        return_value.set(-1);
     }
 }
     

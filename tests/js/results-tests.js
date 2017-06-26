@@ -396,20 +396,18 @@ module.exports = {
         
         // Search in base table
         const objects = realm.objects('TestObject');
-        TestCase.assertEqual(objects.findIndexOfObject(object1), 0);
-        TestCase.assertEqual(objects.findIndexOfObject(object2), 1);
-        TestCase.assertEqual(objects.findIndexOfObject(object3), 2);
+        TestCase.assertEqual(objects.indexOf(object1), 0);
+        TestCase.assertEqual(objects.indexOf(object2), 1);
+        TestCase.assertEqual(objects.indexOf(object3), 2);
         
         // Search in filtered query
         const results = objects.filtered("doubleCol == 2");
-        TestCase.assertEqual(results.findIndexOfObject(object1), -1);
-        TestCase.assertEqual(results.findIndexOfObject(object2), 0);
-        TestCase.assertEqual(results.findIndexOfObject(object3), 1);
-        
-        TestCase.assertThrows(function() {
-            const nonRealmObject = {test: "this is an object"};
-            objects.findIndexOfObject(nonRealmObject);
-        });
+        TestCase.assertEqual(results.indexOf(object1), -1);
+        TestCase.assertEqual(results.indexOf(object2), 0);
+        TestCase.assertEqual(results.indexOf(object3), 1);
+
+        const nonRealmObject = {test: "this is an object"};
+        TestCase.assertEqual(objects.indexOf(nonRealmObject), -1);
         
         // Searching for object from the wrong realm
         var realm2 = new Realm({path: '2.realm', schema: realm.schema});
@@ -418,7 +416,7 @@ module.exports = {
             object4 = realm2.create('TestObject', {doubleCol: 1});
         });
         TestCase.assertThrows(function() {
-            objects.findIndexOfObject(object4);
+            objects.indexOf(object4);
         });
     },
 
