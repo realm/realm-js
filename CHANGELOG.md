@@ -1,11 +1,13 @@
-1.8.x Release notes ()
+vNext Release notes (TBD)
 =============================================================
 ### Breaking changes
+* None
 
 ### Enhancements
-* Added `findIndexOfObject()` method on `Realm.Results` that returns the index of the object in the collection.
+* Added `indexOf()` method on `Realm.Results` and `Realm.List` that returns the index of the object in the collection.
 
 ### Bug fixes
+* Fix opening synced realms with a logged-in admin user. 
 
 1.8.1 Release notes (2017-6-20)
 =============================================================
