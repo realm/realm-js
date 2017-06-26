@@ -1,4 +1,4 @@
-vNext Release notes (TBD)
+1.8.2 Release notes (2017-6-26)
 =============================================================
 ### Breaking changes
 * None
