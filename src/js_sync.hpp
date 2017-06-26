@@ -403,7 +403,7 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
 
         EventLoopDispatcher<SyncBindSessionHandler> bind([protected_ctx, protected_sync](const std::string& path, const realm::SyncConfig& config, std::shared_ptr<SyncSession>) {
             HANDLESCOPE
-            if (config.user->is_admin()) {
+            if (config.user->token_type() == SyncUser::TokenType::Admin) {
                 // FIXME: This log-in callback is called while the object store still holds some sync-related locks.
                 // Notify the object store of the access token asynchronously to avoid the deadlock that would result
                 // from reentering the object store here.

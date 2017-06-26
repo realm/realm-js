@@ -1,3 +1,14 @@
+vNext Release notes (TBD)
+=============================================================
+### Breaking changes
+* None
+
+### Enhancements
+* None.
+
+### Bug fixes
+* Fix opening synced realms with a logged-in admin user. 
+
 1.8.1 Release notes (2017-6-20)
 =============================================================
 ### Breaking changes
