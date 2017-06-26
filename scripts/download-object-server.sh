@@ -6,8 +6,8 @@ set -eo pipefail
 
 . dependencies.list
 
-if [ -f object-server-for-testing/node_modules/realm-object-server/package.json ]; then
-    if grep -q "\"version\": \"$REALM_OBJECT_SERVER_VERSION\"" object-server-for-testing/node_modules/realm-object-server/package.json; then
+if [ -f object-server-for-testing/node_modules/realm-object-server-developer/package.json ]; then
+    if grep -q "\"version\": \"$REALM_OBJECT_SERVER_VERSION\"" object-server-for-testing/node_modules/realm-object-server-developer/package.json; then
         echo -e "yes\n" | object-server-for-testing/reset-server-realms.command
         exit
     fi
