@@ -22,6 +22,12 @@ var Realm = require('realm');
 var TestCase = require('./asserts');
 var schemas = require('./schemas');
 
+function names(results) {
+    return results.map(function(object) {
+        return object.name;
+    });
+}
+
 module.exports = {
     testBasics: function() {
         var realm = new Realm({schema: [schemas.PersonObject]});
@@ -32,16 +38,16 @@ module.exports = {
             realm.create('PersonObject', {name: 'Christine', age: 25, children: [olivier]});
             oliviersParents = olivier.parents;
 
-            TestCase.assertArraysEqual(oliviersParents.map((p) => p.name), ['Christine']);
+            TestCase.assertArraysEqual(names(oliviersParents), ['Christine']);
         });
 
-        TestCase.assertArraysEqual(oliviersParents.map((p) => p.name), ['Christine']);
+        TestCase.assertArraysEqual(names(oliviersParents), ['Christine']);
 
         var jp;
         realm.write(function() {
             jp = realm.create('PersonObject', {name: 'JP', age: 28, children: [olivier]});
 
-            TestCase.assertArraysEqual(oliviersParents.map((p) => p.name), ['Christine', 'JP']);
+            TestCase.assertArraysEqual(names(oliviersParents), ['Christine', 'JP']);
         });
 
         realm.write(function() {
@@ -74,6 +80,6 @@ module.exports = {
 
         TestCase.assertEqual(resultsA.length, 1);
         TestCase.assertEqual(resultsB.filtered("name = 'Christine'").length, 0);
-        TestCase.assertArraysEqual(resultsC.map((p) => p.name), ['JP']);
+        TestCase.assertArraysEqual(names(resultsC), ['JP']);
     },
 };
