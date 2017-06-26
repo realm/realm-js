@@ -29,9 +29,11 @@ function PersonObject() {}
 PersonObject.schema = {
     name: 'PersonObject',
     properties: {
-        name:    'string',
-        age:     'double',
-        married: {type: 'bool', default: false}, 
+        name:     'string',
+        age:      'double',
+        married:  {type: 'bool', default: false}, 
+        children: {type: 'list', objectType: 'PersonObject'},
+        parents:  {type: 'linkingObjects', objectType: 'PersonObject', property: 'children'},
     }
 };
 PersonObject.prototype.description = function() {
