@@ -29,4 +29,11 @@ class Object {
      * @since 0.12.0
      */
     isValid() {}
+
+    /**
+     * Returns the schema for the type this object belongs to.
+     * @returns {Realm~ObjectSchema} the schema that describes this object.
+     * @since 1.8.1
+     */
+    objectSchema() {}
 }
