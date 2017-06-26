@@ -72,7 +72,8 @@ struct ListClass : ClassDefinition<T, realm::js::List<T>, CollectionClass<T>> {
     static void filtered(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void sorted(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void is_valid(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
-    
+    static void index_of(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
+
     // observable
     static void add_listener(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void remove_listener(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
@@ -90,6 +91,7 @@ struct ListClass : ClassDefinition<T, realm::js::List<T>, CollectionClass<T>> {
         {"filtered", wrap<filtered>},
         {"sorted", wrap<sorted>},
         {"isValid", wrap<is_valid>},
+        {"indexOf", wrap<index_of>},
         {"addListener", wrap<add_listener>},
         {"removeListener", wrap<remove_listener>},
         {"removeAllListeners", wrap<remove_all_listeners>},
@@ -256,7 +258,33 @@ template<typename T>
 void ListClass<T>::is_valid(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     return_value.set(get_internal<T, ListClass<T>>(this_object)->is_valid());
 }
-    
+
+template<typename T>
+void ListClass<T>::index_of(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    validate_argument_count(argc, 1);
+
+    ObjectType arg = Value::validated_to_object(ctx, arguments[0]);
+    if (Object::template is_instance<RealmObjectClass<T>>(ctx, arg)) {
+        auto object = get_internal<T, RealmObjectClass<T>>(arg);
+        if (!object->is_valid()) {
+            throw std::runtime_error("Object is invalid. Either it has been previously deleted or the Realm it belongs to has been closed.");
+        }
+
+        auto list = get_internal<T, ListClass<T>>(this_object);
+        size_t ndx = list->find(object->row());
+
+        if (ndx == realm::not_found) {
+            return_value.set(-1);
+        }
+        else {
+            return_value.set((uint32_t)ndx);
+        }
+    }
+    else {
+        return_value.set(-1);
+    }
+}
+
 template<typename T>
 void ListClass<T>::add_listener(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 1);

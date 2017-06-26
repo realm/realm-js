@@ -74,6 +74,8 @@ struct ResultsClass : ClassDefinition<T, realm::js::Results<T>, CollectionClass<
     static void sorted(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void is_valid(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
 
+    static void index_of(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    
     // observable
     static void add_listener(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void remove_listener(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
@@ -89,6 +91,7 @@ struct ResultsClass : ClassDefinition<T, realm::js::Results<T>, CollectionClass<
         {"addListener", wrap<add_listener>},
         {"removeListener", wrap<remove_listener>},
         {"removeAllListeners", wrap<remove_all_listeners>},
+        {"indexOf", wrap<index_of>},
     };
     
     PropertyMap<T> const properties = {
@@ -236,6 +239,38 @@ void ResultsClass<T>::sorted(ContextType ctx, FunctionType, ObjectType this_obje
 template<typename T>
 void ResultsClass<T>::is_valid(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     return_value.set(get_internal<T, ResultsClass<T>>(this_object)->is_valid());
+}
+    
+template<typename T>
+void ResultsClass<T>::index_of(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    validate_argument_count(argc, 1);
+    
+    ObjectType arg = Value::validated_to_object(ctx, arguments[0]);
+    if (Object::template is_instance<RealmObjectClass<T>>(ctx, arg)) {
+        auto object = get_internal<T, RealmObjectClass<T>>(arg);
+        if (!object->is_valid()) {
+            throw std::runtime_error("Object is invalid. Either it has been previously deleted or the Realm it belongs to has been closed.");
+        }
+        
+        size_t ndx;
+        try {
+            auto results = get_internal<T, ResultsClass<T>>(this_object);
+            ndx = results->index_of(object->row());
+        }
+        catch (realm::Results::IncorrectTableException &) {
+            throw std::runtime_error("Object type does not match the type contained in result");
+        }
+        
+        if (ndx == realm::not_found) {
+            return_value.set(-1);
+        }
+        else {
+            return_value.set((uint32_t)ndx);
+        }
+    }
+    else {
+        return_value.set(-1);
+    }
 }
     
 template<typename T>

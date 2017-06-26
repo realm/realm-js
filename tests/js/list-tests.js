@@ -583,6 +583,7 @@ module.exports = {
 
             var index = list.findIndex(function(p) {return p.name == 'Tim'});
             TestCase.assertEqual(index, 1);
+            TestCase.assertEqual(list.indexOf(list[index]), index);
 
             TestCase.assertEqual(list.reduce(function(n, p) {return n + p.age}, 0), 33);
             TestCase.assertEqual(list.reduceRight(function(n, p) {return n + p.age}, 0), 33);

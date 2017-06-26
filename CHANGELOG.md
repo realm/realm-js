@@ -4,7 +4,7 @@ vNext Release notes (TBD)
 * None
 
 ### Enhancements
-* None.
+* Added `indexOf()` method on `Realm.Results` and `Realm.List` that returns the index of the object in the collection.
 
 ### Bug fixes
 * Fix opening synced realms with a logged-in admin user. 
