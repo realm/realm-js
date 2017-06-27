@@ -237,6 +237,114 @@ module.exports = {
             });
     },
 
+    testProgressNotificationsForRealmOpen() {
+        if (!isNodeProccess) {
+            return Promise.resolve();
+        }
+
+        const username = uuid();
+        const realmName = uuid();
+        const expectedObjectsCount = 3;
+
+        let tmpDir = tmp.dirSync();
+        let content = fs.readFileSync(__dirname + '/download-api-helper.js', 'utf8');
+        let tmpFile = tmp.fileSync({ dir: tmpDir.name });
+        fs.appendFileSync(tmpFile.fd, content, { encoding: 'utf8' });
+
+        return new Promise((resolve, reject) => {
+            //execute download-api-helper which inserts predefined number of objects into the synced realm.
+            const child = execFile('node', [tmpFile.name, username, realmName, REALM_MODULE_PATH], { cwd: tmpDir.name }, (error, stdout, stderr) => {
+                if (error) {
+                    reject(new Error('testProgressNotifications: Error executing download api helper for Realm.open ' + error));
+                }
+                resolve();
+            });
+        })
+        .then(() => {
+            return promisifiedLogin('http://localhost:9080', username, 'password').then(user => {
+                const accessTokenRefreshed = this;
+                let successCounter = 0;
+                let progressNotificationCalled = false;
+                let config = {
+                    sync: { 
+                        user, 
+                        url: `realm://localhost:9080/~/${realmName}`,
+                        _onProgress: (transferred, remaining) => { 
+                            progressNotificationCalled = true
+                        },
+                    },
+                    schema: [{ name: 'Dog', properties: { name: 'string' } }],
+                };
+
+                return Realm.open(config)
+                            .then(realm => {
+                            }).then(session => {
+                                TestCase.assertTrue(progressNotificationCalled, "Progress notification not called for Realm.open");
+                            });
+            });
+        });
+    },
+    
+    testProgressNotificationsForRealmOpenAsync() {
+        if (!isNodeProccess) {
+            return Promise.resolve();
+        }
+
+        const username = uuid();
+        const realmName = uuid();
+        const expectedObjectsCount = 3;
+
+        let tmpDir = tmp.dirSync();
+        let content = fs.readFileSync(__dirname + '/download-api-helper.js', 'utf8');
+        let tmpFile = tmp.fileSync({ dir: tmpDir.name });
+        fs.appendFileSync(tmpFile.fd, content, { encoding: 'utf8' });
+
+        return new Promise((resolve, reject) => {
+            //execute download-api-helper which inserts predefined number of objects into the synced realm.
+            const child = execFile('node', [tmpFile.name, username, realmName, REALM_MODULE_PATH], { cwd: tmpDir.name }, (error, stdout, stderr) => {
+                if (error) {
+                     reject(new Error('testProgressNotifications: Error executing download api helper for Realm.openAsync ' + error));
+                }
+                resolve();
+            });
+        })
+            .then(() => {
+                return promisifiedLogin('http://localhost:9080', username, 'password').then(user => {
+                    return new Promise((resolve, reject) => {
+                        let progressNotificationCalled = false;
+                        let config = {
+                            sync: { user, url: `realm://localhost:9080/~/${realmName}`,
+                                _onProgress: (transferred, remaining) => { 
+                                    progressNotificationCalled = true
+                                },
+                            },
+                            schema: [{ name: 'Dog', properties: { name: 'string' } }],
+                        };
+
+                        Realm.openAsync(config, (error, realm) => {
+                            try {
+                                if (error) {
+                                    reject(error);
+                                }
+
+                                setTimeout(() => {
+                                    try {
+                                        TestCase.assertTrue(progressNotificationCalled, "Progress notification not called for Realm.openAsync");
+                                        resolve();
+                                    } catch (e) {
+                                        reject(e);
+                                    }
+                                }, 50);
+                            }
+                            catch (e) {
+                                reject(e);
+                            }
+                        });
+                    });
+                });
+            });
+    },
+
     testRealmOpenAsyncNoSchema() {
         if (!isNodeProccess) {
             return Promise.resolve();
