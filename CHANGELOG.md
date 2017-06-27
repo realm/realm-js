@@ -1,3 +1,14 @@
+vNext Release notes (TBD)
+=============================================================
+### Breaking changes
+* None
+
+### Enhancements
+* None
+
+### Bug fixes
+* Fix admin users not appearing in `Realm.Sync.User.all`, which broke getting an access token for them.
+
 1.8.2 Release notes (2017-6-26)
 =============================================================
 ### Breaking changes

@@ -134,34 +134,12 @@ template<typename T>
 void UserClass<T>::all_users(ContextType ctx, ObjectType object, ReturnValue &return_value) {
     auto users = Object::create_empty(ctx);
     for (auto user : SyncManager::shared().all_logged_in_users()) {
-        if (!user->is_admin()) {
+        if (user->token_type() == SyncUser::TokenType::Normal) {
             Object::set_property(ctx, users, user->identity(), create_object<T, UserClass<T>>(ctx, new SharedUser(user)), ReadOnly | DontDelete);
         }
     }
     return_value.set(users);
 }
-
-/*
-template<typename T>
-void UserClass<T>::current_user(ContextType ctx, ObjectType object, ReturnValue &return_value) {
-    SharedUser *current = nullptr;
-    for (auto user : SyncManager::shared().all_logged_in_users()) {
-        if (!user->is_admin()) {
-            if (current != nullptr) {
-                throw std::runtime_error("More than one user logged in currently.");
-            }
-            current = new SharedUser(user);
-        }
-    }
-
-    if (current != nullptr) {
-        return_value.set(create_object<T, UserClass<T>>(ctx, current));
-    }
-    else {
-        return_value.set_undefined();
-    }
-}
-*/
 
 template<typename T>
 void UserClass<T>::logout(ContextType ctx, FunctionType, ObjectType this_object, size_t, const ValueType[], ReturnValue &) {
@@ -403,26 +381,14 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
 
         EventLoopDispatcher<SyncBindSessionHandler> bind([protected_ctx, protected_sync](const std::string& path, const realm::SyncConfig& config, std::shared_ptr<SyncSession>) {
             HANDLESCOPE
-            if (config.user->token_type() == SyncUser::TokenType::Admin) {
-                // FIXME: This log-in callback is called while the object store still holds some sync-related locks.
-                // Notify the object store of the access token asynchronously to avoid the deadlock that would result
-                // from reentering the object store here.
-                auto thread = std::thread([path, config]{
-                    auto session = SyncManager::shared().get_existing_active_session(path);
-                    session->refresh_access_token(config.user->refresh_token(), config.realm_url);
-                });
-                thread.detach();
-            }
-            else {
-                ObjectType user_constructor = Object::validated_get_object(protected_ctx, protected_sync, std::string("User"));
-                FunctionType refreshAccessToken = Object::validated_get_function(protected_ctx, user_constructor, std::string("_refreshAccessToken"));
+            ObjectType user_constructor = Object::validated_get_object(protected_ctx, protected_sync, std::string("User"));
+            FunctionType refreshAccessToken = Object::validated_get_function(protected_ctx, user_constructor, std::string("_refreshAccessToken"));
 
-                ValueType arguments[3];
-                arguments[0] = create_object<T, UserClass<T>>(protected_ctx, new SharedUser(config.user));
-                arguments[1] = Value::from_string(protected_ctx, path.c_str());
-                arguments[2] = Value::from_string(protected_ctx, config.realm_url.c_str());
-                Function::call(protected_ctx, refreshAccessToken, 3, arguments);
-            }
+            ValueType arguments[3];
+            arguments[0] = create_object<T, UserClass<T>>(protected_ctx, new SharedUser(config.user));
+            arguments[1] = Value::from_string(protected_ctx, path.c_str());
+            arguments[2] = Value::from_string(protected_ctx, config.realm_url.c_str());
+            Function::call(protected_ctx, refreshAccessToken, 3, arguments);
         });
 
         std::function<SyncSessionErrorHandler> error_handler;
