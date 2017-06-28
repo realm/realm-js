@@ -247,7 +247,7 @@ module.exports = {
                         sync: {
                             user,
                             url: `realm://localhost:9080/~/${realmName}`,
-                            _onProgress: (transferred, remaining) => {
+                            _onDownloadProgress: (transferred, remaining) => {
                                 progressNotificationCalled = true
                             },
                         },
@@ -279,7 +279,7 @@ module.exports = {
                         let progressNotificationCalled = false;
                         let config = {
                             sync: { user, url: `realm://localhost:9080/~/${realmName}`,
-                                _onProgress: (transferred, remaining) => { 
+                                _onDownloadProgress: (transferred, remaining) => { 
                                     progressNotificationCalled = true
                                 },
                             },

@@ -586,7 +586,7 @@ void RealmClass<T>::wait_for_download_completion(ContextType ctx, FunctionType, 
         auto realm = realm::Realm::get_shared_realm(config);
         if (auto sync_config = config.sync_config)
         {
-            static const String progressFuncName = "_onProgress";
+            static const String progressFuncName = "_onDownloadProgress";
             bool progressFuncDefined = false;
             if (!Value::is_boolean(ctx, sync_config_value) && !Value::is_undefined(ctx, sync_config_value))
             {
@@ -615,11 +615,8 @@ void RealmClass<T>::wait_for_download_completion(ContextType ctx, FunctionType, 
             if (user && user->state() != SyncUser::State::Error) {
                 if (auto session = user->session_for_on_disk_path(config.path)) {
                     if (progressFuncDefined) {
-                        session->register_progress_notifier([=](uint64_t transferred_bytes, uint64_t transferrable_bytes) {
-                               progressFunc(transferred_bytes, transferrable_bytes);
-                        }, SyncSession::NotifierType::download, false);
-                    }
-                    
+                        session->register_progress_notifier(std::move(progressFunc), SyncSession::NotifierType::download, false);
+                    } 
                     
                     session->wait_for_download_completion([=](std::error_code error_code) {
                         realm->close(); //capture and keep realm instance for until here
