@@ -103,6 +103,11 @@ declare namespace Realm {
          * @returns ObjectSchema
          */
         objectSchema(): ObjectSchema;
+
+        /**
+         * @returns Results<T>
+         */
+        linkingObjects<T>(objectType: string, property: string): Results<T>;
     }
 
     const Object: {

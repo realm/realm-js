@@ -82,4 +82,46 @@ module.exports = {
         TestCase.assertEqual(resultsB.filtered("name = 'Christine'").length, 0);
         TestCase.assertArraysEqual(names(resultsC), ['JP']);
     },
+
+    testMethod: function() {
+        var realm = new Realm({schema: [schemas.PersonObject]});
+
+        var person;
+        realm.write(function () {
+            person = realm.create('PersonObject', { name: 'Person 1', age: 50 });
+        });
+
+        TestCase.assertThrows(() => person.linkingObjects('NoSuchSchema', 'noSuchProperty'),
+            "Could not find schema for type 'NoSuchSchema'");
+
+        TestCase.assertThrows(() => person.linkingObjects('PersonObject', 'noSuchProperty'),
+            "Type 'PersonObject' does not contain property 'noSuchProperty'");
+
+        TestCase.assertThrows(() => person.linkingObjects('PersonObject', 'name'),
+            "'PersonObject.name' is not a relationship to 'PersonObject'");
+
+        var olivier, oliviersParents;
+        realm.write(function() {
+            olivier = realm.create('PersonObject', {name: 'Olivier', age: 0});
+            realm.create('PersonObject', {name: 'Christine', age: 25, children: [olivier]});
+            oliviersParents = olivier.linkingObjects('PersonObject', 'children');
+
+            TestCase.assertArraysEqual(names(oliviersParents), ['Christine']);
+        });
+
+        TestCase.assertArraysEqual(names(oliviersParents), ['Christine']);
+
+        var jp;
+        realm.write(function() {
+            jp = realm.create('PersonObject', {name: 'JP', age: 28, children: [olivier]});
+
+            TestCase.assertArraysEqual(names(oliviersParents), ['Christine', 'JP']);
+        });
+
+        realm.write(function() {
+            realm.delete(olivier);
+
+            TestCase.assertEqual(oliviersParents.length, 0);
+        });
+    },
 };

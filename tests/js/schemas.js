@@ -18,6 +18,8 @@
 
 'use strict';
 
+const Realm = require('realm');
+
 exports.TestObject = {
     name: 'TestObject',
     properties: {
@@ -42,6 +44,8 @@ PersonObject.prototype.description = function() {
 PersonObject.prototype.toString = function() {
     return this.name;
 };
+Object.setPrototypeOf(PersonObject, Realm.Object);
+Object.setPrototypeOf(PersonObject.prototype, Realm.Object.prototype);
 exports.PersonObject = PersonObject;
 
 exports.PersonList = {
