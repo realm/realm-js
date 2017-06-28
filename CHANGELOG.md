@@ -1,3 +1,14 @@
+vNext Release notes (TBD)
+=============================================================
+### Breaking changes
+* None
+
+### Enhancements
+* Add support for Linking Objects (AKA Backlinks).
+
+### Bug fixes
+* Node
+
 1.8.3 Release notes (2017-6-27)
 =============================================================
 ### Breaking changes
