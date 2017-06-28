@@ -189,10 +189,10 @@ ObjectSchema Schema<T>::parse_object_schema(ContextType ctx, ObjectType object_s
             std::string property_name = Object::validated_get_string(ctx, property_object, name_string);
             Property property = parse_property(ctx, property_object, property_name, object_defaults);
             if (property.type == realm::PropertyType::LinkingObjects) {
-                object_schema.computed_properties.emplace_back(property);
+                object_schema.computed_properties.emplace_back(std::move(property));
             }
             else {
-                object_schema.persisted_properties.emplace_back(property);
+                object_schema.persisted_properties.emplace_back(std::move(property));
             }
             
         }
@@ -203,10 +203,10 @@ ObjectSchema Schema<T>::parse_object_schema(ContextType ctx, ObjectType object_s
             ValueType property_value = Object::get_property(ctx, properties_object, property_name);
             Property property = parse_property(ctx, property_value, property_name, object_defaults);
             if (property.type == realm::PropertyType::LinkingObjects) {
-                object_schema.computed_properties.emplace_back(property);
+                object_schema.computed_properties.emplace_back(std::move(property));
             }
             else {
-                object_schema.persisted_properties.emplace_back(property);
+                object_schema.persisted_properties.emplace_back(std::move(property));
             }
         }
     }
