@@ -18,6 +18,8 @@
 
 'use strict';
 
+const Realm = require('realm');
+
 exports.TestObject = {
     name: 'TestObject',
     properties: {
@@ -29,9 +31,11 @@ function PersonObject() {}
 PersonObject.schema = {
     name: 'PersonObject',
     properties: {
-        name:    'string',
-        age:     'double',
-        married: {type: 'bool', default: false}, 
+        name:     'string',
+        age:      'double',
+        married:  {type: 'bool', default: false}, 
+        children: {type: 'list', objectType: 'PersonObject'},
+        parents:  {type: 'linkingObjects', objectType: 'PersonObject', property: 'children'},
     }
 };
 PersonObject.prototype.description = function() {
@@ -40,6 +44,8 @@ PersonObject.prototype.description = function() {
 PersonObject.prototype.toString = function() {
     return this.name;
 };
+Object.setPrototypeOf(PersonObject, Realm.Object);
+Object.setPrototypeOf(PersonObject.prototype, Realm.Object.prototype);
 exports.PersonObject = PersonObject;
 
 exports.PersonList = {
@@ -117,18 +123,26 @@ exports.AllTypes = {
     name: 'AllTypesObject',
     primaryKey: 'primaryCol',
     properties: {
-        primaryCol: 'string',
-        boolCol:    'bool',
-        intCol:     'int',
-        floatCol:   'float',
-        doubleCol:  'double',
-        stringCol:  'string',
-        dateCol:    'date',
-        dataCol:    'data',
-        objectCol:  'TestObject',
-        arrayCol:   {type: 'list', objectType: 'TestObject'},
+        primaryCol:        'string',
+        boolCol:           'bool',
+        intCol:            'int',
+        floatCol:          'float',
+        doubleCol:         'double',
+        stringCol:         'string',
+        dateCol:           'date',
+        dataCol:           'data',
+        objectCol:         'TestObject',
+        arrayCol:          {type: 'list', objectType: 'TestObject'},
+        linkingObjectsCol: {type: 'linkingObjects', objectType: 'LinkToAllTypesObject', property: 'allTypesCol'},
     }
 };
+
+exports.LinkToAllTypes = {
+    name: 'LinkToAllTypesObject',
+    properties: {
+        allTypesCol: 'AllTypesObject',
+    }
+}
 
 exports.DefaultValues = {
     name: 'DefaultValuesObject',
@@ -185,3 +199,12 @@ exports.DateObject = {
         nullDate: { type: 'date', optional: true }
     }
 };
+
+exports.LinkingObjectsObject = {
+    name: 'LinkingObjectsObject',
+    properties: {
+        value:          'int',
+        links:          {type: 'list', objectType: 'LinkingObjectsObject'},
+        linkingObjects: {type: 'linkingObjects', objectType: 'LinkingObjectsObject', property: 'links'}
+    }
+}

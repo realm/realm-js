@@ -24,7 +24,7 @@ declare namespace Realm {
      * PropertyType
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.html#~PropertyType }
      */
-    type PropertyType = string | 'bool' | 'int' | 'float' | 'double' | 'string' | 'data' | 'date' | 'list';
+    type PropertyType = string | 'bool' | 'int' | 'float' | 'double' | 'string' | 'data' | 'date' | 'list' | 'linkingObjects';
 
     /**
      * ObjectSchemaProperty
@@ -33,6 +33,7 @@ declare namespace Realm {
     interface ObjectSchemaProperty {
         type: PropertyType;
         objectType?: string;
+        property?: string;
         default?: any;
         optional?: boolean;
         indexed?: boolean;
@@ -102,6 +103,11 @@ declare namespace Realm {
          * @returns ObjectSchema
          */
         objectSchema(): ObjectSchema;
+
+        /**
+         * @returns Results<T>
+         */
+        linkingObjects<T>(objectType: string, property: string): Results<T>;
     }
 
     const Object: {
