@@ -159,6 +159,8 @@ public:
     using ConstructorMap = typename Schema<T>::ConstructorMap;
     
     using WaitHandler = void(std::error_code);
+    using ProgressHandler = void(uint64_t transferred_bytes, uint64_t transferrable_bytes);
+
 
     static FunctionType create_constructor(ContextType);
 
@@ -559,7 +561,7 @@ void RealmClass<T>::wait_for_download_completion(ContextType ctx, FunctionType, 
         Protected<FunctionType> protected_callback(ctx, callback_function);
         Protected<ObjectType> protected_this(ctx, this_object);
         Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
-
+        
         EventLoopDispatcher<WaitHandler> wait_handler([=](std::error_code error_code) {
             HANDLESCOPE
             if (!error_code) {
@@ -579,13 +581,45 @@ void RealmClass<T>::wait_for_download_completion(ContextType ctx, FunctionType, 
         });
         std::function<WaitHandler> waitFunc = std::move(wait_handler);
 
+        std::function<ProgressHandler> progressFunc; 
+
         auto realm = realm::Realm::get_shared_realm(config);
-        if (auto sync_config = config.sync_config) {
+        if (auto sync_config = config.sync_config)
+        {
+            static const String progressFuncName = "_onDownloadProgress";
+            bool progressFuncDefined = false;
+            if (!Value::is_boolean(ctx, sync_config_value) && !Value::is_undefined(ctx, sync_config_value))
+            {
+                auto sync_config_object = Value::validated_to_object(ctx, sync_config_value);
+
+                ValueType progressFuncValue = Object::get_property(ctx, sync_config_object, progressFuncName);
+                progressFuncDefined = !Value::is_undefined(ctx, progressFuncValue);
+
+                if (progressFuncDefined)
+                {
+                    Protected<FunctionType> protected_progressCallback(protected_ctx, Value::validated_to_function(protected_ctx, progressFuncValue));
+                    EventLoopDispatcher<ProgressHandler> progress_handler([=](uint64_t transferred_bytes, uint64_t transferrable_bytes) {
+                        HANDLESCOPE
+                        ValueType callback_arguments[2];
+                        callback_arguments[0] = Value::from_number(protected_ctx, transferred_bytes);
+                        callback_arguments[1] = Value::from_number(protected_ctx, transferrable_bytes);
+
+                        Function<T>::callback(protected_ctx, protected_progressCallback, protected_this, 2, callback_arguments);
+                    });
+
+                    progressFunc = std::move(progress_handler);
+                }
+            }
+
             std::shared_ptr<SyncUser> user = sync_config->user;
             if (user && user->state() != SyncUser::State::Error) {
                 if (auto session = user->session_for_on_disk_path(config.path)) {
+                    if (progressFuncDefined) {
+                        session->register_progress_notifier(std::move(progressFunc), SyncSession::NotifierType::download, false);
+                    } 
+                    
                     session->wait_for_download_completion([=](std::error_code error_code) {
-                        realm->close(); //capture and keep realm instance for till here
+                        realm->close(); //capture and keep realm instance for until here
                         waitFunc(error_code);
                     });
                     return;
