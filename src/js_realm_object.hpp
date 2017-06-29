@@ -52,6 +52,7 @@ struct RealmObjectClass : ClassDefinition<T, realm::Object> {
     
     static void is_valid(ContextType, FunctionType, ObjectType, size_t, const ValueType [], ReturnValue &);
     static void get_object_schema(ContextType, FunctionType, ObjectType, size_t, const ValueType [], ReturnValue &);
+    static void linking_objects(ContextType, FunctionType, ObjectType, size_t, const ValueType [], ReturnValue &);
 
     const std::string name = "RealmObject";
 
@@ -64,6 +65,7 @@ struct RealmObjectClass : ClassDefinition<T, realm::Object> {
     MethodMap<T> const methods = {
         {"isValid", wrap<is_valid>},
         {"objectSchema", wrap<get_object_schema>},
+        {"linkingObjects", wrap<linking_objects>},
     };
 };
 
@@ -152,3 +154,37 @@ std::vector<String<T>> RealmObjectClass<T>::get_property_names(ContextType ctx, 
 
 } // js
 } // realm
+
+// move this all the way here because it needs to include "js_results.hpp" which in turn includes this file
+
+#include "js_results.hpp"
+
+template<typename T>
+void realm::js::RealmObjectClass<T>::linking_objects(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    validate_argument_count(argc, 2);
+    
+    std::string object_type = Value::validated_to_string(ctx, arguments[0], "objectType");
+    std::string property_name = Value::validated_to_string(ctx, arguments[1], "property");
+    
+    auto object = get_internal<T, RealmObjectClass<T>>(this_object);
+    
+    auto target_object_schema = object->realm()->schema().find(object_type);
+    if (target_object_schema == object->realm()->schema().end()) {
+        throw std::logic_error(util::format("Could not find schema for type '%1'", object_type));
+    }
+    
+    auto link_property = target_object_schema->property_for_name(property_name);
+    if (!link_property) {
+        throw std::logic_error(util::format("Type '%1' does not contain property '%2'", object_type, property_name));
+    }
+    
+    if (link_property->object_type != object->get_object_schema().name) {
+        throw std::logic_error(util::format("'%1.%2' is not a relationship to '%3'", object_type, property_name, object->get_object_schema().name));
+    }
+    
+    realm::TableRef table = ObjectStore::table_for_object_type(object->realm()->read_group(), target_object_schema->name);
+    auto row = object->row();
+    auto tv = row.get_table()->get_backlink_view(row.get_index(), table.get(), link_property->table_column);
+    
+    return_value.set(ResultsClass<T>::create_instance(ctx, realm::Results(object->realm(), std::move(tv))));
+}

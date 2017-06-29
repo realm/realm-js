@@ -75,6 +75,7 @@ Property Schema<T>::parse_property(ContextType ctx, ValueType attributes, std::s
     static const String type_string = "type";
     static const String object_type_string = "objectType";
     static const String optional_string = "optional";
+    static const String property_string = "property";
     
     Property prop;
     prop.name = property_name;
@@ -123,20 +124,29 @@ Property Schema<T>::parse_property(ContextType ctx, ValueType attributes, std::s
         prop.type = realm::PropertyType::Array;
         prop.object_type = Object::validated_get_string(ctx, property_object, object_type_string);
     }
-    else {
+    else if (type == "linkingObjects") {
+        prop.type = realm::PropertyType::LinkingObjects;
+
+        if (!Value::is_valid(property_object)) {
+            throw std::runtime_error("Object property must specify 'objectType'");
+        }
+        prop.object_type = Object::validated_get_string(ctx, property_object, object_type_string);
+        prop.link_origin_property_name = Object::validated_get_string(ctx, property_object, property_string);
+    }
+    else if (type == "object") {
         prop.type = realm::PropertyType::Object;
         prop.is_nullable = true;
-        
-        // The type could either be 'object' or the name of another object type in the same schema.
-        if (type == "object") {
-            if (!Value::is_valid(property_object)) {
-                throw std::runtime_error("Object property must specify 'objectType'");
-            }
-            prop.object_type = Object::validated_get_string(ctx, property_object, object_type_string);
+    
+        if (!Value::is_valid(property_object)) {
+            throw std::runtime_error("Object property must specify 'objectType'");
         }
-        else {
-            prop.object_type = type;
-        }
+        prop.object_type = Object::validated_get_string(ctx, property_object, object_type_string);
+    }
+    else {
+        // The type could be the name of another object type in the same schema.
+        prop.type = realm::PropertyType::Object;
+        prop.is_nullable = true;
+        prop.object_type = type;
     }
     
     if (Value::is_valid(property_object)) {
@@ -177,14 +187,27 @@ ObjectSchema Schema<T>::parse_object_schema(ContextType ctx, ObjectType object_s
         for (uint32_t i = 0; i < length; i++) {
             ObjectType property_object = Object::validated_get_object(ctx, properties_object, i);
             std::string property_name = Object::validated_get_string(ctx, property_object, name_string);
-            object_schema.persisted_properties.emplace_back(parse_property(ctx, property_object, property_name, object_defaults));
+            Property property = parse_property(ctx, property_object, property_name, object_defaults);
+            if (property.type == realm::PropertyType::LinkingObjects) {
+                object_schema.computed_properties.emplace_back(std::move(property));
+            }
+            else {
+                object_schema.persisted_properties.emplace_back(std::move(property));
+            }
+            
         }
     }
     else {
         auto property_names = Object::get_property_names(ctx, properties_object);
         for (auto &property_name : property_names) {
             ValueType property_value = Object::get_property(ctx, properties_object, property_name);
-            object_schema.persisted_properties.emplace_back(parse_property(ctx, property_value, property_name, object_defaults));
+            Property property = parse_property(ctx, property_value, property_name, object_defaults);
+            if (property.type == realm::PropertyType::LinkingObjects) {
+                object_schema.computed_properties.emplace_back(std::move(property));
+            }
+            else {
+                object_schema.persisted_properties.emplace_back(std::move(property));
+            }
         }
     }
 
@@ -243,6 +266,9 @@ typename T::Object Schema<T>::object_for_object_schema(ContextType ctx, const Ob
     for (auto& property : object_schema.persisted_properties) {
         Object::set_property(ctx, properties, property.name, object_for_property(ctx, property));
     }
+    for (auto& property : object_schema.computed_properties) {
+        Object::set_property(ctx, properties, property.name, object_for_property(ctx, property));
+    }
 
     static const String properties_string = "properties";
     Object::set_property(ctx, object, properties_string, properties);
@@ -269,6 +295,11 @@ typename T::Object Schema<T>::object_for_property(ContextType ctx, const Propert
     static const String object_type_string = "objectType";
     if (property.object_type.size()) {
         Object::set_property(ctx, object, object_type_string, Value::from_string(ctx, property.object_type));
+    }
+
+    static const String property_string = "property";
+    if (property.type == realm::PropertyType::LinkingObjects) {
+        Object::set_property(ctx, object, property_string, Value::from_string(ctx, property.link_origin_property_name));
     }
 
     static const String indexed_string = "indexed";

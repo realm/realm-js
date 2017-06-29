@@ -462,6 +462,10 @@ json RPCServer::serialize_object_schema(const realm::ObjectSchema &object_schema
     for (auto &prop : object_schema.persisted_properties) {
         properties.push_back(prop.name);
     }
+    
+    for (auto &prop : object_schema.computed_properties) {
+        properties.push_back(prop.name);
+    }
 
     return {
         {"name", object_schema.name},

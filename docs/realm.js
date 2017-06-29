@@ -241,8 +241,10 @@ Realm.defaultPath;
  * @typedef Realm~ObjectSchemaProperty
  * @type {Object}
  * @property {Realm~PropertyType} type - The type of this property.
- * @property {string} [objectType] - **Required**  when `type` is `"list"`, and must match the
- *   type of an object in the same schema.
+ * @property {string} [objectType] - **Required**  when `type` is `"list"` or `"linkingObjects"`,
+ *   and must match the type of an object in the same schema.
+ * @property {string} [property] - **Required** when `type` is `"linkingObjects"`, and must match
+ *   the name of a property on the type specified in `objectType` that links to the type this property belongs to.
  * @property {any} [default] - The default value for this property on creation when not
  *   otherwise specified.
  * @property {boolean} [optional] - Signals if this property may be assigned `null` or `undefined`.
@@ -262,7 +264,7 @@ Realm.defaultPath;
  * A property type may be specified as one of the standard builtin types, or as an object type
  * inside the same schema.
  * @typedef Realm~PropertyType
- * @type {("bool"|"int"|"float"|"double"|"string"|"date"|"data"|"list"|"<ObjectType>")}
+ * @type {("bool"|"int"|"float"|"double"|"string"|"date"|"data"|"list"|"linkingObjects"|"<ObjectType>")}
  * @property {boolean} "bool" - Property value may either be `true` or `false`.
  * @property {number} "int" - Property may be assigned any number, but will be stored as a
  *   round integer, meaning anything after the decimal will be truncated.
@@ -278,6 +280,9 @@ Realm.defaultPath;
  * @property {Realm.List} "list" - Property may be assigned any ordered collection
  *   (e.g. `Array`, {@link Realm.List}, {@link Realm.Results}) of objects all matching the
  *   `objectType` specified in the {@link Realm~ObjectSchemaProperty ObjectSchemaProperty}.
+ * @property {Realm.Results} "linkingObjects" - Property is read-only and always returns a {@link Realm.Results}
+ *   of all the objects matching the `objectType` that are linking to the current object
+ *   through the `property` relationship specified in {@link Realm~ObjectSchemaProperty ObjectSchemaProperty}.
  * @property {Realm.Object} "<ObjectType>" - A string that matches the `name` of an object in the
  *   same schema (see {@link Realm~ObjectSchema ObjectSchema}) – this property may be assigned
  *   any object of this type from inside the same Realm, and will always be _optional_
