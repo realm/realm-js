@@ -6,6 +6,8 @@ vNext Release notes (TBD)
 ### Enhancements
 * Add support for Linking Objects (AKA Backlinks).
 * Add support for retrieving user account information.
+* Add optional `server` parameter to `Realm.Sync.User.adminUser`
+  Specifying the server address the same way as in `Realm.Sync.User.login` allows the admin token user to use the permission realm APIs.
 
 ### Bug fixes
 * Fix regression where setting a Results or List object to a `list` property would throw.
