@@ -116,13 +116,17 @@
           "<(module_root_dir)/vendor/realm-node/osx"
         ]
       },
-      "actions": [
-        {
-          "action_name": "download-realm",
-          "inputs": [ "<(module_root_dir)/scripts/download-realm.js" ],
-          "outputs": [ "<(module_root_dir)/vendor/realm-node" ],
-          "action": [ "node", "<(module_root_dir)/scripts/download-realm.js", "<(OS)", "--debug=<(use_realm_debug)", "--sync=<(realm_enable_sync)", "--arch=<(target_arch)" ]
-        }
+      "conditions": [
+        ["realm_download_binaries", {
+          "actions": [
+            {
+              "action_name": "download-realm",
+              "inputs": [ "<(module_root_dir)/scripts/download-realm.js" ],
+              "outputs": [ "<(module_root_dir)/vendor/realm-node" ],
+              "action": [ "node", "<(module_root_dir)/scripts/download-realm.js", "<(OS)", "--debug=<(use_realm_debug)", "--sync=<(realm_enable_sync)", "--arch=<(target_arch)" ]
+            }
+          ]
+        }]
       ]
     }
   ]
