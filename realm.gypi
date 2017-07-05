@@ -38,9 +38,9 @@
         "conditions": [
           ["use_realm_debug", {
             "defines": [ "REALM_DEBUG=1" ],
-            "libraries": [ "-lrealm<(realm_library_suffix)-dbg" ]
+            "libraries": [ "-lrealm-dbg" ]
           }, {
-            "libraries": [ "-lrealm<(realm_library_suffix)" ]
+            "libraries": [ "-lrealm" ]
           }]
         ]
       },
