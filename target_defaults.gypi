@@ -43,16 +43,14 @@
       "Debug": {
         "msvs_settings": {
           "VCCLCompilerTool": {
-            "RuntimeTypeInfo": "true",
-            "AdditionalOptions": [ "/MDd" ]
+            "RuntimeTypeInfo": "true"
           },
         }
       },
       "Release": {
         "msvs_settings": {
           "VCCLCompilerTool": {
-            "RuntimeTypeInfo": "true",
-            "AdditionalOptions": [ "/MD" ]
+            "RuntimeTypeInfo": "true"
           },
         }
       }

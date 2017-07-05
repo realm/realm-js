@@ -22,46 +22,55 @@ const fs = require('fs');
 const path = require('path');
 const fetch = require('node-fetch');
 const ini = require('ini').parse;
-const unzip = require('extract-zip');
+const decompress = require('decompress');
 
 function download(url, destination) {
     return fetch(url).then((response) => {
         if (response.status !== 200) {
             throw new Error(`Error downloading ${url} - received status ${response.status} ${response.statusText}`);
-        } else if (response.headers.get('content-type') !== 'application/zip') {
-            throw new Error(`Unexpected response content type - ${response.headers.get('content-type')}`);
-        } else {
-            return new Promise((resolve) => {
-                const file = fs.createWriteStream(destination);
-                response.body.pipe(file)
-                             .on('finish', () => {
-                                 file.close(resolve);
-                             });  
-            });
         }
-    });
-}
 
-function extract(archive, destination) {
-    return new Promise((resolve, reject) => {
-        unzip(archive, { dir: destination }, (error) => {
-            if (error) {
-                reject(error);
-            } else {
-                resolve();
-            }
+        return new Promise((resolve) => {
+            const file = fs.createWriteStream(destination);
+            response.body.pipe(file)
+                         .on('finish', () => {
+                             file.close(resolve);
+                         });  
         });
     });
 }
 
+const optionDefinitions = [
+    { name: 'platform', type: String, defaultOption: true },
+    { name: 'arch', type: String },
+    { name: 'sync', type: Boolean },
+    { name: 'debug', type: Boolean },
+];
+const options = require('command-line-args')(optionDefinitions);
+
+console.log(options);
+
+let product, archive, extractedFolder;
+
 const dependencies = ini(fs.readFileSync(path.resolve(__dirname, '../dependencies.list'), 'utf8'));
-const coreArchive = `realm-core-windows-${dependencies.REALM_CORE_VERSION}.zip`;
-const coreUrl = `https://static.realm.io/downloads/core/${coreArchive}`;
+if (!options.sync) {
+    throw new Error("Downloading core is not yet supported!");
+} else {
+    product = 'sync';
+    switch (options.platform) {
+    case 'mac':
+        archive = `realm-sync-node-cocoa-${dependencies.REALM_SYNC_VERSION}.tar.gz`
+        extractedFolder = `realm-sync-node-cocoa-${dependencies.REALM_SYNC_VERSION}`
+    }
+}
+
+const url = `https://static.realm.io/downloads/${product}/${archive}`;
 const vendorDir = path.resolve(__dirname, '../vendor');
-const downloadedCoreArchive = path.resolve(vendorDir, coreArchive);
+const downloadedArchive = path.resolve(vendorDir, archive);
 const realmDir = path.resolve(vendorDir, 'realm-node');
 
 if (!fs.existsSync(realmDir)) {
-    const downloadTask = fs.existsSync(downloadedCoreArchive) ? Promise.resolve() : download(coreUrl, downloadedCoreArchive);
-    downloadTask.then(() => extract(downloadedCoreArchive, realmDir));
+    const downloadTask = fs.existsSync(downloadedArchive) ? Promise.resolve() : download(url, downloadedArchive);
+    downloadTask.then(() => decompress(downloadedArchive, vendorDir))
+                .then(() => fs.renameSync(path.resolve(vendorDir, extractedFolder), realmDir));
 }
