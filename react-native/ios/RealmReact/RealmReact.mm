@@ -321,7 +321,7 @@ void _initializeOnJSThread(JSContextRefExtractor jsContextExtractor) {
         __weak __typeof__(self) weakSelf = self;
         __weak __typeof__(executor) weakExecutor = executor;
 
-        [bridge dispatchBlock:^{
+        [executor executeBlockOnJavaScriptQueue:^{
             __typeof__(self) self = weakSelf;
             __typeof__(executor) executor = weakExecutor;
             if (!self || !executor) {
@@ -331,7 +331,7 @@ void _initializeOnJSThread(JSContextRefExtractor jsContextExtractor) {
             _initializeOnJSThread(^ {
                 return RealmReactGetJSGlobalContextForExecutor(executor, true);
             });
-        } queue:RCTJSThread];
+        }];
     }
 }
 
