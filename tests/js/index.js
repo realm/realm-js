@@ -41,7 +41,7 @@ if (Realm.Sync) {
     TESTS.SessionTests = require('./session-tests');
 }
 
-function node_require(module) { return require(module); }
+function node_require(module) { return require(module); }
 
 // If on node, run the async tests
 if (typeof process === 'object' && process + '' === '[object process]') {
@@ -71,6 +71,18 @@ exports.registerTests = function(tests) {
     for (var suiteName in tests) {
         TESTS[suiteName] = tests[suiteName];
     }
+};
+
+exports.prepare = function(done) {
+    let helper = require('./admin-user-helper');
+    helper.createAdminUser().then(user => {
+        global.testAdminUserInfo = user;
+        done();
+    })
+        .catch(error => {
+            console.error("Error running admin-user-helper: " + error);
+            done();
+        });
 };
 
 exports.runTest = function(suiteName, testName) {
@@ -103,4 +115,4 @@ exports.runTest = function(suiteName, testName) {
     } else if (!testSuite || !(testName in SPECIAL_METHODS)) {
         throw new Error('Missing test: ' + suiteName + '.' + testName);
     }
-};
+}

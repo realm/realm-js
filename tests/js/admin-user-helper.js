@@ -47,6 +47,7 @@ exports.createAdminUser = function () {
                                     setTimeout(_ => {
                                         waitForServerToUpdateAdminUser();
                                     }, 200);
+                                    return;
                                 }
 
                                 resolve({ 
