@@ -307,7 +307,7 @@
 				02022A731DA47EC8000F0C4F /* format.cpp */,
 				02022A741DA47EC8000F0C4F /* format.hpp */,
 				02022A751DA47EC8000F0C4F /* generic */,
-				02022A771DA47EC8000F0C4F /* node */,
+				02022A771DA47EC8000F0C4F /* uv */,
 			);
 			name = util;
 			path = src/util;
@@ -337,12 +337,12 @@
 			path = generic;
 			sourceTree = "<group>";
 		};
-		02022A771DA47EC8000F0C4F /* node */ = {
+		02022A771DA47EC8000F0C4F /* uv */ = {
 			isa = PBXGroup;
 			children = (
 				02022A781DA47EC8000F0C4F /* event_loop_signal.hpp */,
 			);
-			path = node;
+			path = uv;
 			sourceTree = "<group>";
 		};
 		0270BC3D1B7CFBFD00010E03 /* RealmJS */ = {

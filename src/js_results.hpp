@@ -128,7 +128,7 @@ typename T::Object ResultsClass<T>::create_filtered(ContextType ctx, const U &co
     query_builder::ArgumentConverter<ValueType, NativeAccessor<T>> converter(accessor, &arguments[1], argc - 1);
     query_builder::apply_predicate(query, predicate, converter, realm->schema(), object_schema.name);
 
-    return create_instance(ctx, realm::Results(realm, std::move(query)));
+    return create_instance(ctx, collection.filter(std::move(query)));
 }
 
 template<typename T>
@@ -186,9 +186,7 @@ typename T::Object ResultsClass<T>::create_sorted(ContextType ctx, const U &coll
     }
 
     auto table = realm::ObjectStore::table_for_object_type(realm->read_group(), object_schema.name);
-    auto results = new realm::js::Results<T>(realm, collection.get_query(),
-                                             {*table, std::move(columns), std::move(ascending)});
-    return create_object<T, ResultsClass<T>>(ctx, results);
+    return create_instance(ctx, collection.sort({*table, std::move(columns), std::move(ascending)}));
 }
 
 template<typename T>
