@@ -52,10 +52,6 @@ using namespace realm::rpc;
 // the part of the RCTCxxBridge private class we care about
 @interface RCTBridge (RCTCxxBridge)
 - (JSGlobalContextRef)jsContextRef;
-// RN >= 0.46
-- (void)ensureOnJavaScriptThread:(dispatch_block_t)block;
-// RN < 0.46
-- (void)executeBlockOnJavaScriptThread:(dispatch_block_t)block;
 @end
 
 extern "C" JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executor, bool create) {
