@@ -18,7 +18,7 @@
 
 #import "RealmReact.h"
 #import "RealmAnalytics.h"
-#import "RCTBridge.h"
+#import "RCTBridge+Private.h"
 #import "RCTJavaScriptExecutor.h"
 
 #import "jsc_init.h"
@@ -309,7 +309,7 @@ void _initializeOnJSThread(JSContextRefExtractor jsContextExtractor) {
         __weak __typeof__(self) weakSelf = self;
         __weak __typeof__(bridge) weakBridge = bridge;
 
-        dispatch_block_t bridgeInitializer = ^{
+        [bridge dispatchBlock:^{
             __typeof__(self) self = weakSelf;
             __typeof__(bridge) bridge = weakBridge;
             if (!self || !bridge) {
@@ -319,22 +319,13 @@ void _initializeOnJSThread(JSContextRefExtractor jsContextExtractor) {
             _initializeOnJSThread(^{
                 return [bridge jsContextRef];
             });
-        };
-
-        Class RCTCxxBridgeClass = NSClassFromString(@"RCTCxxBridge");
-        if ([RCTCxxBridgeClass instancesRespondToSelector:@selector(ensureOnJavaScriptThread:)]) {
-            [bridge ensureOnJavaScriptThread:bridgeInitializer];
-        } else {
-            [bridge executeBlockOnJavaScriptThread:bridgeInitializer];
-        }
-        
-        return;
+        } queue:RCTJSThread];
     } else { // React Native 0.44 and older
         id<RCTJavaScriptExecutor> executor = [bridge valueForKey:@"javaScriptExecutor"];
         __weak __typeof__(self) weakSelf = self;
         __weak __typeof__(executor) weakExecutor = executor;
 
-        [executor executeBlockOnJavaScriptQueue:^{
+        [bridge dispatchBlock:^{
             __typeof__(self) self = weakSelf;
             __typeof__(executor) executor = weakExecutor;
             if (!self || !executor) {
@@ -344,7 +335,7 @@ void _initializeOnJSThread(JSContextRefExtractor jsContextExtractor) {
             _initializeOnJSThread(^ {
                 return RealmReactGetJSGlobalContextForExecutor(executor, true);
             });
-        }];
+        } queue:RCTJSThread];
     }
 }
 
