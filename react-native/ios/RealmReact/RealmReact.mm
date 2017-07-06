@@ -52,6 +52,9 @@ using namespace realm::rpc;
 // the part of the RCTCxxBridge private class we care about
 @interface RCTBridge (RCTCxxBridge)
 - (JSGlobalContextRef)jsContextRef;
+// RN >= 0.46
+- (void)ensureOnJavaScriptThread:(dispatch_block_t)block;
+// RN < 0.46
 - (void)executeBlockOnJavaScriptThread:(dispatch_block_t)block;
 @end
 
@@ -305,7 +308,8 @@ void _initializeOnJSThread(JSContextRefExtractor jsContextExtractor) {
 
         __weak __typeof__(self) weakSelf = self;
         __weak __typeof__(bridge) weakBridge = bridge;
-        [bridge executeBlockOnJavaScriptThread:^{
+
+        dispatch_block_t bridgeInitializer = ^{
             __typeof__(self) self = weakSelf;
             __typeof__(bridge) bridge = weakBridge;
             if (!self || !bridge) {
@@ -315,7 +319,15 @@ void _initializeOnJSThread(JSContextRefExtractor jsContextExtractor) {
             _initializeOnJSThread(^{
                 return [bridge jsContextRef];
             });
-        }];
+        };
+
+        Class RCTCxxBridgeClass = NSClassFromString(@"RCTCxxBridge");
+        if ([RCTCxxBridgeClass instancesRespondToSelector:@selector(ensureOnJavaScriptThread:)]) {
+            [bridge ensureOnJavaScriptThread:bridgeInitializer];
+        } else {
+            [bridge executeBlockOnJavaScriptThread:bridgeInitializer];
+        }
+        
         return;
     } else { // React Native 0.44 and older
         id<RCTJavaScriptExecutor> executor = [bridge valueForKey:@"javaScriptExecutor"];
