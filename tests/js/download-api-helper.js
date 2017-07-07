@@ -27,7 +27,7 @@ Realm.Sync.User.register('http://localhost:9080', username, 'password', (error, 
         });
 
         console.log("Dogs count " + realm.objects('Dog').length);
-        setTimeout(_ => process.exit(0), 3000);
+        setTimeout(() => process.exit(0), 3000);
     }
 });
 

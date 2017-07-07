@@ -22,6 +22,7 @@
 
 const Realm = require('realm');
 const TestCase = require('./asserts');
+const isNodeProcess = typeof process === 'object' && process + '' === '[object process]';
 
 function uuid() {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
@@ -297,7 +298,7 @@ module.exports = {
 
   testRetrieveAccount() {
     return new Promise((resolve, reject) => {
-      if (!global.isNodeProcess) {
+      if (!isNodeProcess) {
         resolve();
       }
       
@@ -337,7 +338,7 @@ module.exports = {
 
   testRetrieveNotExistingAccount() {
     return new Promise((resolve, reject) => {
-      if (!global.isNodeProcess) {
+      if (!isNodeProcess) {
         resolve();
       }
 

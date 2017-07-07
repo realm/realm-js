@@ -15,8 +15,6 @@ function random(min, max) {
 
 exports.createAdminUser = function () {
     return new Promise((resolve, reject) => {
-        
-
         let isAdminRetryCounter = 0;
         let newAdminName = 'admin' + random(1, 100000);
         let password = '123';
@@ -39,18 +37,13 @@ exports.createAdminUser = function () {
                 };
 
                 Realm.open(config).then(realm => {
-                    if (userIdentity == admin_token_user.identity)
-                    {
-                        console.log(".");
-                    }
-
                     let pendingAdminUser = realm.objects('User').filtered(`id == "${userIdentity}"`)[0];
                     realm.write(() => {
                         pendingAdminUser.isAdmin = true;
                     });
 
                     admin_token_user.logout();
-                }).then(_ => {
+                }).then(() => {
                     let waitForServerToUpdateAdminUser = function () {
                         isAdminRetryCounter++;
                         if (isAdminRetryCounter > 10) {
@@ -65,7 +58,7 @@ exports.createAdminUser = function () {
                                 let isAdmin = newAdminUser.isAdmin;
                                 user.logout();
                                 if (!isAdmin) {
-                                    setTimeout(_ => {
+                                    setTimeout(() => {
                                         waitForServerToUpdateAdminUser();
                                     }, 500);
                                     return;
@@ -73,7 +66,7 @@ exports.createAdminUser = function () {
 
                                 resolve({ 
                                     username: newAdminName, 
-                                    password: password
+                                    password
                                 });
                             }
                         });
