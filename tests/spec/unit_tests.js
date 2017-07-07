@@ -55,8 +55,8 @@ Realm.copyBundledRealmFiles = function() {
 const tests = RealmTests.getTestNames();
 for (const suiteName in tests) {
     describe(suiteName, () => {
-        
-        //beforeAll(done => RealmTests.prepare(done));
+
+        beforeAll(done => RealmTests.prepare(done));
 
         beforeEach(() => RealmTests.runTest(suiteName, 'beforeEach'));
 

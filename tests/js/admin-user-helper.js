@@ -12,8 +12,7 @@ function random(min, max) {
 
 exports.createAdminUser = function () {
     return new Promise((resolve, reject) => {
-        const admin_token_user = Realm.Sync.User.adminUser(fs.readFileSync(path.join(__dirname, '../../object-server-for-testing/admin_token.base64'), 'utf-8'));
-
+        
 
         let isAdminRetryCounter = 0;
         let newAdminName = 'admin' + random(1, 100000);
@@ -21,22 +20,33 @@ exports.createAdminUser = function () {
         Realm.Sync.User.register('http://localhost:9080', newAdminName, password, (error, user) => {
             if (error) {
                 reject(error);
-            } else {
+            } else {  
+                let userIdentity = user.identity;
+                user.logout();
+
+                let admin_token_user = Realm.Sync.User.adminUser(fs.readFileSync(path.join(__dirname, '/../../object-server-for-testing/admin_token.base64'), 'utf-8'));                
+
                 const config = {
                     sync: {
                         user: admin_token_user,
                         url: `realm://localhost:9080/__admin`,
-                        error: err => console.log('Error opening __admin realm ' + err),
+                        error: err =>
+                         console.log('Error opening __admin realm ' + err.user  + ' ' + err.url + ' ' + err.state),
                     }
                 };
 
                 Realm.open(config).then(realm => {
-                    let pendingAdminUser = realm.objects('User').filtered(`id == "${user.identity}"`)[0];
+                    if (userIdentity == admin_token_user.identity)
+                    {
+                        console.log(".");
+                    }
+
+                    let pendingAdminUser = realm.objects('User').filtered(`id == "${userIdentity}"`)[0];
                     realm.write(() => {
                         pendingAdminUser.isAdmin = true;
                     });
 
-                    user.logout();
+                    admin_token_user.logout();
                 }).then(_ => {
                     let waitForServerToUpdateAdminUser = function () {
                         isAdminRetryCounter++;
@@ -45,11 +55,11 @@ exports.createAdminUser = function () {
                             return;
                         }
 
-                        Realm.Sync.User.login('http://localhost:9080', newAdminName, password, (error, user) => {
+                        Realm.Sync.User.login('http://localhost:9080', newAdminName, password, (error, newAdminUser) => {
                             if (error) {
                                 reject(error);
                             } else {
-                                let isAdmin = user.isAdmin;
+                                let isAdmin = newAdminUser.isAdmin;
                                 user.logout();
                                 if (!isAdmin) {
                                     setTimeout(_ => {

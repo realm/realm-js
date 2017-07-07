@@ -75,7 +75,7 @@ exports.registerTests = function(tests) {
 
 exports.prepare = function(done) {
     if (global.testAdminUserInfo) {
-        return;
+        done();
     }
 
     let helper = require('./admin-user-helper');
