@@ -1,8 +1,11 @@
 'use strict';
+function node_require(module) { 
+    return require(module); 
 
-let fs = require("fs");
-let path = require("path");
-var Realm = require('realm');
+}
+let fs = node_require("fs");
+let path = node_require("path");
+var Realm = node_require('realm');
 
 function random(min, max) {
     min = Math.ceil(min);
