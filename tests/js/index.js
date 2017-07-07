@@ -44,7 +44,8 @@ if (Realm.Sync) {
 function node_require(module) { return require(module); }
 
 // If on node, run the async tests
-if (typeof process === 'object' && process + '' === '[object process]') {
+const isNodeProcess = typeof process === 'object' && process + '' === '[object process]'
+if (isNodeProcess) {
     TESTS.AsyncTests = node_require('./async-tests');
 }
 
@@ -74,7 +75,7 @@ exports.registerTests = function(tests) {
 };
 
 exports.prepare = function(done) {
-    if (global.testAdminUserInfo) {
+    if (!isNodeProcess || global.testAdminUserInfo) {
         done();
     }
 
