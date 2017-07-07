@@ -15,7 +15,7 @@ exports.createAdminUser = function () {
         const admin_token_user = Realm.Sync.User.adminUser(fs.readFileSync(path.join(__dirname, '../../object-server-for-testing/admin_token.base64'), 'utf-8'));
 
 
-
+        let isAdminRetryCounter = 0;
         let newAdminName = 'admin' + random(1, 100000);
         let password = '123';
         Realm.Sync.User.register('http://localhost:9080', newAdminName, password, (error, user) => {
@@ -39,14 +39,22 @@ exports.createAdminUser = function () {
                     user.logout();
                 }).then(_ => {
                     let waitForServerToUpdateAdminUser = function () {
+                        isAdminRetryCounter++;
+                        if (isAdminRetryCounter > 10) {
+                            reject("admin-user-helper: Create admin user timeout");
+                            return;
+                        }
+
                         Realm.Sync.User.login('http://localhost:9080', newAdminName, password, (error, user) => {
                             if (error) {
                                 reject(error);
                             } else {
-                                if (!user.isAdmin) {
+                                let isAdmin = user.isAdmin;
+                                user.logout();
+                                if (!isAdmin) {
                                     setTimeout(_ => {
                                         waitForServerToUpdateAdminUser();
-                                    }, 200);
+                                    }, 500);
                                     return;
                                 }
 
@@ -57,10 +65,6 @@ exports.createAdminUser = function () {
                             }
                         });
                     }
-
-                    setTimeout(_ => {
-                        reject("admin-user-helper: Create admin user timeout");
-                    }, 10000);
 
                     waitForServerToUpdateAdminUser();
                 });

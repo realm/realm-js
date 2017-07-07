@@ -74,9 +74,13 @@ exports.registerTests = function(tests) {
 };
 
 exports.prepare = function(done) {
+    if (global.testAdminUserInfo) {
+        return;
+    }
+
     let helper = require('./admin-user-helper');
-    helper.createAdminUser().then(user => {
-        global.testAdminUserInfo = user;
+    helper.createAdminUser().then(userInfo => {
+        global.testAdminUserInfo = userInfo;
         done();
     })
         .catch(error => {
