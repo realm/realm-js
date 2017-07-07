@@ -297,6 +297,10 @@ module.exports = {
 
   testRetrieveAccount() {
     return new Promise((resolve, reject) => {
+      if (!global.isNodeProcess) {
+        resolve();
+      }
+      
       if (!global.testAdminUserInfo) {
         reject("Test requires an admin user");
       }
@@ -333,6 +337,10 @@ module.exports = {
 
   testRetrieveNotExistingAccount() {
     return new Promise((resolve, reject) => {
+      if (!global.isNodeProcess) {
+        resolve();
+      }
+
       if (!global.testAdminUserInfo) {
         reject("Test requires an admin user");
       }
