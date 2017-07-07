@@ -37,7 +37,7 @@ exports.createAdminUser = function () {
                 };
 
                 Realm.open(config).then(realm => {
-                    let pendingAdminUser = realm.objects('User').filtered(`id == "${userIdentity}"`)[0];
+                    let pendingAdminUser = realm.objectForPrimaryKey('User', userIdentity);
                     realm.write(() => {
                         pendingAdminUser.isAdmin = true;
                     });
