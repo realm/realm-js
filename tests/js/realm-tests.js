@@ -921,5 +921,16 @@ module.exports = {
                 var p1 = realm.create('PersonObject', { name: 'Ari', age: 'Ten' });
             });
         }, new Error("PersonObject.age must be of type: number"));
+    },
+
+    testValidTypesForListProperties: function() {
+        var realm = new Realm({schema: [schemas.PersonObject]});
+        realm.write(function () {
+            var p1 = realm.create('PersonObject', { name: 'Ari', age: 10 });
+            var p2 = realm.create('PersonObject', { name: 'Harold', age: 55, children: realm.objects('PersonObject').filtered('age < 15') });
+            TestCase.assertEqual(p2.children.length, 1);
+            var p3 = realm.create('PersonObject', { name: 'Wendy', age: 52, children: p2.children });
+            TestCase.assertEqual(p3.children.length, 1);
+        });
     }
 };
