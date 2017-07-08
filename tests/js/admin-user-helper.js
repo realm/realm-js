@@ -58,7 +58,7 @@ exports.createAdminUser = function () {
                                 let isAdmin = newAdminUser.isAdmin;
                                 user.logout();
                                 if (!isAdmin) {
-                                    setTimeout(waitForServerToUpdateAdminUser(), 500);
+                                    setTimeout(waitForServerToUpdateAdminUser, 500);
                                     return;
                                 }
 
