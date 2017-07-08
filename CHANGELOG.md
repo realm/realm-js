@@ -5,6 +5,7 @@ vNext Release notes (TBD)
 
 ### Enhancements
 * Add support for Linking Objects (AKA Backlinks).
+* Add support for retrieving user account information.
 
 ### Bug fixes
 * Node
