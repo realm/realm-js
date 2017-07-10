@@ -241,7 +241,7 @@ class User {
      *       }
      * }
      */
-    retrieveAccount() {provider, username}
+    retrieveAccount(provider, username) {}
 }
 
 /**
