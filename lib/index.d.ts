@@ -240,6 +240,17 @@ declare namespace Realm {
  */
 declare namespace Realm.Sync {
 
+    interface UserInfo {
+        id: string;
+        isAdmin: boolean;
+    }
+
+    interface Account {
+        provider_id: string;
+        provider: string;
+        user: UserInfo
+    }
+
     /**
      * User
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.Sync.User.html }
@@ -251,13 +262,14 @@ declare namespace Realm.Sync {
         readonly isAdmin: boolean;
         readonly server: string;
         readonly token: string;
-        static adminUser(adminToken: string): User;
+        static adminUser(adminToken: string, server?: string): User;
         static login(server: string, username: string, password: string, callback: (error: any, user: User) => void): void;
         static loginWithProvider(server: string, provider: string, providerToken: string, callback: (error: any, user: User) => void): void;
         static register(server: string, username: string, password: string, callback: (error: any, user: User) => void): void;
         static registerWithProvider(server: string, options: { provider: string, providerToken: string, userInfo: any }, callback: (error: Error | null, user: User | null) => void): void;
         logout(): void;
         openManagementRealm(): Realm;
+        retrieveAccount(provider: string, username: string): Promise<Account>;
     }
 
     interface SyncConfiguration {

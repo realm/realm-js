@@ -1,4 +1,3 @@
-import {stringify} from 'ini';
 ////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
@@ -169,9 +168,10 @@ class User {
     /**
      * Create an admin user for the given authentication server with an existing token
      * @param {string} adminToken - existing admin token
+     * @param {string} [server] - authentication server
      * @return {User} - admin user populated with the given token and server
      */
-    static adminUser(adminToken) {}
+    static adminUser(adminToken, server) {}
 
     /**
      * A dictionary containing users that are currently logged in.
@@ -225,6 +225,23 @@ class User {
      * @returns {Realm}
      */
     openManagementRealm() {}
+
+    /**
+     * Get account information for a user. (requires administrator privilidges)
+     * @param {string} provider - the provider to query for user account information (ex. 'password')
+     * @param {string} username - the target username which account information should be retrieved
+     * @returns - json object for the retrieved account information
+     * @example
+     * {
+     *   "provider_id": "user@email.co",
+     *   "provider": "password",
+     *       "user": {
+     *           "id": "06ac9a0a-a96a-4ee1-b53c-b05a7542035a",
+     *           "isAdmin": true,
+     *       }
+     * }
+     */
+    retrieveAccount(provider, username) {}
 }
 
 /**

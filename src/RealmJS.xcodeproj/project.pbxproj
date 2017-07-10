@@ -307,7 +307,7 @@
 				02022A731DA47EC8000F0C4F /* format.cpp */,
 				02022A741DA47EC8000F0C4F /* format.hpp */,
 				02022A751DA47EC8000F0C4F /* generic */,
-				02022A771DA47EC8000F0C4F /* node */,
+				02022A771DA47EC8000F0C4F /* uv */,
 			);
 			name = util;
 			path = src/util;
@@ -337,12 +337,12 @@
 			path = generic;
 			sourceTree = "<group>";
 		};
-		02022A771DA47EC8000F0C4F /* node */ = {
+		02022A771DA47EC8000F0C4F /* uv */ = {
 			isa = PBXGroup;
 			children = (
 				02022A781DA47EC8000F0C4F /* event_loop_signal.hpp */,
 			);
-			path = node;
+			path = uv;
 			sourceTree = "<group>";
 		};
 		0270BC3D1B7CFBFD00010E03 /* RealmJS */ = {
@@ -956,7 +956,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 1.8.3;
+				CURRENT_PROJECT_VERSION = 1.9.0;
 				CXX = "$(SRCROOT)/../scripts/ccache-clang++.sh";
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -1020,7 +1020,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 1.8.3;
+				CURRENT_PROJECT_VERSION = 1.9.0;
 				CXX = "$(SRCROOT)/../scripts/ccache-clang++.sh";
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;

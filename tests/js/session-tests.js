@@ -20,6 +20,8 @@
 
 'use strict';
 
+/* global REALM_MODULE_PATH */
+
 const Realm = require('realm');
 const TestCase = require('./asserts');
 
@@ -120,7 +122,7 @@ module.exports = {
                     catch (e) {
                         reject(e)
                     }
-                };
+                }
 
                 // Let the error handler trigger our checks when the access token was refreshed.
                 postTokenRefreshChecks._notifyOnAccessTokenRefreshed = accessTokenRefreshed;
