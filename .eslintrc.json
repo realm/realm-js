@@ -8,10 +8,11 @@
   "rules": {
     "comma-dangle": 0,
     "no-empty": 0,
+    "no-console": 0,
     "no-unused-vars": [
       "warn", {
         "varsIgnorePattern": "^_",
-        "argsIgnorePattern": "^_"
+        "args": "none"
       }
     ],
     "strict": [2, "global"]
