@@ -21,6 +21,7 @@
 #include <list>
 #include <map>
 #include <set>
+#include <regex>
 
 #include "event_loop_dispatcher.hpp"
 #include "platform.hpp"
@@ -404,7 +405,11 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
         }
 
         std::string raw_realm_url = Object::validated_get_string(ctx, sync_config_object, "url");
-
+        if (shared_user->token_type() == SyncUser::TokenType::Admin) {
+            static std::regex tilde("/~/");
+            raw_realm_url = std::regex_replace(raw_realm_url, tilde, "/__auth/");
+        }
+        
         bool client_validate_ssl = true;
         ValueType validate_ssl_temp = Object::get_property(ctx, sync_config_object, "validate_ssl");
         if (!Value::is_undefined(ctx, validate_ssl_temp)) {
