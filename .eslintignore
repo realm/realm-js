@@ -1,6 +1,7 @@
 /core*/
 /docs/jsdoc-template/
 /docs/output/
+/docs/plugins/
 
 build/
 node_modules/
