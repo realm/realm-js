@@ -1,9 +1,10 @@
-vNext Release notes (TBD)
+1.9.0 Release notes (2017-7-10)
 =============================================================
 ### Breaking changes
 * None
 
 ### Enhancements
+* Add support for iOS React Native 0.46. Thanks [@ovr](https://github.com/ovr)!
 * Add support for Linking Objects (AKA Backlinks).
 * Add support for retrieving user account information.
 * Add optional `server` parameter to `Realm.Sync.User.adminUser`
