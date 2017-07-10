@@ -8,7 +8,7 @@ vNext Release notes (TBD)
 * Add support for retrieving user account information.
 
 ### Bug fixes
-* Node
+* Fix regression where setting a Results or List object to a `list` property would throw.
 
 1.8.3 Release notes (2017-6-27)
 =============================================================

@@ -39,6 +39,11 @@
 namespace realm {
 namespace js {
 
+template<typename>
+struct ResultsClass;
+template<typename>
+struct ListClass;
+
 enum PropertyAttributes : unsigned {
     None       = 0,
     ReadOnly   = 1 << 0,
@@ -369,7 +374,17 @@ inline bool Value<T>::is_valid_for_property(ContextType context, const ValueType
             return true;
         case PropertyType::Array:
             // FIXME: Do we need to validate the types of the contained objects?
-            return is_array(context, value);
+            if (is_array(context, value)) {
+                return true;
+            }
+
+            if (is_object(context, value)) {
+                auto object = to_object(context, value);
+                return Object<T>::template is_instance<ResultsClass<T>>(context, object)
+                    || Object<T>::template is_instance<ListClass<T>>(context, object);
+            }
+
+            return false;
 
         case PropertyType::Any:
         case PropertyType::LinkingObjects:
