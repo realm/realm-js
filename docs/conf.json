@@ -3,7 +3,7 @@
     "destination": "docs/output",
     "readme": "README.md",
     "recurse": true,
-    "template": "docs/jsdoc-template/template"
+    "template": "./jsdoc-template/template"
   },
   "source": {
     "include": ["docs"],
