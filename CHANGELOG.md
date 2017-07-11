@@ -1,3 +1,16 @@
+vNext Release notes (TBD)
+=============================================================
+### Breaking changes
+* None
+
+### Enhancements
+* None
+
+### Bug fixes
+* Fix crash on Node.js when a listener callback throws an error.
+  The error will now be forwarded to Node's fatal error handling facilities. This means better error reporting,
+  the ability to debug such errors in a Node.js debugger, and proper invocation of the `uncaughtError` event on the `process` object.
+
 1.9.0 Release notes (2017-7-10)
 =============================================================
 ### Breaking changes
