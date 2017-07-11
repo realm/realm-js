@@ -230,7 +230,7 @@ class User {
      * Get account information for a user. (requires administrator privilidges)
      * @param {string} provider - the provider to query for user account information (ex. 'password')
      * @param {string} username - the target username which account information should be retrieved
-     * @returns - json object for the retrieved account information
+     * @returns {Promise} - a promise that will be resolved with the retrieved account information as json object
      * @example
      * {
      *   "provider_id": "user@email.co",
