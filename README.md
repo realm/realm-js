@@ -65,7 +65,7 @@ To build for Android:
 To build for nodejs:
 
 ```
-npm install --build-from-source
+npm install --build-from-source=realm
 ```
 
  - On Windows you will need to setup the environment for node-gyp

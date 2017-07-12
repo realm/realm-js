@@ -207,7 +207,7 @@ def doWindowsBuild() {
     node('windows') {
       unstash 'source'
       try {
-        bat 'npm install --build-from-source'
+        bat 'npm install --build-from-source=realm'
         dir('tests') {
           bat 'npm install'
           bat 'npm run test'

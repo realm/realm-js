@@ -540,10 +540,10 @@ void RealmClass<T>::get_sync_session(ContextType ctx, ObjectType object, ReturnV
 template<typename T>
 void RealmClass<T>::wait_for_download_completion(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 2);
-    auto config_object = Value::validated_to_object(ctx, arguments[0]);
     auto callback_function = Value::validated_to_function(ctx, arguments[1]);
 
 #if REALM_ENABLE_SYNC
+    auto config_object = Value::validated_to_object(ctx, arguments[0]);
     ValueType sync_config_value = Object::get_property(ctx, config_object, "sync");
     if (!Value::is_undefined(ctx, sync_config_value)) {
         realm::Realm::Config config;
@@ -638,9 +638,7 @@ void RealmClass<T>::wait_for_download_completion(ContextType ctx, FunctionType, 
     }
 #endif
 
-    ValueType callback_arguments[1];
-    callback_arguments[0] = Value::from_null(ctx);
-    Function<T>::callback(ctx, callback_function, this_object, 1, callback_arguments);
+    Function<T>::callback(ctx, callback_function, this_object, 0, nullptr);
 }
 
 template<typename T>

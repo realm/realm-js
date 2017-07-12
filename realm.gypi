@@ -12,21 +12,13 @@
         "realm_enable_sync%": "0"
       }
     }],
-    ["OS=='win'", {
-      "conditions": [
-        ["target_arch == 'ia32'", {
-          "variables": {
-            "realm_library_suffix": "-x86"
-          }
-        }, {
-          "variables": {
-            "realm_library_suffix": "-<(target_arch)"
-          }
-        }]
-      ]
+    ["use_realm_debug", {
+      "variables": {
+        "debug_library_suffix": "-dbg"
+      }
     }, {
       "variables": {
-        "realm_library_suffix": "-node"
+        "debug_library_suffix": ""
       }
     }]
   ],
@@ -35,17 +27,12 @@
       "target_name": "realm-core",
       "type": "none",
       "direct_dependent_settings": {
+        "libraries": [ "-lrealm<(debug_library_suffix)" ],
         "conditions": [
           ["use_realm_debug", {
-            "defines": [ "REALM_DEBUG=1" ],
-            "libraries": [ "-lrealm-dbg" ]
-          }, {
-            "libraries": [ "-lrealm" ]
+            "defines": [ "REALM_DEBUG=1" ]
           }]
         ]
-      },
-      "all_dependent_settings": {
-        "defines": [ "REALM_PLATFORM_NODE=1", "REALM_ENABLE_SYNC=<(realm_enable_sync)" ]
       },
       "variables": {
         "prefix": "<!(node -p \"process.env.REALM_CORE_PREFIX || String()\")"
@@ -62,12 +49,8 @@
           "dependencies": [ "vendored-realm" ]
         }],
         ["OS=='win'", {
-          "all_dependent_settings": {
-            "defines": [ "PTW32_STATIC_LIB" ]
-          }
-        }, {
-          "all_dependent_settings": {
-            "defines": [ "REALM_HAVE_CONFIG" ]
+          "direct_dependent_settings": {
+            "libraries": [ "-lsha_win32<(debug_library_suffix)" ]
           }
         }]
       ]
@@ -75,15 +58,12 @@
     {
       "target_name": "realm-sync",
       "type": "none",
-      "dependencies": [ "realm-core" ], # sync headers include core headers
+      "dependencies": [ "realm-core" ],
       "direct_dependent_settings": {
-        "conditions": [
-          ["use_realm_debug", {
-            "libraries": [ "-lrealm-sync<(realm_library_suffix)-dbg" ]
-          }, {
-            "libraries": [ "-lrealm-sync<(realm_library_suffix)" ]
-          }]
-        ]
+        "libraries": [ "-lrealm-sync-node<(debug_library_suffix)" ]
+      },
+      "all_dependent_settings": {
+        "defines": [ "REALM_ENABLE_SYNC=1" ]
       },
       "export_dependent_settings": [ "realm-core" ], # depending on sync is tantamount to depending on core
       "variables": {
@@ -91,39 +71,48 @@
       },
       "conditions": [
         ["prefix!=''", {
-          "all_dependent_settings": {
+          "all_dependent_settings+": {
             "include_dirs": [ "<(prefix)/src" ],
           },
-          "direct_dependent_settings": {
+          "direct_dependent_settings+": {
             "library_dirs": [ "<(prefix)/src/realm" ]
           }
         }, {
-          "dependencies": [ "vendored-realm" ]
+          "dependencies+": [ "vendored-realm" ]
         }]
       ],
     },
     {
       "variables": {
-        "vendor_dir%": "<(module_root_dir)/vendor"
+        "vendor_dir%": "<(module_root_dir)/vendor/realm-<(OS)-<(target_arch)<(debug_library_suffix)"
       },
       "target_name": "vendored-realm",
       "type": "none",
       "all_dependent_settings": {
-        "include_dirs": [ "<(module_root_dir)/vendor/realm-node/include" ],
+        "include_dirs": [ "<(vendor_dir)/include" ],
         "library_dirs": [ 
-          "<(module_root_dir)/vendor/realm-node/",
-          "<(module_root_dir)/vendor/realm-node/lib",
-          "<(module_root_dir)/vendor/realm-node/osx"
+          "<(vendor_dir)/lib",
+          "<(vendor_dir)/osx"
         ]
       },
       "conditions": [
+        ["use_realm_debug", {
+          "variables": { "download_realm_debug_flag": "--debug" }
+        }, {
+          "variables": { "download_realm_debug_flag": "" }
+        }],
+        ["realm_enable_sync", {
+          "variables": { "download_realm_sync_flag": "--sync" }
+        }, {
+          "variables": { "download_realm_sync_flag": "" }
+        }],
         ["realm_download_binaries", {
           "actions": [
             {
               "action_name": "download-realm",
               "inputs": [ "<(module_root_dir)/scripts/download-realm.js" ],
-              "outputs": [ "<(module_root_dir)/vendor/realm-node" ],
-              "action": [ "node", "<(module_root_dir)/scripts/download-realm.js", "<(OS)", "--debug=<(use_realm_debug)", "--sync=<(realm_enable_sync)", "--arch=<(target_arch)" ]
+              "outputs": [ "<(vendor_dir)" ],
+              "action": [ "node", "<(module_root_dir)/scripts/download-realm.js", "<(OS)", ">(download_realm_debug_flag)", ">(download_realm_sync_flag)", "--arch=<(target_arch)" ]
             }
           ]
         }]
