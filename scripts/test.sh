@@ -44,11 +44,11 @@ LOGCAT_OUT="$SRCROOT/logcat_out.txt"
 
 
 download_server() {
-  sh ./scripts/download-object-server.sh
+  ./scripts/download-object-server.sh
 }
 
 start_server() {
-  sh ./object-server-for-testing/start-object-server.command &
+  ./object-server-for-testing/start-object-server.command &
   SERVER_PID=$!
 }
 
@@ -347,7 +347,7 @@ case "$TARGET" in
 
   pushd "$SRCROOT/tests"
   npm install
-  # eval "$npm_tests_cmd"
+  eval "$npm_tests_cmd"
   popd
   stop_server
   ;;
