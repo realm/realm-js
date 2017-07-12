@@ -4,7 +4,7 @@ vNext Release notes (TBD)
 * None
 
 ### Enhancements
-* None
+* Added `Realm.prototype.empty` which is a property that indicates whether or not the realm has any objects in it.
 
 ### Bug fixes
 * Fix crash on Node.js when a listener callback throws an error.
