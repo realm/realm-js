@@ -76,8 +76,9 @@ exports.registerTests = function(tests) {
 };
 
 exports.prepare = function(done) {
-    if (!isNodeProcess || global.testAdminUserInfo) {
+    if (!Realm.Sync || !isNodeProcess || global.testAdminUserInfo) {
         done();
+        return;
     }
 
     let helper = require('./admin-user-helper');

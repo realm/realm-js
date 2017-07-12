@@ -851,7 +851,8 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "../scripts/download-core.sh";
+			shellScript = "node ../scripts/download-realm.js ios --sync";
+			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -983,7 +984,7 @@
 					"$(SRCROOT)/object-store/external/pegtl",
 					"$(SRCROOT)/object-store/src",
 					"$(SRCROOT)/../vendor",
-					"$(SRCROOT)/../vendor/core/include",
+					"$(SRCROOT)/../vendor/realm-ios/include",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				MTL_ENABLE_DEBUG_INFO = YES;
@@ -1042,7 +1043,7 @@
 					"$(SRCROOT)/object-store/external/pegtl",
 					"$(SRCROOT)/object-store/src",
 					"$(SRCROOT)/../vendor",
-					"$(SRCROOT)/../vendor/core/include",
+					"$(SRCROOT)/../vendor/realm-ios/include",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
@@ -1095,6 +1096,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				DEBUG_INFORMATION_FORMAT = dwarf;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
 					REALM_DEBUG,
@@ -1109,7 +1111,7 @@
 					"-isystem",
 					"$(SRCROOT)/../vendor/sync/include",
 				);
-				OTHER_LIBTOOLFLAGS = "$(SRCROOT)/../vendor/core/librealm-ios-dbg.a $(SRCROOT)/../vendor/sync/librealm-ios-dbg.a";
+				OTHER_LIBTOOLFLAGS = "$(SRCROOT)/../vendor/realm-ios/librealm-ios-dbg.a";
 				PRODUCT_NAME = RealmJS;
 				SKIP_INSTALL = YES;
 			};
@@ -1118,6 +1120,7 @@
 		F63FF2B91C1241E500B3B8E0 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				GCC_INLINES_ARE_PRIVATE_EXTERN = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					REALM_HAVE_CONFIG,
 					__ASSERTMACROS__,
@@ -1130,7 +1133,7 @@
 					"-isystem",
 					"$(SRCROOT)/../vendor/sync/include",
 				);
-				OTHER_LIBTOOLFLAGS = "$(SRCROOT)/../vendor/core/librealm-ios.a $(SRCROOT)/../vendor/sync/librealm-ios.a";
+				OTHER_LIBTOOLFLAGS = "$(SRCROOT)/../vendor/realm-ios/librealm-ios.a";
 				PRODUCT_NAME = RealmJS;
 				SKIP_INSTALL = YES;
 			};

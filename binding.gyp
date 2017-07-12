@@ -42,6 +42,7 @@
         "src/object-store/src/parser",
         "src/object-store/external/pegtl"
       ],
+      "defines": [ "REALM_PLATFORM_NODE=1" ],
       "sources": [
         "src/object-store/src/binding_callback_thread_observer.cpp",
         "src/object-store/src/collection_notifications.cpp",
@@ -97,6 +98,7 @@
         }]
       ],
       "all_dependent_settings": {
+        "defines": [ "REALM_PLATFORM_NODE=1" ],
         "include_dirs": [
           "src/object-store/src",
           "src/object-store/src/impl",

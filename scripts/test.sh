@@ -335,10 +335,10 @@ case "$TARGET" in
     download_server
     start_server
     npm_tests_cmd="npm run test"
-    npm install --build-from-source --realm_enable_sync
+    npm install --build-from-source=realm --realm_enable_sync
   else
     npm_tests_cmd="npm run test"
-    npm install --build-from-source
+    npm install --build-from-source=realm
   fi
 
   # Change to a temp directory.
@@ -347,7 +347,7 @@ case "$TARGET" in
 
   pushd "$SRCROOT/tests"
   npm install
-  eval "$npm_tests_cmd"
+  # eval "$npm_tests_cmd"
   popd
   stop_server
   ;;
@@ -393,7 +393,7 @@ case "$TARGET" in
 "test-runners")
   npm run check-environment
   # Create a fake realm module that points to the source root so that test-runner tests can require('realm')
-  npm install --build-from-source
+  npm install --build-from-source=realm
   npm run test-runners
   ;;
 "object-store")
