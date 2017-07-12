@@ -178,6 +178,7 @@ public:
     static void close(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
 
     // properties
+    static void get_empty(ContextType, ObjectType, ReturnValue &);
     static void get_path(ContextType, ObjectType, ReturnValue &);
     static void get_schema_version(ContextType, ObjectType, ReturnValue &);
     static void get_schema(ContextType, ObjectType, ReturnValue &);
@@ -225,6 +226,7 @@ public:
     };
 
     PropertyMap<T> const properties = {
+        {"empty", {wrap<get_empty>, nullptr}},
         {"path", {wrap<get_path>, nullptr}},
         {"schemaVersion", {wrap<get_schema_version>, nullptr}},
         {"schema", {wrap<get_schema>, nullptr}},
@@ -499,6 +501,13 @@ void RealmClass<T>::get_default_path(ContextType ctx, ObjectType object, ReturnV
 template<typename T>
 void RealmClass<T>::set_default_path(ContextType ctx, ObjectType object, ValueType value) {
     js::set_default_path(Value::validated_to_string(ctx, value, "defaultPath"));
+}
+
+template<typename T>
+void RealmClass<T>::get_empty(ContextType ctx, ObjectType object, ReturnValue &return_value) {
+    SharedRealm& realm = *get_internal<T, RealmClass<T>>(object);
+    bool is_empty = ObjectStore::is_empty(realm->read_group());
+    return_value.set(is_empty);
 }
 
 template<typename T>

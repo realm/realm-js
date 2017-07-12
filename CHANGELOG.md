@@ -1,10 +1,10 @@
-vNext Release notes (TBD)
+1.10.0 Release notes (2017-7-12)
 =============================================================
 ### Breaking changes
 * None
 
 ### Enhancements
-* None
+* Added `Realm.prototype.empty` which is a property that indicates whether or not the realm has any objects in it.
 
 ### Bug fixes
 * Fix crash on Node.js when a listener callback throws an error.

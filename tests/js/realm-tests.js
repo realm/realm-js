@@ -932,5 +932,16 @@ module.exports = {
             var p3 = realm.create('PersonObject', { name: 'Wendy', age: 52, children: p2.children });
             TestCase.assertEqual(p3.children.length, 1);
         });
+    },
+
+    testEmpty: function() {
+        const realm = new Realm({schema: [schemas.PersonObject]});
+        TestCase.assertTrue(realm.empty);
+
+        realm.write(() => realm.create('PersonObject', { name: 'Ari', age: 10 }));
+        TestCase.assertTrue(!realm.empty);
+
+        realm.write(() => realm.delete(realm.objects('PersonObject')));
+        TestCase.assertTrue(realm.empty);
     }
 };
