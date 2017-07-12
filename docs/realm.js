@@ -23,6 +23,14 @@
  * ```
  */
 class Realm {
+   /**
+    * Indicates if this Realm contains any objects.
+    * @type {boolean}
+    * @readonly
+    * @since 1.10.0
+    */
+    get empty() {}
+
     /**
      * The path to the file where this Realm is stored.
      * @type {string}

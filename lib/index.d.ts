@@ -352,6 +352,7 @@ declare namespace Realm.Sync {
 declare class Realm {
     static defaultPath: string;
 
+    readonly empty: boolean;
     readonly path: string;
     readonly readOnly: boolean;
     readonly schema: Realm.ObjectSchema[];
