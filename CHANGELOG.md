@@ -1,3 +1,14 @@
+2.0.0 Release notes (2017-7-12)
+=============================================================
+### Breaking changes
+* Switch to the next version of the Sync protocol, compatible with Realm Object Server 2.0.0-rc2.
+
+### Enhancements
+* None
+
+### Bug fixes
+* None
+
 1.10.0 Release notes (2017-7-12)
 =============================================================
 ### Breaking changes
