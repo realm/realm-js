@@ -1,3 +1,12 @@
+vNext (TBD)
+=============================================================
+### Breaking changes
+* `Realm.openAsync` will no longer open the realm if an error has occured. Previously this resulted in the callback being invoked twice - once with an error and a second time - with the synchronously opened Realm.
+
+### Enhancements
+
+### Bug fixes
+
 1.10.0 Release notes (2017-7-12)
 =============================================================
 ### Breaking changes
