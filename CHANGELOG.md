@@ -10,7 +10,19 @@
 * none
 
 
-2.0.0 Release notes (2017-7-12)
+1.10.2 Release notes (2017-8-16)
+=============================================================
+### Breaking changes
+* None
+
+### Enhancements
+* None
+
+### Bug fixes
+* RN 0.47 no longer breaks for Android due to a superfluous @override annotation
+
+
+2.0.0 Release notes (2017-7-27)
 =============================================================
 ### Breaking changes
 * Switch to the next version of the Sync protocol, compatible with Realm Object Server 2.0.0-rc2.
