@@ -1,11 +1,14 @@
-vNext (TBD)
+1.10.1 Release notes (2017-8-2)
 =============================================================
 ### Breaking changes
-* `Realm.openAsync` will no longer open the realm if an error has occured. Previously this resulted in the callback being invoked twice - once with an error and a second time - with the synchronously opened Realm.
+* None
 
 ### Enhancements
+* None
 
 ### Bug fixes
+* `Realm.openAsync` will no longer open the realm if a sync error has occured. Previously this resulted in the callback being invoked twice - once with an error and a second time - with the synchronously opened Realm.
+* Database adapters will no longer process the sync history of realm files that are not requested by the adapter configuration. Previously this would lead to crashes for realm files that contained schemas that don't define primary keys.
 
 1.10.0 Release notes (2017-7-12)
 =============================================================
