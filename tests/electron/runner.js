@@ -8,11 +8,13 @@ const ELECTRON_PATH = path.join(__dirname, "node_modules", ".bin", "electron");
 const MAIN_PATH = path.join(__dirname, "app", "main.js");
 const POLL_LOG_DELAY = 500;
 
+const filterOption = process.argv[2] || null;
+
 const doneMatcher = /Electron process stopped, with status ([-\d]+)/;
 
 const app = new Application({
   path: ELECTRON_PATH,
-  args: [ MAIN_PATH ]
+  args: [ MAIN_PATH, filterOption /*, '--js-flags="--max-old-space-size=4096"'*/ ]
 });
 
 console.log("Trying to start an Electron process.");

@@ -9,6 +9,7 @@
     "test": "node ./runner.js"
   },
   "devDependencies": {
+    "electron": "^1.6.11",
     "electron-rebuild": "^1.6.0",
     "jasmine": "../node_modules/jasmine",
     "jasmine-console-reporter": "../node_modules/jasmine-console-reporter",

@@ -1,6 +1,9 @@
 "use strict";
 
 const assert = require("assert");
+const path = require("path");
+const fs = require("fs");
+
 const Realm = require("realm");
 const RealmTests = require("realm-tests");
 
@@ -34,6 +37,27 @@ describe("Test harness", () => {
 });
 
 // Almost a copy-paste from the ../spec/unit_tests.js - so it might be possible to generalize.
+
+// Setting the timeout to the same as the ../../spec/unit_tests.js
+jasmine.DEFAULT_TIMEOUT_INTERVAL = 30000;
+
+Realm.copyBundledRealmFiles = function() {
+  const sourceDir = path.join(__dirname, '../data');
+  const destinationDir = path.dirname(Realm.defaultPath);
+
+  for (let filename of fs.readdirSync(sourceDir)) {
+    let src = path.join(sourceDir, filename);
+    let dest = path.join(destinationDir, filename);
+
+    // If the destination file already exists, then don't overwrite it.
+    try {
+        fs.accessSync(dest);
+        continue;
+    } catch (e) {}
+
+    fs.writeFileSync(dest, fs.readFileSync(src));
+  }
+};
 
 const tests = RealmTests.getTestNames();
 for (const suiteName in tests) {

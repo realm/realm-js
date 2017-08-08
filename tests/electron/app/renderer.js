@@ -8,8 +8,17 @@ const remote = require("electron").remote;
 
 const SPEC_PATH = path.join(__dirname, "..", "spec.js");
 
-const jasmine = new Jasmine();
+const ADMIN_TOKEN_PATH = path.join(__dirname, "..", "..", "..", "object-server-for-testing", "admin_token.base64");
+process.env.ADMIN_TOKEN_PATH = ADMIN_TOKEN_PATH;
 
+// console.log(require.resolve("realm-spec-helpers"));
+
+const jasmine = new Jasmine();
+// jasmine.loadConfig({
+//   helpers: [
+//     // 'helpers/**/*.js'
+//   ]
+// });
 jasmine.clearReporters();
 jasmine.addReporter(new JasmineConsoleReporter({
   colors: 2,
@@ -23,4 +32,5 @@ jasmine.onComplete((passed) => {
   remote.process.exit(passed ? 0 : -1);
 });
 
-jasmine.execute([ SPEC_PATH ]);
+const filter = remote.getGlobal("jasminOptions").filter;
+jasmine.execute([ SPEC_PATH ], filter);
