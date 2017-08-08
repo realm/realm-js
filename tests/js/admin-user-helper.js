@@ -1,11 +1,24 @@
 'use strict';
-function node_require(module) { 
-    return require(module); 
+function node_require(module) {
+    return require(module);
 
 }
 let fs = node_require("fs");
 let path = node_require("path");
 var Realm = node_require('realm');
+
+const DEFAULT_ADMIN_TOKEN_PATH = path.join(__dirname, "..", "..", "object-server-for-testing", "admin_token.base64");
+const ADMIN_TOKEN_PATH = process.env.ADMIN_TOKEN_PATH || DEFAULT_ADMIN_TOKEN_PATH;
+
+function getAdminToken() {
+  if(fs.existsSync(ADMIN_TOKEN_PATH)) {
+    return fs.readFileSync(ADMIN_TOKEN_PATH, 'utf-8');
+  } else {
+    throw new Error("Missing the file with an admin token: " + ADMIN_TOKEN_PATH);
+  }
+}
+
+const ADMIN_TOKEN = getAdminToken();
 
 function random(min, max) {
     min = Math.ceil(min);
@@ -21,11 +34,11 @@ exports.createAdminUser = function () {
         Realm.Sync.User.register('http://localhost:9080', newAdminName, password, (error, user) => {
             if (error) {
                 reject(error);
-            } else {  
+            } else {
                 let userIdentity = user.identity;
                 user.logout();
 
-                let admin_token_user = Realm.Sync.User.adminUser(fs.readFileSync(path.join(__dirname, '/../../object-server-for-testing/admin_token.base64'), 'utf-8'));                
+                let admin_token_user = Realm.Sync.User.adminUser(ADMIN_TOKEN);
 
                 const config = {
                     sync: {
@@ -62,8 +75,8 @@ exports.createAdminUser = function () {
                                     return;
                                 }
 
-                                resolve({ 
-                                    username: newAdminName, 
+                                resolve({
+                                    username: newAdminName,
                                     password
                                 });
                             }
@@ -76,4 +89,3 @@ exports.createAdminUser = function () {
         });
     });
 }
-
