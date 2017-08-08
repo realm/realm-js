@@ -15,7 +15,6 @@ public class RealmReactPackage implements ReactPackage {
         return Collections.<NativeModule>singletonList(new RealmReactModule(reactContext));
     }
 
-    @Override
     public List<Class<? extends JavaScriptModule>> createJSModules() {
         return Collections.emptyList();
     }
