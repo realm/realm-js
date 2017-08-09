@@ -16,6 +16,14 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+/*
+ * This test suite is trying to make a bunch of objects with properties of type "data", which will use an ArrayBuffer
+ * when accessed.
+ * The reason for this test suite is that we have experianced issues in the current version (v1.6.11) of Electron that
+ * will crash when an v8::ArrayBuffer is garbage collected.
+ * @see https://github.com/electron/electron/issues/2601#issuecomment-135258750
+ */
+
 'use strict';
 
 const Realm = require('realm');
