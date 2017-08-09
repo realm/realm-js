@@ -8,14 +8,22 @@ const Realm = require("realm");
 const RealmTests = require("realm-tests");
 
 describe("Test harness", () => {
-  it("runs the test in the browser", () => {
-    assert(process.versions.chrome, "Expected a chrome version");
-    assert(global.window, "Expected a window constant");
+  if(global.options && global.options.runIn === "main") {
+    it("runs the test in the main process", () => {
+      assert(process.versions.chrome, "Expected a chrome version");
+      assert(!global.window, "Expected no window constant");
+      assert(!global.navigator, "Expected no navigator global");
+    });
+  } else {
+    it("runs the test in the browser process", () => {
+      assert(process.versions.chrome, "Expected a chrome version");
+      assert(global.window, "Expected a window constant");
 
-    const userAgent = global.navigator.userAgent;
-    assert(userAgent.indexOf("Electron") >= 0, "Expected Electron in the user-agent");
-    assert(userAgent.indexOf("Chrome") >= 0, "Expected Chrome in the user-agent");
-  });
+      const userAgent = global.navigator.userAgent;
+      assert(userAgent.indexOf("Electron") >= 0, "Expected Electron in the user-agent");
+      assert(userAgent.indexOf("Chrome") >= 0, "Expected Chrome in the user-agent");
+    });
+  }
 
   it("waits for async tests to complete", (done) => {
     setTimeout(() => {

@@ -1,36 +1,12 @@
 "use strict";
 
-const Jasmine = require("jasmine");
-const JasmineConsoleReporter = require('jasmine-console-reporter');
-const path = require("path");
-
 const remote = require("electron").remote;
 
-const SPEC_PATH = path.join(__dirname, "..", "spec.js");
-
-const ADMIN_TOKEN_PATH = path.join(__dirname, "..", "..", "..", "object-server-for-testing", "admin_token.base64");
-process.env.ADMIN_TOKEN_PATH = ADMIN_TOKEN_PATH;
-
-// console.log(require.resolve("realm-spec-helpers"));
-
-const jasmine = new Jasmine();
-// jasmine.loadConfig({
-//   helpers: [
-//     // 'helpers/**/*.js'
-//   ]
-// });
-jasmine.clearReporters();
-jasmine.addReporter(new JasmineConsoleReporter({
-  colors: 2,
-  cleanStack: 3,
-  verbosity: 4,
-  activity: false
-}));
-jasmine.onComplete((passed) => {
-  // Exit - but wait for the WebDriver to connect
-  // Add a delay if this happens too fast, to allow the WebDriver to connect first.
-  remote.process.exit(passed ? 0 : -1);
-});
-
-const filter = remote.getGlobal("jasminOptions").filter;
-jasmine.execute([ SPEC_PATH ], filter);
+const options = remote.getGlobal("options");
+if (options.runIn === "render") {
+  const jasmine = require("./jasmine.js").execute(options.filter);
+  jasmine.onComplete((passed) => {
+    // Add a delay if this happens too fast, to allow the WebDriver to connect first.
+    remote.process.exit(passed ? 0 : -1);
+  });
+}

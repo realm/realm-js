@@ -14,7 +14,7 @@ const doneMatcher = /Electron process stopped, with status ([-\d]+)/;
 
 const app = new Application({
   path: ELECTRON_PATH,
-  args: [ MAIN_PATH, filterOption /*, '--js-flags="--max-old-space-size=4096"'*/ ]
+  args: [ MAIN_PATH ].concat(process.argv.slice(2))
 });
 
 console.log("Trying to start an Electron process.");
