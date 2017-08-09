@@ -44,8 +44,15 @@ PersonObject.prototype.description = function() {
 PersonObject.prototype.toString = function() {
     return this.name;
 };
-Object.setPrototypeOf(PersonObject, Realm.Object);
-Object.setPrototypeOf(PersonObject.prototype, Realm.Object.prototype);
+
+// Object.setPrototypeOf doesn't work on JSC on Android. The code below achieves the same thing.
+//Object.setPrototypeOf(PersonObject, Realm.Object);
+//Object.setPrototypeOf(PersonObject.prototype, Realm.Object.prototype);
+
+PersonObject.__proto__ = Realm.Object.__proto__;
+PersonObject.prototype.__proto__ = Realm.Object.prototype.__proto__;
+
+
 exports.PersonObject = PersonObject;
 
 exports.PersonList = {
