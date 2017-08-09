@@ -18,8 +18,6 @@ function getAdminToken() {
   }
 }
 
-const ADMIN_TOKEN = getAdminToken();
-
 function random(min, max) {
     min = Math.ceil(min);
     max = Math.floor(max);
@@ -38,7 +36,7 @@ exports.createAdminUser = function () {
                 let userIdentity = user.identity;
                 user.logout();
 
-                let admin_token_user = Realm.Sync.User.adminUser(ADMIN_TOKEN);
+                let admin_token_user = Realm.Sync.User.adminUser(getAdminToken());
 
                 const config = {
                     sync: {
