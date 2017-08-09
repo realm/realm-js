@@ -381,8 +381,9 @@ case "$TARGET" in
   # npm test -- --filter=MigrationTests
   # npm test -- --filter=EncryptionTests
   # npm test -- --filter=UserTests
-  # # npm test -- --filter=SessionTests
+  # npm test -- --filter=SessionTests
   # npm test -- --filter=AsyncTests
+
   npm test
 
   popd
