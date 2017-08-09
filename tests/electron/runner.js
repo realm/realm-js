@@ -34,6 +34,12 @@ app.start().then(() => {
             resolve(statusCode);
           }
         });
+        app.client.getWindowCount().then((count) => {
+          if(count === 0) {
+            const err = new Error("All Electron windows unexpectedly closed.");
+            reject(err);
+          }
+        });
       });
     }, POLL_LOG_DELAY);
   });
@@ -42,6 +48,6 @@ app.start().then(() => {
   process.exit(statusCode);
 }).catch((error) => {
   // Log any failures
-  console.error("Failure", error.message);
+  console.error("Test harness failure:", error.message);
   process.exit(-1);
 })
