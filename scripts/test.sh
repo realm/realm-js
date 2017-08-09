@@ -385,7 +385,8 @@ case "$TARGET" in
   # npm test -- --filter=GarbageCollectionTests
   # npm test -- --filter=AsyncTests
 
-  npm test
+  npm test -- --process=main
+  npm test -- --process=render
 
   popd
 
