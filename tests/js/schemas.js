@@ -49,8 +49,8 @@ PersonObject.prototype.toString = function() {
 //Object.setPrototypeOf(PersonObject, Realm.Object);
 //Object.setPrototypeOf(PersonObject.prototype, Realm.Object.prototype);
 
-PersonObject.__proto__ = Realm.Object.__proto__;
-PersonObject.prototype.__proto__ = Realm.Object.prototype.__proto__;
+PersonObject.__proto__ = Realm.Object;
+PersonObject.prototype.__proto__ = Realm.Object.prototype;
 
 
 exports.PersonObject = PersonObject;
