@@ -26,7 +26,7 @@ const Realm = require('realm');
 const TestCase = require('./asserts');
 
 const isNodeProccess = (typeof process === 'object' && process + '' === '[object process]');
-console.log("isnode " + isNodeProccess + " typeof " + typeof process === 'object');
+console.log("isnode " + isNodeProccess + " typeof " + (typeof(process) === 'object'));
 function node_require(module) {
     return require(module);
 }  

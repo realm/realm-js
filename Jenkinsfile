@@ -64,6 +64,8 @@ stage('build') {
     linux_node_debug: doDockerBuild('node Debug'),
     linux_node_release: doDockerBuild('node Release'),
     linux_test_runners: doDockerBuild('test-runners'),
+    linux_electron_debug: doDockerBuild('electron Debug'),
+    linux_electron_release: doDockerBuild('electron Release'),
     macos_node_debug: doMacBuild('node Debug'),
     macos_node_release: doMacBuild('node Release'),
     //macos_realmjs_debug: doMacBuild('realmjs Debug'),
@@ -219,4 +221,3 @@ def doWindowsBuild() {
     }
   }
 }
-
