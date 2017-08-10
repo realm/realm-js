@@ -28,7 +28,7 @@ var TESTS = {
     ResultsTests: require('./results-tests'),
     QueryTests: require('./query-tests'),
     MigrationTests: require('./migration-tests'),
-    GarbageCollectionTests: require('./garbage-collection'),
+    // GarbageCollectionTests: require('./garbage-collection'),
 };
 
 // encryption is not supported on windows
