@@ -2,7 +2,6 @@
 
 const fs = require('fs');
 const path = require('path');
-const semver = require('semver');
 const exec = require('child_process').exec;
 
 console.log('Checking setup...');
@@ -27,13 +26,17 @@ function validateEnvPath(envKey) {
 }
 
 exec('npm --version', (err, stdout) => {
+  const verRegex = /^(\d+\.)?(\d+\.)?(\*|\d+)$/;
   const npmVer = stdout.trim();
-  if (!semver.valid(npmVer)) {
+  if (!verRegex.test(npmVer)) {
     console.error(`npm --version returned '${npmVer}. Is Node installed?`);
     process.exit(-1);
   }
 
-  if (semver.gte(npmVer, '5.0.0')) {
+  const matches = verRegex.exec(npmVer);
+  const majorVer = +matches[1];
+
+  if (majorVer >= 5) {
     console.error(`Installed version of npm (${npmVer}) which uses symbolic links for local packages.`);
     console.error('This is currently incompatible with our tests. Please use npm version 4 or less');
     process.exit(-1);
