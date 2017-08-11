@@ -71,7 +71,7 @@
 
         [suite addTest:testSuite];
     }
-    
+
     return suite;
 }
 
@@ -116,7 +116,7 @@
     NSURL *sourceURL = nil;
 
     if (source) {
-        NSString *path = [NSString pathWithComponents:@[[@(__FILE__) stringByDeletingLastPathComponent], @"..", @"js", source.lastPathComponent]];
+        NSString *path = [NSString pathWithComponents:@[[@(__FILE__) stringByDeletingLastPathComponent], @"..", @"shared", @"js", source.lastPathComponent]];
         sourceURL = [NSURL URLWithString:path];
     }
 
