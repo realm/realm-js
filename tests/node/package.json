@@ -1,0 +1,14 @@
+{
+  "name": "realm-node-tests",
+  "private": true,
+  "description": "Test harness running the Realm JS tests in a node process.",
+  "main": "index.js",
+  "scripts": {
+    "test": "node ./unit-tests.js",
+    "test-sync-integration": "node ./sync-integration-tests.js"
+  },
+  "devDependencies": {
+    "realm": "../..",
+    "realm-tests": "../shared"
+  }
+}
