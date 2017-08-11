@@ -1,6 +1,6 @@
 {
-  "name": "realm-tests-jasmine",
-  "version": "0.0.1",
+  "name": "realm-tests",
+  "version": "0.1.0",
   "private": true,
   "dependencies": {
     "es6-promise": "^3.2.1",
@@ -12,8 +12,7 @@
     "tmp": "^0.0.30",
     "url-parse": "^1.1.7"
   },
-  "scripts": {
-    "test": "jasmine spec/unit_tests.js",
-    "test-sync-integration": "jasmine spec/sync_integration_tests.js"
+  "peerDependency": {
+    "realm": "*"
   }
 }
