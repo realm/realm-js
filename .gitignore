@@ -118,7 +118,6 @@ tsconfig.json
 
 # Tests
 object-server-for-testing/
-tests/realm-object-server/
 vendor/sync
 vendor/sync*
 packager_out.txt

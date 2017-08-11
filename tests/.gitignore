@@ -1,2 +1,4 @@
 /sync-bundle/
-/junitresults-*.xml
+
+# Ignore the JUnit/XML formatted test results in the environment specific folders
+junitresults-*.xml
