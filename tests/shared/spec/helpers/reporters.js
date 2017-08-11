@@ -1,11 +1,19 @@
 'use strict';
 
-var jasmineReporters = require('jasmine-reporters');
-var junitReporter = new jasmineReporters.JUnitXmlReporter({
+const env = jasmine.getEnv();
+
+const jasmineReporters = require('jasmine-reporters');
+const junitReporter = new jasmineReporters.JUnitXmlReporter({
     savePath: '.',
     consolidateAll: false
 });
-jasmine.getEnv().addReporter(junitReporter);
+env.addReporter(junitReporter);
 
-var JasmineConsoleReporter = require('jasmine-console-reporter');
-jasmine.getEnv().addReporter(new JasmineConsoleReporter()); 
+const JasmineConsoleReporter = require('jasmine-console-reporter');
+const consoleReporter = new JasmineConsoleReporter({
+  colors: 2,
+  cleanStack: 3,
+  verbosity: 4,
+  activity: false
+});
+env.addReporter(consoleReporter);
