@@ -345,22 +345,27 @@ case "$TARGET" in
   if [ "$(uname)" = 'Darwin' ]; then
     download_server
     start_server
-    npm_tests_cmd="npm run test"
-    npm install --build-from-source --realm_enable_sync
-  else
-    npm_tests_cmd="npm run test"
-    npm install --build-from-source
   fi
 
   # Change to a temp directory.
   cd "$(mktemp -q -d -t realm.node.XXXXXX)"
   test_temp_dir=$PWD # set it to be cleaned at exit
 
-  pushd "$SRCROOT/tests"
-  npm install
-  eval "$npm_tests_cmd"
+  pushd "$SRCROOT/tests/node"
+
+  if [ "$(uname)" = 'Darwin' ]; then
+    npm install --build-from-source --realm_enable_sync
+  else
+    npm install --build-from-source
+  fi
+
+  npm test
+
   popd
-  stop_server
+
+  if [ "$(uname)" = 'Darwin' ]; then
+    stop_server
+  fi
   ;;
 "electron")
   if [ "$(uname)" = 'Darwin' ]; then
@@ -392,7 +397,7 @@ case "$TARGET" in
   # npm test -- --filter=GarbageCollectionTests
   # npm test -- --filter=AsyncTests
 
-  npm test -- --process=main
+  # npm test -- --process=main
   npm test -- --process=render
 
   popd
