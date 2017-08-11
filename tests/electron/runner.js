@@ -4,8 +4,8 @@ const assert = require("assert");
 const path = require("path");
 const Application = require("spectron").Application;
 
-const ELECTRON_PATH = path.join(__dirname, "node_modules", ".bin", "electron");
-const MAIN_PATH = path.join(__dirname, "app", "main.js");
+const ELECTRON_PATH = path.resolve(__dirname, "node_modules/.bin/electron");
+const MAIN_PATH = path.resolve(__dirname, "app/main.js");
 const POLL_LOG_DELAY = 500;
 
 const filterOption = process.argv[2] || null;
@@ -17,10 +17,9 @@ const app = new Application({
   args: [ MAIN_PATH ].concat(process.argv.slice(2))
 });
 
-console.log("Trying to start an Electron process.");
+console.log("Starting an Electron process.");
 
 app.start().then(() => {
-  console.log("The following messages are logs from the Electron process:");
   // Keep reading the log, until Jasmine prints "ALL DONE"
   return new Promise((resolve, reject) => {
     const timeout = setInterval(() => {
