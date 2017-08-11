@@ -98,7 +98,7 @@ exports.runTest = function(suiteName, testName) {
     if (testMethod) {
         // Start fresh in case of a crash in a previous run.
         Realm.clearTestState();
-        console.log("Starting test " + testName);
+        // console.log("Starting test " + testName);
         var promise;
         try {
             promise = testMethod.call(testSuite);
