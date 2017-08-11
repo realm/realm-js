@@ -471,7 +471,7 @@
 				855301CE1E20069D00FF108E /* dates-v5.realm */,
 			);
 			name = data;
-			path = ../../data;
+			path = ../../shared/data;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
