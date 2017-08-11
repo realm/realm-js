@@ -27,7 +27,8 @@ var TESTS = {
     RealmTests: require('./realm-tests'),
     ResultsTests: require('./results-tests'),
     QueryTests: require('./query-tests'),
-    MigrationTests: require('./migration-tests')
+    MigrationTests: require('./migration-tests'),
+    // GarbageCollectionTests: require('./garbage-collection'),
 };
 
 // encryption is not supported on windows

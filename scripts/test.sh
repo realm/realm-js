@@ -355,6 +355,45 @@ case "$TARGET" in
   popd
   stop_server
   ;;
+"electron")
+  if [ "$(uname)" = 'Darwin' ]; then
+    download_server
+    start_server
+  fi
+
+  # Change to a temp directory - because this is what is done for node - but we pushd right after?
+  cd "$(mktemp -q -d -t realm.electron.XXXXXX)"
+  test_temp_dir=$PWD # set it to be cleaned at exit
+  pushd "$SRCROOT/tests/electron"
+
+  if [ "$(uname)" = 'Darwin' ]; then
+    npm install --build-from-source --realm_enable_sync
+  else
+    npm install --build-from-source
+  fi
+
+  # npm test -- --filter=ListTests
+  # npm test -- --filter=LinkingObjectsTests
+  # npm test -- --filter=ObjectTests
+  # npm test -- --filter=RealmTests
+  # npm test -- --filter=ResultsTests
+  # npm test -- --filter=QueryTests
+  # npm test -- --filter=MigrationTests
+  # npm test -- --filter=EncryptionTests
+  # npm test -- --filter=UserTests
+  # npm test -- --filter=SessionTests
+  # npm test -- --filter=GarbageCollectionTests
+  # npm test -- --filter=AsyncTests
+
+  npm test -- --process=main
+  npm test -- --process=render
+
+  popd
+
+  if [ "$(uname)" = 'Darwin' ]; then
+    stop_server
+  fi
+  ;;
 "test-runners")
   # Create a fake realm module that points to the source root so that test-runner tests can require('realm')
   npm install --build-from-source

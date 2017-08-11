@@ -1,0 +1,20 @@
+{
+  "name": "realm-js-electron-tests",
+  "private": true,
+  "description": "Test harness running the Realm JS tests in the Electron renderer process.",
+  "main": "index.js",
+  "scripts": {
+    "prepublish": "electron-rebuild -t dev",
+    "start": "electron ./app/main.js",
+    "test": "node ./runner.js"
+  },
+  "devDependencies": {
+    "electron": "^1.6.11",
+    "electron-rebuild": "^1.6.0",
+    "jasmine": "../node_modules/jasmine",
+    "jasmine-console-reporter": "../node_modules/jasmine-console-reporter",
+    "realm": "../..",
+    "realm-tests": "../js",
+    "spectron": "^3.7.2"
+  }
+}
