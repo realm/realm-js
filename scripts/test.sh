@@ -390,7 +390,7 @@ case "$TARGET" in
   # npm test -- --filter=GarbageCollectionTests
   # npm test -- --filter=AsyncTests
 
-  # npm test -- --process=main
+  npm test -- --process=main
   npm test -- --process=render
 
   popd
