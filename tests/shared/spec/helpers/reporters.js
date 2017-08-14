@@ -2,6 +2,8 @@
 
 const env = jasmine.getEnv();
 
+env.clearReporters();
+
 const jasmineReporters = require('jasmine-reporters');
 const junitReporter = new jasmineReporters.JUnitXmlReporter({
     savePath: '.',
