@@ -274,9 +274,9 @@ case "$TARGET" in
   npm run check-environment
   download_server
   start_server
+
   pushd tests/react-test-app
-  npm install
-  open_chrome
+  npm install --build-from-source
   start_packager
 
   pushd ios
@@ -287,8 +287,7 @@ case "$TARGET" in
   npm run check-environment
   pushd examples/ReactExample
 
-  npm install
-  open_chrome
+  npm install --build-from-source
   start_packager
 
   pushd ios
@@ -306,7 +305,7 @@ case "$TARGET" in
 
   pushd tests/react-test-app
 
-  npm install
+  npm install --build-from-source
 
   echo "Resetting logcat"
   # Despite the docs claiming -c to work, it doesn't, so `-T 1` alleviates that.
