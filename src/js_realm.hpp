@@ -176,7 +176,6 @@ public:
     static void remove_listener(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void remove_all_listeners(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void close(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
-    static void compact(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
     
 
     // properties
@@ -218,7 +217,6 @@ public:
         {"objects", wrap<objects>},
         {"objectForPrimaryKey", wrap<object_for_primary_key>},
         {"create", wrap<create>},
-        {"compact", wrap<compact>},
         {"delete", wrap<delete_one>},
         {"deleteAll", wrap<delete_all>},
         {"write", wrap<write>},
@@ -410,7 +408,7 @@ void RealmClass<T>::constructor(ContextType ctx, ObjectType this_object, size_t 
                         Value::from_number(ctx, unused_bytes)
                     };
 
-                    ValueType should_compact = Function<T>::call(ctx, should_compact_on_launch_function, 2, arguments);
+                    ValueType should_compact = Function<T>::callback(ctx, should_compact_on_launch_function, this_object, 2, arguments);
                     return Value::to_boolean(ctx, should_compact);
                 };
             }
