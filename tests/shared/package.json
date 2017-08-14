@@ -7,6 +7,7 @@
     "jasmine": "^2.5.1",
     "jasmine-console-reporter": "^1.2.7",
     "jasmine-reporters": "^2.2.0",
+    "mockery": "^2.0.0",
     "needle": "^1.3.0",
     "terminate": "^1.0.8",
     "tmp": "^0.0.30",
