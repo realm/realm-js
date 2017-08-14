@@ -30,14 +30,27 @@ RUN dpkg --add-architecture i386 && \
       unzip \
       wget \
       zip && \
-    curl -sL https://deb.nodesource.com/setup_4.x | bash - && \
-    apt-get install -y nodejs && \
     echo oracle-java6-installer shared/accepted-oracle-license-v1-1 select true | debconf-set-selections && \
     add-apt-repository -y ppa:webupd8team/java && \
     apt-get update -qq && \
     apt-get install -y oracle-java8-installer && \
     rm -rf /var/cache/oracle-jdk8-installer && \
     apt-get clean
+
+# Install NVM (based on https://stackoverflow.com/questions/25899912/install-nvm-in-docker)
+
+ENV NVM_DIR /usr/local/nvm
+ENV NODE_VERSION 6.5.0
+
+# Install nvm with node and npm
+RUN curl https://raw.githubusercontent.com/creationix/nvm/v0.33.2/install.sh | bash \
+    && . $NVM_DIR/nvm.sh \
+    && nvm install $NODE_VERSION \
+    && nvm alias default $NODE_VERSION \
+    && nvm use default
+
+ENV NODE_PATH $NVM_DIR/v$NODE_VERSION/lib/node_modules
+ENV PATH      $NVM_DIR/v$NODE_VERSION/bin:$PATH
 
 ENV NPM_CONFIG_UNSAFE_PERM true
 
@@ -73,4 +86,4 @@ RUN cd /opt && \
     ./autogen.sh && ./configure && \
     make && make install
 
-RUN npm install -g react-native-cli
+RUN . $NVM_DIR/nvm.sh && nvm use default && npm install -g react-native-cli
