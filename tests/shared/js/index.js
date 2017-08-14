@@ -27,8 +27,7 @@ var TESTS = {
     RealmTests: require('./realm-tests'),
     ResultsTests: require('./results-tests'),
     QueryTests: require('./query-tests'),
-    MigrationTests: require('./migration-tests'),
-    GarbageCollectionTests: require('./garbage-collection'),
+    MigrationTests: require('./migration-tests')
 };
 
 // encryption is not supported on windows
@@ -50,6 +49,13 @@ if (isNodeProcess) {
   TESTS.AsyncTests = node_require('./async-tests');
 } else {
   console.log("Skipping the AsyncTests");
+}
+
+const isElectronProcess = !!process.versions.electron;
+if (isElectronProcess) {
+  TESTS.GarbageCollectionTests = require('./garbage-collection');
+} else {
+  console.log("Skipping the Electron specific GarbageCollectionTests");
 }
 
 var SPECIAL_METHODS = {
