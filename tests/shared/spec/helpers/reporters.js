@@ -13,7 +13,7 @@ env.addReporter(junitReporter);
 
 const JasmineConsoleReporter = require('jasmine-console-reporter');
 const consoleReporter = new JasmineConsoleReporter({
-  colors: 2,
+  colors: process.platform === 'win32' ? 0 : 2,
   cleanStack: 3,
   verbosity: 4,
   activity: false
