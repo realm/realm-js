@@ -89,7 +89,7 @@ function callbackTest(requestFunc, callback) {
 }
 
 module.exports = {
-  
+
   testLogout() {
     var username = uuid();
     return callbackTest((callback) => Realm.Sync.User.register('http://localhost:9080', username, 'password', callback), (error, user) => {
@@ -132,7 +132,7 @@ module.exports = {
         TestCase.assertUndefined(user);
       });
     });
-  }, 
+  },
 
   testRegisterMissingUsername() {
     return new Promise((resolve, _reject) => {
@@ -298,12 +298,8 @@ module.exports = {
 
   testRetrieveAccount() {
     return new Promise((resolve, reject) => {
-      if (!isNodeProcess) {
+      if (!isNodeProcess || !global.testAdminUserInfo) {
         resolve();
-      }
-      
-      if (!global.testAdminUserInfo) {
-        reject("Test requires an admin user");
       }
 
       Realm.Sync.User.login('http://localhost:9080', global.testAdminUserInfo.username, global.testAdminUserInfo.password, (error, user) => {
@@ -338,12 +334,8 @@ module.exports = {
 
   testRetrieveNotExistingAccount() {
     return new Promise((resolve, reject) => {
-      if (!isNodeProcess) {
+      if (!isNodeProcess || !global.testAdminUserInfo) {
         resolve();
-      }
-
-      if (!global.testAdminUserInfo) {
-        reject("Test requires an admin user");
       }
 
       Realm.Sync.User.login('http://localhost:9080', global.testAdminUserInfo.username, global.testAdminUserInfo.password, (error, user) => {
@@ -427,4 +419,3 @@ module.exports = {
   }, */
 
 };
-
