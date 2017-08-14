@@ -51,7 +51,7 @@ if (isNodeProcess) {
   console.log("Skipping the AsyncTests");
 }
 
-const isElectronProcess = !!process.versions.electron;
+const isElectronProcess = process && process.versions && !!process.versions.electron;
 if (isElectronProcess) {
   TESTS.GarbageCollectionTests = require('./garbage-collection');
 } else {
