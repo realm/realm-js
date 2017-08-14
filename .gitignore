@@ -117,7 +117,10 @@ local.properties
 tsconfig.json
 
 # Tests
-object-server-for-testing/
+object-server-for-testing
+# Some tests will spin up ROS in their own folder - this needs to be in this .gitignore for
+# npm to be able to pack realm, as the "realm-object-server" folders contain FIFO pipes.
+realm-object-server
 vendor/sync
 vendor/sync*
 packager_out.txt

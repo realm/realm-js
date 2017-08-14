@@ -2,5 +2,3 @@
 
 # Ignore the JUnit/XML formatted test results in the environment specific folders
 junitresults-*.xml
-# Some tests will spin up ROS
-realm-object-server
