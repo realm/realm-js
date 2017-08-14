@@ -7,14 +7,31 @@ let fs = node_require("fs");
 let path = node_require("path");
 var Realm = node_require('realm');
 
-const DEFAULT_ADMIN_TOKEN_PATH = path.join(__dirname, "..", "..", "object-server-for-testing", "admin_token.base64");
-const ADMIN_TOKEN_PATH = process.env.ADMIN_TOKEN_PATH || DEFAULT_ADMIN_TOKEN_PATH;
+function getObjectServerPath() {
+  const pathParts = __dirname.split(path.sep);
+  let objectServerPath;
+  for(let p = pathParts.length; p >= 0; p--) {
+    const candidatePathParts = pathParts.slice(0, p);
+    candidatePathParts.push("object-server-for-testing");
+    const candidatePath = candidatePathParts.join(path.sep);
+    if (fs.existsSync(candidatePath)) {
+      return candidatePath;
+    }
+  }
+  return null;
+}
 
 function getAdminToken() {
-  if(fs.existsSync(ADMIN_TOKEN_PATH)) {
-    return fs.readFileSync(ADMIN_TOKEN_PATH, 'utf-8');
+  const objectServerPath = getObjectServerPath();
+  if(objectServerPath) {
+    const accessTokenPath = path.resolve(objectServerPath, "admin_token.base64");
+    if(fs.existsSync(accessTokenPath)) {
+      return fs.readFileSync(accessTokenPath, "utf-8");
+    } else {
+      throw new Error("Couldn´t locate the admin token, used to access the realm object server.");
+    }
   } else {
-    throw new Error("Missing the file with an admin token: " + ADMIN_TOKEN_PATH);
+    throw new Error("Couldn´t locate the realm object server.");
   }
 }
 
