@@ -28,8 +28,6 @@
 		02E315C91DB80DDD00555337 /* sync_manager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E315C31DB80DDD00555337 /* sync_manager.cpp */; };
 		02E315CA1DB80DDD00555337 /* sync_session.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E315C51DB80DDD00555337 /* sync_session.cpp */; };
 		02E315CB1DB80DDD00555337 /* sync_user.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E315C71DB80DDD00555337 /* sync_user.cpp */; };
-		02E315D21DB80DF200555337 /* sync_file.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E315CE1DB80DF200555337 /* sync_file.cpp */; };
-		02E315D31DB80DF200555337 /* sync_metadata.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E315D01DB80DF200555337 /* sync_metadata.cpp */; };
 		02E315E01DB8233E00555337 /* keychain_helper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E315DE1DB8233E00555337 /* keychain_helper.cpp */; };
 		02F59EBF1C88F17D007F774C /* index_set.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02F59EAF1C88F17D007F774C /* index_set.cpp */; };
 		02F59EC01C88F17D007F774C /* list.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02F59EB11C88F17D007F774C /* list.cpp */; };
@@ -49,7 +47,7 @@
 		5D1BF0571EF1DB4800B7DC87 /* jsc_value.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5D1BF0561EF1DB4800B7DC87 /* jsc_value.cpp */; };
 		5D25F5A11D6284FD00EBBB30 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = F63FF3301C16434400B3B8E0 /* libz.tbd */; };
 		8507156E1E2CFCD000E548DB /* object_notifier.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8507156B1E2CFC0100E548DB /* object_notifier.cpp */; };
-		F61378791C18EAC5008BFC51 /* js in Resources */ = {isa = PBXBuildFile; fileRef = F61378781C18EAAC008BFC51 /* js */; };
+		F61378791C18EAC5008BFC51 /* shared/js in Resources */ = {isa = PBXBuildFile; fileRef = F61378781C18EAAC008BFC51 /* shared/js */; };
 		F63FF2C61C12469E00B3B8E0 /* jsc_init.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 029048011C0428DF00ABDED4 /* jsc_init.cpp */; };
 		F63FF2C91C12469E00B3B8E0 /* js_realm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 029048071C0428DF00ABDED4 /* js_realm.cpp */; };
 		F63FF2CD1C12469E00B3B8E0 /* rpc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0290480F1C0428DF00ABDED4 /* rpc.cpp */; };
@@ -216,7 +214,7 @@
 		F60103151CC4CCFD00EC01BA /* node_return_value.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = node_return_value.hpp; sourceTree = "<group>"; };
 		F60103161CC4CD2F00EC01BA /* node_string.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = node_string.hpp; sourceTree = "<group>"; };
 		F6079B181CD3EB9000BD2401 /* concurrent_deque.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = concurrent_deque.hpp; sourceTree = "<group>"; };
-		F61378781C18EAAC008BFC51 /* js */ = {isa = PBXFileReference; lastKnownFileType = folder; path = shared/js; sourceTree = "<group>"; };
+		F61378781C18EAAC008BFC51 /* shared/js */ = {isa = PBXFileReference; lastKnownFileType = folder; path = shared/js; sourceTree = "<group>"; };
 		F620F0521CAF0B600082977B /* js_class.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = js_class.hpp; sourceTree = "<group>"; };
 		F620F0531CAF2EF70082977B /* jsc_class.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = jsc_class.hpp; sourceTree = "<group>"; };
 		F620F0551CB655A50082977B /* node_class.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = node_class.hpp; sourceTree = "<group>"; };
@@ -400,8 +398,8 @@
 		02B58CC01AE99CEC009B348C /* RealmJSTests */ = {
 			isa = PBXGroup;
 			children = (
-				F61378781C18EAAC008BFC51 /* js */,
-				02D041F51CE11159000E4250 /* data */,
+				F61378781C18EAAC008BFC51 /* shared/js */,
+				02D041F51CE11159000E4250 /* shared/data */,
 				0270BC781B7D020100010E03 /* Info.plist */,
 				0270BC7A1B7D020100010E03 /* RealmJSTests.h */,
 				0270BC7B1B7D020100010E03 /* RealmJSTests.mm */,
@@ -428,7 +426,7 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		02D041F51CE11159000E4250 /* data */ = {
+		02D041F51CE11159000E4250 /* shared/data */ = {
 			isa = PBXGroup;
 			children = (
 				02D041F61CE11159000E4250 /* dates-v3.realm */,
@@ -777,7 +775,7 @@
 		02B58CA81AE99CEB009B348C /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0700;
+				LastUpgradeCheck = 0830;
 				ORGANIZATIONNAME = Realm;
 				TargetAttributes = {
 					02B58CBB1AE99CEC009B348C = {
@@ -818,7 +816,7 @@
 				02D041F71CE11159000E4250 /* dates-v3.realm in Resources */,
 				F6BCCFE21C8380A400FE31AE /* lib in Resources */,
 				02414B881CE68CA200A8669F /* dates-v5.realm in Resources */,
-				F61378791C18EAC5008BFC51 /* js in Resources */,
+				F61378791C18EAC5008BFC51 /* shared/js in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -902,13 +900,11 @@
 				02F59EE21C88F2BB007F774C /* realm_coordinator.cpp in Sources */,
 				02F59EC41C88F17D007F774C /* schema.cpp in Sources */,
 				F63FF2CD1C12469E00B3B8E0 /* rpc.cpp in Sources */,
-				02E315D21DB80DF200555337 /* sync_file.cpp in Sources */,
 				022BF1021E7266DF00F382F1 /* binding_callback_thread_observer.cpp in Sources */,
 				5D1BF0571EF1DB4800B7DC87 /* jsc_value.cpp in Sources */,
 				02F59EC21C88F17D007F774C /* object_store.cpp in Sources */,
 				02022A7C1DA47EC8000F0C4F /* format.cpp in Sources */,
 				02E315CB1DB80DDD00555337 /* sync_user.cpp in Sources */,
-				02E315D31DB80DF200555337 /* sync_metadata.cpp in Sources */,
 				02F59EC11C88F17D007F774C /* object_schema.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -950,8 +946,10 @@
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
@@ -985,7 +983,7 @@
 					"$(SRCROOT)/../vendor",
 					"$(SRCROOT)/../vendor/core/include",
 				);
-				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CPLUSPLUSFLAGS = (
@@ -1014,8 +1012,10 @@
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
@@ -1044,7 +1044,7 @@
 					"$(SRCROOT)/../vendor",
 					"$(SRCROOT)/../vendor/core/include",
 				);
-				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(OTHER_CFLAGS)",
