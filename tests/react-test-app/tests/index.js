@@ -19,7 +19,7 @@
 'use strict';
 
 import { NativeAppEventEmitter, NativeModules } from 'react-native';
-import * as RealmTests from 'realm-tests';
+import * as RealmTests from 'realm-tests/js';
 import ListViewTest from './listview-test';
 
 RealmTests.registerTests({

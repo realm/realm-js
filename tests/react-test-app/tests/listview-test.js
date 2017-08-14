@@ -20,7 +20,7 @@
 
 import Realm from 'realm';
 import { ListView } from 'realm/react-native';
-import { assertEqual, assertTrue } from 'realm-tests/asserts';
+import { assertEqual, assertTrue } from 'realm-tests/js/asserts';
 
 const OBJECT_SCHEMA = {
     name: 'UniqueObject',
