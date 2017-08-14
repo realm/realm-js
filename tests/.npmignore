@@ -1,0 +1,10 @@
+/sync-bundle/
+
+/electron
+/ios
+/node
+/react-test-app
+/test-runners
+
+junitresults-*.xml
+realm-object-server
