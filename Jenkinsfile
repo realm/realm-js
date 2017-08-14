@@ -210,7 +210,7 @@ def doWindowsBuild() {
       unstash 'source'
       try {
         bat 'npm install --build-from-source'
-        dir('tests') {
+        dir('tests/node') {
           bat 'npm install'
           bat 'npm run test'
           junit 'junitresults-*.xml'
