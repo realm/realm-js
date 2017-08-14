@@ -213,6 +213,13 @@ Realm.defaultPath;
  *   This function takes two arguments:
  *   - `oldRealm` - The Realm before migration is performed.
  *   - `newRealm` - The Realm that uses the latest `schema`, which should be modified as necessary.
+ * @property {callback(number, number)} [shouldCompactOnLaunch] - The function called when opening 
+ *   a Realm for the first time during the life of a process to determine if it should be compacted 
+ *   before being returned to the user. The function takes two arguments:
+ *     - `totalSize` - The total file size (data + free space) 
+ *     - `unusedSize` - The total bytes used by data in the file.
+ *   It returns `true` to indicate that an attempt to compact the file should be made. The compaction 
+ *   will be skipped if another process is accessing it.
  * @property {string} [path={@link Realm.defaultPath}] - The path to the file where the
  *   Realm database should be stored.
  * @property {boolean} [readOnly=false] - Specifies if this Realm should be opened as read-only.

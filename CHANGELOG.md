@@ -1,3 +1,15 @@
+1.10.2 Release notes
+=============================================================
+### Breaking changes
+* None
+
+### Enhancements
+* Added `shouldCompactOnLaunch` to configuration (#507).
+
+### Bug fixes
+* None
+
+
 1.10.1 Release notes (2017-8-2)
 =============================================================
 ### Breaking changes
