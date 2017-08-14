@@ -27,25 +27,25 @@
 'use strict';
 
 const Realm = require('realm');
-const TestCase = require('./asserts');
 
 const NUMBER_OF_OBJECTS = 1000;
 const BUFFER_LENGTH = 1024;
 const READ_CYCLES = 10;
 
-module.exports = {
-  testPropertiesOfData: () => {
+describe("Electron garbage collection", () => {
+  const TestingSchema = {
+    name: 'Testing',
+    properties: {
+      n: 'int',
+      someData: 'data'
+    }
+  };
 
-    const TestingSchema = {
-      name: 'Testing',
-      properties: {
-        n: 'int',
-        someData: 'data'
-      }
-    };
+  let realm;
 
+  beforeEach(() => {
     // Create a new realm
-    const realm = new Realm({schema: [TestingSchema]});
+    realm = new Realm({schema: [TestingSchema]});
     // Add a bunch of objects, with "data" to it
     realm.write(() => {
       for(let i = 0; i < NUMBER_OF_OBJECTS; i++) {
@@ -55,7 +55,9 @@ module.exports = {
         });
       }
     });
+  });
 
+  it("should not crash when arrays are freed", () => {
     for (let readCycle = 0; readCycle < READ_CYCLES; readCycle++) {
       let allObjects = realm.objects('Testing');
       let totalBytes = 0;
@@ -64,7 +66,9 @@ module.exports = {
         // Accessing the byteLength of the objects someData property
         totalBytes += toBeFreed.byteLength;
       }
+
       // console.log(`Read a total of ${totalBytes} bytes.`);
+      expect(totalBytes).toBe(NUMBER_OF_OBJECTS * BUFFER_LENGTH);
     }
-  }
-};
+  });
+});

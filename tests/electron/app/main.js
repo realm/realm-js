@@ -13,7 +13,7 @@ const app = electron.app;
 // Module to create native browser window.
 const BrowserWindow = electron.BrowserWindow;
 
-const SPEC_PATH = path.resolve(__dirname, "../spec.js");
+const SPEC_GLOB = path.resolve(__dirname, "../spec/*");
 
 const JASMIN_FILTER_KEY = "--filter";
 const MAIN_PROCESS_KEY = "--process";
@@ -41,7 +41,7 @@ app.on("ready", () => {
 
   global.options = {
     filter,
-    specs: [ SPEC_PATH ],
+    specs: [ SPEC_GLOB ],
     runIn
   };
 
