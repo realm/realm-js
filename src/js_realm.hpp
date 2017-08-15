@@ -171,6 +171,9 @@ public:
     static void delete_one(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void delete_all(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void write(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void begin_transaction(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue&);
+    static void commit_transaction(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue&);
+    static void cancel_transaction(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue&);
     static void add_listener(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void wait_for_download_completion(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void remove_listener(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
@@ -183,6 +186,7 @@ public:
     static void get_schema_version(ContextType, ObjectType, ReturnValue &);
     static void get_schema(ContextType, ObjectType, ReturnValue &);
     static void get_read_only(ContextType, ObjectType, ReturnValue &);
+    static void get_is_in_transaction(ContextType, ObjectType, ReturnValue &);
 #if REALM_ENABLE_SYNC
     static void get_sync_session(ContextType, ObjectType, ReturnValue &);
 #endif
@@ -219,6 +223,9 @@ public:
         {"delete", wrap<delete_one>},
         {"deleteAll", wrap<delete_all>},
         {"write", wrap<write>},
+        {"beginTransaction", wrap<begin_transaction>},
+        {"commitTransaction", wrap<commit_transaction>},
+        {"cancelTransaction", wrap<cancel_transaction>},
         {"addListener", wrap<add_listener>},
         {"removeListener", wrap<remove_listener>},
         {"removeAllListeners", wrap<remove_all_listeners>},
@@ -231,6 +238,7 @@ public:
         {"schemaVersion", {wrap<get_schema_version>, nullptr}},
         {"schema", {wrap<get_schema>, nullptr}},
         {"readOnly", {wrap<get_read_only>, nullptr}},
+        {"isInTransaction", {wrap<get_is_in_transaction>, nullptr}},
 #if REALM_ENABLE_SYNC
         {"syncSession", {wrap<get_sync_session>, nullptr}},
 #endif
@@ -533,6 +541,11 @@ void RealmClass<T>::get_read_only(ContextType ctx, ObjectType object, ReturnValu
     return_value.set(get_internal<T, RealmClass<T>>(object)->get()->config().read_only());
 }
 
+template<typename T>
+void RealmClass<T>::get_is_in_transaction(ContextType ctx, ObjectType object, ReturnValue &return_value) {
+    return_value.set(get_internal<T, RealmClass<T>>(object)->get()->is_in_transaction());
+}
+
 #if REALM_ENABLE_SYNC
 template<typename T>
 void RealmClass<T>::get_sync_session(ContextType ctx, ObjectType object, ReturnValue &return_value) {
@@ -784,6 +797,30 @@ void RealmClass<T>::write(ContextType ctx, FunctionType, ObjectType this_object,
     }
 
     realm->commit_transaction();
+}
+
+template<typename T>
+void RealmClass<T>::begin_transaction(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    validate_argument_count(argc, 0);
+
+    SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
+    realm->begin_transaction();    
+}
+
+template<typename T>
+void RealmClass<T>::commit_transaction(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    validate_argument_count(argc, 0);
+
+    SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
+    realm->commit_transaction();
+}
+
+template<typename T>
+void RealmClass<T>::cancel_transaction(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    validate_argument_count(argc, 0);
+
+    SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
+    realm->cancel_transaction();
 }
 
 template<typename T>

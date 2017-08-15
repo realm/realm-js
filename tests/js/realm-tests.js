@@ -943,5 +943,36 @@ module.exports = {
 
         realm.write(() => realm.delete(realm.objects('PersonObject')));
         TestCase.assertTrue(realm.empty);
+    },
+
+    testManualTransaction: function() {
+        const realm = new Realm({schema: [schemas.TestObject]});
+        TestCase.assertTrue(realm.empty);
+
+        realm.beginTransaction();
+        realm.create('TestObject', {doubleCol: 3.1415});
+        realm.commitTransaction();
+
+        TestCase.assertEqual(realm.objects('TestObject').length, 1);
+    },
+
+    testCancelTransaction: function() {
+        const realm = new Realm({schema: [schemas.TestObject]});
+        TestCase.assertTrue(realm.empty);
+
+        realm.beginTransaction();
+        realm.create('TestObject', {doubleCol: 3.1415});
+        realm.cancelTransaction();
+
+        TestCase.assertTrue(realm.empty);
+    },
+
+    testIsInTransaction: function() {
+        const realm = new Realm({schema: [schemas.TestObject]});
+        TestCase.assertTrue(!realm.isInTransaction);
+        realm.beginTransaction();
+        TestCase.assertTrue(realm.isInTransaction);
+        realm.cancelTransaction();
+        TestCase.assertTrue(!realm.isInTransaction);
     }
 };

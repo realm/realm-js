@@ -1,3 +1,17 @@
+1.10.x Release notes ()
+=============================================================
+### Breaking changes
+* None
+
+### Enhancements
+* Added methods `Realm.beginTransaction()`, `Realm.commitTransaction()`, `Realm.cancelTransaction()` to
+manually control write transaction.
+* Added property `Realm.isInTransaction` which indicates if write transaction is in progress.
+
+### Bug fixes
+* None
+
+
 1.10.1 Release notes (2017-8-2)
 =============================================================
 ### Breaking changes
