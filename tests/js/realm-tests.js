@@ -18,7 +18,6 @@
 
 'use strict';
 
-var fs = require('fs');
 var Realm = require('realm');
 var TestCase = require('./asserts');
 var schemas = require('./schemas');
@@ -958,7 +957,6 @@ module.exports = {
             }
             realm1.create('StringOnlyObject', { stringCol: 'B' });
         });
-        var beforeSize = fs.statSync(realm1.path).size;
         realm1.close();
 
         // open Realm and see if it is compacted
@@ -970,8 +968,7 @@ module.exports = {
         const realm2 = new Realm({schema: [schemas.StringOnly], shouldCompactOnLaunch: shouldCompact});
         TestCase.assertTrue(wasCalled);
         TestCase.assertEqual(realm2.objects('StringOnlyObject').length, count + 2);
-        var afterSize = fs.statSync(realm2.path).size;
-        TestCase.assertTrue(beforeSize >= afterSize);
+        // we don't check if the file is smaller as we assume that Object Store does it
         realm2.close();
     }
 };

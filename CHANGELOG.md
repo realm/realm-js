@@ -1,4 +1,4 @@
-1.10.2 Release notes
+X.Y.Z Release notes
 =============================================================
 ### Breaking changes
 * None
