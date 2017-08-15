@@ -263,13 +263,6 @@ case "$TARGET" in
   [[ $CONFIGURATION == 'Debug' ]] && exit 0
   npm run jsdoc
   ;;
-"realmjs")
-  download_server
-  start_server
-  pushd src
-  xctest RealmJS
-  stop_server
-  ;;
 "react-tests")
   npm run check-environment
   download_server
