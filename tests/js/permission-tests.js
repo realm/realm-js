@@ -56,14 +56,20 @@ module.exports = {
     testSimple() {
       var username = uuid();
       // Create user, logout the new user, then login
-      return callbackTest((callback) => Realm.Sync.User.register('http://localhost:9080', username, 'password', callback), (error, user) => {
-        failOnError(error);
-        user.getGrantedPermissions()
-          .then(permissions => {
-
-          }).catch(error => {
-
-          });
+      return new Promise((resolve, reject) => {
+        Realm.Sync.User.register('http://localhost:9080', username, 'password', (error, user) => {
+          failOnError(error);
+          console.log("Getting permissions.. ============================================================");
+          user.getGrantedPermissions()
+            .then(permissions => {
+              console.log("Permissions: ", permissions);
+              resolve();
+            }).catch(error => {
+              console.log("Error: ", error);
+              reject();
+            });
+        });
       });
     }
 }
+
