@@ -91,7 +91,6 @@ You will need yarn installed on the machine.
 test.sh options
 
  * eslint - lints the sources
- * realmjs - runs all tests on quick simulated environment 
  * react-tests - runs all React Native tests on iOS Simulator
  * react-tests-android runs all React Native Android tests on Android emulator
  * node - runs all tests for node
