@@ -44,7 +44,7 @@ if (Realm.Sync) {
 function node_require(module) { return require(module); }
 
 // If on node and an expected version: Run the async tests
-const isNodeProcess = process.versions && process.versions.node === '6.5.0';
+const isNodeProcess = typeof(process) === "object" && process.versions && process.versions.node === '6.5.0';
 if (isNodeProcess) {
   TESTS.AsyncTests = node_require('./async-tests');
 } else {
