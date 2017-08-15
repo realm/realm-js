@@ -335,10 +335,6 @@ case "$TARGET" in
   echo "********* File location: $(pwd)/tests.xml *********";
   cat tests.xml
 
-  if [ "$(uname)" = 'Darwin' ]; then
-    stop_server
-  fi
-
   ;;
 "node")
   npm run check-environment
