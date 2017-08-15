@@ -277,6 +277,7 @@ case "$TARGET" in
 
   pushd tests/react-test-app
   npm install --build-from-source
+  open_chrome
   start_packager
 
   pushd ios
@@ -288,6 +289,7 @@ case "$TARGET" in
   pushd examples/ReactExample
 
   npm install --build-from-source
+  open_chrome
   start_packager
 
   pushd ios
