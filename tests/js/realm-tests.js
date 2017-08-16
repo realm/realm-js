@@ -970,5 +970,34 @@ module.exports = {
         TestCase.assertEqual(realm2.objects('StringOnlyObject').length, count + 2);
         // we don't check if the file is smaller as we assume that Object Store does it
         realm2.close();
+    },
+
+    testManualCompact: function() {
+        const realm1 = new Realm({schema: [schemas.StringOnly]});
+        realm1.write(() => {
+            realm1.create('StringOnlyObject', { stringCol: 'A' });
+        });
+        TestCase.assertTrue(realm1.compact());
+        realm1.close();
+
+        const realm2 = new Realm({schema: [schemas.StringOnly]});
+        TestCase.assertEqual(realm2.objects('StringOnlyObject').length, 1);
+        realm2.close();
+    },
+
+    testManualCompactInWrite: function() {
+        const realm = new Realm({schema: [schemas.StringOnly]});
+        realm.write(() => {
+            TestCase.assertThrows(() => {
+                realm.compact();
+            });
+        });
+        TestCase.assertTrue(realm.empty);
+    },
+
+    testManualCompactMultipleInstances: function() {
+        const realm1 = new Realm({schema: [schemas.StringOnly]});
+        const realm2 = new Realm({schema: [schemas.StringOnly]});
+        TestCase.assertThrows(realm1.compact());
     }
 };

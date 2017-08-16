@@ -176,6 +176,7 @@ public:
     static void remove_listener(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void remove_all_listeners(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void close(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void compact(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
     
 
     // properties
@@ -224,6 +225,7 @@ public:
         {"removeListener", wrap<remove_listener>},
         {"removeAllListeners", wrap<remove_all_listeners>},
         {"close", wrap<close>},
+        {"compact", wrap<compact>},
     };
 
     PropertyMap<T> const properties = {
@@ -857,6 +859,18 @@ void RealmClass<T>::close(ContextType ctx, FunctionType, ObjectType this_object,
 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
     realm->close();
+}
+
+template<typename T>
+void RealmClass<T>::compact(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    validate_argument_count(argc, 0);
+
+    SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
+    if (realm->is_in_transaction()) {
+        throw std::runtime_error("Cannot compact a Realm within a transaction.");
+    }
+
+    return_value.set(realm->compact());
 }
 
 } // js

@@ -182,6 +182,24 @@ class Realm {
     * @param {function()} callback
     */
     write(callback) {}
+
+    /**
+     * Replaces all string columns in this Realm with a string enumeration column and compacts the
+     * database file.
+     * 
+     * Cannot be called from a write transaction.
+     *
+     * Compaction will not occur if other `Realm` instances exist.
+     *
+     * While compaction is in progress, attempts by other threads or processes to open the database will
+     * wait.
+     *
+     * Be warned that resource requirements for compaction is proportional to the amount of live data in
+     * the database. Compaction works by writing the database contents to a temporary database file and
+     * then replacing the database with the temporary one.
+     * @returns {true} if compaction succeeds.
+     */
+    compact() {}
 }
 
 /**

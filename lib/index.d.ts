@@ -453,6 +453,11 @@ declare class Realm {
      * @returns void
      */
     write(callback: () => void): void;
+
+    /**
+     * @returns boolean
+     */
+    compact(): boolean;
 }
 
 declare module 'realm' {

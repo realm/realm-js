@@ -6,6 +6,7 @@ X.Y.Z Release notes
 
 ### Enhancements
 * Added `shouldCompactOnLaunch` to configuration (#507).
+* Added `Realm.compact()` for manually compacting Realm files.
 
 ### Bug fixes
 * None
