@@ -49,6 +49,7 @@
         "src/object-store/src/index_set.cpp",
         "src/object-store/src/list.cpp",
         "src/object-store/src/object.cpp",
+        "src/object-store/src/placeholder.cpp",
         "src/object-store/src/object_schema.cpp",
         "src/object-store/src/object_store.cpp",
         "src/object-store/src/results.cpp",
@@ -66,6 +67,7 @@
         "src/object-store/src/parser/parser.cpp",
         "src/object-store/src/parser/query_builder.cpp",
         "src/object-store/src/util/format.cpp",
+        "src/object-store/src/util/uuid.cpp",
       ],
       "conditions": [
         ["OS=='win'", {

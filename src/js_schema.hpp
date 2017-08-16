@@ -89,7 +89,13 @@ Property Schema<T>::parse_property(ContextType ctx, ValueType attributes, std::s
         
         ValueType optional_value = Object::get_property(ctx, property_object, optional_string);
         if (!Value::is_undefined(ctx, optional_value)) {
-            prop.is_nullable = Value::validated_to_boolean(ctx, optional_value, "optional");
+            auto isNullableValue = Value::validated_to_boolean(ctx, optional_value, "optional");
+            if (isNullableValue) {
+                prop.type |= realm::PropertyType::Nullable;
+            } 
+            else {
+                prop.type &= ~realm::PropertyType::Nullable;
+            }
         }
     }
     else {
@@ -135,7 +141,7 @@ Property Schema<T>::parse_property(ContextType ctx, ValueType attributes, std::s
     }
     else if (type == "object") {
         prop.type = realm::PropertyType::Object;
-        prop.is_nullable = true;
+        prop.type |= realm::PropertyType::Nullable;
     
         if (!Value::is_valid(property_object)) {
             throw std::runtime_error("Object property must specify 'objectType'");
@@ -145,7 +151,7 @@ Property Schema<T>::parse_property(ContextType ctx, ValueType attributes, std::s
     else {
         // The type could be the name of another object type in the same schema.
         prop.type = realm::PropertyType::Object;
-        prop.is_nullable = true;
+        prop.type |= realm::PropertyType::Nullable;
         prop.object_type = type;
     }
     
@@ -308,7 +314,7 @@ typename T::Object Schema<T>::object_for_property(ContextType ctx, const Propert
     }
 
     static const String optional_string = "optional";
-    if (property.is_nullable) {
+    if (is_nullable(property.type)) {
         Object::set_property(ctx, object, optional_string, Value::from_boolean(ctx, true));
     }
 
