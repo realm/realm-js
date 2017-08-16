@@ -263,13 +263,6 @@ case "$TARGET" in
   [[ $CONFIGURATION == 'Debug' ]] && exit 0
   npm run jsdoc
   ;;
-"realmjs")
-  download_server
-  start_server
-  pushd src
-  xctest RealmJS
-  stop_server
-  ;;
 "react-tests")
   npm run check-environment
   download_server
@@ -334,10 +327,6 @@ case "$TARGET" in
   echo "********* TESTS COMPLETED *********";
   echo "********* File location: $(pwd)/tests.xml *********";
   cat tests.xml
-
-  if [ "$(uname)" = 'Darwin' ]; then
-    stop_server
-  fi
 
   ;;
 "node")
