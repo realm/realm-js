@@ -1,7 +1,7 @@
 {
   "name": "realm",
   "description": "Realm is a mobile database: an alternative to SQLite and key-value stores",
-  "version": "1.10.1",
+  "version": "1.10.2",
   "license": "Apache-2.0",
   "homepage": "https://realm.io",
   "keywords": [
@@ -74,7 +74,8 @@
     "win-revert-symlinks": "npm run isWin -s &&  npm run alias:win:apply && git checkout-symlinks && npm run alias:win:revert || echo .",
     "prereact-tests-android": "npm run isWin -s && npm run win-fix-symlinks || echo . ",
     "react-tests-android": "node scripts/react-tests-android.js || npm run postreact-tests-android",
-    "postreact-tests-android": "npm run win-revert-symlinks"
+    "postreact-tests-android": "npm run win-revert-symlinks",
+    "check-environment": "node scripts/check-environment.js"
   },
   "dependencies": {
     "extract-zip": "^1.6.0",

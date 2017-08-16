@@ -1,3 +1,4 @@
+
 X.Y.Z Release notes
 =============================================================
 ### Breaking changes
@@ -8,6 +9,18 @@ X.Y.Z Release notes
 
 ### Bug fixes
 * None
+
+
+1.10.2 Release notes (2017-8-16)
+=============================================================
+### Breaking changes
+* None
+
+### Enhancements
+* None
+
+### Bug fixes
+* RN 0.47 no longer breaks for Android due to a superfluous @override annotation
 
 
 1.10.1 Release notes (2017-8-2)

@@ -243,6 +243,9 @@ fi
 rm -rf ~/.yarn-cache/npm-realm-*
 
 case "$TARGET" in
+"check-environment")
+  npm run check-environment
+  ;;
 "eslint")
   [[ $CONFIGURATION == 'Debug' ]] && exit 0
   npm run eslint
@@ -260,14 +263,8 @@ case "$TARGET" in
   [[ $CONFIGURATION == 'Debug' ]] && exit 0
   npm run jsdoc
   ;;
-"realmjs")
-  download_server
-  start_server
-  pushd src
-  xctest RealmJS
-  stop_server
-  ;;
 "react-tests")
+  npm run check-environment
   download_server
   start_server
   pushd tests/react-test-app
@@ -280,6 +277,7 @@ case "$TARGET" in
   stop_server
   ;;
 "react-example")
+  npm run check-environment
   pushd examples/ReactExample
 
   npm install
@@ -290,6 +288,7 @@ case "$TARGET" in
   xctest ReactExample
   ;;
 "react-tests-android")
+  npm run check-environment
   if [ "$(uname)" = 'Darwin' ]; then
     download_server
     start_server
@@ -329,12 +328,9 @@ case "$TARGET" in
   echo "********* File location: $(pwd)/tests.xml *********";
   cat tests.xml
 
-  if [ "$(uname)" = 'Darwin' ]; then
-    stop_server
-  fi
-
   ;;
 "node")
+  npm run check-environment
   if [ "$(uname)" = 'Darwin' ]; then
     download_server
     start_server
@@ -395,6 +391,7 @@ case "$TARGET" in
   fi
   ;;
 "test-runners")
+  npm run check-environment
   # Create a fake realm module that points to the source root so that test-runner tests can require('realm')
   npm install --build-from-source
   npm run test-runners
