@@ -83,10 +83,10 @@ public:
     std::string const& prefix() const { return m_prefix; }
     std::string const& type() const { return m_type; }
 
-    TypeErrorException(std::string prefix, std::string type) : 
+    TypeErrorException(std::string prefix, std::string type) :
         std::invalid_argument(prefix + " must be of type: " + type),
         m_prefix(std::move(prefix)),
-        m_type(std::move(type)) 
+        m_type(std::move(type))
         {}
 
 private:
@@ -352,7 +352,7 @@ REALM_JS_INLINE void set_internal(const typename T::Object &object, typename Cla
 template<typename T>
 inline bool Value<T>::is_valid_for_property(ContextType context, const ValueType &value, const Property& prop)
 {
-    if (prop.is_nullable && (is_null(context, value) || is_undefined(context, value))) {
+    if (is_nullable(prop.type) && (is_null(context, value) || is_undefined(context, value))) {
         return true;
     }
 
