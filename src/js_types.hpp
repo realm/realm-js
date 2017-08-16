@@ -351,7 +351,7 @@ REALM_JS_INLINE void set_internal(const typename T::Object &object, typename Cla
 template<typename T>
 inline bool Value<T>::is_valid_for_property(ContextType context, const ValueType &value, const Property& prop)
 {
-    if (prop.is_nullable && (is_null(context, value) || is_undefined(context, value))) {
+    if (is_nullable(prop.type) && (is_null(context, value) || is_undefined(context, value))) {
         return true;
     }
 
