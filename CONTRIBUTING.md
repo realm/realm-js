@@ -41,9 +41,43 @@ Realm welcomes all contributions! The only requirement we have is that, like man
 
 ### Guidelines
 
-* Add prototype of function to `src/js_realm.hpp` line 167
-* Wrap function in `MethodWrap` in `src/js_realm.hpp`
-* Implement function/method
-* Add to TypeScript in `lib/index.d.ts`
-* Add documentation in `docs/realm.js`
-* Add unit tests to `tests/js/realm-tests.js`
+Adding new functionality to Realm JavaScript requires that you modify a few places in the repository. As an example, consider adding a function `crashOnStart()` to the class `Realm`. The subsections below guides you through where and what to add.
+
+#### Add the function
+
+First, add a prototype of function to `src/js_realm.hpp`; look for a section marked by the comment `// method`. The prototype looks like:
+
+```
+static void crashOnStart(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
+```
+
+You have to implement the function. Find a place in `src/js_realm.hpp` to add it (maybe at the end):
+
+```
+template<typename T>
+void RealmClass<T>::crashOnStart(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    validate_argument_count(argc, 0); // <- the function doesn't take any arguments
+
+    SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object); // <- unwrap the Realm instance
+
+    // add the actual implement ...
+}
+```
+
+Testing is important, and in `tests/js/realm-tests.js` you can add the tests you need.
+
+#### Wrap the function
+
+In order to call the C++ implementation, the JavaScript engine has to know about the function. You must simply add it to the map of methods/functions. Find `MethodMap<T> const methods` declaration in `src/js_realm.hpp` and add your function to it:
+
+```
+{"crashOnStart", wrap<crashOnStart>},
+```
+
+#### The final details
+
+To finish adding your new function, you will have to add your function a few places:
+
+* In `lib/index.d.ts` you add the TypeScript declaration
+* Documentation is added in `docs/realm.js`
+* Add your function to `lib/browser/index.js` in order to enable it in the Chrome Debugger
