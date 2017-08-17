@@ -42,8 +42,11 @@ exports.createAdminUser = function () {
                     sync: {
                         user: admin_token_user,
                         url: `realm://localhost:9080/__admin`,
-                        error: err =>
-                         console.log('Error opening __admin realm ' + err.user  + ' ' + err.url + ' ' + err.state),
+                        error: err => {
+                            const error = new Error('Error opening __admin realm error:' + err.user  + ' url:' + err.url + ' state:' + err.state)
+                            console.log(error);
+                            reject(error);
+                        }
                     }
                 };
 
