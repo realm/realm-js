@@ -25,14 +25,17 @@ exports.createAdminUser = function () {
                 let userIdentity = user.identity;
                 user.logout();
 
-                let admin_token_user = Realm.Sync.User.adminUser(fs.readFileSync(path.join(__dirname, '/../../object-server-for-testing/admin_token.base64'), 'utf-8'));                
+                let admin_token_user = Realm.Sync.User.adminUser(fs.readFileSync(path.join(__dirname, '/../../object-server-for-testing/admin_token.base64'), 'utf-8'), 'http://localhost:9080');                
 
                 const config = {
                     sync: {
                         user: admin_token_user,
                         url: `realm://localhost:9080/__admin`,
-                        error: err =>
-                         console.log('Error opening __admin realm ' + err.user  + ' ' + err.url + ' ' + err.state),
+                        error: err => {
+                            const error = new Error('Error opening __admin realm error:' + err.user  + ' url:' + err.url + ' state:' + err.state)
+                            console.log(error);
+                            reject(error);
+                        }
                     }
                 };
 
