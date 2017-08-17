@@ -397,6 +397,15 @@ inline bool Value<T>::is_valid_for_property(ContextType context, const ValueType
 
 inline std::string js_type_name_for_property_type(PropertyType type)
 {
+    if (realm::is_array(type)) {
+       if (type == PropertyType::LinkingObjects) {
+            throw std::runtime_error("LinkingObjects' type is not supported");
+        }
+        else if (type == PropertyType::Array) {
+            return "array";
+        }
+    }        
+
     switch (type) {
         case PropertyType::Int:
         case PropertyType::Float:
@@ -412,13 +421,8 @@ inline std::string js_type_name_for_property_type(PropertyType type)
             return "binary";
         case PropertyType::Object:
             return "object";
-        case PropertyType::Array:
-            return "array";
-
         case PropertyType::Any:
             throw std::runtime_error("'Any' type is not supported");
-        case PropertyType::LinkingObjects:
-            throw std::runtime_error("LinkingObjects' type is not supported");
     }
 
     REALM_UNREACHABLE();
