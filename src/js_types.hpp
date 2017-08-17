@@ -356,9 +356,23 @@ inline bool Value<T>::is_valid_for_property(ContextType context, const ValueType
         return true;
     }
 
-    //lubo
+    if (realm::is_array(prop.type)) {
+        if (prop.type == PropertyType::Object) {
+            auto object = to_object(context, value);
+            return Object<T>::template is_instance<ResultsClass<T>>(context, object)
+                || Object<T>::template is_instance<ListClass<T>>(context, object);
+        } else if (prop.type == PropertyType::LinkingObjects) {
+            return false;
+        }
+        else if (prop.type == PropertyType::Array) {
+            return true;
+        }
+        
+        return false;
+    }        
+
     using PropertyType = realm::PropertyType;
-    switch (prop.type) {
+    switch (prop.type & ~PropertyType::Flags) {
         case PropertyType::Int:
         case PropertyType::Float:
         case PropertyType::Double:
@@ -373,22 +387,7 @@ inline bool Value<T>::is_valid_for_property(ContextType context, const ValueType
             return is_date(context, value);
         case PropertyType::Object:
             return true;
-        case PropertyType::Array:
-            // FIXME: Do we need to validate the types of the contained objects?
-            if (is_array(context, value)) {
-                return true;
-            }
-
-            if (is_object(context, value)) {
-                auto object = to_object(context, value);
-                return Object<T>::template is_instance<ResultsClass<T>>(context, object)
-                    || Object<T>::template is_instance<ListClass<T>>(context, object);
-            }
-
-            return false;
-
         case PropertyType::Any:
-        case PropertyType::LinkingObjects:
             return false;
     }
 
