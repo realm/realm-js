@@ -31,14 +31,6 @@
 * None
 
 ### Bug fixes
-### Breaking changes
-* None
-
-### Enhancements
-* None
-
-### Bug fixes
-* RN 0.47 no longer breaks for Android due to a superfluous @override annotation
 
 
 1.10.1 Release notes (2017-8-2)
