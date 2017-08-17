@@ -258,6 +258,7 @@ module.exports = {
 
                     return Realm.open(config)
                         .then(realm => {
+                            return realm.syncSession;
                         }).then(session => {
                             TestCase.assertTrue(progressNotificationCalled, "Progress notification not called for Realm.open");
                         });
