@@ -120,12 +120,12 @@ template<typename T>
 void UserClass<T>::create_user(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 3, 5);
     SyncUserIdentifier userIdentifier {
-        (std::string)Value::validated_to_string(ctx, arguments[1], "identity"),
-        (std::string)Value::validated_to_string(ctx, arguments[0], "authServerUrl")
+        Value::validated_to_string(ctx, arguments[1], "identity"),
+        Value::validated_to_string(ctx, arguments[0], "authServerUrl")
      };
     SharedUser *user = new SharedUser(SyncManager::shared().get_user(
         userIdentifier,
-        (std::string)Value::validated_to_string(ctx, arguments[2], "refreshToken")
+        Value::validated_to_string(ctx, arguments[2], "refreshToken")
     ));
 
     if (argc == 5) {
