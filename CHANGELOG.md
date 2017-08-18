@@ -1,4 +1,3 @@
-
 X.Y.Z Release notes
 =============================================================
 ### Breaking changes
@@ -10,6 +9,18 @@ X.Y.Z Release notes
 
 ### Bug fixes
 * None
+
+
+1.10.3 Release notes (2017-8-16)
+=============================================================
+### Breaking changes
+* setAccessToken renamed to setFeatureToken. setAccessToken still works for now.
+
+### Enhancements
+* None
+
+### Bug fixes
+* none
 
 
 1.10.2 Release notes (2017-8-16)
