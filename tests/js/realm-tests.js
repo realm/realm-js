@@ -974,5 +974,61 @@ module.exports = {
         TestCase.assertTrue(realm.isInTransaction);
         realm.cancelTransaction();
         TestCase.assertTrue(!realm.isInTransaction);
+    },
+    
+    testCompact: function() {
+        var wasCalled = false;
+        const count = 1000;
+        // create compactable Realm
+        const realm1 = new Realm({schema: [schemas.StringOnly]});
+        realm1.write(() => {
+            realm1.create('StringOnlyObject', { stringCol: 'A' });
+            for (var i = 0; i < count; i++) {
+                realm1.create('StringOnlyObject', { stringCol: 'ABCDEFG' });
+            }
+            realm1.create('StringOnlyObject', { stringCol: 'B' });
+        });
+        realm1.close();
+
+        // open Realm and see if it is compacted
+        var shouldCompact = function(totalBytes, usedBytes) {
+            wasCalled = true;
+            const fiveHundredKB = 500*1024;
+            return (totalBytes > fiveHundredKB) && (usedBytes / totalBytes) < 0.2;
+        };
+        const realm2 = new Realm({schema: [schemas.StringOnly], shouldCompactOnLaunch: shouldCompact});
+        TestCase.assertTrue(wasCalled);
+        TestCase.assertEqual(realm2.objects('StringOnlyObject').length, count + 2);
+        // we don't check if the file is smaller as we assume that Object Store does it
+        realm2.close();
+    },
+
+    testManualCompact: function() {
+        const realm1 = new Realm({schema: [schemas.StringOnly]});
+        realm1.write(() => {
+            realm1.create('StringOnlyObject', { stringCol: 'A' });
+        });
+        TestCase.assertTrue(realm1.compact());
+        realm1.close();
+
+        const realm2 = new Realm({schema: [schemas.StringOnly]});
+        TestCase.assertEqual(realm2.objects('StringOnlyObject').length, 1);
+        realm2.close();
+    },
+
+    testManualCompactInWrite: function() {
+        const realm = new Realm({schema: [schemas.StringOnly]});
+        realm.write(() => {
+            TestCase.assertThrows(() => {
+                realm.compact();
+            });
+        });
+        TestCase.assertTrue(realm.empty);
+    },
+
+    testManualCompactMultipleInstances: function() {
+        const realm1 = new Realm({schema: [schemas.StringOnly]});
+        const realm2 = new Realm({schema: [schemas.StringOnly]});
+        TestCase.assertThrows(realm1.compact());
     }
 };

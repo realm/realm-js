@@ -179,6 +179,8 @@ public:
     static void remove_listener(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void remove_all_listeners(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void close(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void compact(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    
 
     // properties
     static void get_empty(ContextType, ObjectType, ReturnValue &);
@@ -230,6 +232,7 @@ public:
         {"removeListener", wrap<remove_listener>},
         {"removeAllListeners", wrap<remove_all_listeners>},
         {"close", wrap<close>},
+        {"compact", wrap<compact>},
     };
 
     PropertyMap<T> const properties = {
@@ -396,6 +399,28 @@ void RealmClass<T>::constructor(ContextType ctx, ObjectType this_object, size_t 
             }
             else if (schema_updated) {
                 config.schema_version = 0;
+            }
+
+            static const String compact_on_launch_string = "shouldCompactOnLaunch";
+            ValueType compact_value = Object::get_property(ctx, object, compact_on_launch_string);
+            if (!Value::is_undefined(ctx, compact_value)) {
+                if (config.schema_mode == SchemaMode::ReadOnly) {
+                    throw std::invalid_argument("Cannot set 'shouldCompactOnLaunch' when 'readOnly' is set.");
+                }
+                if (config.sync_config) {
+                    throw std::invalid_argument("Cannot set 'shouldCompactOnLaunch' when 'sync' is set.");
+                }
+
+                FunctionType should_compact_on_launch_function = Value::validated_to_function(ctx, compact_value, "shouldCompactOnLaunch");
+                config.should_compact_on_launch_function = [=](uint64_t total_bytes, uint64_t unused_bytes) {
+                    ValueType arguments[2] = {
+                        Value::from_number(ctx, total_bytes),
+                        Value::from_number(ctx, unused_bytes)
+                    };
+
+                    ValueType should_compact = Function<T>::callback(ctx, should_compact_on_launch_function, this_object, 2, arguments);
+                    return Value::to_boolean(ctx, should_compact);
+                };
             }
 
             static const String migration_string = "migration";
@@ -871,6 +896,18 @@ void RealmClass<T>::close(ContextType ctx, FunctionType, ObjectType this_object,
 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
     realm->close();
+}
+
+template<typename T>
+void RealmClass<T>::compact(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    validate_argument_count(argc, 0);
+
+    SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
+    if (realm->is_in_transaction()) {
+        throw std::runtime_error("Cannot compact a Realm within a transaction.");
+    }
+
+    return_value.set(realm->compact());
 }
 
 } // js

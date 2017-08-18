@@ -1,12 +1,24 @@
-X.Y.Z Release notes ()
+X.Y.Z Release notes
 =============================================================
 ### Breaking changes
 * None
 
 ### Enhancements
-* Added methods `Realm.beginTransaction()`, `Realm.commitTransaction()`, `Realm.cancelTransaction()` to
-manually control write transaction.
+* Added methods `Realm.beginTransaction()`, `Realm.commitTransaction()`, `Realm.cancelTransaction()` to manually control write transactions.
 * Added property `Realm.isInTransaction` which indicates if write transaction is in progress.
+* Added `shouldCompactOnLaunch` to configuration (#507).
+* Added `Realm.compact()` for manually compacting Realm files.
+
+### Bug fixes
+* None
+
+1.10.3 Release notes (2017-8-16)
+=============================================================
+### Breaking changes
+* setAccessToken renamed to setFeatureToken. setAccessToken still works for now.
+
+### Enhancements
+* None
 
 ### Bug fixes
 * None

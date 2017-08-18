@@ -77,6 +77,7 @@ declare namespace Realm {
     interface Configuration {
         encryptionKey?: ArrayBuffer | ArrayBufferView | Int8Array;
         migration?: (oldRealm: Realm, newRealm: Realm) => void;
+        shouldCompactOnLaunch?: (totalBytes: number, usedBytes: number) => boolean;
         path?: string;
         readOnly?: boolean;
         schema?: ObjectClass[] | ObjectSchema[];
@@ -468,6 +469,11 @@ declare class Realm {
      * @returns void
      */
     cancelTransaction(): void;
+
+    /**
+     * @returns boolean
+     */
+    compact(): boolean;
 }
 
 declare module 'realm' {
