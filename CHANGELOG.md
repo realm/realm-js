@@ -1,3 +1,16 @@
+X.Y.Z Release notes
+=============================================================
+### Breaking changes
+* None
+
+### Enhancements
+* Added `shouldCompactOnLaunch` to configuration (#507).
+* Added `Realm.compact()` for manually compacting Realm files.
+
+### Bug fixes
+* None
+
+
 1.10.3 Release notes (2017-8-16)
 =============================================================
 ### Breaking changes
