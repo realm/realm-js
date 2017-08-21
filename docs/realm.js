@@ -65,6 +65,14 @@ class Realm {
     get schemaVersion() {}
 
     /**
+     * Indicates if this Realm is in a write transaction.
+     * @type {boolean}
+     * @readonly
+     * @since 1.10.3
+     */
+    get isInTransaction() {}
+
+    /**
      * Gets the sync session if this is a synced Realm
      * @type {Session}
      */
@@ -184,6 +192,22 @@ class Realm {
     write(callback) {}
 
     /**
+     * Initiate a write transaction.
+     * @throws {Error} When already in write transaction
+     */
+    beginTransaction() {}
+
+    /**
+     * Commit a write transaction.
+     */
+    commitTransaction() {}
+
+    /**
+     * Cancel a write transaction.
+     */
+    cancelTransaction() {}
+
+    /*
      * Replaces all string columns in this Realm with a string enumeration column and compacts the
      * database file.
      * 

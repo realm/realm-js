@@ -358,6 +358,7 @@ declare class Realm {
     readonly readOnly: boolean;
     readonly schema: Realm.ObjectSchema[];
     readonly schemaVersion: number;
+    readonly isInTransaction: boolean;
 
     readonly syncSession: Realm.Sync.Session | null;
 
@@ -453,6 +454,21 @@ declare class Realm {
      * @returns void
      */
     write(callback: () => void): void;
+
+    /**
+     * @returns void
+     */
+    beginTransaction(): void;
+
+    /**
+     * @returns void
+     */
+    commitTransaction(): void;
+
+    /**
+     * @returns void
+     */
+    cancelTransaction(): void;
 
     /**
      * @returns boolean
