@@ -829,7 +829,7 @@ void RealmClass<T>::begin_transaction(ContextType ctx, FunctionType, ObjectType 
     validate_argument_count(argc, 0);
 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
-    realm->begin_transaction();    
+    realm->begin_transaction();
 }
 
 template<typename T>
