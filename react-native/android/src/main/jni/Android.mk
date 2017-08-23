@@ -70,6 +70,7 @@ LOCAL_C_INCLUDES += src/object-store/external/pegtl
 LOCAL_C_INCLUDES += vendor
 LOCAL_C_INCLUDES += $(JAVA_HOME)/include
 LOCAL_C_INCLUDES += $(JAVA_HOME)/include/darwin
+LOCAL_C_INCLUDES += $(JAVA_HOME)/include/linux
 LOCAL_C_INCLUDES += core/include
 ifeq ($(strip $(BUILD_TYPE_SYNC)),1)
 LOCAL_C_INCLUDES += src/object-store/src/sync
