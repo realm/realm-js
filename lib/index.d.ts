@@ -264,7 +264,6 @@ declare namespace Realm.Sync {
         readonly token: string;
         static adminUser(adminToken: string, server?: string): User;
         static login(server: string, username: string, password: string, callback?: (error: any, user: User) => void): void | Promise<Realm.Sync.User>;
-        static loginWithProvider(server: string, provider: string, providerToken: string, callback?: (error: any, user: User) => void): void | Promise<Realm.Sync.User>;
         static register(server: string, username: string, password: string, callback?: (error: any, user: User) => void): void | Promise<Realm.Sync.User>;
         static registerWithProvider(server: string, options: { provider: string, providerToken: string, userInfo: any }, callback?: (error: Error | null, user: User | null) => void): void | Promise<Realm.Sync.User>;
         logout(): void;
