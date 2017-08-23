@@ -59,15 +59,28 @@ module.exports = {
       return new Promise((resolve, reject) => {
         Realm.Sync.User.register('http://localhost:9080', username, 'password', (error, user) => {
           failOnError(error);
-          console.log("Getting permissions.. ============================================================");
-          user.getGrantedPermissions()
-            .then(permissions => {
-              console.log("Permissions: ", permissions);
-              resolve();
-            }).catch(error => {
-              console.log("Error: ", error);
-              reject();
-            });
+          console.log("Setting permissions.. ============================================================");
+          user.applyPermissions({ userId: '*' }, 'realm://localhost:9080/~/myRealm', 'Read')
+            .then((result) => {
+              console.log("Result: ", result);
+              console.log("Waiting for server to apply permissions...");
+
+              setTimeout(() => {
+                console.log("Getting permissions.. ============================================================");
+                user.getGrantedPermissions('Any')
+                  .then(permissions => {
+                    console.log("Permissions: ", permissions);
+                    resolve();
+                  }).catch(error => {
+                    console.log("Error: ", error);
+                    reject();
+                  });
+              }, 5000);
+              
+            })
+            .catch((e) => {
+              console.log("############ ERROR: ", e);
+            })
         });
       });
     }
