@@ -135,9 +135,10 @@ class User {
      * @param {string} server - authentication server
      * @param {string} username
      * @param {string} password
-     * @param {function(error, user)} callback - called with the following arguments:
+     * @param {function(error, user)} callback - optional callback that is called with the following arguments:
      *   - `error` - an Error object is provided on failure
      *   - `user` - a valid User object on success
+     * @returns {Promise} returns a Promise if the callback was not supplied
      */
     static login(server, username, password, callback) {}
 
@@ -148,9 +149,10 @@ class User {
      * @param {string} options.provider - The provider type
      * @param {string} options.providerToken - The access token for the given provider
      * @param {object} [options.userInfo] - A map containing additional data required by the provider
-     * @param {function(error, User)} callback - called with the following arguments:
+     * @param {function(error, User)} callback - optional callback that is called with the following arguments:
      *   - `error` - an Error object is provided on failure
      *   - `user` - a valid User object on success
+     * @returns {Promise} returns a Promise if the callback was not supplied
      */
     static registerWithProvider(server, options, callback) {}
 
@@ -159,9 +161,10 @@ class User {
      * @param {string} server - authentication server
      * @param {string} username
      * @param {string} password
-     * @param {function(error, user)} callback - called with the following arguments:
+     * @param {function(error, user)} callback - optional callback that is called with the following arguments:
      *   - `error` - an Error object is provided on failure
      *   - `user` - a valid User object on success
+     * @returns {Promise} returns a Promise if the callback was not supplied
      */
     static register(server, username, password, callback) {}
 
@@ -170,6 +173,7 @@ class User {
      * @param {string} adminToken - existing admin token
      * @param {string} [server] - authentication server
      * @return {User} - admin user populated with the given token and server
+     * @returns {Promise} returns a Promise if the callback was not supplied
      */
     static adminUser(adminToken, server) {}
 

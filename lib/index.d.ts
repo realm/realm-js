@@ -263,10 +263,10 @@ declare namespace Realm.Sync {
         readonly server: string;
         readonly token: string;
         static adminUser(adminToken: string, server?: string): User;
-        static login(server: string, username: string, password: string, callback: (error: any, user: User) => void): void;
-        static loginWithProvider(server: string, provider: string, providerToken: string, callback: (error: any, user: User) => void): void;
-        static register(server: string, username: string, password: string, callback: (error: any, user: User) => void): void;
-        static registerWithProvider(server: string, options: { provider: string, providerToken: string, userInfo: any }, callback: (error: Error | null, user: User | null) => void): void;
+        static login(server: string, username: string, password: string, callback?: (error: any, user: User) => void): void | Promise<Realm.Sync.User>;
+        static loginWithProvider(server: string, provider: string, providerToken: string, callback?: (error: any, user: User) => void): void | Promise<Realm.Sync.User>;
+        static register(server: string, username: string, password: string, callback?: (error: any, user: User) => void): void | Promise<Realm.Sync.User>;
+        static registerWithProvider(server: string, options: { provider: string, providerToken: string, userInfo: any }, callback?: (error: Error | null, user: User | null) => void): void | Promise<Realm.Sync.User>;
         logout(): void;
         openManagementRealm(): Realm;
         retrieveAccount(provider: string, username: string): Promise<Account>;
@@ -369,12 +369,15 @@ declare class Realm {
     static schemaVersion(path: string, encryptionKey?: ArrayBuffer | ArrayBufferView): number;
 
     /**
-     * Open a realm asynchronously with a promise. If the realm is synced, it will be fully synchronized before it is available.
+     * Open a realm asynchronously. Returns a @type {Realm} wrapped in a @type {Promise} if the second callback parameter is undefined. 
+     * If the realm is synced, it will be fully synchronized before it is available.
      * @param {Configuration} config 
+     * @param {Function} callback - optional callback that will be called when the realm is ready.
      */
-    static open(config: Realm.Configuration): Promise<Realm>
+    static open(config: Realm.Configuration, callback?: (error: any, realm: Realm) => void): Promise<Realm>
     /**
      * Open a realm asynchronously with a callback. If the realm is synced, it will be fully synchronized before it is available.
+     * @deprecated Deprecated in favor of `Realm.open`
      * @param {Configuration} config 
      * @param {Function} callback will be called when the realm is ready.
      */
