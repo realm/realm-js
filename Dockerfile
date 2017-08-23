@@ -1,5 +1,7 @@
 FROM ubuntu:xenial
 
+ARG ROS_DE_VERSION
+
 # Install the JDK
 # We are going to need some 32 bit binaries because aapt (Android Asset
 # Packaging Tool) requires it
@@ -75,3 +77,23 @@ RUN cd /opt && \
     make && make install
 
 RUN npm install -g react-native-cli
+
+# Add realm repo
+RUN apt-get update -qq \
+    && apt-get install -y curl npm \
+    && curl -s https://packagecloud.io/install/repositories/realm/realm/script.deb.sh | bash
+
+# ROS npm dependencies
+RUN npm init -y
+RUN npm install winston temp httpdispatcher@1.0.0
+
+# Install realm object server
+RUN apt-get update -qq \
+    && apt-get install -y realm-object-server-developer=$ROS_DE_VERSION \
+    && apt-get clean
+
+COPY tests/ros/keys/public.pem keys/private.pem keys/127_0_0_1-server.key.pem tests/ros/keys/127_0_0_1-chain.crt.pem tests/ros/configuration.yml /
+COPY tests/ros/ros-testing-server.js /usr/bin/
+
+CMD /usr/bin/ros-testing-server.js /tmp/ros-testing-server.log
+
