@@ -54,29 +54,6 @@ exec('npm --version', (err, stdout) => {
   validateEnvPath('REALM_CORE_PREFIX');
   validateEnvPath('REALM_SYNC_PREFIX');
 
-  // Check ANDROID_NDK version
-  exec('which ndk-build', (err, stdout) => {
-    if(err) {
-      console.error("Android NDK (ndk-build) not found");
-      console.error(err.message);
-      process.exit(-1);
-    }
+  // TODO: Check ANDROID_NDK and SDK for Android, and XCode for iOS.
 
-    const ndkBuildPath = stdout.trim();
-    const ndkDirPath = path.dirname(ndkBuildPath);
-    const releaseTxtPath = path.join(ndkDirPath, "RELEASE.TXT");
-
-    exec(`grep ^r10e ${releaseTxtPath}`, (err, stdout) => {
-      if(err) {
-        // RELEASE.TXT doesn't exist or version mismatch
-        console.error("Incompatible Android NDK version found. NDK 10e is required.")
-        process.exit(-1);
-      }
-
-      successLog('Android NDK 10e found');
-    });
-  });
-
-  // TODO: Check SDK for Android, and XCode for iOS.
-  
 });
