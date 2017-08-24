@@ -8,9 +8,11 @@ X.Y.Z Release notes
 * Added property `Realm.isInTransaction` which indicates if write transaction is in progress.
 * Added `shouldCompactOnLaunch` to configuration (#507).
 * Added `Realm.compact()` for manually compacting Realm files.
+* Added `Realm.compact()` for manually compacting Realm files.
+* `Realm.Sync.User.login`, `Realm.Sync.User.register`, and `Realm.Sync.User.registerWithProvider` both support _both_ callbacks and Promise return values
 
 ### Bug fixes
-* None
+* Removed `loginWithProvider` from TypeScript definition files. This API never existed and was incorrectly added.
 
 1.10.3 Release notes (2017-8-16)
 =============================================================
