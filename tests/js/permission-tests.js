@@ -64,7 +64,7 @@ module.exports = {
 
           user.applyPermissions({ userId: '*' }, `/${user.identity}/test`, 'Read')
             .then((result) => {
-              user.getGrantedPermissions('Any')
+              return user.getGrantedPermissions('Any')
                 .then(permissions => {
                   TestCase.assertEqual(permissions[1].path, `/${user.identity}/test`);
                   TestCase.assertEqual(permissions[1].mayRead, true);
@@ -72,7 +72,6 @@ module.exports = {
                   TestCase.assertEqual(permissions[1].mayManage, false);
                   resolve();
                 })
-                .catch(reject);
             })
             .catch(reject);
         });
@@ -80,21 +79,36 @@ module.exports = {
     },
 
     testOfferPermissions() {
-      var username = uuid();
+      var username1 = uuid();
+      var username2 = uuid();
       // Create user, logout the new user, then login
       return new Promise((resolve, reject) => {
-        Realm.Sync.User.register('http://localhost:9080', username, 'password', (error, user) => {
+        Realm.Sync.User.register('http://localhost:9080', username1, 'password', (error, user1) => {
           failOnError(error);
-          const r = new Realm({sync: {user, url: 'realm://localhost:9080/~/test'}})
+          const r = new Realm({ sync: { user: user1, url: 'realm://localhost:9080/~/test' } })
           r.close();
 
-          user.offerPermissions(`/${user.identity}/test`, 'Read')
-            .then((token) => {
-              resolve();
-            })
-            .catch(reject);
+          Realm.Sync.User.register('http://localhost:9080', username2, 'password', (error, user2) => {
+            user1.offerPermissions(`/${user1.identity}/test`, 'Read')
+              .then((token) => {
+                return user2.acceptPermissionOffer(token)
+                  .then(realmUrl => {
+                    TestCase.assertEqual(realmUrl, `/${user1.identity}/test`);
+                    return user2.getGrantedPermissions('Any')
+                      .then(permissions => {
+                        TestCase.assertEqual(permissions[0].path, `/${user1.identity}/test`);
+                        TestCase.assertEqual(permissions[0].mayRead, true);
+                        TestCase.assertEqual(permissions[0].mayWrite, false);
+                        TestCase.assertEqual(permissions[0].mayManage, false);
+                        resolve();
+                      });
+                  });
+              })
+              .catch(reject);
+          });
         });
       });
-    }
+    },
+    
 }
 
