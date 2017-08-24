@@ -110,5 +110,43 @@ module.exports = {
       });
     },
     
+    testInvalidatePermissionOffer() {
+      var username1 = uuid();
+      var username2 = uuid();
+      // Create user, logout the new user, then login
+      return new Promise((resolve, reject) => {
+        Realm.Sync.User.register('http://localhost:9080', username1, 'password', (error, user1) => {
+          failOnError(error);
+          const r = new Realm({ sync: { user: user1, url: 'realm://localhost:9080/~/test' } })
+          r.close();
+
+          Realm.Sync.User.register('http://localhost:9080', username2, 'password', (error, user2) => {
+            user1.offerPermissions(`/${user1.identity}/test`, 'Read')
+              .then((token) => {
+                return user1.invalidatePermissionOffer(token)
+                  .then(() => {
+                    // Since we don't yet support notification when the invalidation has gone through,
+                    // wait for a bit and hope the server is done processing.
+                    setTimeout(() => {
+                      user2.acceptPermissionOffer(token)
+                        .then(() => reject("User was able to accept an invalid permission offer token"))
+                        .catch(error => {
+                          try {
+                            TestCase.assertEqual(error.message, 'The permission offer is expired.');
+                            TestCase.assertEqual(error.statusCode, 701);
+                          }
+                          catch (e) {
+                            reject(e);
+                          }
+                          resolve();
+                        });
+                    }, 100);
+                  })
+              })
+              .catch(reject);
+          });
+        });
+      });
+    },
 }
 
