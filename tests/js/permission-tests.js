@@ -53,34 +53,46 @@ function failOnError(error) {
 }
 
 module.exports = {
-    testSimple() {
+    testApplyAndGetGrantedPermissions() {
       var username = uuid();
       // Create user, logout the new user, then login
       return new Promise((resolve, reject) => {
         Realm.Sync.User.register('http://localhost:9080', username, 'password', (error, user) => {
           failOnError(error);
-          console.log("Setting permissions.. ============================================================");
-          user.applyPermissions({ userId: '*' }, 'realm://localhost:9080/~/myRealm', 'Read')
-            .then((result) => {
-              console.log("Result: ", result);
-              console.log("Waiting for server to apply permissions...");
+          const r = new Realm({sync: {user, url: 'realm://localhost:9080/~/test'}})
+          r.close();
 
-              setTimeout(() => {
-                console.log("Getting permissions.. ============================================================");
-                user.getGrantedPermissions('Any')
-                  .then(permissions => {
-                    console.log("Permissions: ", permissions);
-                    resolve();
-                  }).catch(error => {
-                    console.log("Error: ", error);
-                    reject();
-                  });
-              }, 5000);
-              
+          user.applyPermissions({ userId: '*' }, `/${user.identity}/test`, 'Read')
+            .then((result) => {
+              user.getGrantedPermissions('Any')
+                .then(permissions => {
+                  TestCase.assertEqual(permissions[1].path, `/${user.identity}/test`);
+                  TestCase.assertEqual(permissions[1].mayRead, true);
+                  TestCase.assertEqual(permissions[1].mayWrite, false);
+                  TestCase.assertEqual(permissions[1].mayManage, false);
+                  resolve();
+                })
+                .catch(reject);
             })
-            .catch((e) => {
-              console.log("############ ERROR: ", e);
+            .catch(reject);
+        });
+      });
+    },
+
+    testOfferPermissions() {
+      var username = uuid();
+      // Create user, logout the new user, then login
+      return new Promise((resolve, reject) => {
+        Realm.Sync.User.register('http://localhost:9080', username, 'password', (error, user) => {
+          failOnError(error);
+          const r = new Realm({sync: {user, url: 'realm://localhost:9080/~/test'}})
+          r.close();
+
+          user.offerPermissions(`/${user.identity}/test`, 'Read')
+            .then((token) => {
+              resolve();
             })
+            .catch(reject);
         });
       });
     }
