@@ -137,6 +137,41 @@ def findNdkBuildFullPath() {
     return null
 }
 
+def checkNdkVersion(ndkBuildFullPath) {
+    def ndkPath = new File(ndkBuildFullPath).getParent()
+    def detectedNdkVersion
+    def releaseFile = new File(ndkPath, 'RELEASE.TXT')
+    def propertyFile = new File(ndkPath, 'source.properties')
+    if (releaseFile.isFile()) {
+        detectedNdkVersion = releaseFile.text.trim().split()[0].split('-')[0]
+    } else if (propertyFile.isFile()) {
+        detectedNdkVersion = getValueFromPropertiesFile(propertyFile, 'Pkg.Revision')
+        if (detectedNdkVersion == null) {
+            throw new GradleException("Failed to obtain the NDK version information from ${ndkPath}/source.properties")
+        }
+    } else {
+        throw new GradleException("Neither ${releaseFile.getAbsolutePath()} nor ${propertyFile.getAbsolutePath()} is a file.")
+    }
+    if (detectedNdkVersion != project.ndkVersion) {
+        throw new GradleException("Your NDK version: ${detectedNdkVersion}."
+                + " Realm JNI must be compiled with the version ${project.ndkVersion} of NDK.")
+    }
+}
+
+static def getValueFromPropertiesFile(File propFile, String key) {
+    if (!propFile.isFile() || !propFile.canRead()) {
+        return null
+    }
+    def prop = new Properties()
+    def reader = propFile.newReader()
+    try {
+        prop.load(reader)
+    } finally {
+        reader.close()
+    }
+    return prop.get(key)
+}
+
 def getNdkBuildFullPath() {
     def ndkBuildFullPath = findNdkBuildFullPath()
     if (ndkBuildFullPath == null) {
@@ -153,6 +188,9 @@ def getNdkBuildFullPath() {
             "(On Windows, make sure you escape backslashes in local.properties or use forward slashes, e.g. C:\\\\ndk or C:/ndk rather than C:\\ndk)",
             null)
     }
+
+    checkNdkVersion(ndkBuildFullPath);
+
     return ndkBuildFullPath
 }
 
