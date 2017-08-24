@@ -37,7 +37,7 @@ X.Y.Z Release notes
 * Added various methods for permission management (#1204).
 
 ### Bug fixes
-* None
+* Removed `loginWithProvider` from TypeScript definition files. This API never existed and was incorrectly added.
 
 
 1.10.3 Release notes (2017-8-16)
