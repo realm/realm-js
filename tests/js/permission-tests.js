@@ -29,31 +29,51 @@ function uuid() {
   });
 }
 
-// Test the given requestFunc, passing it the given callback after it's been wrapped appropriately.
-// This function makes sure that errors thrown in the async callback rejects the promise (making tests actually run).
-function callbackTest(requestFunc, callback) {
-  return new Promise((resolve, reject) => {
-    function callbackWrapper() {
-      try {
-        callback.apply(this, Array.from(arguments));
-        resolve();
-      }
-      catch (e) {
-        reject(e);
-      }
-    }
-    requestFunc(callbackWrapper);
-  });
-}
-
 function failOnError(error) {
   if (error) {
     throw new Error(`Error ${error} was not expected`);
   }
 }
 
+function createUsersWithTestRealms(count) {
+  const createUserWithTestRealm = username => new Promise((resolve, reject) => {
+    Realm.Sync.User.register('http://localhost:9080', username, 'password', (error, user) => {
+      if (error) {
+        reject(error);
+      } else {
+        new Realm({ sync: { user, url: 'realm://localhost:9080/~/test'}}).close();
+        resolve(user);
+      }
+    })
+  });
+
+  // Generate some usernames: ["user1", "user2", ...]
+  const usernames = (function f(a, acc) { return (a === 0) ? acc : f(a - 1, ["user" + a, ...acc])})(count, []);
+
+  // And turn them into users and realms
+  const userPromises = usernames.map(createUserWithTestRealm);
+  return Promise.all(userPromises);
+}
+
+
 module.exports = {
     testApplyAndGetGrantedPermissions() {
+      return createUsersWithTestRealms(1)
+        .then(([user]) => {
+          return user.applyPermissions({ userId: '*' }, `/${user.identity}/test2`, 'Read')
+            .then((result) => {
+              return user.getGrantedPermissions('Any')
+                .then(permissions => {
+                  TestCase.assertEqual(permissions[1].path, `/${user.identity}/test`);
+                  TestCase.assertEqual(permissions[1].mayRead, true);
+                  TestCase.assertEqual(permissions[1].mayWrite, false);
+                  TestCase.assertEqual(permissions[1].mayManage, false);
+                })
+            });
+        });
+    },
+
+    _testApplyAndGetGrantedPermissions() {
       var username = uuid();
       // Create user, logout the new user, then login
       return new Promise((resolve, reject) => {
