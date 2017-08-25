@@ -88,7 +88,7 @@ RUN npm install winston temp httpdispatcher@1.0.0
 
 # Install realm object server
 RUN apt-get update -qq \
-    && apt-get install -y realm-object-server-developer=$ROS_DE_VERSION \
+    && apt-get install -y realm-object-server-developer=1.8.3-83 \
     && apt-get clean
 
 COPY tests/ros/keys/public.pem keys/private.pem keys/127_0_0_1-server.key.pem tests/ros/keys/127_0_0_1-chain.crt.pem tests/ros/configuration.yml /
