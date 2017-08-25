@@ -94,5 +94,10 @@ RUN apt-get update -qq \
 COPY tests/ros/keys/public.pem tests/ros/keys/private.pem tests/ros/keys/127_0_0_1-server.key.pem tests/ros/keys/127_0_0_1-chain.crt.pem tests/ros/configuration.yml /
 COPY tests/ros/ros-testing-server.js /usr/bin/
 
+# Forward ports
+RUN adb reverse tcp:9443 tcp:9443 && \
+    adb reverse tcp:9080 tcp:9080 && \
+    adb reverse tcp:8888 tcp:8888
+
 CMD /usr/bin/ros-testing-server.js /tmp/ros-testing-server.log
 
