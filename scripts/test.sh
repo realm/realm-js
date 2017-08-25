@@ -294,6 +294,14 @@ case "$TARGET" in
     start_server
   fi
 
+  if [ "$(uname)" = 'Linux' ]; then
+      # Forward ports
+      adb reverse tcp:9443 tcp:9443
+      adb reverse tcp:9080 tcp:9080
+      adb reverse tcp:8888 tcp:8888
+      start_server
+  fi
+  
   [[ $CONFIGURATION == 'Debug' ]] && exit 0
   XCPRETTY=''
 
@@ -306,6 +314,7 @@ case "$TARGET" in
   adb logcat -c
   adb logcat -T 1 | tee "$LOGCAT_OUT" &
 
+  
   ./run-android.sh
 
   echo "Start listening for Test completion"
