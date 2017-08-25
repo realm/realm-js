@@ -29,7 +29,6 @@ var TESTS = {
     QueryTests: require('./query-tests'),
     MigrationTests: require('./migration-tests'),
     // GarbageCollectionTests: require('./garbage-collection'),
-    PermissionTests: require('./permission-tests')
 };
 
 // encryption is not supported on windows
@@ -41,6 +40,7 @@ if (!(typeof process === 'object' && process.platform === 'win32')) {
 if (Realm.Sync) {
     TESTS.UserTests = require('./user-tests');
     TESTS.SessionTests = require('./session-tests');
+    TESTS.PermissionTests = require('./permission-tests');
 }
 
 function node_require(module) { return require(module); }
