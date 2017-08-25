@@ -57,8 +57,8 @@ module.exports = {
     testApplyAndGetGrantedPermissions() {
       return createUsersWithTestRealms(1)
         .then(([user]) => {
-          return user.applyPermissions({ userId: '*' }, `/${user.identity}/test`, 'Read')
-            .then(() => user.getGrantedPermissions('Any'))
+          return user.applyPermissions({ userId: '*' }, `/${user.identity}/test`, 'read')
+            .then(() => user.getGrantedPermissions('any'))
             .then(permissions => {
               TestCase.assertEqual(permissions[1].path, `/${user.identity}/test`);
               TestCase.assertEqual(permissions[1].mayRead, true);
@@ -71,11 +71,11 @@ module.exports = {
     testOfferPermissions() {
       return createUsersWithTestRealms(2)
         .then(([user1, user2]) => {
-          return user1.offerPermissions(`/${user1.identity}/test`, 'Read')
+          return user1.offerPermissions(`/${user1.identity}/test`, 'read')
             .then(token => user2.acceptPermissionOffer(token))
             .then(realmUrl => {
               TestCase.assertEqual(realmUrl, `/${user1.identity}/test`);
-              return user2.getGrantedPermissions('Any')
+              return user2.getGrantedPermissions('any')
                 .then(permissions => {
                   TestCase.assertEqual(permissions[1].path, `/${user1.identity}/test`);
                   TestCase.assertEqual(permissions[1].mayRead, true);
@@ -89,7 +89,7 @@ module.exports = {
     testInvalidatePermissionOffer() {
       return createUsersWithTestRealms(2)
         .then(([user1, user2]) => {
-            user1.offerPermissions(`/${user1.identity}/test`, 'Read')
+            user1.offerPermissions(`/${user1.identity}/test`, 'read')
               .then((token) => {
                 return user1.invalidatePermissionOffer(token)
                     // Since we don't yet support notification when the invalidation has gone through,
