@@ -91,7 +91,7 @@ RUN apt-get update -qq \
     && apt-get install -y realm-object-server-developer=1.8.3-83 \
     && apt-get clean
 
-COPY tests/ros/keys/public.pem keys/private.pem keys/127_0_0_1-server.key.pem tests/ros/keys/127_0_0_1-chain.crt.pem tests/ros/configuration.yml /
+COPY tests/ros/keys/public.pem tests/ros/keys/private.pem keys/127_0_0_1-server.key.pem tests/ros/keys/127_0_0_1-chain.crt.pem tests/ros/configuration.yml /
 COPY tests/ros/ros-testing-server.js /usr/bin/
 
 CMD /usr/bin/ros-testing-server.js /tmp/ros-testing-server.log
