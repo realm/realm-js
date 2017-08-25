@@ -80,7 +80,6 @@ RUN npm install -g react-native-cli
 
 # Add realm repo
 RUN apt-get update -qq \
-    && apt-get install -y curl npm \
     && curl -s https://packagecloud.io/install/repositories/realm/realm/script.deb.sh | bash
 
 # ROS npm dependencies
