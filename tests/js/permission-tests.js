@@ -47,8 +47,8 @@ function createUsersWithTestRealms(count) {
     })
   });
 
-  // Generate some usernames: ["user1", "user2", ...]
-  const usernames = (function f(a, acc) { return (a === 0) ? acc : f(a - 1, ["user" + a, ...acc])})(count, []);
+  // Generate some usernames
+  const usernames = new Array(count).fill(undefined).map(uuid);
 
   // And turn them into users and realms
   const userPromises = usernames.map(createUserWithTestRealm);
@@ -60,7 +60,7 @@ module.exports = {
     testApplyAndGetGrantedPermissions() {
       return createUsersWithTestRealms(1)
         .then(([user]) => {
-          return user.applyPermissions({ userId: '*' }, `/${user.identity}/test2`, 'Read')
+          return user.applyPermissions({ userId: '*' }, `/${user.identity}/test`, 'Read')
             .then((result) => {
               return user.getGrantedPermissions('Any')
                 .then(permissions => {
