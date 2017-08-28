@@ -305,7 +305,7 @@ case "$TARGET" in
       adb reverse tcp:9443 tcp:9443
       adb reverse tcp:9080 tcp:9080
       adb reverse tcp:8888 tcp:8888
-      sh ./script/ros/start_server.sh
+      sh ./scripts/ros/start_server.sh
   fi
   
   [[ $CONFIGURATION == 'Debug' ]] && exit 0
