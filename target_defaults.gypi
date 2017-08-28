@@ -5,8 +5,7 @@
         "-Wno-missing-field-initializers",
         "-Wno-return-type",
         "-Wno-unused-result",
-        "-Wno-deprecated-declarations",
-        "-Wundef"
+        "-Wno-deprecated-declarations"
       ]
     },
     "cflags_cc!": [ # turn off default flags on older nodes on linux
@@ -25,7 +24,7 @@
     ],
     "conditions": [
       ["OS=='win'", {
-        "defines": [ "_UNICODE", "UNICODE", "WIN32=1", "_HAS_EXCEPTIONS=1" ]
+        "defines": [ "_UNICODE", "UNICODE", "WIN32=1", "_HAS_EXCEPTIONS=1", "WIN32_LEAN_AND_MEAN" ]
       }],
       ["OS=='mac'", {
         "xcode_settings": {

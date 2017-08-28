@@ -186,7 +186,10 @@ typename T::Object ResultsClass<T>::create_sorted(ContextType ctx, const U &coll
     }
 
     auto table = realm::ObjectStore::table_for_object_type(realm->read_group(), object_schema.name);
-    return create_instance(ctx, collection.sort({*table, std::move(columns), std::move(ascending)}));
+    DescriptorOrdering ordering;
+    ordering.append_sort({*table, std::move(columns), std::move(ascending)});
+    auto results = new realm::js::Results<T>(realm, collection.get_query(), std::move(ordering));
+    return create_object<T, ResultsClass<T>>(ctx, results);
 }
 
 template<typename T>

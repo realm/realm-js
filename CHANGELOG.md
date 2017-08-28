@@ -36,6 +36,17 @@ X.Y.Z Release notes
 * RN 0.47 no longer breaks for Android due to a superfluous @override annotation
 
 
+2.0.0 Release notes (2017-7-27)
+=============================================================
+### Breaking changes
+* Switch to the next version of the Sync protocol, compatible with Realm Object Server 2.0.0-rc2.
+
+### Enhancements
+* None
+
+### Bug fixes
+
+
 1.10.1 Release notes (2017-8-2)
 =============================================================
 ### Breaking changes
@@ -47,6 +58,9 @@ X.Y.Z Release notes
 ### Bug fixes
 * `Realm.openAsync` will no longer open the realm if a sync error has occured. Previously this resulted in the callback being invoked twice - once with an error and a second time - with the synchronously opened Realm.
 * Database adapters will no longer process the sync history of realm files that are not requested by the adapter configuration. Previously this would lead to crashes for realm files that contained schemas that don't define primary keys.
+
+=======
+* None
 
 1.10.0 Release notes (2017-7-12)
 =============================================================

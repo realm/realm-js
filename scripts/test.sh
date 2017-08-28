@@ -44,11 +44,11 @@ LOGCAT_OUT="$SRCROOT/logcat_out.txt"
 
 
 download_server() {
-  sh ./scripts/download-object-server.sh
+  ./scripts/download-object-server.sh
 }
 
 start_server() {
-  sh ./object-server-for-testing/start-object-server.command &
+  ./object-server-for-testing/start-object-server.command &
   SERVER_PID=$!
 }
 
@@ -335,10 +335,10 @@ case "$TARGET" in
     download_server
     start_server
     npm_tests_cmd="npm run test"
-    npm install --build-from-source --realm_enable_sync
+    npm install --build-from-source=realm --realm_enable_sync
   else
     npm_tests_cmd="npm run test"
-    npm install --build-from-source
+    npm install --build-from-source=realm
   fi
 
   # Change to a temp directory.
@@ -393,7 +393,7 @@ case "$TARGET" in
 "test-runners")
   npm run check-environment
   # Create a fake realm module that points to the source root so that test-runner tests can require('realm')
-  npm install --build-from-source
+  npm install --build-from-source=realm
   npm run test-runners
   ;;
 "object-store")
