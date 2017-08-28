@@ -93,5 +93,3 @@ RUN apt-get update -qq \
 
 COPY tests/ros/keys/public.pem tests/ros/keys/private.pem tests/ros/keys/127_0_0_1-server.key.pem tests/ros/keys/127_0_0_1-chain.crt.pem tests/ros/configuration.yml /
 COPY tests/ros/ros-testing-server.js /usr/bin/
-CMD systemctl enable realm-object-server
-CMD systemctl start realm-object-server

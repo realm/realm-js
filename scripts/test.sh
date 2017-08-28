@@ -53,6 +53,9 @@ start_server() {
 }
 
 stop_server() {
+  if [ "$(uname)" = 'Linux' ]; then
+    sudo systemctl start realm-object-server
+  fi
   if [[ ${SERVER_PID} -gt 0 ]] ; then
     kill -9 ${SERVER_PID}
   fi
@@ -305,6 +308,8 @@ case "$TARGET" in
       adb reverse tcp:9443 tcp:9443
       adb reverse tcp:9080 tcp:9080
       adb reverse tcp:8888 tcp:8888
+      sudo systemctl enable realm-object-server
+      sudo systemctl start realm-object-server
   fi
   
   [[ $CONFIGURATION == 'Debug' ]] && exit 0
