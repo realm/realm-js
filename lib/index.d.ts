@@ -279,6 +279,41 @@ declare namespace Realm.Sync {
         invalidatePermissionOffer(permissionOfferOrToken: PermissionOffer | string): Promise<void>;
     }
 
+    type PermissionCondition = 
+      { [object_type: string]: userId } |
+      { [object_type: string]: metadataKey, [object_type: string]: metadataValue };
+
+    type AccessLevel = 'none' | 'read' | 'write' | 'admin';
+
+    class PermissionChange {
+      id: string;
+      createdAt: Date;
+      updatedAt: Date;
+      statusCode?: number;
+      statusMessage?: string;
+      userId: string;
+      metadataKey?: string;
+      metadataValue?: string;
+      realmUrl: string;
+      mayRead?: boolean;
+      mayWrite?: boolean;
+      mayManage?: boolean;
+    }
+
+    class PermissionOffer {
+      id: string;
+      createdAt: Date;
+      updatedAt: Date;
+      statusCode?: number;
+      statusMessage?: string;
+      token?: string;
+      realmUrl: string;
+      mayRead?: boolean;
+      mayWrite?: boolean;
+      mayManage?: boolean;
+      expiresAt?: Date;
+    }
+
     interface SyncConfiguration {
         user: User;
         url: string;
