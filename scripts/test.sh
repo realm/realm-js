@@ -63,8 +63,14 @@ log_temp=
 test_temp_dir=
 cleanup() {
   # Kill started object server
-  stop_server || true
+  if [ "$(uname)" = 'Darwin' ]; then
+    stop_server || true
+  fi
 
+  if [ "(uname)" = 'Linux' ]; then
+    ros/stop_server.sh
+  fi
+  
   # Quit Simulator.app to give it a chance to go down gracefully
   if $startedSimulator; then
     osascript -e 'tell app "Simulator" to quit without saving' || true
@@ -299,7 +305,7 @@ case "$TARGET" in
       adb reverse tcp:9443 tcp:9443
       adb reverse tcp:9080 tcp:9080
       adb reverse tcp:8888 tcp:8888
-      start_server
+      sh ros/start_server.sh
   fi
   
   [[ $CONFIGURATION == 'Debug' ]] && exit 0
