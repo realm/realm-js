@@ -8,7 +8,7 @@ X.Y.Z Release notes
 * Added property `Realm.isInTransaction` which indicates if write transaction is in progress.
 * Added `shouldCompactOnLaunch` to configuration (#507).
 * Added `Realm.compact()` for manually compacting Realm files.
-* Added various methods for permission management (#1204)
+* Added various methods for permission management (#1204).
 
 ### Bug fixes
 * None
