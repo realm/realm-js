@@ -363,14 +363,10 @@ inline bool Value<T>::is_valid_for_property(ContextType context, const ValueType
         } else if (prop.type == PropertyType::LinkingObjects) {
             return false;
         }
-        else if (prop.type == PropertyType::Array) {
-            return true;
-        }
 
         return false;
     }
 
-    using PropertyType = realm::PropertyType;
     switch (prop.type & ~PropertyType::Flags) {
         case PropertyType::Int:
         case PropertyType::Float:
@@ -388,10 +384,9 @@ inline bool Value<T>::is_valid_for_property(ContextType context, const ValueType
             return true;
         case PropertyType::Any:
             return false;
+        default:
+            REALM_UNREACHABLE();
     }
-
-    REALM_UNREACHABLE();
-    return false;
 }
 
 inline std::string js_type_name_for_property_type(PropertyType type)
@@ -400,12 +395,10 @@ inline std::string js_type_name_for_property_type(PropertyType type)
        if (type == PropertyType::LinkingObjects) {
             throw std::runtime_error("LinkingObjects' type is not supported");
         }
-        else if (type == PropertyType::Array) {
-            return "array";
-        }
-    }        
+        return "array";
+    }
 
-    switch (type) {
+    switch (type & ~PropertyType::Flags) {
         case PropertyType::Int:
         case PropertyType::Float:
         case PropertyType::Double:
@@ -422,10 +415,9 @@ inline std::string js_type_name_for_property_type(PropertyType type)
             return "object";
         case PropertyType::Any:
             throw std::runtime_error("'Any' type is not supported");
+        default:
+            REALM_UNREACHABLE();
     }
-
-    REALM_UNREACHABLE();
-    return "<unknown>";
 }
 
 } // js
