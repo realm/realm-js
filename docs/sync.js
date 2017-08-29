@@ -272,7 +272,7 @@ class User {
      * @param {string} realmUrl - The Realm URL whose permissions settings should be changed. Use * to change 
      * the permissions of all Realms managed by this user.
      * @param {string} accessLevel - The access level to grant matching users. Note that the access level 
-     * setting is absolute, i.e. it may revoke permissions for users who previously had a higher access level. 
+     * setting is additive, i.e. you cannot revoke permissions for users who previously had a higher access level. 
      * Can be 'read', 'write' or 'admin'.
      * @param {Date} [expiresAt] - Optional expiration date of the offer. If set to null, the offer doesn't expire.
      * @returns {string} - A token that can be shared with another user, e.g. via email or message and then consumed by
