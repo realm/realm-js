@@ -117,6 +117,14 @@ public:
         }
     }
 
+    bool is_same_list(realm::List const& list, ValueType const& value) const noexcept {
+        auto object = Value::validated_to_object(m_ctx, value);
+        if (js::Object<JSEngine>::template is_instance<ListClass<JSEngine>>(m_ctx, object)) {
+            return list == *get_internal<JSEngine, ListClass<JSEngine>>(object);
+        }
+        return false;
+    }
+
     bool allow_missing(ValueType const&) const noexcept { return false; }
     void will_change(realm::Object&, realm::Property const&) { }
     void did_change() { }
