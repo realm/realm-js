@@ -83,19 +83,16 @@ Property Schema<T>::parse_property(ContextType ctx, ValueType attributes, std::s
     ObjectType property_object = {};
     std::string type;
 
+    using realm::PropertyType;
+    PropertyType is_optional = PropertyType::Required;
+
     if (Value::is_object(ctx, attributes)) {
         property_object = Value::validated_to_object(ctx, attributes);
         type = Object::validated_get_string(ctx, property_object, type_string);
 
         ValueType optional_value = Object::get_property(ctx, property_object, optional_string);
-        if (!Value::is_undefined(ctx, optional_value)) {
-            auto isNullableValue = Value::validated_to_boolean(ctx, optional_value, "optional");
-            if (isNullableValue) {
-                prop.type |= realm::PropertyType::Nullable;
-            }
-            else {
-                prop.type &= ~realm::PropertyType::Nullable;
-            }
+        if (!Value::is_undefined(ctx, optional_value) && Value::validated_to_boolean(ctx, optional_value, "optional")) {
+            is_optional = PropertyType::Nullable;
         }
     }
     else {
@@ -103,35 +100,35 @@ Property Schema<T>::parse_property(ContextType ctx, ValueType attributes, std::s
     }
 
     if (type == "bool") {
-        prop.type = realm::PropertyType::Bool;
+        prop.type = PropertyType::Bool | is_optional;
     }
     else if (type == "int") {
-        prop.type = realm::PropertyType::Int;
+        prop.type = PropertyType::Int | is_optional;
     }
     else if (type == "float") {
-        prop.type = realm::PropertyType::Float;
+        prop.type = PropertyType::Float | is_optional;
     }
     else if (type == "double") {
-        prop.type = realm::PropertyType::Double;
+        prop.type = PropertyType::Double | is_optional;
     }
     else if (type == "string") {
-        prop.type = realm::PropertyType::String;
+        prop.type = PropertyType::String | is_optional;
     }
     else if (type == "date") {
-        prop.type = realm::PropertyType::Date;
+        prop.type = PropertyType::Date | is_optional;
     }
     else if (type == "data") {
-        prop.type = realm::PropertyType::Data;
+        prop.type = PropertyType::Data | is_optional;
     }
     else if (type == "list") {
         if (!Value::is_valid(property_object)) {
             throw std::runtime_error("List property must specify 'objectType'");
         }
-        prop.type = realm::PropertyType::Array;
+        prop.type = PropertyType::Object | PropertyType::Array;
         prop.object_type = Object::validated_get_string(ctx, property_object, object_type_string);
     }
     else if (type == "linkingObjects") {
-        prop.type = realm::PropertyType::LinkingObjects;
+        prop.type = PropertyType::LinkingObjects | PropertyType::Array;
 
         if (!Value::is_valid(property_object)) {
             throw std::runtime_error("Object property must specify 'objectType'");
@@ -140,8 +137,7 @@ Property Schema<T>::parse_property(ContextType ctx, ValueType attributes, std::s
         prop.link_origin_property_name = Object::validated_get_string(ctx, property_object, property_string);
     }
     else if (type == "object") {
-        prop.type = realm::PropertyType::Object;
-        prop.type |= realm::PropertyType::Nullable;
+        prop.type = PropertyType::Object | PropertyType::Nullable;
 
         if (!Value::is_valid(property_object)) {
             throw std::runtime_error("Object property must specify 'objectType'");
@@ -150,8 +146,7 @@ Property Schema<T>::parse_property(ContextType ctx, ValueType attributes, std::s
     }
     else {
         // The type could be the name of another object type in the same schema.
-        prop.type = realm::PropertyType::Object;
-        prop.type |= realm::PropertyType::Nullable;
+        prop.type = PropertyType::Object | PropertyType::Nullable;
         prop.object_type = type;
     }
 
@@ -295,7 +290,7 @@ typename T::Object Schema<T>::object_for_property(ContextType ctx, const Propert
     Object::set_property(ctx, object, name_string, Value::from_string(ctx, property.name));
 
     static const String type_string = "type";
-    const std::string type = property.type != realm::PropertyType::Array ? string_for_property_type(property.type) : "list";
+    const std::string type = is_array(property.type) ? "list" : string_for_property_type(property.type);
     Object::set_property(ctx, object, type_string, Value::from_string(ctx, type));
 
     static const String object_type_string = "objectType";
