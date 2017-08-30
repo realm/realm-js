@@ -356,12 +356,19 @@ inline bool Value<T>::is_valid_for_property(ContextType context, const ValueType
     }
 
     if (realm::is_array(prop.type)) {
-        if (prop.type == PropertyType::Object) {
+        if (prop.type != PropertyType::Object) {
+            return false;
+        }
+
+        // FIXME: Do we need to validate the types of the contained objects?
+        if (is_array(context, value)) {
+            return true;
+        }
+
+        if (is_object(context, value)) {
             auto object = to_object(context, value);
             return Object<T>::template is_instance<ResultsClass<T>>(context, object)
                 || Object<T>::template is_instance<ListClass<T>>(context, object);
-        } else if (prop.type == PropertyType::LinkingObjects) {
-            return false;
         }
 
         return false;
