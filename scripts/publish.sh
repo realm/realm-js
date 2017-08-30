@@ -62,7 +62,7 @@ git fetch origin || die 'Failed to fetch from git origin.'
 [ -z "$(git rev-list origin/$BRANCH..HEAD)" ] || die 'Local commits are not pushed to origin.'
 
 # Double check before actually publishing.
-confirm "Are you sure you want to publish $VERSION?" || die "Aborted publishing $VERSION"
+confirm "Are you sure you want to publish $VERSION? (Did you run all tests)?" || die "Aborted publishing $VERSION"
 
 # This should fail if this tag already exists.
 git tag "v$VERSION"
@@ -78,3 +78,5 @@ REALM_BUILD_ANDROID=1 npm publish ${PRERELEASE:+--tag $PRERELEASE}
 # Only push the tag to GitHub if the publish was successful.
 echo "Pushing v$VERSION tag to GitHub..."
 git push origin "v$VERSION"
+
+echo "Done. Now, you should update the documentation!"

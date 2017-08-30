@@ -398,7 +398,7 @@ case "$TARGET" in
   ;;
 "all")
   # Run all tests that must pass before publishing.
-  for test in eslint jsdoc license-check react-example react-tests-android react-tests; do
+  for test in eslint license-check react-example react-tests-android react-tests; do
     for configuration in Debug Release; do
       echo "RUNNING TEST: $test ($configuration)"
       echo '----------------------------------------'
