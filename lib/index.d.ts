@@ -424,6 +424,12 @@ declare class Realm {
     static openAsync(config: Realm.Configuration, callback: (error: any, realm: Realm) => void): void
 
     /**
+     * Delete the Realm file for the given configuration.
+     * @param {Configuration} config
+     */
+    static deleteFile(config: Realm.Configuration): void
+
+    /**
      * @param  {Realm.Configuration} config?
      */
     constructor(config?: Realm.Configuration);

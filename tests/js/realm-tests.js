@@ -1030,5 +1030,41 @@ module.exports = {
         const realm1 = new Realm({schema: [schemas.StringOnly]});
         const realm2 = new Realm({schema: [schemas.StringOnly]});
         TestCase.assertThrows(realm1.compact());
+    },
+
+    testRealmDeleteFileDefaultConfigPath: function() {
+        const config = {schema: [schemas.TestObject]};
+        const realm = new Realm(config);
+
+        realm.write(function() {
+            realm.create('TestObject', {doubleCol: 1});
+        });
+
+        TestCase.assertEqual(realm.objects('TestObject').length, 1);
+        realm.close();
+
+        Realm.deleteFile(config);
+
+        const realm2 = new Realm(config);
+        TestCase.assertEqual(realm2.objects('TestObject').length, 0);
+        realm.close();
+    },
+
+    testRealmDeleteFileCustomConfigPath: function() {
+        const config = {schema: [schemas.TestObject], path: 'test-realm-delete-file.realm'};
+        const realm = new Realm(config);
+
+        realm.write(function() {
+            realm.create('TestObject', {doubleCol: 1});
+        });
+
+        TestCase.assertEqual(realm.objects('TestObject').length, 1);
+        realm.close();
+
+        Realm.deleteFile(config);
+
+        const realm2 = new Realm(config);
+        TestCase.assertEqual(realm2.objects('TestObject').length, 0);
+        realm.close();
     }
 };
