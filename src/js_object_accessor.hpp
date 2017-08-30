@@ -22,8 +22,6 @@
 #include "js_realm_object.hpp"
 #include "js_schema.hpp"
 
-#include "util/format.hpp"
-
 namespace realm {
 class List;
 class Object;
@@ -65,8 +63,9 @@ public:
         ValueType value = Object::get_property(m_ctx, object, prop_name);
         const auto& prop = m_object_schema.persisted_properties[prop_index];
         if (!Value::is_valid_for_property(m_ctx, value, prop)) {
-            throw TypeErrorException(util::format("%1.%2", m_object_schema.name, prop.name),
-                                     js_type_name_for_property_type(prop.type));
+            throw TypeErrorException(m_object_schema.name, prop.name,
+                                     js_type_name_for_property_type(prop.type),
+                                     print(value));
         }
         return value;
     }
@@ -129,7 +128,7 @@ public:
     void will_change(realm::Object&, realm::Property const&) { }
     void did_change() { }
 
-    std::string print(ValueType const&) { return "not implemented"; }
+    std::string print(ValueType const& v) { return Value::to_string(m_ctx, v); }
 
 private:
     ContextType m_ctx;

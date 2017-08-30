@@ -67,7 +67,7 @@ module.exports = {
         TestCase.assertThrows(function() {
             new Realm({schemaVersion: 1, schema: []});
         }, "Realm already opened at a different schema version");
-        
+
         TestCase.assertEqual(new Realm().schemaVersion, 0);
         TestCase.assertEqual(new Realm({schemaVersion: 0}).schemaVersion, 0);
 
@@ -144,7 +144,7 @@ module.exports = {
                 }
             }]});
         }, "Property 'InvalidObject.integer' declared as origin of linking objects property 'InvalidObject.linkingObjects' is not a link")
-        
+
         // linkingObjects property where the source property links elsewhere
         TestCase.assertThrows(function() {
             new Realm({schema: [{
@@ -204,7 +204,7 @@ module.exports = {
 
     testRealmSchemaVersion: function() {
         TestCase.assertEqual(Realm.schemaVersion(Realm.defaultPath), -1);
-        
+
         var realm = new Realm({schema: []});
         TestCase.assertEqual(realm.schemaVersion, 0);
         TestCase.assertEqual(Realm.schemaVersion(Realm.defaultPath), 0);
@@ -216,7 +216,7 @@ module.exports = {
 
     testRealmWrite: function() {
         var realm = new Realm({schema: [schemas.IntPrimary, schemas.AllTypes, schemas.TestObject, schemas.LinkToAllTypes]});
-            
+
         // exceptions should be propogated
         TestCase.assertThrows(function() {
             realm.write(function() {
@@ -301,7 +301,7 @@ module.exports = {
             links = realm.create('LinkTypesObject', {});
         });
         for (var name in schemas.NullableBasicTypes.properties) {
-            TestCase.assertEqual(basic[name], null);            
+            TestCase.assertEqual(basic[name], null);
         }
         TestCase.assertEqual(links.objectCol, null);
         TestCase.assertEqual(links.arrayCol.length, 0);
@@ -825,9 +825,9 @@ module.exports = {
     },
 
     testSchema: function() {
-        var originalSchema = [schemas.TestObject, schemas.BasicTypes, schemas.NullableBasicTypes, schemas.IndexedTypes, schemas.IntPrimary, 
+        var originalSchema = [schemas.TestObject, schemas.BasicTypes, schemas.NullableBasicTypes, schemas.IndexedTypes, schemas.IntPrimary,
             schemas.PersonObject, schemas.LinkTypes, schemas.LinkingObjectsObject];
-        
+
         var schemaMap = {};
         originalSchema.forEach(function(objectSchema) {
             if (objectSchema.schema) { // for PersonObject
@@ -857,11 +857,11 @@ module.exports = {
                 var prop1 = returned.properties[propName];
                 var prop2 = original.properties[propName];
                 if (prop1.type == 'object') {
-                    TestCase.assertEqual(prop1.objectType, isString(prop2) ? prop2 : prop2.objectType);    
+                    TestCase.assertEqual(prop1.objectType, isString(prop2) ? prop2 : prop2.objectType);
                     TestCase.assertEqual(prop1.optional, true);
                 }
                 else if (prop1.type == 'list') {
-                    TestCase.assertEqual(prop1.objectType, prop2.objectType);    
+                    TestCase.assertEqual(prop1.objectType, prop2.objectType);
                     TestCase.assertEqual(prop1.optional, undefined);
                 }
                 else if (prop1.type == 'linking objects') {
@@ -870,7 +870,7 @@ module.exports = {
                     TestCase.assertEqual(prop1.optional, undefined);
                 }
                 else {
-                    TestCase.assertEqual(prop1.type, isString(prop2) ? prop2 : prop2.type);    
+                    TestCase.assertEqual(prop1.type, isString(prop2) ? prop2 : prop2.type);
                     TestCase.assertEqual(prop1.optional, prop2.optional || undefined);
                 }
 
@@ -904,13 +904,13 @@ module.exports = {
 
     testErrorMessageFromInvalidWrite: function() {
         var realm = new Realm({schema: [schemas.PersonObject]});
-        
+
         TestCase.assertThrowsException(function() {
             realm.write(function () {
                 var p1 = realm.create('PersonObject', { name: 'Ari', age: 10 });
                 p1.age = "Ten";
             });
-        }, new Error("PersonObject.age must be of type: number"));
+        }, new Error("PersonObject.age must be of type 'number', got (Ten)"));
     },
 
     testErrorMessageFromInvalidCreate: function() {
@@ -920,7 +920,7 @@ module.exports = {
             realm.write(function () {
                 var p1 = realm.create('PersonObject', { name: 'Ari', age: 'Ten' });
             });
-        }, new Error("PersonObject.age must be of type: number"));
+        }, new Error("PersonObject.age must be of type 'number', got (Ten)"));
     },
 
     testValidTypesForListProperties: function() {
