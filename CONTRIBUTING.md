@@ -66,6 +66,13 @@ void RealmClass<T>::crashOnStart(ContextType ctx, FunctionType, ObjectType this_
 
 Testing is important, and in `tests/js/realm-tests.js` you can add the tests you need.
 
+Note: If your new API and/or test cases are not getting picked up when running the Android or iOS tests, remove the corresponding installed package from react-test-app and try again.
+
+```
+rm -rf  tests/react-test-app/node_modules/realm
+rm -rf  tests/react-test-app/node_modules/realm-tests
+```
+
 #### Wrap the function
 
 In order to call the C++ implementation, the JavaScript engine has to know about the function. You must simply add it to the map of methods/functions. Find `MethodMap<T> const methods` declaration in `src/js_realm.hpp` and add your function to it:
