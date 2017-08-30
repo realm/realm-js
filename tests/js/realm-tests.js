@@ -445,8 +445,8 @@ module.exports = {
         });
 
         // primary key
-        IndexedSchema.properties = { boolCol: {type: 'bool', indexed: true} };
-        IndexedSchema.primaryKey = 'boolCol';
+        IndexedSchema.properties = { intCol: {type: 'int', indexed: true} };
+        IndexedSchema.primaryKey = 'intCol';
 
         // Test this doesn't throw
         new Realm({schema: [IndexedSchema], path: '5.realm'});
