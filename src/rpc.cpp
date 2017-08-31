@@ -77,17 +77,16 @@ json RPCWorker::pop_task_result() {
 }
 
 void RPCWorker::try_run_task() {
-    try {
-        // Use a 10 millisecond timeout to keep this thread unblocked.
-        auto task = m_tasks.pop_back(10);
-        task();
+    // Use a 10 millisecond timeout to keep this thread unblocked.
+    auto task = m_tasks.try_pop_back(10);
+    if (!task) {
+        return;
+    }
 
-        // Since this can be called recursively, it must be pushed to the front of the queue *after* running the task.
-        m_futures.push_front(task.get_future());
-    }
-    catch (ConcurrentDequeTimeout &) {
-        // We tried.
-    }
+    (*task)();
+
+    // Since this can be called recursively, it must be pushed to the front of the queue *after* running the task.
+    m_futures.push_front(task->get_future());
 }
 
 void RPCWorker::stop() {
