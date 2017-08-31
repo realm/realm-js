@@ -168,7 +168,7 @@ class User {
     /**
      * Create an admin user for the given authentication server with an existing token
      * @param {string} adminToken - existing admin token
-     * @param {string} [server] - authentication server
+     * @param {string} server - authentication server
      * @return {User} - admin user populated with the given token and server
      */
     static adminUser(adminToken, server) {}

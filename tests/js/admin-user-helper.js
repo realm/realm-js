@@ -23,25 +23,26 @@ function random(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-let newAdminName = 'admin' + random(1, 100000);
-let password = '123';
-
+const newAdminName = 'admin' + random(1, 100000);
+const password = '123';
 exports.createAdminUser = function () {
+    let nonTokenUser, userIdentity, admin_token_user
     return new Promise((resolve, reject) => {
         Realm.Sync.User.register('http://localhost:9080', newAdminName, password, (error, user) => {
             if (error) {
                 reject(error);
                 return;
             }
-            let userIdentity = user.identity;
+            nonTokenUser = user
+            userIdentity = user.identity;
             user.logout();
 
-            let admin_token_user = Realm.Sync.User.adminUser(getAdminToken());
+            admin_token_user = Realm.Sync.User.adminUser(getAdminToken(), 'http://localhost:9080');
 
             const config = {
                 sync: {
                     user: admin_token_user,
-                    url: `realm://localhost:9080/__admin`,
+                    url: 'realm://localhost:9080/__admin',
                     error: err => {
                         reject(new Error('Error opening __admin realm error:' + err.user  + ' url:' + err.url + ' state:' + err.state));
                     }
@@ -74,7 +75,7 @@ exports.createAdminUser = function () {
                     }
 
                     let isAdmin = newAdminUser.isAdmin;
-                    user.logout();
+                    nonTokenUser.logout();
                     if (!isAdmin) {
                         setTimeout(waitForServerToUpdateAdminUser, 500);
                         return;

@@ -71,9 +71,11 @@ public:
     };
 
     static void create_user(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void admin_user(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
 
     MethodMap<T> const static_methods = {
-        {"createUser", wrap<create_user>}
+        {"createUser", wrap<create_user>},
+        {"_adminUser", wrap<admin_user>}
     };
 
     /*static void current_user(ContextType ctx, ObjectType object, ReturnValue &return_value);*/
@@ -131,6 +133,16 @@ void UserClass<T>::create_user(ContextType ctx, FunctionType, ObjectType this_ob
     if (argc == 5) {
         (*user)->set_is_admin(Value::validated_to_boolean(ctx, arguments[4], "isAdmin"));
     }
+    return_value.set(create_object<T, UserClass<T>>(ctx, user));
+}
+
+template<typename T>
+void UserClass<T>::admin_user(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    validate_argument_count(argc, 2, 2);
+    SharedUser *user = new SharedUser(SyncManager::shared().get_admin_token_user(
+        Value::validated_to_string(ctx, arguments[0], "authServerUrl"),
+        Value::validated_to_string(ctx, arguments[1], "refreshToken")
+    ));
     return_value.set(create_object<T, UserClass<T>>(ctx, user));
 }
 
