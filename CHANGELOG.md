@@ -1,4 +1,4 @@
-X.Y.Z Release notes
+1.11.0 Release notes (2017-8-31)
 =============================================================
 ### Breaking changes
 * None
