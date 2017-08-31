@@ -105,7 +105,7 @@ const optionDefinitions = [
 const options = require('command-line-args')(optionDefinitions);
 console.log(options);
 
-let serverFolder, archive, extractedFolder;
+let serverFolder, archive, extractedFolder, forceXZ = false;
 
 const dependencies = ini(fs.readFileSync(path.resolve(__dirname, '../dependencies.list'), 'utf8'));
 if (!options.sync) {
@@ -143,8 +143,9 @@ if (!options.sync) {
         extractedFolder = `realm-sync-node-cocoa-${dependencies.REALM_SYNC_VERSION}`;
         break;
     case 'ios':
-        archive = `realm-sync-cocoa-${dependencies.REALM_SYNC_VERSION}.tar.xz`;
+        archive = `realm-sync-cocoa-${dependencies.REALM_SYNC_VERSION}.tar.gz`;
         extractedFolder = `core`;
+        forceXZ = true;
         break;
     }
 }
@@ -168,7 +169,7 @@ if (options.debug) {
 if (!fs.existsSync(realmDir)) {
     const targetFolder = extractedFolder ? vendorDir : realmDir;
 
-    const decompressOptions = /tar\.xz$/.test(archive) ? { plugins: [ decompressXZ() ] } : undefined;
+    const decompressOptions = forceXZ || /tar\.xz$/.test(archive) ? { plugins: [ decompressXZ() ] } : undefined;
 
     let pipeline = download(url, downloadedArchive);
     pipeline = pipeline.then(() => decompress(downloadedArchive, targetFolder, decompressOptions));
