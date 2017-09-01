@@ -174,7 +174,16 @@ if (!fs.existsSync(realmDir)) {
     pipeline = pipeline.then(() => decompress(downloadedArchive, targetFolder, decompressOptions));
 
     if (extractedFolder) {
-        pipeline = pipeline.then(() => fs.renameSync(path.resolve(vendorDir, extractedFolder), realmDir));
+        pipeline = pipeline.then(() => {
+            fs.renameSync(path.resolve(vendorDir, extractedFolder), realmDir);
+            const libDir = path.resolve(realmDir, 'lib')
+            if (fs.existsSync(libDir)) {
+                // Remove all shared libraries as we want to just use the static ones
+                fs.readdirSync(libDir)
+                  .filter(name => /\.so$/.test(name))
+                  .forEach(name => fs.unlinkSync(path.resolve(libDir, name)));
+            }
+        });
     }
 
     pipeline.catch(error => {
