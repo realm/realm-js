@@ -54,6 +54,7 @@
             "type": "node",
             "request": "attach",
             "name": "Attach to Port",
+            "protocol": "legacy",
             "address": "localhost",
             "port": 5858
         }
