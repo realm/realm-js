@@ -1,3 +1,14 @@
+X.Y.Z Release notes
+=============================================================
+### Breaking changes
+* None
+
+### Enhancements
+* Improve performance of the RPC worker for chrome debugging.
+
+### Bug fixes
+* None
+
 1.11.1 Release notes (2017-9-1)
 =============================================================
 ### Breaking changes
@@ -8,7 +19,6 @@
 
 ### Bug fixes
 * Fix accessToken.
-
 
 1.11.0 Release notes (2017-8-31)
 =============================================================
