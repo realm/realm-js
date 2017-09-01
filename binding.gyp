@@ -37,9 +37,6 @@
       "type": "static_library",
       "include_dirs": [
         "src/object-store/src",
-        "src/object-store/src/impl",
-        "src/object-store/src/impl/apple",
-        "src/object-store/src/parser",
         "src/object-store/external/pegtl"
       ],
       "defines": [ "REALM_PLATFORM_NODE=1" ],
