@@ -619,9 +619,14 @@ void RealmClass<T>::get_sync_session(ContextType ctx, ObjectType object, ReturnV
 
 template<typename T>
 void RealmClass<T>::wait_for_download_completion(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
-    validate_argument_count(argc, 2);
+    validate_argument_count(argc, 2, 3);
     auto config_object = Value::validated_to_object(ctx, arguments[0]);
-    auto callback_function = Value::validated_to_function(ctx, arguments[1]);
+    auto callback_function = Value::validated_to_function(ctx, arguments[argc - 1]);
+
+    FunctionType session_callback;
+    if (argc == 3) {
+        session_callback = Value::validated_to_function(ctx, arguments[1]);
+    }
 
 #if REALM_ENABLE_SYNC
     ValueType sync_config_value = Object::get_property(ctx, config_object, "sync");
@@ -694,6 +699,13 @@ void RealmClass<T>::wait_for_download_completion(ContextType ctx, FunctionType, 
             std::shared_ptr<SyncUser> user = sync_config->user;
             if (user && user->state() != SyncUser::State::Error) {
                 if (auto session = user->session_for_on_disk_path(config.path)) {
+                    if (Value::is_valid(session_callback)) {
+                        auto syncSession = create_object<T, SessionClass<T>>(ctx, new WeakSession(session));
+                        ValueType callback_arguments[1];
+                        callback_arguments[0] = syncSession;
+                        Function<T>::callback(protected_ctx, session_callback, protected_this, 1, callback_arguments);
+                    }
+
                     if (progressFuncDefined) {
                         session->register_progress_notifier(std::move(progressFunc), SyncSession::NotifierType::download, false);
                     } 

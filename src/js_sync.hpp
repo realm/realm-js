@@ -148,6 +148,31 @@ void UserClass<T>::logout(ContextType ctx, FunctionType, ObjectType this_object,
 }
 
 template<typename T>
+class ProgressNotificationTokenClass : public ClassDefinition<T, uint64_t> {
+    using GlobalContextType = typename T::GlobalContext;
+    using ContextType = typename T::Context;
+    using FunctionType = typename T::Function;
+    using ObjectType = typename T::Object;
+    using ValueType = typename T::Value;
+    using String = js::String<T>;
+    using Object = js::Object<T>;
+    using Value = js::Value<T>;
+    using Function = js::Function<T>;
+    using ReturnValue = js::ReturnValue<T>;
+
+public:
+    std::string const name = "ProgressNotificationToken";
+    
+    static ObjectType create_instance(ContextType, uint64_t);
+
+    static void stop(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
+
+    MethodMap<T> const methods = {
+        {"stop", wrap<stop>},
+    };
+};
+
+template<typename T>
 class SessionClass : public ClassDefinition<T, WeakSession> {
     using ContextType = typename T::Context;
     using FunctionType = typename T::Function;
@@ -160,6 +185,7 @@ class SessionClass : public ClassDefinition<T, WeakSession> {
 
 public:
     std::string const name = "Session";
+    using ProgressHandler = void(uint64_t transferred_bytes, uint64_t transferrable_bytes);
 
     static FunctionType create_constructor(ContextType);
 
@@ -170,6 +196,10 @@ public:
 
     static void simulate_error(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void refresh_access_token(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
+#if REALM_ENABLE_SYNC
+    static void add_progress_notification(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &);
+    static void remove_progress_notification(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &);
+#endif
 
     PropertyMap<T> const properties = {
         {"config", {wrap<get_config>, nullptr}},
@@ -180,7 +210,11 @@ public:
 
     MethodMap<T> const methods = {
         {"_simulateError", wrap<simulate_error>},
-        {"_refreshAccessToken", wrap<refresh_access_token>}
+        {"_refreshAccessToken", wrap<refresh_access_token>},
+#if REALM_ENABLE_SYNC
+        {"addProgressNotification", wrap<add_progress_notification>},
+        {"removeProgressNotification", wrap<remove_progress_notification>},
+#endif
     };
 };
 
@@ -307,8 +341,82 @@ void SessionClass<T>::refresh_access_token(ContextType ctx, FunctionType, Object
     }
 }
 
+#if REALM_ENABLE_SYNC
 template<typename T>
-class SyncClass : public ClassDefinition<T, void *> {
+void SessionClass<T>::add_progress_notification(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    validate_argument_count(argc, 3);
+
+    if (auto session = get_internal<T, SessionClass<T>>(this_object)->lock()) {
+        
+        std::string direction = Value::validated_to_string(ctx, arguments[0], "direction");
+        std::string mode = Value::validated_to_string(ctx, arguments[1], "mode");
+        SyncSession::NotifierType notifierType;
+        if (direction == "download") {
+            notifierType = SyncSession::NotifierType::download;
+        }
+        else if (direction == "upload") {
+            notifierType = SyncSession::NotifierType::upload;
+        }
+        else {
+            throw std::invalid_argument("Invalid argument 'direction'. Only 'download' and 'upload' progress notification directions are supported");
+        }
+
+        bool is_streaming = false;
+        if (mode == "reportIndefinitely") {
+            is_streaming = true;
+        }
+        else if (mode == "forCurrentlyOutstandingWork") {
+            is_streaming = false;
+        }
+        else {
+            throw std::invalid_argument("Invalid argument 'mode'. Only 'reportIndefinitely' and 'forCurrentlyOutstandingWork' progress notification modes are supported");
+        }
+
+        auto callback_function = Value::validated_to_function(ctx, arguments[2], "callback");
+
+        Protected<FunctionType> protected_callback(ctx, callback_function);
+        Protected<ObjectType> protected_this(ctx, this_object);
+        Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
+        std::function<ProgressHandler> progressFunc; 
+
+        EventLoopDispatcher<ProgressHandler> progress_handler([=](uint64_t transferred_bytes, uint64_t transferrable_bytes) {
+            HANDLESCOPE
+            ValueType callback_arguments[2];
+            callback_arguments[0] = Value::from_number(protected_ctx, transferred_bytes);
+            callback_arguments[1] = Value::from_number(protected_ctx, transferrable_bytes);
+
+            Function<T>::callback(protected_ctx, protected_callback, protected_this, 2, callback_arguments);
+        });
+
+        progressFunc = std::move(progress_handler);
+
+        
+        auto registrationToken = session->register_progress_notifier(std::move(progressFunc), notifierType, false);
+
+        auto syncSession = create_object<T, SessionClass<T>>(ctx, new WeakSession(session));
+        PropertyAttributes attributes = ReadOnly | DontEnum | DontDelete;
+        Object::set_property(ctx, callback_function, "syncSession", syncSession, attributes);
+        Object::set_property(ctx, callback_function, "registrationToken", Value::from_number(protected_ctx, registrationToken), attributes);
+    }
+}
+
+template<typename T>
+void SessionClass<T>::remove_progress_notification(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    validate_argument_count(argc, 1);
+    auto callback_function = Value::validated_to_function(ctx, arguments[0], "callback");
+    auto syncSessionProp = Object::get_property(ctx, callback_function, "syncSession");
+    auto syncSession = Value::validated_to_object(ctx, syncSessionProp);
+    auto registrationToken = Object::get_property(ctx, callback_function, "registrationToken");
+
+    if (auto session = get_internal<T, SessionClass<T>>(syncSession)->lock()) {
+        auto reg = Value::validated_to_number(ctx, registrationToken);
+        session->unregister_progress_notifier(reg);
+    }
+}
+#endif
+
+template<typename T>
+class SyncClass : public ClassDefinition<T, void*> {
     using GlobalContextType = typename T::GlobalContext;
     using ContextType = typename T::Context;
     using FunctionType = typename T::Function;
@@ -447,5 +555,13 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
     }
 }
 
+template<typename T>
+void ProgressNotificationTokenClass<T>::stop(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+}
+
+template<typename T>
+typename T::Object ProgressNotificationTokenClass<T>::create_instance(ContextType ctx, uint64_t progressToken) {
+    return create_object<T, ProgressNotificationTokenClass<T>>(ctx, new uint64_t(progressToken));
+}
 } // js
 } // realm

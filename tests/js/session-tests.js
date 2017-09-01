@@ -26,7 +26,7 @@ const Realm = require('realm');
 const TestCase = require('./asserts');
 
 const isNodeProccess = (typeof process === 'object' && process + '' === '[object process]');
-console.log("isnode " + isNodeProccess + " typeof " + (typeof(process) === 'object'));
+
 function node_require(module) {
     return require(module);
 }  
@@ -84,13 +84,23 @@ function runOutOfProcess(nodeJsFilePath) {
     fs.appendFileSync(tmpFile.fd, content, { encoding: 'utf8' });
     nodeArgs[0] = tmpFile.name;
     return new Promise((resolve, reject) => {
-        const child = execFile('node', nodeArgs, { cwd: tmpDir.name }, (error, stdout, stderr) => {
-            if (error) {
-                reject(new Error(`Error executing ${nodeJsFilePath} Error: ${error}`));
+        try {
+            console.log('runOutOfProcess command\n node ' + nodeArgs.join(" "));
+            const child = execFile('node', nodeArgs, { cwd: tmpDir.name }, (error, stdout, stderr) => {
+                if (error) {
+                    console.error("runOutOfProcess failed\n" + error);
+                    reject(new Error(`Running ${nodeJsFilePath} failed. error: ${error}`));
+                    return;
+                }
+
+                console.log('runOutOfProcess success\n' + stdout);
+                resolve();
+            });
             }
-            resolve();
-        });
-    })
+        catch (e) {
+            reject(e);
+        };
+    });
 }
 
 module.exports = {
@@ -150,7 +160,7 @@ module.exports = {
         const realmName = uuid();
         const expectedObjectsCount = 3;
 
-        runOutOfProcess(__dirname + '/download-api-helper.js', username, realmName, REALM_MODULE_PATH)
+        return runOutOfProcess(__dirname + '/download-api-helper.js', username, realmName, REALM_MODULE_PATH)
             .then(() => {
                 return promisifiedLogin('http://localhost:9080', username, 'password').then(user => {
                     const accessTokenRefreshed = this;
@@ -186,7 +196,7 @@ module.exports = {
         const realmName = uuid();
         const expectedObjectsCount = 3;
 
-        runOutOfProcess(__dirname + '/download-api-helper.js', username, realmName, REALM_MODULE_PATH)
+        return runOutOfProcess(__dirname + '/download-api-helper.js', username, realmName, REALM_MODULE_PATH)
             .then(() => {
                 return promisifiedLogin('http://localhost:9080', username, 'password').then(user => {
                     return new Promise((resolve, reject) => {
@@ -239,7 +249,7 @@ module.exports = {
         const realmName = uuid();
         const expectedObjectsCount = 3;
 
-        runOutOfProcess(__dirname + '/download-api-helper.js', username, realmName, REALM_MODULE_PATH)
+        return runOutOfProcess(__dirname + '/download-api-helper.js', username, realmName, REALM_MODULE_PATH)
             .then(() => {
                 return promisifiedLogin('http://localhost:9080', username, 'password').then(user => {
                     const accessTokenRefreshed = this;
@@ -275,7 +285,7 @@ module.exports = {
         const realmName = uuid();
         const expectedObjectsCount = 3;
 
-        runOutOfProcess(__dirname + '/download-api-helper.js', username, realmName, REALM_MODULE_PATH)
+        return runOutOfProcess(__dirname + '/download-api-helper.js', username, realmName, REALM_MODULE_PATH)
             .then(() => {
                 return promisifiedLogin('http://localhost:9080', username, 'password').then(user => {
                     return new Promise((resolve, reject) => {
@@ -322,7 +332,7 @@ module.exports = {
         const realmName = uuid();
         const expectedObjectsCount = 3;
 
-       runOutOfProcess(__dirname + '/download-api-helper.js', username, realmName, REALM_MODULE_PATH)
+       return runOutOfProcess(__dirname + '/download-api-helper.js', username, realmName, REALM_MODULE_PATH)
             .then(() => {
                 return promisifiedLogin('http://localhost:9080', username, 'password').then(user => {
                     return new Promise((resolve, reject) => {
@@ -449,5 +459,191 @@ module.exports = {
                 session._simulateError(123, 'simulated error');
             });
         });
-    }
+    },
+
+
+    testProgressNotificationsForRealmConstructor() {
+        if (!isNodeProccess) {
+            return Promise.resolve();
+        }
+
+        const username = uuid();
+        const realmName = uuid();
+
+        return runOutOfProcess(__dirname + '/download-api-helper.js', username, realmName, REALM_MODULE_PATH)
+            .then(() => {
+                return promisifiedLogin('http://localhost:9080', username, 'password').then(user => {
+                    return new Promise((resolve, reject) => {
+                        let config = {
+                            sync: {
+                                user,
+                                url: `realm://localhost:9080/~/${realmName}`
+                            },
+                            schema: [{ name: 'Dog', properties: { name: 'string' } }],
+                        };
+
+                        let realm = new Realm(config);
+                        const progressCallback = (transferred, total) => {
+                            resolve();
+                        };
+                        
+                        realm.syncSession.addProgressNotification('download', 'reportIndefinitely', progressCallback);
+
+                        setTimeout(function() {
+                            reject("Progress Notifications API failed to call progress callback for Realm constructor");
+                        }, 5000);
+                    });
+                });
+            });
+    },  
+
+    testProgressNotificationsUnregisterForRealmConstructor() {
+        if (!isNodeProccess) {
+            return Promise.resolve();
+        }
+
+        const username = uuid();
+        const realmName = uuid();
+
+        return runOutOfProcess(__dirname + '/download-api-helper.js', username, realmName, REALM_MODULE_PATH)
+            .then(() => {
+                return promisifiedLogin('http://localhost:9080', username, 'password').then(user => {
+                    return new Promise((resolve, reject) => {
+                        let config = {
+                            sync: {
+                                user,
+                                url: `realm://localhost:9080/~/${realmName}`
+                            },
+                            schema: [{ name: 'Dog', properties: { name: 'string' } }],
+                        };
+
+                        let realm = new Realm(config);
+                        let unregisterFunc;
+                       
+                        let writeDataFunc = () => {
+                            realm.write(() => {
+                                for (let i = 1; i <= 3; i++) {
+                                    realm.create('Dog', { name: `Lassy ${i}` });
+                                }
+                            });
+                        }
+
+                        let syncFinished = false;
+                        let failOnCall = false;
+                        const progressCallback = (transferred, total) => {
+                            if (failOnCall) {
+                                reject(new Error("Progress callback should not be called after removeProgressNotification"));
+                            }
+                            
+                            syncFinished = transferred === total;
+                            
+                            //unregister and write some new data.
+                            if (syncFinished) { 
+                                failOnCall = true;
+                                unregisterFunc();
+                                
+                                //use second callback to wait for sync finished
+                                realm.syncSession.addProgressNotification('upload', 'reportIndefinitely', (x, y) => {
+                                    if (x === y) {
+                                        resolve();
+                                    }
+                                });
+                                writeDataFunc();
+                            }
+                        };
+                        
+                        realm.syncSession.addProgressNotification('upload', 'reportIndefinitely', progressCallback);
+                        
+                        unregisterFunc = () => {
+                            realm.syncSession.removeProgressNotification(progressCallback);
+                        };
+
+                        writeDataFunc();
+                    });
+                });
+            });
+    },
+
+    testProgressNotificationsForRealmOpen() {
+        if (!isNodeProccess) {
+            return Promise.resolve();
+        }
+
+        const username = uuid();
+        const realmName = uuid();
+
+        return runOutOfProcess(__dirname + '/download-api-helper.js', username, realmName, REALM_MODULE_PATH)
+            .then(() => {
+                return promisifiedLogin('http://localhost:9080', username, 'password').then(user => {
+                    return new Promise((resolve, reject) => {
+                        let config = {
+                            sync: {
+                                user,
+                                url: `realm://localhost:9080/~/${realmName}`
+                            },
+                            schema: [{ name: 'Dog', properties: { name: 'string' } }],
+                        };
+
+                        let progressCalled = false;
+                        Realm.open(config)
+                            .progress((transferred, total) => {
+                                progressCalled = true;
+                            })
+                            .then(() => {
+                                TestCase.assertTrue(progressCalled);
+                                resolve();
+                            })
+                            .catch((e) => reject(e));
+
+                        setTimeout(function() {
+                            reject("Progress Notifications API failed to call progress callback for Realm constructor");
+                        }, 5000);
+                    });
+                });
+            });
+    },  
+
+    testProgressNotificationsForRealmOpenAsync() {
+        if (!isNodeProccess) {
+            return Promise.resolve();
+        }
+
+        const username = uuid();
+        const realmName = uuid();
+
+        return runOutOfProcess(__dirname + '/download-api-helper.js', username, realmName, REALM_MODULE_PATH)
+            .then(() => {
+                return promisifiedLogin('http://localhost:9080', username, 'password').then(user => {
+                    return new Promise((resolve, reject) => {
+                        let config = {
+                            sync: {
+                                user,
+                                url: `realm://localhost:9080/~/${realmName}`
+                            },
+                            schema: [{ name: 'Dog', properties: { name: 'string' } }],
+                        };
+
+                        let progressCalled = false;
+                        
+                        Realm.openAsync(config, 
+                            (transferred, total) => {
+                                progressCalled = true;
+                            }, 
+                            (error) => {
+                                if (error) {
+                                    reject(error);
+                                    return;
+                                }
+                                
+                                TestCase.assertTrue(progressCalled);
+                                resolve();
+                            });
+
+                        setTimeout(function() {
+                            reject("Progress Notifications API failed to call progress callback for Realm constructor");
+                        }, 5000);
+                    });
+                });
+            });
+    },  
 }
