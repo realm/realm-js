@@ -148,31 +148,6 @@ void UserClass<T>::logout(ContextType ctx, FunctionType, ObjectType this_object,
 }
 
 template<typename T>
-class ProgressNotificationTokenClass : public ClassDefinition<T, uint64_t> {
-    using GlobalContextType = typename T::GlobalContext;
-    using ContextType = typename T::Context;
-    using FunctionType = typename T::Function;
-    using ObjectType = typename T::Object;
-    using ValueType = typename T::Value;
-    using String = js::String<T>;
-    using Object = js::Object<T>;
-    using Value = js::Value<T>;
-    using Function = js::Function<T>;
-    using ReturnValue = js::ReturnValue<T>;
-
-public:
-    std::string const name = "ProgressNotificationToken";
-    
-    static ObjectType create_instance(ContextType, uint64_t);
-
-    static void stop(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
-
-    MethodMap<T> const methods = {
-        {"stop", wrap<stop>},
-    };
-};
-
-template<typename T>
 class SessionClass : public ClassDefinition<T, WeakSession> {
     using ContextType = typename T::Context;
     using FunctionType = typename T::Function;
@@ -553,15 +528,6 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
             std::copy_n(config.encryption_key.begin(), config.sync_config->realm_encryption_key->size(), config.sync_config->realm_encryption_key->begin());
         }
     }
-}
-
-template<typename T>
-void ProgressNotificationTokenClass<T>::stop(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
-}
-
-template<typename T>
-typename T::Object ProgressNotificationTokenClass<T>::create_instance(ContextType ctx, uint64_t progressToken) {
-    return create_object<T, ProgressNotificationTokenClass<T>>(ctx, new uint64_t(progressToken));
 }
 } // js
 } // realm
