@@ -1,3 +1,15 @@
+1.11.1 Release notes (2017-9-1)
+=============================================================
+### Breaking changes
+* None
+
+### Enhancements
+* None
+
+### Bug fixes
+* Fix accessToken.
+
+
 1.11.0 Release notes (2017-8-31)
 =============================================================
 ### Breaking changes
