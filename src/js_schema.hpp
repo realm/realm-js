@@ -232,7 +232,8 @@ ObjectSchema Schema<T>::parse_object_schema(ContextType ctx, ObjectType object_s
 }
 
 template<typename T>
-realm::Schema Schema<T>::parse_schema(ContextType ctx, ObjectType schema_object, ObjectDefaultsMap &defaults, ConstructorMap &constructors) {
+realm::Schema Schema<T>::parse_schema(ContextType ctx, ObjectType schema_object,
+                                      ObjectDefaultsMap &defaults, ConstructorMap &constructors) {
     std::vector<ObjectSchema> schema;
     uint32_t length = Object::validated_get_length(ctx, schema_object);
 
