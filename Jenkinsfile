@@ -190,7 +190,7 @@ def doMacBuild(target, postStep = null) {
 
 def doReactBuild(target, postStep = null) {
   return {
-    node('xamarin-mac') {
+    node('macos && nodejs && chrome') {
       try {
         lock("${env.NODE_NAME} iOS Simulator") {
           doInside("./scripts/test.sh", target, postStep)
@@ -204,10 +204,10 @@ def doReactBuild(target, postStep = null) {
 
 def doWindowsBuild() {
   return {
-    node('windows') {
+    node('windows && nodejs') {
       unstash 'source'
       try {
-        bat 'npm install --build-from-source'
+        bat 'npm install --build-from-source=realm'
         dir('tests') {
           bat 'npm install'
           bat 'npm run test'
