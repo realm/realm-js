@@ -300,19 +300,42 @@ inline void ObjectWrap<ClassType>::get_property_names(JSContextRef ctx, JSObject
     }
 }
 
+static inline bool try_get_int(JSStringRef property, int64_t& value) {
+    value = 0;
+    auto str = JSStringGetCharactersPtr(property);
+    auto end = str + JSStringGetLength(property);
+    while (str != end && iswspace(*str)) {
+        ++str;
+    }
+    bool negative = false;
+    if (str != end && *str == '-') {
+        negative = true;
+        ++str;
+    }
+    while (str != end && *str >= '0' && *str <= '9') {
+        if (int_multiply_with_overflow_detect(value, 10)) {
+            return false;
+        }
+        value += *str - '0';
+        ++str;
+    }
+    if (negative) {
+        value *= -1;
+    }
+    return str == end;
+}
+
 template<typename ClassType>
 inline JSValueRef ObjectWrap<ClassType>::get_property(JSContextRef ctx, JSObjectRef object, JSStringRef property, JSValueRef* exception) {
     if (auto index_getter = s_class.index_accessor.getter) {
-        try {
-            uint32_t index = validated_positive_index(jsc::String(property));
+        int64_t num;
+        if (try_get_int(property, num)) {
+            uint32_t index;
+            if (num < 0 || util::int_cast_with_overflow_detect(num, index)) {
+                // Out-of-bounds index getters should just return undefined in JS.
+                return Value::from_undefined(ctx);
+            }
             return index_getter(ctx, object, index, exception);
-        }
-        catch (std::out_of_range &) {
-            // Out-of-bounds index getters should just return undefined in JS.
-            return Value::from_undefined(ctx);
-        }
-        catch (std::invalid_argument &) {
-            // Property is not a number.
         }
     }
     if (auto string_getter = s_class.string_accessor.getter) {
@@ -326,23 +349,23 @@ inline bool ObjectWrap<ClassType>::set_property(JSContextRef ctx, JSObjectRef ob
     auto index_setter = s_class.index_accessor.setter;
 
     if (index_setter || s_class.index_accessor.getter) {
-        try {
-            uint32_t index = validated_positive_index(jsc::String(property));
-
+        int64_t num;
+        if (try_get_int(property, num)) {
+            if (num < 0) {
+                *exception = Exception::value(ctx, util::format("Index %1 cannot be less than zero.", num));
+                return false;
+            }
+            int32_t index;
+            if (util::int_cast_with_overflow_detect(num, index)) {
+                *exception = Exception::value(ctx, util::format("Index %1 cannot be greater than %2.",
+                                                                num, std::numeric_limits<uint32_t>::max()));
+                return false;
+            }
             if (index_setter) {
                 return index_setter(ctx, object, index, value, exception);
             }
-            else {
-                *exception = Exception::value(ctx, std::string("Cannot assign to read only index ") + util::to_string(index));
-                return false;
-            }
-        }
-        catch (std::out_of_range &e) {
-            *exception = Exception::value(ctx, e);
+            *exception = Exception::value(ctx, util::format("Cannot assign to read only index %1", index));
             return false;
-        }
-        catch (std::invalid_argument &) {
-            // Property is not a number.
         }
     }
     if (auto string_setter = s_class.string_accessor.setter) {

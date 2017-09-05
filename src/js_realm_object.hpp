@@ -106,14 +106,12 @@ typename T::Object RealmObjectClass<T>::create_instance(ContextType ctx, realm::
 
 template<typename T>
 void RealmObjectClass<T>::get_property(ContextType ctx, ObjectType object, const String &property, ReturnValue &return_value) {
-    try {
-        auto realm_object = get_internal<T, RealmObjectClass<T>>(object);
+    auto realm_object = get_internal<T, RealmObjectClass<T>>(object);
+    std::string name = property;
+    if (realm_object->get_object_schema().property_for_name(name)) {
         NativeAccessor<T> accessor(ctx, realm_object->realm(), realm_object->get_object_schema());
-        std::string name = property;
         auto result = realm_object->template get_property_value<ValueType>(accessor, name);
         return_value.set(result);
-    } catch (InvalidPropertyException &ex) {
-        // getters for nonexistent properties in JS should always return undefined
     }
 }
 
