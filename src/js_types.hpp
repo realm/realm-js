@@ -354,6 +354,7 @@ inline bool Value<T>::is_valid_for_property(ContextType context, const ValueType
         return true;
     }
 
+    using realm::PropertyType;
     if (realm::is_array(prop.type)) {
         if (prop.type != PropertyType::Object) {
             return false;
@@ -395,8 +396,9 @@ inline bool Value<T>::is_valid_for_property(ContextType context, const ValueType
     }
 }
 
-inline std::string js_type_name_for_property_type(PropertyType type)
+inline std::string js_type_name_for_property_type(realm::PropertyType type)
 {
+    using realm::PropertyType;
     if (realm::is_array(type)) {
        if (type == PropertyType::LinkingObjects) {
             throw std::runtime_error("LinkingObjects' type is not supported");
