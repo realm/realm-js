@@ -68,8 +68,8 @@ stage('build') {
     macos_node_release: doMacBuild('node Release'),
     //macos_realmjs_debug: doMacBuild('realmjs Debug'),
     //macos_realmjs_release: doMacBuild('realmjs Release'),
-    macos_react_tests_debug: doReactBuild('react-tests Debug'),
-    macos_react_tests_release: doReactBuild('react-tests Release'),
+    macos_react_tests_debug: doMacBuild('react-tests Debug'),
+    macos_react_tests_release: doMacBuild('react-tests Release'),
     macos_react_example_debug: doMacBuild('react-example Debug'),
     macos_react_example_release: doMacBuild('react-example Release'),
     //android_react_tests: doAndroidBuild('react-tests-android', {
@@ -184,20 +184,6 @@ def doMacBuild(target, postStep = null) {
   return {
     node('osx_vegas') {
       doInside("./scripts/test.sh", target, postStep)
-    }
-  }
-}
-
-def doReactBuild(target, postStep = null) {
-  return {
-    node('macos && nodejs && chrome') {
-      try {
-        lock("${env.NODE_NAME} iOS Simulator") {
-          doInside("./scripts/test.sh", target, postStep)
-        }
-      } finally {
-        deleteDir()
-      }
     }
   }
 }
