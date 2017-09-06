@@ -629,7 +629,7 @@ module.exports = {
                             (transferred, total) => {
                                 progressCalled = true;
                             }, 
-                            (error) => {
+                            (error, realm) => {
                                 if (error) {
                                     reject(error);
                                     return;
