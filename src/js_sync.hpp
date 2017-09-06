@@ -171,10 +171,8 @@ public:
 
     static void simulate_error(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void refresh_access_token(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
-#if REALM_ENABLE_SYNC
     static void add_progress_notification(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &);
     static void remove_progress_notification(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &);
-#endif
 
     PropertyMap<T> const properties = {
         {"config", {wrap<get_config>, nullptr}},
@@ -186,10 +184,8 @@ public:
     MethodMap<T> const methods = {
         {"_simulateError", wrap<simulate_error>},
         {"_refreshAccessToken", wrap<refresh_access_token>},
-#if REALM_ENABLE_SYNC
         {"addProgressNotification", wrap<add_progress_notification>},
         {"removeProgressNotification", wrap<remove_progress_notification>},
-#endif
     };
 };
 
@@ -316,7 +312,6 @@ void SessionClass<T>::refresh_access_token(ContextType ctx, FunctionType, Object
     }
 }
 
-#if REALM_ENABLE_SYNC
 template<typename T>
 void SessionClass<T>::add_progress_notification(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 3);
@@ -388,7 +383,6 @@ void SessionClass<T>::remove_progress_notification(ContextType ctx, FunctionType
         session->unregister_progress_notifier(reg);
     }
 }
-#endif
 
 template<typename T>
 class SyncClass : public ClassDefinition<T, void*> {
