@@ -200,6 +200,7 @@ public:
     static void schema_version(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void clear_test_state(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void copy_bundled_realm_files(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void delete_file(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
 
     // static properties
     static void get_default_path(ContextType, ObjectType, ReturnValue &);
@@ -211,6 +212,7 @@ public:
         {"schemaVersion", wrap<schema_version>},
         {"clearTestState", wrap<clear_test_state>},
         {"copyBundledRealmFiles", wrap<copy_bundled_realm_files>},
+        {"deleteFile", wrap<delete_file>},
         {"_waitForDownload", wrap<wait_for_download_completion>},
     };
 
@@ -524,6 +526,37 @@ template<typename T>
 void RealmClass<T>::copy_bundled_realm_files(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 0);
     realm::copy_bundled_realm_files();
+}
+
+template<typename T>
+void RealmClass<T>::delete_file(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    validate_argument_count(argc, 1);
+
+    ValueType value = arguments[0];
+    if (!Value::is_object(ctx, value)) {
+        throw std::runtime_error("Invalid argument, expected a Realm configuration object");
+    }
+
+    ObjectType object = Value::validated_to_object(ctx, value);
+    realm::Realm::Config config;
+
+    static const String path_string = "path";
+    ValueType path_value = Object::get_property(ctx, object, path_string);
+    if (!Value::is_undefined(ctx, path_value)) {
+        config.path = Value::validated_to_string(ctx, path_value, "path");
+    }
+    else if (config.path.empty()) {
+        config.path = js::default_path();
+    }
+
+    config.path = normalize_realm_path(config.path);
+
+    std::string realm_file_path = config.path;
+    realm::remove_file(realm_file_path);
+    realm::remove_file(realm_file_path + ".lock");
+    realm::remove_file(realm_file_path + ".note");
+    realm::remove_directory(realm_file_path + ".management");
+
 }
 
 template<typename T>

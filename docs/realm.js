@@ -238,6 +238,13 @@ class Realm {
 Realm.schemaVersion = function(path, encryptionKey) {};
 
 /**
+ * Delete the Realm file for the given configuration.
+ * @param {Realm~Configuration} config
+ * @throws {Error} If anything in the provided `config` is invalid.
+ */
+Realm.deleteFile = function(config) {};
+
+/**
  * The default path where to create and access the Realm file.
  * @type {string}
  */

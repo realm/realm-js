@@ -5,6 +5,7 @@ X.Y.Z Release notes
 
 ### Enhancements
 * Improve performance of the RPC worker for chrome debugging.
+* Added `Realm.deleteFile` for deleting a Realm (#363).
 
 ### Bug fixes
 * None
@@ -34,6 +35,7 @@ X.Y.Z Release notes
 
 ### Bug fixes
 * None
+
 
 1.10.3 Release notes (2017-8-16)
 =============================================================
