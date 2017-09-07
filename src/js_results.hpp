@@ -76,6 +76,12 @@ struct ResultsClass : ClassDefinition<T, realm::js::Results<T>, CollectionClass<
 
     static void index_of(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
     
+    // aggregate functions
+    static void min(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void max(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void sum(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void avg(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
+
     // observable
     static void add_listener(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void remove_listener(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
@@ -88,6 +94,10 @@ struct ResultsClass : ClassDefinition<T, realm::js::Results<T>, CollectionClass<
         {"filtered", wrap<filtered>},
         {"sorted", wrap<sorted>},
         {"isValid", wrap<is_valid>},
+        {"min", wrap<min>},
+        {"max", wrap<max>},
+        {"sum", wrap<sum>},
+        {"avg", wrap<avg>},
         {"addListener", wrap<add_listener>},
         {"removeListener", wrap<remove_listener>},
         {"removeAllListeners", wrap<remove_all_listeners>},
@@ -194,6 +204,71 @@ void ResultsClass<T>::get_length(ContextType ctx, ObjectType object, ReturnValue
     auto results = get_internal<T, ResultsClass<T>>(object);
     return_value.set((uint32_t)results->size());
 }
+
+template<typename T>
+void ResultsClass<T>::min(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    validate_argument_count(argc, 1);
+    std::string property_name = Value::validated_to_string(ctx, arguments[0]);
+
+    auto results = get_internal<T, ResultsClass<T>>(this_object);
+
+    const ObjectSchema& object_schema = results->get_object_schema();
+    const Property* property = object_schema.property_for_name(property_name);
+    if (!property) {
+        throw std::invalid_argument(util::format("No such property: %1", property_name));
+    }
+
+    util::Optional<Mixed> mixed = results->min(property->table_column);
+    return_value.set(Value::from_mixed(ctx, mixed));
+}
+
+template<typename T>
+void ResultsClass<T>::max(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    validate_argument_count(argc, 1);
+    std::string property_name = Value::validated_to_string(ctx, arguments[0]);
+
+    auto results = get_internal<T, ResultsClass<T>>(this_object);
+    const ObjectSchema& object_schema = results->get_object_schema();
+    const Property* property = object_schema.property_for_name(property_name);    
+
+    if (!property) {
+        throw std::invalid_argument(util::format("No such property: %1", property_name));
+    }
+
+    util::Optional<Mixed> mixed = results->max(property->table_column);
+    return_value.set(Value::from_mixed(ctx, mixed));
+}
+template<typename T>
+void ResultsClass<T>::sum(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    validate_argument_count(argc, 1);
+    std::string property_name = Value::validated_to_string(ctx, arguments[0]);
+
+    auto results = get_internal<T, ResultsClass<T>>(this_object);
+    const ObjectSchema& object_schema = results->get_object_schema();
+    const Property* property = object_schema.property_for_name(property_name);
+    if (!property) {
+        throw std::invalid_argument(util::format("No such property: %1", property_name));
+    }
+
+    util::Optional<Mixed> mixed = results->sum(property->table_column);
+    return_value.set(Value::from_mixed(ctx, mixed));
+}
+template<typename T>
+void ResultsClass<T>::avg(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    validate_argument_count(argc, 1);
+    std::string property_name = Value::validated_to_string(ctx, arguments[0]);
+
+    auto results = get_internal<T, ResultsClass<T>>(this_object);
+    const ObjectSchema& object_schema = results->get_object_schema();
+    const Property* property = object_schema.property_for_name(property_name);
+    if (!property) {
+        throw std::invalid_argument(util::format("No such property: %1", property_name));
+    }
+
+    util::Optional<Mixed> mixed = results->average(property->table_column);
+    return_value.set(Value::from_mixed(ctx, mixed));
+}
+
 
 template<typename T>
 void ResultsClass<T>::get_index(ContextType ctx, ObjectType object, uint32_t index, ReturnValue &return_value) {

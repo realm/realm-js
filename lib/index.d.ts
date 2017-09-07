@@ -140,6 +140,34 @@ declare namespace Realm {
         isValid(): boolean;
 
         /**
+         * Computes the minimum value.
+         * @param  {string} property_name
+         * @returns number
+         */
+        min(property_name: string): number;
+
+        /**
+         * Computes the maximum value.
+         * @param  {string} property_name
+         * @returns number
+         */
+        max(property_name: string): number;
+
+        /**
+         * Computes the sum.
+         * @param  {string} property_name
+         * @returns number
+         */
+        sum(property_name: string): number;
+
+        /**
+         * Computes the average.
+         * @param  {string} property_name
+         * @returns number
+         */
+        avg(property_name: string): number;
+
+        /**
          * @param  {string} query
          * @param  {any[]} ...arg
          * @returns Results
@@ -272,46 +300,46 @@ declare namespace Realm.Sync {
         openManagementRealm(): Realm;
         retrieveAccount(provider: string, username: string): Promise<Account>;
 
-        getGrantedPermissions(recipient: 'any' | 'currentUser' | 'otherUser'): Results<Permission>;
+        getGrantedPermissions(recipient: 'any' | 'currentUser' |  'otherUser'): Results<Permission>;
         applyPermissions(condition: PermissionCondition, realmUrl: string, accessLevel: AccessLevel): Promise<PermissionChange>;
         offerPermissions(realmUrl: string, accessLevel: AccessLevel, expiresAt?: Date): Promise<string>;
         acceptPermissionOffer(token: string): Promise<string>
         invalidatePermissionOffer(permissionOfferOrToken: PermissionOffer | string): Promise<void>;
     }
 
-    type PermissionCondition = 
-      { [object_type: string]: userId } |
-      { [object_type: string]: metadataKey, [object_type: string]: metadataValue };
+    type PermissionCondition =
+        { [object_type: string]: userId } |
+        { [object_type: string]: metadataKey, [object_type: string]: metadataValue };
 
-    type AccessLevel = 'none' | 'read' | 'write' | 'admin';
+    type AccessLevel = 'none' | 'read' | 'write' |  'admin';
 
     class PermissionChange {
-      id: string;
-      createdAt: Date;
-      updatedAt: Date;
-      statusCode?: number;
-      statusMessage?: string;
-      userId: string;
-      metadataKey?: string;
-      metadataValue?: string;
-      realmUrl: string;
-      mayRead?: boolean;
-      mayWrite?: boolean;
-      mayManage?: boolean;
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        statusCode?: number;
+        statusMessage?: string;
+        userId: string;
+        metadataKey?: string;
+        metadataValue?: string;
+        realmUrl: string;
+        mayRead?: boolean;
+        mayWrite?: boolean;
+        mayManage?: boolean;
     }
 
     class PermissionOffer {
-      id: string;
-      createdAt: Date;
-      updatedAt: Date;
-      statusCode?: number;
-      statusMessage?: string;
-      token?: string;
-      realmUrl: string;
-      mayRead?: boolean;
-      mayWrite?: boolean;
-      mayManage?: boolean;
-      expiresAt?: Date;
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        statusCode?: number;
+        statusMessage?: string;
+        token?: string;
+        realmUrl: string;
+        mayRead?: boolean;
+        mayWrite?: boolean;
+        mayManage?: boolean;
+        expiresAt?: Date;
     }
 
     interface SyncConfiguration {

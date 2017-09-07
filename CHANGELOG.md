@@ -5,6 +5,7 @@ X.Y.Z Release notes
 
 ### Enhancements
 * Improve performance of the RPC worker for chrome debugging.
+* Added aggregate functions `min()`, `max()`, `sum()`, and `avg()` to `Realm.Results`.
 
 ### Bug fixes
 * None

@@ -27,6 +27,8 @@
 
 #include <realm/binary_data.hpp>
 #include <realm/util/to_string.hpp>
+#include <realm/util/optional.hpp>
+#include <realm/mixed.hpp>
 
 #if defined(__GNUC__) && !(defined(DEBUG) && DEBUG)
 # define REALM_JS_INLINE inline __attribute__((always_inline))
@@ -124,6 +126,7 @@ struct Value {
     static ValueType from_string(ContextType, const String<T> &);
     static ValueType from_binary(ContextType, BinaryData);
     static ValueType from_undefined(ContextType);
+    static ValueType from_mixed(ContextType, util::Optional<Mixed> &);
 
     static ObjectType to_array(ContextType, const ValueType &);
     static bool to_boolean(ContextType, const ValueType &);

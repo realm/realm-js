@@ -443,7 +443,42 @@ module.exports = {
                 realm.create('TestObject', { doubleCol: 1 });
             });
         })
+    },
+
+    testAgregateFunctions: function() {
+        var realm = new Realm({ schema: [schemas.TestObject] });
+        const N = 50;
+        realm.write(() => {
+            for(var i = 0; i < N; i++) {
+                realm.create('TestObject', { doubleCol: i+1 });
+            }
+        });
+
+        var results = realm.objects('TestObject');
+        TestCase.assertEqual(results.min('doubleCol'), 1);
+        TestCase.assertEqual(results.max('doubleCol'), N);
+        TestCase.assertEqual(results.sum('doubleCol'), N*(N+1)/2);
+        TestCase.assertEqual(results.avg('doubleCol'), (N+1)/2);
+    },
+
+    testAgregateFunctionsWrongProperty: function() {
+        var realm = new Realm({ schema: [ schemas.TestObject ]});
+        realm.write(() => {
+            realm.create('TestObject', { doubleCol: 42 });
+        });
+        var results = realm.objects('TestObject');
+        TestCase.assertThrows(function() {
+            results.min('foo')
+        });
+        TestCase.assertThrows(function() {
+            results.max('foo')
+        });
+        TestCase.assertThrows(function() {
+            results.sum('foo')
+        });
+        TestCase.assertThrows(function() {
+            results.avg('foo')
+        });
+
     }
-    
-    
 };
