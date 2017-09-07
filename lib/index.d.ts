@@ -279,11 +279,22 @@ declare namespace Realm.Sync {
         invalidatePermissionOffer(permissionOfferOrToken: PermissionOffer | string): Promise<void>;
     }
 
-    type PermissionCondition = 
-      { [object_type: string]: userId } |
-      { [object_type: string]: metadataKey, [object_type: string]: metadataValue };
-
+    type PermissionCondition = {
+      userId: string  |
+      { metadataKey: string, metadataValue: string }
+    };
+    
     type AccessLevel = 'none' | 'read' | 'write' | 'admin';
+
+    class Permission {
+      readonly id: string;
+      readonly updatedAt: Date;
+      readonly userId: string;
+      readonly path: string;
+      readonly mayRead?: boolean;
+      readonly mayWrite?: boolean;
+      readonly mayManage?: boolean;
+    } 
 
     class PermissionChange {
       id: string;
