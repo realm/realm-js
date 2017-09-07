@@ -273,6 +273,47 @@ declare namespace Realm.Sync {
         logout(): void;
         openManagementRealm(): Realm;
         retrieveAccount(provider: string, username: string): Promise<Account>;
+
+        getGrantedPermissions(recipient: 'any' | 'currentUser' | 'otherUser'): Results<Permission>;
+        applyPermissions(condition: PermissionCondition, realmUrl: string, accessLevel: AccessLevel): Promise<PermissionChange>;
+        offerPermissions(realmUrl: string, accessLevel: AccessLevel, expiresAt?: Date): Promise<string>;
+        acceptPermissionOffer(token: string): Promise<string>
+        invalidatePermissionOffer(permissionOfferOrToken: PermissionOffer | string): Promise<void>;
+    }
+
+    type PermissionCondition = 
+      { [object_type: string]: userId } |
+      { [object_type: string]: metadataKey, [object_type: string]: metadataValue };
+
+    type AccessLevel = 'none' | 'read' | 'write' | 'admin';
+
+    class PermissionChange {
+      id: string;
+      createdAt: Date;
+      updatedAt: Date;
+      statusCode?: number;
+      statusMessage?: string;
+      userId: string;
+      metadataKey?: string;
+      metadataValue?: string;
+      realmUrl: string;
+      mayRead?: boolean;
+      mayWrite?: boolean;
+      mayManage?: boolean;
+    }
+
+    class PermissionOffer {
+      id: string;
+      createdAt: Date;
+      updatedAt: Date;
+      statusCode?: number;
+      statusMessage?: string;
+      token?: string;
+      realmUrl: string;
+      mayRead?: boolean;
+      mayWrite?: boolean;
+      mayManage?: boolean;
+      expiresAt?: Date;
     }
 
     interface SyncConfiguration {
@@ -316,7 +357,7 @@ declare namespace Realm.Sync {
     function addListener(serverURL: string, adminUser: Realm.Sync.User, regex: string, name: string, changeCallback: (changeEvent: ChangeEvent) => void): void;
     function removeAllListeners(name?: string): void;
     function removeListener(regex: string, name: string, changeCallback: (changeEvent: ChangeEvent) => void): void;
-    function setLogLevel(logLevel: 'error' | 'info' | 'debug'): void;
+    function setLogLevel(logLevel: 'all' | 'trace' | 'debug' | 'detail' | 'info' | 'warn' | 'error' | 'fatal' | 'off'): void;
     function setAccessToken(accessToken: string): void;
 
     type Instruction = {
@@ -385,6 +426,12 @@ declare class Realm {
      * @param {Function} callback will be called when the realm is ready.
      */
     static openAsync(config: Realm.Configuration, callback: (error: any, realm: Realm) => void): void
+
+    /**
+     * Delete the Realm file for the given configuration.
+     * @param {Configuration} config
+     */
+    static deleteFile(config: Realm.Configuration): void
 
     /**
      * @param  {Realm.Configuration} config?

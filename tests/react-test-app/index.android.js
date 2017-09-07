@@ -51,7 +51,7 @@ async function runTests() {
                 await runTest(suiteName, testName);
             }
             catch (e) {
-                itemTest.ele('error', {'message': ''}, e.message);
+                itemTest.ele('error', {'message': e.message, 'stacktrace': e.stack}, e.toString());
                 nbrFailures++;
             }
         }
