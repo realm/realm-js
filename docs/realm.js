@@ -65,6 +65,14 @@ class Realm {
     get schemaVersion() {}
 
     /**
+     * Indicates if this Realm is in a write transaction.
+     * @type {boolean}
+     * @readonly
+     * @since 1.10.3
+     */
+    get isInTransaction() {}
+
+    /**
      * Gets the sync session if this is a synced Realm
      * @type {Session}
      */
@@ -182,6 +190,40 @@ class Realm {
     * @param {function()} callback
     */
     write(callback) {}
+
+    /**
+     * Initiate a write transaction.
+     * @throws {Error} When already in write transaction
+     */
+    beginTransaction() {}
+
+    /**
+     * Commit a write transaction.
+     */
+    commitTransaction() {}
+
+    /**
+     * Cancel a write transaction.
+     */
+    cancelTransaction() {}
+
+    /*
+     * Replaces all string columns in this Realm with a string enumeration column and compacts the
+     * database file.
+     * 
+     * Cannot be called from a write transaction.
+     *
+     * Compaction will not occur if other `Realm` instances exist.
+     *
+     * While compaction is in progress, attempts by other threads or processes to open the database will
+     * wait.
+     *
+     * Be warned that resource requirements for compaction is proportional to the amount of live data in
+     * the database. Compaction works by writing the database contents to a temporary database file and
+     * then replacing the database with the temporary one.
+     * @returns {true} if compaction succeeds.
+     */
+    compact() {}
 }
 
 /**
@@ -194,6 +236,13 @@ class Realm {
  * @returns {number} version of the schema, or `-1` if no Realm exists at `path`.
  */
 Realm.schemaVersion = function(path, encryptionKey) {};
+
+/**
+ * Delete the Realm file for the given configuration.
+ * @param {Realm~Configuration} config
+ * @throws {Error} If anything in the provided `config` is invalid.
+ */
+Realm.deleteFile = function(config) {};
 
 /**
  * The default path where to create and access the Realm file.
@@ -213,6 +262,13 @@ Realm.defaultPath;
  *   This function takes two arguments:
  *   - `oldRealm` - The Realm before migration is performed.
  *   - `newRealm` - The Realm that uses the latest `schema`, which should be modified as necessary.
+ * @property {callback(number, number)} [shouldCompactOnLaunch] - The function called when opening 
+ *   a Realm for the first time during the life of a process to determine if it should be compacted 
+ *   before being returned to the user. The function takes two arguments:
+ *     - `totalSize` - The total file size (data + free space) 
+ *     - `unusedSize` - The total bytes used by data in the file.
+ *   It returns `true` to indicate that an attempt to compact the file should be made. The compaction 
+ *   will be skipped if another process is accessing it.
  * @property {string} [path={@link Realm.defaultPath}] - The path to the file where the
  *   Realm database should be stored.
  * @property {boolean} [readOnly=false] - Specifies if this Realm should be opened as read-only.

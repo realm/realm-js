@@ -171,11 +171,16 @@ public:
     static void delete_one(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void delete_all(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void write(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void begin_transaction(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue&);
+    static void commit_transaction(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue&);
+    static void cancel_transaction(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue&);
     static void add_listener(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void wait_for_download_completion(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void remove_listener(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void remove_all_listeners(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void close(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void compact(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    
 
     // properties
     static void get_empty(ContextType, ObjectType, ReturnValue &);
@@ -183,6 +188,7 @@ public:
     static void get_schema_version(ContextType, ObjectType, ReturnValue &);
     static void get_schema(ContextType, ObjectType, ReturnValue &);
     static void get_read_only(ContextType, ObjectType, ReturnValue &);
+    static void get_is_in_transaction(ContextType, ObjectType, ReturnValue &);
 #if REALM_ENABLE_SYNC
     static void get_sync_session(ContextType, ObjectType, ReturnValue &);
 #endif
@@ -194,6 +200,7 @@ public:
     static void schema_version(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void clear_test_state(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void copy_bundled_realm_files(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void delete_file(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
 
     // static properties
     static void get_default_path(ContextType, ObjectType, ReturnValue &);
@@ -205,6 +212,7 @@ public:
         {"schemaVersion", wrap<schema_version>},
         {"clearTestState", wrap<clear_test_state>},
         {"copyBundledRealmFiles", wrap<copy_bundled_realm_files>},
+        {"deleteFile", wrap<delete_file>},
         {"_waitForDownload", wrap<wait_for_download_completion>},
     };
 
@@ -219,10 +227,14 @@ public:
         {"delete", wrap<delete_one>},
         {"deleteAll", wrap<delete_all>},
         {"write", wrap<write>},
+        {"beginTransaction", wrap<begin_transaction>},
+        {"commitTransaction", wrap<commit_transaction>},
+        {"cancelTransaction", wrap<cancel_transaction>},
         {"addListener", wrap<add_listener>},
         {"removeListener", wrap<remove_listener>},
         {"removeAllListeners", wrap<remove_all_listeners>},
         {"close", wrap<close>},
+        {"compact", wrap<compact>},
     };
 
     PropertyMap<T> const properties = {
@@ -231,6 +243,7 @@ public:
         {"schemaVersion", {wrap<get_schema_version>, nullptr}},
         {"schema", {wrap<get_schema>, nullptr}},
         {"readOnly", {wrap<get_read_only>, nullptr}},
+        {"isInTransaction", {wrap<get_is_in_transaction>, nullptr}},
 #if REALM_ENABLE_SYNC
         {"syncSession", {wrap<get_sync_session>, nullptr}},
 #endif
@@ -390,6 +403,28 @@ void RealmClass<T>::constructor(ContextType ctx, ObjectType this_object, size_t 
                 config.schema_version = 0;
             }
 
+            static const String compact_on_launch_string = "shouldCompactOnLaunch";
+            ValueType compact_value = Object::get_property(ctx, object, compact_on_launch_string);
+            if (!Value::is_undefined(ctx, compact_value)) {
+                if (config.schema_mode == SchemaMode::Immutable) {
+                    throw std::invalid_argument("Cannot set 'shouldCompactOnLaunch' when 'readOnly' is set.");
+                }
+                if (config.sync_config) {
+                    throw std::invalid_argument("Cannot set 'shouldCompactOnLaunch' when 'sync' is set.");
+                }
+
+                FunctionType should_compact_on_launch_function = Value::validated_to_function(ctx, compact_value, "shouldCompactOnLaunch");
+                config.should_compact_on_launch_function = [=](uint64_t total_bytes, uint64_t unused_bytes) {
+                    ValueType arguments[2] = {
+                        Value::from_number(ctx, total_bytes),
+                        Value::from_number(ctx, unused_bytes)
+                    };
+
+                    ValueType should_compact = Function<T>::callback(ctx, should_compact_on_launch_function, this_object, 2, arguments);
+                    return Value::to_boolean(ctx, should_compact);
+                };
+            }
+
             static const String migration_string = "migration";
             ValueType migration_value = Object::get_property(ctx, object, migration_string);
             if (!Value::is_undefined(ctx, migration_value)) {
@@ -494,6 +529,37 @@ void RealmClass<T>::copy_bundled_realm_files(ContextType ctx, FunctionType, Obje
 }
 
 template<typename T>
+void RealmClass<T>::delete_file(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    validate_argument_count(argc, 1);
+
+    ValueType value = arguments[0];
+    if (!Value::is_object(ctx, value)) {
+        throw std::runtime_error("Invalid argument, expected a Realm configuration object");
+    }
+
+    ObjectType object = Value::validated_to_object(ctx, value);
+    realm::Realm::Config config;
+
+    static const String path_string = "path";
+    ValueType path_value = Object::get_property(ctx, object, path_string);
+    if (!Value::is_undefined(ctx, path_value)) {
+        config.path = Value::validated_to_string(ctx, path_value, "path");
+    }
+    else if (config.path.empty()) {
+        config.path = js::default_path();
+    }
+
+    config.path = normalize_realm_path(config.path);
+
+    std::string realm_file_path = config.path;
+    realm::remove_file(realm_file_path);
+    realm::remove_file(realm_file_path + ".lock");
+    realm::remove_file(realm_file_path + ".note");
+    realm::remove_directory(realm_file_path + ".management");
+
+}
+
+template<typename T>
 void RealmClass<T>::get_default_path(ContextType ctx, ObjectType object, ReturnValue &return_value) {
     return_value.set(realm::js::default_path());
 }
@@ -531,6 +597,11 @@ void RealmClass<T>::get_schema(ContextType ctx, ObjectType object, ReturnValue &
 template<typename T>
 void RealmClass<T>::get_read_only(ContextType ctx, ObjectType object, ReturnValue &return_value) {
     return_value.set(get_internal<T, RealmClass<T>>(object)->get()->config().immutable());
+}
+
+template<typename T>
+void RealmClass<T>::get_is_in_transaction(ContextType ctx, ObjectType object, ReturnValue &return_value) {
+    return_value.set(get_internal<T, RealmClass<T>>(object)->get()->is_in_transaction());
 }
 
 #if REALM_ENABLE_SYNC
@@ -785,6 +856,30 @@ void RealmClass<T>::write(ContextType ctx, FunctionType, ObjectType this_object,
 }
 
 template<typename T>
+void RealmClass<T>::begin_transaction(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    validate_argument_count(argc, 0);
+
+    SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
+    realm->begin_transaction();
+}
+
+template<typename T>
+void RealmClass<T>::commit_transaction(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    validate_argument_count(argc, 0);
+
+    SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
+    realm->commit_transaction();
+}
+
+template<typename T>
+void RealmClass<T>::cancel_transaction(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    validate_argument_count(argc, 0);
+
+    SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
+    realm->cancel_transaction();
+}
+
+template<typename T>
 void RealmClass<T>::add_listener(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 2);
 
@@ -832,6 +927,18 @@ void RealmClass<T>::close(ContextType ctx, FunctionType, ObjectType this_object,
 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
     realm->close();
+}
+
+template<typename T>
+void RealmClass<T>::compact(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    validate_argument_count(argc, 0);
+
+    SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
+    if (realm->is_in_transaction()) {
+        throw std::runtime_error("Cannot compact a Realm within a transaction.");
+    }
+
+    return_value.set(realm->compact());
 }
 
 } // js
