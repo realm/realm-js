@@ -1,7 +1,7 @@
-X.Y.Z Release notes
+2.0.0 Release notes (2017-9-8)
 =============================================================
 ### Breaking changes
-* None
+* Updating core, sync, object store, moving forward to 2.0.0.
 
 ### Enhancements
 * Improve performance of the RPC worker for chrome debugging.
