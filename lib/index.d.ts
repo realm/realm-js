@@ -332,9 +332,10 @@ declare namespace Realm.Sync {
         ssl_trust_certificate_path?: string;
     }
 
-    type ProgressNotificationCallback = (transferred: number, total: number) => void;
+    type ProgressNotificationCallback = (transferred: number, transferable: number) => void;
     type ProgressDirection = 'download' | 'upload';
     type ProgressMode = 'reportIndefinitely' | 'forCurrentlyOutstandingWork';
+    
     /**
     * Session
     * @see { @link https://realm.io/docs/javascript/latest/api/Realm.Sync.Session.html }
