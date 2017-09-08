@@ -237,7 +237,7 @@ elif [ -x "$(command -v brew)" ] && [ -f "$(brew --prefix nvm)/nvm.sh" ]; then
   # TODO: change the mac slaves to use manual nvm installation
   . "$(brew --prefix nvm)/nvm.sh"
 fi
-[[ "$(command -v nvm)" ]] && nvm use 6.5.0 || true
+[[ "$(command -v nvm)" ]] && nvm install 6.5.0 && nvm use 6.5.0 || true
 
 # Remove cached packages
 rm -rf ~/.yarn-cache/npm-realm-*
