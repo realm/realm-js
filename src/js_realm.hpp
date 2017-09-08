@@ -623,7 +623,7 @@ void RealmClass<T>::wait_for_download_completion(ContextType ctx, FunctionType, 
     auto config_object = Value::validated_to_object(ctx, arguments[0]);
     auto callback_function = Value::validated_to_function(ctx, arguments[argc - 1]);
 
-    FunctionType session_callback;
+    ValueType session_callback = Value::from_null(ctx);
     if (argc == 3) {
         session_callback = Value::validated_to_function(ctx, arguments[1]);
     }
@@ -699,11 +699,12 @@ void RealmClass<T>::wait_for_download_completion(ContextType ctx, FunctionType, 
             std::shared_ptr<SyncUser> user = sync_config->user;
             if (user && user->state() != SyncUser::State::Error) {
                 if (auto session = user->session_for_on_disk_path(config.path)) {
-                    if (Value::is_valid(session_callback)) {
+                    if (!Value::is_null(ctx, session_callback)) {
+                        FunctionType session_callback_func = Value::to_function(ctx, session_callback);
                         auto syncSession = create_object<T, SessionClass<T>>(ctx, new WeakSession(session));
                         ValueType callback_arguments[1];
                         callback_arguments[0] = syncSession;
-                        Function<T>::callback(protected_ctx, session_callback, protected_this, 1, callback_arguments);
+                        Function<T>::callback(protected_ctx, session_callback_func, protected_this, 1, callback_arguments);
                     }
 
                     if (progressFuncDefined) {
