@@ -87,14 +87,15 @@ exports.prepare = function(done) {
         return;
     }
 
-    let helper = require('./admin-user-helper');
-    helper.createAdminUser().then(userInfo => {
-        global.testAdminUserInfo = userInfo;
-        done();
-    })
-        .catch(error => {
-            console.error("Error running admin-user-helper: " + error);
+    require('./admin-user-helper')
+        .createAdminUser()
+        .then(userInfo => {
+            global.testAdminUserInfo = userInfo;
             done();
+        })
+        .catch(error => {
+            console.error("Error running admin-user-helper", error);
+            done.fail(error);
         });
 };
 

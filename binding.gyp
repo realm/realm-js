@@ -37,9 +37,6 @@
       "type": "static_library",
       "include_dirs": [
         "src/object-store/src",
-        "src/object-store/src/impl",
-        "src/object-store/src/impl/apple",
-        "src/object-store/src/parser",
         "src/object-store/external/pegtl"
       ],
       "defines": [ "REALM_PLATFORM_NODE=1" ],
@@ -49,6 +46,7 @@
         "src/object-store/src/index_set.cpp",
         "src/object-store/src/list.cpp",
         "src/object-store/src/object.cpp",
+        "src/object-store/src/placeholder.cpp",
         "src/object-store/src/object_schema.cpp",
         "src/object-store/src/object_store.cpp",
         "src/object-store/src/results.cpp",
@@ -59,6 +57,7 @@
         "src/object-store/src/impl/collection_notifier.cpp",
         "src/object-store/src/impl/list_notifier.cpp",
         "src/object-store/src/impl/object_notifier.cpp",
+        "src/object-store/src/impl/primitive_list_notifier.cpp",
         "src/object-store/src/impl/realm_coordinator.cpp",
         "src/object-store/src/impl/results_notifier.cpp",
         "src/object-store/src/impl/transact_log_handler.cpp",
@@ -66,6 +65,7 @@
         "src/object-store/src/parser/parser.cpp",
         "src/object-store/src/parser/query_builder.cpp",
         "src/object-store/src/util/format.cpp",
+        "src/object-store/src/util/uuid.cpp",
       ],
       "conditions": [
         ["OS=='win'", {
