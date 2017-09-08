@@ -119,6 +119,13 @@ exports.StringPrimary = {
     }
 };
 
+exports.StringOnly = {
+    name: 'StringOnlyObject',
+    properties: {
+        stringCol: 'string',
+    }
+};
+
 exports.AllTypes = {
     name: 'AllTypesObject',
     primaryKey: 'primaryCol',

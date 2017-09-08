@@ -396,6 +396,17 @@ case "$TARGET" in
   npm install --build-from-source=realm
   npm run test-runners
   ;;
+"all")
+  # Run all tests that must pass before publishing.
+  for test in eslint license-check react-example react-tests-android react-tests; do
+    for configuration in Debug Release; do
+      echo "RUNNING TEST: $test ($configuration)"
+      echo '----------------------------------------'
+      npm test "$test" "$configuration" || die "Test Failed: $test ($configuration)"
+      echo
+    done
+  done
+  ;;
 "object-store")
   pushd src/object-store
   cmake -DCMAKE_BUILD_TYPE="$CONFIGURATION" .

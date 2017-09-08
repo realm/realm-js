@@ -77,6 +77,7 @@ declare namespace Realm {
     interface Configuration {
         encryptionKey?: ArrayBuffer | ArrayBufferView | Int8Array;
         migration?: (oldRealm: Realm, newRealm: Realm) => void;
+        shouldCompactOnLaunch?: (totalBytes: number, usedBytes: number) => boolean;
         path?: string;
         readOnly?: boolean;
         schema?: ObjectClass[] | ObjectSchema[];
@@ -270,6 +271,58 @@ declare namespace Realm.Sync {
         logout(): void;
         openManagementRealm(): Realm;
         retrieveAccount(provider: string, username: string): Promise<Account>;
+
+        getGrantedPermissions(recipient: 'any' | 'currentUser' | 'otherUser'): Results<Permission>;
+        applyPermissions(condition: PermissionCondition, realmUrl: string, accessLevel: AccessLevel): Promise<PermissionChange>;
+        offerPermissions(realmUrl: string, accessLevel: AccessLevel, expiresAt?: Date): Promise<string>;
+        acceptPermissionOffer(token: string): Promise<string>
+        invalidatePermissionOffer(permissionOfferOrToken: PermissionOffer | string): Promise<void>;
+    }
+
+    type PermissionCondition = {
+      userId: string  |
+      { metadataKey: string, metadataValue: string }
+    };
+    
+    type AccessLevel = 'none' | 'read' | 'write' | 'admin';
+
+    class Permission {
+      readonly id: string;
+      readonly updatedAt: Date;
+      readonly userId: string;
+      readonly path: string;
+      readonly mayRead?: boolean;
+      readonly mayWrite?: boolean;
+      readonly mayManage?: boolean;
+    } 
+
+    class PermissionChange {
+      id: string;
+      createdAt: Date;
+      updatedAt: Date;
+      statusCode?: number;
+      statusMessage?: string;
+      userId: string;
+      metadataKey?: string;
+      metadataValue?: string;
+      realmUrl: string;
+      mayRead?: boolean;
+      mayWrite?: boolean;
+      mayManage?: boolean;
+    }
+
+    class PermissionOffer {
+      id: string;
+      createdAt: Date;
+      updatedAt: Date;
+      statusCode?: number;
+      statusMessage?: string;
+      token?: string;
+      realmUrl: string;
+      mayRead?: boolean;
+      mayWrite?: boolean;
+      mayManage?: boolean;
+      expiresAt?: Date;
     }
 
     interface SyncConfiguration {
@@ -313,7 +366,7 @@ declare namespace Realm.Sync {
     function addListener(serverURL: string, adminUser: Realm.Sync.User, regex: string, name: string, changeCallback: (changeEvent: ChangeEvent) => void): void;
     function removeAllListeners(name?: string): void;
     function removeListener(regex: string, name: string, changeCallback: (changeEvent: ChangeEvent) => void): void;
-    function setLogLevel(logLevel: 'error' | 'info' | 'debug'): void;
+    function setLogLevel(logLevel: 'all' | 'trace' | 'debug' | 'detail' | 'info' | 'warn' | 'error' | 'fatal' | 'off'): void;
     function setAccessToken(accessToken: string): void;
 
     type Instruction = {
@@ -357,6 +410,7 @@ declare class Realm {
     readonly readOnly: boolean;
     readonly schema: Realm.ObjectSchema[];
     readonly schemaVersion: number;
+    readonly isInTransaction: boolean;
 
     readonly syncSession: Realm.Sync.Session | null;
 
@@ -379,6 +433,12 @@ declare class Realm {
      * @param {Function} callback will be called when the realm is ready.
      */
     static openAsync(config: Realm.Configuration, callback: (error: any, realm: Realm) => void): void
+
+    /**
+     * Delete the Realm file for the given configuration.
+     * @param {Configuration} config
+     */
+    static deleteFile(config: Realm.Configuration): void
 
     /**
      * @param  {Realm.Configuration} config?
@@ -452,6 +512,26 @@ declare class Realm {
      * @returns void
      */
     write(callback: () => void): void;
+
+    /**
+     * @returns void
+     */
+    beginTransaction(): void;
+
+    /**
+     * @returns void
+     */
+    commitTransaction(): void;
+
+    /**
+     * @returns void
+     */
+    cancelTransaction(): void;
+
+    /**
+     * @returns boolean
+     */
+    compact(): boolean;
 }
 
 declare module 'realm' {

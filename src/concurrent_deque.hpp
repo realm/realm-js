@@ -20,37 +20,26 @@
 
 #include <condition_variable>
 #include <deque>
-#include <exception>
 #include <mutex>
+
+#include <realm/util/optional.hpp>
 
 namespace realm {
 
-class ConcurrentDequeTimeout : public std::exception {
-  public:
-    ConcurrentDequeTimeout() : std::exception() {}
-};
-
 template <typename T>
 class ConcurrentDeque {
-  public:
-    T pop_front(size_t timeout = 0) {
+public:
+    T pop_back() {
         std::unique_lock<std::mutex> lock(m_mutex);
-        while (m_deque.empty()) {
-            wait(lock, timeout);
-        }
-        T item = std::move(m_deque.front());
-        m_deque.pop_front();
-        return item;
+        m_condition.wait(lock, [this] { return !m_deque.empty(); });
+        return do_pop_back();
     }
 
-    T pop_back(size_t timeout = 0) {
+    util::Optional<T> try_pop_back(size_t timeout) {
         std::unique_lock<std::mutex> lock(m_mutex);
-        while (m_deque.empty()) {
-            wait(lock, timeout);
-        }
-        T item = std::move(m_deque.back());
-        m_deque.pop_back();
-        return item;
+        m_condition.wait_for(lock, std::chrono::milliseconds(timeout),
+                             [this] { return !m_deque.empty(); });
+        return m_deque.empty() ? util::none : util::make_optional(do_pop_back());
     }
 
     void push_front(T&& item) {
@@ -72,19 +61,16 @@ class ConcurrentDeque {
         return m_deque.empty();
     }
 
-    void wait(std::unique_lock<std::mutex> &lock, size_t timeout = 0) {
-        if (!timeout) {
-            m_condition.wait(lock);
-        }
-        else if (m_condition.wait_for(lock, std::chrono::milliseconds(timeout)) == std::cv_status::timeout) {
-            throw ConcurrentDequeTimeout();
-        }
-    }
-
-  private:
+private:
     std::condition_variable m_condition;
     std::mutex m_mutex;
     std::deque<T> m_deque;
+
+    T do_pop_back() {
+        T item = std::move(m_deque.back());
+        m_deque.pop_back();
+        return item;
+    }
 };
 
 } // realm

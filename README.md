@@ -26,17 +26,17 @@ The API reference is located at [realm.io/docs/javscript/latest/api](https://rea
 - **Need help with your code?**: Look for previous questions on the  [#realm tag](https://stackoverflow.com/questions/tagged/realm?sort=newest) — or [ask a new question](https://stackoverflow.com/questions/ask?tags=realm). We actively monitor and answer questions on SO!
 - **Have a bug to report?** [Open an issue](https://github.com/realm/realm-js/issues/new). If possible, include the version of Realm, a full log, the Realm file, and a project that shows the issue.
 - **Have a feature request?** [Open an issue](https://github.com/realm/realm-js/issues/new). Tell us what the feature should do, and why you want the feature.
-- Sign up for our [**Community Newsletter**](https://www2.realm.io/l/210132/2016-12-05/fy9m) to get regular tips, learn about other use-cases and get alerted of blog posts and tutorials about Realm.
+- Sign up for our [**Community Newsletter**](https://go.pardot.com/l/210132/2017-04-26/3j74l) to get regular tips, learn about other use-cases and get alerted of blog posts and tutorials about Realm.
 
 ## Building Realm
 
 In case you don't want to use the precompiled version on npm, you can build Realm yourself from source. You’ll need an Internet connection the first time you build in order to download the core library.
 
 Prerequisites:
-- Node 4.0+
+- Node: 4.0 <= version < 7.0
 - Xcode 7.2+
 - Android SDK 23+
-- Android NDK 10e+
+- Android NDK 10e
 
 First clone this repository:
 
