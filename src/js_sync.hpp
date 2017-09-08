@@ -375,6 +375,10 @@ void SessionClass<T>::remove_progress_notification(ContextType ctx, FunctionType
     validate_argument_count(argc, 1);
     auto callback_function = Value::validated_to_function(ctx, arguments[0], "callback");
     auto syncSessionProp = Object::get_property(ctx, callback_function, "syncSession");
+    if (Value::is_undefined(ctx, syncSessionProp) || Value::is_null(ctx, syncSessionProp)) {
+        return;
+    }
+
     auto syncSession = Value::validated_to_object(ctx, syncSessionProp);
     auto registrationToken = Object::get_property(ctx, callback_function, "registrationToken");
 
