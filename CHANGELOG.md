@@ -9,7 +9,7 @@ X.Y.Z Release notes
 * `Realm.Sync.User.login`, `Realm.Sync.User.register`, and `Realm.Sync.User.registerWithProvider` both support _both_ callbacks and Promise return values
 
 ### Bug fixes
-* None
+* Adding missing TypeScript declation (#1283).
 
 1.11.1 Release notes (2017-9-1)
 =============================================================
