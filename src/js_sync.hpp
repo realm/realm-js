@@ -71,9 +71,11 @@ public:
     };
 
     static void create_user(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void admin_user(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
 
     MethodMap<T> const static_methods = {
-        {"createUser", wrap<create_user>}
+        {"createUser", wrap<create_user>},
+        {"_adminUser", wrap<admin_user>}
     };
 
     /*static void current_user(ContextType ctx, ObjectType object, ReturnValue &return_value);*/
@@ -119,15 +121,28 @@ void UserClass<T>::is_admin(ContextType ctx, ObjectType object, ReturnValue &ret
 template<typename T>
 void UserClass<T>::create_user(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 3, 5);
-    SharedUser *user = new SharedUser(SyncManager::shared().get_user(
+    SyncUserIdentifier userIdentifier {
         Value::validated_to_string(ctx, arguments[1], "identity"),
-        Value::validated_to_string(ctx, arguments[2], "refreshToken"),
-        (std::string)Value::validated_to_string(ctx, arguments[0], "authServerUrl"),
-        Value::validated_to_boolean(ctx, arguments[3], "isAdminToken") ? SyncUser::TokenType::Admin : SyncUser::TokenType::Normal));
+        Value::validated_to_string(ctx, arguments[0], "authServerUrl")
+     };
+    SharedUser *user = new SharedUser(SyncManager::shared().get_user(
+        userIdentifier,
+        Value::validated_to_string(ctx, arguments[2], "refreshToken")
+    ));
 
     if (argc == 5) {
         (*user)->set_is_admin(Value::validated_to_boolean(ctx, arguments[4], "isAdmin"));
     }
+    return_value.set(create_object<T, UserClass<T>>(ctx, user));
+}
+
+template<typename T>
+void UserClass<T>::admin_user(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    validate_argument_count(argc, 2, 2);
+    SharedUser *user = new SharedUser(SyncManager::shared().get_admin_token_user(
+        Value::validated_to_string(ctx, arguments[0], "authServerUrl"),
+        Value::validated_to_string(ctx, arguments[1], "refreshToken")
+    ));
     return_value.set(create_object<T, UserClass<T>>(ctx, user));
 }
 
@@ -432,7 +447,7 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
                                                                         nullptr, util::none,
                                                                         client_validate_ssl, ssl_trust_certificate_path});
         config.schema_mode = SchemaMode::Additive;
-        config.path = realm::SyncManager::shared().path_for_realm(shared_user->identity(), raw_realm_url);
+        config.path = realm::SyncManager::shared().path_for_realm(*shared_user, raw_realm_url);
 
         if (!config.encryption_key.empty()) {
             config.sync_config->realm_encryption_key = std::array<char, 64>();

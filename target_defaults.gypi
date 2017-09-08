@@ -44,7 +44,6 @@
         "msvs_settings": {
           "VCCLCompilerTool": {
             "RuntimeTypeInfo": "true",
-            "AdditionalOptions": [ "/MDd" ]
           },
         }
       },
@@ -52,7 +51,6 @@
         "msvs_settings": {
           "VCCLCompilerTool": {
             "RuntimeTypeInfo": "true",
-            "AdditionalOptions": [ "/MD" ]
           },
         }
       }

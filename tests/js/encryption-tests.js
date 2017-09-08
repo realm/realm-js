@@ -76,7 +76,7 @@ if (Realm.Sync) {
         new Realm({
             encryptionKey: new Int8Array(64),
             sync: {
-                user: Realm.Sync.User.adminUser('fake-token'),
+                user: Realm.Sync.User.adminUser('fake-token', 'http://fake-server'),
                 url: 'realm://fake-server'
             }
         });

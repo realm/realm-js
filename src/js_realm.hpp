@@ -383,7 +383,7 @@ void RealmClass<T>::constructor(ContextType ctx, ObjectType this_object, size_t 
             static const String read_only_string = "readOnly";
             ValueType read_only_value = Object::get_property(ctx, object, read_only_string);
             if (!Value::is_undefined(ctx, read_only_value) && Value::validated_to_boolean(ctx, read_only_value, "readOnly")) {
-                config.schema_mode = SchemaMode::ReadOnly;
+                config.schema_mode = SchemaMode::Immutable;
             }
 
             static const String schema_string = "schema";
@@ -596,7 +596,7 @@ void RealmClass<T>::get_schema(ContextType ctx, ObjectType object, ReturnValue &
 
 template<typename T>
 void RealmClass<T>::get_read_only(ContextType ctx, ObjectType object, ReturnValue &return_value) {
-    return_value.set(get_internal<T, RealmClass<T>>(object)->get()->config().read_only());
+    return_value.set(get_internal<T, RealmClass<T>>(object)->get()->config().immutable());
 }
 
 template<typename T>
