@@ -365,8 +365,8 @@ void SessionClass<T>::add_progress_notification(ContextType ctx, FunctionType, O
 
         auto syncSession = create_object<T, SessionClass<T>>(ctx, new WeakSession(session));
         PropertyAttributes attributes = ReadOnly | DontEnum | DontDelete;
-        Object::set_property(ctx, callback_function, "syncSession", syncSession, attributes);
-        Object::set_property(ctx, callback_function, "registrationToken", Value::from_number(protected_ctx, registrationToken), attributes);
+        Object::set_property(ctx, callback_function, "_syncSession", syncSession, attributes);
+        Object::set_property(ctx, callback_function, "_registrationToken", Value::from_number(protected_ctx, registrationToken), attributes);
     }
 }
 
@@ -374,13 +374,13 @@ template<typename T>
 void SessionClass<T>::remove_progress_notification(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 1);
     auto callback_function = Value::validated_to_function(ctx, arguments[0], "callback");
-    auto syncSessionProp = Object::get_property(ctx, callback_function, "syncSession");
+    auto syncSessionProp = Object::get_property(ctx, callback_function, "_syncSession");
     if (Value::is_undefined(ctx, syncSessionProp) || Value::is_null(ctx, syncSessionProp)) {
         return;
     }
 
     auto syncSession = Value::validated_to_object(ctx, syncSessionProp);
-    auto registrationToken = Object::get_property(ctx, callback_function, "registrationToken");
+    auto registrationToken = Object::get_property(ctx, callback_function, "_registrationToken");
 
     if (auto session = get_internal<T, SessionClass<T>>(syncSession)->lock()) {
         auto reg = Value::validated_to_number(ctx, registrationToken);
