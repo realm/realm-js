@@ -8,7 +8,7 @@ X.Y.Z Release notes
 * Added `Realm.deleteFile` for deleting a Realm (#363).
 
 ### Bug fixes
-* Adding missing TypeScript declation (#1283).
+* Adding missing TypeScript declations; Permissions (#1283) and `setFeatureToken()`.
 
 1.11.1 Release notes (2017-9-1)
 =============================================================
