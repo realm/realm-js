@@ -354,8 +354,8 @@ void SessionClass<T>::add_progress_notification(ContextType ctx, FunctionType, O
             ValueType callback_arguments[2];
             callback_arguments[0] = Value::from_number(protected_ctx, transferred_bytes);
             callback_arguments[1] = Value::from_number(protected_ctx, transferrable_bytes);
-
-            Function<T>::callback(protected_ctx, protected_callback, protected_this, 2, callback_arguments);
+            
+            Function<T>::callback(protected_ctx, protected_callback, typename T::Object(), 2, callback_arguments);
         });
 
         progressFunc = std::move(progress_handler);
