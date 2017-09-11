@@ -487,6 +487,11 @@ declare class Realm {
     /**
      * @returns void
      */
+    deleteModel(name: string): void;
+
+    /**
+     * @returns void
+     */
     deleteAll(): void;
 
     /**

@@ -180,7 +180,7 @@ public:
     static void remove_all_listeners(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void close(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void compact(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
-    
+    static void delete_model(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
 
     // properties
     static void get_empty(ContextType, ObjectType, ReturnValue &);
@@ -235,6 +235,7 @@ public:
         {"removeAllListeners", wrap<remove_all_listeners>},
         {"close", wrap<close>},
         {"compact", wrap<compact>},
+        {"deleteModel", wrap<delete_model>},
     };
 
     PropertyMap<T> const properties = {
@@ -557,6 +558,17 @@ void RealmClass<T>::delete_file(ContextType ctx, FunctionType, ObjectType this_o
     realm::remove_file(realm_file_path + ".note");
     realm::remove_directory(realm_file_path + ".management");
 
+}
+
+template<typename T>
+void RealmClass<T>::delete_model(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    validate_argument_count(argc, 1);
+    ValueType value = arguments[0];
+
+    SharedRealm& realm = *get_internal<T, RealmClass<T>>(this_object);
+
+    std::string model_name = Value::validated_to_string(ctx, value, "deleteModel");
+    ObjectStore::delete_data_for_object(realm->read_group(), model_name);
 }
 
 template<typename T>
