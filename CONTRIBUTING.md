@@ -88,3 +88,4 @@ To finish adding your new function, you will have to add your function a few pla
 * In `lib/index.d.ts` you add the TypeScript declaration
 * Documentation is added in `docs/realm.js`
 * Add your function to `lib/browser/index.js` in order to enable it in the Chrome Debugger
+* Add an entry to `CHANGELOG.md` if applicable (Breaking changes/Enhancements/Bug fixes)
