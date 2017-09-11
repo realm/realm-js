@@ -328,6 +328,7 @@ public:
     static void set_sync_log_level(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
 
     // private
+    static std::function<SyncBindSessionHandler> session_bind_callback(ContextType ctx, ObjectType sync_constructor);
     static void populate_sync_config(ContextType, ObjectType realm_constructor, ObjectType config_object, Realm::Config&);
 
     // static properties
@@ -368,6 +369,24 @@ void SyncClass<T>::set_sync_log_level(ContextType ctx, FunctionType, ObjectType 
 }
 
 template<typename T>
+std::function<SyncBindSessionHandler> SyncClass<T>::session_bind_callback(ContextType ctx, ObjectType sync_constructor)
+{
+    Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
+    Protected<ObjectType> protected_sync_constructor(ctx, sync_constructor);
+    return EventLoopDispatcher<SyncBindSessionHandler>([protected_ctx, protected_sync_constructor](const std::string& path, const realm::SyncConfig& config, std::shared_ptr<SyncSession>) {
+        HANDLESCOPE
+        ObjectType user_constructor = Object::validated_get_object(protected_ctx, protected_sync_constructor, "User");
+        FunctionType refreshAccessToken = Object::validated_get_function(protected_ctx, user_constructor, "_refreshAccessToken");
+
+        ValueType arguments[3];
+        arguments[0] = create_object<T, UserClass<T>>(protected_ctx, new SharedUser(config.user));
+        arguments[1] = Value::from_string(protected_ctx, path);
+        arguments[2] = Value::from_string(protected_ctx, config.realm_url);
+        Function::call(protected_ctx, refreshAccessToken, 3, arguments);
+    });
+}
+
+template<typename T>
 void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constructor, ObjectType config_object, Realm::Config& config)
 {
     ValueType sync_config_value = Object::get_property(ctx, config_object, "sync");
@@ -376,21 +395,8 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
     } else if (!Value::is_undefined(ctx, sync_config_value)) {
         auto sync_config_object = Value::validated_to_object(ctx, sync_config_value);
 
-        ObjectType sync_constructor = Object::validated_get_object(ctx, realm_constructor, std::string("Sync"));
-        Protected<ObjectType> protected_sync(ctx, sync_constructor);
-        Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
-
-        EventLoopDispatcher<SyncBindSessionHandler> bind([protected_ctx, protected_sync](const std::string& path, const realm::SyncConfig& config, std::shared_ptr<SyncSession>) {
-            HANDLESCOPE
-            ObjectType user_constructor = Object::validated_get_object(protected_ctx, protected_sync, std::string("User"));
-            FunctionType refreshAccessToken = Object::validated_get_function(protected_ctx, user_constructor, std::string("_refreshAccessToken"));
-
-            ValueType arguments[3];
-            arguments[0] = create_object<T, UserClass<T>>(protected_ctx, new SharedUser(config.user));
-            arguments[1] = Value::from_string(protected_ctx, path.c_str());
-            arguments[2] = Value::from_string(protected_ctx, config.realm_url.c_str());
-            Function::call(protected_ctx, refreshAccessToken, 3, arguments);
-        });
+        ObjectType sync_constructor = Object::validated_get_object(ctx, realm_constructor, "Sync");
+        auto bind = session_bind_callback(ctx, sync_constructor);
 
         std::function<SyncSessionErrorHandler> error_handler;
         ValueType error_func = Object::get_property(ctx, sync_config_object, "error");
