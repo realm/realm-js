@@ -127,9 +127,7 @@ bool RealmObjectClass<T>::set_property(ContextType ctx, ObjectType object, const
 
     NativeAccessor<T> accessor(ctx, realm_object->realm(), realm_object->get_object_schema());
     if (!Value::is_valid_for_property(ctx, value, *prop)) {
-        throw TypeErrorException(realm_object->get_object_schema().name, property_name,
-                                 js_type_name_for_property_type(prop->type),
-                                 accessor.print(value));
+        throw TypeErrorException(accessor, realm_object->get_object_schema().name, *prop, value);
     }
 
     realm_object->set_property_value(accessor, property_name, value, true);

@@ -18,226 +18,158 @@
 
 'use strict';
 
-var Realm = require('realm');
-var TestCase = require('./asserts');
-var schemas = require('./schemas');
+const Realm = require('realm');
+const TestCase = require('./asserts');
+const schemas = require('./schemas');
 
-var RANDOM_DATA = new Uint8Array([
+const RANDOM_DATA = new Uint8Array([
     0xd8, 0x21, 0xd6, 0xe8, 0x00, 0x57, 0xbc, 0xb2, 0x6a, 0x15, 0x77, 0x30, 0xac, 0x77, 0x96, 0xd9,
     0x67, 0x1e, 0x40, 0xa7, 0x6d, 0x52, 0x83, 0xda, 0x07, 0x29, 0x9c, 0x70, 0x38, 0x48, 0x4e, 0xff,
 ]);
 
-module.exports = {
-    testBasicTypesPropertyGetters: function() {
-        var realm = new Realm({schema: [schemas.BasicTypes]});
-        var object;
+const allTypesValues = {
+    boolCol:   true,
+    intCol:    1,
+    floatCol:  1.1,
+    doubleCol: 1.11,
+    stringCol: 'string',
+    dateCol:   new Date(1),
+    dataCol:   RANDOM_DATA,
+    objectCol: {doubleCol: 2.2},
 
-        var basicTypesValues = {
-            boolCol:   true,
-            intCol:    1,
-            floatCol:  1.1,
-            doubleCol: 1.11,
-            stringCol: 'string',
-            dateCol:   new Date(1),
-            dataCol:   RANDOM_DATA,
-        };
+    optBoolCol:   true,
+    optIntCol:    1,
+    optFloatCol:  1.1,
+    optDoubleCol: 1.11,
+    optStringCol: 'string',
+    optDateCol:   new Date(1),
+    optDataCol:   RANDOM_DATA,
+
+    boolArrayCol:   [true],
+    intArrayCol:    [1],
+    floatArrayCol:  [1.1],
+    doubleArrayCol: [1.11],
+    stringArrayCol: ['string'],
+    dateArrayCol:   [new Date(1)],
+    dataArrayCol:   [RANDOM_DATA],
+    objectArrayCol: [{doubleCol: 2.2}],
+
+    optBoolArrayCol:   [true],
+    optIntArrayCol:    [1],
+    optFloatArrayCol:  [1.1],
+    optDoubleArrayCol: [1.11],
+    optStringArrayCol: ['string'],
+    optDateArrayCol:   [new Date(1)],
+    optDataArrayCol:   [RANDOM_DATA],
+};
+const nullPropertyValues = (() => {
+    let values = {}
+    for (let name in allTypesValues) {
+        if (name.includes('opt')) {
+            values[name] = name.includes('Array') ? [null] : null;
+        }
+        else {
+            values[name] = allTypesValues[name];
+        }
+    }
+    return values;
+})();
+
+module.exports = {
+    testAllPropertyGetters: function() {
+        const realm = new Realm({schema: [schemas.AllTypes, schemas.TestObject, schemas.LinkToAllTypes]});
+        let object, nullObject;
 
         realm.write(function() {
-            object = realm.create('BasicTypesObject', basicTypesValues);
+            object = realm.create('AllTypesObject', allTypesValues);
+            nullObject = realm.create('AllTypesObject', nullPropertyValues);
         });
 
-        for (const name in schemas.BasicTypes.properties) {
-            const prop = schemas.BasicTypes.properties[name];
-            const type = typeof prop == 'object' ? prop.type : prop;
-            TestCase.assertSimilar(type, object[name], basicTypesValues[name]);
+        const objectSchema = realm.schema[0];
+        for (const name of Object.keys(objectSchema.properties)) {
+            const type = objectSchema.properties[name].type;
+            if (type === 'linkingObjects') {
+                TestCase.assertEqual(object[name].length, 0);
+                TestCase.assertEqual(nullObject[name].length, 0);
+                continue;
+            }
+
+            TestCase.assertSimilar(type, object[name], allTypesValues[name]);
+            TestCase.assertSimilar(type, nullObject[name], nullPropertyValues[name]);
         }
 
         TestCase.assertEqual(object.nonexistent, undefined);
     },
-    testNullableBasicTypesPropertyGetters: function() {
-        var realm = new Realm({schema: [schemas.NullableBasicTypes]});
-        var object, nullObject;
 
-        var basicTypesValues = {
-            boolCol:   true,
-            intCol:    1,
-            floatCol:  1.1,
-            doubleCol: 1.11,
-            stringCol: 'string',
-            dateCol:   new Date(1),
-            dataCol:   RANDOM_DATA,
-        };
+    testAllTypesPropertySetters: function() {
+        const realm = new Realm({schema: [schemas.AllTypes, schemas.TestObject, schemas.LinkToAllTypes]});
+        let obj;
 
         realm.write(function() {
-            object = realm.create('NullableBasicTypesObject', basicTypesValues);
-
-            nullObject = realm.create('NullableBasicTypesObject', {
-                boolCol:   null,
-                intCol:    null,
-                floatCol:  null,
-                doubleCol: null,
-                stringCol: null,
-                dateCol:   null,
-                dataCol:   null,
-            });
+            obj = realm.create('AllTypesObject', allTypesValues);
         });
 
-        for (var name in schemas.BasicTypes.properties) {
-            var prop = schemas.BasicTypes.properties[name];
-            var type = typeof prop == 'object' ? prop.type : prop;
-
-            TestCase.assertEqual(nullObject[name], null);
-
-            if (type == 'float' || type == 'double') {
-                TestCase.assertEqualWithTolerance(object[name], basicTypesValues[name], 0.000001);
-            }
-            else if (type == 'data') {
-                TestCase.assertArraysEqual(new Uint8Array(object[name]), RANDOM_DATA);
-            }
-            else if (type == 'date') {
-                TestCase.assertEqual(object[name].getTime(), basicTypesValues[name].getTime());
-            }
-            else {
-                TestCase.assertEqual(object[name], basicTypesValues[name]);
-            }
-        }
-
-    },
-    testBasicTypesPropertySetters: function() {
-        var realm = new Realm({schema: [schemas.BasicTypes]});
-        var obj;
-
-        var basicTypesValues = {
-            boolCol:   true,
-            intCol:    1,
-            floatCol:  1.1,
-            doubleCol: 1.11,
-            stringCol: 'string',
-            dateCol:   new Date(1),
-            dataCol:   new ArrayBuffer(),
-        };
-
-        realm.write(function() {
-            obj = realm.create('BasicTypesObject', basicTypesValues);
+        TestCase.assertThrows(function() {
             obj.boolCol = false;
-            obj.intCol = 2;
-            obj.floatCol = 2.2;
-            obj.doubleCol = 2.22;
-            obj.stringCol = 'STRING';
-            obj.dateCol = new Date(2);
-            obj.dataCol = RANDOM_DATA;
-        });
-
-        TestCase.assertEqual(obj.boolCol, false, 'wrong bool value');
-        TestCase.assertEqual(obj.intCol, 2, 'wrong int value');
-        TestCase.assertEqualWithTolerance(obj.floatCol, 2.2, 0.000001, 'wrong float value');
-        TestCase.assertEqualWithTolerance(obj.doubleCol, 2.22, 0.000001, 'wrong double value');
-        TestCase.assertEqual(obj.stringCol, 'STRING', 'wrong string value');
-        TestCase.assertEqual(obj.dateCol.getTime(), 2, 'wrong date value');
-        TestCase.assertArraysEqual(new Uint8Array(obj.dataCol), RANDOM_DATA, 'wrong data value');
-
-        realm.write(function() {
-            TestCase.assertThrows(function() {
-                obj.boolCol = 'cat';
-            });
-            TestCase.assertThrows(function() {
-                obj.intCol = 'dog';
-            });
-
-            TestCase.assertThrows(function() {
-                obj.boolCol = null;
-            });
-            TestCase.assertThrows(function() {
-                obj.boolCol = undefined;
-            });
-            TestCase.assertThrows(function() {
-                obj.intCol = null;
-            });
-            TestCase.assertThrows(function() {
-                obj.intCol = undefined;
-            });
-            TestCase.assertThrows(function() {
-                obj.floatCol = null;
-            });
-            TestCase.assertThrows(function() {
-                obj.floatCol = undefined;
-            });
-            TestCase.assertThrows(function() {
-                obj.doubleCol = null;
-            });
-            TestCase.assertThrows(function() {
-                obj.doubleCol = undefined;
-            });
-            TestCase.assertThrows(function() {
-                obj.stringCol = null;
-            });
-            TestCase.assertThrows(function() {
-                obj.stringCol = undefined;
-            });
-            TestCase.assertThrows(function() {
-                obj.dateCol = null;
-            });
-            TestCase.assertThrows(function() {
-                obj.dateCol = undefined;
-            });
-            TestCase.assertThrows(function() {
-                obj.dataCol = null;
-            });
-            TestCase.assertThrows(function() {
-                obj.dataCol = undefined;
-            });
-        });
-
-        TestCase.assertThrows(function() {
-            obj.boolCol = true;
         }, 'can only set property values in a write transaction');
 
-        TestCase.assertEqual(obj.boolCol, false, 'bool value changed outside transaction');
-    },
-    testNullableBasicTypesPropertySetters: function() {
-        var realm = new Realm({schema: [schemas.NullableBasicTypes]});
-        var obj, obj1;
-
-        var basicTypesValues = {
-            boolCol:   true,
-            intCol:    1,
-            floatCol:  1.1,
-            doubleCol: 1.11,
-            stringCol: 'string',
-            dateCol:   new Date(1),
-            dataCol:   RANDOM_DATA,
-        };
+        TestCase.assertEqual(obj.boolCol, true, 'bool value changed outside transaction');
 
         realm.write(function() {
-            obj = realm.create('NullableBasicTypesObject', basicTypesValues);
-            obj1 = realm.create('NullableBasicTypesObject', basicTypesValues);
+            TestCase.assertThrows(() => obj.boolCol = 'cat');
+            TestCase.assertThrows(() => obj.intCol = 'dog');
 
-            for (var name in schemas.NullableBasicTypes.properties) {
-                obj[name] = null;
-                obj1[name] = undefined;
+            // Non-optional properties should complain about null
+            for (const name of ['boolCol', 'intCol', 'floatCol', 'doubleCol', 'stringCol', 'dataCol', 'dateCol']) {
+                TestCase.assertThrows(() => obj[name] = null, `Setting ${name} to null should throw`);
+                TestCase.assertThrows(() => obj[name] = undefined, `Setting ${name} to undefined should throw`);
             }
+
+            // Optional properties should allow it
+            for (const name of ['optBoolCol', 'optIntCol', 'optFloatCol', 'optDoubleCol',
+                                'optStringCol', 'optDataCol', 'optDateCol', 'objectCol']) {
+                obj[name] = null;
+                TestCase.assertEqual(obj[name], null);
+                obj[name] = undefined;
+                TestCase.assertEqual(obj[name], null);
+            }
+
+            function tryAssign(name, value) {
+                var prop = schemas.AllTypes.properties[name];
+                var type = typeof prop == 'object' ? prop.type : prop;
+                obj[name] = value;
+                TestCase.assertSimilar(type, obj[name], value, undefined, 1);
+            }
+
+            tryAssign('boolCol', false);
+            tryAssign('intCol', 10);
+            tryAssign('floatCol', 2.2);
+            tryAssign('doubleCol', 3.3);
+            tryAssign('stringCol', 'new str');
+            tryAssign('dateCol', new Date(2));
+            tryAssign('dataCol', RANDOM_DATA);
+
+            tryAssign('optBoolCol', null);
+            tryAssign('optIntCol', null);
+            tryAssign('optFloatCol', null);
+            tryAssign('optDoubleCol', null);
+            tryAssign('optStringCol', null);
+            tryAssign('optDateCol', null);
+            tryAssign('optDataCol', null);
+
+            tryAssign('optBoolCol', false);
+            tryAssign('optIntCol', 10);
+            tryAssign('optFloatCol', 2.2);
+            tryAssign('optDoubleCol', 3.3);
+            tryAssign('optStringCol', 'new str');
+            tryAssign('optDateCol', new Date(2));
+            tryAssign('optDataCol', RANDOM_DATA);
+
         });
-
-        for (var name in schemas.NullableBasicTypes.properties) {
-            TestCase.assertEqual(obj[name], null);
-            TestCase.assertEqual(obj1[name], null);
-        }
-
-        realm.write(function() {
-            TestCase.assertThrows(function() {
-                obj.boolCol = 'cat';
-            });
-            TestCase.assertThrows(function() {
-                obj.intCol = 'dog';
-            });
-        });
-
-        TestCase.assertThrows(function() {
-            obj.boolCol = null;
-        }, 'can only set property values in a write transaction');
     },
+
     testLinkTypesPropertyGetters: function() {
-        var realm = new Realm({schema: [schemas.LinkTypes, schemas.TestObject]});
+        const realm = new Realm({schema: [schemas.LinkTypes, schemas.TestObject]});
         var obj = null;
 
         realm.write(function() {
@@ -261,8 +193,9 @@ module.exports = {
         TestCase.assertEqual(arrayVal.length, 1);
         TestCase.assertEqual(arrayVal[0].doubleCol, 3);
     },
+
     testLinkTypesPropertySetters: function() {
-        var realm = new Realm({schema: [schemas.LinkTypes, schemas.TestObject]});
+        const realm = new Realm({schema: [schemas.LinkTypes, schemas.TestObject]});
         var objects = realm.objects('TestObject');
         var obj;
 
@@ -328,33 +261,25 @@ module.exports = {
         });
         TestCase.assertEqual(obj.objectCol.doubleCol, 3);
     },
+
     testEnumerablePropertyNames: function() {
-        var realm = new Realm({schema: [schemas.BasicTypes]});
-        var object;
+        const realm = new Realm({schema: [schemas.AllTypes, schemas.TestObject, schemas.LinkToAllTypes]});
+        let object;
 
-        realm.write(function() {
-            object = realm.create('BasicTypesObject', {
-                boolCol:   true,
-                intCol:    1,
-                floatCol:  1.1,
-                doubleCol: 1.11,
-                stringCol: 'string',
-                dateCol:   new Date(1),
-                dataCol:   RANDOM_DATA,
-            });
-        });
+        realm.write(() => object = realm.create('AllTypesObject', allTypesValues));
 
-        var propNames = Object.keys(schemas.BasicTypes.properties);
+        const propNames = Object.keys(schemas.AllTypes.properties);
         TestCase.assertArraysEqual(Object.keys(object), propNames, 'Object.keys');
 
-        for (var key in object) {
+        for (let key in object) {
             TestCase.assertEqual(key, propNames.shift());
         }
 
         TestCase.assertEqual(propNames.length, 0);
     },
+
     testDataProperties: function() {
-        var realm = new Realm({schema: [schemas.DefaultValues, schemas.TestObject]});
+        const realm = new Realm({schema: [schemas.DefaultValues, schemas.TestObject]});
         var object;
 
         // Should be be able to set a data property with a typed array.
@@ -432,7 +357,7 @@ module.exports = {
     },
 
     testObjectConstructor: function() {
-        var realm = new Realm({schema: [schemas.TestObject]});
+        const realm = new Realm({schema: [schemas.TestObject]});
 
         realm.write(function() {
             var obj = realm.create('TestObject', {doubleCol: 1});
@@ -444,7 +369,7 @@ module.exports = {
     },
 
     testIsValid: function() {
-        var realm = new Realm({schema: [schemas.TestObject]});
+        const realm = new Realm({schema: [schemas.TestObject]});
         var obj;
         realm.write(function() {
             obj = realm.create('TestObject', {doubleCol: 1});
@@ -458,9 +383,9 @@ module.exports = {
             obj.doubleCol;
         });
     },
-    
+
     testObjectSchema: function() {
-        var realm = new Realm({schema: [schemas.TestObject]});
+        const realm = new Realm({schema: [schemas.TestObject]});
         var obj;
         realm.write(function() {
             obj = realm.create('TestObject', {doubleCol: 1});
@@ -503,7 +428,7 @@ module.exports = {
         TestCase.assertEqual(realm_v3.objects('Date')[0].nullDate.getTime(), 1462500087955);
         TestCase.assertEqual(realm_v3.objects('Date')[1].currentDate.getTime(), -10000);
         TestCase.assertEqual(realm_v3.objects('Date')[1].nullDate, null);
-        
+
         // test different dates
         var realm = new Realm({schema: [schemas.DateObject]});
         realm.write(function() {

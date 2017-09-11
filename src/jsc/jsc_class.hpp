@@ -395,10 +395,10 @@ JSValueRef wrap(JSContextRef ctx, JSObjectRef function, JSObjectRef this_object,
 }
 
 template<jsc::ArgumentsMethodType F>
-JSValueRef wrap(JSContextRef ctx, JSObjectRef function, JSObjectRef this_object, size_t argc, const JSValueRef arguments[], JSValueRef* exception) {
+JSValueRef wrap(JSContextRef ctx, JSObjectRef, JSObjectRef this_object, size_t argc, const JSValueRef arguments[], JSValueRef* exception) {
     jsc::ReturnValue return_value(ctx);
     try {
-        F(ctx, function, this_object, jsc::Arguments{ctx, argc, arguments}, return_value);
+        F(ctx, this_object, jsc::Arguments{ctx, argc, arguments}, return_value);
         return return_value;
     }
     catch (std::exception &e) {

@@ -21,14 +21,27 @@
 module.exports = {
     assertSimilar: function(type, val1, val2, errorMessage, depth) {
         depth = depth || 0;
-        if (type == 'float' || type == 'double') {
-            this.assertEqualWithTolerance(val1, val2, errorMessage, depth + 1);
+        this.assertDefined(type, depth + 1);
+        type = type.replace('?', '');
+        if (val2 === null) {
+            this.assertNull(val1, errorMessage, depth + 1);
         }
-        else if (type == 'data') {
+        else if (type === 'float' || type === 'double') {
+            this.assertEqualWithTolerance(val1, val2, 0.000001, errorMessage, depth + 1);
+        }
+        else if (type === 'data') {
             this.assertArraysEqual(new Uint8Array(val1), val2, errorMessage, depth + 1);
         }
-        else if (type == 'date') {
-            this.assertEqual(val1.getTime(), val2.getTime(), errorMessage, depth + 1);
+        else if (type === 'date') {
+            this.assertEqual(val1 && val1.getTime(), val2.getTime(), errorMessage, depth + 1);
+        }
+        else if (type === 'object') {
+            for (const key of Object.keys(val1)) {
+                this.assertEqual(val1[key], val2[key], errorMessage, depth + 1);
+            }
+        }
+        else if (type === 'list') {
+            this.assertArraysEqual(val1, val2, errorMessage, depth + 1);
         }
         else {
             this.assertEqual(val1, val2, errorMessage, depth + 1);
@@ -79,6 +92,8 @@ module.exports = {
     },
 
     assertArraysEqual: function(val1, val2, errorMessage, depth) {
+        this.assertDefined(val1, `val1 should be non-null but is ${val1}`, 1 + (depth || 0));
+        this.assertDefined(val2, `val2 should be non-null but is ${val2}`, 1 + (depth || 0));
         const len1 = val1.length;
         const len2 = val2.length;
 
@@ -90,8 +105,25 @@ module.exports = {
             throw new TestFailureError(message, depth);
         }
 
+        let compare;
+        if (val1.type === "data") {
+            compare = (i, a, b) => a === b || this.assertArraysEqual(new Uint8Array(a), b, `Data elements at index ${i}`, 1) || true;
+        }
+        else if (val1.type === "date") {
+            compare = (i, a, b) => (a && a.getTime()) === (b && b.getTime());
+        }
+        else if (val1.type === "float" || val1.type === "double") {
+            compare = (i, a, b) => a >= b - 0.000001 && a <= b + 0.000001;
+        }
+        else if (val1.type === 'object') {
+            compare = (i, a, b) => Object.keys(a).every(key => a[key] === b[key]);
+        }
+        else {
+            compare = (i, a, b) => a === b;
+        }
+
         for (let i = 0; i < len1; i++) {
-            if (val1[i] !== val2[i]) {
+            if (!compare(i, val1[i], val2[i])) {
                 let message = `Array contents not equal at index ${i} (${val1[i]} != ${val2[i]})`;
                 if (errorMessage) {
                     message = `${errorMessage} - ${message}`;
@@ -136,7 +168,7 @@ module.exports = {
     },
 
     assertThrowsContaining: function(func, expectedMessage, depth) {
-        var caught = false;
+        let caught = false;
         try {
             func();
         }
@@ -158,6 +190,12 @@ module.exports = {
         }
     },
 
+    assertFalse: function(condition, errorMessage, depth) {
+        if (condition) {
+            throw new TestFailureError(errorMessage || `Condition ${condition} expected to be false`, depth);
+        }
+    },
+
     assertInstanceOf: function(object, type, errorMessage, depth) {
         if (!(object instanceof type)) {
             throw new TestFailureError(errorMessage || `Object ${object} expected to be of type ${type}`, depth);
@@ -166,6 +204,12 @@ module.exports = {
 
     assertType: function(value, type, depth) {
         this.assertEqual(typeof value, type, `Value ${value} expected to be of type ${type}`, 1 + depth || 0);
+    },
+
+    assertDefined: function(value, errorMessage, depth) {
+        if (value === undefined || value === null) {
+            throw new TestFailureError(errorMessage || `Value ${value} expected to be non-null`, depth);
+        }
     },
 
     assertUndefined: function(value, errorMessage, depth) {

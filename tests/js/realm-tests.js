@@ -95,7 +95,8 @@ module.exports = {
     },
 
     testRealmConstructorSchemaValidation: function() {
-        TestCase.assertThrowsContaining(() => new Realm({schema: schemas.AllTypes}), "schema must be of type 'array', got");
+        TestCase.assertThrowsContaining(() => new Realm({schema: schemas.AllTypes}),
+                                        "schema must be of type 'array', got");
         TestCase.assertThrowsContaining(() => new Realm({schema: ['SomeType']}),
                                         "Failed to read ObjectSchema: JS value must be of type 'object', got (SomeType)");
         TestCase.assertThrowsContaining(() => new Realm({schema: [{}]}),
@@ -142,7 +143,7 @@ module.exports = {
             }]});
         }, "Property 'InvalidObject.link' declared as origin of linking objects property 'InvalidObject.linkingObjects' links to type 'IntObject'")
     },
-    
+
     testRealmConstructorInMemory: function() {
         // open in-memory realm instance
         const realm1 = new Realm({inMemory: true, schema: [schemas.TestObject]});
@@ -166,7 +167,7 @@ module.exports = {
         // Open the same in-memory realm again and verify that it is now empty
         const realm3 = new Realm({inMemory: true});
         TestCase.assertEqual(realm3.schema.length, 0);
-        
+
         // try to open the same realm in persistent mode (should fail as you cannot mix modes)
         TestCase.assertThrowsContaining(() => new Realm({}), 'already opened with different inMemory settings.');
     },
@@ -296,23 +297,10 @@ module.exports = {
         });
     },
 
-    testRealmCreateOptionals: function() {
-        const realm = new Realm({schema: [schemas.NullableBasicTypes, schemas.LinkTypes, schemas.TestObject]});
-        let basic, links;
-        realm.write(() => {
-            basic = realm.create('NullableBasicTypesObject', {});
-            links = realm.create('LinkTypesObject', {});
-        });
-        for (const name in schemas.NullableBasicTypes.properties) {
-            TestCase.assertEqual(basic[name], null);
-        }
-        TestCase.assertEqual(links.objectCol, null);
-        TestCase.assertEqual(links.arrayCol.length, 0);
-    },
-
     testRealmCreateUpsert: function() {
-        const realm = new Realm({schema: [schemas.IntPrimary, schemas.StringPrimary, schemas.AllTypes, schemas.TestObject, schemas.LinkToAllTypes]});
-        realm.write(() => {
+        const realm = new Realm({schema: [schemas.AllPrimaryTypes, schemas.TestObject,
+                                          schemas.StringPrimary]});
+        realm.write(function() {
             const values = {
                 primaryCol: '0',
                 boolCol:    true,
@@ -326,12 +314,12 @@ module.exports = {
                 arrayCol:   [],
             };
 
-            const obj0 = realm.create('AllTypesObject', values);
+            const obj0 = realm.create('AllPrimaryTypesObject', values);
 
-            TestCase.assertThrowsContaining(() => realm.create('AllTypesObject', values),
-                                            "Attempting to create an object of type 'AllTypesObject' with an existing primary key value '0'.");
+            TestCase.assertThrowsContaining(() => realm.create('AllPrimaryTypesObject', values),
+                                            "Attempting to create an object of type 'AllPrimaryTypesObject' with an existing primary key value ''0''.");
 
-            const obj1 = realm.create('AllTypesObject', {
+            const obj1 = realm.create('AllPrimaryTypesObject', {
                 primaryCol: '1',
                 boolCol:    false,
                 intCol:     2,
@@ -344,10 +332,10 @@ module.exports = {
                 arrayCol:   [{doubleCol: 2}],
             }, true);
 
-            const objects = realm.objects('AllTypesObject');
+            const objects = realm.objects('AllPrimaryTypesObject');
             TestCase.assertEqual(objects.length, 2);
 
-            realm.create('AllTypesObject', {
+            realm.create('AllPrimaryTypesObject', {
                 primaryCol: '0',
                 boolCol:    false,
                 intCol:     2,
@@ -371,13 +359,13 @@ module.exports = {
             TestCase.assertEqual(obj0.objectCol, null);
             TestCase.assertEqual(obj0.arrayCol.length, 1);
 
-            realm.create('AllTypesObject', {primaryCol: '0'}, true);
-            realm.create('AllTypesObject', {primaryCol: '1'}, true);
+            realm.create('AllPrimaryTypesObject', {primaryCol: '0'}, true);
+            realm.create('AllPrimaryTypesObject', {primaryCol: '1'}, true);
             TestCase.assertEqual(obj0.stringCol, '2');
             TestCase.assertEqual(obj0.objectCol, null);
             TestCase.assertEqual(obj1.objectCol.doubleCol, 0);
 
-            realm.create('AllTypesObject', {
+            realm.create('AllPrimaryTypesObject', {
                 primaryCol: '0',
                 stringCol:  '3',
                 objectCol:  {doubleCol: 0},
@@ -393,13 +381,13 @@ module.exports = {
             TestCase.assertEqual(obj0.objectCol.doubleCol, 0);
             TestCase.assertEqual(obj0.arrayCol.length, 1);
 
-            realm.create('AllTypesObject', {primaryCol: '0', objectCol: undefined}, true);
-            realm.create('AllTypesObject', {primaryCol: '1', objectCol: null}, true);
+            realm.create('AllPrimaryTypesObject', {primaryCol: '0', objectCol: undefined}, true);
+            realm.create('AllPrimaryTypesObject', {primaryCol: '1', objectCol: null}, true);
             TestCase.assertEqual(obj0.objectCol, null);
             TestCase.assertEqual(obj1.objectCol, null);
 
             // test with string primaries
-            const obj =realm.create('StringPrimaryObject', {
+            const obj = realm.create('StringPrimaryObject', {
                 primaryCol: '0',
                 valueCol: 0
             });
@@ -784,8 +772,9 @@ module.exports = {
     },
 
     testSchema: function() {
-        const originalSchema = [schemas.TestObject, schemas.BasicTypes, schemas.NullableBasicTypes, schemas.IndexedTypes, schemas.IntPrimary,
-            schemas.PersonObject, schemas.LinkTypes, schemas.LinkingObjectsObject];
+        const originalSchema = [schemas.TestObject, schemas.AllTypes, schemas.LinkToAllTypes,
+                                schemas.IndexedTypes, schemas.IntPrimary, schemas.PersonObject,
+                                schemas.LinkTypes, schemas.LinkingObjectsObject];
 
         const schemaMap = {};
         originalSchema.forEach(objectSchema => {
@@ -801,44 +790,66 @@ module.exports = {
         const schema = realm.schema;
         TestCase.assertEqual(schema.length, originalSchema.length);
 
-        function isString(val) {
-            return typeof val === 'string' || val instanceof String;
-        }
+        const normalizeProperty = (val) => {
+            let prop;
+            if (typeof val !== 'string' && !(val instanceof String)) {
+                prop = val;
+                prop.optional = val.optional || false;
+                prop.indexed = val.indexed || false;
+            }
+            else {
+                prop = {type: val, indexed: false, optional: false};
+            }
+            if (prop.type.includes('?')) {
+                prop.optional = true;
+                prop.type = prop.type.replace('?', '');
+            }
+            if (prop.type.includes('[]')) {
+                prop.objectType = prop.type.replace('[]', '');
+                prop.type = 'list';
+            }
+            return prop;
+        };
 
-        function verifyObjectSchema(returned) {
-            let original = schemaMap[returned.name];
+        for (const objectSchema of schema) {
+            let original = schemaMap[objectSchema.name];
             if (original.schema) {
                 original = original.schema;
             }
 
-            TestCase.assertEqual(returned.primaryKey, original.primaryKey);
-            for (const propName in returned.properties) {
-                const prop1 = returned.properties[propName];
-                const prop2 = original.properties[propName];
-                if (prop1.type == 'object') {
-                    TestCase.assertEqual(prop1.objectType, isString(prop2) ? prop2 : prop2.objectType);
-                    TestCase.assertEqual(prop1.optional, true);
+            TestCase.assertEqual(objectSchema.primaryKey, original.primaryKey);
+            for (const propName in objectSchema.properties) {
+                TestCase.assertDefined(original.properties[propName], `schema has unexpected property ${propName}`);
+
+                const actual = objectSchema.properties[propName];
+                const expected = normalizeProperty(original.properties[propName]);
+                TestCase.assertEqual(actual.name, propName);
+                TestCase.assertEqual(actual.indexed, expected.indexed);
+
+                if (actual.type == 'object') {
+                    TestCase.assertEqual(actual.objectType, expected.type === 'object' ? expected.objectType : expected.type);
+                    TestCase.assertEqual(actual.optional, true);
+                    TestCase.assertUndefined(actual.property);
                 }
-                else if (prop1.type == 'list') {
-                    TestCase.assertEqual(prop1.objectType, prop2.objectType);
-                    TestCase.assertEqual(prop1.optional, undefined);
+                else if (actual.type == 'list') {
+                    TestCase.assertEqual(actual.type, expected.type);
+                    TestCase.assertEqual(actual.objectType, expected.objectType);
+                    TestCase.assertEqual(actual.optional, expected.optional);
+                    TestCase.assertUndefined(actual.property);
                 }
-                else if (prop1.type == 'linking objects') {
-                    TestCase.assertEqual(prop1.objectType, prop2.objectType);
-                    TestCase.assertEqual(prop1.property, prop2.property);
-                    TestCase.assertEqual(prop1.optional, undefined);
+                else if (actual.type == 'linkingObjects') {
+                    TestCase.assertEqual(actual.type, expected.type);
+                    TestCase.assertEqual(actual.objectType, expected.objectType);
+                    TestCase.assertEqual(actual.property, expected.property);
+                    TestCase.assertEqual(actual.optional, false);
                 }
                 else {
-                    TestCase.assertEqual(prop1.type, isString(prop2) ? prop2 : prop2.type);
-                    TestCase.assertEqual(prop1.optional, prop2.optional || undefined);
+                    TestCase.assertEqual(actual.type, expected.type);
+                    TestCase.assertEqual(actual.optional, expected.optional);
+                    TestCase.assertUndefined(actual.property);
+                    TestCase.assertUndefined(actual.objectType);
                 }
-
-                TestCase.assertEqual(prop1.indexed, prop2.indexed || undefined);
             }
-        }
-
-        for (let i = 0; i < originalSchema.length; i++) {
-            verifyObjectSchema(schema[i]);
         }
     },
 
@@ -869,7 +880,7 @@ module.exports = {
                 const p1 = realm.create('PersonObject', { name: 'Ari', age: 10 });
                 p1.age = "Ten";
             });
-        }, new Error("PersonObject.age must be of type 'number', got (Ten)"));
+        }, new Error("PersonObject.age must be of type 'number', got 'string' ('Ten')"));
     },
 
     testErrorMessageFromInvalidCreate: function() {
@@ -879,7 +890,7 @@ module.exports = {
             realm.write(() => {
                 const p1 = realm.create('PersonObject', { name: 'Ari', age: 'Ten' });
             });
-        }, new Error("PersonObject.age must be of type 'number', got (Ten)"));
+        }, new Error("PersonObject.age must be of type 'number', got 'string' ('Ten')"));
     },
 
     testValidTypesForListProperties: function() {
@@ -934,7 +945,7 @@ module.exports = {
         realm.cancelTransaction();
         TestCase.assertTrue(!realm.isInTransaction);
     },
-    
+
     testCompact: function() {
         let wasCalled = false;
         const count = 1000;
