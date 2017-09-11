@@ -5,6 +5,8 @@ X.Y.Z Release notes
 
 ### Enhancements
 * Improve performance of the RPC worker for chrome debugging.
+* Added Progress API `realm.syncSession.addProgressNotifications` and `realm.syncSession.removeProgressNotifications`
+* Added additional parameter for `Realm.open` and `Realm.openAsync` for download progress notifications 
 * Added `Realm.deleteFile` for deleting a Realm (#363).
 
 ### Bug fixes
