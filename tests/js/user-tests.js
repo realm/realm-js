@@ -297,55 +297,73 @@ module.exports = {
   },
 
   testRetrieveAccount() {
-    if (!isNodeProcess) {
-      return Promise.resolve()
-    }
-    if (!global.testAdminUserInfo) {
-      return Promise.reject("Test requires an admin user");
-    }
-    return Realm.Sync.User.login('http://localhost:9080', global.testAdminUserInfo.username, global.testAdminUserInfo.password)
-      .then(user => {
+    return new Promise((resolve, reject) => {
+      if (!isNodeProcess) {
+        resolve();
+      }
+      
+      if (!global.testAdminUserInfo) {
+        reject("Test requires an admin user");
+      }
+
+      Realm.Sync.User.login('http://localhost:9080', global.testAdminUserInfo.username, global.testAdminUserInfo.password, (error, user) => {
+        if (error) {
+          reject(error);
+        }
+
         TestCase.assertTrue(user.isAdmin, "Test requires an admin user");
-        return user.retrieveAccount()
+
+        user.retrieveAccount('password', global.testAdminUserInfo.username)
+          .then(account => {
+            //           {
+            // "provider_id": "admin",
+            // "provider": "password",
+            // 	"user": {
+            // "id": "07ac9a0a-a97a-4ee1-b53c-b05a6542035a",
+            // "isAdmin": true,
+            // }
+            // }
+
+            TestCase.assertEqual(account.provider_id, global.testAdminUserInfo.username);
+            TestCase.assertEqual(account.provider, 'password');
+            TestCase.assertTrue(account.user);
+            TestCase.assertTrue(account.user.isAdmin !== undefined);
+            TestCase.assertTrue(account.user.id);
+            resolve();
+          })
+          .catch(e => reject(e));
       })
-      .then(account => {
-        //           {
-        // "provider_id": "admin",
-        // "provider": "password",
-        // 	"user": {
-        // "id": "07ac9a0a-a97a-4ee1-b53c-b05a6542035a",
-        // "isAdmin": true,
-        // }
-        // }
-        TestCase.assertEqual(account.provider_id, global.testAdminUserInfo.username);
-        TestCase.assertEqual(account.provider, 'password');
-        TestCase.assertTrue(account.user);
-        TestCase.assertTrue(account.user.isAdmin !== undefined);
-        TestCase.assertTrue(account.user.id);
-      })
-      .catch(e => reject(e));
+    });
   },
 
   testRetrieveNotExistingAccount() {
-    if (!isNodeProcess) {
-      return Promise.resolve()
-    }
-    if (!global.testAdminUserInfo) {
-      return Promise.reject("Test requires an admin user");
-    }
-    return Realm.Sync.User.login('http://localhost:9080', global.testAdminUserInfo.username, global.testAdminUserInfo.password)
-      .then(user => {
+    return new Promise((resolve, reject) => {
+      if (!isNodeProcess) {
+        resolve();
+      }
+
+      if (!global.testAdminUserInfo) {
+        reject("Test requires an admin user");
+      }
+
+      Realm.Sync.User.login('http://localhost:9080', global.testAdminUserInfo.username, global.testAdminUserInfo.password, (error, user) => {
+        if (error) {
+          reject(error);
+        }
+
         TestCase.assertTrue(user.isAdmin, "Test requires an admin user");
+
         let notExistingUsername = uuid();
-        return user.retrieveAccount('password', notExistingUsername)
+        user.retrieveAccount('password', notExistingUsername)
+          .then(account => {
+            reject("Retrieving not existing account should fail");
+          })
+          .catch(e => {
+            TestCase.assertEqual(e.code, 404);
+            resolve()
+          });
       })
-      .then(account => {
-        reject("Retrieving not existing account should fail");
-      })
-      .catch(e => {
-        TestCase.assertEqual(e.code, 404);
-        resolve()
-      });
+    });
   },
 
   /* This test fails because of realm-object-store #243 . We should use 2 users.
