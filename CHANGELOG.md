@@ -13,6 +13,7 @@ X.Y.Z Release notes
 
 ### Bug fixes
 * Adding missing TypeScript definitions; Permissions (#1283) and `setFeatureToken()`.
+* Removed `loginWithProvider` from TypeScript definition files. This API never existed and was incorrectly added.
 
 1.11.1 Release notes (2017-9-1)
 =============================================================
@@ -38,7 +39,7 @@ X.Y.Z Release notes
 * Added various methods for permission management (#1204).
 
 ### Bug fixes
-* Removed `loginWithProvider` from TypeScript definition files. This API never existed and was incorrectly added.
+* None
 
 
 1.10.3 Release notes (2017-8-16)
