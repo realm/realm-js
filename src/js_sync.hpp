@@ -160,6 +160,7 @@ class SessionClass : public ClassDefinition<T, WeakSession> {
 
 public:
     std::string const name = "Session";
+    using ProgressHandler = void(uint64_t transferred_bytes, uint64_t transferrable_bytes);
 
     static FunctionType create_constructor(ContextType);
 
@@ -170,6 +171,8 @@ public:
 
     static void simulate_error(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void refresh_access_token(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void add_progress_notification(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &);
+    static void remove_progress_notification(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &);
 
     PropertyMap<T> const properties = {
         {"config", {wrap<get_config>, nullptr}},
@@ -180,7 +183,9 @@ public:
 
     MethodMap<T> const methods = {
         {"_simulateError", wrap<simulate_error>},
-        {"_refreshAccessToken", wrap<refresh_access_token>}
+        {"_refreshAccessToken", wrap<refresh_access_token>},
+        {"addProgressNotification", wrap<add_progress_notification>},
+        {"removeProgressNotification", wrap<remove_progress_notification>},
     };
 };
 
@@ -308,7 +313,83 @@ void SessionClass<T>::refresh_access_token(ContextType ctx, FunctionType, Object
 }
 
 template<typename T>
-class SyncClass : public ClassDefinition<T, void *> {
+void SessionClass<T>::add_progress_notification(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    validate_argument_count(argc, 3);
+
+    if (auto session = get_internal<T, SessionClass<T>>(this_object)->lock()) {
+        
+        std::string direction = Value::validated_to_string(ctx, arguments[0], "direction");
+        std::string mode = Value::validated_to_string(ctx, arguments[1], "mode");
+        SyncSession::NotifierType notifierType;
+        if (direction == "download") {
+            notifierType = SyncSession::NotifierType::download;
+        }
+        else if (direction == "upload") {
+            notifierType = SyncSession::NotifierType::upload;
+        }
+        else {
+            throw std::invalid_argument("Invalid argument 'direction'. Only 'download' and 'upload' progress notification directions are supported");
+        }
+
+        bool is_streaming = false;
+        if (mode == "reportIndefinitely") {
+            is_streaming = true;
+        }
+        else if (mode == "forCurrentlyOutstandingWork") {
+            is_streaming = false;
+        }
+        else {
+            throw std::invalid_argument("Invalid argument 'mode'. Only 'reportIndefinitely' and 'forCurrentlyOutstandingWork' progress notification modes are supported");
+        }
+
+        auto callback_function = Value::validated_to_function(ctx, arguments[2], "callback");
+
+        Protected<FunctionType> protected_callback(ctx, callback_function);
+        Protected<ObjectType> protected_this(ctx, this_object);
+        Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
+        std::function<ProgressHandler> progressFunc; 
+
+        EventLoopDispatcher<ProgressHandler> progress_handler([=](uint64_t transferred_bytes, uint64_t transferrable_bytes) {
+            HANDLESCOPE
+            ValueType callback_arguments[2];
+            callback_arguments[0] = Value::from_number(protected_ctx, transferred_bytes);
+            callback_arguments[1] = Value::from_number(protected_ctx, transferrable_bytes);
+            
+            Function<T>::callback(protected_ctx, protected_callback, typename T::Object(), 2, callback_arguments);
+        });
+
+        progressFunc = std::move(progress_handler);
+
+        
+        auto registrationToken = session->register_progress_notifier(std::move(progressFunc), notifierType, false);
+
+        auto syncSession = create_object<T, SessionClass<T>>(ctx, new WeakSession(session));
+        PropertyAttributes attributes = ReadOnly | DontEnum | DontDelete;
+        Object::set_property(ctx, callback_function, "_syncSession", syncSession, attributes);
+        Object::set_property(ctx, callback_function, "_registrationToken", Value::from_number(protected_ctx, registrationToken), attributes);
+    }
+}
+
+template<typename T>
+void SessionClass<T>::remove_progress_notification(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    validate_argument_count(argc, 1);
+    auto callback_function = Value::validated_to_function(ctx, arguments[0], "callback");
+    auto syncSessionProp = Object::get_property(ctx, callback_function, "_syncSession");
+    if (Value::is_undefined(ctx, syncSessionProp) || Value::is_null(ctx, syncSessionProp)) {
+        return;
+    }
+
+    auto syncSession = Value::validated_to_object(ctx, syncSessionProp);
+    auto registrationToken = Object::get_property(ctx, callback_function, "_registrationToken");
+
+    if (auto session = get_internal<T, SessionClass<T>>(syncSession)->lock()) {
+        auto reg = Value::validated_to_number(ctx, registrationToken);
+        session->unregister_progress_notifier(reg);
+    }
+}
+
+template<typename T>
+class SyncClass : public ClassDefinition<T, void*> {
     using GlobalContextType = typename T::GlobalContext;
     using ContextType = typename T::Context;
     using FunctionType = typename T::Function;
@@ -328,6 +409,7 @@ public:
     static void set_sync_log_level(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
 
     // private
+    static std::function<SyncBindSessionHandler> session_bind_callback(ContextType ctx, ObjectType sync_constructor);
     static void populate_sync_config(ContextType, ObjectType realm_constructor, ObjectType config_object, Realm::Config&);
 
     // static properties
@@ -368,6 +450,24 @@ void SyncClass<T>::set_sync_log_level(ContextType ctx, FunctionType, ObjectType 
 }
 
 template<typename T>
+std::function<SyncBindSessionHandler> SyncClass<T>::session_bind_callback(ContextType ctx, ObjectType sync_constructor)
+{
+    Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
+    Protected<ObjectType> protected_sync_constructor(ctx, sync_constructor);
+    return EventLoopDispatcher<SyncBindSessionHandler>([protected_ctx, protected_sync_constructor](const std::string& path, const realm::SyncConfig& config, std::shared_ptr<SyncSession>) {
+        HANDLESCOPE
+        ObjectType user_constructor = Object::validated_get_object(protected_ctx, protected_sync_constructor, "User");
+        FunctionType refreshAccessToken = Object::validated_get_function(protected_ctx, user_constructor, "_refreshAccessToken");
+
+        ValueType arguments[3];
+        arguments[0] = create_object<T, UserClass<T>>(protected_ctx, new SharedUser(config.user));
+        arguments[1] = Value::from_string(protected_ctx, path);
+        arguments[2] = Value::from_string(protected_ctx, config.realm_url);
+        Function::call(protected_ctx, refreshAccessToken, 3, arguments);
+    });
+}
+
+template<typename T>
 void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constructor, ObjectType config_object, Realm::Config& config)
 {
     ValueType sync_config_value = Object::get_property(ctx, config_object, "sync");
@@ -376,21 +476,8 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
     } else if (!Value::is_undefined(ctx, sync_config_value)) {
         auto sync_config_object = Value::validated_to_object(ctx, sync_config_value);
 
-        ObjectType sync_constructor = Object::validated_get_object(ctx, realm_constructor, std::string("Sync"));
-        Protected<ObjectType> protected_sync(ctx, sync_constructor);
-        Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
-
-        EventLoopDispatcher<SyncBindSessionHandler> bind([protected_ctx, protected_sync](const std::string& path, const realm::SyncConfig& config, std::shared_ptr<SyncSession>) {
-            HANDLESCOPE
-            ObjectType user_constructor = Object::validated_get_object(protected_ctx, protected_sync, std::string("User"));
-            FunctionType refreshAccessToken = Object::validated_get_function(protected_ctx, user_constructor, std::string("_refreshAccessToken"));
-
-            ValueType arguments[3];
-            arguments[0] = create_object<T, UserClass<T>>(protected_ctx, new SharedUser(config.user));
-            arguments[1] = Value::from_string(protected_ctx, path.c_str());
-            arguments[2] = Value::from_string(protected_ctx, config.realm_url.c_str());
-            Function::call(protected_ctx, refreshAccessToken, 3, arguments);
-        });
+        ObjectType sync_constructor = Object::validated_get_object(ctx, realm_constructor, "Sync");
+        auto bind = session_bind_callback(ctx, sync_constructor);
 
         std::function<SyncSessionErrorHandler> error_handler;
         ValueType error_func = Object::get_property(ctx, sync_config_object, "error");
@@ -440,6 +527,5 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
         }
     }
 }
-
 } // js
 } // realm

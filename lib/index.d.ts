@@ -334,6 +334,10 @@ declare namespace Realm.Sync {
         ssl_trust_certificate_path?: string;
     }
 
+    type ProgressNotificationCallback = (transferred: number, transferable: number) => void;
+    type ProgressDirection = 'download' | 'upload';
+    type ProgressMode = 'reportIndefinitely' | 'forCurrentlyOutstandingWork';
+    
     /**
     * Session
     * @see { @link https://realm.io/docs/javascript/latest/api/Realm.Sync.Session.html }
@@ -343,6 +347,9 @@ declare namespace Realm.Sync {
         readonly state: 'invalid' | 'active' | 'inactive';
         readonly url: string;
         readonly user: User;
+
+        addProgressNotification(direction: ProgressDirection, mode: ProgressMode, progressCallback: ProgressNotificationCallback): void;
+        removeProgressNotification(progressCallback: ProgressNotificationCallback): void;
     }
 
     /**
@@ -404,6 +411,11 @@ declare namespace Realm.Sync {
     }
 }
 
+
+interface ProgressPromise  extends Promise<Realm> {
+    progress(callback: Realm.Sync.ProgressNotificationCallback) : Promise<Realm>
+}
+
 declare class Realm {
     static defaultPath: string;
 
@@ -424,19 +436,21 @@ declare class Realm {
      */
     static schemaVersion(path: string, encryptionKey?: ArrayBuffer | ArrayBufferView): number;
 
+    
+
     /**
      * Open a realm asynchronously with a promise. If the realm is synced, it will be fully synchronized before it is available.
      * @param {Configuration} config 
      */
-    static open(config: Realm.Configuration): Promise<Realm>
-
+    static open(config: Realm.Configuration): ProgressPromise;
     /**
      * @deprecated in favor of `Realm.open`
      * Open a realm asynchronously with a callback. If the realm is synced, it will be fully synchronized before it is available.
      * @param {Configuration} config 
+     * @param {ProgressNotificationCallback} progressCallback? a progress notification callback for 'download' direction and 'forCurrentlyOutstandingWork' mode 
      * @param {Function} callback will be called when the realm is ready.
      */
-    static openAsync(config: Realm.Configuration, callback: (error: any, realm: Realm) => void): void
+    static openAsync(config: Realm.Configuration, progressCallback?: Realm.Sync.ProgressNotificationCallback, callback: (error: any, realm: Realm) => void): void
 
     /**
      * Delete the Realm file for the given configuration.
@@ -472,6 +486,11 @@ declare class Realm {
      * @returns void
      */
     delete(object: Realm.Object | Realm.Object[] | Realm.List<any> | Realm.Results<any> | any): void;
+
+    /**
+     * @returns void
+     */
+    deleteModel(name: string): void;
 
     /**
      * @returns void
