@@ -9,6 +9,7 @@ X.Y.Z Release notes
 * Added additional parameter for `Realm.open` and `Realm.openAsync` for download progress notifications 
 * Added `Realm.deleteFile` for deleting a Realm (#363).
 * Added `Realm.deleteModel` for deleting a Realm model in a migration (#573).
+* Added support for in-memory realms.
 
 ### Bug fixes
 * Adding missing TypeScript definitions; Permissions (#1283) and `setFeatureToken()`.
