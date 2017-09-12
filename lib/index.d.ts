@@ -374,6 +374,10 @@ declare namespace Realm.Sync {
     function removeAllListeners(name?: string): void;
     function removeListener(regex: string, name: string, changeCallback: (changeEvent: ChangeEvent) => void): void;
     function setLogLevel(logLevel: 'all' | 'trace' | 'debug' | 'detail' | 'info' | 'warn' | 'error' | 'fatal' | 'off'): void;
+    function setFeatureToken(token: string): void;
+    /**
+     * @deprecated, to be removed in 2.0
+     */
     function setAccessToken(accessToken: string): void;
 
     type Instruction = {
