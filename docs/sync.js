@@ -334,6 +334,28 @@ class Session {
      * @type {string}
      */
     get state() {}
+
+    /**
+     * Register a progress notification callback on a session object
+     * @param {string} direction - The progress direction to register for.
+     * Can be either: 
+     *  - `download` - report download progress
+     *  - `upload` - report upload progress
+     * @param {string} mode - The progress notification mode to use for the registration.
+     * Can be either:
+     *  - `reportIndefinitely` - the registration will stay active until the callback is unregistered
+     *  - `forCurrentlyOutstandingWork` - the registration will be active until only the currently transferable bytes are synced
+     * @param {callback(transferred, transferable)} callback - called with the following arguments:
+     *   - `transferred` - the current number of bytes already transferred
+     *   - `transferable` - the total number of transferable bytes (the number of bytes already transferred plus the number of bytes pending transfer)
+     */
+    addProgressNotification(direction, mode, progressCallback) {}
+
+    /** Unregister a progress notification callback that was previously registered with addProgressNotification.
+     * Calling the function multiple times with the same callback is ignored.
+    * @param {callback(transferred, transferable)} callback - a previously registered progress callback
+    */
+    removeProgressNotification(progressCallback) {}
 }
 
 

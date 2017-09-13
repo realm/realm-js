@@ -48,7 +48,11 @@ download_server() {
 }
 
 start_server() {
-  ./object-server-for-testing/start-object-server.command &
+  #disabled ROS logging
+  sh ./object-server-for-testing/start-object-server.command &> /dev/null &
+
+  #enabled ROS logging
+  #sh ./object-server-for-testing/start-object-server.command &
   SERVER_PID=$!
 }
 

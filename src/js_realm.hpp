@@ -180,7 +180,7 @@ public:
     static void remove_all_listeners(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void close(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void compact(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
-    
+    static void delete_model(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
 
     // properties
     static void get_empty(ContextType, ObjectType, ReturnValue &);
@@ -235,6 +235,7 @@ public:
         {"removeAllListeners", wrap<remove_all_listeners>},
         {"close", wrap<close>},
         {"compact", wrap<compact>},
+        {"deleteModel", wrap<delete_model>},
     };
 
     PropertyMap<T> const properties = {
@@ -560,6 +561,17 @@ void RealmClass<T>::delete_file(ContextType ctx, FunctionType, ObjectType this_o
 }
 
 template<typename T>
+void RealmClass<T>::delete_model(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    validate_argument_count(argc, 1);
+    ValueType value = arguments[0];
+
+    SharedRealm& realm = *get_internal<T, RealmClass<T>>(this_object);
+
+    std::string model_name = Value::validated_to_string(ctx, value, "deleteModel");
+    ObjectStore::delete_data_for_object(realm->read_group(), model_name);
+}
+
+template<typename T>
 void RealmClass<T>::get_default_path(ContextType ctx, ObjectType object, ReturnValue &return_value) {
     return_value.set(realm::js::default_path());
 }
@@ -619,11 +631,16 @@ void RealmClass<T>::get_sync_session(ContextType ctx, ObjectType object, ReturnV
 
 template<typename T>
 void RealmClass<T>::wait_for_download_completion(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
-    validate_argument_count(argc, 2);
-    auto callback_function = Value::validated_to_function(ctx, arguments[1]);
+    validate_argument_count(argc, 2, 3);
+    auto config_object = Value::validated_to_object(ctx, arguments[0]);
+    auto callback_function = Value::validated_to_function(ctx, arguments[argc - 1]);
+
+    ValueType session_callback = Value::from_null(ctx);
+    if (argc == 3) {
+        session_callback = Value::validated_to_function(ctx, arguments[1]);
+    }
 
 #if REALM_ENABLE_SYNC
-    auto config_object = Value::validated_to_object(ctx, arguments[0]);
     ValueType sync_config_value = Object::get_property(ctx, config_object, "sync");
     if (!Value::is_undefined(ctx, sync_config_value)) {
         realm::Realm::Config config;
@@ -694,6 +711,14 @@ void RealmClass<T>::wait_for_download_completion(ContextType ctx, FunctionType, 
             std::shared_ptr<SyncUser> user = sync_config->user;
             if (user && user->state() != SyncUser::State::Error) {
                 if (auto session = user->session_for_on_disk_path(config.path)) {
+                    if (!Value::is_null(ctx, session_callback)) {
+                        FunctionType session_callback_func = Value::to_function(ctx, session_callback);
+                        auto syncSession = create_object<T, SessionClass<T>>(ctx, new WeakSession(session));
+                        ValueType callback_arguments[1];
+                        callback_arguments[0] = syncSession;
+                        Function<T>::callback(protected_ctx, session_callback_func, protected_this, 1, callback_arguments);
+                    }
+
                     if (progressFuncDefined) {
                         session->register_progress_notifier(std::move(progressFunc), SyncSession::NotifierType::download, false);
                     } 

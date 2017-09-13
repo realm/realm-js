@@ -133,6 +133,12 @@ class Realm {
     delete(object) {}
 
     /**
+     * Deletes a Realm model, including all of its objects.
+     * @param {string} name - the model name
+     */
+    deleteModel(name) {}
+
+    /**
      * **WARNING:** This will delete **all** objects in the Realm!
      */
     deleteAll() {}

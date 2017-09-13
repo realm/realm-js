@@ -5,10 +5,13 @@
 
 ### Enhancements
 * Improve performance of the RPC worker for chrome debugging.
+* Added Progress API `realm.syncSession.addProgressNotification` and `realm.syncSession.removeProgressNotification`
+* Added additional parameter for `Realm.open` and `Realm.openAsync` for download progress notifications 
 * Added `Realm.deleteFile` for deleting a Realm (#363).
+* Added `Realm.deleteModel` for deleting a Realm model in a migration (#573).
 
 ### Bug fixes
-* Adding missing TypeScript declation (#1283).
+* Adding missing TypeScript definitions; Permissions (#1283), `setFeatureToken()`, and instructions (#1298).
 
 1.11.1 Release notes (2017-9-1)
 =============================================================

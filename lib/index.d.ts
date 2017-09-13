@@ -332,6 +332,10 @@ declare namespace Realm.Sync {
         ssl_trust_certificate_path?: string;
     }
 
+    type ProgressNotificationCallback = (transferred: number, transferable: number) => void;
+    type ProgressDirection = 'download' | 'upload';
+    type ProgressMode = 'reportIndefinitely' | 'forCurrentlyOutstandingWork';
+    
     /**
     * Session
     * @see { @link https://realm.io/docs/javascript/latest/api/Realm.Sync.Session.html }
@@ -341,6 +345,9 @@ declare namespace Realm.Sync {
         readonly state: 'invalid' | 'active' | 'inactive';
         readonly url: string;
         readonly user: User;
+
+        addProgressNotification(direction: ProgressDirection, mode: ProgressMode, progressCallback: ProgressNotificationCallback): void;
+        removeProgressNotification(progressCallback: ProgressNotificationCallback): void;
     }
 
     /**
@@ -367,10 +374,14 @@ declare namespace Realm.Sync {
     function removeAllListeners(name?: string): void;
     function removeListener(regex: string, name: string, changeCallback: (changeEvent: ChangeEvent) => void): void;
     function setLogLevel(logLevel: 'all' | 'trace' | 'debug' | 'detail' | 'info' | 'warn' | 'error' | 'fatal' | 'off'): void;
+    function setFeatureToken(token: string): void;
+    /**
+     * @deprecated, to be removed in 2.0
+     */
     function setAccessToken(accessToken: string): void;
 
     type Instruction = {
-        type: 'INSERT' | 'SET' | 'DELETE' | 'CLEAR' | 'LIST_SET' | 'LIST_INSERT' | 'LIST_ERASE' | 'LIST_CLEAR' | 'ADD_TYPE' | 'ADD_PROPERTIES'
+        type: 'INSERT' | 'SET' | 'DELETE' | 'CLEAR' | 'LIST_SET' | 'LIST_INSERT' | 'LIST_ERASE' | 'LIST_CLEAR' | 'ADD_TYPE' | 'ADD_PROPERTIES' | 'CHANGE_IDENTITY' | 'SWAP_IDENTITY'
         object_type: string,
         identity: string,
         values: any | undefined
@@ -402,6 +413,11 @@ declare namespace Realm.Sync {
     }
 }
 
+
+interface ProgressPromise  extends Promise<Realm> {
+    progress(callback: Realm.Sync.ProgressNotificationCallback) : Promise<Realm>
+}
+
 declare class Realm {
     static defaultPath: string;
 
@@ -422,17 +438,20 @@ declare class Realm {
      */
     static schemaVersion(path: string, encryptionKey?: ArrayBuffer | ArrayBufferView): number;
 
+    
+
     /**
      * Open a realm asynchronously with a promise. If the realm is synced, it will be fully synchronized before it is available.
      * @param {Configuration} config 
      */
-    static open(config: Realm.Configuration): Promise<Realm>
+    static open(config: Realm.Configuration): ProgressPromise;
     /**
      * Open a realm asynchronously with a callback. If the realm is synced, it will be fully synchronized before it is available.
      * @param {Configuration} config 
+     * @param {ProgressNotificationCallback} progressCallback? a progress notification callback for 'download' direction and 'forCurrentlyOutstandingWork' mode 
      * @param {Function} callback will be called when the realm is ready.
      */
-    static openAsync(config: Realm.Configuration, callback: (error: any, realm: Realm) => void): void
+    static openAsync(config: Realm.Configuration, progressCallback?: Realm.Sync.ProgressNotificationCallback, callback: (error: any, realm: Realm) => void): void
 
     /**
      * Delete the Realm file for the given configuration.
@@ -468,6 +487,11 @@ declare class Realm {
      * @returns void
      */
     delete(object: Realm.Object | Realm.Object[] | Realm.List<any> | Realm.Results<any> | any): void;
+
+    /**
+     * @returns void
+     */
+    deleteModel(name: string): void;
 
     /**
      * @returns void
