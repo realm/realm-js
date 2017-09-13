@@ -36,7 +36,7 @@ Realm.Sync.User.register('http://localhost:9080', username, 'password', (error, 
         Realm.Sync.User.login('http://localhost:9080', username, 'password', (err, loggedUser) => {
             if (err) {
                 const loginError = JSON.stringify(err);
-                console.error("download-api-helper failed:\n User.register() error:\n" + registrationError + "\n User.login() error:\n" + loginError);
+                console.error("download-api-helper failed:\n User.register() error:\n" + err + "\n" + registrationError + "\n User.login() error:\n" + loginError);
                 process.exit(-2);
             }
             else {

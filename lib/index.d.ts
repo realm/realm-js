@@ -80,6 +80,7 @@ declare namespace Realm {
         shouldCompactOnLaunch?: (totalBytes: number, usedBytes: number) => boolean;
         path?: string;
         readOnly?: boolean;
+        inMemory?: boolean;
         schema?: ObjectClass[] | ObjectSchema[];
         schemaVersion?: number;
         sync?: Realm.Sync.SyncConfiguration;
@@ -264,10 +265,25 @@ declare namespace Realm.Sync {
         readonly server: string;
         readonly token: string;
         static adminUser(adminToken: string, server?: string): User;
+              
+        /**
+         * @deprecated, to be removed in future versions
+         */
         static login(server: string, username: string, password: string, callback: (error: any, user: User) => void): void;
-        static loginWithProvider(server: string, provider: string, providerToken: string, callback: (error: any, user: User) => void): void;
+        static login(server: string, username: string, password: string): Promise<Realm.Sync.User>;
+       
+        /**
+         * @deprecated, to be removed in future versions
+         */        
         static register(server: string, username: string, password: string, callback: (error: any, user: User) => void): void;
+        static register(server: string, username: string, password: string): Promise<Realm.Sync.User>;
+        
+        /**
+         * @deprecated, to be removed in versions
+         */        
         static registerWithProvider(server: string, options: { provider: string, providerToken: string, userInfo: any }, callback: (error: Error | null, user: User | null) => void): void;
+        static registerWithProvider(server: string, options: { provider: string, providerToken: string, userInfo: any }): Promise<Realm.Sync.User>;
+        
         logout(): void;
         openManagementRealm(): Realm;
         retrieveAccount(provider: string, username: string): Promise<Account>;
@@ -375,6 +391,7 @@ declare namespace Realm.Sync {
     function removeListener(regex: string, name: string, changeCallback: (changeEvent: ChangeEvent) => void): void;
     function setLogLevel(logLevel: 'all' | 'trace' | 'debug' | 'detail' | 'info' | 'warn' | 'error' | 'fatal' | 'off'): void;
     function setFeatureToken(token: string): void;
+    
     /**
      * @deprecated, to be removed in 2.0
      */
@@ -446,6 +463,7 @@ declare class Realm {
      */
     static open(config: Realm.Configuration): ProgressPromise;
     /**
+     * @deprecated in favor of `Realm.open`
      * Open a realm asynchronously with a callback. If the realm is synced, it will be fully synchronized before it is available.
      * @param {Configuration} config 
      * @param {Function} callback will be called when the realm is ready.
