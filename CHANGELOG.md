@@ -12,7 +12,7 @@ X.Y.Z Release notes
 * `Realm.Sync.User.login`, `Realm.Sync.User.register`, and `Realm.Sync.User.registerWithProvider` return Promises and deprecate the callback style for them. Callbacks will continue to work for backward compatibility.
 
 ### Bug fixes
-* Adding missing TypeScript definitions; Permissions (#1283) and `setFeatureToken()`.
+* Adding missing TypeScript definitions; Permissions (#1283), `setFeatureToken()`, and instructions (#1298).
 * Removed `loginWithProvider` from TypeScript definition files. This API never existed and was incorrectly added.
 
 1.11.1 Release notes (2017-9-1)
