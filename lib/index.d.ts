@@ -451,7 +451,7 @@ declare class Realm {
      * @param {Function} callback will be called when the realm is ready.
      * @param {ProgressNotificationCallback} progressCallback? a progress notification callback for 'download' direction and 'forCurrentlyOutstandingWork' mode 
      */
-    static openAsync(config: Realm.Configuration, callback: (error: any, realm: Realm) => void, progressCallback?: Realm.Sync.ProgressNotificationCallback): void
+    static openAsync(config: Realm.Configuration, hello?: string, callback: (error: any, realm: Realm) => void, progressCallback?: Realm.Sync.ProgressNotificationCallback): void
 
     /**
      * Delete the Realm file for the given configuration.
