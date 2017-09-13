@@ -11,7 +11,7 @@ X.Y.Z Release notes
 * Added `Realm.deleteModel` for deleting a Realm model in a migration (#573).
 
 ### Bug fixes
-* Adding missing TypeScript definitions; Permissions (#1283) and `setFeatureToken()`.
+* Adding missing TypeScript definitions; Permissions (#1283), `setFeatureToken()`, and instructions (#1298).
 
 1.11.1 Release notes (2017-9-1)
 =============================================================
