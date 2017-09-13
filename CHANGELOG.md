@@ -9,6 +9,7 @@ X.Y.Z Release notes
 * Added additional parameter for `Realm.open` and `Realm.openAsync` for download progress notifications 
 * Added `Realm.deleteFile` for deleting a Realm (#363).
 * Added `Realm.deleteModel` for deleting a Realm model in a migration (#573).
+* `Realm.Sync.User.login`, `Realm.Sync.User.register`, and `Realm.Sync.User.registerWithProvider` both support _both_ callbacks and Promise return values
 
 ### Bug fixes
 * Adding missing TypeScript definitions; Permissions (#1283), `setFeatureToken()`, and instructions (#1298).
@@ -37,7 +38,7 @@ X.Y.Z Release notes
 * Added various methods for permission management (#1204).
 
 ### Bug fixes
-* None
+* Removed `loginWithProvider` from TypeScript definition files. This API never existed and was incorrectly added.
 
 
 1.10.3 Release notes (2017-8-16)

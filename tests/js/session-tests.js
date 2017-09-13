@@ -50,32 +50,6 @@ function uuid() {
     });
 }
 
-function promisifiedRegister(server, username, password) {
-    return new Promise((resolve, reject) => {
-        Realm.Sync.User.register(server, username, password, (error, user) => {
-            if (error) {
-                console.log(`promisifiedRegister ${error}`);
-                reject(error);
-            } else {
-                resolve(user);
-            }
-        });
-    });
-}
-
-function promisifiedLogin(server, username, password) {
-    return new Promise((resolve, reject) => {
-        Realm.Sync.User.login(server, username, password, (error, user) => {
-            if (error) {
-                console.log(`promisifiedLogin ${error}`);
-                reject(error);
-            } else {
-                resolve(user);
-            }
-        });
-    });
-}
-
 function runOutOfProcess(nodeJsFilePath) {
     var nodeArgs = Array.prototype.slice.call(arguments);
     let tmpDir = tmp.dirSync();
@@ -111,7 +85,7 @@ module.exports = {
     },
 
     testProperties() {
-        return promisifiedRegister('http://localhost:9080', uuid(), 'password').then(user => {
+        return Realm.Sync.User.login('http://localhost:9080', uuid(), 'password').then(user => {
             return new Promise((resolve, reject) => {
 
                 const accessTokenRefreshed = this;
@@ -162,7 +136,7 @@ module.exports = {
 
         return runOutOfProcess(__dirname + '/download-api-helper.js', username, realmName, REALM_MODULE_PATH)
             .then(() => {
-                return promisifiedLogin('http://localhost:9080', username, 'password').then(user => {
+                return Realm.Sync.User.login('http://localhost:9080', username, 'password').then(user => {
                     const accessTokenRefreshed = this;
                     let successCounter = 0;
 
@@ -198,7 +172,7 @@ module.exports = {
 
         return runOutOfProcess(__dirname + '/download-api-helper.js', username, realmName, REALM_MODULE_PATH)
             .then(() => {
-                return promisifiedLogin('http://localhost:9080', username, 'password').then(user => {
+                return Realm.Sync.User.login('http://localhost:9080', username, 'password').then(user => {
                     return new Promise((resolve, reject) => {
                         const accessTokenRefreshed = this;
                         let successCounter = 0;
@@ -251,7 +225,7 @@ module.exports = {
 
         return runOutOfProcess(__dirname + '/download-api-helper.js', username, realmName, REALM_MODULE_PATH)
             .then(() => {
-                return promisifiedLogin('http://localhost:9080', username, 'password').then(user => {
+                return Realm.Sync.User.login('http://localhost:9080', username, 'password').then(user => {
                     const accessTokenRefreshed = this;
                     let successCounter = 0;
                     let progressNotificationCalled = false;
@@ -287,7 +261,7 @@ module.exports = {
 
         return runOutOfProcess(__dirname + '/download-api-helper.js', username, realmName, REALM_MODULE_PATH)
             .then(() => {
-                return promisifiedLogin('http://localhost:9080', username, 'password').then(user => {
+                return Realm.Sync.User.login('http://localhost:9080', username, 'password').then(user => {
                     return new Promise((resolve, reject) => {
                         let progressNotificationCalled = false;
                         let config = {
@@ -334,7 +308,7 @@ module.exports = {
 
        return runOutOfProcess(__dirname + '/download-api-helper.js', username, realmName, REALM_MODULE_PATH)
             .then(() => {
-                return promisifiedLogin('http://localhost:9080', username, 'password').then(user => {
+                return Realm.Sync.User.login('http://localhost:9080', username, 'password').then(user => {
                     return new Promise((resolve, reject) => {
                         const accessTokenRefreshed = this;
                         let successCounter = 0;
@@ -439,7 +413,7 @@ module.exports = {
     },
 
     testErrorHandling() {
-        return promisifiedRegister('http://localhost:9080', uuid(), 'password').then(user => {
+        return Realm.Sync.User.register('http://localhost:9080', uuid(), 'password').then(user => {
             return new Promise((resolve, _reject) => {
                 const config = { sync: { user, url: 'realm://localhost:9080/~/myrealm' } };
                 config.sync.error = (sender, error) => {
