@@ -46,22 +46,10 @@ module.exports = {
             object = realm.create('BasicTypesObject', basicTypesValues);
         });
 
-        for (var name in schemas.BasicTypes.properties) {
-            var prop = schemas.BasicTypes.properties[name];
-            var type = typeof prop == 'object' ? prop.type : prop;
-
-            if (type == 'float' || type == 'double') {
-                TestCase.assertEqualWithTolerance(object[name], basicTypesValues[name], 0.000001);
-            }
-            else if (type == 'data') {
-                TestCase.assertArraysEqual(new Uint8Array(object[name]), RANDOM_DATA);
-            }
-            else if (type == 'date') {
-                TestCase.assertEqual(object[name].getTime(), basicTypesValues[name].getTime());
-            }
-            else {
-                TestCase.assertEqual(object[name], basicTypesValues[name]);
-            }
+        for (const name in schemas.BasicTypes.properties) {
+            const prop = schemas.BasicTypes.properties[name];
+            const type = typeof prop == 'object' ? prop.type : prop;
+            TestCase.assertSimilar(type, object[name], basicTypesValues[name]);
         }
 
         TestCase.assertEqual(object.nonexistent, undefined);

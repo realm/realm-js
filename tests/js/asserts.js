@@ -19,6 +19,22 @@
 'use strict';
 
 module.exports = {
+    assertSimilar: function(type, val1, val2, errorMessage, depth) {
+        depth = depth || 0;
+        if (type == 'float' || type == 'double') {
+            this.assertEqualWithTolerance(val1, val2, errorMessage, depth + 1);
+        }
+        else if (type == 'data') {
+            this.assertArraysEqual(new Uint8Array(val1), val2, errorMessage, depth + 1);
+        }
+        else if (type == 'date') {
+            this.assertEqual(val1.getTime(), val2.getTime(), errorMessage, depth + 1);
+        }
+        else {
+            this.assertEqual(val1, val2, errorMessage, depth + 1);
+        }
+    },
+
     assertEqual: function(val1, val2, errorMessage, depth) {
         if (val1 !== val2) {
             let message = `'${val1}' does not equal expected value '${val2}'`;
