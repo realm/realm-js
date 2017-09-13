@@ -161,6 +161,36 @@ module.exports = {
             }]});
         }, "Property 'InvalidObject.link' declared as origin of linking objects property 'InvalidObject.linkingObjects' links to type 'IntObject'")
     },
+    
+    testRealmConstructorInMemory: function() {
+        // open in-memory realm instance
+        const realm1 = new Realm({inMemory: true, schema: [schemas.TestObject]});
+        realm1.write(function() {
+            realm1.create('TestObject', [1])
+        });
+        TestCase.assertEqual(realm1.inMemory, true);
+
+        // open a second instance of the same realm and check that they share data
+        const realm2 = new Realm({inMemory: true});
+        const objects = realm2.objects('TestObject');
+        TestCase.assertEqual(objects.length, 1);
+        TestCase.assertEqual(objects[0].doubleCol, 1.0);
+        TestCase.assertEqual(realm2.inMemory, true);
+
+        // Close both realms (this should delete the realm since there are no more
+        // references to it.
+        realm1.close();
+        realm2.close();
+
+        // Open the same in-memory realm again and verify that it is now empty
+        const realm3 = new Realm({inMemory: true});
+        TestCase.assertEqual(realm3.schema.length, 0);
+        
+        // try to open the same realm in persistent mode (should fail as you cannot mix modes)
+        TestCase.assertThrows(function() {
+            const realm4 = new Realm({});
+        });
+    },
 
     testRealmConstructorReadOnly: function() {
         var realm = new Realm({schema: [schemas.TestObject]});

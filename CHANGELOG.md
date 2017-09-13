@@ -9,6 +9,7 @@ X.Y.Z Release notes
 * Added additional parameter for `Realm.open` and `Realm.openAsync` for download progress notifications 
 * Added `Realm.deleteFile` for deleting a Realm (#363).
 * Added `Realm.deleteModel` for deleting a Realm model in a migration (#573).
+* Added support for in-memory Realms.
 * `Realm.Sync.User.login`, `Realm.Sync.User.register`, and `Realm.Sync.User.registerWithProvider` return Promises and deprecate the callback style for them. Callbacks will continue to work for backward compatibility.
 
 ### Bug fixes

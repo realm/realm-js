@@ -187,6 +187,7 @@ public:
     static void get_path(ContextType, ObjectType, ReturnValue &);
     static void get_schema_version(ContextType, ObjectType, ReturnValue &);
     static void get_schema(ContextType, ObjectType, ReturnValue &);
+    static void get_in_memory(ContextType, ObjectType, ReturnValue &);
     static void get_read_only(ContextType, ObjectType, ReturnValue &);
     static void get_is_in_transaction(ContextType, ObjectType, ReturnValue &);
 #if REALM_ENABLE_SYNC
@@ -243,6 +244,7 @@ public:
         {"path", {wrap<get_path>, nullptr}},
         {"schemaVersion", {wrap<get_schema_version>, nullptr}},
         {"schema", {wrap<get_schema>, nullptr}},
+        {"inMemory", {wrap<get_in_memory>, nullptr}},
         {"readOnly", {wrap<get_read_only>, nullptr}},
         {"isInTransaction", {wrap<get_is_in_transaction>, nullptr}},
 #if REALM_ENABLE_SYNC
@@ -379,6 +381,12 @@ void RealmClass<T>::constructor(ContextType ctx, ObjectType this_object, size_t 
             }
             else if (config.path.empty()) {
                 config.path = js::default_path();
+            }
+            
+            static const String in_memory_string = "inMemory";
+            ValueType in_memory_value = Object::get_property(ctx, object, in_memory_string);
+            if (!Value::is_undefined(ctx, in_memory_value) && Value::validated_to_boolean(ctx, in_memory_value, "inMemory")) {
+                config.in_memory = true;
             }
 
             static const String read_only_string = "readOnly";
@@ -604,6 +612,11 @@ template<typename T>
 void RealmClass<T>::get_schema(ContextType ctx, ObjectType object, ReturnValue &return_value) {
     auto& schema = get_internal<T, RealmClass<T>>(object)->get()->schema();
     return_value.set(Schema<T>::object_for_schema(ctx, schema));
+}
+
+template<typename T>
+void RealmClass<T>::get_in_memory(ContextType ctx, ObjectType object, ReturnValue &return_value) {
+    return_value.set(get_internal<T, RealmClass<T>>(object)->get()->config().in_memory);
 }
 
 template<typename T>

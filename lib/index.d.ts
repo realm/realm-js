@@ -80,6 +80,7 @@ declare namespace Realm {
         shouldCompactOnLaunch?: (totalBytes: number, usedBytes: number) => boolean;
         path?: string;
         readOnly?: boolean;
+        inMemory?: boolean;
         schema?: ObjectClass[] | ObjectSchema[];
         schemaVersion?: number;
         sync?: Realm.Sync.SyncConfiguration;

@@ -278,6 +278,11 @@ Realm.defaultPath;
  *   will be skipped if another process is accessing it.
  * @property {string} [path={@link Realm.defaultPath}] - The path to the file where the
  *   Realm database should be stored.
+ * @property {boolean} [inMemory=false] - Specifies if this Realm should be opened in-memory. This
+ *    still requires a path (can be the default path) to identify the Realm so other processes can
+ *    open the same Realm. The file will also be used as swap space if the Realm becomes bigger than
+ *    what fits in memory, but it is not persistent and will be removed when the last instance
+ *    is closed.
  * @property {boolean} [readOnly=false] - Specifies if this Realm should be opened as read-only.
  * @property {Array<Realm~ObjectClass|Realm~ObjectSchema>} [schema] - Specifies all the
  *   object types in this Realm. **Required** when first creating a Realm at this `path`.
