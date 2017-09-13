@@ -138,7 +138,7 @@ class User {
      * @param {function(error, user)} [callback] - called with the following arguments:
      *   - `error` - an Error object is provided on failure
      *   - `user` - a valid User object on success
-     * @returns {Promise<User>} Returns a promise with a user only if the callback was not specified 
+     * @returns {void|Promise<User>} Returns a promise with a user if the callback was not specified 
      */
     static login(server, username, password, callback) {}
 
@@ -149,10 +149,10 @@ class User {
      * @param {string} options.provider - The provider type
      * @param {string} options.providerToken - The access token for the given provider
      * @param {object} [options.userInfo] - A map containing additional data required by the provider
-     * @param {function(error, User)} [callback] - an optional called with the following arguments:
+     * @param {function(error, User)} [callback] - an optional callback called with the following arguments:
      *   - `error` - an Error object is provided on failure
      *   - `user` - a valid User object on success
-     * @return {Promise<User>} Returns a promise with a user only if the callback was not specified 
+     * @return {void|Promise<User>} Returns a promise with a user if the callback was not specified 
      */
     static registerWithProvider(server, options, callback) {}
 
@@ -164,7 +164,7 @@ class User {
      * @param {function(error, user)} [callback] - called with the following arguments:
      *   - `error` - an Error object is provided on failure
      *   - `user` - a valid User object on success
-     * @return {Promise<User>} Returns a promise with a user only if the callback was not specified 
+     * @return {void|Promise<User>} Returns a promise with a user if the callback was not specified 
      */
     static register(server, username, password, callback) {}
 
