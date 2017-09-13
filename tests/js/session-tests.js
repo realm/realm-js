@@ -626,9 +626,6 @@ module.exports = {
                         let progressCalled = false;
                         
                         Realm.openAsync(config, 
-                            (transferred, total) => {
-                                progressCalled = true;
-                            }, 
                             (error, realm) => {
                                 if (error) {
                                     reject(error);
@@ -637,6 +634,9 @@ module.exports = {
                                 
                                 TestCase.assertTrue(progressCalled);
                                 resolve();
+                            },
+                            (transferred, total) => {
+                                progressCalled = true;
                             });
 
                         setTimeout(function() {
