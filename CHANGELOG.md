@@ -1,5 +1,7 @@
-2.0.0 Release notes (2017-9-8)
+2.0.0 Release notes (2017-9-13)
 =============================================================
+* Note: this is 2.0.0-rc7.
+
 ### Breaking changes
 * Updating core, sync, object store, moving forward to 2.0.0.
 
