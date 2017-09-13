@@ -438,6 +438,98 @@ module.exports = {
         });
     },
 
+    testWaitForUploadNotification() {
+        if (!isNodeProccess) {
+            return Promise.resolve();
+        }
+
+        const realmName = uuid();
+
+        return promisifiedRegister('http://localhost:9080', uuid(), 'password')
+            .then(user => {
+
+                let config = {
+                    sync: { user, url: `realm://localhost:9080/~/${realmName}` },
+                    schema: [{ name: 'Dog', properties: { name: 'string' } }],
+                };
+
+                return Realm.open(config)
+                    .then(realm => {
+                        return new Promise((resolve, reject) => {
+                            realm.write(() => {
+                                for (let i = 1; i <= 30; i++) {
+                                    realm.create('Dog', { name: `Lassy ${i}` });
+                                }
+                            });
+
+                            Realm._waitForUpload(config, (error) => {
+                                if (error) {
+                                    reject(error);
+                                }
+
+                                //FIXME: RN hangs here. Remove when node's makeCallback alternative is implemented
+                                setTimeout(() => { 
+                                    resolve();
+                                 }, 1);                     
+                            });
+                         });
+                    });
+            }); 
+    },
+
+    testUploadProgress() {
+        if (!isNodeProccess) {
+            return Promise.resolve();
+        }
+
+        const realmName = uuid();
+
+       
+        return promisifiedRegister('http://localhost:9080', uuid(), 'password')
+            .then(user => {
+                let progressNotificationCalled = false;
+       
+                let config = {
+                    sync: { 
+                        user, 
+                        url: `realm://localhost:9080/~/${realmName}`,
+                        _onUploadProgress: (transferred, total) => { 
+                            progressNotificationCalled = true
+                        }, 
+                    },
+                    schema: [{ name: 'Dog', properties: { name: 'string' } }],
+                };
+
+                return Realm.open(config)
+                    .then(realm => {
+                        return new Promise((resolve, reject) => {                       
+                            realm.write(() => {
+                                for (let i = 1; i <= 3; i++) {
+                                    realm.create('Dog', { name: `Lassy ${i}` });
+                                }
+                            });
+
+                            Realm._waitForUpload(config, (error) => {
+                                if (error) {
+                                    reject(error);
+                                }
+
+                                //FIXME: RN hangs here. Remove when node's makeCallback alternative is implemented
+                                    try {
+                                        TestCase.assertTrue(progressNotificationCalled, "Upload progress callback not called");
+                                    }
+                                    catch(ex) {
+                                        reject(ex);
+                                    }
+
+                                    resolve();                   
+                            });
+                         });
+                    });
+            }); 
+    },
+
+
     testErrorHandling() {
         return promisifiedRegister('http://localhost:9080', uuid(), 'password').then(user => {
             return new Promise((resolve, _reject) => {
