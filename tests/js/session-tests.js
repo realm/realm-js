@@ -99,7 +99,7 @@ function runOutOfProcess(nodeJsFilePath) {
             }
         catch (e) {
             reject(e);
-        };
+        }
     });
 }
 
@@ -564,7 +564,7 @@ module.exports = {
             });
     },
 
-    testProgressNotificationsForRealmOpen() {
+    testProgressNotificationsForRealmOpen2() {
         if (!isNodeProccess) {
             return Promise.resolve();
         }
@@ -603,7 +603,7 @@ module.exports = {
             });
     },  
 
-    testProgressNotificationsForRealmOpenAsync() {
+    testProgressNotificationsForRealmOpenAsync2() {
         if (!isNodeProccess) {
             return Promise.resolve();
         }
