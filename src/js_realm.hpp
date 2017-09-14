@@ -398,7 +398,7 @@ void RealmClass<T>::constructor(ContextType ctx, ObjectType this_object, size_t 
             static const String schema_string = "schema";
             ValueType schema_value = Object::get_property(ctx, object, schema_string);
             if (!Value::is_undefined(ctx, schema_value)) {
-                ObjectType schema_object = Value::validated_to_object(ctx, schema_value, "schema");
+                ObjectType schema_object = Value::validated_to_array(ctx, schema_value, "schema");
                 config.schema.emplace(Schema<T>::parse_schema(ctx, schema_object, defaults, constructors));
                 schema_updated = true;
             }
