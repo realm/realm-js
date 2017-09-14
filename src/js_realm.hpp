@@ -795,6 +795,7 @@ void RealmClass<T>::create(ContextType ctx, FunctionType, ObjectType this_object
     validate_argument_count(argc, 2, 3);
 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
+    realm->verify_open();
     std::string object_type;
     auto &object_schema = validated_object_schema_for_value(ctx, realm, arguments[0], object_type);
 
@@ -818,6 +819,7 @@ void RealmClass<T>::delete_one(ContextType ctx, FunctionType, ObjectType this_ob
     validate_argument_count(argc, 1);
 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
+    realm->verify_open();
     if (!realm->is_in_transaction()) {
         throw std::runtime_error("Can only delete objects within a transaction.");
     }
@@ -865,6 +867,7 @@ void RealmClass<T>::delete_all(ContextType ctx, FunctionType, ObjectType this_ob
     validate_argument_count(argc, 0);
 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
+    realm->verify_open();
 
     if (!realm->is_in_transaction()) {
         throw std::runtime_error("Can only delete objects within a transaction.");
@@ -887,7 +890,7 @@ void RealmClass<T>::write(ContextType ctx, FunctionType, ObjectType this_object,
     try {
         Function<T>::call(ctx, callback, this_object, 0, nullptr);
     }
-    catch (std::exception &e) {
+    catch (...) {
         realm->cancel_transaction();
         throw;
     }
@@ -927,9 +930,7 @@ void RealmClass<T>::add_listener(ContextType ctx, FunctionType, ObjectType this_
     auto callback = Value::validated_to_function(ctx, arguments[1]);
 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
-    if (realm->is_closed()) {
-        throw ClosedRealmException();
-    }
+    realm->verify_open();
     get_delegate<T>(realm.get())->add_notification(callback);
 }
 
@@ -941,9 +942,7 @@ void RealmClass<T>::remove_listener(ContextType ctx, FunctionType, ObjectType th
     auto callback = Value::validated_to_function(ctx, arguments[1]);
 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
-    if (realm->is_closed()) {
-        throw ClosedRealmException();
-    }
+    realm->verify_open();
     get_delegate<T>(realm.get())->remove_notification(callback);
 }
 
@@ -955,9 +954,7 @@ void RealmClass<T>::remove_all_listeners(ContextType ctx, FunctionType, ObjectTy
     }
 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
-    if (realm->is_closed()) {
-        throw ClosedRealmException();
-    }
+    realm->verify_open();
     get_delegate<T>(realm.get())->remove_all_notifications();
 }
 
