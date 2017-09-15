@@ -754,6 +754,8 @@ void RealmClass<T>::wait_for_download_completion(ContextType ctx, FunctionType, 
             return;
         }
     }
+#else
+    static_cast<void>(config_object);
 #endif
 
     ValueType callback_arguments[1];
