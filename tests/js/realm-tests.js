@@ -606,7 +606,8 @@ module.exports = {
                                         "Can only delete objects within a transaction.");
 
         realm.write(() => {
-            TestCase.assertThrowsContaining(() => realm.delete(), 'Invalid arguments');
+            TestCase.assertThrowsContaining(() => realm.delete(),
+                                            "object must be of type 'object', got (undefined)");
 
             realm.delete(objects[0]);
             TestCase.assertEqual(objects.length, 9, 'wrong object count');
@@ -671,10 +672,11 @@ module.exports = {
         function InvalidPerson() {}
         InvalidPerson.schema = schemas.PersonObject.schema;
 
-        TestCase.assertThrowsContaining(() => realm.objects(), 'Invalid arguments');
+        TestCase.assertThrowsContaining(() => realm.objects(), "objectType must be of type 'string', got (undefined)");
         TestCase.assertThrowsContaining(() => realm.objects([]), "objectType must be of type 'string', got ()");
         TestCase.assertThrowsContaining(() => realm.objects('InvalidClass'), "Object type 'InvalidClass' not found in schema.");
-        TestCase.assertThrowsContaining(() => realm.objects('PersonObject', 'truepredicate'), 'Invalid arguments');
+        TestCase.assertThrowsContaining(() => realm.objects('PersonObject', 'truepredicate'),
+                                        "Invalid arguments: at most 1 expected, but 2 supplied.");
         TestCase.assertThrowsContaining(() => realm.objects(InvalidPerson),
                                         'Constructor was not registered in the schema for this Realm');
 
@@ -724,8 +726,10 @@ module.exports = {
 
         TestCase.assertThrowsContaining(() => realm.objectForPrimaryKey('TestObject', 0),
                                         "'TestObject' does not have a primary key defined");
-        TestCase.assertThrowsContaining(() => realm.objectForPrimaryKey(), 'Invalid arguments');
-        TestCase.assertThrowsContaining(() => realm.objectForPrimaryKey('IntPrimary'), "Invalid arguments");
+        TestCase.assertThrowsContaining(() => realm.objectForPrimaryKey(),
+                                        "objectType must be of type 'string', got (undefined)");
+        TestCase.assertThrowsContaining(() => realm.objectForPrimaryKey('IntPrimaryObject'),
+                                        "Invalid null value for non-nullable primary key.");
         TestCase.assertThrowsContaining(() => realm.objectForPrimaryKey('InvalidClass', 0),
                                         "Object type 'InvalidClass' not found in schema.");
     },
