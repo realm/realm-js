@@ -341,11 +341,14 @@ declare namespace Realm.Sync {
       expiresAt?: Date;
     }
 
+    type ErrorCallback = (message?: string, isFatal?: boolean, category?: string, code?: number) => void;
+
     interface SyncConfiguration {
         user: User;
         url: string;
         validate_ssl?: boolean;
         ssl_trust_certificate_path?: string;
+        error?: ErrorCallback;
     }
 
     type ProgressNotificationCallback = (transferred: number, transferable: number) => void;

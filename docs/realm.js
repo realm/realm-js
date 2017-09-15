@@ -291,7 +291,11 @@ Realm.defaultPath;
  * @property {Object} [sync] - Sync configuration parameters with the following 
  *   child properties:
  *   - `user` - A `User` object obtained by calling `Realm.Sync.User.login`
- *   - `url` - A `string` which contains a valid Realm Sync url   
+ *   - `url` - A `string` which contains a valid Realm Sync url
+ *   - `error` - A callback function which is called in error situations
+ *   - `validate_ssl` - Indicating if SSL certificates must be validated
+ *   - `ssl_trust_certificate_path` - A path where to find trusted SSL certificates
+ * The `error` callback can take up to four optional arguments: `message`, `isFatal`, `category`, and `code`.
  */
 
 /**
