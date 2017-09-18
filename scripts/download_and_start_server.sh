@@ -2,5 +2,5 @@
 
 set -o pipefail
 set -e
-echo $(pwd)
-sh scripts/download-object-server.sh && sh object-server-for-testing/start-object-server.command -f && echo \"Server PID: $!\"
+echo "Downloading and starting ROS. Current directory: " $(pwd)
+sh scripts/download-object-server.sh && ./node_modules/.bin/ros start --data realm-object-server-data && echo \"Server PID: $!\"
