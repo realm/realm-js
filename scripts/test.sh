@@ -232,12 +232,16 @@ cleanup
 trap cleanup EXIT
 
 # Use a consistent version of Node if possible.
-if [ -f "$NVM_DIR/nvm.sh" ]; then
-  . "$NVM_DIR/nvm.sh" || true
-elif [ -x "$(command -v brew)" ] && [ -f "$(brew --prefix nvm)/nvm.sh" ]; then
-  # we must be on mac and nvm was installed with brew
-  # TODO: change the mac slaves to use manual nvm installation
-  . "$(brew --prefix nvm)/nvm.sh" || true
+if [[ -z "$(command -v nvm)" ]]; then
+  if [ -f "$NVM_DIR/nvm.sh" ]; then
+    . "$NVM_DIR/nvm.sh" || true
+  elif [ -x "$(command -v brew)" ] && [ -f "$(brew --prefix nvm)/nvm.sh" ]; then
+    # we must be on mac and nvm was installed with brew
+    # TODO: change the mac slaves to use manual nvm installation
+    . "$(brew --prefix nvm)/nvm.sh" || true
+  elif [ -f "$HOME/.nvm/nvm.sh" ]; then
+    . ~/.nvm/nvm.sh
+  fi
 fi
 if [[ "$(command -v nvm)" ]]; then
   nvm install 6.5.0
