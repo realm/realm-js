@@ -55,13 +55,13 @@ function assertIsError(error, message) {
   }
 }
 
-function assertIsAuthError(error, code, type) {
+function assertIsAuthError(error, code, title) {
   TestCase.assertInstanceOf(error, Realm.Sync.AuthError, 'The API should return an AuthError');
   if (code) {
     TestCase.assertEqual(error.code, code);
   }
-  if (type) {
-    TestCase.assertEqual(error.type, type);
+  if (title) {
+    TestCase.assertEqual(error.title, title);
   }
 }
 
