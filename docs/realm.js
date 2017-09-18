@@ -95,7 +95,7 @@ class Realm {
      * Open a realm asynchronously with a promise. If the realm is synced, it will be fully 
      * synchronized before it is available.
      * @param {Realm~Configuration} config 
-     * @returns {Promise} - a promise that will be resolved with the realm instance when it's available.
+     * @returns {ProgressPromise} - a promise that will be resolved with the realm instance when it's available.
      */
     static open(config) {}
 
@@ -104,9 +104,10 @@ class Realm {
      * synchronized before it is available.
      * @param {Realm~Configuration} config 
      * @param  {callback(error, realm)} - will be called when the realm is ready.
+     * @param  {callback(transferred, transferable)} [progressCallback] - an optional callback for download progress notifications
      * @throws {Error} If anything in the provided `config` is invalid.
      */
-    static openAsync(config, callback) {}
+    static openAsync(config, callback, progressCallback) {}
 
     /**
      * Closes this Realm so it may be re-opened with a newer schema version.
@@ -131,6 +132,12 @@ class Realm {
      * @param {Realm.Object|Realm.Object[]|Realm.List|Realm.Results} object
      */
     delete(object) {}
+
+    /**
+     * Deletes a Realm model, including all of its objects.
+     * @param {string} name - the model name
+     */
+    deleteModel(name) {}
 
     /**
      * **WARNING:** This will delete **all** objects in the Realm!
@@ -271,6 +278,11 @@ Realm.defaultPath;
  *   will be skipped if another process is accessing it.
  * @property {string} [path={@link Realm.defaultPath}] - The path to the file where the
  *   Realm database should be stored.
+ * @property {boolean} [inMemory=false] - Specifies if this Realm should be opened in-memory. This
+ *    still requires a path (can be the default path) to identify the Realm so other processes can
+ *    open the same Realm. The file will also be used as swap space if the Realm becomes bigger than
+ *    what fits in memory, but it is not persistent and will be removed when the last instance
+ *    is closed.
  * @property {boolean} [readOnly=false] - Specifies if this Realm should be opened as read-only.
  * @property {Array<Realm~ObjectClass|Realm~ObjectSchema>} [schema] - Specifies all the
  *   object types in this Realm. **Required** when first creating a Realm at this `path`.
@@ -279,7 +291,11 @@ Realm.defaultPath;
  * @property {Object} [sync] - Sync configuration parameters with the following 
  *   child properties:
  *   - `user` - A `User` object obtained by calling `Realm.Sync.User.login`
- *   - `url` - A `string` which contains a valid Realm Sync url   
+ *   - `url` - A `string` which contains a valid Realm Sync url
+ *   - `error` - A callback function which is called in error situations
+ *   - `validate_ssl` - Indicating if SSL certificates must be validated
+ *   - `ssl_trust_certificate_path` - A path where to find trusted SSL certificates
+ * The `error` callback can take up to four optional arguments: `message`, `isFatal`, `category`, and `code`.
  */
 
 /**

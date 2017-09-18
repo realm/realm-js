@@ -1,14 +1,29 @@
-2.0.0 Release notes (2017-9-8)
+2.0.0 Release notes
 =============================================================
 ### Breaking changes
 * Updating core, sync, object store.
 
 ### Enhancements
-* Improve performance of the RPC worker for chrome debugging.
-* Added `Realm.deleteFile` for deleting a Realm (#363).
+* None
 
 ### Bug fixes
-* Adding missing TypeScript declation (#1283).
+* None
+
+1.12.0 Release notes (2017-9-14)
+=============================================================
+
+### Enhancements
+* Improve performance of the RPC worker for chrome debugging.
+* Added Progress API `realm.syncSession.addProgressNotification` and `realm.syncSession.removeProgressNotification`
+* Added additional parameter for `Realm.open` and `Realm.openAsync` for download progress notifications 
+* Added `Realm.deleteFile` for deleting a Realm (#363).
+* Added `Realm.deleteModel` for deleting a Realm model in a migration (#573).
+* Added support for in-memory Realms.
+* `Realm.Sync.User.login`, `Realm.Sync.User.register`, and `Realm.Sync.User.registerWithProvider` return Promises and deprecate the callback style for them. Callbacks will continue to work for backward compatibility.
+
+### Bug fixes
+* Adding missing TypeScript definitions; Permissions (#1283), `setFeatureToken()`, and instructions (#1298).
+* Removed `loginWithProvider` from TypeScript definition files. This API never existed and was incorrectly added.
 
 1.11.1 Release notes (2017-9-1)
 =============================================================

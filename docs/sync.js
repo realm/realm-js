@@ -135,9 +135,10 @@ class User {
      * @param {string} server - authentication server
      * @param {string} username
      * @param {string} password
-     * @param {function(error, user)} callback - called with the following arguments:
+     * @param {function(error, user)} [callback] - called with the following arguments:
      *   - `error` - an Error object is provided on failure
      *   - `user` - a valid User object on success
+     * @returns {void|Promise<User>} Returns a promise with a user if the callback was not specified 
      */
     static login(server, username, password, callback) {}
 
@@ -148,9 +149,10 @@ class User {
      * @param {string} options.provider - The provider type
      * @param {string} options.providerToken - The access token for the given provider
      * @param {object} [options.userInfo] - A map containing additional data required by the provider
-     * @param {function(error, User)} callback - called with the following arguments:
+     * @param {function(error, User)} [callback] - an optional callback called with the following arguments:
      *   - `error` - an Error object is provided on failure
      *   - `user` - a valid User object on success
+     * @return {void|Promise<User>} Returns a promise with a user if the callback was not specified 
      */
     static registerWithProvider(server, options, callback) {}
 
@@ -159,9 +161,10 @@ class User {
      * @param {string} server - authentication server
      * @param {string} username
      * @param {string} password
-     * @param {function(error, user)} callback - called with the following arguments:
+     * @param {function(error, user)} [callback] - called with the following arguments:
      *   - `error` - an Error object is provided on failure
      *   - `user` - a valid User object on success
+     * @return {void|Promise<User>} Returns a promise with a user if the callback was not specified 
      */
     static register(server, username, password, callback) {}
 
@@ -334,6 +337,28 @@ class Session {
      * @type {string}
      */
     get state() {}
+
+    /**
+     * Register a progress notification callback on a session object
+     * @param {string} direction - The progress direction to register for.
+     * Can be either: 
+     *  - `download` - report download progress
+     *  - `upload` - report upload progress
+     * @param {string} mode - The progress notification mode to use for the registration.
+     * Can be either:
+     *  - `reportIndefinitely` - the registration will stay active until the callback is unregistered
+     *  - `forCurrentlyOutstandingWork` - the registration will be active until only the currently transferable bytes are synced
+     * @param {callback(transferred, transferable)} callback - called with the following arguments:
+     *   - `transferred` - the current number of bytes already transferred
+     *   - `transferable` - the total number of transferable bytes (the number of bytes already transferred plus the number of bytes pending transfer)
+     */
+    addProgressNotification(direction, mode, progressCallback) {}
+
+    /** Unregister a progress notification callback that was previously registered with addProgressNotification.
+     * Calling the function multiple times with the same callback is ignored.
+    * @param {callback(transferred, transferable)} callback - a previously registered progress callback
+    */
+    removeProgressNotification(progressCallback) {}
 }
 
 

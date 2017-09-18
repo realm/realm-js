@@ -59,6 +59,7 @@ module.exports = {
       return createUsersWithTestRealms(1)
         .then(([user]) => {
           return user.applyPermissions({ userId: '*' }, `/${user.identity}/test`, 'read')
+            .then(wait(100))
             .then(() => user.getGrantedPermissions('any'))
             .then(permissions => {
               TestCase.assertEqual(permissions[1].path, `/${user.identity}/test`);
