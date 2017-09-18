@@ -4,7 +4,7 @@
 * Updating core, sync, object store.
 
 ### Enhancements
-* None
+* Throw exception with recovery configuration for V1 to V2 upgrade.
 
 ### Bug fixes
 * None

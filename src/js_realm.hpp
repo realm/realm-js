@@ -253,6 +253,21 @@ public:
     };
 
   private:
+    static void translateSharedGroupOpenException(ContextType ctx, realm::Realm::Config& originalConfiguration) {
+        try {
+            throw;
+        }
+        catch (RealmFileException const& ex) {
+             switch (ex.kind()) {
+                 case RealmFileException::Kind::IncompatibleSyncedRealm: {
+                     throw IncompatibleSyncedRealmException<T>(ctx, ex.path(), originalConfiguration.encryption_key);
+                default:
+                    throw;
+                }
+            }
+        }
+    }
+
     static std::string validated_notification_name(ContextType ctx, const ValueType &value) {
         std::string name = Value::validated_to_string(ctx, value, "notification name");
         if (name != "change") {
@@ -483,7 +498,13 @@ SharedRealm RealmClass<T>::create_shared_realm(ContextType ctx, realm::Realm::Co
                                         ObjectDefaultsMap && defaults, ConstructorMap && constructors) {
     config.execution_context = Context<T>::get_execution_context_id(ctx);
 
-    SharedRealm realm = realm::Realm::get_shared_realm(config);
+    SharedRealm realm;
+    try {
+        realm = realm::Realm::get_shared_realm(config);
+    }
+    catch (...) {
+        translateSharedGroupOpenException(ctx, config);
+    }
 
     GlobalContextType global_context = Context<T>::get_global_context(ctx);
     if (!realm->m_binding_context) {
@@ -693,7 +714,14 @@ void RealmClass<T>::wait_for_download_completion(ContextType ctx, FunctionType, 
 
         std::function<ProgressHandler> progressFunc; 
 
-        auto realm = realm::Realm::get_shared_realm(config);
+        SharedRealm realm;
+        try {
+            realm = realm::Realm::get_shared_realm(config);
+        }
+        catch (...) {
+            translateSharedGroupOpenException(ctx, config);
+        }
+
         if (auto sync_config = config.sync_config)
         {
             static const String progressFuncName = "_onDownloadProgress";
