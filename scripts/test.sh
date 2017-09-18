@@ -396,8 +396,6 @@ case "$TARGET" in
   ;;
 "test-runners")
   npm run check-environment
-  # Create a fake realm module that points to the source root so that test-runner tests can require('realm')
-  npm install --build-from-source
   npm run test-runners
   ;;
 "all")
