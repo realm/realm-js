@@ -9,15 +9,13 @@ export NPM_CONFIG_PROGRESS=false
 TARGET=$1
 CONFIGURATION=${2:-Release}
 
-if echo $CONFIGURATION | grep -i "^Debug$" > /dev/null ; then
+if echo "$CONFIGURATION" | grep -i "^Debug$" > /dev/null ; then
   CONFIGURATION="Debug"
 fi
 
 IOS_SIM_DEVICE=${IOS_SIM_DEVICE:-} # use preferentially, otherwise will be set and re-exported
 ios_sim_default_device_type=${IOS_SIM_DEVICE_TYPE:-iPhone 5s}
 ios_sim_default_ios_version=${IOS_SIM_OS:-iOS 10.1}
-
-ACCEPTED_LICENSES='MIT, ISC, BSD, Apache-2.0, BSD-2-Clause, BSD-3-Clause, WTFPL, Unlicense, (MIT AND CC-BY-3.0)'
 
 PATH="/opt/android-sdk-linux/platform-tools:$PATH"
 SRCROOT=$(cd "$(dirname "$0")/.." && pwd)
@@ -235,13 +233,15 @@ trap cleanup EXIT
 
 # Use a consistent version of Node if possible.
 if [ -f "$NVM_DIR/nvm.sh" ]; then
-  . "$NVM_DIR/nvm.sh"
+  . "$NVM_DIR/nvm.sh" || true
 elif [ -x "$(command -v brew)" ] && [ -f "$(brew --prefix nvm)/nvm.sh" ]; then
   # we must be on mac and nvm was installed with brew
   # TODO: change the mac slaves to use manual nvm installation
-  . "$(brew --prefix nvm)/nvm.sh"
+  . "$(brew --prefix nvm)/nvm.sh" || true
 fi
-[[ "$(command -v nvm)" ]] && nvm install 6.5.0 && nvm use 6.5.0 || true
+if [[ "$(command -v nvm)" ]]; then
+  nvm install 6.5.0
+fi
 
 # Remove cached packages
 rm -rf ~/.yarn-cache/npm-realm-*
