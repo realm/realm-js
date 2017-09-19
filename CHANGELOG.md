@@ -1,7 +1,7 @@
-2.0.0 Release notes
+2.0.0 Release notes (2017-9-19)
 =============================================================
 ### Breaking changes
-* Updating core, sync, object store.
+* Updating core (3.2.1), sync (2.0.0-rc21), object store.
 
 ### Enhancements
 * None

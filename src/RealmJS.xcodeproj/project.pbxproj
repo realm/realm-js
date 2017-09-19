@@ -992,7 +992,7 @@
 <<<<<<< HEAD
 				CURRENT_PROJECT_VERSION = 2.0.0;
 =======
-				CURRENT_PROJECT_VERSION = 1.12.0;
+				CURRENT_PROJECT_VERSION = 2.0.0;
 >>>>>>> b3ff7ada624f9fcb6d6ad6abf19e862059513857
 				CXX = "$(SRCROOT)/../scripts/ccache-clang++.sh";
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
@@ -1060,7 +1060,7 @@
 <<<<<<< HEAD
 				CURRENT_PROJECT_VERSION = 2.0.0;
 =======
-				CURRENT_PROJECT_VERSION = 1.12.0;
+				CURRENT_PROJECT_VERSION = 2.0.0;
 >>>>>>> b3ff7ada624f9fcb6d6ad6abf19e862059513857
 				CXX = "$(SRCROOT)/../scripts/ccache-clang++.sh";
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
