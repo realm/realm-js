@@ -122,13 +122,18 @@ xctest() {
   echo "  done"
 
   # - Run the build and test
+  xcrun xcodebuild -scheme "$1" -configuration "$CONFIGURATION" -sdk iphonesimulator -destination id="$IOS_SIM_DEVICE" build || {
+      EXITCODE=$?
+      echo "*** Failure (exit code $EXITCODE). ***"
+      exit $EXITCODE
+  }
   if [ -n "$XCPRETTY" ]; then
     log_temp=$(mktemp build.log.XXXXXX)
     if [ -e "$log_temp" ]; then
       rm "$log_temp"
     fi
-    xcrun xcodebuild -scheme "$1" -configuration "$CONFIGURATION" -sdk iphonesimulator -destination name="iPhone 5s" build test 2>&1 | tee "$log_temp" | "$XCPRETTY" -c --no-utf --report junit --output build/reports/junit.xml || {
-	    EXITCODE=$?
+    xcrun xcodebuild -scheme "$1" -configuration "$CONFIGURATION" -sdk iphonesimulator -destination name="iPhone 5s" test 2>&1 | tee "$log_temp" | "$XCPRETTY" -c --no-utf --report junit --output build/reports/junit.xml || {
+        EXITCODE=$?
         printf "*** Xcode Failure (exit code %s). The full xcode log follows: ***\n\n" "$EXITCODE"
         cat "$log_temp"
         printf "\n\n*** End Xcode Failure ***\n"
@@ -136,11 +141,11 @@ xctest() {
     }
     rm "$log_temp"
   else
-    xcrun xcodebuild -scheme "$1" -configuration "$CONFIGURATION" -sdk iphonesimulator -destination id="$IOS_SIM_DEVICE" build test || {
-	    EXITCODE=$?
+    xcrun xcodebuild -scheme "$1" -configuration "$CONFIGURATION" -sdk iphonesimulator -destination id="$IOS_SIM_DEVICE" test || {
+        EXITCODE=$?
         echo "*** Failure (exit code $EXITCODE). ***"
         exit $EXITCODE
-	  }
+    }
   fi
 }
 
