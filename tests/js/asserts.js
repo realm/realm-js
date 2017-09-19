@@ -120,6 +120,23 @@ module.exports = {
         }
     },
 
+    assertThrowsContaining: function(func, expectedMessage) {
+        var caught = false;
+        try {
+            func();
+        }
+        catch (e) {
+            caught = true;
+            if (!e.message.includes(expectedMessage)) {
+                throw new TestFailureError(`Expected exception "${expectedMessage}" not thrown - instead caught: "${e}"`);
+            }
+        }
+
+        if (!caught) {
+            throw new TestFailureError(`Expected exception "${expectedMessage}" not thrown`);
+        }
+    },
+
     assertTrue: function(condition, errorMessage) {
         if (!condition) {
             throw new TestFailureError(errorMessage || `Condition ${condition} expected to be true`);

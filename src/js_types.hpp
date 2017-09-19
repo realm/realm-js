@@ -20,12 +20,14 @@
 
 #include "execution_context_id.hpp"
 #include "property.hpp"
+#include "util/format.hpp"
 
 #include <stdexcept>
 #include <string>
 #include <vector>
 
 #include <realm/binary_data.hpp>
+#include <realm/string_data.hpp>
 #include <realm/util/to_string.hpp>
 
 #if defined(__GNUC__) && !(defined(DEBUG) && DEBUG)
@@ -80,18 +82,16 @@ struct Context {
 
 class TypeErrorException : public std::invalid_argument {
 public:
-    std::string const& prefix() const { return m_prefix; }
-    std::string const& type() const { return m_type; }
+    TypeErrorException(StringData object_type, StringData property,
+                       std::string const& type, std::string const& value)
+    : std::invalid_argument(util::format("%1.%2 must be of type '%3', got (%4)",
+                                         object_type, property, type, value))
+    {}
 
-    TypeErrorException(std::string prefix, std::string type) : 
-        std::invalid_argument(prefix + " must be of type: " + type),
-        m_prefix(std::move(prefix)),
-        m_type(std::move(type)) 
-        {}
-
-private:
-    std::string m_prefix;
-    std::string m_type;
+    TypeErrorException(const char *name, std::string const& type, std::string const& value)
+    : std::invalid_argument(util::format("%1 must be of type '%2', got (%3)",
+                                         name ? name : "JS value", type, value))
+    {}
 };
 
 template<typename T>
@@ -138,8 +138,7 @@ struct Value {
 #define VALIDATED(return_t, type) \
     static return_t validated_to_##type(ContextType ctx, const ValueType &value, const char *name = nullptr) { \
         if (!is_##type(ctx, value)) { \
-            std::string prefix = name ? std::string("'") + name + "'" : "JS value"; \
-            throw TypeErrorException(prefix, #type); \
+            throw TypeErrorException(name, #type, to_string(ctx, value)); \
         } \
         return to_##type(ctx, value); \
     }
@@ -225,7 +224,7 @@ struct Object {
             return Value<T>::validated_to_##type(ctx, get_property(ctx, object, key), std::string(key).c_str()); \
         } \
         catch (std::invalid_argument &e) { \
-            throw message ? std::invalid_argument(message) : e; \
+            throw message ? std::invalid_argument(util::format("Failed to read %1: %2", message, e.what())) : e; \
         } \
     } \
     static return_t validated_get_##type(ContextType ctx, const ObjectType &object, uint32_t index, const char *message = nullptr) { \
@@ -233,7 +232,7 @@ struct Object {
             return Value<T>::validated_to_##type(ctx, get_property(ctx, object, index)); \
         } \
         catch (std::invalid_argument &e) { \
-            throw message ? std::invalid_argument(message) : e; \
+            throw message ? std::invalid_argument(util::format("Failed to read %1: %2", message, e.what())) : e; \
         } \
     }
 
