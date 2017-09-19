@@ -461,6 +461,25 @@ module.exports = {
         });
     },
 
+    testSyncV1() {
+        return Realm.Sync.User.register('http://localhost:9080', uuid(), 'password').then(user => {
+            return new Promise((resolve, _reject) => {
+                const config = { path: 'sync-1.x.realm', sync: { user, url: 'realm:://localhost:9080/~/sync-1.x' } };
+                try {
+                    const realm = new Realm(config);
+                }
+                catch (e) {
+                    if (e instanceof IncompatibleSyncedRealmException) {
+                        backupConfig = e.config();
+                        const backupRealm = new Realm(backupConfig);
+                        TestCase.assertNotEqual(backupRealm.objects('Person').length, 0);
+                        resolve();
+                    }
+                }
+                _reject();
+            });
+        });
+    },
 
     testProgressNotificationsForRealmConstructor() {
         if (!isNodeProccess) {
