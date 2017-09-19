@@ -47,6 +47,7 @@ tsconfig.json
 
 # Tests
 object-server-for-testing/
+realm-object-server-data/
 tests/realm-object-server/
 packager_out.txt
 build.log.*
