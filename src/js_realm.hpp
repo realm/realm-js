@@ -253,14 +253,14 @@ public:
     };
 
   private:
-    static void translateSharedGroupOpenException(ContextType ctx, realm::Realm::Config& originalConfiguration) {
+    static void translateSharedGroupOpenException() {
         try {
             throw;
         }
         catch (RealmFileException const& ex) {
              switch (ex.kind()) {
                  case RealmFileException::Kind::IncompatibleSyncedRealm: {
-                     throw IncompatibleSyncedRealmException<T>(ctx, ex.path(), originalConfiguration.encryption_key);
+                     throw std::runtime_error("IncompatibleSyncedRealm: "+  ex.path());
                 default:
                     throw;
                 }
@@ -503,7 +503,7 @@ SharedRealm RealmClass<T>::create_shared_realm(ContextType ctx, realm::Realm::Co
         realm = realm::Realm::get_shared_realm(config);
     }
     catch (...) {
-        translateSharedGroupOpenException(ctx, config);
+        translateSharedGroupOpenException();
     }
 
     GlobalContextType global_context = Context<T>::get_global_context(ctx);
@@ -719,7 +719,7 @@ void RealmClass<T>::wait_for_download_completion(ContextType ctx, FunctionType, 
             realm = realm::Realm::get_shared_realm(config);
         }
         catch (...) {
-            translateSharedGroupOpenException(ctx, config);
+            translateSharedGroupOpenException();
         }
 
         if (auto sync_config = config.sync_config)
