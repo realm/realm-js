@@ -421,6 +421,11 @@ module.exports = {
     },
 
     testAddListener: function() {
+        if (typeof navigator !== 'undefined' && /Chrome/.test(navigator.userAgent)) { // eslint-disable-line no-undef
+            // FIXME: async callbacks do not work correctly in Chrome debugging mode
+            return;
+        }
+
         const realm = new Realm({ schema: [schemas.TestObject] });
         realm.write(() => {
             realm.create('TestObject', { doubleCol: 1 });
