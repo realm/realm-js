@@ -168,6 +168,7 @@ extern NSMutableArray *RCTGetModuleClasses(void);
 + (void)waitForCondition:(BOOL *)condition description:(NSString *)description {
     NSRunLoop *runLoop = [NSRunLoop currentRunLoop];
     NSDate *timeout = [NSDate dateWithTimeIntervalSinceNow:30.0];
+    RCTBridge *bridge = [self currentBridge];
 
     while (!*condition) {
         if ([timeout timeIntervalSinceNow] < 0) {
@@ -180,6 +181,7 @@ extern NSMutableArray *RCTGetModuleClasses(void);
             [runLoop runMode:NSDefaultRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.1]];
             [runLoop runMode:NSRunLoopCommonModes beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.1]];
             [NSThread sleepForTimeInterval:0.01];  // Bad things may happen without some sleep.
+            [bridge.eventDispatcher sendAppEventWithName:@"realm-dummy" body:nil]; // Ensure RN has an event loop running
         }
     }
 }

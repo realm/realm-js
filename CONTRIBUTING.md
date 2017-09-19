@@ -38,3 +38,54 @@ Below are some guidelines about the format of the commit message itself:
 Realm welcomes all contributions! The only requirement we have is that, like many other projects, we need to have a [Contributor License Agreement](https://en.wikipedia.org/wiki/Contributor_License_Agreement) (CLA) in place before we can accept any external code. Our own CLA is a modified version of the Apache Software Foundation’s CLA.
 
 [Please submit your CLA electronically using our Google form](https://docs.google.com/forms/d/1bVp-Wp5nmNFz9Nx-ngTmYBVWVdwTyKj4T0WtfVm0Ozs/viewform?fbzx=4154977190905366979) so we can accept your submissions. The GitHub username you file there will need to match that of your Pull Requests. If you have any questions or cannot file the CLA electronically, you can email <help@realm.io>.
+
+### Guidelines
+
+Adding new functionality to Realm JavaScript requires that you modify a few places in the repository. As an example, consider adding a function `crashOnStart()` to the class `Realm`. The subsections below guides you through where and what to add.
+
+#### Add the function
+
+First, add a prototype of function to `src/js_realm.hpp`; look for a section marked by the comment `// method`. The prototype looks like:
+
+```
+static void crashOnStart(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
+```
+
+You have to implement the function. Find a place in `src/js_realm.hpp` to add it (maybe at the end):
+
+```
+template<typename T>
+void RealmClass<T>::crashOnStart(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    validate_argument_count(argc, 0); // <- the function doesn't take any arguments
+
+    SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object); // <- unwrap the Realm instance
+
+    // add the actual implement ...
+}
+```
+
+Testing is important, and in `tests/js/realm-tests.js` you can add the tests you need.
+
+Note: If your new API and/or test cases are not getting picked up when running the Android or iOS tests, remove the corresponding installed package from react-test-app and try again.
+
+```
+rm -rf  tests/react-test-app/node_modules/realm
+rm -rf  tests/react-test-app/node_modules/realm-tests
+```
+
+#### Wrap the function
+
+In order to call the C++ implementation, the JavaScript engine has to know about the function. You must simply add it to the map of methods/functions. Find `MethodMap<T> const methods` declaration in `src/js_realm.hpp` and add your function to it:
+
+```
+{"crashOnStart", wrap<crashOnStart>},
+```
+
+#### The final details
+
+To finish adding your new function, you will have to add your function a few places:
+
+* In `lib/index.d.ts` you add the TypeScript declaration
+* Documentation is added in `docs/realm.js`
+* Add your function to `lib/browser/index.js` in order to enable it in the Chrome Debugger
+* Add an entry to `CHANGELOG.md` if applicable (Breaking changes/Enhancements/Bug fixes)

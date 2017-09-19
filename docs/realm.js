@@ -65,6 +65,14 @@ class Realm {
     get schemaVersion() {}
 
     /**
+     * Indicates if this Realm is in a write transaction.
+     * @type {boolean}
+     * @readonly
+     * @since 1.10.3
+     */
+    get isInTransaction() {}
+
+    /**
      * Gets the sync session if this is a synced Realm
      * @type {Session}
      */
@@ -87,7 +95,7 @@ class Realm {
      * Open a realm asynchronously with a promise. If the realm is synced, it will be fully 
      * synchronized before it is available.
      * @param {Realm~Configuration} config 
-     * @returns {Promise} - a promise that will be resolved with the realm instance when it's available.
+     * @returns {ProgressPromise} - a promise that will be resolved with the realm instance when it's available.
      */
     static open(config) {}
 
@@ -96,9 +104,10 @@ class Realm {
      * synchronized before it is available.
      * @param {Realm~Configuration} config 
      * @param  {callback(error, realm)} - will be called when the realm is ready.
+     * @param  {callback(transferred, transferable)} [progressCallback] - an optional callback for download progress notifications
      * @throws {Error} If anything in the provided `config` is invalid.
      */
-    static openAsync(config, callback) {}
+    static openAsync(config, callback, progressCallback) {}
 
     /**
      * Closes this Realm so it may be re-opened with a newer schema version.
@@ -123,6 +132,12 @@ class Realm {
      * @param {Realm.Object|Realm.Object[]|Realm.List|Realm.Results} object
      */
     delete(object) {}
+
+    /**
+     * Deletes a Realm model, including all of its objects.
+     * @param {string} name - the model name
+     */
+    deleteModel(name) {}
 
     /**
      * **WARNING:** This will delete **all** objects in the Realm!
@@ -182,6 +197,40 @@ class Realm {
     * @param {function()} callback
     */
     write(callback) {}
+
+    /**
+     * Initiate a write transaction.
+     * @throws {Error} When already in write transaction
+     */
+    beginTransaction() {}
+
+    /**
+     * Commit a write transaction.
+     */
+    commitTransaction() {}
+
+    /**
+     * Cancel a write transaction.
+     */
+    cancelTransaction() {}
+
+    /*
+     * Replaces all string columns in this Realm with a string enumeration column and compacts the
+     * database file.
+     * 
+     * Cannot be called from a write transaction.
+     *
+     * Compaction will not occur if other `Realm` instances exist.
+     *
+     * While compaction is in progress, attempts by other threads or processes to open the database will
+     * wait.
+     *
+     * Be warned that resource requirements for compaction is proportional to the amount of live data in
+     * the database. Compaction works by writing the database contents to a temporary database file and
+     * then replacing the database with the temporary one.
+     * @returns {true} if compaction succeeds.
+     */
+    compact() {}
 }
 
 /**
@@ -194,6 +243,13 @@ class Realm {
  * @returns {number} version of the schema, or `-1` if no Realm exists at `path`.
  */
 Realm.schemaVersion = function(path, encryptionKey) {};
+
+/**
+ * Delete the Realm file for the given configuration.
+ * @param {Realm~Configuration} config
+ * @throws {Error} If anything in the provided `config` is invalid.
+ */
+Realm.deleteFile = function(config) {};
 
 /**
  * The default path where to create and access the Realm file.
@@ -213,8 +269,20 @@ Realm.defaultPath;
  *   This function takes two arguments:
  *   - `oldRealm` - The Realm before migration is performed.
  *   - `newRealm` - The Realm that uses the latest `schema`, which should be modified as necessary.
+ * @property {callback(number, number)} [shouldCompactOnLaunch] - The function called when opening 
+ *   a Realm for the first time during the life of a process to determine if it should be compacted 
+ *   before being returned to the user. The function takes two arguments:
+ *     - `totalSize` - The total file size (data + free space) 
+ *     - `unusedSize` - The total bytes used by data in the file.
+ *   It returns `true` to indicate that an attempt to compact the file should be made. The compaction 
+ *   will be skipped if another process is accessing it.
  * @property {string} [path={@link Realm.defaultPath}] - The path to the file where the
  *   Realm database should be stored.
+ * @property {boolean} [inMemory=false] - Specifies if this Realm should be opened in-memory. This
+ *    still requires a path (can be the default path) to identify the Realm so other processes can
+ *    open the same Realm. The file will also be used as swap space if the Realm becomes bigger than
+ *    what fits in memory, but it is not persistent and will be removed when the last instance
+ *    is closed.
  * @property {boolean} [readOnly=false] - Specifies if this Realm should be opened as read-only.
  * @property {Array<Realm~ObjectClass|Realm~ObjectSchema>} [schema] - Specifies all the
  *   object types in this Realm. **Required** when first creating a Realm at this `path`.
@@ -223,7 +291,11 @@ Realm.defaultPath;
  * @property {Object} [sync] - Sync configuration parameters with the following 
  *   child properties:
  *   - `user` - A `User` object obtained by calling `Realm.Sync.User.login`
- *   - `url` - A `string` which contains a valid Realm Sync url   
+ *   - `url` - A `string` which contains a valid Realm Sync url
+ *   - `error` - A callback function which is called in error situations
+ *   - `validate_ssl` - Indicating if SSL certificates must be validated
+ *   - `ssl_trust_certificate_path` - A path where to find trusted SSL certificates
+ * The `error` callback can take up to four optional arguments: `message`, `isFatal`, `category`, and `code`.
  */
 
 /**
