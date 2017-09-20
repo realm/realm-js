@@ -40,6 +40,6 @@ Full projects that we can compile and run ourselves are ideal!
 ## Version of Realm and Tooling
 
 - Realm JS SDK Version: ?
-- Node or React Nattive: ?
+- Node or React Native: ?
 - Client OS & Version: ?
 - Which debugger for React Native: ?/None
