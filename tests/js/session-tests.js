@@ -470,7 +470,7 @@ module.exports = {
                 }
                 catch (e) {
                     if (e.match('/IncompatibleSyncedRealm: /')) {
-                        const backupConfig = { config: e.substring('IncompatibleSyncedRealm: '.length), sync: { user, url: 'realm:://localhost:9080/~/sync-1.x' } };
+                        const backupConfig = { path: e.substring('IncompatibleSyncedRealm: '.length) };
                         const backupRealm = new Realm(backupConfig);
                         TestCase.assertNotEqual(backupRealm.objects('Person').length, 0);
                         resolve();
