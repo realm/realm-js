@@ -1,3 +1,48 @@
+1.12.0 Release notes (2017-9-14)
+=============================================================
+### Breaking changes
+* None
+
+### Enhancements
+* Improve performance of the RPC worker for chrome debugging.
+* Added Progress API `realm.syncSession.addProgressNotification` and `realm.syncSession.removeProgressNotification`
+* Added additional parameter for `Realm.open` and `Realm.openAsync` for download progress notifications 
+* Added `Realm.deleteFile` for deleting a Realm (#363).
+* Added `Realm.deleteModel` for deleting a Realm model in a migration (#573).
+* Added support for in-memory Realms.
+* `Realm.Sync.User.login`, `Realm.Sync.User.register`, and `Realm.Sync.User.registerWithProvider` return Promises and deprecate the callback style for them. Callbacks will continue to work for backward compatibility.
+
+### Bug fixes
+* Adding missing TypeScript definitions; Permissions (#1283), `setFeatureToken()`, and instructions (#1298).
+* Removed `loginWithProvider` from TypeScript definition files. This API never existed and was incorrectly added.
+
+1.11.1 Release notes (2017-9-1)
+=============================================================
+### Breaking changes
+* None
+
+### Enhancements
+* None
+
+### Bug fixes
+* Fix accessToken.
+
+1.11.0 Release notes (2017-8-31)
+=============================================================
+### Breaking changes
+* None
+
+### Enhancements
+* Added methods `Realm.beginTransaction()`, `Realm.commitTransaction()`, `Realm.cancelTransaction()` to manually control write transactions.
+* Added property `Realm.isInTransaction` which indicates if write transaction is in progress.
+* Added `shouldCompactOnLaunch` to configuration (#507).
+* Added `Realm.compact()` for manually compacting Realm files.
+* Added various methods for permission management (#1204).
+
+### Bug fixes
+* None
+
+
 1.10.3 Release notes (2017-8-16)
 =============================================================
 ### Breaking changes
@@ -7,7 +52,7 @@
 * None
 
 ### Bug fixes
-* none
+* None
 
 
 1.10.2 Release notes (2017-8-16)

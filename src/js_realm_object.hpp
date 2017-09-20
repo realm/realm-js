@@ -49,7 +49,7 @@ struct RealmObjectClass : ClassDefinition<T, realm::Object> {
     static void get_property(ContextType, ObjectType, const String &, ReturnValue &);
     static bool set_property(ContextType, ObjectType, const String &, ValueType);
     static std::vector<String> get_property_names(ContextType, ObjectType);
-    
+
     static void is_valid(ContextType, FunctionType, ObjectType, size_t, const ValueType [], ReturnValue &);
     static void get_object_schema(ContextType, FunctionType, ObjectType, size_t, const ValueType [], ReturnValue &);
     static void linking_objects(ContextType, FunctionType, ObjectType, size_t, const ValueType [], ReturnValue &);
@@ -73,13 +73,13 @@ template<typename T>
 void RealmObjectClass<T>::is_valid(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     return_value.set(get_internal<T, RealmObjectClass<T>>(this_object)->is_valid());
 }
-    
+
 template<typename T>
 void RealmObjectClass<T>::get_object_schema(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     auto object = get_internal<T, RealmObjectClass<T>>(this_object);
     return_value.set(Schema<T>::object_for_object_schema(ctx, object->get_object_schema()));
 }
-    
+
 template<typename T>
 typename T::Object RealmObjectClass<T>::create_instance(ContextType ctx, realm::Object realm_object) {
     static String prototype_string = "prototype";
@@ -100,7 +100,7 @@ typename T::Object RealmObjectClass<T>::create_instance(ContextType ctx, realm::
     if (result != object && !Value::is_null(ctx, result) && !Value::is_undefined(ctx, result)) {
         throw std::runtime_error("Realm object constructor must not return another value");
     }
-    
+
     return object;
 }
 
@@ -127,12 +127,13 @@ bool RealmObjectClass<T>::set_property(ContextType ctx, ObjectType object, const
         return false;
     }
 
+    NativeAccessor<T> accessor(ctx, realm_object->realm(), realm_object->get_object_schema());
     if (!Value::is_valid_for_property(ctx, value, *prop)) {
-        throw TypeErrorException(util::format("%1.%2", realm_object->get_object_schema().name, property_name),
-                                 js_type_name_for_property_type(prop->type));
+        throw TypeErrorException(realm_object->get_object_schema().name, property_name,
+                                 js_type_name_for_property_type(prop->type),
+                                 accessor.print(value));
     }
 
-    NativeAccessor<T> accessor(ctx, realm_object->realm(), realm_object->get_object_schema());
     realm_object->set_property_value(accessor, property_name, value, true);
     return true;
 }
@@ -162,29 +163,29 @@ std::vector<String<T>> RealmObjectClass<T>::get_property_names(ContextType ctx, 
 template<typename T>
 void realm::js::RealmObjectClass<T>::linking_objects(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 2);
-    
+
     std::string object_type = Value::validated_to_string(ctx, arguments[0], "objectType");
     std::string property_name = Value::validated_to_string(ctx, arguments[1], "property");
-    
+
     auto object = get_internal<T, RealmObjectClass<T>>(this_object);
-    
+
     auto target_object_schema = object->realm()->schema().find(object_type);
     if (target_object_schema == object->realm()->schema().end()) {
         throw std::logic_error(util::format("Could not find schema for type '%1'", object_type));
     }
-    
+
     auto link_property = target_object_schema->property_for_name(property_name);
     if (!link_property) {
         throw std::logic_error(util::format("Type '%1' does not contain property '%2'", object_type, property_name));
     }
-    
+
     if (link_property->object_type != object->get_object_schema().name) {
         throw std::logic_error(util::format("'%1.%2' is not a relationship to '%3'", object_type, property_name, object->get_object_schema().name));
     }
-    
+
     realm::TableRef table = ObjectStore::table_for_object_type(object->realm()->read_group(), target_object_schema->name);
     auto row = object->row();
     auto tv = row.get_table()->get_backlink_view(row.get_index(), table.get(), link_property->table_column);
-    
+
     return_value.set(ResultsClass<T>::create_instance(ctx, realm::Results(object->realm(), std::move(tv))));
 }

@@ -158,4 +158,170 @@ module.exports = {
             }
         });
     },
+
+    testDeleteModelMigration: function() {
+        const schema = [{
+            name: 'TestObject',
+            properties: {
+                prop0: 'string',
+                prop1: 'int',
+            }
+        }];
+
+        var realm = new Realm({schema: schema});
+
+        realm.write(function() {
+            realm.create('TestObject', ['stringValue', 1]);
+        });
+
+        realm.close();
+
+        realm = new Realm({schema: [], schemaVersion: 1});
+        TestCase.assertEqual(realm.schema.length, 0); // no models
+        realm.close(); // this won't delete the model
+
+        realm = new Realm({schema: schema, schemaVersion: 2});
+        TestCase.assertEqual(realm.objects('TestObject').length, 1); // the model objects are still there
+        realm.close();
+
+        // now delete the model explicitly, which should delete the objects too
+        realm = new Realm({schema: [], schemaVersion: 3, migration: function(oldRealm, newRealm) {
+            newRealm.deleteModel('TestObject');
+        }});
+
+        TestCase.assertEqual(realm.schema.length, 0); // no models
+
+        realm.close();
+
+        realm = new Realm({schema: schema, schemaVersion: 4});
+
+        TestCase.assertEqual(realm.objects('TestObject').length, 0);
+
+        realm.close();
+    },
+
+    testDeleteModelInSchema: function() {
+        const schema = [{
+            name: 'TestObject',
+            properties: {
+                prop0: 'string',
+                prop1: 'int',
+            }
+        }];
+
+        var realm = new Realm({schema: schema});
+
+        realm.write(function() {
+            realm.create('TestObject', ['stringValue', 1]);
+        });
+
+        realm.close();
+
+
+        // now delete the model explicitly, but it should remain as it's still in the schema
+        // only the rows should get deleted
+        realm = new Realm({schema: schema, schemaVersion: 1, migration: function(oldRealm, newRealm) {
+            newRealm.deleteModel('TestObject');
+        }});
+
+        TestCase.assertEqual(realm.schema.length, 1); // model should remain
+        TestCase.assertEqual(realm.objects('TestObject').length, 0); // objects should be gone
+
+        realm.close();
+
+        realm = new Realm({schema: schema, schemaVersion: 2});
+        TestCase.assertEqual(realm.objects('TestObject').length, 0);
+
+        realm.close();
+    },
+
+    testDeleteModelIgnoreNotExisting: function() {
+        const schema = [{
+            name: 'TestObject',
+            properties: {
+                prop0: 'string',
+                prop1: 'int',
+            }
+        }];
+
+        var realm = new Realm({schema: schema});
+
+        realm.write(function() {
+            realm.create('TestObject', ['stringValue', 1]);
+        });
+
+        realm.close();
+
+        // non-existing models should be ignore on delete
+        realm = new Realm({schema: schema, schemaVersion: 1, migration: function(oldRealm, newRealm) {
+            newRealm.deleteModel('NonExistingModel');
+        }});
+
+        realm.close();
+
+        realm = new Realm({schema: schema, schemaVersion: 2});
+        TestCase.assertEqual(realm.objects('TestObject').length, 1);
+
+        realm.close();
+    },
+
+    testDeleteModelWithRelationship: function() {
+        const ShipSchema = {
+            name: 'Ship',
+            properties: {
+                ship_name: 'string',
+                captain: 'Captain'
+            }
+        };
+
+        const CaptainSchema = {
+            name: 'Captain',
+            properties: {
+                captain_name: 'string',
+                ships: { type: 'linkingObjects', objectType: 'Ship', property: 'captain' }
+            }
+        };
+
+        var realm = new Realm({schema: [ShipSchema, CaptainSchema]});
+
+        realm.write(function() {
+            realm.create('Ship', {
+                ship_name: 'My Ship',
+                captain: {
+                    captain_name: 'John Doe'
+                }
+            });
+        });
+
+        TestCase.assertEqual(realm.objects('Captain').length, 1);
+        TestCase.assertEqual(realm.objects('Ship').length, 1);
+        TestCase.assertEqual(realm.objects('Ship')[0].captain.captain_name, "John Doe");
+        TestCase.assertEqual(realm.objects('Captain')[0].ships[0].ship_name, "My Ship");
+
+        realm.close();
+
+        realm = new Realm({schema: [ShipSchema, CaptainSchema], schemaVersion: 1, migration: function(oldRealm, newRealm) {
+            TestCase.assertThrows(function(e) {
+                // deleting a model which is target of linkingObjects results in an exception
+                newRealm.deleteModel('Captain');
+                console.log(e);
+            }, "Table is target of cross-table link columns");
+        }});
+
+        TestCase.assertEqual(realm.objects('Captain').length, 1);
+        TestCase.assertEqual(realm.objects('Ship').length, 1);
+
+        realm.close();
+
+        realm = new Realm({schema: [ShipSchema, CaptainSchema], schemaVersion: 2, migration: function(oldRealm, newRealm) {
+            // deleting a model which isn't target of linkingObjects works fine
+            newRealm.deleteModel('Ship');
+        }});
+
+        TestCase.assertEqual(realm.objects('Captain').length, 1);
+        TestCase.assertEqual(realm.objects('Ship').length, 0);
+        TestCase.assertEqual(realm.objects('Captain')[0].ships.length, 0);
+
+        realm.close();
+    },
 };
