@@ -414,7 +414,7 @@ void RealmClass<T>::constructor(ContextType ctx, ObjectType this_object, size_t 
             static const String compact_on_launch_string = "shouldCompactOnLaunch";
             ValueType compact_value = Object::get_property(ctx, object, compact_on_launch_string);
             if (!Value::is_undefined(ctx, compact_value)) {
-                if (config.schema_mode == SchemaMode::ReadOnly) {
+                if (config.schema_mode == SchemaMode::Immutable) {
                     throw std::invalid_argument("Cannot set 'shouldCompactOnLaunch' when 'readOnly' is set.");
                 }
                 if (config.sync_config) {
