@@ -1,5 +1,7 @@
 #!/bin/bash
 
+exit 0
+
 set -eo pipefail
 
 [ "$(uname -s)" != "Darwin" ] && exit

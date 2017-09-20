@@ -46,6 +46,7 @@ download_server() {
 }
 
 start_server() {
+  return
   #disabled ROS logging
   ./object-server-for-testing/start-object-server.command &> /dev/null &
 

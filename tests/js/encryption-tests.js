@@ -71,7 +71,7 @@ module.exports = {
     },
 };
 
-if (Realm.Sync) {
+if (global.enableSyncTests) {
     module.exports.testEncryptionWithSync = function() {
         new Realm({
             encryptionKey: new Int8Array(64),
