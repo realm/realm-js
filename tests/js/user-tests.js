@@ -55,13 +55,13 @@ function assertIsError(error, message) {
   }
 }
 
-function assertIsAuthError(error, code, type) {
+function assertIsAuthError(error, code, title) {
   TestCase.assertInstanceOf(error, Realm.Sync.AuthError, 'The API should return an AuthError');
   if (code) {
     TestCase.assertEqual(error.code, code);
   }
-  if (type) {
-    TestCase.assertEqual(error.type, type);
+  if (title) {
+    TestCase.assertEqual(error.title, title);
   }
 }
 
@@ -123,13 +123,20 @@ module.exports = {
 
   testRegisterExistingUser() {
     var username = uuid();
-    return callbackTest((callback) => Realm.Sync.User.register('http://localhost:9080', username, 'password', callback), (error, user) => {
-      failOnError(error);
-      assertIsUser(user);
-
+    return new Promise((resolve, reject) => {
       Realm.Sync.User.register('http://localhost:9080', username, 'password', (error, user) => {
-        assertIsAuthError(error, 611, 'https://realm.io/docs/object-server/problems/invalid-credentials');
-        TestCase.assertUndefined(user);
+        failOnError(error);
+        assertIsUser(user);
+
+        Realm.Sync.User.register('http://localhost:9080', username, 'password', (error, user) => {
+         try { 
+            assertIsAuthError(error, 613, "The account cannot be registered as it exists already.");
+            TestCase.assertUndefined(user);
+            resolve();
+          } catch(e) { 
+           reject(e);
+          }
+        });
       });
     });
   },
@@ -202,7 +209,7 @@ module.exports = {
 
   testLoginNonExistingUser() {
     return callbackTest((callback) => Realm.Sync.User.login('http://localhost:9080', 'does_not', 'exist', callback), (error, user) => {
-      assertIsAuthError(error, 611, 'https://realm.io/docs/object-server/problems/invalid-credentials');
+      assertIsAuthError(error, 611, "The provided credentials are invalid.");
       TestCase.assertUndefined(user);
     });
   },
@@ -359,7 +366,12 @@ module.exports = {
             reject("Retrieving not existing account should fail");
           })
           .catch(e => {
-            TestCase.assertEqual(e.code, 404);
+            try {
+              TestCase.assertEqual(e.code, 404);
+            }
+            catch (e) {
+              reject(e);
+            }
             resolve()
           });
       })
