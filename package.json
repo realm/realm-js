@@ -85,6 +85,7 @@
     "nan": "^2.3.3",
     "node-fetch": "^1.6.3",
     "node-pre-gyp": "^0.6.36",
+    "prop-types": "^15.5.10",
     "progress": "^2.0.0",
     "request": "^2.78.0",
     "stream-counter": "^1.0.0",
