@@ -1,3 +1,15 @@
+X.Y.Z Release notes
+=============================================================
+### Breaking changes
+* None
+
+### Enhancements
+* None
+
+### Bug fixes
+* Fixed port conflict between RN >= 0.48 inspector proxy and RPC server used for Chrome debugging (#1294).
+
+
 1.12.0 Release notes (2017-9-14)
 =============================================================
 ### Breaking changes
