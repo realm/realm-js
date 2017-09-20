@@ -4,7 +4,7 @@
 * Updating core, sync, object store.
 
 ### Enhancements
-* Throw exception with recovery configuration for V1 to V2 upgrade.
+* Throw exception with recovery path when upgrading from 1.x to 2.x.
 
 ### Bug fixes
 * None

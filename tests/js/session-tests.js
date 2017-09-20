@@ -461,7 +461,7 @@ module.exports = {
         });
     },
 
-    testSyncV1() {
+    testIncompatibleSyncedRealm() {
         return Realm.Sync.User.register('http://localhost:9080', uuid(), 'password').then(user => {
             return new Promise((resolve, _reject) => {
                 const config = { path: 'sync-1.x.realm', sync: { user, url: 'realm:://localhost:9080/~/sync-1.x' } };
