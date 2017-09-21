@@ -1,21 +1,10 @@
-vNext (TBD)
+2.0.0-rc10 Release notes (2017-9-19)
 =============================================================
 ### Breaking changes
-* None
+* Updating core (3.2.1), sync (2.0.0-rc23 - packaged under 2.0.0-rc22), object store.
 
 ### Enhancements
 * Add support for sorting Lists and Results on values from linked objects.
-
-### Bug fixes
-* None
-
-2.0.0 Release notes (2017-9-19)
-=============================================================
-### Breaking changes
-* Updating core (3.2.1), sync (2.0.0-rc21), object store.
-
-### Enhancements
-* None
 
 ### Bug fixes
 * None
