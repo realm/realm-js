@@ -64,7 +64,7 @@ stop_server() {
   echo stopping server 
   if [[ ${SERVER_PID} -gt 0 ]] ; then
     echo server is running. killing it
-    kill -9 ${SERVER_PID}
+    kill -9 ${SERVER_PID} || true
   fi
 }
 
