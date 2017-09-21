@@ -351,12 +351,31 @@ REALM_JS_INLINE void set_internal(const typename T::Object &object, typename Cla
 template<typename T>
 inline bool Value<T>::is_valid_for_property(ContextType context, const ValueType &value, const Property& prop)
 {
-    if (prop.is_nullable && (is_null(context, value) || is_undefined(context, value))) {
+    if (is_nullable(prop.type) && (is_null(context, value) || is_undefined(context, value))) {
         return true;
     }
 
-    using PropertyType = realm::PropertyType;
-    switch (prop.type) {
+    using realm::PropertyType;
+    if (realm::is_array(prop.type)) {
+        if (prop.type != PropertyType::Object) {
+            return false;
+        }
+
+        // FIXME: Do we need to validate the types of the contained objects?
+        if (is_array(context, value)) {
+            return true;
+        }
+
+        if (is_object(context, value)) {
+            auto object = to_object(context, value);
+            return Object<T>::template is_instance<ResultsClass<T>>(context, object)
+                || Object<T>::template is_instance<ListClass<T>>(context, object);
+        }
+
+        return false;
+    }
+
+    switch (prop.type & ~PropertyType::Flags) {
         case PropertyType::Int:
         case PropertyType::Float:
         case PropertyType::Double:
@@ -371,32 +390,24 @@ inline bool Value<T>::is_valid_for_property(ContextType context, const ValueType
             return is_date(context, value);
         case PropertyType::Object:
             return true;
-        case PropertyType::Array:
-            // FIXME: Do we need to validate the types of the contained objects?
-            if (is_array(context, value)) {
-                return true;
-            }
-
-            if (is_object(context, value)) {
-                auto object = to_object(context, value);
-                return Object<T>::template is_instance<ResultsClass<T>>(context, object)
-                    || Object<T>::template is_instance<ListClass<T>>(context, object);
-            }
-
-            return false;
-
         case PropertyType::Any:
-        case PropertyType::LinkingObjects:
             return false;
+        default:
+            REALM_UNREACHABLE();
     }
-
-    REALM_UNREACHABLE();
-    return false;
 }
 
-inline std::string js_type_name_for_property_type(PropertyType type)
+inline std::string js_type_name_for_property_type(realm::PropertyType type)
 {
-    switch (type) {
+    using realm::PropertyType;
+    if (realm::is_array(type)) {
+       if (type == PropertyType::LinkingObjects) {
+            throw std::runtime_error("LinkingObjects' type is not supported");
+        }
+        return "array";
+    }
+
+    switch (type & ~PropertyType::Flags) {
         case PropertyType::Int:
         case PropertyType::Float:
         case PropertyType::Double:
@@ -411,17 +422,11 @@ inline std::string js_type_name_for_property_type(PropertyType type)
             return "binary";
         case PropertyType::Object:
             return "object";
-        case PropertyType::Array:
-            return "array";
-
         case PropertyType::Any:
             throw std::runtime_error("'Any' type is not supported");
-        case PropertyType::LinkingObjects:
-            throw std::runtime_error("LinkingObjects' type is not supported");
+        default:
+            REALM_UNREACHABLE();
     }
-
-    REALM_UNREACHABLE();
-    return "<unknown>";
 }
 
 } // js

@@ -48,11 +48,6 @@
         }, {
           "dependencies": [ "vendored-realm" ]
         }],
-        ["OS=='win'", {
-          "direct_dependent_settings": {
-            "libraries": [ "-lsha_win32<(debug_library_suffix)" ]
-          }
-        }]
       ]
     },
     {

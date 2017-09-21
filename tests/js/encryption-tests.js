@@ -71,12 +71,12 @@ module.exports = {
     },
 };
 
-if (Realm.Sync) {
+if (global.enableSyncTests) {
     module.exports.testEncryptionWithSync = function() {
         new Realm({
             encryptionKey: new Int8Array(64),
             sync: {
-                user: Realm.Sync.User.adminUser('fake-token'),
+                user: Realm.Sync.User.adminUser('fake-token', 'http://fake-server'),
                 url: 'realm://fake-server'
             }
         });

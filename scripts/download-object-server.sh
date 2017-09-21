@@ -1,5 +1,7 @@
 #!/bin/bash
 
+exit 0
+
 set -eo pipefail
 
 [ "$(uname -s)" != "Darwin" ] && exit
@@ -14,6 +16,7 @@ if [ -f object-server-for-testing/node_modules/realm-object-server-developer/pac
 fi
 
 object_server_bundle="realm-object-server-bundled_node_darwin-developer-$REALM_OBJECT_SERVER_VERSION.tar.gz"
+echo "Downloading https://static.realm.io/downloads/object-server/$object_server_bundle"
 curl -f -L "https://static.realm.io/downloads/object-server/$object_server_bundle" -o "$object_server_bundle"
 rm -rf object-server-for-testing
 mkdir object-server-for-testing
