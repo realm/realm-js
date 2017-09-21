@@ -248,10 +248,8 @@ void ListClass<T>::filtered(ContextType ctx, FunctionType, ObjectType this_objec
 
 template<typename T>
 void ListClass<T>::sorted(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
-    validate_argument_count(argc, 1, 2);
-
     auto list = get_internal<T, ListClass<T>>(this_object);
-    return_value.set(ResultsClass<T>::create_sorted(ctx, *list, argc, arguments));
+    return_value.set(ResultsClass<T>::create_instance(ctx, list->sort(ResultsClass<T>::get_keypaths(ctx, argc, arguments))));
 }
     
 template<typename T>

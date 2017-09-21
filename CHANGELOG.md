@@ -1,3 +1,14 @@
+vNext (TBD)
+=============================================================
+### Breaking changes
+* None
+
+### Enhancements
+* Add support for sorting Lists and Results on values from linked objects.
+
+### Bug fixes
+* None
+
 2.0.0 Release notes (2017-9-19)
 =============================================================
 ### Breaking changes

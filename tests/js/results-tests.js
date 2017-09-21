@@ -206,6 +206,9 @@ module.exports = {
             });
         };
 
+        objects = objects.sorted([]);
+        TestCase.assertArraysEqual(primaries(objects), [2, 3, 1, 4, 0]);
+
         objects = objects.sorted('primaryCol');
         TestCase.assertArraysEqual(primaries(objects), [0, 1, 2, 3, 4]);
 
@@ -241,9 +244,6 @@ module.exports = {
         });
         TestCase.assertThrows(function() {
             objects.sorted([1]);
-        });
-        TestCase.assertThrows(function() {
-            objects.sorted([]);
         });
         TestCase.assertThrows(function() {
             objects.sorted('fish');

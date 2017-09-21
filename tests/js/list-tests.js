@@ -511,32 +511,46 @@ module.exports = {
     },
 
     testListSorted: function() {
-        var realm = new Realm({schema: [schemas.PersonObject, schemas.PersonList]});
-        var list;
+        const schema = [
+            {name: 'Target', properties: {value: 'int'}},
+            {name: 'Mid',    properties: {value: 'int', link: 'Target'}},
+            {name: 'List',   properties: {list: {type: 'list', objectType: 'Mid'}}},
+        ];
+        const realm = new Realm({schema: schema});
 
-        realm.write(function() {
-            var object = realm.create('PersonList', {list: [
-                {name: 'Ari', age: 10},
-                {name: 'Tim', age: 11},
-                {name: 'Bjarne', age: 12},
-                {name: 'Alex', age: 12, married: true}
+        let list;
+        realm.write(() => {
+            list = realm.create('List', {list: [
+                {value: 3, link: {value: 1}},
+                {value: 1, link: {value: 3}},
+                {value: 2, link: {value: 2}},
+            ]}).list;
+            realm.create('List', {list: [
+                {value: 4, link: {value: 4}},
             ]});
-            realm.create('PersonObject', {name: 'NotInList', age: 10});
-
-            list = object.list;
         });
 
-        var names = function(results) {
-            return results.map(function(object) {
-                return object.name;
-            });
-        };
+        const values = (results) => results.map((o) => o.value);
 
-        var objects = list.sorted('name', true);
-        TestCase.assertArraysEqual(names(objects), ['Tim', 'Bjarne', 'Ari', 'Alex']);
+        TestCase.assertThrows(() => list.sorted());
+        TestCase.assertThrows(() => list.sorted('nonexistent property'));
+        TestCase.assertThrows(() => list.sorted('link'));
 
-        objects = list.sorted(['age', 'name']);
-        TestCase.assertArraysEqual(names(objects), ['Ari', 'Tim', 'Alex', 'Bjarne']);
+        TestCase.assertArraysEqual(values(list.sorted([])), [3, 1, 2]);
+
+        TestCase.assertArraysEqual(values(list.sorted('value')), [1, 2, 3]);
+        TestCase.assertArraysEqual(values(list.sorted('value', false)), [1, 2, 3]);
+        TestCase.assertArraysEqual(values(list.sorted('value', true)), [3, 2, 1]);
+        TestCase.assertArraysEqual(values(list.sorted(['value'])), [1, 2, 3]);
+        TestCase.assertArraysEqual(values(list.sorted([['value', false]])), [1, 2, 3]);
+        TestCase.assertArraysEqual(values(list.sorted([['value', true]])), [3, 2, 1]);
+
+        TestCase.assertArraysEqual(values(list.sorted('link.value')), [3, 2, 1]);
+        TestCase.assertArraysEqual(values(list.sorted('link.value', false)), [3, 2, 1]);
+        TestCase.assertArraysEqual(values(list.sorted('link.value', true)), [1, 2, 3]);
+        TestCase.assertArraysEqual(values(list.sorted(['link.value'])), [3, 2, 1]);
+        TestCase.assertArraysEqual(values(list.sorted([['link.value', false]])), [3, 2, 1]);
+        TestCase.assertArraysEqual(values(list.sorted([['link.value', true]])), [1, 2, 3]);
     },
 
     testArrayMethods: function() {
