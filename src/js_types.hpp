@@ -319,31 +319,6 @@ struct Exception : public std::runtime_error {
 };
 
 template<typename T>
-struct IncompatibleSyncedRealmException : public std::runtime_error {
-    using ContextType = typename T::Context;
-    using ObjectType = typename T::Object;
-
-    std::string m_path;
-    std::vector<char> m_encryption_key;
-
-    IncompatibleSyncedRealmException(ContextType ctx, const std::string &path)
-        : std::runtime_error(std::string("Incompatible Synced Realm")), m_path(path) {}
-    IncompatibleSyncedRealmException(ContextType ctx, const std::string &path, const std::vector<char> &key)
-        : std::runtime_error(std::string("Incompatible Synced Realm")), m_path(path), m_encryption_key(key) {}
-    
-
-    ObjectType config(ContextType ctx) {
-        ObjectType configuration = ObjectType::create_empty(ctx);
-        ObjectType::set_property(ctx, configuration, "path", m_path);
-        ObjectType::set_property(ctx, configuration, "schema_mode", to_string(ctx, "readOnly"));
-        if (!m_encryption_key.empty()) {
-            ObjectType::set_property(ctx, configuration, "encryption_key", to_binary(ctx, m_encryption_key));
-        }
-        return configuration;
-    }
-};
-
-template<typename T>
 struct ReturnValue {
     using ValueType = typename T::Value;
 
