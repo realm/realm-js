@@ -44,21 +44,27 @@ LOGCAT_OUT="$SRCROOT/logcat_out.txt"
 
 
 download_server() {
+  echo "test.sh: downloading ROS"
   ./scripts/download-object-server.sh
 }
 
 start_server() {
+  echo "test.sh: starting ROS"
   #disabled ROS logging
-  sh ./object-server-for-testing/start-object-server.command &> /dev/null &
+  # sh ./object-server-for-testing/start-object-server.command &> /dev/null &
 
   #enabled ROS logging
   #sh ./object-server-for-testing/start-object-server.command &
+  ./node_modules/.bin/ros start --data realm-object-server-data &
   SERVER_PID=$!
+  echo ROS PID: ${SERVER_PID}
 }
 
 stop_server() {
+  echo stopping server 
   if [[ ${SERVER_PID} -gt 0 ]] ; then
-    kill -9 ${SERVER_PID}
+    echo server is running. killing it
+    kill -9 ${SERVER_PID} || true
   fi
 }
 
@@ -241,7 +247,7 @@ elif [ -x "$(command -v brew)" ] && [ -f "$(brew --prefix nvm)/nvm.sh" ]; then
   # TODO: change the mac slaves to use manual nvm installation
   . "$(brew --prefix nvm)/nvm.sh"
 fi
-[[ "$(command -v nvm)" ]] && nvm install 6.5.0 && nvm use 6.5.0 || true
+[[ "$(command -v nvm)" ]] && nvm install 7.10.0 && nvm use 7.10.0 || true
 
 # Remove cached packages
 rm -rf ~/.yarn-cache/npm-realm-*
@@ -335,11 +341,15 @@ case "$TARGET" in
   ;;
 "node")
   npm run check-environment
-  if [ "$(uname)" = 'Darwin' ]; then
+  if [ "$(uname)" = 'Darwin' ]; then   
+    echo "downloading server"
     download_server
+    echo "starting server"
     start_server
+    
     npm_tests_cmd="npm run test"
     npm install --build-from-source=realm --realm_enable_sync
+
   else
     npm_tests_cmd="npm run test"
     npm install --build-from-source=realm
@@ -429,14 +439,6 @@ case "$TARGET" in
 
   echo -e "enterprise:\n  skip_setup: true\n" >> "tests/sync-bundle/object-server/configuration.yml"
   touch "tests/sync-bundle/object-server/do_not_open_browser"
-  ;;
-"object-server-integration")
-  echo -e "yes\n" | ./tests/sync-bundle/reset-server-realms.command
-
-  pushd "$SRCROOT/tests"
-  npm install
-  npm run test-sync-integration
-  popd
   ;;
 *)
   echo "Invalid target '${TARGET}'"

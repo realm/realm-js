@@ -63,8 +63,7 @@ struct ResultsClass : ClassDefinition<T, realm::js::Results<T>, CollectionClass<
     template<typename U>
     static ObjectType create_filtered(ContextType, const U &, size_t, const ValueType[]);
 
-    template<typename U>
-    static ObjectType create_sorted(ContextType, const U &, size_t, const ValueType[]);
+    static std::vector<std::pair<std::string, bool>> get_keypaths(ContextType, size_t, const ValueType[]);
 
     static void get_length(ContextType, ObjectType, ReturnValue &);
     static void get_index(ContextType, ObjectType, uint32_t, ReturnValue &);
@@ -132,64 +131,37 @@ typename T::Object ResultsClass<T>::create_filtered(ContextType ctx, const U &co
 }
 
 template<typename T>
-template<typename U>
-typename T::Object ResultsClass<T>::create_sorted(ContextType ctx, const U &collection, size_t argc, const ValueType arguments[]) {
-    auto const &realm = collection.get_realm();
-    auto const &object_schema = collection.get_object_schema();
-    std::vector<std::string> prop_names;
-    std::vector<bool> ascending;
-    size_t prop_count;
+std::vector<std::pair<std::string, bool>>
+ResultsClass<T>::get_keypaths(ContextType ctx, size_t argc, const ValueType arguments[]) {
+    validate_argument_count(argc, 1, 2);
 
-    if (Value::is_array(ctx, arguments[0])) {
+    std::vector<std::pair<std::string, bool>> sort_order;
+
+    if (argc > 0 && Value::is_array(ctx, arguments[0])) {
         validate_argument_count(argc, 1, "Second argument is not allowed if passed an array of sort descriptors");
 
         ObjectType js_prop_names = Value::validated_to_object(ctx, arguments[0]);
-        prop_count = Object::validated_get_length(ctx, js_prop_names);
-        if (!prop_count) {
-            throw std::invalid_argument("Sort descriptor array must not be empty");
-        }
-
-        prop_names.resize(prop_count);
-        ascending.resize(prop_count);
+        size_t prop_count = Object::validated_get_length(ctx, js_prop_names);
+        sort_order.reserve(prop_count);
 
         for (unsigned int i = 0; i < prop_count; i++) {
             ValueType value = Object::validated_get_property(ctx, js_prop_names, i);
 
             if (Value::is_array(ctx, value)) {
                 ObjectType array = Value::to_array(ctx, value);
-                prop_names[i] = Object::validated_get_string(ctx, array, 0);
-                ascending[i] = !Object::validated_get_boolean(ctx, array, 1);
+                sort_order.emplace_back(Object::validated_get_string(ctx, array, 0),
+                                        !Object::validated_get_boolean(ctx, array, 1));
             }
             else {
-                prop_names[i] = Value::validated_to_string(ctx, value);
-                ascending[i] = true;
+                sort_order.emplace_back(Value::validated_to_string(ctx, value), true);
             }
         }
     }
     else {
-        validate_argument_count(argc, 1, 2);
-
-        prop_count = 1;
-        prop_names.push_back(Value::validated_to_string(ctx, arguments[0]));
-        ascending.push_back(argc == 1 ? true : !Value::to_boolean(ctx, arguments[1]));
+        sort_order.emplace_back(Value::validated_to_string(ctx, arguments[0]),
+                                argc == 1 || !Value::to_boolean(ctx, arguments[1]));
     }
-
-    std::vector<std::vector<size_t>> columns;
-    columns.reserve(prop_count);
-
-    for (std::string &prop_name : prop_names) {
-        const Property *prop = object_schema.property_for_name(prop_name);
-        if (!prop) {
-            throw std::runtime_error("Property '" + prop_name + "' does not exist on object type '" + object_schema.name + "'");
-        }
-        columns.push_back({prop->table_column});
-    }
-
-    auto table = realm::ObjectStore::table_for_object_type(realm->read_group(), object_schema.name);
-    DescriptorOrdering ordering;
-    ordering.append_sort({*table, std::move(columns), std::move(ascending)});
-    auto results = new realm::js::Results<T>(realm, collection.get_query(), std::move(ordering));
-    return create_object<T, ResultsClass<T>>(ctx, results);
+    return sort_order;
 }
 
 template<typename T>
@@ -231,10 +203,8 @@ void ResultsClass<T>::filtered(ContextType ctx, FunctionType, ObjectType this_ob
 
 template<typename T>
 void ResultsClass<T>::sorted(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
-    validate_argument_count(argc, 1, 2);
-
     auto results = get_internal<T, ResultsClass<T>>(this_object);
-    return_value.set(create_sorted(ctx, *results, argc, arguments));
+    return_value.set(ResultsClass<T>::create_instance(ctx, results->sort(ResultsClass<T>::get_keypaths(ctx, argc, arguments))));
 }
 
 template<typename T>
