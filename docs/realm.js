@@ -92,7 +92,7 @@ class Realm {
     constructor(config) {}
 
     /**
-     * Open a realm asynchronously with a promise. If the realm is synced, it will be fully
+     * Open a Realm asynchronously with a promise. If the Realm is synced, it will be fully
      * synchronized before it is available.
      * @param {Realm~Configuration} config
      * @returns {ProgressPromise} - a promise that will be resolved with the realm instance when it's available.
@@ -100,7 +100,7 @@ class Realm {
     static open(config) {}
 
     /**
-     * Open a realm asynchronously with a callback. If the realm is synced, it will be fully
+     * Open a Realm asynchronously with a callback. If the Realm is synced, it will be fully
      * synchronized before it is available.
      * @param {Realm~Configuration} config
      * @param  {callback(error, realm)} - will be called when the realm is ready.
