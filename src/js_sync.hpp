@@ -243,6 +243,9 @@ private:
 };
 
 
+// An object of type SSLVerifyCallbackSyncThreadFunctor is registered with the sync client in order
+// to verify SSL certificates. The SSLVerifyCallbackSyncThreadFunctor object's operator() is called
+// on the sync client's event loop thread.
 template <typename T>
 class SSLVerifyCallbackSyncThreadFunctor {
 public:
@@ -255,6 +258,7 @@ public:
     {
     }
 
+    // This function is called on the sync client's event loop thread.
     bool operator ()(const std::string& server_address, sync::Session::port_type server_port, const char* pem_data, size_t pem_size, int preverify_ok, int depth)
     {
         const std::string pem_certificate {pem_data, pem_size};
@@ -264,10 +268,13 @@ public:
             m_ssl_certificate_callback_done = false;
         }
 
+        // Dispatch the call to the main_loop_handler on the node.js thread.
         m_event_loop_dispatcher(this, server_address, server_port, pem_certificate, preverify_ok, depth);
 
         bool ssl_certificate_accepted = false;
         {
+            // Wait for the return value of the callback function on the node.js main thread.
+            // The sync client blocks during this wait.
             std::unique_lock<std::mutex> lock(*m_mutex);
             m_cond_var->wait(lock, [this] { return this->m_ssl_certificate_callback_done; });
             ssl_certificate_accepted = m_ssl_certificate_accepted;
@@ -276,6 +283,9 @@ public:
         return ssl_certificate_accepted;
     }
 
+    // main_loop_handler is called on the node.js main thread.
+    // main_loop_handler calls the user callback (m_func) and sends the return value
+    // back to the sync client's event loop thread through a condition variable.
     static void main_loop_handler(SSLVerifyCallbackSyncThreadFunctor<T>* this_object,
                                   const std::string& server_address,
                                   sync::Session::port_type server_port,
@@ -416,7 +426,7 @@ void SessionClass<T>::add_progress_notification(ContextType ctx, FunctionType, O
     validate_argument_count(argc, 3);
 
     if (auto session = get_internal<T, SessionClass<T>>(this_object)->lock()) {
-        
+
         std::string direction = Value::validated_to_string(ctx, arguments[0], "direction");
         std::string mode = Value::validated_to_string(ctx, arguments[1], "mode");
         SyncSession::NotifierType notifierType;
@@ -446,20 +456,20 @@ void SessionClass<T>::add_progress_notification(ContextType ctx, FunctionType, O
         Protected<FunctionType> protected_callback(ctx, callback_function);
         Protected<ObjectType> protected_this(ctx, this_object);
         Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
-        std::function<ProgressHandler> progressFunc; 
+        std::function<ProgressHandler> progressFunc;
 
         EventLoopDispatcher<ProgressHandler> progress_handler([=](uint64_t transferred_bytes, uint64_t transferrable_bytes) {
             HANDLESCOPE
             ValueType callback_arguments[2];
             callback_arguments[0] = Value::from_number(protected_ctx, transferred_bytes);
             callback_arguments[1] = Value::from_number(protected_ctx, transferrable_bytes);
-            
+
             Function<T>::callback(protected_ctx, protected_callback, typename T::Object(), 2, callback_arguments);
         });
 
         progressFunc = std::move(progress_handler);
 
-        
+
         auto registrationToken = session->register_progress_notifier(std::move(progressFunc), notifierType, false);
 
         auto syncSession = create_object<T, SessionClass<T>>(ctx, new WeakSession(session));
@@ -595,7 +605,7 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
             static std::regex tilde("/~/");
             raw_realm_url = std::regex_replace(raw_realm_url, tilde, "/__auth/");
         }
-        
+
         bool client_validate_ssl = true;
         ValueType validate_ssl_temp = Object::get_property(ctx, sync_config_object, "validate_ssl");
         if (!Value::is_undefined(ctx, validate_ssl_temp)) {
