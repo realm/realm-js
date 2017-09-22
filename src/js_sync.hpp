@@ -217,11 +217,18 @@ public:
     void operator()(std::shared_ptr<SyncSession> session, SyncError error) {
         HANDLESCOPE
 
+        auto error_message = error.message;
+        auto error_code = error.error_code.value();
+        if (error.is_client_reset_requested()) {
+            error_message = error.user_info[SyncError::c_recovery_file_path_key];
+            error_code = 7; // FIXME: define a proper constant
+        }
+
         auto error_object = Object<T>::create_empty(m_ctx);
-        Object<T>::set_property(m_ctx, error_object, "message", Value<T>::from_string(m_ctx, error.message));
+        Object<T>::set_property(m_ctx, error_object, "message", Value<T>::from_string(m_ctx, error_message));
         Object<T>::set_property(m_ctx, error_object, "isFatal", Value<T>::from_boolean(m_ctx, error.is_fatal));
         Object<T>::set_property(m_ctx, error_object, "category", Value<T>::from_string(m_ctx, error.error_code.category().name()));
-        Object<T>::set_property(m_ctx, error_object, "code", Value<T>::from_number(m_ctx, error.error_code.value()));
+        Object<T>::set_property(m_ctx, error_object, "code", Value<T>::from_number(m_ctx, error_code));
 
         auto user_info = Object<T>::create_empty(m_ctx);
         for (auto& kvp : error.user_info) {
@@ -511,7 +518,7 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
             static std::regex tilde("/~/");
             raw_realm_url = std::regex_replace(raw_realm_url, tilde, "/__auth/");
         }
-        
+
         bool client_validate_ssl = true;
         ValueType validate_ssl_temp = Object::get_property(ctx, sync_config_object, "validate_ssl");
         if (!Value::is_undefined(ctx, validate_ssl_temp)) {
