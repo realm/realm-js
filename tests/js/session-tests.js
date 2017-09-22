@@ -469,7 +469,7 @@ module.exports = {
                     const realm = new Realm(config);
                 }
                 catch (e) {
-                    if (e.message === 'IncompatibleSyncedRealmException') {
+                    if (e instanceof IncompatibleSyncedRealmError) {
                         const backupRealm = new Realm(e.configuration);
                         TestCase.assertNotEqual(backupRealm.objects('Person').length, 0);
                         resolve();

@@ -271,7 +271,7 @@ public:
                     }
 
                     ObjectType object = Object::create_empty(ctx);
-                    Object::set_property(ctx, object, "message", Value::from_string(ctx, "IncompatibleSyncedRealmException"));
+                    Object::set_property(ctx, object, "message", Value::from_string(ctx, "IncompatibleSyncedRealm"));
                     Object::set_property(ctx, object, "configuration", configuration);
                     throw Exception<T>(ctx, object);
                 }

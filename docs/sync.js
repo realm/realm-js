@@ -133,6 +133,18 @@ class AuthError extends Error {
 }
 
 /**
+ * Class that describes error in migration of a Realm from Realm Mobile Platform v1.x to v2.x
+ * @memberof Realm.Sync
+ */
+class IncompatibleSyncedRealmError extends Error {
+    /**
+     * The {Realm~Configuration} of the backed up Realm.
+     * @type {Realm~Configuration}
+     */
+    get configuration() {}
+}
+
+/**
  * Class for logging in and managing Sync users.
  * @memberof Realm.Sync
  */
