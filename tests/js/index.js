@@ -20,8 +20,7 @@
 
 const Realm = require('realm');
 
-// FIXME: sync testing needs to be updated for ROS 2.0
-global.enableSyncTests = Realm.Sync && false;
+global.enableSyncTests = Realm.Sync;
 
 var TESTS = {
     ListTests: require('./list-tests'),
@@ -48,7 +47,7 @@ if (global.enableSyncTests) {
     if (typeof navigator === 'undefined' ||
       !/Chrome/.test(navigator.userAgent)) { // eslint-disable-line no-undef
       
-     TESTS.PermissionTests = require('./permission-tests');
+     //TESTS.PermissionTests = require('./permission-tests');
     }
 }
 
