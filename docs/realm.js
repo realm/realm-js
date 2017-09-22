@@ -87,7 +87,8 @@ class Realm {
      * `config.schemaVersion` is incremented, in which case the Realm will be automatically
      * migrated to use the new schema.
      * @param {Realm~Configuration} [config] - **Required** when first creating the Realm.
-     * @throws {Error} If anything in the provided `config` is invalid.
+     * @throws {Error} If anything in the provided `config` is invalid or migration from RMP
+     *   version 1 to 2 is not possible.
      */
     constructor(config) {}
 
@@ -105,7 +106,8 @@ class Realm {
      * @param {Realm~Configuration} config 
      * @param  {callback(error, realm)} - will be called when the realm is ready.
      * @param  {callback(transferred, transferable)} [progressCallback] - an optional callback for download progress notifications
-     * @throws {Error} If anything in the provided `config` is invalid.
+     * @throws {Error} If anything in the provided `config` is invalid  or migration from RMP
+     *   version 1 to 2 is not possible.
      */
     static openAsync(config, callback, progressCallback) {}
 
