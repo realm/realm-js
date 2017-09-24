@@ -339,7 +339,7 @@ void SessionClass<T>::add_progress_notification(ContextType ctx, FunctionType, O
     validate_argument_count(argc, 3);
 
     if (auto session = get_internal<T, SessionClass<T>>(this_object)->lock()) {
-        
+
         std::string direction = Value::validated_to_string(ctx, arguments[0], "direction");
         std::string mode = Value::validated_to_string(ctx, arguments[1], "mode");
         SyncSession::NotifierType notifierType;
@@ -369,20 +369,20 @@ void SessionClass<T>::add_progress_notification(ContextType ctx, FunctionType, O
         Protected<FunctionType> protected_callback(ctx, callback_function);
         Protected<ObjectType> protected_this(ctx, this_object);
         Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
-        std::function<ProgressHandler> progressFunc; 
+        std::function<ProgressHandler> progressFunc;
 
         EventLoopDispatcher<ProgressHandler> progress_handler([=](uint64_t transferred_bytes, uint64_t transferrable_bytes) {
             HANDLESCOPE
             ValueType callback_arguments[2];
             callback_arguments[0] = Value::from_number(protected_ctx, transferred_bytes);
             callback_arguments[1] = Value::from_number(protected_ctx, transferrable_bytes);
-            
+
             Function<T>::callback(protected_ctx, protected_callback, typename T::Object(), 2, callback_arguments);
         });
 
         progressFunc = std::move(progress_handler);
 
-        
+
         auto registrationToken = session->register_progress_notifier(std::move(progressFunc), notifierType, false);
 
         auto syncSession = create_object<T, SessionClass<T>>(ctx, new WeakSession(session));
@@ -429,6 +429,7 @@ public:
     static FunctionType create_constructor(ContextType);
 
     static void set_sync_log_level(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void initiate_client_reset(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
 
     // private
     static std::function<SyncBindSessionHandler> session_bind_callback(ContextType ctx, ObjectType sync_constructor);
@@ -439,6 +440,7 @@ public:
 
     MethodMap<T> const static_methods = {
         {"setLogLevel", wrap<set_sync_log_level>},
+        {"_initiateClientReset", wrap<initiate_client_reset>},
     };
 };
 
@@ -455,6 +457,15 @@ inline typename T::Function SyncClass<T>::create_constructor(ContextType ctx) {
     SyncManager::shared().configure_file_system(default_realm_file_directory(), SyncManager::MetadataMode::NoEncryption);
 
     return sync_constructor;
+}
+
+template<typename T>
+void SyncClass<T>::initiate_client_reset(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue & return_value) {
+    validate_argument_count(argc, 1);
+    std::string path = Value::validated_to_string(ctx, arguments[0]);
+    if (!SyncManager::shared().immediately_run_file_actions(std::string(path))) {
+        throw std::runtime_error(util::format("Realm was not configured correctly. Client Reset could not be run for Realm at: %1", path));
+    }
 }
 
 template<typename T>
