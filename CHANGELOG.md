@@ -1,7 +1,13 @@
-NEXT RELEASE
+X.Y.Z Release notes
 =============================================================
+### Breaking changes
+* None
+
 ### Enhancements
 * Add a callback function used to verify SSL certificates in the sync config.
+
+### Bug fixes
+* Fixed port conflict between RN >= 0.48 inspector proxy and RPC server used for Chrome debugging (#1294).
 
 ### Internal
 * Alignment of permission schemas.
