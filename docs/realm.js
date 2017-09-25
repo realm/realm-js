@@ -292,41 +292,43 @@ Realm.defaultPath;
  *   child properties:
  *   - `user` - A `User` object obtained by calling `Realm.Sync.User.login`
  *   - `url` - A `string` which contains a valid Realm Sync url
- *   - `error` - A callback function which is called in error situations
+ *   - `error` - A callback function which is called in error situations.
+ *        The `error` callback can take up to four optional arguments: `message`, `isFatal`,
+ *        `category`, and `code`.
  *   - `validate_ssl` - Indicating if SSL certificates must be validated
  *   - `ssl_trust_certificate_path` - A path where to find trusted SSL certificates
- *   - `ssl_verify_callback` - A callback function used to accept or reject the server's
- *      SSL certificate. ssl_verify_callback is called with an object of type
- *      {
- *        serverAddress: String
- *        serverPort: Number
- *        pemCertificate: String
- *        preverifyOk: Number
- *        depth: Number
- *      }
+ *   - `open_ssl_verify_callback` - A callback function used to accept or reject the server's
+ *        SSL certificate. open_ssl_verify_callback is called with an object of type
+ *        <code>
+ *          {
+ *            serverAddress: String,
+ *            serverPort: Number,
+ *            pemCertificate: String,
+ *            acceptedByOpenSSL: Boolean,
+ *            depth: Number
+ *          }
+ *        </code>
+ *        The return value of open_ssl_verify_callback decides whether the certificate is accepted (true)
+ *        or rejected (false). The open_ssl_verify_callback function is only respected on platforms where
+ *        OpenSSL is used for the sync client, e.g. Linux. The open_ssl_verify_callback function is not
+ *        allowed to throw exceptions.
  *
- *      The return value of ssl_verify_callback decides whether the certificate is accepted (true)
- *      or rejected (false). The ssl_verify_callback function is only respected on platforms where
- *      OpenSSL is used for the sync client, e.g. Linux.
+ *        When the sync client has received the server's certificate chain, it presents every certificate in
+ *        the chain to the open_ssl_verify_callback function. The depth argument specifies the position of the
+ *        certificate in the chain. depth = 0 represents the actual server certificate. The root
+ *        certificate has the highest depth. The certificate of highest depth will be presented first.
  *
- *      When the sync client has received the server's certificate chain, it presents every certificate in
- *      the chain to the ssl_verify_callback function. The depth argument specifies the position of the
- *      certificate in the chain. depth = 0 represents the actual server certificate and the root
- *      certificate has the highest depth. The certificate of highest depth will be presented first.
+ *        acceptedByOpenSSL is true if OpenSSL has accepted the certificate, and false if OpenSSL has rejected it.
+ *        It is generally safe to return true when acceptedByOpenSSL is true. If acceptedByOpenSSL is false, an
+ *        independent verification should be made.
  *
- *      preverifyOk is 1 if OpenSSL has accepted the certificate, and
- *      0 if OpenSSL has rejected it. It is generally safe to return true when preverifyOk is 1. If
- *      preverifyOk is 0, an independent verification should be made.
+ *        One possible way of using the open_ssl_verify_callback function is to embed the known server certificate
+ *        in the client and accept the presented certificate if and only if it is equal to the known certificate.
  *
- *      One possible way of using the ssl_verify_callback function is to embed the known server certificate
- *      in the client and accept the presented certificate if and only if it is equal to the known
- *      certificate.
+ *        The purpose of open_ssl_verify_callback is to enable custom certificate handling and to solve cases where
+ *        OpenSSL erroneously rejects valid certificates possibly because OpenSSL doesn't have access to the
+ *        proper trust certificates.
  *
- *      The purpose of ssl_verify_callback is to enable custom certificate pinning and to solve cases where
- *      OpenSSL erroneously rejects valid certificates possibly because OpenSSL doesn't have access to the
- *      proper trust certificates.
- *
- * The `error` callback can take up to four optional arguments: `message`, `isFatal`, `category`, and `code`.
  */
 
 /**

@@ -301,7 +301,7 @@ public:
         Object<T>::set_property(ctx, ssl_certificate_object, "serverAddress", Value<T>::from_string(ctx, server_address));
         Object<T>::set_property(ctx, ssl_certificate_object, "serverPort", Value<T>::from_number(ctx, double(server_port)));
         Object<T>::set_property(ctx, ssl_certificate_object, "pemCertificate", Value<T>::from_string(ctx, pem_certificate));
-        Object<T>::set_property(ctx, ssl_certificate_object, "preverifyOk", Value<T>::from_number(ctx, double(preverify_ok)));
+        Object<T>::set_property(ctx, ssl_certificate_object, "acceptedByOpenSSL", Value<T>::from_boolean(ctx, preverify_ok != 0));
         Object<T>::set_property(ctx, ssl_certificate_object, "depth", Value<T>::from_number(ctx, double(depth)));
 
         const int argc = 1;
@@ -622,7 +622,7 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
         }
 
         std::function<sync::Session::SSLVerifyCallback> ssl_verify_callback;
-        ValueType ssl_verify_func = Object::get_property(ctx, sync_config_object, "ssl_verify_callback");
+        ValueType ssl_verify_func = Object::get_property(ctx, sync_config_object, "open_ssl_verify_callback");
         if (!Value::is_undefined(ctx, ssl_verify_func)) {
             SSLVerifyCallbackSyncThreadFunctor<T> ssl_verify_functor {ctx, Value::validated_to_function(ctx, ssl_verify_func)};
             ssl_verify_callback = std::move(ssl_verify_functor);

@@ -2,8 +2,7 @@ NEXT RELEASE
 =============================================================
 
 ### Enhancements
-* Add a callback function used to verify SSL certificates in
-  the sync config.
+* Add a callback function used to verify SSL certificates in the sync config.
 
 
 2.0.0-rc10 Release notes (2017-9-19)
