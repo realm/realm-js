@@ -311,7 +311,9 @@ Realm.defaultPath;
  *        The return value of open_ssl_verify_callback decides whether the certificate is accepted (true)
  *        or rejected (false). The open_ssl_verify_callback function is only respected on platforms where
  *        OpenSSL is used for the sync client, e.g. Linux. The open_ssl_verify_callback function is not
- *        allowed to throw exceptions.
+ *        allowed to throw exceptions. If the operations needed to verify the certificate lead to an exception,
+ *        the exception must be caught explicitly before returning. The return value would typically be false
+ *        in case of an exception.
  *
  *        When the sync client has received the server's certificate chain, it presents every certificate in
  *        the chain to the open_ssl_verify_callback function. The depth argument specifies the position of the
