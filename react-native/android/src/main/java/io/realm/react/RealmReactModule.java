@@ -23,7 +23,7 @@ import java.util.Map;
 import fi.iki.elonen.NanoHTTPD;
 
 class RealmReactModule extends ReactContextBaseJavaModule {
-    private static final int DEFAULT_PORT = 8082;
+    private static final int DEFAULT_PORT = 8083;
     private static boolean sentAnalytics = false;
 
     private AndroidWebServer webServer;

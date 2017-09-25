@@ -22,17 +22,17 @@ apply plugin: 'com.android.library'
 
 task forwardDebugPort(type: Exec) {
     def adb = android.getAdbExe()?.toString() ?: 'false'
-    commandLine adb, 'forward', 'tcp:8082', 'tcp:8082'
+    commandLine adb, 'forward', 'tcp:8083', 'tcp:8083'
     ignoreExitValue true
     doLast {
         if (execResult.getExitValue() != 0) {
             logger.error(
                 '===========================================================================\n' +
-                'WARNING: Failed to automatically forward port 8082.\n' +
-                'In order to use Realm in Chrome debugging mode, port 8082 must be forwarded\n' +
+                'WARNING: Failed to automatically forward port 8083.\n' +
+                'In order to use Realm in Chrome debugging mode, port 8083 must be forwarded\n' +
                 'from localhost to the device or emulator being used to run the application.\n' +
                 'You may need to add the appropriate flags to the command that failed:\n' +
-                '    adb forward tcp:8082 tcp:8082\n' +
+                '    adb forward tcp:8083 tcp:8083\n' +
                 '===========================================================================\n'
             )
         }

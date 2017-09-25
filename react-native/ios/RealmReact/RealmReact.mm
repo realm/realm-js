@@ -38,7 +38,7 @@
 #import "GCDWebServerErrorResponse.h"
 #import "rpc.hpp"
 
-#define WEB_SERVER_PORT 8082
+#define WEB_SERVER_PORT 8083
 
 using namespace realm::rpc;
 #endif
