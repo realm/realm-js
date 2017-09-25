@@ -88,22 +88,22 @@ class Realm {
      * migrated to use the new schema.
      * @param {Realm~Configuration} [config] - **Required** when first creating the Realm.
      * @throws {Error} If anything in the provided `config` is invalid.
-     * @throws IncompatibleSyncedRealmError} if migration from RMP version 1 to 2 is not possible.
+     * @throws {IncompatibleSyncedRealmError} if migration from RMP version 1 to 2 is not possible.
      */
     constructor(config) {}
 
     /**
-     * Open a realm asynchronously with a promise. If the realm is synced, it will be fully 
+     * Open a realm asynchronously with a promise. If the realm is synced, it will be fully
      * synchronized before it is available.
-     * @param {Realm~Configuration} config 
+     * @param {Realm~Configuration} config
      * @returns {ProgressPromise} - a promise that will be resolved with the realm instance when it's available.
      */
     static open(config) {}
 
     /**
-     * Open a realm asynchronously with a callback. If the realm is synced, it will be fully 
+     * Open a realm asynchronously with a callback. If the realm is synced, it will be fully
      * synchronized before it is available.
-     * @param {Realm~Configuration} config 
+     * @param {Realm~Configuration} config
      * @param  {callback(error, realm)} - will be called when the realm is ready.
      * @param  {callback(transferred, transferable)} [progressCallback] - an optional callback for download progress notifications
      * @throws {Error} If anything in the provided `config` is invalid
@@ -219,7 +219,7 @@ class Realm {
     /*
      * Replaces all string columns in this Realm with a string enumeration column and compacts the
      * database file.
-     * 
+     *
      * Cannot be called from a write transaction.
      *
      * Compaction will not occur if other `Realm` instances exist.
@@ -271,12 +271,12 @@ Realm.defaultPath;
  *   This function takes two arguments:
  *   - `oldRealm` - The Realm before migration is performed.
  *   - `newRealm` - The Realm that uses the latest `schema`, which should be modified as necessary.
- * @property {callback(number, number)} [shouldCompactOnLaunch] - The function called when opening 
- *   a Realm for the first time during the life of a process to determine if it should be compacted 
+ * @property {callback(number, number)} [shouldCompactOnLaunch] - The function called when opening
+ *   a Realm for the first time during the life of a process to determine if it should be compacted
  *   before being returned to the user. The function takes two arguments:
- *     - `totalSize` - The total file size (data + free space) 
+ *     - `totalSize` - The total file size (data + free space)
  *     - `unusedSize` - The total bytes used by data in the file.
- *   It returns `true` to indicate that an attempt to compact the file should be made. The compaction 
+ *   It returns `true` to indicate that an attempt to compact the file should be made. The compaction
  *   will be skipped if another process is accessing it.
  * @property {string} [path={@link Realm.defaultPath}] - The path to the file where the
  *   Realm database should be stored.
@@ -290,7 +290,7 @@ Realm.defaultPath;
  *   object types in this Realm. **Required** when first creating a Realm at this `path`.
  * @property {number} [schemaVersion] - **Required** (and must be incremented) after
  *   changing the `schema`.
- * @property {Object} [sync] - Sync configuration parameters with the following 
+ * @property {Object} [sync] - Sync configuration parameters with the following
  *   child properties:
  *   - `user` - A `User` object obtained by calling `Realm.Sync.User.login`
  *   - `url` - A `string` which contains a valid Realm Sync url
@@ -331,7 +331,7 @@ Realm.defaultPath;
  *   otherwise specified.
  * @property {boolean} [optional] - Signals if this property may be assigned `null` or `undefined`.
  * @property {boolean} [indexed] - Signals if this property should be indexed. Only supported for
- *   `"string"`, `"int"`, and `"bool"` properties. 
+ *   `"string"`, `"int"`, and `"bool"` properties.
  */
 
 /**
