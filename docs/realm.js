@@ -92,17 +92,17 @@ class Realm {
     constructor(config) {}
 
     /**
-     * Open a realm asynchronously with a promise. If the realm is synced, it will be fully 
+     * Open a Realm asynchronously with a promise. If the Realm is synced, it will be fully
      * synchronized before it is available.
-     * @param {Realm~Configuration} config 
+     * @param {Realm~Configuration} config
      * @returns {ProgressPromise} - a promise that will be resolved with the realm instance when it's available.
      */
     static open(config) {}
 
     /**
-     * Open a realm asynchronously with a callback. If the realm is synced, it will be fully 
+     * Open a Realm asynchronously with a callback. If the Realm is synced, it will be fully
      * synchronized before it is available.
-     * @param {Realm~Configuration} config 
+     * @param {Realm~Configuration} config
      * @param  {callback(error, realm)} - will be called when the realm is ready.
      * @param  {callback(transferred, transferable)} [progressCallback] - an optional callback for download progress notifications
      * @throws {Error} If anything in the provided `config` is invalid.
@@ -217,7 +217,7 @@ class Realm {
     /*
      * Replaces all string columns in this Realm with a string enumeration column and compacts the
      * database file.
-     * 
+     *
      * Cannot be called from a write transaction.
      *
      * Compaction will not occur if other `Realm` instances exist.
@@ -269,12 +269,12 @@ Realm.defaultPath;
  *   This function takes two arguments:
  *   - `oldRealm` - The Realm before migration is performed.
  *   - `newRealm` - The Realm that uses the latest `schema`, which should be modified as necessary.
- * @property {callback(number, number)} [shouldCompactOnLaunch] - The function called when opening 
- *   a Realm for the first time during the life of a process to determine if it should be compacted 
+ * @property {callback(number, number)} [shouldCompactOnLaunch] - The function called when opening
+ *   a Realm for the first time during the life of a process to determine if it should be compacted
  *   before being returned to the user. The function takes two arguments:
- *     - `totalSize` - The total file size (data + free space) 
+ *     - `totalSize` - The total file size (data + free space)
  *     - `unusedSize` - The total bytes used by data in the file.
- *   It returns `true` to indicate that an attempt to compact the file should be made. The compaction 
+ *   It returns `true` to indicate that an attempt to compact the file should be made. The compaction
  *   will be skipped if another process is accessing it.
  * @property {string} [path={@link Realm.defaultPath}] - The path to the file where the
  *   Realm database should be stored.
@@ -288,14 +288,49 @@ Realm.defaultPath;
  *   object types in this Realm. **Required** when first creating a Realm at this `path`.
  * @property {number} [schemaVersion] - **Required** (and must be incremented) after
  *   changing the `schema`.
- * @property {Object} [sync] - Sync configuration parameters with the following 
+ * @property {Object} [sync] - Sync configuration parameters with the following
  *   child properties:
  *   - `user` - A `User` object obtained by calling `Realm.Sync.User.login`
  *   - `url` - A `string` which contains a valid Realm Sync url
- *   - `error` - A callback function which is called in error situations
+ *   - `error` - A callback function which is called in error situations.
+ *        The `error` callback can take up to four optional arguments: `message`, `isFatal`,
+ *        `category`, and `code`.
  *   - `validate_ssl` - Indicating if SSL certificates must be validated
  *   - `ssl_trust_certificate_path` - A path where to find trusted SSL certificates
- * The `error` callback can take up to four optional arguments: `message`, `isFatal`, `category`, and `code`.
+ *   - `open_ssl_verify_callback` - A callback function used to accept or reject the server's
+ *        SSL certificate. open_ssl_verify_callback is called with an object of type
+ *        <code>
+ *          {
+ *            serverAddress: String,
+ *            serverPort: Number,
+ *            pemCertificate: String,
+ *            acceptedByOpenSSL: Boolean,
+ *            depth: Number
+ *          }
+ *        </code>
+ *        The return value of open_ssl_verify_callback decides whether the certificate is accepted (true)
+ *        or rejected (false). The open_ssl_verify_callback function is only respected on platforms where
+ *        OpenSSL is used for the sync client, e.g. Linux. The open_ssl_verify_callback function is not
+ *        allowed to throw exceptions. If the operations needed to verify the certificate lead to an exception,
+ *        the exception must be caught explicitly before returning. The return value would typically be false
+ *        in case of an exception.
+ *
+ *        When the sync client has received the server's certificate chain, it presents every certificate in
+ *        the chain to the open_ssl_verify_callback function. The depth argument specifies the position of the
+ *        certificate in the chain. depth = 0 represents the actual server certificate. The root
+ *        certificate has the highest depth. The certificate of highest depth will be presented first.
+ *
+ *        acceptedByOpenSSL is true if OpenSSL has accepted the certificate, and false if OpenSSL has rejected it.
+ *        It is generally safe to return true when acceptedByOpenSSL is true. If acceptedByOpenSSL is false, an
+ *        independent verification should be made.
+ *
+ *        One possible way of using the open_ssl_verify_callback function is to embed the known server certificate
+ *        in the client and accept the presented certificate if and only if it is equal to the known certificate.
+ *
+ *        The purpose of open_ssl_verify_callback is to enable custom certificate handling and to solve cases where
+ *        OpenSSL erroneously rejects valid certificates possibly because OpenSSL doesn't have access to the
+ *        proper trust certificates.
+ *
  */
 
 /**
@@ -329,7 +364,7 @@ Realm.defaultPath;
  *   otherwise specified.
  * @property {boolean} [optional] - Signals if this property may be assigned `null` or `undefined`.
  * @property {boolean} [indexed] - Signals if this property should be indexed. Only supported for
- *   `"string"`, `"int"`, and `"bool"` properties. 
+ *   `"string"`, `"int"`, and `"bool"` properties.
  */
 
 /**
