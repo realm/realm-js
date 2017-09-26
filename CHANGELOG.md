@@ -4,7 +4,7 @@ X.Y.Z Release notes
 * None
 
 ### Enhancements
-* None
+* Added aggregate functions `min()`, `max()`, `sum()`, and `avg()` to `Realm.Results`.
 
 ### Bug fixes
 * Fixed port conflict between RN >= 0.48 inspector proxy and RPC server used for Chrome debugging (#1294).

@@ -141,6 +141,34 @@ declare namespace Realm {
         isValid(): boolean;
 
         /**
+         * Computes the minimum value.
+         * @param  {string} property_name
+         * @returns number
+         */
+        min(property_name: string): number;
+
+        /**
+         * Computes the maximum value.
+         * @param  {string} property_name
+         * @returns number
+         */
+        max(property_name: string): number;
+
+        /**
+         * Computes the sum.
+         * @param  {string} property_name
+         * @returns number
+         */
+        sum(property_name: string): number;
+
+        /**
+         * Computes the average.
+         * @param  {string} property_name
+         * @returns number
+         */
+        avg(property_name: string): number;
+
+        /**
          * @param  {string} query
          * @param  {any[]} ...arg
          * @returns Results

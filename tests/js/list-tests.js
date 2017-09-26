@@ -649,4 +649,49 @@ module.exports = {
             list.length;
         });
     },
+
+    testAggregateFunctions: function() {
+        var realm = new Realm({schema: [schemas.PersonObject, schemas.PersonList]});
+        var object;
+        var list;
+        realm.write(() => {
+            object = realm.create('PersonList', {list: [
+                {name: 'Ari', age: 10},
+                {name: 'Tim', age: 11},
+                {name: 'Bjarne', age: 12},
+            ]});
+        });
+
+        TestCase.assertEqual(object.list.min('age'), 10);
+        TestCase.assertEqual(object.list.max('age'), 12);
+        TestCase.assertEqual(object.list.sum('age'), 33);
+        TestCase.assertEqual(object.list.avg('age'), 11);
+    },
+
+    testAggregateFunctionsWrongProperty: function() {
+    var realm = new Realm({schema: [schemas.PersonObject, schemas.PersonList]});
+        var object;
+        var list;
+        realm.write(() => {
+            object = realm.create('PersonList', {list: [
+                {name: 'Ari', age: 10},
+                {name: 'Tim', age: 11},
+                {name: 'Bjarne', age: 12},
+            ]});
+        });
+
+        TestCase.assertThrows(function() {
+            object.list.min('foo')
+        });
+        TestCase.assertThrows(function() {
+            object.list.max('foo')
+        });
+        TestCase.assertThrows(function() {
+            object.list.sum('foo')
+        });
+        TestCase.assertThrows(function() {
+            object.list.avg('foo')
+        });
+
+    },
 };
