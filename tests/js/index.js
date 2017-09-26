@@ -31,13 +31,9 @@ var TESTS = {
     ResultsTests: require('./results-tests'),
     QueryTests: require('./query-tests'),
     MigrationTests: require('./migration-tests'),
+    EncryptionTests: require('./encryption-tests'),
     // GarbageCollectionTests: require('./garbage-collection'),
 };
-
-// encryption is not supported on windows
-if (!(typeof process === 'object' && process.platform === 'win32')) {
-    TESTS.EncryptionTests = require('./encryption-tests');
-}
 
 // If sync is enabled, run the sync tests
 if (global.enableSyncTests) {
