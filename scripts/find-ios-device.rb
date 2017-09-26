@@ -19,4 +19,6 @@ else
         .reverse!
 end
 
-puts device[0]['udid']
+if device and device[0] then
+    puts device[0]['udid']
+end
