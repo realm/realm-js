@@ -1,4 +1,4 @@
-X.Y.Z Release notes
+2.0.0 Release notes (2017-9-26)
 =============================================================
 ### Breaking changes
 * None
@@ -11,6 +11,7 @@ X.Y.Z Release notes
 
 ### Internal
 * Alignment of permission schemas.
+* Updating sync (2.0.0-rc24).
 
 2.0.0-rc10 Release notes (2017-9-19)
 =============================================================
