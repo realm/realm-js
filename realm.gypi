@@ -55,7 +55,13 @@
       "type": "none",
       "dependencies": [ "realm-core" ],
       "direct_dependent_settings": {
-        "libraries": [ "-lrealm-sync-node<(debug_library_suffix)" ]
+        "conditions": [
+          ["OS=='win'", {
+            "libraries": [ "-lrealm-sync<(debug_library_suffix)" ]
+          }, {
+            "libraries": [ "-lrealm-sync-node<(debug_library_suffix)" ]
+          }]
+        ]
       },
       "all_dependent_settings": {
         "defines": [ "REALM_ENABLE_SYNC=1" ]

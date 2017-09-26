@@ -89,6 +89,8 @@
         ["realm_enable_sync", {
           "dependencies": [ "realm-sync" ],
           "sources": [
+            "src/object-store/src/sync/partial_sync.cpp",
+            "src/object-store/src/sync/sync_config.cpp",
             "src/object-store/src/sync/sync_manager.cpp",
             "src/object-store/src/sync/sync_user.cpp",
             "src/object-store/src/sync/sync_session.cpp",

@@ -18,50 +18,35 @@
 
 'use strict';
 
-const fs = require('fs');
+const fs = require('fs-extra');
 const path = require('path');
 const os = require('os');
+const child_process = require('child_process');
 const fetch = require('node-fetch');
 const ini = require('ini').parse;
 const decompress = require('decompress');
+const decompressTarxz = require('decompress-tarxz')
 
-function decompressXZ() {
-    // taken from https://github.com/kevva/decompress-tarxz undex the MIT license
-    // we don't add it as a dependency because it depends on too old a version of lzma-native
-    // which doesn't have node-pre-gyp binaries for recent Node versions
-
-    const decompressTar = require('decompress-tar');
-    const fileType = require('file-type');
-    const isStream = require('is-stream');
-    const lzmaNative = require('lzma-native');
-
-    return function(input) {
-        if (!Buffer.isBuffer(input) && !isStream(input)) {
-            return Promise.reject(new TypeError(`Expected a Buffer or Stream, got ${typeof input}`));
+function exec() {
+    const args = Array.from(arguments);
+    return new Promise((resolve, reject) => {
+        function callback(error, stdout, stderr) {
+            if (error) {
+                reject(error);
+            } else {
+                resolve(stdout);
+            }
         }
-
-        if (Buffer.isBuffer(input) && (!fileType(input) || fileType(input).ext !== 'xz')) {
-        	return Promise.resolve([]);
-        }
-
-        const decompressor = lzmaNative.createDecompressor();
-        const result = decompressTar()(decompressor);
-
-        if (Buffer.isBuffer(input)) {
-            decompressor.end(input);
-        } else {
-            input.pipe(decompressor);
-        }
-
-        return result;
-    }
+        args.push(callback);
+        child_process.exec.apply(null, args);
+    });
 }
 
-function printProgress(input, totalBytes) {
+function printProgress(input, totalBytes, archive) {
     const ProgressBar = require('progress');
     const StreamCounter = require('stream-counter');
 
-    const message = 'Downloading Realm binaries [:bar] (:ratek)';
+    const message = `Downloading ${archive} [:bar] (:ratek)`;
     const bar = new ProgressBar(message, {
        complete: '=',
        incomplete: ' ',
@@ -74,26 +59,124 @@ function printProgress(input, totalBytes) {
      });
 }
 
-function download(url, destination) {
+function download(serverFolder, archive, destination) {
+    const url = `https://static.realm.io/downloads/${serverFolder}/${archive}`;
     return fetch(url).then((response) => {
         if (response.status !== 200) {
             throw new Error(`Error downloading ${url} - received status ${response.status} ${response.statusText}`);
         }
-        const totalBytes = parseInt(response.headers.get('Content-Length'));
-        if (fs.existsSync(destination) && fs.statSync(destination).size === totalBytes) {
-            return;
-        }
 
-        if (process.stdout.isTTY) {
-            printProgress(response.body, totalBytes);
-        } else {
-            console.log(`Downloading ${url}`);
-        }
-        return new Promise((resolve) => {
-            const file = fs.createWriteStream(destination);
-            response.body.pipe(file).once('finish', () => file.close(resolve));
+        const lastModified = new Date(response.headers.get('Last-Modified'));
+        return fs.exists(destination)
+                 .then(exists => {
+                     if (!exists) {
+                         return saveFile();
+                     } else {
+                         return fs.stat(destination)
+                                  .then(stat => {
+                                      if (stat.mtime.getTime() !== lastModified.getTime()) {
+                                          return saveFile();
+                                      }
+                         })
+                     }
         });
+
+        function saveFile() {
+            if (process.stdout.isTTY) {
+                printProgress(response.body, parseInt(response.headers.get('Content-Length')), archive);
+            } else {
+                console.log(`Downloading ${archive}`);
+            }
+            return new Promise((resolve) => {
+                const file = fs.createWriteStream(destination);
+                response.body.pipe(file).once('finish', () => file.close(resolve));
+            }).then(() => fs.utimes(destination, lastModified, lastModified));
+        }
     });
+}
+
+function extract(downloadedArchive, targetFolder, archiveRootFolder) {
+    console.log(`Extracting ${path.basename(downloadedArchive)} => ${targetFolder}`);
+    const decompressOptions = /tar\.xz$/.test(downloadedArchive) ? { plugins: [ decompressTarxz() ] } : undefined;
+    if (!archiveRootFolder) {
+        return decompress(downloadedArchive, targetFolder, decompressOptions);
+    } else {
+        const tempExtractLocation = path.resolve(os.tmpdir(), path.basename(downloadedArchive, path.extname(downloadedArchive)));
+        return decompress(downloadedArchive, tempExtractLocation, decompressOptions)
+               .then(() => fs.readdir(path.resolve(tempExtractLocation, archiveRootFolder)))
+               .then(items => Promise.all(items.map(item => {
+                   const source = path.resolve(tempExtractLocation, archiveRootFolder, item);
+                   const target = path.resolve(targetFolder, item);
+                   return fs.copy(source, target, { filter: n => path.extname(n) !== '.so' });
+               })))
+               .then(() => fs.remove(tempExtractLocation))
+    }
+}
+
+function acquireCore(options, dependencies, target) {
+    let serverFolder = `core/v${dependencies.REALM_CORE_VERSION}/`;
+    let flavor = options.debug ? 'Debug' : 'Release';
+
+    let archive, archiveRootFolder;
+    switch (options.platform) {
+    case 'mac':
+        serverFolder += `macos/${flavor}`;
+        archive = `realm-core-${flavor}-v${dependencies.REALM_CORE_VERSION}-Darwin-devel.tar.gz`;
+        break;
+    case 'ios':
+        flavor = flavor === 'Debug' ? 'MinSizeDebug' : flavor;
+        serverFolder += `ios/${flavor}`;
+        archive = `realm-core-${flavor}-v${dependencies.REALM_CORE_VERSION}-iphoneos.tar.gz`;
+        break;
+    case 'win':
+        if (!options.arch) throw new Error(`Specifying '--arch' is required for platform 'win'`);
+        const arch = options.arch === 'ia32' ? 'Win32' : options.arch;
+        serverFolder += `windows/${arch}/nouwp/${flavor}`;
+        archive = `realm-core-${flavor}-v${dependencies.REALM_CORE_VERSION}-Windows-${arch}-devel.tar.gz`;
+        break;
+    case 'linux':
+        serverFolder = 'core';
+        archive = `realm-core-${dependencies.REALM_CORE_VERSION}.tgz`;
+        archiveRootFolder = `realm-core-${dependencies.REALM_CORE_VERSION}`;
+        break;
+    }
+
+    const downloadedArchive = path.resolve(os.tmpdir(), archive);
+    return download(serverFolder, archive, downloadedArchive)
+           .then(() => extract(downloadedArchive, target, archiveRootFolder));
+}
+
+function acquireSync(options, dependencies, target) {
+    let serverFolder = 'sync/';
+    let flavor = options.debug ? 'Debug' : 'Release';
+
+    let archive, archiveRootFolder;
+    let promise = Promise.resolve();
+    switch (options.platform) {
+    case 'mac':
+        archive = `realm-sync-node-cocoa-${dependencies.REALM_SYNC_VERSION}.tar.gz`;
+        archiveRootFolder = `realm-sync-node-cocoa-${dependencies.REALM_SYNC_VERSION}`;
+        break;
+    case 'ios':
+        archive = `realm-sync-cocoa-${dependencies.REALM_SYNC_VERSION}.tar.xz`;
+        archiveRootFolder = `core`;
+        break;
+    case 'win':
+        promise = acquireCore(options, dependencies, target)
+                  .then(() => exec(`git ls-remote git@github.com:realm/realm-sync.git --tags "v${dependencies.REALM_SYNC_VERSION}^{}"`))
+                  .then(stdout => /([^\t]+)/.exec(stdout)[0])
+                  .then(sha => serverFolder += `sha-version/${sha}`);
+        const arch = options.arch === 'ia32' ? 'Win32' : options.arch;
+        archive = `realm-sync-${flavor}-v${dependencies.REALM_SYNC_VERSION}-Windows-${arch}-devel.tar.gz`;
+        break;
+    default:
+        throw new Error(`Unsupported sync platform '${options.platform}'`);
+    }
+
+    const downloadedArchive = path.resolve(os.tmpdir(), archive);
+    return promise
+           .then(() => download(serverFolder, archive, downloadedArchive))
+           .then(() => extract(downloadedArchive, target, archiveRootFolder));
 }
 
 const optionDefinitions = [
@@ -103,59 +186,11 @@ const optionDefinitions = [
     { name: 'debug', type: Boolean },
 ];
 const options = require('command-line-args')(optionDefinitions);
-console.log(options);
-
-let serverFolder, archive, extractedFolder;
-
-const dependencies = ini(fs.readFileSync(path.resolve(__dirname, '../dependencies.list'), 'utf8'));
-if (!options.sync) {
-    serverFolder = `core/v${dependencies.REALM_CORE_VERSION}/`;
-    let flavor = options.debug ? 'Debug' : 'Release';
-
-    switch (options.platform) {
-    case 'mac':
-        serverFolder += `macos/${flavor}`;
-        archive = `realm-core-${flavor}-v${dependencies.REALM_CORE_VERSION}-Darwin-devel.tar.xz`;
-        break;
-    case 'ios':
-        flavor = flavor === 'Debug' ? 'MinSizeDebug' : flavor;
-        serverFolder += `ios/${flavor}`;
-        archive = `realm-core-${flavor}-v${dependencies.REALM_CORE_VERSION}-iphoneos.tar.xz`;
-        break;
-    case '..\\win': // handle gyp idiocy
-        options.platform = 'win';
-    case 'win':
-        const arch = options.arch === 'ia32' ? 'Win32' : options.arch;
-        serverFolder += `windows/${arch}/nouwp/${flavor}`;
-        archive = `realm-core-${flavor}-v${dependencies.REALM_CORE_VERSION}-Windows-${arch}-devel.tar.gz`;
-        break;
-    case 'linux':
-        serverFolder = 'core';
-        archive = `realm-core-${dependencies.REALM_CORE_VERSION}.tgz`;
-        extractedFolder = `realm-core-${dependencies.REALM_CORE_VERSION}`;
-        break;
-    }
-} else {
-    serverFolder = 'sync';
-    switch (options.platform) {
-    case 'mac':
-        archive = `realm-sync-node-cocoa-${dependencies.REALM_SYNC_VERSION}.tar.gz`;
-        extractedFolder = `realm-sync-node-cocoa-${dependencies.REALM_SYNC_VERSION}`;
-        break;
-    case 'ios':
-        archive = `realm-sync-cocoa-${dependencies.REALM_SYNC_VERSION}.tar.xz`;
-        extractedFolder = `core`;
-        break;
-    }
+if (options.platform === '..\\win') {
+    options.platform = 'win'; // handle gyp idiocy
 }
 
-if (!archive) {
-    process.exit();
-}
-
-const url = `https://static.realm.io/downloads/${serverFolder}/${archive}`;
 const vendorDir = path.resolve(__dirname, '../vendor');
-const downloadedArchive = path.resolve(os.tmpdir(), archive);
 
 let realmDir = path.resolve(vendorDir, `realm-${options.platform}`);
 if (options.arch) {
@@ -165,29 +200,9 @@ if (options.debug) {
     realmDir += '-dbg'
 }
 
-if (!fs.existsSync(realmDir)) {
-    const targetFolder = extractedFolder ? vendorDir : realmDir;
+const dependencies = ini(fs.readFileSync(path.resolve(__dirname, '../dependencies.list'), 'utf8'));
 
-    const decompressOptions = /tar\.xz$/.test(archive) ? { plugins: [ decompressXZ() ] } : undefined;
-
-    let pipeline = download(url, downloadedArchive);
-    pipeline = pipeline.then(() => decompress(downloadedArchive, targetFolder, decompressOptions));
-
-    if (extractedFolder) {
-        pipeline = pipeline.then(() => {
-            fs.renameSync(path.resolve(vendorDir, extractedFolder), realmDir);
-            const libDir = path.resolve(realmDir, 'lib')
-            if (fs.existsSync(libDir)) {
-                // Remove all shared libraries as we want to just use the static ones
-                fs.readdirSync(libDir)
-                  .filter(name => /\.so$/.test(name))
-                  .forEach(name => fs.unlinkSync(path.resolve(libDir, name)));
-            }
-        });
-    }
-
-    pipeline.catch(error => {
-        console.log('Downloading Realm binaries failed with', error);
-        process.exit(-1);
-    });
-}
+const acquire = options.sync ? acquireSync : acquireCore;
+fs.emptyDir(realmDir)
+  .then(() => acquire(options, dependencies, realmDir))
+  .catch(error => console.error(error));
