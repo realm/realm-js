@@ -292,7 +292,7 @@ module.exports = {
             TestCase.assertThrowsContaining(() => obj.arrayCol = [person],
                                             "Object of type (PersonObject) does not match List type (TestObject)");
             TestCase.assertThrowsContaining(() => obj.arrayCol = personList,
-                                            "LinkTypesObject.arrayCol must be of type 'TestObject[]', got 'object' (a)");
+                                            "LinkTypesObject.arrayCol must be of type 'TestObject[]', got 'object' (");
             obj.arrayCol = [realm.create('TestObject', {doubleCol: 1.0})]
             TestCase.assertEqual(obj.arrayCol[0].doubleCol, 1.0);
             obj.arrayCol = obj.arrayCol;
