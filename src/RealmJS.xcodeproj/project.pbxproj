@@ -52,6 +52,8 @@
 		5D1BF0571EF1DB4800B7DC87 /* jsc_value.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5D1BF0561EF1DB4800B7DC87 /* jsc_value.cpp */; };
 		5D25F5A11D6284FD00EBBB30 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = F63FF3301C16434400B3B8E0 /* libz.tbd */; };
 		8507156E1E2CFCD000E548DB /* object_notifier.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8507156B1E2CFC0100E548DB /* object_notifier.cpp */; };
+		857990301F7E8B8D005FC9BF /* partial_sync.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8529DCB41F7A91F400A58475 /* partial_sync.cpp */; };
+		857990311F7E8B91005FC9BF /* sync_config.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8529DCAC1F7A91AF00A58475 /* sync_config.cpp */; };
 		F61378791C18EAC5008BFC51 /* js in Resources */ = {isa = PBXBuildFile; fileRef = F61378781C18EAAC008BFC51 /* js */; };
 		F63FF2C61C12469E00B3B8E0 /* jsc_init.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 029048011C0428DF00ABDED4 /* jsc_init.cpp */; };
 		F63FF2C91C12469E00B3B8E0 /* js_realm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 029048071C0428DF00ABDED4 /* js_realm.cpp */; };
@@ -212,6 +214,9 @@
 		8507156B1E2CFC0100E548DB /* object_notifier.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = object_notifier.cpp; sourceTree = "<group>"; };
 		8507156C1E2CFC0100E548DB /* object_notifier.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = object_notifier.hpp; sourceTree = "<group>"; };
 		850715AE1E32366B00E548DB /* event_loop_dispatcher.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = event_loop_dispatcher.hpp; sourceTree = "<group>"; };
+		8529DCAC1F7A91AF00A58475 /* sync_config.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = sync_config.cpp; path = src/sync/sync_config.cpp; sourceTree = "<group>"; };
+		8529DCB31F7A91F400A58475 /* partial_sync.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = partial_sync.hpp; path = src/sync/partial_sync.hpp; sourceTree = "<group>"; };
+		8529DCB41F7A91F400A58475 /* partial_sync.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = partial_sync.cpp; path = src/sync/partial_sync.cpp; sourceTree = "<group>"; };
 		F60102CF1CBB814A00EC01BA /* node_init.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = node_init.hpp; sourceTree = "<group>"; };
 		F60102D11CBB865A00EC01BA /* jsc_init.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = jsc_init.hpp; sourceTree = "<group>"; };
 		F60102F71CBDA6D400EC01BA /* js_collection.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = js_collection.hpp; sourceTree = "<group>"; };
@@ -463,7 +468,10 @@
 			isa = PBXGroup;
 			children = (
 				504CF8521EBCAE3600A9A4B6 /* impl */,
+				8529DCB41F7A91F400A58475 /* partial_sync.cpp */,
+				8529DCB31F7A91F400A58475 /* partial_sync.hpp */,
 				02E315CD1DB80DF200555337 /* sync_client.hpp */,
+				8529DCAC1F7A91AF00A58475 /* sync_config.cpp */,
 				02E315C21DB80DDD00555337 /* sync_config.hpp */,
 				02E315CE1DB80DF200555337 /* sync_file.cpp */,
 				02E315CF1DB80DF200555337 /* sync_file.hpp */,
@@ -902,6 +910,7 @@
 			files = (
 				F63FF2E21C15921A00B3B8E0 /* base64.cpp in Sources */,
 				022BF1021E7266DF00F382F1 /* binding_callback_thread_observer.cpp in Sources */,
+				857990301F7E8B8D005FC9BF /* partial_sync.cpp in Sources */,
 				02414BA51CE6ABCF00A8669F /* collection_change_builder.cpp in Sources */,
 				02414BA91CE6ABCF00A8669F /* collection_notifications.cpp in Sources */,
 				02414BA61CE6ABCF00A8669F /* collection_notifier.cpp in Sources */,
@@ -930,6 +939,7 @@
 				F63FF2CD1C12469E00B3B8E0 /* rpc.cpp in Sources */,
 				02F59EC41C88F17D007F774C /* schema.cpp in Sources */,
 				02F59EC51C88F17D007F774C /* shared_realm.cpp in Sources */,
+				857990311F7E8B91005FC9BF /* sync_config.cpp in Sources */,
 				504CF8601EBCAE3600A9A4B6 /* sync_file.cpp in Sources */,
 				02E315D21DB80DF200555337 /* sync_file.cpp in Sources */,
 				02E315C91DB80DDD00555337 /* sync_manager.cpp in Sources */,
@@ -1136,13 +1146,6 @@
 					__ASSERTMACROS__,
 					REALM_ENABLE_SYNC,
 				);
-				OTHER_CPLUSPLUSFLAGS = (
-					"$(inherited)",
-					"-isystem",
-					"$(SRCROOT)/../vendor/core/include",
-					"-isystem",
-					"$(SRCROOT)/../vendor/sync/include",
-				);
 				OTHER_LIBTOOLFLAGS = "$(SRCROOT)/../vendor/realm-ios/librealm-ios-dbg.a";
 				PRODUCT_NAME = RealmJS;
 				SKIP_INSTALL = YES;
@@ -1157,13 +1160,6 @@
 					REALM_HAVE_CONFIG,
 					__ASSERTMACROS__,
 					REALM_ENABLE_SYNC,
-				);
-				OTHER_CPLUSPLUSFLAGS = (
-					"$(inherited)",
-					"-isystem",
-					"$(SRCROOT)/../vendor/core/include",
-					"-isystem",
-					"$(SRCROOT)/../vendor/sync/include",
 				);
 				OTHER_LIBTOOLFLAGS = "$(SRCROOT)/../vendor/realm-ios/librealm-ios.a";
 				PRODUCT_NAME = RealmJS;
