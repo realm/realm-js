@@ -106,26 +106,21 @@ module.exports = {
         TestCase.assertThrowsContaining(() => new Realm({schema: [{properties: {intCol: 'int'}}]}),
                                         "Failed to read ObjectSchema: name must be of type 'string', got (undefined)");
 
-        // linkingObjects property where the source property is missing
-        TestCase.assertThrowsContaining(() => {
-            new Realm({schema: [{
-                name: 'InvalidObject',
-                properties: {
-                    linkingObjects: {type:'linkingObjects', objectType: 'InvalidObject', property: 'nosuchproperty'}
-                }
-            }]});
-        }, "Property 'InvalidObject.nosuchproperty' declared as origin of linking objects property 'InvalidObject.linkingObjects' does not exist");
+        function assertPropertyInvalid(prop, message) {
+            TestCase.assertThrowsContaining(() => {
+                new Realm({schema: [{name: 'InvalidObject', properties: { int: 'int', bad: prop }}]});
+            }, message, 1);
+        }
 
-        // linkingObjects property where the source property is not a link
-        TestCase.assertThrowsContaining(() => {
-            new Realm({schema: [{
-                name: 'InvalidObject',
-                properties: {
-                    integer: 'int',
-                    linkingObjects: {type:'linkingObjects', objectType: 'InvalidObject', property: 'integer'}
-                }
-            }]});
-        }, "Property 'InvalidObject.integer' declared as origin of linking objects property 'InvalidObject.linkingObjects' is not a link")
+        assertPropertyInvalid({type:'list[]', objectType: 'InvalidObject'},
+                              "List property 'InvalidObject.bad' must have a non-list value type");
+        assertPropertyInvalid({type:'list?', objectType: 'InvalidObject'},
+                              "List property 'InvalidObject.bad' cannot be optional");
+        assertPropertyInvalid('', "Property 'InvalidObject.bad' must have a non-empty type");
+        assertPropertyInvalid({type:'linkingObjects', objectType: 'InvalidObject', property: 'nosuchproperty'},
+                              "Property 'InvalidObject.nosuchproperty' declared as origin of linking objects property 'InvalidObject.bad' does not exist");
+        assertPropertyInvalid({type:'linkingObjects', objectType: 'InvalidObject', property: 'int'},
+                              "Property 'InvalidObject.int' declared as origin of linking objects property 'InvalidObject.bad' is not a link");
 
         // linkingObjects property where the source property links elsewhere
         TestCase.assertThrowsContaining(() => {
@@ -142,6 +137,16 @@ module.exports = {
                 }
             }]});
         }, "Property 'InvalidObject.link' declared as origin of linking objects property 'InvalidObject.linkingObjects' links to type 'IntObject'")
+
+        {
+            new Realm({schema: [{
+                name: 'Object',
+                properties: {
+                    // weird but valid
+                    objectList: {type:'object[]', objectType: 'Object'}
+                }
+            }]});
+        }
     },
 
     testRealmConstructorInMemory: function() {

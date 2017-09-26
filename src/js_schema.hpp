@@ -73,8 +73,8 @@ typename T::Object Schema<T>::dict_for_property_array(ContextType ctx, const Obj
 static inline void parse_property_type(StringData object_name, Property& prop, StringData type)
 {
     using realm::PropertyType;
-    if (!type) {
-        throw std::logic_error(util::format("Property %1.%2 must have a non-empty type", object_name, prop.name));
+    if (!type || !type.size()) {
+        throw std::logic_error(util::format("Property '%1.%2' must have a non-empty type", object_name, prop.name));
     }
     if (type.ends_with("[]")) {
         prop.type |= PropertyType::Array;
@@ -107,6 +107,12 @@ static inline void parse_property_type(StringData object_name, Property& prop, S
         prop.type |= PropertyType::Data;
     }
     else if (type == "list") {
+        if (is_nullable(prop.type)) {
+            throw std::logic_error(util::format("List property '%1.%2' cannot be optional", object_name, prop.name));
+        }
+        if (is_array(prop.type)) {
+            throw std::logic_error(util::format("List property '%1.%2' must have a non-list value type", object_name, prop.name));
+        }
         prop.type |= PropertyType::Object | PropertyType::Array;
     }
     else if (type == "linkingObjects") {
