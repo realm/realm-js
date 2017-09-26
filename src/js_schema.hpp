@@ -180,9 +180,9 @@ ObjectSchema Schema<T>::parse_object_schema(ContextType ctx, ObjectType object_s
 
     ObjectDefaults object_defaults;
     ObjectSchema object_schema;
-    object_schema.name = Object::validated_get_string(ctx, object_schema_object, name_string);
+    object_schema.name = Object::validated_get_string(ctx, object_schema_object, name_string, "ObjectSchema");
 
-    ObjectType properties_object = Object::validated_get_object(ctx, object_schema_object, properties_string, "ObjectSchema must have a 'properties' object.");
+    ObjectType properties_object = Object::validated_get_object(ctx, object_schema_object, properties_string, "ObjectSchema");
     if (Value::is_array(ctx, properties_object)) {
         uint32_t length = Object::validated_get_length(ctx, properties_object);
         for (uint32_t i = 0; i < length; i++) {
@@ -233,7 +233,8 @@ ObjectSchema Schema<T>::parse_object_schema(ContextType ctx, ObjectType object_s
 }
 
 template<typename T>
-realm::Schema Schema<T>::parse_schema(ContextType ctx, ObjectType schema_object, ObjectDefaultsMap &defaults, ConstructorMap &constructors) {
+realm::Schema Schema<T>::parse_schema(ContextType ctx, ObjectType schema_object,
+                                      ObjectDefaultsMap &defaults, ConstructorMap &constructors) {
     std::vector<ObjectSchema> schema;
     uint32_t length = Object::validated_get_length(ctx, schema_object);
 

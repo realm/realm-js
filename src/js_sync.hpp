@@ -22,6 +22,8 @@
 #include <map>
 #include <set>
 #include <regex>
+#include <mutex>
+#include <condition_variable>
 
 #include "event_loop_dispatcher.hpp"
 #include "platform.hpp"
@@ -247,6 +249,98 @@ private:
     const Protected<typename T::Function> m_func;
 };
 
+
+// An object of type SSLVerifyCallbackSyncThreadFunctor is registered with the sync client in order
+// to verify SSL certificates. The SSLVerifyCallbackSyncThreadFunctor object's operator() is called
+// on the sync client's event loop thread.
+template <typename T>
+class SSLVerifyCallbackSyncThreadFunctor {
+public:
+    SSLVerifyCallbackSyncThreadFunctor(typename T::Context ctx, typename T::Function ssl_verify_func)
+    : m_ctx(Context<T>::get_global_context(ctx))
+    , m_func(ctx, ssl_verify_func)
+    , m_event_loop_dispatcher {SSLVerifyCallbackSyncThreadFunctor<T>::main_loop_handler}
+    , m_mutex{new std::mutex}
+    , m_cond_var{new std::condition_variable}
+    {
+    }
+
+    // This function is called on the sync client's event loop thread.
+    bool operator ()(const std::string& server_address, sync::Session::port_type server_port, const char* pem_data, size_t pem_size, int preverify_ok, int depth)
+    {
+        const std::string pem_certificate {pem_data, pem_size};
+
+        {
+            std::lock_guard<std::mutex> lock {*m_mutex};
+            m_ssl_certificate_callback_done = false;
+        }
+
+        // Dispatch the call to the main_loop_handler on the node.js thread.
+        m_event_loop_dispatcher(this, server_address, server_port, pem_certificate, preverify_ok, depth);
+
+        bool ssl_certificate_accepted = false;
+        {
+            // Wait for the return value of the callback function on the node.js main thread.
+            // The sync client blocks during this wait.
+            std::unique_lock<std::mutex> lock(*m_mutex);
+            m_cond_var->wait(lock, [this] { return this->m_ssl_certificate_callback_done; });
+            ssl_certificate_accepted = m_ssl_certificate_accepted;
+        }
+
+        return ssl_certificate_accepted;
+    }
+
+    // main_loop_handler is called on the node.js main thread.
+    // main_loop_handler calls the user callback (m_func) and sends the return value
+    // back to the sync client's event loop thread through a condition variable.
+    static void main_loop_handler(SSLVerifyCallbackSyncThreadFunctor<T>* this_object,
+                                  const std::string& server_address,
+                                  sync::Session::port_type server_port,
+                                  const std::string& pem_certificate,
+                                  int preverify_ok,
+                                  int depth)
+    {
+        HANDLESCOPE
+
+        const Protected<typename T::GlobalContext>& ctx = this_object->m_ctx;
+
+        typename T::Object ssl_certificate_object = Object<T>::create_empty(ctx);
+        Object<T>::set_property(ctx, ssl_certificate_object, "serverAddress", Value<T>::from_string(ctx, server_address));
+        Object<T>::set_property(ctx, ssl_certificate_object, "serverPort", Value<T>::from_number(ctx, double(server_port)));
+        Object<T>::set_property(ctx, ssl_certificate_object, "pemCertificate", Value<T>::from_string(ctx, pem_certificate));
+        Object<T>::set_property(ctx, ssl_certificate_object, "acceptedByOpenSSL", Value<T>::from_boolean(ctx, preverify_ok != 0));
+        Object<T>::set_property(ctx, ssl_certificate_object, "depth", Value<T>::from_number(ctx, double(depth)));
+
+        const int argc = 1;
+        typename T::Value arguments[argc] = { ssl_certificate_object };
+        typename T::Value ret_val = Function<T>::callback(ctx, this_object->m_func, typename T::Object(), 1, arguments);
+        bool ret_val_bool = Value<T>::to_boolean(ctx, ret_val);
+
+        {
+            std::lock_guard<std::mutex> lock {*this_object->m_mutex};
+            this_object->m_ssl_certificate_callback_done = true;
+            this_object->m_ssl_certificate_accepted = ret_val_bool;
+        }
+
+        this_object->m_cond_var->notify_one();
+    };
+
+
+private:
+    const Protected<typename T::GlobalContext> m_ctx;
+    const Protected<typename T::Function> m_func;
+    EventLoopDispatcher<void(SSLVerifyCallbackSyncThreadFunctor<T>* this_object,
+                             const std::string& server_address,
+                             sync::Session::port_type server_port,
+                             const std::string& pem_certificate,
+                             int preverify_ok,
+                             int depth)> m_event_loop_dispatcher;
+    bool m_ssl_certificate_callback_done = false;
+    bool m_ssl_certificate_accepted = false;
+    std::shared_ptr<std::mutex> m_mutex;
+    std::shared_ptr<std::condition_variable> m_cond_var;
+};
+
 template<typename T>
 void UserClass<T>::session_for_on_disk_path(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     auto user = *get_internal<T, UserClass<T>>(this_object);
@@ -382,9 +476,7 @@ void SessionClass<T>::add_progress_notification(ContextType ctx, FunctionType, O
 
         progressFunc = std::move(progress_handler);
 
-
-        auto registrationToken = session->register_progress_notifier(std::move(progressFunc), notifierType, false);
-
+        auto registrationToken = session->register_progress_notifier(std::move(progressFunc), notifierType, is_streaming);
         auto syncSession = create_object<T, SessionClass<T>>(ctx, new WeakSession(session));
         PropertyAttributes attributes = ReadOnly | DontEnum | DontDelete;
         Object::set_property(ctx, callback_function, "_syncSession", syncSession, attributes);
@@ -545,12 +637,23 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
             ssl_trust_certificate_path = util::none;
         }
 
+        std::function<sync::Session::SSLVerifyCallback> ssl_verify_callback;
+        ValueType ssl_verify_func = Object::get_property(ctx, sync_config_object, "open_ssl_verify_callback");
+        if (!Value::is_undefined(ctx, ssl_verify_func)) {
+            SSLVerifyCallbackSyncThreadFunctor<T> ssl_verify_functor {ctx, Value::validated_to_function(ctx, ssl_verify_func)};
+            ssl_verify_callback = std::move(ssl_verify_functor);
+        }
+
         // FIXME - use make_shared
         config.sync_config = std::shared_ptr<SyncConfig>(new SyncConfig{shared_user, raw_realm_url,
                                                                         SyncSessionStopPolicy::AfterChangesUploaded,
                                                                         std::move(bind), std::move(error_handler),
                                                                         nullptr, util::none,
-                                                                        client_validate_ssl, ssl_trust_certificate_path});
+                                                                        client_validate_ssl, ssl_trust_certificate_path,
+                                                                        std::move(ssl_verify_callback)});
+
+
+
         config.schema_mode = SchemaMode::Additive;
         config.path = realm::SyncManager::shared().path_for_realm(*shared_user, raw_realm_url);
 
