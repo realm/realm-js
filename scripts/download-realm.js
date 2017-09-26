@@ -114,24 +114,24 @@ function extract(downloadedArchive, targetFolder, archiveRootFolder) {
 }
 
 function acquireCore(options, dependencies, target) {
-    let serverFolder = `core/v${dependencies.REALM_CORE_VERSION}/`;
+    let serverFolder = `core/v${dependencies.REALM_CORE_VERSION}`;
     let flavor = options.debug ? 'Debug' : 'Release';
 
     let archive, archiveRootFolder;
     switch (options.platform) {
     case 'mac':
-        serverFolder += `macos/${flavor}`;
+        serverFolder += `/macos/${flavor}`;
         archive = `realm-core-${flavor}-v${dependencies.REALM_CORE_VERSION}-Darwin-devel.tar.gz`;
         break;
     case 'ios':
         flavor = flavor === 'Debug' ? 'MinSizeDebug' : flavor;
-        serverFolder += `ios/${flavor}`;
+        serverFolder += `/ios/${flavor}`;
         archive = `realm-core-${flavor}-v${dependencies.REALM_CORE_VERSION}-iphoneos.tar.gz`;
         break;
     case 'win':
         if (!options.arch) throw new Error(`Specifying '--arch' is required for platform 'win'`);
         const arch = options.arch === 'ia32' ? 'Win32' : options.arch;
-        serverFolder += `windows/${arch}/nouwp/${flavor}`;
+        serverFolder += `/windows/${arch}/nouwp/${flavor}`;
         archive = `realm-core-${flavor}-v${dependencies.REALM_CORE_VERSION}-Windows-${arch}-devel.tar.gz`;
         break;
     case 'linux':
@@ -147,7 +147,7 @@ function acquireCore(options, dependencies, target) {
 }
 
 function acquireSync(options, dependencies, target) {
-    let serverFolder = 'sync/';
+    let serverFolder = 'sync';
     let flavor = options.debug ? 'Debug' : 'Release';
 
     let archive, archiveRootFolder;
@@ -165,7 +165,7 @@ function acquireSync(options, dependencies, target) {
         promise = acquireCore(options, dependencies, target)
                   .then(() => exec(`git ls-remote git@github.com:realm/realm-sync.git --tags "v${dependencies.REALM_SYNC_VERSION}^{}"`))
                   .then(stdout => /([^\t]+)/.exec(stdout)[0])
-                  .then(sha => serverFolder += `sha-version/${sha}`);
+                  .then(sha => serverFolder += `/sha-version/${sha}`);
         const arch = options.arch === 'ia32' ? 'Win32' : options.arch;
         archive = `realm-sync-${flavor}-v${dependencies.REALM_SYNC_VERSION}-Windows-${arch}-devel.tar.gz`;
         break;
