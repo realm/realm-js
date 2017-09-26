@@ -8,6 +8,7 @@ X.Y.Z Release notes
 
 ### Bug fixes
 * Fixed port conflict between RN >= 0.48 inspector proxy and RPC server used for Chrome debugging (#1294).
+* Workaround for RN >= 0.49 metro-bundler check for single string literal argument to `require()` (#1342)
 
 
 1.12.0 Release notes (2017-9-14)
