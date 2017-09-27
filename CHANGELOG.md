@@ -8,6 +8,7 @@
 
 ### Bug fixes
 * Fixed port conflict between RN >= 0.48 inspector proxy and RPC server used for Chrome debugging (#1294).
+* An issue where access tokens were not refreshed correctly has been addressed.
 
 ### Internal
 * Alignment of permission schemas.
