@@ -39,17 +39,13 @@
 namespace realm {
 namespace js {
 
-static bool config_fs_done = false;
-
 realm::SyncManager& syncManagerShared() {
-    realm::SyncManager& shared = SyncManager::shared();
-    if (!config_fs_done) {
-        // setup synced realmFile paths
+    static bool configured = []{
         ensure_directory_exists_for_file(default_realm_file_directory());
-        shared.configure_file_system(default_realm_file_directory(), SyncManager::MetadataMode::NoEncryption);
-        config_fs_done = true;
-    }
-    return shared;
+        SyncManager::shared().configure_file_system(default_realm_file_directory(), SyncManager::MetadataMode::NoEncryption);
+        return true;
+    }();
+    return SyncManager::shared();
 }
 
 using SharedUser = std::shared_ptr<realm::SyncUser>;
