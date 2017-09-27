@@ -160,6 +160,27 @@ RPCServer::RPCServer() {
         JSObjectRef user_object = (JSObjectRef)jsc::Function::call(m_context, create_user_method, arg_count, arg_values);
         return (json){{"result", serialize_json_value(user_object)}};
     };
+    m_requests["/_adminUser"] = [this](const json dict) {
+        JSObjectRef realm_constructor = m_session_id ? JSObjectRef(m_objects[m_session_id]) : NULL;
+        if (!realm_constructor) {
+            throw std::runtime_error("Realm constructor not found!");
+        }
+        
+        JSObjectRef sync_constructor = (JSObjectRef)jsc::Object::get_property(m_context, realm_constructor, "Sync");
+        JSObjectRef user_constructor = (JSObjectRef)jsc::Object::get_property(m_context, sync_constructor, "User");
+        JSObjectRef create_user_method = (JSObjectRef)jsc::Object::get_property(m_context, user_constructor, "_adminUser");
+        
+        json::array_t args = dict["arguments"];
+        size_t arg_count = args.size();
+        JSValueRef arg_values[arg_count];
+        
+        for (size_t i = 0; i < arg_count; i++) {
+            arg_values[i] = deserialize_json_value(args[i]);
+        }
+
+        JSObjectRef user_object = (JSObjectRef)jsc::Function::call(m_context, create_user_method, arg_count, arg_values);
+        return (json){{"result", serialize_json_value(user_object)}};
+    };
     m_requests["/call_method"] = [this](const json dict) {
         JSObjectRef object = m_objects[dict["id"].get<RPCObjectID>()];
         std::string method_string = dict["name"].get<std::string>();
