@@ -42,6 +42,8 @@ namespace js {
 using SharedUser = std::shared_ptr<realm::SyncUser>;
 using WeakSession = std::weak_ptr<realm::SyncSession>;
 
+static bool config_fs_done;
+
 template<typename T>
 class UserClass : public ClassDefinition<T, SharedUser> {
     using GlobalContextType = typename T::GlobalContext;
@@ -516,6 +518,7 @@ public:
     static FunctionType create_constructor(ContextType);
 
     static void set_sync_log_level(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void initialize(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
 
     // private
     static std::function<SyncBindSessionHandler> session_bind_callback(ContextType ctx, ObjectType sync_constructor);
@@ -526,6 +529,7 @@ public:
 
     MethodMap<T> const static_methods = {
         {"setLogLevel", wrap<set_sync_log_level>},
+        {"initialize", wrap<initialize>},
     };
 };
 
@@ -537,10 +541,7 @@ inline typename T::Function SyncClass<T>::create_constructor(ContextType ctx) {
     Object::set_property(ctx, sync_constructor, "User", ObjectWrap<T, UserClass<T>>::create_constructor(ctx), attributes);
     Object::set_property(ctx, sync_constructor, "Session", ObjectWrap<T, SessionClass<T>>::create_constructor(ctx), attributes);
 
-    // setup synced realmFile paths
-    ensure_directory_exists_for_file(default_realm_file_directory());
-    SyncManager::shared().configure_file_system(default_realm_file_directory(), SyncManager::MetadataMode::NoEncryption);
-
+    config_fs_done = false;
     return sync_constructor;
 }
 
@@ -646,6 +647,14 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
             std::copy_n(config.encryption_key.begin(), config.sync_config->realm_encryption_key->size(), config.sync_config->realm_encryption_key->begin());
         }
     }
+}
+
+template<typename T>
+void SyncClass<T>::initialize(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    // setup synced realmFile paths
+    ensure_directory_exists_for_file(default_realm_file_directory());
+    SyncManager::shared().configure_file_system(default_realm_file_directory(), SyncManager::MetadataMode::NoEncryption);
+    return_value.set(Nan::Undefined());
 }
 } // js
 } // realm
