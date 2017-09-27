@@ -39,7 +39,7 @@
 namespace realm {
 namespace js {
 
-realm::SyncManager& syncManagerShared() {
+inline realm::SyncManager& syncManagerShared() {
     static bool configured = []{
         ensure_directory_exists_for_file(default_realm_file_directory());
         SyncManager::shared().configure_file_system(default_realm_file_directory(), SyncManager::MetadataMode::NoEncryption);

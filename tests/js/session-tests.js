@@ -37,7 +37,7 @@ let execFile;
 
 if (isNodeProccess) {
     tmp = node_require('tmp');
-    fs = node_require('fs-extra');
+    fs = node_require('fs');
     execFile = node_require('child_process').execFile;
     tmp.setGracefulCleanup();
 }
