@@ -288,7 +288,7 @@ declare namespace Realm.Sync {
         openManagementRealm(): Realm;
         retrieveAccount(provider: string, username: string): Promise<Account>;
 
-        getGrantedPermissions(recipient: 'any' | 'currentUser' | 'otherUser'): Results<Permission>;
+        getGrantedPermissions(recipient: 'any' | 'currentUser' | 'otherUser'): Results<Permission>;
         applyPermissions(condition: PermissionCondition, realmUrl: string, accessLevel: AccessLevel): Promise<PermissionChange>;
         offerPermissions(realmUrl: string, accessLevel: AccessLevel, expiresAt?: Date): Promise<string>;
         acceptPermissionOffer(token: string): Promise<string>
@@ -296,49 +296,49 @@ declare namespace Realm.Sync {
     }
 
     type PermissionCondition = {
-      userId: string  |
-      { metadataKey: string, metadataValue: string }
+        userId: string |
+        { metadataKey: string, metadataValue: string }
     };
 
-    type AccessLevel = 'none' | 'read' | 'write' | 'admin';
+    type AccessLevel = 'none' | 'read' | 'write' | 'admin';
 
     class Permission {
-      readonly id: string;
-      readonly updatedAt: Date;
-      readonly userId: string;
-      readonly path: string;
-      readonly mayRead?: boolean;
-      readonly mayWrite?: boolean;
-      readonly mayManage?: boolean;
+        readonly id: string;
+        readonly updatedAt: Date;
+        readonly userId: string;
+        readonly path: string;
+        readonly mayRead?: boolean;
+        readonly mayWrite?: boolean;
+        readonly mayManage?: boolean;
     }
 
     class PermissionChange {
-      id: string;
-      createdAt: Date;
-      updatedAt: Date;
-      statusCode?: number;
-      statusMessage?: string;
-      userId: string;
-      metadataKey?: string;
-      metadataValue?: string;
-      realmUrl: string;
-      mayRead?: boolean;
-      mayWrite?: boolean;
-      mayManage?: boolean;
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        statusCode?: number;
+        statusMessage?: string;
+        userId: string;
+        metadataKey?: string;
+        metadataValue?: string;
+        realmUrl: string;
+        mayRead?: boolean;
+        mayWrite?: boolean;
+        mayManage?: boolean;
     }
 
     class PermissionOffer {
-      id: string;
-      createdAt: Date;
-      updatedAt: Date;
-      statusCode?: number;
-      statusMessage?: string;
-      token?: string;
-      realmUrl: string;
-      mayRead?: boolean;
-      mayWrite?: boolean;
-      mayManage?: boolean;
-      expiresAt?: Date;
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        statusCode?: number;
+        statusMessage?: string;
+        token?: string;
+        realmUrl: string;
+        mayRead?: boolean;
+        mayWrite?: boolean;
+        mayManage?: boolean;
+        expiresAt?: Date;
     }
 
     type ErrorCallback = (message?: string, isFatal?: boolean, category?: string, code?: number) => void;
@@ -396,6 +396,7 @@ declare namespace Realm.Sync {
     function removeListener(regex: string, name: string, changeCallback: (changeEvent: ChangeEvent) => void): void;
     function setLogLevel(logLevel: 'all' | 'trace' | 'debug' | 'detail' | 'info' | 'warn' | 'error' | 'fatal' | 'off'): void;
     function setFeatureToken(token: string): void;
+    function initialize(): void;
 
     /**
      * @deprecated, to be removed in 2.0
@@ -436,8 +437,8 @@ declare namespace Realm.Sync {
 }
 
 
-interface ProgressPromise  extends Promise<Realm> {
-    progress(callback: Realm.Sync.ProgressNotificationCallback) : Promise<Realm>
+interface ProgressPromise extends Promise<Realm> {
+    progress(callback: Realm.Sync.ProgressNotificationCallback): Promise<Realm>
 }
 
 declare class Realm {

@@ -21,6 +21,11 @@
  */
 class Sync {
     /**
+     * Initialize the interaction with Realm Object Server. It should only be called once.
+     */
+    static initialize() {}
+
+    /**
      * Add a sync listener to listen to changes across multiple Realms
      * @param {string} server_url - the sync server to listen to
      * @param {SyncUser} admin_user - an admin user obtained by calling `new Realm.Sync.User.adminUser`
@@ -135,7 +140,7 @@ class User {
      * @param {function(error, user)} [callback] - called with the following arguments:
      *   - `error` - an Error object is provided on failure
      *   - `user` - a valid User object on success
-     * @returns {void|Promise<User>} Returns a promise with a user if the callback was not specified 
+     * @returns {void|Promise<User>} Returns a promise with a user if the callback was not specified
      */
     static login(server, username, password, callback) {}
 
@@ -149,7 +154,7 @@ class User {
      * @param {function(error, User)} [callback] - an optional callback called with the following arguments:
      *   - `error` - an Error object is provided on failure
      *   - `user` - a valid User object on success
-     * @return {void|Promise<User>} Returns a promise with a user if the callback was not specified 
+     * @return {void|Promise<User>} Returns a promise with a user if the callback was not specified
      */
     static registerWithProvider(server, options, callback) {}
 
@@ -161,7 +166,7 @@ class User {
      * @param {function(error, user)} [callback] - called with the following arguments:
      *   - `error` - an Error object is provided on failure
      *   - `user` - a valid User object on success
-     * @return {void|Promise<User>} Returns a promise with a user if the callback was not specified 
+     * @return {void|Promise<User>} Returns a promise with a user if the callback was not specified
      */
     static register(server, username, password, callback) {}
 
@@ -248,7 +253,7 @@ class User {
      * @param {string} recipient the optional recipient of the permission. Can be either
      * 'any' which is the default, or 'currentUser' or 'otherUser' if you want only permissions
      * belonging to the user or *not* belonging to the user.
-     * @returns {Results} a queryable collection of permission objects that provides detailed 
+     * @returns {Results} a queryable collection of permission objects that provides detailed
      * information regarding the granted access.
      * The collection is a live query similar to what you would get by callig Realm.objects,
      * so the same features apply - you can listen for notifications or filter it.
@@ -261,22 +266,22 @@ class User {
      * This should be an object, containing either the key 'userId', or 'metadataKey' and 'metadataValue'.
      * @param {string} realmUrl - The path to the Realm that you want to apply permissions to.
      * @param {string} accessLevel - The access level you want to set: 'none', 'read', 'write' or 'admin'.
-     * @returns {Promise} a Promise that, upon completion, indicates that the permissions have been 
-     * successfully applied by the server. It will be resolved with the 
+     * @returns {Promise} a Promise that, upon completion, indicates that the permissions have been
+     * successfully applied by the server. It will be resolved with the
      * {@link PermissionChange PermissionChange} object that refers to the applied permission.
      */
     applyPermissions(condition, realmUrl, accessLevel) { }
 
     /**
      * Generates a token that can be used for sharing a Realm.
-     * @param {string} realmUrl - The Realm URL whose permissions settings should be changed. Use * to change 
+     * @param {string} realmUrl - The Realm URL whose permissions settings should be changed. Use * to change
      * the permissions of all Realms managed by this user.
-     * @param {string} accessLevel - The access level to grant matching users. Note that the access level 
-     * setting is additive, i.e. you cannot revoke permissions for users who previously had a higher access level. 
+     * @param {string} accessLevel - The access level to grant matching users. Note that the access level
+     * setting is additive, i.e. you cannot revoke permissions for users who previously had a higher access level.
      * Can be 'read', 'write' or 'admin'.
      * @param {Date} [expiresAt] - Optional expiration date of the offer. If set to null, the offer doesn't expire.
      * @returns {string} - A token that can be shared with another user, e.g. via email or message and then consumed by
-     * User.acceptPermissionOffer to obtain permissions to a Realm. 
+     * User.acceptPermissionOffer to obtain permissions to a Realm.
      */
     offerPermissions(realmUrl, accessLevel, expiresAt) { }
 
@@ -291,9 +296,9 @@ class User {
      * Invalidates a permission offer.
      * Invalidating an offer prevents new users from consuming its token. It doesn't revoke any permissions that have
      * already been granted.
-     * @param {string|PermissionOffer} permissionOfferOrToken - Either the token or the entire 
-     * {@link PermissionOffer PermissionOffer} object that was generated with 
-     * {@link Realm#Sync#User#offerPermissions offerPermissions}. 
+     * @param {string|PermissionOffer} permissionOfferOrToken - Either the token or the entire
+     * {@link PermissionOffer PermissionOffer} object that was generated with
+     * {@link Realm#Sync#User#offerPermissions offerPermissions}.
      */
     invalidatePermissionOffer(permissionOfferOrToken) { }
 }
@@ -338,7 +343,7 @@ class Session {
     /**
      * Register a progress notification callback on a session object
      * @param {string} direction - The progress direction to register for.
-     * Can be either: 
+     * Can be either:
      *  - `download` - report download progress
      *  - `upload` - report upload progress
      * @param {string} mode - The progress notification mode to use for the registration.
@@ -405,12 +410,12 @@ class Adapter {
 }
 
 /**
- * The following Instructions can be returned by `Adapter.current(path)`. Each instruction object has 
+ * The following Instructions can be returned by `Adapter.current(path)`. Each instruction object has
  * a `type` property which is one of the following types. For each type below we list the other properties
  * that will exist in the instruction object.
  * @typedef Realm.Sync.Adapter~Instruction
  * @type {(INSERT|SET|DELETE|CLEAR|CHANGE_IDENTITY|LIST_SET|LIST_INSERT|LIST_ERASE|LIST_CLEAR|ADD_TYPE|ADD_PROPERTY)}
- * @property INSERT - insert a new object 
+ * @property INSERT - insert a new object
  * - `object_type` - type of the object being inserted
  * - `identity` - primary key value or row index for the object
  * - `values` - map of property names and property values for the object to insert
@@ -423,7 +428,7 @@ class Adapter {
  * - `identity` - primary key value or row index for the object
  * @property CLEAR - delete all objects of a given type
  * - `object_type` - type of the object
- * @property LIST_SET - set the object at a given list index to an object 
+ * @property LIST_SET - set the object at a given list index to an object
  * - `object_type` - type of the object
  * - `identity` - primary key for the object
  * - `property` - property name for the list property to mutate
