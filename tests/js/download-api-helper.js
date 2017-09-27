@@ -30,7 +30,6 @@ function createObjects(user) {
     setTimeout(() => process.exit(0), 3000);
 }
 
-Realm.Sync.initialize();
 Realm.Sync.User.register('http://localhost:9080', username, 'password', (error, registeredUser) => {
     if (error) {
         const registrationError = JSON.stringify(error);

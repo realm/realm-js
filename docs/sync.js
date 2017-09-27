@@ -21,11 +21,6 @@
  */
 class Sync {
     /**
-     * Initialize the interaction with Realm Object Server. It should only be called once.
-     */
-    static initialize() {}
-
-    /**
      * Add a sync listener to listen to changes across multiple Realms
      * @param {string} server_url - the sync server to listen to
      * @param {SyncUser} admin_user - an admin user obtained by calling `new Realm.Sync.User.adminUser`

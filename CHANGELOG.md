@@ -1,13 +1,13 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Breaking changes
-* `Realm.Sync.initialize()` must be called prior to any interaction with any Realm Object Server.
+* None.
 
 ### Enhancements
 * None.
 
 ### Bug fixes
-* None.
+* Configuration of file system is delay to after module import (#1351).
 
 
 2.0.0 Release notes (2017-9-26)
