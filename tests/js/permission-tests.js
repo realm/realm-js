@@ -54,13 +54,25 @@ function wait(t) {
    return new Promise(resolve => setTimeout(resolve, t));
 }
 
+function repeatUntil(fn, predicate) {
+    let retries = 0
+    function check() {
+        if (retries > 3) {
+            return Promise.reject(new Error("operation timed out"));
+        }
+        ++retries;
+        return fn().then(x => predicate(x) ? x : wait(100).then(check));
+    }
+    return check;
+}
+
 module.exports = {
     testApplyAndGetGrantedPermissions() {
       return createUsersWithTestRealms(1)
         .then(([user]) => {
           return user.applyPermissions({ userId: '*' }, `/${user.identity}/test`, 'read')
-            .then(wait(100))
-            .then(() => user.getGrantedPermissions('any'))
+            .then(repeatUntil(() => user.getGrantedPermissions('any'),
+                              permissions => permissions.length > 1))
             .then(permissions => {
               TestCase.assertEqual(permissions[1].path, `/${user.identity}/test`);
               TestCase.assertEqual(permissions[1].mayRead, true);
@@ -77,17 +89,19 @@ module.exports = {
             .then(token => user2.acceptPermissionOffer(token))
             .then(realmUrl => {
               TestCase.assertEqual(realmUrl, `/${user1.identity}/test`);
-              return user2.getGrantedPermissions('any')
-                .then(permissions => {
-                  TestCase.assertEqual(permissions[1].path, `/${user1.identity}/test`);
-                  TestCase.assertEqual(permissions[1].mayRead, true);
-                  TestCase.assertEqual(permissions[1].mayWrite, false);
-                  TestCase.assertEqual(permissions[1].mayManage, false);
-                });
+              return realmUrl;
+            })
+            .then(repeatUntil(() => user2.getGrantedPermissions('any'),
+                              permissions => permissions.length > 1))
+            .then(permissions => {
+              TestCase.assertEqual(permissions[1].path, `/${user1.identity}/test`);
+              TestCase.assertEqual(permissions[1].mayRead, true);
+              TestCase.assertEqual(permissions[1].mayWrite, false);
+              TestCase.assertEqual(permissions[1].mayManage, false);
             });
         });
     },
-    
+
     testInvalidatePermissionOffer() {
       return createUsersWithTestRealms(2)
         .then(([user1, user2]) => {

@@ -30,7 +30,9 @@ template<typename T>
 using ClassDefinition = js::ClassDefinition<Types, T>;
 
 using ConstructorType = js::ConstructorType<Types>;
+using ArgumentsMethodType = js::ArgumentsMethodType<Types>;
 using MethodType = js::MethodType<Types>;
+using Arguments = js::Arguments<Types>;
 using PropertyType = js::PropertyType<Types>;
 using IndexPropertyType = js::IndexPropertyType<Types>;
 using StringPropertyType = js::StringPropertyType<Types>;
@@ -361,6 +363,19 @@ JSValueRef wrap(JSContextRef ctx, JSObjectRef function, JSObjectRef this_object,
     jsc::ReturnValue return_value(ctx);
     try {
         F(ctx, function, this_object, argc, arguments, return_value);
+        return return_value;
+    }
+    catch (std::exception &e) {
+        *exception = jsc::Exception::value(ctx, e);
+        return nullptr;
+    }
+}
+
+template<jsc::ArgumentsMethodType F>
+JSValueRef wrap(JSContextRef ctx, JSObjectRef function, JSObjectRef this_object, size_t argc, const JSValueRef arguments[], JSValueRef* exception) {
+    jsc::ReturnValue return_value(ctx);
+    try {
+        F(ctx, function, this_object, jsc::Arguments{ctx, argc, arguments}, return_value);
         return return_value;
     }
     catch (std::exception &e) {

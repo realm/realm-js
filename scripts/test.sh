@@ -9,15 +9,13 @@ export NPM_CONFIG_PROGRESS=false
 TARGET=$1
 CONFIGURATION=${2:-Release}
 
-if echo $CONFIGURATION | grep -i "^Debug$" > /dev/null ; then
+if echo "$CONFIGURATION" | grep -i "^Debug$" > /dev/null ; then
   CONFIGURATION="Debug"
 fi
 
 IOS_SIM_DEVICE=${IOS_SIM_DEVICE:-} # use preferentially, otherwise will be set and re-exported
 ios_sim_default_device_type=${IOS_SIM_DEVICE_TYPE:-iPhone 5s}
 ios_sim_default_ios_version=${IOS_SIM_OS:-iOS 10.1}
-
-ACCEPTED_LICENSES='MIT, ISC, BSD, Apache-2.0, BSD-2-Clause, BSD-3-Clause, WTFPL, Unlicense, (MIT AND CC-BY-3.0)'
 
 PATH="/opt/android-sdk-linux/platform-tools:$PATH"
 SRCROOT=$(cd "$(dirname "$0")/.." && pwd)
@@ -130,13 +128,18 @@ xctest() {
   echo "  done"
 
   # - Run the build and test
+  xcrun xcodebuild -scheme "$1" -configuration "$CONFIGURATION" -sdk iphonesimulator -destination id="$IOS_SIM_DEVICE" build || {
+      EXITCODE=$?
+      echo "*** Failure (exit code $EXITCODE). ***"
+      exit $EXITCODE
+  }
   if [ -n "$XCPRETTY" ]; then
     log_temp=$(mktemp build.log.XXXXXX)
     if [ -e "$log_temp" ]; then
       rm "$log_temp"
     fi
-    xcrun xcodebuild -scheme "$1" -configuration "$CONFIGURATION" -sdk iphonesimulator -destination name="iPhone 5s" build test 2>&1 | tee "$log_temp" | "$XCPRETTY" -c --no-utf --report junit --output build/reports/junit.xml || {
-	    EXITCODE=$?
+    xcrun xcodebuild -scheme "$1" -configuration "$CONFIGURATION" -sdk iphonesimulator -destination name="iPhone 5s" test 2>&1 | tee "$log_temp" | "$XCPRETTY" -c --no-utf --report junit --output build/reports/junit.xml || {
+        EXITCODE=$?
         printf "*** Xcode Failure (exit code %s). The full xcode log follows: ***\n\n" "$EXITCODE"
         cat "$log_temp"
         printf "\n\n*** End Xcode Failure ***\n"
@@ -144,11 +147,11 @@ xctest() {
     }
     rm "$log_temp"
   else
-    xcrun xcodebuild -scheme "$1" -configuration "$CONFIGURATION" -sdk iphonesimulator -destination id="$IOS_SIM_DEVICE" build test || {
-	    EXITCODE=$?
+    xcrun xcodebuild -scheme "$1" -configuration "$CONFIGURATION" -sdk iphonesimulator -destination id="$IOS_SIM_DEVICE" test || {
+        EXITCODE=$?
         echo "*** Failure (exit code $EXITCODE). ***"
         exit $EXITCODE
-	  }
+    }
   fi
 }
 
@@ -240,14 +243,22 @@ cleanup
 trap cleanup EXIT
 
 # Use a consistent version of Node if possible.
-if [ -f "$NVM_DIR/nvm.sh" ]; then
-  . "$NVM_DIR/nvm.sh"
-elif [ -x "$(command -v brew)" ] && [ -f "$(brew --prefix nvm)/nvm.sh" ]; then
-  # we must be on mac and nvm was installed with brew
-  # TODO: change the mac slaves to use manual nvm installation
-  . "$(brew --prefix nvm)/nvm.sh"
+if [[ -z "$(command -v nvm)" ]]; then
+  set +e
+  if [ -f "$NVM_DIR/nvm.sh" ]; then
+    . "$NVM_DIR/nvm.sh" '' || true
+  elif [ -x "$(command -v brew)" ] && [ -f "$(brew --prefix nvm)/nvm.sh" ]; then
+    # we must be on mac and nvm was installed with brew
+    # TODO: change the mac slaves to use manual nvm installation
+    . "$(brew --prefix nvm)/nvm.sh" '' || true
+  elif [ -f "$HOME/.nvm/nvm.sh" ]; then
+    . ~/.nvm/nvm.sh ''
+  fi
+  set -e
 fi
-[[ "$(command -v nvm)" ]] && nvm install 7.10.0 && nvm use 7.10.0 || true
+if [[ "$(command -v nvm)" ]]; then
+  nvm install 7.10.0
+fi
 
 # Remove cached packages
 rm -rf ~/.yarn-cache/npm-realm-*
@@ -406,8 +417,6 @@ case "$TARGET" in
   ;;
 "test-runners")
   npm run check-environment
-  # Create a fake realm module that points to the source root so that test-runner tests can require('realm')
-  npm install --build-from-source=realm
   npm run test-runners
   ;;
 "all")

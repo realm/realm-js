@@ -1,3 +1,18 @@
+2.0.0 Release notes (2017-9-26)
+=============================================================
+### Breaking changes
+* None
+
+### Enhancements
+* Add a callback function used to verify SSL certificates in the sync config.
+
+### Bug fixes
+* Fixed port conflict between RN >= 0.48 inspector proxy and RPC server used for Chrome debugging (#1294).
+
+### Internal
+* Alignment of permission schemas.
+* Updating sync (2.0.0-rc24).
+
 2.0.0-rc10 Release notes (2017-9-19)
 =============================================================
 ### Breaking changes
@@ -15,7 +30,7 @@
 ### Enhancements
 * Improve performance of the RPC worker for chrome debugging.
 * Added Progress API `realm.syncSession.addProgressNotification` and `realm.syncSession.removeProgressNotification`
-* Added additional parameter for `Realm.open` and `Realm.openAsync` for download progress notifications 
+* Added additional parameter for `Realm.open` and `Realm.openAsync` for download progress notifications
 * Added `Realm.deleteFile` for deleting a Realm (#363).
 * Added `Realm.deleteModel` for deleting a Realm model in a migration (#573).
 * Added support for in-memory Realms.
@@ -150,7 +165,7 @@
 * Added `indexOf()` method on `Realm.Results` and `Realm.List` that returns the index of the object in the collection.
 
 ### Bug fixes
-* Fix opening synced realms with a logged-in admin user. 
+* Fix opening synced realms with a logged-in admin user.
 
 1.8.1 Release notes (2017-6-20)
 =============================================================
@@ -164,7 +179,7 @@
 * Added `objectSchema()` method on `Realm.Object` that returns the schema for the object.
 
 ### Bug fixes
-* Fix `Realm.Sync.User.prototype.isAdmin` returning `false` for logged-in admin users. 
+* Fix `Realm.Sync.User.prototype.isAdmin` returning `false` for logged-in admin users.
 
 1.8.0 Release notes (2017-6-15)
 =============================================================
