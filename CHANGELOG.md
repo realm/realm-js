@@ -1,4 +1,16 @@
-2.0.0 Release notes (2017-9-26)
+2.0.0-rc12 Release notes (2017-9-27)
+=============================================================
+### Breaking changes
+* None.
+
+### Enhancements
+* None.
+
+### Bug fixes
+* An issue where access tokens were not refreshed correctly has been addressed.
+
+
+2.0.0-rc11 Release notes (2017-9-26)
 =============================================================
 ### Breaking changes
 * None
@@ -8,7 +20,6 @@
 
 ### Bug fixes
 * Fixed port conflict between RN >= 0.48 inspector proxy and RPC server used for Chrome debugging (#1294).
-* An issue where access tokens were not refreshed correctly has been addressed.
 
 ### Internal
 * Alignment of permission schemas.
