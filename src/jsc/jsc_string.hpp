@@ -32,7 +32,8 @@ class String<jsc::Types> {
   public:
     String(const char *s) : m_str(JSStringCreateWithUTF8CString(s)) {}
     String(const JSStringRef &s) : m_str(JSStringRetain(s)) {}
-    String(const std::string &str) : String(str.c_str()) {}
+    String(StringData str) : String(str.data()) {}
+    String(const std::string& str) : String(str.c_str()) {}
     String(const StringType &o) : String(o.m_str) {}
     String(StringType &&o) : m_str(o.m_str) {
         o.m_str = nullptr;

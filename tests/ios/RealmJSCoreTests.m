@@ -48,6 +48,8 @@
         context[@"Promise"] = promiseModule[@"Promise"];
     }
 
+    context[@"global"] = [JSValue valueWithNewObjectInContext:context];
+
     // Create Realm constructor in the JS context.
     RJSInitializeInContext(context.JSGlobalContextRef);
 
