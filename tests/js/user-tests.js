@@ -130,7 +130,7 @@ module.exports = {
 
         Realm.Sync.User.register('http://localhost:9080', username, 'password', (error, user) => {
          try { 
-            assertIsAuthError(error, 613, "The account cannot be registered as it exists already.");
+            assertIsAuthError(error, 611, "The provided credentials are invalid or the user does not exist.");
             TestCase.assertUndefined(user);
             resolve();
           } catch(e) { 
@@ -209,7 +209,7 @@ module.exports = {
 
   testLoginNonExistingUser() {
     return callbackTest((callback) => Realm.Sync.User.login('http://localhost:9080', 'does_not', 'exist', callback), (error, user) => {
-      assertIsAuthError(error, 611, "The provided credentials are invalid.");
+      assertIsAuthError(error, 611, "The provided credentials are invalid or the user does not exist.");
       TestCase.assertUndefined(user);
     });
   },
@@ -322,20 +322,10 @@ module.exports = {
 
         user.retrieveAccount('password', global.testAdminUserInfo.username)
           .then(account => {
-            //           {
-            // "provider_id": "admin",
-            // "provider": "password",
-            // 	"user": {
-            // "id": "07ac9a0a-a97a-4ee1-b53c-b05a6542035a",
-            // "isAdmin": true,
-            // }
-            // }
-
-            TestCase.assertEqual(account.provider_id, global.testAdminUserInfo.username);
-            TestCase.assertEqual(account.provider, 'password');
-            TestCase.assertTrue(account.user);
-            TestCase.assertTrue(account.user.isAdmin !== undefined);
-            TestCase.assertTrue(account.user.id);
+            TestCase.assertEqual(account.accounts[0].provider_id, global.testAdminUserInfo.username);
+            TestCase.assertEqual(account.accounts[0].provider, 'password');
+            TestCase.assertTrue(account.is_admin);
+            TestCase.assertTrue(account.user_id);
             resolve();
           })
           .catch(e => reject(e));
@@ -367,7 +357,10 @@ module.exports = {
           })
           .catch(e => {
             try {
-              TestCase.assertEqual(e.code, 404);
+              TestCase.assertEqual(e.status, 404);
+              TestCase.assertEqual(e.code, 612);
+              TestCase.assertEqual(e.message, "The account does not exist.");
+              TestCase.assertEqual(e.type, "https://realm.io/docs/object-server/problems/unknown-account");
             }
             catch (e) {
               reject(e);
