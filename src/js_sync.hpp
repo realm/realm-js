@@ -42,8 +42,6 @@ namespace js {
 using SharedUser = std::shared_ptr<realm::SyncUser>;
 using WeakSession = std::weak_ptr<realm::SyncSession>;
 
-static bool config_fs_done;
-
 template<typename T>
 class UserClass : public ClassDefinition<T, SharedUser> {
     using GlobalContextType = typename T::GlobalContext;
@@ -541,7 +539,6 @@ inline typename T::Function SyncClass<T>::create_constructor(ContextType ctx) {
     Object::set_property(ctx, sync_constructor, "User", ObjectWrap<T, UserClass<T>>::create_constructor(ctx), attributes);
     Object::set_property(ctx, sync_constructor, "Session", ObjectWrap<T, SessionClass<T>>::create_constructor(ctx), attributes);
 
-    config_fs_done = false;
     return sync_constructor;
 }
 

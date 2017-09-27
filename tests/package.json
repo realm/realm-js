@@ -11,8 +11,7 @@
     "terminate": "^1.0.8",
     "tmp": "^0.0.30",
     "url-parse": "^1.1.7",
-    "typescript": "^2.5.2",
-    "fs-extra":  "^4.0.2"
+    "typescript": "^2.5.2"
   },
   "scripts": {
     "check-typescript" : "tsc --noEmit --alwaysStrict ./../lib/index.d.ts",
