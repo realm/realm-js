@@ -470,7 +470,7 @@ void SessionClass<T>::add_progress_notification(ContextType ctx, FunctionType, O
         progressFunc = std::move(progress_handler);
 
 
-        auto registrationToken = session->register_progress_notifier(std::move(progressFunc), notifierType, false);
+        auto registrationToken = session->register_progress_notifier(std::move(progressFunc), notifierType, is_streaming);
 
         auto syncSession = create_object<T, SessionClass<T>>(ctx, new WeakSession(session));
         PropertyAttributes attributes = ReadOnly | DontEnum | DontDelete;

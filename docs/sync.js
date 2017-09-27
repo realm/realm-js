@@ -37,9 +37,6 @@ class Sync {
      *   _Currently only the 'change' event is supported_
      * @param {function(change_event)} change_callback - called when changes are made to any Realm which
      *  match the given regular expression
-     * @param {bool} validate_ssl=true - Validate the server's SSL chertificate.
-     * @param {string} ssl_trust_certificate_path=None - Path to  a trust/anchor certificate used by the
-     *  client to verify the server certificate.
      */
     static addListener(server_url, admin_user, regex, name, change_callback) {}
 

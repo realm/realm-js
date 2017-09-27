@@ -1,10 +1,18 @@
-NEXT RELEASE
+2.0.0 Release notes (2017-9-26)
 =============================================================
+### Breaking changes
+* None
 
 ### Enhancements
 * Add a callback function used to verify SSL certificates in the sync config.
 * Throw exception with recovery configuration when upgrading from 1.x to 2.x.
 
+### Bug fixes
+* Fixed port conflict between RN >= 0.48 inspector proxy and RPC server used for Chrome debugging (#1294).
+
+### Internal
+* Alignment of permission schemas.
+* Updating sync (2.0.0-rc24).
 
 2.0.0-rc10 Release notes (2017-9-19)
 =============================================================
