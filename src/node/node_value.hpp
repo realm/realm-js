@@ -132,34 +132,6 @@ inline v8::Local<v8::Value> node::Value::from_undefined(v8::Isolate* isolate) {
 }
 
 template<>
-inline v8::Local<v8::Value> node::Value::from_mixed(v8::Isolate* isolate, util::Optional<Mixed>& mixed) {
-    if (!mixed) {
-        return from_undefined(isolate);
-    }
-
-    Mixed value = *mixed;
-    switch (value.get_type()) {
-    case type_Bool:
-        return from_boolean(isolate, value.get_bool());
-    case type_Int:
-        return from_number(isolate, static_cast<double>(value.get_int()));
-    case type_Float:
-        return from_number(isolate, value.get_float());
-    case type_Double:
-        return from_number(isolate, value.get_double());
-    //case type_Timestamp:
-        // FIXME: create a proper Date object
-    //    return Nan::New(value.get_timestamp());
-    case type_String:
-        return from_string(isolate, value.get_string().data());
-    case type_Binary:
-        return from_binary(isolate, value.get_binary());
-    default:
-        throw std::invalid_argument("Value not convertible.");
-    }
-}
-
-template<>
 inline bool node::Value::to_boolean(v8::Isolate* isolate, const v8::Local<v8::Value> &value) {
     return Nan::To<bool>(value).FromMaybe(false);
 }

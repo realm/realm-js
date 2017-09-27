@@ -126,6 +126,7 @@ struct Value {
     static ValueType from_string(ContextType, const String<T> &);
     static ValueType from_binary(ContextType, BinaryData);
     static ValueType from_undefined(ContextType);
+    static ValueType from_timestamp(ContextType, Timestamp);
     static ValueType from_mixed(ContextType, util::Optional<Mixed> &);
 
     static ObjectType to_array(ContextType, const ValueType &);
@@ -425,6 +426,38 @@ inline std::string js_type_name_for_property_type(PropertyType type)
 
     REALM_UNREACHABLE();
     return "<unknown>";
+}
+
+template<typename T>
+inline typename T::Value Value<T>::from_timestamp(typename T::Context ctx, Timestamp ts) {
+    return Object<T>::create_date(ctx, ts.get_seconds() * 1000 + ts.get_nanoseconds() / 1000000);
+}
+
+template<typename T>
+inline typename T::Value Value<T>::from_mixed(typename T::Context ctx, util::Optional<Mixed>& mixed) {
+    if (!mixed) {
+        return from_undefined(ctx);
+    }
+
+    Mixed value = *mixed;
+    switch (value.get_type()) {
+    case type_Bool:
+        return from_boolean(ctx, value.get_bool());
+    case type_Int:
+        return from_number(ctx, static_cast<double>(value.get_int()));
+    case type_Float:
+        return from_number(ctx, value.get_float());
+    case type_Double:
+        return from_number(ctx, value.get_double());
+    case type_Timestamp:
+        return from_timestamp(ctx, value.get_timestamp());
+    case type_String:
+        return from_string(ctx, value.get_string().data());
+    case type_Binary:
+        return from_binary(ctx, value.get_binary());
+    default:
+        throw std::invalid_argument("Value not convertible.");
+    }
 }
 
 } // js
