@@ -35,7 +35,7 @@ std::string default_path() {
         s_default_path = realm::default_realm_file_directory() +
 #if defined(WIN32) && WIN32
             '\\'
-#else       
+#else
             '/'
 #endif
             + "default.realm";
@@ -55,11 +55,12 @@ void delete_all_realms() {
 void clear_test_state() {
     delete_all_realms();
 #if REALM_ENABLE_SYNC
-    for(auto &user : SyncManager::shared().all_logged_in_users()) {
+    SyncManager& syncManagerShared = SyncManager::shared();
+    for(auto &user : syncManagerShared.all_logged_in_users()) {
         user->log_out();
     }
-    SyncManager::shared().reset_for_testing();
-    SyncManager::shared().configure_file_system(default_realm_file_directory(), SyncManager::MetadataMode::NoEncryption);
+    syncManagerShared.reset_for_testing();
+    syncManagerShared.configure_file_system(default_realm_file_directory(), SyncManager::MetadataMode::NoEncryption);
 #endif
 }
 
@@ -105,6 +106,6 @@ std::string TypeErrorException::type_string(Property const& prop)
     return ret;
 }
 
-    
+
 } // js
 } // realm
