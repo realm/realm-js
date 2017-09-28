@@ -1,7 +1,7 @@
-x.x.x Release notes (yyyy-MM-dd)
+2.0.0 Release notes (2017-9-29)
 =============================================================
 ### Breaking changes
-* Upgrading to Realm Core 4.0.0 (new file format) and Realm Sync 2.0.0-rc25.
+* Upgrading to Realm Core 4.0.0 and Realm Sync 2.0.0-rc25.
 
 ### Enhancements
 * None.
