@@ -299,7 +299,7 @@ module.exports = {
     },
 
     testResultsInvalidation: function() {
-        var realm = new Realm({schema: [schemas.TestObject]});
+        let realm = new Realm({schema: [schemas.TestObject]});
         realm.write(function() {
             for (var i = 10; i > 0; i--) {
                 realm.create('TestObject', [i]);
@@ -322,7 +322,7 @@ module.exports = {
         realm.close();
         realm = new Realm({
             schemaVersion: 1,
-            schema: [schemas.TestObject, schemas.BasicTypes]
+            schema: [schemas.TestObject, schemas.DateObject]
         });
 
         resultsVariants.forEach(function(objects) {

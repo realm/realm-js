@@ -18,6 +18,7 @@
 
 #include "platform.hpp"
 #include "realm_coordinator.hpp"
+#include "js_types.hpp"
 
 #if REALM_ENABLE_SYNC
 #include "sync/sync_manager.hpp"
@@ -61,6 +62,49 @@ void clear_test_state() {
     SyncManager::shared().configure_file_system(default_realm_file_directory(), SyncManager::MetadataMode::NoEncryption);
 #endif
 }
+
+std::string TypeErrorException::type_string(Property const& prop)
+{
+    using realm::PropertyType;
+    std::string ret;
+
+    switch (prop.type & ~PropertyType::Flags) {
+        case PropertyType::Int:
+        case PropertyType::Float:
+        case PropertyType::Double:
+            ret = "number";
+            break;
+        case PropertyType::Bool:
+            ret = "boolean";
+            break;
+        case PropertyType::String:
+            ret = "string";
+            break;
+        case PropertyType::Date:
+            ret = "date";
+            break;
+        case PropertyType::Data:
+            ret = "binary";
+            break;
+        case PropertyType::LinkingObjects:
+        case PropertyType::Object:
+            ret = prop.object_type;
+            break;
+        case PropertyType::Any:
+            throw std::runtime_error("'Any' type is not supported");
+        default:
+            REALM_UNREACHABLE();
+    }
+
+    if (realm::is_nullable(prop.type)) {
+        ret += "?";
+    }
+    if (realm::is_array(prop.type)) {
+        ret += "[]";
+    }
+    return ret;
+}
+
     
 } // js
 } // realm

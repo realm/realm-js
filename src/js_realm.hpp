@@ -164,22 +164,22 @@ public:
     static FunctionType create_constructor(ContextType);
 
     // methods
-    static void objects(ContextType, FunctionType, ObjectType, Arguments, ReturnValue &);
-    static void object_for_primary_key(ContextType, FunctionType, ObjectType, Arguments, ReturnValue &);
-    static void create(ContextType, FunctionType, ObjectType, Arguments, ReturnValue &);
-    static void delete_one(ContextType, FunctionType, ObjectType, Arguments, ReturnValue &);
-    static void delete_all(ContextType, FunctionType, ObjectType, Arguments, ReturnValue &);
-    static void write(ContextType, FunctionType, ObjectType, Arguments, ReturnValue &);
-    static void begin_transaction(ContextType, FunctionType, ObjectType, Arguments, ReturnValue&);
-    static void commit_transaction(ContextType, FunctionType, ObjectType, Arguments, ReturnValue&);
-    static void cancel_transaction(ContextType, FunctionType, ObjectType, Arguments, ReturnValue&);
-    static void add_listener(ContextType, FunctionType, ObjectType, Arguments, ReturnValue &);
-    static void wait_for_download_completion(ContextType, FunctionType, ObjectType, Arguments, ReturnValue &);
-    static void remove_listener(ContextType, FunctionType, ObjectType, Arguments, ReturnValue &);
-    static void remove_all_listeners(ContextType, FunctionType, ObjectType, Arguments, ReturnValue &);
-    static void close(ContextType, FunctionType, ObjectType, Arguments, ReturnValue &);
-    static void compact(ContextType, FunctionType, ObjectType, Arguments, ReturnValue &);
-    static void delete_model(ContextType, FunctionType, ObjectType, Arguments, ReturnValue &);
+    static void objects(ContextType, ObjectType, Arguments, ReturnValue &);
+    static void object_for_primary_key(ContextType, ObjectType, Arguments, ReturnValue &);
+    static void create(ContextType, ObjectType, Arguments, ReturnValue &);
+    static void delete_one(ContextType, ObjectType, Arguments, ReturnValue &);
+    static void delete_all(ContextType, ObjectType, Arguments, ReturnValue &);
+    static void write(ContextType, ObjectType, Arguments, ReturnValue &);
+    static void begin_transaction(ContextType, ObjectType, Arguments, ReturnValue&);
+    static void commit_transaction(ContextType, ObjectType, Arguments, ReturnValue&);
+    static void cancel_transaction(ContextType, ObjectType, Arguments, ReturnValue&);
+    static void add_listener(ContextType, ObjectType, Arguments, ReturnValue &);
+    static void wait_for_download_completion(ContextType, ObjectType, Arguments, ReturnValue &);
+    static void remove_listener(ContextType, ObjectType, Arguments, ReturnValue &);
+    static void remove_all_listeners(ContextType, ObjectType, Arguments, ReturnValue &);
+    static void close(ContextType, ObjectType, Arguments, ReturnValue &);
+    static void compact(ContextType, ObjectType, Arguments, ReturnValue &);
+    static void delete_model(ContextType, ObjectType, Arguments, ReturnValue &);
 
     // properties
     static void get_empty(ContextType, ObjectType, ReturnValue &);
@@ -197,10 +197,10 @@ public:
     static void constructor(ContextType, ObjectType, size_t, const ValueType[]);
     static SharedRealm create_shared_realm(ContextType, realm::Realm::Config, bool, ObjectDefaultsMap &&, ConstructorMap &&);
 
-    static void schema_version(ContextType, FunctionType, ObjectType, Arguments, ReturnValue &);
-    static void clear_test_state(ContextType, FunctionType, ObjectType, Arguments, ReturnValue &);
-    static void copy_bundled_realm_files(ContextType, FunctionType, ObjectType, Arguments, ReturnValue &);
-    static void delete_file(ContextType, FunctionType, ObjectType, Arguments, ReturnValue &);
+    static void schema_version(ContextType, ObjectType, Arguments, ReturnValue &);
+    static void clear_test_state(ContextType, ObjectType, Arguments, ReturnValue &);
+    static void copy_bundled_realm_files(ContextType, ObjectType, Arguments, ReturnValue &);
+    static void delete_file(ContextType, ObjectType, Arguments, ReturnValue &);
 
     // static properties
     static void get_default_path(ContextType, ObjectType, ReturnValue &);
@@ -503,7 +503,7 @@ SharedRealm RealmClass<T>::create_shared_realm(ContextType ctx, realm::Realm::Co
 }
 
 template<typename T>
-void RealmClass<T>::schema_version(ContextType ctx, FunctionType, ObjectType this_object, Arguments args, ReturnValue &return_value) {
+void RealmClass<T>::schema_version(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
     args.validate_maximum(2);
 
     realm::Realm::Config config;
@@ -524,19 +524,19 @@ void RealmClass<T>::schema_version(ContextType ctx, FunctionType, ObjectType thi
 
 
 template<typename T>
-void RealmClass<T>::clear_test_state(ContextType ctx, FunctionType, ObjectType this_object, Arguments args, ReturnValue &return_value) {
+void RealmClass<T>::clear_test_state(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
     args.validate_maximum(0);
     js::clear_test_state();
 }
 
 template<typename T>
-void RealmClass<T>::copy_bundled_realm_files(ContextType ctx, FunctionType, ObjectType this_object, Arguments args, ReturnValue &return_value) {
+void RealmClass<T>::copy_bundled_realm_files(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
     args.validate_maximum(0);
     realm::copy_bundled_realm_files();
 }
 
 template<typename T>
-void RealmClass<T>::delete_file(ContextType ctx, FunctionType, ObjectType this_object, Arguments args, ReturnValue &return_value) {
+void RealmClass<T>::delete_file(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
     args.validate_maximum(1);
 
     ValueType value = args[0];
@@ -567,7 +567,7 @@ void RealmClass<T>::delete_file(ContextType ctx, FunctionType, ObjectType this_o
 }
 
 template<typename T>
-void RealmClass<T>::delete_model(ContextType ctx, FunctionType, ObjectType this_object, Arguments args, ReturnValue &return_value) {
+void RealmClass<T>::delete_model(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
     args.validate_maximum(1);
     ValueType value = args[0];
 
@@ -641,7 +641,7 @@ void RealmClass<T>::get_sync_session(ContextType ctx, ObjectType object, ReturnV
 #endif
 
 template<typename T>
-void RealmClass<T>::wait_for_download_completion(ContextType ctx, FunctionType, ObjectType this_object, Arguments args, ReturnValue &return_value) {
+void RealmClass<T>::wait_for_download_completion(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
     args.validate_maximum(3);
     auto config_object = Value::validated_to_object(ctx, args[0]);
     auto callback_function = Value::validated_to_function(ctx, args[1 + (args.count == 3)]);
@@ -743,7 +743,8 @@ void RealmClass<T>::wait_for_download_completion(ContextType ctx, FunctionType, 
             }
 
             ObjectType object = Object::create_empty(protected_ctx);
-            Object::set_property(protected_ctx, object, "message", Value::from_string(protected_ctx, "Cannot asynchronously open synced Realm, because the associated session previously experienced a fatal error"));
+            Object::set_property(protected_ctx, object, "message",
+                                 Value::from_string(protected_ctx, "Cannot asynchronously open synced Realm because the associated session previously experienced a fatal error"));
             Object::set_property(protected_ctx, object, "errorCode", Value::from_number(protected_ctx, 1));
 
             ValueType callback_arguments[1];
@@ -760,7 +761,7 @@ void RealmClass<T>::wait_for_download_completion(ContextType ctx, FunctionType, 
 }
 
 template<typename T>
-void RealmClass<T>::objects(ContextType ctx, FunctionType, ObjectType this_object, Arguments args, ReturnValue &return_value) {
+void RealmClass<T>::objects(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
     args.validate_maximum(1);
 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
@@ -771,7 +772,7 @@ void RealmClass<T>::objects(ContextType ctx, FunctionType, ObjectType this_objec
 }
 
 template<typename T>
-void RealmClass<T>::object_for_primary_key(ContextType ctx, FunctionType, ObjectType this_object, Arguments args, ReturnValue &return_value) {
+void RealmClass<T>::object_for_primary_key(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
     args.validate_maximum(2);
 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
@@ -789,7 +790,7 @@ void RealmClass<T>::object_for_primary_key(ContextType ctx, FunctionType, Object
 }
 
 template<typename T>
-void RealmClass<T>::create(ContextType ctx, FunctionType, ObjectType this_object, Arguments args, ReturnValue &return_value) {
+void RealmClass<T>::create(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
     args.validate_maximum(3);
 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
@@ -813,7 +814,7 @@ void RealmClass<T>::create(ContextType ctx, FunctionType, ObjectType this_object
 }
 
 template<typename T>
-void RealmClass<T>::delete_one(ContextType ctx, FunctionType, ObjectType this_object, Arguments args, ReturnValue &return_value) {
+void RealmClass<T>::delete_one(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
     args.validate_maximum(1);
 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
@@ -861,7 +862,7 @@ void RealmClass<T>::delete_one(ContextType ctx, FunctionType, ObjectType this_ob
 }
 
 template<typename T>
-void RealmClass<T>::delete_all(ContextType ctx, FunctionType, ObjectType this_object, Arguments args, ReturnValue &return_value) {
+void RealmClass<T>::delete_all(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
     args.validate_maximum(0);
 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
@@ -877,7 +878,7 @@ void RealmClass<T>::delete_all(ContextType ctx, FunctionType, ObjectType this_ob
 }
 
 template<typename T>
-void RealmClass<T>::write(ContextType ctx, FunctionType, ObjectType this_object, Arguments args, ReturnValue &return_value) {
+void RealmClass<T>::write(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
     args.validate_maximum(1);
 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
@@ -897,7 +898,7 @@ void RealmClass<T>::write(ContextType ctx, FunctionType, ObjectType this_object,
 }
 
 template<typename T>
-void RealmClass<T>::begin_transaction(ContextType ctx, FunctionType, ObjectType this_object, Arguments args, ReturnValue &return_value) {
+void RealmClass<T>::begin_transaction(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
     args.validate_maximum(0);
 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
@@ -905,7 +906,7 @@ void RealmClass<T>::begin_transaction(ContextType ctx, FunctionType, ObjectType 
 }
 
 template<typename T>
-void RealmClass<T>::commit_transaction(ContextType ctx, FunctionType, ObjectType this_object, Arguments args, ReturnValue &return_value) {
+void RealmClass<T>::commit_transaction(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
     args.validate_maximum(0);
 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
@@ -913,7 +914,7 @@ void RealmClass<T>::commit_transaction(ContextType ctx, FunctionType, ObjectType
 }
 
 template<typename T>
-void RealmClass<T>::cancel_transaction(ContextType ctx, FunctionType, ObjectType this_object, Arguments args, ReturnValue &return_value) {
+void RealmClass<T>::cancel_transaction(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
     args.validate_maximum(0);
 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
@@ -921,7 +922,7 @@ void RealmClass<T>::cancel_transaction(ContextType ctx, FunctionType, ObjectType
 }
 
 template<typename T>
-void RealmClass<T>::add_listener(ContextType ctx, FunctionType, ObjectType this_object, Arguments args, ReturnValue &return_value) {
+void RealmClass<T>::add_listener(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
     args.validate_maximum(2);
 
     validated_notification_name(ctx, args[0]);
@@ -933,7 +934,7 @@ void RealmClass<T>::add_listener(ContextType ctx, FunctionType, ObjectType this_
 }
 
 template<typename T>
-void RealmClass<T>::remove_listener(ContextType ctx, FunctionType, ObjectType this_object, Arguments args, ReturnValue &return_value) {
+void RealmClass<T>::remove_listener(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
     args.validate_maximum(2);
 
     validated_notification_name(ctx, args[0]);
@@ -945,7 +946,7 @@ void RealmClass<T>::remove_listener(ContextType ctx, FunctionType, ObjectType th
 }
 
 template<typename T>
-void RealmClass<T>::remove_all_listeners(ContextType ctx, FunctionType, ObjectType this_object, Arguments args, ReturnValue &return_value) {
+void RealmClass<T>::remove_all_listeners(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
     args.validate_maximum(1);
     if (args.count) {
         validated_notification_name(ctx, args[0]);
@@ -957,7 +958,7 @@ void RealmClass<T>::remove_all_listeners(ContextType ctx, FunctionType, ObjectTy
 }
 
 template<typename T>
-void RealmClass<T>::close(ContextType ctx, FunctionType, ObjectType this_object, Arguments args, ReturnValue &return_value) {
+void RealmClass<T>::close(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
     args.validate_maximum(0);
 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
@@ -965,7 +966,7 @@ void RealmClass<T>::close(ContextType ctx, FunctionType, ObjectType this_object,
 }
 
 template<typename T>
-void RealmClass<T>::compact(ContextType ctx, FunctionType, ObjectType this_object, Arguments args, ReturnValue &return_value) {
+void RealmClass<T>::compact(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
     args.validate_maximum(0);
 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);

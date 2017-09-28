@@ -88,8 +88,8 @@ module.exports = {
                     renamed: 'string',
                     prop1: 'int',
                 }
-            }], 
-            schemaVersion: 1, 
+            }],
+            schemaVersion: 1,
             migration: function(oldRealm, newRealm) {
                 var oldObjects = oldRealm.objects('TestObject');
                 var newObjects = newRealm.objects('TestObject');
@@ -136,8 +136,8 @@ module.exports = {
                     renamed: 'string',
                     prop1: 'int',
                 }
-            }], 
-            schemaVersion: 1, 
+            }],
+            schemaVersion: 1,
             migration: function(oldRealm, newRealm) {
                 var oldSchema = oldRealm.schema;
                 var newSchema = newRealm.schema;
@@ -323,5 +323,45 @@ module.exports = {
         TestCase.assertEqual(realm.objects('Captain')[0].ships.length, 0);
 
         realm.close();
+    },
+
+    testMigrateToListOfInts: function() {
+        let realm = new Realm({schema: [{name: 'TestObject', properties: {values: 'IntObject[]'}},
+                                        {name: 'IntObject', properties: {value: 'int'}}]});
+        realm.write(function() {
+            realm.create('TestObject', {values: [{value: 1}, {value: 2}, {value: 3}]});
+            realm.create('TestObject', {values: [{value: 1}, {value: 4}, {value: 5}]});
+        });
+        realm.close();
+
+        realm = new Realm({
+            schema: [{name: 'TestObject', properties: {values: 'int[]'}}],
+            schemaVersion: 1,
+            migration: function(oldRealm, newRealm) {
+                const oldObjects = oldRealm.objects('TestObject');
+                const newObjects = newRealm.objects('TestObject');
+                TestCase.assertEqual(oldObjects.length, 2);
+                TestCase.assertEqual(newObjects.length, 2);
+
+                for (let i = 0; i < oldObjects.length; ++i) {
+                    TestCase.assertEqual(oldObjects[i].values.length, 3);
+                    TestCase.assertEqual(newObjects[i].values.length, 0);
+                    newObjects[i].values = oldObjects[i].values.map(o => o.value);
+                    TestCase.assertEqual(newObjects[i].values.length, 3);
+                }
+                newRealm.deleteModel('IntObject');
+            }
+        });
+
+        const objects = realm.objects('TestObject');
+        TestCase.assertEqual(objects.length, 2);
+        TestCase.assertEqual(objects[0].values.length, 3);
+        TestCase.assertEqual(objects[1].values.length, 3);
+        TestCase.assertEqual(objects[0].values[0], 1);
+        TestCase.assertEqual(objects[0].values[1], 2);
+        TestCase.assertEqual(objects[0].values[2], 3);
+        TestCase.assertEqual(objects[1].values[0], 1);
+        TestCase.assertEqual(objects[1].values[1], 4);
+        TestCase.assertEqual(objects[1].values[2], 5);
     },
 };

@@ -34,6 +34,7 @@ using namespace realm::rpc;
 
 using Accessor = realm::js::NativeAccessor<jsc::Types>;
 
+namespace {
 static const char * const RealmObjectTypesData = "data";
 static const char * const RealmObjectTypesDate = "date";
 static const char * const RealmObjectTypesDictionary = "dict";
@@ -46,9 +47,39 @@ static const char * const RealmObjectTypesUser = "user";
 static const char * const RealmObjectTypesSession = "session";
 static const char * const RealmObjectTypesUndefined = "undefined";
 
-static RPCServer*& get_rpc_server(JSGlobalContextRef ctx) {
+json serialize_object_schema(const realm::ObjectSchema &object_schema) {
+    std::vector<std::string> properties;
+
+    for (auto &prop : object_schema.persisted_properties) {
+        properties.push_back(prop.name);
+    }
+
+    for (auto &prop : object_schema.computed_properties) {
+        properties.push_back(prop.name);
+    }
+
+    return {
+        {"name", object_schema.name},
+        {"properties", properties},
+    };
+}
+
+template<typename Container>
+json get_type(Container const& c) {
+    auto type = c.get_type();
+    if (type == realm::PropertyType::Object) {
+        return serialize_object_schema(c.get_object_schema());
+    }
+    return {
+        {"type", string_for_property_type(type)},
+        {"optional", is_nullable(type)}
+    };
+}
+
+RPCServer*& get_rpc_server(JSGlobalContextRef ctx) {
     static std::map<JSGlobalContextRef, RPCServer*> s_map;
     return s_map[ctx];
+}
 }
 
 RPCWorker::RPCWorker() {
@@ -144,10 +175,31 @@ RPCServer::RPCServer() {
         if (!realm_constructor) {
             throw std::runtime_error("Realm constructor not found!");
         }
-        
+
         JSObjectRef sync_constructor = (JSObjectRef)jsc::Object::get_property(m_context, realm_constructor, "Sync");
         JSObjectRef user_constructor = (JSObjectRef)jsc::Object::get_property(m_context, sync_constructor, "User");
         JSObjectRef create_user_method = (JSObjectRef)jsc::Object::get_property(m_context, user_constructor, "createUser");
+
+        json::array_t args = dict["arguments"];
+        size_t arg_count = args.size();
+        JSValueRef arg_values[arg_count];
+
+        for (size_t i = 0; i < arg_count; i++) {
+            arg_values[i] = deserialize_json_value(args[i]);
+        }
+
+        JSObjectRef user_object = (JSObjectRef)jsc::Function::call(m_context, create_user_method, arg_count, arg_values);
+        return (json){{"result", serialize_json_value(user_object)}};
+    };
+    m_requests["/_adminUser"] = [this](const json dict) {
+        JSObjectRef realm_constructor = m_session_id ? JSObjectRef(m_objects[m_session_id]) : NULL;
+        if (!realm_constructor) {
+            throw std::runtime_error("Realm constructor not found!");
+        }
+        
+        JSObjectRef sync_constructor = (JSObjectRef)jsc::Object::get_property(m_context, realm_constructor, "Sync");
+        JSObjectRef user_constructor = (JSObjectRef)jsc::Object::get_property(m_context, sync_constructor, "User");
+        JSObjectRef create_user_method = (JSObjectRef)jsc::Object::get_property(m_context, user_constructor, "_adminUser");
         
         json::array_t args = dict["arguments"];
         size_t arg_count = args.size();
@@ -213,11 +265,11 @@ RPCServer::RPCServer() {
         if (!realm_constructor) {
             throw std::runtime_error("Realm constructor not found!");
         }
-        
+
         JSObjectRef sync_constructor = (JSObjectRef)jsc::Object::get_property(m_context, realm_constructor, "Sync");
         JSObjectRef user_constructor = (JSObjectRef)jsc::Object::get_property(m_context, sync_constructor, "User");
         JSValueRef value = jsc::Object::get_property(m_context, user_constructor, "all");
-        
+
         return (json){{"result", serialize_json_value(value)}};
     };
     m_requests["/clear_test_state"] = [this](const json dict) {
@@ -360,7 +412,7 @@ json RPCServer::serialize_json_value(JSValueRef js_value) {
             {"type", RealmObjectTypesList},
             {"id", store_object(js_object)},
             {"size", list->size()},
-            {"schema", serialize_object_schema(list->get_object_schema())}
+            {"schema", get_type(*list)},
          };
     }
     else if (jsc::Object::is_instance<js::ResultsClass<jsc::Types>>(m_context, js_object)) {
@@ -369,7 +421,7 @@ json RPCServer::serialize_json_value(JSValueRef js_value) {
             {"type", RealmObjectTypesResults},
             {"id", store_object(js_object)},
             {"size", results->size()},
-            {"schema", serialize_object_schema(results->get_object_schema())}
+            {"schema", get_type(*results)},
         };
     }
     else if (jsc::Object::is_instance<js::RealmClass<jsc::Types>>(m_context, js_object)) {
@@ -453,23 +505,6 @@ json RPCServer::serialize_json_value(JSValueRef js_value) {
         };
     }
     assert(0);
-}
-
-json RPCServer::serialize_object_schema(const realm::ObjectSchema &object_schema) {
-    std::vector<std::string> properties;
-
-    for (auto &prop : object_schema.persisted_properties) {
-        properties.push_back(prop.name);
-    }
-    
-    for (auto &prop : object_schema.computed_properties) {
-        properties.push_back(prop.name);
-    }
-
-    return {
-        {"name", object_schema.name},
-        {"properties", properties},
-    };
 }
 
 JSValueRef RPCServer::deserialize_json_value(const json dict) {
