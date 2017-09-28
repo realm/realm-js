@@ -43,7 +43,6 @@
 		3FCE2A8B1F58BDEF00D4855B /* primitive_list_notifier.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3FCE2A891F58BDE500D4855B /* primitive_list_notifier.cpp */; };
 		3FCE2A931F58BE0300D4855B /* uuid.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3FCE2A911F58BDFF00D4855B /* uuid.cpp */; };
 		3FCE2A971F58BE2200D4855B /* sync_permission.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3FCE2A951F58BE1D00D4855B /* sync_permission.cpp */; };
-		426FCE001F7DA2F9005565DC /* sync_config.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 426FCDFF1F7DA2F9005565DC /* sync_config.cpp */; };
 		502B07E41E2CD201007A84ED /* object.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 502B07E31E2CD1FA007A84ED /* object.cpp */; };
 		504CF85E1EBCAE3600A9A4B6 /* network_reachability_observer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 504CF8541EBCAE3600A9A4B6 /* network_reachability_observer.cpp */; };
 		504CF85F1EBCAE3600A9A4B6 /* system_configuration.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 504CF8561EBCAE3600A9A4B6 /* system_configuration.cpp */; };
@@ -52,6 +51,7 @@
 		50C671001E1D2D31003CB63C /* thread_safe_reference.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5D02C7791E1C83650048C13E /* thread_safe_reference.cpp */; };
 		5D1BF0571EF1DB4800B7DC87 /* jsc_value.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5D1BF0561EF1DB4800B7DC87 /* jsc_value.cpp */; };
 		5D25F5A11D6284FD00EBBB30 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = F63FF3301C16434400B3B8E0 /* libz.tbd */; };
+		5D97DC4E1F7DAB1400B856A4 /* sync_config.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 426FCDFF1F7DA2F9005565DC /* sync_config.cpp */; };
 		8507156E1E2CFCD000E548DB /* object_notifier.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8507156B1E2CFC0100E548DB /* object_notifier.cpp */; };
 		F61378791C18EAC5008BFC51 /* js in Resources */ = {isa = PBXBuildFile; fileRef = F61378781C18EAAC008BFC51 /* js */; };
 		F63FF2C61C12469E00B3B8E0 /* jsc_init.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 029048011C0428DF00ABDED4 /* jsc_init.cpp */; };
@@ -933,6 +933,7 @@
 				F63FF2CD1C12469E00B3B8E0 /* rpc.cpp in Sources */,
 				02F59EC41C88F17D007F774C /* schema.cpp in Sources */,
 				02F59EC51C88F17D007F774C /* shared_realm.cpp in Sources */,
+				5D97DC4E1F7DAB1400B856A4 /* sync_config.cpp in Sources */,
 				504CF8601EBCAE3600A9A4B6 /* sync_file.cpp in Sources */,
 				02E315D21DB80DF200555337 /* sync_file.cpp in Sources */,
 				02E315C91DB80DDD00555337 /* sync_manager.cpp in Sources */,
@@ -959,7 +960,6 @@
 				F63FF3241C1642BB00B3B8E0 /* GCDWebServerDataResponse.m in Sources */,
 				F63FF3251C1642BB00B3B8E0 /* GCDWebServerErrorResponse.m in Sources */,
 				F63FF3211C1642BB00B3B8E0 /* GCDWebServerFileRequest.m in Sources */,
-				426FCE001F7DA2F9005565DC /* sync_config.cpp in Sources */,
 				F63FF3261C1642BB00B3B8E0 /* GCDWebServerFileResponse.m in Sources */,
 				F63FF31D1C1642BB00B3B8E0 /* GCDWebServerFunctions.m in Sources */,
 				F63FF3221C1642BB00B3B8E0 /* GCDWebServerMultiPartFormRequest.m in Sources */,
