@@ -53,15 +53,15 @@ void delete_all_realms() {
 }
 
 void clear_test_state() {
-//    delete_all_realms();
 #if REALM_ENABLE_SYNC
     SyncManager& syncManagerShared = SyncManager::shared();
 //    for(auto &user : syncManagerShared.all_logged_in_users()) {
 //        user->log_out();
 //    }
-    syncManagerShared.reset_for_testing();
+    SyncManager::shared().reset_for_testing();
 //    syncManagerShared.configure_file_system(default_realm_file_directory(), SyncManager::MetadataMode::NoEncryption);
 #endif
+    delete_all_realms();
 }
 
 std::string TypeErrorException::type_string(Property const& prop)
