@@ -531,6 +531,19 @@ module.exports = {
         // date columns support only 'min' & 'max'
         TestCase.assertEqual(results.min('dateCol').getTime(), new Date(1).getTime());
         TestCase.assertEqual(results.max('dateCol').getTime(), new Date(N).getTime());
+
+        // call aggregate functions on empty results
+        var emptyResults = realm.objects('NullableBasicTypesObject').filtered('intCol < 0');
+        TestCase.assertEqual(emptyResults.length, 0);
+        ['intCol', 'floatCol', 'doubleCol'].forEach(colName => {
+            TestCase.assertUndefined(emptyResults.min(colName));
+            TestCase.assertUndefined(emptyResults.max(colName));
+            TestCase.assertEqual(emptyResults.sum(colName), 0);
+            TestCase.assertUndefined(emptyResults.avg(colName));
+        });
+
+        TestCase.assertUndefined(emptyResults.min('dateCol'));
+        TestCase.assertUndefined(emptyResults.max('dateCol'));
     },
 
     testResultsAggregateFunctionsUnsupported: function() {

@@ -702,6 +702,7 @@ module.exports = {
 
         var realm = new Realm({schema: [schemas.NullableBasicTypes, NullableBasicTypesList]});
         var object;
+        var objectEmptyList;
 
         const N = 50;
         const M = 10;
@@ -727,12 +728,14 @@ module.exports = {
 
         realm.write(() => {
             object = realm.create('NullableBasicTypesList', {list: list});
+            objectEmptyList = realm.create('NullableBasicTypesList', {list: []});
         });
 
         TestCase.assertEqual(object.list.length, N + M);
 
 
         // int, float & double columns support all aggregate functions
+        // the M null valued objects should be ignored
         ['intCol', 'floatCol', 'doubleCol'].forEach(colName => {
             TestCase.assertEqual(object.list.min(colName), 1);
             TestCase.assertEqual(object.list.max(colName), N);
@@ -743,6 +746,18 @@ module.exports = {
         // date columns support only 'min' & 'max'
         TestCase.assertEqual(object.list.min('dateCol').getTime(), new Date(1).getTime());
         TestCase.assertEqual(object.list.max('dateCol').getTime(), new Date(N).getTime());
+
+        // call aggregate functions on empty list
+        TestCase.assertEqual(objectEmptyList.list.length, 0);
+        ['intCol', 'floatCol', 'doubleCol'].forEach(colName => {
+            TestCase.assertUndefined(objectEmptyList.list.min(colName));
+            TestCase.assertUndefined(objectEmptyList.list.max(colName));
+            TestCase.assertEqual(objectEmptyList.list.sum(colName), 0);
+            TestCase.assertUndefined(objectEmptyList.list.avg(colName));
+        });
+
+        TestCase.assertUndefined(objectEmptyList.list.min('dateCol'));
+        TestCase.assertUndefined(objectEmptyList.list.max('dateCol'));
     },
 
     testListAggregateFunctionsUnsupported: function() {
