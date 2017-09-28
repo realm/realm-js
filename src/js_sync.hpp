@@ -39,6 +39,15 @@
 namespace realm {
 namespace js {
 
+inline realm::SyncManager& syncManagerShared() {
+    static bool configured = []{
+        ensure_directory_exists_for_file(default_realm_file_directory());
+        SyncManager::shared().configure_file_system(default_realm_file_directory(), SyncManager::MetadataMode::NoEncryption);
+        return true;
+    }();
+    return SyncManager::shared();
+}
+
 using SharedUser = std::shared_ptr<realm::SyncUser>;
 using WeakSession = std::weak_ptr<realm::SyncSession>;
 
@@ -127,7 +136,7 @@ void UserClass<T>::create_user(ContextType ctx, FunctionType, ObjectType this_ob
         Value::validated_to_string(ctx, arguments[1], "identity"),
         Value::validated_to_string(ctx, arguments[0], "authServerUrl")
      };
-    SharedUser *user = new SharedUser(SyncManager::shared().get_user(
+    SharedUser *user = new SharedUser(syncManagerShared().get_user(
         userIdentifier,
         Value::validated_to_string(ctx, arguments[2], "refreshToken")
     ));
@@ -141,7 +150,7 @@ void UserClass<T>::create_user(ContextType ctx, FunctionType, ObjectType this_ob
 template<typename T>
 void UserClass<T>::admin_user(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 2, 2);
-    SharedUser *user = new SharedUser(SyncManager::shared().get_admin_token_user(
+    SharedUser *user = new SharedUser(syncManagerShared().get_admin_token_user(
         Value::validated_to_string(ctx, arguments[0], "authServerUrl"),
         Value::validated_to_string(ctx, arguments[1], "refreshToken")
     ));
@@ -151,7 +160,7 @@ void UserClass<T>::admin_user(ContextType ctx, FunctionType, ObjectType this_obj
 template<typename T>
 void UserClass<T>::all_users(ContextType ctx, ObjectType object, ReturnValue &return_value) {
     auto users = Object::create_empty(ctx);
-    for (auto user : SyncManager::shared().all_logged_in_users()) {
+    for (auto user : syncManagerShared().all_logged_in_users()) {
         if (user->token_type() == SyncUser::TokenType::Normal) {
             Object::set_property(ctx, users, user->identity(), create_object<T, UserClass<T>>(ctx, new SharedUser(user)), ReadOnly | DontDelete);
         }
@@ -537,10 +546,6 @@ inline typename T::Function SyncClass<T>::create_constructor(ContextType ctx) {
     Object::set_property(ctx, sync_constructor, "User", ObjectWrap<T, UserClass<T>>::create_constructor(ctx), attributes);
     Object::set_property(ctx, sync_constructor, "Session", ObjectWrap<T, SessionClass<T>>::create_constructor(ctx), attributes);
 
-    // setup synced realmFile paths
-    ensure_directory_exists_for_file(default_realm_file_directory());
-    SyncManager::shared().configure_file_system(default_realm_file_directory(), SyncManager::MetadataMode::NoEncryption);
-
     return sync_constructor;
 }
 
@@ -555,7 +560,7 @@ void SyncClass<T>::set_sync_log_level(ContextType ctx, FunctionType, ObjectType 
     in >> log_level_2; // Throws
     if (!in || !in.eof())
         throw std::runtime_error("Bad log level");
-    realm::SyncManager::shared().set_log_level(log_level_2);
+    syncManagerShared().set_log_level(log_level_2);
 }
 
 template<typename T>
@@ -639,7 +644,7 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
 
 
         config.schema_mode = SchemaMode::Additive;
-        config.path = realm::SyncManager::shared().path_for_realm(*shared_user, raw_realm_url);
+        config.path = syncManagerShared().path_for_realm(*shared_user, raw_realm_url);
 
         if (!config.encryption_key.empty()) {
             config.sync_config->realm_encryption_key = std::array<char, 64>();

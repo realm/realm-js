@@ -11,9 +11,9 @@ var Realm = require(realmModule);
 
 function createObjects(user) {
     const config = {
-        sync: { user, 
-            url: `realm://localhost:9080/~/${realmName}`, 
-            error: err => console.log(err) 
+        sync: { user,
+            url: `realm://localhost:9080/~/${realmName}`,
+            error: err => console.log(err)
         },
         schema: [{ name: 'Dog', properties: { name: 'string' } }]
     };
@@ -43,8 +43,8 @@ Realm.Sync.User.register('http://localhost:9080', username, 'password', (error, 
                 createObjects(loggedUser);
             }
         });
-    } 
-    else {    
+    }
+    else {
         createObjects(registeredUser);
     }
 });
