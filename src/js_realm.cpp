@@ -61,7 +61,6 @@ void clear_test_state() {
     SyncManager::shared().reset_for_testing();
 //    syncManagerShared.configure_file_system(default_realm_file_directory(), SyncManager::MetadataMode::NoEncryption);
 #endif
-    delete_all_realms();
 }
 
 std::string TypeErrorException::type_string(Property const& prop)
