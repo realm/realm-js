@@ -179,7 +179,7 @@ class Collection {
      * @param {string} propertyName - The name of the property.
      * @throws {Error} If no property with the name exists or if property is not numeric/date.
      * @returns {number} the minimum value.
-     * @since 1.11.2
+     * @since 1.12.1
      */
     min(propertyName) {}
 
@@ -188,7 +188,7 @@ class Collection {
      * @param {string} propertyName - The name of the property.
      * @throws {Error} If no property with the name exists or if property is not numeric/date.
      * @returns {number} the maximum value.
-     * @since 1.11.2
+     * @since 1.12.1
      */
     max(propertyName) {}
 
@@ -197,7 +197,7 @@ class Collection {
      * @param {string} propertyName - The name of the property.
      * @throws {Error} If no property with the name exists or if property is not numeric/date.
      * @returns {number} the sum.
-     * @since 1.11.2
+     * @since 1.12.1
      */
     sum(propertyName) {}
 
@@ -206,7 +206,7 @@ class Collection {
      * @param {string} propertyName - The name of the property.
      * @throws {Error} If no property with the name exists or if property is not numeric/date.
      * @returns {number} the average value.
-     * @since 1.11.2
+     * @since 1.12.1
      */
     avg(propertyName) {}
 
