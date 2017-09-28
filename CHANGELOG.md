@@ -1,4 +1,16 @@
-2.0.0 Release notes (2017-9-26)
+2.0.0 Release notes (2017-9-28)
+=============================================================
+### Breaking changes
+* None.
+
+### Enhancements
+* None.
+
+### Bug fixes
+* An issue where access tokens were not refreshed correctly has been addressed.
+
+
+2.0.0-rc11 Release notes (2017-9-26)
 =============================================================
 ### Breaking changes
 * None
