@@ -650,25 +650,160 @@ module.exports = {
         });
     },
 
-    testAggregateFunctions: function() {
-        var realm = new Realm({schema: [schemas.PersonObject, schemas.PersonList]});
+    testListAggregateFunctions: function() {
+        const NullableBasicTypesList = {
+            name: 'NullableBasicTypesList',
+            properties: {
+                list: {type: 'list', objectType: 'NullableBasicTypesObject'},
+            }
+        };
+
+        var realm = new Realm({schema: [schemas.NullableBasicTypes, NullableBasicTypesList]});
         var object;
-        var list;
+
+        const N = 50;
+
+        var list = [];
+        for(var i = 0; i < N; i++) {
+            list.push({
+                intCol: i+1,
+                floatCol: i+1,
+                doubleCol: i+1,
+                dateCol: new Date(i+1)
+            });
+        }
+
         realm.write(() => {
-            object = realm.create('PersonList', {list: [
-                {name: 'Ari', age: 10},
-                {name: 'Tim', age: 11},
-                {name: 'Bjarne', age: 12},
-            ]});
+            object = realm.create('NullableBasicTypesList', {list: list});
         });
 
-        TestCase.assertEqual(object.list.min('age'), 10);
-        TestCase.assertEqual(object.list.max('age'), 12);
-        TestCase.assertEqual(object.list.sum('age'), 33);
-        TestCase.assertEqual(object.list.avg('age'), 11);
+        TestCase.assertEqual(object.list.length, N);
+
+        // int, float & double columns support all aggregate functions
+        ['intCol', 'floatCol', 'doubleCol'].forEach(colName => {
+            TestCase.assertEqual(object.list.min(colName), 1);
+            TestCase.assertEqual(object.list.max(colName), N);
+            TestCase.assertEqual(object.list.sum(colName), N*(N+1)/2);
+            TestCase.assertEqual(object.list.avg(colName), (N+1)/2);
+        });
+
+        // date columns support only 'min' & 'max'
+        TestCase.assertEqual(object.list.min('dateCol').getTime(), new Date(1).getTime());
+        TestCase.assertEqual(object.list.max('dateCol').getTime(), new Date(N).getTime());
     },
 
-    testAggregateFunctionsWrongProperty: function() {
+    testListAggregateFunctionsWithNullColumnValues: function() {
+        const NullableBasicTypesList = {
+            name: 'NullableBasicTypesList',
+            properties: {
+                list: {type: 'list', objectType: 'NullableBasicTypesObject'},
+            }
+        };
+
+        var realm = new Realm({schema: [schemas.NullableBasicTypes, NullableBasicTypesList]});
+        var object;
+
+        const N = 50;
+        const M = 10;
+
+        var list = [];
+        for(var i = 0; i < N; i++) {
+            list.push({
+                intCol: i+1,
+                floatCol: i+1,
+                doubleCol: i+1,
+                dateCol: new Date(i+1)
+            });
+        }
+
+        for(var j = 0; j < M; j++) {
+            list.push({
+                intCol: null,
+                floatCol: null,
+                doubleCol: null,
+                dateCol: null
+            });
+        }
+
+        realm.write(() => {
+            object = realm.create('NullableBasicTypesList', {list: list});
+        });
+
+        TestCase.assertEqual(object.list.length, N + M);
+
+
+        // int, float & double columns support all aggregate functions
+        ['intCol', 'floatCol', 'doubleCol'].forEach(colName => {
+            TestCase.assertEqual(object.list.min(colName), 1);
+            TestCase.assertEqual(object.list.max(colName), N);
+            TestCase.assertEqual(object.list.sum(colName), N*(N+1)/2);
+            TestCase.assertEqual(object.list.avg(colName), (N+1)/2);
+        });
+
+        // date columns support only 'min' & 'max'
+        TestCase.assertEqual(object.list.min('dateCol').getTime(), new Date(1).getTime());
+        TestCase.assertEqual(object.list.max('dateCol').getTime(), new Date(N).getTime());
+    },
+
+    testListAggregateFunctionsUnsupported: function() {
+        const NullableBasicTypesList = {
+            name: 'NullableBasicTypesList',
+            properties: {
+                list: {type: 'list', objectType: 'NullableBasicTypesObject'},
+            }
+        };
+
+        var realm = new Realm({schema: [schemas.NullableBasicTypes, NullableBasicTypesList]});
+        var object;
+
+        const N = 5;
+
+        var list = [];
+        for(var i = 0; i < N; i++) {
+            list.push({
+                intCol: i+1,
+                floatCol: i+1,
+                doubleCol: i+1,
+                dateCol: new Date(i+1)
+            });
+        }
+
+        realm.write(() => {
+            object = realm.create('NullableBasicTypesList', {list: list});
+        });
+
+        TestCase.assertEqual(object.list.length, N);
+
+        // bool, string & data columns don't support 'min'
+        ['boolCol', 'stringCol', 'dataCol'].forEach(colName => {
+            TestCase.assertThrows(function() {
+                object.list.min(colName);
+            }
+        )});
+
+        // bool, string & data columns don't support 'max'
+        ['boolCol', 'stringCol', 'dataCol'].forEach(colName => {
+            TestCase.assertThrows(function() {
+                object.list.max(colName);
+            }
+        )});
+
+        // bool, string, date & data columns don't support 'avg'
+        ['boolCol', 'stringCol', 'dateCol', 'dataCol'].forEach(colName => {
+            TestCase.assertThrows(function() {
+                object.list.avg(colName);
+            }
+        )});
+
+        // bool, string, date & data columns don't support 'sum'
+        ['boolCol', 'stringCol', 'dateCol', 'dataCol'].forEach(colName => {
+            TestCase.assertThrows(function() {
+                object.list.sum(colName);
+            }
+        )});
+    },
+
+    testListAggregateFunctionsWrongProperty: function() {
     var realm = new Realm({schema: [schemas.PersonObject, schemas.PersonList]});
         var object;
         var list;

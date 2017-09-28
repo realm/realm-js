@@ -458,7 +458,7 @@ module.exports = {
         })
     },
 
-    testAggregateFunctions: function() {
+    testResultsAggregateFunctions: function() {
         var realm = new Realm({ schema: [schemas.NullableBasicTypes] });
         const N = 50;
         realm.write(() => {
@@ -488,7 +488,7 @@ module.exports = {
         TestCase.assertEqual(results.max('dateCol').getTime(), new Date(N).getTime());
     },
 
-    testAggregateFunctionsWithNullColumnValues: function() {
+    testResultsAggregateFunctionsWithNullColumnValues: function() {
         var realm = new Realm({ schema: [schemas.NullableBasicTypes] });
 
         const N = 50;
@@ -533,7 +533,7 @@ module.exports = {
         TestCase.assertEqual(results.max('dateCol').getTime(), new Date(N).getTime());
     },
 
-    testAggregateFunctionsUnsupported: function() {
+    testResultsAggregateFunctionsUnsupported: function() {
         var realm = new Realm({ schema: [schemas.NullableBasicTypes] });
         realm.write(() => {
             realm.create('NullableBasicTypesObject', {
@@ -574,7 +574,7 @@ module.exports = {
         )});
     },
 
-    testAggregateFunctionsWrongProperty: function() {
+    testResultsAggregateFunctionsWrongProperty: function() {
         var realm = new Realm({ schema: [ schemas.TestObject ]});
         realm.write(() => {
             realm.create('TestObject', { doubleCol: 42 });
