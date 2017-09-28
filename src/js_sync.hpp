@@ -358,7 +358,7 @@ void SessionClass<T>::get_config(ContextType ctx, ObjectType object, ReturnValue
     if (auto session = get_internal<T, SessionClass<T>>(object)->lock()) {
         ObjectType config = Object::create_empty(ctx);
         Object::set_property(ctx, config, "user", create_object<T, UserClass<T>>(ctx, new SharedUser(session->config().user)));
-        Object::set_property(ctx, config, "url", Value::from_string(ctx, session->config().realm_url));
+        Object::set_property(ctx, config, "url", Value::from_string(ctx, session->config().realm_url()));
         if (auto* dispatcher = session->config().error_handler.template target<EventLoopDispatcher<SyncSessionErrorHandler>>()) {
             auto& handler = *dispatcher->func().template target<SyncSessionErrorHandlerFunctor<T>>();
             Object::set_property(ctx, config, "error", handler.func());
@@ -576,7 +576,7 @@ std::function<SyncBindSessionHandler> SyncClass<T>::session_bind_callback(Contex
         ValueType arguments[3];
         arguments[0] = create_object<T, UserClass<T>>(protected_ctx, new SharedUser(config.user));
         arguments[1] = Value::from_string(protected_ctx, path);
-        arguments[2] = Value::from_string(protected_ctx, config.realm_url);
+        arguments[2] = Value::from_string(protected_ctx, config.realm_url());
         Function::call(protected_ctx, refreshAccessToken, 3, arguments);
     });
 }
