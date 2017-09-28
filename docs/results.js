@@ -23,6 +23,7 @@
  * {@link Realm.Results#snapshot snapshot()}, however, will **not** live update
  * (and listener callbacks added through {@link Realm.Results#addListener addListener()}
  * will thus never be called).
+ *
  * @extends Realm.Collection
  * @memberof Realm
  */
