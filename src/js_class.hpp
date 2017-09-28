@@ -54,7 +54,7 @@ struct Arguments {
 };
 
 template<typename T>
-using ArgumentsMethodType = void(typename T::Context, typename T::Function, typename T::Object, Arguments<T>, ReturnValue<T> &);
+using ArgumentsMethodType = void(typename T::Context, typename T::Object, Arguments<T>, ReturnValue<T> &);
 
 template<typename T>
 struct PropertyType {

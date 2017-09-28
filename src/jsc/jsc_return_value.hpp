@@ -38,6 +38,9 @@ class ReturnValue<jsc::Types> {
     void set(const std::string &string) {
         m_value = JSValueMakeString(m_context, jsc::String(string));
     }
+    void set(const char *string) {
+        m_value = JSValueMakeString(m_context, jsc::String(string));
+    }
     void set(bool boolean) {
         m_value = JSValueMakeBoolean(m_context, boolean);
     }

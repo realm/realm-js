@@ -1,4 +1,28 @@
-2.0.0 Release notes (2017-9-26)
+x.x.x Release notes (yyyy-MM-dd) 
+=============================================================
+### Breaking changes
+* None.
+
+### Enhancements
+* None.
+
+### Bug fixes
+* Configuration of sync file system is not done on module import but later when actually needed by sync (#1351) 
+
+
+2.0.0 Release notes (2017-9-28)
+=============================================================
+### Breaking changes
+* None.
+
+### Enhancements
+* None.
+
+### Bug fixes
+* An issue where access tokens were not refreshed correctly has been addressed.
+
+
+2.0.0-rc11 Release notes (2017-9-26)
 =============================================================
 ### Breaking changes
 * None
@@ -12,6 +36,9 @@
 ### Internal
 * Alignment of permission schemas.
 * Updating sync (2.0.0-rc24).
+
+
+
 
 2.0.0-rc10 Release notes (2017-9-19)
 =============================================================
