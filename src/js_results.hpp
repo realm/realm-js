@@ -20,6 +20,7 @@
 
 #include "js_collection.hpp"
 #include "js_realm_object.hpp"
+#include "js_util.hpp"
 
 #include "results.hpp"
 #include "list.hpp"
@@ -49,6 +50,7 @@ class Results : public realm::Results {
 
 template<typename T>
 struct ResultsClass : ClassDefinition<T, realm::js::Results<T>, CollectionClass<T>> {
+    using Type = T;
     using ContextType = typename T::Context;
     using ObjectType = typename T::Object;
     using ValueType = typename T::Value;
@@ -76,6 +78,12 @@ struct ResultsClass : ClassDefinition<T, realm::js::Results<T>, CollectionClass<
 
     static void index_of(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
     
+    // aggregate functions
+    static void min(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void max(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void sum(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void avg(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
+
     // observable
     static void add_listener(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void remove_listener(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
@@ -88,6 +96,10 @@ struct ResultsClass : ClassDefinition<T, realm::js::Results<T>, CollectionClass<
         {"filtered", wrap<filtered>},
         {"sorted", wrap<sorted>},
         {"isValid", wrap<is_valid>},
+        {"min", wrap<min>},
+        {"max", wrap<max>},
+        {"sum", wrap<sum>},
+        {"avg", wrap<avg>},
         {"addListener", wrap<add_listener>},
         {"removeListener", wrap<remove_listener>},
         {"removeAllListeners", wrap<remove_all_listeners>},
@@ -193,6 +205,26 @@ template<typename T>
 void ResultsClass<T>::get_length(ContextType ctx, ObjectType object, ReturnValue &return_value) {
     auto results = get_internal<T, ResultsClass<T>>(object);
     return_value.set((uint32_t)results->size());
+}
+
+template<typename T>
+void ResultsClass<T>::min(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    compute_aggregate_on_collection<ResultsClass<T>>(AggregateFunc::Min, ctx, this_object, argc, arguments, return_value);
+}
+
+template<typename T>
+void ResultsClass<T>::max(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    compute_aggregate_on_collection<ResultsClass<T>>(AggregateFunc::Max, ctx, this_object, argc, arguments, return_value);
+}
+
+template<typename T>
+void ResultsClass<T>::sum(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    compute_aggregate_on_collection<ResultsClass<T>>(AggregateFunc::Sum, ctx, this_object, argc, arguments, return_value);
+}
+
+template<typename T>
+void ResultsClass<T>::avg(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    compute_aggregate_on_collection<ResultsClass<T>>(AggregateFunc::Avg, ctx, this_object, argc, arguments, return_value);
 }
 
 template<typename T>

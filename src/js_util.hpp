@@ -22,10 +22,18 @@
 #include <sstream>
 #include <stdexcept>
 
+#include "object_schema.hpp"
 #include "shared_realm.hpp"
 
 namespace realm {
 namespace js {
+
+enum class AggregateFunc {
+    Min,
+    Max,
+    Sum,
+    Avg
+};
 
 template<typename T>
 class RealmDelegate;
@@ -73,6 +81,46 @@ static inline void validate_argument_count_at_least(size_t count, size_t expecte
     if (count < expected) {
         throw std::invalid_argument(message ? message : "Invalid arguments");
     }
+}
+
+template<typename T>
+static inline void compute_aggregate_on_collection(AggregateFunc func, typename T::ContextType ctx, typename T::ObjectType this_object, size_t argc, const typename T::ValueType arguments[], typename T::ReturnValue &return_value) {
+    validate_argument_count(argc, 1);
+    std::string property_name = T::Value::validated_to_string(ctx, arguments[0]);
+
+    auto list = get_internal<typename T::Type, T>(this_object);
+
+    const ObjectSchema& object_schema = list->get_object_schema();
+    const Property* property = object_schema.property_for_name(property_name);
+    if (!property) {
+        throw std::invalid_argument(util::format("No such property: %1", property_name));
+    }
+
+    util::Optional<Mixed> mixed;
+    switch (func) {
+        case AggregateFunc::Min: {
+            mixed = list->min(property->table_column);
+            break;
+        }
+        case AggregateFunc::Max: {
+            mixed = list->max(property->table_column);
+            break;
+        }
+        case AggregateFunc::Sum: {
+            mixed = list->sum(property->table_column);
+            break;
+        }
+        case AggregateFunc::Avg: {
+            mixed = list->average(property->table_column);
+            break;
+        }
+        default: {
+            REALM_ASSERT(false && "Unknown aggregate function");
+            REALM_UNREACHABLE();
+        }
+    }
+
+    return_value.set(T::Value::from_mixed(ctx, mixed));
 }
 
 } // js
