@@ -142,31 +142,31 @@ declare namespace Realm {
 
         /**
          * Computes the minimum value.
-         * @param  {string} property_name
+         * @param  {string} property
          * @returns number
          */
-        min(property_name: string): number;
+        min(property: string): number;
 
         /**
          * Computes the maximum value.
-         * @param  {string} property_name
+         * @param  {string} property
          * @returns number
          */
-        max(property_name: string): number;
+        max(property: string): number;
 
         /**
          * Computes the sum.
-         * @param  {string} property_name
+         * @param  {string} property
          * @returns number
          */
-        sum(property_name: string): number;
+        sum(property: string): number;
 
         /**
          * Computes the average.
-         * @param  {string} property_name
+         * @param  {string} property
          * @returns number
          */
-        avg(property_name: string): number;
+        avg(property: string): number;
 
         /**
          * @param  {string} query

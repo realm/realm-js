@@ -176,39 +176,39 @@ class Collection {
 
     /**
      * Computes the minimum value of a property.
-     * @param {string} propertyName - The name of the property.
+     * @param {string} property - The name of the property.
      * @throws {Error} If no property with the name exists or if property is not numeric/date.
      * @returns {number} the minimum value.
      * @since 1.12.1
      */
-    min(propertyName) {}
+    min(property) {}
 
     /**
      * Computes the maximum value of a property.
-     * @param {string} propertyName - The name of the property.
+     * @param {string} property - The name of the property.
      * @throws {Error} If no property with the name exists or if property is not numeric/date.
      * @returns {number} the maximum value.
      * @since 1.12.1
      */
-    max(propertyName) {}
+    max(property) {}
 
     /**
      * Computes the sum of a property.
-     * @param {string} propertyName - The name of the property.
+     * @param {string} property - The name of the property.
      * @throws {Error} If no property with the name exists or if property is not numeric/date.
      * @returns {number} the sum.
      * @since 1.12.1
      */
-    sum(propertyName) {}
+    sum(property) {}
 
     /**
      * Computes the average of a property.
-     * @param {string} propertyName - The name of the property.
+     * @param {string} property - The name of the property.
      * @throws {Error} If no property with the name exists or if property is not numeric/date.
      * @returns {number} the average value.
      * @since 1.12.1
      */
-    avg(propertyName) {}
+    avg(property) {}
 
     /**
      * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/forEach Array.prototype.forEach}
