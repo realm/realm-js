@@ -231,7 +231,6 @@ public:
         auto error_message = error.message;
         auto error_code = error.error_code.value();
         if (error.is_client_reset_requested()) {
-            error_message = error.user_info[SyncError::c_recovery_file_path_key];
             error_code = 7; // FIXME: define a proper constant
         }
 
@@ -246,6 +245,14 @@ public:
             Object<T>::set_property(m_ctx, user_info, kvp.first, Value<T>::from_string(m_ctx, kvp.second));
         }
         Object<T>::set_property(m_ctx, error_object, "userInfo", user_info);
+
+        if (error_code == 7) {
+            auto config& = session->config();
+            auto config_oject = Object<T>::create_empty(m_ctx);
+            Object<T>::set_property(m_ctx, config_object, "path", Value::from_string(m_ctx, error.user_info[SyncError::c_recovery_file_path_key]));
+            Object<T>::set_property(m_ctx, config_object, "readOnly", Value::config->schema_mode == SchemaMode::Immutable)
+            Object<T>::set_property(m_ctx, error_object, "configuration", config_object);
+        }
 
         typename T::Value arguments[2];
         arguments[0] = create_object<T, SessionClass<T>>(m_ctx, new WeakSession(session));

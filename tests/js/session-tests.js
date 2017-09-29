@@ -653,7 +653,7 @@ module.exports = {
                 const config = { sync: { user, url: 'realm://localhost:9080/~/myrealm' } };
                 config.sync.error = (sender, error) => {
                     try {
-                        TestCase.assertInstanceOf(error, ClientResetError); // FIXME: not really
+                        TestCase.assertInstanceOf(error, Realm.Sync.ClientResetError); // FIXME: not really
                         resolve();
                     }
                     catch (e) {
