@@ -653,7 +653,9 @@ module.exports = {
                 const config = { sync: { user, url: 'realm://localhost:9080/~/myrealm' } };
                 config.sync.error = (sender, error) => {
                     try {
-                        TestCase.assertInstanceOf(error, Realm.Sync.ClientResetError); // FIXME: not really
+                        TestCase.assertEqual(error.code, 7); // 7 -> client reset
+                        TestCase.assertDefined(error.configuration);
+                        TestCase.assertNotEqual(error.configuration.path, '');
                         resolve();
                     }
                     catch (e) {
@@ -664,7 +666,7 @@ module.exports = {
                 const session = realm.syncSession;
 
                 TestCase.assertEqual(session.config.error, config.sync.error);
-                session._simulateError(7, 'ClientReset');
+                session._simulateError(211, 'ClientReset'); // 211 -> divering histories
             });
         });
     }
