@@ -70,7 +70,7 @@ class Sync {
      *   }
      * }
      */
-    static InitiateClientReset(path) {}
+    static initiateClientReset(path) {}
 }
 
 /**
