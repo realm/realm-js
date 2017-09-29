@@ -252,32 +252,24 @@ public:
     };
 
   private:
-    static void translateSharedGroupOpenException(ContextType ctx, realm::Realm::Config config) {
-        try {
-            throw;
-        }
-        catch (RealmFileException const& ex) {
-            switch (ex.kind()) {
-                case RealmFileException::Kind::IncompatibleSyncedRealm: {
-                     // create an object which is going to be used as exception:
-                    // { message: 'IncompatibleSyncedRealmException', configuration: { path: ... } }
-
-                    ObjectType configuration = Object::create_empty(ctx);
-                    Object::set_property(ctx, configuration, "path", Value::from_string(ctx, ex.path()));
-                    Object::set_property(ctx, configuration, "schema_mode", Value::from_string(ctx, "readOnly"));
-                    if (!config.encryption_key.empty()) {
-                        Object::set_property(ctx, configuration, "encryption_key", Value::from_binary(ctx, BinaryData(&config.encryption_key[0], 64)));
-                    }
-
-                    ObjectType object = Object::create_empty(ctx);
-                    Object::set_property(ctx, object, "message", Value::from_string(ctx, "IncompatibleSyncedRealm"));
-                    Object::set_property(ctx, object, "configuration", configuration);
-                    throw Exception<T>(ctx, object);
+    static void handleRealmFileException(ContextType ctx, realm::Realm::Config config, const RealmFileException& ex) {
+        switch (ex.kind()) {
+            case RealmFileException::Kind::IncompatibleSyncedRealm: {
+                ObjectType configuration = Object::create_empty(ctx);
+                Object::set_property(ctx, configuration, "path", Value::from_string(ctx, ex.path()));
+                Object::set_property(ctx, configuration, "readOnly", Value::from_boolean(ctx, true));
+                if (!config.encryption_key.empty()) {
+                    Object::set_property(ctx, configuration, "encryption_key", Value::from_binary(ctx, BinaryData(&config.encryption_key[0], 64)));
                 }
-                default:
-                    throw;
+
+                ObjectType object = Object::create_empty(ctx);
+                Object::set_property(ctx, object, "name", Value::from_string(ctx, "IncompatibleSyncedRealmError"));
+                Object::set_property(ctx, object, "configuration", configuration);
+                throw Exception<T>(ctx, object);
             }
-        }
+            default:
+                throw;
+        }   
     }
 
     static std::string validated_notification_name(ContextType ctx, const ValueType &value) {
@@ -514,8 +506,11 @@ SharedRealm RealmClass<T>::create_shared_realm(ContextType ctx, realm::Realm::Co
     try {
         realm = realm::Realm::get_shared_realm(config);
     }
+    catch (const RealmFileException& ex) {
+        handleRealmFileException(ctx, config, ex);
+    }
     catch (...) {
-        translateSharedGroupOpenException(ctx, config);
+        throw;
     }
 
     GlobalContextType global_context = Context<T>::get_global_context(ctx);
@@ -729,8 +724,11 @@ void RealmClass<T>::wait_for_download_completion(ContextType ctx, ObjectType thi
         try {
             realm = realm::Realm::get_shared_realm(config);
         }
+        catch (const RealmFileException& ex) {
+            handleRealmFileException(ctx, config, ex);
+        }
         catch (...) {
-            translateSharedGroupOpenException(ctx, config);
+           throw;
         }
 
         if (auto sync_config = config.sync_config)
