@@ -115,7 +115,8 @@ static inline void compute_aggregate_on_collection(AggregateFunc func, typename 
             break;
         }
         default: {
-            REALM_ASSERT(false); // Invalid aggregate function
+            REALM_ASSERT(false && "Unknown aggregate function");
+            REALM_UNREACHABLE();
         }
     }
 
