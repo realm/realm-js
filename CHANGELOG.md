@@ -1,4 +1,4 @@
-2.0.0-rc16 Release notes
+2.0.0 Release notes (2017-9-29)
 =============================================================
 ### Breaking changes
 * Upgtading to Realm Core 4.0.1 (bug fixes)
