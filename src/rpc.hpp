@@ -81,8 +81,6 @@ class RPCServer {
 
     json serialize_json_value(JSValueRef value);
     JSValueRef deserialize_json_value(const json dict);
-
-    json serialize_object_schema(const ObjectSchema &objectSchema);
 };
 
 } // rpc

@@ -120,7 +120,7 @@ declare namespace Realm {
      * SortDescriptor
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.Collection.html#~SortDescriptor }
      */
-    type SortDescriptor = string | [string, boolean] | any[];
+    type SortDescriptor = [string] | [string, boolean];
 
     interface CollectionChangeSet {
         insertions: number[];
@@ -135,6 +135,9 @@ declare namespace Realm {
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.Collection.html }
      */
     interface Collection<T> extends ReadonlyArray<T> {
+        readonly type: PropertyType;
+        readonly optional: boolean;
+
         /**
          * @returns boolean
          */
@@ -147,12 +150,9 @@ declare namespace Realm {
          */
         filtered(query: string, ...arg: any[]): Results<T>;
 
-        /**
-         * @param  {string|SortDescriptor} descriptor
-         * @param  {boolean} reverse?
-         * @returns Results
-         */
-        sorted(descriptor: string | SortDescriptor, reverse?: boolean): Results<T>;
+        sorted(reverse?: boolean): Results<T>;
+        sorted(descriptor: SortDescriptor[]): Results<T>;
+        sorted(descriptor: string, reverse?: boolean): Results<T>;
 
         /**
          * @returns Results
@@ -188,21 +188,20 @@ declare namespace Realm {
     interface List<T> extends Collection<T> {
         [n: number]: T;
 
-        /**
-         * @returns T
-         */
         pop(): T | null | undefined;
 
         /**
          * @param  {T} object
          * @returns number
          */
-        push(object: T): number;
+        push(...object: T[]): number;
 
         /**
          * @returns T
          */
         shift(): T | null | undefined;
+
+        unshift(...object: T[]): number;
 
         /**
          * @param  {number} index
@@ -211,12 +210,6 @@ declare namespace Realm {
          * @returns T
          */
         splice(index: number, count?: number, object?: any): T[];
-
-        /**
-         * @param  {T} object
-         * @returns number
-         */
-        unshift(object: T): number;
     }
 
     const List: {
@@ -288,7 +281,7 @@ declare namespace Realm.Sync {
         openManagementRealm(): Realm;
         retrieveAccount(provider: string, username: string): Promise<Account>;
 
-        getGrantedPermissions(recipient: 'any' | 'currentUser' | 'otherUser'): Results<Permission>;
+        getGrantedPermissions(recipient: 'any' | 'currentUser' | 'otherUser'): Results<Permission>;
         applyPermissions(condition: PermissionCondition, realmUrl: string, accessLevel: AccessLevel): Promise<PermissionChange>;
         offerPermissions(realmUrl: string, accessLevel: AccessLevel, expiresAt?: Date): Promise<string>;
         acceptPermissionOffer(token: string): Promise<string>
@@ -296,49 +289,48 @@ declare namespace Realm.Sync {
     }
 
     type PermissionCondition = {
-      userId: string  |
-      { metadataKey: string, metadataValue: string }
+        userId: string | { metadataKey: string, metadataValue: string }
     };
 
-    type AccessLevel = 'none' | 'read' | 'write' | 'admin';
+    type AccessLevel = 'none' | 'read' | 'write' | 'admin';
 
     class Permission {
-      readonly id: string;
-      readonly updatedAt: Date;
-      readonly userId: string;
-      readonly path: string;
-      readonly mayRead?: boolean;
-      readonly mayWrite?: boolean;
-      readonly mayManage?: boolean;
+        readonly id: string;
+        readonly updatedAt: Date;
+        readonly userId: string;
+        readonly path: string;
+        readonly mayRead?: boolean;
+        readonly mayWrite?: boolean;
+        readonly mayManage?: boolean;
     }
 
     class PermissionChange {
-      id: string;
-      createdAt: Date;
-      updatedAt: Date;
-      statusCode?: number;
-      statusMessage?: string;
-      userId: string;
-      metadataKey?: string;
-      metadataValue?: string;
-      realmUrl: string;
-      mayRead?: boolean;
-      mayWrite?: boolean;
-      mayManage?: boolean;
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        statusCode?: number;
+        statusMessage?: string;
+        userId: string;
+        metadataKey?: string;
+        metadataValue?: string;
+        realmUrl: string;
+        mayRead?: boolean;
+        mayWrite?: boolean;
+        mayManage?: boolean;
     }
 
     class PermissionOffer {
-      id: string;
-      createdAt: Date;
-      updatedAt: Date;
-      statusCode?: number;
-      statusMessage?: string;
-      token?: string;
-      realmUrl: string;
-      mayRead?: boolean;
-      mayWrite?: boolean;
-      mayManage?: boolean;
-      expiresAt?: Date;
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        statusCode?: number;
+        statusMessage?: string;
+        token?: string;
+        realmUrl: string;
+        mayRead?: boolean;
+        mayWrite?: boolean;
+        mayManage?: boolean;
+        expiresAt?: Date;
     }
 
     type ErrorCallback = (message?: string, isFatal?: boolean, category?: string, code?: number) => void;
@@ -436,8 +428,8 @@ declare namespace Realm.Sync {
 }
 
 
-interface ProgressPromise  extends Promise<Realm> {
-    progress(callback: Realm.Sync.ProgressNotificationCallback) : Promise<Realm>
+interface ProgressPromise extends Promise<Realm> {
+    progress(callback: Realm.Sync.ProgressNotificationCallback): Promise<Realm>
 }
 
 declare class Realm {

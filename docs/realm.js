@@ -95,7 +95,7 @@ class Realm {
      * Open a Realm asynchronously with a promise. If the Realm is synced, it will be fully
      * synchronized before it is available.
      * @param {Realm~Configuration} config
-     * @returns {ProgressPromise} - a promise that will be resolved with the realm instance when it's available.
+     * @returns {ProgressPromise} - a promise that will be resolved with the Realm instance when it's available.
      */
     static open(config) {}
 
@@ -103,7 +103,7 @@ class Realm {
      * Open a Realm asynchronously with a callback. If the Realm is synced, it will be fully
      * synchronized before it is available.
      * @param {Realm~Configuration} config
-     * @param  {callback(error, realm)} - will be called when the realm is ready.
+     * @param  {callback(error, realm)} - will be called when the Realm is ready.
      * @param  {callback(transferred, transferable)} [progressCallback] - an optional callback for download progress notifications
      * @throws {Error} If anything in the provided `config` is invalid.
      */
@@ -286,6 +286,7 @@ Realm.defaultPath;
  * @property {boolean} [readOnly=false] - Specifies if this Realm should be opened as read-only.
  * @property {Array<Realm~ObjectClass|Realm~ObjectSchema>} [schema] - Specifies all the
  *   object types in this Realm. **Required** when first creating a Realm at this `path`.
+ *   If omitted, the schema will be read from the existing Realm file.
  * @property {number} [schemaVersion] - **Required** (and must be incremented) after
  *   changing the `schema`.
  * @property {Object} [sync] - Sync configuration parameters with the following
@@ -350,19 +351,39 @@ Realm.defaultPath;
  *   that must be unique across all objects of this type within the same Realm.
  * @property {Object<string, (Realm~PropertyType|Realm~ObjectSchemaProperty)>} properties -
  *   An object where the keys are property names and the values represent the property type.
+ *
+ * @example
+ * let MyClassSchema = {
+ *     name: 'MyClass',
+ *     primaryKey: 'pk',
+ *     properties: {
+ *         pk: 'int',
+ *         optionalFloatValue: 'float?' // or {type: 'float', optional: true}
+ *         listOfStrings: 'string[]',
+ *         listOfOptionalDates: 'date?[]',
+ *         indexedInt: {type: 'int', indexed: true}
+ *
+ *         linkToObject: 'MyClass',
+ *         listOfObjects: 'MyClass[]', // or {type: 'list', objectType: 'MyClass'}
+ *         objectsLinkingToThisObject: {type: 'linkingObjects', objectType: 'MyClass', property: 'linkToObject'}
+ *     }
+ * };
  */
 
 /**
  * @typedef Realm~ObjectSchemaProperty
  * @type {Object}
  * @property {Realm~PropertyType} type - The type of this property.
- * @property {string} [objectType] - **Required**  when `type` is `"list"` or `"linkingObjects"`,
- *   and must match the type of an object in the same schema.
+ * @property {Realm~PropertyType} [objectType] - **Required**  when `type` is `"list"` or `"linkingObjects"`,
+ *   and must match the type of an object in the same schema, or, for `"list"`
+ *   only, any other type which may be stored as a Realm property.
  * @property {string} [property] - **Required** when `type` is `"linkingObjects"`, and must match
  *   the name of a property on the type specified in `objectType` that links to the type this property belongs to.
  * @property {any} [default] - The default value for this property on creation when not
  *   otherwise specified.
  * @property {boolean} [optional] - Signals if this property may be assigned `null` or `undefined`.
+ *   For `"list"` properties of non-object types, this instead signals whether the values inside the list may be assigned `null` or `undefined`.
+ *   This is not supported for `"list"` properties of object types and `"linkingObjects"` properties.
  * @property {boolean} [indexed] - Signals if this property should be indexed. Only supported for
  *   `"string"`, `"int"`, and `"bool"` properties.
  */
@@ -376,10 +397,21 @@ Realm.defaultPath;
  */
 
 /**
- * A property type may be specified as one of the standard builtin types, or as an object type
- * inside the same schema.
+ * A property type may be specified as one of the standard builtin types, or as
+ * an object type inside the same schema.
+ *
+ * When specifying property types in an {@linkplain Realm~ObjectSchema object schema}, you
+ * may append `?` to any of the property types to indicate that it is optional
+ * (i.e. it can be `null` in addition to the normal values) and `[]` to
+ * indicate that it is instead a list of that type. For example,
+ * `optionalIntList: 'int?[]'` would declare a property which is a list of
+ * nullable integers. The property types reported by {@linkplain Realm.Collection
+ * collections} and in a Realm's schema will never
+ * use these forms.
+ *
  * @typedef Realm~PropertyType
  * @type {("bool"|"int"|"float"|"double"|"string"|"date"|"data"|"list"|"linkingObjects"|"<ObjectType>")}
+ *
  * @property {boolean} "bool" - Property value may either be `true` or `false`.
  * @property {number} "int" - Property may be assigned any number, but will be stored as a
  *   round integer, meaning anything after the decimal will be truncated.

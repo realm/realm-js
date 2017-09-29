@@ -29,7 +29,7 @@ const isNodeProccess = (typeof process === 'object' && process + '' === '[object
 
 function node_require(module) {
     return require(module);
-}  
+}
 
 let tmp;
 let fs;
@@ -275,7 +275,7 @@ module.exports = {
                 });
             });
     },
-    
+
     testProgressNotificationsForRealmOpenAsync() {
         if (!isNodeProccess) {
             return Promise.resolve();
@@ -292,7 +292,7 @@ module.exports = {
                         let progressNotificationCalled = false;
                         let config = {
                             sync: { user, url: `realm://localhost:9080/~/${realmName}`,
-                                _onDownloadProgress: (transferred, total) => { 
+                                _onDownloadProgress: (transferred, total) => {
                                     progressNotificationCalled = true
                                 },
                             },
@@ -486,7 +486,7 @@ module.exports = {
                         const progressCallback = (transferred, total) => {
                             resolve();
                         };
-                        
+
                         realm.syncSession.addProgressNotification('download', 'reportIndefinitely', progressCallback);
 
                         setTimeout(function() {
@@ -495,7 +495,7 @@ module.exports = {
                     });
                 });
             });
-    },  
+    },
 
     testProgressNotificationsUnregisterForRealmConstructor() {
         if (!isNodeProccess) {
@@ -519,7 +519,7 @@ module.exports = {
 
                         let realm = new Realm(config);
                         let unregisterFunc;
-                       
+
                         let writeDataFunc = () => {
                             realm.write(() => {
                                 for (let i = 1; i <= 3; i++) {
@@ -534,14 +534,14 @@ module.exports = {
                             if (failOnCall) {
                                 reject(new Error("Progress callback should not be called after removeProgressNotification"));
                             }
-                            
+
                             syncFinished = transferred === total;
-                            
+
                             //unregister and write some new data.
-                            if (syncFinished) { 
+                            if (syncFinished) {
                                 failOnCall = true;
                                 unregisterFunc();
-                                
+
                                 //use second callback to wait for sync finished
                                 realm.syncSession.addProgressNotification('upload', 'reportIndefinitely', (x, y) => {
                                     if (x === y) {
@@ -551,9 +551,9 @@ module.exports = {
                                 writeDataFunc();
                             }
                         };
-                        
+
                         realm.syncSession.addProgressNotification('upload', 'reportIndefinitely', progressCallback);
-                        
+
                         unregisterFunc = () => {
                             realm.syncSession.removeProgressNotification(progressCallback);
                         };
@@ -601,7 +601,7 @@ module.exports = {
                     });
                 });
             });
-    },  
+    },
 
     testProgressNotificationsForRealmOpenAsync2() {
         if (!isNodeProccess) {
@@ -624,14 +624,14 @@ module.exports = {
                         };
 
                         let progressCalled = false;
-                        
-                        Realm.openAsync(config, 
+
+                        Realm.openAsync(config,
                             (error, realm) => {
                                 if (error) {
                                     reject(error);
                                     return;
                                 }
-                                
+
                                 TestCase.assertTrue(progressCalled);
                                 resolve();
                             },
@@ -645,5 +645,5 @@ module.exports = {
                     });
                 });
             });
-    },  
+    },
 }
