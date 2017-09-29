@@ -237,7 +237,7 @@ public:
             auto config_object = Object<T>::create_empty(m_ctx);
             Object<T>::set_property(m_ctx, config_object, "path", Value<T>::from_string(m_ctx, error.user_info[SyncError::c_recovery_file_path_key]));
             Object<T>::set_property(m_ctx, config_object, "readOnly", Value<T>::from_boolean(m_ctx, true));
-            Object<T>::set_property(m_ctx, error_object, "configuration", config_object);
+            Object<T>::set_property(m_ctx, error_object, "config", config_object);
         }
 
         Object<T>::set_property(m_ctx, error_object, "message", Value<T>::from_string(m_ctx, error.message));
@@ -545,7 +545,7 @@ public:
 
     MethodMap<T> const static_methods = {
         {"setLogLevel", wrap<set_sync_log_level>},
-        {"_initiateClientReset", wrap<initiate_client_reset>},
+        {"initiateClientReset", wrap<initiate_client_reset>},
     };
 };
 

@@ -4,7 +4,7 @@
 * Upgrading to Realm Core 4.0.0 and Realm Sync 2.0.0-rc25.
 
 ### Enhancements
-* None.
+* Handling of the situation when the client has to reset the Realm due to diverging histories (#795).
 
 ### Bug fixes
 * Configuration of sync file system is not done on module import but later when actually needed by sync (#1351)

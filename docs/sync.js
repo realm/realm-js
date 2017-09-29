@@ -55,7 +55,22 @@ class Sync {
      */
     static setLogLevel(log_level) {}
 
-
+    /**
+     * Initiate a client reset. The Realm must be closed prior to the reset.
+     * @param {string} [path] - The Realm to reset.
+     * Throws error if reset is not possible.
+     * @example
+     * {
+     *   const config = { sync: { user, url: 'realm://localhost:9080/~/myrealm' } };
+     *   config.sync.error = (sender, error) => {
+     *     if (error.code === 7) { // 7 -> client reset
+     *       Realm.Sync.initiateClientReset(original_path);
+     *       // copy required objects from Realm at error.config.path
+     *     }
+     *   }
+     * }
+     */
+    static InitiateClientReset(path) {}
 }
 
 /**

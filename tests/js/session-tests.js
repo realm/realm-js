@@ -650,19 +650,24 @@ module.exports = {
     testClientReset() {
         return Realm.Sync.User.register('http://localhost:9080', uuid(), 'password').then(user => {
             return new Promise((resolve, _reject) => {
+                var realm;
                 const config = { sync: { user, url: 'realm://localhost:9080/~/myrealm' } };
                 config.sync.error = (sender, error) => {
                     try {
                         TestCase.assertEqual(error.code, 7); // 7 -> client reset
-                        TestCase.assertDefined(error.configuration);
-                        TestCase.assertNotEqual(error.configuration.path, '');
+                        TestCase.assertDefined(error.config);
+                        TestCase.assertNotEqual(error.config.path, '');
+                        const original_path = realm.path;
+                        realm.close();
+                        Realm.Sync.initiateClientReset(original_path);
+                        // copy required objects from Realm at error.config.path
                         resolve();
                     }
                     catch (e) {
                         _reject(e);
                     }
                 };
-                const realm = new Realm(config);
+                realm = new Realm(config);
                 const session = realm.syncSession;
 
                 TestCase.assertEqual(session.config.error, config.sync.error);
