@@ -1,13 +1,13 @@
-x.x.x Release notes (yyyy-MM-dd) 
+2.0.0 Release notes (2017-9-29)
 =============================================================
 ### Breaking changes
-* None.
+* Upgrading to Realm Core 4.0.0 and Realm Sync 2.0.0-rc25.
 
 ### Enhancements
 * None.
 
 ### Bug fixes
-* Configuration of sync file system is not done on module import but later when actually needed by sync (#1351) 
+* Configuration of sync file system is not done on module import but later when actually needed by sync (#1351)
 
 
 2.0.0 Release notes (2017-9-28)
