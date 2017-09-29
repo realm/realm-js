@@ -20,6 +20,7 @@
 
 #include "js_collection.hpp"
 #include "js_realm_object.hpp"
+#include "js_util.hpp"
 
 #include "results.hpp"
 #include "list.hpp"
@@ -49,6 +50,7 @@ class Results : public realm::Results {
 
 template<typename T>
 struct ResultsClass : ClassDefinition<T, realm::js::Results<T>, CollectionClass<T>> {
+    using Type = T;
     using ContextType = typename T::Context;
     using ObjectType = typename T::Object;
     using ValueType = typename T::Value;
@@ -207,70 +209,23 @@ void ResultsClass<T>::get_length(ContextType ctx, ObjectType object, ReturnValue
 
 template<typename T>
 void ResultsClass<T>::min(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
-    validate_argument_count(argc, 1);
-    std::string property_name = Value::validated_to_string(ctx, arguments[0]);
-
-    auto results = get_internal<T, ResultsClass<T>>(this_object);
-
-    const ObjectSchema& object_schema = results->get_object_schema();
-    const Property* property = object_schema.property_for_name(property_name);
-    if (!property) {
-        throw std::invalid_argument(util::format("No such property: %1", property_name));
-    }
-
-    util::Optional<Mixed> mixed = results->min(property->table_column);
-    return_value.set(Value::from_mixed(ctx, mixed));
+    compute_aggregate_on_collection<ResultsClass<T>>(AggregateFunc::Min, ctx, this_object, argc, arguments, return_value);
 }
 
 template<typename T>
 void ResultsClass<T>::max(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
-    validate_argument_count(argc, 1);
-    std::string property_name = Value::validated_to_string(ctx, arguments[0]);
-
-    auto results = get_internal<T, ResultsClass<T>>(this_object);
-    const ObjectSchema& object_schema = results->get_object_schema();
-    const Property* property = object_schema.property_for_name(property_name);
-
-    if (!property) {
-        throw std::invalid_argument(util::format("No such property: %1", property_name));
-    }
-
-    util::Optional<Mixed> mixed = results->max(property->table_column);
-    return_value.set(Value::from_mixed(ctx, mixed));
+    compute_aggregate_on_collection<ResultsClass<T>>(AggregateFunc::Max, ctx, this_object, argc, arguments, return_value);
 }
 
 template<typename T>
 void ResultsClass<T>::sum(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
-    validate_argument_count(argc, 1);
-    std::string property_name = Value::validated_to_string(ctx, arguments[0]);
-
-    auto results = get_internal<T, ResultsClass<T>>(this_object);
-    const ObjectSchema& object_schema = results->get_object_schema();
-    const Property* property = object_schema.property_for_name(property_name);
-    if (!property) {
-        throw std::invalid_argument(util::format("No such property: %1", property_name));
-    }
-
-    util::Optional<Mixed> mixed = results->sum(property->table_column);
-    return_value.set(Value::from_mixed(ctx, mixed));
+    compute_aggregate_on_collection<ResultsClass<T>>(AggregateFunc::Sum, ctx, this_object, argc, arguments, return_value);
 }
 
 template<typename T>
 void ResultsClass<T>::avg(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
-    validate_argument_count(argc, 1);
-    std::string property_name = Value::validated_to_string(ctx, arguments[0]);
-
-    auto results = get_internal<T, ResultsClass<T>>(this_object);
-    const ObjectSchema& object_schema = results->get_object_schema();
-    const Property* property = object_schema.property_for_name(property_name);
-    if (!property) {
-        throw std::invalid_argument(util::format("No such property: %1", property_name));
-    }
-
-    util::Optional<Mixed> mixed = results->average(property->table_column);
-    return_value.set(Value::from_mixed(ctx, mixed));
+    compute_aggregate_on_collection<ResultsClass<T>>(AggregateFunc::Avg, ctx, this_object, argc, arguments, return_value);
 }
-
 
 template<typename T>
 void ResultsClass<T>::get_index(ContextType ctx, ObjectType object, uint32_t index, ReturnValue &return_value) {

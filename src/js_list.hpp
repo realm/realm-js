@@ -47,6 +47,7 @@ class List : public realm::List {
 
 template<typename T>
 struct ListClass : ClassDefinition<T, realm::js::List<T>, CollectionClass<T>> {
+    using Type = T;
     using ContextType = typename T::Context;
     using ObjectType = typename T::Object;
     using ValueType = typename T::Value;
@@ -127,72 +128,23 @@ void ListClass<T>::get_length(ContextType, ObjectType object, ReturnValue &retur
 
 template<typename T>
 void ListClass<T>::min(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
-    validate_argument_count_at_least(argc, 1);
-    std::string property_name = Value::validated_to_string(ctx, arguments[0]);
-
-    auto list = get_internal<T, ListClass<T>>(this_object);
-
-    const ObjectSchema& object_schema = list->get_object_schema();
-    const Property* property = object_schema.property_for_name(property_name);
-    if (!property) {
-        throw std::invalid_argument(util::format("No such property: %1", property_name));
-    }
-
-    util::Optional<Mixed> mixed = list->min(property->table_column);
-    return_value.set(Value::from_mixed(ctx, mixed));
+    compute_aggregate_on_collection<ListClass<T>>(AggregateFunc::Min, ctx, this_object, argc, arguments, return_value);
 }
 
 template<typename T>
 void ListClass<T>::max(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
-    validate_argument_count_at_least(argc, 1);
-    std::string property_name = Value::validated_to_string(ctx, arguments[0]);
-
-    auto list = get_internal<T, ListClass<T>>(this_object);
-
-    const ObjectSchema& object_schema = list->get_object_schema();
-    const Property* property = object_schema.property_for_name(property_name);
-    if (!property) {
-        throw std::invalid_argument("No such property");
-    }
-
-    util::Optional<Mixed> mixed = list->max(property->table_column);
-    return_value.set(Value::from_mixed(ctx, mixed));
+    compute_aggregate_on_collection<ListClass<T>>(AggregateFunc::Max, ctx, this_object, argc, arguments, return_value);
 }
 
 template<typename T>
 void ListClass<T>::sum(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
-    validate_argument_count_at_least(argc, 1);
-    std::string property_name = Value::validated_to_string(ctx, arguments[0]);
-
-    auto list = get_internal<T, ListClass<T>>(this_object);
-
-    const ObjectSchema& object_schema = list->get_object_schema();
-    const Property* property = object_schema.property_for_name(property_name);
-    if (!property) {
-        throw std::invalid_argument("No such property");
-    }
-
-    util::Optional<Mixed> mixed = list->sum(property->table_column);
-    return_value.set(Value::from_mixed(ctx, mixed));
+    compute_aggregate_on_collection<ListClass<T>>(AggregateFunc::Sum, ctx, this_object, argc, arguments, return_value);
 }
 
 template<typename T>
 void ListClass<T>::avg(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
-    validate_argument_count_at_least(argc, 1);
-    std::string property_name = Value::validated_to_string(ctx, arguments[0]);
-
-    auto list = get_internal<T, ListClass<T>>(this_object);
-
-    const ObjectSchema& object_schema = list->get_object_schema();
-    const Property* property = object_schema.property_for_name(property_name);
-    if (!property) {
-        throw std::invalid_argument("No such property");
-    }
-
-    util::Optional<Mixed> mixed = list->average(property->table_column);
-    return_value.set(Value::from_mixed(ctx, mixed));
+    compute_aggregate_on_collection<ListClass<T>>(AggregateFunc::Avg, ctx, this_object, argc, arguments, return_value);
 }
-
 
 template<typename T>
 void ListClass<T>::get_index(ContextType ctx, ObjectType object, uint32_t index, ReturnValue &return_value) {
