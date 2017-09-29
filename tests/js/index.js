@@ -46,7 +46,6 @@ if (global.enableSyncTests) {
     // FIXME: Permission tests currently fail in chrome debugging mode.
     if (typeof navigator === 'undefined' ||
       !/Chrome/.test(navigator.userAgent)) { // eslint-disable-line no-undef
-      
      //TESTS.PermissionTests = require('./permission-tests');
     }
 }
