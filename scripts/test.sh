@@ -57,7 +57,7 @@ start_server() {
 }
 
 stop_server() {
-  echo stopping server 
+  echo stopping server
   if [[ ${SERVER_PID} -gt 0 ]] ; then
     echo server is running. killing it
     kill -9 ${SERVER_PID} || true
@@ -352,12 +352,12 @@ case "$TARGET" in
   ;;
 "node")
   npm run check-environment
-  if [ "$(uname)" = 'Darwin' ]; then   
+  if [ "$(uname)" = 'Darwin' ]; then
     echo "downloading server"
     download_server
     echo "starting server"
     start_server
-    
+
     npm_tests_cmd="npm run test"
     npm install --build-from-source=realm --realm_enable_sync
 

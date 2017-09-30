@@ -252,6 +252,19 @@ exports.NullQueryObject = {
     ]
 };
 
+exports.NullableBasicTypes = {
+    name: 'NullableBasicTypesObject',
+    properties: [
+        {name: 'boolCol',   type: 'bool?'},
+        {name: 'intCol',    type: 'int?'},
+        {name: 'floatCol',  type: 'float?'},
+        {name: 'doubleCol', type: 'double?'},
+        {name: 'stringCol', type: 'string?'},
+        {name: 'dateCol',   type: 'date?'},
+        {name: 'dataCol',   type: 'data?'},
+    ]
+};
+
 exports.DateObject = {
     name: 'Date',
     properties: {

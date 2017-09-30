@@ -234,6 +234,42 @@ class Collection {
    indexOf(object) {}
 
     /**
+     * Computes the minimum value of a property.
+     * @param {string} property - The name of the property.
+     * @throws {Error} If no property with the name exists or if property is not numeric/date.
+     * @returns {number} the minimum value.
+     * @since 1.12.1
+     */
+    min(property) {}
+
+    /**
+     * Computes the maximum value of a property.
+     * @param {string} property - The name of the property.
+     * @throws {Error} If no property with the name exists or if property is not numeric/date.
+     * @returns {number} the maximum value.
+     * @since 1.12.1
+     */
+    max(property) {}
+
+    /**
+     * Computes the sum of a property.
+     * @param {string} property - The name of the property.
+     * @throws {Error} If no property with the name exists or if property is not numeric/date.
+     * @returns {number} the sum.
+     * @since 1.12.1
+     */
+    sum(property) {}
+
+    /**
+     * Computes the average of a property.
+     * @param {string} property - The name of the property.
+     * @throws {Error} If no property with the name exists or if property is not numeric/date.
+     * @returns {number} the average value.
+     * @since 1.12.1
+     */
+    avg(property) {}
+
+    /**
      * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/forEach Array.prototype.forEach}
      * @param {function} callback - Function to execute on each object in the collection.
      *   This function takes three arguments:

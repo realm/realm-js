@@ -51,6 +51,7 @@
 		50C671001E1D2D31003CB63C /* thread_safe_reference.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5D02C7791E1C83650048C13E /* thread_safe_reference.cpp */; };
 		5D1BF0571EF1DB4800B7DC87 /* jsc_value.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5D1BF0561EF1DB4800B7DC87 /* jsc_value.cpp */; };
 		5D25F5A11D6284FD00EBBB30 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = F63FF3301C16434400B3B8E0 /* libz.tbd */; };
+		5D97DC4E1F7DAB1400B856A4 /* sync_config.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 426FCDFF1F7DA2F9005565DC /* sync_config.cpp */; };
 		8507156E1E2CFCD000E548DB /* object_notifier.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8507156B1E2CFC0100E548DB /* object_notifier.cpp */; };
 		F61378791C18EAC5008BFC51 /* js in Resources */ = {isa = PBXBuildFile; fileRef = F61378781C18EAAC008BFC51 /* js */; };
 		F63FF2C61C12469E00B3B8E0 /* jsc_init.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 029048011C0428DF00ABDED4 /* jsc_init.cpp */; };
@@ -193,6 +194,7 @@
 		3FCE2A951F58BE1D00D4855B /* sync_permission.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = sync_permission.cpp; path = src/sync/sync_permission.cpp; sourceTree = "<group>"; };
 		3FCE2A981F58BE3600D4855B /* descriptor_ordering.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = descriptor_ordering.hpp; path = "object-store/src/descriptor_ordering.hpp"; sourceTree = SOURCE_ROOT; };
 		3FCE2A991F58BE3600D4855B /* feature_checks.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = feature_checks.hpp; path = "object-store/src/feature_checks.hpp"; sourceTree = SOURCE_ROOT; };
+		426FCDFF1F7DA2F9005565DC /* sync_config.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = sync_config.cpp; path = src/sync/sync_config.cpp; sourceTree = "<group>"; };
 		502B07E31E2CD1FA007A84ED /* object.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = object.cpp; path = src/object.cpp; sourceTree = "<group>"; };
 		502B07E51E2CD20D007A84ED /* object.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = object.hpp; path = src/object.hpp; sourceTree = "<group>"; };
 		504CF8541EBCAE3600A9A4B6 /* network_reachability_observer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = network_reachability_observer.cpp; sourceTree = "<group>"; };
@@ -462,6 +464,7 @@
 		02E315CC1DB80DE000555337 /* sync */ = {
 			isa = PBXGroup;
 			children = (
+				426FCDFF1F7DA2F9005565DC /* sync_config.cpp */,
 				504CF8521EBCAE3600A9A4B6 /* impl */,
 				02E315CD1DB80DF200555337 /* sync_client.hpp */,
 				02E315C21DB80DDD00555337 /* sync_config.hpp */,
@@ -930,6 +933,7 @@
 				F63FF2CD1C12469E00B3B8E0 /* rpc.cpp in Sources */,
 				02F59EC41C88F17D007F774C /* schema.cpp in Sources */,
 				02F59EC51C88F17D007F774C /* shared_realm.cpp in Sources */,
+				5D97DC4E1F7DAB1400B856A4 /* sync_config.cpp in Sources */,
 				504CF8601EBCAE3600A9A4B6 /* sync_file.cpp in Sources */,
 				02E315D21DB80DF200555337 /* sync_file.cpp in Sources */,
 				02E315C91DB80DDD00555337 /* sync_manager.cpp in Sources */,

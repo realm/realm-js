@@ -29,6 +29,8 @@
 #include <realm/binary_data.hpp>
 #include <realm/string_data.hpp>
 #include <realm/util/to_string.hpp>
+#include <realm/util/optional.hpp>
+#include <realm/mixed.hpp>
 
 #if defined(__GNUC__) && !(defined(DEBUG) && DEBUG)
 # define REALM_JS_INLINE inline __attribute__((always_inline))
@@ -136,6 +138,8 @@ struct Value {
     static ValueType from_nonnull_string(ContextType, const String<T>&);
     static ValueType from_nonnull_binary(ContextType, BinaryData);
     static ValueType from_undefined(ContextType);
+    static ValueType from_timestamp(ContextType, Timestamp);
+    static ValueType from_mixed(ContextType, util::Optional<Mixed> &);
 
     static ObjectType to_array(ContextType, const ValueType &);
     static bool to_boolean(ContextType, const ValueType &);
@@ -434,6 +438,38 @@ inline bool Value<T>::is_valid_for_property_type(ContextType context, const Valu
         }
     }
     return true;
+}
+
+template<typename T>
+inline typename T::Value Value<T>::from_timestamp(typename T::Context ctx, Timestamp ts) {
+    return Object<T>::create_date(ctx, ts.get_seconds() * 1000 + ts.get_nanoseconds() / 1000000);
+}
+
+template<typename T>
+inline typename T::Value Value<T>::from_mixed(typename T::Context ctx, util::Optional<Mixed>& mixed) {
+    if (!mixed) {
+        return from_undefined(ctx);
+    }
+
+    Mixed value = *mixed;
+    switch (value.get_type()) {
+    case type_Bool:
+        return from_boolean(ctx, value.get_bool());
+    case type_Int:
+        return from_number(ctx, static_cast<double>(value.get_int()));
+    case type_Float:
+        return from_number(ctx, value.get_float());
+    case type_Double:
+        return from_number(ctx, value.get_double());
+    case type_Timestamp:
+        return from_timestamp(ctx, value.get_timestamp());
+    case type_String:
+        return from_string(ctx, value.get_string().data());
+    case type_Binary:
+        return from_binary(ctx, value.get_binary());
+    default:
+        throw std::invalid_argument("Value not convertible.");
+    }
 }
 
 } // js

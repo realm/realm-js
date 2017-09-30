@@ -120,7 +120,7 @@ declare namespace Realm {
      * SortDescriptor
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.Collection.html#~SortDescriptor }
      */
-    type SortDescriptor = string | [string, boolean] | any[];
+    type SortDescriptor = [string] | [string, boolean];
 
     interface CollectionChangeSet {
         insertions: number[];
@@ -135,10 +135,41 @@ declare namespace Realm {
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.Collection.html }
      */
     interface Collection<T> extends ReadonlyArray<T> {
+        readonly type: PropertyType;
+        readonly optional: boolean;
+
         /**
          * @returns boolean
          */
         isValid(): boolean;
+
+        /**
+         * Computes the minimum value.
+         * @param  {string} property
+         * @returns number
+         */
+        min(property: string): number;
+
+        /**
+         * Computes the maximum value.
+         * @param  {string} property
+         * @returns number
+         */
+        max(property: string): number;
+
+        /**
+         * Computes the sum.
+         * @param  {string} property
+         * @returns number
+         */
+        sum(property: string): number;
+
+        /**
+         * Computes the average.
+         * @param  {string} property
+         * @returns number
+         */
+        avg(property: string): number;
 
         /**
          * @param  {string} query
@@ -147,12 +178,9 @@ declare namespace Realm {
          */
         filtered(query: string, ...arg: any[]): Results<T>;
 
-        /**
-         * @param  {string|SortDescriptor} descriptor
-         * @param  {boolean} reverse?
-         * @returns Results
-         */
-        sorted(descriptor: string | SortDescriptor, reverse?: boolean): Results<T>;
+        sorted(reverse?: boolean): Results<T>;
+        sorted(descriptor: SortDescriptor[]): Results<T>;
+        sorted(descriptor: string, reverse?: boolean): Results<T>;
 
         /**
          * @returns Results
@@ -188,21 +216,20 @@ declare namespace Realm {
     interface List<T> extends Collection<T> {
         [n: number]: T;
 
-        /**
-         * @returns T
-         */
         pop(): T | null | undefined;
 
         /**
          * @param  {T} object
          * @returns number
          */
-        push(object: T): number;
+        push(...object: T[]): number;
 
         /**
          * @returns T
          */
         shift(): T | null | undefined;
+
+        unshift(...object: T[]): number;
 
         /**
          * @param  {number} index
@@ -211,12 +238,6 @@ declare namespace Realm {
          * @returns T
          */
         splice(index: number, count?: number, object?: any): T[];
-
-        /**
-         * @param  {T} object
-         * @returns number
-         */
-        unshift(object: T): number;
     }
 
     const List: {
@@ -296,8 +317,7 @@ declare namespace Realm.Sync {
     }
 
     type PermissionCondition = {
-        userId: string |
-        { metadataKey: string, metadataValue: string }
+        userId: string | { metadataKey: string, metadataValue: string }
     };
 
     type AccessLevel = 'none' | 'read' | 'write' | 'admin';

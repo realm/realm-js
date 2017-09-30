@@ -20,6 +20,7 @@
 
 #include "js_collection.hpp"
 #include "js_realm_object.hpp"
+#include "js_util.hpp"
 
 #include "results.hpp"
 #include "list.hpp"
@@ -53,6 +54,7 @@ class Results : public realm::Results {
 
 template<typename T>
 struct ResultsClass : ClassDefinition<T, realm::js::Results<T>, CollectionClass<T>> {
+    using Type = T;
     using ContextType = typename T::Context;
     using ObjectType = typename T::Object;
     using ValueType = typename T::Value;
@@ -84,7 +86,13 @@ struct ResultsClass : ClassDefinition<T, realm::js::Results<T>, CollectionClass<
 
     template<typename Fn>
     static void index_of(ContextType, Fn&, Arguments, ReturnValue &);
-    
+
+    // aggregate functions
+    static void min(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void max(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void sum(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void avg(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
+
     // observable
     static void add_listener(ContextType, ObjectType, Arguments, ReturnValue &);
     static void remove_listener(ContextType, ObjectType, Arguments, ReturnValue &);
@@ -94,7 +102,7 @@ struct ResultsClass : ClassDefinition<T, realm::js::Results<T>, CollectionClass<
     static void add_listener(ContextType, U&, ObjectType, Arguments);
     template<typename U>
     static void remove_listener(ContextType, U&, ObjectType, Arguments);
-    
+
     std::string const name = "Results";
 
     MethodMap<T> const methods = {
@@ -102,18 +110,22 @@ struct ResultsClass : ClassDefinition<T, realm::js::Results<T>, CollectionClass<
         {"filtered", wrap<filtered>},
         {"sorted", wrap<sorted>},
         {"isValid", wrap<is_valid>},
+        {"min", wrap<min>},
+        {"max", wrap<max>},
+        {"sum", wrap<sum>},
+        {"avg", wrap<avg>},
         {"addListener", wrap<add_listener>},
         {"removeListener", wrap<remove_listener>},
         {"removeAllListeners", wrap<remove_all_listeners>},
         {"indexOf", wrap<index_of>},
     };
-    
+
     PropertyMap<T> const properties = {
         {"length", {wrap<get_length>, nullptr}},
         {"type", {wrap<get_type>, nullptr}},
         {"optional", {wrap<get_optional>, nullptr}},
     };
-    
+
     IndexPropertyType<T> const index_accessor = {wrap<get_index>, nullptr};
 };
 
@@ -200,6 +212,26 @@ void ResultsClass<T>::get_length(ContextType ctx, ObjectType object, ReturnValue
 }
 
 template<typename T>
+void ResultsClass<T>::min(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    compute_aggregate_on_collection<ResultsClass<T>>(AggregateFunc::Min, ctx, this_object, argc, arguments, return_value);
+}
+
+template<typename T>
+void ResultsClass<T>::max(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    compute_aggregate_on_collection<ResultsClass<T>>(AggregateFunc::Max, ctx, this_object, argc, arguments, return_value);
+}
+
+template<typename T>
+void ResultsClass<T>::sum(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    compute_aggregate_on_collection<ResultsClass<T>>(AggregateFunc::Sum, ctx, this_object, argc, arguments, return_value);
+}
+
+template<typename T>
+void ResultsClass<T>::avg(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    compute_aggregate_on_collection<ResultsClass<T>>(AggregateFunc::Avg, ctx, this_object, argc, arguments, return_value);
+}
+
+template<typename T>
 void ResultsClass<T>::get_type(ContextType, ObjectType object, ReturnValue &return_value) {
     auto results = get_internal<T, ResultsClass<T>>(object);
     return_value.set(string_for_property_type(results->get_type() & ~realm::PropertyType::Flags));
@@ -210,7 +242,6 @@ void ResultsClass<T>::get_optional(ContextType, ObjectType object, ReturnValue &
     auto results = get_internal<T, ResultsClass<T>>(object);
     return_value.set(is_nullable(results->get_type()));
 }
-
 
 template<typename T>
 void ResultsClass<T>::get_index(ContextType ctx, ObjectType object, uint32_t index, ReturnValue &return_value) {
@@ -242,7 +273,7 @@ template<typename T>
 void ResultsClass<T>::is_valid(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
     return_value.set(get_internal<T, ResultsClass<T>>(this_object)->is_valid());
 }
-    
+
 template<typename T>
 template<typename Fn>
 void ResultsClass<T>::index_of(ContextType ctx, Fn& fn, Arguments args, ReturnValue &return_value) {
@@ -287,7 +318,7 @@ void ResultsClass<T>::add_listener(ContextType ctx, U& collection, ObjectType th
     Protected<FunctionType> protected_callback(ctx, callback);
     Protected<ObjectType> protected_this(ctx, this_object);
     Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
-    
+
     auto token = collection.add_notification_callback([=](CollectionChangeSet const& change_set, std::exception_ptr exception) {
         HANDLESCOPE
         ValueType arguments[] {
@@ -333,6 +364,6 @@ void ResultsClass<T>::remove_all_listeners(ContextType ctx, ObjectType this_obje
     auto results = get_internal<T, ResultsClass<T>>(this_object);
     results->m_notification_tokens.clear();
 }
-    
+
 } // js
 } // realm
