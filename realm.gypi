@@ -1,6 +1,8 @@
 {
   "variables": {
-    "use_realm_debug%": "<!(node -p \"'REALMJS_USE_DEBUG_CORE' in process.env ? 1 : 0\")"
+    "realm_download_binaries%": "1",
+    "use_realm_debug%": "<!(node -p \"'REALMJS_USE_DEBUG_CORE' in process.env ? 1 : 0\")",
+    "realm_js_dir%": "<(module_root_dir)"
   },
   "conditions": [
     ["OS=='mac'", {
@@ -85,7 +87,7 @@
     },
     {
       "variables": {
-        "vendor_dir%": "<(module_root_dir)/vendor/realm-<(OS)-<(target_arch)<(debug_library_suffix)"
+        "vendor_dir": "<(realm_js_dir)/vendor/realm-<(OS)-<(target_arch)<(debug_library_suffix)"
       },
       "target_name": "vendored-realm",
       "type": "none",
@@ -111,9 +113,9 @@
           "actions": [
             {
               "action_name": "download-realm",
-              "inputs": [ "<(module_root_dir)/scripts/download-realm.js" ],
+              "inputs": [ "<(realm_js_dir)/scripts/download-realm.js" ],
               "outputs": [ "<(vendor_dir)" ],
-              "action": [ "node", "<(module_root_dir)/scripts/download-realm.js", "<(OS)", ">(download_realm_debug_flag)", ">(download_realm_sync_flag)", "--arch=<(target_arch)" ]
+              "action": [ "node", "<(realm_js_dir)/scripts/download-realm.js", "<(OS)", ">(download_realm_debug_flag)", ">(download_realm_sync_flag)", "--arch=<(target_arch)" ]
             }
           ]
         }]
