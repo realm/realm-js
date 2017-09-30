@@ -25,7 +25,6 @@ const child_process = require('child_process');
 const fetch = require('node-fetch');
 const ini = require('ini').parse;
 const decompress = require('decompress');
-const decompressTarxz = require('decompress-tarxz')
 
 function exec() {
     const args = Array.from(arguments);
@@ -97,7 +96,7 @@ function download(serverFolder, archive, destination) {
 
 function extract(downloadedArchive, targetFolder, archiveRootFolder) {
     console.log(`Extracting ${path.basename(downloadedArchive)} => ${targetFolder}`);
-    const decompressOptions = /tar\.xz$/.test(downloadedArchive) ? { plugins: [ decompressTarxz() ] } : undefined;
+    const decompressOptions = /tar\.xz$/.test(downloadedArchive) ? { plugins: [ require('decompress-tarxz')() ] } : undefined;
     if (!archiveRootFolder) {
         return decompress(downloadedArchive, targetFolder, decompressOptions);
     } else {
