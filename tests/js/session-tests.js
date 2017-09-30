@@ -476,6 +476,10 @@ module.exports = {
         if (isNodeProccess) {
             realm = copyFileToTempDir(path.join(process.cwd(), "data", realm));
         }
+        else {
+            //copy the bundled RN realm files for the test
+            Realm.copyBundledRealmFiles();
+        }
 
         return Realm.Sync.User.register('http://localhost:9080', uuid(), 'password').then(user => {
             return new Promise((resolve, _reject) => {
@@ -509,6 +513,10 @@ module.exports = {
         let realm = "sync-v1.realm";
         if (isNodeProccess) {
             realm = copyFileToTempDir(path.join(process.cwd(), "data", realm));
+        }
+        else {
+            //copy the bundled RN realm files for the test
+            Realm.copyBundledRealmFiles();
         }
 
         return Realm.Sync.User.register('http://localhost:9080', uuid(), 'password').then(user => {
@@ -545,6 +553,10 @@ module.exports = {
         let realm = "sync-v1.realm";
         if (isNodeProccess) {
             realm = copyFileToTempDir(path.join(process.cwd(), "data", realm));
+        }
+        else {
+            //copy the bundled RN realm files for the test
+            Realm.copyBundledRealmFiles();
         }
 
         return Realm.Sync.User.register('http://localhost:9080', uuid(), 'password').then(user => {
