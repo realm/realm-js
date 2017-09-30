@@ -1,6 +1,12 @@
 2.0.0 Release notes (2017-9-29)
 =============================================================
 ### Breaking changes
+* Upgtading to Realm Core 4.0.1 (bug fixes)
+* Upgrading to Realm Sync 2.0.0-rc26 (sync protocol 22 + bug fixes)
+
+2.0.0-rc14 Release notes (2017-9-29)
+=============================================================
+### Breaking changes
 * Upgrading to Realm Core 4.0.0 and Realm Sync 2.0.0-rc25.
 
 ### Enhancements
@@ -10,7 +16,7 @@
 * Configuration of sync file system is not done on module import but later when actually needed by sync (#1351)
 
 
-2.0.0 Release notes (2017-9-28)
+2.0.0-rc12 Release notes (2017-9-28)
 =============================================================
 ### Breaking changes
 * None.
@@ -27,17 +33,22 @@
 ### Breaking changes
 * None
 
-### Enhancements
-* Add a callback function used to verify SSL certificates in the sync config.
-
-### Bug fixes
-* Fixed port conflict between RN >= 0.48 inspector proxy and RPC server used for Chrome debugging (#1294).
-
 ### Internal
 * Alignment of permission schemas.
 * Updating sync (2.0.0-rc24).
 
+1.13.0 Release notes (to be released)
+=============================================================
+### Breaking changes
+* None.
 
+### Enhancements
+* Add a callback function used to verify SSL certificates in the sync config.
+* Added aggregate functions `min()`, `max()`, `sum()`, and `avg()` to `Realm.Results` and `Realm.List` (#807).
+
+### Bug fixes
+* Fixed port conflict between RN >= 0.48 inspector proxy and RPC server used for Chrome debugging (#1294).
+* Workaround for RN >= 0.49 metro-bundler check for single string literal argument to `require()` (#1342)
 
 
 2.0.0-rc10 Release notes (2017-9-19)
