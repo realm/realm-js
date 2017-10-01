@@ -605,6 +605,25 @@ module.exports = {
         TestCase.assertThrows(function() {
             results.avg('foo')
         });
+    },
 
-    }
+    testIterator: function() {
+        var realm = new Realm({ schema: [ schemas.TestObject ]});
+        realm.write(() => {
+            realm.create('TestObject', { doubleCol: 2 });
+            realm.create('TestObject', { doubleCol: 3 });
+        });
+
+        var results = realm.objects('TestObject').filtered('doubleCol >= 2');
+        TestCase.assertEqual(results.length, 2);
+        var calls = 0;
+        for(let obj of results) {
+            realm.write(() => {
+                obj.doubleCol = 1;
+            });
+            calls++;
+        }
+        TestCase.assertEqual(results.length, 0);
+        TestCase.assertEqual(calls, 2);
+    },
 };

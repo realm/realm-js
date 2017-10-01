@@ -1,3 +1,14 @@
+X.Z.Y Release notes
+=============================================================
+### Breaking changes
+* During iteration (`for ... of`) of `Realm.Results`, the results will be frozen using the `snapshot()` method (#1366).
+
+### Enhancements
+* None.
+
+### Bug fixes
+* None.
+
 2.0.0 Release notes (2017-9-29)
 =============================================================
 ### Breaking changes
