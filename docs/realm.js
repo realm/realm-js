@@ -88,7 +88,7 @@ class Realm {
      * migrated to use the new schema.
      * @param {Realm~Configuration} [config] - **Required** when first creating the Realm.
      * @throws {Error} If anything in the provided `config` is invalid.
-     * @throws {IncompatibleSyncedRealmError} if migration from RMP version 1 to 2 is not possible.
+     * @throws {IncompatibleSyncedRealmError} when an incompatible synced Realm is opened
      */
     constructor(config) {}
 
@@ -107,7 +107,7 @@ class Realm {
      * @param  {callback(error, realm)} - will be called when the Realm is ready.
      * @param  {callback(transferred, transferable)} [progressCallback] - an optional callback for download progress notifications
      * @throws {Error} If anything in the provided `config` is invalid
-     * @throws {IncompatibleSyncedRealmError} if migration from RMP version 1 to 2 is not possible
+     * @throws {IncompatibleSyncedRealmError} when an incompatible synced Realm is opened
      */
     static openAsync(config, callback, progressCallback) {}
 
