@@ -133,7 +133,7 @@ class AuthError extends Error {
  * Describes an error when an incompatible synced Realm is opened. The old version of the Realm can be accessed in readonly mode using the configuration() member
  * @memberof Realm.Sync
  */
-interface IncompatibleSyncedRealmError {
+class IncompatibleSyncedRealmError {
     /**
      * The name of the error is 'IncompatibleSyncedRealmError'
      */
