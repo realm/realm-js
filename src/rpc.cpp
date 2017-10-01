@@ -360,8 +360,25 @@ json RPCServer::perform_request(std::string name, const json &args) {
         assert(action);
 
         m_worker.add_task([=] {
-            return action(args);
+            try {
+                return action(args);
+            }
+            catch (jsc::Exception ex) {
+                json exceptionAsJson = nullptr;
+                try {
+                    exceptionAsJson = serialize_json_value(ex);
+                }
+                catch (...) {
+                    exceptionAsJson = {{"error", "An exception occured while processing the request. Could not serialize the exception as JSON"}};
+                }
+                
+                 return (json){{"error", exceptionAsJson}};
+            }
+            catch (std::exception &exception) {
+                return (json){{"error", exception.what()}};
+            }
         });
+
     }
 
     try {
