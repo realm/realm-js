@@ -646,4 +646,65 @@ module.exports = {
                 });
             });
     },
+
+    testPartialSync() {
+        const username1 = uuid();
+        const username2 = uuid();
+        const realmName = uuid();
+
+        return runOutOfProcess(__dirname + '/download-api-helper.js', username1, realmName, REALM_MODULE_PATH)
+            .then(() => {
+                return Realm.Sync.User.login('http://localhost:9080', username1, 'password').then(user1 => {
+                    TestCase.assertDefined(user1, 'user1');
+                    return new Promise((resolve, reject) => {
+                        let config1 = {
+                            sync: {
+                                user1,
+                                url: `realm://localhost:9080/~/${realmName}`,
+                            },
+                            schema: [{ name: 'Integer', properties: { value: 'int' } }],
+                        };
+
+                        return Realm.open(config1)
+                            .then(realm1 => {
+                                for(let i = 0; i < 10; i++) {
+                                    realm1.write(() => {
+                                        realm1.create('Integer', {value: i});
+                                    });
+                                }
+                            })
+                            .then(() => {
+                                return Realm.Sync.User.login('http://localhost:9080', username2, 'password').then(user2 => {
+                                    TestCase.assertDefined(user2, 'user2');
+                                    return new Promise((resolve, reject) => {
+                                        let called = false;
+                                        let config2 = {
+                                            sync: {
+                                                user2,
+                                                url: `realm://localhost:9080/${user1.identity}/${realmName}`,
+                                                partial: true,
+                                            },
+                                            schema: [{ name: 'Integer', properties: { value: 'int' } }],
+                                        };
+                                        const realm2 = new Realm(config2);
+                                        realm2.subscribeToObjects('Integer', 'value > 5', function(results, error) {
+                                            called = true;
+                                            TestCase.assertEqual(error, '', 'error!');
+                                            TestCase.assertEqual(results.length, 4);
+                                            for(obj in results) {
+                                                TestCase.assertTrue(obj.value > 5, '<= 5');
+                                            }
+                                        });
+                                        setTimeout(() => {
+                                            TestCase.assertTrue(called, 'not called');
+                                            resolve();
+                                        }, 5000);
+                                        reject();
+                                    })
+                                })
+                            })
+                    })
+                })
+            })
+    },
 }

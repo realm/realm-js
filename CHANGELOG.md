@@ -1,8 +1,20 @@
+X.Z.Y Release notes
+=============================================================
+### Breaking changes
+
+### Enhancements
+* Added `Realm.subscribeToObjects()` to listen for changes in partial sync'ed Realms.
+
+### Bug fixes
+* None.
+
+
 2.0.0 Release notes (2017-9-29)
 =============================================================
 ### Breaking changes
 * Upgtading to Realm Core 4.0.1 (bug fixes)
 * Upgrading to Realm Sync 2.0.0-rc26 (sync protocol 22 + bug fixes)
+
 
 2.0.0-rc14 Release notes (2017-9-29)
 =============================================================

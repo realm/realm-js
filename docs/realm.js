@@ -214,7 +214,7 @@ class Realm {
      */
     cancelTransaction() {}
 
-    /*
+    /**
      * Replaces all string columns in this Realm with a string enumeration column and compacts the
      * database file.
      *
@@ -231,6 +231,17 @@ class Realm {
      * @returns {true} if compaction succeeds.
      */
     compact() {}
+
+    /**
+     * If the Realm is a partially synchronized Realm, fetch and synchronize the objects
+     * of a given object type that match the given query (in string format).
+     *
+     * **Partial synchronization is a tech preview. Its APIs are subject to change.**
+     * @param {Realm~ObjectType} type - The type of Realm objects to retrieve.
+     * @param {string} query - Query used to filter objects.
+     * @param {callback} - function to call when objects are created, modified, or deleted.
+     */
+    subscribeToObjects(className, query, callback) {}
 }
 
 /**
@@ -331,7 +342,10 @@ Realm.defaultPath;
  *        The purpose of open_ssl_verify_callback is to enable custom certificate handling and to solve cases where
  *        OpenSSL erroneously rejects valid certificates possibly because OpenSSL doesn't have access to the
  *        proper trust certificates.
- *
+ *   - `partial` - Whether this Realm should be opened in 'partial synchronization' mode.
+ *        Partial synchronization mode means that no objects are synchronized from the remote Realm
+ *        except those matching queries that the user explicitly specifies.
+ *        **Partial synchronization is a tech preview. Its APIs are subject to change.**
  */
 
 /**

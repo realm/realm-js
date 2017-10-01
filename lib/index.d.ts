@@ -599,6 +599,11 @@ declare class Realm {
      * @returns boolean
      */
     compact(): boolean;
+
+    /**
+     * @returns void
+     */
+    subscribeToObjects<T>(objectType: string, query: string, callback: (results: Realm.Results<T>, error: string) => void): void;
 }
 
 declare module 'realm' {
