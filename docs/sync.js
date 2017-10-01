@@ -130,10 +130,15 @@ class AuthError extends Error {
 }
 
 /**
- * Class that describes error in migration of a Realm from Realm Mobile Platform v1.x to v2.x
+ * Describes an error when an incompatible synced Realm is opened. The old version of the Realm can be accessed in readonly mode using the configuration() member
  * @memberof Realm.Sync
  */
-class IncompatibleSyncedRealmError extends Error {
+interface IncompatibleSyncedRealmError {
+    /**
+     * The name of the error is 'IncompatibleSyncedRealmError'
+     */
+    get name() {}
+    
     /**
      * The {Realm~Configuration} of the backed up Realm.
      * @type {Realm~Configuration}
