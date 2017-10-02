@@ -17,6 +17,13 @@
 ////////////////////////////////////////////////////////////////////////////
 
 /**
+ * When opening a Realm created with Realm Mobile Platform v1.x, it is automatically
+ * migration to format of Realm Mobile Plarform v2.x. In the case where this migration
+ * is not possible, an exception is thrown. The exception´s `message` property will be equal
+ * to `IncompatibleSyncedRealmException`. The Realm is backed up, and the property `configuration`
+ * is a {Realm~Configuration} which refers to it. You can open it as a local, read-only Realm, and 
+ * copy objects to a new synced Realm.
+ * 
  * @memberof Realm
  */
 class Sync {
@@ -55,7 +62,22 @@ class Sync {
      */
     static setLogLevel(log_level) {}
 
-
+    /**
+     * Initiate a client reset. The Realm must be closed prior to the reset.
+     * @param {string} [path] - The Realm to reset.
+     * Throws error if reset is not possible.
+     * @example
+     * {
+     *   const config = { sync: { user, url: 'realm://localhost:9080/~/myrealm' } };
+     *   config.sync.error = (sender, error) => {
+     *     if (error.code === 7) { // 7 -> client reset
+     *       Realm.Sync.initiateClientReset(original_path);
+     *       // copy required objects from Realm at error.config.path
+     *     }
+     *   }
+     * }
+     */
+    static initiateClientReset(path) {}
 }
 
 /**
@@ -120,6 +142,23 @@ class AuthError extends Error {
      * @type {string}
      */
     get type() {}
+}
+
+/**
+ * Describes an error when an incompatible synced Realm is opened. The old version of the Realm can be accessed in readonly mode using the configuration() member
+ * @memberof Realm.Sync
+ */
+class IncompatibleSyncedRealmError {
+    /**
+     * The name of the error is 'IncompatibleSyncedRealmError'
+     */
+    get name() {}
+    
+    /**
+     * The {Realm~Configuration} of the backed up Realm.
+     * @type {Realm~Configuration}
+     */
+    get configuration() {}
 }
 
 /**
@@ -248,7 +287,7 @@ class User {
      * @param {string} recipient the optional recipient of the permission. Can be either
      * 'any' which is the default, or 'currentUser' or 'otherUser' if you want only permissions
      * belonging to the user or *not* belonging to the user.
-     * @returns {Results} a queryable collection of permission objects that provides detailed
+     * @returns {Promise} a Promise with a queryable collection of permission objects that provides detailed
      * information regarding the granted access.
      * The collection is a live query similar to what you would get by callig Realm.objects,
      * so the same features apply - you can listen for notifications or filter it.
