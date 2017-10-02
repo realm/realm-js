@@ -17,6 +17,13 @@
 ////////////////////////////////////////////////////////////////////////////
 
 /**
+ * When opening a Realm created with Realm Mobile Platform v1.x, it is automatically
+ * migration to format of Realm Mobile Plarform v2.x. In the case where this migration
+ * is not possible, an exception is thrown. The exception´s `message` property will be equal
+ * to `IncompatibleSyncedRealmException`. The Realm is backed up, and the property `configuration`
+ * is a {Realm~Configuration} which refers to it. You can open it as a local, read-only Realm, and 
+ * copy objects to a new synced Realm.
+ * 
  * @memberof Realm
  */
 class Sync {
@@ -120,6 +127,23 @@ class AuthError extends Error {
      * @type {string}
      */
     get type() {}
+}
+
+/**
+ * Describes an error when an incompatible synced Realm is opened. The old version of the Realm can be accessed in readonly mode using the configuration() member
+ * @memberof Realm.Sync
+ */
+class IncompatibleSyncedRealmError {
+    /**
+     * The name of the error is 'IncompatibleSyncedRealmError'
+     */
+    get name() {}
+    
+    /**
+     * The {Realm~Configuration} of the backed up Realm.
+     * @type {Realm~Configuration}
+     */
+    get configuration() {}
 }
 
 /**

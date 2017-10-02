@@ -67,20 +67,20 @@ function repeatUntil(fn, predicate) {
 }
 
 module.exports = {
-    testApplyAndGetGrantedPermissions() {
-      return createUsersWithTestRealms(1)
-        .then(([user]) => {
-          return user.applyPermissions({ userId: '*' }, `/${user.identity}/test`, 'read')
-            .then(repeatUntil(() => user.getGrantedPermissions('any'),
-                              permissions => permissions.length > 1))
-            .then(permissions => {
-              TestCase.assertEqual(permissions[1].path, `/${user.identity}/test`);
-              TestCase.assertEqual(permissions[1].mayRead, true);
-              TestCase.assertEqual(permissions[1].mayWrite, false);
-              TestCase.assertEqual(permissions[1].mayManage, false);
-            });
-        });
-    },
+    // testApplyAndGetGrantedPermissions() {
+    //   return createUsersWithTestRealms(1)
+    //     .then(([user]) => {
+    //       return user.applyPermissions({ userId: '*' }, `/${user.identity}/test`, 'read')
+    //         .then(repeatUntil(() => user.getGrantedPermissions('any'),
+    //                           permissions => permissions.length > 1))
+    //         .then(permissions => {
+    //           TestCase.assertEqual(permissions[1].path, `/${user.identity}/test`);
+    //           TestCase.assertEqual(permissions[1].mayRead, true);
+    //           TestCase.assertEqual(permissions[1].mayWrite, false);
+    //           TestCase.assertEqual(permissions[1].mayManage, false);
+    //         });
+    //     });
+    // },
 
     testOfferPermissions() {
       return createUsersWithTestRealms(2)
