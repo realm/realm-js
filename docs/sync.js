@@ -272,7 +272,7 @@ class User {
      * @param {string} recipient the optional recipient of the permission. Can be either
      * 'any' which is the default, or 'currentUser' or 'otherUser' if you want only permissions
      * belonging to the user or *not* belonging to the user.
-     * @returns {Results} a queryable collection of permission objects that provides detailed
+     * @returns {Promise} a Promise with a queryable collection of permission objects that provides detailed
      * information regarding the granted access.
      * The collection is a live query similar to what you would get by callig Realm.objects,
      * so the same features apply - you can listen for notifications or filter it.

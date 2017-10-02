@@ -309,7 +309,7 @@ declare namespace Realm.Sync {
         openManagementRealm(): Realm;
         retrieveAccount(provider: string, username: string): Promise<Account>;
 
-        getGrantedPermissions(recipient: 'any' | 'currentUser' | 'otherUser'): Results<Permission>;
+        getGrantedPermissions(recipient: 'any' | 'currentUser' | 'otherUser'): Promise<Results<Permission>>;
         applyPermissions(condition: PermissionCondition, realmUrl: string, accessLevel: AccessLevel): Promise<PermissionChange>;
         offerPermissions(realmUrl: string, accessLevel: AccessLevel, expiresAt?: Date): Promise<string>;
         acceptPermissionOffer(token: string): Promise<string>
