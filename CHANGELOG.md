@@ -2,6 +2,7 @@ X.Y.Z Release notes
 =============================================================
 ### Breaking changes
 * Removed `setAccessToken()`; use `setFeatureToken()` instead.
+* During iteration (`for ... of`) of `Realm.Results`, the results will be frozen using the `snapshot()` method (#1366).
 
 ### Enhancements
 * Support migration from Realms sync 1.0 to sync 2.0 versions
@@ -10,7 +11,6 @@ X.Y.Z Release notes
 
 ### Bug fixes
 * None.
-
 
 2.0.0-rc16 Release notes (2017-9-29)
 =============================================================
