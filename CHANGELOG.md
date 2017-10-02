@@ -1,7 +1,7 @@
-X.Y.Z-rc Release notes
+X.Y.Z Release notes
 =============================================================
 ### Breaking changes
-* None
+* Removed `setAccessToken()`; use `setFeatureToken()` instead.
 
 ### Enhancements
 * Support migration from Realms sync 1.0 to sync 2.0 versions
@@ -9,7 +9,8 @@ X.Y.Z-rc Release notes
 * Added `Realm.subscribeToObjects()` to listen for changes in partially synced Realms.
 
 ### Bug fixes
-* None
+* None.
+
 
 2.0.0-rc16 Release notes (2017-9-29)
 =============================================================

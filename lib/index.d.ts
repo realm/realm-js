@@ -418,11 +418,6 @@ declare namespace Realm.Sync {
     function initiateClientReset(path: string): void;
     function setFeatureToken(token: string): void;
 
-    /**
-     * @deprecated, to be removed in 2.0
-     */
-    function setAccessToken(accessToken: string): void;
-
     type Instruction = {
         type: 'INSERT' | 'SET' | 'DELETE' | 'CLEAR' | 'LIST_SET' | 'LIST_INSERT' | 'LIST_ERASE' | 'LIST_CLEAR' | 'ADD_TYPE' | 'ADD_PROPERTIES' | 'CHANGE_IDENTITY' | 'SWAP_IDENTITY'
         object_type: string,
