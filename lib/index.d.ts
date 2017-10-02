@@ -601,9 +601,9 @@ declare class Realm {
     compact(): boolean;
 
     /**
-     * @returns void
+     * @returns Promise<Results<T>>
      */
-    subscribeToObjects<T>(objectType: string, query: string, callback: (results: Realm.Results<T>, error: string) => void): void;
+    subscribeToObjects<T>(objectType: string, query: string): Promise<Realm.Results<T>>;
 }
 
 declare module 'realm' {

@@ -995,6 +995,8 @@ void RealmClass<T>::subscribe_to_objects(ContextType ctx, ObjectType this_object
     auto query = Value::validated_to_string(ctx, args[1]);
     auto callback = Value::validated_to_function(ctx, args[2]);
 
+    Protected<ObjectType> protected_this(ctx, this_object);
+    Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
     auto cb = [=](realm::Results results, std::exception_ptr err) {
         if (err) {
             try {
@@ -1002,17 +1004,17 @@ void RealmClass<T>::subscribe_to_objects(ContextType ctx, ObjectType this_object
             }
             catch (const std::exception& e) {
                 typename T::Value arguments[2];
-                arguments[0] = Value::from_null(ctx);
-                arguments[1] = Value::from_string(ctx, e.what());
-                Function<T>::callback(ctx, callback, this_object, 2, arguments);
+                arguments[0] = Value::from_null(protected_ctx);
+                arguments[1] = Value::from_string(protected_ctx, e.what());
+                Function<T>::callback(ctx, callback, protected_this, 2, arguments);
             }
             return;
         }
 
         typename T::Value arguments[2];
-        arguments[0] = ResultsClass<T>::create_instance(ctx, results);
-        arguments[1] = Value::from_null(ctx);
-        Function<T>::callback(ctx, callback, this_object, 2, arguments);
+        arguments[0] = ResultsClass<T>::create_instance(protected_ctx, results);
+        arguments[1] = Value::from_null(protected_ctx);
+        Function<T>::callback(protected_ctx, callback, protected_this, 2, arguments);
     };
 
     partial_sync::register_query(realm, class_name, query, std::move(cb));

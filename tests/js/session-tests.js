@@ -652,13 +652,12 @@ module.exports = {
             return Promise.resolve();
         }
 
-        const username1 = uuid();
-        const username2 = uuid();
+        const username = uuid();
         const realmName = uuid();
 
         return runOutOfProcess(__dirname + '/download-api-helper.js', username1, realmName, REALM_MODULE_PATH)
             .then(() => {
-                Realm.Sync.User.login('http://localhost:9080', username1, 'password').then(user1 => {
+                Realm.Sync.User.login('http://localhost:9080', username, 'password').then(user1 => {
                     TestCase.assertDefined(user1, 'user1');
                     return new Promise((resolve, reject) => {
                         let config1 = {
@@ -682,7 +681,7 @@ module.exports = {
                 })
             })
             .then(() => {
-                Realm.Sync.User.login('http://localhost:9080', username1, 'password').then(user2 => {
+                Realm.Sync.User.login('http://localhost:9080', username, 'password').then(user2 => {
                     TestCase.assertDefined(user2, 'user2');
                     return new Promise((resolve, reject) => {
                         let config2 = {
