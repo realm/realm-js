@@ -88,6 +88,7 @@ class Realm {
      * migrated to use the new schema.
      * @param {Realm~Configuration} [config] - **Required** when first creating the Realm.
      * @throws {Error} If anything in the provided `config` is invalid.
+     * @throws {IncompatibleSyncedRealmError} when an incompatible synced Realm is opened
      */
     constructor(config) {}
 
@@ -105,7 +106,8 @@ class Realm {
      * @param {Realm~Configuration} config
      * @param  {callback(error, realm)} - will be called when the Realm is ready.
      * @param  {callback(transferred, transferable)} [progressCallback] - an optional callback for download progress notifications
-     * @throws {Error} If anything in the provided `config` is invalid.
+     * @throws {Error} If anything in the provided `config` is invalid
+     * @throws {IncompatibleSyncedRealmError} when an incompatible synced Realm is opened
      */
     static openAsync(config, callback, progressCallback) {}
 
@@ -214,7 +216,7 @@ class Realm {
      */
     cancelTransaction() {}
 
-    /*
+    /**
      * Replaces all string columns in this Realm with a string enumeration column and compacts the
      * database file.
      *
@@ -231,6 +233,17 @@ class Realm {
      * @returns {true} if compaction succeeds.
      */
     compact() {}
+
+    /**
+     * If the Realm is a partially synchronized Realm, fetch and synchronize the objects
+     * of a given object type that match the given query (in string format).
+     *
+     * **Partial synchronization is a tech preview. Its APIs are subject to change.**
+     * @param {Realm~ObjectType} type - The type of Realm objects to retrieve.
+     * @param {string} query - Query used to filter objects.
+     * @return {Promise} - a promise that will be resolved with the Realm.Results instance when it's available.
+     */
+    subscribeToObjects(className, query, callback) {}
 }
 
 /**
@@ -331,7 +344,10 @@ Realm.defaultPath;
  *        The purpose of open_ssl_verify_callback is to enable custom certificate handling and to solve cases where
  *        OpenSSL erroneously rejects valid certificates possibly because OpenSSL doesn't have access to the
  *        proper trust certificates.
- *
+ *   - `partial` - Whether this Realm should be opened in 'partial synchronization' mode.
+ *        Partial synchronisation only synchronizes those objects that match the query specified in contrast
+ *        to the normal mode of operation that synchronises all objects in a remote Realm.
+ *        **Partial synchronization is a tech preview. Its APIs are subject to change.**
  */
 
 /**

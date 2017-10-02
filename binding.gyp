@@ -93,6 +93,7 @@
             "src/object-store/src/sync/sync_user.cpp",
             "src/object-store/src/sync/sync_session.cpp",
             "src/object-store/src/sync/sync_config.cpp",
+            "src/object-store/src/sync/partial_sync.cpp",
             "src/object-store/src/sync/impl/sync_file.cpp",
             "src/object-store/src/sync/impl/sync_metadata.cpp"
           ],
