@@ -277,7 +277,7 @@ public:
             }
             default:
                 throw;
-        }   
+        }
     }
 
     static std::string validated_notification_name(ContextType ctx, const ValueType &value) {
@@ -1039,7 +1039,7 @@ void RealmClass<T>::subscribe_to_objects(ContextType ctx, ObjectType this_object
     auto cb = [=](realm::Results results, std::exception_ptr err) {
         if (err) {
             try {
-                rethrow_exception(err);
+                std::rethrow_exception(err);
             }
             catch (const std::exception& e) {
                 typename T::Value arguments[2];
