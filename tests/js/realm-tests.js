@@ -1025,5 +1025,132 @@ module.exports = {
         const realm2 = new Realm(config);
         TestCase.assertEqual(realm2.objects('TestObject').length, 0);
         realm.close();
-    }
+    },
+
+    testRealmDeleteRealmIfMigrationNeededVersionChanged: function() {
+        const schema = [{
+            name: 'TestObject',
+            properties: {
+                prop0: 'string',
+                prop1: 'int',
+            }
+        }];
+
+        var realm = new Realm({schema: schema});
+
+        realm.write(function() {
+            realm.create('TestObject', ['stringValue', 1]);
+        });
+
+        realm.close();
+
+        var migrationWasCalled = false;
+
+        realm = new Realm({schema: schema, deleteRealmIfMigrationNeeded: true, schemaVersion: 1, migration: function(oldRealm, newRealm) {
+            migrationWasCalled = true;
+        }});
+
+        // migration function should not be called as deleteRealmIfMigrationNeeded is true
+        TestCase.assertEqual(migrationWasCalled, false);
+
+        // object should be gone as Realm should get deleted
+        TestCase.assertEqual(realm.objects('TestObject').length, 0);
+
+        // create a new object
+        realm.write(function() {
+            realm.create('TestObject', ['stringValue', 1]);
+        });
+
+        realm.close();
+
+        migrationWasCalled = false;
+        realm = new Realm({schema: schema, deleteRealmIfMigrationNeeded: false, schemaVersion: 2, migration: function(oldRealm, newRealm) {
+            migrationWasCalled = true;
+        }});
+
+        // migration function should get called as deleteRealmIfMigrationNeeded is false
+        TestCase.assertEqual(migrationWasCalled, true);
+
+        // object should be there because Realm shouldn't get deleted
+        TestCase.assertEqual(realm.objects('TestObject').length, 1);
+        realm.close();
+    },
+
+    testRealmDeleteRealmIfMigrationNeededSchemaChanged: function() {
+        const schema = [{
+            name: 'TestObject',
+            properties: {
+                prop0: 'string',
+                prop1: 'int',
+            }
+        }];
+
+        const schema1 = [{
+            name: 'TestObject',
+            properties: {
+                prop0: 'string',
+                prop1: 'int',
+                prop2: 'float',
+            }
+        }];
+
+        const schema2 = [{
+            name: 'TestObject',
+            properties: {
+                prop0: 'string',
+                prop1: 'int',
+                prop2: 'float',
+                prop3: 'double'
+            }
+        }];
+
+        var realm = new Realm({schema: schema});
+
+        realm.write(function() {
+            realm.create('TestObject', {prop0: 'stringValue', prop1: 1});
+        });
+
+        realm.close();
+
+
+        var migrationWasCalled = false;
+
+        // change schema
+        realm = new Realm({schema: schema1, deleteRealmIfMigrationNeeded: true, migration: function(oldRealm, newRealm) {
+            migrationWasCalled = true;
+        }});
+
+        // migration function should not be called as deleteRealmIfMigrationNeeded is true
+        TestCase.assertEqual(migrationWasCalled, false);
+
+        // object should be gone as Realm should get deleted
+        TestCase.assertEqual(realm.objects('TestObject').length, 0);
+
+        // create a new object
+        realm.write(function() {
+            realm.create('TestObject', {prop0: 'stringValue', prop1: 1, prop2: 1.0});
+        });
+
+        realm.close();
+
+
+        TestCase.assertThrows(function(e) {
+            // updating schema without changing schemaVersion OR setting deleteRealmIfMigrationNeeded = true should raise an error
+            new Realm({schema: schema2, deleteRealmIfMigrationNeeded: false, migration: function(oldRealm, newRealm) {}});
+        });
+
+        migrationWasCalled = false;
+
+        // change schema again, but increment schemaVersion
+        realm = new Realm({schema: schema2, deleteRealmIfMigrationNeeded: false, schemaVersion: 1, migration: function(oldRealm, newRealm) {
+            migrationWasCalled = true;
+        }});
+
+        // migration function should get called as deleteRealmIfMigrationNeeded is false
+        TestCase.assertEqual(migrationWasCalled, true);
+
+        // object should be there because Realm shouldn't get deleted
+        TestCase.assertEqual(realm.objects('TestObject').length, 1);
+        realm.close();
+    },
 };

@@ -296,6 +296,8 @@ Realm.defaultPath;
  *   - `validate_ssl` - Indicating if SSL certificates must be validated
  *   - `ssl_trust_certificate_path` - A path where to find trusted SSL certificates
  * The `error` callback can take up to four optional arguments: `message`, `isFatal`, `category`, and `code`.
+ * @property {boolean} [deleteRealmIfMigrationNeeded=false] - Specifies if this Realm should be deleted 
+ * if a migration is needed.
  */
 
 /**
