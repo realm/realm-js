@@ -394,6 +394,16 @@ void RealmClass<T>::constructor(ContextType ctx, ObjectType this_object, size_t 
                 config.schema_mode = SchemaMode::ReadOnly;
             }
 
+            static const String delete_realm_if_migration_needed_string = "deleteRealmIfMigrationNeeded";
+            ValueType delete_realm_if_migration_needed_value = Object::get_property(ctx, object, delete_realm_if_migration_needed_string);
+            if (!Value::is_undefined(ctx, delete_realm_if_migration_needed_value) && Value::validated_to_boolean(ctx, delete_realm_if_migration_needed_value, "deleteRealmIfMigrationNeeded")) {
+                if (config.schema_mode == SchemaMode::ReadOnly) {
+                    throw std::invalid_argument("Cannot set 'deleteRealmIfMigrationNeeded' when 'readOnly' is set.");
+                }
+
+                config.schema_mode = SchemaMode::ResetFile;
+            }
+
             static const String schema_string = "schema";
             ValueType schema_value = Object::get_property(ctx, object, schema_string);
             if (!Value::is_undefined(ctx, schema_value)) {
@@ -437,6 +447,11 @@ void RealmClass<T>::constructor(ContextType ctx, ObjectType this_object, size_t 
             ValueType migration_value = Object::get_property(ctx, object, migration_string);
             if (!Value::is_undefined(ctx, migration_value)) {
                 FunctionType migration_function = Value::validated_to_function(ctx, migration_value, "migration");
+
+                if (config.schema_mode == SchemaMode::ResetFile) {
+                    throw std::invalid_argument("Cannot include 'migration' when 'deleteRealmIfMigrationNeeded' is set.");
+                }
+
                 config.migration_function = [=](SharedRealm old_realm, SharedRealm realm, realm::Schema&) {
                     auto old_realm_ptr = new SharedRealm(old_realm);
                     auto realm_ptr = new SharedRealm(realm);
