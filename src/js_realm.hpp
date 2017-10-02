@@ -34,6 +34,7 @@
 #include "js_sync.hpp"
 #include "sync/sync_config.hpp"
 #include "sync/sync_manager.hpp"
+#include "sync/partial_sync.hpp"
 #endif
 
 #include "shared_realm.hpp"
@@ -241,7 +242,7 @@ public:
         {"compact", wrap<compact>},
         {"deleteModel", wrap<delete_model>},
  #if REALM_ENABLE_SYNC
-        {"subscribeToObjects", wrap<subscribe_to_objects>},
+        {"_subscribeToObjects", wrap<subscribe_to_objects>},
  #endif
     };
 

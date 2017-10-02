@@ -239,7 +239,7 @@ class Realm {
      * **Partial synchronization is a tech preview. Its APIs are subject to change.**
      * @param {Realm~ObjectType} type - The type of Realm objects to retrieve.
      * @param {string} query - Query used to filter objects.
-     * @param {callback} - function to call when objects are created, modified, or deleted.
+     * @return {Promise} - a promise that will be resolved with the Realm.Results instance when it's available.
      */
     subscribeToObjects(className, query, callback) {}
 }

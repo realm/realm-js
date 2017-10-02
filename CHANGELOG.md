@@ -3,7 +3,7 @@ X.Z.Y Release notes
 ### Breaking changes
 
 ### Enhancements
-* Added `Realm.subscribeToObjects()` to listen for changes in partial sync'ed Realms.
+* Added `Realm.subscribeToObjects()` to listen for changes in partially synced Realms.
 
 ### Bug fixes
 * None.

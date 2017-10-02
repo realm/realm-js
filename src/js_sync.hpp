@@ -33,7 +33,6 @@
 #include "sync/sync_config.hpp"
 #include "sync/sync_session.hpp"
 #include "sync/sync_user.hpp"
-#include "sync/partial_sync.hpp"
 #include "realm/util/logger.hpp"
 #include "realm/util/uri.hpp"
 
@@ -647,8 +646,7 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
                                                                         nullptr, util::none,
                                                                         client_validate_ssl, ssl_trust_certificate_path,
                                                                         std::move(ssl_verify_callback),
-                                                                        is_partial,
-                                                                        util::none});
+                                                                        is_partial});
 
 
         config.schema_mode = SchemaMode::Additive;
