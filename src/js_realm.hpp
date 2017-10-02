@@ -252,6 +252,26 @@ public:
     };
 
   private:
+    static void handleRealmFileException(ContextType ctx, realm::Realm::Config config, const RealmFileException& ex) {
+        switch (ex.kind()) {
+            case RealmFileException::Kind::IncompatibleSyncedRealm: {
+                ObjectType configuration = Object::create_empty(ctx);
+                Object::set_property(ctx, configuration, "path", Value::from_string(ctx, ex.path()));
+                Object::set_property(ctx, configuration, "readOnly", Value::from_boolean(ctx, true));
+                if (!config.encryption_key.empty()) {
+                    Object::set_property(ctx, configuration, "encryption_key", Value::from_binary(ctx, BinaryData(&config.encryption_key[0], 64)));
+                }
+
+                ObjectType object = Object::create_empty(ctx);
+                Object::set_property(ctx, object, "name", Value::from_string(ctx, "IncompatibleSyncedRealmError"));
+                Object::set_property(ctx, object, "configuration", configuration);
+                throw Exception<T>(ctx, object);
+            }
+            default:
+                throw;
+        }   
+    }
+
     static std::string validated_notification_name(ContextType ctx, const ValueType &value) {
         std::string name = Value::validated_to_string(ctx, value, "notification name");
         if (name != "change") {
@@ -482,7 +502,16 @@ SharedRealm RealmClass<T>::create_shared_realm(ContextType ctx, realm::Realm::Co
                                         ObjectDefaultsMap && defaults, ConstructorMap && constructors) {
     config.execution_context = Context<T>::get_execution_context_id(ctx);
 
-    SharedRealm realm = realm::Realm::get_shared_realm(config);
+    SharedRealm realm;
+    try {
+        realm = realm::Realm::get_shared_realm(config);
+    }
+    catch (const RealmFileException& ex) {
+        handleRealmFileException(ctx, config, ex);
+    }
+    catch (...) {
+        throw;
+    }
 
     GlobalContextType global_context = Context<T>::get_global_context(ctx);
     if (!realm->m_binding_context) {
@@ -691,7 +720,17 @@ void RealmClass<T>::wait_for_download_completion(ContextType ctx, ObjectType thi
 
         std::function<ProgressHandler> progressFunc; 
 
-        auto realm = realm::Realm::get_shared_realm(config);
+        SharedRealm realm;
+        try {
+            realm = realm::Realm::get_shared_realm(config);
+        }
+        catch (const RealmFileException& ex) {
+            handleRealmFileException(ctx, config, ex);
+        }
+        catch (...) {
+           throw;
+        }
+
         if (auto sync_config = config.sync_config)
         {
             static const String progressFuncName = "_onDownloadProgress";
