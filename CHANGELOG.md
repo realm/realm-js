@@ -5,6 +5,7 @@ X.Y.Z-rc Release notes
 
 ### Enhancements
 * Support migration from Realms sync 1.0 to sync 2.0 versions
+* Handling of the situation when the client has to reset the Realm due to diverging histories (#795).
 
 ### Bug fixes
 * None

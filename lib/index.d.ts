@@ -415,6 +415,7 @@ declare namespace Realm.Sync {
     function removeAllListeners(name?: string): void;
     function removeListener(regex: string, name: string, changeCallback: (changeEvent: ChangeEvent) => void): void;
     function setLogLevel(logLevel: 'all' | 'trace' | 'debug' | 'detail' | 'info' | 'warn' | 'error' | 'fatal' | 'off'): void;
+    function initiateClientReset(path: string): void;
     function setFeatureToken(token: string): void;
 
     /**
