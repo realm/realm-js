@@ -21,7 +21,7 @@ X.Y.Z-rc Release notes
 * Upgrading to Realm Core 4.0.0 and Realm Sync 2.0.0-rc25.
 
 ### Enhancements
-** Support Realm migration from sync 1.0 to sync 2.0 version
+* None
 
 ### Bug fixes
 * Configuration of sync file system is not done on module import but later when actually needed by sync (#1351)
