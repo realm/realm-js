@@ -1044,14 +1044,8 @@ module.exports = {
 
         realm.close();
 
-        var migrationWasCalled = false;
 
-        realm = new Realm({schema: schema, deleteRealmIfMigrationNeeded: true, schemaVersion: 1, migration: function(oldRealm, newRealm) {
-            migrationWasCalled = true;
-        }});
-
-        // migration function should not be called as deleteRealmIfMigrationNeeded is true
-        TestCase.assertEqual(migrationWasCalled, false);
+        realm = new Realm({schema: schema, deleteRealmIfMigrationNeeded: true, schemaVersion: 1, migration: undefined });
 
         // object should be gone as Realm should get deleted
         TestCase.assertEqual(realm.objects('TestObject').length, 0);
@@ -1063,7 +1057,7 @@ module.exports = {
 
         realm.close();
 
-        migrationWasCalled = false;
+        var migrationWasCalled = false;
         realm = new Realm({schema: schema, deleteRealmIfMigrationNeeded: false, schemaVersion: 2, migration: function(oldRealm, newRealm) {
             migrationWasCalled = true;
         }});
@@ -1113,15 +1107,8 @@ module.exports = {
         realm.close();
 
 
-        var migrationWasCalled = false;
-
         // change schema
-        realm = new Realm({schema: schema1, deleteRealmIfMigrationNeeded: true, migration: function(oldRealm, newRealm) {
-            migrationWasCalled = true;
-        }});
-
-        // migration function should not be called as deleteRealmIfMigrationNeeded is true
-        TestCase.assertEqual(migrationWasCalled, false);
+        realm = new Realm({schema: schema1, deleteRealmIfMigrationNeeded: true, migration: undefined});
 
         // object should be gone as Realm should get deleted
         TestCase.assertEqual(realm.objects('TestObject').length, 0);
@@ -1139,7 +1126,7 @@ module.exports = {
             new Realm({schema: schema2, deleteRealmIfMigrationNeeded: false, migration: function(oldRealm, newRealm) {}});
         });
 
-        migrationWasCalled = false;
+        var migrationWasCalled = false;
 
         // change schema again, but increment schemaVersion
         realm = new Realm({schema: schema2, deleteRealmIfMigrationNeeded: false, schemaVersion: 1, migration: function(oldRealm, newRealm) {
@@ -1152,5 +1139,23 @@ module.exports = {
         // object should be there because Realm shouldn't get deleted
         TestCase.assertEqual(realm.objects('TestObject').length, 1);
         realm.close();
+    },
+
+    testRealmDeleteRealmIfMigrationNeededIncompatibleConfig: function() {
+        const schema = [{
+            name: 'TestObject',
+            properties: {
+                prop0: 'string',
+                prop1: 'int',
+            }
+        }];
+
+        TestCase.assertThrows(function() {
+            new Realm({schema: schema, deleteRealmIfMigrationNeeded: true, readOnly: true});
+        }, "Cannot set 'deleteRealmIfMigrationNeeded' when 'readOnly' is set.")
+
+        TestCase.assertThrows(function() {
+            new Realm({schema: schema, deleteRealmIfMigrationNeeded: true, migration: function(oldRealm, newRealm) {}});
+        }, "Cannot include 'migration' when 'deleteRealmIfMigrationNeeded' is set.")
     },
 };
