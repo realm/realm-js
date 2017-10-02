@@ -24,6 +24,11 @@
  * accessed in any of the ways that a normal Javascript Array can, including
  * subscripting, enumerating with `for-of` and so on.
  *
+ * A Collection always reflect the current state of the Realm. The one exception to this is
+ * when using `for...in` or `for...of` enumeration, which will always enumerate over the
+ * objects which matched the query when the enumeration is begun, even if some of them are
+ * deleted or modified to be excluded by the filter during the enumeration.
+ *
  * @memberof Realm
  * @since 0.11.0
  */
