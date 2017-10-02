@@ -648,6 +648,11 @@ module.exports = {
     },
 
     testClientReset() {
+        // FIXME: try to enable for React Native
+        if (!isNodeProccess) {
+            return Promise.resolved();
+        }
+
         return Realm.Sync.User.register('http://localhost:9080', uuid(), 'password').then(user => {
             return new Promise((resolve, _reject) => {
                 var realm;
