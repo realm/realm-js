@@ -655,19 +655,18 @@ module.exports = {
         const username = uuid();
         const realmName = uuid();
 
-        return runOutOfProcess(__dirname + '/download-api-helper.js', username1, realmName, REALM_MODULE_PATH)
+        return runOutOfProcess(__dirname + '/download-api-helper.js', username, realmName, REALM_MODULE_PATH)
             .then(() => {
                 Realm.Sync.User.login('http://localhost:9080', username, 'password').then(user1 => {
                     TestCase.assertDefined(user1, 'user1');
+                    let config1 = {
+                        sync: {
+                            user: user1,
+                            url: `realm://localhost:9080/~/${realmName}`,
+                        },
+                        schema: [{ name: 'Integer', properties: { value: 'int' } }],
+                    };
                     return new Promise((resolve, reject) => {
-                        let config1 = {
-                            sync: {
-                                user: user1,
-                                url: `realm://localhost:9080/~/${realmName}`,
-                            },
-                            schema: [{ name: 'Integer', properties: { value: 'int' } }],
-                        };
-
                         return Realm.open(config1)
                             .then(realm1 => {
                                 for(let i = 0; i < 10; i++) {
@@ -675,9 +674,10 @@ module.exports = {
                                         realm1.create('Integer', {value: i});
                                     });
                                 }
-                            })
-                    })
-                    user1.logout();
+                                user1.logout();
+                                realm.deleteFile(config1);
+                            });
+                    });
                 })
             })
             .then(() => {
