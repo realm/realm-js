@@ -653,14 +653,20 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
             ssl_verify_callback = std::move(ssl_verify_functor);
         }
 
+        bool is_partial = false;
+        ValueType partial_value = Object::get_property(ctx, sync_config_object, "partial");
+        if (!Value::is_undefined(ctx, partial_value)) {
+            is_partial = Value::validated_to_boolean(ctx, partial_value);
+        }
+
         // FIXME - use make_shared
         config.sync_config = std::shared_ptr<SyncConfig>(new SyncConfig{shared_user, raw_realm_url,
                                                                         SyncSessionStopPolicy::AfterChangesUploaded,
                                                                         std::move(bind), std::move(error_handler),
                                                                         nullptr, util::none,
                                                                         client_validate_ssl, ssl_trust_certificate_path,
-                                                                        std::move(ssl_verify_callback)});
-
+                                                                        std::move(ssl_verify_callback),
+                                                                        is_partial});
 
 
         config.schema_mode = SchemaMode::Additive;

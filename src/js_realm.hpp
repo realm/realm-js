@@ -34,12 +34,14 @@
 #include "js_sync.hpp"
 #include "sync/sync_config.hpp"
 #include "sync/sync_manager.hpp"
+#include "sync/partial_sync.hpp"
 #endif
 
 #include "shared_realm.hpp"
 #include "binding_context.hpp"
 #include "object_accessor.hpp"
 #include "platform.hpp"
+#include "results.hpp"
 
 namespace realm {
 namespace js {
@@ -156,7 +158,7 @@ class RealmClass : public ClassDefinition<T, SharedRealm, ObservableClass<T>> {
 public:
     using ObjectDefaultsMap = typename Schema<T>::ObjectDefaultsMap;
     using ConstructorMap = typename Schema<T>::ConstructorMap;
-    
+
     using WaitHandler = void(std::error_code);
     using ProgressHandler = void(uint64_t transferred_bytes, uint64_t transferrable_bytes);
 
@@ -180,6 +182,9 @@ public:
     static void close(ContextType, ObjectType, Arguments, ReturnValue &);
     static void compact(ContextType, ObjectType, Arguments, ReturnValue &);
     static void delete_model(ContextType, ObjectType, Arguments, ReturnValue &);
+#if REALM_ENABLE_SYNC
+    static void subscribe_to_objects(ContextType, ObjectType, Arguments, ReturnValue &);
+#endif
 
     // properties
     static void get_empty(ContextType, ObjectType, ReturnValue &);
@@ -236,6 +241,9 @@ public:
         {"close", wrap<close>},
         {"compact", wrap<compact>},
         {"deleteModel", wrap<delete_model>},
+ #if REALM_ENABLE_SYNC
+        {"_subscribeToObjects", wrap<subscribe_to_objects>},
+ #endif
     };
 
     PropertyMap<T> const properties = {
@@ -401,7 +409,7 @@ void RealmClass<T>::constructor(ContextType ctx, ObjectType this_object, size_t 
             else if (config.path.empty()) {
                 config.path = js::default_path();
             }
-            
+
             static const String in_memory_string = "inMemory";
             ValueType in_memory_value = Object::get_property(ctx, object, in_memory_string);
             if (!Value::is_undefined(ctx, in_memory_value) && Value::validated_to_boolean(ctx, in_memory_value, "inMemory")) {
@@ -691,14 +699,14 @@ void RealmClass<T>::wait_for_download_completion(ContextType ctx, ObjectType thi
             auto encryption_key = Value::validated_to_binary(ctx, encryption_key_value, "encryptionKey");
             config.encryption_key.assign(encryption_key.data(), encryption_key.data() + encryption_key.size());
         }
-        
+
         Protected<ObjectType> thiz(ctx, this_object);
         SyncClass<T>::populate_sync_config(ctx, thiz, config_object, config);
 
         Protected<FunctionType> protected_callback(ctx, callback_function);
         Protected<ObjectType> protected_this(ctx, this_object);
         Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
-        
+
         EventLoopDispatcher<WaitHandler> wait_handler([=](std::error_code error_code) {
             HANDLESCOPE
             if (!error_code) {
@@ -718,7 +726,7 @@ void RealmClass<T>::wait_for_download_completion(ContextType ctx, ObjectType thi
         });
         std::function<WaitHandler> waitFunc = std::move(wait_handler);
 
-        std::function<ProgressHandler> progressFunc; 
+        std::function<ProgressHandler> progressFunc;
 
         SharedRealm realm;
         try {
@@ -771,8 +779,8 @@ void RealmClass<T>::wait_for_download_completion(ContextType ctx, ObjectType thi
 
                     if (progressFuncDefined) {
                         session->register_progress_notifier(std::move(progressFunc), SyncSession::NotifierType::download, false);
-                    } 
-                    
+                    }
+
                     session->wait_for_download_completion([=](std::error_code error_code) {
                         realm->close(); //capture and keep realm instance for until here
                         waitFunc(error_code);
@@ -1015,6 +1023,42 @@ void RealmClass<T>::compact(ContextType ctx, ObjectType this_object, Arguments a
 
     return_value.set(realm->compact());
 }
+
+#if REALM_ENABLE_SYNC
+template<typename T>
+void RealmClass<T>::subscribe_to_objects(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
+    args.validate_count(3);
+
+    SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
+    auto class_name = Value::validated_to_string(ctx, args[0]);
+    auto query = Value::validated_to_string(ctx, args[1]);
+    auto callback = Value::validated_to_function(ctx, args[2]);
+
+    Protected<ObjectType> protected_this(ctx, this_object);
+    Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
+    auto cb = [=](realm::Results results, std::exception_ptr err) {
+        if (err) {
+            try {
+                rethrow_exception(err);
+            }
+            catch (const std::exception& e) {
+                typename T::Value arguments[2];
+                arguments[0] = Value::from_null(protected_ctx);
+                arguments[1] = Value::from_string(protected_ctx, e.what());
+                Function<T>::callback(ctx, callback, protected_this, 2, arguments);
+            }
+            return;
+        }
+
+        typename T::Value arguments[2];
+        arguments[0] = ResultsClass<T>::create_instance(protected_ctx, results);
+        arguments[1] = Value::from_null(protected_ctx);
+        Function<T>::callback(protected_ctx, callback, protected_this, 2, arguments);
+    };
+
+    partial_sync::register_query(realm, class_name, query, std::move(cb));
+}
+#endif
 
 } // js
 } // realm

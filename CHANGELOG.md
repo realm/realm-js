@@ -6,6 +6,7 @@ X.Y.Z-rc Release notes
 ### Enhancements
 * Support migration from Realms sync 1.0 to sync 2.0 versions
 * Handling of the situation when the client has to reset the Realm due to diverging histories (#795).
+* Added `Realm.subscribeToObjects()` to listen for changes in partially synced Realms.
 
 ### Bug fixes
 * None
@@ -15,6 +16,7 @@ X.Y.Z-rc Release notes
 ### Breaking changes
 * Upgtading to Realm Core 4.0.1 (bug fixes)
 * Upgrading to Realm Sync 2.0.0-rc26 (sync protocol 22 + bug fixes)
+
 
 2.0.0-rc14 Release notes (2017-9-29)
 =============================================================

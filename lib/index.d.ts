@@ -600,6 +600,11 @@ declare class Realm {
      * @returns boolean
      */
     compact(): boolean;
+
+    /**
+     * @returns Promise<Results<T>>
+     */
+    subscribeToObjects<T>(objectType: string, query: string): Promise<Realm.Results<T>>;
 }
 
 declare module 'realm' {

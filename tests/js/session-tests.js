@@ -493,7 +493,7 @@ module.exports = {
                 };
 
                 Realm.open(config)
-                    .then(realm => 
+                    .then(realm =>
                         _reject("Should fail with IncompatibleSyncedRealmError"))
                     .catch(e => {
                         if (e.name == "IncompatibleSyncedRealmError") {
@@ -502,7 +502,7 @@ module.exports = {
                             resolve();
                             return;
                         }
-                        
+
                         function printObject(o) {
                             var out = '';
                             for (var p in o) {
@@ -779,6 +779,79 @@ module.exports = {
                     });
                 });
             });
+    },
+
+    testPartialSync() {
+        // FIXME: try to enable for React Native
+        if (!isNodeProccess) {
+            return Promise.resolve();
+        }
+
+        const username = uuid();
+        const realmName = uuid();
+
+        return runOutOfProcess(__dirname + '/download-api-helper.js', username, realmName, REALM_MODULE_PATH)
+            .then(() => {
+                Realm.Sync.User.login('http://localhost:9080', username, 'password').then(user1 => {
+                    TestCase.assertDefined(user1, 'user1');
+                    let config1 = {
+                        sync: {
+                            user: user1,
+                            url: `realm://localhost:9080/~/${realmName}`,
+                        },
+                        schema: [{ name: 'Integer', properties: { value: 'int' } }],
+                    };
+                    return new Promise((resolve, reject) => {
+                        return Realm.open(config1)
+                            .then(realm1 => {
+                                for(let i = 0; i < 10; i++) {
+                                    realm1.write(() => {
+                                        realm1.create('Integer', {value: i});
+                                    });
+                                }
+
+                                const progressCallback = (transferred, total) => {
+                                    if (transferred === total) {
+                                        resolve();
+                                    }
+                                }
+                                realm.syncSession.addProgressNotification('upload', 'reportIndefinitely', progressCallback);
+                            })
+                            .then(() => {
+                                realm.close();
+                                realm.deleteFile(config1);
+                                user1.logout();
+                            });
+                    });
+                })
+            })
+            .then(() => {
+                Realm.Sync.User.login('http://localhost:9080', username, 'password').then(user2 => {
+                    TestCase.assertDefined(user2, 'user2');
+                    return new Promise((resolve, reject) => {
+                        let config2 = {
+                            sync: {
+                                user: user2,
+                                url: `realm://localhost:9080/~/${realmName}`,
+                                partial: true,
+                            },
+                            schema: [{ name: 'Integer', properties: { value: 'int' } }],
+                        };
+
+                        const realm2 = new Realm(config2);
+                        realm2.subscribeToObjects('Integer', 'value > 5').then((results, error) => {
+                            return results;
+                        }).then((results) => {
+                            TestCase.assertEqual(results.length, 4);
+                            for(obj in results) {
+                                TestCase.assertTrue(obj.value > 5, '<= 5');
+                            }
+                            resolve();
+                        });
+                        reject();
+                    })
+                })
+            })
     },
 
     testClientReset() {
