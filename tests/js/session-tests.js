@@ -674,8 +674,18 @@ module.exports = {
                                         realm1.create('Integer', {value: i});
                                     });
                                 }
-                                user1.logout();
+
+                                const progressCallback = (transferred, total) => {
+                                    if (transferred === total) {
+                                        resolve();
+                                    }
+                                }
+                                realm.syncSession.addProgressNotification('upload', 'reportIndefinitely', progressCallback);
+                            })
+                            .then(() => {
+                                realm.close();
                                 realm.deleteFile(config1);
+                                user1.logout();
                             });
                     });
                 })
