@@ -502,8 +502,16 @@ module.exports = {
                             resolve();
                             return;
                         }
+                        
+                        function printObject(o) {
+                            var out = '';
+                            for (var p in o) {
+                              out += p + ': ' + o[p] + '\n';
+                            }
+                            return out;
+                          }
 
-                        _reject("Failed with unexpected error" + JSON.stringify(e));
+                        _reject("Failed with unexpected error " + printObject(e));
                     });
             });
         });
