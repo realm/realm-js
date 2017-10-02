@@ -371,8 +371,7 @@ json RPCServer::perform_request(std::string name, const json &args) {
                 catch (...) {
                     exceptionAsJson = {{"error", "An exception occured while processing the request. Could not serialize the exception as JSON"}};
                 }
-                
-                 return (json){{"error", exceptionAsJson}};
+                return (json){{"error", exceptionAsJson}, {"message", ex.what()}};
             }
             catch (std::exception &exception) {
                 return (json){{"error", exception.what()}};
