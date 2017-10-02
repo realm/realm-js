@@ -229,10 +229,21 @@ public:
         HANDLESCOPE
 
         auto error_object = Object<T>::create_empty(m_ctx);
+
+        auto error_code = error.error_code.value();
+        if (error.is_client_reset_requested()) {
+            error_code = 7; // FIXME: define a proper constant
+
+            auto config_object = Object<T>::create_empty(m_ctx);
+            Object<T>::set_property(m_ctx, config_object, "path", Value<T>::from_string(m_ctx, error.user_info[SyncError::c_recovery_file_path_key]));
+            Object<T>::set_property(m_ctx, config_object, "readOnly", Value<T>::from_boolean(m_ctx, true));
+            Object<T>::set_property(m_ctx, error_object, "config", config_object);
+        }
+
         Object<T>::set_property(m_ctx, error_object, "message", Value<T>::from_string(m_ctx, error.message));
         Object<T>::set_property(m_ctx, error_object, "isFatal", Value<T>::from_boolean(m_ctx, error.is_fatal));
         Object<T>::set_property(m_ctx, error_object, "category", Value<T>::from_string(m_ctx, error.error_code.category().name()));
-        Object<T>::set_property(m_ctx, error_object, "code", Value<T>::from_number(m_ctx, error.error_code.value()));
+        Object<T>::set_property(m_ctx, error_object, "code", Value<T>::from_number(m_ctx, error_code));
 
         auto user_info = Object<T>::create_empty(m_ctx);
         for (auto& kvp : error.user_info) {
@@ -478,9 +489,7 @@ void SessionClass<T>::add_progress_notification(ContextType ctx, FunctionType, O
 
         progressFunc = std::move(progress_handler);
 
-
         auto registrationToken = session->register_progress_notifier(std::move(progressFunc), notifierType, is_streaming);
-
         auto syncSession = create_object<T, SessionClass<T>>(ctx, new WeakSession(session));
         PropertyAttributes attributes = ReadOnly | DontEnum | DontDelete;
         Object::set_property(ctx, callback_function, "_syncSession", syncSession, attributes);
@@ -525,6 +534,7 @@ public:
     static FunctionType create_constructor(ContextType);
 
     static void set_sync_log_level(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void initiate_client_reset(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
 
     // private
     static std::function<SyncBindSessionHandler> session_bind_callback(ContextType ctx, ObjectType sync_constructor);
@@ -535,6 +545,7 @@ public:
 
     MethodMap<T> const static_methods = {
         {"setLogLevel", wrap<set_sync_log_level>},
+        {"initiateClientReset", wrap<initiate_client_reset>},
     };
 };
 
@@ -547,6 +558,15 @@ inline typename T::Function SyncClass<T>::create_constructor(ContextType ctx) {
     Object::set_property(ctx, sync_constructor, "Session", ObjectWrap<T, SessionClass<T>>::create_constructor(ctx), attributes);
 
     return sync_constructor;
+}
+
+template<typename T>
+void SyncClass<T>::initiate_client_reset(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue & return_value) {
+    validate_argument_count(argc, 1);
+    std::string path = Value::validated_to_string(ctx, arguments[0]);
+    if (!SyncManager::shared().immediately_run_file_actions(std::string(path))) {
+        throw std::runtime_error(util::format("Realm was not configured correctly. Client Reset could not be run for Realm at: %1", path));
+    }
 }
 
 template<typename T>

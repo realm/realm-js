@@ -1,15 +1,17 @@
-X.Z.Y Release notes
+X.Y.Z-rc Release notes
 =============================================================
 ### Breaking changes
+* None
 
 ### Enhancements
+* Support migration from Realms sync 1.0 to sync 2.0 versions
+* Handling of the situation when the client has to reset the Realm due to diverging histories (#795).
 * Added `Realm.subscribeToObjects()` to listen for changes in partially synced Realms.
 
 ### Bug fixes
-* None.
+* None
 
-
-2.0.0 Release notes (2017-9-29)
+2.0.0-rc16 Release notes (2017-9-29)
 =============================================================
 ### Breaking changes
 * Upgtading to Realm Core 4.0.1 (bug fixes)
@@ -22,7 +24,7 @@ X.Z.Y Release notes
 * Upgrading to Realm Core 4.0.0 and Realm Sync 2.0.0-rc25.
 
 ### Enhancements
-* None.
+* None
 
 ### Bug fixes
 * Configuration of sync file system is not done on module import but later when actually needed by sync (#1351)
