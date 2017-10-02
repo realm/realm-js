@@ -343,8 +343,8 @@ Realm.defaultPath;
  *        OpenSSL erroneously rejects valid certificates possibly because OpenSSL doesn't have access to the
  *        proper trust certificates.
  *   - `partial` - Whether this Realm should be opened in 'partial synchronization' mode.
- *        Partial synchronization mode means that no objects are synchronized from the remote Realm
- *        except those matching queries that the user explicitly specifies.
+ *        Partial synchronisation only synchronizes those objects that match the query specified in contrast
+ *        to the normal mode of operation that synchronises all objects in a remote Realm.
  *        **Partial synchronization is a tech preview. Its APIs are subject to change.**
  */
 
