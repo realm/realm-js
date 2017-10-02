@@ -648,6 +648,10 @@ module.exports = {
     },
 
     testPartialSync() {
+        if (!isNodeProccess) {
+            return Promise.resolve();
+        }
+
         const username1 = uuid();
         const username2 = uuid();
         const realmName = uuid();
