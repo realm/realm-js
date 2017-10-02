@@ -12,6 +12,10 @@ X.Y.Z Release notes
 ### Bug fixes
 * None.
 
+### Internal
+* Upgraded to Realm Sync 2.0.0-rc27.
+
+
 2.0.0-rc16 Release notes (2017-9-29)
 =============================================================
 ### Breaking changes
