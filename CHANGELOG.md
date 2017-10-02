@@ -1,3 +1,14 @@
+X.Y.Z Release notes
+=============================================================
+### Breaking changes
+* Removed `setAccessToken()`; use `setFeatureToken()` instead.
+
+### Enhancements
+* None.
+
+### Bug fixes
+* None.
+
 2.0.0 Release notes (2017-9-29)
 =============================================================
 ### Breaking changes
