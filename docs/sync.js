@@ -18,7 +18,7 @@
 
 /**
  * When opening a Realm created with Realm Mobile Platform v1.x, it is automatically
- * migration to format of Realm Mobile Plarform v2.x. In the case where this migration
+ * migrated to the v2.x format. In case this migration
  * is not possible, an exception is thrown. The exception´s `message` property will be equal
  * to `IncompatibleSyncedRealmException`. The Realm is backed up, and the property `configuration`
  * is a {Realm~Configuration} which refers to it. You can open it as a local, read-only Realm, and 
@@ -31,9 +31,9 @@ class Sync {
      * Add a sync listener to listen to changes across multiple Realms
      * @param {string} server_url - the sync server to listen to
      * @param {SyncUser} admin_user - an admin user obtained by calling `new Realm.Sync.User.adminUser`
-     * @param {string} regex - a regular expression used to determine which cahnged Realms should trigger events -
+     * @param {string} regex - a regular expression used to determine which changed Realms should trigger events -
      *  Use `.*` to match all all Realms
-     * @param {string} name - The name of event that should cause the callback to be called
+     * @param {string} name - The name of the event that should trigger the callback to be called
      *   _Currently only the 'change' event is supported_
      * @param {function(change_event)} change_callback - called when changes are made to any Realm which
      *  match the given regular expression
@@ -64,7 +64,7 @@ class Sync {
 
     /**
      * Initiate a client reset. The Realm must be closed prior to the reset.
-     * @param {string} [path] - The Realm to reset.
+     * @param {string} [path] - The path to the Realm to reset.
      * Throws error if reset is not possible.
      * @example
      * {
@@ -81,7 +81,7 @@ class Sync {
 }
 
 /**
- * Change info passed when receiving sync 'change' events
+ * Change information passed when receiving sync 'change' events
  * @memberof Realm.Sync
  */
 class ChangeEvent {
