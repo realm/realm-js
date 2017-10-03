@@ -1,3 +1,17 @@
+X.Y.Z-rc? Release notes (DATE)
+=============================================================
+### Breaking changes
+* Deprecate node 4 and node 5 support
+
+### Enhancements
+* None
+
+### Bug fixes
+* None.
+
+### Internal
+* None
+
 2.0.0-rc17 Release notes (2017-10-3)
 =============================================================
 ### Breaking changes
