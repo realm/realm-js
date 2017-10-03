@@ -282,6 +282,8 @@ Realm.defaultPath;
  *   This function takes two arguments:
  *   - `oldRealm` - The Realm before migration is performed.
  *   - `newRealm` - The Realm that uses the latest `schema`, which should be modified as necessary.
+ * @property {boolean} [deleteRealmIfMigrationNeeded=false] - Specifies if this Realm should be deleted
+ *   if a migration is needed.
  * @property {callback(number, number)} [shouldCompactOnLaunch] - The function called when opening
  *   a Realm for the first time during the life of a process to determine if it should be compacted
  *   before being returned to the user. The function takes two arguments:
