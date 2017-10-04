@@ -670,7 +670,7 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
 
 
         config.schema_mode = SchemaMode::Additive;
-        config.path = syncManagerShared().path_for_realm(*shared_user, raw_realm_url);
+        config.path = syncManagerShared().path_for_realm(*shared_user, config.sync_config->realm_url());
 
         if (!config.encryption_key.empty()) {
             config.sync_config->realm_encryption_key = std::array<char, 64>();

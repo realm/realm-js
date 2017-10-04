@@ -803,10 +803,12 @@ module.exports = {
                         schema: [{ name: 'Dog', properties: { name: 'string' } }]
                     };
 
+                    Realm.deleteFile(config);
                     const realm = new Realm(config);
+                    TestCase.assertEqual(realm.objects('Dog').length, 0);
                     return realm.subscribeToObjects("Dog", "name == 'Lassy 1'").then(results => {
                         TestCase.assertEqual(results.length, 1);
-                        TestCase.assertTrue(results[0].name === 'Lassy 1', "The object is not synced correctly");    
+                        TestCase.assertTrue(results[0].name === 'Lassy 1', "The object is not synced correctly");
                     });
                 })
             })
