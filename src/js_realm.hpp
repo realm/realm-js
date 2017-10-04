@@ -1045,8 +1045,8 @@ void RealmClass<T>::subscribe_to_objects(ContextType ctx, ObjectType this_object
     args.validate_count(3);
 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
-    auto class_name = Value::validated_to_string(ctx, args[0]);
-    auto query = Value::validated_to_string(ctx, args[1]);
+    std::string class_name = Value::validated_to_string(ctx, args[0]);
+    std::string query = Value::validated_to_string(ctx, args[1]);
     auto callback = Value::validated_to_function(ctx, args[2]);
 
     Protected<ObjectType> protected_this(ctx, this_object);

@@ -114,7 +114,7 @@ function runOutOfProcess(nodeJsFilePath) {
 }
 
 module.exports = {
-
+/*
     testLocalRealmHasNoSession() {
         let realm = new Realm();
         TestCase.assertNull(realm.syncSession);
@@ -780,7 +780,7 @@ module.exports = {
                 });
             });
     },
-
+*/
     testPartialSync() {
         // FIXME: try to enable for React Native
         if (!isNodeProccess) {
@@ -792,7 +792,7 @@ module.exports = {
 
         return runOutOfProcess(__dirname + '/download-api-helper.js', username, realmName, REALM_MODULE_PATH)
             .then(() => {
-                Realm.Sync.User.login('http://localhost:9080', username, 'password').then(user1 => {
+                return Realm.Sync.User.login('http://localhost:9080', username, 'password').then(user1 => {
                     TestCase.assertDefined(user1, 'user1');
                     let config1 = {
                         sync: {
@@ -801,59 +801,56 @@ module.exports = {
                         },
                         schema: [{ name: 'Integer', properties: { value: 'int' } }],
                     };
-                    return new Promise((resolve, reject) => {
-                        return Realm.open(config1)
-                            .then(realm1 => {
-                                for(let i = 0; i < 10; i++) {
-                                    realm1.write(() => {
-                                        realm1.create('Integer', {value: i});
-                                    });
-                                }
-
-                                const progressCallback = (transferred, total) => {
-                                    if (transferred === total) {
-                                        resolve();
-                                    }
-                                }
-                                realm.syncSession.addProgressNotification('upload', 'reportIndefinitely', progressCallback);
-                            })
-                            .then(() => {
-                                realm.close();
-                                realm.deleteFile(config1);
-                                user1.logout();
-                            });
-                    });
+                    const realm1 = new Realm(config1)
+                    for(let i = 0; i < 10; i++) {
+                        realm1.write(() => {
+                            realm1.create('Integer', {value: i});
+                        });
+                    }
+                    let done = false;
+                    const progressCallback = function(transferred, total) {
+                        done = (transferred === total);
+                    }
+                    realm1.syncSession.addProgressNotification('upload', 'reportIndefinitely', progressCallback);
+                    setTimeout(() => {
+                        TestCase.assertTrue(done);
+                        realm1.removeProgressNotification(progressCallback);
+                    }, 2000);
+                    realm1.close();
+                    user1.logout();
+                    Realm.deleteFile(config1);
                 })
             })
             .then(() => {
-                Realm.Sync.User.login('http://localhost:9080', username, 'password').then(user2 => {
+                return Realm.Sync.User.login('http://localhost:9080', username, 'password').then(user2 => {
                     TestCase.assertDefined(user2, 'user2');
-                    return new Promise((resolve, reject) => {
-                        let config2 = {
-                            sync: {
-                                user: user2,
-                                url: `realm://localhost:9080/~/${realmName}`,
-                                partial: true,
-                            },
-                            schema: [{ name: 'Integer', properties: { value: 'int' } }],
-                        };
+                    let config2 = {
+                        sync: {
+                            user: user2,
+                            url: `realm://localhost:9080/~/${realmName}`,
+                            partial: true,
+                        },
+                        schema: [{ name: 'Integer', properties: { value: 'int' } }],
+                    };
 
-                        const realm2 = new Realm(config2);
-                        realm2.subscribeToObjects('Integer', 'value > 5').then((results, error) => {
-                            return results;
-                        }).then((results) => {
-                            TestCase.assertEqual(results.length, 4);
-                            for(obj in results) {
-                                TestCase.assertTrue(obj.value > 5, '<= 5');
-                            }
-                            resolve();
-                        });
-                        reject();
-                    })
-                })
-            })
+                    const realm2 = new Realm(config2);
+                    realm2.subscribeToObjects('Integer', 'value > 5').then((results, error) => {
+                        if (error) {
+                            throw error;
+                        }
+                        return results;
+                    }).then((results) => {
+                        TestCase.assertEqual(results.length, 4);
+                        for(obj in results) {
+                            TestCase.assertTrue(obj.value > 5, '<= 5');
+                        }
+                    }).catch((error) => {
+                        TestCase.assertTrue(false);
+                    });
+                });
+            });
     },
-
+/*
     testClientReset() {
         // FIXME: try to enable for React Native
         if (!isNodeProccess) {
@@ -886,5 +883,5 @@ module.exports = {
                 session._simulateError(211, 'ClientReset'); // 211 -> divering histories
             });
         });
-    }
+    }*/
 }
