@@ -362,7 +362,14 @@ declare namespace Realm.Sync {
         expiresAt?: Date;
     }
 
-    type ErrorCallback = (message?: string, isFatal?: boolean, category?: string, code?: number) => void;
+    interface SyncError {
+        message: string; 
+        isFatal: boolean 
+        category?: string 
+        code: number;
+    }
+
+    type ErrorCallback = (session: Session, error: SyncError) => void;
     type SSLVerifyCallback = (serverAddress: string, serverPort: number, pemCertificate: string, preverifyOk: number, depth: number) => boolean;
 
     interface SyncConfiguration {
