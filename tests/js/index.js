@@ -55,7 +55,7 @@ function node_require(module) { return require(module); }
 // If on node, run the async tests
 const isNodeProcess = typeof process === 'object' && process + '' === '[object process]';
 if (isNodeProcess) {
-   // TESTS.AsyncTests = node_require('./async-tests');
+    TESTS.AsyncTests = node_require('./async-tests');
 }
 
 var SPECIAL_METHODS = {
