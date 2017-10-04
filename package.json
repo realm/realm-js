@@ -49,7 +49,7 @@
     "set-version": "scripts/set-version.sh",
     "lint": "eslint",
     "test": "scripts/test.sh",
-    "install": "node-pre-gyp install --fallback-to-build",
+    "install": "npm install node-pre-gyp && node-pre-gyp install --fallback-to-build",
     "build-changes": "node-pre-gyp build --debug",
     "rebuild-changes": "node-pre-gyp rebuild --debug && cd tests && npm install",
     "prepublish": "echo prepublishing && node scripts/prepublish.js",
