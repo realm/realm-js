@@ -792,63 +792,29 @@ module.exports = {
 
         return runOutOfProcess(__dirname + '/download-api-helper.js', username, realmName, REALM_MODULE_PATH)
             .then(() => {
-                return Realm.Sync.User.login('http://localhost:9080', username, 'password').then(user1 => {
-                    TestCase.assertDefined(user1, 'user1');
-                    let config1 = {
+                return Realm.Sync.User.login('http://localhost:9080', username, 'password').then(user => {
+                    let config = {
                         sync: {
-                            user: user1,
-                            url: `realm://localhost:9080/~/${realmName}`,
-                        },
-                        schema: [{ name: 'Integer', properties: { value: 'int' } }],
-                    };
-                    const realm1 = new Realm(config1)
-                    for(let i = 0; i < 10; i++) {
-                        realm1.write(() => {
-                            realm1.create('Integer', {value: i});
-                        });
-                    }
-                    let done = false;
-                    const progressCallback = function(transferred, total) {
-                        done = (transferred === total);
-                    }
-                    realm1.syncSession.addProgressNotification('upload', 'reportIndefinitely', progressCallback);
-                    setTimeout(() => {
-                        TestCase.assertTrue(done);
-                        realm1.removeProgressNotification(progressCallback);
-                    }, 2000);
-                    realm1.close();
-                    user1.logout();
-                    Realm.deleteFile(config1);
-                })
-            })
-            .then(() => {
-                return Realm.Sync.User.login('http://localhost:9080', username, 'password').then(user2 => {
-                    TestCase.assertDefined(user2, 'user2');
-                    let config2 = {
-                        sync: {
-                            user: user2,
+                            user: user,
                             url: `realm://localhost:9080/~/${realmName}`,
                             partial: true,
+                            error: (session, error) => console.log(error)
                         },
-                        schema: [{ name: 'Integer', properties: { value: 'int' } }],
+                        schema: [{ name: 'Dog', properties: { name: 'string' } }]
                     };
 
-                    const realm2 = new Realm(config2);
-                    realm2.subscribeToObjects('Integer', 'value > 5').then((results, error) => {
+                    const realm = new Realm(config);
+                    return realm.subscribeToObjects("Dog", "name == 'Lassy 1'").then((results, error) => {
                         if (error) {
                             throw error;
                         }
                         return results;
                     }).then((results) => {
-                        TestCase.assertEqual(results.length, 4);
-                        for(obj in results) {
-                            TestCase.assertTrue(obj.value > 5, '<= 5');
-                        }
-                    }).catch((error) => {
-                        TestCase.assertTrue(false);
+                        TestCase.assertEqual(results.length, 1);
+                        TestCase.assertTrue(results[0].name === 'Lassy 1', "The object is not synced correctly");    
                     });
-                });
-            });
+                })
+            })
     },
 /*
     testClientReset() {
