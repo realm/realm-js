@@ -804,12 +804,7 @@ module.exports = {
                     };
 
                     const realm = new Realm(config);
-                    return realm.subscribeToObjects("Dog", "name == 'Lassy 1'").then((results, error) => {
-                        if (error) {
-                            throw error;
-                        }
-                        return results;
-                    }).then((results) => {
+                    return realm.subscribeToObjects("Dog", "name == 'Lassy 1'").then(results => {
                         TestCase.assertEqual(results.length, 1);
                         TestCase.assertTrue(results[0].name === 'Lassy 1', "The object is not synced correctly");    
                     });

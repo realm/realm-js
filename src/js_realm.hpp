@@ -1061,8 +1061,8 @@ void RealmClass<T>::subscribe_to_objects(ContextType ctx, ObjectType this_object
             }
             catch (const std::exception& e) {
                 ValueType callback_arguments[2];
-                callback_arguments[0] = Value::from_null(protected_ctx);
-                callback_arguments[1] = Value::from_string(protected_ctx, e.what());
+                callback_arguments[0] = Value::from_string(protected_ctx, e.what());
+                callback_arguments[1] = Value::from_null(protected_ctx);
                 Function<T>::callback(ctx, protected_callback, protected_this, 2, callback_arguments);
             }
             return;
@@ -1070,8 +1070,8 @@ void RealmClass<T>::subscribe_to_objects(ContextType ctx, ObjectType this_object
 
         
         ValueType callback_arguments[2];
-        callback_arguments[0] = ResultsClass<T>::create_instance(protected_ctx, results);
-        callback_arguments[1] = Value::from_null(protected_ctx);
+        callback_arguments[0] = Value::from_null(protected_ctx);
+        callback_arguments[1] = ResultsClass<T>::create_instance(protected_ctx, results);
         Function<T>::callback(protected_ctx, protected_callback, protected_this, 2, callback_arguments);
     };
 
