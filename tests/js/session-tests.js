@@ -114,7 +114,6 @@ function runOutOfProcess(nodeJsFilePath) {
 }
 
 module.exports = {
-/*
     testLocalRealmHasNoSession() {
         let realm = new Realm();
         TestCase.assertNull(realm.syncSession);
@@ -780,7 +779,7 @@ module.exports = {
                 });
             });
     },
-*/
+
     testPartialSync() {
         // FIXME: try to enable for React Native
         if (!isNodeProccess) {
@@ -813,7 +812,7 @@ module.exports = {
                 })
             })
     },
-/*
+
     testClientReset() {
         // FIXME: try to enable for React Native
         if (!isNodeProccess) {
@@ -846,5 +845,5 @@ module.exports = {
                 session._simulateError(211, 'ClientReset'); // 211 -> divering histories
             });
         });
-    }*/
+    }
 }
