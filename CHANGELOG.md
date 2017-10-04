@@ -1,4 +1,4 @@
-X.Y.Z-rc? Release notes (DATE)
+2.0.0-rc18 Release notes (2017-10-4)
 =============================================================
 ### Breaking changes
 * Deprecate node 4 and node 5 support
