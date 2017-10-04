@@ -114,7 +114,6 @@ function runOutOfProcess(nodeJsFilePath) {
 }
 
 module.exports = {
-
     testLocalRealmHasNoSession() {
         let realm = new Realm();
         TestCase.assertNull(realm.syncSession);
@@ -792,64 +791,24 @@ module.exports = {
 
         return runOutOfProcess(__dirname + '/download-api-helper.js', username, realmName, REALM_MODULE_PATH)
             .then(() => {
-                Realm.Sync.User.login('http://localhost:9080', username, 'password').then(user1 => {
-                    TestCase.assertDefined(user1, 'user1');
-                    let config1 = {
+                return Realm.Sync.User.login('http://localhost:9080', username, 'password').then(user => {
+                    let config = {
                         sync: {
-                            user: user1,
+                            user: user,
                             url: `realm://localhost:9080/~/${realmName}`,
+                            partial: true,
+                            error: (session, error) => console.log(error)
                         },
-                        schema: [{ name: 'Integer', properties: { value: 'int' } }],
+                        schema: [{ name: 'Dog', properties: { name: 'string' } }]
                     };
-                    return new Promise((resolve, reject) => {
-                        return Realm.open(config1)
-                            .then(realm1 => {
-                                for(let i = 0; i < 10; i++) {
-                                    realm1.write(() => {
-                                        realm1.create('Integer', {value: i});
-                                    });
-                                }
 
-                                const progressCallback = (transferred, total) => {
-                                    if (transferred === total) {
-                                        resolve();
-                                    }
-                                }
-                                realm.syncSession.addProgressNotification('upload', 'reportIndefinitely', progressCallback);
-                            })
-                            .then(() => {
-                                realm.close();
-                                realm.deleteFile(config1);
-                                user1.logout();
-                            });
+                    Realm.deleteFile(config);
+                    const realm = new Realm(config);
+                    TestCase.assertEqual(realm.objects('Dog').length, 0);
+                    return realm.subscribeToObjects("Dog", "name == 'Lassy 1'").then(results => {
+                        TestCase.assertEqual(results.length, 1);
+                        TestCase.assertTrue(results[0].name === 'Lassy 1', "The object is not synced correctly");
                     });
-                })
-            })
-            .then(() => {
-                Realm.Sync.User.login('http://localhost:9080', username, 'password').then(user2 => {
-                    TestCase.assertDefined(user2, 'user2');
-                    return new Promise((resolve, reject) => {
-                        let config2 = {
-                            sync: {
-                                user: user2,
-                                url: `realm://localhost:9080/~/${realmName}`,
-                                partial: true,
-                            },
-                            schema: [{ name: 'Integer', properties: { value: 'int' } }],
-                        };
-
-                        const realm2 = new Realm(config2);
-                        realm2.subscribeToObjects('Integer', 'value > 5').then((results, error) => {
-                            return results;
-                        }).then((results) => {
-                            TestCase.assertEqual(results.length, 4);
-                            for(obj in results) {
-                                TestCase.assertTrue(obj.value > 5, '<= 5');
-                            }
-                            resolve();
-                        });
-                        reject();
-                    })
                 })
             })
     },

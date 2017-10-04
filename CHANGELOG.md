@@ -7,7 +7,7 @@ X.Y.Z-rc? Release notes (DATE)
 * None
 
 ### Bug fixes
-* None.
+* Fixed bug in `Realm.subscribeToObjects()`.
 
 ### Internal
 * None
