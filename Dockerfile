@@ -1,5 +1,7 @@
 FROM ubuntu:xenial
 
+ARG ROS_DE_VERSION
+
 # Install the JDK
 # We are going to need some 32 bit binaries because aapt (Android Asset
 # Packaging Tool) requires it
@@ -55,6 +57,7 @@ ENV PATH ${PATH}:${ANDROID_HOME}/tools:${ANDROID_HOME}/platform-tools
 RUN echo y | android update sdk --no-ui --all --filter tools > /dev/null && \
     echo y | android update sdk --no-ui --all --filter platform-tools | grep 'package installed' && \
     echo y | android update sdk --no-ui --all --filter build-tools-23.0.1 | grep 'package installed' && \
+    echo y | android update sdk --no-ui --all --filter build-tools-25.0.2 | grep 'package installed' && \
     echo y | android update sdk --no-ui --all --filter extra-android-m2repository | grep 'package installed' && \
     echo y | android update sdk --no-ui --all --filter android-23 | grep 'package installed'
 
@@ -74,3 +77,19 @@ RUN cd /opt && \
     make && make install
 
 RUN npm install -g react-native-cli
+
+# Add realm repo
+RUN apt-get update -qq \
+    && curl -s https://packagecloud.io/install/repositories/realm/realm/script.deb.sh | bash
+
+# ROS npm dependencies
+RUN npm init -y
+RUN npm install winston temp httpdispatcher@1.0.0
+
+# Install realm object server
+RUN apt-get update -qq \
+    && apt-get install -y realm-object-server-developer=1.8.3-83 \
+    && apt-get clean
+
+COPY tests/ros/keys/public.pem tests/ros/keys/private.pem tests/ros/keys/127_0_0_1-server.key.pem tests/ros/keys/127_0_0_1-chain.crt.pem tests/ros/configuration.yml /
+COPY tests/ros/ros-testing-server.js /usr/bin/

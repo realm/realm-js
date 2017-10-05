@@ -55,6 +55,10 @@ start_server() {
 }
 
 stop_server() {
+  if [ "$(uname)" = 'Linux' ]; then
+    # FIXME: sudo is required if not Docker 
+    systemctl start realm-object-server
+  fi
   if [[ ${SERVER_PID} -gt 0 ]] ; then
     kill -9 ${SERVER_PID}
   fi
@@ -65,8 +69,14 @@ log_temp=
 test_temp_dir=
 cleanup() {
   # Kill started object server
-  stop_server || true
+  if [ "$(uname)" = 'Darwin' ]; then
+    stop_server || true
+  fi
 
+  if [ "(uname)" = 'Linux' ]; then
+    sh ./tests/ros/stop_server.sh
+  fi
+  
   # Quit Simulator.app to give it a chance to go down gracefully
   if $startedSimulator; then
     osascript -e 'tell app "Simulator" to quit without saving' || true
@@ -309,6 +319,16 @@ case "$TARGET" in
     start_server
   fi
 
+  if [ "$(uname)" = 'Linux' ]; then
+      # Forward ports
+      adb reverse tcp:9443 tcp:9443
+      adb reverse tcp:9080 tcp:9080
+      adb reverse tcp:8888 tcp:8888
+      # FIXME: sudo is required if not Docker
+      systemctl enable realm-object-server
+      systemctl start realm-object-server
+  fi
+  
   [[ $CONFIGURATION == 'Debug' ]] && exit 0
   XCPRETTY=''
 
@@ -321,6 +341,7 @@ case "$TARGET" in
   adb logcat -c
   adb logcat -T 1 | tee "$LOGCAT_OUT" &
 
+  
   ./run-android.sh
 
   echo "Start listening for Test completion"
