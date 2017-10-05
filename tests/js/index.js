@@ -18,7 +18,9 @@
 
 'use strict';
 
-var Realm = require('realm');
+const Realm = require('realm');
+
+global.enableSyncTests = Realm.Sync;
 
 var TESTS = {
     ListTests: require('./list-tests'),
@@ -37,14 +39,14 @@ if (!(typeof process === 'object' && process.platform === 'win32')) {
 }
 
 // If sync is enabled, run the sync tests
-if (Realm.Sync) {
+if (global.enableSyncTests) {
     TESTS.UserTests = require('./user-tests');
     TESTS.SessionTests = require('./session-tests');
 
     // FIXME: Permission tests currently fail in chrome debugging mode.
     if (typeof navigator === 'undefined' ||
-        !/Chrome/.test(navigator.userAgent)) { // eslint-disable-line no-undef
-      TESTS.PermissionTests = require('./permission-tests');
+      !/Chrome/.test(navigator.userAgent)) { // eslint-disable-line no-undef
+     TESTS.PermissionTests = require('./permission-tests');
     }
 }
 
@@ -82,18 +84,20 @@ exports.registerTests = function(tests) {
 };
 
 exports.prepare = function(done) {
-    if (!isNodeProcess || global.testAdminUserInfo) {
+    if (!global.enableSyncTests || !isNodeProcess || global.testAdminUserInfo) {
         done();
+        return;
     }
 
-    let helper = require('./admin-user-helper');
-    helper.createAdminUser().then(userInfo => {
-        global.testAdminUserInfo = userInfo;
-        done();
-    })
-        .catch(error => {
-            console.error("Error running admin-user-helper: " + error);
+    require('./admin-user-helper')
+        .createAdminUser()
+        .then(userInfo => {
+            global.testAdminUserInfo = userInfo;
             done();
+        })
+        .catch(error => {
+            console.error("Error running admin-user-helper", error);
+            done.fail(error);
         });
 };
 

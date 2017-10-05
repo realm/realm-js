@@ -15,7 +15,7 @@
   },
   "scripts": {
     "check-typescript" : "tsc --noEmit --alwaysStrict ./../lib/index.d.ts",
-    "test": "npm run check-typescript && jasmine spec/unit_tests.js",
-    "test-sync-integration": "npm run check-typescript && jasmine spec/sync_integration_tests.js"
+    "js-tests" : "jasmine spec/unit_tests.js",
+    "test": "npm run check-typescript && npm run js-tests"
   }
 }

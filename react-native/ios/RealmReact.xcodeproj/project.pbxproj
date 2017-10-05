@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		85CA5FE61F1536720038172D /* libRealmJS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F606902F1CA277CD0003FB26 /* libRealmJS.a */; };
 		F60690171CA2766F0003FB26 /* RealmReact.h in Copy Headers */ = {isa = PBXBuildFile; fileRef = F60690161CA2766F0003FB26 /* RealmReact.h */; };
 		F60690191CA2766F0003FB26 /* RealmReact.mm in Sources */ = {isa = PBXBuildFile; fileRef = F60690181CA2766F0003FB26 /* RealmReact.mm */; };
 		F60690211CA277410003FB26 /* RealmAnalytics.mm in Sources */ = {isa = PBXBuildFile; fileRef = F60690201CA277410003FB26 /* RealmAnalytics.mm */; };
@@ -48,13 +49,6 @@
 			remoteGlobalIDString = F63FF2F01C16405C00B3B8E0;
 			remoteInfo = GCDWebServers;
 		};
-		F68759FC1D21949A007471AB /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = F60690231CA277CC0003FB26 /* RealmJS.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = F62BF8FB1CAC71780022BCDC;
-			remoteInfo = RealmNode;
-		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -79,6 +73,17 @@
 		F60690201CA277410003FB26 /* RealmAnalytics.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = RealmAnalytics.mm; sourceTree = "<group>"; };
 		F60690231CA277CC0003FB26 /* RealmJS.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RealmJS.xcodeproj; path = ../../src/RealmJS.xcodeproj; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		85CA5FE41F1536660038172D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				85CA5FE61F1536720038172D /* libRealmJS.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
 		F606900A1CA2766F0003FB26 = {
@@ -122,7 +127,6 @@
 			children = (
 				F68759FB1D21949A007471AB /* libGCDWebServers.a */,
 				F606902F1CA277CD0003FB26 /* libRealmJS.a */,
-				F68759FD1D21949A007471AB /* libRealmNode.dylib */,
 				F60690331CA277CD0003FB26 /* RealmJSTests.xctest */,
 			);
 			name = Products;
@@ -137,6 +141,7 @@
 			buildPhases = (
 				F606900F1CA2766F0003FB26 /* Sources */,
 				F60690111CA2766F0003FB26 /* Copy Headers */,
+				85CA5FE41F1536660038172D /* Frameworks */,
 			);
 			buildRules = (
 			);
@@ -206,13 +211,6 @@
 			fileType = archive.ar;
 			path = libGCDWebServers.a;
 			remoteRef = F68759FA1D21949A007471AB /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		F68759FD1D21949A007471AB /* libRealmNode.dylib */ = {
-			isa = PBXReferenceProxy;
-			fileType = "compiled.mach-o.dylib";
-			path = libRealmNode.dylib;
-			remoteRef = F68759FC1D21949A007471AB /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 /* End PBXReferenceProxy section */
@@ -345,14 +343,14 @@
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SRCROOT)/../../src/**",
-					"$(SRCROOT)/../../vendor/core/include",
+					"$(SRCROOT)/../../vendor/realm-ios/include",
 					"$(SRCROOT)/../../vendor/GCDWebServer/GCDWebServer/**",
 					"$(SRCROOT)/../../../react-native/React/**",
 					"$(SRCROOT)/../../tests/react-test-app/node_modules/react-native/React/**",
 					"$(SRCROOT)/../../examples/ReactExample/node_modules/react-native/React/**",
 					"$(SRCROOT)/../../vendor",
 				);
-				OTHER_LIBTOOLFLAGS = "$(BUILT_PRODUCTS_DIR)/libRealmJS.a $(BUILT_PRODUCTS_DIR)/libGCDWebServers.a";
+				OTHER_LIBTOOLFLAGS = "$(BUILT_PRODUCTS_DIR)/libGCDWebServers.a";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 			};
@@ -364,14 +362,13 @@
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SRCROOT)/../../src/**",
-					"$(SRCROOT)/../../vendor/core/include",
+					"$(SRCROOT)/../../vendor/realm-ios/include",
 					"$(SRCROOT)/../../vendor/GCDWebServer/GCDWebServer/**",
 					"$(SRCROOT)/../../../react-native/React/**",
 					"$(SRCROOT)/../../tests/react-test-app/node_modules/react-native/React/**",
 					"$(SRCROOT)/../../examples/ReactExample/node_modules/react-native/React/**",
 					"$(SRCROOT)/../../vendor",
 				);
-				OTHER_LIBTOOLFLAGS = "$(BUILT_PRODUCTS_DIR)/libRealmJS.a";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 			};

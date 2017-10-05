@@ -51,16 +51,22 @@ struct Arguments {
             throw std::invalid_argument(util::format("Invalid arguments: at most %1 expected, but %2 supplied.", max, count));
         }
     }
+
+    void validate_count(size_t actual) const {
+        if (count != actual) {
+            throw std::invalid_argument(util::format("Invalid arguments: %1 expected, but %s supplied.", actual, count));
+        }
+    }
 };
 
 template<typename T>
-using ArgumentsMethodType = void(typename T::Context, typename T::Function, typename T::Object, Arguments<T>, ReturnValue<T> &);
+using ArgumentsMethodType = void(typename T::Context, typename T::Object, Arguments<T>, ReturnValue<T> &);
 
 template<typename T>
 struct PropertyType {
     using GetterType = void(typename T::Context, typename T::Object, ReturnValue<T> &);
     using SetterType = void(typename T::Context, typename T::Object, typename T::Value);
-    
+
     typename T::PropertyGetterCallback getter;
     typename T::PropertySetterCallback setter;
 };
@@ -95,7 +101,7 @@ template<typename T, typename U, typename V = void>
 struct ClassDefinition {
     using Internal = U;
     using Parent = V;
-    
+
     // Every subclass *must* at least have a name.
     // std::string const name;
 

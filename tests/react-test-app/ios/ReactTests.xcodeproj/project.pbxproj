@@ -29,6 +29,7 @@
 		855301CF1E20069D00FF108E /* dates-v3.realm in Resources */ = {isa = PBXBuildFile; fileRef = 855301CD1E20069D00FF108E /* dates-v3.realm */; };
 		855301D01E20069D00FF108E /* dates-v5.realm in Resources */ = {isa = PBXBuildFile; fileRef = 855301CE1E20069D00FF108E /* dates-v5.realm */; };
 		855301D31E2006F700FF108E /* RealmReactTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 855301D11E2006F400FF108E /* RealmReactTests.m */; };
+		A4CEF4BB1F7F862D00BA3B26 /* sync-v1.realm in Resources */ = {isa = PBXBuildFile; fileRef = A4CEF4BA1F7F862D00BA3B26 /* sync-v1.realm */; };
 		E2050A7A5BE14CEA9A9E0722 /* libc++.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 8B37A7097A134D5CBB4C462A /* libc++.tbd */; };
 /* End PBXBuildFile section */
 
@@ -253,6 +254,7 @@
 		855301CE1E20069D00FF108E /* dates-v5.realm */ = {isa = PBXFileReference; lastKnownFileType = file; path = "dates-v5.realm"; sourceTree = "<group>"; };
 		855301D11E2006F400FF108E /* RealmReactTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = RealmReactTests.m; path = ReactTests/RealmReactTests.m; sourceTree = "<group>"; };
 		8B37A7097A134D5CBB4C462A /* libc++.tbd */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.tbd"; path = "usr/lib/libc++.tbd"; sourceTree = SDKROOT; };
+		A4CEF4BA1F7F862D00BA3B26 /* sync-v1.realm */ = {isa = PBXFileReference; lastKnownFileType = file; path = "sync-v1.realm"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -377,6 +379,14 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		3F0587551F58D19B006F7080 /* Recovered References */ = {
+			isa = PBXGroup;
+			children = (
+				629FEF95D64747E9A56D4D0C /* libRealmReact.a */,
+			);
+			name = "Recovered References";
+			sourceTree = "<group>";
+		};
 		49D7AFC5B84C4E5599233B8E /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
@@ -442,6 +452,7 @@
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				83CBBA001A601CBA00E9B192 /* Products */,
 				49D7AFC5B84C4E5599233B8E /* Frameworks */,
+				3F0587551F58D19B006F7080 /* Recovered References */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -467,6 +478,7 @@
 		855301CC1E20069D00FF108E /* data */ = {
 			isa = PBXGroup;
 			children = (
+				A4CEF4BA1F7F862D00BA3B26 /* sync-v1.realm */,
 				855301CD1E20069D00FF108E /* dates-v3.realm */,
 				855301CE1E20069D00FF108E /* dates-v5.realm */,
 			);
@@ -796,6 +808,7 @@
 			files = (
 				13B07FBD1A68108700A75B9A /* LaunchScreen.xib in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
+				A4CEF4BB1F7F862D00BA3B26 /* sync-v1.realm in Resources */,
 				855301D01E20069D00FF108E /* dates-v5.realm in Resources */,
 				855301CF1E20069D00FF108E /* dates-v3.realm in Resources */,
 			);
@@ -871,12 +884,12 @@
 					"DEBUG=1",
 					"$(inherited)",
 				);
+				INFOPLIST_FILE = ../../ios/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 				);
-				INFOPLIST_FILE = ../../ios/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/ReactTests.app/ReactTests";
 				USER_HEADER_SEARCH_PATHS = "$(SRCROOT)/../../ios";
@@ -889,12 +902,12 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				COPY_PHASE_STRIP = NO;
 				DEAD_CODE_STRIPPING = NO;
+				INFOPLIST_FILE = ../../ios/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 				);
-				INFOPLIST_FILE = ../../ios/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/ReactTests.app/ReactTests";
 				USER_HEADER_SEARCH_PATHS = "$(SRCROOT)/../../ios";

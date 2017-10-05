@@ -15,38 +15,10 @@
 *.realm.lock
 *.management/
 
-# core
-core
-core-*
-sync
-sync-*
-node-sync
-node-sync-*
-vendor/realm-node*
+vendor/realm-*
 
-# sh build.sh config
-/Realm/config.mk
-
-# sh build.sh test
-build/
-
-# sh build.sh build-iphone
-/iphone-lib/include
-
-# sh build.sh ios-framework
-# sh build.sh package-examples
-*/Realm.framework
-Realm.framework
-
-# sh build.sh build-cocoa
-bin
-
-# sh build.sh cocoapods-setup
-/include
-
-# sh build.sh docs
+# jsdoc
 /docs/output
-/docs/swift_output
 
 # XCode
 *.bak
@@ -55,59 +27,16 @@ project.xcworkspace
 *.xccheckout
 DerivedData
 
-# AppCode
-.idea/
-*.iml
-# backup and crash files
-*.swp
-
-# xcpretty
-build.log
-
-# ruby
-*.gem
-*.rbc
-/.config
-/coverage/
-/InstalledFiles
-/pkg/
-/spec/reports/
-/test/tmp/
-/test/version_tmp/
-/tmp/
-
-## Specific to RubyMotion:
-.dat*
-.repl_history
-build/
-
-## Documentation cache and generated files:
-/.yardoc/
-/_yardoc/
-/doc/
-/rdoc/
-
-## Environment normalisation:
-/.bundle/
-/lib/bundler/man/
-
-# for a library or gem, you might want to ignore these files since the code is
-# intended to run in multiple environments; otherwise, check them in:
-# Gemfile.lock
-# .ruby-version
-# .ruby-gemset
-
-# unless supporting rvm < 1.11.0 or doing something fancy, ignore this:
-.rvmrc
-
 # node.js
 node_modules/
 npm-debug.log
+build/
 /compiled/
 *.lock
 
 # Android/IJ
-/android/
+/android
+/react-native/android/src/main/jni/core
 .idea
 .gradle
 local.properties
@@ -118,8 +47,7 @@ tsconfig.json
 
 # Tests
 object-server-for-testing/
+realm-object-server-data/
 tests/realm-object-server/
-vendor/sync
-vendor/sync*
 packager_out.txt
 build.log.*

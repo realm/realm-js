@@ -1,9 +1,10 @@
 1.13.0 Release notes (2017-10-5)
 =============================================================
 ### Breaking changes
-* None
+* None.
 
 ### Enhancements
+* Add a callback function used to verify SSL certificates in the sync config.
 * Added aggregate functions `min()`, `max()`, `sum()`, and `avg()` to `Realm.Results` and `Realm.List` (#807).
 * Added `deleteRealmIfMigrationNeeded` to configuration to delete a Realm if migration needed (#502).
 
@@ -11,16 +12,97 @@
 * Fixed port conflict between RN >= 0.48 inspector proxy and RPC server used for Chrome debugging (#1294).
 * Workaround for RN >= 0.49 metro-bundler check for single string literal argument to `require()` (#1342)
 
+2.0.0-rc18 Release notes (2017-10-4)
+=============================================================
+### Breaking changes
+* Deprecate node 4 and node 5 support
 
-1.12.0 Release notes (2017-9-14)
+### Enhancements
+* None
+
+### Bug fixes
+* Fixed bug in `Realm.subscribeToObjects()`.
+
+### Internal
+* None
+
+2.0.0-rc17 Release notes (2017-10-3)
+=============================================================
+### Breaking changes
+* Removed `setAccessToken()`; use `setFeatureToken()` instead.
+* During iteration (`for ... of`) of `Realm.Results`, the results will be frozen using the `snapshot()` method (#1366).
+
+### Enhancements
+* Support migration from Realms sync 1.0 to sync 2.0 versions
+* Handling of the situation when the client has to reset the Realm due to diverging histories (#795).
+* Added `Realm.subscribeToObjects()` to listen for changes in partially synced Realms.
+
+### Bug fixes
+* None.
+
+### Internal
+* Upgraded to Realm Sync 2.0.0-rc27.
+
+
+2.0.0-rc16 Release notes (2017-9-29)
+=============================================================
+### Breaking changes
+* Upgtading to Realm Core 4.0.1 (bug fixes)
+* Upgrading to Realm Sync 2.0.0-rc26 (sync protocol 22 + bug fixes)
+
+
+2.0.0-rc14 Release notes (2017-9-29)
+=============================================================
+### Breaking changes
+* Upgrading to Realm Core 4.0.0 and Realm Sync 2.0.0-rc25.
+
+### Enhancements
+* None
+
+### Bug fixes
+* Configuration of sync file system is not done on module import but later when actually needed by sync (#1351)
+
+
+2.0.0-rc12 Release notes (2017-9-28)
+=============================================================
+### Breaking changes
+* None.
+
+### Enhancements
+* None.
+
+### Bug fixes
+* An issue where access tokens were not refreshed correctly has been addressed.
+
+
+2.0.0-rc11 Release notes (2017-9-26)
 =============================================================
 ### Breaking changes
 * None
 
+### Internal
+* Alignment of permission schemas.
+* Updating sync (2.0.0-rc24).
+
+
+2.0.0-rc10 Release notes (2017-9-19)
+=============================================================
+### Breaking changes
+* Updating core (3.2.1), sync (2.0.0-rc23 - packaged under 2.0.0-rc22), object store.
+
+### Enhancements
+* Add support for sorting Lists and Results on values from linked objects.
+
+### Bug fixes
+* None
+
+1.12.0 Release notes (2017-9-14)
+=============================================================
+
 ### Enhancements
 * Improve performance of the RPC worker for chrome debugging.
 * Added Progress API `realm.syncSession.addProgressNotification` and `realm.syncSession.removeProgressNotification`
-* Added additional parameter for `Realm.open` and `Realm.openAsync` for download progress notifications 
+* Added additional parameter for `Realm.open` and `Realm.openAsync` for download progress notifications
 * Added `Realm.deleteFile` for deleting a Realm (#363).
 * Added `Realm.deleteModel` for deleting a Realm model in a migration (#573).
 * Added support for in-memory Realms.
@@ -81,6 +163,17 @@
 * RN 0.47 no longer breaks for Android due to a superfluous @override annotation
 
 
+2.0.0 Release notes (2017-7-27)
+=============================================================
+### Breaking changes
+* Switch to the next version of the Sync protocol, compatible with Realm Object Server 2.0.0-rc2.
+
+### Enhancements
+* None
+
+### Bug fixes
+
+
 1.10.1 Release notes (2017-8-2)
 =============================================================
 ### Breaking changes
@@ -92,6 +185,9 @@
 ### Bug fixes
 * `Realm.openAsync` will no longer open the realm if a sync error has occured. Previously this resulted in the callback being invoked twice - once with an error and a second time - with the synchronously opened Realm.
 * Database adapters will no longer process the sync history of realm files that are not requested by the adapter configuration. Previously this would lead to crashes for realm files that contained schemas that don't define primary keys.
+
+=======
+* None
 
 1.10.0 Release notes (2017-7-12)
 =============================================================
@@ -141,7 +237,7 @@
 * Added `indexOf()` method on `Realm.Results` and `Realm.List` that returns the index of the object in the collection.
 
 ### Bug fixes
-* Fix opening synced realms with a logged-in admin user. 
+* Fix opening synced realms with a logged-in admin user.
 
 1.8.1 Release notes (2017-6-20)
 =============================================================
@@ -155,7 +251,7 @@
 * Added `objectSchema()` method on `Realm.Object` that returns the schema for the object.
 
 ### Bug fixes
-* Fix `Realm.Sync.User.prototype.isAdmin` returning `false` for logged-in admin users. 
+* Fix `Realm.Sync.User.prototype.isAdmin` returning `false` for logged-in admin users.
 
 1.8.0 Release notes (2017-6-15)
 =============================================================

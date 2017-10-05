@@ -206,6 +206,9 @@ module.exports = {
             });
         };
 
+        objects = objects.sorted([]);
+        TestCase.assertArraysEqual(primaries(objects), [2, 3, 1, 4, 0]);
+
         objects = objects.sorted('primaryCol');
         TestCase.assertArraysEqual(primaries(objects), [0, 1, 2, 3, 4]);
 
@@ -241,9 +244,6 @@ module.exports = {
         });
         TestCase.assertThrows(function() {
             objects.sorted([1]);
-        });
-        TestCase.assertThrows(function() {
-            objects.sorted([]);
         });
         TestCase.assertThrows(function() {
             objects.sorted('fish');
@@ -299,7 +299,7 @@ module.exports = {
     },
 
     testResultsInvalidation: function() {
-        var realm = new Realm({schema: [schemas.TestObject]});
+        let realm = new Realm({schema: [schemas.TestObject]});
         realm.write(function() {
             for (var i = 10; i > 0; i--) {
                 realm.create('TestObject', [i]);
@@ -322,7 +322,7 @@ module.exports = {
         realm.close();
         realm = new Realm({
             schemaVersion: 1,
-            schema: [schemas.TestObject, schemas.BasicTypes]
+            schema: [schemas.TestObject, schemas.DateObject]
         });
 
         resultsVariants.forEach(function(objects) {
@@ -605,6 +605,25 @@ module.exports = {
         TestCase.assertThrows(function() {
             results.avg('foo')
         });
+    },
 
-    }
+    testIterator: function() {
+        var realm = new Realm({ schema: [ schemas.TestObject ]});
+        realm.write(() => {
+            realm.create('TestObject', { doubleCol: 2 });
+            realm.create('TestObject', { doubleCol: 3 });
+        });
+
+        var results = realm.objects('TestObject').filtered('doubleCol >= 2');
+        TestCase.assertEqual(results.length, 2);
+        var calls = 0;
+        for(let obj of results) {
+            realm.write(() => {
+                obj.doubleCol = 1;
+            });
+            calls++;
+        }
+        TestCase.assertEqual(results.length, 0);
+        TestCase.assertEqual(calls, 2);
+    },
 };

@@ -111,8 +111,14 @@ static inline void compute_aggregate_on_collection(AggregateFunc func, typename 
             break;
         }
         case AggregateFunc::Avg: {
-            mixed = list->average(property->table_column);
-            break;
+            util::Optional<double> avg = list->average(property->table_column);
+            if (!avg) {
+                return_value.set_undefined();
+            }
+            else {
+                return_value.set(*avg);
+            }
+            return;
         }
         default: {
             REALM_ASSERT(false && "Unknown aggregate function");
