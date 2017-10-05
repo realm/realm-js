@@ -70,7 +70,7 @@
 * Alignment of permission schemas.
 * Updating sync (2.0.0-rc24).
 
-1.13.0 Release notes (to be released)
+1.13.0 Release notes (2017-10-5)
 =============================================================
 ### Breaking changes
 * None.

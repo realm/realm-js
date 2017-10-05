@@ -1,20 +1,11 @@
-<!--
- Make sure to assign one and only one Type (`T:`) and State (`S:`) label.
- Select reviewers if ready for review. Our bot will automatically assign you.
- -->
+<!-- Make sure to assign one and only one Type (`T:`) and State (`S:`) label.
+ Select reviewers if ready for review. Our bot will automatically assign you. -->
 
 ## What, How & Why?
+<!-- Describe the changes and give some hints to guide your reviewers if possible. -->
+<!-- E.g. reference to other repos: This closes realm/realm-sync#??? -->
 
-<!--
-Describe the changes and give some hints to guide your reviewers if possible.
- -->
-
-Reference to the issue(s) addressed by this PR: # ???
-
-<!--
-- This fixes #???
-- This closes realm/realm-sync#???
- -->
+This closes # ???
 
 ## ☑️ ToDos
 <!-- Add your own todos here -->
