@@ -18,16 +18,43 @@
 
 /**
  * Abstract base class containing methods shared by {@link Realm.List} and {@link Realm.Results}.
+ *
+ * A Realm Collection is a homogenous sequence of values of any of the types
+ * that can be stored as properties of Realm objects. A collection can be
+ * accessed in any of the ways that a normal Javascript Array can, including
+ * subscripting, enumerating with `for-of` and so on.
+ *
+ * A Collection always reflect the current state of the Realm. The one exception to this is
+ * when using `for...in` or `for...of` enumeration, which will always enumerate over the
+ * objects which matched the query when the enumeration is begun, even if some of them are
+ * deleted or modified to be excluded by the filter during the enumeration.
+ *
  * @memberof Realm
  * @since 0.11.0
  */
 class Collection {
     /**
-     * The number of objects in the collection.
+     * The number of values in the collection.
      * @type {number}
      * @readonly
      */
     get length() {}
+
+    /**
+     * The {@linkplain Realm~PropertyType type} of values in the collection.
+     * @type {string}
+     * @readonly
+     * @since 2.0.0
+     */
+    get type() {}
+
+    /**
+     * Whether `null` is a valid value for the collection.
+     * @type {boolean}
+     * @readonly
+     * @since 2.0.0
+     */
+    get optional() {}
 
     /**
      * Checks if this collection has not been deleted and is part of a valid Realm.
@@ -38,12 +65,15 @@ class Collection {
 
     /**
      * Returns new _Results_ that represent this collection being filtered by the provided query.
+     *
      * @param {string} query - Query used to filter objects from the collection.
      * @param {...any} [arg] - Each subsequent argument is used by the placeholders
      *   (e.g. `$0`, `$1`, `$2`, …) in the query.
      * @throws {Error} If the query or any other argument passed into this method is invalid.
-     * @returns {Realm.Results} filtered according to the provided query.
-     * 
+     * @returns {Realm.Results<T>} filtered according to the provided query.
+     *
+     * This is currently only supported for collections of Realm Objects.
+     *
      * See {@tutorial query-language} for details about the query language.
      * @example
      * let merlots = wines.filtered('variety == "Merlot" && vintage <= $0', maxYear);
@@ -51,43 +81,76 @@ class Collection {
     filtered(query, ...arg) {}
 
     /**
-     * Returns new _Results_ that represent this collection being sorted by the provided property
-     * (or properties) of each object.
-     * @param {string|Realm.Results~SortDescriptor[]} descriptor - The property name(s) to sort
-     *   the objects in the collection.
-     * @param {boolean} [reverse=false] - May only be provided if `descriptor` is a string.
+     * Returns new _Results_ that represent a sorted view of this collection.
+     *
+     * A collection of Realm Objects can be sorted on one or more properties of
+     * those objects, or of properties of objects linked to by those objects.
+     * To sort by a single property, simply pass the name of that property to
+     * `sorted()`, optionally followed by a boolean indicating if the sort should be reversed.
+     * For more than one property, you must pass an array of
+     * {@linkplain Realm.Collection~SortDescriptor sort descriptors} which list
+     * which properties to sort on.
+     *
+     * Collections of other types sort on the values themselves rather than
+     * properties of the values, and so no property name or sort descriptors
+     * should be supplied.
+     *
+     * @example
+     * // Sort wines by age
+     * wines.sorted('age')
+     * @example
+     * // Sort wines by price in descending order, then sort ties by age in
+     * // ascending order
+     * wines.sorted([['price', false], ['age'])
+     * @example
+     * // Sort a list of numbers in ascending order
+     * let sortedPrices = wine.pricesSeen.sort()
+     * @example
+     * // Sort people by how expensive their favorite wine is
+     * people.sort("favoriteWine.price")
+     *
+     * @param {string|Realm.Collection~SortDescriptor[]} [descriptor] - The property name(s) to sort the collection on.
+     * @param {boolean} [reverse=false] - Sort in descending order rather than ascended.
+     *   May not be supplied if `descriptor` is an array of sort descriptors.
      * @throws {Error} If a specified property does not exist.
-     * @returns {Realm.Results} sorted according to the arguments passed in
+     * @returns {Realm.Results<T>} sorted according to the arguments passed in.
      */
     sorted(descriptor, reverse) {}
 
     /**
-     * Create a frozen snapshot of the collection. This means objects added to and removed from the
-     * original collection will not be reflected in the _Results_ returned by this method.
-     * However, objects deleted from the Realm will become `null` at their respective indices.
-     * This is **not** a _deep_ snapshot, meaning the objects contained in this snapshot will
-     * continue to update as changes are made to them.
-     * @returns {Realm.Results} which will **not** live update.
+     * Create a frozen snapshot of the collection.
+     *
+     * Values added to and removed from the original collection will not be
+     * reflected in the _Results_ returned by this method, including if the
+     * values of properties are changed to make them match or not match any
+     * filters applied.
+     *
+     * This is **not** a _deep_ snapshot. Realm objects contained in this
+     * snapshot will continue to update as changes are made to them, and if
+     * they are deleted from the Realm they will be replaced by `null` at the
+     * respective indices.
+     *
+     * @returns {Realm.Results<T>} which will **not** live update.
      */
     snapshot() {}
 
     /**
      * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/entries Array.prototype.entries}
-     * @returns {Realm.Collection~Iterator} of each `[index, object]` pair in the collection
+     * @returns {Realm.Collection~Iterator<T>} of each `[index, object]` pair in the collection
      * @since 0.11.0
      */
     entries() {}
 
     /**
      * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/keys Array.prototype.keys}
-     * @returns {Realm.Collection~Iterator} of each index in the collection
+     * @returns {Realm.Collection~Iterator<T>} of each index in the collection
      * @since 0.11.0
      */
     keys() {}
 
     /**
      * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/values Array.prototype.values}
-     * @returns {Realm.Collection~Iterator} of each Realm object in the collection
+     * @returns {Realm.Collection~Iterator<T>} of each Realm object in the collection
      * @since 0.11.0
      */
     values() {}
@@ -101,7 +164,7 @@ class Collection {
      * spread operators, and more.
      * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol/iterator Symbol.iterator}
      *   and the {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#iterable iterable protocol}
-     * @returns {Realm.Collection~Iterator} of each Realm object in the collection
+     * @returns {Realm.Collection~Iterator<T>} of each Realm object in the collection
      * @since 0.11.0
      * @example
      * for (let object of collection) {
@@ -128,7 +191,7 @@ class Collection {
      *   index will be include in the return value. If negative, then the end index will be
      *   counted from the end of the collection. If omitted, then all objects from the start
      *   index will be included in the return value.
-     * @returns {Realm.Object[]} containing the objects from the start index up to, but not
+     * @returns {T[]} containing the objects from the start index up to, but not
      *   including, the end index.
      * @since 0.11.0
      */
@@ -143,7 +206,7 @@ class Collection {
      *   - `index` – The index of the object being processed in the collection.
      *   - `collection` – The collection itself.
      * @param {object} [thisArg] - The value of `this` when `callback` is called.
-     * @returns {Realm.Object|undefined} if the `callback` did not return `true` for any object
+     * @returns {T|undefined} if the `callback` did not return `true` for any object
      *   in the collection.
      * @since 0.11.0
      */
@@ -166,10 +229,11 @@ class Collection {
 
    /**
     Finds the index of the given object in the collection.
-    * @param {Realm.Object} [object] - The object to search for in the collection.
-    * @throws {Error} If the argument does not belong to the realm.
-    * @returns {number} representing the index where the object was found, or `-1`
-    *   if not in collection.
+    * @param {T} object - The value to search for in the collection.
+    * @throws {Error} If the argument is a {@link Realm.Object} that does not
+    *                 belong to the same Realm as the collection.
+    * @returns {number} representing the index where the value was found, or
+    *          `-1` if not in collection.
     * @since 1.8.2
     */
    indexOf(object) {}
@@ -330,7 +394,7 @@ class Collection {
     /**
      * Remove the listener `callback` from the collection instance.
      * @param {function(collection, changes)} callback - Callback function that was previously
- *       added as a listener through the {@link Collection#addListener addListener} method.
+     *   added as a listener through the {@link Collection#addListener addListener} method.
      * @throws {Error} If `callback` is not a function.
      */
     removeListener(callback) {}
@@ -360,8 +424,9 @@ class Collection {
  */
 
 /**
- * The sort descriptors may either just be a string representing the property name, **or** an
- * array with two items: `[propertyName, reverse]`
+ * A sort descriptor is either a string containing one or more property names
+ * separate by dots, **or** an array with two items: `[propertyName, reverse]`.
+ *
  * @typedef Realm.Collection~SortDescriptor
  * @type {string|Array}
  */

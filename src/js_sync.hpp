@@ -22,6 +22,8 @@
 #include <map>
 #include <set>
 #include <regex>
+#include <mutex>
+#include <condition_variable>
 
 #include "event_loop_dispatcher.hpp"
 #include "platform.hpp"
@@ -36,6 +38,15 @@
 
 namespace realm {
 namespace js {
+
+inline realm::SyncManager& syncManagerShared() {
+    static bool configured = []{
+        ensure_directory_exists_for_file(default_realm_file_directory());
+        SyncManager::shared().configure_file_system(default_realm_file_directory(), SyncManager::MetadataMode::NoEncryption);
+        return true;
+    }();
+    return SyncManager::shared();
+}
 
 using SharedUser = std::shared_ptr<realm::SyncUser>;
 using WeakSession = std::weak_ptr<realm::SyncSession>;
@@ -71,9 +82,11 @@ public:
     };
 
     static void create_user(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void admin_user(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
 
     MethodMap<T> const static_methods = {
-        {"createUser", wrap<create_user>}
+        {"createUser", wrap<create_user>},
+        {"_adminUser", wrap<admin_user>}
     };
 
     /*static void current_user(ContextType ctx, ObjectType object, ReturnValue &return_value);*/
@@ -119,11 +132,14 @@ void UserClass<T>::is_admin(ContextType ctx, ObjectType object, ReturnValue &ret
 template<typename T>
 void UserClass<T>::create_user(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     validate_argument_count(argc, 3, 5);
-    SharedUser *user = new SharedUser(SyncManager::shared().get_user(
+    SyncUserIdentifier userIdentifier {
         Value::validated_to_string(ctx, arguments[1], "identity"),
-        Value::validated_to_string(ctx, arguments[2], "refreshToken"),
-        (std::string)Value::validated_to_string(ctx, arguments[0], "authServerUrl"),
-        Value::validated_to_boolean(ctx, arguments[3], "isAdminToken") ? SyncUser::TokenType::Admin : SyncUser::TokenType::Normal));
+        Value::validated_to_string(ctx, arguments[0], "authServerUrl")
+     };
+    SharedUser *user = new SharedUser(syncManagerShared().get_user(
+        userIdentifier,
+        Value::validated_to_string(ctx, arguments[2], "refreshToken")
+    ));
 
     if (argc == 5) {
         (*user)->set_is_admin(Value::validated_to_boolean(ctx, arguments[4], "isAdmin"));
@@ -132,9 +148,19 @@ void UserClass<T>::create_user(ContextType ctx, FunctionType, ObjectType this_ob
 }
 
 template<typename T>
+void UserClass<T>::admin_user(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    validate_argument_count(argc, 2, 2);
+    SharedUser *user = new SharedUser(syncManagerShared().get_admin_token_user(
+        Value::validated_to_string(ctx, arguments[0], "authServerUrl"),
+        Value::validated_to_string(ctx, arguments[1], "refreshToken")
+    ));
+    return_value.set(create_object<T, UserClass<T>>(ctx, user));
+}
+
+template<typename T>
 void UserClass<T>::all_users(ContextType ctx, ObjectType object, ReturnValue &return_value) {
     auto users = Object::create_empty(ctx);
-    for (auto user : SyncManager::shared().all_logged_in_users()) {
+    for (auto user : syncManagerShared().all_logged_in_users()) {
         if (user->token_type() == SyncUser::TokenType::Normal) {
             Object::set_property(ctx, users, user->identity(), create_object<T, UserClass<T>>(ctx, new SharedUser(user)), ReadOnly | DontDelete);
         }
@@ -203,10 +229,21 @@ public:
         HANDLESCOPE
 
         auto error_object = Object<T>::create_empty(m_ctx);
+
+        auto error_code = error.error_code.value();
+        if (error.is_client_reset_requested()) {
+            error_code = 7; // FIXME: define a proper constant
+
+            auto config_object = Object<T>::create_empty(m_ctx);
+            Object<T>::set_property(m_ctx, config_object, "path", Value<T>::from_string(m_ctx, error.user_info[SyncError::c_recovery_file_path_key]));
+            Object<T>::set_property(m_ctx, config_object, "readOnly", Value<T>::from_boolean(m_ctx, true));
+            Object<T>::set_property(m_ctx, error_object, "config", config_object);
+        }
+
         Object<T>::set_property(m_ctx, error_object, "message", Value<T>::from_string(m_ctx, error.message));
         Object<T>::set_property(m_ctx, error_object, "isFatal", Value<T>::from_boolean(m_ctx, error.is_fatal));
         Object<T>::set_property(m_ctx, error_object, "category", Value<T>::from_string(m_ctx, error.error_code.category().name()));
-        Object<T>::set_property(m_ctx, error_object, "code", Value<T>::from_number(m_ctx, error.error_code.value()));
+        Object<T>::set_property(m_ctx, error_object, "code", Value<T>::from_number(m_ctx, error_code));
 
         auto user_info = Object<T>::create_empty(m_ctx);
         for (auto& kvp : error.user_info) {
@@ -225,6 +262,98 @@ private:
     const Protected<typename T::Function> m_func;
 };
 
+
+// An object of type SSLVerifyCallbackSyncThreadFunctor is registered with the sync client in order
+// to verify SSL certificates. The SSLVerifyCallbackSyncThreadFunctor object's operator() is called
+// on the sync client's event loop thread.
+template <typename T>
+class SSLVerifyCallbackSyncThreadFunctor {
+public:
+    SSLVerifyCallbackSyncThreadFunctor(typename T::Context ctx, typename T::Function ssl_verify_func)
+    : m_ctx(Context<T>::get_global_context(ctx))
+    , m_func(ctx, ssl_verify_func)
+    , m_event_loop_dispatcher {SSLVerifyCallbackSyncThreadFunctor<T>::main_loop_handler}
+    , m_mutex{new std::mutex}
+    , m_cond_var{new std::condition_variable}
+    {
+    }
+
+    // This function is called on the sync client's event loop thread.
+    bool operator ()(const std::string& server_address, sync::Session::port_type server_port, const char* pem_data, size_t pem_size, int preverify_ok, int depth)
+    {
+        const std::string pem_certificate {pem_data, pem_size};
+
+        {
+            std::lock_guard<std::mutex> lock {*m_mutex};
+            m_ssl_certificate_callback_done = false;
+        }
+
+        // Dispatch the call to the main_loop_handler on the node.js thread.
+        m_event_loop_dispatcher(this, server_address, server_port, pem_certificate, preverify_ok, depth);
+
+        bool ssl_certificate_accepted = false;
+        {
+            // Wait for the return value of the callback function on the node.js main thread.
+            // The sync client blocks during this wait.
+            std::unique_lock<std::mutex> lock(*m_mutex);
+            m_cond_var->wait(lock, [this] { return this->m_ssl_certificate_callback_done; });
+            ssl_certificate_accepted = m_ssl_certificate_accepted;
+        }
+
+        return ssl_certificate_accepted;
+    }
+
+    // main_loop_handler is called on the node.js main thread.
+    // main_loop_handler calls the user callback (m_func) and sends the return value
+    // back to the sync client's event loop thread through a condition variable.
+    static void main_loop_handler(SSLVerifyCallbackSyncThreadFunctor<T>* this_object,
+                                  const std::string& server_address,
+                                  sync::Session::port_type server_port,
+                                  const std::string& pem_certificate,
+                                  int preverify_ok,
+                                  int depth)
+    {
+        HANDLESCOPE
+
+        const Protected<typename T::GlobalContext>& ctx = this_object->m_ctx;
+
+        typename T::Object ssl_certificate_object = Object<T>::create_empty(ctx);
+        Object<T>::set_property(ctx, ssl_certificate_object, "serverAddress", Value<T>::from_string(ctx, server_address));
+        Object<T>::set_property(ctx, ssl_certificate_object, "serverPort", Value<T>::from_number(ctx, double(server_port)));
+        Object<T>::set_property(ctx, ssl_certificate_object, "pemCertificate", Value<T>::from_string(ctx, pem_certificate));
+        Object<T>::set_property(ctx, ssl_certificate_object, "acceptedByOpenSSL", Value<T>::from_boolean(ctx, preverify_ok != 0));
+        Object<T>::set_property(ctx, ssl_certificate_object, "depth", Value<T>::from_number(ctx, double(depth)));
+
+        const int argc = 1;
+        typename T::Value arguments[argc] = { ssl_certificate_object };
+        typename T::Value ret_val = Function<T>::callback(ctx, this_object->m_func, typename T::Object(), 1, arguments);
+        bool ret_val_bool = Value<T>::to_boolean(ctx, ret_val);
+
+        {
+            std::lock_guard<std::mutex> lock {*this_object->m_mutex};
+            this_object->m_ssl_certificate_callback_done = true;
+            this_object->m_ssl_certificate_accepted = ret_val_bool;
+        }
+
+        this_object->m_cond_var->notify_one();
+    };
+
+
+private:
+    const Protected<typename T::GlobalContext> m_ctx;
+    const Protected<typename T::Function> m_func;
+    EventLoopDispatcher<void(SSLVerifyCallbackSyncThreadFunctor<T>* this_object,
+                             const std::string& server_address,
+                             sync::Session::port_type server_port,
+                             const std::string& pem_certificate,
+                             int preverify_ok,
+                             int depth)> m_event_loop_dispatcher;
+    bool m_ssl_certificate_callback_done = false;
+    bool m_ssl_certificate_accepted = false;
+    std::shared_ptr<std::mutex> m_mutex;
+    std::shared_ptr<std::condition_variable> m_cond_var;
+};
+
 template<typename T>
 void UserClass<T>::session_for_on_disk_path(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     auto user = *get_internal<T, UserClass<T>>(this_object);
@@ -240,7 +369,7 @@ void SessionClass<T>::get_config(ContextType ctx, ObjectType object, ReturnValue
     if (auto session = get_internal<T, SessionClass<T>>(object)->lock()) {
         ObjectType config = Object::create_empty(ctx);
         Object::set_property(ctx, config, "user", create_object<T, UserClass<T>>(ctx, new SharedUser(session->config().user)));
-        Object::set_property(ctx, config, "url", Value::from_string(ctx, session->config().realm_url));
+        Object::set_property(ctx, config, "url", Value::from_string(ctx, session->config().realm_url()));
         if (auto* dispatcher = session->config().error_handler.template target<EventLoopDispatcher<SyncSessionErrorHandler>>()) {
             auto& handler = *dispatcher->func().template target<SyncSessionErrorHandlerFunctor<T>>();
             Object::set_property(ctx, config, "error", handler.func());
@@ -317,7 +446,7 @@ void SessionClass<T>::add_progress_notification(ContextType ctx, FunctionType, O
     validate_argument_count(argc, 3);
 
     if (auto session = get_internal<T, SessionClass<T>>(this_object)->lock()) {
-        
+
         std::string direction = Value::validated_to_string(ctx, arguments[0], "direction");
         std::string mode = Value::validated_to_string(ctx, arguments[1], "mode");
         SyncSession::NotifierType notifierType;
@@ -347,22 +476,20 @@ void SessionClass<T>::add_progress_notification(ContextType ctx, FunctionType, O
         Protected<FunctionType> protected_callback(ctx, callback_function);
         Protected<ObjectType> protected_this(ctx, this_object);
         Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
-        std::function<ProgressHandler> progressFunc; 
+        std::function<ProgressHandler> progressFunc;
 
         EventLoopDispatcher<ProgressHandler> progress_handler([=](uint64_t transferred_bytes, uint64_t transferrable_bytes) {
             HANDLESCOPE
             ValueType callback_arguments[2];
             callback_arguments[0] = Value::from_number(protected_ctx, transferred_bytes);
             callback_arguments[1] = Value::from_number(protected_ctx, transferrable_bytes);
-            
+
             Function<T>::callback(protected_ctx, protected_callback, typename T::Object(), 2, callback_arguments);
         });
 
         progressFunc = std::move(progress_handler);
 
-        
         auto registrationToken = session->register_progress_notifier(std::move(progressFunc), notifierType, is_streaming);
-
         auto syncSession = create_object<T, SessionClass<T>>(ctx, new WeakSession(session));
         PropertyAttributes attributes = ReadOnly | DontEnum | DontDelete;
         Object::set_property(ctx, callback_function, "_syncSession", syncSession, attributes);
@@ -407,6 +534,7 @@ public:
     static FunctionType create_constructor(ContextType);
 
     static void set_sync_log_level(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void initiate_client_reset(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
 
     // private
     static std::function<SyncBindSessionHandler> session_bind_callback(ContextType ctx, ObjectType sync_constructor);
@@ -417,6 +545,7 @@ public:
 
     MethodMap<T> const static_methods = {
         {"setLogLevel", wrap<set_sync_log_level>},
+        {"initiateClientReset", wrap<initiate_client_reset>},
     };
 };
 
@@ -428,11 +557,16 @@ inline typename T::Function SyncClass<T>::create_constructor(ContextType ctx) {
     Object::set_property(ctx, sync_constructor, "User", ObjectWrap<T, UserClass<T>>::create_constructor(ctx), attributes);
     Object::set_property(ctx, sync_constructor, "Session", ObjectWrap<T, SessionClass<T>>::create_constructor(ctx), attributes);
 
-    // setup synced realmFile paths
-    ensure_directory_exists_for_file(default_realm_file_directory());
-    SyncManager::shared().configure_file_system(default_realm_file_directory(), SyncManager::MetadataMode::NoEncryption);
-
     return sync_constructor;
+}
+
+template<typename T>
+void SyncClass<T>::initiate_client_reset(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue & return_value) {
+    validate_argument_count(argc, 1);
+    std::string path = Value::validated_to_string(ctx, arguments[0]);
+    if (!SyncManager::shared().immediately_run_file_actions(std::string(path))) {
+        throw std::runtime_error(util::format("Realm was not configured correctly. Client Reset could not be run for Realm at: %1", path));
+    }
 }
 
 template<typename T>
@@ -446,7 +580,7 @@ void SyncClass<T>::set_sync_log_level(ContextType ctx, FunctionType, ObjectType 
     in >> log_level_2; // Throws
     if (!in || !in.eof())
         throw std::runtime_error("Bad log level");
-    realm::SyncManager::shared().set_log_level(log_level_2);
+    syncManagerShared().set_log_level(log_level_2);
 }
 
 template<typename T>
@@ -462,7 +596,7 @@ std::function<SyncBindSessionHandler> SyncClass<T>::session_bind_callback(Contex
         ValueType arguments[3];
         arguments[0] = create_object<T, UserClass<T>>(protected_ctx, new SharedUser(config.user));
         arguments[1] = Value::from_string(protected_ctx, path);
-        arguments[2] = Value::from_string(protected_ctx, config.realm_url);
+        arguments[2] = Value::from_string(protected_ctx, config.realm_url());
         Function::call(protected_ctx, refreshAccessToken, 3, arguments);
     });
 }
@@ -496,7 +630,7 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
             static std::regex tilde("/~/");
             raw_realm_url = std::regex_replace(raw_realm_url, tilde, "/__auth/");
         }
-        
+
         bool client_validate_ssl = true;
         ValueType validate_ssl_temp = Object::get_property(ctx, sync_config_object, "validate_ssl");
         if (!Value::is_undefined(ctx, validate_ssl_temp)) {
@@ -512,14 +646,31 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
             ssl_trust_certificate_path = util::none;
         }
 
+        std::function<sync::Session::SSLVerifyCallback> ssl_verify_callback;
+        ValueType ssl_verify_func = Object::get_property(ctx, sync_config_object, "open_ssl_verify_callback");
+        if (!Value::is_undefined(ctx, ssl_verify_func)) {
+            SSLVerifyCallbackSyncThreadFunctor<T> ssl_verify_functor {ctx, Value::validated_to_function(ctx, ssl_verify_func)};
+            ssl_verify_callback = std::move(ssl_verify_functor);
+        }
+
+        bool is_partial = false;
+        ValueType partial_value = Object::get_property(ctx, sync_config_object, "partial");
+        if (!Value::is_undefined(ctx, partial_value)) {
+            is_partial = Value::validated_to_boolean(ctx, partial_value);
+        }
+
         // FIXME - use make_shared
         config.sync_config = std::shared_ptr<SyncConfig>(new SyncConfig{shared_user, raw_realm_url,
                                                                         SyncSessionStopPolicy::AfterChangesUploaded,
                                                                         std::move(bind), std::move(error_handler),
                                                                         nullptr, util::none,
-                                                                        client_validate_ssl, ssl_trust_certificate_path});
+                                                                        client_validate_ssl, ssl_trust_certificate_path,
+                                                                        std::move(ssl_verify_callback),
+                                                                        is_partial});
+
+
         config.schema_mode = SchemaMode::Additive;
-        config.path = realm::SyncManager::shared().path_for_realm(shared_user->identity(), raw_realm_url);
+        config.path = syncManagerShared().path_for_realm(*shared_user, config.sync_config->realm_url());
 
         if (!config.encryption_key.empty()) {
             config.sync_config->realm_encryption_key = std::array<char, 64>();

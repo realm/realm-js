@@ -41,6 +41,17 @@ class ReturnValue<node::Types> {
             m_value.Set(Nan::New(string).ToLocalChecked());
         }
     }
+    void set(const char *str) {
+        if (!str) {
+            m_value.SetNull();
+        }
+        else if (!*str) {
+            m_value.SetEmptyString();
+        }
+        else {
+            m_value.Set(Nan::New(str).ToLocalChecked());
+        }
+    }
     void set(bool boolean) {
         m_value.Set(boolean);
     }

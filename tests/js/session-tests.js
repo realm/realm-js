@@ -29,17 +29,19 @@ const isNodeProccess = (typeof process === 'object' && process + '' === '[object
 
 function node_require(module) {
     return require(module);
-}  
+}
 
 let tmp;
 let fs;
 let execFile;
+let path;
 
 if (isNodeProccess) {
     tmp = node_require('tmp');
     fs = node_require('fs');
     execFile = node_require('child_process').execFile;
     tmp.setGracefulCleanup();
+    path = node_require("path");
 }
 
 
@@ -76,6 +78,14 @@ function promisifiedLogin(server, username, password) {
     });
 }
 
+function copyFileToTempDir(filename) {
+    let tmpDir = tmp.dirSync();
+    let content = fs.readFileSync(filename);
+    let tmpFile = tmp.fileSync({ dir: tmpDir.name });
+    fs.appendFileSync(tmpFile.fd, content);
+    return tmpFile.name;
+}
+
 function runOutOfProcess(nodeJsFilePath) {
     var nodeArgs = Array.prototype.slice.call(arguments);
     let tmpDir = tmp.dirSync();
@@ -104,7 +114,6 @@ function runOutOfProcess(nodeJsFilePath) {
 }
 
 module.exports = {
-
     testLocalRealmHasNoSession() {
         let realm = new Realm();
         TestCase.assertNull(realm.syncSession);
@@ -275,7 +284,7 @@ module.exports = {
                 });
             });
     },
-    
+
     testProgressNotificationsForRealmOpenAsync() {
         if (!isNodeProccess) {
             return Promise.resolve();
@@ -292,7 +301,7 @@ module.exports = {
                         let progressNotificationCalled = false;
                         let config = {
                             sync: { user, url: `realm://localhost:9080/~/${realmName}`,
-                                _onDownloadProgress: (transferred, total) => { 
+                                _onDownloadProgress: (transferred, total) => {
                                     progressNotificationCalled = true
                                 },
                             },
@@ -461,6 +470,130 @@ module.exports = {
         });
     },
 
+    testIncompatibleSyncedRealmOpen() {
+        let realm = "sync-v1.realm";
+        if (isNodeProccess) {
+            realm = copyFileToTempDir(path.join(process.cwd(), "data", realm));
+        }
+        else {
+            //copy the bundled RN realm files for the test
+            Realm.copyBundledRealmFiles();
+        }
+
+        return Realm.Sync.User.register('http://localhost:9080', uuid(), 'password').then(user => {
+            return new Promise((resolve, _reject) => {
+                const config = {
+                    path: realm,
+                    sync: {
+                        user,
+                        error : err => cosole.log(err),
+                        url: 'realm://localhost:9080/~/sync-v1'
+                    }
+                };
+
+                Realm.open(config)
+                    .then(realm =>
+                        _reject("Should fail with IncompatibleSyncedRealmError"))
+                    .catch(e => {
+                        if (e.name == "IncompatibleSyncedRealmError") {
+                            const backupRealm = new Realm(e.configuration);
+                            TestCase.assertEqual(backupRealm.objects('Dog').length, 3);
+                            resolve();
+                            return;
+                        }
+
+                        function printObject(o) {
+                            var out = '';
+                            for (var p in o) {
+                              out += p + ': ' + o[p] + '\n';
+                            }
+                            return out;
+                          }
+
+                        _reject("Failed with unexpected error " + printObject(e));
+                    });
+            });
+        });
+    },
+
+    testIncompatibleSyncedRealmOpenAsync() {
+        let realm = "sync-v1.realm";
+        if (isNodeProccess) {
+            realm = copyFileToTempDir(path.join(process.cwd(), "data", realm));
+        }
+        else {
+            //copy the bundled RN realm files for the test
+            Realm.copyBundledRealmFiles();
+        }
+
+        return Realm.Sync.User.register('http://localhost:9080', uuid(), 'password').then(user => {
+            return new Promise((resolve, _reject) => {
+                const config = {
+                    path: realm,
+                    sync: {
+                        user,
+                        error : err => cosole.log(err),
+                        url: 'realm://localhost:9080/~/sync-v1'
+                    }
+                };
+
+                Realm.openAsync(config, (error, realm) => {
+                    if (!error) {
+                        _reject("Should fail with IncompatibleSyncedRealmError");
+                        return;
+                    }
+
+                    if (error.name == "IncompatibleSyncedRealmError") {
+                        const backupRealm = new Realm(error.configuration);
+                        TestCase.assertEqual(backupRealm.objects('Dog').length, 3);
+                        resolve();
+                        return;
+                    }
+
+                    _reject("Failed with unexpected error" + JSON.stringify(error));
+                });
+            });
+        });
+    },
+
+    testIncompatibleSyncedRealmConsructor() {
+        let realm = "sync-v1.realm";
+        if (isNodeProccess) {
+            realm = copyFileToTempDir(path.join(process.cwd(), "data", realm));
+        }
+        else {
+            //copy the bundled RN realm files for the test
+            Realm.copyBundledRealmFiles();
+        }
+
+        return Realm.Sync.User.register('http://localhost:9080', uuid(), 'password').then(user => {
+            return new Promise((resolve, _reject) => {
+                    const config = {
+                        path: realm,
+                        sync: {
+                            user,
+                            error : err => cosole.log(err),
+                            url: 'realm://localhost:9080/~/sync-v1'
+                        }
+                    };
+
+                    try {
+                        const realm = new Realm(config);
+                        _reject("Should fail with IncompatibleSyncedRealmError");
+                    }
+                    catch (e) {
+                        if (e.name == "IncompatibleSyncedRealmError") {
+                            const backupRealm = new Realm(e.configuration);
+                            TestCase.assertEqual(backupRealm.objects('Dog').length, 3);
+                            resolve();
+                            return;
+                        }
+
+                        _reject("Failed with unexpected error" + JSON.stringify(e));
+                    }
+            });
+        });
+    },
 
     testProgressNotificationsForRealmConstructor() {
         if (!isNodeProccess) {
@@ -486,7 +619,7 @@ module.exports = {
                         const progressCallback = (transferred, total) => {
                             resolve();
                         };
-                        
+
                         realm.syncSession.addProgressNotification('download', 'reportIndefinitely', progressCallback);
 
                         setTimeout(function() {
@@ -495,7 +628,7 @@ module.exports = {
                     });
                 });
             });
-    },  
+    },
 
     testProgressNotificationsUnregisterForRealmConstructor() {
         if (!isNodeProccess) {
@@ -519,7 +652,7 @@ module.exports = {
 
                         let realm = new Realm(config);
                         let unregisterFunc;
-                       
+
                         let writeDataFunc = () => {
                             realm.write(() => {
                                 for (let i = 1; i <= 3; i++) {
@@ -534,14 +667,14 @@ module.exports = {
                             if (failOnCall) {
                                 reject(new Error("Progress callback should not be called after removeProgressNotification"));
                             }
-                            
+
                             syncFinished = transferred === total;
-                            
+
                             //unregister and write some new data.
-                            if (syncFinished) { 
+                            if (syncFinished) {
                                 failOnCall = true;
                                 unregisterFunc();
-                                
+
                                 //use second callback to wait for sync finished
                                 realm.syncSession.addProgressNotification('upload', 'reportIndefinitely', (x, y) => {
                                     if (x === y) {
@@ -551,9 +684,9 @@ module.exports = {
                                 writeDataFunc();
                             }
                         };
-                        
+
                         realm.syncSession.addProgressNotification('upload', 'reportIndefinitely', progressCallback);
-                        
+
                         unregisterFunc = () => {
                             realm.syncSession.removeProgressNotification(progressCallback);
                         };
@@ -601,7 +734,7 @@ module.exports = {
                     });
                 });
             });
-    },  
+    },
 
     testProgressNotificationsForRealmOpenAsync2() {
         if (!isNodeProccess) {
@@ -624,14 +757,14 @@ module.exports = {
                         };
 
                         let progressCalled = false;
-                        
-                        Realm.openAsync(config, 
+
+                        Realm.openAsync(config,
                             (error, realm) => {
                                 if (error) {
                                     reject(error);
                                     return;
                                 }
-                                
+
                                 TestCase.assertTrue(progressCalled);
                                 resolve();
                             },
@@ -645,5 +778,72 @@ module.exports = {
                     });
                 });
             });
-    },  
+    },
+
+    testPartialSync() {
+        // FIXME: try to enable for React Native
+        if (!isNodeProccess) {
+            return Promise.resolve();
+        }
+
+        const username = uuid();
+        const realmName = uuid();
+
+        return runOutOfProcess(__dirname + '/download-api-helper.js', username, realmName, REALM_MODULE_PATH)
+            .then(() => {
+                return Realm.Sync.User.login('http://localhost:9080', username, 'password').then(user => {
+                    let config = {
+                        sync: {
+                            user: user,
+                            url: `realm://localhost:9080/~/${realmName}`,
+                            partial: true,
+                            error: (session, error) => console.log(error)
+                        },
+                        schema: [{ name: 'Dog', properties: { name: 'string' } }]
+                    };
+
+                    Realm.deleteFile(config);
+                    const realm = new Realm(config);
+                    TestCase.assertEqual(realm.objects('Dog').length, 0);
+                    return realm.subscribeToObjects("Dog", "name == 'Lassy 1'").then(results => {
+                        TestCase.assertEqual(results.length, 1);
+                        TestCase.assertTrue(results[0].name === 'Lassy 1', "The object is not synced correctly");
+                    });
+                })
+            })
+    },
+
+    testClientReset() {
+        // FIXME: try to enable for React Native
+        if (!isNodeProccess) {
+            return Promise.resolve();
+        }
+
+        return Realm.Sync.User.register('http://localhost:9080', uuid(), 'password').then(user => {
+            return new Promise((resolve, _reject) => {
+                var realm;
+                const config = { sync: { user, url: 'realm://localhost:9080/~/myrealm' } };
+                config.sync.error = (sender, error) => {
+                    try {
+                        TestCase.assertEqual(error.code, 7); // 7 -> client reset
+                        TestCase.assertDefined(error.config);
+                        TestCase.assertNotEqual(error.config.path, '');
+                        const original_path = realm.path;
+                        realm.close();
+                        Realm.Sync.initiateClientReset(original_path);
+                        // copy required objects from Realm at error.config.path
+                        resolve();
+                    }
+                    catch (e) {
+                        _reject(e);
+                    }
+                };
+                realm = new Realm(config);
+                const session = realm.syncSession;
+
+                TestCase.assertEqual(session.config.error, config.sync.error);
+                session._simulateError(211, 'ClientReset'); // 211 -> divering histories
+            });
+        });
+    }
 }

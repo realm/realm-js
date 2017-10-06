@@ -88,24 +88,26 @@ class Realm {
      * migrated to use the new schema.
      * @param {Realm~Configuration} [config] - **Required** when first creating the Realm.
      * @throws {Error} If anything in the provided `config` is invalid.
+     * @throws {IncompatibleSyncedRealmError} when an incompatible synced Realm is opened
      */
     constructor(config) {}
 
     /**
-     * Open a realm asynchronously with a promise. If the realm is synced, it will be fully 
+     * Open a Realm asynchronously with a promise. If the Realm is synced, it will be fully
      * synchronized before it is available.
-     * @param {Realm~Configuration} config 
-     * @returns {ProgressPromise} - a promise that will be resolved with the realm instance when it's available.
+     * @param {Realm~Configuration} config
+     * @returns {ProgressPromise} - a promise that will be resolved with the Realm instance when it's available.
      */
     static open(config) {}
 
     /**
-     * Open a realm asynchronously with a callback. If the realm is synced, it will be fully 
+     * Open a Realm asynchronously with a callback. If the Realm is synced, it will be fully
      * synchronized before it is available.
-     * @param {Realm~Configuration} config 
-     * @param  {callback(error, realm)} - will be called when the realm is ready.
+     * @param {Realm~Configuration} config
+     * @param  {callback(error, realm)} - will be called when the Realm is ready.
      * @param  {callback(transferred, transferable)} [progressCallback] - an optional callback for download progress notifications
-     * @throws {Error} If anything in the provided `config` is invalid.
+     * @throws {Error} If anything in the provided `config` is invalid
+     * @throws {IncompatibleSyncedRealmError} when an incompatible synced Realm is opened
      */
     static openAsync(config, callback, progressCallback) {}
 
@@ -214,10 +216,10 @@ class Realm {
      */
     cancelTransaction() {}
 
-    /*
+    /**
      * Replaces all string columns in this Realm with a string enumeration column and compacts the
      * database file.
-     * 
+     *
      * Cannot be called from a write transaction.
      *
      * Compaction will not occur if other `Realm` instances exist.
@@ -231,6 +233,17 @@ class Realm {
      * @returns {true} if compaction succeeds.
      */
     compact() {}
+
+    /**
+     * If the Realm is a partially synchronized Realm, fetch and synchronize the objects
+     * of a given object type that match the given query (in string format).
+     *
+     * **Partial synchronization is a tech preview. Its APIs are subject to change.**
+     * @param {Realm~ObjectType} type - The type of Realm objects to retrieve.
+     * @param {string} query - Query used to filter objects.
+     * @return {Promise} - a promise that will be resolved with the Realm.Results instance when it's available.
+     */
+    subscribeToObjects(className, query, callback) {}
 }
 
 /**
@@ -269,12 +282,14 @@ Realm.defaultPath;
  *   This function takes two arguments:
  *   - `oldRealm` - The Realm before migration is performed.
  *   - `newRealm` - The Realm that uses the latest `schema`, which should be modified as necessary.
- * @property {callback(number, number)} [shouldCompactOnLaunch] - The function called when opening 
- *   a Realm for the first time during the life of a process to determine if it should be compacted 
+ * @property {boolean} [deleteRealmIfMigrationNeeded=false] - Specifies if this Realm should be deleted
+ *   if a migration is needed.
+ * @property {callback(number, number)} [shouldCompactOnLaunch] - The function called when opening
+ *   a Realm for the first time during the life of a process to determine if it should be compacted
  *   before being returned to the user. The function takes two arguments:
- *     - `totalSize` - The total file size (data + free space) 
+ *     - `totalSize` - The total file size (data + free space)
  *     - `unusedSize` - The total bytes used by data in the file.
- *   It returns `true` to indicate that an attempt to compact the file should be made. The compaction 
+ *   It returns `true` to indicate that an attempt to compact the file should be made. The compaction
  *   will be skipped if another process is accessing it.
  * @property {string} [path={@link Realm.defaultPath}] - The path to the file where the
  *   Realm database should be stored.
@@ -286,18 +301,55 @@ Realm.defaultPath;
  * @property {boolean} [readOnly=false] - Specifies if this Realm should be opened as read-only.
  * @property {Array<Realm~ObjectClass|Realm~ObjectSchema>} [schema] - Specifies all the
  *   object types in this Realm. **Required** when first creating a Realm at this `path`.
+ *   If omitted, the schema will be read from the existing Realm file.
  * @property {number} [schemaVersion] - **Required** (and must be incremented) after
  *   changing the `schema`.
- * @property {Object} [sync] - Sync configuration parameters with the following 
+ * @property {Object} [sync] - Sync configuration parameters with the following
  *   child properties:
  *   - `user` - A `User` object obtained by calling `Realm.Sync.User.login`
  *   - `url` - A `string` which contains a valid Realm Sync url
- *   - `error` - A callback function which is called in error situations
+ *   - `error` - A callback function which is called in error situations.
+ *        The `error` callback can take up to four optional arguments: `message`, `isFatal`,
+ *        `category`, and `code`.
  *   - `validate_ssl` - Indicating if SSL certificates must be validated
  *   - `ssl_trust_certificate_path` - A path where to find trusted SSL certificates
- * The `error` callback can take up to four optional arguments: `message`, `isFatal`, `category`, and `code`.
- * @property {boolean} [deleteRealmIfMigrationNeeded=false] - Specifies if this Realm should be deleted 
- * if a migration is needed.
+ *   - `open_ssl_verify_callback` - A callback function used to accept or reject the server's
+ *        SSL certificate. open_ssl_verify_callback is called with an object of type
+ *        <code>
+ *          {
+ *            serverAddress: String,
+ *            serverPort: Number,
+ *            pemCertificate: String,
+ *            acceptedByOpenSSL: Boolean,
+ *            depth: Number
+ *          }
+ *        </code>
+ *        The return value of open_ssl_verify_callback decides whether the certificate is accepted (true)
+ *        or rejected (false). The open_ssl_verify_callback function is only respected on platforms where
+ *        OpenSSL is used for the sync client, e.g. Linux. The open_ssl_verify_callback function is not
+ *        allowed to throw exceptions. If the operations needed to verify the certificate lead to an exception,
+ *        the exception must be caught explicitly before returning. The return value would typically be false
+ *        in case of an exception.
+ *
+ *        When the sync client has received the server's certificate chain, it presents every certificate in
+ *        the chain to the open_ssl_verify_callback function. The depth argument specifies the position of the
+ *        certificate in the chain. depth = 0 represents the actual server certificate. The root
+ *        certificate has the highest depth. The certificate of highest depth will be presented first.
+ *
+ *        acceptedByOpenSSL is true if OpenSSL has accepted the certificate, and false if OpenSSL has rejected it.
+ *        It is generally safe to return true when acceptedByOpenSSL is true. If acceptedByOpenSSL is false, an
+ *        independent verification should be made.
+ *
+ *        One possible way of using the open_ssl_verify_callback function is to embed the known server certificate
+ *        in the client and accept the presented certificate if and only if it is equal to the known certificate.
+ *
+ *        The purpose of open_ssl_verify_callback is to enable custom certificate handling and to solve cases where
+ *        OpenSSL erroneously rejects valid certificates possibly because OpenSSL doesn't have access to the
+ *        proper trust certificates.
+ *   - `partial` - Whether this Realm should be opened in 'partial synchronization' mode.
+ *        Partial synchronisation only synchronizes those objects that match the query specified in contrast
+ *        to the normal mode of operation that synchronises all objects in a remote Realm.
+ *        **Partial synchronization is a tech preview. Its APIs are subject to change.**
  */
 
 /**
@@ -317,21 +369,41 @@ Realm.defaultPath;
  *   that must be unique across all objects of this type within the same Realm.
  * @property {Object<string, (Realm~PropertyType|Realm~ObjectSchemaProperty)>} properties -
  *   An object where the keys are property names and the values represent the property type.
+ *
+ * @example
+ * let MyClassSchema = {
+ *     name: 'MyClass',
+ *     primaryKey: 'pk',
+ *     properties: {
+ *         pk: 'int',
+ *         optionalFloatValue: 'float?' // or {type: 'float', optional: true}
+ *         listOfStrings: 'string[]',
+ *         listOfOptionalDates: 'date?[]',
+ *         indexedInt: {type: 'int', indexed: true}
+ *
+ *         linkToObject: 'MyClass',
+ *         listOfObjects: 'MyClass[]', // or {type: 'list', objectType: 'MyClass'}
+ *         objectsLinkingToThisObject: {type: 'linkingObjects', objectType: 'MyClass', property: 'linkToObject'}
+ *     }
+ * };
  */
 
 /**
  * @typedef Realm~ObjectSchemaProperty
  * @type {Object}
  * @property {Realm~PropertyType} type - The type of this property.
- * @property {string} [objectType] - **Required**  when `type` is `"list"` or `"linkingObjects"`,
- *   and must match the type of an object in the same schema.
+ * @property {Realm~PropertyType} [objectType] - **Required**  when `type` is `"list"` or `"linkingObjects"`,
+ *   and must match the type of an object in the same schema, or, for `"list"`
+ *   only, any other type which may be stored as a Realm property.
  * @property {string} [property] - **Required** when `type` is `"linkingObjects"`, and must match
  *   the name of a property on the type specified in `objectType` that links to the type this property belongs to.
  * @property {any} [default] - The default value for this property on creation when not
  *   otherwise specified.
  * @property {boolean} [optional] - Signals if this property may be assigned `null` or `undefined`.
+ *   For `"list"` properties of non-object types, this instead signals whether the values inside the list may be assigned `null` or `undefined`.
+ *   This is not supported for `"list"` properties of object types and `"linkingObjects"` properties.
  * @property {boolean} [indexed] - Signals if this property should be indexed. Only supported for
- *   `"string"`, `"int"`, and `"bool"` properties. 
+ *   `"string"`, `"int"`, and `"bool"` properties.
  */
 
 /**
@@ -343,10 +415,21 @@ Realm.defaultPath;
  */
 
 /**
- * A property type may be specified as one of the standard builtin types, or as an object type
- * inside the same schema.
+ * A property type may be specified as one of the standard builtin types, or as
+ * an object type inside the same schema.
+ *
+ * When specifying property types in an {@linkplain Realm~ObjectSchema object schema}, you
+ * may append `?` to any of the property types to indicate that it is optional
+ * (i.e. it can be `null` in addition to the normal values) and `[]` to
+ * indicate that it is instead a list of that type. For example,
+ * `optionalIntList: 'int?[]'` would declare a property which is a list of
+ * nullable integers. The property types reported by {@linkplain Realm.Collection
+ * collections} and in a Realm's schema will never
+ * use these forms.
+ *
  * @typedef Realm~PropertyType
  * @type {("bool"|"int"|"float"|"double"|"string"|"date"|"data"|"list"|"linkingObjects"|"<ObjectType>")}
+ *
  * @property {boolean} "bool" - Property value may either be `true` or `false`.
  * @property {number} "int" - Property may be assigned any number, but will be stored as a
  *   round integer, meaning anything after the decimal will be truncated.

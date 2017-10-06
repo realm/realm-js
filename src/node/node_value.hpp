@@ -24,6 +24,17 @@ namespace realm {
 namespace js {
 
 template<>
+inline const char *node::Value::typeof(v8::Isolate* isolate, const v8::Local<v8::Value> &value) {
+    if (value->IsNull()) { return "null"; }
+    if (value->IsNumber()) { return "number"; }
+    if (value->IsString()) { return "string"; }
+    if (value->IsBoolean()) { return "boolean"; }
+    if (value->IsUndefined()) { return "undefined"; }
+    if (value->IsObject()) { return "object"; }
+    return "unknown";
+}
+
+template<>
 inline bool node::Value::is_array(v8::Isolate* isolate, const v8::Local<v8::Value> &value) {
     return value->IsArray();
 }
@@ -110,12 +121,12 @@ inline v8::Local<v8::Value> node::Value::from_number(v8::Isolate* isolate, doubl
 }
 
 template<>
-inline v8::Local<v8::Value> node::Value::from_string(v8::Isolate* isolate, const node::String &string) {
+inline v8::Local<v8::Value> node::Value::from_nonnull_string(v8::Isolate* isolate, const node::String &string) {
     return v8::Local<v8::String>(string);
 }
 
 template<>
-inline v8::Local<v8::Value> node::Value::from_binary(v8::Isolate* isolate, BinaryData data) {
+inline v8::Local<v8::Value> node::Value::from_nonnull_binary(v8::Isolate* isolate, BinaryData data) {
     v8::Local<v8::ArrayBuffer> buffer = v8::ArrayBuffer::New(isolate, data.size());
     v8::ArrayBuffer::Contents contents = buffer->GetContents();
 
@@ -137,17 +148,18 @@ inline bool node::Value::to_boolean(v8::Isolate* isolate, const v8::Local<v8::Va
 }
 
 template<>
-inline double node::Value::to_number(v8::Isolate* isolate, const v8::Local<v8::Value> &value) {
-    double number = Nan::To<double>(value).FromMaybe(NAN);
-    if (std::isnan(number)) {
-        throw std::invalid_argument("Value not convertible to a number.");
-    }
-    return number;
+inline node::String node::Value::to_string(v8::Isolate* isolate, const v8::Local<v8::Value> &value) {
+    return value->ToString();
 }
 
 template<>
-inline node::String node::Value::to_string(v8::Isolate* isolate, const v8::Local<v8::Value> &value) {
-    return value->ToString();
+inline double node::Value::to_number(v8::Isolate* isolate, const v8::Local<v8::Value> &value) {
+    double number = Nan::To<double>(value).FromMaybe(NAN);
+    if (std::isnan(number)) {
+        throw std::invalid_argument(util::format("Value '%1' not convertible to a number.",
+                                                 (std::string)to_string(isolate, value)));
+    }
+    return number;
 }
 
 template<>

@@ -19,59 +19,70 @@
 /**
  * Instances of this class will be returned when accessing object properties whose type is `"list"`
  * (see {@linkplain Realm~ObjectSchemaProperty ObjectSchemaProperty}).
- * The objects contained in a list are accessible through its index properties and may only be
- * modified inside a {@linkplain Realm#write write} transaction.
+ *
+ * Lists mostly behave like normal Javascript Arrays, except for that they can
+ * only store values of a single type (indicated by the `type` and `optional`
+ * properties of the List), and can only be modified inside a {@linkplain
+ * Realm#write write} transaction.
+ *
  * @extends Realm.Collection
  * @memberof Realm
  */
 class List extends Collection {
     /**
-     * Remove the **last** object from the list and return it.
+     * Remove the **last** value from the list and return it.
      * @throws {Error} If not inside a write transaction.
-     * @returns {Realm.Object|undefined} if the list is empty.
+     * @returns {T|undefined} if the list is empty.
      */
     pop() {}
 
     /**
-     * Add one or more objects to the _end_ of the list.
-     * @param {...Realm.Object} object - Each object’s type must match
-     *   {@linkcode Realm~ObjectSchemaProperty objectType} specified in the schema.
-     * @throws {TypeError} If an `object` is of the wrong type.
+     * Add one or more values to the _end_ of the list.
+     *
+     * @param {...T} value - Values to add to the list.
+     * @throws {TypeError} If a `value` is not of a type which can be stored in
+     *   the list, or if an object being added to the list does not match the
+     *   {@linkcode Realm~ObjectSchema object schema} for the list.
+     *
      * @throws {Error} If not inside a write transaction.
-     * @returns {number} equal to the new {@link Realm.List#length length} of the list
-     *   after adding objects.
+     * @returns {number} equal to the new {@link Realm.List#length length} of
+     *          the list after adding the values.
      */
-    push(...object) {}
+    push(...value) {}
 
     /**
-     * Remove the **first** object from the list and return it.
+     * Remove the **first** value from the list and return it.
      * @throws {Error} If not inside a write transaction.
-     * @returns {Realm.Object|undefined} if the list is empty.
+     * @returns {T|undefined} if the list is empty.
      */
     shift() {}
 
     /**
-     * Changes the contents of the list by removing objects and/or inserting new objects.
+     * Changes the contents of the list by removing value and/or inserting new value.
+     *
      * @see {@linkcode https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/splice Array.prototype.splice}
      * @param {number} index - The start index. If greater than the length of the list,
      *   the start index will be set to the length instead. If negative, then the start index
      *   will be counted from the end of the list (e.g. `list.length - index`).
-     * @param {number} [count] - The number of objects to remove from the list. If not provided,
-     *   then all objects from the start index through the end of the list will be removed.
-     * @param {...Realm.Object} [object] - Objects to insert into the list starting at `index`.
-     * @returns {Realm.Object[]} containing the objects that were removed from the list. The
-     *   array is empty if no objects were removed.
+     * @param {number} [count] - The number of values to remove from the list.
+     *   If not provided, then all values from the start index through the end of
+     *   the list will be removed.
+     * @param {...T} [value] - Values to insert into the list starting at `index`.
+     * @returns {T[]} containing the value that were removed from the list. The
+     *   array is empty if no value were removed.
      */
     splice(index, count, ...object) {}
 
     /**
-     * Add one or more objects to the _beginning_ of the list.
-     * @param {...Realm.Object} object - Each object’s type must match
-     *   {@linkcode Realm~ObjectSchemaProperty objectType} specified in the schema.
-     * @throws {TypeError} If an `object` is of the wrong type.
+     * Add one or more values to the _beginning_ of the list.
+     *
+     * @param {...T} value - Values to add to the list.
+     * @throws {TypeError} If a `value` is not of a type which can be stored in
+     *   the list, or if an object being added to the list does not match the
+     *   {@linkcode Realm~ObjectSchema object schema} for the list.
      * @throws {Error} If not inside a write transaction.
-     * @returns {number} equal to the new {@link Realm.List#length length} of the list
-     *   after adding objects.
+     * @returns {number} equal to the new {@link Realm.List#length length} of
+     *          the list after adding the values.
      */
     unshift(...object) {}
 }
