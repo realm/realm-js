@@ -1,3 +1,17 @@
+2.0.0-rc19 Release notes (2017-10-7)
+=============================================================
+### Breaking changes
+* None.
+
+### Enhancements
+* None
+
+### Bug fixes
+* None
+
+### Internal
+* Update object store libs to fix partial sync
+
 1.13.0 Release notes (2017-10-5)
 =============================================================
 ### Breaking changes
