@@ -362,7 +362,6 @@
 			buildSettings = {
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(SRCROOT)/../../../../ios/Pods/Headers/Public/**"
 					"$(SRCROOT)/../../src/**",
 					"$(SRCROOT)/../../vendor/realm-ios/include",
 					"$(SRCROOT)/../../vendor/GCDWebServer/GCDWebServer/**",
