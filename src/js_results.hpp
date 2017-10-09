@@ -87,6 +87,8 @@ struct ResultsClass : ClassDefinition<T, realm::js::Results<T>, CollectionClass<
     template<typename Fn>
     static void index_of(ContextType, Fn&, Arguments, ReturnValue &);
 
+    static void update(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
+
     // aggregate functions
     static void min(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void max(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
@@ -118,6 +120,7 @@ struct ResultsClass : ClassDefinition<T, realm::js::Results<T>, CollectionClass<
         {"removeListener", wrap<remove_listener>},
         {"removeAllListeners", wrap<remove_all_listeners>},
         {"indexOf", wrap<index_of>},
+        {"update", wrap<update>},
     };
 
     PropertyMap<T> const properties = {
@@ -295,6 +298,30 @@ void ResultsClass<T>::index_of(ContextType ctx, Fn& fn, Arguments args, ReturnVa
     }
     else {
         return_value.set((uint32_t)ndx);
+    }
+}
+
+template<typename T>
+void ResultsClass<T>::update(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    validate_argument_count(argc, 2);
+
+    std::string property = Value::validated_to_string(ctx, arguments[0], "property");
+    auto results = get_internal<T, ResultsClass<T>>(this_object);
+
+    auto schema = results->get_object_schema();
+    if (!schema.property_for_name(StringData(property))) {
+        throw std::invalid_argument(util::format("No such property: %1", property));
+    }
+
+    auto realm = results->get_realm();
+    if (!realm->is_in_transaction()) {
+        throw std::runtime_error("Can only 'update' objects within a transaction.");
+    }
+
+    for (auto i = results->size(); i > 0; i--) {
+        auto realm_object = realm::Object(realm, schema, results->get(i - 1));
+        auto obj = RealmObjectClass<T>::create_instance(ctx, realm_object);
+        RealmObjectClass<T>::set_property(ctx, obj, property, arguments[1]);
     }
 }
 

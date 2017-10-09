@@ -21,6 +21,7 @@
 * Add a callback function used to verify SSL certificates in the sync config.
 * Added aggregate functions `min()`, `max()`, `sum()`, and `avg()` to `Realm.Results` and `Realm.List` (#807).
 * Added `deleteRealmIfMigrationNeeded` to configuration to delete a Realm if migration needed (#502).
+* Added `update` method to `Realm.Results` to support bulk updates (#808).
 
 ### Bug fixes
 * Fixed port conflict between RN >= 0.48 inspector proxy and RPC server used for Chrome debugging (#1294).
