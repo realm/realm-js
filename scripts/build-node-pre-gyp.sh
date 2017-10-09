@@ -1,6 +1,6 @@
 #!/bin/bash
 
-node_versions=${@:-4.4.7 5.12.0 6.5.0 7.0.0}
+node_versions=${@:-6.5.0 7.0.0}
 
 topdir=$(cd $(dirname "$0")/..; pwd)
 
@@ -41,4 +41,3 @@ for node_version in ${node_versions}; do
     cp build/stage/node-pre-gyp/*.tar.gz ${topdir}/out/
   )
 done
-

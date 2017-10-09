@@ -30,7 +30,7 @@ RUN dpkg --add-architecture i386 && \
       unzip \
       wget \
       zip && \
-    curl -sL https://deb.nodesource.com/setup_4.x | bash - && \
+    curl -sL https://deb.nodesource.com/setup_6.x | bash - && \
     apt-get install -y nodejs && \
     echo oracle-java6-installer shared/accepted-oracle-license-v1-1 select true | debconf-set-selections && \
     add-apt-repository -y ppa:webupd8team/java && \
