@@ -349,6 +349,7 @@
 					"$(SRCROOT)/../../tests/react-test-app/node_modules/react-native/React/**",
 					"$(SRCROOT)/../../examples/ReactExample/node_modules/react-native/React/**",
 					"$(SRCROOT)/../../vendor",
+					"$(SRCROOT)/../../../../ios/Pods/Headers/Public/**"
 				);
 				OTHER_LIBTOOLFLAGS = "$(BUILT_PRODUCTS_DIR)/libGCDWebServers.a";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -368,6 +369,7 @@
 					"$(SRCROOT)/../../tests/react-test-app/node_modules/react-native/React/**",
 					"$(SRCROOT)/../../examples/ReactExample/node_modules/react-native/React/**",
 					"$(SRCROOT)/../../vendor",
+					"$(SRCROOT)/../../../../ios/Pods/Headers/Public/**"
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
