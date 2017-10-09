@@ -62,7 +62,7 @@ stage('build') {
       publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'docs/output', reportFiles: 'index.html', reportName: 'Docs'])
     }),
     linux_node_debug: doDockerBuild('node Debug', {
-        withCredentials([string(credentialsId: 'codecov-token-js', variable: 'codecov-token')]) {
+        withCredentials([string(credentialsId: 'codecov-token-js', variable: 'CODECOV_TOKEN')]) {
           sh 'tests/node_modules/codecov/bin/codecov'
         }
       }),
