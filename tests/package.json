@@ -11,11 +11,13 @@
     "terminate": "^1.0.8",
     "tmp": "^0.0.30",
     "url-parse": "^1.1.7",
-    "typescript": "^2.5.2"
+    "typescript": "^2.5.2",
+    "istanbul": "^0.3.2",
+    "codecov": "^1.0.0"
   },
   "scripts": {
     "check-typescript" : "tsc --noEmit --alwaysStrict ./../lib/index.d.ts",
-    "js-tests" : "jasmine spec/unit_tests.js",
+    "js-tests" : "istanbul cover jasmine spec/unit_tests.js",
     "test": "npm run check-typescript && npm run js-tests"
   }
 }
