@@ -1,3 +1,16 @@
+X.Y.Z Release notes
+=============================================================
+### Breaking changes
+* None.
+
+### Enhancements
+* None
+
+### Bug fixes
+* Spurious closing of sync session (#1391).
+* Custom path not respected (#1392 and #1393).
+
+
 2.0.0-rc19 Release notes (2017-10-7)
 =============================================================
 ### Breaking changes

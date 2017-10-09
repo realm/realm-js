@@ -715,6 +715,15 @@ void RealmClass<T>::wait_for_download_completion(ContextType ctx, ObjectType thi
             config.encryption_key.assign(encryption_key.data(), encryption_key.data() + encryption_key.size());
         }
 
+        static const String path_string = "path";
+        ValueType path_value = Object::get_property(ctx, config_object, path_string);
+        if (Value::is_undefined(ctx, path_value)) {
+            config.path = default_path();
+        }
+        else {
+            config.path = Value::validated_to_string(ctx, path_value);
+        }
+
         Protected<ObjectType> thiz(ctx, this_object);
         SyncClass<T>::populate_sync_config(ctx, thiz, config_object, config);
 
@@ -797,8 +806,8 @@ void RealmClass<T>::wait_for_download_completion(ContextType ctx, ObjectType thi
                     }
 
                     session->wait_for_download_completion([=](std::error_code error_code) {
-                        realm->close(); //capture and keep realm instance for until here
                         waitFunc(error_code);
+                        realm->close(); //capture and keep realm instance for until here
                     });
                     return;
                 }
