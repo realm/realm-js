@@ -18,10 +18,6 @@
 
 #pragma once
 
-#include <list>
-#include <map>
-#include <set>
-#include <regex>
 #include <mutex>
 #include <condition_variable>
 
@@ -40,11 +36,11 @@ namespace realm {
 namespace js {
 
 inline realm::SyncManager& syncManagerShared() {
-    static bool configured = []{
+    static std::once_flag flag;
+    std::call_once(flag, [] {
         ensure_directory_exists_for_file(default_realm_file_directory());
         SyncManager::shared().configure_file_system(default_realm_file_directory(), SyncManager::MetadataMode::NoEncryption);
-        return true;
-    }();
+    });
     return SyncManager::shared();
 }
 
@@ -627,8 +623,10 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
 
         std::string raw_realm_url = Object::validated_get_string(ctx, sync_config_object, "url");
         if (shared_user->token_type() == SyncUser::TokenType::Admin) {
-            static std::regex tilde("/~/");
-            raw_realm_url = std::regex_replace(raw_realm_url, tilde, "/__auth/");
+            size_t pos = raw_realm_url.find("/~/");
+            if (pos != std::string::npos) {
+                raw_realm_url.replace(pos + 1, 1, "__auth");
+            }
         }
 
         bool client_validate_ssl = true;
