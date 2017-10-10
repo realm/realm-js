@@ -197,14 +197,6 @@ def doDockerBuild(target, postStep = null) {
   }
 }
 
-// def doDockerBuild(target, postStep = null) {
-//   return {
-//     node('docker') {
-//       doDockerInside("./scripts/docker-wrapper.sh ./scripts/test.sh", target, postStep)
-//     }
-//   }
-// }
-
 def doMacBuild(target, postStep = null) {
   return {
     node('osx_vegas') {
