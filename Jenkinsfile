@@ -24,7 +24,7 @@ stage('check') {
       userRemoteConfigs: scm.userRemoteConfigs
     ])
 
-    stash name: 'source', includes:'**/*', excludes:'react-native/android/src/main/jni/src/object-store/.dockerignore'
+    stash name: 'source', includes: '**/*', excludes: 'react-native/android/src/main/jni/src/object-store/.dockerignore', useDefaultExcludes: false
 
     dependencies = readProperties file: 'dependencies.list'
 
