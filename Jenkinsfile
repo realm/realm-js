@@ -6,10 +6,10 @@ import groovy.json.JsonOutput
 
 repoName = 'realm-js' // This is a global variable
 
-def gitTag
-def gitSha
-def dependencies
-def version
+gitTag = null
+gitSha = null
+dependencies = null
+version = null
 
 // == Stages
 
@@ -88,7 +88,7 @@ def readGitSha() {
   return sha
 }
 
-def getVersion(){
+def getVersion() {
   def dependencies = readProperties file: 'dependencies.list'
   def gitTag = readGitTag()
   def gitSha = readGitSha()
@@ -171,6 +171,7 @@ def doDockerBuild(target, postStep = null) {
         reportStatus(target, 'PENDING', 'Build has started')
 
         docker.image('node:6').inside('-e HOME=/tmp') {
+          sh 'ls -la'
           sh "scripts/test.sh ${target}"
           if(postStep) {
             postStep.call()
