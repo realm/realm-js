@@ -1,4 +1,7 @@
 #!groovy
+
+@Library('realm-ci') _
+
 import groovy.json.JsonOutput
 
 repoName = 'realm-js' // This is a global variable
@@ -12,19 +15,7 @@ def version
 
 stage('check') {
   node('docker') {
-    // - checkout the source
-    checkout([
-      $class: 'GitSCM',
-      branches: scm.branches,
-      gitTool: 'native git',
-      extensions: scm.extensions + [
-        [$class: 'CleanCheckout'],
-        [$class: 'SubmoduleOption', recursiveSubmodules: true]
-      ],
-      userRemoteConfigs: scm.userRemoteConfigs
-    ])
-
-    stash name: 'source', includes: '**/*', excludes: 'react-native/android/src/main/jni/src/object-store/.dockerignore', useDefaultExcludes: false
+    rlmCheckout scm
 
     dependencies = readProperties file: 'dependencies.list'
 
@@ -136,12 +127,7 @@ def doInside(script, target, postStep = null) {
   try {
     reportStatus(target, 'PENDING', 'Build has started')
 
-    retry(3) { // retry unstash up to three times to mitigate network and contention
-      dir(env.WORKSPACE) {
-        deleteDir()
-        unstash 'source'
-      }
-    }
+    rlmCheckout scm
     wrap([$class: 'AnsiColorBuildWrapper']) {
       sh "bash ${script} ${target}"
     }
@@ -179,8 +165,7 @@ def doAndroidBuild(target, postStep = null) {
 def doDockerBuild(target, postStep = null) {
   return {
     node('docker') {
-      deleteDir()
-      unstash 'source'
+      rlmCheckout scm
 
       try {
         reportStatus(target, 'PENDING', 'Build has started')
@@ -212,7 +197,7 @@ def doMacBuild(target, postStep = null) {
 def doWindowsBuild() {
   return {
     node('windows && nodejs') {
-      unstash 'source'
+      rlmCheckout scm
       try {
         bat 'npm install --build-from-source=realm'
         dir('tests') {
