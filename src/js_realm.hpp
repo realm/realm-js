@@ -733,6 +733,14 @@ void RealmClass<T>::wait_for_download_completion(ContextType ctx, ObjectType thi
         Protected<ObjectType> protected_this(ctx, this_object);
         Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
 
+        SharedRealm realm;
+        try {
+            realm = realm::Realm::get_shared_realm(config);
+        }
+        catch (const RealmFileException& ex) {
+            handleRealmFileException(ctx, config, ex);
+        }
+
         EventLoopDispatcher<WaitHandler> wait_handler([=](std::error_code error_code) {
             HANDLESCOPE
             if (!error_code) {
@@ -749,19 +757,13 @@ void RealmClass<T>::wait_for_download_completion(ContextType ctx, ObjectType thi
                 callback_arguments[0] = object;
                 Function<T>::callback(protected_ctx, protected_callback, protected_this, 1, callback_arguments);
             }
+
+            // We keep our Realm instance alive until the callback has had a chance to open its own instance.
+            // This allows it to share the sync session that our Realm opened.
+            if (realm)
+                realm->close();
         });
         std::function<WaitHandler> waitFunc = std::move(wait_handler);
-
-        SharedRealm realm;
-        try {
-            realm = realm::Realm::get_shared_realm(config);
-        }
-        catch (const RealmFileException& ex) {
-            handleRealmFileException(ctx, config, ex);
-        }
-        catch (...) {
-           throw;
-        }
 
         if (auto sync_config = config.sync_config)
         {
@@ -804,10 +806,7 @@ void RealmClass<T>::wait_for_download_completion(ContextType ctx, ObjectType thi
                         session->register_progress_notifier(std::move(progressFunc), SyncSession::NotifierType::download, false);
                     }
 
-                    session->wait_for_download_completion([=](std::error_code error_code) {
-                        waitFunc(error_code);
-                        realm->close(); //capture and keep realm instance for until here
-                    });
+                    session->wait_for_download_completion(std::move(waitFunc));
                     return;
                 }
             }
