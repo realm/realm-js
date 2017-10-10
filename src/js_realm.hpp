@@ -750,8 +750,6 @@ void RealmClass<T>::wait_for_download_completion(ContextType ctx, ObjectType thi
         });
         std::function<WaitHandler> waitFunc = std::move(wait_handler);
 
-        std::function<ProgressHandler> progressFunc;
-
         SharedRealm realm;
         try {
             realm = realm::Realm::get_shared_realm(config);
@@ -765,16 +763,15 @@ void RealmClass<T>::wait_for_download_completion(ContextType ctx, ObjectType thi
 
         if (auto sync_config = config.sync_config)
         {
-            static const String progressFuncName = "_onDownloadProgress";
-            bool progressFuncDefined = false;
+            std::function<ProgressHandler> progressFunc;
             if (!Value::is_boolean(ctx, sync_config_value) && !Value::is_undefined(ctx, sync_config_value))
             {
                 auto sync_config_object = Value::validated_to_object(ctx, sync_config_value);
 
+                static const String progressFuncName = "_onDownloadProgress";
                 ValueType progressFuncValue = Object::get_property(ctx, sync_config_object, progressFuncName);
-                progressFuncDefined = !Value::is_undefined(ctx, progressFuncValue);
 
-                if (progressFuncDefined)
+                if (!Value::is_undefined(ctx, progressFuncValue))
                 {
                     Protected<FunctionType> protected_progressCallback(protected_ctx, Value::validated_to_function(protected_ctx, progressFuncValue));
                     EventLoopDispatcher<ProgressHandler> progress_handler([=](uint64_t transferred_bytes, uint64_t transferrable_bytes) {
@@ -801,7 +798,7 @@ void RealmClass<T>::wait_for_download_completion(ContextType ctx, ObjectType thi
                         Function<T>::callback(protected_ctx, session_callback_func, protected_this, 1, callback_arguments);
                     }
 
-                    if (progressFuncDefined) {
+                    if (progressFunc) {
                         session->register_progress_notifier(std::move(progressFunc), SyncSession::NotifierType::download, false);
                     }
 
