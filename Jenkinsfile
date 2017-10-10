@@ -198,6 +198,7 @@ def doWindowsBuild() {
   return {
     node('windows && nodejs') {
       rlmCheckout scm
+
       try {
         bat 'npm install --build-from-source=realm'
         dir('tests') {
