@@ -52,7 +52,7 @@ stage('build') {
     jsdoc: doDockerBuild('jsdoc', {
       publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'docs/output', reportFiles: 'index.html', reportName: 'Docs'])
     }),
-    linux_node_debug: doDockerBuild('node Debug', {
+    linux_node_debug: doDockerBuild('node-cover Debug', {
         withCredentials([string(credentialsId: 'codecov-token-js', variable: 'CODECOV_TOKEN')]) {
           sh 'tests/node_modules/codecov/bin/codecov'
         }
