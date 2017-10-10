@@ -78,12 +78,6 @@ struct ListClass : ClassDefinition<T, realm::js::List<T>, CollectionClass<T>> {
     static void is_valid(ContextType, ObjectType, Arguments, ReturnValue &);
     static void index_of(ContextType, ObjectType, Arguments, ReturnValue &);
 
-    // aggregate functions
-    static void min(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
-    static void max(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
-    static void sum(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
-    static void avg(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
-
     // observable
     static void add_listener(ContextType, ObjectType, Arguments, ReturnValue &);
     static void remove_listener(ContextType, ObjectType, Arguments, ReturnValue &);
@@ -102,10 +96,10 @@ struct ListClass : ClassDefinition<T, realm::js::List<T>, CollectionClass<T>> {
         {"sorted", wrap<sorted>},
         {"isValid", wrap<is_valid>},
         {"indexOf", wrap<index_of>},
-        {"min", wrap<min>},
-        {"max", wrap<max>},
-        {"sum", wrap<sum>},
-        {"avg", wrap<avg>},
+        {"min", wrap<compute_aggregate_on_collection<ListClass<T>, AggregateFunc::Min>>},
+        {"max", wrap<compute_aggregate_on_collection<ListClass<T>, AggregateFunc::Max>>},
+        {"sum", wrap<compute_aggregate_on_collection<ListClass<T>, AggregateFunc::Sum>>},
+        {"avg", wrap<compute_aggregate_on_collection<ListClass<T>, AggregateFunc::Avg>>},
         {"addListener", wrap<add_listener>},
         {"removeListener", wrap<remove_listener>},
         {"removeAllListeners", wrap<remove_all_listeners>},
@@ -132,26 +126,6 @@ template<typename T>
 void ListClass<T>::get_length(ContextType, ObjectType object, ReturnValue &return_value) {
     auto list = get_internal<T, ListClass<T>>(object);
     return_value.set((uint32_t)list->size());
-}
-
-template<typename T>
-void ListClass<T>::min(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
-    compute_aggregate_on_collection<ListClass<T>>(AggregateFunc::Min, ctx, this_object, argc, arguments, return_value);
-}
-
-template<typename T>
-void ListClass<T>::max(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
-    compute_aggregate_on_collection<ListClass<T>>(AggregateFunc::Max, ctx, this_object, argc, arguments, return_value);
-}
-
-template<typename T>
-void ListClass<T>::sum(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
-    compute_aggregate_on_collection<ListClass<T>>(AggregateFunc::Sum, ctx, this_object, argc, arguments, return_value);
-}
-
-template<typename T>
-void ListClass<T>::avg(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
-    compute_aggregate_on_collection<ListClass<T>>(AggregateFunc::Avg, ctx, this_object, argc, arguments, return_value);
 }
 
 template<typename T>

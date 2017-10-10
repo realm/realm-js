@@ -5,6 +5,7 @@ X.Y.Z Release notes
 
 ### Enhancements
 * Added `update` method to `Realm.Results` to support bulk updates (#808).
+* Added support for aggregate functions on `Realm.Results` and `Realm.List` of primitive types.
 
 ### Bug fixes
 * None
