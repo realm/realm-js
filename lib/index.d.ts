@@ -250,7 +250,13 @@ declare namespace Realm {
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.Results.html }
      */
     interface Results<T> extends Collection<T> {
-
+        /**
+         * Bulk update objects in the collection.
+         * @param  {string} property
+         * @param  {any} value
+         * @returns void
+         */
+        update(property: string, value: any): void;
     }
 
     const Results: {

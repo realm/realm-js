@@ -1,3 +1,14 @@
+X.Y.Z Release notes
+=============================================================
+### Breaking changes
+* None
+
+### Enhancements
+* Added `update` method to `Realm.Results` to support bulk updates (#808).
+
+### Bug fixes
+* None
+
 2.0.0-rc19 Release notes (2017-10-7)
 =============================================================
 ### Breaking changes
