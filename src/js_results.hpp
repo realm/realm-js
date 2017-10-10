@@ -318,6 +318,8 @@ void ResultsClass<T>::update(ContextType ctx, FunctionType, ObjectType this_obje
         throw std::runtime_error("Can only 'update' objects within a transaction.");
     }
 
+    // TODO: This approach just moves the for-loop from JS to C++
+    // Ideally, we'd implement this in OS or Core in an optimized fashion
     for (auto i = results->size(); i > 0; i--) {
         auto realm_object = realm::Object(realm, schema, results->get(i - 1));
         auto obj = RealmObjectClass<T>::create_instance(ctx, realm_object);
