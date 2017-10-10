@@ -715,19 +715,19 @@ void RealmClass<T>::wait_for_download_completion(ContextType ctx, ObjectType thi
             config.encryption_key.assign(encryption_key.data(), encryption_key.data() + encryption_key.size());
         }
 
+        Protected<ObjectType> thiz(ctx, this_object);
+        SyncClass<T>::populate_sync_config(ctx, thiz, config_object, config);
+
         static const String path_string = "path";
         ValueType path_value = Object::get_property(ctx, config_object, path_string);
-        if (Value::is_undefined(ctx, path_value)) {
-            config.path = default_path();
-        }
-        else {
+        if (!Value::is_undefined(ctx, path_value)) {
             config.path = Value::validated_to_string(ctx, path_value);
+        }
+        else if (config.path.empty()) {
+            config.path = default_path();
         }
         config.path = normalize_realm_path(config.path);
         ensure_directory_exists_for_file(config.path);
-
-        Protected<ObjectType> thiz(ctx, this_object);
-        SyncClass<T>::populate_sync_config(ctx, thiz, config_object, config);
 
         Protected<FunctionType> protected_callback(ctx, callback_function);
         Protected<ObjectType> protected_this(ctx, this_object);
