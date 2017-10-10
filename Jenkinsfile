@@ -175,6 +175,9 @@ def doAndroidBuild(target, postStep = null) {
 def doDockerBuild(target, postStep = null) {
   return {
     node('docker') {
+      deleteDir()
+      unstash 'source'
+
       try {
         reportStatus(target, 'PENDING', 'Build has started')
 
