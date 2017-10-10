@@ -33,7 +33,7 @@ class Results extends Collection {
      * @param {string} property - The name of the property.
      * @param {string} value - The updated property value.
      * @throws {Error} If no property with the name exists.
-     * @since 1.12.1
+     * @since 2.0.0-rc20
      */
     update(property, value) {}
 }
