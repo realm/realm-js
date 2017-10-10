@@ -7,7 +7,8 @@ X.Y.Z Release notes
 * Added `update` method to `Realm.Results` to support bulk updates (#808).
 
 ### Bug fixes
-* None
+* Avoid closing then reopening a sync session when using `Realm.open` (#1391).
+* Respect custom Realm paths when using `Realm.open` (#1392 and #1393).
 
 2.0.0-rc19 Release notes (2017-10-7)
 =============================================================
