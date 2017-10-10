@@ -1,10 +1,10 @@
 X.Y.Z Release notes
 =============================================================
 ### Breaking changes
-* None.
+* None
 
 ### Enhancements
-* None
+* Added `update` method to `Realm.Results` to support bulk updates (#808).
 
 ### Bug fixes
 * Spurious closing of sync session (#1391).
