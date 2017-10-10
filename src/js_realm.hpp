@@ -723,6 +723,8 @@ void RealmClass<T>::wait_for_download_completion(ContextType ctx, ObjectType thi
         else {
             config.path = Value::validated_to_string(ctx, path_value);
         }
+        config.path = normalize_realm_path(config.path);
+        ensure_directory_exists_for_file(config.path);
 
         Protected<ObjectType> thiz(ctx, this_object);
         SyncClass<T>::populate_sync_config(ctx, thiz, config_object, config);
