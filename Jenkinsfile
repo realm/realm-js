@@ -64,7 +64,11 @@ stage('build') {
     linux_node_debug: doDockerBuild('node Debug'),
     linux_node_release: doDockerBuild('node Release'),
     linux_test_runners: doDockerBuild('test-runners'),
-    macos_node_debug: doMacBuild('node Debug'),
+    macos_node_debug: doMacBuild('node Debug', true) {
+      withCredentials([string(credentialsId: 'codecov-token-js', variable: 'CODECOV_TOKEN')]) {
+        sh 'node_modules/.bin/codecov'
+      }
+    },
     macos_node_release: doMacBuild('node Release'),
     //macos_realmjs_debug: doMacBuild('realmjs Debug'),
     //macos_realmjs_release: doMacBuild('realmjs Release'),
@@ -172,7 +176,8 @@ def doAndroidBuild(target, postStep = null) {
   }
 }
 
-def doDockerBuild(target, postStep = null) {
+def doDockerBuild(target, coverage = false, postStep = null) {
+  def prefix = coverage?'node_modules/.bin/nyc ':''
   return {
     node('docker') {
       deleteDir()
@@ -182,7 +187,7 @@ def doDockerBuild(target, postStep = null) {
         reportStatus(target, 'PENDING', 'Build has started')
 
         docker.image('node:6').inside('-e HOME=/tmp') {
-          sh "scripts/test.sh ${target}"
+          sh "${prefix}scripts/test.sh ${target}"
           if(postStep) {
             postStep.call()
           }
