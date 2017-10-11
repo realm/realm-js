@@ -263,7 +263,7 @@ class Collection {
      *
      * @param {string} [property] - For a collection of objects, the property to take the maximum of.
      * @throws {Error} If no property with the name exists or if property is not numeric/date.
-     * @returns {number} the minimum value.
+     * @returns {number} the maximum value.
      * @since 1.12.1
      */
     max(property) {}
