@@ -24,7 +24,8 @@ stage('check') {
       userRemoteConfigs: scm.userRemoteConfigs
     ])
 
-    stash name: 'source', includes:'**/*', excludes:'react-native/android/src/main/jni/src/object-store/.dockerignore'
+    stash name: 'source', includes: '**/*', excludes: 'react-native/android/src/main/jni/src/object-store/.dockerignore'
+    stash name: 'git', includes: '.git/**/*', useDefaultExcludes: false
 
     dependencies = readProperties file: 'dependencies.list'
 
@@ -207,6 +208,9 @@ def doMacBuild(target, coverage = false, postStep = null) {
     node('macos') {
       deleteDir()
       unstash 'source'
+      if(coverage) {
+        unstash 'git'
+      }
 
       try {
         reportStatus(target, 'PENDING', 'Build has started')
