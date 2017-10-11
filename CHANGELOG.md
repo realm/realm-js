@@ -8,7 +8,8 @@ X.Y.Z Release notes
 * Added support for aggregate functions on `Realm.Results` and `Realm.List` of primitive types.
 
 ### Bug fixes
-* None
+* Avoid closing then reopening a sync session when using `Realm.open` (#1391).
+* Respect custom Realm paths when using `Realm.open` (#1392 and #1393).
 
 2.0.0-rc19 Release notes (2017-10-7)
 =============================================================
