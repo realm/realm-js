@@ -204,8 +204,25 @@ def doDockerBuild(target, postStep = null) {
 def doMacBuild(target, coverage = false, postStep = null) {
   def prefix = coverage?'npm install nyc && node_modules/.bin/nyc ':''
   return {
-    node('osx_vegas') {
-      doInside("${prefix}scripts/test.sh", target, postStep)
+    node('macos') {
+      deleteDir()
+      unstash 'source'
+
+      try {
+        reportStatus(target, 'PENDING', 'Build has started')
+
+        nvm('v7.10.0') {
+          sh "${prefix}scripts/test.sh ${target}"
+          if(postStep) {
+            postStep.call()
+          }
+          deleteDir()
+          reportStatus(target, 'SUCCESS', 'Success!')
+        }
+      } catch(Exception e) {
+        reportStatus(target, 'FAILURE', e.toString())
+        throw e
+      }
     }
   }
 }
