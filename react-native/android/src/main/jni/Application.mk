@@ -13,11 +13,13 @@ APP_CPPFLAGS += -frtti
 APP_CPPFLAGS += -fexceptions
 APP_CPPFLAGS += -DREALM_HAVE_CONFIG
 APP_CPPFLAGS += -fomit-frame-pointer
+APP_CPPFLAGS += -fvisibility=hidden
 
 # Make sure every shared lib includes a .note.gnu.build-id header
 APP_LDFLAGS := -Wl,--build-id
 APP_LDFLAGS += -llog
 APP_LDFLAGS += -landroid
+APP_LDFLAGS += -fvisibility=hidden
 
 ifeq ($(strip $(BUILD_TYPE_SYNC)),1)
 APP_CPPFLAGS += -DREALM_ENABLE_SYNC=1
