@@ -239,8 +239,14 @@ class Collection {
    indexOf(object) {}
 
     /**
-     * Computes the minimum value of a property.
-     * @param {string} property - The name of the property.
+     * Returns the minimum value of the values in the collection or of the
+     * given property among all the objects in the collection, or `undefined`
+     * if the collection is empty.
+     *
+     * Only supported for int, float, double and date properties. `null` values
+     * are ignored entirely by this method and will not be returned.
+     *
+     * @param {string} [property] - For a collection of objects, the property to take the minimum of.
      * @throws {Error} If no property with the name exists or if property is not numeric/date.
      * @returns {number} the minimum value.
      * @since 1.12.1
@@ -248,8 +254,14 @@ class Collection {
     min(property) {}
 
     /**
-     * Computes the maximum value of a property.
-     * @param {string} property - The name of the property.
+     * Returns the maximum value of the values in the collection or of the
+     * given property among all the objects in the collection, or `undefined`
+     * if the collection is empty.
+     *
+     * Only supported for int, float, double and date properties. `null` values
+     * are ignored entirely by this method and will not be returned.
+     *
+     * @param {string} [property] - For a collection of objects, the property to take the maximum of.
      * @throws {Error} If no property with the name exists or if property is not numeric/date.
      * @returns {number} the maximum value.
      * @since 1.12.1
@@ -257,19 +269,29 @@ class Collection {
     max(property) {}
 
     /**
-     * Computes the sum of a property.
-     * @param {string} property - The name of the property.
-     * @throws {Error} If no property with the name exists or if property is not numeric/date.
+     * Computes the sum of the values in the collection or of the given
+     * property among all the objects in the collection, or 0 if the collection
+     * is empty.
+     *
+     * Only supported for int, float and double properties. `null` values are
+     * ignored entirely by this method.
+     * @param {string} [property] - For a collection of objects, the property to take the sum of.
+     * @throws {Error} If no property with the name exists or if property is not numeric.
      * @returns {number} the sum.
      * @since 1.12.1
      */
     sum(property) {}
 
     /**
-     * Computes the average of a property.
-     * @param {string} property - The name of the property.
-     * @throws {Error} If no property with the name exists or if property is not numeric/date.
-     * @returns {number} the average value.
+     * Computes the average of the values in the collection or of the given
+     * property among all the objects in the collection, or `undefined` if the collection
+     * is empty.
+     *
+     * Only supported for int, float and double properties. `null` values are
+     * ignored entirely by this method and will not be factored into the average.
+     * @param {string} [property] - For a collection of objects, the property to take the average of.
+     * @throws {Error} If no property with the name exists or if property is not numeric.
+     * @returns {number} the sum.
      * @since 1.12.1
      */
     avg(property) {}
