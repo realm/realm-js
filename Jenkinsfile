@@ -211,7 +211,7 @@ def doMacBuild(target, coverage = false, postStep = null) {
       try {
         reportStatus(target, 'PENDING', 'Build has started')
 
-        nvm('v7.10.0') {
+        nvm(version: '7.10.0') {
           sh "${prefix}scripts/test.sh ${target}"
           if(postStep) {
             postStep.call()
