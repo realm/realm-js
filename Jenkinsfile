@@ -203,7 +203,7 @@ def doDockerBuild(target, postStep = null) {
 }
 
 def doMacBuild(target, coverage = false, postStep = null) {
-  def prefix = coverage?'npm install nyc && node_modules/.bin/nyc --show-process-tree ':''
+  def prefix = coverage?'echo $0 && env && npm install nyc && node_modules/.bin/nyc --show-process-tree ':''
   return {
     node('osx_vegas') {
       deleteDir()
