@@ -205,7 +205,7 @@ def doDockerBuild(target, postStep = null) {
 def doMacBuild(target, coverage = false, postStep = null) {
   def prefix = coverage?'npm install nyc && node_modules/.bin/nyc ':''
   return {
-    node('macos') {
+    node('osx_vegas') {
       deleteDir()
       unstash 'source'
       if(coverage) {
