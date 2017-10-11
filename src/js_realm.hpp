@@ -718,9 +718,28 @@ void RealmClass<T>::wait_for_download_completion(ContextType ctx, ObjectType thi
         Protected<ObjectType> thiz(ctx, this_object);
         SyncClass<T>::populate_sync_config(ctx, thiz, config_object, config);
 
+        static const String path_string = "path";
+        ValueType path_value = Object::get_property(ctx, config_object, path_string);
+        if (!Value::is_undefined(ctx, path_value)) {
+            config.path = Value::validated_to_string(ctx, path_value);
+        }
+        else if (config.path.empty()) {
+            config.path = default_path();
+        }
+        config.path = normalize_realm_path(config.path);
+        ensure_directory_exists_for_file(config.path);
+
         Protected<FunctionType> protected_callback(ctx, callback_function);
         Protected<ObjectType> protected_this(ctx, this_object);
         Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
+
+        SharedRealm realm;
+        try {
+            realm = realm::Realm::get_shared_realm(config);
+        }
+        catch (const RealmFileException& ex) {
+            handleRealmFileException(ctx, config, ex);
+        }
 
         EventLoopDispatcher<WaitHandler> wait_handler([=](std::error_code error_code) {
             HANDLESCOPE
@@ -738,34 +757,25 @@ void RealmClass<T>::wait_for_download_completion(ContextType ctx, ObjectType thi
                 callback_arguments[0] = object;
                 Function<T>::callback(protected_ctx, protected_callback, protected_this, 1, callback_arguments);
             }
+
+            // We keep our Realm instance alive until the callback has had a chance to open its own instance.
+            // This allows it to share the sync session that our Realm opened.
+            if (realm)
+                realm->close();
         });
         std::function<WaitHandler> waitFunc = std::move(wait_handler);
 
-        std::function<ProgressHandler> progressFunc;
-
-        SharedRealm realm;
-        try {
-            realm = realm::Realm::get_shared_realm(config);
-        }
-        catch (const RealmFileException& ex) {
-            handleRealmFileException(ctx, config, ex);
-        }
-        catch (...) {
-           throw;
-        }
-
         if (auto sync_config = config.sync_config)
         {
-            static const String progressFuncName = "_onDownloadProgress";
-            bool progressFuncDefined = false;
+            std::function<ProgressHandler> progressFunc;
             if (!Value::is_boolean(ctx, sync_config_value) && !Value::is_undefined(ctx, sync_config_value))
             {
                 auto sync_config_object = Value::validated_to_object(ctx, sync_config_value);
 
+                static const String progressFuncName = "_onDownloadProgress";
                 ValueType progressFuncValue = Object::get_property(ctx, sync_config_object, progressFuncName);
-                progressFuncDefined = !Value::is_undefined(ctx, progressFuncValue);
 
-                if (progressFuncDefined)
+                if (!Value::is_undefined(ctx, progressFuncValue))
                 {
                     Protected<FunctionType> protected_progressCallback(protected_ctx, Value::validated_to_function(protected_ctx, progressFuncValue));
                     EventLoopDispatcher<ProgressHandler> progress_handler([=](uint64_t transferred_bytes, uint64_t transferrable_bytes) {
@@ -792,14 +802,11 @@ void RealmClass<T>::wait_for_download_completion(ContextType ctx, ObjectType thi
                         Function<T>::callback(protected_ctx, session_callback_func, protected_this, 1, callback_arguments);
                     }
 
-                    if (progressFuncDefined) {
+                    if (progressFunc) {
                         session->register_progress_notifier(std::move(progressFunc), SyncSession::NotifierType::download, false);
                     }
 
-                    session->wait_for_download_completion([=](std::error_code error_code) {
-                        realm->close(); //capture and keep realm instance for until here
-                        waitFunc(error_code);
-                    });
+                    session->wait_for_download_completion(std::move(waitFunc));
                     return;
                 }
             }
