@@ -10,6 +10,10 @@ X.Y.Z Release notes
 ### Bug fixes
 * None
 
+### Internal
+* Upgrading to Realm Sync 2.0.0-rc28.
+* Upgrading to Realm Object Server 2.0.0-rc.4.
+
 2.0.0-rc19 Release notes (2017-10-7)
 =============================================================
 ### Breaking changes
