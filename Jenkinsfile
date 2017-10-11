@@ -176,8 +176,7 @@ def doAndroidBuild(target, postStep = null) {
   }
 }
 
-def doDockerBuild(target, coverage = false, postStep = null) {
-  def prefix = coverage?'node_modules/.bin/nyc ':''
+def doDockerBuild(target, postStep = null) {
   return {
     node('docker') {
       deleteDir()
@@ -187,7 +186,7 @@ def doDockerBuild(target, coverage = false, postStep = null) {
         reportStatus(target, 'PENDING', 'Build has started')
 
         docker.image('node:6').inside('-e HOME=/tmp') {
-          sh "${prefix}scripts/test.sh ${target}"
+          sh "scripts/test.sh ${target}"
           if(postStep) {
             postStep.call()
           }
@@ -202,10 +201,11 @@ def doDockerBuild(target, coverage = false, postStep = null) {
   }
 }
 
-def doMacBuild(target, postStep = null) {
+def doMacBuild(target, coverage = false, postStep = null) {
+  def prefix = coverage?'npm install nyc && node_modules/.bin/nyc ':''
   return {
     node('osx_vegas') {
-      doInside("./scripts/test.sh", target, postStep)
+      doInside("${prefix}scripts/test.sh", target, postStep)
     }
   }
 }
