@@ -1,4 +1,4 @@
-X.Y.Z Release notes
+2.0.0-rc20 Release notes (2017-10-11)
 =============================================================
 ### Breaking changes
 * None
@@ -14,8 +14,6 @@ X.Y.Z Release notes
 ### Internal
 * Upgrading to Realm Sync 2.0.0-rc28.
 * Upgrading to Realm Object Server 2.0.0-rc.4.
-
-### Internal
 * OpenSSL for Android is distributed in a separate package, and the build system needed updates to accommendate this.
 * Added `-fvisibility=hidden` to Android builds (reduces size of `.so` file).
 
