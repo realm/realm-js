@@ -5,9 +5,15 @@ X.Y.Z Release notes
 
 ### Enhancements
 * Added `update` method to `Realm.Results` to support bulk updates (#808).
+* Added support for aggregate functions on `Realm.Results` and `Realm.List` of primitive types.
 
 ### Bug fixes
-* None
+* Avoid closing then reopening a sync session when using `Realm.open` (#1391).
+* Respect custom Realm paths when using `Realm.open` (#1392 and #1393).
+
+### Internal
+* Upgrading to Realm Sync 2.0.0-rc28.
+* Upgrading to Realm Object Server 2.0.0-rc.4.
 
 ### Internal
 * OpenSSL for Android is distributed in a separate package, and the build system needed updates to accommendate this.

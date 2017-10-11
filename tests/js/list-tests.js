@@ -1009,17 +1009,14 @@ module.exports = {
         const NullableBasicTypesList = {
             name: 'NullableBasicTypesList',
             properties: {
-                list: {type: 'list', objectType: 'NullableBasicTypesObject'},
+                list: 'NullableBasicTypesObject[]',
             }
         };
 
-        var realm = new Realm({schema: [schemas.NullableBasicTypes, NullableBasicTypesList]});
-        var object;
-
+        const realm = new Realm({schema: [schemas.NullableBasicTypes, NullableBasicTypesList]});
         const N = 50;
-
-        var list = [];
-        for(var i = 0; i < N; i++) {
+        const list = [];
+        for (let i = 0; i < N; i++) {
             list.push({
                 intCol: i+1,
                 floatCol: i+1,
@@ -1028,6 +1025,7 @@ module.exports = {
             });
         }
 
+        let object;
         realm.write(() => {
             object = realm.create('NullableBasicTypesList', {list: list});
         });
@@ -1051,19 +1049,17 @@ module.exports = {
         const NullableBasicTypesList = {
             name: 'NullableBasicTypesList',
             properties: {
-                list: {type: 'list', objectType: 'NullableBasicTypesObject'},
+                list: 'NullableBasicTypesObject[]',
             }
         };
 
-        var realm = new Realm({schema: [schemas.NullableBasicTypes, NullableBasicTypesList]});
-        var object;
-        var objectEmptyList;
+        const realm = new Realm({schema: [schemas.NullableBasicTypes, NullableBasicTypesList]});
 
         const N = 50;
         const M = 10;
 
-        var list = [];
-        for(var i = 0; i < N; i++) {
+        const list = [];
+        for (let i = 0; i < N; i++) {
             list.push({
                 intCol: i+1,
                 floatCol: i+1,
@@ -1072,22 +1068,17 @@ module.exports = {
             });
         }
 
-        for(var j = 0; j < M; j++) {
-            list.push({
-                intCol: null,
-                floatCol: null,
-                doubleCol: null,
-                dateCol: null
-            });
+        for (let j = 0; j < M; j++) {
+            list.push({});
         }
 
+        let object, objectEmptyList;
         realm.write(() => {
             object = realm.create('NullableBasicTypesList', {list: list});
             objectEmptyList = realm.create('NullableBasicTypesList', {list: []});
         });
 
         TestCase.assertEqual(object.list.length, N + M);
-
 
         // int, float & double columns support all aggregate functions
         // the M null valued objects should be ignored
@@ -1115,6 +1106,44 @@ module.exports = {
         TestCase.assertUndefined(objectEmptyList.list.max('dateCol'));
     },
 
+    testPrimitiveListAggregateFunctions: function() {
+        const realm = new Realm({schema: [schemas.PrimitiveArrays]});
+        let object;
+        realm.write(() => {
+            object = realm.create('PrimitiveArrays', {
+                int:    [1, 2, 3],
+                float:  [1.1, 2.2, 3.3],
+                double: [1.11, 2.22, 3.33],
+                date:   [DATE1, DATE2, DATE3],
+
+                optInt:    [1, null, 2],
+                optFloat:  [1.1, null, 3.3],
+                optDouble: [1.11, null, 3.33],
+                optDate:   [DATE1, null, DATE3]
+            });
+        });
+
+        for (let prop of ['int', 'float', 'double', 'date', 'optInt', 'optFloat', 'optDouble', 'optDate']) {
+            const list = object[prop];
+            TestCase.assertSimilar(list.type, list.min(), list[0]);
+            TestCase.assertSimilar(list.type, list.max(), list[2]);
+
+            if (list.type === 'date') {
+                TestCase.assertThrowsContaining(() => list.sum(), "Cannot sum 'date' array: operation not supported")
+                TestCase.assertThrowsContaining(() => list.avg(), "Cannot average 'date' array: operation not supported")
+                continue;
+            }
+
+            const sum = list[0] + list[1] + list[2];
+            const avg = sum / (list[1] === null ? 2 : 3);
+            TestCase.assertSimilar(list.type, list.sum(), sum);
+            TestCase.assertSimilar(list.type, list.avg(), avg);
+        }
+
+        TestCase.assertThrowsContaining(() => object.bool.min(), "Cannot min 'bool' array: operation not supported")
+        TestCase.assertThrowsContaining(() => object.int.min("foo"), "Invalid arguments: at most 0 expected, but 1 supplied")
+    },
+
     testListAggregateFunctionsUnsupported: function() {
         const NullableBasicTypesList = {
             name: 'NullableBasicTypesList',
@@ -1123,13 +1152,12 @@ module.exports = {
             }
         };
 
-        var realm = new Realm({schema: [schemas.NullableBasicTypes, NullableBasicTypesList]});
-        var object;
+        const realm = new Realm({schema: [schemas.NullableBasicTypes, NullableBasicTypesList]});
 
         const N = 5;
 
         var list = [];
-        for(var i = 0; i < N; i++) {
+        for (let i = 0; i < N; i++) {
             list.push({
                 intCol: i+1,
                 floatCol: i+1,
@@ -1138,6 +1166,7 @@ module.exports = {
             });
         }
 
+        let object;
         realm.write(() => {
             object = realm.create('NullableBasicTypesList', {list: list});
         });
@@ -1145,38 +1174,33 @@ module.exports = {
         TestCase.assertEqual(object.list.length, N);
 
         // bool, string & data columns don't support 'min'
-        ['boolCol', 'stringCol', 'dataCol'].forEach(colName => {
-            TestCase.assertThrows(function() {
-                object.list.min(colName);
-            }
-        )});
+        ['bool', 'string', 'data'].forEach(colName => {
+            TestCase.assertThrowsContaining(() => object.list.min(colName + 'Col'),
+                                            `Cannot min property '${colName}Col': operation not supported for '${colName}' properties`);
+        });
 
         // bool, string & data columns don't support 'max'
-        ['boolCol', 'stringCol', 'dataCol'].forEach(colName => {
-            TestCase.assertThrows(function() {
-                object.list.max(colName);
-            }
-        )});
+        ['bool', 'string', 'data'].forEach(colName => {
+            TestCase.assertThrowsContaining(() => object.list.max(colName + 'Col'),
+                                            `Cannot max property '${colName}Col': operation not supported for '${colName}' properties`);
+        });
 
         // bool, string, date & data columns don't support 'avg'
-        ['boolCol', 'stringCol', 'dateCol', 'dataCol'].forEach(colName => {
-            TestCase.assertThrows(function() {
-                object.list.avg(colName);
-            }
-        )});
+        ['bool', 'string', 'date', 'data'].forEach(colName => {
+            TestCase.assertThrowsContaining(() => object.list.avg(colName + 'Col'),
+                                            `Cannot average property '${colName}Col': operation not supported for '${colName}' properties`);
+        });
 
         // bool, string, date & data columns don't support 'sum'
-        ['boolCol', 'stringCol', 'dateCol', 'dataCol'].forEach(colName => {
-            TestCase.assertThrows(function() {
-                object.list.sum(colName);
-            }
-        )});
+        ['bool', 'string', 'date', 'data'].forEach(colName => {
+            TestCase.assertThrowsContaining(() => object.list.sum(colName + 'Col'),
+                                            `Cannot sum property '${colName}Col': operation not supported for '${colName}' properties`);
+        });
     },
 
     testListAggregateFunctionsWrongProperty: function() {
-    var realm = new Realm({schema: [schemas.PersonObject, schemas.PersonList]});
-        var object;
-        var list;
+        const realm = new Realm({schema: [schemas.PersonObject, schemas.PersonList]});
+        let object;
         realm.write(() => {
             object = realm.create('PersonList', {list: [
                 {name: 'Ari', age: 10},
@@ -1185,18 +1209,21 @@ module.exports = {
             ]});
         });
 
-        TestCase.assertThrows(function() {
-            object.list.min('foo')
-        });
-        TestCase.assertThrows(function() {
-            object.list.max('foo')
-        });
-        TestCase.assertThrows(function() {
-            object.list.sum('foo')
-        });
-        TestCase.assertThrows(function() {
-            object.list.avg('foo')
-        });
-
+        TestCase.assertThrowsContaining(() => object.list.min('foo'),
+                                        "Property 'foo' does not exist on object 'PersonObject'");
+        TestCase.assertThrowsContaining(() => object.list.max('foo'),
+                                        "Property 'foo' does not exist on object 'PersonObject'");
+        TestCase.assertThrowsContaining(() => object.list.sum('foo'),
+                                        "Property 'foo' does not exist on object 'PersonObject'");
+        TestCase.assertThrowsContaining(() => object.list.avg('foo'),
+                                        "Property 'foo' does not exist on object 'PersonObject'");
+        TestCase.assertThrowsContaining(() => object.list.min(),
+                                        "JS value must be of type 'string', got (undefined)");
+        TestCase.assertThrowsContaining(() => object.list.max(),
+                                        "JS value must be of type 'string', got (undefined)");
+        TestCase.assertThrowsContaining(() => object.list.sum(),
+                                        "JS value must be of type 'string', got (undefined)");
+        TestCase.assertThrowsContaining(() => object.list.avg(),
+                                        "JS value must be of type 'string', got (undefined)");
     },
 };

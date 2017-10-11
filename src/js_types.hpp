@@ -139,7 +139,7 @@ struct Value {
     static ValueType from_nonnull_binary(ContextType, BinaryData);
     static ValueType from_undefined(ContextType);
     static ValueType from_timestamp(ContextType, Timestamp);
-    static ValueType from_mixed(ContextType, util::Optional<Mixed> &);
+    static ValueType from_mixed(ContextType, const util::Optional<Mixed> &);
 
     static ObjectType to_array(ContextType, const ValueType &);
     static bool to_boolean(ContextType, const ValueType &);
@@ -446,7 +446,7 @@ inline typename T::Value Value<T>::from_timestamp(typename T::Context ctx, Times
 }
 
 template<typename T>
-inline typename T::Value Value<T>::from_mixed(typename T::Context ctx, util::Optional<Mixed>& mixed) {
+inline typename T::Value Value<T>::from_mixed(typename T::Context ctx, const util::Optional<Mixed>& mixed) {
     if (!mixed) {
         return from_undefined(ctx);
     }
