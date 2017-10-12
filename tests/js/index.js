@@ -22,6 +22,13 @@ const Realm = require('realm');
 
 global.enableSyncTests = Realm.Sync;
 
+const isNodeProcess = typeof process === 'object' && process + '' === '[object process]';
+function node_require(module) { return require(module); }
+
+if (isNodeProcess && process.platform === 'win32') {
+    global.enableSyncTests = false;
+}
+
 var TESTS = {
     ListTests: require('./list-tests'),
     LinkingObjectsTests: require('./linkingobjects-tests'),
@@ -30,13 +37,9 @@ var TESTS = {
     ResultsTests: require('./results-tests'),
     QueryTests: require('./query-tests'),
     MigrationTests: require('./migration-tests'),
+    EncryptionTests: require('./encryption-tests'),
     // GarbageCollectionTests: require('./garbage-collection'),
 };
-
-// encryption is not supported on windows
-if (!(typeof process === 'object' && process.platform === 'win32')) {
-    TESTS.EncryptionTests = require('./encryption-tests');
-}
 
 // If sync is enabled, run the sync tests
 if (global.enableSyncTests) {
@@ -50,11 +53,8 @@ if (global.enableSyncTests) {
     }
 }
 
-function node_require(module) { return require(module); }
-
 // If on node, run the async tests
-const isNodeProcess = typeof process === 'object' && process + '' === '[object process]';
-if (isNodeProcess) {
+if (isNodeProcess && process.platform !== 'win32') {
     TESTS.AsyncTests = node_require('./async-tests');
 }
 
