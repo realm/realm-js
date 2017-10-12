@@ -216,6 +216,7 @@ def doMacBuild(target, coverage = false, postStep = null) {
         reportStatus(target, 'PENDING', 'Build has started')
 
         nvm(version: '7.10.0') {
+          sh 'node -e "const osHomedir = require('os-homedir');console.log(osHomedir())"'
           sh "${prefix}scripts/test.sh ${target}"
           if(postStep) {
             postStep.call()
