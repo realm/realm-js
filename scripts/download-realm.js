@@ -33,7 +33,7 @@ function exec() {
             if (error) {
                 reject(error);
             } else {
-                resolve(stdout);
+                resolve(stdout.trim());
             }
         }
         args.push(callback);
@@ -145,6 +145,17 @@ function acquireCore(options, dependencies, target) {
            .then(() => extract(downloadedArchive, target, archiveRootFolder));
 }
 
+function getSyncCommitSha(version) {
+  return exec(`git ls-remote git@github.com:realm/realm-sync.git --tags "v${version}^{}"`)
+         .then(stdout => {
+           if (!Boolean(stdout)) {
+             return exec(`git ls-remote git@github.com:realm/realm-sync.git --tags "v${version}"`)
+           } else {
+             return stdout;
+           }
+         }).then(stdout => /([^\t]+)/.exec(stdout)[0]);
+}
+
 function acquireSync(options, dependencies, target) {
     let serverFolder = 'sync';
     let flavor = options.debug ? 'Debug' : 'Release';
@@ -162,8 +173,7 @@ function acquireSync(options, dependencies, target) {
         break;
     case 'win':
         promise = acquireCore(options, dependencies, target)
-                  .then(() => exec(`git ls-remote git@github.com:realm/realm-sync.git --tags "v${dependencies.REALM_SYNC_VERSION}^{}"`))
-                  .then(stdout => /([^\t]+)/.exec(stdout)[0])
+                  .then(() => getSyncCommitSha(dependencies.REALM_SYNC_VERSION))
                   .then(sha => serverFolder += `/sha-version/${sha}`);
         const arch = options.arch === 'ia32' ? 'Win32' : options.arch;
         archive = `realm-sync-${flavor}-v${dependencies.REALM_SYNC_VERSION}-Windows-${arch}-devel.tar.gz`;
