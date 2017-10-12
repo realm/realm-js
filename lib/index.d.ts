@@ -84,6 +84,7 @@ declare namespace Realm {
         schema?: ObjectClass[] | ObjectSchema[];
         schemaVersion?: number;
         sync?: Realm.Sync.SyncConfiguration;
+        deleteRealmIfMigrationNeeded?: boolean;
     }
 
     // object props type
@@ -142,6 +143,11 @@ declare namespace Realm {
          * @returns boolean
          */
         isValid(): boolean;
+
+        min(property?: string): number|Date|null;
+        max(property?: string): number|Date|null;
+        sum(property?: string): number|null;
+        avg(property?: string): number;
 
         /**
          * @param  {string} query
@@ -221,7 +227,13 @@ declare namespace Realm {
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.Results.html }
      */
     interface Results<T> extends Collection<T> {
-
+        /**
+         * Bulk update objects in the collection.
+         * @param  {string} property
+         * @param  {any} value
+         * @returns void
+         */
+        update(property: string, value: any): void;
     }
 
     const Results: {
@@ -281,7 +293,7 @@ declare namespace Realm.Sync {
         openManagementRealm(): Realm;
         retrieveAccount(provider: string, username: string): Promise<Account>;
 
-        getGrantedPermissions(recipient: 'any' | 'currentUser' | 'otherUser'): Results<Permission>;
+        getGrantedPermissions(recipient: 'any' | 'currentUser' | 'otherUser'): Promise<Results<Permission>>;
         applyPermissions(condition: PermissionCondition, realmUrl: string, accessLevel: AccessLevel): Promise<PermissionChange>;
         offerPermissions(realmUrl: string, accessLevel: AccessLevel, expiresAt?: Date): Promise<string>;
         acceptPermissionOffer(token: string): Promise<string>
@@ -333,7 +345,14 @@ declare namespace Realm.Sync {
         expiresAt?: Date;
     }
 
-    type ErrorCallback = (message?: string, isFatal?: boolean, category?: string, code?: number) => void;
+    interface SyncError {
+        message: string; 
+        isFatal: boolean 
+        category?: string 
+        code: number;
+    }
+
+    type ErrorCallback = (session: Session, error: SyncError) => void;
     type SSLVerifyCallback = (serverAddress: string, serverPort: number, pemCertificate: string, preverifyOk: number, depth: number) => boolean;
 
     interface SyncConfiguration {
@@ -387,12 +406,8 @@ declare namespace Realm.Sync {
     function removeAllListeners(name?: string): void;
     function removeListener(regex: string, name: string, changeCallback: (changeEvent: ChangeEvent) => void): void;
     function setLogLevel(logLevel: 'all' | 'trace' | 'debug' | 'detail' | 'info' | 'warn' | 'error' | 'fatal' | 'off'): void;
+    function initiateClientReset(path: string): void;
     function setFeatureToken(token: string): void;
-
-    /**
-     * @deprecated, to be removed in 2.0
-     */
-    function setAccessToken(accessToken: string): void;
 
     type Instruction = {
         type: 'INSERT' | 'SET' | 'DELETE' | 'CLEAR' | 'LIST_SET' | 'LIST_INSERT' | 'LIST_ERASE' | 'LIST_CLEAR' | 'ADD_TYPE' | 'ADD_PROPERTIES' | 'CHANGE_IDENTITY' | 'SWAP_IDENTITY'
@@ -571,6 +586,11 @@ declare class Realm {
      * @returns boolean
      */
     compact(): boolean;
+
+    /**
+     * @returns Promise<Results<T>>
+     */
+    subscribeToObjects<T>(objectType: string, query: string): Promise<Realm.Results<T>>;
 }
 
 declare module 'realm' {

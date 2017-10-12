@@ -16,11 +16,13 @@
     }],
     ["use_realm_debug", {
       "variables": {
-        "debug_library_suffix": "-dbg"
+        "debug_library_suffix": "-dbg",
+        "build_directory": "build.debug",
       }
     }, {
       "variables": {
-        "debug_library_suffix": ""
+        "debug_library_suffix": "",
+        "build_directory": "build.release",
       }
     }]
   ],
@@ -42,10 +44,10 @@
       "conditions": [
         ["prefix!=''", {
           "all_dependent_settings": {
-            "include_dirs": [ "<(prefix)/src" ],
+            "include_dirs": [ "<(prefix)/src", "<(prefix)/<(build_directory)/src" ],
           },
           "direct_dependent_settings": {
-            "library_dirs": [ "<(prefix)/src/realm" ]
+            "library_dirs": [ "<(prefix)/<(build_directory)/src/realm" ]
           }
         }, {
           "dependencies": [ "vendored-realm" ]
@@ -74,15 +76,15 @@
       },
       "conditions": [
         ["prefix!=''", {
-          "all_dependent_settings+": {
+          "all_dependent_settings": {
             "include_dirs": [ "<(prefix)/src" ],
           },
-          "direct_dependent_settings+": {
+          "direct_dependent_settings": {
             "library_dirs": [ "<(prefix)/src/realm" ]
           }
         }, {
-          "dependencies+": [ "vendored-realm" ]
-        }]
+          "dependencies": [ "vendored-realm" ]
+        }],
       ],
     },
     {

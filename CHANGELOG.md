@@ -1,16 +1,103 @@
-2.0.0 Release notes (2017-9-29)
+2.0.0-rc20 Release notes (2017-10-11)
+=============================================================
+### Breaking changes
+* None
+
+### Enhancements
+* Added `update` method to `Realm.Results` to support bulk updates (#808).
+* Added support for aggregate functions on `Realm.Results` and `Realm.List` of primitive types.
+
+### Bug fixes
+* Avoid closing then reopening a sync session when using `Realm.open` (#1391).
+* Respect custom Realm paths when using `Realm.open` (#1392 and #1393).
+
+### Internal
+* Upgrading to Realm Sync 2.0.0-rc28.
+* Upgrading to Realm Object Server 2.0.0-rc.4.
+* OpenSSL for Android is distributed in a separate package, and the build system needed updates to accommendate this.
+* Added `-fvisibility=hidden` to Android builds (reduces size of `.so` file).
+
+
+2.0.0-rc19 Release notes (2017-10-7)
+=============================================================
+### Breaking changes
+* None.
+
+### Enhancements
+* None
+
+### Bug fixes
+* None
+
+### Internal
+* Update object store libs to fix partial sync
+
+1.13.0 Release notes (2017-10-5)
+=============================================================
+### Breaking changes
+* None.
+
+### Enhancements
+* Add a callback function used to verify SSL certificates in the sync config.
+* Added aggregate functions `min()`, `max()`, `sum()`, and `avg()` to `Realm.Results` and `Realm.List` (#807).
+* Added `deleteRealmIfMigrationNeeded` to configuration to delete a Realm if migration needed (#502).
+
+### Bug fixes
+* Fixed port conflict between RN >= 0.48 inspector proxy and RPC server used for Chrome debugging (#1294).
+* Workaround for RN >= 0.49 metro-bundler check for single string literal argument to `require()` (#1342)
+
+2.0.0-rc18 Release notes (2017-10-4)
+=============================================================
+### Breaking changes
+* Deprecate node 4 and node 5 support
+
+### Enhancements
+* None
+
+### Bug fixes
+* Fixed bug in `Realm.subscribeToObjects()`.
+
+### Internal
+* None
+
+2.0.0-rc17 Release notes (2017-10-3)
+=============================================================
+### Breaking changes
+* Removed `setAccessToken()`; use `setFeatureToken()` instead.
+* During iteration (`for ... of`) of `Realm.Results`, the results will be frozen using the `snapshot()` method (#1366).
+
+### Enhancements
+* Support migration from Realms sync 1.0 to sync 2.0 versions
+* Handling of the situation when the client has to reset the Realm due to diverging histories (#795).
+* Added `Realm.subscribeToObjects()` to listen for changes in partially synced Realms.
+
+### Bug fixes
+* None.
+
+### Internal
+* Upgraded to Realm Sync 2.0.0-rc27.
+
+
+2.0.0-rc16 Release notes (2017-9-29)
+=============================================================
+### Breaking changes
+* Upgtading to Realm Core 4.0.1 (bug fixes)
+* Upgrading to Realm Sync 2.0.0-rc26 (sync protocol 22 + bug fixes)
+
+
+2.0.0-rc14 Release notes (2017-9-29)
 =============================================================
 ### Breaking changes
 * Upgrading to Realm Core 4.0.0 and Realm Sync 2.0.0-rc25.
 
 ### Enhancements
-* None.
+* None
 
 ### Bug fixes
 * Configuration of sync file system is not done on module import but later when actually needed by sync (#1351)
 
 
-2.0.0 Release notes (2017-9-28)
+2.0.0-rc12 Release notes (2017-9-28)
 =============================================================
 ### Breaking changes
 * None.
@@ -27,17 +114,9 @@
 ### Breaking changes
 * None
 
-### Enhancements
-* Add a callback function used to verify SSL certificates in the sync config.
-
-### Bug fixes
-* Fixed port conflict between RN >= 0.48 inspector proxy and RPC server used for Chrome debugging (#1294).
-
 ### Internal
 * Alignment of permission schemas.
 * Updating sync (2.0.0-rc24).
-
-
 
 
 2.0.0-rc10 Release notes (2017-9-19)

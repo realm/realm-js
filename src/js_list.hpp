@@ -47,6 +47,7 @@ class List : public realm::List {
 
 template<typename T>
 struct ListClass : ClassDefinition<T, realm::js::List<T>, CollectionClass<T>> {
+    using Type = T;
     using ContextType = typename T::Context;
     using ObjectType = typename T::Object;
     using ValueType = typename T::Value;
@@ -81,7 +82,7 @@ struct ListClass : ClassDefinition<T, realm::js::List<T>, CollectionClass<T>> {
     static void add_listener(ContextType, ObjectType, Arguments, ReturnValue &);
     static void remove_listener(ContextType, ObjectType, Arguments, ReturnValue &);
     static void remove_all_listeners(ContextType, ObjectType, Arguments, ReturnValue &);
-    
+
     std::string const name = "List";
 
     MethodMap<T> const methods = {
@@ -95,6 +96,10 @@ struct ListClass : ClassDefinition<T, realm::js::List<T>, CollectionClass<T>> {
         {"sorted", wrap<sorted>},
         {"isValid", wrap<is_valid>},
         {"indexOf", wrap<index_of>},
+        {"min", wrap<compute_aggregate_on_collection<ListClass<T>, AggregateFunc::Min>>},
+        {"max", wrap<compute_aggregate_on_collection<ListClass<T>, AggregateFunc::Max>>},
+        {"sum", wrap<compute_aggregate_on_collection<ListClass<T>, AggregateFunc::Sum>>},
+        {"avg", wrap<compute_aggregate_on_collection<ListClass<T>, AggregateFunc::Avg>>},
         {"addListener", wrap<add_listener>},
         {"removeListener", wrap<remove_listener>},
         {"removeAllListeners", wrap<remove_all_listeners>},
@@ -124,7 +129,7 @@ void ListClass<T>::get_length(ContextType, ObjectType object, ReturnValue &retur
 }
 
 template<typename T>
-void ListClass<T>::get_type(ContextType, ObjectType object, ReturnValue &return_value) {
+void ListClass<T>::get_type(ContextType ctx, ObjectType object, ReturnValue &return_value) {
     auto list = get_internal<T, ListClass<T>>(object);
     return_value.set(string_for_property_type(list->get_type() & ~realm::PropertyType::Flags));
 }
@@ -229,7 +234,7 @@ void ListClass<T>::splice(ContextType ctx, ObjectType this_object, Arguments arg
         remove = std::max<long>(Value::to_number(ctx, args[1]), 0);
         remove = std::min<long>(remove, size - index);
     }
-    
+
     std::vector<ValueType> removed_objects;
     removed_objects.reserve(remove);
 
@@ -263,7 +268,7 @@ void ListClass<T>::sorted(ContextType ctx, ObjectType this_object, Arguments arg
     auto list = get_internal<T, ListClass<T>>(this_object);
     return_value.set(ResultsClass<T>::create_instance(ctx, list->sort(ResultsClass<T>::get_keypaths(ctx, args))));
 }
-    
+
 template<typename T>
 void ListClass<T>::is_valid(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
     return_value.set(get_internal<T, ListClass<T>>(this_object)->is_valid());
@@ -284,7 +289,7 @@ void ListClass<T>::add_listener(ContextType ctx, ObjectType this_object, Argumen
     auto list = get_internal<T, ListClass<T>>(this_object);
     ResultsClass<T>::add_listener(ctx, *list, this_object, args);
 }
-    
+
 template<typename T>
 void ListClass<T>::remove_listener(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
     auto list = get_internal<T, ListClass<T>>(this_object);

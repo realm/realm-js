@@ -53,12 +53,26 @@ class ReturnValue<jsc::Types> {
     void set(uint32_t number) {
         m_value = JSValueMakeNumber(m_context, number);
     }
+    void set(const util::Optional<realm::Mixed>& mixed) {
+        m_value = Value<jsc::Types>::from_mixed(m_context, mixed);
+    }
     void set_null() {
         m_value = JSValueMakeNull(m_context);
     }
     void set_undefined() {
         m_value = JSValueMakeUndefined(m_context);
     }
+
+    template<typename T>
+    void set(const util::Optional<T>& value) {
+        if (value) {
+            set(*value);
+        }
+        else {
+            set_undefined();
+        }
+    }
+
     operator JSValueRef() const {
         return m_value;
     }

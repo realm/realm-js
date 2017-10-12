@@ -158,6 +158,11 @@ class RealmReactModule extends ReactContextBaseJavaModule {
                 e.printStackTrace();
             }
             final String json = map.get("postData");
+            if (json == null) {
+                Response response = newFixedLengthResponse("");
+                response.addHeader("Access-Control-Allow-Origin", "http://localhost:8081");
+                return response;
+            }  
             final String jsonResponse = processChromeDebugCommand(cmdUri, json);
 
             Response response = newFixedLengthResponse(jsonResponse);

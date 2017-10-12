@@ -24,6 +24,11 @@
  * accessed in any of the ways that a normal Javascript Array can, including
  * subscripting, enumerating with `for-of` and so on.
  *
+ * A Collection always reflect the current state of the Realm. The one exception to this is
+ * when using `for...in` or `for...of` enumeration, which will always enumerate over the
+ * objects which matched the query when the enumeration is begun, even if some of them are
+ * deleted or modified to be excluded by the filter during the enumeration.
+ *
  * @memberof Realm
  * @since 0.11.0
  */
@@ -232,6 +237,64 @@ class Collection {
     * @since 1.8.2
     */
    indexOf(object) {}
+
+    /**
+     * Returns the minimum value of the values in the collection or of the
+     * given property among all the objects in the collection, or `undefined`
+     * if the collection is empty.
+     *
+     * Only supported for int, float, double and date properties. `null` values
+     * are ignored entirely by this method and will not be returned.
+     *
+     * @param {string} [property] - For a collection of objects, the property to take the minimum of.
+     * @throws {Error} If no property with the name exists or if property is not numeric/date.
+     * @returns {number} the minimum value.
+     * @since 1.12.1
+     */
+    min(property) {}
+
+    /**
+     * Returns the maximum value of the values in the collection or of the
+     * given property among all the objects in the collection, or `undefined`
+     * if the collection is empty.
+     *
+     * Only supported for int, float, double and date properties. `null` values
+     * are ignored entirely by this method and will not be returned.
+     *
+     * @param {string} [property] - For a collection of objects, the property to take the maximum of.
+     * @throws {Error} If no property with the name exists or if property is not numeric/date.
+     * @returns {number} the maximum value.
+     * @since 1.12.1
+     */
+    max(property) {}
+
+    /**
+     * Computes the sum of the values in the collection or of the given
+     * property among all the objects in the collection, or 0 if the collection
+     * is empty.
+     *
+     * Only supported for int, float and double properties. `null` values are
+     * ignored entirely by this method.
+     * @param {string} [property] - For a collection of objects, the property to take the sum of.
+     * @throws {Error} If no property with the name exists or if property is not numeric.
+     * @returns {number} the sum.
+     * @since 1.12.1
+     */
+    sum(property) {}
+
+    /**
+     * Computes the average of the values in the collection or of the given
+     * property among all the objects in the collection, or `undefined` if the collection
+     * is empty.
+     *
+     * Only supported for int, float and double properties. `null` values are
+     * ignored entirely by this method and will not be factored into the average.
+     * @param {string} [property] - For a collection of objects, the property to take the average of.
+     * @throws {Error} If no property with the name exists or if property is not numeric.
+     * @returns {number} the sum.
+     * @since 1.12.1
+     */
+    avg(property) {}
 
     /**
      * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/forEach Array.prototype.forEach}

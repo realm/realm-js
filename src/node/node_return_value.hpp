@@ -64,11 +64,24 @@ class ReturnValue<node::Types> {
     void set(uint32_t number) {
         m_value.Set(number);
     }
+    void set(realm::Mixed mixed) {
+        m_value.Set(Value<node::Types>::from_mixed(nullptr, mixed));
+    }
     void set_null() {
         m_value.SetNull();
     }
     void set_undefined() {
         m_value.SetUndefined();
+    }
+
+    template<typename T>
+    void set(util::Optional<T> value) {
+        if (value) {
+            set(*value);
+        }
+        else {
+            m_value.SetUndefined();
+        }
     }
 };
     

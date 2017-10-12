@@ -20,6 +20,7 @@
 
 #include "js_collection.hpp"
 #include "js_realm_object.hpp"
+#include "js_util.hpp"
 
 #include "results.hpp"
 #include "list.hpp"
@@ -53,6 +54,7 @@ class Results : public realm::Results {
 
 template<typename T>
 struct ResultsClass : ClassDefinition<T, realm::js::Results<T>, CollectionClass<T>> {
+    using Type = T;
     using ContextType = typename T::Context;
     using ObjectType = typename T::Object;
     using ValueType = typename T::Value;
@@ -84,7 +86,9 @@ struct ResultsClass : ClassDefinition<T, realm::js::Results<T>, CollectionClass<
 
     template<typename Fn>
     static void index_of(ContextType, Fn&, Arguments, ReturnValue &);
-    
+
+    static void update(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
+
     // observable
     static void add_listener(ContextType, ObjectType, Arguments, ReturnValue &);
     static void remove_listener(ContextType, ObjectType, Arguments, ReturnValue &);
@@ -94,7 +98,7 @@ struct ResultsClass : ClassDefinition<T, realm::js::Results<T>, CollectionClass<
     static void add_listener(ContextType, U&, ObjectType, Arguments);
     template<typename U>
     static void remove_listener(ContextType, U&, ObjectType, Arguments);
-    
+
     std::string const name = "Results";
 
     MethodMap<T> const methods = {
@@ -102,18 +106,23 @@ struct ResultsClass : ClassDefinition<T, realm::js::Results<T>, CollectionClass<
         {"filtered", wrap<filtered>},
         {"sorted", wrap<sorted>},
         {"isValid", wrap<is_valid>},
+        {"min", wrap<compute_aggregate_on_collection<ResultsClass<T>, AggregateFunc::Min>>},
+        {"max", wrap<compute_aggregate_on_collection<ResultsClass<T>, AggregateFunc::Max>>},
+        {"sum", wrap<compute_aggregate_on_collection<ResultsClass<T>, AggregateFunc::Sum>>},
+        {"avg", wrap<compute_aggregate_on_collection<ResultsClass<T>, AggregateFunc::Avg>>},
         {"addListener", wrap<add_listener>},
         {"removeListener", wrap<remove_listener>},
         {"removeAllListeners", wrap<remove_all_listeners>},
         {"indexOf", wrap<index_of>},
+        {"update", wrap<update>},
     };
-    
+
     PropertyMap<T> const properties = {
         {"length", {wrap<get_length>, nullptr}},
         {"type", {wrap<get_type>, nullptr}},
         {"optional", {wrap<get_optional>, nullptr}},
     };
-    
+
     IndexPropertyType<T> const index_accessor = {wrap<get_index>, nullptr};
 };
 
@@ -211,7 +220,6 @@ void ResultsClass<T>::get_optional(ContextType, ObjectType object, ReturnValue &
     return_value.set(is_nullable(results->get_type()));
 }
 
-
 template<typename T>
 void ResultsClass<T>::get_index(ContextType ctx, ObjectType object, uint32_t index, ReturnValue &return_value) {
     auto results = get_internal<T, ResultsClass<T>>(object);
@@ -242,7 +250,7 @@ template<typename T>
 void ResultsClass<T>::is_valid(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
     return_value.set(get_internal<T, ResultsClass<T>>(this_object)->is_valid());
 }
-    
+
 template<typename T>
 template<typename Fn>
 void ResultsClass<T>::index_of(ContextType ctx, Fn& fn, Arguments args, ReturnValue &return_value) {
@@ -268,6 +276,32 @@ void ResultsClass<T>::index_of(ContextType ctx, Fn& fn, Arguments args, ReturnVa
 }
 
 template<typename T>
+void ResultsClass<T>::update(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    validate_argument_count(argc, 2);
+
+    std::string property = Value::validated_to_string(ctx, arguments[0], "property");
+    auto results = get_internal<T, ResultsClass<T>>(this_object);
+
+    auto schema = results->get_object_schema();
+    if (!schema.property_for_name(StringData(property))) {
+        throw std::invalid_argument(util::format("No such property: %1", property));
+    }
+
+    auto realm = results->get_realm();
+    if (!realm->is_in_transaction()) {
+        throw std::runtime_error("Can only 'update' objects within a transaction.");
+    }
+
+    // TODO: This approach just moves the for-loop from JS to C++
+    // Ideally, we'd implement this in OS or Core in an optimized fashion
+    for (auto i = results->size(); i > 0; i--) {
+        auto realm_object = realm::Object(realm, schema, results->get(i - 1));
+        auto obj = RealmObjectClass<T>::create_instance(ctx, realm_object);
+        RealmObjectClass<T>::set_property(ctx, obj, property, arguments[1]);
+    }
+}
+
+template<typename T>
 void ResultsClass<T>::index_of(ContextType ctx, ObjectType this_object,
                                Arguments args, ReturnValue &return_value) {
     auto fn = [&](auto&& row) {
@@ -287,7 +321,7 @@ void ResultsClass<T>::add_listener(ContextType ctx, U& collection, ObjectType th
     Protected<FunctionType> protected_callback(ctx, callback);
     Protected<ObjectType> protected_this(ctx, this_object);
     Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
-    
+
     auto token = collection.add_notification_callback([=](CollectionChangeSet const& change_set, std::exception_ptr exception) {
         HANDLESCOPE
         ValueType arguments[] {
@@ -333,6 +367,6 @@ void ResultsClass<T>::remove_all_listeners(ContextType ctx, ObjectType this_obje
     auto results = get_internal<T, ResultsClass<T>>(this_object);
     results->m_notification_tokens.clear();
 }
-    
+
 } // js
 } // realm

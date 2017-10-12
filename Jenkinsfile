@@ -175,7 +175,24 @@ def doAndroidBuild(target, postStep = null) {
 def doDockerBuild(target, postStep = null) {
   return {
     node('docker') {
-      doDockerInside("./scripts/docker-wrapper.sh ./scripts/test.sh", target, postStep)
+      deleteDir()
+      unstash 'source'
+
+      try {
+        reportStatus(target, 'PENDING', 'Build has started')
+
+        docker.image('node:6').inside('-e HOME=/tmp') {
+          sh "scripts/test.sh ${target}"
+          if(postStep) {
+            postStep.call()
+          }
+          deleteDir()
+          reportStatus(target, 'SUCCESS', 'Success!')
+        }
+      } catch(Exception e) {
+        reportStatus(target, 'FAILURE', e.toString())
+        throw e
+      }
     }
   }
 }
