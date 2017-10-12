@@ -21,9 +21,9 @@
  * migrated to the v2.x format. In case this migration
  * is not possible, an exception is thrown. The exception´s `message` property will be equal
  * to `IncompatibleSyncedRealmException`. The Realm is backed up, and the property `configuration`
- * is a {Realm~Configuration} which refers to it. You can open it as a local, read-only Realm, and 
+ * is a {Realm~Configuration} which refers to it. You can open it as a local, read-only Realm, and
  * copy objects to a new synced Realm.
- * 
+ *
  * @memberof Realm
  */
 class Sync {
@@ -153,7 +153,7 @@ class IncompatibleSyncedRealmError {
      * The name of the error is 'IncompatibleSyncedRealmError'
      */
     get name() {}
-    
+
     /**
      * The {Realm~Configuration} of the backed up Realm.
      * @type {Realm~Configuration}
@@ -209,6 +209,7 @@ class User {
      * @param {string} adminToken - existing admin token
      * @param {string} server - authentication server
      * @return {User} - admin user populated with the given token and server
+     * @throws {Error} If token or server is invalid.
      */
     static adminUser(adminToken, server) {}
 
