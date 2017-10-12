@@ -22,6 +22,13 @@ const Realm = require('realm');
 
 global.enableSyncTests = Realm.Sync;
 
+const isNodeProcess = typeof process === 'object' && process + '' === '[object process]';
+function node_require(module) { return require(module); }
+
+if (isNodeProcess && process.platform === 'win32') {
+    global.enableSyncTests = false;
+}
+
 var TESTS = {
     ListTests: require('./list-tests'),
     LinkingObjectsTests: require('./linkingobjects-tests'),
@@ -46,10 +53,7 @@ if (global.enableSyncTests) {
     }
 }
 
-function node_require(module) { return require(module); }
-
 // If on node, run the async tests
-const isNodeProcess = typeof process === 'object' && process + '' === '[object process]';
 if (isNodeProcess) {
     TESTS.AsyncTests = node_require('./async-tests');
 }
