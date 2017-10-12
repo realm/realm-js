@@ -179,6 +179,7 @@ class SessionClass : public ClassDefinition<T, WeakSession> {
     using Object = js::Object<T>;
     using Value = js::Value<T>;
     using ReturnValue = js::ReturnValue<T>;
+    using Arguments = js::Arguments<T>;
 
 public:
     std::string const name = "Session";
@@ -196,6 +197,8 @@ public:
     static void add_progress_notification(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &);
     static void remove_progress_notification(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &);
 
+    static void override_server(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue&);
+
     PropertyMap<T> const properties = {
         {"config", {wrap<get_config>, nullptr}},
         {"user", {wrap<get_user>, nullptr}},
@@ -206,6 +209,7 @@ public:
     MethodMap<T> const methods = {
         {"_simulateError", wrap<simulate_error>},
         {"_refreshAccessToken", wrap<refresh_access_token>},
+        {"_overrideServer", wrap<override_server>},
         {"addProgressNotification", wrap<add_progress_notification>},
         {"removeProgressNotification", wrap<remove_progress_notification>},
     };
@@ -508,6 +512,23 @@ void SessionClass<T>::remove_progress_notification(ContextType ctx, FunctionType
     if (auto session = get_internal<T, SessionClass<T>>(syncSession)->lock()) {
         auto reg = Value::validated_to_number(ctx, registrationToken);
         session->unregister_progress_notifier(reg);
+    }
+}
+
+template<typename T>
+void SessionClass<T>::override_server(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue&) {
+    args.validate_count(2);
+
+    std::string address = Value::validated_to_string(ctx, args[0], "address");
+    double port = Value::validated_to_number(ctx, args[1], "port");
+    if (port < 1 || port > 65535 || uint16_t(port) != port) {
+        std::ostringstream message;
+        message << "Invalid port number. Expected an integer in the range 1-65,535, got '" << port << "'";
+        throw std::invalid_argument(message.str());
+    }
+
+    if (auto session = get_internal<T, SessionClass<T>>(this_object)->lock()) {
+        session->override_server(std::move(address), uint16_t(port));
     }
 }
 

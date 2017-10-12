@@ -1,4 +1,4 @@
-2.0.0-rc20 Release notes (2017-10-11)
+2.0.0 Release notes (2017-10-12)
 =============================================================
 ### Breaking changes
 * None
@@ -16,7 +16,7 @@
 * Upgrading to Realm Object Server 2.0.0-rc.4.
 * OpenSSL for Android is distributed in a separate package, and the build system needed updates to accommendate this.
 * Added `-fvisibility=hidden` to Android builds (reduces size of `.so` file).
-
+* Add `Session._overrideServer` to force an existing session to connect to a different server.
 
 2.0.0-rc19 Release notes (2017-10-7)
 =============================================================
