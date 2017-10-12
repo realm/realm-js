@@ -54,7 +54,7 @@ if (global.enableSyncTests) {
 }
 
 // If on node, run the async tests
-if (isNodeProcess) {
+if (isNodeProcess && process.platform !== 'win32') {
     TESTS.AsyncTests = node_require('./async-tests');
 }
 
