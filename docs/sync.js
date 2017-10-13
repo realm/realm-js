@@ -209,7 +209,7 @@ class User {
      * @param {string} adminToken - existing admin token
      * @param {string} server - authentication server
      * @return {User} - admin user populated with the given token and server
-     * @throws {Error} If admin token or server is invalid.
+     * @throws {Error} If adminToken or server is invalid.
      */
     static adminUser(adminToken, server) {}
 
