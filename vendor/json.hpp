@@ -66,8 +66,11 @@ Class @ref nlohmann::basic_json is a good entry point for the documentation.
 
 // enable ssize_t for MSVC
 #ifdef _MSC_VER
-    #include <basetsd.h>
-    using ssize_t = SSIZE_T;
+    #if !defined(_SSIZE_T_) && !defined(_SSIZE_T_DEFINED)
+        typedef SSIZE_T ssize_t;
+        #define _SSIZE_T_
+        #define _SSIZE_T_DEFINED
+    #endif
 #endif
 
 /*!
