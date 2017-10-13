@@ -384,7 +384,7 @@ module.exports = {
           }
           catch (e) {
               didThrow = true;
-              TestCase.assertTrue(e === 'Error: Invalid admin token or server.');
+              TestCase.assertTrue(e === 'Error: Invalid adminToken or server.');
           }
           TestCase.assertTrue(didThrow);
 
@@ -394,7 +394,7 @@ module.exports = {
           }
           catch (e) {
               didThrow = true;
-              TestCase.assertTrue(e === 'Error: Invalid admin token or server.');
+              TestCase.assertTrue(e === 'Error: Invalid adminToken or server.');
           }
           TestCase.assertTrue(didThrow);
           resolve();
