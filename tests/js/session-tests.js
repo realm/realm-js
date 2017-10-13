@@ -249,31 +249,6 @@ module.exports = {
             });
     },
 
-    testRealmOpenAsyncInvalidToken() {
-        if (!isNodeProccess) {
-            return Promise.resolve();
-        }
-
-        const username = uuid();
-        const realmName = uuid();
-
-        return runOutOfProcess(__dirname + '/download-api-helper.js', username, realmName, REALM_MODULE_PATH)
-            .then(() => {
-                const invalidFeatureToken = 'THIS_IS_INVALID';
-                const url = `http://localhost:9080/~/${realmName}`;
-                return new Promise((resolve, reject) => {
-                    try {
-                        const user = Realm.Sync.User.adminUser(invalidFeatureToken, url);
-                    }
-                    catch (e) {
-                        TestCase.assertTrue(e == 'Error: Invalid token or server.');
-                        resolve();
-                    }
-                    reject();
-                });
-            });
-    },
-
     testRealmOpenAsyncNoSchema() {
         if (!isNodeProccess) {
             return Promise.resolve();

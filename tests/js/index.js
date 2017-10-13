@@ -23,30 +23,30 @@ const Realm = require('realm');
 global.enableSyncTests = Realm.Sync;
 
 var TESTS = {
-/*    ListTests: require('./list-tests'),
+    ListTests: require('./list-tests'),
     LinkingObjectsTests: require('./linkingobjects-tests'),
     ObjectTests: require('./object-tests'),
     RealmTests: require('./realm-tests'),
     ResultsTests: require('./results-tests'),
     QueryTests: require('./query-tests'),
-    MigrationTests: require('./migration-tests'),*/
+    MigrationTests: require('./migration-tests'),
     // GarbageCollectionTests: require('./garbage-collection'),
 };
 
 // encryption is not supported on windows
 if (!(typeof process === 'object' && process.platform === 'win32')) {
-//    TESTS.EncryptionTests = require('./encryption-tests');
+    TESTS.EncryptionTests = require('./encryption-tests');
 }
 
 // If sync is enabled, run the sync tests
 if (global.enableSyncTests) {
-  //  TESTS.UserTests = require('./user-tests');
+    TESTS.UserTests = require('./user-tests');
     TESTS.SessionTests = require('./session-tests');
 
     // FIXME: Permission tests currently fail in chrome debugging mode.
     if (typeof navigator === 'undefined' ||
       !/Chrome/.test(navigator.userAgent)) { // eslint-disable-line no-undef
-    // TESTS.PermissionTests = require('./permission-tests');
+        TESTS.PermissionTests = require('./permission-tests');
     }
 }
 

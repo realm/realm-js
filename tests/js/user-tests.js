@@ -129,11 +129,11 @@ module.exports = {
         assertIsUser(user);
 
         Realm.Sync.User.register('http://localhost:9080', username, 'password', (error, user) => {
-         try { 
+         try {
             assertIsAuthError(error, 611, "The provided credentials are invalid or the user does not exist.");
             TestCase.assertUndefined(user);
             resolve();
-          } catch(e) { 
+          } catch(e) {
            reject(e);
           }
         });
@@ -371,6 +371,37 @@ module.exports = {
     });
   },
 
+  testAdminUser() {
+      return new Promise((resolve, reject) => {
+          if (!isNodeProcess) {
+              resolve();
+          }
+
+          // FIXME: check if adminUser() returns user iff valid token/server
+          let didThrow = false;
+          try {
+              let user = Realm.Sync.User.adminUser('THIS_IS_INVALID', 'http://localhost:9080');
+          }
+          catch (e) {
+              didThrow = true;
+              TestCase.assertTrue(e === 'Error: Invalid admin token or server.');
+          }
+          TestCase.assertTrue(didThrow);
+
+          didThrow = false;
+          try {
+              Realm.Sync.User.adminUser('', 'http://foo.bar:9080');
+          }
+          catch (e) {
+              didThrow = true;
+              TestCase.assertTrue(e === 'Error: Invalid admin token or server.');
+          }
+          TestCase.assertTrue(didThrow);
+          resolve();
+      });
+  }
+
+
   /* This test fails because of realm-object-store #243 . We should use 2 users.
   testSynchronizeChangesWithTwoClientsAndOneUser() {
     // Test Schema
@@ -432,4 +463,3 @@ module.exports = {
   }, */
 
 };
-
