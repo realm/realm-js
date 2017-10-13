@@ -150,12 +150,7 @@ void UserClass<T>::admin_user(ContextType ctx, FunctionType, ObjectType this_obj
         Value::validated_to_string(ctx, arguments[0], "authServerUrl"),
         Value::validated_to_string(ctx, arguments[1], "refreshToken")
     ));
-    if ((*user)->is_admin()) {
-        return_value.set(create_object<T, UserClass<T>>(ctx, user));
-    }
-    else {
-        throw std::runtime_error("Invalid admin token or server.");
-    }
+    return_value.set(create_object<T, UserClass<T>>(ctx, user));
 }
 
 template<typename T>

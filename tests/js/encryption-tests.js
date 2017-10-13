@@ -71,14 +71,22 @@ module.exports = {
     },
 };
 
+
 if (global.enableSyncTests) {
     module.exports.testEncryptionWithSync = function() {
-        new Realm({
-            encryptionKey: new Int8Array(64),
-            sync: {
-                user: Realm.Sync.User.adminUser('fake-token', 'http://fake-server'),
-                url: 'realm://fake-server'
+        Realm.Sync.User.login('http://localhost:9080', global.testAdminUserInfo.username, global.testAdminUserInfo.password, (error, user) => {
+            if (error) {
+                reject(error);
             }
+            new Realm({
+                encryptionKey: new Int8Array(64),
+                sync: {
+                    user: user,
+                    url: 'realm://localhost:9080'
+                }
+            });
+            user.logout(); // FIXME: clearTestState() doesn't clean up enough and Realm.Sync.User.current might not work
+            resolve();
         });
-    };
+    }
 }

@@ -384,17 +384,18 @@ module.exports = {
           }
           catch (e) {
               didThrow = true;
-              TestCase.assertTrue(e === 'Error: Invalid admin token or server.');
+              TestCase.assertTrue(e.message === 'Invalid admin token or server.');
           }
           TestCase.assertTrue(didThrow);
 
+          // FIXME: find a way to set up a proper admin token
           didThrow = false;
           try {
-              Realm.Sync.User.adminUser('', 'http://foo.bar:9080');
+              Realm.Sync.User.adminUser('THIS_IS_VALID', 'http://foo.bar:9080');
           }
           catch (e) {
               didThrow = true;
-              TestCase.assertTrue(e === 'Error: Invalid admin token or server.');
+              TestCase.assertTrue(e.message === 'Invalid admin token or server.');
           }
           TestCase.assertTrue(didThrow);
           resolve();
