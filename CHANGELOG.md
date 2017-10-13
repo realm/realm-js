@@ -1,4 +1,4 @@
-2.0.0 Release notes (2017-10-12)
+2.0.0-rc20 Release notes (2017-10-13)
 =============================================================
 ### Breaking changes
 * None
@@ -12,8 +12,8 @@
 * Respect custom Realm paths when using `Realm.open` (#1392 and #1393).
 
 ### Internal
-* Upgrading to Realm Sync 2.0.0-rc28.
-* Upgrading to Realm Object Server 2.0.0-rc.4.
+* Upgrading to Realm Sync 2.0.2.
+* Upgrading to Realm Object Server 2.0.0-rc.5.
 * OpenSSL for Android is distributed in a separate package, and the build system needed updates to accommendate this.
 * Added `-fvisibility=hidden` to Android builds (reduces size of `.so` file).
 * Add `Session._overrideServer` to force an existing session to connect to a different server.
