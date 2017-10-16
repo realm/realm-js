@@ -2,7 +2,7 @@
 =============================================================
 ### Breaking changes
 * Deprecate node 4 and node 5 support
-* Removed `setAccessToken()`; use `setFeatureToken()` instead.
+* Renamed `setAccessToken()` to `setFeatureToken()`.
 * During iteration (`for ... of`) of `Realm.Results`, the results will be frozen using the `snapshot()` method (#1366).
 * Upgraded to Realm Core 4.0.1
 * Switch to the next version of the Sync protocol, compatible with Realm Object Server 2.0.0.
