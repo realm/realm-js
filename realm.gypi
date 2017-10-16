@@ -2,7 +2,8 @@
   "variables": {
     "realm_download_binaries%": "1",
     "use_realm_debug%": "<!(node -p \"'REALMJS_USE_DEBUG_CORE' in process.env ? 1 : 0\")",
-    "realm_js_dir%": "<(module_root_dir)"
+    "realm_js_dir%": "<(module_root_dir)",
+    "runtime%": "node"
   },
   "conditions": [
     ["OS=='mac'", {
@@ -147,6 +148,19 @@
             "libraries": [ "-lrealm-sync<(debug_library_suffix)" ]
           }, {
             "libraries": [ "-lrealm-sync-node<(debug_library_suffix)" ]
+          }],
+          ["OS=='win' and runtime=='electron'", {
+            "libraries": [ "libeay32.lib", "ssleay32.lib" ],
+            "conditions": [
+              ["target_arch=='ia32'", {
+                "library_dirs": [ "C:\\src\\vcpkg\\installed\\x86-windows-static\\lib" ]
+              }, {
+                "library_dirs": [ "C:\\src\\vcpkg\\installed\\x64-windows-static\\lib" ]
+              }],
+            ]
+          }],
+          ["OS=='linux' and runtime=='electron'", {
+            "libraries": [ "-l:libcrypto.a", "-l:libssl.a" ]
           }]
         ]
       },

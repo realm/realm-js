@@ -4,7 +4,10 @@ const assert = require("assert");
 const path = require("path");
 const Application = require("spectron").Application;
 
-const ELECTRON_PATH = path.join(__dirname, "node_modules", ".bin", "electron");
+let ELECTRON_PATH = path.join(__dirname, "node_modules", ".bin", "electron");
+if (process.platform === 'win32') {
+  ELECTRON_PATH += '.cmd';
+}
 const MAIN_PATH = path.join(__dirname, "app", "main.js");
 const POLL_LOG_DELAY = 500;
 
