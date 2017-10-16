@@ -69,24 +69,21 @@ module.exports = {
             Realm.schemaVersion('encrypted.realm', 'asdf');
         });
     },
-};
 
+    testEncryptionWithSync: function() {
+        if (!global.enableSyncTests) {
+            return Promise.resolve();
+        }
 
-if (global.enableSyncTests) {
-    module.exports.testEncryptionWithSync = function() {
-        Realm.Sync.User.login('http://localhost:9080', global.testAdminUserInfo.username, global.testAdminUserInfo.password, (error, user) => {
-            if (error) {
-                reject(error);
-            }
+        return Realm.Sync.User.login('http://localhost:9080', "realm-admin", '').then(adminUser => { 
             new Realm({
                 encryptionKey: new Int8Array(64),
                 sync: {
-                    user: user,
+                    user: adminUser,
                     url: 'realm://localhost:9080'
                 }
             });
-            user.logout(); // FIXME: clearTestState() doesn't clean up enough and Realm.Sync.User.current might not work
-            resolve();
+            adminUser.logout(); // FIXME: clearTestState() doesn't clean up enough and Realm.Sync.User.current might not work
         });
     }
-}
+};

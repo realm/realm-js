@@ -51,7 +51,7 @@ start_server() {
 
   #enabled ROS logging
   #sh ./object-server-for-testing/start-object-server.command &
-  ./node_modules/.bin/ros start --data realm-object-server-data &
+  export ROS_SKIP_PROMTS=true &&  ./node_modules/.bin/ros start --data realm-object-server-data &
   SERVER_PID=$!
   echo ROS PID: ${SERVER_PID}
 }
