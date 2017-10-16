@@ -1,13 +1,17 @@
 X.Y.Z Release notes
 =============================================================
 ### Breaking changes
-* `Realm.Sync.User.adminUser()` will now throw an exception if either token or server argument is invalid.
+* None
 
 ### Enhancements
-* None.
+* None
 
 ### Bug fixes
-* None.
+* Fix Typescript definition for partial sync configuration object.
+* `Realm.Sync.User.adminUser()` will now throw an exception if either token or server argument is invalid.
+
+### Internal
+* None
 
 2.0.0-rc22 Release notes (2017-10-13)
 =============================================================
