@@ -1,3 +1,14 @@
+X.Y.Z Release notes
+=============================================================
+### Breaking changes
+* `Realm.Sync.User.adminUser()` will now throw an exception if either token or server argument is invalid.
+
+### Enhancements
+* None.
+
+### Bug fixes
+* None.
+
 2.0.0-rc22 Release notes (2017-10-13)
 =============================================================
 ### Breaking changes
