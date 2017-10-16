@@ -136,6 +136,9 @@
         }, {
           "dependencies": [ "vendored-realm" ]
         }],
+        ["runtime=='electron'", {
+          "dependencies": [ "OpenSSL" ]
+        }]
       ]
     },
     {
@@ -148,26 +151,13 @@
             "libraries": [ "-lrealm-sync<(debug_library_suffix)" ]
           }, {
             "libraries": [ "-lrealm-sync-node<(debug_library_suffix)" ]
-          }],
-          ["OS=='win' and runtime=='electron'", {
-            "libraries": [ "libeay32.lib", "ssleay32.lib" ],
-            "conditions": [
-              ["target_arch=='ia32'", {
-                "library_dirs": [ "C:\\src\\vcpkg\\installed\\x86-windows-static\\lib" ]
-              }, {
-                "library_dirs": [ "C:\\src\\vcpkg\\installed\\x64-windows-static\\lib" ]
-              }],
-            ]
-          }],
-          ["OS=='linux' and runtime=='electron'", {
-            "libraries": [ "-l:libcrypto.a", "-l:libssl.a" ]
           }]
         ]
       },
       "all_dependent_settings": {
         "defines": [ "REALM_ENABLE_SYNC=1" ]
       },
-      "export_dependent_settings": [ "realm-core" ], # depending on sync is tantamount to depending on core
+      "export_dependent_settings": [ "<@(_dependencies)" ], # depending on sync is tantamount to depending on core
       "variables": {
         "prefix": "<!(node -p \"process.env.REALM_SYNC_PREFIX || String()\")"
       },
@@ -182,7 +172,31 @@
         }, {
           "dependencies": [ "vendored-realm" ]
         }],
+        ["runtime=='electron'", {
+          "dependencies": [ "OpenSSL" ]
+        }]
       ],
+    },
+    {
+      "target_name": "OpenSSL",
+      "type": "none",
+      "direct_dependent_settings": {
+        "conditions": [
+          ["OS=='win'", {
+            "libraries": [ "libeay32.lib", "ssleay32.lib" ],
+            "conditions": [
+              ["target_arch=='ia32'", {
+                "library_dirs": [ "C:\\src\\vcpkg\\installed\\x86-windows-static\\lib" ]
+              }, {
+                "library_dirs": [ "C:\\src\\vcpkg\\installed\\x64-windows-static\\lib" ]
+              }],
+            ]
+          }],
+          ["OS=='linux'", {
+            "libraries": [ "-l:libssl.a", "-l:libcrypto.a" ]
+          }]
+        ]
+      }
     },
     {
       "variables": {
