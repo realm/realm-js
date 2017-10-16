@@ -1,4 +1,4 @@
-2.0.0 Release notes
+2.0.0 Release notes (2017-10-16)
 =============================================================
 ### Breaking changes
 * Switch to Sync protocol 2.0, compatible with Realm Object Server 2.0.0. This version does NOT support 1.x.x of Realm Object Server. 
