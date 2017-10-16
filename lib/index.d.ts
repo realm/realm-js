@@ -362,6 +362,7 @@ declare namespace Realm.Sync {
         ssl_trust_certificate_path?: string;
         ssl_verify_callback?: SSLVerifyCallback;
         error?: ErrorCallback;
+        partial?: boolean;
     }
 
     type ProgressNotificationCallback = (transferred: number, transferable: number) => void;
