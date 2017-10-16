@@ -1,42 +1,35 @@
 2.0.0 Release notes
 =============================================================
 ### Breaking changes
-* Deprecate node 4 and node 5 support
+* Switch to Sync protocol 2.0, compatible with Realm Object Server 2.0.0. This version does NOT support 1.x.x of Realm Object Server. 
+* Upgraded to Realm Core 4.0.1, which has a new file format. If older Realm versions are opened, the database will be migrated automatically. 
+* Deprecate node 4 and node 5 support.
 * Renamed `setAccessToken()` to `setFeatureToken()`.
 * During iteration (`for ... of`) of `Realm.Results`, the results will be frozen using the `snapshot()` method (#1366).
-* Upgraded to Realm Core 4.0.1
-* Switch to the next version of the Sync protocol, compatible with Realm Object Server 2.0.0.
-
 
 ### Enhancements
+* The data model now support arrays of primitive types!
 * Added `update` method to `Realm.Results` to support bulk updates (#808).
 * Added support for aggregate functions on `Realm.Results` and `Realm.List` of primitive types.
-* Support migration from Realms sync 1.0 to sync 2.0 versions
-* Handling of the situation when the client has to reset the Realm due to diverging histories (#795).
+* Handling of the situation when the client has to reset due to mismatching Realm versions (#795).
 * Added `Realm.subscribeToObjects()` to listen for changes in partially synced Realms.
 * Add support for sorting Lists and Results on values from linked objects.
-
+* Configuration of sync file system is not done on module import but later when actually needed by sync (#1351)
+* `Realm.Sync.User.adminUser()` will now throw an exception if either token or server argument is invalid.
 
 ### Bug fixes
-* Fix Typescript definition for partial sync configuration object
 * Avoid closing then reopening a sync session when using `Realm.open` (#1391).
 * Respect custom Realm paths when using `Realm.open` (#1392 and #1393).
 * Fixed bug in `Realm.subscribeToObjects()`.
-* Configuration of sync file system is not done on module import but later when actually needed by sync (#1351)
 * An issue where access tokens were not refreshed correctly has been addressed.
-* Fix Typescript definition for partial sync configuration object.
-* `Realm.Sync.User.adminUser()` will now throw an exception if either token or server argument is invalid.
 
 ### Internal
-* Upgrading to Realm Sync 2.0.2.
-* Upgrading to Realm Object Server 2.0.0
 * OpenSSL for Android is distributed in a separate package, and the build system needed updates to accommendate this.
 * Added `-fvisibility=hidden` to Android builds (reduces size of `.so` file).
 * Add `Session._overrideServer` to force an existing session to connect to a different server.
-* Update object store libs to fix partial sync.
 * Alignment of permission schemas.
-
-
+* Upgrading to Realm Sync 2.0.2.
+* Upgrading to Realm Object Server 2.0.0
 
 
 1.13.0 Release notes (2017-10-5)
