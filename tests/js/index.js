@@ -20,7 +20,11 @@
 
 const Realm = require('realm');
 
-global.enableSyncTests = Realm.Sync;
+
+if( typeof Realm.Sync !== 'undefined' && Realm.Sync !== null ) {
+    global.WARNING = "global is not available in React Native. Use it only in tests";
+    global.enableSyncTests = true;
+}
 
 const isNodeProcess = typeof process === 'object' && process + '' === '[object process]';
 function node_require(module) { return require(module); }
