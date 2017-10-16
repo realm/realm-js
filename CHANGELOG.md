@@ -1,3 +1,17 @@
+X.Y.Z Release notes
+=============================================================
+### Breaking changes
+* None
+
+### Enhancements
+* None
+
+### Bug fixes
+* Fix Typescript definition for partial sync configuration object
+
+### Internal
+* None
+
 2.0.0-rc22 Release notes (2017-10-13)
 =============================================================
 ### Breaking changes
