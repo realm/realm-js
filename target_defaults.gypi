@@ -61,6 +61,6 @@
       }
     },
     "msvs_disabled_warnings": [ 4068, 4101, 4244, 4996 ],
-	"msbuild_toolset": "v141"
+    "msbuild_toolset": "v141"
   }
 }
