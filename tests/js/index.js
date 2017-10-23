@@ -20,7 +20,11 @@
 
 const Realm = require('realm');
 
-global.enableSyncTests = Realm.Sync;
+
+if( typeof Realm.Sync !== 'undefined' && Realm.Sync !== null ) {
+    global.WARNING = "global is not available in React Native. Use it only in tests";
+    global.enableSyncTests = true;
+}
 
 const isNodeProcess = typeof process === 'object' && process + '' === '[object process]';
 function node_require(module) { return require(module); }
@@ -49,7 +53,7 @@ if (global.enableSyncTests) {
     // FIXME: Permission tests currently fail in chrome debugging mode.
     if (typeof navigator === 'undefined' ||
       !/Chrome/.test(navigator.userAgent)) { // eslint-disable-line no-undef
-        TESTS.PermissionTests = require('./permission-tests');
+     TESTS.PermissionTests = require('./permission-tests');
     }
 }
 
