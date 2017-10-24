@@ -205,24 +205,30 @@ function readManifest(target) {
     try {
         return ini.parse(fs.readFileSync(path.resolve(target, MANIFEST_FILENAME), 'utf8'));
     } catch (e) {
-        return false;
+        return null;
     }
 }
 
 function shouldSkipAcquire(target, desiredManifest, force) {
+    if (force) {
+        console.log('Skipping manifest check as --force is enabled');
+        return false;
+    }
+
     const existingManifest = readManifest(target);
 
     if (!existingManifest) {
         console.log('No manifest at the target, proceeding.');
-    } else if (!Object.keys(desiredManifest).every(key => existingManifest[key] === desiredManifest[key])) {
-        console.log('Target has is non-empty but has a different manifest, overwriting.');
-    } else if (force) {
-        console.log('Target has a matching manifest but download forced.');
-    } else {
-        console.log('Matching manifest already exists at target - nothing to do (use --force to override)');
-        return true;
+        return false;
     }
-    return false;
+
+    if (!Object.keys(desiredManifest).every(key => existingManifest[key] === desiredManifest[key])) {
+        console.log('Target directory has a differing manifest, overwriting.');
+        return false;
+    }
+
+    console.log('Matching manifest already exists at target - nothing to do (use --force to override)');
+    return true;
 }
 
 const optionDefinitions = [
