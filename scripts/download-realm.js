@@ -26,7 +26,7 @@ const fetch = require('node-fetch');
 const ini = require('ini');
 const decompress = require('decompress');
 
-const MANIFEST_FILENAME = '.manifest.list';
+const LOCKFILE_NAME = 'download-realm.lock';
 
 function exec() {
     const args = Array.from(arguments);
@@ -123,7 +123,7 @@ function acquire(desired, target) {
         .then(() => corePath && extract(corePath, target, desired.CORE_ARCHIVE_ROOT))
         .then(() => syncPath && download(desired.SYNC_SERVER_FOLDER, desired.SYNC_ARCHIVE, syncPath))
         .then(() => syncPath && extract(syncPath, target, desired.SYNC_ARCHIVE_ROOT))
-        .then(() => writeManifest(target, desired))
+        .then(() => writeLockfile(target, desired))
 }
 
 function getSyncCommitSha(version) {
@@ -137,97 +137,94 @@ function getSyncCommitSha(version) {
          }).then(stdout => /([^\t]+)/.exec(stdout)[0]);
 }
 
-function appendCoreRequirements(desired, dependencies, options) {
-    desired.CORE_SERVER_FOLDER = `core/v${dependencies.REALM_CORE_VERSION}`;
+function getCoreRequirements(dependencies, options, required = {}) {
+    required.CORE_SERVER_FOLDER = `core/v${dependencies.REALM_CORE_VERSION}`;
     let flavor = options.debug ? 'Debug' : 'Release';
 
     switch (options.platform) {
         case 'mac':
-            desired.CORE_SERVER_FOLDER += `/macos/${flavor}`;
-            desired.CORE_ARCHIVE = `realm-core-${flavor}-v${dependencies.REALM_CORE_VERSION}-Darwin-devel.tar.gz`;
-            return Promise.resolve();
+            required.CORE_SERVER_FOLDER += `/macos/${flavor}`;
+            required.CORE_ARCHIVE = `realm-core-${flavor}-v${dependencies.REALM_CORE_VERSION}-Darwin-devel.tar.gz`;
+            return Promise.resolve(required);
         case 'ios':
             flavor = flavor === 'Debug' ? 'MinSizeDebug' : flavor;
-            desired.CORE_SERVER_FOLDER += `/ios/${flavor}`;
-            desired.CORE_ARCHIVE = `realm-core-${flavor}-v${dependencies.REALM_CORE_VERSION}-iphoneos.tar.gz`;
-            return Promise.resolve();
+            required.CORE_SERVER_FOLDER += `/ios/${flavor}`;
+            required.CORE_ARCHIVE = `realm-core-${flavor}-v${dependencies.REALM_CORE_VERSION}-iphoneos.tar.gz`;
+            return Promise.resolve(required);
         case 'win':
             if (!options.arch) throw new Error(`Specifying '--arch' is required for platform 'win'`);
             const arch = options.arch === 'ia32' ? 'Win32' : options.arch;
-            desired.CORE_SERVER_FOLDER += `/windows/${arch}/nouwp/${flavor}`;
-            desired.CORE_ARCHIVE = `realm-core-${flavor}-v${dependencies.REALM_CORE_VERSION}-Windows-${arch}-devel.tar.gz`;
-            return Promise.resolve();
+            required.CORE_SERVER_FOLDER += `/windows/${arch}/nouwp/${flavor}`;
+            required.CORE_ARCHIVE = `realm-core-${flavor}-v${dependencies.REALM_CORE_VERSION}-Windows-${arch}-devel.tar.gz`;
+            return Promise.resolve(required);
         case 'linux':
-            desired.CORE_SERVER_FOLDER = 'core';
-            desired.CORE_ARCHIVE = `realm-core-${dependencies.REALM_CORE_VERSION}.tgz`;
-            desired.CORE_ARCHIVE_ROOT = `realm-core-${dependencies.REALM_CORE_VERSION}`;
-            return Promise.resolve();
+            required.CORE_SERVER_FOLDER = 'core';
+            required.CORE_ARCHIVE = `realm-core-${dependencies.REALM_CORE_VERSION}.tgz`;
+            required.CORE_ARCHIVE_ROOT = `realm-core-${dependencies.REALM_CORE_VERSION}`;
+            return Promise.resolve(required);
         default:
-            return Promise.reject(new Error(`Unsupported sync platform '${options.platform}'`));
+            return Promise.reject(new Error(`Unsupported core platform '${options.platform}'`));
     }
 }
 
-function appendSyncRequirements(desired, dependencies, options) {
-    desired.SYNC_SERVER_FOLDER = 'sync';
+function getSyncRequirements(dependencies, options, required = {}) {
+    required.SYNC_SERVER_FOLDER = 'sync';
     let flavor = options.debug ? 'Debug' : 'Release';
 
     switch (options.platform) {
         case 'mac':
-            desired.SYNC_ARCHIVE = `realm-sync-node-cocoa-${dependencies.REALM_SYNC_VERSION}.tar.gz`;
-            desired.SYNC_ARCHIVE_ROOT = `realm-sync-node-cocoa-${dependencies.REALM_SYNC_VERSION}`;
-            return Promise.resolve();
+            required.SYNC_ARCHIVE = `realm-sync-node-cocoa-${dependencies.REALM_SYNC_VERSION}.tar.gz`;
+            required.SYNC_ARCHIVE_ROOT = `realm-sync-node-cocoa-${dependencies.REALM_SYNC_VERSION}`;
+            return Promise.resolve(required);
         case 'ios':
-            desired.SYNC_ARCHIVE = `realm-sync-cocoa-${dependencies.REALM_SYNC_VERSION}.tar.xz`;
-            desired.SYNC_ARCHIVE_ROOT = `core`;
-            return Promise.resolve();
+            required.SYNC_ARCHIVE = `realm-sync-cocoa-${dependencies.REALM_SYNC_VERSION}.tar.xz`;
+            required.SYNC_ARCHIVE_ROOT = `core`;
+            return Promise.resolve(required);
         case 'win':
             const arch = options.arch === 'ia32' ? 'Win32' : options.arch;
-            desired.SYNC_ARCHIVE = `realm-sync-${flavor}-v${dependencies.REALM_SYNC_VERSION}-Windows-${arch}-devel.tar.gz`;
-            return appendCoreRequirements(desired, dependencies, options)
+            required.SYNC_ARCHIVE = `realm-sync-${flavor}-v${dependencies.REALM_SYNC_VERSION}-Windows-${arch}-devel.tar.gz`;
+            return getCoreRequirements(dependencies, options, required)
                 .then(() => getSyncCommitSha(dependencies.REALM_SYNC_VERSION))
-                .then(sha => desired.SYNC_SERVER_FOLDER += `/sha-version/${sha}`);
+                .then(sha => {
+                    required.SYNC_SERVER_FOLDER += `/sha-version/${sha}`;
+                    return required;
+                });
         default:
             return Promise.reject(new Error(`Unsupported sync platform '${options.platform}'`));
     }
 }
 
-function calculateRequirements(options, dependencies) {
-    const desired = {};
-    return (options.sync ? appendSyncRequirements : appendCoreRequirements)(desired, dependencies, options)
-        .then(() => desired);
+function writeLockfile(target, contents) {
+    return fs.writeFile(path.resolve(target, LOCKFILE_NAME), ini.encode(contents));
 }
 
-function writeManifest(target, manifest) {
-    return fs.writeFile(path.resolve(target, MANIFEST_FILENAME), ini.encode(manifest));
-}
-
-function readManifest(target) {
+function readLockfile(target) {
     try {
-        return ini.parse(fs.readFileSync(path.resolve(target, MANIFEST_FILENAME), 'utf8'));
+        return ini.parse(fs.readFileSync(path.resolve(target, LOCKFILE_NAME), 'utf8'));
     } catch (e) {
         return null;
     }
 }
 
-function shouldSkipAcquire(target, desiredManifest, force) {
+function shouldSkipAcquire(target, requirements, force) {
     if (force) {
-        console.log('Skipping manifest check as --force is enabled');
+        console.log('Skipping lockfile check as --force is enabled');
         return false;
     }
 
-    const existingManifest = readManifest(target);
+    const existingLockfile = readLockfile(target);
 
-    if (!existingManifest) {
-        console.log('No manifest at the target, proceeding.');
+    if (!existingLockfile) {
+        console.log('No lockfile found at the target, proceeding.');
         return false;
     }
 
-    if (!Object.keys(desiredManifest).every(key => existingManifest[key] === desiredManifest[key])) {
-        console.log('Target directory has a differing manifest, overwriting.');
+    if (!Object.keys(requirements).every(key => existingLockfile[key] === requirements[key])) {
+        console.log('Target directory has a differing lockfile, overwriting.');
         return false;
     }
 
-    console.log('Matching manifest already exists at target - nothing to do (use --force to override)');
+    console.log('Matching lockfile already exists at target - nothing to do (use --force to override)');
     return true;
 }
 
@@ -255,11 +252,11 @@ if (options.debug) {
 
 const dependencies = ini.parse(fs.readFileSync(path.resolve(__dirname, '../dependencies.list'), 'utf8'));
 
-calculateRequirements(options, dependencies)
-    .then(manifest => {
-        console.log('Desired manifest', manifest);
-        if (!shouldSkipAcquire(realmDir, manifest, options.force)) {
-            return acquire(manifest, realmDir)
+(options.sync ? getSyncRequirements : getCoreRequirements)(dependencies, options)
+    .then(requirements => {
+        console.log('Resolved requirements:', requirements);
+        if (!shouldSkipAcquire(realmDir, requirements, options.force)) {
+            return acquire(requirements, realmDir)
         }
     })
     .then(() => console.log('Success'))
