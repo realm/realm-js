@@ -129,7 +129,7 @@ function acquire(desired, target) {
 function getSyncCommitSha(version) {
   return exec(`git ls-remote git@github.com:realm/realm-sync.git --tags "v${version}^{}"`)
          .then(stdout => {
-           if (!Boolean(stdout)) {
+           if (!stdout) {
              return exec(`git ls-remote git@github.com:realm/realm-sync.git --tags "v${version}"`)
            } else {
              return stdout;
@@ -151,12 +151,13 @@ function getCoreRequirements(dependencies, options, required = {}) {
             required.CORE_SERVER_FOLDER += `/ios/${flavor}`;
             required.CORE_ARCHIVE = `realm-core-${flavor}-v${dependencies.REALM_CORE_VERSION}-iphoneos.tar.gz`;
             return Promise.resolve(required);
-        case 'win':
+        case 'win': {
             if (!options.arch) throw new Error(`Specifying '--arch' is required for platform 'win'`);
             const arch = options.arch === 'ia32' ? 'Win32' : options.arch;
             required.CORE_SERVER_FOLDER += `/windows/${arch}/nouwp/${flavor}`;
             required.CORE_ARCHIVE = `realm-core-${flavor}-v${dependencies.REALM_CORE_VERSION}-Windows-${arch}-devel.tar.gz`;
             return Promise.resolve(required);
+        }
         case 'linux':
             required.CORE_SERVER_FOLDER = 'core';
             required.CORE_ARCHIVE = `realm-core-${dependencies.REALM_CORE_VERSION}.tgz`;
@@ -180,7 +181,7 @@ function getSyncRequirements(dependencies, options, required = {}) {
             required.SYNC_ARCHIVE = `realm-sync-cocoa-${dependencies.REALM_SYNC_VERSION}.tar.xz`;
             required.SYNC_ARCHIVE_ROOT = `core`;
             return Promise.resolve(required);
-        case 'win':
+        case 'win': {
             const arch = options.arch === 'ia32' ? 'Win32' : options.arch;
             required.SYNC_ARCHIVE = `realm-sync-${flavor}-v${dependencies.REALM_SYNC_VERSION}-Windows-${arch}-devel.tar.gz`;
             return getCoreRequirements(dependencies, options, required)
@@ -189,6 +190,7 @@ function getSyncRequirements(dependencies, options, required = {}) {
                     required.SYNC_SERVER_FOLDER += `/sha-version/${sha}`;
                     return required;
                 });
+        }
         default:
             return Promise.reject(new Error(`Unsupported sync platform '${options.platform}'`));
     }

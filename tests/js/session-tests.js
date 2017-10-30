@@ -403,7 +403,7 @@ module.exports = {
                     path: realm,
                     sync: {
                         user,
-                        error : err => cosole.log(err),
+                        error : err => console.log(err),
                         url: 'realm://localhost:9080/~/sync-v1'
                     }
                 };
@@ -449,7 +449,7 @@ module.exports = {
                     path: realm,
                     sync: {
                         user,
-                        error : err => cosole.log(err),
+                        error : err => console.log(err),
                         url: 'realm://localhost:9080/~/sync-v1'
                     }
                 };
@@ -489,7 +489,7 @@ module.exports = {
                         path: realm,
                         sync: {
                             user,
-                            error : err => cosole.log(err),
+                            error : err => console.log(err),
                             url: 'realm://localhost:9080/~/sync-v1'
                         }
                     };
