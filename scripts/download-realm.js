@@ -23,8 +23,10 @@ const path = require('path');
 const os = require('os');
 const child_process = require('child_process');
 const fetch = require('node-fetch');
-const ini = require('ini').parse;
+const ini = require('ini');
 const decompress = require('decompress');
+
+const LOCKFILE_NAME = 'download-realm.lock';
 
 function exec() {
     const args = Array.from(arguments);
@@ -112,37 +114,16 @@ function extract(downloadedArchive, targetFolder, archiveRootFolder) {
     }
 }
 
-function acquireCore(options, dependencies, target) {
-    let serverFolder = `core/v${dependencies.REALM_CORE_VERSION}`;
-    let flavor = options.debug ? 'Debug' : 'Release';
+function acquire(desired, target) {
+    const corePath = desired.CORE_ARCHIVE && path.resolve(os.tmpdir(), desired.CORE_ARCHIVE);
+    const syncPath = desired.SYNC_ARCHIVE && path.resolve(os.tmpdir(), desired.SYNC_ARCHIVE);
 
-    let archive, archiveRootFolder;
-    switch (options.platform) {
-    case 'mac':
-        serverFolder += `/macos/${flavor}`;
-        archive = `realm-core-${flavor}-v${dependencies.REALM_CORE_VERSION}-Darwin-devel.tar.gz`;
-        break;
-    case 'ios':
-        flavor = flavor === 'Debug' ? 'MinSizeDebug' : flavor;
-        serverFolder += `/ios/${flavor}`;
-        archive = `realm-core-${flavor}-v${dependencies.REALM_CORE_VERSION}-iphoneos.tar.gz`;
-        break;
-    case 'win':
-        if (!options.arch) throw new Error(`Specifying '--arch' is required for platform 'win'`);
-        const arch = options.arch === 'ia32' ? 'Win32' : options.arch;
-        serverFolder += `/windows/${arch}/nouwp/${flavor}`;
-        archive = `realm-core-${flavor}-v${dependencies.REALM_CORE_VERSION}-Windows-${arch}-devel.tar.gz`;
-        break;
-    case 'linux':
-        serverFolder = 'core';
-        archive = `realm-core-${dependencies.REALM_CORE_VERSION}.tgz`;
-        archiveRootFolder = `realm-core-${dependencies.REALM_CORE_VERSION}`;
-        break;
-    }
-
-    const downloadedArchive = path.resolve(os.tmpdir(), archive);
-    return download(serverFolder, archive, downloadedArchive)
-           .then(() => extract(downloadedArchive, target, archiveRootFolder));
+    return fs.emptyDir(target)
+        .then(() => corePath && download(desired.CORE_SERVER_FOLDER, desired.CORE_ARCHIVE, corePath))
+        .then(() => corePath && extract(corePath, target, desired.CORE_ARCHIVE_ROOT))
+        .then(() => syncPath && download(desired.SYNC_SERVER_FOLDER, desired.SYNC_ARCHIVE, syncPath))
+        .then(() => syncPath && extract(syncPath, target, desired.SYNC_ARCHIVE_ROOT))
+        .then(() => writeLockfile(target, desired))
 }
 
 function getSyncCommitSha(version) {
@@ -156,36 +137,95 @@ function getSyncCommitSha(version) {
          }).then(stdout => /([^\t]+)/.exec(stdout)[0]);
 }
 
-function acquireSync(options, dependencies, target) {
-    let serverFolder = 'sync';
+function getCoreRequirements(dependencies, options, required = {}) {
+    required.CORE_SERVER_FOLDER = `core/v${dependencies.REALM_CORE_VERSION}`;
     let flavor = options.debug ? 'Debug' : 'Release';
 
-    let archive, archiveRootFolder;
-    let promise = Promise.resolve();
     switch (options.platform) {
-    case 'mac':
-        archive = `realm-sync-node-cocoa-${dependencies.REALM_SYNC_VERSION}.tar.gz`;
-        archiveRootFolder = `realm-sync-node-cocoa-${dependencies.REALM_SYNC_VERSION}`;
-        break;
-    case 'ios':
-        archive = `realm-sync-cocoa-${dependencies.REALM_SYNC_VERSION}.tar.xz`;
-        archiveRootFolder = `core`;
-        break;
-    case 'win':
-        promise = acquireCore(options, dependencies, target)
-                  .then(() => getSyncCommitSha(dependencies.REALM_SYNC_VERSION))
-                  .then(sha => serverFolder += `/sha-version/${sha}`);
-        const arch = options.arch === 'ia32' ? 'Win32' : options.arch;
-        archive = `realm-sync-${flavor}-v${dependencies.REALM_SYNC_VERSION}-Windows-${arch}-devel.tar.gz`;
-        break;
-    default:
-        throw new Error(`Unsupported sync platform '${options.platform}'`);
+        case 'mac':
+            required.CORE_SERVER_FOLDER += `/macos/${flavor}`;
+            required.CORE_ARCHIVE = `realm-core-${flavor}-v${dependencies.REALM_CORE_VERSION}-Darwin-devel.tar.gz`;
+            return Promise.resolve(required);
+        case 'ios':
+            flavor = flavor === 'Debug' ? 'MinSizeDebug' : flavor;
+            required.CORE_SERVER_FOLDER += `/ios/${flavor}`;
+            required.CORE_ARCHIVE = `realm-core-${flavor}-v${dependencies.REALM_CORE_VERSION}-iphoneos.tar.gz`;
+            return Promise.resolve(required);
+        case 'win':
+            if (!options.arch) throw new Error(`Specifying '--arch' is required for platform 'win'`);
+            const arch = options.arch === 'ia32' ? 'Win32' : options.arch;
+            required.CORE_SERVER_FOLDER += `/windows/${arch}/nouwp/${flavor}`;
+            required.CORE_ARCHIVE = `realm-core-${flavor}-v${dependencies.REALM_CORE_VERSION}-Windows-${arch}-devel.tar.gz`;
+            return Promise.resolve(required);
+        case 'linux':
+            required.CORE_SERVER_FOLDER = 'core';
+            required.CORE_ARCHIVE = `realm-core-${dependencies.REALM_CORE_VERSION}.tgz`;
+            required.CORE_ARCHIVE_ROOT = `realm-core-${dependencies.REALM_CORE_VERSION}`;
+            return Promise.resolve(required);
+        default:
+            return Promise.reject(new Error(`Unsupported core platform '${options.platform}'`));
+    }
+}
+
+function getSyncRequirements(dependencies, options, required = {}) {
+    required.SYNC_SERVER_FOLDER = 'sync';
+    let flavor = options.debug ? 'Debug' : 'Release';
+
+    switch (options.platform) {
+        case 'mac':
+            required.SYNC_ARCHIVE = `realm-sync-node-cocoa-${dependencies.REALM_SYNC_VERSION}.tar.gz`;
+            required.SYNC_ARCHIVE_ROOT = `realm-sync-node-cocoa-${dependencies.REALM_SYNC_VERSION}`;
+            return Promise.resolve(required);
+        case 'ios':
+            required.SYNC_ARCHIVE = `realm-sync-cocoa-${dependencies.REALM_SYNC_VERSION}.tar.xz`;
+            required.SYNC_ARCHIVE_ROOT = `core`;
+            return Promise.resolve(required);
+        case 'win':
+            const arch = options.arch === 'ia32' ? 'Win32' : options.arch;
+            required.SYNC_ARCHIVE = `realm-sync-${flavor}-v${dependencies.REALM_SYNC_VERSION}-Windows-${arch}-devel.tar.gz`;
+            return getCoreRequirements(dependencies, options, required)
+                .then(() => getSyncCommitSha(dependencies.REALM_SYNC_VERSION))
+                .then(sha => {
+                    required.SYNC_SERVER_FOLDER += `/sha-version/${sha}`;
+                    return required;
+                });
+        default:
+            return Promise.reject(new Error(`Unsupported sync platform '${options.platform}'`));
+    }
+}
+
+function writeLockfile(target, contents) {
+    return fs.writeFile(path.resolve(target, LOCKFILE_NAME), ini.encode(contents));
+}
+
+function readLockfile(target) {
+    try {
+        return ini.parse(fs.readFileSync(path.resolve(target, LOCKFILE_NAME), 'utf8'));
+    } catch (e) {
+        return null;
+    }
+}
+
+function shouldSkipAcquire(target, requirements, force) {
+    if (force) {
+        console.log('Skipping lockfile check as --force is enabled');
+        return false;
     }
 
-    const downloadedArchive = path.resolve(os.tmpdir(), archive);
-    return promise
-           .then(() => download(serverFolder, archive, downloadedArchive))
-           .then(() => extract(downloadedArchive, target, archiveRootFolder));
+    const existingLockfile = readLockfile(target);
+
+    if (!existingLockfile) {
+        console.log('No lockfile found at the target, proceeding.');
+        return false;
+    }
+
+    if (!Object.keys(requirements).every(key => existingLockfile[key] === requirements[key])) {
+        console.log('Target directory has a differing lockfile, overwriting.');
+        return false;
+    }
+
+    console.log('Matching lockfile already exists at target - nothing to do (use --force to override)');
+    return true;
 }
 
 const optionDefinitions = [
@@ -193,6 +233,7 @@ const optionDefinitions = [
     { name: 'arch', type: String },
     { name: 'sync', type: Boolean },
     { name: 'debug', type: Boolean },
+    { name: 'force', type: Boolean },
 ];
 const options = require('command-line-args')(optionDefinitions);
 if (options.platform === '..\\win') {
@@ -209,9 +250,17 @@ if (options.debug) {
     realmDir += '-dbg'
 }
 
-const dependencies = ini(fs.readFileSync(path.resolve(__dirname, '../dependencies.list'), 'utf8'));
+const dependencies = ini.parse(fs.readFileSync(path.resolve(__dirname, '../dependencies.list'), 'utf8'));
 
-const acquire = options.sync ? acquireSync : acquireCore;
-fs.emptyDir(realmDir)
-  .then(() => acquire(options, dependencies, realmDir))
-  .catch(error => console.error(error));
+(options.sync ? getSyncRequirements : getCoreRequirements)(dependencies, options)
+    .then(requirements => {
+        console.log('Resolved requirements:', requirements);
+        if (!shouldSkipAcquire(realmDir, requirements, options.force)) {
+            return acquire(requirements, realmDir)
+        }
+    })
+    .then(() => console.log('Success'))
+    .catch(error => {
+        console.error(error);
+        process.exit(1);
+    });
