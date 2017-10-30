@@ -38,6 +38,10 @@ SERVER_PID=0
 PACKAGER_OUT="$SRCROOT/packager_out.txt"
 LOGCAT_OUT="$SRCROOT/logcat_out.txt"
 
+die() {
+  echo "$@" >&2
+  exit 1
+}
 
 download_server() {
   echo "test.sh: downloading ROS"
