@@ -1,3 +1,18 @@
+X.Y.Z Release notes
+=============================================================
+### Breaking changes
+* None.
+
+### Enhancements
+* None.
+
+### Bug fixes
+* Fix several cases where adding collection listeners from within a listener
+  callback would produce incorrect results.
+
+### Internal
+* None.
+
 2.0.1 Release notes (2017-10-23)
 =============================================================
 ### Breaking changes
