@@ -738,6 +738,7 @@ void RealmClass<T>::wait_for_download_completion(ContextType ctx, ObjectType thi
 
                 ValueType callback_arguments[1];
                 callback_arguments[0] = object;
+                
                 Function<T>::callback(protected_ctx, protected_callback, protected_this, 1, callback_arguments);
             }
 

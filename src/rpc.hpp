@@ -26,6 +26,7 @@
 #include "json.hpp"
 #include "jsc_types.hpp"
 #include "jsc_protected.hpp"
+#include <android/looper.h>
 
 namespace realm {
 
@@ -45,11 +46,12 @@ class RPCWorker {
 
     void add_task(std::function<json()>);
     json pop_task_result();
-    void try_run_task();
+    bool try_run_task();
     void stop();
 
   private:
     bool m_stop = false;
+    //ALooper* m_looper;
     std::thread m_thread;
     ConcurrentDeque<std::packaged_task<json()>> m_tasks;
     ConcurrentDeque<std::future<json>> m_futures;
@@ -60,6 +62,7 @@ class RPCServer {
     RPCServer();
     ~RPCServer();
     json perform_request(std::string name, const json &args);
+    bool try_run_task();
 
   private:
     JSGlobalContextRef m_context;
