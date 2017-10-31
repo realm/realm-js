@@ -28,6 +28,7 @@
 #include "object_accessor.hpp"
 #include "shared_realm.hpp"
 #include "results.hpp"
+#include <android/looper.h>
 
 using namespace realm;
 using namespace realm::rpc;
@@ -52,12 +53,14 @@ static RPCServer*& get_rpc_server(JSGlobalContextRef ctx) {
 }
 
 RPCWorker::RPCWorker() {
-    m_thread = std::thread([this]() {
+    //m_thread = std::thread([this]() {
+        //m_looper = ALooper_prepare(ALOOPER_PREPARE_ALLOW_NON_CALLBACKS);
+
         // TODO: Create ALooper/CFRunLoop to support async calls.
-        while (!m_stop) {
-            try_run_task();
-        }
-    });
+        //while (!m_stop) {
+            //try_run_task();
+        //}
+    //});
 }
 
 RPCWorker::~RPCWorker() {
@@ -76,23 +79,30 @@ json RPCWorker::pop_task_result() {
     return future.get();
 }
 
-void RPCWorker::try_run_task() {
+bool RPCWorker::try_run_task() {
+    if (m_stop) {
+        return true;
+    }
+
     // Use a 10 millisecond timeout to keep this thread unblocked.
     auto task = m_tasks.try_pop_back(10);
     if (!task) {
-        return;
+        return false;
     }
 
     (*task)();
 
     // Since this can be called recursively, it must be pushed to the front of the queue *after* running the task.
     m_futures.push_front(task->get_future());
+
+    return m_stop;
 }
 
 void RPCWorker::stop() {
     if (!m_stop) {
         m_stop = true;
         m_thread.join();
+        //m_looper = nullptr;
     }
 }
 
@@ -236,6 +246,10 @@ RPCServer::RPCServer() {
 
         return json::object();
     };
+
+    m_requests["/callbacks_poll"] = [this](const json dict) {
+        return json::object();
+    };
 }
 
 RPCServer::~RPCServer() {
@@ -288,6 +302,7 @@ void RPCServer::run_callback(JSContextRef ctx, JSObjectRef function, JSObjectRef
     }
 
     return_value.set(server->deserialize_json_value(results["result"]));
+
 }
 
 json RPCServer::perform_request(std::string name, const json &args) {
@@ -318,6 +333,10 @@ json RPCServer::perform_request(std::string name, const json &args) {
     } catch (std::exception &exception) {
         return {{"error", exception.what()}};
     }
+}
+
+bool RPCServer::try_run_task() {
+    return m_worker.try_run_task();
 }
 
 RPCObjectID RPCServer::store_object(JSObjectRef object) {

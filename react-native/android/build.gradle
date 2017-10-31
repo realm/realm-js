@@ -44,7 +44,7 @@ def jscDownloadDir = new File("$projectDir/src/main/jni/jsc")
 def coreDownloadDir = new File("$projectDir/src/main/jni")
 def publishDir = new File("$projectDir/../../android/")
 // to build with sync run: ./gradlew assembleDebug -PbuildWithSync=true
-ext.buildSync = project.hasProperty('buildWithSync') ? project.getProperty('buildWithSync').toBoolean() : true
+ext.buildSync =  true
 
 task generateVersionClass(type: Copy) {
     from 'src/main/templates/Version.java'
@@ -120,6 +120,7 @@ def findNdkBuildFullPath() {
     if (hasProperty('ndk.command')) {
         return property('ndk.command')
     }
+
     // or just a path to the containing directory
     if (hasProperty('ndk.path')) {
         def ndkDir = property('ndk.path')
@@ -129,12 +130,13 @@ def findNdkBuildFullPath() {
         def ndkDir = System.getenv('ANDROID_NDK')
         return new File(ndkDir, getNdkBuildName()).getAbsolutePath()
     }
-    def ndkDir = android.hasProperty('plugin') ? android.plugin.ndkFolder :
-            plugins.getPlugin('com.android.library').sdkHandler.getNdkFolder()
+    def ndkDir = android.hasProperty('plugin') ? android.plugin.ndkFolder : ""
     if (ndkDir) {
         return new File(ndkDir, getNdkBuildName()).getAbsolutePath()
     }
-    return null
+
+    return new File("/Users/macaka/Downloads/android-ndk-r10e", getNdkBuildName()).getAbsolutePath()
+
 }
 
 def checkNdkVersion(ndkBuildFullPath) {
@@ -199,14 +201,14 @@ task buildReactNdkLib(dependsOn: [downloadJSCHeaders,prepareRealmCore], type: Ex
     outputs.dir("$buildDir/realm-react-ndk/all")
     commandLine getNdkBuildFullPath(),
             '-e',
-            project.buildSync ? 'BUILD_TYPE_SYNC=1' : 'BUILD_TYPE_SYNC=0',
+            'BUILD_TYPE_SYNC=1',
             'NDK_PROJECT_PATH=null',
             "NDK_APPLICATION_MK=$projectDir/src/main/jni/Application.mk",
             'NDK_OUT=' + temporaryDir,
             "NDK_LIBS_OUT=$buildDir/realm-react-ndk/all",
             '-C', file('src/main/jni').absolutePath,
             'NDK_LOG=1',
-            'NDK_DEBUG=' + (DEBUG_BUILD.toBoolean() ? '1' : '0'),
+            'NDK_DEBUG=1',
             '--jobs', Runtime.runtime.availableProcessors(),
             'V=1'
 }

@@ -699,6 +699,7 @@ void RealmClass<T>::wait_for_download_completion(ContextType ctx, FunctionType, 
 
                 ValueType callback_arguments[1];
                 callback_arguments[0] = object;
+                
                 Function<T>::callback(protected_ctx, protected_callback, protected_this, 1, callback_arguments);
             }
         });
@@ -727,7 +728,7 @@ void RealmClass<T>::wait_for_download_completion(ContextType ctx, FunctionType, 
                         callback_arguments[0] = Value::from_number(protected_ctx, transferred_bytes);
                         callback_arguments[1] = Value::from_number(protected_ctx, transferrable_bytes);
 
-                        Function<T>::callback(protected_ctx, protected_progressCallback, protected_this, 2, callback_arguments);
+                        Function<T>::callback(protected_ctx, protected_progressCallback, typename T::Object(), 2, callback_arguments);
                     });
 
                     progressFunc = std::move(progress_handler);
@@ -742,16 +743,19 @@ void RealmClass<T>::wait_for_download_completion(ContextType ctx, FunctionType, 
                         auto syncSession = create_object<T, SessionClass<T>>(ctx, new WeakSession(session));
                         ValueType callback_arguments[1];
                         callback_arguments[0] = syncSession;
-                        Function<T>::callback(protected_ctx, session_callback_func, protected_this, 1, callback_arguments);
+                        Function<T>::callback(protected_ctx, session_callback_func, typename T::Object(), 1, callback_arguments);
                     }
 
                     if (progressFuncDefined) {
                         session->register_progress_notifier(std::move(progressFunc), SyncSession::NotifierType::download, false);
                     } 
-                    
-                    session->wait_for_download_completion([=](std::error_code error_code) {
-                        realm->close(); //capture and keep realm instance for until here
+                    auto result = session->wait_for_download_completion([=](std::error_code error_code) {
                         waitFunc(error_code);
+
+                        if (error_code.value() != 45)
+                        {
+                            realm->close(); //capture and keep realm instance for until here
+                        }
                     });
                     return;
                 }
