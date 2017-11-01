@@ -1,3 +1,17 @@
+X.Y.Z Release notes
+=============================================================
+### Breaking changes
+* None.
+
+### Enhancements
+* Better support for React Native 0.49 for iOS (#1431).
+
+### Bug fixea
+* Fixed missing Realm constructor in while debugging React Native apps (#1436).
+
+### Internal
+* None.
+
 2.0.2 Release notes (2017-10-30)
 =============================================================
 ### Breaking changes
