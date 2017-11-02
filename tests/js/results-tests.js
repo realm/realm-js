@@ -627,6 +627,26 @@ module.exports = {
         TestCase.assertEqual(calls, 2);
     },
 
+    testIteratorDeleteObjects: function() {
+        var realm = new Realm({ schema: [ schemas.TestObject ]});
+        realm.write(() => {
+            realm.create('TestObject', { doubleCol: 2 });
+            realm.create('TestObject', { doubleCol: 3 });
+        });
+
+        var results = realm.objects('TestObject');
+        TestCase.assertEqual(results.length, 2);
+        var calls = 0;
+        for(let obj of results) {
+            realm.write(() => {
+                realm.delete(obj);
+                calls++;
+            });
+        }
+        TestCase.assertEqual(calls, 2);
+        TestCase.assertEqual(realm.objects('TestObject').length, 0);
+    },
+
     testResultsUpdate: function() {
         const N = 5;
 
