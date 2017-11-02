@@ -439,7 +439,7 @@ declare namespace Realm.Sync {
         advance(path: string): void;
         close(): void;
         current(path: string): Array<Instruction>;
-        realmAtPath(path: string, realmID?: string, schema?: ObjectSchema[]): Realm
+        realmAtPath(path: string, schema?: ObjectSchema[]): Realm
     }
 }
 

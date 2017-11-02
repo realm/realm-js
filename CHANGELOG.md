@@ -8,6 +8,7 @@ X.Y.Z Release notes
 
 ### Bug fixea
 * Fixed missing Realm constructor in while debugging React Native apps (#1436).
+* Remove argument in documentation of `Realm.Sync.Adapter.realmAtPath()`.
 
 ### Internal
 * None.
