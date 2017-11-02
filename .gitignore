@@ -34,6 +34,9 @@ build/
 /compiled/
 *.lock
 
+# Emacs
+*~
+
 # Android/IJ
 /android
 /react-native/android/src/main/jni/core
@@ -51,3 +54,4 @@ realm-object-server-data/
 tests/realm-object-server/
 packager_out.txt
 build.log.*
+realm-object-server/
