@@ -5,10 +5,11 @@ X.Y.Z Release notes
 
 ### Enhancements
 * Better support for React Native 0.49 for iOS (#1431).
+* Added property `name` to `error` in `Sync.error` callback.
 
-### Bug fixea
+### Bug fixed
 * Fixed missing Realm constructor in while debugging React Native apps (#1436).
-* Remove argument in documentation of `Realm.Sync.Adapter.realmAtPath()`.
+* Removed argument in documentation of `Realm.Sync.Adapter.realmAtPath()`.
 
 ### Internal
 * None.

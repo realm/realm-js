@@ -742,13 +742,14 @@ module.exports = {
                 const config = { sync: { user, url: 'realm://localhost:9080/~/myrealm' } };
                 config.sync.error = (sender, error) => {
                     try {
+                        TestCase.assertEqual(error.name, 'ClientReset');
                         TestCase.assertEqual(error.code, 7); // 7 -> client reset
                         TestCase.assertDefined(error.config);
                         TestCase.assertNotEqual(error.config.path, '');
-                        const original_path = realm.path;
+                        const path = realm.path;
                         realm.close();
-                        Realm.Sync.initiateClientReset(original_path);
-                        // copy required objects from Realm at error.config.path
+                        Realm.Sync.initiateClientReset(path);
+                        // open Realm with error.config, and copy required objects a Realm at `path`
                         resolve();
                     }
                     catch (e) {

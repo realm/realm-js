@@ -228,6 +228,7 @@ public:
     void operator()(std::shared_ptr<SyncSession> session, SyncError error) {
         HANDLESCOPE
 
+        std::string name = "Error";
         auto error_object = Object<T>::create_empty(m_ctx);
 
         auto error_code = error.error_code.value();
@@ -238,8 +239,10 @@ public:
             Object<T>::set_property(m_ctx, config_object, "path", Value<T>::from_string(m_ctx, error.user_info[SyncError::c_recovery_file_path_key]));
             Object<T>::set_property(m_ctx, config_object, "readOnly", Value<T>::from_boolean(m_ctx, true));
             Object<T>::set_property(m_ctx, error_object, "config", config_object);
+            name = "ClientReset";
         }
 
+        Object<T>::set_property(m_ctx, error_object, "name", Value<T>::from_string(m_ctx, name));
         Object<T>::set_property(m_ctx, error_object, "message", Value<T>::from_string(m_ctx, error.message));
         Object<T>::set_property(m_ctx, error_object, "isFatal", Value<T>::from_boolean(m_ctx, error.is_fatal));
         Object<T>::set_property(m_ctx, error_object, "category", Value<T>::from_string(m_ctx, error.error_code.category().name()));
