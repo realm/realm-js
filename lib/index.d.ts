@@ -360,7 +360,7 @@ declare namespace Realm.Sync {
         url: string;
         validate_ssl?: boolean;
         ssl_trust_certificate_path?: string;
-        ssl_verify_callback?: SSLVerifyCallback;
+        open_ssl_verify_callback?: SSLVerifyCallback;
         error?: ErrorCallback;
         partial?: boolean;
     }
