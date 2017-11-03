@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include <cctype>
 #include <list>
 #include <map>
 
@@ -182,6 +183,7 @@ public:
     static void close(ContextType, ObjectType, Arguments, ReturnValue &);
     static void compact(ContextType, ObjectType, Arguments, ReturnValue &);
     static void delete_model(ContextType, ObjectType, Arguments, ReturnValue &);
+    static void object_for_object_id(ContextType, ObjectType, Arguments, ReturnValue&);
 #if REALM_ENABLE_SYNC
     static void subscribe_to_objects(ContextType, ObjectType, Arguments, ReturnValue &);
 #endif
@@ -241,6 +243,7 @@ public:
         {"compact", wrap<compact>},
         {"deleteModel", wrap<delete_model>},
         {"_waitForDownload", wrap<wait_for_download_completion>},
+        {"_objectForObjectId", wrap<object_for_object_id>},
  #if REALM_ENABLE_SYNC
         {"_subscribeToObjects", wrap<subscribe_to_objects>},
  #endif
@@ -984,6 +987,60 @@ void RealmClass<T>::compact(ContextType ctx, ObjectType this_object, Arguments a
     }
 
     return_value.set(realm->compact());
+}
+
+#if REALM_ENABLE_SYNC
+namespace {
+
+// FIXME: Sync should provide this: https://github.com/realm/realm-sync/issues/1796
+inline sync::ObjectID object_id_from_string(std::string const& string)
+{
+    if (string.front() != '{' || string.back() != '}')
+        throw std::invalid_argument("Invalid object ID.");
+
+    size_t dash_index = string.find('-');
+    if (dash_index == std::string::npos)
+        throw std::invalid_argument("Invalid object ID.");
+
+    std::string high_string = string.substr(1, dash_index - 1);
+    std::string low_string = string.substr(dash_index + 1, string.size() - dash_index - 2);
+
+    if (high_string.size() == 0 || high_string.size() > 16 || low_string.size() == 0 || low_string.size() > 16)
+        throw std::invalid_argument("Invalid object ID.");
+
+    auto isxdigit = static_cast<int(*)(int)>(std::isxdigit);
+    if (!std::all_of(high_string.begin(), high_string.end(), isxdigit) ||
+        !std::all_of(low_string.begin(), low_string.end(), isxdigit)) {
+        throw std::invalid_argument("Invalid object ID.");
+    }
+
+    return sync::ObjectID(std::stoi(high_string, nullptr, 16), std::stoi(low_string, nullptr, 16));
+}
+
+} // unnamed namespace
+#endif // REALM_ENABLE_SYNC
+
+template<typename T>
+void RealmClass<T>::object_for_object_id(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue& return_value) {
+    args.validate_count(2);
+
+#if REALM_ENABLE_SYNC
+    SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
+    if (!sync::has_object_ids(realm->read_group()))
+        return;
+
+    std::string object_type = Value::validated_to_string(ctx, args[0]);
+    validated_object_schema_for_value(ctx, realm, args[0], object_type);
+
+    std::string object_id_string = Value::validated_to_string(ctx, args[1]);
+    auto object_id = object_id_from_string(object_id_string);
+
+    const Group& group = realm->read_group();
+    size_t ndx = sync::row_for_object_id(group, *ObjectStore::table_for_object_type(group, object_type), object_id);
+    if (ndx != realm::npos) {
+        return_value.set(RealmObjectClass<T>::create_instance(ctx, realm::Object(realm, object_type, ndx)));
+    }
+#endif // REALM_ENABLE_SYNC
 }
 
 #if REALM_ENABLE_SYNC

@@ -43,6 +43,7 @@ struct RealmObjectClass : ClassDefinition<T, realm::Object> {
     using Object = js::Object<T>;
     using Function = js::Function<T>;
     using ReturnValue = js::ReturnValue<T>;
+    using Arguments = js::Arguments<T>;
 
     static ObjectType create_instance(ContextType, realm::Object);
 
@@ -53,6 +54,7 @@ struct RealmObjectClass : ClassDefinition<T, realm::Object> {
     static void is_valid(ContextType, FunctionType, ObjectType, size_t, const ValueType [], ReturnValue &);
     static void get_object_schema(ContextType, FunctionType, ObjectType, size_t, const ValueType [], ReturnValue &);
     static void linking_objects(ContextType, FunctionType, ObjectType, size_t, const ValueType [], ReturnValue &);
+    static void get_object_id(ContextType, ObjectType, Arguments, ReturnValue &);
 
     const std::string name = "RealmObject";
 
@@ -66,6 +68,7 @@ struct RealmObjectClass : ClassDefinition<T, realm::Object> {
         {"isValid", wrap<is_valid>},
         {"objectSchema", wrap<get_object_schema>},
         {"linkingObjects", wrap<linking_objects>},
+        {"_objectId", wrap<get_object_id>},
     };
 };
 
@@ -150,6 +153,23 @@ std::vector<String<T>> RealmObjectClass<T>::get_property_names(ContextType ctx, 
     }
 
     return names;
+}
+
+template<typename T>
+void RealmObjectClass<T>::get_object_id(ContextType ctx, ObjectType object, Arguments args, ReturnValue& return_value) {
+    args.validate_maximum(0);
+
+    auto realm_object = get_internal<T, RealmObjectClass<T>>(object);
+
+#if REALM_ENABLE_SYNC
+    const Group& group = realm_object->realm()->read_group();
+    if (!sync::has_object_ids(group))
+        return;
+
+    const Row& row = realm_object->row();
+    auto object_id = sync::object_id_for_row(group, *row.get_table(), row.get_index());
+    return_value.set(object_id.to_string());
+#endif
 }
 
 } // js
