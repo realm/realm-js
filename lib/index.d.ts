@@ -346,9 +346,10 @@ declare namespace Realm.Sync {
     }
 
     interface SyncError {
+        name: string;
         message: string; 
-        isFatal: boolean 
-        category?: string 
+        isFatal: boolean;
+        category?: string; 
         code: number;
     }
 
