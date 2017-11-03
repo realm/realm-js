@@ -313,8 +313,8 @@ Realm.defaultPath;
  *        `category`, and `code`.
  *   - `validate_ssl` - Indicating if SSL certificates must be validated
  *   - `ssl_trust_certificate_path` - A path where to find trusted SSL certificates
- *   - `open_ssl_verify_callback` - A callback function used to accept or reject the server's
- *        SSL certificate. open_ssl_verify_callback is called with an object of type
+ *   - `ssl_verify_callback` - A callback function used to accept or reject the server's
+ *        SSL certificate. ssl_verify_callback is called with an object of type
  *        <code>
  *          {
  *            serverAddress: String,
@@ -324,15 +324,15 @@ Realm.defaultPath;
  *            depth: Number
  *          }
  *        </code>
- *        The return value of open_ssl_verify_callback decides whether the certificate is accepted (true)
- *        or rejected (false). The open_ssl_verify_callback function is only respected on platforms where
- *        OpenSSL is used for the sync client, e.g. Linux. The open_ssl_verify_callback function is not
+ *        The return value of ssl_verify_callback decides whether the certificate is accepted (true)
+ *        or rejected (false). The ssl_verify_callback function is only respected on platforms where
+ *        OpenSSL is used for the sync client, e.g. Linux. The ssl_verify_callback function is not
  *        allowed to throw exceptions. If the operations needed to verify the certificate lead to an exception,
  *        the exception must be caught explicitly before returning. The return value would typically be false
  *        in case of an exception.
  *
  *        When the sync client has received the server's certificate chain, it presents every certificate in
- *        the chain to the open_ssl_verify_callback function. The depth argument specifies the position of the
+ *        the chain to the ssl_verify_callback function. The depth argument specifies the position of the
  *        certificate in the chain. depth = 0 represents the actual server certificate. The root
  *        certificate has the highest depth. The certificate of highest depth will be presented first.
  *
@@ -340,10 +340,10 @@ Realm.defaultPath;
  *        It is generally safe to return true when acceptedByOpenSSL is true. If acceptedByOpenSSL is false, an
  *        independent verification should be made.
  *
- *        One possible way of using the open_ssl_verify_callback function is to embed the known server certificate
+ *        One possible way of using the ssl_verify_callback function is to embed the known server certificate
  *        in the client and accept the presented certificate if and only if it is equal to the known certificate.
  *
- *        The purpose of open_ssl_verify_callback is to enable custom certificate handling and to solve cases where
+ *        The purpose of ssl_verify_callback is to enable custom certificate handling and to solve cases where
  *        OpenSSL erroneously rejects valid certificates possibly because OpenSSL doesn't have access to the
  *        proper trust certificates.
  *   - `partial` - Whether this Realm should be opened in 'partial synchronization' mode.
