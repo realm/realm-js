@@ -48,11 +48,12 @@ class RPCWorker {
     json pop_task_result();
     bool try_run_task();
     void stop();
+    json try_pop_task_result();
 
   private:
     bool m_stop = false;
     //ALooper* m_looper;
-    std::thread m_thread;
+    //std::thread m_thread;
     ConcurrentDeque<std::packaged_task<json()>> m_tasks;
     ConcurrentDeque<std::future<json>> m_futures;
 };
@@ -63,6 +64,7 @@ class RPCServer {
     ~RPCServer();
     json perform_request(std::string name, const json &args);
     bool try_run_task();
+
 
   private:
     JSGlobalContextRef m_context;
@@ -77,6 +79,7 @@ class RPCServer {
     ConcurrentDeque<json> m_callback_results;
     RPCObjectID m_session_id;
     RPCWorker m_worker;
+    u_int64_t m_callback_call_counter;
 
     static void run_callback(JSContextRef, JSObjectRef, JSObjectRef, size_t, const JSValueRef[], jsc::ReturnValue &);
 
