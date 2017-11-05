@@ -689,7 +689,7 @@ void RealmClass<T>::wait_for_download_completion(ContextType ctx, FunctionType, 
             HANDLESCOPE
             if (!error_code) {
                 //success
-                Function<T>::callback(protected_ctx, protected_callback, protected_this, 0, nullptr);
+                Function<T>::callback(protected_ctx, protected_callback, typename T::Object(), 0, nullptr);
             }
             else {
                 //fail
@@ -700,7 +700,7 @@ void RealmClass<T>::wait_for_download_completion(ContextType ctx, FunctionType, 
                 ValueType callback_arguments[1];
                 callback_arguments[0] = object;
                 
-                Function<T>::callback(protected_ctx, protected_callback, protected_this, 1, callback_arguments);
+                Function<T>::callback(protected_ctx, protected_callback, typename T::Object(), 1, callback_arguments);
             }
         });
         std::function<WaitHandler> waitFunc = std::move(wait_handler);
@@ -750,11 +750,12 @@ void RealmClass<T>::wait_for_download_completion(ContextType ctx, FunctionType, 
                         session->register_progress_notifier(std::move(progressFunc), SyncSession::NotifierType::download, false);
                     } 
                     auto result = session->wait_for_download_completion([=](std::error_code error_code) {
+                        realm->close();
                         waitFunc(error_code);
 
                         if (error_code.value() != 45)
                         {
-                            realm->close(); //capture and keep realm instance for until here
+                             //capture and keep realm instance for until here
                         }
                     });
                     return;

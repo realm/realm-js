@@ -79,6 +79,16 @@ json RPCWorker::pop_task_result() {
     return future.get();
 }
 
+json RPCWorker::try_pop_task_result() {
+    // This might block until a future has been added.
+    auto future = m_futures.try_pop_back(0);
+    if (!future) {
+        return json::object();
+    }
+    // This will block until a return value (or exception) is available.
+    return (*future).get();
+}
+
 bool RPCWorker::try_run_task() {
     if (m_stop) {
         return true;
@@ -101,7 +111,7 @@ bool RPCWorker::try_run_task() {
 void RPCWorker::stop() {
     if (!m_stop) {
         m_stop = true;
-        m_thread.join();
+        //m_thread.join();
         //m_looper = nullptr;
     }
 }
@@ -109,6 +119,7 @@ void RPCWorker::stop() {
 RPCServer::RPCServer() {
     m_context = JSGlobalContextCreate(NULL);
     get_rpc_server(m_context) = this;
+    m_callback_call_counter = 1;
 
     // JavaScriptCore crashes when trying to walk up the native stack to print the stacktrace.
     // FIXME: Avoid having to do this!
@@ -247,9 +258,9 @@ RPCServer::RPCServer() {
         return json::object();
     };
 
-    m_requests["/callbacks_poll"] = [this](const json dict) {
-        return json::object();
-    };
+//    m_requests["/callbacks_poll"] = [this](const json dict) {
+//        return json::object();
+//    };
 }
 
 RPCServer::~RPCServer() {
@@ -269,6 +280,7 @@ void RPCServer::run_callback(JSContextRef ctx, JSObjectRef function, JSObjectRef
         return;
     }
 
+    u_int64_t counter = server->m_callback_call_counter++;
     // The first argument was curried to be the callback id.
     RPCObjectID callback_id = server->m_callback_ids[function];
     JSObjectRef arguments_array = jsc::Object::create_array(ctx, uint32_t(argc), arguments);
@@ -282,24 +294,51 @@ void RPCServer::run_callback(JSContextRef ctx, JSObjectRef function, JSObjectRef
             {"callback", callback_id},
             {"this", this_json},
             {"arguments", arguments_json},
+            {"callback_call_counter", counter}
         };
     });
 
-    // Wait for the next callback result to come off the result stack.
-    while (server->m_callback_results.empty()) {
-        // This may recursively bring us into another callback, hence the callback results being a stack.
-        server->m_worker.try_run_task();
+//    // Wait for the next callback result to come off the result stack.
+//    while (server->m_callback_results.empty()) {
+//        // This may recursively bring us into another callback, hence the callback results being a stack.
+//        server->m_worker.try_run_task();
+//    }
+
+
+    json callbackResult = nullptr;
+    while (callbackResult == nullptr) {
+        callbackResult = server->m_callback_results.pop_if([&](json result) {
+            auto resultCallbackId = result["callback"].get<u_int64_t>();
+            auto resultCallbackCounter = result["callback_call_counter"].get<u_int64_t>();
+            if (resultCallbackId == callback_id && resultCallbackCounter == counter) {
+                return true;
+            }
+            else {
+                return false;
+            }
+        });
+
+        if (callbackResult == nullptr) {
+            server->m_worker.try_run_task();
+        }
     }
 
-    json results = server->m_callback_results.pop_back();
+    //json results = server->m_callback_results.pop_back();
+
+    json results = callbackResult;
     json error = results["error"];
 
+    auto resultCallbackId = results["callback"];
+    if (resultCallbackId.is_null()) {
+
+    }
     // The callback id should be identical!
-    assert(callback_id == results["callback"].get<RPCObjectID>());
+    assert(callback_id == resultCallbackId.get<RPCObjectID>());
 
     if (!error.is_null()) {
         throw jsc::Exception(ctx, error.get<std::string>());
     }
+
 
     return_value.set(server->deserialize_json_value(results["result"]));
 
@@ -318,6 +357,15 @@ json RPCServer::perform_request(std::string name, const json &args) {
         json results(args);
         m_callback_results.push_back(std::move(results));
     }
+    else if (name == "/callback_poll_result") {
+        json results(args);
+        m_callback_results.push_back(std::move(results));
+        return json::object();
+    }
+    else if (name == "/callbacks_poll") {
+        auto result = m_worker.try_pop_task_result();
+        return result;
+    }
     else {
         RPCRequest action = m_requests[name];
         assert(action);
@@ -329,7 +377,8 @@ json RPCServer::perform_request(std::string name, const json &args) {
 
     try {
         // This will either be the return value (or exception) of the action perform, OR an instruction to run a callback.
-        return m_worker.pop_task_result();
+        auto result = m_worker.pop_task_result();
+        return result;
     } catch (std::exception &exception) {
         return {{"error", exception.what()}};
     }
