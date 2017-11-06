@@ -1014,7 +1014,7 @@ inline sync::ObjectID object_id_from_string(std::string const& string)
         throw std::invalid_argument("Invalid object ID.");
     }
 
-    return sync::ObjectID(std::stoi(high_string, nullptr, 16), std::stoi(low_string, nullptr, 16));
+    return sync::ObjectID(std::stoull(high_string, nullptr, 16), std::stoull(low_string, nullptr, 16));
 }
 
 } // unnamed namespace
