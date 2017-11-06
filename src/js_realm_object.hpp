@@ -159,16 +159,17 @@ template<typename T>
 void RealmObjectClass<T>::get_object_id(ContextType ctx, ObjectType object, Arguments args, ReturnValue& return_value) {
     args.validate_maximum(0);
 
-    auto realm_object = get_internal<T, RealmObjectClass<T>>(object);
-
 #if REALM_ENABLE_SYNC
+    auto realm_object = get_internal<T, RealmObjectClass<T>>(object);
     const Group& group = realm_object->realm()->read_group();
     if (!sync::has_object_ids(group))
-        return;
+        throw std::logic_error("_objectId() can only be used with objects from synced Realms.");
 
     const Row& row = realm_object->row();
     auto object_id = sync::object_id_for_row(group, *row.get_table(), row.get_index());
     return_value.set(object_id.to_string());
+#else
+    throw std::logic_error("_objectId() can only be used with objects from synced Realms.");
 #endif
 }
 

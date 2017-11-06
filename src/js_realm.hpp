@@ -1027,7 +1027,7 @@ void RealmClass<T>::object_for_object_id(ContextType ctx, ObjectType this_object
 #if REALM_ENABLE_SYNC
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
     if (!sync::has_object_ids(realm->read_group()))
-        return;
+        throw std::logic_error("Realm._objectForObjectId() can only be used with synced Realms.");
 
     std::string object_type = Value::validated_to_string(ctx, args[0]);
     validated_object_schema_for_value(ctx, realm, args[0], object_type);
@@ -1040,6 +1040,8 @@ void RealmClass<T>::object_for_object_id(ContextType ctx, ObjectType this_object
     if (ndx != realm::npos) {
         return_value.set(RealmObjectClass<T>::create_instance(ctx, realm::Object(realm, object_type, ndx)));
     }
+#else
+    throw std::logic_error("Realm._objectForObjectId() can only be used with synced Realms.");
 #endif // REALM_ENABLE_SYNC
 }
 
