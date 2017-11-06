@@ -88,6 +88,7 @@ extern "C" JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executo
 #if DEBUG
     GCDWebServer *_webServer;
     std::unique_ptr<RPCServer> _rpcServer;
+    std::thread _workerThread;
 #endif
 }
 
@@ -206,6 +207,15 @@ RCT_REMAP_METHOD(emit, emitEvent:(NSString *)eventName withObject:(id)object) {
     return [ipAddresses copy];
 }
 
+static void
+TimerCallback(CFRunLoopTimerRef timer, void *info)
+{
+    RPCServer* rpcServer = (RPCServer*)info;
+    rpcServer->try_run_task();
+done:
+    return;
+}
+
 - (void)startRPC {
     [GCDWebServer setLogLevel:3];
     _webServer = [[GCDWebServer alloc] init];
@@ -246,6 +256,27 @@ RCT_REMAP_METHOD(emit, emitEvent:(NSString *)eventName withObject:(id)object) {
         [response setValue:@"http://localhost:8081" forAdditionalHeader:@"Access-Control-Allow-Origin"];
         return response;
     }];
+    
+    _workerThread = std::thread([&]() {
+        
+            auto timerInterval = 0.5;
+            CFStringRef timerMode = CFSTR("TimerMode");
+            CFRunLoopTimerContext timerContext = { 0, NULL, NULL, NULL, NULL };
+            timerContext.info = &_rpcServer;
+            CFRunLoopTimerRef timerRef = CFRunLoopTimerCreate(kCFAllocatorDefault,
+                                            CFAbsoluteTimeGetCurrent() + timerInterval,
+                                            timerInterval,
+                                            0,
+                                            0,
+                                            TimerCallback,
+                                            &timerContext);
+            
+            CFRunLoopAddTimer(CFRunLoopGetCurrent(), timerRef, timerMode);
+            CFRunLoopRunInMode(timerMode, 4, false);
+        
+        
+        CFRunLoopRun();
+    });
 
     [_webServer startWithPort:WEB_SERVER_PORT bonjourName:nil];
     return;
