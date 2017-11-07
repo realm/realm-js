@@ -55,6 +55,7 @@ struct RealmObjectClass : ClassDefinition<T, realm::Object> {
     static void get_object_schema(ContextType, FunctionType, ObjectType, size_t, const ValueType [], ReturnValue &);
     static void linking_objects(ContextType, FunctionType, ObjectType, size_t, const ValueType [], ReturnValue &);
     static void get_object_id(ContextType, ObjectType, Arguments, ReturnValue &);
+    static void is_same_object(ContextType, ObjectType, Arguments, ReturnValue &);
 
     const std::string name = "RealmObject";
 
@@ -69,6 +70,7 @@ struct RealmObjectClass : ClassDefinition<T, realm::Object> {
         {"objectSchema", wrap<get_object_schema>},
         {"linkingObjects", wrap<linking_objects>},
         {"_objectId", wrap<get_object_id>},
+        {"_isSameObject", wrap<is_same_object>},
     };
 };
 
@@ -173,6 +175,32 @@ void RealmObjectClass<T>::get_object_id(ContextType ctx, ObjectType object, Argu
 #endif
 }
 
+template<typename T>
+void RealmObjectClass<T>::is_same_object(ContextType ctx, ObjectType object, Arguments args, ReturnValue& return_value) {
+    args.validate_count(1);
+
+    ObjectType otherObject = Value::validated_to_object(ctx, args[0]);
+    if (!Object::template is_instance<RealmObjectClass<T>>(ctx, otherObject)) {
+        return_value.set(false);
+        return;
+    }
+
+    auto self = get_internal<T, RealmObjectClass<T>>(object);
+    auto other = get_internal<T, RealmObjectClass<T>>(otherObject);
+
+    if (!self->realm() || self->realm() != other->realm()) {
+        return_value.set(false);
+        return;
+    }
+
+    if (!self->is_valid() || !other->is_valid()) {
+        return_value.set(false);
+        return;
+    }
+
+    return_value.set(self->row().get_table() == other->row().get_table()
+                     && self->row().get_index() == other->row().get_index());
+}
 } // js
 } // realm
 
