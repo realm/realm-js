@@ -23,6 +23,8 @@
 const Realm = require('realm');
 const TestCase = require('./asserts');
 
+const isNodeProccess = (typeof process === 'object' && process + '' === '[object process]');
+
 function uuid() {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
         var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
@@ -42,7 +44,7 @@ module.exports = {
     },
 
     testSynced: function() {
-        if (!global.enableSyncTests)
+        if (!global.enableSyncTests || !isNodeProccess)
             return;
 
         return Realm.Sync.User.register('http://localhost:9080', uuid(), 'password').then(user => {
