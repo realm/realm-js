@@ -121,7 +121,7 @@ declare namespace Realm {
          * @param Object otherObject
          * @returns boolean
          */
-        isSameObject(otherObject: Object): boolean;
+        _isSameObject(otherObject: Object): boolean;
     }
 
     const Object: {
