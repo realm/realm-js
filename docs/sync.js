@@ -70,7 +70,7 @@ class Sync {
      * {
      *   const config = { sync: { user, url: 'realm://localhost:9080/~/myrealm' } };
      *   config.sync.error = (sender, error) => {
-     *     if (error.code === 7) { // 7 -> client reset
+     *     if (error.name === 'ClientReset') {
      *       Realm.Sync.initiateClientReset(original_path);
      *       // copy required objects from Realm at error.config.path
      *     }
