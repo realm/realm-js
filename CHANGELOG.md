@@ -1,3 +1,18 @@
+X.Y.Z Release notes
+=============================================================
+### Breaking changes
+* None.
+
+### Enhancements
+* None.
+
+### Bug fixes
+* None.
+
+### Internal
+* Updated to Realm Sync 2.1.1.
+
+
 2.0.3 Release notes (2017-11-6)
 =============================================================
 ### Breaking changes
