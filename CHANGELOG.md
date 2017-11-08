@@ -1,3 +1,18 @@
+X.Y.Z Release notes
+=============================================================
+### Breaking changes
+* None.
+
+### Enchancements
+* None.
+
+### Bug fixes
+* None.
+
+### Internal
+* Added support for object IDs.
+
+
 2.0.4 Release notes (2017-11-7)
 =============================================================
 ### Breaking changes

@@ -42,6 +42,7 @@ var TESTS = {
     QueryTests: require('./query-tests'),
     MigrationTests: require('./migration-tests'),
     EncryptionTests: require('./encryption-tests'),
+    ObjectIDTests: require('./object-id-tests'),
     // GarbageCollectionTests: require('./garbage-collection'),
 };
 
