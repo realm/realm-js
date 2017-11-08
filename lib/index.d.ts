@@ -111,17 +111,6 @@ declare namespace Realm {
          * @returns Results<T>
          */
         linkingObjects<T>(objectType: string, property: string): Results<T>;
-
-        /**
-         * @returns string
-         */
-        _objectId(): string;
-
-        /**
-         * @param Object otherObject
-         * @returns boolean
-         */
-        isSameObject(otherObject: Object): boolean;
     }
 
     const Object: {
@@ -155,9 +144,9 @@ declare namespace Realm {
          */
         isValid(): boolean;
 
-        min(property?: string): number | Date | null;
-        max(property?: string): number | Date | null;
-        sum(property?: string): number | null;
+        min(property?: string): number|Date|null;
+        max(property?: string): number|Date|null;
+        sum(property?: string): number|null;
         avg(property?: string): number;
 
         /**
@@ -192,7 +181,6 @@ declare namespace Realm {
          * @returns void
          */
         removeListener(callback: CollectionChangeCallback<T>): void;
-
     }
 
     const Collection: {
@@ -359,9 +347,9 @@ declare namespace Realm.Sync {
 
     interface SyncError {
         name: string;
-        message: string;
+        message: string; 
         isFatal: boolean;
-        category?: string;
+        category?: string; 
         code: number;
     }
 
@@ -554,13 +542,6 @@ declare class Realm {
      * @returns Realm
      */
     objects<T>(type: string | Realm.ObjectSchema | Function): Realm.Results<T>;
-
-    /**
-     * @param {string} type
-     * @param {string} id
-     * @returns T
-     */
-    _objectForObjectId<T>(type: string, id: string): T | null;
 
     /**
      * @param  {string} name
