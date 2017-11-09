@@ -11,6 +11,7 @@ X.Y.Z Release notes
 
 ### Internal
 * Added support for object IDs.
+* Updated to Realm Sync 2.1.2.
 
 
 2.0.4 Release notes (2017-11-7)
