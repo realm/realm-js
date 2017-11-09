@@ -1,4 +1,4 @@
-X.Y.Z Release notes
+2.0.5 Release notes (2017-11-9)
 =============================================================
 ### Breaking changes
 * None.
