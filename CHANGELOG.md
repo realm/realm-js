@@ -1,3 +1,18 @@
+X.Y.Z Release notes
+=============================================================
+### Breaking changes
+* None.
+
+### Enchancements
+* None.
+
+### Bug fixes
+* Enabled object Ids on RN Android (#1480).
+
+### Internal
+* None.
+
+
 2.0.5 Release notes (2017-11-9)
 =============================================================
 ### Breaking changes
