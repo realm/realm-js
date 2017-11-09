@@ -1,3 +1,18 @@
+X.Y.Z Release notes
+=============================================================
+### Breaking changes
+* None.
+
+### Enchancements
+* Improve notification performance for objects with no object or list properties.
+
+### Bug fixes
+* Fix a race condition where closing and immediately reopening a synchronized
+  Realm opened using an admin token user would fail.
+
+### Internal
+* None.
+
 2.0.5 Release notes (2017-11-9)
 =============================================================
 ### Breaking changes
