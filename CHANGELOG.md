@@ -4,14 +4,15 @@ X.Y.Z Release notes
 * None.
 
 ### Enchancements
-* None.
+* Improved notification performance for objects with no object or list properties.
 
 ### Bug fixes
 * Fixed a compilation error related to object IDs for React Native on Android (#1480).
+* Fixed a race condition where closing and immediately reopening a synchronized
+  Realm opened using an admin token user would fail.
 
 ### Internal
 * None.
-
 
 2.0.5 Release notes (2017-11-9)
 =============================================================

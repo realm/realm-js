@@ -678,15 +678,13 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
             is_partial = Value::validated_to_boolean(ctx, partial_value);
         }
 
-        // FIXME - use make_shared
-        config.sync_config = std::shared_ptr<SyncConfig>(new SyncConfig{shared_user, raw_realm_url,
-                                                                        SyncSessionStopPolicy::AfterChangesUploaded,
-                                                                        std::move(bind), std::move(error_handler),
-                                                                        nullptr, util::none,
-                                                                        client_validate_ssl, ssl_trust_certificate_path,
-                                                                        std::move(ssl_verify_callback),
-                                                                        is_partial});
-
+        config.sync_config = std::make_shared<SyncConfig>(shared_user, std::move(raw_realm_url));
+        config.sync_config->bind_session_handler = std::move(bind);
+        config.sync_config->error_handler = std::move(error_handler);
+        config.sync_config->client_validate_ssl = client_validate_ssl;
+        config.sync_config->ssl_trust_certificate_path = ssl_trust_certificate_path;
+        config.sync_config->ssl_verify_callback = std::move(ssl_verify_callback);
+        config.sync_config->is_partial = is_partial;
 
         config.schema_mode = SchemaMode::Additive;
         config.path = syncManagerShared().path_for_realm(*shared_user, config.sync_config->realm_url());
