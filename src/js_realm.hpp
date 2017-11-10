@@ -44,6 +44,8 @@
 #include "platform.hpp"
 #include "results.hpp"
 
+#include <realm/disable_sync_to_disk.hpp>
+
 namespace realm {
 namespace js {
 
@@ -342,6 +344,10 @@ inline typename T::Function RealmClass<T>::create_constructor(ContextType ctx) {
     FunctionType sync_constructor = SyncClass<T>::create_constructor(ctx);
     Object::set_property(ctx, realm_constructor, "Sync", sync_constructor, attributes);
 #endif
+
+    if (getenv("REALM_DISABLE_SYNC_TO_DISK")) {
+        realm::disable_sync_to_disk();
+    }
 
     Object::set_global(ctx, "Realm", realm_constructor);
     return realm_constructor;
