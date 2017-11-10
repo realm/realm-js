@@ -30,24 +30,15 @@ function uuid() {
 }
 
 function createUsersWithTestRealms(count) {
-  const createUserWithTestRealm = username => new Promise((resolve, reject) => {
-    Realm.Sync.User.register('http://localhost:9080', username, 'password', (error, user) => {
-      if (error) {
-        reject(error);
-      }
-      else {
-        new Realm({ sync: { user, url: 'realm://localhost:9080/~/test'}}).close();
-        resolve(user);
-      }
-    })
-  });
+  const createUserWithTestRealm = () => {
+    return Realm.Sync.User.register('http://localhost:9080', uuid(), 'password')
+      .then(user => {
+        new Realm({sync: {user, url: 'realm://localhost:9080/~/test'}}).close();
+        return user;
+      });
+  };
 
-  // Generate some usernames
-  const usernames = new Array(count).fill(undefined).map(uuid);
-
-  // And turn them into users and realms
-  const userPromises = usernames.map(createUserWithTestRealm);
-  return Promise.all(userPromises);
+  return Promise.all(Array.from({length: count}, createUserWithTestRealm));
 }
 
 function wait(t) {
@@ -103,28 +94,29 @@ module.exports = {
     },
 
     testInvalidatePermissionOffer() {
+      let user1, user2, token;
       return createUsersWithTestRealms(2)
-        .then(([user1, user2]) => {
-            user1.offerPermissions(`/${user1.identity}/test`, 'read')
-              .then((token) => {
-                return user1.invalidatePermissionOffer(token)
-                    // Since we don't yet support notification when the invalidation has gone through,
-                    // wait for a bit and hope the server is done processing.
-                  .then(wait(100))
-                  .then(user2.acceptPermissionOffer(token))
-                  // We want the call to fail, i.e. the catch() below should be called.
-                  .then(() => { throw new Error("User was able to accept an invalid permission offer token"); })
-                  .catch(error => {
-                    try {
-                      TestCase.assertEqual(error.message, 'The permission offer is expired.');
-                      TestCase.assertEqual(error.statusCode, 701);
-                    }
-                    catch (e) {
-                      throw new Error(e);
-                    }
-                  });
-              });
-          });
+        .then(users => {
+            user1 = users[0];
+            user2 = users[1];
+            return user1.offerPermissions(`/${user1.identity}/test`, 'read');
+        })
+        .then(t => { token = t; return user1.invalidatePermissionOffer(token); })
+        // Since we don't yet support notification when the invalidation has gone through,
+        // wait for a bit and hope the server is done processing.
+        .then(wait(100))
+        .then(() => user2.acceptPermissionOffer(token))
+        // We want the call to fail, i.e. the catch() below should be called.
+        .then(() => { throw new Error("User was able to accept an invalid permission offer token"); })
+        .catch(error => {
+          try {
+            TestCase.assertEqual(error.message, 'The permission offer is expired.');
+            TestCase.assertEqual(error.statusCode, 701);
+          }
+          catch (e) {
+            throw new Error(e);
+          }
+        });
     },
 }
 
