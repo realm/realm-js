@@ -7,7 +7,7 @@ X.Y.Z Release notes
 * None.
 
 ### Bug fixes
-* Enabled object Ids on RN Android (#1480).
+* Fixed a compilation error related to object IDs for React Native on Android (#1480).
 
 ### Internal
 * None.
