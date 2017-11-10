@@ -35,7 +35,7 @@ std::string default_path() {
         s_default_path = realm::default_realm_file_directory() +
 #if defined(WIN32) && WIN32
             '\\'
-#else       
+#else
             '/'
 #endif
             + "default.realm";
@@ -105,6 +105,6 @@ std::string TypeErrorException::type_string(Property const& prop)
     return ret;
 }
 
-    
+
 } // js
 } // realm
