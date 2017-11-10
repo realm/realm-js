@@ -1013,8 +1013,7 @@ inline sync::ObjectID object_id_from_string(std::string const& string)
         !std::all_of(low_string.begin(), low_string.end(), isxdigit)) {
         throw std::invalid_argument("Invalid object ID.");
     }
-
-    return sync::ObjectID(std::stoull(high_string, nullptr, 16), std::stoull(low_string, nullptr, 16));
+    return sync::ObjectID(strtoull(high_string.c_str(), nullptr, 16), strtoull(low_string.c_str(), nullptr, 16));
 }
 
 } // unnamed namespace
