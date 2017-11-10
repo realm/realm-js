@@ -888,7 +888,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "node ../scripts/download-realm.js ios --sync";
+			shellScript = "if [[ -s \"$HOME/.nvm/nvm.sh\" ]]; then\n  . \"$HOME/.nvm/nvm.sh\"\n  NVM_DIR=\"$HOME/.nvm\"\nelif [[ -x \"$(command -v brew)\" && -s \"$(brew --prefix nvm)/nvm.sh\" ]]; then\n  . \"$(brew --prefix nvm)/nvm.sh\"\n  NVM_DIR=\"$(brew --prefix)\"\nfi\nnode ../scripts/download-realm.js ios --sync";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
