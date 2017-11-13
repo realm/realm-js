@@ -52,7 +52,7 @@ class RPCWorker {
 
   private:
     bool m_stop = false;
-#if REALM_PLATFORM_APPLE
+#if __APPLE__
     std::thread m_thread;
     CFRunLoopRef m_loop;
 #endif

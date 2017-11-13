@@ -82,7 +82,7 @@ RPCServer*& get_rpc_server(JSGlobalContextRef ctx) {
 }
 }
 
-#ifdef REALM_PLATFORM_APPLE
+#ifdef __APPLE__
 void runLoopFunc(CFRunLoopRef loop, RPCWorker* rpcWorker) {
     auto m_stop = false;
     CFRunLoopPerformBlock(loop, kCFRunLoopDefaultMode,
@@ -99,7 +99,7 @@ void runLoopFunc(CFRunLoopRef loop, RPCWorker* rpcWorker) {
 #endif
 
 RPCWorker::RPCWorker() {
-    #ifdef REALM_PLATFORM_APPLE
+    #ifdef __APPLE__
         m_thread = std::thread([this]() {
             m_loop = CFRunLoopGetCurrent();
             runLoopFunc(m_loop, this);
@@ -160,7 +160,7 @@ bool RPCWorker::should_stop() {
 void RPCWorker::stop() {
     if (!m_stop) {
         m_stop = true;
-#if REALM_PLATFORM_APPLE
+#if __APPLE__
         m_thread.join();
         m_loop = nullptr;
 #endif 
