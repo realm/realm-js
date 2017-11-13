@@ -329,10 +329,6 @@ RPCServer::RPCServer() {
 
         return json::object();
     };
-
-//    m_requests["/callbacks_poll"] = [this](const json dict) {
-//        return json::object();
-//    };
 }
 
 RPCServer::~RPCServer() {
@@ -370,13 +366,7 @@ void RPCServer::run_callback(JSContextRef ctx, JSObjectRef function, JSObjectRef
         };
     });
 
-//    // Wait for the next callback result to come off the result stack.
-//    while (server->m_callback_results.empty()) {
-//        // This may recursively bring us into another callback, hence the callback results being a stack.
-//        server->m_worker.try_run_task();
-//    }
-
-
+    // Wait for this callback call result to come off the result stack.
     json callbackResult = nullptr;
     while (callbackResult == nullptr) {
         callbackResult = server->m_callback_results.pop_if([&](json result) {
@@ -394,8 +384,6 @@ void RPCServer::run_callback(JSContextRef ctx, JSObjectRef function, JSObjectRef
             server->m_worker.try_run_task();
         }
     }
-
-    //json results = server->m_callback_results.pop_back();
 
     json results = callbackResult;
     json error = results["error"];
