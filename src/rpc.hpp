@@ -26,7 +26,6 @@
 #include "json.hpp"
 #include "jsc_types.hpp"
 #include "jsc_protected.hpp"
-#include <android/looper.h>
 
 namespace realm {
 
@@ -49,11 +48,14 @@ class RPCWorker {
     bool try_run_task();
     void stop();
     json try_pop_task_result();
+    bool should_stop();
 
   private:
     bool m_stop = false;
-    //ALooper* m_looper;
-    //std::thread m_thread;
+#if REALM_PLATFORM_APPLE
+    std::thread m_thread;
+    CFRunLoopRef m_loop;
+#endif
     ConcurrentDeque<std::packaged_task<json()>> m_tasks;
     ConcurrentDeque<std::future<json>> m_futures;
 };

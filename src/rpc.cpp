@@ -28,7 +28,6 @@
 #include "object_accessor.hpp"
 #include "shared_realm.hpp"
 #include "results.hpp"
-#include <android/looper.h>
 
 using namespace realm;
 using namespace realm::rpc;
@@ -83,15 +82,30 @@ RPCServer*& get_rpc_server(JSGlobalContextRef ctx) {
 }
 }
 
-RPCWorker::RPCWorker() {
-    //m_thread = std::thread([this]() {
-        //m_looper = ALooper_prepare(ALOOPER_PREPARE_ALLOW_NON_CALLBACKS);
+#ifdef REALM_PLATFORM_APPLE
+void runLoopFunc(CFRunLoopRef loop, RPCWorker* rpcWorker) {
+    auto m_stop = false;
+    CFRunLoopPerformBlock(loop, kCFRunLoopDefaultMode,
+                          ^{
+                              rpcWorker->try_run_task();
+                              if (rpcWorker->should_stop()) {
+                                  CFRunLoopStop(CFRunLoopGetCurrent());
+                              } else {
+                                  runLoopFunc(loop, rpcWorker);
+                            }
+                          });
+    CFRunLoopWakeUp(loop);
+}
+#endif
 
-        // TODO: Create ALooper/CFRunLoop to support async calls.
-        //while (!m_stop) {
-            //try_run_task();
-        //}
-    //});
+RPCWorker::RPCWorker() {
+    #ifdef REALM_PLATFORM_APPLE
+        m_thread = std::thread([this]() {
+            m_loop = CFRunLoopGetCurrent();
+            runLoopFunc(m_loop, this);
+            CFRunLoopRun();
+        });
+    #endif
 }
 
 RPCWorker::~RPCWorker() {
@@ -139,11 +153,17 @@ bool RPCWorker::try_run_task() {
     return m_stop;
 }
 
+bool RPCWorker::should_stop() {
+    return m_stop;
+}
+
 void RPCWorker::stop() {
     if (!m_stop) {
         m_stop = true;
-        //m_thread.join();
-        //m_looper = nullptr;
+#if REALM_PLATFORM_APPLE
+        m_thread.join();
+        m_loop = nullptr;
+#endif 
     }
 }
 
