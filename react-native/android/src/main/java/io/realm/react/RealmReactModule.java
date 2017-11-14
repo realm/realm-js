@@ -2,6 +2,9 @@ package io.realm.react;
 
 import android.content.res.AssetManager;
 import android.os.Build;
+import android.os.Handler;
+import android.os.HandlerThread;
+import android.os.Looper;
 import android.util.Log;
 
 import com.facebook.react.bridge.ReactApplicationContext;
@@ -19,6 +22,9 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.RunnableFuture;
 
 import fi.iki.elonen.NanoHTTPD;
 
@@ -36,6 +42,9 @@ class RealmReactModule extends ReactContextBaseJavaModule {
     static {
         SoLoader.loadLibrary("realmreact");
     }
+
+    private Handler worker;
+    private HandlerThread workerThread;
 
     public RealmReactModule(ReactApplicationContext reactContext) {
         super(reactContext);
@@ -121,7 +130,9 @@ class RealmReactModule extends ReactContextBaseJavaModule {
 
     private void startWebServer() {
         setupChromeDebugModeRealmJsContext();
-        webServer = new AndroidWebServer(DEFAULT_PORT);
+        startWorker();
+
+        webServer = new AndroidWebServer(DEFAULT_PORT, getReactApplicationContext());
         try {
             webServer.start();
             Log.i("Realm", "Starting the debugging WebServer, Host: " + webServer.getHostname() + " Port: " + webServer.getListeningPort());
@@ -130,20 +141,44 @@ class RealmReactModule extends ReactContextBaseJavaModule {
         }
     }
 
+    private void startWorker() {
+        workerThread = new HandlerThread("MyHandlerThread");
+        workerThread.start();
+        worker = new Handler(workerThread.getLooper());
+        worker.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                boolean stop = tryRunTask();
+                if (!stop) {
+                    worker.postDelayed(this, 10);
+                }
+            }
+        }, 10);
+    }
+
     private void stopWebServer() {
         if (webServer != null) {
              Log.i("Realm", "Stopping the webserver");
              webServer.stop();
         }
+
+        if (workerThread != null) {
+            workerThread.quit();
+            workerThread = null;
+        }
     }
 
     class AndroidWebServer extends NanoHTTPD {
-        public AndroidWebServer(int port) {
+        private ReactApplicationContext reactApplicationContext;
+
+        public AndroidWebServer(int port, ReactApplicationContext reactApplicationContext) {
             super(port);
+            this.reactApplicationContext = reactApplicationContext;
         }
 
-        public AndroidWebServer(String hostname, int port) {
+        public AndroidWebServer(String hostname, int port, ReactApplicationContext reactApplicationContext) {
             super(hostname, port);
+            this.reactApplicationContext = reactApplicationContext;
         }
 
         @Override
@@ -164,7 +199,7 @@ class RealmReactModule extends ReactContextBaseJavaModule {
                 return response;
             }  
             final String jsonResponse = processChromeDebugCommand(cmdUri, json);
-
+           
             Response response = newFixedLengthResponse(jsonResponse);
             response.addHeader("Access-Control-Allow-Origin", "http://localhost:8081");
             return response;
@@ -185,4 +220,7 @@ class RealmReactModule extends ReactContextBaseJavaModule {
 
     // this receives one command from Chrome debug then return the processing we should post back
     private native String processChromeDebugCommand(String cmd, String args);
+
+    // this receives one command from Chrome debug then return the processing we should post back
+    private native boolean tryRunTask();
 }
