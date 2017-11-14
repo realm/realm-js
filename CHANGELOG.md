@@ -1,3 +1,18 @@
+X.Y.Z Release notes
+=============================================================
+### Breaking changes
+* None.
+
+### Enchancements
+* None
+
+### Bug fixes
+* Fixes Realm.open hangs in React Native debugger for iOS and Android
+
+### Internal
+* None.
+
+
 2.0.6 Release notes (2017-11-10)
 =============================================================
 ### Breaking changes
