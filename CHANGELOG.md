@@ -10,7 +10,7 @@ X.Y.Z Release notes
 * Fixes Realm.open hangs in React Native debugger for iOS and Android
 
 ### Internal
-* None.
+* Updated to Realm Sync 2.1.4.
 
 
 2.0.6 Release notes (2017-11-10)
