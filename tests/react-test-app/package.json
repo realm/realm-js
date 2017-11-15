@@ -6,13 +6,14 @@
     "start": "react-native start"
   },
   "dependencies": {
-    "react": "~15.4.0-rc.4",
-    "react-native": "0.40.0",
+    "react": "~16.0.0-beta.5",
+    "react-native": "0.50.3",
     "react-native-fs": "^1.1.0",
     "realm": "file:../..",
     "realm-tests": "file:../js",
     "xmlbuilder": "^4.2.1"
   },
+  "resolutions": { "moment": "2.19.1" },
   "devDependencies": {
     "babel-preset-react-native": "1.9.1",
     "invariant": "^2.2.2"

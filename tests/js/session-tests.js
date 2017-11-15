@@ -27,8 +27,9 @@ const TestCase = require('./asserts');
 
 const isNodeProccess = (typeof process === 'object' && process + '' === '[object process]');
 
+const require_method = require;
 function node_require(module) {
-    return require(module);
+    return require_method(module);
 }
 
 let tmp;

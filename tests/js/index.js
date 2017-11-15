@@ -27,7 +27,8 @@ if( typeof Realm.Sync !== 'undefined' && Realm.Sync !== null ) {
 }
 
 const isNodeProcess = typeof process === 'object' && process + '' === '[object process]';
-function node_require(module) { return require(module); }
+const require_method = require;
+function node_require(module) { return require_method(module); }
 
 if (isNodeProcess && process.platform === 'win32') {
     global.enableSyncTests = false;
