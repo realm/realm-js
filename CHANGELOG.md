@@ -1,7 +1,7 @@
 2.0.7 Release notes (2017-11-15)
 =============================================================
 ### Breaking changes
-* None.
+* None
 
 ### Enchancements
 * None
