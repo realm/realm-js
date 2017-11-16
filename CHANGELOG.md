@@ -1,17 +1,17 @@
 X.Y.Z Release notes
 =============================================================
 ### Breaking changes
-* None
+* None.
 
 ### Enchancements
-* None
+* [Object Server] Improving performance of processing large changesets.
 
 ### Bug fixes
-* None.
+* [Object Server] Changesets over 16MB in size are now handled correctly.
 
 ### Internal
 * Updated to Realm Sync 2.1.5.
-
+* Updated to JSON for Modern C++ 2.1.1.
 
 2.0.7 Release notes (2017-11-15)
 =============================================================
