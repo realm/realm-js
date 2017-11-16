@@ -292,7 +292,6 @@ case "$TARGET" in
   npm run check-environment
   download_server
   start_server
-  node ./scripts/download-realm.js ios --sync
   pushd tests/react-test-app
   npm install
   open_chrome
@@ -304,7 +303,6 @@ case "$TARGET" in
   ;;
 "react-example")
   npm run check-environment
-  node ./scripts/download-realm.js ios --sync
   pushd examples/ReactExample
 
   npm install
