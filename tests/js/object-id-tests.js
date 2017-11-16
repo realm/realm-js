@@ -44,9 +44,6 @@ module.exports = {
     },
 
     testSynced: function() {
-        if (!global.enableSyncTests || !isNodeProccess)
-            return;
-
         return Realm.Sync.User.register('http://localhost:9080', uuid(), 'password').then(user => {
             const config = { sync: { user, url: 'realm://localhost:9080/~/myrealm' },
                              schema: [{ name: 'IntegerPrimaryKey', properties: { int: 'int?' }, primaryKey: 'int' },
