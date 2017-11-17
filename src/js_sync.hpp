@@ -423,10 +423,9 @@ void SessionClass<T>::simulate_error(ContextType ctx, FunctionType, ObjectType t
     validate_argument_count(argc, 2);
 
     if (auto session = get_internal<T, SessionClass<T>>(this_object)->lock()) {
-        SyncError error;
-        error.error_code = std::error_code(Value::validated_to_number(ctx, arguments[0]), realm::sync::protocol_error_category());
-        error.message = Value::validated_to_string(ctx, arguments[1]);
-        SyncSession::OnlyForTesting::handle_error(*session, std::move(error));
+        std::error_code error_code(Value::validated_to_number(ctx, arguments[0]), realm::sync::protocol_error_category());
+        std::string message = Value::validated_to_string(ctx, arguments[1]);
+        SyncSession::OnlyForTesting::handle_error(*session, SyncError(error_code, message, false));
     }
 }
 
