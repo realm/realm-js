@@ -4,10 +4,10 @@
 * None.
 
 ### Enchancements
-* Reenable Realm for RN Android (#1506).
+* None
 
 ### Bug fixes
-* None.
+* Reenable Realm for RN Android (#1506), which was disabled only in 2.0.8 by mistake.
 
 ### Internal
 * None.
