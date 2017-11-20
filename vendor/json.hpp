@@ -57,6 +57,8 @@ SOFTWARE.
 #include <utility> // declval, forward, make_pair, move, pair, swap
 #include <vector> // vector
 
+#include <realm/util/to_string.hpp> // realm::util::to_string
+
 // exclude unsupported compilers
 #if defined(__clang__)
     #if (__clang_major__ * 10000 + __clang_minor__ * 100 + __clang_patchlevel__) < 30400
@@ -1159,7 +1161,7 @@ class basic_json
 #elif defined(__ICC) || defined(__INTEL_COMPILER)
         result["compiler"] = {{"family", "icc"}, {"version", __INTEL_COMPILER}};
 #elif defined(__GNUC__) || defined(__GNUG__)
-        result["compiler"] = {{"family", "gcc"}, {"version", std::to_string(__GNUC__) + "." + std::to_string(__GNUC_MINOR__) + "." + std::to_string(__GNUC_PATCHLEVEL__)}};
+        result["compiler"] = {{"family", "gcc"}, {"version", realm::util::to_string(__GNUC__) + "." + realm::util::to_string(__GNUC_MINOR__) + "." + realm::util::to_string(__GNUC_PATCHLEVEL__)}};
 #elif defined(__HP_cc) || defined(__HP_aCC)
         result["compiler"] = "hp"
 #elif defined(__IBMCPP__)
@@ -1175,7 +1177,7 @@ class basic_json
 #endif
 
 #ifdef __cplusplus
-        result["compiler"]["c++"] = std::to_string(__cplusplus);
+        result["compiler"]["c++"] = realm::util::to_string(__cplusplus);
 #else
         result["compiler"]["c++"] = "unknown";
 #endif
@@ -3540,7 +3542,7 @@ class basic_json
             JSON_CATCH (std::out_of_range&)
             {
                 // create better exception explanation
-                JSON_THROW(std::out_of_range("array index " + std::to_string(idx) + " is out of range"));
+                JSON_THROW(std::out_of_range("array index " + realm::util::to_string(idx) + " is out of range"));
             }
         }
         else
@@ -3583,7 +3585,7 @@ class basic_json
             JSON_CATCH (std::out_of_range&)
             {
                 // create better exception explanation
-                JSON_THROW(std::out_of_range("array index " + std::to_string(idx) + " is out of range"));
+                JSON_THROW(std::out_of_range("array index " + realm::util::to_string(idx) + " is out of range"));
             }
         }
         else
@@ -4535,7 +4537,7 @@ class basic_json
         {
             if (idx >= size())
             {
-                JSON_THROW(std::out_of_range("array index " + std::to_string(idx) + " is out of range"));
+                JSON_THROW(std::out_of_range("array index " + realm::util::to_string(idx) + " is out of range"));
             }
 
             m_value.array->erase(m_value.array->begin() + static_cast<difference_type>(idx));
@@ -6627,7 +6629,7 @@ class basic_json
     {
         if (current_index + sizeof(T) + 1 > vec.size())
         {
-            JSON_THROW(std::out_of_range("cannot read " + std::to_string(sizeof(T)) + " bytes from vector"));
+            JSON_THROW(std::out_of_range("cannot read " + realm::util::to_string(sizeof(T)) + " bytes from vector"));
         }
 
         T result;
@@ -7425,7 +7427,7 @@ class basic_json
 
                 default:
                 {
-                    JSON_THROW(std::invalid_argument("error parsing a msgpack @ " + std::to_string(current_idx) + ": " + std::to_string(static_cast<int>(v[current_idx]))));
+                    JSON_THROW(std::invalid_argument("error parsing a msgpack @ " + realm::util::to_string(current_idx) + ": " + realm::util::to_string(static_cast<int>(v[current_idx]))));
                 }
             }
         }
@@ -7910,7 +7912,7 @@ class basic_json
 
             default: // anything else (0xFF is handled inside the other types)
             {
-                JSON_THROW(std::invalid_argument("error parsing a CBOR @ " + std::to_string(current_idx) + ": " + std::to_string(static_cast<int>(v[current_idx]))));
+                JSON_THROW(std::invalid_argument("error parsing a CBOR @ " + realm::util::to_string(current_idx) + ": " + realm::util::to_string(static_cast<int>(v[current_idx]))));
             }
         }
     }
@@ -8334,11 +8336,18 @@ class basic_json
             // read information from locale
             const auto loc = localeconv();
             assert(loc != nullptr);
+            
+            #if defined(ANDROID)
+            // Android NDK doesn't have access to locale info yet
+            const char thousands_sep  = ',';
+            const char decimal_point  = '.';
+            #else
             const char thousands_sep = !loc->thousands_sep ? '\0'
                                        : loc->thousands_sep[0];
 
             const char decimal_point = !loc->decimal_point ? '\0'
                                        : loc->decimal_point[0];
+            #endif
 
             // erase thousands separator
             if (thousands_sep != '\0')
@@ -8767,7 +8776,7 @@ class basic_json
                     // use integer array index as key
                     case value_t::array:
                     {
-                        return std::to_string(array_index);
+                        return realm::util::to_string(array_index);
                     }
 
                     // use key from the object
@@ -11126,17 +11135,29 @@ basic_json_parser_74:
             // that will be called from parse<floating_point_t>
             static void strtof(float& f, const char* str, char** endptr)
             {
+                #if defined(ANDROID)
+                f = ::strtof(str, endptr);
+                #else
                 f = std::strtof(str, endptr);
+                #endif
             }
 
             static void strtof(double& f, const char* str, char** endptr)
             {
+                #if defined(ANDROID)
+                f = ::strtod(str, endptr);
+                #else
                 f = std::strtod(str, endptr);
+                #endif
             }
 
             static void strtof(long double& f, const char* str, char** endptr)
             {
-                f = std::strtold(str, endptr);
+                #if defined(ANDROID)
+                f = ::strtod(str, endptr);  // FIXME: how to convert to long double? Btw, we only compile to 32 bit
+                #else
+                f = std::strtod(str, endptr);
+                #endif
             }
 
             template<typename T>
@@ -11157,7 +11178,11 @@ basic_json_parser_74:
                 // instead of C++'s numpunct facet of the current std::locale
                 const auto loc = localeconv();
                 assert(loc != nullptr);
+                #if defined(ANDROID)
+                const char decimal_point_char = '.';
+                #else
                 const char decimal_point_char = (loc->decimal_point == nullptr) ? '.' : loc->decimal_point[0];
+                #endif
 
                 const char* data = m_start;
 
@@ -11208,12 +11233,12 @@ basic_json_parser_74:
 
             signed long long parse_integral(char** endptr, /*is_signed*/std::true_type) const
             {
-                return std::strtoll(m_start, endptr, 10);
+                return ::strtoll(m_start, endptr, 10);
             }
 
             unsigned long long parse_integral(char** endptr, /*is_signed*/std::false_type) const
             {
-                return std::strtoull(m_start, endptr, 10);
+                return ::strtoull(m_start, endptr, 10);
             }
 
             template<typename T>
@@ -11778,7 +11803,11 @@ basic_json_parser_74:
                     case value_t::array:
                     {
                         // create an entry in the array
+                        #if defined(ANDROID)
+                        result = &result->operator[](static_cast<size_type>(atoi(reference_token.c_str())));
+                        #else
                         result = &result->operator[](static_cast<size_type>(std::stoi(reference_token)));
+                        #endif
                         break;
                     }
 
@@ -11870,7 +11899,11 @@ basic_json_parser_74:
                         else
                         {
                             // convert array index to number; unchecked access
+                            #if defined(ANDROID)
+                            ptr = &ptr->operator[](static_cast<size_type>(atoi(reference_token.c_str())));
+                            #else
                             ptr = &ptr->operator[](static_cast<size_type>(std::stoi(reference_token)));
+                            #endif
                         }
                         break;
                     }
@@ -11904,7 +11937,7 @@ basic_json_parser_74:
                         {
                             // "-" always fails the range check
                             JSON_THROW(std::out_of_range("array index '-' (" +
-                                                         std::to_string(ptr->m_value.array->size()) +
+                                                         realm::util::to_string(ptr->m_value.array->size()) +
                                                          ") is out of range"));
                         }
 
@@ -11915,7 +11948,11 @@ basic_json_parser_74:
                         }
 
                         // note: at performs range check
+                        #if defined(ANDROID)
+                        ptr = &ptr->at(static_cast<size_type>(atoi(reference_token.c_str())));
+                        #else
                         ptr = &ptr->at(static_cast<size_type>(std::stoi(reference_token)));
+                        #endif
                         break;
                     }
 
@@ -11956,7 +11993,7 @@ basic_json_parser_74:
                         {
                             // "-" cannot be used for const access
                             JSON_THROW(std::out_of_range("array index '-' (" +
-                                                         std::to_string(ptr->m_value.array->size()) +
+                                                         realm::util::to_string(ptr->m_value.array->size()) +
                                                          ") is out of range"));
                         }
 
@@ -11967,7 +12004,11 @@ basic_json_parser_74:
                         }
 
                         // use unchecked array access
+                        #if defined (ANDROID)
+                        ptr = &ptr->operator[](static_cast<size_type>(atoi(reference_token.c_str())));
+                        #else
                         ptr = &ptr->operator[](static_cast<size_type>(std::stoi(reference_token)));
+                        #endif
                         break;
                     }
 
@@ -12000,7 +12041,7 @@ basic_json_parser_74:
                         {
                             // "-" always fails the range check
                             JSON_THROW(std::out_of_range("array index '-' (" +
-                                                         std::to_string(ptr->m_value.array->size()) +
+                                                         realm::util::to_string(ptr->m_value.array->size()) +
                                                          ") is out of range"));
                         }
 
@@ -12011,7 +12052,11 @@ basic_json_parser_74:
                         }
 
                         // note: at performs range check
+                        #if defined(ANDROID)
+                        ptr = &ptr->at(static_cast<size_type>(atoi(reference_token.c_str())));
+                        #else
                         ptr = &ptr->at(static_cast<size_type>(std::stoi(reference_token)));
+                        #endif
                         break;
                     }
 
@@ -12156,7 +12201,7 @@ basic_json_parser_74:
                         // iterate array and use index as reference string
                         for (size_t i = 0; i < value.m_value.array->size(); ++i)
                         {
-                            flatten(reference_string + "/" + std::to_string(i),
+                            flatten(reference_string + "/" + realm::util::to_string(i),
                                     value.m_value.array->operator[](i), result);
                         }
                     }
@@ -12547,11 +12592,15 @@ basic_json_parser_74:
                         }
                         else
                         {
+                            #if defined(ANDROID)
+                            const auto idx = atoi(last_path.c_str());
+                            #else
                             const auto idx = std::stoi(last_path);
+                            #endif
                             if (static_cast<size_type>(idx) > parent.size())
                             {
                                 // avoid undefined behavior
-                                JSON_THROW(std::out_of_range("array index " + std::to_string(idx) + " is out of range"));
+                                JSON_THROW(std::out_of_range("array index " + realm::util::to_string(idx) + " is out of range"));
                             }
                             else
                             {
@@ -12595,7 +12644,11 @@ basic_json_parser_74:
             else if (parent.is_array())
             {
                 // note erase performs range check
+                #if defined(ANDROID)
+                parent.erase(static_cast<size_type>(atoi(last_path.c_str())));
+                #else
                 parent.erase(static_cast<size_type>(std::stoi(last_path)));
+                #endif
             }
         };
 
@@ -12796,7 +12849,7 @@ basic_json_parser_74:
                     while (i < source.size() and i < target.size())
                     {
                         // recursive call to compare array values at index i
-                        auto temp_diff = diff(source[i], target[i], path + "/" + std::to_string(i));
+                        auto temp_diff = diff(source[i], target[i], path + "/" + realm::util::to_string(i));
                         result.insert(result.end(), temp_diff.begin(), temp_diff.end());
                         ++i;
                     }
@@ -12813,7 +12866,7 @@ basic_json_parser_74:
                         result.insert(result.begin() + end_index, object(
                         {
                             {"op", "remove"},
-                            {"path", path + "/" + std::to_string(i)}
+                            {"path", path + "/" + realm::util::to_string(i)}
                         }));
                         ++i;
                     }
@@ -12824,7 +12877,7 @@ basic_json_parser_74:
                         result.push_back(
                         {
                             {"op", "add"},
-                            {"path", path + "/" + std::to_string(i)},
+                            {"path", path + "/" + realm::util::to_string(i)},
                             {"value", target[i]}
                         });
                         ++i;
