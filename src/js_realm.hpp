@@ -728,7 +728,7 @@ void RealmClass<T>::wait_for_download_completion(ContextType ctx, ObjectType thi
             HANDLESCOPE
             if (!error_code) {
                 //success
-                Function<T>::callback(protected_ctx, protected_callback, protected_this, 0, nullptr);
+                Function<T>::callback(protected_ctx, protected_callback, typename T::Object(), 0, nullptr);
             }
             else {
                 //fail
@@ -738,7 +738,8 @@ void RealmClass<T>::wait_for_download_completion(ContextType ctx, ObjectType thi
 
                 ValueType callback_arguments[1];
                 callback_arguments[0] = object;
-                Function<T>::callback(protected_ctx, protected_callback, protected_this, 1, callback_arguments);
+                
+                Function<T>::callback(protected_ctx, protected_callback, typename T::Object(), 1, callback_arguments);
             }
 
             // We keep our Realm instance alive until the callback has had a chance to open its own instance.
@@ -755,7 +756,7 @@ void RealmClass<T>::wait_for_download_completion(ContextType ctx, ObjectType thi
                     auto syncSession = create_object<T, SessionClass<T>>(ctx, new WeakSession(session));
                     ValueType callback_arguments[1];
                     callback_arguments[0] = syncSession;
-                    Function<T>::callback(protected_ctx, session_callback_func, protected_this, 1, callback_arguments);
+                    Function<T>::callback(protected_ctx, session_callback_func, typename T::Object(), 1, callback_arguments);
                 }
 
                 session->wait_for_download_completion(std::move(wait_handler));

@@ -230,7 +230,7 @@ public:
 
         std::string name = "Error";
         auto error_object = Object<T>::create_empty(m_ctx);
-        
+
         if (error.is_client_reset_requested()) {
             auto config_object = Object<T>::create_empty(m_ctx);
             Object<T>::set_property(m_ctx, config_object, "path", Value<T>::from_string(m_ctx, error.user_info[SyncError::c_recovery_file_path_key]));
@@ -423,18 +423,20 @@ void SessionClass<T>::simulate_error(ContextType ctx, FunctionType, ObjectType t
     validate_argument_count(argc, 2);
 
     if (auto session = get_internal<T, SessionClass<T>>(this_object)->lock()) {
-        SyncError error;
-        error.error_code = std::error_code(Value::validated_to_number(ctx, arguments[0]), realm::sync::protocol_error_category());
-        error.message = Value::validated_to_string(ctx, arguments[1]);
-        SyncSession::OnlyForTesting::handle_error(*session, std::move(error));
+        std::error_code error_code(Value::validated_to_number(ctx, arguments[0]), realm::sync::protocol_error_category());
+        std::string message = Value::validated_to_string(ctx, arguments[1]);
+        SyncSession::OnlyForTesting::handle_error(*session, SyncError(error_code, message, false));
     }
 }
 
 template<typename T>
 void SessionClass<T>::refresh_access_token(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &) {
-    validate_argument_count(argc, 2);
+    validate_argument_count(argc, 3);
 
     if (auto session = get_internal<T, SessionClass<T>>(this_object)->lock()) {
+        std::string sync_label = Value::validated_to_string(ctx, arguments[2], "syncLabel");
+        session->set_multiplex_identifier(std::move(sync_label));
+
         std::string access_token = Value::validated_to_string(ctx, arguments[0], "accessToken");
         std::string realm_url = Value::validated_to_string(ctx, arguments[1], "realmUrl");
         session->refresh_access_token(std::move(access_token), std::move(realm_url));
