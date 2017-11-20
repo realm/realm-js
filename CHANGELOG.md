@@ -1,3 +1,17 @@
+X.Y.Z Release notes
+=============================================================
+### Breaking changes
+* None.
+
+### Enchancements
+* Reenable Realm for RN Android (#1506).
+
+### Bug fixes
+* None.
+
+### Internal
+* None.
+
 2.0.8 Release notes (2017-11-17)
 =============================================================
 ### Breaking changes
