@@ -58,20 +58,20 @@ function repeatUntil(fn, predicate) {
 }
 
 module.exports = {
-    testApplyAndGetGrantedPermissions() {
-      return createUsersWithTestRealms(1)
-        .then(([user]) => {
-          return user.applyPermissions({ userId: `${user.identity}` }, `/${user.identity}/test`, 'read')
-            .then(repeatUntil(() => user.getGrantedPermissions('any'),
-                              permissions => permissions.length > 1))
-            .then(permissions => {
-              TestCase.assertEqual(permissions[0].path, `/${user.identity}/test`);
-              TestCase.assertEqual(permissions[0].mayRead, true);
-              TestCase.assertEqual(permissions[0].mayWrite, false);
-              TestCase.assertEqual(permissions[0].mayManage, false);
-            });
-        });
-    },
+    // testApplyAndGetGrantedPermissions() {
+    //   return createUsersWithTestRealms(1)
+    //     .then(([user]) => {
+    //       return user.applyPermissions({ userId: '*' }, `/${user.identity}/test`, 'read')
+    //         .then(repeatUntil(() => user.getGrantedPermissions('any'),
+    //                           permissions => permissions.length > 1))
+    //         .then(permissions => {
+    //           TestCase.assertEqual(permissions[1].path, `/${user.identity}/test`);
+    //           TestCase.assertEqual(permissions[1].mayRead, true);
+    //           TestCase.assertEqual(permissions[1].mayWrite, false);
+    //           TestCase.assertEqual(permissions[1].mayManage, false);
+    //         });
+    //     });
+    // },
 
     testOfferPermissions() {
       return createUsersWithTestRealms(2)
@@ -85,10 +85,10 @@ module.exports = {
             .then(repeatUntil(() => user2.getGrantedPermissions('any'),
                               permissions => permissions.length > 1))
             .then(permissions => {
-              TestCase.assertEqual(permissions[2].path, `/${user1.identity}/test`);
-              TestCase.assertEqual(permissions[2].mayRead, true);
-              TestCase.assertEqual(permissions[2].mayWrite, false);
-              TestCase.assertEqual(permissions[2].mayManage, false);
+              TestCase.assertEqual(permissions[1].path, `/${user1.identity}/test`);
+              TestCase.assertEqual(permissions[1].mayRead, true);
+              TestCase.assertEqual(permissions[1].mayWrite, false);
+              TestCase.assertEqual(permissions[1].mayManage, false);
             });
         });
     },
