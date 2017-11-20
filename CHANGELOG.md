@@ -1,76 +1,161 @@
-2.0.0-rc18 Release notes (2017-10-4)
+2.0.8 Release notes (2017-11-17)
 =============================================================
 ### Breaking changes
-* Deprecate node 4 and node 5 support
+* None.
 
-### Enhancements
+### Enchancements
+* [Object Server] Improving performance of processing large changesets.
+
+### Bug fixes
+* [Object Server] Changesets over 16MB in size are now handled correctly.
+
+### Internal
+* Updated to Realm Sync 2.1.6.
+* Updated to JSON for Modern C++ 2.1.1.
+
+2.0.7 Release notes (2017-11-15)
+=============================================================
+### Breaking changes
+* None
+
+### Enchancements
 * None
 
 ### Bug fixes
-* Fixed bug in `Realm.subscribeToObjects()`.
+* Fixes Realm.open hangs in React Native debugger for iOS and Android
 
 ### Internal
-* None
+* Updated to Realm Sync 2.1.4.
 
-2.0.0-rc17 Release notes (2017-10-3)
+
+2.0.6 Release notes (2017-11-10)
 =============================================================
 ### Breaking changes
-* Removed `setAccessToken()`; use `setFeatureToken()` instead.
+* None.
+
+### Enchancements
+* Improved notification performance for objects with no object or list properties.
+
+### Bug fixes
+* Fixed a compilation error related to object IDs for React Native on Android (#1480).
+* Fixed a race condition where closing and immediately reopening a synchronized
+  Realm opened using an admin token user would fail.
+
+### Internal
+* None.
+
+2.0.5 Release notes (2017-11-9)
+=============================================================
+### Breaking changes
+* None.
+
+### Enchancements
+* None.
+
+### Bug fixes
+* None.
+
+### Internal
+* Added support for object IDs.
+* Updated to Realm Sync 2.1.2.
+
+
+2.0.4 Release notes (2017-11-7)
+=============================================================
+### Breaking changes
+* None.
+
+### Enhancements
+* None.
+
+### Bug fixes
+* None.
+
+### Internal
+* Updated to Realm Sync 2.1.1.
+
+
+2.0.3 Release notes (2017-11-6)
+=============================================================
+### Breaking changes
+* None.
+
+### Enhancements
+* Better support for React Native 0.49 for iOS (#1431).
+* Added property `name` to `error` in `Sync.error` callback.
+* Sync error handler provides also a property called `name`; `code` is not changed.
+
+### Bug fixed
+* Fixed missing Realm constructor in while debugging React Native apps (#1436).
+* Removed argument in documentation of `Realm.Sync.Adapter.realmAtPath()`.
+
+### Internal
+* None.
+
+2.0.2 Release notes (2017-10-30)
+=============================================================
+### Breaking changes
+* None.
+
+### Enhancements
+* None.
+
+### Bug fixes
+* Fix several cases where adding collection listeners from within a listener
+  callback would produce incorrect results.
+
+### Internal
+* None.
+
+2.0.1 Release notes (2017-10-23)
+=============================================================
+### Breaking changes
+* None.
+
+### Enhancements
+* None.
+
+### Bug fixes
+* None.
+
+### Internal
+* Upgraded to Realm Sync 2.1.0.
+
+2.0.0 Release notes (2017-10-17)
+=============================================================
+### Breaking changes
+* Switch to Sync protocol 2.0, compatible with Realm Object Server 2.0.0. This version does NOT support 1.x.x of Realm Object Server.
+* Upgraded to Realm Core 4.0.1, which has a new file format. If older Realm versions are opened, the database will be migrated automatically.
+* Deprecate node 4 and node 5 support.
+* Renamed `setAccessToken()` to `setFeatureToken()`.
 * During iteration (`for ... of`) of `Realm.Results`, the results will be frozen using the `snapshot()` method (#1366).
 
 ### Enhancements
-* Support migration from Realms sync 1.0 to sync 2.0 versions
-* Handling of the situation when the client has to reset the Realm due to diverging histories (#795).
+* The data model now support arrays of primitive types!
+* Added `update` method to `Realm.Results` to support bulk updates (#808).
+* Added support for aggregate functions on `Realm.Results` and `Realm.List` of primitive types.
+* Handling of the situation when the client has to reset due to mismatching Realm versions (#795).
 * Added `Realm.subscribeToObjects()` to listen for changes in partially synced Realms.
-
-### Bug fixes
-* None.
-
-### Internal
-* Upgraded to Realm Sync 2.0.0-rc27.
-
-
-2.0.0-rc16 Release notes (2017-9-29)
-=============================================================
-### Breaking changes
-* Upgtading to Realm Core 4.0.1 (bug fixes)
-* Upgrading to Realm Sync 2.0.0-rc26 (sync protocol 22 + bug fixes)
-
-
-2.0.0-rc14 Release notes (2017-9-29)
-=============================================================
-### Breaking changes
-* Upgrading to Realm Core 4.0.0 and Realm Sync 2.0.0-rc25.
-
-### Enhancements
-* None
-
-### Bug fixes
+* Add support for sorting Lists and Results on values from linked objects.
 * Configuration of sync file system is not done on module import but later when actually needed by sync (#1351)
-
-
-2.0.0-rc12 Release notes (2017-9-28)
-=============================================================
-### Breaking changes
-* None.
-
-### Enhancements
-* None.
+* `Realm.Sync.User.adminUser()` will now throw an exception if either token or server argument is invalid.
 
 ### Bug fixes
+* Avoid closing then reopening a sync session when using `Realm.open` (#1391).
+* Respect custom Realm paths when using `Realm.open` (#1392 and #1393).
+* Fixed bug in `Realm.subscribeToObjects()`.
 * An issue where access tokens were not refreshed correctly has been addressed.
 
-
-2.0.0-rc11 Release notes (2017-9-26)
-=============================================================
-### Breaking changes
-* None
-
 ### Internal
+* OpenSSL for Android is distributed in a separate package, and the build system needed updates to accommendate this.
+* Added `-fvisibility=hidden` to Android builds (reduces size of `.so` file).
+* Add `Session._overrideServer` to force an existing session to connect to a different server.
 * Alignment of permission schemas.
-* Updating sync (2.0.0-rc24).
+* Upgrading to Realm Sync 2.0.2.
+* Upgrading to Realm Object Server 2.0.0
 
-1.13.0 Release notes (to be released)
+
+1.13.0 Release notes (2017-10-5)
 =============================================================
 ### Breaking changes
 * None.
@@ -83,18 +168,6 @@
 ### Bug fixes
 * Fixed port conflict between RN >= 0.48 inspector proxy and RPC server used for Chrome debugging (#1294).
 * Workaround for RN >= 0.49 metro-bundler check for single string literal argument to `require()` (#1342)
-
-
-2.0.0-rc10 Release notes (2017-9-19)
-=============================================================
-### Breaking changes
-* Updating core (3.2.1), sync (2.0.0-rc23 - packaged under 2.0.0-rc22), object store.
-
-### Enhancements
-* Add support for sorting Lists and Results on values from linked objects.
-
-### Bug fixes
-* None
 
 1.12.0 Release notes (2017-9-14)
 =============================================================
@@ -161,17 +234,6 @@
 
 ### Bug fixes
 * RN 0.47 no longer breaks for Android due to a superfluous @override annotation
-
-
-2.0.0 Release notes (2017-7-27)
-=============================================================
-### Breaking changes
-* Switch to the next version of the Sync protocol, compatible with Realm Object Server 2.0.0-rc2.
-
-### Enhancements
-* None
-
-### Bug fixes
 
 
 1.10.1 Release notes (2017-8-2)

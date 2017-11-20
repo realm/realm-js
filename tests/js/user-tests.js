@@ -26,7 +26,7 @@ const isNodeProcess = typeof process === 'object' && process + '' === '[object p
 
 function uuid() {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-    var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+    const r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
     return v.toString(16);
   });
 }
@@ -65,35 +65,11 @@ function assertIsAuthError(error, code, title) {
   }
 }
 
-function failOnError(error) {
-  if (error) {
-    throw new Error(`Unexpected error in test: ${error}\n${error.stack}`);
-  }
-}
-
-// Test the given requestFunc, passing it the given callback after it's been wrapped appropriately.
-// This function makes sure that errors thrown in the async callback rejects the promise (making tests actually run).
-function callbackTest(requestFunc, callback) {
-  return new Promise((resolve, reject) => {
-    function callbackWrapper() {
-      try {
-        callback.apply(this, Array.from(arguments));
-        resolve();
-      }
-      catch (e) {
-        reject(e);
-      }
-    }
-    requestFunc(callbackWrapper);
-  });
-}
-
 module.exports = {
 
   testLogout() {
-    var username = uuid();
-    return callbackTest((callback) => Realm.Sync.User.register('http://localhost:9080', username, 'password', callback), (error, user) => {
-      failOnError(error);
+    const username = uuid();
+    return Realm.Sync.User.register('http://localhost:9080', username, 'password').then((user) => {
       assertIsUser(user);
 
       assertIsSameUser(user, Realm.Sync.User.current);
@@ -103,272 +79,188 @@ module.exports = {
       TestCase.assertUndefined(Realm.Sync.User.current);
 
       // Can we open a realm with the registered user?
-      TestCase.assertThrows(function() {
-        var _realm = new Realm({sync: {user: user, url: 'realm://localhost:9080/~/test'}});
-      });
-    })
+      TestCase.assertThrows(() => new Realm({sync: {user: user, url: 'realm://localhost:9080/~/test'}}));
+    });
   },
 
   testRegisterUser() {
-    var username = uuid();
-    return callbackTest((callback) => Realm.Sync.User.register('http://localhost:9080', username, 'password', callback), (error, user) => {
-      failOnError(error);
-      assertIsUser(user);
-
+    const username = uuid();
+    return Realm.Sync.User.register('http://localhost:9080', username, 'password').then((user) => {
       // Can we open a realm with the registered user?
-      var realm = new Realm({sync: {user: user, url: 'realm://localhost:9080/~/test'}});
+      const realm = new Realm({sync: {user: user, url: 'realm://localhost:9080/~/test'}});
       TestCase.assertInstanceOf(realm, Realm);
     });
   },
 
   testRegisterExistingUser() {
-    var username = uuid();
-    return new Promise((resolve, reject) => {
-      Realm.Sync.User.register('http://localhost:9080', username, 'password', (error, user) => {
-        failOnError(error);
-        assertIsUser(user);
-
-        Realm.Sync.User.register('http://localhost:9080', username, 'password', (error, user) => {
-         try { 
-            assertIsAuthError(error, 611, "The provided credentials are invalid or the user does not exist.");
-            TestCase.assertUndefined(user);
-            resolve();
-          } catch(e) { 
-           reject(e);
-          }
-        });
-      });
+    const username = uuid();
+    return Realm.Sync.User.register('http://localhost:9080', username, 'password').then((user) => {
+      assertIsUser(user);
+      return Realm.Sync.User.register('http://localhost:9080', username, 'password')
+        .then((user) => { throw new Error(user); })
+        .catch((e) => {
+            assertIsAuthError(e, 611, "The provided credentials are invalid or the user does not exist.");
+        })
     });
   },
 
   testRegisterMissingUsername() {
-    return new Promise((resolve, _reject) => {
-        TestCase.assertThrows(() => {
-            Realm.Sync.User.register('http://localhost:9080', undefined, 'password', () => {});
-        });
-        resolve();
-    });
+    TestCase.assertThrows(() => Realm.Sync.User.register('http://localhost:9080', undefined, 'password'));
   },
 
   testRegisterMissingPassword() {
-    var username = uuid();
-    return new Promise((resolve, _reject) => {
-        TestCase.assertThrows(() => {
-            Realm.Sync.User.register('http://localhost:9080', username, undefined, () => {});
-        });
-        resolve();
-    });
+    const username = uuid();
+    TestCase.assertThrows(() => Realm.Sync.User.register('http://localhost:9080', username, undefined));
   },
 
   testRegisterServerOffline() {
-    var username = uuid();
+    const username = uuid();
     // Because it waits for answer this takes some time..
-    return callbackTest((callback) => Realm.Sync.User.register('http://fake_host.local', username, 'password', callback), (error, user) => {
-      assertIsError(error);
-      TestCase.assertUndefined(user);
-    });
+    return Realm.Sync.User.register('http://fake_host.local', username, 'password')
+      .catch((e) => {})
+      .then((user) => { if (user) { throw new Error('should not have been able to register'); }})
   },
 
   testLogin() {
-      var username = uuid();
+      const username = uuid();
       // Create user, logout the new user, then login
-      return callbackTest((callback) => Realm.Sync.User.register('http://localhost:9080', username, 'password', callback), (error, user) => {
-        failOnError(error);
+      return Realm.Sync.User.register('http://localhost:9080', username, 'password').then((user) => {
         user.logout();
-
-        Realm.Sync.User.login('http://localhost:9080', username, 'password', (error, user) => {
-          failOnError(error);
+        return Realm.Sync.User.login('http://localhost:9080', username, 'password');
+      }).then((user => {
           assertIsUser(user);
-
           // Can we open a realm with the logged-in user?
-          var realm = new Realm({ sync: { user: user, url: 'realm://localhost:9080/~/test' } });
+          const realm = new Realm({ sync: { user: user, url: 'realm://localhost:9080/~/test' } });
           TestCase.assertInstanceOf(realm, Realm);
           realm.close();
-        });
-      });
+      }))
   },
 
   testLoginMissingUsername() {
-    return new Promise((resolve, _reject) => {
-        TestCase.assertThrows(() => {
-            Realm.Sync.User.login('http://localhost:9080', undefined, 'password', () => {});
-        });
-        resolve();
-    });
+    TestCase.assertThrows(() => Realm.Sync.User.login('http://localhost:9080', undefined, 'password'));
   },
 
   testLoginMissingPassword() {
-    var username = uuid();
-    return new Promise((resolve, _reject) => {
-        TestCase.assertThrows(() => {
-            Realm.Sync.User.login('http://localhost:9080', username, undefined, () => {});
-        });
-        resolve();
-    });
+    const username = uuid();
+    TestCase.assertThrows(() => Realm.Sync.User.login('http://localhost:9080', username, undefined));
   },
 
   testLoginNonExistingUser() {
-    return callbackTest((callback) => Realm.Sync.User.login('http://localhost:9080', 'does_not', 'exist', callback), (error, user) => {
-      assertIsAuthError(error, 611, "The provided credentials are invalid or the user does not exist.");
-      TestCase.assertUndefined(user);
-    });
+    return Realm.Sync.User.login('http://localhost:9080', 'does_not', 'exist')
+      .then((user) => { throw new Error(user); })
+      .catch((e) => assertIsAuthError(e, 611, "The provided credentials are invalid or the user does not exist."))
   },
 
   testLoginServerOffline() {
-    var username = uuid();
+    const username = uuid();
 
     // Because it waits for answer this takes some time..
-    return new Promise((resolve, reject) => {
-      Realm.Sync.User.register('http://fake_host.local', username, 'password', (error, user) => {
-        try {
-          assertIsError(error);
-          TestCase.assertUndefined(user);
-          resolve();
-        }
-        catch (e) { reject(e) }
-      });
-    });
+    return Realm.Sync.User.register('http://fake_host.local', username, 'password')
+      .then((user) => { throw new Error(user); })
+      .catch((e) => assertIsError(e));
   },
 
   testAll() {
-    return new Promise((resolve, reject) => {
-      let all;
-      all = Realm.Sync.User.all;
-      TestCase.assertArrayLength(Object.keys(all), 0);
+    const all = Realm.Sync.User.all;
+    TestCase.assertArrayLength(Object.keys(all), 0);
 
-      callbackTest((callback) => Realm.Sync.User.register('http://localhost:9080', uuid(), 'password', callback), (error, user1) => {
-        failOnError(error);
+    let user1;
+    return Realm.Sync.User.register('http://localhost:9080', uuid(), 'password').then((user) => {
+      const all = Realm.Sync.User.all;
+      TestCase.assertArrayLength(Object.keys(all), 1);
+      assertIsSameUser(all[user.identity], user);
+      user1 = user;
 
+      return Realm.Sync.User.register('http://localhost:9080', uuid(), 'password');
+    }).then((user2) => {
+        let all = Realm.Sync.User.all;
+        TestCase.assertArrayLength(Object.keys(all), 2);
+        // NOTE: the list of users is in latest-first order.
+        assertIsSameUser(all[user2.identity], user2);
+        assertIsSameUser(all[user1.identity], user1);
+
+        user2.logout();
         all = Realm.Sync.User.all;
         TestCase.assertArrayLength(Object.keys(all), 1);
         assertIsSameUser(all[user1.identity], user1);
 
-        Realm.Sync.User.register('http://localhost:9080', uuid(), 'password', (error, user2) => {
-          failOnError(error);
-
-          all = Realm.Sync.User.all;
-          TestCase.assertArrayLength(Object.keys(all), 2);
-          // NOTE: the list of users is in latest-first order.
-          assertIsSameUser(all[user2.identity], user2);
-          assertIsSameUser(all[user1.identity], user1);
-
-          user2.logout();
-          all = Realm.Sync.User.all;
-          TestCase.assertArrayLength(Object.keys(all), 1);
-          assertIsSameUser(all[user1.identity], user1);
-
-          user1.logout();
-          all = Realm.Sync.User.all;
-          TestCase.assertArrayLength(Object.keys(all), 0);
-          resolve();
-        });
-      }).catch(e => reject(e));
-    });
-  },
-
-  testCurrent() {
-      return new Promise((resolve, reject) => {
-        TestCase.assertUndefined(Realm.Sync.User.current);
-
-        callbackTest((callback) => Realm.Sync.User.register('http://localhost:9080', uuid(), 'password', callback), (error, user1) => {
-          failOnError(error);
-          assertIsSameUser(Realm.Sync.User.current, user1);
-
-          Realm.Sync.User.register('http://localhost:9080', uuid(), 'password', (error, user2) => {
-            failOnError(error);
-            TestCase.assertThrows(() => Realm.Sync.User.current, 'We expect Realm.Sync.User.current to throw if > 1 user.');
-            user2.logout();
-
-            assertIsSameUser(Realm.Sync.User.current, user1);
-
-            user1.logout();
-            TestCase.assertUndefined(Realm.Sync.User.current);
-
-            resolve();
-
-          });
-        }).catch(e => reject(e));
+        user1.logout();
+        all = Realm.Sync.User.all;
+        TestCase.assertArrayLength(Object.keys(all), 0);
       });
   },
 
-  testManagementRealm() {
-    return callbackTest((callback) => Realm.Sync.User.register('http://localhost:9080', uuid(), 'password', callback), (error, user) => {
-      failOnError(error);
+  testCurrent() {
+    TestCase.assertUndefined(Realm.Sync.User.current);
 
+    let user1;
+    return Realm.Sync.User.register('http://localhost:9080', uuid(), 'password').then((user) => {
+      user1 = user;
+      assertIsSameUser(Realm.Sync.User.current, user1);
+
+      return Realm.Sync.User.register('http://localhost:9080', uuid(), 'password');
+    }).then((user2) => {
+      TestCase.assertThrows(() => Realm.Sync.User.current, 'We expect Realm.Sync.User.current to throw if > 1 user.');
+      user2.logout();
+
+      assertIsSameUser(Realm.Sync.User.current, user1);
+
+      user1.logout();
+      TestCase.assertUndefined(Realm.Sync.User.current);
+    });
+  },
+
+  testManagementRealm() {
+    return Realm.Sync.User.register('http://localhost:9080', uuid(), 'password').then((user) => {
       let realm = user.openManagementRealm();
       TestCase.assertInstanceOf(realm, Realm);
 
-      let objectSchemaNames = realm.schema.map(o => o.name);
-      TestCase.assertArraysEqual(objectSchemaNames, [ 'PermissionChange', 'PermissionOffer', 'PermissionOfferResponse' ]);
+      TestCase.assertArraysEqual(realm.schema.map(o => o.name),
+                                 ['PermissionChange', 'PermissionOffer', 'PermissionOfferResponse']);
     });
   },
 
   testRetrieveAccount() {
-    return new Promise((resolve, reject) => {
-      if (!isNodeProcess) {
-        resolve();
-      }
+    if (!isNodeProcess) {
+      return;
+    }
 
-      if (!global.testAdminUserInfo) {
-        reject("Test requires an admin user");
-      }
+    if (!global.testAdminUserInfo) {
+      throw new Error("Test requires an admin user");
+    }
 
-      Realm.Sync.User.login('http://localhost:9080', global.testAdminUserInfo.username, global.testAdminUserInfo.password, (error, user) => {
-        if (error) {
-          reject(error);
-        }
+    return Realm.Sync.User.login('http://localhost:9080', global.testAdminUserInfo.username, global.testAdminUserInfo.password).then((user) => {
+      TestCase.assertTrue(user.isAdmin, "Test requires an admin user");
 
-        TestCase.assertTrue(user.isAdmin, "Test requires an admin user");
-
-        user.retrieveAccount('password', global.testAdminUserInfo.username)
-          .then(account => {
-            TestCase.assertEqual(account.accounts[0].provider_id, global.testAdminUserInfo.username);
-            TestCase.assertEqual(account.accounts[0].provider, 'password');
-            TestCase.assertTrue(account.is_admin);
-            TestCase.assertTrue(account.user_id);
-            resolve();
-          })
-          .catch(e => reject(e));
-      })
+      return user.retrieveAccount('password', global.testAdminUserInfo.username)
+    }).then((account) => {
+      TestCase.assertEqual(account.accounts[0].provider_id, global.testAdminUserInfo.username);
+      TestCase.assertEqual(account.accounts[0].provider, 'password');
+      TestCase.assertTrue(account.is_admin);
+      TestCase.assertTrue(account.user_id);
     });
   },
 
   testRetrieveNotExistingAccount() {
-    return new Promise((resolve, reject) => {
-      if (!isNodeProcess) {
-        resolve();
-      }
+    if (!isNodeProcess) {
+      return;
+    }
 
-      if (!global.testAdminUserInfo) {
-        reject("Test requires an admin user");
-      }
+    if (!global.testAdminUserInfo) {
+      throw new Error("Test requires an admin user");
+    }
 
-      Realm.Sync.User.login('http://localhost:9080', global.testAdminUserInfo.username, global.testAdminUserInfo.password, (error, user) => {
-        if (error) {
-          reject(error);
-        }
+    return Realm.Sync.User.login('http://localhost:9080', global.testAdminUserInfo.username, global.testAdminUserInfo.password).then((user) => {
+      TestCase.assertTrue(user.isAdmin, "Test requires an admin user");
 
-        TestCase.assertTrue(user.isAdmin, "Test requires an admin user");
-
-        let notExistingUsername = uuid();
-        user.retrieveAccount('password', notExistingUsername)
-          .then(account => {
-            reject("Retrieving not existing account should fail");
-          })
-          .catch(e => {
-            try {
-              TestCase.assertEqual(e.status, 404);
-              TestCase.assertEqual(e.code, 612);
-              TestCase.assertEqual(e.message, "The account does not exist.");
-              TestCase.assertEqual(e.type, "https://realm.io/docs/object-server/problems/unknown-account");
-            }
-            catch (e) {
-              reject(e);
-            }
-            resolve()
-          });
-      })
-    });
+      let notExistingUsername = uuid();
+      return user.retrieveAccount('password', notExistingUsername)
+    }).catch(e => {
+      TestCase.assertEqual(e.status, 404);
+      TestCase.assertEqual(e.code, 612);
+      TestCase.assertEqual(e.message, "The account does not exist.");
+      TestCase.assertEqual(e.type, "https://realm.io/docs/object-server/problems/unknown-account");
+    }).then(account => { if (account) { throw new Error("Retrieving nonexistent account should fail"); }});
   },
 
   /* This test fails because of realm-object-store #243 . We should use 2 users.

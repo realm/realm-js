@@ -18,10 +18,6 @@
 
 #pragma once
 
-#include <list>
-#include <map>
-#include <set>
-#include <regex>
 #include <mutex>
 #include <condition_variable>
 
@@ -40,11 +36,11 @@ namespace realm {
 namespace js {
 
 inline realm::SyncManager& syncManagerShared() {
-    static bool configured = []{
+    static std::once_flag flag;
+    std::call_once(flag, [] {
         ensure_directory_exists_for_file(default_realm_file_directory());
         SyncManager::shared().configure_file_system(default_realm_file_directory(), SyncManager::MetadataMode::NoEncryption);
-        return true;
-    }();
+    });
     return SyncManager::shared();
 }
 
@@ -183,6 +179,7 @@ class SessionClass : public ClassDefinition<T, WeakSession> {
     using Object = js::Object<T>;
     using Value = js::Value<T>;
     using ReturnValue = js::ReturnValue<T>;
+    using Arguments = js::Arguments<T>;
 
 public:
     std::string const name = "Session";
@@ -200,6 +197,8 @@ public:
     static void add_progress_notification(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &);
     static void remove_progress_notification(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &);
 
+    static void override_server(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue&);
+
     PropertyMap<T> const properties = {
         {"config", {wrap<get_config>, nullptr}},
         {"user", {wrap<get_user>, nullptr}},
@@ -210,6 +209,7 @@ public:
     MethodMap<T> const methods = {
         {"_simulateError", wrap<simulate_error>},
         {"_refreshAccessToken", wrap<refresh_access_token>},
+        {"_overrideServer", wrap<override_server>},
         {"addProgressNotification", wrap<add_progress_notification>},
         {"removeProgressNotification", wrap<remove_progress_notification>},
     };
@@ -228,22 +228,22 @@ public:
     void operator()(std::shared_ptr<SyncSession> session, SyncError error) {
         HANDLESCOPE
 
+        std::string name = "Error";
         auto error_object = Object<T>::create_empty(m_ctx);
 
-        auto error_code = error.error_code.value();
         if (error.is_client_reset_requested()) {
-            error_code = 7; // FIXME: define a proper constant
-
             auto config_object = Object<T>::create_empty(m_ctx);
             Object<T>::set_property(m_ctx, config_object, "path", Value<T>::from_string(m_ctx, error.user_info[SyncError::c_recovery_file_path_key]));
             Object<T>::set_property(m_ctx, config_object, "readOnly", Value<T>::from_boolean(m_ctx, true));
             Object<T>::set_property(m_ctx, error_object, "config", config_object);
+            name = "ClientReset";
         }
 
+        Object<T>::set_property(m_ctx, error_object, "name", Value<T>::from_string(m_ctx, name));
         Object<T>::set_property(m_ctx, error_object, "message", Value<T>::from_string(m_ctx, error.message));
         Object<T>::set_property(m_ctx, error_object, "isFatal", Value<T>::from_boolean(m_ctx, error.is_fatal));
         Object<T>::set_property(m_ctx, error_object, "category", Value<T>::from_string(m_ctx, error.error_code.category().name()));
-        Object<T>::set_property(m_ctx, error_object, "code", Value<T>::from_number(m_ctx, error_code));
+        Object<T>::set_property(m_ctx, error_object, "code", Value<T>::from_number(m_ctx, error.error_code.value()));
 
         auto user_info = Object<T>::create_empty(m_ctx);
         for (auto& kvp : error.user_info) {
@@ -423,18 +423,20 @@ void SessionClass<T>::simulate_error(ContextType ctx, FunctionType, ObjectType t
     validate_argument_count(argc, 2);
 
     if (auto session = get_internal<T, SessionClass<T>>(this_object)->lock()) {
-        SyncError error;
-        error.error_code = std::error_code(Value::validated_to_number(ctx, arguments[0]), realm::sync::protocol_error_category());
-        error.message = Value::validated_to_string(ctx, arguments[1]);
-        SyncSession::OnlyForTesting::handle_error(*session, std::move(error));
+        std::error_code error_code(Value::validated_to_number(ctx, arguments[0]), realm::sync::protocol_error_category());
+        std::string message = Value::validated_to_string(ctx, arguments[1]);
+        SyncSession::OnlyForTesting::handle_error(*session, SyncError(error_code, message, false));
     }
 }
 
 template<typename T>
 void SessionClass<T>::refresh_access_token(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &) {
-    validate_argument_count(argc, 2);
+    validate_argument_count(argc, 3);
 
     if (auto session = get_internal<T, SessionClass<T>>(this_object)->lock()) {
+        std::string sync_label = Value::validated_to_string(ctx, arguments[2], "syncLabel");
+        session->set_multiplex_identifier(std::move(sync_label));
+
         std::string access_token = Value::validated_to_string(ctx, arguments[0], "accessToken");
         std::string realm_url = Value::validated_to_string(ctx, arguments[1], "realmUrl");
         session->refresh_access_token(std::move(access_token), std::move(realm_url));
@@ -512,6 +514,23 @@ void SessionClass<T>::remove_progress_notification(ContextType ctx, FunctionType
     if (auto session = get_internal<T, SessionClass<T>>(syncSession)->lock()) {
         auto reg = Value::validated_to_number(ctx, registrationToken);
         session->unregister_progress_notifier(reg);
+    }
+}
+
+template<typename T>
+void SessionClass<T>::override_server(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue&) {
+    args.validate_count(2);
+
+    std::string address = Value::validated_to_string(ctx, args[0], "address");
+    double port = Value::validated_to_number(ctx, args[1], "port");
+    if (port < 1 || port > 65535 || uint16_t(port) != port) {
+        std::ostringstream message;
+        message << "Invalid port number. Expected an integer in the range 1-65,535, got '" << port << "'";
+        throw std::invalid_argument(message.str());
+    }
+
+    if (auto session = get_internal<T, SessionClass<T>>(this_object)->lock()) {
+        session->override_server(std::move(address), uint16_t(port));
     }
 }
 
@@ -627,8 +646,10 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
 
         std::string raw_realm_url = Object::validated_get_string(ctx, sync_config_object, "url");
         if (shared_user->token_type() == SyncUser::TokenType::Admin) {
-            static std::regex tilde("/~/");
-            raw_realm_url = std::regex_replace(raw_realm_url, tilde, "/__auth/");
+            size_t pos = raw_realm_url.find("/~/");
+            if (pos != std::string::npos) {
+                raw_realm_url.replace(pos + 1, 1, "__auth");
+            }
         }
 
         bool client_validate_ssl = true;
@@ -659,15 +680,13 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
             is_partial = Value::validated_to_boolean(ctx, partial_value);
         }
 
-        // FIXME - use make_shared
-        config.sync_config = std::shared_ptr<SyncConfig>(new SyncConfig{shared_user, raw_realm_url,
-                                                                        SyncSessionStopPolicy::AfterChangesUploaded,
-                                                                        std::move(bind), std::move(error_handler),
-                                                                        nullptr, util::none,
-                                                                        client_validate_ssl, ssl_trust_certificate_path,
-                                                                        std::move(ssl_verify_callback),
-                                                                        is_partial});
-
+        config.sync_config = std::make_shared<SyncConfig>(shared_user, std::move(raw_realm_url));
+        config.sync_config->bind_session_handler = std::move(bind);
+        config.sync_config->error_handler = std::move(error_handler);
+        config.sync_config->client_validate_ssl = client_validate_ssl;
+        config.sync_config->ssl_trust_certificate_path = ssl_trust_certificate_path;
+        config.sync_config->ssl_verify_callback = std::move(ssl_verify_callback);
+        config.sync_config->is_partial = is_partial;
 
         config.schema_mode = SchemaMode::Additive;
         config.path = syncManagerShared().path_for_realm(*shared_user, config.sync_config->realm_url());

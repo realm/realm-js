@@ -119,6 +119,60 @@ module.exports = {
         TestCase.assertEqual(objects[0].prop0, undefined);
     },
 
+    testCreateObjectsDuringMigration: function() {
+        const FirstObjectType = {
+            name: 'FirstObjectType',
+            properties: {
+                prop0: 'string',
+                prop1: 'int',
+            }
+        };
+
+        const SecondObjectType = {
+            name: 'SecondObjectType',
+            properties: {
+                prop0: 'string',
+                prop1: 'int',
+                prop2: 'int',
+            }
+        };
+
+
+        var realm1 = new Realm({ schema: [FirstObjectType],
+                                 schemaVersion: 0,
+                               });
+        realm1.write(function() {
+            realm1.create('FirstObjectType', ['stringValue', 1]);
+        });
+        realm1.close();
+
+        var realm2 = new Realm({schema: [FirstObjectType, SecondObjectType],
+                                schemaVersion: 1,
+                                migration: function(oldRealm, newRealm) {
+                                    var oldObjects_1 = oldRealm.objects('FirstObjectType');
+                                    var newObjects_1 = newRealm.objects('FirstObjectType');
+                                    var newObjects_2 = newRealm.objects('SecondObjectType');
+
+                                    TestCase.assertEqual(oldObjects_1.length, 1);
+                                    TestCase.assertEqual(newObjects_1.length, 1);
+                                    TestCase.assertEqual(newObjects_2.length, 0);
+
+                                    newRealm.create('SecondObjectType', {
+                                        prop0: oldObjects_1[0].prop0,
+                                        prop1: oldObjects_1[0].prop1,
+                                        prop2: 42,
+                                    });
+                                }
+                               });
+        var objects_1 = realm2.objects('FirstObjectType');
+        var objects_2 = realm2.objects('SecondObjectType');
+        TestCase.assertEqual(objects_1.length, 1);
+        TestCase.assertEqual(objects_1[0].prop1, 1);
+        TestCase.assertEqual(objects_2.length, 1);
+        TestCase.assertEqual(objects_2[0].prop1, 1);
+        TestCase.assertEqual(objects_2[0].prop2, 42);
+    },
+
     testMigrationSchema: function() {
         var realm = new Realm({schema: [{
             name: 'TestObject',

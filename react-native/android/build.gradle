@@ -92,6 +92,33 @@ task prepareRealmCore(dependsOn: downloadRealmCore, type:Copy) {
     }
 }
 
+task downloadOpenSSL_x86(type: Download) {
+    src "https://static.realm.io/downloads/openssl/1.0.2k/Android/x86/openssl-release-1.0.2k-Android-x86.tar.gz"
+    onlyIfNewer true
+    overwrite true
+    dest new File(downloadsDir, "openssl-release-1.0.2k-Android-x86.tar.gz")
+}
+
+task prepareOpenSSL_x86(dependsOn: downloadOpenSSL_x86, type:Copy) {
+    from tarTree(downloadOpenSSL_x86.dest)
+    into "$coreDownloadDir/core"
+}
+
+task downloadOpenSSL_arm(type: Download) {
+    src "https://static.realm.io/downloads/openssl/1.0.2k/Android/armeabi-v7a/openssl-release-1.0.2k-Android-armeabi-v7a.tar.gz"
+    onlyIfNewer true
+    overwrite true
+    dest new File(downloadsDir, "openssl-release-1.0.2k-Android-armeabi-v7a.tar.gz")
+}
+
+task prepareOpenSSL_arm(dependsOn: downloadOpenSSL_arm, type:Copy) {
+    from tarTree(downloadOpenSSL_arm.dest)
+    into "$coreDownloadDir/core"
+    rename { String fileName ->
+        fileName.replace("-arm-", "-armeabi-")
+    }
+}
+
 def getDependenciesVersion(keyName) {
     def inputFile = new File(buildscript.sourceFile.getParent() + "/../../dependencies.list")
     def line
@@ -194,7 +221,7 @@ def getNdkBuildFullPath() {
     return ndkBuildFullPath
 }
 
-task buildReactNdkLib(dependsOn: [downloadJSCHeaders,prepareRealmCore], type: Exec) {
+task buildReactNdkLib(dependsOn: [downloadJSCHeaders,prepareRealmCore,prepareOpenSSL_x86,prepareOpenSSL_arm], type: Exec) {
     inputs.file('src/main/jni')
     outputs.dir("$buildDir/realm-react-ndk/all")
     commandLine getNdkBuildFullPath(),
@@ -227,7 +254,7 @@ task packageReactNdkLibs(dependsOn: buildReactNdkLib, type: Copy) {
 
 android {
     compileSdkVersion 23
-    buildToolsVersion "25.0.2"
+    buildToolsVersion "26.0.2"
 
     defaultConfig {
         minSdkVersion 16

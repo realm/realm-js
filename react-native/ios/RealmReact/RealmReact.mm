@@ -95,6 +95,10 @@ extern "C" JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executo
 
 RCT_EXPORT_MODULE(Realm)
 
++ (BOOL)requiresMainQueueSetup {
+    return YES;
+}
+
 + (void)initialize {
     if (self != [RealmReact class]) {
         return;

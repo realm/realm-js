@@ -21,9 +21,9 @@
  * migrated to the v2.x format. In case this migration
  * is not possible, an exception is thrown. The exception´s `message` property will be equal
  * to `IncompatibleSyncedRealmException`. The Realm is backed up, and the property `configuration`
- * is a {Realm~Configuration} which refers to it. You can open it as a local, read-only Realm, and 
+ * is a {Realm~Configuration} which refers to it. You can open it as a local, read-only Realm, and
  * copy objects to a new synced Realm.
- * 
+ *
  * @memberof Realm
  */
 class Sync {
@@ -70,7 +70,7 @@ class Sync {
      * {
      *   const config = { sync: { user, url: 'realm://localhost:9080/~/myrealm' } };
      *   config.sync.error = (sender, error) => {
-     *     if (error.code === 7) { // 7 -> client reset
+     *     if (error.name === 'ClientReset') {
      *       Realm.Sync.initiateClientReset(original_path);
      *       // copy required objects from Realm at error.config.path
      *     }
@@ -153,7 +153,7 @@ class IncompatibleSyncedRealmError {
      * The name of the error is 'IncompatibleSyncedRealmError'
      */
     get name() {}
-    
+
     /**
      * The {Realm~Configuration} of the backed up Realm.
      * @type {Realm~Configuration}
@@ -433,9 +433,10 @@ class Adapter {
 	 * Open the Realm used by the Adapter for the given path. This is useful for writing two way
 	 * adapters as transactions written to this realm will be ignored when calling `current` and `advance`
 	 * @param {string} path - the path for the Realm to open
+     * @param {Realm~ObjectSchema[]} [optional] schema - schema to apply when opening the Realm
 	 * @returns {Realm}
 	 */
-	realmAtPath(path) {}
+	realmAtPath(path, schema) {}
 
 	/**
 	 * Close the adapter and all opened Realms.

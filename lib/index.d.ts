@@ -144,33 +144,10 @@ declare namespace Realm {
          */
         isValid(): boolean;
 
-        /**
-         * Computes the minimum value.
-         * @param  {string} property
-         * @returns number
-         */
-        min(property: string): number;
-
-        /**
-         * Computes the maximum value.
-         * @param  {string} property
-         * @returns number
-         */
-        max(property: string): number;
-
-        /**
-         * Computes the sum.
-         * @param  {string} property
-         * @returns number
-         */
-        sum(property: string): number;
-
-        /**
-         * Computes the average.
-         * @param  {string} property
-         * @returns number
-         */
-        avg(property: string): number;
+        min(property?: string): number|Date|null;
+        max(property?: string): number|Date|null;
+        sum(property?: string): number|null;
+        avg(property?: string): number;
 
         /**
          * @param  {string} query
@@ -250,7 +227,13 @@ declare namespace Realm {
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.Results.html }
      */
     interface Results<T> extends Collection<T> {
-
+        /**
+         * Bulk update objects in the collection.
+         * @param  {string} property
+         * @param  {any} value
+         * @returns void
+         */
+        update(property: string, value: any): void;
     }
 
     const Results: {
@@ -363,9 +346,10 @@ declare namespace Realm.Sync {
     }
 
     interface SyncError {
+        name: string;
         message: string; 
-        isFatal: boolean 
-        category?: string 
+        isFatal: boolean;
+        category?: string; 
         code: number;
     }
 
@@ -377,8 +361,9 @@ declare namespace Realm.Sync {
         url: string;
         validate_ssl?: boolean;
         ssl_trust_certificate_path?: string;
-        ssl_verify_callback?: SSLVerifyCallback;
+        open_ssl_verify_callback?: SSLVerifyCallback;
         error?: ErrorCallback;
+        partial?: boolean;
     }
 
     type ProgressNotificationCallback = (transferred: number, transferable: number) => void;
@@ -455,7 +440,7 @@ declare namespace Realm.Sync {
         advance(path: string): void;
         close(): void;
         current(path: string): Array<Instruction>;
-        realmAtPath(path: string, realmID?: string, schema?: ObjectSchema[]): Realm
+        realmAtPath(path: string, schema?: ObjectSchema[]): Realm
     }
 }
 

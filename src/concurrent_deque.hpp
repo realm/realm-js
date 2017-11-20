@@ -35,6 +35,23 @@ public:
         return do_pop_back();
     }
 
+    T pop_if(std::function<bool(const T&)> predicate) {
+        std::unique_lock<std::mutex> lock(m_mutex);
+
+        for (auto it = m_deque.begin(); it != m_deque.end();) {
+            if (predicate(*it)) {
+                T item = std::move(*it);
+                m_deque.erase(it);
+                return item;
+            }
+            else {
+                ++it;
+            }
+        }
+
+        return nullptr;
+    }
+
     util::Optional<T> try_pop_back(size_t timeout) {
         std::unique_lock<std::mutex> lock(m_mutex);
         m_condition.wait_for(lock, std::chrono::milliseconds(timeout),
@@ -57,7 +74,7 @@ public:
     }
 
     bool empty() {
-        std::lock_guard<std::mutex> lock(m_mutex);
+        std::lock_guard <std::mutex> lock(m_mutex);
         return m_deque.empty();
     }
 
