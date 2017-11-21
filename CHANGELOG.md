@@ -1,4 +1,4 @@
-2.0.9 Release notes (2017-11-20)
+X.Y.Z Release notes
 =============================================================
 ### Breaking changes
 * None.
@@ -8,6 +8,19 @@
 
 ### Bug fixes
 * Fix json parsing in RN debugger.
+
+### Internal
+* None.
+
+2.0.9 Release notes (2017-11-20)
+=============================================================
+### Breaking changes
+* None.
+
+### Enchancements
+* None
+
+### Bug fixes
 * Reenable Realm for RN Android (#1506), which was disabled only in 2.0.8 by mistake.
 
 ### Internal
