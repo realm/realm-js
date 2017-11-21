@@ -600,13 +600,13 @@ json RPCServer::serialize_json_value(JSValueRef js_value) {
 }
 
 JSValueRef RPCServer::deserialize_json_value(const json dict) {
-    json oid = dict["id"];
+    json oid = dict.value("id", json());
     if (oid.is_number()) {
         return m_objects[oid.get<RPCObjectID>()];
     }
 
-    json value = dict["value"];
-    json type = dict["type"];
+    json value = dict.value("value", json());
+    json type = dict.value("type", json());
 
     if (type.is_string()) {
         std::string type_string = type.get<std::string>();
