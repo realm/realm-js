@@ -4,7 +4,7 @@
 * None.
 
 ### Enchancements
-* Reenable Realm for RN Android (#1506)
+* None
 
 ### Bug fixes
 * Fix json parsing in RN debugger.
