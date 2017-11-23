@@ -1,3 +1,18 @@
+X.Y.X Release notes
+=============================================================
+### Breaking changes
+* None.
+
+### Enchancements
+* None
+
+### Bug fixes
+* [Object Server] Fixed a bug where deleted-then-recreated objects with identical primary keys to become empty.
+* [Object Server] Fixed a bug in outward partial sync is changed to ensure convergence of partial sync in the case where the client creates a primary key object, that is already present on the server, and subscribes to it in the same transaction. 
+
+### Internal
+* Updated to Realm Sync 2.1.7 (see under "Bug fixes").
+
 2.0.10 Release notes (2017-11-21)
 =============================================================
 ### Breaking changes
