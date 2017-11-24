@@ -434,9 +434,10 @@ module.exports = {
         });
 
         let resolve, first = true;
-        return new Promise((r, _reject) => {
+        new Promise((r, _reject) => {
             resolve = r;
             realm.objects('TestObject').addListener((testObjects, changes) => {
+                console.log('FISK', testObjects.length, changes.insertions.length)
                 if (first) {
                     TestCase.assertEqual(testObjects.length, 3);
                     TestCase.assertEqual(changes.insertions.length, 0);
@@ -449,7 +450,7 @@ module.exports = {
                 resolve();
             });
         }).then(() => {
-            return new Promise((r, _reject) => {
+            new Promise((r, _reject) => {
                 realm.write(() => {
                     realm.create('TestObject', { doubleCol: 1 });
                 });

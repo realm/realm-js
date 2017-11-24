@@ -1,3 +1,17 @@
+X.Y.Z Release notes
+=============================================================
+### Breaking changes
+* None.
+
+### Enchancements
+* None
+
+### Bug fixes
+* None.
+
+### Internal
+* Fixed issues in unit tests (`addListener` hangs on Android).
+
 2.0.11 Release notes (2017-11-23)
 =============================================================
 ### Breaking changes
