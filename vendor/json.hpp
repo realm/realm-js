@@ -8333,15 +8333,15 @@ class basic_json
             // check if buffer was large enough
             assert(static_cast<size_t>(written_bytes) < m_buf.size());
 
+            #if defined(ANDROID)
+            // Android NDK doesn't have access to locale info yet; API < 21 doesn't have localeconv()
+            const char thousands_sep  = ',';
+            const char decimal_point  = '.';
+            #else
             // read information from locale
             const auto loc = localeconv();
             assert(loc != nullptr);
             
-            #if defined(ANDROID)
-            // Android NDK doesn't have access to locale info yet
-            const char thousands_sep  = ',';
-            const char decimal_point  = '.';
-            #else
             const char thousands_sep = !loc->thousands_sep ? '\0'
                                        : loc->thousands_sep[0];
 
@@ -11176,11 +11176,11 @@ basic_json_parser_74:
                 // since dealing with strtod family of functions, we're
                 // getting the decimal point char from the C locale facilities
                 // instead of C++'s numpunct facet of the current std::locale
-                const auto loc = localeconv();
-                assert(loc != nullptr);
                 #if defined(ANDROID)
                 const char decimal_point_char = '.';
                 #else
+                const auto loc = localeconv();
+                assert(loc != nullptr);
                 const char decimal_point_char = (loc->decimal_point == nullptr) ? '.' : loc->decimal_point[0];
                 #endif
 
