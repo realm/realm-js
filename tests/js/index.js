@@ -34,15 +34,15 @@ if (isNodeProcess && process.platform === 'win32') {
 }
 
 var TESTS = {
-    /*ListTests: require('./list-tests'),
+    ListTests: require('./list-tests'),
     LinkingObjectsTests: require('./linkingobjects-tests'),
     ObjectTests: require('./object-tests'),
     RealmTests: require('./realm-tests'),
     ResultsTests: require('./results-tests'),
-    QueryTests: require('./query-tests'),*/
+    QueryTests: require('./query-tests'),
     MigrationTests: require('./migration-tests'),
-/*    EncryptionTests: require('./encryption-tests'),
-    ObjectIDTests: require('./object-id-tests'),*/
+    EncryptionTests: require('./encryption-tests'),
+    ObjectIDTests: require('./object-id-tests'),
     // GarbageCollectionTests: require('./garbage-collection'),
 };
 

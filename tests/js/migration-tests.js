@@ -76,15 +76,14 @@ module.exports = {
                 properties: {
                     prop0: 'string',
                 },
-                schemaVersion: 0
             }],
+            schemaVersion: 0
         }).then(realm => {
             realm.write(() => {
                 realm.create('TestObject', ['foo'])
             })
-            realm.close()
+            //realm.close()
         })
-
         Realm.open({
             path: 'foobar.realm',
             schema: [{
@@ -101,9 +100,8 @@ module.exports = {
             realm.write(() => {
                 realm.create('TestObject', ['foobar', 'bar'])
             })
-            realm.close()
+            //realm.close()
         })
-
         var nTestObjects = 0
         Realm.open({
             path: 'foobar.realm',
@@ -120,7 +118,7 @@ module.exports = {
         }).then(realm => {
             nTestObjects = realm.objects('TestObject').length
             TestCase.assertEqual(nTestObjects, 2)
-            realm.close()
+            //realm.close()
         })
         TestCase.assertEqual(nTestObjects, 2)
     },
