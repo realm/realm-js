@@ -115,12 +115,14 @@
       "target_name": "realm-core",
       "type": "none",
       "direct_dependent_settings": {
-        "libraries": [ "-lrealm<(debug_library_suffix)" ],
         "conditions": [
           ["use_realm_debug", {
             "defines": [ "REALM_DEBUG=1" ]
           }]
         ]
+      },
+      "link_settings": {
+        "libraries": [ "-lrealm<(debug_library_suffix)" ],
       },
       "variables": {
         "prefix": "<!(node -p \"process.env.REALM_CORE_PREFIX || String()\")"
@@ -130,7 +132,7 @@
           "all_dependent_settings": {
             "include_dirs": [ "<(prefix)/src", "<(prefix)/<(build_directory)/src" ],
           },
-          "direct_dependent_settings": {
+          "link_settings": {
             "library_dirs": [ "<(prefix)/<(build_directory)/src/realm" ]
           }
         }, {
@@ -145,7 +147,7 @@
       "target_name": "realm-sync",
       "type": "none",
       "dependencies": [ "realm-core" ],
-      "direct_dependent_settings": {
+      "link_settings": {
         "conditions": [
           ["OS=='win'", {
             "libraries": [ "-lrealm-sync<(debug_library_suffix)" ]
@@ -180,7 +182,7 @@
     {
       "target_name": "OpenSSL",
       "type": "none",
-      "direct_dependent_settings": {
+      "link_settings": {
         "conditions": [
           ["OS=='win'", {
             "libraries": [ "libeay32.lib", "ssleay32.lib" ],
