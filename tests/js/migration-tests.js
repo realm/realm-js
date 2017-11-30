@@ -69,58 +69,69 @@ module.exports = {
     },
 
     testSchemaVersion() {
-        Realm.open({
-            path: 'foobar.realm',
-            schema: [{
-                name: 'TestObject',
-                properties: {
-                    prop0: 'string',
-                },
-            }],
-            schemaVersion: 0
-        }).then(realm => {
-            realm.write(() => {
-                realm.create('TestObject', ['foo'])
+        // remove old file
+        Realm.deleteFile({
+            path: 'foobar.realm'
+        })
+
+        return new Promise((resolve, error) => {
+            Realm.open({
+                path: 'foobar.realm',
+                schema: [{
+                    name: 'TestObject',
+                    properties: {
+                        prop0: 'string',
+                    },
+                }],
+                schemaVersion: 0
+            }).then(realm => {
+                realm.write(() => {
+                    realm.create('TestObject', ['foo'])
+                })
+                realm.close()
             })
-            //realm.close()
-        })
-        Realm.open({
-            path: 'foobar.realm',
-            schema: [{
-                name: 'TestObject',
-                properties: {
-                    prop0: 'string',
-                    prop1: 'string'
-                }
-            }],
-            schemaVersion: 1,
-            migration: function(oldRealm, newRealm) { /* dont do anything */ }
-        }).then(realm => {
-            TestCase.assertEqual(realm.objects('TestObject').length, 1)
-            realm.write(() => {
-                realm.create('TestObject', ['foobar', 'bar'])
+            Realm.open({
+                path: 'foobar.realm',
+                schema: [{
+                    name: 'TestObject',
+                    properties: {
+                        prop0: 'string',
+                        prop1: 'string'
+                    }
+                }],
+                schemaVersion: 1,
+                migration: function(oldRealm, newRealm) { }
+            }).then(realm => {
+                console.log('HEST 0')
+                TestCase.assertEqual(realm.objects('TestObject').length, 1)
+                realm.write(() => {
+                    realm.create('TestObject', ['foobar', 'bar'])
+                })
+                console.log('HEST 1')
+                realm.close()
             })
-            //realm.close()
+            Realm.open({
+                path: 'foobar.realm',
+                schema: [{
+                    name: 'TestObject',
+                    properties: {
+                        prop0: 'string',
+                        prop1: 'string',
+                        prop2: 'string'
+                    }
+                }],
+                schemaVersion: 2,
+                migration: function(oldRealm, newRealm) { }
+            }).then(realm => {
+                console.log('GED 0')
+                let nTestObjects = realm.objects('TestObject').length
+                TestCase.assertEqual(nTestObjects, 2)
+                console.log('GED 1')
+                realm.close()
+                console.log('GED 2')
+                resolve()
+            })
         })
-        var nTestObjects = 0
-        Realm.open({
-            path: 'foobar.realm',
-            schema: [{
-                name: 'TestObject',
-                properties: {
-                    prop0: 'string',
-                    prop1: 'string',
-                    prop2: 'string'
-                }
-            }],
-            schemaVersion: 2,
-            migration: function(oldRealm, newRealm) { /* dont do anything */ }
-        }).then(realm => {
-            nTestObjects = realm.objects('TestObject').length
-            TestCase.assertEqual(nTestObjects, 2)
-            //realm.close()
-        })
-        TestCase.assertEqual(nTestObjects, 2)
     },
     testDataMigration: function() {
         var realm = new Realm({schema: [{
