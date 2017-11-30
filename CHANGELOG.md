@@ -10,7 +10,7 @@ X.Y.Z Release notes
 * Fixed a bug in 3rd party JSON parser: `localeconv()` does not exist on Android API < 21 and should not be called.
 
 ### Internal
-* None.
+* Upgraded to Realm Sync 2.1.8.
 
 2.0.11 Release notes (2017-11-23)
 =============================================================
