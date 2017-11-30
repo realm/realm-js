@@ -423,7 +423,7 @@ module.exports = {
     testAddListener: function() {
         if (typeof navigator !== 'undefined' && /Chrome/.test(navigator.userAgent)) { // eslint-disable-line no-undef
             // FIXME: async callbacks do not work correctly in Chrome debugging mode
-            return;
+            return Promise.resolve();
         }
 
         const realm = new Realm({ schema: [schemas.TestObject] });
@@ -433,30 +433,28 @@ module.exports = {
             realm.create('TestObject', { doubleCol: 3 });
         });
 
-        let resolve, first = true;
-        new Promise((r, _reject) => {
+        let resolve = () => {};
+        let first = true;
+
+        realm.objects('TestObject').addListener((testObjects, changes) => {
+            if (first) {
+                TestCase.assertEqual(testObjects.length, 3);
+                TestCase.assertEqual(changes.insertions.length, 0);
+            }
+            else {
+                TestCase.assertEqual(testObjects.length, 4);
+                TestCase.assertEqual(changes.insertions.length, 1);
+            }
+            first = false;
+            resolve();
+        });
+
+        return new Promise((r, _reject) => {
             resolve = r;
-            realm.objects('TestObject').addListener((testObjects, changes) => {
-                console.log('FISK', testObjects.length, changes.insertions.length)
-                if (first) {
-                    TestCase.assertEqual(testObjects.length, 3);
-                    TestCase.assertEqual(changes.insertions.length, 0);
-                }
-                else {
-                    TestCase.assertEqual(testObjects.length, 4);
-                    TestCase.assertEqual(changes.insertions.length, 1);
-                }
-                first = false;
-                resolve();
+            realm.write(() => {
+                realm.create('TestObject', { doubleCol: 1 });
             });
-        }).then(() => {
-            new Promise((r, _reject) => {
-                realm.write(() => {
-                    realm.create('TestObject', { doubleCol: 1 });
-                });
-                resolve = r;
-            });
-        })
+        });
     },
 
     testResultsAggregateFunctions: function() {
