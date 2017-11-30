@@ -102,12 +102,10 @@ module.exports = {
                 schemaVersion: 1,
                 migration: function(oldRealm, newRealm) { }
             }).then(realm => {
-                console.log('HEST 0')
                 TestCase.assertEqual(realm.objects('TestObject').length, 1)
                 realm.write(() => {
                     realm.create('TestObject', ['foobar', 'bar'])
                 })
-                console.log('HEST 1')
                 realm.close()
             })
             Realm.open({
@@ -123,12 +121,9 @@ module.exports = {
                 schemaVersion: 2,
                 migration: function(oldRealm, newRealm) { }
             }).then(realm => {
-                console.log('GED 0')
                 let nTestObjects = realm.objects('TestObject').length
                 TestCase.assertEqual(nTestObjects, 2)
-                console.log('GED 1')
                 realm.close()
-                console.log('GED 2')
                 resolve()
             })
         })
