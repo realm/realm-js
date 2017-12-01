@@ -408,7 +408,7 @@ class Adapter {
 	 * @param {string} local_path - the local path where realm files are stored
 	 * @param {string} server_url - the sync server to listen to
 	 * @param {SyncUser} admin_user - an admin user obtained by calling `new Realm.Sync.User.adminUser`
-	 * @param {string} regex - a regular expression used to determine which cahnged Realms should be monitored -
+	 * @param {string} regex - a regular expression used to determine which changed Realms should be monitored -
 	 *  use `.*` to match all all Realms
 	 * @param {function(realm_path)} change_callback - called when a new transaction is available
 	 *  to process for the given realm_path
