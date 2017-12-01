@@ -1,4 +1,4 @@
-X.Y.Z Release notes
+2.0.12 Release notes
 =============================================================
 ### Breaking changes
 * None.
@@ -11,6 +11,7 @@ X.Y.Z Release notes
 
 ### Internal
 * Fixed issues in unit tests (`addListener` hangs on Android).
+* Upgraded to Realm Sync 2.1.8 (no external effects).
 
 2.0.11 Release notes (2017-11-23)
 =============================================================
