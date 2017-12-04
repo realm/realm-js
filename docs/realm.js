@@ -304,7 +304,7 @@ Realm.defaultPath;
  *   If omitted, the schema will be read from the existing Realm file.
  * @property {number} [schemaVersion] - **Required** (and must be incremented) after
  *   changing the `schema`.
- * @property {Object} [sync] - Sync configuration parameters with the following
+ * @property {Object|true} [sync] - Sync configuration parameters with the following
  *   child properties:
  *   - `user` - A `User` object obtained by calling `Realm.Sync.User.login`
  *   - `url` - A `string` which contains a valid Realm Sync url
@@ -350,6 +350,8 @@ Realm.defaultPath;
  *        Partial synchronisation only synchronizes those objects that match the query specified in contrast
  *        to the normal mode of operation that synchronises all objects in a remote Realm.
  *        **Partial synchronization is a tech preview. Its APIs are subject to change.**
+ * 
+ * If set to `true`, this configuration will help open a sync Realm locally/offline without any syncing capabilities.
  */
 
 /**
