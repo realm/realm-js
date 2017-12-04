@@ -98,7 +98,7 @@
     "eslint": "^3.2.2",
     "eslint-plugin-jasmine": "^2.1.0",
     "eslint-plugin-react": "^6.7.0",
-    "jsdoc": "^3.4.0",
+    "jsdoc": "^3.5.5",
     "license-checker": "^8.0.3",
     "mockery": "^2.0.0",
     "rimraf": "^2.6.1",
