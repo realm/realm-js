@@ -83,7 +83,7 @@ declare namespace Realm {
         inMemory?: boolean;
         schema?: ObjectClass[] | ObjectSchema[];
         schemaVersion?: number;
-        sync?: Realm.Sync.SyncConfiguration | boolean;
+        sync?: Realm.Sync.SyncConfiguration | true;
         deleteRealmIfMigrationNeeded?: boolean;
     }
 
