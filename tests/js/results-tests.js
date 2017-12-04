@@ -386,35 +386,36 @@ module.exports = {
 
     testResultsFindIndexOfObject: function() {
         var realm = new Realm({schema: [schemas.TestObject]});
-
+    
         var object1, object2, object3;
         realm.write(function() {
             object1 = realm.create('TestObject', {doubleCol: 1});
             object2 = realm.create('TestObject', {doubleCol: 2});
             object3 = realm.create('TestObject', {doubleCol: 2});
         });
-
+    
         // Search in base table
         const objects = realm.objects('TestObject');
         TestCase.assertEqual(objects.indexOf(object1), 0);
         TestCase.assertEqual(objects.indexOf(object2), 1);
         TestCase.assertEqual(objects.indexOf(object3), 2);
-
+    
         // Search in filtered query
         const results = objects.filtered("doubleCol == 2");
         TestCase.assertEqual(results.indexOf(object1), -1);
         TestCase.assertEqual(results.indexOf(object2), 0);
         TestCase.assertEqual(results.indexOf(object3), 1);
-
+    
         const nonRealmObject = {test: "this is an object"};
         TestCase.assertEqual(objects.indexOf(nonRealmObject), -1);
-
+    
         // Searching for object from the wrong realm
         var realm2 = new Realm({path: '2.realm', schema: realm.schema});
         var object4;
         realm2.write(function() {
             object4 = realm2.create('TestObject', {doubleCol: 1});
         });
+    
         TestCase.assertThrows(function() {
             objects.indexOf(object4);
         });
@@ -423,7 +424,7 @@ module.exports = {
     testAddListener: function() {
         if (typeof navigator !== 'undefined' && /Chrome/.test(navigator.userAgent)) { // eslint-disable-line no-undef
             // FIXME: async callbacks do not work correctly in Chrome debugging mode
-            return;
+            return Promise.resolve();
         }
 
         const realm = new Realm({ schema: [schemas.TestObject] });
@@ -433,29 +434,28 @@ module.exports = {
             realm.create('TestObject', { doubleCol: 3 });
         });
 
-        let resolve, first = true;
+        let resolve = () => {};
+        let first = true;
+
+        realm.objects('TestObject').addListener((testObjects, changes) => {
+            if (first) {
+                TestCase.assertEqual(testObjects.length, 3);
+                TestCase.assertEqual(changes.insertions.length, 0);
+            }
+            else {
+                TestCase.assertEqual(testObjects.length, 4);
+                TestCase.assertEqual(changes.insertions.length, 1);
+            }
+            first = false;
+            resolve();
+        });
+
         return new Promise((r, _reject) => {
-            resolve = r;
-            realm.objects('TestObject').addListener((testObjects, changes) => {
-                if (first) {
-                    TestCase.assertEqual(testObjects.length, 3);
-                    TestCase.assertEqual(changes.insertions.length, 0);
-                }
-                else {
-                    TestCase.assertEqual(testObjects.length, 4);
-                    TestCase.assertEqual(changes.insertions.length, 1);
-                }
-                first = false;
-                resolve();
-            });
-        }).then(() => {
-            return new Promise((r, _reject) => {
+                resolve = r;
                 realm.write(() => {
                     realm.create('TestObject', { doubleCol: 1 });
                 });
-                resolve = r;
             });
-        })
     },
 
     testResultsAggregateFunctions: function() {

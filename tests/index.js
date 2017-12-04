@@ -56,7 +56,7 @@ function runTests() {
 
     return Object.keys(testNames).reduce((suitePromiseChain, suiteName) => {
         return suitePromiseChain.then(() => {
-            console.log('Starting ' + suiteName);
+            console.warn('Starting ' + suiteName);
 
             return testNames[suiteName].reduce((testPromiseChain, testName) => {
                 return testPromiseChain.then(() => {
@@ -64,7 +64,7 @@ function runTests() {
                 }).then(() => {
                     return RealmTests.runTest(suiteName, testName);
                 }).then(() => {
-                    console.log('+ ' + testName);
+                    console.warn('+ ' + testName);
                 }, (err) => {
                     console.warn('- ' + testName);
                     console.warn(err.message || err);

@@ -23,6 +23,8 @@ if [ -n "${JENKINS_HOME}" ]; then
   CI_RUN=true
 fi
 
+SIM_DEVICE_NAME=realm-js-test
+
 # Start current working directory at the root of the project.
 cd "$SRCROOT"
 
@@ -97,7 +99,11 @@ cleanup() {
   fi
 }
 
-open_chrome() {
+open_chrome() { 
+  if [ $CONFIGURATION == 'Release' ]; then
+    break
+  fi
+  
   local dir
   for dir in "$HOME/Applications" "/Applications"; do
     if [ -d "$dir/Google Chrome.app" ]; then
@@ -124,122 +130,52 @@ start_packager() {
 xctest() {
   setup_ios_simulator
 
-  # - Wait until the simulator is fully booted by waiting for it to launch SpringBoard
-  printf "Waiting for springboard to ensure device is ready..."
-  xcrun simctl launch "$IOS_SIM_DEVICE" com.apple.springboard 1>/dev/null 2>/dev/null || true
-  echo "  done"
-
   # - Run the build and test
-  xcrun xcodebuild -scheme "$1" -configuration "$CONFIGURATION" -sdk iphonesimulator -destination id="$IOS_SIM_DEVICE" build || {
+  echo "Building application"
+  xcrun xcodebuild -scheme "$1" -configuration "$CONFIGURATION" -sdk iphonesimulator -destination id="${IOS_SIM_DEVICE_ID}" -derivedDataPath ./build build || {
       EXITCODE=$?
       echo "*** Failure (exit code $EXITCODE). ***"
       exit $EXITCODE
   }
-  if [ -n "$XCPRETTY" ]; then
-    log_temp=$(mktemp build.log.XXXXXX)
-    if [ -e "$log_temp" ]; then
-      rm "$log_temp"
-    fi
-    xcrun xcodebuild -scheme "$1" -configuration "$CONFIGURATION" -sdk iphonesimulator -destination name="iPhone 5s" test 2>&1 | tee "$log_temp" | "$XCPRETTY" -c --no-utf --report junit --output build/reports/junit.xml || {
-        EXITCODE=$?
-        printf "*** Xcode Failure (exit code %s). The full xcode log follows: ***\n\n" "$EXITCODE"
-        cat "$log_temp"
-        printf "\n\n*** End Xcode Failure ***\n"
-        exit $EXITCODE
-    }
-    rm "$log_temp"
+  
+  echo "Installing application on ${SIM_DEVICE_NAME}"
+  echo "Application Path" $(pwd)/build/Build/Products/$CONFIGURATION-iphonesimulator/ReactTests.app
+  xcrun simctl install ${SIM_DEVICE_NAME} $(pwd)/build/Build/Products/$CONFIGURATION-iphonesimulator/ReactTests.app
+  
+  
+  echo "Launching application"
+  xcrun simctl launch --console ${SIM_DEVICE_NAME} io.realm.ReactTests | tee out.txt
+
+  echo "Shuttting down ${SIM_DEVICE_NAME} simulator. (device is not deleted. you can use it to debug the app)"
+  xcrun simctl shutdown ${SIM_DEVICE_NAME} || true
+
+  echo "Checking tests results"
+  if grep -q "REALM_FAILING_TESTS" out.txt; then
+      echo "*** REALM JS TESTS FAILED. See tests results above ***"
+      exit 20
   else
-    xcrun xcodebuild -scheme "$1" -configuration "$CONFIGURATION" -sdk iphonesimulator -destination id="$IOS_SIM_DEVICE" test || {
-        EXITCODE=$?
-        echo "*** Failure (exit code $EXITCODE). ***"
-        exit $EXITCODE
-    }
+      echo "*** REALM JS TESTS SUCCESS ***"
   fi
 }
 
-setup_ios_simulator() {
-  # - Ensure one version of xcode is chosen by all tools
-  if [[ -z "$DEVELOPER_DIR" ]]; then
-    DEV_DIR="$(xcode-select -p)"
-    export DEVELOPER_DIR=$DEV_DIR
-  fi
+setup_ios_simulator() { 
+  shutdown_ios_simulator
 
-  # -- Ensure that the simulator is ready
+  #parse devices
+  IOS_RUNTIME=$(xcrun simctl list runtimes |  grep -m1 -o '(com.apple.CoreSimulator.SimRuntime.iOS.*)' | sed 's/[()]//g')
+  echo using iOS Runtime ${IOS_RUNTIME} to create new simulator ${SIM_DEVICE_NAME}
 
-  if [ $CI_RUN == true ]; then
-    # - Kill the Simulator to ensure we are running the correct one, only when running in CI
-    echo "Resetting simulator using toolchain from: $DEVELOPER_DIR"
+  #create new test simulator
+  IOS_SIM_DEVICE_ID=$(xcrun simctl create ${SIM_DEVICE_NAME} com.apple.CoreSimulator.SimDeviceType.iPhone-SE ${IOS_RUNTIME})
+  #boot new test simulator
+  xcrun simctl boot ${SIM_DEVICE_NAME}
+}
 
-    # Quit Simulator.app to give it a chance to go down gracefully
-    local deadline=$((SECONDS+5))
-    while pgrep -qx Simulator && [ $SECONDS -lt $deadline ]; do
-      osascript -e 'tell app "Simulator" to quit without saving' || true
-      sleep 0.25 # otherwise the pkill following will get it too early
-    done
-
-    # stop CoreSimulatorService
-    launchctl remove com.apple.CoreSimulator.CoreSimulatorService 2>/dev/null || true
-    sleep 0.25 # launchtl can take a small moment to kill services
-
-    # kill them with fire
-    while pgrep -qx Simulator com.apple.CoreSimulator.CoreSimulatorService; do
-      pkill -9 -x Simulator com.apple.CoreSimulator.CoreSimulatorService || true
-      sleep 0.05
-    done
-
-    # - Prod `simctl` a few times as sometimes it fails the first couple of times after switching XCode vesions
-    local deadline=$((SECONDS+5))
-    while [ -z "$(xcrun simctl list devices 2>/dev/null)" ] && [ $SECONDS -lt $deadline ]; do
-      : # nothing to see here, will stop cycling on the first successful run
-    done
-
-    # - Choose a device, if it has not already been chosen
-    local deadline=$((SECONDS+5))
-    IOS_DEVICE=""
-    while [ -z "$IOS_DEVICE" ] && [ $SECONDS -lt $deadline ]; do
-        IOS_DEVICE="$(ruby $SRCROOT/scripts/find-ios-device.rb best)"
-    done
-    if [ -z "$IOS_DEVICE" ]; then
-      echo "*** Failed to determine the iOS Simulator device to use ***"
-      exit 1
-    fi
-    export IOS_SIM_DEVICE=$IOS_DEVICE
-
-    # - Reset the device we will be using if running in CI
-    xcrun simctl shutdown "$IOS_SIM_DEVICE" 1>/dev/null 2>/dev/null || true # sometimes simctl gets confused
-    xcrun simctl erase "$IOS_SIM_DEVICE"
-
-    # - Start the target in Simulator.app
-    # Note: as of Xcode 7.3.1 `simctl` can not completely boot a simulator, specifically it can not bring up backboard, so GUI apps can not run.
-    #       This is fixed in version 8 of Xcode, but we still need the compatibility
-
-    "$DEVELOPER_DIR/Applications/Simulator.app/Contents/MacOS/Simulator" -CurrentDeviceUDID "$IOS_SIM_DEVICE" & # will get killed with all other children at exit
-    startedSimulator=true
-
-  else
-      # - ensure that the simulator is running on a developer's workstation
-    open "$DEVELOPER_DIR/Applications/Simulator.app"
-
-    # - Select the first device booted in the simulator, since it will boot something for us
-    local deadline=$((SECONDS+10))
-    IOS_DEVICE=""
-    while [ -z "$IOS_DEVICE" ] && [ $SECONDS -lt $deadline ]; do
-      IOS_DEVICE="$(ruby $SRCROOT/scripts/find-ios-device.rb booted)"
-    done
-    if [ -z "$IOS_DEVICE" ]; then
-      echo "*** Failed to determine the iOS Simulator device in use ***"
-      exit 1
-    fi
-    export IOS_SIM_DEVICE=$IOS_DEVICE
-  fi
-
-  # Wait until the boot completes
-  printf "  waiting for simulator (%s) to boot..." "$IOS_SIM_DEVICE"
-  until ruby -rjson -e "exit JSON.parse(%x{xcrun simctl list devices --json})['devices'].flat_map { |d| d[1] }.any? { |d| d['availability'] == '(available)' && d['state'] == 'Booted' }"; do
-    sleep 0.25
-  done
-  echo " done"
-  echo "It will take some time before the simulator is fully ready, continuing on to other work"
+shutdown_ios_simulator() { 
+  #shutdown test simulator
+  xcrun simctl shutdown ${SIM_DEVICE_NAME} || true
+  #delete test simulator
+  xcrun simctl delete ${SIM_DEVICE_NAME} || true
 }
 
 # Cleanup now and also cleanup when this script exits.
