@@ -1,3 +1,17 @@
+x.y.z Release notes
+=============================================================
+### Breaking changes
+* None
+
+### Enhancements
+* None
+
+### Bug fixes
+* When authentication fails due to a misbehaving server, a proper error is thrown.
+
+### Internal
+* None
+
 2.0.12 Release notes (2017-12-1)
 =============================================================
 ### Breaking changes
