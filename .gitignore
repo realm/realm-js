@@ -55,3 +55,4 @@ tests/realm-object-server/
 packager_out.txt
 build.log.*
 realm-object-server/
+tests/react-test-app/ios/out.txt
