@@ -91,7 +91,8 @@
     "request": "^2.78.0",
     "stream-counter": "^1.0.0",
     "sync-request": "^3.0.1",
-    "url-parse": "^1.1.7"
+    "url-parse": "^1.1.7",
+    "lzma-native": "^3.0.4"
   },
   "devDependencies": {
     "babel-eslint": "^6.0.4",
