@@ -888,7 +888,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = "/bin/sh";
-			shellScript = "[ -z \"$NVM_DIR\" ] && export NVM_DIR=\"$HOME/.nvm\"\n\nif [[ -s \"$HOME/.nvm/nvm.sh\" ]]; then\n  . \"$HOME/.nvm/nvm.sh\"\nelif [[ -x \"$(command -v brew)\" && -s \"$(brew --prefix nvm)/nvm.sh\" ]]; then\n  . \"$(brew --prefix nvm)/nvm.sh\"\nfi\nnode ../scripts/download-realm.js ios --sync";
+			shellScript = "[ -z \"$NVM_DIR\" ] && export NVM_DIR=\"$HOME/.nvm\"\n\nif [[ -s \"$HOME/.nvm/nvm.sh\" ]]; then\n  . \"$HOME/.nvm/nvm.sh\"\nelif [[ -x \"$(command -v brew)\" && -s \"$(brew --prefix nvm)/nvm.sh\" ]]; then\n  . \"$(brew --prefix nvm)/nvm.sh\"\nfi\n \nif [[ \"$(command -v nvm)\" ]]; then\n nvm install 7.10.0\nfi\n \n node ../scripts/download-realm.js ios --sync";
 		};
 /* End PBXShellScriptBuildPhase section */
 
