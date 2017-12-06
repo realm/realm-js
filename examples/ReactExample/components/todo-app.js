@@ -21,7 +21,6 @@
 import React from 'react';
 
 import {
-    Navigator,
     Platform,
     StatusBar,
     Text,
@@ -33,6 +32,9 @@ import TodoItem from './todo-item';
 import TodoListView from './todo-listview';
 import realm from './realm';
 import styles from './styles';
+
+import NavigationExperimental from 'react-native-deprecated-custom-components';
+
 
 export default class TodoApp extends React.Component {
     constructor(props) {
@@ -91,11 +93,11 @@ export default class TodoApp extends React.Component {
         };
 
         let navigationBar = (
-            <Navigator.NavigationBar routeMapper={RouteMapper} style={styles.navBar} />
+            <NavigationExperimental.Navigator.NavigationBar routeMapper={RouteMapper} style={styles.navBar} />
         );
 
         return (
-            <Navigator
+            <NavigationExperimental.Navigator
                 ref="nav"
                 initialRoute={route}
                 navigationBar={navigationBar}
