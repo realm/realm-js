@@ -1,3 +1,18 @@
+vNext Release notes (TBD)
+=============================================================
+### Breaking changes
+* None.
+
+### Enchancements
+* None
+
+### Bug fixes
+* None.
+
+### Internal
+* Strings can now be assigned to Date columns. When that happens the JavaScript Date constructor will be invoked to parse the string.
+* Base64 strings can now be assigned to Data columns.
+
 2.0.12 Release notes (2017-12-1)
 =============================================================
 ### Breaking changes
