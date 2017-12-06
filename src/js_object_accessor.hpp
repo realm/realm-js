@@ -21,7 +21,10 @@
 #include "js_list.hpp"
 #include "js_realm_object.hpp"
 #include "js_schema.hpp"
+
+#if REALM_ENABLE_SYNC
 #include <realm/util/base64.hpp>
+#endif
 
 namespace realm {
 class List;
