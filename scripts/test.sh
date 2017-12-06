@@ -77,6 +77,9 @@ cleanup() {
   # Kill started object server
   stop_server || true
 
+  echo "shutting down running simulators"
+  shutdown_ios_simulator >/dev/null 2>&1
+  
   # Quit Simulator.app to give it a chance to go down gracefully
   if $startedSimulator; then
     osascript -e 'tell app "Simulator" to quit without saving' || true
@@ -139,27 +142,29 @@ xctest() {
   }
   
   echo "Installing application on ${SIM_DEVICE_NAME}"
-  echo "Application Path" $(pwd)/build/Build/Products/$CONFIGURATION-iphonesimulator/ReactTests.app
-  xcrun simctl install ${SIM_DEVICE_NAME} $(pwd)/build/Build/Products/$CONFIGURATION-iphonesimulator/ReactTests.app
+  echo "Application Path" $(pwd)/build/Build/Products/$CONFIGURATION-iphonesimulator/$1.app
+  xcrun simctl install ${SIM_DEVICE_NAME} $(pwd)/build/Build/Products/$CONFIGURATION-iphonesimulator/$1.app
   
   
-  echo "Launching application"
-  xcrun simctl launch --console ${SIM_DEVICE_NAME} io.realm.ReactTests | tee out.txt
+  echo "Launching application. (output is in $(pwd)/build/out.txt)"
+  xcrun simctl launch --console ${SIM_DEVICE_NAME} io.realm.$1 | tee $(pwd)/build/out.txt
 
   echo "Shuttting down ${SIM_DEVICE_NAME} simulator. (device is not deleted. you can use it to debug the app)"
-  xcrun simctl shutdown ${SIM_DEVICE_NAME} || true
+  shutdown_ios_simulator
 
   echo "Checking tests results"
-  if grep -q "REALM_FAILING_TESTS" out.txt; then
+  if grep -q "REALM_FAILING_TESTS" $(pwd)/build/out.txt; then
       echo "*** REALM JS TESTS FAILED. See tests results above ***"
       exit 20
   else
-      echo "*** REALM JS TESTS SUCCESS ***"
+      echo "*** $1 SUCCESS ***"
   fi
 }
 
 setup_ios_simulator() { 
-  shutdown_ios_simulator
+  #try deleting old simulator with same name.
+  echo "Preparing to create a new simulator"
+  delete_ios_simulator >/dev/null 2>&1
 
   #parse devices
   IOS_RUNTIME=$(xcrun simctl list runtimes |  grep -m1 -o '(com.apple.CoreSimulator.SimRuntime.iOS.*)' | sed 's/[()]//g')
@@ -174,12 +179,17 @@ setup_ios_simulator() {
 shutdown_ios_simulator() { 
   #shutdown test simulator
   xcrun simctl shutdown ${SIM_DEVICE_NAME} || true
+}
+
+delete_ios_simulator() { 
+  shutdown_ios_simulator
+
   #delete test simulator
   xcrun simctl delete ${SIM_DEVICE_NAME} || true
 }
 
 # Cleanup now and also cleanup when this script exits.
-cleanup
+cleanup >/dev/null 2>&1
 trap cleanup EXIT
 
 # Use a consistent version of Node if possible.
@@ -234,7 +244,7 @@ case "$TARGET" in
   start_packager
 
   pushd ios
-  xctest ReactTestApp
+  xctest ReactTests
   stop_server
   ;;
 "react-example")
