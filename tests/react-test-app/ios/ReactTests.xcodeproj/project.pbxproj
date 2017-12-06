@@ -1155,6 +1155,7 @@
 				INFOPLIST_FILE = ReactTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				OTHER_LDFLAGS = "-ObjC";
+				PRODUCT_BUNDLE_IDENTIFIER = io.realm.ReactTests;
 				PRODUCT_NAME = ReactTests;
 			};
 			name = Debug;
@@ -1166,6 +1167,7 @@
 				INFOPLIST_FILE = ReactTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				OTHER_LDFLAGS = "-ObjC";
+				PRODUCT_BUNDLE_IDENTIFIER = io.realm.ReactTests;
 				PRODUCT_NAME = ReactTests;
 			};
 			name = Release;
