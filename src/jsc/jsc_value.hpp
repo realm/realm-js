@@ -203,6 +203,15 @@ inline JSObjectRef jsc::Value::to_constructor(JSContextRef ctx, const JSValueRef
 
 template<>
 inline JSObjectRef jsc::Value::to_date(JSContextRef ctx, const JSValueRef &value) {
+    if (JSValueIsString(ctx, value)) {
+        JSValueRef error;
+        std::array<JSValueRef, 1> args { value };
+        if (JSObjectRef result = JSObjectMakeDate(ctx, args.size(), args.data(), &error)) {
+            return result;
+        } else {
+            throw jsc::Exception(ctx, error);
+        }
+    }
     return to_object(ctx, value);
 }
 

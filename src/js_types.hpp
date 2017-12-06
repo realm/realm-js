@@ -389,9 +389,9 @@ inline bool Value<T>::is_valid_for_property_type(ContextType context, const Valu
             case PropertyType::String:
                 return is_string(context, value);
             case PropertyType::Data:
-                return is_binary(context, value);
+                return is_binary(context, value) || is_string(context, value);
             case PropertyType::Date:
-                return is_date(context, value);
+                return is_date(context, value) || is_string(context, value);
             case PropertyType::Object:
                 return true;
             case PropertyType::Any:
