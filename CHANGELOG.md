@@ -10,7 +10,8 @@ x.y.z Release notes
 * When authentication fails due to a misbehaving server, a proper error is thrown.
 
 ### Internal
-* None
+* Strings can now be assigned to Date columns. When that happens the JavaScript Date constructor will be invoked to parse the string.
+* Base64 strings can now be assigned to Data columns.
 
 2.0.12 Release notes (2017-12-1)
 =============================================================

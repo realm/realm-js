@@ -22,6 +22,10 @@
 #include "js_realm_object.hpp"
 #include "js_schema.hpp"
 
+#if REALM_ENABLE_SYNC
+#include <realm/util/base64.hpp>
+#endif
+
 namespace realm {
 class List;
 class Object;
@@ -239,7 +243,23 @@ struct Unbox<JSEngine, BinaryData> {
         if (ctx->is_null(value)) {
             return BinaryData();
         }
-        ctx->m_owned_binary_data = js::Value<JSEngine>::validated_to_binary(ctx->m_ctx, value, "Property");
+#if REALM_ENABLE_SYNC
+        // realm-sync holds the base64-decoding routine
+        if (js::Value<JSEngine>::is_string(ctx->m_ctx, value)) {
+            // the incoming value might be a base64 string, so let's try to parse it
+            std::string str = js::Value<JSEngine>::to_string(ctx->m_ctx, value);
+            size_t max_size = util::base64_decoded_size(str.size());
+            std::unique_ptr<char[]> data(new char[max_size]);
+            if (auto size = util::base64_decode(str, data.get(), max_size)) {
+                ctx->m_owned_binary_data = OwnedBinaryData(std::move(data), *size);
+                return ctx->m_owned_binary_data.get();
+            } else {
+                throw std::runtime_error("Attempting to populate BinaryData from string that is not valid base64");
+            }
+        }
+#endif
+
+        ctx->m_owned_binary_data = js::Value<JSEngine>::validated_to_binary(ctx->m_ctx, value);
         return ctx->m_owned_binary_data.get();
     }
 };
@@ -257,7 +277,14 @@ struct Unbox<JSEngine, Timestamp> {
         if (ctx->is_null(value)) {
             return Timestamp();
         }
-        auto date = js::Value<JSEngine>::validated_to_date(ctx->m_ctx, value, "Property");
+        typename JSEngine::Value date;
+        if (js::Value<JSEngine>::is_string(ctx->m_ctx, value)) {
+            // the incoming value might be a date string, so let the Date constructor have at it
+            date = js::Value<JSEngine>::to_date(ctx->m_ctx, value);
+        } else {
+            date = js::Value<JSEngine>::validated_to_date(ctx->m_ctx, value);
+        }
+
         double milliseconds = js::Value<JSEngine>::to_number(ctx->m_ctx, date);
         int64_t seconds = milliseconds / 1000;
         int32_t nanoseconds = ((int64_t)milliseconds % 1000) * 1000000;
