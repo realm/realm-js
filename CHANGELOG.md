@@ -1,9 +1,23 @@
+x.y.z Release notes
+=============================================================
+### Breaking changes
+* None
+
+### Enhancements
+* None
+
+### Bug fixes
+* When authentication fails due to a misbehaving server, a proper error is thrown.
+
+### Internal
+* None
+
 2.0.12 Release notes (2017-12-1)
 =============================================================
 ### Breaking changes
 * None.
 
-### Enchancements
+### Enhancements
 * None
 
 ### Bug fixes
@@ -18,12 +32,12 @@
 ### Breaking changes
 * None.
 
-### Enchancements
+### Enhancements
 * None
 
 ### Bug fixes
 * [Object Server] Fixed a bug where deleted-then-recreated objects with identical primary keys to become empty.
-* [Object Server] Fixed a bug in outward partial sync is changed to ensure convergence of partial sync in the case where the client creates a primary key object, that is already present on the server, and subscribes to it in the same transaction. 
+* [Object Server] Fixed a bug in outward partial sync is changed to ensure convergence of partial sync in the case where the client creates a primary key object, that is already present on the server, and subscribes to it in the same transaction.
 
 ### Internal
 * Updated to Realm Sync 2.1.7 (see under "Bug fixes").
@@ -33,7 +47,7 @@
 ### Breaking changes
 * None.
 
-### Enchancements
+### Enhancements
 * None
 
 ### Bug fixes
@@ -47,7 +61,7 @@
 ### Breaking changes
 * None.
 
-### Enchancements
+### Enhancements
 * None
 
 ### Bug fixes
@@ -61,7 +75,7 @@
 ### Breaking changes
 * None.
 
-### Enchancements
+### Enhancements
 * [Object Server] Improving performance of processing large changesets.
 
 ### Bug fixes
@@ -76,7 +90,7 @@
 ### Breaking changes
 * None
 
-### Enchancements
+### Enhancements
 * None
 
 ### Bug fixes
@@ -91,7 +105,7 @@
 ### Breaking changes
 * None.
 
-### Enchancements
+### Enhancements
 * Improved notification performance for objects with no object or list properties.
 
 ### Bug fixes
@@ -107,7 +121,7 @@
 ### Breaking changes
 * None.
 
-### Enchancements
+### Enhancements
 * None.
 
 ### Bug fixes
