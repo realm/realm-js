@@ -160,7 +160,7 @@ module.exports = {
       .catch((e) => assertIsError(e));
   },
 
-  testLoginTowardsMisbehavingServcer() {
+  testLoginTowardsMisbehavingServer() {
     const username = uuid();
 
     // Try authenticating towards a server thats clearly not ROS
