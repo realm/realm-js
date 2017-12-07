@@ -1,13 +1,13 @@
-vNext Release notes (TBD)
+x.y.z Release notes
 =============================================================
 ### Breaking changes
-* None.
+* None
 
-### Enchancements
+### Enhancements
 * None
 
 ### Bug fixes
-* None.
+* When authentication fails due to a misbehaving server, a proper error is thrown.
 
 ### Internal
 * Strings can now be assigned to Date columns. When that happens the JavaScript Date constructor will be invoked to parse the string.
@@ -18,7 +18,7 @@ vNext Release notes (TBD)
 ### Breaking changes
 * None.
 
-### Enchancements
+### Enhancements
 * None
 
 ### Bug fixes
@@ -33,12 +33,12 @@ vNext Release notes (TBD)
 ### Breaking changes
 * None.
 
-### Enchancements
+### Enhancements
 * None
 
 ### Bug fixes
 * [Object Server] Fixed a bug where deleted-then-recreated objects with identical primary keys to become empty.
-* [Object Server] Fixed a bug in outward partial sync is changed to ensure convergence of partial sync in the case where the client creates a primary key object, that is already present on the server, and subscribes to it in the same transaction. 
+* [Object Server] Fixed a bug in outward partial sync is changed to ensure convergence of partial sync in the case where the client creates a primary key object, that is already present on the server, and subscribes to it in the same transaction.
 
 ### Internal
 * Updated to Realm Sync 2.1.7 (see under "Bug fixes").
@@ -48,7 +48,7 @@ vNext Release notes (TBD)
 ### Breaking changes
 * None.
 
-### Enchancements
+### Enhancements
 * None
 
 ### Bug fixes
@@ -62,7 +62,7 @@ vNext Release notes (TBD)
 ### Breaking changes
 * None.
 
-### Enchancements
+### Enhancements
 * None
 
 ### Bug fixes
@@ -76,7 +76,7 @@ vNext Release notes (TBD)
 ### Breaking changes
 * None.
 
-### Enchancements
+### Enhancements
 * [Object Server] Improving performance of processing large changesets.
 
 ### Bug fixes
@@ -91,7 +91,7 @@ vNext Release notes (TBD)
 ### Breaking changes
 * None
 
-### Enchancements
+### Enhancements
 * None
 
 ### Bug fixes
@@ -106,7 +106,7 @@ vNext Release notes (TBD)
 ### Breaking changes
 * None.
 
-### Enchancements
+### Enhancements
 * Improved notification performance for objects with no object or list properties.
 
 ### Bug fixes
@@ -122,7 +122,7 @@ vNext Release notes (TBD)
 ### Breaking changes
 * None.
 
-### Enchancements
+### Enhancements
 * None.
 
 ### Bug fixes

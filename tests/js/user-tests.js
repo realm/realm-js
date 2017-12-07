@@ -160,6 +160,20 @@ module.exports = {
       .catch((e) => assertIsError(e));
   },
 
+  testLoginTowardsMisbehavingServer() {
+    const username = uuid();
+
+    // Try authenticating towards a server thats clearly not ROS
+    return Realm.Sync.User.register('https://github.com/realm/realm-js', username, 'user')
+      .catch((e) => {
+        assertIsError(e);
+        TestCase.assertEqual(
+          e.message,
+          "Could not authenticate: Realm Object Server didn't respond with valid JSON"
+        );
+      });
+  },
+
   testAll() {
     const all = Realm.Sync.User.all;
     TestCase.assertArrayLength(Object.keys(all), 0);
@@ -324,4 +338,3 @@ module.exports = {
   }, */
 
 };
-
