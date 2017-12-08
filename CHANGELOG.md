@@ -1,17 +1,17 @@
-x.y.z Release notes
+2.0.13 Release notes (2017-12-8)
 =============================================================
 ### Breaking changes
-* None
+* None.
 
 ### Enhancements
-* None
+* None.
 
 ### Bug fixes
-* When authentication fails due to a misbehaving server, a proper error is thrown.
+* [Object Server] When authentication fails due to a misbehaving server, a proper error is thrown.
 
 ### Internal
-* Strings can now be assigned to Date columns. When that happens the JavaScript Date constructor will be invoked to parse the string.
-* Base64 strings can now be assigned to Data columns.
+* [Object Server] Strings can now be assigned to Date columns. When that happens the JavaScript Date constructor will be invoked to parse the string.
+* [Object Server] Base64 strings can now be assigned to Data columns.
 
 2.0.12 Release notes (2017-12-1)
 =============================================================
@@ -19,7 +19,7 @@ x.y.z Release notes
 * None.
 
 ### Enhancements
-* None
+* None.
 
 ### Bug fixes
 * Fixed a bug in 3rd party JSON parser: `localeconv()` does not exist on Android API < 21 and should not be called.
