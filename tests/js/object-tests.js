@@ -453,5 +453,25 @@ module.exports = {
         TestCase.assertEqual(realm.objects('Date')[2].currentDate.getTime(), 1000000000000);
         TestCase.assertEqual(realm.objects('Date')[3].currentDate.getTime(), -1000000000000);
         TestCase.assertEqual(realm.objects('Date')[4].currentDate.toString(), stringifiedDate.toString());
+    },
+
+    testDateResolution: function() {
+        const dateObjectSchema = {
+            name: 'DateObject',
+            properties: {
+                dateCol: 'date'
+            }
+        }
+
+        var realm = new Realm({schema: [dateObjectSchema]})
+        realm.write(function() {
+            realm.create('DateObject', { dateCol: new Date('2017-12-07 20:16:03.837+00') })
+        })
+
+        var objects = realm.objects('DateObject')
+        TestCase.assertEqual(new Date('2017-12-07 20:16:03.837+00').getTime(), objects[0].dateCol.getTime())
+        TestCase.assertTrue(new Date('2017-12-07 20:16:03.837+00').toISOString() === objects[0].dateCol.toISOString())
+
+        realm.close()
     }
 };
