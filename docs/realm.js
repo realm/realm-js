@@ -73,7 +73,7 @@ class Realm {
     get isInTransaction() {}
 
     /**
-     * Indicated is this Realm is closed.
+     * Indicates if this Realm has been closed.
      * @type {boolean}
      * @readonly
      * @since 2.1.0
