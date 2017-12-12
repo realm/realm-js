@@ -1,3 +1,18 @@
+
+X.Y.Z Release notes
+=============================================================
+### Breaking changes
+* None.
+
+### Enhancements
+* Added property `Realm.isClosed` which indicates if a Realm instance is closed or not.
+
+### Bug fixes
+* None.
+
+### Internal
+* None.
+
 2.0.13 Release notes (2017-12-8)
 =============================================================
 ### Breaking changes

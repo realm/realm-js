@@ -458,6 +458,7 @@ declare class Realm {
     readonly schema: Realm.ObjectSchema[];
     readonly schemaVersion: number;
     readonly isInTransaction: boolean;
+    readonly isClosed: boolean;
 
     readonly syncSession: Realm.Sync.Session | null;
 

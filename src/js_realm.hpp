@@ -198,6 +198,7 @@ public:
     static void get_in_memory(ContextType, ObjectType, ReturnValue &);
     static void get_read_only(ContextType, ObjectType, ReturnValue &);
     static void get_is_in_transaction(ContextType, ObjectType, ReturnValue &);
+    static void get_is_closed(ContextType, ObjectType, ReturnValue &);
 #if REALM_ENABLE_SYNC
     static void get_sync_session(ContextType, ObjectType, ReturnValue &);
 #endif
@@ -259,6 +260,7 @@ public:
         {"inMemory", {wrap<get_in_memory>, nullptr}},
         {"readOnly", {wrap<get_read_only>, nullptr}},
         {"isInTransaction", {wrap<get_is_in_transaction>, nullptr}},
+        {"isClosed", {wrap<get_is_closed>, nullptr}},
 #if REALM_ENABLE_SYNC
         {"syncSession", {wrap<get_sync_session>, nullptr}},
 #endif
@@ -694,6 +696,11 @@ void RealmClass<T>::get_is_in_transaction(ContextType ctx, ObjectType object, Re
     return_value.set(get_internal<T, RealmClass<T>>(object)->get()->is_in_transaction());
 }
 
+template<typename T>
+void RealmClass<T>::get_is_closed(ContextType ctx, ObjectType object, ReturnValue &return_value) {
+    return_value.set(get_internal<T, RealmClass<T>>(object)->get()->is_closed());
+}
+
 #if REALM_ENABLE_SYNC
 template<typename T>
 void RealmClass<T>::get_sync_session(ContextType ctx, ObjectType object, ReturnValue &return_value) {
@@ -738,7 +745,7 @@ void RealmClass<T>::wait_for_download_completion(ContextType ctx, ObjectType thi
 
                 ValueType callback_arguments[1];
                 callback_arguments[0] = object;
-                
+
                 Function<T>::callback(protected_ctx, protected_callback, typename T::Object(), 1, callback_arguments);
             }
 
