@@ -73,6 +73,14 @@ class Realm {
     get isInTransaction() {}
 
     /**
+     * Indicates if this Realm has been closed.
+     * @type {boolean}
+     * @readonly
+     * @since 2.1.0
+     */
+     get isClosed() {}
+
+    /**
      * Gets the sync session if this is a synced Realm
      * @type {Session}
      */
