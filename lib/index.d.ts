@@ -85,6 +85,7 @@ declare namespace Realm {
         schemaVersion?: number;
         sync?: Realm.Sync.SyncConfiguration;
         deleteRealmIfMigrationNeeded?: boolean;
+        disableFormatUpgrade?: boolean;
     }
 
     // object props type

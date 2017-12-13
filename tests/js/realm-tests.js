@@ -1181,4 +1181,12 @@ module.exports = {
             new Realm({schema: schema, deleteRealmIfMigrationNeeded: true, migration: function(oldRealm, newRealm) {}});
         }, "Cannot include 'migration' when 'deleteRealmIfMigrationNeeded' is set.")
     },
+
+    testDisableFileFormatUpgrade: function() {
+        Realm.copyBundledRealmFiles();
+
+        TestCase.assertThrowsContaining(() => { 
+            new Realm({ path: 'dates-v3.realm', disableFormatUpgrade: true } );
+        }, 'The Realm file format must be allowed to be upgraded in order to proceed.');
+    }
 };
