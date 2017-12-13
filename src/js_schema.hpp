@@ -23,8 +23,6 @@
 #include "js_types.hpp"
 #include "schema.hpp"
 
-#include "util/format.hpp"
-
 namespace realm {
 namespace js {
 
