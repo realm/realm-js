@@ -63,6 +63,68 @@
         "src/object-store/src/parser/query_builder.cpp",
         "src/object-store/src/util/format.cpp",
         "src/object-store/src/util/uuid.cpp",
+
+        "src/object-store/src/binding_callback_thread_observer.hpp",
+        "src/object-store/src/binding_context.hpp",
+        "src/object-store/src/collection_notifications.hpp",
+        "src/object-store/src/descriptor_ordering.hpp",
+        "src/object-store/src/execution_context_id.hpp",
+        "src/object-store/src/feature_checks.hpp",
+        "src/object-store/src/impl/apple/external_commit_helper.hpp",
+        "src/object-store/src/impl/apple/keychain_helper.hpp",
+        "src/object-store/src/impl/collection_change_builder.hpp",
+        "src/object-store/src/impl/collection_notifier.hpp",
+        "src/object-store/src/impl/epoll/external_commit_helper.hpp",
+        "src/object-store/src/impl/external_commit_helper.hpp",
+        "src/object-store/src/impl/generic/external_commit_helper.hpp",
+        "src/object-store/src/impl/list_notifier.hpp",
+        "src/object-store/src/impl/notification_wrapper.hpp",
+        "src/object-store/src/impl/object_accessor_impl.hpp",
+        "src/object-store/src/impl/object_notifier.hpp",
+        "src/object-store/src/impl/primitive_list_notifier.hpp",
+        "src/object-store/src/impl/realm_coordinator.hpp",
+        "src/object-store/src/impl/results_notifier.hpp",
+        "src/object-store/src/impl/transact_log_handler.hpp",
+        "src/object-store/src/impl/weak_realm_notifier.hpp",
+        "src/object-store/src/impl/windows/external_commit_helper.hpp",
+        "src/object-store/src/index_set.hpp",
+        "src/object-store/src/list.hpp",
+        "src/object-store/src/object.hpp",
+        "src/object-store/src/object_accessor.hpp",
+        "src/object-store/src/object_schema.hpp",
+        "src/object-store/src/object_store.hpp",
+        "src/object-store/src/parser/parser.hpp",
+        "src/object-store/src/parser/query_builder.hpp",
+        "src/object-store/src/property.hpp",
+        "src/object-store/src/results.hpp",
+        "src/object-store/src/schema.hpp",
+        "src/object-store/src/shared_realm.hpp",
+        "src/object-store/src/sync/impl/apple/network_reachability_observer.hpp",
+        "src/object-store/src/sync/impl/apple/system_configuration.hpp",
+        "src/object-store/src/sync/impl/network_reachability.hpp",
+        "src/object-store/src/sync/impl/sync_client.hpp",
+        "src/object-store/src/sync/impl/sync_file.hpp",
+        "src/object-store/src/sync/impl/sync_metadata.hpp",
+        "src/object-store/src/sync/partial_sync.hpp",
+        "src/object-store/src/sync/sync_config.hpp",
+        "src/object-store/src/sync/sync_manager.hpp",
+        "src/object-store/src/sync/sync_permission.hpp",
+        "src/object-store/src/sync/sync_session.hpp",
+        "src/object-store/src/sync/sync_user.hpp",
+        "src/object-store/src/thread_safe_reference.hpp",
+        "src/object-store/src/util/aligned_union.hpp",
+        "src/object-store/src/util/android/event_loop_signal.hpp",
+        "src/object-store/src/util/any.hpp",
+        "src/object-store/src/util/apple/event_loop_signal.hpp",
+        "src/object-store/src/util/atomic_shared_ptr.hpp",
+        "src/object-store/src/util/compiler.hpp",
+        "src/object-store/src/util/event_loop_signal.hpp",
+        "src/object-store/src/util/format.hpp",
+        "src/object-store/src/util/generic/event_loop_signal.hpp",
+        "src/object-store/src/util/tagged_bool.hpp",
+        "src/object-store/src/util/time.hpp",
+        "src/object-store/src/util/uuid.hpp",
+        "src/object-store/src/util/uv/event_loop_signal.hpp",
       ],
       "conditions": [
         ["OS=='win'", {
@@ -115,12 +177,14 @@
       "target_name": "realm-core",
       "type": "none",
       "direct_dependent_settings": {
-        "libraries": [ "-lrealm<(debug_library_suffix)" ],
         "conditions": [
           ["use_realm_debug", {
             "defines": [ "REALM_DEBUG=1" ]
           }]
         ]
+      },
+      "link_settings": {
+        "libraries": [ "-lrealm<(debug_library_suffix)" ],
       },
       "variables": {
         "prefix": "<!(node -p \"process.env.REALM_CORE_PREFIX || String()\")"
@@ -130,7 +194,7 @@
           "all_dependent_settings": {
             "include_dirs": [ "<(prefix)/src", "<(prefix)/<(build_directory)/src" ],
           },
-          "direct_dependent_settings": {
+          "link_settings": {
             "library_dirs": [ "<(prefix)/<(build_directory)/src/realm" ]
           }
         }, {
@@ -145,7 +209,7 @@
       "target_name": "realm-sync",
       "type": "none",
       "dependencies": [ "realm-core" ],
-      "direct_dependent_settings": {
+      "link_settings": {
         "conditions": [
           ["OS=='win'", {
             "libraries": [ "-lrealm-sync<(debug_library_suffix)" ]
@@ -180,7 +244,7 @@
     {
       "target_name": "OpenSSL",
       "type": "none",
-      "direct_dependent_settings": {
+      "link_settings": {
         "conditions": [
           ["OS=='win'", {
             "libraries": [ "libeay32.lib", "ssleay32.lib" ],

@@ -205,11 +205,6 @@ inline v8::Local<v8::Object> node::Value::to_array(v8::Isolate* isolate, const v
 }
 
 template<>
-inline v8::Local<v8::Object> node::Value::to_date(v8::Isolate* isolate, const v8::Local<v8::Value> &value) {
-    return to_object(isolate, value);
-}
-
-template<>
 inline v8::Local<v8::Function> node::Value::to_function(v8::Isolate* isolate, const v8::Local<v8::Value> &value) {
     return value->IsFunction() ? v8::Local<v8::Function>::Cast(value) : v8::Local<v8::Function>();
 }
@@ -218,6 +213,16 @@ template<>
 inline v8::Local<v8::Function> node::Value::to_constructor(v8::Isolate* isolate, const v8::Local<v8::Value> &value) {
     return to_function(isolate, value);
 }
-    
+
+template<>
+inline v8::Local<v8::Object> node::Value::to_date(v8::Isolate* isolate, const v8::Local<v8::Value> &value) {
+    if (value->IsString()) {
+        v8::Local<v8::Function> date_constructor = to_constructor(isolate, node::Object::get_property(isolate, isolate->GetCurrentContext()->Global(), "Date"));
+        std::array<v8::Local<v8::Value>, 1> args { {value} };
+        return node::Function::construct(isolate, date_constructor, args.size(), args.data());
+    }
+    return to_object(isolate, value);
+}
+
 } // js
 } // realm

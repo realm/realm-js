@@ -39,7 +39,6 @@ module.exports = {
         });
         
         TestCase.assertThrowsContaining(() => new Realm.List(), 'constructor');
-        TestCase.assertType(Realm.List, 'function');
         TestCase.assertInstanceOf(Realm.List, Function);
     },
 

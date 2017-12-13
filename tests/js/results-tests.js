@@ -451,11 +451,11 @@ module.exports = {
         });
 
         return new Promise((r, _reject) => {
-                resolve = r;
-                realm.write(() => {
-                    realm.create('TestObject', { doubleCol: 1 });
-                });
+            resolve = r;
+            realm.write(() => {
+                realm.create('TestObject', { doubleCol: 1 });
             });
+        });
     },
 
     testResultsAggregateFunctions: function() {

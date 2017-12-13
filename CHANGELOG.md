@@ -1,9 +1,69 @@
+
+X.Y.Z Release notes
+=============================================================
+### Breaking changes
+* None.
+
+### Enhancements
+* Added property `Realm.isClosed` which indicates if a Realm instance is closed or not.
+
+### Bug fixes
+* None.
+
+### Internal
+* None.
+
+2.0.13 Release notes (2017-12-8)
+=============================================================
+### Breaking changes
+* None.
+
+### Enhancements
+* None.
+
+### Bug fixes
+* [Object Server] When authentication fails due to a misbehaving server, a proper error is thrown.
+
+### Internal
+* [Object Server] Strings can now be assigned to Date columns. When that happens the JavaScript Date constructor will be invoked to parse the string.
+* [Object Server] Base64 strings can now be assigned to Data columns.
+
+2.0.12 Release notes (2017-12-1)
+=============================================================
+### Breaking changes
+* None.
+
+### Enhancements
+* None.
+
+### Bug fixes
+* Fixed a bug in 3rd party JSON parser: `localeconv()` does not exist on Android API < 21 and should not be called.
+
+### Internal
+* Fixed issues in unit tests (`addListener` hangs on Android).
+* Upgraded to Realm Sync 2.1.8 (no external effects).
+
+2.0.11 Release notes (2017-11-23)
+=============================================================
+### Breaking changes
+* None.
+
+### Enhancements
+* None
+
+### Bug fixes
+* [Object Server] Fixed a bug where deleted-then-recreated objects with identical primary keys to become empty.
+* [Object Server] Fixed a bug in outward partial sync is changed to ensure convergence of partial sync in the case where the client creates a primary key object, that is already present on the server, and subscribes to it in the same transaction.
+
+### Internal
+* Updated to Realm Sync 2.1.7 (see under "Bug fixes").
+
 2.0.10 Release notes (2017-11-21)
 =============================================================
 ### Breaking changes
 * None.
 
-### Enchancements
+### Enhancements
 * None
 
 ### Bug fixes
@@ -17,7 +77,7 @@
 ### Breaking changes
 * None.
 
-### Enchancements
+### Enhancements
 * None
 
 ### Bug fixes
@@ -31,7 +91,7 @@
 ### Breaking changes
 * None.
 
-### Enchancements
+### Enhancements
 * [Object Server] Improving performance of processing large changesets.
 
 ### Bug fixes
@@ -46,7 +106,7 @@
 ### Breaking changes
 * None
 
-### Enchancements
+### Enhancements
 * None
 
 ### Bug fixes
@@ -61,7 +121,7 @@
 ### Breaking changes
 * None.
 
-### Enchancements
+### Enhancements
 * Improved notification performance for objects with no object or list properties.
 
 ### Bug fixes
@@ -77,7 +137,7 @@
 ### Breaking changes
 * None.
 
-### Enchancements
+### Enhancements
 * None.
 
 ### Bug fixes

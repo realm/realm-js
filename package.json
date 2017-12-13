@@ -1,7 +1,7 @@
 {
   "name": "realm",
   "description": "Realm is a mobile database: an alternative to SQLite and key-value stores",
-  "version": "2.0.10",
+  "version": "2.0.13",
   "license": "Apache-2.0",
   "homepage": "https://realm.io",
   "keywords": [
@@ -99,7 +99,7 @@
     "eslint": "^3.2.2",
     "eslint-plugin-jasmine": "^2.1.0",
     "eslint-plugin-react": "^6.7.0",
-    "jsdoc": "^3.4.0",
+    "jsdoc": "^3.5.5",
     "license-checker": "^8.0.3",
     "mockery": "^2.0.0",
     "rimraf": "^2.6.1",

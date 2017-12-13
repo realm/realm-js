@@ -297,6 +297,15 @@ module.exports = {
         });
         TestCase.assertArraysEqual(new Uint8Array(object.dataCol), RANDOM_DATA);
 
+        if (Realm.Sync) {
+            // The base64 decoder comes from realm-sync
+            // Should be able to also set a data property to base64-encoded string.
+            realm.write(function() {
+                object.dataCol = require('buffer/').Buffer.from(RANDOM_DATA).toString('base64');
+            });
+            TestCase.assertArraysEqual(new Uint8Array(object.dataCol), RANDOM_DATA);
+        }
+
         // Should be to set a data property to a DataView.
         realm.write(function() {
             object.dataCol = new DataView(RANDOM_DATA.buffer);
@@ -348,7 +357,7 @@ module.exports = {
                 object.dataCol = 1;
             });
             TestCase.assertThrows(function() {
-                object.dataCol = 'data';
+                object.dataCol = 'some binary data';
             });
             TestCase.assertThrows(function() {
                 object.dataCol = [1];
@@ -431,15 +440,18 @@ module.exports = {
 
         // test different dates
         var realm = new Realm({schema: [schemas.DateObject]});
+        const stringifiedDate = new Date();
         realm.write(function() {
             realm.create('Date', { currentDate: new Date(10000) });
             realm.create('Date', { currentDate: new Date(-10000) });
             realm.create('Date', { currentDate: new Date(1000000000000) });
             realm.create('Date', { currentDate: new Date(-1000000000000) });
+            realm.create('Date', { currentDate: stringifiedDate.toString() });
         });
         TestCase.assertEqual(realm.objects('Date')[0].currentDate.getTime(), 10000);
         TestCase.assertEqual(realm.objects('Date')[1].currentDate.getTime(), -10000);
         TestCase.assertEqual(realm.objects('Date')[2].currentDate.getTime(), 1000000000000);
         TestCase.assertEqual(realm.objects('Date')[3].currentDate.getTime(), -1000000000000);
+        TestCase.assertEqual(realm.objects('Date')[4].currentDate.toString(), stringifiedDate.toString());
     }
 };
