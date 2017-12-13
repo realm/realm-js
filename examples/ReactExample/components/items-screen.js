@@ -54,51 +54,10 @@ export default class ItemsScreen extends React.Component {
     }
 
     render() {
-        // let objects = realm.objects('Todo');
-        // let extraItems = [
-        //     { name: 'Complete', items: objects.filtered('done = true') },
-        //     { name: 'Incomplete', items: objects.filtered('done = false') },
-        // ];
-
+    
         let properties = {
-            // ref: 'listView',
-            // extraItems: extraItems,
-            // onPressItem: this._onPressTodoList,
         }
 
         return <TodoItemsView items={this.props.navigation.state.params.items} {...properties} />;
     }
-
-    // renderScene(route) {
-    //     console.log(this.todoLists);
-    //     return <route.component items={this.todoLists} {...route.passProps} />
-    // }
-
-    
-
-    // _onPressTodoItem(list) {
-    //     const { navigate } = this.props.navigation;
-    //     let items = list.items;
-
-    //     let route = {
-    //         title: list.name,
-    //         component: TodoListView,
-    //         passProps: {
-    //             ref: 'listItemView',
-    //             items: items,
-    //             rowClass: TodoItem,
-    //         },
-    //     };
-
-    //     // Check if the items are mutable (i.e. List rather than Results).
-    //     if (items.push) {
-    //         Object.assign(route, {
-    //             rightButtonTitle: 'Add',
-    //             onRightButtonPress: () => this._addNewTodoItem(list),
-    //         });
-    //     }
-
-    //     // this.refs.nav.push(route);
-    //     navigate('TodoListItem', { items: items })
-    // }
 }

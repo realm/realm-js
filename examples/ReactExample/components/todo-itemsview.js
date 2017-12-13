@@ -86,13 +86,6 @@ export default class TodoItemsView extends React.Component {
         let RowClass;
         let editing = false;
 
-        // if (sectionIndex == 0) {
-        //     RowClass = this.props.rowClass || TodoListItem;
-        //     editing = this.state.editingRow == rowIndex;
-        // } else if (sectionIndex == 1) {
-        //     RowClass = TodoListExtraItem;
-        // }
-
         return (
             <TodoItem
                 item={item}
