@@ -22,9 +22,9 @@ import {
     Platform,
     StyleSheet
 } from 'react-native';
-import NavigationExperimental from 'react-native-deprecated-custom-components';
+// import NavigationExperimental from 'react-native-deprecated-custom-components';
 
-const { NavBarHeight, TotalNavHeight } = NavigationExperimental.Navigator.NavigationBar.Styles.General;
+// const { NavBarHeight, TotalNavHeight } = NavigationExperimental.Navigator.NavigationBar.Styles.General;
 const iOS = (Platform.OS == 'ios');
 
 
@@ -44,7 +44,7 @@ export default StyleSheet.create({
     navBarView: {
         alignItems: 'center',
         flexDirection: 'row',
-        height: NavBarHeight,
+        height: 20,
     },
     navBarLeftArrow: {
         color: '#fff',
@@ -67,7 +67,7 @@ export default StyleSheet.create({
         fontWeight: '500',
     },
     navScene: {
-        top: TotalNavHeight,
+        top: 20,
     },
     listItem: {
         borderColor: '#c8c7cc',

@@ -26,11 +26,11 @@ import {
 } from 'react-native';
 
 import { ListView } from 'realm/react-native';
-import TodoListItem from './todo-list-item';
+import TodoItem from './todo-item';
 import realm from './realm';
 import styles from './styles';
 
-export default class TodoListView extends React.Component {
+export default class TodoItemsView extends React.Component {
     constructor(props) {
         super(props);
 
@@ -86,15 +86,15 @@ export default class TodoListView extends React.Component {
         let RowClass;
         let editing = false;
 
-        if (sectionIndex == 0) {
-            RowClass = this.props.rowClass || TodoListItem;
-            editing = this.state.editingRow == rowIndex;
-        } else if (sectionIndex == 1) {
-            RowClass = TodoListExtraItem;
-        }
+        // if (sectionIndex == 0) {
+        //     RowClass = this.props.rowClass || TodoListItem;
+        //     editing = this.state.editingRow == rowIndex;
+        // } else if (sectionIndex == 1) {
+        //     RowClass = TodoListExtraItem;
+        // }
 
         return (
-            <RowClass
+            <TodoItem
                 item={item}
                 editing={editing}
                 onPress={() => this._onPressRow(item, sectionIndex, rowIndex)}
@@ -168,27 +168,5 @@ export default class TodoListView extends React.Component {
             return true;
         }
         return false;
-    }
-}
-
-class TodoListExtraItem extends TodoListItem {
-    renderText() {
-        return super.renderText(styles.listItemTextSpecial);
-    }
-
-    renderLeftSide() {
-        return (
-            <View style={styles.listItemLeftSide}>
-                <View style={styles.listItemCount}>
-                    <Text style={styles.listItemCountText}>
-                        {this.props.item.items.length}
-                    </Text>
-                </View>
-            </View>
-        );
-    }
-
-    renderRightSide() {
-        return null;
     }
 }

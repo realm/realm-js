@@ -30,13 +30,22 @@ import {
 
 import TodoItem from './todo-item';
 import TodoListView from './todo-listview';
+import TodoListItem from './todo-list-item';
+import ItemsScreen from './items-screen'
 import realm from './realm';
 import styles from './styles';
 
-import NavigationExperimental from 'react-native-deprecated-custom-components';
+// import NavigationExperimental from 'react-native-deprecated-custom-components';
+import { StackNavigator } from 'react-navigation';
+import RNExitApp from 'react-native-exit-app-no-history';
 
+const params = require("./params.json");
 
-export default class TodoApp extends React.Component {
+class HomeScreen extends React.Component {
+    static navigationOptions = {
+        title: 'Todo Lists',
+    };
+
     constructor(props) {
         super(props);
 
@@ -44,17 +53,21 @@ export default class TodoApp extends React.Component {
         this.todoLists = realm.objects('TodoList').sorted('creationDate');
         if (this.todoLists.length < 1) {
             realm.write(() => {
-                realm.create('TodoList', {name: 'Todo List', creationDate: new Date()});
+                realm.create('TodoList', { name: 'Todo List', creationDate: new Date() });
             });
         }
         this.todoLists.addListener((name, changes) => {
             console.log("changed: " + JSON.stringify(changes));
+            if (params) {
+                console.error("params.json indicate a test run. Exiting application");
+                RNExitApp.exitApp();
+            }
         });
         console.log("registered listener");
 
 
         // Bind all the methods that we will be passing as props.
-        this.renderScene = this.renderScene.bind(this);
+        // this.renderScene = this.renderScene.bind(this);
         this._addNewTodoList = this._addNewTodoList.bind(this);
         this._onPressTodoList = this._onPressTodoList.bind(this);
 
@@ -75,37 +88,17 @@ export default class TodoApp extends React.Component {
     render() {
         let objects = realm.objects('Todo');
         let extraItems = [
-            {name: 'Complete', items: objects.filtered('done = true')},
-            {name: 'Incomplete', items: objects.filtered('done = false')},
+            { name: 'Complete', items: objects.filtered('done = true') },
+            { name: 'Incomplete', items: objects.filtered('done = false') },
         ];
 
-        let route = {
-            title: 'My Todo Lists',
-            component: TodoListView,
-            passProps: {
-                ref: 'listView',
-                extraItems: extraItems,
-                onPressItem: this._onPressTodoList,
-            },
-            backButtonTitle: 'Lists',
-            rightButtonTitle: 'Add',
-            onRightButtonPress: this._addNewTodoList,
-        };
+        let properties = {
+            ref: 'listView',
+            extraItems: extraItems,
+            onPressItem: this._onPressTodoList,
+        }
 
-        let navigationBar = (
-            <NavigationExperimental.Navigator.NavigationBar routeMapper={RouteMapper} style={styles.navBar} />
-        );
-
-        return (
-            <NavigationExperimental.Navigator
-                ref="nav"
-                initialRoute={route}
-                navigationBar={navigationBar}
-                renderScene={this.renderScene}
-                sceneStyle={styles.navScene}
-                style={styles.navigator}
-            />
-        );
+        return <TodoListView items={this.todoLists} {...properties} />;
     }
 
     renderScene(route) {
@@ -120,7 +113,7 @@ export default class TodoApp extends React.Component {
         }
 
         realm.write(() => {
-            items.push({text: ''});
+            items.push({ text: '' });
         });
 
         this._setEditingRow(items.length - 1);
@@ -133,34 +126,17 @@ export default class TodoApp extends React.Component {
         }
 
         realm.write(() => {
-            realm.create('TodoList', {name: '', creationDate: new Date()});
+            realm.create('TodoList', { name: '', creationDate: new Date() });
         });
 
         this._setEditingRow(items.length - 1);
     }
 
     _onPressTodoList(list) {
+        const { navigate } = this.props.navigation;
         let items = list.items;
 
-        let route = {
-            title: list.name,
-            component: TodoListView,
-            passProps: {
-                ref: 'listItemView',
-                items: items,
-                rowClass: TodoItem,
-            },
-        };
-
-        // Check if the items are mutable (i.e. List rather than Results).
-        if (items.push) {
-            Object.assign(route, {
-                rightButtonTitle: 'Add',
-                onRightButtonPress: () => this._addNewTodoItem(list),
-            });
-        }
-
-        this.refs.nav.push(route);
+        navigate('ItemsScreen', { items: items })
     }
 
     _shouldAddNewItem(items) {
@@ -175,53 +151,14 @@ export default class TodoApp extends React.Component {
         let listView = this.currentListView;
 
         // Update the state on the currently displayed TodoList to edit this new item.
-        listView.setState({editingRow: rowIndex});
+        listView.setState({ editingRow: rowIndex });
         listView.updateDataSource();
     }
 }
 
-const RouteMapper = {
-    LeftButton(route, navigator, index, navState) {
-        if (index == 0) {
-            return null;
-        }
+const SimpleApp = StackNavigator({
+    Home: { screen: HomeScreen },
+    ItemsScreen: { screen: ItemsScreen }
+});
 
-        let prevRoute = navState.routeStack[index - 1];
-        return (
-            <TouchableOpacity onPress={() => navigator.pop()}>
-                <View style={[styles.navBarView, styles.navBarLeftButton]}>
-                    <Text style={styles.navBarLeftArrow}>‹</Text>
-                    <Text style={styles.navBarText}>
-                        {prevRoute.backButtonTitle || prevRoute.title || 'Back'}
-                    </Text>
-                </View>
-            </TouchableOpacity>
-        );
-    },
-
-    RightButton(route) {
-        if (!route.rightButtonTitle) {
-            return null;
-        }
-
-        return (
-            <TouchableOpacity onPress={route.onRightButtonPress}>
-                <View style={[styles.navBarView, styles.navBarRightButton]}>
-                    <Text style={styles.navBarText}>
-                        {route.rightButtonTitle}
-                    </Text>
-                </View>
-            </TouchableOpacity>
-        );
-    },
-
-    Title(route) {
-        return (
-            <View style={styles.navBarView}>
-                <Text style={[styles.navBarText, styles.navBarTitleText]}>
-                    {route.title}
-                </Text>
-            </View>
-        );
-    },
-};
+export default SimpleApp;

@@ -42,7 +42,12 @@ export default class TodoListItem extends React.Component {
 
     get done() {
         let items = this.props.item.items;
-        return items.length > 0 && items.every((item) => item.done);
+        if (items) {
+            return items.length > 0 && items.every((item) => item.done);
+        }
+        else {
+            return this.props.item.done;
+        }
     }
 
     get text() {

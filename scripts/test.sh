@@ -255,8 +255,11 @@ case "$TARGET" in
   open_chrome
   start_packager
 
+  echo "{ \"test\" : true }" > $(pwd)/components/params.json
   pushd ios
   xctest ReactExample
+  popd
+  echo "{}" > $(pwd)/components/params.json
   ;;
 "react-tests-android")
   npm run check-environment
