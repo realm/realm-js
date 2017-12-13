@@ -174,6 +174,18 @@ module.exports = {
       });
   },
 
+  testAuthenticateInvalidProvider() {
+    return Realm.Sync.User.authenticate('http://localhost:9080', 'FooBar', {})
+      .then((user) => { Promise.reject() } )
+      .catch((e) => { Promise.resolve() } )
+  },
+
+  testAuthenticateJWT() {
+    return Realm.Sync.User.authenticate('http://localhost:9080', 'jwt', { token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ' })
+      .then((user) => { Promise.resolve() } )
+      .catch((e) => { Promise.reject(e) } )
+  },
+
   testAll() {
     const all = Realm.Sync.User.all;
     TestCase.assertArrayLength(Object.keys(all), 0);

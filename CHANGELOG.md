@@ -6,12 +6,14 @@ X.Y.Z Release notes
 
 ### Enhancements
 * Added property `Realm.isClosed` which indicates if a Realm instance is closed or not.
+* [Object Server] Added JWT authenfication (#1548).
 
 ### Bug fixes
 * None.
 
 ### Internal
-* None.
+* [Object Server] Updated to Realm Object Server v2.2.0 for testing.
+
 
 2.0.13 Release notes (2017-12-8)
 =============================================================
