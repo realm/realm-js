@@ -1,5 +1,4 @@
-
-X.Y.Z Release notes
+2.1.0 Release notes (2017-12-14)
 =============================================================
 ### Breaking changes
 * None.
@@ -12,7 +11,7 @@ X.Y.Z Release notes
 * None.
 
 ### Internal
-* None.
+* Updated to React Native 0.50.4 (test and example apps).
 
 2.0.13 Release notes (2017-12-8)
 =============================================================
