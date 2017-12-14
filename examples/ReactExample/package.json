@@ -1,24 +1,26 @@
 {
-	"name": "ReactExample",
-	"version": "0.0.1",
-	"private": true,
-	"scripts": {
-		"start": "node node_modules/react-native/local-cli/cli.js start",
-		"test": "jest"
-	},
-	"dependencies": {
-		"react": "~15.4.0-rc.4",
-		"react-native": "0.40.0",
-		"realm": "file:../.."
-	},
-	"devDependencies": {
-		"babel-jest": "18.0.0",
-		"babel-preset-react-native": "1.9.1",
-		"jest": "18.1.0",
-		"react-test-renderer": "~15.4.0-rc.4",
-		"invariant": "^2.2.2"
-	},
-	"jest": {
-		"preset": "react-native"
-	}
+  "name": "ReactExample",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "start": "node node_modules/react-native/local-cli/cli.js start",
+    "test": "jest"
+  },
+  "dependencies": {
+    "react": "16.0.0",
+    "react-native": "0.50.4",
+    "react-navigation": "^1.0.0-beta.21",
+    "react-native-exit-app-no-history": "^1.0.2",
+    "realm": "file:../.."
+  },
+  "devDependencies": {
+    "babel-jest": "18.0.0",
+    "babel-preset-react-native": "4.0.0",
+    "invariant": "^2.2.2",
+    "jest": "18.1.0",
+    "react-test-renderer": "^16.2.0"
+  },
+  "jest": {
+    "preset": "react-native"
+  }
 }

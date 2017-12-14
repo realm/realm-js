@@ -32,15 +32,13 @@ const DATE3 = new Date(3);
 module.exports = {
     testListConstructor: function() {
         const realm = new Realm({schema: [schemas.PersonObject, schemas.PersonList]});
-
         realm.write(() => {
             let obj = realm.create('PersonList', {list: []});
             TestCase.assertInstanceOf(obj.list, Realm.List);
             TestCase.assertInstanceOf(obj.list, Realm.Collection);
         });
-
+        
         TestCase.assertThrowsContaining(() => new Realm.List(), 'constructor');
-
         TestCase.assertInstanceOf(Realm.List, Function);
     },
 

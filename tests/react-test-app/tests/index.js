@@ -52,7 +52,7 @@ export async function runTests() {
     let passed = true;
 
     for (let suiteName in testNames) {
-        console.log('Starting ' + suiteName);
+        console.warn('Starting ' + suiteName);
 
         for (let testName of testNames[suiteName]) {
             try {
@@ -72,11 +72,11 @@ export async function runTest(suiteName, testName) {
 
     try {
         await RealmTests.runTest(suiteName, testName);
-        console.log('+ ' + testName);
+        console.warn('+ ' + testName);
     }
     catch (e) {
-        console.warn('- ' + testName);
-        console.warn(e.message || e);
+        console.error('- ' + testName);
+        console.error(e.message || e);
         throw e;
     }
     finally {

@@ -33,13 +33,13 @@ import { getTestNames, runTest } from './tests';
 async function runTests() {
     let testNames = getTestNames();
     let rootXml = builder.create('testsuites');
-
+    let failingTests = [];
     for (let suiteName in testNames) {
         let itemTestsuite = rootXml.ele('testsuite');
         let nbrTests = 0;
         let nbrFailures = 0;
 
-        console.log('Starting ' + suiteName);
+        console.error('Starting ' + suiteName);
 
         for (let testName of testNames[suiteName]) {
             nbrTests++;
@@ -51,6 +51,7 @@ async function runTests() {
                 await runTest(suiteName, testName);
             }
             catch (e) {
+                failingTests.push(`${suiteName}: ${testName} : Error ${e.message}`);
                 itemTest.ele('error', {'message': e.message, 'stacktrace': e.stack}, e.toString());
                 nbrFailures++;
             }
@@ -73,10 +74,18 @@ async function runTests() {
     // write the unit tests reports
     try {
         await RNFS.writeFile('/sdcard/tests.xml', xmlString, 'utf8');
-        console.log('__REALM_REACT_ANDROID_TESTS_COMPLETED__');
+        console.log('__REALM_JS_TESTS_COMPLETED__');
+        if (failingTests.length !== 0) {
+            console.error('\n\nREALM_FAILING_TESTS\n');
+            console.error(failingTests);
+        } 
     }
     catch (e) {
         console.error(e);
+    }
+    finally {
+        console.warn("Realm Tests App finished. Exiting. Disable this to debug the app locally");
+        RNExitApp.exitApp();
     }
 }
 

@@ -203,7 +203,12 @@ module.exports = {
     },
 
     assertType: function(value, type, depth) {
-        this.assertEqual(typeof value, type, `Value ${value} expected to be of type ${type}`, 1 + depth || 0);
+        try {
+            this.assertEqual(typeof value, type, "", 1 + depth || 0);
+        }
+        catch (e) {
+            throw new Error(`Value ${value} expected to be of type ${type}`)
+        }
     },
 
     assertDefined: function(value, errorMessage, depth) {

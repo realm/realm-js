@@ -64,6 +64,6 @@ shell.exec("adb shell am start -n io.realm.react.testapp/.MainActivity");
 
 shell.popd();
 
-shell.exec("adb shell \"logcat -c && logcat | grep -m 1 __REALM_REACT_ANDROID_TESTS_COMPLETED__\"");
+shell.exec("adb shell \"logcat -c && logcat | grep -m 1 __REALM_JS_TESTS_COMPLETED__\"");
 
 shell.exec("adb pull /sdcard/tests.xml");
