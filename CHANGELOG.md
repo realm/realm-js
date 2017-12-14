@@ -6,6 +6,7 @@ X.Y.Z Release notes
 
 ### Enhancements
 * Added property `Realm.isClosed` which indicates if a Realm instance is closed or not.
+* Added property `disableFormatUpgrade` to the Realm configuration object which disables automatic file format upgrade when opening a Realm file.
 
 ### Bug fixes
 * None.

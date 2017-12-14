@@ -520,6 +520,12 @@ void RealmClass<T>::constructor(ContextType ctx, ObjectType this_object, size_t 
             if (!Value::is_undefined(ctx, cache_value)) {
                 config.cache = Value::validated_to_boolean(ctx, cache_value, "_cache");
             }
+
+            static const String disable_format_upgrade_string = "disableFormatUpgrade";
+            ValueType disable_format_upgrade_value = Object::get_property(ctx, object, disable_format_upgrade_string);
+            if (!Value::is_undefined(ctx, disable_format_upgrade_value)) {
+                config.disable_format_upgrade = Value::validated_to_boolean(ctx, disable_format_upgrade_value, "disableFormatUpgrade");
+            }
         }
     }
     else {
