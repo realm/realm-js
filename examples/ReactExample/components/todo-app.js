@@ -35,7 +35,6 @@ import ItemsScreen from './items-screen'
 import realm from './realm';
 import styles from './styles';
 
-// import NavigationExperimental from 'react-native-deprecated-custom-components';
 import { StackNavigator } from 'react-navigation';
 import RNExitApp from 'react-native-exit-app-no-history';
 
@@ -59,7 +58,7 @@ class HomeScreen extends React.Component {
         this.todoLists.addListener((name, changes) => {
             console.log("changed: " + JSON.stringify(changes));
             if (params) {
-                console.error("params.json indicate a test run. Exiting application");
+                console.error("params.json indicates a test run. Exiting application");
                 RNExitApp.exitApp();
             }
         });
@@ -67,7 +66,6 @@ class HomeScreen extends React.Component {
 
 
         // Bind all the methods that we will be passing as props.
-        // this.renderScene = this.renderScene.bind(this);
         this._addNewTodoList = this._addNewTodoList.bind(this);
         this._onPressTodoList = this._onPressTodoList.bind(this);
 

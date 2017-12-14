@@ -99,7 +99,7 @@ async function runTests() {
         
         //using console.log output is not shown in Release builds. using console.warn
         console.warn(xmlString);
-        console.warn('__REALM_REACT_IOS_TESTS_COMPLETED__');
+        console.warn('__REALM_JS_TESTS_COMPLETED__');
         if (failingTests.length !== 0) {
             console.error('\n\nREALM_FAILING_TESTS\n');
             console.error(failingTests);
@@ -109,7 +109,7 @@ async function runTests() {
         console.error(e);
     }
     finally {
-        console.warn("Realm iOS Tests App finished. Exiting. Disable this to debug the app locally");
+        console.warn("Realm Tests App finished. Exiting. Disable this to debug the app locally");
         RNExitApp.exitApp();
     }
 }

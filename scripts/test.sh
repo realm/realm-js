@@ -66,7 +66,7 @@ stop_server() {
   echo stopping server
   if [[ ${SERVER_PID} -gt 0 ]] ; then
     echo server is running. killing it
-    kill -9 ${SERVER_PID} || true
+    kill -9 ${SERVER_PID} >/dev/null 2>&1  || true
   fi
 }
 
@@ -104,7 +104,7 @@ cleanup() {
 
 open_chrome() { 
   if [ $CONFIGURATION == 'Release' ]; then
-    break
+    return;
   fi
   
   local dir
@@ -152,6 +152,10 @@ xctest() {
   echo "Shuttting down ${SIM_DEVICE_NAME} simulator. (device is not deleted. you can use it to debug the app)"
   shutdown_ios_simulator
 
+  check_test_results $1
+}
+
+check_test_results() {
   echo "Checking tests results"
   if grep -q "REALM_FAILING_TESTS" $(pwd)/build/out.txt; then
       echo "*** REALM JS TESTS FAILED. See tests results above ***"
@@ -167,7 +171,7 @@ setup_ios_simulator() {
   delete_ios_simulator >/dev/null 2>&1
 
   #parse devices
-  IOS_RUNTIME=$(xcrun simctl list runtimes |  grep -m1 -o '(com.apple.CoreSimulator.SimRuntime.iOS.*)' | sed 's/[()]//g')
+  IOS_RUNTIME=$(xcrun simctl list runtimes |  grep -m1 -o 'com.apple.CoreSimulator.SimRuntime.iOS.*' | sed 's/[()]//g')
   echo using iOS Runtime ${IOS_RUNTIME} to create new simulator ${SIM_DEVICE_NAME}
 
   #create new test simulator
@@ -271,21 +275,25 @@ case "$TARGET" in
   [[ $CONFIGURATION == 'Debug' ]] && exit 0
   XCPRETTY=''
 
-  pushd tests/react-test-app
+  pushd react-native/android
+  $(pwd)/gradlew publishAndroid
+  popd
 
+  pushd tests/react-test-app
   npm install
 
   echo "Resetting logcat"
   # Despite the docs claiming -c to work, it doesn't, so `-T 1` alleviates that.
+  mkdir -p $(pwd)/build || true
   adb logcat -c
-  adb logcat -T 1 | tee "$LOGCAT_OUT" &
+  adb logcat -T 1 | tee "$LOGCAT_OUT" | tee $(pwd)/build/out.txt &
 
   ./run-android.sh
 
   echo "Start listening for Test completion"
 
   while :; do
-    if grep -q "__REALM_REACT_ANDROID_TESTS_COMPLETED__" "$LOGCAT_OUT"; then
+    if grep -q "__REALM_JS_TESTS_COMPLETED__" "$LOGCAT_OUT"; then
       break
     else
       echo "Waiting for tests."
@@ -301,7 +309,8 @@ case "$TARGET" in
   echo "********* TESTS COMPLETED *********";
   echo "********* File location: $(pwd)/tests.xml *********";
   cat tests.xml
-
+  
+  check_test_results ReactTests
   ;;
 "node")
   npm run check-environment

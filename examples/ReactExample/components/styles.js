@@ -22,9 +22,7 @@ import {
     Platform,
     StyleSheet
 } from 'react-native';
-// import NavigationExperimental from 'react-native-deprecated-custom-components';
 
-// const { NavBarHeight, TotalNavHeight } = NavigationExperimental.Navigator.NavigationBar.Styles.General;
 const iOS = (Platform.OS == 'ios');
 
 
