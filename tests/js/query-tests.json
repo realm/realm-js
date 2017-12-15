@@ -45,9 +45,9 @@
         ["QueryCount", 1, "BoolObject", "boolCol == $0", false],
         ["QueryCount", 0, "BoolObject", "boolCol == true && boolCol == false"],
         ["QueryCount", 3, "BoolObject", "boolCol == true || boolCol == false"],
+        ["QueryCount", 1, "BoolObject", "boolCol == 0"],
+        ["QueryCount", 2, "BoolObject", "boolCol == 1"],
 
-        ["QueryThrows", "BoolObject", "boolCol == 0"],
-        ["QueryThrows", "BoolObject", "boolCol == 1"],
         ["QueryThrows", "BoolObject", "boolCol == 'not a bool'"],
         ["QueryThrows", "BoolObject", "boolCol == $0", "not a bool"],
         ["QueryThrows", "BoolObject", "boolCol >  true"],
@@ -294,8 +294,7 @@
             { "name": "floatCol",   "type": "float" },
             { "name": "doubleCol",  "type": "double" },
             { "name": "stringCol",  "type": "string" },
-            { "name": "dateCol",    "type": "date" },
-            { "name": "dataCol",    "type": "data" }
+            { "name": "dateCol",    "type": "date?" }
         ]
     }, 
     {
@@ -304,13 +303,15 @@
         "properties": [
             { "name": "primaryKey", "type": "int" },
             { "name": "basicLink",  "type": "object", "objectType": "BasicTypesObject" },
-            { "name": "linkLink",   "type": "object", "objectType": "LinkTypesObject" }
+            { "name": "linkLink",   "type": "object", "objectType": "LinkTypesObject" },
+            { "name": "linkList",   "type": "BasicTypesObject[]" }
         ]
     }],
     "objects": [
-        { "type": "LinkTypesObject", "value": [0, [1, 0.1, 0.001, "1", 1, [1, 10, 100]], null] },
-        { "type": "LinkTypesObject", "value": [1, null, [2, [1, 0.1, 0.001, "1", 1, [1, 10, 100]], null]] },
-        { "type": "LinkTypesObject", "value": [3, null, [4, [2, 0.2, 0.002, "2", 2, [2, 20, 200]], null]] }
+        { "type": "LinkTypesObject", "value": [0, [1, 0.1, 0.001, "1", null], null, []] },
+        { "type": "LinkTypesObject", "value": [1, null, [2, [1, 0.1, 0.001, "1", null], null, []], []] },
+        { "type": "LinkTypesObject", "value": [3, null, [4, [2, 0.2, 0.002, "2", null], null, []], []] },
+        { "type": "LinkTypesObject", "value": [5, null, null, [[3, 0.3, 0.003, "3", null]]] }
     ],
     "tests": [
         ["ObjectSet", [0, 2], "LinkTypesObject", "basicLink.intCol == 1"],
@@ -318,7 +319,8 @@
         ["ObjectSet", [1, 3], "LinkTypesObject", "linkLink.basicLink.intCol > 0"],
         ["ObjectSet", [0, 2], "LinkTypesObject", "basicLink.floatCol == 0.1"],
         ["ObjectSet", [1],    "LinkTypesObject", "linkLink.basicLink.floatCol == 0.1"],
-        ["ObjectSet", [1, 3], "LinkTypesObject", "linkLink.basicLink.floatCol > 0"]
+        ["ObjectSet", [1, 3], "LinkTypesObject", "linkLink.basicLink.floatCol > 0"],
+        ["ObjectSet", [5],    "LinkTypesObject", "linkList.intCol == 3"]
     ]
 },
 
