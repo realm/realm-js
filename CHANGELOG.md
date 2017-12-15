@@ -1,3 +1,18 @@
+x.y.z Release notes
+=============================================================
+### Breaking changes
+* None.
+
+### Enhancements
+* None.
+
+### Bug fixes
+* [Object Server] Fixed a bug where long reconnection happens when a proxy in front of the sync worker returns one of those.
+
+### Internal
+* Updated to Realm Sync 2.1.10 (see "Bug fixes").
+
+
 2.1.0 Release notes (2017-12-14)
 =============================================================
 ### Breaking changes
