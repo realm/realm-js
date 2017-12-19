@@ -1,3 +1,17 @@
+X.Y.Z Release notes
+=============================================================
+### Breaking changes
+* None.
+
+### Enhancements
+* None.
+
+### Bug fixes
+* Fix a bug where `Realm.open` could unexpectedly raise a "Realm at path ... already opened with different schema version" error.
+
+### Internal
+* None
+
 2.1.1 Release notes (2017-12-15)
 =============================================================
 ### Breaking changes
