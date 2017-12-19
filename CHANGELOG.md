@@ -8,7 +8,7 @@
 
 ### Bug fixes
 * [Object Server] Fixed a bug where long reconnection happens when a proxy in front of the sync worker returns one of those.
-* Fix a bug where `Realm.open` could unexpectedly raise an "Realm at path ... already opened with different schema version" error.
+* Fix a bug where `Realm.open` could unexpectedly raise a "Realm at path ... already opened with different schema version" error.
 
 ### Internal
 * Updated to Realm Sync 2.1.10 (see "Bug fixes").
