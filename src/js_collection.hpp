@@ -23,6 +23,9 @@
 #include "js_observable.hpp"
 
 #include "collection_notifications.hpp"
+#if REALM_ENABLE_SYNC
+#include "subscription_state.hpp"
+#endif
 
 namespace realm {
 namespace js {
@@ -68,6 +71,17 @@ typename T::Value CollectionClass<T>::create_collection_change_set(ContextType c
         modifications.push_back(Value::from_number(ctx, index));
     }
     Object::set_property(ctx, object, "modifications", Object::create_array(ctx, modifications));
+
+#if REALM_ENABLE_SYNC
+    // Partial sync brings a number of additional properties. They only make sense if partial sync is used
+    // but we don't have the information avaiable here.
+    ObjectType partial_sync = Object::create_empty(ctx);
+    Object::set_property(ctx, partial_sync, "error", Value::from_string(ctx, change_set.partial_sync_error_message));
+    Object::set_property(ctx, partial_sync, "old_state", Value::from_number(ctx, static_cast<double>(change_set.partial_sync_old_state)));
+    Object::set_property(ctx, partial_sync, "new_state", Value::from_number(ctx, static_cast<double>(change_set.partial_sync_new_state)));
+    
+    Object::set_property(ctx, object, "partial_sync", partial_sync);
+#endif
 
     return object;
 }
