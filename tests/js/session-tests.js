@@ -691,6 +691,50 @@ module.exports = {
             })
     },
 
+    testPartialSyncListener() {
+        // FIXME: try to enable for React Native
+        if (!isNodeProccess) {
+            return;
+        }
+
+        const username = uuid();
+        const realmName = uuid();
+
+        return runOutOfProcess(__dirname + '/dowbload-api-helper.js', username, realmName, REALM_MODULE_PATH)
+            .then(() => {
+                return Realm.Sync.User.login('http://localhost:9080', username, 'password').then(user => {
+                    let config = {
+                        sync: {
+                            user: user,
+                            url: `realm://localhost:9080/~/${realmName}`,
+                            partial: true,
+                            error: (session, error) => console.log(error)
+                        },
+                        schema: [{ name: 'Dog', properties: { name: 'string' } }]
+                    };
+
+                    Realm.deleteFile(config);
+                    const realm = new Realm(config);
+                    TestCase.assertEqual(realm.objects('Dog').length, 0);
+                    let results = realm.subscribeToObjects("Dog", "name == 'Lassy 1").then(results => {
+                        return results;
+                    });
+                    return new Promise((resolve, reject) => {
+                        let calls = 0;
+                        results.addListener(function(collection, changes) {
+                            calls++;
+                            if (calls === 1) {
+                                TestCase.assertEqual(changes.partial_sync.new_state, Realm.Sync.SubscriptionState.Uninitialized);
+                            } else {
+                                TestCase.assertEqual(changes.partial_sync.new_state, Realm.Sync.SubscriptionState.Initialized);
+                                resolve();
+                            }   
+                        })
+                    })
+                })
+            })
+    },
+
     testClientReset() {
         // FIXME: try to enable for React Native
         if (!isNodeProccess) {
