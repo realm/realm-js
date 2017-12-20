@@ -465,12 +465,12 @@ module.exports = {
 
         var realm = new Realm({schema: [dateObjectSchema]})
         realm.write(function() {
-            realm.create('DateObject', { dateCol: new Date('2017-12-07 20:16:03.837+00') })
+            realm.create('DateObject', { dateCol: new Date('2017-12-07T20:16:03.837Z') })
         })
 
         var objects = realm.objects('DateObject')
-        TestCase.assertEqual(new Date('2017-12-07 20:16:03.837+00').getTime(), objects[0].dateCol.getTime())
-        TestCase.assertTrue(new Date('2017-12-07 20:16:03.837+00').toISOString() === objects[0].dateCol.toISOString())
+        TestCase.assertEqual(new Date('2017-12-07T20:16:03.837Z').getTime(), objects[0].dateCol.getTime())
+        TestCase.assertTrue(new Date('2017-12-07T20:16:03.837Z').toISOString() === objects[0].dateCol.toISOString())
 
         realm.close()
     }
