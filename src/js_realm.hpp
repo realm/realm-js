@@ -1064,12 +1064,20 @@ void RealmClass<T>::object_for_object_id(ContextType ctx, ObjectType this_object
 #if REALM_ENABLE_SYNC
 template<typename T>
 void RealmClass<T>::subscribe_to_objects(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
-    args.validate_count(3);
+    args.validate_count(4);
 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
     std::string object_type = Value::validated_to_string(ctx, args[0]);
     std::string query = Value::validated_to_string(ctx, args[1]);
-    auto callback = Value::validated_to_function(ctx, args[2]);
+
+    std::string key;
+    FunctionType callback;
+    if (Value::is_function(ctx, args[1])) {
+        callback = Value::validated_to_function(ctx, args[2]);
+    }
+    else {
+        key = Value::validated_to_string(ctx, args[2]);
+    }
 
     auto &schema = realm->schema();
     auto object_schema = schema.find(object_type);
@@ -1078,32 +1086,37 @@ void RealmClass<T>::subscribe_to_objects(ContextType ctx, ObjectType this_object
         throw std::runtime_error("Object type '" + object_type + "' not found in schema.");
     }
 
-    Protected<ObjectType> protected_this(ctx, this_object);
-    Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
-    Protected<FunctionType> protected_callback(ctx, callback);
-    auto cb = [=](realm::Results results, std::exception_ptr err) {
-        HANDLESCOPE
+    if (key == nullptr) {
+        partial_sync::register_query(*realm, key, object_type, query);
+    }
+    else {
+        Protected<ObjectType> protected_this(ctx, this_object);
+        Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
+        Protected<FunctionType> protected_callback(ctx, callback);
+        auto cb = [=](realm::Results results, std::exception_ptr err) {
+            HANDLESCOPE
 
-        if (err) {
-            try {
-                std::rethrow_exception(err);
+            if (err) {
+                try {
+                    std::rethrow_exception(err);
+                }
+                catch (const std::exception& e) {
+                    ValueType callback_arguments[2];
+                    callback_arguments[0] = Value::from_string(protected_ctx, e.what());
+                    callback_arguments[1] = Value::from_null(protected_ctx);
+                    Function<T>::callback(ctx, protected_callback, protected_this, 2, callback_arguments);
+                }
+                return;
             }
-            catch (const std::exception& e) {
-                ValueType callback_arguments[2];
-                callback_arguments[0] = Value::from_string(protected_ctx, e.what());
-                callback_arguments[1] = Value::from_null(protected_ctx);
-                Function<T>::callback(ctx, protected_callback, protected_this, 2, callback_arguments);
-            }
-            return;
-        }
 
-        ValueType callback_arguments[2];
-        callback_arguments[0] = Value::from_null(protected_ctx);
-        callback_arguments[1] = ResultsClass<T>::create_instance(protected_ctx, results);
-        Function<T>::callback(protected_ctx, protected_callback, protected_this, 2, callback_arguments);
-    };
+            ValueType callback_arguments[2];
+            callback_arguments[0] = Value::from_null(protected_ctx);
+            callback_arguments[1] = ResultsClass<T>::create_instance(protected_ctx, results);
+            Function<T>::callback(protected_ctx, protected_callback, protected_this, 2, callback_arguments);
+        };
 
-    partial_sync::register_query(realm, object_type, query, std::move(cb));
+        partial_sync::register_query(realm, object_type, query, std::move(cb));
+    }
 }
 #endif
 
