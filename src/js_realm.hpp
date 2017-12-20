@@ -188,6 +188,7 @@ public:
     static void object_for_object_id(ContextType, ObjectType, Arguments, ReturnValue&);
 #if REALM_ENABLE_SYNC
     static void subscribe_to_objects(ContextType, ObjectType, Arguments, ReturnValue &);
+    static void get_query_status(ContextType, ObjectType, Arguments, ReturnValue &);
 #endif
 
     // properties
@@ -249,6 +250,7 @@ public:
         {"_objectForObjectId", wrap<object_for_object_id>},
  #if REALM_ENABLE_SYNC
         {"_subscribeToObjects", wrap<subscribe_to_objects>},
+        {"getQueryStatus", wrap<get_query_status>},
  #endif
     };
 
@@ -1120,6 +1122,25 @@ void RealmClass<T>::subscribe_to_objects(ContextType ctx, ObjectType this_object
 
         partial_sync::register_query(realm, object_type, query, std::move(cb));
     }
+}
+
+template<typename T>
+void RealmClass<T>::get_query_status(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
+    args.validate_count(1);
+
+    SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
+    
+    std::string key = Value::validated_to_string(ctx, args[0]);
+
+    partial_sync::SubscriptionState state;
+    std::string error;
+    partial_sync::get_query_status(realm->read_group(), key, state, error);
+    
+    ObjectType partial_sync_status = Object::create_empty(ctx);
+    Object::set_property(ctx, partial_sync_status, "error", Value::from_string(ctx, error));
+    Object::set_property(ctx, partial_sync_status, "state", Value::from_number(ctx, static_cast<double>(state)));
+
+    return_value.set(partial_sync_status);
 }
 #endif
 
