@@ -1,3 +1,48 @@
+X.Y.Z Release notes
+=============================================================
+### Breaking changes
+* None.
+
+### Enhancements
+* None.
+
+### Bug fixes
+* Fix a bug where `Realm.open` could unexpectedly raise a "Realm at path ... already opened with different schema version" error.
+
+### Internal
+* None
+
+2.1.1 Release notes (2017-12-15)
+=============================================================
+### Breaking changes
+* None.
+
+### Enhancements
+* None.
+
+### Bug fixes
+* [Object Server] Fixed a bug where long reconnection happens when a proxy in front of the sync worker returns one of those.
+* Fix a bug where `Realm.open` could unexpectedly raise a "Realm at path ... already opened with different schema version" error.
+
+### Internal
+* Updated to Realm Sync 2.1.10 (see "Bug fixes").
+
+
+2.1.0 Release notes (2017-12-14)
+=============================================================
+### Breaking changes
+* None.
+
+### Enhancements
+* Added property `Realm.isClosed` which indicates if a Realm instance is closed or not.
+* Added property `disableFormatUpgrade` to the Realm configuration object which disables automatic file format upgrade when opening a Realm file.
+
+### Bug fixes
+* None.
+
+### Internal
+* Updated to React Native 0.50.4 (test and example apps).
+
 2.0.13 Release notes (2017-12-8)
 =============================================================
 ### Breaking changes

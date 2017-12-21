@@ -142,6 +142,8 @@ dependencies {
     compile "com.facebook.react:react-native:+"  // From node_modules
     compile project(":realm")
     compile project(":react-native-fs")
+    compile project(':react-native-exception-handler')
+    compile project(':react-native-exit-app-no-history')
 }
 
 // Run this once to be able to run the application with BUCK

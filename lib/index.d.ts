@@ -85,6 +85,7 @@ declare namespace Realm {
         schemaVersion?: number;
         sync?: Realm.Sync.SyncConfiguration;
         deleteRealmIfMigrationNeeded?: boolean;
+        disableFormatUpgrade?: boolean;
     }
 
     // object props type
@@ -458,6 +459,7 @@ declare class Realm {
     readonly schema: Realm.ObjectSchema[];
     readonly schemaVersion: number;
     readonly isInTransaction: boolean;
+    readonly isClosed: boolean;
 
     readonly syncSession: Realm.Sync.Session | null;
 

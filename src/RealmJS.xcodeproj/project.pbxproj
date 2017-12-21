@@ -887,9 +887,8 @@
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "node ../scripts/download-realm.js ios --sync";
-			showEnvVarsInLog = 0;
+			shellPath = "/bin/sh";
+			shellScript = "[ -z \"$NVM_DIR\" ] && export NVM_DIR=\"$HOME/.nvm\"\n\nif [[ -s \"$HOME/.nvm/nvm.sh\" ]]; then\n  . \"$HOME/.nvm/nvm.sh\"\nelif [[ -x \"$(command -v brew)\" && -s \"$(brew --prefix nvm)/nvm.sh\" ]]; then\n  . \"$(brew --prefix nvm)/nvm.sh\"\nfi\n \nif [[ \"$(command -v nvm)\" ]]; then\n nvm install 7.10.0\nfi\n \n node ../scripts/download-realm.js ios --sync";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -999,7 +998,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 2.0.13;
+				CURRENT_PROJECT_VERSION = 2.1.1;
 				CXX = "$(SRCROOT)/../scripts/ccache-clang++.sh";
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -1063,7 +1062,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 2.0.13;
+				CURRENT_PROJECT_VERSION = 2.1.1;
 				CXX = "$(SRCROOT)/../scripts/ccache-clang++.sh";
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
