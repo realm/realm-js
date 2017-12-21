@@ -175,7 +175,7 @@
         ]
       },
       "link_settings": {
-        "libraries": [ "-lrealm<(debug_library_suffix)", "-lrealm-parser<(debug_library_suffix)" ],
+        "libraries": [ "-lrealm-parser<(debug_library_suffix)", "-lrealm<(debug_library_suffix)" ],
       },
       "variables": {
         "prefix": "<!(node -p \"process.env.REALM_CORE_PREFIX || String()\")"
