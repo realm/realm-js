@@ -27,7 +27,8 @@ if( typeof Realm.Sync !== 'undefined' && Realm.Sync !== null ) {
 }
 
 const isNodeProcess = typeof process === 'object' && process + '' === '[object process]';
-function node_require(module) { return require(module); }
+const require_method = require;
+function node_require(module) { return require_method(module); }
 
 if (isNodeProcess && process.platform === 'win32') {
     global.enableSyncTests = false;
@@ -113,7 +114,7 @@ exports.runTest = function(suiteName, testName) {
     if (testMethod) {
         // Start fresh in case of a crash in a previous run.
         Realm.clearTestState();
-        console.log("Starting test " + testName);
+        console.warn("Starting test " + testName);
         var promise;
         try {
             promise = testMethod.call(testSuite);

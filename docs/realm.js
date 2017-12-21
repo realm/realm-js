@@ -307,6 +307,9 @@ Realm.defaultPath;
  *    what fits in memory, but it is not persistent and will be removed when the last instance
  *    is closed.
  * @property {boolean} [readOnly=false] - Specifies if this Realm should be opened as read-only.
+ * @property {boolean} [disableFormatUpgrade=false] - Specifies if this Realm's file format should
+ *    be automatically upgraded if it was created with an older version of the Realm library.
+ *    If set to `true` and a file format upgrade is required, an error will be thrown instead.
  * @property {Array<Realm~ObjectClass|Realm~ObjectSchema>} [schema] - Specifies all the
  *   object types in this Realm. **Required** when first creating a Realm at this `path`.
  *   If omitted, the schema will be read from the existing Realm file.

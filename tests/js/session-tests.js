@@ -27,8 +27,9 @@ const TestCase = require('./asserts');
 
 const isNodeProccess = (typeof process === 'object' && process + '' === '[object process]');
 
+const require_method = require;
 function node_require(module) {
-    return require(module);
+    return require_method(module);
 }
 
 let tmp;
@@ -154,6 +155,50 @@ module.exports = {
                     schema: [{ name: 'Dog', properties: { name: 'string' } }],
                 };
 
+                return Realm.open(config)
+            }).then(realm => {
+                let actualObjectsCount = realm.objects('Dog').length;
+                TestCase.assertEqual(actualObjectsCount, expectedObjectsCount, "Synced realm does not contain the expected objects count");
+
+                const session = realm.syncSession;
+                TestCase.assertInstanceOf(session, Realm.Sync.Session);
+                TestCase.assertEqual(session.user.identity, user.identity);
+                TestCase.assertEqual(session.config.url, config.sync.url);
+                TestCase.assertEqual(session.config.user.identity, config.sync.user.identity);
+                TestCase.assertEqual(session.state, 'active');
+            });
+    },
+
+    testRealmOpenWithExistingLocalRealm() {
+        if (!isNodeProccess) {
+            return;
+        }
+
+        const username = uuid();
+        const realmName = uuid();
+        const expectedObjectsCount = 3;
+
+        let user, config;
+        return runOutOfProcess(__dirname + '/download-api-helper.js', username, realmName, REALM_MODULE_PATH)
+            .then(() => Realm.Sync.User.login('http://localhost:9080', username, 'password'))
+            .then(u => {
+                user = u;
+                const accessTokenRefreshed = this;
+                let successCounter = 0;
+
+                config = {
+                    sync: { user, url: `realm://localhost:9080/~/${realmName}` },
+                    schema: [{ name: 'Dog', properties: { name: 'string' } }],
+                    schemaVersion: 1,
+                };
+
+                // Open the Realm with a schema version of 1, then immediately close it.
+                // This verifies that Realm.open doesn't hit issues when the schema version
+                // of an existing, local Realm is different than the one passed in the configuration.
+                let realm = new Realm(config);
+                realm.close();
+
+                config.schemaVersion = 2;
                 return Realm.open(config)
             }).then(realm => {
                 let actualObjectsCount = realm.objects('Dog').length;

@@ -1,6 +1,7 @@
 'use strict';
+const require_method = require;
 function node_require(module) {
-    return require(module);
+    return require_method(module);
 }
 
 const Realm = node_require('realm');
