@@ -4,6 +4,7 @@ X.Y.Z Release notes
 * None.
 
 ### Enhancements
+* [Object Server] Added method `Realm.Sync.User.authenticate` to unify authentication of users.
 * [Object Server] Added JWT authenfication (#1548).
 
 ### Bug fixes

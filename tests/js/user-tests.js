@@ -136,6 +136,19 @@ module.exports = {
       }))
   },
 
+  testAuthenticateWithPassword() {
+    const username = uuid();
+    return Realm.Sync.User.register('http://localhost:9080', username, 'password').then((user) => {
+      user.logout();
+      return Realm.Sync.User.authenticate('http://localhost:9080', 'password', { username: username, password: 'password' });
+    }).then((user => {
+      assertIsUser(user);
+      const realm = new Realm({ sync: { user: user, url: 'realm://localhost:9080/~/test' } });
+      TestCase.assertInstanceOf(realm, Realm);
+      realm.close();
+    }))
+  },
+
   testLoginMissingUsername() {
     TestCase.assertThrows(() => Realm.Sync.User.login('http://localhost:9080', undefined, 'password'));
   },
