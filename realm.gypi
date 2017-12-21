@@ -60,7 +60,6 @@
         "src/object-store/src/impl/transact_log_handler.cpp",
         "src/object-store/src/impl/weak_realm_notifier.cpp",
         "src/object-store/src/util/uuid.cpp",
-
         "src/object-store/src/binding_callback_thread_observer.hpp",
         "src/object-store/src/binding_context.hpp",
         "src/object-store/src/collection_notifications.hpp",
@@ -263,6 +262,7 @@
       "all_dependent_settings": {
         "include_dirs": [ "<(vendor_dir)/include" ],
         "library_dirs": [ 
+          "<(vendor_dir)/lib",
           "<(vendor_dir)/osx"
         ]
       },
