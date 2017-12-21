@@ -62,6 +62,7 @@ function printProgress(input, totalBytes, archive) {
 
 function download(serverFolder, archive, destination) {
     const url = `https://static.realm.io/downloads/${serverFolder}/${archive}`;
+    console.log(`Download url: ${url}`);
     return fetch(url).then((response) => {
         if (response.status !== 200) {
             throw new Error(`Error downloading ${url} - received status ${response.status} ${response.statusText}`);

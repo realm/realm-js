@@ -20,7 +20,6 @@
 
 #include "object_accessor.hpp"
 #include "object_store.hpp"
-#include "util/format.hpp"
 
 #include "js_class.hpp"
 #include "js_types.hpp"
