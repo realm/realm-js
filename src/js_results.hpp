@@ -25,8 +25,9 @@
 #include "results.hpp"
 #include "list.hpp"
 #include "object_store.hpp"
-#include "realm/parser/parser.hpp"
-#include "realm/parser/query_builder.hpp"
+
+#include <realm/parser/parser.hpp>
+#include <realm/parser/query_builder.hpp>
 
 namespace realm {
 namespace js {
