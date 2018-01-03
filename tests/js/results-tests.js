@@ -206,9 +206,6 @@ module.exports = {
             });
         };
 
-        objects = objects.sorted([]);
-        TestCase.assertArraysEqual(primaries(objects), [2, 3, 1, 4, 0]);
-
         objects = objects.sorted('primaryCol');
         TestCase.assertArraysEqual(primaries(objects), [0, 1, 2, 3, 4]);
 
@@ -244,6 +241,9 @@ module.exports = {
         });
         TestCase.assertThrows(function() {
             objects.sorted([1]);
+        });
+        TestCase.assertThrows(function() {
+            objects.sorted([]);
         });
         TestCase.assertThrows(function() {
             objects.sorted('fish');
@@ -299,7 +299,7 @@ module.exports = {
     },
 
     testResultsInvalidation: function() {
-        let realm = new Realm({schema: [schemas.TestObject]});
+        var realm = new Realm({schema: [schemas.TestObject]});
         realm.write(function() {
             for (var i = 10; i > 0; i--) {
                 realm.create('TestObject', [i]);
@@ -322,7 +322,7 @@ module.exports = {
         realm.close();
         realm = new Realm({
             schemaVersion: 1,
-            schema: [schemas.TestObject, schemas.DateObject]
+            schema: [schemas.TestObject, schemas.BasicTypes]
         });
 
         resultsVariants.forEach(function(objects) {
@@ -384,493 +384,28 @@ module.exports = {
         });
     },
 
-    testResultsFindIndexOfObject: function() {
-        var realm = new Realm({schema: [schemas.TestObject]});
-    
-        var object1, object2, object3;
-        realm.write(function() {
-            object1 = realm.create('TestObject', {doubleCol: 1});
-            object2 = realm.create('TestObject', {doubleCol: 2});
-            object3 = realm.create('TestObject', {doubleCol: 2});
-        });
-    
-        // Search in base table
-        const objects = realm.objects('TestObject');
-        TestCase.assertEqual(objects.indexOf(object1), 0);
-        TestCase.assertEqual(objects.indexOf(object2), 1);
-        TestCase.assertEqual(objects.indexOf(object3), 2);
-    
-        // Search in filtered query
-        const results = objects.filtered("doubleCol == 2");
-        TestCase.assertEqual(results.indexOf(object1), -1);
-        TestCase.assertEqual(results.indexOf(object2), 0);
-        TestCase.assertEqual(results.indexOf(object3), 1);
-    
-        const nonRealmObject = {test: "this is an object"};
-        TestCase.assertEqual(objects.indexOf(nonRealmObject), -1);
-    
-        // Searching for object from the wrong realm
-        var realm2 = new Realm({path: '2.realm', schema: realm.schema});
-        var object4;
-        realm2.write(function() {
-            object4 = realm2.create('TestObject', {doubleCol: 1});
-        });
-    
-        TestCase.assertThrows(function() {
-            objects.indexOf(object4);
-        });
-    },
-
     testAddListener: function() {
-        if (typeof navigator !== 'undefined' && /Chrome/.test(navigator.userAgent)) { // eslint-disable-line no-undef
-            // FIXME: async callbacks do not work correctly in Chrome debugging mode
-            return Promise.resolve();
-        }
+        return new Promise((resolve, _reject) => {
+            var realm = new Realm({ schema: [schemas.TestObject] });
 
-        const realm = new Realm({ schema: [schemas.TestObject] });
-        realm.write(() => {
-            realm.create('TestObject', { doubleCol: 1 });
-            realm.create('TestObject', { doubleCol: 2 });
-            realm.create('TestObject', { doubleCol: 3 });
-        });
+            realm.write(() => {
+                realm.create('TestObject', { doubleCol: 1 });
+                realm.create('TestObject', { doubleCol: 2 });
+                realm.create('TestObject', { doubleCol: 3 });
+            });
 
-        let resolve = () => {};
-        let first = true;
+            realm.objects('TestObject').addListener((testObjects, changes) => {
+                // TODO: First notification is empty, so perform these
+                // assertions on the second call. However, there is a race condition
+                // in React Native, so find a way to do this in a robust way.
+                //TestCase.assertEqual(testObjects.length, 4);
+                //TestCase.assertEqual(changes.insertions.length, 1);
+                resolve();
+            });
 
-        realm.objects('TestObject').addListener((testObjects, changes) => {
-            if (first) {
-                TestCase.assertEqual(testObjects.length, 3);
-                TestCase.assertEqual(changes.insertions.length, 0);
-            }
-            else {
-                TestCase.assertEqual(testObjects.length, 4);
-                TestCase.assertEqual(changes.insertions.length, 1);
-            }
-            first = false;
-            resolve();
-        });
-
-        return new Promise((r, _reject) => {
-            resolve = r;
             realm.write(() => {
                 realm.create('TestObject', { doubleCol: 1 });
             });
-        });
-    },
-
-    testResultsAggregateFunctions: function() {
-        var realm = new Realm({ schema: [schemas.NullableBasicTypes] });
-        const N = 50;
-        realm.write(() => {
-            for(var i = 0; i < N; i++) {
-                realm.create('NullableBasicTypesObject', {
-                    intCol: i+1,
-                    floatCol: i+1,
-                    doubleCol: i+1,
-                    dateCol: new Date(i+1)
-                });
-            }
-        });
-
-        var results = realm.objects('NullableBasicTypesObject');
-        TestCase.assertEqual(results.length, N);
-
-        // int, float & double columns support all aggregate functions
-        ['intCol', 'floatCol', 'doubleCol'].forEach(colName => {
-            TestCase.assertEqual(results.min(colName), 1);
-            TestCase.assertEqual(results.max(colName), N);
-            TestCase.assertEqual(results.sum(colName), N*(N+1)/2);
-            TestCase.assertEqual(results.avg(colName), (N+1)/2);
-        });
-
-        // date columns support only 'min' & 'max'
-        TestCase.assertEqual(results.min('dateCol').getTime(), new Date(1).getTime());
-        TestCase.assertEqual(results.max('dateCol').getTime(), new Date(N).getTime());
-    },
-
-    testResultsAggregateFunctionsWithNullColumnValues: function() {
-        var realm = new Realm({ schema: [schemas.NullableBasicTypes] });
-
-        const N = 50;
-        const M = 10;
-
-        realm.write(() => {
-            for(var i = 0; i < N; i++) {
-                realm.create('NullableBasicTypesObject', {
-                    intCol: i+1,
-                    floatCol: i+1,
-                    doubleCol: i+1,
-                    dateCol: new Date(i+1)
-                });
-            }
-
-            // add some null valued data, which should be ignored by the aggregate functions
-            for(var j = 0; j < M; j++) {
-                realm.create('NullableBasicTypesObject', {
-                    intCol: null,
-                    floatCol: null,
-                    doubleCol: null,
-                    dateCol: null
-                });
-            }
-        });
-
-        var results = realm.objects('NullableBasicTypesObject');
-
-        TestCase.assertEqual(results.length, N + M);
-
-        // int, float & double columns support all aggregate functions
-        // the M null valued objects should be ignored
-        ['intCol', 'floatCol', 'doubleCol'].forEach(colName => {
-            TestCase.assertEqual(results.min(colName), 1);
-            TestCase.assertEqual(results.max(colName), N);
-            TestCase.assertEqual(results.sum(colName), N*(N+1)/2);
-            TestCase.assertEqual(results.avg(colName), (N+1)/2);
-        });
-
-        // date columns support only 'min' & 'max'
-        TestCase.assertEqual(results.min('dateCol').getTime(), new Date(1).getTime());
-        TestCase.assertEqual(results.max('dateCol').getTime(), new Date(N).getTime());
-
-        // call aggregate functions on empty results
-        var emptyResults = realm.objects('NullableBasicTypesObject').filtered('intCol < 0');
-        TestCase.assertEqual(emptyResults.length, 0);
-        ['intCol', 'floatCol', 'doubleCol'].forEach(colName => {
-            TestCase.assertUndefined(emptyResults.min(colName));
-            TestCase.assertUndefined(emptyResults.max(colName));
-            TestCase.assertEqual(emptyResults.sum(colName), 0);
-            TestCase.assertUndefined(emptyResults.avg(colName));
-        });
-
-        TestCase.assertUndefined(emptyResults.min('dateCol'));
-        TestCase.assertUndefined(emptyResults.max('dateCol'));
-    },
-
-    testResultsAggregateFunctionsUnsupported: function() {
-        var realm = new Realm({ schema: [schemas.NullableBasicTypes] });
-        realm.write(() => {
-            realm.create('NullableBasicTypesObject', {
-                boolCol: true,
-                stringCol: "hello",
-                dataCol: new ArrayBuffer(12),
-            });
-        });
-
-        var results = realm.objects('NullableBasicTypesObject');
-
-        // bool, string & data columns don't support 'min'
-        ['boolCol', 'stringCol', 'dataCol'].forEach(colName => {
-            TestCase.assertThrows(function() {
-                results.min(colName);
-            }
-        )});
-
-        // bool, string & data columns don't support 'max'
-        ['boolCol', 'stringCol', 'dataCol'].forEach(colName => {
-            TestCase.assertThrows(function() {
-                results.max(colName);
-            }
-        )});
-
-        // bool, string, date & data columns don't support 'avg'
-        ['boolCol', 'stringCol', 'dateCol', 'dataCol'].forEach(colName => {
-            TestCase.assertThrows(function() {
-                results.avg(colName);
-            }
-        )});
-
-        // bool, string, date & data columns don't support 'sum'
-        ['boolCol', 'stringCol', 'dateCol', 'dataCol'].forEach(colName => {
-            TestCase.assertThrows(function() {
-                results.sum(colName);
-            }
-        )});
-    },
-
-    testResultsAggregateFunctionsWrongProperty: function() {
-        var realm = new Realm({ schema: [ schemas.TestObject ]});
-        realm.write(() => {
-            realm.create('TestObject', { doubleCol: 42 });
-        });
-        var results = realm.objects('TestObject');
-        TestCase.assertThrows(function() {
-            results.min('foo')
-        });
-        TestCase.assertThrows(function() {
-            results.max('foo')
-        });
-        TestCase.assertThrows(function() {
-            results.sum('foo')
-        });
-        TestCase.assertThrows(function() {
-            results.avg('foo')
-        });
-    },
-
-    testIterator: function() {
-        var realm = new Realm({ schema: [ schemas.TestObject ]});
-        realm.write(() => {
-            realm.create('TestObject', { doubleCol: 2 });
-            realm.create('TestObject', { doubleCol: 3 });
-        });
-
-        var results = realm.objects('TestObject').filtered('doubleCol >= 2');
-        TestCase.assertEqual(results.length, 2);
-        var calls = 0;
-        for(let obj of results) {
-            realm.write(() => {
-                obj.doubleCol = 1;
-            });
-            calls++;
-        }
-        TestCase.assertEqual(results.length, 0);
-        TestCase.assertEqual(calls, 2);
-    },
-
-    testIteratorDeleteObjects: function() {
-        var realm = new Realm({ schema: [ schemas.TestObject ]});
-        realm.write(() => {
-            realm.create('TestObject', { doubleCol: 2 });
-            realm.create('TestObject', { doubleCol: 3 });
-        });
-
-        var results = realm.objects('TestObject');
-        TestCase.assertEqual(results.length, 2);
-        var calls = 0;
-        for(let obj of results) {
-            realm.write(() => {
-                realm.delete(obj);
-                calls++;
-            });
-        }
-        TestCase.assertEqual(calls, 2);
-        TestCase.assertEqual(realm.objects('TestObject').length, 0);
-    },
-
-    testResultsUpdate: function() {
-        const N = 5;
-
-        var realm = new Realm({schema: [schemas.NullableBasicTypes]});
-        realm.write(() => {
-            for(var i = 0; i < N; i++) {
-                realm.create('NullableBasicTypesObject', { intCol: 10 });
-            }
-        });
-
-        // update should work on a basic result set
-        var results = realm.objects('NullableBasicTypesObject');
-        TestCase.assertEqual(results.length, 5);
-        realm.write(() => {
-            results.update('intCol', 20);
-        });
-        TestCase.assertEqual(results.length, 5);
-        TestCase.assertEqual(realm.objects('NullableBasicTypesObject').filtered('intCol = 20').length, 5);
-
-        // update should work on a filtered result set
-        results = realm.objects('NullableBasicTypesObject').filtered('intCol = 20');
-        realm.write(() => {
-            results.update('intCol', 10);
-        });
-        TestCase.assertEqual(results.length, 0);
-        TestCase.assertEqual(realm.objects('NullableBasicTypesObject').filtered('intCol = 10').length, 5);
-
-        // update should work on a sorted result set
-        results = realm.objects('NullableBasicTypesObject').filtered('intCol == 10').sorted('intCol');
-        realm.write(() => {
-            results.update('intCol', 20);
-        });
-        TestCase.assertEqual(results.length, 0);
-        TestCase.assertEqual(realm.objects('NullableBasicTypesObject').filtered('intCol = 20').length, 5);
-
-        // update should work on a result snapshot
-        results = realm.objects('NullableBasicTypesObject').filtered('intCol == 20').snapshot();
-        realm.write(() => {
-            results.update('intCol', 10);
-        });
-        TestCase.assertEqual(results.length, 5); // snapshot length should not change
-        TestCase.assertEqual(realm.objects('NullableBasicTypesObject').filtered('intCol = 10').length, 5);
-
-        realm.close();
-    },
-
-    testResultsUpdateDataTypes: function() {
-        const N = 5;
-
-        var realm = new Realm({schema: [schemas.NullableBasicTypes]});
-        realm.write(() => {
-            for(var i = 0; i < N; i++) {
-                realm.create('NullableBasicTypesObject', {
-                    boolCol: false,
-                    stringCol: 'hello',
-                    intCol: 10,
-                    floatCol: 10.0,
-                    doubleCol: 10.0,
-                    dateCol: new Date(10)
-                });
-            }
-        });
-
-        const testCases = [
-            // col name, initial filter, initial filter pre-update count, initial filter post-update count, updated value, updated filter, updated filter post-update count
-            [ 'boolCol', 'boolCol = false', N, 0, true, 'boolCol = true', N ],
-            [ 'stringCol', 'stringCol = "hello"', N, 0, 'world', 'stringCol = "world"', N ],
-            [ 'intCol', 'intCol = 10', N, 0, 20, 'intCol = 20', N ],
-            [ 'floatCol', 'floatCol = 10.0', N, 0, 20.0, 'floatCol = 20.0', N ],
-            [ 'doubleCol', 'doubleCol = 10.0', N, 0, 20.0, 'doubleCol = 20.0', N ],
-        ];
-
-        testCases.forEach(function(testCase) {
-            var results = realm.objects('NullableBasicTypesObject').filtered(testCase[1]);
-            TestCase.assertEqual(results.length, testCase[2]);
-
-            realm.write(() => {
-                results.update(testCase[0], testCase[4]);
-            });
-
-            TestCase.assertEqual(results.length, testCase[3]);
-
-            results = realm.objects('NullableBasicTypesObject').filtered(testCase[5]);
-            TestCase.assertEqual(results.length, testCase[6]);
-        });
-
-        realm.close();
-    },
-
-    testResultUpdateDateColumn: function() {
-        const N = 5;
-
-        var realm = new Realm({schema: [schemas.NullableBasicTypes]});
-
-        // date column
-        realm.write(() => {
-            for(var i = 0; i < N; i++) {
-                realm.create('NullableBasicTypesObject', {
-                    dateCol: new Date(1000)
-                });
-            }
-        });
-
-        var results = realm.objects('NullableBasicTypesObject').filtered('dateCol = $0', new Date(1000));
-        TestCase.assertEqual(results.length, N);
-
-        realm.write(() => {
-            results.update('dateCol', new Date(2000));
-        });
-
-        TestCase.assertEqual(results.length, 0);
-        results = realm.objects('NullableBasicTypesObject').filtered('dateCol = $0', new Date(2000));
-        TestCase.assertEqual(results.length, N);
-
-        realm.close();
-    },
-
-    testResultsUpdateDataColumn: function() {
-        const N = 5;
-
-        var RANDOM_DATA = new Uint8Array([
-            0xd8, 0x21, 0xd6, 0xe8, 0x00, 0x57, 0xbc, 0xb2, 0x6a, 0x15, 0x77, 0x30, 0xac, 0x77, 0x96, 0xd9,
-            0x67, 0x1e, 0x40, 0xa7, 0x6d, 0x52, 0x83, 0xda, 0x07, 0x29, 0x9c, 0x70, 0x38, 0x48, 0x4e, 0xff,
-        ]);
-
-        var realm = new Realm({schema: [schemas.NullableBasicTypes]});
-
-            // date column
-        realm.write(() => {
-            for(var i = 0; i < N; i++) {
-                realm.create('NullableBasicTypesObject', {
-                    dataCol: null
-                });
-            }
-        });
-
-        var results = realm.objects('NullableBasicTypesObject');
-        TestCase.assertEqual(results.length, N);
-
-        realm.write(() => {
-            results.update('dataCol', RANDOM_DATA);
-        });
-
-        for(var i = 0; i < results.length; i++) {
-            TestCase.assertArraysEqual(new Uint8Array(results[i].dataCol), RANDOM_DATA);
-        }
-
-        realm.close();
-    },
-
-    testResultsUpdateEmpty() {
-        var realm = new Realm({schema: [schemas.NullableBasicTypes]});
-
-        var emptyResults = realm.objects('NullableBasicTypesObject').filtered('stringCol = "hello"');
-        TestCase.assertEqual(emptyResults.length, 0);
-
-        realm.write(() => {
-            emptyResults.update('stringCol', 'no-op');
-        });
-
-        TestCase.assertEqual(emptyResults.length, 0);
-        TestCase.assertEqual(realm.objects('NullableBasicTypesObject').filtered('stringCol = "no-op"').length, 0);
-
-        realm.close();
-    },
-
-    testResultsUpdateInvalidated() {
-        var realm = new Realm({schema: [schemas.TestObject]});
-        realm.write(function() {
-            for (var i = 10; i > 0; i--) {
-                realm.create('TestObject', [i]);
-            }
-        });
-
-        var resultsVariants = [
-            realm.objects('TestObject'),
-            realm.objects('TestObject').filtered('doubleCol > 1'),
-            realm.objects('TestObject').filtered('doubleCol > 1').sorted('doubleCol'),
-            realm.objects('TestObject').filtered('doubleCol > 1').snapshot()
-        ];
-
-        // test isValid
-        resultsVariants.forEach(function(objects) {
-            TestCase.assertEqual(objects.isValid(), true);
-        });
-
-        // close and test update
-        realm.close();
-        realm = new Realm({
-            schemaVersion: 1,
-            schema: [schemas.TestObject, schemas.BasicTypes]
-        });
-
-        resultsVariants.forEach(function(objects) {
-            TestCase.assertEqual(objects.isValid(), false);
-            TestCase.assertThrows(function() { objects.update('doubleCol', 42); });
-        });
-    },
-
-    testResultsUpdateWrongProperty() {
-        var realm = new Realm({schema: [schemas.NullableBasicTypes]});
-
-        const N = 5;
-        realm.write(() => {
-            for(var i = 0; i < N; i++) {
-                realm.create('NullableBasicTypesObject', {
-                    stringCol: 'hello'
-                });
-            }
-        });
-
-        var results = realm.objects('NullableBasicTypesObject').filtered('stringCol = "hello"');
-        TestCase.assertEqual(results.length, N);
-
-        TestCase.assertThrows(function() {
-            realm.write(() => {
-                results.update('unknownCol', 'world');
-            });
-        });
-
-        TestCase.assertThrows(function() {
-            results.update('stringCol', 'world');
-        });
-
-        realm.close();
+        })
     }
 };

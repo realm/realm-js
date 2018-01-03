@@ -38,21 +38,13 @@ inline v8::Local<v8::Value> node::Function::call(v8::Isolate* isolate, const v8:
 
 template<>
 inline v8::Local<v8::Value> node::Function::callback(v8::Isolate* isolate, const v8::Local<v8::Function> &function, const v8::Local<v8::Object> &this_object, size_t argc, const v8::Local<v8::Value> arguments[]) {
-    if (!isolate->GetCallingContext().IsEmpty()) {
-        // if there are any JavaScript frames on the stack below this one we don't need to
-        // go through the trouble of calling MakeCallback. MakeCallback is only for when a
-        // thread with no JavaScript frames on its stack needs to call into JavaScript, like in
-        // an uv_async callback.
-        return call(isolate, function, this_object, argc, arguments);
-    }
-
-    v8::TryCatch trycatch(isolate);
+    Nan::TryCatch trycatch;
     
     auto recv = this_object.IsEmpty() ? isolate->GetCurrentContext()->Global() : this_object;
-    auto result = ::node::MakeCallback(isolate, recv, function, (int)argc, const_cast<v8::Local<v8::Value>*>(arguments));
+    auto result = Nan::MakeCallback(recv, function, (int)argc, const_cast<v8::Local<v8::Value>*>(arguments));
 
     if (trycatch.HasCaught()) {
-        ::node::FatalException(isolate, trycatch);
+        throw node::Exception(isolate, trycatch.Exception());
     }
     return result;
 }

@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		85CA5FE61F1536720038172D /* libRealmJS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F606902F1CA277CD0003FB26 /* libRealmJS.a */; };
 		F60690171CA2766F0003FB26 /* RealmReact.h in Copy Headers */ = {isa = PBXBuildFile; fileRef = F60690161CA2766F0003FB26 /* RealmReact.h */; };
 		F60690191CA2766F0003FB26 /* RealmReact.mm in Sources */ = {isa = PBXBuildFile; fileRef = F60690181CA2766F0003FB26 /* RealmReact.mm */; };
 		F60690211CA277410003FB26 /* RealmAnalytics.mm in Sources */ = {isa = PBXBuildFile; fileRef = F60690201CA277410003FB26 /* RealmAnalytics.mm */; };
@@ -74,17 +73,6 @@
 		F60690231CA277CC0003FB26 /* RealmJS.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RealmJS.xcodeproj; path = ../../src/RealmJS.xcodeproj; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
-/* Begin PBXFrameworksBuildPhase section */
-		85CA5FE41F1536660038172D /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				85CA5FE61F1536720038172D /* libRealmJS.a in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXFrameworksBuildPhase section */
-
 /* Begin PBXGroup section */
 		F606900A1CA2766F0003FB26 = {
 			isa = PBXGroup;
@@ -141,7 +129,6 @@
 			buildPhases = (
 				F606900F1CA2766F0003FB26 /* Sources */,
 				F60690111CA2766F0003FB26 /* Copy Headers */,
-				85CA5FE41F1536660038172D /* Frameworks */,
 			);
 			buildRules = (
 			);
@@ -241,6 +228,216 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		D51E35CE1F875191007859A9 /* iBDialogDebug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CC = "$(SRCROOT)/../../scripts/ccache-clang.sh";
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				CXX = "$(SRCROOT)/../../scripts/ccache-clang++.sh";
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				OTHER_CPLUSPLUSFLAGS = (
+					"$(OTHER_CFLAGS)",
+					"-isystem",
+					../../core/include,
+				);
+				SDKROOT = iphoneos;
+				STRIP_INSTALLED_PRODUCT = NO;
+			};
+			name = iBDialogDebug;
+		};
+		D51E35CF1F875191007859A9 /* iBDialogDebug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/../../src/**",
+					"$(SRCROOT)/../../vendor/core/include",
+					"$(SRCROOT)/../../vendor/GCDWebServer/GCDWebServer/**",
+					"$(SRCROOT)/../../../react-native/React/**",
+					"$(SRCROOT)/../../tests/react-test-app/node_modules/react-native/React/**",
+					"$(SRCROOT)/../../examples/ReactExample/node_modules/react-native/React/**",
+					"$(SRCROOT)/../../vendor",
+				);
+				OTHER_LIBTOOLFLAGS = "$(BUILT_PRODUCTS_DIR)/libRealmJS.a $(BUILT_PRODUCTS_DIR)/libGCDWebServers.a";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+			};
+			name = iBDialogDebug;
+		};
+		D51E35D11F875198007859A9 /* IMCDebug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CC = "$(SRCROOT)/../../scripts/ccache-clang.sh";
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				CXX = "$(SRCROOT)/../../scripts/ccache-clang++.sh";
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				OTHER_CPLUSPLUSFLAGS = (
+					"$(OTHER_CFLAGS)",
+					"-isystem",
+					../../core/include,
+				);
+				SDKROOT = iphoneos;
+				STRIP_INSTALLED_PRODUCT = NO;
+			};
+			name = IMCDebug;
+		};
+		D51E35D21F875198007859A9 /* IMCDebug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/../../src/**",
+					"$(SRCROOT)/../../vendor/core/include",
+					"$(SRCROOT)/../../vendor/GCDWebServer/GCDWebServer/**",
+					"$(SRCROOT)/../../../react-native/React/**",
+					"$(SRCROOT)/../../tests/react-test-app/node_modules/react-native/React/**",
+					"$(SRCROOT)/../../examples/ReactExample/node_modules/react-native/React/**",
+					"$(SRCROOT)/../../vendor",
+				);
+				OTHER_LIBTOOLFLAGS = "$(BUILT_PRODUCTS_DIR)/libRealmJS.a $(BUILT_PRODUCTS_DIR)/libGCDWebServers.a";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+			};
+			name = IMCDebug;
+		};
+		D51E35D31F87519E007859A9 /* JustToKnowDebug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CC = "$(SRCROOT)/../../scripts/ccache-clang.sh";
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				CXX = "$(SRCROOT)/../../scripts/ccache-clang++.sh";
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				OTHER_CPLUSPLUSFLAGS = (
+					"$(OTHER_CFLAGS)",
+					"-isystem",
+					../../core/include,
+				);
+				SDKROOT = iphoneos;
+				STRIP_INSTALLED_PRODUCT = NO;
+			};
+			name = JustToKnowDebug;
+		};
+		D51E35D41F87519E007859A9 /* JustToKnowDebug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/../../src/**",
+					"$(SRCROOT)/../../vendor/core/include",
+					"$(SRCROOT)/../../vendor/GCDWebServer/GCDWebServer/**",
+					"$(SRCROOT)/../../../react-native/React/**",
+					"$(SRCROOT)/../../tests/react-test-app/node_modules/react-native/React/**",
+					"$(SRCROOT)/../../examples/ReactExample/node_modules/react-native/React/**",
+					"$(SRCROOT)/../../vendor",
+				);
+				OTHER_LIBTOOLFLAGS = "$(BUILT_PRODUCTS_DIR)/libRealmJS.a $(BUILT_PRODUCTS_DIR)/libGCDWebServers.a";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+			};
+			name = JustToKnowDebug;
+		};
 		F606901A1CA2766F0003FB26 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -343,15 +540,14 @@
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SRCROOT)/../../src/**",
-					"$(SRCROOT)/../../vendor/realm-ios/include",
+					"$(SRCROOT)/../../vendor/core/include",
 					"$(SRCROOT)/../../vendor/GCDWebServer/GCDWebServer/**",
 					"$(SRCROOT)/../../../react-native/React/**",
 					"$(SRCROOT)/../../tests/react-test-app/node_modules/react-native/React/**",
 					"$(SRCROOT)/../../examples/ReactExample/node_modules/react-native/React/**",
 					"$(SRCROOT)/../../vendor",
-					"$(SRCROOT)/../../../../ios/Pods/Headers/Public/**"
 				);
-				OTHER_LIBTOOLFLAGS = "$(BUILT_PRODUCTS_DIR)/libGCDWebServers.a";
+				OTHER_LIBTOOLFLAGS = "$(BUILT_PRODUCTS_DIR)/libRealmJS.a $(BUILT_PRODUCTS_DIR)/libGCDWebServers.a";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 			};
@@ -363,14 +559,14 @@
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SRCROOT)/../../src/**",
-					"$(SRCROOT)/../../vendor/realm-ios/include",
+					"$(SRCROOT)/../../vendor/core/include",
 					"$(SRCROOT)/../../vendor/GCDWebServer/GCDWebServer/**",
 					"$(SRCROOT)/../../../react-native/React/**",
 					"$(SRCROOT)/../../tests/react-test-app/node_modules/react-native/React/**",
 					"$(SRCROOT)/../../examples/ReactExample/node_modules/react-native/React/**",
 					"$(SRCROOT)/../../vendor",
-					"$(SRCROOT)/../../../../ios/Pods/Headers/Public/**"
 				);
+				OTHER_LIBTOOLFLAGS = "$(BUILT_PRODUCTS_DIR)/libRealmJS.a";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 			};
@@ -383,6 +579,9 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				F606901A1CA2766F0003FB26 /* Debug */,
+				D51E35D31F87519E007859A9 /* JustToKnowDebug */,
+				D51E35D11F875198007859A9 /* IMCDebug */,
+				D51E35CE1F875191007859A9 /* iBDialogDebug */,
 				F606901B1CA2766F0003FB26 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
@@ -392,6 +591,9 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				F606901D1CA2766F0003FB26 /* Debug */,
+				D51E35D41F87519E007859A9 /* JustToKnowDebug */,
+				D51E35D21F875198007859A9 /* IMCDebug */,
+				D51E35CF1F875191007859A9 /* iBDialogDebug */,
 				F606901E1CA2766F0003FB26 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;

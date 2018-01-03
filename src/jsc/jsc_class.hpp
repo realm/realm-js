@@ -30,9 +30,7 @@ template<typename T>
 using ClassDefinition = js::ClassDefinition<Types, T>;
 
 using ConstructorType = js::ConstructorType<Types>;
-using ArgumentsMethodType = js::ArgumentsMethodType<Types>;
 using MethodType = js::MethodType<Types>;
-using Arguments = js::Arguments<Types>;
 using PropertyType = js::PropertyType<Types>;
 using IndexPropertyType = js::IndexPropertyType<Types>;
 using StringPropertyType = js::StringPropertyType<Types>;
@@ -300,42 +298,19 @@ inline void ObjectWrap<ClassType>::get_property_names(JSContextRef ctx, JSObject
     }
 }
 
-static inline bool try_get_int(JSStringRef property, int64_t& value) {
-    value = 0;
-    auto str = JSStringGetCharactersPtr(property);
-    auto end = str + JSStringGetLength(property);
-    while (str != end && iswspace(*str)) {
-        ++str;
-    }
-    bool negative = false;
-    if (str != end && *str == '-') {
-        negative = true;
-        ++str;
-    }
-    while (str != end && *str >= '0' && *str <= '9') {
-        if (int_multiply_with_overflow_detect(value, 10)) {
-            return false;
-        }
-        value += *str - '0';
-        ++str;
-    }
-    if (negative) {
-        value *= -1;
-    }
-    return str == end;
-}
-
 template<typename ClassType>
 inline JSValueRef ObjectWrap<ClassType>::get_property(JSContextRef ctx, JSObjectRef object, JSStringRef property, JSValueRef* exception) {
     if (auto index_getter = s_class.index_accessor.getter) {
-        int64_t num;
-        if (try_get_int(property, num)) {
-            uint32_t index;
-            if (num < 0 || util::int_cast_with_overflow_detect(num, index)) {
-                // Out-of-bounds index getters should just return undefined in JS.
-                return Value::from_undefined(ctx);
-            }
+        try {
+            uint32_t index = validated_positive_index(jsc::String(property));
             return index_getter(ctx, object, index, exception);
+        }
+        catch (std::out_of_range &) {
+            // Out-of-bounds index getters should just return undefined in JS.
+            return Value::from_undefined(ctx);
+        }
+        catch (std::invalid_argument &) {
+            // Property is not a number.
         }
     }
     if (auto string_getter = s_class.string_accessor.getter) {
@@ -349,23 +324,23 @@ inline bool ObjectWrap<ClassType>::set_property(JSContextRef ctx, JSObjectRef ob
     auto index_setter = s_class.index_accessor.setter;
 
     if (index_setter || s_class.index_accessor.getter) {
-        int64_t num;
-        if (try_get_int(property, num)) {
-            if (num < 0) {
-                *exception = Exception::value(ctx, util::format("Index %1 cannot be less than zero.", num));
-                return false;
-            }
-            int32_t index;
-            if (util::int_cast_with_overflow_detect(num, index)) {
-                *exception = Exception::value(ctx, util::format("Index %1 cannot be greater than %2.",
-                                                                num, std::numeric_limits<uint32_t>::max()));
-                return false;
-            }
+        try {
+            uint32_t index = validated_positive_index(jsc::String(property));
+
             if (index_setter) {
                 return index_setter(ctx, object, index, value, exception);
             }
-            *exception = Exception::value(ctx, util::format("Cannot assign to read only index %1", index));
+            else {
+                *exception = Exception::value(ctx, std::string("Cannot assign to read only index ") + util::to_string(index));
+                return false;
+            }
+        }
+        catch (std::out_of_range &e) {
+            *exception = Exception::value(ctx, e);
             return false;
+        }
+        catch (std::invalid_argument &) {
+            // Property is not a number.
         }
     }
     if (auto string_setter = s_class.string_accessor.setter) {
@@ -386,19 +361,6 @@ JSValueRef wrap(JSContextRef ctx, JSObjectRef function, JSObjectRef this_object,
     jsc::ReturnValue return_value(ctx);
     try {
         F(ctx, function, this_object, argc, arguments, return_value);
-        return return_value;
-    }
-    catch (std::exception &e) {
-        *exception = jsc::Exception::value(ctx, e);
-        return nullptr;
-    }
-}
-
-template<jsc::ArgumentsMethodType F>
-JSValueRef wrap(JSContextRef ctx, JSObjectRef, JSObjectRef this_object, size_t argc, const JSValueRef arguments[], JSValueRef* exception) {
-    jsc::ReturnValue return_value(ctx);
-    try {
-        F(ctx, this_object, jsc::Arguments{ctx, argc, arguments}, return_value);
         return return_value;
     }
     catch (std::exception &e) {

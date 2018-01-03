@@ -40,10 +40,6 @@
 		02F59EC51C88F17D007F774C /* shared_realm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02F59EBD1C88F17D007F774C /* shared_realm.cpp */; };
 		02F59EE21C88F2BB007F774C /* realm_coordinator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02F59EDB1C88F2BA007F774C /* realm_coordinator.cpp */; };
 		02F59EE31C88F2BB007F774C /* transact_log_handler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02F59EDD1C88F2BB007F774C /* transact_log_handler.cpp */; };
-		3FCE2A8B1F58BDEF00D4855B /* primitive_list_notifier.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3FCE2A891F58BDE500D4855B /* primitive_list_notifier.cpp */; };
-		3FCE2A931F58BE0300D4855B /* uuid.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3FCE2A911F58BDFF00D4855B /* uuid.cpp */; };
-		3FCE2A971F58BE2200D4855B /* sync_permission.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3FCE2A951F58BE1D00D4855B /* sync_permission.cpp */; };
-		420FB79F1F7FBFE900D43D0F /* partial_sync.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 423737AF1F7E333400FAEDFF /* partial_sync.cpp */; };
 		502B07E41E2CD201007A84ED /* object.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 502B07E31E2CD1FA007A84ED /* object.cpp */; };
 		504CF85E1EBCAE3600A9A4B6 /* network_reachability_observer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 504CF8541EBCAE3600A9A4B6 /* network_reachability_observer.cpp */; };
 		504CF85F1EBCAE3600A9A4B6 /* system_configuration.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 504CF8561EBCAE3600A9A4B6 /* system_configuration.cpp */; };
@@ -52,7 +48,6 @@
 		50C671001E1D2D31003CB63C /* thread_safe_reference.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5D02C7791E1C83650048C13E /* thread_safe_reference.cpp */; };
 		5D1BF0571EF1DB4800B7DC87 /* jsc_value.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5D1BF0561EF1DB4800B7DC87 /* jsc_value.cpp */; };
 		5D25F5A11D6284FD00EBBB30 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = F63FF3301C16434400B3B8E0 /* libz.tbd */; };
-		5D97DC4E1F7DAB1400B856A4 /* sync_config.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 426FCDFF1F7DA2F9005565DC /* sync_config.cpp */; };
 		8507156E1E2CFCD000E548DB /* object_notifier.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8507156B1E2CFC0100E548DB /* object_notifier.cpp */; };
 		F61378791C18EAC5008BFC51 /* js in Resources */ = {isa = PBXBuildFile; fileRef = F61378781C18EAAC008BFC51 /* js */; };
 		F63FF2C61C12469E00B3B8E0 /* jsc_init.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 029048011C0428DF00ABDED4 /* jsc_init.cpp */; };
@@ -182,22 +177,6 @@
 		02F59EDC1C88F2BB007F774C /* realm_coordinator.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = realm_coordinator.hpp; sourceTree = "<group>"; };
 		02F59EDD1C88F2BB007F774C /* transact_log_handler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = transact_log_handler.cpp; sourceTree = "<group>"; };
 		02F59EDE1C88F2BB007F774C /* transact_log_handler.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = transact_log_handler.hpp; sourceTree = "<group>"; };
-		3FCE2A871F58BDE500D4855B /* object_accessor_impl.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = object_accessor_impl.hpp; sourceTree = "<group>"; };
-		3FCE2A881F58BDE500D4855B /* primitive_list_notifier.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = primitive_list_notifier.hpp; sourceTree = "<group>"; };
-		3FCE2A891F58BDE500D4855B /* primitive_list_notifier.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = primitive_list_notifier.cpp; sourceTree = "<group>"; };
-		3FCE2A8C1F58BDFF00D4855B /* aligned_union.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = aligned_union.hpp; sourceTree = "<group>"; };
-		3FCE2A8D1F58BDFF00D4855B /* any.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = any.hpp; sourceTree = "<group>"; };
-		3FCE2A8E1F58BDFF00D4855B /* tagged_bool.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = tagged_bool.hpp; sourceTree = "<group>"; };
-		3FCE2A8F1F58BDFF00D4855B /* time.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = time.hpp; sourceTree = "<group>"; };
-		3FCE2A901F58BDFF00D4855B /* uuid.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = uuid.hpp; sourceTree = "<group>"; };
-		3FCE2A911F58BDFF00D4855B /* uuid.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = uuid.cpp; sourceTree = "<group>"; };
-		3FCE2A941F58BE1D00D4855B /* sync_permission.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = sync_permission.hpp; path = src/sync/sync_permission.hpp; sourceTree = "<group>"; };
-		3FCE2A951F58BE1D00D4855B /* sync_permission.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = sync_permission.cpp; path = src/sync/sync_permission.cpp; sourceTree = "<group>"; };
-		3FCE2A981F58BE3600D4855B /* descriptor_ordering.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = descriptor_ordering.hpp; path = "object-store/src/descriptor_ordering.hpp"; sourceTree = SOURCE_ROOT; };
-		3FCE2A991F58BE3600D4855B /* feature_checks.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = feature_checks.hpp; path = "object-store/src/feature_checks.hpp"; sourceTree = SOURCE_ROOT; };
-		423737AF1F7E333400FAEDFF /* partial_sync.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = partial_sync.cpp; path = src/sync/partial_sync.cpp; sourceTree = "<group>"; };
-		423737B01F7E333400FAEDFF /* partial_sync.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = partial_sync.hpp; path = src/sync/partial_sync.hpp; sourceTree = "<group>"; };
-		426FCDFF1F7DA2F9005565DC /* sync_config.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = sync_config.cpp; path = src/sync/sync_config.cpp; sourceTree = "<group>"; };
 		502B07E31E2CD1FA007A84ED /* object.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = object.cpp; path = src/object.cpp; sourceTree = "<group>"; };
 		502B07E51E2CD20D007A84ED /* object.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = object.hpp; path = src/object.hpp; sourceTree = "<group>"; };
 		504CF8541EBCAE3600A9A4B6 /* network_reachability_observer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = network_reachability_observer.cpp; sourceTree = "<group>"; };
@@ -301,9 +280,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				02D8D1F71B601984006DB49D /* JavaScriptCore.framework in Frameworks */,
-				027A23131CD3E379000543AE /* libRealmJS.a in Frameworks */,
 				5D25F5A11D6284FD00EBBB30 /* libz.tbd in Frameworks */,
+				027A23131CD3E379000543AE /* libRealmJS.a in Frameworks */,
+				02D8D1F71B601984006DB49D /* JavaScriptCore.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -322,19 +301,13 @@
 			children = (
 				02022A6C1DA47EC8000F0C4F /* android */,
 				02022A6E1DA47EC8000F0C4F /* apple */,
-				02022A751DA47EC8000F0C4F /* generic */,
-				02022A771DA47EC8000F0C4F /* uv */,
-				3FCE2A8C1F58BDFF00D4855B /* aligned_union.hpp */,
-				3FCE2A8D1F58BDFF00D4855B /* any.hpp */,
 				02022A701DA47EC8000F0C4F /* atomic_shared_ptr.hpp */,
 				02022A711DA47EC8000F0C4F /* compiler.hpp */,
 				02022A721DA47EC8000F0C4F /* event_loop_signal.hpp */,
 				02022A731DA47EC8000F0C4F /* format.cpp */,
 				02022A741DA47EC8000F0C4F /* format.hpp */,
-				3FCE2A8E1F58BDFF00D4855B /* tagged_bool.hpp */,
-				3FCE2A8F1F58BDFF00D4855B /* time.hpp */,
-				3FCE2A911F58BDFF00D4855B /* uuid.cpp */,
-				3FCE2A901F58BDFF00D4855B /* uuid.hpp */,
+				02022A751DA47EC8000F0C4F /* generic */,
+				02022A771DA47EC8000F0C4F /* node */,
 			);
 			name = util;
 			path = src/util;
@@ -364,41 +337,41 @@
 			path = generic;
 			sourceTree = "<group>";
 		};
-		02022A771DA47EC8000F0C4F /* uv */ = {
+		02022A771DA47EC8000F0C4F /* node */ = {
 			isa = PBXGroup;
 			children = (
 				02022A781DA47EC8000F0C4F /* event_loop_signal.hpp */,
 			);
-			path = uv;
+			path = node;
 			sourceTree = "<group>";
 		};
 		0270BC3D1B7CFBFD00010E03 /* RealmJS */ = {
 			isa = PBXGroup;
 			children = (
+				F6BCCFDF1C83809A00FE31AE /* lib */,
+				02879D8B1DC29D5600777A5D /* package.json */,
 				F62A35131C18E6E2004A917D /* iOS */,
 				F6874A441CAD2ACD00EEEE36 /* JSC */,
-				F6BCCFDF1C83809A00FE31AE /* lib */,
 				F62BF9001CAC72C40022BCDC /* Node */,
 				F62A35141C18E783004A917D /* Object Store */,
-				F6079B181CD3EB9000BD2401 /* concurrent_deque.hpp */,
 				850715AE1E32366B00E548DB /* event_loop_dispatcher.hpp */,
-				F620F0521CAF0B600082977B /* js_class.hpp */,
+				0290934A1CEFA9170009769E /* js_observable.hpp */,
 				F60102F71CBDA6D400EC01BA /* js_collection.hpp */,
 				029048041C0428DF00ABDED4 /* js_list.hpp */,
-				F620F0591CB7B4C80082977B /* js_object_accessor.hpp */,
-				0290934A1CEFA9170009769E /* js_observable.hpp */,
+				029048061C0428DF00ABDED4 /* js_realm_object.hpp */,
 				029048071C0428DF00ABDED4 /* js_realm.cpp */,
 				029048081C0428DF00ABDED4 /* js_realm.hpp */,
-				029048061C0428DF00ABDED4 /* js_realm_object.hpp */,
+				0250D9C01D7647E00012C20C /* js_sync.hpp */,
 				0290480A1C0428DF00ABDED4 /* js_results.hpp */,
 				0290480C1C0428DF00ABDED4 /* js_schema.hpp */,
-				0250D9C01D7647E00012C20C /* js_sync.hpp */,
+				F620F0521CAF0B600082977B /* js_class.hpp */,
 				F6874A3E1CACA5A900EEEE36 /* js_types.hpp */,
 				F6267BC91CADC30000AC36B1 /* js_util.hpp */,
-				02879D8B1DC29D5600777A5D /* package.json */,
+				F620F0591CB7B4C80082977B /* js_object_accessor.hpp */,
 				029048351C042A3C00ABDED4 /* platform.hpp */,
 				0290480F1C0428DF00ABDED4 /* rpc.cpp */,
 				029048101C0428DF00ABDED4 /* rpc.hpp */,
+				F6079B181CD3EB9000BD2401 /* concurrent_deque.hpp */,
 			);
 			name = RealmJS;
 			sourceTree = "<group>";
@@ -407,19 +380,19 @@
 			isa = PBXGroup;
 			children = (
 				02B58CCF1AE99D8C009B348C /* Frameworks */,
-				02B58CB21AE99CEC009B348C /* Products */,
+				F6C3FBB41BF680D000E6FFD4 /* Vendor */,
 				0270BC3D1B7CFBFD00010E03 /* RealmJS */,
 				02B58CC01AE99CEC009B348C /* RealmJSTests */,
-				F6C3FBB41BF680D000E6FFD4 /* Vendor */,
+				02B58CB21AE99CEC009B348C /* Products */,
 			);
 			sourceTree = "<group>";
 		};
 		02B58CB21AE99CEC009B348C /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				F63FF2F01C16405C00B3B8E0 /* libGCDWebServers.a */,
-				F63FF2B11C1241E500B3B8E0 /* libRealmJS.a */,
 				02B58CBC1AE99CEC009B348C /* RealmJSTests.xctest */,
+				F63FF2B11C1241E500B3B8E0 /* libRealmJS.a */,
+				F63FF2F01C16405C00B3B8E0 /* libGCDWebServers.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -427,12 +400,12 @@
 		02B58CC01AE99CEC009B348C /* RealmJSTests */ = {
 			isa = PBXGroup;
 			children = (
-				02D041F51CE11159000E4250 /* data */,
 				F61378781C18EAAC008BFC51 /* js */,
+				02D041F51CE11159000E4250 /* data */,
 				0270BC781B7D020100010E03 /* Info.plist */,
-				02409DC11BCF11D6005F3B3E /* RealmJSCoreTests.m */,
 				0270BC7A1B7D020100010E03 /* RealmJSTests.h */,
 				0270BC7B1B7D020100010E03 /* RealmJSTests.mm */,
+				02409DC11BCF11D6005F3B3E /* RealmJSCoreTests.m */,
 				F68A278A1BC2722A0063D40A /* RJSModuleLoader.h */,
 				F68A278B1BC2722A0063D40A /* RJSModuleLoader.m */,
 			);
@@ -443,14 +416,14 @@
 		02B58CCF1AE99D8C009B348C /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				F63FF32C1C16432E00B3B8E0 /* CFNetwork.framework */,
 				F620F0741CB9F60C0082977B /* CoreFoundation.framework */,
-				02B58CCD1AE99D4D009B348C /* JavaScriptCore.framework */,
 				02A3C7A41BC4341500B1A7BE /* libc++.tbd */,
-				F63FF32E1C16433900B3B8E0 /* libxml2.tbd */,
 				F63FF3301C16434400B3B8E0 /* libz.tbd */,
+				F63FF32E1C16433900B3B8E0 /* libxml2.tbd */,
+				F63FF32C1C16432E00B3B8E0 /* CFNetwork.framework */,
 				F63FF32A1C16432700B3B8E0 /* MobileCoreServices.framework */,
 				F63FF3281C16430C00B3B8E0 /* UIKit.framework */,
+				02B58CCD1AE99D4D009B348C /* JavaScriptCore.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -467,20 +440,15 @@
 		02E315CC1DB80DE000555337 /* sync */ = {
 			isa = PBXGroup;
 			children = (
-				423737AF1F7E333400FAEDFF /* partial_sync.cpp */,
-				423737B01F7E333400FAEDFF /* partial_sync.hpp */,
-				426FCDFF1F7DA2F9005565DC /* sync_config.cpp */,
 				504CF8521EBCAE3600A9A4B6 /* impl */,
 				02E315CD1DB80DF200555337 /* sync_client.hpp */,
-				02E315C21DB80DDD00555337 /* sync_config.hpp */,
 				02E315CE1DB80DF200555337 /* sync_file.cpp */,
 				02E315CF1DB80DF200555337 /* sync_file.hpp */,
-				02E315C31DB80DDD00555337 /* sync_manager.cpp */,
-				02E315C41DB80DDD00555337 /* sync_manager.hpp */,
 				02E315D01DB80DF200555337 /* sync_metadata.cpp */,
 				02E315D11DB80DF200555337 /* sync_metadata.hpp */,
-				3FCE2A951F58BE1D00D4855B /* sync_permission.cpp */,
-				3FCE2A941F58BE1D00D4855B /* sync_permission.hpp */,
+				02E315C21DB80DDD00555337 /* sync_config.hpp */,
+				02E315C31DB80DDD00555337 /* sync_manager.cpp */,
+				02E315C41DB80DDD00555337 /* sync_manager.hpp */,
 				02E315C51DB80DDD00555337 /* sync_session.cpp */,
 				02E315C61DB80DDD00555337 /* sync_session.hpp */,
 				02E315C71DB80DDD00555337 /* sync_user.cpp */,
@@ -518,8 +486,8 @@
 		F62A35131C18E6E2004A917D /* iOS */ = {
 			isa = PBXGroup;
 			children = (
-				0270BC5A1B7CFC1300010E03 /* Info.plist */,
 				029048381C042A8F00ABDED4 /* platform.mm */,
+				0270BC5A1B7CFC1300010E03 /* Info.plist */,
 			);
 			name = iOS;
 			path = ios;
@@ -528,18 +496,16 @@
 		F62A35141C18E783004A917D /* Object Store */ = {
 			isa = PBXGroup;
 			children = (
-				F63117EA1CEB0BFA00ECB2DE /* impl */,
-				F63117EC1CEB0C8100ECB2DE /* parser */,
 				02E315CC1DB80DE000555337 /* sync */,
 				02022A6B1DA47EC8000F0C4F /* util */,
-				022BF0FF1E7266C800F382F1 /* binding_callback_thread_observer.cpp */,
+				F63117EA1CEB0BFA00ECB2DE /* impl */,
+				F63117EC1CEB0C8100ECB2DE /* parser */,
 				022BF1001E7266C800F382F1 /* binding_callback_thread_observer.hpp */,
+				022BF0FF1E7266C800F382F1 /* binding_callback_thread_observer.cpp */,
 				02F59EAE1C88F17D007F774C /* binding_context.hpp */,
 				02414B961CE6AADD00A8669F /* collection_notifications.cpp */,
 				02414B971CE6AADD00A8669F /* collection_notifications.hpp */,
-				3FCE2A981F58BE3600D4855B /* descriptor_ordering.hpp */,
 				5D02C7781E1C83650048C13E /* execution_context_id.hpp */,
-				3FCE2A991F58BE3600D4855B /* feature_checks.hpp */,
 				02F59EAF1C88F17D007F774C /* index_set.cpp */,
 				02F59EB01C88F17D007F774C /* index_set.hpp */,
 				02F59EB11C88F17D007F774C /* list.cpp */,
@@ -569,19 +535,19 @@
 		F62BF9001CAC72C40022BCDC /* Node */ = {
 			isa = PBXGroup;
 			children = (
-				F620F0551CB655A50082977B /* node_class.hpp */,
-				F601030A1CC4B64E00EC01BA /* node_context.hpp */,
 				F6267BCA1CADC49200AC36B1 /* node_dummy.cpp */,
-				F60103121CC4CBF000EC01BA /* node_exception.hpp */,
-				F60103101CC4B86000EC01BA /* node_function.hpp */,
-				F620F0571CB766DA0082977B /* node_init.cpp */,
 				F60102CF1CBB814A00EC01BA /* node_init.hpp */,
+				F620F0571CB766DA0082977B /* node_init.cpp */,
+				F620F0551CB655A50082977B /* node_class.hpp */,
+				F6874A351CAC792D00EEEE36 /* node_types.hpp */,
+				F60103161CC4CD2F00EC01BA /* node_string.hpp */,
+				F601030A1CC4B64E00EC01BA /* node_context.hpp */,
+				F601030C1CC4B72B00EC01BA /* node_value.hpp */,
 				F601030E1CC4B7C900EC01BA /* node_object.hpp */,
+				F60103101CC4B86000EC01BA /* node_function.hpp */,
+				F60103121CC4CBF000EC01BA /* node_exception.hpp */,
 				F60103071CC4B3DF00EC01BA /* node_protected.hpp */,
 				F60103151CC4CCFD00EC01BA /* node_return_value.hpp */,
-				F60103161CC4CD2F00EC01BA /* node_string.hpp */,
-				F6874A351CAC792D00EEEE36 /* node_types.hpp */,
-				F601030C1CC4B72B00EC01BA /* node_value.hpp */,
 				F67478481CC81F1300F9273C /* platform.cpp */,
 			);
 			name = Node;
@@ -598,22 +564,19 @@
 				02414B9A1CE6AAEF00A8669F /* collection_change_builder.hpp */,
 				02414B9B1CE6AAEF00A8669F /* collection_notifier.cpp */,
 				02414B9C1CE6AAEF00A8669F /* collection_notifier.hpp */,
-				02F59EDA1C88F2BA007F774C /* external_commit_helper.hpp */,
 				02414B9D1CE6AAEF00A8669F /* list_notifier.cpp */,
 				02414B9E1CE6AAEF00A8669F /* list_notifier.hpp */,
-				3FCE2A871F58BDE500D4855B /* object_accessor_impl.hpp */,
 				8507156B1E2CFC0100E548DB /* object_notifier.cpp */,
 				8507156C1E2CFC0100E548DB /* object_notifier.hpp */,
-				3FCE2A891F58BDE500D4855B /* primitive_list_notifier.cpp */,
-				3FCE2A881F58BDE500D4855B /* primitive_list_notifier.hpp */,
-				02F59EDB1C88F2BA007F774C /* realm_coordinator.cpp */,
-				02F59EDC1C88F2BB007F774C /* realm_coordinator.hpp */,
 				02414B9F1CE6AAEF00A8669F /* results_notifier.cpp */,
 				02414BA01CE6AAEF00A8669F /* results_notifier.hpp */,
+				02F59EDA1C88F2BA007F774C /* external_commit_helper.hpp */,
+				02F59EDB1C88F2BA007F774C /* realm_coordinator.cpp */,
+				02F59EDC1C88F2BB007F774C /* realm_coordinator.hpp */,
 				02F59EDD1C88F2BB007F774C /* transact_log_handler.cpp */,
 				02F59EDE1C88F2BB007F774C /* transact_log_handler.hpp */,
-				02022A4A1DA475A9000F0C4F /* weak_realm_notifier.cpp */,
 				02022A481DA474A7000F0C4F /* weak_realm_notifier.hpp */,
+				02022A4A1DA475A9000F0C4F /* weak_realm_notifier.cpp */,
 			);
 			name = impl;
 			path = src/impl;
@@ -622,10 +585,10 @@
 		F63117EB1CEB0C1B00ECB2DE /* apple */ = {
 			isa = PBXGroup;
 			children = (
-				02022A411DA47489000F0C4F /* external_commit_helper.cpp */,
-				02022A421DA47489000F0C4F /* external_commit_helper.hpp */,
 				02E315DE1DB8233E00555337 /* keychain_helper.cpp */,
 				02E315DF1DB8233E00555337 /* keychain_helper.hpp */,
+				02022A411DA47489000F0C4F /* external_commit_helper.cpp */,
+				02022A421DA47489000F0C4F /* external_commit_helper.hpp */,
 			);
 			path = apple;
 			sourceTree = "<group>";
@@ -723,20 +686,20 @@
 		F6874A441CAD2ACD00EEEE36 /* JSC */ = {
 			isa = PBXGroup;
 			children = (
-				F620F0531CAF2EF70082977B /* jsc_class.hpp */,
-				F60103091CC4B5E800EC01BA /* jsc_context.hpp */,
-				F60103111CC4BA6500EC01BA /* jsc_exception.hpp */,
-				F601030F1CC4B80800EC01BA /* jsc_function.hpp */,
-				029048011C0428DF00ABDED4 /* jsc_init.cpp */,
 				029048021C0428DF00ABDED4 /* jsc_init.h */,
 				F60102D11CBB865A00EC01BA /* jsc_init.hpp */,
+				029048011C0428DF00ABDED4 /* jsc_init.cpp */,
+				F620F0531CAF2EF70082977B /* jsc_class.hpp */,
+				025678951CAB392000FB8501 /* jsc_types.hpp */,
+				F60103131CC4CC4500EC01BA /* jsc_string.hpp */,
+				F60103091CC4B5E800EC01BA /* jsc_context.hpp */,
+				F601030B1CC4B6C900EC01BA /* jsc_value.hpp */,
+				5D1BF0561EF1DB4800B7DC87 /* jsc_value.cpp */,
 				F601030D1CC4B76F00EC01BA /* jsc_object.hpp */,
+				F601030F1CC4B80800EC01BA /* jsc_function.hpp */,
+				F60103111CC4BA6500EC01BA /* jsc_exception.hpp */,
 				F60103081CC4B4F900EC01BA /* jsc_protected.hpp */,
 				F60103141CC4CC8C00EC01BA /* jsc_return_value.hpp */,
-				F60103131CC4CC4500EC01BA /* jsc_string.hpp */,
-				025678951CAB392000FB8501 /* jsc_types.hpp */,
-				5D1BF0561EF1DB4800B7DC87 /* jsc_value.cpp */,
-				F601030B1CC4B6C900EC01BA /* jsc_value.hpp */,
 			);
 			name = JSC;
 			path = jsc;
@@ -746,8 +709,8 @@
 			isa = PBXGroup;
 			children = (
 				F63FF2FB1C1642BB00B3B8E0 /* GCDWebServer */,
-				F6BB7DEF1BF681BC00D0A69E /* base64.cpp */,
 				F6BB7DF01BF681BC00D0A69E /* base64.hpp */,
+				F6BB7DEF1BF681BC00D0A69E /* base64.cpp */,
 				F6C3FBBC1BF680EC00E6FFD4 /* json.hpp */,
 			);
 			name = Vendor;
@@ -853,9 +816,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				02D041F71CE11159000E4250 /* dates-v3.realm in Resources */,
+				F6BCCFE21C8380A400FE31AE /* lib in Resources */,
 				02414B881CE68CA200A8669F /* dates-v5.realm in Resources */,
 				F61378791C18EAC5008BFC51 /* js in Resources */,
-				F6BCCFE21C8380A400FE31AE /* lib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -887,8 +850,8 @@
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = "/bin/sh";
-			shellScript = "[ -z \"$NVM_DIR\" ] && export NVM_DIR=\"$HOME/.nvm\"\n\nif [[ -s \"$HOME/.nvm/nvm.sh\" ]]; then\n  . \"$HOME/.nvm/nvm.sh\"\nelif [[ -x \"$(command -v brew)\" && -s \"$(brew --prefix nvm)/nvm.sh\" ]]; then\n  . \"$(brew --prefix nvm)/nvm.sh\"\nfi\n \nif [[ \"$(command -v nvm)\" ]]; then\n nvm install 7.10.0\nfi\n \n node ../scripts/download-realm.js ios --sync";
+			shellPath = /bin/sh;
+			shellScript = "../scripts/download-core.sh";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -897,9 +860,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				02409DC21BCF11D6005F3B3E /* RealmJSCoreTests.m in Sources */,
-				0270BC821B7D020100010E03 /* RealmJSTests.mm in Sources */,
 				F68A278C1BC2722A0063D40A /* RJSModuleLoader.m in Sources */,
+				0270BC821B7D020100010E03 /* RealmJSTests.mm in Sources */,
+				02409DC21BCF11D6005F3B3E /* RealmJSCoreTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -907,51 +870,46 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F63FF2E21C15921A00B3B8E0 /* base64.cpp in Sources */,
-				022BF1021E7266DF00F382F1 /* binding_callback_thread_observer.cpp in Sources */,
-				02414BA51CE6ABCF00A8669F /* collection_change_builder.cpp in Sources */,
-				02414BA91CE6ABCF00A8669F /* collection_notifications.cpp in Sources */,
-				02414BA61CE6ABCF00A8669F /* collection_notifier.cpp in Sources */,
+				02E315C91DB80DDD00555337 /* sync_manager.cpp in Sources */,
+				02022A671DA47BD7000F0C4F /* parser.cpp in Sources */,
+				02022A681DA47BD7000F0C4F /* query_builder.cpp in Sources */,
+				02E315E01DB8233E00555337 /* keychain_helper.cpp in Sources */,
 				02022A581DA476CD000F0C4F /* external_commit_helper.cpp in Sources */,
-				02022A7C1DA47EC8000F0C4F /* format.cpp in Sources */,
+				02022A5A1DA476CD000F0C4F /* weak_realm_notifier.cpp in Sources */,
+				02022A5B1DA476CD000F0C4F /* placeholder.cpp in Sources */,
+				504CF8611EBCAE3600A9A4B6 /* sync_metadata.cpp in Sources */,
+				502B07E41E2CD201007A84ED /* object.cpp in Sources */,
+				02414BA51CE6ABCF00A8669F /* collection_change_builder.cpp in Sources */,
+				02414BA61CE6ABCF00A8669F /* collection_notifier.cpp in Sources */,
+				504CF85F1EBCAE3600A9A4B6 /* system_configuration.cpp in Sources */,
+				02414BA71CE6ABCF00A8669F /* list_notifier.cpp in Sources */,
+				504CF8601EBCAE3600A9A4B6 /* sync_file.cpp in Sources */,
+				02414BA81CE6ABCF00A8669F /* results_notifier.cpp in Sources */,
+				02414BA91CE6ABCF00A8669F /* collection_notifications.cpp in Sources */,
+				02F59EE31C88F2BB007F774C /* transact_log_handler.cpp in Sources */,
+				F63FF2E81C159C4B00B3B8E0 /* platform.mm in Sources */,
+				50C671001E1D2D31003CB63C /* thread_safe_reference.cpp in Sources */,
+				8507156E1E2CFCD000E548DB /* object_notifier.cpp in Sources */,
+				02E315CA1DB80DDD00555337 /* sync_session.cpp in Sources */,
+				02F59EC31C88F17D007F774C /* results.cpp in Sources */,
+				F63FF2E21C15921A00B3B8E0 /* base64.cpp in Sources */,
+				F63FF2C61C12469E00B3B8E0 /* jsc_init.cpp in Sources */,
+				02F59EC01C88F17D007F774C /* list.cpp in Sources */,
 				02F59EBF1C88F17D007F774C /* index_set.cpp in Sources */,
 				F63FF2C91C12469E00B3B8E0 /* js_realm.cpp in Sources */,
-				F63FF2C61C12469E00B3B8E0 /* jsc_init.cpp in Sources */,
-				5D1BF0571EF1DB4800B7DC87 /* jsc_value.cpp in Sources */,
-				02E315E01DB8233E00555337 /* keychain_helper.cpp in Sources */,
-				02F59EC01C88F17D007F774C /* list.cpp in Sources */,
-				02414BA71CE6ABCF00A8669F /* list_notifier.cpp in Sources */,
-				504CF85E1EBCAE3600A9A4B6 /* network_reachability_observer.cpp in Sources */,
-				502B07E41E2CD201007A84ED /* object.cpp in Sources */,
-				8507156E1E2CFCD000E548DB /* object_notifier.cpp in Sources */,
-				02F59EC11C88F17D007F774C /* object_schema.cpp in Sources */,
-				02F59EC21C88F17D007F774C /* object_store.cpp in Sources */,
-				02022A671DA47BD7000F0C4F /* parser.cpp in Sources */,
-				02022A5B1DA476CD000F0C4F /* placeholder.cpp in Sources */,
-				F63FF2E81C159C4B00B3B8E0 /* platform.mm in Sources */,
-				3FCE2A8B1F58BDEF00D4855B /* primitive_list_notifier.cpp in Sources */,
-				02022A681DA47BD7000F0C4F /* query_builder.cpp in Sources */,
-				02F59EE21C88F2BB007F774C /* realm_coordinator.cpp in Sources */,
-				02F59EC31C88F17D007F774C /* results.cpp in Sources */,
-				02414BA81CE6ABCF00A8669F /* results_notifier.cpp in Sources */,
-				F63FF2CD1C12469E00B3B8E0 /* rpc.cpp in Sources */,
-				02F59EC41C88F17D007F774C /* schema.cpp in Sources */,
 				02F59EC51C88F17D007F774C /* shared_realm.cpp in Sources */,
-				5D97DC4E1F7DAB1400B856A4 /* sync_config.cpp in Sources */,
-				504CF8601EBCAE3600A9A4B6 /* sync_file.cpp in Sources */,
+				504CF85E1EBCAE3600A9A4B6 /* network_reachability_observer.cpp in Sources */,
+				02F59EE21C88F2BB007F774C /* realm_coordinator.cpp in Sources */,
+				02F59EC41C88F17D007F774C /* schema.cpp in Sources */,
+				F63FF2CD1C12469E00B3B8E0 /* rpc.cpp in Sources */,
 				02E315D21DB80DF200555337 /* sync_file.cpp in Sources */,
-				420FB79F1F7FBFE900D43D0F /* partial_sync.cpp in Sources */,
-				02E315C91DB80DDD00555337 /* sync_manager.cpp in Sources */,
-				504CF8611EBCAE3600A9A4B6 /* sync_metadata.cpp in Sources */,
-				02E315D31DB80DF200555337 /* sync_metadata.cpp in Sources */,
-				3FCE2A971F58BE2200D4855B /* sync_permission.cpp in Sources */,
-				02E315CA1DB80DDD00555337 /* sync_session.cpp in Sources */,
+				022BF1021E7266DF00F382F1 /* binding_callback_thread_observer.cpp in Sources */,
+				5D1BF0571EF1DB4800B7DC87 /* jsc_value.cpp in Sources */,
+				02F59EC21C88F17D007F774C /* object_store.cpp in Sources */,
+				02022A7C1DA47EC8000F0C4F /* format.cpp in Sources */,
 				02E315CB1DB80DDD00555337 /* sync_user.cpp in Sources */,
-				504CF85F1EBCAE3600A9A4B6 /* system_configuration.cpp in Sources */,
-				50C671001E1D2D31003CB63C /* thread_safe_reference.cpp in Sources */,
-				02F59EE31C88F2BB007F774C /* transact_log_handler.cpp in Sources */,
-				3FCE2A931F58BE0300D4855B /* uuid.cpp in Sources */,
-				02022A5A1DA476CD000F0C4F /* weak_realm_notifier.cpp in Sources */,
+				02E315D31DB80DF200555337 /* sync_metadata.cpp in Sources */,
+				02F59EC11C88F17D007F774C /* object_schema.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -959,19 +917,19 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F63FF31B1C1642BB00B3B8E0 /* GCDWebServer.m in Sources */,
+				F63FF31E1C1642BB00B3B8E0 /* GCDWebServerRequest.m in Sources */,
+				F63FF3231C1642BB00B3B8E0 /* GCDWebServerURLEncodedFormRequest.m in Sources */,
 				F63FF31C1C1642BB00B3B8E0 /* GCDWebServerConnection.m in Sources */,
 				F63FF3201C1642BB00B3B8E0 /* GCDWebServerDataRequest.m in Sources */,
-				F63FF3241C1642BB00B3B8E0 /* GCDWebServerDataResponse.m in Sources */,
-				F63FF3251C1642BB00B3B8E0 /* GCDWebServerErrorResponse.m in Sources */,
-				F63FF3211C1642BB00B3B8E0 /* GCDWebServerFileRequest.m in Sources */,
-				F63FF3261C1642BB00B3B8E0 /* GCDWebServerFileResponse.m in Sources */,
-				F63FF31D1C1642BB00B3B8E0 /* GCDWebServerFunctions.m in Sources */,
 				F63FF3221C1642BB00B3B8E0 /* GCDWebServerMultiPartFormRequest.m in Sources */,
-				F63FF31E1C1642BB00B3B8E0 /* GCDWebServerRequest.m in Sources */,
+				F63FF3211C1642BB00B3B8E0 /* GCDWebServerFileRequest.m in Sources */,
 				F63FF31F1C1642BB00B3B8E0 /* GCDWebServerResponse.m in Sources */,
+				F63FF3261C1642BB00B3B8E0 /* GCDWebServerFileResponse.m in Sources */,
 				F63FF3271C1642BB00B3B8E0 /* GCDWebServerStreamedResponse.m in Sources */,
-				F63FF3231C1642BB00B3B8E0 /* GCDWebServerURLEncodedFormRequest.m in Sources */,
+				F63FF3241C1642BB00B3B8E0 /* GCDWebServerDataResponse.m in Sources */,
+				F63FF31B1C1642BB00B3B8E0 /* GCDWebServer.m in Sources */,
+				F63FF31D1C1642BB00B3B8E0 /* GCDWebServerFunctions.m in Sources */,
+				F63FF3251C1642BB00B3B8E0 /* GCDWebServerErrorResponse.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -998,7 +956,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 2.1.1;
+				CURRENT_PROJECT_VERSION = 1.8.1;
 				CXX = "$(SRCROOT)/../scripts/ccache-clang++.sh";
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -1025,7 +983,7 @@
 					"$(SRCROOT)/object-store/external/pegtl",
 					"$(SRCROOT)/object-store/src",
 					"$(SRCROOT)/../vendor",
-					"$(SRCROOT)/../vendor/realm-ios/include",
+					"$(SRCROOT)/../vendor/core/include",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				MTL_ENABLE_DEBUG_INFO = YES;
@@ -1062,7 +1020,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 2.1.1;
+				CURRENT_PROJECT_VERSION = 1.8.1;
 				CXX = "$(SRCROOT)/../scripts/ccache-clang++.sh";
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
@@ -1084,7 +1042,7 @@
 					"$(SRCROOT)/object-store/external/pegtl",
 					"$(SRCROOT)/object-store/src",
 					"$(SRCROOT)/../vendor",
-					"$(SRCROOT)/../vendor/realm-ios/include",
+					"$(SRCROOT)/../vendor/core/include",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
@@ -1133,11 +1091,89 @@
 			};
 			name = Release;
 		};
-		F63FF2B71C1241E500B3B8E0 /* Debug */ = {
+		D51E35D51F8751A7007859A9 /* JustToKnowDebug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CC = "$(SRCROOT)/../scripts/ccache-clang.sh";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1.8.1;
+				CXX = "$(SRCROOT)/../scripts/ccache-clang++.sh";
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_GENERATE_TEST_COVERAGE_FILES = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					REALM_DEBUG,
+					REALM_HAVE_CONFIG,
+					__ASSERTMACROS__,
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"$(SRCROOT)/object-store/external/pegtl",
+					"$(SRCROOT)/object-store/src",
+					"$(SRCROOT)/../vendor",
+					"$(SRCROOT)/../vendor/core/include",
+				);
+				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				OTHER_CPLUSPLUSFLAGS = (
+					"$(OTHER_CFLAGS)",
+					"-ftemplate-backtrace-limit=0",
+				);
+				SDKROOT = iphoneos;
+				STRIP_INSTALLED_PRODUCT = NO;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = JustToKnowDebug;
+		};
+		D51E35D61F8751A7007859A9 /* JustToKnowDebug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				GCC_INLINES_ARE_PRIVATE_EXTERN = YES;
+				HEADER_SEARCH_PATHS = (
+					"$(SRCROOT)/object-store/src",
+					"$(SRCROOT)/../vendor",
+					"$(SRCROOT)/../vendor/core/include",
+				);
+				OTHER_LDFLAGS = "-ObjC";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+			};
+			name = JustToKnowDebug;
+		};
+		D51E35D71F8751A7007859A9 /* JustToKnowDebug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				DEBUG_INFORMATION_FORMAT = dwarf;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
 					REALM_DEBUG,
@@ -1152,7 +1188,285 @@
 					"-isystem",
 					"$(SRCROOT)/../vendor/sync/include",
 				);
-				OTHER_LIBTOOLFLAGS = "$(SRCROOT)/../vendor/realm-ios/librealm-ios-dbg.a";
+				OTHER_LIBTOOLFLAGS = "$(SRCROOT)/../vendor/core/librealm-ios-dbg.a $(SRCROOT)/../vendor/sync/librealm-ios-dbg.a";
+				PRODUCT_NAME = RealmJS;
+				SKIP_INSTALL = YES;
+			};
+			name = JustToKnowDebug;
+		};
+		D51E35D81F8751A7007859A9 /* JustToKnowDebug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				INFOPLIST_FILE = ../tests/ios/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				OTHER_CPLUSPLUSFLAGS = (
+					"$(inherited)",
+					"-isystem",
+					../core/include,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "io.realm.$(PRODUCT_NAME:rfc1034identifier)";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = JustToKnowDebug;
+		};
+		D51E35D91F8751AD007859A9 /* IMCDebug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CC = "$(SRCROOT)/../scripts/ccache-clang.sh";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1.8.1;
+				CXX = "$(SRCROOT)/../scripts/ccache-clang++.sh";
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_GENERATE_TEST_COVERAGE_FILES = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					REALM_DEBUG,
+					REALM_HAVE_CONFIG,
+					__ASSERTMACROS__,
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"$(SRCROOT)/object-store/external/pegtl",
+					"$(SRCROOT)/object-store/src",
+					"$(SRCROOT)/../vendor",
+					"$(SRCROOT)/../vendor/core/include",
+				);
+				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				OTHER_CPLUSPLUSFLAGS = (
+					"$(OTHER_CFLAGS)",
+					"-ftemplate-backtrace-limit=0",
+				);
+				SDKROOT = iphoneos;
+				STRIP_INSTALLED_PRODUCT = NO;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = IMCDebug;
+		};
+		D51E35DA1F8751AD007859A9 /* IMCDebug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				HEADER_SEARCH_PATHS = (
+					"$(SRCROOT)/object-store/src",
+					"$(SRCROOT)/../vendor",
+					"$(SRCROOT)/../vendor/core/include",
+				);
+				OTHER_LDFLAGS = "-ObjC";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+			};
+			name = IMCDebug;
+		};
+		D51E35DB1F8751AD007859A9 /* IMCDebug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					REALM_DEBUG,
+					REALM_HAVE_CONFIG,
+					__ASSERTMACROS__,
+					REALM_ENABLE_SYNC,
+				);
+				OTHER_CPLUSPLUSFLAGS = (
+					"$(inherited)",
+					"-isystem",
+					"$(SRCROOT)/../vendor/core/include",
+					"-isystem",
+					"$(SRCROOT)/../vendor/sync/include",
+				);
+				OTHER_LIBTOOLFLAGS = "$(SRCROOT)/../vendor/core/librealm-ios-dbg.a $(SRCROOT)/../vendor/sync/librealm-ios-dbg.a";
+				PRODUCT_NAME = RealmJS;
+				SKIP_INSTALL = YES;
+			};
+			name = IMCDebug;
+		};
+		D51E35DC1F8751AD007859A9 /* IMCDebug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				INFOPLIST_FILE = ../tests/ios/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				OTHER_CPLUSPLUSFLAGS = (
+					"$(inherited)",
+					"-isystem",
+					../core/include,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "io.realm.$(PRODUCT_NAME:rfc1034identifier)";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = IMCDebug;
+		};
+		D51E35DD1F8751B6007859A9 /* iBDialogDebug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CC = "$(SRCROOT)/../scripts/ccache-clang.sh";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1.8.1;
+				CXX = "$(SRCROOT)/../scripts/ccache-clang++.sh";
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_GENERATE_TEST_COVERAGE_FILES = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					REALM_DEBUG,
+					REALM_HAVE_CONFIG,
+					__ASSERTMACROS__,
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"$(SRCROOT)/object-store/external/pegtl",
+					"$(SRCROOT)/object-store/src",
+					"$(SRCROOT)/../vendor",
+					"$(SRCROOT)/../vendor/core/include",
+				);
+				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				OTHER_CPLUSPLUSFLAGS = (
+					"$(OTHER_CFLAGS)",
+					"-ftemplate-backtrace-limit=0",
+				);
+				SDKROOT = iphoneos;
+				STRIP_INSTALLED_PRODUCT = NO;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = iBDialogDebug;
+		};
+		D51E35DE1F8751B6007859A9 /* iBDialogDebug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				HEADER_SEARCH_PATHS = (
+					"$(SRCROOT)/object-store/src",
+					"$(SRCROOT)/../vendor",
+					"$(SRCROOT)/../vendor/core/include",
+				);
+				OTHER_LDFLAGS = "-ObjC";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+			};
+			name = iBDialogDebug;
+		};
+		D51E35DF1F8751B6007859A9 /* iBDialogDebug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					REALM_DEBUG,
+					REALM_HAVE_CONFIG,
+					__ASSERTMACROS__,
+					REALM_ENABLE_SYNC,
+				);
+				OTHER_CPLUSPLUSFLAGS = (
+					"$(inherited)",
+					"-isystem",
+					"$(SRCROOT)/../vendor/core/include",
+					"-isystem",
+					"$(SRCROOT)/../vendor/sync/include",
+				);
+				OTHER_LIBTOOLFLAGS = "$(SRCROOT)/../vendor/core/librealm-ios-dbg.a $(SRCROOT)/../vendor/sync/librealm-ios-dbg.a";
+				PRODUCT_NAME = RealmJS;
+				SKIP_INSTALL = YES;
+			};
+			name = iBDialogDebug;
+		};
+		D51E35E01F8751B6007859A9 /* iBDialogDebug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				INFOPLIST_FILE = ../tests/ios/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				OTHER_CPLUSPLUSFLAGS = (
+					"$(inherited)",
+					"-isystem",
+					../core/include,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "io.realm.$(PRODUCT_NAME:rfc1034identifier)";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = iBDialogDebug;
+		};
+		F63FF2B71C1241E500B3B8E0 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					REALM_DEBUG,
+					REALM_HAVE_CONFIG,
+					__ASSERTMACROS__,
+					REALM_ENABLE_SYNC,
+				);
+				OTHER_CPLUSPLUSFLAGS = (
+					"$(inherited)",
+					"-isystem",
+					"$(SRCROOT)/../vendor/core/include",
+					"-isystem",
+					"$(SRCROOT)/../vendor/sync/include",
+				);
+				OTHER_LIBTOOLFLAGS = "$(SRCROOT)/../vendor/core/librealm-ios-dbg.a $(SRCROOT)/../vendor/sync/librealm-ios-dbg.a";
 				PRODUCT_NAME = RealmJS;
 				SKIP_INSTALL = YES;
 			};
@@ -1161,7 +1475,6 @@
 		F63FF2B91C1241E500B3B8E0 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				GCC_INLINES_ARE_PRIVATE_EXTERN = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					REALM_HAVE_CONFIG,
 					__ASSERTMACROS__,
@@ -1174,7 +1487,7 @@
 					"-isystem",
 					"$(SRCROOT)/../vendor/sync/include",
 				);
-				OTHER_LIBTOOLFLAGS = "$(SRCROOT)/../vendor/realm-ios/librealm-ios.a";
+				OTHER_LIBTOOLFLAGS = "$(SRCROOT)/../vendor/core/librealm-ios.a $(SRCROOT)/../vendor/sync/librealm-ios.a";
 				PRODUCT_NAME = RealmJS;
 				SKIP_INSTALL = YES;
 			};
@@ -1216,6 +1529,9 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				02B58CC51AE99CEC009B348C /* Debug */,
+				D51E35DD1F8751B6007859A9 /* iBDialogDebug */,
+				D51E35D91F8751AD007859A9 /* IMCDebug */,
+				D51E35D51F8751A7007859A9 /* JustToKnowDebug */,
 				02B58CC61AE99CEC009B348C /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
@@ -1225,6 +1541,9 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				02B58CCB1AE99CEC009B348C /* Debug */,
+				D51E35E01F8751B6007859A9 /* iBDialogDebug */,
+				D51E35DC1F8751AD007859A9 /* IMCDebug */,
+				D51E35D81F8751A7007859A9 /* JustToKnowDebug */,
 				02B58CCC1AE99CEC009B348C /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
@@ -1234,6 +1553,9 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				F63FF2B71C1241E500B3B8E0 /* Debug */,
+				D51E35DF1F8751B6007859A9 /* iBDialogDebug */,
+				D51E35DB1F8751AD007859A9 /* IMCDebug */,
+				D51E35D71F8751A7007859A9 /* JustToKnowDebug */,
 				F63FF2B91C1241E500B3B8E0 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
@@ -1243,6 +1565,9 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				F63FF2F61C16405D00B3B8E0 /* Debug */,
+				D51E35DE1F8751B6007859A9 /* iBDialogDebug */,
+				D51E35DA1F8751AD007859A9 /* IMCDebug */,
+				D51E35D61F8751A7007859A9 /* JustToKnowDebug */,
 				F63FF2F81C16405D00B3B8E0 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;

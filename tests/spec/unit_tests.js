@@ -20,7 +20,6 @@
 /* eslint-disable no-console */
 
 'use strict';
-const isNodeProccess = (typeof process === 'object' && process + '' === '[object process]');
 
 const fs = require('fs');
 const path = require('path');
@@ -29,11 +28,7 @@ const Realm = require('realm');
 const RealmTests = require('../js');
 
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 30000;
-let isDebuggerAttached = typeof v8debug === 'object';
-if (!isDebuggerAttached && isNodeProccess) {
-    isDebuggerAttached = /--debug|--inspect/.test(process.execArgv.join(' '));
-}
-
+const isDebuggerAttached = typeof v8debug === 'object';
 if (isDebuggerAttached) {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = 3000000;
 }
@@ -60,9 +55,6 @@ Realm.copyBundledRealmFiles = function() {
 const tests = RealmTests.getTestNames();
 for (const suiteName in tests) {
     describe(suiteName, () => {
-
-        beforeAll(done => RealmTests.prepare(done));
-
         beforeEach(() => RealmTests.runTest(suiteName, 'beforeEach'));
 
         for (const testName of tests[suiteName]) {

@@ -22,18 +22,10 @@
 #include <sstream>
 #include <stdexcept>
 
-#include "object_schema.hpp"
 #include "shared_realm.hpp"
 
 namespace realm {
 namespace js {
-
-enum class AggregateFunc {
-    Min,
-    Max,
-    Sum,
-    Avg
-};
 
 template<typename T>
 class RealmDelegate;
@@ -80,44 +72,6 @@ static inline void validate_argument_count(size_t count, size_t min, size_t max,
 static inline void validate_argument_count_at_least(size_t count, size_t expected, const char *message = nullptr) {
     if (count < expected) {
         throw std::invalid_argument(message ? message : "Invalid arguments");
-    }
-}
-
-template<typename T, AggregateFunc func>
-void compute_aggregate_on_collection(typename T::ContextType ctx, typename T::ObjectType this_object,
-                                     typename T::Arguments args, typename T::ReturnValue &return_value) {
-
-    auto list = get_internal<typename T::Type, T>(this_object);
-
-    size_t column = 0;
-    if (list->get_type() == realm::PropertyType::Object) {
-        const ObjectSchema& object_schema = list->get_object_schema();
-        std::string property_name = T::Value::validated_to_string(ctx, args[0]);
-        const Property* property = object_schema.property_for_name(property_name);
-        if (!property) {
-            throw std::invalid_argument(util::format("Property '%1' does not exist on object '%2'",
-                                                     property_name, object_schema.name));
-        }
-        column = property->table_column;
-    }
-    else {
-        args.validate_maximum(0);
-    }
-
-    util::Optional<Mixed> mixed;
-    switch (func) {
-        case AggregateFunc::Min:
-            return_value.set(list->min(column));
-            break;
-        case AggregateFunc::Max:
-            return_value.set(list->max(column));
-            break;
-        case AggregateFunc::Sum:
-            return_value.set(list->sum(column));
-            break;
-        case AggregateFunc::Avg:
-            return_value.set(list->average(column));
-            break;
     }
 }
 

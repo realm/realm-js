@@ -22,7 +22,6 @@
     "no-magic-numbers": "off",
     "jasmine/no-spec-dupes": ["error", "branch"],
     "jasmine/no-suite-dupes": ["error", "branch"],
-    "no-console": "off",
-    "no-unused-vars": "off"
+    "no-console": "off"
   }
 }

@@ -93,19 +93,4 @@ namespace realm {
                           s_default_realm_directory + "/*.realm.lock";
         system(cmd.c_str());
     }
-
-    void remove_directory(const std::string &path)
-    {
-        std::string cmd_clear_dir = "rm " + path + "/*";
-        system(cmd_clear_dir.c_str());
-
-        std::string cmd_rmdir = "rmdir " + path;
-        system(cmd_rmdir.c_str());
-    }
-
-    void remove_file(const std::string &path)
-    {
-        std::string cmd = "rm " + path;
-        system(cmd.c_str());
-    }
 }

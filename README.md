@@ -26,17 +26,17 @@ The API reference is located at [realm.io/docs/javscript/latest/api](https://rea
 - **Need help with your code?**: Look for previous questions on the  [#realm tag](https://stackoverflow.com/questions/tagged/realm?sort=newest) — or [ask a new question](https://stackoverflow.com/questions/ask?tags=realm). We actively monitor and answer questions on SO!
 - **Have a bug to report?** [Open an issue](https://github.com/realm/realm-js/issues/new). If possible, include the version of Realm, a full log, the Realm file, and a project that shows the issue.
 - **Have a feature request?** [Open an issue](https://github.com/realm/realm-js/issues/new). Tell us what the feature should do, and why you want the feature.
-- Sign up for our [**Community Newsletter**](https://go.pardot.com/l/210132/2017-04-26/3j74l) to get regular tips, learn about other use-cases and get alerted of blog posts and tutorials about Realm.
+- Sign up for our [**Community Newsletter**](https://www2.realm.io/l/210132/2016-12-05/fy9m) to get regular tips, learn about other use-cases and get alerted of blog posts and tutorials about Realm.
 
 ## Building Realm
 
 In case you don't want to use the precompiled version on npm, you can build Realm yourself from source. You’ll need an Internet connection the first time you build in order to download the core library.
 
 Prerequisites:
-- Node: 4.0 <= version < 7.0
+- Node 4.0+
 - Xcode 7.2+
 - Android SDK 23+
-- Android NDK 10e
+- Android NDK 10e+
 
 First clone this repository:
 
@@ -65,7 +65,7 @@ To build for Android:
 To build for nodejs:
 
 ```
-npm install --build-from-source=realm
+npm install --build-from-source
 ```
 
  - On Windows you will need to setup the environment for node-gyp
@@ -82,8 +82,6 @@ npm install --build-from-source=realm
 
         - Check [node-gyp](https://github.com/nodejs/node-gyp) manual for custom installation procedure for Windows
 
-## Issues with debugging
-Some users have reported the Chrome debugging being too slow to use after integrating Realm into their react-native project. This is due to the blocking nature of the RPC calls made through the Realm library. It is an ongoing issue and we are actively working on fixing it. See https://github.com/realm/realm-js/issues/491 for more information.
 
 ## Running the tests
 
@@ -93,6 +91,7 @@ You will need yarn installed on the machine.
 test.sh options
 
  * eslint - lints the sources
+ * realmjs - runs all tests on quick simulated environment 
  * react-tests - runs all React Native tests on iOS Simulator
  * react-tests-android runs all React Native Android tests on Android emulator
  * node - runs all tests for node
@@ -129,8 +128,7 @@ See [CONTRIBUTING.md](https://github.com/realm/realm-js/blob/master/CONTRIBUTING
 ## License
 
 Realm JS is published under the Apache 2.0 license.
-Realm Core is also published under the Apache 2.0 license and is available
-[here](https://github.com/realm/realm-core).
+The underlying core is available under the [Realm Core Binary License](https://github.com/realm/realm-cocoa/blob/master/LICENSE#L210-L243) while we [work to open-source it under the Apache 2.0 license](https://realm.io/docs/javascript/latest/#faq).
 
 **This product is not being made available to any person located in Cuba, Iran,
 North Korea, Sudan, Syria or the Crimea region, or to any other person that is
@@ -138,8 +136,7 @@ not eligible to receive the product under U.S. law.**
 
 ## Feedback
 
-**_If you use Realm and are happy with it, all we ask is that you please consider sending out a tweet mentioning [@realm](https://twitter.com/realm) to share your thoughts_**
+**_If you use Realm and are happy with it, all we ask is that you please consider sending out a tweet mentioning [@realm](https://twitter.com/realm), or email [help@realm.io](mailto:help@realm.io) about your great apps!_**
 
 **_And if you don't like it, please let us know what you would like improved, so we can fix it!_**
 
-![analytics](https://ga-beacon.appspot.com/UA-50247013-2/realm-js/README?pixel)

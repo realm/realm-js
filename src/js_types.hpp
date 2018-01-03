@@ -20,17 +20,13 @@
 
 #include "execution_context_id.hpp"
 #include "property.hpp"
-#include "util/format.hpp"
 
 #include <stdexcept>
 #include <string>
 #include <vector>
 
 #include <realm/binary_data.hpp>
-#include <realm/string_data.hpp>
 #include <realm/util/to_string.hpp>
-#include <realm/util/optional.hpp>
-#include <realm/mixed.hpp>
 
 #if defined(__GNUC__) && !(defined(DEBUG) && DEBUG)
 # define REALM_JS_INLINE inline __attribute__((always_inline))
@@ -42,11 +38,6 @@
 
 namespace realm {
 namespace js {
-
-template<typename>
-struct ResultsClass;
-template<typename>
-struct ListClass;
 
 enum PropertyAttributes : unsigned {
     None       = 0,
@@ -67,7 +58,7 @@ struct String {
     String(const char *);
     String(const StringType &);
     String(StringType &&);
-    String(StringData);
+    String(const std::string &);
 
     operator StringType() const;
     operator std::string() const;
@@ -84,21 +75,18 @@ struct Context {
 
 class TypeErrorException : public std::invalid_argument {
 public:
-    template<typename NativeAccessor, typename ValueType>
-    TypeErrorException(NativeAccessor& accessor, StringData object_type,
-                       Property const& prop, ValueType value)
-    : std::invalid_argument(util::format("%1.%2 must be of type '%3', got '%4' (%5)",
-                                         object_type, prop.name, type_string(prop),
-                                         accessor.typeof(value),
-                                         accessor.print(value)))
-    {}
+    std::string const& prefix() const { return m_prefix; }
+    std::string const& type() const { return m_type; }
 
-    TypeErrorException(const char *name, std::string const& type, std::string const& value)
-    : std::invalid_argument(util::format("%1 must be of type '%2', got (%3)",
-                                         name ? name : "JS value", type, value))
-    {}
+    TypeErrorException(std::string prefix, std::string type) : 
+        std::invalid_argument(prefix + " must be of type: " + type),
+        m_prefix(std::move(prefix)),
+        m_type(std::move(type)) 
+        {}
 
-    static std::string type_string(Property const& prop);
+private:
+    std::string m_prefix;
+    std::string m_type;
 };
 
 template<typename T>
@@ -107,8 +95,6 @@ struct Value {
     using FunctionType = typename T::Function;
     using ObjectType = typename T::Object;
     using ValueType = typename T::Value;
-
-    static const char *typeof(ContextType, const ValueType &);
 
     static bool is_array(ContextType, const ValueType &);
     static bool is_array_buffer(ContextType, const ValueType &);
@@ -126,20 +112,13 @@ struct Value {
     static bool is_valid(const ValueType &);
 
     static bool is_valid_for_property(ContextType, const ValueType&, const Property&);
-    static bool is_valid_for_property_type(ContextType, const ValueType&, realm::PropertyType type, StringData object_type);
 
     static ValueType from_boolean(ContextType, bool);
     static ValueType from_null(ContextType);
     static ValueType from_number(ContextType, double);
-    static ValueType from_string(ContextType ctx, const char *s) { return s ? from_nonnull_string(ctx, s) : from_null(ctx); }
-    static ValueType from_string(ContextType ctx, StringData s) { return s ? from_nonnull_string(ctx, s) : from_null(ctx); }
-    static ValueType from_string(ContextType ctx, const std::string& s) { return from_nonnull_string(ctx, s.c_str()); }
-    static ValueType from_binary(ContextType ctx, BinaryData b) { return b ? from_nonnull_binary(ctx, b) : from_null(ctx); }
-    static ValueType from_nonnull_string(ContextType, const String<T>&);
-    static ValueType from_nonnull_binary(ContextType, BinaryData);
+    static ValueType from_string(ContextType, const String<T> &);
+    static ValueType from_binary(ContextType, BinaryData);
     static ValueType from_undefined(ContextType);
-    static ValueType from_timestamp(ContextType, Timestamp);
-    static ValueType from_mixed(ContextType, const util::Optional<Mixed> &);
 
     static ObjectType to_array(ContextType, const ValueType &);
     static bool to_boolean(ContextType, const ValueType &);
@@ -151,11 +130,11 @@ struct Value {
     static String<T> to_string(ContextType, const ValueType &);
     static OwnedBinaryData to_binary(ContextType, ValueType);
 
-
 #define VALIDATED(return_t, type) \
     static return_t validated_to_##type(ContextType ctx, const ValueType &value, const char *name = nullptr) { \
         if (!is_##type(ctx, value)) { \
-            throw TypeErrorException(name, #type, to_string(ctx, value)); \
+            std::string prefix = name ? std::string("'") + name + "'" : "JS value"; \
+            throw TypeErrorException(prefix, #type); \
         } \
         return to_##type(ctx, value); \
     }
@@ -241,7 +220,7 @@ struct Object {
             return Value<T>::validated_to_##type(ctx, get_property(ctx, object, key), std::string(key).c_str()); \
         } \
         catch (std::invalid_argument &e) { \
-            throw message ? std::invalid_argument(util::format("Failed to read %1: %2", message, e.what())) : e; \
+            throw message ? std::invalid_argument(message) : e; \
         } \
     } \
     static return_t validated_get_##type(ContextType ctx, const ObjectType &object, uint32_t index, const char *message = nullptr) { \
@@ -249,7 +228,7 @@ struct Object {
             return Value<T>::validated_to_##type(ctx, get_property(ctx, object, index)); \
         } \
         catch (std::invalid_argument &e) { \
-            throw message ? std::invalid_argument(util::format("Failed to read %1: %2", message, e.what())) : e; \
+            throw message ? std::invalid_argument(message) : e; \
         } \
     }
 
@@ -368,108 +347,67 @@ REALM_JS_INLINE void set_internal(const typename T::Object &object, typename Cla
 template<typename T>
 inline bool Value<T>::is_valid_for_property(ContextType context, const ValueType &value, const Property& prop)
 {
-    return is_valid_for_property_type(context, value, prop.type, prop.object_type);
-}
+    if (prop.is_nullable && (is_null(context, value) || is_undefined(context, value))) {
+        return true;
+    }
 
-template<typename T>
-inline bool Value<T>::is_valid_for_property_type(ContextType context, const ValueType &value, realm::PropertyType type, StringData object_type) {
-    using realm::PropertyType;
-
-    auto check_value = [&](auto&& value) {
-        if (is_nullable(type) && (is_null(context, value) || is_undefined(context, value))) {
+    using PropertyType = realm::PropertyType;
+    switch (prop.type) {
+        case PropertyType::Int:
+        case PropertyType::Float:
+        case PropertyType::Double:
+            return is_number(context, value);
+        case PropertyType::Bool:
+            return is_boolean(context, value);
+        case PropertyType::String:
+            return is_string(context, value);
+        case PropertyType::Data:
+            return is_binary(context, value);
+        case PropertyType::Date:
+            return is_date(context, value);
+        case PropertyType::Object:
             return true;
-        }
-        switch (type & ~PropertyType::Flags) {
-            case PropertyType::Int:
-            case PropertyType::Float:
-            case PropertyType::Double:
-                return is_number(context, value);
-            case PropertyType::Bool:
-                return is_boolean(context, value);
-            case PropertyType::String:
-                return is_string(context, value);
-            case PropertyType::Data:
-                return is_binary(context, value) || is_string(context, value);
-            case PropertyType::Date:
-                return is_date(context, value) || is_string(context, value);
-            case PropertyType::Object:
-                return true;
-            case PropertyType::Any:
-                return false;
-            default:
-                REALM_UNREACHABLE();
-        }
-    };
-    auto check_collection_type = [&](auto&& list) {
-        auto list_type = list->get_type();
-        return list_type == type
-            && is_nullable(list_type) == is_nullable(type)
-            && (type != PropertyType::Object || list->get_object_schema().name == object_type);
-    };
+        case PropertyType::Array:
+            // FIXME: Do we need to validate the types of the contained objects?
+            return is_array(context, value);
 
-    if (!realm::is_array(type)) {
-        return check_value(value);
-    }
-
-    if (is_object(context, value)) {
-        auto object = to_object(context, value);
-        if (Object<T>::template is_instance<ResultsClass<T>>(context, object)) {
-            return check_collection_type(get_internal<T, ResultsClass<T>>(object));
-        }
-        if (Object<T>::template is_instance<ListClass<T>>(context, object)) {
-            return check_collection_type(get_internal<T, ListClass<T>>(object));
-        }
-    }
-
-    if (type == PropertyType::Object) {
-        // FIXME: Do we need to validate the types of the contained objects?
-        return is_array(context, value);
-    }
-
-    if (!is_array(context, value)) {
-        return false;
-    }
-
-    auto array = to_array(context, value);
-    uint32_t size = Object<T>::validated_get_length(context, array);
-    for (uint32_t i = 0; i < size; ++i) {
-        if (!check_value(Object<T>::get_property(context, array, i))) {
+        case PropertyType::Any:
+        case PropertyType::LinkingObjects:
             return false;
-        }
     }
-    return true;
+
+    REALM_UNREACHABLE();
+    return false;
 }
 
-template<typename T>
-inline typename T::Value Value<T>::from_timestamp(typename T::Context ctx, Timestamp ts) {
-    return Object<T>::create_date(ctx, ts.get_seconds() * 1000 + ts.get_nanoseconds() / 1000000);
-}
+inline std::string js_type_name_for_property_type(PropertyType type)
+{
+    switch (type) {
+        case PropertyType::Int:
+        case PropertyType::Float:
+        case PropertyType::Double:
+            return "number";
+        case PropertyType::Bool:
+            return "boolean";
+        case PropertyType::String:
+            return "string";
+        case PropertyType::Date:
+            return "date";
+        case PropertyType::Data:
+            return "binary";
+        case PropertyType::Object:
+            return "object";
+        case PropertyType::Array:
+            return "array";
 
-template<typename T>
-inline typename T::Value Value<T>::from_mixed(typename T::Context ctx, const util::Optional<Mixed>& mixed) {
-    if (!mixed) {
-        return from_undefined(ctx);
+        case PropertyType::Any:
+            throw std::runtime_error("'Any' type is not supported");
+        case PropertyType::LinkingObjects:
+            throw std::runtime_error("LinkingObjects' type is not supported");
     }
 
-    Mixed value = *mixed;
-    switch (value.get_type()) {
-    case type_Bool:
-        return from_boolean(ctx, value.get_bool());
-    case type_Int:
-        return from_number(ctx, static_cast<double>(value.get_int()));
-    case type_Float:
-        return from_number(ctx, value.get_float());
-    case type_Double:
-        return from_number(ctx, value.get_double());
-    case type_Timestamp:
-        return from_timestamp(ctx, value.get_timestamp());
-    case type_String:
-        return from_string(ctx, value.get_string().data());
-    case type_Binary:
-        return from_binary(ctx, value.get_binary());
-    default:
-        throw std::invalid_argument("Value not convertible.");
-    }
+    REALM_UNREACHABLE();
+    return "<unknown>";
 }
 
 } // js
