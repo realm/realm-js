@@ -4,15 +4,16 @@ X.Y.Z Release notes
 * None.
 
 ### Enhancements
-* None.
+* Added new query features.
+* Potential performance enhancements.
 
 ### Bug fixes
-* Fix a bug where `Realm.open` could unexpectedly raise a "Realm at path ... already opened with different schema version" error.
-* Increased request timeout for token refresh requests to 10 seconds. This
-  should help with failing token refreshes on a loaded server.
+* Fixed a bug where `Realm.open` could unexpectedly raise a "Realm at path ... already opened with different schema version" error.
+* Increased request timeout for token refresh requests to 10 seconds. This should help with failing token refreshes on a loaded server.
 
 ### Internal
-* None
+* Updated to Realm Sync 2.2.5.
+* Updated to Realm Core 5.1.0 (see "Enhancements").
 
 2.1.1 Release notes (2017-12-15)
 =============================================================
