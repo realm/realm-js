@@ -18,7 +18,7 @@
 
 #import "RealmReact.h"
 #import "RealmAnalytics.h"
-#import "RCTBridge+Private.h"
+#import "RCTBridge.h"
 #import "RCTJavaScriptExecutor.h"
 
 #import "jsc_init.h"
@@ -38,7 +38,7 @@
 #import "GCDWebServerErrorResponse.h"
 #import "rpc.hpp"
 
-#define WEB_SERVER_PORT 8083
+#define WEB_SERVER_PORT 8082
 
 using namespace realm::rpc;
 #endif
@@ -52,6 +52,7 @@ using namespace realm::rpc;
 // the part of the RCTCxxBridge private class we care about
 @interface RCTBridge (RCTCxxBridge)
 - (JSGlobalContextRef)jsContextRef;
+- (void)executeBlockOnJavaScriptThread:(dispatch_block_t)block;
 @end
 
 extern "C" JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executor, bool create) {
@@ -94,10 +95,6 @@ extern "C" JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executo
 @synthesize bridge = _bridge;
 
 RCT_EXPORT_MODULE(Realm)
-
-+ (BOOL)requiresMainQueueSetup {
-    return YES;
-}
 
 + (void)initialize {
     if (self != [RealmReact class]) {
@@ -308,8 +305,7 @@ void _initializeOnJSThread(JSContextRefExtractor jsContextExtractor) {
 
         __weak __typeof__(self) weakSelf = self;
         __weak __typeof__(bridge) weakBridge = bridge;
-
-        [bridge dispatchBlock:^{
+        [bridge executeBlockOnJavaScriptThread:^{
             __typeof__(self) self = weakSelf;
             __typeof__(bridge) bridge = weakBridge;
             if (!self || !bridge) {
@@ -319,7 +315,8 @@ void _initializeOnJSThread(JSContextRefExtractor jsContextExtractor) {
             _initializeOnJSThread(^{
                 return [bridge jsContextRef];
             });
-        } queue:RCTJSThread];
+        }];
+        return;
     } else { // React Native 0.44 and older
         id<RCTJavaScriptExecutor> executor = [bridge valueForKey:@"javaScriptExecutor"];
         __weak __typeof__(self) weakSelf = self;

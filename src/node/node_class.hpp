@@ -31,8 +31,6 @@ using ClassDefinition = js::ClassDefinition<Types, T>;
 
 using ConstructorType = js::ConstructorType<Types>;
 using MethodType = js::MethodType<Types>;
-using ArgumentsMethodType = js::ArgumentsMethodType<Types>;
-using Arguments = js::Arguments<Types>;
 using PropertyType = js::PropertyType<Types>;
 using IndexPropertyType = js::IndexPropertyType<Types>;
 using StringPropertyType = js::StringPropertyType<Types>;
@@ -309,21 +307,6 @@ void wrap(const v8::FunctionCallbackInfo<v8::Value>& info) {
         Nan::ThrowError(node::Exception::value(isolate, e));
     }
 }
-
-template<node::ArgumentsMethodType F>
-void wrap(const v8::FunctionCallbackInfo<v8::Value>& info) {
-    v8::Isolate* isolate = info.GetIsolate();
-    node::ReturnValue return_value(info.GetReturnValue());
-    auto arguments = node::get_arguments(info);
-
-    try {
-        F(isolate, info.This(), node::Arguments{isolate, arguments.size(), arguments.data()}, return_value);
-    }
-    catch (std::exception &e) {
-        Nan::ThrowError(node::Exception::value(isolate, e));
-    }
-}
-
 
 template<node::PropertyType::GetterType F>
 void wrap(v8::Local<v8::String> property, const v8::PropertyCallbackInfo<v8::Value>& info) {

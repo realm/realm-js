@@ -77,13 +77,6 @@ JNIEXPORT jstring JNICALL Java_io_realm_react_RealmReactModule_processChromeDebu
     return env->NewStringUTF(response.dump().c_str());
 }
 
-JNIEXPORT jboolean JNICALL Java_io_realm_react_RealmReactModule_tryRunTask
-(JNIEnv *env, jclass)
-{
-  jboolean result = s_rpc_server->try_run_task();
-  return result;
-}
-
 JNIEXPORT jboolean JNICALL Java_io_realm_react_RealmReactModule_isContextInjected
     (JNIEnv *env, jclass)
 {

@@ -20,43 +20,37 @@
 
 #include <condition_variable>
 #include <deque>
+#include <exception>
 #include <mutex>
-
-#include <realm/util/optional.hpp>
 
 namespace realm {
 
+class ConcurrentDequeTimeout : public std::exception {
+  public:
+    ConcurrentDequeTimeout() : std::exception() {}
+};
+
 template <typename T>
 class ConcurrentDeque {
-public:
-    T pop_back() {
+  public:
+    T pop_front(size_t timeout = 0) {
         std::unique_lock<std::mutex> lock(m_mutex);
-        m_condition.wait(lock, [this] { return !m_deque.empty(); });
-        return do_pop_back();
-    }
-
-    T pop_if(std::function<bool(const T&)> predicate) {
-        std::unique_lock<std::mutex> lock(m_mutex);
-
-        for (auto it = m_deque.begin(); it != m_deque.end();) {
-            if (predicate(*it)) {
-                T item = std::move(*it);
-                m_deque.erase(it);
-                return item;
-            }
-            else {
-                ++it;
-            }
+        while (m_deque.empty()) {
+            wait(lock, timeout);
         }
-
-        return nullptr;
+        T item = std::move(m_deque.front());
+        m_deque.pop_front();
+        return item;
     }
 
-    util::Optional<T> try_pop_back(size_t timeout) {
+    T pop_back(size_t timeout = 0) {
         std::unique_lock<std::mutex> lock(m_mutex);
-        m_condition.wait_for(lock, std::chrono::milliseconds(timeout),
-                             [this] { return !m_deque.empty(); });
-        return m_deque.empty() ? util::none : util::make_optional(do_pop_back());
+        while (m_deque.empty()) {
+            wait(lock, timeout);
+        }
+        T item = std::move(m_deque.back());
+        m_deque.pop_back();
+        return item;
     }
 
     void push_front(T&& item) {
@@ -74,20 +68,23 @@ public:
     }
 
     bool empty() {
-        std::lock_guard <std::mutex> lock(m_mutex);
+        std::lock_guard<std::mutex> lock(m_mutex);
         return m_deque.empty();
     }
 
-private:
+    void wait(std::unique_lock<std::mutex> &lock, size_t timeout = 0) {
+        if (!timeout) {
+            m_condition.wait(lock);
+        }
+        else if (m_condition.wait_for(lock, std::chrono::milliseconds(timeout)) == std::cv_status::timeout) {
+            throw ConcurrentDequeTimeout();
+        }
+    }
+
+  private:
     std::condition_variable m_condition;
     std::mutex m_mutex;
     std::deque<T> m_deque;
-
-    T do_pop_back() {
-        T item = std::move(m_deque.back());
-        m_deque.pop_back();
-        return item;
-    }
 };
 
 } // realm

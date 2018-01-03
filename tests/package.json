@@ -10,12 +10,10 @@
     "needle": "^1.3.0",
     "terminate": "^1.0.8",
     "tmp": "^0.0.30",
-    "url-parse": "^1.1.7",
-    "typescript": "^2.5.2"
+    "url-parse": "^1.1.7"
   },
   "scripts": {
-    "check-typescript" : "tsc --noEmit --alwaysStrict ./../lib/index.d.ts",
-    "js-tests" : "jasmine spec/unit_tests.js",
-    "test": "npm run check-typescript && npm run js-tests"
+    "test": "jasmine spec/unit_tests.js",
+    "test-sync-integration": "jasmine spec/sync_integration_tests.js"
   }
 }

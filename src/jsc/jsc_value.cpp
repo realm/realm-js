@@ -47,7 +47,7 @@ bool jsc::Value::is_binary(JSContextRef ctx, const JSValueRef &value)
 }
 
 template<>
-JSValueRef jsc::Value::from_nonnull_binary(JSContextRef ctx, BinaryData data)
+JSValueRef jsc::Value::from_binary(JSContextRef ctx, BinaryData data)
 {
     static jsc::String s_buffer = "buffer";
     static jsc::String s_uint8_array = "Uint8Array";

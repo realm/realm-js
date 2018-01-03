@@ -23,8 +23,6 @@
 #include "js_types.hpp"
 #include "schema.hpp"
 
-#include "util/format.hpp"
-
 namespace realm {
 namespace js {
 
@@ -43,7 +41,7 @@ struct Schema {
     using ConstructorMap = std::map<std::string, Protected<FunctionType>>;
 
     static ObjectType dict_for_property_array(ContextType, const ObjectSchema &, ObjectType);
-    static Property parse_property(ContextType, ValueType, StringData, std::string, ObjectDefaults &);
+    static Property parse_property(ContextType, ValueType, std::string, ObjectDefaults &);
     static ObjectSchema parse_object_schema(ContextType, ObjectType, ObjectDefaultsMap &, ConstructorMap &);
     static realm::Schema parse_schema(ContextType, ObjectType, ObjectDefaultsMap &, ConstructorMap &);
 
@@ -55,7 +53,7 @@ struct Schema {
 template<typename T>
 typename T::Object Schema<T>::dict_for_property_array(ContextType ctx, const ObjectSchema &object_schema, ObjectType array) {
     size_t count = object_schema.persisted_properties.size();
-
+    
     if (count != Object::validated_get_length(ctx, array)) {
         throw std::runtime_error("Array must contain values for all object properties");
     }
@@ -70,130 +68,89 @@ typename T::Object Schema<T>::dict_for_property_array(ContextType ctx, const Obj
     return dict;
 }
 
-static inline void parse_property_type(StringData object_name, Property& prop, StringData type)
-{
-    using realm::PropertyType;
-    if (!type || !type.size()) {
-        throw std::logic_error(util::format("Property '%1.%2' must have a non-empty type", object_name, prop.name));
-    }
-    if (type.ends_with("[]")) {
-        prop.type |= PropertyType::Array;
-        type = type.substr(0, type.size() - 2);
-    }
-    if (type.ends_with("?")) {
-        prop.type |= PropertyType::Nullable;
-        type = type.substr(0, type.size() - 1);
-    }
-
-    if (type == "bool") {
-        prop.type |= PropertyType::Bool;
-    }
-    else if (type == "int") {
-        prop.type |= PropertyType::Int;
-    }
-    else if (type == "float") {
-        prop.type |= PropertyType::Float;
-    }
-    else if (type == "double") {
-        prop.type |= PropertyType::Double;
-    }
-    else if (type == "string") {
-        prop.type |= PropertyType::String;
-    }
-    else if (type == "date") {
-        prop.type |= PropertyType::Date;
-    }
-    else if (type == "data") {
-        prop.type |= PropertyType::Data;
-    }
-    else if (type == "list") {
-        if (is_nullable(prop.type)) {
-            throw std::logic_error(util::format("List property '%1.%2' cannot be optional", object_name, prop.name));
-        }
-        if (is_array(prop.type)) {
-            throw std::logic_error(util::format("List property '%1.%2' must have a non-list value type", object_name, prop.name));
-        }
-        prop.type |= PropertyType::Object | PropertyType::Array;
-    }
-    else if (type == "linkingObjects") {
-        prop.type |= PropertyType::LinkingObjects | PropertyType::Array;
-    }
-    else if (type == "object") {
-        prop.type |= PropertyType::Object;
-    }
-    else {
-        // The type could be the name of another object type in the same schema.
-        prop.type |= PropertyType::Object;
-        prop.object_type = type;
-    }
-
-    // Object properties are implicitly optional
-    if (prop.type == PropertyType::Object && !is_array(prop.type)) {
-        prop.type |= PropertyType::Nullable;
-    }
-}
-
-
 template<typename T>
-Property Schema<T>::parse_property(ContextType ctx, ValueType attributes, StringData object_name,
-                                   std::string property_name, ObjectDefaults &object_defaults) {
+Property Schema<T>::parse_property(ContextType ctx, ValueType attributes, std::string property_name, ObjectDefaults &object_defaults) {
     static const String default_string = "default";
     static const String indexed_string = "indexed";
     static const String type_string = "type";
     static const String object_type_string = "objectType";
     static const String optional_string = "optional";
-    static const String property_string = "property";
-
+    
     Property prop;
-    prop.name = std::move(property_name);
-
+    prop.name = property_name;
+    
     ObjectType property_object = {};
     std::string type;
-
-    using realm::PropertyType;
-
+    
     if (Value::is_object(ctx, attributes)) {
         property_object = Value::validated_to_object(ctx, attributes);
-        std::string property_type = Object::validated_get_string(ctx, property_object, type_string);
-        parse_property_type(object_name, prop, property_type);
-
+        type = Object::validated_get_string(ctx, property_object, type_string);
+        
         ValueType optional_value = Object::get_property(ctx, property_object, optional_string);
-        if (!Value::is_undefined(ctx, optional_value) && Value::validated_to_boolean(ctx, optional_value, "optional")) {
-            prop.type |= PropertyType::Nullable;
+        if (!Value::is_undefined(ctx, optional_value)) {
+            prop.is_nullable = Value::validated_to_boolean(ctx, optional_value, "optional");
         }
-
+    }
+    else {
+        type = Value::validated_to_string(ctx, attributes);
+    }
+    
+    if (type == "bool") {
+        prop.type = realm::PropertyType::Bool;
+    }
+    else if (type == "int") {
+        prop.type = realm::PropertyType::Int;
+    }
+    else if (type == "float") {
+        prop.type = realm::PropertyType::Float;
+    }
+    else if (type == "double") {
+        prop.type = realm::PropertyType::Double;
+    }
+    else if (type == "string") {
+        prop.type = realm::PropertyType::String;
+    }
+    else if (type == "date") {
+        prop.type = realm::PropertyType::Date;
+    }
+    else if (type == "data") {
+        prop.type = realm::PropertyType::Data;
+    }
+    else if (type == "list") {
+        if (!Value::is_valid(property_object)) {
+            throw std::runtime_error("List property must specify 'objectType'");
+        }
+        prop.type = realm::PropertyType::Array;
+        prop.object_type = Object::validated_get_string(ctx, property_object, object_type_string);
+    }
+    else {
+        prop.type = realm::PropertyType::Object;
+        prop.is_nullable = true;
+        
+        // The type could either be 'object' or the name of another object type in the same schema.
+        if (type == "object") {
+            if (!Value::is_valid(property_object)) {
+                throw std::runtime_error("Object property must specify 'objectType'");
+            }
+            prop.object_type = Object::validated_get_string(ctx, property_object, object_type_string);
+        }
+        else {
+            prop.object_type = type;
+        }
+    }
+    
+    if (Value::is_valid(property_object)) {
         ValueType default_value = Object::get_property(ctx, property_object, default_string);
         if (!Value::is_undefined(ctx, default_value)) {
             object_defaults.emplace(prop.name, Protected<ValueType>(ctx, default_value));
         }
-
+        
         ValueType indexed_value = Object::get_property(ctx, property_object, indexed_string);
         if (!Value::is_undefined(ctx, indexed_value)) {
             prop.is_indexed = Value::validated_to_boolean(ctx, indexed_value);
         }
     }
-    else {
-        std::string property_type = Value::validated_to_string(ctx, attributes);
-        parse_property_type(object_name, prop, property_type);
-    }
-
-    if (prop.type == PropertyType::Object && prop.object_type.empty()) {
-        if (!Value::is_valid(property_object)) {
-            throw std::logic_error(util::format("%1 property %2.%3 must specify 'objectType'",
-                                                is_array(prop.type) ? "List" : "Object", object_name, prop.name));
-        }
-        prop.object_type = Object::validated_get_string(ctx, property_object, object_type_string);
-    }
-
-    if (prop.type == PropertyType::LinkingObjects) {
-        if (!Value::is_valid(property_object)) {
-            throw std::logic_error(util::format("Linking objects property %1.%2 must specify 'objectType'",
-                                                object_name, prop.name));
-        }
-        prop.object_type = Object::validated_get_string(ctx, property_object, object_type_string);
-        prop.link_origin_property_name = Object::validated_get_string(ctx, property_object, property_string);
-    }
-
+    
     return prop;
 }
 
@@ -203,44 +160,31 @@ ObjectSchema Schema<T>::parse_object_schema(ContextType ctx, ObjectType object_s
     static const String primary_string = "primaryKey";
     static const String properties_string = "properties";
     static const String schema_string = "schema";
-
+    
     FunctionType object_constructor = {};
     if (Value::is_constructor(ctx, object_schema_object)) {
         object_constructor = Value::to_constructor(ctx, object_schema_object);
         object_schema_object = Object::validated_get_object(ctx, object_constructor, schema_string, "Realm object constructor must have a 'schema' property.");
     }
-
+    
     ObjectDefaults object_defaults;
     ObjectSchema object_schema;
-    object_schema.name = Object::validated_get_string(ctx, object_schema_object, name_string, "ObjectSchema");
-
-    ObjectType properties_object = Object::validated_get_object(ctx, object_schema_object, properties_string, "ObjectSchema");
+    object_schema.name = Object::validated_get_string(ctx, object_schema_object, name_string);
+    
+    ObjectType properties_object = Object::validated_get_object(ctx, object_schema_object, properties_string, "ObjectSchema must have a 'properties' object.");
     if (Value::is_array(ctx, properties_object)) {
         uint32_t length = Object::validated_get_length(ctx, properties_object);
         for (uint32_t i = 0; i < length; i++) {
             ObjectType property_object = Object::validated_get_object(ctx, properties_object, i);
             std::string property_name = Object::validated_get_string(ctx, property_object, name_string);
-            Property property = parse_property(ctx, property_object, object_schema.name, std::move(property_name), object_defaults);
-            if (property.type == realm::PropertyType::LinkingObjects) {
-                object_schema.computed_properties.emplace_back(std::move(property));
-            }
-            else {
-                object_schema.persisted_properties.emplace_back(std::move(property));
-            }
-
+            object_schema.persisted_properties.emplace_back(parse_property(ctx, property_object, property_name, object_defaults));
         }
     }
     else {
         auto property_names = Object::get_property_names(ctx, properties_object);
-        for (auto& property_name : property_names) {
+        for (auto &property_name : property_names) {
             ValueType property_value = Object::get_property(ctx, properties_object, property_name);
-            Property property = parse_property(ctx, property_value, object_schema.name, property_name, object_defaults);
-            if (property.type == realm::PropertyType::LinkingObjects) {
-                object_schema.computed_properties.emplace_back(std::move(property));
-            }
-            else {
-                object_schema.persisted_properties.emplace_back(std::move(property));
-            }
+            object_schema.persisted_properties.emplace_back(parse_property(ctx, property_value, property_name, object_defaults));
         }
     }
 
@@ -253,20 +197,19 @@ ObjectSchema Schema<T>::parse_object_schema(ContextType ctx, ObjectType object_s
         }
         property->is_primary = true;
     }
-
+    
     // Store prototype so that objects of this type will have their prototype set to this prototype object.
     if (Value::is_valid(object_constructor)) {
         constructors.emplace(object_schema.name, Protected<FunctionType>(ctx, object_constructor));
     }
-
+    
     defaults.emplace(object_schema.name, std::move(object_defaults));
-
+    
     return object_schema;
 }
 
 template<typename T>
-realm::Schema Schema<T>::parse_schema(ContextType ctx, ObjectType schema_object,
-                                      ObjectDefaultsMap &defaults, ConstructorMap &constructors) {
+realm::Schema Schema<T>::parse_schema(ContextType ctx, ObjectType schema_object, ObjectDefaultsMap &defaults, ConstructorMap &constructors) {
     std::vector<ObjectSchema> schema;
     uint32_t length = Object::validated_get_length(ctx, schema_object);
 
@@ -300,9 +243,6 @@ typename T::Object Schema<T>::object_for_object_schema(ContextType ctx, const Ob
     for (auto& property : object_schema.persisted_properties) {
         Object::set_property(ctx, properties, property.name, object_for_property(ctx, property));
     }
-    for (auto& property : object_schema.computed_properties) {
-        Object::set_property(ctx, properties, property.name, object_for_property(ctx, property));
-    }
 
     static const String properties_string = "properties";
     Object::set_property(ctx, object, properties_string, properties);
@@ -323,36 +263,23 @@ typename T::Object Schema<T>::object_for_property(ContextType ctx, const Propert
     Object::set_property(ctx, object, name_string, Value::from_string(ctx, property.name));
 
     static const String type_string = "type";
-    if (is_array(property.type)) {
-        if  (property.type == realm::PropertyType::LinkingObjects) {
-            Object::set_property(ctx, object, type_string, Value::from_string(ctx, "linkingObjects"));
-        }
-        else {
-            Object::set_property(ctx, object, type_string, Value::from_string(ctx, "list"));
-        }
-    }
-    else {
-        Object::set_property(ctx, object, type_string, Value::from_string(ctx, string_for_property_type(property.type)));
-    }
+    const std::string type = property.type != realm::PropertyType::Array ? string_for_property_type(property.type) : "list";
+    Object::set_property(ctx, object, type_string, Value::from_string(ctx, type));
 
     static const String object_type_string = "objectType";
     if (property.object_type.size()) {
         Object::set_property(ctx, object, object_type_string, Value::from_string(ctx, property.object_type));
     }
-    else if (is_array(property.type)) {
-        Object::set_property(ctx, object, object_type_string, Value::from_string(ctx, string_for_property_type(property.type & ~realm::PropertyType::Flags)));
-    }
-
-    static const String property_string = "property";
-    if (property.type == realm::PropertyType::LinkingObjects) {
-        Object::set_property(ctx, object, property_string, Value::from_string(ctx, property.link_origin_property_name));
-    }
 
     static const String indexed_string = "indexed";
-    Object::set_property(ctx, object, indexed_string, Value::from_boolean(ctx, property.is_indexed));
+    if (property.is_indexed) {
+        Object::set_property(ctx, object, indexed_string, Value::from_boolean(ctx, true));
+    }
 
     static const String optional_string = "optional";
-    Object::set_property(ctx, object, optional_string, Value::from_boolean(ctx, is_nullable(property.type)));
+    if (property.is_nullable) {
+        Object::set_property(ctx, object, optional_string, Value::from_boolean(ctx, true));
+    }
 
     return object;
 }

@@ -24,29 +24,26 @@ namespace realm {
 namespace js {
 
 template<>
-inline const char *node::Value::typeof(v8::Isolate* isolate, const v8::Local<v8::Value> &value) {
-    if (value->IsNull()) { return "null"; }
-    if (value->IsNumber()) { return "number"; }
-    if (value->IsString()) { return "string"; }
-    if (value->IsBoolean()) { return "boolean"; }
-    if (value->IsUndefined()) { return "undefined"; }
-    if (value->IsObject()) { return "object"; }
-    return "unknown";
-}
-
-template<>
 inline bool node::Value::is_array(v8::Isolate* isolate, const v8::Local<v8::Value> &value) {
     return value->IsArray();
 }
 
 template<>
 inline bool node::Value::is_array_buffer(v8::Isolate* isolate, const v8::Local<v8::Value> &value) {
+#if REALM_V8_ARRAY_BUFFER_API
     return value->IsArrayBuffer();
+#else
+    // TODO: Implement this!
+#endif
 }
 
 template<>
 inline bool node::Value::is_array_buffer_view(v8::Isolate* isolate, const v8::Local<v8::Value> &value) {
+#if REALM_V8_ARRAY_BUFFER_API
     return value->IsArrayBufferView();
+#else
+    // TODO: Implement this!
+#endif
 }
 
 template<>
@@ -121,20 +118,25 @@ inline v8::Local<v8::Value> node::Value::from_number(v8::Isolate* isolate, doubl
 }
 
 template<>
-inline v8::Local<v8::Value> node::Value::from_nonnull_string(v8::Isolate* isolate, const node::String &string) {
+inline v8::Local<v8::Value> node::Value::from_string(v8::Isolate* isolate, const node::String &string) {
     return v8::Local<v8::String>(string);
 }
 
 template<>
-inline v8::Local<v8::Value> node::Value::from_nonnull_binary(v8::Isolate* isolate, BinaryData data) {
-    v8::Local<v8::ArrayBuffer> buffer = v8::ArrayBuffer::New(isolate, data.size());
-    v8::ArrayBuffer::Contents contents = buffer->GetContents();
+inline v8::Local<v8::Value> node::Value::from_binary(v8::Isolate* isolate, BinaryData data) {
+#if REALM_V8_ARRAY_BUFFER_API
+    size_t byte_count = data.size();
+    void* bytes = nullptr;
 
-    if (data.size()) {
-        memcpy(contents.Data(), data.data(), data.size());
+    if (byte_count) {
+        bytes = memcpy(malloc(byte_count), data.data(), byte_count);
     }
 
-    return buffer;
+    // An "internalized" ArrayBuffer will free the malloc'd memory when garbage collected.
+    return v8::ArrayBuffer::New(isolate, bytes, byte_count, v8::ArrayBufferCreationMode::kInternalized);
+#else
+    // TODO: Implement this for older V8
+#endif
 }
 
 template<>
@@ -148,18 +150,17 @@ inline bool node::Value::to_boolean(v8::Isolate* isolate, const v8::Local<v8::Va
 }
 
 template<>
-inline node::String node::Value::to_string(v8::Isolate* isolate, const v8::Local<v8::Value> &value) {
-    return value->ToString();
-}
-
-template<>
 inline double node::Value::to_number(v8::Isolate* isolate, const v8::Local<v8::Value> &value) {
     double number = Nan::To<double>(value).FromMaybe(NAN);
     if (std::isnan(number)) {
-        throw std::invalid_argument(util::format("Value '%1' not convertible to a number.",
-                                                 (std::string)to_string(isolate, value)));
+        throw std::invalid_argument("Value not convertible to a number.");
     }
     return number;
+}
+
+template<>
+inline node::String node::Value::to_string(v8::Isolate* isolate, const v8::Local<v8::Value> &value) {
+    return value->ToString();
 }
 
 template<>
@@ -172,25 +173,26 @@ inline OwnedBinaryData node::Value::to_binary(v8::Isolate* isolate, v8::Local<v8
     };
 
     if (Value::is_array_buffer(isolate, value)) {
+        // TODO: This probably needs some abstraction for older V8.
+#if REALM_V8_ARRAY_BUFFER_API
         v8::Local<v8::ArrayBuffer> array_buffer = value.As<v8::ArrayBuffer>();
         v8::ArrayBuffer::Contents contents = array_buffer->GetContents();
 
         return make_owned_binary_data(static_cast<char*>(contents.Data()), contents.ByteLength());
+#else
+        // TODO: Implement this for older V8
+#endif
     }
     else if (Value::is_array_buffer_view(isolate, value)) {
-        v8::Local<v8::ArrayBufferView> array_buffer_view = value.As<v8::ArrayBufferView>();
-        std::unique_ptr<char[]> data(new char[array_buffer_view->ByteLength()]);
+        Nan::TypedArrayContents<char> contents(value);
 
-        size_t bytes = array_buffer_view->CopyContents(data.get(), array_buffer_view->ByteLength());
-        OwnedData owned_data(std::move(data), bytes);
-
-        return *reinterpret_cast<OwnedBinaryData*>(&owned_data);
+        return make_owned_binary_data(*contents, contents.length());
     }
     else if (::node::Buffer::HasInstance(value)) {
         return make_owned_binary_data(::node::Buffer::Data(value), ::node::Buffer::Length(value));
     }
     else {
-        throw std::runtime_error("Can only convert Buffer, ArrayBuffer, and ArrayBufferView objects to binary");
+        throw std::runtime_error("Can only convert Buffer, ArrayBuffer, and TypedArray objects to binary");
     }
 }
 
@@ -205,6 +207,11 @@ inline v8::Local<v8::Object> node::Value::to_array(v8::Isolate* isolate, const v
 }
 
 template<>
+inline v8::Local<v8::Object> node::Value::to_date(v8::Isolate* isolate, const v8::Local<v8::Value> &value) {
+    return to_object(isolate, value);
+}
+
+template<>
 inline v8::Local<v8::Function> node::Value::to_function(v8::Isolate* isolate, const v8::Local<v8::Value> &value) {
     return value->IsFunction() ? v8::Local<v8::Function>::Cast(value) : v8::Local<v8::Function>();
 }
@@ -213,16 +220,6 @@ template<>
 inline v8::Local<v8::Function> node::Value::to_constructor(v8::Isolate* isolate, const v8::Local<v8::Value> &value) {
     return to_function(isolate, value);
 }
-
-template<>
-inline v8::Local<v8::Object> node::Value::to_date(v8::Isolate* isolate, const v8::Local<v8::Value> &value) {
-    if (value->IsString()) {
-        v8::Local<v8::Function> date_constructor = to_constructor(isolate, node::Object::get_property(isolate, isolate->GetCurrentContext()->Global(), "Date"));
-        std::array<v8::Local<v8::Value>, 1> args { {value} };
-        return node::Function::construct(isolate, date_constructor, args.size(), args.data());
-    }
-    return to_object(isolate, value);
-}
-
+    
 } // js
 } // realm

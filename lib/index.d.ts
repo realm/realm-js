@@ -24,7 +24,7 @@ declare namespace Realm {
      * PropertyType
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.html#~PropertyType }
      */
-    type PropertyType = string | 'bool' | 'int' | 'float' | 'double' | 'string' | 'data' | 'date' | 'list' | 'linkingObjects';
+    type PropertyType = string | 'bool' | 'int' | 'float' | 'double' | 'string' | 'data' | 'date' | 'list';
 
     /**
      * ObjectSchemaProperty
@@ -33,7 +33,6 @@ declare namespace Realm {
     interface ObjectSchemaProperty {
         type: PropertyType;
         objectType?: string;
-        property?: string;
         default?: any;
         optional?: boolean;
         indexed?: boolean;
@@ -77,15 +76,11 @@ declare namespace Realm {
     interface Configuration {
         encryptionKey?: ArrayBuffer | ArrayBufferView | Int8Array;
         migration?: (oldRealm: Realm, newRealm: Realm) => void;
-        shouldCompactOnLaunch?: (totalBytes: number, usedBytes: number) => boolean;
         path?: string;
         readOnly?: boolean;
-        inMemory?: boolean;
         schema?: ObjectClass[] | ObjectSchema[];
         schemaVersion?: number;
         sync?: Realm.Sync.SyncConfiguration;
-        deleteRealmIfMigrationNeeded?: boolean;
-        disableFormatUpgrade?: boolean;
     }
 
     // object props type
@@ -107,11 +102,6 @@ declare namespace Realm {
          * @returns ObjectSchema
          */
         objectSchema(): ObjectSchema;
-
-        /**
-         * @returns Results<T>
-         */
-        linkingObjects<T>(objectType: string, property: string): Results<T>;
     }
 
     const Object: {
@@ -122,7 +112,7 @@ declare namespace Realm {
      * SortDescriptor
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.Collection.html#~SortDescriptor }
      */
-    type SortDescriptor = [string] | [string, boolean];
+    type SortDescriptor = string | [string, boolean] | any[];
 
     interface CollectionChangeSet {
         insertions: number[];
@@ -137,18 +127,10 @@ declare namespace Realm {
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.Collection.html }
      */
     interface Collection<T> extends ReadonlyArray<T> {
-        readonly type: PropertyType;
-        readonly optional: boolean;
-
         /**
          * @returns boolean
          */
         isValid(): boolean;
-
-        min(property?: string): number|Date|null;
-        max(property?: string): number|Date|null;
-        sum(property?: string): number|null;
-        avg(property?: string): number;
 
         /**
          * @param  {string} query
@@ -157,9 +139,12 @@ declare namespace Realm {
          */
         filtered(query: string, ...arg: any[]): Results<T>;
 
-        sorted(reverse?: boolean): Results<T>;
-        sorted(descriptor: SortDescriptor[]): Results<T>;
-        sorted(descriptor: string, reverse?: boolean): Results<T>;
+        /**
+         * @param  {string|SortDescriptor} descriptor
+         * @param  {boolean} reverse?
+         * @returns Results
+         */
+        sorted(descriptor: string | SortDescriptor, reverse?: boolean): Results<T>;
 
         /**
          * @returns Results
@@ -195,20 +180,21 @@ declare namespace Realm {
     interface List<T> extends Collection<T> {
         [n: number]: T;
 
+        /**
+         * @returns T
+         */
         pop(): T | null | undefined;
 
         /**
          * @param  {T} object
          * @returns number
          */
-        push(...object: T[]): number;
+        push(object: T): number;
 
         /**
          * @returns T
          */
         shift(): T | null | undefined;
-
-        unshift(...object: T[]): number;
 
         /**
          * @param  {number} index
@@ -217,6 +203,12 @@ declare namespace Realm {
          * @returns T
          */
         splice(index: number, count?: number, object?: any): T[];
+
+        /**
+         * @param  {T} object
+         * @returns number
+         */
+        unshift(object: T): number;
     }
 
     const List: {
@@ -228,13 +220,7 @@ declare namespace Realm {
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.Results.html }
      */
     interface Results<T> extends Collection<T> {
-        /**
-         * Bulk update objects in the collection.
-         * @param  {string} property
-         * @param  {any} value
-         * @returns void
-         */
-        update(property: string, value: any): void;
+
     }
 
     const Results: {
@@ -248,17 +234,6 @@ declare namespace Realm {
  */
 declare namespace Realm.Sync {
 
-    interface UserInfo {
-        id: string;
-        isAdmin: boolean;
-    }
-
-    interface Account {
-        provider_id: string;
-        provider: string;
-        user: UserInfo
-    }
-
     /**
      * User
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.Sync.User.html }
@@ -270,106 +245,21 @@ declare namespace Realm.Sync {
         readonly isAdmin: boolean;
         readonly server: string;
         readonly token: string;
-        static adminUser(adminToken: string, server?: string): User;
-
-        /**
-         * @deprecated, to be removed in future versions
-         */
+        static adminUser(adminToken: string): User;
         static login(server: string, username: string, password: string, callback: (error: any, user: User) => void): void;
-        static login(server: string, username: string, password: string): Promise<Realm.Sync.User>;
-
-        /**
-         * @deprecated, to be removed in future versions
-         */
+        static loginWithProvider(server: string, provider: string, providerToken: string, callback: (error: any, user: User) => void): void;
         static register(server: string, username: string, password: string, callback: (error: any, user: User) => void): void;
-        static register(server: string, username: string, password: string): Promise<Realm.Sync.User>;
-
-        /**
-         * @deprecated, to be removed in versions
-         */
         static registerWithProvider(server: string, options: { provider: string, providerToken: string, userInfo: any }, callback: (error: Error | null, user: User | null) => void): void;
-        static registerWithProvider(server: string, options: { provider: string, providerToken: string, userInfo: any }): Promise<Realm.Sync.User>;
-
         logout(): void;
         openManagementRealm(): Realm;
-        retrieveAccount(provider: string, username: string): Promise<Account>;
-
-        getGrantedPermissions(recipient: 'any' | 'currentUser' | 'otherUser'): Promise<Results<Permission>>;
-        applyPermissions(condition: PermissionCondition, realmUrl: string, accessLevel: AccessLevel): Promise<PermissionChange>;
-        offerPermissions(realmUrl: string, accessLevel: AccessLevel, expiresAt?: Date): Promise<string>;
-        acceptPermissionOffer(token: string): Promise<string>
-        invalidatePermissionOffer(permissionOfferOrToken: PermissionOffer | string): Promise<void>;
     }
-
-    type PermissionCondition = {
-        userId: string | { metadataKey: string, metadataValue: string }
-    };
-
-    type AccessLevel = 'none' | 'read' | 'write' | 'admin';
-
-    class Permission {
-        readonly id: string;
-        readonly updatedAt: Date;
-        readonly userId: string;
-        readonly path: string;
-        readonly mayRead?: boolean;
-        readonly mayWrite?: boolean;
-        readonly mayManage?: boolean;
-    }
-
-    class PermissionChange {
-        id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        statusCode?: number;
-        statusMessage?: string;
-        userId: string;
-        metadataKey?: string;
-        metadataValue?: string;
-        realmUrl: string;
-        mayRead?: boolean;
-        mayWrite?: boolean;
-        mayManage?: boolean;
-    }
-
-    class PermissionOffer {
-        id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        statusCode?: number;
-        statusMessage?: string;
-        token?: string;
-        realmUrl: string;
-        mayRead?: boolean;
-        mayWrite?: boolean;
-        mayManage?: boolean;
-        expiresAt?: Date;
-    }
-
-    interface SyncError {
-        name: string;
-        message: string; 
-        isFatal: boolean;
-        category?: string; 
-        code: number;
-    }
-
-    type ErrorCallback = (session: Session, error: SyncError) => void;
-    type SSLVerifyCallback = (serverAddress: string, serverPort: number, pemCertificate: string, preverifyOk: number, depth: number) => boolean;
 
     interface SyncConfiguration {
         user: User;
         url: string;
-        validate_ssl?: boolean;
-        ssl_trust_certificate_path?: string;
-        open_ssl_verify_callback?: SSLVerifyCallback;
-        error?: ErrorCallback;
-        partial?: boolean;
+        validate_ssl: boolean;
+        ssl_trust_certificate_path: string;
     }
-
-    type ProgressNotificationCallback = (transferred: number, transferable: number) => void;
-    type ProgressDirection = 'download' | 'upload';
-    type ProgressMode = 'reportIndefinitely' | 'forCurrentlyOutstandingWork';
 
     /**
     * Session
@@ -380,9 +270,6 @@ declare namespace Realm.Sync {
         readonly state: 'invalid' | 'active' | 'inactive';
         readonly url: string;
         readonly user: User;
-
-        addProgressNotification(direction: ProgressDirection, mode: ProgressMode, progressCallback: ProgressNotificationCallback): void;
-        removeProgressNotification(progressCallback: ProgressNotificationCallback): void;
     }
 
     /**
@@ -408,12 +295,11 @@ declare namespace Realm.Sync {
     function addListener(serverURL: string, adminUser: Realm.Sync.User, regex: string, name: string, changeCallback: (changeEvent: ChangeEvent) => void): void;
     function removeAllListeners(name?: string): void;
     function removeListener(regex: string, name: string, changeCallback: (changeEvent: ChangeEvent) => void): void;
-    function setLogLevel(logLevel: 'all' | 'trace' | 'debug' | 'detail' | 'info' | 'warn' | 'error' | 'fatal' | 'off'): void;
-    function initiateClientReset(path: string): void;
-    function setFeatureToken(token: string): void;
+    function setLogLevel(logLevel: 'error' | 'info' | 'debug'): void;
+    function setAccessToken(accessToken: string): void;
 
     type Instruction = {
-        type: 'INSERT' | 'SET' | 'DELETE' | 'CLEAR' | 'LIST_SET' | 'LIST_INSERT' | 'LIST_ERASE' | 'LIST_CLEAR' | 'ADD_TYPE' | 'ADD_PROPERTIES' | 'CHANGE_IDENTITY' | 'SWAP_IDENTITY'
+        type: 'INSERT' | 'SET' | 'DELETE' | 'CLEAR' | 'LIST_SET' | 'LIST_INSERT' | 'LIST_ERASE' | 'LIST_CLEAR' | 'ADD_TYPE' | 'ADD_PROPERTIES'
         object_type: string,
         identity: string,
         values: any | undefined
@@ -441,25 +327,17 @@ declare namespace Realm.Sync {
         advance(path: string): void;
         close(): void;
         current(path: string): Array<Instruction>;
-        realmAtPath(path: string, schema?: ObjectSchema[]): Realm
+        realmAtPath(path: string, realmID?: string, schema?: ObjectSchema[]): Realm
     }
-}
-
-
-interface ProgressPromise extends Promise<Realm> {
-    progress(callback: Realm.Sync.ProgressNotificationCallback): Promise<Realm>
 }
 
 declare class Realm {
     static defaultPath: string;
 
-    readonly empty: boolean;
     readonly path: string;
     readonly readOnly: boolean;
     readonly schema: Realm.ObjectSchema[];
     readonly schemaVersion: number;
-    readonly isInTransaction: boolean;
-    readonly isClosed: boolean;
 
     readonly syncSession: Realm.Sync.Session | null;
 
@@ -471,27 +349,17 @@ declare class Realm {
      */
     static schemaVersion(path: string, encryptionKey?: ArrayBuffer | ArrayBufferView): number;
 
-
-
     /**
      * Open a realm asynchronously with a promise. If the realm is synced, it will be fully synchronized before it is available.
-     * @param {Configuration} config
+     * @param {Configuration} config 
      */
-    static open(config: Realm.Configuration): ProgressPromise;
+    static open(config: Realm.Configuration): Promise<Realm>
     /**
-     * @deprecated in favor of `Realm.open`
      * Open a realm asynchronously with a callback. If the realm is synced, it will be fully synchronized before it is available.
-     * @param {Configuration} config
+     * @param {Configuration} config 
      * @param {Function} callback will be called when the realm is ready.
-     * @param {ProgressNotificationCallback} progressCallback? a progress notification callback for 'download' direction and 'forCurrentlyOutstandingWork' mode
      */
-    static openAsync(config: Realm.Configuration, callback: (error: any, realm: Realm) => void, progressCallback?: Realm.Sync.ProgressNotificationCallback): void
-
-    /**
-     * Delete the Realm file for the given configuration.
-     * @param {Configuration} config
-     */
-    static deleteFile(config: Realm.Configuration): void
+    static openAsync(config: Realm.Configuration, callback: (error: any, realm: Realm) => void): void
 
     /**
      * @param  {Realm.Configuration} config?
@@ -521,11 +389,6 @@ declare class Realm {
      * @returns void
      */
     delete(object: Realm.Object | Realm.Object[] | Realm.List<any> | Realm.Results<any> | any): void;
-
-    /**
-     * @returns void
-     */
-    deleteModel(name: string): void;
 
     /**
      * @returns void
@@ -570,31 +433,6 @@ declare class Realm {
      * @returns void
      */
     write(callback: () => void): void;
-
-    /**
-     * @returns void
-     */
-    beginTransaction(): void;
-
-    /**
-     * @returns void
-     */
-    commitTransaction(): void;
-
-    /**
-     * @returns void
-     */
-    cancelTransaction(): void;
-
-    /**
-     * @returns boolean
-     */
-    compact(): boolean;
-
-    /**
-     * @returns Promise<Results<T>>
-     */
-    subscribeToObjects<T>(objectType: string, query: string): Promise<Realm.Results<T>>;
 }
 
 declare module 'realm' {

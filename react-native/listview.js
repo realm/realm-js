@@ -19,7 +19,6 @@
 'use strict';
 
 import React from 'react';
-import PropTypes from 'prop-types';
 import { ListView as BaseListView } from 'react-native';
 
 function hashObjects(array) {
@@ -197,8 +196,8 @@ export default class ListView extends React.Component {
 }
 
 ListView.propTypes = {
-    dataSource: PropTypes.instanceOf(ListViewDataSource).isRequired,
-    renderRow: PropTypes.func.isRequired,
+    dataSource: React.PropTypes.instanceOf(ListViewDataSource).isRequired,
+    renderRow: React.PropTypes.func.isRequired,
 };
 
 ListView.DataSource = ListViewDataSource;

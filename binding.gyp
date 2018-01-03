@@ -1,5 +1,9 @@
 {
- "includes": [
+  "variables": {
+    "realm_node_build_as_library%": "0",
+    "realm_download_binaries%": "1"
+  },
+  "includes": [
     "target_defaults.gypi",
     "realm.gypi"
   ],
@@ -10,146 +14,117 @@
         "object-store"
       ],
       "sources": [
-        "src/js_realm.cpp",
-        "src/node/node_init.cpp",
         "src/node/platform.cpp",
-
-        "src/concurrent_deque.hpp",
-        "src/event_loop_dispatcher.hpp",
-        "src/js_class.hpp",
-        "src/js_collection.hpp",
-        "src/js_list.hpp",
-        "src/js_object_accessor.hpp",
-        "src/js_observable.hpp",
-        "src/js_realm.hpp",
-        "src/js_realm_object.hpp",
-        "src/js_results.hpp",
-        "src/js_schema.hpp",
-        "src/js_sync.hpp",
-        "src/js_types.hpp",
-        "src/js_util.hpp",
-        "src/node/node_class.hpp",
-        "src/node/node_context.hpp",
-        "src/node/node_exception.hpp",
-        "src/node/node_function.hpp",
-        "src/node/node_init.hpp",
-        "src/node/node_object.hpp",
-        "src/node/node_protected.hpp",
-        "src/node/node_return_value.hpp",
-        "src/node/node_string.hpp",
-        "src/node/node_types.hpp",
-        "src/node/node_value.hpp",
-        "src/platform.hpp",
-        "src/rpc.hpp",
+        "src/js_realm.cpp"
       ],
       "include_dirs": [
         "src"
+      ],
+      "conditions": [
+        ["realm_node_build_as_library", {
+          "type": "static_library",
+          "export_dependent_settings": [ "object-store" ]
+        }, {
+          "sources": [
+            "src/node/node_init.cpp"
+          ]
+        }]
       ]
     },
     {
-      "target_name": "action_after_build",
-      "type": "none",
-      "dependencies": [ "<(module_name)" ],
-      "copies": [
-        {
-          "files": [ "<(PRODUCT_DIR)/<(module_name).node" ],
-          "destination": "<(module_path)"
-        }
-      ]
-    },
-    {
-      "target_name": "scripts",
-      "type": "none",
+      "target_name": "object-store",
+      "dependencies": [ "realm-core" ],
+      "type": "static_library",
+      "include_dirs": [
+        "src/object-store/src",
+        "src/object-store/src/impl",
+        "src/object-store/src/impl/apple",
+        "src/object-store/src/parser",
+        "src/object-store/external/pegtl"
+      ],
       "sources": [
-        "CHANGELOG.md",
-        "README.md",
-        "binding.gyp",
-        "dependencies.list",
-        "package.json",
-        "realm.gypi",
-        "target_defaults.gypi",
-
-        "lib/collection-methods.js",
-        "lib/errors.js",
-        "lib/extensions.js",
-        "lib/index.d.ts",
-        "lib/index.js",
-        "lib/management-schema.js",
-        "lib/permission-api.js",
-        "lib/submit-analytics.js",
-        "lib/user-methods.js",
-
-        "lib/browser/base64.js",
-        "lib/browser/collections.js",
-        "lib/browser/constants.js",
-        "lib/browser/index.js",
-        "lib/browser/lists.js",
-        "lib/browser/objects.js",
-        "lib/browser/results.js",
-        "lib/browser/rpc.js",
-        "lib/browser/session.js",
-        "lib/browser/user.js",
-        "lib/browser/util.js"
-
-        "scripts/build-node-pre-gyp.ps1",
-        "scripts/build-node-pre-gyp.sh",
-        "scripts/ccache-clang++.sh",
-        "scripts/ccache-clang.sh",
-        "scripts/changelog-header.sh",
-        "scripts/check-environment.js",
-        "scripts/docker-android-wrapper.sh",
-        "scripts/docker-wrapper.sh",
-        "scripts/docker_build_wrapper.sh",
-        "scripts/download-object-server.sh",
-        "scripts/download-realm.js",
-        "scripts/download_and_start_server.sh",
-        "scripts/find-ios-device.rb",
-        "scripts/git-win-symlink-aliases",
-        "scripts/handle-license-check.js",
-        "scripts/prepublish.js",
-        "scripts/publish.sh",
-        "scripts/react-tests-android.js",
-        "scripts/set-version.sh",
-        "scripts/test.sh",
-
-        "tests/.eslintrc.json",
-        "tests/index.js",
-        "tests/js/admin-user-helper.js",
-        "tests/js/asserts.js",
-        "tests/js/async-tests.js",
-        "tests/js/download-api-helper.js",
-        "tests/js/encryption-tests.js",
-        "tests/js/garbage-collection.js",
-        "tests/js/index.js",
-        "tests/js/linkingobjects-tests.js",
-        "tests/js/list-tests.js",
-        "tests/js/migration-tests.js",
-        "tests/js/object-id-tests.js",
-        "tests/js/object-tests.js",
-        "tests/js/package.json",
-        "tests/js/permission-tests.js",
-        "tests/js/query-tests.js",
-        "tests/js/query-tests.json",
-        "tests/js/realm-tests.js",
-        "tests/js/results-tests.js",
-        "tests/js/schemas.js",
-        "tests/js/session-tests.js",
-        "tests/js/user-tests.js",
-        "tests/js/worker-tests-script.js",
-        "tests/js/worker.js",
-        "tests/package.json",
-        "tests/spec/helpers/mock_realm.js",
-        "tests/spec/helpers/reporters.js",
-        "tests/spec/helpers/setup-module-path.js",
-        "tests/spec/support/jasmine.json",
-        "tests/spec/unit_tests.js",
-        "tests/test-runners/ava/package.json",
-        "tests/test-runners/ava/test.js",
-        "tests/test-runners/jest/package.json",
-        "tests/test-runners/jest/test.js",
-        "tests/test-runners/mocha/package.json",
-        "tests/test-runners/mocha/test.js",
+        "src/object-store/src/binding_callback_thread_observer.cpp",
+        "src/object-store/src/collection_notifications.cpp",
+        "src/object-store/src/index_set.cpp",
+        "src/object-store/src/list.cpp",
+        "src/object-store/src/object.cpp",
+        "src/object-store/src/object_schema.cpp",
+        "src/object-store/src/object_store.cpp",
+        "src/object-store/src/results.cpp",
+        "src/object-store/src/schema.cpp",
+        "src/object-store/src/shared_realm.cpp",
+        "src/object-store/src/thread_safe_reference.cpp",
+        "src/object-store/src/impl/collection_change_builder.cpp",
+        "src/object-store/src/impl/collection_notifier.cpp",
+        "src/object-store/src/impl/list_notifier.cpp",
+        "src/object-store/src/impl/object_notifier.cpp",
+        "src/object-store/src/impl/realm_coordinator.cpp",
+        "src/object-store/src/impl/results_notifier.cpp",
+        "src/object-store/src/impl/transact_log_handler.cpp",
+        "src/object-store/src/impl/weak_realm_notifier.cpp",
+        "src/object-store/src/parser/parser.cpp",
+        "src/object-store/src/parser/query_builder.cpp",
+        "src/object-store/src/util/format.cpp",
+      ],
+      "conditions": [
+        ["OS=='win'", {
+          "sources": [
+            "src/object-store/src/impl/windows/external_commit_helper.cpp",
+          ]
+        }],
+        ["OS=='linux'", {
+          "sources": [
+            "src/object-store/src/impl/epoll/external_commit_helper.cpp",
+          ]
+        }],
+        ["OS=='mac'", {
+          "sources": [
+            "src/object-store/src/impl/apple/external_commit_helper.cpp",
+            "src/object-store/src/impl/apple/keychain_helper.cpp",
+            "src/object-store/src/sync/impl/apple/network_reachability_observer.cpp",
+            "src/object-store/src/sync/impl/apple/system_configuration.cpp"
+          ]
+        }],
+        ["realm_enable_sync", {
+          "dependencies": [ "realm-sync" ],
+          "sources": [
+            "src/object-store/src/sync/sync_manager.cpp",
+            "src/object-store/src/sync/sync_user.cpp",
+            "src/object-store/src/sync/sync_session.cpp",
+            "src/object-store/src/sync/impl/sync_file.cpp",
+            "src/object-store/src/sync/impl/sync_metadata.cpp"
+          ],
+        }]
+      ],
+      "all_dependent_settings": {
+        "include_dirs": [
+          "src/object-store/src",
+          "src/object-store/src/impl",
+          "src/object-store/src/impl/apple",
+          "src/object-store/src/parser",
+          "src/object-store/external/pegtl"
+        ]
+      },
+      "export_dependent_settings": [
+        "<@(_dependencies)" # re-export settings related to linking the realm binaries
       ]
     }
+  ],
+  "conditions": [
+    ["not realm_node_build_as_library", {
+      "targets": [
+        {
+          "target_name": "action_after_build",
+          "type": "none",
+          "dependencies": [ "<(module_name)" ],
+          "copies": [
+            {
+              "files": [ "<(PRODUCT_DIR)/<(module_name).node" ],
+              "destination": "<(module_path)"
+            }
+          ]
+        }
+      ]
+    }]
   ]
 }

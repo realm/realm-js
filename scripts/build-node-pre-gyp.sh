@@ -35,7 +35,7 @@ for node_version in ${node_versions}; do
     nvm install ${node_version} || die "Could not install nodejs v${node_version}"
     nvm use ${node_version} || die "Could not load nodejs v${node_version}"
 
-    npm install --build-from-source=realm "$EXTRA_NPM_ARGUMENTS" || die "Could not build module"
+    npm install --build-from-source "$EXTRA_NPM_ARGUMENTS" || die "Could not build module"
     #./scripts/test.sh node || die "Unit tests for nodejs v${node_version} failed"
     ./node_modules/.bin/node-pre-gyp package || die "Could not package module"
     cp build/stage/node-pre-gyp/*.tar.gz ${topdir}/out/

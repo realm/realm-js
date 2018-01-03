@@ -30,6 +30,10 @@
 
 #include "js_types.hpp"
 
+#if defined(V8_MAJOR_VERSION) && (V8_MAJOR_VERSION > 4 || (V8_MAJOR_VERSION == 4 && defined(V8_MINOR_VERSION) && V8_MINOR_VERSION >= 3))
+#define REALM_V8_ARRAY_BUFFER_API 1
+#endif
+
 #define HANDLESCOPE Nan::HandleScope handle_scope;
 
 namespace realm {

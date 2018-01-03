@@ -34,7 +34,6 @@ using namespace realm::rpc;
 
 using Accessor = realm::js::NativeAccessor<jsc::Types>;
 
-namespace {
 static const char * const RealmObjectTypesData = "data";
 static const char * const RealmObjectTypesDate = "date";
 static const char * const RealmObjectTypesDictionary = "dict";
@@ -47,65 +46,18 @@ static const char * const RealmObjectTypesUser = "user";
 static const char * const RealmObjectTypesSession = "session";
 static const char * const RealmObjectTypesUndefined = "undefined";
 
-json serialize_object_schema(const realm::ObjectSchema &object_schema) {
-    std::vector<std::string> properties;
-
-    for (auto &prop : object_schema.persisted_properties) {
-        properties.push_back(prop.name);
-    }
-
-    for (auto &prop : object_schema.computed_properties) {
-        properties.push_back(prop.name);
-    }
-
-    return {
-        {"name", object_schema.name},
-        {"properties", properties},
-    };
-}
-
-template<typename Container>
-json get_type(Container const& c) {
-    auto type = c.get_type();
-    if (type == realm::PropertyType::Object) {
-        return serialize_object_schema(c.get_object_schema());
-    }
-    return {
-        {"type", string_for_property_type(type)},
-        {"optional", is_nullable(type)}
-    };
-}
-
-RPCServer*& get_rpc_server(JSGlobalContextRef ctx) {
+static RPCServer*& get_rpc_server(JSGlobalContextRef ctx) {
     static std::map<JSGlobalContextRef, RPCServer*> s_map;
     return s_map[ctx];
 }
-}
-
-#ifdef __APPLE__
-void runLoopFunc(CFRunLoopRef loop, RPCWorker* rpcWorker) {
-    auto m_stop = false;
-    CFRunLoopPerformBlock(loop, kCFRunLoopDefaultMode,
-                          ^{
-                              rpcWorker->try_run_task();
-                              if (rpcWorker->should_stop()) {
-                                  CFRunLoopStop(CFRunLoopGetCurrent());
-                              } else {
-                                  runLoopFunc(loop, rpcWorker);
-                            }
-                          });
-    CFRunLoopWakeUp(loop);
-}
-#endif
 
 RPCWorker::RPCWorker() {
-    #ifdef __APPLE__
-        m_thread = std::thread([this]() {
-            m_loop = CFRunLoopGetCurrent();
-            runLoopFunc(m_loop, this);
-            CFRunLoopRun();
-        });
-    #endif
+    m_thread = std::thread([this]() {
+        // TODO: Create ALooper/CFRunLoop to support async calls.
+        while (!m_stop) {
+            try_run_task();
+        }
+    });
 }
 
 RPCWorker::~RPCWorker() {
@@ -124,53 +76,30 @@ json RPCWorker::pop_task_result() {
     return future.get();
 }
 
-json RPCWorker::try_pop_task_result() {
-    // This might block until a future has been added.
-    auto future = m_futures.try_pop_back(0);
-    if (!future) {
-        return json::object();
+void RPCWorker::try_run_task() {
+    try {
+        // Use a 10 millisecond timeout to keep this thread unblocked.
+        auto task = m_tasks.pop_back(10);
+        task();
+
+        // Since this can be called recursively, it must be pushed to the front of the queue *after* running the task.
+        m_futures.push_front(task.get_future());
     }
-    // This will block until a return value (or exception) is available.
-    return (*future).get();
-}
-
-bool RPCWorker::try_run_task() {
-    if (m_stop) {
-        return true;
+    catch (ConcurrentDequeTimeout &) {
+        // We tried.
     }
-
-    // Use a 10 millisecond timeout to keep this thread unblocked.
-    auto task = m_tasks.try_pop_back(10);
-    if (!task) {
-        return false;
-    }
-
-    (*task)();
-
-    // Since this can be called recursively, it must be pushed to the front of the queue *after* running the task.
-    m_futures.push_front(task->get_future());
-
-    return m_stop;
-}
-
-bool RPCWorker::should_stop() {
-    return m_stop;
 }
 
 void RPCWorker::stop() {
     if (!m_stop) {
         m_stop = true;
-#if __APPLE__
         m_thread.join();
-        m_loop = nullptr;
-#endif 
     }
 }
 
 RPCServer::RPCServer() {
     m_context = JSGlobalContextCreate(NULL);
     get_rpc_server(m_context) = this;
-    m_callback_call_counter = 1;
 
     // JavaScriptCore crashes when trying to walk up the native stack to print the stacktrace.
     // FIXME: Avoid having to do this!
@@ -216,31 +145,10 @@ RPCServer::RPCServer() {
         if (!realm_constructor) {
             throw std::runtime_error("Realm constructor not found!");
         }
-
-        JSObjectRef sync_constructor = (JSObjectRef)jsc::Object::get_property(m_context, realm_constructor, "Sync");
-        JSObjectRef user_constructor = (JSObjectRef)jsc::Object::get_property(m_context, sync_constructor, "User");
-        JSObjectRef create_user_method = (JSObjectRef)jsc::Object::get_property(m_context, user_constructor, "createUser");
-
-        json::array_t args = dict["arguments"];
-        size_t arg_count = args.size();
-        JSValueRef arg_values[arg_count];
-
-        for (size_t i = 0; i < arg_count; i++) {
-            arg_values[i] = deserialize_json_value(args[i]);
-        }
-
-        JSObjectRef user_object = (JSObjectRef)jsc::Function::call(m_context, create_user_method, arg_count, arg_values);
-        return (json){{"result", serialize_json_value(user_object)}};
-    };
-    m_requests["/_adminUser"] = [this](const json dict) {
-        JSObjectRef realm_constructor = m_session_id ? JSObjectRef(m_objects[m_session_id]) : NULL;
-        if (!realm_constructor) {
-            throw std::runtime_error("Realm constructor not found!");
-        }
         
         JSObjectRef sync_constructor = (JSObjectRef)jsc::Object::get_property(m_context, realm_constructor, "Sync");
         JSObjectRef user_constructor = (JSObjectRef)jsc::Object::get_property(m_context, sync_constructor, "User");
-        JSObjectRef create_user_method = (JSObjectRef)jsc::Object::get_property(m_context, user_constructor, "_adminUser");
+        JSObjectRef create_user_method = (JSObjectRef)jsc::Object::get_property(m_context, user_constructor, "createUser");
         
         json::array_t args = dict["arguments"];
         size_t arg_count = args.size();
@@ -306,11 +214,11 @@ RPCServer::RPCServer() {
         if (!realm_constructor) {
             throw std::runtime_error("Realm constructor not found!");
         }
-
+        
         JSObjectRef sync_constructor = (JSObjectRef)jsc::Object::get_property(m_context, realm_constructor, "Sync");
         JSObjectRef user_constructor = (JSObjectRef)jsc::Object::get_property(m_context, sync_constructor, "User");
         JSValueRef value = jsc::Object::get_property(m_context, user_constructor, "all");
-
+        
         return (json){{"result", serialize_json_value(value)}};
     };
     m_requests["/clear_test_state"] = [this](const json dict) {
@@ -348,7 +256,6 @@ void RPCServer::run_callback(JSContextRef ctx, JSObjectRef function, JSObjectRef
         return;
     }
 
-    u_int64_t counter = server->m_callback_call_counter++;
     // The first argument was curried to be the callback id.
     RPCObjectID callback_id = server->m_callback_ids[function];
     JSObjectRef arguments_array = jsc::Object::create_array(ctx, uint32_t(argc), arguments);
@@ -362,46 +269,26 @@ void RPCServer::run_callback(JSContextRef ctx, JSObjectRef function, JSObjectRef
             {"callback", callback_id},
             {"this", this_json},
             {"arguments", arguments_json},
-            {"callback_call_counter", counter}
         };
     });
 
-    // Wait for this callback call result to come off the result stack.
-    json callbackResult = nullptr;
-    while (callbackResult == nullptr) {
-        callbackResult = server->m_callback_results.pop_if([&](json result) {
-            auto resultCallbackId = result["callback"].get<u_int64_t>();
-            auto resultCallbackCounter = result["callback_call_counter"].get<u_int64_t>();
-            if (resultCallbackId == callback_id && resultCallbackCounter == counter) {
-                return true;
-            }
-            else {
-                return false;
-            }
-        });
-
-        if (callbackResult == nullptr) {
-            server->m_worker.try_run_task();
-        }
+    // Wait for the next callback result to come off the result stack.
+    while (server->m_callback_results.empty()) {
+        // This may recursively bring us into another callback, hence the callback results being a stack.
+        server->m_worker.try_run_task();
     }
 
-    json results = callbackResult;
+    json results = server->m_callback_results.pop_back();
     json error = results["error"];
 
-    auto resultCallbackId = results["callback"];
-    if (resultCallbackId.is_null()) {
-
-    }
     // The callback id should be identical!
-    assert(callback_id == resultCallbackId.get<RPCObjectID>());
+    assert(callback_id == results["callback"].get<RPCObjectID>());
 
     if (!error.is_null()) {
         throw jsc::Exception(ctx, error.get<std::string>());
     }
 
-
     return_value.set(server->deserialize_json_value(results["result"]));
-
 }
 
 json RPCServer::perform_request(std::string name, const json &args) {
@@ -417,51 +304,21 @@ json RPCServer::perform_request(std::string name, const json &args) {
         json results(args);
         m_callback_results.push_back(std::move(results));
     }
-    else if (name == "/callback_poll_result") {
-        json results(args);
-        m_callback_results.push_back(std::move(results));
-        return json::object();
-    }
-    else if (name == "/callbacks_poll") {
-        auto result = m_worker.try_pop_task_result();
-        return result;
-    }
     else {
         RPCRequest action = m_requests[name];
         assert(action);
 
         m_worker.add_task([=] {
-            try {
-                return action(args);
-            }
-            catch (jsc::Exception ex) {
-                json exceptionAsJson = nullptr;
-                try {
-                    exceptionAsJson = serialize_json_value(ex);
-                }
-                catch (...) {
-                    exceptionAsJson = {{"error", "An exception occured while processing the request. Could not serialize the exception as JSON"}};
-                }
-                return (json){{"error", exceptionAsJson}, {"message", ex.what()}};
-            }
-            catch (std::exception &exception) {
-                return (json){{"error", exception.what()}};
-            }
+            return action(args);
         });
-
     }
 
     try {
         // This will either be the return value (or exception) of the action perform, OR an instruction to run a callback.
-        auto result = m_worker.pop_task_result();
-        return result;
+        return m_worker.pop_task_result();
     } catch (std::exception &exception) {
         return {{"error", exception.what()}};
     }
-}
-
-bool RPCServer::try_run_task() {
-    return m_worker.try_run_task();
 }
 
 RPCObjectID RPCServer::store_object(JSObjectRef object) {
@@ -504,7 +361,7 @@ json RPCServer::serialize_json_value(JSValueRef js_value) {
             {"type", RealmObjectTypesList},
             {"id", store_object(js_object)},
             {"size", list->size()},
-            {"schema", get_type(*list)},
+            {"schema", serialize_object_schema(list->get_object_schema())}
          };
     }
     else if (jsc::Object::is_instance<js::ResultsClass<jsc::Types>>(m_context, js_object)) {
@@ -513,7 +370,7 @@ json RPCServer::serialize_json_value(JSValueRef js_value) {
             {"type", RealmObjectTypesResults},
             {"id", store_object(js_object)},
             {"size", results->size()},
-            {"schema", get_type(*results)},
+            {"schema", serialize_object_schema(results->get_object_schema())}
         };
     }
     else if (jsc::Object::is_instance<js::RealmClass<jsc::Types>>(m_context, js_object)) {
@@ -599,14 +456,27 @@ json RPCServer::serialize_json_value(JSValueRef js_value) {
     assert(0);
 }
 
+json RPCServer::serialize_object_schema(const realm::ObjectSchema &object_schema) {
+    std::vector<std::string> properties;
+
+    for (auto &prop : object_schema.persisted_properties) {
+        properties.push_back(prop.name);
+    }
+
+    return {
+        {"name", object_schema.name},
+        {"properties", properties},
+    };
+}
+
 JSValueRef RPCServer::deserialize_json_value(const json dict) {
-    json oid = dict.value("id", json());
+    json oid = dict["id"];
     if (oid.is_number()) {
         return m_objects[oid.get<RPCObjectID>()];
     }
 
-    json value = dict.value("value", json());
-    json type = dict.value("type", json());
+    json value = dict["value"];
+    json type = dict["type"];
 
     if (type.is_string()) {
         std::string type_string = type.get<std::string>();

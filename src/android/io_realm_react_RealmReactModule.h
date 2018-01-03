@@ -31,13 +31,6 @@ JNIEXPORT jstring JNICALL Java_io_realm_react_RealmReactModule_processChromeDebu
 
 /*
  * Class:     io_realm_react_RealmReactModule
- * Method:    tryRunTask
- */
-JNIEXPORT jboolean JNICALL Java_io_realm_react_RealmReactModule_tryRunTask
-(JNIEnv *, jclass);
-
-/*
- * Class:     io_realm_react_RealmReactModule
  * Method:    isContextInjected
  */
 JNIEXPORT jboolean JNICALL Java_io_realm_react_RealmReactModule_isContextInjected
