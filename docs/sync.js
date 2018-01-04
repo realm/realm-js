@@ -28,42 +28,67 @@
  */
 class Sync {
     /**
-     * Add a sync listener to listen to changes across multiple Realms
-     * @param {string} server_url - the sync server to listen to
-     * @param {SyncUser} admin_user - an admin user obtained by calling `new Realm.Sync.User.adminUser`
-     * @param {string} regex - a regular expression used to determine which changed Realms should trigger events -
-     *  Use `.*` to match all all Realms
-     * @param {string} name - The name of the event that should trigger the callback to be called
-     *   _Currently only the 'change' event is supported_
-     * @param {function(change_event)} change_callback - called when changes are made to any Realm which
-     *  match the given regular expression
+     * Add a sync listener to listen to changes across multiple Realms.
+     *
+     * @param {string} serverUrl - The sync server to listen to.
+     * @param {SyncUser} adminUser - An admin user obtained by calling `new Realm.Sync.User.adminUser`.
+     * @param {string} filterRegex - A regular expression used to determine which changed Realms should trigger events. Use `.*` to match all Realms.
+     * @param {string} name - The name of the event.
+     * @param {function(changeEvent)} changeCallback - The callback to invoke with the events.
+     *
+     * Registers the `changeCallback` to be called each time the given event occurs on the specified server.
+     * Only events on Realms with a _virtual path_ that matches the filter regex are emitted.
+     *
+     * Currently supported events:
+     *
+     *  * "available": Emitted whenever a new Realm is registered with the server. Passes the virtual path of the new Realm to the callback.
+     *  * "change": Emitted whenever a Realm has been changed. Passes a ChangeEvent object to the callback.
      */
-    static addListener(server_url, admin_user, regex, name, change_callback) {}
+    static addListener(serverUrl, adminUser, filterRegex, name, changeCallback) {}
 
     /**
-     * Remove a previously registered sync listener
-     * @param {string} regex - the regular expression previously used to register the listener
-     * @param {string} name - The event name
-     *   _Currently only the 'change' event is supported_
-     * @param {function(change_event)} change_callback - the previously registered callback to be removed
+     * Add a sync listener to listen to changes across multiple Realms.
+     *
+     * @param {string} serverUrl - The sync server to listen to.
+     * @param {SyncUser} adminUser - An admin user obtained by calling `new Realm.Sync.User.adminUser`.
+     * @param {string} filterRegex - A regular expression used to determine which changed Realms should trigger events. Use `.*` to match all Realms.
+     * @param {Realm.Worker} worker - Worker to deliver events to.
      */
-    static removeListener(regex, name, change_callback) {}
+    static addListener(serverUrl, adminUser, filterRegex, worker) {}
 
     /**
-     * Remove all previously regiestered listeners
-     * @param {string} [name] - The name of the event whose listeners should be removed.
-     *   _Currently only the 'change' event is supported_
+     * Remove a previously registered sync listener.
+     *
+     * @param {string} filterRegex - The regular expression previously used to register the listener.
+     * @param {string} name - The event name.
+     * @param {function(changeEvent)} changeCallback - The previously registered callback to be removed.
+     */
+    static removeListener(regex, name, changeCallback) {}
+
+    /**
+     * Remove a previously registered sync listener.
+     *
+     * @param {string} filterRegex - The regular expression previously used to register the listener.
+     * @param {string} worker - The worker registered as a listener.
+     * @return {Promise<void>} A promise which is resolved when the worker has finished shutting down.
+     */
+    static removeListener(regex, worker) {}
+
+    /**
+     * Remove all previously registered listeners.
+     * @return {Promise<void>} A promise which is resolved when all workers (if any) have finished shutting down.
      */
     static removeAllListeners(name) {}
 
     /**
      * Set the sync log level.
-     * @param {string} log_level
+     * @param {Realm.Sync~LogLevel} log_level - The new log level.
      */
     static setLogLevel(log_level) {}
 
     /**
      * Initiate a client reset. The Realm must be closed prior to the reset.
+     *
      * @param {string} [path] - The path to the Realm to reset.
      * Throws error if reset is not possible.
      * @example
@@ -408,6 +433,46 @@ class Session {
     removeProgressNotification(progressCallback) {}
 }
 
+/**
+ * A Realm Worker can be used to process Sync events in multiple automatically-managed child processes.
+ *
+ * Similar to Web Workers, a Worker is initialized by passing it the name of a module which should be loaded in the new process.
+ * The module should have exports named `onavailable` and/or `onchange`, which are invoked when the appropriate event occurs.
+ *
+ * Events for each specific Realm will be delivered in serial, in the order in which they occurred.
+ * If events occur for more than one Realm at a time, multiple child processes may be spawned to process them in parallel.
+ *
+ * @example
+ * // my-worker.js
+ * function onchange(path) {
+ *    console.log(`Realm created at ${path}`);
+ * }
+ *
+ * function onavailable(change) {
+ *    console.log(`Realm at ${change.path} changed`);
+ * }
+ *
+ * module.exports = {onchange, oncavailable};
+ *
+ * // server script
+ * Realm.Sync.addListener(realmServerURL, adminUser, '.*', new Realm.Worker('my-worker'));
+ *
+ * @memberof Realm
+ */
+class Worker {
+    /**
+     * Create a new Worker which executes the given module.
+     *
+     * @param {string} moduleName - The module to load in the worker process.
+     * @param {object} [options] - An object containing option properties to configure the worker.
+     * Available properties are as follows:
+     *
+     * * `maxWorkers`: The maximum number of child processes to spawn. Defaults to `os.cpus().length`.
+     * * `env`: An object containing environment variables to set for the child process.
+     * * `execArgv`: Command-line arguments to pass to the `node` worker processes.
+     */
+    constructor(moduleName, options = {}) {}
+}
 
 /**
  * Class for creating custom Data Connectors. Only available in the Enterprise Edition.
@@ -416,15 +481,15 @@ class Session {
 class Adapter {
 	/**
 	 * Create a new Adapter to moitor and process changes made across multiple Realms
-	 * @param {string} local_path - the local path where realm files are stored
-	 * @param {string} server_url - the sync server to listen to
-	 * @param {SyncUser} admin_user - an admin user obtained by calling `new Realm.Sync.User.adminUser`
+	 * @param {string} localPath - the local path where realm files are stored
+	 * @param {string} serverUrl - the sync server to listen to
+	 * @param {SyncUser} adminUser - an admin user obtained by calling `new Realm.Sync.User.adminUser`
 	 * @param {string} regex - a regular expression used to determine which changed Realms should be monitored -
 	 *  use `.*` to match all all Realms
-	 * @param {function(realm_path)} change_callback - called when a new transaction is available
+	 * @param {function(realmPath)} changeCallback - called when a new transaction is available
 	 *  to process for the given realm_path
 	 */
-	constructor(local_path, server_url, admin_user, regex, change_callback) {}
+	constructor(localPath, serverUrl, adminUser, regex, changeCallback) {}
 
 	/**
 	 * Get the Array of current instructions for the given Realm.
