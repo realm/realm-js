@@ -159,13 +159,11 @@ void UserClass<T>::admin_user(ContextType ctx, FunctionType, ObjectType this_obj
 template<typename T>
 void UserClass<T>::get_existing_user(ContextType ctx, ObjectType, Arguments arguments, ReturnValue& return_value) {
     arguments.validate_count(2);
-    SharedUser *user = new SharedUser(syncManagerShared().get_existing_logged_in_user(
-        SyncUserIdentifier{
+    if (auto user = syncManagerShared().get_existing_logged_in_user(SyncUserIdentifier{
             Value::validated_to_string(ctx, arguments[1], "identity"),
-            Value::validated_to_string(ctx, arguments[0], "authServerUrl"),
-        }
-    ));
-    return_value.set(create_object<T, UserClass<T>>(ctx, user));
+            Value::validated_to_string(ctx, arguments[0], "authServerUrl")})) {
+        return_value.set(create_object<T, UserClass<T>>(ctx, new SharedUser(std::move(user))));
+    }
 }
 
 template<typename T>
