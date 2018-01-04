@@ -41,8 +41,16 @@ class Sync {
      *
      * Currently supported events:
      *
-     *  * "available": Emitted whenever a new Realm is registered with the server. Passes the virtual path of the new Realm to the callback.
-     *  * "change": Emitted whenever a Realm has been changed. Passes a ChangeEvent object to the callback.
+     *  * `'available'`: Emitted whenever there is a new Realm which has a virtual
+     *    path matching the filter regex, either due to the Realm being newly created
+     *    or the listener being added. The virtual path (i.e. the portion of the
+     *    URL after the protocol and hostname) is passed as an argument.
+     *  * `'change'`: Emitted whenever the data within a Realm matching the filter
+     *    regex has changed. A [ChangeEvent]{@link Realm.Sync.ChangeEvent} argument
+     *    is passed containing information about which Realm changed and what
+     *    objects within the Realm changed.
+     *
+     * Only available in the Enterprise Edition.
      */
     static addListener(serverUrl, adminUser, filterRegex, name, changeCallback) {}
 
@@ -53,6 +61,8 @@ class Sync {
      * @param {SyncUser} adminUser - An admin user obtained by calling `new Realm.Sync.User.adminUser`.
      * @param {string} filterRegex - A regular expression used to determine which changed Realms should trigger events. Use `.*` to match all Realms.
      * @param {Realm.Worker} worker - Worker to deliver events to.
+     *
+     * Only available in the Enterprise Edition.
      */
     static addListener(serverUrl, adminUser, filterRegex, worker) {}
 
@@ -106,41 +116,60 @@ class Sync {
 }
 
 /**
- * Change information passed when receiving sync 'change' events
+ * Change information passed when receiving sync `'change'` events.
+ *
+ * A ChangeEvent object can only be used within the callback which it is
+ * supplied to, and cannot be stored for use later. In particular, this means
+ * that async functions cannot be used within the callback prior to accessing
+ * the change event. The Realms supplied by the change event do not need to be
+ * explicitly closed.
+ *
  * @memberof Realm.Sync
  */
 class ChangeEvent {
     /**
-     * The path of the changed Realm
+     * The virtual path of the changed Realm. This is the portion of the URL of
+     * the synced Realm after the protocol and the host name.
      * @type {string}
      */
     get path() {}
 
     /**
-     * The changed realm
+     * The changed realm, with the changes applied.
      * @type {Realm}
      */
     get realm() {}
 
     /**
-     * The changed Realm at the old state before the changes were applied
+     * The modified Realm prior to any of the changes being applied. This can
+     * be used in combination with the change indices to read the old values of
+     * any objects which were modified.
+     *
      * @type {Realm}
      */
     get oldRealm() {}
 
     /**
-     * The change indexes for all added, removed, and modified objects in the changed Realm.
-     * This object is a hashmap of object types to arrays of indexes for all changed objects:
+     * The change indexes for all added, removed, and modified objects in the
+     * changed Realm. This object is a hashmap of object types to arrays of
+     * indexes for all changed objects:
+     *
+     * Note that deleting an object in Realm can cause other objects in the
+     * Realm to move, which will be reported as an insertion/deletion pair. For
+     * example, if there are ten objects in a Realm and the fifth is deleted,
+     * the change indices will be `{insertions: [4], deletions: [4, 9]}`.
+     *
      * @example
      * {
-     *   object_type_1: {
+     *   MyObject: {
      *     insertions:    [indexes...],
      *     deletions:     [indexes...],
      *     modifications: [indexes...]
      *   },
-     *   object_type_2:
+     *   MyOtherObject:
      *     ...
      * }
+     *
      * @type {object}
      */
     get changes() {}
@@ -437,10 +466,23 @@ class Session {
  * A Realm Worker can be used to process Sync events in multiple automatically-managed child processes.
  *
  * Similar to Web Workers, a Worker is initialized by passing it the name of a module which should be loaded in the new process.
- * The module should have exports named `onavailable` and/or `onchange`, which are invoked when the appropriate event occurs.
+ * The module should export a function for each even type it wishes to handle, which will be called when that event is emitted.
  *
- * Events for each specific Realm will be delivered in serial, in the order in which they occurred.
- * If events occur for more than one Realm at a time, multiple child processes may be spawned to process them in parallel.
+ * Currently supported events:
+ *
+ *  * `'available'`: Emitted whenever there is a new Realm which has a virtual
+ *    path matching the filter regex, either due to the Realm being newly created
+ *    or the listener being added. The virtual path (i.e. the portion of the
+ *    URL after the protocol and hostname) is passed as an argument.
+ *  * `'change'`: Emitted whenever the data within a Realm matching the filter
+ *    regex has changed. A [ChangeEvent]{@link Realm.Sync.ChangeEvent} argument
+ *    is passed containing information about which Realm changed and what
+ *    objects within the Realm changed.
+ *
+ * Worker automatically spawns child processes as needed to handle events in
+ * parallel (up to the limit specified in the `options` parameter). Events for
+ * each specific Realm will be processes in serial in the order in which the
+ * events occurred, but may not all be processed in the same child.
  *
  * @example
  * // my-worker.js
