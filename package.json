@@ -95,6 +95,7 @@
     "lzma-native": "^3.0.4"
   },
   "devDependencies": {
+    "@types/node": "^4.0.35",
     "babel-eslint": "^6.0.4",
     "eslint": "^3.2.2",
     "eslint-plugin-jasmine": "^2.1.0",
