@@ -176,7 +176,7 @@
         ]
       },
       "link_settings": {
-        "libraries": [ "-lrealm<(debug_library_suffix)", "-lrealm-parser<(debug_library_suffix)" ],
+        "libraries": [ "-lrealm-parser<(debug_library_suffix)", "-lrealm<(debug_library_suffix)" ],
       },
       "variables": {
         "prefix": "<!(node -p \"process.env.REALM_CORE_PREFIX || String()\")"
@@ -262,7 +262,7 @@
       "type": "none",
       "all_dependent_settings": {
         "include_dirs": [ "<(vendor_dir)/include" ],
-        "library_dirs": [ 
+        "library_dirs": [
           "<(vendor_dir)/lib",
           "<(vendor_dir)/osx"
         ]
