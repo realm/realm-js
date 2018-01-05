@@ -4,8 +4,8 @@ X.Y.Z Release notes
 * None.
 
 ### Enhancements
-* Added new query features.
-* Potential performance enhancements.
+* Added new query features to support a subset of `NSPredicates` for example `LIKE` for string matches, `@count` and `@sum` in lists. See documentation for more details.
+* Potential performance enhancements in cases of many writes between queries.
 
 ### Bug fixes
 * Fixed a bug where `Realm.open` could unexpectedly raise a "Realm at path ... already opened with different schema version" error.
