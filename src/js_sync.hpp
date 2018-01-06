@@ -69,12 +69,14 @@ public:
     static void get_identity(ContextType, ObjectType, ReturnValue &);
     static void get_token(ContextType, ObjectType, ReturnValue &);
     static void is_admin(ContextType, ObjectType, ReturnValue &);
+    static void is_admin_token(ContextType, ObjectType, ReturnValue &);
 
     PropertyMap<T> const properties = {
         {"server", {wrap<get_server>, nullptr}},
         {"identity", {wrap<get_identity>, nullptr}},
         {"token", {wrap<get_token>, nullptr}},
         {"isAdmin", {wrap<is_admin>, nullptr}},
+        {"isAdminToken", {wrap<is_admin_token>, nullptr}},
     };
 
     static void create_user(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
@@ -123,6 +125,11 @@ void UserClass<T>::get_token(ContextType ctx, ObjectType object, ReturnValue &re
 template<typename T>
 void UserClass<T>::is_admin(ContextType ctx, ObjectType object, ReturnValue &return_value) {
     return_value.set(get_internal<T, UserClass<T>>(object)->get()->is_admin());
+}
+
+template<typename T>
+void UserClass<T>::is_admin_token(ContextType ctx, ObjectType object, ReturnValue &return_value) {
+    return_value.set(get_internal<T, UserClass<T>>(object)->get()->token_type() == SyncUser::TokenType::Admin);
 }
 
 template<typename T>
