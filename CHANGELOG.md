@@ -13,7 +13,7 @@ X.Y.Z Release notes
   should help with failing token refreshes on a loaded server.
 
 ### Internal
-* None.
+* Explicitly send `register: false` when logging in with `Realm.Sync.User.login` to avoid creating the user if they don't exist.
 
 2.1.1 Release notes (2017-12-15)
 =============================================================
