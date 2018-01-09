@@ -1145,7 +1145,7 @@
 					"$(SRCROOT)/../vendor/sync/include",
 				);
 				OTHER_LIBTOOLFLAGS = (
-                    "$(SRCROOT)/../vendor/realm-parser-ios/librealm-ios.a",
+                    "$(SRCROOT)/../vendor/realm-ios/librealm-parser-ios.a",
                     "$(SRCROOT)/../vendor/realm-ios/librealm-ios.a",
                 );
 				PRODUCT_NAME = RealmJS;
