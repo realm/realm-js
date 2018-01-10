@@ -9,8 +9,8 @@ X.Y.Z Release notes
 
 ### Bug fixes
 * Fix a bug where `Realm.open` could unexpectedly raise a "Realm at path ... already opened with different schema version" error.
-* Increased request timeout for token refresh requests to 10 seconds. This
-  should help with failing token refreshes on a loaded server.
+* Increased request timeout for token refresh requests to 10 seconds. This should help with failing token refreshes on a loaded server.
+* `subscribeToObjects` was added as a property for Chrome debugging (#1608).
 
 ### Internal
 * Explicitly send `register: false` when logging in with `Realm.Sync.User.login` to avoid creating the user if they don't exist.
