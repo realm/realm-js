@@ -188,7 +188,7 @@ class User {
      * @return {Promise<User>} Returns a promise with a user
      */
     static authenticate(server, provider, options) {}
-    
+
     /**
      * Register/login a sync user using an external login provider.
      * @param {string} server - authentication server
@@ -258,10 +258,14 @@ class User {
     get token() {}
 
     /**
-     * Returns true if this user is an administrator
+     * Returns true if this user is an administrator.
      * @type {bool}
      */
     get isAdmin() {}
+
+    /**
+     * Returns true if the token is an administrator token.
+     */
 
     /**
      * Logs out the user from the Realm Object Server.
