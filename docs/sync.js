@@ -179,6 +179,17 @@ class User {
     static login(server, username, password, callback) {}
 
     /**
+     * Authenticate a sync user with provider.
+     * @param {string} server - authentication server
+     * @param {string} provider - the provider (curently: 'password', and 'jwt')
+     * @param {object} options - options used by provider:
+     *   - jwt - `token`; a JWT token
+     *   - password - `username` and `password`
+     * @return {Promise<User>} Returns a promise with a user
+     */
+    static authenticate(server, provider, options) {}
+    
+    /**
      * Register/login a sync user using an external login provider.
      * @param {string} server - authentication server
      * @param {object} options - options, containing the following:

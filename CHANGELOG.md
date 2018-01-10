@@ -1,3 +1,20 @@
+X.Y.Z Release notes
+=============================================================
+### Breaking changes
+* None.
+
+### Enhancements
+* [Object Server] Added method `Realm.Sync.User.authenticate` to unify authentication of users.
+* [Object Server] Added JWT authenfication (#1548).
+
+### Bug fixes
+* Fix a bug where `Realm.open` could unexpectedly raise a "Realm at path ... already opened with different schema version" error.
+* Increased request timeout for token refresh requests to 10 seconds. This
+  should help with failing token refreshes on a loaded server.
+
+### Internal
+* Explicitly send `register: false` when logging in with `Realm.Sync.User.login` to avoid creating the user if they don't exist.
+
 2.1.1 Release notes (2017-12-15)
 =============================================================
 ### Breaking changes
@@ -10,6 +27,7 @@
 * [Object Server] Fixed a bug where long reconnection happens when a proxy in front of the sync worker returns one of those.
 
 ### Internal
+* [Object Server] Updated to Realm Object Server v2.2.0 for testing.
 * Updated to Realm Sync 2.1.10 (see "Bug fixes").
 
 

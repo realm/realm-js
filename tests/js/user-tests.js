@@ -136,6 +136,19 @@ module.exports = {
       }))
   },
 
+  testAuthenticateWithPassword() {
+    const username = uuid();
+    return Realm.Sync.User.register('http://localhost:9080', username, 'password').then((user) => {
+      user.logout();
+      return Realm.Sync.User.authenticate('http://localhost:9080', 'password', { username: username, password: 'password' });
+    }).then((user => {
+      assertIsUser(user);
+      const realm = new Realm({ sync: { user: user, url: 'realm://localhost:9080/~/test' } });
+      TestCase.assertInstanceOf(realm, Realm);
+      realm.close();
+    }))
+  },
+
   testLoginMissingUsername() {
     TestCase.assertThrows(() => Realm.Sync.User.login('http://localhost:9080', undefined, 'password'));
   },
@@ -172,6 +185,22 @@ module.exports = {
           "Could not authenticate: Realm Object Server didn't respond with valid JSON"
         );
       });
+  },
+
+  testAuthenticateInvalidProvider() {
+    return Realm.Sync.User.authenticate('http://localhost:9080', 'FooBar', {})
+      .then((user) => { Promise.reject() } )
+      .catch((e) => { Promise.resolve() } )
+  },
+
+  testAuthenticateJWT() {
+    let token = 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJhdXN0aW5femhlbmciLCJpc0FkbWluIjp0cnVlLCJpYXQiOjE1MTI2OTI3NDl9.klca-3wYLe5mGdVk7N7dE9YRIlB1el1Dv6BxZNAKMsJ3Ms4vBTweu4-65kVJftiMrYhmSGY6QtTzqQ-xlLH4XzPd3jYIXlPQ45lxO7PW7EkJNs9m83VdcsJmHRHQ3PRP8V_mx0f2Ks4ga3xZ9IycAQB4q5NXLei_HJk8tRRJccZ6qB5nnAoD48Qu8JOEfhO596Mdoi-QCbH51iJZjgXo4gSRZ4KKK8jU0S6twLj_lf9jehENTqHDdtsRHdyCnICcPcz4AjFrNHEvUrsPkGxXSZ2BCGgDcvsSTVgGNV7rWU4IjH4FaDssenumi50R1QcZh8kiO35s9H6MngQsEm-zApRgd0V9_L3A6Ys47_crmKbunYRsATfMNBn2fKm5tS6RXvM2RN2G_Y9AkGgh2boY42CRy7HOcHby2vQ8IoQ-fZfE5xn_YYktNlKeNiCv3_-i86lANFbmB3tcdScrbjsgO6Tfg3u71VmJ_ZW1_vyMi5vCTEysLXfHG-OA85c3o8-25vcfuX5gIpbU-nMLgPagyn5w7Uazd27uhFfwepP9OMc8jz2JTlQICInLCUdESu8aG5d1F_IPUA5NU_ryPmebqUmyaRVDS8cGChxp0gZDNSiIvaggw8N2JCDGvk-s_PSG2pFGq0f4veYyWGBTHD_iX4a0UrhB471QZplRpMwvu7o'
+    return Realm.Sync.User.authenticate('http://localhost:9080', 'jwt', { token: token })
+      .then((user) => { 
+        TestCase.assertEqual(user.identity, 'austin_zheng')
+        Promise.resolve() 
+      })
+      .catch((e) => { Promise.reject(e) } )
   },
 
   testAll() {
