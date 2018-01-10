@@ -13,7 +13,7 @@ X.Y.Z Release notes
 
 ### Internal
 * Updated to Realm Sync 2.2.8.
-* Updated to Realm Core 5.1.0 (see "Enhancements").
+* Updated to Realm Core 5.1.2 (see "Enhancements").
 
 2.1.1 Release notes (2017-12-15)
 =============================================================
