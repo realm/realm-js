@@ -145,9 +145,9 @@ declare namespace Realm {
          */
         isValid(): boolean;
 
-        min(property?: string): number|Date|null;
-        max(property?: string): number|Date|null;
-        sum(property?: string): number|null;
+        min(property?: string): number | Date | null;
+        max(property?: string): number | Date | null;
+        sum(property?: string): number | null;
         avg(property?: string): number;
 
         /**
@@ -268,6 +268,7 @@ declare namespace Realm.Sync {
         static readonly current: User;
         readonly identity: string;
         readonly isAdmin: boolean;
+        readonly isAdminToken: boolean;
         readonly server: string;
         readonly token: string;
         static adminUser(adminToken: string, server?: string): User;
@@ -349,9 +350,9 @@ declare namespace Realm.Sync {
 
     interface SyncError {
         name: string;
-        message: string; 
+        message: string;
         isFatal: boolean;
-        category?: string; 
+        category?: string;
         code: number;
     }
 
