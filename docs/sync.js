@@ -320,6 +320,7 @@ class User {
     /**
      * Returns true if the token is an administrator token.
      */
+    get isAdminToken() {}
 
     /**
      * Logs out the user from the Realm Object Server.
