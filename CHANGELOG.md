@@ -6,6 +6,8 @@ X.Y.Z Release notes
 ### Enhancements
 * Added new query features to support a subset of `NSPredicates` for example `LIKE` for string matches, `@count` and `@sum` in lists. See documentation for more details.
 * Potential performance enhancements in cases of many writes between queries.
+* [Object Server] Added method `Realm.Sync.User.authenticate` to unify authentication of users.
+* [Object Server] Added JWT authenfication (#1548).
 
 ### Bug fixes
 * Fixed a bug where `Realm.open` could unexpectedly raise a "Realm at path ... already opened with different schema version" error.
@@ -14,6 +16,7 @@ X.Y.Z Release notes
 ### Internal
 * Updated to Realm Sync 2.2.9.
 * Updated to Realm Core 5.1.2 (see "Enhancements").
+* Explicitly send `register: false` when logging in with `Realm.Sync.User.login` to avoid creating the user if they don't exist.
 
 2.1.1 Release notes (2017-12-15)
 =============================================================
@@ -25,9 +28,9 @@ X.Y.Z Release notes
 
 ### Bug fixes
 * [Object Server] Fixed a bug where long reconnection happens when a proxy in front of the sync worker returns one of those.
-* Fix a bug where `Realm.open` could unexpectedly raise a "Realm at path ... already opened with different schema version" error.
 
 ### Internal
+* [Object Server] Updated to Realm Object Server v2.2.0 for testing.
 * Updated to Realm Sync 2.1.10 (see "Bug fixes").
 
 

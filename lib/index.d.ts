@@ -290,6 +290,7 @@ declare namespace Realm.Sync {
         static registerWithProvider(server: string, options: { provider: string, providerToken: string, userInfo: any }, callback: (error: Error | null, user: User | null) => void): void;
         static registerWithProvider(server: string, options: { provider: string, providerToken: string, userInfo: any }): Promise<Realm.Sync.User>;
 
+        authenticate(server: string, provider: string, options: any): Promise<Realm.Sync.User>;
         logout(): void;
         openManagementRealm(): Realm;
         retrieveAccount(provider: string, username: string): Promise<Account>;
