@@ -12,7 +12,7 @@ X.Y.Z Release notes
 * Increased request timeout for token refresh requests to 10 seconds. This should help with failing token refreshes on a loaded server.
 
 ### Internal
-* Updated to Realm Sync 2.2.8.
+* Updated to Realm Sync 2.2.9.
 * Updated to Realm Core 5.1.2 (see "Enhancements").
 
 2.1.1 Release notes (2017-12-15)
