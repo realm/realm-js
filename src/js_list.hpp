@@ -27,8 +27,6 @@
 
 #include "shared_realm.hpp"
 #include "list.hpp"
-#include "realm/parser/parser.hpp"
-#include "realm/parser/query_builder.hpp"
 
 namespace realm {
 namespace js {
