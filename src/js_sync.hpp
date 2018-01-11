@@ -59,6 +59,7 @@ class UserClass : public ClassDefinition<T, SharedUser> {
     using Value = js::Value<T>;
     using Function = js::Function<T>;
     using ReturnValue = js::ReturnValue<T>;
+    using Arguments = js::Arguments<T>;
 
 public:
     std::string const name = "User";
@@ -81,10 +82,12 @@ public:
 
     static void create_user(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void admin_user(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void get_existing_user(ContextType, ObjectType, Arguments, ReturnValue&);
 
     MethodMap<T> const static_methods = {
         {"createUser", wrap<create_user>},
-        {"_adminUser", wrap<admin_user>}
+        {"_adminUser", wrap<admin_user>},
+        {"_getExistingUser", wrap<get_existing_user>},
     };
 
     /*static void current_user(ContextType ctx, ObjectType object, ReturnValue &return_value);*/
@@ -158,6 +161,16 @@ void UserClass<T>::admin_user(ContextType ctx, FunctionType, ObjectType this_obj
         Value::validated_to_string(ctx, arguments[1], "refreshToken")
     ));
     return_value.set(create_object<T, UserClass<T>>(ctx, user));
+}
+
+template<typename T>
+void UserClass<T>::get_existing_user(ContextType ctx, ObjectType, Arguments arguments, ReturnValue& return_value) {
+    arguments.validate_count(2);
+    if (auto user = syncManagerShared().get_existing_logged_in_user(SyncUserIdentifier{
+            Value::validated_to_string(ctx, arguments[1], "identity"),
+            Value::validated_to_string(ctx, arguments[0], "authServerUrl")})) {
+        return_value.set(create_object<T, UserClass<T>>(ctx, new SharedUser(std::move(user))));
+    }
 }
 
 template<typename T>

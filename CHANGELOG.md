@@ -10,7 +10,9 @@ X.Y.Z Release notes
 * [Object Server] Added JWT authenfication (#1548).
 
 ### Bug fixes
-* Fixed a bug where `Realm.open` could unexpectedly raise a "Realm at path ... already opened with different schema version" error.
+* Fix a bug where `Realm.open` could unexpectedly raise a "Realm at path ... already opened with different schema version" error.
+* Increased request timeout for token refresh requests to 10 seconds. This
+  should help with failing token refreshes on a loaded server (#1586).
 * Increased request timeout for token refresh requests to 10 seconds. This should help with failing token refreshes on a loaded server.
 
 ### Internal
