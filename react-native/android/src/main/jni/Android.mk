@@ -21,6 +21,11 @@ LOCAL_SRC_FILES := core/librealm-android-$(TARGET_ARCH_ABI).a
 include $(PREBUILT_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
+LOCAL_MODULE := realm-parser-android-$(TARGET_ARCH_ABI)
+LOCAL_SRC_FILES := core/librealm-parser-android-$(TARGET_ARCH_ABI).a
+include $(PREBUILT_STATIC_LIBRARY)
+
+include $(CLEAR_VARS)
 LOCAL_MODULE := libjsc
 LOCAL_EXPORT_C_INCLUDES := jsc
 include $(BUILD_SHARED_LIBRARY)
@@ -98,7 +103,7 @@ LOCAL_STATIC_LIBRARIES += ssl-$(TARGET_ARCH_ABI)
 LOCAL_STATIC_LIBRARIES += crypto-$(TARGET_ARCH_ABI)
 else
 LOCAL_STATIC_LIBRARIES := realm-parser-android-$(TARGET_ARCH_ABI)
-LOCAL_STATIC_LIBRARIES := realm-android-$(TARGET_ARCH_ABI)
+LOCAL_STATIC_LIBRARIES += realm-android-$(TARGET_ARCH_ABI)
 LOCAL_STATIC_LIBRARIES += crypto-$(TARGET_ARCH_ABI)
 endif
 
