@@ -62,6 +62,7 @@ function printProgress(input, totalBytes, archive) {
 
 function download(serverFolder, archive, destination) {
     const url = `https://static.realm.io/downloads/${serverFolder}/${archive}`;
+    console.log(`Download url: ${url}`);
     return fetch(url).then((response) => {
         if (response.status !== 200) {
             throw new Error(`Error downloading ${url} - received status ${response.status} ${response.statusText}`);
@@ -98,12 +99,11 @@ function download(serverFolder, archive, destination) {
 
 function extract(downloadedArchive, targetFolder, archiveRootFolder) {
     console.log(`Extracting ${path.basename(downloadedArchive)} => ${targetFolder}`);
-    const decompressOptions = /tar\.xz$/.test(downloadedArchive) ? { plugins: [ require('decompress-tarxz')() ] } : undefined;
     if (!archiveRootFolder) {
-        return decompress(downloadedArchive, targetFolder, decompressOptions);
+        return decompress(downloadedArchive, targetFolder);
     } else {
         const tempExtractLocation = path.resolve(os.tmpdir(), path.basename(downloadedArchive, path.extname(downloadedArchive)));
-        return decompress(downloadedArchive, tempExtractLocation, decompressOptions)
+        return decompress(downloadedArchive, tempExtractLocation)
                .then(() => fs.readdir(path.resolve(tempExtractLocation, archiveRootFolder)))
                .then(items => Promise.all(items.map(item => {
                    const source = path.resolve(tempExtractLocation, archiveRootFolder, item);
@@ -178,7 +178,7 @@ function getSyncRequirements(dependencies, options, required = {}) {
             required.SYNC_ARCHIVE_ROOT = `realm-sync-node-cocoa-${dependencies.REALM_SYNC_VERSION}`;
             return Promise.resolve(required);
         case 'ios':
-            required.SYNC_ARCHIVE = `realm-sync-cocoa-${dependencies.REALM_SYNC_VERSION}.tar.xz`;
+            required.SYNC_ARCHIVE = `realm-sync-cocoa-${dependencies.REALM_SYNC_VERSION}.tar.gz`;
             required.SYNC_ARCHIVE_ROOT = `core`;
             return Promise.resolve(required);
         case 'win': {
