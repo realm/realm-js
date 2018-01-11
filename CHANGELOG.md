@@ -4,15 +4,21 @@ X.Y.Z Release notes
 * None.
 
 ### Enhancements
+* Added new query features to support a subset of `NSPredicates` for example `LIKE` for string matches, `@count` and `@sum` in lists. See documentation for more details.
+* Potential performance enhancements in cases of many writes between queries.
 * [Object Server] Added method `Realm.Sync.User.authenticate` to unify authentication of users.
 * [Object Server] Added JWT authenfication (#1548).
 
 ### Bug fixes
 * Fix a bug where `Realm.open` could unexpectedly raise a "Realm at path ... already opened with different schema version" error.
-* Increased request timeout for token refresh requests to 10 seconds. This should help with failing token refreshes on a loaded server.
 * `subscribeToObjects` was added as a property for Chrome debugging (#1608).
+* Increased request timeout for token refresh requests to 10 seconds. This
+  should help with failing token refreshes on a loaded server (#1586).
+* Increased request timeout for token refresh requests to 10 seconds. This should help with failing token refreshes on a loaded server.
 
 ### Internal
+* Updated to Realm Sync 2.2.9.
+* Updated to Realm Core 5.1.2 (see "Enhancements").
 * Explicitly send `register: false` when logging in with `Realm.Sync.User.login` to avoid creating the user if they don't exist.
 
 2.1.1 Release notes (2017-12-15)
