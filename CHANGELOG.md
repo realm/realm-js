@@ -1,3 +1,17 @@
+X.Y.Z Release notes
+=============================================================
+### Breaking changes
+* None.
+
+### Enhancements
+* None.
+
+### Bug fixes
+* [Object Server] Fixed a bug preventing opening Realms with an admin token without a working ROS directory service (#1615).
+
+### Internal
+* None.
+
 2.2.0 Release notes (2018-1-12)
 =============================================================
 ### Breaking changes
@@ -12,9 +26,7 @@
 ### Bug fixes
 * Fix a bug where `Realm.open` could unexpectedly raise a "Realm at path ... already opened with different schema version" error.
 * `subscribeToObjects` was added as a property for Chrome debugging (#1608).
-* Increased request timeout for token refresh requests to 10 seconds. This
-  should help with failing token refreshes on a loaded server (#1586).
-* Increased request timeout for token refresh requests to 10 seconds. This should help with failing token refreshes on a loaded server.
+* Increased request timeout for token refresh requests to 10 seconds. This should help with failing token refreshes on a loaded server (#1586).
 
 ### Internal
 * Updated to Realm Sync 2.2.9.
