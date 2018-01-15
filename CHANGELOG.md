@@ -1,3 +1,18 @@
+X.Y.Z Release notes
+=============================================================
+### Breaking changes
+* None.
+
+### Enhancements
+* None.
+
+### Bug fixes
+* [Object Server] Added missing `Realm.Sync` listener functions.
+
+### Internal
+* None.
+
+
 2.2.1 Release notes (2018-1-13)
 =============================================================
 ### Breaking changes
