@@ -21,6 +21,11 @@ LOCAL_SRC_FILES := core/librealm-android-$(TARGET_ARCH_ABI).a
 include $(PREBUILT_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
+LOCAL_MODULE := realm-parser-android-$(TARGET_ARCH_ABI)
+LOCAL_SRC_FILES := core/librealm-parser-android-$(TARGET_ARCH_ABI).a
+include $(PREBUILT_STATIC_LIBRARY)
+
+include $(CLEAR_VARS)
 LOCAL_MODULE := libjsc
 LOCAL_EXPORT_C_INCLUDES := jsc
 include $(BUILD_SHARED_LIBRARY)
@@ -52,9 +57,6 @@ LOCAL_SRC_FILES += src/object-store/src/impl/results_notifier.cpp
 LOCAL_SRC_FILES += src/object-store/src/impl/transact_log_handler.cpp
 LOCAL_SRC_FILES += src/object-store/src/impl/weak_realm_notifier.cpp
 LOCAL_SRC_FILES += src/object-store/src/impl/epoll/external_commit_helper.cpp
-LOCAL_SRC_FILES += src/object-store/src/parser/parser.cpp
-LOCAL_SRC_FILES += src/object-store/src/parser/query_builder.cpp
-LOCAL_SRC_FILES += src/object-store/src/util/format.cpp
 LOCAL_SRC_FILES += src/object-store/src/util/uuid.cpp
 LOCAL_SRC_FILES += src/object-store/src/binding_callback_thread_observer.cpp
 LOCAL_SRC_FILES += src/object-store/src/collection_notifications.cpp
@@ -82,8 +84,6 @@ LOCAL_C_INCLUDES := src
 LOCAL_C_INCLUDES += src/jsc
 LOCAL_C_INCLUDES += src/object-store/src
 LOCAL_C_INCLUDES += src/object-store/src/impl
-LOCAL_C_INCLUDES += src/object-store/src/parser
-LOCAL_C_INCLUDES += src/object-store/external/pegtl
 LOCAL_C_INCLUDES += vendor
 LOCAL_C_INCLUDES += $(JAVA_HOME)/include
 LOCAL_C_INCLUDES += $(JAVA_HOME)/include/darwin
@@ -97,11 +97,13 @@ endif
 LOCAL_ALLOW_UNDEFINED_SYMBOLS := true
 ifeq ($(strip $(BUILD_TYPE_SYNC)),1)
 LOCAL_STATIC_LIBRARIES := realm-android-sync-$(TARGET_ARCH_ABI)
+LOCAL_STATIC_LIBRARIES += realm-parser-android-$(TARGET_ARCH_ABI)
 LOCAL_STATIC_LIBRARIES += realm-android-$(TARGET_ARCH_ABI)
 LOCAL_STATIC_LIBRARIES += ssl-$(TARGET_ARCH_ABI)
 LOCAL_STATIC_LIBRARIES += crypto-$(TARGET_ARCH_ABI)
 else
-LOCAL_STATIC_LIBRARIES := realm-android-$(TARGET_ARCH_ABI)
+LOCAL_STATIC_LIBRARIES := realm-parser-android-$(TARGET_ARCH_ABI)
+LOCAL_STATIC_LIBRARIES += realm-android-$(TARGET_ARCH_ABI)
 LOCAL_STATIC_LIBRARIES += crypto-$(TARGET_ARCH_ABI)
 endif
 

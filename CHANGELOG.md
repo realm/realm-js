@@ -1,3 +1,38 @@
+2.2.1 Release notes (2018-1-13)
+=============================================================
+### Breaking changes
+* None.
+
+### Enhancements
+* None.
+
+### Bug fixes
+* [Object Server] Fixed a bug preventing opening Realms with an admin token without a working ROS directory service (#1615).
+
+### Internal
+* None.
+
+2.2.0 Release notes (2018-1-12)
+=============================================================
+### Breaking changes
+* None.
+
+### Enhancements
+* Added new query features to support a subset of `NSPredicates` for example `LIKE` for string matches, `@count` and `@sum` in lists. See documentation for more details.
+* Potential performance enhancements in cases of many writes between queries.
+* [Object Server] Added method `Realm.Sync.User.authenticate` to unify authentication of users.
+* [Object Server] Added JWT authenfication (#1548).
+
+### Bug fixes
+* Fix a bug where `Realm.open` could unexpectedly raise a "Realm at path ... already opened with different schema version" error.
+* `subscribeToObjects` was added as a property for Chrome debugging (#1608).
+* Increased request timeout for token refresh requests to 10 seconds. This should help with failing token refreshes on a loaded server (#1586).
+
+### Internal
+* Updated to Realm Sync 2.2.9.
+* Updated to Realm Core 5.1.2 (see "Enhancements").
+* Explicitly send `register: false` when logging in with `Realm.Sync.User.login` to avoid creating the user if they don't exist.
+
 2.1.1 Release notes (2017-12-15)
 =============================================================
 ### Breaking changes
@@ -10,6 +45,7 @@
 * [Object Server] Fixed a bug where long reconnection happens when a proxy in front of the sync worker returns one of those.
 
 ### Internal
+* [Object Server] Updated to Realm Object Server v2.2.0 for testing.
 * Updated to Realm Sync 2.1.10 (see "Bug fixes").
 
 

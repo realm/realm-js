@@ -246,9 +246,9 @@ public:
         {"close", wrap<close>},
         {"compact", wrap<compact>},
         {"deleteModel", wrap<delete_model>},
-        {"_waitForDownload", wrap<wait_for_download_completion>},
         {"_objectForObjectId", wrap<object_for_object_id>},
  #if REALM_ENABLE_SYNC
+        {"_waitForDownload", wrap<wait_for_download_completion>},
         {"_subscribeToObjects", wrap<subscribe_to_objects>},
         {"getQueryStatus", wrap<get_query_status>},
  #endif
@@ -722,6 +722,7 @@ void RealmClass<T>::get_sync_session(ContextType ctx, ObjectType object, ReturnV
 }
 #endif
 
+#if REALM_ENABLE_SYNC
 template<typename T>
 void RealmClass<T>::wait_for_download_completion(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
     args.validate_maximum(2);
@@ -732,67 +733,63 @@ void RealmClass<T>::wait_for_download_completion(ContextType ctx, ObjectType thi
         session_callback = Value::validated_to_function(ctx, args[0]);
     }
 
-#if REALM_ENABLE_SYNC
     auto realm = *get_internal<T, RealmClass<T>>(this_object);
-    if (auto* sync_config = realm->config().sync_config.get()) {
-        Protected<FunctionType> protected_callback(ctx, callback_function);
-        Protected<ObjectType> protected_this(ctx, this_object);
-        Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
-
-        EventLoopDispatcher<WaitHandler> wait_handler([=](std::error_code error_code) {
-            HANDLESCOPE
-            if (!error_code) {
-                //success
-                Function<T>::callback(protected_ctx, protected_callback, typename T::Object(), 0, nullptr);
-            }
-            else {
-                //fail
-                ObjectType object = Object::create_empty(protected_ctx);
-                Object::set_property(protected_ctx, object, "message", Value::from_string(protected_ctx, error_code.message()));
-                Object::set_property(protected_ctx, object, "errorCode", Value::from_number(protected_ctx, error_code.value()));
-
-                ValueType callback_arguments[1];
-                callback_arguments[0] = object;
-
-                Function<T>::callback(protected_ctx, protected_callback, typename T::Object(), 1, callback_arguments);
-            }
-
-            // We keep our Realm instance alive until the callback has had a chance to open its own instance.
-            // This allows it to share the sync session that our Realm opened.
-            if (realm)
-                realm->close();
-        });
-
-        std::shared_ptr<SyncUser> user = sync_config->user;
-        if (user && user->state() != SyncUser::State::Error) {
-            if (auto session = user->session_for_on_disk_path(realm->config().path)) {
-                if (!Value::is_null(ctx, session_callback)) {
-                    FunctionType session_callback_func = Value::to_function(ctx, session_callback);
-                    auto syncSession = create_object<T, SessionClass<T>>(ctx, new WeakSession(session));
-                    ValueType callback_arguments[1];
-                    callback_arguments[0] = syncSession;
-                    Function<T>::callback(protected_ctx, session_callback_func, typename T::Object(), 1, callback_arguments);
-                }
-
-                session->wait_for_download_completion(std::move(wait_handler));
-                return;
-            }
-        }
-
-        ObjectType object = Object::create_empty(protected_ctx);
-        Object::set_property(protected_ctx, object, "message",
-                             Value::from_string(protected_ctx, "Cannot asynchronously open synced Realm because the associated session previously experienced a fatal error"));
-        Object::set_property(protected_ctx, object, "errorCode", Value::from_number(protected_ctx, 1));
-
-        ValueType callback_arguments[1];
-        callback_arguments[0] = object;
-        Function<T>::callback(protected_ctx, protected_callback, protected_this, 1, callback_arguments);
-        return;
+    auto* sync_config = realm->config().sync_config.get();
+    if (!sync_config) {
+        throw std::logic_error("_waitForDownload can only be used on a synchronized Realm.");
     }
-#endif
 
-    Function<T>::callback(ctx, callback_function, this_object, 0, nullptr);
+    Protected<FunctionType> protected_callback(ctx, callback_function);
+    Protected<ObjectType> protected_this(ctx, this_object);
+    Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
+
+    std::shared_ptr<SyncUser> user = sync_config->user;
+    if (user && user->state() != SyncUser::State::Error) {
+        if (auto session = user->session_for_on_disk_path(realm->config().path)) {
+            if (!Value::is_null(ctx, session_callback)) {
+                FunctionType session_callback_func = Value::to_function(ctx, session_callback);
+                auto syncSession = create_object<T, SessionClass<T>>(ctx, new WeakSession(session));
+                ValueType callback_arguments[1];
+                callback_arguments[0] = syncSession;
+                Function<T>::callback(protected_ctx, session_callback_func, typename T::Object(), 1, callback_arguments);
+            }
+
+            EventLoopDispatcher<WaitHandler> wait_handler([=](std::error_code error_code) {
+                HANDLESCOPE
+                if (!error_code) {
+                    //success
+                    Function<T>::callback(protected_ctx, protected_callback, typename T::Object(), 0, nullptr);
+                }
+                else {
+                    //fail
+                    ObjectType object = Object::create_empty(protected_ctx);
+                    Object::set_property(protected_ctx, object, "message", Value::from_string(protected_ctx, error_code.message()));
+                    Object::set_property(protected_ctx, object, "errorCode", Value::from_number(protected_ctx, error_code.value()));
+
+                    ValueType callback_arguments[1];
+                    callback_arguments[0] = object;
+
+                    Function<T>::callback(protected_ctx, protected_callback, typename T::Object(), 1, callback_arguments);
+                }
+                // Ensure that the session remains alive until the callback has had an opportunity to reopen the Realm
+                // with the appropriate schema.
+                (void)session;
+            });
+            session->wait_for_download_completion(std::move(wait_handler));
+            return;
+        }
+    }
+
+    ObjectType object = Object::create_empty(protected_ctx);
+    Object::set_property(protected_ctx, object, "message",
+                         Value::from_string(protected_ctx, "Cannot asynchronously open synced Realm because the associated session previously experienced a fatal error"));
+    Object::set_property(protected_ctx, object, "errorCode", Value::from_number(protected_ctx, 1));
+
+    ValueType callback_arguments[1];
+    callback_arguments[0] = object;
+    Function<T>::callback(protected_ctx, protected_callback, protected_this, 1, callback_arguments);
 }
+#endif
 
 template<typename T>
 void RealmClass<T>::objects(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {

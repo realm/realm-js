@@ -207,6 +207,21 @@ module.exports = {
         TestCase.assertEqual(realm.readOnly, true);
     },
 
+    testRealmOpen: function() {
+        let realm = new Realm({schema: [schemas.TestObject], schemaVersion: 1});
+        realm.write(() => {
+            realm.create('TestObject', [1])
+        });
+        realm.close();
+
+        return Realm.open({schema: [schemas.TestObject], schemaVersion: 2}).then(realm => {
+            const objects = realm.objects('TestObject');
+            TestCase.assertEqual(objects.length, 1);
+            TestCase.assertEqual(objects[0].doubleCol, 1.0);
+            realm.close();
+        });
+    },
+
     testDefaultPath: function() {
         const defaultPath = Realm.defaultPath;
         let defaultRealm = new Realm({schema: []});
