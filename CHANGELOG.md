@@ -1,3 +1,17 @@
+X.Y.Z Release notes
+=============================================================
+### Breaking changes
+* None.
+
+### Enhancements
+* None.
+
+### Bug fixes
+* [Object Server] Fixed a bug in upload progress reporting.
+
+### Internal
+* None.
+
 2.2.2 Release notes (2018-1-16)
 =============================================================
 ### Breaking changes
