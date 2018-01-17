@@ -544,8 +544,8 @@ module.exports = {
 
                 return Realm.open(config).then((realm) => {
                     return new Promise((resolve, reject) => {
-                        realm.syncSession.addProgressNotification('download', 'reportIndefinitely', (x, y) => {
-                            if (x === y) {
+                        realm.syncSession.addProgressNotification('download', 'reportIndefinitely', (transferred, transferable) => {
+                            if (transferred === transferable) {
                                 resolve();
                             }
                         });
@@ -603,8 +603,8 @@ module.exports = {
                                 unregisterFunc();
 
                                 //use second callback to wait for sync finished
-                                realm.syncSession.addProgressNotification('upload', 'reportIndefinitely', (x, y) => {
-                                    if (x === y) {
+                                realm.syncSession.addProgressNotification('upload', 'reportIndefinitely', (transferred, transferable) => {
+                                    if (transferred === transferable) {
                                         resolve();
                                     }
                                 });
