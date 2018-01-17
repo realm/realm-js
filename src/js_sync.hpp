@@ -390,9 +390,10 @@ void SessionClass<T>::get_config(ContextType ctx, ObjectType object, ReturnValue
         ObjectType config = Object::create_empty(ctx);
         Object::set_property(ctx, config, "user", create_object<T, UserClass<T>>(ctx, new SharedUser(session->config().user)));
         Object::set_property(ctx, config, "url", Value::from_string(ctx, session->config().realm_url()));
-        if (auto* dispatcher = session->config().error_handler.template target<EventLoopDispatcher<SyncSessionErrorHandler>>()) {
-            auto& handler = *dispatcher->func().template target<SyncSessionErrorHandlerFunctor<T>>();
-            Object::set_property(ctx, config, "error", handler.func());
+        if (auto dispatcher = session->config().error_handler.template target<EventLoopDispatcher<SyncSessionErrorHandler>>()) {
+            if (auto handler = dispatcher->func().template target<SyncSessionErrorHandlerFunctor<T>>()) {
+                Object::set_property(ctx, config, "error", handler->func());
+            }
         }
         return_value.set(config);
     } else {
