@@ -1,4 +1,4 @@
-X.Y.Z Release notes
+2.2.3 Release notes (2018-1-17)
 =============================================================
 ### Breaking changes
 * None.
@@ -8,6 +8,7 @@ X.Y.Z Release notes
 
 ### Bug fixes
 * [Object Server] Fixed a bug in upload progress reporting.
+* [Object Server] Fixed a bug where any errors which occurred when trying to sync the admin Realm were ignored, which made attempting to add a listener with an invalid admin user silently do nothing.
 
 ### Internal
 * None.
