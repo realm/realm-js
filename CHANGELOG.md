@@ -1,3 +1,17 @@
+X.Y.Z Release notes
+=============================================================
+### Breaking changes
+* None.
+
+### Enhancements
+* None.
+
+### Bug fixes
+* [Object Server] Fixed a bug where errors in `refreshAdminToken` wasn't catched (#1627).
+
+### Internal
+* None.
+
 2.2.3 Release notes (2018-1-17)
 =============================================================
 ### Breaking changes
