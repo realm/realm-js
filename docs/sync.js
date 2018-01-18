@@ -119,9 +119,10 @@ class Sync {
  * Change information passed when receiving sync `'change'` events.
  *
  * A ChangeEvent object can only be used within the callback which it is
- * supplied to, and cannot be stored for use later. In particular, this means
- * that async functions cannot be used within the callback prior to accessing
- * the change event. The Realms supplied by the change event do not need to be
+ * supplied to, and cannot be stored for use later. If the callback returns a
+ * promise, the ChangeEvent will remain valid until that promise is resolved
+ * (and no further notifications for that same Realm will be made until it is
+ * resolved). The Realms supplied by the change event do not need to be
  * explicitly closed.
  *
  * @memberof Realm.Sync
