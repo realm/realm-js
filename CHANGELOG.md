@@ -1,3 +1,17 @@
+X.Y.Z Release notes
+=============================================================
+### Breaking changes
+* None.
+
+### Enhancements
+* None.
+
+### Bug fixes
+* [Object Server] Added `_getExitingUser` to the Chrome debugging support library.
+
+### Internal
+* None.
+
 2.2.3 Release notes (2018-1-17)
 =============================================================
 ### Breaking changes
