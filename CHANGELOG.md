@@ -8,6 +8,7 @@ X.Y.Z Release notes
 
 ### Bug fixes
 * [Object Server] Fixed a bug where errors in `refreshAdminToken` wasn't catched (#1627).
+* [Object Server] Added `_getExitingUser` to the Chrome debugging support library.
 
 ### Internal
 * None.
