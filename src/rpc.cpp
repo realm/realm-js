@@ -253,7 +253,7 @@ RPCServer::RPCServer() {
         JSObjectRef user_object = (JSObjectRef)jsc::Function::call(m_context, create_user_method, arg_count, arg_values);
         return (json){{"result", serialize_json_value(user_object)}};
     };
-    m_requests["/_getExistingUser" = [this](const json dict) {
+    m_requests["/_getExistingUser"] = [this](const json dict) {
         JSObjectRef realm_constructor = m_session_id ? JSObjectRef(m_objects[m_session_id]) : NULL;
         if (!realm_constructor) {
             throw std::runtime_error("Realm constructor not found!");
