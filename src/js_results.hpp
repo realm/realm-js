@@ -275,12 +275,14 @@ void ResultsClass<T>::subscribe(ContextType ctx, ObjectType this_object, Argumen
     Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
     auto cb = [=](bool updated_remote, std::exception_ptr err) {
         HANDLESCOPE
+
+        auto protected_results = get_internal<T, ResultsClass<T>>(protected_this);
         if (err) {
             // FIXME: maybe write error message to log
-            results->m_partial_sync_state = partial_sync::SubscriptionState::Error;
+            protected_results->m_partial_sync_state = partial_sync::SubscriptionState::Error;
         }
         else {
-            results->m_partial_sync_state = updated_remote ? partial_sync::SubscriptionState::Initialized : partial_sync::SubscriptionState::Uninitialized;
+            protected_results->m_partial_sync_state = updated_remote ? partial_sync::SubscriptionState::Initialized : partial_sync::SubscriptionState::Uninitialized;
         }
     };
 
