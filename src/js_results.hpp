@@ -28,6 +28,8 @@
 
 #include <realm/parser/parser.hpp>
 #include <realm/parser/query_builder.hpp>
+#include <realm/util/optional.hpp>
+#include "sync/partial_sync.hpp"
 
 namespace realm {
 namespace js {
@@ -51,6 +53,9 @@ class Results : public realm::Results {
     using realm::Results::Results;
 
     std::vector<std::pair<Protected<typename T::Function>, NotificationToken>> m_notification_tokens;
+#if REALM_ENABLE_SYNC
+    partial_sync::SubscriptionState m_partial_sync_state;
+#endif
 };
 
 template<typename T>
@@ -82,6 +87,7 @@ struct ResultsClass : ClassDefinition<T, realm::js::Results<T>, CollectionClass<
     static void filtered(ContextType, ObjectType, Arguments, ReturnValue &);
     static void sorted(ContextType, ObjectType, Arguments, ReturnValue &);
     static void is_valid(ContextType, ObjectType, Arguments, ReturnValue &);
+    static void subscribe(ContextType, ObjectType, Arguments, ReturnValue &);
 
     static void index_of(ContextType, ObjectType, Arguments, ReturnValue &);
 
@@ -107,6 +113,7 @@ struct ResultsClass : ClassDefinition<T, realm::js::Results<T>, CollectionClass<
         {"filtered", wrap<filtered>},
         {"sorted", wrap<sorted>},
         {"isValid", wrap<is_valid>},
+        {"subscribe", wrap<subscribe>},
         {"min", wrap<compute_aggregate_on_collection<ResultsClass<T>, AggregateFunc::Min>>},
         {"max", wrap<compute_aggregate_on_collection<ResultsClass<T>, AggregateFunc::Max>>},
         {"sum", wrap<compute_aggregate_on_collection<ResultsClass<T>, AggregateFunc::Sum>>},
@@ -250,6 +257,36 @@ void ResultsClass<T>::sorted(ContextType ctx, ObjectType this_object, Arguments 
 template<typename T>
 void ResultsClass<T>::is_valid(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
     return_value.set(get_internal<T, ResultsClass<T>>(this_object)->is_valid());
+}
+
+template<typename T>
+void ResultsClass<T>::subscribe(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
+    args.validate_maximum(1);
+
+    std::string subscription_name = nullptr;
+    if (args.count == 1) {
+        subscription_name = Value::validated_to_string(ctx, args[0]);
+    }
+
+    auto results = get_internal<T, ResultsClass<T>>(this_object);
+    results->m_partial_sync_state = partial_sync::SubscriptionState::Undefined;
+
+    Protected<ObjectType> protected_this(ctx, this_object);
+    Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
+    auto cb = [=](bool updated_remote, std::exception_ptr err) {
+        HANDLESCOPE
+        if (err) {
+            // FIXME: maybe write error message to log
+            results->m_partial_sync_state = partial_sync::SubscriptionState::Error;
+        }
+        else {
+            results->m_partial_sync_state = updated_remote ? partial_sync::SubscriptionState::Initialized : partial_sync::SubscriptionState::Uninitialized;
+        }
+    };
+
+    // FIXME: will subscribe return a new Results?
+    /* auto partial_results = */partial_sync::subscribe(*results, subscription_name, cb);
+    //return_value.set(ResultsClass<T>::create_instance(ctx, partial_results));
 }
 
 template<typename T>
