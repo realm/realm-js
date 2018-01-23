@@ -87,7 +87,9 @@ struct ResultsClass : ClassDefinition<T, realm::js::Results<T>, CollectionClass<
     static void filtered(ContextType, ObjectType, Arguments, ReturnValue &);
     static void sorted(ContextType, ObjectType, Arguments, ReturnValue &);
     static void is_valid(ContextType, ObjectType, Arguments, ReturnValue &);
+#if REALM_ENABLE_SYNC
     static void subscribe(ContextType, ObjectType, Arguments, ReturnValue &);
+#endif
 
     static void index_of(ContextType, ObjectType, Arguments, ReturnValue &);
 
@@ -259,37 +261,30 @@ void ResultsClass<T>::is_valid(ContextType ctx, ObjectType this_object, Argument
     return_value.set(get_internal<T, ResultsClass<T>>(this_object)->is_valid());
 }
 
+#if REALM_ENABLE_SYNC
 template<typename T>
 void ResultsClass<T>::subscribe(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
     args.validate_maximum(1);
 
-    std::string subscription_name = nullptr;
-    if (args.count == 1) {
-        subscription_name = Value::validated_to_string(ctx, args[0]);
+    auto results = get_internal<T, ResultsClass<T>>(this_object);
+    auto realm = results->get_realm();
+    auto sync_config = realm->config().sync_config;
+    if (!sync_config || !sync_config->is_partial) {
+        throw std::logic_error("A partial sync query can only be registered in a partially synced Realm.");
     }
 
-    auto results = get_internal<T, ResultsClass<T>>(this_object);
-    results->m_partial_sync_state = partial_sync::SubscriptionState::Undefined;
+    util::Optional<std::string> subscription_name;
+    if (args.count == 1) {
+        subscription_name = util::Optional<std::string>(Value::validated_to_string(ctx, args[0]));
+    }
+    else {
+        subscription_name = util::none;
+    }
 
-    Protected<ObjectType> protected_this(ctx, this_object);
-    Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
-    auto cb = [=](bool updated_remote, std::exception_ptr err) {
-        HANDLESCOPE
-
-        auto protected_results = get_internal<T, ResultsClass<T>>(protected_this);
-        if (err) {
-            // FIXME: maybe write error message to log
-            protected_results->m_partial_sync_state = partial_sync::SubscriptionState::Error;
-        }
-        else {
-            protected_results->m_partial_sync_state = updated_remote ? partial_sync::SubscriptionState::Initialized : partial_sync::SubscriptionState::Uninitialized;
-        }
-    };
-
-    // FIXME: will subscribe return a new Results?
-    /* auto partial_results = */partial_sync::subscribe(*results, subscription_name, cb);
-    //return_value.set(ResultsClass<T>::create_instance(ctx, partial_results));
+    results->subscribe(subscription_name);
+    return_value.set_undefined();
 }
+#endif
 
 template<typename T>
 template<typename Fn>
