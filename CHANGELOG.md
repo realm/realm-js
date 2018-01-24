@@ -1,3 +1,17 @@
+X.Y.Z Release notes
+=============================================================
+### Breaking changes
+* None.
+
+### Enhancements
+* None.
+
+### Bug fixes
+* [Object Server] Fixed a typing error leading to `_getExistingUser` wasn't defined in the Chrome debugging support library (#1625).
+
+### Internal
+* None.
+
 2.2.4 Release notes (2018-1-18)
 =============================================================
 ### Breaking changes
