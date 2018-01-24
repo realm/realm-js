@@ -162,6 +162,11 @@ declare namespace Realm {
         sorted(descriptor: string, reverse?: boolean): Results<T>;
 
         /**
+         * @returns Results<T>
+         */
+        subscribe<T>(subscriptionName?: string): Realm.Results<T>;
+
+        /**
          * @returns Results
          */
         snapshot(): Results<T>;
@@ -593,11 +598,6 @@ declare class Realm {
      * @returns boolean
      */
     compact(): boolean;
-
-    /**
-     * @returns Promise<Results<T>>
-     */
-    subscribeToObjects<T>(objectType: string, query: string): Promise<Realm.Results<T>>;
 }
 
 declare module 'realm' {

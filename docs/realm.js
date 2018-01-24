@@ -241,17 +241,6 @@ class Realm {
      * @returns {true} if compaction succeeds.
      */
     compact() {}
-
-    /**
-     * If the Realm is a partially synchronized Realm, fetch and synchronize the objects
-     * of a given object type that match the given query (in string format).
-     *
-     * **Partial synchronization is a tech preview. Its APIs are subject to change.**
-     * @param {Realm~ObjectType} type - The type of Realm objects to retrieve.
-     * @param {string} query - Query used to filter objects.
-     * @return {Promise} - a promise that will be resolved with the Realm.Results instance when it's available.
-     */
-    subscribeToObjects(className, query, callback) {}
 }
 
 /**

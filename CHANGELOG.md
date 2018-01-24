@@ -1,10 +1,10 @@
 X.Y.Z Release notes
 =============================================================
 ### Breaking changes
-* None.
+* Removed `Realm.subscribeToObjects()`; use `Realm.Results.subscribe()` instead.
 
 ### Enhancements
-* None.
+* [Object Server] Added method `Realm.Results.subscribe()` and extra properties to listener's `changes` argument. All query features introduced in version 2.2.0 are supported by `subscribe()`.
 
 ### Bug fixes
 * [Object Server] Fixed a typing error leading to `_getExistingUser` wasn't defined in the Chrome debugging support library (#1625).
