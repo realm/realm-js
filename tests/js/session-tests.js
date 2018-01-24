@@ -542,12 +542,17 @@ module.exports = {
                     schema: [{ name: 'Dog', properties: { name: 'string' } }],
                 };
 
-                const realm = new Realm(config);
-                return new Promise((resolve, reject) => {
-                    realm.syncSession.addProgressNotification('download', 'reportIndefinitely', resolve);
-                    setTimeout(function() {
-                        reject("Progress Notifications API failed to call progress callback for Realm constructor");
-                    }, 5000);
+                return Realm.open(config).then((realm) => {
+                    return new Promise((resolve, reject) => {
+                        realm.syncSession.addProgressNotification('download', 'reportIndefinitely', (transferred, transferable) => {
+                            if (transferred === transferable) {
+                                resolve();
+                            }
+                        });
+                        setTimeout(function() {
+                            reject("Progress Notifications API failed to call progress callback for Realm constructor");
+                        }, 5000);
+                    });
                 });
             });
     },*/
@@ -598,8 +603,8 @@ module.exports = {
                                 unregisterFunc();
 
                                 //use second callback to wait for sync finished
-                                realm.syncSession.addProgressNotification('upload', 'reportIndefinitely', (x, y) => {
-                                    if (x === y) {
+                                realm.syncSession.addProgressNotification('upload', 'reportIndefinitely', (transferred, transferable) => {
+                                    if (transferred === transferable) {
                                         resolve();
                                     }
                                 });

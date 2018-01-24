@@ -1,3 +1,62 @@
+X.Y.Z Release notes
+=============================================================
+### Breaking changes
+* None.
+
+### Enhancements
+* None.
+
+### Bug fixes
+* [Object Server] Fixed a typing error leading to `_getExistingUser` wasn't defined in the Chrome debugging support library (#1625).
+
+### Internal
+* None.
+
+2.2.4 Release notes (2018-1-18)
+=============================================================
+### Breaking changes
+* None.
+
+### Enhancements
+* None.
+
+### Bug fixes
+* [Object Server] Fixed a bug where errors in `refreshAdminToken` wasn't catched (#1627).
+* [Object Server] Added `_getExitingUser` to the Chrome debugging support library.
+
+### Internal
+* None.
+
+2.2.3 Release notes (2018-1-17)
+=============================================================
+### Breaking changes
+* None.
+
+### Enhancements
+* None.
+
+### Bug fixes
+* [Object Server] Fixed a bug in upload progress reporting.
+* [Object Server] Fixed a bug where any errors which occurred when trying to sync the admin Realm were ignored, which made attempting to add a listener with an invalid admin user silently do nothing.
+
+### Internal
+* None.
+
+2.2.2 Release notes (2018-1-16)
+=============================================================
+### Breaking changes
+* None.
+
+### Enhancements
+* None.
+
+### Bug fixes
+* [Object Server] Added missing `Realm.Sync` listener functions.
+
+### Internal
+* None.
+
+
 2.2.1 Release notes (2018-1-13)
 =============================================================
 ### Breaking changes
