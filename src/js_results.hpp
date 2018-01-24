@@ -282,7 +282,7 @@ void ResultsClass<T>::subscribe(ContextType ctx, ObjectType this_object, Argumen
     }
 
     results->subscribe(subscription_name);
-    return_value.set_undefined();
+    return_value.set(this_object);
 }
 #endif
 

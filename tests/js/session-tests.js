@@ -702,7 +702,7 @@ module.exports = {
             });
     },
 
-    testPartialSync() {
+    testPartialSyncAnonymous() {
         // FIXME: try to enable for React Native
         if (!isNodeProccess) {
             return;
@@ -727,8 +727,7 @@ module.exports = {
                     Realm.deleteFile(config);
                     const realm = new Realm(config);
                     TestCase.assertEqual(realm.objects('Dog').length, 0);
-                    var results = realm.objects('Dog').filtered("name == 'Lassy 1'");
-                    results.subscribe();
+                    var results = realm.objects('Dog').filtered("name == 'Lassy 1'").subscribe();
                     return new Promise((resolve, reject) => {
                         results.addListener((collection, changeset) => {
                             if (changeset.partial_sync.new_state == Realm.Sync.SubscriptionState.Initialized) {
@@ -743,6 +742,96 @@ module.exports = {
                     });
                 })
             })
+    },
+
+    testPartialSyncMultipleSubscriptions() {
+        // FIXME: try to enable for React Native
+        if (!isNodeProccess) {
+            return;
+        }
+
+        const username = uuid();
+        const realmName = uuid();
+
+        return runOutOfProcess(__dirname + '/download-api-helper.js', username, realmName, REALM_MODULE_PATH)
+            .then(() => {
+                return Realm.Sync.User.login('http://localhost:9080', username, 'password').then(user => {
+                    let config = {
+                        sync: {
+                            user: user,
+                            url: `realm://localhost:9080/~/${realmName}`,
+                            partial: true,
+                            error: (session, error) => console.log(error)
+                        },
+                        schema: [{ name: 'Dog', properties: { name: 'string' } }]
+                    };
+
+                    Realm.deleteFile(config);
+                    const realm = new Realm(config);
+                    TestCase.assertEqual(realm.objects('Dog').length, 0);
+                    var results1 = realm.objects('Dog').filtered("name == 'Lassy 1'").subscribe();
+                    var results2 = realm.objects('Dog').filtered("name == 'Lassy 2'").subscribe();
+
+                    return new Promise((resolve, reject) => {
+                        let called1 = false;
+                        let called2 = false;
+                        results1.addListener((collection, changeset) => {
+                            if (changeset.partial_sync.new_state == Realm.Sync.SubscriptionState.Initialized) {
+                                TestCase.assertEqual(collection.length, 1);
+                                TestCase.assertTrue(collection[0].name === 'Lassy 1', "The object is not synced correctly");
+                                called1 = true;
+                                if (called1 && called2) {
+                                    resolve();
+                                }
+                            }
+                        });
+                        results2.addListener((collection, changeset) => {
+                            if (changeset.partial_sync.new_state == Realm.Sync.SubscriptionState.Initialized) {
+                                TestCase.assertEqual(collection.length, 1);
+                                TestCase.assertTrue(collection[0].name === 'Lassy 2', "The object is not synced correctly");
+                                called2 = true;
+                                if (called1 && called2) {
+                                    resolve();
+                                }
+                            }
+                        });
+
+                        setTimeout(function() {
+                             reject("listener never called");
+                        }, 5000);
+                    });
+                })
+            })
+    },
+
+    testPartialSyncFailing() {
+        // FIXME: try to enable for React Native
+        if (!isNodeProccess) {
+            return;
+        }
+
+        const username = uuid();
+        const realmName = uuid();
+
+        return runOutOfProcess(__dirname + '/download-api-helper.js', username, realmName, REALM_MODULE_PATH)
+            .then(() => {
+                return Realm.Sync.User.login('http://localhost:9080', username, 'password').then(user => {
+                    let config = {
+                        sync: {
+                            user: user,
+                            url: `realm://localhost:9080/~/${realmName}`,
+                            partial: false, // <---- calling subscribe should fail
+                            error: (session, error) => console.log(error)
+                        },
+                        schema: [{ name: 'Dog', properties: { name: 'string' } }]
+                    };
+
+                    Realm.deleteFile(config);
+                    const realm = new Realm(config);
+                    TestCase.assertEqual(realm.objects('Dog').length, 0);
+                    TestCase.assertThrows(function () { var results = realm.objects('Dog').filtered("name == 'Lassy 1'").subscribe(); } );
+                });
+            });
     },
 
 /*    testPartialSyncListener() {
