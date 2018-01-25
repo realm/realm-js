@@ -44,6 +44,11 @@
       ],
       "include_dirs": [
         "src"
+      ],
+      "conditions": [
+        ["runtime=='electron'", {
+          "dependencies": [ "OpenSSL" ]
+        }]
       ]
     },
     {
