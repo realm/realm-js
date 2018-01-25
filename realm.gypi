@@ -190,9 +190,6 @@
           }
         }, {
           "dependencies": [ "vendored-realm" ]
-        }],
-        ["runtime=='electron'", {
-          "dependencies": [ "OpenSSL" ]
         }]
       ]
     },
@@ -226,9 +223,6 @@
           }
         }, {
           "dependencies": [ "vendored-realm" ]
-        }],
-        ["runtime=='electron'", {
-          "dependencies": [ "OpenSSL" ]
         }]
       ],
     },
