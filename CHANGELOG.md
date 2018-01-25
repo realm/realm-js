@@ -8,6 +8,7 @@ X.Y.Z Release notes
 
 ### Bug fixes
 * [Object Server] Fixed a typing error leading to `_getExistingUser` wasn't defined in the Chrome debugging support library (#1625).
+* [Electron] Fixed a `dlopen` error related to OpenSSL that prevented using realm-js on Linux (#1636).
 
 ### Internal
 * None.
