@@ -1,3 +1,17 @@
+X.Y.Z  Release notes (2018-1-25)
+=============================================================
+### Breaking changes
+* None.
+
+### Enhancements
+* None.
+
+### Bug fixes
+* [Object Server] Fixed a bug where arguments were not transferred when debugging.
+
+### Internal
+* None.
+
 2.2.5 Release notes (2018-1-25)
 =============================================================
 ### Breaking changes
