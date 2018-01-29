@@ -1029,6 +1029,18 @@ module.exports = {
         TestCase.assertTrue(realm1.compact());
     },
 
+    testNumberOfVersions: function() {
+        const realm1 = new Realm({schema: [schemas.StringOnly]});
+        const realm2 = new Realm({schema: [schemas.StringOnly]});
+
+        realm1.write(() => {
+            realm1.create('StringOnlyObject', { stringCol: 'A' });
+        });
+
+        TestCase.assertEqual(realm1._numberOfVersions, 2);
+        TestCase.assertEqual(realm2._numberOfVersions, 2);
+    },
+
     testRealmDeleteFileDefaultConfigPath: function() {
         const config = {schema: [schemas.TestObject]};
         const realm = new Realm(config);
