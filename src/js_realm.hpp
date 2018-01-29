@@ -199,6 +199,7 @@ public:
     static void get_read_only(ContextType, ObjectType, ReturnValue &);
     static void get_is_in_transaction(ContextType, ObjectType, ReturnValue &);
     static void get_is_closed(ContextType, ObjectType, ReturnValue &);
+    static void get_number_of_versions(ContextType, ObjectType, ReturnValue &);
 #if REALM_ENABLE_SYNC
     static void get_sync_session(ContextType, ObjectType, ReturnValue &);
 #endif
@@ -261,6 +262,7 @@ public:
         {"readOnly", {wrap<get_read_only>, nullptr}},
         {"isInTransaction", {wrap<get_is_in_transaction>, nullptr}},
         {"isClosed", {wrap<get_is_closed>, nullptr}},
+        {"_numberOfVersions", {wrap<get_number_of_versions>, nullptr}},
 #if REALM_ENABLE_SYNC
         {"syncSession", {wrap<get_sync_session>, nullptr}},
 #endif
@@ -705,6 +707,11 @@ void RealmClass<T>::get_is_in_transaction(ContextType ctx, ObjectType object, Re
 template<typename T>
 void RealmClass<T>::get_is_closed(ContextType ctx, ObjectType object, ReturnValue &return_value) {
     return_value.set(get_internal<T, RealmClass<T>>(object)->get()->is_closed());
+}
+
+template<typename T>
+void RealmClass<T>::get_number_of_versions(ContextType ctx, ObjectType object, ReturnValue &return_value) {
+    return_value.set(static_cast<int32_t>(get_internal<T, RealmClass<T>>(object)->get()->get_number_of_versions()));
 }
 
 #if REALM_ENABLE_SYNC
