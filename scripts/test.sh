@@ -79,7 +79,7 @@ cleanup() {
 
   echo "shutting down running simulators"
   shutdown_ios_simulator >/dev/null 2>&1
-  
+
   # Quit Simulator.app to give it a chance to go down gracefully
   if $startedSimulator; then
     osascript -e 'tell app "Simulator" to quit without saving' || true
@@ -102,11 +102,11 @@ cleanup() {
   fi
 }
 
-open_chrome() { 
+open_chrome() {
   if [ $CONFIGURATION == 'Release' ]; then
     return;
   fi
-  
+
   local dir
   for dir in "$HOME/Applications" "/Applications"; do
     if [ -d "$dir/Google Chrome.app" ]; then
@@ -140,12 +140,12 @@ xctest() {
       echo "*** Failure (exit code $EXITCODE). ***"
       exit $EXITCODE
   }
-  
+
   echo "Installing application on ${SIM_DEVICE_NAME}"
   echo "Application Path" $(pwd)/build/Build/Products/$CONFIGURATION-iphonesimulator/$1.app
   xcrun simctl install ${SIM_DEVICE_NAME} $(pwd)/build/Build/Products/$CONFIGURATION-iphonesimulator/$1.app
-  
-  
+
+
   echo "Launching application. (output is in $(pwd)/build/out.txt)"
   xcrun simctl launch --console ${SIM_DEVICE_NAME} io.realm.$1 | tee $(pwd)/build/out.txt
 
@@ -165,7 +165,7 @@ check_test_results() {
   fi
 }
 
-setup_ios_simulator() { 
+setup_ios_simulator() {
   #try deleting old simulator with same name.
   echo "Preparing to create a new simulator"
   delete_ios_simulator >/dev/null 2>&1
@@ -180,12 +180,12 @@ setup_ios_simulator() {
   xcrun simctl boot ${SIM_DEVICE_NAME}
 }
 
-shutdown_ios_simulator() { 
+shutdown_ios_simulator() {
   #shutdown test simulator
   xcrun simctl shutdown ${SIM_DEVICE_NAME} || true
 }
 
-delete_ios_simulator() { 
+delete_ios_simulator() {
   shutdown_ios_simulator
 
   #delete test simulator
@@ -309,7 +309,7 @@ case "$TARGET" in
   echo "********* TESTS COMPLETED *********";
   echo "********* File location: $(pwd)/tests.xml *********";
   cat tests.xml
-  
+
   check_test_results ReactTests
   ;;
 "node")

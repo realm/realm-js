@@ -1,4 +1,18 @@
-X.Y.Z Release notes
+2.2.6 Release notes (2018-1-26)
+=============================================================
+### Breaking changes
+* None.
+
+### Enhancements
+* None.
+
+### Bug fixes
+* [Object Server] Fixed a bug where arguments were not transferred when debugging.
+
+### Internal
+* None.
+
+2.2.5 Release notes (2018-1-25)
 =============================================================
 ### Breaking changes
 * Removed `Realm.subscribeToObjects()`; use `Realm.Results.subscribe()` instead.
@@ -8,6 +22,8 @@ X.Y.Z Release notes
 
 ### Bug fixes
 * [Object Server] Fixed a typing error leading to `_getExistingUser` wasn't defined in the Chrome debugging support library (#1625).
+* Fixed a bug in the TypeScript definition of `PermissionCondition` (#1574).
+* [Electron] Fixed a `dlopen` error related to OpenSSL that prevented using realm-js on Linux (#1636).
 
 ### Internal
 * None.
