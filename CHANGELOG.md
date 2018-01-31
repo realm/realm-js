@@ -1,3 +1,20 @@
+2.3.0-alpha.1 Release notes (2018-1-31)
+=============================================================
+### Breaking changes
+* Sync protocol changed to version 24.
+* History schema format for server-side Realm files bumped to version 4. This means that after the server has been upgraded, it cannot be downgraded again without restoring state from backup.
+* Backup protocol version bumped to 2. No compatibility with earlier versions of the backup protocol is provided.
+
+### Enhancements
+* Reduced initial download times in Realms with long transaction histories.
+
+### Bug fixes
+* None.
+
+### Internal
+* Updated to Realm Sync 3.0.0-alpha.1.
+
+
 2.2.6 Release notes (2018-1-26)
 =============================================================
 ### Breaking changes
