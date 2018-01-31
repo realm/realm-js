@@ -1,4 +1,4 @@
-2.3.0 Release notes (2018-1-31)
+2.3.0-alpha.2 Release notes (2018-1-31)
 =============================================================
 ### Breaking changes
 * Sync protocol changed to version 24.
