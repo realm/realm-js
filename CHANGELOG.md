@@ -1,4 +1,4 @@
-2.3.0-alpha.1 Release notes (2018-1-31)
+2.3.0 Release notes (2018-1-31)
 =============================================================
 ### Breaking changes
 * Sync protocol changed to version 24.
@@ -12,7 +12,7 @@
 * None.
 
 ### Internal
-* Updated to Realm Sync 3.0.0-alpha.1.
+* Updated to Realm Sync 3.0.0-alpha.2.
 
 
 2.2.6 Release notes (2018-1-26)
