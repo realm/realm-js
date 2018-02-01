@@ -1,4 +1,4 @@
-2.3.0-alpha.2 Release notes (2018-1-31)
+2.3.0-alpha.3 Release notes (2018-2-1)
 =============================================================
 ### Breaking changes
 * Sync protocol changed to version 24.
@@ -7,6 +7,7 @@
 
 ### Enhancements
 * Reduced initial download times in Realms with long transaction histories.
+* Wait for pending notifications to complete when removing a sync listener (1648).
 
 ### Bug fixes
 * None.
