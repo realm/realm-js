@@ -1,3 +1,18 @@
+X.Y.Z Release notes
+=============================================================
+### Breaking changes
+* None.
+
+### Enhancements
+* [Object Server] Wait for pending notifications to complete when removing a sync listener (#1648).
+
+### Bug fixes
+* None.
+
+### Internal
+* None.
+
+
 2.2.6 Release notes (2018-1-26)
 =============================================================
 ### Breaking changes
