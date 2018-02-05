@@ -153,10 +153,10 @@ typename T::Object ResultsClass<T>::create_filtered(ContextType ctx, const U &co
     auto const &realm = collection.get_realm();
     auto const &object_schema = collection.get_object_schema();
 
-    parser::Predicate predicate = parser::parse(query_string);
+    parser::ParserResult result = parser::parse(query_string);
     NativeAccessor<T> accessor(ctx, realm, object_schema);
     query_builder::ArgumentConverter<ValueType, NativeAccessor<T>> converter(accessor, &args.value[1], args.count - 1);
-    query_builder::apply_predicate(query, predicate, converter);
+    query_builder::apply_predicate(query, result.predicate, converter);
 
     return create_instance(ctx, collection.filter(std::move(query)));
 }
