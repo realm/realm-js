@@ -707,6 +707,7 @@ module.exports = {
             });
     },
 
+    /* Disabled: waiting for new implementation
     testPartialSync() {
         // FIXME: try to enable for React Native
         if (!isNodeProccess) {
@@ -739,7 +740,7 @@ module.exports = {
                 })
             })
     },
-
+    */
     testClientReset() {
         // FIXME: try to enable for React Native
         if (!isNodeProccess) {
