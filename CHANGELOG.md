@@ -1,4 +1,4 @@
-2.3.0-alpha.3 Release notes (2018-2-1)
+2.3.0 Release notes (2018-2-5)
 =============================================================
 ### Breaking changes
 * Sync protocol changed to version 24.
@@ -8,12 +8,14 @@
 ### Enhancements
 * Reduced initial download times in Realms with long transaction histories.
 * Wait for pending notifications to complete when removing a sync listener (1648).
+* Further enhancements of the query parser.
 
 ### Bug fixes
 * None.
 
 ### Internal
-* Updated to Realm Sync 3.0.0-alpha.2.
+* Updated to Realm Core 5.2.0.
+* Updated to Realm Sync 3.0.0-alpha.3.
 * Tested against Realm Object Server 3.0.0-alpha.1.
 
 2.2.6 Release notes (2018-1-26)
