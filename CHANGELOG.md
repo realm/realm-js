@@ -1,4 +1,4 @@
-2.3.0 Release notes (2018-2-5)
+2.3.0 Release notes (2018-2-6)
 =============================================================
 ### Breaking changes
 * Sync protocol changed to version 24.
@@ -15,7 +15,7 @@
 
 ### Internal
 * Updated to Realm Core 5.2.0.
-* Updated to Realm Sync 3.0.0-alpha.3.
+* Updated to Realm Sync 3.0.0-alpha.4.
 * Tested against Realm Object Server 3.0.0-alpha.1.
 
 2.2.6 Release notes (2018-1-26)
