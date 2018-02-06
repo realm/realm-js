@@ -377,6 +377,27 @@
         ["ObjectSet", [1], "LinkTypesObject", "basicLink.dateCol == null"],
         ["ObjectSet", [0], "LinkTypesObject", "basicLink.dateCol != null"]
     ]
-}
+},
 
+"orderingTests" : {
+    "schema" : [
+        { "name": "Person",
+          "properties": [
+              {"name": "id", "type": "int"},
+              { "name": "name",  "type": "string" },
+              {"name": "age", "type": "int"}
+          ],
+          "primaryKey" : "id" }
+    ],
+    "objects": [
+        { "type": "Person", "value": [0, "John", 28] },
+        { "type": "Person", "value": [1, "John", 37] },
+        { "type": "Person", "value": [2, "Jake", 27] },
+        { "type": "Person", "value": [3, "Jake", 32] }
+    ],
+    "tests": [
+        ["ObjectSet", [1, 3],       "Person", "age > 20 SORT(age DESC) DISTINCT(name)"],
+        ["ObjectSet", [2, 0],       "Person", "age > 20 SORT(age ASC) DISTINCT(name)"]
+    ]
+}
 }
