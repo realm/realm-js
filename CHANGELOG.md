@@ -5,6 +5,7 @@
 
 ### Enhancements
 * [Object Server] Wait for pending notifications to complete when removing a sync listener (#1648).
+* Add schema name to missing primary key error message
 
 ### Bug fixes
 * [Object Server] Fixed a bug causing use-after-free crashes in Global Notifier (realm-js-private #405).
