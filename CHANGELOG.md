@@ -1,4 +1,4 @@
-X.Y.Z Release notes
+2.2.7 Release notes (2018-2-6)
 =============================================================
 ### Breaking changes
 * None.
@@ -7,7 +7,7 @@ X.Y.Z Release notes
 * [Object Server] Wait for pending notifications to complete when removing a sync listener (#1648).
 
 ### Bug fixes
-* None.
+* [Object Server] Fixed a bug causing use-after-free crashes in Global Notifier (realm-js-private #405).
 
 ### Internal
 * None.
