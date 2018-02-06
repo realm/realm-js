@@ -247,7 +247,7 @@ ObjectSchema Schema<T>::parse_object_schema(ContextType ctx, ObjectType object_s
         object_schema.primary_key = Value::validated_to_string(ctx, primary_value);
         Property *property = object_schema.primary_key_property();
         if (!property) {
-            throw std::runtime_error("Schema '" + object_schema.name + "' is missing primary key property '" + object_schema.primary_key + "'");
+            throw std::runtime_error("Schema with name '" + object_schema.name + "' is missing primary key property '" + object_schema.primary_key + "'");
         }
         property->is_primary = true;
     }
