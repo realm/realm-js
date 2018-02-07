@@ -21,6 +21,7 @@
 #include "js_collection.hpp"
 #include "js_realm_object.hpp"
 #include "js_util.hpp"
+#include "js_sync.hpp"
 
 #include "results.hpp"
 #include "list.hpp"
@@ -53,9 +54,6 @@ class Results : public realm::Results {
     using realm::Results::Results;
 
     std::vector<std::pair<Protected<typename T::Function>, NotificationToken>> m_notification_tokens;
-#if REALM_ENABLE_SYNC
-    partial_sync::SubscriptionState m_partial_sync_state;
-#endif
 };
 
 template<typename T>
@@ -283,8 +281,10 @@ void ResultsClass<T>::subscribe(ContextType ctx, ObjectType this_object, Argumen
         subscription_name = util::none;
     }
 
-    results->subscribe(subscription_name);
-    return_value.set(this_object);
+    std::cout << "HEST 1\n";
+    auto subscription = partial_sync::subscribe(*results, subscription_name);
+    std::cout << "HEST 2\n";
+    return_value.set(SubscriptionClass<T>::create_instance(ctx, std::move(subscription)));
 }
 #endif
 
@@ -360,13 +360,13 @@ void ResultsClass<T>::add_listener(ContextType ctx, U& collection, ObjectType th
     Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
 
     auto token = collection.add_notification_callback([=](CollectionChangeSet const& change_set, std::exception_ptr exception) {
-        HANDLESCOPE
-        ValueType arguments[] {
-            static_cast<ObjectType>(protected_this),
-            CollectionClass<T>::create_collection_change_set(protected_ctx, change_set)
-        };
-        Function<T>::callback(protected_ctx, protected_callback, protected_this, 2, arguments);
-    });
+            HANDLESCOPE
+            ValueType arguments[] {
+                static_cast<ObjectType>(protected_this),
+                CollectionClass<T>::create_collection_change_set(protected_ctx, change_set)
+            };
+            Function<T>::callback(protected_ctx, protected_callback, protected_this, 2, arguments);
+        });
     collection.m_notification_tokens.emplace_back(protected_callback, std::move(token));
 }
 

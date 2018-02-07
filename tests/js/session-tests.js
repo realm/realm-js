@@ -732,23 +732,30 @@ module.exports = {
                     Realm.deleteFile(config);
                     const realm = new Realm(config);
                     TestCase.assertEqual(realm.objects('Dog').length, 0);
-                    var results = realm.objects('Dog').filtered("name == 'Lassy 1'").subscribe();
+                    var results = realm.objects('Dog').filtered("name == 'Lassy 1'");
+                    var subscription = results.subscribe();
                     return new Promise((resolve, reject) => {
-                        results.addListener((collection, changeset) => {
-                            if (changeset.partial_sync.new_state == Realm.Sync.SubscriptionState.Initialized) {
-                                TestCase.assertEqual(collection.length, 1);
-                                TestCase.assertTrue(collection[0].name === 'Lassy 1', "The object is not synced correctly");
+                        console.log('HVAL 1');
+                        subscription.addListener((subscription, state) => {
+                            console.log('HVAL 2');
+                            if (state == Realm.Sync.SubscriptionState.Initialized) {
+                                console.log('HVAL 3');
+                                var partial_results = subscription.results;
+                                console.log('HVAL 4');
+                                TestCase.assertEqual(partial_sync.length, 1);
+                                TestCase.assertTrue(partial_sync[0].name === 'Lassy 1', "The object is not synced correctly");
                                 resolve();
                             }
                         });
+                        console.log('HVAL 5');
                         setTimeout(function() {
-                             reject("listener never called");
+                            reject("listener never called");
                         }, 5000);
                     });
                 })
             })
     },
-
+/*
     testPartialSyncMultipleSubscriptions() {
         // FIXME: try to enable for React Native
         if (!isNodeProccess) {
@@ -808,7 +815,7 @@ module.exports = {
                 })
             })
     },
-
+*/
     testPartialSyncFailing() {
         // FIXME: try to enable for React Native
         if (!isNodeProccess) {

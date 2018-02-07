@@ -24,7 +24,7 @@
 
 #include "collection_notifications.hpp"
 #if REALM_ENABLE_SYNC
-#include "subscription_state.hpp"
+#include "sync/subscription_state.hpp"
 #endif
 
 namespace realm {
@@ -42,7 +42,7 @@ struct CollectionClass : ClassDefinition<T, Collection, ObservableClass<T>> {
     using Value = js::Value<T>;
 
     std::string const name = "Collection";
-    
+
     static inline ValueType create_collection_change_set(ContextType ctx, const CollectionChangeSet &change_set);
 };
 
@@ -51,7 +51,7 @@ typename T::Value CollectionClass<T>::create_collection_change_set(ContextType c
 {
     ObjectType object = Object::create_empty(ctx);
     std::vector<ValueType> deletions, insertions, modifications;
-    
+
     if (change_set.deletions.count() == std::numeric_limits<size_t>::max()) {
         deletions.push_back(Value::from_null(ctx));
     }
@@ -61,27 +61,16 @@ typename T::Value CollectionClass<T>::create_collection_change_set(ContextType c
         }
     }
     Object::set_property(ctx, object, "deletions", Object::create_array(ctx, deletions));
-    
+
     for (auto index : change_set.insertions.as_indexes()) {
         insertions.push_back(Value::from_number(ctx, index));
     }
     Object::set_property(ctx, object, "insertions", Object::create_array(ctx, insertions));
-    
+
     for (auto index : change_set.modifications.as_indexes()) {
         modifications.push_back(Value::from_number(ctx, index));
     }
     Object::set_property(ctx, object, "modifications", Object::create_array(ctx, modifications));
-
-#if REALM_ENABLE_SYNC
-    // Partial sync brings a number of additional properties. They only make sense if partial sync is used
-    // but we don't have the information avaiable here.
-    ObjectType partial_sync = Object::create_empty(ctx);
-    Object::set_property(ctx, partial_sync, "error", Value::from_string(ctx, change_set.partial_sync_error_message));
-    Object::set_property(ctx, partial_sync, "old_state", Value::from_number(ctx, static_cast<double>(change_set.partial_sync_old_state)));
-    Object::set_property(ctx, partial_sync, "new_state", Value::from_number(ctx, static_cast<double>(change_set.partial_sync_new_state)));
-    
-    Object::set_property(ctx, object, "partial_sync", partial_sync);
-#endif
 
     return object;
 }

@@ -29,6 +29,7 @@
 #include "sync/sync_config.hpp"
 #include "sync/sync_session.hpp"
 #include "sync/sync_user.hpp"
+#include "sync/partial_sync.hpp"
 #include "realm/util/logger.hpp"
 #include "realm/util/uri.hpp"
 
@@ -554,6 +555,112 @@ void SessionClass<T>::override_server(ContextType ctx, ObjectType this_object, A
         session->override_server(std::move(address), uint16_t(port));
     }
 }
+
+template<typename T>
+class SubscriptionClass : public ClassDefinition<T, partial_sync::Subscription> {
+    using GlobalContextType = typename T::GlobalContext;
+    using ContextType = typename T::Context;
+    using FunctionType = typename T::Function;
+    using ObjectType = typename T::Object;
+    using ValueType = typename T::Value;
+    using String = js::String<T>;
+    using Object = js::Object<T>;
+    using Value = js::Value<T>;
+    using Function = js::Function<T>;
+    using ReturnValue = js::ReturnValue<T>;
+    using Arguments = js::Arguments<T>;
+
+public:
+    std::string const name = "Subscription";
+
+    static FunctionType create_constructor(ContextType);
+    static ObjectType create_instance(ContextType, partial_sync::Subscription);
+
+    static void get_results(ContextType, ObjectType, ReturnValue &);
+    static void get_state(ContextType, ObjectType, ReturnValue &);
+    static void get_error(ContextType, ObjectType, ReturnValue &);
+
+    static void add_listener(ContextType, ObjectType, Arguments, ReturnValue &);
+
+    PropertyMap<T> const properties = {
+        {"results", {wrap<get_results>, nullptr}},
+        {"state", {wrap<get_state>, nullptr}},
+        {"error", {wrap<get_error>, nullptr}}
+    };
+
+    MethodMap<T> const methods = {
+        {"addListener", wrap<add_listener>},
+    };
+};
+
+// FIXME: do we need a constructor?
+template<typename T>
+inline typename T::Function SubscriptionClass<T>::create_constructor(ContextType ctx) {
+    FunctionType subscription_constructor = ObjectWrap<T, SubscriptionClass<T>>::create_constructor(ctx);
+    return subscription_constructor;
+}
+
+template<typename T>
+typename T::Object SubscriptionClass<T>::create_instance(ContextType ctx, partial_sync::Subscription subscription) {
+    return create_object<T, SubscriptionClass<T>>(ctx, new partial_sync::Subscription(std::move(subscription)));
+}
+
+template<typename T>
+void SubscriptionClass<T>::get_results(ContextType ctx, ObjectType object, ReturnValue &return_value) {
+    auto subscription = get_internal<T, SubscriptionClass<T>>(object);
+    return_value.set(ResultsClass<T>::create_instance(ctx, subscription->results()));
+}
+
+template<typename T>
+void SubscriptionClass<T>::get_state(ContextType ctx, ObjectType object, ReturnValue &return_value) {
+    auto subscription = get_internal<T, SubscriptionClass<T>>(object);
+    return_value.set(static_cast<int8_t>(subscription->state()));
+}
+
+template<typename T>
+void SubscriptionClass<T>::get_error(ContextType ctx, ObjectType object, ReturnValue &return_value) {
+    auto subscription = get_internal<T, SubscriptionClass<T>>(object);
+    if (auto error = subscription->error()) {
+        try {
+            std::rethrow_exception(error);
+        }
+        catch (const std::exception& e) {
+            return_value.set(e.what());
+        }
+    }
+    else {
+        return_value.set_undefined();
+    }
+}
+
+template<typename T>
+void SubscriptionClass<T>::add_listener(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
+    args.validate_maximum(1);
+    std::cout << "FISK 1\n";
+    auto subscription = get_internal<T, SubscriptionClass<T>>(this_object);
+
+    auto callback = Value::validated_to_function(ctx, args[0]);
+    Protected<FunctionType> protected_callback(ctx, callback);
+    Protected<ObjectType> protected_this(ctx, this_object);
+    Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
+
+    auto cb = [=]() {
+        HANDLESCOPE
+
+        std::cout << "GED 0\n";
+        ValueType arguments[2];
+        arguments[0] = static_cast<ObjectType>(protected_this),
+        std::cout << "GED 1\n";
+        arguments[1] = Value::from_number(ctx, static_cast<double>(subscription->state()));
+        std::cout << "GED 2\n";
+        Function::callback(protected_ctx, protected_callback, protected_this, 2, arguments);
+        std::cout << "GED 3\n";
+    };
+    std::cout << "FISK 2\n";
+    subscription->add_notification_callback(std::move(cb));
+    std::cout << "FISK 3\n";
+}
+
 
 template<typename T>
 class SyncClass : public ClassDefinition<T, void*> {
