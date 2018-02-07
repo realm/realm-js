@@ -8,7 +8,12 @@
 ### Enhancements
 * Reduced initial download times in Realms with long transaction histories.
 * Wait for pending notifications to complete when removing a sync listener (1648).
-* Further enhancements of the query parser.
+* Enabled sort and distinct in the query string. If sort or distinct are also applied outside of the query string, the conditions are stacked.
+  - Example syntax: `age > 20 SORT(name ASC, age DESC) DISTINCT(name)`
+  - The ordering for sorting can be one of the following case insensitive literals: `ASC`, `ASCENDING`, `DESC`, `DESCENDING`.
+  - Any number of properties can appear inside the brackets in a comma separated list.
+  - Any number of sort/distinct conditions can be indicated, they will be applied in the specified order.
+  - Sort or distinct cannot operate independently, these conditions must be attached to at least one query filter.
 
 ### Bug fixes
 * None.

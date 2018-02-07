@@ -154,5 +154,8 @@ module.exports = {
     },
     testOptionalQueries: function() {
         runQuerySuite(testCases.optionalTests);
+    },
+    testOrderingQueries: function() {
+        runQuerySuite(testCases.orderingTests);
     }
 };
