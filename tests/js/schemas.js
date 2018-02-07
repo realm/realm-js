@@ -280,4 +280,20 @@ exports.LinkingObjectsObject = {
         links:          'LinkingObjectsObject[]',
         linkingObjects: {type: 'linkingObjects', objectType: 'LinkingObjectsObject', property: 'links'}
     }
-}
+};
+
+exports.ParentObject = {
+    name: 'ParentObject',
+    properties: {
+        id:            'int',
+        name:          'NameObject[]'
+    }
+};
+
+exports.NameObject = {
+    name: 'NameObject',
+    properties: {
+        family:       'string',
+        given:        'string[]'
+    }
+};

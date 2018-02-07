@@ -37,7 +37,7 @@ module.exports = {
             TestCase.assertInstanceOf(obj.list, Realm.List);
             TestCase.assertInstanceOf(obj.list, Realm.Collection);
         });
-        
+
         TestCase.assertThrowsContaining(() => new Realm.List(), 'constructor');
         TestCase.assertInstanceOf(Realm.List, Function);
     },
@@ -1222,5 +1222,52 @@ module.exports = {
                                         "JS value must be of type 'string', got (undefined)");
         TestCase.assertThrowsContaining(() => object.list.avg(),
                                         "JS value must be of type 'string', got (undefined)");
+    },
+
+    testListNested: function() {
+        const realm = new Realm({schema: [schemas.ParentObject, schemas.NameObject]});
+        realm.write(() => {
+            realm.create('ParentObject', {
+                id: 1,
+                name: [
+                    { family: 'Larsen', given: ['Hans', 'Jørgen'] },
+                    { family: 'Hansen', given: ['Ib'] }
+                ]
+            });
+            realm.create('ParentObject', {
+                id: 2,
+                name: [
+                    {family: 'Petersen', given: ['Gurli', 'Margrete'] }
+                ]
+            });
+        });
+
+        let objects = realm.objects('ParentObject');
+        TestCase.assertEqual(objects.length, 2);
+        TestCase.assertEqual(objects[0].name.length, 2);
+        TestCase.assertEqual(objects[0].name[0].given.length, 2);
+        TestCase.assertEqual(objects[0].name[0].given[0], 'Hans');
+        TestCase.assertEqual(objects[0].name[1].given.length, 1);
+
+
+        TestCase.assertEqual(objects[1].name.length, 1);
+        TestCase.assertEqual(objects[1].name[0].given.length, 2);
+        TestCase.assertEqual(objects[1].name[0].given[1], 'Margrete');
+    },
+
+    testListNestedFromJSON: function() {
+        let json = '{"id":1, "name": [{ "family": "Larsen", "given": ["Hans", "Jørgen"] }, { "family": "Hansen", "given": ["Ib"] }] }';
+        let parent = JSON.parse(json);
+        const realm = new Realm({schema: [schemas.ParentObject, schemas.NameObject]});
+        realm.write(() => {
+            realm.create('ParentObject', parent);
+        });
+
+        let objects = realm.objects('ParentObject');
+        TestCase.assertEqual(objects.length, 1);
+        TestCase.assertEqual(objects[0].name.length, 2);
+        TestCase.assertEqual(objects[0].name[0].given.length, 2);
+        TestCase.assertEqual(objects[0].name[0].given[0], 'Hans');
+        TestCase.assertEqual(objects[0].name[1].given.length, 1);
     },
 };
