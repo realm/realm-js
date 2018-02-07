@@ -1,3 +1,22 @@
+X.Y.Z Release notes
+=============================================================
+### Breaking changes
+* None.
+
+### Enhancements
+* Enabled sort and distinct in the query string. If sort or distinct are also applied outside of the query string, the conditions are stacked.
+  - Example syntax: `age > 20 SORT(name ASC, age DESC) DISTINCT(name)`
+  - The ordering for sorting can be one of the following case insensitive literals: `ASC`, `ASCENDING`, `DESC`, `DESCENDING`.
+  - Any number of properties can appear inside the brackets in a comma separated list.
+  - Any number of sort/distinct conditions can be indicated, they will be applied in the specified order.
+  - Sort or distinct cannot operate independently, these conditions must be attached to at least one query filter.
+
+### Bug fixes
+* None.
+
+### Internal
+* None.
+
 2.3.0 Release notes (2018-2-5)
 =============================================================
 ### Breaking changes
