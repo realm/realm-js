@@ -636,7 +636,6 @@ void SubscriptionClass<T>::get_error(ContextType ctx, ObjectType object, ReturnV
 template<typename T>
 void SubscriptionClass<T>::add_listener(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
     args.validate_maximum(1);
-    std::cout << "FISK 1\n";
     auto subscription = get_internal<T, SubscriptionClass<T>>(this_object);
 
     auto callback = Value::validated_to_function(ctx, args[0]);
@@ -644,21 +643,16 @@ void SubscriptionClass<T>::add_listener(ContextType ctx, ObjectType this_object,
     Protected<ObjectType> protected_this(ctx, this_object);
     Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
 
-    auto cb = [=]() {
+    auto token = subscription->add_notification_callback([=]() {
         HANDLESCOPE
 
-        std::cout << "GED 0\n";
         ValueType arguments[2];
         arguments[0] = static_cast<ObjectType>(protected_this),
-        std::cout << "GED 1\n";
         arguments[1] = Value::from_number(ctx, static_cast<double>(subscription->state()));
-        std::cout << "GED 2\n";
         Function::callback(protected_ctx, protected_callback, protected_this, 2, arguments);
-        std::cout << "GED 3\n";
-    };
-    std::cout << "FISK 2\n";
-    subscription->add_notification_callback(std::move(cb));
-    std::cout << "FISK 3\n";
+    });
+
+    //subscription.m_notification_tokens.emplace_back(protected_callback, std::move(token));
 }
 
 

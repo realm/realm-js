@@ -283,9 +283,7 @@ void ResultsClass<T>::subscribe(ContextType ctx, ObjectType this_object, Argumen
         subscription_name = util::none;
     }
 
-    std::cout << "HEST 1\n";
     auto subscription = partial_sync::subscribe(*results, subscription_name);
-    std::cout << "HEST 2\n";
     return_value.set(SubscriptionClass<T>::create_instance(ctx, std::move(subscription)));
 }
 #endif

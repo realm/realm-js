@@ -734,20 +734,25 @@ module.exports = {
                     TestCase.assertEqual(realm.objects('Dog').length, 0);
                     var results = realm.objects('Dog').filtered("name == 'Lassy 1'");
                     var subscription = results.subscribe();
+                    TestCase.assertEqual(subscription.state, Realm.Sync.SubscriptionState.Creating);
                     return new Promise((resolve, reject) => {
-                        console.log('HVAL 1');
-                        subscription.addListener((subscription, state) => {
-                            console.log('HVAL 2');
-                            if (state == Realm.Sync.SubscriptionState.Initialized) {
-                                console.log('HVAL 3');
+                        // FIXME: should this work?
+                        /*subscription.addListener((subscription, state) => {
+                            if (state == Realm.Sync.SubscriptionState.Complete) {
                                 var partial_results = subscription.results;
-                                console.log('HVAL 4');
                                 TestCase.assertEqual(partial_results.length, 1);
                                 TestCase.assertTrue(partial_results[0].name === 'Lassy 1', "The object is not synced correctly");
                                 resolve();
                             }
+                        });*/
+                        results.addListener((collection, changes) => {
+                            console.log('GED', subscription.state);
+                            if (subscription.state == Realm.Sync.SubscriptionState.Complete) {
+                                TestCase.assertEqual(collection.length, 1);
+                                TestCase.assertTrue(collection[0].name === 'Lassy 1', "The object is not synced correctly");
+                                resolve();
+                            }
                         });
-                        console.log('HVAL 5');
                         setTimeout(function() {
                             reject("listener never called");
                         }, 5000);
