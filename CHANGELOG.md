@@ -1,3 +1,19 @@
+2.2.7 Release notes (2018-2-6)
+=============================================================
+### Breaking changes
+* None.
+
+### Enhancements
+* [Object Server] Wait for pending notifications to complete when removing a sync listener (#1648).
+* Add schema name to missing primary key error message
+
+### Bug fixes
+* [Object Server] Fixed a bug causing use-after-free crashes in Global Notifier (realm-js-private #405).
+
+### Internal
+* None.
+
+
 2.2.6 Release notes (2018-1-26)
 =============================================================
 ### Breaking changes

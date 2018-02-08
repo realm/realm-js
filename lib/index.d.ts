@@ -422,7 +422,7 @@ declare namespace Realm.Sync {
     function addListener(serverURL: string, adminUser: Realm.Sync.User, regex: string, name: string, changeCallback: (changeEvent: ChangeEvent) => void): void;
     function addListener(serverURL: string, adminUser: Realm.Sync.User, regex: string, name: string, changeCallback: (changeEvent: ChangeEvent) => Promise<void>): void;
     function removeAllListeners(): Promise<void>;
-    function removeListener(regex: string, name: string, changeCallback: (changeEvent: ChangeEvent) => void): void;
+    function removeListener(regex: string, name: string, changeCallback: (changeEvent: ChangeEvent) => void): Promise<void>;
     function setLogLevel(logLevel: 'all' | 'trace' | 'debug' | 'detail' | 'info' | 'warn' | 'error' | 'fatal' | 'off'): void;
     function initiateClientReset(path: string): void;
     function setFeatureToken(token: string): void;
