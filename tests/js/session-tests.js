@@ -742,8 +742,8 @@ module.exports = {
                                 console.log('HVAL 3');
                                 var partial_results = subscription.results;
                                 console.log('HVAL 4');
-                                TestCase.assertEqual(partial_sync.length, 1);
-                                TestCase.assertTrue(partial_sync[0].name === 'Lassy 1', "The object is not synced correctly");
+                                TestCase.assertEqual(partial_results.length, 1);
+                                TestCase.assertTrue(partial_results[0].name === 'Lassy 1', "The object is not synced correctly");
                                 resolve();
                             }
                         });

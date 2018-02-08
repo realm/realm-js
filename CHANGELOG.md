@@ -1,3 +1,28 @@
+2.3.0 Release notes (2018-2-7)
+=============================================================
+### Breaking changes
+* Sync protocol changed to version 24.
+* History schema format for server-side Realm files bumped to version 4. This means that after the server has been upgraded, it cannot be downgraded again without restoring state from backup.
+* Backup protocol version bumped to 2. No compatibility with earlier versions of the backup protocol is provided.
+
+### Enhancements
+* Reduced initial download times in Realms with long transaction histories.
+* Wait for pending notifications to complete when removing a sync listener (1648).
+* Enabled sort and distinct in the query string. If sort or distinct are also applied outside of the query string, the conditions are stacked.
+  - Example syntax: `age > 20 SORT(name ASC, age DESC) DISTINCT(name)`
+  - The ordering for sorting can be one of the following case insensitive literals: `ASC`, `ASCENDING`, `DESC`, `DESCENDING`.
+  - Any number of properties can appear inside the brackets in a comma separated list.
+  - Any number of sort/distinct conditions can be indicated, they will be applied in the specified order.
+  - Sort or distinct cannot operate independently, these conditions must be attached to at least one query filter.
+
+### Bug fixes
+* None.
+
+### Internal
+* Updated to Realm Core 5.2.0.
+* Updated to Realm Sync 3.0.0-beta.1.
+* Tested against Realm Object Server 3.0.0-alpha.2.
+
 2.2.7 Release notes (2018-2-6)
 =============================================================
 ### Breaking changes
