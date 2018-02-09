@@ -1247,11 +1247,13 @@ module.exports = {
         TestCase.assertEqual(objects[0].name.length, 2);
         TestCase.assertEqual(objects[0].name[0].given.length, 2);
         TestCase.assertEqual(objects[0].name[0].given[0], 'Hans');
+        TestCase.assertEqual(objects[0].name[0].given[1], 'Jørgen')
         TestCase.assertEqual(objects[0].name[1].given.length, 1);
-
+        TestCase.assertEqual(objects[0].name[1].given[0], 'Ib');
 
         TestCase.assertEqual(objects[1].name.length, 1);
         TestCase.assertEqual(objects[1].name[0].given.length, 2);
+        TestCase.assertEqual(objects[1].name[0].given[0], 'Gurli');
         TestCase.assertEqual(objects[1].name[0].given[1], 'Margrete');
     },
 
@@ -1268,6 +1270,9 @@ module.exports = {
         TestCase.assertEqual(objects[0].name.length, 2);
         TestCase.assertEqual(objects[0].name[0].given.length, 2);
         TestCase.assertEqual(objects[0].name[0].given[0], 'Hans');
+        TestCase.assertEqual(objects[0].name[0].given[1], 'Jørgen');
+        
         TestCase.assertEqual(objects[0].name[1].given.length, 1);
+        TestCase.assertEqual(objects[0].name[1].given[0], 'Ib');
     },
 };
