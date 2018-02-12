@@ -24,6 +24,7 @@
 
 const Realm = require('realm');
 const TestCase = require('./asserts');
+let schemas = require('./schemas');
 
 const isNodeProccess = (typeof process === 'object' && process + '' === '[object process]');
 
@@ -398,6 +399,50 @@ module.exports = {
 
                 TestCase.assertEqual(session.config.error, config.sync.error);
                 session._simulateError(123, 'simulated error');
+            });
+        });
+    },
+
+    testListNestedSync() {
+        return Realm.Sync.User.register('http://localhost:9080', uuid(), 'password').then(user => {
+            return new Promise((resolve, _reject) => {
+                const config = { 
+                    schema: [schemas.ParentObject, schemas.NameObject],
+                    sync: { user, url: 'realm://localhost:9080/~/myrealm' } 
+                };
+                return Realm.open(config).then((realm) => {
+                        realm.write(() => {
+                            realm.create('ParentObject', {
+                            id: 1,
+                            name: [
+                                { family: 'Larsen', given: ['Hans', 'Jørgen'] },
+                                { family: 'Hansen', given: ['Ib'] }
+                            ]
+                        });
+                        realm.create('ParentObject', {
+                            id: 2,
+                            name: [
+                                {family: 'Petersen', given: ['Gurli', 'Margrete'] }
+                            ]
+                        });
+                    });
+
+                    let objects = realm.objects('ParentObject');
+                    TestCase.assertEqual(objects.length, 2);
+                    TestCase.assertEqual(objects[0].name.length, 2);
+                    TestCase.assertEqual(objects[0].name[0].given.length, 2);
+                    TestCase.assertEqual(objects[0].name[0].given[0], 'Hans');
+                    TestCase.assertEqual(objects[0].name[0].given[1], 'Jørgen')
+                    TestCase.assertEqual(objects[0].name[1].given.length, 1);
+                    TestCase.assertEqual(objects[0].name[1].given[0], 'Ib');
+
+                    TestCase.assertEqual(objects[1].name.length, 1);
+                    TestCase.assertEqual(objects[1].name[0].given.length, 2);
+                    TestCase.assertEqual(objects[1].name[0].given[0], 'Gurli');
+                    TestCase.assertEqual(objects[1].name[0].given[1], 'Margrete');
+
+                    resolve();
+                });
             });
         });
     },
