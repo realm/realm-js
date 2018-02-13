@@ -1,3 +1,18 @@
+X.Y.Z Release notes
+=============================================================
+### Breaking changes
+* None.
+
+### Enhancements
+* [Object Server] For OpenSSL, the sync client includes a fixed list of certificates in its SSL certificate verification besides the default trust store in the case where the user is not specifying its own trust certificates or callback.
+
+### Bug fixes
+* None.
+
+### Internaæ
+* Updated to Realm Sync 2.2.10.
+
+
 2.2.7 Release notes (2018-2-6)
 =============================================================
 ### Breaking changes
