@@ -404,47 +404,35 @@ module.exports = {
     },
 
     testListNestedSync() {
-        return Realm.Sync.User.register('http://localhost:9080', uuid(), 'password').then(user => {
-            return new Promise((resolve, _reject) => {
-                const config = { 
-                    schema: [schemas.ParentObject, schemas.NameObject],
-                    sync: { user, url: 'realm://localhost:9080/~/myrealm' } 
-                };
-                return Realm.open(config).then((realm) => {
-                        realm.write(() => {
-                            realm.create('ParentObject', {
-                            id: 1,
-                            name: [
-                                { family: 'Larsen', given: ['Hans', 'Jørgen'] },
-                                { family: 'Hansen', given: ['Ib'] }
-                            ]
-                        });
-                        realm.create('ParentObject', {
-                            id: 2,
-                            name: [
-                                {family: 'Petersen', given: ['Gurli', 'Margrete'] }
-                            ]
-                        });
+        if (!isNodeProccess) {
+            return;
+        }
+
+        const username = uuid();
+        const realmName = uuid();
+
+        return runOutOfProcess(__dirname + '/nested-list-helper.js', __dirname + '/schemas.js', username, realmName, REALM_MODULE_PATH)
+            .then(() => {
+                return Realm.Sync.User.login('http://localhost:9080', username, 'password').then(user => {
+                    return new Promise((resolve, reject) => {
+                        let config = {
+                            schema: [schemas.ParentObject, schemas.NameObject],
+                            sync: { user, url: `realm://localhost:9080/~/${realmName}` }
+                        };
+                        Realm.open(config).then(realm => {
+                            let objects = realm.objects('ParentObject');
+                            TestCase.assertEqual(objects.length, 25);
+                            for(let i = 0; i < 25; i++) {
+                                TestCase.assertEqual(objects[i].name.length, 1);
+                                TestCase.assertEqual(objects[i].name[0].given.length, 2);
+                                TestCase.assertEqual(objects[i].name[0].given[0], `Hans ${i}`);
+                                TestCase.assertEqual(objects[i].name[0].given[1], `Jørgen ${i}`);
+                            }
+                            resolve();
+                        }).catch(() => reject());
                     });
-
-                    let objects = realm.objects('ParentObject');
-                    TestCase.assertEqual(objects.length, 2);
-                    TestCase.assertEqual(objects[0].name.length, 2);
-                    TestCase.assertEqual(objects[0].name[0].given.length, 2);
-                    TestCase.assertEqual(objects[0].name[0].given[0], 'Hans');
-                    TestCase.assertEqual(objects[0].name[0].given[1], 'Jørgen')
-                    TestCase.assertEqual(objects[0].name[1].given.length, 1);
-                    TestCase.assertEqual(objects[0].name[1].given[0], 'Ib');
-
-                    TestCase.assertEqual(objects[1].name.length, 1);
-                    TestCase.assertEqual(objects[1].name[0].given.length, 2);
-                    TestCase.assertEqual(objects[1].name[0].given[0], 'Gurli');
-                    TestCase.assertEqual(objects[1].name[0].given[1], 'Margrete');
-
-                    resolve();
                 });
             });
-        });
     },
 
     testIncompatibleSyncedRealmOpen() {
