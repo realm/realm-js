@@ -124,4 +124,36 @@ module.exports = {
             TestCase.assertEqual(oliviersParents.length, 0);
         });
     },
+
+    testFilterByLinkingObject: function() {
+        const Realm = require('realm')
+
+        const ProductSchema = {
+            name: 'Product',
+            primaryKey:'productId',
+            properties: {
+                productId:'int',
+                product:'string',
+                combinations: {type: 'linkingObjects', objectType: 'Combination', property: 'products'}
+            }
+        }
+
+        const CombinationSchema = {
+            name: 'Combination',
+            properties: {
+                onSale: {type: 'string'},
+                products: {type: 'list', objectType:'Product'}
+            }
+        }
+
+        Realm.open({
+            schema: [ProductSchema, CombinationSchema]
+        }).then(function (realm) {
+            let queryFilter1 = 'onSale = "yes" AND products.productId = 1'
+            let data1 = realm.objects('Combination').filtered(queryFilter1)
+
+            let queryFilter2 = 'combinations.onSale = "yes" AND productId = 1'
+            let data2 = realm.objects('Product').filtered(queryFilter2)
+        })
+    },
 };

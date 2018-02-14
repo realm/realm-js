@@ -141,6 +141,23 @@ typename T::Object ResultsClass<T>::create_instance(ContextType ctx, SharedRealm
     return create_object<T, ResultsClass<T>>(ctx, new realm::js::Results<T>(realm, *table));
 }
 
+void alias_backlinks(parser::KeypathMapping &mapping, const realm::SharedRealm &realm)
+{
+    const realm::Schema &schema = realm->schema();
+    for (auto it = schema.begin(); it != schema.end(); ++it) {
+        for (const Property &property : it->computed_properties) {
+            if (property.type == realm::PropertyType::LinkingObjects) {
+                auto target_object_schema = schema.find(property.object_type);
+                auto link_property = target_object_schema->property_for_name(property.link_origin_property_name);
+                const TableRef table = ObjectStore::table_for_object_type(realm->read_group(), target_object_schema->name);
+                std::string native_name = "@links." + std::string(table->get_name()) + "." + property.link_origin_property_name;
+                //std::cout << "mapping named backlink: " << property.name << " to: " << native_name << std::endl;
+                mapping.add_mapping(table, property.name, native_backlink_name);
+            }
+        }
+    }
+}
+
 template<typename T>
 template<typename U>
 typename T::Object ResultsClass<T>::create_filtered(ContextType ctx, const U &collection, Arguments args) {
@@ -153,11 +170,13 @@ typename T::Object ResultsClass<T>::create_filtered(ContextType ctx, const U &co
     auto const &realm = collection.get_realm();
     auto const &object_schema = collection.get_object_schema();
     DescriptorOrdering ordering;
+    parser::KeypathMapping mapping;
+    alias_backlinks(mapping, realm);
 
     parser::ParserResult result = parser::parse(query_string);
     NativeAccessor<T> accessor(ctx, realm, object_schema);
     query_builder::ArgumentConverter<ValueType, NativeAccessor<T>> converter(accessor, &args.value[1], args.count - 1);
-    query_builder::apply_predicate(query, result.predicate, converter);
+    query_builder::apply_predicate(query, result.predicate, converter, mapping);
     query_builder::apply_ordering(ordering, query.get_table(), result.ordering);
 
     return create_instance(ctx, collection.filter(std::move(query)).apply_ordering(std::move(ordering)));
