@@ -4,6 +4,7 @@
 * Sync protocol changed to version 24.
 * History schema format for server-side Realm files bumped to version 4. This means that after the server has been upgraded, it cannot be downgraded again without restoring state from backup.
 * Backup protocol version bumped to 2. No compatibility with earlier versions of the backup protocol is provided.
+* `Realm.subscribeToObjects()` has been removed. Use `Realm.Results.subscribe()` instead.
 
 ### Enhancements
 * Reduced initial download times in Realms with long transaction histories.
@@ -14,6 +15,8 @@
   - Any number of properties can appear inside the brackets in a comma separated list.
   - Any number of sort/distinct conditions can be indicated, they will be applied in the specified order.
   - Sort or distinct cannot operate independently, these conditions must be attached to at least one query filter.
+* Added `Realm.Results.subscribe()` to subscribe to partial synced Realms.
+* Added class `Realm.Sync.Subscription` to support partial synced Realms.
 
 ### Internal
 * Updated to Realm Core 5.2.0.
