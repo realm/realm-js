@@ -1,22 +1,22 @@
 2.3.0 Release notes (2018-2-15)
 =============================================================
 ### Breaking changes
-* Sync protocol changed to version 24.
-* History schema format for server-side Realm files bumped to version 4. This means that after the server has been upgraded, it cannot be downgraded again without restoring state from backup.
-* Backup protocol version bumped to 2. No compatibility with earlier versions of the backup protocol is provided.
-* `Realm.subscribeToObjects()` has been removed. Use `Realm.Results.subscribe()` instead.
+* [Object Server] Sync protocol changed to version 24.
+* [Object Server] History schema format for server-side Realm files bumped to version 4. This means that after the server has been upgraded, it cannot be downgraded again without restoring state from backup.
+* [Object Server] Backup protocol version bumped to 2. No compatibility with earlier versions of the backup protocol is provided.
+* [Object Server] `Realm.subscribeToObjects()` has been removed. Use `Realm.Results.subscribe()` instead.
 
 ### Enhancements
-* Reduced initial download times in Realms with long transaction histories.
-* Wait for pending notifications to complete when removing a sync listener (1648).
+* [Object Server] Reduced initial download times in Realms with long transaction histories.
+* [Object Server] Wait for pending notifications to complete when removing a sync listener (1648).
 * Enabled sort and distinct in the query string. If sort or distinct are also applied outside of the query string, the conditions are stacked.
   - Example syntax: `age > 20 SORT(name ASC, age DESC) DISTINCT(name)`
   - The ordering for sorting can be one of the following case insensitive literals: `ASC`, `ASCENDING`, `DESC`, `DESCENDING`.
   - Any number of properties can appear inside the brackets in a comma separated list.
   - Any number of sort/distinct conditions can be indicated, they will be applied in the specified order.
   - Sort or distinct cannot operate independently, these conditions must be attached to at least one query filter.
-* Added `Realm.Results.subscribe()` to subscribe to partial synced Realms.
-* Added class `Realm.Sync.Subscription` to support partial synced Realms.
+* [Object Server] Added `Realm.Results.subscribe()` to subscribe to partial synced Realms.
+* [Object Server] Added class `Realm.Sync.Subscription` to support partial synced Realms.
 
 ### Internal
 * Updated to Realm Core 5.2.0.
@@ -70,10 +70,10 @@
 2.2.5 Release notes (2018-1-25)
 =============================================================
 ### Breaking changes
-* Removed `Realm.subscribeToObjects()`; use `Realm.Results.subscribe()` instead.
+* None.
 
 ### Enhancements
-* [Object Server] Added method `Realm.Results.subscribe()` and extra properties to listener's `changes` argument. All query features introduced in version 2.2.0 are supported by `subscribe()`.
+* None.
 
 ### Bug fixes
 * [Object Server] Fixed a typing error leading to `_getExistingUser` wasn't defined in the Chrome debugging support library (#1625).
