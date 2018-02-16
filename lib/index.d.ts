@@ -164,7 +164,7 @@ declare namespace Realm {
         /**
          * @returns Results<T>
          */
-        subscribe<T>(subscriptionName?: string): Realm.Results<T>;
+        subscribe(subscriptionName?: string): Realm.Sync.Subscription;
 
         /**
          * @returns Results
@@ -397,6 +397,20 @@ declare namespace Realm.Sync {
 
         addProgressNotification(direction: ProgressDirection, mode: ProgressMode, progressCallback: ProgressNotificationCallback): void;
         removeProgressNotification(progressCallback: ProgressNotificationCallback): void;
+    }
+
+    type SubscriptionNotificationCallback = (state: number) => void;
+
+    /**
+     * Subscription
+     * @see { @link https://realm.io/docs/javascript/latest/api/Realm.Sync.Subscription.html }
+     */
+    class Subscription {
+        readonly state: number;
+        readonly results: Realm.Results<T>;
+
+        addListener(subscruptionCallback: SubscriptionNotificationCallback): void;
+        removeListener(subscruptionCallback: SubscriptionNotificationCallback): void;
     }
 
     /**

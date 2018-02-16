@@ -737,22 +737,22 @@ module.exports = {
                     TestCase.assertEqual(subscription.state, Realm.Sync.SubscriptionState.Creating);
                     return new Promise((resolve, reject) => {
                         // FIXME: should this work?
-                        /*subscription.addListener((subscription, state) => {
+                        subscription.addListener((subscription, state) => {
                             if (state == Realm.Sync.SubscriptionState.Complete) {
                                 var partial_results = subscription.results;
                                 TestCase.assertEqual(partial_results.length, 1);
                                 TestCase.assertTrue(partial_results[0].name === 'Lassy 1', "The object is not synced correctly");
                                 resolve();
                             }
-                        });*/
-                        results.addListener((collection, changes) => {
-                            console.log('GED', subscription.state);
-                            if (subscription.state == Realm.Sync.SubscriptionState.Complete) {
-                                TestCase.assertEqual(collection.length, 1);
-                                TestCase.assertTrue(collection[0].name === 'Lassy 1', "The object is not synced correctly");
-                                resolve();
-                            }
                         });
+                        // results.addListener((collection, changes) => {
+                        //     console.log('GED', subscription.state);
+                        //     if (subscription.state == Realm.Sync.SubscriptionState.Complete) {
+                        //         TestCase.assertEqual(collection.length, 1);
+                        //         TestCase.assertTrue(collection[0].name === 'Lassy 1', "The object is not synced correctly");
+                        //         resolve();
+                        //     }
+                        // });
                         setTimeout(function() {
                             reject("listener never called");
                         }, 5000);

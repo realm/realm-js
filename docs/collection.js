@@ -148,7 +148,7 @@ class Collection {
      * });
      *
      * @param {string} subscriptionName - an optional name for the subscription.
-     * @return {Realm.Results<T>} - the Realm.Results instance.
+     * @returns {Realm.Sync.Subscription} - the Realm.Sync.Subscription instance.
      * @throws {Error} if the partial sync is not enabled in the configuration or the query is not supported by Realm Object Server.
      * @since 2.3.0
      */

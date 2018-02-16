@@ -557,7 +557,16 @@ void SessionClass<T>::override_server(ContextType ctx, ObjectType this_object, A
 }
 
 template<typename T>
-class SubscriptionClass : public ClassDefinition<T, partial_sync::Subscription> {
+class Subscription : public partial_sync::Subscription {
+public:
+    Subscription(partial_sync::Subscription s) : partial_sync::Subscription(std::move(s)) {}
+    Subscription(Subscription &&) = default;
+
+    std::vector<std::pair<Protected<typename T::Function>, partial_sync::SubscriptionNotificationToken>> m_notification_tokens;
+};
+
+template<typename T>
+class SubscriptionClass : public ClassDefinition<T, Subscription<T>> {
     using GlobalContextType = typename T::GlobalContext;
     using ContextType = typename T::Context;
     using FunctionType = typename T::Function;
@@ -581,6 +590,7 @@ public:
     static void get_error(ContextType, ObjectType, ReturnValue &);
 
     static void add_listener(ContextType, ObjectType, Arguments, ReturnValue &);
+    static void remove_listener(ContextType, ObjectType, Arguments, ReturnValue &);
 
     PropertyMap<T> const properties = {
         {"results", {wrap<get_results>, nullptr}},
@@ -590,25 +600,20 @@ public:
 
     MethodMap<T> const methods = {
         {"addListener", wrap<add_listener>},
+        {"removeListener", wrap<remove_listener>},
     };
 };
 
-// FIXME: do we need a constructor?
-template<typename T>
-inline typename T::Function SubscriptionClass<T>::create_constructor(ContextType ctx) {
-    FunctionType subscription_constructor = ObjectWrap<T, SubscriptionClass<T>>::create_constructor(ctx);
-    return subscription_constructor;
-}
-
 template<typename T>
 typename T::Object SubscriptionClass<T>::create_instance(ContextType ctx, partial_sync::Subscription subscription) {
-    return create_object<T, SubscriptionClass<T>>(ctx, new partial_sync::Subscription(std::move(subscription)));
+    return create_object<T, SubscriptionClass<T>>(ctx, new Subscription<T>(std::move(subscription)));
 }
 
 template<typename T>
 void SubscriptionClass<T>::get_results(ContextType ctx, ObjectType object, ReturnValue &return_value) {
     auto subscription = get_internal<T, SubscriptionClass<T>>(object);
-    return_value.set(ResultsClass<T>::create_instance(ctx, subscription->results()));
+    auto results = subscription->results();
+    return_value.set(ResultsClass<T>::create_instance(ctx, std::move(results)));
 }
 
 template<typename T>
@@ -652,7 +657,22 @@ void SubscriptionClass<T>::add_listener(ContextType ctx, ObjectType this_object,
         Function::callback(protected_ctx, protected_callback, protected_this, 2, arguments);
     });
 
-    //subscription.m_notification_tokens.emplace_back(protected_callback, std::move(token));
+    subscription->m_notification_tokens.emplace_back(protected_callback, std::move(token));
+}
+
+template<typename T>
+void SubscriptionClass<T>::remove_listener(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
+    args.validate_maximum(1);
+    auto subscription = get_internal<T, SubscriptionClass<T>>(this_object);
+
+    auto callback = Value::validated_to_function(ctx, args[0]);
+    auto protected_function = Protected<FunctionType>(ctx, callback);
+
+    auto& tokens = subscription->m_notification_tokens;
+    auto compare = [&](auto&& token) {
+        return typename Protected<FunctionType>::Comparator()(token.first, protected_function);
+    };
+    tokens.erase(std::remove_if(tokens.begin(), tokens.end(), compare), tokens.end());
 }
 
 
