@@ -294,6 +294,16 @@ exports.NameObject = {
     name: 'NameObject',
     properties: {
         family:       'string',
-        given:        'string[]'
+        given:        'string[]',
+        prefix:       'string[]'
+    }
+};
+
+exports.MultiListObject = {
+    name: 'MultiListObject',
+    properties: {
+        'id':         'int',
+        'list1':      'string[]',
+        'list2':      'string[]'
     }
 };

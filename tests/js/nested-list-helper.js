@@ -10,7 +10,6 @@ const realmModule = process.argv[5];
 
 const Realm = require(realmModule);
 let schemas = require(process.argv[2]);
-let n_objects = 25;
 
 function createObjects(user) {
     const config = {
@@ -24,17 +23,22 @@ function createObjects(user) {
     const realm = new Realm(config);
 
     realm.write(() => {
-        for(let i = 0; i < n_objects; i++) {
-            realm.create('ParentObject', {
-                id: i,
-                name: [
-                    { family: 'Larsen', given: [`Hans ${i}`, `Jørgen ${i}`] },
-                ]
-            });
-        }
+        realm.create('ParentObject', {
+            id: 1,
+            name: [
+                { family: 'Larsen', given: ['Hans', 'Jørgen'], prefix: [] },
+                { family: 'Hansen', given: ['Ib'], prefix: [] }
+            ]
+        });
+        realm.create('ParentObject', {
+            id: 2,
+            name: [
+                {family: 'Petersen', given: ['Gurli', 'Margrete'], prefix: [] }
+            ]
+        });
     });
 
-    console.log("Count " + realm.objects('ParentObject').length);
+    console.log("JSON: " + JSON.stringify(realm.objects('ParentObject')));
 
     let session = realm.syncSession;
     return new Promise((resolve, reject) => {
