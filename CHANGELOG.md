@@ -1,3 +1,18 @@
+X.Y.Z  Release notes (2018-2-13)
+=============================================================
+### Breaking changes
+* None.
+
+### Enhancements
+* None.
+
+### Bug fixes
+* Improved root certificate checking.
+
+### Internal
+* Updated to Realm Sync 2.2.11.
+
+
 2.2.8 Release notes (2018-2-13)
 =============================================================
 ### Breaking changes
