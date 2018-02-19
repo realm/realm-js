@@ -1,4 +1,4 @@
-2.3.0 Release notes (2018-2-13)
+2.3.0 Release notes (2018-2-19)
 =============================================================
 ### Breaking changes
 * Sync protocol changed to version 24.
@@ -15,13 +15,40 @@
   - Any number of sort/distinct conditions can be indicated, they will be applied in the specified order.
   - Sort or distinct cannot operate independently, these conditions must be attached to at least one query filter.
 
+### Internal
+* Updated to Realm Core 5.2.0.
+* Updated to Realm Sync 3.0.0-beta.5.
+* Tested against Realm Object Server 3.0.0-alpha.2.
+
+2.2.8 Release notes (2018-2-13)
+=============================================================
+### Breaking changes
+* None.
+
+### Enhancements
+* [Object Server] For OpenSSL, the sync client includes a fixed list of certificates in its SSL certificate verification besides the default trust store in the case where the user is not specifying its own trust certificates or callback.
+
 ### Bug fixes
 * None.
 
 ### Internal
-* Updated to Realm Core 5.2.0.
-* Updated to Realm Sync 3.0.0-beta.3.
-* Tested against Realm Object Server 3.0.0-alpha.2.
+* Updated to Realm Sync 2.2.10.
+
+
+2.2.7 Release notes (2018-2-6)
+=============================================================
+### Breaking changes
+* None.
+
+### Enhancements
+* [Object Server] Wait for pending notifications to complete when removing a sync listener (#1648).
+* Add schema name to missing primary key error message
+
+### Bug fixes
+* [Object Server] Fixed a bug causing use-after-free crashes in Global Notifier (realm-js-private #405).
+
+### Internal
+* None.
 
 2.2.6 Release notes (2018-1-26)
 =============================================================
