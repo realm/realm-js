@@ -707,7 +707,7 @@ module.exports = {
             });
     },
 
-    testPartialSyncAnonymous() {
+    testPartialSyncAnonymous_SubscriptionListener() {
         // FIXME: try to enable for React Native
         if (!isNodeProccess) {
             return;
@@ -736,23 +736,13 @@ module.exports = {
                     var subscription = results.subscribe();
                     TestCase.assertEqual(subscription.state, Realm.Sync.SubscriptionState.Creating);
                     return new Promise((resolve, reject) => {
-                        // FIXME: should this work?
                         subscription.addListener((subscription, state) => {
                             if (state == Realm.Sync.SubscriptionState.Complete) {
-                                var partial_results = subscription.results;
-                                TestCase.assertEqual(partial_results.length, 1);
-                                TestCase.assertTrue(partial_results[0].name === 'Lassy 1', "The object is not synced correctly");
+                                TestCase.assertEqual(results.length, 1);
+                                TestCase.assertTrue(results[0].name === 'Lassy 1', "The object is not synced correctly");
                                 resolve();
                             }
                         });
-                        // results.addListener((collection, changes) => {
-                        //     console.log('GED', subscription.state);
-                        //     if (subscription.state == Realm.Sync.SubscriptionState.Complete) {
-                        //         TestCase.assertEqual(collection.length, 1);
-                        //         TestCase.assertTrue(collection[0].name === 'Lassy 1', "The object is not synced correctly");
-                        //         resolve();
-                        //     }
-                        // });
                         setTimeout(function() {
                             reject("listener never called");
                         }, 5000);
@@ -760,7 +750,51 @@ module.exports = {
                 })
             })
     },
-/*
+
+    testPartialSyncAnonymous_ResultsListener() {
+        // FIXME: try to enable for React Native
+        if (!isNodeProccess) {
+            return;
+        }
+
+        const username = uuid();
+        const realmName = uuid();
+
+        return runOutOfProcess(__dirname + '/download-api-helper.js', username, realmName, REALM_MODULE_PATH)
+            .then(() => {
+                return Realm.Sync.User.login('http://localhost:9080', username, 'password').then(user => {
+                    let config = {
+                        sync: {
+                            user: user,
+                            url: `realm://localhost:9080/~/${realmName}`,
+                            partial: true,
+                            error: (session, error) => console.log(error)
+                        },
+                        schema: [{ name: 'Dog', properties: { name: 'string' } }]
+                    };
+
+                    Realm.deleteFile(config);
+                    const realm = new Realm(config);
+                    TestCase.assertEqual(realm.objects('Dog').length, 0);
+                    var results = realm.objects('Dog').filtered("name == 'Lassy 1'");
+                    var subscription = results.subscribe();
+                    TestCase.assertEqual(subscription.state, Realm.Sync.SubscriptionState.Creating);
+                    return new Promise((resolve, reject) => {
+                        results.addListener((collection, changes) => {
+                            if (subscription.state === Realm.Sync.SubscriptionState.Complete) {
+                                TestCase.assertEqual(collection.length, 1);
+                                TestCase.assertTrue(collection[0].name === 'Lassy 1', "The object is not synced correctly");
+                                resolve();
+                            }
+                        });
+                        setTimeout(function() {
+                            reject("listener never called");
+                        }, 5000);
+                    });
+                })
+            })
+    },
+
     testPartialSyncMultipleSubscriptions() {
         // FIXME: try to enable for React Native
         if (!isNodeProccess) {
@@ -786,14 +820,16 @@ module.exports = {
                     Realm.deleteFile(config);
                     const realm = new Realm(config);
                     TestCase.assertEqual(realm.objects('Dog').length, 0);
-                    var results1 = realm.objects('Dog').filtered("name == 'Lassy 1'").subscribe();
-                    var results2 = realm.objects('Dog').filtered("name == 'Lassy 2'").subscribe();
+                    var results1 = realm.objects('Dog').filtered("name == 'Lassy 1'");
+                    var results2 = realm.objects('Dog').filtered("name == 'Lassy 2'");
+                    var subscription1 = results1.subscribe();
+                    var subscription2 = results2.subscribe();
 
                     return new Promise((resolve, reject) => {
                         let called1 = false;
                         let called2 = false;
                         results1.addListener((collection, changeset) => {
-                            if (changeset.partial_sync.new_state == Realm.Sync.SubscriptionState.Initialized) {
+                            if (subscription1.state == Realm.Sync.SubscriptionState.Complete) {
                                 TestCase.assertEqual(collection.length, 1);
                                 TestCase.assertTrue(collection[0].name === 'Lassy 1', "The object is not synced correctly");
                                 called1 = true;
@@ -803,7 +839,7 @@ module.exports = {
                             }
                         });
                         results2.addListener((collection, changeset) => {
-                            if (changeset.partial_sync.new_state == Realm.Sync.SubscriptionState.Initialized) {
+                            if (subscription2.state == Realm.Sync.SubscriptionState.Complete) {
                                 TestCase.assertEqual(collection.length, 1);
                                 TestCase.assertTrue(collection[0].name === 'Lassy 2', "The object is not synced correctly");
                                 called2 = true;
@@ -820,7 +856,7 @@ module.exports = {
                 })
             })
     },
-*/
+
     testPartialSyncFailing() {
         // FIXME: try to enable for React Native
         if (!isNodeProccess) {
@@ -846,12 +882,12 @@ module.exports = {
                     Realm.deleteFile(config);
                     const realm = new Realm(config);
                     TestCase.assertEqual(realm.objects('Dog').length, 0);
-                    TestCase.assertThrows(function () { var results = realm.objects('Dog').filtered("name == 'Lassy 1'").subscribe(); } );
+                    TestCase.assertThrows(function () { var subscription = realm.objects('Dog').filtered("name == 'Lassy 1'").subscribe(); } );
                 });
             });
     },
 
-/*    testPartialSyncListener() {
+    testPartialSyncUnsubscribe() {
         // FIXME: try to enable for React Native
         if (!isNodeProccess) {
             return;
@@ -860,7 +896,7 @@ module.exports = {
         const username = uuid();
         const realmName = uuid();
 
-        return runOutOfProcess(__dirname + '/dowbload-api-helper.js', username, realmName, REALM_MODULE_PATH)
+        return runOutOfProcess(__dirname + '/download-api-helper.js', username, realmName, REALM_MODULE_PATH)
             .then(() => {
                 return Realm.Sync.User.login('http://localhost:9080', username, 'password').then(user => {
                     let config = {
@@ -875,25 +911,25 @@ module.exports = {
 
                     Realm.deleteFile(config);
                     const realm = new Realm(config);
-                    TestCase.assertEqual(realm.objects('Dog').length, 0);
-                    let results = realm.subscribeToObjects("Dog", "name == 'Lassy 1").then(results => {
-                        return results;
-                    });
+                    var results = realm.objects('Dog').filtered("name == 'Lassy 1'");
+                    var subscription = results.subscribe();
+                    TestCase.assertEqual(subscription.state, Realm.Sync.SubscriptionState.Creating);
                     return new Promise((resolve, reject) => {
-                        let calls = 0;
-                        results.addListener(function(collection, changes) {
-                            calls++;
-                            if (calls === 1) {
-                                TestCase.assertEqual(changes.partial_sync.new_state, Realm.Sync.SubscriptionState.Uninitialized);
-                            } else {
-                                TestCase.assertEqual(changes.partial_sync.new_state, Realm.Sync.SubscriptionState.Initialized);
+                        results.addListener((collection, changes) => {
+                            if (subscription.state === Realm.Sync.SubscriptionState.Complete) {
+                                subscription.unsubscribe();
+                            }
+                            if (subscription.state === Realm.Sync.SubscriptionState.Invalidated) {
                                 resolve();
                             }
-                        })
-                    })
-                })
-            })
-    },*/
+                        });
+                        setTimeout(function() {
+                            reject("listener never called");
+                        }, 5000);
+                    });
+                });
+            });
+    },
 
     testClientReset() {
         // FIXME: try to enable for React Native

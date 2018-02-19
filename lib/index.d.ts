@@ -407,8 +407,9 @@ declare namespace Realm.Sync {
      */
     class Subscription {
         readonly state: number;
-        readonly results: Realm.Results<T>;
+        readonly error: string;
 
+        unsubscribe(): void;
         addListener(subscruptionCallback: SubscriptionNotificationCallback): void;
         removeListener(subscruptionCallback: SubscriptionNotificationCallback): void;
     }

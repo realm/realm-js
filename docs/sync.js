@@ -486,10 +486,16 @@ class Subscription {
     get state() {}
 
     /**
-     * Gets the Realm.Results matching the query.
-     * @type {Realm.Results}
+     * Gets the error message. `undefined` if no error.
+     * @type {string}
      */
-    get results() {}
+    get error() {}
+
+    /**
+     * Unsubscribe a partial synced `Realm.Results`. The state will change to `Realm.Sync.SubscriptionState.Invalidated`.
+     * The `Realm.Results` will not produce any meaningful values.
+     */
+    unsubscribe() {}
 
     /**
      * Adds a listener `callback` which will be called when the state of the subscription changes.

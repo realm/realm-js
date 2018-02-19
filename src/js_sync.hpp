@@ -585,20 +585,20 @@ public:
     static FunctionType create_constructor(ContextType);
     static ObjectType create_instance(ContextType, partial_sync::Subscription);
 
-    static void get_results(ContextType, ObjectType, ReturnValue &);
     static void get_state(ContextType, ObjectType, ReturnValue &);
     static void get_error(ContextType, ObjectType, ReturnValue &);
 
+    static void unsubscribe(ContextType, ObjectType, Arguments, ReturnValue &);
     static void add_listener(ContextType, ObjectType, Arguments, ReturnValue &);
     static void remove_listener(ContextType, ObjectType, Arguments, ReturnValue &);
 
     PropertyMap<T> const properties = {
-        {"results", {wrap<get_results>, nullptr}},
         {"state", {wrap<get_state>, nullptr}},
         {"error", {wrap<get_error>, nullptr}}
     };
 
     MethodMap<T> const methods = {
+        {"unsubscribe", wrap<unsubscribe>},
         {"addListener", wrap<add_listener>},
         {"removeListener", wrap<remove_listener>},
     };
@@ -607,13 +607,6 @@ public:
 template<typename T>
 typename T::Object SubscriptionClass<T>::create_instance(ContextType ctx, partial_sync::Subscription subscription) {
     return create_object<T, SubscriptionClass<T>>(ctx, new Subscription<T>(std::move(subscription)));
-}
-
-template<typename T>
-void SubscriptionClass<T>::get_results(ContextType ctx, ObjectType object, ReturnValue &return_value) {
-    auto subscription = get_internal<T, SubscriptionClass<T>>(object);
-    auto results = subscription->results();
-    return_value.set(ResultsClass<T>::create_instance(ctx, std::move(results)));
 }
 
 template<typename T>
@@ -636,6 +629,14 @@ void SubscriptionClass<T>::get_error(ContextType ctx, ObjectType object, ReturnV
     else {
         return_value.set_undefined();
     }
+}
+
+template<typename T>
+void SubscriptionClass<T>::unsubscribe(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
+    args.validate_maximum(0);
+    auto subscription = get_internal<T, SubscriptionClass<T>>(this_object);
+    partial_sync::unsubscribe(*subscription);
+    return_value.set_undefined();
 }
 
 template<typename T>
