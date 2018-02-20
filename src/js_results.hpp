@@ -21,7 +21,6 @@
 #include "js_collection.hpp"
 #include "js_realm_object.hpp"
 #include "js_util.hpp"
-#include "js_sync.hpp"
 
 #include "results.hpp"
 #include "list.hpp"
@@ -31,6 +30,7 @@
 #include <realm/parser/query_builder.hpp>
 #include <realm/util/optional.hpp>
 #ifdef REALM_ENABLE_SYNC
+#include "js_sync.hpp"
 #include "sync/partial_sync.hpp"
 #endif
 
