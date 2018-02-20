@@ -1,3 +1,33 @@
+2.2.9 Release notes (2018-2-19)
+=============================================================
+### Breaking changes
+* None.
+
+### Enhancements
+* None.
+
+### Bug fixes
+* Improved root certificate checking.
+
+### Internal
+* Updated to Realm Sync 2.2.11.
+
+
+2.2.8 Release notes (2018-2-13)
+=============================================================
+### Breaking changes
+* None.
+
+### Enhancements
+* [Object Server] For OpenSSL, the sync client includes a fixed list of certificates in its SSL certificate verification besides the default trust store in the case where the user is not specifying its own trust certificates or callback.
+
+### Bug fixes
+* None.
+
+### Internaæ
+* Updated to Realm Sync 2.2.10.
+
+
 2.2.7 Release notes (2018-2-6)
 =============================================================
 ### Breaking changes
