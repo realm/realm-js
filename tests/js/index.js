@@ -44,7 +44,7 @@ var TESTS = {
     MigrationTests: require('./migration-tests'),
     EncryptionTests: require('./encryption-tests'),
     ObjectIDTests: require('./object-id-tests'),
-    // GarbageCollectionTests: require('./garbage-collection'),
+    // Garbagecollectiontests: require('./garbage-collection'),
 };
 
 // If sync is enabled, run the sync tests

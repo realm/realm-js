@@ -1,3 +1,18 @@
+X.Y.Z Release notes
+=============================================================
+### Breaking changes
+* None.
+
+### Enhancements
+* None.
+
+### Bug fixes
+* [Object Server] A use-after-free bug was fixed which could cause arrays of primitives to behave unexpectedly.
+
+### Internal
+* Updated to Realm Sync 2.2.12.
+
+
 2.2.9 Release notes (2018-2-19)
 =============================================================
 ### Breaking changes

@@ -280,4 +280,30 @@ exports.LinkingObjectsObject = {
         links:          'LinkingObjectsObject[]',
         linkingObjects: {type: 'linkingObjects', objectType: 'LinkingObjectsObject', property: 'links'}
     }
-}
+};
+
+exports.ParentObject = {
+    name: 'ParentObject',
+    properties: {
+        id:            'int',
+        name:          'NameObject[]'
+    }
+};
+
+exports.NameObject = {
+    name: 'NameObject',
+    properties: {
+        family:       'string',
+        given:        'string[]',
+        prefix:       'string[]'
+    }
+};
+
+exports.MultiListObject = {
+    name: 'MultiListObject',
+    properties: {
+        'id':         'int',
+        'list1':      'string[]',
+        'list2':      'string[]'
+    }
+};
