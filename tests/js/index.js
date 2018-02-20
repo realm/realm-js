@@ -35,7 +35,7 @@ if (isNodeProcess && process.platform === 'win32') {
 }
 
 var TESTS = {
-/*    ListTests: require('./list-tests'),
+    ListTests: require('./list-tests'),
     LinkingObjectsTests: require('./linkingobjects-tests'),
     ObjectTests: require('./object-tests'),
     RealmTests: require('./realm-tests'),
@@ -43,25 +43,25 @@ var TESTS = {
     QueryTests: require('./query-tests'),
     MigrationTests: require('./migration-tests'),
     EncryptionTests: require('./encryption-tests'),
-    ObjectIDTests: require('./object-id-tests'),*/
+    ObjectIDTests: require('./object-id-tests'),
     // GarbageCollectionTests: require('./garbage-collection'),
 };
 
 // If sync is enabled, run the sync tests
 if (global.enableSyncTests) {
-//    TESTS.UserTests = require('./user-tests');
+    TESTS.UserTests = require('./user-tests');
     TESTS.SessionTests = require('./session-tests');
 
     // FIXME: Permission tests currently fail in chrome debugging mode.
     if (typeof navigator === 'undefined' ||
       !/Chrome/.test(navigator.userAgent)) { // eslint-disable-line no-undef
-//        TESTS.PermissionTests = require('./permission-tests');
+        TESTS.PermissionTests = require('./permission-tests');
     }
 }
 
 // If on node, run the async tests
 if (isNodeProcess && process.platform !== 'win32') {
-//    TESTS.AsyncTests = node_require('./async-tests');
+    TESTS.AsyncTests = node_require('./async-tests');
 }
 
 var SPECIAL_METHODS = {
