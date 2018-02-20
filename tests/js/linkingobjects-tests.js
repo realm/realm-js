@@ -83,6 +83,26 @@ module.exports = {
         TestCase.assertArraysEqual(names(resultsC), ['JP']);
     },
 
+    testFilteredLinkingObjectsByName: function() {
+        var realm = new Realm({schema: [schemas.PersonObject]});
+
+        var christine, olivier;
+        realm.write(function() {
+            olivier = realm.create('PersonObject', {name: 'Olivier', age: 0});
+            christine = realm.create('PersonObject', {name: 'Christine', age: 25, children: [olivier]});
+            realm.create('PersonObject', {name: 'JP', age: 28, children: [olivier]});
+        });
+
+        let people = realm.objects('PersonObject')
+
+        TestCase.assertEqual(people.filtered('parents.age > 25').length, 1);
+        TestCase.assertEqual(people.filtered('parents.age > 25')[0].name, 'Olivier');
+        TestCase.assertEqual(people.filtered('parents.@count == 2').length, 1);
+        TestCase.assertEqual(people.filtered('parents.name CONTAINS[c] "chris"').length, 1);
+        TestCase.assertEqual(people.filtered('parents.name.@size == 2').length, 1);
+        TestCase.assertEqual(people.filtered('25 IN parents.age').length, 1);
+    },
+
     testMethod: function() {
         var realm = new Realm({schema: [schemas.PersonObject]});
 
@@ -123,37 +143,5 @@ module.exports = {
 
             TestCase.assertEqual(oliviersParents.length, 0);
         });
-    },
-
-    testFilterByLinkingObject: function() {
-        const Realm = require('realm')
-
-        const ProductSchema = {
-            name: 'Product',
-            primaryKey:'productId',
-            properties: {
-                productId:'int',
-                product:'string',
-                combinations: {type: 'linkingObjects', objectType: 'Combination', property: 'products'}
-            }
-        }
-
-        const CombinationSchema = {
-            name: 'Combination',
-            properties: {
-                onSale: {type: 'string'},
-                products: {type: 'list', objectType:'Product'}
-            }
-        }
-
-        Realm.open({
-            schema: [ProductSchema, CombinationSchema]
-        }).then(function (realm) {
-            let queryFilter1 = 'onSale = "yes" AND products.productId = 1'
-            let data1 = realm.objects('Combination').filtered(queryFilter1)
-
-            let queryFilter2 = 'combinations.onSale = "yes" AND productId = 1'
-            let data2 = realm.objects('Product').filtered(queryFilter2)
-        })
     },
 };
