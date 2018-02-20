@@ -545,9 +545,9 @@ declare class Realm {
     /**
      * @param  {string|Realm.ObjectSchema|Function} type
      * @param  {number|string} key
-     * @returns T
+     * @returns {T | undefined}
      */
-    objectForPrimaryKey<T>(type: string | Realm.ObjectSchema | Function, key: number | string): T | null;
+    objectForPrimaryKey<T>(type: string | Realm.ObjectSchema | Function, key: number | string): T | undefined;
 
     /**
      * @param  {string|Realm.ObjectType|Function} type

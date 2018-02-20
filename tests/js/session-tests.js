@@ -24,6 +24,7 @@
 
 const Realm = require('realm');
 const TestCase = require('./asserts');
+let schemas = require('./schemas');
 
 const isNodeProccess = (typeof process === 'object' && process + '' === '[object process]');
 
@@ -400,6 +401,49 @@ module.exports = {
                 session._simulateError(123, 'simulated error');
             });
         });
+    },
+
+    testListNestedSync() {
+        if (!isNodeProccess) {
+            return;
+        }
+
+        const username = uuid();
+        const realmName = uuid();
+
+        return runOutOfProcess(__dirname + '/nested-list-helper.js', __dirname + '/schemas.js', username, realmName, REALM_MODULE_PATH)
+            .then(() => {
+                return Realm.Sync.User.login('http://localhost:9080', username, 'password').then(user => {
+                    return new Promise((resolve, reject) => {
+                        let config = {
+                            schema: [schemas.ParentObject, schemas.NameObject],
+                            sync: { user, url: `realm://localhost:9080/~/${realmName}` }
+                        };
+                        Realm.open(config).then(realm => {
+                            let objects = realm.objects('ParentObject');
+
+                            let json = JSON.stringify(objects);
+                            TestCase.assertEqual(json, '{"0":{"id":1,"name":{"0":{"family":"Larsen","given":{"0":"Hans","1":"Jørgen"},"prefix":{}},"1":{"family":"Hansen","given":{"0":"Ib"},"prefix":{}}}},"1":{"id":2,"name":{"0":{"family":"Petersen","given":{"0":"Gurli","1":"Margrete"},"prefix":{}}}}}');
+                            TestCase.assertEqual(objects.length, 2);
+                            TestCase.assertEqual(objects[0].name.length, 2);
+                            TestCase.assertEqual(objects[0].name[0].given.length, 2);
+                            TestCase.assertEqual(objects[0].name[0].prefix.length, 0);
+                            TestCase.assertEqual(objects[0].name[0].given[0], 'Hans');
+                            TestCase.assertEqual(objects[0].name[0].given[1], 'Jørgen')
+                            TestCase.assertEqual(objects[0].name[1].given.length, 1);
+                            TestCase.assertEqual(objects[0].name[1].given[0], 'Ib');
+                            TestCase.assertEqual(objects[0].name[1].prefix.length, 0);
+
+                            TestCase.assertEqual(objects[1].name.length, 1);
+                            TestCase.assertEqual(objects[1].name[0].given.length, 2);
+                            TestCase.assertEqual(objects[1].name[0].prefix.length, 0);
+                            TestCase.assertEqual(objects[1].name[0].given[0], 'Gurli');
+                            TestCase.assertEqual(objects[1].name[0].given[1], 'Margrete');
+                            resolve();
+                        }).catch(() => reject());
+                    });
+                });
+            });
     },
 
     testIncompatibleSyncedRealmOpen() {

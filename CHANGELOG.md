@@ -20,6 +20,37 @@
 * Updated to Realm Sync 3.0.0-beta.4.
 * Tested against Realm Object Server 3.0.0-alpha.2.
 
+
+2.2.10 Release notes (2018-2-20)
+=============================================================
+### Breaking changes
+* None.
+
+### Enhancements
+* None.
+
+### Bug fixes
+* [Object Server] A use-after-free bug was fixed which could cause arrays of primitives to behave unexpectedly.
+
+### Internal
+* Updated to Realm Sync 2.2.12.
+
+
+2.2.9 Release notes (2018-2-19)
+=============================================================
+### Breaking changes
+* None.
+
+### Enhancements
+* None.
+
+### Bug fixes
+* Improved root certificate checking.
+
+### Internal
+* Updated to Realm Sync 2.2.11.
+
+
 2.2.8 Release notes (2018-2-13)
 =============================================================
 ### Breaking changes
@@ -50,7 +81,6 @@
 ### Internal
 * None.
 
->>>>>>> 1ad557b47fa03b4085b8fb5c682598a36d79b966
 
 2.2.6 Release notes (2018-1-26)
 =============================================================
