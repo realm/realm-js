@@ -99,6 +99,7 @@
         "src/object-store/src/sync/impl/sync_client.hpp",
         "src/object-store/src/sync/impl/sync_file.hpp",
         "src/object-store/src/sync/impl/sync_metadata.hpp",
+        "src/object-store/src/sync/impl/work_queue.hpp",
         "src/object-store/src/sync/partial_sync.hpp",
         "src/object-store/src/sync/sync_config.hpp",
         "src/object-store/src/sync/sync_manager.hpp",
@@ -147,7 +148,8 @@
             "src/object-store/src/sync/sync_session.cpp",
             "src/object-store/src/sync/sync_config.cpp",
             "src/object-store/src/sync/impl/sync_file.cpp",
-            "src/object-store/src/sync/impl/sync_metadata.cpp"
+            "src/object-store/src/sync/impl/sync_metadata.cpp",
+            "src/object-store/src/sync/impl/work_queue.cpp"
           ],
         }]
       ],

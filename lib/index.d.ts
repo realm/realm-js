@@ -162,6 +162,11 @@ declare namespace Realm {
         sorted(descriptor: string, reverse?: boolean): Results<T>;
 
         /**
+         * @returns Results<T>
+         */
+        subscribe(subscriptionName?: string): Realm.Sync.Subscription;
+
+        /**
          * @returns Results
          */
         snapshot(): Results<T>;
@@ -394,6 +399,21 @@ declare namespace Realm.Sync {
         removeProgressNotification(progressCallback: ProgressNotificationCallback): void;
     }
 
+    type SubscriptionNotificationCallback = (state: number) => void;
+
+    /**
+     * Subscription
+     * @see { @link https://realm.io/docs/javascript/latest/api/Realm.Sync.Subscription.html }
+     */
+    class Subscription {
+        readonly state: number;
+        readonly error: string;
+
+        unsubscribe(): void;
+        addListener(subscruptionCallback: SubscriptionNotificationCallback): void;
+        removeListener(subscruptionCallback: SubscriptionNotificationCallback): void;
+    }
+
     /**
     * AuthError
     * @see { @link https://realm.io/docs/javascript/latest/api/Realm.Sync.AuthError.html }
@@ -600,11 +620,6 @@ declare class Realm {
      * @returns boolean
      */
     compact(): boolean;
-
-    /**
-     * @returns Promise<Results<T>>
-     */
-    subscribeToObjects<T>(objectType: string, query: string): Promise<Realm.Results<T>>;
 }
 
 declare module 'realm' {
