@@ -478,7 +478,7 @@ module.exports = {
             });
         });
     },
-
+/*
     testProgressNotificationsForRealmConstructor() {
         if (!isNodeProccess) {
             return;
@@ -507,7 +507,7 @@ module.exports = {
                 });
             });
     },
-
+*/
     testProgressNotificationsUnregisterForRealmConstructor() {
         if (!isNodeProccess) {
             return;
