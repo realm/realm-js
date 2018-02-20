@@ -42,6 +42,7 @@
 		3FCE2A971F58BE2200D4855B /* sync_permission.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3FCE2A951F58BE1D00D4855B /* sync_permission.cpp */; };
 		420FB79F1F7FBFE900D43D0F /* partial_sync.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 423737AF1F7E333400FAEDFF /* partial_sync.cpp */; };
 		425A121120235A1400C2F932 /* work_queue.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 425A120F20235A1400C2F932 /* work_queue.cpp */; };
+		4261AF8E203C42000052450D /* work_queue.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 425A120F20235A1400C2F932 /* work_queue.cpp */; };
 		502B07E41E2CD201007A84ED /* object.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 502B07E31E2CD1FA007A84ED /* object.cpp */; };
 		504CF85E1EBCAE3600A9A4B6 /* network_reachability_observer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 504CF8541EBCAE3600A9A4B6 /* network_reachability_observer.cpp */; };
 		504CF85F1EBCAE3600A9A4B6 /* system_configuration.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 504CF8561EBCAE3600A9A4B6 /* system_configuration.cpp */; };
@@ -878,6 +879,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4261AF8E203C42000052450D /* work_queue.cpp in Sources */,
 				F63FF2E21C15921A00B3B8E0 /* base64.cpp in Sources */,
 				022BF1021E7266DF00F382F1 /* binding_callback_thread_observer.cpp in Sources */,
 				02414BA51CE6ABCF00A8669F /* collection_change_builder.cpp in Sources */,
