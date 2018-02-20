@@ -493,7 +493,8 @@ class Subscription {
 
     /**
      * Unsubscribe a partial synced `Realm.Results`. The state will change to `Realm.Sync.SubscriptionState.Invalidated`.
-     * The `Realm.Results` will not produce any meaningful values.
+     * The `Realm.Results` will not produce any meaningful values. Moreover, any objects matching the query will be
+     * removed if they are not matched by any other query. The object removal is done asynchronously.
      */
     unsubscribe() {}
 
@@ -502,10 +503,15 @@ class Subscription {
      * @param {function(state)} callback - A function to be called when changes occur.
      * @throws {Error} If `callback` is not a function.
      * @example
+     * let subscription = results.subscribe();
      * subscription.addListener((subscription, state) => {
-     *     if (state == Realm.Sync.SubscriptionState.Complete) {
-     *         var partial_results = subscription.results;
-     *         // use partial_results
+     *     switch (state) {
+     *     case Realm.Sync.SubscriptionState.Complete:
+     *         // results is ready to be consumed
+     *         break;
+     *     case Realm.Sync.SubscriptionState.Error:
+     *         console.log('An error occurred: ', subscription.error);
+     *         break;
      *     }
      * }
      */

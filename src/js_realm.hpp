@@ -186,9 +186,6 @@ public:
     static void compact(ContextType, ObjectType, Arguments, ReturnValue &);
     static void delete_model(ContextType, ObjectType, Arguments, ReturnValue &);
     static void object_for_object_id(ContextType, ObjectType, Arguments, ReturnValue&);
-#if REALM_ENABLE_SYNC
-    static void get_query_status(ContextType, ObjectType, Arguments, ReturnValue &);
-#endif
 
     // properties
     static void get_empty(ContextType, ObjectType, ReturnValue &);
@@ -248,7 +245,6 @@ public:
         {"_objectForObjectId", wrap<object_for_object_id>},
  #if REALM_ENABLE_SYNC
         {"_waitForDownload", wrap<wait_for_download_completion>},
-        {"getQueryStatus", wrap<get_query_status>},
  #endif
     };
 

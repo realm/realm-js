@@ -30,7 +30,9 @@
 #include <realm/parser/parser.hpp>
 #include <realm/parser/query_builder.hpp>
 #include <realm/util/optional.hpp>
+#ifdef REALM_ENABLE_SYNC
 #include "sync/partial_sync.hpp"
+#endif
 
 namespace realm {
 namespace js {
@@ -271,9 +273,6 @@ void ResultsClass<T>::subscribe(ContextType ctx, ObjectType this_object, Argumen
     auto results = get_internal<T, ResultsClass<T>>(this_object);
     auto realm = results->get_realm();
     auto sync_config = realm->config().sync_config;
-    if (!sync_config || !sync_config->is_partial) {
-        throw std::logic_error("A partial sync query can only be registered in a partially synced Realm.");
-    }
 
     util::Optional<std::string> subscription_name;
     if (args.count == 1) {
