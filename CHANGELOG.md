@@ -1,3 +1,18 @@
+X.Y.Z Release notes
+=============================================================
+### Breaking changes
+* None.
+
+### Enhancements
+* None.
+
+### Bug fixes
+* Validate that a given type appears at most once in the schema.
+
+### Internal
+* None.
+
+
 2.2.10 Release notes (2018-2-20)
 =============================================================
 ### Breaking changes
