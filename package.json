@@ -37,6 +37,7 @@
     "react-native",
     "scripts",
     "src",
+    "vendor",
     "tests",
     "binding.gyp",
     "realm.gypi",
