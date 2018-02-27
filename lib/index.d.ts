@@ -676,6 +676,13 @@ declare class Realm {
      */
     compact(): boolean;
 
+    /**
+     * Write a copy to destination path
+     * @param path destination path
+     * @returns void
+     */
+    writeCopyTo(path: string): void;
+
     privileges() : Realm.Permissions.Realm;
     privileges(objectType: string | Realm.ObjectSchema | Function) : Realm.Permissions.Class;
     privileges(obj: Realm.Object) : Realm.Permissions.Class;

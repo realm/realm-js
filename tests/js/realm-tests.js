@@ -56,7 +56,7 @@ module.exports = {
         const realm2 = new Realm({schema: [], path: testPath2});
         TestCase.assertEqual(realm2.path, defaultDir + testPath2);
     },
-    
+
     testRealmIsClosed: function() {
         const realm = new Realm({schema: []});
         TestCase.assertFalse(realm.isClosed);
@@ -1200,8 +1200,30 @@ module.exports = {
     testDisableFileFormatUpgrade: function() {
         Realm.copyBundledRealmFiles();
 
-        TestCase.assertThrowsContaining(() => { 
+        TestCase.assertThrowsContaining(() => {
             new Realm({ path: 'dates-v3.realm', disableFormatUpgrade: true } );
         }, 'The Realm file format must be allowed to be upgraded in order to proceed.');
+    },
+
+    testWriteCopyTo: function() {
+        const realm = new Realm({schema: [schemas.IntPrimary, schemas.AllTypes, schemas.TestObject, schemas.LinkToAllTypes]});
+
+        realm.write(() => {
+            realm.create('TestObject', {doubleCol: 1});
+        });
+        TestCase.assertEqual(1, realm.objects('TestObject').length);
+
+        TestCase.assertThrows(() => {
+            realm.writeCopyTo(34);
+        }, "Argument to 'writeCopyTo' must be a String.")
+
+        const copyName = "testWriteCopy.realm";
+        realm.writeCopyTo(copyName);
+        realm.close();
+
+        const copyConfig = { path: copyName };
+        const realmCopy = new Realm(copyConfig);
+        TestCase.assertEqual(1, realmCopy.objects('TestObject').length);
+        realmCopy.close();
     }
 };

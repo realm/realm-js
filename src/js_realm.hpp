@@ -183,6 +183,7 @@ public:
     static void remove_all_listeners(ContextType, ObjectType, Arguments, ReturnValue &);
     static void close(ContextType, ObjectType, Arguments, ReturnValue &);
     static void compact(ContextType, ObjectType, Arguments, ReturnValue &);
+    static void writeCopyTo(ContextType, ObjectType, Arguments, ReturnValue &);
     static void delete_model(ContextType, ObjectType, Arguments, ReturnValue &);
     static void object_for_object_id(ContextType, ObjectType, Arguments, ReturnValue&);
     static void privileges(ContextType, ObjectType, Arguments, ReturnValue&);
@@ -241,6 +242,7 @@ public:
         {"removeAllListeners", wrap<remove_all_listeners>},
         {"close", wrap<close>},
         {"compact", wrap<compact>},
+        {"writeCopyTo", wrap<writeCopyTo>},
         {"deleteModel", wrap<delete_model>},
         {"privileges", wrap<privileges>},
         {"_objectForObjectId", wrap<object_for_object_id>},
@@ -1002,6 +1004,22 @@ void RealmClass<T>::compact(ContextType ctx, ObjectType this_object, Arguments a
     }
 
     return_value.set(realm->compact());
+}
+
+template<typename T>
+void RealmClass<T>::writeCopyTo(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
+    args.validate_maximum(1);
+
+    SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
+
+    ValueType pathValue = args[0];
+    if (!Value::is_string(ctx, pathValue)) {
+        throw std::runtime_error("Argument to 'writeCopyTo' must be a String.");
+    }
+
+    std::string path = Value::validated_to_string(ctx, pathValue);
+    BinaryData key;
+    realm->write_copy(path, key);
 }
 
 template<typename T>
