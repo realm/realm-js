@@ -44,7 +44,7 @@ var TESTS = {
     MigrationTests: require('./migration-tests'),
     EncryptionTests: require('./encryption-tests'),
     ObjectIDTests: require('./object-id-tests'),
-    // GarbageCollectionTests: require('./garbage-collection'),
+    // Garbagecollectiontests: require('./garbage-collection'),
 };
 
 // If sync is enabled, run the sync tests
@@ -55,7 +55,7 @@ if (global.enableSyncTests) {
     // FIXME: Permission tests currently fail in chrome debugging mode.
     if (typeof navigator === 'undefined' ||
       !/Chrome/.test(navigator.userAgent)) { // eslint-disable-line no-undef
-     TESTS.PermissionTests = require('./permission-tests');
+        TESTS.PermissionTests = require('./permission-tests');
     }
 }
 

@@ -37,7 +37,7 @@ module.exports = {
             TestCase.assertInstanceOf(obj.list, Realm.List);
             TestCase.assertInstanceOf(obj.list, Realm.Collection);
         });
-        
+
         TestCase.assertThrowsContaining(() => new Realm.List(), 'constructor');
         TestCase.assertInstanceOf(Realm.List, Function);
     },
@@ -1223,4 +1223,83 @@ module.exports = {
         TestCase.assertThrowsContaining(() => object.list.avg(),
                                         "JS value must be of type 'string', got (undefined)");
     },
+
+    testListNested: function() {
+        const realm = new Realm({schema: [schemas.ParentObject, schemas.NameObject]});
+        realm.write(() => {
+            realm.create('ParentObject', {
+                id: 1,
+                name: [
+                    { family: 'Larsen', given: ['Hans', 'Jørgen'], prefix: [] },
+                    { family: 'Hansen', given: ['Ib'], prefix: [] }
+                ]
+            });
+            realm.create('ParentObject', {
+                id: 2,
+                name: [
+                    {family: 'Petersen', given: ['Gurli', 'Margrete'], prefix: [] }
+                ]
+            });
+        });
+
+        let objects = realm.objects('ParentObject');
+        TestCase.assertEqual(objects.length, 2);
+        TestCase.assertEqual(objects[0].name.length, 2);
+        TestCase.assertEqual(objects[0].name[0].given.length, 2);
+        TestCase.assertEqual(objects[0].name[0].prefix.length, 0);
+        TestCase.assertEqual(objects[0].name[0].given[0], 'Hans');
+        TestCase.assertEqual(objects[0].name[0].given[1], 'Jørgen')
+        TestCase.assertEqual(objects[0].name[1].given.length, 1);
+        TestCase.assertEqual(objects[0].name[1].given[0], 'Ib');
+        TestCase.assertEqual(objects[0].name[1].prefix.length, 0);
+
+        TestCase.assertEqual(objects[1].name.length, 1);
+        TestCase.assertEqual(objects[1].name[0].given.length, 2);
+        TestCase.assertEqual(objects[1].name[0].prefix.length, 0);
+        TestCase.assertEqual(objects[1].name[0].given[0], 'Gurli');
+        TestCase.assertEqual(objects[1].name[0].given[1], 'Margrete');
+    },
+
+    testListNestedFromJSON: function() {
+        let json = '{"id":1, "name": [{ "family": "Larsen", "given": ["Hans", "Jørgen"], "prefix": [] }, { "family": "Hansen", "given": ["Ib"], "prefix": [] }] }';
+        let parent = JSON.parse(json);
+        const realm = new Realm({schema: [schemas.ParentObject, schemas.NameObject]});
+        realm.write(() => {
+            realm.create('ParentObject', parent);
+        });
+
+        let objects = realm.objects('ParentObject');
+        TestCase.assertEqual(objects.length, 1);
+        TestCase.assertEqual(objects[0].name.length, 2);
+        TestCase.assertEqual(objects[0].name[0].given.length, 2);
+        TestCase.assertEqual(objects[0].name[0].prefix.length, 0);
+        TestCase.assertEqual(objects[0].name[0].given[0], 'Hans');
+        TestCase.assertEqual(objects[0].name[0].given[1], 'Jørgen');
+
+        TestCase.assertEqual(objects[0].name[1].given.length, 1);
+        TestCase.assertEqual(objects[0].name[1].prefix.length, 0);
+        TestCase.assertEqual(objects[0].name[1].given[0], 'Ib');
+    },
+
+    testMultipleLists: function() {
+        const realm = new Realm({schema: [schemas.MultiListObject]});
+        realm.write(() => {
+            realm.create('MultiListObject', { id: 0, list1: ["Hello"], list2: ["World"] });
+            realm.create('MultiListObject', { id: 1, list1: ["Foo"], list2: ["Bar"] });
+        });
+
+        let objects = realm.objects('MultiListObject');
+        TestCase.assertEqual(objects.length, 2);
+        TestCase.assertEqual(objects[0].id, 0);
+        TestCase.assertEqual(objects[0].list1.length, 1);
+        TestCase.assertEqual(objects[0].list1[0], "Hello");
+        TestCase.assertEqual(objects[0].list2.length, 1);
+        TestCase.assertEqual(objects[0].list2[0], "World");
+
+        TestCase.assertEqual(objects[1].id, 1);
+        TestCase.assertEqual(objects[1].list1.length, 1);
+        TestCase.assertEqual(objects[1].list1[0], "Foo");
+        TestCase.assertEqual(objects[1].list2.length, 1);
+        TestCase.assertEqual(objects[1].list2[0], "Bar");
+    }
 };

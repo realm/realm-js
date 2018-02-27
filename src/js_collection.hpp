@@ -23,6 +23,9 @@
 #include "js_observable.hpp"
 
 #include "collection_notifications.hpp"
+#if REALM_ENABLE_SYNC
+#include "sync/subscription_state.hpp"
+#endif
 
 namespace realm {
 namespace js {
@@ -39,7 +42,7 @@ struct CollectionClass : ClassDefinition<T, Collection, ObservableClass<T>> {
     using Value = js::Value<T>;
 
     std::string const name = "Collection";
-    
+
     static inline ValueType create_collection_change_set(ContextType ctx, const CollectionChangeSet &change_set);
 };
 
@@ -48,7 +51,7 @@ typename T::Value CollectionClass<T>::create_collection_change_set(ContextType c
 {
     ObjectType object = Object::create_empty(ctx);
     std::vector<ValueType> deletions, insertions, modifications;
-    
+
     if (change_set.deletions.count() == std::numeric_limits<size_t>::max()) {
         deletions.push_back(Value::from_null(ctx));
     }
@@ -58,12 +61,12 @@ typename T::Value CollectionClass<T>::create_collection_change_set(ContextType c
         }
     }
     Object::set_property(ctx, object, "deletions", Object::create_array(ctx, deletions));
-    
+
     for (auto index : change_set.insertions.as_indexes()) {
         insertions.push_back(Value::from_number(ctx, index));
     }
     Object::set_property(ctx, object, "insertions", Object::create_array(ctx, insertions));
-    
+
     for (auto index : change_set.modifications.as_indexes()) {
         modifications.push_back(Value::from_number(ctx, index));
     }

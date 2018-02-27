@@ -135,6 +135,26 @@ class Collection {
     snapshot() {}
 
     /**
+     * Subscribe to a subset of objects matching the query of the collection. The Realm will only be
+     * partially synced. Not all queries are currently supported. Once subscribed, it is highly recommended
+     * to add a listener.
+     *
+     * @example
+     * let wines = realm.objects('Wine').filtered('vintage <= $0', maxYear).subscribe();
+     * wines.addListener((collection, changes) => {
+     *     if (changes.partial_sync.new_state == Realm.Sync.SubscriptionState.Initialized) {
+     *         // update UI
+     *     }
+     * });
+     *
+     * @param {string} subscriptionName - an optional name for the subscription.
+     * @returns {Realm.Sync.Subscription} - the Realm.Sync.Subscription instance.
+     * @throws {Error} if the partial sync is not enabled in the configuration or the query is not supported by Realm Object Server.
+     * @since 2.3.0
+     */
+    subscribe(subscriptionName) {}
+
+    /**
      * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/entries Array.prototype.entries}
      * @returns {Realm.Collection~Iterator<T>} of each `[index, object]` pair in the collection
      * @since 0.11.0
@@ -400,15 +420,21 @@ class Collection {
      *   The callback function is called with two arguments:
      *   - `collection`: the collection instance that changed,
      *   - `changes`: a dictionary with keys `insertions`, `modifications` and `deletions`,
-     *      each containing a list of indices that were inserted, updated or deleted respectively.
+     *      each containing a list of indices that were inserted, updated or deleted respectively. If
+     *      partial sync is enabled, an additional key `partial_sync` is added.
+     *   - `changes.partial_sync`: `error` indicates if an error has occurred, `old_state` is the previous
+     *      state, and `new_state` is the current state.
      * @throws {Error} If `callback` is not a function.
      * @example
      * wines.addListener((collection, changes) => {
      *  // collection === wines
-     *  console.log(`${changes.insertions.length} insertions`);
-     *  console.log(`${changes.modifications.length} modifications`);
-     *  console.log(`${changes.deletions.length} deletions`);
-     *  console.log(`new size of collection: ${collection.length}`);
+     *  if (changes.partial_sync.new_state == Realm.Sync.SubscriptionState.Initialized) {
+     *     console.log('Our subset is ready');
+     *     console.log(`${changes.insertions.length} insertions`);
+     *     console.log(`${changes.modifications.length} modifications`);
+     *     console.log(`${changes.deletions.length} deletions`);
+     *     console.log(`new size of collection: ${collection.length}`);
+     *   }
      * });
      */
     addListener(callback) {}

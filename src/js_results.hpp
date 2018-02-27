@@ -28,6 +28,11 @@
 
 #include <realm/parser/parser.hpp>
 #include <realm/parser/query_builder.hpp>
+#include <realm/util/optional.hpp>
+#ifdef REALM_ENABLE_SYNC
+#include "js_sync.hpp"
+#include "sync/partial_sync.hpp"
+#endif
 
 namespace realm {
 namespace js {
@@ -82,6 +87,9 @@ struct ResultsClass : ClassDefinition<T, realm::js::Results<T>, CollectionClass<
     static void filtered(ContextType, ObjectType, Arguments, ReturnValue &);
     static void sorted(ContextType, ObjectType, Arguments, ReturnValue &);
     static void is_valid(ContextType, ObjectType, Arguments, ReturnValue &);
+#if REALM_ENABLE_SYNC
+    static void subscribe(ContextType, ObjectType, Arguments, ReturnValue &);
+#endif
 
     static void index_of(ContextType, ObjectType, Arguments, ReturnValue &);
 
@@ -107,6 +115,9 @@ struct ResultsClass : ClassDefinition<T, realm::js::Results<T>, CollectionClass<
         {"filtered", wrap<filtered>},
         {"sorted", wrap<sorted>},
         {"isValid", wrap<is_valid>},
+#if REALM_ENABLE_SYNC
+        {"subscribe", wrap<subscribe>},
+#endif
         {"min", wrap<compute_aggregate_on_collection<ResultsClass<T>, AggregateFunc::Min>>},
         {"max", wrap<compute_aggregate_on_collection<ResultsClass<T>, AggregateFunc::Max>>},
         {"sum", wrap<compute_aggregate_on_collection<ResultsClass<T>, AggregateFunc::Sum>>},
@@ -271,6 +282,28 @@ void ResultsClass<T>::is_valid(ContextType ctx, ObjectType this_object, Argument
     return_value.set(get_internal<T, ResultsClass<T>>(this_object)->is_valid());
 }
 
+#if REALM_ENABLE_SYNC
+template<typename T>
+void ResultsClass<T>::subscribe(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
+    args.validate_maximum(1);
+
+    auto results = get_internal<T, ResultsClass<T>>(this_object);
+    auto realm = results->get_realm();
+    auto sync_config = realm->config().sync_config;
+
+    util::Optional<std::string> subscription_name;
+    if (args.count == 1) {
+        subscription_name = util::Optional<std::string>(Value::validated_to_string(ctx, args[0]));
+    }
+    else {
+        subscription_name = util::none;
+    }
+
+    auto subscription = partial_sync::subscribe(*results, subscription_name);
+    return_value.set(SubscriptionClass<T>::create_instance(ctx, std::move(subscription)));
+}
+#endif
+
 template<typename T>
 template<typename Fn>
 void ResultsClass<T>::index_of(ContextType ctx, Fn& fn, Arguments args, ReturnValue &return_value) {
@@ -343,13 +376,13 @@ void ResultsClass<T>::add_listener(ContextType ctx, U& collection, ObjectType th
     Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
 
     auto token = collection.add_notification_callback([=](CollectionChangeSet const& change_set, std::exception_ptr exception) {
-        HANDLESCOPE
-        ValueType arguments[] {
-            static_cast<ObjectType>(protected_this),
-            CollectionClass<T>::create_collection_change_set(protected_ctx, change_set)
-        };
-        Function<T>::callback(protected_ctx, protected_callback, protected_this, 2, arguments);
-    });
+            HANDLESCOPE
+            ValueType arguments[] {
+                static_cast<ObjectType>(protected_this),
+                CollectionClass<T>::create_collection_change_set(protected_ctx, change_set)
+            };
+            Function<T>::callback(protected_ctx, protected_callback, protected_this, 2, arguments);
+        });
     collection.m_notification_tokens.emplace_back(protected_callback, std::move(token));
 }
 

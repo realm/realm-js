@@ -469,6 +469,64 @@ class Session {
 }
 
 /**
+ * An object encapsulating partial sync subscriptions.
+ * @memberof Realm.Sync
+ */
+class Subscription {
+    /**
+     * Gets the current state of the subscription.
+     * Can be either:
+     *  - Realm.Sync.SubscriptionState.Error: An error occurred while creating or processing the partial sync subscription.
+     *  - Realm.Sync.SubscriptionState.Creating: The subscription is being created.
+     *  - Realm.Sync.SubscriptionState.Pending: The subscription was created, but has not yet been processed by the sync server.
+     *  - Realm.Sync.SubscriptionState.Complete: The subscription has been processed by the sync server and data is being synced to the device.
+     *  - Realm.Sync.SubscriptionState.Invalidated: The subscription has been removed.
+     * @type {number}
+     */
+    get state() {}
+
+    /**
+     * Gets the error message. `undefined` if no error.
+     * @type {string}
+     */
+    get error() {}
+
+    /**
+     * Unsubscribe a partial synced `Realm.Results`. The state will change to `Realm.Sync.SubscriptionState.Invalidated`.
+     * The `Realm.Results` will not produce any meaningful values. Moreover, any objects matching the query will be
+     * removed if they are not matched by any other query. The object removal is done asynchronously.
+     */
+    unsubscribe() {}
+
+    /**
+     * Adds a listener `callback` which will be called when the state of the subscription changes.
+     * @param {function(state)} callback - A function to be called when changes occur.
+     * @throws {Error} If `callback` is not a function.
+     * @example
+     * let subscription = results.subscribe();
+     * subscription.addListener((subscription, state) => {
+     *     switch (state) {
+     *     case Realm.Sync.SubscriptionState.Complete:
+     *         // results is ready to be consumed
+     *         break;
+     *     case Realm.Sync.SubscriptionState.Error:
+     *         console.log('An error occurred: ', subscription.error);
+     *         break;
+     *     }
+     * }
+     */
+     addListener(callback) {}
+
+    /**
+     * Remove the listener `callback` from the subscription instance.
+     * @param {function(collection, changes)} callback - Callback function that was previously
+     *   added as a listener through the {@link Subscription#addListener addListener} method.
+     * @throws {Error} If `callback` is not a function.
+     */
+    removeListener(callback) {}
+}
+
+/**
  * A Realm Worker can be used to process Sync events in multiple automatically-managed child processes.
  *
  * Similar to Web Workers, a Worker is initialized by passing it the name of a module which should be loaded in the new process.
