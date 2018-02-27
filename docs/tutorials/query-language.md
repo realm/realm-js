@@ -103,8 +103,8 @@ Other objects can link to an object and you can query on that releationship usin
 Example:
 ```JS
 // Find contacts with no incomming links
-let lonely = realm.objects('Contact').filtered('@links.@count == 0);
+let lonely = realm.objects('Contact').filtered('@links.@count == 0');
 
 // Find contacts where someone from SF has them as friends
-realm.objects('Contact').filtered('@links.Contact.friends.city == "SF");
+realm.objects('Contact').filtered('@links.Contact.friends.city == "SF"');
 ```
