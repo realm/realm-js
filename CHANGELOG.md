@@ -20,7 +20,7 @@
 ### Internal
 * Updated to Realm Core 5.2.0.
 * Updated to Realm Sync 3.0.0-beta.9.
-* Tested against Realm Object Server 3.0.0-alpha.2.
+* Tested against Realm Object Server 3.0.0-alpha.8.
 
 
 2.2.10 Release notes (2018-2-20)
