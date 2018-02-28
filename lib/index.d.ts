@@ -622,6 +622,33 @@ declare class Realm {
     compact(): boolean;
 }
 
+declare namespace Realm.Permissions {
+    interface Permission {
+        identity: string;
+        canRead: boolean;
+        canUpdate: boolean;
+        canDelete: boolean;
+        canSetPermissions: boolean;
+        canQuery: boolean;
+        canCreate: boolean;
+        canModifySchema: boolean;
+    }
+    interface User {
+        identity: string;
+    }
+    interface Role {
+        name: string;
+        members: User[];
+    }
+    interface Class {
+        class_name: string;
+        permissions: Permission[];
+    }
+    interface Realm {
+        permissions: Permission[];
+    }
+}
+
 declare module 'realm' {
     export = Realm
 }
