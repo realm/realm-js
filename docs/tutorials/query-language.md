@@ -82,10 +82,10 @@ You can query on aggregates over properties in the lists using the aggregate ope
 Example:
 ```JS
 // Find contacts without friends
-let teens = realm.objects('Contact').filtered('friends.@count == 0');
+let lonely = realm.objects('Contact').filtered('friends.@count == 0');
 
 // Find contacts where the average age of their friends is above 40
-let adults = realm.objects('Contact').filtered('friends.@avg.age > 40"');
+let adults = realm.objects('Contact').filtered('friends.@avg.age > 40');
 ```
 
 Subqueries using the `SUBQUERY` operator allows you to filter the lists across multiple parameters while querying them.
@@ -93,7 +93,7 @@ Subqueries using the `SUBQUERY` operator allows you to filter the lists across m
 Example:
 ```JS
 // Find contacts with friends above 21 in SF
-let teens = realm.objects('Contact').filtered('SUBQUERY(friends, $friend, $friend.age > 21 AND $friend.city = 'SF').@count > 0');
+let teens = realm.objects('Contact').filtered('SUBQUERY(friends, $friend, $friend.age > 21 AND $friend.city = "SF").@count > 0');
 ```
 
 ### Backlink queries
