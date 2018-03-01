@@ -37,7 +37,8 @@ module.exports = {
         }
         else if (type === 'object') {
             for (const key of Object.keys(val1)) {
-                this.assertEqual(val1[key], val2[key], errorMessage, depth + 1);
+                const message = errorMessage ? `${errorMessage}: ${key}` : key;
+                this.assertEqual(val1[key], val2[key], message, depth + 1);
             }
         }
         else if (type === 'list') {

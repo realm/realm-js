@@ -35,7 +35,6 @@
 #include "js_sync.hpp"
 #include "sync/sync_config.hpp"
 #include "sync/sync_manager.hpp"
-#include "sync/partial_sync.hpp"
 #endif
 
 #include "shared_realm.hpp"
