@@ -1,4 +1,4 @@
-2.3.0 Release notes (2018-2-19)
+2.3.0 Release notes (2018-3-1)
 =============================================================
 ### Breaking changes
 * [Sync] Sync protocol changed to version 24.
@@ -18,9 +18,9 @@
 * [Sync] Added class `Realm.Sync.Subscription` to support partial synced Realms.
 
 ### Internal
-* Updated to Realm Core 5.2.0.
+* Updated to Realm Core 5.8.0.
 * Updated to Realm Sync 3.0.0-beta.9.
-* Tested against Realm Object Server 3.0.0-alpha.2.
+* Tested against Realm Object Server 3.0.0-alpha.8.
 
 
 2.2.10 Release notes (2018-2-20)
