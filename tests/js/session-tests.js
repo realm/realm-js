@@ -61,27 +61,23 @@ function copyFileToTempDir(filename) {
     return tmpFile.name;
 }
 
-function runOutOfProcess(nodeJsFilePath) {
-    var nodeArgs = Array.prototype.slice.call(arguments);
+function runOutOfProcess() {
+    const args = Array.prototype.slice.call(arguments);
     let tmpDir = tmp.dirSync();
-    let content = fs.readFileSync(nodeJsFilePath, 'utf8');
-    let tmpFile = tmp.fileSync({ dir: tmpDir.name });
-    fs.appendFileSync(tmpFile.fd, content, { encoding: 'utf8' });
-    nodeArgs[0] = tmpFile.name;
+    console.log(`runOutOfProcess : ${args.join(' ')}`);
     return new Promise((resolve, reject) => {
         try {
-            console.log('runOutOfProcess command\n node ' + nodeArgs.join(" "));
-            const child = execFile('node', nodeArgs, { cwd: tmpDir.name }, (error, stdout, stderr) => {
+            execFile(process.execPath, args, {cwd: tmpDir.name}, (error, stdout, stderr) => {
                 if (error) {
-                    console.error("runOutOfProcess failed\n" + error);
-                    reject(new Error(`Running ${nodeJsFilePath} failed. error: ${error}`));
+                    console.error("runOutOfProcess failed\n", error);
+                    reject(new Error(`Running ${modulePath} failed. error: ${error}`));
                     return;
                 }
 
                 console.log('runOutOfProcess success\n' + stdout);
                 resolve();
             });
-            }
+        }
         catch (e) {
             reject(e);
         }
