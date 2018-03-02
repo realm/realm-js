@@ -81,7 +81,7 @@ declare namespace Realm {
         path?: string;
         readOnly?: boolean;
         inMemory?: boolean;
-        schema?: ObjectClass[] | ObjectSchema[];
+        schema?: (ObjectClass | ObjectSchema)[];
         schemaVersion?: number;
         sync?: Realm.Sync.SyncConfiguration;
         deleteRealmIfMigrationNeeded?: boolean;
@@ -483,6 +483,42 @@ declare namespace Realm.Sync {
     }
 }
 
+declare namespace Realm.Permissions {
+    class Permission {
+        static schema: ObjectSchema;
+
+        identity: string;
+        canRead: boolean;
+        canUpdate: boolean;
+        canDelete: boolean;
+        canSetPermissions: boolean;
+        canQuery: boolean;
+        canCreate: boolean;
+        canModifySchema: boolean;
+    }
+
+    class User {
+        static schema: ObjectSchema;
+        identity: string;
+    }
+
+    class Role {
+        static schema: ObjectSchema;
+        name: string;
+        members: User[];
+    }
+
+    class Class {
+        static schema: ObjectSchema;
+        class_name: string;
+        permissions: Permission[];
+    }
+
+    class Realm {
+        static schema: ObjectSchema;
+        permissions: Permission[];
+    }
+}
 
 interface ProgressPromise extends Promise<Realm> {
     progress(callback: Realm.Sync.ProgressNotificationCallback): Promise<Realm>
@@ -552,7 +588,7 @@ declare class Realm {
      * @param  {boolean} update?
      * @returns T
      */
-    create<T>(type: string | Realm.ObjectClass | Function, properties: T & Realm.ObjectPropsType, update?: boolean): T;
+    create<T>(type: string | Realm.ObjectClass | Function, properties: T | Realm.ObjectPropsType, update?: boolean): T;
 
     /**
      * @param  {Realm.Object|Realm.Object[]|Realm.List<any>|Realm.Results<any>|any} object
@@ -628,33 +664,10 @@ declare class Realm {
      * @returns boolean
      */
     compact(): boolean;
-}
 
-declare namespace Realm.Permissions {
-    interface Permission {
-        identity: string;
-        canRead: boolean;
-        canUpdate: boolean;
-        canDelete: boolean;
-        canSetPermissions: boolean;
-        canQuery: boolean;
-        canCreate: boolean;
-        canModifySchema: boolean;
-    }
-    interface User {
-        identity: string;
-    }
-    interface Role {
-        name: string;
-        members: User[];
-    }
-    interface Class {
-        class_name: string;
-        permissions: Permission[];
-    }
-    interface Realm {
-        permissions: Permission[];
-    }
+    privileges() : Realm.Permissions.Realm;
+    privileges(objectType: string | Realm.ObjectSchema | Function) : Realm.Permissions.Class;
+    privileges(obj: Realm.Object) : Realm.Permissions.Class;
 }
 
 declare module 'realm' {

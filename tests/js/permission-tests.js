@@ -147,7 +147,7 @@ module.exports = {
         .then(t => { token = t; return user1.invalidatePermissionOffer(token); })
         // Since we don't yet support notification when the invalidation has gone through,
         // wait for a bit and hope the server is done processing.
-        .then(wait(100))
+        .then(() => wait(100))
         .then(() => user2.acceptPermissionOffer(token))
         // We want the call to fail, i.e. the catch() below should be called.
         .then(() => { throw new Error("User was able to accept an invalid permission offer token"); })
