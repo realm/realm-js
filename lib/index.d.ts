@@ -406,12 +406,20 @@ declare namespace Realm.Sync {
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.Sync.Subscription.html }
      */
     class Subscription {
-        readonly state: number;
+        readonly state: SubscriptionState;
         readonly error: string;
 
         unsubscribe(): void;
         addListener(subscruptionCallback: SubscriptionNotificationCallback): void;
         removeListener(subscruptionCallback: SubscriptionNotificationCallback): void;
+    }
+
+    enum SubscriptionState {
+         Error,
+         Creating,
+         Pending,
+         Complete,
+         Invalidated,
     }
 
     /**
