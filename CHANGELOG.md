@@ -1,3 +1,18 @@
+X.Y.Z Release notes
+=============================================================
+### Breaking changes
+* None.
+
+### Enhancements
+* None.
+
+### Bug fixes
+* [Object Server] Fixed handling of SSL certificates for the sync client.
+
+### Internal
+* Updated to Realm Sync 2.2.14.
+
+
 2.2.12 Release notes (2018-2-23)
 =============================================================
 ### Breaking changes
