@@ -69,8 +69,8 @@ function runOutOfProcess() {
         try {
             execFile(process.execPath, args, {cwd: tmpDir.name}, (error, stdout, stderr) => {
                 if (error) {
-                    console.error("runOutOfProcess failed\n", error);
-                    reject(new Error(`Running ${modulePath} failed. error: ${error}`));
+                    console.error("runOutOfProcess failed\n", error, stdout, stderr);
+                    reject(new Error(`Running ${args[0]} failed. error: ${error}`));
                     return;
                 }
 
