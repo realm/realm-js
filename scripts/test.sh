@@ -211,7 +211,7 @@ if [[ -z "$(command -v nvm)" ]]; then
   set -e
 fi
 if [[ "$(command -v nvm)" ]]; then
-  nvm install 7.10.0
+  nvm install 6.11.3
 fi
 
 # Remove cached packages
