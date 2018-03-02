@@ -85,18 +85,31 @@ function waitForUpload(realm) {
     });
 }
 
+function permissionForPath(permissions, path) {
+  for (const permission of permissions) {
+    if (permission.path == path) {
+      return permission;
+    }
+  }
+}
+
 module.exports = {
     testApplyAndGetGrantedPermissions() {
       return createUsersWithTestRealms(1)
         .then(([user]) => {
-          return user.applyPermissions({ userId: `${user.identity}` }, `/${user.identity}/test`, 'read')
+          const path = `/${user.identity}/test`;
+          return user.applyPermissions({userId: `${user.identity}`}, `/${user.identity}/test`, 'read')
             .then(repeatUntil(() => user.getGrantedPermissions('any'),
-                              permissions => permissions.length > 1))
+                              permissions => {
+                                let permission = permissionForPath(permissions, path);
+                                return permission && !permission.mayWrite;
+                              }))
             .then(permissions => {
-              TestCase.assertEqual(permissions[0].path, `/${user.identity}/test`);
-              TestCase.assertEqual(permissions[0].mayRead, true);
-              TestCase.assertEqual(permissions[0].mayWrite, false);
-              TestCase.assertEqual(permissions[0].mayManage, false);
+              let permission = permissionForPath(permissions, path);
+              TestCase.assertDefined(permission);
+              TestCase.assertEqual(permission.mayRead, true);
+              TestCase.assertEqual(permission.mayWrite, false);
+              TestCase.assertEqual(permission.mayManage, false);
             });
         });
     },
@@ -104,19 +117,21 @@ module.exports = {
     testOfferPermissions() {
       return createUsersWithTestRealms(2)
         .then(([user1, user2]) => {
+          const path = `/${user1.identity}/test`;
           return user1.offerPermissions(`/${user1.identity}/test`, 'read')
             .then(token => user2.acceptPermissionOffer(token))
             .then(realmUrl => {
-              TestCase.assertEqual(realmUrl, `/${user1.identity}/test`);
+              TestCase.assertEqual(realmUrl, path);
               return realmUrl;
             })
             .then(repeatUntil(() => user2.getGrantedPermissions('any'),
-                              permissions => permissions.length > 1))
+                              permissions => permissions.length > 2 &&  permissionForPath(permissions, path)))
             .then(permissions => {
-              TestCase.assertEqual(permissions[2].path, `/${user1.identity}/test`);
-              TestCase.assertEqual(permissions[2].mayRead, true);
-              TestCase.assertEqual(permissions[2].mayWrite, false);
-              TestCase.assertEqual(permissions[2].mayManage, false);
+              let permission = permissionForPath(permissions, path)
+              TestCase.assertDefined(permission);
+              TestCase.assertEqual(permission.mayRead, true);
+              TestCase.assertEqual(permission.mayWrite, false);
+              TestCase.assertEqual(permission.mayManage, false);
             });
         });
     },
