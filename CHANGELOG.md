@@ -18,8 +18,8 @@
 * [Sync] Added class `Realm.Sync.Subscription` to support partial synced Realms.
 
 ### Internal
-* Updated to Realm Core 5.8.0.
-* Updated to Realm Sync 3.0.0-beta.9.
+* Updated to Realm Core 5.3.0.
+* Updated to Realm Sync 3.0.0-beta.10.
 * Tested against Realm Object Server 3.0.0-alpha.8.
 
 
