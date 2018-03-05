@@ -1,3 +1,19 @@
+X.Y.Z Release notes
+=============================================================
+### Breaking changes
+* None.
+
+### Enhancements
+* None.
+
+### Bug fixes
+* [Object Server] Fixed race condition in handling of session bootstrapping in client.
+
+
+### Internal
+* Updated to Realm Sync 2.2.15.
+
+
 2.2.13 Release notes (2018-3-2)
 =============================================================
 ### Breaking changes
