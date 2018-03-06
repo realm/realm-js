@@ -15,7 +15,14 @@
   - Any number of sort/distinct conditions can be indicated, they will be applied in the specified order.
   - Sort or distinct cannot operate independently, these conditions must be attached to at least one query filter.
 * [Sync] Added `Realm.Results.subscribe()` to subscribe to partial synced Realms.
-* [Sync] Added class `Realm.Sync.Subscription` to support partial synced Realms.
+* [Sync] Added class `Realm.Sync.Subscription` and enum `Realm.Sync.SubscriptionState` to support partial synced Realms.
+* [Sync] Added an object-level permission subsystem. It is possible to grant fine-grained priviliges to users.
+* Added object-level permissions:
+  - Schemas `Realm.Permissions.Realm`, `Realm.Permissions.Class`, `Realm.Permissions.Role`, `Realm.Permissions.User`, and `Realm.Permissions.Permission` to support working with permissions. These schemas can be used in user-defined Realms and schemas.
+  - Permissions are enforced by the object server but connectivity is not required.
+  - Method `Realm.privilges()` to compute privileges on a Realm, a Realm object schema, or a Realm object. The method returns either a `Realm.Permissions.Realm` or `Realm.Permissions.Class` object.
+  - For non-synced Realms, all privileges are always granted.
+  - For more details, please read the reference documentation.
 
 ### Internal
 * Updated to Realm Core 5.8.0.

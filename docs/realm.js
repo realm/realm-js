@@ -126,6 +126,27 @@ class Realm {
     close() {}
 
     /**
+     * Returns the granted privilges.
+     *
+     * This combines all privileges granted on the Realm/Class/Object by all Roles which
+     * the current User is a member of into the final privileges which will
+     * be enforced by the server.
+     *
+     * The privilege calculation is done locally using cached data, and inherently may
+     * be stale. It is possible that this method may indicate that an operation is
+     * permitted but the server will still reject it if permission is revoked before
+     * the changes have been integrated on the server.
+     *
+     * Non-synchronized Realms always have permission to perform all operations.
+     *
+     * @param {(Realm~ObjectType|Realm.Object)} arg - the object type or the object to compute priviliges from
+     * @returns {Object} as the computed priviliges as properties
+     * @since 2.3.0
+     * @see {Realm.Permissions} for details of priviliges and roles.
+     */
+    privileges(arg) {}
+
+    /**
      * Create a new Realm object of the given type and with the specified properties.
      * @param {Realm~ObjectType} type - The type of Realm object to create.
      * @param {Object} properties - Property values for all required properties without a

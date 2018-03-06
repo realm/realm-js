@@ -21,7 +21,7 @@
  * They are created exclusively by the client and are processed by the server
  * as indicated by the status fields.
  * PermissionChange objects allow to grant and revoke permissions by setting
- * mayRead, mayWrite and mayManage accordingly. 
+ * mayRead, mayWrite and mayManage accordingly.
  * If any of these flags are not set, these are merged
  * with either the existing or default permissions as applicable. As a
  * side-effect this causes that the default permissions are permanently
@@ -30,7 +30,7 @@
  * ErrorCode will be updated accordingly.
  */
 class PermissionChange {
-
+    
     /**
      * Gets the unique identifier of this object in the Management realm.
      * @type {string}
@@ -228,4 +228,162 @@ class PermissionOfferResponse {
      * @type {string}
      */
     get realmUrl() {}
+}
+
+
+
+/**
+ * A permission which can be applied to a Realm, Class, or specific Object.
+ * Permissions are applied by adding the permission to the Realm.Permission singleton
+ * object, the RealmClass.Permission object for the desired class, or to a user-defined
+ * Realm.List<Realm.Permission> property on a specific Object instance. The meaning of each of
+ * the properties of Permission depend on what the permission is applied to, and so are
+ * left undocumented here.
+ * @since 2.3.0
+*/
+class Permission {
+
+    /**
+     * The Role which this Permission applies to. All users within the Role are
+     * granted the permissions specified by the fields below any
+     * objects/classes/realms which use this Permission.
+     *
+     * This property cannot be modified once set.
+     * @type {Role}
+     */
+    get role() {}
+
+    /**
+     * Whether the user can read the object to which this Permission is attached.
+     * @type {boolean}
+     */
+    get canRead() {}
+
+    /**
+     * Whether the user can modify the object to which this Permission is attached.
+     * @type {boolean}
+     */
+    get canUpdate() {}
+
+    /**
+     * Whether the user can delete the object to which this Permission is attached.
+     *
+     * This property is only applicable to Permissions attached to Objects, and not
+     * to Realms or Classes.
+     * @type {boolean}
+     */
+    get canDelete() {}
+
+    /**
+     * Whether the user can add or modify Permissions for the object which this
+     * Permission is attached to.
+     * @type {boolean}
+     */
+    get canSetPermissions() {}
+
+    /**
+     *  Whether the user can subscribe to queries for this object type.
+     *
+     * This property is only applicable to Permissions attached to Classes, and not
+     * to Realms or Objects.
+     * @type {boolean}
+     */
+    get canQuery() {}
+
+    /**
+     * Whether the user can create new objects of the type this Permission is attached to.
+     *
+     * This property is only applicable to Permissions attached to Classes, and not
+     * to Realms or Objects.
+     * @type {boolean}
+     */
+    get canCreate() {}
+
+    /**
+     * Whether the user can modify the schema of the Realm which this
+     * Permission is attached to.
+     *
+     * This property is only applicable to Permissions attached to Realms, and not
+     * to Realms or Objects.
+     * @type {boolean}
+     */
+    get canModifySchema() {}
+}
+
+/**
+ * A representation of a sync user within the permissions system.
+ *
+ * User objects are created automatically for each sync user which connects to
+ * a Realm, and can also be created manually if you wish to grant permissions to a user
+ * which has not yet connected to this Realm.
+ * @since 2.3.0
+ */
+class User {
+    /**
+     * The unique Realm Object Server user ID string identifying this user. This will have
+     * the same value as Realm.Sync.User.identity.
+     * @type {string}
+     */
+    get id() {}
+}
+
+/**
+ * A Role within the permissions system.
+ *
+ * A Role consists of a name for the role and a list of users which are members of the role.
+ * Roles are granted privileges on Realms, Classes and Objects, and in turn grant those
+ * privileges to all users which are members of the role.
+ * A role named "everyone" is automatically created in new Realms, and all new users which
+ * connect to the Realm are automatically added to it. Any other roles you wish to use are
+ * managed as normal Realm objects.
+ * @since 2.3.0
+ */
+class Role {
+    /**
+     * The name of the Role.
+     * @type {string}
+     */
+    get name() {}
+
+    /**
+     * The users which belong to the role.
+     * @type {Array<Realm.Sync.Permissions.User>}
+     */
+    get members() {}
+}
+
+/**
+ * An object which describes class-wide permissions.
+ *
+ * An instance of this object is automatically created in the Realm for class in your schema,
+ * and should not be created manually.
+ * @since 2.3.0
+ */
+class Class {
+    /**
+     * The name of the class which these permissions apply to.
+     * @type {string}
+     */
+    get class_name() {}
+
+    /**
+     * The permissions for this class.
+     * @type {Array<Realm.Sync.Permissions.Permission>}
+     */
+    get permissions() {}
+}
+
+/**
+ *  A singleton object which describes Realm-wide permissions.
+ *
+ * An object of this type is automatically created in the Realm for you, and more objects
+ * cannot be created manually.
+ * @since 2.3.0
+ */
+class Realm {
+    /**
+     * The permissions for the Realm.
+     * @type {Array<Realm.Sync.Permission>}
+     */
+    get permissions() {}
 }
