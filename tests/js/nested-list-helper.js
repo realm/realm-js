@@ -9,6 +9,8 @@ const realmName = process.argv[4];
 const realmModule = process.argv[5];
 
 const Realm = require(realmModule);
+// Ensure that schemas.js gets the correct module with `require('realm')`
+require.cache[require.resolve('realm')] = require.cache[require.resolve(realmModule)];
 let schemas = require(process.argv[2]);
 
 function createObjects(user) {
