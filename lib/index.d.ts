@@ -114,9 +114,7 @@ declare namespace Realm {
         linkingObjects<T>(objectType: string, property: string): Results<T>;
     }
 
-    const Object: {
-        readonly prototype: Object;
-    }
+    const Object: { }
 
     /**
      * SortDescriptor
