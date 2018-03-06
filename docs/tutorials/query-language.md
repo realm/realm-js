@@ -95,16 +95,3 @@ Example:
 // Find contacts with friends above 21 in SF
 let teens = realm.objects('Contact').filtered('SUBQUERY(friends, $friend, $friend.age > 21 AND $friend.city = "SF").@count > 0');
 ```
-
-### Backlink queries
-
-Other objects can link to an object and you can query on that releationship using the `@links` and `@links.ClassName.PropertyName` syntax:
-
-Example:
-```JS
-// Find contacts with no incomming links
-let lonely = realm.objects('Contact').filtered('@links.@count == 0');
-
-// Find contacts where someone from SF has them as friends
-realm.objects('Contact').filtered('@links.Contact.friends.city == "SF"');
-```
