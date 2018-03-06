@@ -23,6 +23,51 @@
 * Tested against Realm Object Server 3.0.0-alpha.8.
 
 
+2.2.14 Release notes (2018-3-5)
+=============================================================
+### Breaking changes
+* None.
+
+### Enhancements
+* None.
+
+### Bug fixes
+* [Sync] Fixed race condition in handling of session bootstrapping in client.
+
+### Internal
+* Updated to Realm Sync 2.2.15.
+
+
+2.2.13 Release notes (2018-3-2)
+=============================================================
+### Breaking changes
+* None.
+
+### Enhancements
+* None.
+
+### Bug fixes
+* [Sync] Fixed handling of SSL certificates for the sync client.
+
+### Internal
+* Updated to Realm Sync 2.2.14.
+
+
+2.2.12 Release notes (2018-2-23)
+=============================================================
+### Breaking changes
+* None.
+
+### Enhancements
+* None.
+
+### Bug fixes
+* Validate that a given type appears at most once in the schema.
+
+### Internal
+* None.
+
+
 2.2.10 Release notes (2018-2-20)
 =============================================================
 ### Breaking changes
