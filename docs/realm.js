@@ -120,6 +120,16 @@ class Realm {
     static openAsync(config, callback, progressCallback) {}
 
     /**
+     * Open the default Realm. The server URL for the current user will be used as base for
+     * the URL for the synced Realm. If {Realm.Sync} is not enabled, the default local Realm will
+     * be opened.
+     * @throws {Error} if zero or multiple users are logged in
+     * @returns {ProgressPromise} - a promise that will be resolved with the Realm instance when it's available.
+     * @since 2.3.0
+     */
+    static default() {}
+
+    /**
      * Closes this Realm so it may be re-opened with a newer schema version.
      * All objects and collections from this Realm are no longer valid after calling this method.
      */
@@ -261,8 +271,8 @@ class Realm {
      * then replacing the database with the temporary one.
      * @returns {true} if compaction succeeds.
      */
-    compact() {}
-}
+    compact() {}}
+
 
 /**
  * Get the current schema version of the Realm at the given path.
