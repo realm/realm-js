@@ -23,7 +23,6 @@
   - Method `Realm.privilges()` to compute privileges on a Realm, a Realm object schema, or a Realm object. The method returns either a `Realm.Permissions.Realm` or `Realm.Permissions.Class` object.
   - For non-synced Realms, all privileges are always granted.
   - For more details, please read the reference documentation.
-* [Sync] Decrepated `Realm.Sync.setFeatureToken` (#1689).
 
 ### Internal
 * Updated to Realm Core 5.3.0.

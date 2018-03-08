@@ -448,10 +448,6 @@ declare namespace Realm.Sync {
     function removeListener(regex: string, name: string, changeCallback: (changeEvent: ChangeEvent) => void): Promise<void>;
     function setLogLevel(logLevel: 'all' | 'trace' | 'debug' | 'detail' | 'info' | 'warn' | 'error' | 'fatal' | 'off'): void;
     function initiateClientReset(path: string): void;
-
-    /**
-     * @deprecated, to be removed in future versions
-     */
     function setFeatureToken(token: string): void;
 
     type Instruction = {
