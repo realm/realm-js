@@ -271,8 +271,8 @@ class Realm {
      * then replacing the database with the temporary one.
      * @returns {true} if compaction succeeds.
      */
-    compact() {}}
-
+    compact() {}
+}
 
 /**
  * Get the current schema version of the Realm at the given path.
