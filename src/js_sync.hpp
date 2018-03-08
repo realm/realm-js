@@ -103,7 +103,7 @@ public:
     static void session_for_on_disk_path(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
 
     MethodMap<T> const methods = {
-        {"logout", wrap<logout>},
+        {"_logout", wrap<logout>},
         {"_sessionForOnDiskPath", wrap<session_for_on_disk_path>}
     };
 };
