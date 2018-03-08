@@ -180,7 +180,7 @@ module.exports = {
             .then(() => Realm.Sync.User.login('http://localhost:9080', username, 'password'))
             .then(u => {
                 user = u;
-                return Realm.default();
+                return Realm.open(Realm.default());
             })
             .then(realm => {
                 let actualObjectsCount = realm.objects('Dog').length;

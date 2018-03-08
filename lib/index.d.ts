@@ -562,15 +562,15 @@ declare class Realm {
     static openAsync(config: Realm.Configuration, callback: (error: any, realm: Realm) => void, progressCallback?: Realm.Sync.ProgressNotificationCallback): void
 
     /**
-     * Open the default Realm.
+     * Return a configuration for a default Realm.
      */
-    static default(): ProgressPromise;
+    static defaultSyncConfiguration(): string;
 
     /**
      * Delete the Realm file for the given configuration.
      * @param {Configuration} config
      */
-    static deleteFile(config: Realm.Configuration): void
+    static deleteFile(config: Realm.Configuration): void;
 
     /**
      * @param  {Realm.Configuration} config?
