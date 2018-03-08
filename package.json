@@ -90,7 +90,7 @@
     "request": "^2.78.0",
     "stream-counter": "^1.0.0",
     "sync-request": "^3.0.1",
-    "url-parse": "^1.1.7"
+    "url-parse": "^1.2.0"
   },
   "devDependencies": {
     "@types/node": "^4.0.35",
