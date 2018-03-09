@@ -24,6 +24,7 @@
   - For non-synced Realms, all privileges are always granted.
   - For more details, please read the reference documentation.
 * [Sync] Revoke refresh tiken upon logout (#1354).
+* [Sync] Decrepated `Realm.Sync.setFeatureToken` (#1689).
 
 ### Internal
 * Updated to Realm Core 5.3.0.
