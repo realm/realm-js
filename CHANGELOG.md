@@ -1,4 +1,4 @@
-2.3.0 Release notes (2018-3-7)
+2.3.0 Release notes (2018-3-9)
 =============================================================
 ### Breaking changes
 * [Sync] Sync protocol changed to version 24.
@@ -25,6 +25,7 @@
   - Method `Realm.privilges()` to compute privileges on a Realm, a Realm object schema, or a Realm object. The method returns either a `Realm.Permissions.Realm` or `Realm.Permissions.Class` object.
   - For non-synced Realms, all privileges are always granted.
   - For more details, please read the reference documentation.
+* [Sync] Revoke refresh tiken upon logout (#1354).
 * Added `Realm.defaultSyncConfiguration()` which will return the configuration for a default synced Realm (#1688).
 * [Sync] Decrepated `Realm.Sync.setFeatureToken` (#1689).
 
