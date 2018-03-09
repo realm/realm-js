@@ -25,9 +25,12 @@
   - For more details, please read the reference documentation.
 * [Sync] Decrepated `Realm.Sync.setFeatureToken` (#1689).
 
+### Bug fixes
+* Fixed usage of disk space preallocation which would occasionally fail on recent MacOS running with the APFS filesystem (Realm Core #3005).
+
 ### Internal
-* Updated to Realm Core 5.3.0.
-* Updated to Realm Sync 3.0.0-beta.10.
+* Updated to Realm Core 5.4.0.
+* Updated to Realm Sync 3.0.0-rc.1.
 * Tested against Realm Object Server 3.0.0-alpha.8.
 
 
