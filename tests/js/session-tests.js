@@ -166,6 +166,33 @@ module.exports = {
             });
     },
 
+    testDefaultRealm() {
+        if (!isNodeProccess) {
+            return;
+        }
+
+        const username = uuid();
+        const realmName = 'default';
+        const expectedObjectsCount = 3;
+
+        let user;
+        return runOutOfProcess(__dirname + '/download-api-helper.js', username, realmName, REALM_MODULE_PATH)
+            .then(() => Realm.Sync.User.login('http://localhost:9080', username, 'password'))
+            .then(u => {
+                user = u;
+                return Realm.open(Realm.defaultSyncConfiguration());
+            })
+            .then(realm => {
+                let actualObjectsCount = realm.objects('Dog').length;
+                TestCase.assertEqual(actualObjectsCount, expectedObjectsCount, "Synced realm does not contain the expected objects count");
+
+                const session = realm.syncSession;
+                TestCase.assertInstanceOf(session, Realm.Sync.Session);
+                TestCase.assertEqual(session.user.identity, user.identity);
+                TestCase.assertEqual(session.state, 'active');
+            });
+    },
+
     testRealmOpenWithExistingLocalRealm() {
         if (!isNodeProccess) {
             return;
