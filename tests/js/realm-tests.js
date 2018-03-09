@@ -56,7 +56,7 @@ module.exports = {
         const realm2 = new Realm({schema: [], path: testPath2});
         TestCase.assertEqual(realm2.path, defaultDir + testPath2);
     },
-
+    
     testRealmIsClosed: function() {
         const realm = new Realm({schema: []});
         TestCase.assertFalse(realm.isClosed);

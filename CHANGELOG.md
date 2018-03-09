@@ -1,4 +1,4 @@
-2.3.0 Release notes (2018-2-19)
+2.3.0 Release notes (2018-3-7)
 =============================================================
 ### Breaking changes
 * [Sync] Sync protocol changed to version 24.
@@ -17,12 +17,69 @@
 * Added support for queries over named backlinks (#1498/#1660).
   - Example syntax: `parents.age > 25` and `parents.@count == 2`.
 * [Sync] Added `Realm.Results.subscribe()` to subscribe to partial synced Realms.
-* [Sync] Added class `Realm.Sync.Subscription` to support partial synced Realms.
+* [Sync] Added class `Realm.Sync.Subscription` and enum `Realm.Sync.SubscriptionState` to support partial synced Realms.
+* [Sync] Added an object-level permission subsystem. It is possible to grant fine-grained priviliges to users.
+* Added object-level permissions:
+  - Schemas `Realm.Permissions.Realm`, `Realm.Permissions.Class`, `Realm.Permissions.Role`, `Realm.Permissions.User`, and `Realm.Permissions.Permission` to support working with permissions. These schemas can be used in user-defined Realms and schemas.
+  - Permissions are enforced by the object server but connectivity is not required.
+  - Method `Realm.privilges()` to compute privileges on a Realm, a Realm object schema, or a Realm object. The method returns either a `Realm.Permissions.Realm` or `Realm.Permissions.Class` object.
+  - For non-synced Realms, all privileges are always granted.
+  - For more details, please read the reference documentation.
+* Added `Realm.defaultSyncConfiguration()` which will return the configuration for a default synced Realm (#1688).
+* [Sync] Decrepated `Realm.Sync.setFeatureToken` (#1689).
+
+### Bug fixes
+* Fixed usage of disk space preallocation which would occasionally fail on recent MacOS running with the APFS filesystem (Realm Core #3005).
 
 ### Internal
-* Updated to Realm Core 5.2.0.
-* Updated to Realm Sync 3.0.0-beta.9.
-* Tested against Realm Object Server 3.0.0-alpha.2.
+* Updated to Realm Core 5.4.0.
+* Updated to Realm Sync 3.0.0-rc.1.
+* Tested against Realm Object Server 3.0.0-alpha.8.
+
+
+2.2.14 Release notes (2018-3-5)
+=============================================================
+### Breaking changes
+* None.
+
+### Enhancements
+* None.
+
+### Bug fixes
+* [Sync] Fixed race condition in handling of session bootstrapping in client.
+
+### Internal
+* Updated to Realm Sync 2.2.15.
+
+
+2.2.13 Release notes (2018-3-2)
+=============================================================
+### Breaking changes
+* None.
+
+### Enhancements
+* None.
+
+### Bug fixes
+* [Sync] Fixed handling of SSL certificates for the sync client.
+
+### Internal
+* Updated to Realm Sync 2.2.14.
+
+
+2.2.12 Release notes (2018-2-23)
+=============================================================
+### Breaking changes
+* None.
+
+### Enhancements
+* None.
+
+### Bug fixes
+* Validate that a given type appears at most once in the schema.
+
+### Internal
+* None.
 
 
 2.2.10 Release notes (2018-2-20)

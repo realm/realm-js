@@ -120,10 +120,40 @@ class Realm {
     static openAsync(config, callback, progressCallback) {}
 
     /**
+     * Return a configuration for a default synced Realm. The server URL for the current user will be used as base for
+     * the URL for the synced Realm.
+     * @throws {Error} if zero or multiple users are logged in
+     * @returns {Realm~Configuration} - a configuration matching a default synced Realm.
+     * @since 2.3.0
+     */
+    static defaultSyncConfiguration() {}
+
+    /**
      * Closes this Realm so it may be re-opened with a newer schema version.
      * All objects and collections from this Realm are no longer valid after calling this method.
      */
     close() {}
+
+    /**
+     * Returns the granted privilges.
+     *
+     * This combines all privileges granted on the Realm/Class/Object by all Roles which
+     * the current User is a member of into the final privileges which will
+     * be enforced by the server.
+     *
+     * The privilege calculation is done locally using cached data, and inherently may
+     * be stale. It is possible that this method may indicate that an operation is
+     * permitted but the server will still reject it if permission is revoked before
+     * the changes have been integrated on the server.
+     *
+     * Non-synchronized Realms always have permission to perform all operations.
+     *
+     * @param {(Realm~ObjectType|Realm.Object)} arg - the object type or the object to compute priviliges from
+     * @returns {Object} as the computed priviliges as properties
+     * @since 2.3.0
+     * @see {Realm.Permissions} for details of priviliges and roles.
+     */
+    privileges(arg) {}
 
     /**
      * Create a new Realm object of the given type and with the specified properties.

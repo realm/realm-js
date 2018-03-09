@@ -12,3 +12,5 @@ GCDWebServer/iOS
 GCDWebServer/Mac
 GCDWebServer/Tests
 GCDWebServer/tvOS
+
+realm-*
