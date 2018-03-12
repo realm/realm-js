@@ -152,7 +152,7 @@ typename T::Object ResultsClass<T>::create_instance(ContextType ctx, SharedRealm
     return create_object<T, ResultsClass<T>>(ctx, new realm::js::Results<T>(realm, *table));
 }
 
-void alias_backlinks(parser::KeyPathMapping &mapping, const realm::SharedRealm &realm)
+inline void alias_backlinks(parser::KeyPathMapping &mapping, const realm::SharedRealm &realm)
 {
     const realm::Schema &schema = realm->schema();
     for (auto it = schema.begin(); it != schema.end(); ++it) {
