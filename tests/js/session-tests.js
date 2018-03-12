@@ -775,7 +775,7 @@ module.exports = {
                         partial: true,
                     }
                 };
-                TestCase.assertThrows(new Realm(config2));
+                TestCase.assertThrows(() => new Realm(config2));
             });
     },
 
