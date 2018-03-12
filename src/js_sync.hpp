@@ -823,7 +823,13 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
             is_partial = Value::validated_to_boolean(ctx, partial_value);
         }
 
-        config.sync_config = std::make_shared<SyncConfig>(shared_user, std::move(raw_realm_url));
+        bool force_open_realms = false;
+        ValueType force_open_realms_value = Object::get_property(ctx, sync_config_object, "force_open_realms");
+        if (!Value::is_undefined(ctx, force_open_realms_value)) {
+            force_open_realms = Value::validated_to_boolean(ctx, force_open_realms_value);
+        }
+
+        config.sync_config = std::make_shared<SyncConfig>(shared_user, std::move(raw_realm_url), !force_open_realms);
         config.sync_config->bind_session_handler = std::move(bind);
         config.sync_config->error_handler = std::move(error_handler);
         config.sync_config->client_validate_ssl = client_validate_ssl;
