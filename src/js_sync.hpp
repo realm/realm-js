@@ -824,7 +824,7 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
         }
 
         bool force_open_realms = false;
-        ValueType force_open_realms_value = Object::get_property(ctx, sync_config_object, "force_open_realms");
+        ValueType force_open_realms_value = Object::get_property(ctx, sync_config_object, "forceOpenRealms");
         if (!Value::is_undefined(ctx, force_open_realms_value)) {
             force_open_realms = Value::validated_to_boolean(ctx, force_open_realms_value);
         }
