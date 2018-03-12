@@ -83,6 +83,26 @@ module.exports = {
         TestCase.assertArraysEqual(names(resultsC), ['JP']);
     },
 
+    testFilteredLinkingObjectsByName: function() {
+        var realm = new Realm({schema: [schemas.PersonObject]});
+
+        var christine, olivier;
+        realm.write(function() {
+            olivier = realm.create('PersonObject', {name: 'Olivier', age: 0});
+            christine = realm.create('PersonObject', {name: 'Christine', age: 25, children: [olivier]});
+            realm.create('PersonObject', {name: 'JP', age: 28, children: [olivier]});
+        });
+
+        let people = realm.objects('PersonObject')
+
+        TestCase.assertEqual(people.filtered('parents.age > 25').length, 1);
+        TestCase.assertEqual(people.filtered('parents.age > 25')[0].name, 'Olivier');
+        TestCase.assertEqual(people.filtered('parents.@count == 2').length, 1);
+        TestCase.assertEqual(people.filtered('parents.name CONTAINS[c] "chris"').length, 1);
+        TestCase.assertEqual(people.filtered('parents.name.@size == 2').length, 1);
+        TestCase.assertEqual(people.filtered('25 IN parents.age').length, 1);
+    },
+
     testMethod: function() {
         var realm = new Realm({schema: [schemas.PersonObject]});
 
