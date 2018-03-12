@@ -762,7 +762,7 @@ module.exports = {
                         user: user,
                         url: `realm://localhost:9080/~/default/__partial/`,
                         partial: true,
-                        forceOpenRealms: true
+                        _disablePartialSyncUrlChecks: true
                     }
                 };
                 const realm = new Realm(config1);

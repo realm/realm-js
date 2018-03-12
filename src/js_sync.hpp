@@ -823,13 +823,19 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
             is_partial = Value::validated_to_boolean(ctx, partial_value);
         }
 
-        bool force_open_realms = false;
-        ValueType force_open_realms_value = Object::get_property(ctx, sync_config_object, "forceOpenRealms");
-        if (!Value::is_undefined(ctx, force_open_realms_value)) {
-            force_open_realms = Value::validated_to_boolean(ctx, force_open_realms_value);
+        bool disable_partial_sync_url_checks = false;
+        ValueType disable_partial_sync_url_value = Object::get_property(ctx, sync_config_object, "_disablePartialSyncUrlChecks");
+        if (!Value::is_undefined(ctx, disable_partial_sync_url_value)) {
+            disable_partial_sync_url_urls = Value::validated_to_boolean(ctx, disable_partial_sync_url_value);
         }
 
-        config.sync_config = std::make_shared<SyncConfig>(shared_user, std::move(raw_realm_url), !force_open_realms);
+        if (disable_partial_sync_url_urls) {
+            config.sync_config = std::make_shared<SyncConfig>(shared_user, std::move(""));
+            config.sync_config->reference_realm_url = std::move(raw_realm_url);
+        }
+        else {
+            config.sync_config = std::make_shared<SyncConfig>(shared_user, std::move(raw_realm_url));
+        }
         config.sync_config->bind_session_handler = std::move(bind);
         config.sync_config->error_handler = std::move(error_handler);
         config.sync_config->client_validate_ssl = client_validate_ssl;
