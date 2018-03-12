@@ -824,12 +824,12 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
         }
 
         bool disable_partial_sync_url_checks = false;
-        ValueType disable_partial_sync_url_value = Object::get_property(ctx, sync_config_object, "_disablePartialSyncUrlChecks");
-        if (!Value::is_undefined(ctx, disable_partial_sync_url_value)) {
-            disable_partial_sync_url_urls = Value::validated_to_boolean(ctx, disable_partial_sync_url_value);
+        ValueType disable_partial_sync_url_checks_value = Object::get_property(ctx, sync_config_object, "_disablePartialSyncUrlChecks");
+        if (!Value::is_undefined(ctx, disable_partial_sync_url_checks_value)) {
+            disable_partial_sync_url_checks = Value::validated_to_boolean(ctx, disable_partial_sync_url_checks_value);
         }
 
-        if (disable_partial_sync_url_urls) {
+        if (disable_partial_sync_url_checks) {
             config.sync_config = std::make_shared<SyncConfig>(shared_user, std::move(""));
             config.sync_config->reference_realm_url = std::move(raw_realm_url);
         }
