@@ -23,9 +23,9 @@
   - Method `Realm.privilges()` to compute privileges on a Realm, a Realm object schema, or a Realm object. The method returns either a `Realm.Permissions.Realm` or `Realm.Permissions.Class` object.
   - For non-synced Realms, all privileges are always granted.
   - For more details, please read the reference documentation.
-* [Sync] Revoke refresh tiken upon logout (#1354).
+* [Sync] Revoke refresh token upon logout (#1354).
 * Added `Realm.defaultSyncConfiguration()` which will return the configuration for a default synced Realm (#1688).
-* [Sync] Decrepated `Realm.Sync.setFeatureToken` (#1689).
+* [Sync] Deprecated `Realm.Sync.setFeatureToken` (#1689).
 
 ### Bug fixes
 * Fixed usage of disk space preallocation which would occasionally fail on recent MacOS running with the APFS filesystem (Realm Core #3005).
