@@ -379,6 +379,7 @@ declare namespace Realm.Sync {
         open_ssl_verify_callback?: SSLVerifyCallback;
         error?: ErrorCallback;
         partial?: boolean;
+        force_open_realms?:boolean;
     }
 
     type ProgressNotificationCallback = (transferred: number, transferable: number) => void;
