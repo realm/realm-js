@@ -120,13 +120,14 @@ class Realm {
     static openAsync(config, callback, progressCallback) {}
 
     /**
-     * Return a configuration for a default synced Realm. The server URL for the current user will be used as base for
-     * the URL for the synced Realm.
+     * Return a configuration for a default synced Realm. The server URL for the user will be used as base for
+     * the URL for the synced Realm. If no user is supplied, the current user will be used.
+     * @param {Realm.Sync.User} - an optional sync user
      * @throws {Error} if zero or multiple users are logged in
      * @returns {Realm~Configuration} - a configuration matching a default synced Realm.
      * @since 2.3.0
      */
-    static automaticSyncConfiguration() {}
+    static automaticSyncConfiguration(user) {}
 
     /**
      * Closes this Realm so it may be re-opened with a newer schema version.
