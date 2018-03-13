@@ -140,9 +140,10 @@ class Collection {
      * to add a listener.
      *
      * @example
-     * let wines = realm.objects('Wine').filtered('vintage <= $0', maxYear).subscribe();
+     * let wines = realm.objects('Wine').filtered('vintage <= $0', maxYear);
+     * let subscription = wines.subscribe();
      * wines.addListener((collection, changes) => {
-     *     if (changes.partial_sync.new_state == Realm.Sync.SubscriptionState.Initialized) {
+     *     if (subscription.state === Realm.Sync.SubscriptionState.Complete) {
      *         // update UI
      *     }
      * });

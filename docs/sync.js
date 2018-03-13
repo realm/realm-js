@@ -500,7 +500,7 @@ class Subscription {
 
     /**
      * Adds a listener `callback` which will be called when the state of the subscription changes.
-     * @param {function(state)} callback - A function to be called when changes occur.
+     * @param {function(subscription, state)} callback - A function to be called when changes to the subscription occur.
      * @throws {Error} If `callback` is not a function.
      * @example
      * let subscription = results.subscribe();
@@ -519,7 +519,7 @@ class Subscription {
 
     /**
      * Remove the listener `callback` from the subscription instance.
-     * @param {function(collection, changes)} callback - Callback function that was previously
+     * @param {function(subscription, state)} callback - Callback function that was previously
      *   added as a listener through the {@link Subscription#addListener addListener} method.
      * @throws {Error} If `callback` is not a function.
      */
