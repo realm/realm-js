@@ -34,7 +34,7 @@
 
 ### Internal
 * Updated to Realm Core 5.4.0.
-* Updated to Realm Sync 3.0.0-rc.2.
+* Updated to Realm Sync 3.0.0.
 * Tested against Realm Object Server 3.0.0-alpha.8.
 * Added `_disablePartialSyncUrlChecks` to `Realm.Configuration`.
 
