@@ -1,4 +1,4 @@
-2.3.0 Release notes (2018-3-9)
+2.3.0 Release notes (2018-3-13)
 =============================================================
 ### Breaking changes
 * [Sync] Sync protocol changed to version 24.
