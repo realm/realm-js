@@ -29,6 +29,7 @@
 #include "sync/sync_config.hpp"
 #include "sync/sync_session.hpp"
 #include "sync/sync_user.hpp"
+#include "sync/partial_sync.hpp"
 #include "realm/util/logger.hpp"
 #include "realm/util/uri.hpp"
 
@@ -102,7 +103,7 @@ public:
     static void session_for_on_disk_path(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
 
     MethodMap<T> const methods = {
-        {"logout", wrap<logout>},
+        {"_logout", wrap<logout>},
         {"_sessionForOnDiskPath", wrap<session_for_on_disk_path>}
     };
 };
@@ -556,6 +557,127 @@ void SessionClass<T>::override_server(ContextType ctx, ObjectType this_object, A
 }
 
 template<typename T>
+class Subscription : public partial_sync::Subscription {
+public:
+    Subscription(partial_sync::Subscription s) : partial_sync::Subscription(std::move(s)) {}
+    Subscription(Subscription &&) = default;
+
+    std::vector<std::pair<Protected<typename T::Function>, partial_sync::SubscriptionNotificationToken>> m_notification_tokens;
+};
+
+template<typename T>
+class SubscriptionClass : public ClassDefinition<T, Subscription<T>> {
+    using GlobalContextType = typename T::GlobalContext;
+    using ContextType = typename T::Context;
+    using FunctionType = typename T::Function;
+    using ObjectType = typename T::Object;
+    using ValueType = typename T::Value;
+    using String = js::String<T>;
+    using Object = js::Object<T>;
+    using Value = js::Value<T>;
+    using Function = js::Function<T>;
+    using ReturnValue = js::ReturnValue<T>;
+    using Arguments = js::Arguments<T>;
+
+public:
+    std::string const name = "Subscription";
+
+    static FunctionType create_constructor(ContextType);
+    static ObjectType create_instance(ContextType, partial_sync::Subscription);
+
+    static void get_state(ContextType, ObjectType, ReturnValue &);
+    static void get_error(ContextType, ObjectType, ReturnValue &);
+
+    static void unsubscribe(ContextType, ObjectType, Arguments, ReturnValue &);
+    static void add_listener(ContextType, ObjectType, Arguments, ReturnValue &);
+    static void remove_listener(ContextType, ObjectType, Arguments, ReturnValue &);
+
+    PropertyMap<T> const properties = {
+        {"state", {wrap<get_state>, nullptr}},
+        {"error", {wrap<get_error>, nullptr}}
+    };
+
+    MethodMap<T> const methods = {
+        {"unsubscribe", wrap<unsubscribe>},
+        {"addListener", wrap<add_listener>},
+        {"removeListener", wrap<remove_listener>},
+    };
+};
+
+template<typename T>
+typename T::Object SubscriptionClass<T>::create_instance(ContextType ctx, partial_sync::Subscription subscription) {
+    return create_object<T, SubscriptionClass<T>>(ctx, new Subscription<T>(std::move(subscription)));
+}
+
+template<typename T>
+void SubscriptionClass<T>::get_state(ContextType ctx, ObjectType object, ReturnValue &return_value) {
+    auto subscription = get_internal<T, SubscriptionClass<T>>(object);
+    return_value.set(static_cast<int8_t>(subscription->state()));
+}
+
+template<typename T>
+void SubscriptionClass<T>::get_error(ContextType ctx, ObjectType object, ReturnValue &return_value) {
+    auto subscription = get_internal<T, SubscriptionClass<T>>(object);
+    if (auto error = subscription->error()) {
+        try {
+            std::rethrow_exception(error);
+        }
+        catch (const std::exception& e) {
+            return_value.set(e.what());
+        }
+    }
+    else {
+        return_value.set_undefined();
+    }
+}
+
+template<typename T>
+void SubscriptionClass<T>::unsubscribe(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
+    args.validate_maximum(0);
+    auto subscription = get_internal<T, SubscriptionClass<T>>(this_object);
+    partial_sync::unsubscribe(*subscription);
+    return_value.set_undefined();
+}
+
+template<typename T>
+void SubscriptionClass<T>::add_listener(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
+    args.validate_maximum(1);
+    auto subscription = get_internal<T, SubscriptionClass<T>>(this_object);
+
+    auto callback = Value::validated_to_function(ctx, args[0]);
+    Protected<FunctionType> protected_callback(ctx, callback);
+    Protected<ObjectType> protected_this(ctx, this_object);
+    Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
+
+    auto token = subscription->add_notification_callback([=]() {
+        HANDLESCOPE
+
+        ValueType arguments[2];
+        arguments[0] = static_cast<ObjectType>(protected_this),
+        arguments[1] = Value::from_number(ctx, static_cast<double>(subscription->state()));
+        Function::callback(protected_ctx, protected_callback, protected_this, 2, arguments);
+    });
+
+    subscription->m_notification_tokens.emplace_back(protected_callback, std::move(token));
+}
+
+template<typename T>
+void SubscriptionClass<T>::remove_listener(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
+    args.validate_maximum(1);
+    auto subscription = get_internal<T, SubscriptionClass<T>>(this_object);
+
+    auto callback = Value::validated_to_function(ctx, args[0]);
+    auto protected_function = Protected<FunctionType>(ctx, callback);
+
+    auto& tokens = subscription->m_notification_tokens;
+    auto compare = [&](auto&& token) {
+        return typename Protected<FunctionType>::Comparator()(token.first, protected_function);
+    };
+    tokens.erase(std::remove_if(tokens.begin(), tokens.end(), compare), tokens.end());
+}
+
+
+template<typename T>
 class SyncClass : public ClassDefinition<T, void*> {
     using GlobalContextType = typename T::GlobalContext;
     using ContextType = typename T::Context;
@@ -701,7 +823,19 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
             is_partial = Value::validated_to_boolean(ctx, partial_value);
         }
 
-        config.sync_config = std::make_shared<SyncConfig>(shared_user, std::move(raw_realm_url));
+        bool disable_partial_sync_url_checks = false;
+        ValueType disable_partial_sync_url_checks_value = Object::get_property(ctx, sync_config_object, "_disablePartialSyncUrlChecks");
+        if (!Value::is_undefined(ctx, disable_partial_sync_url_checks_value)) {
+            disable_partial_sync_url_checks = Value::validated_to_boolean(ctx, disable_partial_sync_url_checks_value);
+        }
+
+        if (disable_partial_sync_url_checks) {
+            config.sync_config = std::make_shared<SyncConfig>(shared_user, std::move(""));
+            config.sync_config->reference_realm_url = std::move(raw_realm_url);
+        }
+        else {
+            config.sync_config = std::make_shared<SyncConfig>(shared_user, std::move(raw_realm_url));
+        }
         config.sync_config->bind_session_handler = std::move(bind);
         config.sync_config->error_handler = std::move(error_handler);
         config.sync_config->client_validate_ssl = client_validate_ssl;

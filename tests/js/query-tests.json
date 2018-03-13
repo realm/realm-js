@@ -1,7 +1,7 @@
 {
 
 "dateTests" : {
-    "schema" : [{ 
+    "schema" : [{
         "name": "DateObject",
         "properties": [{ "name": "date", "type": "date" }]
     }],
@@ -25,7 +25,7 @@
 },
 
 "boolTests" : {
-      "schema" : [{ 
+      "schema" : [{
         "name": "BoolObject",
         "properties": [{ "name": "boolCol", "type": "bool" }]
     }],
@@ -57,11 +57,11 @@
         ["QueryThrows", "BoolObject", "boolCol BEGINSWITH true"],
         ["QueryThrows", "BoolObject", "boolCol CONTAINS true"],
         ["QueryThrows", "BoolObject", "boolCol ENDSWITH true"]
-    ]  
+    ]
 },
 
 "intTests" : {
-    "schema" : [{ 
+    "schema" : [{
         "name": "IntObject",
         "properties": [{ "name": "intCol", "type": "int" }]
     }],
@@ -92,7 +92,7 @@
 },
 
 "floatTests" : {
-    "schema" : [{ 
+    "schema" : [{
         "name": "FloatObject",
         "properties": [{ "name": "floatCol", "type": "float" }]
     }],
@@ -126,7 +126,7 @@
 },
 
 "doubleTests" : {
-    "schema" : [{ 
+    "schema" : [{
         "name": "DoubleObject",
         "properties": [{ "name": "doubleCol", "type": "double" }]
     }],
@@ -157,7 +157,7 @@
 },
 
 "stringTests" : {
-    "schema" : [{ 
+    "schema" : [{
         "name": "StringObject",
         "properties": [{ "name": "stringCol", "type": "string" }]
     }],
@@ -205,7 +205,7 @@
 },
 
 "binaryTests" : {
-    "schema" : [{ 
+    "schema" : [{
         "name": "BinaryObject",
         "properties": [{ "name": "binaryCol", "type": "data" }]
     }],
@@ -256,14 +256,14 @@
 
 "compoundTests" : {
     "schema" : [
-        { "name": "IntObject",  
+        { "name": "IntObject",
           "properties": [{ "name": "intCol",  "type": "int" }],
           "primaryKey" : "intCol" }
     ],
     "objects": [
         { "type": "IntObject", "value": [0] },
         { "type": "IntObject", "value": [1] },
-        { "type": "IntObject", "value": [2] },    
+        { "type": "IntObject", "value": [2] },
         { "type": "IntObject", "value": [3] }
     ],
     "tests": [
@@ -281,14 +281,14 @@
         ["ObjectSet", [0, 1, 2],"IntObject", "intCol == 0 || intCol == 1 || intCol <= 2"],
         ["ObjectSet", [0, 1],   "IntObject", "intCol == 1 && intCol >= 1 || intCol == 0"],
         ["ObjectSet", [0, 1],   "IntObject", "intCol == 1 || intCol == 0 && intCol <= 0 && intCol >= 0"],
-        ["ObjectSet", [0, 1],   "IntObject", "intCol == 0 || NOT (intCol == 3 && intCol >= 0) && intCol == 1"]   
+        ["ObjectSet", [0, 1],   "IntObject", "intCol == 0 || NOT (intCol == 3 && intCol >= 0) && intCol == 1"]
     ]
 },
 
 "keyPathTests" : {
     "schema" : [
-    { 
-        "name": "BasicTypesObject",  
+    {
+        "name": "BasicTypesObject",
         "properties": [
             { "name": "intCol",     "type": "int" },
             { "name": "floatCol",   "type": "float" },
@@ -296,7 +296,7 @@
             { "name": "stringCol",  "type": "string" },
             { "name": "dateCol",    "type": "date?" }
         ]
-    }, 
+    },
     {
         "name": "LinkTypesObject",
         "primaryKey": "primaryKey",
@@ -326,8 +326,8 @@
 
 "optionalTests" : {
     "schema" : [
-    { 
-        "name": "OptionalTypesObject",  
+    {
+        "name": "OptionalTypesObject",
         "primaryKey": "primaryKey",
         "properties": [
             { "name": "primaryKey", "type": "int" },
@@ -338,7 +338,7 @@
             { "name": "dateCol",    "type": "date",     "optional": true },
             { "name": "dataCol",    "type": "data",     "optional": true }
         ]
-    }, 
+    },
     {
         "name": "LinkTypesObject",
         "primaryKey": "primaryKey",
@@ -375,9 +375,35 @@
         ["ObjectSet", [1], "LinkTypesObject", "basicLink.stringCol == null"],
         ["ObjectSet", [0], "LinkTypesObject", "basicLink.stringCol != null"],
         ["ObjectSet", [1], "LinkTypesObject", "basicLink.dateCol == null"],
-        ["ObjectSet", [0], "LinkTypesObject", "basicLink.dateCol != null"],
-        ["QueryThrows", "LinkTypesObject", "basicLink.dataCol == null"]
+        ["ObjectSet", [0], "LinkTypesObject", "basicLink.dateCol != null"]
+    ]
+},
+
+"orderingTests" : {
+    "schema" : [
+        { "name": "Person",
+          "properties": [
+              { "name": "id", "type": "int"},
+              { "name": "name",  "type": "string" },
+              { "name": "age", "type": "int"}
+          ],
+          "primaryKey" : "id" }
+    ],
+    "objects": [
+        { "type": "Person", "value": [0, "John", 28] },
+        { "type": "Person", "value": [1, "John", 37] },
+        { "type": "Person", "value": [2, "Jake", 27] },
+        { "type": "Person", "value": [3, "Jake", 32] },
+        { "type": "Person", "value": [4, "Jake", 32] },
+        { "type": "Person", "value": [5, "Johnny", 19] }
+    ],
+    "tests": [
+        ["ObjectSet", [1, 3],       "Person", "age > 20 SORT(age DESC) DISTINCT(name)"],
+        ["ObjectSet", [2, 0],       "Person", "age > 20 SORT(age ASC) DISTINCT(name)"],
+        ["ObjectSet", [2, 0],       "Person", "age > 20 SORT(age ASC, name DESC) DISTINCT(name)"],
+        ["ObjectSet", [2, 0],       "Person", "age > 20 SORT(name DESC) SORT(age ASC) DISTINCT(name)"],
+        ["ObjectSet", [2, 0, 3, 1], "Person", "age > 20 SORT(age ASC, name DESC) DISTINCT(name, age)"],
+        ["ObjectSet", [0, 2],       "Person", "age > 20 SORT(age ASC) DISTINCT(age) SORT(name DESC) DISTINCT(name)"]
     ]
 }
-
 }

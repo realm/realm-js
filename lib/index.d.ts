@@ -81,7 +81,7 @@ declare namespace Realm {
         path?: string;
         readOnly?: boolean;
         inMemory?: boolean;
-        schema?: ObjectClass[] | ObjectSchema[];
+        schema?: (ObjectClass | ObjectSchema)[];
         schemaVersion?: number;
         sync?: Realm.Sync.SyncConfiguration;
         deleteRealmIfMigrationNeeded?: boolean;
@@ -160,6 +160,11 @@ declare namespace Realm {
         sorted(reverse?: boolean): Results<T>;
         sorted(descriptor: SortDescriptor[]): Results<T>;
         sorted(descriptor: string, reverse?: boolean): Results<T>;
+
+        /**
+         * @returns Results<T>
+         */
+        subscribe(subscriptionName?: string): Realm.Sync.Subscription;
 
         /**
          * @returns Results
@@ -374,6 +379,7 @@ declare namespace Realm.Sync {
         open_ssl_verify_callback?: SSLVerifyCallback;
         error?: ErrorCallback;
         partial?: boolean;
+        _disablePartialSyncUrlChecks?:boolean;
     }
 
     type ProgressNotificationCallback = (transferred: number, transferable: number) => void;
@@ -392,6 +398,29 @@ declare namespace Realm.Sync {
 
         addProgressNotification(direction: ProgressDirection, mode: ProgressMode, progressCallback: ProgressNotificationCallback): void;
         removeProgressNotification(progressCallback: ProgressNotificationCallback): void;
+    }
+
+    type SubscriptionNotificationCallback = (subscription: Subscription, state: number) => void;
+
+    /**
+     * Subscription
+     * @see { @link https://realm.io/docs/javascript/latest/api/Realm.Sync.Subscription.html }
+     */
+    class Subscription {
+        readonly state: SubscriptionState;
+        readonly error: string;
+
+        unsubscribe(): void;
+        addListener(subscruptionCallback: SubscriptionNotificationCallback): void;
+        removeListener(subscruptionCallback: SubscriptionNotificationCallback): void;
+    }
+
+    enum SubscriptionState {
+         Error,
+         Creating,
+         Pending,
+         Complete,
+         Invalidated,
     }
 
     /**
@@ -420,6 +449,10 @@ declare namespace Realm.Sync {
     function removeListener(regex: string, name: string, changeCallback: (changeEvent: ChangeEvent) => void): Promise<void>;
     function setLogLevel(logLevel: 'all' | 'trace' | 'debug' | 'detail' | 'info' | 'warn' | 'error' | 'fatal' | 'off'): void;
     function initiateClientReset(path: string): void;
+
+    /**
+     * @deprecated, to be removed in future versions
+     */
     function setFeatureToken(token: string): void;
 
     type Instruction = {
@@ -455,6 +488,42 @@ declare namespace Realm.Sync {
     }
 }
 
+declare namespace Realm.Permissions {
+    class Permission {
+        static schema: ObjectSchema;
+
+        identity: string;
+        canRead: boolean;
+        canUpdate: boolean;
+        canDelete: boolean;
+        canSetPermissions: boolean;
+        canQuery: boolean;
+        canCreate: boolean;
+        canModifySchema: boolean;
+    }
+
+    class User {
+        static schema: ObjectSchema;
+        identity: string;
+    }
+
+    class Role {
+        static schema: ObjectSchema;
+        name: string;
+        members: User[];
+    }
+
+    class Class {
+        static schema: ObjectSchema;
+        class_name: string;
+        permissions: Permission[];
+    }
+
+    class Realm {
+        static schema: ObjectSchema;
+        permissions: Permission[];
+    }
+}
 
 interface ProgressPromise extends Promise<Realm> {
     progress(callback: Realm.Sync.ProgressNotificationCallback): Promise<Realm>
@@ -498,10 +567,15 @@ declare class Realm {
     static openAsync(config: Realm.Configuration, callback: (error: any, realm: Realm) => void, progressCallback?: Realm.Sync.ProgressNotificationCallback): void
 
     /**
+     * Return a configuration for a default Realm.
+     */
+    static automaticSyncConfiguration(): string;
+
+    /**
      * Delete the Realm file for the given configuration.
      * @param {Configuration} config
      */
-    static deleteFile(config: Realm.Configuration): void
+    static deleteFile(config: Realm.Configuration): void;
 
     /**
      * @param  {Realm.Configuration} config?
@@ -524,7 +598,7 @@ declare class Realm {
      * @param  {boolean} update?
      * @returns T
      */
-    create<T>(type: string | Realm.ObjectClass | Function, properties: T & Realm.ObjectPropsType, update?: boolean): T;
+    create<T>(type: string | Realm.ObjectClass | Function, properties: T | Realm.ObjectPropsType, update?: boolean): T;
 
     /**
      * @param  {Realm.Object|Realm.Object[]|Realm.List<any>|Realm.Results<any>|any} object
@@ -601,10 +675,9 @@ declare class Realm {
      */
     compact(): boolean;
 
-    /**
-     * @returns Promise<Results<T>>
-     */
-    subscribeToObjects<T>(objectType: string, query: string): Promise<Realm.Results<T>>;
+    privileges() : Realm.Permissions.Realm;
+    privileges(objectType: string | Realm.ObjectSchema | Function) : Realm.Permissions.Class;
+    privileges(obj: Realm.Object) : Realm.Permissions.Class;
 }
 
 declare module 'realm' {
