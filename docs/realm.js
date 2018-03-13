@@ -126,7 +126,7 @@ class Realm {
      * @returns {Realm~Configuration} - a configuration matching a default synced Realm.
      * @since 2.3.0
      */
-    static defaultSyncConfiguration() {}
+    static automaticSyncConfiguration() {}
 
     /**
      * Closes this Realm so it may be re-opened with a newer schema version.

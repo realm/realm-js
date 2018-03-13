@@ -569,7 +569,7 @@ declare class Realm {
     /**
      * Return a configuration for a default Realm.
      */
-    static defaultSyncConfiguration(): string;
+    static automaticSyncConfiguration(): string;
 
     /**
      * Delete the Realm file for the given configuration.

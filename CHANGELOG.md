@@ -26,7 +26,7 @@
   - For non-synced Realms, all privileges are always granted.
   - For more details, please read the reference documentation.
 * [Sync] Revoke refresh token upon logout (#1354).
-* Added `Realm.defaultSyncConfiguration()` which will return the configuration for a default synced Realm (#1688).
+* Added `Realm.automaticSyncConfiguration()` which will return the configuration for a default synced Realm (#1688).
 * [Sync] Deprecated `Realm.Sync.setFeatureToken` (#1689).
 
 ### Bug fixes
