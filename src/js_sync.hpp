@@ -823,7 +823,19 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
             is_partial = Value::validated_to_boolean(ctx, partial_value);
         }
 
-        config.sync_config = std::make_shared<SyncConfig>(shared_user, std::move(raw_realm_url));
+        bool disable_partial_sync_url_checks = false;
+        ValueType disable_partial_sync_url_checks_value = Object::get_property(ctx, sync_config_object, "_disablePartialSyncUrlChecks");
+        if (!Value::is_undefined(ctx, disable_partial_sync_url_checks_value)) {
+            disable_partial_sync_url_checks = Value::validated_to_boolean(ctx, disable_partial_sync_url_checks_value);
+        }
+
+        if (disable_partial_sync_url_checks) {
+            config.sync_config = std::make_shared<SyncConfig>(shared_user, std::move(""));
+            config.sync_config->reference_realm_url = std::move(raw_realm_url);
+        }
+        else {
+            config.sync_config = std::make_shared<SyncConfig>(shared_user, std::move(raw_realm_url));
+        }
         config.sync_config->bind_session_handler = std::move(bind);
         config.sync_config->error_handler = std::move(error_handler);
         config.sync_config->client_validate_ssl = client_validate_ssl;

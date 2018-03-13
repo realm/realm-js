@@ -749,6 +749,36 @@ module.exports = {
             });
     },
 
+    testOpenPartialSyncUrl() {
+        if (!isNodeProccess) {
+            return;
+        }
+
+        const username = uuid();
+        return Realm.Sync.User.register('http://localhost:9080', username, 'password')
+            .then(user => {
+                let config1 = {
+                    sync: {
+                        user: user,
+                        url: `realm://localhost:9080/~/default/__partial/`,
+                        partial: true,
+                        _disablePartialSyncUrlChecks: true
+                    }
+                };
+                const realm = new Realm(config1);
+                TestCase.assertFalse(realm.isClosed);
+
+                let config2 = {
+                    sync: {
+                        user: user,
+                        url: `realm://localhost:9080/~/default/__partial/`,  // <--- not allowed URL
+                        partial: true,
+                    }
+                };
+                TestCase.assertThrows(() => new Realm(config2));
+            });
+    },
+
     testPartialSyncAnonymous_SubscriptionListener() {
         // FIXME: try to enable for React Native
         if (!isNodeProccess) {
