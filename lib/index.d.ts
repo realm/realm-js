@@ -400,7 +400,7 @@ declare namespace Realm.Sync {
         removeProgressNotification(progressCallback: ProgressNotificationCallback): void;
     }
 
-    type SubscriptionNotificationCallback = (state: number) => void;
+    type SubscriptionNotificationCallback = (subscription: Subscription, state: number) => void;
 
     /**
      * Subscription
