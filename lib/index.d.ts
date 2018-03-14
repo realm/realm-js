@@ -369,7 +369,7 @@ declare namespace Realm.Sync {
     }
 
     type ErrorCallback = (session: Session, error: SyncError) => void;
-    type SSLVerifyCallback = (serverAddress: string, serverPort: number, pemCertificate: string, preverifyOk: number, depth: number) => boolean;
+    type SSLVerifyCallback = (serverAddress: string, serverPort: number, pemCertificate: string, acceptedByOpenSSL: boolean, depth: number) => boolean;
 
     interface SyncConfiguration {
         user: User;

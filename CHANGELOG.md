@@ -7,7 +7,7 @@ X.Y.Z Release notes
 * Added an optional user as argument to `Realm.automaticSyncConfiguration` (#1708).
 
 ### Bug fixes
-* None.
+* Fixed from TypeScript defintion for `open_ssl_verify_callback` configuration option (#1652).
 
 ### Internal
 * None.
