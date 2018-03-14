@@ -1,3 +1,17 @@
+X.Y.Z Release notes
+=============================================================
+### Breaking changes
+* None.
+
+### Enhancements
+* Added an optional user as argument to `Realm.automaticSyncConfiguration` (#1708).
+
+### Bug fixes
+* None.
+
+### Internal
+* None.
+
 2.3.0 Release notes (2018-3-13)
 =============================================================
 ### Breaking changes

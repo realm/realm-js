@@ -568,8 +568,9 @@ declare class Realm {
 
     /**
      * Return a configuration for a default Realm.
+     * @param {Realm.Sync.User} optional user.
      */
-    static automaticSyncConfiguration(): string;
+    static automaticSyncConfiguration(user?: Realm.Sync.User): string;
 
     /**
      * Delete the Realm file for the given configuration.
