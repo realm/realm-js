@@ -9,8 +9,12 @@ X.Y.Z Release notes
 ### Bug fixes
 * None.
 
+### Compatibility
+* Realm Object Server 3.0.0 or later.
+
 ### Internal
-* None.
+* Tested with Realm Object Server 3.0.0-rc.1.
+
 
 2.3.0 Release notes (2018-3-13)
 =============================================================
