@@ -7,7 +7,7 @@ X.Y.Z Release notes
 * Added an optional user as argument to `Realm.automaticSyncConfiguration` (#1708).
 
 ### Bug fixes
-* None.
+* [Sync] Avoid hammering the ROS authentication service when large numbers of Realms are opened at once.
 
 ### Internal
 * None.
