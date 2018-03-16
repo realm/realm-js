@@ -1,3 +1,18 @@
+X.Y.Z Release notes
+=============================================================
+### Breaking changes
+* None.
+
+### Enhancements
+* None.
+
+### Bug fixes
+* [Sync] Avoid hammering the ROS authentication service when large numbers of Realms are opened at once.
+
+### Internal
+* None.
+
+
 2.2.15 Release notes (2018-3-9)
 =============================================================
 ### Breaking changes
