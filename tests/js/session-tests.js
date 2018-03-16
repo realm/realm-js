@@ -172,51 +172,23 @@ module.exports = {
         }
 
         const username = uuid();
-        const realmName = 'default';
         const expectedObjectsCount = 3;
 
         let user;
-        return runOutOfProcess(__dirname + '/download-api-helper.js', username, realmName, REALM_MODULE_PATH)
+        return runOutOfProcess(__dirname + '/partial-sync-api-helper.js', username, REALM_MODULE_PATH)
             .then(() => Realm.Sync.User.login('http://localhost:9080', username, 'password'))
             .then(u => {
                 user = u;
-                return Realm.open(Realm.automaticSyncConfiguration());
+                let config = Realm.automaticSyncConfiguration();
+                config.schema = [{ name: 'Dog', properties: { name: 'string' } }];
+                return Realm.open(config);
             })
             .then(realm => {
-                let actualObjectsCount = realm.objects('Dog').length;
-                TestCase.assertEqual(actualObjectsCount, expectedObjectsCount, "Synced realm does not contain the expected objects count");
-
                 const session = realm.syncSession;
                 TestCase.assertInstanceOf(session, Realm.Sync.Session);
                 TestCase.assertEqual(session.user.identity, user.identity);
                 TestCase.assertEqual(session.state, 'active');
-            });
-    },
-
-    testDefaultRealmFromUser() {
-        if (!isNodeProccess) {
-            return;
-        }
-
-        const username = uuid();
-        const realmName = 'default';
-        const expectedObjectsCount = 3;
-
-        let user;
-        return runOutOfProcess(__dirname + '/download-api-helper.js', username, realmName, REALM_MODULE_PATH)
-            .then(() => Realm.Sync.User.login('http://localhost:9080', username, 'password'))
-            .then(u => {
-                user = u;
-                return Realm.open(Realm.automaticSyncConfiguration(user));
-            })
-            .then(realm => {
-                let actualObjectsCount = realm.objects('Dog').length;
-                TestCase.assertEqual(actualObjectsCount, expectedObjectsCount, "Synced realm does not contain the expected objects count");
-
-                const session = realm.syncSession;
-                TestCase.assertInstanceOf(session, Realm.Sync.Session);
-                TestCase.assertEqual(session.user.identity, user.identity);
-                TestCase.assertEqual(session.state, 'active');
+                realm.close();
             });
     },
 
@@ -804,7 +776,7 @@ module.exports = {
                 let config1 = {
                     sync: {
                         user: user,
-                        url: `realm://localhost:9080/~/default/__partial/`,
+                        url: `realm://localhost:9080/default/__partial/`,
                         partial: true,
                         _disablePartialSyncUrlChecks: true
                     }
@@ -815,7 +787,7 @@ module.exports = {
                 let config2 = {
                     sync: {
                         user: user,
-                        url: `realm://localhost:9080/~/default/__partial/`,  // <--- not allowed URL
+                        url: `realm://localhost:9080/default/__partial/`,  // <--- not allowed URL
                         partial: true,
                     }
                 };
@@ -830,24 +802,15 @@ module.exports = {
         }
 
         const username = uuid();
-        const realmName = uuid();
 
-        return runOutOfProcess(__dirname + '/download-api-helper.js', username, realmName, REALM_MODULE_PATH)
+        return runOutOfProcess(__dirname + '/partial-sync-api-helper.js', username, REALM_MODULE_PATH)
             .then(() => Realm.Sync.User.login('http://localhost:9080', username, 'password'))
             .then(user => {
-                let config = {
-                    sync: {
-                        user: user,
-                        url: `realm://localhost:9080/~/${realmName}`,
-                        partial: true,
-                        error: (session, error) => console.log(error)
-                    },
-                    schema: [{ name: 'Dog', properties: { name: 'string' } }]
-                };
+                let config = Realm.automaticSyncConfiguration();
+                config.schema = [{ name: 'Dog', properties: { name: 'string' } }];
 
                 Realm.deleteFile(config);
                 const realm = new Realm(config);
-                TestCase.assertEqual(realm.objects('Dog').length, 0);
                 var results = realm.objects('Dog').filtered("name == 'Lassy 1'");
                 var subscription = results.subscribe();
                 TestCase.assertEqual(subscription.state, Realm.Sync.SubscriptionState.Creating);
@@ -873,24 +836,15 @@ module.exports = {
         }
 
         const username = uuid();
-        const realmName = uuid();
 
-        return runOutOfProcess(__dirname + '/download-api-helper.js', username, realmName, REALM_MODULE_PATH)
+        return runOutOfProcess(__dirname + '/partial-sync-api-helper.js', username, REALM_MODULE_PATH)
             .then(() => Realm.Sync.User.login('http://localhost:9080', username, 'password'))
             .then(user => {
-                let config = {
-                    sync: {
-                        user: user,
-                        url: `realm://localhost:9080/~/${realmName}`,
-                        partial: true,
-                        error: (session, error) => console.log(error)
-                    },
-                    schema: [{ name: 'Dog', properties: { name: 'string' } }]
-                };
+                let config = Realm.automaticSyncConfiguration();
+                config.schema = [{ name: 'Dog', properties: { name: 'string' } }];
 
                 Realm.deleteFile(config);
                 const realm = new Realm(config);
-                TestCase.assertEqual(realm.objects('Dog').length, 0);
                 var results = realm.objects('Dog').filtered("name == 'Lassy 1'");
                 var subscription = results.subscribe();
                 TestCase.assertEqual(subscription.state, Realm.Sync.SubscriptionState.Creating);
@@ -916,24 +870,15 @@ module.exports = {
         }
 
         const username = uuid();
-        const realmName = uuid();
 
-        return runOutOfProcess(__dirname + '/download-api-helper.js', username, realmName, REALM_MODULE_PATH)
+        return runOutOfProcess(__dirname + '/partial-sync-api-helper.js', username, REALM_MODULE_PATH)
             .then(() => Realm.Sync.User.login('http://localhost:9080', username, 'password'))
             .then(user => {
-                let config = {
-                    sync: {
-                        user: user,
-                        url: `realm://localhost:9080/~/${realmName}`,
-                        partial: true,
-                        error: (session, error) => console.log(error)
-                    },
-                    schema: [{ name: 'Dog', properties: { name: 'string' } }]
-                };
+                let config = Realm.automaticSyncConfiguration();
+                config.schema = [{ name: 'Dog', properties: { name: 'string' } }];
 
                 Realm.deleteFile(config);
                 const realm = new Realm(config);
-                TestCase.assertEqual(realm.objects('Dog').length, 0);
                 var results1 = realm.objects('Dog').filtered("name == 'Lassy 1'");
                 var results2 = realm.objects('Dog').filtered("name == 'Lassy 2'");
                 var subscription1 = results1.subscribe();
@@ -977,15 +922,14 @@ module.exports = {
         }
 
         const username = uuid();
-        const realmName = uuid();
 
-        return runOutOfProcess(__dirname + '/download-api-helper.js', username, realmName, REALM_MODULE_PATH)
+        return runOutOfProcess(__dirname + '/partial-sync-api-helper.js', username, REALM_MODULE_PATH)
             .then(() => Realm.Sync.User.login('http://localhost:9080', username, 'password'))
             .then(user => {
                 let config = {
                     sync: {
                         user: user,
-                        url: `realm://localhost:9080/~/${realmName}`,
+                        url: 'realm://localhost:9080/default',
                         partial: false, // <---- calling subscribe should fail
                         error: (session, error) => console.log(error)
                     },
@@ -1006,20 +950,12 @@ module.exports = {
         }
 
         const username = uuid();
-        const realmName = uuid();
 
-        return runOutOfProcess(__dirname + '/download-api-helper.js', username, realmName, REALM_MODULE_PATH)
+        return runOutOfProcess(__dirname + '/partial-sync-api-helper.js', username, REALM_MODULE_PATH)
             .then(() => Realm.Sync.User.login('http://localhost:9080', username, 'password'))
             .then(user => {
-                let config = {
-                    sync: {
-                        user: user,
-                        url: `realm://localhost:9080/~/${realmName}`,
-                        partial: true,
-                        error: (session, error) => console.log(error)
-                    },
-                    schema: [{ name: 'Dog', properties: { name: 'string' } }]
-                };
+                let config = Realm.automaticSyncConfiguration();
+                config.schema = [{ name: 'Dog', properties: { name: 'string' } }];
 
                 Realm.deleteFile(config);
                 const realm = new Realm(config);
