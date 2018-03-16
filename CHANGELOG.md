@@ -1,5 +1,11 @@
 2.3.1 Release notes (2018-3-16)
 =============================================================
+### Compatability
+* Sync protocol: 24
+* Server-side history format: 4
+* File format: 7
+* Realm Object Server: 3.0.0-alpha.8
+
 ### Breaking changes
 * None.
 
