@@ -1,6 +1,6 @@
 2.3.1 Release notes (2018-3-16)
 =============================================================
-### Compatability
+### Compatibility
 * Sync protocol: 24
 * Server-side history format: 4
 * File format: 7
