@@ -1,26 +1,39 @@
+X.Y.Z Release notes
+=============================================================
+### Compatibility
+* Sync protocol: 24
+* Server-side history format: 4
+* File format: 7
+* Realm Object Server: 3.0.0 or later
+
+### Breaking changes
+* None.
+
+### Enhancements
+* Added `Realm.Sync.Subscription.removeAllListeners()`.
+
+### Internal
+* Tested with Realm Object Server 3.0.0.
+
 2.3.1 Release notes (2018-3-16)
 =============================================================
 ### Compatibility
 * Sync protocol: 24
 * Server-side history format: 4
 * File format: 7
-* Realm Object Server: 3.0.0-alpha.8
+* Realm Object Server: 3.0.0-alpha.8 or later
 
 ### Breaking changes
 * None.
 
 ### Enhancements
 * Added an optional user as argument to `Realm.automaticSyncConfiguration` (#1708).
-* Added `Realm.Sync.Subscription.removeAllListeners()`.
 
 ### Bug fixes
 * [Sync] Avoid hammering the ROS authentication service when large numbers of Realms are opened at once.
 
-### Compatibility
-* Realm Object Server 3.0.0 or later.
-
 ### Internal
-* Tested with Realm Object Server 3.0.0.
+* Tested with Realm Object Server 3.0.0-rc.1.
 
 
 2.3.0 Release notes (2018-3-13)
