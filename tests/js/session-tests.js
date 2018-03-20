@@ -834,7 +834,7 @@ module.exports = {
                             if (called1 && called2) {
                                 realm.close();
                                 console.log('Done 1');
-                                resolve('Done');
+                                Promise.resolve('Done');
                             }
                         }
                     });
@@ -854,13 +854,13 @@ module.exports = {
                             if (called1 && called2) {
                                 realm.close();
                                 console.log('Done 2');
-                                resolve('Done');
+                                Promise.resolve('Done');
                             }
                         }
                     });
 
                     setTimeout(() => {
-                        reject("listeners never called");
+                        Promise.reject("listeners never called");
                     }, 5000);
                 });
             });
