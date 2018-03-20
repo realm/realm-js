@@ -10,6 +10,7 @@ This closes # ???
 ## ☑️ ToDos
 <!-- Add your own todos here -->
 * [ ] 📝 Changelog entry
+* [ ] 📝 `Compatibility` label is updated or copied from previous entry
 * [ ] 🚦 Tests
 * [ ] 📝 Public documentation PR created or is not necessary
 * [ ] 💥 `Breaking` label has been applied or is not necessary
