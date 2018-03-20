@@ -413,6 +413,7 @@ declare namespace Realm.Sync {
         unsubscribe(): void;
         addListener(subscruptionCallback: SubscriptionNotificationCallback): void;
         removeListener(subscruptionCallback: SubscriptionNotificationCallback): void;
+        removeAllListeners(void): void;
     }
 
     enum SubscriptionState {

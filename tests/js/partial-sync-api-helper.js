@@ -24,6 +24,7 @@
 console.log("partial-sync-api-helper started");
 const username = process.argv[2];
 const realmModule = process.argv[3];
+console.log('FISK', username, realmModule);
 
 const Realm = require(realmModule);
 
@@ -33,12 +34,11 @@ function createObjects(user) {
             user,
             url: `realm://localhost:9080/default`,
             partial: true,
-            error: err => console.log(err)
+            error: err => console.log('partial-sync-api-helper', err)
         },
         schema: [{ name: 'Dog', properties: { name: 'string' } }]
     };
 
-    Realm.deleteFile(config);
     const realm = new Realm(config);
     realm.write(() => {
         for (let i = 1; i <= 3; i++) {
@@ -51,8 +51,7 @@ function createObjects(user) {
         let callback = (transferred, total) => {
             if (transferred === total) {
                 session.removeProgressNotification(callback);
-                realm.close();
-                resolve();
+                resolve(realm);
             }
         }
         session.addProgressNotification('upload', 'forCurrentlyOutstandingWork', callback);
@@ -61,9 +60,9 @@ function createObjects(user) {
 
 let registrationError;
 Realm.Sync.User.register('http://localhost:9080', username, 'password')
-  .catch((error) => {
-      registrationError = JSON.stringify(error);
-      return Realm.Sync.User.login('http://localhost:9080', username, 'password')
+    .catch((error) => {
+        registrationError = JSON.stringify(error);
+        return Realm.Sync.User.login('http://localhost:9080', username, 'password')
     })
     .catch((error) => {
         const loginError = JSON.stringify(error);

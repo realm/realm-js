@@ -5,6 +5,7 @@ X.Y.Z Release notes
 
 ### Enhancements
 * Added an optional user as argument to `Realm.automaticSyncConfiguration` (#1708).
+* Added `Realm.Sync.Subscription.removeAllListeners()`.
 
 ### Bug fixes
 * None.
@@ -13,7 +14,7 @@ X.Y.Z Release notes
 * Realm Object Server 3.0.0 or later.
 
 ### Internal
-* Tested with Realm Object Server 3.0.0-rc.1.
+* Tested with Realm Object Server 3.0.0.
 
 
 2.3.0 Release notes (2018-3-13)

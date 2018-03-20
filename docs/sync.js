@@ -524,6 +524,11 @@ class Subscription {
      * @throws {Error} If `callback` is not a function.
      */
     removeListener(callback) {}
+
+    /**
+     * Remove all listeners from the subscription instance.
+     */
+    removeAllListeners() {}
 }
 
 /**
