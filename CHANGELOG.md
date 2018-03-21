@@ -1,3 +1,18 @@
+X.Y.Z Release notes
+=============================================================
+### Breaking changes
+* None.
+
+### Enhancements
+* None.
+
+### Bug fixes
+* [Sync] Do a better job of not opening the notifier pipe file for global notifier realms.
+
+### Internal
+* None.
+
+
 2.2.16 Release notes (2018-3-16)
 =============================================================
 ### Breaking changes
