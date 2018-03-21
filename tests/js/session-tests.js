@@ -797,71 +797,69 @@ module.exports = {
                     shouldFail();
                     defaultRealmInvalidArguments();
 
-                    let config = Realm.automaticSyncConfiguration();
-                    config.schema = [{ name: 'Dog', properties: { name: 'string' } }];
-                    Realm.deleteFile(config);
+                    return new Promise((resolve, reject) => {
+                        let config = Realm.automaticSyncConfiguration();
+                        config.schema = [{ name: 'Dog', properties: { name: 'string' } }];
+                        Realm.deleteFile(config);
 
-                    realm = new Realm(config);
-                    const session = realm.syncSession;
-                    TestCase.assertInstanceOf(session, Realm.Sync.Session);
-                    TestCase.assertEqual(session.user.identity, user.identity);
-                    TestCase.assertEqual(session.state, 'active');
+                        realm = new Realm(config);
+                        const session = realm.syncSession;
+                        TestCase.assertInstanceOf(session, Realm.Sync.Session);
+                        TestCase.assertEqual(session.user.identity, user.identity);
+                        TestCase.assertEqual(session.state, 'active');
 
-                    var results1 = realm.objects('Dog').filtered("name == 'Lassy 1'");
-                    var results2 = realm.objects('Dog').filtered("name == 'Lassy 2'");
+                        var results1 = realm.objects('Dog').filtered("name == 'Lassy 1'");
+                        var results2 = realm.objects('Dog').filtered("name == 'Lassy 2'");
 
-                    var subscription1 = results1.subscribe();
-                    TestCase.assertEqual(subscription1.state, Realm.Sync.SubscriptionState.Creating);
+                        var subscription1 = results1.subscribe();
+                        TestCase.assertEqual(subscription1.state, Realm.Sync.SubscriptionState.Creating);
 
-                    var subscription2 = results2.subscribe();
-                    TestCase.assertEqual(subscription2.state, Realm.Sync.SubscriptionState.Creating);
+                        var subscription2 = results2.subscribe();
+                        TestCase.assertEqual(subscription2.state, Realm.Sync.SubscriptionState.Creating);
 
-                    let called1 = false;
-                    let called2 = false;
+                        let called1 = false;
+                        let called2 = false;
 
-                    subscription1.addListener((subscription, state) => {
-                        if (state === Realm.Sync.SubscriptionState.Complete) {
-                            results1.addListener((collection, changeset) => {
-                                TestCase.assertTrue(subscription1.state == Realm.Sync.SubscriptionState.Complete);
-                                TestCase.assertEqual(collection.length, 1);
-                                TestCase.assertTrue(collection[0].name === 'Lassy 1', "The object is not synced correctly");
-                                results1.removeAllListeners();
-                                subscription1.unsubscribe();
-                                called1 = true;
-                            });
-                        } else if (state === Realm.Sync.SubscriptionState.Invalidated) {
-                            subscription1.removeAllListeners();
-                            if (called1 && called2) {
-                                realm.close();
-                                console.log('Done 1');
-                                Promise.resolve('Done');
+                        subscription1.addListener((subscription, state) => {
+                            if (state === Realm.Sync.SubscriptionState.Complete) {
+                                results1.addListener((collection, changeset) => {
+                                    TestCase.assertEqual(collection.length, 1);
+                                    TestCase.assertTrue(collection[0].name === 'Lassy 1', "The object is not synced correctly");
+                                    results1.removeAllListeners();
+                                    subscription1.unsubscribe();
+                                    called1 = true;
+                                });
+                            } else if (state === Realm.Sync.SubscriptionState.Invalidated) {
+                                subscription1.removeAllListeners();
+                                if (called1 && called2) {
+                                    realm.close();
+                                    resolve('Done');
+                                }
                             }
-                        }
-                    });
+                        });
 
-                    subscription2.addListener((subscription, state) => {
-                        if (state === Realm.Sync.SubscriptionState.Complete) {
-                            results2.addListener((collection, changeset) => {
-                                TestCase.assertTrue(subscription2.state == Realm.Sync.SubscriptionState.Complete);
-                                TestCase.assertEqual(collection.length, 1);
-                                TestCase.assertTrue(collection[0].name === 'Lassy 2', "The object is not synced correctly");
-                                results2.removeAllListeners();
-                                subscription2.unsubscribe();
-                                called2 = true;
-                            });
-                        } else if (state === Realm.Sync.SubscriptionState.Invalidated) {
-                            subscription2.removeAllListeners();
-                            if (called1 && called2) {
-                                realm.close();
-                                console.log('Done 2');
-                                Promise.resolve('Done');
+                        subscription2.addListener((subscription, state) => {
+                            if (state === Realm.Sync.SubscriptionState.Complete) {
+                                results2.addListener((collection, changeset) => {
+                                    TestCase.assertEqual(collection.length, 1);
+                                    TestCase.assertTrue(collection[0].name === 'Lassy 2', "The object is not synced correctly");
+                                    results2.removeAllListeners();
+                                    subscription2.unsubscribe();
+                                    called2 = true;
+                                });
+                            } else if (state === Realm.Sync.SubscriptionState.Invalidated) {
+                                subscription2.removeAllListeners();
+                                if (called1 && called2) {
+                                    realm.close();
+                                    resolve('Done');
+                                }
                             }
-                        }
-                    });
+                        });
 
-                    setTimeout(() => {
-                        Promise.reject("listeners never called");
-                    }, 5000);
+                        setTimeout(() => {
+                            reject("listeners never called");
+                        }, 15000);
+                    });
                 });
             });
     },

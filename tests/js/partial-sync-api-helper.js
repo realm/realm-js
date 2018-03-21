@@ -24,7 +24,6 @@
 console.log("partial-sync-api-helper started");
 const username = process.argv[2];
 const realmModule = process.argv[3];
-console.log('FISK', username, realmModule);
 
 const Realm = require(realmModule);
 
