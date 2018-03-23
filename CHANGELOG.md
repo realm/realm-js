@@ -1,3 +1,23 @@
+2.3.3 Release notes (2018-3-23)
+=============================================================
+### Compatibility
+* Sync protocol: 24
+* Server-side history format: 4
+* File format: 7
+* Realm Object Server: 3.0.0 or later
+
+### Breaking changes
+* None.
+
+### Enhancements
+* None.
+
+### Bug fixes
+* Fixed a bug where leaking Realms when an error occurs within an event handler (#1725).
+
+### Internal
+* Added trace logging to the global notifier (realm-js-private #426).
+
 2.3.2 Release notes (2018-3-21)
 =============================================================
 ### Compatibility
