@@ -1,3 +1,18 @@
+2.2.18 Release notes (2018-3-23)
+=============================================================
+### Breaking changes
+* None.
+
+### Enhancements
+* None.
+
+### Bug fixes
+* Fixed a bug where leaking Realms when an error occurs within an event handler (#1725).
+
+### Internal
+* Added trace logging to the global notifier (realm-js-private #426).
+
+
 2.2.17 Release notes (2018-3-21)
 =============================================================
 ### Breaking changes
