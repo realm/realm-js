@@ -307,3 +307,20 @@ exports.MultiListObject = {
         'list2':      'string[]'
     }
 };
+
+exports.Language = {
+    name: 'Language',
+    properties: {
+        name: 'string',
+        spokenIn: {type: 'linkingObjects', objectType: 'Country', property: 'languages'}
+    }
+};
+
+exports.Country = {
+    name: 'Country',
+    properties: {
+        name: 'string',
+        languages: 'Language[]',
+    }
+};
+
