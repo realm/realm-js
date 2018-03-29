@@ -162,7 +162,6 @@ inline void alias_backlinks(parser::KeyPathMapping &mapping, const realm::Shared
                 const TableRef table = ObjectStore::table_for_object_type(realm->read_group(), it->name);
                 const TableRef target_table = ObjectStore::table_for_object_type(realm->read_group(), target_object_schema->name);
                 std::string native_name = "@links." + std::string(target_table->get_name()) + "." + property.link_origin_property_name;
-                std::cout << table->get_name() << " mapping: " << property.name << " to " << native_name << std::endl;
                 mapping.add_mapping(table, property.name, native_name);
             }
         }
