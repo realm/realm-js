@@ -679,9 +679,10 @@ declare class Realm {
     /**
      * Write a copy to destination path
      * @param path destination path
+     * @param encryptionKey encryption key to use
      * @returns void
      */
-    writeCopyTo(path: string): void;
+    writeCopyTo(path: string, encryptionKey?: ArrayBuffer | ArrayBufferView): void;
 
     privileges() : Realm.Permissions.Realm;
     privileges(objectType: string | Realm.ObjectSchema | Function) : Realm.Permissions.Class;

@@ -1213,17 +1213,36 @@ module.exports = {
         });
         TestCase.assertEqual(1, realm.objects('TestObject').length);
 
-        TestCase.assertThrows(() => {
+        TestCase.assertThrowsContaining(() => {
+            realm.writeCopyTo();
+        }, "At least path has to be provided for 'writeCopyTo'");
+
+        TestCase.assertThrowsContaining(() => {
             realm.writeCopyTo(34);
-        }, "Argument to 'writeCopyTo' must be a String.")
+        }, "Argument to 'writeCopyTo' must be a String.");
 
         const copyName = "testWriteCopy.realm";
         realm.writeCopyTo(copyName);
-        realm.close();
 
         const copyConfig = { path: copyName };
         const realmCopy = new Realm(copyConfig);
         TestCase.assertEqual(1, realmCopy.objects('TestObject').length);
         realmCopy.close();
+
+        TestCase.assertThrowsContaining(() => {
+            realm.writeCopyTo("testWriteCopyWithInvalidKey.realm", "hello");
+        }, "Encryption key for 'writeCopyTo' must be a Binary.");
+
+        const encryptedCopyName = "testWriteEncryptedCopy.realm";
+        var encryptionKey = new Int8Array(64);
+        encryptionKey[0] = 1;
+        realm.writeCopyTo(encryptedCopyName, encryptionKey);
+
+        const encryptedCopyConfig = { path: encryptedCopyName, encryptionKey: encryptionKey };
+        const encryptedRealmCopy = new Realm(encryptedCopyConfig);
+        TestCase.assertEqual(1, encryptedRealmCopy.objects('TestObject').length);
+        encryptedRealmCopy.close();
+
+        realm.close();
     }
 };

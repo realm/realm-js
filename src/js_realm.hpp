@@ -1008,7 +1008,11 @@ void RealmClass<T>::compact(ContextType ctx, ObjectType this_object, Arguments a
 
 template<typename T>
 void RealmClass<T>::writeCopyTo(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
-    args.validate_maximum(1);
+    args.validate_maximum(2);
+
+    if (args.count == 0) {
+        throw std::runtime_error("At least path has to be provided for 'writeCopyTo'");
+    }
 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
 
@@ -1019,6 +1023,16 @@ void RealmClass<T>::writeCopyTo(ContextType ctx, ObjectType this_object, Argumen
 
     std::string path = Value::validated_to_string(ctx, pathValue);
     BinaryData key;
+    if (args.count == 2) {
+        ValueType key_value = args[1];
+        if (!Value::is_binary(ctx, key_value)) {
+            throw std::runtime_error("Encryption key for 'writeCopyTo' must be a Binary.");
+        }
+
+        auto key_data = Value::validated_to_binary(ctx, key_value);
+        key = { static_cast<const char *>(key_data.data()), key_data.size() };
+    }
+
     realm->write_copy(path, key);
 }
 
