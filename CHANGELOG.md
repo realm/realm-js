@@ -1,3 +1,17 @@
+X.Y.Z Release notes
+=============================================================
+### Breaking changes
+* None.
+
+### Enhancements
+* None.
+
+### Bug fixes
+* Fix named LinkingObject queries across different classes (#1734).
+
+### Internal
+* None.
+
 2.3.3 Release notes (2018-3-23)
 =============================================================
 ### Compatibility
