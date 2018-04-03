@@ -272,6 +272,18 @@ class Realm {
      * @returns {true} if compaction succeeds.
      */
     compact() {}
+
+    /**
+     * Writes a compacted copy of the Realm to the given path.
+     *
+     * The destination file cannot already exist.
+     *
+     * Note that if this method is called from within a write transaction, the current data is written,
+     * not the data from the point when the previous write transaction was committed.
+     * @param {string} path path to save the Realm to
+     * @param {ArrayBuffer|ArrayBufferView} [encryptionKey] - Optional 64-byte encryption key to encrypt the new file with.
+     */
+    writeCopyTo(path, encryptionKey) {}
 }
 
 /**
