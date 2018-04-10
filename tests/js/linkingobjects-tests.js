@@ -109,24 +109,49 @@ module.exports = {
             let english = realm.create('Language', {name: 'English'});
             let french = realm.create('Language', {name: 'French'});
             let danish = realm.create('Language', {name: 'Danish'});
+            let latin = realm.create('Language', {name: 'Latin'});
             let canada = realm.create('Country', {name: 'Canada', languages: [english, french]});
             let denmark = realm.create('Country', {name: 'Denmark', languages: [danish, english]});
             let france = realm.create('Country', {name: 'France', languages: [french, english]});
         });
         let languages = realm.objects('Language');
-        let spokenInThreeCountries = languages.filtered('spokenIn.@count == 3');
-        TestCase.assertEqual(spokenInThreeCountries.length, 1);
-        TestCase.assertEqual(spokenInThreeCountries[0].name, 'English');
-        let spokenInTwoCountries = languages.filtered('spokenIn.@count == 2');
-        TestCase.assertEqual(spokenInTwoCountries.length, 1);
-        TestCase.assertEqual(spokenInTwoCountries[0].name, 'French')
-        let spokenInOneCountry = languages.filtered('spokenIn.@count == 1');
-        TestCase.assertEqual(spokenInOneCountry.length, 1);
-        TestCase.assertEqual(spokenInOneCountry[0].name, 'Danish')
-        let languagesSpokenInCanada = languages.filtered('spokenIn.name ==[c] "canada"');
-        TestCase.assertEqual(languagesSpokenInCanada.length, 2);
-        TestCase.assertEqual(languagesSpokenInCanada[0].name, 'English');
-        TestCase.assertEqual(languagesSpokenInCanada[1].name, 'French');
+        {
+            let spokenInThreeCountries = languages.filtered('spokenIn.@count == 3');
+            TestCase.assertEqual(spokenInThreeCountries.length, 1);
+            TestCase.assertEqual(spokenInThreeCountries[0].name, 'English');
+            let spokenInTwoCountries = languages.filtered('spokenIn.@count == 2');
+            TestCase.assertEqual(spokenInTwoCountries.length, 1);
+            TestCase.assertEqual(spokenInTwoCountries[0].name, 'French')
+            let spokenInOneCountry = languages.filtered('spokenIn.@count == 1');
+            TestCase.assertEqual(spokenInOneCountry.length, 1);
+            TestCase.assertEqual(spokenInOneCountry[0].name, 'Danish')
+            let languagesSpokenInCanada = languages.filtered('spokenIn.name ==[c] "canada"');
+            TestCase.assertEqual(languagesSpokenInCanada.length, 2);
+            TestCase.assertEqual(languagesSpokenInCanada[0].name, 'English');
+            TestCase.assertEqual(languagesSpokenInCanada[1].name, 'French');
+        }
+        // check the same but using the unnamed relationship which is available to users
+        {
+            let spokenInThreeCountries = languages.filtered('@links.Country.languages.@count == 3');
+            TestCase.assertEqual(spokenInThreeCountries.length, 1);
+            TestCase.assertEqual(spokenInThreeCountries[0].name, 'English');
+            let spokenInTwoCountries = languages.filtered('@links.Country.languages.@count == 2');
+            TestCase.assertEqual(spokenInTwoCountries.length, 1);
+            TestCase.assertEqual(spokenInTwoCountries[0].name, 'French')
+            let spokenInOneCountry = languages.filtered('@links.Country.languages.@count == 1');
+            TestCase.assertEqual(spokenInOneCountry.length, 1);
+            TestCase.assertEqual(spokenInOneCountry[0].name, 'Danish')
+            let languagesSpokenInCanada = languages.filtered('@links.Country.languages.name ==[c] "canada"');
+            TestCase.assertEqual(languagesSpokenInCanada.length, 2);
+            TestCase.assertEqual(languagesSpokenInCanada[0].name, 'English');
+            TestCase.assertEqual(languagesSpokenInCanada[1].name, 'French');
+        }
+        let notSpokenInAnyCountry = languages.filtered('@links.@count == 0'); // no incoming links over any relationships to the object
+        TestCase.assertEqual(notSpokenInAnyCountry.length, 1);
+        TestCase.assertEqual(notSpokenInAnyCountry[0].name, 'Latin');
+        let notSpokenMethod2 = languages.filtered('@links.Country.languages.@count == 0'); // links of a specific relationship are 0
+        TestCase.assertEqual(notSpokenMethod2.length, 1);
+        TestCase.assertEqual(notSpokenMethod2[0].name, 'Latin');
     },
 
     testMethod: function() {
