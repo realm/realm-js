@@ -1,5 +1,11 @@
-X.Y.Z Release notes
+2.3.4 Release notes (2018-4-12)
 =============================================================
+### Compatibility
+* Sync protocol: 24
+* Server-side history format: 4
+* File format: 7
+* Realm Object Server: 3.0.0 or later
+
 ### Breaking changes
 * None.
 
