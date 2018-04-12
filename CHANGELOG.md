@@ -7,7 +7,8 @@ X.Y.Z Release notes
 * None.
 
 ### Bug fixes
-* Fix named LinkingObject queries across different classes (#1734).
+* Fixed named LinkingObject queries across different classes (#1734).
+* Fixed a bug when refreshing admin token due to network errors (realm-js-private #433).
 
 ### Internal
 * None.
