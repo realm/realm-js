@@ -1235,7 +1235,9 @@ module.exports = {
 
         const encryptedCopyName = "testWriteEncryptedCopy.realm";
         var encryptionKey = new Int8Array(64);
-        encryptionKey[0] = 1;
+        for(let i=0; i < 64; i++) {
+            encryptionKey[i] = 1;
+        }
         realm.writeCopyTo(encryptedCopyName, encryptionKey);
 
         const encryptedCopyConfig = { path: encryptedCopyName, encryptionKey: encryptionKey };
