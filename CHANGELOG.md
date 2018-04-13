@@ -1,3 +1,18 @@
+X.Y.Z Release notes
+=============================================================
+### Breaking changes
+* None.
+
+### Enhancements
+* None.
+
+### Bug fixes
+* None.
+
+### Internal
+* Updated to Realm Sync 2.2.17
+
+
 2.2.19 Release notes (2018-4-10)
 =============================================================
 ### Breaking changes
@@ -9,7 +24,7 @@
 ### Bug fixes
 * Avoid crashing if partial Realms find their way into the admin Realm when using Realm Object Server v3.0.0 or later (realm-js-private #430).
 
-### 
+### Internal
 * None.
 
 
