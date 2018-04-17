@@ -1,3 +1,17 @@
+X.Y.Z Release notes
+=============================================================
+### Breaking changes
+* None.
+
+### Enhancements
+* None.
+
+### Bug fixes
+* Fixed logout error due to fetch body not being stringified (#1731).
+
+### Internal
+* None.
+
 2.3.4 Release notes (2018-4-12)
 =============================================================
 ### Compatibility
