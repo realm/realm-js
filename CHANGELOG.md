@@ -1,3 +1,17 @@
+X.Y.Z Release notes
+=============================================================
+### Breaking changes
+* None.
+
+### Enhancements
+* None.
+
+### Bug fixes
+* Fixed TypeScript definition for `Configuration.schema` (#1726).
+
+### Internal
+* None.
+
 2.2.20 Release notes (2018-4-13)
 =============================================================
 ### Breaking changes
