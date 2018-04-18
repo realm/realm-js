@@ -1,5 +1,11 @@
 X.Y.Z Release notes
 =============================================================
+### Compatibility
+* Sync protocol: 24
+* Server-side history format: 4
+* File format: 7
+* Realm Object Server: 3.0.0 or later
+
 ### Breaking changes
 * None.
 
@@ -8,6 +14,7 @@ X.Y.Z Release notes
 
 ### Bug fixes
 * Fixed logout error due to fetch body not being stringified (#1731).
+* Added `Subscription` import to `browser/index.js` and register type converter (#1711).
 
 ### Internal
 * None.
