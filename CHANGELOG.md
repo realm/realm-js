@@ -4,13 +4,93 @@ X.Y.Z Release notes
 * None.
 
 ### Enhancements
-* Added an optional user as argument to `Realm.automaticSyncConfiguration` (#1708).
+* None.
 
 ### Bug fixes
+* Fixed logout error due to fetch body not being stringified (#1731).
 * Fixed from TypeScript defintion for `open_ssl_verify_callback` configuration option (#1652).
 
 ### Internal
 * None.
+
+2.3.4 Release notes (2018-4-12)
+=============================================================
+### Compatibility
+* Sync protocol: 24
+* Server-side history format: 4
+* File format: 7
+* Realm Object Server: 3.0.0 or later
+
+### Breaking changes
+* None.
+
+### Enhancements
+* None.
+
+### Bug fixes
+* Fixed named LinkingObject queries across different classes (#1734).
+* Fixed a bug when refreshing admin token due to network errors (realm-js-private #433).
+
+### Internal
+* None.
+
+2.3.3 Release notes (2018-3-23)
+=============================================================
+### Compatibility
+* Sync protocol: 24
+* Server-side history format: 4
+* File format: 7
+* Realm Object Server: 3.0.0 or later
+
+### Breaking changes
+* None.
+
+### Enhancements
+* None.
+
+### Bug fixes
+* Fixed a bug where leaking Realms when an error occurs within an event handler (#1725).
+
+### Internal
+* Added trace logging to the global notifier (realm-js-private #426).
+
+2.3.2 Release notes (2018-3-21)
+=============================================================
+### Compatibility
+* Sync protocol: 24
+* Server-side history format: 4
+* File format: 7
+* Realm Object Server: 3.0.0 or later
+
+### Breaking changes
+* None.
+
+### Enhancements
+* Added `Realm.Sync.Subscription.removeAllListeners()`.
+
+### Internal
+* Tested with Realm Object Server 3.0.0.
+
+2.3.1 Release notes (2018-3-16)
+=============================================================
+### Compatibility
+* Sync protocol: 24
+* Server-side history format: 4
+* File format: 7
+* Realm Object Server: 3.0.0-alpha.8 or later
+
+### Breaking changes
+* None.
+
+### Enhancements
+* Added an optional user as argument to `Realm.automaticSyncConfiguration` (#1708).
+
+### Bug fixes
+* [Sync] Avoid hammering the ROS authentication service when large numbers of Realms are opened at once.
+
+### Internal
+* Tested with Realm Object Server 3.0.0-rc.1.
+
 
 2.3.0 Release notes (2018-3-13)
 =============================================================

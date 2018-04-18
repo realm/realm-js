@@ -159,8 +159,9 @@ inline void alias_backlinks(parser::KeyPathMapping &mapping, const realm::Shared
         for (const Property &property : it->computed_properties) {
             if (property.type == realm::PropertyType::LinkingObjects) {
                 auto target_object_schema = schema.find(property.object_type);
-                const TableRef table = ObjectStore::table_for_object_type(realm->read_group(), target_object_schema->name);
-                std::string native_name = "@links." + std::string(table->get_name()) + "." + property.link_origin_property_name;
+                const TableRef table = ObjectStore::table_for_object_type(realm->read_group(), it->name);
+                const TableRef target_table = ObjectStore::table_for_object_type(realm->read_group(), target_object_schema->name);
+                std::string native_name = "@links." + std::string(target_table->get_name()) + "." + property.link_origin_property_name;
                 mapping.add_mapping(table, property.name, native_name);
             }
         }

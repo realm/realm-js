@@ -166,77 +166,6 @@ module.exports = {
             });
     },
 
-    testDefaultRealm() {
-        if (!isNodeProccess) {
-            return;
-        }
-
-        const username = uuid();
-        const realmName = 'default';
-        const expectedObjectsCount = 3;
-
-        let user;
-        return runOutOfProcess(__dirname + '/download-api-helper.js', username, realmName, REALM_MODULE_PATH)
-            .then(() => Realm.Sync.User.login('http://localhost:9080', username, 'password'))
-            .then(u => {
-                user = u;
-                return Realm.open(Realm.automaticSyncConfiguration());
-            })
-            .then(realm => {
-                let actualObjectsCount = realm.objects('Dog').length;
-                TestCase.assertEqual(actualObjectsCount, expectedObjectsCount, "Synced realm does not contain the expected objects count");
-
-                const session = realm.syncSession;
-                TestCase.assertInstanceOf(session, Realm.Sync.Session);
-                TestCase.assertEqual(session.user.identity, user.identity);
-                TestCase.assertEqual(session.state, 'active');
-            });
-    },
-
-    testDefaultRealmFromUser() {
-        if (!isNodeProccess) {
-            return;
-        }
-
-        const username = uuid();
-        const realmName = 'default';
-        const expectedObjectsCount = 3;
-
-        let user;
-        return runOutOfProcess(__dirname + '/download-api-helper.js', username, realmName, REALM_MODULE_PATH)
-            .then(() => Realm.Sync.User.login('http://localhost:9080', username, 'password'))
-            .then(u => {
-                user = u;
-                return Realm.open(Realm.automaticSyncConfiguration(user));
-            })
-            .then(realm => {
-                let actualObjectsCount = realm.objects('Dog').length;
-                TestCase.assertEqual(actualObjectsCount, expectedObjectsCount, "Synced realm does not contain the expected objects count");
-
-                const session = realm.syncSession;
-                TestCase.assertInstanceOf(session, Realm.Sync.Session);
-                TestCase.assertEqual(session.user.identity, user.identity);
-                TestCase.assertEqual(session.state, 'active');
-            });
-    },
-
-    testDefaultRealmInvalidArguments() {
-        if (!isNodeProccess) {
-            return;
-        }
-
-        const username = uuid();
-        const realmName = 'default';
-        const expectedObjectsCount = 3;
-
-        let user;
-        return runOutOfProcess(__dirname + '/download-api-helper.js', username, realmName, REALM_MODULE_PATH)
-            .then(() => Realm.Sync.User.login('http://localhost:9080', username, 'password'))
-            .then(u => {
-                TestCase.assertThrows(() => Realm.automaticSyncConfiguration('foo', 'bar')); // too many arguments
-            })
-    },
-
     testRealmOpenWithExistingLocalRealm() {
         if (!isNodeProccess) {
             return;
@@ -793,254 +722,148 @@ module.exports = {
             });
     },
 
-    testOpenPartialSyncUrl() {
+
+    // All tests releated to partial sync is assemble in one big test.
+    // Since it is the same instance of ROS running, it is virtually impossible
+    // to reset the state between the tests.
+    // In the future we should away from this style of testing.
+    testPartialSync() {
         if (!isNodeProccess) {
             return;
         }
 
+        var user;
+        var realm;
+
         const username = uuid();
-        return Realm.Sync.User.register('http://localhost:9080', username, 'password')
-            .then(user => {
+        const expectedObjectsCount = 3;
+
+        function __partialIsAllowed() {
+                // test: __partial is allowed
                 let config1 = {
                     sync: {
                         user: user,
-                        url: `realm://localhost:9080/~/default/__partial/`,
+                        url: `realm://localhost:9080/default/__partial/`,
                         partial: true,
                         _disablePartialSyncUrlChecks: true
                     }
                 };
                 const realm = new Realm(config1);
                 TestCase.assertFalse(realm.isClosed);
+                realm.close();
+        };
 
-                let config2 = {
-                    sync: {
-                        user: user,
-                        url: `realm://localhost:9080/~/default/__partial/`,  // <--- not allowed URL
-                        partial: true,
-                    }
-                };
-                TestCase.assertThrows(() => new Realm(config2));
-            });
-    },
+        function __partialIsNotAllowed() {
+            let config2 = {
+                sync: {
+                    user: user,
+                    url: `realm://localhost:9080/default/__partial/`,  // <--- not allowed URL
+                    partial: true,
+                }
+            };
+            TestCase.assertThrows(() => new Realm(config2));
+        };
 
-    testPartialSyncAnonymous_SubscriptionListener() {
-        // FIXME: try to enable for React Native
-        if (!isNodeProccess) {
-            return;
-        }
+        function shouldFail() {
+            let config = {
+                sync: {
+                    user: user,
+                    url: 'realm://localhost:9080/~/default',
+                    partial: false, // <---- calling subscribe should fail
+                    error: (session, error) => console.log(error)
+                },
+                schema: [{ name: 'Dog', properties: { name: 'string' } }]
+            };
 
-        const username = uuid();
-        const realmName = uuid();
+            Realm.deleteFile(config);
+            const realm = new Realm(config);
+            TestCase.assertEqual(realm.objects('Dog').length, 0);
+            TestCase.assertThrows(function () { var subscription = realm.objects('Dog').filtered("name == 'Lassy 1'").subscribe(); } );
+            realm.close();
+        };
 
-        return runOutOfProcess(__dirname + '/download-api-helper.js', username, realmName, REALM_MODULE_PATH)
-            .then(() => Realm.Sync.User.login('http://localhost:9080', username, 'password'))
-            .then(user => {
-                let config = {
-                    sync: {
-                        user: user,
-                        url: `realm://localhost:9080/~/${realmName}`,
-                        partial: true,
-                        error: (session, error) => console.log(error)
-                    },
-                    schema: [{ name: 'Dog', properties: { name: 'string' } }]
-                };
+        function defaultRealmInvalidArguments() {
+            TestCase.assertThrows(() => Realm.automaticSyncConfiguration('foo', 'bar')); // too many arguments
+        };
 
-                Realm.deleteFile(config);
-                const realm = new Realm(config);
-                TestCase.assertEqual(realm.objects('Dog').length, 0);
-                var results = realm.objects('Dog').filtered("name == 'Lassy 1'");
-                var subscription = results.subscribe();
-                TestCase.assertEqual(subscription.state, Realm.Sync.SubscriptionState.Creating);
-                return new Promise((resolve, reject) => {
-                    subscription.addListener((subscription, state) => {
-                        if (state == Realm.Sync.SubscriptionState.Complete) {
-                            TestCase.assertEqual(results.length, 1);
-                            TestCase.assertTrue(results[0].name === 'Lassy 1', "The object is not synced correctly");
-                            resolve();
-                        }
-                    });
-                    setTimeout(function() {
-                        reject("listener never called");
-                    }, 5000);
-                });
-            });
-    },
 
-    testPartialSyncAnonymous_ResultsListener() {
-        // FIXME: try to enable for React Native
-        if (!isNodeProccess) {
-            return;
-        }
+        return runOutOfProcess(__dirname + '/partial-sync-api-helper.js', username, REALM_MODULE_PATH)
+            .then(() => {
+                return Realm.Sync.User.login('http://localhost:9080', username, 'password').then((u) => {
+                    user = u;
 
-        const username = uuid();
-        const realmName = uuid();
+                    __partialIsAllowed();
+                    __partialIsNotAllowed();
+                    shouldFail();
+                    defaultRealmInvalidArguments();
 
-        return runOutOfProcess(__dirname + '/download-api-helper.js', username, realmName, REALM_MODULE_PATH)
-            .then(() => Realm.Sync.User.login('http://localhost:9080', username, 'password'))
-            .then(user => {
-                let config = {
-                    sync: {
-                        user: user,
-                        url: `realm://localhost:9080/~/${realmName}`,
-                        partial: true,
-                        error: (session, error) => console.log(error)
-                    },
-                    schema: [{ name: 'Dog', properties: { name: 'string' } }]
-                };
+                    return new Promise((resolve, reject) => {
+                        let config = Realm.automaticSyncConfiguration();
+                        config.schema = [{ name: 'Dog', properties: { name: 'string' } }];
+                        Realm.deleteFile(config);
 
-                Realm.deleteFile(config);
-                const realm = new Realm(config);
-                TestCase.assertEqual(realm.objects('Dog').length, 0);
-                var results = realm.objects('Dog').filtered("name == 'Lassy 1'");
-                var subscription = results.subscribe();
-                TestCase.assertEqual(subscription.state, Realm.Sync.SubscriptionState.Creating);
-                return new Promise((resolve, reject) => {
-                    results.addListener((collection, changes) => {
-                        if (subscription.state === Realm.Sync.SubscriptionState.Complete) {
-                            TestCase.assertEqual(collection.length, 1);
-                            TestCase.assertTrue(collection[0].name === 'Lassy 1', "The object is not synced correctly");
-                            resolve();
-                        }
-                    });
-                    setTimeout(function() {
-                        reject("listener never called");
-                    }, 5000);
-                });
-            });
-    },
+                        realm = new Realm(config);
+                        const session = realm.syncSession;
+                        TestCase.assertInstanceOf(session, Realm.Sync.Session);
+                        TestCase.assertEqual(session.user.identity, user.identity);
+                        TestCase.assertEqual(session.state, 'active');
 
-    testPartialSyncMultipleSubscriptions() {
-        // FIXME: try to enable for React Native
-        if (!isNodeProccess) {
-            return;
-        }
+                        var results1 = realm.objects('Dog').filtered("name == 'Lassy 1'");
+                        var results2 = realm.objects('Dog').filtered("name == 'Lassy 2'");
 
-        const username = uuid();
-        const realmName = uuid();
+                        var subscription1 = results1.subscribe();
+                        TestCase.assertEqual(subscription1.state, Realm.Sync.SubscriptionState.Creating);
 
-        return runOutOfProcess(__dirname + '/download-api-helper.js', username, realmName, REALM_MODULE_PATH)
-            .then(() => Realm.Sync.User.login('http://localhost:9080', username, 'password'))
-            .then(user => {
-                let config = {
-                    sync: {
-                        user: user,
-                        url: `realm://localhost:9080/~/${realmName}`,
-                        partial: true,
-                        error: (session, error) => console.log(error)
-                    },
-                    schema: [{ name: 'Dog', properties: { name: 'string' } }]
-                };
+                        var subscription2 = results2.subscribe();
+                        TestCase.assertEqual(subscription2.state, Realm.Sync.SubscriptionState.Creating);
 
-                Realm.deleteFile(config);
-                const realm = new Realm(config);
-                TestCase.assertEqual(realm.objects('Dog').length, 0);
-                var results1 = realm.objects('Dog').filtered("name == 'Lassy 1'");
-                var results2 = realm.objects('Dog').filtered("name == 'Lassy 2'");
-                var subscription1 = results1.subscribe();
-                var subscription2 = results2.subscribe();
+                        let called1 = false;
+                        let called2 = false;
 
-                return new Promise((resolve, reject) => {
-                    let called1 = false;
-                    let called2 = false;
-                    results1.addListener((collection, changeset) => {
-                        if (subscription1.state == Realm.Sync.SubscriptionState.Complete) {
-                            TestCase.assertEqual(collection.length, 1);
-                            TestCase.assertTrue(collection[0].name === 'Lassy 1', "The object is not synced correctly");
-                            called1 = true;
-                            if (called1 && called2) {
-                                resolve();
+                        subscription1.addListener((subscription, state) => {
+                            if (state === Realm.Sync.SubscriptionState.Complete) {
+                                results1.addListener((collection, changeset) => {
+                                    TestCase.assertEqual(collection.length, 1);
+                                    TestCase.assertTrue(collection[0].name === 'Lassy 1', "The object is not synced correctly");
+                                    results1.removeAllListeners();
+                                    subscription1.unsubscribe();
+                                    called1 = true;
+                                });
+                            } else if (state === Realm.Sync.SubscriptionState.Invalidated) {
+                                subscription1.removeAllListeners();
+                                if (called1 && called2) {
+                                    realm.close();
+                                    resolve('Done');
+                                }
                             }
-                        }
-                    });
-                    results2.addListener((collection, changeset) => {
-                        if (subscription2.state == Realm.Sync.SubscriptionState.Complete) {
-                            TestCase.assertEqual(collection.length, 1);
-                            TestCase.assertTrue(collection[0].name === 'Lassy 2', "The object is not synced correctly");
-                            called2 = true;
-                            if (called1 && called2) {
-                                resolve();
+                        });
+
+                        subscription2.addListener((subscription, state) => {
+                            if (state === Realm.Sync.SubscriptionState.Complete) {
+                                results2.addListener((collection, changeset) => {
+                                    TestCase.assertEqual(collection.length, 1);
+                                    TestCase.assertTrue(collection[0].name === 'Lassy 2', "The object is not synced correctly");
+                                    results2.removeAllListeners();
+                                    subscription2.unsubscribe();
+                                    called2 = true;
+                                });
+                            } else if (state === Realm.Sync.SubscriptionState.Invalidated) {
+                                subscription2.removeAllListeners();
+                                if (called1 && called2) {
+                                    realm.close();
+                                    resolve('Done');
+                                }
                             }
-                        }
-                    });
+                        });
 
-                    setTimeout(function() {
-                         reject("listener never called");
-                    }, 5000);
+                        setTimeout(() => {
+                            reject("listeners never called");
+                        }, 15000);
+                    });
                 });
             });
     },
 
-    testPartialSyncFailing() {
-        // FIXME: try to enable for React Native
-        if (!isNodeProccess) {
-            return;
-        }
-
-        const username = uuid();
-        const realmName = uuid();
-
-        return runOutOfProcess(__dirname + '/download-api-helper.js', username, realmName, REALM_MODULE_PATH)
-            .then(() => Realm.Sync.User.login('http://localhost:9080', username, 'password'))
-            .then(user => {
-                let config = {
-                    sync: {
-                        user: user,
-                        url: `realm://localhost:9080/~/${realmName}`,
-                        partial: false, // <---- calling subscribe should fail
-                        error: (session, error) => console.log(error)
-                    },
-                    schema: [{ name: 'Dog', properties: { name: 'string' } }]
-                };
-
-                Realm.deleteFile(config);
-                const realm = new Realm(config);
-                TestCase.assertEqual(realm.objects('Dog').length, 0);
-                TestCase.assertThrows(function () { var subscription = realm.objects('Dog').filtered("name == 'Lassy 1'").subscribe(); } );
-            });
-    },
-
-    testPartialSyncUnsubscribe() {
-        // FIXME: try to enable for React Native
-        if (!isNodeProccess) {
-            return;
-        }
-
-        const username = uuid();
-        const realmName = uuid();
-
-        return runOutOfProcess(__dirname + '/download-api-helper.js', username, realmName, REALM_MODULE_PATH)
-            .then(() => Realm.Sync.User.login('http://localhost:9080', username, 'password'))
-            .then(user => {
-                let config = {
-                    sync: {
-                        user: user,
-                        url: `realm://localhost:9080/~/${realmName}`,
-                        partial: true,
-                        error: (session, error) => console.log(error)
-                    },
-                    schema: [{ name: 'Dog', properties: { name: 'string' } }]
-                };
-
-                Realm.deleteFile(config);
-                const realm = new Realm(config);
-                var results = realm.objects('Dog').filtered("name == 'Lassy 1'");
-                var subscription = results.subscribe();
-                TestCase.assertEqual(subscription.state, Realm.Sync.SubscriptionState.Creating);
-                return new Promise((resolve, reject) => {
-                    results.addListener((collection, changes) => {
-                        if (subscription.state === Realm.Sync.SubscriptionState.Complete) {
-                            subscription.unsubscribe();
-                        }
-                        if (subscription.state === Realm.Sync.SubscriptionState.Invalidated) {
-                            resolve();
-                        }
-                    });
-                    setTimeout(function() {
-                        reject("listener never called");
-                    }, 5000);
-                });
-            });
-    },
 
     testClientReset() {
         // FIXME: try to enable for React Native

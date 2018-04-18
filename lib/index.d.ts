@@ -413,6 +413,7 @@ declare namespace Realm.Sync {
         unsubscribe(): void;
         addListener(subscruptionCallback: SubscriptionNotificationCallback): void;
         removeListener(subscruptionCallback: SubscriptionNotificationCallback): void;
+        removeAllListeners(): void;
     }
 
     enum SubscriptionState {
@@ -675,6 +676,14 @@ declare class Realm {
      * @returns boolean
      */
     compact(): boolean;
+
+    /**
+     * Write a copy to destination path
+     * @param path destination path
+     * @param encryptionKey encryption key to use
+     * @returns void
+     */
+    writeCopyTo(path: string, encryptionKey?: ArrayBuffer | ArrayBufferView): void;
 
     privileges() : Realm.Permissions.Realm;
     privileges(objectType: string | Realm.ObjectSchema | Function) : Realm.Permissions.Class;

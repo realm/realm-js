@@ -61,10 +61,10 @@ function subscribe(results) {
     const subscription = results.subscribe();
     return new Promise((resolve, reject) => {
         subscription.addListener((subscription, state) => {
-            if (state == Realm.Sync.SubscriptionState.Complete) {
+            if (state === Realm.Sync.SubscriptionState.Complete) {
                 resolve();
             }
-            else if (state == Realm.Sync.SubscriptionState.Error) {
+            else if (state === Realm.Sync.SubscriptionState.Error) {
                 reject();
             }
         });
@@ -185,7 +185,7 @@ module.exports = {
                         }
                     }
                 ],
-                sync: {user, url, partial: true}
+                sync: {user: user, url: url, partial: true}
             };
         };
         let owner, otherUser
@@ -193,16 +193,12 @@ module.exports = {
             .register('http://localhost:9080', uuid(), 'password')
             .then(user => {
                 owner = user;
-                new Realm({sync: {user, url: 'realm://localhost:9080/~/test'}}).close();
+                new Realm({sync: {user, url: 'realm://localhost:9080/default', partial: true}}).close();
                 return Realm.Sync.User.register('http://localhost:9080', uuid(), 'password')
             })
-            .then(user => {
+            .then((user) => {
                 otherUser = user;
-                return owner.applyPermissions({userId: otherUser.identity},
-                                              `/${owner.identity}/test`, 'read')
-            })
-            .then(() => {
-                let realm = new Realm(config(owner, 'realm://localhost:9080/~/test'));
+                let realm = new Realm(config(owner, 'realm://localhost:9080/default'));
                 realm.write(() => {
                     let user = realm.create(Realm.Permissions.User, {id: otherUser.identity})
                     let role = realm.create(Realm.Permissions.Role, {name: 'reader'})
@@ -215,7 +211,7 @@ module.exports = {
                 });
                 return waitForUpload(realm).then(() => realm.close());
             })
-            .then(() => Realm.open(config(otherUser, `realm://localhost:9080/${owner.identity}/test`)))
+            .then(() => Realm.open(config(otherUser, `realm://localhost:9080/default`)))
             .then((realm) => subscribe(realm.objects('Object')).then(() => realm))
             .then((realm) => {
                 // Should have full access to the Realm as a whole

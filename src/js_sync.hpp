@@ -591,6 +591,7 @@ public:
     static void unsubscribe(ContextType, ObjectType, Arguments, ReturnValue &);
     static void add_listener(ContextType, ObjectType, Arguments, ReturnValue &);
     static void remove_listener(ContextType, ObjectType, Arguments, ReturnValue &);
+    static void remove_all_listeners(ContextType, ObjectType, Arguments, ReturnValue &);
 
     PropertyMap<T> const properties = {
         {"state", {wrap<get_state>, nullptr}},
@@ -601,6 +602,7 @@ public:
         {"unsubscribe", wrap<unsubscribe>},
         {"addListener", wrap<add_listener>},
         {"removeListener", wrap<remove_listener>},
+        {"removeAllListeners", wrap<remove_all_listeners>},
     };
 };
 
@@ -676,6 +678,12 @@ void SubscriptionClass<T>::remove_listener(ContextType ctx, ObjectType this_obje
     tokens.erase(std::remove_if(tokens.begin(), tokens.end(), compare), tokens.end());
 }
 
+template<typename T>
+void SubscriptionClass<T>::remove_all_listeners(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
+    args.validate_maximum(0);
+    auto subscription = get_internal<T, SubscriptionClass<T>>(this_object);
+    subscription->m_notification_tokens.clear();
+}
 
 template<typename T>
 class SyncClass : public ClassDefinition<T, void*> {
