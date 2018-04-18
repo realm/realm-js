@@ -81,7 +81,7 @@ declare namespace Realm {
         path?: string;
         readOnly?: boolean;
         inMemory?: boolean;
-        schema?: ObjectClass[] | ObjectSchema[];
+        schema?: (ObjectClass | ObjectSchema)[];
         schemaVersion?: number;
         sync?: Realm.Sync.SyncConfiguration;
         deleteRealmIfMigrationNeeded?: boolean;
