@@ -49,7 +49,6 @@
         ["QueryCount", 2, "BoolObject", "boolCol == 1"],
 
         ["QueryThrows", "BoolObject", "boolCol == 'not a bool'"],
-        ["QueryThrows", "BoolObject", "boolCol == $0", "not a bool"],
         ["QueryThrows", "BoolObject", "boolCol >  true"],
         ["QueryThrows", "BoolObject", "boolCol >= true"],
         ["QueryThrows", "BoolObject", "boolCol <  true"],

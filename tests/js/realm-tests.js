@@ -1221,7 +1221,8 @@ module.exports = {
             realm.writeCopyTo(34);
         }, "Argument to 'writeCopyTo' must be a String.");
 
-        const copyName = "testWriteCopy.realm";
+        const p = realm.path.substr(0, realm.path.length-13);
+        const copyName = p + "testWriteCopy.realm";
         realm.writeCopyTo(copyName);
 
         const copyConfig = { path: copyName };

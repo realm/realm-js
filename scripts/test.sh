@@ -290,6 +290,7 @@ case "$TARGET" in
 
   ./run-android.sh
 
+  
   echo "Start listening for Test completion"
 
   while :; do

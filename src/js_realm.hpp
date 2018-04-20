@@ -1033,7 +1033,8 @@ void RealmClass<T>::writeCopyTo(ContextType ctx, ObjectType this_object, Argumen
         key = { static_cast<const char *>(key_data.data()), key_data.size() };
     }
 
-    realm->write_copy(path, key);
+    std::string normalized_path = normalize_realm_path(path);
+    realm->write_copy(normalized_path, key);
 }
 
 template<typename T>
