@@ -4,7 +4,7 @@ X.Y.Z Release notes
 * None.
 
 ### Enhancements
-* None.
+* Add password reset wrappers (#1699).
 
 ### Bug fixes
 * Fixed logout error due to fetch body not being stringified (#1731).

@@ -271,6 +271,54 @@ class User {
     static register(server, username, password, callback) {}
 
     /**
+     * Request a password reset email to be sent to a user's email.
+     * This will not throw an exception, even if the email doesn't belong to a Realm Object Server user.
+     * 
+     * This can only be used for users who authenticated with the 'password' provider, and passed a valid email address as a username.
+     * 
+     * @param {string} server - authentication server
+     * @param {string} email - The email that corresponds to the user's username.
+     * @return {Promise<void>} A promise which is resolved when the request has been sent.
+     */
+    static requestPasswordReset(server, email) {}
+    
+    /**
+     * Complete the password reset flow by using the reset token sent to the user's email as a one-time authorization token to change the password.
+     * 
+     * By default, the link that will be sent to the user's email will redirect to a webpage where, they can enter their new password.
+     * If you wish to provide a native UX, you may wish to modify the url to use deep linking to open the app, extract the token,
+     * and navigate to a view that allows them to change their password within the app.
+     * 
+     * @param {string} server - authentication server
+     * @param {string} reset_token - The token that was sent to the user's email address.
+     * @param {string} new_passwd - The user's new password.
+     * @return {Promise<void>} A promise which is resolved when the request has been sent.
+     */
+    static completePasswordReset(server, reset_token, new_passwd) {}
+
+    /**
+     * Request an email confirmation email to be sent to a user's email.
+     * This will not throw an exception, even if the email doesn't belong to a Realm Object Server user.
+     * 
+     * @param {string} server - authentication server
+     * @param {string} email - The email that corresponds to the user's username.
+     * @return {Promise<void>} A promise which is resolved when the request has been sent.
+     */
+    static requestEmailConfirmation(server, email) {}
+    
+    /**
+     * Complete the password reset flow by using the confirmation token sent to the user's email as a one-time authorization token to confirm their email.
+     * 
+     * By default, the link that will be sent to the user's email will redirect to a webpage where they'll see a generic "Thank you for confirming" text.
+     * If you wish to provide a native UX, you may wish to modify the url to use deep linking to open the app, extract the token, and inform them that their email has been confirmed.
+     * 
+     * @param {string} server - authentication server
+     * @param {string} confirmation_token - The token that was sent to the user's email address.
+     * @return {Promise<void>} A promise which is resolved when the request has been sent.
+     */
+    static confirmEmail(server, confirmation_token) {}
+
+    /**
      * Create an admin user for the given authentication server with an existing token
      * @param {string} adminToken - existing admin token
      * @param {string} server - authentication server

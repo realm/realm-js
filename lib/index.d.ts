@@ -296,6 +296,14 @@ declare namespace Realm.Sync {
         static registerWithProvider(server: string, options: { provider: string, providerToken: string, userInfo: any }, callback: (error: Error | null, user: User | null) => void): void;
         static registerWithProvider(server: string, options: { provider: string, providerToken: string, userInfo: any }): Promise<Realm.Sync.User>;
 
+        static requestPasswordReset(server: string, email: string): Promise<Void>;
+
+        static completePasswordReset(server:string, reset_token:string, new_passwd:string): Promise<Void>;
+        
+        static requestEmailConfirmation(server:string, email:string): Promise<Void>;
+
+        static confirmEmail(server:string, confirmation_token:string): Promise<Void>;
+
         authenticate(server: string, provider: string, options: any): Promise<Realm.Sync.User>;
         logout(): void;
         openManagementRealm(): Realm;
