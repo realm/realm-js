@@ -291,10 +291,10 @@ class User {
      * 
      * @param {string} server - authentication server
      * @param {string} reset_token - The token that was sent to the user's email address.
-     * @param {string} new_passwd - The user's new password.
+     * @param {string} new_password - The user's new password.
      * @return {Promise<void>} A promise which is resolved when the request has been sent.
      */
-    static completePasswordReset(server, reset_token, new_passwd) {}
+    static completePasswordReset(server, reset_token, new_password) {}
 
     /**
      * Request an email confirmation email to be sent to a user's email.
