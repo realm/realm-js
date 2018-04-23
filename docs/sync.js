@@ -285,9 +285,9 @@ class User {
     /**
      * Complete the password reset flow by using the reset token sent to the user's email as a one-time authorization token to change the password.
      * 
-     * By default, the link that will be sent to the user's email will redirect to a webpage where, they can enter their new password.
-     * If you wish to provide a native UX, you may wish to modify the url to use deep linking to open the app, extract the token,
-     * and navigate to a view that allows them to change their password within the app.
+     * By default, Realm Object Server will send a link to the user's email that will redirect to a webpage where they can enter their new password.
+     * If you wish to provide a native UX, you may wish to modify the password authentication provider to use a custom URL with deep linking, so you can
+     * open the app, extract the token, and navigate to a view that allows to change the password within the app.
      * 
      * @param {string} server - authentication server
      * @param {string} reset_token - The token that was sent to the user's email address.
@@ -307,10 +307,11 @@ class User {
     static requestEmailConfirmation(server, email) {}
     
     /**
-     * Complete the password reset flow by using the confirmation token sent to the user's email as a one-time authorization token to confirm their email.
+     * Complete the email confirmation flow by using the confirmation token sent to the user's email as a one-time authorization token to confirm their email.
      * 
-     * By default, the link that will be sent to the user's email will redirect to a webpage where they'll see a generic "Thank you for confirming" text.
-     * If you wish to provide a native UX, you may wish to modify the url to use deep linking to open the app, extract the token, and inform them that their email has been confirmed.
+     * By default, Realm Object Server will send a link to the user's email that will redirect to a webpage where they can enter their new password.
+     * If you wish to provide a native UX, you may wish to modify the password authentication provider to use a custom URL with deep linking, so you can
+     * open the app, extract the token, and navigate to a view that allows to confirm the email within the app.
      * 
      * @param {string} server - authentication server
      * @param {string} confirmation_token - The token that was sent to the user's email address.
