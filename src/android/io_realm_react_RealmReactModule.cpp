@@ -23,15 +23,47 @@
 #include "io_realm_react_RealmReactModule.h"
 #include "rpc.hpp"
 #include "platform.hpp"
+#include "jni_utils.hpp"
 
 using namespace realm::rpc;
+using namespace realm::jni_util;
 
 static RPCServer *s_rpc_server;
 extern bool realmContextInjected;
+jclass ssl_helper_class;
 
 namespace realm {    
     // set the AssetManager used to access bundled files within the APK
     void set_asset_manager(AAssetManager* assetManager);
+}
+
+JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void*)
+{
+    JNIEnv* env;
+    if (vm->GetEnv((void**)&env, JNI_VERSION_1_6) != JNI_OK) {
+        return JNI_ERR;
+    }
+    else {
+        JniUtils::initialize(vm, JNI_VERSION_1_6);
+    }
+
+    // We do lookup the class in this Thread, since FindClass sometimes fails
+    // when issued from the sync client thread
+    ssl_helper_class = reinterpret_cast<jclass>(env->NewGlobalRef(env->FindClass("io/realm/react/util/SSLHelper")));
+
+    return JNI_VERSION_1_6;
+}
+
+JNIEXPORT void JNI_OnUnload(JavaVM* vm, void*)
+{
+    JNIEnv* env;
+    if (vm->GetEnv((void**)&env, JNI_VERSION_1_6) != JNI_OK) {
+        return;
+    }
+    else {
+        env->DeleteLocalRef(ssl_helper_class);
+        JniUtils::release();
+    }
 }
 
 JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_setDefaultRealmFileDirectory

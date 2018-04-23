@@ -33,6 +33,14 @@
 #include "realm/util/logger.hpp"
 #include "realm/util/uri.hpp"
 
+#if REALM_ANDROID
+#include <jni.h>
+#include "./android/io_realm_react_RealmReactModule.h"
+#include "./android/jni_utils.hpp"
+
+extern jclass ssl_helper_class;
+#endif
+
 namespace realm {
 namespace js {
 
@@ -303,7 +311,6 @@ public:
     bool operator ()(const std::string& server_address, sync::Session::port_type server_port, const char* pem_data, size_t pem_size, int preverify_ok, int depth)
     {
         const std::string pem_certificate {pem_data, pem_size};
-
         {
             std::lock_guard<std::mutex> lock {*m_mutex};
             m_ssl_certificate_callback_done = false;
@@ -824,7 +831,33 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
             SSLVerifyCallbackSyncThreadFunctor<T> ssl_verify_functor {ctx, Value::validated_to_function(ctx, ssl_verify_func)};
             ssl_verify_callback = std::move(ssl_verify_functor);
         }
-
+#if REALM_ANDROID
+        // For React Native Android, if the user didn't define the ssl_verify_callback, we provide a default
+        // implementation for him, otherwise all SSL validation will fail, since the Sync client doesn't have
+        // access to the Android Keystore.
+        // This default implementation will perform a JNI call to invoke a Java method defined at the `SSLHelper`
+        // to perform the certificate verification.
+        else {
+            auto ssl_verify_functor =
+            [](const std::string server_address, realm::sync::Session::port_type server_port,
+               const char* pem_data, size_t pem_size, int preverify_ok, int depth) {
+                JNIEnv* env = realm::jni_util::JniUtils::get_env(true);
+                static jmethodID java_certificate_verifier = env->GetStaticMethodID(ssl_helper_class, "certificateVerifier", "(Ljava/lang/String;Ljava/lang/String;I)Z");
+                jstring jserver_address = env->NewStringUTF(server_address.c_str());
+                // deep copy the pem_data into a string so DeleteLocalRef delete the local reference not the original const char
+                std::string pem(pem_data, pem_size);
+                jstring jpem = env->NewStringUTF(pem.c_str());
+                
+                bool isValid = env->CallStaticBooleanMethod(ssl_helper_class, java_certificate_verifier,
+                                                            jserver_address,
+                                                            jpem, depth) == JNI_TRUE;
+                env->DeleteLocalRef(jserver_address);
+                env->DeleteLocalRef(jpem);
+                return isValid;
+            };
+            ssl_verify_callback = std::move(ssl_verify_functor);
+        }
+#endif
         bool is_partial = false;
         ValueType partial_value = Object::get_property(ctx, sync_config_object, "partial");
         if (!Value::is_undefined(ctx, partial_value)) {
