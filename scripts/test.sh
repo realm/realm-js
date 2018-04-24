@@ -171,7 +171,7 @@ setup_ios_simulator() {
   delete_ios_simulator >/dev/null 2>&1
 
   #parse devices
-  IOS_RUNTIME=$(xcrun simctl list runtimes |  grep -m1 -o 'com.apple.CoreSimulator.SimRuntime.iOS.*' | sed 's/[()]//g')
+  IOS_RUNTIME=$(xcrun simctl list runtimes | grep -v unavailable | grep -m1 -o 'com.apple.CoreSimulator.SimRuntime.iOS.*' | sed 's/[()]//g')
   echo using iOS Runtime ${IOS_RUNTIME} to create new simulator ${SIM_DEVICE_NAME}
 
   #create new test simulator
