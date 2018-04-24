@@ -147,7 +147,17 @@ xctest() {
 
 
   echo "Launching application. (output is in $(pwd)/build/out.txt)"
-  xcrun simctl launch --console ${SIM_DEVICE_NAME} io.realm.$1 | tee $(pwd)/build/out.txt
+  testpid=$(xcrun simctl launch --stdout=$(pwd)/build/out.txt --stderr=$(pwd)/build/err.txt ${SIM_DEVICE_NAME} io.realm.$1 | grep -m1 -o '\d\+$')
+  tail -n +0 -f $(pwd)/build/out.txt &
+  stdoutpid=$!
+  tail -n +0 -f $(pwd)/build/err.txt &
+  stderrpid=$!
+
+  # `kill -0` checks if a signal can be sent to the pid without actually doing so
+  while kill -0 $testpid 2> /dev/null; do sleep 1; done
+
+  kill $stdoutpid
+  kill $stderrpid
 
   echo "Shuttting down ${SIM_DEVICE_NAME} simulator. (device is not deleted. you can use it to debug the app)"
   shutdown_ios_simulator
