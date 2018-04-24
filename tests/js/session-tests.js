@@ -751,7 +751,7 @@ module.exports = {
                 const realm = new Realm(config1);
                 TestCase.assertFalse(realm.isClosed);
                 realm.close();
-        };
+        }
 
         function __partialIsNotAllowed() {
             let config2 = {
@@ -762,7 +762,7 @@ module.exports = {
                 }
             };
             TestCase.assertThrows(() => new Realm(config2));
-        };
+        }
 
         function shouldFail() {
             let config = {
@@ -780,11 +780,11 @@ module.exports = {
             TestCase.assertEqual(realm.objects('Dog').length, 0);
             TestCase.assertThrows(function () { var subscription = realm.objects('Dog').filtered("name == 'Lassy 1'").subscribe(); } );
             realm.close();
-        };
+        }
 
         function defaultRealmInvalidArguments() {
             TestCase.assertThrows(() => Realm.automaticSyncConfiguration('foo', 'bar')); // too many arguments
-        };
+        }
 
 
         return runOutOfProcess(__dirname + '/partial-sync-api-helper.js', username, REALM_MODULE_PATH)
