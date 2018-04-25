@@ -1,4 +1,4 @@
-X.Y.Z Release notes
+2.3.5 Release notes (2018-4-25)
 =============================================================
 ### Compatibility
 * Sync protocol: 24
@@ -10,7 +10,8 @@ X.Y.Z Release notes
 * None.
 
 ### Enhancements
-* Add password reset wrappers (#1699).
+* Added password reset wrappers (#1699).
+* Added a certificate validation using Android Keystore for RN (#1761).
 
 ### Bug fixes
 * Fixed logout error due to fetch body not being stringified (#1731).
