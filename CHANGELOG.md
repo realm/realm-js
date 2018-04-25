@@ -1,5 +1,11 @@
 X.Y.Z Release notes
 =============================================================
+### Compatibility
+* Sync protocol: 24
+* Server-side history format: 4
+* File format: 7
+* Realm Object Server: 3.0.0 or later
+
 ### Breaking changes
 * None.
 
@@ -8,9 +14,11 @@ X.Y.Z Release notes
 
 ### Bug fixes
 * Fixed logout error due to fetch body not being stringified (#1731).
+* Added `Subscription` import to `browser/index.js` and register type converter (#1711).
 
 ### Internal
-* None.
+* Updated `scripts/test.sh` so it doesn't hang forever when the React tests fail to start (#1764).
+
 
 2.3.4 Release notes (2018-4-12)
 =============================================================
