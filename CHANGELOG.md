@@ -17,7 +17,8 @@ X.Y.Z Release notes
 * Added `Subscription` import to `browser/index.js` and register type converter (#1711).
 
 ### Internal
-* None.
+* Updated `scripts/test.sh` so it doesn't hang forever when the React tests fail to start (#1764).
+
 
 2.3.4 Release notes (2018-4-12)
 =============================================================
