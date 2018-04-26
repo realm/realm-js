@@ -278,8 +278,9 @@ case "$TARGET" in
 "react-tests-android")
   npm run check-environment
   if [ "$(uname)" = 'Darwin' ]; then
-    download_server
-    start_server
+      # You need to connect your phone and start the server before running this script.
+      # The server is started by ./sync_test_server/start_server.sh
+      curl http://localhost:8888/start
   fi
 
   [[ $CONFIGURATION == 'Debug' ]] && exit 0
@@ -296,11 +297,10 @@ case "$TARGET" in
   # Despite the docs claiming -c to work, it doesn't, so `-T 1` alleviates that.
   mkdir -p $(pwd)/build || true
   adb logcat -c
-  adb logcat -T 1 | tee "$LOGCAT_OUT" | tee $(pwd)/build/out.txt &
+  adb logcat -T 1 | tee "$LOGCAT_OUT" > $(pwd)/build/out.txt &
 
   ./run-android.sh
 
-  
   echo "Start listening for Test completion"
 
   while :; do
@@ -322,6 +322,10 @@ case "$TARGET" in
   cat tests.xml
 
   check_test_results ReactTests
+
+  # stop server
+  curl http://localhost:8888/stop
+  ./sync_test_server/stop_server.sh
   ;;
 "node")
   npm run check-environment

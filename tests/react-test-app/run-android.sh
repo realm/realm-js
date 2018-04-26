@@ -27,6 +27,7 @@ adb reverse tcp:8081 tcp:8081
 
 echo "Reversing port for Realm Object Server"
 adb reverse tcp:9080 tcp:9080
+adb reverse tcp:9443 tcp:9443
 
 echo "Starting the Main Activity"
 adb shell am start -n io.realm.react.testapp/.MainActivity
