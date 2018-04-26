@@ -1,4 +1,4 @@
-2.3.5 Release notes (2018-4-25)
+2.4.0 Release notes (2018-4-26)
 =============================================================
 ### Compatibility
 * Sync protocol: 24
@@ -16,6 +16,7 @@
 ### Bug fixes
 * Fixed logout error due to fetch body not being stringified (#1731).
 * Added `Subscription` import to `browser/index.js` and register type converter (#1711).
+* Fixed call to `logout()` when debugging React Native apps (#1744).
 
 ### Internal
 * Updated `scripts/test.sh` so it doesn't hang forever when the React tests fail to start (#1764).
