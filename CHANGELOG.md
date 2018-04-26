@@ -1,3 +1,24 @@
+X.Y.Z Release notes
+=============================================================
+### Compatibility
+* Sync protocol: 24
+* Server-side history format: 4
+* File format: 7
+* Realm Object Server: 3.0.0 or later
+
+### Breaking changes
+* None.
+
+### Enhancements
+* None.
+
+### Bug fixes
+* Fixed call to `logout()` when debugging React Native apps (#1744).
+
+### Internal
+* None.
+
+
 2.3.5 Release notes (2018-4-25)
 =============================================================
 ### Compatibility
