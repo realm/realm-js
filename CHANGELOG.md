@@ -1,25 +1,4 @@
-X.Y.Z Release notes
-=============================================================
-### Compatibility
-* Sync protocol: 24
-* Server-side history format: 4
-* File format: 7
-* Realm Object Server: 3.0.0 or later
-
-### Breaking changes
-* None.
-
-### Enhancements
-* None.
-
-### Bug fixes
-* Fixed call to `logout()` when debugging React Native apps (#1744).
-
-### Internal
-* None.
-
-
-2.3.5 Release notes (2018-4-25)
+2.4.0 Release notes (2018-4-26)
 =============================================================
 ### Compatibility
 * Sync protocol: 24
@@ -37,6 +16,7 @@ X.Y.Z Release notes
 ### Bug fixes
 * Fixed logout error due to fetch body not being stringified (#1731).
 * Added `Subscription` import to `browser/index.js` and register type converter (#1711).
+* Fixed call to `logout()` when debugging React Native apps (#1744).
 
 ### Internal
 * Updated `scripts/test.sh` so it doesn't hang forever when the React tests fail to start (#1764).
