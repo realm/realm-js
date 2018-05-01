@@ -250,8 +250,7 @@ case "$TARGET" in
   ;;
 "react-tests")
   npm run check-environment
-  download_server
-  start_server
+  curl http://localhost:8888/start
   pushd tests/react-test-app
   npm install
   open_chrome
@@ -259,7 +258,8 @@ case "$TARGET" in
 
   pushd ios
   xctest ReactTests
-  stop_server
+  curl http://localhost:8888/start
+  ./scripts/sync_test_server/stop_server.sh
   ;;
 "react-example")
   npm run check-environment
@@ -277,11 +277,9 @@ case "$TARGET" in
   ;;
 "react-tests-android")
   npm run check-environment
-  if [ "$(uname)" = 'Darwin' ]; then
-      # You need to connect your phone and start the server before running this script.
-      # The server is started by ./sync_test_server/start_server.sh
-      curl http://localhost:8888/start
-  fi
+  # You need to connect your phone and start the server before running this script.
+  # The server is started by ./sync_test_server/start_server.sh
+  curl http://localhost:8888/start
 
   [[ $CONFIGURATION == 'Debug' ]] && exit 0
   XCPRETTY=''
@@ -330,10 +328,8 @@ case "$TARGET" in
 "node")
   npm run check-environment
   if [ "$(uname)" = 'Darwin' ]; then
-    echo "downloading server"
-    download_server
     echo "starting server"
-    start_server
+    curl http://localhost:8888/start
 
     npm_tests_cmd="npm run test"
     npm install --build-from-source=realm --realm_enable_sync
@@ -351,7 +347,11 @@ case "$TARGET" in
   npm install
   eval "$npm_tests_cmd"
   popd
-  stop_server
+  if [ "$(uname)" = 'Darwin' ]; then
+      # stop server
+      curl http://localhost:8888/stop
+      ./sync_test_server/stop_server.sh
+  fi
   ;;
 "electron")
   if [ "$(uname)" = 'Darwin' ]; then

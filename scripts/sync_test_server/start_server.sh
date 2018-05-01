@@ -7,9 +7,12 @@ ROS_VERSION=$(grep REALM_OBJECT_SERVER_VERSION $DOCKERFILE_DIR/../../dependencie
 
 TMP_DIR=$(mktemp -d /tmp/sync-test.XXXX) || { echo "Failed to mktemp $TEST_TEMP_DIR" ; exit 1 ; }
 
-adb reverse tcp:9443 tcp:9443 && \
-adb reverse tcp:9080 tcp:9080 && \
-adb reverse tcp:8888 tcp:8888 || { echo "Failed to reverse adb port." ; exit 1 ; }
+if [ "$1" = "-android" ]; then
+    echo "Port forwarding for Android"
+    adb reverse tcp:9443 tcp:9443 && \
+    adb reverse tcp:9080 tcp:9080 && \
+    adb reverse tcp:8888 tcp:8888 || { echo "Failed to reverse adb port." ; exit 1 ; }
+fi
 
 docker build $DOCKERFILE_DIR --build-arg ROS_VERSION=$ROS_VERSION -t sync-test-server || { echo "Failed to build Docker image." ; exit 1 ; }
 
