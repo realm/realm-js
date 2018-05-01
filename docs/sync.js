@@ -640,7 +640,7 @@ class Worker {
  */
 class Adapter {
 	/**
-	 * Create a new Adapter to moitor and process changes made across multiple Realms
+	 * Create a new Adapter to monitor and process changes made across multiple Realms
 	 * @param {string} localPath - the local path where realm files are stored
 	 * @param {string} serverUrl - the sync server to listen to
 	 * @param {SyncUser} adminUser - an admin user obtained by calling `new Realm.Sync.User.adminUser`
