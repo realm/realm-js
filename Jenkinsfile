@@ -178,6 +178,14 @@ def doDockerBuild(target, postStep = null) {
       deleteDir()
       unstash 'source'
 
+            def rosContainer
+            stage('ROS container') {
+                def dependProperties = readProperties file: 'dependencies.list'
+                def rosVersion = dependProperties["REALM_OBJECT_SERVER_VERSION"]
+                def rosEnv = docker.build 'ros:snapshot', "--build-arg ROS_VERSION=${rosVersion} tools/sync_test_server"
+                rosContainer = rosEnv.run()
+            }
+
       try {
         reportStatus(target, 'PENDING', 'Build has started')
 
@@ -192,7 +200,8 @@ def doDockerBuild(target, postStep = null) {
       } catch(Exception e) {
         reportStatus(target, 'FAILURE', e.toString())
         throw e
-      }
+      } finally {
+        rosContainer.stop()
     }
   }
 }

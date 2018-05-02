@@ -91,7 +91,7 @@ cleanup() {
 
   # Kill react native packager
   pkill -x node || true
-  rm -f "$PACKAGER_OUT" "$LOGCAT_OUT"
+#  rm -f "$PACKAGER_OUT" "$LOGCAT_OUT"
 
   # Cleanup temp files
   if [ -n "$log_temp" ] && [ -e "$log_temp" ]; then
@@ -258,8 +258,7 @@ case "$TARGET" in
 
   pushd ios
   xctest ReactTests
-  curl http://localhost:8888/start
-  ./scripts/sync_test_server/stop_server.sh
+  curl http://localhost:8888/stop
   ;;
 "react-example")
   npm run check-environment
@@ -323,7 +322,6 @@ case "$TARGET" in
 
   # stop server
   curl http://localhost:8888/stop
-  ./sync_test_server/stop_server.sh
   ;;
 "node")
   npm run check-environment
@@ -350,7 +348,6 @@ case "$TARGET" in
   if [ "$(uname)" = 'Darwin' ]; then
       # stop server
       curl http://localhost:8888/stop
-      ./sync_test_server/stop_server.sh
   fi
   ;;
 "electron")
