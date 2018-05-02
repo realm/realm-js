@@ -182,7 +182,7 @@ def doDockerBuild(target, postStep = null) {
             stage('ROS container') {
                 def dependProperties = readProperties file: 'dependencies.list'
                 def rosVersion = dependProperties["REALM_OBJECT_SERVER_VERSION"]
-                def rosEnv = docker.build 'ros:snapshot', "--build-arg ROS_VERSION=${rosVersion} tools/sync_test_server"
+                def rosEnv = docker.build 'ros:snapshot', "--build-arg ROS_VERSION=${rosVersion} scripts/sync_test_server"
                 rosContainer = rosEnv.run()
             }
 
