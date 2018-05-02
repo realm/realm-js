@@ -202,8 +202,9 @@ def doDockerBuild(target, postStep = null) {
         throw e
       } finally {
         rosContainer.stop()
-    }
-  }
+      }
+   }
+ }
 }
 
 def doMacBuild(target, postStep = null) {
