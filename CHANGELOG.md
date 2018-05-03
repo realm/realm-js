@@ -1,4 +1,5 @@
 X.Y.Z Release notes
+=============================================================
 ### Compatibility
 * Sync protocol: 24
 * Server-side history format: 4
@@ -18,8 +19,9 @@ X.Y.Z Release notes
 * Updated to Relm Sync 3.3.0.
 * Updated to Realm Core 5.6.0.
 
+
 2.4.0 Release notes (2018-4-26)
- =============================================================
+=============================================================
 ### Compatibility
 * Sync protocol: 24
 * Server-side history format: 4
