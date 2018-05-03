@@ -50,9 +50,6 @@ startedSimulator=false
 log_temp=
 test_temp_dir=
 cleanup() {
-  # Kill started object server
-  curl http://localhost:8888/stop
-
   echo "shutting down running simulators"
   shutdown_ios_simulator >/dev/null 2>&1
 
