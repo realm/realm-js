@@ -11,7 +11,8 @@ const Realm = require(realmModule);
 
 function createObjects(user) {
     const config = {
-        sync: { user,
+        sync: {
+            user: user,
             url: `realm://localhost:9080/~/${realmName}`,
             error: err => console.log(err)
         },
@@ -19,7 +20,6 @@ function createObjects(user) {
     };
 
     const realm = new Realm(config);
-
     realm.write(() => {
         for (let i = 1; i <= 3; i++) {
             realm.create('Dog', { name: `Lassy ${i}` });

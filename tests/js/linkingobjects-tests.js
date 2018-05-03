@@ -83,6 +83,52 @@ module.exports = {
         TestCase.assertArraysEqual(names(resultsC), ['JP']);
     },
 
+    testFilteredLinkingObjectsByName: function() {
+        var realm = new Realm({schema: [schemas.PersonObject]});
+
+        var christine, olivier;
+        realm.write(function() {
+            olivier = realm.create('PersonObject', {name: 'Olivier', age: 0});
+            christine = realm.create('PersonObject', {name: 'Christine', age: 25, children: [olivier]});
+            realm.create('PersonObject', {name: 'JP', age: 28, children: [olivier]});
+        });
+
+        let people = realm.objects('PersonObject')
+
+        TestCase.assertEqual(people.filtered('parents.age > 25').length, 1);
+        TestCase.assertEqual(people.filtered('parents.age > 25')[0].name, 'Olivier');
+        TestCase.assertEqual(people.filtered('parents.@count == 2').length, 1);
+        TestCase.assertEqual(people.filtered('parents.name CONTAINS[c] "chris"').length, 1);
+        TestCase.assertEqual(people.filtered('parents.name.@size == 2').length, 1);
+        TestCase.assertEqual(people.filtered('25 IN parents.age').length, 1);
+    },
+
+    testNamedLinkingObjectsAcrossClasses: function() {
+        let realm = new Realm({schema: [schemas.Language, schemas.Country]});
+        realm.write(() => {
+            let english = realm.create('Language', {name: 'English'});
+            let french = realm.create('Language', {name: 'French'});
+            let danish = realm.create('Language', {name: 'Danish'});
+            let canada = realm.create('Country', {name: 'Canada', languages: [english, french]});
+            let denmark = realm.create('Country', {name: 'Denmark', languages: [danish, english]});
+            let france = realm.create('Country', {name: 'France', languages: [french, english]});
+        });
+        let languages = realm.objects('Language');
+        let spokenInThreeCountries = languages.filtered('spokenIn.@count == 3');
+        TestCase.assertEqual(spokenInThreeCountries.length, 1);
+        TestCase.assertEqual(spokenInThreeCountries[0].name, 'English');
+        let spokenInTwoCountries = languages.filtered('spokenIn.@count == 2');
+        TestCase.assertEqual(spokenInTwoCountries.length, 1);
+        TestCase.assertEqual(spokenInTwoCountries[0].name, 'French')
+        let spokenInOneCountry = languages.filtered('spokenIn.@count == 1');
+        TestCase.assertEqual(spokenInOneCountry.length, 1);
+        TestCase.assertEqual(spokenInOneCountry[0].name, 'Danish')
+        let languagesSpokenInCanada = languages.filtered('spokenIn.name ==[c] "canada"');
+        TestCase.assertEqual(languagesSpokenInCanada.length, 2);
+        TestCase.assertEqual(languagesSpokenInCanada[0].name, 'English');
+        TestCase.assertEqual(languagesSpokenInCanada[1].name, 'French');
+    },
+
     testMethod: function() {
         var realm = new Realm({schema: [schemas.PersonObject]});
 

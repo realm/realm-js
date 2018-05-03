@@ -35,7 +35,6 @@
 #include "js_sync.hpp"
 #include "sync/sync_config.hpp"
 #include "sync/sync_manager.hpp"
-#include "sync/partial_sync.hpp"
 #endif
 
 #include "shared_realm.hpp"
@@ -184,11 +183,10 @@ public:
     static void remove_all_listeners(ContextType, ObjectType, Arguments, ReturnValue &);
     static void close(ContextType, ObjectType, Arguments, ReturnValue &);
     static void compact(ContextType, ObjectType, Arguments, ReturnValue &);
+    static void writeCopyTo(ContextType, ObjectType, Arguments, ReturnValue &);
     static void delete_model(ContextType, ObjectType, Arguments, ReturnValue &);
     static void object_for_object_id(ContextType, ObjectType, Arguments, ReturnValue&);
-#if REALM_ENABLE_SYNC
-    static void subscribe_to_objects(ContextType, ObjectType, Arguments, ReturnValue &);
-#endif
+    static void privileges(ContextType, ObjectType, Arguments, ReturnValue&);
 
     // properties
     static void get_empty(ContextType, ObjectType, ReturnValue &);
@@ -244,11 +242,12 @@ public:
         {"removeAllListeners", wrap<remove_all_listeners>},
         {"close", wrap<close>},
         {"compact", wrap<compact>},
+        {"writeCopyTo", wrap<writeCopyTo>},
         {"deleteModel", wrap<delete_model>},
+        {"privileges", wrap<privileges>},
         {"_objectForObjectId", wrap<object_for_object_id>},
  #if REALM_ENABLE_SYNC
         {"_waitForDownload", wrap<wait_for_download_completion>},
-        {"_subscribeToObjects", wrap<subscribe_to_objects>},
  #endif
     };
 
@@ -295,7 +294,8 @@ public:
         return name;
     }
 
-    static const ObjectSchema& validated_object_schema_for_value(ContextType ctx, const SharedRealm &realm, const ValueType &value, std::string& object_type) {
+    static const ObjectSchema& validated_object_schema_for_value(ContextType ctx, const SharedRealm &realm, const ValueType &value) {
+        std::string object_type;
         if (Value::is_constructor(ctx, value)) {
             FunctionType constructor = Value::to_constructor(ctx, value);
 
@@ -545,7 +545,7 @@ void RealmClass<T>::constructor(ContextType ctx, ObjectType this_object, size_t 
 
 template<typename T>
 SharedRealm RealmClass<T>::create_shared_realm(ContextType ctx, realm::Realm::Config config, bool schema_updated,
-                                        ObjectDefaultsMap && defaults, ConstructorMap && constructors) {
+                                        ObjectDefaultsMap&& defaults, ConstructorMap&& constructors) {
     config.execution_context = Context<T>::get_execution_context_id(ctx);
 
     SharedRealm realm;
@@ -554,9 +554,6 @@ SharedRealm RealmClass<T>::create_shared_realm(ContextType ctx, realm::Realm::Co
     }
     catch (const RealmFileException& ex) {
         handleRealmFileException(ctx, config, ex);
-    }
-    catch (...) {
-        throw;
     }
 
     GlobalContextType global_context = Context<T>::get_global_context(ctx);
@@ -794,10 +791,8 @@ void RealmClass<T>::objects(ContextType ctx, ObjectType this_object, Arguments a
     args.validate_maximum(1);
 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
-    std::string object_type;
-    validated_object_schema_for_value(ctx, realm, args[0], object_type);
-
-    return_value.set(ResultsClass<T>::create_instance(ctx, realm, object_type));
+    auto& object_schema = validated_object_schema_for_value(ctx, realm, args[0]);
+    return_value.set(ResultsClass<T>::create_instance(ctx, realm, object_schema.name));
 }
 
 template<typename T>
@@ -806,7 +801,7 @@ void RealmClass<T>::object_for_primary_key(ContextType ctx, ObjectType this_obje
 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
     std::string object_type;
-    auto &object_schema = validated_object_schema_for_value(ctx, realm, args[0], object_type);
+    auto &object_schema = validated_object_schema_for_value(ctx, realm, args[0]);
     NativeAccessor accessor(ctx, realm, object_schema);
     auto realm_object = realm::Object::get_for_primary_key(accessor, realm, object_schema, args[1]);
 
@@ -824,8 +819,7 @@ void RealmClass<T>::create(ContextType ctx, ObjectType this_object, Arguments ar
 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
     realm->verify_open();
-    std::string object_type;
-    auto &object_schema = validated_object_schema_for_value(ctx, realm, args[0], object_type);
+    auto &object_schema = validated_object_schema_for_value(ctx, realm, args[0]);
 
     ObjectType object = Value::validated_to_object(ctx, args[1], "properties");
     if (Value::is_array(ctx, args[1])) {
@@ -902,7 +896,13 @@ void RealmClass<T>::delete_all(ContextType ctx, ObjectType this_object, Argument
     }
 
     for (auto objectSchema : realm->schema()) {
-        ObjectStore::table_for_object_type(realm->read_group(), objectSchema.name)->clear();
+        auto table = ObjectStore::table_for_object_type(realm->read_group(), objectSchema.name);
+        if (realm->is_partial()) {
+            realm::Results(realm, *table).clear();
+        }
+        else {
+            table->clear();
+        }
     }
 }
 
@@ -1006,35 +1006,35 @@ void RealmClass<T>::compact(ContextType ctx, ObjectType this_object, Arguments a
     return_value.set(realm->compact());
 }
 
-#if REALM_ENABLE_SYNC
-namespace {
+template<typename T>
+void RealmClass<T>::writeCopyTo(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
+    args.validate_maximum(2);
 
-// FIXME: Sync should provide this: https://github.com/realm/realm-sync/issues/1796
-inline sync::ObjectID object_id_from_string(std::string const& string)
-{
-    if (string.front() != '{' || string.back() != '}')
-        throw std::invalid_argument("Invalid object ID.");
-
-    size_t dash_index = string.find('-');
-    if (dash_index == std::string::npos)
-        throw std::invalid_argument("Invalid object ID.");
-
-    std::string high_string = string.substr(1, dash_index - 1);
-    std::string low_string = string.substr(dash_index + 1, string.size() - dash_index - 2);
-
-    if (high_string.size() == 0 || high_string.size() > 16 || low_string.size() == 0 || low_string.size() > 16)
-        throw std::invalid_argument("Invalid object ID.");
-
-    auto isxdigit = static_cast<int(*)(int)>(std::isxdigit);
-    if (!std::all_of(high_string.begin(), high_string.end(), isxdigit) ||
-        !std::all_of(low_string.begin(), low_string.end(), isxdigit)) {
-        throw std::invalid_argument("Invalid object ID.");
+    if (args.count == 0) {
+        throw std::runtime_error("At least path has to be provided for 'writeCopyTo'");
     }
-    return sync::ObjectID(strtoull(high_string.c_str(), nullptr, 16), strtoull(low_string.c_str(), nullptr, 16));
-}
 
-} // unnamed namespace
-#endif // REALM_ENABLE_SYNC
+    SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
+
+    ValueType pathValue = args[0];
+    if (!Value::is_string(ctx, pathValue)) {
+        throw std::runtime_error("Argument to 'writeCopyTo' must be a String.");
+    }
+
+    std::string path = Value::validated_to_string(ctx, pathValue);
+    BinaryData key;
+    if (args.count == 2) {
+        ValueType key_value = args[1];
+        if (!Value::is_binary(ctx, key_value)) {
+            throw std::runtime_error("Encryption key for 'writeCopyTo' must be a Binary.");
+        }
+
+        auto key_data = Value::validated_to_binary(ctx, key_value);
+        key = { static_cast<const char *>(key_data.data()), key_data.size() };
+    }
+
+    realm->write_copy(path, key);
+}
 
 template<typename T>
 void RealmClass<T>::object_for_object_id(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue& return_value) {
@@ -1045,67 +1045,67 @@ void RealmClass<T>::object_for_object_id(ContextType ctx, ObjectType this_object
     if (!sync::has_object_ids(realm->read_group()))
         throw std::logic_error("Realm._objectForObjectId() can only be used with synced Realms.");
 
-    std::string object_type = Value::validated_to_string(ctx, args[0]);
-    validated_object_schema_for_value(ctx, realm, args[0], object_type);
-
+    auto& object_schema = validated_object_schema_for_value(ctx, realm, args[0]);
     std::string object_id_string = Value::validated_to_string(ctx, args[1]);
-    auto object_id = object_id_from_string(object_id_string);
+    auto object_id = sync::ObjectID::from_string(object_id_string);
 
     const Group& group = realm->read_group();
-    size_t ndx = sync::row_for_object_id(group, *ObjectStore::table_for_object_type(group, object_type), object_id);
+    size_t ndx = sync::row_for_object_id(group, *ObjectStore::table_for_object_type(group, object_schema.name), object_id);
     if (ndx != realm::npos) {
-        return_value.set(RealmObjectClass<T>::create_instance(ctx, realm::Object(realm, object_type, ndx)));
+        return_value.set(RealmObjectClass<T>::create_instance(ctx, realm::Object(realm, object_schema.name, ndx)));
     }
 #else
     throw std::logic_error("Realm._objectForObjectId() can only be used with synced Realms.");
 #endif // REALM_ENABLE_SYNC
 }
 
-#if REALM_ENABLE_SYNC
 template<typename T>
-void RealmClass<T>::subscribe_to_objects(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
-    args.validate_count(3);
+void RealmClass<T>::privileges(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
+    args.validate_maximum(1);
 
-    SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
-    std::string object_type = Value::validated_to_string(ctx, args[0]);
-    std::string query = Value::validated_to_string(ctx, args[1]);
-    auto callback = Value::validated_to_function(ctx, args[2]);
-
-    auto &schema = realm->schema();
-    auto object_schema = schema.find(object_type);
-
-    if (object_schema == schema.end()) {
-        throw std::runtime_error("Object type '" + object_type + "' not found in schema.");
-    }
-
-    Protected<ObjectType> protected_this(ctx, this_object);
-    Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
-    Protected<FunctionType> protected_callback(ctx, callback);
-    auto cb = [=](realm::Results results, std::exception_ptr err) {
-        HANDLESCOPE
-
-        if (err) {
-            try {
-                std::rethrow_exception(err);
-            }
-            catch (const std::exception& e) {
-                ValueType callback_arguments[2];
-                callback_arguments[0] = Value::from_string(protected_ctx, e.what());
-                callback_arguments[1] = Value::from_null(protected_ctx);
-                Function<T>::callback(ctx, protected_callback, protected_this, 2, callback_arguments);
-            }
-            return;
-        }
-
-        ValueType callback_arguments[2];
-        callback_arguments[0] = Value::from_null(protected_ctx);
-        callback_arguments[1] = ResultsClass<T>::create_instance(protected_ctx, results);
-        Function<T>::callback(protected_ctx, protected_callback, protected_this, 2, callback_arguments);
+    using Privilege = realm::ComputedPrivileges;
+    auto has_privilege = [](Privilege actual, Privilege expected) {
+        return (static_cast<int>(actual) & static_cast<int>(expected)) == static_cast<int>(expected);
     };
 
-    partial_sync::register_query(realm, object_type, query, std::move(cb));
+    SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
+    if (args.count == 0) {
+        auto p = realm->get_privileges();
+        ObjectType object = Object::create_empty(ctx);
+        Object::set_property(ctx, object, "read", Value::from_boolean(ctx, has_privilege(p, Privilege::Read)));
+        Object::set_property(ctx, object, "update", Value::from_boolean(ctx,has_privilege(p, Privilege::Update)));
+        Object::set_property(ctx, object, "modifySchema", Value::from_boolean(ctx, has_privilege(p, Privilege::ModifySchema)));
+        Object::set_property(ctx, object, "setPermissions", Value::from_boolean(ctx, has_privilege(p, Privilege::SetPermissions)));
+        return_value.set(object);
+        return;
+    }
+
+    if (Value::is_object(ctx, args[0])) {
+        auto arg = Value::to_object(ctx, args[0]);
+        if (Object::template is_instance<RealmObjectClass<T>>(ctx, arg)) {
+            auto obj = get_internal<T, RealmObjectClass<T>>(arg);
+            auto p = realm->get_privileges(obj->row());
+
+            ObjectType object = Object::create_empty(ctx);
+            Object::set_property(ctx, object, "read", Value::from_boolean(ctx, has_privilege(p, Privilege::Read)));
+            Object::set_property(ctx, object, "update", Value::from_boolean(ctx,has_privilege(p, Privilege::Update)));
+            Object::set_property(ctx, object, "delete", Value::from_boolean(ctx,has_privilege(p, Privilege::Delete)));
+            Object::set_property(ctx, object, "setPermissions", Value::from_boolean(ctx, has_privilege(p, Privilege::SetPermissions)));
+            return_value.set(object);
+            return;
+        }
+    }
+
+    auto& object_schema = validated_object_schema_for_value(ctx, realm, args[0]);
+    auto p = realm->get_privileges(object_schema.name);
+    ObjectType object = Object::create_empty(ctx);
+    Object::set_property(ctx, object, "read", Value::from_boolean(ctx, has_privilege(p, Privilege::Read)));
+    Object::set_property(ctx, object, "update", Value::from_boolean(ctx,has_privilege(p, Privilege::Update)));
+    Object::set_property(ctx, object, "create", Value::from_boolean(ctx, has_privilege(p, Privilege::Create)));
+    Object::set_property(ctx, object, "subscribe", Value::from_boolean(ctx, has_privilege(p, Privilege::Query)));
+    Object::set_property(ctx, object, "setPermissions", Value::from_boolean(ctx, has_privilege(p, Privilege::SetPermissions)));
+    return_value.set(object);
 }
-#endif
 
 } // js
 } // realm

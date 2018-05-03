@@ -120,10 +120,41 @@ class Realm {
     static openAsync(config, callback, progressCallback) {}
 
     /**
+     * Return a configuration for a default synced Realm. The server URL for the user will be used as base for
+     * the URL for the synced Realm. If no user is supplied, the current user will be used.
+     * @param {Realm.Sync.User} - an optional sync user
+     * @throws {Error} if zero or multiple users are logged in
+     * @returns {Realm~Configuration} - a configuration matching a default synced Realm.
+     * @since 2.3.0
+     */
+    static automaticSyncConfiguration(user) {}
+
+    /**
      * Closes this Realm so it may be re-opened with a newer schema version.
      * All objects and collections from this Realm are no longer valid after calling this method.
      */
     close() {}
+
+    /**
+     * Returns the granted privilges.
+     *
+     * This combines all privileges granted on the Realm/Class/Object by all Roles which
+     * the current User is a member of into the final privileges which will
+     * be enforced by the server.
+     *
+     * The privilege calculation is done locally using cached data, and inherently may
+     * be stale. It is possible that this method may indicate that an operation is
+     * permitted but the server will still reject it if permission is revoked before
+     * the changes have been integrated on the server.
+     *
+     * Non-synchronized Realms always have permission to perform all operations.
+     *
+     * @param {(Realm~ObjectType|Realm.Object)} arg - the object type or the object to compute priviliges from
+     * @returns {Object} as the computed priviliges as properties
+     * @since 2.3.0
+     * @see {Realm.Permissions} for details of priviliges and roles.
+     */
+    privileges(arg) {}
 
     /**
      * Create a new Realm object of the given type and with the specified properties.
@@ -243,15 +274,16 @@ class Realm {
     compact() {}
 
     /**
-     * If the Realm is a partially synchronized Realm, fetch and synchronize the objects
-     * of a given object type that match the given query (in string format).
+     * Writes a compacted copy of the Realm to the given path.
      *
-     * **Partial synchronization is a tech preview. Its APIs are subject to change.**
-     * @param {Realm~ObjectType} type - The type of Realm objects to retrieve.
-     * @param {string} query - Query used to filter objects.
-     * @return {Promise} - a promise that will be resolved with the Realm.Results instance when it's available.
+     * The destination file cannot already exist.
+     *
+     * Note that if this method is called from within a write transaction, the current data is written,
+     * not the data from the point when the previous write transaction was committed.
+     * @param {string} path path to save the Realm to
+     * @param {ArrayBuffer|ArrayBufferView} [encryptionKey] - Optional 64-byte encryption key to encrypt the new file with.
      */
-    subscribeToObjects(className, query, callback) {}
+    writeCopyTo(path, encryptionKey) {}
 }
 
 /**

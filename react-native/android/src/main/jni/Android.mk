@@ -45,6 +45,7 @@ LOCAL_SRC_FILES += src/rpc.cpp
 LOCAL_SRC_FILES += src/jsc/jsc_init.cpp
 LOCAL_SRC_FILES += src/jsc/jsc_value.cpp
 LOCAL_SRC_FILES += src/android/io_realm_react_RealmReactModule.cpp
+LOCAL_SRC_FILES += src/android/jni_utils.cpp
 LOCAL_SRC_FILES += src/android/jsc_override.cpp
 LOCAL_SRC_FILES += src/android/platform.cpp
 LOCAL_SRC_FILES += src/object-store/src/impl/collection_change_builder.cpp
@@ -78,6 +79,7 @@ LOCAL_SRC_FILES += src/object-store/src/sync/sync_user.cpp
 LOCAL_SRC_FILES += src/object-store/src/sync/sync_permission.cpp
 LOCAL_SRC_FILES += src/object-store/src/sync/impl/sync_file.cpp
 LOCAL_SRC_FILES += src/object-store/src/sync/impl/sync_metadata.cpp
+LOCAL_SRC_FILES += src/object-store/src/sync/impl/work_queue.cpp
 endif
 
 LOCAL_C_INCLUDES := src

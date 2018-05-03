@@ -1200,8 +1200,54 @@ module.exports = {
     testDisableFileFormatUpgrade: function() {
         Realm.copyBundledRealmFiles();
 
-        TestCase.assertThrowsContaining(() => { 
+        TestCase.assertThrowsContaining(() => {
             new Realm({ path: 'dates-v3.realm', disableFormatUpgrade: true } );
         }, 'The Realm file format must be allowed to be upgraded in order to proceed.');
+    },
+
+    testWriteCopyTo: function() {
+        const realm = new Realm({schema: [schemas.IntPrimary, schemas.AllTypes, schemas.TestObject, schemas.LinkToAllTypes]});
+
+        realm.write(() => {
+            realm.create('TestObject', {doubleCol: 1});
+        });
+        TestCase.assertEqual(1, realm.objects('TestObject').length);
+
+        TestCase.assertThrowsContaining(() => {
+            realm.writeCopyTo();
+        }, "At least path has to be provided for 'writeCopyTo'");
+
+        TestCase.assertThrowsContaining(() => {
+            realm.writeCopyTo(34);
+        }, "Argument to 'writeCopyTo' must be a String.");
+
+        const copyName = "testWriteCopy.realm";
+        realm.writeCopyTo(copyName);
+
+        const copyConfig = { path: copyName };
+        const realmCopy = new Realm(copyConfig);
+        TestCase.assertEqual(1, realmCopy.objects('TestObject').length);
+        realmCopy.close();
+
+        TestCase.assertThrowsContaining(() => {
+            realm.writeCopyTo("testWriteCopyWithInvalidKey.realm", "hello");
+        }, "Encryption key for 'writeCopyTo' must be a Binary.");
+
+        // Failing on Linux only!
+        /*
+        const encryptedCopyName = "testWriteEncryptedCopy.realm";
+        var encryptionKey = new Int8Array(64);
+        for(let i=0; i < 64; i++) {
+            encryptionKey[i] = 1;
+        }
+        realm.writeCopyTo(encryptedCopyName, encryptionKey);
+
+        const encryptedCopyConfig = { path: encryptedCopyName, encryptionKey: encryptionKey };
+        const encryptedRealmCopy = new Realm(encryptedCopyConfig);
+        TestCase.assertEqual(1, encryptedRealmCopy.objects('TestObject').length);
+        encryptedRealmCopy.close();
+        */
+
+        realm.close();
     }
 };

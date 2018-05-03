@@ -29,8 +29,17 @@
 #include "sync/sync_config.hpp"
 #include "sync/sync_session.hpp"
 #include "sync/sync_user.hpp"
+#include "sync/partial_sync.hpp"
 #include "realm/util/logger.hpp"
 #include "realm/util/uri.hpp"
+
+#if REALM_ANDROID
+#include <jni.h>
+#include "./android/io_realm_react_RealmReactModule.h"
+#include "./android/jni_utils.hpp"
+
+extern jclass ssl_helper_class;
+#endif
 
 namespace realm {
 namespace js {
@@ -102,7 +111,7 @@ public:
     static void session_for_on_disk_path(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
 
     MethodMap<T> const methods = {
-        {"logout", wrap<logout>},
+        {"_logout", wrap<logout>},
         {"_sessionForOnDiskPath", wrap<session_for_on_disk_path>}
     };
 };
@@ -302,7 +311,6 @@ public:
     bool operator ()(const std::string& server_address, sync::Session::port_type server_port, const char* pem_data, size_t pem_size, int preverify_ok, int depth)
     {
         const std::string pem_certificate {pem_data, pem_size};
-
         {
             std::lock_guard<std::mutex> lock {*m_mutex};
             m_ssl_certificate_callback_done = false;
@@ -556,6 +564,135 @@ void SessionClass<T>::override_server(ContextType ctx, ObjectType this_object, A
 }
 
 template<typename T>
+class Subscription : public partial_sync::Subscription {
+public:
+    Subscription(partial_sync::Subscription s) : partial_sync::Subscription(std::move(s)) {}
+    Subscription(Subscription &&) = default;
+
+    std::vector<std::pair<Protected<typename T::Function>, partial_sync::SubscriptionNotificationToken>> m_notification_tokens;
+};
+
+template<typename T>
+class SubscriptionClass : public ClassDefinition<T, Subscription<T>> {
+    using GlobalContextType = typename T::GlobalContext;
+    using ContextType = typename T::Context;
+    using FunctionType = typename T::Function;
+    using ObjectType = typename T::Object;
+    using ValueType = typename T::Value;
+    using String = js::String<T>;
+    using Object = js::Object<T>;
+    using Value = js::Value<T>;
+    using Function = js::Function<T>;
+    using ReturnValue = js::ReturnValue<T>;
+    using Arguments = js::Arguments<T>;
+
+public:
+    std::string const name = "Subscription";
+
+    static FunctionType create_constructor(ContextType);
+    static ObjectType create_instance(ContextType, partial_sync::Subscription);
+
+    static void get_state(ContextType, ObjectType, ReturnValue &);
+    static void get_error(ContextType, ObjectType, ReturnValue &);
+
+    static void unsubscribe(ContextType, ObjectType, Arguments, ReturnValue &);
+    static void add_listener(ContextType, ObjectType, Arguments, ReturnValue &);
+    static void remove_listener(ContextType, ObjectType, Arguments, ReturnValue &);
+    static void remove_all_listeners(ContextType, ObjectType, Arguments, ReturnValue &);
+
+    PropertyMap<T> const properties = {
+        {"state", {wrap<get_state>, nullptr}},
+        {"error", {wrap<get_error>, nullptr}}
+    };
+
+    MethodMap<T> const methods = {
+        {"unsubscribe", wrap<unsubscribe>},
+        {"addListener", wrap<add_listener>},
+        {"removeListener", wrap<remove_listener>},
+        {"removeAllListeners", wrap<remove_all_listeners>},
+    };
+};
+
+template<typename T>
+typename T::Object SubscriptionClass<T>::create_instance(ContextType ctx, partial_sync::Subscription subscription) {
+    return create_object<T, SubscriptionClass<T>>(ctx, new Subscription<T>(std::move(subscription)));
+}
+
+template<typename T>
+void SubscriptionClass<T>::get_state(ContextType ctx, ObjectType object, ReturnValue &return_value) {
+    auto subscription = get_internal<T, SubscriptionClass<T>>(object);
+    return_value.set(static_cast<int8_t>(subscription->state()));
+}
+
+template<typename T>
+void SubscriptionClass<T>::get_error(ContextType ctx, ObjectType object, ReturnValue &return_value) {
+    auto subscription = get_internal<T, SubscriptionClass<T>>(object);
+    if (auto error = subscription->error()) {
+        try {
+            std::rethrow_exception(error);
+        }
+        catch (const std::exception& e) {
+            return_value.set(e.what());
+        }
+    }
+    else {
+        return_value.set_undefined();
+    }
+}
+
+template<typename T>
+void SubscriptionClass<T>::unsubscribe(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
+    args.validate_maximum(0);
+    auto subscription = get_internal<T, SubscriptionClass<T>>(this_object);
+    partial_sync::unsubscribe(*subscription);
+    return_value.set_undefined();
+}
+
+template<typename T>
+void SubscriptionClass<T>::add_listener(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
+    args.validate_maximum(1);
+    auto subscription = get_internal<T, SubscriptionClass<T>>(this_object);
+
+    auto callback = Value::validated_to_function(ctx, args[0]);
+    Protected<FunctionType> protected_callback(ctx, callback);
+    Protected<ObjectType> protected_this(ctx, this_object);
+    Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
+
+    auto token = subscription->add_notification_callback([=]() {
+        HANDLESCOPE
+
+        ValueType arguments[2];
+        arguments[0] = static_cast<ObjectType>(protected_this),
+        arguments[1] = Value::from_number(ctx, static_cast<double>(subscription->state()));
+        Function::callback(protected_ctx, protected_callback, protected_this, 2, arguments);
+    });
+
+    subscription->m_notification_tokens.emplace_back(protected_callback, std::move(token));
+}
+
+template<typename T>
+void SubscriptionClass<T>::remove_listener(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
+    args.validate_maximum(1);
+    auto subscription = get_internal<T, SubscriptionClass<T>>(this_object);
+
+    auto callback = Value::validated_to_function(ctx, args[0]);
+    auto protected_function = Protected<FunctionType>(ctx, callback);
+
+    auto& tokens = subscription->m_notification_tokens;
+    auto compare = [&](auto&& token) {
+        return typename Protected<FunctionType>::Comparator()(token.first, protected_function);
+    };
+    tokens.erase(std::remove_if(tokens.begin(), tokens.end(), compare), tokens.end());
+}
+
+template<typename T>
+void SubscriptionClass<T>::remove_all_listeners(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
+    args.validate_maximum(0);
+    auto subscription = get_internal<T, SubscriptionClass<T>>(this_object);
+    subscription->m_notification_tokens.clear();
+}
+
+template<typename T>
 class SyncClass : public ClassDefinition<T, void*> {
     using GlobalContextType = typename T::GlobalContext;
     using ContextType = typename T::Context;
@@ -694,14 +831,52 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
             SSLVerifyCallbackSyncThreadFunctor<T> ssl_verify_functor {ctx, Value::validated_to_function(ctx, ssl_verify_func)};
             ssl_verify_callback = std::move(ssl_verify_functor);
         }
-
+#if REALM_ANDROID
+        // For React Native Android, if the user didn't define the ssl_verify_callback, we provide a default
+        // implementation for him, otherwise all SSL validation will fail, since the Sync client doesn't have
+        // access to the Android Keystore.
+        // This default implementation will perform a JNI call to invoke a Java method defined at the `SSLHelper`
+        // to perform the certificate verification.
+        else {
+            auto ssl_verify_functor =
+            [](const std::string server_address, realm::sync::Session::port_type server_port,
+               const char* pem_data, size_t pem_size, int preverify_ok, int depth) {
+                JNIEnv* env = realm::jni_util::JniUtils::get_env(true);
+                static jmethodID java_certificate_verifier = env->GetStaticMethodID(ssl_helper_class, "certificateVerifier", "(Ljava/lang/String;Ljava/lang/String;I)Z");
+                jstring jserver_address = env->NewStringUTF(server_address.c_str());
+                // deep copy the pem_data into a string so DeleteLocalRef delete the local reference not the original const char
+                std::string pem(pem_data, pem_size);
+                jstring jpem = env->NewStringUTF(pem.c_str());
+                
+                bool isValid = env->CallStaticBooleanMethod(ssl_helper_class, java_certificate_verifier,
+                                                            jserver_address,
+                                                            jpem, depth) == JNI_TRUE;
+                env->DeleteLocalRef(jserver_address);
+                env->DeleteLocalRef(jpem);
+                return isValid;
+            };
+            ssl_verify_callback = std::move(ssl_verify_functor);
+        }
+#endif
         bool is_partial = false;
         ValueType partial_value = Object::get_property(ctx, sync_config_object, "partial");
         if (!Value::is_undefined(ctx, partial_value)) {
             is_partial = Value::validated_to_boolean(ctx, partial_value);
         }
 
-        config.sync_config = std::make_shared<SyncConfig>(shared_user, std::move(raw_realm_url));
+        bool disable_partial_sync_url_checks = false;
+        ValueType disable_partial_sync_url_checks_value = Object::get_property(ctx, sync_config_object, "_disablePartialSyncUrlChecks");
+        if (!Value::is_undefined(ctx, disable_partial_sync_url_checks_value)) {
+            disable_partial_sync_url_checks = Value::validated_to_boolean(ctx, disable_partial_sync_url_checks_value);
+        }
+
+        if (disable_partial_sync_url_checks) {
+            config.sync_config = std::make_shared<SyncConfig>(shared_user, std::move(""));
+            config.sync_config->reference_realm_url = std::move(raw_realm_url);
+        }
+        else {
+            config.sync_config = std::make_shared<SyncConfig>(shared_user, std::move(raw_realm_url));
+        }
         config.sync_config->bind_session_handler = std::move(bind);
         config.sync_config->error_handler = std::move(error_handler);
         config.sync_config->client_validate_ssl = client_validate_ssl;
