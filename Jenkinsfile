@@ -138,6 +138,14 @@ def doInside(script, target, postStep = null) {
         unstash 'source'
       }
     }
+
+   def rosContainer
+        stage('ROS container') {
+            def dependProperties = readProperties file: 'dependencies.list'
+            def rosVersion = dependProperties["REALM_OBJECT_SERVER_VERSION"]
+            def rosEnv = docker.build 'ros:snapshot', "--build-arg ROS_VERSION=${rosVersion} scripts/sync_test_server"
+            rosContainer = rosEnv.run()
+        }
     wrap([$class: 'AnsiColorBuildWrapper']) {
       sh "bash ${script} ${target}"
     }
@@ -153,7 +161,9 @@ def doInside(script, target, postStep = null) {
     currentBuild.rawBuild.setResult(Result.FAILURE)
     e.printStackTrace()
     throw e
-  }
+    } finally {
+        rosContainer.stop()
+    }
 }
 
 def doDockerInside(script, target, postStep = null) {
