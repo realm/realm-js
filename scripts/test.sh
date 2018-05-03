@@ -45,37 +45,13 @@ die() {
   exit 1
 }
 
-download_server() {
-  echo "test.sh: downloading ROS"
-  ./scripts/download-object-server.sh
-}
-
-start_server() {
-  echo "test.sh: starting ROS"
-  #disabled ROS logging
-  # sh ./object-server-for-testing/start-object-server.command &> /dev/null &
-
-  #enabled ROS logging
-  #sh ./object-server-for-testing/start-object-server.command &
-  export ROS_SKIP_PROMPTS=true &&  ./node_modules/.bin/ros start --data realm-object-server-data &
-  SERVER_PID=$!
-  echo ROS PID: ${SERVER_PID}
-}
-
-stop_server() {
-  echo stopping server
-  if [[ ${SERVER_PID} -gt 0 ]] ; then
-    echo server is running. killing it
-    kill -9 ${SERVER_PID} >/dev/null 2>&1  || true
-  fi
-}
 
 startedSimulator=false
 log_temp=
 test_temp_dir=
 cleanup() {
   # Kill started object server
-  stop_server || true
+  curl http://localhost:8888/stop
 
   echo "shutting down running simulators"
   shutdown_ios_simulator >/dev/null 2>&1
@@ -91,7 +67,7 @@ cleanup() {
 
   # Kill react native packager
   pkill -x node || true
-#  rm -f "$PACKAGER_OUT" "$LOGCAT_OUT"
+  rm -f "$PACKAGER_OUT" "$LOGCAT_OUT"
 
   # Cleanup temp files
   if [ -n "$log_temp" ] && [ -e "$log_temp" ]; then
