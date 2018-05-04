@@ -253,6 +253,7 @@
         "include_dirs": [ "<(vendor_dir)/include" ],
         "library_dirs": [
           "<(vendor_dir)/lib",
+          "<(vendor_dir)/lib64",
           "<(vendor_dir)/osx"
         ]
       },
