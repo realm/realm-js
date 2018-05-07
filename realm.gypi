@@ -200,13 +200,7 @@
       "type": "none",
       "dependencies": [ "realm-core" ],
       "link_settings": {
-        "conditions": [
-          ["OS=='win'", {
-            "libraries": [ "-lrealm-sync<(debug_library_suffix)" ]
-          }, {
-            "libraries": [ "-lrealm-sync-node<(debug_library_suffix)" ]
-          }]
-        ]
+          "libraries": [ "-lrealm-sync<(debug_library_suffix)" ],
       },
       "all_dependent_settings": {
         "defines": [ "REALM_ENABLE_SYNC=1" ]
@@ -259,6 +253,7 @@
         "include_dirs": [ "<(vendor_dir)/include" ],
         "library_dirs": [
           "<(vendor_dir)/lib",
+          "<(vendor_dir)/lib64",
           "<(vendor_dir)/osx"
         ]
       },

@@ -12,9 +12,15 @@ X.Y.Z Release notes
 ### Enhancements
 * None
 
+### Bug fixes
+* None.
+
 ### Internal
+* Updated to Relm Sync 3.3.0.
+* Updated to Realm Core 5.6.0.
 * Tested against Realm Object Server 3.1.5.
 * Included Docker setup for Realm Object Server tests.
+
 
 2.4.0 Release notes (2018-4-26)
 =============================================================
@@ -158,6 +164,82 @@ X.Y.Z Release notes
 * Updated to Realm Sync 3.0.0.
 * Tested against Realm Object Server 3.0.0-alpha.8.
 * Added `_disablePartialSyncUrlChecks` to `Realm.Configuration`.
+
+
+2.2.20 Release notes (2018-4-13)
+=============================================================
+### Breaking changes
+* None.
+
+### Enhancements
+* None.
+
+### Bug fixes
+* None.
+
+### Internal
+* Updated to Realm Sync 2.2.17
+
+
+2.2.19 Release notes (2018-4-10)
+=============================================================
+### Breaking changes
+* None.
+
+### Enhancements
+* None.
+
+### Bug fixes
+* Avoid crashing if partial Realms find their way into the admin Realm when using Realm Object Server v3.0.0 or later (realm-js-private #430).
+
+### Internal
+* None.
+
+
+2.2.18 Release notes (2018-3-23)
+=============================================================
+### Breaking changes
+* None.
+
+### Enhancements
+* None.
+
+### Bug fixes
+* Fixed a bug where leaking Realms when an error occurs within an event handler (#1725).
+
+### Internal
+* Added trace logging to the global notifier (realm-js-private #426).
+
+
+2.2.17 Release notes (2018-3-21)
+=============================================================
+### Breaking changes
+* None.
+
+### Enhancements
+* None.
+
+### Bug fixes
+* [Sync] Do a better job of not opening the notifier pipe file for global notifier realms.
+
+### Internal
+* None.
+
+
+2.2.16 Release notes (2018-3-16)
+=============================================================
+### Breaking changes
+* None.
+
+### Enhancements
+* None.
+
+### Bug fixes
+* [Sync] Avoid hammering the ROS authentication service when large numbers of Realms are opened at once.
+
+### Internal
+* None.
+
 
 2.2.15 Release notes (2018-3-9)
 =============================================================
