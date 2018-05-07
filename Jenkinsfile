@@ -72,9 +72,9 @@ stage('build') {
     macos_react_tests_release: doMacBuild('react-tests Release'),
     macos_react_example_debug: doMacBuild('react-example Debug'),
     macos_react_example_release: doMacBuild('react-example Release'),
-    //android_react_tests: doAndroidBuild('react-tests-android', {
-    //  junit 'tests/react-test-app/tests.xml'
-    //}),
+    android_react_tests: doAndroidBuild('react-tests-android', {
+      junit 'tests/react-test-app/tests.xml'
+    }),
     windows_node: doWindowsBuild()
   )
 }
