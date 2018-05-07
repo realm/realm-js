@@ -217,8 +217,8 @@ def doDockerBuild(target, postStep = null) {
 
 def doMacBuild(target, postStep = null) {
   return {
-    node('osx_vegas') {
-      doInside("./scripts/test.sh", target, postStep)
+    node('macos') {
+      doDockerInside("./scripts/test.sh", target, postStep)
     }
   }
 }
