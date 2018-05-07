@@ -13,7 +13,7 @@ X.Y.Z Release notes
 * None.
 
 ### Bug fixes
-* None.
+* Fixed TypeScript defintion for `open_ssl_verify_callback` configuration option (#1652).
 
 ### Internal
 * Updated to Relm Sync 3.3.0.
