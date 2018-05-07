@@ -36,7 +36,7 @@ Prerequisites:
 - Node: 4.0 <= version < 7.0
 - Xcode 7.2+
 - Android SDK 23+
-- Android NDK 10e
+- [Android NDK 10e](https://developer.android.com/ndk/downloads/older_releases) 
 
 First clone this repository:
 
