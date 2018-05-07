@@ -1,4 +1,4 @@
-X.Y.Z Release notes
+2.4.1 Release notes (2018-5-7)
 =============================================================
 ### Compatibility
 * Sync protocol: 24
@@ -10,7 +10,7 @@ X.Y.Z Release notes
 * None.
 
 ### Enhancements
-* None.
+* Added minimal support for Realm deletions to the Global Notifier (realm-js-private #443).
 
 ### Bug fixes
 * Fixed TypeScript defintion for `open_ssl_verify_callback` configuration option (#1652).
