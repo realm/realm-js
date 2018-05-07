@@ -1,5 +1,11 @@
 X.Y.Z Release notes
 =============================================================
+### Compatibility
+* Sync protocol: 24
+* Server-side history format: 4
+* File format: 7
+* Realm Object Server: 3.0.0 or later
+
 ### Breaking changes
 * None.
 
@@ -7,7 +13,54 @@ X.Y.Z Release notes
 * None.
 
 ### Bug fixes
-* Fix named LinkingObject queries across different classes (#1734).
+* None.
+
+### Internal
+* Updated to Relm Sync 3.3.0.
+* Updated to Realm Core 5.6.0.
+
+
+2.4.0 Release notes (2018-4-26)
+=============================================================
+### Compatibility
+* Sync protocol: 24
+* Server-side history format: 4
+* File format: 7
+* Realm Object Server: 3.0.0 or later
+
+### Breaking changes
+* None.
+
+### Enhancements
+* Added password reset wrappers (#1699).
+* Added a certificate validation using Android Keystore for RN (#1761).
+
+### Bug fixes
+* Fixed logout error due to fetch body not being stringified (#1731).
+* Added `Subscription` import to `browser/index.js` and register type converter (#1711).
+* Fixed call to `logout()` when debugging React Native apps (#1744).
+
+### Internal
+* Updated `scripts/test.sh` so it doesn't hang forever when the React tests fail to start (#1764).
+
+
+2.3.4 Release notes (2018-4-12)
+=============================================================
+### Compatibility
+* Sync protocol: 24
+* Server-side history format: 4
+* File format: 7
+* Realm Object Server: 3.0.0 or later
+
+### Breaking changes
+* None.
+
+### Enhancements
+* None.
+
+### Bug fixes
+* Fixed named LinkingObject queries across different classes (#1734).
+* Fixed a bug when refreshing admin token due to network errors (realm-js-private #433).
 
 ### Internal
 * None.
@@ -109,6 +162,82 @@ X.Y.Z Release notes
 * Updated to Realm Sync 3.0.0.
 * Tested against Realm Object Server 3.0.0-alpha.8.
 * Added `_disablePartialSyncUrlChecks` to `Realm.Configuration`.
+
+
+2.2.20 Release notes (2018-4-13)
+=============================================================
+### Breaking changes
+* None.
+
+### Enhancements
+* None.
+
+### Bug fixes
+* None.
+
+### Internal
+* Updated to Realm Sync 2.2.17
+
+
+2.2.19 Release notes (2018-4-10)
+=============================================================
+### Breaking changes
+* None.
+
+### Enhancements
+* None.
+
+### Bug fixes
+* Avoid crashing if partial Realms find their way into the admin Realm when using Realm Object Server v3.0.0 or later (realm-js-private #430).
+
+### Internal
+* None.
+
+
+2.2.18 Release notes (2018-3-23)
+=============================================================
+### Breaking changes
+* None.
+
+### Enhancements
+* None.
+
+### Bug fixes
+* Fixed a bug where leaking Realms when an error occurs within an event handler (#1725).
+
+### Internal
+* Added trace logging to the global notifier (realm-js-private #426).
+
+
+2.2.17 Release notes (2018-3-21)
+=============================================================
+### Breaking changes
+* None.
+
+### Enhancements
+* None.
+
+### Bug fixes
+* [Sync] Do a better job of not opening the notifier pipe file for global notifier realms.
+
+### Internal
+* None.
+
+
+2.2.16 Release notes (2018-3-16)
+=============================================================
+### Breaking changes
+* None.
+
+### Enhancements
+* None.
+
+### Bug fixes
+* [Sync] Avoid hammering the ROS authentication service when large numbers of Realms are opened at once.
+
+### Internal
+* None.
+
 
 2.2.15 Release notes (2018-3-9)
 =============================================================
