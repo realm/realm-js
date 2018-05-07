@@ -33,7 +33,7 @@ The API reference is located at [realm.io/docs/javscript/latest/api/](https://re
 In case you don't want to use the precompiled version on npm, you can build Realm yourself from source. You’ll need an Internet connection the first time you build in order to download the core library.
 
 Prerequisites:
-- Node: 4.0 <= version < 7.0 and python2.7 (3.x won't work)
+- Node: 4.0 <= version < 7.0
 - Xcode 7.2+
 - Android SDK 23+
 - Android NDK 10e
@@ -63,6 +63,7 @@ git submodule update --init --recursive
 - The compiled version of the Android module is here: `<project-root>/android`
 
 ### Building for nodejs:
+Be sure you have python2.7 as the default python. 3.x won't work, and it's not enough to use `--python=python2.7` as parameter to npm.
 
 ```
 npm install --build-from-source=realm
