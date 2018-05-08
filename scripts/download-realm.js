@@ -193,8 +193,11 @@ function getSyncRequirements(dependencies, options, required = {}) {
         }
         case 'linux':
             required.SYNC_ARCHIVE = `realm-sync-Release-v${dependencies.REALM_SYNC_VERSION}-Linux-devel.tar.gz`;
-            required.SYNC_ARCHIVE_ROOT = `realm-sync-Release-v${dependencies.REALM_SYNC_VERSION}`;
-            return Promise.resolve(required);
+            return getCoreRequirements(dependencies, options, required)
+                .then(() => {
+                    required.SYNC_ARCHIVE_ROOT = `realm-sync-Release-v${dependencies.REALM_SYNC_VERSION}`;
+                    return required;
+                });
         default:
             return Promise.reject(new Error(`Unsupported sync platform '${options.platform}'`));
     }
