@@ -195,7 +195,6 @@ function getSyncRequirements(dependencies, options, required = {}) {
             required.SYNC_ARCHIVE = `realm-sync-Release-v${dependencies.REALM_SYNC_VERSION}-Linux-devel.tar.gz`;
             return getCoreRequirements(dependencies, options, required)
                 .then(() => {
-                    required.SYNC_ARCHIVE_ROOT = `realm-sync-Release-v${dependencies.REALM_SYNC_VERSION}`;
                     return required;
                 });
         default:
