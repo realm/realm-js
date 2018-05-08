@@ -160,8 +160,7 @@ inline void alias_backlinks(parser::KeyPathMapping &mapping, const realm::Shared
             if (property.type == realm::PropertyType::LinkingObjects) {
                 auto target_object_schema = schema.find(property.object_type);
                 const TableRef table = ObjectStore::table_for_object_type(realm->read_group(), it->name);
-                const TableRef target_table = ObjectStore::table_for_object_type(realm->read_group(), target_object_schema->name);
-                std::string native_name = "@links." + std::string(target_table->get_name()) + "." + property.link_origin_property_name;
+                std::string native_name = "@links." + target_object_schema->name + "." + property.link_origin_property_name;
                 mapping.add_mapping(table, property.name, native_name);
             }
         }
@@ -181,6 +180,7 @@ typename T::Object ResultsClass<T>::create_filtered(ContextType ctx, const U &co
     auto const &object_schema = collection.get_object_schema();
     DescriptorOrdering ordering;
     parser::KeyPathMapping mapping;
+    mapping.set_backlink_class_prefix(ObjectStore::table_name_for_object_type(""));
     alias_backlinks(mapping, realm);
 
     parser::ParserResult result = parser::parse(query_string);

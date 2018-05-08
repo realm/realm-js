@@ -1,4 +1,11 @@
-X.Y.Z Release notes
+2.4.2 Release notes (YYYY-MM-DD)
+=============================================================
+
+### Bug fixes
+* Building React Native Android projects using Java version 9 used deprecated API's (#1779).
+
+
+2.4.1 Release notes (2018-5-7)
 =============================================================
 ### Compatibility
 * Sync protocol: 24
@@ -10,11 +17,10 @@ X.Y.Z Release notes
 * None.
 
 ### Enhancements
-* None.
+* Added minimal support for Realm deletions to the Global Notifier (realm-js-private #443).
 
 ### Bug fixes
-
-* Building React Native Android projects using Java version 9 used deprecated API's (#1779).
+* Fixed TypeScript defintion for `open_ssl_verify_callback` configuration option (#1652).
 
 ### Internal
 * Updated to Relm Sync 3.3.0.

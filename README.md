@@ -36,7 +36,7 @@ Prerequisites:
 - Node: 4.0 <= version < 7.0
 - Xcode 7.2+
 - Android SDK 23+
-- Android NDK 10e
+- [Android NDK 10e](https://developer.android.com/ndk/downloads/older_releases) 
 
 First clone this repository:
 
@@ -52,17 +52,18 @@ git submodule update --init --recursive
 
 ```Note: If you have cloned the repo previously make sure you remove your node_modules directory since it may contain stale dependencies which may cause the build to fail.```
 
-To build for iOS:
+### Building for iOS:
 - Open `react-native/ios/RealmReact.xcodeproj`
 - Select `RealmReact.framework` as the build target
 - Build
 
-To build for Android:
+### Building for Android:
 - `cd react-native/android`
 - `./gradlew publishAndroid`
 - The compiled version of the Android module is here: `<project-root>/android`
 
-To build for nodejs:
+### Building for nodejs:
+Be sure you have python2.7 as the default python. 3.x won't work, and it's not enough to use `--python=python2.7` as parameter to npm.
 
 ```
 npm install --build-from-source=realm
@@ -70,7 +71,7 @@ npm install --build-from-source=realm
 
  - On Windows you will need to setup the environment for node-gyp
 
-    - Option 1: Install windows-build-tools node package
+    * Option 1: Install windows-build-tools node package
 
          - Open an elevated command prompt (As Administrator)
 
