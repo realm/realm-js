@@ -13,7 +13,8 @@ X.Y.Z Release notes
 * None.
 
 ### Bug fixes
-* None.
+
+* Building React Native Android projects using Java version 9 used deprecated API's (#1779).
 
 ### Internal
 * Updated to Relm Sync 3.3.0.
