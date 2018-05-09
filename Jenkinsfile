@@ -232,7 +232,7 @@ def doMacBuild(target, postStep = null) {
 
             try {
                 reportStatus(target, 'PENDING', 'Build has started')
-                wrap() {
+                wrap([$class: 'AnsiColorBuildWrapper']) {
                     sh "bash ./scripts/sync_test_server/start_server.sh"
                 }
                 wrap([$class: 'AnsiColorBuildWrapper']) {
@@ -254,7 +254,7 @@ def doMacBuild(target, postStep = null) {
                 // archiveRosLog(rosContainer.id)
                 // sh "docker logs ${rosContainer.id}"
                 // rosContainer.stop()
-                wrap() {
+                wrap([$class: 'AnsiColorBuildWrapper']) {
                     sh "bash ./scripts/sync_test_server/stop_server.sh"
                 }
             }
