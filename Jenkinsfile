@@ -72,9 +72,9 @@ stage('build') {
     macos_react_tests_release: doMacBuild('react-tests Release'),
     macos_react_example_debug: doMacBuild('react-example Debug'),
     macos_react_example_release: doMacBuild('react-example Release'),
-    //android_react_tests: doAndroidBuild('react-tests-android', {
-    //  junit 'tests/react-test-app/tests.xml'
-    //}),
+    android_react_tests: doAndroidBuild('react-tests-android', {
+      junit 'tests/react-test-app/tests.xml'
+    }),
     windows_node: doWindowsBuild()
   )
 }
@@ -138,6 +138,8 @@ def doInside(script, target, postStep = null) {
         unstash 'source'
       }
     }
+
+   def rosContainer
     wrap([$class: 'AnsiColorBuildWrapper']) {
       sh "bash ${script} ${target}"
     }
@@ -157,8 +159,14 @@ def doInside(script, target, postStep = null) {
 }
 
 def doDockerInside(script, target, postStep = null) {
-  docker.withRegistry("https://${env.DOCKER_REGISTRY}", "ecr:eu-west-1:aws-ci-user") {
-    doInside(script, target, postStep)
+    docker.withRegistry("https://${env.DOCKER_REGISTRY}", "ecr:eu-west-1:aws-ci-user") {
+
+      def dependProperties = readProperties file: 'dependencies.list'
+      def rosVersion = dependProperties["REALM_OBJECT_SERVER_VERSION"]
+      def rosEnv = docker.build 'ros:snapshot', "--build-arg ROS_VERSION=${rosVersion} scripts/sync_test_server"
+      rosContainer = rosEnv.run()
+      doInside(script, target, postStep)
+      rosContainer.stop()
   }
 }
 
@@ -178,6 +186,14 @@ def doDockerBuild(target, postStep = null) {
       deleteDir()
       unstash 'source'
 
+            def rosContainer
+            stage('ROS container') {
+                def dependProperties = readProperties file: 'dependencies.list'
+                def rosVersion = dependProperties["REALM_OBJECT_SERVER_VERSION"]
+                def rosEnv = docker.build 'ros:snapshot', "--build-arg ROS_VERSION=${rosVersion} scripts/sync_test_server"
+                rosContainer = rosEnv.run()
+            }
+
       try {
         reportStatus(target, 'PENDING', 'Build has started')
 
@@ -192,15 +208,17 @@ def doDockerBuild(target, postStep = null) {
       } catch(Exception e) {
         reportStatus(target, 'FAILURE', e.toString())
         throw e
+      } finally {
+        rosContainer.stop()
       }
-    }
-  }
+   }
+ }
 }
 
 def doMacBuild(target, postStep = null) {
   return {
-    node('osx_vegas') {
-      doInside("./scripts/test.sh", target, postStep)
+    node('macos') {
+      doDockerInside("./scripts/test.sh", target, postStep)
     }
   }
 }

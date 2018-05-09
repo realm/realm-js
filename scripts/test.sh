@@ -45,38 +45,11 @@ die() {
   exit 1
 }
 
-download_server() {
-  echo "test.sh: downloading ROS"
-  ./scripts/download-object-server.sh
-}
-
-start_server() {
-  echo "test.sh: starting ROS"
-  #disabled ROS logging
-  # sh ./object-server-for-testing/start-object-server.command &> /dev/null &
-
-  #enabled ROS logging
-  #sh ./object-server-for-testing/start-object-server.command &
-  export ROS_SKIP_PROMPTS=true &&  ./node_modules/.bin/ros start --data realm-object-server-data &
-  SERVER_PID=$!
-  echo ROS PID: ${SERVER_PID}
-}
-
-stop_server() {
-  echo stopping server
-  if [[ ${SERVER_PID} -gt 0 ]] ; then
-    echo server is running. killing it
-    kill -9 ${SERVER_PID} >/dev/null 2>&1  || true
-  fi
-}
 
 startedSimulator=false
 log_temp=
 test_temp_dir=
 cleanup() {
-  # Kill started object server
-  stop_server || true
-
   echo "shutting down running simulators"
   shutdown_ios_simulator >/dev/null 2>&1
 
@@ -250,8 +223,7 @@ case "$TARGET" in
   ;;
 "react-tests")
   npm run check-environment
-  download_server
-  start_server
+  curl http://localhost:8888/start
   pushd tests/react-test-app
   npm install
   open_chrome
@@ -259,7 +231,7 @@ case "$TARGET" in
 
   pushd ios
   xctest ReactTests
-  stop_server
+  curl http://localhost:8888/stop
   ;;
 "react-example")
   npm run check-environment
@@ -277,10 +249,9 @@ case "$TARGET" in
   ;;
 "react-tests-android")
   npm run check-environment
-  if [ "$(uname)" = 'Darwin' ]; then
-    download_server
-    start_server
-  fi
+  # You need to connect your phone and start the server before running this script.
+  # The server is started by ./sync_test_server/start_server.sh
+  curl http://localhost:8888/start
 
   [[ $CONFIGURATION == 'Debug' ]] && exit 0
   XCPRETTY=''
@@ -296,7 +267,7 @@ case "$TARGET" in
   # Despite the docs claiming -c to work, it doesn't, so `-T 1` alleviates that.
   mkdir -p $(pwd)/build || true
   adb logcat -c
-  adb logcat -T 1 | tee "$LOGCAT_OUT" | tee $(pwd)/build/out.txt &
+  adb logcat -T 1 | tee "$LOGCAT_OUT" > $(pwd)/build/out.txt &
 
   ./run-android.sh
 
@@ -321,14 +292,15 @@ case "$TARGET" in
   cat tests.xml
 
   check_test_results ReactTests
+
+  # stop server
+  curl http://localhost:8888/stop
   ;;
 "node")
   npm run check-environment
   if [ "$(uname)" = 'Darwin' ]; then
-    echo "downloading server"
-    download_server
     echo "starting server"
-    start_server
+    curl http://localhost:8888/start
 
     npm_tests_cmd="npm run test"
     npm install --build-from-source=realm --realm_enable_sync
@@ -346,7 +318,10 @@ case "$TARGET" in
   npm install
   eval "$npm_tests_cmd"
   popd
-  stop_server
+  if [ "$(uname)" = 'Darwin' ]; then
+      # stop server
+      curl http://localhost:8888/stop
+  fi
   ;;
 "electron")
   if [ "$(uname)" = 'Darwin' ]; then

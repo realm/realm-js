@@ -1,3 +1,25 @@
+X.Y.Z Release notes
+=============================================================
+### Compatibility
+* Sync protocol: 24
+* Server-side history format: 4
+* File format: 7
+* Realm Object Server: 3.0.0 or later
+
+### Breaking changes
+* None.
+
+### Enhancements
+* None.
+
+### Bug fixes
+* None.
+
+### Internals
+* Tested against Realm Object Server 3.1.5.
+* Included Docker setup for Realm Object Server tests.
+
+
 2.4.1 Release notes (2018-5-8)
 =============================================================
 ### Compatibility

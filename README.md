@@ -88,8 +88,10 @@ Some users have reported the Chrome debugging being too slow to use after integr
 
 ## Running the tests
 
-You can use scripts/tests.sh to run the various tests.
+You can use `scripts/tests.sh` to run the various tests.
 You will need yarn installed on the machine.
+
+If you are testing against Realm Object Server (sync integration tests), you need to start the server before running `test.sh`. You do that by executing `./scripts/sync_test_server/start_servere.sh`. If you are testing RN Android, pleaase add the `-android` flag in order to forward ports.
 
 test.sh options
 

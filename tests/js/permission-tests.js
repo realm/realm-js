@@ -33,7 +33,10 @@ function createUsersWithTestRealms(count) {
         return Realm.Sync.User
             .register('http://localhost:9080', uuid(), 'password')
             .then(user => {
-                new Realm({sync: {user, url: 'realm://localhost:9080/~/test'}}).close();
+                new Realm({sync: { user,
+                                   url: 'realm://localhost:9080/~/test'
+                                 }
+                          }).close();
                 return user;
             });
     };
