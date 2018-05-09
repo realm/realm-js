@@ -226,8 +226,8 @@ def doMacBuild(target, postStep = null) {
             stage('ROS container') {
                 def dependProperties = readProperties file: 'dependencies.list'
                 def rosVersion = dependProperties["REALM_OBJECT_SERVER_VERSION"]
-                def rosEnv = docker.build 'ros:snapshot', "--build-arg ROS_VERSION=${rosVersion} -p 8888:8888 scripts/sync_test_server"
-                rosContainer = rosEnv.run()
+                def rosEnv = docker.build 'ros:snapshot', "--build-arg ROS_VERSION=${rosVersion} scripts/sync_test_server"
+                rosContainer = rosEnv.run('-p 8888:8888')
             }
 
             try {
