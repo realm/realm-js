@@ -139,7 +139,6 @@ def doInside(script, target, postStep = null) {
       }
     }
 
-   def rosContainer
     wrap([$class: 'AnsiColorBuildWrapper']) {
       sh "bash ${script} ${target}"
     }
@@ -159,23 +158,22 @@ def doInside(script, target, postStep = null) {
 }
 
 def doDockerInside(script, target, postStep = null) {
-    docker.withRegistry("https://${env.DOCKER_REGISTRY}", "ecr:eu-west-1:aws-ci-user") {
-
-      def dependProperties = readProperties file: 'dependencies.list'
-      def rosVersion = dependProperties["REALM_OBJECT_SERVER_VERSION"]
-      def rosEnv = docker.build 'ros:snapshot', "--build-arg ROS_VERSION=${rosVersion} scripts/sync_test_server"
-      rosContainer = rosEnv.run()
-      doInside(script, target, postStep)
-      rosContainer.stop()
+  docker.withRegistry("https://${env.DOCKER_REGISTRY}", "ecr:eu-west-1:aws-ci-user") {
+    def dependProperties = readProperties file: 'dependencies.list'
+    def rosVersion = dependProperties["REALM_OBJECT_SERVER_VERSION"]
+    def rosEnv = docker.build 'ros:snapshot', "--build-arg ROS_VERSION=${rosVersion} scripts/sync_test_server"
+    rosContainer = rosEnv.run()
+    doInside(script, target, postStep)
+    rosContainer.stop()
   }
 }
 
 def doAndroidBuild(target, postStep = null) {
   return {
     node('docker && android') {
-        timeout(time: 1, unit: 'HOURS') {
-            doDockerInside("./scripts/docker-android-wrapper.sh ./scripts/test.sh", target, postStep)
-        }
+      timeout(time: 1, unit: 'HOURS') {
+        doDockerInside("./scripts/docker-android-wrapper.sh ./scripts/test.sh", target, postStep)
+      }
     }
   }
 }
@@ -185,14 +183,13 @@ def doDockerBuild(target, postStep = null) {
     node('docker') {
       deleteDir()
       unstash 'source'
-
-            def rosContainer
-            stage('ROS container') {
-                def dependProperties = readProperties file: 'dependencies.list'
-                def rosVersion = dependProperties["REALM_OBJECT_SERVER_VERSION"]
-                def rosEnv = docker.build 'ros:snapshot', "--build-arg ROS_VERSION=${rosVersion} scripts/sync_test_server"
-                rosContainer = rosEnv.run()
-            }
+      def rosContainer
+      stage('ROS container') {
+        def dependProperties = readProperties file: 'dependencies.list'
+        def rosVersion = dependProperties["REALM_OBJECT_SERVER_VERSION"]
+        def rosEnv = docker.build 'ros:snapshot', "--build-arg ROS_VERSION=${rosVersion} scripts/sync_test_server"
+        rosContainer = rosEnv.run()
+      }
 
       try {
         reportStatus(target, 'PENDING', 'Build has started')
@@ -217,10 +214,45 @@ def doDockerBuild(target, postStep = null) {
 
 def doMacBuild(target, postStep = null) {
   return {
-    node('macos') {
-      doDockerInside("./scripts/test.sh", target, postStep)
+        node('macos') {
+            retry(3) { // retry unstash up to three times to mitigate network and contention
+                dir(env.WORKSPACE) {
+                    deleteDir()
+                    unstash 'source'
+                }
+            }
+
+            def rosContainer
+            stage('ROS container') {
+                def dependProperties = readProperties file: 'dependencies.list'
+                def rosVersion = dependProperties["REALM_OBJECT_SERVER_VERSION"]
+                def rosEnv = docker.build 'ros:snapshot', "--build-arg ROS_VERSION=${rosVersion} scripts/sync_test_server"
+                rosContainer = rosEnv.run()
+            }
+
+            try {
+                reportStatus(target, 'PENDING', 'Build has started')
+                wrap([$class: 'AnsiColorBuildWrapper']) {
+                    sh "bash ./scripts/test.sh ${target}"
+                }
+                if(postStep) {
+                    postStep.call()
+                }
+                dir(env.WORKSPACE) {
+                    deleteDir() // solving realm/realm-js#734
+                }
+                reportStatus(target, 'SUCCESS', 'Success!')
+            } catch(Exception e) {
+  	            reportStatus(target, 'FAILURE', e.toString())
+                currentBuild.rawBuild.setResult(Result.FAILURE)
+                e.printStackTrace()
+                throw e
+            } finally {
+                rosContainer.stop()
+            }
+
+        }
     }
-  }
 }
 
 def doWindowsBuild() {
