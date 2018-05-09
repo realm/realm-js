@@ -81,6 +81,16 @@ stage('build') {
 
 // == Methods
 
+def archiveRosLog(String id) {
+  sh "docker cp ${id}:/tmp/integration-test-command-server.log ./ros.log"
+  zip([
+      'zipFile': 'roslog.zip',
+      'archive': true,
+      'glob' : 'ros.log'
+  ])
+  sh 'rm ros.log'
+}
+
 def readGitTag() {
   sh "git describe --exact-match --tags HEAD | tail -n 1 > tag.txt 2>&1 || true"
   def tag = readFile('tag.txt').trim()
@@ -222,19 +232,16 @@ def doMacBuild(target, postStep = null) {
                 }
             }
 
-            // def rosContainer
-            // stage('ROS container') {
-            //     def dependProperties = readProperties file: 'dependencies.list'
-            //     def rosVersion = dependProperties["REALM_OBJECT_SERVER_VERSION"]
-            //     def rosEnv = docker.build 'ros:snapshot', "--build-arg ROS_VERSION=${rosVersion} scripts/sync_test_server"
-            //     rosContainer = rosEnv.run()
-            // }
+            def rosContainer
+            stage('ROS container') {
+                def dependProperties = readProperties file: 'dependencies.list'
+                def rosVersion = dependProperties["REALM_OBJECT_SERVER_VERSION"]
+                def rosEnv = docker.build 'ros:snapshot', "--build-arg ROS_VERSION=${rosVersion} scripts/sync_test_server"
+                rosContainer = rosEnv.run()
+            }
 
             try {
                 reportStatus(target, 'PENDING', 'Build has started')
-                wrap([$class: 'AnsiColorBuildWrapper']) {
-                    sh "bash ./scripts/sync_test_server/start_server.sh"
-                }
                 wrap([$class: 'AnsiColorBuildWrapper']) {
                     sh "bash ./scripts/test.sh ${target}"
                 }
@@ -251,12 +258,10 @@ def doMacBuild(target, postStep = null) {
                 e.printStackTrace()
                 throw e
             } finally {
-                // archiveRosLog(rosContainer.id)
-                // sh "docker logs ${rosContainer.id}"
-                // rosContainer.stop()
+                archiveRosLog(rosContainer.id)
+                sh "docker logs ${rosContainer.id}"
+                rosContainer.stop()
                 wrap([$class: 'AnsiColorBuildWrapper']) {
-                    sh "bash ./scripts/sync_test_server/stop_server.sh"
-                }
             }
 
         }
