@@ -261,9 +261,7 @@ def doMacBuild(target, postStep = null) {
                 archiveRosLog(rosContainer.id)
                 sh "docker logs ${rosContainer.id}"
                 rosContainer.stop()
-                wrap([$class: 'AnsiColorBuildWrapper']) {
             }
-
         }
     }
 }
