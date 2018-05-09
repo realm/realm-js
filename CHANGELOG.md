@@ -1,4 +1,26 @@
-2.4.1 Release notes (2018-5-8)
+X.Y.Z Release notes
+=============================================================
+### Compatibility
+* Sync protocol: 24
+* Server-side history format: 4
+* File format: 7
+* Realm Object Server: 3.0.0 or later
+
+### Breaking changes
+* None.
+
+### Enhancements
+* None.
+
+### Bug fixes
+* Building React Native Android projects using Java version 9 used deprecated API's (#1779).
+
+
+### Internal
+* None.
+
+
+2.4.1 Release notes (2018-5-7)
 =============================================================
 ### Compatibility
 * Sync protocol: 24
