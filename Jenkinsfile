@@ -248,6 +248,8 @@ def doMacBuild(target, postStep = null) {
                 e.printStackTrace()
                 throw e
             } finally {
+                archiveRosLog(rosContainer.id)
+                sh "docker logs ${rosContainer.id}"
                 rosContainer.stop()
             }
 
