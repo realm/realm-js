@@ -10,16 +10,36 @@ X.Y.Z Release notes
 * None.
 
 ### Enhancements
-* None
+* None.
 
 ### Bug fixes
 * None.
 
+### Internals
+* Tested against Realm Object Server 3.1.5.
+* Included Docker setup for Realm Object Server tests.
+
+
+2.4.1 Release notes (2018-5-8)
+=============================================================
+### Compatibility
+* Sync protocol: 24
+* Server-side history format: 4
+* File format: 7
+* Realm Object Server: 3.0.0 or later
+
+### Breaking changes
+* None.
+
+### Enhancements
+* Added minimal support for Realm deletions to the Global Notifier (realm-js-private #443).
+
+### Bug fixes
+* Fixed TypeScript defintion for `open_ssl_verify_callback` configuration option (#1652).
+
 ### Internal
 * Updated to Relm Sync 3.3.0.
 * Updated to Realm Core 5.6.0.
-* Tested against Realm Object Server 3.1.5.
-* Included Docker setup for Realm Object Server tests.
 
 
 2.4.0 Release notes (2018-4-26)
