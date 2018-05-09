@@ -15,11 +15,12 @@ X.Y.Z Release notes
 ### Bug fixes
 * Building React Native Android projects using Java version 9 used deprecated API's (#1779).
 
+
 ### Internal
 * None.
 
 
-2.4.1 Release notes (2018-5-8)
+2.4.1 Release notes (2018-5-7)
 =============================================================
 ### Compatibility
 * Sync protocol: 24
