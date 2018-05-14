@@ -1,4 +1,4 @@
-X.Y.Z Release notes
+2.4.2 Release notes (2018-5-14)
 =============================================================
 ### Compatibility
 * Sync protocol: 24
@@ -10,11 +10,10 @@ X.Y.Z Release notes
 * None.
 
 ### Enhancements
-* None.
+* [Sync] Emit a `delete` event to the Sync event listener whenever a Realm matching the regex is deleted from the server.
 
 ### Bug fixes
 * Building React Native Android projects using Java version 9 used deprecated API's (#1779).
-
 
 ### Internal
 * None.
