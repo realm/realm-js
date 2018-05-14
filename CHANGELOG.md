@@ -1,3 +1,24 @@
+x.y.z Release notes (TBD)
+=============================================================
+### Compatibility
+* Sync protocol: 24
+* Server-side history format: 4
+* File format: 7
+* Realm Object Server: 3.0.0 or later
+
+### Breaking changes
+* None.
+
+### Enhancements
+* [Sync] The SSL configuration options are now grouped in a new config object. (#1465)
+* [Sync] The Adapter can accept a new config parameter that specifies SSL settings for spawned sync sessions.
+
+### Bug fixes
+* None.
+
+### Internal
+* None.
+
 2.4.2 Release notes (2018-5-14)
 =============================================================
 ### Compatibility
