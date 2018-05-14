@@ -17,6 +17,68 @@
 ////////////////////////////////////////////////////////////////////////////
 
 /**
+ * This describes the different options used to create a {@link Realm} instance with Realm Platform synchronization.
+ * @typedef {Object} Realm.Sync~SyncConfiguration
+ * @property {Realm.Sync.User} user - A {@link Realm.Sync.User} object obtained by calling `Realm.Sync.User.login`.
+ * @property {string} url - A `string` which contains a valid Realm Sync url.
+ * @property {function} [error] - A callback function which is called in error situations.
+ *    The `error` callback can take up to five optional arguments: `name`, `message`, `isFatal`,
+ *    `category`, and `code`.
+ *
+ * @deprecated
+ * @property {boolean} [validate_ssl] - Indicating if SSL certificates must be validated.
+ * @deprecated
+ * @property {string} [ssl_trust_certificate_path] - A path where to find trusted SSL certificates.
+ * @deprecated
+ * @property {Realm.Sync~sslValidateCallback} [open_ssl_verify_callback] - A callback function used to
+ * accept or reject the server's SSL certificate.
+ *
+ * @property {Realm.Sync~SSLConfiguration} [ssl] - SSL configuration.
+ * @property {boolean} [partial] - Whether this Realm should be opened in 'partial synchronization' mode.
+ *    Partial synchronisation only synchronizes those objects that match the query specified in contrast
+ *    to the normal mode of operation that synchronises all objects in a remote Realm.
+ *    **Partial synchronization is a tech preview. Its APIs are subject to change.**
+ */
+
+/**
+ * This describes the different options used to create a {@link Realm} instance with Realm Platform synchronization.
+ * @typedef {Object} Realm.Sync~SSLConfiguration
+ * @property {boolean} validate - Indicating if SSL certificates must be validated. Default is `true`.
+ * @property {string} certificatePath - A path where to find trusted SSL certificates.
+ * @property {Realm.Sync~sslValidateCallback} validateCallback - A callback function used to
+ * accept or reject the server's SSL certificate.
+ */
+
+/**
+ * When the sync client has received the server's certificate chain, it presents every certificate in
+ * the chain to the {@link Realm.Sync~sslValidateCallback} callback.
+ *
+ * The return value of the callback decides whether the certificate is accepted (`true`)
+ * or rejected (`false`). {@link Realm.Sync~sslValidateCallback} is only respected on platforms where
+ * OpenSSL is used for the sync client, e.g. Linux. The callback is not
+ * allowed to throw exceptions. If the operations needed to verify the certificate lead to an exception,
+ * the exception must be caught explicitly before returning. The return value would typically be false
+ * in case of an exception.
+ * @callback Realm.Sync~sslValidateCallback
+ * @param {Realm.Sync~SSLCertificateValidationInfo} validationInfo
+ * @return {boolean}
+ */
+
+/**
+ * @typedef {Object} Realm.Sync~SSLCertificateValidationInfo
+ * @property {string} serverAddress
+ * @property {number} serverPort
+ * @property {string} pemCertificate
+ * @property {boolean} acceptedByOpenSSL - `true` if OpenSSL has accepted the certificate,
+ * and `false` if OpenSSL has rejected it.
+ * It is generally safe to return true when `acceptedByOpenSSL` is `true`. If `acceptedByOpenSSL` is `false`,
+ * an independent verification should be made.
+ * @property {number} depth - Specifies the position of the certificate in the chain.
+ * `depth = 0` represents the actual server certificate. The root
+ * certificate has the highest depth. The certificate of highest depth will be presented first.
+ */
+
+/**
  * When opening a Realm created with Realm Mobile Platform v1.x, it is automatically
  * migrated to the v2.x format. In case this migration
  * is not possible, an exception is thrown. The exception´s `message` property will be equal
@@ -658,8 +720,9 @@ class Adapter {
 	 *  use `.*` to match all all Realms
 	 * @param {function(realmPath)} changeCallback - called when a new transaction is available
 	 *  to process for the given realm_path
+     * @param {Realm.Sync~SSLConfiguration} [ssl] - SSL configuration for the spawned sync sessions.
 	 */
-	constructor(localPath, serverUrl, adminUser, regex, changeCallback) {}
+	constructor(localPath, serverUrl, adminUser, regex, changeCallback, ssl) {}
 
 	/**
 	 * Get the Array of current instructions for the given Realm.

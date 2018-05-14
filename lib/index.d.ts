@@ -387,12 +387,22 @@ declare namespace Realm.Sync {
     type ErrorCallback = (session: Session, error: SyncError) => void;
     type SSLVerifyCallback = (sslVerifyObject: SSLVerifyObject) => boolean;
 
+    interface SSLConfiguration {
+        validate?: boolean;
+        certificatePath?: string;
+        validateCallback?: SSLVerifyCallback;
+    }
+
     interface SyncConfiguration {
         user: User;
         url: string;
+        /** @deprecated use `ssl` instead */
         validate_ssl?: boolean;
+        /** @deprecated use `ssl` instead */
         ssl_trust_certificate_path?: string;
+        /** @deprecated use `ssl` instead */
         open_ssl_verify_callback?: SSLVerifyCallback;
+        ssl?: SSLConfiguration;
         error?: ErrorCallback;
         partial?: boolean;
         _disablePartialSyncUrlChecks?:boolean;
@@ -491,7 +501,8 @@ declare namespace Realm.Sync {
             server_url: string,
             admin_user: User,
             regex: string,
-            change_callback: Function
+            change_callback: Function,
+            ssl?: SSLConfiguration
         )
 
         /**
