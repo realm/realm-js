@@ -909,7 +909,7 @@ template<typename T>
 void SyncClass<T>::populate_sync_config_for_ssl(ContextType ctx, ObjectType config_object, SyncConfig& config)
 {
     ValueType validate_ssl = Object::get_property(ctx, config_object, "validate");
-    if (Value::is_boolean(ctx, validate_ssl_temp)) {
+    if (Value::is_boolean(ctx, validate_ssl)) {
         config.client_validate_ssl = Value::to_boolean(ctx, validate_ssl);
     }
 
