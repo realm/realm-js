@@ -49,6 +49,9 @@ class Sync {
      *    regex has changed. A [ChangeEvent]{@link Realm.Sync.ChangeEvent} argument
      *    is passed containing information about which Realm changed and what
      *    objects within the Realm changed.
+     *  * `'delete'`: Emitted whenever a Realm matching the filter regex has been
+     *    deleted from the server. The virtual path of the Realm being deleted is
+     *    passed as an argument.
      *
      * Only available in the Enterprise Edition.
      */
@@ -596,6 +599,9 @@ class Subscription {
  *    regex has changed. A [ChangeEvent]{@link Realm.Sync.ChangeEvent} argument
  *    is passed containing information about which Realm changed and what
  *    objects within the Realm changed.
+ *  * `'delete'`: Emitted whenever a Realm matching the filter regex has been
+ *    deleted from the server. The virtual path of the Realm being deleted is
+ *    passed as an argument.
  *
  * Worker automatically spawns child processes as needed to handle events in
  * parallel (up to the limit specified in the `options` parameter). Events for
@@ -612,7 +618,11 @@ class Subscription {
  *    console.log(`Realm at ${change.path} changed`);
  * }
  *
- * module.exports = {onchange, oncavailable};
+ * function ondelete(path) {
+ *    console.log(`Realm at ${path} deleted`);
+ * }
+ *
+ * module.exports = {onchange, oncavailable, ondelete};
  *
  * // server script
  * Realm.Sync.addListener(realmServerURL, adminUser, '.*', new Realm.Worker('my-worker'));
