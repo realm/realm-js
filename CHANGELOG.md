@@ -1,3 +1,23 @@
+X.Y.Z Release notes ()
+=============================================================
+### Compatibility
+* Sync protocol: 24
+* Server-side history format: 4
+* File format: 7
+* Realm Object Server: 3.0.0 or later
+
+### Breaking changes
+* None.
+
+### Enhancements
+* Added `Object.linkingObjectsCount()` method, that returns total count of incoming links.
+
+### Bug fixes
+* None
+
+### Internal
+* None.
+
 2.5.0 Release notes (2018-5-14)
 =============================================================
 ### Compatibility
