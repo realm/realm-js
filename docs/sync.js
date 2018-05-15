@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+
 /**
  * When opening a Realm created with Realm Mobile Platform v1.x, it is automatically
  * migrated to the v2.x format. In case this migration
@@ -646,6 +647,7 @@ class Worker {
 
 /**
  * Class for creating custom Data Connectors. Only available in the Enterprise Edition.
+ *
  * @memberof Realm.Sync
  */
 class Adapter {

@@ -240,7 +240,9 @@ class PermissionOfferResponse {
  * the properties of Permission depend on what the permission is applied to, and so are
  * left undocumented here.
  * @since 2.3.0
-*/
+ *
+ * @memberof Realm.Sync
+ */
 class Permission {
 
     /**
@@ -317,6 +319,9 @@ class Permission {
  * a Realm, and can also be created manually if you wish to grant permissions to a user
  * which has not yet connected to this Realm.
  * @since 2.3.0
+ * @class
+ * @name Realm.Sync.Permission.User
+ * @memberof Realm.Sync.Permission
  */
 class User {
     /**
@@ -337,6 +342,9 @@ class User {
  * connect to the Realm are automatically added to it. Any other roles you wish to use are
  * managed as normal Realm objects.
  * @since 2.3.0
+ * @class
+ * @name Realm.Sync.Permission.Role
+ * @memberof Realm.Sync.Permission
  */
 class Role {
     /**
@@ -358,6 +366,9 @@ class Role {
  * An instance of this object is automatically created in the Realm for class in your schema,
  * and should not be created manually.
  * @since 2.3.0
+ * @class
+ * @name Realm.Sync.Permission.Class
+ * @memberof Realm.Sync.Permission
  */
 class Class {
     /**
@@ -379,6 +390,9 @@ class Class {
  * An object of this type is automatically created in the Realm for you, and more objects
  * cannot be created manually.
  * @since 2.3.0
+ * @class
+ * @name Realm.Sync.Permission.Realm
+ * @memberof Realm.Sync.Permission
  */
 class Realm {
     /**
