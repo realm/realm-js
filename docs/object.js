@@ -52,5 +52,5 @@ class Object {
      * @returns {number} number of links to this object.
      * @since 2.6.0
      */
-    linkingObjectsCount(objectType, property) {}
+    linkingObjectsCount() {}
 }
