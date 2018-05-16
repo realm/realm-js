@@ -15,10 +15,11 @@
 * Added `Object.linkingObjectsCount()` method, that returns total count of incoming links.
 
 ### Bug fixes
-* None.
+* Fix a crash when attempting to use the data adaptor or sync event listener introduced in 2.4.1.
 
 ### Internal
-* None.
+* Realm Sync v3.3.0.
+* Realm Core v5.6.0.
 
 2.5.0 Release notes (2018-5-14)
 =============================================================
