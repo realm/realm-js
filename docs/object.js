@@ -21,6 +21,9 @@
  * was specified that does **not** inherit from this class.
  * @memberof Realm
  * @since 0.12.0
+ * @class
+ * @name Realm.Object
+ * @memberof Realm
  */
 class Object {
     /**

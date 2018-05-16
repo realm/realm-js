@@ -18,9 +18,11 @@
 
 /**
  * A Realm instance represents a Realm database.
+ *
  * ```js
  * const Realm = require('realm');
  * ```
+ *
  */
 class Realm {
    /**
@@ -284,32 +286,25 @@ class Realm {
      * @param {ArrayBuffer|ArrayBufferView} [encryptionKey] - Optional 64-byte encryption key to encrypt the new file with.
      */
     writeCopyTo(path, encryptionKey) {}
+
+    /**
+     * Get the current schema version of the Realm at the given path.
+     * @param {string} path - The path to the file where the
+     *   Realm database is stored.
+     * @param {ArrayBuffer|ArrayBufferView} [encryptionKey] - Required only when
+     *   accessing encrypted Realms.
+     * @throws {Error} When passing an invalid or non-matching encryption key.
+     * @returns {number} version of the schema, or `-1` if no Realm exists at `path`.
+     */
+    static schemaVersion(path, encryptionKey) {}
+
+    /**
+     * Delete the Realm file for the given configuration.
+     * @param {Realm~Configuration} config
+     * @throws {Error} If anything in the provided `config` is invalid.
+     */
+    static deleteFile(config) {}
 }
-
-/**
- * Get the current schema version of the Realm at the given path.
- * @param {string} path - The path to the file where the
- *   Realm database is stored.
- * @param {ArrayBuffer|ArrayBufferView} [encryptionKey] - Required only when
- *   accessing encrypted Realms.
- * @throws {Error} When passing an invalid or non-matching encryption key.
- * @returns {number} version of the schema, or `-1` if no Realm exists at `path`.
- */
-Realm.schemaVersion = function(path, encryptionKey) {};
-
-/**
- * Delete the Realm file for the given configuration.
- * @param {Realm~Configuration} config
- * @throws {Error} If anything in the provided `config` is invalid.
- */
-Realm.deleteFile = function(config) {};
-
-/**
- * The default path where to create and access the Realm file.
- * @type {string}
- */
-Realm.defaultPath;
-
 /**
  * This describes the different options used to create a {@link Realm} instance.
  * @typedef Realm~Configuration
@@ -496,3 +491,4 @@ Realm.defaultPath;
  *   any object of this type from inside the same Realm, and will always be _optional_
  *   (meaning it may also be assigned `null` or `undefined`).
  */
+

@@ -24,6 +24,8 @@
  * (and listener callbacks added through {@link Realm.Results#addListener addListener()}
  * will thus never be called).
  *
+ * @class
+ * @name Realm.Results
  * @extends Realm.Collection
  * @memberof Realm
  */

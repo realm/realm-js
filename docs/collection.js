@@ -29,6 +29,8 @@
  * objects which matched the query when the enumeration is begun, even if some of them are
  * deleted or modified to be excluded by the filter during the enumeration.
  *
+ * @class
+ * @name Realm.Collection
  * @memberof Realm
  * @since 0.11.0
  */
@@ -458,6 +460,7 @@ class Collection {
 /**
  * This is an ES6 iterator.
  * @typedef Realm.Collection~Iterator
+ * @memberof Realm.Collection
  * @property {function} next - Returns an object with two properties:
  *   - `done` – `true` if the iterator is done iterating through items in the collection,
  *     otherwise `false`
@@ -477,5 +480,6 @@ class Collection {
  * separate by dots, **or** an array with two items: `[propertyName, reverse]`.
  *
  * @typedef Realm.Collection~SortDescriptor
+ * @memberof Realm.Collection
  * @type {string|Array}
  */

@@ -28,6 +28,9 @@
  * materialized for the affected Realm files and the affected user.
  * Once the request has been processed, the Status, StatusMessage, and
  * ErrorCode will be updated accordingly.
+ * @class
+ * @name Realm.Sync.User.PermissionChange
+ * @memberof Realm.Sync.User
  */
 class PermissionChange {
     
@@ -104,6 +107,9 @@ class PermissionChange {
  * with users you wish to grant permissions to.
  * If the request has failed, statusMessage will be updated with relevant information about the
  * failure and statusCode will be set.
+ * @class
+ * @name Realm.Sync.User.PermissionOffer
+ * @memberof Realm.Sync.User
  */
 class PermissionOffer {
     /**
@@ -184,6 +190,9 @@ class PermissionOffer {
  * to connect to the Realm.
  * If the request has failed, the statusMessage will be updated with relevant information about the
  * failure and statusCode will be set.
+ * @class
+ * @name Realm.Sync.User.PermissionOfferResponse
+ * @memberof Realm.Sync.User
  */
 class PermissionOfferResponse {
     /**
@@ -241,6 +250,8 @@ class PermissionOfferResponse {
  * left undocumented here.
  * @since 2.3.0
  *
+ * @class
+ * @name Realm.Sync.Permission
  * @memberof Realm.Sync
  */
 class Permission {
