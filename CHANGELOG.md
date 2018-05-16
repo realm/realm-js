@@ -1,4 +1,4 @@
-x.y.z Release notes (TBD)
+2.6.0 Release notes (2018-5-16)
 =============================================================
 ### Compatibility
 * Sync protocol: 24
