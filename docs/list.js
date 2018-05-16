@@ -26,6 +26,8 @@
  * Realm#write write} transaction.
  *
  * @extends Realm.Collection
+ * @class
+ * @name Realm.List
  * @memberof Realm
  */
 class List extends Collection {

@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+
 /**
  * This describes the different options used to create a {@link Realm} instance with Realm Platform synchronization.
  * @typedef {Object} Realm.Sync~SyncConfiguration
@@ -86,6 +87,7 @@
  * is a {Realm~Configuration} which refers to it. You can open it as a local, read-only Realm, and
  * copy objects to a new synced Realm.
  *
+ * @name Realm.Sync
  * @memberof Realm
  */
 class Sync {
@@ -190,6 +192,8 @@ class Sync {
  * resolved). The Realms supplied by the change event do not need to be
  * explicitly closed.
  *
+ * @class
+ * @name Realm.Sync.ChangeEvent
  * @memberof Realm.Sync
  */
 class ChangeEvent {
@@ -248,6 +252,8 @@ class ChangeEvent {
 
 /**
  * Class that describes authentication errors in the Realm Object Server
+ * @class
+ * @name Realm.Sync.AuthError
  * @memberof Realm.Sync
  */
 class AuthError extends Error {
@@ -266,6 +272,8 @@ class AuthError extends Error {
 
 /**
  * Describes an error when an incompatible synced Realm is opened. The old version of the Realm can be accessed in readonly mode using the configuration() member
+ * @class
+ * @name Realm.Sync.IncompatibleSyncedRealmError
  * @memberof Realm.Sync
  */
 class IncompatibleSyncedRealmError {
@@ -283,6 +291,8 @@ class IncompatibleSyncedRealmError {
 
 /**
  * Class for logging in and managing Sync users.
+ * @class
+ * @name Realm.Sync.User
  * @memberof Realm.Sync
  */
 class User {
@@ -527,6 +537,8 @@ class User {
  * client (and a local Realm file on disk), and the server (and a remote Realm at a given URL stored on a Realm Object Server).
  * Sessions are always created by the SDK and vended out through various APIs. The lifespans of sessions
  * associated with Realms are managed automatically.
+ * @class
+ * @name Realm.Sync.Session
  * @memberof Realm.Sync
  */
 class Session {
@@ -584,6 +596,8 @@ class Session {
 
 /**
  * An object encapsulating partial sync subscriptions.
+ * @class
+ * @name Realm.Sync.Subscription
  * @memberof Realm.Sync
  */
 class Subscription {
@@ -707,7 +721,8 @@ class Worker {
 }
 
 /**
- * Class for creating custom Data Connectors. Only available in the Enterprise Edition.
+ * Custom Data Connectors.
+ * @name Realm.Sync.Adapter
  * @memberof Realm.Sync
  */
 class Adapter {
@@ -727,6 +742,59 @@ class Adapter {
 	/**
 	 * Get the Array of current instructions for the given Realm.
 	 * @param {string} path - the path for the Realm being monitored
+     *
+     * The following Instructions can be returned. Each instruction object has
+     * a `type` property which is one of the following types. For each type below we list the other properties
+     * that will exist in the instruction object.
+     * @type {(INSERT|SET|DELETE|CLEAR|CHANGE_IDENTITY|LIST_SET|LIST_INSERT|LIST_ERASE|LIST_CLEAR|ADD_TYPE|ADD_PROPERTY)}
+     * @property INSERT - insert a new object
+     * - `object_type` - type of the object being inserted
+     * - `identity` - primary key value or row index for the object
+     * - `values` - map of property names and property values for the object to insert
+     * @property SET - set property values for an existing object
+     * - `object_type` - type of the object
+     * - `identity` - primary key value or row index for the object
+     * - `values` - map of property names and property values to update for the object
+     * @property DELETE - delete an exising object
+     * - `object_type` - type of the object
+     * - `identity` - primary key value or row index for the object
+     * @property CLEAR - delete all objects of a given type
+     * - `object_type` - type of the object
+     * @property LIST_SET - set the object at a given list index to an object
+     * - `object_type` - type of the object
+     * - `identity` - primary key for the object
+     * - `property` - property name for the list property to mutate
+     * - `list_index` - list index to set
+     * - `object_identity` - primary key or row number of the object being set
+     * @property LIST_INSERT - insert an object in the list at the given index
+     * - `object_type` - type of the object
+     * - `identity` - primary key for the object
+     * - `property` - property name for the list property to mutate
+     * - `list_index` - list index at which to insert
+     * - `object_identity` - primary key or row number of the object to insert
+     * @property LIST_ERASE - erase an object in the list at the given index - this removes the object
+     * from the list but the object will still exist in the Realm
+     * - `object_type` - type of the object
+     * - `identity` - primary key for the object
+     * - `property` - property name for the list property to mutate
+     * - `list_index` - list index which should be erased
+     * @property LIST_CLEAR - clear a list removing all objects - objects are not deleted from the Realm
+     * - `object_type` - type of the object
+     * - `identity` - primary key for the object
+     * - `property` - property name for the list property to clear
+     * @property ADD_TYPE - add a new type
+     * - `object_type` - name of the type
+     * - `primary_key` - name of primary key property for this type
+     * - `properties` - Property map as described in {@link Realm~ObjectSchema}
+     * @property ADD_PROPERTIES - add properties to an existing type
+     * - `object_type` - name of the type
+     * - `properties` - Property map as described in {@link Realm~ObjectSchema}
+     * @property CHANGE_IDENTITY - change the row index for an existing object - not called for objects
+     * with primary keys
+     * - `object_type` - type fo the object
+     * - `identity` - old row value for the object
+     * - `new_identity` - new row value for the object
+     *
 	 * @returns {Array(instructions)} or {undefined} if all transactions have been processed
 	 */
 	current(path) {}
@@ -753,57 +821,3 @@ class Adapter {
 	close() {}
 }
 
-/**
- * The following Instructions can be returned by `Adapter.current(path)`. Each instruction object has
- * a `type` property which is one of the following types. For each type below we list the other properties
- * that will exist in the instruction object.
- * @typedef Realm.Sync.Adapter~Instruction
- * @type {(INSERT|SET|DELETE|CLEAR|CHANGE_IDENTITY|LIST_SET|LIST_INSERT|LIST_ERASE|LIST_CLEAR|ADD_TYPE|ADD_PROPERTY)}
- * @property INSERT - insert a new object
- * - `object_type` - type of the object being inserted
- * - `identity` - primary key value or row index for the object
- * - `values` - map of property names and property values for the object to insert
- * @property SET - set property values for an existing object
- * - `object_type` - type of the object
- * - `identity` - primary key value or row index for the object
- * - `values` - map of property names and property values to update for the object
- * @property DELETE - delete an exising object
- * - `object_type` - type of the object
- * - `identity` - primary key value or row index for the object
- * @property CLEAR - delete all objects of a given type
- * - `object_type` - type of the object
- * @property LIST_SET - set the object at a given list index to an object
- * - `object_type` - type of the object
- * - `identity` - primary key for the object
- * - `property` - property name for the list property to mutate
- * - `list_index` - list index to set
- * - `object_identity` - primary key or row number of the object being set
- * @property LIST_INSERT - insert an object in the list at the given index
- * - `object_type` - type of the object
- * - `identity` - primary key for the object
- * - `property` - property name for the list property to mutate
- * - `list_index` - list index at which to insert
- * - `object_identity` - primary key or row number of the object to insert
- * @property LIST_ERASE - erase an object in the list at the given index - this removes the object
- * from the list but the object will still exist in the Realm
- * - `object_type` - type of the object
- * - `identity` - primary key for the object
- * - `property` - property name for the list property to mutate
- * - `list_index` - list index which should be erased
- * @property LIST_CLEAR - clear a list removing all objects - objects are not deleted from the Realm
- * - `object_type` - type of the object
- * - `identity` - primary key for the object
- * - `property` - property name for the list property to clear
- * @property ADD_TYPE - add a new type
- * - `object_type` - name of the type
- * - `primary_key` - name of primary key property for this type
- * - `properties` - Property map as described in {@link Realm~ObjectSchema}
- * @property ADD_PROPERTIES - add properties to an existing type
- * - `object_type` - name of the type
- * - `properties` - Property map as described in {@link Realm~ObjectSchema}
- * @property CHANGE_IDENTITY - change the row index for an existing object - not called for objects
- * with primary keys
- * - `object_type` - type fo the object
- * - `identity` - old row value for the object
- * - `new_identity` - new row value for the object
- */

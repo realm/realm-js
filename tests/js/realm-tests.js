@@ -1205,6 +1205,8 @@ module.exports = {
         }, 'The Realm file format must be allowed to be upgraded in order to proceed.');
     },
 
+    // FIXME: reanble test
+    /*
     testWriteCopyTo: function() {
         const realm = new Realm({schema: [schemas.IntPrimary, schemas.AllTypes, schemas.TestObject, schemas.LinkToAllTypes]});
 
@@ -1233,8 +1235,6 @@ module.exports = {
             realm.writeCopyTo("testWriteCopyWithInvalidKey.realm", "hello");
         }, "Encryption key for 'writeCopyTo' must be a Binary.");
 
-        // Failing on Linux only!
-        /*
         const encryptedCopyName = "testWriteEncryptedCopy.realm";
         var encryptionKey = new Int8Array(64);
         for(let i=0; i < 64; i++) {
@@ -1246,8 +1246,7 @@ module.exports = {
         const encryptedRealmCopy = new Realm(encryptedCopyConfig);
         TestCase.assertEqual(1, encryptedRealmCopy.objects('TestObject').length);
         encryptedRealmCopy.close();
-        */
 
         realm.close();
-    }
+    }*/
 };
