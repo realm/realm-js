@@ -88,16 +88,22 @@ Some users have reported the Chrome debugging being too slow to use after integr
 
 ## Running the tests
 
-You can use scripts/tests.sh to run the various tests.
+You will need to install `nvm` to run the tests. Currently it is only possible to test using node 6, so please `nvm install 6.11.3`.
+
+You can use `scripts/test.sh` to run the various tests.
 You will need yarn installed on the machine.
 
-test.sh options
+`test.sh` options
 
  * eslint - lints the sources
  * react-tests - runs all React Native tests on iOS Simulator
  * react-tests-android runs all React Native Android tests on Android emulator
  * node - runs all tests for node
  * test-runners - checks supported tests runners are working correctly
+
+If you modify or add a test, please remove `tests/react-test-app/node_modules/realm-tests` before running `test.sh` (of course, only if you are testing with React Native).
+
+### Testing on Windows
 
 On Windows some of these targets are available as npm commands.
 ```
@@ -108,10 +114,10 @@ npm run test-runners
 
 ## Debugging the tests
 
-You can attach a debugger to react-native tests by passing "Debug" to the tests.sh script. A Chrome browser will open and connect to the react native application. Use the built-in Chrome Debugger to debug the code.
+You can attach a debugger to react-native tests by passing "Debug" to the `test.sh` script. A Chrome browser will open and connect to the react native application. Use the built-in Chrome Debugger to debug the code.
 
 ```
-./tests.sh react-tests Debug
+./scripts/tests.sh react-tests Debug
 ```
 
 Using Visual Studio Code

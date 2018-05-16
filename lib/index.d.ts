@@ -112,6 +112,11 @@ declare namespace Realm {
          * @returns Results<T>
          */
         linkingObjects<T>(objectType: string, property: string): Results<T>;
+
+        /**
+         * @returns number
+         */
+        linkingObjectsCount(): number;
     }
 
     const Object: {
