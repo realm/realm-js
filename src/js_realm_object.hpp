@@ -53,6 +53,7 @@ struct RealmObjectClass : ClassDefinition<T, realm::Object> {
     static void is_valid(ContextType, FunctionType, ObjectType, size_t, const ValueType [], ReturnValue &);
     static void get_object_schema(ContextType, FunctionType, ObjectType, size_t, const ValueType [], ReturnValue &);
     static void linking_objects(ContextType, FunctionType, ObjectType, size_t, const ValueType [], ReturnValue &);
+    static void linking_objects_count(ContextType, FunctionType, ObjectType, size_t, const ValueType [], ReturnValue &);
     static void get_object_id(ContextType, ObjectType, Arguments, ReturnValue &);
     static void is_same_object(ContextType, ObjectType, Arguments, ReturnValue &);
 
@@ -68,6 +69,7 @@ struct RealmObjectClass : ClassDefinition<T, realm::Object> {
         {"isValid", wrap<is_valid>},
         {"objectSchema", wrap<get_object_schema>},
         {"linkingObjects", wrap<linking_objects>},
+        {"linkingObjectsCount", wrap<linking_objects_count>},
         {"_objectId", wrap<get_object_id>},
         {"_isSameObject", wrap<is_same_object>},
     };
@@ -200,6 +202,15 @@ void RealmObjectClass<T>::is_same_object(ContextType ctx, ObjectType object, Arg
     return_value.set(self->row().get_table() == other->row().get_table()
                      && self->row().get_index() == other->row().get_index());
 }
+    
+template<typename T>
+void RealmObjectClass<T>::linking_objects_count(ContextType ctx, FunctionType, ObjectType object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    auto realm_object = get_internal<T, RealmObjectClass<T>>(object);
+    const Row& row = realm_object->row();
+    
+    return_value.set((uint32_t)row.get_backlink_count());
+}
+    
 } // js
 } // realm
 

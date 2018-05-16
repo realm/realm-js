@@ -195,4 +195,29 @@ module.exports = {
             TestCase.assertEqual(oliviersParents.length, 0);
         });
     },
+
+    testLinkingObjectsCount: function() {
+        var realm = new Realm({schema: [schemas.PersonObject]});
+
+        var john;
+        realm.write(function () {
+            john = realm.create('PersonObject', { name: 'John', age: 50 });
+        });
+
+        TestCase.assertEqual(john.linkingObjectsCount(), 0);
+        
+        var olivier;
+        realm.write(function() {
+            olivier = realm.create('PersonObject', {name: 'Olivier', age: 0});
+            realm.create('PersonObject', {name: 'Christine', age: 25, children: [olivier]});
+        });
+        
+        TestCase.assertEqual(olivier.linkingObjectsCount(), 1);
+        
+        realm.write(function() {
+            john.children.push(olivier);
+        });
+
+        TestCase.assertEqual(olivier.linkingObjectsCount(), 2);
+    }
 };

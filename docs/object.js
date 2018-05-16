@@ -46,4 +46,11 @@ class Object {
      * @since 1.9.0
      */
     linkingObjects(objectType, property) {}
+
+    /**
+     * Returns the total count of incoming links to this object
+     * @returns {number} number of links to this object.
+     * @since 2.6.0
+     */
+    linkingObjectsCount() {}
 }
