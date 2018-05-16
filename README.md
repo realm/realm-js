@@ -90,7 +90,14 @@ Some users have reported the Chrome debugging being too slow to use after integr
 
 You will need to install `nvm` to run the tests. Currently it is only possible to test using node 6, so please `nvm install 6.11.3`.
 
-You can use `scripts/test.sh` to run the various tests.
+The tests will spawn a new shell when running, so you need to make sure that new shell instances use the correct version of `npm`. On Mac you can add the following to your prefered shell setup:
+
+```
+export NVM_DIR="$HOME/.nvm"
+. "$(brew --prefix nvm)/nvm.sh"
+```
+
+You can now use `scripts/test.sh` to run the various tests.
 You will need yarn installed on the machine.
 
 `test.sh` options
