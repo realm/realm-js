@@ -52,9 +52,8 @@ if (global.enableSyncTests) {
     TESTS.UserTests = require('./user-tests');
     TESTS.SessionTests = require('./session-tests');
 
-    // FIXME: Permission tests currently fail in chrome debugging mode.
-    if (typeof navigator === 'undefined' ||
-      !/Chrome/.test(navigator.userAgent)) { // eslint-disable-line no-undef
+    // FIXME: Permission tests currently fail in react native
+    if (isNodeProcess) {
         TESTS.PermissionTests = require('./permission-tests');
     }
 }
