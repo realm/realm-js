@@ -1,4 +1,4 @@
-X.Y.Z Release notes ()
+x.y.z Release notes (TBD)
 =============================================================
 ### Compatibility
 * Sync protocol: 24
@@ -10,10 +10,12 @@ X.Y.Z Release notes ()
 * None.
 
 ### Enhancements
+* [Sync] The SSL configuration options are now grouped in a new config object. (#1465)
+* [Sync] The Adapter can accept a new config parameter that specifies SSL settings for spawned sync sessions.
 * Added `Object.linkingObjectsCount()` method, that returns total count of incoming links.
 
 ### Bug fixes
-* None
+* None.
 
 ### Internal
 * None.
