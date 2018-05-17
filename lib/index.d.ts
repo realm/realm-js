@@ -409,8 +409,8 @@ declare namespace Realm.Sync {
         open_ssl_verify_callback?: SSLVerifyCallback;
         ssl?: SSLConfiguration;
         error?: ErrorCallback;
-        partial?: boolean;
-        _disablePartialSyncUrlChecks?:boolean;
+        full_synchronization?: boolean;
+        _disableQueryBasedSyncUrlChecks?:boolean;
     }
 
     type ProgressNotificationCallback = (transferred: number, transferable: number) => void;

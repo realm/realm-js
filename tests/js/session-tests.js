@@ -116,7 +116,7 @@ module.exports = {
                 // Let the error handler trigger our checks when the access token was refreshed.
                 postTokenRefreshChecks._notifyOnAccessTokenRefreshed = accessTokenRefreshed;
 
-                const config = { sync: { user, url: 'realm://localhost:9080/~/myrealm', error: postTokenRefreshChecks } };
+                const config = { sync: { user, url: 'realm://localhost:9080/~/myrealm', error: postTokenRefreshChecks, full_synchronization: true } };
                 const realm = new Realm(config);
                 const session = realm.syncSession;
                 TestCase.assertInstanceOf(session, Realm.Sync.Session);
@@ -148,7 +148,7 @@ module.exports = {
                 let successCounter = 0;
 
                 config = {
-                    sync: { user, url: `realm://localhost:9080/~/${realmName}` },
+                    sync: { user, url: `realm://localhost:9080/~/${realmName}`, full_synchronization: true },
                     schema: [{ name: 'Dog', properties: { name: 'string' } }],
                 };
 
@@ -184,7 +184,7 @@ module.exports = {
                 let successCounter = 0;
 
                 config = {
-                    sync: { user, url: `realm://localhost:9080/~/${realmName}` },
+                    sync: { user, url: `realm://localhost:9080/~/${realmName}`, full_synchronization: true },
                     schema: [{ name: 'Dog', properties: { name: 'string' } }],
                     schemaVersion: 1,
                 };
@@ -226,7 +226,7 @@ module.exports = {
                 let successCounter = 0;
 
                 let config = {
-                    sync: { user, url: `realm://localhost:9080/~/${realmName}` },
+                    sync: { user, url: `realm://localhost:9080/~/${realmName}`, full_synchronization: true },
                     schema: [{ name: 'Dog', properties: { name: 'string' } }],
                 };
                 return new Promise((resolve, reject) => {
@@ -277,7 +277,7 @@ module.exports = {
                 let successCounter = 0;
 
                 let config = {
-                    sync: { user, url: `realm://localhost:9080/~/${realmName}` }
+                    sync: { user, url: `realm://localhost:9080/~/${realmName}`, full_synchronization: true }
                 };
                 return new Promise((resolve, reject) => {
                     Realm.openAsync(config, (error, realm) => {
@@ -405,7 +405,7 @@ module.exports = {
             .then(user => {
                 let config = {
                     schema: [schemas.ParentObject, schemas.NameObject],
-                    sync: { user, url: `realm://localhost:9080/~/${realmName}` }
+                    sync: { user, url: `realm://localhost:9080/~/${realmName}`, full_synchronization: true }
                 };
                 return Realm.open(config)
             }).then(realm => {
@@ -744,8 +744,7 @@ module.exports = {
                     sync: {
                         user: user,
                         url: `realm://localhost:9080/default/__partial/`,
-                        partial: true,
-                        _disablePartialSyncUrlChecks: true
+                        _disableQueryBasedSyncUrlChecks: true
                     }
                 };
                 const realm = new Realm(config1);
@@ -758,7 +757,6 @@ module.exports = {
                 sync: {
                     user: user,
                     url: `realm://localhost:9080/default/__partial/`,  // <--- not allowed URL
-                    partial: true,
                 }
             };
             TestCase.assertThrows(() => new Realm(config2));
@@ -769,7 +767,7 @@ module.exports = {
                 sync: {
                     user: user,
                     url: 'realm://localhost:9080/~/default',
-                    partial: false, // <---- calling subscribe should fail
+                    full_synchronization: true, // <---- calling subscribe should fail
                     error: (session, error) => console.log(error)
                 },
                 schema: [{ name: 'Dog', properties: { name: 'string' } }]

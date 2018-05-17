@@ -33,7 +33,7 @@ function createUsersWithTestRealms(count) {
         return Realm.Sync.User
             .register('http://localhost:9080', uuid(), 'password')
             .then(user => {
-                new Realm({sync: {user, url: 'realm://localhost:9080/~/test'}}).close();
+                new Realm({sync: {user, url: 'realm://localhost:9080/~/test', full_synchronization: true }}).close();
                 return user;
             });
     };
@@ -185,7 +185,7 @@ module.exports = {
                         }
                     }
                 ],
-                sync: {user: user, url: url, partial: true}
+                sync: {user: user, url: url}
             };
         };
         let owner, otherUser
@@ -193,7 +193,7 @@ module.exports = {
             .register('http://localhost:9080', uuid(), 'password')
             .then(user => {
                 owner = user;
-                new Realm({sync: {user, url: 'realm://localhost:9080/default', partial: true}}).close();
+                new Realm({sync: {user, url: 'realm://localhost:9080/default'}}).close();
                 return Realm.Sync.User.register('http://localhost:9080', uuid(), 'password')
             })
             .then((user) => {

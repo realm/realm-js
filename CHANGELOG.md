@@ -1,4 +1,4 @@
-x.y.z Release notes (TBD)
+3.0.0 Release notes (TBD)
 =============================================================
 ### Compatibility
 * Sync protocol: 24
@@ -7,7 +7,9 @@ x.y.z Release notes (TBD)
 * Realm Object Server: 3.0.0 or later
 
 ### Breaking changes
-* None.
+* [Sync] Query-based mode is now the default mode for synced Realms. Current fully synced Realms should add `full_synchronization: true` to their `sync` configuration to maintain their current behaviour.
+* [Sync] `Realm.Configuration.sync.partial` have been changed to `Realm.Configuration.sync.full_synchronization`. 
+* [Sync] `Realm.Configuration.sync._disablePartialSyncUrlChecks` have been renamed to `Realm.Configuration.sync._disableQueryBasedSyncUrlChecks`.
 
 ### Enhancements
 * [Sync] The SSL configuration options are now grouped in a new config object. (#1465)
