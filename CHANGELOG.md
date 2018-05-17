@@ -1,4 +1,20 @@
-3.0.0 Release notes (TBD)
+3.0.0 Release notes (YYYY-MM-DD)
+=============================================================
+### Compatibility
+* Sync protocol: 24
+* Server-side history format: 4
+* File format: 7
+* Realm Object Server: 3.0.0 or later
+
+### Breaking changes
+Partial synchronization has been renamed to Query-based synchronization and the API is now considered stable and have left beta.
+
+* [Sync] Query-based sync is now the default mode for synced Realms. Current fully synced Realms should add `full_synchronization: true` to their `sync` configuration to maintain their current behaviour.
+* [Sync] `Realm.Configuration.sync.partial` have been changed to `Realm.Configuration.sync.full_synchronization`. 
+* [Sync] `Realm.Configuration.sync._disablePartialSyncUrlChecks` have been renamed to `Realm.Configuration.sync._disableQueryBasedSyncUrlChecks`.
+
+
+2.6.0 Release notes (2018-5-16)
 =============================================================
 ### Compatibility
 * Sync protocol: 24
