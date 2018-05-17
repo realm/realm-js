@@ -330,8 +330,6 @@ class Permission {
  * a Realm, and can also be created manually if you wish to grant permissions to a user
  * which has not yet connected to this Realm.
  * @since 2.3.0
- * @class
- * @name Realm.Sync.Permission.User
  * @memberof Realm.Sync.Permission
  */
 class User {

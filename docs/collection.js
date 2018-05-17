@@ -29,8 +29,6 @@
  * objects which matched the query when the enumeration is begun, even if some of them are
  * deleted or modified to be excluded by the filter during the enumeration.
  *
- * @class
- * @name Realm.Collection
  * @memberof Realm
  * @since 0.11.0
  */

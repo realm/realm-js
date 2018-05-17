@@ -21,11 +21,9 @@
  * was specified that does **not** inherit from this class.
  * @memberof Realm
  * @since 0.12.0
- * @class
- * @name Realm.Object
- * @memberof Realm
  */
 class Object {
+
     /**
      * Checks if this object has not been deleted and is part of a valid Realm.
      * @returns {boolean} indicating if the object can be safely accessed.
