@@ -7,11 +7,11 @@
 * Realm Object Server: 3.0.0 or later
 
 ### Breaking changes
-Partial synchronization has been renamed to Query-based synchronization and the API is now considered stable and have left beta.
+Partial synchronization has been renamed to Query-based synchronization and the API is now considered stable and has left beta.
 
-* [Sync] Query-based sync is now the default mode for synced Realms. Current fully synced Realms should add `full_synchronization: true` to their `sync` configuration to maintain their current behaviour.
-* [Sync] `Realm.Configuration.sync.partial` have been changed to `Realm.Configuration.sync.full_synchronization`. 
-* [Sync] `Realm.Configuration.sync._disablePartialSyncUrlChecks` have been renamed to `Realm.Configuration.sync._disableQueryBasedSyncUrlChecks`.
+* [Sync] Query-based sync is now the default mode for synced Realms. Current fully synced Realms should add `full_synchronization: true` to their `sync` configuration to maintain the current behaviour. Failing to do this will make Realm create an empty query-based Realm which will be used instead of the original, making it look like all data was deleted.
+* [Sync] `Realm.Configuration.sync.partial` has been changed to `Realm.Configuration.sync.full_synchronization`. 
+* [Sync] `Realm.Configuration.sync._disablePartialSyncUrlChecks` has been renamed to `Realm.Configuration.sync._disableQueryBasedSyncUrlChecks`.
 
 
 2.6.0 Release notes (2018-5-16)
@@ -23,9 +23,7 @@ Partial synchronization has been renamed to Query-based synchronization and the 
 * Realm Object Server: 3.0.0 or later
 
 ### Breaking changes
-* [Sync] Query-based mode is now the default mode for synced Realms. Current fully synced Realms should add `full_synchronization: true` to their `sync` configuration to maintain their current behaviour.
-* [Sync] `Realm.Configuration.sync.partial` have been changed to `Realm.Configuration.sync.full_synchronization`. 
-* [Sync] `Realm.Configuration.sync._disablePartialSyncUrlChecks` have been renamed to `Realm.Configuration.sync._disableQueryBasedSyncUrlChecks`.
+* None.
 
 ### Enhancements
 * [Sync] The SSL configuration options are now grouped in a new config object. (#1465)
