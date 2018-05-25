@@ -1,3 +1,19 @@
+x.x.x Release notes (xxxx-xx-xx)
+=============================================================
+### Compatibility
+
+### Breaking changes
+* None.
+
+### Enhancements
+* None
+
+### Bug fixes
+* Fix `Realm.open()` to work without passing a config.
+
+### Internal
+
+
 2.6.0 Release notes (2018-5-16)
 =============================================================
 ### Compatibility
