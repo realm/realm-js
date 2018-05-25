@@ -9,7 +9,8 @@ x.x.x Release notes (xxxx-xx-xx)
 * None
 
 ### Bug fixes
-* Fix `Realm.open()` to work without passing a config.
+* Fixed `Realm.open()` to work without passing a config.
+* Fixed TypeScript definition of `Realm.objects()` and `Realm.objectForPrimaryKety()`.
 
 ### Internal
 

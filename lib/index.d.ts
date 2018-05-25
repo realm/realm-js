@@ -651,17 +651,17 @@ declare class Realm {
     deleteAll(): void;
 
     /**
-     * @param  {string|Realm.ObjectSchema|Function} type
+     * @param  {string|Realm.ObjectType|Function} type
      * @param  {number|string} key
      * @returns {T | undefined}
      */
-    objectForPrimaryKey<T>(type: string | Realm.ObjectSchema | Function, key: number | string): T | undefined;
+    objectForPrimaryKey<T>(type: string | Realm.ObjectType | Function, key: number | string): T | undefined;
 
     /**
      * @param  {string|Realm.ObjectType|Function} type
      * @returns Realm
      */
-    objects<T>(type: string | Realm.ObjectSchema | Function): Realm.Results<T>;
+    objects<T>(type: string | Realm.ObjectType | Function): Realm.Results<T>;
 
     /**
      * @param  {string} name
