@@ -334,6 +334,17 @@ module.exports = {
         });
     },
 
+    testIsEmpty: function () {
+        let realm = new Realm({ schema: [schemas.TestObject] });
+        let result = realm.objects('TestObject');
+        TestCase.assertTrue(result.isEmpty());
+        realm.write(function () {
+            realm.create('TestObject', { doubleCol: 42 });
+        });
+        TestCase.assertFalse(result.isEmpty());
+        realm.close();
+    },
+
     testResultsDeletedObjects: function() {
         var realm = new Realm({schema: [schemas.TestObject]});
 

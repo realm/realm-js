@@ -1,3 +1,22 @@
+2.7.0 Release notes (YYYY-MM-DD)
+=============================================================
+### Compatibility
+* Sync protocol: 24
+* Server-side history format: 4
+* File format: 7
+* Realm Object Server: 3.0.0 or later
+
+### Breaking changes
+* None.
+
+### Enhancements
+* Added `isEmpty()` method on `Realm.Results` and `Realm.List`.
+
+### Bug fixes
+
+### Internal
+* None.
+
 2.6.0 Release notes (2018-5-16)
 =============================================================
 ### Compatibility
@@ -880,7 +899,7 @@
 * Added `Realm.prototype.empty` which is a property that indicates whether or not the realm has any objects in it.
 
 ### Bug fixes
-* Fix crash on Node.js when a listener callback throws an error.
+* Fix crash on Node.js when a ener callback throws an error.
   The error will now be forwarded to Node's fatal error handling facilities. This means better error reporting,
   the ability to debug such errors in a Node.js debugger, and proper invocation of the `uncaughtError` event on the `process` object.
 

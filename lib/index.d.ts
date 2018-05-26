@@ -150,6 +150,11 @@ declare namespace Realm {
          */
         isValid(): boolean;
 
+        /**
+         * @returns boolean
+         */
+        isEmpty(): boolean;
+
         min(property?: string): number | Date | null;
         max(property?: string): number | Date | null;
         sum(property?: string): number | null;
