@@ -105,7 +105,7 @@ class Realm {
     /**
      * Open a Realm asynchronously with a promise. If the Realm is synced, it will be fully
      * synchronized before it is available.
-     * @param {Realm~Configuration} config
+     * @param {Realm~Configuration} config - if no config is defined, it will open the default realm
      * @returns {ProgressPromise} - a promise that will be resolved with the Realm instance when it's available.
      */
     static open(config) {}

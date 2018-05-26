@@ -1,10 +1,6 @@
-2.7.0 Release notes (YYYY-MM-DD)
+x.x.x Release notes (xxxx-xx-xx)
 =============================================================
 ### Compatibility
-* Sync protocol: 24
-* Server-side history format: 4
-* File format: 7
-* Realm Object Server: 3.0.0 or later
 
 ### Breaking changes
 * None.
@@ -13,9 +9,10 @@
 * Added `isEmpty()` method on `Realm.Results` and `Realm.List`.
 
 ### Bug fixes
+* Fix `Realm.open()` to work without passing a config.
 
 ### Internal
-* None.
+
 
 2.6.0 Release notes (2018-5-16)
 =============================================================
