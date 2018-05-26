@@ -899,7 +899,7 @@
 * Added `Realm.prototype.empty` which is a property that indicates whether or not the realm has any objects in it.
 
 ### Bug fixes
-* Fix crash on Node.js when a ener callback throws an error.
+* Fix crash on Node.js when a listener callback throws an error.
   The error will now be forwarded to Node's fatal error handling facilities. This means better error reporting,
   the ability to debug such errors in a Node.js debugger, and proper invocation of the `uncaughtError` event on the `process` object.
 
