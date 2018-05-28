@@ -33,17 +33,17 @@ function node_require(module) { return require_method(module); }
 if (isNodeProcess && process.platform === 'win32') {
     global.enableSyncTests = false;
 }
-global.enableSyncTests = false;
+
 var TESTS = {
-    // ListTests: require('./list-tests'),
-    // LinkingObjectsTests: require('./linkingobjects-tests'),
-    // ObjectTests: require('./object-tests'),
+    ListTests: require('./list-tests'),
+    LinkingObjectsTests: require('./linkingobjects-tests'),
+    ObjectTests: require('./object-tests'),
     RealmTests: require('./realm-tests'),
-    // ResultsTests: require('./results-tests'),
-    // QueryTests: require('./query-tests'),
-    // MigrationTests: require('./migration-tests'),
-    // EncryptionTests: require('./encryption-tests'),
-    // ObjectIDTests: require('./object-id-tests'),
+    ResultsTests: require('./results-tests'),
+    QueryTests: require('./query-tests'),
+    MigrationTests: require('./migration-tests'),
+    EncryptionTests: require('./encryption-tests'),
+    ObjectIDTests: require('./object-id-tests'),
     // Garbagecollectiontests: require('./garbage-collection'),
 };
 
@@ -60,7 +60,7 @@ if (global.enableSyncTests) {
 
 // If on node, run the async tests
 if (isNodeProcess && process.platform !== 'win32') {
-//    TESTS.AsyncTests = node_require('./async-tests');
+    TESTS.AsyncTests = node_require('./async-tests');
 }
 
 var SPECIAL_METHODS = {
