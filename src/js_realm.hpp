@@ -82,7 +82,7 @@ class RealmDelegate : public BindingContext {
     }
 
     virtual void schema_did_change(realm::Schema const& schema) {
-        schema_notify(schema);
+        schema_notify("schema", schema);
     }
 
     RealmDelegate(std::weak_ptr<realm::Realm> realm, GlobalContextType ctx) : m_context(ctx), m_realm(realm) {}
@@ -112,7 +112,7 @@ class RealmDelegate : public BindingContext {
             }
         }
     }
-    
+
     void remove_all_notifications() {
         m_notifications.clear();
     }
@@ -167,7 +167,7 @@ class RealmDelegate : public BindingContext {
         }
     }
 
-    void schema_notify(realm::Schema const& schema) {
+    void schema_notify(const char *notification_name, realm::Schema const& schema) {
         HANDLESCOPE
 
         SharedRealm realm = m_realm.lock();
@@ -177,11 +177,11 @@ class RealmDelegate : public BindingContext {
 
         ObjectType realm_object = create_object<T, RealmClass<T>>(m_context, new SharedRealm(realm));
         ObjectType schema_object = Schema<T>::object_for_schema(m_context, schema);
-        ValueType arguments[] = {realm_object, schema_object};
+        ValueType arguments[] = {realm_object, Value::from_string(m_context, notification_name), schema_object};
 
         std::list<Protected<FunctionType>> notifications_copy(m_schema_notifications);
         for (auto &callback : notifications_copy) {
-            Function<T>::callback(m_context, callback, realm_object, 2, arguments);
+            Function<T>::callback(m_context, callback, realm_object, 3, arguments);
         }
     }
 

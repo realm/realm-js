@@ -669,7 +669,7 @@ declare class Realm {
      * @returns void
      */
     addListener(name: string, callback: (sender: Realm, event: 'change') => void): void;
-    addListener(name: string, callback: (sender: Realm, schema: Realm.ObjectSchema[]) => void): void;
+    addListener(name: string, callback: (sender: Realm, event: 'schema', schema: Realm.ObjectSchema[]) => void): void;
 
     /**
      * @param  {string} name
@@ -677,7 +677,7 @@ declare class Realm {
      * @returns void
      */
     removeListener(name: string, callback: (sender: Realm, event: 'change') => void): void;
-    removeListener(name: string, callback: (sender: Realm, schema: Realm.ObjectSchema[]) => void): void;
+    removeListener(name: string, callback: (sender: Realm, event: 'schema', schema: Realm.ObjectSchema[]) => void): void;
 
     /**
      * @param  {string} name?

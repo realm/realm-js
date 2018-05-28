@@ -1225,9 +1225,10 @@ module.exports = {
             let calls = 0;
             let realm1 = new Realm({_cache: false});
             TestCase.assertEqual(realm1.schema.length, 0);  // empty schema
-            realm1.addListener('schema', (realm, schema) => {
+            realm1.addListener('schema', (realm, event, schema) => {
                 calls++;
 
+                TestCase.assertEqual(event, 'schema');
                 TestCase.assertEqual(schema.length, 1);
                 TestCase.assertEqual(realm.schema.length, 1);
                 TestCase.assertEqual(schema[0].name, 'TestObject');
@@ -1239,10 +1240,10 @@ module.exports = {
                 }
             });
 
-            realm1.addListener('change', (realm, what) => {
+            realm1.addListener('change', (realm, event) => {
                 calls++;
 
-                TestCase.assertEqual(what, 'change');
+                TestCase.assertEqual(event, 'change');
 
                 if (calls == 2) {
                     resolve();
