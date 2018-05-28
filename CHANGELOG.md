@@ -6,12 +6,22 @@
 * File format: 7
 * Realm Object Server: 3.0.0 or later
 
-### Breaking changes
-Partial synchronization has been renamed to Query-based synchronization and the API is now considered stable and has left beta.
+The feature known as Partial synchronization has been renamed to Query-based synchronization and is now the default mode
+for synchronized Realms. This has impacted a number of API's. See below for the details.
 
-* [Sync] Query-based sync is now the default mode for synced Realms. Current fully synced Realms should add `full_synchronization: true` to their `sync` configuration to maintain the current behaviour. Failing to do this will make Realm create an empty query-based Realm which will be used instead of the original, making it look like all data was deleted.
-* [Sync] `Realm.Configuration.sync.partial` has been changed to `Realm.Configuration.sync.full_synchronization`. 
-* [Sync] `Realm.Configuration.sync._disablePartialSyncUrlChecks` has been renamed to `Realm.Configuration.sync._disableQueryBasedSyncUrlChecks`.
+### Breaking changes
+
+* [Sync] `Realm.Configuration.SyncConfig._disablePartialSyncUrlChecks` has been renamed to `Realm.Configuration.sync._disableQueryBasedSyncUrlChecks`.
+
+### Deprecated
+
+* [Sync] `Realm.Configuration.SyncConfiguration.partial` has been deprecated in favor of `Realm.Configuration.SyncConfiguration.fullSynchronization`. 
+* [Sync] `Realm.automaticSyncConfiguration()` has been deprecated in favor of `Realm.Sync.User.createConfiguration()`
+
+### Enhancements
+
+* [Sync] `Realm.Configuration.SyncConfiguration.fullSynchronization` has been added.
+* [Sync] `Realm.Sync.User.createConfiguration(config)` has been added for creating default and user defined sync configurations.
 
 
 2.6.0 Release notes (2018-5-16)

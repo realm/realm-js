@@ -835,6 +835,13 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
 
         bool is_partial = true;
         ValueType full_synchronization_value = Object::get_property(ctx, sync_config_object, "full_synchronization");
+        ValueType partial_value = Object::get_property(ctx, sync_config_object, "partial");
+
+        if (!Value::is_undefined(ctx, partial_value)) {
+            is_partial = Value::validated_to_boolean(ctx, partial_value);
+        }
+
+        // In the deprecation period setting full_synchronization takes precedence over partial
         if (!Value::is_undefined(ctx, full_synchronization_value)) {
             is_partial = !Value::validated_to_boolean(ctx, full_synchronization_value);
         }

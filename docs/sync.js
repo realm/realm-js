@@ -35,6 +35,10 @@
  * accept or reject the server's SSL certificate.
  *
  * @property {Realm.Sync~SSLConfiguration} [ssl] - SSL configuration.
+ * @deprecated
+ * @property {boolean} [partial] - Whether this Realm should be opened in 'query-based synchronization' mode.
+ *    Query-based synchronisation only synchronizes those objects that match the query specified in contrast
+ *    to the normal mode of operation that synchronises all objects in a remote Realm.
  * @property {boolean} [full_synchronization] - Whether this Realm should be opened in query-based or full
  *    synchronization mode. The default is query-based mode which only synchronizes objects that have been subscribed to.
  *    A fully synchronized Realm will synchronize the entire Realm in the background, irrespectively of the data being
@@ -446,6 +450,15 @@ class User {
      * Returns true if the token is an administrator token.
      */
     get isAdminToken() {}
+
+    /**
+     * Creates the configuration object required to open a synchronized Realm.
+     *
+     * @param {Realm.PartialConfiguration} config - parameters that should override any default settings.
+     * @returns {Realm.Configuration} the full Realm configuration
+     * @since 3.0.0
+     */
+    createConfiguration(config) {}
 
     /**
      * Logs out the user from the Realm Object Server.

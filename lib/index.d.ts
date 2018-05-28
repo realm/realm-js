@@ -83,9 +83,17 @@ declare namespace Realm {
         inMemory?: boolean;
         schema?: (ObjectClass | ObjectSchema)[];
         schemaVersion?: number;
-        sync?: Realm.Sync.SyncConfiguration;
+        sync?: Partial<Realm.Sync.SyncConfiguration>;
         deleteRealmIfMigrationNeeded?: boolean;
         disableFormatUpgrade?: boolean;
+    }
+
+    /**
+     * realm configuration used for overriding default configuration values.
+     * @see { @link https://realm.io/docs/javascript/latest/api/Realm.html#~Configuration }
+     */
+    interface PartialConfiguration extends Partial<Realm.Configuration> {
+        sync?: Partial<Realm.Sync.SyncConfiguration>;
     }
 
     // object props type
@@ -309,6 +317,7 @@ declare namespace Realm.Sync {
 
         static confirmEmail(server:string, confirmation_token:string): Promise<void>;
 
+        createConfiguration(config?: Realm.PartialConfiguration): Realm.Configuration
         authenticate(server: string, provider: string, options: any): Promise<Realm.Sync.User>;
         logout(): void;
         openManagementRealm(): Realm;
@@ -409,7 +418,8 @@ declare namespace Realm.Sync {
         open_ssl_verify_callback?: SSLVerifyCallback;
         ssl?: SSLConfiguration;
         error?: ErrorCallback;
-        full_synchronization?: boolean;
+        partial?: boolean;
+        fullSynchronization?: boolean;
         _disableQueryBasedSyncUrlChecks?:boolean;
     }
 
@@ -583,8 +593,6 @@ declare class Realm {
      */
     static schemaVersion(path: string, encryptionKey?: ArrayBuffer | ArrayBufferView): number;
 
-
-
     /**
      * Open a realm asynchronously with a promise. If the realm is synced, it will be fully synchronized before it is available.
      * @param {Configuration} config
@@ -600,6 +608,7 @@ declare class Realm {
     static openAsync(config: Realm.Configuration, callback: (error: any, realm: Realm) => void, progressCallback?: Realm.Sync.ProgressNotificationCallback): void
 
     /**
+     * @deprecated Use {@link Realm.Sync.User#createConfiguration} instead.
      * Return a configuration for a default Realm.
      * @param {Realm.Sync.User} optional user.
      */

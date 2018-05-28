@@ -318,6 +318,26 @@ module.exports = {
     }).then(account => { if (account) { throw new Error("Retrieving nonexistent account should fail"); }});
   },
 
+  testCreateConfiguration_defaultConfig() {
+      const username = uuid();
+      return Realm.Sync.User.register('http://localhost:9080', username, 'password').then((user) => {
+          let config = user.createConfiguration();
+          TestCase.assertEqual(config.sync.url, "realm://localhost:9080/default");
+          TestCase.assertUndefined(config.sync.partial);
+          TestCase.assertFalse(config.sync.fullSynchronization);
+      });
+  },
+
+  testCreateConfiguration_useOldConfiguration() {
+      const username = uuid();
+      return Realm.Sync.User.register('http://localhost:9080', username, 'password').then((user) => {
+          let config = user.createConfiguration({ sync: { url: 'http://localhost:9080/other_realm', partial: true }});
+          TestCase.assertEqual(config.sync.url, 'http://localhost:9080/other_realm');
+          TestCase.assertUndefined(config.sync.fullSynchronization);
+          TestCase.assertTrue(config.sync.partial);
+      });
+  },
+
   /* This test fails because of realm-object-store #243 . We should use 2 users.
   testSynchronizeChangesWithTwoClientsAndOneUser() {
     // Test Schema

@@ -122,6 +122,7 @@ class Realm {
     static openAsync(config, callback, progressCallback) {}
 
     /**
+     * @deprecated Use {@link Sync.User#getDefaultConfiguration} instead.
      * Return a configuration for a default synced Realm. The server URL for the user will be used as base for
      * the URL for the synced Realm. If no user is supplied, the current user will be used.
      * @param {Realm.Sync.User} - an optional sync user
