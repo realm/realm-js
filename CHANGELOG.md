@@ -6,7 +6,7 @@ x.x.x Release notes (xxxx-xx-xx)
 * None.
 
 ### Enhancements
-* None
+* Added schema change listener to `Realm.addListener()` (#1825).
 
 ### Bug fixes
 * Fix `Realm.open()` to work without passing a config.

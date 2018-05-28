@@ -803,7 +803,7 @@ module.exports = {
         TestCase.assertEqual(secondNotificationCount, 1);
 
         TestCase.assertThrowsContaining(() => realm.addListener('invalid', () => {}),
-                                        "Only the 'change' notification name is supported.");
+                                        "Only the 'change' or 'schema' notification names are supported.");
 
         realm.addListener('change', () => {
             throw new Error('expected error message');
@@ -1220,6 +1220,50 @@ module.exports = {
         }, 'The Realm file format must be allowed to be upgraded in order to proceed.');
     },
 
+    testSchemaUpdates: function() {
+        return new Promise((resolve, reject) => {
+            let calls = 0;
+            let realm1 = new Realm({_cache: false});
+            TestCase.assertEqual(realm1.schema.length, 0);  // empty schema
+            realm1.addListener('schema', (realm, schema) => {
+                calls++;
+
+                TestCase.assertEqual(schema.length, 1);
+                TestCase.assertEqual(realm.schema.length, 1);
+                TestCase.assertEqual(schema[0].name, 'TestObject');
+                TestCase.assertEqual(realm1.schema.length, 1);
+                TestCase.assertEqual(realm.schema[0].name, 'TestObject');
+
+                if (calls == 2) {
+                    resolve();
+                }
+            });
+
+            realm1.addListener('change', (realm, what) => {
+                calls++;
+
+                TestCase.assertEqual(what, 'change');
+
+                if (calls == 2) {
+                    resolve();
+                }
+            });
+
+            const schema = [{
+                name: 'TestObject',
+                properties: {
+                    prop0: 'string',
+                }
+            }];
+            let realm2 = new Realm({ schema: schema, _cache: false });
+            TestCase.assertEqual(realm1.schema.length, 0); // not yet updated
+            TestCase.assertEqual(realm2.schema.length, 1);
+            realm2.write(() => {
+                realm2.create('TestObject', { prop0: 'foobar' });
+            });
+            realm2.close();
+        });
+    },
     // FIXME: reanble test
     /*
     testWriteCopyTo: function() {
