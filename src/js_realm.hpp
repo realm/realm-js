@@ -78,7 +78,9 @@ class RealmDelegate : public BindingContext {
     using ConstructorMap = typename Schema<T>::ConstructorMap;
 
     virtual void did_change(std::vector<ObserverState> const& observers, std::vector<void*> const& invalidated, bool version_changed) {
-        notify("change");
+        if (version_changed) {
+            notify("change");
+        }
     }
 
     virtual void schema_did_change(realm::Schema const& schema) {
@@ -119,7 +121,7 @@ class RealmDelegate : public BindingContext {
 
     void add_schema_notification(FunctionType notification) {
         SharedRealm realm = m_realm.lock();
-        realm->read_group();
+        realm->read_group(); // to get the schema change handler going
         for (auto &handler : m_schema_notifications) {
             if (handler == notification) {
                 return;

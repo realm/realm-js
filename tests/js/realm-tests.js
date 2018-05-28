@@ -1222,32 +1222,18 @@ module.exports = {
 
     testSchemaUpdates: function() {
         return new Promise((resolve, reject) => {
-            let calls = 0;
-            let realm1 = new Realm({_cache: false});
+            let done = false;
+            let realm1 = new Realm({ _cache: false });
+            TestCase.assertTrue(realm1.empty);
             TestCase.assertEqual(realm1.schema.length, 0);  // empty schema
             realm1.addListener('schema', (realm, event, schema) => {
-                calls++;
-
                 TestCase.assertEqual(event, 'schema');
                 TestCase.assertEqual(schema.length, 1);
                 TestCase.assertEqual(realm.schema.length, 1);
                 TestCase.assertEqual(schema[0].name, 'TestObject');
                 TestCase.assertEqual(realm1.schema.length, 1);
                 TestCase.assertEqual(realm.schema[0].name, 'TestObject');
-
-                if (calls == 2) {
-                    resolve();
-                }
-            });
-
-            realm1.addListener('change', (realm, event) => {
-                calls++;
-
-                TestCase.assertEqual(event, 'change');
-
-                if (calls == 2) {
-                    resolve();
-                }
+                resolve();
             });
 
             const schema = [{
@@ -1256,13 +1242,10 @@ module.exports = {
                     prop0: 'string',
                 }
             }];
+
             let realm2 = new Realm({ schema: schema, _cache: false });
             TestCase.assertEqual(realm1.schema.length, 0); // not yet updated
             TestCase.assertEqual(realm2.schema.length, 1);
-            realm2.write(() => {
-                realm2.create('TestObject', { prop0: 'foobar' });
-            });
-            realm2.close();
         });
     },
     // FIXME: reanble test
