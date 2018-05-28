@@ -78,9 +78,7 @@ class RealmDelegate : public BindingContext {
     using ConstructorMap = typename Schema<T>::ConstructorMap;
 
     virtual void did_change(std::vector<ObserverState> const& observers, std::vector<void*> const& invalidated, bool version_changed) {
-        if (version_changed) {
-            notify("change");
-        }
+        notify("change");
     }
 
     virtual void schema_did_change(realm::Schema const& schema) {
@@ -343,7 +341,7 @@ public:
         if (name == "change" || name == "schema") {
             return name;
         }
-        throw std::runtime_error("Only the 'change' or 'schema' notification names are supported.");
+        throw std::runtime_error("Only the 'change' and 'schema' notification names are supported.");
     }
 
     static const ObjectSchema& validated_object_schema_for_value(ContextType ctx, const SharedRealm &realm, const ValueType &value) {

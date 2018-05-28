@@ -803,7 +803,7 @@ module.exports = {
         TestCase.assertEqual(secondNotificationCount, 1);
 
         TestCase.assertThrowsContaining(() => realm.addListener('invalid', () => {}),
-                                        "Only the 'change' or 'schema' notification names are supported.");
+                                        "Only the 'change' and 'schema' notification names are supported.");
 
         realm.addListener('change', () => {
             throw new Error('expected error message');
