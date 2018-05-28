@@ -668,14 +668,16 @@ declare class Realm {
      * @param  {()=>void} callback
      * @returns void
      */
-    addListener(name: string, callback: (sender: Realm, event: 'change' | sender: Realm, schema: Schema) => void): void;
+    addListener(name: string, callback: (sender: Realm, event: 'change') => void): void;
+    addListener(name: string, callback: (sender: Realm, schema: Realm.ObjectSchema[]) => void): void;
 
     /**
      * @param  {string} name
      * @param  {()=>void} callback
      * @returns void
      */
-    removeListener(name: string, callback: (sender: Realm, event: 'change' | sender: Realm, schema: Schema) => void): void;
+    removeListener(name: string, callback: (sender: Realm, event: 'change') => void): void;
+    removeListener(name: string, callback: (sender: Realm, schema: Realm.ObjectSchema[]) => void): void;
 
     /**
      * @param  {string} name?
