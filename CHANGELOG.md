@@ -1,6 +1,10 @@
-x.x.x Release notes (xxxx-xx-xx)
+2.7.0 Release notes (2018-5-29)
 =============================================================
 ### Compatibility
+* Sync protocol: 24
+* Server-side history format: 4
+* File format: 7
+* Realm Object Server: 3.0.0 or later
 
 ### Breaking changes
 * None.
@@ -9,9 +13,11 @@ x.x.x Release notes (xxxx-xx-xx)
 * Added schema change listener to `Realm.addListener()` (#1825).
 
 ### Bug fixes
-* Fix `Realm.open()` to work without passing a config.
+* Fixed a bug in `Realm.open()` to work without passing a config.
 
 ### Internal
+* Realm Sync v3.3.0.
+* Realm Core v5.6.0.
 
 
 2.6.0 Release notes (2018-5-16)
