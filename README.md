@@ -99,7 +99,7 @@ npm install --build-from-source --debug
 (cd tests && npm install)
 ```
 
-Prior to begin debugging, you must start Realm Object Server. Under *Tasks*/*Run Task*, find *Download and Start Server*.
+Prior to begin debugging, you must start Realm Object Server. In VSCode, under menu *Tasks*/*Run Task*, find *Download and Start Server*.
 
 In the debugging pane, you can find `Debug LLDB + NodeJS` in the dropdown. First select *Start Debugging* in the *Debug* menu.
 
