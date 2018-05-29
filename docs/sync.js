@@ -39,7 +39,7 @@
  * @property {boolean} [partial] - Whether this Realm should be opened in 'query-based synchronization' mode.
  *    Query-based synchronisation only synchronizes those objects that match the query specified in contrast
  *    to the normal mode of operation that synchronises all objects in a remote Realm.
- * @property {boolean} [full_synchronization] - Whether this Realm should be opened in query-based or full
+ * @property {boolean} [fullSynchronization] - Whether this Realm should be opened in query-based or full
  *    synchronization mode. The default is query-based mode which only synchronizes objects that have been subscribed to.
  *    A fully synchronized Realm will synchronize the entire Realm in the background, irrespectively of the data being
  *    used or not.

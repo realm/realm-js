@@ -33,7 +33,7 @@ function createUsersWithTestRealms(count) {
         return Realm.Sync.User
             .register('http://localhost:9080', uuid(), 'password')
             .then(user => {
-                new Realm({sync: {user, url: 'realm://localhost:9080/~/test', full_synchronization: true }}).close();
+                new Realm({sync: {user, url: 'realm://localhost:9080/~/test', fullSynchronization: true }}).close();
                 return user;
             });
     };
@@ -185,7 +185,7 @@ module.exports = {
                         }
                     }
                 ],
-                sync: {user: user, url: url}
+                sync: {user: user, url: url, fullSynchronization: false }
             };
         };
         let owner, otherUser

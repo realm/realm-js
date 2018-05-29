@@ -339,6 +339,38 @@ module.exports = {
       });
   },
 
+  testCreateConfiguration_settingPartialAndFullSynchronizationThrows() {
+      const username = uuid();
+      return Realm.Sync.User.register('http://localhost:9080', username, 'password').then((user) => {
+          TestCase.assertThrowsContaining(() => {
+                  let config = { 
+                    sync: { 
+                      url: 'http://localhost:9080/~/default',
+                      partial: true, 
+                      fullSynchronization: false 
+                    } 
+                  };
+                  user.createConfiguration(config);
+          }, "'partial' and 'fullSynchronization' was both set. 'partial' has been deprecated, use only 'fullSynchronization'");
+      });
+  },
+    
+  testOpen_partialAndFullSynchronizationSetThrows() {
+      const username = uuid();
+      return Realm.Sync.User.register('http://localhost:9080', username, 'password').then((user) => {
+          TestCase.assertThrowsContaining(() => {
+              new Realm({
+                  sync: {
+                    user: user,
+                    url: 'http://localhost:9080/~/default',
+                    partial: false,
+                    fullSynchronization: true
+                  }
+              })
+          }, "'partial' and 'fullSynchronization' was both set. 'partial' has been deprecated, use only 'fullSynchronization'");
+      });
+  }
+
   /* This test fails because of realm-object-store #243 . We should use 2 users.
   testSynchronizeChangesWithTwoClientsAndOneUser() {
     // Test Schema

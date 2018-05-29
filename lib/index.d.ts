@@ -93,7 +93,6 @@ declare namespace Realm {
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.html#~Configuration }
      */
     interface PartialConfiguration extends Partial<Realm.Configuration> {
-        sync?: Partial<Realm.Sync.SyncConfiguration>;
     }
 
     // object props type
