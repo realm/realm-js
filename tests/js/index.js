@@ -18,8 +18,8 @@
 
 'use strict';
 
+const SegfaultHandler = require('segfault-handler');
 const Realm = require('realm');
-
 
 if( typeof Realm.Sync !== 'undefined' && Realm.Sync !== null ) {
     global.WARNING = "global is not available in React Native. Use it only in tests";
@@ -32,6 +32,11 @@ function node_require(module) { return require_method(module); }
 
 if (isNodeProcess && process.platform === 'win32') {
     global.enableSyncTests = false;
+}
+
+// catching segfaults during testing can help debugging
+if (isNodeProcess) {
+    SegfaultHandler.registerHandler("crash.log");
 }
 
 var TESTS = {
