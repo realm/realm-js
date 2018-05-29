@@ -1220,9 +1220,10 @@ module.exports = {
         }, 'The Realm file format must be allowed to be upgraded in order to proceed.');
     },
 
-    testSchemaUpdates: function() {
+
+    // FIXME: We need to test adding a property also calls the listener
+    testSchemaUpdatesNewClass: function() {
         return new Promise((resolve, reject) => {
-            let done = false;
             let realm1 = new Realm({ _cache: false });
             TestCase.assertTrue(realm1.empty);
             TestCase.assertEqual(realm1.schema.length, 0);  // empty schema
@@ -1233,7 +1234,6 @@ module.exports = {
                 TestCase.assertEqual(schema[0].name, 'TestObject');
                 TestCase.assertEqual(realm1.schema.length, 1);
                 TestCase.assertEqual(realm.schema[0].name, 'TestObject');
-                resolve();
             });
 
             const schema = [{
@@ -1246,8 +1246,17 @@ module.exports = {
             let realm2 = new Realm({ schema: schema, _cache: false });
             TestCase.assertEqual(realm1.schema.length, 0); // not yet updated
             TestCase.assertEqual(realm2.schema.length, 1);
+
+            // give some time to let advance_read to complete
+            // in real world, a Realm will not be closed just after its
+            // schema has been updated
+            setTimeout(() => {
+                resolve();
+            }, 1000);
         });
     },
+
+
     // FIXME: reanble test
     /*
     testWriteCopyTo: function() {
