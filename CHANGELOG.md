@@ -7,7 +7,7 @@
 * Realm Object Server: 3.0.0 or later
 
 The feature known as Partial synchronization has been renamed to Query-based synchronization and is now the default mode
-for synchronized Realms. This has impacted a number of API's. See below for the details.
+for synchronized Realms. This has impacted a number of APIs. See below for the details.
 
 ### Breaking changes
 
