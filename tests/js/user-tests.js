@@ -130,7 +130,8 @@ module.exports = {
       }).then((user => {
           assertIsUser(user);
           // Can we open a realm with the logged-in user?
-          const realm = new Realm({ sync: { user: user, url: 'realm://localhost:9080/~/test' } });
+          const config = user.createConfiguration({ sync: { url: 'realm://localhost:9080/~/test' }});
+          const realm = new Realm(config);
           TestCase.assertInstanceOf(realm, Realm);
           realm.close();
       }))
@@ -143,7 +144,7 @@ module.exports = {
       return Realm.Sync.User.authenticate('http://localhost:9080', 'password', { username: username, password: 'password' });
     }).then((user => {
       assertIsUser(user);
-      const realm = new Realm({ sync: { user: user, url: 'realm://localhost:9080/~/test' } });
+      const realm = new Realm(user.createConfiguration({ sync: { url: 'realm://localhost:9080/~/test' } }));
       TestCase.assertInstanceOf(realm, Realm);
       realm.close();
     }))

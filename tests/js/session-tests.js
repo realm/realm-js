@@ -116,7 +116,7 @@ module.exports = {
                 // Let the error handler trigger our checks when the access token was refreshed.
                 postTokenRefreshChecks._notifyOnAccessTokenRefreshed = accessTokenRefreshed;
 
-                const config = { sync: { user, url: 'realm://localhost:9080/~/myrealm', error: postTokenRefreshChecks, full_synchronization: true } };
+                const config = user.createConfiguration({ sync: { url: 'realm://localhost:9080/~/myrealm', error: postTokenRefreshChecks, full_synchronization: true } });
                 const realm = new Realm(config);
                 const session = realm.syncSession;
                 TestCase.assertInstanceOf(session, Realm.Sync.Session);
@@ -372,7 +372,7 @@ module.exports = {
     testErrorHandling() {
         return Realm.Sync.User.register('http://localhost:9080', uuid(), 'password').then(user => {
             return new Promise((resolve, _reject) => {
-                const config = { sync: { user, url: 'realm://localhost:9080/~/myrealm' } };
+                const config = user.createConfiguration({ sync: { url: 'realm://localhost:9080/~/myrealm' } });
                 config.sync.error = (sender, error) => {
                     try {
                         TestCase.assertEqual(error.message, 'simulated error');
@@ -872,7 +872,7 @@ module.exports = {
         return Realm.Sync.User.register('http://localhost:9080', uuid(), 'password').then(user => {
             return new Promise((resolve, _reject) => {
                 var realm;
-                const config = { sync: { user, url: 'realm://localhost:9080/~/myrealm' } };
+                const config = user.createConfiguration({ sync: { url: 'realm://localhost:9080/~/myrealm' } });
                 config.sync.error = (sender, error) => {
                     try {
                         TestCase.assertEqual(error.name, 'ClientReset');
