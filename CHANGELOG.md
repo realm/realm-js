@@ -9,10 +9,6 @@
 The feature known as Partial synchronization has been renamed to Query-based synchronization and is now the default mode
 for synchronized Realms. This has impacted a number of APIs. See below for the details.
 
-### Breaking changes
-
-* [Sync] `Realm.Configuration.SyncConfig._disablePartialSyncUrlChecks` has been renamed to `Realm.Configuration.sync._disableQueryBasedSyncUrlChecks`.
-
 ### Deprecated
 
 * [Sync] `Realm.Configuration.SyncConfiguration.partial` has been deprecated in favor of `Realm.Configuration.SyncConfiguration.fullSynchronization`. 
@@ -22,6 +18,10 @@ for synchronized Realms. This has impacted a number of APIs. See below for the d
 
 * [Sync] `Realm.Configuration.SyncConfiguration.fullSynchronization` has been added.
 * [Sync] `Realm.Sync.User.createConfiguration(config)` has been added for creating default and user defined sync configurations.
+
+### Internal
+
+* [Sync] `Realm.Configuration.SyncConfig._disablePartialSyncUrlChecks` has been renamed to `Realm.Configuration.sync._disableQueryBasedSyncUrlChecks`.
 
 
 2.6.0 Release notes (2018-5-16)
