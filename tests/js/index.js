@@ -18,7 +18,6 @@
 
 'use strict';
 
-const SegfaultHandler = require('segfault-handler');
 const Realm = require('realm');
 
 if( typeof Realm.Sync !== 'undefined' && Realm.Sync !== null ) {
@@ -36,6 +35,7 @@ if (isNodeProcess && process.platform === 'win32') {
 
 // catching segfaults during testing can help debugging
 if (isNodeProcess) {
+    const SegfaultHandler = require('segfault-handler');
     SegfaultHandler.registerHandler("crash.log");
 }
 
