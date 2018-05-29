@@ -10,6 +10,7 @@
 * None.
 
 ### Enhancements
+* Added `isEmpty()` method on `Realm.Results` and `Realm.List`.
 * Added schema change listener to `Realm.addListener()` (#1825).
 
 ### Bug fixes

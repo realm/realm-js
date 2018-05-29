@@ -74,6 +74,7 @@ struct ListClass : ClassDefinition<T, realm::js::List<T>, CollectionClass<T>> {
     static void filtered(ContextType, ObjectType, Arguments, ReturnValue &);
     static void sorted(ContextType, ObjectType, Arguments, ReturnValue &);
     static void is_valid(ContextType, ObjectType, Arguments, ReturnValue &);
+    static void is_empty(ContextType, ObjectType, Arguments, ReturnValue &);
     static void index_of(ContextType, ObjectType, Arguments, ReturnValue &);
 
     // observable
@@ -93,6 +94,7 @@ struct ListClass : ClassDefinition<T, realm::js::List<T>, CollectionClass<T>> {
         {"filtered", wrap<filtered>},
         {"sorted", wrap<sorted>},
         {"isValid", wrap<is_valid>},
+        {"isEmpty", wrap<is_empty>},
         {"indexOf", wrap<index_of>},
         {"min", wrap<compute_aggregate_on_collection<ListClass<T>, AggregateFunc::Min>>},
         {"max", wrap<compute_aggregate_on_collection<ListClass<T>, AggregateFunc::Max>>},
@@ -270,6 +272,11 @@ void ListClass<T>::sorted(ContextType ctx, ObjectType this_object, Arguments arg
 template<typename T>
 void ListClass<T>::is_valid(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
     return_value.set(get_internal<T, ListClass<T>>(this_object)->is_valid());
+}
+
+template<typename T>
+void ListClass<T>::is_empty(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
+    return_value.set(get_internal<T, ListClass<T>>(this_object)->size() == 0);
 }
 
 template<typename T>
