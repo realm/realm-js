@@ -608,7 +608,7 @@ declare class Realm {
     static openAsync(config: Realm.Configuration, callback: (error: any, realm: Realm) => void, progressCallback?: Realm.Sync.ProgressNotificationCallback): void
 
     /**
-     * @deprecated Use {@link Realm.Sync.User#createConfiguration} instead.
+     * @deprecated in favor of `Realm.Sync.User.createConfiguration()`.
      * Return a configuration for a default Realm.
      * @param {Realm.Sync.User} optional user.
      */

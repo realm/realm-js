@@ -454,7 +454,7 @@ class User {
     /**
      * Creates the configuration object required to open a synchronized Realm.
      *
-     * @param {Realm.PartialConfiguration} config - parameters that should override any default settings.
+     * @param {Realm.PartialConfiguration} config - optional parameters that should override any default settings.
      * @returns {Realm.Configuration} the full Realm configuration
      * @since 3.0.0
      */
