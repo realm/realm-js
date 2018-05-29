@@ -83,6 +83,13 @@ npm install --build-from-source=realm
 
         - Check [node-gyp](https://github.com/nodejs/node-gyp) manual for custom installation procedure for Windows
 
+### Building docs:
+API documentation is written using [JSDoc](http://usejsdoc.org/).
+
+- `npm run jsdoc`
+
+The generated docs can be found by opening `docs/output/realm/<version>/index.html`.
+
 ## Issues with debugging
 Some users have reported the Chrome debugging being too slow to use after integrating Realm into their react-native project. This is due to the blocking nature of the RPC calls made through the Realm library. It is an ongoing issue and we are actively working on fixing it. See https://github.com/realm/realm-js/issues/491 for more information.
 
