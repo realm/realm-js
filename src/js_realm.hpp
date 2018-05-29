@@ -81,6 +81,10 @@ class RealmDelegate : public BindingContext {
         notify("change");
     }
 
+    virtual void schema_did_change(realm::Schema const& schema) {
+        schema_notify("schema", schema);
+    }
+
     RealmDelegate(std::weak_ptr<realm::Realm> realm, GlobalContextType ctx) : m_context(ctx), m_realm(realm) {}
 
     ~RealmDelegate() {
@@ -88,6 +92,7 @@ class RealmDelegate : public BindingContext {
         m_defaults.clear();
         m_constructors.clear();
         m_notifications.clear();
+        m_schema_notifications.clear();
     }
 
     void add_notification(FunctionType notification) {
@@ -98,6 +103,7 @@ class RealmDelegate : public BindingContext {
         }
         m_notifications.emplace_back(m_context, notification);
     }
+
     void remove_notification(FunctionType notification) {
         for (auto iter = m_notifications.begin(); iter != m_notifications.end(); ++iter) {
             if (*iter == notification) {
@@ -106,8 +112,33 @@ class RealmDelegate : public BindingContext {
             }
         }
     }
+
     void remove_all_notifications() {
         m_notifications.clear();
+    }
+
+    void add_schema_notification(FunctionType notification) {
+        SharedRealm realm = m_realm.lock();
+        realm->read_group(); // to get the schema change handler going
+        for (auto &handler : m_schema_notifications) {
+            if (handler == notification) {
+                return;
+            }
+        }
+        m_schema_notifications.emplace_back(m_context, notification);
+    }
+
+    void remove_schema_notification(FunctionType notification) {
+        for (auto iter = m_schema_notifications.begin(); iter != m_schema_notifications.end(); ++iter) {
+            if (*iter == notification) {
+                m_schema_notifications.erase(iter);
+                return;
+            }
+        }
+    }
+
+    void remove_all_schema_notifications() {
+        m_schema_notifications.clear();
     }
 
     ObjectDefaultsMap m_defaults;
@@ -116,6 +147,7 @@ class RealmDelegate : public BindingContext {
   private:
     Protected<GlobalContextType> m_context;
     std::list<Protected<FunctionType>> m_notifications;
+    std::list<Protected<FunctionType>> m_schema_notifications;
     std::weak_ptr<realm::Realm> m_realm;
 
     void notify(const char *notification_name) {
@@ -132,6 +164,24 @@ class RealmDelegate : public BindingContext {
         std::list<Protected<FunctionType>> notifications_copy(m_notifications);
         for (auto &callback : notifications_copy) {
             Function<T>::callback(m_context, callback, realm_object, 2, arguments);
+        }
+    }
+
+    void schema_notify(const char *notification_name, realm::Schema const& schema) {
+        HANDLESCOPE
+
+        SharedRealm realm = m_realm.lock();
+        if (!realm) {
+            throw std::runtime_error("Realm no longer exists");
+        }
+
+        ObjectType realm_object = create_object<T, RealmClass<T>>(m_context, new SharedRealm(realm));
+        ObjectType schema_object = Schema<T>::object_for_schema(m_context, schema);
+        ValueType arguments[] = {realm_object, Value::from_string(m_context, notification_name), schema_object};
+
+        std::list<Protected<FunctionType>> notifications_copy(m_schema_notifications);
+        for (auto &callback : notifications_copy) {
+            Function<T>::callback(m_context, callback, realm_object, 3, arguments);
         }
     }
 
@@ -288,10 +338,10 @@ public:
 
     static std::string validated_notification_name(ContextType ctx, const ValueType &value) {
         std::string name = Value::validated_to_string(ctx, value, "notification name");
-        if (name != "change") {
-            throw std::runtime_error("Only the 'change' notification name is supported.");
+        if (name == "change" || name == "schema") {
+            return name;
         }
-        return name;
+        throw std::runtime_error("Only the 'change' and 'schema' notification names are supported.");
     }
 
     static const ObjectSchema& validated_object_schema_for_value(ContextType ctx, const SharedRealm &realm, const ValueType &value) {
@@ -954,36 +1004,52 @@ template<typename T>
 void RealmClass<T>::add_listener(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
     args.validate_maximum(2);
 
-    validated_notification_name(ctx, args[0]);
+    auto name = validated_notification_name(ctx, args[0]);
     auto callback = Value::validated_to_function(ctx, args[1]);
 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
     realm->verify_open();
-    get_delegate<T>(realm.get())->add_notification(callback);
+    if (name == "change") {
+        get_delegate<T>(realm.get())->add_notification(callback);
+    }
+    else {
+        get_delegate<T>(realm.get())->add_schema_notification(callback);
+    }
 }
 
 template<typename T>
 void RealmClass<T>::remove_listener(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
     args.validate_maximum(2);
 
-    validated_notification_name(ctx, args[0]);
+    auto name = validated_notification_name(ctx, args[0]);
     auto callback = Value::validated_to_function(ctx, args[1]);
 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
     realm->verify_open();
-    get_delegate<T>(realm.get())->remove_notification(callback);
+    if (name == "change") {
+        get_delegate<T>(realm.get())->remove_notification(callback);
+    }
+    else {
+        get_delegate<T>(realm.get())->remove_schema_notification(callback);
+    }
 }
 
 template<typename T>
 void RealmClass<T>::remove_all_listeners(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
     args.validate_maximum(1);
+    std::string name = "change";
     if (args.count) {
-        validated_notification_name(ctx, args[0]);
+        name = validated_notification_name(ctx, args[0]);
     }
 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
     realm->verify_open();
-    get_delegate<T>(realm.get())->remove_all_notifications();
+    if (name == "change") {
+        get_delegate<T>(realm.get())->remove_all_notifications();
+    }
+    else {
+        get_delegate<T>(realm.get())->remove_all_schema_notifications();
+    }
 }
 
 template<typename T>
