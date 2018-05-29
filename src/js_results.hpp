@@ -87,6 +87,7 @@ struct ResultsClass : ClassDefinition<T, realm::js::Results<T>, CollectionClass<
     static void filtered(ContextType, ObjectType, Arguments, ReturnValue &);
     static void sorted(ContextType, ObjectType, Arguments, ReturnValue &);
     static void is_valid(ContextType, ObjectType, Arguments, ReturnValue &);
+    static void is_empty(ContextType, ObjectType, Arguments, ReturnValue &);
 #if REALM_ENABLE_SYNC
     static void subscribe(ContextType, ObjectType, Arguments, ReturnValue &);
 #endif
@@ -115,6 +116,7 @@ struct ResultsClass : ClassDefinition<T, realm::js::Results<T>, CollectionClass<
         {"filtered", wrap<filtered>},
         {"sorted", wrap<sorted>},
         {"isValid", wrap<is_valid>},
+        {"isEmpty", wrap<is_empty>},
 #if REALM_ENABLE_SYNC
         {"subscribe", wrap<subscribe>},
 #endif
@@ -281,6 +283,11 @@ void ResultsClass<T>::sorted(ContextType ctx, ObjectType this_object, Arguments 
 template<typename T>
 void ResultsClass<T>::is_valid(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
     return_value.set(get_internal<T, ResultsClass<T>>(this_object)->is_valid());
+}
+
+template<typename T>
+void ResultsClass<T>::is_empty(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
+    return_value.set(get_internal<T, ResultsClass<T>>(this_object)->size() == 0);
 }
 
 #if REALM_ENABLE_SYNC

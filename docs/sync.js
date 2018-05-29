@@ -91,7 +91,6 @@
  * is a {Realm~Configuration} which refers to it. You can open it as a local, read-only Realm, and
  * copy objects to a new synced Realm.
  *
- * @name Realm.Sync
  * @memberof Realm
  */
 class Sync {
@@ -196,8 +195,6 @@ class Sync {
  * resolved). The Realms supplied by the change event do not need to be
  * explicitly closed.
  *
- * @class
- * @name Realm.Sync.ChangeEvent
  * @memberof Realm.Sync
  */
 class ChangeEvent {
@@ -256,8 +253,6 @@ class ChangeEvent {
 
 /**
  * Class that describes authentication errors in the Realm Object Server
- * @class
- * @name Realm.Sync.AuthError
  * @memberof Realm.Sync
  */
 class AuthError extends Error {
@@ -276,8 +271,6 @@ class AuthError extends Error {
 
 /**
  * Describes an error when an incompatible synced Realm is opened. The old version of the Realm can be accessed in readonly mode using the configuration() member
- * @class
- * @name Realm.Sync.IncompatibleSyncedRealmError
  * @memberof Realm.Sync
  */
 class IncompatibleSyncedRealmError {
@@ -295,8 +288,6 @@ class IncompatibleSyncedRealmError {
 
 /**
  * Class for logging in and managing Sync users.
- * @class
- * @name Realm.Sync.User
  * @memberof Realm.Sync
  */
 class User {
@@ -609,8 +600,6 @@ class Session {
 
 /**
  * An object encapsulating partial sync subscriptions.
- * @class
- * @name Realm.Sync.Subscription
  * @memberof Realm.Sync
  */
 class Subscription {
@@ -735,7 +724,6 @@ class Worker {
 
 /**
  * Custom Data Connectors.
- * @name Realm.Sync.Adapter
  * @memberof Realm.Sync
  */
 class Adapter {

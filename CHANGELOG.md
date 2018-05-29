@@ -1,4 +1,4 @@
-3.0.0 Release notes (YYYY-MM-DD)
+2.8.0 Release notes (YYYY-MM-DD)
 =============================================================
 ### Compatibility
 * Sync protocol: 24
@@ -24,6 +24,29 @@ for synchronized Realms. This has impacted a number of APIs. See below for the d
 * [Sync] `Realm.Configuration.SyncConfig._disablePartialSyncUrlChecks` has been renamed to `Realm.Configuration.sync._disableQueryBasedSyncUrlChecks`.
 
 
+2.7.0 Release notes (2018-5-29)
+=============================================================
+### Compatibility
+* Sync protocol: 24
+* Server-side history format: 4
+* File format: 7
+* Realm Object Server: 3.0.0 or later
+
+### Breaking changes
+* None.
+
+### Enhancements
+* Added `isEmpty()` method on `Realm.Results` and `Realm.List`.
+* Added schema change listener to `Realm.addListener()` (#1825).
+
+### Bug fixes
+* Fixed a bug in `Realm.open()` to work without passing a config.
+
+### Internal
+* Realm Sync v3.3.0.
+* Realm Core v5.6.0.
+
+
 2.6.0 Release notes (2018-5-16)
 =============================================================
 ### Compatibility
@@ -41,10 +64,11 @@ for synchronized Realms. This has impacted a number of APIs. See below for the d
 * Added `Object.linkingObjectsCount()` method, that returns total count of incoming links.
 
 ### Bug fixes
-* None.
+* Fix a crash when attempting to use the data adaptor or sync event listener introduced in 2.4.1.
 
 ### Internal
-* None.
+* Realm Sync v3.3.0.
+* Realm Core v5.6.0.
 
 2.5.0 Release notes (2018-5-14)
 =============================================================

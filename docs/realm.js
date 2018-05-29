@@ -105,7 +105,7 @@ class Realm {
     /**
      * Open a Realm asynchronously with a promise. If the Realm is synced, it will be fully
      * synchronized before it is available.
-     * @param {Realm~Configuration} config
+     * @param {Realm~Configuration} config - if no config is defined, it will open the default realm
      * @returns {ProgressPromise} - a promise that will be resolved with the Realm instance when it's available.
      */
     static open(config) {}
@@ -210,8 +210,8 @@ class Realm {
     /**
      * Add a listener `callback` for the specified event `name`.
      * @param {string} name - The name of event that should cause the callback to be called.
-     *   _Currently, only the "change" event supported_.
-     * @param {callback(Realm, string)} callback - Function to be called when the event occurs.
+     *   _Currently, only the "change" and "schema" events are supported_.
+     * @param {callback(Realm, string)|callback(Realm, string, Schema)} callback - Function to be called when a change event occurs.
      *   Each callback will only be called once per event, regardless of the number of times
      *   it was added.
      * @throws {Error} If an invalid event `name` is supplied, or if `callback` is not a function.
@@ -221,8 +221,8 @@ class Realm {
    /**
     * Remove the listener `callback` for the specfied event `name`.
     * @param {string} name - The event name.
-    *   _Currently, only the "change" event supported_.
-    * @param {callback(Realm, string)} callback - Function that was previously added as a
+    *   _Currently, only the "change" and "schema" events are supported_.
+    * @param {callback(Realm, string)|callback(Realm, string, Schema)} callback - Function that was previously added as a
     *   listener for this event through the {@link Realm#addListener addListener} method.
     * @throws {Error} If an invalid event `name` is supplied, or if `callback` is not a function.
     */
@@ -231,7 +231,7 @@ class Realm {
    /**
     * Remove all event listeners (restricted to the event `name`, if provided).
     * @param {string} [name] - The name of the event whose listeners should be removed.
-    *   _Currently, only the "change" event supported_.
+    *   _Currently, only the "change" and "schema" events are supported_.
     * @throws {Error} When invalid event `name` is supplied
     */
     removeAllListeners(name) {}

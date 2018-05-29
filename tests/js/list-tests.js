@@ -1002,6 +1002,28 @@ module.exports = {
         TestCase.assertThrowsContaining(() => list.length, 'invalidated');
     },
 
+    testIsEmpty: function () {
+        const realm = new Realm({ schema: [schemas.PersonObject, schemas.PersonList] });
+        let object;
+        realm.write(() => {
+            object = realm.create('PersonList', {
+                list: [
+                ]
+            });
+        });
+        TestCase.assertTrue(object.list.isEmpty());
+
+        realm.write(() => {
+            object.list = [
+                { name: 'Bob', age: 42 },
+                { name: 'Alice', age: 42 }
+            ]
+        });
+        TestCase.assertFalse(object.list.isEmpty());
+
+        realm.close();
+    },
+
     testListAggregateFunctions: function() {
         const NullableBasicTypesList = {
             name: 'NullableBasicTypesList',
@@ -1301,5 +1323,5 @@ module.exports = {
         TestCase.assertEqual(objects[1].list1[0], "Foo");
         TestCase.assertEqual(objects[1].list2.length, 1);
         TestCase.assertEqual(objects[1].list2[0], "Bar");
-    }
+    },
 };

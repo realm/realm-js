@@ -29,8 +29,6 @@
  * objects which matched the query when the enumeration is begun, even if some of them are
  * deleted or modified to be excluded by the filter during the enumeration.
  *
- * @class
- * @name Realm.Collection
  * @memberof Realm
  * @since 0.11.0
  */
@@ -64,6 +62,13 @@ class Collection {
      * @since 0.14.0
      */
     isValid() {}
+
+    /**
+     * Checks if this collection is empty.
+     * @returns {boolean} indicating if the collection is empty or not.
+     * @since 2.7.0
+     */
+    isEmpty() {}
 
     /**
      * Returns new _Results_ that represent this collection being filtered by the provided query.
