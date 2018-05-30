@@ -32,7 +32,7 @@ function createObjects(user) {
         sync: {
             user,
             url: `realm://localhost:9080/default`,
-            partial: true,
+            fullSynchronization: false,
             error: err => console.log('partial-sync-api-helper', err)
         },
         schema: [{ name: 'Dog', properties: { name: 'string' } }]

@@ -6,16 +6,26 @@ X.Y.Z Release notes
 * File format: 7
 * Realm Object Server: 3.0.0 or later
 
+### Notes
+The feature known as Partial synchronization has been renamed to Query-based synchronization and is now the default mode
+for synchronized Realms. This has impacted a number of APIs. See below for the details.
+
+### Deprecated
+* [Sync] `Realm.Configuration.SyncConfiguration.partial` has been deprecated in favor of `Realm.Configuration.SyncConfiguration.fullSynchronization`. 
+* [Sync] `Realm.automaticSyncConfiguration()` has been deprecated in favor of `Realm.Sync.User.createConfiguration()`
+
 ### Breaking changes
 * None.
 
 ### Enhancements
-* None.
+* [Sync] `Realm.Configuration.SyncConfiguration.fullSynchronization` has been added.
+* [Sync] `Realm.Sync.User.createConfiguration(config)` has been added for creating default and user defined sync configurations.
 
 ### Bug fixes
 * Fixed TypeScript definition of `Realm.objects()` and `Realm.objectForPrimaryKey()` (#1803).
 
 ### Internal
+* [Sync] `Realm.Configuration.SyncConfig._disablePartialSyncUrlChecks` has been renamed to `Realm.Configuration.sync._disableQueryBasedSyncUrlChecks`.
 * Realm Sync v3.3.0.
 * Realm Core v5.6.0.
 

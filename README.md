@@ -83,6 +83,13 @@ npm install --build-from-source=realm
 
         - Check [node-gyp](https://github.com/nodejs/node-gyp) manual for custom installation procedure for Windows
 
+### Building docs:
+API documentation is written using [JSDoc](http://usejsdoc.org/).
+
+- `npm run jsdoc`
+
+The generated docs can be found by opening `docs/output/realm/<version>/index.html`.
+
 ## Debugging the node addon
 
 You can use (Visual Studio Code)[https://code.visualstudio.com/] to develop and debug. In the `.vscode` folder, configuration for building and debugging has been added for your convience.
