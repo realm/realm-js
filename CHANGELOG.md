@@ -13,7 +13,7 @@ X.Y.Z Release notes
 * None.
 
 ### Bug fixes
-* Fixed TypeScript definition of `Realm.objects()` and `Realm.objectForPrimaryKety()`.
+* Fixed TypeScript definition of `Realm.objects()` and `Realm.objectForPrimaryKey()` (#1803).
 
 ### Internal
 * Realm Sync v3.3.0.
