@@ -90,6 +90,26 @@ API documentation is written using [JSDoc](http://usejsdoc.org/).
 
 The generated docs can be found by opening `docs/output/realm/<version>/index.html`.
 
+## Debugging the node addon
+
+You can use (Visual Studio Code)[https://code.visualstudio.com/] to develop and debug. In the `.vscode` folder, configuration for building and debugging has been added for your convience.
+
+VSCode has good support for debugging JavaScript, but to work with C++ code, you are required to install two additional VSCode extensions:
+
+* Microsoft C/C++
+* CodeLLDB 
+
+To begin, you will need to build the node addon and prepare the test environment:
+
+```
+npm install --build-from-source --debug
+(cd tests && npm install)
+```
+
+Prior to begin debugging, you must start Realm Object Server. In VSCode, under menu *Tasks*/*Run Task*, find *Download and Start Server*.
+
+In the debugging pane, you can find `Debug LLDB + NodeJS` in the dropdown. First select *Start Debugging* in the *Debug* menu.
+
 ## Issues with debugging
 Some users have reported the Chrome debugging being too slow to use after integrating Realm into their react-native project. This is due to the blocking nature of the RPC calls made through the Realm library. It is an ongoing issue and we are actively working on fixing it. See https://github.com/realm/realm-js/issues/491 for more information.
 

@@ -57,3 +57,4 @@ build.log.*
 realm-object-server/
 tests/react-test-app/ios/out.txt
 *.iml
+crash.log
