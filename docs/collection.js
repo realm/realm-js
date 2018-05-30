@@ -64,6 +64,13 @@ class Collection {
     isValid() {}
 
     /**
+     * Checks if this collection is empty.
+     * @returns {boolean} indicating if the collection is empty or not.
+     * @since 2.7.0
+     */
+    isEmpty() {}
+
+    /**
      * Returns new _Results_ that represent this collection being filtered by the provided query.
      *
      * @param {string} query - Query used to filter objects from the collection.
