@@ -351,7 +351,7 @@ module.exports = {
                     } 
                   };
                   user.createConfiguration(config);
-          }, "'partial' and 'fullSynchronization' was both set. 'partial' has been deprecated, use only 'fullSynchronization'");
+          }, "'partial' and 'fullSynchronization' were both set. 'partial' has been deprecated, use only 'fullSynchronization'");
       });
   },
     
@@ -367,7 +367,7 @@ module.exports = {
                     fullSynchronization: true
                   }
               })
-          }, "'partial' and 'fullSynchronization' was both set. 'partial' has been deprecated, use only 'fullSynchronization'");
+          }, "'partial' and 'fullSynchronization' were both set. 'partial' has been deprecated, use only 'fullSynchronization'");
       });
   }
 

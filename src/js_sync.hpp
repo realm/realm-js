@@ -839,7 +839,7 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
 
         // Disallow setting `partial` and `fullSynchronization` at the same time
         if (!Value::is_undefined(ctx, full_synchronization_value) && !Value::is_undefined(ctx, partial_value)) {
-            throw std::invalid_argument("'partial' and 'fullSynchronization' was both set. 'partial' has been deprecated, use only 'fullSynchronization'");
+            throw std::invalid_argument("'partial' and 'fullSynchronization' were both set. 'partial' has been deprecated, use only 'fullSynchronization'");
         }
 
         if (!Value::is_undefined(ctx, partial_value)) {
