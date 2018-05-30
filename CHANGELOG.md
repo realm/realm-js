@@ -1,4 +1,4 @@
-2.8.0 Release notes (YYYY-MM-DD)
+X.Y.Z Release notes
 =============================================================
 ### Compatibility
 * Sync protocol: 24
@@ -6,22 +6,28 @@
 * File format: 7
 * Realm Object Server: 3.0.0 or later
 
+### Notes
 The feature known as Partial synchronization has been renamed to Query-based synchronization and is now the default mode
 for synchronized Realms. This has impacted a number of APIs. See below for the details.
 
 ### Deprecated
-
 * [Sync] `Realm.Configuration.SyncConfiguration.partial` has been deprecated in favor of `Realm.Configuration.SyncConfiguration.fullSynchronization`. 
 * [Sync] `Realm.automaticSyncConfiguration()` has been deprecated in favor of `Realm.Sync.User.createConfiguration()`
 
-### Enhancements
+### Breaking changes
+* None.
 
+### Enhancements
 * [Sync] `Realm.Configuration.SyncConfiguration.fullSynchronization` has been added.
 * [Sync] `Realm.Sync.User.createConfiguration(config)` has been added for creating default and user defined sync configurations.
 
-### Internal
+### Bug fixes
+* Fixed TypeScript definition of `Realm.objects()` and `Realm.objectForPrimaryKey()` (#1803).
 
+### Internal
 * [Sync] `Realm.Configuration.SyncConfig._disablePartialSyncUrlChecks` has been renamed to `Realm.Configuration.sync._disableQueryBasedSyncUrlChecks`.
+* Realm Sync v3.3.0.
+* Realm Core v5.6.0.
 
 
 2.7.0 Release notes (2018-5-29)
@@ -40,6 +46,7 @@ for synchronized Realms. This has impacted a number of APIs. See below for the d
 * Added schema change listener to `Realm.addListener()` (#1825).
 
 ### Bug fixes
+* Fixed `Realm.open()` to work without passing a config.
 * Fixed a bug in `Realm.open()` to work without passing a config.
 
 ### Internal
