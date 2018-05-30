@@ -128,6 +128,7 @@ class Realm {
      * @throws {Error} if zero or multiple users are logged in
      * @returns {Realm~Configuration} - a configuration matching a default synced Realm.
      * @since 2.3.0
+     * @deprecated use {@link Sync.User.createConfiguration()} instead.
      */
     static automaticSyncConfiguration(user) {}
 

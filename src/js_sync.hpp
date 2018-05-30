@@ -833,19 +833,28 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
             ssl_verify_callback = std::move(ssl_verify_functor);
         }
 
-        bool is_partial = false;
+        bool is_partial = false; // Change to `true` when `partial` is removed
+        ValueType full_synchronization_value = Object::get_property(ctx, sync_config_object, "fullSynchronization");
         ValueType partial_value = Object::get_property(ctx, sync_config_object, "partial");
+
+        // Disallow setting `partial` and `fullSynchronization` at the same time
+        if (!Value::is_undefined(ctx, full_synchronization_value) && !Value::is_undefined(ctx, partial_value)) {
+            throw std::invalid_argument("'partial' and 'fullSynchronization' were both set. 'partial' has been deprecated, use only 'fullSynchronization'");
+        }
+
         if (!Value::is_undefined(ctx, partial_value)) {
             is_partial = Value::validated_to_boolean(ctx, partial_value);
+        } else if (!Value::is_undefined(ctx, full_synchronization_value)) {
+            is_partial = !Value::validated_to_boolean(ctx, full_synchronization_value);
         }
 
-        bool disable_partial_sync_url_checks = false;
-        ValueType disable_partial_sync_url_checks_value = Object::get_property(ctx, sync_config_object, "_disablePartialSyncUrlChecks");
-        if (!Value::is_undefined(ctx, disable_partial_sync_url_checks_value)) {
-            disable_partial_sync_url_checks = Value::validated_to_boolean(ctx, disable_partial_sync_url_checks_value);
+        bool disable_query_based_sync_url_checks = false;
+        ValueType disable_query_based_sync_url_checks_value = Object::get_property(ctx, sync_config_object, "_disableQueryBasedSyncUrlChecks");
+        if (!Value::is_undefined(ctx, disable_query_based_sync_url_checks_value)) {
+            disable_query_based_sync_url_checks = Value::validated_to_boolean(ctx, disable_query_based_sync_url_checks_value);
         }
 
-        if (disable_partial_sync_url_checks) {
+        if (disable_query_based_sync_url_checks) {
             config.sync_config = std::make_shared<SyncConfig>(shared_user, std::move(""));
             config.sync_config->reference_realm_url = std::move(raw_realm_url);
         }

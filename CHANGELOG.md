@@ -1,3 +1,29 @@
+2.8.0 Release notes (YYYY-MM-DD)
+=============================================================
+### Compatibility
+* Sync protocol: 24
+* Server-side history format: 4
+* File format: 7
+* Realm Object Server: 3.0.0 or later
+
+The feature known as Partial synchronization has been renamed to Query-based synchronization and is now the default mode
+for synchronized Realms. This has impacted a number of APIs. See below for the details.
+
+### Deprecated
+
+* [Sync] `Realm.Configuration.SyncConfiguration.partial` has been deprecated in favor of `Realm.Configuration.SyncConfiguration.fullSynchronization`. 
+* [Sync] `Realm.automaticSyncConfiguration()` has been deprecated in favor of `Realm.Sync.User.createConfiguration()`
+
+### Enhancements
+
+* [Sync] `Realm.Configuration.SyncConfiguration.fullSynchronization` has been added.
+* [Sync] `Realm.Sync.User.createConfiguration(config)` has been added for creating default and user defined sync configurations.
+
+### Internal
+
+* [Sync] `Realm.Configuration.SyncConfig._disablePartialSyncUrlChecks` has been renamed to `Realm.Configuration.sync._disableQueryBasedSyncUrlChecks`.
+
+
 2.7.0 Release notes (2018-5-29)
 =============================================================
 ### Compatibility
