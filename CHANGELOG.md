@@ -30,6 +30,28 @@ for synchronized Realms. This has impacted a number of APIs. See below for the d
 * Realm Core v5.6.0.
 
 
+2.7.1 Release notes (2018-5-31)
+=============================================================
+### Compatibility
+* Sync protocol: 24
+* Server-side history format: 4
+* File format: 7
+* Realm Object Server: 3.0.0 or later
+
+### Breaking changes
+* None.
+
+### Enhancements
+* None.
+
+### Bug fixes
+* Fixed a crash when invalid schema cache is used to look up a property (realm-js-private #452).
+
+### Internal
+* Realm Sync v3.3.0.
+* Realm Core v5.6.0.
+
+
 2.7.0 Release notes (2018-5-29)
 =============================================================
 ### Compatibility
