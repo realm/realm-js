@@ -1,5 +1,4 @@
 2.7.1 Release notes (2018-5-31)
-X.Y.Z Release notes
 =============================================================
 ### Compatibility
 * Sync protocol: 24
