@@ -80,6 +80,7 @@
   },
   "dependencies": {
     "decompress": "^4.2.0",
+    "deepmerge": "2.1.0",
     "node-fetch": "^1.6.3",
     "pre-binding": "^1.1.0",
     "url-parse": "^1.2.0"
