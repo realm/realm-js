@@ -87,7 +87,6 @@
     "node-fetch": "^1.6.3",
     "node-pre-gyp": "^0.6.36",
     "progress": "^2.0.0",
-    "prop-types": "^15.5.10",
     "stream-counter": "^1.0.0",
     "url-parse": "^1.2.0"
   },
@@ -103,8 +102,10 @@
     "rimraf": "^2.6.1",
     "semver": "^5.1.0",
     "shelljs": "^0.7.7",
-    "shx": "^0.2.2",
-    "sync-request": "^3.0.1"
+    "shx": "^0.2.2"
+  },
+  "peerDependencies": {
+    "prop-types": "^15.5.10"
   },
   "rnpm": {
     "ios": {
