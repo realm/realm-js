@@ -94,13 +94,11 @@
     "jsdoc": "^3.5.5",
     "license-checker": "^8.0.3",
     "mockery": "^2.0.0",
+    "prop-types": "^15.5.10",
     "rimraf": "^2.6.1",
     "semver": "^5.1.0",
     "shelljs": "^0.7.7",
     "shx": "^0.2.2"
-  },
-  "peerDependencies": {
-    "prop-types": "^15.5.10"
   },
   "rnpm": {
     "ios": {
