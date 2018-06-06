@@ -140,6 +140,8 @@ declare namespace Realm {
         insertions: number[];
         deletions: number[];
         modifications: number[];
+        newModifications: number[];
+        oldModifications: number[];
     }
 
     type CollectionChangeCallback<T> = (collection: Collection<T>, change: CollectionChangeSet) => void;
