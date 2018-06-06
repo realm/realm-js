@@ -13,7 +13,7 @@ X.Y.Z Release notes
 * None.
 
 ### Bug fixes
-* [Sync] Fixed a bug which crash query-based Realms (realm-js-private #450).
+* [Sync] Fixed a bug which crash query-based Realms (realm-js-private #450). A bug in gcc's optimizer will generate code which in some case will lead to a memory violation and eventually a segmentation fault.
 
 ### Internal
 * Upgraded to Realm Sync v3.5.1.
