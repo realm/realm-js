@@ -452,10 +452,16 @@ module.exports = {
             if (first) {
                 TestCase.assertEqual(testObjects.length, 3);
                 TestCase.assertEqual(changes.insertions.length, 0);
+                TestCase.assertEqual(changes.modifications.length, 0);
+                TestCase.assertEqual(changes.newModifications.length, 0);
+                TestCase.assertEqual(changes.oldModifications.length, 0);
             }
             else {
                 TestCase.assertEqual(testObjects.length, 4);
                 TestCase.assertEqual(changes.insertions.length, 1);
+                TestCase.assertEqual(changes.modifications.length, 1);
+                TestCase.assertEqual(changes.newModifications.length, 1);
+                TestCase.assertEqual(changes.oldModifications.length, 1);
             }
             first = false;
             resolve();
@@ -464,6 +470,7 @@ module.exports = {
         return new Promise((r, _reject) => {
             resolve = r;
             realm.write(() => {
+                realm.objects('TestObject')[0].doubleCol = 5;
                 realm.create('TestObject', { doubleCol: 1 });
             });
         });

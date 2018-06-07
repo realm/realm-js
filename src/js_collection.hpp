@@ -50,27 +50,28 @@ template<typename T>
 typename T::Value CollectionClass<T>::create_collection_change_set(ContextType ctx, const CollectionChangeSet &change_set)
 {
     ObjectType object = Object::create_empty(ctx);
-    std::vector<ValueType> deletions, insertions, modifications;
+    std::vector<ValueType> scratch;
+    auto make_array = [&](realm::IndexSet const& index_set) {
+        scratch.clear();
+        scratch.reserve(index_set.count());
+        for (auto index : index_set.as_indexes()) {
+            scratch.push_back(Value::from_number(ctx, index));
+        }
+        return Object::create_array(ctx, scratch);
+    };
 
     if (change_set.deletions.count() == std::numeric_limits<size_t>::max()) {
-        deletions.push_back(Value::from_null(ctx));
+        Object::set_property(ctx, object, "deletions", Object::create_array(ctx, {Value::from_null(ctx)}));
     }
     else {
-        for (auto index : change_set.deletions.as_indexes()) {
-            deletions.push_back(Value::from_number(ctx, index));
-        }
+        Object::set_property(ctx, object, "deletions", make_array(change_set.deletions));
     }
-    Object::set_property(ctx, object, "deletions", Object::create_array(ctx, deletions));
+    Object::set_property(ctx, object, "insertions", make_array(change_set.insertions));
+    Object::set_property(ctx, object, "newModifications", make_array(change_set.modifications_new));
 
-    for (auto index : change_set.insertions.as_indexes()) {
-        insertions.push_back(Value::from_number(ctx, index));
-    }
-    Object::set_property(ctx, object, "insertions", Object::create_array(ctx, insertions));
-
-    for (auto index : change_set.modifications.as_indexes()) {
-        modifications.push_back(Value::from_number(ctx, index));
-    }
-    Object::set_property(ctx, object, "modifications", Object::create_array(ctx, modifications));
+    auto old_modifications = make_array(change_set.modifications);
+    Object::set_property(ctx, object, "modifications", old_modifications);
+    Object::set_property(ctx, object, "oldModifications", old_modifications);
 
     return object;
 }
