@@ -10,7 +10,7 @@
 * None.
 
 ### Enhancements
-* Add the `oldModifications` and `newModifications` properties to the listener change objects, which report the indices that changed in the collection both before and after the changes being notified for.
+* Add the `oldModifications` and `newModifications` properties to the listener change objects, which report the indices that changed in the collection both before and after the changes being notified for. The `modifications` property is kept as an alias for `oldModifications` but might be removed in a future version.
 
 ### Bug fixes
 * [Sync] Fixed a bug which crash query-based Realms. A bug in gcc's optimizer will generate code which in some case will lead to a memory violation and eventually a segmentation fault.
