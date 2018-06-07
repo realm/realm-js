@@ -16,6 +16,7 @@ X.Y.Z Release notes
 * [Sync] Fixed a bug which crash query-based Realms. A bug in gcc's optimizer will generate code which in some case will lead to a memory violation and eventually a segmentation fault.
 
 ### Internal
+* Changed download URL for Linux binaries (`scripts/download-realm.js`).
 * Upgraded to Realm Sync v3.5.1.
 * Realm Core v5.6.0.
 * Realm Sync v3.5.1.

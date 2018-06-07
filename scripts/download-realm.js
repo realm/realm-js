@@ -192,9 +192,11 @@ function getSyncRequirements(dependencies, options, required = {}) {
                 });
         }
         case 'linux':
-            required.SYNC_ARCHIVE = `realm-sync-Release-v${dependencies.REALM_SYNC_VERSION}-Linux-devel.tar.gz`;
+            required.SYNC_ARCHIVE = `realm-sync-${flavor}-v${dependencies.REALM_SYNC_VERSION}-Linux-devel.tar.gz`;
             return getCoreRequirements(dependencies, options, required)
-                .then(() => {
+                .then(() => getSyncCommitSha(dependencies.REALM_SYNC_VERSION))
+                .then(sha => {
+                    required.SYNC_SERVER_FOLDER += `/sha-version/${sha}`;
                     return required;
                 });
         default:
