@@ -431,21 +431,15 @@ class Collection {
      *      and `deletions`, each containing a list of indices in the collection that were
      *      inserted, updated or deleted respectively. `deletions` and `oldModifications` are
      *      indices into the collection before the change happened, while `insertions` and
-     *      `newModifications` are indices into the new version of the collection. If partial sync
-     *      is enabled, an additional key `partial_sync` is added.
-     *   - `changes.partial_sync`: `error` indicates if an error has occurred, `old_state` is the previous
-     *      state, and `new_state` is the current state.
+     *      `newModifications` are indices into the new version of the collection.
      * @throws {Error} If `callback` is not a function.
      * @example
      * wines.addListener((collection, changes) => {
      *  // collection === wines
-     *  if (changes.partial_sync.new_state == Realm.Sync.SubscriptionState.Initialized) {
-     *     console.log('Our subset is ready');
-     *     console.log(`${changes.insertions.length} insertions`);
-     *     console.log(`${changes.modifications.length} modifications`);
-     *     console.log(`${changes.deletions.length} deletions`);
-     *     console.log(`new size of collection: ${collection.length}`);
-     *   }
+     *  console.log(`${changes.insertions.length} insertions`);
+     *  console.log(`${changes.modifications.length} modifications`);
+     *  console.log(`${changes.deletions.length} deletions`);
+     *  console.log(`new size of collection: ${collection.length}`);
      * });
      */
     addListener(callback) {}
