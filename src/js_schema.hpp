@@ -321,12 +321,13 @@ typename T::Object Schema<T>::object_for_property(ContextType ctx, const Propert
     Object::set_property(ctx, object, name_string, Value::from_string(ctx, property.name));
 
     static const String type_string = "type";
+    bool is_list = false;
     if (is_array(property.type)) {
         if  (property.type == realm::PropertyType::LinkingObjects) {
             Object::set_property(ctx, object, type_string, Value::from_string(ctx, "linkingObjects"));
         }
         else {
-            Object::set_property(ctx, object, type_string, Value::from_string(ctx, "list"));
+            is_list = true;
         }
     }
     else {
@@ -338,7 +339,17 @@ typename T::Object Schema<T>::object_for_property(ContextType ctx, const Propert
         Object::set_property(ctx, object, object_type_string, Value::from_string(ctx, property.object_type));
     }
     else if (is_array(property.type)) {
-        Object::set_property(ctx, object, object_type_string, Value::from_string(ctx, string_for_property_type(property.type & ~realm::PropertyType::Flags)));
+        auto tmp = string_for_property_type(property.type & ~realm::PropertyType::Flags);
+        if (strncmp(tmp, "string", 6) || strncmp(tmp, "int", 3) || strncmp(tmp, "bool", 4)
+             || strncmp(tmp, "date", 4) || strncmp(tmp, "data", 4) || strncmp(tmp, "double", 6)
+             || strncmp(tmp, "float", 5)) {
+            Object::set_property(ctx, object, type_string, Value::from_string(ctx, std::string(tmp) + "[]"));
+            is_list = false;
+        }
+        else {
+            Object::set_property(ctx, object, object_type_string, Value::from_string(ctx, string_for_property_type(property.type & ~realm::PropertyType::Flags)));
+            is_list = true;
+        }
     }
 
     static const String property_string = "property";
@@ -351,6 +362,10 @@ typename T::Object Schema<T>::object_for_property(ContextType ctx, const Propert
 
     static const String optional_string = "optional";
     Object::set_property(ctx, object, optional_string, Value::from_boolean(ctx, is_nullable(property.type)));
+
+    if (is_list) {
+        Object::set_property(ctx, object, type_string, Value::from_string(ctx, "list"));
+    }
 
     return object;
 }

@@ -1,3 +1,25 @@
+X.Y.Z Release notes
+=============================================================
+### Compatibility
+* Sync protocol: 24
+* Server-side history format: 4
+* File format: 7
+* Realm Object Server: 3.0.0 or later
+
+### Breaking changes
+* None.
+
+### Enhancements
+* None.
+
+### Bug fixes
+* Fixed a bug in how arrays of primitive types are represented. The bug prevented a schema from one Realm to be used when opening another (#1847).
+
+### Internal
+* Realm Core v5.6.0.
+* Realm Sync v3.5.1.
+
+
 2.8.1 Release notes (2018-6-8)
 =============================================================
 ### Compatibility
