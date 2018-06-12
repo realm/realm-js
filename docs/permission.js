@@ -28,8 +28,6 @@
  * materialized for the affected Realm files and the affected user.
  * Once the request has been processed, the Status, StatusMessage, and
  * ErrorCode will be updated accordingly.
- * @class
- * @name Realm.Sync.User.PermissionChange
  * @memberof Realm.Sync.User
  */
 class PermissionChange {
@@ -107,8 +105,6 @@ class PermissionChange {
  * with users you wish to grant permissions to.
  * If the request has failed, statusMessage will be updated with relevant information about the
  * failure and statusCode will be set.
- * @class
- * @name Realm.Sync.User.PermissionOffer
  * @memberof Realm.Sync.User
  */
 class PermissionOffer {
@@ -190,8 +186,6 @@ class PermissionOffer {
  * to connect to the Realm.
  * If the request has failed, the statusMessage will be updated with relevant information about the
  * failure and statusCode will be set.
- * @class
- * @name Realm.Sync.User.PermissionOfferResponse
  * @memberof Realm.Sync.User
  */
 class PermissionOfferResponse {
@@ -249,9 +243,6 @@ class PermissionOfferResponse {
  * the properties of Permission depend on what the permission is applied to, and so are
  * left undocumented here.
  * @since 2.3.0
- *
- * @class
- * @name Realm.Sync.Permission
  * @memberof Realm.Sync
  */
 class Permission {
@@ -351,8 +342,6 @@ class User {
  * connect to the Realm are automatically added to it. Any other roles you wish to use are
  * managed as normal Realm objects.
  * @since 2.3.0
- * @class
- * @name Realm.Sync.Permission.Role
  * @memberof Realm.Sync.Permission
  */
 class Role {
@@ -375,8 +364,6 @@ class Role {
  * An instance of this object is automatically created in the Realm for class in your schema,
  * and should not be created manually.
  * @since 2.3.0
- * @class
- * @name Realm.Sync.Permission.Class
  * @memberof Realm.Sync.Permission
  */
 class Class {
@@ -399,8 +386,6 @@ class Class {
  * An object of this type is automatically created in the Realm for you, and more objects
  * cannot be created manually.
  * @since 2.3.0
- * @class
- * @name Realm.Sync.Permission.Realm
  * @memberof Realm.Sync.Permission
  */
 class Realm {
