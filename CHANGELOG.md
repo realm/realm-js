@@ -1,3 +1,24 @@
+X.Y.Z Release notes
+=============================================================
+### Compatibility
+* Sync protocol: 24
+* Server-side history format: 4
+* File format: 7
+* Realm Object Server: 3.0.0 or later
+
+### Breaking changes
+* None.
+
+### Enhancements
+* None.
+
+### Bug fixes
+* [Sync] Fixed a problem which would sometimes cause `bad permission object` and `bad changeset` errors.
+
+### Internal
+* Upgraded to Realm Sync v3.5.2.
+* Realm Core v5.6.0.
+
 2.8.1 Release notes (2018-6-8)
 =============================================================
 ### Compatibility
