@@ -105,13 +105,43 @@ static inline void parse_property_type(StringData object_name, Property& prop, S
         prop.type |= PropertyType::Data;
     }
     else if (type == "list") {
-        if (is_nullable(prop.type)) {
-            throw std::logic_error(util::format("List property '%1.%2' cannot be optional", object_name, prop.name));
+        if (prop.object_type == "bool") {
+            prop.type |= PropertyType::Bool | PropertyType::Array;
+            prop.object_type = "";
+        } 
+        else if (prop.object_type == "int") {
+            prop.type |= PropertyType::Int | PropertyType::Array;
+            prop.object_type = "";
         }
-        if (is_array(prop.type)) {
-            throw std::logic_error(util::format("List property '%1.%2' must have a non-list value type", object_name, prop.name));
+        else if (prop.object_type == "float") {
+            prop.type |= PropertyType::Float | PropertyType::Array;
+            prop.object_type = "";
         }
-        prop.type |= PropertyType::Object | PropertyType::Array;
+        else if (prop.object_type == "double") {
+            prop.type |= PropertyType::Double | PropertyType::Array;
+            prop.object_type = "";
+        }
+        else if (prop.object_type == "string") {
+            prop.type |= PropertyType::String | PropertyType::Array;
+            prop.object_type = "";
+        }
+        else if (prop.object_type == "date") {
+            prop.type |= PropertyType::Date | PropertyType::Array;
+            prop.object_type = "";
+        }
+        else if (prop.object_type == "data") {
+            prop.type |= PropertyType::Data | PropertyType::Array;
+            prop.object_type = "";
+        }
+        else {
+            if (is_nullable(prop.type)) {
+                throw std::logic_error(util::format("List property '%1.%2' cannot be optional", object_name, prop.name));
+            }
+            if (is_array(prop.type)) {
+                throw std::logic_error(util::format("List property '%1.%2' must have a non-list value type", object_name, prop.name));
+            }
+            prop.type |= PropertyType::Object | PropertyType::Array;
+        }
     }
     else if (type == "linkingObjects") {
         prop.type |= PropertyType::LinkingObjects | PropertyType::Array;
@@ -153,6 +183,10 @@ Property Schema<T>::parse_property(ContextType ctx, ValueType attributes, String
     if (Value::is_object(ctx, attributes)) {
         property_object = Value::validated_to_object(ctx, attributes);
         std::string property_type = Object::validated_get_string(ctx, property_object, type_string);
+        ValueType object_type_value = Object::get_property(ctx, property_object, object_type_string);
+        if (!Value::is_undefined(ctx, object_type_value)) {
+            prop.object_type = Value::validated_to_string(ctx, object_type_value, "objectType");
+        }
         parse_property_type(object_name, prop, property_type);
 
         ValueType optional_value = Object::get_property(ctx, property_object, optional_string);
@@ -321,13 +355,12 @@ typename T::Object Schema<T>::object_for_property(ContextType ctx, const Propert
     Object::set_property(ctx, object, name_string, Value::from_string(ctx, property.name));
 
     static const String type_string = "type";
-    bool is_list = false;
     if (is_array(property.type)) {
         if  (property.type == realm::PropertyType::LinkingObjects) {
             Object::set_property(ctx, object, type_string, Value::from_string(ctx, "linkingObjects"));
         }
         else {
-            is_list = true;
+            Object::set_property(ctx, object, type_string, Value::from_string(ctx, "list"));
         }
     }
     else {
@@ -339,17 +372,7 @@ typename T::Object Schema<T>::object_for_property(ContextType ctx, const Propert
         Object::set_property(ctx, object, object_type_string, Value::from_string(ctx, property.object_type));
     }
     else if (is_array(property.type)) {
-        auto tmp = string_for_property_type(property.type & ~realm::PropertyType::Flags);
-        if (strncmp(tmp, "string", 6) || strncmp(tmp, "int", 3) || strncmp(tmp, "bool", 4)
-             || strncmp(tmp, "date", 4) || strncmp(tmp, "data", 4) || strncmp(tmp, "double", 6)
-             || strncmp(tmp, "float", 5)) {
-            Object::set_property(ctx, object, type_string, Value::from_string(ctx, std::string(tmp) + "[]"));
-            is_list = false;
-        }
-        else {
-            Object::set_property(ctx, object, object_type_string, Value::from_string(ctx, string_for_property_type(property.type & ~realm::PropertyType::Flags)));
-            is_list = true;
-        }
+        Object::set_property(ctx, object, object_type_string, Value::from_string(ctx, string_for_property_type(property.type & ~realm::PropertyType::Flags)));
     }
 
     static const String property_string = "property";
@@ -362,10 +385,6 @@ typename T::Object Schema<T>::object_for_property(ContextType ctx, const Propert
 
     static const String optional_string = "optional";
     Object::set_property(ctx, object, optional_string, Value::from_boolean(ctx, is_nullable(property.type)));
-
-    if (is_list) {
-        Object::set_property(ctx, object, type_string, Value::from_string(ctx, "list"));
-    }
 
     return object;
 }
