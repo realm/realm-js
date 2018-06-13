@@ -14,10 +14,11 @@ X.Y.Z Release notes
 
 ### Bug fixes
 * Fixed a bug in how arrays of primitive types are represented. The bug prevented a schema from one Realm to be used when opening another (#1847).
+* Added a more readable error message in the query parser when requesting an a bad argument (#1808).
 
 ### Internal
-* Realm Core v5.6.0.
-* Realm Sync v3.5.2.
+* Upgraded to Realm Core v5.6.1.
+* Upgraded to Realm Sync v3.5.3.
 
 
 2.8.2 Release notes (2018-6-12)
