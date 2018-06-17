@@ -212,10 +212,10 @@
       "conditions": [
         ["prefix!=''", {
           "all_dependent_settings": {
-            "include_dirs": [ "<(prefix)/src" ],
+            "include_dirs": [ "<(prefix)/src", "<(prefix)/<(build_directory)/src" ],
           },
-          "direct_dependent_settings": {
-            "library_dirs": [ "<(prefix)/src/realm" ]
+          "link_settings": {
+            "library_dirs": [ "<(prefix)/<(build_directory)/src/realm" ]
           }
         }, {
           "dependencies": [ "vendored-realm" ]
