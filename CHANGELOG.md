@@ -14,7 +14,7 @@ X.Y.Z Release notes
   `shouldCompactOnLaunch` config property for them.
 
 ### Bug fixes
-* None.
+* Fix incorrect documentation of the `shouldCompactOnLaunch` parameters.
 
 ### Internals
 * None.
