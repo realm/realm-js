@@ -1,3 +1,25 @@
+X.Y.Z Release notes
+=============================================================
+### Compatibility
+* Sync protocol: 24
+* Server-side history format: 4
+* File format: 7
+* Realm Object Server: 3.0.0 or later
+
+### Breaking changes
+* None.
+
+### Enhancements
+* Added support for compacting synchronized Realms and allowed setting the
+  `shouldCompactOnLaunch` config property for them.
+
+### Bug fixes
+* None.
+
+### Internals
+* None.
+
+
 2.8.5 Release notes (2018-6-18)
 =============================================================
 ### Compatibility
