@@ -1256,6 +1256,29 @@ module.exports = {
         });
     },
 
+    testCreateTemplateObject: function() {
+        var realm = new Realm({schema: [
+            schemas.AllTypes,
+            schemas.DefaultValues,
+            schemas.TestObject,
+            schemas.LinkToAllTypes
+        ]});
+        realm.beginTransaction();
+
+        // Test all simple data types
+        let template = Realm.createTemplateObject(schemas.AllTypes);
+        TestCase.assertEqual(Object.keys(template).length, 7);
+        let unmanagedObj = Object.assign(template, { boolCol: true });
+        let managedObj = realm.create(schemas.AllTypes.name, unmanagedObj) ;
+        TestCase.assertEqual(unmanagedObj, managedObj);
+
+        // Default values
+        unmanagedObj = Realm.createTemplateObject(schemas.DefaultValues);
+        TestCase.assertEqual(Object.keys(template).length, 10);
+        managedObj = realm.create(schemas.DefaultValues.name, template);
+        TestCase.assertEqual(unmanagedObj, managedObj);
+    }
+
 
     // FIXME: reanble test
     /*

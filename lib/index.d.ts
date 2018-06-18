@@ -621,6 +621,12 @@ declare class Realm {
     static automaticSyncConfiguration(user?: Realm.Sync.User): string;
 
     /**
+     * FIXME
+     * @returns {T}
+     */
+    static createTemplateObject<T>(objectSchema: Realm.ObjectSchema): T;
+
+    /**
      * Delete the Realm file for the given configuration.
      * @param {Configuration} config
      */
