@@ -518,10 +518,10 @@ void RealmClass<T>::constructor(ContextType ctx, ObjectType this_object, size_t 
                 }
 
                 FunctionType should_compact_on_launch_function = Value::validated_to_function(ctx, compact_value, "shouldCompactOnLaunch");
-                config.should_compact_on_launch_function = [=](uint64_t total_bytes, uint64_t unused_bytes) {
+                config.should_compact_on_launch_function = [=](uint64_t total_bytes, uint64_t used_bytes) {
                     ValueType arguments[2] = {
                         Value::from_number(ctx, total_bytes),
-                        Value::from_number(ctx, unused_bytes)
+                        Value::from_number(ctx, used_bytes)
                     };
 
                     ValueType should_compact = Function<T>::callback(ctx, should_compact_on_launch_function, this_object, 2, arguments);
