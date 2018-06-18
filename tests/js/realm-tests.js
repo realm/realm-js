@@ -1270,13 +1270,22 @@ module.exports = {
         TestCase.assertEqual(Object.keys(template).length, 7);
         let unmanagedObj = Object.assign(template, { boolCol: true });
         let managedObj = realm.create(schemas.AllTypes.name, unmanagedObj) ;
-        TestCase.assertEqual(unmanagedObj, managedObj);
+        TestCase.assertEqual(managedObj.boolCol, true);
 
         // Default values
         unmanagedObj = Realm.createTemplateObject(schemas.DefaultValues);
-        TestCase.assertEqual(Object.keys(template).length, 10);
-        managedObj = realm.create(schemas.DefaultValues.name, template);
-        TestCase.assertEqual(unmanagedObj, managedObj);
+        TestCase.assertEqual(Object.keys(unmanagedObj).length, 10);
+        managedObj = realm.create(schemas.DefaultValues.name, unmanagedObj);
+        TestCase.assertEqual(managedObj.boolCol, true);
+        TestCase.assertEqual(managedObj.intCol, -1);
+        TestCase.assertEqualWithTolerance(managedObj.floatCol, -1.1, 0.000001);
+        TestCase.assertEqualWithTolerance(managedObj.doubleCol, -1.11, 0.000001);
+        TestCase.assertEqual(managedObj.stringCol, 'defaultString');
+        TestCase.assertEqual(managedObj.dateCol.getTime(), 1);
+        TestCase.assertEqual(managedObj.dataCol.byteLength, 1);
+        TestCase.assertEqual(managedObj.objectCol.doubleCol, 1);
+        TestCase.assertEqual(managedObj.nullObjectCol, null);
+        TestCase.assertEqual(managedObj.arrayCol[0].doubleCol, 2);
     }
 
 
