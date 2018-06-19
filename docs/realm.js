@@ -332,7 +332,7 @@ class Realm {
  *   a Realm for the first time during the life of a process to determine if it should be compacted
  *   before being returned to the user. The function takes two arguments:
  *     - `totalSize` - The total file size (data + free space)
- *     - `unusedSize` - The total bytes used by data in the file.
+ *     - `usedSize` - The total bytes used by data in the file.
  *   It returns `true` to indicate that an attempt to compact the file should be made. The compaction
  *   will be skipped if another process is accessing it.
  * @property {string} [path={@link Realm.defaultPath}] - The path to the file where the
