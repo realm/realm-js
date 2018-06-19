@@ -13,11 +13,11 @@ X.Y.Z Release notes
 * Added `Realm.createTemplateObject(objectSchema)` (#1870).
 
 ### Bug fixes
-* None.
+* [Sync] Fixed a bug which could potentially flood Realm Object Server with PING messages.
 
 ### Internals
+* Upgraded to Realm Sync v3.5.6.
 * Realm Core v5.6.2.
-* Realm Sync v3.5.5.
 
 
 2.9.0 Release notes (2018-6-19)
