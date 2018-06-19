@@ -10,15 +10,36 @@ X.Y.Z Release notes
 * None.
 
 ### Enhancements
-* Added support for compacting synchronized Realms and allowed setting the
-  `shouldCompactOnLaunch` config property for them.
-* Added `Realm.createTemplateObject(objectSchema)' (#1870).
+* Added `Realm.createTemplateObject(objectSchema)` (#1870).
+
+### Bug fixes
+* None.
+
+### Internals
+* Realm Core v5.6.2.
+* Realm Sync v3.5.5.
+
+
+2.9.0 Release notes (2018-6-19)
+=============================================================
+### Compatibility
+* Sync protocol: 24
+* Server-side history format: 4
+* File format: 7
+* Realm Object Server: 3.0.0 or later
+
+### Breaking changes
+* None.
+
+### Enhancements
+* Added support for compacting synchronized Realms and allowed setting the `shouldCompactOnLaunch` config property for them.
 
 ### Bug fixes
 * Fix incorrect documentation of the `shouldCompactOnLaunch` parameters.
 
 ### Internals
-* None.
+* Realm Core v5.6.2.
+* Realm Sync v3.5.5.
 
 
 2.8.5 Release notes (2018-6-18)
