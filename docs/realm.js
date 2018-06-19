@@ -133,8 +133,9 @@ class Realm {
     static automaticSyncConfiguration(user) {}
 
     /**
-     * Creates a template object where all optional fields are `undefined` and all required fields have the default
-     * value for the given data type, i.e. `0`, false and `""`.
+     * Creates a template object for a Realm model class where all optional fields are `undefined` and all required
+     * fields have the default value for the given data type, either the value set by the `default` property in the
+     * schema or the default value for the datatype if the schema doesn't specify one, i.e. `0`, false and `""`.
      *
      * @param {Realm~ObjectSchema} schema object describing the class
      */

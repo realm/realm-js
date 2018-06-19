@@ -621,7 +621,7 @@ declare class Realm {
     static automaticSyncConfiguration(user?: Realm.Sync.User): string;
 
     /**
-     * FIXME
+     * @param {Realm.ObjectSchema} object schema describing the object that should be created.
      * @returns {T}
      */
     static createTemplateObject<T>(objectSchema: Realm.ObjectSchema): T;
