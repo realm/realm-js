@@ -1,4 +1,4 @@
-X.Y.Z Release notes
+2.9.0 Release notes (2018-6-19)
 =============================================================
 ### Compatibility
 * Sync protocol: 24
@@ -10,8 +10,7 @@ X.Y.Z Release notes
 * None.
 
 ### Enhancements
-* Added support for compacting synchronized Realms and allowed setting the
-  `shouldCompactOnLaunch` config property for them.
+* Added support for compacting synchronized Realms and allowed setting the `shouldCompactOnLaunch` config property for them.
 
 ### Bug fixes
 * Fix incorrect documentation of the `shouldCompactOnLaunch` parameters.
