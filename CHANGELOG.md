@@ -1,3 +1,24 @@
+X.Y.Z Release notes
+=============================================================
+### Compatibility
+* Sync protocol: 24
+* Server-side history format: 4
+* File format: 7
+* Realm Object Server: 3.0.0 or later
+
+### Breaking changes
+* None.
+
+### Enhancements
+* Added a method named `computeSize` on the Realm object that computes the aggregated size of all objects and their history.
+
+### Bug fixes
+* None.
+
+### Internals
+* None.
+
+
 2.10.0 Release notes (2018-6-19)
 =============================================================
 ### Compatibility
@@ -167,7 +188,7 @@
 The feature known as Partial synchronization has been renamed to Query-based synchronization and is now the default mode for synchronized Realms. This has impacted a number of APIs. See below for the details.
 
 ### Deprecated
-* [Sync] `Realm.Configuration.SyncConfiguration.partial` has been deprecated in favor of `Realm.Configuration.SyncConfiguration.fullSynchronization`. 
+* [Sync] `Realm.Configuration.SyncConfiguration.partial` has been deprecated in favor of `Realm.Configuration.SyncConfiguration.fullSynchronization`.
 * [Sync] `Realm.automaticSyncConfiguration()` has been deprecated in favor of `Realm.Sync.User.createConfiguration()`.
 
 ### Breaking changes

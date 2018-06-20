@@ -318,7 +318,7 @@ declare namespace Realm.Sync {
         static requestPasswordReset(server: string, email: string): Promise<void>;
 
         static completePasswordReset(server:string, reset_token:string, new_password:string): Promise<void>;
-        
+
         static requestEmailConfirmation(server:string, email:string): Promise<void>;
 
         static confirmEmail(server:string, confirmation_token:string): Promise<void>;
@@ -731,6 +731,14 @@ declare class Realm {
      * @returns boolean
      */
     compact(): boolean;
+
+    /**
+     * Computes the aggregated size of all objects and their history in the Realm.
+     *
+     * Note that this will traverse the Realm and might be expensive for large Realms.
+     * @returns {number} the computed size in bytes.
+     */
+    computeSize(): number;
 
     /**
      * Write a copy to destination path
