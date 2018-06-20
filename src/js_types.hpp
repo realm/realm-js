@@ -210,6 +210,9 @@ struct Object {
     static ValueType get_prototype(ContextType, const ObjectType &);
     static void set_prototype(ContextType, const ObjectType &, const ValueType &);
 
+    static ValueType get_property(ContextType, const ObjectType &, StringData);
+    static ValueType get_property(ContextType c, const ObjectType &o, const char *s) { return get_property(c, o, StringData(s)); }
+    static ValueType get_property(ContextType c, const ObjectType &o, const std::string &s) { return get_property(c, o, StringData(s)); }
     static ValueType get_property(ContextType, const ObjectType &, const String<T> &);
     static ValueType get_property(ContextType, const ObjectType &, uint32_t);
     static void set_property(ContextType, const ObjectType &, const String<T> &, const ValueType &, PropertyAttributes attributes = None);
