@@ -30,16 +30,35 @@ class String<node::Types> {
   public:
     String(const char* s) : m_str(s) {}
     String(const std::string &s) : m_str(s) {}
-    String(const v8::Local<v8::String> &s) : m_str(*Nan::Utf8String(s)) {}
+    String(const v8::Local<v8::String> &s);
     String(v8::Local<v8::String> &&s) : String(s) {}
 
-    operator std::string() const {
+    operator std::string() const& {
         return m_str;
+    }
+    operator std::string() && {
+        return std::move(m_str);
     }
     operator v8::Local<v8::String>() const {
         return Nan::New(m_str).ToLocalChecked();
     }
 };
+
+inline String<node::Types>::String(const v8::Local<v8::String> &s) {
+    if (s.IsEmpty() || s->Length() == 0) {
+        return;
+    }
+    if (s->IsOneByte()) {
+        m_str.resize(s->Length());
+    }
+    else {
+        // Length is in UCS-2 code units, which can take up to 3 bytes each to encode
+        m_str.resize(3 * s->Length());
+    }
+    const int flags = v8::String::NO_NULL_TERMINATION | v8::String::REPLACE_INVALID_UTF8;
+    auto length = s->WriteUtf8(&m_str[0], m_str.size(), 0, flags);
+    m_str.resize(length);
+}
 
 } // js
 } // realm
