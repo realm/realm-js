@@ -24,16 +24,6 @@ namespace realm {
 namespace js {
 
 template<>
-inline bool node::Object::has_property(v8::Isolate* isolate, const v8::Local<v8::Object> &object, const node::String &key) {
-    return Nan::Has(object, key).FromMaybe(false);
-}
-
-template<>
-inline bool node::Object::has_property(v8::Isolate* isolate, const v8::Local<v8::Object> &object, uint32_t index) {
-    return Nan::Has(object, index).FromMaybe(false);
-}
-
-template<>
 inline v8::Local<v8::Value> node::Object::get_property(v8::Isolate* isolate, const v8::Local<v8::Object> &object, const node::String &key) {
     Nan::TryCatch trycatch;
     auto value = Nan::Get(object, v8::Local<v8::String>(key));

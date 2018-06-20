@@ -24,16 +24,6 @@ namespace realm {
 namespace js {
 
 template<>
-inline bool jsc::Object::has_property(JSContextRef ctx, const JSObjectRef &object, const jsc::String &key) {
-    return JSObjectHasProperty(ctx, object, key);
-}
-
-template<>
-inline bool jsc::Object::has_property(JSContextRef ctx, const JSObjectRef &object, uint32_t index) {
-    return JSObjectHasProperty(ctx, object, jsc::String(util::to_string(index)));
-}
-
-template<>
 inline JSValueRef jsc::Object::get_property(JSContextRef ctx, const JSObjectRef &object, const jsc::String &key) {
     JSValueRef exception = nullptr;
     JSValueRef value = JSObjectGetProperty(ctx, object, key, &exception);
