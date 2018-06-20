@@ -237,6 +237,7 @@ public:
     static void delete_model(ContextType, ObjectType, Arguments, ReturnValue &);
     static void object_for_object_id(ContextType, ObjectType, Arguments, ReturnValue&);
     static void privileges(ContextType, ObjectType, Arguments, ReturnValue&);
+    static void compute_size(ContextType, ObjectType, Arguments, ReturnValue&);
 
     // properties
     static void get_empty(ContextType, ObjectType, ReturnValue &);
@@ -295,6 +296,7 @@ public:
         {"writeCopyTo", wrap<writeCopyTo>},
         {"deleteModel", wrap<delete_model>},
         {"privileges", wrap<privileges>},
+        {"computeSize", wrap<compute_size>},
         {"_objectForObjectId", wrap<object_for_object_id>},
  #if REALM_ENABLE_SYNC
         {"_waitForDownload", wrap<wait_for_download_completion>},
@@ -1174,6 +1176,15 @@ void RealmClass<T>::privileges(ContextType ctx, ObjectType this_object, Argument
     Object::set_property(ctx, object, "subscribe", Value::from_boolean(ctx, has_privilege(p, Privilege::Query)));
     Object::set_property(ctx, object, "setPermissions", Value::from_boolean(ctx, has_privilege(p, Privilege::SetPermissions)));
     return_value.set(object);
+}
+
+template<typename T>
+void RealmClass<T>::compute_size(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
+    args.validate_maximum(0);
+
+    SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
+    auto size = realm->read_group().compute_aggregated_byte_size();
+    return_value.set(Value::from_number(ctx, size));
 }
 
 } // js
