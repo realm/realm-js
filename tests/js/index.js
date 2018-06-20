@@ -50,6 +50,7 @@ var TESTS = {
     EncryptionTests: require('./encryption-tests'),
     ObjectIDTests: require('./object-id-tests'),
     // Garbagecollectiontests: require('./garbage-collection'),
+    ComputeSizeTests: require('./compute-size-tests'),
 };
 
 // If sync is enabled, run the sync tests
