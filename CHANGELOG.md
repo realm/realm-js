@@ -10,13 +10,15 @@ X.Y.Z Release notes
 * None.
 
 ### Enhancements
-* Added a method named `computeSize` on the Realm object that computes the aggregated size of all objects and their history.
+* Added a method `Realm.computeSize()` that computes the aggregated size of all objects and their history (#1881).
+* Improved performance for devices which can support large address spaces.
 
 ### Bug fixes
 * None.
 
 ### Internals
-* None.
+* Upgraded to Realm Core v5.6.3.
+* Upgraded to Realm Sync v3.5.7.
 
 
 2.10.0 Release notes (2018-6-19)
