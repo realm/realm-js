@@ -18,7 +18,7 @@ X.Y.Z Release notes
 
 ### Internals
 * Upgraded to Realm Core v5.6.3.
-* Upgraded to Realm Sync v3.5.7.
+* Upgraded to Realm Sync v3.5.8.
 
 
 2.10.0 Release notes (2018-6-19)
