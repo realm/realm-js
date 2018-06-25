@@ -105,13 +105,43 @@ static inline void parse_property_type(StringData object_name, Property& prop, S
         prop.type |= PropertyType::Data;
     }
     else if (type == "list") {
-        if (is_nullable(prop.type)) {
-            throw std::logic_error(util::format("List property '%1.%2' cannot be optional", object_name, prop.name));
+        if (prop.object_type == "bool") {
+            prop.type |= PropertyType::Bool | PropertyType::Array;
+            prop.object_type = "";
+        } 
+        else if (prop.object_type == "int") {
+            prop.type |= PropertyType::Int | PropertyType::Array;
+            prop.object_type = "";
         }
-        if (is_array(prop.type)) {
-            throw std::logic_error(util::format("List property '%1.%2' must have a non-list value type", object_name, prop.name));
+        else if (prop.object_type == "float") {
+            prop.type |= PropertyType::Float | PropertyType::Array;
+            prop.object_type = "";
         }
-        prop.type |= PropertyType::Object | PropertyType::Array;
+        else if (prop.object_type == "double") {
+            prop.type |= PropertyType::Double | PropertyType::Array;
+            prop.object_type = "";
+        }
+        else if (prop.object_type == "string") {
+            prop.type |= PropertyType::String | PropertyType::Array;
+            prop.object_type = "";
+        }
+        else if (prop.object_type == "date") {
+            prop.type |= PropertyType::Date | PropertyType::Array;
+            prop.object_type = "";
+        }
+        else if (prop.object_type == "data") {
+            prop.type |= PropertyType::Data | PropertyType::Array;
+            prop.object_type = "";
+        }
+        else {
+            if (is_nullable(prop.type)) {
+                throw std::logic_error(util::format("List property '%1.%2' cannot be optional", object_name, prop.name));
+            }
+            if (is_array(prop.type)) {
+                throw std::logic_error(util::format("List property '%1.%2' must have a non-list value type", object_name, prop.name));
+            }
+            prop.type |= PropertyType::Object | PropertyType::Array;
+        }
     }
     else if (type == "linkingObjects") {
         prop.type |= PropertyType::LinkingObjects | PropertyType::Array;
@@ -153,6 +183,10 @@ Property Schema<T>::parse_property(ContextType ctx, ValueType attributes, String
     if (Value::is_object(ctx, attributes)) {
         property_object = Value::validated_to_object(ctx, attributes);
         std::string property_type = Object::validated_get_string(ctx, property_object, type_string);
+        ValueType object_type_value = Object::get_property(ctx, property_object, object_type_string);
+        if (!Value::is_undefined(ctx, object_type_value)) {
+            prop.object_type = Value::validated_to_string(ctx, object_type_value, "objectType");
+        }
         parse_property_type(object_name, prop, property_type);
 
         ValueType optional_value = Object::get_property(ctx, property_object, optional_string);

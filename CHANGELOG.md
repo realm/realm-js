@@ -6,11 +6,191 @@ X.Y.Z Release notes
 * File format: 7
 * Realm Object Server: 3.0.0 or later
 
+### Breaking changes
+* None.
+
+### Enhancements
+* Added a method `Realm.computeSize()` that computes the aggregated size of all objects and their history (#1881).
+* Improved performance for devices which can support large address spaces.
+
+### Bug fixes
+* None.
+
+### Internals
+* Upgraded to Realm Core v5.6.3.
+* Upgraded to Realm Sync v3.5.8.
+
+
+2.10.0 Release notes (2018-6-19)
+=============================================================
+### Compatibility
+* Sync protocol: 24
+* Server-side history format: 4
+* File format: 7
+* Realm Object Server: 3.0.0 or later
+
+### Breaking changes
+* None.
+
+### Enhancements
+* Added `Realm.createTemplateObject(objectSchema)` (#1870).
+
+### Bug fixes
+* [Sync] Fixed a bug which could potentially flood Realm Object Server with PING messages.
+
+### Internals
+* Upgraded to Realm Sync v3.5.6.
+* Realm Core v5.6.2.
+
+
+2.9.0 Release notes (2018-6-19)
+=============================================================
+### Compatibility
+* Sync protocol: 24
+* Server-side history format: 4
+* File format: 7
+* Realm Object Server: 3.0.0 or later
+
+### Breaking changes
+* None.
+
+### Enhancements
+* Added support for compacting synchronized Realms and allowed setting the `shouldCompactOnLaunch` config property for them.
+
+### Bug fixes
+* Fix incorrect documentation of the `shouldCompactOnLaunch` parameters.
+
+### Internals
+* Realm Core v5.6.2.
+* Realm Sync v3.5.5.
+
+
+2.8.5 Release notes (2018-6-18)
+=============================================================
+### Compatibility
+* Sync protocol: 24
+* Server-side history format: 4
+* File format: 7
+* Realm Object Server: 3.0.0 or later
+
+### Breaking changes
+* None.
+
+### Enhancements
+* None.
+
+### Bug fixes
+* [Sync] Fixed a bug that could result in a crash with the message "bad changeset error".
+
+### Internals
+* Upgraded to Realm Sync v3.5.5.
+* Realm Core v5.6.2.
+
+
+2.8.4 Release notes (2018-6-15)
+=============================================================
+### Compatibility
+* Sync protocol: 24
+* Server-side history format: 4
+* File format: 7
+* Realm Object Server: 3.0.0 or later
+
+### Breaking changes
+* None.
+
+### Enhancements
+* None.
+
+### Bug fixes
+* Fixed a potential corruption.
+
+### Internals
+* Upgraded to Realm Core v5.6.2.
+* Upgraded to Realm Sync v3.5.4.
+
+
+2.8.3 Release notes (2018-6-13)
+=============================================================
+### Compatibility
+* Sync protocol: 24
+* Server-side history format: 4
+* File format: 7
+* Realm Object Server: 3.0.0 or later
+
+### Breaking changes
+* None.
+
+### Enhancements
+* None.
+
+### Bug fixes
+* Fixed a bug in how arrays of primitive types are represented. The bug prevented a schema from one Realm to be used when opening another (#1847).
+* Added a more readable error message in the query parser when requesting an a bad argument (#1808).
+
+### Internal
+* Upgraded to Realm Core v5.6.1.
+* Upgraded to Realm Sync v3.5.3.
+
+
+2.8.2 Release notes (2018-6-12)
+=============================================================
+### Compatibility
+* Sync protocol: 24
+* Server-side history format: 4
+* File format: 7
+* Realm Object Server: 3.0.0 or later
+
+### Breaking changes
+* None.
+
+### Enhancements
+* None.
+
+### Bug fixes
+* [Sync] Fixed a problem which would sometimes cause `bad permission object` and `bad changeset` errors.
+
+### Internal
+* Upgraded to Realm Sync v3.5.2.
+* Realm Core v5.6.0.
+
+
+2.8.1 Release notes (2018-6-8)
+=============================================================
+### Compatibility
+* Sync protocol: 24
+* Server-side history format: 4
+* File format: 7
+* Realm Object Server: 3.0.0 or later
+
+### Breaking changes
+* None.
+
+### Enhancements
+* Add the `oldModifications` and `newModifications` properties to the listener change objects, which report the indices that changed in the collection both before and after the changes being notified for. The `modifications` property is kept as an alias for `oldModifications` but might be removed in a future version.
+
+### Bug fixes
+* [Sync] Fixed a bug which crash query-based Realms. A bug in gcc's optimizer will generate code which in some case will lead to a memory violation and eventually a segmentation fault.
+
+### Internal
+* Changed download URL for Linux binaries (`scripts/download-realm.js`).
+* Upgraded to Realm Sync v3.5.1.
+* Realm Core v5.6.0.
+* Realm Sync v3.5.1.
+
+
+2.8.0 Release notes (2018-6-6)
+=============================================================
+### Compatibility
+* Sync protocol: 24
+* Server-side history format: 4
+* File format: 7
+* Realm Object Server: 3.0.0 or later
+
 ### Notes
 The feature known as Partial synchronization has been renamed to Query-based synchronization and is now the default mode for synchronized Realms. This has impacted a number of APIs. See below for the details.
 
 ### Deprecated
-* [Sync] `Realm.Configuration.SyncConfiguration.partial` has been deprecated in favor of `Realm.Configuration.SyncConfiguration.fullSynchronization`. 
+* [Sync] `Realm.Configuration.SyncConfiguration.partial` has been deprecated in favor of `Realm.Configuration.SyncConfiguration.fullSynchronization`.
 * [Sync] `Realm.automaticSyncConfiguration()` has been deprecated in favor of `Realm.Sync.User.createConfiguration()`.
 
 ### Breaking changes

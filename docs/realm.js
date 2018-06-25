@@ -133,6 +133,15 @@ class Realm {
     static automaticSyncConfiguration(user) {}
 
     /**
+     * Creates a template object for a Realm model class where all optional fields are `undefined` and all required
+     * fields have the default value for the given data type, either the value set by the `default` property in the
+     * schema or the default value for the datatype if the schema doesn't specify one, i.e. `0`, false and `""`.
+     *
+     * @param {Realm~ObjectSchema} schema object describing the class
+     */
+    static createTemplateObject(objectSchema) {}
+
+    /**
      * Closes this Realm so it may be re-opened with a newer schema version.
      * All objects and collections from this Realm are no longer valid after calling this method.
      */
@@ -277,6 +286,14 @@ class Realm {
     compact() {}
 
     /**
+     * Computes the aggregated size of all objects and their history in the Realm.
+     *
+     * Note that this will traverse the Realm and might be expensive for large Realms.
+     * @returns {number} the computed size in bytes.
+     */
+    computeSize() {}
+
+    /**
      * Writes a compacted copy of the Realm to the given path.
      *
      * The destination file cannot already exist.
@@ -324,7 +341,7 @@ class Realm {
  *   a Realm for the first time during the life of a process to determine if it should be compacted
  *   before being returned to the user. The function takes two arguments:
  *     - `totalSize` - The total file size (data + free space)
- *     - `unusedSize` - The total bytes used by data in the file.
+ *     - `usedSize` - The total bytes used by data in the file.
  *   It returns `true` to indicate that an attempt to compact the file should be made. The compaction
  *   will be skipped if another process is accessing it.
  * @property {string} [path={@link Realm.defaultPath}] - The path to the file where the
@@ -447,4 +464,3 @@ class Realm {
  *   any object of this type from inside the same Realm, and will always be _optional_
  *   (meaning it may also be assigned `null` or `undefined`).
  */
-

@@ -1324,4 +1324,26 @@ module.exports = {
         TestCase.assertEqual(objects[1].list2.length, 1);
         TestCase.assertEqual(objects[1].list2[0], "Bar");
     },
+
+    testGetAndApplySchema: function() {
+        const realm1 = new Realm({
+            schema: [schemas.NameObject],
+            _cache: false,
+        });
+        realm1.write(() => {
+            realm1.create(schemas.NameObject.name, { family: 'Smith', given: [ 'Bob', 'Ted']});
+        })
+        const schema = realm1.schema;
+        realm1.close();
+
+        const realm2 = new Realm({
+            schema: schema,
+            _cache: false,
+        });
+        let names = realm2.objects(schemas.NameObject.name);
+        TestCase.assertEqual(names.length, 1);
+        TestCase.assertEqual(names[0]['family'], 'Smith');
+        TestCase.assertEqual(names[0]['given'].length, 2);
+        realm2.close();
+    },
 };

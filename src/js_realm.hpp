@@ -237,6 +237,7 @@ public:
     static void delete_model(ContextType, ObjectType, Arguments, ReturnValue &);
     static void object_for_object_id(ContextType, ObjectType, Arguments, ReturnValue&);
     static void privileges(ContextType, ObjectType, Arguments, ReturnValue&);
+    static void compute_size(ContextType, ObjectType, Arguments, ReturnValue&);
 
     // properties
     static void get_empty(ContextType, ObjectType, ReturnValue &);
@@ -295,6 +296,7 @@ public:
         {"writeCopyTo", wrap<writeCopyTo>},
         {"deleteModel", wrap<delete_model>},
         {"privileges", wrap<privileges>},
+        {"computeSize", wrap<compute_size>},
         {"_objectForObjectId", wrap<object_for_object_id>},
  #if REALM_ENABLE_SYNC
         {"_waitForDownload", wrap<wait_for_download_completion>},
@@ -516,15 +518,12 @@ void RealmClass<T>::constructor(ContextType ctx, ObjectType this_object, size_t 
                 if (config.schema_mode == SchemaMode::Immutable) {
                     throw std::invalid_argument("Cannot set 'shouldCompactOnLaunch' when 'readOnly' is set.");
                 }
-                if (config.sync_config) {
-                    throw std::invalid_argument("Cannot set 'shouldCompactOnLaunch' when 'sync' is set.");
-                }
 
                 FunctionType should_compact_on_launch_function = Value::validated_to_function(ctx, compact_value, "shouldCompactOnLaunch");
-                config.should_compact_on_launch_function = [=](uint64_t total_bytes, uint64_t unused_bytes) {
+                config.should_compact_on_launch_function = [=](uint64_t total_bytes, uint64_t used_bytes) {
                     ValueType arguments[2] = {
                         Value::from_number(ctx, total_bytes),
-                        Value::from_number(ctx, unused_bytes)
+                        Value::from_number(ctx, used_bytes)
                     };
 
                     ValueType should_compact = Function<T>::callback(ctx, should_compact_on_launch_function, this_object, 2, arguments);
@@ -569,6 +568,12 @@ void RealmClass<T>::constructor(ContextType ctx, ObjectType this_object, size_t 
             ValueType cache_value = Object::get_property(ctx, object, cache_string);
             if (!Value::is_undefined(ctx, cache_value)) {
                 config.cache = Value::validated_to_boolean(ctx, cache_value, "_cache");
+            }
+
+            static const String automatic_change_notifications_string = "_automaticChangeNotifications";
+            ValueType automatic_change_notifications_value = Object::get_property(ctx, object, automatic_change_notifications_string);
+            if (!Value::is_undefined(ctx, automatic_change_notifications_value)) {
+                config.automatic_change_notifications = Value::validated_to_boolean(ctx, automatic_change_notifications_value, "_automaticChangeNotifications");
             }
 
             static const String disable_format_upgrade_string = "disableFormatUpgrade";
@@ -1171,6 +1176,14 @@ void RealmClass<T>::privileges(ContextType ctx, ObjectType this_object, Argument
     Object::set_property(ctx, object, "subscribe", Value::from_boolean(ctx, has_privilege(p, Privilege::Query)));
     Object::set_property(ctx, object, "setPermissions", Value::from_boolean(ctx, has_privilege(p, Privilege::SetPermissions)));
     return_value.set(object);
+}
+
+template<typename T>
+void RealmClass<T>::compute_size(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
+    args.validate_maximum(0);
+
+    SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
+    return_value.set(Value::from_number(ctx, realm->compute_size()));
 }
 
 } // js

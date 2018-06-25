@@ -22,6 +22,7 @@
 var Realm = require('realm');
 var TestCase = require('./asserts');
 var testCases = require('./query-tests.json');
+var schemas = require('./schemas');
 
 var typeConverters = {};
 
@@ -157,5 +158,11 @@ module.exports = {
     },
     testOrderingQueries: function() {
         runQuerySuite(testCases.orderingTests);
+    },
+    testMalformedQueries: function() {
+        var realm = new Realm({ schema: [schemas.StringOnly] });
+        TestCase.assertThrows(function() {
+            realm.objects(schemas.StringOnly.name).filtered('stringCol = $0');
+        }, "Request for argument at index 0 but no arguments are provided");
     }
 };

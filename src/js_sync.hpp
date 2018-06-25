@@ -785,6 +785,9 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
     ValueType sync_config_value = Object::get_property(ctx, config_object, "sync");
     if (Value::is_boolean(ctx, sync_config_value)) {
         config.force_sync_history = Value::to_boolean(ctx, sync_config_value);
+        if (config.force_sync_history) {
+            config.schema_mode = SchemaMode::Additive;
+        }
     } else if (!Value::is_undefined(ctx, sync_config_value)) {
         auto sync_config_object = Value::validated_to_object(ctx, sync_config_value);
 
