@@ -19,6 +19,7 @@ X.Y.Z Release notes
 ### Internals
 * Upgraded to Realm Core v5.6.3.
 * Upgraded to Realm Sync v3.5.8.
+* Added properties of `Realm.Sync.User` to debugger support.
 * Fixed class names in API documentation.
 
 
