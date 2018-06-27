@@ -43,6 +43,7 @@
  *    synchronization mode. The default is query-based mode which only synchronizes objects that have been subscribed to.
  *    A fully synchronized Realm will synchronize the entire Realm in the background, irrespectively of the data being
  *    used or not.
+ * @property {Object} [custom_http_header] - A map (string, string) of custom HTTP headers.
  */
 
 /**

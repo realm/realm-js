@@ -12,6 +12,7 @@ X.Y.Z Release notes
 ### Enhancements
 * Added a method `Realm.computeSize()` that computes the aggregated size of all objects and their history (#1881).
 * Improved performance for devices which can support large address spaces.
+* [Sync] Exposed custom HTTP headers in `Realm.Configuration` (#1897).
 
 ### Bug fixes
 * None.
@@ -20,7 +21,7 @@ X.Y.Z Release notes
 * Upgraded to Realm Core v5.6.3.
 * Upgraded to Realm Sync v3.5.8.
 * Added properties of `Realm.Sync.User` to debugger support.
-* Fixed class names in API documentation.
+* Fixed class names in API documentation (wrong names were introduced in v2.6.0).
 
 
 2.10.0 Release notes (2018-6-19)
