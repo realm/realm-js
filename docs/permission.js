@@ -243,7 +243,7 @@ class PermissionOfferResponse {
  * the properties of Permission depend on what the permission is applied to, and so are
  * left undocumented here.
  * @since 2.3.0
- * @memberof Realm.Sync
+ * @memberof Realm.Permissions
  */
 class Permission {
 
@@ -253,7 +253,7 @@ class Permission {
      * objects/classes/realms which use this Permission.
      *
      * This property cannot be modified once set.
-     * @type {Role}
+     * @type {Realm.Permissions.Role}
      */
     get role() {}
 
@@ -321,7 +321,7 @@ class Permission {
  * a Realm, and can also be created manually if you wish to grant permissions to a user
  * which has not yet connected to this Realm.
  * @since 2.3.0
- * @memberof Realm.Sync.Permission
+ * @memberof Realm.Permissions
  */
 class User {
     /**
@@ -342,7 +342,7 @@ class User {
  * connect to the Realm are automatically added to it. Any other roles you wish to use are
  * managed as normal Realm objects.
  * @since 2.3.0
- * @memberof Realm.Sync.Permission
+ * @memberof Realm.Permissions
  */
 class Role {
     /**
@@ -353,7 +353,7 @@ class Role {
 
     /**
      * The users which belong to the role.
-     * @type {Array<Realm.Sync.Permissions.User>}
+     * @type {Array<Realm.Permissions.User>}
      */
     get members() {}
 }
@@ -364,7 +364,7 @@ class Role {
  * An instance of this object is automatically created in the Realm for class in your schema,
  * and should not be created manually.
  * @since 2.3.0
- * @memberof Realm.Sync.Permission
+ * @memberof Realm.Permissions
  */
 class Class {
     /**
@@ -375,7 +375,7 @@ class Class {
 
     /**
      * The permissions for this class.
-     * @type {Array<Realm.Sync.Permissions.Permission>}
+     * @type {Array<Realm.Permissions.Permission>}
      */
     get permissions() {}
 }
@@ -386,12 +386,12 @@ class Class {
  * An object of this type is automatically created in the Realm for you, and more objects
  * cannot be created manually.
  * @since 2.3.0
- * @memberof Realm.Sync.Permission
+ * @memberof Realm.Permissions
  */
 class Realm {
     /**
      * The permissions for the Realm.
-     * @type {Array<Realm.Sync.Permission>}
+     * @type {Array<Realm.Permissions.Permission>}
      */
     get permissions() {}
 }
