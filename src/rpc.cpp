@@ -45,6 +45,7 @@ static const char * const RealmObjectTypesResults = "results";
 static const char * const RealmObjectTypesRealm = "realm";
 static const char * const RealmObjectTypesUser = "user";
 static const char * const RealmObjectTypesSession = "session";
+static const char * const RealmObjectTypeSubscription = "subscription";
 static const char * const RealmObjectTypesUndefined = "undefined";
 
 json serialize_object_schema(const realm::ObjectSchema &object_schema) {
@@ -567,6 +568,17 @@ json RPCServer::serialize_json_value(JSValueRef js_value) {
             {"type", RealmObjectTypesSession},
             {"id", store_object(js_object)},
             {"data", session_dict}
+        };
+    }
+    else if (jsc::Object::is_instance<js::SubscriptionClass<jsc::Types>>(m_context, js_object)) {
+        json subscription_dict {
+            {"state", serialize_json_value(jsc::Object::get_property(m_context, js_object, "state"))},
+            {"error", serialize_json_value(jsc::Object::get_property(m_context, js_object, "error"))}
+        };
+        return {
+            {"type", RealmObjectTypeSubscription},
+            {"id", store_object(js_object)},
+            {"data", subscription_dict}
         };
     }
     else if (jsc::Value::is_array(m_context, js_object)) {
