@@ -14,7 +14,7 @@ X.Y.Z Release notes
 * [Sync] Exposed custom HTTP headers in `Realm.Configuration` (#1897).
 
 ### Bug fixes
-* None.
+* [RN Android] Ported workaround for crashes in `memmove`/`memcpy` on some old Android devices (#1163 and #1895).
 
 ### Internals
 * Upgraded to Realm Core v5.6.3.

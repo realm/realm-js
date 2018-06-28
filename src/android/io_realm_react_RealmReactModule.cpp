@@ -24,6 +24,7 @@
 #include "rpc.hpp"
 #include "platform.hpp"
 #include "jni_utils.hpp"
+#include "hack.hpp"
 
 using namespace realm::rpc;
 using namespace realm::jni_util;
@@ -39,6 +40,9 @@ namespace realm {
 
 JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void*)
 {
+    // Workaround for some known bugs in system calls on specific devices.
+    hack_init();
+
     JNIEnv* env;
     if (vm->GetEnv((void**)&env, JNI_VERSION_1_6) != JNI_OK) {
         return JNI_ERR;
