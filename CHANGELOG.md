@@ -1,4 +1,4 @@
-X.Y.Z Release notes
+2.11.0 Release notes (2018-6-28)
 =============================================================
 ### Compatibility
 * Sync protocol: 24
@@ -22,6 +22,7 @@ X.Y.Z Release notes
 * Upgraded to Realm Sync v3.5.8.
 * Added properties of `Realm.Sync.User` to debugger support.
 * Fixed class names in API documentation (wrong names were introduced in v2.6.0).
+* Added prebuilding for Electron v2.0 (**Electron is not supported**).
 
 
 2.10.0 Release notes (2018-6-19)
