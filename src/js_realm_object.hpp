@@ -56,6 +56,7 @@ struct RealmObjectClass : ClassDefinition<T, realm::Object> {
     static void linking_objects_count(ContextType, FunctionType, ObjectType, size_t, const ValueType [], ReturnValue &);
     static void get_object_id(ContextType, ObjectType, Arguments, ReturnValue &);
     static void is_same_object(ContextType, ObjectType, Arguments, ReturnValue &);
+    static void set_link(ContextType, ObjectType, Arguments, ReturnValue &);
 
     const std::string name = "RealmObject";
 
@@ -72,6 +73,7 @@ struct RealmObjectClass : ClassDefinition<T, realm::Object> {
         {"linkingObjectsCount", wrap<linking_objects_count>},
         {"_objectId", wrap<get_object_id>},
         {"_isSameObject", wrap<is_same_object>},
+        {"_setLink", wrap<set_link>},
     };
 };
 
@@ -138,6 +140,50 @@ bool RealmObjectClass<T>::set_property(ContextType ctx, ObjectType object, const
 
     realm_object->set_property_value(accessor, property_name, value, true);
     return true;
+}
+
+template<typename T>
+void RealmObjectClass<T>::set_link(ContextType ctx, ObjectType object, Arguments args, ReturnValue& return_value) {
+    args.validate_count(2);
+
+    auto realm_object = get_internal<T, RealmObjectClass<T>>(object);
+    realm_object->realm()->verify_in_write();
+
+    NativeAccessor<T> accessor(ctx, realm_object->realm(), realm_object->get_object_schema());
+    std::string property_name = Value::validated_to_string(ctx, args[0], "propertyName");
+    const Property* prop = realm_object->get_object_schema().property_for_name(property_name);
+    if (!prop) {
+        throw std::invalid_argument(util::format("No such property: %1", property_name));
+    }
+    if (prop->type != realm::PropertyType::Object) {
+        throw TypeErrorException(accessor, realm_object->get_object_schema().name, *prop, args[1]);
+    }
+    auto& linked_schema = *realm_object->realm()->schema().find(prop->object_type);
+    auto linked_pk = linked_schema.primary_key_property();
+    if (!linked_pk) {
+        throw std::invalid_argument("Linked object type must have a primary key.");
+    }
+
+    auto table = realm_object->row().get_table();
+    auto linked_table = table->get_link_target(prop->table_column);
+
+    size_t row_ndx = realm::not_found;
+    if (linked_pk->type == realm::PropertyType::String) {
+        row_ndx = linked_table->find_first(linked_pk->table_column,
+                                           accessor.template unbox<StringData>(args[1]));
+    }
+    else if (is_nullable(linked_pk->type)) {
+        row_ndx = linked_table->find_first(linked_pk->table_column,
+                                           accessor.template unbox<util::Optional<int64_t>>(args[1]));
+    }
+    else {
+        row_ndx = linked_table->find_first(linked_pk->table_column,
+                                           accessor.template unbox<int64_t>(args[1]));
+    }
+
+    if (row_ndx != realm::not_found) {
+        realm_object->row().set_link(prop->table_column, row_ndx);
+    }
 }
 
 template<typename T>

@@ -473,5 +473,87 @@ module.exports = {
         TestCase.assertTrue(new Date('2017-12-07T20:16:03.837Z').toISOString() === objects[0].dateCol.toISOString())
 
         realm.close()
+    },
+
+    testSetLink: function() {
+        const schema = [
+            {
+                name: 'PrimaryInt',
+                primaryKey: 'pk',
+                properties: {
+                    pk: 'int',
+                    value: 'int'
+                }
+            },
+            {
+                name: 'PrimaryOptionalInt',
+                primaryKey: 'pk',
+                properties: {
+                    pk: 'int?',
+                    value: 'int'
+                }
+            },
+            {
+                name: 'PrimaryString',
+                primaryKey: 'pk',
+                properties: {
+                    pk: 'string?',
+                    value: 'int'
+                }
+            },
+            {
+                name: 'Links',
+                properties: {
+                    intLink: 'PrimaryInt',
+                    optIntLink: 'PrimaryOptionalInt',
+                    stringLink: 'PrimaryString'
+                }
+            }
+        ];
+
+        const realm = new Realm({schema: schema});
+        realm.write(function() {
+            realm.create('PrimaryInt', {pk: 1, value: 2})
+            realm.create('PrimaryInt', {pk: 2, value: 4})
+            realm.create('PrimaryOptionalInt', {pk: 1, value: 2})
+            realm.create('PrimaryOptionalInt', {pk: 2, value: 4})
+            realm.create('PrimaryOptionalInt', {pk: null, value: 6})
+            realm.create('PrimaryString', {pk: 'a', value: 2})
+            realm.create('PrimaryString', {pk: 'b', value: 4})
+            realm.create('PrimaryString', {pk: null, value: 6})
+
+            const obj = realm.create('Links', {});
+
+            obj._setLink('intLink', 3);
+            TestCase.assertEqual(obj.intLink, null);
+            obj._setLink('intLink', 1);
+            TestCase.assertEqual(obj.intLink.value, 2);
+            obj._setLink('intLink', 2);
+            TestCase.assertEqual(obj.intLink.value, 4);
+            obj._setLink('intLink', 3);
+            TestCase.assertEqual(obj.intLink.value, 4);
+
+            obj._setLink('optIntLink', 3);
+            TestCase.assertEqual(obj.optIntLink, null);
+            obj._setLink('optIntLink', 1);
+            TestCase.assertEqual(obj.optIntLink.value, 2);
+            obj._setLink('optIntLink', 2);
+            TestCase.assertEqual(obj.optIntLink.value, 4);
+            obj._setLink('optIntLink', null);
+            TestCase.assertEqual(obj.optIntLink.value, 6);
+            obj._setLink('optIntLink', 3);
+            TestCase.assertEqual(obj.optIntLink.value, 6);
+
+            obj._setLink('stringLink', 'c');
+            TestCase.assertEqual(obj.stringLink, null);
+            obj._setLink('stringLink', 'a');
+            TestCase.assertEqual(obj.stringLink.value, 2);
+            obj._setLink('stringLink', 'b');
+            TestCase.assertEqual(obj.stringLink.value, 4);
+            obj._setLink('stringLink', null);
+            TestCase.assertEqual(obj.stringLink.value, 6);
+            obj._setLink('stringLink', 'c');
+            TestCase.assertEqual(obj.stringLink.value, 6);
+        });
     }
 };
