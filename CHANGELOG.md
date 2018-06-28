@@ -15,7 +15,7 @@ X.Y.Z Release notes
 * Improved performance of `Realm.compact()`.
 
 ### Bug fixes
-* None.
+* [RN Android] Ported workaround for crashes in `memmove`/`memcpy` on some old Android devices (#1163 and #1895).
 
 ### Internals
 * Upgraded to Realm Core v5.6.3.
