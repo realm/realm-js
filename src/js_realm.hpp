@@ -1183,7 +1183,8 @@ void RealmClass<T>::compute_size(ContextType ctx, ObjectType this_object, Argume
     args.validate_maximum(0);
 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
-    return_value.set(Value::from_number(ctx, realm->compute_size()));
+    auto size = realm->read_group().compute_aggregated_byte_size();
+    return_value.set(Value::from_number(ctx, size));
 }
 
 } // js
