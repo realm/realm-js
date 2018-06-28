@@ -90,6 +90,36 @@ module.exports = {
         TestCase.assertNull(realm.syncSession);
     },
 
+    testCustomHTTPHeaders() {
+        if (!isNodeProccess) {
+            return;
+        }
+
+        const username = uuid();
+        const realmName = uuid();
+
+        return Realm.Sync.User.register('http://localhost:9080', username, 'password').then(user => {
+            let config = {
+                sync: { 
+                    user, 
+                    url: `realm://localhost:9080/~/${realmName}`, 
+                    fullSynchronization: true,
+                    custom_http_headers: {
+                        'X-Foo': 'Bar'
+                    }
+                },
+                schema: [{ name: 'Dog', properties: { name: 'string' } }],
+            };
+            return Realm.open(config).then(realm => {
+                return new Promise((resolve, reject) => {
+                    TestCase.assertDefined(realm.syncSession.config.custom_http_headers);
+                    TestCase.assertEqual(realm.syncSession.config.custom_http_headers['X-Foo'], 'Bar');
+                    resolve();
+                });
+            });
+        });
+    },
+
     testProperties() {
         return Realm.Sync.User.register('http://localhost:9080', uuid(), 'password').then(user => {
             return new Promise((resolve, reject) => {

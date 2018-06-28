@@ -427,6 +427,7 @@ declare namespace Realm.Sync {
         partial?: boolean;
         fullSynchronization?: boolean;
         _disableQueryBasedSyncUrlChecks?:boolean;
+        custom_http_headers?: { [header: string]: string };
     }
 
     type ProgressNotificationCallback = (transferred: number, transferable: number) => void;

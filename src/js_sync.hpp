@@ -403,6 +403,13 @@ void SessionClass<T>::get_config(ContextType ctx, ObjectType object, ReturnValue
                 Object::set_property(ctx, config, "error", handler->func());
             }
         }
+        if (!session->config().custom_http_headers.empty()) {
+            ObjectType custom_http_headers_object = Object::create_empty(ctx);
+            for (auto it = session->config().custom_http_headers.begin(); it != session->config().custom_http_headers.end(); ++it) {
+                Object::set_property(ctx, custom_http_headers_object, it->first, Value::from_string(ctx, it->second));
+            }
+            Object::set_property(ctx, config, "custom_http_headers", custom_http_headers_object);
+        }
         return_value.set(config);
     } else {
         return_value.set_undefined();
@@ -867,6 +874,21 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
         config.sync_config->bind_session_handler = std::move(bind);
         config.sync_config->error_handler = std::move(error_handler);
         config.sync_config->is_partial = is_partial;
+
+        // Custom HTTP headers
+        ValueType sync_custom_http_headers_value = Object::get_property(ctx, sync_config_object, "custom_http_headers");
+        if (!Value::is_undefined(ctx, sync_custom_http_headers_value)) {
+            auto sync_custom_http_headers = Value::validated_to_object(ctx, sync_custom_http_headers_value);
+            auto property_names = Object::get_property_names(ctx, sync_custom_http_headers);
+            std::map<std::string, std::string> http_headers;
+            for (auto it = property_names.begin(); it != property_names.end(); ++it) {
+                auto name = *it;
+                ValueType prop_value = Object::get_property(ctx, sync_custom_http_headers, name);
+                auto value = Value::validated_to_string(ctx, prop_value);
+                http_headers[name] = value;
+            }
+            config.sync_config->custom_http_headers = std::move(http_headers);
+        }
 
         // TODO: remove
         config.sync_config->client_validate_ssl = client_validate_ssl;
