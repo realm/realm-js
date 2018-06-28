@@ -12,6 +12,7 @@ X.Y.Z Release notes
 ### Enhancements
 * Improved performance for devices which can support large address spaces.
 * [Sync] Exposed custom HTTP headers in `Realm.Configuration` (#1897).
+* Improved performance of `Realm.compact()`.
 
 ### Bug fixes
 * None.
