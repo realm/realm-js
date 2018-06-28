@@ -10,7 +10,6 @@ X.Y.Z Release notes
 * None.
 
 ### Enhancements
-* Added a method `Realm.computeSize()` that computes the aggregated size of all objects and their history (#1881).
 * Improved performance for devices which can support large address spaces.
 * [Sync] Exposed custom HTTP headers in `Realm.Configuration` (#1897).
 
@@ -193,7 +192,7 @@ X.Y.Z Release notes
 The feature known as Partial synchronization has been renamed to Query-based synchronization and is now the default mode for synchronized Realms. This has impacted a number of APIs. See below for the details.
 
 ### Deprecated
-* [Sync] `Realm.Configuration.SyncConfiguration.partial` has been deprecated in favor of `Realm.Configuration.SyncConfiguration.fullSynchronization`.
+* [Sync] `Realm.Configuration.SyncConfiguration.partial` has been deprecated in favor of `Realm.Configuration.SyncConfiguration.fullSynchronization`. 
 * [Sync] `Realm.automaticSyncConfiguration()` has been deprecated in favor of `Realm.Sync.User.createConfiguration()`.
 
 ### Breaking changes

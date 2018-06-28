@@ -286,14 +286,6 @@ class Realm {
     compact() {}
 
     /**
-     * Computes the aggregated size of all objects and their history in the Realm.
-     *
-     * Note that this will traverse the Realm and might be expensive for large Realms.
-     * @returns {number} the computed size in bytes.
-     */
-    computeSize() {}
-
-    /**
      * Writes a compacted copy of the Realm to the given path.
      *
      * The destination file cannot already exist.
@@ -464,3 +456,4 @@ class Realm {
  *   any object of this type from inside the same Realm, and will always be _optional_
  *   (meaning it may also be assigned `null` or `undefined`).
  */
+
