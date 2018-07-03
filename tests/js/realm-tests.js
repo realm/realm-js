@@ -425,7 +425,7 @@ module.exports = {
 
             realm.create('AllPrimaryTypesObject', {primaryCol: '0', objectCol: undefined}, true);
             realm.create('AllPrimaryTypesObject', {primaryCol: '1', objectCol: null}, true);
-            TestCase.assertEqual(obj0.objectCol, null);
+            TestCase.assertEqual(obj0.objectCol.doubleCol, 0);
             TestCase.assertEqual(obj1.objectCol, null);
 
             // test with string primaries
