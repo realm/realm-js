@@ -10,14 +10,15 @@ X.Y.Z Release notes
 * None.
 
 ### Enhancements
-* None.
+* Improved performance of creating objects with string primary keys.
+* Improved memory management to allow larger transactions.
 
 ### Bug fixes
 * Fixed a bug which caused RN Android to fail loading (#1904).
 
 ### Internals
-* Realm Core v5.6.3.
-* Realm Sync v3.5.8.
+* Upgraded to Realm Core v5.6.5.
+* Upgraded to Realm Sync v3.7.0.
 
 
 2.11.0 Release notes (2018-6-28)
