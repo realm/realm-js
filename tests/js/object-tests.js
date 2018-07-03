@@ -531,7 +531,7 @@ module.exports = {
             obj._setLink('intLink', 2);
             TestCase.assertEqual(obj.intLink.value, 4);
             obj._setLink('intLink', 3);
-            TestCase.assertEqual(obj.intLink.value, 4);
+            TestCase.assertEqual(obj.intLink, null);
 
             obj._setLink('optIntLink', 3);
             TestCase.assertEqual(obj.optIntLink, null);
@@ -542,7 +542,7 @@ module.exports = {
             obj._setLink('optIntLink', null);
             TestCase.assertEqual(obj.optIntLink.value, 6);
             obj._setLink('optIntLink', 3);
-            TestCase.assertEqual(obj.optIntLink.value, 6);
+            TestCase.assertEqual(obj.optIntLink, null);
 
             obj._setLink('stringLink', 'c');
             TestCase.assertEqual(obj.stringLink, null);
@@ -553,7 +553,7 @@ module.exports = {
             obj._setLink('stringLink', null);
             TestCase.assertEqual(obj.stringLink.value, 6);
             obj._setLink('stringLink', 'c');
-            TestCase.assertEqual(obj.stringLink.value, 6);
+            TestCase.assertEqual(obj.stringLink, null);
         });
     }
 };
