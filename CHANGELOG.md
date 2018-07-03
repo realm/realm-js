@@ -1,3 +1,24 @@
+X.Y.Z Release notes
+=============================================================
+### Compatibility
+* Sync protocol: 24
+* Server-side history format: 4
+* File format: 7
+* Realm Object Server: 3.0.0 or later
+
+### Breaking changes
+* None.
+
+### Enhancements
+* [Sync] Improved performance of creating objects with string primary keys.
+
+### Bug fixes
+* [Sync] Fixed a bug which could lead corruption that would cause errors during future synchronization between query-based synced Realm and its reference Realm.
+
+### Internals
+* Upgraded to Realm Core v5.6.4.
+* Upgraded to Realm Sync v3.6.0.
+
 2.11.0 Release notes (2018-6-28)
 =============================================================
 ### Compatibility
