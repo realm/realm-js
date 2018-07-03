@@ -210,8 +210,9 @@ struct Object {
     static ValueType get_prototype(ContextType, const ObjectType &);
     static void set_prototype(ContextType, const ObjectType &, const ValueType &);
 
-    static bool has_property(ContextType, const ObjectType &, const String<T> &);
-    static bool has_property(ContextType, const ObjectType &, uint32_t);
+    static ValueType get_property(ContextType, const ObjectType &, StringData);
+    static ValueType get_property(ContextType c, const ObjectType &o, const char *s) { return get_property(c, o, StringData(s)); }
+    static ValueType get_property(ContextType c, const ObjectType &o, const std::string &s) { return get_property(c, o, StringData(s)); }
     static ValueType get_property(ContextType, const ObjectType &, const String<T> &);
     static ValueType get_property(ContextType, const ObjectType &, uint32_t);
     static void set_property(ContextType, const ObjectType &, const String<T> &, const ValueType &, PropertyAttributes attributes = None);
@@ -223,10 +224,11 @@ struct Object {
 
     template<typename P>
     static ValueType validated_get_property(ContextType ctx, const ObjectType &object, const P &property, const char *message = nullptr) {
-        if (!has_property(ctx, object, property)) {
+        auto value = get_property(ctx, object, property);
+        if (Value<T>::is_undefined(ctx, value)) {
             throw std::out_of_range(message ? message : "Object missing expected property: " + util::to_string(property));
         }
-        return get_property(ctx, object, property);
+        return value;
     }
 
     static uint32_t validated_get_length(ContextType ctx, const ObjectType &object) {

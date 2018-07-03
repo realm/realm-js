@@ -12,6 +12,7 @@ X.Y.Z Release notes
 ### Enhancements
 * Improved performance of creating objects with string primary keys.
 * Improved memory management to allow larger transactions.
+* Improved performance of `realm.create()` when running in node.
 
 ### Bug fixes
 * Fixed a bug which caused RN Android to fail loading (#1904).

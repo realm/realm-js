@@ -24,13 +24,23 @@ namespace realm {
 namespace js {
 
 template<>
-inline bool node::Object::has_property(v8::Isolate* isolate, const v8::Local<v8::Object> &object, const node::String &key) {
-    return Nan::Has(object, key).FromMaybe(false);
-}
+inline v8::Local<v8::Value> node::Object::get_property(v8::Isolate* isolate, const v8::Local<v8::Object> &object, StringData key) {
+    Nan::TryCatch trycatch;
+    v8::Local<v8::String> node_key;
 
-template<>
-inline bool node::Object::has_property(v8::Isolate* isolate, const v8::Local<v8::Object> &object, uint32_t index) {
-    return Nan::Has(object, index).FromMaybe(false);
+    // If we have just plain ASCII, we can skip the conversion from UTF-8
+    if (std::all_of(key.data(), key.data() + key.size(), [](char c) { return c <= 127; })) {
+        node_key = v8::String::NewExternal(isolate, new v8::ExternalOneByteStringResourceImpl(key.data(), key.size()));
+    }
+    else {
+        node_key = v8::String::NewFromUtf8(isolate, key.data(), v8::String::kNormalString, key.size());
+    }
+
+    auto value = Nan::Get(object, node_key);
+    if (trycatch.HasCaught()) {
+        throw node::Exception(isolate, trycatch.Exception());
+    }
+    return value.ToLocalChecked();
 }
 
 template<>
