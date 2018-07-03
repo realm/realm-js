@@ -1,3 +1,25 @@
+X.Y.Z Release notes
+=============================================================
+### Compatibility
+* Sync protocol: 24
+* Server-side history format: 4
+* File format: 7
+* Realm Object Server: 3.0.0 or later
+
+### Breaking changes
+* None.
+
+### Enhancements
+* None.
+
+### Bug fixes
+* Fixed a bug which caused RN Android to fail loading (#1904).
+
+### Internals
+* Realm Core v5.6.3.
+* Realm Sync v3.5.8.
+
+
 2.11.0 Release notes (2018-6-28)
 =============================================================
 ### Compatibility

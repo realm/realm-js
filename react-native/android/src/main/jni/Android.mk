@@ -48,6 +48,7 @@ LOCAL_SRC_FILES += src/android/io_realm_react_RealmReactModule.cpp
 LOCAL_SRC_FILES += src/android/jni_utils.cpp
 LOCAL_SRC_FILES += src/android/jsc_override.cpp
 LOCAL_SRC_FILES += src/android/platform.cpp
+LOCAL_SRC_FILES += src/android/hack.cpp
 LOCAL_SRC_FILES += src/object-store/src/impl/collection_change_builder.cpp
 LOCAL_SRC_FILES += src/object-store/src/impl/collection_notifier.cpp
 LOCAL_SRC_FILES += src/object-store/src/impl/list_notifier.cpp
@@ -84,7 +85,6 @@ endif
 
 # Workaround for memmove/memcpy bug
 ifeq ($(strip $(TARGET_ARCH_ABI)),armeabi-v7a)
-LOCAL_SRC_FILES += src/android/hack.cpp
 BUILD_WRAP_MEMMOVE = 1
 else
 BUILD_WRAP_MEMMOVE = 0
