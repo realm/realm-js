@@ -1,3 +1,25 @@
+X.Y.Z Release notes
+=============================================================
+### Compatibility
+* Sync protocol: 24
+* Server-side history format: 4
+* File format: 7
+* Realm Object Server: 3.0.0 or later
+
+### Breaking changes
+* None.
+
+### Enhancements
+* None.
+
+### Bug fixes
+* [Sync] Fixed a bug in the build system which prevented OpenSSL to be linked (#1864).
+
+### Internals
+* Realm Core v5.6.5.
+* Realm Sync v3.7.0.
+
+
 2.12.0 Release notes (2018-7-3)
 =============================================================
 ### Compatibility
