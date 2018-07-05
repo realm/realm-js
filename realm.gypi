@@ -239,7 +239,7 @@
           }],
           ["OS=='linux'", {
             "libraries": [ "-l:libssl.a", "-l:libcrypto.a" ],
-            "library_dirs:": [ "/usr/lib", "/usr/lib64" ],
+            "library_dirs": [ "/usr/lib", "/usr/lib64" ],
           }]
         ]
       }

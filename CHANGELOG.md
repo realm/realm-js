@@ -10,6 +10,52 @@ X.Y.Z Release notes
 * None.
 
 ### Enhancements
+* None.
+
+### Bug fixes
+* [Sync] Fixed a bug in the build system which prevented OpenSSL to be linked (#1864).
+
+### Internals
+* Realm Core v5.6.5.
+* Realm Sync v3.7.0.
+
+
+2.12.0 Release notes (2018-7-3)
+=============================================================
+### Compatibility
+* Sync protocol: 24
+* Server-side history format: 4
+* File format: 7
+* Realm Object Server: 3.0.0 or later
+
+### Breaking changes
+* None.
+
+### Enhancements
+* Improved performance of creating objects with string primary keys.
+* Improved memory management to allow larger transactions.
+* Improved performance of `realm.create()` when running in node.
+
+### Bug fixes
+* Fixed a bug which caused RN Android to fail loading (#1904).
+
+### Internals
+* Upgraded to Realm Core v5.6.5.
+* Upgraded to Realm Sync v3.7.0.
+
+
+2.11.0 Release notes (2018-6-28)
+=============================================================
+### Compatibility
+* Sync protocol: 24
+* Server-side history format: 4
+* File format: 7
+* Realm Object Server: 3.0.0 or later
+
+### Breaking changes
+* None.
+
+### Enhancements
 * Improved performance for devices which can support large address spaces.
 * [Sync] Exposed custom HTTP headers in `Realm.Configuration` (#1897).
 * Improved performance of `Realm.compact()`.
@@ -22,6 +68,7 @@ X.Y.Z Release notes
 * Upgraded to Realm Sync v3.5.8.
 * Added properties of `Realm.Sync.User` to debugger support.
 * Fixed class names in API documentation (wrong names were introduced in v2.6.0).
+* Added prebuilding for Electron v2.0 (**Electron is not supported**).
 
 
 2.10.0 Release notes (2018-6-19)

@@ -68,10 +68,10 @@ public:
 
     OptionalValue value_for_property(ValueType dict, std::string const& prop_name, size_t prop_index) {
         ObjectType object = Value::validated_to_object(m_ctx, dict);
-        if (!Object::has_property(m_ctx, object, prop_name)) {
+        ValueType value = Object::get_property(m_ctx, object, prop_name);
+        if (Value::is_undefined(m_ctx, value)) {
             return util::none;
         }
-        ValueType value = Object::get_property(m_ctx, object, prop_name);
         const auto& prop = m_object_schema->persisted_properties[prop_index];
         if (!Value::is_valid_for_property(m_ctx, value, prop)) {
             throw TypeErrorException(*this, m_object_schema->name, prop, value);
