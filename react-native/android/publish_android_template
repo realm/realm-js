@@ -41,11 +41,23 @@ task forwardDebugPort(type: Exec) {
 
 android {
     compileSdkVersion 23
+    if (rootProject.hasProperty("compileSdkVersion")) {
+        compileSdkVersion rootProject.compileSdkVersion
+    }
     buildToolsVersion "26.0.2"
+    if (rootProject.hasProperty("buildToolsVersion")) {
+        buildToolsVersion rootProject.buildToolsVersion
+    }
 
     defaultConfig {
         minSdkVersion 16
+        if (rootProject.hasProperty("minSdkVersion")) {
+            minSdkVersion rootProject.minSdkVersion
+        }
         targetSdkVersion 22
+        if (rootProject.hasProperty("targetSdkVersion")) {
+            targetSdkVersion rootProject.targetSdkVersion
+        }
     }
 
     tasks.withType(JavaCompile) {

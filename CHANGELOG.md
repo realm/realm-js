@@ -13,7 +13,8 @@ X.Y.Z Release notes
 * None.
 
 ### Bug fixes
-* [Sync] Fixed a bug in the build system which prevented OpenSSL to be linked (#1864).
+* [Sync] Fixed a bug in the build system which prevented OpenSSL to be linked (#1864)
+* Fixed a bug in RN Android which prevented apps to specify `minSdkVersion`, etc. (#1914).
 
 ### Internals
 * Realm Core v5.6.5.
