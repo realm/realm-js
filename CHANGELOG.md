@@ -10,14 +10,14 @@ X.Y.Z Release notes
 * None.
 
 ### Enhancements
-* None.
+* [Sync] Improved performance of changeset parsing.
 
 ### Bug fixes
 * [Sync] Fixed a bug in the build system which prevented OpenSSL to be linked (#1864).
 
 ### Internals
-* Realm Core v5.6.5.
-* Realm Sync v3.7.0.
+* Upgraded to Realm Core v5.7.1.
+* Upgraded to Realm Sync v3.8.0.
 
 
 2.12.0 Release notes (2018-7-3)
