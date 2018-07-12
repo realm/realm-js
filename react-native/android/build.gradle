@@ -259,12 +259,11 @@ task packageReactNdkLibs(dependsOn: buildReactNdkLib, type: Copy) {
 }
 
 android {
-    compileSdkVersion 23
-    buildToolsVersion "26.0.2"
+    compileSdkVersion 26
 
     defaultConfig {
         minSdkVersion 16
-        targetSdkVersion 23
+        targetSdkVersion 26
     }
 
     sourceSets.main {
