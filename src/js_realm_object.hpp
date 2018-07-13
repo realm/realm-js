@@ -164,28 +164,28 @@ void RealmObjectClass<T>::set_link(ContextType ctx, ObjectType object, Arguments
         throw std::invalid_argument("Linked object type must have a primary key.");
     }
 
-    auto table = realm_object->row().get_table();
-    auto linked_table = table->get_link_target(prop->table_column);
+    auto table = realm_object->obj().get_table();
+    auto linked_table = table->get_link_target(prop->column_key);
 
-    size_t row_ndx = realm::not_found;
+    ObjKey obj_key;
     if (linked_pk->type == realm::PropertyType::String) {
-        row_ndx = linked_table->find_first(linked_pk->table_column,
+        obj_key = linked_table->find_first(linked_pk->column_key,
                                            accessor.template unbox<StringData>(args[1]));
     }
     else if (is_nullable(linked_pk->type)) {
-        row_ndx = linked_table->find_first(linked_pk->table_column,
+        obj_key = linked_table->find_first(linked_pk->column_key,
                                            accessor.template unbox<util::Optional<int64_t>>(args[1]));
     }
     else {
-        row_ndx = linked_table->find_first(linked_pk->table_column,
+        obj_key = linked_table->find_first(linked_pk->column_key,
                                            accessor.template unbox<int64_t>(args[1]));
     }
 
-    if (row_ndx == realm::not_found) {
-        realm_object->row().set_null(prop->table_column);
+    if (!obj_key) {
+        realm_object->obj().set_null(prop->column_key);
     }
     else {
-        realm_object->row().set_link(prop->table_column, row_ndx);
+        realm_object->obj().set_link(prop->column_key, obj_key);
     }
 }
 
@@ -255,9 +255,9 @@ void RealmObjectClass<T>::is_same_object(ContextType ctx, ObjectType object, Arg
 template<typename T>
 void RealmObjectClass<T>::linking_objects_count(ContextType ctx, FunctionType, ObjectType object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
     auto realm_object = get_internal<T, RealmObjectClass<T>>(object);
-    const Row& row = realm_object->row();
+    auto obj = realm_object->obj();
     
-    return_value.set((uint32_t)row.get_backlink_count());
+    return_value.set(static_cast<uint32_t>(obj.get_backlink_count()));
 }
     
 } // js
@@ -291,8 +291,8 @@ void realm::js::RealmObjectClass<T>::linking_objects(ContextType ctx, FunctionTy
     }
 
     realm::TableRef table = ObjectStore::table_for_object_type(object->realm()->read_group(), target_object_schema->name);
-    auto row = object->row();
-    auto tv = row.get_table()->get_backlink_view(row.get_index(), table.get(), link_property->table_column);
+    auto obj = object->obj();
+    auto tv = obj.get_backlink_view(table, link_property->table_column);
 
     return_value.set(ResultsClass<T>::create_instance(ctx, realm::Results(object->realm(), std::move(tv))));
 }

@@ -455,19 +455,19 @@ inline typename T::Value Value<T>::from_mixed(typename T::Context ctx, const uti
     Mixed value = *mixed;
     switch (value.get_type()) {
     case type_Bool:
-        return from_boolean(ctx, value.get_bool());
+        return from_boolean(ctx, value.get<bool>());
     case type_Int:
-        return from_number(ctx, static_cast<double>(value.get_int()));
+        return from_number(ctx, static_cast<double>(value.get<int64_t>()));
     case type_Float:
-        return from_number(ctx, value.get_float());
+        return from_number(ctx, value.get<float>());
     case type_Double:
-        return from_number(ctx, value.get_double());
+        return from_number(ctx, value.get<double>());
     case type_Timestamp:
-        return from_timestamp(ctx, value.get_timestamp());
+        return from_timestamp(ctx, value.get<Timestamp>());
     case type_String:
-        return from_string(ctx, value.get_string().data());
+        return from_string(ctx, value.get<StringData>().data());
     case type_Binary:
-        return from_binary(ctx, value.get_binary());
+        return from_binary(ctx, value.get<BinaryData>());
     default:
         throw std::invalid_argument("Value not convertible.");
     }
