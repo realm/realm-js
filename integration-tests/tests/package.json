@@ -1,0 +1,11 @@
+{
+  "name": "@realm-tests/tests",
+  "version": "0.1.0",
+  "description": "A set of tests that can run in different environments",
+  "main": "src/index.js",
+  "private": true,
+  "peerDependencies": {
+    "mocha": "^5.2.0",
+    "realm": "*"
+  }
+}

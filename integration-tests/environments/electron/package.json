@@ -1,0 +1,23 @@
+{
+  "name": "realm-js-electron-tests",
+  "private": true,
+  "description": "Test harness running the Realm JS tests in the Electron renderer process.",
+  "main": "index.js",
+  "scripts": {
+    "start": "electron ./app/main.js",
+    "test": "node ./runner.js --process=main,renderer",
+    "test/main": "node ./runner.js --process=main",
+    "test/renderer": "node ./runner.js --process=renderer",
+    "postinstall": "npm run realm/install; npm run realm/rebuild",
+    "realm/install": "npm install realm@file://../../../ --build-from-source --no-save",
+    "realm/rebuild": "cd node_modules/realm; HOME=~/.electron-gyp node-pre-gyp rebuild --build-from-source --runtime=electron --target=2.0.4 --arch=x64 --dist-url=https://atom.io/download/electron"
+  },
+  "devDependencies": {
+    "@realm-tests/tests": "../../tests",
+    "electron": "^2.0.4",
+    "mocha": "^5.2.0",
+    "node-gyp": "^3.7.0",
+    "node-pre-gyp": "^0.10.3",
+    "spectron": "^3.8.0"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "name": "@realm-tests/node",
+  "version": "0.1.0",
+  "description": "Realm JS tests running in a Node.js environment",
+  "private": true,
+  "scripts": {
+    "test": "mocha index.js",
+    "postinstall": "npm install realm@file://../../../ --build-from-source --no-save"
+  },
+  "dependencies": {
+    "@realm-tests/tests": "../../tests",
+    "mocha": "^5.2.0",
+    "mocha-cli": "^1.0.1"
+  }
+}
