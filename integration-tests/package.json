@@ -1,0 +1,22 @@
+{
+  "name": "realm-tests",
+  "version": "0.1.0",
+  "description": "A wrapper module that can install and run Realm JS tests in various environments",
+  "private": true,
+  "scripts": {
+    "lint": "npm run tests/lint; npm run node/lint",
+    "postinstall": "npm run tests/install; npm run node/install; npm run electron/install",
+    "test": "npm run node/test",
+    "electron/install": "cd environments/electron; npm install",
+    "electron/test": "cd environments/electron; npm test",
+    "electron/test/main": "cd environments/electron; npm run test/main",
+    "node/install": "cd environments/node; npm install",
+    "node/lint": "cd environments/node; eslint **/*.js",
+    "node/test": "cd environments/node; npm test",
+    "tests/install": "cd tests; npm install",
+    "tests/lint": "cd tests; eslint **/*.js"
+  },
+  "devDependencies": {
+    "eslint": "^5.1.0"
+  }
+}
