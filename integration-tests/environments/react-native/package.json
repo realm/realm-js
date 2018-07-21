@@ -1,0 +1,26 @@
+{
+  "name": "realm-react-native-tests",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "test": "npm run test/android && npm run test/ios",
+    "test/android": "node harness/runner.js --platform=android",
+    "test/ios": "node harness/runner.js --platform=ios",
+    "postinstall": "npm run realm/install",
+    "realm/install": "REALM_BUILD_ANDROID=1 npm install realm@file://../../../ --build-from-source --no-save",
+    "realm/publish": "cd node_modules/realm/react-native/android; ./gradlew publishAndroid",
+    "realm/link": "react-native link realm"
+  },
+  "dependencies": {
+    "@realm-tests/tests": "../../tests",
+    "flatted": "^0.2.3",
+    "mocha": "^5.2.0",
+    "node-libs-react-native": "^1.0.2",
+    "react": "16.4.1",
+    "react-native": "0.56.0"
+  },
+  "devDependencies": {
+    "babel-preset-react-native": "^5",
+    "react-test-renderer": "16.4.1"
+  }
+}

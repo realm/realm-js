@@ -4,4 +4,10 @@ describe("Realm#constructor", () => {
         const realm = new Realm();
         realm.close();
     });
+
+    /*
+    it("fails", () => {
+        throw new Error("Failed!");
+    });
+    */
 });
