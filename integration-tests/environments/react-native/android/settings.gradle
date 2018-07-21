@@ -1,0 +1,6 @@
+rootProject.name = 'RealmReactNativeTests'
+
+include ':app'
+
+include ':realm'
+project(':realm').projectDir = new File(rootProject.projectDir, '../node_modules/realm/android')

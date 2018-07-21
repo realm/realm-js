@@ -35,6 +35,7 @@ function loop(callback, delay) {
 
 async function run() {
     await app.start();
+    await app.client.waitUntilWindowLoaded();
     // Start polling and printing the logs
     await loop(async (resolve) => {
         const mainMessages = await app.client.getMainProcessLogs();

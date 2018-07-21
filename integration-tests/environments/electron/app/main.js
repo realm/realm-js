@@ -38,9 +38,9 @@ app.on("ready", () => {
         slashes: true,
     }));
 
-    const filterArg = process.argv.find((arg) => arg.indexOf(MAIN_PROCESS_KEY) === 0);
-    if (filterArg) {
-        const runIn = filterArg.slice(MAIN_PROCESS_KEY.length + 1).split(",");
+    const processArg = process.argv.find((arg) => arg.indexOf(MAIN_PROCESS_KEY) === 0);
+    if (processArg) {
+        const runIn = processArg.slice(MAIN_PROCESS_KEY.length + 1).split(",");
         global.options = { runIn };
     } else {
         console.error("Expected a --process runtime argument");

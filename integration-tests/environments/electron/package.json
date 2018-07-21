@@ -1,5 +1,5 @@
 {
-  "name": "realm-js-electron-tests",
+  "name": "@realm-tests/electron",
   "private": true,
   "description": "Test harness running the Realm JS tests in the Electron renderer process.",
   "main": "index.js",
