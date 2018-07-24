@@ -11,7 +11,8 @@
     "cflags_cc!": [ # turn off default flags on older nodes on linux
       "-fno-exceptions",
       "-fno-rtti",
-      "-std=gnu++0x"
+      "-std=gnu++0x",
+      "-std=gnu++1y" # this is the default on Node.js 10, but we can't use the GNU dialect
     ],
     "cflags_cc": [
       "-fexceptions",
