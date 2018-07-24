@@ -1,4 +1,4 @@
-X.Y.Z Release notes (TBD)
+2.14.0 Release notes (2018-7-24)
 =============================================================
 ### Compatibility
 * Sync protocol: 24
