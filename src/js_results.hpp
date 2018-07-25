@@ -74,40 +74,40 @@ struct ResultsClass : ClassDefinition<T, realm::js::Results<T>, CollectionClass<
     static ObjectType create_instance(ContextType, SharedRealm, const std::string &object_type);
 
     template<typename U>
-    static ObjectType create_filtered(ContextType, const U &, Arguments &);
+    static ObjectType create_filtered(ContextType, const U &, Arguments);
 
-    static std::vector<std::pair<std::string, bool>> get_keypaths(ContextType, Arguments &);
+    static std::vector<std::pair<std::string, bool>> get_keypaths(ContextType, Arguments);
 
     static void get_length(ContextType, ObjectType, ReturnValue &);
     static void get_type(ContextType, ObjectType, ReturnValue &);
     static void get_optional(ContextType, ObjectType, ReturnValue &);
     static void get_index(ContextType, ObjectType, uint32_t, ReturnValue &);
 
-    static void snapshot(ContextType, ObjectType, Arguments &, ReturnValue &);
-    static void filtered(ContextType, ObjectType, Arguments &, ReturnValue &);
-    static void sorted(ContextType, ObjectType, Arguments &, ReturnValue &);
-    static void is_valid(ContextType, ObjectType, Arguments &, ReturnValue &);
-    static void is_empty(ContextType, ObjectType, Arguments &, ReturnValue &);
+    static void snapshot(ContextType, ObjectType, Arguments, ReturnValue &);
+    static void filtered(ContextType, ObjectType, Arguments, ReturnValue &);
+    static void sorted(ContextType, ObjectType, Arguments, ReturnValue &);
+    static void is_valid(ContextType, ObjectType, Arguments, ReturnValue &);
+    static void is_empty(ContextType, ObjectType, Arguments, ReturnValue &);
 #if REALM_ENABLE_SYNC
-    static void subscribe(ContextType, ObjectType, Arguments &, ReturnValue &);
+    static void subscribe(ContextType, ObjectType, Arguments, ReturnValue &);
 #endif
 
-    static void index_of(ContextType, ObjectType, Arguments &, ReturnValue &);
+    static void index_of(ContextType, ObjectType, Arguments, ReturnValue &);
 
     template<typename Fn>
-    static void index_of(ContextType, Fn&, Arguments &, ReturnValue &);
+    static void index_of(ContextType, Fn&, Arguments, ReturnValue &);
 
-    static void update(ContextType, ObjectType, Arguments &, ReturnValue &);
+    static void update(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
 
     // observable
-    static void add_listener(ContextType, ObjectType, Arguments &, ReturnValue &);
-    static void remove_listener(ContextType, ObjectType, Arguments &, ReturnValue &);
-    static void remove_all_listeners(ContextType, ObjectType, Arguments &, ReturnValue &);
+    static void add_listener(ContextType, ObjectType, Arguments, ReturnValue &);
+    static void remove_listener(ContextType, ObjectType, Arguments, ReturnValue &);
+    static void remove_all_listeners(ContextType, ObjectType, Arguments, ReturnValue &);
 
     template<typename U>
-    static void add_listener(ContextType, U&, ObjectType, Arguments &);
+    static void add_listener(ContextType, U&, ObjectType, Arguments);
     template<typename U>
-    static void remove_listener(ContextType, U&, ObjectType, Arguments &);
+    static void remove_listener(ContextType, U&, ObjectType, Arguments);
 
     std::string const name = "Results";
 
@@ -171,7 +171,7 @@ inline void alias_backlinks(parser::KeyPathMapping &mapping, const realm::Shared
 
 template<typename T>
 template<typename U>
-typename T::Object ResultsClass<T>::create_filtered(ContextType ctx, const U &collection, Arguments &args) {
+typename T::Object ResultsClass<T>::create_filtered(ContextType ctx, const U &collection, Arguments args) {
     if (collection.get_type() != realm::PropertyType::Object) {
         throw std::runtime_error("Filtering non-object Lists and Results is not yet implemented.");
     }
@@ -196,7 +196,7 @@ typename T::Object ResultsClass<T>::create_filtered(ContextType ctx, const U &co
 
 template<typename T>
 std::vector<std::pair<std::string, bool>>
-ResultsClass<T>::get_keypaths(ContextType ctx, Arguments &args) {
+ResultsClass<T>::get_keypaths(ContextType ctx, Arguments args) {
     args.validate_maximum(2);
 
     std::vector<std::pair<std::string, bool>> sort_order;
@@ -262,37 +262,37 @@ void ResultsClass<T>::get_index(ContextType ctx, ObjectType object, uint32_t ind
 }
 
 template<typename T>
-void ResultsClass<T>::snapshot(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
+void ResultsClass<T>::snapshot(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
     args.validate_maximum(0);
     auto results = get_internal<T, ResultsClass<T>>(this_object);
     return_value.set(ResultsClass<T>::create_instance(ctx, results->snapshot()));
 }
 
 template<typename T>
-void ResultsClass<T>::filtered(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
+void ResultsClass<T>::filtered(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
     auto results = get_internal<T, ResultsClass<T>>(this_object);
     return_value.set(create_filtered(ctx, *results, args));
 }
 
 template<typename T>
-void ResultsClass<T>::sorted(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
+void ResultsClass<T>::sorted(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
     auto results = get_internal<T, ResultsClass<T>>(this_object);
     return_value.set(ResultsClass<T>::create_instance(ctx, results->sort(ResultsClass<T>::get_keypaths(ctx, args))));
 }
 
 template<typename T>
-void ResultsClass<T>::is_valid(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
+void ResultsClass<T>::is_valid(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
     return_value.set(get_internal<T, ResultsClass<T>>(this_object)->is_valid());
 }
 
 template<typename T>
-void ResultsClass<T>::is_empty(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
+void ResultsClass<T>::is_empty(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
     return_value.set(get_internal<T, ResultsClass<T>>(this_object)->size() == 0);
 }
 
 #if REALM_ENABLE_SYNC
 template<typename T>
-void ResultsClass<T>::subscribe(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
+void ResultsClass<T>::subscribe(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
     args.validate_maximum(1);
 
     auto results = get_internal<T, ResultsClass<T>>(this_object);
@@ -314,7 +314,7 @@ void ResultsClass<T>::subscribe(ContextType ctx, ObjectType this_object, Argumen
 
 template<typename T>
 template<typename Fn>
-void ResultsClass<T>::index_of(ContextType ctx, Fn& fn, Arguments &args, ReturnValue &return_value) {
+void ResultsClass<T>::index_of(ContextType ctx, Fn& fn, Arguments args, ReturnValue &return_value) {
     args.validate_maximum(1);
 
     size_t ndx;
@@ -337,10 +337,10 @@ void ResultsClass<T>::index_of(ContextType ctx, Fn& fn, Arguments &args, ReturnV
 }
 
 template<typename T>
-void ResultsClass<T>::update(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
-    args.validate_maximum(2);
+void ResultsClass<T>::update(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    validate_argument_count(argc, 2);
 
-    std::string property = Value::validated_to_string(ctx, args[0], "property");
+    std::string property = Value::validated_to_string(ctx, arguments[0], "property");
     auto results = get_internal<T, ResultsClass<T>>(this_object);
 
     auto schema = results->get_object_schema();
@@ -358,13 +358,13 @@ void ResultsClass<T>::update(ContextType ctx, ObjectType this_object, Arguments 
     for (auto i = results->size(); i > 0; i--) {
         auto realm_object = realm::Object(realm, schema, results->get(i - 1));
         auto obj = RealmObjectClass<T>::create_instance(ctx, realm_object);
-        RealmObjectClass<T>::set_property(ctx, obj, property, args[1]);
+        RealmObjectClass<T>::set_property(ctx, obj, property, arguments[1]);
     }
 }
 
 template<typename T>
 void ResultsClass<T>::index_of(ContextType ctx, ObjectType this_object,
-                               Arguments &args, ReturnValue &return_value) {
+                               Arguments args, ReturnValue &return_value) {
     auto fn = [&](auto&& row) {
         auto results = get_internal<T, ResultsClass<T>>(this_object);
         NativeAccessor<T> accessor(ctx, *results);
@@ -375,7 +375,7 @@ void ResultsClass<T>::index_of(ContextType ctx, ObjectType this_object,
 
 template<typename T>
 template<typename U>
-void ResultsClass<T>::add_listener(ContextType ctx, U& collection, ObjectType this_object, Arguments &args) {
+void ResultsClass<T>::add_listener(ContextType ctx, U& collection, ObjectType this_object, Arguments args) {
     args.validate_maximum(1);
 
     auto callback = Value::validated_to_function(ctx, args[0]);
@@ -395,14 +395,14 @@ void ResultsClass<T>::add_listener(ContextType ctx, U& collection, ObjectType th
 }
 
 template<typename T>
-void ResultsClass<T>::add_listener(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
+void ResultsClass<T>::add_listener(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
     auto results = get_internal<T, ResultsClass<T>>(this_object);
     add_listener(ctx, *results, this_object, args);
 }
 
 template<typename T>
 template<typename U>
-void ResultsClass<T>::remove_listener(ContextType ctx, U& collection, ObjectType this_object, Arguments &args) {
+void ResultsClass<T>::remove_listener(ContextType ctx, U& collection, ObjectType this_object, Arguments args) {
     args.validate_maximum(1);
 
     auto callback = Value::validated_to_function(ctx, args[0]);
@@ -416,13 +416,13 @@ void ResultsClass<T>::remove_listener(ContextType ctx, U& collection, ObjectType
 }
 
 template<typename T>
-void ResultsClass<T>::remove_listener(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
+void ResultsClass<T>::remove_listener(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
     auto results = get_internal<T, ResultsClass<T>>(this_object);
     remove_listener(ctx, *results, this_object, args);
 }
 
 template<typename T>
-void ResultsClass<T>::remove_all_listeners(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
+void ResultsClass<T>::remove_all_listeners(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
     args.validate_maximum(0);
 
     auto results = get_internal<T, ResultsClass<T>>(this_object);

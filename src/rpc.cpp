@@ -365,10 +365,10 @@ RPCServer::~RPCServer() {
     JSGlobalContextRelease(m_context);
 }
 
-JSValueRef RPCServer::run_callback(JSContextRef ctx, JSObjectRef function, JSObjectRef this_object, size_t argc, const JSValueRef arguments[], JSValueRef* exception) {
+void RPCServer::run_callback(JSContextRef ctx, JSObjectRef function, JSObjectRef this_object, size_t argc, const JSValueRef arguments[], jsc::ReturnValue &return_value) {
     RPCServer* server = get_rpc_server(JSContextGetGlobalContext(ctx));
     if (!server) {
-        return JSValueMakeUndefined(ctx);
+        return;
     }
 
     u_int64_t counter = server->m_callback_call_counter++;
@@ -419,15 +419,11 @@ JSValueRef RPCServer::run_callback(JSContextRef ctx, JSObjectRef function, JSObj
     assert(callback_id == resultCallbackId.get<RPCObjectID>());
 
     if (!error.is_null()) {
-        JSStringRef message = JSStringCreateWithUTF8CString(error.get<std::string>().c_str());
-        JSValueRef arguments[] { JSValueMakeString(ctx, message) };
-        JSStringRelease(message);
-
-        *exception = JSObjectMakeError(ctx, 1, arguments, nullptr);
+        throw jsc::Exception(ctx, error.get<std::string>());
     }
 
 
-    return server->deserialize_json_value(results["result"]);
+    return_value.set(server->deserialize_json_value(results["result"]));
 
 }
 
@@ -653,7 +649,7 @@ JSValueRef RPCServer::deserialize_json_value(const json dict) {
             RPCObjectID callback_id = value.get<RPCObjectID>();
 
             if (!m_callbacks.count(callback_id)) {
-                JSObjectRef callback = JSObjectMakeFunctionWithCallback(m_context, nullptr, run_callback);
+                JSObjectRef callback = JSObjectMakeFunctionWithCallback(m_context, nullptr, js::wrap<run_callback>);
                 m_callbacks.emplace(callback_id, js::Protected<JSObjectRef>(m_context, callback));
                 m_callback_ids.emplace(callback, callback_id);
             }

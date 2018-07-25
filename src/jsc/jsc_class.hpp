@@ -31,6 +31,7 @@ using ClassDefinition = js::ClassDefinition<Types, T>;
 
 using ConstructorType = js::ConstructorType<Types>;
 using ArgumentsMethodType = js::ArgumentsMethodType<Types>;
+using MethodType = js::MethodType<Types>;
 using Arguments = js::Arguments<Types>;
 using PropertyType = js::PropertyType<Types>;
 using IndexPropertyType = js::IndexPropertyType<Types>;
@@ -228,9 +229,8 @@ inline JSValueRef ObjectWrap<ClassType>::call(JSContextRef ctx, JSObjectRef func
 
     // Classes without a constructor should still be subclassable.
     if (reinterpret_cast<void*>(s_class.constructor)) {
-        jsc::Arguments args{ctx, argc, arguments};
         try {
-            s_class.constructor(ctx, this_object, args);
+            s_class.constructor(ctx, this_object, argc, arguments);
         }
         catch (std::exception &e) {
             *exception = jsc::Exception::value(ctx, e);
@@ -249,9 +249,8 @@ inline JSObjectRef ObjectWrap<ClassType>::construct(JSContextRef ctx, JSObjectRe
     }
 
     JSObjectRef this_object = create_instance(ctx);
-    jsc::Arguments args{ctx, argc, arguments};
     try {
-        s_class.constructor(ctx, this_object, args);
+        s_class.constructor(ctx, this_object, argc, arguments);
     }
     catch (std::exception &e) {
         *exception = jsc::Exception::value(ctx, e);
@@ -382,12 +381,24 @@ namespace js {
 template<typename ClassType>
 class ObjectWrap<jsc::Types, ClassType> : public jsc::ObjectWrap<ClassType> {};
 
-template<jsc::ArgumentsMethodType F>
-JSValueRef wrap(JSContextRef ctx, JSObjectRef, JSObjectRef this_object, size_t argc, const JSValueRef arguments[], JSValueRef* exception) {
-    jsc::Arguments args{ctx, argc, arguments};
+template<jsc::MethodType F>
+JSValueRef wrap(JSContextRef ctx, JSObjectRef function, JSObjectRef this_object, size_t argc, const JSValueRef arguments[], JSValueRef* exception) {
     jsc::ReturnValue return_value(ctx);
     try {
-        F(ctx, this_object, args, return_value);
+        F(ctx, function, this_object, argc, arguments, return_value);
+        return return_value;
+    }
+    catch (std::exception &e) {
+        *exception = jsc::Exception::value(ctx, e);
+        return nullptr;
+    }
+}
+
+template<jsc::ArgumentsMethodType F>
+JSValueRef wrap(JSContextRef ctx, JSObjectRef, JSObjectRef this_object, size_t argc, const JSValueRef arguments[], JSValueRef* exception) {
+    jsc::ReturnValue return_value(ctx);
+    try {
+        F(ctx, this_object, jsc::Arguments{ctx, argc, arguments}, return_value);
         return return_value;
     }
     catch (std::exception &e) {

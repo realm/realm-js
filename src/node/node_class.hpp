@@ -30,6 +30,7 @@ template<typename T>
 using ClassDefinition = js::ClassDefinition<Types, T>;
 
 using ConstructorType = js::ConstructorType<Types>;
+using MethodType = js::MethodType<Types>;
 using ArgumentsMethodType = js::ArgumentsMethodType<Types>;
 using Arguments = js::Arguments<Types>;
 using PropertyType = js::PropertyType<Types>;
@@ -50,7 +51,7 @@ class ObjectWrap : public Nan::ObjectWrap {
         return Nan::New(js_template);
     }
 
-    static void construct(const Nan::FunctionCallbackInfo<v8::Value>&);
+    static void construct(const v8::FunctionCallbackInfo<v8::Value>&);
 
     static bool has_instance(v8::Isolate* isolate, const v8::Local<v8::Value> &value) {
         return get_template()->HasInstance(value);
@@ -76,26 +77,26 @@ class ObjectWrap : public Nan::ObjectWrap {
 
     static v8::Local<v8::FunctionTemplate> create_template();
 
-    static void setup_method(v8::Local<v8::FunctionTemplate>, const std::string &, Nan::FunctionCallback);
-    static void setup_static_method(v8::Local<v8::FunctionTemplate>, const std::string &, Nan::FunctionCallback);
+    static void setup_method(v8::Local<v8::FunctionTemplate>, const std::string &, v8::FunctionCallback);
+    static void setup_static_method(v8::Local<v8::FunctionTemplate>, const std::string &, v8::FunctionCallback);
 
     template<typename TargetType>
     static void setup_property(v8::Local<TargetType>, const std::string &, const PropertyType &);
 
-    static void get_indexes(const Nan::PropertyCallbackInfo<v8::Array>&);
-    static void set_property(v8::Local<v8::String>, v8::Local<v8::Value>, const Nan::PropertyCallbackInfo<v8::Value>&);
+    static void get_indexes(const v8::PropertyCallbackInfo<v8::Array>&);
+    static void set_property(v8::Local<v8::String>, v8::Local<v8::Value>, const v8::PropertyCallbackInfo<v8::Value>&);
 
-    static void set_readonly_property(v8::Local<v8::String> property, v8::Local<v8::Value> value, const Nan::PropertyCallbackInfo<void>& info) {
+    static void set_readonly_property(v8::Local<v8::String> property, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info) {
         std::string message = std::string("Cannot assign to read only property '") + std::string(String(property)) + "'";
         Nan::ThrowError(message.c_str());
     }
 
-    static void set_readonly_index(uint32_t index, v8::Local<v8::Value> value, const Nan::PropertyCallbackInfo<v8::Value>& info) {
+    static void set_readonly_index(uint32_t index, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info) {
         std::string message = std::string("Cannot assign to read only index ") + util::to_string(index);
         Nan::ThrowError(message.c_str());
     }
 
-    static void get_nonexistent_property(v8::Local<v8::String>, const Nan::PropertyCallbackInfo<v8::Value>&) {
+    static void get_nonexistent_property(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>&) {
         // Do nothing. This function exists only to prevent a crash where it is used.
     }
 };
@@ -111,7 +112,7 @@ class ObjectWrap<void> {
 };
 
 // This helper function is needed outside the scope of the ObjectWrap class as well.
-static inline std::vector<v8::Local<v8::Value>> get_arguments(const Nan::FunctionCallbackInfo<v8::Value> &info) {
+static inline std::vector<v8::Local<v8::Value>> get_arguments(const v8::FunctionCallbackInfo<v8::Value> &info) {
     int count = info.Length();
     std::vector<v8::Local<v8::Value>> arguments;
     arguments.reserve(count);
@@ -158,7 +159,7 @@ template<typename ClassType>
 inline v8::Local<v8::FunctionTemplate> ObjectWrap<ClassType>::create_template() {
     Nan::EscapableHandleScope scope;
 
-    v8::Local<v8::FunctionTemplate> tpl = Nan::New<v8::FunctionTemplate>(construct);
+    v8::Local<v8::FunctionTemplate> tpl = v8::FunctionTemplate::New(v8::Isolate::GetCurrent(), construct);
     v8::Local<v8::ObjectTemplate> instance_tpl = tpl->InstanceTemplate();
     v8::Local<v8::String> name = Nan::New(s_class.name).ToLocalChecked();
 
@@ -183,21 +184,21 @@ inline v8::Local<v8::FunctionTemplate> ObjectWrap<ClassType>::create_template() 
 
     if (s_class.index_accessor.getter) {
         auto &index_accessor = s_class.index_accessor;
-        Nan::SetIndexedPropertyHandler(instance_tpl, index_accessor.getter, index_accessor.setter ? index_accessor.setter : set_readonly_index, 0, 0, get_indexes);
+        instance_tpl->SetIndexedPropertyHandler(index_accessor.getter, index_accessor.setter ? index_accessor.setter : set_readonly_index, 0, 0, get_indexes);
     }
     if (s_class.string_accessor.getter || s_class.index_accessor.getter || s_class.index_accessor.setter) {
         // Use our own wrapper for the setter since we want to throw for negative indices.
         auto &string_accessor = s_class.string_accessor;
-        Nan::SetNamedPropertyHandler(instance_tpl, string_accessor.getter ? string_accessor.getter : get_nonexistent_property, set_property, 0, 0, string_accessor.enumerator);
+        instance_tpl->SetNamedPropertyHandler(string_accessor.getter ? string_accessor.getter : get_nonexistent_property, set_property, 0, 0, string_accessor.enumerator);
     }
 
     return scope.Escape(tpl);
 }
 
 template<typename ClassType>
-inline void ObjectWrap<ClassType>::setup_method(v8::Local<v8::FunctionTemplate> tpl, const std::string &name, Nan::FunctionCallback callback) {
+inline void ObjectWrap<ClassType>::setup_method(v8::Local<v8::FunctionTemplate> tpl, const std::string &name, v8::FunctionCallback callback) {
     v8::Local<v8::Signature> signature = Nan::New<v8::Signature>(tpl);
-    v8::Local<v8::FunctionTemplate> fn_tpl = Nan::New<v8::FunctionTemplate>(callback, v8::Local<v8::Value>(), signature);
+    v8::Local<v8::FunctionTemplate> fn_tpl = v8::FunctionTemplate::New(v8::Isolate::GetCurrent(), callback, v8::Local<v8::Value>(), signature);
     v8::Local<v8::String> fn_name = Nan::New(name).ToLocalChecked();
 
     // The reason we use this rather than Nan::SetPrototypeMethod is DontEnum.
@@ -206,8 +207,8 @@ inline void ObjectWrap<ClassType>::setup_method(v8::Local<v8::FunctionTemplate> 
 }
 
 template<typename ClassType>
-inline void ObjectWrap<ClassType>::setup_static_method(v8::Local<v8::FunctionTemplate> tpl, const std::string &name, Nan::FunctionCallback callback) {
-    v8::Local<v8::FunctionTemplate> fn_tpl = Nan::New<v8::FunctionTemplate>(callback);
+inline void ObjectWrap<ClassType>::setup_static_method(v8::Local<v8::FunctionTemplate> tpl, const std::string &name, v8::FunctionCallback callback) {
+    v8::Local<v8::FunctionTemplate> fn_tpl = v8::FunctionTemplate::New(v8::Isolate::GetCurrent(), callback);
     v8::Local<v8::String> fn_name = Nan::New(name).ToLocalChecked();
 
     tpl->Set(fn_name, fn_tpl, v8::PropertyAttribute::DontEnum);
@@ -220,18 +221,17 @@ inline void ObjectWrap<ClassType>::setup_property(v8::Local<TargetType> target, 
     v8::Local<v8::String> prop_name = Nan::New(name).ToLocalChecked();
     v8::PropertyAttribute attributes = v8::PropertyAttribute(v8::DontEnum | v8::DontDelete);
 
-    Nan::SetAccessor(target, prop_name, property.getter, property.setter ? property.setter : set_readonly_property, v8::Local<v8::Value>(), v8::DEFAULT, attributes);
+    target->SetAccessor(prop_name, property.getter, property.setter ? property.setter : set_readonly_property, v8::Local<v8::Value>(), v8::DEFAULT, attributes);
 }
 
 template<typename ClassType>
-inline void ObjectWrap<ClassType>::construct(const Nan::FunctionCallbackInfo<v8::Value>& info) {
+inline void ObjectWrap<ClassType>::construct(const v8::FunctionCallbackInfo<v8::Value>& info) {
     if (!info.IsConstructCall()) {
         Nan::ThrowError("Constructor must be called with new");
     }
     if (reinterpret_cast<void*>(s_class.constructor)) {
         auto isolate = info.GetIsolate();
         auto arguments = get_arguments(info);
-        node::Arguments args{isolate, arguments.size(), arguments.data()};
         v8::Local<v8::Object> this_object = info.This();
         info.GetReturnValue().Set(this_object);
 
@@ -239,7 +239,7 @@ inline void ObjectWrap<ClassType>::construct(const Nan::FunctionCallbackInfo<v8:
         wrap->Wrap(this_object);
 
         try {
-            s_class.constructor(isolate, this_object, args);
+            s_class.constructor(isolate, this_object, arguments.size(), arguments.data());
         }
         catch (std::exception &e) {
             Nan::ThrowError(node::Exception::value(isolate, e));
@@ -251,7 +251,7 @@ inline void ObjectWrap<ClassType>::construct(const Nan::FunctionCallbackInfo<v8:
 }
 
 template<typename ClassType>
-inline void ObjectWrap<ClassType>::get_indexes(const Nan::PropertyCallbackInfo<v8::Array>& info) {
+inline void ObjectWrap<ClassType>::get_indexes(const v8::PropertyCallbackInfo<v8::Array>& info) {
     uint32_t length;
     try {
         length = Object::validated_get_length(info.GetIsolate(), info.This());
@@ -270,7 +270,7 @@ inline void ObjectWrap<ClassType>::get_indexes(const Nan::PropertyCallbackInfo<v
 }
 
 template<typename ClassType>
-inline void ObjectWrap<ClassType>::set_property(v8::Local<v8::String> property, v8::Local<v8::Value> value, const Nan::PropertyCallbackInfo<v8::Value>& info) {
+inline void ObjectWrap<ClassType>::set_property(v8::Local<v8::String> property, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info) {
     if (s_class.index_accessor.getter || s_class.index_accessor.setter) {
         try {
             // Negative indices are passed into this string property interceptor, so check for them here.
@@ -296,15 +296,28 @@ namespace js {
 template<typename ClassType>
 class ObjectWrap<node::Types, ClassType> : public node::ObjectWrap<ClassType> {};
 
-template<node::ArgumentsMethodType F>
-void wrap(const Nan::FunctionCallbackInfo<v8::Value>& info) {
+template<node::MethodType F>
+void wrap(const v8::FunctionCallbackInfo<v8::Value>& info) {
     v8::Isolate* isolate = info.GetIsolate();
-    auto arguments = node::get_arguments(info);
-    node::Arguments args{isolate, arguments.size(), arguments.data()};
     node::ReturnValue return_value(info.GetReturnValue());
+    auto arguments = node::get_arguments(info);
 
     try {
-        F(isolate, info.This(), args, return_value);
+        F(isolate, info.Callee(), info.This(), arguments.size(), arguments.data(), return_value);
+    }
+    catch (std::exception &e) {
+        Nan::ThrowError(node::Exception::value(isolate, e));
+    }
+}
+
+template<node::ArgumentsMethodType F>
+void wrap(const v8::FunctionCallbackInfo<v8::Value>& info) {
+    v8::Isolate* isolate = info.GetIsolate();
+    node::ReturnValue return_value(info.GetReturnValue());
+    auto arguments = node::get_arguments(info);
+
+    try {
+        F(isolate, info.This(), node::Arguments{isolate, arguments.size(), arguments.data()}, return_value);
     }
     catch (std::exception &e) {
         Nan::ThrowError(node::Exception::value(isolate, e));
@@ -313,7 +326,7 @@ void wrap(const Nan::FunctionCallbackInfo<v8::Value>& info) {
 
 
 template<node::PropertyType::GetterType F>
-void wrap(v8::Local<v8::String> property, const Nan::PropertyCallbackInfo<v8::Value>& info) {
+void wrap(v8::Local<v8::String> property, const v8::PropertyCallbackInfo<v8::Value>& info) {
     v8::Isolate* isolate = info.GetIsolate();
     node::ReturnValue return_value(info.GetReturnValue());
     try {
@@ -325,7 +338,7 @@ void wrap(v8::Local<v8::String> property, const Nan::PropertyCallbackInfo<v8::Va
 }
 
 template<node::PropertyType::SetterType F>
-void wrap(v8::Local<v8::String> property, v8::Local<v8::Value> value, const Nan::PropertyCallbackInfo<void>& info) {
+void wrap(v8::Local<v8::String> property, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info) {
     v8::Isolate* isolate = info.GetIsolate();
     try {
         F(isolate, info.This(), value);
@@ -336,7 +349,7 @@ void wrap(v8::Local<v8::String> property, v8::Local<v8::Value> value, const Nan:
 }
 
 template<node::IndexPropertyType::GetterType F>
-void wrap(uint32_t index, const Nan::PropertyCallbackInfo<v8::Value>& info) {
+void wrap(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info) {
     v8::Isolate* isolate = info.GetIsolate();
     node::ReturnValue return_value(info.GetReturnValue());
     try {
@@ -352,7 +365,7 @@ void wrap(uint32_t index, const Nan::PropertyCallbackInfo<v8::Value>& info) {
 }
 
 template<node::IndexPropertyType::SetterType F>
-void wrap(uint32_t index, v8::Local<v8::Value> value, const Nan::PropertyCallbackInfo<v8::Value>& info) {
+void wrap(uint32_t index, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info) {
     v8::Isolate* isolate = info.GetIsolate();
     try {
         if (F(isolate, info.This(), index, value)) {
@@ -366,7 +379,7 @@ void wrap(uint32_t index, v8::Local<v8::Value> value, const Nan::PropertyCallbac
 }
 
 template<node::StringPropertyType::GetterType F>
-void wrap(v8::Local<v8::String> property, const Nan::PropertyCallbackInfo<v8::Value>& info) {
+void wrap(v8::Local<v8::String> property, const v8::PropertyCallbackInfo<v8::Value>& info) {
     v8::Isolate* isolate = info.GetIsolate();
     node::ReturnValue return_value(info.GetReturnValue());
     try {
@@ -378,7 +391,7 @@ void wrap(v8::Local<v8::String> property, const Nan::PropertyCallbackInfo<v8::Va
 }
 
 template<node::StringPropertyType::SetterType F>
-void wrap(v8::Local<v8::String> property, v8::Local<v8::Value> value, const Nan::PropertyCallbackInfo<v8::Value>& info) {
+void wrap(v8::Local<v8::String> property, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info) {
     v8::Isolate* isolate = info.GetIsolate();
     try {
         if (F(isolate, info.This(), property, value)) {
@@ -392,7 +405,7 @@ void wrap(v8::Local<v8::String> property, v8::Local<v8::Value> value, const Nan:
 }
 
 template<node::StringPropertyType::EnumeratorType F>
-void wrap(const Nan::PropertyCallbackInfo<v8::Array>& info) {
+void wrap(const v8::PropertyCallbackInfo<v8::Array>& info) {
     auto names = F(info.GetIsolate(), info.This());
     int count = (int)names.size();
     v8::Local<v8::Array> array = Nan::New<v8::Array>(count);
