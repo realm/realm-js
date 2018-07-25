@@ -10,7 +10,7 @@
 * None.
 
 ### Enhancements
-* Support Node.js 10.
+* None.
 
 ### Bug fixes
 * [Sync] Various bugfixes.
