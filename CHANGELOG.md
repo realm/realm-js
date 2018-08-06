@@ -1,3 +1,24 @@
+2.14.1 Release notes (YYYY-MM-DD)
+=============================================================
+### Compatibility
+* Sync protocol: 24
+* Server-side history format: 4
+* File format: 7
+* Realm Object Server: 3.0.0 or later
+
+### Breaking changes
+* None.
+
+### Enhancements
+* None.
+
+### Bug fixes
+* [Sync] The schema definition for `permissionsSchema.Class` defined a `class_name` property instead of `name` (#1942).
+
+### Internals
+* Upgraded to Realm Core v5.7.2.
+* Upgraded to Realm Sync v3.8.3.
+
 2.14.0 Release notes (2018-7-24)
 =============================================================
 ### Compatibility
