@@ -1,3 +1,27 @@
+2.15.0 Release notes (YYYY-MM-DD)
+=============================================================
+### Compatibility
+* Sync protocol: 24
+* Server-side history format: 4
+* File format: 7
+* Realm Object Server: 3.0.0 or later
+
+### Breaking changes
+* None.
+
+### Enhancements
+* [Sync] Added `Realm.Sync.SessionState` representing the states a session can be in.
+* [Sync] Added `Realm.Sync.ConnectionState` representing the states a connection to the server can be in.
+* [Sync] Added support for `Session.addStateNotification()` and `Session.removeStateNotification()`.
+* [Sync] Added support for `Session.addConnectionNotification()` and `Session.removeConnectionNotification`.
+* [Sync] Added `Session.connectionState()`
+
+### Bug fixes
+* None
+
+### Internals
+* None
+
 2.14.0 Release notes (2018-7-24)
 =============================================================
 ### Compatibility

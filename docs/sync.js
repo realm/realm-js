@@ -595,6 +595,35 @@ class Session {
     * @param {callback(transferred, transferable)} callback - a previously registered progress callback
     */
     removeProgressNotification(progressCallback) {}
+
+    /**
+     * FIXME
+     * @param stateCallback
+     */
+    addStateNotification(stateCallback) {}
+
+    /**
+     * FIXME
+     * @param stateCallback
+     */
+    removeStateNotification(stateCallback) {}
+
+    /**
+     *
+     * @param connectionCallback
+     */
+    addConnectionNotification(connectionCallback) {}
+
+    /**
+     * FIXME
+     * @param connectionCallback
+     */
+    removeConnectionNotification(connectionCallback) {}
+
+    /**
+     * FIXME
+     */
+    connectionState() {}
 }
 
 /**

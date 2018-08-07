@@ -927,5 +927,127 @@ module.exports = {
                 session._simulateError(211, 'ClientReset'); // 211 -> divering histories
             });
         });
-    }
+    },
+
+    testAddStateNotification() {
+        if (!isNodeProccess) {
+            return;
+        }
+
+        return Realm.Sync.User.register('http://localhost:9080', uuid(), 'password').then((u) => {
+            return new Promise((resolve, reject) => {
+                var user = u;
+                let config = {
+                    sync: {
+                        user: user,
+                        url: `realm://localhost:9080/~/${uuid()}`,
+                        fullSynchronization: true,
+                    }
+                };
+                
+                Realm.open(config).then(realm => {
+                    realm.syncSession.addStateNotification((oldState, newState) => {
+                        if (oldState === Realm.Sync.SessionState.Active && newState === Realm.Sync.SessionState.Dying) {
+                            resolve('Done');
+                        }
+                    });
+                    realm.close()
+                }).catch(error => reject(error));
+            });
+        });
+    },
+
+    testRemoveStateNotification() {
+        if (!isNodeProccess) {
+            return;
+        }
+
+        return Realm.Sync.User.register('http://localhost:9080', uuid(), 'password').then((u) => {
+            return new Promise((resolve, reject) => {
+                var user = u;
+                let config = {
+                    sync: {
+                        user: user,
+                        url: `realm://localhost:9080/~/${uuid()}`,
+                        fullSynchronization: true,
+                    }
+                };
+                
+                Realm.open(config).then(realm => {
+
+                    let callback1 = (oldState, newState) => {
+                        reject("Should not be called");
+                    };
+                    let callback2 = (oldState, newState) => {
+                        resolve('Done');
+                    }
+                    realm.syncSession.addStateNotification(callback1);
+                    realm.syncSession.addStateNotification(callback2);
+                    realm.syncSession.removeStateNotification(callback1);
+                    realm.close()
+                }).catch(error => reject(error));
+            });
+        });
+    },
+
+    testAddConnectionNotification() {
+        if (!isNodeProccess) {
+            return;
+        }
+
+        return Realm.Sync.User.register('http://localhost:9080', uuid(), 'password').then((u) => {
+            return new Promise((resolve, reject) => {
+                var user = u;
+                let config = {
+                    sync: {
+                        user: user,
+                        url: `realm://localhost:9080/~/${uuid()}`,
+                        fullSynchronization: true,
+                    }
+                };
+                
+                Realm.open(config).then(realm => {
+                    realm.syncSession.addConnectionNotification((oldState, newState) => {
+                        if (oldState == Realm.Sync.ConnectionState.Connected && newState == Realm.Sync.ConnectionState.Disconnected) {
+                            resolve('Done');
+                        }
+                    });
+                    realm.close()
+                }).catch(error => reject(error));
+            });
+        });
+    },
+
+    testRemoveConnectionNotification() {
+        if (!isNodeProccess) {
+            return;
+        }
+
+        return Realm.Sync.User.register('http://localhost:9080', uuid(), 'password').then((u) => {
+            return new Promise((resolve, reject) => {
+                var user = u;
+                let config = {
+                    sync: {
+                        user: user,
+                        url: `realm://localhost:9080/~/${uuid()}`,
+                        fullSynchronization: true,
+                    }
+                };
+                
+                Realm.open(config).then(realm => {
+                    let callback1 = (oldState, newState) => {
+                        reject("Should not be called");
+                    };
+                    let callback2 = (oldState, newState) => {
+                        resolve('Done');
+                    }
+                    realm.syncSession.addConnectionNotification(callback1);
+                    realm.syncSession.addConnectionNotification(callback2);
+                    realm.syncSession.removeConnectionNotification(callback1);
+                    realm.close()
+                }).catch(error => reject(error));
+            });
+        });
+    },
+
 }
