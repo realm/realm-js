@@ -17,7 +17,7 @@
 
 ### Internals
 * Upgraded to Realm Core v5.7.2.
-* Upgraded to Realm Sync v3.8.3.
+* Upgraded to Realm Sync v3.8.7.
 
 2.14.0 Release notes (2018-7-24)
 =============================================================
