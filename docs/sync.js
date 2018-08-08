@@ -597,14 +597,19 @@ class Session {
     removeProgressNotification(progressCallback) {}
 
     /**
-     * FIXME
-     * @param stateCallback
+     * Register a state notification callback on a session object. This will be called whenever the session state changes.
+     *
+     * @param {callback(oldState, newState)} callback - Called with the following arguments:
+     *   - `oldState` - The `Realm.Sync.SessionState` the session transitioned from.
+     *   - `newState` - The `Realm.Sync.SessionState` the session transitioned to.
      */
     addStateNotification(stateCallback) {}
 
     /**
-     * FIXME
-     * @param stateCallback
+     * Unregister a state notification callback that was previously registered with addStateNotification.
+     * Calling the function multiple times with the same callback is ignored.
+     *
+     * @param {callback(oldState, newState)} callback - a previously registered state callback.
      */
     removeStateNotification(stateCallback) {}
 
@@ -615,13 +620,26 @@ class Session {
     addConnectionNotification(connectionCallback) {}
 
     /**
-     * FIXME
-     * @param connectionCallback
+     * Unregister a state notification callback that was previously registered with addStateNotification.
+     * Calling the function multiple times with the same callback is ignored.
+     *
+     * @param {callback(oldState, newState)} callback - a previously registered state callback.
      */
     removeConnectionNotification(connectionCallback) {}
 
     /**
-     * FIXME
+     * Gets the current state of the connection to the server. Multiple sessions might share the same underlying
+     * connection. In that case, any connection change is sent to all sessions.
+     *
+     * Can be either:
+     *  - Realm.Sync.ConnectionState.Disconnected: No connection to the server is available.
+     *  - Realm.Sync.ConnectionState.Connecting: An attempt to connect to the server is in progress.
+     *  - Realm.Sync.ConnectionState.Connected: The connection to the server is active and data can be synchronized.
+     *
+     * Data will only be synchronized with the Realm ObjectServer if this method returns `Connected` and `state()`
+     * returns `Active` or `Dying`.
+     *
+     * @type {number}
      */
     connectionState() {}
 }
