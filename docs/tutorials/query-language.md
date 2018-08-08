@@ -62,7 +62,18 @@ let Johns = realm.objects('Contact').filtered('name LIKE "John*"');
 ```
 
 ### Composition
-Use parentheses and the `&&`/`AND` and `||`/`OR` operators to compose queries. You can negate a predicate with `!`/`NOT`.
+Use parentheses `()` and the `&&`/`AND` and `||`/`OR` operators to compose queries. You can negate a predicate with `!`/`NOT`.
+
+### Timestamps
+
+Normally queries can be written with variable substitution so that the syntax of dates is taken care of by Realm. However, sometimes it fits better to compose a entirely string based query. In that case the syntax follows the format `YYYY-MM-DD@HH:MM:SS:N` where the `:N` suffix specifies nanoseconds but can be omitted (defaulting to 0). If preferred, a programmatic format is also supported `TSS:NS` which is a literal `T` followed by seconds since epoch, and nanoseconds modifier. In both formats, negative nanoseconds are considered invalid syntax. Timestamps are not quoted like strings. Due to platform limitations, using the first syntax is not supported for dates pre epoch on windows and pre 1901 on other platforms.
+
+```JS
+realm.objects('Person').filtered('birthday == 2017-12-04@0:0:0') // readable date omitting nanoseconds (assumes 0)
+realm.objects('Person').filtered('birthday == 2015-7-2@14:23:17:233') // readable date including nanoseconds
+realm.objects('Person').filtered('birthday == T1435846997:233') // equivalent to above
+realm.objects('Person').filtered('birthday == 1970-1-1@0:0:0:0') // epoch is the default non-null Timestamp value
+```
 
 ### Queries on collections
 
@@ -98,18 +109,46 @@ let teens = realm.objects('Contact').filtered('SUBQUERY(friends, $friend, $frien
 
 ### Backlink queries
 
-Other objects can link to an object and you can query on that releationship using the `@links` and `@links.ClassName.PropertyName` syntax.
-If the relationship of the LinkingObject is named, use the name in the query just like you would use any other property for readability.
-If the relationship is not named, you can use the `@links.ClassName.PropertyName` syntax where `ClassName.PropertyName` describes the forward relationship.
+Since backlinks are an indirect concept, let's consider a running example with the following models:
 
-Example:
 ```JS
-// Find contacts where someone from SF has them as friends
-realm.objects('Contact').filtered('@links.Contact.friends.city == "SF"');
+const CarSchema = {
+  name: 'Car',
+  properties: {
+    make:  'string',
+    model: 'string',
+    price: 'double',
+    owner: 'Person',
+  }
+};
+const PersonSchema = {
+  name: 'Person',
+  properties: {
+    name: 'string',
+    cars: { type: 'linkingObjects', objectType: 'Car', property: 'owner' }, // backlinks of Car.owner, this property is optional
+  }
+};
+```
 
-// Find contacts with no incomming links (across all linked properties)
-let isolated = realm.objects('Contact').filtered('@links.@count == 0');
+Links are properties which are an object type, for example `Car.owner` is a forward link. You can query through a forward link chain by following the link property names (see query 1 in the example below). The query is self descriptive.
+What if we want to know which People own a certain type of car? We can find this using backlinks. Backlink is a term used to describe following a relationship backwards. This backwards relationship always exists for every link property and it is not required to name it in the model. We can use the named backlink (query 2 in the example below) just like we did with a forward relationship. However, you can also query backlinks without a name by fully describing the forward relationship using the ` @links.ClassName.PropertyName` syntax (query 3 in the example below). Regardless of whether they are named or not, backlinks can be treated like a collection. This means that you can use all the collection operators as usual (queries 4-7 in the example below). In addition to the collection operators, there is special syntax to allow querying the count of all backlink relationships (query 8 in the example below) which is different than querying for the backlink count on a specific relationship (query 5 in the example below) unless there is only one incoming link in total. Although there is no functional difference between using named versus unnamed backlinks, the readability of the query syntax is affected so it is normally preferred to name the backlink with a `linkingObject` property when possible.
 
-// Find contacts with no incoming friend links
-let lonely = realm.objects('Contact').filtered('@links.Contact.friends.@count == 0');
+Examples:
+```JS
+// Query 1) Find all cars which have an owner named 'bob' (case insensitive equality)
+realm.objects('Car').filtered('owner.name ==[c] "bob"')
+// Query 2) Find which people own a certain type of car by using a named backlink (any is implied)
+realm.objects('Person').filtered('cars.make ==[c] "honda"')
+// Query 3) Find which people own a certain type of car by using the unnamed backlink syntax
+realm.objects('Person').filtered('@links.Car.owner.make ==[c] "honda"')
+// Query 4) collection aggregate operator example using the unnamed backlink syntax
+realm.objects('Person').filtered('@links.Car.owner.@avg.price > 30000')
+// Query 5) Find people who have 3 cars using the named backlink syntax
+realm.objects('Person').filtered('cars.@count == 3')
+// Query 6) Find people who own a Honda which has a price > 30000 using the unnamed backlink syntax with SUBQUERY
+realm.objects('Person').filtered('SUBQUERY(@links.Car.owner, $x, $x.make ==[c] "honda" && $x.price > 30000).@count > 1')
+// Query 7) Find people who own only a specific type of car
+realm.objects('Person').filtered('ALL @links.Car.owner.make ==[c] "honda"')
+// Query 8) Find people with no incoming links (across all linked properties)
+realm.objects('Person').filtered('@links.@count == 0')
 ```
