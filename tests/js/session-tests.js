@@ -1041,9 +1041,11 @@ module.exports = {
                     let callback2 = (oldState, newState) => {
                         resolve('Done');
                     }
-                    realm.syncSession.addConnectionNotification(callback1);
-                    realm.syncSession.addConnectionNotification(callback2);
-                    realm.syncSession.removeConnectionNotification(callback1);
+                    let session = realm.syncSession;
+                    TestCase.assertEqual(session.connectionState, Realm.Sync.ConnectionState.Connected);
+                    session.addConnectionNotification(callback1);
+                    session.addConnectionNotification(callback2);
+                    session.removeConnectionNotification(callback1);
                     realm.close()
                 }).catch(error => reject(error));
             });

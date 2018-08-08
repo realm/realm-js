@@ -459,6 +459,7 @@ declare namespace Realm.Sync {
         readonly state: 'invalid' | 'active' | 'inactive';
         readonly url: string;
         readonly user: User;
+        readonly connectionState: ConnectionState;
 
         addProgressNotification(direction: ProgressDirection, mode: ProgressMode, progressCallback: ProgressNotificationCallback): void;
         removeProgressNotification(progressCallback: ProgressNotificationCallback): void;

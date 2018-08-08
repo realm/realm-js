@@ -222,6 +222,7 @@ public:
     static void get_user(ContextType, ObjectType, ReturnValue &);
     static void get_url(ContextType, ObjectType, ReturnValue &);
     static void get_state(ContextType, ObjectType, ReturnValue &);
+    static void get_connection_state(ContextType, ObjectType, ReturnValue &);
 
     static void simulate_error(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void refresh_access_token(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
@@ -238,7 +239,8 @@ public:
         {"config", {wrap<get_config>, nullptr}},
         {"user", {wrap<get_user>, nullptr}},
         {"url", {wrap<get_url>, nullptr}},
-        {"state", {wrap<get_state>, nullptr}}
+        {"state", {wrap<get_state>, nullptr}},
+        {"connectionState", {wrap<get_connection_state>, nullptr}},
     };
 
     MethodMap<T> const methods = {
@@ -461,6 +463,19 @@ void SessionClass<T>::get_state(ContextType ctx, ObjectType object, ReturnValue 
         } else {
             return_value.set(active);
         }
+    }
+}
+
+template<typename T>
+void SessionClass<T>::get_connection_state(ContextType ctx, ObjectType object, ReturnValue &return_value) {
+    static const std::string invalid("invalid");
+    static const std::string inactive("inactive");
+    static const std::string active("active");
+
+    if (auto session = get_internal<T, SessionClass<T>>(object)->lock()) {
+        return_value.set(static_cast<uint8_t>(session->connectionState());
+    } else {
+        return_value.set(static_cast<uint8_t>(realm::sync::SyncSession::PublicConnectionState::Disconnected));
     }
 }
 
