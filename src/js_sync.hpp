@@ -473,9 +473,9 @@ void SessionClass<T>::get_connection_state(ContextType ctx, ObjectType object, R
     static const std::string active("active");
 
     if (auto session = get_internal<T, SessionClass<T>>(object)->lock()) {
-        return_value.set(static_cast<uint8_t>(session->connectionState());
+        return_value.set(static_cast<uint8_t>(session->connectionState()));
     } else {
-        return_value.set(static_cast<uint8_t>(realm::sync::SyncSession::PublicConnectionState::Disconnected));
+        return_value.set(static_cast<uint8_t>(SyncSession::PublicConnectionState::Disconnected));
     }
 }
 
