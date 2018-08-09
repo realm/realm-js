@@ -597,23 +597,6 @@ class Session {
     removeProgressNotification(progressCallback) {}
 
     /**
-     * Register a state notification callback on a session object. This will be called whenever the session state changes.
-     *
-     * @param {callback(oldState, newState)} callback - Called with the following arguments:
-     *   - `oldState` - The `Realm.Sync.SessionState` the session transitioned from.
-     *   - `newState` - The `Realm.Sync.SessionState` the session transitioned to.
-     */
-    addStateNotification(stateCallback) {}
-
-    /**
-     * Unregister a state notification callback that was previously registered with addStateNotification.
-     * Calling the function multiple times with the same callback is ignored.
-     *
-     * @param {callback(oldState, newState)} callback - a previously registered state callback.
-     */
-    removeStateNotification(stateCallback) {}
-
-    /**
      *
      * @param connectionCallback
      */
@@ -639,9 +622,17 @@ class Session {
      * Data will only be synchronized with the Realm ObjectServer if this method returns `Connected` and `state()`
      * returns `Active` or `Dying`.
      *
-     * @type {number}
+     * @type {string}
      */
     connectionState() {}
+
+    /**
+     * Returns `true` if the session is currently active and connected to the server, `false` if not.
+     *
+     * @type {boolean}
+     */
+    isConnected() {}
+
 }
 
 /**

@@ -10,11 +10,10 @@
 * None.
 
 ### Enhancements
-* [Sync] Added `Realm.Sync.SessionState` representing the states a session can be in.
 * [Sync] Added `Realm.Sync.ConnectionState` representing the states a connection to the server can be in.
-* [Sync] Added support for `Session.addStateNotification()` and `Session.removeStateNotification()`.
 * [Sync] Added support for `Session.addConnectionNotification()` and `Session.removeConnectionNotification`.
-* [Sync] Added `Session.connectionState()`
+* [Sync] Added `Session.connectionState`.
+* [Sync] Added `Session.isConnected()`.
 
 ### Bug fixes
 * None
