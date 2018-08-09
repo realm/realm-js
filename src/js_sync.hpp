@@ -481,7 +481,7 @@ std::string SessionClass<T>::get_connection_state_value(SyncSession::ConnectionS
 
 template<typename T>
 void SessionClass<T>::get_connection_state(ContextType ctx, ObjectType object, ReturnValue &return_value) {
-    return_value.set("unknown1");
+    return_value.set(get_connection_state_value(SyncSession::ConnectionState::Disconnected);
     if (auto session = get_internal<T, SessionClass<T>>(object)->lock()) {
         return_value.set(get_connection_state_value(session->connection_state()));
     }
@@ -640,7 +640,7 @@ void SessionClass<T>::is_connected(ContextType ctx, FunctionType, ObjectType thi
         auto state = session->state();
         auto connection_state = session->connection_state();
         if (connection_state == SyncSession::ConnectionState::Connected
-            && ( state == SyncSession::PublicState::Active || state == SyncSession::PublicState::Dying)) {
+            && (state == SyncSession::PublicState::Active || state == SyncSession::PublicState::Dying)) {
             return_value.set(true);
         }
     }

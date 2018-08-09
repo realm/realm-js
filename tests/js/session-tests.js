@@ -1007,12 +1007,10 @@ module.exports = {
 
                 Realm.open(config).then(realm => {
                     let session = realm.syncSession;
-                    console.log(session.connectionState);
                     TestCase.assertEqual(session.connectionState, Realm.Sync.ConnectionState.Disconnected);
                     TestCase.assertFalse(session.isConnected());
                     session.addConnectionNotification((oldState, newState) => {
-                        console.log(oldState + " -> " + newState);
-                        switch(newState) {
+                        switch (newState) {
                             case Realm.Sync.ConnectionState.Disconnected:
                                 TestCase.assertEqual(session.connectionState, Realm.Sync.ConnectionState.Disconnected);
                                 TestCase.assertFalse(session.isConnected());
