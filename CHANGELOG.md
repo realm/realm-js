@@ -21,6 +21,28 @@
 ### Internals
 * None
 
+2.14.2 Release notes (2018-8-8)
+=============================================================
+### Compatibility
+* Sync protocol: 24
+* Server-side history format: 4
+* File format: 7
+* Realm Object Server: 3.0.0 or later
+
+### Breaking changes
+* None.
+
+### Enhancements
+* None.
+
+### Bug fixes
+* [Sync] Fixed a potential memory corruption.
+
+### Internal
+* Realm Core v5.7.2.
+* Upgraded to Realm Sync v3.8.8.
+
+
 2.14.1 Release notes (2018-8-7)
 =============================================================
 ### Compatibility
