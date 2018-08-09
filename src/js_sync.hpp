@@ -255,6 +255,9 @@ public:
         {"removeConnectionNotification", wrap<remove_connection_notification>},
         {"isConnected", wrap<is_connected>},
     };
+
+private:
+    static std::string get_connection_state_value(SyncSession::ConnectionState state);
 };
 
 template<typename T>
@@ -468,20 +471,19 @@ void SessionClass<T>::get_state(ContextType ctx, ObjectType object, ReturnValue 
 }
 
 template<typename T>
+std::string SessionClass<T>::get_connection_state_value(SyncSession::ConnectionState state) {
+    switch(state) {
+        case SyncSession::ConnectionState::Disconnected: return "disconnected";
+        case SyncSession::ConnectionState::Connecting: return "connecting";
+        case SyncSession::ConnectionState::Connected: return "connected";
+    }
+}
+
+template<typename T>
 void SessionClass<T>::get_connection_state(ContextType ctx, ObjectType object, ReturnValue &return_value) {
-    return_value.set("disconnected");
+    return_value.set("unknown1");
     if (auto session = get_internal<T, SessionClass<T>>(object)->lock()) {
-        switch(session->connection_state()) {
-            case SyncSession::ConnectionState::Disconnected:
-                return_value.set("disconnected");
-                break;
-            case SyncSession::ConnectionState::Connecting:
-                return_value.set("connecting");
-                break;
-            case SyncSession::ConnectionState::Connected:
-                return_value.set("connected");
-                break;
-        }
+        return_value.set(get_connection_state_value(session->connection_state()));
     }
 }
 
@@ -598,8 +600,8 @@ void SessionClass<T>::add_connection_notification(ContextType ctx, FunctionType,
         EventLoopDispatcher<ConnectionHandler> connection_handler([=](SyncSession::ConnectionState old_state, SyncSession::ConnectionState new_state) {
             HANDLESCOPE
             ValueType callback_arguments[2];
-            callback_arguments[0] = Value::from_number(protected_ctx, static_cast<uint8_t>(old_state));
-            callback_arguments[1] = Value::from_number(protected_ctx, static_cast<uint8_t>(new_state));
+            callback_arguments[0] = Value::from_string(protected_ctx, get_connection_state_value(old_state));
+            callback_arguments[1] = Value::from_string(protected_ctx, get_connection_state_value(new_state));
             Function<T>::callback(protected_ctx, protected_callback, typename T::Object(), 2, callback_arguments);
         });
 

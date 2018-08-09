@@ -929,38 +929,6 @@ module.exports = {
         });
     },
 
-    testRemoveStateNotification() {
-        if (!isNodeProccess) {
-            return;
-        }
-
-        return Realm.Sync.User.register('http://localhost:9080', uuid(), 'password').then((u) => {
-            return new Promise((resolve, reject) => {
-                let config = {
-                    sync: {
-                        user: u,
-                        url: `realm://localhost:9080/~/${uuid()}`,
-                        fullSynchronization: true,
-                    }
-                };
-                
-                Realm.open(config).then(realm => {
-
-                    let callback1 = (oldState, newState) => {
-                        reject("Should not be called");
-                    };
-                    let callback2 = (oldState, newState) => {
-                        resolve('Done');
-                    };
-                    realm.syncSession.addStateNotification(callback1);
-                    realm.syncSession.addStateNotification(callback2);
-                    realm.syncSession.removeStateNotification(callback1);
-                    realm.close()
-                }).catch(error => reject(error));
-            });
-        });
-    },
-
     testAddConnectionNotification() {
         if (!isNodeProccess) {
             return;
@@ -1039,7 +1007,11 @@ module.exports = {
 
                 Realm.open(config).then(realm => {
                     let session = realm.syncSession;
+                    console.log(session.connectionState);
+                    TestCase.assertEqual(session.connectionState, Realm.Sync.ConnectionState.Disconnected);
+                    TestCase.assertFalse(session.isConnected());
                     session.addConnectionNotification((oldState, newState) => {
+                        console.log(oldState + " -> " + newState);
                         switch(newState) {
                             case Realm.Sync.ConnectionState.Disconnected:
                                 TestCase.assertEqual(session.connectionState, Realm.Sync.ConnectionState.Disconnected);
@@ -1054,14 +1026,13 @@ module.exports = {
                                 TestCase.assertTrue(session.isConnected());
                                 break;
                             default:
-                                reject(`unknown value: ${newState}`);
+                                reject(`unknown connection value: ${newState}`);
                         }
 
-                        if (oldState === Realm.Sync.ConnectionState.Connected && newState === Realm.Sync.ConnectionState.Disconnected) {
+                        if (oldState === Realm.Sync.ConnectionState.Connecting && newState === Realm.Sync.ConnectionState.Connected) {
                             resolve('Done');
                         }
                     });
-                    realm.close()
                 }).catch(error => reject(error));
             });
         });
