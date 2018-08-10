@@ -213,6 +213,8 @@ class SessionClass : public ClassDefinition<T, WeakSession> {
 public:
     std::string const name = "Session";
     using ProgressHandler = void(uint64_t transferred_bytes, uint64_t transferrable_bytes);
+    using StateHandler = void(SyncSession::PublicState old_state, SyncSession::PublicState new_state);
+    using ConnectionHandler = void(SyncSession::ConnectionState old_state, SyncSession::ConnectionState new_state);
 
     static FunctionType create_constructor(ContextType);
 
@@ -220,11 +222,18 @@ public:
     static void get_user(ContextType, ObjectType, ReturnValue &);
     static void get_url(ContextType, ObjectType, ReturnValue &);
     static void get_state(ContextType, ObjectType, ReturnValue &);
+    static void get_connection_state(ContextType, ObjectType, ReturnValue &);
 
     static void simulate_error(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void refresh_access_token(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
     static void add_progress_notification(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &);
     static void remove_progress_notification(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &);
+    static void add_state_notification(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &);
+    static void remove_state_notification(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &);
+    static void add_connection_notification(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &);
+    static void remove_connection_notification(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &);
+    static void is_connected(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &);
+
 
     static void override_server(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue&);
 
@@ -232,7 +241,8 @@ public:
         {"config", {wrap<get_config>, nullptr}},
         {"user", {wrap<get_user>, nullptr}},
         {"url", {wrap<get_url>, nullptr}},
-        {"state", {wrap<get_state>, nullptr}}
+        {"state", {wrap<get_state>, nullptr}},
+        {"connectionState", {wrap<get_connection_state>, nullptr}},
     };
 
     MethodMap<T> const methods = {
@@ -241,7 +251,13 @@ public:
         {"_overrideServer", wrap<override_server>},
         {"addProgressNotification", wrap<add_progress_notification>},
         {"removeProgressNotification", wrap<remove_progress_notification>},
+        {"addConnectionNotification", wrap<add_connection_notification>},
+        {"removeConnectionNotification", wrap<remove_connection_notification>},
+        {"isConnected", wrap<is_connected>},
     };
+
+private:
+    static std::string get_connection_state_value(SyncSession::ConnectionState state);
 };
 
 template<typename T>
@@ -448,9 +464,26 @@ void SessionClass<T>::get_state(ContextType ctx, ObjectType object, ReturnValue 
     if (auto session = get_internal<T, SessionClass<T>>(object)->lock()) {
         if (session->state() == SyncSession::PublicState::Inactive) {
             return_value.set(inactive);
-        } else if (session->state() != SyncSession::PublicState::Error) {
+        } else {
             return_value.set(active);
         }
+    }
+}
+
+template<typename T>
+std::string SessionClass<T>::get_connection_state_value(SyncSession::ConnectionState state) {
+    switch(state) {
+        case SyncSession::ConnectionState::Disconnected: return "disconnected";
+        case SyncSession::ConnectionState::Connecting: return "connecting";
+        case SyncSession::ConnectionState::Connected: return "connected";
+    }
+}
+
+template<typename T>
+void SessionClass<T>::get_connection_state(ContextType ctx, ObjectType object, ReturnValue &return_value) {
+    return_value.set(get_connection_state_value(SyncSession::ConnectionState::Disconnected));
+    if (auto session = get_internal<T, SessionClass<T>>(object)->lock()) {
+        return_value.set(get_connection_state_value(session->connection_state()));
     }
 }
 
@@ -550,6 +583,66 @@ void SessionClass<T>::remove_progress_notification(ContextType ctx, FunctionType
     if (auto session = get_internal<T, SessionClass<T>>(syncSession)->lock()) {
         auto reg = Value::validated_to_number(ctx, registrationToken);
         session->unregister_progress_notifier(reg);
+    }
+}
+
+template<typename T>
+void SessionClass<T>::add_connection_notification(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    validate_argument_count(argc, 1);
+    if (auto session = get_internal<T, SessionClass<T>>(this_object)->lock()) {
+        auto callback_function = Value::validated_to_function(ctx, arguments[0], "callback");
+        Protected<FunctionType> protected_callback(ctx, callback_function);
+        Protected<ObjectType> protected_this(ctx, this_object);
+        Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
+
+        std::function<ConnectionHandler> connectionFunc;
+
+        EventLoopDispatcher<ConnectionHandler> connection_handler([=](SyncSession::ConnectionState old_state, SyncSession::ConnectionState new_state) {
+            HANDLESCOPE
+            ValueType callback_arguments[2];
+            callback_arguments[0] = Value::from_string(protected_ctx, get_connection_state_value(old_state));
+            callback_arguments[1] = Value::from_string(protected_ctx, get_connection_state_value(new_state));
+            Function<T>::callback(protected_ctx, protected_callback, typename T::Object(), 2, callback_arguments);
+        });
+
+        connectionFunc = std::move(connection_handler);
+
+        auto notificationToken = session->register_connection_change_callback(std::move(connectionFunc));
+        auto syncSession = create_object<T, SessionClass<T>>(ctx, new WeakSession(session));
+        PropertyAttributes attributes = ReadOnly | DontEnum | DontDelete;
+        Object::set_property(ctx, callback_function, "_syncSession", syncSession, attributes);
+        Object::set_property(ctx, callback_function, "_connectionNotificationToken", Value::from_number(protected_ctx, notificationToken), attributes);
+    }
+}
+
+template<typename T>
+void SessionClass<T>::remove_connection_notification(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    validate_argument_count(argc, 1);
+    auto callback_function = Value::validated_to_function(ctx, arguments[0], "callback");
+    auto syncSessionProp = Object::get_property(ctx, callback_function, "_syncSession");
+    if (Value::is_undefined(ctx, syncSessionProp) || Value::is_null(ctx, syncSessionProp)) {
+        return;
+    }
+    auto syncSession = Value::validated_to_object(ctx, syncSessionProp);
+    auto registrationToken = Object::get_property(ctx, callback_function, "_connectionNotificationToken");
+
+    if (auto session = get_internal<T, SessionClass<T>>(syncSession)->lock()) {
+        auto reg = Value::validated_to_number(ctx, registrationToken);
+        session->unregister_connection_change_callback(reg);
+    }
+}
+
+template<typename T>
+void SessionClass<T>::is_connected(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    validate_argument_count(argc, 0);
+    return_value.set(false);
+    if (auto session = get_internal<T, SessionClass<T>>(this_object)->lock()) {
+        auto state = session->state();
+        auto connection_state = session->connection_state();
+        if (connection_state == SyncSession::ConnectionState::Connected
+            && (state == SyncSession::PublicState::Active || state == SyncSession::PublicState::Dying)) {
+            return_value.set(true);
+        }
     }
 }
 

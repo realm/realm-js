@@ -595,6 +595,44 @@ class Session {
     * @param {callback(transferred, transferable)} callback - a previously registered progress callback
     */
     removeProgressNotification(progressCallback) {}
+
+    /**
+     *
+     * @param connectionCallback
+     */
+    addConnectionNotification(connectionCallback) {}
+
+    /**
+     * Unregister a state notification callback that was previously registered with addStateNotification.
+     * Calling the function multiple times with the same callback is ignored.
+     *
+     * @param {callback(oldState, newState)} callback - a previously registered state callback.
+     */
+    removeConnectionNotification(connectionCallback) {}
+
+    /**
+     * Gets the current state of the connection to the server. Multiple sessions might share the same underlying
+     * connection. In that case, any connection change is sent to all sessions.
+     *
+     * Can be either:
+     *  - Realm.Sync.ConnectionState.Disconnected: No connection to the server is available.
+     *  - Realm.Sync.ConnectionState.Connecting: An attempt to connect to the server is in progress.
+     *  - Realm.Sync.ConnectionState.Connected: The connection to the server is active and data can be synchronized.
+     *
+     * Data will only be synchronized with the Realm ObjectServer if this method returns `Connected` and `state()`
+     * returns `Active` or `Dying`.
+     *
+     * @type {string}
+     */
+    connectionState() {}
+
+    /**
+     * Returns `true` if the session is currently active and connected to the server, `false` if not.
+     *
+     * @type {boolean}
+     */
+    isConnected() {}
+
 }
 
 /**
