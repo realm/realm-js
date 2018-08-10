@@ -19,7 +19,8 @@
 * None
 
 ### Internals
-* None
+* Updated to Object Store commit: 97fd03819f398b3c81c8b007feaca8636629050b
+
 
 2.14.2 Release notes (2018-8-8)
 =============================================================
