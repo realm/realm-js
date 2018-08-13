@@ -16,11 +16,12 @@
 * [Sync] Added `Session.isConnected()`.
 
 ### Bug fixes
-* None
+* None.
 
 ### Internals
 * Updated to Object Store commit: 97fd03819f398b3c81c8b007feaca8636629050b
-
+* Updated external packages with help from `npm audit`.
+ 
 
 2.14.2 Release notes (2018-8-8)
 =============================================================
