@@ -85,10 +85,10 @@
     "ini": "^1.3.4",
     "nan": "2.8.0",
     "node-fetch": "^1.6.3",
-    "node-pre-gyp": "^0.6.36",
+    "node-pre-gyp": "^0.11.0",
     "progress": "^2.0.0",
     "prop-types": "^15.5.10",
-    "request": "^2.78.0",
+    "request": "^2.88.0",
     "stream-counter": "^1.0.0",
     "sync-request": "^3.0.1",
     "url-parse": "^1.2.0"
