@@ -95,8 +95,8 @@
   },
   "devDependencies": {
     "@types/node": "^4.0.35",
-    "babel-eslint": "^6.0.4",
-    "eslint": "^3.2.2",
+    "babel-eslint": "^8.2.6",
+    "eslint": "^5.3.0",
     "eslint-plugin-jasmine": "^2.1.0",
     "eslint-plugin-react": "^6.7.0",
     "jsdoc": "^3.5.5",
