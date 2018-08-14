@@ -1,4 +1,4 @@
-2.14.3 Release notes (2018-8-8)
+2.15.0 Release notes (YYYY-MM-DD)
 =============================================================
 ### Compatibility
 * Sync protocol: 24
@@ -10,13 +10,18 @@
 * None.
 
 ### Enhancements
-* None.
+* [Sync] Added `Realm.Sync.ConnectionState` representing the states a connection to the server can be in.
+* [Sync] Added support for `Session.addConnectionNotification()` and `Session.removeConnectionNotification`.
+* [Sync] Added `Session.connectionState`.
+* [Sync] Added `Session.isConnected()`.
 
 ### Bug fixes
 * React Native for Android now support the Android Gradle Plugin 3.0 (#1742).
 
-### Internal
-* None.
+### Internals
+* Updated to Object Store commit: 97fd03819f398b3c81c8b007feaca8636629050b
+* Updated external packages with help from `npm audit`.
+ 
 
 2.14.2 Release notes (2018-8-8)
 =============================================================

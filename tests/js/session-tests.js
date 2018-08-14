@@ -927,5 +927,113 @@ module.exports = {
                 session._simulateError(211, 'ClientReset'); // 211 -> divering histories
             });
         });
-    }
-}
+    },
+
+    testAddConnectionNotification() {
+        if (!isNodeProccess) {
+            return;
+        }
+
+        return Realm.Sync.User.register('http://localhost:9080', uuid(), 'password').then((u) => {
+            return new Promise((resolve, reject) => {
+                let config = {
+                    sync: {
+                        user: u,
+                        url: `realm://localhost:9080/~/${uuid()}`,
+                        fullSynchronization: true,
+                    }
+                };
+                
+                Realm.open(config).then(realm => {
+                    realm.syncSession.addConnectionNotification((oldState, newState) => {
+                        if (oldState === Realm.Sync.ConnectionState.Connected && newState === Realm.Sync.ConnectionState.Disconnected) {
+                            resolve('Done');
+                        }
+                    });
+                    realm.close()
+                }).catch(error => reject(error));
+            });
+        });
+    },
+
+    testRemoveConnectionNotification() {
+        if (!isNodeProccess) {
+            return;
+        }
+
+        return Realm.Sync.User.register('http://localhost:9080', uuid(), 'password').then((u) => {
+            return new Promise((resolve, reject) => {
+                let config = {
+                    sync: {
+                        user: u,
+                        url: `realm://localhost:9080/~/${uuid()}`,
+                        fullSynchronization: true,
+                    }
+                };
+                
+                Realm.open(config).then(realm => {
+                    let callback1 = (oldState, newState) => {
+                        reject("Should not be called");
+                    };
+                    let callback2 = (oldState, newState) => {
+                        if (oldState === Realm.Sync.ConnectionState.Connected && newState === Realm.Sync.ConnectionState.Disconnected) {
+                            resolve('Done');
+                        }
+                    };
+                    let session = realm.syncSession;
+                    session.addConnectionNotification(callback1);
+                    session.addConnectionNotification(callback2);
+                    session.removeConnectionNotification(callback1);
+                    realm.close()
+                }).catch(error => reject(error));
+            });
+        });
+    },
+
+    testConnectionState() {
+        if (!isNodeProccess) {
+            return;
+        }
+
+        return Realm.Sync.User.register('http://localhost:9080', uuid(), 'password').then((u) => {
+            return new Promise((resolve, reject) => {
+                let config = {
+                    sync: {
+                        user: u,
+                        url: `realm://localhost:9080/~/${uuid()}`,
+                        fullSynchronization: true,
+                    }
+                };
+
+                Realm.open(config).then(realm => {
+                    let session = realm.syncSession;
+                    TestCase.assertEqual(session.connectionState, Realm.Sync.ConnectionState.Disconnected);
+                    TestCase.assertFalse(session.isConnected());
+                    session.addConnectionNotification((oldState, newState) => {
+                        switch (newState) {
+                            case Realm.Sync.ConnectionState.Disconnected:
+                                TestCase.assertEqual(session.connectionState, Realm.Sync.ConnectionState.Disconnected);
+                                TestCase.assertFalse(session.isConnected());
+                                break;
+                            case Realm.Sync.ConnectionState.Connecting:
+                                TestCase.assertEqual(session.connectionState, Realm.Sync.ConnectionState.Connecting);
+                                TestCase.assertFalse(session.isConnected());
+                                break;
+                            case Realm.Sync.ConnectionState.Connected:
+                                TestCase.assertEqual(session.connectionState, Realm.Sync.ConnectionState.Connected);
+                                TestCase.assertTrue(session.isConnected());
+                                break;
+                            default:
+                                reject(`unknown connection value: ${newState}`);
+                        }
+
+                        if (oldState === Realm.Sync.ConnectionState.Connecting && newState === Realm.Sync.ConnectionState.Connected) {
+                            resolve('Done');
+                        }
+                    });
+                }).catch(error => reject(error));
+            });
+        });
+    },
+
+};

@@ -430,9 +430,17 @@ declare namespace Realm.Sync {
         custom_http_headers?: { [header: string]: string };
     }
 
+    enum ConnectionState {
+        Disconnected = "disconnected",
+        Connecting = "connecting",
+        Connected = "connected",
+    }
+
     type ProgressNotificationCallback = (transferred: number, transferable: number) => void;
     type ProgressDirection = 'download' | 'upload';
     type ProgressMode = 'reportIndefinitely' | 'forCurrentlyOutstandingWork';
+
+    type ConnectionNotificationCallback = (oldState: ConnectionState, newState: ConnectionState) => void;
 
     /**
     * Session
@@ -443,9 +451,15 @@ declare namespace Realm.Sync {
         readonly state: 'invalid' | 'active' | 'inactive';
         readonly url: string;
         readonly user: User;
+        readonly connectionState: ConnectionState;
 
         addProgressNotification(direction: ProgressDirection, mode: ProgressMode, progressCallback: ProgressNotificationCallback): void;
         removeProgressNotification(progressCallback: ProgressNotificationCallback): void;
+
+        addConnectionNotification(callback): void;
+        removeConnectionNotification(callback): void;
+
+        isConnected(): boolean;
     }
 
     type SubscriptionNotificationCallback = (subscription: Subscription, state: number) => void;
