@@ -1,3 +1,23 @@
+2.14.3 Release notes (2018-8-8)
+=============================================================
+### Compatibility
+* Sync protocol: 24
+* Server-side history format: 4
+* File format: 7
+* Realm Object Server: 3.0.0 or later
+
+### Breaking changes
+* None.
+
+### Enhancements
+* None.
+
+### Bug fixes
+* React Native for Android now support the Android Gradle Plugin 3.0 (#1742).
+
+### Internal
+* None.
+
 2.14.2 Release notes (2018-8-8)
 =============================================================
 ### Compatibility
