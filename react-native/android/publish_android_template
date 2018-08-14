@@ -81,8 +81,15 @@ task send(type: SendAnalyticsTask) << {
 
 preBuild.dependsOn send
 
-dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile 'org.nanohttpd:nanohttpd:2.2.0'
-    compile 'com.facebook.react:react-native:+'  // From node_modules
+def dependencyType = "implementation"
+try {
+    project.getConfigurations().getByName("implementation")
+} catch (UnknownConfigurationException e) {
+    dependencyType = "compile" // Pre 3.0 Android Gradle Plugin
+}
+
+project.dependencies {
+    add(dependencyType, fileTree(dir: 'libs', include: ['*.jar']))
+    add(dependencyType, 'org.nanohttpd:nanohttpd:2.2.0')
+    add(dependencyType, 'com.facebook.react:react-native:+')
 }
