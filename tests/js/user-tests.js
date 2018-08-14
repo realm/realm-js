@@ -324,53 +324,11 @@ module.exports = {
       return Realm.Sync.User.register('http://localhost:9080', username, 'password').then((user) => {
           let config = user.createConfiguration();
           TestCase.assertEqual(config.sync.url, "realm://localhost:9080/default");
-          TestCase.assertUndefined(config.sync.partial);
+          TestCase.assertUndefined(config.sync.partial);  // completely removed in v3.0.0
           TestCase.assertFalse(config.sync.fullSynchronization);
       });
   },
-
-  testCreateConfiguration_useOldConfiguration() {
-      const username = uuid();
-      return Realm.Sync.User.register('http://localhost:9080', username, 'password').then((user) => {
-          let config = user.createConfiguration({ sync: { url: 'http://localhost:9080/other_realm', partial: true }});
-          TestCase.assertEqual(config.sync.url, 'http://localhost:9080/other_realm');
-          TestCase.assertUndefined(config.sync.fullSynchronization);
-          TestCase.assertTrue(config.sync.partial);
-      });
-  },
-
-  testCreateConfiguration_settingPartialAndFullSynchronizationThrows() {
-      const username = uuid();
-      return Realm.Sync.User.register('http://localhost:9080', username, 'password').then((user) => {
-          TestCase.assertThrowsContaining(() => {
-                  let config = { 
-                    sync: { 
-                      url: 'http://localhost:9080/~/default',
-                      partial: true, 
-                      fullSynchronization: false 
-                    } 
-                  };
-                  user.createConfiguration(config);
-          }, "'partial' and 'fullSynchronization' were both set. 'partial' has been deprecated, use only 'fullSynchronization'");
-      });
-  },
-    
-  testOpen_partialAndFullSynchronizationSetThrows() {
-      const username = uuid();
-      return Realm.Sync.User.register('http://localhost:9080', username, 'password').then((user) => {
-          TestCase.assertThrowsContaining(() => {
-              new Realm({
-                  sync: {
-                    user: user,
-                    url: 'http://localhost:9080/~/default',
-                    partial: false,
-                    fullSynchronization: true
-                  }
-              })
-          }, "'partial' and 'fullSynchronization' were both set. 'partial' has been deprecated, use only 'fullSynchronization'");
-      });
-  }
-
+  
   /* This test fails because of realm-object-store #243 . We should use 2 users.
   testSynchronizeChangesWithTwoClientsAndOneUser() {
     // Test Schema

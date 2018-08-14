@@ -1,4 +1,26 @@
-2.15.0 Release notes (YYYY-MM-DD)
+3.0.0 Release notes
+=============================================================
+### Compatibility
+* Sync protocol: 24
+* Server-side history format: 4
+* File format: 7
+* Realm Object Server: 3.0.0 or later
+
+### Breaking changes
+* Removed `partial` from sync configuration.
+* Query-based sync is now the default (`fullSyncronization` is false).
+
+### Enhancements
+* None.
+
+### Bug fixes
+* None.
+
+### Internal
+* None.
+
+
+X.Y.Z Release notes (YYYY-MM-DD)
 =============================================================
 ### Compatibility
 * Sync protocol: 24
@@ -21,6 +43,8 @@
 ### Internals
 * Updated to Object Store commit: 97fd03819f398b3c81c8b007feaca8636629050b
 * Updated external packages with help from `npm audit`.
+* Realm Core v5.7.2.
+* Realm Sync v3.8.8.
  
 
 2.14.2 Release notes (2018-8-8)

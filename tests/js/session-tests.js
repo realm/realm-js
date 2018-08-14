@@ -816,6 +816,10 @@ module.exports = {
             TestCase.assertThrows(() => Realm.automaticSyncConfiguration('foo', 'bar')); // too many arguments
         }
 
+        function partialIsDefault() {
+            let config = Realm.Sync.User.current.createConfiguration();
+            TestCase.assertFalse(config.fullSynchronization);
+        }
 
         return runOutOfProcess(__dirname + '/partial-sync-api-helper.js', username, REALM_MODULE_PATH)
             .then(() => {
@@ -826,10 +830,18 @@ module.exports = {
                     __partialIsNotAllowed();
                     shouldFail();
                     defaultRealmInvalidArguments();
+                    partialIsDefault();
 
                     return new Promise((resolve, reject) => {
-                        let config = Realm.Sync.User.current.createConfiguration();
-                        config.schema = [{ name: 'Dog', properties: { name: 'string' } }];
+                        // query-based sync is default so need to specify it
+                        let config = {
+                            schema: [{ name: 'Dog', properties: { name: 'string' } }],
+                            sync: {
+                                user: user,
+                                url: 'realm://localhost:9080/default'
+                            }
+                        };
+
                         Realm.deleteFile(config);
 
                         realm = new Realm(config);
