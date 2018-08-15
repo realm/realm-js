@@ -597,7 +597,7 @@ void SessionClass<T>::add_connection_notification(ContextType ctx, FunctionType,
 
         std::function<ConnectionHandler> connectionFunc;
 
-        EventLoopDispatcher<ConnectionHandler> connection_handler([=](SyncSession::ConnectionState new_state, SyncSession::ConnectionState old_state) {
+        EventLoopDispatcher<ConnectionHandler> connection_handler([=](SyncSession::ConnectionState old_state, SyncSession::ConnectionState new_state) {
             HANDLESCOPE
             ValueType callback_arguments[2];
             callback_arguments[0] = Value::from_string(protected_ctx, get_connection_state_value(new_state));
