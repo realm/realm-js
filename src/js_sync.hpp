@@ -214,7 +214,7 @@ public:
     std::string const name = "Session";
     using ProgressHandler = void(uint64_t transferred_bytes, uint64_t transferrable_bytes);
     using StateHandler = void(SyncSession::PublicState old_state, SyncSession::PublicState new_state);
-    using ConnectionHandler = void(SyncSession::ConnectionState old_state, SyncSession::ConnectionState new_state);
+    using ConnectionHandler = void(SyncSession::ConnectionState new_state, SyncSession::ConnectionState old_state);
 
     static FunctionType create_constructor(ContextType);
 
@@ -600,8 +600,8 @@ void SessionClass<T>::add_connection_notification(ContextType ctx, FunctionType,
         EventLoopDispatcher<ConnectionHandler> connection_handler([=](SyncSession::ConnectionState old_state, SyncSession::ConnectionState new_state) {
             HANDLESCOPE
             ValueType callback_arguments[2];
-            callback_arguments[0] = Value::from_string(protected_ctx, get_connection_state_value(old_state));
-            callback_arguments[1] = Value::from_string(protected_ctx, get_connection_state_value(new_state));
+            callback_arguments[0] = Value::from_string(protected_ctx, get_connection_state_value(new_state));
+            callback_arguments[1] = Value::from_string(protected_ctx, get_connection_state_value(old_state));
             Function<T>::callback(protected_ctx, protected_callback, typename T::Object(), 2, callback_arguments);
         });
 
