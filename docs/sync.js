@@ -597,8 +597,12 @@ class Session {
     removeProgressNotification(progressCallback) {}
 
     /**
+     * Registers a connection notification on the session object. This will be notified about changes to the
+     * underlying connection to the Realm Object Server.
      *
-     * @param connectionCallback
+     * @param {callback(newState, oldState)} callback - called with the following arguments:
+     *   - `newState` - the new state of the connection
+     *   - `oldState` - the state the connection transitioned from.
      */
     addConnectionNotification(connectionCallback) {}
 

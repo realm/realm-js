@@ -945,7 +945,7 @@ module.exports = {
                 };
                 
                 Realm.open(config).then(realm => {
-                    realm.syncSession.addConnectionNotification((oldState, newState) => {
+                    realm.syncSession.addConnectionNotification((newState, oldState) => {
                         if (oldState === Realm.Sync.ConnectionState.Connected && newState === Realm.Sync.ConnectionState.Disconnected) {
                             resolve('Done');
                         }
@@ -972,10 +972,10 @@ module.exports = {
                 };
                 
                 Realm.open(config).then(realm => {
-                    let callback1 = (oldState, newState) => {
+                    let callback1 = () => {
                         reject("Should not be called");
                     };
-                    let callback2 = (oldState, newState) => {
+                    let callback2 = (newState, oldState) => {
                         if (oldState === Realm.Sync.ConnectionState.Connected && newState === Realm.Sync.ConnectionState.Disconnected) {
                             resolve('Done');
                         }
@@ -1009,7 +1009,7 @@ module.exports = {
                     let session = realm.syncSession;
                     TestCase.assertEqual(session.connectionState, Realm.Sync.ConnectionState.Disconnected);
                     TestCase.assertFalse(session.isConnected());
-                    session.addConnectionNotification((oldState, newState) => {
+                    session.addConnectionNotification((newState, oldState) => {
                         switch (newState) {
                             case Realm.Sync.ConnectionState.Disconnected:
                                 TestCase.assertEqual(session.connectionState, Realm.Sync.ConnectionState.Disconnected);

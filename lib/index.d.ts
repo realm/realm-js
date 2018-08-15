@@ -440,7 +440,7 @@ declare namespace Realm.Sync {
     type ProgressDirection = 'download' | 'upload';
     type ProgressMode = 'reportIndefinitely' | 'forCurrentlyOutstandingWork';
 
-    type ConnectionNotificationCallback = (oldState: ConnectionState, newState: ConnectionState) => void;
+    type ConnectionNotificationCallback = (newState: ConnectionState, oldState: ConnectionState) => void;
 
     /**
     * Session
