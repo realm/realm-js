@@ -37,6 +37,7 @@
 #include <jni.h>
 #include "./android/io_realm_react_RealmReactModule.h"
 #include "./android/jni_utils.hpp"
+#include <android/log.h>
 
 extern jclass ssl_helper_class;
 #endif
@@ -763,7 +764,7 @@ void SubscriptionClass<T>::add_listener(ContextType ctx, ObjectType this_object,
 
         ValueType arguments[2];
         arguments[0] = static_cast<ObjectType>(protected_this),
-        arguments[1] = Value::from_number(ctx, static_cast<double>(subscription->state()));
+        arguments[1] = Value::from_number(protected_ctx, static_cast<double>(subscription->state()));
         Function::callback(protected_ctx, protected_callback, protected_this, 2, arguments);
     });
 

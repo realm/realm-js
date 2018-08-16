@@ -17,6 +17,7 @@
 
 ### Bug fixes
 * React Native for Android now supports the Android Gradle Plugin 3.0 (#1742).
+* [Sync] Fixed a crash in subscription listeners (#1926).
 
 ### Internals
 * Updated to Object Store commit: 97fd03819f398b3c81c8b007feaca8636629050b
