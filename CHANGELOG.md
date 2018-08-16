@@ -17,10 +17,12 @@
 
 ### Bug fixes
 * React Native for Android now supports the Android Gradle Plugin 3.0 (#1742).
+* [Sync] Fixed distinct queries with query-based sync (broken since v2.11.0).
 
 ### Internals
 * Updated to Object Store commit: 97fd03819f398b3c81c8b007feaca8636629050b
 * Updated external packages with help from `npm audit`.
+* Upgraded to Realm Sync v3.8.10.
  
 
 2.14.2 Release notes (2018-8-8)
