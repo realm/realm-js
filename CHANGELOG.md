@@ -1,3 +1,23 @@
+X.Y.Z Release notes
+=============================================================
+### Compatibility
+* Sync protocol: ???
+* Server-side history format: ???
+* File format: 9
+* Realm Object Server: ???
+
+### Breaking changes
+* Updated to new file format of Realms.
+
+### Enhancements
+
+### Bug fixes
+
+### Internals
+* Upgraded to Realm Core v6.0.0.
+* Removed `Realm.Configuration._cache`.
+
+
 2.15.0 Release notes (YYYY-MM-DD)
 =============================================================
 ### Compatibility

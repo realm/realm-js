@@ -113,11 +113,11 @@ public:
     ValueType box(realm::Object realm_object) {
         return RealmObjectClass<JSEngine>::create_instance(m_ctx, std::move(realm_object));
     }
-    ValueType box(RowExpr row) {
-        if (!row.is_attached()) {
+    ValueType box(Obj obj) {
+        if (!obj.is_valid()) {
             return Value::from_null(m_ctx);
         }
-        return RealmObjectClass<JSEngine>::create_instance(m_ctx, realm::Object(m_realm, *m_object_schema, row));
+        return RealmObjectClass<JSEngine>::create_instance(m_ctx, realm::Object(m_realm, *m_object_schema, obj));
     }
     ValueType box(realm::List list) {
         return ListClass<JSEngine>::create_instance(m_ctx, std::move(list));
@@ -293,8 +293,8 @@ struct Unbox<JSEngine, Timestamp> {
 };
 
 template<typename JSEngine>
-struct Unbox<JSEngine, RowExpr> {
-    static RowExpr call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, bool create, bool try_update) {
+struct Unbox<JSEngine, Obj> {
+    static Obj call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, bool create, bool try_update) {
         using Value = js::Value<JSEngine>;
         using ValueType = typename JSEngine::Value;
 
@@ -302,7 +302,7 @@ struct Unbox<JSEngine, RowExpr> {
         if (js::Object<JSEngine>::template is_instance<RealmObjectClass<JSEngine>>(ctx->m_ctx, object)) {
             auto realm_object = get_internal<JSEngine, RealmObjectClass<JSEngine>>(object);
             if (realm_object->realm() == ctx->m_realm) {
-                return realm_object->row();
+                return realm_object->obj();
             }
             if (!create) {
                 throw std::runtime_error("Realm object is from another Realm");
@@ -318,7 +318,7 @@ struct Unbox<JSEngine, RowExpr> {
 
         auto child = realm::Object::create<ValueType>(*ctx, ctx->m_realm, *ctx->m_object_schema,
                                                       static_cast<ValueType>(object), try_update);
-        return child.row();
+        return child.obj();
     }
 };
 } // namespace _impl

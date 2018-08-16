@@ -1,6 +1,6 @@
 {
   "variables": {
-    "realm_download_binaries%": "1",
+    "realm_download_binaries%": "0",
     "use_realm_debug%": "<!(node -p \"'REALMJS_USE_DEBUG_CORE' in process.env ? 1 : 0\")",
     "realm_js_dir%": "<(module_root_dir)",
     "runtime%": "node"
@@ -8,7 +8,7 @@
   "conditions": [
     ["OS=='mac'", {
       "variables": {
-        "realm_enable_sync%": "1"
+        "realm_enable_sync%": "0"
       }
     }, {
       "variables": {
@@ -54,7 +54,6 @@
         "src/object-store/src/impl/collection_notifier.cpp",
         "src/object-store/src/impl/list_notifier.cpp",
         "src/object-store/src/impl/object_notifier.cpp",
-        "src/object-store/src/impl/primitive_list_notifier.cpp",
         "src/object-store/src/impl/realm_coordinator.cpp",
         "src/object-store/src/impl/results_notifier.cpp",
         "src/object-store/src/impl/transact_log_handler.cpp",
