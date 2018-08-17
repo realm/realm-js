@@ -763,7 +763,7 @@ void SubscriptionClass<T>::add_listener(ContextType ctx, ObjectType this_object,
 
         ValueType arguments[2];
         arguments[0] = static_cast<ObjectType>(protected_this),
-        arguments[1] = Value::from_number(ctx, static_cast<double>(subscription->state()));
+        arguments[1] = Value::from_number(protected_ctx, static_cast<double>(subscription->state()));
         Function::callback(protected_ctx, protected_callback, protected_this, 2, arguments);
     });
 
