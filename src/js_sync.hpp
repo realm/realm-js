@@ -37,7 +37,6 @@
 #include <jni.h>
 #include "./android/io_realm_react_RealmReactModule.h"
 #include "./android/jni_utils.hpp"
-#include <android/log.h>
 
 extern jclass ssl_helper_class;
 #endif
