@@ -1,4 +1,4 @@
-2.15.0 Release notes (YYYY-MM-DD)
+2.15.0 Release notes (2018-8-17)
 =============================================================
 ### Compatibility
 * Sync protocol: 24
