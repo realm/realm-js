@@ -1036,4 +1036,17 @@ module.exports = {
         });
     },
 
-};
+    testOfflinePermissionSchemas() {
+        if (!isNodeProccess) {
+            return;
+        }
+
+        return Realm.Sync.User.register('http://localhost:9080', uuid(), 'password').then((u) => {
+            return new Promise((resolve, reject) => {
+                let realm = new Realm(u.createConfiguration());
+                TestCase.assertEqual(5, realm.objects(Realm.Permissions.Class.schema.name).length);
+                resolve('Done');
+            });
+        });
+    }
+}
