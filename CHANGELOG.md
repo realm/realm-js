@@ -18,7 +18,9 @@
 ### Bug fixes
 * React Native for Android now supports the Android Gradle Plugin 3.0 (#1742).
 * [Sync] Fixed a crash in subscription listeners (#1926).
+* [Sync] Classes used by the Object-level permission system are now automatically part of the schema for Query-based Realms (#1966).
 * [Sync] Fixed distinct queries with query-based sync (broken since v2.11.0).
+* Support parallel run of muliple iOS builds with React Native on the same CI machine.
 
 ### Internals
 * Updated to Object Store commit: 97fd03819f398b3c81c8b007feaca8636629050b

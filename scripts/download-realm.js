@@ -25,8 +25,35 @@ const child_process = require('child_process');
 const fetch = require('node-fetch');
 const ini = require('ini');
 const decompress = require('decompress');
+const crypto = require('crypto');
 
 const LOCKFILE_NAME = 'download-realm.lock';
+
+const TEMP_DIR_SUFFIX = generateRandomString();
+
+function generateRandomString() {
+    return crypto.randomBytes(20).toString('hex');
+}
+
+function ensureDirExists(dir) {
+    if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir);
+    }
+}
+
+function getTempDir() {
+    /*
+     * Each run of this script will have it's own temp directory.
+     * That way, parallel runs of this script on a same computer won't
+     * conflict.
+     *
+     * It is also possible to overrride this temp directory by setting
+     * REALM_DOWNLOAD_CORE_TEMP_DIR so, for instance, CI systems will 
+     * be able to clean up files.
+     */
+    return process.env.REALM_DOWNLOAD_CORE_TEMP_DIR ||
+           path.join(os.tmpdir(), TEMP_DIR_SUFFIX);
+}
 
 function exec() {
     const args = Array.from(arguments);
@@ -102,7 +129,7 @@ function extract(downloadedArchive, targetFolder, archiveRootFolder) {
     if (!archiveRootFolder) {
         return decompress(downloadedArchive, targetFolder);
     } else {
-        const tempExtractLocation = path.resolve(os.tmpdir(), path.basename(downloadedArchive, path.extname(downloadedArchive)));
+        const tempExtractLocation = path.resolve(getTempDir(), path.basename(downloadedArchive, path.extname(downloadedArchive)));
         return decompress(downloadedArchive, tempExtractLocation)
                .then(() => fs.readdir(path.resolve(tempExtractLocation, archiveRootFolder)))
                .then(items => Promise.all(items.map(item => {
@@ -115,8 +142,8 @@ function extract(downloadedArchive, targetFolder, archiveRootFolder) {
 }
 
 function acquire(desired, target) {
-    const corePath = desired.CORE_ARCHIVE && path.resolve(os.tmpdir(), desired.CORE_ARCHIVE);
-    const syncPath = desired.SYNC_ARCHIVE && path.resolve(os.tmpdir(), desired.SYNC_ARCHIVE);
+    const corePath = desired.CORE_ARCHIVE && path.resolve(getTempDir(), desired.CORE_ARCHIVE);
+    const syncPath = desired.SYNC_ARCHIVE && path.resolve(getTempDir(), desired.SYNC_ARCHIVE);
 
     return fs.emptyDir(target)
         .then(() => corePath && download(desired.CORE_SERVER_FOLDER, desired.CORE_ARCHIVE, corePath))
@@ -260,6 +287,8 @@ if (options.arch) {
 if (options.debug) {
     realmDir += '-dbg'
 }
+
+ensureDirExists(getTempDir());
 
 const dependencies = ini.parse(fs.readFileSync(path.resolve(__dirname, '../dependencies.list'), 'utf8'));
 
