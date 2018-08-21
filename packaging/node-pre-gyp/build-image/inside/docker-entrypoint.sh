@@ -1,3 +1,3 @@
 #!/bin/bash
 
-scl enable devtoolset-3 -- "$@"
+scl enable devtoolset-6 -- "$@"
