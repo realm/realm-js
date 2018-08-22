@@ -1,4 +1,4 @@
-2.15.0 Release notes (YYYY-MM-DD)
+X.Y.Z Release notes (YYYY-MM-DD)
 =============================================================
 ### Compatibility
 * Sync protocol: 24
@@ -26,6 +26,7 @@
 * Updated to Object Store commit: 97fd03819f398b3c81c8b007feaca8636629050b
 * Updated external packages with help from `npm audit`.
 * Upgraded to Realm Sync v3.8.11.
+* Upgraded to devtoolset-6 on Centos for Linux builds.
  
 
 2.14.2 Release notes (2018-8-8)
