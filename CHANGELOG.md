@@ -25,7 +25,7 @@ X.Y.Z Release notes (YYYY-MM-DD)
 ### Internals
 * Updated to Object Store commit: 97fd03819f398b3c81c8b007feaca8636629050b
 * Updated external packages with help from `npm audit`.
-* Upgraded to Realm Sync v3.8.11.
+* Upgraded to Realm Sync v3.9.1.
 * Upgraded to devtoolset-6 on Centos for Linux builds.
  
 
