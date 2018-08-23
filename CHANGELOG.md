@@ -21,11 +21,12 @@ X.Y.Z Release notes (YYYY-MM-DD)
 * [Sync] Classes used by the Object-level permission system are now automatically part of the schema for Query-based Realms (#1966).
 * [Sync] Fixed distinct queries with query-based sync (broken since v2.11.0).
 * Support parallel run of muliple iOS builds with React Native on the same CI machine.
+* [Sync] Fixed a bug in the client where a session was not properly discarded after a deactivation process ending with the reception of an ERROR message. When this happened, it would lead to corruption of the client's internal datastructures.
 
 ### Internals
 * Updated to Object Store commit: 97fd03819f398b3c81c8b007feaca8636629050b
 * Updated external packages with help from `npm audit`.
-* Upgraded to Realm Sync v3.8.11.
+* Upgraded to Realm Sync v3.9.1 (to match the devtoolset-6 upgrade).
 * Upgraded to devtoolset-6 on Centos for Linux builds.
  
 
