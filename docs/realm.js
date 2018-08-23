@@ -96,6 +96,8 @@ class Realm {
      * In this case, `config.schema` is _optional_ or not have changed, unless
      * `config.schemaVersion` is incremented, in which case the Realm will be automatically
      * migrated to use the new schema.
+     * In the case of query-based sync, `config.schema` is required. An exception will be
+     * thrown if `config.schema` is not defined.
      * @param {Realm~Configuration} [config] - **Required** when first creating the Realm.
      * @throws {Error} If anything in the provided `config` is invalid.
      * @throws {IncompatibleSyncedRealmError} when an incompatible synced Realm is opened
@@ -105,8 +107,11 @@ class Realm {
     /**
      * Open a Realm asynchronously with a promise. If the Realm is synced, it will be fully
      * synchronized before it is available.
+     * In the case of query-based sync, `config.schema` is required. An exception will be
+     * thrown if `config.schema` is not defined.
      * @param {Realm~Configuration} config - if no config is defined, it will open the default realm
      * @returns {ProgressPromise} - a promise that will be resolved with the Realm instance when it's available.
+     * @throws {Error} If anything in the provided `config` is invalid.
      */
     static open(config) {}
 

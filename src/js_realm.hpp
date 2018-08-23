@@ -609,6 +609,13 @@ SharedRealm RealmClass<T>::create_shared_realm(ContextType ctx, realm::Realm::Co
         handleRealmFileException(ctx, config, ex);
     }
 
+#if REALM_ENABLE_SYNC
+        auto schema = realm->schema();
+        if (realm->is_partial() && schema.empty() && config.cache) {
+            throw std::invalid_argument("Query-based sync requires a schema.");
+        }
+#endif
+
     GlobalContextType global_context = Context<T>::get_global_context(ctx);
     if (!realm->m_binding_context) {
         realm->m_binding_context.reset(new RealmDelegate<T>(realm, global_context));
