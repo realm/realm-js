@@ -14,6 +14,7 @@ X.Y.Z Release notes (YYYY-MM-DD)
 * [Sync] Added support for `Session.addConnectionNotification()` and `Session.removeConnectionNotification`.
 * [Sync] Added `Session.connectionState`.
 * [Sync] Added `Session.isConnected()`.
+* [Sync] Added a check to prevent the case where query-based sync is opened without a schema. It is not possible to deduce the schema, and subscribing to a query-based sync will lead to an error if no schema is defined (#1976).
 
 ### Bug fixes
 * React Native for Android now supports the Android Gradle Plugin 3.0 (#1742).

@@ -478,7 +478,8 @@ module.exports = {
                     sync: {
                         user,
                         error : err => console.log(err),
-                        url: 'realm://localhost:9080/~/sync-v1'
+                        url: 'realm://localhost:9080/~/sync-v1',
+                        fullSynchronization: true,
                     }
                 };
                 return Realm.open(config)
@@ -520,7 +521,8 @@ module.exports = {
                     sync: {
                         user,
                         error : err => console.log(err),
-                        url: 'realm://localhost:9080/~/sync-v1'
+                        url: 'realm://localhost:9080/~/sync-v1',
+                        fullSynchronization: true,
                     }
                 };
 
@@ -776,7 +778,8 @@ module.exports = {
                         url: `realm://localhost:9080/default/__partial/`,
                         _disableQueryBasedSyncUrlChecks: true,
                         fullSynchronization: false,
-                    }
+                    },
+                    schema: [ { name: 'Dog', properties: { name: 'string' } } ]
                 };
                 const realm = new Realm(config1);
                 TestCase.assertFalse(realm.isClosed);
@@ -816,6 +819,12 @@ module.exports = {
             TestCase.assertThrows(() => Realm.automaticSyncConfiguration('foo', 'bar')); // too many arguments
         }
 
+        function schemalessNotAllowed() {
+            let config = Realm.Sync.User.current.createConfiguration();
+            config.schema = undefined; // no schema in the configuration
+            Realm.deleteFile(config);
+            TestCase.assertThrows(() => { let realm = new Realm(config); } );
+        }
 
         return runOutOfProcess(__dirname + '/partial-sync-api-helper.js', username, REALM_MODULE_PATH)
             .then(() => {
@@ -826,6 +835,7 @@ module.exports = {
                     __partialIsNotAllowed();
                     shouldFail();
                     defaultRealmInvalidArguments();
+                    schemalessNotAllowed();
 
                     return new Promise((resolve, reject) => {
                         let config = Realm.Sync.User.current.createConfiguration();

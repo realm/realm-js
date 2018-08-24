@@ -174,16 +174,16 @@ module.exports = {
         let config = (user, url) => {
             return {
                 schema: [
-                    Realm.Permissions.Permission,
-                    Realm.Permissions.User,
-                    Realm.Permissions.Role,
                     {
                         name: 'Object',
                         properties: {
                             value: 'int',
                             permissions: '__Permission[]'
                         }
-                    }
+                    },
+                    Realm.Permissions.Permission,
+                    Realm.Permissions.User,
+                    Realm.Permissions.Role,
                 ],
                 sync: {user: user, url: url, fullSynchronization: false }
             };
