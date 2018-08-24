@@ -1,3 +1,24 @@
+X.Y.Z Release notes
+=============================================================
+### Compatibility
+* Sync protocol: 24
+* Server-side history format: 4
+* File format: 7
+* Realm Object Server: 3.0.0 or later
+
+### Breaking changes
+* None.
+
+### Enhancements
+* None.
+
+### Bug fixes
+* Fixed a bug if `fullSynchronized` is not defined. This could lead to an exception when opening a synced Realm.
+
+### Internal
+* Realm Core v5.7.2.
+* Realm Sync v3.9.1.
+
 2.15.2 Release notes (2018-8-24)
 =============================================================
 ### Compatibility

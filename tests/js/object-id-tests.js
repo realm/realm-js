@@ -49,7 +49,7 @@ module.exports = {
         }
         
         return Realm.Sync.User.register('http://localhost:9080', uuid(), 'password').then(user => {
-            const config = user.createConfiguration({ sync: { url: 'realm://localhost:9080/~/myrealm', fullSynchronization: true },
+            const config = user.createConfiguration({ sync: { url: 'realm://localhost:9080/~/myrealm' },
                              schema: [{ name: 'IntegerPrimaryKey', properties: { int: 'int?' }, primaryKey: 'int' },
                                       { name: 'StringPrimaryKey', properties: { string: 'string?' }, primaryKey: 'string' },
                                       { name: 'NoPrimaryKey', properties: { string: 'string' }},
