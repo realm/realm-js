@@ -1,4 +1,4 @@
-X.Y.Z Release notes (YYYY-MM-DD)
+2.15.0 Release notes (2018-8-24)
 =============================================================
 ### Compatibility
 * Sync protocol: 24
@@ -21,7 +21,7 @@ X.Y.Z Release notes (YYYY-MM-DD)
 * [Sync] Fixed a crash in subscription listeners (#1926).
 * [Sync] Classes used by the Object-level permission system are now automatically part of the schema for Query-based Realms (#1966).
 * [Sync] Fixed distinct queries with query-based sync (broken since v2.11.0).
-* Support parallel run of muliple iOS builds with React Native on the same CI machine.
+* Support parallel run of muliple iOS builds with React Native on the same CI machine (contributed by @mandrigin).
 * [Sync] Fixed a bug in the client where a session was not properly discarded after a deactivation process ending with the reception of an ERROR message. When this happened, it would lead to corruption of the client's internal datastructures.
 
 ### Internals
