@@ -1,4 +1,4 @@
-X.Y.Z Release notes
+2.15.3 Release notes (2018-8-24)
 =============================================================
 ### Compatibility
 * Sync protocol: 24
