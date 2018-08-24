@@ -1,3 +1,24 @@
+2.15.1 Release notes (2018-8-24)
+=============================================================
+### Compatibility
+* Sync protocol: 24
+* Server-side history format: 4
+* File format: 7
+* Realm Object Server: 3.0.0 or later
+
+### Breaking changes
+* None.
+
+### Enhancements
+* None.
+
+### Bug fixes
+* Fixed a bug that would cause the Global Notifier to crash with the following error message: `A schema version must be specified when the schema is specified`.
+
+### Internal
+* Realm Core v5.7.2.
+* Realm Sync v3.9.1.
+
 2.15.0 Release notes (2018-8-24)
 =============================================================
 ### Compatibility
