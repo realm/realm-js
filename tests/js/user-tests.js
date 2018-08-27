@@ -343,18 +343,18 @@ module.exports = {
       const username = uuid();
       return Realm.Sync.User.register('http://localhost:9080', username, 'password').then((user) => {
           TestCase.assertThrowsContaining(() => {
-                  let config = { 
-                    sync: { 
+                  let config = {
+                    sync: {
                       url: 'http://localhost:9080/~/default',
-                      partial: true, 
-                      fullSynchronization: false 
-                    } 
+                      partial: true,
+                      fullSynchronization: false
+                    }
                   };
                   user.createConfiguration(config);
           }, "'partial' and 'fullSynchronization' were both set. 'partial' has been deprecated, use only 'fullSynchronization'");
       });
   },
-    
+
   testOpen_partialAndFullSynchronizationSetThrows() {
       const username = uuid();
       return Realm.Sync.User.register('http://localhost:9080', username, 'password').then((user) => {
@@ -369,7 +369,67 @@ module.exports = {
               })
           }, "'partial' and 'fullSynchronization' were both set. 'partial' has been deprecated, use only 'fullSynchronization'");
       });
-  }
+  },
+
+  testSerialize() {
+    const username = uuid();
+    return Realm.Sync.User.register('http://localhost:9080', username, 'password').then((user) => {
+      const serialized = user.serialize();
+      TestCase.assertFalse(serialized.isAdmin);
+      TestCase.assertEqual(serialized.identity, user.identity);
+      TestCase.assertEqual(serialized.server, 'http://localhost:9080');
+      TestCase.assertEqual(serialized.refreshToken, user.token);
+    });
+  },
+
+  testDeserialize() {
+    const username = uuid();
+    return Realm.Sync.User.register('http://localhost:9080', username, 'password')
+      .then((user) => {
+        const userConfig = user.createConfiguration({
+          schema: [{ name: 'Dog', properties: { name: 'string' } }],
+          sync: {
+            url: 'realm://localhost:9080/~/foo',
+            fullSynchronization: true,
+          }
+        });
+
+        const realm = new Realm(userConfig);
+        realm.write(() => {
+          realm.create('Dog', {
+            name: 'Doggo'
+          });
+        });
+
+        const session = realm.syncSession;
+        return new Promise((resolve, reject) => {
+          let callback = (transferred, total) => {
+              if (transferred >= total) {
+                  session.removeProgressNotification(callback);
+                  realm.close();
+                  Realm.deleteFile(userConfig);
+                  resolve(user.serialize());
+              }
+          }
+          session.addProgressNotification('upload', 'forCurrentlyOutstandingWork', callback);
+        });
+      }).then((serialized) => {
+        const deserialized = Realm.Sync.User.deserialize(serialized);
+        const config = deserialized.createConfiguration({
+          schema: [{ name: 'Dog', properties: { name: 'string' } }],
+          sync: {
+            url: 'realm://localhost:9080/~/foo',
+            fullSynchronization: true,
+          }
+        });
+
+        return Realm.open(config);
+      }).then((realm) => {
+        const dogs = realm.objects('Dog');
+        TestCase.assertEqual(dogs.length, 1);
+        TestCase.assertEqual(dogs[0].name, 'Doggo');
+      });
+  },
 
   /* This test fails because of realm-object-store #243 . We should use 2 users.
   testSynchronizeChangesWithTwoClientsAndOneUser() {
