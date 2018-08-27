@@ -12,10 +12,10 @@ X.Y.Z Release notes
 ### Enhancements
 * Exposed `User.serialize` to create a persistable representation of a user instance, as well as
 `User.deserialize` to later inflate a `User` instance that can be used to connect to Realm Object
-Server and open synchronized Realms.
+Server and open synchronized Realms (#1276).
 
 ### Bug fixes
-* None.
+* Removed a false negative warning when using `User.createConfiguration`.
 
 ### Internal
 * Realm Core v5.7.2.
