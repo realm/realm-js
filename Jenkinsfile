@@ -1,30 +1,21 @@
 #!groovy
+
+@Library('realm-ci') _
+
 import groovy.json.JsonOutput
 
 repoName = 'realm-js' // This is a global variable
 
-def gitTag
-def gitSha
-def dependencies
-def version
+gitTag = null
+gitSha = null
+dependencies = null
+version = null
 
 // == Stages
 
 stage('check') {
   node('docker') {
-    // - checkout the source
-    checkout([
-      $class: 'GitSCM',
-      branches: scm.branches,
-      gitTool: 'native git',
-      extensions: scm.extensions + [
-        [$class: 'CleanCheckout'],
-        [$class: 'SubmoduleOption', recursiveSubmodules: true]
-      ],
-      userRemoteConfigs: scm.userRemoteConfigs
-    ])
-
-    stash name: 'source', includes:'**/*', excludes:'react-native/android/src/main/jni/src/object-store/.dockerignore'
+    rlmCheckout scm
 
     dependencies = readProperties file: 'dependencies.list'
 
@@ -61,7 +52,11 @@ stage('build') {
     jsdoc: doDockerBuild('jsdoc', {
       publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'docs/output', reportFiles: 'index.html', reportName: 'Docs'])
     }),
-    linux_node_debug: doDockerBuild('node Debug'),
+    linux_node_debug: doDockerBuild('node-cover Debug', {
+        withCredentials([string(credentialsId: 'codecov-token-js', variable: 'CODECOV_TOKEN')]) {
+          sh 'tests/node_modules/codecov/bin/codecov'
+        }
+      }),
     linux_node_release: doDockerBuild('node Release'),
     linux_test_runners: doDockerBuild('test-runners'),
     macos_node_debug: doMacBuild('node Debug'),
@@ -93,7 +88,7 @@ def readGitSha() {
   return sha
 }
 
-def getVersion(){
+def getVersion() {
   def dependencies = readProperties file: 'dependencies.list'
   def gitTag = readGitTag()
   def gitSha = readGitSha()
@@ -132,12 +127,7 @@ def doInside(script, target, postStep = null) {
   try {
     reportStatus(target, 'PENDING', 'Build has started')
 
-    retry(3) { // retry unstash up to three times to mitigate network and contention
-      dir(env.WORKSPACE) {
-        deleteDir()
-        unstash 'source'
-      }
-    }
+    rlmCheckout scm
     wrap([$class: 'AnsiColorBuildWrapper']) {
       sh "bash ${script} ${target}"
     }
@@ -175,13 +165,13 @@ def doAndroidBuild(target, postStep = null) {
 def doDockerBuild(target, postStep = null) {
   return {
     node('docker') {
-      deleteDir()
-      unstash 'source'
+      rlmCheckout scm
 
       try {
         reportStatus(target, 'PENDING', 'Build has started')
 
         docker.image('node:6').inside('-e HOME=/tmp') {
+          sh 'ls -la'
           sh "scripts/test.sh ${target}"
           if(postStep) {
             postStep.call()
@@ -208,7 +198,8 @@ def doMacBuild(target, postStep = null) {
 def doWindowsBuild() {
   return {
     node('windows && nodejs') {
-      unstash 'source'
+      rlmCheckout scm
+
       try {
         sshagent(['realm-ci-ssh']) {
           bat 'npm install --build-from-source=realm --realm_enable_sync'

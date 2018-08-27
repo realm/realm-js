@@ -348,6 +348,32 @@ case "$TARGET" in
   popd
   stop_server
   ;;
+"node-cover")
+  npm run check-environment
+  if [ "$(uname)" = 'Darwin' ]; then
+    echo "downloading server"
+    download_server
+    echo "starting server"
+    start_server
+
+    npm_tests_cmd="npm run test-cover"
+    npm install --build-from-source=realm --realm_enable_sync
+
+  else
+    npm_tests_cmd="npm run test-cover"
+    npm install --build-from-source=realm
+  fi
+
+  # Change to a temp directory.
+  cd "$(mktemp -q -d -t realm.node.XXXXXX)"
+  test_temp_dir=$PWD # set it to be cleaned at exit
+
+  pushd "$SRCROOT/tests"
+  npm install
+  eval "$npm_tests_cmd"
+  popd
+  stop_server
+  ;;
 "electron")
   if [ "$(uname)" = 'Darwin' ]; then
     download_server
