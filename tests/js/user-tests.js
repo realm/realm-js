@@ -431,6 +431,27 @@ module.exports = {
       });
   },
 
+  testDeserializeInvalidInput() {
+    const dummy = {
+      server: '123',
+      identity: '123',
+      refreshToken: '123',
+      isAdmin: false,
+    };
+
+    for (const name of Object.getOwnPropertyNames(dummy)) {
+      const clone = Object.assign({}, dummy);
+      // Set to invalid type
+      clone[name] = 123;
+
+      TestCase.assertThrowsContaining(() => Realm.Sync.User.deserialize(clone), `${name} must be of type '${typeof dummy[name]}'`);
+
+      // Set to undefined
+      clone[name] = undefined;
+      TestCase.assertThrowsContaining(() => Realm.Sync.User.deserialize(clone), `${name} is required, but a value was not provided.`);
+    }
+  }
+
   /* This test fails because of realm-object-store #243 . We should use 2 users.
   testSynchronizeChangesWithTwoClientsAndOneUser() {
     // Test Schema
