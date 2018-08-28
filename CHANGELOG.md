@@ -13,7 +13,7 @@
 * None.
 
 ### Bug fixes
-* Fixed a bug if `fullSynchronization` is not defined in the configuration. This could lead to an exception when opening a synced Realm (#1989).
+* Fixed a bug if `fullSynchronization` is not defined in the configuration used for opening a synced Realm. This could lead to an exception when opening a synced Realm (#1989).
 
 ### Internal
 * Realm Core v5.7.2.
