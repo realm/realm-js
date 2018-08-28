@@ -283,6 +283,13 @@ declare namespace Realm.Sync {
         user: UserInfo
     }
 
+    interface SerializedUser {
+        server: string;
+        refreshToken: string;
+        identity: string;
+        isAdmin: boolean;
+    }
+
     /**
      * User
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.Sync.User.html }
@@ -318,13 +325,16 @@ declare namespace Realm.Sync {
         static requestPasswordReset(server: string, email: string): Promise<void>;
 
         static completePasswordReset(server:string, reset_token:string, new_password:string): Promise<void>;
-        
+
         static requestEmailConfirmation(server:string, email:string): Promise<void>;
 
         static confirmEmail(server:string, confirmation_token:string): Promise<void>;
 
+        static deserialize(serialized: SerializedUser): Realm.Sync.User;
+
         createConfiguration(config?: Realm.PartialConfiguration): Realm.Configuration
         authenticate(server: string, provider: string, options: any): Promise<Realm.Sync.User>;
+        serialize(): SerializedUser;
         logout(): void;
         openManagementRealm(): Realm;
         retrieveAccount(provider: string, username: string): Promise<Account>;

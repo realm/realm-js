@@ -1,3 +1,26 @@
+X.Y.Z Release notes
+=============================================================
+### Compatibility
+* Sync protocol: 24
+* Server-side history format: 4
+* File format: 7
+* Realm Object Server: 3.0.0 or later
+
+### Breaking changes
+* None.
+
+### Enhancements
+* Exposed `User.serialize` to create a persistable representation of a user instance, as well as
+`User.deserialize` to later inflate a `User` instance that can be used to connect to Realm Object
+Server and open synchronized Realms (#1276).
+
+### Bug fixes
+* Removed a false negative warning when using `User.createConfiguration`.
+
+### Internal
+* Realm Core v5.7.2.
+* Realm Sync v3.9.1.
+
 2.15.3 Release notes (2018-8-24)
 =============================================================
 ### Compatibility
@@ -71,7 +94,7 @@
 * Updated external packages with help from `npm audit`.
 * Upgraded to Realm Sync v3.9.1 (to match the devtoolset-6 upgrade).
 * Upgraded to devtoolset-6 on Centos for Linux builds.
- 
+
 
 2.14.2 Release notes (2018-8-8)
 =============================================================
@@ -380,7 +403,7 @@
 The feature known as Partial synchronization has been renamed to Query-based synchronization and is now the default mode for synchronized Realms. This has impacted a number of APIs. See below for the details.
 
 ### Deprecated
-* [Sync] `Realm.Configuration.SyncConfiguration.partial` has been deprecated in favor of `Realm.Configuration.SyncConfiguration.fullSynchronization`. 
+* [Sync] `Realm.Configuration.SyncConfiguration.partial` has been deprecated in favor of `Realm.Configuration.SyncConfiguration.fullSynchronization`.
 * [Sync] `Realm.automaticSyncConfiguration()` has been deprecated in favor of `Realm.Sync.User.createConfiguration()`.
 
 ### Breaking changes

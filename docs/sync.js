@@ -344,22 +344,22 @@ class User {
     /**
      * Request a password reset email to be sent to a user's email.
      * This will not throw an exception, even if the email doesn't belong to a Realm Object Server user.
-     * 
+     *
      * This can only be used for users who authenticated with the 'password' provider, and passed a valid email address as a username.
-     * 
+     *
      * @param {string} server - authentication server
      * @param {string} email - The email that corresponds to the user's username.
      * @return {Promise<void>} A promise which is resolved when the request has been sent.
      */
     static requestPasswordReset(server, email) {}
-    
+
     /**
      * Complete the password reset flow by using the reset token sent to the user's email as a one-time authorization token to change the password.
-     * 
+     *
      * By default, Realm Object Server will send a link to the user's email that will redirect to a webpage where they can enter their new password.
      * If you wish to provide a native UX, you may wish to modify the password authentication provider to use a custom URL with deep linking, so you can
      * open the app, extract the token, and navigate to a view that allows to change the password within the app.
-     * 
+     *
      * @param {string} server - authentication server
      * @param {string} reset_token - The token that was sent to the user's email address.
      * @param {string} new_password - The user's new password.
@@ -370,20 +370,20 @@ class User {
     /**
      * Request an email confirmation email to be sent to a user's email.
      * This will not throw an exception, even if the email doesn't belong to a Realm Object Server user.
-     * 
+     *
      * @param {string} server - authentication server
      * @param {string} email - The email that corresponds to the user's username.
      * @return {Promise<void>} A promise which is resolved when the request has been sent.
      */
     static requestEmailConfirmation(server, email) {}
-    
+
     /**
      * Complete the email confirmation flow by using the confirmation token sent to the user's email as a one-time authorization token to confirm their email.
-     * 
+     *
      * By default, Realm Object Server will send a link to the user's email that will redirect to a webpage where they can enter their new password.
      * If you wish to provide a native UX, you may wish to modify the password authentication provider to use a custom URL with deep linking, so you can
      * open the app, extract the token, and navigate to a view that allows to confirm the email within the app.
-     * 
+     *
      * @param {string} server - authentication server
      * @param {string} confirmation_token - The token that was sent to the user's email address.
      * @return {Promise<void>} A promise which is resolved when the request has been sent.
@@ -397,6 +397,12 @@ class User {
      * @return {User} - admin user populated with the given token and server
      */
     static adminUser(adminToken, server) {}
+
+    /**
+     * Creates a new sync user instance from the serialized representation.
+     * @param {object} serialized - the serialized version of the user, obtained by calling {@link User#serialize}.
+     */
+    static deserialize(serialized) {}
 
     /**
      * A dictionary containing users that are currently logged in.
@@ -451,6 +457,14 @@ class User {
      * @since 3.0.0
      */
     createConfiguration(config) {}
+
+    /**
+     * Serializes a user to an object, that can be persisted or passed to another component to create a new instance
+     * by calling {@link User.deserialize}. The serialized user instance includes the user's refresh token and should
+     * be treated as sensitive data.
+     * @returns {object} an object, containing the user identity, server url, and refresh token.
+     */
+    serialize() {}
 
     /**
      * Logs out the user from the Realm Object Server.
