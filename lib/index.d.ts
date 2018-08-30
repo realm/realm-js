@@ -321,6 +321,7 @@ declare namespace Realm.Sync {
          */
         static registerWithProvider(server: string, options: { provider: string, providerToken: string, userInfo: any }, callback: (error: Error | null, user: User | null) => void): void;
         static registerWithProvider(server: string, options: { provider: string, providerToken: string, userInfo: any }): Promise<Realm.Sync.User>;
+        static authenticate(server: string, provider: string, options: any): Promise<Realm.Sync.User>;
 
         static requestPasswordReset(server: string, email: string): Promise<void>;
 
@@ -333,7 +334,6 @@ declare namespace Realm.Sync {
         static deserialize(serialized: SerializedUser): Realm.Sync.User;
 
         createConfiguration(config?: Realm.PartialConfiguration): Realm.Configuration
-        authenticate(server: string, provider: string, options: any): Promise<Realm.Sync.User>;
         serialize(): SerializedUser;
         logout(): void;
         openManagementRealm(): Realm;
