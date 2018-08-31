@@ -290,6 +290,21 @@ declare namespace Realm.Sync {
         isAdmin: boolean;
     }
 
+    class Credentials {
+        static usernamePassword(username: string, password: string, createUser?: boolean): Credentials;
+        static facebook(token: string): Credentials;
+        static google(token: string): Credentials;
+        static anonymous(): Credentials;
+        static nickname(value: string, isAdmin?: boolean): Credentials;
+        static azureAD(token: string): Credentials;
+        static jwt(token: string): Credentials;
+        static adminToken(token: string): Credentials;
+
+        readonly provider: string;
+        readonly token: string;
+        readonly userInfo: { [key: string]: any };
+    }
+
     /**
      * User
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.Sync.User.html }
@@ -302,26 +317,7 @@ declare namespace Realm.Sync {
         readonly isAdminToken: boolean;
         readonly server: string;
         readonly token: string;
-        static adminUser(adminToken: string, server?: string): User;
-
-        /**
-         * @deprecated, to be removed in future versions
-         */
-        static login(server: string, username: string, password: string, callback: (error: any, user: User) => void): void;
-        static login(server: string, username: string, password: string): Promise<Realm.Sync.User>;
-
-        /**
-         * @deprecated, to be removed in future versions
-         */
-        static register(server: string, username: string, password: string, callback: (error: any, user: User) => void): void;
-        static register(server: string, username: string, password: string): Promise<Realm.Sync.User>;
-
-        /**
-         * @deprecated, to be removed in versions
-         */
-        static registerWithProvider(server: string, options: { provider: string, providerToken: string, userInfo: any }, callback: (error: Error | null, user: User | null) => void): void;
-        static registerWithProvider(server: string, options: { provider: string, providerToken: string, userInfo: any }): Promise<Realm.Sync.User>;
-        static authenticate(server: string, provider: string, options: any): Promise<Realm.Sync.User>;
+        static login(server: string, credentials: Credentials): Promise<User> | User;
 
         static requestPasswordReset(server: string, email: string): Promise<void>;
 

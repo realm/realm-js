@@ -288,58 +288,105 @@ class IncompatibleSyncedRealmError {
 }
 
 /**
+ * Class for creating user credentials
+ * @memberof Realm.Sync
+ */
+class Credentials {
+    /**
+     * Creates credentials based on a login with a username and a password.
+     * @param {string} username The username of the user.
+     * @param {string} password The user's password.
+     * @param {boolean} createUser optional - `true` if the user should be created, `false` otherwise. If
+     * `true` is provided and the user exists, or `false` is provided and the user doesn't exist,
+     * an error will be thrown. If not specified, if the user doesn't exist, they will be created,
+     * otherwise, they'll be logged in if the password matches.
+     * @return {Credentials} An instance of `Credentials` that can be used in @see {User.login}.
+     */
+    static usernamePassword(username, password, createUser) {};
+
+    /**
+     * Creates credentials based on a Facebook login.
+     * @param {string} token A Facebook authentication token, obtained by logging into Facebook..
+     * @return {Credentials} An instance of `Credentials` that can be used in @see {User.login}.
+     */
+    static facebook(token);
+
+    /**
+     * Creates credentials based on a Google login.
+     * @param {string} token A Google authentication token, obtained by logging into Google..
+     * @return {Credentials} An instance of `Credentials` that can be used in @see {User.login}.
+    static google(token) {};
+
+    /**
+     * Creates credentials for an anonymous user. These can only be used once - using them a second
+     * time will result in a different user being logged in. If you need to get a user that has already logged
+     * in with the Anonymous credentials, use @see {User.current} or @see {User.all}
+     * @return {Credentials} An instance of `Credentials` that can be used in @see {User.login}.
+     */
+    static anonymous() {};
+
+    /**
+     * Creates credentials based on a login with a nickname. If multiple users try to login
+     * with the same nickname, they'll get the same underlying sync user.
+     * @param {string} value The nickname of the user.
+     * @param {boolean} isAdmin An optional parameter controlling whether the user is admin.
+     * @return {Credentials} An instance of `Credentials` that can be used in @see {User.login}.
+     */
+    static nickname(value, isAdmin) {};
+
+    /**
+     * Creates credentials based on an Active Directory login.
+     * @param {string} token An access token, obtained by logging into Azure Active Directory.
+     * @return {Credentials} An instance of `Credentials` that can be used in @see {User.login}.
+     */
+    static azureAD(token) {};
+
+    /**
+     * Creates credentials based on a JWT login.
+     * @param {string} token A Json Web Token, that will be validated against the server's configured rules.
+     * @return {Credentials} An instance of `Credentials` that can be used in @see {User.login}.
+     */
+    static jwt(token) {};
+
+    /**
+     * Creates credentials based on an admin token. Using this credential will not contact the Realm Object Server.
+     * @param {string} token The admin token.
+     * @return {Credentials} An instance of `Credentials` that can be used in @see {User.login}.
+     */
+    static adminToken(token) {};
+
+    /**
+     * Gets the identity provider for the credentials.
+     * @returns {string} The identity provider, such as Google, Facebook, etc.
+     */
+    get provider();
+
+    /**
+     * Gets the access token.
+     * @returns {string}
+     */
+    get token();
+
+    /**
+     * Gets additional user information associated with the credentials.
+     * @returns {object} A dictionary, containing the additional information.
+     */
+    get userInfo();
+
+}
+
+/**
  * Class for logging in and managing Sync users.
  * @memberof Realm.Sync
  */
 class User {
     /**
-     * Login a sync user with username and password.
-     * @param {string} server - authentication server
-     * @param {string} username
-     * @param {string} password
-     * @param {function(error, user)} [callback] - called with the following arguments:
-     *   - `error` - an Error object is provided on failure
-     *   - `user` - a valid User object on success
-     * @returns {void|Promise<User>} Returns a promise with a user if the callback was not specified
+     * Logs the user in to the Realm Object Server.
+     * @param {string} server The url of the server that the user is authenticated against.
+     * @param {Credentials} credentials The credentials to use for authentication. Obtain them by calling one of the
+     * @see {Credentials} static methods.
      */
-    static login(server, username, password, callback) {}
-
-    /**
-     * Authenticate a sync user with provider.
-     * @param {string} server - authentication server
-     * @param {string} provider - the provider (curently: 'password', and 'jwt')
-     * @param {object} options - options used by provider:
-     *   - jwt - `token`; a JWT token
-     *   - password - `username` and `password`
-     * @return {Promise<User>} Returns a promise with a user
-     */
-    static authenticate(server, provider, options) {}
-
-    /**
-     * Register/login a sync user using an external login provider.
-     * @param {string} server - authentication server
-     * @param {object} options - options, containing the following:
-     * @param {string} options.provider - The provider type
-     * @param {string} options.providerToken - The access token for the given provider
-     * @param {object} [options.userInfo] - A map containing additional data required by the provider
-     * @param {function(error, User)} [callback] - an optional callback called with the following arguments:
-     *   - `error` - an Error object is provided on failure
-     *   - `user` - a valid User object on success
-     * @return {void|Promise<User>} Returns a promise with a user if the callback was not specified
-     */
-    static registerWithProvider(server, options, callback) {}
-
-    /**
-     * Register a sync user with username and password.
-     * @param {string} server - authentication server
-     * @param {string} username
-     * @param {string} password
-     * @param {function(error, user)} [callback] - called with the following arguments:
-     *   - `error` - an Error object is provided on failure
-     *   - `user` - a valid User object on success
-     * @return {void|Promise<User>} Returns a promise with a user if the callback was not specified
-     */
-    static register(server, username, password, callback) {}
+    static login(server, credentials) {}
 
     /**
      * Request a password reset email to be sent to a user's email.
