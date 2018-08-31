@@ -17,6 +17,7 @@ Server and open synchronized Realms (#1276).
 ### Bug fixes
 * Removed a false negative warning when using `User.createConfiguration`.
 * Fixed the type definition for `User.authenticate`.
+* Fixed the type definitions for `Session.addConnectionNotification` and `Session.removeConnectionNotification`
 
 ### Internal
 * Realm Core v5.7.2.
