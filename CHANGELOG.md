@@ -21,9 +21,9 @@ X.Y.Z Release notes
 
   | Old | New |
   | - | - |
-  | <pre><code>const user = await Realm.Sync.User.login(serverUrl, 'username', 'password');</code></pre> | <pre><code>const credentials = Realm.Sync.Credentials.usernamePassword('username', 'password');<br>const user = await Realm.Sync.User.login(serverUrl, credentials); </code></pre> |
-  | <pre><code>const jwtToken = 'acc3ssT0ken...';<br>const user = await Realm.Sync.User.registerWithProvider(serverUrl, 'jwt', jwtToken);</code></pre> | <pre><code>const jwtToken = 'acc3ssT0ken...';<br>const credentials = Realm.Sync.Credentials.jwt(jwtToken);<br>const user = await Realm.Sync.User.login(serverUrl, credentials);</code></pre> |
-  | <pre><code>const customToken = 'acc3ssT0ken...';<br>const userInfo = { someValue: true };<br>const user = await Realm.Sync.User.registerWithProvider(serverUrl, 'custom/fooauth', customToken, userInfo);</code></pre> | <pre><code>const customToken = 'acc3ssT0ken...';<br>const userInfo = { someValue: true };<br>const credentials = Realm.Sync.Credentials.custom('custom/fooauth', customToken, userInfo);<br>const user = await Realm.Sync.User.login(serverUrl, credentials);</code></pre> |
+  | `const user = await Realm.Sync.User.login(serverUrl, 'username', 'password');` | `const credentials = Realm.Sync.Credentials.usernamePassword('username', 'password');`<br/> `const user = await Realm.Sync.User.login(serverUrl, credentials);` |
+  | `const jwtToken = 'acc3ssT0ken...';`<br>`const user = await Realm.Sync.User.registerWithProvider(serverUrl, 'jwt', jwtToken);` | `const jwtToken = 'acc3ssT0ken...';`<br>`const credentials = Realm.Sync.Credentials.jwt(jwtToken);`<br>`const user = await Realm.Sync.User.login(serverUrl, credentials);` |
+  | `const customToken = 'acc3ssT0ken...';`<br>`const userInfo = { someValue: true };`<br>`const user = await Realm.Sync.User.registerWithProvider(serverUrl, 'custom/fooauth', customToken, userInfo);` | `const customToken = 'acc3ssT0ken...';`<br>`const userInfo = { someValue: true };`<br>`const credentials = Realm.Sync.Credentials.custom('custom/fooauth', customToken, userInfo);`<br>`const user = await Realm.Sync.User.login(serverUrl, credentials);` |
 
 ### Enhancements
 * Exposed `User.serialize` to create a persistable representation of a user instance, as well as
