@@ -296,7 +296,7 @@ class Credentials {
      * Creates credentials based on a login with a username and a password.
      * @param {string} username The username of the user.
      * @param {string} password The user's password.
-     * @param {boolean} createUser optional - `true` if the user should be created, `false` otherwise. If
+     * @param {boolean} [createUser] optional - `true` if the user should be created, `false` otherwise. If
      * `true` is provided and the user exists, or `false` is provided and the user doesn't exist,
      * an error will be thrown. If not specified, if the user doesn't exist, they will be created,
      * otherwise, they'll be logged in if the password matches.
@@ -330,7 +330,7 @@ class Credentials {
      * Creates credentials based on a login with a nickname. If multiple users try to login
      * with the same nickname, they'll get the same underlying sync user.
      * @param {string} value The nickname of the user.
-     * @param {boolean} isAdmin An optional parameter controlling whether the user is admin.
+     * @param {boolean} [isAdmin] An optional parameter controlling whether the user is admin. Default is `false`.
      * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.Sync.User.login|User.login}.
      */
     static nickname(value, isAdmin) {};
@@ -345,9 +345,11 @@ class Credentials {
     /**
      * Creates credentials based on a JWT login.
      * @param {string} token A Json Web Token, that will be validated against the server's configured rules.
+     * @param {string} [providerName] The name of the provider as configured in the Realm Object. If not specified, the default
+     * name - `jwt` - will be used.
      * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.Sync.User.login|User.login}.
      */
-    static jwt(token) {};
+    static jwt(token, providerName) {};
 
     /**
      * Creates credentials based on an admin token. Using this credential will not contact the Realm Object Server.
@@ -915,7 +917,7 @@ class Adapter {
 	 * Open the Realm used by the Adapter for the given path. This is useful for writing two way
 	 * adapters as transactions written to this realm will be ignored when calling `current` and `advance`
 	 * @param {string} path - the path for the Realm to open
-     * @param {Realm~ObjectSchema[]} [optional] schema - schema to apply when opening the Realm
+     * @param {Realm~ObjectSchema[]} [schema] - optional schema to apply when opening the Realm
 	 * @returns {Realm}
 	 */
 	realmAtPath(path, schema) {}

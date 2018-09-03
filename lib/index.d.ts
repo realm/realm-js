@@ -297,7 +297,7 @@ declare namespace Realm.Sync {
         static anonymous(): Credentials;
         static nickname(value: string, isAdmin?: boolean): Credentials;
         static azureAD(token: string): Credentials;
-        static jwt(token: string): Credentials;
+        static jwt(token: string, providerName?: string): Credentials;
         static adminToken(token: string): Credentials;
 
         readonly identityProvider: string;
@@ -321,11 +321,11 @@ declare namespace Realm.Sync {
 
         static requestPasswordReset(server: string, email: string): Promise<void>;
 
-        static completePasswordReset(server:string, reset_token:string, new_password:string): Promise<void>;
+        static completePasswordReset(server:string, resetToken:string, newPassword:string): Promise<void>;
 
         static requestEmailConfirmation(server:string, email:string): Promise<void>;
 
-        static confirmEmail(server:string, confirmation_token:string): Promise<void>;
+        static confirmEmail(server:string, confirmationToken:string): Promise<void>;
 
         static deserialize(serialized: SerializedUser): Realm.Sync.User;
 
