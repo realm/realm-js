@@ -300,28 +300,29 @@ class Credentials {
      * `true` is provided and the user exists, or `false` is provided and the user doesn't exist,
      * an error will be thrown. If not specified, if the user doesn't exist, they will be created,
      * otherwise, they'll be logged in if the password matches.
-     * @return {Credentials} An instance of `Credentials` that can be used in @see {User.login}.
+     * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.Sync.User.login|User.login}.
      */
     static usernamePassword(username, password, createUser) {};
 
     /**
      * Creates credentials based on a Facebook login.
      * @param {string} token A Facebook authentication token, obtained by logging into Facebook..
-     * @return {Credentials} An instance of `Credentials` that can be used in @see {User.login}.
+     * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.Sync.User.login|User.login}.
      */
-    static facebook(token);
+    static facebook(token) {};
 
     /**
      * Creates credentials based on a Google login.
      * @param {string} token A Google authentication token, obtained by logging into Google..
-     * @return {Credentials} An instance of `Credentials` that can be used in @see {User.login}.
+     * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.Sync.User.login|User.login}.
+     */
     static google(token) {};
 
     /**
      * Creates credentials for an anonymous user. These can only be used once - using them a second
      * time will result in a different user being logged in. If you need to get a user that has already logged
-     * in with the Anonymous credentials, use @see {User.current} or @see {User.all}
-     * @return {Credentials} An instance of `Credentials` that can be used in @see {User.login}.
+     * in with the Anonymous credentials, use {@linkcode Realm.Sync.User.current|User.current} or {@linkcode Realm.Sync.User.all|User.all}
+     * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.Sync.User.login|User.login}.
      */
     static anonymous() {};
 
@@ -330,28 +331,28 @@ class Credentials {
      * with the same nickname, they'll get the same underlying sync user.
      * @param {string} value The nickname of the user.
      * @param {boolean} isAdmin An optional parameter controlling whether the user is admin.
-     * @return {Credentials} An instance of `Credentials` that can be used in @see {User.login}.
+     * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.Sync.User.login|User.login}.
      */
     static nickname(value, isAdmin) {};
 
     /**
      * Creates credentials based on an Active Directory login.
      * @param {string} token An access token, obtained by logging into Azure Active Directory.
-     * @return {Credentials} An instance of `Credentials` that can be used in @see {User.login}.
+     * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.Sync.User.login|User.login}.
      */
     static azureAD(token) {};
 
     /**
      * Creates credentials based on a JWT login.
      * @param {string} token A Json Web Token, that will be validated against the server's configured rules.
-     * @return {Credentials} An instance of `Credentials` that can be used in @see {User.login}.
+     * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.Sync.User.login|User.login}.
      */
     static jwt(token) {};
 
     /**
      * Creates credentials based on an admin token. Using this credential will not contact the Realm Object Server.
      * @param {string} token The admin token.
-     * @return {Credentials} An instance of `Credentials` that can be used in @see {User.login}.
+     * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.Sync.User.login|User.login}.
      */
     static adminToken(token) {};
 
@@ -359,32 +360,33 @@ class Credentials {
      * Gets the identity provider for the credentials.
      * @returns {string} The identity provider, such as Google, Facebook, etc.
      */
-    get provider();
+    get identityProvider() {};
 
     /**
      * Gets the access token.
      * @returns {string}
      */
-    get token();
+    get token() {};
 
     /**
      * Gets additional user information associated with the credentials.
      * @returns {object} A dictionary, containing the additional information.
      */
-    get userInfo();
-
+    get userInfo() {};
 }
 
 /**
- * Class for logging in and managing Sync users.
+ * Class for managing Sync users.
  * @memberof Realm.Sync
  */
 class User {
     /**
      * Logs the user in to the Realm Object Server.
      * @param {string} server The url of the server that the user is authenticated against.
-     * @param {Credentials} credentials The credentials to use for authentication. Obtain them by calling one of the
-     * @see {Credentials} static methods.
+     * @param {Credentials} credentials The credentials to use for authentication. Obtain them by calling one of
+     * the {@linkcode Realm.Sync.Credentials|Credentials} static methods.
+     * @return {Promise<User> | User} A {@linkcode Realm.Sync.User|User} object if the credentials are
+     * {@linkcode Realm.Sync.Credentials.adminToken|adminToken}, {@link Realm.Sync.User|`Promise<User>`} otherwise.
      */
     static login(server, credentials) {}
 
@@ -408,11 +410,11 @@ class User {
      * open the app, extract the token, and navigate to a view that allows to change the password within the app.
      *
      * @param {string} server - authentication server
-     * @param {string} reset_token - The token that was sent to the user's email address.
-     * @param {string} new_password - The user's new password.
+     * @param {string} resetToken - The token that was sent to the user's email address.
+     * @param {string} newPassword - The user's new password.
      * @return {Promise<void>} A promise which is resolved when the request has been sent.
      */
-    static completePasswordReset(server, reset_token, new_password) {}
+    static completePasswordReset(server, resetToken, newPassword) {}
 
     /**
      * Request an email confirmation email to be sent to a user's email.
@@ -432,10 +434,10 @@ class User {
      * open the app, extract the token, and navigate to a view that allows to confirm the email within the app.
      *
      * @param {string} server - authentication server
-     * @param {string} confirmation_token - The token that was sent to the user's email address.
+     * @param {string} confirmationToken - The token that was sent to the user's email address.
      * @return {Promise<void>} A promise which is resolved when the request has been sent.
      */
-    static confirmEmail(server, confirmation_token) {}
+    static confirmEmail(server, confirmationToken) {}
 
     /**
      * Create an admin user for the given authentication server with an existing token

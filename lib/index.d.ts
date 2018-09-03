@@ -300,7 +300,7 @@ declare namespace Realm.Sync {
         static jwt(token: string): Credentials;
         static adminToken(token: string): Credentials;
 
-        readonly provider: string;
+        readonly identityProvider: string;
         readonly token: string;
         readonly userInfo: { [key: string]: any };
     }
