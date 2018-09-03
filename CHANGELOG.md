@@ -7,7 +7,23 @@ X.Y.Z Release notes
 * Realm Object Server: 3.0.0 or later
 
 ### Breaking changes
-* None.
+* The authentication API have been completely revamped.
+  * The following methods have been removed:
+    * `Realm.Sync.User.login`
+    * `Realm.Sync.User.register`
+    * `Realm.Sync.User.authenticate`
+    * `Realm.Sync.User.registerWithProvider`
+    * `Realm.Sync.User.adminUser`
+  * A new `Realm.Sync.User.login` method has been added that accepts the server url and a credentials object.
+  * A new class - `Realm.Sync.Credentials` has been added that contains factory methods to create credentials
+  with all supported providers.
+  * Here are some examples on how to transform your old code to use the new API:
+
+  | Old | New |
+  | - | - |
+  | <pre><code>const user = await Realm.Sync.User.login(serverUrl, 'username', 'password');</code></pre> | <pre><code>const credentials = Realm.Sync.Credentials.usernamePassword('username', 'password');<br>const user = await Realm.Sync.User.login(serverUrl, credentials); </code></pre> |
+  | <pre><code>const jwtToken = 'acc3ssT0ken...';<br>const user = await Realm.Sync.User.registerWithProvider(serverUrl, 'jwt', jwtToken);</code></pre> | <pre><code>const jwtToken = 'acc3ssT0ken...';<br>const credentials = Realm.Sync.Credentials.jwt(jwtToken);<br>const user = await Realm.Sync.User.login(serverUrl, credentials);</code></pre> |
+  | <pre><code>const customToken = 'acc3ssT0ken...';<br>const userInfo = { someValue: true };<br>const user = await Realm.Sync.User.registerWithProvider(serverUrl, 'custom/fooauth', customToken, userInfo);</code></pre> | <pre><code>const customToken = 'acc3ssT0ken...';<br>const userInfo = { someValue: true };<br>const credentials = Realm.Sync.Credentials.custom('custom/fooauth', customToken, userInfo);<br>const user = await Realm.Sync.User.login(serverUrl, credentials);</code></pre> |
 
 ### Enhancements
 * Exposed `User.serialize` to create a persistable representation of a user instance, as well as

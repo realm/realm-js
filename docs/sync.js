@@ -99,7 +99,7 @@ class Sync {
      * Add a sync listener to listen to changes across multiple Realms.
      *
      * @param {string} serverUrl - The sync server to listen to.
-     * @param {SyncUser} adminUser - An admin user obtained by calling `new Realm.Sync.User.adminUser`.
+     * @param {SyncUser} adminUser - an admin user obtained by calling {@linkcode Realm.Sync.User.login|User.login} with admin credentials.
      * @param {string} filterRegex - A regular expression used to determine which changed Realms should trigger events. Use `.*` to match all Realms.
      * @param {string} name - The name of the event.
      * @param {function(changeEvent)} changeCallback - The callback to invoke with the events.
@@ -129,7 +129,7 @@ class Sync {
      * Add a sync listener to listen to changes across multiple Realms.
      *
      * @param {string} serverUrl - The sync server to listen to.
-     * @param {SyncUser} adminUser - An admin user obtained by calling `new Realm.Sync.User.adminUser`.
+     * @param {SyncUser} adminUser - an admin user obtained by calling {@linkcode Realm.Sync.User.login|User.login} with admin credentials.
      * @param {string} filterRegex - A regular expression used to determine which changed Realms should trigger events. Use `.*` to match all Realms.
      * @param {Realm.Worker} worker - Worker to deliver events to.
      *
@@ -359,6 +359,17 @@ class Credentials {
     static adminToken(token) {};
 
     /**
+     * Creates credentials with a custom provider and user identifier.
+     * @param {string} providerName Provider used to verify the credentials.
+     * @param {string} token A string identifying the user. Usually an identity token or a username.
+     * @param {userInfo} token Data describing the user further or null if the user does not have any extra data.
+     * The data will be serialized to JSON, so all values must be mappable to a valid JSON data type.
+     * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.Sync.User.login|User.login}.
+     */
+    static custom(providerName, token, userInfo) {};
+
+
+    /**
      * Gets the identity provider for the credentials.
      * @returns {string} The identity provider, such as Google, Facebook, etc.
      */
@@ -440,14 +451,6 @@ class User {
      * @return {Promise<void>} A promise which is resolved when the request has been sent.
      */
     static confirmEmail(server, confirmationToken) {}
-
-    /**
-     * Create an admin user for the given authentication server with an existing token
-     * @param {string} adminToken - existing admin token
-     * @param {string} server - authentication server
-     * @return {User} - admin user populated with the given token and server
-     */
-    static adminUser(adminToken, server) {}
 
     /**
      * Creates a new sync user instance from the serialized representation.
@@ -837,7 +840,7 @@ class Adapter {
 	 * Create a new Adapter to monitor and process changes made across multiple Realms
 	 * @param {string} localPath - the local path where realm files are stored
 	 * @param {string} serverUrl - the sync server to listen to
-	 * @param {SyncUser} adminUser - an admin user obtained by calling `new Realm.Sync.User.adminUser`
+	 * @param {SyncUser} adminUser - an admin user obtained by calling {@linkcode Realm.Sync.User.login|User.login} with admin credentials.
 	 * @param {string} regex - a regular expression used to determine which changed Realms should be monitored -
 	 *  use `.*` to match all all Realms
 	 * @param {function(realmPath)} changeCallback - called when a new transaction is available

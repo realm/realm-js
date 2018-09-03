@@ -299,6 +299,7 @@ declare namespace Realm.Sync {
         static azureAD(token: string): Credentials;
         static jwt(token: string, providerName?: string): Credentials;
         static adminToken(token: string): Credentials;
+        static custom(providerName: string, token: string, userInfo: {[key: string]: any}): Credentials;
 
         readonly identityProvider: string;
         readonly token: string;
