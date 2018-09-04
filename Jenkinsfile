@@ -24,7 +24,8 @@ stage('check') {
       userRemoteConfigs: scm.userRemoteConfigs
     ])
 
-    stash name: 'source', includes:'**/*', excludes:'react-native/android/src/main/jni/src/object-store/.dockerignore'
+    stash name: 'source', includes: '**/*', excludes: 'react-native/android/src/main/jni/src/object-store/.dockerignore'
+    stash name: 'git', includes: '.git/**/*', useDefaultExcludes: false
 
     dependencies = readProperties file: 'dependencies.list'
 
@@ -64,7 +65,11 @@ stage('build') {
     linux_node_debug: doDockerBuild('node Debug'),
     linux_node_release: doDockerBuild('node Release'),
     linux_test_runners: doDockerBuild('test-runners'),
-    macos_node_debug: doMacBuild('node Debug'),
+    macos_node_debug: doMacBuild('node Debug', true) {
+      withCredentials([string(credentialsId: 'codecov-token-js', variable: 'CODECOV_TOKEN')]) {
+        sh 'node_modules/.bin/codecov'
+      }
+    },
     macos_node_release: doMacBuild('node Release'),
     //macos_realmjs_debug: doMacBuild('realmjs Debug'),
     //macos_realmjs_release: doMacBuild('realmjs Release'),
@@ -197,10 +202,32 @@ def doDockerBuild(target, postStep = null) {
   }
 }
 
-def doMacBuild(target, postStep = null) {
+def doMacBuild(target, coverage = false, postStep = null) {
+  def prefix = coverage?'echo $0 && env && npm install nyc && node_modules/.bin/nyc --show-process-tree ':''
   return {
     node('osx_vegas') {
-      doInside("./scripts/test.sh", target, postStep)
+      deleteDir()
+      unstash 'source'
+      if(coverage) {
+        unstash 'git'
+      }
+
+      try {
+        reportStatus(target, 'PENDING', 'Build has started')
+
+        nvm(version: '7.10.0') {
+          sh 'npm install os-homedir; node -e "const osHomedir = require(\'os-homedir\');console.log(osHomedir())"'
+          sh "${prefix}scripts/test.sh ${target}"
+          if(postStep) {
+            postStep.call()
+          }
+          deleteDir()
+          reportStatus(target, 'SUCCESS', 'Success!')
+        }
+      } catch(Exception e) {
+        reportStatus(target, 'FAILURE', e.toString())
+        throw e
+      }
     }
   }
 }

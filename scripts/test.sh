@@ -72,7 +72,6 @@ stop_server() {
 
 startedSimulator=false
 log_temp=
-test_temp_dir=
 cleanup() {
   # Kill started object server
   stop_server || true
@@ -96,9 +95,6 @@ cleanup() {
   # Cleanup temp files
   if [ -n "$log_temp" ] && [ -e "$log_temp" ]; then
     rm "$log_temp" || true
-  fi
-  if [ -n "$test_temp_dir" ] && [ -e "$test_temp_dir" ]; then
-    rm -rf "$test_temp_dir" || true
   fi
 }
 
@@ -338,10 +334,6 @@ case "$TARGET" in
     npm install --build-from-source=realm
   fi
 
-  # Change to a temp directory.
-  cd "$(mktemp -q -d -t realm.node.XXXXXX)"
-  test_temp_dir=$PWD # set it to be cleaned at exit
-
   pushd "$SRCROOT/tests"
   npm install
   eval "$npm_tests_cmd"
@@ -354,9 +346,6 @@ case "$TARGET" in
     start_server
   fi
 
-  # Change to a temp directory - because this is what is done for node - but we pushd right after?
-  cd "$(mktemp -q -d -t realm.electron.XXXXXX)"
-  test_temp_dir=$PWD # set it to be cleaned at exit
   pushd "$SRCROOT/tests/electron"
 
   if [ "$(uname)" = 'Darwin' ]; then

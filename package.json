@@ -49,6 +49,7 @@
     "set-version": "scripts/set-version.sh",
     "lint": "eslint",
     "test": "scripts/test.sh",
+    "test-cover": "npm install nyc && node_modules/.bin/nyc scripts/test.sh",
     "install": "node-pre-gyp install --fallback-to-build",
     "build-changes": "node-pre-gyp build --debug",
     "rebuild-changes": "node-pre-gyp rebuild --debug && cd tests && npm install",
@@ -105,7 +106,9 @@
     "rimraf": "^2.6.1",
     "semver": "^5.1.0",
     "shelljs": "^0.7.7",
-    "shx": "^0.2.2"
+    "shx": "^0.2.2",
+    "nyc": "^11.2.1",
+    "codecov": "^2.2.0"
   },
   "rnpm": {
     "ios": {
