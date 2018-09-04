@@ -466,8 +466,8 @@ declare namespace Realm.Sync {
         addProgressNotification(direction: ProgressDirection, mode: ProgressMode, progressCallback: ProgressNotificationCallback): void;
         removeProgressNotification(progressCallback: ProgressNotificationCallback): void;
 
-        addConnectionNotification(callback): void;
-        removeConnectionNotification(callback): void;
+        addConnectionNotification(callback: ConnectionNotificationCallback): void;
+        removeConnectionNotification(callback: ConnectionNotificationCallback): void;
 
         isConnected(): boolean;
     }
