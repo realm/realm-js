@@ -603,6 +603,27 @@ class User {
      * {@link Realm#Sync#User#offerPermissions offerPermissions}.
      */
     invalidatePermissionOffer(permissionOfferOrToken) { }
+
+    // Deprecated
+    /**
+     * @deprecated, to be removed in future versions. Use User.login(server, Credentials.usernamePassword) instead.
+     */
+    static register(server, username, password, callback) {}
+
+    /**
+     * @deprecated, to be removed in future versions. Use User.login(server, Credentials.adminToken) instead.
+     */
+    static adminUser(adminToken, server) {}
+
+    /**
+     * @deprecated, to be removed in future versions. Use User.login(server, Credentials.SOME-PROVIDER) instead.
+     */
+    static registerWithProvider(server, options, callback) {}
+
+    /**
+     * @deprecated, to be removed in future versions. Use User.login(server, Credentials.SOME-PROVIDER) instead.
+     */
+    static authenticate(server, provider, options) {}
 }
 
 /**
