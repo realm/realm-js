@@ -606,22 +606,22 @@ class User {
 
     // Deprecated
     /**
-     * @deprecated, to be removed in future versions. Use User.login(server, Credentials.usernamePassword) instead.
+     * @deprecated to be removed in future versions. Use User.login(server, Credentials.usernamePassword) instead.
      */
     static register(server, username, password) {}
 
     /**
-     * @deprecated, to be removed in future versions. Use User.login(server, Credentials.adminToken) instead.
+     * @deprecated to be removed in future versions. Use User.login(server, Credentials.adminToken) instead.
      */
     static adminUser(adminToken, server) {}
 
     /**
-     * @deprecated, to be removed in future versions. Use User.login(server, Credentials.SOME-PROVIDER) instead.
+     * @deprecated to be removed in future versions. Use User.login(server, Credentials.SOME-PROVIDER) instead.
      */
     static registerWithProvider(server, options) {}
 
     /**
-     * @deprecated, to be removed in future versions. Use User.login(server, Credentials.SOME-PROVIDER) instead.
+     * @deprecated to be removed in future versions. Use User.login(server, Credentials.SOME-PROVIDER) instead.
      */
     static authenticate(server, provider, options) {}
 }
