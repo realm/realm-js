@@ -132,7 +132,7 @@ Server and open synchronized Realms (#1276).
 * None.
 
 ### Enhancements
-* None.
+* Added support for `LIMIT` in queries to restrict the size of the results set. This is in particular useful for query-based synced Realms. An example of the syntax is `age >= 20 LIMIT(2)`.
 
 ### Bug fixes
 * [Sync] The schema definition for `permissionsSchema.Class` defined a `class_name` property instead of `name` (#1942).
