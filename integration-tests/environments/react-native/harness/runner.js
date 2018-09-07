@@ -1,12 +1,10 @@
+const { MochaRemoteServer } = require("mocha-remote-server");
 const { resolve } = require("path");
-const Mocha = require("mocha");
 
 const rn = require("./react-native-cli");
-const { Server } = require("./server");
-const adb = require("./adb");
+const adb = require("./adb-cli");
 
 const PLATFORM_KEY = "--platform";
-const HARNESS_PORT = 8090;
 
 const projectRoots = [
     // The react-native test app
@@ -18,8 +16,8 @@ const projectRoots = [
 ];
 
 async function runApp(platform) {
-    const server = new Server();
-    await server.start(HARNESS_PORT);
+    const server = new MochaRemoteServer();
+    await server.start();
 
     // Spawn a react-native metro server
     const metro = rn.async("start", "--reset-cache", `--projectRoots=${projectRoots.join(",")}`);
@@ -35,11 +33,8 @@ async function runApp(platform) {
         }
     });
 
-    // Create a spec reporter and listen to the server emitting like a runner
-    const reporter = new Mocha.reporters.spec(server);
-
     if (platform === "android") {
-        adb.reverseServerPort(HARNESS_PORT);
+        adb.reverseServerPort(MochaRemoteServer.DEFAULT_CONFIG.port);
         // Ask React Native to run the android app
         rn.sync("run-android", "--no-packager");
     } else if (platform === "ios") {
@@ -48,11 +43,11 @@ async function runApp(platform) {
     } else {
         throw new Error(`Unexpected platform ${platform}`);
     }
+
     // Wait until the tests ends
     return new Promise((resolve) => {
-        server.once("end", () => {
-            // Resolve when the server ends
-            resolve(reporter.stats);
+        server.run((failures) => {
+            resolve(failures);
         });
     });
 }
@@ -71,9 +66,9 @@ async function run() {
     }
 }
 
-run().then(stats => {
+run().then(failures => {
     // Exit with a non-zero code if we had failures
-    process.exit(stats.failures > 0 ? 1 : 0);
+    process.exit(failures > 0 ? 1 : 0);
 }, err => {
     console.error(err.stack);
     process.exit(2);
