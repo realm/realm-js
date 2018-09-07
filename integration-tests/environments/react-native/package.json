@@ -14,7 +14,7 @@
   "dependencies": {
     "@realm-tests/tests": "../../tests",
     "mocha": "^5.2.0",
-    "mocha-remote-client": "^0.6.1",
+    "mocha-remote-client": "^0.6.2",
     "react": "16.4.1",
     "react-native": "0.56.0"
   },
