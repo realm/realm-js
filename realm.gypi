@@ -173,9 +173,6 @@
         "conditions": [
           ["use_realm_debug", {
             "defines": [ "REALM_DEBUG=1" ]
-          }],
-          ["OS=='linux'", {
-            "defines": [ "_GLIBCXX_USE_CXX11_ABI=0" ]
           }]
         ]
       },
