@@ -128,7 +128,8 @@
         ["OS=='linux'", {
           "sources": [
             "src/object-store/src/impl/epoll/external_commit_helper.cpp",
-          ]
+          ],
+          "defines": [ "_GLIBCXX_USE_CXX11_ABI=0" ]
         }],
         ["OS=='mac'", {
           "sources": [
