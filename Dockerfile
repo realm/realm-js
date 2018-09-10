@@ -1,4 +1,4 @@
-FROM ubuntu:xenial
+FROM ubuntu:18.04
 
 # Install the JDK
 # We are going to need some 32 bit binaries because aapt (Android Asset
