@@ -219,5 +219,24 @@ module.exports = {
         });
 
         TestCase.assertEqual(olivier.linkingObjectsCount(), 2);
+    },
+
+    testInfinityRecursion: function() {
+        var realm = new Realm({schema: [schemas.Dog, schemas.Person]});
+
+        realm.write(() => {
+            realm.create('Person', {
+                name: "test",
+                dog: realm.create('Dog', {
+                    name: 'harry'
+                })
+            });
+        });
+
+        const persons = realm.objects('Person');
+
+        const json = JSON.stringify(persons.slice());
+
+        TestCase.assertType(json, 'string');
     }
 };
