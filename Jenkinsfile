@@ -181,6 +181,7 @@ def doDockerBuild(target, postStep = null) {
       try {
         reportStatus(target, 'PENDING', 'Build has started')
 
+        // We use the bitnami/node image since it comes with GCC 6.3
         docker.image('bitnami/node:6').inside('-e HOME=/tmp') {
           sh "scripts/test.sh ${target}"
           if(postStep) {
