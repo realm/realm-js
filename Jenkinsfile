@@ -181,7 +181,7 @@ def doDockerBuild(target, postStep = null) {
       try {
         reportStatus(target, 'PENDING', 'Build has started')
 
-        docker.image('node:6').inside('-e HOME=/tmp') {
+        docker.image('bitnami/node:6').inside('-e HOME=/tmp') {
           sh "scripts/test.sh ${target}"
           if(postStep) {
             postStep.call()
