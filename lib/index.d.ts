@@ -470,6 +470,9 @@ declare namespace Realm.Sync {
         removeConnectionNotification(callback: ConnectionNotificationCallback): void;
 
         isConnected(): boolean;
+
+        start(): void;
+        stop(): void;
     }
 
     type SubscriptionNotificationCallback = (subscription: Subscription, state: number) => void;
