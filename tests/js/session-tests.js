@@ -1137,7 +1137,7 @@ module.exports = {
 
         return Realm.Sync.User.register('http://localhost:9080', uuid(), 'password')
         .then((user) => {
-            let config = {
+            const config = {
                 sync: {
                     user: user,
                     url: `realm://localhost:9080/~/${uuid()}`,
