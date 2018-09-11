@@ -1062,36 +1062,36 @@ module.exports = {
             return;
         }
 
-        return Realm.Sync.User.register('http://localhost:9080', uuid(), 'password').then((u) => {
+        return Realm.Sync.User.register('http://localhost:9080', uuid(), 'password')
+        .then((user) => {
+            const config = {
+                sync: {
+                    user: user,
+                    url: `realm://localhost:9080/~/${uuid()}`,
+                    fullSynchronization: true,
+                }
+            };
+
+            return Realm.open(config);
+        }).then((realm) => {
             return new Promise((resolve, reject) => {
-                const config = {
-                    sync: {
-                        user: u,
-                        url: `realm://localhost:9080/~/${uuid()}`,
-                        fullSynchronization: true,
-                    }
-                };
+                const session = realm.syncSession;
 
                 const checks = {
                     started: false,
                     stopped: false,
-                    restarted: false,
+                    restarted: false
                 }
 
-                Realm.open(config).then(realm => {
-                    const session = realm.syncSession;
+                session.addConnectionNotification((newState, oldState) => {
+                    if (newState === Realm.Sync.ConnectionState.Connected && checks.started === false) { checks.started = true; session.stop(); }
+                    if (newState === Realm.Sync.ConnectionState.Connected && checks.started === true) { checks.restarted = true; resolve(); }
+                    if (newState === Realm.Sync.ConnectionState.Disconnected) { checks.stopped = true; session.start();}
+                });
 
-                    session.addConnectionNotification((newState, oldState) => {
-                        if (newState === Realm.Sync.ConnectionState.Connected && checks.started === false) { checks.started = true; session.stop(); }
-                        if (newState === Realm.Sync.ConnectionState.Connected && checks.started === true) { checks.restarted = true; resolve(); }
-                        if (newState === Realm.Sync.ConnectionState.Disconnected) { checks.stopped = true; session.start();}
-                    });
-
-                    setTimeout(() => { reject("Timeout") }, 10000);
-                    
-                }).catch(error => reject(error));
-            });
-        });
+                setTimeout(() => { reject("Timeout") }, 10000);
+            })
+        })
     },
 
     testMultipleStarts() {
@@ -1099,34 +1099,35 @@ module.exports = {
             return;
         }
 
-        return Realm.Sync.User.register('http://localhost:9080', uuid(), 'password').then((u) => {
+        return Realm.Sync.User.register('http://localhost:9080', uuid(), 'password')
+        .then((user) => {
+            const config = {
+                sync: {
+                    user: user,
+                    url: `realm://localhost:9080/~/${uuid()}`,
+                    fullSynchronization: true,
+                }
+            };
+
+            return Realm.open(config)
+        }).then(realm => {
             return new Promise((resolve, reject) => {
-                let config = {
-                    sync: {
-                        user: u,
-                        url: `realm://localhost:9080/~/${uuid()}`,
-                        fullSynchronization: true,
-                    }
-                };
+                const session = realm.syncSession;
 
-                Realm.open(config).then(realm => {
-                    const session = realm.syncSession;
-
-                    waitForSessionConnected(session).then(() => {
-                        session.start();
-                        session.start();
-                        session.start();
-                        setTimeout(() => {
-                            if (session.isConnected()) {
-                                resolve();
-                            } else {
-                                reject();
-                            }
-                        }, 1000);                       
-                    })
-                }).catch(error => reject(error));
-            });
-        });
+                waitForSessionConnected(session).then(() => {
+                    session.start();
+                    session.start();
+                    session.start();
+                    setTimeout(() => {
+                        if (session.isConnected()) {
+                            resolve();
+                        } else {
+                            reject();
+                        }
+                    }, 1000); 
+                })
+            })
+        })
     },
 
     testMultipleStopped() {
@@ -1134,34 +1135,35 @@ module.exports = {
             return;
         }
 
-        return Realm.Sync.User.register('http://localhost:9080', uuid(), 'password').then((u) => {
+        return Realm.Sync.User.register('http://localhost:9080', uuid(), 'password')
+        .then((user) => {
+            let config = {
+                sync: {
+                    user: user,
+                    url: `realm://localhost:9080/~/${uuid()}`,
+                    fullSynchronization: true,
+                }
+            };
+
+            return Realm.open(config)
+        }).then(realm => {
             return new Promise((resolve, reject) => {
-                let config = {
-                    sync: {
-                        user: u,
-                        url: `realm://localhost:9080/~/${uuid()}`,
-                        fullSynchronization: true,
-                    }
-                };
+                const session = realm.syncSession;
 
-                Realm.open(config).then(realm => {
-                    const session = realm.syncSession;
-
-                    waitForSessionConnected(session).then(() => {
-                        session.stop();
-                        session.stop();
-                        session.stop();
-                        setTimeout(() => {
-                            if (session.isConnected()) {
-                                reject();
-                            } else {
-                                resolve();
-                            }
-                        }, 1000);                       
-                    })
-                }).catch(error => reject(error));
-            });
-        });
+                waitForSessionConnected(session).then(() => {
+                    session.stop();
+                    session.stop();
+                    session.stop();
+                    setTimeout(() => {
+                        if (session.isConnected()) {
+                            reject();
+                        } else {
+                            resolve();
+                        }
+                    }, 1000);                       
+                })
+            })
+        })
     },
 
     testOfflinePermissionSchemas() {
