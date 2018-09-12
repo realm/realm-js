@@ -19,7 +19,7 @@ Server and open synchronized Realms (#1276).
 * Fixed the type definitions for `Session.addConnectionNotification` and `Session.removeConnectionNotification`
 
 ### Internal
-* Upgraded to Realm Core v5.10.1.
+* Upgraded to Realm Core v5.10.0.
 * Upgraded to Realm Sync v3.9.9.
 
 2.15.3 Release notes (2018-8-24)
