@@ -344,7 +344,7 @@ class Credentials {
 
     /**
      * Creates credentials based on a JWT login.
-     * @param {string} token A Json Web Token, that will be validated against the server's configured rules.
+     * @param {string} token A JSON Web Token, that will be validated against the server's configured rules.
      * @param {string} [providerName] The name of the provider as configured in the Realm Object. If not specified, the default
      * name - `jwt` - will be used.
      * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.Sync.User.login|User.login}.
@@ -537,7 +537,7 @@ class User {
      * Get account information for a user. (requires administrator privilidges)
      * @param {string} provider - the provider to query for user account information (ex. 'password')
      * @param {string} username - the target username which account information should be retrieved
-     * @returns {Promise} - a promise that will be resolved with the retrieved account information as json object
+     * @returns {Promise} - a promise that will be resolved with the retrieved account information as JSON object
      * @example
      * {
      *   "provider_id": "user@email.co",

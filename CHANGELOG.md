@@ -7,8 +7,8 @@ X.Y.Z Release notes
 * Realm Object Server: 3.0.0 or later
 
 ### Breaking changes
-* The authentication API have been completely revamped.
-  * The following methods have been removed:
+* The authentication API has been completely revamped.
+  * The following methods have been deprecated and will be removed at a next major version:
     * `Realm.Sync.User.login`
     * `Realm.Sync.User.register`
     * `Realm.Sync.User.authenticate`
