@@ -1,8 +1,6 @@
 X.Y.Z Release notes
 =============================================================
 ### Compatibility
-* Sync protocol: 24
-* Server-side history format: 4
 * File format: 7
 * Realm Object Server: 3.0.0 or later
 
@@ -14,6 +12,7 @@ X.Y.Z Release notes
 `User.deserialize` to later inflate a `User` instance that can be used to connect to Realm Object
 Server and open synchronized Realms (#1276).
 * Added `Session.start()` and `Session.stop()` in order to allow stopping to sync data (#2014).
+* Added support for `LIMIT` in queries to restrict the size of the results set. This is in particular useful for query-based synced Realms. An example of the syntax is `age >= 20 LIMIT(2)`.
 
 ### Bug fixes
 * Removed a false negative warning when using `User.createConfiguration`.
@@ -22,8 +21,8 @@ Server and open synchronized Realms (#1276).
 * Fixed the type definitions for `Session.addConnectionNotification` and `Session.removeConnectionNotification`
 
 ### Internal
-* Realm Core v5.7.2.
-* Realm Sync v3.9.1.
+* Upgraded to Realm Core v5.10.0.
+* Upgraded to Realm Sync v3.9.9.
 
 2.15.3 Release notes (2018-8-24)
 =============================================================
