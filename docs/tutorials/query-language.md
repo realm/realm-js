@@ -1,4 +1,4 @@
-The Realm JavaScript SDK supports querying based on a language inspired by [NSPredicate](https://realm.io/news/nspredicate-cheatsheet/). 
+The Realm JavaScript SDK supports querying based on a language inspired by [NSPredicate](https://realm.io/news/nspredicate-cheatsheet/).
 
 The {@link Realm.Collection#filtered Collection.filtered()} method is used to query a Realm:
 
@@ -24,8 +24,8 @@ let merlots = wines.filtered('variety == $0 && vintage <= $1', 'Merlot', maxYear
 
 
 ### Conditional operators
-You can use equality comparison on all property types: 
-`==` and `!=` 
+You can use equality comparison on all property types:
+`==` and `!=`
 
 Furthermore, the following can be used on numerical types:
 `<`, `<=`, `>`, `>=`
@@ -73,6 +73,15 @@ realm.objects('Person').filtered('birthday == 2017-12-04@0:0:0') // readable dat
 realm.objects('Person').filtered('birthday == 2015-7-2@14:23:17:233') // readable date including nanoseconds
 realm.objects('Person').filtered('birthday == T1435846997:233') // equivalent to above
 realm.objects('Person').filtered('birthday == 1970-1-1@0:0:0:0') // epoch is the default non-null Timestamp value
+```
+
+### Limiting the size of the result set
+In order to limit the number of objects in a result set, you can use `LIMIT`.
+
+Example:
+
+```JS
+realm.objects('Person').filtered('age >= 20 LIMIT(2)')  // at most two objects which fulfil the condition
 ```
 
 ### Queries on collections
