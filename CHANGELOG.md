@@ -11,6 +11,7 @@ X.Y.Z Release notes
 * Exposed `User.serialize` to create a persistable representation of a user instance, as well as
 `User.deserialize` to later inflate a `User` instance that can be used to connect to Realm Object
 Server and open synchronized Realms (#1276).
+* Added `Session.start()` and `Session.stop()` in order to allow stopping to sync data (#2014).
 * Added support for `LIMIT` in queries to restrict the size of the results set. This is in particular useful for query-based synced Realms. An example of the syntax is `age >= 20 LIMIT(2)`.
 
 ### Bug fixes
