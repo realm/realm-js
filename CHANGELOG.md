@@ -34,6 +34,7 @@ X.Y.Z Release notes
 * Added `Realm.Sync.Subscription.removeAllListeners()` to the `Subscription` proxy class used when debugging a React Native app (#479). The bug was introduced in v2.3.2.
 * Fixed the type definitions for `Session.addConnectionNotification()` and `Session.removeConnectionNotification()`. The bug was introduced in v2.15.0. Contributed by @gabro.
 * Fixed a memory corruption in `writeCopyTo()` related to encryption key (#1748). Bug was introduced in v2.3.4. Contributed by @mandrigin.
+* Fixed a bug where `Realm.write()` crashed with segmentation fault when trying to insert a record without providing values for the properties that are optional in the schema (`realm-js-private` #474/#483). The bug was introduced in v2.15.3.
 
 ### Internal
 * Upgraded to Realm Core v5.10.0.
