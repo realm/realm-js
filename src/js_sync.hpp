@@ -256,8 +256,8 @@ public:
         {"addConnectionNotification", wrap<add_connection_notification>},
         {"removeConnectionNotification", wrap<remove_connection_notification>},
         {"isConnected", wrap<is_connected>},
-        {"resume", wrap<start>},
-        {"pause", wrap<stop>},
+        {"resume", wrap<resume>},
+        {"pause", wrap<pause>},
     };
 
 private:
