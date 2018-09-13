@@ -1,9 +1,5 @@
 X.Y.Z Release notes
 =============================================================
-### Compatibility
-* File format: 7
-* Realm Object Server: 3.0.0 or later
-
 ### Breaking changes
 * None.
 
@@ -25,20 +21,25 @@ X.Y.Z Release notes
   | `const jwtToken = 'acc3ssT0ken...';`<br>`const user = await Realm.Sync.User.registerWithProvider(serverUrl, 'jwt', jwtToken);` | `const jwtToken = 'acc3ssT0ken...';`<br>`const credentials = Realm.Sync.Credentials.jwt(jwtToken);`<br>`const user = await Realm.Sync.User.login(serverUrl, credentials);` |
   | `const customToken = 'acc3ssT0ken...';`<br>`const userInfo = { someValue: true };`<br>`const user = await Realm.Sync.User.registerWithProvider(serverUrl, 'custom/fooauth', customToken, userInfo);` | `const customToken = 'acc3ssT0ken...';`<br>`const userInfo = { someValue: true };`<br>`const credentials = Realm.Sync.Credentials.custom('custom/fooauth', customToken, userInfo);`<br>`const user = await Realm.Sync.User.login(serverUrl, credentials);` |
 * Exposed `Realm.Sync.User.serialize()` to create a persistable representation of a user instance, as well as `Realm.Sync.User.deserialize()` to later inflate a `User` instance that can be used to connect to Realm Object Server and open synchronized Realms (#1276).
-* Added `Realm.Sync.Session.resume()` and `Realm.Sync.Session.pause()` in order to allow stopping to sync data (#2014).
+* Added `Realm.Sync.Session.pause()` and `Realm.Sync.Session.resume()` to allow controlling when to sync data (#2014).
 * Added support for `LIMIT` in queries to restrict the size of the results set. This is in particular useful for query-based synced Realms. An example of the syntax is `age >= 20 LIMIT(2)`.
 
 ### Bug fixes
-* Removed a false negative warning when using `User.createConfiguration()`. The bug was introduced in v2.15.3.
-* Fixed the type definition for `User.authenticate()`. The bug was introduced in v2.2.0.
-* Added `Realm.Sync.Subscription.removeAllListeners()` to the `Subscription` proxy class used when debugging a React Native app (#479). The bug was introduced in v2.3.2.
-* Fixed the type definitions for `Session.addConnectionNotification()` and `Session.removeConnectionNotification()`. The bug was introduced in v2.15.0. Contributed by @gabro.
-* Fixed a memory corruption in `writeCopyTo()` related to encryption key (#1748). Bug was introduced in v2.3.4. Contributed by @mandrigin.
-* Fixed a bug where `Realm.write()` crashed with segmentation fault when trying to insert a record without providing values for the properties that are optional in the schema (`realm-js-private` #474/#483). The bug was introduced in v2.15.3.
+* Removed a false negative warning when using `User.createConfiguration()`. (Introduced in v2.15.3).
+* Fixed the type definition for `User.authenticate()`. (Introduced in v2.2.0).
+* Added `Realm.Sync.Subscription.removeAllListeners()` to the `Subscription` proxy class used when debugging a React Native app (#479). (Introduced in v2.3.2).
+* Fixed the type definitions for `Session.addConnectionNotification()` and `Session.removeConnectionNotification()`. (Introduced in v2.15.0). Thanks to @gabor!
+* Fixed a memory corruption in `writeCopyTo()` related to encryption key (#1748). (Introduced in v2.3.4). Thanks to @mandrigin!
+* Fixed a bug where `Realm.write()` crashed with segmentation fault when trying to insert a record without providing values for the properties that are optional in the schema (`realm-js-private` #474/#483). (Introduced in v2.15.3).
+
+### Compatibility
+* Realm Object Server: 3.0.0 or later
+* File format: ver 7. (upgrades from previous formats automatically)
 
 ### Internal
 * Upgraded to Realm Core v5.10.0.
 * Upgraded to Realm Sync v3.9.9.
+
 
 2.15.3 Release notes (2018-8-24)
 =============================================================
