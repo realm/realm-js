@@ -99,7 +99,7 @@ class Sync {
      * Add a sync listener to listen to changes across multiple Realms.
      *
      * @param {string} serverUrl - The sync server to listen to.
-     * @param {SyncUser} adminUser - An admin user obtained by calling `new Realm.Sync.User.adminUser`.
+     * @param {SyncUser} adminUser - an admin user obtained by calling {@linkcode Realm.Sync.User.login|User.login} with admin credentials.
      * @param {string} filterRegex - A regular expression used to determine which changed Realms should trigger events. Use `.*` to match all Realms.
      * @param {string} name - The name of the event.
      * @param {function(changeEvent)} changeCallback - The callback to invoke with the events.
@@ -129,7 +129,7 @@ class Sync {
      * Add a sync listener to listen to changes across multiple Realms.
      *
      * @param {string} serverUrl - The sync server to listen to.
-     * @param {SyncUser} adminUser - An admin user obtained by calling `new Realm.Sync.User.adminUser`.
+     * @param {SyncUser} adminUser - an admin user obtained by calling {@linkcode Realm.Sync.User.login|User.login} with admin credentials.
      * @param {string} filterRegex - A regular expression used to determine which changed Realms should trigger events. Use `.*` to match all Realms.
      * @param {Realm.Worker} worker - Worker to deliver events to.
      *
@@ -288,58 +288,120 @@ class IncompatibleSyncedRealmError {
 }
 
 /**
- * Class for logging in and managing Sync users.
+ * Class for creating user credentials
+ * @memberof Realm.Sync
+ */
+class Credentials {
+    /**
+     * Creates credentials based on a login with a username and a password.
+     * @param {string} username The username of the user.
+     * @param {string} password The user's password.
+     * @param {boolean} [createUser] optional - `true` if the user should be created, `false` otherwise. If
+     * `true` is provided and the user exists, or `false` is provided and the user doesn't exist,
+     * an error will be thrown. If not specified, if the user doesn't exist, they will be created,
+     * otherwise, they'll be logged in if the password matches.
+     * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.Sync.User.login|User.login}.
+     */
+    static usernamePassword(username, password, createUser) {};
+
+    /**
+     * Creates credentials based on a Facebook login.
+     * @param {string} token A Facebook authentication token, obtained by logging into Facebook..
+     * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.Sync.User.login|User.login}.
+     */
+    static facebook(token) {};
+
+    /**
+     * Creates credentials based on a Google login.
+     * @param {string} token A Google authentication token, obtained by logging into Google..
+     * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.Sync.User.login|User.login}.
+     */
+    static google(token) {};
+
+    /**
+     * Creates credentials for an anonymous user. These can only be used once - using them a second
+     * time will result in a different user being logged in. If you need to get a user that has already logged
+     * in with the Anonymous credentials, use {@linkcode Realm.Sync.User.current|User.current} or {@linkcode Realm.Sync.User.all|User.all}
+     * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.Sync.User.login|User.login}.
+     */
+    static anonymous() {};
+
+    /**
+     * Creates credentials based on a login with a nickname. If multiple users try to login
+     * with the same nickname, they'll get the same underlying sync user.
+     * @param {string} value The nickname of the user.
+     * @param {boolean} [isAdmin] An optional parameter controlling whether the user is admin. Default is `false`.
+     * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.Sync.User.login|User.login}.
+     */
+    static nickname(value, isAdmin) {};
+
+    /**
+     * Creates credentials based on an Active Directory login.
+     * @param {string} token An access token, obtained by logging into Azure Active Directory.
+     * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.Sync.User.login|User.login}.
+     */
+    static azureAD(token) {};
+
+    /**
+     * Creates credentials based on a JWT login.
+     * @param {string} token A JSON Web Token, that will be validated against the server's configured rules.
+     * @param {string} [providerName] The name of the provider as configured in the Realm Object. If not specified, the default
+     * name - `jwt` - will be used.
+     * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.Sync.User.login|User.login}.
+     */
+    static jwt(token, providerName) {};
+
+    /**
+     * Creates credentials based on an admin token. Using this credential will not contact the Realm Object Server.
+     * @param {string} token The admin token.
+     * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.Sync.User.login|User.login}.
+     */
+    static adminToken(token) {};
+
+    /**
+     * Creates credentials with a custom provider and user identifier.
+     * @param {string} providerName Provider used to verify the credentials.
+     * @param {string} token A string identifying the user. Usually an identity token or a username.
+     * @param {userInfo} token Data describing the user further or null if the user does not have any extra data.
+     * The data will be serialized to JSON, so all values must be mappable to a valid JSON data type.
+     * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.Sync.User.login|User.login}.
+     */
+    static custom(providerName, token, userInfo) {};
+
+
+    /**
+     * Gets the identity provider for the credentials.
+     * @returns {string} The identity provider, such as Google, Facebook, etc.
+     */
+    get identityProvider() {};
+
+    /**
+     * Gets the access token.
+     * @returns {string}
+     */
+    get token() {};
+
+    /**
+     * Gets additional user information associated with the credentials.
+     * @returns {object} A dictionary, containing the additional information.
+     */
+    get userInfo() {};
+}
+
+/**
+ * Class for managing Sync users.
  * @memberof Realm.Sync
  */
 class User {
     /**
-     * Login a sync user with username and password.
-     * @param {string} server - authentication server
-     * @param {string} username
-     * @param {string} password
-     * @param {function(error, user)} [callback] - called with the following arguments:
-     *   - `error` - an Error object is provided on failure
-     *   - `user` - a valid User object on success
-     * @returns {void|Promise<User>} Returns a promise with a user if the callback was not specified
+     * Logs the user in to the Realm Object Server.
+     * @param {string} server The url of the server that the user is authenticated against.
+     * @param {Credentials} credentials The credentials to use for authentication. Obtain them by calling one of
+     * the {@linkcode Realm.Sync.Credentials|Credentials} static methods.
+     * @return {Promise<User> | User} A {@linkcode Realm.Sync.User|User} object if the credentials are
+     * {@linkcode Realm.Sync.Credentials.adminToken|adminToken}, {@link Realm.Sync.User|`Promise<User>`} otherwise.
      */
-    static login(server, username, password, callback) {}
-
-    /**
-     * Authenticate a sync user with provider.
-     * @param {string} server - authentication server
-     * @param {string} provider - the provider (curently: 'password', and 'jwt')
-     * @param {object} options - options used by provider:
-     *   - jwt - `token`; a JWT token
-     *   - password - `username` and `password`
-     * @return {Promise<User>} Returns a promise with a user
-     */
-    static authenticate(server, provider, options) {}
-
-    /**
-     * Register/login a sync user using an external login provider.
-     * @param {string} server - authentication server
-     * @param {object} options - options, containing the following:
-     * @param {string} options.provider - The provider type
-     * @param {string} options.providerToken - The access token for the given provider
-     * @param {object} [options.userInfo] - A map containing additional data required by the provider
-     * @param {function(error, User)} [callback] - an optional callback called with the following arguments:
-     *   - `error` - an Error object is provided on failure
-     *   - `user` - a valid User object on success
-     * @return {void|Promise<User>} Returns a promise with a user if the callback was not specified
-     */
-    static registerWithProvider(server, options, callback) {}
-
-    /**
-     * Register a sync user with username and password.
-     * @param {string} server - authentication server
-     * @param {string} username
-     * @param {string} password
-     * @param {function(error, user)} [callback] - called with the following arguments:
-     *   - `error` - an Error object is provided on failure
-     *   - `user` - a valid User object on success
-     * @return {void|Promise<User>} Returns a promise with a user if the callback was not specified
-     */
-    static register(server, username, password, callback) {}
+    static login(server, credentials) {}
 
     /**
      * Request a password reset email to be sent to a user's email.
@@ -361,11 +423,11 @@ class User {
      * open the app, extract the token, and navigate to a view that allows to change the password within the app.
      *
      * @param {string} server - authentication server
-     * @param {string} reset_token - The token that was sent to the user's email address.
-     * @param {string} new_password - The user's new password.
+     * @param {string} resetToken - The token that was sent to the user's email address.
+     * @param {string} newPassword - The user's new password.
      * @return {Promise<void>} A promise which is resolved when the request has been sent.
      */
-    static completePasswordReset(server, reset_token, new_password) {}
+    static completePasswordReset(server, resetToken, newPassword) {}
 
     /**
      * Request an email confirmation email to be sent to a user's email.
@@ -385,18 +447,10 @@ class User {
      * open the app, extract the token, and navigate to a view that allows to confirm the email within the app.
      *
      * @param {string} server - authentication server
-     * @param {string} confirmation_token - The token that was sent to the user's email address.
+     * @param {string} confirmationToken - The token that was sent to the user's email address.
      * @return {Promise<void>} A promise which is resolved when the request has been sent.
      */
-    static confirmEmail(server, confirmation_token) {}
-
-    /**
-     * Create an admin user for the given authentication server with an existing token
-     * @param {string} adminToken - existing admin token
-     * @param {string} server - authentication server
-     * @return {User} - admin user populated with the given token and server
-     */
-    static adminUser(adminToken, server) {}
+    static confirmEmail(server, confirmationToken) {}
 
     /**
      * Creates a new sync user instance from the serialized representation.
@@ -483,7 +537,7 @@ class User {
      * Get account information for a user. (requires administrator privilidges)
      * @param {string} provider - the provider to query for user account information (ex. 'password')
      * @param {string} username - the target username which account information should be retrieved
-     * @returns {Promise} - a promise that will be resolved with the retrieved account information as json object
+     * @returns {Promise} - a promise that will be resolved with the retrieved account information as JSON object
      * @example
      * {
      *   "provider_id": "user@email.co",
@@ -549,6 +603,27 @@ class User {
      * {@link Realm#Sync#User#offerPermissions offerPermissions}.
      */
     invalidatePermissionOffer(permissionOfferOrToken) { }
+
+    // Deprecated
+    /**
+     * @deprecated to be removed in future versions. Use User.login(server, Credentials.usernamePassword) instead.
+     */
+    static register(server, username, password) {}
+
+    /**
+     * @deprecated to be removed in future versions. Use User.login(server, Credentials.adminToken) instead.
+     */
+    static adminUser(adminToken, server) {}
+
+    /**
+     * @deprecated to be removed in future versions. Use User.login(server, Credentials.SOME-PROVIDER) instead.
+     */
+    static registerWithProvider(server, options) {}
+
+    /**
+     * @deprecated to be removed in future versions. Use User.login(server, Credentials.SOME-PROVIDER) instead.
+     */
+    static authenticate(server, provider, options) {}
 }
 
 /**
@@ -806,7 +881,7 @@ class Adapter {
 	 * Create a new Adapter to monitor and process changes made across multiple Realms
 	 * @param {string} localPath - the local path where realm files are stored
 	 * @param {string} serverUrl - the sync server to listen to
-	 * @param {SyncUser} adminUser - an admin user obtained by calling `new Realm.Sync.User.adminUser`
+	 * @param {SyncUser} adminUser - an admin user obtained by calling {@linkcode Realm.Sync.User.login|User.login} with admin credentials.
 	 * @param {string} regex - a regular expression used to determine which changed Realms should be monitored -
 	 *  use `.*` to match all all Realms
 	 * @param {function(realmPath)} changeCallback - called when a new transaction is available
@@ -886,7 +961,7 @@ class Adapter {
 	 * Open the Realm used by the Adapter for the given path. This is useful for writing two way
 	 * adapters as transactions written to this realm will be ignored when calling `current` and `advance`
 	 * @param {string} path - the path for the Realm to open
-     * @param {Realm~ObjectSchema[]} [optional] schema - schema to apply when opening the Realm
+     * @param {Realm~ObjectSchema[]} [schema] - optional schema to apply when opening the Realm
 	 * @returns {Realm}
 	 */
 	realmAtPath(path, schema) {}

@@ -31,7 +31,7 @@ function uuid() {
 function createUsersWithTestRealms(count) {
     const createUserWithTestRealm = () => {
         return Realm.Sync.User
-            .register('http://localhost:9080', uuid(), 'password')
+            .login('http://localhost:9080', Realm.Sync.Credentials.anonymous())
             .then(user => {
                 new Realm({sync: {user, url: 'realm://localhost:9080/~/test', fullSynchronization: true }}).close();
                 return user;
@@ -190,11 +190,11 @@ module.exports = {
         };
         let owner, otherUser
         return Realm.Sync.User
-            .register('http://localhost:9080', uuid(), 'password')
+            .login('http://localhost:9080', Realm.Sync.Credentials.nickname(uuid()))
             .then(user => {
                 owner = user;
                 new Realm({sync: {user, url: 'realm://localhost:9080/default'}}).close();
-                return Realm.Sync.User.register('http://localhost:9080', uuid(), 'password')
+                return Realm.Sync.User.login('http://localhost:9080', Realm.Sync.Credentials.nickname(uuid()))
             })
             .then((user) => {
                 otherUser = user;
