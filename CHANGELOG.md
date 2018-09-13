@@ -5,6 +5,9 @@ X.Y.Z Release notes
 * Realm Object Server: 3.0.0 or later
 
 ### Breaking changes
+* None.
+
+### Enhancements
 * The authentication API has been completely revamped.
   * The following methods have been deprecated and will be removed at a next major version:
     * `Realm.Sync.User.login`
@@ -13,8 +16,7 @@ X.Y.Z Release notes
     * `Realm.Sync.User.registerWithProvider`
     * `Realm.Sync.User.adminUser`
   * A new `Realm.Sync.User.login` method has been added that accepts the server url and a credentials object.
-  * A new class - `Realm.Sync.Credentials` has been added that contains factory methods to create credentials
-  with all supported providers.
+  * A new class - `Realm.Sync.Credentials` has been added that contains factory methods to create credentials with all supported providers.
   * Here are some examples on how to transform your old code to use the new API:
 
   | Old | New |
@@ -22,20 +24,16 @@ X.Y.Z Release notes
   | `const user = await Realm.Sync.User.login(serverUrl, 'username', 'password');` | `const credentials = Realm.Sync.Credentials.usernamePassword('username', 'password');`<br/> `const user = await Realm.Sync.User.login(serverUrl, credentials);` |
   | `const jwtToken = 'acc3ssT0ken...';`<br>`const user = await Realm.Sync.User.registerWithProvider(serverUrl, 'jwt', jwtToken);` | `const jwtToken = 'acc3ssT0ken...';`<br>`const credentials = Realm.Sync.Credentials.jwt(jwtToken);`<br>`const user = await Realm.Sync.User.login(serverUrl, credentials);` |
   | `const customToken = 'acc3ssT0ken...';`<br>`const userInfo = { someValue: true };`<br>`const user = await Realm.Sync.User.registerWithProvider(serverUrl, 'custom/fooauth', customToken, userInfo);` | `const customToken = 'acc3ssT0ken...';`<br>`const userInfo = { someValue: true };`<br>`const credentials = Realm.Sync.Credentials.custom('custom/fooauth', customToken, userInfo);`<br>`const user = await Realm.Sync.User.login(serverUrl, credentials);` |
-
-### Enhancements
-* Exposed `User.serialize` to create a persistable representation of a user instance, as well as
-`User.deserialize` to later inflate a `User` instance that can be used to connect to Realm Object
-Server and open synchronized Realms (#1276).
-* Added `Session.start()` and `Session.stop()` in order to allow stopping to sync data (#2014).
+* Exposed `Realm.Sync.User.serialize()` to create a persistable representation of a user instance, as well as `Realm.Sync.User.deserialize()` to later inflate a `User` instance that can be used to connect to Realm Object Server and open synchronized Realms (#1276).
+* Added `Realm.Sync.Session.start()` and `Realm.Sync.Session.stop()` in order to allow stopping to sync data (#2014).
 * Added support for `LIMIT` in queries to restrict the size of the results set. This is in particular useful for query-based synced Realms. An example of the syntax is `age >= 20 LIMIT(2)`.
 
 ### Bug fixes
-* Removed a false negative warning when using `User.createConfiguration`.
-* Fixed the type definition for `User.authenticate`.
-* Added `Realm.Sync.Subscription.removeAllListeners()` to the `Subscription` proxy class used when debugging a React Native app (#479).
-* Fixed the type definitions for `Session.addConnectionNotification` and `Session.removeConnectionNotification`
-* Fixed a memory corruption in `writeCopyTo`
+* Removed a false negative warning when using `User.createConfiguration()`. The bug was introduced in v2.15.3.
+* Fixed the type definition for `User.authenticate()`. The bug was introduced in v2.2.0.
+* Added `Realm.Sync.Subscription.removeAllListeners()` to the `Subscription` proxy class used when debugging a React Native app (#479). The bug was introduced in v2.3.2.
+* Fixed the type definitions for `Session.addConnectionNotification()` and `Session.removeConnectionNotification()`. The bug was introduced in v2.15.0. Contributed by @gabro.
+* Fixed a memory corruption in `writeCopyTo()` related to encryption key (#1748). Bug was introduced in v2.3.4. Contributed by @mandrigin.
 
 ### Internal
 * Upgraded to Realm Core v5.10.0.
