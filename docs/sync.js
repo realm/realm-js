@@ -727,24 +727,24 @@ class Session {
     isConnected() {}
 
     /**
-     * Starts a sync session.
-     * 
+     * Resumes a sync session.
+     *
      * This method is asynchronous so in order to know when the session has started you will need
      * to add a connection notification with `addConnectionNotification`.
-     * 
+     *
      * This method is idempotent so it will be a no-op if the session has already started.
      */
-    start() {}
+    resume() {}
 
     /**
-     * Stops a sync session.
-     * 
+     * Paused a sync session.
+     *
      * This method is asynchronous so in order to know when the session has started you will need
      * to add a connection notification with `addConnectionNotification`.
-     * 
-     * This method is idempotent so it will be a no-op if the session has already stopped.
+     *
+     * This method is idempotent so it will be a no-op if the session has already paused.
      */
-    stop() {}
+    pause() {}
 
 }
 
