@@ -727,36 +727,36 @@ class Session {
     isConnected() {}
 
     /**
-     * Starts a sync session.
-     * 
+     * Resumes a sync session that has been paused.
+     *
      * This method is asynchronous so in order to know when the session has started you will need
      * to add a connection notification with `addConnectionNotification`.
-     * 
-     * This method is idempotent so it will be a no-op if the session has already started.
+     *
+     * This method is idempotent so it will be a no-op if the session is already started.
      */
-    start() {}
+    resume() {}
 
     /**
-     * Stops a sync session.
-     * 
+     * Pause a sync session.
+     *
      * This method is asynchronous so in order to know when the session has started you will need
      * to add a connection notification with `addConnectionNotification`.
-     * 
-     * This method is idempotent so it will be a no-op if the session has already stopped.
+     *
+     * This method is idempotent so it will be a no-op if the session is already paused.
      */
-    stop() {}
+    pause() {}
 
 }
 
 /**
- * An object encapsulating partial sync subscriptions.
+ * An object encapsulating query-based sync subscriptions.
  * @memberof Realm.Sync
  */
 class Subscription {
     /**
      * Gets the current state of the subscription.
      * Can be either:
-     *  - Realm.Sync.SubscriptionState.Error: An error occurred while creating or processing the partial sync subscription.
+     *  - Realm.Sync.SubscriptionState.Error: An error occurred while creating or processing the query-based sync subscription.
      *  - Realm.Sync.SubscriptionState.Creating: The subscription is being created.
      *  - Realm.Sync.SubscriptionState.Pending: The subscription was created, but has not yet been processed by the sync server.
      *  - Realm.Sync.SubscriptionState.Complete: The subscription has been processed by the sync server and data is being synced to the device.
@@ -772,7 +772,7 @@ class Subscription {
     get error() {}
 
     /**
-     * Unsubscribe a partial synced `Realm.Results`. The state will change to `Realm.Sync.SubscriptionState.Invalidated`.
+     * Unsubscribe a query-based synced `Realm.Results`. The state will change to `Realm.Sync.SubscriptionState.Invalidated`.
      * The `Realm.Results` will not produce any meaningful values. Moreover, any objects matching the query will be
      * removed if they are not matched by any other query. The object removal is done asynchronously.
      */

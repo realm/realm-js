@@ -1053,7 +1053,7 @@ module.exports = {
         });
     },
 
-    testStartStop() {
+    testResumePause() {
         if(!isNodeProccess) {
             return;
         }
@@ -1080,9 +1080,9 @@ module.exports = {
                 }
 
                 session.addConnectionNotification((newState, oldState) => {
-                    if (newState === Realm.Sync.ConnectionState.Connected && checks.started === false) { checks.started = true; session.stop(); }
+                    if (newState === Realm.Sync.ConnectionState.Connected && checks.started === false) { checks.started = true; session.pause(); }
                     if (newState === Realm.Sync.ConnectionState.Connected && checks.started === true) { checks.restarted = true; resolve(); }
-                    if (newState === Realm.Sync.ConnectionState.Disconnected) { checks.stopped = true; session.start();}
+                    if (newState === Realm.Sync.ConnectionState.Disconnected) { checks.stopped = true; session.resume();}
                 });
 
                 setTimeout(() => { reject("Timeout") }, 10000);
@@ -1090,7 +1090,7 @@ module.exports = {
         })
     },
 
-    testMultipleStarts() {
+    testMultipleResumes() {
         if(!isNodeProccess) {
             return;
         }
@@ -1111,22 +1111,22 @@ module.exports = {
                 const session = realm.syncSession;
 
                 waitForSessionConnected(session).then(() => {
-                    session.start();
-                    session.start();
-                    session.start();
+                    session.resume();
+                    session.resume();
+                    session.resume();
                     setTimeout(() => {
                         if (session.isConnected()) {
                             resolve();
                         } else {
                             reject();
                         }
-                    }, 1000); 
+                    }, 1000);
                 })
             })
         })
     },
 
-    testMultipleStopped() {
+    testMultiplePauses() {
         if(!isNodeProccess) {
             return;
         }
@@ -1147,16 +1147,16 @@ module.exports = {
                 const session = realm.syncSession;
 
                 waitForSessionConnected(session).then(() => {
-                    session.stop();
-                    session.stop();
-                    session.stop();
+                    session.pause();
+                    session.pause();
+                    session.pause();
                     setTimeout(() => {
                         if (session.isConnected()) {
                             reject();
                         } else {
                             resolve();
                         }
-                    }, 1000);                       
+                    }, 1000);
                 })
             })
         })
