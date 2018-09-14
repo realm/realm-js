@@ -4,7 +4,7 @@ X.Y.Z Release notes
 * None.
 
 ### Enhancements
-* #2002: The authentication API has been completely revamped.
+* The authentication API has been completely revamped ([#2002](https://github.com/realm/realm-js/pull/2002)).
   * The following methods have been deprecated and will be removed at a next major version:
     * `Realm.Sync.User.login`
     * `Realm.Sync.User.register`
@@ -20,26 +20,26 @@ X.Y.Z Release notes
   | `const user = await Realm.Sync.User.login(serverUrl, 'username', 'password');` | `const credentials = Realm.Sync.Credentials.usernamePassword('username', 'password');`<br/> `const user = await Realm.Sync.User.login(serverUrl, credentials);` |
   | `const jwtToken = 'acc3ssT0ken...';`<br>`const user = await Realm.Sync.User.registerWithProvider(serverUrl, 'jwt', jwtToken);` | `const jwtToken = 'acc3ssT0ken...';`<br>`const credentials = Realm.Sync.Credentials.jwt(jwtToken);`<br>`const user = await Realm.Sync.User.login(serverUrl, credentials);` |
   | `const customToken = 'acc3ssT0ken...';`<br>`const userInfo = { someValue: true };`<br>`const user = await Realm.Sync.User.registerWithProvider(serverUrl, 'custom/fooauth', customToken, userInfo);` | `const customToken = 'acc3ssT0ken...';`<br>`const userInfo = { someValue: true };`<br>`const credentials = Realm.Sync.Credentials.custom('custom/fooauth', customToken, userInfo);`<br>`const user = await Realm.Sync.User.login(serverUrl, credentials);` |
-* #1276: Exposed `Realm.Sync.User.serialize()` to create a persistable representation of a user instance, as well as `Realm.Sync.User.deserialize()` to later inflate a `User` instance that can be used to connect to Realm Object Server and open synchronized Realms.
-* #2014: Added `Realm.Sync.Session.pause()` and `Realm.Sync.Session.resume()` to allow controlling when to sync data.
-* #2008: Added support for `LIMIT` in queries to restrict the size of the results set. This is in particular useful for query-based synced Realms. An example of the syntax is `age >= 20 LIMIT(2)`.
+* Exposed `Realm.Sync.User.serialize()` to create a persistable representation of a user instance, as well as `Realm.Sync.User.deserialize()` to later inflate a `User` instance that can be used to connect to Realm Object Server and open synchronized Realms ([1276](https://github.com/realm/realm-js/issues/1276).
+* Added `Realm.Sync.Session.pause()` and `Realm.Sync.Session.resume()` to allow controlling when to sync data ([#2014](https://github.com/realm/realm-js/issues/2014)).
+* Added support for `LIMIT` in queries to restrict the size of the results set ([#2008](https://github.com/realm/realm-js/pull/2008)). This is in particular useful for query-based synced Realms. An example of the syntax is `age >= 20 LIMIT(2)`
 
 ### Bug fixes
-* #2000: Fixed the type definition for `User.authenticate()`. (Introduced in v2.2.0).
-* realm/realm-js-private/#474: Added `Realm.Sync.Subscription.removeAllListeners()` to the `Subscription` proxy class used when debugging a React Native app. (Introduced in v2.3.2).
-* #1748: Fixed a memory corruption in `writeCopyTo()` when using encryption. This could be experienced as: `Error: Unable to open a realm at path ...`. (Introduced in v2.3.4). Thanks to @mandrigin!
-* #2003: Fixed the type definitions for `Session.addConnectionNotification()` and `Session.removeConnectionNotification()`. (Introduced in v2.15.0). Thanks to @gabro!
-* #1996: Removed a false negative warning when using `User.createConfiguration()`. (Introduced in v2.15.3).
-* realm/realm-js-private/#479: Fixed a bug where `Realm.write()` crashed with segmentation fault when trying to insert a record without providing values for the properties that are optional in the schema. (Introduced in v2.15.3).
+* Fixed the type definition for `User.authenticate()`. ([#2000](https://github.com/realm/realm-js/pull/2000), since v2.2.0).
+* Added `Realm.Sync.Subscription.removeAllListeners()` to the `Subscription` proxy class used when debugging a React Native app ([realm/realm-js-private/#474](https://github.com/realm/realm-js-private/issues/474), since v2.3.2).
+* Fixed a memory corruption in `writeCopyTo()` when using encryption. This could be experienced as: `Error: Unable to open a realm at path ...`. ([#1748](https://github.com/realm/realm-js/issues/1748), since v2.3.4). Thanks to @mandrigin!
+* Fixed the type definitions for `Session.addConnectionNotification()` and `Session.removeConnectionNotification()`. ([#2003](https://github.com/realm/realm-js/pull/2003), since v2.15.0). Thanks to @gabro!
+* Removed a false negative warning when using `User.createConfiguration()`. ([#1989](https://github.com/realm/realm-js/issues/1989), since v2.15.3).
+* Fixed a bug where `Realm.write()` crashed with segmentation fault when trying to insert a record without providing values for the properties that are optional in the schema. ([realm/realm-js-private/#479](https://github.com/realm/realm-js-private/issues/479), since v2.15.3).
 
 ### Compatibility
 * Realm Object Server: 3.0.0 or later
 * File format: ver 7. (upgrades from previous formats automatically)
 
 ### Internal
-* Upgraded to Realm Core v5.10.0.
-* Upgraded to Realm Sync v3.9.9.
-  
+* Upgraded to Realm Core v5.10.1.
+* Upgraded to Realm Sync v3.10.0.
+
 
 2.15.3 Release notes (2018-8-24)
 =============================================================
