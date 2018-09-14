@@ -37,8 +37,8 @@ X.Y.Z Release notes
 * File format: ver 7. (upgrades from previous formats automatically)
 
 ### Internal
-* Upgraded to Realm Core v5.10.1.
-* Upgraded to Realm Sync v3.10.0.
+* Upgraded to Realm Core v5.10.0.
+* Upgraded to Realm Sync v3.19.9.
 
 
 2.15.3 Release notes (2018-8-24)
