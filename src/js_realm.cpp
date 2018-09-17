@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #include "platform.hpp"
-#include "realm_coordinator.hpp"
+#include "impl/realm_coordinator.hpp"
 #include "js_types.hpp"
 
 #if REALM_ENABLE_SYNC
