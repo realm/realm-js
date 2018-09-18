@@ -10,6 +10,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * None
 
 ### Fixes
+* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
 * None
 
 ### Compatibility
