@@ -7,7 +7,7 @@
 * None.
 
 ### Bug fixes
-* None.
+* Fixed the type definition for `Realm.Permissions.User`. Thanks to @apperside! ([#2012](https://github.com/realm/realm-js/issues/2012), since v2.3.0-beta.2)
 
 ### Compatibility
 * Realm Object Server: 3.11.0 or later
