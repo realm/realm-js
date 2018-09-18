@@ -1,10 +1,7 @@
-2.16.0 Release notes
+2.17.0 Release notes
 =============================================================
 ### Enhancements
 * When using a synced Realm where you only receive updates from the server and never update the realm locally, the client will now report download progress to the server such that it can compact files on the server. This enhancement doesn't affect the client.
-
-### Fixes
-* Fixed the type definition for `Realm.Permissions.User`. Thanks to @apperside! ([#2012](https://github.com/realm/realm-js/issues/2012), since v2.3.0-beta.2)
 
 ### Compatibility
 * File format: ver. 7 (upgrades automatically from previous formats)
