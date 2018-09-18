@@ -231,5 +231,109 @@ module.exports = {
                                        {read: true, update: false, delete: false, setPermissions: false});
                 realm.close();
             });
+    },
+
+    testAddPermissionSchemaForQueryBasedRealmOnly() {
+        return new Promise((resolve, reject) => {
+            Realm.Sync.User.register('http://localhost:9080', uuid(), 'password').then((user) => {
+                let config = {
+                    sync: {
+                        user: user,
+                        url: `realm://NO_SERVER/foo`,
+                        fullSynchronization: false,
+                    }
+                };
+                
+                let realm = new Realm(config);
+                TestCase.assertTrue(realm.empty);
+                 
+                TestCase.assertEqual(realm.schema.length, 5);
+                TestCase.assertEqual(realm.schema.filter(schema => schema.name === '__Class').length, 1);
+                TestCase.assertEqual(realm.schema.filter(schema => schema.name === '__Permission').length, 1);
+                TestCase.assertEqual(realm.schema.filter(schema => schema.name === '__Realm').length, 1);
+                TestCase.assertEqual(realm.schema.filter(schema => schema.name === '__Role').length, 1);
+                TestCase.assertEqual(realm.schema.filter(schema => schema.name === '__User').length, 1);
+
+                realm.close();
+                Realm.deleteFile(config);
+
+                // Full sync shouldn't include the permission schema
+                config = {
+                    sync: {
+                        user: user,
+                        url: `realm://NO_SERVER/foo`,
+                        fullSynchronization: true
+                    }
+                };
+                realm = new Realm(config);
+                TestCase.assertTrue(realm.empty);
+                TestCase.assertEqual(realm.schema.length, 0);
+
+                realm.close();
+                Realm.deleteFile(config);
+
+                resolve();                
+            }).catch(error => reject(error));
+        });
+    },
+
+    testUsingAddedPermissionSchemas() {
+        return new Promise((resolve, reject) => {
+            Realm.Sync.User.register('http://localhost:9080', uuid(), 'password').then((user) => {
+                const config = user.createConfiguration();
+                const PrivateChatRoomSchema = {
+                    name: 'PrivateChatRoom',
+                    primaryKey: 'name',
+                    properties: {
+                        'name': { type: 'string', optional: false },
+                        'permissions': { type: 'list', objectType: '__Permission' }
+                    }
+                };
+                config.schema = [PrivateChatRoomSchema];
+                const realm = new Realm(config);
+
+                let rooms = realm.objects(PrivateChatRoomSchema.name);
+                let subscription = rooms.subscribe();
+                subscription.addListener((sub, state) => {
+                    if (state === Realm.Sync.SubscriptionState.Complete) {
+                        let roles = realm.objects(Realm.Permissions.Role.schema.name).filtered(`name = '__User:${user.identity}'`);
+                        TestCase.assertEqual(roles.length, 1);
+
+                        realm.write(() => {
+                            const permission = realm.create(Realm.Permissions.Permission.schema.name,                                
+                                { canUpdate: true, canRead: true, canQuery: true, role: roles[0] });
+
+                            let room = realm.create(PrivateChatRoomSchema.name, { name: `#sales` });
+                            room.permissions.push(permission);
+                        });
+
+                        waitForUpload(realm).then(() => {
+                            realm.close();
+                            Realm.deleteFile(config);
+                            // connecting with an empty schema should be possible, permission is added implicitly
+                            Realm.open(user.createConfiguration()).then((realm) => {
+                                let permissions = realm.objects(Realm.Permissions.Permission).filtered(`role.name = '__User:${user.identity}'`);
+                                let subscription = permissions.subscribe();
+                                subscription.addListener((sub, state) => {
+                                    if (state === Realm.Sync.SubscriptionState.Complete) {
+                                        TestCase.assertEqual(permissions.length, 1);
+                                        TestCase.assertTrue(permissions[0].canRead);
+                                        TestCase.assertTrue(permissions[0].canQuery);
+                                        TestCase.assertTrue(permissions[0].canUpdate);
+                                        TestCase.assertFalse(permissions[0].canDelete);
+                                        TestCase.assertFalse(permissions[0].canSetPermissions);
+                                        TestCase.assertFalse(permissions[0].canCreate);
+                                        TestCase.assertFalse(permissions[0].canModifySchema);
+
+                                        realm.close();
+                                        resolve();
+                                    }
+                                });
+                            });
+                        });
+                    }
+                });
+            }).catch(error => reject(error));
+        });
     }
 }

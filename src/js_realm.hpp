@@ -501,6 +501,85 @@ void RealmClass<T>::constructor(ContextType ctx, ObjectType this_object, size_t 
                 schema_updated = true;
             }
 
+#if REALM_ENABLE_SYNC
+        // Include permission schema for query-based sync 
+        if (config.sync_config && config.sync_config->is_partial) {
+            std::vector<ObjectSchema> objectsSchema;
+            
+            if (!config.schema) {
+                config.schema.emplace(realm::Schema(objectsSchema));
+            }
+
+            auto it = config.schema->find("__Class");
+            if (it == config.schema->end()) {
+                realm::ObjectSchema clazz = {"__Class", {
+                    {"name", realm::PropertyType::String, Property::IsPrimary{true}},
+                    {"permissions", realm::PropertyType::Object|realm::PropertyType::Array, "__Permission"}
+                }};
+                objectsSchema.emplace_back(std::move(clazz));
+            }
+
+            it = config.schema->find("__Permission");
+            if (it == config.schema->end()) {
+                realm::ObjectSchema permission = {"__Permission", {
+                    {"role", realm::PropertyType::Object|realm::PropertyType::Nullable, "__Role"},
+                    {"canRead", realm::PropertyType::Bool},
+                    {"canUpdate", realm::PropertyType::Bool},
+                    {"canDelete", realm::PropertyType::Bool},
+                    {"canSetPermissions", realm::PropertyType::Bool},
+                    {"canQuery", realm::PropertyType::Bool},
+                    {"canCreate", realm::PropertyType::Bool},
+                    {"canModifySchema", realm::PropertyType::Bool}
+                }};
+                objectsSchema.emplace_back(std::move(permission));
+                // adding default values
+                std::map<std::string, Protected<ValueType>> object_defaults;
+                object_defaults.emplace("canRead", Protected<ValueType>(ctx, Value::from_boolean(ctx, false)));
+                object_defaults.emplace("canUpdate", Protected<ValueType>(ctx, Value::from_boolean(ctx, false)));
+                object_defaults.emplace("canDelete", Protected<ValueType>(ctx, Value::from_boolean(ctx, false)));
+                object_defaults.emplace("canSetPermissions", Protected<ValueType>(ctx, Value::from_boolean(ctx, false)));
+                object_defaults.emplace("canQuery", Protected<ValueType>(ctx, Value::from_boolean(ctx, false)));
+                object_defaults.emplace("canCreate", Protected<ValueType>(ctx, Value::from_boolean(ctx, false)));
+                object_defaults.emplace("canModifySchema", Protected<ValueType>(ctx, Value::from_boolean(ctx, false)));
+
+                defaults.emplace("__Permission", std::move(object_defaults));
+            }
+
+            it = config.schema->find("__Realm");
+            if (it == config.schema->end()) {
+                realm::ObjectSchema realm = {"__Realm", {
+                    {"id", realm::PropertyType::Int, realm::Property::IsPrimary{true}},
+                    {"permissions", realm::PropertyType::Object|realm::PropertyType::Array, "__Permission"}
+                }};
+                objectsSchema.emplace_back(std::move(realm));
+            }
+
+            it = config.schema->find("__Role");
+            if (it == config.schema->end()) {
+                realm::ObjectSchema role = {"__Role", {
+                    {"name", realm::PropertyType::String, realm::Property::IsPrimary{true}},
+                    {"members", realm::PropertyType::Object|realm::PropertyType::Array, "__User"}
+                }};
+                objectsSchema.emplace_back(std::move(role));
+            }
+
+            it = config.schema->find("__User");
+            if (it == config.schema->end()) {
+                realm::ObjectSchema user = {"__User", {
+                    {"id", realm::PropertyType::String, realm::Property::IsPrimary{true}},
+                    {"role", realm::PropertyType::Object|realm::PropertyType::Nullable, "__Role"}
+                }};
+                objectsSchema.emplace_back(std::move(user));
+            }
+            
+            objectsSchema.insert(objectsSchema.end(), std::make_move_iterator(config.schema->begin()),
+                                                      std::make_move_iterator(config.schema->end()));
+            
+            config.schema.emplace(realm::Schema(objectsSchema));
+            schema_updated = true;   
+        }
+#endif
+
             static const String schema_version_string = "schemaVersion";
             ValueType version_value = Object::get_property(ctx, object, schema_version_string);
             if (!Value::is_undefined(ctx, version_value)) {
