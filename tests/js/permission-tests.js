@@ -303,7 +303,7 @@ module.exports = {
                             const permission = realm.create(Realm.Permissions.Permission.schema.name,                                
                                 { canUpdate: true, canRead: true, canQuery: true, role: roles[0] });
 
-                            let room = realm.create(PrivateChatRoomSchema.name, { name: `#sales` });
+                            let room = realm.create(PrivateChatRoomSchema.name, { name: `#sales_${uuid()}` });
                             room.permissions.push(permission);
                         });
 
