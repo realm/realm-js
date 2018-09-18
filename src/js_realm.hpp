@@ -517,6 +517,7 @@ void RealmClass<T>::constructor(ContextType ctx, ObjectType this_object, size_t 
                     {"permissions", realm::PropertyType::Object|realm::PropertyType::Array, "__Permission"}
                 }};
                 objectsSchema.emplace_back(std::move(clazz));
+                schema_updated = true;
             }
 
             it = config.schema->find("__Permission");
@@ -543,6 +544,7 @@ void RealmClass<T>::constructor(ContextType ctx, ObjectType this_object, size_t 
                 object_defaults.emplace("canModifySchema", Protected<ValueType>(ctx, Value::from_boolean(ctx, false)));
 
                 defaults.emplace("__Permission", std::move(object_defaults));
+                schema_updated = true;
             }
 
             it = config.schema->find("__Realm");
@@ -552,6 +554,7 @@ void RealmClass<T>::constructor(ContextType ctx, ObjectType this_object, size_t 
                     {"permissions", realm::PropertyType::Object|realm::PropertyType::Array, "__Permission"}
                 }};
                 objectsSchema.emplace_back(std::move(realm));
+                schema_updated = true;
             }
 
             it = config.schema->find("__Role");
@@ -561,6 +564,7 @@ void RealmClass<T>::constructor(ContextType ctx, ObjectType this_object, size_t 
                     {"members", realm::PropertyType::Object|realm::PropertyType::Array, "__User"}
                 }};
                 objectsSchema.emplace_back(std::move(role));
+                schema_updated = true;
             }
 
             it = config.schema->find("__User");
@@ -570,13 +574,13 @@ void RealmClass<T>::constructor(ContextType ctx, ObjectType this_object, size_t 
                     {"role", realm::PropertyType::Object|realm::PropertyType::Nullable, "__Role"}
                 }};
                 objectsSchema.emplace_back(std::move(user));
+                schema_updated = true;
             }
             
             objectsSchema.insert(objectsSchema.end(), std::make_move_iterator(config.schema->begin()),
                                                       std::make_move_iterator(config.schema->end()));
             
             config.schema.emplace(realm::Schema(objectsSchema));
-            schema_updated = true;   
         }
 #endif
 
