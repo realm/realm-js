@@ -3,6 +3,9 @@
 ### Enhancements
 * When using a synced Realm where you only receive updates from the server and never update the realm locally, the client will now report download progress to the server such that it can compact files on the server. This enhancement doesn't affect the client.
 
+### Fixes
+* None
+
 ### Compatibility
 * File format: ver. 7 (upgrades automatically from previous formats)
 * **Realm Object Server: 3.11.0 or later.** 
