@@ -1,3 +1,13 @@
+X.Y.Z Release notes
+=============================================================
+### Bug fixes
+* Fixed the type definition for `Realm.Permissions.User`. Thanks to @apperside! ([#2012](https://github.com/realm/realm-js/issues/2012), since v2.3.0-beta.2)
+
+### Compatibility
+* Realm Object Server: 3.0.0 or later
+* File format: ver 7. (upgrades from previous formats automatically)
+
+
 2.16.0-rc.2 Release notes (2018-9-14)
 =============================================================
 ### Breaking changes
