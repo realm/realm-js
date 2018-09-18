@@ -1,3 +1,10 @@
+2.16.0 Release notes (YYYY-MM-DD)
+=============================================================
+
+### Bug fixes
+* Including user's schema without overriding the permission schema added for query based Realm [#2017](https://github.com/realm/realm-js/issues/2017).
+* Including missing class for the permission schema [#2016](https://github.com/realm/realm-js/issues/2016).
+
 2.16.0-rc.2 Release notes (2018-9-14)
 =============================================================
 ### Breaking changes
