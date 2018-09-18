@@ -312,7 +312,7 @@ module.exports = {
                             Realm.deleteFile(config);
                             // connecting with an empty schema should be possible, permission is added implicitly
                             Realm.open(user.createConfiguration()).then((realm) => {
-                                let permissions = realm.objects(Realm.Permissions.Permission).filtered(`role.name = '__User:${user.identity}'`);
+                                let permissions = realm.objects(Realm.Permissions.Permission.schema.name).filtered(`role.name = '__User:${user.identity}'`);
                                 let subscription = permissions.subscribe();
                                 subscription.addListener((sub, state) => {
                                     if (state === Realm.Sync.SubscriptionState.Complete) {
