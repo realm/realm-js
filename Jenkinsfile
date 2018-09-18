@@ -139,7 +139,9 @@ def doInside(script, target, postStep = null) {
       }
     }
     wrap([$class: 'AnsiColorBuildWrapper']) {
-      sh "bash ${script} ${target}"
+      withCredentials([string(credentialsId: 'realm-sync-feature-token-enterprise', variable: 'realmFeatureToken')]) {
+        sh "bash SYNC_WORKER_FEATURE_TOKEN=${realmFeatureToken} ${script} ${target}"
+      }
     }
     if(postStep) {
        postStep.call()

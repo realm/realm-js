@@ -1,3 +1,23 @@
+2.16.0 Release notes
+=============================================================
+### Breaking changes
+* No API breaking changes but the sync protocol is updated to version 26. You will need to upgrade your Realm Object Server to at least version 3.11.0 or use [Realm Cloud](https://cloud.realm.io). See https://docs.realm.io/platform/using-synced-realms/troubleshoot/version-compatibilities fror more information
+
+### Enhancements
+* None.
+
+### Bug fixes
+* None.
+
+### Compatibility
+* Realm Object Server: 3.11.0 or later
+* File format: ver. 7 (upgrade for previous formats automatically)
+
+### Internal
+* Upgraded to Realm Core v5.11.1.
+* Upgraded to Realm Sync v3.10.0.
+
+
 2.16.0-rc.2 Release notes (2018-9-14)
 =============================================================
 ### Breaking changes
