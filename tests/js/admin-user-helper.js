@@ -10,7 +10,8 @@ const adminName = "realm-admin"
 const password = '';
 
 exports.createAdminUser = function () {
-    return Realm.Sync.User.login('http://localhost:9080', adminName, password).then((user) => {
+    const credentials = Realm.Sync.Credentials.usernamePassword(adminName, password);
+    return Realm.Sync.User.login('http://localhost:9080', credentials).then((user) => {
         if (!user.isAdmin) {
             throw new Error(`${adminName} user is not an admin user on this server`);
         }

@@ -233,6 +233,8 @@ public:
     static void add_connection_notification(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &);
     static void remove_connection_notification(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &);
     static void is_connected(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &);
+    static void resume(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &);
+    static void pause(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &);
 
 
     static void override_server(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue&);
@@ -254,6 +256,8 @@ public:
         {"addConnectionNotification", wrap<add_connection_notification>},
         {"removeConnectionNotification", wrap<remove_connection_notification>},
         {"isConnected", wrap<is_connected>},
+        {"resume", wrap<resume>},
+        {"pause", wrap<pause>},
     };
 
 private:
@@ -647,6 +651,24 @@ void SessionClass<T>::is_connected(ContextType ctx, FunctionType, ObjectType thi
 }
 
 template<typename T>
+void SessionClass<T>::resume(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    validate_argument_count(argc, 0);
+    return_value.set(false);
+    if (auto session = get_internal<T, SessionClass<T>>(this_object)->lock()) {
+        session->revive_if_needed();
+    }
+}
+
+template<typename T>
+void SessionClass<T>::pause(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+    validate_argument_count(argc, 0);
+    return_value.set(false);
+    if (auto session = get_internal<T, SessionClass<T>>(this_object)->lock()) {
+        session->log_out();
+    }
+}
+
+template<typename T>
 void SessionClass<T>::override_server(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue&) {
     args.validate_count(2);
 
@@ -1018,7 +1040,7 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
                 // deep copy the pem_data into a string so DeleteLocalRef delete the local reference not the original const char
                 std::string pem(pem_data, pem_size);
                 jstring jpem = env->NewStringUTF(pem.c_str());
-                
+
                 bool isValid = env->CallStaticBooleanMethod(ssl_helper_class, java_certificate_verifier,
                                                             jserver_address,
                                                             jpem, depth) == JNI_TRUE;

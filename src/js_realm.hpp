@@ -1177,18 +1177,24 @@ void RealmClass<T>::writeCopyTo(ContextType ctx, ObjectType this_object, Argumen
     }
 
     std::string path = Value::validated_to_string(ctx, pathValue);
-    BinaryData key;
-    if (args.count == 2) {
-        ValueType key_value = args[1];
-        if (!Value::is_binary(ctx, key_value)) {
-            throw std::runtime_error("Encryption key for 'writeCopyTo' must be a Binary.");
-        }
 
-        auto key_data = Value::validated_to_binary(ctx, key_value);
-        key = { static_cast<const char *>(key_data.data()), key_data.size() };
+    if (args.count == 1) {
+        BinaryData empty_encryption_key;
+        realm->write_copy(path, empty_encryption_key);
+
+        return;
     }
 
-    realm->write_copy(path, key);
+    // enryption key is specified
+    ValueType encryption_key_arg = args[1];
+
+    if (!Value::is_binary(ctx, encryption_key_arg)) {
+        throw std::runtime_error("Encryption key for 'writeCopyTo' must be a Binary.");
+    }
+
+    auto encryption_key = Value::validated_to_binary(ctx, encryption_key_arg);
+
+    realm->write_copy(path, encryption_key.get());
 }
 
 template<typename T>

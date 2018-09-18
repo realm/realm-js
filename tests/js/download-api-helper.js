@@ -40,15 +40,11 @@ function createObjects(user) {
     });
 }
 
-let registrationError;
-Realm.Sync.User.register('http://localhost:9080', username, 'password')
-  .catch((error) => {
-      registrationError = JSON.stringify(error);
-      return Realm.Sync.User.login('http://localhost:9080', username, 'password')
-    })
+const credentials = Realm.Sync.Credentials.nickname(username);
+Realm.Sync.User.login('http://localhost:9080', credentials)
     .catch((error) => {
         const loginError = JSON.stringify(error);
-        console.error(`download-api-helper failed:\n User.register() error:\n${registrationError}\n User.login() error:\n${registrationError}`);
+        console.error(`download-api-helper failed:\n User login error:\n${loginError}`);
         process.exit(-2);
     })
     .then((user) => createObjects(user))

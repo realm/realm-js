@@ -1286,11 +1286,9 @@ module.exports = {
         TestCase.assertEqual(managedObj.objectCol.doubleCol, 1);
         TestCase.assertEqual(managedObj.nullObjectCol, null);
         TestCase.assertEqual(managedObj.arrayCol[0].doubleCol, 2);
-    }
+    },
 
 
-    // FIXME: reanble test
-    /*
     testWriteCopyTo: function() {
         const realm = new Realm({schema: [schemas.IntPrimary, schemas.AllTypes, schemas.TestObject, schemas.LinkToAllTypes]});
 
@@ -1307,7 +1305,11 @@ module.exports = {
             realm.writeCopyTo(34);
         }, "Argument to 'writeCopyTo' must be a String.");
 
-        const copyName = "testWriteCopy.realm";
+        // make sure that copies are in the same directory as the original file
+        // that is important for running tests on mobile devices,
+        // so we don't have issues with permissisons
+        const copyName = realm.path + ".copy.realm";
+
         realm.writeCopyTo(copyName);
 
         const copyConfig = { path: copyName };
@@ -1316,10 +1318,11 @@ module.exports = {
         realmCopy.close();
 
         TestCase.assertThrowsContaining(() => {
-            realm.writeCopyTo("testWriteCopyWithInvalidKey.realm", "hello");
+            realm.writeCopyTo(realm.path + ".copy-invalid-key.realm", "hello");
         }, "Encryption key for 'writeCopyTo' must be a Binary.");
 
-        const encryptedCopyName = "testWriteEncryptedCopy.realm";
+        const encryptedCopyName = realm.path + ".copy-encrypted.realm";
+
         var encryptionKey = new Int8Array(64);
         for(let i=0; i < 64; i++) {
             encryptionKey[i] = 1;
@@ -1332,5 +1335,5 @@ module.exports = {
         encryptedRealmCopy.close();
 
         realm.close();
-    }*/
+    }
 };

@@ -81,6 +81,7 @@
         ["QueryCount", 3, "IntObject", "intCol <= 100"],
         ["QueryCount", 1, "IntObject", "intCol > 0x1F"],
         ["QueryCount", 1, "IntObject", "intCol == $0", 100],
+        ["QueryCount", 2, "IntObject", "intCol >= 0 LIMIT(2)"],
 
         ["QueryThrows", "IntObject", "intCol == 'not an int'"],
         ["QueryThrows", "IntObject", "intCol == true"],
@@ -112,6 +113,7 @@
         ["QueryCount", 3, "FloatObject", "floatCol <= 100.2"],
         ["QueryCount", 1, "FloatObject", "floatCol > 0x1F"],
         ["QueryCount", 1, "FloatObject", "floatCol == $0", 100.2],
+        ["QueryCount", 2, "FloatObject", "floatCol >= 0.0"],
 
         ["QueryThrows", "FloatObject", "floatCol == 'not a float'"],
         ["QueryThrows", "FloatObject", "floatCol == true"],
@@ -146,6 +148,7 @@
         ["QueryCount", 3, "DoubleObject", "doubleCol <= 100.2"],
         ["QueryCount", 1, "DoubleObject", "doubleCol > 0x1F"],
         ["QueryCount", 1, "DoubleObject", "doubleCol == $0", 100.2],
+        ["QueryCount", 2, "DoubleObject", "doubleCol >= 0.0 LIMIT(2)"],
 
         ["QueryThrows", "DoubleObject", "doubleCol == 'not a double'"],
         ["QueryThrows", "DoubleObject", "doubleCol == true"],
@@ -192,6 +195,7 @@
         ["QueryCount", 9, "StringObject", "stringCol CONTAINS ''"],
         ["QueryCount", 2, "StringObject", "stringCol == $0", "a"],
         ["QueryCount", 2, "StringObject", "stringCol ENDSWITH $0", "c"],
+        ["QueryCount", 2, "StringObject", "stringCol BEGINSWITH 'a' LIMIT(2)"],
 
         ["QueryThrows", "StringObject", "stringCol == true"],
         ["QueryThrows", "StringObject", "stringCol == 123"],
