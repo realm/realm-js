@@ -166,7 +166,7 @@ class Realm {
      *
      * Non-synchronized Realms always have permission to perform all operations.
      *
-     * @param {(Realm~ObjectType|Realm.Object|[arg])} arg - the object type or the object to compute privileges from. If no
+     * @param {(Realm~ObjectType|Realm.Object)} arg - the object type or the object to compute privileges from. If no
      *   argument is given, the privileges for the Realm is returned.
      * @returns {Object} as the computed privileges as properties
      * @since 2.3.0
