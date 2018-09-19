@@ -7,6 +7,8 @@ X.Y.Z Release notes
 * Realm Object Server: 3.0.0 or later
 * File format: ver 7. (upgrades from previous formats automatically)
 
+### Enhancements
+* Support [ASDF](https://github.com/asdf-vm/asdf-nodejs) nodejs shims.
 
 2.16.0-rc.2 Release notes (2018-9-14)
 =============================================================
