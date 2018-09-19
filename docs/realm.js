@@ -153,7 +153,7 @@ class Realm {
     close() {}
 
     /**
-     * Returns the granted privilges.
+     * Returns the granted privileges.
      *
      * This combines all privileges granted on the Realm/Class/Object by all Roles which
      * the current User is a member of into the final privileges which will
@@ -166,10 +166,11 @@ class Realm {
      *
      * Non-synchronized Realms always have permission to perform all operations.
      *
-     * @param {(Realm~ObjectType|Realm.Object)} arg - the object type or the object to compute priviliges from
-     * @returns {Object} as the computed priviliges as properties
+     * @param {(Realm~ObjectType|Realm.Object|[arg])} arg - the object type or the object to compute privileges from. If no
+     *   argument is given, the privileges for the Realm is returned.
+     * @returns {Object} as the computed privileges as properties
      * @since 2.3.0
-     * @see {Realm.Permissions} for details of priviliges and roles.
+     * @see {Realm.Permissions} for details of privileges and roles.
      */
     privileges(arg) {}
 
