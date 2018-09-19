@@ -1,9 +1,11 @@
 X.Y.Z Release notes
 =============================================================
+### Enhancements
+* Added support for [ASDF](https://github.com/asdf-vm/asdf-nodejs) nodejs shims. Thanks to @breezeight! ([#2031](https://github.com/realm/realm-js/issues/2031))
 
 ### Bug fixes
 * Fixed the type definition for `Realm.Permissions.User`. Thanks to @apperside! ([#2012](https://github.com/realm/realm-js/issues/2012), since v2.3.0-beta.2)
-* Previously, adding a schema definition (using `config.schema = [Dog, Person]` for example) will prevent the permission schema from being added for query based Realm. ([#2017](https://github.com/realm/realm-js/issues/2017), since v2.3.0). 
+* Previously, adding a schema definition (using `config.schema = [Dog, Person]` for example) will prevent the permission schema from being added for query based Realm. ([#2017](https://github.com/realm/realm-js/issues/2017), since v2.3.0).
 * As part of including the permission schema implicitly when using query based Realm, the schema `Realm.Permissions.Realm` was missing, which may break any query including it. ([#2016](https://github.com/realm/realm-js/issues/2016), since v2.3.0)
 * Fixed the type definition for `Realm.getPrivileges()`, `Realm.getPrivileges(className)` and `Realm.getPrivileges(object)`. ([#2030](https://github.com/realm/realm-js/pull/2030), since v2.2.14)
 
@@ -11,8 +13,6 @@ X.Y.Z Release notes
 * Realm Object Server: 3.0.0 or later
 * File format: ver 7. (upgrades from previous formats automatically)
 
-### Enhancements
-* Support [ASDF](https://github.com/asdf-vm/asdf-nodejs) nodejs shims.
 
 2.16.0-rc.2 Release notes (2018-9-14)
 =============================================================
