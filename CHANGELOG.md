@@ -1,4 +1,4 @@
-X.Y.Z Release notes
+2.16.0 Release notes (2018-9-19)
 =============================================================
 ### Enhancements
 * Added support for [ASDF](https://github.com/asdf-vm/asdf-nodejs) nodejs shims. Thanks to @breezeight! ([#2031](https://github.com/realm/realm-js/issues/2031))
