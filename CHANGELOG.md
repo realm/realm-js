@@ -1,7 +1,9 @@
 X.Y.Z Release notes
 =============================================================
+
 ### Bug fixes
 * Fixed the type definition for `Realm.Permissions.User`. Thanks to @apperside! ([#2012](https://github.com/realm/realm-js/issues/2012), since v2.3.0-beta.2)
+* Fixed the type definition for `Realm.getPrivileges()`, `Realm.getPrivileges(className)` and `Realm.getPrivileges(object)`. ([#2030](https://github.com/realm/realm-js/pull/2030), since v2.2.14)
 
 ### Compatibility
 * Realm Object Server: 3.0.0 or later
