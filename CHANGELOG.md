@@ -36,7 +36,7 @@ X.Y.Z Release notes
 * Added support for `LIMIT` in queries to restrict the size of the results set. This is in particular useful for query-based synced Realms. An example of the syntax is `age >= 20 LIMIT(2)`. ([#2008](https://github.com/realm/realm-js/pull/2008))
 
 ### Bug fixes
-* Type definition for `Realm.getPrivileges()`, `Realm.getPrivileges(className)` and `Realm.getPrivileges(object)` ([#XXXX](TODO)).
+* Type definition for `Realm.getPrivileges()`, `Realm.getPrivileges(className)` and `Realm.getPrivileges(object)` ([#2030](https://github.com/realm/realm-js/pull/2030)). Introduced in v2.2.14.
 * Fixed the type definition for `User.authenticate()`. ([#2000](https://github.com/realm/realm-js/pull/2000), since v2.2.0)
 * Added `Realm.Sync.Subscription.removeAllListeners()` to the `Subscription` proxy class used when debugging a React Native app. ([#474](https://github.com/realm/realm-js-private/issues/474), since v2.3.2)
 * Fixed a memory corruption in `writeCopyTo()` when using encryption. This could be experienced as: `Error: Unable to open a realm at path ...`. Thanks to @mandrigin! ([#1748](https://github.com/realm/realm-js/issues/1748), since v2.3.4)
