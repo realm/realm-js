@@ -603,11 +603,13 @@ declare namespace Realm.Permissions {
     class Class {
         static schema: ObjectSchema;
         class_name: string;
+        name: string;
         permissions: Permission[];
     }
 
     class Realm {
         static schema: ObjectSchema;
+        id: number;
         permissions: Permission[];
     }
 }

@@ -22,9 +22,29 @@ const Realm = require('realm');
 const TestCase = require('./asserts');
 const schemas = require('./schemas');
 
+const isNodeProccess = (typeof process === 'object' && process + '' === '[object process]');
+
 let pathSeparator = '/';
 if (typeof process === 'object' && process.platform === 'win32') {
     pathSeparator = '\\';
+}
+
+const getPartialRealm = () => {
+    return Realm.Sync.User
+        .login('http://localhost:9080', Realm.Sync.Credentials.anonymous())
+        .then(user => {
+            return Realm.open(user.createConfiguration());
+        });
+};
+
+const assertFullAccess= function(permission) {
+    TestCase.assertTrue(permission.canCreate);
+    TestCase.assertTrue(permission.canRead);
+    TestCase.assertTrue(permission.canUpdate);
+    TestCase.assertTrue(permission.canDelete);
+    TestCase.assertTrue(permission.canQuery);
+    TestCase.assertTrue(permission.canModifySchema);
+    TestCase.assertTrue(permission.canSetPermissions);
 }
 
 module.exports = {
@@ -1335,5 +1355,59 @@ module.exports = {
         encryptedRealmCopy.close();
 
         realm.close();
-    }
+    },
+
+    testPermissions_Realm: function() {
+        if (!isNodeProccess) {
+            return;
+        }
+
+        return getPartialRealm().then(realm => {
+            return new Promise((resolve, reject) => {
+                let permissions = realm.permissions();
+                TestCase.assertEqual(1, permissions.permissions.length);
+                let perm = permissions.permissions[0];
+                TestCase.assertEqual("everyone", perm.role.name);
+                assertFullAccess(perm);
+                resolve();
+            });
+        });
+    },
+
+    testPermissions_Class: function() {
+        if (!isNodeProccess) {
+            return;
+        }
+
+        return getPartialRealm().then(realm => {
+            return new Promise((resolve, reject) => {
+                let permissions = realm.permissions('__Class');
+                TestCase.assertEqual('__Class', permissions.name)
+                TestCase.assertEqual(1, permissions.permissions.length);
+                let perm = permissions.permissions[0];
+                TestCase.assertEqual("everyone", perm.role.name);
+                TestCase.assertTrue(perm.canCreate);
+                TestCase.assertTrue(perm.canRead);
+                TestCase.assertTrue(perm.canUpdate);
+                TestCase.assertFalse(perm.canDelete);
+                TestCase.assertTrue(perm.canQuery);
+                TestCase.assertFalse(perm.canModifySchema);
+                TestCase.assertTrue(perm.canSetPermissions);
+                resolve();
+            });
+        });
+    },
+
+    testPermissions_Class_InvalidClassArgument: function() {
+        if (!isNodeProccess) {
+            return;
+        }
+        return getPartialRealm().then(realm => {
+            return new Promise((resolve, reject) => {
+                TestCase.assertThrows(() => realm.permissions('foo'));
+                resolve();
+            });
+        });
+    },
+
 };

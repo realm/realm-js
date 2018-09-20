@@ -3,6 +3,10 @@ X.Y.Z Release notes
 ### Bug fixes
 * Fixed the type definition for `Realm.Permissions.User`. Thanks to @apperside! ([#2012](https://github.com/realm/realm-js/issues/2012), since v2.3.0-beta.2)
 
+### Enhancements
+* Added support for finding Realm-level permissions in Query-based realms using `realm.getPermissions()` ([#XXXX](TODO)).
+* Added support for finding Class-level permissions in Query-based realms using `realm.getPermissions(className)` ([#XXXX](TODO)).
+
 ### Compatibility
 * Realm Object Server: 3.0.0 or later
 * File format: ver 7. (upgrades from previous formats automatically)

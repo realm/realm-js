@@ -370,8 +370,16 @@ class Class {
     /**
      * The name of the class which these permissions apply to.
      * @type {string}
+     * @deprecated Use name() instead.
      */
     get class_name() {}
+
+    /**
+     * The name of the class which these permissions apply to.
+     * @type {string}
+     * @since 2.17.0
+     */
+    get name() {}
 
     /**
      * The permissions for this class.
@@ -389,6 +397,7 @@ class Class {
  * @memberof Realm.Permissions
  */
 class Realm {
+
     /**
      * The permissions for the Realm.
      * @type {Array<Realm.Permissions.Permission>}
