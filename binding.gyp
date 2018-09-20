@@ -139,7 +139,6 @@
         "tests/js/results-tests.js",
         "tests/js/schemas.js",
         "tests/js/session-tests.js",
-        "tests/js/synced-realm-tests.js",
         "tests/js/user-tests.js",
         "tests/js/worker-tests-script.js",
         "tests/js/worker.js",
