@@ -1,21 +1,38 @@
-2.16.0 Release notes
+2.17.0 Release notes
 =============================================================
-### Breaking changes
-* No API breaking changes but the sync protocol is updated to version 26. You will need to upgrade your Realm Object Server to at least version 3.11.0 or use [Realm Cloud](https://cloud.realm.io). If you are using an old Realm Object Server, you will seee error message `Wrong protocol version in Sync HTTP request, client protocol version = 25, server protocol version = 24`. See https://docs.realm.io/platform/using-synced-realms/troubleshoot/version-compatibilities for more information.
-
 ### Enhancements
+* When using a synced Realm where you only receive updates from the server and never update the realm locally, the client will now report download progress to the server such that it can compact files on the server. This enhancement doesn't affect the client.
+
+### Fixes
 * None.
 
-### Bug fixes
-* Fixed the type definition for `Realm.Permissions.User`. Thanks to @apperside! ([#2012](https://github.com/realm/realm-js/issues/2012), since v2.3.0-beta.2)
-
 ### Compatibility
-* Realm Object Server: 3.11.0 or later
-* File format: ver. 7 (upgrade for previous formats automatically)
+* File format: ver. 7 (upgrades automatically from previous formats)
+* **Realm Object Server: 3.11.0 or later.**
+You will need to upgrade your Realm Object Server to at least version 3.11.0 or use [Realm Cloud](https://cloud.realm.io).
+If you try to connect to a ROS v3.10.x or previous, you will see an error like `Wrong protocol version in Sync HTTP request, client protocol version = 25, server protocol version = 24`.
+* APIs are backwards compatible with all previous release of realm in the 2.x.y series.
 
 ### Internal
 * Upgraded to Realm Core v5.11.1.
-* Upgraded to Realm Sync v3.10.0.
+* Upgraded to Realm Sync v3.10.0 (with new protocol version 25).
+
+
+
+2.16.0 Release notes (2018-9-19)
+=============================================================
+### Enhancements
+* Added support for [ASDF](https://github.com/asdf-vm/asdf-nodejs) nodejs shims. Thanks to @breezeight! ([#2031](https://github.com/realm/realm-js/issues/2031))
+
+### Bug fixes
+* Fixed the type definition for `Realm.Permissions.User`. Thanks to @apperside! ([#2012](https://github.com/realm/realm-js/issues/2012), since v2.3.0-beta.2)
+* When adding a schema definition (e.g. `let config = user.createConfiguration(); config.schema = [Dog, Person]`) the permission schema would be removed, resulting in an `unknown object type __Permission` if using query based Realm. ([#2017](https://github.com/realm/realm-js/issues/2017), since v2.3.0).
+* As part of including the permission schema implicitly when using query based Realm, the schema `Realm.Permissions.Realm` was missing, which may break any query including it. ([#2016](https://github.com/realm/realm-js/issues/2016), since v2.3.0)
+* Fixed the type definition for `Realm.getPrivileges()`, `Realm.getPrivileges(className)` and `Realm.getPrivileges(object)`. ([#2030](https://github.com/realm/realm-js/pull/2030), since v2.2.14)
+
+### Compatibility
+* Realm Object Server: 3.0.0 or later
+* File format: ver 7. (upgrades from previous formats automatically)
 
 
 2.16.0-rc.2 Release notes (2018-9-14)
