@@ -781,6 +781,11 @@ declare class Realm {
     privileges() : Realm.Permissions.Realm;
     privileges(objectType: string | Realm.ObjectSchema | Function) : Realm.Permissions.Class;
     privileges(obj: Realm.Object) : Realm.Permissions.Class;
+
+    permissions() : Realm.Permissions.Realm;
+    permissions(objectType: string | Realm.ObjectSchema | Function) : Realm.Permissions.Class;
+    permissions(obj: Realm.Object) : Realm.Permissions.Class;
+
 }
 
 declare module 'realm' {

@@ -237,6 +237,7 @@ public:
     static void delete_model(ContextType, ObjectType, Arguments, ReturnValue &);
     static void object_for_object_id(ContextType, ObjectType, Arguments, ReturnValue&);
     static void privileges(ContextType, ObjectType, Arguments, ReturnValue&);
+    static void get_schema_name_from_object(ContextType, ObjectType, Arguments, ReturnValue&);
 
     // properties
     static void get_empty(ContextType, ObjectType, ReturnValue &);
@@ -296,6 +297,7 @@ public:
         {"deleteModel", wrap<delete_model>},
         {"privileges", wrap<privileges>},
         {"_objectForObjectId", wrap<object_for_object_id>},
+        {"_schemaName", wrap<get_schema_name_from_object>},
  #if REALM_ENABLE_SYNC
         {"_waitForDownload", wrap<wait_for_download_completion>},
  #endif
@@ -1140,6 +1142,19 @@ void RealmClass<T>::object_for_object_id(ContextType ctx, ObjectType this_object
     throw std::logic_error("Realm._objectForObjectId() can only be used with synced Realms.");
 #endif // REALM_ENABLE_SYNC
 }
+
+
+template<typename T>
+void RealmClass<T>::get_schema_name_from_object(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue& return_value) {
+    args.validate_count(1);
+
+    // Try to map the input to the internal schema name for the given input. This should work for managed objects and
+    // schema objects. Pure strings and functions are expected to return a correct value.
+    SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
+    auto &object_schema = validated_object_schema_for_value(ctx, realm, args[0]);
+    return_value.set(object_schema.name);
+}
+
 
 template<typename T>
 void RealmClass<T>::privileges(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
