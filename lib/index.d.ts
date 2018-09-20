@@ -580,13 +580,13 @@ declare namespace Realm.Permissions {
         static schema: ObjectSchema;
 
         identity: string;
+        canCreate: boolean;
         canRead: boolean;
         canUpdate: boolean;
         canDelete: boolean;
-        canSetPermissions: boolean;
         canQuery: boolean;
-        canCreate: boolean;
         canModifySchema: boolean;
+        canSetPermissions: boolean;
     }
 
     class User {
@@ -611,6 +611,29 @@ declare namespace Realm.Permissions {
         static schema: ObjectSchema;
         id: number;
         permissions: Permission[];
+    }
+
+    class RealmPrivileges {
+        canRead: boolean;
+        canUpdate: boolean;
+        canModifySchema: boolean;
+        canSetPermissions: boolean;
+    }
+
+    class ClassPrivileges {
+        canCreate: boolean
+        canRead: boolean;
+        canUpdate: boolean;
+        canQuery: boolean;
+        canModifySchema: boolean;
+        canSetPermissions: boolean;
+    }
+
+    class ObjectPrivileges {
+        canRead: boolean;
+        canUpdate: boolean;
+        canDelete: boolean;
+        canSetPermissions: boolean;
     }
 }
 
@@ -781,12 +804,12 @@ declare class Realm {
     writeCopyTo(path: string, encryptionKey?: ArrayBuffer | ArrayBufferView): void;
 
     privileges() : Realm.Permissions.Realm;
-    privileges(objectType: string | Realm.ObjectSchema | Function) : Realm.Permissions.Class;
-    privileges(obj: Realm.Object) : Realm.Permissions.Class;
+    privileges() : Realm.Permissions.RealmPrivileges;
+    privileges(objectType: string | Realm.ObjectSchema | Function) : Realm.Permissions.ClassPrivileges;
+    privileges(obj: Realm.Object) : Realm.Permissions.ObjectPrivileges;
 
     permissions() : Realm.Permissions.Realm;
     permissions(objectType: string | Realm.ObjectSchema | Function) : Realm.Permissions.Class;
-    permissions(obj: Realm.Object) : Realm.Permissions.Class;
 
 }
 

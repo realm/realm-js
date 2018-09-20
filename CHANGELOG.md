@@ -1,7 +1,30 @@
-X.Y.Z Release notes
+x.x.x Release notes (yyyy-MM-dd)
 =============================================================
+## Enhancements
+* None
+
+### Fixes
+* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
+* None
+
+### Compatibility
+* File format: ver. 7 (upgrades automatically from previous formats)
+* Realm Object Server: 3.11.0 or later.
+* APIs are backwards compatible with all previous release of realm in the 2.x.y series.
+ 
+ ### Internal
+* None
+
+2.16.0 Release notes (2018-9-19)
+=============================================================
+### Enhancements
+* Added support for [ASDF](https://github.com/asdf-vm/asdf-nodejs) nodejs shims. Thanks to @breezeight! ([#2031](https://github.com/realm/realm-js/issues/2031))
+
 ### Bug fixes
 * Fixed the type definition for `Realm.Permissions.User`. Thanks to @apperside! ([#2012](https://github.com/realm/realm-js/issues/2012), since v2.3.0-beta.2)
+* When adding a schema definition (e.g. `let config = user.createConfiguration(); config.schema = [Dog, Person]`) the permission schema would be removed, resulting in an `unknown object type __Permission` if using query based Realm. ([#2017](https://github.com/realm/realm-js/issues/2017), since v2.3.0).
+* As part of including the permission schema implicitly when using query based Realm, the schema `Realm.Permissions.Realm` was missing, which may break any query including it. ([#2016](https://github.com/realm/realm-js/issues/2016), since v2.3.0)
+* Fixed the type definition for `Realm.getPrivileges()`, `Realm.getPrivileges(className)` and `Realm.getPrivileges(object)`. ([#2030](https://github.com/realm/realm-js/pull/2030), since v2.2.14)
 
 ### Enhancements
 * Added support for finding Realm-level permissions in Query-based realms using `realm.getPermissions()` ([#XXXX](TODO)).
