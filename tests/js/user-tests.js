@@ -20,10 +20,13 @@
 
 'use strict';
 
-const fs = require('fs');
 const Realm = require('realm');
 const TestCase = require('./asserts');
 const isNodeProcess = typeof process === 'object' && process + '' === '[object process]';
+
+if (isNodeProcess) {
+  fs = require('fs');
+}
 
 function uuid() {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
