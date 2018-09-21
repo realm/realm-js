@@ -1,10 +1,10 @@
-x.x.x Release notes (yyyy-MM-dd)
+2.16.1 Release notes (2018-9-21)
 =============================================================
 ## Enhancements
 * None
 
 ### Fixes
-* Fixed a bug in creating credentials using an admin token. ([#2037](https://github.com/realm/realm-js/issues/2037), since v2.16.0-rc.2
+* Fixed a bug in creating credentials using an admin token. The app would stop saying `then()` is not a function. ([#2037](https://github.com/realm/realm-js/issues/2037), since v2.16.0-rc.2)
 
 ### Compatibility
 * File format: ver. 7 (upgrades automatically from previous formats)
