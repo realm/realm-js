@@ -24,10 +24,6 @@ const Realm = require('realm');
 const TestCase = require('./asserts');
 const isNodeProcess = typeof process === 'object' && process + '' === '[object process]';
 
-if (isNodeProcess) {
-  fs = require('fs');
-}
-
 function uuid() {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
     const r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
@@ -194,6 +190,7 @@ module.exports = {
     if (!isNodeProcess) {
       return
     }
+    const fs = require('fs');
     // read admin token from ROS
     let obj = JSON.parse(fs.readFileSync('../realm-object-server-data/keys/admin.json', 'utf8'));
     let token = obj['ADMIN_TOKEN'];
