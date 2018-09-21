@@ -20,6 +20,7 @@
 
 'use strict';
 
+const fs = require('fs');
 const Realm = require('realm');
 const TestCase = require('./asserts');
 const isNodeProcess = typeof process === 'object' && process + '' === '[object process]';
@@ -184,6 +185,23 @@ module.exports = {
         Promise.resolve()
       })
       .catch((e) => { Promise.reject(e) } )
+  },
+
+  testAuthenticateAdminToken() {
+    if (!isNodeProcess) {
+      return
+    }
+    // read admin token from ROS
+    let obj = JSON.parse(fs.readFileSync('../realm-object-server-data/keys/admin.json', 'utf8'));
+    let token = obj['ADMIN_TOKEN'];
+
+    let credentials = Realm.Sync.Credentials.adminToken(token);
+    return Realm.Sync.User.login('http://localhost:9080', credentials)
+      .then((user) => {
+        TestCase.assertTrue(user.isAdmin);
+        Promise.resolve();
+      })
+      .catch((e) => { Promise.reject(e) } );
   },
 
   testAll() {
