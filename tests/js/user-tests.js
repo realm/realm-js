@@ -29,8 +29,8 @@ function node_require(module) {
     return require_method(module);
 }
 
-let fs;
-if (isNodeProccess) {
+ let fs;
+if (isNodeProcess) {
   fs = node_require('fs');
 }
 
@@ -201,6 +201,7 @@ module.exports = {
       return
     }
     // read admin token from ROS
+
     let obj = JSON.parse(fs.readFileSync('../realm-object-server-data/keys/admin.json', 'utf8'));
     let token = obj['ADMIN_TOKEN'];
 
