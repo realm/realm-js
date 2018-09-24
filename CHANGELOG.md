@@ -4,14 +4,13 @@ x.x.x Release notes (yyyy-MM-dd)
 * None
 
 ### Fixes
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None
+* Fixed a bug where logging in using an admin token returned a promise. The correct behavior is to be synchronious. (related to [#2037](https://github.com/realm/realm-js/issues/2037), since v2.16.1)
 
 ### Compatibility
 * File format: ver. 7 (upgrades automatically from previous formats)
 * Realm Object Server: 3.11.0 or later.
 * APIs are backwards compatible with all previous release of realm in the 2.x.y series.
- 
+
  ### Internal
 * None
 

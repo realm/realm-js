@@ -29,7 +29,7 @@ function node_require(module) {
     return require_method(module);
 }
 
- let fs;
+let fs;
 if (isNodeProcess) {
   fs = node_require('fs');
 }
@@ -206,12 +206,8 @@ module.exports = {
     let token = obj['ADMIN_TOKEN'];
 
     let credentials = Realm.Sync.Credentials.adminToken(token);
-    return Realm.Sync.User.login('http://localhost:9080', credentials)
-      .then((user) => {
-        TestCase.assertTrue(user.isAdmin);
-        Promise.resolve();
-      })
-      .catch((e) => { Promise.reject(e) } );
+    let user = Realm.Sync.User.login('http://localhost:9080', credentials);
+    TestCase.assertTrue(user.isAdmin);
   },
 
   testAll() {
