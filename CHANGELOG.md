@@ -8,7 +8,7 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Compatibility
 * File format: ver. 7 (upgrades automatically from previous formats)
-* Realm Object Server: 3.11.0 or later.
+* Realm Object Server: 3.0.0 or later.
 * APIs are backwards compatible with all previous release of realm in the 2.x.y series.
 
  ### Internal
@@ -24,7 +24,7 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Compatibility
 * File format: ver. 7 (upgrades automatically from previous formats)
-* Realm Object Server: 3.11.0 or later.
+* Realm Object Server: 3.0.0 or later.
 * APIs are backwards compatible with all previous release of realm in the 2.x.y series.
 
  ### Internal
