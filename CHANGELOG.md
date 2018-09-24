@@ -4,7 +4,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * None
 
 ### Fixes
-* Fixed a bug where logging in using an admin token returned a promise. The correct behavior is to be synchronious. (related to [#2037](https://github.com/realm/realm-js/issues/2037), since v2.16.1)
+* Fixed a bug where logging in using an admin token returned a promise. The correct behavior is to be synchronous. (related to [#2037](https://github.com/realm/realm-js/issues/2037), since v2.16.1)
 
 ### Compatibility
 * File format: ver. 7 (upgrades automatically from previous formats)
