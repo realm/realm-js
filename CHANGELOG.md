@@ -1,4 +1,4 @@
-2.17.0 Release notes
+2.17.0 Release notes (2018-9-25)
 =============================================================
 ### Enhancements
 * When using a synced Realm where you only receive updates from the server and never update the realm locally, the client will now report download progress to the server such that it can compact files on the server. This enhancement doesn't affect the client.
