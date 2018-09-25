@@ -1,4 +1,4 @@
-x.x.x Release notes (yyyy-MM-dd)
+2.16.2 Release notes (2018-9-25)
 =============================================================
 ## Enhancements
 * None
