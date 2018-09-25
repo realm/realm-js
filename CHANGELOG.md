@@ -21,6 +21,23 @@ If you try to connect to a ROS v3.10.x or previous, you will see an error like `
 * None.
 
 ### Fixes
+* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
+* None
+
+### Compatibility
+* File format: ver. 7 (upgrades automatically from previous formats)
+* Realm Object Server: 3.11.0 or later.
+* APIs are backwards compatible with all previous release of realm in the 2.x.y series.
+ 
+ ### Internal
+* None
+
+2.16.2 Release notes (2018-9-25)
+=============================================================
+## Enhancements
+* None
+
+### Fixes
 * Fixed a bug where logging in using an admin token returned a promise. The correct behavior is to be synchronous. (related to [#2037](https://github.com/realm/realm-js/issues/2037), since v2.16.1)
 
 ### Compatibility
