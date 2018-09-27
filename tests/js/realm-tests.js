@@ -1402,7 +1402,7 @@ module.exports = {
     },
 
     testPermissions_Realm: function() {
-        if (!isNodeProccess) {
+        if (!isNodeProccess || !Realm.Sync) {
             return;
         }
 
@@ -1419,7 +1419,7 @@ module.exports = {
     },
 
     testPermissions_Class: function() {
-        if (!isNodeProccess) {
+        if (!isNodeProccess || !Realm.Sync) {
             return;
         }
 
@@ -1443,7 +1443,7 @@ module.exports = {
     },
 
     testPermissions_Class_InvalidClassArgument: function() {
-        if (!isNodeProccess) {
+        if (!isNodeProccess || !Realm.Sync) {
             return;
         }
         return getPartialRealm().then(realm => {
