@@ -29,11 +29,55 @@ if (typeof process === 'object' && process.platform === 'win32') {
     pathSeparator = '\\';
 }
 
+function uuid() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+    });
+}
+
+function waitForUpload(realm) {
+    let session = realm.syncSession;
+    return new Promise(resolve => {
+        let callback = (transferred, total) => {
+            if (transferred === total) {
+                session.removeProgressNotification(callback);
+                resolve(realm);
+            }
+        };
+        session.addProgressNotification('upload', 'forCurrentlyOutstandingWork', callback);
+    });
+}
+
+function waitForDownload(realm) {
+    let session = realm.syncSession;
+    return new Promise(resolve => {
+        let callback = (transferred, total) => {
+            if (transferred === total) {
+                session.removeProgressNotification(callback);
+                resolve(realm);
+            }
+        };
+        session.addProgressNotification('download', 'forCurrentlyOutstandingWork', callback);
+    });
+}
+
 const getPartialRealm = () => {
+    const testID = uuid();
     return Realm.Sync.User
-        .login('http://localhost:9080', Realm.Sync.Credentials.anonymous())
+        .login('http://localhost:9080', Realm.Sync.Credentials.nickname("user-" + testID, true))
         .then(user => {
-            return Realm.open(user.createConfiguration());
+            const config = user.createConfiguration({
+                sync: {
+                    url: 'realm://localhost:9080/test_' + testID,
+                    fullSynchronization: false,
+                }
+            });
+            return Realm.open(config); // Creates the Realm on the server
+        }).then(realm => {
+            return waitForUpload(realm);
+        }).then(realm => {
+            return waitForDownload(realm);
         });
 };
 

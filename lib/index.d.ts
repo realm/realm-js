@@ -605,12 +605,14 @@ declare namespace Realm.Permissions {
         class_name: string;
         name: string;
         permissions: Permission[];
+        findOrCreate(roleName: string): Permission;
     }
 
     class Realm {
         static schema: ObjectSchema;
         id: number;
         permissions: Permission[];
+        findOrCreate(roleName: string): Permission;
     }
 
     class RealmPrivileges {

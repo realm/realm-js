@@ -1,8 +1,11 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ## Enhancements
-* None
-
+* Added support for finding Realm-level permissions in Query-based Realms using `realm.getPermissions()` ([#XXXX](TODO)).
+* Added support for finding Class-level permissions in Query-based Realms using `realm.getPermissions(className)` ([#XXXX](TODO)).
+* Added `Realm.Permissions.Realm.findOrCreate(roleName)` and `Realm.Permissions.Class.findOrCreate(roleName)` which makes
+  it easier to find or create permissions for a given role when using Query-based realms ([#XXXX](TODO)).
+  
 ### Fixes
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
 * None
@@ -27,8 +30,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * Fixed the type definition for `Realm.getPrivileges()`, `Realm.getPrivileges(className)` and `Realm.getPrivileges(object)`. ([#2030](https://github.com/realm/realm-js/pull/2030), since v2.2.14)
 
 ### Enhancements
-* Added support for finding Realm-level permissions in Query-based realms using `realm.getPermissions()` ([#XXXX](TODO)).
-* Added support for finding Class-level permissions in Query-based realms using `realm.getPermissions(className)` ([#XXXX](TODO)).
+* None
 
 ### Compatibility
 * Realm Object Server: 3.0.0 or later

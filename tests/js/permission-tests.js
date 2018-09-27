@@ -85,6 +85,19 @@ function waitForUpload(realm) {
     });
 }
 
+function waitForDownload(realm) {
+    let session = realm.syncSession;
+    return new Promise(resolve => {
+        let callback = (transferred, total) => {
+            if (transferred === total) {
+                session.removeProgressNotification(callback);
+                resolve(realm);
+            }
+        };
+        session.addProgressNotification('download', 'forCurrentlyOutstandingWork', callback);
+    });
+}
+
 function permissionForPath(permissions, path) {
     for (const permission of permissions) {
         if (permission.path == path) {
@@ -92,6 +105,25 @@ function permissionForPath(permissions, path) {
         }
     }
 }
+
+const getPartialRealm = () => {
+    const testID = uuid();
+    return Realm.Sync.User
+        .login('http://localhost:9080', Realm.Sync.Credentials.nickname("user-" + testID, true))
+        .then(user => {
+            const config = user.createConfiguration({
+                sync: {
+                    url: 'realm://localhost:9080/test_' + testID,
+                    fullSynchronization: false,
+                }
+            });
+            return Realm.open(config); // Creates the Realm on the server
+        }).then(realm => {
+            return waitForUpload(realm);
+        }).then(realm => {
+            return waitForDownload(realm);
+        });
+};
 
 module.exports = {
     testApplyAndGetGrantedPermissions() {
@@ -243,10 +275,10 @@ module.exports = {
                         fullSynchronization: false,
                     }
                 };
-                
+
                 let realm = new Realm(config);
                 TestCase.assertTrue(realm.empty);
-                 
+
                 TestCase.assertEqual(realm.schema.length, 5);
                 TestCase.assertEqual(realm.schema.filter(schema => schema.name === '__Class').length, 1);
                 TestCase.assertEqual(realm.schema.filter(schema => schema.name === '__Permission').length, 1);
@@ -272,7 +304,7 @@ module.exports = {
                 realm.close();
                 Realm.deleteFile(config);
 
-                resolve();                
+                resolve();
             }).catch(error => reject(error));
         });
     },
@@ -300,7 +332,7 @@ module.exports = {
                         TestCase.assertEqual(roles.length, 1);
 
                         realm.write(() => {
-                            const permission = realm.create(Realm.Permissions.Permission.schema.name,                                
+                            const permission = realm.create(Realm.Permissions.Permission.schema.name,
                                 { canUpdate: true, canRead: true, canQuery: true, role: roles[0] });
 
                             let room = realm.create(PrivateChatRoomSchema.name, { name: `#sales_${uuid()}` });
@@ -335,5 +367,79 @@ module.exports = {
                 });
             }).catch(error => reject(error));
         });
+    },
+
+    testFindOrCreate_realmPermissions() {
+        return getPartialRealm().then(realm => {
+            return new Promise((resolve, reject) => {
+                let realmPermissions = realm.permissions();
+                TestCase.assertEqual(2, realm.objects('__Role').length); // [ "everyone", "__User:<xxx>" ]    
+                realm.write(() => {
+                    let permissions = realmPermissions.findOrCreate("foo");
+                    TestCase.assertEqual("foo", permissions.role.name);
+                    TestCase.assertEqual(0, permissions.role.members.length);
+                    TestCase.assertFalse(permissions.canCreate);
+                    TestCase.assertFalse(permissions.canRead);
+                    TestCase.assertFalse(permissions.canUpdate);
+                    TestCase.assertFalse(permissions.canDelete);
+                    TestCase.assertFalse(permissions.canQuery);
+                    TestCase.assertFalse(permissions.canModifySchema);
+                    TestCase.assertFalse(permissions.canSetPermissions);
+                    TestCase.assertEqual(3, realm.objects('__Role').length); // [ "everyone", "__User:<xxx>", "foo" ]    
+                });
+                resolve();
+            });
+        });
+    },
+
+    testFindOrCreate_existingRole() {
+        return getPartialRealm().then(realm => {
+            return new Promise((resolve, reject) => {
+                realm.write(() => {
+                    realm.create('__Role', {'name':'foo'});
+                });
+                TestCase.assertEqual(3, realm.objects('__Role').length); // [ "everyone", "__User:xxx", "foo" ]    
+
+                let realmPermissions = realm.permissions();
+                realm.write(() => {
+                    let permissions = realmPermissions.findOrCreate("foo");
+                    TestCase.assertEqual("foo", permissions.role.name);
+                    TestCase.assertFalse(permissions.canCreate);
+                    TestCase.assertFalse(permissions.canRead);
+                    TestCase.assertFalse(permissions.canUpdate);
+                    TestCase.assertFalse(permissions.canDelete);
+                    TestCase.assertFalse(permissions.canQuery);
+                    TestCase.assertFalse(permissions.canModifySchema);
+                    TestCase.assertFalse(permissions.canSetPermissions);
+                    TestCase.assertEqual(3, realm.objects('__Role').length); // [ "everyone", "__User:xxx", "foo" ]    
+                });
+                resolve();
+            });
+        });
+    },
+
+    testFindOrCreate_classPermissions() {
+        return getPartialRealm().then(realm => {
+            return new Promise((resolve, reject) => {
+                let classPermissions = realm.permissions('__Class');
+                TestCase.assertEqual(2, realm.objects('__Role').length); // [ "everyone", "__User:xxx" ]    
+                realm.write(() => {
+                    let permissions = classPermissions.findOrCreate("foo");
+                    TestCase.assertEqual("foo", permissions.role.name);
+                    TestCase.assertEqual(0, permissions.role.members.length);
+                    TestCase.assertFalse(permissions.canCreate);
+                    TestCase.assertFalse(permissions.canRead);
+                    TestCase.assertFalse(permissions.canUpdate);
+                    TestCase.assertFalse(permissions.canDelete);
+                    TestCase.assertFalse(permissions.canQuery);
+                    TestCase.assertFalse(permissions.canModifySchema);
+                    TestCase.assertFalse(permissions.canSetPermissions);
+                    TestCase.assertEqual(3, realm.objects('__Role').length); // [ "everyone", "__User:xxx", "foo" ]                   
+                });
+                resolve();
+            });
+        });
     }
-}
+
+
+};

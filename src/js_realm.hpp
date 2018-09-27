@@ -348,6 +348,9 @@ public:
 
     static const ObjectSchema& validated_object_schema_for_value(ContextType ctx, const SharedRealm &realm, const ValueType &value) {
         std::string object_type;
+
+        // If argument is a constructor function, expect it to be the constructor specified by the object containing the
+        // schema.
         if (Value::is_constructor(ctx, value)) {
             FunctionType constructor = Value::to_constructor(ctx, value);
 
@@ -364,6 +367,8 @@ public:
             }
         }
         else {
+            // Any other argument is expected to be able to be converted to a String containg the name of the
+            // internal class.
             object_type = Value::validated_to_string(ctx, value, "objectType");
             if (object_type.empty()) {
                 throw std::runtime_error("objectType cannot be empty");
@@ -437,16 +442,24 @@ static inline void convert_outdated_datetime_columns(const SharedRealm &realm) {
 
 template<typename T>
 void RealmClass<T>::constructor(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[]) {
+
+    if (argc > 1) {
+        throw std::runtime_error("Invalid arguments when constructing 'Realm'");
+    }
+    // Callback to custom constructor
+    ValueType modifiedConfig = Object::call_method(ctx, this_object, "_constructor", argc, arguments);
+
+    // Continue with C++ construction
     realm::Realm::Config config;
     ObjectDefaultsMap defaults;
     ConstructorMap constructors;
     bool schema_updated = false;
 
-    if (argc == 0) {
+    if (Value::is_undefined(ctx, modifiedConfig)) {
         config.path = default_path();
     }
     else if (argc == 1) {
-        ValueType value = arguments[0];
+        ValueType value = modifiedConfig;
         if (Value::is_string(ctx, value)) {
             config.path = Value::validated_to_string(ctx, value, "path");
         }
@@ -502,89 +515,6 @@ void RealmClass<T>::constructor(ContextType ctx, ObjectType this_object, size_t 
                 config.schema.emplace(Schema<T>::parse_schema(ctx, schema_object, defaults, constructors));
                 schema_updated = true;
             }
-
-#if REALM_ENABLE_SYNC
-        // Include permission schema for query-based sync 
-        if (config.sync_config && config.sync_config->is_partial) {
-            std::vector<ObjectSchema> objectsSchema;
-            
-            if (!config.schema) {
-                config.schema.emplace(realm::Schema(objectsSchema));
-            }
-
-            auto it = config.schema->find("__Class");
-            if (it == config.schema->end()) {
-                realm::ObjectSchema clazz = {"__Class", {
-                    {"name", realm::PropertyType::String, Property::IsPrimary{true}},
-                    {"permissions", realm::PropertyType::Object|realm::PropertyType::Array, "__Permission"}
-                }};
-                objectsSchema.emplace_back(std::move(clazz));
-                schema_updated = true;
-            }
-
-            it = config.schema->find("__Permission");
-            if (it == config.schema->end()) {
-                realm::ObjectSchema permission = {"__Permission", {
-                    {"role", realm::PropertyType::Object|realm::PropertyType::Nullable, "__Role"},
-                    {"canRead", realm::PropertyType::Bool},
-                    {"canUpdate", realm::PropertyType::Bool},
-                    {"canDelete", realm::PropertyType::Bool},
-                    {"canSetPermissions", realm::PropertyType::Bool},
-                    {"canQuery", realm::PropertyType::Bool},
-                    {"canCreate", realm::PropertyType::Bool},
-                    {"canModifySchema", realm::PropertyType::Bool}
-                }};
-                objectsSchema.emplace_back(std::move(permission));
-                // adding default values
-                std::map<std::string, Protected<ValueType>> object_defaults;
-                object_defaults.emplace("canRead", Protected<ValueType>(ctx, Value::from_boolean(ctx, false)));
-                object_defaults.emplace("canUpdate", Protected<ValueType>(ctx, Value::from_boolean(ctx, false)));
-                object_defaults.emplace("canDelete", Protected<ValueType>(ctx, Value::from_boolean(ctx, false)));
-                object_defaults.emplace("canSetPermissions", Protected<ValueType>(ctx, Value::from_boolean(ctx, false)));
-                object_defaults.emplace("canQuery", Protected<ValueType>(ctx, Value::from_boolean(ctx, false)));
-                object_defaults.emplace("canCreate", Protected<ValueType>(ctx, Value::from_boolean(ctx, false)));
-                object_defaults.emplace("canModifySchema", Protected<ValueType>(ctx, Value::from_boolean(ctx, false)));
-
-                defaults.emplace("__Permission", std::move(object_defaults));
-                schema_updated = true;
-            }
-
-            it = config.schema->find("__Realm");
-            if (it == config.schema->end()) {
-                realm::ObjectSchema realm = {"__Realm", {
-                    {"id", realm::PropertyType::Int, realm::Property::IsPrimary{true}},
-                    {"permissions", realm::PropertyType::Object|realm::PropertyType::Array, "__Permission"}
-                }};
-                objectsSchema.emplace_back(std::move(realm));
-                schema_updated = true;
-            }
-
-            it = config.schema->find("__Role");
-            if (it == config.schema->end()) {
-                realm::ObjectSchema role = {"__Role", {
-                    {"name", realm::PropertyType::String, realm::Property::IsPrimary{true}},
-                    {"members", realm::PropertyType::Object|realm::PropertyType::Array, "__User"}
-                }};
-                objectsSchema.emplace_back(std::move(role));
-                schema_updated = true;
-            }
-
-            it = config.schema->find("__User");
-            if (it == config.schema->end()) {
-                realm::ObjectSchema user = {"__User", {
-                    {"id", realm::PropertyType::String, realm::Property::IsPrimary{true}},
-                    {"role", realm::PropertyType::Object|realm::PropertyType::Nullable, "__Role"}
-                }};
-                objectsSchema.emplace_back(std::move(user));
-                schema_updated = true;
-            }
-            
-            objectsSchema.insert(objectsSchema.end(), std::make_move_iterator(config.schema->begin()),
-                                                      std::make_move_iterator(config.schema->end()));
-            
-            config.schema.emplace(realm::Schema(objectsSchema));
-        }
-#endif
 
             static const String schema_version_string = "schemaVersion";
             ValueType version_value = Object::get_property(ctx, object, schema_version_string);
@@ -665,9 +595,6 @@ void RealmClass<T>::constructor(ContextType ctx, ObjectType this_object, size_t 
                 config.disable_format_upgrade = Value::validated_to_boolean(ctx, disable_format_upgrade_value, "disableFormatUpgrade");
             }
         }
-    }
-    else {
-        throw std::runtime_error("Invalid arguments when constructing 'Realm'");
     }
 
     config.path = normalize_realm_path(config.path);
