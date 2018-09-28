@@ -349,8 +349,7 @@ public:
     static const ObjectSchema& validated_object_schema_for_value(ContextType ctx, const SharedRealm &realm, const ValueType &value) {
         std::string object_type;
 
-        // If argument is a constructor function, expect it to be the constructor specified by the object containing the
-        // schema.
+        // If argument is a constructor function, expect that the same constructor was used when specifying the schema.
         if (Value::is_constructor(ctx, value)) {
             FunctionType constructor = Value::to_constructor(ctx, value);
 
@@ -447,6 +446,8 @@ void RealmClass<T>::constructor(ContextType ctx, ObjectType this_object, size_t 
         throw std::runtime_error("Invalid arguments when constructing 'Realm'");
     }
     // Callback to custom constructor
+    // This is used to work around the fact that we cannot reliably wrap the the Realm constructor
+    // without risking breaking existing code, so instead we make an extra roundtrip to this method.
     ValueType modifiedConfig = Object::call_method(ctx, this_object, "_constructor", argc, arguments);
 
     // Continue with C++ construction
@@ -1153,7 +1154,6 @@ void RealmClass<T>::object_for_object_id(ContextType ctx, ObjectType this_object
 #endif // REALM_ENABLE_SYNC
 }
 
-
 template<typename T>
 void RealmClass<T>::get_schema_name_from_object(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue& return_value) {
     args.validate_count(1);
@@ -1164,7 +1164,6 @@ void RealmClass<T>::get_schema_name_from_object(ContextType ctx, ObjectType this
     auto &object_schema = validated_object_schema_for_value(ctx, realm, args[0]);
     return_value.set(object_schema.name);
 }
-
 
 template<typename T>
 void RealmClass<T>::privileges(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {

@@ -22,8 +22,6 @@ const Realm = require('realm');
 const TestCase = require('./asserts');
 const schemas = require('./schemas');
 
-const isNodeProccess = (typeof process === 'object' && process + '' === '[object process]');
-
 let pathSeparator = '/';
 if (typeof process === 'object' && process.platform === 'win32') {
     pathSeparator = '\\';
