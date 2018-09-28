@@ -177,10 +177,10 @@ class Realm {
     /**
      * Returns the fine-grained permissions object associated with either the Realm itself or a Realm model class.
      *
-     * @param {Realm~ObjectType} [arg] - If no argument is provided, the Realm-level permissions are are returned.
+     * @param {Realm~ObjectType} [arg] - If no argument is provided, the Realm-level permissions are returned.
      *   Otherwise, the Class-level permissions for the provided type is returned.
      * @returns {Object} The permissions object
-     * @since 2.17.0
+     * @since 2.18.0
      * @see {Realm.Permissions} for details of priviliges and roles.
      */
     permissions(arg) {}
