@@ -66,7 +66,6 @@ struct RealmObjectClass : ClassDefinition<T, realm::Object> {
     static void set_link(ContextType, ObjectType, Arguments, ReturnValue &);
 
     static void get_realm(ContextType, ObjectType, ReturnValue &);
-    static void is_managed(ContextType, ObjectType, ReturnValue &);
 
     const std::string name = "RealmObject";
 
@@ -88,7 +87,6 @@ struct RealmObjectClass : ClassDefinition<T, realm::Object> {
 
     PropertyMap<T> const properties = {
         {"_realm", {wrap<get_realm>, nullptr}},
-        {"_managed", {wrap<is_managed>, nullptr}},
     };
 };
 
@@ -212,11 +210,6 @@ void RealmObjectClass<T>::get_realm(ContextType ctx, ObjectType object, ReturnVa
         ObjectType realm_obj = create_object<T, RealmClass<T>>(ctx, new SharedRealm(realm_object->realm()));
         return_value.set(realm_obj);
     }
-}
-
-template<typename T>
-void RealmObjectClass<T>::is_managed(ContextType ctx, ObjectType object, ReturnValue& return_value) {
-    return_value.set(get_internal<T, RealmObjectClass<T>>(object) != nullptr);
 }
 
 template<typename T>
