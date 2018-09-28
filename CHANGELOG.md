@@ -15,6 +15,22 @@ x.x.x Release notes (yyyy-MM-dd)
  ### Internal
 * None
 
+2.17.0-rc.1 Release notes (2018-9-25)
+=============================================================
+### Enhancements
+* When using a synced Realm where you only receive updates from the server and never update the realm locally, the client will now report download progress to the server such that it can compact files on the server. This enhancement doesn't affect the client.
+
+### Compatibility
+* File format: ver. 7 (upgrades automatically from previous formats)
+* You will need to upgrade your Realm Object Server to at least version 3.11.0 or use [Realm Cloud](https://cloud.realm.io).
+If you try to connect to a ROS v3.10.x or previous, you will see an error like `Wrong protocol version in Sync HTTP request, client protocol version = 25, server protocol version = 24`.
+* APIs are backwards compatible with all previous release of realm in the 2.x.y series.
+
+### Internal
+* Upgraded to Realm Core v5.11.1.
+* Upgraded to Realm Sync v3.10.0 (with new protocol version 25).
+
+
 2.16.2 Release notes (2018-9-25)
 =============================================================
 ## Enhancements
@@ -28,8 +44,8 @@ x.x.x Release notes (yyyy-MM-dd)
 * Realm Object Server: 3.0.0 or later.
 * APIs are backwards compatible with all previous release of realm in the 2.x.y series.
 
- ### Internal
-* None
+### Internal
+* None.
 
 2.16.1 Release notes (2018-9-21)
 =============================================================
@@ -44,7 +60,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * Realm Object Server: 3.0.0 or later.
 * APIs are backwards compatible with all previous release of realm in the 2.x.y series.
 
- ### Internal
+### Internal
 * None
 
 2.16.0 Release notes (2018-9-19)
