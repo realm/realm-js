@@ -1,3 +1,20 @@
+x.x.x Release notes (yyyy-MM-dd)
+=============================================================
+## Enhancements
+* None
+
+### Fixes
+* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
+* None
+
+### Compatibility
+* File format: ver. 7 (upgrades automatically from previous formats)
+* Realm Object Server: 3.11.0 or later.
+* APIs are backwards compatible with all previous release of realm in the 2.x.y series.
+ 
+ ### Internal
+* None
+
 2.17.0 Release notes (2018-9-28)
 =============================================================
 ## Enhancements
