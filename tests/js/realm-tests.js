@@ -29,68 +29,6 @@ if (typeof process === 'object' && process.platform === 'win32') {
     pathSeparator = '\\';
 }
 
-function uuid() {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-        var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
-        return v.toString(16);
-    });
-}
-
-function waitForUpload(realm) {
-    let session = realm.syncSession;
-    return new Promise(resolve => {
-        let callback = (transferred, total) => {
-            if (transferred === total) {
-                session.removeProgressNotification(callback);
-                resolve(realm);
-            }
-        };
-        session.addProgressNotification('upload', 'forCurrentlyOutstandingWork', callback);
-    });
-}
-
-function waitForDownload(realm) {
-    let session = realm.syncSession;
-    return new Promise(resolve => {
-        let callback = (transferred, total) => {
-            if (transferred === total) {
-                session.removeProgressNotification(callback);
-                resolve(realm);
-            }
-        };
-        session.addProgressNotification('download', 'forCurrentlyOutstandingWork', callback);
-    });
-}
-
-const getPartialRealm = () => {
-    const testID = uuid();
-    return Realm.Sync.User
-        .login('http://localhost:9080', Realm.Sync.Credentials.nickname("user-" + testID, true))
-        .then(user => {
-            const config = user.createConfiguration({
-                sync: {
-                    url: 'realm://localhost:9080/test_' + testID,
-                    fullSynchronization: false,
-                }
-            });
-            return Realm.open(config); // Creates the Realm on the server
-        }).then(realm => {
-            return waitForUpload(realm);
-        }).then(realm => {
-            return waitForDownload(realm);
-        });
-};
-
-const assertFullAccess= function(permission) {
-    TestCase.assertTrue(permission.canCreate);
-    TestCase.assertTrue(permission.canRead);
-    TestCase.assertTrue(permission.canUpdate);
-    TestCase.assertTrue(permission.canDelete);
-    TestCase.assertTrue(permission.canQuery);
-    TestCase.assertTrue(permission.canModifySchema);
-    TestCase.assertTrue(permission.canSetPermissions);
-}
-
 module.exports = {
     testRealmConstructor: function() {
         const realm = new Realm({schema: []});
@@ -1399,59 +1337,6 @@ module.exports = {
         encryptedRealmCopy.close();
 
         realm.close();
-    },
-
-    testPermissions_Realm: function() {
-        if (!isNodeProccess || !Realm.Sync) {
-            return;
-        }
-
-        return getPartialRealm().then(realm => {
-            return new Promise((resolve, reject) => {
-                let permissions = realm.permissions();
-                TestCase.assertEqual(1, permissions.permissions.length);
-                let perm = permissions.permissions[0];
-                TestCase.assertEqual("everyone", perm.role.name);
-                assertFullAccess(perm);
-                resolve();
-            });
-        });
-    },
-
-    testPermissions_Class: function() {
-        if (!isNodeProccess || !Realm.Sync) {
-            return;
-        }
-
-        return getPartialRealm().then(realm => {
-            return new Promise((resolve, reject) => {
-                let permissions = realm.permissions('__Class');
-                TestCase.assertEqual('__Class', permissions.name)
-                TestCase.assertEqual(1, permissions.permissions.length);
-                let perm = permissions.permissions[0];
-                TestCase.assertEqual("everyone", perm.role.name);
-                TestCase.assertTrue(perm.canCreate);
-                TestCase.assertTrue(perm.canRead);
-                TestCase.assertTrue(perm.canUpdate);
-                TestCase.assertFalse(perm.canDelete);
-                TestCase.assertTrue(perm.canQuery);
-                TestCase.assertFalse(perm.canModifySchema);
-                TestCase.assertTrue(perm.canSetPermissions);
-                resolve();
-            });
-        });
-    },
-
-    testPermissions_Class_InvalidClassArgument: function() {
-        if (!isNodeProccess || !Realm.Sync) {
-            return;
-        }
-        return getPartialRealm().then(realm => {
-            return new Promise((resolve, reject) => {
-                TestCase.assertThrows(() => realm.permissions('foo'));
-                resolve();
-            });
-        });
     },
 
 };
