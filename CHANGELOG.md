@@ -5,7 +5,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * Added support for finding Class-level permissions in Query-based Realms using `realm.getPermissions(className)` 
   ([#2036](https://github.com/realm/realm-js/pull/2036)).
 * Added `Realm.Permissions.Realm.findOrCreate(roleName)` and `Realm.Permissions.Class.findOrCreate(roleName)` which 
-  makes it easier to find or create permissions for a given role when using Query-based realms ([#2036](https://github.com/realm/realm-js/pull/2036)).
+  makes it easier to find or create permissions for a given role when using Query-based Realms ([#2036](https://github.com/realm/realm-js/pull/2036)).
   
 ### Fixes
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
