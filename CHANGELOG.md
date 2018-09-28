@@ -19,6 +19,71 @@ x.x.x Release notes (yyyy-MM-dd)
  ### Internal
 * None
 
+2.17.0 Release notes (2018-9-28)
+=============================================================
+## Enhancements
+* None.
+
+### Fixes
+* None.
+
+### Compatibility
+* File format: ver. 7 (upgrades automatically from previous formats)
+* You will need to upgrade your Realm Object Server to at least version 3.11.0 or use [Realm Cloud](https://cloud.realm.io).
+If you try to connect to a ROS v3.10.x or previous, you will see an error like `Wrong protocol version in Sync HTTP request, client protocol version = 25, server protocol version = 24`.
+* APIs are backwards compatible with all previous release of realm in the 2.x.y series.
+
+ ### Internal
+* None.
+
+2.17.0-rc.1 Release notes (2018-9-25)
+=============================================================
+### Enhancements
+* When using a synced Realm where you only receive updates from the server and never update the realm locally, the client will now report download progress to the server such that it can compact files on the server. This enhancement doesn't affect the client.
+
+### Compatibility
+* File format: ver. 7 (upgrades automatically from previous formats)
+* You will need to upgrade your Realm Object Server to at least version 3.11.0 or use [Realm Cloud](https://cloud.realm.io).
+If you try to connect to a ROS v3.10.x or previous, you will see an error like `Wrong protocol version in Sync HTTP request, client protocol version = 25, server protocol version = 24`.
+* APIs are backwards compatible with all previous release of realm in the 2.x.y series.
+
+### Internal
+* Upgraded to Realm Core v5.11.1.
+* Upgraded to Realm Sync v3.10.0 (with new protocol version 25).
+
+
+2.16.2 Release notes (2018-9-25)
+=============================================================
+## Enhancements
+* None.
+
+### Fixes
+* Fixed a bug where logging in using an admin token returned a promise. The correct behavior is to be synchronous. (related to [#2037](https://github.com/realm/realm-js/issues/2037), since v2.16.1)
+
+### Compatibility
+* File format: ver. 7 (upgrades automatically from previous formats)
+* Realm Object Server: 3.0.0 or later.
+* APIs are backwards compatible with all previous release of realm in the 2.x.y series.
+
+### Internal
+* None.
+
+2.16.1 Release notes (2018-9-21)
+=============================================================
+## Enhancements
+* None.
+
+### Fixes
+* Fixed a bug in creating credentials using an admin token. The app would stop saying `then()` is not a function. ([#2037](https://github.com/realm/realm-js/issues/2037), since v2.16.0-rc.2)
+
+### Compatibility
+* File format: ver. 7 (upgrades automatically from previous formats)
+* Realm Object Server: 3.0.0 or later.
+* APIs are backwards compatible with all previous release of realm in the 2.x.y series.
+
+### Internal
+* None.
+
 2.16.0 Release notes (2018-9-19)
 =============================================================
 ### Enhancements
