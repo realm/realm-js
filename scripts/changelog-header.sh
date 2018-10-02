@@ -6,7 +6,7 @@ set -o pipefail
 CHANGELOG=$(cat <<EOF
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
-## Enhancements
+### Enhancements
 * None.
 
 ### Fixed
