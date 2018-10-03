@@ -18,6 +18,13 @@
 
 'use strict';
 
+const require_method = require;
+
+// Prevent React Native packager from seeing modules required with this
+function nodeRequire(module) {
+    return require_method(module);
+}
+
 const Realm = require('realm');
 const TestCase = require('./asserts');
 const schemas = require('./schemas');
@@ -28,7 +35,7 @@ if (isNodeProcess && process.platform === 'win32') {
     pathSeparator = '\\';
 }
 
-const fs = isNodeProcess ? require('fs-extra') : require('react-native-fs');
+const fs = isNodeProcess ? nodeRequire('fs-extra') : require('react-native-fs');
 
 module.exports = {
     testRealmConstructor: function() {
