@@ -701,17 +701,20 @@ void RealmClass<T>::delete_file(ContextType ctx, ObjectType this_object, Argumen
 
     static const String path_string = "path";
     ValueType path_value = Object::get_property(ctx, config_object, path_string);
-    ValueType sync_config_value = Object::get_property(ctx, config_object, "sync");
     if (!Value::is_undefined(ctx, path_value)) {
         config.path = Value::validated_to_string(ctx, path_value, "path");
     }
-    #if REALM_ENABLE_SYNC
-    else if (!Value::is_undefined(ctx, sync_config_value)) {
-        SyncClass<T>::populate_sync_config(ctx, Value::validated_to_object(ctx, Object::get_global(ctx, "Realm")), config_object, config);
-    }
-    #endif
-    else if (config.path.empty()) {
-        config.path = js::default_path();
+    else {
+        #if REALM_ENABLE_SYNC
+        ValueType sync_config_value = Object::get_property(ctx, config_object, "sync");
+        if (!Value::is_undefined(ctx, sync_config_value)) {
+            SyncClass<T>::populate_sync_config(ctx, Value::validated_to_object(ctx, Object::get_global(ctx, "Realm")), config_object, config);
+        }
+        #endif
+
+        if (config.path.empty()) {
+            config.path = js::default_path();
+        }
     }
 
     config.path = normalize_realm_path(config.path);
