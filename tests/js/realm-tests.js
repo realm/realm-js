@@ -23,9 +23,12 @@ const TestCase = require('./asserts');
 const schemas = require('./schemas');
 
 let pathSeparator = '/';
-if (typeof process === 'object' && process.platform === 'win32') {
+const isNodeProcess = typeof process === 'object' && process + '' === '[object process]';
+if (isNodeProcess && process.platform === 'win32') {
     pathSeparator = '\\';
 }
+
+const fs = isNodeProcess ? require('fs-extra') : require('react-native-fs');
 
 module.exports = {
     testRealmConstructor: function() {
@@ -1078,6 +1081,36 @@ module.exports = {
         const realm2 = new Realm(config);
         TestCase.assertEqual(realm2.objects('TestObject').length, 0);
         realm.close();
+    },
+
+    testRealmDeleteFileSyncConfig: function() {
+        if (!global.enableSyncTests) {
+            return;
+        }
+
+        return Realm.Sync.User
+            .login('http://localhost:9080', Realm.Sync.Credentials.anonymous())
+            .then(user => {
+                const config = {
+                    schema: [schemas.TestObject],
+                    sync: {user, url: 'realm://localhost:9080/~/test', fullSynchronization: true },
+                };
+
+                const realm = new Realm(config);
+                const path = realm.path;
+                realm.close();
+
+                return fs.exists(path)
+                    .then(pathExistBeforeDelete => {
+                        TestCase.assertTrue(pathExistBeforeDelete);
+                        Realm.deleteFile(config);
+
+                        return fs.exists(path)
+                    })
+                    .then(pathExistAfterDelete => {
+                        TestCase.assertFalse(pathExistAfterDelete);
+                    });
+            });
     },
 
     testRealmDeleteRealmIfMigrationNeededVersionChanged: function() {
