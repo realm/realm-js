@@ -18,12 +18,19 @@
 
 #pragma once
 
+namespace realm {
+namespace js {
+    template<typename> struct RealmObjectClass;
+}
+}
+
 #include "object_accessor.hpp"
 #include "object_store.hpp"
 
 #include "js_class.hpp"
 #include "js_types.hpp"
 #include "js_util.hpp"
+#include "js_realm.hpp"
 #include "js_schema.hpp"
 
 namespace realm {
@@ -58,6 +65,8 @@ struct RealmObjectClass : ClassDefinition<T, realm::Object> {
     static void is_same_object(ContextType, ObjectType, Arguments, ReturnValue &);
     static void set_link(ContextType, ObjectType, Arguments, ReturnValue &);
 
+    static void get_realm(ContextType, ObjectType, ReturnValue &);
+
     const std::string name = "RealmObject";
 
     const StringPropertyType<T> string_accessor = {
@@ -74,6 +83,10 @@ struct RealmObjectClass : ClassDefinition<T, realm::Object> {
         {"_objectId", wrap<get_object_id>},
         {"_isSameObject", wrap<is_same_object>},
         {"_setLink", wrap<set_link>},
+    };
+
+    PropertyMap<T> const properties = {
+        {"_realm", {wrap<get_realm>, nullptr}},
     };
 };
 
@@ -186,6 +199,16 @@ void RealmObjectClass<T>::set_link(ContextType ctx, ObjectType object, Arguments
     }
     else {
         realm_object->row().set_link(prop->table_column, row_ndx);
+    }
+}
+
+template<typename T>
+void RealmObjectClass<T>::get_realm(ContextType ctx, ObjectType object, ReturnValue& return_value) {
+    return_value.set_undefined();
+    auto realm_object = get_internal<T, RealmObjectClass<T>>(object);
+    if (realm_object) {
+        ObjectType realm_obj = create_object<T, RealmClass<T>>(ctx, new SharedRealm(realm_object->realm()));
+        return_value.set(realm_obj);
     }
 }
 

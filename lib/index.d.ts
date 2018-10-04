@@ -603,12 +603,16 @@ declare namespace Realm.Permissions {
     class Class {
         static schema: ObjectSchema;
         class_name: string;
+        name: string;
         permissions: Permission[];
+        findOrCreate(roleName: string): Permission;
     }
 
     class Realm {
         static schema: ObjectSchema;
+        id: number;
         permissions: Permission[];
+        findOrCreate(roleName: string): Permission;
     }
 
     class RealmPrivileges {
@@ -801,9 +805,14 @@ declare class Realm {
      */
     writeCopyTo(path: string, encryptionKey?: ArrayBuffer | ArrayBufferView): void;
 
+    privileges() : Realm.Permissions.Realm;
     privileges() : Realm.Permissions.RealmPrivileges;
     privileges(objectType: string | Realm.ObjectSchema | Function) : Realm.Permissions.ClassPrivileges;
     privileges(obj: Realm.Object) : Realm.Permissions.ObjectPrivileges;
+
+    permissions() : Realm.Permissions.Realm;
+    permissions(objectType: string | Realm.ObjectSchema | Function) : Realm.Permissions.Class;
+
 }
 
 declare module 'realm' {

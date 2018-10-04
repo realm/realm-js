@@ -370,14 +370,37 @@ class Class {
     /**
      * The name of the class which these permissions apply to.
      * @type {string}
+     * @deprecated Use name() instead.
      */
     get class_name() {}
+
+    /**
+     * The name of the class which these permissions apply to.
+     * @type {string}
+     * @since 2.18.0
+     */
+    get name() {}
 
     /**
      * The permissions for this class.
      * @type {Array<Realm.Permissions.Permission>}
      */
     get permissions() {}
+
+    /**
+     * Finds the Class-level permissions associated with the named Role. If either the role or the permission
+     * object doesn't exist, it will be created.
+     *
+     * If the Permission object is created because one didn't exist already, it will be
+     * created with all privileges disabled.
+     *
+     * If the Role object is created because one didn't exist, it will be created
+     * with no members.
+     *
+     * @type {Realm.Permissions.Permission}
+     * @since 2.18.0
+     */
+     findOrCreate(roleName) {}
 }
 
 /**
@@ -389,9 +412,25 @@ class Class {
  * @memberof Realm.Permissions
  */
 class Realm {
+
     /**
      * The permissions for the Realm.
      * @type {Array<Realm.Permissions.Permission>}
      */
     get permissions() {}
+
+    /**
+     * Finds the Realm-level permissions associated with the named Role. If either the role or the permission
+     * object doesn't exist, it will be created.
+     *
+     * If the Permission object is created because one didn't exist already, it will be
+     * created with all privileges disabled.
+     *
+     * If the Role object is created because one didn't exist, it will be created
+     * with no members.
+     *
+     * @type {Realm.Permissions.Permission}
+     * @since 2.17.0
+     */
+    findOrCreate(roleName) {}
 }

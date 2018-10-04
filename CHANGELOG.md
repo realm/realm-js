@@ -1,8 +1,12 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ## Enhancements
-* None
-
+* Added support for finding Realm-level permissions in Query-based Realms using `realm.getPermissions()` ([#2036](https://github.com/realm/realm-js/pull/2036)).
+* Added support for finding Class-level permissions in Query-based Realms using `realm.getPermissions(className)` 
+  ([#2036](https://github.com/realm/realm-js/pull/2036)).
+* Added `Realm.Permissions.Realm.findOrCreate(roleName)` and `Realm.Permissions.Class.findOrCreate(roleName)` which 
+  makes it easier to find or create permissions for a given role when using Query-based Realms ([#2036](https://github.com/realm/realm-js/pull/2036)).
+  
 ### Fixes
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
 * None
@@ -90,6 +94,9 @@ If you try to connect to a ROS v3.10.x or previous, you will see an error like `
 * When adding a schema definition (e.g. `let config = user.createConfiguration(); config.schema = [Dog, Person]`) the permission schema would be removed, resulting in an `unknown object type __Permission` if using query based Realm. ([#2017](https://github.com/realm/realm-js/issues/2017), since v2.3.0).
 * As part of including the permission schema implicitly when using query based Realm, the schema `Realm.Permissions.Realm` was missing, which may break any query including it. ([#2016](https://github.com/realm/realm-js/issues/2016), since v2.3.0)
 * Fixed the type definition for `Realm.getPrivileges()`, `Realm.getPrivileges(className)` and `Realm.getPrivileges(object)`. ([#2030](https://github.com/realm/realm-js/pull/2030), since v2.2.14)
+
+### Enhancements
+* None
 
 ### Compatibility
 * Realm Object Server: 3.0.0 or later

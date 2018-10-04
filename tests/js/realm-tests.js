@@ -1335,5 +1335,6 @@ module.exports = {
         encryptedRealmCopy.close();
 
         realm.close();
-    }
+    },
+
 };
