@@ -1,16 +1,12 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ## Enhancements
-* Added support for finding Realm-level permissions in Query-based Realms using `realm.getPermissions()` ([#2036](https://github.com/realm/realm-js/pull/2036)).
-* Added support for finding Class-level permissions in Query-based Realms using `realm.getPermissions(className)` 
-  ([#2036](https://github.com/realm/realm-js/pull/2036)).
-* Added `Realm.Permissions.Realm.findOrCreate(roleName)` and `Realm.Permissions.Class.findOrCreate(roleName)` which 
-  makes it easier to find or create permissions for a given role when using Query-based Realms ([#2036](https://github.com/realm/realm-js/pull/2036)).
+* Added support for finding Realm-level permissions in Query-based Realms using `realm.getPermissions()`. ([#2036](https://github.com/realm/realm-js/pull/2036))
+* Added support for finding Class-level permissions in Query-based Realms using `realm.getPermissions(className)`. ([#2036](https://github.com/realm/realm-js/pull/2036))
+* Added `Realm.Permissions.Realm.findOrCreate(roleName)` and `Realm.Permissions.Class.findOrCreate(roleName)` which makes it easier to find or create permissions for a given role when using query-based Realms. ([#2036](https://github.com/realm/realm-js/pull/2036))
   
 ### Fixes
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* Allow `Realm.deleteFile` to be used with a sync configuration. Previously, only local Realms could be deleted with this API
-and the `sync` property on the configuration would be ignored. ([#2045](https://github.com/realm/realm-js/pull/2045), since v1.0.0)
+* Allow `Realm.deleteFile` to be used with a sync configuration. Previously, only local Realms could be deleted with this API and the `sync` property on the configuration would be ignored. ([#2045](https://github.com/realm/realm-js/pull/2045), since v1.0.0)
 
 ### Compatibility
 * File format: ver. 7 (upgrades automatically from previous formats)
@@ -18,7 +14,7 @@ and the `sync` property on the configuration would be ignored. ([#2045](https://
 * APIs are backwards compatible with all previous release of realm in the 2.x.y series.
 
  ### Internal
-* None
+* None.
 
 2.17.0 Release notes (2018-9-28)
 =============================================================
