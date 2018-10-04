@@ -1,4 +1,4 @@
-x.x.x Release notes (yyyy-MM-dd)
+2.18.0 Release notes (2018-10-4)
 =============================================================
 ## Enhancements
 * Added support for finding Realm-level permissions in Query-based Realms using `realm.getPermissions()`. ([#2036](https://github.com/realm/realm-js/pull/2036))
