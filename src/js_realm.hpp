@@ -517,13 +517,6 @@ void RealmClass<T>::constructor(ContextType ctx, ObjectType this_object, size_t 
                 schema_updated = true;
             }
 
-            objectsSchema.insert(objectsSchema.end(), std::make_move_iterator(config.schema->begin()),
-                                                      std::make_move_iterator(config.schema->end()));
-
-            config.schema.emplace(realm::Schema(objectsSchema));
-        }
-#endif
-
             static const String schema_version_string = "schemaVersion";
             ValueType version_value = Object::get_property(ctx, object, schema_version_string);
             if (!Value::is_undefined(ctx, version_value)) {
