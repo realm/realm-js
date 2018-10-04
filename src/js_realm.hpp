@@ -623,10 +623,10 @@ SharedRealm RealmClass<T>::create_shared_realm(ContextType ctx, realm::Realm::Co
     }
 
 #if REALM_ENABLE_SYNC
-        auto schema = realm->schema();
-        if (realm->is_partial() && schema.empty() && config.cache) {
-            throw std::invalid_argument("Query-based sync requires a schema.");
-        }
+    auto schema = realm->schema();
+    if (realm->is_partial() && schema.empty() && config.cache) {
+        throw std::invalid_argument("Query-based sync requires a schema.");
+    }
 #endif
 
     GlobalContextType global_context = Context<T>::get_global_context(ctx);
@@ -689,16 +689,25 @@ void RealmClass<T>::delete_file(ContextType ctx, ObjectType this_object, Argumen
         throw std::runtime_error("Invalid argument, expected a Realm configuration object");
     }
 
-    ObjectType object = Value::validated_to_object(ctx, value);
+    ObjectType config_object = Value::validated_to_object(ctx, value);
     realm::Realm::Config config;
 
     static const String path_string = "path";
-    ValueType path_value = Object::get_property(ctx, object, path_string);
+    ValueType path_value = Object::get_property(ctx, config_object, path_string);
     if (!Value::is_undefined(ctx, path_value)) {
         config.path = Value::validated_to_string(ctx, path_value, "path");
     }
-    else if (config.path.empty()) {
-        config.path = js::default_path();
+    else {
+        #if REALM_ENABLE_SYNC
+        ValueType sync_config_value = Object::get_property(ctx, config_object, "sync");
+        if (!Value::is_undefined(ctx, sync_config_value)) {
+            SyncClass<T>::populate_sync_config(ctx, Value::validated_to_object(ctx, Object::get_global(ctx, "Realm")), config_object, config);
+        }
+        #endif
+
+        if (config.path.empty()) {
+            config.path = js::default_path();
+        }
     }
 
     config.path = normalize_realm_path(config.path);

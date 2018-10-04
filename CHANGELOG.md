@@ -9,13 +9,14 @@ x.x.x Release notes (yyyy-MM-dd)
   
 ### Fixes
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None
+* Allow `Realm.deleteFile` to be used with a sync configuration. Previously, only local Realms could be deleted with this API
+and the `sync` property on the configuration would be ignored. ([#2045](https://github.com/realm/realm-js/pull/2045), since v1.0.0)
 
 ### Compatibility
 * File format: ver. 7 (upgrades automatically from previous formats)
 * Realm Object Server: 3.11.0 or later.
 * APIs are backwards compatible with all previous release of realm in the 2.x.y series.
- 
+
  ### Internal
 * None
 
