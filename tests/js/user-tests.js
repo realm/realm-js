@@ -196,6 +196,11 @@ module.exports = {
       .catch((e) => { Promise.reject(e) } )
   },
 
+  testAuthenticateCustom() {
+    // Assert that we can create custom credentials without specifying userInfo
+    Realm.Sync.Credentials.custom("foo", "bar");
+  },
+
   testAuthenticateAdminToken() {
     if (!isNodeProcess) {
       return

@@ -5,13 +5,14 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None.
+* Fixed the typescript definitions for `User.login` to make it explicit in which cases a promise is returned and in which - a `User`. ([#2050](https://github.com/realm/realm-js/pull/2050), since 2.16.0).
+* Fixed an exception being thrown when using the deprecated `User.registerWithProvider` API and not providing a value for `userInfo`. ([#2050](https://github.com/realm/realm-js/pull/2050), since 2.16.0).
 
 ### Compatibility
 * File format: ver. 7 (upgrades automatically from previous formats)
 * Realm Object Server: 3.11.0 or later.
 * APIs are backwards compatible with all previous release of realm in the 2.x.y series.
- 
+
  ### Internal
 * None.
 
@@ -21,7 +22,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * Added support for finding Realm-level permissions in Query-based Realms using `realm.getPermissions()`. ([#2036](https://github.com/realm/realm-js/pull/2036))
 * Added support for finding Class-level permissions in Query-based Realms using `realm.getPermissions(className)`. ([#2036](https://github.com/realm/realm-js/pull/2036))
 * Added `Realm.Permissions.Realm.findOrCreate(roleName)` and `Realm.Permissions.Class.findOrCreate(roleName)` which makes it easier to find or create permissions for a given role when using query-based Realms. ([#2036](https://github.com/realm/realm-js/pull/2036))
-  
+
 ### Fixes
 * Allow `Realm.deleteFile` to be used with a sync configuration. Previously, only local Realms could be deleted with this API and the `sync` property on the configuration would be ignored. ([#2045](https://github.com/realm/realm-js/pull/2045), since v1.0.0)
 
