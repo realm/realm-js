@@ -10,7 +10,7 @@ x.x.x Release notes (yyyy-MM-dd)
 ### Compatibility
 * Realm Object Server: 3.11.0 or later.
 * APIs are backwards compatible with all previous release of realm in the 2.x.y series.
-* File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
+* File format: Generates Realms with format v9 (Reads and upgrades all previous formats).
 
  ### Internal
 * None.
