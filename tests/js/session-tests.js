@@ -827,7 +827,7 @@ module.exports = {
 
             // Sanity check - when there's no custom identifier, it should not end in /foo/bar
             TestCase.assertFalse(basicRealm.path.endsWith(encodeURIComponent("default/__partial/foo/bar")));
-            customRealm.close();
+            basicRealm.close();
         }
 
         function shouldFail() {
