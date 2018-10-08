@@ -759,7 +759,6 @@ module.exports = {
             });
     },
 
-
     // All tests releated to partial sync is assemble in one big test.
     // Since it is the same instance of ROS running, it is virtually impossible
     // to reset the state between the tests.
@@ -776,19 +775,19 @@ module.exports = {
         const expectedObjectsCount = 3;
 
         function __partialIsAllowed() {
-                // test: __partial is allowed
-                let config1 = {
-                    sync: {
-                        user: user,
-                        url: `realm://localhost:9080/default/__partial/`,
-                        _disableQueryBasedSyncUrlChecks: true,
-                        fullSynchronization: false,
-                    },
-                    schema: [ { name: 'Dog', properties: { name: 'string' } } ]
-                };
-                const realm = new Realm(config1);
-                TestCase.assertFalse(realm.isClosed);
-                realm.close();
+            // test: __partial is allowed
+            let config1 = {
+                sync: {
+                    user: user,
+                    url: `realm://localhost:9080/default/__partial/`,
+                    _disableQueryBasedSyncUrlChecks: true,
+                    fullSynchronization: false,
+                },
+                schema: [ { name: 'Dog', properties: { name: 'string' } } ]
+            };
+            const realm = new Realm(config1);
+            TestCase.assertFalse(realm.isClosed);
+            realm.close();
         }
 
         function __partialIsNotAllowed() {
@@ -800,6 +799,35 @@ module.exports = {
                 }
             };
             TestCase.assertThrows(() => new Realm(config2));
+        }
+
+        function customPartialSyncIdentifier() {
+            const customRealm = new Realm({
+                schema: [ { name: 'Dog', properties: { name: 'string' } } ],
+                sync: {
+                    user,
+                    url: 'realm://localhost:9080/default',
+                    fullSynchronization: false,
+                    customQueryBasedSyncIdentifier: "foo/bar",
+                }
+            });
+
+            // Ensure that the custom partial sync identifier was picked up and appended to the url
+            TestCase.assertTrue(customRealm.path.endsWith(encodeURIComponent("default/__partial/foo/bar")));
+            customRealm.close();
+
+            const basicRealm = new Realm({
+                schema: [ { name: 'Dog', properties: { name: 'string' } } ],
+                sync: {
+                    user,
+                    url: 'realm://localhost:9080/default',
+                    fullSynchronization: false,
+                }
+            });
+
+            // Sanity check - when there's no custom identifier, it should not end in /foo/bar
+            TestCase.assertFalse(basicRealm.path.endsWith(encodeURIComponent("default/__partial/foo/bar")));
+            basicRealm.close();
         }
 
         function shouldFail() {
@@ -834,6 +862,7 @@ module.exports = {
                     __partialIsNotAllowed();
                     shouldFail();
                     defaultRealmInvalidArguments();
+                    customPartialSyncIdentifier();
 
                     return new Promise((resolve, reject) => {
                         let config = Realm.Sync.User.current.createConfiguration();
@@ -901,7 +930,6 @@ module.exports = {
                 });
             });
     },
-
 
     testClientReset() {
         // FIXME: try to enable for React Native

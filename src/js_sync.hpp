@@ -990,6 +990,11 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
         config.sync_config->error_handler = std::move(error_handler);
         config.sync_config->is_partial = is_partial;
 
+        ValueType custom_partial_sync_identifier_value = Object::get_property(ctx, sync_config_object, "customQueryBasedSyncIdentifier");
+        if (!Value::is_undefined(ctx, custom_partial_sync_identifier_value)) {
+            config.sync_config->custom_partial_sync_identifier = std::string(Value::validated_to_string(ctx, custom_partial_sync_identifier_value, "customQueryBasedSyncIdentifier"));
+        }
+
         // Custom HTTP headers
         ValueType sync_custom_http_headers_value = Object::get_property(ctx, sync_config_object, "custom_http_headers");
         if (!Value::is_undefined(ctx, sync_custom_http_headers_value)) {

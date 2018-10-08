@@ -1,7 +1,11 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
-* None.
+* Added `SyncConfig.customQueryBasedSyncIdentifier` to allow customizing the identifier appended to the realm path
+when opening a query based Realm. This identifier is used to distinguish between query based Realms opened on
+different devices and by default Realm builds it as a combination of a user's id and a random string, allowing the
+same user to subscribe to different queries on different devices. In very rare cases, you may want to share query
+based Realms between devices and specifying the `customQueryBasedSyncIdentifier` allows you to do that.
 
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)

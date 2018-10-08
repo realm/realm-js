@@ -448,6 +448,7 @@ declare namespace Realm.Sync {
         fullSynchronization?: boolean;
         _disableQueryBasedSyncUrlChecks?:boolean;
         custom_http_headers?: { [header: string]: string };
+        customQueryBasedSyncIdentifier?: string;
     }
 
     enum ConnectionState {
