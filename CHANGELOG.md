@@ -9,7 +9,8 @@ based Realms between devices and specifying the `customQueryBasedSyncIdentifier`
 
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None.
+* Fixed the typescript definitions for `User.login` to make it explicit in which cases a promise is returned and in which - a `User`. ([#2050](https://github.com/realm/realm-js/pull/2050), since 2.16.0).
+* Fixed an exception being thrown when using the deprecated `User.registerWithProvider` API and not providing a value for `userInfo`. ([#2050](https://github.com/realm/realm-js/pull/2050), since 2.16.0).
 
 ### Compatibility
 * File format: ver. 9 (upgrades automatically from previous formats)
