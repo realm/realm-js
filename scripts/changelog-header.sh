@@ -14,10 +14,10 @@ x.x.x Release notes (yyyy-MM-dd)
 * None.
 
 ### Compatibility
-* File format: ver. 7 (upgrades automatically from previous formats)
+* File format: ver. 9 (upgrades automatically from previous formats)
 * Realm Object Server: 3.11.0 or later.
 * APIs are backwards compatible with all previous release of realm in the 2.x.y series.
- 
+
  ### Internal
 * None.
 

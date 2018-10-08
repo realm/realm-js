@@ -8,10 +8,10 @@ x.x.x Release notes (yyyy-MM-dd)
 * None.
 
 ### Compatibility
-* File format: ver. 7 (upgrades automatically from previous formats)
+* File format: ver. 9 (upgrades automatically from previous formats)
 * Realm Object Server: 3.11.0 or later.
 * APIs are backwards compatible with all previous release of realm in the 2.x.y series.
- 
+
  ### Internal
 * None.
 
@@ -21,12 +21,12 @@ x.x.x Release notes (yyyy-MM-dd)
 * Added support for finding Realm-level permissions in Query-based Realms using `realm.getPermissions()`. ([#2036](https://github.com/realm/realm-js/pull/2036))
 * Added support for finding Class-level permissions in Query-based Realms using `realm.getPermissions(className)`. ([#2036](https://github.com/realm/realm-js/pull/2036))
 * Added `Realm.Permissions.Realm.findOrCreate(roleName)` and `Realm.Permissions.Class.findOrCreate(roleName)` which makes it easier to find or create permissions for a given role when using query-based Realms. ([#2036](https://github.com/realm/realm-js/pull/2036))
-  
+
 ### Fixes
 * Allow `Realm.deleteFile` to be used with a sync configuration. Previously, only local Realms could be deleted with this API and the `sync` property on the configuration would be ignored. ([#2045](https://github.com/realm/realm-js/pull/2045), since v1.0.0)
 
 ### Compatibility
-* File format: ver. 7 (upgrades automatically from previous formats)
+* File format: ver. 9 (upgrades automatically from previous formats)
 * Realm Object Server: 3.11.0 or later.
 * APIs are backwards compatible with all previous release of realm in the 2.x.y series.
 
@@ -42,7 +42,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * None.
 
 ### Compatibility
-* File format: ver. 7 (upgrades automatically from previous formats)
+* File format: ver. 9 (upgrades automatically from previous formats)
 * You will need to upgrade your Realm Object Server to at least version 3.11.0 or use [Realm Cloud](https://cloud.realm.io).
 If you try to connect to a ROS v3.10.x or previous, you will see an error like `Wrong protocol version in Sync HTTP request, client protocol version = 25, server protocol version = 24`.
 * APIs are backwards compatible with all previous release of realm in the 2.x.y series.
@@ -56,7 +56,7 @@ If you try to connect to a ROS v3.10.x or previous, you will see an error like `
 * When using a synced Realm where you only receive updates from the server and never update the realm locally, the client will now report download progress to the server such that it can compact files on the server. This enhancement doesn't affect the client.
 
 ### Compatibility
-* File format: ver. 7 (upgrades automatically from previous formats)
+* File format: ver. 9 (upgrades automatically from previous formats)
 * You will need to upgrade your Realm Object Server to at least version 3.11.0 or use [Realm Cloud](https://cloud.realm.io).
 If you try to connect to a ROS v3.10.x or previous, you will see an error like `Wrong protocol version in Sync HTTP request, client protocol version = 25, server protocol version = 24`.
 * APIs are backwards compatible with all previous release of realm in the 2.x.y series.
@@ -75,7 +75,7 @@ If you try to connect to a ROS v3.10.x or previous, you will see an error like `
 * Fixed a bug where logging in using an admin token returned a promise. The correct behavior is to be synchronous. (related to [#2037](https://github.com/realm/realm-js/issues/2037), since v2.16.1)
 
 ### Compatibility
-* File format: ver. 7 (upgrades automatically from previous formats)
+* File format: ver. 9 (upgrades automatically from previous formats)
 * Realm Object Server: 3.0.0 or later.
 * APIs are backwards compatible with all previous release of realm in the 2.x.y series.
 
@@ -91,7 +91,7 @@ If you try to connect to a ROS v3.10.x or previous, you will see an error like `
 * Fixed a bug in creating credentials using an admin token. The app would stop saying `then()` is not a function. ([#2037](https://github.com/realm/realm-js/issues/2037), since v2.16.0-rc.2)
 
 ### Compatibility
-* File format: ver. 7 (upgrades automatically from previous formats)
+* File format: ver. 9 (upgrades automatically from previous formats)
 * Realm Object Server: 3.0.0 or later.
 * APIs are backwards compatible with all previous release of realm in the 2.x.y series.
 
@@ -114,7 +114,7 @@ If you try to connect to a ROS v3.10.x or previous, you will see an error like `
 
 ### Compatibility
 * Realm Object Server: 3.0.0 or later
-* File format: ver 7. (upgrades from previous formats automatically)
+* File format: ver 9. (upgrades from previous formats automatically)
 
 
 2.16.0-rc.2 Release notes (2018-9-14)
@@ -153,7 +153,7 @@ If you try to connect to a ROS v3.10.x or previous, you will see an error like `
 
 ### Compatibility
 * Realm Object Server: 3.0.0 or later
-* File format: ver 7. (upgrades from previous formats automatically)
+* File format: ver 9. (upgrades from previous formats automatically)
 
 ### Internal
 * Upgraded to Realm Core v5.10.0.
@@ -165,7 +165,7 @@ If you try to connect to a ROS v3.10.x or previous, you will see an error like `
 ### Compatibility
 * Sync protocol: 24
 * Server-side history format: 4
-* File format: 7
+* File format: 9
 * Realm Object Server: 3.0.0 or later
 
 ### Breaking changes
@@ -186,7 +186,7 @@ If you try to connect to a ROS v3.10.x or previous, you will see an error like `
 ### Compatibility
 * Sync protocol: 24
 * Server-side history format: 4
-* File format: 7
+* File format: 9
 * Realm Object Server: 3.0.0 or later
 
 ### Breaking changes
@@ -207,7 +207,7 @@ If you try to connect to a ROS v3.10.x or previous, you will see an error like `
 ### Compatibility
 * Sync protocol: 24
 * Server-side history format: 4
-* File format: 7
+* File format: 9
 * Realm Object Server: 3.0.0 or later
 
 ### Breaking changes
@@ -240,7 +240,7 @@ If you try to connect to a ROS v3.10.x or previous, you will see an error like `
 ### Compatibility
 * Sync protocol: 24
 * Server-side history format: 4
-* File format: 7
+* File format: 9
 * Realm Object Server: 3.0.0 or later
 
 ### Breaking changes
@@ -262,7 +262,7 @@ If you try to connect to a ROS v3.10.x or previous, you will see an error like `
 ### Compatibility
 * Sync protocol: 24
 * Server-side history format: 4
-* File format: 7
+* File format: 9
 * Realm Object Server: 3.0.0 or later
 
 ### Breaking changes
@@ -283,7 +283,7 @@ If you try to connect to a ROS v3.10.x or previous, you will see an error like `
 ### Compatibility
 * Sync protocol: 24
 * Server-side history format: 4
-* File format: 7
+* File format: 9
 * Realm Object Server: 3.0.0 or later
 
 ### Breaking changes
@@ -304,7 +304,7 @@ If you try to connect to a ROS v3.10.x or previous, you will see an error like `
 ### Compatibility
 * Sync protocol: 24
 * Server-side history format: 4
-* File format: 7
+* File format: 9
 * Realm Object Server: 3.0.0 or later
 
 ### Breaking changes
@@ -327,7 +327,7 @@ If you try to connect to a ROS v3.10.x or previous, you will see an error like `
 ### Compatibility
 * Sync protocol: 24
 * Server-side history format: 4
-* File format: 7
+* File format: 9
 * Realm Object Server: 3.0.0 or later
 
 ### Breaking changes
@@ -351,7 +351,7 @@ If you try to connect to a ROS v3.10.x or previous, you will see an error like `
 ### Compatibility
 * Sync protocol: 24
 * Server-side history format: 4
-* File format: 7
+* File format: 9
 * Realm Object Server: 3.0.0 or later
 
 ### Breaking changes
@@ -378,7 +378,7 @@ If you try to connect to a ROS v3.10.x or previous, you will see an error like `
 ### Compatibility
 * Sync protocol: 24
 * Server-side history format: 4
-* File format: 7
+* File format: 9
 * Realm Object Server: 3.0.0 or later
 
 ### Breaking changes
@@ -400,7 +400,7 @@ If you try to connect to a ROS v3.10.x or previous, you will see an error like `
 ### Compatibility
 * Sync protocol: 24
 * Server-side history format: 4
-* File format: 7
+* File format: 9
 * Realm Object Server: 3.0.0 or later
 
 ### Breaking changes
@@ -422,7 +422,7 @@ If you try to connect to a ROS v3.10.x or previous, you will see an error like `
 ### Compatibility
 * Sync protocol: 24
 * Server-side history format: 4
-* File format: 7
+* File format: 9
 * Realm Object Server: 3.0.0 or later
 
 ### Breaking changes
@@ -444,7 +444,7 @@ If you try to connect to a ROS v3.10.x or previous, you will see an error like `
 ### Compatibility
 * Sync protocol: 24
 * Server-side history format: 4
-* File format: 7
+* File format: 9
 * Realm Object Server: 3.0.0 or later
 
 ### Breaking changes
@@ -466,7 +466,7 @@ If you try to connect to a ROS v3.10.x or previous, you will see an error like `
 ### Compatibility
 * Sync protocol: 24
 * Server-side history format: 4
-* File format: 7
+* File format: 9
 * Realm Object Server: 3.0.0 or later
 
 ### Breaking changes
@@ -489,7 +489,7 @@ If you try to connect to a ROS v3.10.x or previous, you will see an error like `
 ### Compatibility
 * Sync protocol: 24
 * Server-side history format: 4
-* File format: 7
+* File format: 9
 * Realm Object Server: 3.0.0 or later
 
 ### Breaking changes
@@ -511,7 +511,7 @@ If you try to connect to a ROS v3.10.x or previous, you will see an error like `
 ### Compatibility
 * Sync protocol: 24
 * Server-side history format: 4
-* File format: 7
+* File format: 9
 * Realm Object Server: 3.0.0 or later
 
 ### Breaking changes
@@ -535,7 +535,7 @@ If you try to connect to a ROS v3.10.x or previous, you will see an error like `
 ### Compatibility
 * Sync protocol: 24
 * Server-side history format: 4
-* File format: 7
+* File format: 9
 * Realm Object Server: 3.0.0 or later
 
 ### Notes
@@ -566,7 +566,7 @@ The feature known as Partial synchronization has been renamed to Query-based syn
 ### Compatibility
 * Sync protocol: 24
 * Server-side history format: 4
-* File format: 7
+* File format: 9
 * Realm Object Server: 3.0.0 or later
 
 ### Breaking changes
@@ -588,7 +588,7 @@ The feature known as Partial synchronization has been renamed to Query-based syn
 ### Compatibility
 * Sync protocol: 24
 * Server-side history format: 4
-* File format: 7
+* File format: 9
 * Realm Object Server: 3.0.0 or later
 
 ### Breaking changes
@@ -610,7 +610,7 @@ The feature known as Partial synchronization has been renamed to Query-based syn
 ### Compatibility
 * Sync protocol: 24
 * Server-side history format: 4
-* File format: 7
+* File format: 9
 * Realm Object Server: 3.0.0 or later
 
 ### Breaking changes
@@ -634,7 +634,7 @@ The feature known as Partial synchronization has been renamed to Query-based syn
 ### Compatibility
 * Sync protocol: 24
 * Server-side history format: 4
-* File format: 7
+* File format: 9
 * Realm Object Server: 3.0.0 or later
 
 ### Breaking changes
@@ -657,7 +657,7 @@ The feature known as Partial synchronization has been renamed to Query-based syn
 ### Compatibility
 * Sync protocol: 24
 * Server-side history format: 4
-* File format: 7
+* File format: 9
 * Realm Object Server: 3.0.0 or later
 
 ### Breaking changes
@@ -678,7 +678,7 @@ The feature known as Partial synchronization has been renamed to Query-based syn
 ### Compatibility
 * Sync protocol: 24
 * Server-side history format: 4
-* File format: 7
+* File format: 9
 * Realm Object Server: 3.0.0 or later
 
 ### Breaking changes
@@ -700,7 +700,7 @@ The feature known as Partial synchronization has been renamed to Query-based syn
 ### Compatibility
 * Sync protocol: 24
 * Server-side history format: 4
-* File format: 7
+* File format: 9
 * Realm Object Server: 3.0.0 or later
 
 ### Breaking changes
@@ -724,7 +724,7 @@ The feature known as Partial synchronization has been renamed to Query-based syn
 ### Compatibility
 * Sync protocol: 24
 * Server-side history format: 4
-* File format: 7
+* File format: 9
 * Realm Object Server: 3.0.0 or later
 
 ### Breaking changes
@@ -745,7 +745,7 @@ The feature known as Partial synchronization has been renamed to Query-based syn
 ### Compatibility
 * Sync protocol: 24
 * Server-side history format: 4
-* File format: 7
+* File format: 9
 * Realm Object Server: 3.0.0 or later
 
 ### Breaking changes
@@ -765,7 +765,7 @@ The feature known as Partial synchronization has been renamed to Query-based syn
 ### Compatibility
 * Sync protocol: 24
 * Server-side history format: 4
-* File format: 7
+* File format: 9
 * Realm Object Server: 3.0.0 or later
 
 ### Breaking changes
@@ -782,7 +782,7 @@ The feature known as Partial synchronization has been renamed to Query-based syn
 ### Compatibility
 * Sync protocol: 24
 * Server-side history format: 4
-* File format: 7
+* File format: 9
 * Realm Object Server: 3.0.0-alpha.8 or later
 
 ### Breaking changes
