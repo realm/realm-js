@@ -1,4 +1,4 @@
-x.x.x Release notes (yyyy-MM-dd)
+2.19.0 Release notes (2018-10-9)
 =============================================================
 ### Enhancements
 * Added `SyncConfig.customQueryBasedSyncIdentifier` to allow customizing the identifier appended to the realm path
@@ -8,7 +8,6 @@ same user to subscribe to different queries on different devices. In very rare c
 based Realms between devices and specifying the `customQueryBasedSyncIdentifier` allows you to do that.
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
 * Fixed the typescript definitions for `User.login` to make it explicit in which cases a promise is returned and in which - a `User`. ([#2050](https://github.com/realm/realm-js/pull/2050), since 2.16.0).
 * Fixed an exception being thrown when using the deprecated `User.registerWithProvider` API and not providing a value for `userInfo`. ([#2050](https://github.com/realm/realm-js/pull/2050), since 2.16.0).
 
