@@ -290,6 +290,10 @@ declare namespace Realm.Sync {
         isAdmin: boolean;
     }
 
+    class AdminCredentials extends Credentials {
+        identityProvider: "adminToken";
+    }
+
     class Credentials {
         static usernamePassword(username: string, password: string, createUser?: boolean): Credentials;
         static facebook(token: string): Credentials;
@@ -298,8 +302,8 @@ declare namespace Realm.Sync {
         static nickname(value: string, isAdmin?: boolean): Credentials;
         static azureAD(token: string): Credentials;
         static jwt(token: string, providerName?: string): Credentials;
-        static adminToken(token: string): Credentials;
-        static custom(providerName: string, token: string, userInfo: {[key: string]: any}): Credentials;
+        static adminToken(token: string): AdminCredentials;
+        static custom(providerName: string, token: string, userInfo?: {[key: string]: any}): Credentials;
 
         readonly identityProvider: string;
         readonly token: string;
@@ -318,7 +322,8 @@ declare namespace Realm.Sync {
         readonly isAdminToken: boolean;
         readonly server: string;
         readonly token: string;
-        static login(server: string, credentials: Credentials): Promise<User> | User;
+        static login(server: string, credentials: AdminCredentials): User;
+        static login(server: string, credentials: Credentials): Promise<User>;
 
         static requestPasswordReset(server: string, email: string): Promise<void>;
 
@@ -448,6 +453,7 @@ declare namespace Realm.Sync {
         fullSynchronization?: boolean;
         _disableQueryBasedSyncUrlChecks?:boolean;
         custom_http_headers?: { [header: string]: string };
+        customQueryBasedSyncIdentifier?: string;
     }
 
     enum ConnectionState {
