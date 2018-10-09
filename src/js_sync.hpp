@@ -688,9 +688,10 @@ void SessionClass<T>::override_server(ContextType ctx, ObjectType this_object, A
 template<typename T>
 class Subscription : public partial_sync::Subscription {
 public:
-    Subscription(partial_sync::Subscription s) : partial_sync::Subscription(std::move(s)) {}
+    Subscription(partial_sync::Subscription s, util::Optional<std::string> name) : partial_sync::Subscription(std::move(s)), m_name(name) {}
     Subscription(Subscription &&) = default;
 
+    util::Optional<std::string> m_name;
     std::vector<std::pair<Protected<typename T::Function>, partial_sync::SubscriptionNotificationToken>> m_notification_tokens;
 };
 
@@ -712,10 +713,11 @@ public:
     std::string const name = "Subscription";
 
     static FunctionType create_constructor(ContextType);
-    static ObjectType create_instance(ContextType, partial_sync::Subscription);
+    static ObjectType create_instance(ContextType, partial_sync::Subscription, util::Optional<std::string>);
 
     static void get_state(ContextType, ObjectType, ReturnValue &);
     static void get_error(ContextType, ObjectType, ReturnValue &);
+    static void get_name(ContextType, ObjectType, ReturnValue &);
 
     static void unsubscribe(ContextType, ObjectType, Arguments, ReturnValue &);
     static void add_listener(ContextType, ObjectType, Arguments, ReturnValue &);
@@ -724,7 +726,8 @@ public:
 
     PropertyMap<T> const properties = {
         {"state", {wrap<get_state>, nullptr}},
-        {"error", {wrap<get_error>, nullptr}}
+        {"error", {wrap<get_error>, nullptr}},
+        {"name",  {wrap<get_name>, nullptr}},
     };
 
     MethodMap<T> const methods = {
@@ -736,8 +739,8 @@ public:
 };
 
 template<typename T>
-typename T::Object SubscriptionClass<T>::create_instance(ContextType ctx, partial_sync::Subscription subscription) {
-    return create_object<T, SubscriptionClass<T>>(ctx, new Subscription<T>(std::move(subscription)));
+typename T::Object SubscriptionClass<T>::create_instance(ContextType ctx, partial_sync::Subscription subscription, util::Optional<std::string> name) {
+    return create_object<T, SubscriptionClass<T>>(ctx, new Subscription<T>(std::move(subscription), name));
 }
 
 template<typename T>
@@ -759,6 +762,18 @@ void SubscriptionClass<T>::get_error(ContextType ctx, ObjectType object, ReturnV
     }
     else {
         return_value.set_undefined();
+    }
+}
+
+template<typename T>
+void SubscriptionClass<T>::get_name(ContextType ctx, ObjectType object, ReturnValue &return_value) {
+    auto subscription = get_internal<T, SubscriptionClass<T>>(object);
+    if (subscription->m_name == util::none) {
+        // FIXME: should we reconstruct the name to match the one stored in __ResultSets?
+        return_value.set_undefined();
+    }
+    else {
+        return_value.set(subscription->m_name);
     }
 }
 
