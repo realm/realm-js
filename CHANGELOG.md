@@ -15,7 +15,7 @@ x.x.x Release notes (yyyy-MM-dd)
  ### Internal
 * None.
 
-2.19.0 Release notes (2018-10-10)
+2.19.0-rc.2 Release notes (2018-10-10)
 =============================================================
 ### Enhancements
 * Added `Realm.subscriptions()` to query active query-based sync subscriptions. This method is in beta and might change in future releases. ([#2052](https://github.com/realm/realm-js/issues/2052))
