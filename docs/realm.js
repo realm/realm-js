@@ -331,6 +331,22 @@ class Realm {
      * @throws {Error} If anything in the provided `config` is invalid.
      */
     static deleteFile(config) {}
+
+    /**
+     * Get a list of subscriptions. THIS METHOD IS IN BETA AND MAY CHANGE IN FUTURE VERSIONS.
+     * @param {string} name - Optional parameter to query for either a specific name or pattern (using
+     *   cards `?` and `*`).
+     * @throws {Error} If `name` is not a string.
+     * @returns an array of objects of (`name`, `objectType`, `query`).
+     */
+    subscriptions(name) {}
+
+    /**
+     * Unsubscribe a named subscription. THIS METHOD IS IN BETA AND MAY CHANGE IN FUTURE VERSIONS.
+     * @param {string} name - The name of the subscription.
+     * @throws {Error} If `name` is not a string or an empty string.
+     */
+    unsubscribe(name) {}
 }
 /**
  * This describes the different options used to create a {@link Realm} instance.

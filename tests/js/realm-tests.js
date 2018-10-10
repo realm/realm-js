@@ -1264,6 +1264,7 @@ module.exports = {
     // FIXME: We need to test adding a property also calls the listener
     testSchemaUpdatesNewClass: function() {
         return new Promise((resolve, reject) => {
+            let called = false;
             let realm1 = new Realm({ _cache: false });
             TestCase.assertTrue(realm1.empty);
             TestCase.assertEqual(realm1.schema.length, 0);  // empty schema
@@ -1274,6 +1275,7 @@ module.exports = {
                 TestCase.assertEqual(schema[0].name, 'TestObject');
                 TestCase.assertEqual(realm1.schema.length, 1);
                 TestCase.assertEqual(realm.schema[0].name, 'TestObject');
+                called = true;
             });
 
             const schema = [{
@@ -1291,7 +1293,11 @@ module.exports = {
             // in real world, a Realm will not be closed just after its
             // schema has been updated
             setTimeout(() => {
-                resolve();
+                if (called) {
+                    resolve();
+                } else {
+                    reject();
+                }
             }, 1000);
         });
     },

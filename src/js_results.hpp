@@ -308,7 +308,7 @@ void ResultsClass<T>::subscribe(ContextType ctx, ObjectType this_object, Argumen
     }
 
     auto subscription = partial_sync::subscribe(*results, subscription_name);
-    return_value.set(SubscriptionClass<T>::create_instance(ctx, std::move(subscription)));
+    return_value.set(SubscriptionClass<T>::create_instance(ctx, std::move(subscription), subscription_name));
 }
 #endif
 
