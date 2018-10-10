@@ -825,7 +825,7 @@ declare class Realm {
     permissions() : Realm.Permissions.Realm;
     permissions(objectType: string | Realm.ObjectSchema | Function) : Realm.Permissions.Class;
 
-    subscriptions(name: string?): NamedSubscription[];
+    subscriptions(name?: string): NamedSubscription[];
     unsubscribe(name: string): void;
 }
 

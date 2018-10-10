@@ -342,7 +342,7 @@ class Realm {
     subscriptions(name) {}
 
     /**
-     * Unsubscribe a name subscription. THIS METHOD IS IN BETA AND MAY CHANGE IN FUTURE VERSIONS.
+     * Unsubscribe a named subscription. THIS METHOD IS IN BETA AND MAY CHANGE IN FUTURE VERSIONS.
      * @param {string} name - The name of the subscription.
      * @throws {Error} If `name` is not a string or an empty string.
      */
