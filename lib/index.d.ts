@@ -649,6 +649,12 @@ interface ProgressPromise extends Promise<Realm> {
     progress(callback: Realm.Sync.ProgressNotificationCallback): Promise<Realm>
 }
 
+interface NamedSubscription {
+    name: string,
+    objectType: string,
+    query: string
+}
+
 declare class Realm {
     static defaultPath: string;
 
@@ -819,6 +825,8 @@ declare class Realm {
     permissions() : Realm.Permissions.Realm;
     permissions(objectType: string | Realm.ObjectSchema | Function) : Realm.Permissions.Class;
 
+    subscriptions(name: string?): NamedSubscription[];
+    unsubscribe(name: string): void;
 }
 
 declare module 'realm' {

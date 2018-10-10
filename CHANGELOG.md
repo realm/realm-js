@@ -1,8 +1,8 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
-* Added `Realm.subscriptions()` to query active query-based sync subscriptions. ([#2052](https://github.com/realm/realm-js/issues/2052))
-* Added `Realm.unsubscribe()` to unsubscribe ny name an active query-based sync subscriptions. ([#2052](https://github.com/realm/realm-js/issues/2052))
+* Added `Realm.subscriptions()` to query active query-based sync subscriptions. This method is in beta and might change in future releases. ([#2052](https://github.com/realm/realm-js/issues/2052))
+* Added `Realm.unsubscribe()` to unsubscribe by name an active query-based sync subscriptions. This method is in beta and might change in future releases. ([#2052](https://github.com/realm/realm-js/issues/2052))
 
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
@@ -16,7 +16,7 @@ x.x.x Release notes (yyyy-MM-dd)
  ### Internal
 * None.
 
-2.19.0 Release notes (2018-10-9)
+2.19.0-rc.1 Release notes (2018-10-9)
 =============================================================
 ### Enhancements
 * Added `SyncConfig.customQueryBasedSyncIdentifier` to allow customizing the identifier appended to the realm path when opening a query based Realm. This identifier is used to distinguish between query based Realms opened on different devices and by default Realm builds it as a combination of a user's id and a random string, allowing the same user to subscribe to different queries on different devices. In very rare cases, you may want to share query based Realms between devices and specifying the `customQueryBasedSyncIdentifier` allows you to do that.
