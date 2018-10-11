@@ -1344,6 +1344,79 @@ module.exports = {
             });
     },
 
+    testSchemaUpdatesWithPredefinedSchema: function() {
+        if (!global.enableSyncTests) {
+            return;
+        }
+
+        const realmId = uuid();
+
+        return Realm.Sync.User.login('http://localhost:9080', Realm.Sync.Credentials.nickname(uuid(), true))
+            .then((admin1) => {
+                return Realm.Sync.User.login('http://localhost:9080', Realm.Sync.Credentials.nickname(uuid(), true))
+                    .then((admin2) => {
+                        return { admin1, admin2 }
+                    });
+            })
+            .then(({ admin1, admin2 }) => {
+                const config1 = admin1.createConfiguration({
+                    schema: [{
+                        name: 'Foo',
+                        properties: {
+                            value: 'double',
+                        }
+                    }],
+                    sync: {
+                        fullSynchronization: true,
+                        url: `realm://localhost:9080/${realmId}`,
+                    }
+                });
+
+                const config2 = admin2.createConfiguration({
+                    schema: [{
+                        name: 'Bar',
+                        properties: {
+                            value: 'double',
+                        }
+                    }],
+                    sync: {
+                        fullSynchronization: true,
+                        url: `realm://localhost:9080/${realmId}`,
+                    }
+                });
+
+                const realm1 = new Realm(config1);
+                const realm2 = new Realm(config2);
+
+                return new Promise((resolve, reject) => {
+                    let called1 = false;
+                    let called2 = false;
+
+                    realm1.addListener('schema', (realm, event, schema) => {
+                        if (schema.length === 2) {
+                            TestCase.assertEqual(realm1.schema.length, 2);
+                            called1 = true;
+                        }
+                    });
+
+                    realm2.addListener('schema', (realm, event, schema) => {
+                        if (schema.length === 2) {
+                            TestCase.assertEqual(realm2.schema.length, 2);
+                            called2 = true;
+                        }
+                    });
+
+                    setTimeout(() => {
+                        if (called1 && called2) {
+                            resolve();
+                        } else {
+                            reject();
+                        }
+                    }, 1000);
+                });
+            });
+    },
+
     testCreateTemplateObject: function() {
         var realm = new Realm({schema: [
             schemas.AllTypes,
