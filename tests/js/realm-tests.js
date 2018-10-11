@@ -1329,8 +1329,16 @@ module.exports = {
 
                 const realm = new Realm(config);
                 TestCase.assertEqual(realm.schema.length, 7); // 5 permissions, 1 results set, 1 test object
-                realm.close();
-
+                return new Promise((resolve, reject) => {
+                    realm.syncSession.addProgressNotification('upload', 'forCurrentlyOutstandingWork', (transferred, transferable) => {
+                        if (transferred >= transferable) {
+                            realm.close();
+                            resolve();
+                        }
+                    })
+                })
+            })
+            .then(() => {
                 return Realm.Sync.User.login('http://localhost:9080', Realm.Sync.Credentials.anonymous());
             })
             .then((user2) => {
