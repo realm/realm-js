@@ -645,6 +645,18 @@ SharedRealm RealmClass<T>::create_shared_realm(ContextType ctx, realm::Realm::Co
         js_binding_context->m_defaults = std::move(defaults);
         js_binding_context->m_constructors = std::move(constructors);
     }
+#if REALM_ENABLE_SYNC
+    // For query-based Realms we need to register the constructors for the
+    // permissions types even if a schema isn't specified
+    else if (config.sync_config && config.sync_config->is_partial && js_binding_context->m_constructors.empty()) {
+        ValueType schema_value = Object::create_array(ctx);
+        auto realm_constructor = Value::validated_to_object(ctx, Object::get_global(ctx, "Realm"));
+        Object::call_method(ctx, realm_constructor, "_extendQueryBasedSchema", 1, &schema_value);
+        Schema<T>::parse_schema(ctx, Value::to_object(ctx, schema_value), defaults, constructors);
+        js_binding_context->m_defaults = std::move(defaults);
+        js_binding_context->m_constructors = std::move(constructors);
+    }
+#endif
 
     return realm;
 }
