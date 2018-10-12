@@ -274,46 +274,44 @@ module.exports = {
     },
 
     testAddPermissionSchemaForQueryBasedRealmOnly() {
-        return new Promise((resolve, reject) => {
-            Realm.Sync.User.register('http://localhost:9080', uuid(), 'password').then((user) => {
-                let config = {
-                    sync: {
-                        user: user,
-                        url: `realm://NO_SERVER/foo`,
-                        fullSynchronization: false,
-                    }
-                };
+        return Realm.Sync.User.register('http://localhost:9080', uuid(), 'password').then((user) => {
+            let config = {
+                schema: [],
+                sync: {
+                    user: user,
+                    url: `realm://NO_SERVER/foo`,
+                    fullSynchronization: false,
+                }
+            };
 
-                let realm = new Realm(config);
-                TestCase.assertTrue(realm.empty);
+            let realm = new Realm(config);
+            TestCase.assertTrue(realm.empty);
 
-                TestCase.assertEqual(realm.schema.length, 5 + 1); // 5 = see below, 1 = __ResultSets
-                TestCase.assertEqual(realm.schema.filter(schema => schema.name === '__Class').length, 1);
-                TestCase.assertEqual(realm.schema.filter(schema => schema.name === '__Permission').length, 1);
-                TestCase.assertEqual(realm.schema.filter(schema => schema.name === '__Realm').length, 1);
-                TestCase.assertEqual(realm.schema.filter(schema => schema.name === '__Role').length, 1);
-                TestCase.assertEqual(realm.schema.filter(schema => schema.name === '__User').length, 1);
+            TestCase.assertEqual(realm.schema.length, 5 + 1); // 5 = see below, 1 = __ResultSets
+            TestCase.assertEqual(realm.schema.filter(schema => schema.name === '__Class').length, 1);
+            TestCase.assertEqual(realm.schema.filter(schema => schema.name === '__Permission').length, 1);
+            TestCase.assertEqual(realm.schema.filter(schema => schema.name === '__Realm').length, 1);
+            TestCase.assertEqual(realm.schema.filter(schema => schema.name === '__Role').length, 1);
+            TestCase.assertEqual(realm.schema.filter(schema => schema.name === '__User').length, 1);
 
-                realm.close();
-                Realm.deleteFile(config);
+            realm.close();
+            Realm.deleteFile(config);
 
-                // Full sync shouldn't include the permission schema
-                config = {
-                    sync: {
-                        user: user,
-                        url: `realm://NO_SERVER/foo`,
-                        fullSynchronization: true
-                    }
-                };
-                realm = new Realm(config);
-                TestCase.assertTrue(realm.empty);
-                TestCase.assertEqual(realm.schema.length, 0);
+            // Full sync shouldn't include the permission schema
+            config = {
+                schema: [],
+                sync: {
+                    user: user,
+                    url: `realm://NO_SERVER/foo`,
+                    fullSynchronization: true
+                }
+            };
+            realm = new Realm(config);
+            TestCase.assertTrue(realm.empty);
+            TestCase.assertEqual(realm.schema.length, 0);
 
-                realm.close();
-                Realm.deleteFile(config);
-
-                resolve();
-            }).catch(error => reject(error));
+            realm.close();
+            Realm.deleteFile(config);
         });
     },
 
