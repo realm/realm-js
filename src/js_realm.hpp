@@ -447,17 +447,13 @@ bool RealmClass<T>::get_realm_config(ContextType ctx, ObjectType this_object, si
     if (argc > 1) {
         throw std::runtime_error("Invalid arguments when constructing 'Realm'");
     }
-    // Callback to custom constructor
-    // This is used to work around the fact that we cannot reliably wrap the the Realm constructor
-    // without risking breaking existing code, so instead we make an extra roundtrip to this method.
-    ValueType modifiedConfig = Object::call_method(ctx, this_object, "_constructor", argc, arguments);
 
     bool schema_updated = false;
-    if (Value::is_undefined(ctx, modifiedConfig)) {
+    if (argc == 0) {
         config.path = default_path();
     }
     else if (argc == 1) {
-        ValueType value = modifiedConfig;
+        ValueType value = arguments[0];
         if (Value::is_string(ctx, value)) {
             config.path = Value::validated_to_string(ctx, value, "path");
         }
@@ -510,6 +506,14 @@ bool RealmClass<T>::get_realm_config(ContextType ctx, ObjectType this_object, si
             ValueType schema_value = Object::get_property(ctx, object, schema_string);
             if (!Value::is_undefined(ctx, schema_value)) {
                 ObjectType schema_object = Value::validated_to_array(ctx, schema_value, "schema");
+#if REALM_ENABLE_SYNC
+                // Ensure that the permissions and ResultSets object definitions
+                // are present in the schema for query-based sync
+                if (config.sync_config && config.sync_config->is_partial) {
+                    auto realm_constructor = Value::validated_to_object(ctx, Object::get_global(ctx, "Realm"));
+                    Object::call_method(ctx, realm_constructor, "_extendQueryBasedSchema", 1, &schema_value);
+                }
+#endif
                 config.schema.emplace(Schema<T>::parse_schema(ctx, schema_object, defaults, constructors));
                 schema_updated = true;
             }
@@ -626,13 +630,6 @@ SharedRealm RealmClass<T>::create_shared_realm(ContextType ctx, realm::Realm::Co
     catch (const RealmFileException& ex) {
         handleRealmFileException(ctx, config, ex);
     }
-
-#if REALM_ENABLE_SYNC
-    auto schema = realm->schema();
-    if (realm->is_partial() && schema.empty() && config.cache) {
-        throw std::invalid_argument("Query-based sync requires a schema.");
-    }
-#endif
 
     GlobalContextType global_context = Context<T>::get_global_context(ctx);
     if (!realm->m_binding_context) {
