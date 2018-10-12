@@ -376,6 +376,11 @@ public:
             }
         }
 
+        // Beginning a read transaction may reread the schema, invalidating the
+        // pointer that we're returning. Avoid this by ensuring that we're in a
+        // read transaction before we search the schema.
+        realm->read_group();
+
         auto &schema = realm->schema();
         auto object_schema = schema.find(object_type);
 
