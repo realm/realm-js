@@ -524,7 +524,9 @@ class User {
     serialize() {}
 
     /**
-     * Logs out the user from the Realm Object Server.
+     * Logs out the user from the Realm Object Server. Once the Object Server has confirmed the logout the user
+     * credentials will be deleted from this device.
+     * @return {Promise<void>} A promise which is resolved when the user has logged out both locally and on the server.
      */
     logout() {}
 
