@@ -1,11 +1,11 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
-* None.
+* Improved the proactive token refresh mechanism to make several attempts to refresh the token before it expires and to also ensure that there is only one ongoing refresh timer for a combination of user and realm path. Previously it was possible to end up in a situation where many redundant refreshes were scheduled for the same Realm. ([#2071](https://github.com/realm/realm-js/pull/2071), since v1.0.2)
 
 ### Fixes
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None.
+* Fixed the signature of `user.logout` to return a `Promise<void>` rather than `void`. It has always done asynchronous work, but previously, it was impossible to be notified that the call has completed. Since that is now possible, the superfluous "User is logged out" message printed in the console upon logout has been removed. ([#2071](https://github.com/realm/realm-js/pull/2071), since v2.3.0)
 
 ### Compatibility
 * Realm Object Server: 3.11.0 or later.
