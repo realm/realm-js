@@ -32,6 +32,17 @@ function uuid() {
     });
 }
 
+function closeAfterUpload(realm) {
+    return new Promise((resolve, reject) => {
+        realm.syncSession.addProgressNotification('upload', 'forCurrentlyOutstandingWork', (transferred, transferable) => {
+            if (transferred >= transferable) {
+                realm.close();
+                resolve();
+            }
+        });
+    });
+}
+
 const Realm = require('realm');
 const TestCase = require('./asserts');
 const schemas = require('./schemas');
@@ -1317,11 +1328,11 @@ module.exports = {
         const realmId = uuid();
         // We need an admin user to create the reference Realm
         return Realm.Sync.User.login('http://localhost:9080', Realm.Sync.Credentials.nickname("admin", true))
-            .then(user => {
+            .then(user1 => {
                 const config = {
                     schema: [schemas.TestObject],
                     sync: {
-                        user,
+                        user: user1,
                         url: `realm://localhost:9080/${realmId}`,
                         fullSynchronization: false,
                     },
@@ -1329,99 +1340,47 @@ module.exports = {
 
                 const realm = new Realm(config);
                 TestCase.assertEqual(realm.schema.length, 7); // 5 permissions, 1 results set, 1 test object
-                return new Promise((resolve, reject) => {
-                    realm.syncSession.addProgressNotification('upload', 'forCurrentlyOutstandingWork', (transferred, transferable) => {
-                        if (transferred >= transferable) {
-                            realm.close();
-                            resolve();
-                        }
-                    })
-                })
-            })
-            .then(() => {
-                return Realm.Sync.User.login('http://localhost:9080', Realm.Sync.Credentials.anonymous());
-            })
-            .then((user2) => {
-                const dynamicConfig = {
-                    sync: { user: user2, url: `realm://localhost:9080/${realmId}`, fullSynchronization: false },
-                };
-                return Realm.open(dynamicConfig);
-            })
-            .then((realm) => {
-                TestCase.assertEqual(realm.schema.length, 7); // 5 permissions, 1 results set, 1 test object
-            });
-    },
+                return closeAfterUpload(realm)
+                    .then(() => {
+                        return Realm.Sync.User.login('http://localhost:9080', Realm.Sync.Credentials.anonymous());
+                    }).then((user2) => {
+                        const dynamicConfig = {
+                            sync: { user: user2, url: `realm://localhost:9080/${realmId}`, fullSynchronization: false },
+                        };
 
-    testSchemaUpdatesWithPredefinedSchema: function() {
-        if (!global.enableSyncTests) {
-            return;
-        }
+                        return Realm.open(dynamicConfig);
+                    }).then((realm2) => {
+                        TestCase.assertEqual(realm2.schema.length, 7); // 5 permissions, 1 results set, 1 test object
+                        let called = false;
+                        realm2.addListener('schema', (realm, event, schema) => {
+                            TestCase.assertEqual(realm2.schema.length, 8); // 5 permissions, 1 results set, 1 test object, 1 foo object
+                            called = true;
+                        });
 
-        const realmId = uuid();
+                        config.schema.push({
+                            name: 'Foo',
+                            properties: {
+                                doubleCol: 'double',
+                            }
+                        });
 
-        return Realm.Sync.User.login('http://localhost:9080', Realm.Sync.Credentials.nickname(uuid(), true))
-            .then((admin1) => {
-                return Realm.Sync.User.login('http://localhost:9080', Realm.Sync.Credentials.nickname(uuid(), true))
-                    .then((admin2) => {
-                        return { admin1, admin2 }
+                        return Realm.open(config)
+                            .then((realm) => {
+                                return closeAfterUpload(realm);
+                            })
+                            .then(() => {
+                                return new Promise((resolve, reject) => {
+                                    setTimeout(() => {
+                                        realm2.close();
+                                        if (called) {
+                                            resolve();
+                                        } else {
+                                            reject();
+                                        }
+                                    }, 1000);
+                                });;
+                            });
                     });
-            })
-            .then(({ admin1, admin2 }) => {
-                const config1 = admin1.createConfiguration({
-                    schema: [{
-                        name: 'Foo',
-                        properties: {
-                            value: 'double',
-                        }
-                    }],
-                    sync: {
-                        fullSynchronization: true,
-                        url: `realm://localhost:9080/${realmId}`,
-                    }
-                });
-
-                const config2 = admin2.createConfiguration({
-                    schema: [{
-                        name: 'Bar',
-                        properties: {
-                            value: 'double',
-                        }
-                    }],
-                    sync: {
-                        fullSynchronization: true,
-                        url: `realm://localhost:9080/${realmId}`,
-                    }
-                });
-
-                const realm1 = new Realm(config1);
-                const realm2 = new Realm(config2);
-
-                return new Promise((resolve, reject) => {
-                    let called1 = false;
-                    let called2 = false;
-
-                    realm1.addListener('schema', (realm, event, schema) => {
-                        if (schema.length === 2) {
-                            TestCase.assertEqual(realm1.schema.length, 2);
-                            called1 = true;
-                        }
-                    });
-
-                    realm2.addListener('schema', (realm, event, schema) => {
-                        if (schema.length === 2) {
-                            TestCase.assertEqual(realm2.schema.length, 2);
-                            called2 = true;
-                        }
-                    });
-
-                    setTimeout(() => {
-                        if (called1 && called2) {
-                            resolve();
-                        } else {
-                            reject();
-                        }
-                    }, 1000);
-                });
             });
     },
 
