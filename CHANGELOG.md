@@ -6,6 +6,7 @@ x.x.x Release notes (yyyy-MM-dd)
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
 * Fixed an incorrect property named returned from `Realm.subscriptions()`. (since v2.19.0-rc.2)
+* Fixed opening query-based Realms with a dynamic schema. Previously the schema would always contain only the types present when the Realm was first added and not any types added later.
 
 ### Compatibility
 * Realm Object Server: 3.11.0 or later.
