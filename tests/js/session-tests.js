@@ -918,43 +918,58 @@ module.exports = {
                 });
 
                 return new Promise((resolve, reject) => {
-                    setTimeout(() => {
-                        if (called1 && called2 && listener_called) {
-                            let listOfSubscriptions = realm.subscriptions();
-                            TestCase.assertArrayLength(listOfSubscriptions, 2 + 5); // 2 = the two subscriptions, 5 = the permissions classes
-                            TestCase.assertEqual(listOfSubscriptions[0]['name'], '[Dog] name == "Lassy 1" '); // the query is the default name; notice the trailing whitespace!
-                            TestCase.assertEqual(listOfSubscriptions[0]['query'], 'name == "Lassy 1" '); // notice the trailing whitespace!
-                            TestCase.assertEqual(listOfSubscriptions[0]['objectType'], 'Dog');
-                            TestCase.assertEqual(listOfSubscriptions[1]['name'], 'foobar');
-                            TestCase.assertEqual(listOfSubscriptions[1]['query'], 'name == "Lassy 2" '); // notice the trailing whitespace!
-                            TestCase.assertEqual(listOfSubscriptions[1]['objectType'], 'Dog');
+                    let retries = 0;
+                    let token;
+                    token = setInterval(() => {
+                        if (!called1 || !called2 || !listener_called) {
+                            // Time out after 10s
+                            if (++retries < 30) {
+                                reject('Partial sync listeners timed out');
+                                clearInterval(token);
+                            }
+                            return;
+                        }
+                        clearInterval(token);
 
-                            listOfSubscriptions = realm.subscriptions('foobar');
-                            TestCase.assertArrayLength(listOfSubscriptions, 1);
+                        let listOfSubscriptions = realm.subscriptions();
+                        TestCase.assertArrayLength(listOfSubscriptions, 2 + 5); // 2 = the two subscriptions, 5 = the permissions classes
+                        TestCase.assertEqual(listOfSubscriptions[0]['name'], '[Dog] name == "Lassy 1" '); // the query is the default name; notice the trailing whitespace!
+                        TestCase.assertEqual(listOfSubscriptions[0]['query'], 'name == "Lassy 1" '); // notice the trailing whitespace!
+                        TestCase.assertEqual(listOfSubscriptions[0]['objectType'], 'Dog');
+                        TestCase.assertEqual(listOfSubscriptions[1]['name'], 'foobar');
+                        TestCase.assertEqual(listOfSubscriptions[1]['query'], 'name == "Lassy 2" '); // notice the trailing whitespace!
+                        TestCase.assertEqual(listOfSubscriptions[1]['objectType'], 'Dog');
 
-                            listOfSubscriptions = realm.subscriptions('*bar');
-                            TestCase.assertArrayLength(listOfSubscriptions, 1);
+                        listOfSubscriptions = realm.subscriptions('foobar');
+                        TestCase.assertArrayLength(listOfSubscriptions, 1);
 
-                            listOfSubscriptions = realm.subscriptions('RABOOF');
-                            TestCase.assertArrayLength(listOfSubscriptions, 0);
+                        listOfSubscriptions = realm.subscriptions('*bar');
+                        TestCase.assertArrayLength(listOfSubscriptions, 1);
 
-                            subscription1.unsubscribe();
-                            realm.unsubscribe('foobar');
-                            realm.removeAllListeners();
+                        listOfSubscriptions = realm.subscriptions('RABOOF');
+                        TestCase.assertArrayLength(listOfSubscriptions, 0);
 
-                            // check if subscriptions have been removed
-                            // subscription1.unsubscribe() requires a server round-trip so it might take a while
-                            setTimeout(() => {
-                                listOfSubscriptions = realm.subscriptions();
-                                TestCase.assertArrayLength(listOfSubscriptions, 5);  // the 5 permissions classes
+                        subscription1.unsubscribe();
+                        realm.unsubscribe('foobar');
+                        realm.removeAllListeners();
 
+                        // check if subscriptions have been removed
+                        // subscription1.unsubscribe() requires a server round-trip so it might take a while
+                        let retries = 0;
+                        token = setInterval(() => {
+                            listOfSubscriptions = realm.subscriptions();
+                            if (listOfSubscriptions.length == 5) { // the 5 permissions classes
+                                clearInterval(token);
                                 realm.close();
                                 resolve();
-                            }, 10000);
-                        } else {
-                            reject("listeners never called");
-                        }
-                    }, 15000);
+                            }
+                            // Time out after 10s
+                            if (++retries > 20) {
+                                reject('Removing listeners timed out');
+                                clearInterval(token);
+                            }
+                        }, 500);
+                    }, 500);
                 });
             });
     },
