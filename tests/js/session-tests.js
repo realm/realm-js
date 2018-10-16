@@ -974,6 +974,53 @@ module.exports = {
             });
     },
 
+    testPartialSyncWithDynamicSchema() {
+        if (!isNodeProccess) {
+            return;
+        }
+        const username = uuid();
+        const credentials = Realm.Sync.Credentials.nickname(username);
+        let user;
+        return Realm.Sync.User.login('http://localhost:9080', credentials).then(u => {
+            user = u;
+            let config = {
+                sync: {
+                    user: user,
+                    url: 'realm://localhost:9080/~/dynamicSchema',
+                    fullSynchronization: false,
+                    error: (session, error) => console.log(error)
+                }
+            };
+            return Realm.open(config);
+        }).then(realm => {
+            // Dog type shouldn't exist in the schema yet
+            TestCase.assertThrows(() => realm.objects('Dog'));
+            return new Promise(resolve => {
+                realm.addListener('schema', () => {
+                    if (realm.schema.find(s => s.name == 'Dog')) {
+                        setTimeout(() => resolve(realm), 0);
+                        realm.removeAllListeners();
+                    }
+                });
+                runOutOfProcess(__dirname + '/partial-sync-api-helper.js', username, REALM_MODULE_PATH, '/~/dynamicSchema');
+            });
+        }).then(realm => {
+            // Should now have Dog type in the schema, but no objects
+            TestCase.assertEqual(0, realm.objects('Dog').length);
+            return new Promise(resolve => {
+                realm.objects('Dog').subscribe().addListener((subscription, state) => {
+                    if (state === Realm.Sync.SubscriptionState.Complete) {
+                        subscription.removeAllListeners();
+                        resolve(realm);
+                    }
+                });
+            });
+        }).then(realm => {
+            // Should now have objects
+            TestCase.assertEqual(3, realm.objects('Dog').length);
+        });
+    },
+
     testClientReset() {
         // FIXME: try to enable for React Native
         if (!isNodeProccess) {
