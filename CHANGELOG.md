@@ -1,4 +1,4 @@
-x.x.x Release notes (yyyy-MM-dd)
+2.19.0 Release notes (2018-10-16)
 =============================================================
 ### Enhancements
 * Improved the proactive token refresh mechanism to make several attempts to refresh the token before it expires and to also ensure that there is only one ongoing refresh timer for a combination of user and realm path. Previously it was possible to end up in a situation where many redundant refreshes were scheduled for the same Realm. ([#2071](https://github.com/realm/realm-js/pull/2071), since v1.0.2)
