@@ -24,6 +24,7 @@
 console.log("partial-sync-api-helper started");
 const username = process.argv[2];
 const realmModule = process.argv[3];
+const realmPath = process.argv[4] || '/default';
 
 const Realm = require(realmModule);
 
@@ -31,7 +32,7 @@ function createObjects(user) {
     const config = {
         sync: {
             user,
-            url: `realm://localhost:9080/default`,
+            url: `realm://localhost:9080${realmPath}`,
             fullSynchronization: false,
             error: err => console.log('partial-sync-api-helper', err)
         },
