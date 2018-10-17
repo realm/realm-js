@@ -169,8 +169,8 @@ See [CONTRIBUTING.md](https://github.com/realm/realm-js/blob/master/CONTRIBUTING
 
 ## License
 
-Realm JS is published under the Apache 2.0 license.
-Realm Core is also published under the Apache 2.0 license and is available
+Realm JS is published under a mix of the Apache License 2.0 and the Realm Platform Extensions License.
+Realm Core is published under the Apache 2.0 license and is available
 [here](https://github.com/realm/realm-core).
 
 **This product is not being made available to any person located in Cuba, Iran,
