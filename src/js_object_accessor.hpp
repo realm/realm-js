@@ -66,22 +66,21 @@ public:
     , m_object_schema(&*m_realm->schema().find(prop.object_type))
     { }
 
-    OptionalValue value_for_property(ValueType dict, std::string const& prop_name, size_t prop_index) {
+    OptionalValue value_for_property(ValueType dict, Property const& prop, size_t) {
         ObjectType object = Value::validated_to_object(m_ctx, dict);
-        ValueType value = Object::get_property(m_ctx, object, prop_name);
+        ValueType value = Object::get_property(m_ctx, object, prop.name);
         if (Value::is_undefined(m_ctx, value)) {
             return util::none;
         }
-        const auto& prop = m_object_schema->persisted_properties[prop_index];
         if (!Value::is_valid_for_property(m_ctx, value, prop)) {
             throw TypeErrorException(*this, m_object_schema->name, prop, value);
         }
         return value;
     }
 
-    OptionalValue default_value_for_property(const ObjectSchema &object_schema, const std::string &prop_name) {
+    OptionalValue default_value_for_property(const ObjectSchema &object_schema, const Property &prop) {
         auto defaults = get_delegate<JSEngine>(m_realm.get())->m_defaults[object_schema.name];
-        auto it = defaults.find(prop_name);
+        auto it = defaults.find(prop.name);
         return it != defaults.end() ? util::make_optional(ValueType(it->second)) : util::none;
     }
 

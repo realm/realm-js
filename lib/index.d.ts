@@ -337,7 +337,7 @@ declare namespace Realm.Sync {
 
         createConfiguration(config?: Realm.PartialConfiguration): Realm.Configuration
         serialize(): SerializedUser;
-        logout(): void;
+        logout(): Promise<void>;
         openManagementRealm(): Realm;
         retrieveAccount(provider: string, username: string): Promise<Account>;
 
