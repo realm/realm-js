@@ -2,7 +2,7 @@
   "name": "realm",
   "description": "Realm is a mobile database: an alternative to SQLite and key-value stores",
   "version": "2.19.0-rc.3",
-  "license": "Apache-2.0",
+  "license": "{ "license" : "SEE LICENSE IN LICENSE" }",
   "homepage": "https://realm.io",
   "keywords": [
     "database",
