@@ -15,7 +15,7 @@ x.x.x Release notes (yyyy-MM-dd)
  ### Internal
 * None.
 
-2.19.0 Release notes (2018-10-17)
+2.19.0-rc.4 Release notes (2018-10-17)
 =============================================================
 ### Enhancements
 * None.
