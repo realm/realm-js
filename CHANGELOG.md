@@ -1,12 +1,11 @@
-x.x.x Release notes (yyyy-MM-dd)
+2.19.0 Release notes (2018-10-17)
 =============================================================
 ### Enhancements
 * None.
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
 * Fixed an incorrect property named returned from `Realm.subscriptions()`. (since v2.19.0-rc.2)
-* Fixed opening query-based Realms with a dynamic schema. Previously the schema would always contain only the types present when the Realm was first added and not any types added later.
+* Fixed opening query-based Realms with a dynamic schema. Previously the schema would always contain only the types present when the Realm was first added and not any types added later. (since v2.3.0)
 
 ### Compatibility
 * Realm Object Server: 3.11.0 or later.
@@ -14,9 +13,9 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
  ### Internal
-* None.
+* Updates to `package.json` and `README.md`. Thanks to @hyandell.
 
-2.19.0 Release notes (2018-10-16)
+2.19.0-rc.3 Release notes (2018-10-16)
 =============================================================
 ### Enhancements
 * Improved the proactive token refresh mechanism to make several attempts to refresh the token before it expires and to also ensure that there is only one ongoing refresh timer for a combination of user and realm path. Previously it was possible to end up in a situation where many redundant refreshes were scheduled for the same Realm. ([#2071](https://github.com/realm/realm-js/pull/2071), since v1.0.2)
