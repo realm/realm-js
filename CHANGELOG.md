@@ -21,7 +21,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * None.
 
 ### Fixed
-* Fixed an incorrect property names returned from `Realm.subscriptions()`. (since v2.19.0-rc.2)
+* Fixed an incorrect property name returned from `Realm.subscriptions()`. (since v2.19.0-rc.2)
 * Fixed opening query-based Realms with a dynamic schema. Previously the schema would always contain only the types present when the Realm was first added and not any types added later. (since v2.3.0)
 
 ### Compatibility
