@@ -81,7 +81,7 @@ module.exports = {
                 encryptionKey: new Int8Array(64),
                 sync: {
                     user: adminUser,
-                    url: 'realm://localhost:9080'
+                    url: 'realm://localhost:9080/~/encryptedRealm'
                 }
             });
             adminUser.logout(); // FIXME: clearTestState() doesn't clean up enough and Realm.Sync.User.current might not work
