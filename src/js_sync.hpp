@@ -89,9 +89,9 @@ public:
         {"isAdminToken", {wrap<is_admin_token>, nullptr}},
     };
 
-    static void create_user(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
-    static void admin_user(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
-    static void get_existing_user(ContextType, ObjectType, Arguments, ReturnValue&);
+    static void create_user(ContextType, ObjectType, Arguments &, ReturnValue &);
+    static void admin_user(ContextType, ObjectType, Arguments &, ReturnValue &);
+    static void get_existing_user(ContextType, ObjectType, Arguments &, ReturnValue&);
 
     MethodMap<T> const static_methods = {
         {"createUser", wrap<create_user>},
@@ -100,15 +100,15 @@ public:
     };
 
     /*static void current_user(ContextType ctx, ObjectType object, ReturnValue &return_value);*/
-    static void all_users(ContextType ctx, ObjectType object, ReturnValue &return_value);
+    static void all_users(ContextType ctx, ObjectType object, ReturnValue &);
 
     PropertyMap<T> const static_properties = {
         /*{"current", {wrap<current_user>, nullptr}},*/
         {"all", {wrap<all_users>, nullptr}},
     };
 
-    static void logout(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
-    static void session_for_on_disk_path(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void logout(ContextType, ObjectType, Arguments &, ReturnValue &);
+    static void session_for_on_disk_path(ContextType, ObjectType, Arguments &, ReturnValue &);
 
     MethodMap<T> const methods = {
         {"_logout", wrap<logout>},
@@ -145,39 +145,39 @@ void UserClass<T>::is_admin_token(ContextType ctx, ObjectType object, ReturnValu
 }
 
 template<typename T>
-void UserClass<T>::create_user(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
-    validate_argument_count(argc, 3, 5);
+void UserClass<T>::create_user(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
+    args.validate_between(3, 5);
     SyncUserIdentifier userIdentifier {
-        Value::validated_to_string(ctx, arguments[1], "identity"),
-        Value::validated_to_string(ctx, arguments[0], "authServerUrl")
+        Value::validated_to_string(ctx, args[1], "identity"),
+        Value::validated_to_string(ctx, args[0], "authServerUrl")
      };
     SharedUser *user = new SharedUser(syncManagerShared().get_user(
         userIdentifier,
-        Value::validated_to_string(ctx, arguments[2], "refreshToken")
+        Value::validated_to_string(ctx, args[2], "refreshToken")
     ));
 
-    if (argc == 5) {
-        (*user)->set_is_admin(Value::validated_to_boolean(ctx, arguments[4], "isAdmin"));
+    if (args.count == 5) {
+        (*user)->set_is_admin(Value::validated_to_boolean(ctx, args[4], "isAdmin"));
     }
     return_value.set(create_object<T, UserClass<T>>(ctx, user));
 }
 
 template<typename T>
-void UserClass<T>::admin_user(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
-    validate_argument_count(argc, 2, 2);
+void UserClass<T>::admin_user(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
+    args.validate_count(2);
     SharedUser *user = new SharedUser(syncManagerShared().get_admin_token_user(
-        Value::validated_to_string(ctx, arguments[0], "authServerUrl"),
-        Value::validated_to_string(ctx, arguments[1], "refreshToken")
+        Value::validated_to_string(ctx, args[0], "authServerUrl"),
+        Value::validated_to_string(ctx, args[1], "refreshToken")
     ));
     return_value.set(create_object<T, UserClass<T>>(ctx, user));
 }
 
 template<typename T>
-void UserClass<T>::get_existing_user(ContextType ctx, ObjectType, Arguments arguments, ReturnValue& return_value) {
-    arguments.validate_count(2);
+void UserClass<T>::get_existing_user(ContextType ctx, ObjectType, Arguments &args, ReturnValue &return_value) {
+    args.validate_count(2);
     if (auto user = syncManagerShared().get_existing_logged_in_user(SyncUserIdentifier{
-            Value::validated_to_string(ctx, arguments[1], "identity"),
-            Value::validated_to_string(ctx, arguments[0], "authServerUrl")})) {
+            Value::validated_to_string(ctx, args[1], "identity"),
+            Value::validated_to_string(ctx, args[0], "authServerUrl")})) {
         return_value.set(create_object<T, UserClass<T>>(ctx, new SharedUser(std::move(user))));
     }
 }
@@ -194,7 +194,7 @@ void UserClass<T>::all_users(ContextType ctx, ObjectType object, ReturnValue &re
 }
 
 template<typename T>
-void UserClass<T>::logout(ContextType ctx, FunctionType, ObjectType this_object, size_t, const ValueType[], ReturnValue &) {
+void UserClass<T>::logout(ContextType, ObjectType this_object, Arguments &, ReturnValue &) {
     get_internal<T, UserClass<T>>(this_object)->get()->log_out();
 }
 
@@ -224,20 +224,18 @@ public:
     static void get_state(ContextType, ObjectType, ReturnValue &);
     static void get_connection_state(ContextType, ObjectType, ReturnValue &);
 
-    static void simulate_error(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
-    static void refresh_access_token(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
-    static void add_progress_notification(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &);
-    static void remove_progress_notification(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &);
-    static void add_state_notification(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &);
-    static void remove_state_notification(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &);
-    static void add_connection_notification(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &);
-    static void remove_connection_notification(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &);
-    static void is_connected(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &);
-    static void resume(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &);
-    static void pause(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &);
-
-
-    static void override_server(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue&);
+    static void simulate_error(ContextType, ObjectType, Arguments &, ReturnValue &);
+    static void refresh_access_token(ContextType, ObjectType, Arguments &, ReturnValue &);
+    static void add_progress_notification(ContextType ctx, ObjectType this_object, Arguments &, ReturnValue &);
+    static void remove_progress_notification(ContextType ctx, ObjectType this_object, Arguments &, ReturnValue &);
+    static void add_state_notification(ContextType ctx, ObjectType this_object, Arguments &, ReturnValue &);
+    static void remove_state_notification(ContextType ctx, ObjectType this_object, Arguments &, ReturnValue &);
+    static void add_connection_notification(ContextType ctx, ObjectType this_object, Arguments &, ReturnValue &);
+    static void remove_connection_notification(ContextType ctx, ObjectType this_object, Arguments &, ReturnValue &);
+    static void is_connected(ContextType ctx, ObjectType this_object, Arguments &, ReturnValue &);
+    static void resume(ContextType ctx, ObjectType this_object, Arguments &, ReturnValue &);
+    static void pause(ContextType ctx, ObjectType this_object, Arguments &, ReturnValue &);
+    static void override_server(ContextType, ObjectType, Arguments &, ReturnValue &);
 
     PropertyMap<T> const properties = {
         {"config", {wrap<get_config>, nullptr}},
@@ -403,9 +401,10 @@ private:
 };
 
 template<typename T>
-void UserClass<T>::session_for_on_disk_path(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+void UserClass<T>::session_for_on_disk_path(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
+    args.validate_count(1);
     auto user = *get_internal<T, UserClass<T>>(this_object);
-    if (auto session = user->session_for_on_disk_path(Value::validated_to_string(ctx, arguments[0]))) {
+    if (auto session = user->session_for_on_disk_path(Value::validated_to_string(ctx, args[0]))) {
         return_value.set(create_object<T, SessionClass<T>>(ctx, new WeakSession(session)));
     } else {
         return_value.set_undefined();
@@ -492,38 +491,38 @@ void SessionClass<T>::get_connection_state(ContextType ctx, ObjectType object, R
 }
 
 template<typename T>
-void SessionClass<T>::simulate_error(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &) {
-    validate_argument_count(argc, 2);
+void SessionClass<T>::simulate_error(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &) {
+    args.validate_count(2);
 
     if (auto session = get_internal<T, SessionClass<T>>(this_object)->lock()) {
-        std::error_code error_code(Value::validated_to_number(ctx, arguments[0]), realm::sync::protocol_error_category());
-        std::string message = Value::validated_to_string(ctx, arguments[1]);
+        std::error_code error_code(Value::validated_to_number(ctx, args[0]), realm::sync::protocol_error_category());
+        std::string message = Value::validated_to_string(ctx, args[1]);
         SyncSession::OnlyForTesting::handle_error(*session, SyncError(error_code, message, false));
     }
 }
 
 template<typename T>
-void SessionClass<T>::refresh_access_token(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &) {
-    validate_argument_count(argc, 3);
+void SessionClass<T>::refresh_access_token(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &) {
+    args.validate_count(3);
 
     if (auto session = get_internal<T, SessionClass<T>>(this_object)->lock()) {
-        std::string sync_label = Value::validated_to_string(ctx, arguments[2], "syncLabel");
+        std::string sync_label = Value::validated_to_string(ctx, args[2], "syncLabel");
         session->set_multiplex_identifier(std::move(sync_label));
 
-        std::string access_token = Value::validated_to_string(ctx, arguments[0], "accessToken");
-        std::string realm_url = Value::validated_to_string(ctx, arguments[1], "realmUrl");
+        std::string access_token = Value::validated_to_string(ctx, args[0], "accessToken");
+        std::string realm_url = Value::validated_to_string(ctx, args[1], "realmUrl");
         session->refresh_access_token(std::move(access_token), std::move(realm_url));
     }
 }
 
 template<typename T>
-void SessionClass<T>::add_progress_notification(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
-    validate_argument_count(argc, 3);
+void SessionClass<T>::add_progress_notification(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
+    args.validate_count(3);
 
     if (auto session = get_internal<T, SessionClass<T>>(this_object)->lock()) {
 
-        std::string direction = Value::validated_to_string(ctx, arguments[0], "direction");
-        std::string mode = Value::validated_to_string(ctx, arguments[1], "mode");
+        std::string direction = Value::validated_to_string(ctx, args[0], "direction");
+        std::string mode = Value::validated_to_string(ctx, args[1], "mode");
         SyncSession::NotifierType notifierType;
         if (direction == "download") {
             notifierType = SyncSession::NotifierType::download;
@@ -546,7 +545,7 @@ void SessionClass<T>::add_progress_notification(ContextType ctx, FunctionType, O
             throw std::invalid_argument("Invalid argument 'mode'. Only 'reportIndefinitely' and 'forCurrentlyOutstandingWork' progress notification modes are supported");
         }
 
-        auto callback_function = Value::validated_to_function(ctx, arguments[2], "callback");
+        auto callback_function = Value::validated_to_function(ctx, args[2], "callback");
 
         Protected<FunctionType> protected_callback(ctx, callback_function);
         Protected<ObjectType> protected_this(ctx, this_object);
@@ -573,9 +572,9 @@ void SessionClass<T>::add_progress_notification(ContextType ctx, FunctionType, O
 }
 
 template<typename T>
-void SessionClass<T>::remove_progress_notification(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
-    validate_argument_count(argc, 1);
-    auto callback_function = Value::validated_to_function(ctx, arguments[0], "callback");
+void SessionClass<T>::remove_progress_notification(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
+    args.validate_count(1);
+    auto callback_function = Value::validated_to_function(ctx, args[0], "callback");
     auto syncSessionProp = Object::get_property(ctx, callback_function, "_syncSession");
     if (Value::is_undefined(ctx, syncSessionProp) || Value::is_null(ctx, syncSessionProp)) {
         return;
@@ -591,10 +590,10 @@ void SessionClass<T>::remove_progress_notification(ContextType ctx, FunctionType
 }
 
 template<typename T>
-void SessionClass<T>::add_connection_notification(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
-    validate_argument_count(argc, 1);
+void SessionClass<T>::add_connection_notification(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue &return_value) {
+    args.validate_count(1);
     if (auto session = get_internal<T, SessionClass<T>>(this_object)->lock()) {
-        auto callback_function = Value::validated_to_function(ctx, arguments[0], "callback");
+        auto callback_function = Value::validated_to_function(ctx, args[0], "callback");
         Protected<FunctionType> protected_callback(ctx, callback_function);
         Protected<ObjectType> protected_this(ctx, this_object);
         Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
@@ -620,9 +619,9 @@ void SessionClass<T>::add_connection_notification(ContextType ctx, FunctionType,
 }
 
 template<typename T>
-void SessionClass<T>::remove_connection_notification(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
-    validate_argument_count(argc, 1);
-    auto callback_function = Value::validated_to_function(ctx, arguments[0], "callback");
+void SessionClass<T>::remove_connection_notification(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue &return_value) {
+    args.validate_count(1);
+    auto callback_function = Value::validated_to_function(ctx, args[0], "callback");
     auto syncSessionProp = Object::get_property(ctx, callback_function, "_syncSession");
     if (Value::is_undefined(ctx, syncSessionProp) || Value::is_null(ctx, syncSessionProp)) {
         return;
@@ -637,8 +636,8 @@ void SessionClass<T>::remove_connection_notification(ContextType ctx, FunctionTy
 }
 
 template<typename T>
-void SessionClass<T>::is_connected(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
-    validate_argument_count(argc, 0);
+void SessionClass<T>::is_connected(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue &return_value) {
+    args.validate_count(0);
     return_value.set(false);
     if (auto session = get_internal<T, SessionClass<T>>(this_object)->lock()) {
         auto state = session->state();
@@ -651,8 +650,8 @@ void SessionClass<T>::is_connected(ContextType ctx, FunctionType, ObjectType thi
 }
 
 template<typename T>
-void SessionClass<T>::resume(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
-    validate_argument_count(argc, 0);
+void SessionClass<T>::resume(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue &return_value) {
+    args.validate_count(0);
     return_value.set(false);
     if (auto session = get_internal<T, SessionClass<T>>(this_object)->lock()) {
         session->revive_if_needed();
@@ -660,8 +659,8 @@ void SessionClass<T>::resume(ContextType ctx, FunctionType, ObjectType this_obje
 }
 
 template<typename T>
-void SessionClass<T>::pause(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
-    validate_argument_count(argc, 0);
+void SessionClass<T>::pause(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue &return_value) {
+    args.validate_count(0);
     return_value.set(false);
     if (auto session = get_internal<T, SessionClass<T>>(this_object)->lock()) {
         session->log_out();
@@ -669,7 +668,7 @@ void SessionClass<T>::pause(ContextType ctx, FunctionType, ObjectType this_objec
 }
 
 template<typename T>
-void SessionClass<T>::override_server(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue&) {
+void SessionClass<T>::override_server(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue&) {
     args.validate_count(2);
 
     std::string address = Value::validated_to_string(ctx, args[0], "address");
@@ -719,10 +718,10 @@ public:
     static void get_error(ContextType, ObjectType, ReturnValue &);
     static void get_name(ContextType, ObjectType, ReturnValue &);
 
-    static void unsubscribe(ContextType, ObjectType, Arguments, ReturnValue &);
-    static void add_listener(ContextType, ObjectType, Arguments, ReturnValue &);
-    static void remove_listener(ContextType, ObjectType, Arguments, ReturnValue &);
-    static void remove_all_listeners(ContextType, ObjectType, Arguments, ReturnValue &);
+    static void unsubscribe(ContextType, ObjectType, Arguments &, ReturnValue &);
+    static void add_listener(ContextType, ObjectType, Arguments &, ReturnValue &);
+    static void remove_listener(ContextType, ObjectType, Arguments &, ReturnValue &);
+    static void remove_all_listeners(ContextType, ObjectType, Arguments &, ReturnValue &);
 
     PropertyMap<T> const properties = {
         {"state", {wrap<get_state>, nullptr}},
@@ -778,7 +777,7 @@ void SubscriptionClass<T>::get_name(ContextType ctx, ObjectType object, ReturnVa
 }
 
 template<typename T>
-void SubscriptionClass<T>::unsubscribe(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
+void SubscriptionClass<T>::unsubscribe(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_maximum(0);
     auto subscription = get_internal<T, SubscriptionClass<T>>(this_object);
     partial_sync::unsubscribe(*subscription);
@@ -786,7 +785,7 @@ void SubscriptionClass<T>::unsubscribe(ContextType ctx, ObjectType this_object, 
 }
 
 template<typename T>
-void SubscriptionClass<T>::add_listener(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
+void SubscriptionClass<T>::add_listener(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_maximum(1);
     auto subscription = get_internal<T, SubscriptionClass<T>>(this_object);
 
@@ -808,7 +807,7 @@ void SubscriptionClass<T>::add_listener(ContextType ctx, ObjectType this_object,
 }
 
 template<typename T>
-void SubscriptionClass<T>::remove_listener(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
+void SubscriptionClass<T>::remove_listener(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_maximum(1);
     auto subscription = get_internal<T, SubscriptionClass<T>>(this_object);
 
@@ -823,7 +822,7 @@ void SubscriptionClass<T>::remove_listener(ContextType ctx, ObjectType this_obje
 }
 
 template<typename T>
-void SubscriptionClass<T>::remove_all_listeners(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
+void SubscriptionClass<T>::remove_all_listeners(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_maximum(0);
     auto subscription = get_internal<T, SubscriptionClass<T>>(this_object);
     subscription->m_notification_tokens.clear();
@@ -841,14 +840,15 @@ class SyncClass : public ClassDefinition<T, void*> {
     using Value = js::Value<T>;
     using Function = js::Function<T>;
     using ReturnValue = js::ReturnValue<T>;
+    using Arguments = js::Arguments<T>;
 
 public:
     std::string const name = "Sync";
 
     static FunctionType create_constructor(ContextType);
 
-    static void set_sync_log_level(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
-    static void initiate_client_reset(ContextType, FunctionType, ObjectType, size_t, const ValueType[], ReturnValue &);
+    static void set_sync_log_level(ContextType, ObjectType, Arguments &, ReturnValue &);
+    static void initiate_client_reset(ContextType, ObjectType, Arguments &, ReturnValue &);
 
     // private
     static std::function<SyncBindSessionHandler> session_bind_callback(ContextType ctx, ObjectType sync_constructor);
@@ -876,18 +876,18 @@ inline typename T::Function SyncClass<T>::create_constructor(ContextType ctx) {
 }
 
 template<typename T>
-void SyncClass<T>::initiate_client_reset(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue & return_value) {
-    validate_argument_count(argc, 1);
-    std::string path = Value::validated_to_string(ctx, arguments[0]);
+void SyncClass<T>::initiate_client_reset(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue & return_value) {
+    args.validate_count(1);
+    std::string path = Value::validated_to_string(ctx, args[0]);
     if (!SyncManager::shared().immediately_run_file_actions(std::string(path))) {
         throw std::runtime_error(util::format("Realm was not configured correctly. Client Reset could not be run for Realm at: %1", path));
     }
 }
 
 template<typename T>
-void SyncClass<T>::set_sync_log_level(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
-    validate_argument_count(argc, 1);
-    std::string log_level = Value::validated_to_string(ctx, arguments[0]);
+void SyncClass<T>::set_sync_log_level(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
+    args.validate_count(1);
+    std::string log_level = Value::validated_to_string(ctx, args[0]);
     std::istringstream in(log_level); // Throws
     in.imbue(std::locale::classic()); // Throws
     in.unsetf(std::ios_base::skipws);

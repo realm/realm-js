@@ -25,10 +25,10 @@ namespace js {
 
 template<>
 class ReturnValue<node::Types> {
-    v8::ReturnValue<v8::Value> m_value;
+    Nan::ReturnValue<v8::Value> m_value;
 
   public:
-    ReturnValue(v8::ReturnValue<v8::Value> value) : m_value(value) {}
+    ReturnValue(Nan::ReturnValue<v8::Value> value) : m_value(value) {}
 
     void set(const v8::Local<v8::Value> &value) {
         m_value.Set(value);

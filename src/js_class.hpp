@@ -28,12 +28,6 @@ namespace realm {
 namespace js {
 
 template<typename T>
-using ConstructorType = void(typename T::Context, typename T::Object, size_t, const typename T::Value[]);
-
-template<typename T>
-using MethodType = void(typename T::Context, typename T::Function, typename T::Object, size_t, const typename T::Value[], ReturnValue<T> &);
-
-template<typename T>
 struct Arguments {
     const typename T::Context ctx;
     const size_t count;
@@ -52,15 +46,24 @@ struct Arguments {
         }
     }
 
-    void validate_count(size_t actual) const {
-        if (count != actual) {
-            throw std::invalid_argument(util::format("Invalid arguments: %1 expected, but %s supplied.", actual, count));
+    void validate_count(size_t expected) const {
+        if (count != expected) {
+            throw std::invalid_argument(util::format("Invalid arguments: %1 expected, but %2 supplied.", expected, count));
+        }
+    }
+
+    void validate_between(size_t min, size_t max) const {
+        if (count < min || count > max) {
+            throw std::invalid_argument(util::format("Invalid arguments: expected between %1 and %2, but %3 supplied.", min, max, count));
         }
     }
 };
 
 template<typename T>
-using ArgumentsMethodType = void(typename T::Context, typename T::Object, Arguments<T>, ReturnValue<T> &);
+using ConstructorType = void(typename T::Context, typename T::Object, Arguments<T> &);
+
+template<typename T>
+using ArgumentsMethodType = void(typename T::Context, typename T::Object, Arguments<T> &, ReturnValue<T> &);
 
 template<typename T>
 struct PropertyType {
