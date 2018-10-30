@@ -820,7 +820,7 @@ void RealmClass<T>::get_sync_session(ContextType ctx, ObjectType object, ReturnV
 
 #if REALM_ENABLE_SYNC
 template<typename T>
-void RealmClass<T>::wait_for_download_completion(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
+void RealmClass<T>::async_open_realm(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_maximum(2);
     auto callback_function = Value::validated_to_function(ctx, args[0 + (args.count == 2)]);
     Realm::Config config;
