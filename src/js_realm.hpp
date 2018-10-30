@@ -826,7 +826,7 @@ void RealmClass<T>::async_open_realm(ContextType ctx, ObjectType this_object, Ar
     Realm::Config config;
     ObjectDefaultsMap defaults;
     ConstructorMap constructors;
-    bool schema_updated = get_realm_config(ctx, this_object, args.count - 1, args.value, config, defaults, constructors);
+    bool schema_updated = get_realm_config(ctx, this_object, args, config, defaults, constructors);
 
     if (!config.sync_config) {
         throw std::logic_error("_asyncOpen can only be used on a synchronized Realm.");
