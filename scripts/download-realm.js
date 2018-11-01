@@ -189,7 +189,6 @@ function getCoreRequirements(dependencies, options, required = {}) {
         case 'linux':
             required.CORE_SERVER_FOLDER = 'core';
             required.CORE_ARCHIVE = `realm-core-${flavor}-v${dependencies.REALM_CORE_VERSION}-Linux-devel.tar.gz`;
-            required.CORE_ARCHIVE_ROOT = `realm-core-${dependencies.REALM_CORE_VERSION}`;
             return Promise.resolve(required);
         default:
             return Promise.reject(new Error(`Unsupported core platform '${options.platform}'`));
