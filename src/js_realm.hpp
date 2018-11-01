@@ -258,7 +258,7 @@ public:
     // static methods
     static void constructor(ContextType, ObjectType, Arguments &);
     static SharedRealm create_shared_realm(ContextType, realm::Realm::Config, bool, ObjectDefaultsMap &&, ConstructorMap &&);
-    static bool get_realm_config(ContextType ctx, ObjectType this_object, Arguments &, realm::Realm::Config &, ObjectDefaultsMap &, ConstructorMap &);
+    static bool get_realm_config(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], realm::Realm::Config &, ObjectDefaultsMap &, ConstructorMap &);
 
     static void schema_version(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void clear_test_state(ContextType, ObjectType, Arguments &, ReturnValue &);
@@ -449,16 +449,18 @@ static inline void convert_outdated_datetime_columns(const SharedRealm &realm) {
 }
 
 template<typename T>
-bool RealmClass<T>::get_realm_config(ContextType ctx, ObjectType this_object, Arguments &args, realm::Realm::Config& config, ObjectDefaultsMap& defaults, ConstructorMap& constructors) {
+bool RealmClass<T>::get_realm_config(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], realm::Realm::Config& config, ObjectDefaultsMap& defaults, ConstructorMap& constructors) {
     bool schema_updated = false;
 
-    args.validate_maximum(1);
+    if (argc > 1) {
+        throw std::runtime_error("Invalid arguments when constructing 'Realm'");
+    }
 
-    if (args.count == 0) {
+    if (argc == 0) {
         config.path = default_path();
     }
-    else if (args.count == 1) {
-        ValueType value = args[0];
+    else if (argc == 1) {
+        ValueType value = arguments[0];
         if (Value::is_string(ctx, value)) {
             config.path = Value::validated_to_string(ctx, value, "path");
         }
@@ -614,7 +616,7 @@ void RealmClass<T>::constructor(ContextType ctx, ObjectType this_object, Argumen
     realm::Realm::Config config;
     ObjectDefaultsMap defaults;
     ConstructorMap constructors;
-    bool schema_updated = get_realm_config(ctx, this_object, args, config, defaults, constructors);
+    bool schema_updated = get_realm_config(ctx, this_object, args.count, args.value, config, defaults, constructors);
     auto realm = create_shared_realm(ctx, config, schema_updated, std::move(defaults), std::move(constructors));
 
     // Fix for datetime -> timestamp conversion
@@ -826,7 +828,7 @@ void RealmClass<T>::async_open_realm(ContextType ctx, ObjectType this_object, Ar
     Realm::Config config;
     ObjectDefaultsMap defaults;
     ConstructorMap constructors;
-    bool schema_updated = get_realm_config(ctx, this_object, args, config, defaults, constructors);
+    bool schema_updated = get_realm_config(ctx, this_object, args.count - 1, args.value, config, defaults, constructors);
 
     if (!config.sync_config) {
         throw std::logic_error("_asyncOpen can only be used on a synchronized Realm.");
