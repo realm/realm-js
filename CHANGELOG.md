@@ -2,6 +2,7 @@ x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
 * A more meaningful exception will be thrown when trying to refresh the access token for a Realm with an invalid url. Previously, trying to connect to a Realm with a url that lacks the path component (e.g. `realm://foo.com`) would result in errors like `Cannot read property ‘token_data’ of undefined`. Instead, now we'll print out the Realm url and provide a more meaningful exception message. ([#ROS-1310](https://github.com/realm/realm-object-server-private/issues/1310), since v1.0.2)
+* Adds support for Node 10. ([#1813](https://github.com/realm/realm-js/issues/1813) and [#2087](https://github.com/realm/realm-js/issues/2087))
 
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
@@ -14,6 +15,8 @@ x.x.x Release notes (yyyy-MM-dd)
 
  ### Internal
 * Building for iOS can now use the `n` node version manager. Thanks to @SandyChapman! ([#2078](https://github.com/realm/realm-js/pull/2078)
+* Upgrading to Realm Core v5.12.0.
+* Upgrading to Realm Sync v3.13.0.
 
 2.19.0-rc.4 Release notes (2018-10-17)
 =============================================================
