@@ -16,7 +16,7 @@ x.x.x Release notes (yyyy-MM-dd)
  ### Internal
 * Building for iOS can now use the `n` node version manager. Thanks to @SandyChapman! ([#2078](https://github.com/realm/realm-js/pull/2078)
 * Upgrading to Realm Core v5.12.0.
-* Upgrading to Realm Sync v3.13.0.
+* Upgrading to Realm Sync v3.13.1.
 
 2.19.0-rc.4 Release notes (2018-10-17)
 =============================================================
