@@ -129,7 +129,8 @@ function extract(downloadedArchive, targetFolder, archiveRootFolder) {
     if (!archiveRootFolder) {
         return decompress(downloadedArchive, targetFolder);
     } else {
-        const tempExtractLocation = path.resolve(getTempDir(), path.basename(downloadedArchive).replace(/(\.[^/.]+)+$/, ""));
+        const base = path.basename(downloadedArchive).split('.');
+        const tempExtractLocation = path.resolve(getTempDir(), base.slice(0, base.length - 2).join('.'));
         return decompress(downloadedArchive, tempExtractLocation)
                .then(() => fs.readdir(path.resolve(tempExtractLocation, archiveRootFolder)))
                .then(items => Promise.all(items.map(item => {
