@@ -201,6 +201,11 @@
       "dependencies": [ "realm-core" ],
       "link_settings": {
           "libraries": [ "-lrealm-sync<(debug_library_suffix)" ],
+          "conditions": [
+              ["OS=='win'", {
+                "libraries": [ "version.lib" ]
+              }]
+          ]
       },
       "all_dependent_settings": {
         "defines": [ "REALM_ENABLE_SYNC=1" ]
