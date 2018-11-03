@@ -198,7 +198,7 @@
     {
       "target_name": "realm-sync",
       "type": "none",
-      "dependencies": [ "realm-core" ],
+      "dependencies": [ "realm-core", "OpenSSL" ],
       "link_settings": {
           "libraries": [ "-lrealm-sync<(debug_library_suffix)" ],
           "conditions": [
@@ -244,7 +244,8 @@
           }],
           ["OS=='linux'", {
             "libraries": [ "-l:libssl.a", "-l:libcrypto.a" ],
-            "library_dirs": [ "/usr/lib", "/usr/lib64" ],
+              "library_dirs": [ "/usr/lib", "/usr/lib64" ],
+               "type": "static_library",
           }]
         ]
       }
