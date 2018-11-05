@@ -170,7 +170,6 @@
     {
       "target_name": "realm-core",
       "type": "none",
-      "dependencies": [ "OpenSSL" ],
       "direct_dependent_settings": {
         "conditions": [
           ["use_realm_debug", {
