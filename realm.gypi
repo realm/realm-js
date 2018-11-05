@@ -30,7 +30,6 @@
   "targets": [
     {
       "target_name": "object-store",
-      "dependencies": [ "realm-core" ],
       "type": "static_library",
       "include_dirs": [
         "src/object-store/src",
@@ -151,6 +150,8 @@
             "src/object-store/src/sync/impl/sync_metadata.cpp",
             "src/object-store/src/sync/impl/work_queue.cpp"
           ],
+        }, {
+          "dependencies": [ "realm-core" ]
         }]
       ],
       "all_dependent_settings": {
@@ -169,6 +170,7 @@
     {
       "target_name": "realm-core",
       "type": "none",
+      "dependencies": [ "OpenSSL" ],
       "direct_dependent_settings": {
         "conditions": [
           ["use_realm_debug", {
@@ -198,7 +200,7 @@
     {
       "target_name": "realm-sync",
       "type": "none",
-      "dependencies": [ "realm-core", "OpenSSL" ],
+      "dependencies": [ "realm-core" ],
       "link_settings": {
           "libraries": [ "-lrealm-sync<(debug_library_suffix)" ],
           "conditions": [
@@ -244,8 +246,7 @@
           }],
           ["OS=='linux'", {
             "libraries": [ "-l:libssl.a", "-l:libcrypto.a" ],
-              "library_dirs": [ "/usr/lib", "/usr/lib64" ],
-               "type": "static_library",
+            "library_dirs": [ "/usr/lib", "/usr/lib64" ],
           }]
         ]
       }
