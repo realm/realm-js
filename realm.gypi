@@ -240,12 +240,11 @@
       "link_settings": {
         "conditions": [
           ["OS=='win'", {
-            "libraries": [ "libeay32.lib", "ssleay32.lib" ],
             "conditions": [
               ["target_arch=='ia32'", {
-                "library_dirs": [ "C:\\src\\vcpkg\\installed\\x86-windows-static\\lib" ]
+                "libraries": [ "C:\\src\\vcpkg\\installed\\x86-windows-static\\lib\\libeay32.lib", "C:\\src\\vcpkg\\installed\\x86-windows-static\\lib\\ssleay32.lib" ]
               }, {
-                "library_dirs": [ "C:\\src\\vcpkg\\installed\\x64-windows-static\\lib" ]
+                "libraries": [ "C:\\src\\vcpkg\\installed\\x64-windows-static\\lib\\libeay32.lib", "C:\\src\\vcpkg\\installed\\x64-windows-static\\lib\\ssleay32.lib" ]
               }],
             ]
           }],
