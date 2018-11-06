@@ -18,7 +18,7 @@ RUN touch /var/lib/rpm/* \
     && yum -y install \
         python27 \
         which \
-        chrpath \
+        chrpath \:q
         openssl-devel \
         devtoolset-6-gcc \
         devtoolset-6-gcc-c++ \
@@ -31,7 +31,6 @@ RUN touch /var/lib/rpm/* \
 ENV NVM_DIR /root/.nvm
 RUN wget -qO- https://raw.githubusercontent.com/creationix/nvm/v0.31.4/install.sh | bash
 RUN . $NVM_DIR/nvm.sh && \
-    nvm install 4.4.7 && \
-    nvm install 5.12.0 && \
-    nvm install 6.5.0 && \
-    nvm install 7.0.0
+    nvm install 6.14.4 && \
+    nvm install 8.12.0 && \
+    nvm install 10.13.0
