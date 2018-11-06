@@ -204,7 +204,7 @@
           "libraries": [ "-lrealm-sync<(debug_library_suffix)" ],
           "conditions": [
               ["OS=='win'", {
-                "libraries": [ "version.lib" ]
+                "libraries": [ "Mincore.lib" ]
               }]
           ]
       },
