@@ -1,4 +1,4 @@
-x.x.x Release notes (yyyy-MM-dd)
+2.19.0 Release notes (2018-11-7)
 =============================================================
 ### Enhancements
 * A more meaningful exception will be thrown when trying to refresh the access token for a Realm with an invalid url. Previously, trying to connect to a Realm with a url that lacks the path component (e.g. `realm://foo.com`) would result in errors like `Cannot read property ‘token_data’ of undefined`. Instead, now we'll print out the Realm url and provide a more meaningful exception message. ([#ROS-1310](https://github.com/realm/realm-object-server-private/issues/1310), since v1.0.2)
