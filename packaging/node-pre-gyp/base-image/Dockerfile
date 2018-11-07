@@ -18,7 +18,7 @@ RUN touch /var/lib/rpm/* \
     && yum -y install \
         python27 \
         which \
-        chrpath \:q
+        chrpath \
         openssl-devel \
         devtoolset-6-gcc \
         devtoolset-6-gcc-c++ \
