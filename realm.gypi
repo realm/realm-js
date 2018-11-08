@@ -30,7 +30,6 @@
   "targets": [
     {
       "target_name": "object-store",
-      "dependencies": [ "realm-core" ],
       "type": "static_library",
       "include_dirs": [
         "src/object-store/src",
@@ -151,6 +150,8 @@
             "src/object-store/src/sync/impl/sync_metadata.cpp",
             "src/object-store/src/sync/impl/work_queue.cpp"
           ],
+        }, {
+          "dependencies": [ "realm-core" ]
         }]
       ],
       "all_dependent_settings": {
@@ -201,6 +202,17 @@
       "dependencies": [ "realm-core" ],
       "link_settings": {
           "libraries": [ "-lrealm-sync<(debug_library_suffix)" ],
+          "conditions": [
+              ["OS=='win'", {
+                "conditions": [
+                  ["target_arch=='ia32'", {
+                    "libraries": [ "C:\\Program Files (x86)\\Windows Kits\\8.1\\Lib\\winv6.3\\um\\x86\\mincore.lib" ]
+                  }, {
+                    "libraries": [ "C:\\Program Files (x86)\\Windows Kits\\8.1\\Lib\\winv6.3\\um\\x64\\mincore.lib" ]
+                  }]
+                ]
+              }]
+          ]
       },
       "all_dependent_settings": {
         "defines": [ "REALM_ENABLE_SYNC=1" ]
@@ -228,12 +240,11 @@
       "link_settings": {
         "conditions": [
           ["OS=='win'", {
-            "libraries": [ "libeay32.lib", "ssleay32.lib" ],
             "conditions": [
               ["target_arch=='ia32'", {
-                "library_dirs": [ "C:\\src\\vcpkg\\installed\\x86-windows-static\\lib" ]
+                "libraries": [ "C:\\src\\vcpkg\\installed\\x86-windows-static\\lib\\libeay32.lib", "C:\\src\\vcpkg\\installed\\x86-windows-static\\lib\\ssleay32.lib" ]
               }, {
-                "library_dirs": [ "C:\\src\\vcpkg\\installed\\x64-windows-static\\lib" ]
+                "libraries": [ "C:\\src\\vcpkg\\installed\\x64-windows-static\\lib\\libeay32.lib", "C:\\src\\vcpkg\\installed\\x64-windows-static\\lib\\ssleay32.lib" ]
               }],
             ]
           }],

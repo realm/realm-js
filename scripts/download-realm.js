@@ -48,7 +48,7 @@ function getTempDir() {
      * conflict.
      *
      * It is also possible to overrride this temp directory by setting
-     * REALM_DOWNLOAD_CORE_TEMP_DIR so, for instance, CI systems will 
+     * REALM_DOWNLOAD_CORE_TEMP_DIR so, for instance, CI systems will
      * be able to clean up files.
      */
     return process.env.REALM_DOWNLOAD_CORE_TEMP_DIR ||
@@ -129,7 +129,8 @@ function extract(downloadedArchive, targetFolder, archiveRootFolder) {
     if (!archiveRootFolder) {
         return decompress(downloadedArchive, targetFolder);
     } else {
-        const tempExtractLocation = path.resolve(getTempDir(), path.basename(downloadedArchive, path.extname(downloadedArchive)));
+        const base = path.basename(downloadedArchive).split('.');
+        const tempExtractLocation = path.resolve(getTempDir(), base.slice(0, base.length - 2).join('.'));
         return decompress(downloadedArchive, tempExtractLocation)
                .then(() => fs.readdir(path.resolve(tempExtractLocation, archiveRootFolder)))
                .then(items => Promise.all(items.map(item => {
@@ -187,8 +188,7 @@ function getCoreRequirements(dependencies, options, required = {}) {
         }
         case 'linux':
             required.CORE_SERVER_FOLDER = 'core';
-            required.CORE_ARCHIVE = `realm-core-${dependencies.REALM_CORE_VERSION}.tgz`;
-            required.CORE_ARCHIVE_ROOT = `realm-core-${dependencies.REALM_CORE_VERSION}`;
+            required.CORE_ARCHIVE = `realm-core-${flavor}-v${dependencies.REALM_CORE_VERSION}-Linux-devel.tar.gz`;
             return Promise.resolve(required);
         default:
             return Promise.reject(new Error(`Unsupported core platform '${options.platform}'`));
