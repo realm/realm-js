@@ -1,4 +1,4 @@
-x.x.x Release notes (yyyy-MM-dd)
+2.19.0 Release notes (2018-11-8)
 =============================================================
 This release contains all changes from v2.19.0-rc.1 to v2.19.0-rc.5.
 
