@@ -1,11 +1,21 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
+This release contains all changes from v2.19.0-rc.1 to v2.19.0-rc.5.
+
 ### Enhancements
-* None.
+* Adds `SyncConfig.customQueryBasedSyncIdentifier` to allow customizing the identifier appended to the Realm path when opening a query based Realm. This identifier is used to distinguish between query based Realms opened on different devices and by default Realm builds it as a combination of a user's id and a random string, allowing the same user to subscribe to different queries on different devices. In very rare cases, you may want to share query based Realms between devices and specifying the `customQueryBasedSyncIdentifier` allows you to do that.
+* Adds `Realm.subscriptions()` to query active query-based sync subscriptions. This method is in beta and might change in future releases. ([#2052](https://github.com/realm/realm-js/issues/2052))
+* Adds `Realm.unsubscribe()` to unsubscribe by name an active query-based sync subscription. This method is in beta and might change in future releases. ([#2052](https://github.com/realm/realm-js/issues/2052))
+* Improves the proactive token refresh mechanism to make several attempts to refresh the token before it expires and to also ensure that there is only one ongoing refresh timer for a combination of user and realm path. Previously it was possible to end up in a situation where many redundant refreshes were scheduled for the same Realm. ([#2071](https://github.com/realm/realm-js/pull/2071))
+* A more meaningful exception will be thrown when trying to refresh the access token for a Realm with an invalid url. Previously, trying to connect to a Realm with an url that lacks the path component (e.g. `realm://foo.com`) would result in errors like `Cannot read property ‘token_data’ of undefined`. Instead, now we'll print out the Realm url and provide a more meaningful exception message. ([#ROS-1310](https://github.com/realm/realm-object-server-private/issues/1310), since v1.0.2)
+* Adds support for Node 10. Pre-gyp'ed binaries are available for Node 6, 8, and 10. ([#1813](https://github.com/realm/realm-js/issues/1813) and [#2087](https://github.com/realm/realm-js/issues/2087))
+* Building for iOS can now use the `n` node version manager. Thanks to @SandyChapman! ([#2078](https://github.com/realm/realm-js/pull/2078))
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None.
+* Fixes the TypeScript definitions for `User.login` to make it explicit in which cases a promise  and in which a `User` is returned. ([#2050](https://github.com/realm/realm-js/pull/2050), since 2.16.0).
+* Fixes the exception being thrown when using the deprecated `User.registerWithProvider` API and not providing a value for `userInfo`. ([#2050](https://github.com/realm/realm-js/pull/2050), since 2.16.0).
+* Fixes the signature of `user.logout` to return a `Promise<void>` rather than `void`. It has always done asynchronous work, but previously, it was impossible to be notified that the call has completed. Since that is now possible, the superfluous `User is logged out` message printed in the console upon logout has been removed. ([#2071](https://github.com/realm/realm-js/pull/2071), since v2.3.0)
+* Fixes opening query-based Realms with a dynamic schema. Previously the schema would always contain only the types present when the Realm was first added and not any types added later. ([#2077](https://github.com/realm/realm-js/pull/2077), since v2.3.0)
 
 ### Compatibility
 * Realm Object Server: 3.11.0 or later.
@@ -13,9 +23,11 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
  ### Internal
-* None.
+* Upgrades to Realm Core v5.12.0.
+* Upgrades to Realm Sync v3.13.1.
+* Updates to `package.json` and `README.md`. Thanks to @hyandell.
 
-2.19.0 Release notes (2018-11-7)
+2.19.0-rc.5 Release notes (2018-11-7)
 =============================================================
 ### Enhancements
 * A more meaningful exception will be thrown when trying to refresh the access token for a Realm with an invalid url. Previously, trying to connect to a Realm with a url that lacks the path component (e.g. `realm://foo.com`) would result in errors like `Cannot read property ‘token_data’ of undefined`. Instead, now we'll print out the Realm url and provide a more meaningful exception message. ([#ROS-1310](https://github.com/realm/realm-object-server-private/issues/1310), since v1.0.2)
