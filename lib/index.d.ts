@@ -585,7 +585,7 @@ declare namespace Realm.Permissions {
     class Permission {
         static schema: ObjectSchema;
 
-        identity: string;
+        role: Role;
         canCreate: boolean;
         canRead: boolean;
         canUpdate: boolean;
