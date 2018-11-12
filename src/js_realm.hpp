@@ -218,25 +218,29 @@ public:
     static FunctionType create_constructor(ContextType);
 
     // methods
-    static void objects(ContextType, ObjectType, Arguments, ReturnValue &);
-    static void object_for_primary_key(ContextType, ObjectType, Arguments, ReturnValue &);
-    static void create(ContextType, ObjectType, Arguments, ReturnValue &);
-    static void delete_one(ContextType, ObjectType, Arguments, ReturnValue &);
-    static void delete_all(ContextType, ObjectType, Arguments, ReturnValue &);
-    static void write(ContextType, ObjectType, Arguments, ReturnValue &);
-    static void begin_transaction(ContextType, ObjectType, Arguments, ReturnValue&);
-    static void commit_transaction(ContextType, ObjectType, Arguments, ReturnValue&);
-    static void cancel_transaction(ContextType, ObjectType, Arguments, ReturnValue&);
-    static void add_listener(ContextType, ObjectType, Arguments, ReturnValue &);
-    static void wait_for_download_completion(ContextType, ObjectType, Arguments, ReturnValue &);
-    static void remove_listener(ContextType, ObjectType, Arguments, ReturnValue &);
-    static void remove_all_listeners(ContextType, ObjectType, Arguments, ReturnValue &);
-    static void close(ContextType, ObjectType, Arguments, ReturnValue &);
-    static void compact(ContextType, ObjectType, Arguments, ReturnValue &);
-    static void writeCopyTo(ContextType, ObjectType, Arguments, ReturnValue &);
-    static void delete_model(ContextType, ObjectType, Arguments, ReturnValue &);
-    static void object_for_object_id(ContextType, ObjectType, Arguments, ReturnValue&);
-    static void privileges(ContextType, ObjectType, Arguments, ReturnValue&);
+    static void objects(ContextType, ObjectType, Arguments &, ReturnValue &);
+    static void object_for_primary_key(ContextType, ObjectType, Arguments &, ReturnValue &);
+    static void create(ContextType, ObjectType, Arguments &, ReturnValue &);
+    static void delete_one(ContextType, ObjectType, Arguments &, ReturnValue &);
+    static void delete_all(ContextType, ObjectType, Arguments &, ReturnValue &);
+    static void write(ContextType, ObjectType, Arguments &, ReturnValue &);
+    static void begin_transaction(ContextType, ObjectType, Arguments &, ReturnValue&);
+    static void commit_transaction(ContextType, ObjectType, Arguments &, ReturnValue&);
+    static void cancel_transaction(ContextType, ObjectType, Arguments &, ReturnValue&);
+    static void add_listener(ContextType, ObjectType, Arguments &, ReturnValue &);
+    static void wait_for_download_completion(ContextType, ObjectType, Arguments &, ReturnValue &);
+    static void remove_listener(ContextType, ObjectType, Arguments &, ReturnValue &);
+    static void remove_all_listeners(ContextType, ObjectType, Arguments &, ReturnValue &);
+    static void close(ContextType, ObjectType, Arguments &, ReturnValue &);
+    static void compact(ContextType, ObjectType, Arguments &, ReturnValue &);
+    static void writeCopyTo(ContextType, ObjectType, Arguments &, ReturnValue &);
+    static void delete_model(ContextType, ObjectType, Arguments &, ReturnValue &);
+    static void object_for_object_id(ContextType, ObjectType, Arguments &, ReturnValue&);
+    static void privileges(ContextType, ObjectType, Arguments &, ReturnValue&);
+    static void get_schema_name_from_object(ContextType, ObjectType, Arguments &, ReturnValue&);
+#if REALM_ENABLE_SYNC
+    static void async_open_realm(ContextType, ObjectType, Arguments &, ReturnValue&);
+#endif
 
     // properties
     static void get_empty(ContextType, ObjectType, ReturnValue &);
@@ -252,13 +256,14 @@ public:
 #endif
 
     // static methods
-    static void constructor(ContextType, ObjectType, size_t, const ValueType[]);
+    static void constructor(ContextType, ObjectType, Arguments &);
     static SharedRealm create_shared_realm(ContextType, realm::Realm::Config, bool, ObjectDefaultsMap &&, ConstructorMap &&);
+    static bool get_realm_config(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], realm::Realm::Config &, ObjectDefaultsMap &, ConstructorMap &);
 
-    static void schema_version(ContextType, ObjectType, Arguments, ReturnValue &);
-    static void clear_test_state(ContextType, ObjectType, Arguments, ReturnValue &);
-    static void copy_bundled_realm_files(ContextType, ObjectType, Arguments, ReturnValue &);
-    static void delete_file(ContextType, ObjectType, Arguments, ReturnValue &);
+    static void schema_version(ContextType, ObjectType, Arguments &, ReturnValue &);
+    static void clear_test_state(ContextType, ObjectType, Arguments &, ReturnValue &);
+    static void copy_bundled_realm_files(ContextType, ObjectType, Arguments &, ReturnValue &);
+    static void delete_file(ContextType, ObjectType, Arguments &, ReturnValue &);
 
     // static properties
     static void get_default_path(ContextType, ObjectType, ReturnValue &);
@@ -271,6 +276,9 @@ public:
         {"clearTestState", wrap<clear_test_state>},
         {"copyBundledRealmFiles", wrap<copy_bundled_realm_files>},
         {"deleteFile", wrap<delete_file>},
+ #if REALM_ENABLE_SYNC
+        {"_asyncOpen", wrap<async_open_realm>},
+ #endif
     };
 
     PropertyMap<T> const static_properties = {
@@ -296,9 +304,7 @@ public:
         {"deleteModel", wrap<delete_model>},
         {"privileges", wrap<privileges>},
         {"_objectForObjectId", wrap<object_for_object_id>},
- #if REALM_ENABLE_SYNC
-        {"_waitForDownload", wrap<wait_for_download_completion>},
- #endif
+        {"_schemaName", wrap<get_schema_name_from_object>},
     };
 
     PropertyMap<T> const properties = {
@@ -346,6 +352,8 @@ public:
 
     static const ObjectSchema& validated_object_schema_for_value(ContextType ctx, const SharedRealm &realm, const ValueType &value) {
         std::string object_type;
+
+        // If argument is a constructor function, expect that the same constructor was used when specifying the schema.
         if (Value::is_constructor(ctx, value)) {
             FunctionType constructor = Value::to_constructor(ctx, value);
 
@@ -362,11 +370,18 @@ public:
             }
         }
         else {
+            // Any other argument is expected to be able to be converted to a String containg the name of the
+            // internal class.
             object_type = Value::validated_to_string(ctx, value, "objectType");
             if (object_type.empty()) {
                 throw std::runtime_error("objectType cannot be empty");
             }
         }
+
+        // Beginning a read transaction may reread the schema, invalidating the
+        // pointer that we're returning. Avoid this by ensuring that we're in a
+        // read transaction before we search the schema.
+        realm->read_group();
 
         auto &schema = realm->schema();
         auto object_schema = schema.find(object_type);
@@ -434,11 +449,12 @@ static inline void convert_outdated_datetime_columns(const SharedRealm &realm) {
 }
 
 template<typename T>
-void RealmClass<T>::constructor(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[]) {
-    realm::Realm::Config config;
-    ObjectDefaultsMap defaults;
-    ConstructorMap constructors;
+bool RealmClass<T>::get_realm_config(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], realm::Realm::Config& config, ObjectDefaultsMap& defaults, ConstructorMap& constructors) {
     bool schema_updated = false;
+
+    if (argc > 1) {
+        throw std::runtime_error("Invalid arguments when constructing 'Realm'");
+    }
 
     if (argc == 0) {
         config.path = default_path();
@@ -497,6 +513,14 @@ void RealmClass<T>::constructor(ContextType ctx, ObjectType this_object, size_t 
             ValueType schema_value = Object::get_property(ctx, object, schema_string);
             if (!Value::is_undefined(ctx, schema_value)) {
                 ObjectType schema_object = Value::validated_to_array(ctx, schema_value, "schema");
+#if REALM_ENABLE_SYNC
+                // Ensure that the permissions and ResultSets object definitions
+                // are present in the schema for query-based sync
+                if (config.sync_config && config.sync_config->is_partial) {
+                    auto realm_constructor = Value::validated_to_object(ctx, Object::get_global(ctx, "Realm"));
+                    Object::call_method(ctx, realm_constructor, "_extendQueryBasedSchema", 1, &schema_value);
+                }
+#endif
                 config.schema.emplace(Schema<T>::parse_schema(ctx, schema_object, defaults, constructors));
                 schema_updated = true;
             }
@@ -581,13 +605,18 @@ void RealmClass<T>::constructor(ContextType ctx, ObjectType this_object, size_t 
             }
         }
     }
-    else {
-        throw std::runtime_error("Invalid arguments when constructing 'Realm'");
-    }
 
     config.path = normalize_realm_path(config.path);
     ensure_directory_exists_for_file(config.path);
+    return schema_updated;
+}
 
+template<typename T>
+void RealmClass<T>::constructor(ContextType ctx, ObjectType this_object, Arguments& args) {
+    realm::Realm::Config config;
+    ObjectDefaultsMap defaults;
+    ConstructorMap constructors;
+    bool schema_updated = get_realm_config(ctx, this_object, args.count, args.value, config, defaults, constructors);
     auto realm = create_shared_realm(ctx, config, schema_updated, std::move(defaults), std::move(constructors));
 
     // Fix for datetime -> timestamp conversion
@@ -598,7 +627,7 @@ void RealmClass<T>::constructor(ContextType ctx, ObjectType this_object, size_t 
 
 template<typename T>
 SharedRealm RealmClass<T>::create_shared_realm(ContextType ctx, realm::Realm::Config config, bool schema_updated,
-                                        ObjectDefaultsMap&& defaults, ConstructorMap&& constructors) {
+                                               ObjectDefaultsMap&& defaults, ConstructorMap&& constructors) {
     config.execution_context = Context<T>::get_execution_context_id(ctx);
 
     SharedRealm realm;
@@ -608,13 +637,6 @@ SharedRealm RealmClass<T>::create_shared_realm(ContextType ctx, realm::Realm::Co
     catch (const RealmFileException& ex) {
         handleRealmFileException(ctx, config, ex);
     }
-
-#if REALM_ENABLE_SYNC
-        auto schema = realm->schema();
-        if (realm->is_partial() && schema.empty() && config.cache) {
-            throw std::invalid_argument("Query-based sync requires a schema.");
-        }
-#endif
 
     GlobalContextType global_context = Context<T>::get_global_context(ctx);
     if (!realm->m_binding_context) {
@@ -630,12 +652,24 @@ SharedRealm RealmClass<T>::create_shared_realm(ContextType ctx, realm::Realm::Co
         js_binding_context->m_defaults = std::move(defaults);
         js_binding_context->m_constructors = std::move(constructors);
     }
+#if REALM_ENABLE_SYNC
+    // For query-based Realms we need to register the constructors for the
+    // permissions types even if a schema isn't specified
+    else if (config.sync_config && config.sync_config->is_partial && js_binding_context->m_constructors.empty()) {
+        ValueType schema_value = Object::create_array(ctx);
+        auto realm_constructor = Value::validated_to_object(ctx, Object::get_global(ctx, "Realm"));
+        Object::call_method(ctx, realm_constructor, "_extendQueryBasedSchema", 1, &schema_value);
+        Schema<T>::parse_schema(ctx, Value::to_object(ctx, schema_value), defaults, constructors);
+        js_binding_context->m_defaults = std::move(defaults);
+        js_binding_context->m_constructors = std::move(constructors);
+    }
+#endif
 
     return realm;
 }
 
 template<typename T>
-void RealmClass<T>::schema_version(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
+void RealmClass<T>::schema_version(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_maximum(2);
 
     realm::Realm::Config config;
@@ -656,19 +690,19 @@ void RealmClass<T>::schema_version(ContextType ctx, ObjectType this_object, Argu
 
 
 template<typename T>
-void RealmClass<T>::clear_test_state(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
+void RealmClass<T>::clear_test_state(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_maximum(0);
     js::clear_test_state();
 }
 
 template<typename T>
-void RealmClass<T>::copy_bundled_realm_files(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
+void RealmClass<T>::copy_bundled_realm_files(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_maximum(0);
     realm::copy_bundled_realm_files();
 }
 
 template<typename T>
-void RealmClass<T>::delete_file(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
+void RealmClass<T>::delete_file(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_maximum(1);
 
     ValueType value = args[0];
@@ -676,16 +710,25 @@ void RealmClass<T>::delete_file(ContextType ctx, ObjectType this_object, Argumen
         throw std::runtime_error("Invalid argument, expected a Realm configuration object");
     }
 
-    ObjectType object = Value::validated_to_object(ctx, value);
+    ObjectType config_object = Value::validated_to_object(ctx, value);
     realm::Realm::Config config;
 
     static const String path_string = "path";
-    ValueType path_value = Object::get_property(ctx, object, path_string);
+    ValueType path_value = Object::get_property(ctx, config_object, path_string);
     if (!Value::is_undefined(ctx, path_value)) {
         config.path = Value::validated_to_string(ctx, path_value, "path");
     }
-    else if (config.path.empty()) {
-        config.path = js::default_path();
+    else {
+        #if REALM_ENABLE_SYNC
+        ValueType sync_config_value = Object::get_property(ctx, config_object, "sync");
+        if (!Value::is_undefined(ctx, sync_config_value)) {
+            SyncClass<T>::populate_sync_config(ctx, Value::validated_to_object(ctx, Object::get_global(ctx, "Realm")), config_object, config);
+        }
+        #endif
+
+        if (config.path.empty()) {
+            config.path = js::default_path();
+        }
     }
 
     config.path = normalize_realm_path(config.path);
@@ -699,7 +742,7 @@ void RealmClass<T>::delete_file(ContextType ctx, ObjectType this_object, Argumen
 }
 
 template<typename T>
-void RealmClass<T>::delete_model(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
+void RealmClass<T>::delete_model(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_maximum(1);
     ValueType value = args[0];
 
@@ -779,75 +822,94 @@ void RealmClass<T>::get_sync_session(ContextType ctx, ObjectType object, ReturnV
 
 #if REALM_ENABLE_SYNC
 template<typename T>
-void RealmClass<T>::wait_for_download_completion(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
+void RealmClass<T>::async_open_realm(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_maximum(2);
     auto callback_function = Value::validated_to_function(ctx, args[0 + (args.count == 2)]);
+    Realm::Config config;
+    ObjectDefaultsMap defaults;
+    ConstructorMap constructors;
+    bool schema_updated = get_realm_config(ctx, this_object, args.count - 1, args.value, config, defaults, constructors);
 
-    ValueType session_callback = Value::from_null(ctx);
-    if (args.count == 2) {
-        session_callback = Value::validated_to_function(ctx, args[0]);
-    }
-
-    auto realm = *get_internal<T, RealmClass<T>>(this_object);
-    auto* sync_config = realm->config().sync_config.get();
-    if (!sync_config) {
-        throw std::logic_error("_waitForDownload can only be used on a synchronized Realm.");
+    if (!config.sync_config) {
+        throw std::logic_error("_asyncOpen can only be used on a synchronized Realm.");
     }
 
     Protected<FunctionType> protected_callback(ctx, callback_function);
     Protected<ObjectType> protected_this(ctx, this_object);
     Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
 
-    std::shared_ptr<SyncUser> user = sync_config->user;
-    if (user && user->state() != SyncUser::State::Error) {
-        if (auto session = user->session_for_on_disk_path(realm->config().path)) {
-            if (!Value::is_null(ctx, session_callback)) {
-                FunctionType session_callback_func = Value::to_function(ctx, session_callback);
-                auto syncSession = create_object<T, SessionClass<T>>(ctx, new WeakSession(session));
-                ValueType callback_arguments[1];
-                callback_arguments[0] = syncSession;
-                Function<T>::callback(protected_ctx, session_callback_func, typename T::Object(), 1, callback_arguments);
-            }
+    auto& user = config.sync_config->user;
+    if (user && user->state() == SyncUser::State::Error) {
+        ObjectType object = Object::create_empty(protected_ctx);
+        Object::set_property(protected_ctx, object, "message",
+                             Value::from_string(protected_ctx, "Cannot asynchronously open synced Realm because the associated session previously experienced a fatal error"));
+        Object::set_property(protected_ctx, object, "errorCode", Value::from_number(protected_ctx, 1));
 
-            EventLoopDispatcher<WaitHandler> wait_handler([=](std::error_code error_code) {
-                HANDLESCOPE
-                if (!error_code) {
-                    //success
-                    Function<T>::callback(protected_ctx, protected_callback, typename T::Object(), 0, nullptr);
-                }
-                else {
-                    //fail
-                    ObjectType object = Object::create_empty(protected_ctx);
-                    Object::set_property(protected_ctx, object, "message", Value::from_string(protected_ctx, error_code.message()));
-                    Object::set_property(protected_ctx, object, "errorCode", Value::from_number(protected_ctx, error_code.value()));
-
-                    ValueType callback_arguments[1];
-                    callback_arguments[0] = object;
-
-                    Function<T>::callback(protected_ctx, protected_callback, typename T::Object(), 1, callback_arguments);
-                }
-                // Ensure that the session remains alive until the callback has had an opportunity to reopen the Realm
-                // with the appropriate schema.
-                (void)session;
-            });
-            session->wait_for_download_completion(std::move(wait_handler));
-            return;
-        }
+        ValueType callback_arguments[1];
+        callback_arguments[0] = object;
+        Function<T>::callback(protected_ctx, protected_callback, protected_this, 1, callback_arguments);
     }
 
-    ObjectType object = Object::create_empty(protected_ctx);
-    Object::set_property(protected_ctx, object, "message",
-                         Value::from_string(protected_ctx, "Cannot asynchronously open synced Realm because the associated session previously experienced a fatal error"));
-    Object::set_property(protected_ctx, object, "errorCode", Value::from_number(protected_ctx, 1));
+    // First download the Realm with no schema set to avoid spurious writes that
+    // the server may either reject (for read-only Realms) or just waste time
+    // merging.
+    std::shared_ptr<Realm> realm;
+    try {
+        auto download_config = config;
+        download_config.schema = util::none;
+        download_config.cache = false;
+        realm = realm::Realm::get_shared_realm(std::move(download_config));
+    }
+    catch (const RealmFileException& ex) {
+        handleRealmFileException(ctx, config, ex);
+    }
 
-    ValueType callback_arguments[1];
-    callback_arguments[0] = object;
-    Function<T>::callback(protected_ctx, protected_callback, protected_this, 1, callback_arguments);
+    auto session = user->session_for_on_disk_path(realm->config().path);
+    EventLoopDispatcher<WaitHandler> wait_handler([=, config=std::move(config),
+                                                   defaults=std::move(defaults),
+                                                   constructors=std::move(constructors)](std::error_code error_code) mutable {
+        HANDLESCOPE
+        if (error_code) {
+            ObjectType object = Object::create_empty(protected_ctx);
+            Object::set_property(protected_ctx, object, "message", Value::from_string(protected_ctx, error_code.message()));
+            Object::set_property(protected_ctx, object, "errorCode", Value::from_number(protected_ctx, error_code.value()));
+
+            ValueType callback_arguments[2];
+            callback_arguments[0] = Value::from_null(protected_ctx);
+            callback_arguments[1] = object;
+
+            Function<T>::callback(protected_ctx, protected_callback, typename T::Object(), 2, callback_arguments);
+            return;
+        }
+
+        // Ensure that all of our metadata tables are properly initialized if
+        // this is a query-based sync Realm
+        if (config.sync_config->is_partial) {
+            realm->update_schema({}, 0);
+        }
+        realm->close();
+
+        // Reopen it with the real configuration and pass that Realm back to the callback
+        auto final_realm = create_shared_realm(ctx, std::move(config),
+                                               schema_updated, std::move(defaults),
+                                               std::move(constructors));
+        ObjectType object = create_object<T, RealmClass<T>>(protected_ctx, new SharedRealm(final_realm));
+
+        ValueType callback_arguments[2];
+        callback_arguments[0] = object;
+        callback_arguments[1] = Value::from_null(protected_ctx);
+        Function<T>::callback(protected_ctx, protected_callback, typename T::Object(), 2, callback_arguments);
+
+        // Ensure the sync session is kept alive while we close and reopen the Realm
+        static_cast<void>(session);
+    });
+    session->wait_for_download_completion(std::move(wait_handler));
+    return_value.set(create_object<T, SessionClass<T>>(ctx, new WeakSession(session)));
 }
 #endif
 
 template<typename T>
-void RealmClass<T>::objects(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
+void RealmClass<T>::objects(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_maximum(1);
 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
@@ -856,7 +918,7 @@ void RealmClass<T>::objects(ContextType ctx, ObjectType this_object, Arguments a
 }
 
 template<typename T>
-void RealmClass<T>::object_for_primary_key(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
+void RealmClass<T>::object_for_primary_key(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_maximum(2);
 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
@@ -874,7 +936,7 @@ void RealmClass<T>::object_for_primary_key(ContextType ctx, ObjectType this_obje
 }
 
 template<typename T>
-void RealmClass<T>::create(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
+void RealmClass<T>::create(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_maximum(3);
 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
@@ -897,7 +959,7 @@ void RealmClass<T>::create(ContextType ctx, ObjectType this_object, Arguments ar
 }
 
 template<typename T>
-void RealmClass<T>::delete_one(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
+void RealmClass<T>::delete_one(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_maximum(1);
 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
@@ -945,7 +1007,7 @@ void RealmClass<T>::delete_one(ContextType ctx, ObjectType this_object, Argument
 }
 
 template<typename T>
-void RealmClass<T>::delete_all(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
+void RealmClass<T>::delete_all(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_maximum(0);
 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
@@ -967,7 +1029,7 @@ void RealmClass<T>::delete_all(ContextType ctx, ObjectType this_object, Argument
 }
 
 template<typename T>
-void RealmClass<T>::write(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
+void RealmClass<T>::write(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_maximum(1);
 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
@@ -987,7 +1049,7 @@ void RealmClass<T>::write(ContextType ctx, ObjectType this_object, Arguments arg
 }
 
 template<typename T>
-void RealmClass<T>::begin_transaction(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
+void RealmClass<T>::begin_transaction(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_maximum(0);
 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
@@ -995,7 +1057,7 @@ void RealmClass<T>::begin_transaction(ContextType ctx, ObjectType this_object, A
 }
 
 template<typename T>
-void RealmClass<T>::commit_transaction(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
+void RealmClass<T>::commit_transaction(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_maximum(0);
 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
@@ -1003,7 +1065,7 @@ void RealmClass<T>::commit_transaction(ContextType ctx, ObjectType this_object, 
 }
 
 template<typename T>
-void RealmClass<T>::cancel_transaction(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
+void RealmClass<T>::cancel_transaction(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_maximum(0);
 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
@@ -1011,7 +1073,7 @@ void RealmClass<T>::cancel_transaction(ContextType ctx, ObjectType this_object, 
 }
 
 template<typename T>
-void RealmClass<T>::add_listener(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
+void RealmClass<T>::add_listener(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_maximum(2);
 
     auto name = validated_notification_name(ctx, args[0]);
@@ -1028,7 +1090,7 @@ void RealmClass<T>::add_listener(ContextType ctx, ObjectType this_object, Argume
 }
 
 template<typename T>
-void RealmClass<T>::remove_listener(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
+void RealmClass<T>::remove_listener(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_maximum(2);
 
     auto name = validated_notification_name(ctx, args[0]);
@@ -1045,7 +1107,7 @@ void RealmClass<T>::remove_listener(ContextType ctx, ObjectType this_object, Arg
 }
 
 template<typename T>
-void RealmClass<T>::remove_all_listeners(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
+void RealmClass<T>::remove_all_listeners(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_maximum(1);
     std::string name = "change";
     if (args.count) {
@@ -1063,7 +1125,7 @@ void RealmClass<T>::remove_all_listeners(ContextType ctx, ObjectType this_object
 }
 
 template<typename T>
-void RealmClass<T>::close(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
+void RealmClass<T>::close(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_maximum(0);
 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
@@ -1071,7 +1133,7 @@ void RealmClass<T>::close(ContextType ctx, ObjectType this_object, Arguments arg
 }
 
 template<typename T>
-void RealmClass<T>::compact(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
+void RealmClass<T>::compact(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_maximum(0);
 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
@@ -1083,7 +1145,7 @@ void RealmClass<T>::compact(ContextType ctx, ObjectType this_object, Arguments a
 }
 
 template<typename T>
-void RealmClass<T>::writeCopyTo(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
+void RealmClass<T>::writeCopyTo(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_maximum(2);
 
     if (args.count == 0) {
@@ -1119,7 +1181,7 @@ void RealmClass<T>::writeCopyTo(ContextType ctx, ObjectType this_object, Argumen
 }
 
 template<typename T>
-void RealmClass<T>::object_for_object_id(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue& return_value) {
+void RealmClass<T>::object_for_object_id(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue& return_value) {
     args.validate_count(2);
 
 #if REALM_ENABLE_SYNC
@@ -1142,7 +1204,18 @@ void RealmClass<T>::object_for_object_id(ContextType ctx, ObjectType this_object
 }
 
 template<typename T>
-void RealmClass<T>::privileges(ContextType ctx, ObjectType this_object, Arguments args, ReturnValue &return_value) {
+void RealmClass<T>::get_schema_name_from_object(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue& return_value) {
+    args.validate_count(1);
+
+    // Try to map the input to the internal schema name for the given input. This should work for managed objects and
+    // schema objects. Pure strings and functions are expected to return a correct value.
+    SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
+    auto &object_schema = validated_object_schema_for_value(ctx, realm, args[0]);
+    return_value.set(object_schema.name);
+}
+
+template<typename T>
+void RealmClass<T>::privileges(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_maximum(1);
 
     using Privilege = realm::ComputedPrivileges;

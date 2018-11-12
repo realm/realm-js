@@ -43,7 +43,10 @@
  *    synchronization mode. The default is query-based mode which only synchronizes objects that have been subscribed to.
  *    A fully synchronized Realm will synchronize the entire Realm in the background, irrespectively of the data being
  *    used or not.
- * @property {Object} [custom_http_header] - A map (string, string) of custom HTTP headers.
+ * @property {Object} [custom_http_headers] - A map (string, string) of custom HTTP headers.
+ * @property {string} [customQueryBasedSyncIdentifier] - A custom identifier to append to the Realm url rather than the default
+ *    identifier which is comprised of the user id and a random string. It allows you to reuse query based Realms across
+ *    different devices.
  */
 
 /**
@@ -521,7 +524,9 @@ class User {
     serialize() {}
 
     /**
-     * Logs out the user from the Realm Object Server.
+     * Logs out the user from the Realm Object Server. Once the Object Server has confirmed the logout the user
+     * credentials will be deleted from this device.
+     * @return {Promise<void>} A promise which is resolved when the user has logged out both locally and on the server.
      */
     logout() {}
 

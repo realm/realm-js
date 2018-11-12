@@ -111,7 +111,7 @@ Prior to begin debugging, you must start Realm Object Server. In VSCode, under m
 In the debugging pane, you can find `Debug LLDB + NodeJS` in the dropdown. First select *Start Debugging* in the *Debug* menu.
 
 ## Issues with debugging
-Some users have reported the Chrome debugging being too slow to use after integrating Realm into their react-native project. This is due to the blocking nature of the RPC calls made through the Realm library. It is an ongoing issue and we are actively working on fixing it. See https://github.com/realm/realm-js/issues/491 for more information. The best workaround is to use Safari instead, as a user has described [here](https://github.com/realm/realm-js/issues/491#issuecomment-404670910).
+Some users have reported the Chrome debugging being too slow to use after integrating Realm into their react-native project. This is due to the blocking nature of the RPC calls made through the Realm library. See https://github.com/realm/realm-js/issues/491 for more information. The best workaround is to use Safari instead, as a user has described [here](https://github.com/realm/realm-js/issues/491#issuecomment-404670910).
 
 ## Running the tests
 
@@ -169,8 +169,8 @@ See [CONTRIBUTING.md](https://github.com/realm/realm-js/blob/master/CONTRIBUTING
 
 ## License
 
-Realm JS is published under the Apache 2.0 license.
-Realm Core is also published under the Apache 2.0 license and is available
+Realm JS is published under a mix of the Apache License 2.0 and the Realm Platform Extensions License.
+Realm Core is published under the Apache 2.0 license and is available
 [here](https://github.com/realm/realm-core).
 
 **This product is not being made available to any person located in Cuba, Iran,

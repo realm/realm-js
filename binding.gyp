@@ -48,7 +48,10 @@
       "conditions": [
         ["runtime=='electron'", {
           "dependencies": [ "OpenSSL" ]
-        }]
+        }],
+        ["OS=='win'", {
+          "dependencies": [ "OpenSSL" ]
+        }],
       ]
     },
     {

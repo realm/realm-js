@@ -153,7 +153,7 @@ class Realm {
     close() {}
 
     /**
-     * Returns the granted privilges.
+     * Returns the granted privileges.
      *
      * This combines all privileges granted on the Realm/Class/Object by all Roles which
      * the current User is a member of into the final privileges which will
@@ -166,12 +166,24 @@ class Realm {
      *
      * Non-synchronized Realms always have permission to perform all operations.
      *
-     * @param {(Realm~ObjectType|Realm.Object)} arg - the object type or the object to compute priviliges from
-     * @returns {Object} as the computed priviliges as properties
+     * @param {(Realm~ObjectType|Realm.Object)} arg - the object type or the object to compute privileges from. If no
+     *   argument is given, the privileges for the Realm is returned.
+     * @returns {Object} as the computed privileges as properties
      * @since 2.3.0
-     * @see {Realm.Permissions} for details of priviliges and roles.
+     * @see {Realm.Permissions} for details of privileges and roles.
      */
     privileges(arg) {}
+
+    /**
+     * Returns the fine-grained permissions object associated with either the Realm itself or a Realm model class.
+     *
+     * @param {Realm~ObjectType} [arg] - If no argument is provided, the Realm-level permissions are returned.
+     *   Otherwise, the Class-level permissions for the provided type is returned.
+     * @returns {Object} The permissions object
+     * @since 2.18.0
+     * @see {Realm.Permissions} for details of priviliges and roles.
+     */
+    permissions(arg) {}
 
     /**
      * Create a new Realm object of the given type and with the specified properties.
@@ -319,6 +331,22 @@ class Realm {
      * @throws {Error} If anything in the provided `config` is invalid.
      */
     static deleteFile(config) {}
+
+    /**
+     * Get a list of subscriptions. THIS METHOD IS IN BETA AND MAY CHANGE IN FUTURE VERSIONS.
+     * @param {string} name - Optional parameter to query for either a specific name or pattern (using
+     *   cards `?` and `*`).
+     * @throws {Error} If `name` is not a string.
+     * @returns an array of objects of (`name`, `objectType`, `query`).
+     */
+    subscriptions(name) {}
+
+    /**
+     * Unsubscribe a named subscription. THIS METHOD IS IN BETA AND MAY CHANGE IN FUTURE VERSIONS.
+     * @param {string} name - The name of the subscription.
+     * @throws {Error} If `name` is not a string or an empty string.
+     */
+    unsubscribe(name) {}
 }
 /**
  * This describes the different options used to create a {@link Realm} instance.

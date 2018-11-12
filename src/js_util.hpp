@@ -85,7 +85,7 @@ static inline void validate_argument_count_at_least(size_t count, size_t expecte
 
 template<typename T, AggregateFunc func>
 void compute_aggregate_on_collection(typename T::ContextType ctx, typename T::ObjectType this_object,
-                                     typename T::Arguments args, typename T::ReturnValue &return_value) {
+                                     typename T::Arguments &args, typename T::ReturnValue &return_value) {
 
     auto list = get_internal<typename T::Type, T>(this_object);
 

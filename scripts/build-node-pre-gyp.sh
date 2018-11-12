@@ -1,6 +1,6 @@
 #!/bin/bash
 
-node_versions=${@:-4.4.7 5.12.0 6.5.0 7.0.0}
+node_versions=${@:-6.14.4 8.12.0 10.13.0}
 
 topdir=$(cd $(dirname "$0")/..; pwd)
 
@@ -36,7 +36,6 @@ for node_version in ${node_versions}; do
     nvm use ${node_version} || die "Could not load nodejs v${node_version}"
 
     npm install --build-from-source=realm "$EXTRA_NPM_ARGUMENTS" || die "Could not build module"
-    #./scripts/test.sh node || die "Unit tests for nodejs v${node_version} failed"
     ./node_modules/.bin/node-pre-gyp package || die "Could not package module"
     cp build/stage/node-pre-gyp/*.tar.gz ${topdir}/out/
   )

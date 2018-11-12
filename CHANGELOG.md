@@ -1,3 +1,237 @@
+x.x.x Release notes (yyyy-MM-dd)
+=============================================================
+### Enhancements
+* None.
+
+### Fixed
+* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
+* None.
+
+### Compatibility
+* Realm Object Server: 3.11.0 or later.
+* APIs are backwards compatible with all previous release of realm in the 2.x.y series.
+* File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
+
+ ### Internal
+* None.
+
+2.19.0 Release notes (2018-11-8)
+=============================================================
+This release contains all changes from v2.19.0-rc.1 to v2.19.0-rc.5.
+
+### Enhancements
+* Adds `SyncConfig.customQueryBasedSyncIdentifier` to allow customizing the identifier appended to the Realm path when opening a query based Realm. This identifier is used to distinguish between query based Realms opened on different devices and by default Realm builds it as a combination of a user's id and a random string, allowing the same user to subscribe to different queries on different devices. In very rare cases, you may want to share query based Realms between devices and specifying the `customQueryBasedSyncIdentifier` allows you to do that.
+* Adds `Realm.subscriptions()` to query active query-based sync subscriptions. This method is in beta and might change in future releases. ([#2052](https://github.com/realm/realm-js/issues/2052))
+* Adds `Realm.unsubscribe()` to unsubscribe by name an active query-based sync subscription. This method is in beta and might change in future releases. ([#2052](https://github.com/realm/realm-js/issues/2052))
+* Improves the proactive token refresh mechanism to make several attempts to refresh the token before it expires and to also ensure that there is only one ongoing refresh timer for a combination of user and realm path. Previously it was possible to end up in a situation where many redundant refreshes were scheduled for the same Realm. ([#2071](https://github.com/realm/realm-js/pull/2071))
+* A more meaningful exception will be thrown when trying to refresh the access token for a Realm with an invalid url. Previously, trying to connect to a Realm with an url that lacks the path component (e.g. `realm://foo.com`) would result in errors like `Cannot read property ‘token_data’ of undefined`. Instead, now we'll print out the Realm url and provide a more meaningful exception message. ([#ROS-1310](https://github.com/realm/realm-object-server-private/issues/1310))
+* Adds support for Node 10. Pre-gyp'ed binaries are available for Node 6, 8, and 10. ([#1813](https://github.com/realm/realm-js/issues/1813) and [#2087](https://github.com/realm/realm-js/issues/2087))
+* Building for iOS can now use the `n` node version manager. Thanks to @SandyChapman! ([#2078](https://github.com/realm/realm-js/pull/2078))
+
+### Fixed
+* Fixes the TypeScript definitions for `User.login` to make it explicit in which cases a promise  and in which a `User` is returned. ([#2050](https://github.com/realm/realm-js/pull/2050), since 2.16.0).
+* Fixes the exception being thrown when using the deprecated `User.registerWithProvider` API and not providing a value for `userInfo`. ([#2050](https://github.com/realm/realm-js/pull/2050), since 2.16.0).
+* Fixes the signature of `user.logout` to return a `Promise<void>` rather than `void`. It has always done asynchronous work, but previously, it was impossible to be notified that the call has completed. Since that is now possible, the superfluous `User is logged out` message printed in the console upon logout has been removed. ([#2071](https://github.com/realm/realm-js/pull/2071), since v2.3.0)
+* Fixes opening query-based Realms with a dynamic schema. Previously the schema would always contain only the types present when the Realm was first added and not any types added later. ([#2077](https://github.com/realm/realm-js/pull/2077), since v2.3.0)
+
+### Compatibility
+* Realm Object Server: 3.11.0 or later.
+* APIs are backwards compatible with all previous release of realm in the 2.x.y series.
+* File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
+
+ ### Internal
+* Upgrades to Realm Core v5.12.0.
+* Upgrades to Realm Sync v3.13.1.
+* Updates to `package.json` and `README.md`. Thanks to @hyandell.
+
+2.19.0-rc.5 Release notes (2018-11-7)
+=============================================================
+### Enhancements
+* A more meaningful exception will be thrown when trying to refresh the access token for a Realm with an invalid url. Previously, trying to connect to a Realm with a url that lacks the path component (e.g. `realm://foo.com`) would result in errors like `Cannot read property ‘token_data’ of undefined`. Instead, now we'll print out the Realm url and provide a more meaningful exception message. ([#ROS-1310](https://github.com/realm/realm-object-server-private/issues/1310), since v1.0.2)
+* Adds support for Node 10. Pre-gyp'ed binaries are available for Node 6, 8, and 10. ([#1813](https://github.com/realm/realm-js/issues/1813) and [#2087](https://github.com/realm/realm-js/issues/2087))
+
+### Fixed
+* None.
+
+### Compatibility
+* Realm Object Server: 3.11.0 or later.
+* APIs are backwards compatible with all previous release of realm in the 2.x.y series.
+* File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
+
+ ### Internal
+* Building for iOS can now use the `n` node version manager. Thanks to @SandyChapman! ([#2078](https://github.com/realm/realm-js/pull/2078))
+* Upgrading to Realm Core v5.12.0.
+* Upgrading to Realm Sync v3.13.1.
+
+2.19.0-rc.4 Release notes (2018-10-17)
+=============================================================
+### Enhancements
+* None.
+
+### Fixed
+* Fixed an incorrect property name returned from `Realm.subscriptions()`. (since v2.19.0-rc.2)
+* Fixed opening query-based Realms with a dynamic schema. Previously the schema would always contain only the types present when the Realm was first added and not any types added later. (since v2.3.0)
+
+### Compatibility
+* Realm Object Server: 3.11.0 or later.
+* APIs are backwards compatible with all previous release of realm in the 2.x.y series.
+* File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
+
+ ### Internal
+* Updates to `package.json` and `README.md`. Thanks to @hyandell.
+
+2.19.0-rc.3 Release notes (2018-10-16)
+=============================================================
+### Enhancements
+* Improved the proactive token refresh mechanism to make several attempts to refresh the token before it expires and to also ensure that there is only one ongoing refresh timer for a combination of user and realm path. Previously it was possible to end up in a situation where many redundant refreshes were scheduled for the same Realm. ([#2071](https://github.com/realm/realm-js/pull/2071), since v1.0.2)
+
+### Fixes
+* Fixed the signature of `user.logout` to return a `Promise<void>` rather than `void`. It has always done asynchronous work, but previously, it was impossible to be notified that the call has completed. Since that is now possible, the superfluous "User is logged out" message printed in the console upon logout has been removed. ([#2071](https://github.com/realm/realm-js/pull/2071), since v2.3.0)
+
+### Compatibility
+* Realm Object Server: 3.11.0 or later.
+* APIs are backwards compatible with all previous release of realm in the 2.x.y series.
+* File format: Generates Realms with format v9 (Reads and upgrades all previous formats).
+
+### Internal
+* None.
+
+2.19.0-rc.2 Release notes (2018-10-10)
+=============================================================
+### Enhancements
+* Added `Realm.subscriptions()` to query active query-based sync subscriptions. This method is in beta and might change in future releases. ([#2052](https://github.com/realm/realm-js/issues/2052))
+* Added `Realm.unsubscribe()` to unsubscribe by name an active query-based sync subscription. This method is in beta and might change in future releases. ([#2052](https://github.com/realm/realm-js/issues/2052))
+
+### Fixed
+* None.
+
+### Compatibility
+* File format: ver. 9 (upgrades automatically from previous formats)
+* Realm Object Server: 3.11.0 or later.
+* APIs are backwards compatible with all previous release of realm in the 2.x.y series.
+
+ ### Internal
+* None.
+
+2.19.0-rc.1 Release notes (2018-10-9)
+=============================================================
+### Enhancements
+* Added `SyncConfig.customQueryBasedSyncIdentifier` to allow customizing the identifier appended to the realm path when opening a query based Realm. This identifier is used to distinguish between query based Realms opened on different devices and by default Realm builds it as a combination of a user's id and a random string, allowing the same user to subscribe to different queries on different devices. In very rare cases, you may want to share query based Realms between devices and specifying the `customQueryBasedSyncIdentifier` allows you to do that.
+
+### Fixed
+* Fixed the typescript definitions for `User.login` to make it explicit in which cases a promise is returned and in which - a `User`. ([#2050](https://github.com/realm/realm-js/pull/2050), since 2.16.0).
+* Fixed an exception being thrown when using the deprecated `User.registerWithProvider` API and not providing a value for `userInfo`. ([#2050](https://github.com/realm/realm-js/pull/2050), since 2.16.0).
+
+### Compatibility
+* File format: ver. 9 (upgrades automatically from previous formats)
+* Realm Object Server: 3.11.0 or later.
+* APIs are backwards compatible with all previous release of realm in the 2.x.y series.
+
+ ### Internal
+* None.
+
+2.18.0 Release notes (2018-10-4)
+=============================================================
+## Enhancements
+* Added support for finding Realm-level permissions in Query-based Realms using `realm.getPermissions()`. ([#2036](https://github.com/realm/realm-js/pull/2036))
+* Added support for finding Class-level permissions in Query-based Realms using `realm.getPermissions(className)`. ([#2036](https://github.com/realm/realm-js/pull/2036))
+* Added `Realm.Permissions.Realm.findOrCreate(roleName)` and `Realm.Permissions.Class.findOrCreate(roleName)` which makes it easier to find or create permissions for a given role when using query-based Realms. ([#2036](https://github.com/realm/realm-js/pull/2036))
+
+### Fixes
+* Allow `Realm.deleteFile` to be used with a sync configuration. Previously, only local Realms could be deleted with this API and the `sync` property on the configuration would be ignored. ([#2045](https://github.com/realm/realm-js/pull/2045), since v1.0.0)
+
+### Compatibility
+* File format: ver. 9 (upgrades automatically from previous formats)
+* Realm Object Server: 3.11.0 or later.
+* APIs are backwards compatible with all previous release of realm in the 2.x.y series.
+
+ ### Internal
+* None.
+
+2.17.0 Release notes (2018-9-28)
+=============================================================
+## Enhancements
+* None.
+
+### Fixes
+* None.
+
+### Compatibility
+* File format: ver. 9 (upgrades automatically from previous formats)
+* You will need to upgrade your Realm Object Server to at least version 3.11.0 or use [Realm Cloud](https://cloud.realm.io).
+If you try to connect to a ROS v3.10.x or previous, you will see an error like `Wrong protocol version in Sync HTTP request, client protocol version = 25, server protocol version = 24`.
+* APIs are backwards compatible with all previous release of realm in the 2.x.y series.
+
+ ### Internal
+* None.
+
+2.17.0-rc.1 Release notes (2018-9-25)
+=============================================================
+### Enhancements
+* When using a synced Realm where you only receive updates from the server and never update the realm locally, the client will now report download progress to the server such that it can compact files on the server. This enhancement doesn't affect the client.
+
+### Compatibility
+* File format: ver. 9 (upgrades automatically from previous formats)
+* You will need to upgrade your Realm Object Server to at least version 3.11.0 or use [Realm Cloud](https://cloud.realm.io).
+If you try to connect to a ROS v3.10.x or previous, you will see an error like `Wrong protocol version in Sync HTTP request, client protocol version = 25, server protocol version = 24`.
+* APIs are backwards compatible with all previous release of realm in the 2.x.y series.
+
+### Internal
+* Upgraded to Realm Core v5.11.1.
+* Upgraded to Realm Sync v3.10.0 (with new protocol version 25).
+
+
+2.16.2 Release notes (2018-9-25)
+=============================================================
+## Enhancements
+* None.
+
+### Fixes
+* Fixed a bug where logging in using an admin token returned a promise. The correct behavior is to be synchronous. (related to [#2037](https://github.com/realm/realm-js/issues/2037), since v2.16.1)
+
+### Compatibility
+* File format: ver. 9 (upgrades automatically from previous formats)
+* Realm Object Server: 3.0.0 or later.
+* APIs are backwards compatible with all previous release of realm in the 2.x.y series.
+
+### Internal
+* None.
+
+2.16.1 Release notes (2018-9-21)
+=============================================================
+## Enhancements
+* None.
+
+### Fixes
+* Fixed a bug in creating credentials using an admin token. The app would stop saying `then()` is not a function. ([#2037](https://github.com/realm/realm-js/issues/2037), since v2.16.0-rc.2)
+
+### Compatibility
+* File format: ver. 9 (upgrades automatically from previous formats)
+* Realm Object Server: 3.0.0 or later.
+* APIs are backwards compatible with all previous release of realm in the 2.x.y series.
+
+### Internal
+* None.
+
+2.16.0 Release notes (2018-9-19)
+=============================================================
+### Enhancements
+* Added support for [ASDF](https://github.com/asdf-vm/asdf-nodejs) nodejs shims. Thanks to @breezeight! ([#2031](https://github.com/realm/realm-js/issues/2031))
+
+### Bug fixes
+* Fixed the type definition for `Realm.Permissions.User`. Thanks to @apperside! ([#2012](https://github.com/realm/realm-js/issues/2012), since v2.3.0-beta.2)
+* When adding a schema definition (e.g. `let config = user.createConfiguration(); config.schema = [Dog, Person]`) the permission schema would be removed, resulting in an `unknown object type __Permission` if using query based Realm. ([#2017](https://github.com/realm/realm-js/issues/2017), since v2.3.0).
+* As part of including the permission schema implicitly when using query based Realm, the schema `Realm.Permissions.Realm` was missing, which may break any query including it. ([#2016](https://github.com/realm/realm-js/issues/2016), since v2.3.0)
+* Fixed the type definition for `Realm.getPrivileges()`, `Realm.getPrivileges(className)` and `Realm.getPrivileges(object)`. ([#2030](https://github.com/realm/realm-js/pull/2030), since v2.2.14)
+
+### Enhancements
+* None
+
+### Compatibility
+* Realm Object Server: 3.0.0 or later
+* File format: ver 9. (upgrades from previous formats automatically)
+
+
 2.16.0-rc.2 Release notes (2018-9-14)
 =============================================================
 ### Breaking changes
@@ -34,7 +268,7 @@
 
 ### Compatibility
 * Realm Object Server: 3.0.0 or later
-* File format: ver 7. (upgrades from previous formats automatically)
+* File format: ver 9. (upgrades from previous formats automatically)
 
 ### Internal
 * Upgraded to Realm Core v5.10.0.
@@ -46,7 +280,7 @@
 ### Compatibility
 * Sync protocol: 24
 * Server-side history format: 4
-* File format: 7
+* File format: 9
 * Realm Object Server: 3.0.0 or later
 
 ### Breaking changes
@@ -67,7 +301,7 @@
 ### Compatibility
 * Sync protocol: 24
 * Server-side history format: 4
-* File format: 7
+* File format: 9
 * Realm Object Server: 3.0.0 or later
 
 ### Breaking changes
@@ -88,7 +322,7 @@
 ### Compatibility
 * Sync protocol: 24
 * Server-side history format: 4
-* File format: 7
+* File format: 9
 * Realm Object Server: 3.0.0 or later
 
 ### Breaking changes
@@ -121,7 +355,7 @@
 ### Compatibility
 * Sync protocol: 24
 * Server-side history format: 4
-* File format: 7
+* File format: 9
 * Realm Object Server: 3.0.0 or later
 
 ### Breaking changes
@@ -143,7 +377,7 @@
 ### Compatibility
 * Sync protocol: 24
 * Server-side history format: 4
-* File format: 7
+* File format: 9
 * Realm Object Server: 3.0.0 or later
 
 ### Breaking changes
@@ -164,7 +398,7 @@
 ### Compatibility
 * Sync protocol: 24
 * Server-side history format: 4
-* File format: 7
+* File format: 9
 * Realm Object Server: 3.0.0 or later
 
 ### Breaking changes
@@ -185,7 +419,7 @@
 ### Compatibility
 * Sync protocol: 24
 * Server-side history format: 4
-* File format: 7
+* File format: 9
 * Realm Object Server: 3.0.0 or later
 
 ### Breaking changes
@@ -208,7 +442,7 @@
 ### Compatibility
 * Sync protocol: 24
 * Server-side history format: 4
-* File format: 7
+* File format: 9
 * Realm Object Server: 3.0.0 or later
 
 ### Breaking changes
@@ -232,7 +466,7 @@
 ### Compatibility
 * Sync protocol: 24
 * Server-side history format: 4
-* File format: 7
+* File format: 9
 * Realm Object Server: 3.0.0 or later
 
 ### Breaking changes
@@ -259,7 +493,7 @@
 ### Compatibility
 * Sync protocol: 24
 * Server-side history format: 4
-* File format: 7
+* File format: 9
 * Realm Object Server: 3.0.0 or later
 
 ### Breaking changes
@@ -281,7 +515,7 @@
 ### Compatibility
 * Sync protocol: 24
 * Server-side history format: 4
-* File format: 7
+* File format: 9
 * Realm Object Server: 3.0.0 or later
 
 ### Breaking changes
@@ -303,7 +537,7 @@
 ### Compatibility
 * Sync protocol: 24
 * Server-side history format: 4
-* File format: 7
+* File format: 9
 * Realm Object Server: 3.0.0 or later
 
 ### Breaking changes
@@ -325,7 +559,7 @@
 ### Compatibility
 * Sync protocol: 24
 * Server-side history format: 4
-* File format: 7
+* File format: 9
 * Realm Object Server: 3.0.0 or later
 
 ### Breaking changes
@@ -347,7 +581,7 @@
 ### Compatibility
 * Sync protocol: 24
 * Server-side history format: 4
-* File format: 7
+* File format: 9
 * Realm Object Server: 3.0.0 or later
 
 ### Breaking changes
@@ -370,7 +604,7 @@
 ### Compatibility
 * Sync protocol: 24
 * Server-side history format: 4
-* File format: 7
+* File format: 9
 * Realm Object Server: 3.0.0 or later
 
 ### Breaking changes
@@ -392,7 +626,7 @@
 ### Compatibility
 * Sync protocol: 24
 * Server-side history format: 4
-* File format: 7
+* File format: 9
 * Realm Object Server: 3.0.0 or later
 
 ### Breaking changes
@@ -416,7 +650,7 @@
 ### Compatibility
 * Sync protocol: 24
 * Server-side history format: 4
-* File format: 7
+* File format: 9
 * Realm Object Server: 3.0.0 or later
 
 ### Notes
@@ -447,7 +681,7 @@ The feature known as Partial synchronization has been renamed to Query-based syn
 ### Compatibility
 * Sync protocol: 24
 * Server-side history format: 4
-* File format: 7
+* File format: 9
 * Realm Object Server: 3.0.0 or later
 
 ### Breaking changes
@@ -469,7 +703,7 @@ The feature known as Partial synchronization has been renamed to Query-based syn
 ### Compatibility
 * Sync protocol: 24
 * Server-side history format: 4
-* File format: 7
+* File format: 9
 * Realm Object Server: 3.0.0 or later
 
 ### Breaking changes
@@ -491,7 +725,7 @@ The feature known as Partial synchronization has been renamed to Query-based syn
 ### Compatibility
 * Sync protocol: 24
 * Server-side history format: 4
-* File format: 7
+* File format: 9
 * Realm Object Server: 3.0.0 or later
 
 ### Breaking changes
@@ -515,7 +749,7 @@ The feature known as Partial synchronization has been renamed to Query-based syn
 ### Compatibility
 * Sync protocol: 24
 * Server-side history format: 4
-* File format: 7
+* File format: 9
 * Realm Object Server: 3.0.0 or later
 
 ### Breaking changes
@@ -538,7 +772,7 @@ The feature known as Partial synchronization has been renamed to Query-based syn
 ### Compatibility
 * Sync protocol: 24
 * Server-side history format: 4
-* File format: 7
+* File format: 9
 * Realm Object Server: 3.0.0 or later
 
 ### Breaking changes
@@ -559,7 +793,7 @@ The feature known as Partial synchronization has been renamed to Query-based syn
 ### Compatibility
 * Sync protocol: 24
 * Server-side history format: 4
-* File format: 7
+* File format: 9
 * Realm Object Server: 3.0.0 or later
 
 ### Breaking changes
@@ -581,7 +815,7 @@ The feature known as Partial synchronization has been renamed to Query-based syn
 ### Compatibility
 * Sync protocol: 24
 * Server-side history format: 4
-* File format: 7
+* File format: 9
 * Realm Object Server: 3.0.0 or later
 
 ### Breaking changes
@@ -605,7 +839,7 @@ The feature known as Partial synchronization has been renamed to Query-based syn
 ### Compatibility
 * Sync protocol: 24
 * Server-side history format: 4
-* File format: 7
+* File format: 9
 * Realm Object Server: 3.0.0 or later
 
 ### Breaking changes
@@ -626,7 +860,7 @@ The feature known as Partial synchronization has been renamed to Query-based syn
 ### Compatibility
 * Sync protocol: 24
 * Server-side history format: 4
-* File format: 7
+* File format: 9
 * Realm Object Server: 3.0.0 or later
 
 ### Breaking changes
@@ -646,7 +880,7 @@ The feature known as Partial synchronization has been renamed to Query-based syn
 ### Compatibility
 * Sync protocol: 24
 * Server-side history format: 4
-* File format: 7
+* File format: 9
 * Realm Object Server: 3.0.0 or later
 
 ### Breaking changes
@@ -663,7 +897,7 @@ The feature known as Partial synchronization has been renamed to Query-based syn
 ### Compatibility
 * Sync protocol: 24
 * Server-side history format: 4
-* File format: 7
+* File format: 9
 * Realm Object Server: 3.0.0-alpha.8 or later
 
 ### Breaking changes

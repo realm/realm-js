@@ -24,6 +24,16 @@ const Realm = require('realm');
 const TestCase = require('./asserts');
 const isNodeProcess = typeof process === 'object' && process + '' === '[object process]';
 
+const require_method = require;
+function node_require(module) {
+    return require_method(module);
+}
+
+let fs;
+if (isNodeProcess) {
+  fs = node_require('fs');
+}
+
 function uuid() {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
     const r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
@@ -184,6 +194,25 @@ module.exports = {
         Promise.resolve()
       })
       .catch((e) => { Promise.reject(e) } )
+  },
+
+  testAuthenticateCustom() {
+    // Assert that we can create custom credentials without specifying userInfo
+    Realm.Sync.Credentials.custom("foo", "bar");
+  },
+
+  testAuthenticateAdminToken() {
+    if (!isNodeProcess) {
+      return
+    }
+    // read admin token from ROS
+
+    let obj = JSON.parse(fs.readFileSync('../realm-object-server-data/keys/admin.json', 'utf8'));
+    let token = obj['ADMIN_TOKEN'];
+
+    let credentials = Realm.Sync.Credentials.adminToken(token);
+    let user = Realm.Sync.User.login('http://localhost:9080', credentials);
+    TestCase.assertTrue(user.isAdmin);
   },
 
   testAll() {

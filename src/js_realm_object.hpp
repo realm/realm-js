@@ -18,12 +18,19 @@
 
 #pragma once
 
+namespace realm {
+namespace js {
+    template<typename> struct RealmObjectClass;
+}
+}
+
 #include "object_accessor.hpp"
 #include "object_store.hpp"
 
 #include "js_class.hpp"
 #include "js_types.hpp"
 #include "js_util.hpp"
+#include "js_realm.hpp"
 #include "js_schema.hpp"
 
 namespace realm {
@@ -50,13 +57,15 @@ struct RealmObjectClass : ClassDefinition<T, realm::Object> {
     static bool set_property(ContextType, ObjectType, const String &, ValueType);
     static std::vector<String> get_property_names(ContextType, ObjectType);
 
-    static void is_valid(ContextType, FunctionType, ObjectType, size_t, const ValueType [], ReturnValue &);
-    static void get_object_schema(ContextType, FunctionType, ObjectType, size_t, const ValueType [], ReturnValue &);
-    static void linking_objects(ContextType, FunctionType, ObjectType, size_t, const ValueType [], ReturnValue &);
-    static void linking_objects_count(ContextType, FunctionType, ObjectType, size_t, const ValueType [], ReturnValue &);
-    static void get_object_id(ContextType, ObjectType, Arguments, ReturnValue &);
-    static void is_same_object(ContextType, ObjectType, Arguments, ReturnValue &);
-    static void set_link(ContextType, ObjectType, Arguments, ReturnValue &);
+    static void is_valid(ContextType, ObjectType, Arguments &, ReturnValue &);
+    static void get_object_schema(ContextType, ObjectType, Arguments &, ReturnValue &);
+    static void linking_objects(ContextType, ObjectType, Arguments &, ReturnValue &);
+    static void linking_objects_count(ContextType, ObjectType, Arguments &, ReturnValue &);
+    static void get_object_id(ContextType, ObjectType, Arguments &, ReturnValue &);
+    static void is_same_object(ContextType, ObjectType, Arguments &, ReturnValue &);
+    static void set_link(ContextType, ObjectType, Arguments &, ReturnValue &);
+
+    static void get_realm(ContextType, ObjectType, ReturnValue &);
 
     const std::string name = "RealmObject";
 
@@ -75,15 +84,19 @@ struct RealmObjectClass : ClassDefinition<T, realm::Object> {
         {"_isSameObject", wrap<is_same_object>},
         {"_setLink", wrap<set_link>},
     };
+
+    PropertyMap<T> const properties = {
+        {"_realm", {wrap<get_realm>, nullptr}},
+    };
 };
 
 template<typename T>
-void RealmObjectClass<T>::is_valid(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+void RealmObjectClass<T>::is_valid(ContextType, ObjectType this_object, Arguments &, ReturnValue &return_value) {
     return_value.set(get_internal<T, RealmObjectClass<T>>(this_object)->is_valid());
 }
 
 template<typename T>
-void RealmObjectClass<T>::get_object_schema(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+void RealmObjectClass<T>::get_object_schema(ContextType ctx, ObjectType this_object, Arguments &, ReturnValue &return_value) {
     auto object = get_internal<T, RealmObjectClass<T>>(this_object);
     return_value.set(Schema<T>::object_for_object_schema(ctx, object->get_object_schema()));
 }
@@ -143,7 +156,7 @@ bool RealmObjectClass<T>::set_property(ContextType ctx, ObjectType object, const
 }
 
 template<typename T>
-void RealmObjectClass<T>::set_link(ContextType ctx, ObjectType object, Arguments args, ReturnValue& return_value) {
+void RealmObjectClass<T>::set_link(ContextType ctx, ObjectType object, Arguments &args, ReturnValue& return_value) {
     args.validate_count(2);
 
     auto realm_object = get_internal<T, RealmObjectClass<T>>(object);
@@ -190,6 +203,16 @@ void RealmObjectClass<T>::set_link(ContextType ctx, ObjectType object, Arguments
 }
 
 template<typename T>
+void RealmObjectClass<T>::get_realm(ContextType ctx, ObjectType object, ReturnValue& return_value) {
+    return_value.set_undefined();
+    auto realm_object = get_internal<T, RealmObjectClass<T>>(object);
+    if (realm_object) {
+        ObjectType realm_obj = create_object<T, RealmClass<T>>(ctx, new SharedRealm(realm_object->realm()));
+        return_value.set(realm_obj);
+    }
+}
+
+template<typename T>
 std::vector<String<T>> RealmObjectClass<T>::get_property_names(ContextType ctx, ObjectType object) {
     auto realm_object = get_internal<T, RealmObjectClass<T>>(object);
     auto &object_schema = realm_object->get_object_schema();
@@ -208,7 +231,7 @@ std::vector<String<T>> RealmObjectClass<T>::get_property_names(ContextType ctx, 
 }
 
 template<typename T>
-void RealmObjectClass<T>::get_object_id(ContextType ctx, ObjectType object, Arguments args, ReturnValue& return_value) {
+void RealmObjectClass<T>::get_object_id(ContextType ctx, ObjectType object, Arguments &args, ReturnValue& return_value) {
     args.validate_maximum(0);
 
 #if REALM_ENABLE_SYNC
@@ -226,7 +249,7 @@ void RealmObjectClass<T>::get_object_id(ContextType ctx, ObjectType object, Argu
 }
 
 template<typename T>
-void RealmObjectClass<T>::is_same_object(ContextType ctx, ObjectType object, Arguments args, ReturnValue& return_value) {
+void RealmObjectClass<T>::is_same_object(ContextType ctx, ObjectType object, Arguments &args, ReturnValue& return_value) {
     args.validate_count(1);
 
     ObjectType otherObject = Value::validated_to_object(ctx, args[0]);
@@ -253,7 +276,7 @@ void RealmObjectClass<T>::is_same_object(ContextType ctx, ObjectType object, Arg
 }
     
 template<typename T>
-void RealmObjectClass<T>::linking_objects_count(ContextType ctx, FunctionType, ObjectType object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
+void RealmObjectClass<T>::linking_objects_count(ContextType, ObjectType object, Arguments &, ReturnValue &return_value) {
     auto realm_object = get_internal<T, RealmObjectClass<T>>(object);
     const Row& row = realm_object->row();
     
@@ -268,11 +291,11 @@ void RealmObjectClass<T>::linking_objects_count(ContextType ctx, FunctionType, O
 #include "js_results.hpp"
 
 template<typename T>
-void realm::js::RealmObjectClass<T>::linking_objects(ContextType ctx, FunctionType, ObjectType this_object, size_t argc, const ValueType arguments[], ReturnValue &return_value) {
-    validate_argument_count(argc, 2);
+void realm::js::RealmObjectClass<T>::linking_objects(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
+    args.validate_count(2);
 
-    std::string object_type = Value::validated_to_string(ctx, arguments[0], "objectType");
-    std::string property_name = Value::validated_to_string(ctx, arguments[1], "property");
+    std::string object_type = Value::validated_to_string(ctx, args[0], "objectType");
+    std::string property_name = Value::validated_to_string(ctx, args[1], "property");
 
     auto object = get_internal<T, RealmObjectClass<T>>(this_object);
 

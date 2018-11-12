@@ -290,6 +290,10 @@ declare namespace Realm.Sync {
         isAdmin: boolean;
     }
 
+    class AdminCredentials extends Credentials {
+        identityProvider: "adminToken";
+    }
+
     class Credentials {
         static usernamePassword(username: string, password: string, createUser?: boolean): Credentials;
         static facebook(token: string): Credentials;
@@ -298,8 +302,8 @@ declare namespace Realm.Sync {
         static nickname(value: string, isAdmin?: boolean): Credentials;
         static azureAD(token: string): Credentials;
         static jwt(token: string, providerName?: string): Credentials;
-        static adminToken(token: string): Credentials;
-        static custom(providerName: string, token: string, userInfo: {[key: string]: any}): Credentials;
+        static adminToken(token: string): AdminCredentials;
+        static custom(providerName: string, token: string, userInfo?: {[key: string]: any}): Credentials;
 
         readonly identityProvider: string;
         readonly token: string;
@@ -318,7 +322,8 @@ declare namespace Realm.Sync {
         readonly isAdminToken: boolean;
         readonly server: string;
         readonly token: string;
-        static login(server: string, credentials: Credentials): Promise<User> | User;
+        static login(server: string, credentials: AdminCredentials): User;
+        static login(server: string, credentials: Credentials): Promise<User>;
 
         static requestPasswordReset(server: string, email: string): Promise<void>;
 
@@ -332,7 +337,7 @@ declare namespace Realm.Sync {
 
         createConfiguration(config?: Realm.PartialConfiguration): Realm.Configuration
         serialize(): SerializedUser;
-        logout(): void;
+        logout(): Promise<void>;
         openManagementRealm(): Realm;
         retrieveAccount(provider: string, username: string): Promise<Account>;
 
@@ -448,6 +453,7 @@ declare namespace Realm.Sync {
         fullSynchronization?: boolean;
         _disableQueryBasedSyncUrlChecks?:boolean;
         custom_http_headers?: { [header: string]: string };
+        customQueryBasedSyncIdentifier?: string;
     }
 
     enum ConnectionState {
@@ -580,13 +586,13 @@ declare namespace Realm.Permissions {
         static schema: ObjectSchema;
 
         identity: string;
+        canCreate: boolean;
         canRead: boolean;
         canUpdate: boolean;
         canDelete: boolean;
-        canSetPermissions: boolean;
         canQuery: boolean;
-        canCreate: boolean;
         canModifySchema: boolean;
+        canSetPermissions: boolean;
     }
 
     class User {
@@ -603,17 +609,50 @@ declare namespace Realm.Permissions {
     class Class {
         static schema: ObjectSchema;
         class_name: string;
+        name: string;
         permissions: Permission[];
+        findOrCreate(roleName: string): Permission;
     }
 
     class Realm {
         static schema: ObjectSchema;
+        id: number;
         permissions: Permission[];
+        findOrCreate(roleName: string): Permission;
+    }
+
+    class RealmPrivileges {
+        canRead: boolean;
+        canUpdate: boolean;
+        canModifySchema: boolean;
+        canSetPermissions: boolean;
+    }
+
+    class ClassPrivileges {
+        canCreate: boolean
+        canRead: boolean;
+        canUpdate: boolean;
+        canQuery: boolean;
+        canModifySchema: boolean;
+        canSetPermissions: boolean;
+    }
+
+    class ObjectPrivileges {
+        canRead: boolean;
+        canUpdate: boolean;
+        canDelete: boolean;
+        canSetPermissions: boolean;
     }
 }
 
 interface ProgressPromise extends Promise<Realm> {
     progress(callback: Realm.Sync.ProgressNotificationCallback): Promise<Realm>
+}
+
+interface NamedSubscription {
+    name: string,
+    objectType: string,
+    query: string
 }
 
 declare class Realm {
@@ -779,8 +818,15 @@ declare class Realm {
     writeCopyTo(path: string, encryptionKey?: ArrayBuffer | ArrayBufferView): void;
 
     privileges() : Realm.Permissions.Realm;
-    privileges(objectType: string | Realm.ObjectSchema | Function) : Realm.Permissions.Class;
-    privileges(obj: Realm.Object) : Realm.Permissions.Class;
+    privileges() : Realm.Permissions.RealmPrivileges;
+    privileges(objectType: string | Realm.ObjectSchema | Function) : Realm.Permissions.ClassPrivileges;
+    privileges(obj: Realm.Object) : Realm.Permissions.ObjectPrivileges;
+
+    permissions() : Realm.Permissions.Realm;
+    permissions(objectType: string | Realm.ObjectSchema | Function) : Realm.Permissions.Class;
+
+    subscriptions(name?: string): NamedSubscription[];
+    unsubscribe(name: string): void;
 }
 
 declare module 'realm' {

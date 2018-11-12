@@ -79,4 +79,11 @@ REALM_BUILD_ANDROID=1 npm publish ${PRERELEASE:+--tag $PRERELEASE}
 echo "Pushing v$VERSION tag to GitHub..."
 git push origin "v$VERSION"
 
+# Add the changelog templates
+echo "Adding changelog template"
+./scripts/changelog-header.sh
+git add CHANGELOG.md
+git commit -m "Adding changelog template"
+git push origin "$BRANCH"
+
 echo "Done. Now, you should update the documentation!"
