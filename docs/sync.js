@@ -545,12 +545,12 @@ class User {
      * @returns {Promise} - a promise that will be resolved with the retrieved account information as JSON object
      * @example
      * {
-     *   "user_id":" f7a8d2ad9768d73d9d161723935f6f95",
+     *   "user_id": "f7a8d2ad9768d73d9d161723935f6f95",
      *   "is_admin": false,
-     *   "accounts":[
+     *   "accounts": [
      *     {
      *       "provider": "password",
-     *       "provider_id":"user@email.com
+     *       "provider_id": "user@email.com"
      *     }
      *   ],
      *   "metadata":[]
