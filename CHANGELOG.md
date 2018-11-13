@@ -15,6 +15,22 @@ x.x.x Release notes (yyyy-MM-dd)
  ### Internal
 * None.
 
+x.x.x Release notes (yyyy-MM-dd)
+=============================================================
+### Enhancements
+* None.
+
+### Fixed
+* The Typescript definition for `Realm.Permissions.Permission` did not have the correct `role` property defined. This could result in compilation errors like this "error TS2339: Property 'role' does not exist on type 'Permission'". Since 2.3.0.
+
+### Compatibility
+* Realm Object Server: 3.11.0 or later.
+* APIs are backwards compatible with all previous release of realm in the 2.x.y series.
+* File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
+
+ ### Internal
+* None.
+
 2.19.0 Release notes (2018-11-8)
 =============================================================
 This release contains all changes from v2.19.0-rc.1 to v2.19.0-rc.5.
