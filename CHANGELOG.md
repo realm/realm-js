@@ -15,13 +15,13 @@ x.x.x Release notes (yyyy-MM-dd)
  ### Internal
 * None.
 
-2.19.1 Release notes (yyyy-MM-dd)
+x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
 * None.
 
 ### Fixed
-* The Typescript definition for `Realm.Permissions.Permission` did not have the correct `role` property defined. Since 2.3.0.
+* The Typescript definition for `Realm.Permissions.Permission` did not have the correct `role` property defined. This could result in compilation errors like this "error TS2339: Property 'role' does not exist on type 'Permission'". Since 2.3.0.
 
 ### Compatibility
 * Realm Object Server: 3.11.0 or later.
