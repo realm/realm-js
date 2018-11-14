@@ -4,24 +4,8 @@ x.x.x Release notes (yyyy-MM-dd)
 * None.
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None.
-
-### Compatibility
-* Realm Object Server: 3.11.0 or later.
-* APIs are backwards compatible with all previous release of realm in the 2.x.y series.
-* File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
-
- ### Internal
-* None.
-
-x.x.x Release notes (yyyy-MM-dd)
-=============================================================
-### Enhancements
-* None.
-
-### Fixed
 * The Typescript definition for `Realm.Permissions.Permission` did not have the correct `role` property defined. This could result in compilation errors like this "error TS2339: Property 'role' does not exist on type 'Permission'". Since 2.3.0. ([#2106](https://github.com/realm/realm-js/pull/2106))
+* The shell script to help download Realm Sync when building for React Native (iOS) never worked with a "naked" node installation but only worked when node version manager `n` or `nvm` is installed. This is fixed so the script supports "naked" node, `n` and `nvm`. Moreover, the node v8.3.0 (or later) is required to align with React Native. ([#2099](https://github.com/realm/realm-js/issues/2099), since v2.0.11)
 
 ### Compatibility
 * Realm Object Server: 3.11.0 or later.
