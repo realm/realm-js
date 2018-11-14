@@ -4,6 +4,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * None.
 
 ### Fixed
+* Removed calls to `new Buffer()` as this is deprecated with Node 10. ([#2107](https://github.com/realm/realm-js/issues/2107), since 2.19.0)
 * The Typescript definition for `Realm.Permissions.Permission` did not have the correct `role` property defined. This could result in compilation errors like this "error TS2339: Property 'role' does not exist on type 'Permission'". Since 2.3.0. ([#2106](https://github.com/realm/realm-js/pull/2106))
 * The shell script to help download Realm Sync when building for React Native (iOS) never worked with a "naked" node installation but only worked when node version manager `n` or `nvm` is installed. This is fixed so the script supports "naked" node, `n` and `nvm`. Moreover, the node v8.3.0 (or later) is required to align with React Native. ([#2099](https://github.com/realm/realm-js/issues/2099), since v2.0.11)
 
@@ -12,8 +13,10 @@ x.x.x Release notes (yyyy-MM-dd)
 * APIs are backwards compatible with all previous release of realm in the 2.x.y series.
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
- ### Internal
-* None.
+### Internal
+* Introduce 100 ms delay before submitting analytics so that an app may disable it after importing Realm. ([#2108](https://github.com/realm/realm-js/pull/2108))
+* Distinguish between node.js and electron in the `BindingType` field when submitting analytics. ([#2108](https://github.com/realm/realm-js/pull/2108))
+* Add a package to compute the Windows analytics identifier rather than returning `null` which likely accounts for the disproportionally large number of unique Windows users. ([#2108](https://github.com/realm/realm-js/pull/2108))
 
 2.19.0 Release notes (2018-11-8)
 =============================================================
