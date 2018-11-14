@@ -46,20 +46,12 @@ if [[ -d "$HOME/.n" ]]; then
     export N_PREFIX="$HOME/.n"; [[ :$PATH: == *":$N_PREFIX/bin:"* ]] || PATH+=":$N_PREFIX/bin"
 fi
 
-if [[ "$(command -v n)" ]]; then
-    n ${node_version}
-else
-    [ -z "$NVM_DIR" ] && export NVM_DIR="$HOME/.nvm"
+[ -z "$NVM_DIR" ] && export NVM_DIR="$HOME/.nvm"
 
-    if [[ -s "$HOME/.nvm/nvm.sh" ]]; then
-        . "$HOME/.nvm/nvm.sh"
-    elif [[ -x "$(command -v brew)" && -s "$(brew --prefix nvm)/nvm.sh" ]]; then
+if [[ -s "$HOME/.nvm/nvm.sh" ]]; then
+    . "$HOME/.nvm/nvm.sh"
+elif [[ -x "$(command -v brew)" && -s "$(brew --prefix nvm)/nvm.sh" ]]; then
     . "$(brew --prefix nvm)/nvm.sh"
-    fi
-
-    if [[ "$(command -v nvm)" ]]; then
-        nvm install ${node_version}
-    fi
 fi
 
 if [ -z "$(command -v node)" ]; then

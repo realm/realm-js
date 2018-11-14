@@ -1,7 +1,7 @@
 ![Realm](https://github.com/realm/realm-js/raw/master/logo.png)
 
 Realm is a mobile database that runs directly inside phones, tablets or wearables.
-This project hosts the JavaScript versions of [Realm](https://realm.io/). Currently we only support React Native (both iOS & Android) and Node.js (on MacOS and Linux) but we are considering adding support for Cordova/PhoneGap/Ionic as well.
+This project hosts the JavaScript versions of [Realm](https://realm.io/). Currently we only support React Native (both iOS & Android) and Node.js (on MacOS, Linux, and Windows) but we are considering adding support for Cordova/PhoneGap/Ionic as well.
 
 ## Features
 
@@ -14,11 +14,13 @@ This project hosts the JavaScript versions of [Realm](https://realm.io/). Curren
 
 Please see the detailed instructions in our docs to use [Realm Javascript](https://realm.io/docs/javascript/latest/#getting-started).
 
+To use Realm JavaScript with React Native, you need to use node v8.3.0 or later.
+
 ## Documentation
 
 ### Realm React Native and Node.js
 
-The documentation can be found at [realm.io/docs/javascript/latest/](https://realm.io/docs/javascript/latest/).  
+The documentation can be found at [realm.io/docs/javascript/latest/](https://realm.io/docs/javascript/latest/).
 The API reference is located at [realm.io/docs/javascript/latest/api/](https://realm.io/docs/javascript/latest/api/).
 
 ## Getting Help
@@ -36,7 +38,7 @@ Prerequisites:
 - Node: 4.0 <= version < 7.0
 - Xcode 7.2+
 - Android SDK 23+
-- [Android NDK 10e](https://developer.android.com/ndk/downloads/older_releases) 
+- [Android NDK 10e](https://developer.android.com/ndk/downloads/older_releases)
 
 First clone this repository:
 
@@ -77,7 +79,7 @@ npm install --build-from-source=realm
 
             ```
             npm install -g --production windows-build-tools
-            ```  
+            ```
 
     * Option 2: Manually install and configure
 
@@ -97,7 +99,7 @@ You can use (Visual Studio Code)[https://code.visualstudio.com/] to develop and 
 VSCode has good support for debugging JavaScript, but to work with C++ code, you are required to install two additional VSCode extensions:
 
 * Microsoft C/C++
-* CodeLLDB 
+* CodeLLDB
 
 To begin, you will need to build the node addon and prepare the test environment:
 
