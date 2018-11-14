@@ -15,6 +15,7 @@ x.x.x Release notes (yyyy-MM-dd)
  ### Internal
 * Introduce 100 ms delay before submitting analytics so that an app may disable it after importing Realm. ([#2108](https://github.com/realm/realm-js/pull/2108))
 * Distinguish between node.js and electron in the `BindingType` field when submitting analytics. ([#2108](https://github.com/realm/realm-js/pull/2108))
+* Add a package to compute the Windows analytics identifier rather than returning `null` which likely accounts for the disproportionally large number of unique Windows users. ([#2108](https://github.com/realm/realm-js/pull/2108))
 
 2.19.0 Release notes (2018-11-8)
 =============================================================
