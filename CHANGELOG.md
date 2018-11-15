@@ -6,6 +6,7 @@ x.x.x Release notes (yyyy-MM-dd)
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
 * Removed calls to `new Buffer()` as this is deprecated with Node 10. ([#2107](https://github.com/realm/realm-js/issues/2107), since 2.19.0)
+* Updated the type definitions to be explicit that the return type of the generics `Realm.objects<T>`, `Realm.objectForPrimaryKey<T>`, etc. is an intersection of `T & Realm.Object`. ([#1838](https://github.com/realm/realm-js/issues/1838))
 
 ### Compatibility
 * Realm Object Server: 3.11.0 or later.
