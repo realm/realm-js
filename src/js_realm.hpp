@@ -948,13 +948,14 @@ void RealmClass<T>::create(ContextType ctx, ObjectType this_object, Arguments &a
         object = Schema<T>::dict_for_property_array(ctx, object_schema, object);
     }
 
+    bool only_update_diff_objects = false;
     bool update = false;
     if (args.count == 3) {
         update = Value::validated_to_boolean(ctx, args[2], "update");
     }
 
     NativeAccessor accessor(ctx, realm, object_schema);
-    auto realm_object = realm::Object::create<ValueType>(accessor, realm, object_schema, object, update);
+    auto realm_object = realm::Object::create<ValueType>(accessor, realm, object_schema, object, update, only_update_diff_objects);
     return_value.set(RealmObjectClass<T>::create_instance(ctx, std::move(realm_object)));
 }
 

@@ -18,7 +18,7 @@ x.x.x Release notes (yyyy-MM-dd)
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
-* None.
+* Added support for setting a custom User-Agent string using `Realm.Sync.setUserAgent(...)`. This string will be sent to the server when creating a connection. ([#XXX]())
 
 ### Fixed
 * The Typescript definition for `Realm.Permissions.Permission` did not have the correct `role` property defined. This could result in compilation errors like this "error TS2339: Property 'role' does not exist on type 'Permission'". Since 2.3.0. ([#2106](https://github.com/realm/realm-js/pull/2106))
@@ -29,7 +29,8 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
  ### Internal
-* None.
+* Upgraded to Object Store commit: 1d98a126f4fd0984741b5fa7d17539461c7d9ead
+
 
 2.19.0 Release notes (2018-11-8)
 =============================================================

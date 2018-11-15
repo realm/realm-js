@@ -540,6 +540,7 @@ declare namespace Realm.Sync {
     function removeAllListeners(): Promise<void>;
     function removeListener(regex: string, name: string, changeCallback: (changeEvent: ChangeEvent) => void): Promise<void>;
     function setLogLevel(logLevel: 'all' | 'trace' | 'debug' | 'detail' | 'info' | 'warn' | 'error' | 'fatal' | 'off'): void;
+    function setUserAgent(userAgent: string): void;
     function initiateClientReset(path: string): void;
 
     /**
