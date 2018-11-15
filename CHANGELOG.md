@@ -1,3 +1,4 @@
+2.19.1 Release notes (2018-11-15)
 =============================================================
 ### Enhancements
 * None.
@@ -18,7 +19,7 @@
 * Distinguish between node.js and electron in the `BindingType` field when submitting analytics. ([#2108](https://github.com/realm/realm-js/pull/2108))
 * Adds a package to compute the Windows analytics identifier rather than returning `null` which likely accounts for the disproportionally large number of unique Windows users. ([#2108](https://github.com/realm/realm-js/pull/2108))
 * Upgrades to Realm Core v5.12.1.
-* Upgrades to Realm Sync v3.13.3.
+* Upgrades to Realm Sync v3.13.4.
 
 2.19.0 Release notes (2018-11-8)
 =============================================================
