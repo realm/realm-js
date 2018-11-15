@@ -48,7 +48,7 @@ inline realm::SyncManager& syncManagerShared() {
     static std::once_flag flag;
     std::call_once(flag, [] {
         ensure_directory_exists_for_file(default_realm_file_directory());
-        SyncManager::shared().configure_file_system(default_realm_file_directory(), SyncManager::MetadataMode::NoEncryption);
+        SyncManager::shared().configure(default_realm_file_directory(), SyncManager::MetadataMode::NoEncryption);
     });
     return SyncManager::shared();
 }

@@ -949,12 +949,13 @@ void RealmClass<T>::create(ContextType ctx, ObjectType this_object, Arguments &a
     }
 
     bool update = false;
+    bool only_update_diff_objects = false;
     if (args.count == 3) {
         update = Value::validated_to_boolean(ctx, args[2], "update");
     }
 
     NativeAccessor accessor(ctx, realm, object_schema);
-    auto realm_object = realm::Object::create<ValueType>(accessor, realm, object_schema, object, update);
+    auto realm_object = realm::Object::create<ValueType>(accessor, realm, object_schema, object, update, only_update_diff_objects);
     return_value.set(RealmObjectClass<T>::create_instance(ctx, std::move(realm_object)));
 }
 
