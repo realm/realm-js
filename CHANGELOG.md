@@ -5,7 +5,7 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Fixed
 * Removed calls to `new Buffer()` as this is deprecated with Node 10. ([#2107](https://github.com/realm/realm-js/issues/2107), since 2.19.0)
-* The Typescript definition for `Realm.Permissions.Permission` did not have the correct `role` property defined. This could result in compilation errors like this "error TS2339: Property 'role' does not exist on type 'Permission'". Since 2.3.0. ([#2106](https://github.com/realm/realm-js/pull/2106))
+* The Typescript definition for `Realm.Permissions.Permission` did not have the correct `role` property defined. This could result in compilation errors like this "error TS2339: Property 'role' does not exist on type 'Permission'". ([#2106](https://github.com/realm/realm-js/pull/2106), since 2.3.0.)
 * The shell script to help download Realm Sync when building for React Native (iOS) never worked with a "naked" node installation but only worked when node version manager `n` or `nvm` is installed. This is fixed so the script supports "naked" node, `n` and `nvm`. Moreover, the node v8.3.0 (or later) is required to align with React Native. ([#2099](https://github.com/realm/realm-js/issues/2099), since v2.0.11)
 
 ### Compatibility
