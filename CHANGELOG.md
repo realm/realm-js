@@ -4,8 +4,8 @@ x.x.x Release notes (yyyy-MM-dd)
 * None.
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* Removed calls to `new Buffer()` as this is deprecated with Node 10. ([#2107](https://github.com/realm/realm-js/issues/2107), since 2.19.0)
+* Removed calls to `new Buffer()` as this is deprecated with Node 10. ([#2107](https://github.com/realm/realm-js/issues/2107), since v2.19.0)
+* Removes call to `Realm._constructor()` in the React Native debugging support library (https://github.com/realm/realm-js/issues/491#issuecomment-438688937, since v2.19.0-rc.4)
 
 ### Compatibility
 * Realm Object Server: 3.11.0 or later.
