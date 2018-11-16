@@ -118,7 +118,7 @@ declare namespace Realm {
         /**
          * @returns Results<T>
          */
-        linkingObjects<T>(objectType: string, property: string): Results<T>;
+        linkingObjects<T>(objectType: string, property: string): Results<T & Realm.Object>;
 
         /**
          * @returns number
@@ -702,7 +702,7 @@ declare class Realm {
      * @param {Realm.ObjectSchema} object schema describing the object that should be created.
      * @returns {T}
      */
-    static createTemplateObject<T>(objectSchema: Realm.ObjectSchema): T;
+    static createTemplateObject<T>(objectSchema: Realm.ObjectSchema): T & Realm.Object;
 
     /**
      * Delete the Realm file for the given configuration.
@@ -754,13 +754,13 @@ declare class Realm {
      * @param  {number|string} key
      * @returns {T | undefined}
      */
-    objectForPrimaryKey<T>(type: string | Realm.ObjectType | Function, key: number | string): T | undefined;
+    objectForPrimaryKey<T>(type: string | Realm.ObjectType | Function, key: number | string): T & Realm.Object | undefined;
 
     /**
      * @param  {string|Realm.ObjectType|Function} type
      * @returns Realm
      */
-    objects<T>(type: string | Realm.ObjectType | Function): Realm.Results<T>;
+    objects<T>(type: string | Realm.ObjectType | Function): Realm.Results<T & Realm.Object>;
 
     /**
      * @param  {string} name

@@ -21,7 +21,8 @@ x.x.x Release notes (yyyy-MM-dd)
 * Added support for setting a custom User-Agent string using `Realm.Sync.setUserAgent(...)`. This string will be sent to the server when creating a connection. ([#XXX]())
 
 ### Fixed
-* The Typescript definition for `Realm.Permissions.Permission` did not have the correct `role` property defined. This could result in compilation errors like this "error TS2339: Property 'role' does not exist on type 'Permission'". Since 2.3.0. ([#2106](https://github.com/realm/realm-js/pull/2106))
+* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
+* None.
 
 ### Compatibility
 * Realm Object Server: 3.11.0 or later.
@@ -29,8 +30,30 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
  ### Internal
-* Upgraded to Object Store commit: 1d98a126f4fd0984741b5fa7d17539461c7d9ead
+* None.
 
+2.19.1 Release notes (2018-11-15)
+=============================================================
+### Enhancements
+* None.
+
+### Fixed
+* The Typescript definition for `Realm.Permissions.Permission` did not have the correct `role` property defined. This could result in compilation errors like this `error TS2339: Property 'role' does not exist on type 'Permission'`. ([#2106](https://github.com/realm/realm-js/pull/2106), since v2.3.0.)
+* Removes calls to `new Buffer()` as this is deprecated with Node 10. ([#2107](https://github.com/realm/realm-js/issues/2107), since v2.19.0)
+* Updates the type definitions to be explicit that the return type of the generics `Realm.objects<T>`, `Realm.objectForPrimaryKey<T>`, etc. is an intersection of `T & Realm.Object`. ([#1838](https://github.com/realm/realm-js/issues/1838))
+* A set of bugs that could lead to bad changesets have been fixed. An example of error message is `Failed to parse, or apply received changeset: ndx out of range`. (Fixed by Realm Sync v3.13.3)
+
+### Compatibility
+* Realm Object Server: 3.11.0 or later.
+* APIs are backwards compatible with all previous release of realm in the 2.x.y series.
+* File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
+
+ ### Internal
+* Introduces 100 ms delay before submitting analytics so that an app may disable it after importing Realm. ([#2108](https://github.com/realm/realm-js/pull/2108))
+* Distinguish between node.js and electron in the `BindingType` field when submitting analytics. ([#2108](https://github.com/realm/realm-js/pull/2108))
+* Adds a package to compute the Windows analytics identifier rather than returning `null` which likely accounts for the disproportionally large number of unique Windows users. ([#2108](https://github.com/realm/realm-js/pull/2108))
+* Upgrades to Realm Core v5.12.1.
+* Upgrades to Realm Sync v3.13.4.
 
 2.19.0 Release notes (2018-11-8)
 =============================================================

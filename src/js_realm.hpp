@@ -950,6 +950,7 @@ void RealmClass<T>::create(ContextType ctx, ObjectType this_object, Arguments &a
 
     bool only_update_diff_objects = false;
     bool update = false;
+    bool only_update_diff_objects = false;
     if (args.count == 3) {
         update = Value::validated_to_boolean(ctx, args[2], "update");
     }
