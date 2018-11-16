@@ -948,7 +948,6 @@ void RealmClass<T>::create(ContextType ctx, ObjectType this_object, Arguments &a
         object = Schema<T>::dict_for_property_array(ctx, object_schema, object);
     }
 
-    bool only_update_diff_objects = false;
     bool update = false;
     bool only_update_diff_objects = false;
     if (args.count == 3) {

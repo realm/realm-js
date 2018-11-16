@@ -877,12 +877,9 @@ inline typename T::Function SyncClass<T>::create_constructor(ContextType ctx) {
 template<typename T>
 void SyncClass<T>::initialize_sync_manager(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue & return_value) {
     args.validate_count(1);
-    static std::once_flag flag;
-    std::call_once(flag, [&] {
-        std::string user_agent_binding_info = Value::validated_to_string(ctx, args[0]);
-        ensure_directory_exists_for_file(default_realm_file_directory());
-        SyncManager::shared().configure(default_realm_file_directory(), SyncManager::MetadataMode::NoEncryption, user_agent_binding_info);
-    });
+    std::string user_agent_binding_info = Value::validated_to_string(ctx, args[0]);
+    ensure_directory_exists_for_file(default_realm_file_directory());
+    SyncManager::shared().configure(default_realm_file_directory(), SyncManager::MetadataMode::NoEncryption, user_agent_binding_info);
 }
 
 template<typename T>
