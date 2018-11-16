@@ -4,7 +4,7 @@ x.x.x Release notes (yyyy-mm-dd)
 * None.
 
 ### Fixed
-* Tokens are refreshed ahead of time. If the lifetime of the token is lower than the threshold for refreshing it will cause the client to continously refresh, spamming the server with refresh requests. A lower bound of 10 seconds have been introduced. ([#2115](https://github.com/realm/realm-js/issues/2115), since 1.0.2)
+* Tokens are refreshed ahead of time. If the lifetime of the token is lower than the threshold for refreshing it will cause the client to continously refresh, spamming the server with refresh requests. A lower bound of 10 seconds has been introduced. ([#2115](https://github.com/realm/realm-js/issues/2115), since v1.0.2)
 
 ### Compatibility
 * Realm Object Server: 3.11.0 or later.
