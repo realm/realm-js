@@ -21,15 +21,14 @@ x.x.x Release notes (yyyy-MM-dd)
 * Added support for setting a custom User-Agent string using `Realm.Sync.setUserAgent(...)`. This string will be sent to the server when creating a connection. ([#XXX]())
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None.
+* Tokens are refreshed ahead of time. If the lifetime of the token is lower than the threshold for refreshing it will cause the client to continously refresh, spamming the server with refresh requests. A lower bound of 10 seconds has been introduced. ([#2115](https://github.com/realm/realm-js/issues/2115), since v1.0.2)
 
 ### Compatibility
 * Realm Object Server: 3.11.0 or later.
 * APIs are backwards compatible with all previous release of realm in the 2.x.y series.
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
- ### Internal
+### Internal
 * Upgraded to Object Store commit: 66eea3994f598a388a775b93acb1c13603cc65c3
 
 2.19.1 Release notes (2018-11-15)
