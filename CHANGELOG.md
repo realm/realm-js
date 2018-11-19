@@ -6,6 +6,7 @@ x.x.x Release notes (yyyy-MM-dd)
 ### Fixed
 * Tokens are refreshed ahead of time. If the lifetime of the token is lower than the threshold for refreshing it will cause the client to continously refresh, spamming the server with refresh requests. A lower bound of 10 seconds has been introduced. ([#2115](https://github.com/realm/realm-js/issues/2115), since v1.0.2)
 * Prevent automatic token refreshes for Realms that have been closed. Previously, these could have resulted in obscure `Unhandled session token refresh error` messages in the logs that were benign. ([#2119](https://github.com/realm/realm-js/pull/2119))
+* Check the correct name when automatically adding the permission object schemas to the schema for query-based sync realms so that defining types with the same name works correctly. ([#2121](https://github.com/realm/realm-js/pull/2121), since 2.15.0)
 
 ### Compatibility
 * Realm Object Server: 3.11.0 or later.
