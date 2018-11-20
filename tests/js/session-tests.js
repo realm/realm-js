@@ -1290,6 +1290,7 @@ module.exports = {
             Realm.Sync.User.login(AUTH_URL, Realm.Sync.Credentials.nickname("admin1", true))
                 .then((admin1) => {
                     const admin1Config = admin1.createConfiguration({
+                        schema: [schema],
                         sync:  {
                             url: REALM_URL,
                             fullSynchronization: true
@@ -1302,6 +1303,7 @@ module.exports = {
                             Realm.Sync.User.login(AUTH_URL, Realm.Sync.Credentials.nickname("admin2", true))
                                 .then((admin2) => {
                                     const admin2Config = admin2.createConfiguration({
+                                        schema: [schema],
                                         sync:  {
                                             url: REALM_URL,
                                             fullSynchronization: true
