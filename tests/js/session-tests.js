@@ -1287,7 +1287,7 @@ module.exports = {
         }
 
         return new Promise((resolve, reject) => {
-            Realm.Sync.User.login(AUTH_URL, new Realm.Sync.Credentials.nickname("admin1", true))
+            Realm.Sync.User.login(AUTH_URL, Realm.Sync.Credentials.nickname("admin1", true))
                 .then((admin1) => {
                     const admin1Config = admin1.createConfiguration({
                         sync:  {
@@ -1299,7 +1299,7 @@ module.exports = {
                         admin1Realm.write(() => { admin1Realm.create('CompletionHandlerObject', { 'name': 'foo'}); });
                         admin1Realm.syncSession.uploadAllLocalChanges().then(() => {
                             admin1Realm.close();
-                            Realm.Sync.User.login(AUTH_URL, new Realm.Sync.Credentials.nickname("admin2", true))
+                            Realm.Sync.User.login(AUTH_URL, Realm.Sync.Credentials.nickname("admin2", true))
                                 .then((admin2) => {
                                     const admin2Config = admin2.createConfiguration({
                                         sync:  {
