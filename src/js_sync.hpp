@@ -45,11 +45,6 @@ namespace realm {
 namespace js {
 
 inline realm::SyncManager& syncManagerShared() {
-    static std::once_flag flag;
-    std::call_once(flag, [] {
-        ensure_directory_exists_for_file(default_realm_file_directory());
-        SyncManager::shared().configure_file_system(default_realm_file_directory(), SyncManager::MetadataMode::NoEncryption);
-    });
     return SyncManager::shared();
 }
 
@@ -847,7 +842,9 @@ public:
 
     static FunctionType create_constructor(ContextType);
 
+    static void initialize_sync_manager(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void set_sync_log_level(ContextType, ObjectType, Arguments &, ReturnValue &);
+    static void set_sync_user_agent(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void initiate_client_reset(ContextType, ObjectType, Arguments &, ReturnValue &);
 
     // private
@@ -860,7 +857,9 @@ public:
 
     MethodMap<T> const static_methods = {
         {"setLogLevel", wrap<set_sync_log_level>},
+        {"setUserAgent", wrap<set_sync_user_agent>},
         {"initiateClientReset", wrap<initiate_client_reset>},
+        {"_initializeSyncManager", wrap<initialize_sync_manager>},
     };
 };
 
@@ -873,6 +872,14 @@ inline typename T::Function SyncClass<T>::create_constructor(ContextType ctx) {
     Object::set_property(ctx, sync_constructor, "Session", ObjectWrap<T, SessionClass<T>>::create_constructor(ctx), attributes);
 
     return sync_constructor;
+}
+
+template<typename T>
+void SyncClass<T>::initialize_sync_manager(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue & return_value) {
+    args.validate_count(1);
+    std::string user_agent_binding_info = Value::validated_to_string(ctx, args[0]);
+    ensure_directory_exists_for_file(default_realm_file_directory());
+    SyncManager::shared().configure(default_realm_file_directory(), SyncManager::MetadataMode::NoEncryption, user_agent_binding_info);
 }
 
 template<typename T>
@@ -896,6 +903,13 @@ void SyncClass<T>::set_sync_log_level(ContextType ctx, ObjectType this_object, A
     if (!in || !in.eof())
         throw std::runtime_error("Bad log level");
     syncManagerShared().set_log_level(log_level_2);
+}
+
+template<typename T>
+void SyncClass<T>::set_sync_user_agent(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
+    args.validate_count(1);
+    std::string application_user_agent = Value::validated_to_string(ctx, args[0]);
+    syncManagerShared().set_user_agent(application_user_agent);
 }
 
 template<typename T>

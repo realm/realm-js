@@ -1,9 +1,11 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
-* None.
+* Adds support for setting a custom User-Agent string using `Realm.Sync.setUserAgent(...)`. This string will be sent to the server when creating a connection. ([#XXX]())
 
 ### Fixed
+* Tokens are refreshed ahead of time. If the lifetime of the token is lower than the threshold for refreshing it will cause the client to continously refresh, spamming the server with refresh requests. A lower bound of 10 seconds has been introduced. ([#2115](https://github.com/realm/realm-js/issues/2115), since v1.0.2)
+* Prevent automatic token refreshes for Realms that have been closed. Previously, these could have resulted in obscure `Unhandled session token refresh error` messages in the logs that were benign. ([#2119](https://github.com/realm/realm-js/pull/2119))
 * Removed calls to `new Buffer()` as this is deprecated with Node 10. ([#2107](https://github.com/realm/realm-js/issues/2107), since v2.19.0)
 * Removes call to `Realm._constructor()` in the React Native debugging support library (https://github.com/realm/realm-js/issues/491#issuecomment-438688937, since v2.19.0-rc.4)
 
@@ -12,18 +14,20 @@ x.x.x Release notes (yyyy-MM-dd)
 * APIs are backwards compatible with all previous release of realm in the 2.x.y series.
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
- ### Internal
-* Introduce 100 ms delay before submitting analytics so that an app may disable it after importing Realm. ([#2108](https://github.com/realm/realm-js/pull/2108))
-* Distinguish between node.js and electron in the `BindingType` field when submitting analytics. ([#2108](https://github.com/realm/realm-js/pull/2108))
-* Add a package to compute the Windows analytics identifier rather than returning `null` which likely accounts for the disproportionally large number of unique Windows users. ([#2108](https://github.com/realm/realm-js/pull/2108))
+### Internal
+* Upgrades to Object Store commit: 66eea3994f598a388a775b93acb1c13603cc65c3
 
-x.x.x Release notes (yyyy-MM-dd)
+
+2.19.1 Release notes (2018-11-15)
 =============================================================
 ### Enhancements
 * None.
 
 ### Fixed
-* The Typescript definition for `Realm.Permissions.Permission` did not have the correct `role` property defined. This could result in compilation errors like this "error TS2339: Property 'role' does not exist on type 'Permission'". Since 2.3.0. ([#2106](https://github.com/realm/realm-js/pull/2106))
+* The Typescript definition for `Realm.Permissions.Permission` did not have the correct `role` property defined. This could result in compilation errors like this `error TS2339: Property 'role' does not exist on type 'Permission'`. ([#2106](https://github.com/realm/realm-js/pull/2106), since v2.3.0.)
+* Removes calls to `new Buffer()` as this is deprecated with Node 10. ([#2107](https://github.com/realm/realm-js/issues/2107), since v2.19.0)
+* Updates the type definitions to be explicit that the return type of the generics `Realm.objects<T>`, `Realm.objectForPrimaryKey<T>`, etc. is an intersection of `T & Realm.Object`. ([#1838](https://github.com/realm/realm-js/issues/1838))
+* A set of bugs that could lead to bad changesets have been fixed. An example of error message is `Failed to parse, or apply received changeset: ndx out of range`. (Fixed by Realm Sync v3.13.3)
 
 ### Compatibility
 * Realm Object Server: 3.11.0 or later.
@@ -31,7 +35,11 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
  ### Internal
-* None.
+* Introduces 100 ms delay before submitting analytics so that an app may disable it after importing Realm. ([#2108](https://github.com/realm/realm-js/pull/2108))
+* Distinguish between node.js and electron in the `BindingType` field when submitting analytics. ([#2108](https://github.com/realm/realm-js/pull/2108))
+* Adds a package to compute the Windows analytics identifier rather than returning `null` which likely accounts for the disproportionally large number of unique Windows users. ([#2108](https://github.com/realm/realm-js/pull/2108))
+* Upgrades to Realm Core v5.12.1.
+* Upgrades to Realm Sync v3.13.4.
 
 2.19.0 Release notes (2018-11-8)
 =============================================================

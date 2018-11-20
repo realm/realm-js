@@ -59,7 +59,7 @@ void clear_test_state() {
         user->log_out();
     }
     SyncManager::shared().reset_for_testing();
-    SyncManager::shared().configure_file_system(default_realm_file_directory(), SyncManager::MetadataMode::NoEncryption);
+    SyncManager::shared().configure(default_realm_file_directory(), SyncManager::MetadataMode::NoEncryption);
 #endif
 }
 

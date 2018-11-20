@@ -171,6 +171,16 @@ class Sync {
     static setLogLevel(log_level) {}
 
     /**
+     * Set the application part of the User-Agent string that will be sent to the Realm Object Server when a session
+     * is created.
+     *
+     * This method can only be called up to the point where the first Realm is opened. After that, the User-Agent
+     * can no longer be changed.
+     * @param {string} the user agent description
+     */
+    static setUserAgent(userAgent) {}
+
+    /**
      * Initiate a client reset. The Realm must be closed prior to the reset.
      *
      * @param {string} [path] - The path to the Realm to reset.
@@ -252,7 +262,7 @@ class ChangeEvent {
 
 /**
  * @typedef Realm.Sync~LogLevel
- * @type {("error"|"info"|"debug")}
+ * @type {("all"|"trace"|"debug"|"detail"|"info"|"warn"|"error"|"fatal"|"off")}
  */
 
 /**
