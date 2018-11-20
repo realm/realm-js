@@ -210,6 +210,7 @@ public:
     using ProgressHandler = void(uint64_t transferred_bytes, uint64_t transferrable_bytes);
     using StateHandler = void(SyncSession::PublicState old_state, SyncSession::PublicState new_state);
     using ConnectionHandler = void(SyncSession::ConnectionState new_state, SyncSession::ConnectionState old_state);
+    using DownloadUploadCompletionHandler = void(std::error_code error);
 
     static FunctionType create_constructor(ContextType);
 
@@ -231,6 +232,9 @@ public:
     static void resume(ContextType ctx, ObjectType this_object, Arguments &, ReturnValue &);
     static void pause(ContextType ctx, ObjectType this_object, Arguments &, ReturnValue &);
     static void override_server(ContextType, ObjectType, Arguments &, ReturnValue &);
+    static void wait_for_download_completion(ContextType, ObjectType, Arguments &, ReturnValue &);
+    static void wait_for_upload_completion(ContextType, ObjectType, Arguments &, ReturnValue &);
+
 
     PropertyMap<T> const properties = {
         {"config", {wrap<get_config>, nullptr}},
@@ -244,6 +248,8 @@ public:
         {"_simulateError", wrap<simulate_error>},
         {"_refreshAccessToken", wrap<refresh_access_token>},
         {"_overrideServer", wrap<override_server>},
+        {"_waitForDownloadCompletion", wrap<wait_for_download_completion>},
+        {"_waitForUploadCompletion", wrap<wait_for_upload_completion>},
         {"addProgressNotification", wrap<add_progress_notification>},
         {"removeProgressNotification", wrap<remove_progress_notification>},
         {"addConnectionNotification", wrap<add_connection_notification>},
@@ -254,7 +260,9 @@ public:
     };
 
 private:
+    enum Direction { Upload, Download };
     static std::string get_connection_state_value(SyncSession::ConnectionState state);
+    static void wait_for_completion(Direction direction, ContextType ctx, ObjectType this_object, Arguments& args);
 };
 
 template<typename T>
@@ -677,6 +685,59 @@ void SessionClass<T>::override_server(ContextType ctx, ObjectType this_object, A
     if (auto session = get_internal<T, SessionClass<T>>(this_object)->lock()) {
         session->override_server(std::move(address), uint16_t(port));
     }
+}
+
+template<typename T>
+void SessionClass<T>::wait_for_completion(Direction direction, ContextType ctx, ObjectType this_object, Arguments &args) {
+    args.validate_count(1);
+    if (auto session = get_internal<T, SessionClass<T>>(this_object)->lock()) {
+        auto callback_function = Value::validated_to_function(ctx, args[0]);
+        Protected<FunctionType> protected_callback(ctx, callback_function);
+        Protected<ObjectType> protected_this(ctx, this_object);
+        Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
+
+        std::function<DownloadUploadCompletionHandler> completion_func;
+        EventLoopDispatcher<DownloadUploadCompletionHandler> completion_handler([=](std::error_code error) {
+            HANDLESCOPE
+            ValueType callback_arguments[1];
+            if (error) {
+                ObjectType error_object = Object::create_empty(protected_ctx);
+                Object::set_property(protected_ctx, error_object, "message", Value::from_string(protected_ctx, error.message()));
+                Object::set_property(protected_ctx, error_object, "errorCode", Value::from_number(protected_ctx, error.value()));
+                callback_arguments[0] = error_object;
+            } else {
+                callback_arguments[0] = Value::from_undefined(ctx);
+            }
+            Function<T>::callback(protected_ctx, protected_callback, typename T::Object(), 1, callback_arguments);
+        });
+
+        completion_func = std::move(completion_handler);
+        bool callback_registered;
+        switch(direction) {
+            case Upload:
+                callback_registered = session->wait_for_upload_completion(std::move(completion_func));
+                break;
+            case Download:
+                callback_registered = session->wait_for_download_completion(std::move(completion_func));
+                break;
+        }
+        if (!callback_registered) {
+            throw new logic_error("Could not register upload/download completion handler");
+        }
+        auto syncSession = create_object<T, SessionClass<T>>(ctx, new WeakSession(session));
+        PropertyAttributes attributes = ReadOnly | DontEnum | DontDelete;
+        Object::set_property(ctx, callback_function, "_syncSession", syncSession, attributes);
+    }
+}
+
+template<typename T>
+void SessionClass<T>::wait_for_upload_completion(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue&) {
+    wait_for_completion(Direction::Upload, ctx, this_object, args);
+}
+
+template<typename T>
+void SessionClass<T>::wait_for_download_completion(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue&) {
+    wait_for_completion(Direction::Download, ctx, this_object, args);
 }
 
 template<typename T>

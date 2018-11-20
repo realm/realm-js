@@ -489,6 +489,9 @@ declare namespace Realm.Sync {
 
         resume(): void;
         pause(): void;
+
+        downloadAllServerChanges(): Promise<void>;
+        uploadAllLocalChanges(): Promise<void>;
     }
 
     type SubscriptionNotificationCallback = (subscription: Subscription, state: number) => void;
