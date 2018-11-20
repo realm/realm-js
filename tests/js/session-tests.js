@@ -1287,42 +1287,38 @@ module.exports = {
         }
 
         return new Promise((resolve, reject) => {
-            try {
-                let admin1 = await Realm.Sync.User.login(AUTH_URL, new Realm.Sync.Credentials.nickname("admin1", true));
-                resolve();
-            } catch (e) {
-                reject(e);
-            }
-        };
-        //         .then((admin1) => {
-        //             const admin1Config = admin1.createConfiguration({
-        //                 sync:  {
-        //                     url: REALM_URL,
-        //                     fullSynchronization: true
-        //                 }
-        //             });
-        //             Realm.open(admin1Config).then((admin1Realm) => {
-        //                 admin1Realm.write(() => { admin1Realm.create('CompletionHandlerObject', { 'name': 'foo'}); });
-        //                 admin1Realm.syncSession.uploadAllLocalChanges().then(() => {
-        //                     admin1Realm.close();
-        //                     Realm.Sync.User.login(AUTH_URL, new Realm.Sync.Credentials.nickname("admin2", true))
-        //                         .then((admin2) => {
-        //                             const admin2Config = admin2.createConfiguration({
-        //                                 sync:  {
-        //                                     url: REALM_URL,
-        //                                     fullSynchronization: true
-        //                                 }
-        //                             });
-        //                             Realm.open(admin2Config).then(admin2Realm => {
-        //                                 admin2Realm.syncSession.downloadAllServerChanges().then(() => {
-        //
-        //                                 }).catch(e => { reject(e); });
-        //                             });
-        //                         }).catch(e => { reject(e); });
-        //                 }).catch(e => { reject(e); });;
-        //             }).catch(e => { reject(e); });
-        //         }).catch(e => { reject(e); });
-        // });
+            Realm.Sync.User.login(AUTH_URL, new Realm.Sync.Credentials.nickname("admin1", true))
+                .then((admin1) => {
+                    const admin1Config = admin1.createConfiguration({
+                        sync:  {
+                            url: REALM_URL,
+                            fullSynchronization: true
+                        }
+                    });
+                    Realm.open(admin1Config).then((admin1Realm) => {
+                        admin1Realm.write(() => { admin1Realm.create('CompletionHandlerObject', { 'name': 'foo'}); });
+                        admin1Realm.syncSession.uploadAllLocalChanges().then(() => {
+                            admin1Realm.close();
+                            Realm.Sync.User.login(AUTH_URL, new Realm.Sync.Credentials.nickname("admin2", true))
+                                .then((admin2) => {
+                                    const admin2Config = admin2.createConfiguration({
+                                        sync:  {
+                                            url: REALM_URL,
+                                            fullSynchronization: true
+                                        }
+                                    });
+                                    Realm.open(admin2Config).then(admin2Realm => {
+                                        admin2Realm.syncSession.downloadAllServerChanges().then(() => {
+                                            TestCase.assertEqual(1,  admin2Realm.objects('CompletionHandlerObject').length);
+                                            admin2Realm.close();
+                                            resolve();
+                                        }).catch(e => { reject(e); });
+                                    });
+                                }).catch(e => { reject(e); });
+                        }).catch(e => { reject(e); });;
+                    }).catch(e => { reject(e); });
+                }).catch(e => { reject(e); });
+        });
     },
 
     testDownloadAllLocalChanges() {
