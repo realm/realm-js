@@ -1272,7 +1272,7 @@ module.exports = {
         })
     },
 
-    testUploadAllLocalChanges() {
+    testUploadDownloadAllChanges() {
         if(!isNodeProccess) {
             return;
         }
@@ -1284,7 +1284,7 @@ module.exports = {
             properties: {
                 'name': { type: 'string'}
             }
-        }
+        };
 
         return new Promise((resolve, reject) => {
             Realm.Sync.User.login(AUTH_URL, Realm.Sync.Credentials.nickname("admin1", true))
@@ -1309,21 +1309,66 @@ module.exports = {
                                             fullSynchronization: true
                                         }
                                     });
-                                    Realm.open(admin2Config).then(admin2Realm => {
-                                        admin2Realm.syncSession.downloadAllServerChanges().then(() => {
-                                            TestCase.assertEqual(1,  admin2Realm.objects('CompletionHandlerObject').length);
-                                            admin2Realm.close();
-                                            resolve();
-                                        }).catch(e => { reject(e); });
-                                    });
+                                    let admin2Realm = new Realm(admin2Config);
+                                    admin2Realm.syncSession.downloadAllServerChanges().then(() => {
+                                        TestCase.assertEqual(1,  admin2Realm.objects('CompletionHandlerObject').length);
+                                        admin2Realm.close();
+                                        resolve();
+                                    }).catch(e => { reject(e); });
                                 }).catch(e => { reject(e); });
-                        }).catch(e => { reject(e); });;
+                        }).catch(e => { reject(e); });
                     }).catch(e => { reject(e); });
                 }).catch(e => { reject(e); });
         });
     },
 
-    testDownloadAllLocalChanges() {
+    testDownloadAllServerChangesTimeout() {
+        if(!isNodeProccess) {
+            return;
+        }
 
+        const REALM_URL = 'realm://localhost:9080/timeout_download_realm';
+        return new Promise((resolve, reject) => {
+            Realm.Sync.User.login(AUTH_URL, Realm.Sync.Credentials.nickname("admin", true))
+                .then((admin1) => {
+                    const admin1Config = admin1.createConfiguration({
+                        sync: {
+                            url: REALM_URL,
+                            fullSynchronization: true
+                        }
+                    });
+                    let realm = new Realm(admin1Config);
+                    realm.syncSession.downloadAllServerChanges(1).then(() => {
+                        reject("Download did not time out");
+                    }).catch(e => {
+                        resolve();
+                    });
+                });
+        });
+    },
+
+    testUploadAllLocalChangesTimeout() {
+        if(!isNodeProccess) {
+            return;
+        }
+
+        const REALM_URL = 'realm://localhost:9080/timeout_upload_realm';
+        return new Promise((resolve, reject) => {
+            Realm.Sync.User.login(AUTH_URL, Realm.Sync.Credentials.nickname("admin", true))
+                .then((admin1) => {
+                    const admin1Config = admin1.createConfiguration({
+                        sync: {
+                            url: REALM_URL,
+                            fullSynchronization: true
+                        }
+                    });
+                    let realm = new Realm(admin1Config);
+                    realm.syncSession.uploadAllLocalChanges(1).then(() => {
+                        reject("Upload did not time out");
+                    }).catch(e => {
+                        resolve();
+                    });
+                });
+        });
     }
-}
+};
