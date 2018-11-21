@@ -1296,4 +1296,109 @@ module.exports = {
             })
         })
     },
-}
+
+    testUploadDownloadAllChanges() {
+        if(!isNodeProccess) {
+            return;
+        }
+
+        const AUTH_URL = 'http://localhost:9080';
+        const REALM_URL = 'realm://localhost:9080/completion_realm';
+        const schema = {
+            'name': 'CompletionHandlerObject',
+            properties: {
+                'name': { type: 'string'}
+            }
+        };
+
+        return new Promise((resolve, reject) => {
+            let admin2Realm;
+            Realm.Sync.User.login(AUTH_URL, Realm.Sync.Credentials.nickname("admin1", true))
+                .then((admin1) => {
+                    const admin1Config = admin1.createConfiguration({
+                        schema: [schema],
+                        sync:  {
+                            url: REALM_URL,
+                            fullSynchronization: true
+                        }
+                    });
+                    return Realm.open(admin1Config);
+                })
+                .then((admin1Realm) => {
+                    admin1Realm.write(() => { admin1Realm.create('CompletionHandlerObject', { 'name': 'foo'}); });
+                    return admin1Realm.syncSession.uploadAllLocalChanges();
+                })
+                .then(() => {
+                    return Realm.Sync.User.login(AUTH_URL, Realm.Sync.Credentials.nickname("admin2", true));
+                })
+                .then((admin2) => {
+                    const admin2Config = admin2.createConfiguration({
+                        schema: [schema],
+                        sync:  {
+                            url: REALM_URL,
+                            fullSynchronization: true
+                        }
+                    });
+                    admin2Realm = new Realm(admin2Config);
+                    return admin2Realm.syncSession.downloadAllServerChanges();
+                })
+                .then(() => {
+                    TestCase.assertEqual(1,  admin2Realm.objects('CompletionHandlerObject').length);
+                    resolve();
+                })
+                .catch(e => reject(e));
+        });
+    },
+
+    testDownloadAllServerChangesTimeout() {
+        if(!isNodeProccess) {
+            return;
+        }
+
+        const AUTH_URL = 'http://localhost:9080';
+        const REALM_URL = 'realm://localhost:9080/timeout_download_realm';
+        return new Promise((resolve, reject) => {
+            Realm.Sync.User.login(AUTH_URL, Realm.Sync.Credentials.nickname("admin", true))
+                .then((admin1) => {
+                    const admin1Config = admin1.createConfiguration({
+                        sync: {
+                            url: REALM_URL,
+                            fullSynchronization: true
+                        }
+                    });
+                    let realm = new Realm(admin1Config);
+                    realm.syncSession.downloadAllServerChanges(1).then(() => {
+                        reject("Download did not time out");
+                    }).catch(e => {
+                        resolve();
+                    });
+                });
+        });
+    },
+
+    testUploadAllLocalChangesTimeout() {
+        if(!isNodeProccess) {
+            return;
+        }
+
+        const AUTH_URL = 'http://localhost:9080';
+        const REALM_URL = 'realm://localhost:9080/timeout_upload_realm';
+        return new Promise((resolve, reject) => {
+            Realm.Sync.User.login(AUTH_URL, Realm.Sync.Credentials.nickname("admin", true))
+                .then((admin1) => {
+                    const admin1Config = admin1.createConfiguration({
+                        sync: {
+                            url: REALM_URL,
+                            fullSynchronization: true
+                        }
+                    });
+                    let realm = new Realm(admin1Config);
+                    realm.syncSession.uploadAllLocalChanges(1).then(() => {
+                        reject("Upload did not time out");
+                    }).catch(e => {
+                        resolve();
+                    });
+                });
+        });
+    }
+};

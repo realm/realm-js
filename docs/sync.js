@@ -764,6 +764,29 @@ class Session {
      */
     pause() {}
 
+    /**
+     * This method returns a promise that does not resolve successfully until all known local changes have been uploaded
+     * to the server or the specified timeout is hit in which case it will be rejected. If the method times out, the upload
+     * will still continue in the background.
+     *
+     * This method cannot be called before the Realm has been opened.
+     *
+     * @param timeout maximum amount of time to wait in milliseconds before the promise is rejected. If no timeout
+     * is specified the method will wait forever.
+     */
+    uploadAllLocalChanges(timeoutMs) {}
+
+    /**
+     * This method returns a promise that does not resolve successfully until all known remote changes have been
+     * downloaded and applied to the Realm or the specified timeout is hit in which case it will be rejected. If the method
+     * times out, the download will still continue in the background.
+     *
+     * This method cannot be called before the Realm has been opened.
+     *
+     * @param timeout maximum amount of time to wait in milliseconds before the promise will be rejected. If no timeout
+     * is specified the method will wait forever.
+     */
+    downloadAllServerChanges(timeoutMs) {}
 }
 
 /**
