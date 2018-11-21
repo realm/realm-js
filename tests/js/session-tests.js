@@ -1021,6 +1021,31 @@ module.exports = {
         });
     },
 
+    testRoleClassWithPartialSyncCanCoexistWithPermissionsClass() {
+        if (!isNodeProccess) {
+            return;
+        }
+
+        const username = uuid();
+        const credentials = Realm.Sync.Credentials.nickname(username);
+        return Realm.Sync.User.login('http://localhost:9080', credentials).then(user => {
+            let config = {
+                schema: [{name: 'Role', properties: {name: 'string'}}],
+                sync: {
+                    user: user,
+                    url: 'realm://localhost:9080/~/roleClass',
+                    fullSynchronization: false,
+                    error: (session, error) => console.log(error)
+                }
+            };
+            return Realm.open(config);
+        }).then(realm => {
+            // verify that these don't throw
+            realm.objects('Role');
+            realm.objects('__Role');
+        });
+    },
+
     testClientReset() {
         // FIXME: try to enable for React Native
         if (!isNodeProccess) {
