@@ -490,7 +490,7 @@ declare namespace Realm.Sync {
         resume(): void;
         pause(): void;
 
-        downloadAllServerChanges(): Promise<void>;
+        downloadAllServerChanges(timeoutMs?: number): Promise<void>;
         uploadAllLocalChanges(): Promise<void>;
     }
 
