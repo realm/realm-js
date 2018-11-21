@@ -1327,6 +1327,7 @@ module.exports = {
             return;
         }
 
+        const AUTH_URL = 'http://localhost:9080';
         const REALM_URL = 'realm://localhost:9080/timeout_download_realm';
         return new Promise((resolve, reject) => {
             Realm.Sync.User.login(AUTH_URL, Realm.Sync.Credentials.nickname("admin", true))
@@ -1352,6 +1353,7 @@ module.exports = {
             return;
         }
 
+        const AUTH_URL = 'http://localhost:9080';
         const REALM_URL = 'realm://localhost:9080/timeout_upload_realm';
         return new Promise((resolve, reject) => {
             Realm.Sync.User.login(AUTH_URL, Realm.Sync.Credentials.nickname("admin", true))
