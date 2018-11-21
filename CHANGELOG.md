@@ -7,7 +7,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * Tokens are refreshed ahead of time. If the lifetime of the token is lower than the threshold for refreshing it will cause the client to continously refresh, spamming the server with refresh requests. A lower bound of 10 seconds has been introduced. ([#2115](https://github.com/realm/realm-js/issues/2115), since v1.0.2)
 * Prevent automatic token refreshes for Realms that have been closed. Previously, these could have resulted in obscure `Unhandled session token refresh error` messages in the logs that were benign. ([#2119](https://github.com/realm/realm-js/pull/2119))
 * Removed calls to `new Buffer()` as this is deprecated with Node 10. ([#2107](https://github.com/realm/realm-js/issues/2107), since v2.19.0)
-* Removes call to non-existing function `Realm._constructor()` in the React Native debugging support library. When trying to debug, users will experience a crash with message `this._constructor is not a function`. (https://github.com/realm/realm-js/issues/491#issuecomment-438688937, since v2.19.0-rc.4)
+* When trying to debug, users could experience a crash with the message `this._constructor is not a function`.  (https://github.com/realm/realm-js/issues/491#issuecomment-438688937, since v2.19.0-rc.4)
 
 ### Compatibility
 * Realm Object Server: 3.11.0 or later.
