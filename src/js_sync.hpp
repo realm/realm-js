@@ -696,7 +696,6 @@ void SessionClass<T>::wait_for_completion(Direction direction, ContextType ctx, 
         Protected<ObjectType> protected_this(ctx, this_object);
         Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
 
-        std::function<DownloadUploadCompletionHandler> completion_func;
         EventLoopDispatcher<DownloadUploadCompletionHandler> completion_handler([=](std::error_code error) {
             HANDLESCOPE
             ValueType callback_arguments[1];
@@ -711,14 +710,13 @@ void SessionClass<T>::wait_for_completion(Direction direction, ContextType ctx, 
             Function<T>::callback(protected_ctx, protected_callback, typename T::Object(), 1, callback_arguments);
         });
 
-        completion_func = std::move(completion_handler);
         bool callback_registered;
         switch(direction) {
             case Upload:
-                callback_registered = session->wait_for_upload_completion(std::move(completion_func));
+                callback_registered = session->wait_for_upload_completion(std::move(completion_handler));
                 break;
             case Download:
-                callback_registered = session->wait_for_download_completion(std::move(completion_func));
+                callback_registered = session->wait_for_download_completion(std::move(completion_handler));
                 break;
         }
         if (!callback_registered) {

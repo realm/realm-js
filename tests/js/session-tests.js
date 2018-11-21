@@ -1287,6 +1287,7 @@ module.exports = {
         };
 
         return new Promise((resolve, reject) => {
+            let admin2Realm;
             Realm.Sync.User.login(AUTH_URL, Realm.Sync.Credentials.nickname("admin1", true))
                 .then((admin1) => {
                     const admin1Config = admin1.createConfiguration({
@@ -1296,29 +1297,31 @@ module.exports = {
                             fullSynchronization: true
                         }
                     });
-                    Realm.open(admin1Config).then((admin1Realm) => {
-                        admin1Realm.write(() => { admin1Realm.create('CompletionHandlerObject', { 'name': 'foo'}); });
-                        admin1Realm.syncSession.uploadAllLocalChanges().then(() => {
-                            admin1Realm.close();
-                            Realm.Sync.User.login(AUTH_URL, Realm.Sync.Credentials.nickname("admin2", true))
-                                .then((admin2) => {
-                                    const admin2Config = admin2.createConfiguration({
-                                        schema: [schema],
-                                        sync:  {
-                                            url: REALM_URL,
-                                            fullSynchronization: true
-                                        }
-                                    });
-                                    let admin2Realm = new Realm(admin2Config);
-                                    admin2Realm.syncSession.downloadAllServerChanges().then(() => {
-                                        TestCase.assertEqual(1,  admin2Realm.objects('CompletionHandlerObject').length);
-                                        admin2Realm.close();
-                                        resolve();
-                                    }).catch(e => { reject(e); });
-                                }).catch(e => { reject(e); });
-                        }).catch(e => { reject(e); });
-                    }).catch(e => { reject(e); });
-                }).catch(e => { reject(e); });
+                    return Realm.open(admin1Config);
+                })
+                .then((admin1Realm) => {
+                    admin1Realm.write(() => { admin1Realm.create('CompletionHandlerObject', { 'name': 'foo'}); });
+                    return admin1Realm.syncSession.uploadAllLocalChanges();
+                })
+                .then(() => {
+                    return Realm.Sync.User.login(AUTH_URL, Realm.Sync.Credentials.nickname("admin2", true));
+                })
+                .then((admin2) => {
+                    const admin2Config = admin2.createConfiguration({
+                        schema: [schema],
+                        sync:  {
+                            url: REALM_URL,
+                            fullSynchronization: true
+                        }
+                    });
+                    admin2Realm = new Realm(admin2Config);
+                    return admin2Realm.syncSession.downloadAllServerChanges();
+                })
+                .then(() => {
+                    TestCase.assertEqual(1,  admin2Realm.objects('CompletionHandlerObject').length);
+                    resolve();
+                })
+                .catch(e => reject(e));
         });
     },
 
