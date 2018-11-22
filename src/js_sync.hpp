@@ -45,11 +45,6 @@ namespace realm {
 namespace js {
 
 inline realm::SyncManager& syncManagerShared() {
-    static std::once_flag flag;
-    std::call_once(flag, [] {
-        ensure_directory_exists_for_file(default_realm_file_directory());
-        SyncManager::shared().configure_file_system(default_realm_file_directory(), SyncManager::MetadataMode::NoEncryption);
-    });
     return SyncManager::shared();
 }
 
@@ -215,6 +210,7 @@ public:
     using ProgressHandler = void(uint64_t transferred_bytes, uint64_t transferrable_bytes);
     using StateHandler = void(SyncSession::PublicState old_state, SyncSession::PublicState new_state);
     using ConnectionHandler = void(SyncSession::ConnectionState new_state, SyncSession::ConnectionState old_state);
+    using DownloadUploadCompletionHandler = void(std::error_code error);
 
     static FunctionType create_constructor(ContextType);
 
@@ -236,6 +232,9 @@ public:
     static void resume(ContextType ctx, ObjectType this_object, Arguments &, ReturnValue &);
     static void pause(ContextType ctx, ObjectType this_object, Arguments &, ReturnValue &);
     static void override_server(ContextType, ObjectType, Arguments &, ReturnValue &);
+    static void wait_for_download_completion(ContextType, ObjectType, Arguments &, ReturnValue &);
+    static void wait_for_upload_completion(ContextType, ObjectType, Arguments &, ReturnValue &);
+
 
     PropertyMap<T> const properties = {
         {"config", {wrap<get_config>, nullptr}},
@@ -249,6 +248,8 @@ public:
         {"_simulateError", wrap<simulate_error>},
         {"_refreshAccessToken", wrap<refresh_access_token>},
         {"_overrideServer", wrap<override_server>},
+        {"_waitForDownloadCompletion", wrap<wait_for_download_completion>},
+        {"_waitForUploadCompletion", wrap<wait_for_upload_completion>},
         {"addProgressNotification", wrap<add_progress_notification>},
         {"removeProgressNotification", wrap<remove_progress_notification>},
         {"addConnectionNotification", wrap<add_connection_notification>},
@@ -259,7 +260,9 @@ public:
     };
 
 private:
+    enum Direction { Upload, Download };
     static std::string get_connection_state_value(SyncSession::ConnectionState state);
+    static void wait_for_completion(Direction direction, ContextType ctx, ObjectType this_object, Arguments& args);
 };
 
 template<typename T>
@@ -685,6 +688,57 @@ void SessionClass<T>::override_server(ContextType ctx, ObjectType this_object, A
 }
 
 template<typename T>
+void SessionClass<T>::wait_for_completion(Direction direction, ContextType ctx, ObjectType this_object, Arguments &args) {
+    args.validate_count(1);
+    if (auto session = get_internal<T, SessionClass<T>>(this_object)->lock()) {
+        auto callback_function = Value::validated_to_function(ctx, args[0]);
+        Protected<FunctionType> protected_callback(ctx, callback_function);
+        Protected<ObjectType> protected_this(ctx, this_object);
+        Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
+
+        EventLoopDispatcher<DownloadUploadCompletionHandler> completion_handler([=](std::error_code error) {
+            HANDLESCOPE
+            ValueType callback_arguments[1];
+            if (error) {
+                ObjectType error_object = Object::create_empty(protected_ctx);
+                Object::set_property(protected_ctx, error_object, "message", Value::from_string(protected_ctx, error.message()));
+                Object::set_property(protected_ctx, error_object, "errorCode", Value::from_number(protected_ctx, error.value()));
+                callback_arguments[0] = error_object;
+            } else {
+                callback_arguments[0] = Value::from_undefined(ctx);
+            }
+            Function<T>::callback(protected_ctx, protected_callback, typename T::Object(), 1, callback_arguments);
+        });
+
+        bool callback_registered;
+        switch(direction) {
+            case Upload:
+                callback_registered = session->wait_for_upload_completion(std::move(completion_handler));
+                break;
+            case Download:
+                callback_registered = session->wait_for_download_completion(std::move(completion_handler));
+                break;
+        }
+        if (!callback_registered) {
+            throw new logic_error("Could not register upload/download completion handler");
+        }
+        auto syncSession = create_object<T, SessionClass<T>>(ctx, new WeakSession(session));
+        PropertyAttributes attributes = ReadOnly | DontEnum | DontDelete;
+        Object::set_property(ctx, callback_function, "_syncSession", syncSession, attributes);
+    }
+}
+
+template<typename T>
+void SessionClass<T>::wait_for_upload_completion(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue&) {
+    wait_for_completion(Direction::Upload, ctx, this_object, args);
+}
+
+template<typename T>
+void SessionClass<T>::wait_for_download_completion(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue&) {
+    wait_for_completion(Direction::Download, ctx, this_object, args);
+}
+
+template<typename T>
 class Subscription : public partial_sync::Subscription {
 public:
     Subscription(partial_sync::Subscription s, util::Optional<std::string> name) : partial_sync::Subscription(std::move(s)), m_name(name) {}
@@ -847,7 +901,9 @@ public:
 
     static FunctionType create_constructor(ContextType);
 
+    static void initialize_sync_manager(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void set_sync_log_level(ContextType, ObjectType, Arguments &, ReturnValue &);
+    static void set_sync_user_agent(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void initiate_client_reset(ContextType, ObjectType, Arguments &, ReturnValue &);
 
     // private
@@ -860,7 +916,9 @@ public:
 
     MethodMap<T> const static_methods = {
         {"setLogLevel", wrap<set_sync_log_level>},
+        {"setUserAgent", wrap<set_sync_user_agent>},
         {"initiateClientReset", wrap<initiate_client_reset>},
+        {"_initializeSyncManager", wrap<initialize_sync_manager>},
     };
 };
 
@@ -873,6 +931,14 @@ inline typename T::Function SyncClass<T>::create_constructor(ContextType ctx) {
     Object::set_property(ctx, sync_constructor, "Session", ObjectWrap<T, SessionClass<T>>::create_constructor(ctx), attributes);
 
     return sync_constructor;
+}
+
+template<typename T>
+void SyncClass<T>::initialize_sync_manager(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue & return_value) {
+    args.validate_count(1);
+    std::string user_agent_binding_info = Value::validated_to_string(ctx, args[0]);
+    ensure_directory_exists_for_file(default_realm_file_directory());
+    SyncManager::shared().configure(default_realm_file_directory(), SyncManager::MetadataMode::NoEncryption, user_agent_binding_info);
 }
 
 template<typename T>
@@ -896,6 +962,13 @@ void SyncClass<T>::set_sync_log_level(ContextType ctx, ObjectType this_object, A
     if (!in || !in.eof())
         throw std::runtime_error("Bad log level");
     syncManagerShared().set_log_level(log_level_2);
+}
+
+template<typename T>
+void SyncClass<T>::set_sync_user_agent(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
+    args.validate_count(1);
+    std::string application_user_agent = Value::validated_to_string(ctx, args[0]);
+    syncManagerShared().set_user_agent(application_user_agent);
 }
 
 template<typename T>
