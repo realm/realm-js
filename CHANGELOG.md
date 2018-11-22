@@ -1,4 +1,4 @@
-x.x.x Release notes (yyyy-MM-dd)
+2.20.0 Release notes (2018-11-22)
 =============================================================
 ### Enhancements
 * Adds support for setting a custom User-Agent string using `Realm.Sync.setUserAgent(...)`. This string will be sent to the server when creating a connection. ([#2102](https://github.com/realm/realm-js/issues/2102))
