@@ -9,6 +9,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * Prevent automatic token refreshes for Realms that have been closed. Previously, these could have resulted in obscure `Unhandled session token refresh error` messages in the logs that were benign. ([#2119](https://github.com/realm/realm-js/pull/2119))
 * When trying to debug, users could experience a crash with the message `this._constructor is not a function`.  (https://github.com/realm/realm-js/issues/491#issuecomment-438688937, since v2.19.0-rc.4)
 * Check the correct name when automatically adding the permission object schemas to the schema for query-based sync realms so that defining types with the same name works correctly. ([#2121](https://github.com/realm/realm-js/pull/2121), since 2.15.0)
+* Fixes a bug where the JS engine might garbage collect an object prematurely. ([#496](https://github.com/realm/realm-js-private/issues/496), since v2.19.0)
 
 ### Compatibility
 * Realm Object Server: 3.11.0 or later.
