@@ -2,11 +2,12 @@ x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
 * Adds support for setting a custom User-Agent string using `Realm.Sync.setUserAgent(...)`. This string will be sent to the server when creating a connection. ([#2102](https://github.com/realm/realm-js/issues/2102))
-* Adds support for uploading and downloading changes using `Realm.Sync.Session.uploadAllLocalChanges(timeout)` and `Realm.Sync.Session.downloadAllRemoteChanges(timeout)`. ([#2122](https://github.com/realm/realm-js/issues/2122)) 
+* Adds support for uploading and downloading changes using `Realm.Sync.Session.uploadAllLocalChanges(timeout)` and `Realm.Sync.Session.downloadAllRemoteChanges(timeout)`. ([#2122](https://github.com/realm/realm-js/issues/2122))
 
 ### Fixed
 * Tokens are refreshed ahead of time. If the lifetime of the token is lower than the threshold for refreshing it will cause the client to continously refresh, spamming the server with refresh requests. A lower bound of 10 seconds has been introduced. ([#2115](https://github.com/realm/realm-js/issues/2115), since v1.0.2)
 * Prevent automatic token refreshes for Realms that have been closed. Previously, these could have resulted in obscure `Unhandled session token refresh error` messages in the logs that were benign. ([#2119](https://github.com/realm/realm-js/pull/2119))
+* When trying to debug, users could experience a crash with the message `this._constructor is not a function`.  (https://github.com/realm/realm-js/issues/491#issuecomment-438688937, since v2.19.0-rc.4)
 * Check the correct name when automatically adding the permission object schemas to the schema for query-based sync realms so that defining types with the same name works correctly. ([#2121](https://github.com/realm/realm-js/pull/2121), since 2.15.0)
 
 ### Compatibility
@@ -16,6 +17,7 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Internal
 * Upgrades to Object Store commit: 66eea3994f598a388a775b93acb1c13603cc65c3
+* Aligns better with Node 10 by not using deprecated calls. ([#2107](https://github.com/realm/realm-js/issues/2107), since v2.19.0)
 
 2.19.1 Release notes (2018-11-15)
 =============================================================
