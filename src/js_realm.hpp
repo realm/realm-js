@@ -890,7 +890,7 @@ void RealmClass<T>::async_open_realm(ContextType ctx, ObjectType this_object, Ar
         realm->close();
 
         // Reopen it with the real configuration and pass that Realm back to the callback
-        auto final_realm = create_shared_realm(ctx, std::move(config),
+        auto final_realm = create_shared_realm(protected_ctx, std::move(config),
                                                schema_updated, std::move(defaults),
                                                std::move(constructors));
         ObjectType object = create_object<T, RealmClass<T>>(protected_ctx, new SharedRealm(final_realm));
