@@ -1467,6 +1467,10 @@ module.exports = {
 
 
     testQueryBasedOnlyMethods: function() {
+        if (!global.enableSyncTests) {
+            return;
+        }
+
         const realm = new Realm({sync: true});
         TestCase.assertThrowsContaining(() =>  {
             realm.privileges();
