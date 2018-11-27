@@ -1224,7 +1224,6 @@ void RealmClass<T>::get_schema_name_from_object(ContextType ctx, ObjectType this
     return_value.set(object_schema.name);
 }
 
-if
 template<typename T>
 void RealmClass<T>::privileges(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_maximum(1);
