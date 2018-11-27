@@ -821,7 +821,6 @@ declare class Realm {
      */
     writeCopyTo(path: string, encryptionKey?: ArrayBuffer | ArrayBufferView): void;
 
-    privileges() : Realm.Permissions.Realm;
     privileges() : Realm.Permissions.RealmPrivileges;
     privileges(objectType: string | Realm.ObjectSchema | Function) : Realm.Permissions.ClassPrivileges;
     privileges(obj: Realm.Object) : Realm.Permissions.ObjectPrivileges;
