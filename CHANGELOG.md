@@ -1,7 +1,7 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
-* None.
+* Using methods only available for Query-based Realms now throw a better error message if called on the wrong Realm type.
 
 ### Fixed
 * `_initializeSyncManager` missing when debugging React Native. Resulted in messages like `realmConstructor.Sync._initializeSyncManager is not a function` ([#2128](https://github.com/realm/realm-js/issues/2128), since v2.20.0)

@@ -253,6 +253,7 @@ public:
     static void get_is_closed(ContextType, ObjectType, ReturnValue &);
 #if REALM_ENABLE_SYNC
     static void get_sync_session(ContextType, ObjectType, ReturnValue &);
+    static void get_is_partial_realm(ContextType, ObjectType, ReturnValue &);
 #endif
 
     // static methods
@@ -318,6 +319,7 @@ public:
         {"isClosed", {wrap<get_is_closed>, nullptr}},
 #if REALM_ENABLE_SYNC
         {"syncSession", {wrap<get_sync_session>, nullptr}},
+        {"_isPartialRealm", {wrap<get_is_partial_realm>, nullptr}},
 #endif
     };
 
@@ -818,6 +820,13 @@ void RealmClass<T>::get_sync_session(ContextType ctx, ObjectType object, ReturnV
     }
 
 }
+
+template<typename T>
+void RealmClass<T>::get_is_partial_realm(ContextType ctx, ObjectType object, ReturnValue &return_value) {
+    auto realm = *get_internal<T, RealmClass<T>>(object);
+    auto config = realm->config();
+    return_value.set(config.sync_config && config.sync_config->is_partial);
+}
 #endif
 
 #if REALM_ENABLE_SYNC
@@ -1225,6 +1234,10 @@ void RealmClass<T>::privileges(ContextType ctx, ObjectType this_object, Argument
     };
 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
+    auto config = realm->config();
+    if (!(config.sync_config && config.sync_config->is_partial)) {
+        throw std::runtime_error("Wrong Realm type. 'privileges()' is only available for Query-based Realms.");
+    }
     if (args.count == 0) {
         auto p = realm->get_privileges();
         ObjectType object = Object::create_empty(ctx);

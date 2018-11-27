@@ -1465,4 +1465,27 @@ module.exports = {
         realm.close();
     },
 
+
+    testQueryBasedOnlyMethods: function() {
+        const realm = new Realm({sync: true});
+        TestCase.assertThrowsContaining(() =>  {
+            realm.privileges();
+        }, 'Wrong Realm type');
+        TestCase.assertThrowsContaining(() =>  {
+            realm.privileges('__Role');
+        }, 'Wrong Realm type');
+        TestCase.assertThrowsContaining(() =>  {
+            realm.permissions();
+        }, 'Wrong Realm type');
+        TestCase.assertThrowsContaining(() =>  {
+            realm.permissions('__Class');
+        }, 'Wrong Realm type');
+        TestCase.assertThrowsContaining(() =>  {
+            realm.subscriptions();
+        }, 'Wrong Realm type');
+        TestCase.assertThrowsContaining(() =>  {
+            realm.unsubscribe('foo');
+        }, 'Wrong Realm type');
+    } ,
+
 };
