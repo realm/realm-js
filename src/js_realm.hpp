@@ -1224,10 +1224,12 @@ void RealmClass<T>::get_schema_name_from_object(ContextType ctx, ObjectType this
     return_value.set(object_schema.name);
 }
 
+if
 template<typename T>
 void RealmClass<T>::privileges(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_maximum(1);
 
+#if REALM_ENABLE_SYNC
     using Privilege = realm::ComputedPrivileges;
     auto has_privilege = [](Privilege actual, Privilege expected) {
         return (static_cast<int>(actual) & static_cast<int>(expected)) == static_cast<int>(expected);
@@ -1274,6 +1276,9 @@ void RealmClass<T>::privileges(ContextType ctx, ObjectType this_object, Argument
     Object::set_property(ctx, object, "subscribe", Value::from_boolean(ctx, has_privilege(p, Privilege::Query)));
     Object::set_property(ctx, object, "setPermissions", Value::from_boolean(ctx, has_privilege(p, Privilege::SetPermissions)));
     return_value.set(object);
+#else
+    throw std::logic_error("Realm.privileges() can only be used with Query-based Realms.");
+#endif
 }
 
 } // js
