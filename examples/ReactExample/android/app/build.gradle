@@ -127,7 +127,6 @@ android {
 
 dependencies {
     implementation project(':react-native-exit-app-no-history')
-    implementation fileTree(dir: "libs", include: ["*.jar"])
     implementation "com.android.support:appcompat-v7:23.0.1"
     implementation "com.facebook.react:react-native:+"  // From node_modules
     implementation project(":realm")
