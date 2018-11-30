@@ -4,7 +4,7 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.1.4'
+        classpath 'com.android.tools.build:gradle:3.1.2'
         classpath 'de.undercouch:gradle-download-task:1.2'
     }
 }
@@ -228,7 +228,7 @@ def getNdkBuildFullPath() {
 }
 
 task buildReactNdkLib(dependsOn: [downloadJSCHeaders,prepareRealmCore,prepareOpenSSL_x86,prepareOpenSSL_arm], type: Exec) {
-    inputs.files('src/main/jni')
+    inputs.file('src/main/jni')
     outputs.dir("$buildDir/realm-react-ndk/all")
     commandLine getNdkBuildFullPath(),
             '-e',
@@ -393,17 +393,14 @@ afterEvaluate { project ->
 }
 
 def dependencyType = "implementation"
-def providedDependencyType = "compileOnly"
 try {
     project.getConfigurations().getByName("implementation")
 } catch (UnknownConfigurationException e) {
-    // Pre 3.0 Android Gradle Plugin
-    dependencyType = "compile"
-    providedDependencyType = "provided"
+    dependencyType = "compile" // Pre 3.0 Android Gradle Plugin
 }
 
 project.dependencies {
-    add(providedDependencyType, 'com.squareup.okhttp3:okhttp:3.9.0')
-    add(providedDependencyType, 'com.facebook.react:react-native:+')
+    add(dependencyType, fileTree(dir: 'libs', include: ['*.jar']))
     add(dependencyType, 'org.nanohttpd:nanohttpd:2.2.0')
+    add(dependencyType, 'com.facebook.react:react-native:+')
 }
