@@ -141,6 +141,16 @@ class Sync {
     static addListener(serverUrl, adminUser, filterRegex, worker) {}
 
     /**
+     * Calling this method will force Realm to attempt to reconnect to the server immediately.
+     *
+     * Realm will reconnect automatically, but by using exponential backoff. This means that if the device is offline for
+     * a long time, restoring the connection after it comes back online can take longer than expected. In situations
+     * where it is possible to detect the network condition (e.g. Airplane mode). Manually calling this method can
+     * provide a smoother user experience.
+     */
+    static reconnect() {}
+
+    /**
      * Remove a previously registered sync listener.
      *
      * @param {string} filterRegex - The regular expression previously used to register the listener.

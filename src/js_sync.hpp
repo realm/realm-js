@@ -905,6 +905,7 @@ public:
     static void set_sync_log_level(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void set_sync_user_agent(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void initiate_client_reset(ContextType, ObjectType, Arguments &, ReturnValue &);
+    static void reconnect(ContextType, ObjectType, Arguments &, ReturnValue &);
 
     // private
     static std::function<SyncBindSessionHandler> session_bind_callback(ContextType ctx, ObjectType sync_constructor);
@@ -918,6 +919,7 @@ public:
         {"setLogLevel", wrap<set_sync_log_level>},
         {"setUserAgent", wrap<set_sync_user_agent>},
         {"initiateClientReset", wrap<initiate_client_reset>},
+        {"reconnect", wrap<reconnect>},
         {"_initializeSyncManager", wrap<initialize_sync_manager>},
     };
 };
@@ -969,6 +971,12 @@ void SyncClass<T>::set_sync_user_agent(ContextType ctx, ObjectType this_object, 
     args.validate_count(1);
     std::string application_user_agent = Value::validated_to_string(ctx, args[0]);
     syncManagerShared().set_user_agent(application_user_agent);
+}
+
+template<typename T>
+void SyncClass<T>::reconnect(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
+    args.validate_count(0);
+    syncManagerShared().reconnect();
 }
 
 template<typename T>

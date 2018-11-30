@@ -1400,5 +1400,30 @@ module.exports = {
                     });
                 });
         });
+    },
+
+    testReconnect() {
+        if(!isNodeProccess) {
+            return;
+        }
+
+        const AUTH_URL = 'http://localhost:9080';
+        const REALM_URL = 'realm://localhost:9080/~/reconnect';
+        return new Promise((resolve, reject) => {
+            Realm.Sync.User.login(AUTH_URL, Realm.Sync.Credentials.nickname("admin", true))
+                .then((admin1) => {
+                    const admin1Config = admin1.createConfiguration({
+                        sync: {
+                            url: REALM_URL,
+                            fullSynchronization: true
+                        }
+                    });
+                    let realm = new Realm(admin1Config);
+
+                    // No real way to check if this works automatically.
+                    // This is just a smoke test, making sure the method doesn't crash outright.
+                    Realm.Sync.reconnect();
+                });
+        });
     }
 };
