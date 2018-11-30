@@ -89,7 +89,6 @@
     "node-pre-gyp": "^0.11.0",
     "progress": "^2.0.0",
     "prop-types": "^15.5.10",
-    "realm-object-server": "^3.11.1",
     "request": "^2.88.0",
     "stream-counter": "^1.0.0",
     "sync-request": "^3.0.1",
