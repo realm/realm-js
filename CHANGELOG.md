@@ -6,6 +6,7 @@ x.x.x Release notes (yyyy-MM-dd)
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
 * Fixed a bug that prevented admin token users from being properly deserialized when calling `User.deserialize`. ([#2155](https://github.com/realm/realm-js/issues/2155), since v2.16.0)
+* ReactNative for Android no longer uses deprecated methods and can build using Gradle 5.0 and above. ([#1995](https://github.com/realm/realm-js/issues/1995))
 
 ### Compatibility
 * Realm Object Server: 3.11.0 or later.
