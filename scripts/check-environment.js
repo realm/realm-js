@@ -36,12 +36,6 @@ exec('npm --version', (err, stdout) => {
   const matches = verRegex.exec(npmVer);
   const majorVer = +matches[1];
 
-  if (majorVer >= 5) {
-    console.error(`Installed version of npm (${npmVer}) which uses symbolic links for local packages.`);
-    console.error('This is currently incompatible with our tests. Please use npm version 4 or less');
-    process.exit(-1);
-  }
-
   successLog(`npm version is ${npmVer}`);
 
   const objectStoreDir = path.join(__dirname, '..', 'src', 'object-store');

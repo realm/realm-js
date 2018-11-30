@@ -206,23 +206,23 @@ delete_ios_simulator() {
 cleanup >/dev/null 2>&1
 trap cleanup EXIT
 
-# Use a consistent version of Node if possible.
-if [[ -z "$(command -v nvm)" ]]; then
-  set +e
-  if [ -f "$NVM_DIR/nvm.sh" ]; then
-    . "$NVM_DIR/nvm.sh" '' || true
-  elif [ -x "$(command -v brew)" ] && [ -f "$(brew --prefix nvm)/nvm.sh" ]; then
-    # we must be on mac and nvm was installed with brew
-    # TODO: change the mac slaves to use manual nvm installation
-    . "$(brew --prefix nvm)/nvm.sh" '' || true
-  elif [ -f "$HOME/.nvm/nvm.sh" ]; then
-    . ~/.nvm/nvm.sh ''
-  fi
-  set -e
-fi
-if [[ "$(command -v nvm)" ]]; then
-  nvm install 6.11.3
-fi
+# # Use a consistent version of Node if possible.
+# if [[ -z "$(command -v nvm)" ]]; then
+#   set +e
+#   if [ -f "$NVM_DIR/nvm.sh" ]; then
+#     . "$NVM_DIR/nvm.sh" '' || true
+#   elif [ -x "$(command -v brew)" ] && [ -f "$(brew --prefix nvm)/nvm.sh" ]; then
+#     # we must be on mac and nvm was installed with brew
+#     # TODO: change the mac slaves to use manual nvm installation
+#     . "$(brew --prefix nvm)/nvm.sh" '' || true
+#   elif [ -f "$HOME/.nvm/nvm.sh" ]; then
+#     . ~/.nvm/nvm.sh ''
+#   fi
+#   set -e
+# fi
+# if [[ "$(command -v nvm)" ]]; then
+#   nvm install 6.11.3
+# fi
 
 # Remove cached packages
 rm -rf ~/.yarn-cache/npm-realm-*
@@ -249,11 +249,12 @@ case "$TARGET" in
   npm run jsdoc
   ;;
 "react-tests")
+  rootdir="$(pwd)"
   npm run check-environment
   download_server
   start_server
   pushd tests/react-test-app
-  npm install
+  "${rootdir}/node_modules/.bin/install-local"
   open_chrome
   start_packager
 
@@ -262,10 +263,11 @@ case "$TARGET" in
   stop_server
   ;;
 "react-example")
+  rootdir="$(pwd)"
   npm run check-environment
   pushd examples/ReactExample
 
-  npm install
+  "${rootdir}/node_modules/.bin/install-local"
   open_chrome
   start_packager
 
@@ -276,6 +278,7 @@ case "$TARGET" in
   echo "{}" > $(pwd)/components/params.json
   ;;
 "react-tests-android")
+  rootdir="$(pwd)"
   npm run check-environment
   if [ "$(uname)" = 'Darwin' ]; then
     download_server
@@ -290,7 +293,7 @@ case "$TARGET" in
   popd
 
   pushd tests/react-test-app
-  npm install
+  "${rootdir}/node_modules/.bin/install-local"
 
   echo "Resetting logcat"
   # Despite the docs claiming -c to work, it doesn't, so `-T 1` alleviates that.
@@ -323,6 +326,7 @@ case "$TARGET" in
   check_test_results ReactTests
   ;;
 "node")
+  rootdir="$(pwd)"
   npm run check-environment
   if [ "$(uname)" = 'Darwin' ]; then
     echo "downloading server"
@@ -343,7 +347,7 @@ case "$TARGET" in
   test_temp_dir=$PWD # set it to be cleaned at exit
 
   pushd "$SRCROOT/tests"
-  npm install
+  "${rootdir}/node_modules/.bin/install-local"
   eval "$npm_tests_cmd"
   popd
   stop_server
