@@ -171,6 +171,16 @@ class Sync {
     static setLogLevel(log_level) {}
 
     /**
+     * Set the application part of the User-Agent string that will be sent to the Realm Object Server when a session
+     * is created.
+     *
+     * This method can only be called up to the point where the first Realm is opened. After that, the User-Agent
+     * can no longer be changed.
+     * @param {string} the user agent description
+     */
+    static setUserAgent(userAgent) {}
+
+    /**
      * Initiate a client reset. The Realm must be closed prior to the reset.
      *
      * @param {string} [path] - The path to the Realm to reset.
@@ -252,7 +262,7 @@ class ChangeEvent {
 
 /**
  * @typedef Realm.Sync~LogLevel
- * @type {("error"|"info"|"debug")}
+ * @type {("all"|"trace"|"debug"|"detail"|"info"|"warn"|"error"|"fatal"|"off")}
  */
 
 /**
@@ -754,6 +764,29 @@ class Session {
      */
     pause() {}
 
+    /**
+     * This method returns a promise that does not resolve successfully until all known local changes have been uploaded
+     * to the server or the specified timeout is hit in which case it will be rejected. If the method times out, the upload
+     * will still continue in the background.
+     *
+     * This method cannot be called before the Realm has been opened.
+     *
+     * @param timeout maximum amount of time to wait in milliseconds before the promise is rejected. If no timeout
+     * is specified the method will wait forever.
+     */
+    uploadAllLocalChanges(timeoutMs) {}
+
+    /**
+     * This method returns a promise that does not resolve successfully until all known remote changes have been
+     * downloaded and applied to the Realm or the specified timeout is hit in which case it will be rejected. If the method
+     * times out, the download will still continue in the background.
+     *
+     * This method cannot be called before the Realm has been opened.
+     *
+     * @param timeout maximum amount of time to wait in milliseconds before the promise will be rejected. If no timeout
+     * is specified the method will wait forever.
+     */
+    downloadAllServerChanges(timeoutMs) {}
 }
 
 /**

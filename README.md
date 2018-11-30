@@ -94,7 +94,7 @@ The generated docs can be found by opening `docs/output/realm/<version>/index.ht
 
 ## Debugging the node addon
 
-You can use (Visual Studio Code)[https://code.visualstudio.com/] to develop and debug. In the `.vscode` folder, configuration for building and debugging has been added for your convience.
+You can use [Visual Studio Code](https://code.visualstudio.com/) to develop and debug. In the `.vscode` folder, configuration for building and debugging has been added for your convience.
 
 VSCode has good support for debugging JavaScript, but to work with C++ code, you are required to install two additional VSCode extensions:
 

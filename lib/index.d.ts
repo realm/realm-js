@@ -118,7 +118,7 @@ declare namespace Realm {
         /**
          * @returns Results<T>
          */
-        linkingObjects<T>(objectType: string, property: string): Results<T>;
+        linkingObjects<T>(objectType: string, property: string): Results<T & Realm.Object>;
 
         /**
          * @returns number
@@ -489,6 +489,9 @@ declare namespace Realm.Sync {
 
         resume(): void;
         pause(): void;
+
+        downloadAllServerChanges(timeoutMs?: number): Promise<void>;
+        uploadAllLocalChanges(timeoutMs?: number): Promise<void>;
     }
 
     type SubscriptionNotificationCallback = (subscription: Subscription, state: number) => void;
@@ -540,6 +543,7 @@ declare namespace Realm.Sync {
     function removeAllListeners(): Promise<void>;
     function removeListener(regex: string, name: string, changeCallback: (changeEvent: ChangeEvent) => void): Promise<void>;
     function setLogLevel(logLevel: 'all' | 'trace' | 'debug' | 'detail' | 'info' | 'warn' | 'error' | 'fatal' | 'off'): void;
+    function setUserAgent(userAgent: string): void;
     function initiateClientReset(path: string): void;
 
     /**
@@ -701,7 +705,7 @@ declare class Realm {
      * @param {Realm.ObjectSchema} object schema describing the object that should be created.
      * @returns {T}
      */
-    static createTemplateObject<T>(objectSchema: Realm.ObjectSchema): T;
+    static createTemplateObject<T>(objectSchema: Realm.ObjectSchema): T & Realm.Object;
 
     /**
      * Delete the Realm file for the given configuration.
@@ -753,13 +757,13 @@ declare class Realm {
      * @param  {number|string} key
      * @returns {T | undefined}
      */
-    objectForPrimaryKey<T>(type: string | Realm.ObjectType | Function, key: number | string): T | undefined;
+    objectForPrimaryKey<T>(type: string | Realm.ObjectType | Function, key: number | string): T & Realm.Object | undefined;
 
     /**
      * @param  {string|Realm.ObjectType|Function} type
      * @returns Realm
      */
-    objects<T>(type: string | Realm.ObjectType | Function): Realm.Results<T>;
+    objects<T>(type: string | Realm.ObjectType | Function): Realm.Results<T & Realm.Object>;
 
     /**
      * @param  {string} name
@@ -817,7 +821,6 @@ declare class Realm {
      */
     writeCopyTo(path: string, encryptionKey?: ArrayBuffer | ArrayBufferView): void;
 
-    privileges() : Realm.Permissions.Realm;
     privileges() : Realm.Permissions.RealmPrivileges;
     privileges(objectType: string | Realm.ObjectSchema | Function) : Realm.Permissions.ClassPrivileges;
     privileges(obj: Realm.Object) : Realm.Permissions.ObjectPrivileges;

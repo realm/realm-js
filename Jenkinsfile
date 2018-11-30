@@ -203,6 +203,7 @@ def doDockerBuild(target, postStep = null) {
 def doMacBuild(target, postStep = null) {
   return {
     node('osx_vegas') {
+      env.DEVELOPER_DIR = "/Applications/Xcode-9.4.app/Contents/Developer"
       doInside("./scripts/test.sh", target, postStep)
     }
   }
