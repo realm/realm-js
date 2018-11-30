@@ -80,7 +80,6 @@ x.x.x Release notes (yyyy-MM-dd)
 * Upgrades to Realm Core v5.12.1.
 * Upgrades to Realm Sync v3.13.4.
 
->>>>>>> 07c3b1f7227a8c51e9480b1e744f646e9eacabae
 2.19.0 Release notes (2018-11-8)
 =============================================================
 This release contains all changes from v2.19.0-rc.1 to v2.19.0-rc.5.
