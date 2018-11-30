@@ -437,6 +437,20 @@ module.exports = {
       });
   },
 
+  testSerializeAdminToken() {
+    const adminToken = 'this-is-admin-token';
+    const server = 'http://foo/bar';
+    const user = Realm.Sync.User.login(server, Realm.Sync.Credentials.adminToken(adminToken))
+    const serialized = user.serialize();
+    TestCase.assertEqual(serialized.adminToken, adminToken);
+    TestCase.assertEqual(serialized.server, server);
+
+    const deserialized = Realm.Sync.User.deserialize(serialized);
+    TestCase.assertEqual(deserialized.token, adminToken);
+    TestCase.assertEqual(deserialized.server, server);
+    TestCase.assertTrue(deserialized.isAdminToken);
+  },
+
   testDeserializeInvalidInput() {
     const dummy = {
       server: '123',

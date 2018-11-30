@@ -290,6 +290,11 @@ declare namespace Realm.Sync {
         isAdmin: boolean;
     }
 
+    interface SerializedTokenUser {
+        server: string;
+        adminToken: string;
+    }
+
     class AdminCredentials extends Credentials {
         identityProvider: "adminToken";
     }
@@ -333,10 +338,10 @@ declare namespace Realm.Sync {
 
         static confirmEmail(server:string, confirmationToken:string): Promise<void>;
 
-        static deserialize(serialized: SerializedUser): Realm.Sync.User;
+        static deserialize(serialized: SerializedUser | SerializedTokenUser): Realm.Sync.User;
 
         createConfiguration(config?: Realm.PartialConfiguration): Realm.Configuration
-        serialize(): SerializedUser;
+        serialize(): SerializedUser | SerializedTokenUser;
         logout(): Promise<void>;
         openManagementRealm(): Realm;
         retrieveAccount(provider: string, username: string): Promise<Account>;
