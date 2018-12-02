@@ -81,11 +81,38 @@ In order to call the C++ implementation, the JavaScript engine has to know about
 {"crashOnStart", wrap<crashOnStart>},
 ```
 
+#### Update the RPC protocol
+
+This is required for the Chrome Debugger to work with React Native. If the method added is a pure Javascript function, 
+you can skip this step as it will work automatically. If the method is a C++ method you will
+need to manually update the RPC protocol.
+
+If the method is an instance method you need to:
+
+* Add your function to the relevant list of methods in `lib/browser/index.js` or one of the subclasses in `lib/browser/`.
+
+If the method is static method you need to:
+
+* Add function name to `lib/browser/index.js` or the relevant class under `lib/browser/`. It should forward the method
+  call to an RPC method, e.g like:
+  
+```
+const Sync = {
+    "_myMethod": function(arg) {
+        rpc._myMethod(arg);
+    },
+    // ...
+};
+```
+  
+* Add the RPC sender method to `/lib/browser/rpc.js`.
+* Add the RPC receiver endpoint in `/src/rpc.cpp`.
+
 #### The final details
 
 To finish adding your new function, you will have to add your function a few places:
 
 * In `lib/index.d.ts` you add the TypeScript declaration
 * Documentation is added in `docs/realm.js`
-* Add your function to `lib/browser/index.js` in order to enable it in the Chrome Debugger
 * Add an entry to `CHANGELOG.md` if applicable (Breaking changes/Enhancements/Bug fixes)
+
