@@ -35,7 +35,7 @@ The API reference is located at [realm.io/docs/javascript/latest/api/](https://r
 In case you don't want to use the precompiled version on npm, you can build Realm yourself from source. You’ll need an Internet connection the first time you build in order to download the core library.
 
 Prerequisites:
-- Node: 4.0 <= version < 7.0
+- npm < 5.0 (due to symlinks not working)
 - Xcode 7.2+
 - Android SDK 23+
 - [Android NDK 10e](https://developer.android.com/ndk/downloads/older_releases)
@@ -55,9 +55,9 @@ git submodule update --init --recursive
 ```Note: If you have cloned the repo previously make sure you remove your node_modules directory since it may contain stale dependencies which may cause the build to fail.```
 
 ### Building for iOS:
-- Open `react-native/ios/RealmReact.xcodeproj`
-- Select `RealmReact.framework` as the build target
-- Build
+- Open `react-native/ios/RealmReact.xcodeproj` in Xcode
+- Select `RealmReact` under `Targets`
+- Build: `⌘ + B`
 
 ### Building for Android:
 - `cd react-native/android`
