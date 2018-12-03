@@ -7,6 +7,9 @@ x.x.x Release notes (yyyy-MM-dd)
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
 * Fixed a bug that prevented admin token users from being properly deserialized when calling `User.deserialize`. ([#2155](https://github.com/realm/realm-js/issues/2155), since v2.16.0)
 * `_initializeSyncManager` missing when debugging React Native in Chrome. Resulted in messages like `realmConstructor.Sync._initializeSyncManager is not a function` ([#2128](https://github.com/realm/realm-js/issues/2128), since v2.20.0)
+* The `LIMIT` predicate on query-based sync Realms will now be evaluated after the permission check instead of before. Sometimes the predicates would not get all the objects matched.
+* An index out of range error in query-based sync is fixed. The bug would manifest itself with a `list ndx out of range` assertion.
+* If encryption was enabled, decrypted pages were not released until the file was closed, causing excessive usage of memory.
 
 ### Compatibility
 * Realm Object Server: 3.11.0 or later.
@@ -14,7 +17,8 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
  ### Internal
-* None.
+* Upgraded to Realm Core v5.12.3 (`LIMIT` and out-of-range).
+* Upgraded to Realm Sync v3.14.1 (releasing decrypted pages).
 
 2.20.1 Release notes (2018-11-28)
 =============================================================
