@@ -140,6 +140,7 @@ def doInside(script, target, postStep = null) {
     }
     wrap([$class: 'AnsiColorBuildWrapper']) {
       withCredentials([string(credentialsId: 'realm-sync-feature-token-enterprise', variable: 'realmFeatureToken')]) {
+        sh "nvm use v8.14.0"
         sh "SYNC_WORKER_FEATURE_TOKEN=${realmFeatureToken} bash ${script} ${target}"
       }
     }
