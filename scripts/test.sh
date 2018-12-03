@@ -239,8 +239,8 @@ case "$TARGET" in
   pushd tests/react-test-app
   npm install
   rm -f package-lock.json
-  "${rootdir}/node_modules/.bin/install-local ../.."
-  (cd .. && npm install && rm -f package-lock.json) && "${rootdir}/node_modules/.bin/install-local .."
+  "${rootdir}/node_modules/.bin/install-local" ../..
+  (cd .. && npm install && rm -f package-lock.json) && "${rootdir}/node_modules/.bin/install-local" ..
   open_chrome
   start_packager
 
