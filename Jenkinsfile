@@ -203,9 +203,10 @@ def doDockerBuild(target, postStep = null) {
 def doMacBuild(target, postStep = null) {
   return {
     node('osx_vegas') {
-      env.DEVELOPER_DIR = "/Applications/Xcode-9.4.app/Contents/Developer"
-      sh ". \"\$(brew --prefix nvm)/nvm.sh\" && nvm use v8.9.4"
-      doInside("./scripts/test.sh", target, postStep)
+      nvm('8.9.4') {
+        env.DEVELOPER_DIR = "/Applications/Xcode-9.4.app/Contents/Developer"
+        doInside("./scripts/test.sh", target, postStep)
+      }
     }
   }
 }
