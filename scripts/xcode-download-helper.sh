@@ -54,6 +54,11 @@ elif [[ -x "$(command -v brew)" && -s "$(brew --prefix nvm)/nvm.sh" ]]; then
     . "$(brew --prefix nvm)/nvm.sh"
 fi
 
+# Hack to help Realm CI; xcode doesn't inherit nvm
+if [[ ! -z "$(command -v nvm)" ]]; then
+    nvm use ${REALM_CI_NODE_VERSION}
+fi
+
 if [ -z "$(command -v node)" ]; then
     echo "Realm JavaScript requires node installed. Either install node or use a node version mananger (n or nvm)."
     exit 1

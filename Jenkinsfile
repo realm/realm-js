@@ -205,11 +205,11 @@ def doMacBuild(target, postStep = null) {
     node('osx_vegas') {
       nvm('8.9.4') {
         env.DEVELOPER_DIR = "/Applications/Xcode-9.4.app/Contents/Developer"
+        env.REALM_CI_NODE_VERSION = "8.9.4"
         doInside("./scripts/test.sh", target, postStep)
       }
     }
   }
-}
 
 def doWindowsBuild() {
   return {
