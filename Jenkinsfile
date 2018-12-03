@@ -140,7 +140,6 @@ def doInside(script, target, postStep = null) {
     }
     wrap([$class: 'AnsiColorBuildWrapper']) {
       withCredentials([string(credentialsId: 'realm-sync-feature-token-enterprise', variable: 'realmFeatureToken')]) {
-        sh "nvm use v8.14.0"
         sh "SYNC_WORKER_FEATURE_TOKEN=${realmFeatureToken} bash ${script} ${target}"
       }
     }
@@ -205,6 +204,7 @@ def doMacBuild(target, postStep = null) {
   return {
     node('osx_vegas') {
       env.DEVELOPER_DIR = "/Applications/Xcode-9.4.app/Contents/Developer"
+      sh ". \"$(brew --prefix nvm)/nvm.sh\" && nvm use v8.9.4"
       doInside("./scripts/test.sh", target, postStep)
     }
   }
