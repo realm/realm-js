@@ -1423,6 +1423,7 @@ module.exports = {
                     // No real way to check if this works automatically.
                     // This is just a smoke test, making sure the method doesn't crash outright.
                     Realm.Sync.reconnect();
+                    resolve();
                 });
         });
     }
