@@ -276,6 +276,26 @@ RPCServer::RPCServer() {
         return (json){{"result", serialize_json_value(user_object)}};
 
     };
+    m_requests["/reconnect"] = [this](const json dict) {
+        JSObjectRef realm_constructor = m_session_id ? JSObjectRef(m_objects[m_session_id]) : NULL;
+        if (!realm_constructor) {
+            throw std::runtime_error("Realm constructor not found!");
+        }
+
+        JSObjectRef sync_constructor = (JSObjectRef)jsc::Object::get_property(m_context, realm_constructor, "Sync");
+        JSObjectRef reconnect_method = (JSObjectRef)jsc::Object::get_property(m_context, sync_constructor, "reconnect");
+
+        json::array_t args = dict["arguments"];
+        size_t arg_count = args.size();
+        JSValueRef arg_values[arg_count];
+
+        for (size_t i = 0; i < arg_count; i++) {
+            arg_values[i] = deserialize_json_value(args[i]);
+        }
+
+        JSObjectRef user_object = (JSObjectRef)jsc::Function::call(m_context, reconnect_method, arg_count, arg_values);
+        return json::object();
+    };
     m_requests["/_initializeSyncManager"] = [this](const json dict) {
         JSObjectRef realm_constructor = m_session_id ? JSObjectRef(m_objects[m_session_id]) : NULL;
         if (!realm_constructor) {
