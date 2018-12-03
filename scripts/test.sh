@@ -231,6 +231,7 @@ case "$TARGET" in
   npm run jsdoc
   ;;
 "react-tests")
+  npm install
   rootdir="$(pwd)"
   npm run check-environment
   download_server
@@ -245,6 +246,7 @@ case "$TARGET" in
   stop_server
   ;;
 "react-example")
+  npm install
   rootdir="$(pwd)"
   npm run check-environment
   pushd examples/ReactExample
@@ -260,6 +262,7 @@ case "$TARGET" in
   echo "{}" > $(pwd)/components/params.json
   ;;
 "react-tests-android")
+  npm install
   rootdir="$(pwd)"
   npm run check-environment
   if [ "$(uname)" = 'Darwin' ]; then
