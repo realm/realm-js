@@ -210,6 +210,7 @@ def doMacBuild(target, postStep = null) {
       }
     }
   }
+}
 
 def doWindowsBuild() {
   return {
