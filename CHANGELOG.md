@@ -1,4 +1,4 @@
-x.x.x Release notes (yyyy-MM-dd)
+2.21.0 Release notes (2018-12-3)
 =============================================================
 ### Enhancements
 * Adds support for `Realm.Sync.reconnect()` that  will attempt to reconnect to the server immediately if the device has been offline.
