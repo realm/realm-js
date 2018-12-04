@@ -75,10 +75,8 @@ def getNpmVersion() {
 }
 
 task send(type: SendAnalyticsTask) {
-    doLast {
-        applicationId = getAppId()
-        version = getNpmVersion().trim()
-    }
+    applicationId = getAppId()
+    version = getNpmVersion().trim()
 }
 
 preBuild.dependsOn send
