@@ -21,7 +21,6 @@ x.x.x Release notes (yyyy-MM-dd)
 * Adds support for `Realm.Sync.reconnect()` that  will attempt to reconnect to the server immediately if the device has been offline.
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
 * Fixed a bug that prevented admin token users from being properly deserialized when calling `User.deserialize`. ([#2155](https://github.com/realm/realm-js/issues/2155), since v2.16.0)
 * `_initializeSyncManager` missing when debugging React Native in Chrome. Resulted in messages like `realmConstructor.Sync._initializeSyncManager is not a function` ([#2128](https://github.com/realm/realm-js/issues/2128), since v2.20.0)
 * The `LIMIT` predicate on query-based sync Realms will now be evaluated after the permission check instead of before. Sometimes the predicates would not get all the objects matched.
@@ -34,8 +33,8 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
  ### Internal
-* Upgraded to Realm Core v5.12.3 (`LIMIT` and out-of-range).
-* Upgraded to Realm Sync v3.14.1 (releasing decrypted pages).
+* Upgraded to Realm Core v5.12.3 (releasing decrypted pages).
+* Upgraded to Realm Sync v3.14.1 (`LIMIT` and out-of-range).
 
 2.20.1 Release notes (2018-11-28)
 =============================================================
