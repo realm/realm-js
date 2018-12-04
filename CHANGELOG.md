@@ -8,8 +8,7 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Breaking changes
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* Fixed a bug that prevented admin token users from being properly deserialized when calling `User.deserialize`. ([#2155](https://github.com/realm/realm-js/issues/2155), since v2.16.0)
-* `_initializeSyncManager` missing when debugging React Native in Chrome. Resulted in messages like `realmConstructor.Sync._initializeSyncManager is not a function` ([#2128](https://github.com/realm/realm-js/issues/2128), since v2.20.0)
+* ReactNative for Android no longer uses deprecated methods and can build using Gradle 5.0 and above. ([#1995](https://github.com/realm/realm-js/issues/1995))
 
 ### Compatibility
 * Realm Object Server: 3.11.0 or later.
@@ -18,6 +17,27 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Internal
 * None.
+
+2.21.0 Release notes (2018-12-3)
+=============================================================
+### Enhancements
+* Adds support for `Realm.Sync.reconnect()` that  will attempt to reconnect to the server immediately if the device has been offline.
+
+### Fixed
+* Fixed a bug that prevented admin token users from being properly deserialized when calling `User.deserialize`. ([#2155](https://github.com/realm/realm-js/issues/2155), since v2.16.0)
+* `_initializeSyncManager` missing when debugging React Native in Chrome. Resulted in messages like `realmConstructor.Sync._initializeSyncManager is not a function` ([#2128](https://github.com/realm/realm-js/issues/2128), since v2.20.0)
+* The `LIMIT` predicate on query-based sync Realms will now be evaluated after the permission check instead of before. Sometimes the predicates would not get all the objects matched.
+* An index out of range error in query-based sync is fixed. The bug would manifest itself with a `list ndx out of range` assertion.
+* If encryption was enabled, decrypted pages were not released until the file was closed, causing excessive usage of memory.
+
+### Compatibility
+* Realm Object Server: 3.11.0 or later.
+* APIs are backwards compatible with all previous release of realm in the 2.x.y series.
+* File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
+
+### Internal
+* Upgraded to Realm Core v5.12.3 (releasing decrypted pages).
+* Upgraded to Realm Sync v3.14.1 (`LIMIT` and out-of-range).
 
 2.20.1 Release notes (2018-11-28)
 =============================================================

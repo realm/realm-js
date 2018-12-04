@@ -20,7 +20,6 @@ import android.content.res.AssetManager;
 import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
-import android.os.Looper;
 import android.util.Log;
 
 import com.facebook.react.bridge.ReactApplicationContext;
@@ -38,9 +37,6 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.FutureTask;
-import java.util.concurrent.RunnableFuture;
 
 import fi.iki.elonen.NanoHTTPD;
 
@@ -53,6 +49,7 @@ class RealmReactModule extends ReactContextBaseJavaModule {
     // Note: We keep a VM reference to the assetManager to prevent its being
     //       garbage collected while the native object is in use.
     //http://developer.android.com/ndk/reference/group___asset.html#gadfd6537af41577735bcaee52120127f4
+    @SuppressWarnings("FieldCanBeLocal")
     private final AssetManager assetManager;
 
     static {
@@ -86,14 +83,14 @@ class RealmReactModule extends ReactContextBaseJavaModule {
     public Map<String, Object> getConstants() {
         if (isContextInjected()) {
             // No constants are needed if *not* running in Chrome debug mode.
-            return Collections.EMPTY_MAP;
+            return Collections.<String, Object>emptyMap();
         }
 
         startWebServer();
 
         List<String> hosts;
         if (isRunningOnEmulator()) {
-            hosts = Arrays.asList(new String[]{"localhost"});
+            hosts = Arrays.asList("localhost");
         } else {
             hosts = getIPAddresses();
         }

@@ -1,7 +1,7 @@
 {
   "name": "realm",
   "description": "Realm is a mobile database: an alternative to SQLite and key-value stores",
-  "version": "2.20.1",
+  "version": "2.21.0",
   "license": "See the actual license in the file LICENSE",
   "homepage": "https://realm.io",
   "keywords": [
@@ -107,7 +107,8 @@
     "rimraf": "^2.6.1",
     "semver": "^5.1.0",
     "shelljs": "^0.7.7",
-    "shx": "^0.2.2"
+    "shx": "^0.2.2",
+    "react-native": "0.57.7"
   },
   "rnpm": {
     "ios": {
