@@ -56,7 +56,9 @@ fi
 
 # Hack to help Realm CI; xcode doesn't inherit nvm
 if [[ ! -z "$(command -v nvm)" ]]; then
-    nvm use ${REALM_CI_NODE_VERSION}
+    if [[ ! -z "${REALM_CI_NODE_VERSION}" ]]; then
+        nvm use ${REALM_CI_NODE_VERSION}
+    fi
 fi
 
 if [ -z "$(command -v node)" ]; then
