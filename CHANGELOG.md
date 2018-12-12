@@ -6,6 +6,7 @@ x.x.x Release notes (yyyy-MM-dd)
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
 * ReactNative for Android no longer uses deprecated methods and can build using Gradle 5.0 and above. ([#1995](https://github.com/realm/realm-js/issues/1995))
+* Fix occasional "FATAL ERROR: v8::String::Cast Could not convert to string" crashes when reading a property from a Realm object. ([#2172](https://github.com/realm/realm-js/pull/2172), since 2.19.0)
 
 ### Compatibility
 * Realm Object Server: 3.11.0 or later.
