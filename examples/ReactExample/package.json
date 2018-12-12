@@ -8,9 +8,8 @@
   },
   "dependencies": {
     "react": "16.0.0",
-    "react-native": "0.50.4",
-    "react-navigation": "^1.0.0-beta.21",
     "react-native-exit-app-no-history": "^1.0.2",
+    "react-navigation": "^1.0.0-beta.21",
     "realm": "file:../.."
   },
   "devDependencies": {
