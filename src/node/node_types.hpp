@@ -49,9 +49,9 @@ struct Types {
     using PropertySetterCallback = Nan::SetterCallback;
     using IndexPropertyGetterCallback = Nan::IndexGetterCallback;
     using IndexPropertySetterCallback = Nan::IndexSetterCallback;
-    using StringPropertyGetterCallback = Nan::PropertyGetterCallback;
-    using StringPropertySetterCallback = Nan::PropertySetterCallback;
-    using StringPropertyEnumeratorCallback = Nan::PropertyEnumeratorCallback;
+    using StringPropertyGetterCallback = v8::NamedPropertyGetterCallback;
+    using StringPropertySetterCallback = v8::NamedPropertySetterCallback;
+    using StringPropertyEnumeratorCallback = v8::NamedPropertyEnumeratorCallback;
 };
 
 template<typename ClassType>

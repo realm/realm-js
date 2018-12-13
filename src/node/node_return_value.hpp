@@ -29,6 +29,7 @@ class ReturnValue<node::Types> {
 
   public:
     ReturnValue(Nan::ReturnValue<v8::Value> value) : m_value(value) {}
+    ReturnValue(v8::ReturnValue<v8::Value> value) : m_value(value) {}
 
     void set(const v8::Local<v8::Value> &value) {
         m_value.Set(value);
