@@ -341,7 +341,7 @@ module.exports = {
   },
 
   testConfiguration_urlConversion() {
-    const test = [
+    const tests = [
 
         // If no URL is provided default to using `/default`
         { auth: 'http://localhost/auth', sync: undefined, output:'realm://localhost/default' },
@@ -364,18 +364,19 @@ module.exports = {
     ];
 
     const adminCreds = Realm.Sync.Credentials.adminToken("foo"); // Fake user
-    test.forEach(test => {
+    for (var i = 0; i < tests; i++) {
+        const test = tests[i];
         const user = Realm.Sync.User.login(test.auth, adminCreds);
 
         let customConfig = {
-          sync: {}
+            sync: {}
         };
         if (test.sync !== undefined) {
-          customConfig.sync['url'] = test.sync
+            customConfig.sync['url'] = test.sync
         }
         const realmConfig = user.createConfiguration(customConfig);
-        TestCase.assertEqual(realmConfig.sync.url, test.output);
-    });
+        TestCase.assertEqual(realmConfig.sync.url, test.output, `Test ${i}`);
+    }
   },
 
   testCreateConfiguration_useOldConfiguration() {
