@@ -340,6 +340,44 @@ module.exports = {
       });
   },
 
+  testConfiguration_urlConversion() {
+    const test = [
+
+        // If no URL is provided default to using `/default`
+        { auth: 'http://localhost/auth', sync: undefined, output:'realm://localhost/default' },
+        { auth: 'http://localhost/auth?foo', sync: undefined, output:'realm://localhost/default' },
+        { auth: 'http://localhost:1234/auth?foo', sync: undefined, output:'realm://localhost:1234/default' },
+        { auth: 'https://localhost/auth', sync: undefined, output:'realms://localhost/default' },
+
+        // If relative URL is used, use auth host
+        { auth: 'http://localhost/auth', sync: '/default1', output: 'realm://localhost/default1' },
+        { auth: 'http://localhost/auth', sync: '/~/default1', output: 'realm://localhost/~/default1' },
+        { auth: 'http://localhost/auth', sync: '~/default1', output: 'realm://localhost/~/default1' },
+        { auth: 'http://localhost/auth?foo', sync: '/default1', output:'realm://localhost/default1' },
+        { auth: 'http://localhost:1234/auth?foo', sync: '/default1', output:'realm://localhost:1234/default1' },
+        { auth: 'https://localhost/auth', sync: '/default1', output:'realms://localhost/default1' },
+
+        // If full URL is used, no automatic conversions should be applied
+        { auth: 'http://localhost/auth', sync: 'realm://foo.bar.com/default', output: 'realm://foo.bar.com/default' },
+        { auth: 'http://localhost/auth', sync: 'realms://foo.bar.com/default', output: 'realms://foo.bar.com/default' },
+        { auth: 'http://localhost:1234/auth', sync: 'realm://foo.bar.com:5678/~/default', output: 'realm://foo.bar.com:5678/~/default' },
+    ];
+
+    const adminCreds = Realm.Sync.User.credentials.adminToken("foo"); // Fake user
+    test.forEach(test => {
+        const user = Realm.Sync.User.login(test.auth, adminCreds);
+
+        let customConfig = {
+          sync: {}
+        };
+        if (test.sync !== undefined) {
+          customConfig.sync['url'] = test.sync
+        }
+        const realmConfig = user.createConfiguration(customConfig);
+        TestCase.assertEqual(realmConfig.sync.url, test.output);
+    });
+  },
+
   testCreateConfiguration_useOldConfiguration() {
       return Realm.Sync.User.login('http://localhost:9080', Realm.Sync.Credentials.anonymous()).then((user) => {
           let config = user.createConfiguration({ sync: { url: 'http://localhost:9080/other_realm', partial: true }});
