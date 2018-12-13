@@ -83,7 +83,7 @@ class ObjectWrap : public Nan::ObjectWrap {
     static void setup_property(v8::Local<TargetType>, const std::string &, const PropertyType &);
 
     static void get_indexes(const Nan::PropertyCallbackInfo<v8::Array>&);
-    static void set_property(v8::Local<v8::String>, v8::Local<v8::Value>, const Nan::PropertyCallbackInfo<v8::Value>&);
+    static void set_property(v8::Local<v8::String>, v8::Local<v8::Value>, const v8::PropertyCallbackInfo<v8::Value>&);
 
     static void set_readonly_property(v8::Local<v8::String> property, v8::Local<v8::Value> value, const Nan::PropertyCallbackInfo<void>& info) {
         std::string message = std::string("Cannot assign to read only property '") + std::string(String(property)) + "'";
@@ -95,7 +95,7 @@ class ObjectWrap : public Nan::ObjectWrap {
         Nan::ThrowError(message.c_str());
     }
 
-    static void get_nonexistent_property(v8::Local<v8::String>, const Nan::PropertyCallbackInfo<v8::Value>&) {
+    static void get_nonexistent_property(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>&) {
         // Do nothing. This function exists only to prevent a crash where it is used.
     }
 };
@@ -188,7 +188,7 @@ inline v8::Local<v8::FunctionTemplate> ObjectWrap<ClassType>::create_template() 
     if (s_class.string_accessor.getter || s_class.index_accessor.getter || s_class.index_accessor.setter) {
         // Use our own wrapper for the setter since we want to throw for negative indices.
         auto &string_accessor = s_class.string_accessor;
-        Nan::SetNamedPropertyHandler(instance_tpl, string_accessor.getter ? string_accessor.getter : get_nonexistent_property, set_property, 0, 0, string_accessor.enumerator);
+        instance_tpl->SetNamedPropertyHandler(string_accessor.getter ? string_accessor.getter : get_nonexistent_property, set_property, 0, 0, string_accessor.enumerator);
     }
 
     return scope.Escape(tpl);
@@ -270,7 +270,7 @@ inline void ObjectWrap<ClassType>::get_indexes(const Nan::PropertyCallbackInfo<v
 }
 
 template<typename ClassType>
-inline void ObjectWrap<ClassType>::set_property(v8::Local<v8::String> property, v8::Local<v8::Value> value, const Nan::PropertyCallbackInfo<v8::Value>& info) {
+inline void ObjectWrap<ClassType>::set_property(v8::Local<v8::String> property, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info) {
     if (s_class.index_accessor.getter || s_class.index_accessor.setter) {
         try {
             // Negative indices are passed into this string property interceptor, so check for them here.
@@ -366,7 +366,7 @@ void wrap(uint32_t index, v8::Local<v8::Value> value, const Nan::PropertyCallbac
 }
 
 template<node::StringPropertyType::GetterType F>
-void wrap(v8::Local<v8::String> property, const Nan::PropertyCallbackInfo<v8::Value>& info) {
+void wrap(v8::Local<v8::String> property, const v8::PropertyCallbackInfo<v8::Value>& info) {
     v8::Isolate* isolate = info.GetIsolate();
     node::ReturnValue return_value(info.GetReturnValue());
     try {
@@ -378,7 +378,7 @@ void wrap(v8::Local<v8::String> property, const Nan::PropertyCallbackInfo<v8::Va
 }
 
 template<node::StringPropertyType::SetterType F>
-void wrap(v8::Local<v8::String> property, v8::Local<v8::Value> value, const Nan::PropertyCallbackInfo<v8::Value>& info) {
+void wrap(v8::Local<v8::String> property, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info) {
     v8::Isolate* isolate = info.GetIsolate();
     try {
         if (F(isolate, info.This(), property, value)) {
@@ -392,7 +392,7 @@ void wrap(v8::Local<v8::String> property, v8::Local<v8::Value> value, const Nan:
 }
 
 template<node::StringPropertyType::EnumeratorType F>
-void wrap(const Nan::PropertyCallbackInfo<v8::Array>& info) {
+void wrap(const v8::PropertyCallbackInfo<v8::Array>& info) {
     auto names = F(info.GetIsolate(), info.This());
     int count = (int)names.size();
     v8::Local<v8::Array> array = Nan::New<v8::Array>(count);
