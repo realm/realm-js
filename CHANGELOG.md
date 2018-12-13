@@ -6,6 +6,7 @@ x.x.x Release notes (yyyy-MM-dd)
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
 * ReactNative for Android no longer uses deprecated methods and can build using Gradle 5.0 and above. ([#1995](https://github.com/realm/realm-js/issues/1995))
+* A bug caused loading the binary component of the SDK to hang on Windows. ([#2169](https://github.com/realm/realm-js/issues/2169), since v2.21.0)
 
 ### Compatibility
 * Realm Object Server: 3.11.0 or later.
@@ -13,7 +14,8 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
  ### Internal
-* None.
+* Upgraded to Realm Core v5.12.5 (hanging on Windows).
+* Upgraded to Realm Sync v3.14.3.
 
 2.21.0 Release notes (2018-12-3)
 =============================================================
