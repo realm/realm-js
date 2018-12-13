@@ -5,9 +5,6 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* ReactNative for Android no longer uses deprecated methods and can build using Gradle 5.0 and above. ([#1995](https://github.com/realm/realm-js/issues/1995))
-* A bug caused loading the binary component of the SDK to hang on Windows. ([#2169](https://github.com/realm/realm-js/issues/2169), since v2.21.0)
-* Fix occasional `FATAL ERROR: v8::String::Cast Could not convert to string` crashes when reading a property from a Realm object. ([#2172](https://github.com/realm/realm-js/pull/2172), since v2.19.0)
 * `Realm.Sync.User.createConfiguration()` creating an extra `:` if no port was defined.  ([#1980](https://github.com/realm/realm-js/issues/1980), since v2.8.0)
 
 ### Compatibility
@@ -15,7 +12,26 @@ x.x.x Release notes (yyyy-MM-dd)
 * APIs are backwards compatible with all previous release of realm in the 2.x.y series.
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
- ### Internal
+### Internal
+* None.
+
+2.21.1 Release notes (2018-12-13)
+=============================================================
+### Enhancements
+* None.
+
+### Fixed
+* ReactNative for Android no longer uses deprecated methods and can build using Gradle 5.0 and above. ([#1995](https://github.com/realm/realm-js/issues/1995))
+* A bug caused loading the binary component of the SDK to hang on Windows. ([#2169](https://github.com/realm/realm-js/issues/2169), since v2.21.0)
+* Fix occasional `FATAL ERROR: v8::String::Cast Could not convert to string` crashes when reading a property from a Realm object. ([#2172](https://github.com/realm/realm-js/pull/2172), since v2.19.0)
+* Reverted support for `n` as it prevents users to include Realm in iOS apps. We restore the old behaviour as a temporary solution, and we will reenable support of `n` in the near future. ([#2099](https://github.com/realm/realm-js/issues/2099), since v2.19.0-rc.5)
+
+### Compatibility
+* Realm Object Server: 3.11.0 or later.
+* APIs are backwards compatible with all previous release of realm in the 2.x.y series.
+* File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
+
+### Internal
 * Upgraded to Realm Core v5.12.5 (hanging on Windows).
 * Upgraded to Realm Sync v3.14.3.
 

@@ -860,7 +860,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "if [[ -d \"$HOME/.asdf/shims\" ]]; then\n  export PATH=$HOME/.asdf/shims:$PATH\nfi\n\nif [[ -d \"$HOME/.n\" ]]; then\n  export N_PREFIX=\"$HOME/.n\"; [[ :$PATH: == *\":$N_PREFIX/bin:\"* ]] || PATH+=\":$N_PREFIX/bin\"\nfi\n\nif [[ \"$(command -v n)\" ]]; then\n n 7.10.0\nelse\n  [ -z \"$NVM_DIR\" ] && export NVM_DIR=\"$HOME/.nvm\"\n\n  if [[ -s \"$HOME/.nvm/nvm.sh\" ]]; then\n    . \"$HOME/.nvm/nvm.sh\"\n  elif [[ -x \"$(command -v brew)\" && -s \"$(brew --prefix nvm)/nvm.sh\" ]]; then\n    . \"$(brew --prefix nvm)/nvm.sh\"\n  fi\n \n  if [[ \"$(command -v nvm)\" ]]; then\n    nvm install 7.10.0\n  else\n    echo \"RealmJS requires a node package manager (n or nvm).\"\n    exit 1\n  fi\nfi\n \nnode ../scripts/download-realm.js ios --sync\n";
+			shellScript = "if [[ -d \"$HOME/.asdf/shims\" ]]; then\n  export PATH=$HOME/.asdf/shims:$PATH\nfi\n\n[ -z \"$NVM_DIR\" ] && export NVM_DIR=\"$HOME/.nvm\"\n\nif [[ -s \"$HOME/.nvm/nvm.sh\" ]]; then\n  . \"$HOME/.nvm/nvm.sh\"\nelif [[ -x \"$(command -v brew)\" && -s \"$(brew --prefix nvm)/nvm.sh\" ]]; then\n  . \"$(brew --prefix nvm)/nvm.sh\"\nfi\n \nif [[ \"$(command -v nvm)\" ]]; then\n nvm install 7.10.0\nfi\n \n node ../scripts/download-realm.js ios --sync";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -969,7 +969,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 2.21.0;
+				CURRENT_PROJECT_VERSION = 2.21.1;
 				CXX = "$(SRCROOT)/../scripts/ccache-clang++.sh";
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -1033,7 +1033,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 2.21.0;
+				CURRENT_PROJECT_VERSION = 2.21.1;
 				CXX = "$(SRCROOT)/../scripts/ccache-clang++.sh";
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;

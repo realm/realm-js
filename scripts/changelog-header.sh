@@ -18,7 +18,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * APIs are backwards compatible with all previous release of realm in the 2.x.y series.
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
- ### Internal
+### Internal
 * None.
 
 $(cat CHANGELOG.md)
