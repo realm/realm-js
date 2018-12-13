@@ -363,7 +363,7 @@ module.exports = {
         { auth: 'http://localhost:1234/auth', sync: 'realm://foo.bar.com:5678/~/default', output: 'realm://foo.bar.com:5678/~/default' },
     ];
 
-    const adminCreds = Realm.Sync.User.Credentials.adminToken("foo"); // Fake user
+    const adminCreds = Realm.Sync.Credentials.adminToken("foo"); // Fake user
     test.forEach(test => {
         const user = Realm.Sync.User.login(test.auth, adminCreds);
 
