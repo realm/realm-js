@@ -475,7 +475,8 @@ module.exports = {
         realm.close()
     },
 
-    testSetLink: function() {
+    // FIXME: disabled, see https://github.com/realm/realm-js/issues/2072
+    DISABLEDtestSetLink: function() {
         const schema = [
             {
                 name: 'PrimaryInt',
