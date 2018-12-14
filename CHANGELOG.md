@@ -2,6 +2,7 @@ x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
 * Calling `Realm.Sync.User.createConfiguration()` now supports a relative URL which will use the Authentication server as base url. ([#1981](https://github.com/realm/realm-js/issues/1981))
+* Updated React Native Android Builds to use Android Build Tools 3.2.1. ([#2103](https://github.com/realm/realm-js/issues/2103))
 
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
