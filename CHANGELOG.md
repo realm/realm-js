@@ -1,4 +1,4 @@
-x.x.x Release notes (yyyy-MM-dd)
+2.22.0 Release notes (2018-12-15)
 =============================================================
 ### Enhancements
 * Calling `Realm.Sync.User.createConfiguration()` now supports a relative URL which will use the Authentication server as base url. ([#1981](https://github.com/realm/realm-js/issues/1981))
