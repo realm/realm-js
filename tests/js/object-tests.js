@@ -18,6 +18,8 @@
 
 'use strict';
 
+const isNodeProcess = (typeof process === 'object' && process + '' === '[object process]');
+
 const Realm = require('realm');
 const TestCase = require('./asserts');
 const schemas = require('./schemas');
@@ -476,6 +478,11 @@ module.exports = {
     },
 
     testSetLink: function() {
+        // FIXME: disabled for React Native, see https://github.com/realm/realm-js/issues/2072
+        if (!isNodeProcess) {
+            return;
+        }
+
         const schema = [
             {
                 name: 'PrimaryInt',
