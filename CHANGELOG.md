@@ -23,7 +23,7 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Fixed
 * `Realm.Sync.User.createConfiguration()` creating an extra `:` if no port was defined.  ([#1980](https://github.com/realm/realm-js/issues/1980), since v2.8.0)
-* On AWS Lambda we may throw an `Operation not permitted` exception when calling posix_fallocate(). ([#1832](https://github.com/realm/realm-js/issues/1832), since v0.10.0)
+* A slower fallback solution for system which does not support `posix_fallocate()`.
 
 ### Compatibility
 * Realm Object Server: 3.11.0 or later.
@@ -31,7 +31,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
 ### Internal
-* Upgraded to Realm Core v5.12.6 (AWS Lambda bug fix).
+* Upgraded to Realm Core v5.12.6 (`posix_fallocate()` fallback).
 * Upgraded to Realm Sync v3.14.6.
 
 
