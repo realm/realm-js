@@ -11,7 +11,7 @@ def version
 // == Stages
 
 stage('check') {
-  node('docker') {
+  node('docker && !aws') {
     // - checkout the source
     checkout([
       $class: 'GitSCM',
@@ -166,7 +166,7 @@ def doDockerInside(script, target, postStep = null) {
 
 def doAndroidBuild(target, postStep = null) {
   return {
-    node('docker && android') {
+    node('docker && android && !aws') {
         timeout(time: 1, unit: 'HOURS') {
             doDockerInside("./scripts/docker-android-wrapper.sh ./scripts/test.sh", target, postStep)
         }
@@ -176,7 +176,7 @@ def doAndroidBuild(target, postStep = null) {
 
 def doDockerBuild(target, postStep = null) {
   return {
-    node('docker') {
+    node('docker && !aws') {
       deleteDir()
       unstash 'source'
 
