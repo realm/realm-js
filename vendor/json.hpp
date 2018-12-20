@@ -56,6 +56,31 @@ SOFTWARE.
 #include <string> // string
 #include <vector> // vector
 
+#ifdef ANDROID
+#define REALM_STD_POLYFILL realm::util
+#include <realm/util/to_string.hpp>
+namespace realm {
+namespace util {
+float strtof(const char* str, char** endptr) { return ::strtof(str, endptr); }
+double strtod(const char* str, char** endptr) { return ::strtod(str, endptr); }
+// Android doesn't have strtold due to `long double` being the same size as `double`
+long double strtold(const char* str, char** endptr) { return ::strtod(str, endptr); }
+long long strtoll(const char* str, char** endptr) { return ::strtoll(str, endptr); }
+unsigned long long strtoull(const char* str, char** endptr) { return ::strtoull(str, endptr); }
+int stoi(std::string const& str, std::size_t* pos=0, int base=10) {
+    errno = 0;
+    long ret = ::strtol(str.c_str(), &pos, base);
+    if (errno == ERANGE || static_cast<int>(ret) != ret)
+        throw std::out_of_range("stoi");
+    return static_cast<int>(ret);
+}
+
+}
+}
+#else
+#define REALM_STD_POLYFILL std
+#endif
+
 /*!
 @brief namespace for Niels Lohmann
 @see https://github.com/nlohmann
@@ -827,7 +852,7 @@ class exception : public std::exception
 
     static std::string name(const std::string& ename, int id_)
     {
-        return "[json.exception." + ename + "." + std::to_string(id_) + "] ";
+        return "[json.exception." + ename + "." + REALM_STD_POLYFILL::to_string(id_) + "] ";
     }
 
   private:
@@ -901,7 +926,7 @@ class parse_error : public exception
     static parse_error create(int id_, std::size_t byte_, const std::string& what_arg)
     {
         std::string w = exception::name("parse_error", id_) + "parse error" +
-                        (byte_ != 0 ? (" at byte " + std::to_string(byte_)) : "") +
+                        (byte_ != 0 ? (" at byte " + REALM_STD_POLYFILL::to_string(byte_)) : "") +
                         ": " + what_arg;
         return parse_error(id_, byte_, w.c_str());
     }
@@ -923,8 +948,8 @@ class parse_error : public exception
 
     static std::string position_string(const position_t& pos)
     {
-        return " at line " + std::to_string(pos.lines_read + 1) +
-               ", column " + std::to_string(pos.chars_read_current_line);
+        return " at line " + REALM_STD_POLYFILL::to_string(pos.lines_read + 1) +
+               ", column " + REALM_STD_POLYFILL::to_string(pos.chars_read_current_line);
     }
 };
 
@@ -1670,7 +1695,7 @@ template<typename IteratorType> class iteration_proxy
                 {
                     if (array_index != array_index_last)
                     {
-                        array_index_str = std::to_string(array_index);
+                        array_index_str = REALM_STD_POLYFILL::to_string(array_index);
                         array_index_last = array_index;
                     }
                     return array_index_str;
@@ -2564,9 +2589,13 @@ class lexer
     /// return the locale-dependent decimal point
     static char get_decimal_point() noexcept
     {
+#ifdef ANDROID
+        return '.';
+#else
         const auto loc = localeconv();
         assert(loc != nullptr);
         return (loc->decimal_point == nullptr) ? '.' : *(loc->decimal_point);
+#endif
     }
 
     /////////////////////
@@ -3261,17 +3290,17 @@ class lexer
 
     static void strtof(float& f, const char* str, char** endptr) noexcept
     {
-        f = std::strtof(str, endptr);
+        f = REALM_STD_POLYFILL::strtof(str, endptr);
     }
 
     static void strtof(double& f, const char* str, char** endptr) noexcept
     {
-        f = std::strtod(str, endptr);
+        f = REALM_STD_POLYFILL::strtod(str, endptr);
     }
 
     static void strtof(long double& f, const char* str, char** endptr) noexcept
     {
-        f = std::strtold(str, endptr);
+        f = REALM_STD_POLYFILL::strtold(str, endptr);
     }
 
     /*!
@@ -3602,7 +3631,7 @@ scan_number_done:
         // try to parse integers first and fall back to floats
         if (number_type == token_type::value_unsigned)
         {
-            const auto x = std::strtoull(token_buffer.data(), &endptr, 10);
+            const auto x = REALM_STD_POLYFILL::strtoull(token_buffer.data(), &endptr, 10);
 
             // we checked the number format before
             assert(endptr == token_buffer.data() + token_buffer.size());
@@ -3618,7 +3647,7 @@ scan_number_done:
         }
         else if (number_type == token_type::value_integer)
         {
-            const auto x = std::strtoll(token_buffer.data(), &endptr, 10);
+            const auto x = REALM_STD_POLYFILL::strtoll(token_buffer.data(), &endptr, 10);
 
             // we checked the number format before
             assert(endptr == token_buffer.data() + token_buffer.size());
@@ -4317,7 +4346,7 @@ class json_sax_dom_parser
         if (JSON_UNLIKELY(len != std::size_t(-1) and len > ref_stack.back()->max_size()))
         {
             JSON_THROW(out_of_range::create(408,
-                                            "excessive object size: " + std::to_string(len)));
+                                            "excessive object size: " + REALM_STD_POLYFILL::to_string(len)));
         }
 
         return true;
@@ -4343,7 +4372,7 @@ class json_sax_dom_parser
         if (JSON_UNLIKELY(len != std::size_t(-1) and len > ref_stack.back()->max_size()))
         {
             JSON_THROW(out_of_range::create(408,
-                                            "excessive array size: " + std::to_string(len)));
+                                            "excessive array size: " + REALM_STD_POLYFILL::to_string(len)));
         }
 
         return true;
@@ -4501,7 +4530,7 @@ class json_sax_dom_callback_parser
             if (JSON_UNLIKELY(len != std::size_t(-1) and len > ref_stack.back()->max_size()))
             {
                 JSON_THROW(out_of_range::create(408,
-                                                "excessive object size: " + std::to_string(len)));
+                                                "excessive object size: " + REALM_STD_POLYFILL::to_string(len)));
             }
         }
 
@@ -4574,7 +4603,7 @@ class json_sax_dom_callback_parser
             if (JSON_UNLIKELY(len != std::size_t(-1) and len > ref_stack.back()->max_size()))
             {
                 JSON_THROW(out_of_range::create(408,
-                                                "excessive array size: " + std::to_string(len)));
+                                                "excessive array size: " + REALM_STD_POLYFILL::to_string(len)));
             }
         }
 
@@ -6530,7 +6559,7 @@ class binary_reader
         if (JSON_UNLIKELY(len < 1))
         {
             auto last_token = get_token_string();
-            return sax->parse_error(chars_read, last_token, parse_error::create(112, chars_read, exception_message(input_format_t::bson, "string length must be at least 1, is " + std::to_string(len), "string")));
+            return sax->parse_error(chars_read, last_token, parse_error::create(112, chars_read, exception_message(input_format_t::bson, "string length must be at least 1, is " + REALM_STD_POLYFILL::to_string(len), "string")));
         }
 
         return get_string(input_format_t::bson, len - static_cast<NumberType>(1), result) and get() != std::char_traits<char>::eof();
@@ -9036,7 +9065,7 @@ class binary_writer
         if (JSON_UNLIKELY(it != BasicJsonType::string_t::npos))
         {
             JSON_THROW(out_of_range::create(409,
-                                            "BSON key cannot contain code point U+0000 (at byte " + std::to_string(it) + ")"));
+                                            "BSON key cannot contain code point U+0000 (at byte " + REALM_STD_POLYFILL::to_string(it) + ")"));
         }
 
         return /*id*/ 1ul + name.size() + /*zero-terminator*/1u;
@@ -9165,7 +9194,7 @@ class binary_writer
         }
         else
         {
-            JSON_THROW(out_of_range::create(407, "integer number " + std::to_string(value) + " cannot be represented by BSON as it does not fit int64"));
+            JSON_THROW(out_of_range::create(407, "integer number " + REALM_STD_POLYFILL::to_string(value) + " cannot be represented by BSON as it does not fit int64"));
         }
     }
 
@@ -9189,7 +9218,7 @@ class binary_writer
 
         for (const auto& el : value)
         {
-            embedded_document_size += calc_bson_element_size(std::to_string(array_index++), el);
+            embedded_document_size += calc_bson_element_size(REALM_STD_POLYFILL::to_string(array_index++), el);
         }
 
         return sizeof(std::int32_t) + embedded_document_size + 1ul;
@@ -9208,7 +9237,7 @@ class binary_writer
 
         for (const auto& el : value)
         {
-            write_bson_element(std::to_string(array_index++), el);
+            write_bson_element(REALM_STD_POLYFILL::to_string(array_index++), el);
         }
 
         oa->write_character(to_char_type(0x00));
@@ -9426,7 +9455,7 @@ class binary_writer
         }
         else
         {
-            JSON_THROW(out_of_range::create(407, "integer number " + std::to_string(n) + " cannot be represented by UBJSON as it does not fit int64"));
+            JSON_THROW(out_of_range::create(407, "integer number " + REALM_STD_POLYFILL::to_string(n) + " cannot be represented by UBJSON as it does not fit int64"));
         }
     }
 
@@ -9480,7 +9509,7 @@ class binary_writer
         // LCOV_EXCL_START
         else
         {
-            JSON_THROW(out_of_range::create(407, "integer number " + std::to_string(n) + " cannot be represented by UBJSON as it does not fit int64"));
+            JSON_THROW(out_of_range::create(407, "integer number " + REALM_STD_POLYFILL::to_string(n) + " cannot be represented by UBJSON as it does not fit int64"));
         }
         // LCOV_EXCL_STOP
     }
@@ -10818,9 +10847,14 @@ class serializer
     serializer(output_adapter_t<char> s, const char ichar,
                error_handler_t error_handler_ = error_handler_t::strict)
         : o(std::move(s))
+#ifdef ANDROID
+        , thousands_sep(',')
+        , decimal_point('.')
+#else
         , loc(std::localeconv())
         , thousands_sep(loc->thousands_sep == nullptr ? '\0' : * (loc->thousands_sep))
         , decimal_point(loc->decimal_point == nullptr ? '\0' : * (loc->decimal_point))
+#endif
         , indent_char(ichar)
         , indent_string(512, indent_char)
         , error_handler(error_handler_)
@@ -11179,7 +11213,7 @@ class serializer
                         {
                             std::string sn(3, '\0');
                             snprintf(&sn[0], sn.size(), "%.2X", byte);
-                            JSON_THROW(type_error::create(316, "invalid UTF-8 byte at index " + std::to_string(i) + ": 0x" + sn));
+                            JSON_THROW(type_error::create(316, "invalid UTF-8 byte at index " + REALM_STD_POLYFILL::to_string(i) + ": 0x" + sn));
                         }
 
                         case error_handler_t::ignore:
@@ -11665,7 +11699,7 @@ class json_pointer
     static int array_index(const std::string& s)
     {
         std::size_t processed_chars = 0;
-        const int res = std::stoi(s, &processed_chars);
+        const int res = REALM_STD_POLYFILL::stoi(s, &processed_chars);
 
         // check if the string was completely read
         if (JSON_UNLIKELY(processed_chars != s.size()))
@@ -11895,7 +11929,7 @@ class json_pointer
                     {
                         // "-" always fails the range check
                         JSON_THROW(detail::out_of_range::create(402,
-                                                                "array index '-' (" + std::to_string(ptr->m_value.array->size()) +
+                                                                "array index '-' (" + REALM_STD_POLYFILL::to_string(ptr->m_value.array->size()) +
                                                                 ") is out of range"));
                     }
 
@@ -11960,7 +11994,7 @@ class json_pointer
                     {
                         // "-" cannot be used for const access
                         JSON_THROW(detail::out_of_range::create(402,
-                                                                "array index '-' (" + std::to_string(ptr->m_value.array->size()) +
+                                                                "array index '-' (" + REALM_STD_POLYFILL::to_string(ptr->m_value.array->size()) +
                                                                 ") is out of range"));
                     }
 
@@ -12019,7 +12053,7 @@ class json_pointer
                     {
                         // "-" always fails the range check
                         JSON_THROW(detail::out_of_range::create(402,
-                                                                "array index '-' (" + std::to_string(ptr->m_value.array->size()) +
+                                                                "array index '-' (" + REALM_STD_POLYFILL::to_string(ptr->m_value.array->size()) +
                                                                 ") is out of range"));
                     }
 
@@ -12186,7 +12220,7 @@ class json_pointer
                     // iterate array and use index as reference string
                     for (std::size_t i = 0; i < value.m_value.array->size(); ++i)
                     {
-                        flatten(reference_string + "/" + std::to_string(i),
+                        flatten(reference_string + "/" + REALM_STD_POLYFILL::to_string(i),
                                 value.m_value.array->operator[](i), result);
                     }
                 }
@@ -12584,9 +12618,9 @@ class basic_json
         result["name"] = "JSON for Modern C++";
         result["url"] = "https://github.com/nlohmann/json";
         result["version"]["string"] =
-            std::to_string(NLOHMANN_JSON_VERSION_MAJOR) + "." +
-            std::to_string(NLOHMANN_JSON_VERSION_MINOR) + "." +
-            std::to_string(NLOHMANN_JSON_VERSION_PATCH);
+            REALM_STD_POLYFILL::to_string(NLOHMANN_JSON_VERSION_MAJOR) + "." +
+            REALM_STD_POLYFILL::to_string(NLOHMANN_JSON_VERSION_MINOR) + "." +
+            REALM_STD_POLYFILL::to_string(NLOHMANN_JSON_VERSION_PATCH);
         result["version"]["major"] = NLOHMANN_JSON_VERSION_MAJOR;
         result["version"]["minor"] = NLOHMANN_JSON_VERSION_MINOR;
         result["version"]["patch"] = NLOHMANN_JSON_VERSION_PATCH;
@@ -12608,7 +12642,7 @@ class basic_json
 #elif defined(__clang__)
         result["compiler"] = {{"family", "clang"}, {"version", __clang_version__}};
 #elif defined(__GNUC__) || defined(__GNUG__)
-        result["compiler"] = {{"family", "gcc"}, {"version", std::to_string(__GNUC__) + "." + std::to_string(__GNUC_MINOR__) + "." + std::to_string(__GNUC_PATCHLEVEL__)}};
+        result["compiler"] = {{"family", "gcc"}, {"version", REALM_STD_POLYFILL::to_string(__GNUC__) + "." + REALM_STD_POLYFILL::to_string(__GNUC_MINOR__) + "." + REALM_STD_POLYFILL::to_string(__GNUC_PATCHLEVEL__)}};
 #elif defined(__HP_cc) || defined(__HP_aCC)
         result["compiler"] = "hp"
 #elif defined(__IBMCPP__)
@@ -12624,7 +12658,7 @@ class basic_json
 #endif
 
 #ifdef __cplusplus
-        result["compiler"]["c++"] = std::to_string(__cplusplus);
+        result["compiler"]["c++"] = REALM_STD_POLYFILL::to_string(__cplusplus);
 #else
         result["compiler"]["c++"] = "unknown";
 #endif
@@ -15176,7 +15210,7 @@ class basic_json
             JSON_CATCH (std::out_of_range&)
             {
                 // create better exception explanation
-                JSON_THROW(out_of_range::create(401, "array index " + std::to_string(idx) + " is out of range"));
+                JSON_THROW(out_of_range::create(401, "array index " + REALM_STD_POLYFILL::to_string(idx) + " is out of range"));
             }
         }
         else
@@ -15223,7 +15257,7 @@ class basic_json
             JSON_CATCH (std::out_of_range&)
             {
                 // create better exception explanation
-                JSON_THROW(out_of_range::create(401, "array index " + std::to_string(idx) + " is out of range"));
+                JSON_THROW(out_of_range::create(401, "array index " + REALM_STD_POLYFILL::to_string(idx) + " is out of range"));
             }
         }
         else
@@ -16112,7 +16146,7 @@ class basic_json
         {
             if (JSON_UNLIKELY(idx >= size()))
             {
-                JSON_THROW(out_of_range::create(401, "array index " + std::to_string(idx) + " is out of range"));
+                JSON_THROW(out_of_range::create(401, "array index " + REALM_STD_POLYFILL::to_string(idx) + " is out of range"));
             }
 
             m_value.array->erase(m_value.array->begin() + static_cast<difference_type>(idx));
@@ -19730,7 +19764,7 @@ class basic_json
                             if (JSON_UNLIKELY(static_cast<size_type>(idx) > parent.size()))
                             {
                                 // avoid undefined behavior
-                                JSON_THROW(out_of_range::create(401, "array index " + std::to_string(idx) + " is out of range"));
+                                JSON_THROW(out_of_range::create(401, "array index " + REALM_STD_POLYFILL::to_string(idx) + " is out of range"));
                             }
 
                             // default case: insert add offset
@@ -19977,7 +20011,7 @@ class basic_json
                     while (i < source.size() and i < target.size())
                     {
                         // recursive call to compare array values at index i
-                        auto temp_diff = diff(source[i], target[i], path + "/" + std::to_string(i));
+                        auto temp_diff = diff(source[i], target[i], path + "/" + REALM_STD_POLYFILL::to_string(i));
                         result.insert(result.end(), temp_diff.begin(), temp_diff.end());
                         ++i;
                     }
@@ -19994,7 +20028,7 @@ class basic_json
                         result.insert(result.begin() + end_index, object(
                         {
                             {"op", "remove"},
-                            {"path", path + "/" + std::to_string(i)}
+                            {"path", path + "/" + REALM_STD_POLYFILL::to_string(i)}
                         }));
                         ++i;
                     }
@@ -20005,7 +20039,7 @@ class basic_json
                         result.push_back(
                         {
                             {"op", "add"},
-                            {"path", path + "/" + std::to_string(i)},
+                            {"path", path + "/" + REALM_STD_POLYFILL::to_string(i)},
                             {"value", target[i]}
                         });
                         ++i;
