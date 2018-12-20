@@ -13,7 +13,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
 ### Internal
-* None.
+* Upgraded to https://github.com/nlohmann/json 3.4
 
 2.22.0 Release notes (2018-12-15)
 =============================================================
