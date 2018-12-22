@@ -1,11 +1,7 @@
-x.x.x Release notes (yyyy-MM-dd)
+2.22.0-beta.2 Release notes (2018-12-22)
 =============================================================
 ### Enhancements
-* None.
-
-### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None.
+* Improved performance and memory usage of `Realm.Sync.Adapter`.
 
 ### Compatibility
 * Realm Object Server: 3.11.0 or later.
@@ -15,7 +11,7 @@ x.x.x Release notes (yyyy-MM-dd)
 ### Internal
 * Upgraded to https://github.com/nlohmann/json 3.4
 
-2.22.0 Release notes (2018-12-15)
+2.22.0-beta.1 Release notes (2018-12-15)
 =============================================================
 ### Enhancements
 * Calling `Realm.Sync.User.createConfiguration()` now supports a relative URL which will use the Authentication server as base url. ([#1981](https://github.com/realm/realm-js/issues/1981))
