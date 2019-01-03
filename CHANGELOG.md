@@ -4,8 +4,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * None.
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None.
+* Fix an occasional crash due to an uncaught `realm::IncorrectThreadException` when a client reset error occurs. ([#2193]()https://github.com/realm/realm-js/pull/2193)
 
 ### Compatibility
 * Realm Object Server: 3.11.0 or later.
