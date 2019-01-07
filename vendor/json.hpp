@@ -65,11 +65,12 @@ float strtof(const char* str, char** endptr) { return ::strtof(str, endptr); }
 double strtod(const char* str, char** endptr) { return ::strtod(str, endptr); }
 // Android doesn't have strtold due to `long double` being the same size as `double`
 long double strtold(const char* str, char** endptr) { return ::strtod(str, endptr); }
-long long strtoll(const char* str, char** endptr) { return ::strtoll(str, endptr); }
-unsigned long long strtoull(const char* str, char** endptr) { return ::strtoull(str, endptr); }
+long long strtoll(const char* str, char** endptr, int base) { return ::strtoll(str, endptr, base); }
+unsigned long long strtoull(const char* str, char** endptr, int base) { return ::strtoull(str, endptr, base); }
 int stoi(std::string const& str, std::size_t* pos=0, int base=10) {
     errno = 0;
-    long ret = ::strtol(str.c_str(), &pos, base);
+    char* mypos = reinterpret_cast<char*>(pos);
+    long ret = ::strtol(str.c_str(), &mypos, base);
     if (errno == ERANGE || static_cast<int>(ret) != ret)
         throw std::out_of_range("stoi");
     return static_cast<int>(ret);
@@ -11168,15 +11169,15 @@ class serializer
                             {
                                 if (codepoint <= 0xFFFF)
                                 {
-                                    std::snprintf(string_buffer.data() + bytes, 7, "\\u%04x",
-                                                  static_cast<uint16_t>(codepoint));
+                                    snprintf(string_buffer.data() + bytes, 7, "\\u%04x",
+                                             static_cast<uint16_t>(codepoint));
                                     bytes += 6;
                                 }
                                 else
                                 {
-                                    std::snprintf(string_buffer.data() + bytes, 13, "\\u%04x\\u%04x",
-                                                  static_cast<uint16_t>(0xD7C0 + (codepoint >> 10)),
-                                                  static_cast<uint16_t>(0xDC00 + (codepoint & 0x3FF)));
+                                    snprintf(string_buffer.data() + bytes, 13, "\\u%04x\\u%04x",
+                                             static_cast<uint16_t>(0xD7C0 + (codepoint >> 10)),
+                                             static_cast<uint16_t>(0xDC00 + (codepoint & 0x3FF)));
                                     bytes += 12;
                                 }
                             }
