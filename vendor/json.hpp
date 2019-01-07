@@ -61,13 +61,13 @@ SOFTWARE.
 #include <realm/util/to_string.hpp>
 namespace realm {
 namespace util {
-float strtof(const char* str, char** endptr) { return ::strtof(str, endptr); }
-double strtod(const char* str, char** endptr) { return ::strtod(str, endptr); }
+inline float strtof(const char* str, char** endptr) { return ::strtof(str, endptr); }
+inline double strtod(const char* str, char** endptr) { return ::strtod(str, endptr); }
 // Android doesn't have strtold due to `long double` being the same size as `double`
-long double strtold(const char* str, char** endptr) { return ::strtod(str, endptr); }
-long long strtoll(const char* str, char** endptr, int base) { return ::strtoll(str, endptr, base); }
-unsigned long long strtoull(const char* str, char** endptr, int base) { return ::strtoull(str, endptr, base); }
-int stoi(std::string const& str, std::size_t* pos=0, int base=10) {
+inline long double strtold(const char* str, char** endptr) { return ::strtod(str, endptr); }
+inline long long strtoll(const char* str, char** endptr, int base) { return ::strtoll(str, endptr, base); }
+inline unsigned long long strtoull(const char* str, char** endptr, int base) { return ::strtoull(str, endptr, base); }
+inline int stoi(std::string const& str, std::size_t* pos=0, int base=10) {
     errno = 0;
     char* mypos = reinterpret_cast<char*>(pos);
     long ret = ::strtol(str.c_str(), &mypos, base);

@@ -105,9 +105,6 @@ LOCAL_C_INCLUDES += src/object-store/src/sync
 endif
 
 LOCAL_ALLOW_UNDEFINED_SYMBOLS := true
-# json.hpp is included in multiple compilation units and the Android specific
-# functions cause the linker to complain.
-LOCAL_LDFLAGS += -Wl,--allow-multiple-definition
 ifeq ($(strip $(BUILD_TYPE_SYNC)),1)
 LOCAL_STATIC_LIBRARIES := realm-android-sync-$(TARGET_ARCH_ABI)
 LOCAL_STATIC_LIBRARIES += realm-parser-android-$(TARGET_ARCH_ABI)
