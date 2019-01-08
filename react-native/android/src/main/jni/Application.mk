@@ -21,6 +21,10 @@ APP_LDFLAGS += -llog
 APP_LDFLAGS += -landroid
 APP_LDFLAGS += -fvisibility=hidden
 
+# Workaround for getting UINT64_MAX defined
+# https://stackoverflow.com/questions/16748392/cant-find-symbols-in-stdint-h
+APP_CPPFLAGS += -D__STDC_LIMIT_MACROS=1
+
 # Workaround for memmove/memcpy bug
 ifeq ($(strip $(BUILD_WRAP_MEMMOVE)),1)
 APP_CPPFLAGS += -DREALM_WRAP_MEMMOVE=1
