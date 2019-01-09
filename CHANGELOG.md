@@ -15,7 +15,6 @@ This release contains all changes from v2.22.0-beta.1 to v2.22.0-beta.2.
 * Fix an occasional crash due to an uncaught `realm::IncorrectThreadException` when a client reset error occurs. ([#2193]()https://github.com/realm/realm-js/pull/2193)
 * When a sync worker is called with no arguments, a runtime error can occur. Thanks to @radovanstevanovic. ([#2195](https://github.com/realm/realm-js/pull/2195), since v2.2.2)
 * Fix an occasional crash due to an uncaught `realm::IncorrectThreadException` when a client reset error occurs. ([#2193](https://github.com/realm/realm-js/pull/2193))
-* Fix uncaught exception `realm::util::File::PermissionDenied: remove_dir() failed: Directory not empty` which could occur when deleting Realm files. ([realm/realm-sync#2699](https://github.com/realm/realm-sync/issues/2699), since v2.21.1)
 * A crash bug could be triggered in some situations by creating, deleting, then recreating tables with primary keys. This could be seen observed as a crash with the message `Row index out of range.` ([realm/realm-sync#2651](https://github.com/realm/realm-sync/issues/2651), since v2.0.0)
 
 ### Compatibility
