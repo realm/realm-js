@@ -24,7 +24,7 @@ This release contains all changes from v2.22.0-beta.1 to v2.22.0-beta.2.
 
 ### Internal
 * Upgraded to Realm Core v5.12.7.
-* Upgraded to Realm Sync v3.14.11.
+* Upgraded to Realm Sync v3.14.12.
 * Upgraded to https://github.com/nlohmann/json 3.4
 
 2.22.0-beta.2 Release notes (2018-12-22)
