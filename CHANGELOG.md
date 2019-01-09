@@ -1,13 +1,14 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
-* None.
+* When an invalid/corrupt Realm file is opened, the error message will now contain the file name.
 
 ### Fixed
 * Fixed building on Android. ([#2189](https://github.com/realm/realm-js/issues/2189), since v2.22.0-beta.2)
 * Fix an occasional crash due to an uncaught `realm::IncorrectThreadException` when a client reset error occurs. ([#2193]()https://github.com/realm/realm-js/pull/2193)
 * When a sync worker is called with no arguments, a runtime error can occur. Thanks to @radovanstevanovic. ([#2195](https://github.com/realm/realm-js/pull/2195), since v2.2.2)
 * Fix an occasional crash due to an uncaught `realm::IncorrectThreadException` when a client reset error occurs. ([#2193](https://github.com/realm/realm-js/pull/2193))
+* Fix uncaught exception `realm::util::File::PermissionDenied: remove_dir() failed: Directory not empty` which could occur when deleting Realm files. ([realm/realm-sync#2699](https://github.com/realm/realm-sync/issues/2699), since v2.21.1)
 
 ### Compatibility
 * Realm Object Server: 3.11.0 or later.
@@ -15,7 +16,8 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
 ### Internal
-* None.
+* Upgraded to Realm Core v5.12.7.
+* Upgraded to Realm Sync v3.14.11.
 
 2.22.0-beta.2 Release notes (2018-12-22)
 =============================================================
