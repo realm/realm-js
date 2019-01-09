@@ -9,7 +9,7 @@ This release contains all changes from v2.22.0-beta.1 to v2.22.0-beta.2.
 * When an invalid/corrupt Realm file is opened, the error message will now contain the file name. ([realm/realm-core#3203](https://github.com/realm/realm-core/pull/3203))
 
 ### Fixed
-* `Realm.Sync.User.createConfiguration()` creating an extra `:` if no port was defined.  ([#1980](https://github.com/realm/realm-js/issues/1980), since v2.8.0)
+* `Realm.Sync.User.createConfiguration()` created an extra `:` if no port was defined.  ([#1980](https://github.com/realm/realm-js/issues/1980), since v2.8.0)
 * A slower fallback solution for system which does not support `posix_fallocate()`.
 * Fixed building on Android. ([#2189](https://github.com/realm/realm-js/issues/2189), since v2.22.0-beta.2)
 * Fix an occasional crash due to an uncaught `realm::IncorrectThreadException` when a client reset error occurs. ([#2193]()https://github.com/realm/realm-js/pull/2193)
