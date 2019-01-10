@@ -1,13 +1,21 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
+This release contains all changes from v2.22.0-beta.1 to v2.22.0-beta.2.
+
 ### Enhancements
-* None.
+* Calling `Realm.Sync.User.createConfiguration()` now supports a relative URL which will use the Authentication server as base url. ([#1981](https://github.com/realm/realm-js/issues/1981))
+* Updated React Native Android Builds to use Android Build Tools 3.2.1. ([#2103](https://github.com/realm/realm-js/issues/2103))
+* Improved performance and memory usage of `Realm.Sync.Adapter`. ([realm/realm-js-private#501](https://github.com/realm/realm-js-private/pull/501))
+* When an invalid/corrupt Realm file is opened, the error message will now contain the file name. ([realm/realm-core#3203](https://github.com/realm/realm-core/pull/3203))
 
 ### Fixed
+* `Realm.Sync.User.createConfiguration()` created an extra `:` if no port was defined.  ([#1980](https://github.com/realm/realm-js/issues/1980), since v2.8.0)
+* A slower fallback solution for system which does not support `posix_fallocate()`.
 * Fixed building on Android. ([#2189](https://github.com/realm/realm-js/issues/2189), since v2.22.0-beta.2)
 * Fix an occasional crash due to an uncaught `realm::IncorrectThreadException` when a client reset error occurs. ([#2193]()https://github.com/realm/realm-js/pull/2193)
 * When a sync worker is called with no arguments, a runtime error can occur. Thanks to @radovanstevanovic. ([#2195](https://github.com/realm/realm-js/pull/2195), since v2.2.2)
 * Fix an occasional crash due to an uncaught `realm::IncorrectThreadException` when a client reset error occurs. ([#2193](https://github.com/realm/realm-js/pull/2193))
+* A crash bug could be triggered in some situations by creating, deleting, then recreating tables with primary keys. This could be seen observed as a crash with the message `Row index out of range.` ([realm/realm-sync#2651](https://github.com/realm/realm-sync/issues/2651), since v2.0.0)
 
 ### Compatibility
 * Realm Object Server: 3.11.0 or later.
@@ -15,7 +23,9 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
 ### Internal
-* None.
+* Upgraded to Realm Core v5.12.7.
+* Upgraded to Realm Sync v3.14.12.
+* Upgraded to https://github.com/nlohmann/json 3.4
 
 2.22.0-beta.2 Release notes (2018-12-22)
 =============================================================

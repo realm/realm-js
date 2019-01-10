@@ -211,22 +211,12 @@ function getSyncRequirements(dependencies, options, required = {}) {
         case 'win': {
             const arch = options.arch === 'ia32' ? 'Win32' : options.arch;
             required.SYNC_ARCHIVE = `realm-sync-${flavor}-v${dependencies.REALM_SYNC_VERSION}-Windows-${arch}-devel.tar.gz`;
-            return getCoreRequirements(dependencies, options, required)
-                .then(() => getSyncCommitSha(dependencies.REALM_SYNC_VERSION))
-                .then(sha => {
-                    required.SYNC_SERVER_FOLDER += `/sha-version/${sha}`;
-                    return required;
-                });
+            return getCoreRequirements(dependencies, options, required);
         }
         case 'linux':
             // flavor is ignored since we only publish Release mode
             required.SYNC_ARCHIVE = `realm-sync-Release-v${dependencies.REALM_SYNC_VERSION}-Linux-devel.tar.gz`;
-            return getCoreRequirements(dependencies, options, required)
-                .then(() => {
-                    const private_dependencies = ini.parse(fs.readFileSync(path.resolve(__dirname, '../../dependencies.list'), 'utf8'));
-                    required.SYNC_SERVER_FOLDER += `/sha-version/${private_dependencies.REALM_SYNC_SHA}`;
-                    return required;
-                });
+            return getCoreRequirements(dependencies, options, required);
         default:
             return Promise.reject(new Error(`Unsupported sync platform '${options.platform}'`));
     }
