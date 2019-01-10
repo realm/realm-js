@@ -1,4 +1,4 @@
-x.x.x Release notes (yyyy-MM-dd)
+2.22.0 Release notes (2019-1-10)
 =============================================================
 This release contains all changes from v2.22.0-beta.1 to v2.22.0-beta.2.
 
