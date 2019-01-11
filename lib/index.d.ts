@@ -720,6 +720,11 @@ declare class Realm {
     static deleteFile(config: Realm.Configuration): void;
 
     /**
+     * Copy bundled Realm files to app's default file folder.
+     */
+    static copyBundledRealmFiles(): void;
+
+    /**
      * @param  {Realm.Configuration} config?
      */
     constructor(config?: Realm.Configuration);
