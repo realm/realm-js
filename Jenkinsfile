@@ -214,9 +214,7 @@ def doWindowsBuild() {
     node('windows && nodejs') {
       unstash 'source'
       try {
-        sshagent(['realm-ci-ssh']) {
-          bat 'npm install --build-from-source=realm --realm_enable_sync'
-        }
+        bat 'npm install --build-from-source=realm --realm_enable_sync'
         dir('tests') {
           bat 'npm install'
           bat 'npm run test'
