@@ -154,17 +154,6 @@ function acquire(desired, target) {
         .then(() => writeLockfile(target, desired))
 }
 
-function getSyncCommitSha(version) {
-  return exec(`git ls-remote git@github.com:realm/realm-sync.git --tags "v${version}^{}"`)
-         .then(stdout => {
-           if (!stdout) {
-             return exec(`git ls-remote git@github.com:realm/realm-sync.git --tags "v${version}"`)
-           } else {
-             return stdout;
-           }
-         }).then(stdout => /([^\t]+)/.exec(stdout)[0]);
-}
-
 function getCoreRequirements(dependencies, options, required = {}) {
     required.CORE_SERVER_FOLDER = `core/v${dependencies.REALM_CORE_VERSION}`;
     let flavor = options.debug ? 'Debug' : 'Release';
