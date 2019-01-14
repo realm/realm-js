@@ -330,6 +330,181 @@ module.exports = {
         TestCase.assertEqual(objects[1].doubleCol, 2, 'wrong object property value');
     },
 
+
+    testRealmCreateOOrUpdate_InvalidArguments: function() {
+        const realm = new Realm({schema: [schemas.TestObject]});
+        realm.write(function() {
+            TestCase.assertThrowsContaining(() => realm.createOrUpdate('TestObject', {doubleCol: 1}, "foo"),
+                "Unsupported 'mode': foo. Only 'do-not-set-identical-values' is supported.");
+        });
+    },
+
+    testRealmCreateOrUpdate: function() {
+
+        const realm = new Realm({schema: [schemas.AllPrimaryTypes, schemas.TestObject, schemas.StringPrimary]});
+        realm.write(function() {
+
+            const objects = realm.objects('AllPrimaryTypesObject');
+
+            // Create Initial object
+            const obj1 = realm.create('AllPrimaryTypesObject', {
+                primaryCol: '33',
+                boolCol: false,
+                intCol: 1,
+                floatCol: 1.1,
+                doubleCol: 1.11,
+                stringCol: '1',
+                dateCol: new Date(1),
+                dataCol: new ArrayBuffer(1),
+                objectCol: {doubleCol: 1},
+                arrayCol: [{doubleCol: 1}],
+            });
+
+            // Update object
+            const obj2 = realm.createOrUpdate('AllPrimaryTypesObject', {
+                primaryCol: '33',
+                boolCol: true,
+                intCol: 2,
+                floatCol: 2.2,
+                doubleCol: 2.22,
+                stringCol: '2',
+                dateCol: new Date(2),
+                dataCol: new ArrayBuffer(2),
+                objectCol: {doubleCol: 2},
+                arrayCol: [{doubleCol: 2}],
+            });
+
+            TestCase.assertEqual(obj2.stringCol, '2');
+            TestCase.assertEqual(obj2.boolCol, true);
+            TestCase.assertEqual(obj2.intCol, 2);
+            TestCase.assertEqualWithTolerance(obj2.floatCol, 2.2, 0.000001);
+            TestCase.assertEqualWithTolerance(obj2.doubleCol, 2.22, 0.000001);
+            TestCase.assertEqual(obj2.dateCol.getTime(), 2);
+            TestCase.assertEqual(obj2.dataCol.byteLength, 2);
+            TestCase.assertEqual(obj2.objectCol.doubleCol, 2);
+            TestCase.assertEqual(obj2.arrayCol.length, 1);
+            TestCase.assertEqual(obj2.arrayCol[0].doubleCol, 2);
+        });
+    },
+
+    testRealmCreateOrUpdate_diffedUpdate: function() {
+        const realm = new Realm({schema: [schemas.AllPrimaryTypes, schemas.TestObject]});
+        realm.write(function() {
+            const objects = realm.objects('AllPrimaryTypesObject');
+            TestCase.assertEqual(objects.length, 0);
+
+            // Create Initial object
+            const obj1 = realm.create('AllPrimaryTypesObject', {
+                primaryCol: '34',
+                boolCol: false,
+                intCol: 1,
+                floatCol: 1.1,
+                doubleCol: 1.11,
+                stringCol: '1',
+                dateCol: new Date(1),
+                dataCol: new ArrayBuffer(1),
+                objectCol: {doubleCol: 1},
+                arrayCol: [{doubleCol: 1}],
+            });
+
+            // Update object
+            const obj2 = realm.createOrUpdate('AllPrimaryTypesObject', {
+                primaryCol: '34',
+                boolCol: false,
+                intCol: 1,
+                floatCol: 1.1,
+                doubleCol: 1.11,
+                stringCol: '1',
+                dateCol: new Date(1),
+                dataCol: new ArrayBuffer(1),
+                objectCol: {doubleCol: 1},
+                arrayCol: [{doubleCol: 1}],
+            }, 'do-not-set-identical-values');
+
+            TestCase.assertEqual(objects.length, 1);
+            TestCase.assertEqual(obj2.stringCol, '1');
+            TestCase.assertEqual(obj2.boolCol, false);
+            TestCase.assertEqual(obj2.intCol, 1);
+            TestCase.assertEqualWithTolerance(obj2.floatCol, 1.1, 0.000001);
+            TestCase.assertEqualWithTolerance(obj2.doubleCol, 1.11, 0.000001);
+            TestCase.assertEqual(obj2.dateCol.getTime(), 1);
+            TestCase.assertEqual(obj2.dataCol.byteLength, 1);
+            TestCase.assertEqual(obj2.objectCol.doubleCol, 1);
+            TestCase.assertEqual(obj2.arrayCol.length, 1);
+            TestCase.assertEqual(obj2.arrayCol[0].doubleCol, 1);
+        });
+    },
+
+    testRealmCreateOrUpdate_diffedUpdatesOnlyTriggerNotificationsForChangedValues() {
+        const realm = new Realm({schema: [schemas.AllPrimaryTypes, schemas.TestObject]});
+        return new Promise((resolve, reject) => {
+            let notification = 0;
+            realm.objects('AllPrimaryTypesObject').addListener((objects, changes) => {
+                switch (notification) {
+                    case 0:
+                        TestCase.assertEqual(changes.insertions.length, 0);
+                        TestCase.assertEqual(objects.length, 0);
+                        break;
+                    case 1:
+                        TestCase.assertEqual(changes.insertions.length, 1);
+                        TestCase.assertEqual(objects[0].boolCol, false);
+                        break;
+                    case 2:
+                        TestCase.assertEqual(changes.modifications.length, 1);
+                        TestCase.assertEqual(objects[0].boolCol, true);
+                        break;
+                    case 3:
+                        TestCase.assertEqual(changes.modifications.length, 0);
+                        TestCase.assertEqual(objects[0].boolCol, true);
+                        break;
+                    case 4:
+                        TestCase.assertEqual(changes.modifications.length, 1);
+                        TestCase.assertEqual(objects[0].boolCol, true);
+                        break;
+                    default:
+                        reject("Notifications triggered too many times");
+                }
+                notification++;
+            });
+
+            let template = Realm.createTemplateObject(schemas.AllPrimaryTypes);
+
+            // First notification -> Object created
+            realm.write(() => {
+                // Create Initial object
+                const obj1 = realm.create('AllPrimaryTypesObject', Object.assign(template, {
+                    primaryCol: '35',
+                    boolCol: false,
+                }));
+            });
+
+            realm.write(() => {
+                // Update object with a change in value.
+                realm.createOrUpdate('AllPrimaryTypesObject',{
+                    primaryCol: '35',
+                    boolCol: true,
+                }, 'do-not-set-identical-values');
+            });
+
+            realm.write(() => {
+                // Update object with no change in value
+                realm.createOrUpdate('AllPrimaryTypesObject', {
+                    primaryCol: '35',
+                    boolCol: true,
+                }, 'do-not-set-identical-values');
+            });
+
+            realm.write(() => {
+                // Update object with no change in value and no diffed update.
+                // This should still trigger a notification
+                realm.createOrUpdate('AllPrimaryTypesObject',{
+                    primaryCol: '35',
+                    boolCol: true,
+                });
+            });
+        });
+    },
+
     testRealmCreatePrimaryKey: function() {
         const realm = new Realm({schema: [schemas.IntPrimary]});
 

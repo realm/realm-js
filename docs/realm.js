@@ -190,12 +190,20 @@ class Realm {
      * @param {Realm~ObjectType} type - The type of Realm object to create.
      * @param {Object} properties - Property values for all required properties without a
      *   default value.
-     * @param {boolean} [update=false] - Signals that an existing object with matching primary key
+     * @param {boolean} [update=false] - DEPRECATED: Use createOrUpdate instead. Signals that an existing object with matching primary key
      *   should be updated. Only the primary key property and properties which should be updated
      *   need to be specified. All missing property values will remain unchanged.
      * @returns {Realm.Object}
      */
     create(type, properties, update) {}
+
+    /**
+     *
+     * @param {Realm~ObjectType} type - The type of Realm object to create.
+     * @param {Object} properties - Property values for all required properties without a default value.
+     * @param {string} update mode. Only 'do-not-set-identical-values' is currently supported.
+     */
+    createOrUpdate(type, properties, mode) {}
 
     /**
      * Deletes the provided Realm object, or each one inside the provided collection.

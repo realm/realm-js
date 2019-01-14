@@ -1,7 +1,8 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
-* None.
+* Added new method `Realm.createOrUpdate(type, values, mode)`. ($)
+* Added new update mode , which will only update values that actually changed. 
 
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)

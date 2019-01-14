@@ -221,6 +221,7 @@ public:
     static void objects(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void object_for_primary_key(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void create(ContextType, ObjectType, Arguments &, ReturnValue &);
+    static void create_or_update(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void delete_one(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void delete_all(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void write(ContextType, ObjectType, Arguments &, ReturnValue &);
@@ -290,6 +291,7 @@ public:
         {"objects", wrap<objects>},
         {"objectForPrimaryKey", wrap<object_for_primary_key>},
         {"create", wrap<create>},
+        {"createOrUpdate", wrap<create_or_update>},
         {"delete", wrap<delete_one>},
         {"deleteAll", wrap<delete_all>},
         {"write", wrap<write>},
@@ -392,6 +394,21 @@ public:
             throw std::runtime_error("Object type '" + object_type + "' not found in schema.");
         }
         return *object_schema;
+    }
+
+    static void internal_create_or_update(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value, bool update, bool only_update_diff_objects) {
+        SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
+        realm->verify_open();
+        auto &object_schema = validated_object_schema_for_value(ctx, realm, args[0]);
+
+        ObjectType object = Value::validated_to_object(ctx, args[1], "properties");
+        if (Value::is_array(ctx, args[1])) {
+            object = Schema<T>::dict_for_property_array(ctx, object_schema, object);
+        }
+
+        NativeAccessor accessor(ctx, realm, object_schema);
+        auto realm_object = realm::Object::create<ValueType>(accessor, realm, object_schema, object, update, only_update_diff_objects);
+        return_value.set(RealmObjectClass<T>::create_instance(ctx, std::move(realm_object)));
     }
 };
 
@@ -947,25 +964,26 @@ void RealmClass<T>::object_for_primary_key(ContextType ctx, ObjectType this_obje
 template<typename T>
 void RealmClass<T>::create(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_maximum(3);
-
-    SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
-    realm->verify_open();
-    auto &object_schema = validated_object_schema_for_value(ctx, realm, args[0]);
-
-    ObjectType object = Value::validated_to_object(ctx, args[1], "properties");
-    if (Value::is_array(ctx, args[1])) {
-        object = Schema<T>::dict_for_property_array(ctx, object_schema, object);
-    }
-
     bool update = false;
+    if (args.count == 3) {
+        update = Value::validated_to_boolean(ctx, args[2]);
+    }
+    RealmClass<T>::internal_create_or_update(ctx, this_object, args, return_value, update, false);
+}
+
+template<typename T>
+void RealmClass<T>::create_or_update(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
+    args.validate_maximum(3);
     bool only_update_diff_objects = false;
     if (args.count == 3) {
-        update = Value::validated_to_boolean(ctx, args[2], "update");
+        std::string mode = Value::validated_to_string(ctx, args[2]);
+        if (mode == "do-not-set-identical-values") {
+            only_update_diff_objects = true;
+        } else {
+            throw std::runtime_error("Unsupported 'mode': " + mode + ". Only 'do-not-set-identical-values' is supported.");
+        }
     }
-
-    NativeAccessor accessor(ctx, realm, object_schema);
-    auto realm_object = realm::Object::create<ValueType>(accessor, realm, object_schema, object, update, only_update_diff_objects);
-    return_value.set(RealmObjectClass<T>::create_instance(ctx, std::move(realm_object)));
+    RealmClass<T>::internal_create_or_update(ctx, this_object, args, return_value, true, only_update_diff_objects);
 }
 
 template<typename T>

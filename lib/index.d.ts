@@ -44,6 +44,10 @@ declare namespace Realm {
         [keys: string]: PropertyType | ObjectSchemaProperty;
     }
 
+    enum UpdateMode {
+        DoNotSetIdenticalValues = 'do-not-set-identical-values'
+    }
+
     /**
      * ObjectSchema
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.html#~ObjectSchema }
@@ -741,6 +745,14 @@ declare class Realm {
      * @returns T
      */
     create<T>(type: string | Realm.ObjectClass | Function, properties: T | Realm.ObjectPropsType, update?: boolean): T;
+
+    /**
+     * @param  {string|Realm.ObjectClass|Function} type
+     * @param  {T&Realm.ObjectPropsType} properties
+     * @param  {Realm.UpdateMode} mode?
+     * @returns T
+     */
+    createOrUpdate<T>(type: string | Realm.ObjectClass | Function, properties: T | Realm.ObjectPropsType, mode?: Realm.UpdateMode): T;
 
     /**
      * @param  {Realm.Object|Realm.Object[]|Realm.List<any>|Realm.Results<any>|any} object
