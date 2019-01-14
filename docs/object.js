@@ -54,4 +54,25 @@ class Object {
      * @since 2.6.0
      */
     linkingObjectsCount() {}
+
+    /**
+     * Add a listener `callback` which will be called when a **live** object instance changes.
+     * @param {function(collection, changes)} callback - A function to be called when changes occur.
+     *   The callback function is called with two arguments:
+     *   - `collection`: the object as a collection instance that changed,
+     *   - `changes`: a dictionary with keys `insertions`, `newModifications`, `oldModifications`
+     *      and `deletions`, each containing a list of indices in the collection that were
+     *      inserted, updated or deleted respectively. `deletions` and `oldModifications` are
+     *      indices into the collection before the change happened, while `insertions` and
+     *      `newModifications` are indices into the new version of the collection.
+     * @throws {Error} If `callback` is not a function.
+     * @since 2.23.0
+     * @example
+     * wine.addListener((collection, changes) => {
+     *  // collection === wine
+     *  console.log(`${changes.insertions.length} insertions`);
+     *  console.log(`${changes.modifications.length} modifications`);
+     *  console.log(`${changes.deletions.length} deletions`);
+     * })
+     */
 }

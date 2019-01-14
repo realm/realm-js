@@ -562,5 +562,32 @@ module.exports = {
             obj._setLink('stringLink', 'c');
             TestCase.assertEqual(obj.stringLink, null);
         });
+    },
+
+    testNotification: function() {
+        const realm = new Realm({schema: [schemas.StringOnly]});
+
+        let obj;
+        realm.write(function() {
+            obj = realm.create(schemas.StringOnly.name, { stringCol: 'foo' });
+        });
+
+        let calls = 0;
+        let resolve = () => {};
+
+        obj.addListener(function(objs, changes) {
+            calls++;
+            if (calls === 2) { // first call is when object is created
+               TestCase.assertEqual(obj['stringCol'], 'bar');
+               resolve();
+            }
+        });
+
+        return new Promise((r, _reject) => {
+            resolve = r;
+            realm.write(function() {
+                obj['stringCol'] = 'bar';
+            });
+        });
     }
 };
