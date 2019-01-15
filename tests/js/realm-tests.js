@@ -446,7 +446,7 @@ module.exports = {
                         TestCase.assertEqual(objects.length, 0);
                         break;
                     case 1:
-                        TestCase.assertEqual(changes.insertions.length, 1);
+                        TestCase.assertEqual(changes.insertions.length, 2);
                         TestCase.assertEqual(objects[0].boolCol, false);
                         break;
                     case 2:
@@ -454,12 +454,14 @@ module.exports = {
                         TestCase.assertEqual(objects[0].boolCol, true);
                         break;
                     case 3:
-                        TestCase.assertEqual(changes.modifications.length, 0);
-                        TestCase.assertEqual(objects[0].boolCol, true);
+                        TestCase.assertEqual(changes.modifications.length, 1);
+                        TestCase.assertEqual(changes.modifications[0],1);
                         break;
                     case 4:
                         TestCase.assertEqual(changes.modifications.length, 1);
+                        TestCase.assertEqual(changes.modifications[0], 0);
                         TestCase.assertEqual(objects[0].boolCol, true);
+                        resolve();
                         break;
                     default:
                         reject("Notifications triggered too many times");
@@ -472,8 +474,12 @@ module.exports = {
             // First notification -> Object created
             realm.write(() => {
                 // Create Initial object
-                const obj1 = realm.create('AllPrimaryTypesObject', Object.assign(template, {
+                realm.create('AllPrimaryTypesObject', Object.assign(template, {
                     primaryCol: '35',
+                    boolCol: false,
+                }));
+                realm.create('AllPrimaryTypesObject', Object.assign(template, {
+                    primaryCol: '36',
                     boolCol: false,
                 }));
             });
@@ -492,6 +498,12 @@ module.exports = {
                     primaryCol: '35',
                     boolCol: true,
                 }, 'do-not-set-identical-values');
+
+                // Update other object to ensure that notifications are triggered
+                realm.createOrUpdate('AllPrimaryTypesObject', {
+                    primaryCol: '36',
+                    boolCol: true,
+                });
             });
 
             realm.write(() => {
