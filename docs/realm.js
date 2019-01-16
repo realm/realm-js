@@ -334,7 +334,7 @@ class Realm {
 
     /**
      * Copy all bundled Realm files to app's default file folder.
-     * This is not implemented for node.js.
+     * This is only implemented for React Native.
      * @throws {Error} If an I/O error occured or method is not implemented.
      */
     static copyBundledRealmFiles() {}
