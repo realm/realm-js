@@ -168,7 +168,7 @@ class Realm {
      *
      * @param {(Realm~ObjectType|Realm.Object)} arg - the object type or the object to compute privileges from. If no
      *   argument is given, the privileges for the Realm is returned.
-     * @returns {Object} as the computed privileges as properties
+     * @returns {Realm.Permissions.RealmPrivileges|Realm.Permissions.ClassPrivileges|Realm.Permissions.ObjectPrivileges} as the computed privileges as properties
      * @since 2.3.0
      * @see {Realm.Permissions} for details of privileges and roles.
      */
@@ -179,7 +179,7 @@ class Realm {
      *
      * @param {Realm~ObjectType} [arg] - If no argument is provided, the Realm-level permissions are returned.
      *   Otherwise, the Class-level permissions for the provided type is returned.
-     * @returns {Object} The permissions object
+     * @returns {Realm.Permissions.Realm|Realm.Permissions.Class} The permissions object
      * @since 2.18.0
      * @see {Realm.Permissions} for details of priviliges and roles.
      */
