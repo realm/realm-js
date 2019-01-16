@@ -66,7 +66,7 @@ Use parentheses `()` and the `&&`/`AND` and `||`/`OR` operators to compose queri
 
 ### Timestamps
 
-Normally queries can be written with variable substitution so that the syntax of dates is taken care of by Realm. However, sometimes it fits better to compose a entirely string based query. In that case the syntax follows the format `YYYY-MM-DD@HH:MM:SS:N` where the `:N` suffix specifies nanoseconds but can be omitted (defaulting to 0). If preferred, a programmatic format is also supported `TSS:NS` which is a literal `T` followed by seconds since epoch, and nanoseconds modifier. In both formats, negative nanoseconds are considered invalid syntax. Timestamps are not quoted like strings. Due to platform limitations, using the first syntax is not supported for dates pre epoch on windows and pre 1901 on other platforms.
+Normally queries can be written with variable substitution so that the syntax of dates is taken care of by Realm. However, sometimes it fits better to compose a entirely string based query. In that case the syntax follows the formats `YYYY-MM-DD@HH:MM:SS:N` and `YYYY-MM-DDTHH:MM:SS:N` where the `:N` suffix specifies nanoseconds but can be omitted (defaulting to 0). If preferred, a programmatic format is also supported `TSS:NS` which is a literal `T` followed by seconds since epoch, and nanoseconds modifier. In both formats, negative nanoseconds are considered invalid syntax. Timestamps are not quoted like strings. Due to platform limitations, using the first syntax is not supported for dates pre epoch on windows and pre 1901 on other platforms.
 
 ```JS
 realm.objects('Person').filtered('birthday == 2017-12-04@0:0:0') // readable date omitting nanoseconds (assumes 0)
