@@ -333,7 +333,7 @@ class Realm {
     static deleteFile(config) {}
 
     /**
-     * Copy bundled Realm files to app's default file folder.
+     * Copy all bundled Realm files to app's default file folder.
      * This is not implemented for node.js.
      * @throws {Error} If an I/O error occured or method is not implemented.
      */
