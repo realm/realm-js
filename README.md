@@ -36,7 +36,7 @@ Prerequisites:
 - npm < 5.0 (due to symlinks not working)
 - Xcode 7.2+
 - Android SDK 23+
-- [Android NDK 10e](https://developer.android.com/ndk/downloads/older_releases) 
+- [Android NDK 10e](https://developer.android.com/ndk/downloads/older_releases)
 
 First clone this repository:
 
@@ -50,7 +50,7 @@ Then in the cloned directory:
 git submodule update --init --recursive
 ```
 
-```Note: If you have cloned the repo previously make sure you remove your node_modules directory since it may contain stale dependencies which may cause the build to fail.```
+Note: If you have cloned the repo previously make sure you remove your node_modules directory since it may contain stale dependencies which may cause the build to fail.
 
 ### Building for iOS:
 - Open `react-native/ios/RealmReact.xcodeproj` in Xcode
@@ -97,7 +97,7 @@ You can use [Visual Studio Code](https://code.visualstudio.com/) to develop and 
 VSCode has good support for debugging JavaScript, but to work with C++ code, you are required to install two additional VSCode extensions:
 
 * Microsoft C/C++
-* CodeLLDB 
+* CodeLLDB
 
 To begin, you will need to build the node addon and prepare the test environment:
 
