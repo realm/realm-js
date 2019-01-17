@@ -15,7 +15,6 @@
         "src/node/platform.cpp",
 
         "src/concurrent_deque.hpp",
-        "src/event_loop_dispatcher.hpp",
         "src/js_class.hpp",
         "src/js_collection.hpp",
         "src/js_list.hpp",

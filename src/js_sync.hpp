@@ -21,17 +21,18 @@
 #include <mutex>
 #include <condition_variable>
 
-#include "event_loop_dispatcher.hpp"
-#include "platform.hpp"
 #include "js_class.hpp"
 #include "js_collection.hpp"
-#include "sync/sync_manager.hpp"
+#include "platform.hpp"
+#include "sync/partial_sync.hpp"
 #include "sync/sync_config.hpp"
+#include "sync/sync_manager.hpp"
 #include "sync/sync_session.hpp"
 #include "sync/sync_user.hpp"
-#include "sync/partial_sync.hpp"
-#include "realm/util/logger.hpp"
-#include "realm/util/uri.hpp"
+#include "util/event_loop_dispatcher.hpp"
+
+#include <realm/util/logger.hpp>
+#include <realm/util/uri.hpp>
 
 #if REALM_ANDROID
 #include <jni.h>
@@ -405,12 +406,12 @@ public:
 private:
     const Protected<typename T::GlobalContext> m_ctx;
     const Protected<typename T::Function> m_func;
-    EventLoopDispatcher<void(SSLVerifyCallbackSyncThreadFunctor<T>* this_object,
-                             const std::string& server_address,
-                             sync::Session::port_type server_port,
-                             const std::string& pem_certificate,
-                             int preverify_ok,
-                             int depth)> m_event_loop_dispatcher;
+    util::EventLoopDispatcher<void(SSLVerifyCallbackSyncThreadFunctor<T>* this_object,
+                                   const std::string& server_address,
+                                   sync::Session::port_type server_port,
+                                   const std::string& pem_certificate,
+                                   int preverify_ok,
+                                   int depth)> m_event_loop_dispatcher;
     bool m_ssl_certificate_callback_done = false;
     bool m_ssl_certificate_accepted = false;
     std::shared_ptr<std::mutex> m_mutex;
@@ -434,7 +435,7 @@ void SessionClass<T>::get_config(ContextType ctx, ObjectType object, ReturnValue
         ObjectType config = Object::create_empty(ctx);
         Object::set_property(ctx, config, "user", create_object<T, UserClass<T>>(ctx, new SharedUser(session->config().user)));
         Object::set_property(ctx, config, "url", Value::from_string(ctx, session->config().realm_url()));
-        if (auto dispatcher = session->config().error_handler.template target<EventLoopDispatcher<SyncSessionErrorHandler>>()) {
+        if (auto dispatcher = session->config().error_handler.template target<util::EventLoopDispatcher<SyncSessionErrorHandler>>()) {
             if (auto handler = dispatcher->func().template target<SyncSessionErrorHandlerFunctor<T>>()) {
                 Object::set_property(ctx, config, "error", handler->func());
             }
@@ -569,7 +570,7 @@ void SessionClass<T>::add_progress_notification(ContextType ctx, ObjectType this
         Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
         std::function<ProgressHandler> progressFunc;
 
-        EventLoopDispatcher<ProgressHandler> progress_handler([=](uint64_t transferred_bytes, uint64_t transferrable_bytes) {
+        util::EventLoopDispatcher<ProgressHandler> progress_handler([=](uint64_t transferred_bytes, uint64_t transferrable_bytes) {
             HANDLESCOPE
             ValueType callback_arguments[2];
             callback_arguments[0] = Value::from_number(protected_ctx, transferred_bytes);
@@ -617,7 +618,7 @@ void SessionClass<T>::add_connection_notification(ContextType ctx, ObjectType th
 
         std::function<ConnectionHandler> connectionFunc;
 
-        EventLoopDispatcher<ConnectionHandler> connection_handler([=](SyncSession::ConnectionState old_state, SyncSession::ConnectionState new_state) {
+        util::EventLoopDispatcher<ConnectionHandler> connection_handler([=](SyncSession::ConnectionState old_state, SyncSession::ConnectionState new_state) {
             HANDLESCOPE
             ValueType callback_arguments[2];
             callback_arguments[0] = Value::from_string(protected_ctx, get_connection_state_value(new_state));
@@ -710,7 +711,7 @@ void SessionClass<T>::wait_for_completion(Direction direction, ContextType ctx, 
         Protected<ObjectType> protected_this(ctx, this_object);
         Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
 
-        EventLoopDispatcher<DownloadUploadCompletionHandler> completion_handler([=](std::error_code error) {
+        util::EventLoopDispatcher<DownloadUploadCompletionHandler> completion_handler([=](std::error_code error) {
             HANDLESCOPE
             ValueType callback_arguments[1];
             if (error) {
@@ -1006,7 +1007,7 @@ std::function<SyncBindSessionHandler> SyncClass<T>::session_bind_callback(Contex
 {
     Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
     Protected<ObjectType> protected_sync_constructor(ctx, sync_constructor);
-    return EventLoopDispatcher<SyncBindSessionHandler>([protected_ctx, protected_sync_constructor](const std::string& path, const realm::SyncConfig& config, std::shared_ptr<SyncSession>) {
+    return util::EventLoopDispatcher<SyncBindSessionHandler>([protected_ctx, protected_sync_constructor](const std::string& path, const realm::SyncConfig& config, std::shared_ptr<SyncSession>) {
         HANDLESCOPE
         ObjectType user_constructor = Object::validated_get_object(protected_ctx, protected_sync_constructor, "User");
         FunctionType refreshAccessToken = Object::validated_get_function(protected_ctx, user_constructor, "_refreshAccessToken");
@@ -1037,7 +1038,7 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
         std::function<SyncSessionErrorHandler> error_handler;
         ValueType error_func = Object::get_property(ctx, sync_config_object, "error");
         if (!Value::is_undefined(ctx, error_func)) {
-            error_handler = EventLoopDispatcher<SyncSessionErrorHandler>(SyncSessionErrorHandlerFunctor<T>(ctx, Value::validated_to_function(ctx, error_func)));
+            error_handler = util::EventLoopDispatcher<SyncSessionErrorHandler>(SyncSessionErrorHandlerFunctor<T>(ctx, Value::validated_to_function(ctx, error_func)));
         }
 
         ObjectType user = Object::validated_get_object(ctx, sync_config_object, "user");
