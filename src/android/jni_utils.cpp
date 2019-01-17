@@ -37,7 +37,7 @@ JNIEnv* JniUtils::get_env(bool attach_if_needed)
     JNIEnv* env;
     if (s_instance->m_vm->GetEnv(reinterpret_cast<void**>(&env), s_instance->m_vm_version) != JNI_OK) {
         if (attach_if_needed) {
-            jint ret = s_instance->m_vm->AttachCurrentThread(reinterpret_cast<void**>(&env), nullptr);
+            jint ret = s_instance->m_vm->AttachCurrentThread(&env, nullptr);
         }
     }
 
