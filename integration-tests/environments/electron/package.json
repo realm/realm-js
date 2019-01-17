@@ -14,10 +14,10 @@
   },
   "devDependencies": {
     "@realm-tests/tests": "../../tests",
-    "electron": "^2.0.4",
+    "electron": "^2.0.0",
     "mocha": "^5.2.0",
     "node-gyp": "^3.7.0",
     "node-pre-gyp": "^0.10.3",
-    "spectron": "^3.8.0"
+    "spectron": "^4.0.0"
   }
 }
