@@ -1,7 +1,7 @@
 "use strict";
 
 const path = require("path");
-const Application = require("spectron").Application;
+const { Application } = require("spectron");
 
 let ELECTRON_PATH = path.join(__dirname, "node_modules", ".bin", "electron");
 if (process.platform === "win32") {
