@@ -15,6 +15,7 @@ x.x.x Release notes (yyyy-MM-dd)
 ### Internal
 * Upgraded to Realm Core v5.13.0.
 * Upgraded to Realm Sync v3.14.14.
+* Stopped including headers from developers JDK when building the Android native module. ([#2223](https://github.com/realm/realm-js/pull/2223))
 
 2.22.0 Release notes (2019-1-10)
 =============================================================

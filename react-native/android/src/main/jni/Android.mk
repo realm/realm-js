@@ -95,9 +95,6 @@ LOCAL_C_INCLUDES += src/jsc
 LOCAL_C_INCLUDES += src/object-store/src
 LOCAL_C_INCLUDES += src/object-store/src/impl
 LOCAL_C_INCLUDES += vendor
-LOCAL_C_INCLUDES += $(JAVA_HOME)/include
-LOCAL_C_INCLUDES += $(JAVA_HOME)/include/darwin
-LOCAL_C_INCLUDES += $(JAVA_HOME)/include/linux
 LOCAL_C_INCLUDES += core/include
 LOCAL_C_INCLUDES += core/openssl-release-1.0.2k-Android-$(TARGET_ARCH_ABI)/include
 ifeq ($(strip $(BUILD_TYPE_SYNC)),1)
