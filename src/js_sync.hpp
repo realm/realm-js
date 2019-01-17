@@ -46,7 +46,7 @@ namespace js {
 
 
 template<typename T>
-inline realm::SyncManager& syncManagerShared(typename T::Context ctx) {
+inline realm::SyncManager& syncManagerShared(typename T::Context &ctx) {
     static std::once_flag flag;
     std::call_once(flag, [ctx] {
         auto realm_constructor = js::Value<T>::validated_to_object(ctx, js::Object<T>::get_global(ctx, "Realm"));
