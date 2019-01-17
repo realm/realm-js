@@ -6,7 +6,7 @@
     "test": "npm run test/android && npm run test/ios",
     "test/android": "node harness/runner.js --platform=android",
     "test/ios": "node harness/runner.js --platform=ios",
-    "postinstall": "exit 0; npm run realm/install",
+    "postinstall": "npm run realm/install; npm run realm/publish",
     "realm/install": "REALM_BUILD_ANDROID=1 npm install realm@file://../../../ --build-from-source --no-save",
     "realm/publish": "cd node_modules/realm/react-native/android; ./gradlew publishAndroid",
     "realm/link": "react-native link realm"
