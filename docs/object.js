@@ -57,22 +57,31 @@ class Object {
 
     /**
      * Add a listener `callback` which will be called when a **live** object instance changes.
-     * @param {function(collection, changes)} callback - A function to be called when changes occur.
+     * @param {function(obj, changes)} callback - A function to be called when changes occur.
      *   The callback function is called with two arguments:
-     *   - `collection`: the object as a collection instance that changed,
-     *   - `changes`: a dictionary with keys `insertions`, `newModifications`, `oldModifications`
-     *      and `deletions`, each containing a list of indices in the collection that were
-     *      inserted, updated or deleted respectively. `deletions` and `oldModifications` are
-     *      indices into the collection before the change happened, while `insertions` and
-     *      `newModifications` are indices into the new version of the collection.
+     *   - `obj`: the object that changed,
+     *   - `changes`: a dictionary with keys `deleted`, and `changedProperties`. `deleted` is true
+     *       if the object has been deleted. `changesProperties` is an array of property names of changes
+     *       properties.
      * @throws {Error} If `callback` is not a function.
      * @since 2.23.0
      * @example
-     * wine.addListener((collection, changes) => {
-     *  // collection === wine
-     *  console.log(`${changes.insertions.length} insertions`);
-     *  console.log(`${changes.modifications.length} modifications`);
-     *  console.log(`${changes.deletions.length} deletions`);
+     * wine.addListener((obj, changes) => {
+     *  // obj === wine
+     *  console.log(`object is deleted: ${changes.deleted}`);
+     *  console.log(`${changes.changedProperties.length} properties have been changed`);
      * })
      */
+    addListener(callback) {}
+
+     /**
+      * Remove the listener `callback`
+      * @param {function(obj, changes) callback - A function previously }
+      */
+     removeListener(callback) {}
+
+     /**
+      * Remove all listeners.
+      */
+     removeAllListeners() {}
 }

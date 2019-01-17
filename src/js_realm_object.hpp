@@ -77,6 +77,8 @@ struct RealmObjectClass : ClassDefinition<T, realm::js::RealmObject<T>> {
     static void is_same_object(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void set_link(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void add_listener(ContextType, ObjectType, Arguments &, ReturnValue &);
+    static void remove_listener(ContextType, ObjectType, Arguments &, ReturnValue &);
+    static void remove_all_listeners(ContextType, ObjectType, Arguments &, ReturnValue &);
 
     static void get_realm(ContextType, ObjectType, ReturnValue &);
 
@@ -97,6 +99,8 @@ struct RealmObjectClass : ClassDefinition<T, realm::js::RealmObject<T>> {
         {"_isSameObject", wrap<is_same_object>},
         {"_setLink", wrap<set_link>},
         {"addListener", wrap<add_listener>},
+        {"removeListener", wrap<remove_listener>},
+        {"removeAllListeners", wrap<remove_all_listeners>},
     };
 
     PropertyMap<T> const properties = {
@@ -311,14 +315,60 @@ void RealmObjectClass<T>::add_listener(ContextType ctx, ObjectType this_object, 
 
     auto token = realm_object->add_notification_callback([=](CollectionChangeSet const& change_set, std::exception_ptr exception) {
             HANDLESCOPE
+
+            bool deleted = false;
+            std::vector<ValueType> scratch;
+
+            if (!change_set.deletions.empty()) {
+                deleted = true;
+            }
+            else {
+                auto table = realm_object->row().get_table();
+                for (size_t i = 0; i < change_set.columns.size(); ++i) {
+                    if (change_set.columns[i].empty()) {
+                        continue;
+                    }
+                    scratch.push_back(Value::from_string(protected_ctx, std::string(table->get_column_name(i))));
+                }
+            }
+
+            ObjectType object = Object::create_empty(protected_ctx);
+            Object::set_property(protected_ctx, object, "deleted", Value::from_boolean(protected_ctx, deleted));
+            Object::set_property(protected_ctx, object, "changedProperties", Object::create_array(protected_ctx, scratch));
+
             ValueType arguments[] {
                 static_cast<ObjectType>(protected_this),
-                CollectionClass<T>::create_collection_change_set(protected_ctx, change_set)
+                object
             };
             Function::callback(protected_ctx, protected_callback, protected_this, 2, arguments);
         });
     realm_object->m_notification_tokens.emplace_back(protected_callback, std::move(token));
 }
+
+template<typename T>
+void RealmObjectClass<T>::remove_listener(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
+    args.validate_maximum(1);
+
+    auto callback = Value::validated_to_function(ctx, args[0]);
+    auto protected_function = Protected<FunctionType>(ctx, callback);
+
+    auto realm_object = get_internal<T, RealmObjectClass<T>>(this_object);
+
+    auto& tokens = realm_object->m_notification_tokens;
+    auto compare = [&](auto&& token) {
+        return typename Protected<FunctionType>::Comparator()(token.first, protected_function);
+    };
+    tokens.erase(std::remove_if(tokens.begin(), tokens.end(), compare), tokens.end());
+}
+
+template<typename T>
+void RealmObjectClass<T>::remove_all_listeners(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
+    args.validate_maximum(0);
+
+    auto realm_object = get_internal<T, RealmObjectClass<T>>(this_object);
+    realm_object->m_notification_tokens.clear();
+}
+
 
 } // js
 } // realm

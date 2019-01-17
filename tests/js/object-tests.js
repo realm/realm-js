@@ -575,11 +575,22 @@ module.exports = {
         let calls = 0;
         let resolve = () => {};
 
-        obj.addListener(function(objs, changes) {
+        obj.addListener(function(obj, changes) {
             calls++;
-            if (calls === 2) { // first call is when object is created
-               TestCase.assertEqual(obj['stringCol'], 'bar');
-               resolve();
+            switch (calls) {
+                case 1:
+                    break;
+                case 2:
+                    TestCase.assertFalse(changes.deleted);
+                    TestCase.assertEqual(changes.changedProperties.length, 1);
+                    TestCase.assertEqual(changes.changedProperties[0], 'stringCol');
+                    TestCase.assertEqual(obj['stringCol'], 'bar');
+                    break;
+                case 3:
+                    TestCase.assertTrue(changes.deleted);
+                    TestCase.assertEqual(changes.changedProperties.length, 0);
+                    obj.removeAllListeners();
+                    resolve();
             }
         });
 
@@ -587,6 +598,9 @@ module.exports = {
             resolve = r;
             realm.write(function() {
                 obj['stringCol'] = 'bar';
+            });
+            realm.write(function() {
+                realm.delete(obj);
             });
         });
     }

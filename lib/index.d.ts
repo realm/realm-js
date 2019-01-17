@@ -110,6 +110,8 @@ declare namespace Realm {
         [keys: string]: any;
     }
 
+    type ObjectChangeCallback = (object: Object, changes: any) => void;
+
     /**
      * Object
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.Object.html }
@@ -136,10 +138,13 @@ declare namespace Realm {
         linkingObjectsCount(): number;
 
         /**
-         * @param  {(collection:any,changes:any)=>void} callback
          * @returns void
          */
-        addListener(callback: CollectionChangeCallback<T>): void;
+        addListener(callback: ObjectChangeCallback): void;
+
+        removeListener(callback: ObjectChangeCallback): void;
+
+        removeAllListeners(): void;
     }
 
     const Object: {
