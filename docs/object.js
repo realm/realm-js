@@ -74,14 +74,16 @@ class Object {
      */
     addListener(callback) {}
 
-     /**
-      * Remove the listener `callback`
-      * @param {function(obj, changes) callback - A function previously }
-      */
+    /**
+     * Remove the listener `callback`
+     * @param {function(obj, changes)} callback - A function previously added as listener
+     * @since 2.23.0
+     */
      removeListener(callback) {}
 
-     /**
-      * Remove all listeners.
-      */
+    /**
+     * Remove all listeners.
+     * @since 2.23.0
+     */
      removeAllListeners() {}
 }
