@@ -8,25 +8,16 @@ Currently this directory consists of:
   - `renderer.js` detects if it's supposed to run the tests and runs them.
 - A `runner.js` script, which uses [spectron](https://www.npmjs.com/package/spectron) to start the Electron app and read out the console from the Electron process, and console logging it.
 
-## Flags
+## Running the tests
 
-To use these flags, you need to prepend them when calling `npm test` after the `--`, which indicates that the flag is
-not ment for npm.
+To run tests in the main process:
 
-### Process
+    npm run test/main
 
-You can specify in which Electron process to run the tests:
-- `--process=main` for the main process or
-- `--process=render` the render process (which is default)
+To run tests in a renderer process:
 
-As an example, this runs all tests in the main process:
+    npm run test/renderer
 
-    npm test -- --process=main
+To run tests both processes in sequence:
 
-### Filter
-
-If you want to run only a subset of the tests, use the `--filter` flag, ex:
-
-As an example, this runs only the suite named "UserTests":
-
-    npm test -- --filter=UserTests
+    npm test
