@@ -603,5 +603,44 @@ module.exports = {
                 realm.delete(obj);
             });
         });
+    },
+
+    testAddAndRemoveListener: function() {
+        const realm = new Realm({schema: [schemas.StringOnly]});
+
+        let obj;
+        realm.write(function() {
+            obj = realm.create(schemas.StringOnly.name, { stringCol: 'foo' });
+        });
+
+        let calls = 0;
+
+        let listener = function(obj, changes) {
+            calls++;
+            if (calls === 2) {
+                TestCase.assertEqual(obj['stringCol'], 'bar');
+            }
+        };
+
+        obj.addListener(listener);
+
+        return new Promise((resolve, reject) => {
+            realm.write(function() {
+                obj['stringCol'] = 'bar';
+            });
+
+            setTimeout(() => {
+                obj.removeListener(listener);
+                realm.write(function() {
+                    obj['stringCol'] = 'foobar';
+                });
+
+                setTimeout(() => {
+                    TestCase.assertEqual(realm.objects(schemas.StringOnly.name)[0]['stringCol'], 'foobar');
+                    TestCase.assertEqual(calls, 2); // listener only called twice
+                    resolve();
+                }, 2000);
+            }, 2000);
+        });
     }
 };

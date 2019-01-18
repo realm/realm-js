@@ -61,15 +61,18 @@ class Object {
      *   The callback function is called with two arguments:
      *   - `obj`: the object that changed,
      *   - `changes`: a dictionary with keys `deleted`, and `changedProperties`. `deleted` is true
-     *       if the object has been deleted. `changesProperties` is an array of property that has changed
-     *       their value. 
+     *       if the object has been deleted. `changesProperties` is an array of properties that have changed
+     *       their value.
      * @throws {Error} If `callback` is not a function.
      * @since 2.23.0
      * @example
      * wine.addListener((obj, changes) => {
      *  // obj === wine
      *  console.log(`object is deleted: ${changes.deleted}`);
-     *  console.log(`${changes.changedProperties.length} properties have been changed`);
+     *  console.log(`${changes.changedProperties.length} properties have been changed:`);
+     *  changes.changedProperties.forEach(prop => {
+     *      console.log(` ${prop}`);
+     *   });
      * })
      */
     addListener(callback) {}
