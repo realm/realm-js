@@ -61,7 +61,7 @@ class Object {
      *   The callback function is called with two arguments:
      *   - `obj`: the object that changed,
      *   - `changes`: a dictionary with keys `deleted`, and `changedProperties`. `deleted` is true
-     *       if the object has been deleted. `changesProperties` is an array of property names of changes
+     *       if the object has been deleted. `changesProperties` is an array of property that has changed
      *       properties.
      * @throws {Error} If `callback` is not a function.
      * @since 2.23.0
