@@ -27,10 +27,11 @@ app.on("ready", () => {
         slashes: true,
     }));
 
-    const runIn = process.argv[2];
-    global.options = { runIn };
+    const mochaRemoteServerURL = process.argv[2];
+    const runIn = process.argv[3];
+    global.options = { mochaRemoteServerURL, runIn };
     if (runIn === "main") {
-        require("./mocha.js")("main");
+        require("./mocha.js")(mochaRemoteServerURL, "main");
     } else if (runIn !== "renderer") {
         console.error("Expected a --process runtime argument");
     }

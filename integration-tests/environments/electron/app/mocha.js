@@ -1,9 +1,10 @@
 const { MochaRemoteClient } = require("mocha-remote-client");
 const { resolve } = require("path");
 
-module.exports = (id) => {
+module.exports = (serverURL, id) => {
     return new MochaRemoteClient({
         id,
+        url: serverURL,
         whenInstrumented: mocha => {
             // Sets the root suite title to include the process type
             mocha.suite.title = `Electron ${id} process`;

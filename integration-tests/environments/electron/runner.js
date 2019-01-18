@@ -19,13 +19,17 @@ async function printLogs(app) {
 
 async function run() {
     const runIn = process.argv[2];
+    // Start the mocha remote server
+    const server = new MochaRemoteServer({}, {
+        id: runIn,
+        port: 0,
+    });
+    await server.start();
+    // Create a spectron handle for the application
     const app = new Application({
         path: ELECTRON_PATH,
-        args: [ MAIN_PATH, runIn ],
+        args: [ MAIN_PATH, server.getUrl(), runIn ],
     });
-    // Start the mocha remote server
-    const server = new MochaRemoteServer({}, { id: runIn });
-    await server.start();
     // Start the app
     await app.start();
     await app.client.waitUntilWindowLoaded();
