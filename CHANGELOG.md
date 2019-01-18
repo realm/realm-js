@@ -1,7 +1,7 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
-* Added `RealmObject.addListener()` to set up object-level notifications. ([#763](https://github.com/realm/realm-js/issues/763))
+* Added `RealmObject.addListener()` and `RealmObject.removeListener()` to set up and remove object-level notifications. ([#763](https://github.com/realm/realm-js/issues/763))
 * The parser now supports readable timestamps with a `T` separator in addition to the originally supported `@` separator. For example: `startDate > 1981-11-01T23:59:59:1`. ([realm/realm-core#3198](https://github.com/realm/realm-core/issues/3198))
 
 ### Fixed
