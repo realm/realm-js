@@ -110,7 +110,12 @@ declare namespace Realm {
         [keys: string]: any;
     }
 
-    type ObjectChangeCallback = (object: Object, changes: any) => void;
+    interface ObjectChangeSet {
+        deleted: boolean;
+        changedProperties: string[]
+    }
+
+    type ObjectChangeCallback = (object: Object, changes: ObjectChangeSet) => void;
 
     /**
      * Object
