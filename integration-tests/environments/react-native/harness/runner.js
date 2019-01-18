@@ -21,7 +21,7 @@ async function runApp(platform) {
     await server.start();
 
     // Spawn a react-native metro server
-    const metro = rn.async("start", `--projectRoots=${projectRoots.join(",")}`, "--verbose", /*"--reset-cache"*/);
+    const metro = rn.async("start", `--projectRoots=${projectRoots.join(",")}`,  /*"--verbose", "--reset-cache"*/);
     // Kill metro when the process is killed
     process.on("exit", (code) => {
         metro.kill("SIGHUP");
