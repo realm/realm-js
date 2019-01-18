@@ -27,8 +27,13 @@ This will package Realm JS, into `integration-tests/realm-*.tgz` making it ready
 
 Start up both an Android and iOS emulator before running the React Native tests.
 
-Then run all the tests in sequence by running the npm test command, also from within this directory:
+To run all the tests in parallel:
 
+    npm test
+
+To run the tests for individual environments, change directory into the environment and run `npm test`, ex.
+
+    cd environment/node
     npm test
 
 ### How to write tests
