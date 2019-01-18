@@ -56,6 +56,7 @@ export class App extends Component<Props> {
 
     prepareTests() {
         this.client = new MochaRemoteClient({
+            id: Platform.OS,
             whenInstrumented: (mocha) => {
                 // Setting the title of the root suite
                 mocha.suite.title = `React-Native on ${Platform.OS}`;

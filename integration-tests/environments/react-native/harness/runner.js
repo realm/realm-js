@@ -2,7 +2,7 @@ const { MochaRemoteServer } = require("mocha-remote-server");
 const { resolve } = require("path");
 
 const rn = require("./react-native-cli");
-const adb = require("./adb-cli");
+const android = require("./android-cli");
 
 const PLATFORM_KEY = "--platform";
 
@@ -11,16 +11,17 @@ const projectRoots = [
     resolve(__dirname, ".."),
     // The integration-tests
     resolve(__dirname, "../../.."),
-    // The Realm JS root folder
-    resolve(__dirname, "../../../.."),
 ];
 
 async function runApp(platform) {
-    const server = new MochaRemoteServer();
+    const server = new MochaRemoteServer({}, {
+        // Accept connections only from the expected platform, to prevent cross-talk when both emulators are open
+        id: platform,
+    });
     await server.start();
 
     // Spawn a react-native metro server
-    const metro = rn.async("start", "--reset-cache", `--projectRoots=${projectRoots.join(",")}`);
+    const metro = rn.async("start", `--projectRoots=${projectRoots.join(",")}`, "--verbose", /*"--reset-cache"*/);
     // Kill metro when the process is killed
     process.on("exit", (code) => {
         metro.kill("SIGHUP");
@@ -34,7 +35,15 @@ async function runApp(platform) {
     });
 
     if (platform === "android") {
-        adb.reverseServerPort(MochaRemoteServer.DEFAULT_CONFIG.port);
+        const devices = android.adb.devices();
+        if (devices.length === 0) {
+            const avds = android.emulator.devices();
+            const startHelper = `run "emulator -avd ${avds[0]}"`;
+            throw new Error(`"Missing a device, start an emulator (${startHelper}) or attach a device via USB"`);
+        } else {
+            // Ensure the device can access the mocha remote server
+            android.adb.reverseServerPort(MochaRemoteServer.DEFAULT_CONFIG.port);
+        }
         // Ask React Native to run the android app
         rn.sync("run-android", "--no-packager");
     } else if (platform === "ios") {

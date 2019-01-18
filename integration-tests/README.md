@@ -4,34 +4,34 @@ This directory of the repository is contains two sub-directories:
 - `test`: A suite of tests which are supposed to pass in all defined environments.
 - `environments`: A couple of environments in which the tests are supposed pass.
 
-## How to run the tests
+## Using the integration tests
 
-First install the root project at `..`:
+First install the root project at `..` and change directory back to the integration tests.
 
     cd ..
     npm install
-
-Change directory back to the integration tests
-
     cd integration-tests
 
-Install all the environments, run npm install command in this directory:
+### Installing the environments
+
+Install all the environments by installing the package in this directory:
 
     npm install
 
-This will iterate all the available environments and run their install scripts, specifically:
+This will package Realm JS, into `integration-tests/realm-*.tgz` making it ready for consumption by the environments:
 
-- Each of the environments will install the `realm` packages as a symbolic link pointing back to the root project
-  folder and building it's native module from source, which allows for rapid iteration when fixing a bug.
+- Each environment installs the `realm` packages from the packaged version to simulate a realistic install.
 - The Electron environment will rebuild realm-js's native module for the Electron runtime.
-- The React Native environment will run `./gradlew publishAndroid` to publish the Android native module as part of its
-  postinstall script.
+
+### Running the tests
+
+Start up both an Android and iOS emulator before running the React Native tests.
 
 Then run all the tests in sequence by running the npm test command, also from within this directory:
 
     npm test
 
-## How to write tests
+### How to write tests
 
 Because React Native bundles it's JavaScript source files into a single bundle, using the Metro bundler, we need to be
 explicit in the files we include in the test-suite. I.e. we cannot call the require function with a variable that is

@@ -6,21 +6,18 @@
     "test": "npm run test/android && npm run test/ios",
     "test/android": "node harness/runner.js --platform=android",
     "test/ios": "node harness/runner.js --platform=ios",
-    "postinstall": "npm run realm/install; npm run realm/publish",
-    "realm/install": "REALM_BUILD_ANDROID=1 npm install realm@file://../../../ --build-from-source --no-save",
-    "realm/publish": "cd node_modules/realm/react-native/android; ./gradlew publishAndroid",
-    "realm/link": "react-native link realm"
+    "postinstall": "npm install ../../realm-*.tgz --no-save"
   },
   "dependencies": {
     "@realm-tests/tests": "../../tests",
     "mocha": "^5.2.0",
-    "mocha-remote-client": "^0.6.2",
+    "mocha-remote-client": "^0.8.1",
     "react": "16.4.1",
     "react-native": "0.56.0"
   },
   "devDependencies": {
     "babel-preset-react-native": "^5",
-    "mocha-remote-server": "^0.6.1",
+    "mocha-remote-server": "^0.8.1",
     "react-test-renderer": "16.4.1"
   }
 }

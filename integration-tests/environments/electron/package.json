@@ -9,7 +9,7 @@
     "test/main": "node ./runner.js --process=main",
     "test/renderer": "node ./runner.js --process=renderer",
     "postinstall": "npm run realm/install; npm run realm/rebuild",
-    "realm/install": "npm install realm@file://../../../ --build-from-source --no-save",
+    "realm/install": "npm install ../../realm-*.tgz --no-save",
     "realm/rebuild": "cd node_modules/realm; HOME=~/.electron-gyp node-pre-gyp rebuild --build-from-source --runtime=electron --target=2.0.4 --arch=x64 --dist-url=https://atom.io/download/electron"
   },
   "devDependencies": {

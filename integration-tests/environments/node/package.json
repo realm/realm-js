@@ -5,7 +5,7 @@
   "private": true,
   "scripts": {
     "test": "mocha index.js",
-    "postinstall": "npm install realm@file://../../../ --build-from-source --no-save"
+    "postinstall": "npm install ../../realm-*.tgz --no-save"
   },
   "dependencies": {
     "@realm-tests/tests": "../../tests",
