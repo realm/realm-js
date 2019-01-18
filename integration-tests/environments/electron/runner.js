@@ -2,60 +2,54 @@
 
 const path = require("path");
 const { Application } = require("spectron");
+const { MochaRemoteServer } = require("mocha-remote-server");
 
 let ELECTRON_PATH = path.join(__dirname, "node_modules", ".bin", "electron");
 if (process.platform === "win32") {
     ELECTRON_PATH += ".cmd";
 }
 const MAIN_PATH = path.join(__dirname, "app", "main.js");
-const POLL_LOG_DELAY = 100;
 
-const doneMatcher = /^Electron process stopped, with status ([-\d]+)$/;
-
-const app = new Application({
-    path: ELECTRON_PATH,
-    args: [ MAIN_PATH ].concat(process.argv.slice(2))
-});
-
-function loop(callback, delay) {
-    return new Promise((resolve, reject) => {
-        const timeout = setInterval(() => {
-            callback((result) => {
-                // Clear the timeout and resolve ...
-                clearTimeout(timeout);
-                resolve(result);
-            }).then(undefined, (err) => {
-                // Clear the timeout and reject ...
-                clearTimeout(timeout);
-                reject(err);
-            });
-        }, delay);
-    });
+async function printLogs(app) {
+    const messages = await app.client.getMainProcessLogs();
+    for (const message of messages) {
+        console.log(message);
+    }
 }
 
 async function run() {
+    const runIn = process.argv[2];
+    const app = new Application({
+        path: ELECTRON_PATH,
+        args: [ MAIN_PATH, runIn ],
+    });
+    // Start the mocha remote server
+    const server = new MochaRemoteServer({}, { id: runIn });
+    await server.start();
+    // Start the app
     await app.start();
     await app.client.waitUntilWindowLoaded();
-    // Start polling and printing the logs
-    await loop(async (resolve) => {
-        const mainMessages = await app.client.getMainProcessLogs();
-        for (const message of mainMessages) {
-            const doneTest = doneMatcher.exec(message);
-            console.log(message);
-            if(doneTest) {
-                const statusCode = parseInt(doneTest[1], 10);
-                resolve(statusCode);
-                return;
-            }
-        }
-    }, POLL_LOG_DELAY);
+    // Print any log messages, these may contain errors relevant for the harness
+    printLogs(app);
+    // Tell the client to run its tests
+    const failures = await new Promise((resolve, reject) => {
+        server.run(resolve);
+    });
+    // Print any logs from the process
+    if (app.isRunning()) {
+        // Print the standard out from the process
+        printLogs(app);
+    }
+    await app.stop();
+    // Return the number of failed tests
+    return failures;
 }
 
-run().then((statusCode) => {
+run().then(failures => {
     // Exit with the same status as the Electron process
-    process.exit(statusCode);
+    process.exit(failures > 0 ? 1 : 0);
 }, (error) => {
     // Log any failures
-    console.error("Test harness failure:", error.message);
+    console.error("Test harness failure:", error.stack);
     process.exit(1);
 });
