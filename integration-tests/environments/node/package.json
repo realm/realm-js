@@ -4,7 +4,7 @@
   "description": "Realm JS tests running in a Node.js environment",
   "private": true,
   "scripts": {
-    "test": "mocha index.js",
+    "test": "mocha --exit index.js",
     "postinstall": "npm install ../../realm-*.tgz --no-save"
   },
   "dependencies": {
