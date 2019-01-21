@@ -49,6 +49,10 @@ individual files in which our tests are defined: We cannot simply ask for all */
 To write a new test, simply add it in the relevant file in `test/src/` or create a new file and make sure to require
 that from `test/src/index.js`.
 
+To perform rapid iterations on the test suite, use the "start" script to start mocha in `--watch` mode
+
+    npm start
+
 ## Current limitations
 
 This is still very much a work in progress, currently we're missing:
