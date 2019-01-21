@@ -54,8 +54,12 @@ To perform rapid iterations on the test suite, use the "start" script to start m
     npm start
 
 Tests will have access to the following globals:
+- [the Mocha hook globals](https://mochajs.org/#hooks) (define, it, after, before, etc.).
+- `Realm` the Realm constructor.
 - `fs` the lowest common denominator of the [`fs-extra`](https://www.npmjs.com/package/fs-extra) and
   [`react-native-fs`](https://www.npmjs.com/package/react-native-fs) APIs.
+- `path` a [node-independent implementation of Node's path](https://www.npmjs.com/package/path-browserify) module.
+
 ## Current limitations
 
 This is still very much a work in progress, currently we're missing:

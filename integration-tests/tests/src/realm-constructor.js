@@ -19,15 +19,56 @@
 const { expect } = require("chai");
 
 describe("Realm#constructor", () => {
-    it("creates a Realm file", () => {
-        const realm = new Realm();
-        expect(realm.path).to.be.a("string");
-        realm.close();
+    let realm;
+
+    afterEach(async () => {
+        if (realm) {
+            // Close the Realm
+            realm.close();
+            // Delete the file
+            try {
+                Realm.deleteFile({ path: realm.path });
+            } catch (err) {
+                // TODO: Fix deletion of Realms on React Native iOS
+                console.warn(`Failed to delete Realm file: ${err.message}`);
+            }
+        }
+        // Delete the default Realm
+        Realm.clearTestState();
     });
 
-    /*
-    it("fails", () => {
-        throw new Error("Failed!");
+    it("is a function", () => {
+        expect(Realm).to.be.a("function");
+        expect(Realm instanceof Function).to.equal(true);
     });
-    */
+
+    it("creates a Realm instance", () => {
+        realm = new Realm();
+        expect(realm instanceof Realm).to.equal(true);
+        expect(realm.path).to.equal(Realm.defaultPath);
+    });
+
+    it("creates a Realm file when called with a non-empty string", async () => {
+        realm = new Realm("temporary.realm");
+        expect(realm instanceof Realm).to.equal(true);
+        const fileExists = await fs.exists(realm.path);
+        expect(fileExists).to.equal(true);
+        // Expect something about the path
+        const defaultPathDir = path.dirname(Realm.defaultPath);
+        expect(realm.path).to.equal(path.resolve(defaultPathDir, "temporary.realm"));
+    });
+
+    describe("called with invalid arguments", () => {
+        it("throws when called with an empty string", () => {
+            expect(() => {
+                realm = new Realm("");
+            }).to.throw(); // The actual message varies across environments
+        });
+
+        it("throws when called with two strings", () => {
+            expect(() => {
+                realm = new Realm("", "");
+            }).to.throw("Invalid arguments when constructing 'Realm'");
+        });
+    });
 });

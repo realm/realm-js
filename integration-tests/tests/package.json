@@ -17,6 +17,7 @@
     "realm": "../.."
   },
   "dependencies": {
-    "chai": "^4.2.0"
+    "chai": "^4.2.0",
+    "path-browserify": "^1.0.0"
   }
 }

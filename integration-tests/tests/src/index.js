@@ -24,6 +24,8 @@ if (!global.fs) {
     throw new Error("Expected fs to be available as a global");
 }
 
+global.path = require("path-browserify");
+
 require("./realm-constructor");
 
 after(() => {

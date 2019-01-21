@@ -3,5 +3,6 @@
     "globals": {
       "Realm": true,
       "fs": true,
+      "path": true
     }
 }
