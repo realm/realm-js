@@ -20,3 +20,4 @@
 // This is useful when we want to run the tests outside of any particular environment
 
 global.Realm = require("realm");
+global.fs = require("fs-extra");

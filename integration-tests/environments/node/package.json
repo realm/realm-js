@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@realm-tests/tests": "../../tests",
+    "fs-extra": "^7.0.1",
     "mocha": "^5.2.0",
     "mocha-cli": "^1.0.1"
   }

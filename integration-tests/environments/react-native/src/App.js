@@ -80,6 +80,7 @@ export class App extends Component<Props> {
                 mocha.suite.title = `React-Native on ${Platform.OS}`;
                 // Provide the global Realm constructor to the tests
                 global.Realm = require("realm");
+                global.fs = require("react-native-fs");
                 // Require in the tests
                 require("@realm-tests/tests");
             },

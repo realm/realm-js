@@ -20,6 +20,10 @@ if (!global.Realm) {
     throw new Error("Expected Realm to be available as a global");
 }
 
+if (!global.fs) {
+    throw new Error("Expected fs to be available as a global");
+}
+
 require("./realm-constructor");
 
 after(() => {

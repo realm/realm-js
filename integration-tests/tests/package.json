@@ -5,13 +5,14 @@
   "main": "src/index.js",
   "private": true,
   "scripts": {
-    "start": "mocha --require src/utils/inject-realm-global.js --watch src/index.js"
+    "start": "mocha --require src/utils/inject-globals.js --watch src/index.js"
   },
   "peerDependencies": {
     "mocha": "^5.2.0",
     "realm": "*"
   },
   "devDependencies": {
+    "fs-extra": "^7.0.1",
     "mocha": "^5.2.0",
     "realm": "../.."
   },

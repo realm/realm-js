@@ -28,6 +28,7 @@ module.exports = (serverURL, id) => {
             mocha.suite.title = `Electron ${id} process`;
             // Set the Realm global for the tests to use
             global.Realm = require("realm");
+            global.fs = require("fs-extra");
             // Add the integration test suite
             const testIndexPath = resolve(__dirname, "../../../tests/src/index.js");
             mocha.addFile(testIndexPath);
