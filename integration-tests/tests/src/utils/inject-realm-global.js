@@ -16,18 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-const { expect } = require("chai");
+// Require this file to get the Realm constructor injected into the global.
+// This is useful when we want to run the tests outside of any particular environment
 
-describe("Realm#constructor", () => {
-    it("creates a Realm file", () => {
-        const realm = new Realm();
-        expect(realm.path).to.be.a("string");
-        realm.close();
-    });
-
-    /*
-    it("fails", () => {
-        throw new Error("Failed!");
-    });
-    */
-});
+global.Realm = require("realm");

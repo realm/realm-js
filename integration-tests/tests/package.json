@@ -4,8 +4,18 @@
   "description": "A set of tests that can run in different environments",
   "main": "src/index.js",
   "private": true,
+  "scripts": {
+    "start": "mocha --require src/utils/inject-realm-global.js --watch src/index.js"
+  },
   "peerDependencies": {
     "mocha": "^5.2.0",
     "realm": "*"
+  },
+  "devDependencies": {
+    "mocha": "^5.2.0",
+    "realm": "../.."
+  },
+  "dependencies": {
+    "chai": "^4.2.0"
   }
 }
