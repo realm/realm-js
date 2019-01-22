@@ -28,7 +28,7 @@ global.path = require("path-browserify");
 
 require("./realm-constructor");
 
-after(() => {
-    // Remove all default.realm files
+afterEach(() => {
+    // Remove all Realm files that was opened
     Realm.clearTestState();
 });
