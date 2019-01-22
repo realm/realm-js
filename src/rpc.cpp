@@ -85,16 +85,14 @@ RPCServer*& get_rpc_server(JSGlobalContextRef ctx) {
 
 #ifdef __APPLE__
 void runLoopFunc(CFRunLoopRef loop, RPCWorker* rpcWorker) {
-    auto m_stop = false;
-    CFRunLoopPerformBlock(loop, kCFRunLoopDefaultMode,
-                          ^{
-                              rpcWorker->try_run_task();
-                              if (rpcWorker->should_stop()) {
-                                  CFRunLoopStop(CFRunLoopGetCurrent());
-                              } else {
-                                  runLoopFunc(loop, rpcWorker);
-                            }
-                          });
+    CFRunLoopPerformBlock(loop, kCFRunLoopDefaultMode, ^{
+        rpcWorker->try_run_task();
+        if (rpcWorker->should_stop()) {
+            CFRunLoopStop(CFRunLoopGetCurrent());
+        } else {
+            runLoopFunc(loop, rpcWorker);
+        }
+    });
     CFRunLoopWakeUp(loop);
 }
 #endif
@@ -293,7 +291,7 @@ RPCServer::RPCServer() {
             arg_values[i] = deserialize_json_value(args[i]);
         }
 
-        JSObjectRef user_object = (JSObjectRef)jsc::Function::call(m_context, reconnect_method, arg_count, arg_values);
+        jsc::Function::call(m_context, reconnect_method, arg_count, arg_values);
         return json::object();
     };
     m_requests["/_initializeSyncManager"] = [this](const json dict) {
