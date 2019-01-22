@@ -53,6 +53,25 @@ stage('check') {
   }
 }
 
+
+// Produce a package
+stage('package') {
+  node('docker && !aws') {
+    // We are using:
+    // - the latest node LTS,
+    // - the workspace as the HOME to ensure ~/.npm will be in a directory we have permissions for
+    // - the same passwd file as the Jenkins slave inside the docker file, to allow running as "jenkins"
+    docker.image('node:lts').inside('-e HOME=${WORKSPACE} -v /etc/passwd:/etc/passwd:ro') {
+      sh 'npm --version'
+      sh 'npm install'
+      sh 'npm pack'
+      // TODO: Archive and stash the package
+      archiveArtifacts 'realm-*.tgz'
+      stash includes: 'realm-*.tgz', name: 'package'
+    }
+  }
+}
+
 stage('build') {
   parallel(
     eslint: doDockerBuild('eslint-ci', {
@@ -226,4 +245,3 @@ def doWindowsBuild() {
     }
   }
 }
-
