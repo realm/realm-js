@@ -81,6 +81,11 @@ export class App extends Component<Props> {
                 // Provide the global Realm constructor to the tests
                 global.Realm = require("realm");
                 global.fs = require("react-native-fs");
+                global.environment = {
+                    reactNative: Platform.OS,
+                    android: Platform.OS === "android",
+                    ios: Platform.OS === "ios"
+                };
                 // Require in the tests
                 require("@realm-tests/tests");
             },

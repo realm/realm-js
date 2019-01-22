@@ -249,3 +249,29 @@ describe("Realm#constructor", () => {
 
     // TODO: Next up is testRealmConstructorInMemory from realm-tests.js
 });
+
+// Testing static methods
+
+describe("#deleteFile", () => {
+    function expectDeletion(path) {
+        // Create the Realm with a schema
+        const realm = new Realm({ path, schema: PersonAndDogsSchema });
+        realm.close();
+        // Delete the Realm
+        Realm.deleteFile({ path });
+        // Re-open the Realm without a schema and expect it to be empty
+        const reopenedRealm = new Realm({ path });
+        expect(reopenedRealm.schema).to.deep.equal([]);
+    }
+    it("deletes the default Realm", () => {
+        expectDeletion();
+    });
+
+    // TODO: Fix the issue on Android that prevents this from passing
+
+    it.environment({
+        android: false,
+    }, "deletes a Realm with a space in its path", () => {
+        expectDeletion("my realm.realm");
+    });
+});

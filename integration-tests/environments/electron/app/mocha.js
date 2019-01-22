@@ -29,6 +29,9 @@ module.exports = (serverURL, id) => {
             // Set the Realm global for the tests to use
             global.Realm = require("realm");
             global.fs = require("fs-extra");
+            global.environment = {
+                electron: process.type === "browser" ? "main" : "renderer",
+            };
             // Add the integration test suite
             const testIndexPath = resolve(__dirname, "../../../tests/src/index.js");
             mocha.addFile(testIndexPath);

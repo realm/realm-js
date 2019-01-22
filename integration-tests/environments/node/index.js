@@ -20,6 +20,7 @@
 
 global.Realm = require("realm");
 global.fs = require("fs-extra");
+global.environment = { node: true };
 
 describe(`Node.js v${process.versions.node} process`, () => {
     // Require the tests

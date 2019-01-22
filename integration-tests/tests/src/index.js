@@ -24,11 +24,18 @@ if (!global.fs) {
     throw new Error("Expected fs to be available as a global");
 }
 
+if (!global.environment || typeof global.environment !== "object") {
+    throw new Error("Expected environment to be available as a global");
+}
+
 global.path = require("path-browserify");
+
+// Patch in a function that can skip running tests in specific environments
+global.it.environment = require("./utils/environment-test");
 
 require("./realm-constructor");
 
 afterEach(() => {
-    // Remove all Realm files that was opened
+    // Remove all Realm files in the default directory
     Realm.clearTestState();
 });
