@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 const { MochaRemoteClient } = require("mocha-remote-client");
+const { platform } = require("os");
 const { resolve } = require("path");
 
 module.exports = (serverURL, id) => {
@@ -25,7 +26,7 @@ module.exports = (serverURL, id) => {
         url: serverURL,
         whenInstrumented: mocha => {
             // Sets the root suite title to include the process type
-            mocha.suite.title = `Electron ${id} process`;
+            mocha.suite.title = `Electron ${id} process on ${platform()}`;
             // Set the Realm global for the tests to use
             global.Realm = require("realm");
             global.fs = require("fs-extra");
