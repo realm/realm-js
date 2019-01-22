@@ -169,9 +169,7 @@
         "defines": [ "REALM_PLATFORM_NODE=1" ],
         "include_dirs": [
           "src/object-store/src",
-          "src/object-store/src/impl",
           "src/object-store/src/impl/apple",
-          "src/object-store/external/pegtl"
         ]
       },
       "export_dependent_settings": [

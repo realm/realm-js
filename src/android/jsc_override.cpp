@@ -25,7 +25,7 @@
 
 #include "jsc_init.h"
 #include "shared_realm.hpp"
-#include "realm_coordinator.hpp"
+#include "impl/realm_coordinator.hpp"
 
 #if __arm__
 #define HOOK_SIZE 8
