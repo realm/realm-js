@@ -219,7 +219,7 @@ describe("Realm#constructor", () => {
             }, "Property 'InvalidObject.nosuchproperty' declared as origin of linking objects property 'InvalidObject.bad' does not exist");
         });
 
-        it("fails when asking for linkingObjects to a non-existing property", () => {
+        it("fails when asking for linkingObjects to a non-link property", () => {
             expectInvalidProperty({
                 type: "linkingObjects",
                 objectType: "InvalidObject",
@@ -227,7 +227,7 @@ describe("Realm#constructor", () => {
             }, "Property 'InvalidObject.nummeric' declared as origin of linking objects property 'InvalidObject.bad' is not a link");
         });
 
-        it("fails when asking for linkingObjects to a non-existing property", () => {
+        it("fails when asking for linkingObjects to a property linking elsewhere", () => {
             expectInvalidProperty({
                 type: "linkingObjects",
                 objectType: "InvalidObject",
