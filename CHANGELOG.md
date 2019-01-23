@@ -2,11 +2,12 @@ x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
 * Added `RealmObject.addListener()`, `RealmObject.removeListener()`, and `RealmObject.removeAllListeners()` to set up and remove object-level notifications. ([#763](https://github.com/realm/realm-js/issues/763))
+* Added `Realm.copyBundledRealmFiles()` to TypeScript definitions. ([#2176](https://github.com/realm/realm-js/issues/2176))
 * The parser now supports readable timestamps with a `T` separator in addition to the originally supported `@` separator. For example: `startDate > 1981-11-01T23:59:59:1`. ([realm/realm-core#3198](https://github.com/realm/realm-core/issues/3198))
 
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None.
+* Realm initialized the filesystem when being imported instead of waiting for the first Realm to be opened. ([#2218] (https://github.com/realm/realm-js/issues/2218), since v2.22.0).
 
 ### Compatibility
 * Realm Object Server: 3.11.0 or later.
@@ -16,6 +17,7 @@ x.x.x Release notes (yyyy-MM-dd)
 ### Internal
 * Upgraded to Realm Core v5.13.0.
 * Upgraded to Realm Sync v3.14.14.
+* Stopped including headers from developers JDK when building the Android native module. ([#2223](https://github.com/realm/realm-js/pull/2223))
 
 2.22.0 Release notes (2019-1-10)
 =============================================================

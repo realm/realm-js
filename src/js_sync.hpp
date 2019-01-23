@@ -44,7 +44,17 @@ extern jclass ssl_helper_class;
 namespace realm {
 namespace js {
 
-inline realm::SyncManager& syncManagerShared() {
+
+template<typename T>
+inline realm::SyncManager& syncManagerShared(typename T::Context &ctx) {
+    static std::once_flag flag;
+    std::call_once(flag, [ctx] {
+        auto realm_constructor = js::Value<T>::validated_to_object(ctx, js::Object<T>::get_global(ctx, "Realm"));
+        auto result = js::Object<T>::call_method(ctx, realm_constructor, "_createUserAgentDescription", 0, nullptr);
+        std::string user_agent_binding_info = js::Value<T>::validated_to_string(ctx, result);
+        ensure_directory_exists_for_file(default_realm_file_directory());
+        SyncManager::shared().configure(default_realm_file_directory(), SyncManager::MetadataMode::NoEncryption, user_agent_binding_info);
+    });
     return SyncManager::shared();
 }
 
@@ -146,7 +156,7 @@ void UserClass<T>::create_user(ContextType ctx, ObjectType this_object, Argument
         Value::validated_to_string(ctx, args[1], "identity"),
         Value::validated_to_string(ctx, args[0], "authServerUrl")
      };
-    SharedUser *user = new SharedUser(syncManagerShared().get_user(
+    SharedUser *user = new SharedUser(syncManagerShared<T>(ctx).get_user(
         userIdentifier,
         Value::validated_to_string(ctx, args[2], "refreshToken")
     ));
@@ -160,7 +170,7 @@ void UserClass<T>::create_user(ContextType ctx, ObjectType this_object, Argument
 template<typename T>
 void UserClass<T>::admin_user(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_count(2);
-    SharedUser *user = new SharedUser(syncManagerShared().get_admin_token_user(
+    SharedUser *user = new SharedUser(syncManagerShared<T>(ctx).get_admin_token_user(
         Value::validated_to_string(ctx, args[0], "authServerUrl"),
         Value::validated_to_string(ctx, args[1], "refreshToken")
     ));
@@ -170,7 +180,7 @@ void UserClass<T>::admin_user(ContextType ctx, ObjectType this_object, Arguments
 template<typename T>
 void UserClass<T>::get_existing_user(ContextType ctx, ObjectType, Arguments &args, ReturnValue &return_value) {
     args.validate_count(2);
-    if (auto user = syncManagerShared().get_existing_logged_in_user(SyncUserIdentifier{
+    if (auto user = syncManagerShared<T>(ctx).get_existing_logged_in_user(SyncUserIdentifier{
             Value::validated_to_string(ctx, args[1], "identity"),
             Value::validated_to_string(ctx, args[0], "authServerUrl")})) {
         return_value.set(create_object<T, UserClass<T>>(ctx, new SharedUser(std::move(user))));
@@ -180,7 +190,7 @@ void UserClass<T>::get_existing_user(ContextType ctx, ObjectType, Arguments &arg
 template<typename T>
 void UserClass<T>::all_users(ContextType ctx, ObjectType object, ReturnValue &return_value) {
     auto users = Object::create_empty(ctx);
-    for (auto user : syncManagerShared().all_logged_in_users()) {
+    for (auto user : syncManagerShared<T>(ctx).all_logged_in_users()) {
         if (user->token_type() == SyncUser::TokenType::Normal) {
             Object::set_property(ctx, users, user->identity(), create_object<T, UserClass<T>>(ctx, new SharedUser(user)), ReadOnly | DontDelete);
         }
@@ -963,20 +973,20 @@ void SyncClass<T>::set_sync_log_level(ContextType ctx, ObjectType this_object, A
     in >> log_level_2; // Throws
     if (!in || !in.eof())
         throw std::runtime_error("Bad log level");
-    syncManagerShared().set_log_level(log_level_2);
+    syncManagerShared<T>(ctx).set_log_level(log_level_2);
 }
 
 template<typename T>
 void SyncClass<T>::set_sync_user_agent(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_count(1);
     std::string application_user_agent = Value::validated_to_string(ctx, args[0]);
-    syncManagerShared().set_user_agent(application_user_agent);
+    syncManagerShared<T>(ctx).set_user_agent(application_user_agent);
 }
 
 template<typename T>
 void SyncClass<T>::reconnect(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_count(0);
-    syncManagerShared().reconnect();
+    syncManagerShared<T>(ctx).reconnect();
 }
 
 template<typename T>
@@ -1118,7 +1128,7 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
         }
 
         config.schema_mode = SchemaMode::Additive;
-        config.path = syncManagerShared().path_for_realm(*shared_user, config.sync_config->realm_url());
+        config.path = syncManagerShared<T>(ctx).path_for_realm(*shared_user, config.sync_config->realm_url());
 
         if (!config.encryption_key.empty()) {
             config.sync_config->realm_encryption_key = std::array<char, 64>();
