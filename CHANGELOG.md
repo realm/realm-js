@@ -1,6 +1,7 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
+* Added `Realm.copyBundledRealmFiles()` to TypeScript definitions. ([#2176](https://github.com/realm/realm-js/issues/2176))
 * The parser now supports readable timestamps with a `T` separator in addition to the originally supported `@` separator. For example: `startDate > 1981-11-01T23:59:59:1`. ([realm/realm-core#3198](https://github.com/realm/realm-core/issues/3198))
 
 ### Fixed
