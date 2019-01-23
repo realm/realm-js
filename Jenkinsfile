@@ -60,17 +60,10 @@ stage('package') {
   node('docker && !aws') {
     // Unstash the files in the repository
     // TODO: Consider moving the node on the other side of the stages
-    unstash 'source'
     buildDockerEnv(
       'ci/realm-js:android-build',
       extra_args: '-f Dockerfile.android'
-    ).inside(
-      // Setting HOME to ensure ~/.npm and ~/.gradle will be in a directory we have permissions for
-      // (using single quotes on purpose, to postpone the replacement)
-      // Using the /etc/passwd file as the Jenkins slave inside the docker file, to allow running as "jenkins"
-      '-v /etc/passwd:/etc/passwd:ro -v ${PWD}:/home/jenkins'
-    ) {
-      sh 'cd $HOME'
+    ).inside {
       // Install dependencies
       sh 'npm install'
       // Publish the Android module
