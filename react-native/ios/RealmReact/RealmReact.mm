@@ -18,13 +18,14 @@
 
 #import "RealmReact.h"
 #import "RealmAnalytics.h"
-#import "RCTBridge+Private.h"
-#import "RCTJavaScriptExecutor.h"
 
 #import "jsc/jsc_init.h"
 
 #import "impl/realm_coordinator.hpp"
 #import "shared_realm.hpp"
+
+#import <React/RCTBridge+Private.h>
+#import <React/RCTJavaScriptExecutor.h>
 
 #import <objc/runtime.h>
 #import <arpa/inet.h>

@@ -119,7 +119,7 @@ start_packager() {
   ./node_modules/react-native/scripts/packager.sh | tee "$PACKAGER_OUT" &
 
   while :; do
-    if grep -Fxq "Metro Bundler ready." "$PACKAGER_OUT"; then
+    if grep -Fxq "Loading dependency graph, done." "$PACKAGER_OUT"; then
       break
     else
       echo "Waiting for packager."
@@ -133,29 +133,19 @@ xctest() {
 
   # - Run the build and test
   echo "Building application"
-  xcrun xcodebuild -scheme "$1" -configuration "$CONFIGURATION" -sdk iphonesimulator -destination id="${IOS_SIM_DEVICE_ID}" -derivedDataPath ./build build || {
+  xcrun xcodebuild -workspace "$1.xcworkspace" -scheme "$1" -configuration "$CONFIGURATION" -sdk iphonesimulator -destination id="${IOS_SIM_DEVICE_ID}" -derivedDataPath ./build build-for-testing || {
       EXITCODE=$?
       echo "*** Failure (exit code $EXITCODE). ***"
       exit $EXITCODE
   }
 
-  echo "Installing application on ${SIM_DEVICE_NAME}"
-  echo "Application Path" $(pwd)/build/Build/Products/$CONFIGURATION-iphonesimulator/$1.app
-  xcrun simctl install ${SIM_DEVICE_NAME} $(pwd)/build/Build/Products/$CONFIGURATION-iphonesimulator/$1.app
-
-
-  echo "Launching application. (output is in $(pwd)/build/out.txt)"
-  testpid=$(xcrun simctl launch --stdout=$(pwd)/build/out.txt --stderr=$(pwd)/build/err.txt ${SIM_DEVICE_NAME} io.realm.$1 | grep -m1 -o '\d\+$')
-  tail -n +0 -f $(pwd)/build/out.txt &
-  stdoutpid=$!
-  tail -n +0 -f $(pwd)/build/err.txt &
-  stderrpid=$!
-
-  # `kill -0` checks if a signal can be sent to the pid without actually doing so
-  while kill -0 $testpid 2> /dev/null; do sleep 1; done
-
-  kill $stdoutpid
-  kill $stderrpid
+  log_temp="$(pwd)/build/out.txt"
+  echo "Launching tests. (output is in ${log_temp})"
+  xcrun xcodebuild -workspace "$1.xcworkspace" -scheme "$1" -configuration "$CONFIGURATION" -sdk iphonesimulator -destination id="${IOS_SIM_DEVICE_ID}" -derivedDataPath ./build test-without-building 2>&1 | tee "$log_temp" || {
+      EXITCODE=$?
+      echo "*** Failure (exit code $EXITCODE). ***"
+      exit $EXITCODE
+  }
 
   echo "Shuttting down ${SIM_DEVICE_NAME} simulator. (device is not deleted. you can use it to debug the app)"
   shutdown_ios_simulator
@@ -186,6 +176,10 @@ setup_ios_simulator() {
   IOS_SIM_DEVICE_ID=$(xcrun simctl create ${SIM_DEVICE_NAME} com.apple.CoreSimulator.SimDeviceType.iPhone-SE ${IOS_RUNTIME})
   #boot new test simulator
   xcrun simctl boot ${SIM_DEVICE_NAME}
+
+  printf "Waiting for springboard to ensure device is ready..."
+  xcrun simctl launch ${SIM_DEVICE_NAME} com.apple.springboard 1>/dev/null 2>/dev/null || true
+  echo "  done"
 }
 
 shutdown_ios_simulator() {
@@ -251,11 +245,12 @@ case "$TARGET" in
   download_server
   start_server
   pushd tests/react-test-app
-  npm install
+  npm install --no-save
   open_chrome
   start_packager
 
   pushd ios
+  pod install
   xctest ReactTests
   stop_server
   ;;

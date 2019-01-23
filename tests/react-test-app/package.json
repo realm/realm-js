@@ -6,8 +6,8 @@
     "start": "node node_modules/react-native/local-cli/cli.js start"
   },
   "dependencies": {
-    "react": "16.0.0",
-    "react-native": "0.50.4",
+    "react": "16.6.3",
+    "react-native": "0.57.8",
     "react-native-exception-handler": "^2.4.3",
     "react-native-exit-app-no-history": "^1.0.2",
     "react-native-fs": "^2.8.5",
@@ -19,7 +19,8 @@
     "moment": "2.19.1"
   },
   "devDependencies": {
-    "babel-preset-react-native": "4.0.0",
-    "invariant": "^2.2.2"
+    "metro-react-native-babel-preset": "^0.45.0",
+    "invariant": "^2.2.2",
+    "eslint": "^3.0.0"
   }
 }

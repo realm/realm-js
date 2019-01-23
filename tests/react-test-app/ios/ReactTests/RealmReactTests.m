@@ -25,11 +25,14 @@
 #import <React/RCTRootView.h>
 #import <React/RCTJavaScriptExecutor.h>
 #import <React/RCTBridge.h>
-#import <React/RCTDevMenu.h>
 #import <React/RCTEventDispatcher.h>
 #import <React/RCTJavaScriptLoader.h>
 
 #import "RealmJSTests.h"
+
+@interface RCTBridge (Realm_RCTCxxBridge)
+- (JSGlobalContextRef)jsContextRef;
+@end
 
 extern void JSGlobalContextSetIncludesNativeCallStackWhenReportingExceptions(JSGlobalContextRef ctx, bool includesNativeCallStack);
 extern NSMutableArray *RCTGetModuleClasses(void);
@@ -39,25 +42,10 @@ extern NSMutableArray *RCTGetModuleClasses(void);
 - (void)setUp;
 @end
 
-@interface RCTDevMenuDisabler : RCTDevMenu
-@end
-
 @interface RealmReactTests : RealmJSTests
 @end
 
 @interface RealmReactChromeTests : RealmReactTests
-@end
-
-
-@implementation RCTDevMenuDisabler
-
-+ (void)load {
-    // +[RCTDevMenu load] is guaranteed to have been called since it's the superclass.
-    // We remove it since it interferes with us fully controlling the executor class.
-    NSMutableArray *moduleClasses = RCTGetModuleClasses();
-    [moduleClasses removeObject:[RCTDevMenu class]];
-}
-
 @end
 
 
@@ -77,55 +65,25 @@ extern NSMutableArray *RCTGetModuleClasses(void);
     return @"";
 }
 
-+ (RCTBridge *)currentBridge {
-    Class executorClass = [self executorClass];
-    if (!executorClass) {
-        return nil;
-    }
-
-    @autoreleasepool {
-        RCTBridge *bridge = [RCTBridge currentBridge];
-
-        if (!bridge.valid) {
-            [self waitForNotification:RCTJavaScriptDidLoadNotification];
-            bridge = [RCTBridge currentBridge];
-        }
-
-        if (bridge.executorClass != executorClass) {
-            bridge.executorClass = executorClass;
-
-            RCTBridge *parentBridge = [bridge valueForKey:@"parentBridge"];
-            [parentBridge invalidate];
-            [parentBridge setUp];
-
-            return [self currentBridge];
-        }
-
-        return bridge;
-    }
-}
-
-+ (id<RCTJavaScriptExecutor>)currentExecutor {
-    return [[self currentBridge] valueForKey:@"javaScriptExecutor"];
-}
-
 + (XCTestSuite *)defaultTestSuite {
     @autoreleasepool {
         XCTestSuite *suite = [super defaultTestSuite];
-        id<RCTJavaScriptExecutor> executor = [self currentExecutor];
-
-        // The executor may be nil if the executorClass was not found (i.e. release build).
-        if (!executor) {
+        Class executorClass = [self executorClass];
+        if (!executorClass) {
             return suite;
         }
 
-        // FIXME: Remove this nonsense once the crashes go away when a test fails!
-        JSGlobalContextRef ctx = RealmReactGetJSGlobalContextForExecutor(executor, false);
-        if (ctx) {
-            JSGlobalContextSetIncludesNativeCallStackWhenReportingExceptions(ctx, false);
-        }
+        RCTBridge *bridge = [RCTBridge currentBridge];
+        bridge.executorClass = executorClass;
+        [bridge reload];
+        [self waitForNotification:RCTJavaScriptDidLoadNotification];
+        bridge = [RCTBridge currentBridge];
+        NSAssert(bridge.jsContextRef, @"No JS context after loading");
 
-        [self.currentBridge.eventDispatcher sendAppEventWithName:@"realm-test-names" body:nil];
+        JSGlobalContextRef ctx = RCTBridge.currentBridge.jsContextRef;
+        JSGlobalContextSetIncludesNativeCallStackWhenReportingExceptions(ctx, false);
+
+        [bridge.eventDispatcher sendAppEventWithName:@"realm-test-names" body:nil];
         NSDictionary *testCaseNames = [self waitForEvent:@"realm-test-names"];
         NSAssert(testCaseNames.count, @"No test names were provided by the JS");
 
@@ -168,7 +126,6 @@ extern NSMutableArray *RCTGetModuleClasses(void);
 + (void)waitForCondition:(BOOL *)condition description:(NSString *)description {
     NSRunLoop *runLoop = [NSRunLoop currentRunLoop];
     NSDate *timeout = [NSDate dateWithTimeIntervalSinceNow:30.0];
-    RCTBridge *bridge = [self currentBridge];
 
     while (!*condition) {
         if ([timeout timeIntervalSinceNow] < 0) {
@@ -181,13 +138,13 @@ extern NSMutableArray *RCTGetModuleClasses(void);
             [runLoop runMode:NSDefaultRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.1]];
             [runLoop runMode:NSRunLoopCommonModes beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.1]];
             [NSThread sleepForTimeInterval:0.01];  // Bad things may happen without some sleep.
-            [bridge.eventDispatcher sendAppEventWithName:@"realm-dummy" body:nil]; // Ensure RN has an event loop running
+            [RCTBridge.currentBridge.eventDispatcher sendAppEventWithName:@"realm-dummy" body:nil]; // Ensure RN has an event loop running
         }
     }
 }
 
 + (id)waitForEvent:(NSString *)eventName {
-    __weak RealmReact *realmModule = [[self currentBridge] moduleForClass:[RealmReact class]];
+    __weak RealmReact *realmModule = [RCTBridge.currentBridge moduleForClass:[RealmReact class]];
     NSAssert(realmModule, @"RealmReact module not found");
 
     __block BOOL condition = NO;
@@ -233,8 +190,7 @@ extern NSMutableArray *RCTGetModuleClasses(void);
         module = [module substringToIndex:(module.length - suffix.length)];
     }
 
-    RCTBridge *bridge = [self.class currentBridge];
-    [bridge.eventDispatcher sendAppEventWithName:@"realm-run-test" body:@{@"suite": module, @"name": method}];
+    [RCTBridge.currentBridge.eventDispatcher sendAppEventWithName:@"realm-run-test" body:@{@"suite": module, @"name": method}];
 
     id error;
     @try {

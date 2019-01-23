@@ -58,6 +58,8 @@ realm-object-server/
 tests/react-test-app/ios/out.txt
 *.iml
 crash.log
+tests/react-test-app/ios/Pods/
+tests/react-test-app/ios/ReactTests.xcworkspace/
 
 # Integration tests
 integration-tests/**/realm-*.tgz
