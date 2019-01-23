@@ -488,6 +488,11 @@ bool RealmClass<T>::get_realm_config(ContextType ctx, ObjectType this_object, si
             else if (config.path.empty()) {
                 config.path = js::default_path();
             }
+            static const String fifo_fallback_path_string = "fifoFilesFallbackPath";
+            ValueType fallback_path_value = Object::get_property(ctx, object, fifo_fallback_path_string);
+            if (!Value::is_undefined(ctx, fallback_path_value)) {
+                config.fifo_files_fallback_path = Value::validated_to_string(ctx, fallback_path_value, "fifoFilesFallbackPath");
+            }
 
             static const String in_memory_string = "inMemory";
             ValueType in_memory_value = Object::get_property(ctx, object, in_memory_string);

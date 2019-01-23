@@ -85,6 +85,14 @@ module.exports = {
         TestCase.assertEqual(realm2.path, defaultDir + testPath2);
     },
 
+    testRealmFifoFallbackPath: function() {
+        // We do not run the unit tests on a filesystem that would trigger the fallback.
+        // So for now we just check that setting the property doesn't crash Realm.
+        // To test this for real, we would need to
+        const defaultDir = Realm.defaultPath.substring(0, Realm.defaultPath.lastIndexOf(pathSeparator) + 1);
+        const realm = new Realm({fifoFilesFallbackPath: defaultDir});
+    },
+
     testRealmIsClosed: function() {
         const realm = new Realm({schema: []});
         TestCase.assertFalse(realm.isClosed);
