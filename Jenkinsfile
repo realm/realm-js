@@ -58,6 +58,9 @@ stage('check') {
 // Produce a package
 stage('package') {
   node('docker && !aws') {
+    // Unstash the files in the repository
+    // TODO: Consider moving the node on the other side of the stages
+    unstash 'source'
     // We are using:
     // - the workspace as the HOME to ensure ~/.npm will be in a directory we have permissions for
     // - the same /etc/passwd file as the Jenkins slave inside the docker file, to allow running as "jenkins"
