@@ -68,8 +68,9 @@ stage('package') {
       // Setting HOME to ensure ~/.npm and ~/.gradle will be in a directory we have permissions for
       // (using single quotes on purpose, to postpone the replacement)
       // Using the /etc/passwd file as the Jenkins slave inside the docker file, to allow running as "jenkins"
-      '-e "HOME=${WORKSPACE}" -v /etc/passwd:/etc/passwd:ro'
+      '-v /etc/passwd:/etc/passwd:ro -v ${PWD}:/home/jenkins'
     ) {
+      sh 'cd $HOME'
       // Install dependencies
       sh 'npm install'
       // Publish the Android module
