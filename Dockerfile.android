@@ -24,6 +24,8 @@ RUN dpkg --add-architecture i386 && \
       curl \
       gnupg \
       unzip \
+      # Tools ndeed when building Android module
+      build-essential \
     && \
     # Install the active LTS version of Node.js
     curl -sL https://deb.nodesource.com/setup_${NODE_VERSION} | bash - && \
