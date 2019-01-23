@@ -52,11 +52,9 @@ download_server() {
 
 start_server() {
   echo "test.sh: starting ROS"
-  #disabled ROS logging
-  # sh ./object-server-for-testing/start-object-server.command &> /dev/null &
-
-  #enabled ROS logging
-  #sh ./object-server-for-testing/start-object-server.command &
+  if [ -z "${SYNC_WORKER_FEATURE_TOKEN}" ]; then
+      die "SYNC_WORKER_FEATURE_TOKEN must be set to run tests."
+  fi
   export ROS_SKIP_PROMPTS=true &&  ./node_modules/.bin/ros start --data realm-object-server-data &
   SERVER_PID=$!
   echo ROS PID: ${SERVER_PID}
@@ -221,7 +219,7 @@ if [[ -z "$(command -v nvm)" ]]; then
   set -e
 fi
 if [[ "$(command -v nvm)" ]]; then
-  nvm install 6.11.3
+  nvm install 8.15.0
 fi
 
 # Remove cached packages
@@ -325,17 +323,12 @@ case "$TARGET" in
 "node")
   npm run check-environment
   if [ "$(uname)" = 'Darwin' ]; then
-    echo "downloading server"
     download_server
-    echo "starting server"
     start_server
 
-    npm_tests_cmd="npm run test"
-    npm install --build-from-source=realm --realm_enable_sync
-
+    npm install --no-save --build-from-source=realm --realm_enable_sync
   else
-    npm_tests_cmd="npm run test"
-    npm install --build-from-source=realm
+    npm install --no-save --build-from-source=realm
   fi
 
   # Change to a temp directory.
@@ -344,7 +337,7 @@ case "$TARGET" in
 
   pushd "$SRCROOT/tests"
   npm install
-  eval "$npm_tests_cmd"
+  npm run test
   popd
   stop_server
   ;;
@@ -360,9 +353,9 @@ case "$TARGET" in
   pushd "$SRCROOT/tests/electron"
 
   if [ "$(uname)" = 'Darwin' ]; then
-    npm install --build-from-source --realm_enable_sync
+    npm install --no-save --build-from-source --realm_enable_sync
   else
-    npm install --build-from-source
+    npm install --no-save --build-from-source
   fi
 
   # npm test -- --filter=ListTests

@@ -41,6 +41,8 @@
 		3FCE2A8B1F58BDEF00D4855B /* primitive_list_notifier.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3FCE2A891F58BDE500D4855B /* primitive_list_notifier.cpp */; };
 		3FCE2A931F58BE0300D4855B /* uuid.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3FCE2A911F58BDFF00D4855B /* uuid.cpp */; };
 		3FCE2A971F58BE2200D4855B /* sync_permission.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3FCE2A951F58BE1D00D4855B /* sync_permission.cpp */; };
+		3FDC253821F919AD0087FB9B /* sync_file.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 504CF85A1EBCAE3600A9A4B6 /* sync_file.cpp */; };
+		3FDC253921F91E320087FB9B /* package.json in Resources */ = {isa = PBXBuildFile; fileRef = 02879D8B1DC29D5600777A5D /* package.json */; };
 		420FB79F1F7FBFE900D43D0F /* partial_sync.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 423737AF1F7E333400FAEDFF /* partial_sync.cpp */; };
 		425A121120235A1400C2F932 /* work_queue.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 425A120F20235A1400C2F932 /* work_queue.cpp */; };
 		4261AF8E203C42000052450D /* work_queue.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 425A120F20235A1400C2F932 /* work_queue.cpp */; };
@@ -829,6 +831,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3FDC253921F91E320087FB9B /* package.json in Resources */,
 				02D041F71CE11159000E4250 /* dates-v3.realm in Resources */,
 				02414B881CE68CA200A8669F /* dates-v5.realm in Resources */,
 				F61378791C18EAC5008BFC51 /* js in Resources */,
@@ -851,7 +854,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "cd \"$TARGET_BUILD_DIR/$CONTENTS_FOLDER_PATH\"\nyarn add needle url-parse";
+			shellScript = "cd \"$TARGET_BUILD_DIR/$CONTENTS_FOLDER_PATH\"\nyarn add --production --ignore-scripts react-native-fs\n";
 		};
 		F63FF2C51C12462600B3B8E0 /* Download Core */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -865,7 +868,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "if [[ -d \"$HOME/.asdf/shims\" ]]; then\n  export PATH=$HOME/.asdf/shims:$PATH\nfi\n\n[ -z \"$NVM_DIR\" ] && export NVM_DIR=\"$HOME/.nvm\"\n\nif [[ -s \"$HOME/.nvm/nvm.sh\" ]]; then\n  . \"$HOME/.nvm/nvm.sh\"\nelif [[ -x \"$(command -v brew)\" && -s \"$(brew --prefix nvm)/nvm.sh\" ]]; then\n  . \"$(brew --prefix nvm)/nvm.sh\"\nfi\n \nif [[ \"$(command -v nvm)\" ]]; then\n nvm install 7.10.0\nfi\n \n node ../scripts/download-realm.js ios --sync";
+			shellScript = "if [[ -d \"$HOME/.asdf/shims\" ]]; then\n  export PATH=$HOME/.asdf/shims:$PATH\nfi\n\n[ -z \"$NVM_DIR\" ] && export NVM_DIR=\"$HOME/.nvm\"\n\nif [[ -s \"$HOME/.nvm/nvm.sh\" ]]; then\n  . \"$HOME/.nvm/nvm.sh\"\nelif [[ -x \"$(command -v brew)\" && -s \"$(brew --prefix nvm)/nvm.sh\" ]]; then\n  . \"$(brew --prefix nvm)/nvm.sh\"\nfi\n \nif [[ \"$(command -v nvm)\" ]]; then\n nvm install 8.15.0\nfi\n\ncd ..\n[ ! -d node_modules/fs-extra ] && npm install --no-save\nnode scripts/download-realm.js ios --sync\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
