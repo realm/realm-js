@@ -1,6 +1,8 @@
 #!groovy
 import groovy.json.JsonOutput
 
+@Library('realm-ci') _
+
 repoName = 'realm-js' // This is a global variable
 
 def gitTag
@@ -53,17 +55,19 @@ stage('check') {
   }
 }
 
-
 // Produce a package
 stage('package') {
   node('docker && !aws') {
     // We are using:
-    // - the latest node LTS,
     // - the workspace as the HOME to ensure ~/.npm will be in a directory we have permissions for
-    // - the same passwd file as the Jenkins slave inside the docker file, to allow running as "jenkins"
-    docker.image('node:lts').inside('-e HOME=${WORKSPACE} -v /etc/passwd:/etc/passwd:ro') {
-      sh 'npm --version'
+    // - the same /etc/passwd file as the Jenkins slave inside the docker file, to allow running as "jenkins"
+    buildDockerEnv('ci/realm-js:android-build', extra_args: '-f Dockerfile.android')
+    .inside('-e HOME=${WORKSPACE} -v /etc/passwd:/etc/passwd:ro') {
+      // Install dependencies
       sh 'npm install'
+      // Publish the Android module
+      sh 'cd react-native/android && ./gradlew publishAndroid'
+      // Package up the app
       sh 'npm pack'
       // TODO: Archive and stash the package
       archiveArtifacts 'realm-*.tgz'

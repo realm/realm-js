@@ -1,0 +1,50 @@
+# Starting from a slimmed version of the latest stable Debian
+FROM debian:stable-slim
+
+# Setting environment variables for versions
+# See https://developer.android.com/studio/#command-tools for the latest SDK version
+ENV ANDROID_SDK_VERSION 4333796
+ENV ANDROID_NDK_VERSION r10e
+ENV NODE_VERSION 10.x
+
+# Locales
+ENV LANG C.UTF-8
+
+# Because we're using the slim variant of Debian some directories (expected when installing openjdk) are missing
+RUN mkdir /usr/share/man/man1
+
+# Install dependencies
+ENV DEBIAN_FRONTEND noninteractive
+RUN dpkg --add-architecture i386 && \
+    apt-get update -qq && \
+    apt-get install -y \
+      # Installing OpenJDK in its headless variant as we don't need the GUI related parts
+      openjdk-8-jdk-headless \
+      # Tools needed when installing dependencies
+      curl \
+      gnupg \
+      unzip \
+    && \
+    # Install the active LTS version of Node.js
+    curl -sL https://deb.nodesource.com/setup_${NODE_VERSION} | bash - && \
+    apt-get install -y nodejs && \
+    # Clean-up to lower the image size
+    apt-get clean
+
+# Install the Android SDK
+ENV ANDROID_HOME /opt/android-sdk
+RUN mkdir -p ${ANDROID_HOME} && cd ${ANDROID_HOME} && \
+    curl -sO https://dl.google.com/android/repository/sdk-tools-linux-${ANDROID_SDK_VERSION}.zip && \
+    unzip -q sdk-tools-linux-*.zip && \
+    rm sdk-tools-linux-*.zip
+ENV PATH ${PATH}:${ANDROID_HOME}/tools:${ANDROID_HOME}/tools/bin:${ANDROID_HOME}/platform-tools
+# Print the version of the SDK using the sdkmanager
+RUN sdkmanager --update
+RUN yes | sdkmanager "tools" "platform-tools" "build-tools;27.0.3" "platforms;android-26"
+
+# Install the Android NDK
+ENV ANDROID_NDK /opt/android-ndk-${ANDROID_NDK_VERSION}
+RUN cd /opt && \
+    curl -sO http://dl.google.com/android/repository/android-ndk-${ANDROID_NDK_VERSION}-linux-x86_64.zip && \
+    unzip -q android-ndk-*-linux-x86_64.zip && \
+    rm android-ndk-*-linux-x86_64.zip
