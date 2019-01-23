@@ -6,7 +6,7 @@ x.x.x Release notes (yyyy-MM-dd)
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
 * Realm initialized the filesystem when being imported instead of waiting for the first Realm to be opened. ([#2218] (https://github.com/realm/realm-js/issues/2218), since v2.22.0).
-* When debugging with React Native, calling `Realm.open()` will crach since `Realm._asyncOpen()` is not available in the debugger. ([#2234](https://github.com/realm/realm-js/pull/2234), since v2.20.0)
+* When debugging with React Native, calling `Realm.open()` would crash since `Realm._asyncOpen()` was not available in the debugger. ([#2234](https://github.com/realm/realm-js/pull/2234), since v2.20.0)
 
 ### Compatibility
 * Realm Object Server: 3.11.0 or later.
