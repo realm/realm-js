@@ -191,6 +191,20 @@
 			remoteGlobalIDString = 3D3CD9181DE5FBD800167DC4;
 			remoteInfo = "jschelpers-tvOS";
 		};
+		3FDC252A21F902C70087FB9B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 146833FF1AC3E56700842450 /* React.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = EBF21BDC1FC498900052F4D5;
+			remoteInfo = jsinspector;
+		};
+		3FDC252C21F902C70087FB9B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 146833FF1AC3E56700842450 /* React.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = EBF21BFA1FC4989A0052F4D5;
+			remoteInfo = "jsinspector-tvOS";
+		};
 		5E9157321DD0AC6500FF2AA8 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 5E91572D1DD0AC6500FF2AA8 /* RCTAnimation.xcodeproj */;
@@ -473,6 +487,8 @@
 				3DAD3EAB1DF850E9000B6D8A /* libcxxreact.a */,
 				3DAD3EAD1DF850E9000B6D8A /* libjschelpers.a */,
 				3DAD3EAF1DF850E9000B6D8A /* libjschelpers.a */,
+				3FDC252B21F902C70087FB9B /* libjsinspector.a */,
+				3FDC252D21F902C70087FB9B /* libjsinspector-tvOS.a */,
 				A47439721FCF49A00034D32F /* libthird-party.a */,
 				A47439741FCF49A00034D32F /* libthird-party.a */,
 				A47439761FCF49A00034D32F /* libdouble-conversion.a */,
@@ -487,6 +503,9 @@
 			isa = PBXGroup;
 			children = (
 				629FEF95D64747E9A56D4D0C /* libRealmReact.a */,
+				6EBE9BC51D4A4EF79B40A51A /* libRNFS.a */,
+				9DAA9FCB85294F77873D2769 /* libRNExitApp.a */,
+				9BDA39DE0BF646F2AF670F18 /* libReactNativeExceptionHandler.a */,
 			);
 			name = "Recovered References";
 			sourceTree = "<group>";
@@ -899,6 +918,20 @@
 			fileType = archive.ar;
 			path = libjschelpers.a;
 			remoteRef = 3DAD3EAE1DF850E9000B6D8A /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		3FDC252B21F902C70087FB9B /* libjsinspector.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libjsinspector.a;
+			remoteRef = 3FDC252A21F902C70087FB9B /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		3FDC252D21F902C70087FB9B /* libjsinspector-tvOS.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = "libjsinspector-tvOS.a";
+			remoteRef = 3FDC252C21F902C70087FB9B /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		5E9157331DD0AC6500FF2AA8 /* libRCTAnimation.a */ = {

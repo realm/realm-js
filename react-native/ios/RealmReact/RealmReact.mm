@@ -21,9 +21,10 @@
 #import "RCTBridge+Private.h"
 #import "RCTJavaScriptExecutor.h"
 
-#import "jsc_init.h"
+#import "jsc/jsc_init.h"
+
+#import "impl/realm_coordinator.hpp"
 #import "shared_realm.hpp"
-#import "realm_coordinator.hpp"
 
 #import <objc/runtime.h>
 #import <arpa/inet.h>
@@ -50,7 +51,7 @@ using namespace realm::rpc;
 @end
 
 // the part of the RCTCxxBridge private class we care about
-@interface RCTBridge (RCTCxxBridge)
+@interface RCTBridge (Realm_RCTCxxBridge)
 - (JSGlobalContextRef)jsContextRef;
 @end
 
