@@ -59,6 +59,7 @@ stage('check') {
 stage('package') {
   node('docker && !aws') {
     // Unstash the files in the repository
+    unstash 'source'
     // TODO: Consider moving the node on the other side of the stages
     buildDockerEnv(
       'ci/realm-js:android-build',
