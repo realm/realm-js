@@ -33,8 +33,13 @@ RUN dpkg --add-architecture i386 && \
     # Clean-up to lower the image size
     apt-get clean
 
+# Jenkins will run this image as user 1001, let's ensure that user exists and has a home directory
+RUN adduser --uid 1001 --disabled-password --gecos "" jenkins
+# Install the SDK and NDK as jenkins
+USER jenkins
+
 # Install the Android SDK
-ENV ANDROID_HOME /opt/android-sdk
+ENV ANDROID_HOME /home/jenkins/android-sdk
 RUN mkdir -p ${ANDROID_HOME} && cd ${ANDROID_HOME} && \
     curl -sO https://dl.google.com/android/repository/sdk-tools-linux-${ANDROID_SDK_VERSION}.zip && \
     unzip -q sdk-tools-linux-*.zip && \
@@ -45,13 +50,9 @@ RUN sdkmanager --update
 RUN yes | sdkmanager "tools" "platform-tools" "build-tools;27.0.3" "platforms;android-26"
 
 # Install the Android NDK
-# The final chmod is needed to allow the jenkins user to execute the ndk tools
-ENV ANDROID_NDK /opt/android-ndk-${ANDROID_NDK_VERSION}
-RUN cd /opt && \
+ENV ANDROID_NDK /home/jenkins/android-ndk
+RUN cd ${ANDROID_NDK}/.. && \
     curl -sO http://dl.google.com/android/repository/android-ndk-${ANDROID_NDK_VERSION}-linux-x86_64.zip && \
     unzip -q android-ndk-*-linux-x86_64.zip && \
     rm android-ndk-*-linux-x86_64.zip && \
-    chmod o+x *
-
-# Jenkins will run this image as user 1001, let's ensure that user exists and has a home directory
-RUN adduser --uid 1001 --disabled-password --gecos "" jenkins
+    mv android-ndk-* android-ndk
