@@ -11,16 +11,19 @@
     "react-native-exception-handler": "^2.4.3",
     "react-native-exit-app-no-history": "^1.0.2",
     "react-native-fs": "^2.8.5",
-    "realm": "file:../..",
-    "realm-tests": "file:../js",
     "xmlbuilder": "^4.2.1"
   },
   "resolutions": {
     "moment": "2.19.1"
   },
   "devDependencies": {
-    "metro-react-native-babel-preset": "^0.45.0",
+    "eslint": "^3.0.0",
+    "install-local": "^0.6.2",
     "invariant": "^2.2.2",
-    "eslint": "^3.0.0"
+    "metro-react-native-babel-preset": "^0.45.0"
+  },
+  "localDependencies": {
+    "realm": "../..",
+    "realm-tests": "../js"
   }
 }

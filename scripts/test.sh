@@ -246,6 +246,7 @@ case "$TARGET" in
   start_server
   pushd tests/react-test-app
   npm install --no-save
+  ./node_modules/.bin/install-local
   open_chrome
   start_packager
 
