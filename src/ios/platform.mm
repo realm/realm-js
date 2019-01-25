@@ -17,9 +17,19 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #include "platform.hpp"
+
+#include <realm/util/to_string.hpp>
+
 #include <string>
 
 #import <Foundation/Foundation.h>
+
+static NSString *error_description(NSError *error) {
+    if (NSError *underlyingError = error.userInfo[NSUnderlyingErrorKey]) {
+        return underlyingError.localizedDescription;
+    }
+    return error.localizedDescription;
+}
 
 namespace realm {
 
@@ -47,7 +57,7 @@ std::string default_realm_file_directory()
                                                         error:nil];
     }
 #endif
-    return std::string(path.UTF8String);
+    return path.UTF8String;
 }
 
 void ensure_directory_exists_for_file(const std::string &fileName)
@@ -55,12 +65,13 @@ void ensure_directory_exists_for_file(const std::string &fileName)
     NSString *docsDir = [@(fileName.c_str()) stringByDeletingLastPathComponent];
     NSFileManager *manager = [NSFileManager defaultManager];
 
-    if (![manager fileExistsAtPath:docsDir]) {
-        NSError *error = nil;
-        [manager createDirectoryAtPath:docsDir withIntermediateDirectories:YES attributes:nil error:&error];
-        if (error) {
-            throw std::runtime_error([[error description] UTF8String]);
-        }
+    if ([manager fileExistsAtPath:docsDir]) {
+        return;
+    }
+
+    NSError *error = nil;
+    if ([manager createDirectoryAtPath:docsDir withIntermediateDirectories:YES attributes:nil error:&error]) {
+        throw std::runtime_error(util::format("Failed to create directory \"%1\": %2", docsDir.UTF8String, error_description(error).UTF8String));
     }
 }
 
@@ -79,9 +90,10 @@ void copy_bundled_realm_files()
             if ([manager fileExistsAtPath:docsPath]) {
                 continue;
             }
-            
-            if (![manager copyItemAtPath:[resourcePath stringByAppendingPathComponent:path] toPath:docsPath error:nil]) {
-                throw std::runtime_error((std::string)"Failed to copy file at path " + path.UTF8String + " to path " + docsPath.UTF8String);
+
+            NSError *error = nil;
+            if (![manager copyItemAtPath:[resourcePath stringByAppendingPathComponent:path] toPath:docsPath error:&error]) {
+                throw std::runtime_error(util::format("Failed to copy file from \"%1\" to \"%2\": %3", path.UTF8String, docsPath.UTF8String, error_description(error).UTF8String));
             }
         }
     }
@@ -96,8 +108,10 @@ void remove_realm_files_from_directory(const std::string &directory)
         if (![path.pathExtension isEqualToString:@"realm"] && ![path.pathExtension isEqualToString:@"realm.lock"] && ![path.pathExtension isEqualToString:@"realm.management"]) {
             continue;
         }
-        if (![manager removeItemAtPath:[fileDir stringByAppendingPathComponent:path] error:nil]) {
-            throw std::runtime_error((std::string)"Failed to delete file at path " + path.UTF8String);
+        NSError *error = nil;
+        NSString *filePath = [fileDir stringByAppendingPathComponent:path];
+        if (![manager removeItemAtPath:filePath error:&error]) {
+            throw std::runtime_error(util::format("Failed to delete file at path \"%1\": %2", filePath.UTF8String, error_description(error).UTF8String));
         }
     }
 }
@@ -107,8 +121,9 @@ void remove_file(const std::string &path)
     NSFileManager *manager = [NSFileManager defaultManager];
     NSString *filePath = @(path.c_str());
 
-    if (![manager removeItemAtPath:filePath error:nil]) {
-        throw std::runtime_error((std::string)"Failed to delete file at path " + filePath.UTF8String);
+    NSError *error = nil;
+    if (![manager removeItemAtPath:filePath error:&error]) {
+        throw std::runtime_error(util::format("Failed to delete file at path \"%1\": %2", filePath.UTF8String, error_description(error).UTF8String));
     }
 }
 
