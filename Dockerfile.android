@@ -17,7 +17,7 @@ RUN mkdir /usr/share/man/man1
 ENV DEBIAN_FRONTEND noninteractive
 RUN dpkg --add-architecture i386 && \
     apt-get update -qq && \
-    apt-get install -y \
+    apt-get install -qq -y \
       # Installing OpenJDK in its headless variant as we don't need the GUI related parts
       openjdk-8-jdk-headless \
       # Tools needed when installing dependencies
@@ -29,7 +29,7 @@ RUN dpkg --add-architecture i386 && \
     && \
     # Install the active LTS version of Node.js
     curl -sL https://deb.nodesource.com/setup_${NODE_VERSION} | bash - && \
-    apt-get install -y nodejs && \
+    apt-get install -qq -y nodejs && \
     # Clean-up to lower the image size
     apt-get clean
 
