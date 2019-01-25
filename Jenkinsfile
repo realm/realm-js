@@ -55,19 +55,16 @@ stage('check') {
   }
 }
 
-def androidBuildImage
-
 // Produce a package
 stage('package') {
   node('docker') {
     // Unstash the files in the repository
     unstash 'source'
     // TODO: Consider moving the node on the other side of the stages
-    androidBuildImage = buildDockerEnv(
+    docker.build(
       'ci/realm-js:android-build',
-      extra_args: '-f Dockerfile.android'
-    )
-    androidBuildImage.inside {
+      '-f Dockerfile.android .'
+    ).inside {
       // Install dependencies
       sh 'npm install'
       // Publish the Android module
@@ -84,7 +81,7 @@ stage('package') {
 stage('integration tests') {
   parallel(
     react_native_android: node('docker && android') {
-      androidBuildImage.inside(
+      docker.image('ci/realm-js:android-build').inside(
         '-v /dev/bus/usb:/dev/bus/usb --privileged'
       ) {
         dir('integration-tests/environments/react-native') {
