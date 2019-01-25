@@ -54,10 +54,9 @@ async function runApp(platform) {
 
     if (platform === "android") {
         const devices = android.adb.devices();
-        if (devices.length === 0) {
-            const avds = android.emulator.devices();
-            const startHelper = `run "emulator -avd ${avds[0]}"`;
-            throw new Error(`"Missing a device, start an emulator (${startHelper}) or attach a device via USB"`);
+        const activeDevices = devices.filter(({ state }) => state === "device");
+        if (activeDevices.length === 0) {
+            throw new Error("Missing an active device: Attach a device via USB or start an emulator");
         } else {
             // Ensure the device can access the mocha remote server
             android.adb.reverseServerPort(MochaRemoteServer.DEFAULT_CONFIG.port);

@@ -54,12 +54,15 @@ const adb = {
     devices() {
         const output = adb.exec(["devices"]).trim().split("\n");
         // Remove the "List of devices attached"
-        const [ intro, ...devices ] = output;
+        const [ intro, ...lines ] = output;
         if (intro !== "List of devices attached") {
             throw new Error("Unexpected output from ADB");
         }
         // Return the list of devices
-        return devices;
+        return lines.map(line => {
+            const [ id, state ] = line.split("\t");
+            return { id, state };
+        });
     },
 };
 
