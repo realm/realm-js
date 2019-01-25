@@ -259,15 +259,15 @@ case "$TARGET" in
   npm run check-environment
   pushd examples/ReactExample
 
-  npm install
+  npm install --no-save
+  ./node_modules/.bin/install-local
   open_chrome
   start_packager
 
-  echo "{ \"test\" : true }" > $(pwd)/components/params.json
   pushd ios
+  pod install
   xctest ReactExample
   popd
-  echo "{}" > $(pwd)/components/params.json
   ;;
 "react-tests-android")
   npm run check-environment

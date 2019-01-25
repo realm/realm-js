@@ -7,20 +7,23 @@
     "test": "jest"
   },
   "dependencies": {
-    "react": "16.0.0",
-    "react-native": "0.50.4",
-    "react-navigation": "^1.0.0-beta.21",
-    "react-native-exit-app-no-history": "^1.0.2",
-    "realm": "file:../.."
+    "react": "16.6.3",
+    "react-native": "0.57.8",
+    "react-native-exception-handler": "^2.4.3",
+    "react-native-fs": "^2.8.5",
+    "react-navigation": "^1.0.0",
+    "xmlbuilder": "^4.2.1"
+  },
+  "resolutions": {
+    "moment": "2.19.1"
   },
   "devDependencies": {
-    "babel-jest": "18.0.0",
-    "babel-preset-react-native": "4.0.0",
+    "eslint": "^3.0.0",
+    "install-local": "^0.6.2",
     "invariant": "^2.2.2",
-    "jest": "18.1.0",
-    "react-test-renderer": "^16.2.0"
+    "metro-react-native-babel-preset": "^0.45.0"
   },
-  "jest": {
-    "preset": "react-native"
+  "localDependencies": {
+    "realm": "../.."
   }
 }

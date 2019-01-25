@@ -60,6 +60,8 @@ tests/react-test-app/ios/out.txt
 crash.log
 tests/react-test-app/ios/Pods/
 tests/react-test-app/ios/ReactTests.xcworkspace/
+examples/ReactExample/ios/Pods/
+examples/ReactExample/ios/ReactExample.xcworkspace/
 
 # Integration tests
 integration-tests/**/realm-*.tgz
