@@ -123,7 +123,9 @@ void remove_file(const std::string &path)
 
     NSError *error = nil;
     if (![manager removeItemAtPath:filePath error:&error]) {
-        throw std::runtime_error(util::format("Failed to delete file at path \"%1\": %2", filePath.UTF8String, error_description(error).UTF8String));
+        if (error.code != NSFileNoSuchFileError)
+            throw std::runtime_error(util::format("Failed to delete file at path \"%1\": %2",
+                                                  filePath.UTF8String, error_description(error).UTF8String));
     }
 }
 
