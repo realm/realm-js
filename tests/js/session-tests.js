@@ -856,6 +856,10 @@ module.exports = {
     },
 
     testPartialSync() {
+        if (!isNodeProccess) {
+            return;
+        }
+
         const username = uuid();
         const credentials = Realm.Sync.Credentials.nickname(username);
         return runOutOfProcess(__dirname + '/partial-sync-api-helper.js', username, REALM_MODULE_PATH)
