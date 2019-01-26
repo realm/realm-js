@@ -33,14 +33,7 @@ function uuid() {
 }
 
 function closeAfterUpload(realm) {
-    return new Promise((resolve, reject) => {
-        realm.syncSession.addProgressNotification('upload', 'forCurrentlyOutstandingWork', (transferred, transferable) => {
-            if (transferred >= transferable) {
-                realm.close();
-                resolve();
-            }
-        });
-    });
+    return realm.syncSession.uploadAllLocalChanges().then(() => realm.close());
 }
 
 const Realm = require('realm');
@@ -1333,6 +1326,7 @@ module.exports = {
         }
 
         const realmId = uuid();
+        let realm2 = null, called = false;
         // We need an admin user to create the reference Realm
         return Realm.Sync.User.login('http://localhost:9080', Realm.Sync.Credentials.nickname("admin", true))
             .then(user1 => {
@@ -1347,47 +1341,43 @@ module.exports = {
 
                 const realm = new Realm(config);
                 TestCase.assertEqual(realm.schema.length, 7); // 5 permissions, 1 results set, 1 test object
-                return closeAfterUpload(realm)
-                    .then(() => {
-                        return Realm.Sync.User.login('http://localhost:9080', Realm.Sync.Credentials.anonymous());
-                    }).then((user2) => {
-                        const dynamicConfig = {
-                            sync: { user: user2, url: `realm://localhost:9080/${realmId}`, fullSynchronization: false },
-                        };
+                return closeAfterUpload(realm);
+            })
+            .then(() => {
+                return Realm.Sync.User.login('http://localhost:9080', Realm.Sync.Credentials.anonymous());
+            }).then((user2) => {
+                const dynamicConfig = {
+                    sync: { user: user2, url: `realm://localhost:9080/${realmId}`, fullSynchronization: false },
+                };
+                return Realm.open(dynamicConfig);
+            }).then((realm) => {
+                realm2 = realm;
+                TestCase.assertEqual(realm2.schema.length, 7); // 5 permissions, 1 results set, 1 test object
+                realm2.addListener('schema', (realm, event, schema) => {
+                    TestCase.assertEqual(realm2.schema.length, 8); // 5 permissions, 1 results set, 1 test object, 1 foo object
+                    called = true;
+                });
 
-                        return Realm.open(dynamicConfig);
-                    }).then((realm2) => {
-                        TestCase.assertEqual(realm2.schema.length, 7); // 5 permissions, 1 results set, 1 test object
-                        let called = false;
-                        realm2.addListener('schema', (realm, event, schema) => {
-                            TestCase.assertEqual(realm2.schema.length, 8); // 5 permissions, 1 results set, 1 test object, 1 foo object
-                            called = true;
-                        });
-
-                        config.schema.push({
-                            name: 'Foo',
-                            properties: {
-                                doubleCol: 'double',
-                            }
-                        });
-
-                        return Realm.open(config)
-                            .then((realm) => {
-                                return closeAfterUpload(realm);
-                            })
-                            .then(() => {
-                                return new Promise((resolve, reject) => {
-                                    setTimeout(() => {
-                                        realm2.close();
-                                        if (called) {
-                                            resolve();
-                                        } else {
-                                            reject();
-                                        }
-                                    }, 1000);
-                                });;
-                            });
-                    });
+                config.schema.push({
+                    name: 'Foo',
+                    properties: {
+                        doubleCol: 'double',
+                    }
+                });
+                return Realm.open(config);
+            }).then((realm) => {
+                return closeAfterUpload(realm);
+            }).then(() => {
+                return new Promise((resolve, reject) => {
+                    setTimeout(() => {
+                        realm2.close();
+                        if (called) {
+                            resolve();
+                        } else {
+                            reject();
+                        }
+                    }, 1000);
+                });;
             });
     },
 

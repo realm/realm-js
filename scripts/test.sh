@@ -284,7 +284,8 @@ case "$TARGET" in
   popd
 
   pushd tests/react-test-app
-  npm install
+  npm install --no-save
+  ./node_modules/.bin/install-local
 
   echo "Resetting logcat"
   # Despite the docs claiming -c to work, it doesn't, so `-T 1` alleviates that.
