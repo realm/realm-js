@@ -319,10 +319,9 @@ case "$TARGET" in
 "node")
   npm run check-environment
   if [ "$(uname)" = 'Darwin' ]; then
+    npm install --no-save --build-from-source=realm --realm_enable_sync
     download_server
     start_server
-
-    npm install --no-save --build-from-source=realm --realm_enable_sync
   else
     npm install --no-save --build-from-source=realm
   fi
