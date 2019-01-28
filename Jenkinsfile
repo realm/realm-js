@@ -80,6 +80,7 @@ stage('package') {
 
 stage('integration tests') {
   parallel(
+    /*
     react_native_android: node('docker && android') {
       docker.image('ci/realm-js:android-build').inside(
         '-v /dev/bus/usb:/dev/bus/usb --privileged'
@@ -92,6 +93,7 @@ stage('integration tests') {
         }
       }
     },
+    */
     react_native_ios: node('macos') {
       nvm('10') {
         // Unstash the files in the repository
