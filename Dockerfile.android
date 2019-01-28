@@ -3,9 +3,9 @@ FROM debian:stable-slim
 
 # Setting environment variables for versions
 # See https://developer.android.com/studio/#command-tools for the latest SDK version
-ENV ANDROID_SDK_VERSION 4333796
-ENV ANDROID_NDK_VERSION r10e
-ENV NODE_VERSION 10.x
+ARG ANDROID_SDK_VERSION=4333796
+ARG ANDROID_NDK_VERSION=r10e
+ARG NODE_VERSION=10.x
 
 # Locales
 ENV LANG C.UTF-8
