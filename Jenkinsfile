@@ -91,6 +91,22 @@ stage('integration tests') {
           sh 'npm run test/android'
         }
       }
+    },
+    react_native_ios: node('macos') {
+      nvm('10') {
+        // Unstash the files in the repository
+        unstash 'source'
+        // Install the modules used from the tests
+        dir('integration-tests/tests') {
+          sh 'npm install --production'
+        }
+        // Install the packaged version of realm into the react-native app and run the iOS tests
+        dir('integration-tests/environments/react-native') {
+          unstash 'package'
+          sh 'npm install realm-*.tgz'
+          sh 'npm run test/ios'
+        }
+      }
     }
   )
 }
