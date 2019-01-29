@@ -56,3 +56,6 @@ RUN cd ${ANDROID_NDK}/.. && \
     unzip -q android-ndk-*-linux-x86_64.zip && \
     rm android-ndk-*-linux-x86_64.zip && \
     mv android-ndk-* android-ndk
+
+# Make adb communicate with the ADB deamon on the host
+RUN echo "alias adb='adb -H host.docker.internal'" >> ~/.bashrc

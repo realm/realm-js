@@ -117,9 +117,7 @@ stage('integration tests') {
         docker.build(
           'ci/realm-js:android-build',
           '-f Dockerfile.android .'
-        ).inside(
-          '-v /dev/bus/usb:/dev/bus/usb --privileged'
-        ) {
+        ).inside {
           // Install the packaged version of realm into the app and run the tests
           dir('integration-tests/environments/react-native') {
             unstash 'package'
