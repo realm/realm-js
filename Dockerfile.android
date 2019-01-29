@@ -58,4 +58,5 @@ RUN cd ${ANDROID_NDK}/.. && \
     mv android-ndk-* android-ndk
 
 # Make adb communicate with the ADB deamon on the host
-RUN echo "alias adb='adb -H host.docker.internal'" >> ~/.bashrc
+COPY --chown=1001:1001 integration-tests/adb-on-host.sh /home/jenkins/.bin/adb
+ENV PATH /home/jenkins/.bin:${PATH}
