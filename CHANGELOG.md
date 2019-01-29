@@ -5,7 +5,7 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None.
+* Fixed an assertion failure after creating an object with a null int primary key in a synchronized Realm. ([#3227](https://github.com/realm/realm-core/pull/3227))
 
 ### Compatibility
 * Realm Object Server: 3.11.0 or later.
@@ -36,7 +36,7 @@ x.x.x Release notes (yyyy-MM-dd)
 ### Internal
 * Upgraded to Object Store commit: 0f2f8347cb32afddef1753a018f70f65972a4679
 * Upgraded to Realm Core v5.13.0.
-* Upgraded to Realm Sync v3.14.14.
+* Upgraded to Realm Sync v3.15.0.
 * Stopped including headers from developers JDK when building the Android native module. ([#2223](https://github.com/realm/realm-js/pull/2223))
 
 2.22.0 Release notes (2019-1-10)
