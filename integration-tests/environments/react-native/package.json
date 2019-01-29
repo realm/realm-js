@@ -6,10 +6,11 @@
     "test": "npm run test/android && npm run test/ios",
     "test/android": "node harness/runner.js --platform=android",
     "test/ios": "node harness/runner.js --platform=ios",
+    "preinstall": "test -d ../../tests/node_modules || (cd ../../tests; npm install --production)",
     "postinstall": "npm install ../../realm-*.tgz --no-save"
   },
   "dependencies": {
-    "@realm-tests/tests": "../../tests",
+    "@realm-tests/tests": "file:../../tests",
     "mocha": "^5.2.0",
     "mocha-remote-client": "^0.8.1",
     "react": "16.4.1",

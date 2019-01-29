@@ -95,22 +95,20 @@ stage('integration tests') {
       }
     },
     */
-    react_native_ios: node('macos') {
-      nvm('10') {
-        // Unstash the files in the repository
-        unstash 'source'
-        // Unstash the package produced when packaging
-        dir('integration-tests') {
-          unstash 'package'
-        }
-        // Install the integration tests
-        dir('integration-tests/tests') {
-          sh 'npm install --production'
-        }
-        // Install the packaged version of realm into the react-native app and run the iOS tests
-        dir('integration-tests/environments/react-native') {
-          sh 'npm install'
-          sh 'npm run test/ios'
+    react_native_ios: {
+      node('macos') {
+        nvm('10') {
+          // Unstash the files in the repository
+          unstash 'source'
+          // Unstash the package produced when packaging
+          dir('integration-tests') {
+            unstash 'package'
+          }
+          // Install the packaged version of realm into the react-native app and run the iOS tests
+          dir('integration-tests/environments/react-native') {
+            sh 'npm install'
+            sh 'npm run test/ios'
+          }
         }
       }
     }

@@ -5,6 +5,7 @@
   "private": true,
   "scripts": {
     "test": "mocha --exit index.js",
+    "preinstall": "test -d ../../tests/node_modules || (cd ../../tests; npm install --production)",
     "postinstall": "npm install ../../realm-*.tgz --no-save"
   },
   "dependencies": {

@@ -8,6 +8,7 @@
     "test": "npm run test/main && npm run test/renderer",
     "test/main": "node ./runner.js main",
     "test/renderer": "node ./runner.js renderer",
+    "preinstall": "test -d ../../tests/node_modules || (cd ../../tests; npm install --production)",
     "postinstall": "npm run realm/install; npm run realm/rebuild",
     "realm/install": "npm install ../../realm-*.tgz --no-save",
     "realm/rebuild": "cd node_modules/realm; HOME=~/.electron-gyp node-pre-gyp rebuild --build-from-source --runtime=electron --target=3.1.1 --arch=x64 --dist-url=https://atom.io/download/electron"

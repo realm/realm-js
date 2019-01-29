@@ -11,20 +11,44 @@ This directory of the repository is contains two sub-directories:
 
 First install the root project at `..` and change directory back to the integration tests.
 
-    cd ..
-    npm install
-    cd integration-tests
+```bash
+cd ..
+npm install
+cd integration-tests
+```
 
 ### Installing the environments
 
 Install all the environments by installing the package in this directory:
 
-    npm install
+```bash
+npm install
+```
 
 This will package Realm JS, into `integration-tests/realm-*.tgz` making it ready for consumption by the environments:
 
+- The test suite (`integration-tests/tests`) will install.
 - Each environment installs the `realm` packages from the packaged version to simulate a realistic install.
 - The Electron environment will rebuild realm-js's native module for the Electron runtime.
+
+### Installing an environment on CI
+
+When installing on CI we don't want to install all environments for every executing environment, therefore the
+environments support installing individually too. Because the package-lock.json of the environments depends on the
+test suite being installed before installing an environment, the environments have a "preinstall" script that will check
+the existance of a node_modules folder in the test suite directory and install the test suite if needed.
+
+To install an environment on CI we simply ensure that a `realm-*.tgz` package is available in the `integration-tests`
+directory, change directory to the particular environment and install the package
+
+```bash
+# Ensure a packaged archive
+cd integration-tests
+npm pack ..
+# Install the React Native environment
+cd environments/react-native
+npm install
+```
 
 ### Running the tests
 
@@ -32,12 +56,16 @@ Start up both an Android and iOS emulator before running the React Native tests.
 
 To run all the tests in parallel:
 
-    npm test
+```bash
+npm test
+```
 
 To run the tests for individual environments, change directory into the environment and run `npm test`, ex.
 
-    cd environment/node
-    npm test
+```bash
+cd environment/node
+npm test
+```
 
 ### How to write tests
 
@@ -51,7 +79,9 @@ that from `test/src/index.js`.
 
 To perform rapid iterations on the test suite, use the "start" script to start mocha in `--watch` mode
 
-    npm start
+```bash
+npm start
+```
 
 Tests will have access to the following globals:
 
