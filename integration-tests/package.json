@@ -9,7 +9,7 @@
     "test": "npm run environments/test",
     "tests/install": "cd tests; npm install",
     "tests/lint": "cd tests; eslint **/*.js",
-    "prepublish": "npm run realm/pack; npm run tests/install; npm run environments/install",
+    "postinstall": "npm run realm/pack; npm run tests/install; npm run environments/install",
     "realm/pack": "REALM_BUILD_ANDROID=1 npm pack ..",
     "environments/install": "node environments 'npm install'",
     "environments/lint": "node environments 'eslint **/*.js'",
