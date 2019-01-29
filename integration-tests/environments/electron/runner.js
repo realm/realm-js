@@ -36,9 +36,20 @@ async function printLogs(app) {
 }
 
 async function run() {
+    const mochaConfig = {};
+
     const runIn = process.argv[2];
+
+    // Check if an argument for junit path was requested
+    const junitFilePath = process.argv[3];
+    if (junitFilePath) {
+        mochaConfig.reporter = "mocha-junit-reporter";
+        // Probably due to an issue in "mocha-junit-reporter", this needs to be wrapped twice in `reporterOptions`
+        mochaConfig.reporterOptions = { reporterOptions: { mochaFile: junitFilePath } };
+    }
+
     // Start the mocha remote server
-    const server = new MochaRemoteServer({}, {
+    const server = new MochaRemoteServer(mochaConfig, {
         id: runIn,
         port: 0,
     });

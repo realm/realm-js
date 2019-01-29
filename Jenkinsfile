@@ -81,21 +81,30 @@ stage('package') {
 
 stage('integration tests') {
   parallel(
-    /*
-    react_native_android: node('docker && android') {
-      docker.image('ci/realm-js:android-build').inside(
-        '-v /dev/bus/usb:/dev/bus/usb --privileged'
-      ) {
-        dir('integration-tests/environments/react-native') {
-          unstash 'package'
-          sh 'npm install realm-*.tgz'
-          sh 'adb devices'
-          sh 'npm run test/android'
+    'React Native on Android': {
+      node('docker && android') {
+        docker.image('ci/realm-js:android-build').inside(
+          '-v /dev/bus/usb:/dev/bus/usb --privileged'
+        ) {
+          // Install the packaged version of realm into the app and run the tests
+          dir('integration-tests/environments/react-native') {
+            unstash 'package'
+            sh 'npm install realm-*.tgz'
+            // In case the tests fail, it's nice to have an idea on the devices attached to the machine
+            sh 'adb devices'
+            try {
+              sh 'npm run test/android -- react-native-android-test-results.xml'
+            } finally {
+              junit(
+                allowEmptyResults: true,
+                testResults: 'react-native-android-test-results.xml',
+              )
+            }
+          }
         }
       }
     },
-    */
-    react_native_ios: {
+    'React Native on iOS': {
       node('macos') {
         nvm('10') {
           // Unstash the files in the repository
@@ -104,10 +113,41 @@ stage('integration tests') {
           dir('integration-tests') {
             unstash 'package'
           }
-          // Install the packaged version of realm into the react-native app and run the iOS tests
+          // Install the packaged version of realm into the app and run the tests
           dir('integration-tests/environments/react-native') {
             sh 'npm install'
-            sh 'npm run test/ios'
+            try {
+              sh 'npm run test/ios -- react-native-ios-test-results.xml'
+            } finally {
+              junit(
+                allowEmptyResults: true,
+                testResults: 'react-native-ios-test-results.xml',
+              )
+            }
+          }
+        }
+      }
+    },
+    'Node.js v10 on Mac': {
+      node('macos') {
+        nvm('10') {
+          // Unstash the files in the repository
+          unstash 'source'
+          // Unstash the package produced when packaging
+          dir('integration-tests') {
+            unstash 'package'
+          }
+          // Install the packaged version of realm into the app and run the tests
+          dir('integration-tests/environments/node') {
+            sh 'npm install'
+            try {
+              sh 'npm test -- --reporter mocha-junit-reporter --reporter-options mochaFile=node-macos-test-results.xml'
+            } finally {
+              junit(
+                allowEmptyResults: true,
+                testResults: 'node-macos-test-results.xml',
+              )
+            }
           }
         }
       }

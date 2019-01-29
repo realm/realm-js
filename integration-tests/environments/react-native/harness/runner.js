@@ -31,8 +31,17 @@ const projectRoots = [
     resolve(__dirname, "../../.."),
 ];
 
-async function runApp(platform) {
-    const server = new MochaRemoteServer({}, {
+async function runApp(platform, junitFilePath) {
+    const mochaConfig = {};
+
+    // Check if an argument for junit path was requested
+    if (junitFilePath) {
+        mochaConfig.reporter = "mocha-junit-reporter";
+        // Probably due to an issue in "mocha-junit-reporter", this needs to be wrapped twice in `reporterOptions`
+        mochaConfig.reporterOptions = { reporterOptions: { mochaFile: junitFilePath } };
+    }
+
+    const server = new MochaRemoteServer(mochaConfig, {
         // Accept connections only from the expected platform, to prevent cross-talk when both emulators are open
         id: platform,
     });
@@ -79,17 +88,13 @@ async function runApp(platform) {
 }
 
 async function run() {
-    // Determine if we're supposed to run the android or ios app
-    const platformArgIndex = process.argv.findIndex((arg) => arg.indexOf(PLATFORM_KEY) === 0);
-    if (platformArgIndex === -1) {
+    const platform = process.argv[2];
+    if (!platform) {
         throw new Error(`Expected a ${PLATFORM_KEY} runtime argument`);
-    } else {
-        // Remove the item from the process.argv to avoid confusions
-        const [ platformArg ] = process.argv.splice(platformArgIndex, 1);
-        const platform = platformArg.slice(PLATFORM_KEY.length + 1);
-        // Run the application
-        return runApp(platform);
     }
+    const junitFilePath = process.argv[3];
+    // Run the application
+    return runApp(platform, junitFilePath);
 }
 
 run().then(failures => {
