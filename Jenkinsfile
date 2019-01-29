@@ -82,7 +82,11 @@ stage('package') {
 def doNodeLinuxTests(nodeVersion) {
   return {
     node('docker') {
-      docker("node:${nodeVersion}").inside {
+      docker.image(
+        "node:${nodeVersion}"
+      ).inside(
+        '-e HOME=/tmp' // NPM will create folders in ~/.npm
+      ) {
         // Unstash the files in the repository
         unstash 'source'
         // Unstash the package produced when packaging
