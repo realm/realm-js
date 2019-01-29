@@ -338,36 +338,34 @@ case "$TARGET" in
   stop_server
   ;;
 "electron")
+  npm install --no-save
   if [ "$(uname)" = 'Darwin' ]; then
     download_server
     start_server
   fi
 
-  # Change to a temp directory - because this is what is done for node - but we pushd right after?
-  cd "$(mktemp -q -d -t realm.electron.XXXXXX)"
-  test_temp_dir=$PWD # set it to be cleaned at exit
   pushd "$SRCROOT/tests/electron"
-
+  # Build Realm and runtime deps for electron
+  export npm_config_target=4.0.3
+  export npm_config_runtime=electron
+  export npm_config_disturl=https://atom.io/download/electron
   if [ "$(uname)" = 'Darwin' ]; then
-    npm install --no-save --build-from-source --realm_enable_sync
-  else
-    npm install --no-save --build-from-source
+    export npm_config_realm_enable_sync=true
   fi
-
-  # npm test -- --filter=ListTests
-  # npm test -- --filter=LinkingObjectsTests
-  # npm test -- --filter=ObjectTests
-  # npm test -- --filter=RealmTests
-  # npm test -- --filter=ResultsTests
-  # npm test -- --filter=QueryTests
-  # npm test -- --filter=MigrationTests
-  # npm test -- --filter=EncryptionTests
-  # npm test -- --filter=UserTests
-  # npm test -- --filter=SessionTests
-  # npm test -- --filter=GarbageCollectionTests
-  # npm test -- --filter=AsyncTests
+  npm install --no-save
+  ./node_modules/.bin/install-local
 
   npm test -- --process=main
+
+  if [ "$(uname)" = 'Darwin' ]; then
+    popd
+    stop_server
+    rm -rf realm-object-server-data
+    rm -rf realm-object-server
+    start_server
+    pushd "$SRCROOT/tests/electron"
+  fi
+
   npm test -- --process=render
 
   popd

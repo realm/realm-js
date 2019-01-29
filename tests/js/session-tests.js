@@ -26,7 +26,8 @@ const Realm = require('realm');
 const TestCase = require('./asserts');
 let schemas = require('./schemas');
 
-const isNodeProccess = (typeof process === 'object' && process + '' === '[object process]');
+const isElectronProcess = typeof process === 'object' && process.type === 'renderer';
+const isNodeProccess = typeof process === 'object' && process + '' === '[object process]' && !isElectronProcess;
 
 const require_method = require;
 function node_require(module) {
