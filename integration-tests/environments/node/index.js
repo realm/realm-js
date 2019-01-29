@@ -16,13 +16,15 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+const os = require("os");
+
 // Exposing the Realm constructor as a global
 
 global.Realm = require("realm");
 global.fs = require("fs-extra");
 global.environment = { node: true };
 
-describe(`Node.js v${process.versions.node} process`, () => {
+describe(`Node.js v${process.versions.node} on ${os.platform()}`, () => {
     // Require the tests
     require("@realm-tests/tests");
 });
