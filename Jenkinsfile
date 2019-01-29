@@ -79,7 +79,7 @@ stage('package') {
   }
 }
 
-def doNodeLinuxTests(String nodeVersion) {
+def doNodeLinuxTests(nodeVersion) {
   return {
     node('docker') {
       docker("node:${nodeVersion}").inside {
@@ -120,8 +120,8 @@ stage('integration tests') {
           dir('integration-tests/environments/react-native') {
             unstash 'package'
             sh 'npm install realm-*.tgz'
-            // In case the tests fail, it's nice to have an idea on the devices attached to the machine
-            sh 'adb devices'
+            // Wait for the device
+            sh 'adb wait-for-device'
             try {
               sh 'npm run test/android -- test-results.xml'
             } finally {
@@ -129,6 +129,8 @@ stage('integration tests') {
                 allowEmptyResults: true,
                 testResults: 'test-results.xml',
               )
+              // In case the tests fail, it's nice to have an idea on the devices attached to the machine
+              sh 'adb devices'
             }
           }
         }
