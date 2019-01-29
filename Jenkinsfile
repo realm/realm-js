@@ -79,11 +79,41 @@ stage('package') {
   }
 }
 
+def doNodeLinuxTests(String nodeVersion) {
+  return {
+    node('docker') {
+      docker("node:${nodeVersion}").inside {
+        // Unstash the files in the repository
+        unstash 'source'
+        // Unstash the package produced when packaging
+        dir('integration-tests') {
+          unstash 'package'
+        }
+        // Install the packaged version of realm into the app and run the tests
+        dir('integration-tests/environments/node') {
+          sh 'npm install'
+          try {
+            sh 'npm test -- --reporter mocha-junit-reporter'
+          } finally {
+            junit(
+              allowEmptyResults: true,
+              testResults: 'test-results.xml',
+            )
+          }
+        }
+      }
+    }
+  }
+}
+
 stage('integration tests') {
   parallel(
     'React Native on Android': {
       node('docker && android') {
-        docker.image('ci/realm-js:android-build').inside(
+        docker.build(
+          'ci/realm-js:android-build',
+          '-f Dockerfile.android .'
+        ).inside(
           '-v /dev/bus/usb:/dev/bus/usb --privileged'
         ) {
           // Install the packaged version of realm into the app and run the tests
@@ -93,11 +123,11 @@ stage('integration tests') {
             // In case the tests fail, it's nice to have an idea on the devices attached to the machine
             sh 'adb devices'
             try {
-              sh 'npm run test/android -- react-native-android-test-results.xml'
+              sh 'npm run test/android -- test-results.xml'
             } finally {
               junit(
                 allowEmptyResults: true,
-                testResults: 'react-native-android-test-results.xml',
+                testResults: 'test-results.xml',
               )
             }
           }
@@ -117,11 +147,11 @@ stage('integration tests') {
           dir('integration-tests/environments/react-native') {
             sh 'npm install'
             try {
-              sh 'npm run test/ios -- react-native-ios-test-results.xml'
+              sh 'npm run test/ios -- test-results.xml'
             } finally {
               junit(
                 allowEmptyResults: true,
-                testResults: 'react-native-ios-test-results.xml',
+                testResults: 'test-results.xml',
               )
             }
           }
@@ -141,17 +171,19 @@ stage('integration tests') {
           dir('integration-tests/environments/node') {
             sh 'npm install'
             try {
-              sh 'npm test -- --reporter mocha-junit-reporter --reporter-options mochaFile=node-macos-test-results.xml'
+              sh 'npm test -- --reporter mocha-junit-reporter'
             } finally {
               junit(
                 allowEmptyResults: true,
-                testResults: 'node-macos-test-results.xml',
+                testResults: 'test-results.xml',
               )
             }
           }
         }
       }
-    }
+    },
+    'Node.js v8 on Linux': doNodeLinuxTests(8),
+    'Node.js v10 on Linux': doNodeLinuxTests(10),
   )
 }
 
