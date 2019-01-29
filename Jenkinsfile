@@ -99,9 +99,13 @@ stage('integration tests') {
       nvm('10') {
         // Unstash the files in the repository
         unstash 'source'
-        // Unstash the modules used from the tests
+        // Unstash the package produced when packaging
         dir('integration-tests') {
           unstash 'package'
+        }
+        // Install the integration tests
+        dir('integration-tests/tests') {
+          sh 'npm install --production'
         }
         // Install the packaged version of realm into the react-native app and run the iOS tests
         dir('integration-tests/environments/react-native') {
