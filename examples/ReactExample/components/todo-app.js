@@ -23,17 +23,11 @@ import React from 'react';
 import {
     Platform,
     StatusBar,
-    Text,
-    TouchableOpacity,
-    View,
 } from 'react-native';
 
-import TodoItem from './todo-item';
 import TodoListView from './todo-listview';
-import TodoListItem from './todo-list-item';
 import ItemsScreen from './items-screen'
 import realm from './realm';
-import styles from './styles';
 
 import { StackNavigator } from 'react-navigation';
 

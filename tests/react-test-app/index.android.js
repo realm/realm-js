@@ -27,6 +27,7 @@ import {
 
 import builder from 'xmlbuilder';
 import React from 'react';
+import RNExitApp from 'react-native-exit-app-no-history';
 import RNFS from 'react-native-fs';
 import { getTestNames, runTest } from './tests';
 

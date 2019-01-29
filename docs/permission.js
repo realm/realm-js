@@ -16,6 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+/* eslint getter-return: "off" */
+
 /**
  * Objects of this class allow to change permissions of owned Realms.
  * They are created exclusively by the client and are processed by the server
@@ -31,7 +33,7 @@
  * @memberof Realm.Sync.User
  */
 class PermissionChange {
-    
+
     /**
      * Gets the unique identifier of this object in the Management realm.
      * @type {string}
@@ -40,18 +42,18 @@ class PermissionChange {
 
     /**
      * Gets the creation time of this object.
-     * @type {Date} 
+     * @type {Date}
      */
     get createdAt() {}
 
     /**
      * Gets when the object was updated the last time.
-     * @type {Date} 
+     * @type {Date}
      */
     get updatedAt() {}
 
     /**
-     * 
+     *
      */
     get statusCode() {}
 
@@ -116,18 +118,18 @@ class PermissionOffer {
 
     /**
      * Gets the creation time of this object.
-     * @type {Date} 
+     * @type {Date}
      */
     get createdAt() {}
 
     /**
      * Gets when the object was updated the last time.
-     * @type {Date} 
+     * @type {Date}
      */
     get updatedAt() {}
 
     /**
-     * 
+     *
      */
     get statusCode() {}
 
@@ -197,18 +199,18 @@ class PermissionOfferResponse {
 
     /**
      * Gets the creation time of this object.
-     * @type {Date} 
+     * @type {Date}
      */
     get createdAt() {}
 
     /**
      * Gets when the object was updated the last time.
-     * @type {Date} 
+     * @type {Date}
      */
     get updatedAt() {}
 
     /**
-     * 
+     *
      */
     get statusCode() {}
 

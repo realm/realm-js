@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+/* eslint getter-return: "off", no-dupe-class-members: "off" */
 
 /**
  * This describes the different options used to create a {@link Realm} instance with Realm Platform synchronization.
@@ -363,21 +364,21 @@ class Credentials {
      * otherwise, they'll be logged in if the password matches.
      * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.Sync.User.login|User.login}.
      */
-    static usernamePassword(username, password, createUser) {};
+    static usernamePassword(username, password, createUser) {}
 
     /**
      * Creates credentials based on a Facebook login.
      * @param {string} token A Facebook authentication token, obtained by logging into Facebook..
      * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.Sync.User.login|User.login}.
      */
-    static facebook(token) {};
+    static facebook(token) {}
 
     /**
      * Creates credentials based on a Google login.
      * @param {string} token A Google authentication token, obtained by logging into Google..
      * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.Sync.User.login|User.login}.
      */
-    static google(token) {};
+    static google(token) {}
 
     /**
      * Creates credentials for an anonymous user. These can only be used once - using them a second
@@ -385,7 +386,7 @@ class Credentials {
      * in with the Anonymous credentials, use {@linkcode Realm.Sync.User.current|User.current} or {@linkcode Realm.Sync.User.all|User.all}
      * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.Sync.User.login|User.login}.
      */
-    static anonymous() {};
+    static anonymous() {}
 
     /**
      * Creates credentials based on a login with a nickname. If multiple users try to login
@@ -394,14 +395,14 @@ class Credentials {
      * @param {boolean} [isAdmin] An optional parameter controlling whether the user is admin. Default is `false`.
      * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.Sync.User.login|User.login}.
      */
-    static nickname(value, isAdmin) {};
+    static nickname(value, isAdmin) {}
 
     /**
      * Creates credentials based on an Active Directory login.
      * @param {string} token An access token, obtained by logging into Azure Active Directory.
      * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.Sync.User.login|User.login}.
      */
-    static azureAD(token) {};
+    static azureAD(token) {}
 
     /**
      * Creates credentials based on a JWT login.
@@ -410,14 +411,14 @@ class Credentials {
      * name - `jwt` - will be used.
      * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.Sync.User.login|User.login}.
      */
-    static jwt(token, providerName) {};
+    static jwt(token, providerName) {}
 
     /**
      * Creates credentials based on an admin token. Using this credential will not contact the Realm Object Server.
      * @param {string} token The admin token.
      * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.Sync.User.login|User.login}.
      */
-    static adminToken(token) {};
+    static adminToken(token) {}
 
     /**
      * Creates credentials with a custom provider and user identifier.
@@ -427,26 +428,26 @@ class Credentials {
      * The data will be serialized to JSON, so all values must be mappable to a valid JSON data type.
      * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.Sync.User.login|User.login}.
      */
-    static custom(providerName, token, userInfo) {};
+    static custom(providerName, token, userInfo) {}
 
 
     /**
      * Gets the identity provider for the credentials.
      * @returns {string} The identity provider, such as Google, Facebook, etc.
      */
-    get identityProvider() {};
+    get identityProvider() {}
 
     /**
      * Gets the access token.
      * @returns {string}
      */
-    get token() {};
+    get token() {}
 
     /**
      * Gets additional user information associated with the credentials.
      * @returns {object} A dictionary, containing the additional information.
      */
-    get userInfo() {};
+    get userInfo() {}
 }
 
 /**

@@ -1327,18 +1327,18 @@ module.exports = {
 
         const realmId = uuid();
         let realm2 = null, called = false;
+        const config = {
+            schema: [schemas.TestObject],
+            sync: {
+                url: `realm://localhost:9080/${realmId}`,
+                fullSynchronization: false,
+            },
+        };
+
         // We need an admin user to create the reference Realm
         return Realm.Sync.User.login('http://localhost:9080', Realm.Sync.Credentials.nickname("admin", true))
             .then(user1 => {
-                const config = {
-                    schema: [schemas.TestObject],
-                    sync: {
-                        user: user1,
-                        url: `realm://localhost:9080/${realmId}`,
-                        fullSynchronization: false,
-                    },
-                };
-
+                config.sync.user = user1;
                 const realm = new Realm(config);
                 TestCase.assertEqual(realm.schema.length, 7); // 5 permissions, 1 results set, 1 test object
                 return closeAfterUpload(realm);
@@ -1377,7 +1377,7 @@ module.exports = {
                             reject();
                         }
                     }, 1000);
-                });;
+                });
             });
     },
 

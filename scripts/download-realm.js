@@ -21,7 +21,6 @@
 const fs = require('fs-extra');
 const path = require('path');
 const os = require('os');
-const child_process = require('child_process');
 const fetch = require('node-fetch');
 const HttpsProxyAgent = require('https-proxy-agent');
 const ini = require('ini');
@@ -54,21 +53,6 @@ function getTempDir() {
      */
     return process.env.REALM_DOWNLOAD_CORE_TEMP_DIR ||
            path.join(os.tmpdir(), TEMP_DIR_SUFFIX);
-}
-
-function exec() {
-    const args = Array.from(arguments);
-    return new Promise((resolve, reject) => {
-        function callback(error, stdout, stderr) {
-            if (error) {
-                reject(error);
-            } else {
-                resolve(stdout.trim());
-            }
-        }
-        args.push(callback);
-        child_process.exec.apply(null, args);
-    });
 }
 
 function printProgress(input, totalBytes, archive) {

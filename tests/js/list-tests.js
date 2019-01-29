@@ -292,7 +292,7 @@ module.exports = {
                                             "LinkTypesObject.arrayCol must be of type 'TestObject[]', got 'object' (");
             obj.arrayCol = [realm.create('TestObject', {doubleCol: 1.0})]
             TestCase.assertEqual(obj.arrayCol[0].doubleCol, 1.0);
-            obj.arrayCol = obj.arrayCol;
+            obj.arrayCol = obj.arrayCol; // eslint-disable-line no-self-assign
             TestCase.assertEqual(obj.arrayCol[0].doubleCol, 1.0);
 
             TestCase.assertThrowsContaining(() => prim.bool = [person],

@@ -16,5 +16,10 @@
       }
     ],
     "strict": [2, "global"]
+  },
+  "settings": {
+    "react": {
+      "version": "16.6.3"
+    }
   }
 }
