@@ -8,15 +8,27 @@ target 'ReactTestApp' do
     'RCTNetwork',
     'RCTText',
     'RCTWebSocket',
-  ]
-  pod 'yoga', :path => '../node_modules/react-native/ReactCommon/yoga'
+  ], :inhibit_warnings => true
+  pod 'yoga', :path => '../node_modules/react-native/ReactCommon/yoga', :inhibit_warnings => true
 
-  pod 'DoubleConversion', :podspec => '../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec'
-  pod 'glog', :podspec => '../node_modules/react-native/third-party-podspecs/glog.podspec'
-  pod 'Folly', :podspec => '../node_modules/react-native/third-party-podspecs/Folly.podspec'
-  pod 'RNFS', :path => '../node_modules/react-native-fs'
+  pod 'DoubleConversion', :podspec => '../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec', :inhibit_warnings => true
+  pod 'glog', :podspec => '../node_modules/react-native/third-party-podspecs/glog.podspec', :inhibit_warnings => true
+  pod 'Folly', :podspec => '../node_modules/react-native/third-party-podspecs/Folly.podspec', :inhibit_warnings => true
+  pod 'RNFS', :path => '../node_modules/react-native-fs', :inhibit_warnings => true
 
   target 'RealmReactTests' do
-      inherit! :search_paths
+    inherit! :search_paths
+  end
+
+  # Define RCT_DEV for release builds so that we can run the chrome tests against both debug and release
+  post_install do |installer|
+    installer.pods_project.targets.each do |target|
+      if target.product_name == 'React'
+        target.build_configurations.each do |config|
+          config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= ['$(inherited)']
+          config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] << 'RCT_DEV=1'
+        end
+      end
+    end
   end
 end
