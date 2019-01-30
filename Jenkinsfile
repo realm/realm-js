@@ -126,9 +126,11 @@ stage('integration tests') {
           dir('integration-tests/environments/react-native') {
             unstash 'package'
             sh 'npm install realm-*.tgz'
-            // Wait for the device
-            sh 'adb wait-for-device'
             try {
+              // Wait for the device
+              timeout(15) { // minutes
+                  sh 'adb wait-for-device'
+              }
               sh 'npm run test/android -- test-results.xml'
             } finally {
               junit(
