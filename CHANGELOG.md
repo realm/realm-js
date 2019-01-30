@@ -2,6 +2,7 @@ x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
 * The parser now supports readable timestamps with a `T` separator in addition to the originally supported `@` separator. For example: `startDate > 1981-11-01T23:59:59:1`. ([realm/realm-core#3198](https://github.com/realm/realm-core/issues/3198))
+* It is now possible to store Realms on Android external storage with React Native by using `Realm.Configuration.fifoFallbackPath()`. ([#2062](https://github.com/realm/realm-js/issues/2062)).
 
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
@@ -13,6 +14,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
 ### Internal
+* Upgraded to Object Store commit: 2d3357a2df181dc4bece24719a71efc4752ec470
 * Upgraded to Realm Core v5.13.0.
 * Upgraded to Realm Sync v3.14.14.
 * Stopped including headers from developers JDK when building the Android native module. ([#2223](https://github.com/realm/realm-js/pull/2223))
