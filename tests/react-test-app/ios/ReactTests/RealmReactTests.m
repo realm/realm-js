@@ -30,6 +30,9 @@
 
 #import "RealmJSTests.h"
 
+@interface RCTWebSocketExecutor : NSObject
+@end
+
 @interface RCTBridge (Realm_RCTCxxBridge)
 - (JSGlobalContextRef)jsContextRef;
 @end
@@ -58,7 +61,7 @@ extern NSMutableArray *RCTGetModuleClasses(void);
 }
 
 + (Class)executorClass {
-    return NSClassFromString(@"RCTJSCExecutor");
+    return nil;
 }
 
 + (NSString *)classNameSuffix {
@@ -69,12 +72,10 @@ extern NSMutableArray *RCTGetModuleClasses(void);
     @autoreleasepool {
         XCTestSuite *suite = [super defaultTestSuite];
         Class executorClass = [self executorClass];
-        if (!executorClass) {
-            return suite;
-        }
-
         RCTBridge *bridge = [RCTBridge currentBridge];
-        bridge.executorClass = executorClass;
+        if (executorClass) {
+            bridge.executorClass = executorClass;
+        }
         [bridge reload];
         [self waitForNotification:RCTJavaScriptDidLoadNotification];
         bridge = [RCTBridge currentBridge];
@@ -210,7 +211,7 @@ extern NSMutableArray *RCTGetModuleClasses(void);
 @implementation RealmReactChromeTests
 
 + (Class)executorClass {
-    return NSClassFromString(@"RCTWebSocketExecutor");
+    return [RCTWebSocketExecutor class];
 }
 
 + (NSString *)classNameSuffix {
