@@ -715,7 +715,7 @@ void SessionClass<T>::wait_for_completion(Direction direction, ContextType ctx, 
                 Object::set_property(protected_ctx, error_object, "errorCode", Value::from_number(protected_ctx, error.value()));
                 callback_arguments[0] = error_object;
             } else {
-                callback_arguments[0] = Value::from_undefined(ctx);
+                callback_arguments[0] = Value::from_undefined(protected_ctx);
             }
             Function<T>::callback(protected_ctx, protected_callback, typename T::Object(), 1, callback_arguments);
         });
