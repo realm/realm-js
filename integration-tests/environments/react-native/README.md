@@ -1,10 +1,10 @@
 # Realm JS tests running in an React Native enviroment
 
 Because React Native's packager (Metro) does not support symbolic links, we need to install Realm JS and the shared
-test suite from an archive. While iterating on the tests, repack and install the tests by running:
+test suite from an archive. While iterating on the tests re-install the package to pack tests and re-install them.
 
 ```bash
-npm run update-tests
+npm install
 ```
 
 This script is also called when installing the package initially.

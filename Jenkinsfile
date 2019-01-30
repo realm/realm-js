@@ -114,6 +114,9 @@ stage('integration tests') {
   parallel(
     'React Native on Android': {
       node('docker && android') {
+        // Unstash the files in the repository
+        unstash 'source'
+        // Build the image and run inside of it (again)
         docker.build(
           'ci/realm-js:android-build',
           '-f Dockerfile.android .'
@@ -122,10 +125,13 @@ stage('integration tests') {
           // Mounting /dev/bus/usb with --privileged to allow connecting to the device via USB
           "-v ${HOME}/.android:/home/jenkins/.android:ro -v /dev/bus/usb:/dev/bus/usb --privileged"
         ) {
+          dir('integration-tests') {
+            unstash 'package'
+          }
           // Install the packaged version of realm into the app and run the tests
           dir('integration-tests/environments/react-native') {
-            unstash 'package'
-            sh 'npm install realm-*.tgz'
+            // Installing the package will also pack up the tests and install them together with the Realm JS package
+            sh 'npm install'
             try {
               // Wait for the device
               timeout(15) { // minutes
@@ -155,6 +161,7 @@ stage('integration tests') {
           }
           // Install the packaged version of realm into the app and run the tests
           dir('integration-tests/environments/react-native') {
+            // Installing the package will also pack up the tests and install them together with the Realm JS package
             sh 'npm install'
             try {
               sh 'npm run test/ios -- test-results.xml'
