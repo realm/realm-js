@@ -376,6 +376,7 @@ case "$TARGET" in
   ;;
 "test-runners")
   npm run check-environment
+  npm install --no-save
   npm run test-runners
   ;;
 "all")
