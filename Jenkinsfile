@@ -122,29 +122,34 @@ stage('integration tests') {
           '-f Dockerfile.android .'
         ).inside(
           // Mounting ~/.android to reuse the adb keys
+          // Mounting ~/gradle-cache as ~/.gradle to prevent gradle from being redownloaded
+          // Mounting ~/ccache as ~/.ccache to reuse the C-Cache across builds
           // Mounting /dev/bus/usb with --privileged to allow connecting to the device via USB
-          "-v ${HOME}/.android:/home/jenkins/.android:ro -v /dev/bus/usb:/dev/bus/usb --privileged"
+          "-v ${HOME}/.android:/home/jenkins/.android:ro -v ${HOME}/gradle-cache:/home/jenkins/.gradle -v ${HOME}/ccache:/home/jenkins/.ccache -v /dev/bus/usb:/dev/bus/usb --privileged"
         ) {
-          dir('integration-tests') {
-            unstash 'package'
-          }
-          // Install the packaged version of realm into the app and run the tests
-          dir('integration-tests/environments/react-native') {
-            // Installing the package will also pack up the tests and install them together with the Realm JS package
-            sh 'npm install'
-            try {
-              // Wait for the device
-              timeout(15) { // minutes
-                  sh 'adb wait-for-device'
+          // Locking the Android device to prevent other jobs from interfering
+          lock("${NODE_NAME}-android") {
+            dir('integration-tests') {
+              unstash 'package'
+            }
+            // Install the packaged version of realm into the app and run the tests
+            dir('integration-tests/environments/react-native') {
+              // Installing the package will also pack up the tests and install them together with the Realm JS package
+              sh 'npm install'
+              try {
+                // Wait for the device
+                timeout(15) { // minutes
+                    sh 'adb wait-for-device'
+                }
+                sh 'npm run test/android -- test-results.xml'
+              } finally {
+                junit(
+                  allowEmptyResults: true,
+                  testResults: 'test-results.xml',
+                )
+                // In case the tests fail, it's nice to have an idea on the devices attached to the machine
+                sh 'adb devices'
               }
-              sh 'npm run test/android -- test-results.xml'
-            } finally {
-              junit(
-                allowEmptyResults: true,
-                testResults: 'test-results.xml',
-              )
-              // In case the tests fail, it's nice to have an idea on the devices attached to the machine
-              sh 'adb devices'
             }
           }
         }
