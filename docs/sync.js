@@ -115,7 +115,6 @@ class Sync {
      * @param {string} filterRegex - A regular expression used to determine which changed Realms should trigger events. Use `.*` to match all Realms.
      * @param {string} name - The name of the event.
      * @param {function(changeEvent)} changeCallback - The callback to invoke with the events.
-     * @param {Realm.Sync.SSLConfiguration} sslConfiguration - SSL configuration used by the Realms being observed.
      *
      * Registers the `changeCallback` to be called each time the given event occurs on the specified server.
      * Only events on Realms with a _virtual path_ that matches the filter regex are emitted.
@@ -137,7 +136,7 @@ class Sync {
      * Only available in the Enterprise Edition.
      * @deprecated Use `addListener(config, eventName, changeCallback)` instead`.
      */
-    static addListener(serverUrl, adminUser, filterRegex, name, changeCallback, sslConfiguration) {}
+    static addListener(serverUrl, adminUser, filterRegex, name, changeCallback) {}
 
     /**
      * Add a sync listener to listen to changes across multiple Realms.
@@ -174,11 +173,10 @@ class Sync {
      * @param {SyncUser} adminUser - an admin user obtained by calling {@linkcode Realm.Sync.User.login|User.login} with admin credentials.
      * @param {string} filterRegex - A regular expression used to determine which changed Realms should trigger events. Use `.*` to match all Realms.
      * @param {Realm.Worker} worker - Worker to deliver events to.
-     * @param {Realm.Sync.SSLConfiguration} sslConfiguration - SSL configuration used by the Realms being observed.
      *
      * Only available in the Enterprise Edition.
      */
-    static addListener(serverUrl, adminUser, filterRegex, worker, sslConfiguration) {}
+    static addListener(serverUrl, adminUser, filterRegex, worker) {}
 
     /**
      * Calling this method will force Realm to attempt to reconnect to the server immediately.
