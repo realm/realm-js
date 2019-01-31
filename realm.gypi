@@ -58,6 +58,7 @@
         "src/object-store/src/impl/results_notifier.cpp",
         "src/object-store/src/impl/transact_log_handler.cpp",
         "src/object-store/src/impl/weak_realm_notifier.cpp",
+        "src/object-store/src/util/fifo.cpp",
         "src/object-store/src/util/uuid.cpp",
         "src/object-store/src/binding_callback_thread_observer.hpp",
         "src/object-store/src/binding_context.hpp",
