@@ -9,6 +9,7 @@ def gitTag
 def gitSha
 def dependencies
 def version
+def IntegrationTests
 
 // == Stages
 
@@ -53,6 +54,9 @@ stage('check') {
       // cache registry
       env.DOCKER_PUSH = "1"
     }
+
+    // Load the integration tests groovy script
+    IntegrationTests = load 'integration-tests/jenkins.groovy'
   }
 }
 
@@ -78,8 +82,6 @@ stage('package') {
     }
   }
 }
-
-def IntegrationTests = load 'integration-tests/jenkins.groovy'
 
 stage('integration tests') {
   parallel(
