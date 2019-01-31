@@ -143,6 +143,8 @@ stage('integration tests') {
                     sh 'adb devices'
                     sh 'adb wait-for-device'
                 }
+                // Uninstall any other installations of this package before trying to install it again
+                sh 'adb uninstall io.realm.tests.reactnative || true' // '|| true' to prevent a build failure
                 sh 'npm run test/android -- test-results.xml'
               } finally {
                 junit(
