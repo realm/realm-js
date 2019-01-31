@@ -25,11 +25,11 @@ module.exports = (serverURL, id) => {
         id,
         url: serverURL,
         whenInstrumented: mocha => {
-            // Sets the root suite title to include the process type
-            mocha.suite.title = `Electron ${id} process on ${platform()}`;
             // Set the Realm global for the tests to use
             global.Realm = require("realm");
             global.fs = require("fs-extra");
+            // Sets the root suite title to include the process type
+            global.title = `Electron ${id} process on ${platform()}`;
             global.environment = {
                 electron: process.type === "browser" ? "main" : "renderer",
             };

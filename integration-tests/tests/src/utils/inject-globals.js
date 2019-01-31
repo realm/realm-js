@@ -19,5 +19,6 @@
 // Require this file to get the Realm constructor injected into the global.
 // This is useful when we want to run the tests outside of any particular environment
 
+global.title = "Realm JS development-mode";
 global.Realm = require("realm");
 global.fs = require("fs-extra");

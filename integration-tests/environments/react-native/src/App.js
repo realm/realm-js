@@ -77,7 +77,7 @@ export class App extends Component<Props> {
             id: Platform.OS,
             whenInstrumented: (mocha) => {
                 // Setting the title of the root suite
-                mocha.suite.title = `React-Native on ${Platform.OS}`;
+                global.title = `React-Native on ${Platform.OS}`;
                 // Provide the global Realm constructor to the tests
                 global.Realm = require("realm");
                 global.fs = require("react-native-fs");
