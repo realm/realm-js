@@ -146,7 +146,7 @@ def electronOnLinux() {
       docker.build(
         'ci/realm-js:electron',
         // Based on node:10, installing xvbf
-        '-f integration-tests/environments/electron/Dockerfile.android .'
+        '-f integration-tests/environments/electron/Dockerfile .'
       ).inside(
         '-e HOME=/tmp' // NPM will create folders in ~/.npm
       ) {
