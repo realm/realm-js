@@ -17,3 +17,5 @@
 ////////////////////////////////////////////////////////////////////////////
 
 export { App } from "./App";
+
+console.log("Hello from the Realm React Native integration tests!");

@@ -149,6 +149,8 @@ stage('integration tests') {
                   allowEmptyResults: true,
                   testResults: 'test-results.xml',
                 )
+                // Read out the logs in case we want some more information to debug from
+                sh 'adb logcat -d -s ReactNativeJS:*'
               }
             }
           }
