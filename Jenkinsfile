@@ -139,6 +139,8 @@ stage('integration tests') {
               try {
                 // Wait for the device
                 timeout(15) { // minutes
+                    // In case the tests fail, it's nice to have an idea on the devices attached to the machine
+                    sh 'adb devices'
                     sh 'adb wait-for-device'
                 }
                 sh 'npm run test/android -- test-results.xml'
@@ -147,8 +149,6 @@ stage('integration tests') {
                   allowEmptyResults: true,
                   testResults: 'test-results.xml',
                 )
-                // In case the tests fail, it's nice to have an idea on the devices attached to the machine
-                sh 'adb devices'
               }
             }
           }
