@@ -1,3 +1,4 @@
+
 def reactNativeOnAndroid() {
   return {
     node('docker && android') {
@@ -105,9 +106,6 @@ def nodeJSOnMacOS(Map args=[:]) {
   }
 }
 
-def onLinux(Map args=[:], commands) {
-}
-
 def nodeJSOnLinux(Map args=[:]) {
   def nodeVersion = args.get('nodeVersion', '10')
   return {
@@ -189,3 +187,5 @@ def electronOnLinux() {
     }
   }
 }
+
+return this;
