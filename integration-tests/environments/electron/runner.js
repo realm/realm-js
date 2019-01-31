@@ -58,6 +58,7 @@ async function run() {
     const app = new Application({
         path: ELECTRON_PATH,
         args: [ MAIN_PATH, server.getUrl(), runIn ],
+        // chromeDriverLogPath: path.resolve("chrome-driver.log"),
     });
     // Start the app
     await app.start();
