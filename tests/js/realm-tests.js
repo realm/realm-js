@@ -86,9 +86,8 @@ module.exports = {
     },
 
     testRealmFifoFallbackPath: function() {
-        // We do not run the unit tests on a filesystem that would trigger the fallback.
-        // So for now we just check that setting the property doesn't crash Realm.
-        // To test this for real, we would need to
+        // Object Store already tests the fallback logic
+        // So this is just a smoke test to ensure that setting the property from JS doesn't actually crash anything.
         const defaultDir = Realm.defaultPath.substring(0, Realm.defaultPath.lastIndexOf(pathSeparator) + 1);
         const realm = new Realm({fifoFilesFallbackPath: defaultDir});
     },
