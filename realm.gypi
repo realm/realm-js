@@ -58,7 +58,6 @@
         "src/object-store/src/impl/results_notifier.cpp",
         "src/object-store/src/impl/transact_log_handler.cpp",
         "src/object-store/src/impl/weak_realm_notifier.cpp",
-        "src/object-store/src/util/fifo.cpp",
         "src/object-store/src/util/uuid.cpp",
         "src/object-store/src/binding_callback_thread_observer.hpp",
         "src/object-store/src/binding_context.hpp",
@@ -128,12 +127,14 @@
         ["OS=='linux'", {
           "sources": [
             "src/object-store/src/impl/epoll/external_commit_helper.cpp",
+            "src/object-store/src/util/fifo.cpp",
           ]
         }],
         ["OS=='mac'", {
           "sources": [
             "src/object-store/src/impl/apple/external_commit_helper.cpp",
             "src/object-store/src/impl/apple/keychain_helper.cpp",
+            "src/object-store/src/util/fifo.cpp",
             "src/object-store/src/sync/impl/apple/network_reachability_observer.cpp",
             "src/object-store/src/sync/impl/apple/system_configuration.cpp"
           ]
