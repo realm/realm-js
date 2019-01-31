@@ -6,15 +6,13 @@ RUN apt-get update -qq && \
     apt-get install -qq -y \
       # Allow us to open windows without a display
       xvfb \
-      # Adding some dependencies (see https://github.com/electron/spectron/issues/144#issuecomment-270778659)
-      # Display server dependencies
-      libxtst6 \
-      libxss1 \
-      libgtk2.0-0 \
-      # Core libraries for chromium driver
-      libnss3 \
-      libasound2 \
-      libgconf-2-4 \
+      # Adding some dependencies (see https://github.com/Googlechrome/puppeteer/issues/290#issuecomment-451471338)
+      libx11-xcb1 libxrandr2 libasound2 libpangocairo-1.0-0 libatk1.0-0 libatk-bridge2.0-0 libgtk-3-0 libnss3 libxss1 \
     && \
     # Clean-up to lower the image size
     apt-get clean
+
+# Jenkins will run this image as user 1001, let's ensure that user exists and has a home directory
+RUN adduser --uid 1001 --disabled-password --gecos "" jenkins
+# Install the SDK and NDK as jenkins
+USER jenkins
