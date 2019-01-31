@@ -121,11 +121,11 @@ stage('integration tests') {
           'ci/realm-js:android-build',
           '-f Dockerfile.android .'
         ).inside(
-          // Mounting ~/.android to reuse the adb keys
+          // Mounting ~/.android/adbkey(.pub) to reuse the adb keys
           // Mounting ~/gradle-cache as ~/.gradle to prevent gradle from being redownloaded
           // Mounting ~/ccache as ~/.ccache to reuse the C-Cache across builds
           // Mounting /dev/bus/usb with --privileged to allow connecting to the device via USB
-          "-v ${HOME}/.android:/home/jenkins/.android:ro -v ${HOME}/gradle-cache:/home/jenkins/.gradle -v ${HOME}/ccache:/home/jenkins/.ccache -v /dev/bus/usb:/dev/bus/usb --privileged"
+          "-v ${HOME}/.android/adbkey:/home/jenkins/.android/adbkey:ro -v ${HOME}/.android/adbkey.pub:/home/jenkins/.android/adbkey.pub:ro -v ${HOME}/gradle-cache:/home/jenkins/.gradle -v ${HOME}/ccache:/home/jenkins/.ccache -v /dev/bus/usb:/dev/bus/usb --privileged"
         ) {
           // Locking the Android device to prevent other jobs from interfering
           lock("${NODE_NAME}-android") {
