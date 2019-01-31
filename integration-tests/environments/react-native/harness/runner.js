@@ -22,15 +22,6 @@ const { resolve } = require("path");
 const rn = require("./react-native-cli");
 const android = require("./android-cli");
 
-const PLATFORM_KEY = "--platform";
-
-const projectRoots = [
-    // The react-native test app
-    resolve(__dirname, ".."),
-    // The integration-tests
-    resolve(__dirname, "../../.."),
-];
-
 async function runApp(platform, junitFilePath) {
     const mochaConfig = {};
 
@@ -48,7 +39,7 @@ async function runApp(platform, junitFilePath) {
     await server.start();
 
     // Spawn a react-native metro server
-    const metro = rn.async("start", `--projectRoots=${projectRoots.join(",")}`,  /*"--verbose", "--reset-cache"*/);
+    const metro = rn.async("start",  /*"--verbose", "--reset-cache"*/);
     // Kill metro when the process is killed
     process.on("exit", (code) => {
         metro.kill("SIGHUP");
