@@ -15,7 +15,7 @@
     "test/main": "node runner.js main",
     "test/renderer": "node runner.js renderer",
     "preinstall": "npm pack ../../tests && test -f realm-integration-tests-0.1.0.tgz && test -f ../../realm.tgz",
-    "postinstall": "electron-builder install-app-deps",
+    "postpublish": "./rebuild-realm.sh",
     "package": "electron-builder --dir"
   },
   "devDependencies": {
