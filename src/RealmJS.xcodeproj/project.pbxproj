@@ -925,7 +925,6 @@
 				504CF85F1EBCAE3600A9A4B6 /* system_configuration.cpp in Sources */,
 				50C671001E1D2D31003CB63C /* thread_safe_reference.cpp in Sources */,
 				02F59EE31C88F2BB007F774C /* transact_log_handler.cpp in Sources */,
-				838DCFB62203057300F8BBB3 /* fifo.cpp in Sources */,
 				3FCE2A931F58BE0300D4855B /* uuid.cpp in Sources */,
 				02022A5A1DA476CD000F0C4F /* weak_realm_notifier.cpp in Sources */,
 				4261AF8E203C42000052450D /* work_queue.cpp in Sources */,
