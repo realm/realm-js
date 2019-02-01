@@ -88,6 +88,15 @@
  */
 
 /**
+ * This describes the different options used when adding a Global Notifier listener.
+ * @typedef {Object} Realm.Sync~RealmListenerConfiguration
+ * @property {string} serverUrl - The sync server to listen to.
+ * @property {SyncUser} adminUser - an admin user obtained by calling {@linkcode Realm.Sync.User.login|User.login} with admin credentials.
+ * @property {string} filterRegex - A regular expression used to determine which changed Realms should trigger events. Use `.*` to match all Realms.
+ * @property {Realm.Sync.SSLConfiguration} sslConfiguration - SSL configuration used by the Realms being observed.
+ */
+
+/**
  * When opening a Realm created with Realm Mobile Platform v1.x, it is automatically
  * migrated to the v2.x format. In case this migration
  * is not possible, an exception is thrown. The exception´s `message` property will be equal
@@ -125,8 +134,37 @@ class Sync {
      *    passed as an argument.
      *
      * Only available in the Enterprise Edition.
+     * @deprecated Use `addListener(config, eventName, changeCallback)` instead`.
      */
     static addListener(serverUrl, adminUser, filterRegex, name, changeCallback) {}
+
+    /**
+     * Add a sync listener to listen to changes across multiple Realms.
+     *
+     * @param {Realm.Sync.RealmListenerConfiguration} config - The configuration object for Realms being observed.
+     * @param {string} eventName - The name of the event to observe.
+     * @param {function(changeEvent)} changeCallback - The callback to invoke with the events.
+     *
+     * Registers the `changeCallback` to be called each time the given event occurs on the specified server.
+     * Only events on Realms with a _virtual path_ that matches the filter regex are emitted.
+     *
+     * Currently supported events:
+     *
+     *  * `'available'`: Emitted whenever there is a new Realm which has a virtual
+     *    path matching the filter regex, either due to the Realm being newly created
+     *    or the listener being added. The virtual path (i.e. the portion of the
+     *    URL after the protocol and hostname) is passed as an argument.
+     *  * `'change'`: Emitted whenever the data within a Realm matching the filter
+     *    regex has changed. A [ChangeEvent]{@link Realm.Sync.ChangeEvent} argument
+     *    is passed containing information about which Realm changed and what
+     *    objects within the Realm changed.
+     *  * `'delete'`: Emitted whenever a Realm matching the filter regex has been
+     *    deleted from the server. The virtual path of the Realm being deleted is
+     *    passed as an argument.
+     *
+     * Only available in the Enterprise Edition.
+     */
+    static addListener(config, eventName, changeCallback) {}
 
     /**
      * Add a sync listener to listen to changes across multiple Realms.
