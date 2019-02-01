@@ -51,6 +51,6 @@ app.on("ready", () => {
     if (runIn === "main") {
         require("./mocha.js")(mochaRemoteServerURL, "main");
     } else if (runIn !== "renderer") {
-        console.error("Expected a --process runtime argument");
+        console.error("Expected a process runtime argument");
     }
 });
