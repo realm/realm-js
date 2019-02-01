@@ -135,7 +135,6 @@
           "sources": [
             "src/object-store/src/impl/apple/external_commit_helper.cpp",
             "src/object-store/src/impl/apple/keychain_helper.cpp",
-            "src/object-store/src/util/fifo.cpp",
             "src/object-store/src/sync/impl/apple/network_reachability_observer.cpp",
             "src/object-store/src/sync/impl/apple/system_configuration.cpp",
             "src/object-store/src/util/fifo.cpp",
