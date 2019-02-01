@@ -120,7 +120,7 @@ To finish adding your new function, you will have to add your function a few pla
 
 Object Store is the cross platform abstraction shared between all SDKs supported by Realm.
 
-It is included in Realm JS as a Git submodule under `/src/object-store`.
+It is included in Realm JS as a Git submodule under `src/object-store`.
 
 In order to pull in new versions checkout the appropriate commit and add the commit to the `### Internal`
 section of the changelog.
