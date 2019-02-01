@@ -17,22 +17,24 @@
 ////////////////////////////////////////////////////////////////////////////
 
 if (!global.Realm) {
-    throw new Error("Expected Realm to be available as a global");
+    throw new Error("Expected 'Realm' to be available as a global");
 }
 
 if (!global.title) {
-    throw new Error("Expected title to be available as a global");
+    throw new Error("Expected 'title' to be available as a global");
 }
 
 if (!global.fs) {
-    throw new Error("Expected fs to be available as a global");
+    throw new Error("Expected 'fs' to be available as a global");
+}
+
+if (!global.path) {
+    throw new Error("Expected 'path' to be available as a global");
 }
 
 if (!global.environment || typeof global.environment !== "object") {
-    throw new Error("Expected environment to be available as a global");
+    throw new Error("Expected 'environment' to be available as a global");
 }
-
-global.path = require("path-browserify");
 
 // Patch in a function that can skip running tests in specific environments
 global.it.environment = require("./utils/environment-test");

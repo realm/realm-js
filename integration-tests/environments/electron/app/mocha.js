@@ -28,6 +28,7 @@ module.exports = (serverURL, id) => {
             // Set the Realm global for the tests to use
             global.Realm = require("realm");
             global.fs = require("fs-extra");
+            global.path = require("path");
             // Sets the root suite title to include the process type
             global.title = `Electron ${id} process on ${platform()}`;
             global.environment = {

@@ -23,6 +23,7 @@ const os = require("os");
 global.title = `Node.js v${process.versions.node} on ${os.platform()}`;
 global.Realm = require("realm");
 global.fs = require("fs-extra");
+global.path = require("path");
 global.environment = { node: true };
 
 // Require the tests

@@ -81,6 +81,7 @@ export class App extends Component<Props> {
                 // Provide the global Realm constructor to the tests
                 global.Realm = require("realm");
                 global.fs = require("react-native-fs");
+                global.path = require("path-browserify");
                 global.environment = {
                     reactNative: Platform.OS,
                     android: Platform.OS === "android",
