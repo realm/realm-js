@@ -18,7 +18,6 @@
 
 const { MochaRemoteClient } = require("mocha-remote-client");
 const { platform } = require("os");
-const { resolve } = require("path");
 
 module.exports = (serverURL, id) => {
     return new MochaRemoteClient({
@@ -35,7 +34,7 @@ module.exports = (serverURL, id) => {
                 electron: process.type === "browser" ? "main" : "renderer",
             };
             // Add the integration test suite
-            const testIndexPath = resolve(__dirname, "../../../tests/src/index.js");
+            const testIndexPath = require.resolve("realm-integration-tests/src/index.js");
             mocha.addFile(testIndexPath);
         },
         whenRunning: (runner) => {
