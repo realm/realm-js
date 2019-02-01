@@ -8,6 +8,9 @@ Currently this directory consists of:
   - `renderer.js` detects if it's supposed to run the tests and runs them.
 - A `runner.js` script, which uses [spectron](https://www.npmjs.com/package/spectron) to start the Electron app and read out the console from the Electron process, and console logging it.
 
+When running `npm install` a postinstall script will package the test suite and install that as well as Realm from an
+archive. Make sure the integration-tests folder contains a `realm.tgz` file before installing this.
+
 ## Running the tests
 
 To run tests in the main process:

@@ -88,7 +88,7 @@ export class App extends Component<Props> {
                     ios: Platform.OS === "ios"
                 };
                 // Require in the tests
-                require("@realm-tests/tests");
+                require("realm-integration-tests");
             },
             whenRunning: (runner) => {
                 runner.on("test", (test) => {

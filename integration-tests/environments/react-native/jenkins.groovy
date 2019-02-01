@@ -36,6 +36,7 @@ def onAndroid() {
         lock("${NODE_NAME}-android") {
           dir('integration-tests') {
             unstash 'package'
+            sh 'mv realm-*.tgz realm.tgz'
           }
           // Install the packaged version of realm into the app and run the tests
           dir('integration-tests/environments/react-native') {
@@ -49,7 +50,7 @@ def onAndroid() {
                   sh 'adb wait-for-device'
               }
               // Uninstall any other installations of this package before trying to install it again
-              sh 'adb uninstall io.realm.tests.reactnative || true' // '|| true' to prevent a build failure
+              sh 'adb uninstall io.realm.tests.reactnative || true' // '|| true' to prevent a build failure
               sh 'npm run test/android -- test-results.xml'
             } finally {
               junit(

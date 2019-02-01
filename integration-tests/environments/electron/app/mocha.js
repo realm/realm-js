@@ -19,9 +19,9 @@
 const { MochaRemoteClient } = require("mocha-remote-client");
 const { platform } = require("os");
 
-module.exports = (serverURL, id) => {
+module.exports = (serverURL, processType) => {
     return new MochaRemoteClient({
-        id,
+        id: processType,
         url: serverURL,
         whenInstrumented: mocha => {
             // Set the Realm global for the tests to use
@@ -29,7 +29,7 @@ module.exports = (serverURL, id) => {
             global.fs = require("fs-extra");
             global.path = require("path");
             // Sets the root suite title to include the process type
-            global.title = `Electron ${id} process on ${platform()}`;
+            global.title = `Electron ${processType} process on ${platform()}`;
             global.environment = {
                 electron: process.type === "browser" ? "main" : "renderer",
             };
@@ -39,8 +39,9 @@ module.exports = (serverURL, id) => {
         },
         whenRunning: (runner) => {
             runner.on("end", () => {
+                const p = process.type === "renderer" ? require("electron").remote.process : process;
                 // Exit the process with the number of failures
-                process.exit(runner.failures);
+                p.exit(runner.failures);
             });
         },
     });

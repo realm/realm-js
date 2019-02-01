@@ -10,7 +10,7 @@
     "tests/install": "cd tests && npm install",
     "tests/lint": "cd tests && eslint **/*.js",
     "postinstall": "npm run realm/pack && npm run tests/install && npm run environments/install",
-    "realm/pack": "REALM_BUILD_ANDROID=1 npm pack ..",
+    "realm/pack": "REALM_BUILD_ANDROID=1 npm pack .. && mv realm-*.tgz realm.tgz",
     "environments/install": "node environments 'npm install'",
     "environments/lint": "node environments 'eslint **/*.js'",
     "environments/test": "node environments 'npm test'"

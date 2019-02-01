@@ -45,12 +45,12 @@ app.on("ready", () => {
         slashes: true,
     }));
 
-    const mochaRemoteServerURL = process.argv[2];
-    const runIn = process.argv[3];
-    global.options = { mochaRemoteServerURL, runIn };
-    if (runIn === "main") {
+    const processType = process.argv[2];
+    const mochaRemoteServerURL = process.argv[3] || "ws://localhost:8090";
+    global.options = { mochaRemoteServerURL, processType };
+    if (processType === "main") {
         require("./mocha.js")(mochaRemoteServerURL, "main");
-    } else if (runIn !== "renderer") {
+    } else if (processType !== "renderer") {
         console.error("Expected a process runtime argument");
     }
 });

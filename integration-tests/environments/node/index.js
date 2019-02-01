@@ -27,4 +27,4 @@ global.path = require("path");
 global.environment = { node: true };
 
 // Require the tests
-require("@realm-tests/tests");
+require("realm-integration-tests");
