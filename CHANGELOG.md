@@ -8,6 +8,8 @@ x.x.x Release notes (yyyy-MM-dd)
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
 * Realm initialized the filesystem when being imported instead of waiting for the first Realm to be opened. ([#2218] (https://github.com/realm/realm-js/issues/2218), since v2.22.0).
+* Sync sessions for Realms which were closed while the session was paused would sometimes not be cleaned up correctly. (Since v2.16.0).
+* Querying Realm instances obtained from `Realm.Sync.Adapter` would sometimes pin the read transaction version, resulting in the file rapidly growing in size as further transactions were processed. ([#766](https://github.com/realm/realm-object-store/pull/766), since v2.0.2).
 
 ### Compatibility
 * Realm Object Server: 3.11.0 or later.
