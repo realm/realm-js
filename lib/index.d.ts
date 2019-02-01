@@ -555,11 +555,11 @@ declare namespace Realm.Sync {
     /**
      * @deprecated, to be removed in future versions
      */
-    function addListener(serverURL: string, adminUser: Realm.Sync.User, regex: string, name: RealmListenerEventName, changeCallback: (changeEvent: ChangeEvent) => void, sslConfiguration?: Realm.Sync.SSLConfiguration): void;
+    function addListener(serverURL: string, adminUser: Realm.Sync.User, regex: string, name: RealmListenerEventName, changeCallback: (changeEvent: ChangeEvent) => void): void;
     /**
      * @deprecated, to be removed in future versions
      */
-    function addListener(serverURL: string, adminUser: Realm.Sync.User, regex: string, name: RealmListenerEventName, changeCallback: (changeEvent: ChangeEvent) => Promise<void>, sslConfiguration?: Realm.Sync.SSLConfiguration): void;
+    function addListener(serverURL: string, adminUser: Realm.Sync.User, regex: string, name: RealmListenerEventName, changeCallback: (changeEvent: ChangeEvent) => Promise<void>): void;
     function addListener(config: RealmListenerConfiguration, eventName: RealmListenerEventName, changeCallback: (changeEvent: ChangeEvent) => void): void;
     function addListener(config: RealmListenerConfiguration, eventName: RealmListenerEventName, changeCallback: (changeEvent: ChangeEvent) => Promise<void>): void;
     function removeAllListeners(): Promise<void>;
