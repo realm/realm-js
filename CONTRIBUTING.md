@@ -118,7 +118,7 @@ To finish adding your new function, you will have to add your function a few pla
 
 ### Updating Object Store
 
-Object Store is the cross platform abstraction shared between all SDKs supported by Realm.
+[Object Store](https://github.com/realm/realm-object-store) is the cross platform abstraction shared between all SDKs supported by Realm.
 
 It is included in Realm JS as a Git submodule under `src/object-store`.
 
