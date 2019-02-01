@@ -7,6 +7,7 @@ This release contains all changes from v2.22.0-beta.1 to v2.22.0-beta.2.
 * Updated React Native Android Builds to use Android Build Tools 3.2.1. ([#2103](https://github.com/realm/realm-js/issues/2103))
 * Improved performance and memory usage of `Realm.Sync.Adapter`. ([realm/realm-js-private#501](https://github.com/realm/realm-js-private/pull/501))
 * When an invalid/corrupt Realm file is opened, the error message will now contain the file name. ([realm/realm-core#3203](https://github.com/realm/realm-core/pull/3203))
+* New global notifier API introduced though `Realm.Sync.addListener(config, event, callback)`. This also adds support for configuring the SSL connection. The old API `Realm.Sync.AddListener(serverUrl, adminUser, filterRegex, event, event, callback)` is deprecated. ([#2243](https://github.com/realm/realm-js/pull/2243))  
 
 ### Fixed
 * `Realm.Sync.User.createConfiguration()` created an extra `:` if no port was defined.  ([#1980](https://github.com/realm/realm-js/issues/1980), since v2.8.0)
