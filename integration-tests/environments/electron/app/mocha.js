@@ -29,7 +29,7 @@ module.exports = (serverURL, processType) => {
             global.fs = require("fs-extra");
             global.path = require("path");
             // Sets the root suite title to include the process type
-            global.title = `Electron ${processType} process on ${platform()}`;
+            global.title = `Electron v${process.versions.electron} ${processType} process on ${platform()}`;
             global.environment = {
                 electron: process.type === "browser" ? "main" : "renderer",
             };
