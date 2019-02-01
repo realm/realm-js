@@ -79,6 +79,7 @@ declare namespace Realm {
         migration?: (oldRealm: Realm, newRealm: Realm) => void;
         shouldCompactOnLaunch?: (totalBytes: number, usedBytes: number) => boolean;
         path?: string;
+        fifoFilesFallbackPath?: string;
         readOnly?: boolean;
         inMemory?: boolean;
         schema?: (ObjectClass | ObjectSchema)[];
