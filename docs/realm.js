@@ -333,6 +333,13 @@ class Realm {
     static deleteFile(config) {}
 
     /**
+     * Copy all bundled Realm files to app's default file folder.
+     * This is only implemented for React Native.
+     * @throws {Error} If an I/O error occured or method is not implemented.
+     */
+    static copyBundledRealmFiles() {}
+
+    /**
      * Get a list of subscriptions. THIS METHOD IS IN BETA AND MAY CHANGE IN FUTURE VERSIONS.
      * @param {string} name - Optional parameter to query for either a specific name or pattern (using
      *   cards `?` and `*`).
