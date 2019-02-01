@@ -19,8 +19,7 @@
     "package": "electron-builder --dir"
   },
   "devDependencies": {
-    "concurrently": "^4.1.0",
-    "electron": "^3.0.15",
+    "electron": "^4.0.3",
     "electron-builder": "^20.38.5",
     "mocha-remote-cli": "^0.8.1",
     "mocha-remote-server": "^0.8.1",
