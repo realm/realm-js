@@ -1,12 +1,16 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
+* Added `Realm.copyBundledRealmFiles()` to TypeScript definitions. ([#2176](https://github.com/realm/realm-js/issues/2176))
 * The parser now supports readable timestamps with a `T` separator in addition to the originally supported `@` separator. For example: `startDate > 1981-11-01T23:59:59:1`. ([realm/realm-core#3198](https://github.com/realm/realm-core/issues/3198))
+* It is now possible to store Realms on Android external storage with React Native by using `Realm.Configuration.fifoFilesFallbackPath`. ([#2062](https://github.com/realm/realm-js/issues/2062)).
 
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
 * Realm initialized the filesystem when being imported instead of waiting for the first Realm to be opened. ([#2218] (https://github.com/realm/realm-js/issues/2218), since v2.22.0).
 * When debugging with React Native, calling `Realm.open()` would crash since `Realm._asyncOpen()` was not available in the debugger. ([#2234](https://github.com/realm/realm-js/pull/2234), since v2.20.0)
+* Sync sessions for Realms which were closed while the session was paused would sometimes not be cleaned up correctly. (Since v2.16.0).
+* Querying Realm instances obtained from `Realm.Sync.Adapter` would sometimes pin the read transaction version, resulting in the file rapidly growing in size as further transactions were processed. ([#766](https://github.com/realm/realm-object-store/pull/766), since v2.0.2).
 
 ### Compatibility
 * Realm Object Server: 3.11.0 or later.
@@ -14,6 +18,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
 ### Internal
+* Upgraded to Object Store commit: 0f2f8347cb32afddef1753a018f70f65972a4679
 * Upgraded to Realm Core v5.13.0.
 * Upgraded to Realm Sync v3.14.14.
 * Stopped including headers from developers JDK when building the Android native module. ([#2223](https://github.com/realm/realm-js/pull/2223))

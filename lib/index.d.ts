@@ -79,6 +79,7 @@ declare namespace Realm {
         migration?: (oldRealm: Realm, newRealm: Realm) => void;
         shouldCompactOnLaunch?: (totalBytes: number, usedBytes: number) => boolean;
         path?: string;
+        fifoFilesFallbackPath?: string;
         readOnly?: boolean;
         inMemory?: boolean;
         schema?: (ObjectClass | ObjectSchema)[];
@@ -718,6 +719,11 @@ declare class Realm {
      * @param {Configuration} config
      */
     static deleteFile(config: Realm.Configuration): void;
+
+    /**
+     * Copy all bundled Realm files to app's default file folder.
+     */
+    static copyBundledRealmFiles(): void;
 
     /**
      * @param  {Realm.Configuration} config?
