@@ -19,9 +19,10 @@
 // Running any of the methods exported by this module depends on:
 // - The entire sourcecode being stashed as 'source'
 // - The packaged library being stashed as 'package'
+// NOTE: These paths needs to be relative to the Jenkinsfile in the project root directory.
 
-def electron = load 'environments/electron/jenkins.groovy'
-def nodeJs = load 'environments/node/jenkins.groovy'
-def reactNative = load 'environments/react-native/jenkins.groovy'
+def electron = load 'integration-tests/environments/electron/jenkins.groovy'
+def nodeJs = load 'integration-tests/environments/node/jenkins.groovy'
+def reactNative = load 'integration-tests/environments/react-native/jenkins.groovy'
 
 return this
