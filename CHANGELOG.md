@@ -1,4 +1,4 @@
-x.x.x Release notes (yyyy-MM-dd)
+2.23.0 Release notes (2019-2-1)
 =============================================================
 ### Enhancements
 * Added `Realm.copyBundledRealmFiles()` to TypeScript definitions. ([#2176](https://github.com/realm/realm-js/issues/2176))
