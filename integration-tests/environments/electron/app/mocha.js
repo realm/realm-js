@@ -38,5 +38,11 @@ module.exports = (serverURL, id) => {
             const testIndexPath = resolve(__dirname, "../../../tests/src/index.js");
             mocha.addFile(testIndexPath);
         },
+        whenRunning: (runner) => {
+            runner.on("end", () => {
+                // Exit the process with the number of failures
+                process.exit(runner.failures);
+            });
+        },
     });
 };
