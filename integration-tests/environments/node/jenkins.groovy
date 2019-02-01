@@ -76,3 +76,5 @@ def onLinux(Map args=[:]) {
     }
   }
 }
+
+return this

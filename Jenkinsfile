@@ -9,7 +9,10 @@ def gitTag
 def gitSha
 def dependencies
 def version
-def IntegrationTests
+
+def ElectronTests
+def NodeJsTests
+def ReactNativeTests
 
 // == Stages
 
@@ -55,8 +58,10 @@ stage('check') {
       env.DOCKER_PUSH = "1"
     }
 
-    // Load the integration tests groovy script
-    IntegrationTests = load 'integration-tests/jenkins.groovy'
+    // Load the integration tests groovy scripts
+    ElectronTests = load 'integration-tests/environments/electron/jenkins.groovy'
+    NodeJsTests = load 'integration-tests/environments/node/jenkins.groovy'
+    ReactNativeTests = load 'integration-tests/environments/react-native/jenkins.groovy'
   }
 }
 
@@ -85,12 +90,12 @@ stage('package') {
 
 stage('integration tests') {
   parallel(
-    'React Native on Android': IntegrationTests.reactNative.onAndroid(),
-    'React Native on iOS': IntegrationTests.reactNative.onIOS(),
-    'Node.js v10 on Mac': IntegrationTests.nodeJs.onMacOS(nodeVersion: '10'),
-    'Node.js v8 on Linux': IntegrationTests.nodeJs.onLinux(nodeVersion: '8'),
-    'Node.js v10 on Linux': IntegrationTests.nodeJs.onLinux(nodeVersion: '10'),
-    'Electron on Linux': IntegrationTests.electron.onLinux(),
+    'React Native on Android': ReactNativeTests.onAndroid(),
+    'React Native on iOS': ReactNativeTests.onIOS(),
+    'Node.js v10 on Mac': NodeJsTests.onMacOS(nodeVersion: '10'),
+    'Node.js v8 on Linux': NodeJsTests.onLinux(nodeVersion: '8'),
+    'Node.js v10 on Linux': NodeJsTests.onLinux(nodeVersion: '10'),
+    'Electron on Linux': ElectronTests.onLinux(),
   )
 }
 
