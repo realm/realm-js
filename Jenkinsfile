@@ -85,12 +85,12 @@ stage('package') {
 
 stage('integration tests') {
   parallel(
-    'React Native on Android': IntegrationTests.reactNativeOnAndroid(),
-    'React Native on iOS': IntegrationTests.reactNativeOnIOS(),
-    'Node.js v10 on Mac': IntegrationTests.nodeJSOnMacOS(nodeVersion: '10'),
-    'Node.js v8 on Linux': IntegrationTests.nodeJSOnLinux(nodeVersion: '8'),
-    'Node.js v10 on Linux': IntegrationTests.nodeJSOnLinux(nodeVersion: '10'),
-    'Electron on Linux': IntegrationTests.electronOnLinux(),
+    'React Native on Android': IntegrationTests.reactNative.onAndroid(),
+    'React Native on iOS': IntegrationTests.reactNative.onIOS(),
+    'Node.js v10 on Mac': IntegrationTests.nodeJs.onMacOS(nodeVersion: '10'),
+    'Node.js v8 on Linux': IntegrationTests.nodeJs.onLinux(nodeVersion: '8'),
+    'Node.js v10 on Linux': IntegrationTests.nodeJs.onLinux(nodeVersion: '10'),
+    'Electron on Linux': IntegrationTests.electron.onLinux(),
   )
 }
 
