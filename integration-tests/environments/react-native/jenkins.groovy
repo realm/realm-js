@@ -36,7 +36,6 @@ def onAndroid() {
         lock("${NODE_NAME}-android") {
           dir('integration-tests') {
             unstash 'package'
-            sh 'mv realm-*.tgz realm.tgz'
           }
           // Install the packaged version of realm into the app and run the tests
           dir('integration-tests/environments/react-native') {

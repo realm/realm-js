@@ -5,8 +5,8 @@
   "private": true,
   "scripts": {
     "test": "mocha --exit index.js",
-    "preinstall": "npm pack ../../tests && test -f realm-integration-tests-0.1.0.tgz && test -f ../../realm.tgz",
-    "postinstall": "npm install realm-integration-tests-0.1.0.tgz ../../realm.tgz --no-save"
+    "preinstall": "npm pack ../../tests && test -f realm-integration-tests-0.1.0.tgz && test -f ../../realm-*.tgz",
+    "postinstall": "npm install realm-integration-tests-0.1.0.tgz ../../realm-*.tgz --no-save"
   },
   "peerDependencies": {
     "realm": "*",
