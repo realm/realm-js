@@ -15,12 +15,17 @@
     "test/main": "node runner.js main",
     "test/renderer": "node runner.js renderer",
     "preinstall": "npm pack ../../tests && test -f realm-integration-tests-0.1.0.tgz && test -f ../../realm.tgz",
-    "postpublish": "./rebuild-realm.sh",
+    "postinstall": "npm install ../../realm.tgz realm-integration-tests-0.1.0.tgz --no-save && ./rebuild-realm.sh",
     "package": "electron-builder --dir"
+  },
+  "optionalDependencies": {
+    "realm": "*",
+    "realm-integration-tests": "*"
   },
   "devDependencies": {
     "electron": "^4.0.3",
     "electron-builder": "^20.38.5",
+    "mocha-junit-reporter": "^1.18.0",
     "mocha-remote-cli": "^0.8.1",
     "mocha-remote-server": "^0.8.1",
     "node-gyp": "^3.7.0",
@@ -29,10 +34,7 @@
   "dependencies": {
     "fs-extra": "^7.0.1",
     "mocha": "^5.2.0",
-    "mocha-junit-reporter": "^1.18.0",
     "mocha-remote-client": "^0.8.1",
-    "realm": "file:../../realm.tgz",
-    "realm-integration-tests": "file:realm-integration-tests-0.1.0.tgz",
     "ws": "^6.1.3"
   },
   "build": {
