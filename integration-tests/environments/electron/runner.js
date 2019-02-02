@@ -19,12 +19,50 @@
 ////////////////////////////////////////////////////////////////////////////
 
 const { spawn } = require("child_process");
+const fs = require("fs");
 const path = require("path");
 const { MochaRemoteServer } = require("mocha-remote-server");
 
-let ELECTRON_PATH = path.join(__dirname, "node_modules", ".bin", "electron");
-if (process.platform === "win32") {
-    ELECTRON_PATH += ".cmd";
+const appPaths = {
+    darwin: "dist/mac/realm-electron-tests.app/Contents/MacOS/realm-electron-tests",
+    linux: "dist/linux-unpacked/realm-electron-tests",
+    win32: "dist/win-unpacked/realm-electron-tests.exe",
+};
+
+function determineSpawnParameters(processType, serverUrl) {
+    const platform = process.platform;
+    const appPath = path.resolve(appPaths[platform]);
+    if (fs.existsSync(appPath)) {
+        if (platform === "darwin") {
+            return {
+                command: appPath,
+                args: ["--", processType, serverUrl],
+            };
+        } else {
+            throw new Error(`Running tests on ${platform} is not supported yet`);
+        }
+    } else {
+        console.warn("🚧 Running an unpackaged version of the app 🚧");
+        return {
+            command: path.resolve(__dirname, "node_modules/.bin/electron", process.platform === "win32" ? ".cmd" : ""),
+            args: [".", processType, serverUrl],
+        };
+    }
+}
+
+function runElectron(processType, serverUrl) {
+    const { command, args } = determineSpawnParameters(processType, serverUrl);
+    // Spawn the Electron app
+    const appProcess = spawn(command, args, { stdio: "inherit" });
+    process.on("exit", () => {
+        appProcess.kill("SIGHUP");
+    });
+    // Return a promise that resolves when the app close
+    return new Promise((resolve, reject) => {
+        appProcess.on("close", (code) => {
+            resolve(code);
+        });
+    });
 }
 
 async function run() {
@@ -47,30 +85,12 @@ async function run() {
     });
     await server.start();
 
-    const electronProcess = spawn(
-        ELECTRON_PATH,
-        [".", processType, server.getUrl()],
-        { stdio: "inherit" }
-    );
-
-    const electronProcessExit = new Promise((resolve, reject) => {
-        process.on("exit", () => {
-            electronProcess.kill("SIGHUP");
-        });
-        electronProcess.on("close", (code) => {
-            if (code === 0) {
-                resolve();
-            } else {
-                reject(code);
-            }
-        });
-    });
-
+    const electronApp = runElectron(processType, server.getUrl());
     const mochaTests = new Promise((resolve, reject) => {
         server.run(resolve);
     });
 
-    await Promise.race([electronProcessExit, mochaTests]);
+    await Promise.race([electronApp, mochaTests]);
 }
 
 run().then(failures => {
