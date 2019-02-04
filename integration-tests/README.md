@@ -1,8 +1,8 @@
 # Realm JS integration tests
 
 This directory of the repository is contains two sub-directories:
-- [./tests]((./tests): A suite of tests which are supposed to pass in all defined environments.
-- [./environments]((./environments): A couple of environments in which the tests are supposed pass:
+- [./tests](./tests): A suite of tests which are supposed to pass in all defined environments.
+- [./environments](./environments): A couple of environments in which the tests are supposed pass:
   - [Node.js](./environments/node/README.md)
   - [React Native](./environments/react-native/README.md)
   - [Electron](./environments/electron/README.md)
