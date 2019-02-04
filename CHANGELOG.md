@@ -16,6 +16,30 @@ x.x.x Release notes (yyyy-MM-dd)
 ### Internal
 * None.
 
+2.23.0 Release notes (2019-2-1)
+=============================================================
+### Enhancements
+* Added `Realm.copyBundledRealmFiles()` to TypeScript definitions. ([#2176](https://github.com/realm/realm-js/issues/2176))
+* The parser now supports readable timestamps with a `T` separator in addition to the originally supported `@` separator. For example: `startDate > 1981-11-01T23:59:59:1`. ([realm/realm-core#3198](https://github.com/realm/realm-core/issues/3198))
+* It is now possible to store Realms on Android external storage with React Native by using `Realm.Configuration.fifoFilesFallbackPath`. ([#2062](https://github.com/realm/realm-js/issues/2062))
+* New global notifier API introduced though `Realm.Sync.addListener(config, event, callback)`. This also adds support for configuring the SSL connection. The old API `Realm.Sync.AddListener(serverUrl, adminUser, filterRegex, event, event, callback)` is deprecated. ([#2243](https://github.com/realm/realm-js/pull/2243))
+
+### Fixed
+* Realm initialized the filesystem when being imported instead of waiting for the first Realm to be opened. ([#2218] (https://github.com/realm/realm-js/issues/2218), since v2.22.0)
+* Sync sessions for Realms which were closed while the session was paused would sometimes not be cleaned up correctly. ([realm/realm-object-store#766](https://github.com/realm/realm-object-store/pull/766), since v2.16.0)
+* Querying Realm instances obtained from `Realm.Sync.Adapter` would sometimes pin the read transaction version, resulting in the file rapidly growing in size as further transactions were processed. ([realm/realm-object-store#766](https://github.com/realm/realm-object-store/pull/766), since v2.0.2)
+
+### Compatibility
+* Realm Object Server: 3.11.0 or later.
+* APIs are backwards compatible with all previous release of realm in the 2.x.y series.
+* File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
+
+### Internal
+* Upgraded to Object Store commit: 0f2f8347cb32afddef1753a018f70f65972a4679
+* Upgraded to Realm Core v5.13.0.
+* Upgraded to Realm Sync v3.14.14.
+* Stopped including headers from developers JDK when building the Android native module. ([#2223](https://github.com/realm/realm-js/pull/2223))
+
 2.22.0 Release notes (2019-1-10)
 =============================================================
 This release contains all changes from v2.22.0-beta.1 to v2.22.0-beta.2.

@@ -59,6 +59,7 @@ LOCAL_SRC_FILES += src/object-store/src/impl/results_notifier.cpp
 LOCAL_SRC_FILES += src/object-store/src/impl/transact_log_handler.cpp
 LOCAL_SRC_FILES += src/object-store/src/impl/weak_realm_notifier.cpp
 LOCAL_SRC_FILES += src/object-store/src/impl/epoll/external_commit_helper.cpp
+LOCAL_SRC_FILES += src/object-store/src/util/fifo.cpp
 LOCAL_SRC_FILES += src/object-store/src/util/uuid.cpp
 LOCAL_SRC_FILES += src/object-store/src/binding_callback_thread_observer.cpp
 LOCAL_SRC_FILES += src/object-store/src/collection_notifications.cpp
@@ -95,9 +96,6 @@ LOCAL_C_INCLUDES += src/jsc
 LOCAL_C_INCLUDES += src/object-store/src
 LOCAL_C_INCLUDES += src/object-store/src/impl
 LOCAL_C_INCLUDES += vendor
-LOCAL_C_INCLUDES += $(JAVA_HOME)/include
-LOCAL_C_INCLUDES += $(JAVA_HOME)/include/darwin
-LOCAL_C_INCLUDES += $(JAVA_HOME)/include/linux
 LOCAL_C_INCLUDES += core/include
 LOCAL_C_INCLUDES += core/openssl-release-1.0.2k-Android-$(TARGET_ARCH_ABI)/include
 ifeq ($(strip $(BUILD_TYPE_SYNC)),1)

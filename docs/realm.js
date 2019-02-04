@@ -168,7 +168,7 @@ class Realm {
      *
      * @param {(Realm~ObjectType|Realm.Object)} arg - the object type or the object to compute privileges from. If no
      *   argument is given, the privileges for the Realm is returned.
-     * @returns {Object} as the computed privileges as properties
+     * @returns {Realm.Permissions.RealmPrivileges|Realm.Permissions.ClassPrivileges|Realm.Permissions.ObjectPrivileges} as the computed privileges as properties
      * @since 2.3.0
      * @see {Realm.Permissions} for details of privileges and roles.
      */
@@ -179,7 +179,7 @@ class Realm {
      *
      * @param {Realm~ObjectType} [arg] - If no argument is provided, the Realm-level permissions are returned.
      *   Otherwise, the Class-level permissions for the provided type is returned.
-     * @returns {Object} The permissions object
+     * @returns {Realm.Permissions.Realm|Realm.Permissions.Class} The permissions object
      * @since 2.18.0
      * @see {Realm.Permissions} for details of priviliges and roles.
      */
@@ -341,6 +341,13 @@ class Realm {
     static deleteFile(config) {}
 
     /**
+     * Copy all bundled Realm files to app's default file folder.
+     * This is only implemented for React Native.
+     * @throws {Error} If an I/O error occured or method is not implemented.
+     */
+    static copyBundledRealmFiles() {}
+
+    /**
      * Get a list of subscriptions. THIS METHOD IS IN BETA AND MAY CHANGE IN FUTURE VERSIONS.
      * @param {string} name - Optional parameter to query for either a specific name or pattern (using
      *   cards `?` and `*`).
@@ -379,6 +386,12 @@ class Realm {
  *   will be skipped if another process is accessing it.
  * @property {string} [path={@link Realm.defaultPath}] - The path to the file where the
  *   Realm database should be stored.
+ * @property {string} [fifoFilesFallbackPath] - Opening a Realm creates a number of FIFO special files in order to
+ * coordinate access to the Realm across threads and processes. If the Realm file is stored in a location
+ * that does not allow the creation of FIFO special files (e.g. FAT32 filesystems), then the Realm cannot be opened.
+ * In that case Realm needs a different location to store these files and this property defines that location.
+ * The FIFO special files are very lightweight and the main Realm file will still be stored in the location defined
+ * by the `path` property. This property is ignored if the directory defined by `path` allow FIFO special files.
  * @property {boolean} [inMemory=false] - Specifies if this Realm should be opened in-memory. This
  *    still requires a path (can be the default path) to identify the Realm so other processes can
  *    open the same Realm. The file will also be used as swap space if the Realm becomes bigger than

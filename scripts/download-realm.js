@@ -23,6 +23,7 @@ const path = require('path');
 const os = require('os');
 const child_process = require('child_process');
 const fetch = require('node-fetch');
+const HttpsProxyAgent = require('https-proxy-agent');
 const ini = require('ini');
 const decompress = require('decompress');
 const crypto = require('crypto');
@@ -90,7 +91,13 @@ function printProgress(input, totalBytes, archive) {
 function download(serverFolder, archive, destination) {
     const url = `https://static.realm.io/downloads/${serverFolder}/${archive}`;
     console.log(`Download url: ${url}`);
-    return fetch(url).then((response) => {
+    const proxyUrl = process.env.HTTP_PROXY || process.env.http_proxy || process.env.HTTPS_PROXY || process.env.https_proxy;
+    let agent;
+    if (proxyUrl) {
+        const agentOpts = require('url').parse(proxyUrl);
+        agent = new HttpsProxyAgent(agentOpts);
+    }
+    return fetch(url, { agent }).then((response) => {
         if (response.status !== 200) {
             throw new Error(`Error downloading ${url} - received status ${response.status} ${response.statusText}`);
         }
@@ -152,17 +159,6 @@ function acquire(desired, target) {
         .then(() => syncPath && download(desired.SYNC_SERVER_FOLDER, desired.SYNC_ARCHIVE, syncPath))
         .then(() => syncPath && extract(syncPath, target, desired.SYNC_ARCHIVE_ROOT))
         .then(() => writeLockfile(target, desired))
-}
-
-function getSyncCommitSha(version) {
-  return exec(`git ls-remote git@github.com:realm/realm-sync.git --tags "v${version}^{}"`)
-         .then(stdout => {
-           if (!stdout) {
-             return exec(`git ls-remote git@github.com:realm/realm-sync.git --tags "v${version}"`)
-           } else {
-             return stdout;
-           }
-         }).then(stdout => /([^\t]+)/.exec(stdout)[0]);
 }
 
 function getCoreRequirements(dependencies, options, required = {}) {

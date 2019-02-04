@@ -112,6 +112,7 @@
         "src/object-store/src/util/atomic_shared_ptr.hpp",
         "src/object-store/src/util/compiler.hpp",
         "src/object-store/src/util/event_loop_signal.hpp",
+        "src/object-store/src/util/fifo.hpp",
         "src/object-store/src/util/generic/event_loop_signal.hpp",
         "src/object-store/src/util/tagged_bool.hpp",
         "src/object-store/src/util/time.hpp",
@@ -127,6 +128,7 @@
         ["OS=='linux'", {
           "sources": [
             "src/object-store/src/impl/epoll/external_commit_helper.cpp",
+            "src/object-store/src/util/fifo.cpp",
           ]
         }],
         ["OS=='mac'", {
@@ -134,7 +136,8 @@
             "src/object-store/src/impl/apple/external_commit_helper.cpp",
             "src/object-store/src/impl/apple/keychain_helper.cpp",
             "src/object-store/src/sync/impl/apple/network_reachability_observer.cpp",
-            "src/object-store/src/sync/impl/apple/system_configuration.cpp"
+            "src/object-store/src/sync/impl/apple/system_configuration.cpp",
+            "src/object-store/src/util/fifo.cpp",
           ]
         }],
         ["realm_enable_sync", {

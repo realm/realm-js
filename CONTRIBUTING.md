@@ -116,3 +116,20 @@ To finish adding your new function, you will have to add your function a few pla
 * Documentation is added in `docs/realm.js`
 * Add an entry to `CHANGELOG.md` if applicable (Breaking changes/Enhancements/Bug fixes)
 
+### Updating Object Store
+
+[Object Store](https://github.com/realm/realm-object-store) is the cross platform abstraction shared between all SDKs supported by Realm.
+
+It is included in Realm JS as a Git submodule under `src/object-store`.
+
+In order to pull in new versions checkout the appropriate commit and add the commit to the `### Internal`
+section of the changelog.
+
+If the Object Store commit contains new files, it is necessary to update some Realm JS files due to how the project
+is built. These files are:
+
+* Android: `/react-native/android/src/main/jni/Android.mk`
+* iOS: `/Realm.xcodeworkspace`: Open in XCode and add the files to RealmJS under `Build Phases`
+* Node: `/realm.gypi`
+
+
