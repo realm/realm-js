@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 const { MochaRemoteServer } = require("mocha-remote-server");
-const { resolve } = require("path");
 
 const rn = require("./react-native-cli");
 const android = require("./android-cli");
@@ -81,7 +80,7 @@ async function runApp(platform, junitFilePath) {
 async function run() {
     const platform = process.argv[2];
     if (!platform) {
-        throw new Error(`Expected a ${PLATFORM_KEY} runtime argument`);
+        throw new Error("Expected a platform runtime argument");
     }
     const junitFilePath = process.argv[3];
     // Run the application
