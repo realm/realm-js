@@ -414,7 +414,7 @@ module.exports = {
             });
 
             // Update object
-            const obj2 = realm.createOrUpdate('AllPrimaryTypesObject', {
+            const obj2 = realm.create('AllPrimaryTypesObject', {
                 primaryCol: '34',
                 boolCol: false,
                 intCol: 1,

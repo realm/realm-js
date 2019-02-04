@@ -974,10 +974,12 @@ void RealmClass<T>::create(ContextType ctx, ObjectType this_object, Arguments &a
             else if (mode == "all") {
                 update = true;
                 only_update_diff_objects = false;
+            } else {
+                throw std::runtime_error("Unsupported 'updateMode'. Only 'never', 'modified' or 'all' is supported.");
             }
         }
         else {
-            throw std::runtime_error("Unsupported 'updateMode'. Only 'never', 'modified' or 'all' is supported.");
+            throw std::runtime_error("Unsupported 'updateMode'. Only the strings 'never', 'modified' or 'all' is supported.");
         }
     }
 
