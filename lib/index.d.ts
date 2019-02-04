@@ -45,7 +45,9 @@ declare namespace Realm {
     }
 
     enum UpdateMode {
-        DoNotSetIdenticalValues = 'do-not-set-identical-values'
+        Never = 'never',
+        Modified = 'modified',
+        All = 'all'
     }
 
     /**
@@ -766,16 +768,18 @@ declare class Realm {
      * @param  {T&Realm.ObjectPropsType} properties
      * @param  {boolean} update?
      * @returns T
+     *
+     * @deprecated, to be removed in future versions. Use `create(type, properties, UpdateMode)` instead.
      */
     create<T>(type: string | Realm.ObjectClass | Function, properties: T | Realm.ObjectPropsType, update?: boolean): T;
 
     /**
      * @param  {string|Realm.ObjectClass|Function} type
      * @param  {T&Realm.ObjectPropsType} properties
-     * @param  {Realm.UpdateMode} mode?
+     * @param  {Realm.UpdateMode} mode? If not provided, `Realm.UpdateMode.Never` is used.
      * @returns T
      */
-    createOrUpdate<T>(type: string | Realm.ObjectClass | Function, properties: T | Realm.ObjectPropsType, mode?: Realm.UpdateMode): T;
+    create<T>(type: string | Realm.ObjectClass | Function, properties: T | Realm.ObjectPropsType, mode?: Realm.UpdateMode): T;
 
     /**
      * @param  {Realm.Object|Realm.Object[]|Realm.List<any>|Realm.Results<any>|any} object

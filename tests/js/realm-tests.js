@@ -338,16 +338,15 @@ module.exports = {
     },
 
 
-    testRealmCreateOOrUpdate_InvalidArguments: function() {
+    testRealmCreateOrUpdate_InvalidArguments: function() {
         const realm = new Realm({schema: [schemas.TestObject]});
         realm.write(function() {
-            TestCase.assertThrowsContaining(() => realm.createOrUpdate('TestObject', {doubleCol: 1}, "foo"),
-                "Unsupported 'mode': foo. Only 'do-not-set-identical-values' is supported.");
+            TestCase.assertThrowsContaining(() => realm.create('TestObject', {doubleCol: 1}, "foo"),
+                "Unsupported 'updateMode'. Only 'never', 'modified' or 'all' is supported.");
         });
     },
 
     testRealmCreateOrUpdate: function() {
-
         const realm = new Realm({schema: [schemas.AllPrimaryTypes, schemas.TestObject, schemas.StringPrimary]});
         realm.write(function() {
 
@@ -368,7 +367,7 @@ module.exports = {
             });
 
             // Update object
-            const obj2 = realm.createOrUpdate('AllPrimaryTypesObject', {
+            const obj2 = realm.create('AllPrimaryTypesObject', {
                 primaryCol: '33',
                 boolCol: true,
                 intCol: 2,
@@ -379,7 +378,7 @@ module.exports = {
                 dataCol: new ArrayBuffer(2),
                 objectCol: {doubleCol: 2},
                 arrayCol: [{doubleCol: 2}],
-            });
+            }, 'all');
 
             TestCase.assertEqual(obj2.stringCol, '2');
             TestCase.assertEqual(obj2.boolCol, true);
@@ -426,7 +425,7 @@ module.exports = {
                 dataCol: new ArrayBuffer(1),
                 objectCol: {doubleCol: 1},
                 arrayCol: [{doubleCol: 1}],
-            }, 'do-not-set-identical-values');
+            }, 'modified');
 
             TestCase.assertEqual(objects.length, 1);
             TestCase.assertEqual(obj2.stringCol, '1');
@@ -493,33 +492,33 @@ module.exports = {
 
             realm.write(() => {
                 // Update object with a change in value.
-                realm.createOrUpdate('AllPrimaryTypesObject',{
+                realm.create('AllPrimaryTypesObject',{
                     primaryCol: '35',
                     boolCol: true,
-                }, 'do-not-set-identical-values');
+                }, 'modified');
             });
 
             realm.write(() => {
                 // Update object with no change in value
-                realm.createOrUpdate('AllPrimaryTypesObject', {
+                realm.create('AllPrimaryTypesObject', {
                     primaryCol: '35',
                     boolCol: true,
-                }, 'do-not-set-identical-values');
+                }, 'modified');
 
                 // Update other object to ensure that notifications are triggered
-                realm.createOrUpdate('AllPrimaryTypesObject', {
+                realm.create('AllPrimaryTypesObject', {
                     primaryCol: '36',
                     boolCol: true,
-                });
+                }, 'all');
             });
 
             realm.write(() => {
                 // Update object with no change in value and no diffed update.
                 // This should still trigger a notification
-                realm.createOrUpdate('AllPrimaryTypesObject',{
+                realm.create('AllPrimaryTypesObject',{
                     primaryCol: '35',
                     boolCol: true,
-                });
+                }, 'all');
             });
         });
     },
@@ -543,7 +542,7 @@ module.exports = {
             realm.create('IntPrimaryObject', {
                 primaryCol: 1,
                 valueCol: 'val1',
-            }, true);
+            }, 'all');
 
             const objects = realm.objects('IntPrimaryObject');
             TestCase.assertEqual(objects.length, 2);
@@ -551,12 +550,12 @@ module.exports = {
             realm.create('IntPrimaryObject', {
                 primaryCol: 0,
                 valueCol: 'newVal0',
-            }, true);
+            }, 'all');
 
             TestCase.assertEqual(obj0.valueCol, 'newVal0');
             TestCase.assertEqual(objects.length, 2);
 
-            realm.create('IntPrimaryObject', {primaryCol: 0}, true);
+            realm.create('IntPrimaryObject', {primaryCol: 0}, 'all');
             TestCase.assertEqual(obj0.valueCol, 'newVal0');
         });
     },

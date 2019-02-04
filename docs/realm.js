@@ -190,20 +190,19 @@ class Realm {
      * @param {Realm~ObjectType} type - The type of Realm object to create.
      * @param {Object} properties - Property values for all required properties without a
      *   default value.
-     * @param {boolean} [update=false] - DEPRECATED: Use createOrUpdate instead. Signals that an existing object with matching primary key
-     *   should be updated. Only the primary key property and properties which should be updated
-     *   need to be specified. All missing property values will remain unchanged.
+     * @param {boolean|string} [updateMode='never'] - Optional update mode. It can be one of the following values
+     *     - 'never': Objects are only created. If an existing object exists, an exception is thrown. This is the
+     *       default value.
+     *     - 'all': If an existing object is found, all properties provided will be updated, any other properties will
+     *       remain unchanged.
+     *     - 'modified: If an existing object exists, only properties where the value has actually changed will be
+     *       updated. This improves notifications and server side performance but also have implications for how changes
+     *       across devices are merged. For most use cases, the behaviour will match the intuitive behaviour of how
+     *       changes should be merged, but if updating an entire object is considered an atomic operation, this mode
+     *       should not be used.
      * @returns {Realm.Object}
      */
-    create(type, properties, update) {}
-
-    /**
-     *
-     * @param {Realm~ObjectType} type - The type of Realm object to create.
-     * @param {Object} properties - Property values for all required properties without a default value.
-     * @param {string} update mode. Only 'do-not-set-identical-values' is currently supported.
-     */
-    createOrUpdate(type, properties, mode) {}
+    create(type, properties, updateMode) {}
 
     /**
      * Deletes the provided Realm object, or each one inside the provided collection.
