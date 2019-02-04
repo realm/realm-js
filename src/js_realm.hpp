@@ -959,7 +959,8 @@ void RealmClass<T>::create(ContextType ctx, ObjectType this_object, Arguments &a
             // Deprecated API
             update = Value::validated_to_boolean(ctx, args[2]);
             only_update_diff_objects = false;
-        } else if (Value::is_string(ctx, args[2])) {
+        }
+        else if (Value::is_string(ctx, args[2])) {
             // New API accepting an updateMode parameter
             std::string mode = Value::validated_to_string(ctx, args[2]);
             if (mode == "never") {
@@ -974,8 +975,9 @@ void RealmClass<T>::create(ContextType ctx, ObjectType this_object, Arguments &a
                 update = true;
                 only_update_diff_objects = false;
             }
-        } else {
-            throw std::runtime_error("Unsupported 'updateMode'. Only 'never', 'modified' or 'all' is supported.").
+        }
+        else {
+            throw std::runtime_error("Unsupported 'updateMode'. Only 'never', 'modified' or 'all' is supported.");
         }
     }
 
