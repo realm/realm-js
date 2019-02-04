@@ -1,15 +1,16 @@
-# Realm JS tests running in an Electron enviroment
+# Realm JS tests running in an Electron environment
 
 Currently this directory consists of:
-- An electron app in `app` which has
-  - `main.js` which starts a hidden `BrowserWindow` and either runs the tests itself (see --main flag below) or lets
-    the render process do the heavy lifting.
-  - `index.html` which requires `renderer.js`.
+- An electron app in `app` where:
+  - `main.js` starts a hidden `BrowserWindow` (loading `index.html`), either runs the tests or lets the render process
+    do the heavy lifting.
+  - `index.html` simply requires `renderer.js`.
   - `renderer.js` detects if it's supposed to run the tests and runs them.
-- A `runner.js` script, which uses [spectron](https://www.npmjs.com/package/spectron) to start the Electron app and read out the console from the Electron process, and console logging it.
+  - `mocha.js` creates a mocha remote client and sets globals for the tests to use.
+- `runner.js` which start the Mocha remote server and the Electron app (using the distribution package when available).
 
-When running `npm install` a postinstall script will package the test suite and install that as well as Realm from an
-archive. Make sure the integration-tests folder contains a `realm-*.tgz` file before installing this.
+When running `npm install` a post-install script will package the test suite and install that as well as Realm from an
+archive. Make sure the integration-tests folder contains a `realm-*.tgz` file before running this.
 
 ## Running the tests
 
@@ -24,3 +25,7 @@ To run tests in a renderer process:
 To run tests both processes in sequence:
 
     npm test
+
+To package the test app for distribution:
+
+    npm run package -- [{arguments for electron-builder}](https://www.electron.build/cli).
