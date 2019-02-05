@@ -20,18 +20,38 @@ const { expect } = require("chai");
 
 const PersonAndDogsSchema = require("./schemas/person-and-dogs");
 
-describe("Realm.creatClass", () => {
+describe("Realm.schema.createClass", () => {
     it("is a function", () => {
         const realm = new Realm({ schema: PersonAndDogsSchema, _cache: false });
         expect(realm.schema).to.be.an("array");
-        console.log(Object.keys(realm.schema));
+        // Expect a non-enumerable field
+        expect(Object.keys(realm.schema)).to.not.contain("createClass");
         // expect(realm.schema.createClass).to.be.a("function");
         expect(realm._createSchemaClass).to.be.a("function");
+    });
+
+    it("creates a class schema from just a name", () => {
+        const realm = new Realm({ schema: PersonAndDogsSchema, _cache: false });
         realm.write(() => {
-            realm._createSchemaClass("MyClass", {});
+            realm._createSchemaClass("MyClass");
         });
-        process.nextTick(() => {
-            console.log(realm.schema);
+        const classNames = realm.schema.map(s => s.name);
+        expect(classNames).to.contain("MyClass");
+    });
+
+    it("creates a class schema from a name and properties", () => {
+        const realm = new Realm({ schema: PersonAndDogsSchema, _cache: false });
+        realm.write(() => {
+            realm._createSchemaClass("MyClass", { myField: "string" });
+        });
+        const MyClassSchema = realm.schema.find(s => s.name === "MyClass");
+        expect(MyClassSchema).to.deep.equal({
+            name: "MyClass",
+            properties: {
+                myField: {
+                    type: "string",
+                },
+            },
         });
     });
 });

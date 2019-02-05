@@ -1290,35 +1290,48 @@ void RealmClass<T>::privileges(ContextType ctx, ObjectType this_object, Argument
 
 template<typename T>
 void RealmClass<T>::create_schema_class(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
-    args.validate_between(2, 3);
+    args.validate_between(1, 3);
+
+    // Create a schema object from the arguments, which can be parsed
+    // We could take this as an argument directly, but that would be a less intuitive API 
+    ObjectType schema = Object::create_empty(ctx);
+
     std::string name = Value::validated_to_string(ctx, args[0], "name");
-    ObjectType properties = Value::validated_to_object(ctx, args[1], "properties");
-    std::string primary_key;
-    if (args.count >= 3) {
-        primary_key = Value::validated_to_string(ctx, args[2], "primaryKey");
+    Object::set_property(ctx, schema, "name", Value::from_string(ctx, name));
+
+    if (args.count >= 2) {
+        ObjectType properties = Value::validated_to_object(ctx, args[1], "properties");
+        Object::set_property(ctx, schema, "properties", properties);
+    } else {
+        // Use an empty object if no properties are supplied
+        Object::set_property(ctx, schema, "properties", Object::create_empty(ctx));
     }
 
-    std::string table_name = ObjectStore::table_name_for_object_type(name);
-    printf("table_name = %s", table_name.c_str());
+    if (args.count >= 3) {
+        Object::set_property(ctx, schema, "primaryKey", args[2]);
+    }
+
+    // Parse the schema object
+    ObjectDefaultsMap defaults;
+    ConstructorMap constructors;
+    ObjectSchema parsed_schema = Schema<T>::parse_object_schema(ctx, schema, defaults, constructors);
+
+    // Compute the prefixed table name for the object
+    std::string table_name = ObjectStore::table_name_for_object_type(parsed_schema.name);
 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
     Group& group = realm->read_group();
 
+    // TODO: Use `group.has_table();` to check if the table already exists
+
     // SharedGroup& shared_group = _impl::RealmFriend::get_shared_group(*realm);
     // Group& group = _impl::SharedGroupFriend::get_group(shared_group);
-    // group.has_table();
-
-    // Schema<T> parsed_schema = Schema<T>::parse_object_schema(ctx, properties, defaults, constructors);
     
+    // Add a table to the Realm
     TableRef table = group.add_table(table_name);
-    // TODO: Add the individual properties
     
-    /*
-    // Trigger a schema change notification
-    realm::Schema schema = realm->schema();
-    auto version = realm->schema_version();
-    realm->update_schema(schema, version + 1, nullptr, nullptr, true);
-    */
+    // TODO: Loop through the parsed_schema and add the individual properties as columns in the table
+    
 }
 
 } // js
