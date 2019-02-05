@@ -41,6 +41,7 @@ global.it.skipIf = require("./utils/skip-if");
 
 describe(global.title, () => {
     require("./realm-constructor");
+    require("./imperative-schema-manipulation");
 });
 
 afterEach(() => {
