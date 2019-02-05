@@ -5,7 +5,7 @@
   "main": "src/index.js",
   "private": true,
   "scripts": {
-    "start": "mocha --require src/utils/inject-globals.js --watch src/index.js"
+    "start": "mocha --require src/utils/segfault-handler.js --require src/utils/inject-globals.js --watch src/index.js"
   },
   "peerDependencies": {
     "mocha": "^5.2.0",
@@ -14,7 +14,8 @@
   "devDependencies": {
     "fs-extra": "^7.0.1",
     "mocha": "^5.2.0",
-    "realm": "../.."
+    "realm": "../..",
+    "segfault-handler": "^1.0.1"
   },
   "dependencies": {
     "chai": "^4.2.0"
