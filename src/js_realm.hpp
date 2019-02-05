@@ -238,6 +238,8 @@ public:
     static void object_for_object_id(ContextType, ObjectType, Arguments &, ReturnValue&);
     static void privileges(ContextType, ObjectType, Arguments &, ReturnValue&);
     static void get_schema_name_from_object(ContextType, ObjectType, Arguments &, ReturnValue&);
+    static void create_schema_class(ContextType, ObjectType, Arguments &, ReturnValue&);
+
 #if REALM_ENABLE_SYNC
     static void async_open_realm(ContextType, ObjectType, Arguments &, ReturnValue&);
 #endif
@@ -304,6 +306,7 @@ public:
         {"writeCopyTo", wrap<writeCopyTo>},
         {"deleteModel", wrap<delete_model>},
         {"privileges", wrap<privileges>},
+        {"_createSchemaClass", wrap<create_schema_class>},
         {"_objectForObjectId", wrap<object_for_object_id>},
         {"_schemaName", wrap<get_schema_name_from_object>},
     };
@@ -1283,6 +1286,39 @@ void RealmClass<T>::privileges(ContextType ctx, ObjectType this_object, Argument
 #else
     throw std::logic_error("Realm.privileges() can only be used with Query-based Realms.");
 #endif
+}
+
+template<typename T>
+void RealmClass<T>::create_schema_class(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
+    args.validate_between(2, 3);
+    std::string name = Value::validated_to_string(ctx, args[0], "name");
+    ObjectType properties = Value::validated_to_object(ctx, args[1], "properties");
+    std::string primary_key;
+    if (args.count >= 3) {
+        primary_key = Value::validated_to_string(ctx, args[2], "primaryKey");
+    }
+
+    std::string table_name = ObjectStore::table_name_for_object_type(name);
+    printf("table_name = %s", table_name.c_str());
+
+    SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
+    Group& group = realm->read_group();
+
+    // SharedGroup& shared_group = _impl::RealmFriend::get_shared_group(*realm);
+    // Group& group = _impl::SharedGroupFriend::get_group(shared_group);
+    // group.has_table();
+
+    // Schema<T> parsed_schema = Schema<T>::parse_object_schema(ctx, properties, defaults, constructors);
+    
+    TableRef table = group.add_table(table_name);
+    // TODO: Add the individual properties
+    
+    /*
+    // Trigger a schema change notification
+    realm::Schema schema = realm->schema();
+    auto version = realm->schema_version();
+    realm->update_schema(schema, version + 1, nullptr, nullptr, true);
+    */
 }
 
 } // js
