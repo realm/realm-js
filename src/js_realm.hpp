@@ -952,8 +952,8 @@ void RealmClass<T>::object_for_primary_key(ContextType ctx, ObjectType this_obje
 template<typename T>
 void RealmClass<T>::create(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_maximum(3);
-    bool update;
-    bool only_update_diff_objects;
+    bool update = false;
+    bool only_update_diff_objects = false;
     if (args.count == 3) {
         if (Value::is_boolean(ctx, args[2])) {
             // Deprecated API
