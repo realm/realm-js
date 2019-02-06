@@ -960,7 +960,7 @@ module.exports = {
 
                         // check if subscriptions have been removed
                         // subscription1.unsubscribe() requires a server round-trip so it might take a while
-                        let retries = 0;
+                        let retries2 = 0;
                         token = setInterval(() => {
                             listOfSubscriptions = realm.subscriptions();
                             if (listOfSubscriptions.length == 5) { // the 5 permissions classes
@@ -969,7 +969,7 @@ module.exports = {
                                 resolve();
                             }
                             // Time out after 10s
-                            if (++retries > 20) {
+                            if (++retries2 > 20) {
                                 reject('Removing listeners timed out');
                                 clearInterval(token);
                             }
