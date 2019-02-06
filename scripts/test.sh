@@ -55,9 +55,11 @@ start_server() {
   if [ -z "${SYNC_WORKER_FEATURE_TOKEN}" ]; then
       die "SYNC_WORKER_FEATURE_TOKEN must be set to run tests."
   fi
-  export ROS_SKIP_PROMPTS=true &&  ./node_modules/.bin/ros start --data realm-object-server-data &
-  SERVER_PID=$!
+  ros_log_temp="$(pwd)/build/ros_out.txt"
+  ROS_SKIP_PROMPTS=true ./node_modules/.bin/ros start --data realm-object-server-data 2>&1 | tee $ros_log_temp &
+  SERVER_PID=$(jobs -l | grep node_modules/.bin/ros | cut -f2 -d" ")
   echo ROS PID: ${SERVER_PID}
+  ( tail -f -n0 $ros_log_temp & ) | grep -q "Realm Object Server has started and is listening"
 }
 
 stop_server() {
@@ -70,6 +72,7 @@ stop_server() {
 
 startedSimulator=false
 log_temp=
+ros_log_temp=
 test_temp_dir=
 cleanup() {
   # Kill started object server
@@ -94,6 +97,9 @@ cleanup() {
   # Cleanup temp files
   if [ -n "$log_temp" ] && [ -e "$log_temp" ]; then
     rm "$log_temp" || true
+  fi
+  if [ -n "$ros_log_temp" ] && [ -e "$ros_log_temp" ]; then
+    rm "$ros_log_temp" || true
   fi
   if [ -n "$test_temp_dir" ] && [ -e "$test_temp_dir" ]; then
     rm -rf "$test_temp_dir" || true
