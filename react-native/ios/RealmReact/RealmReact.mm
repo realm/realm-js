@@ -54,6 +54,7 @@ using namespace realm::rpc;
 // the part of the RCTCxxBridge private class we care about
 @interface RCTBridge (Realm_RCTCxxBridge)
 - (JSGlobalContextRef)jsContextRef;
+- (void *)runtime;
 @end
 
 extern "C" JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executor, bool create) {
@@ -319,7 +320,19 @@ void _initializeOnJSThread(JSContextRefExtractor jsContextExtractor) {
             }
 
             _initializeOnJSThread(^{
-                return [bridge jsContextRef];
+                // RN < 0.58 has a private method that returns the js context
+                if ([bridge respondsToSelector:@selector(jsContextRef)]) {
+                    return [bridge jsContextRef];
+                }
+                // RN 0.58+ wraps the js context in the jsi abstraction layer,
+                // which doesn't have any way to obtain the JSGlobalContextRef,
+                // so engage in some undefined behavior and slurp out the
+                // member variable
+                struct RealmJSCRuntime {
+                    virtual ~RealmJSCRuntime() = 0;
+                    JSGlobalContextRef ctx_;
+                };
+                return static_cast<RealmJSCRuntime*>(bridge.runtime)->ctx_;
             });
         } queue:RCTJSThread];
     } else { // React Native 0.44 and older

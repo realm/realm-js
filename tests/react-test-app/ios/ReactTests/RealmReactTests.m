@@ -33,16 +33,18 @@
 @interface RCTWebSocketExecutor : NSObject
 @end
 
-@interface RCTBridge (Realm_RCTCxxBridge)
-- (JSGlobalContextRef)jsContextRef;
-@end
-
 extern void JSGlobalContextSetIncludesNativeCallStackWhenReportingExceptions(JSGlobalContextRef ctx, bool includesNativeCallStack);
 extern NSMutableArray *RCTGetModuleClasses(void);
+
+struct RealmJSCRuntime {
+  void* vtbl;
+  JSGlobalContextRef ctx;
+};
 
 @interface RCTBridge ()
 + (instancetype)currentBridge;
 - (void)setUp;
+- (void *)runtime;
 @end
 
 @interface RealmReactTests : RealmJSTests
@@ -79,9 +81,8 @@ extern NSMutableArray *RCTGetModuleClasses(void);
         [bridge reload];
         [self waitForNotification:RCTJavaScriptDidLoadNotification];
         bridge = [RCTBridge currentBridge];
-        NSAssert(bridge.jsContextRef, @"No JS context after loading");
 
-        JSGlobalContextRef ctx = RCTBridge.currentBridge.jsContextRef;
+        JSGlobalContextRef ctx = ((struct RealmJSCRuntime *)bridge.runtime)->ctx;
         JSGlobalContextSetIncludesNativeCallStackWhenReportingExceptions(ctx, false);
 
         [bridge.eventDispatcher sendAppEventWithName:@"realm-test-names" body:nil];
