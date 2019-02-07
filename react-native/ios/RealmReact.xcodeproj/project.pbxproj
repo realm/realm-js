@@ -66,6 +66,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		3F8D968A220CE21400327C8C /* RealmReact.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = RealmReact.xcconfig; sourceTree = "<group>"; };
 		F60690131CA2766F0003FB26 /* libRealmReact.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libRealmReact.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		F60690161CA2766F0003FB26 /* RealmReact.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RealmReact.h; sourceTree = "<group>"; };
 		F60690181CA2766F0003FB26 /* RealmReact.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = RealmReact.mm; sourceTree = "<group>"; };
@@ -110,6 +111,7 @@
 				F60690201CA277410003FB26 /* RealmAnalytics.mm */,
 				F60690161CA2766F0003FB26 /* RealmReact.h */,
 				F60690181CA2766F0003FB26 /* RealmReact.mm */,
+				3F8D968A220CE21400327C8C /* RealmReact.xcconfig */,
 			);
 			path = RealmReact;
 			sourceTree = "<group>";
@@ -243,6 +245,7 @@
 /* Begin XCBuildConfiguration section */
 		F606901A1CA2766F0003FB26 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 3F8D968A220CE21400327C8C /* RealmReact.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CC = "$(SRCROOT)/../../scripts/ccache-clang.sh";
@@ -304,6 +307,7 @@
 		};
 		F606901B1CA2766F0003FB26 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 3F8D968A220CE21400327C8C /* RealmReact.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CC = "$(SRCROOT)/../../scripts/ccache-clang.sh";
