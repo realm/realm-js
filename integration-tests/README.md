@@ -2,7 +2,7 @@
 
 This directory of the repository contains two sub-directories:
 - [./tests](./tests): A suite of tests which are supposed to pass in all defined environments.
-- [./environments](./environments): A couple of environments in which the tests are supposed pass:
+- [./environments](./environments): A number of environments in which the tests are supposed pass:
   - [Node.js](./environments/node/README.md)
   - [React Native](./environments/react-native/README.md)
   - [Electron](./environments/electron/README.md)
