@@ -65,7 +65,7 @@ stage('check') {
   }
 }
 
-// Produce a package
+// Create the Realm JS npm package
 stage('package') {
   node('docker') {
     // Unstash the files in the repository
