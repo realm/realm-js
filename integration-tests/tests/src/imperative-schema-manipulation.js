@@ -22,16 +22,25 @@ const PersonAndDogsSchema = require("./schemas/person-and-dogs");
 
 describe("Realm.schema.createClass", () => {
     it("is a function", () => {
-        const realm = new Realm({ schema: PersonAndDogsSchema, _cache: false });
+        const realm = new Realm({ schema: PersonAndDogsSchema });
         expect(realm.schema).to.be.an("array");
         // Expect a non-enumerable field
         expect(Object.keys(realm.schema)).to.not.contain("createClass");
-        // expect(realm.schema.createClass).to.be.a("function");
+        // There is a function defined on the Realm
         expect(realm._createSchemaClass).to.be.a("function");
+        // This function gets put on the schema to
+        // expect(realm.schema.createClass).to.be.a("function");
+    });
+
+    it("creates a class schema outside a transaction", () => {
+        const realm = new Realm({ schema: PersonAndDogsSchema });
+        realm._createSchemaClass("MyClass");
+        const classNames = realm.schema.map(s => s.name);
+        expect(classNames).to.contain("MyClass");
     });
 
     it("creates a class schema from just a name", () => {
-        const realm = new Realm({ schema: PersonAndDogsSchema, _cache: false });
+        const realm = new Realm({ schema: PersonAndDogsSchema });
         realm.write(() => {
             realm._createSchemaClass("MyClass");
         });
@@ -40,7 +49,7 @@ describe("Realm.schema.createClass", () => {
     });
 
     it("creates a class schema from a name and properties", () => {
-        const realm = new Realm({ schema: PersonAndDogsSchema, _cache: false });
+        const realm = new Realm({ schema: PersonAndDogsSchema });
         realm.write(() => {
             realm._createSchemaClass("MyClass", { myField: "string" });
         });
@@ -50,8 +59,18 @@ describe("Realm.schema.createClass", () => {
             properties: {
                 myField: {
                     type: "string",
+                    indexed: false,
+                    name: "myField",
+                    optional: false,
                 },
             },
         });
+    });
+
+    it("throws if asked to create a class that already exists", () => {
+        const realm = new Realm({ schema: PersonAndDogsSchema });
+        expect(() => {
+            realm._createSchemaClass("Person");
+        }).to.throw("Another class named 'Person' already exists");
     });
 });

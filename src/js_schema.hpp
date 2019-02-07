@@ -108,7 +108,7 @@ static inline void parse_property_type(StringData object_name, Property& prop, S
         if (prop.object_type == "bool") {
             prop.type |= PropertyType::Bool | PropertyType::Array;
             prop.object_type = "";
-        } 
+        }
         else if (prop.object_type == "int") {
             prop.type |= PropertyType::Int | PropertyType::Array;
             prop.object_type = "";

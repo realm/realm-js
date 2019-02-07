@@ -1288,50 +1288,65 @@ void RealmClass<T>::privileges(ContextType ctx, ObjectType this_object, Argument
 #endif
 }
 
+class InvalidNameException : public std::invalid_argument {
+    public:
+        InvalidNameException(const std::string& __s) : std::invalid_argument(__s) {}
+        InvalidNameException(const char* __s) : std::invalid_argument(__s) {}
+};
+
 template<typename T>
 void RealmClass<T>::create_schema_class(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_between(1, 3);
 
     // Create a schema object from the arguments, which can be parsed
-    // We could take this as an argument directly, but that would be a less intuitive API 
-    ObjectType schema = Object::create_empty(ctx);
+    // We could take this as an argument directly, but that would result in a less intuitive API
+    ObjectType object_schema = Object::create_empty(ctx);
 
     std::string name = Value::validated_to_string(ctx, args[0], "name");
-    Object::set_property(ctx, schema, "name", Value::from_string(ctx, name));
+    Object::set_property(ctx, object_schema, "name", Value::from_string(ctx, name));
 
     if (args.count >= 2) {
         ObjectType properties = Value::validated_to_object(ctx, args[1], "properties");
-        Object::set_property(ctx, schema, "properties", properties);
+        Object::set_property(ctx, object_schema, "properties", properties);
     } else {
         // Use an empty object if no properties are supplied
-        Object::set_property(ctx, schema, "properties", Object::create_empty(ctx));
+        Object::set_property(ctx, object_schema, "properties", Object::create_empty(ctx));
     }
 
     if (args.count >= 3) {
-        Object::set_property(ctx, schema, "primaryKey", args[2]);
+        Object::set_property(ctx, object_schema, "primaryKey", args[2]);
     }
 
-    // Parse the schema object
+    // Parse the schema object provided by the user
     ObjectDefaultsMap defaults;
     ConstructorMap constructors;
-    ObjectSchema parsed_schema = Schema<T>::parse_object_schema(ctx, schema, defaults, constructors);
+    ObjectSchema parsed_object_schema = Schema<T>::parse_object_schema(ctx, object_schema, defaults, constructors);
 
-    // Compute the prefixed table name for the object
-    std::string table_name = ObjectStore::table_name_for_object_type(parsed_schema.name);
-
+    // Get a handle to the Realms group
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
     Group& group = realm->read_group();
 
-    // TODO: Use `group.has_table();` to check if the table already exists
-
-    // SharedGroup& shared_group = _impl::RealmFriend::get_shared_group(*realm);
-    // Group& group = _impl::SharedGroupFriend::get_group(shared_group);
+    // Determine if we already have an object schema with the requested name
+    realm::Schema schema = realm->schema();
+    if (schema.find(parsed_object_schema.name) != schema.end()) {
+        throw InvalidNameException(util::format(
+            "Another class named '%1' already exists",
+            parsed_object_schema.name
+        ));
+    }
     
-    // Add a table to the Realm
-    TableRef table = group.add_table(table_name);
-    
-    // TODO: Loop through the parsed_schema and add the individual properties as columns in the table
-    
+    // Create a vector from the existing schema
+    std::vector<ObjectSchema> updated_schema(schema.begin(), schema.end());
+    // Add the new object schema to the end of the updated schema
+    updated_schema.emplace_back(parsed_object_schema);
+    // Perform the schema update
+    realm->update_schema(
+        updated_schema,
+        realm->schema_version() + 1,
+        nullptr,
+        nullptr,
+        realm->is_in_transaction()
+    );
 }
 
 } // js
