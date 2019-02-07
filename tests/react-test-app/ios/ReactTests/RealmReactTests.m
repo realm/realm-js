@@ -127,7 +127,7 @@ struct RealmJSCRuntime {
 
 + (void)waitForCondition:(BOOL *)condition description:(NSString *)description {
     NSRunLoop *runLoop = [NSRunLoop currentRunLoop];
-    NSDate *timeout = [NSDate dateWithTimeIntervalSinceNow:30.0];
+    NSDate *timeout = [NSDate dateWithTimeIntervalSinceNow:60.0];
 
     while (!*condition) {
         if ([timeout timeIntervalSinceNow] < 0) {
