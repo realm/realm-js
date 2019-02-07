@@ -55,6 +55,7 @@ start_server() {
   if [ -z "${SYNC_WORKER_FEATURE_TOKEN}" ]; then
       die "SYNC_WORKER_FEATURE_TOKEN must be set to run tests."
   fi
+  mkdir -p "$(pwd)/build"
   ros_log_temp="$(pwd)/build/ros_out.txt"
   ROS_SKIP_PROMPTS=true ./node_modules/.bin/ros start --data realm-object-server-data 2>&1 | tee $ros_log_temp &
   SERVER_PID=$(jobs -l | grep node_modules/.bin/ros | cut -f2 -d" ")
