@@ -1,6 +1,6 @@
 # Realm JS integration tests
 
-This directory of the repository is contains two sub-directories:
+This directory of the repository contains two sub-directories:
 - [./tests](./tests): A suite of tests which are supposed to pass in all defined environments.
 - [./environments](./environments): A couple of environments in which the tests are supposed pass:
   - [Node.js](./environments/node/README.md)
