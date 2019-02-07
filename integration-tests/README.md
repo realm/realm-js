@@ -104,7 +104,7 @@ This is still very much a work in progress, currently we're missing:
 
 ### Operating systems
 
-In its current state the integration tests are note setup to run with Node.js nor Electron on Windows:
+In its current state the integration tests are not setup to run with Node.js nor Electron on Windows:
 There should be no reason that it couldn't or shouldn't do that, except time spent setting it up (and maintaining it).
 
 ### No symbolic links in `./tests` nor `./environments/react-native`
