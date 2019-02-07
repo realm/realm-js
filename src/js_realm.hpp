@@ -794,7 +794,22 @@ void RealmClass<T>::get_schema_version(ContextType ctx, ObjectType object, Retur
 template<typename T>
 void RealmClass<T>::get_schema(ContextType ctx, ObjectType object, ReturnValue &return_value) {
     auto& schema = get_internal<T, RealmClass<T>>(object)->get()->schema();
-    return_value.set(Schema<T>::object_for_schema(ctx, schema));
+    ObjectType schema_object = Schema<T>::object_for_schema(ctx, schema);
+
+    // Patch in the methods to modify the schema
+    // PropertyAttributes attributes = ReadOnly | DontEnum | DontDelete;
+    /*
+    PropertyAttributes attributes = ReadOnly | DontDelete;
+    Object::set_property(
+        ctx,
+        schema_object,
+        "createClass",
+        Object::get_property(ctx, object, "_createSchemaClass"),
+        attributes
+    );
+    */
+
+    return_value.set(schema_object);
 }
 
 template<typename T>
