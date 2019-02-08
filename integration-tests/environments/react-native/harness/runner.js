@@ -67,7 +67,7 @@ async function runApp(platform, junitFilePath) {
         // Ask React Native to run the ios app
         rn.sync("run-ios", "--no-packager");
     } else {
-        throw new Error(`Unexpected platform ${platform}`);
+        throw new Error(`Unexpected platform: '${platform}'`);
     }
 
     // Wait until the tests ends
