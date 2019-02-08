@@ -27,8 +27,9 @@ async function runApp(platform, junitFilePath) {
     // Check if an argument for junit path was requested
     if (junitFilePath) {
         mochaConfig.reporter = "mocha-junit-reporter";
-        // Probably due to an issue in "mocha-junit-reporter", this needs to be wrapped twice in `reporterOptions`
-        mochaConfig.reporterOptions = { reporterOptions: { mochaFile: junitFilePath } };
+        mochaConfig.reporterOptions = {
+            mochaFile: junitFilePath,
+        };
     }
 
     const server = new MochaRemoteServer(mochaConfig, {
