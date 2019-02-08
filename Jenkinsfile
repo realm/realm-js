@@ -88,18 +88,7 @@ stage('package') {
   }
 }
 
-stage('integration tests') {
-  parallel(
-    'React Native on Android': ReactNativeTests.onAndroid(),
-    'React Native on iOS': ReactNativeTests.onIOS(),
-    'Node.js v10 on Mac': NodeJsTests.onMacOS(nodeVersion: '10'),
-    'Node.js v8 on Linux': NodeJsTests.onLinux(nodeVersion: '8'),
-    'Node.js v10 on Linux': NodeJsTests.onLinux(nodeVersion: '10'),
-    'Electron on Linux': ElectronTests.onLinux(),
-  )
-}
-
-stage('build') {
+stage('test (and build)') {
   parallel(
     eslint: doDockerBuild('eslint-ci', {
       step([$class: 'CheckStylePublisher', canComputeNew: false, canRunOnFailed: true, defaultEncoding: '', healthy: '', pattern: 'eslint.xml', unHealthy: ''])
@@ -121,7 +110,16 @@ stage('build') {
     //android_react_tests: doAndroidBuild('react-tests-android', {
     //  junit 'tests/react-test-app/tests.xml'
     //}),
-    windows_node: doWindowsBuild()
+    windows_node: doWindowsBuild(),
+
+    // Integration tests:
+    // The tests above should be removed once we manage to move them to the new test harness in ./integration-tests
+    'React Native on Android': ReactNativeTests.onAndroid(),
+    'React Native on iOS': ReactNativeTests.onIOS(),
+    'Node.js v10 on Mac': NodeJsTests.onMacOS(nodeVersion: '10'),
+    'Node.js v8 on Linux': NodeJsTests.onLinux(nodeVersion: '8'),
+    'Node.js v10 on Linux': NodeJsTests.onLinux(nodeVersion: '10'),
+    'Electron on Linux': ElectronTests.onLinux(),
   )
 }
 
