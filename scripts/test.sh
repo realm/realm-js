@@ -128,8 +128,9 @@ open_chrome() {
 }
 
 start_packager() {
+  rm -r $TMPDIR/react-* || true
   watchman watch-del-all || true
-  ./node_modules/react-native/scripts/packager.sh | tee "$PACKAGER_OUT" &
+  ./node_modules/react-native/scripts/packager.sh --reset-cache | tee "$PACKAGER_OUT" &
 
   while :; do
     if grep -Fxq "Loading dependency graph, done." "$PACKAGER_OUT"; then
