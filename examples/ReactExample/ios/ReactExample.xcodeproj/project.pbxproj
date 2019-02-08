@@ -7,15 +7,15 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		0CCAB2A8EBABFE3B7A0C71E1 /* libPods-ReactExample.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E1588A423C2A93E226CAA32F /* libPods-ReactExample.a */; };
 		13B07FBC1A68108700A75B9A /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB01A68108700A75B9A /* AppDelegate.m */; };
 		13B07FBD1A68108700A75B9A /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB11A68108700A75B9A /* LaunchScreen.xib */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
+		13D64EEAE34A1CF62266D89F /* libPods-ReactExample.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DE0AD34812997F4FC9D2B96B /* libPods-ReactExample.a */; };
+		22B758D4B4AB47E220943094 /* libPods-ReactExampleTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = AC68B7327A3ED7A13642626E /* libPods-ReactExampleTests.a */; };
 		3F2C205B1F59D921005D67C0 /* components in Resources */ = {isa = PBXBuildFile; fileRef = 3F2C20571F59D921005D67C0 /* components */; };
 		3F9518C821FBBBA900BB64A5 /* libRealmReact.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 859609611E23C0AB009C7E43 /* libRealmReact.a */; };
 		8573DE511E23DDA700914396 /* ReactExampleTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 8573DE501E23DDA700914396 /* ReactExampleTests.m */; };
-		9BB0481E1941F8E9E31EE2EA /* libPods-ReactExampleTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 612B839133792ECD786E0CC4 /* libPods-ReactExampleTests.a */; };
 		B06E5AD59A024665BD24C8C7 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 3C4594A7EF1647D68ADF0ED0 /* libz.tbd */; };
 		EF9CDEC26BA64438B1A9F856 /* libc++.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = C202449017C94855B351AE73 /* libc++.tbd */; };
 /* End PBXBuildFile section */
@@ -55,20 +55,20 @@
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = ReactExample/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = ReactExample/Info.plist; sourceTree = "<group>"; };
 		13B07FB71A68108700A75B9A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = ReactExample/main.m; sourceTree = "<group>"; };
+		2AD7C23EDFD4833BB64BDD11 /* Pods-ReactExampleTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ReactExampleTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-ReactExampleTests/Pods-ReactExampleTests.debug.xcconfig"; sourceTree = SOURCE_ROOT; };
 		3C4594A7EF1647D68ADF0ED0 /* libz.tbd */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
 		3F2C20571F59D921005D67C0 /* components */ = {isa = PBXFileReference; lastKnownFileType = folder; name = components; path = ../components; sourceTree = "<group>"; };
 		3F2C20581F59D921005D67C0 /* index.android.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; name = index.android.js; path = ../index.android.js; sourceTree = "<group>"; };
 		3F2C20591F59D921005D67C0 /* index.ios.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; name = index.ios.js; path = ../index.ios.js; sourceTree = "<group>"; };
 		3F2C205A1F59D921005D67C0 /* main.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; name = main.js; path = ../main.js; sourceTree = "<group>"; };
-		5D7EB777800C564F45D3B0FF /* Pods-ReactExample.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ReactExample.release.xcconfig"; path = "Target Support Files/Pods-ReactExample/Pods-ReactExample.release.xcconfig"; sourceTree = "<group>"; };
-		612B839133792ECD786E0CC4 /* libPods-ReactExampleTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-ReactExampleTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		3F47825A483282902E078A10 /* Pods-ReactExample.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ReactExample.debug.xcconfig"; path = "Pods/Target Support Files/Pods-ReactExample/Pods-ReactExample.debug.xcconfig"; sourceTree = SOURCE_ROOT; };
 		73AD103601A44EB291AC2117 /* RealmReact.xcodeproj */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = "wrapper.pb-project"; name = RealmReact.xcodeproj; path = "../node_modules/realm/react-native/ios/RealmReact.xcodeproj"; sourceTree = "<group>"; };
 		8573DE501E23DDA700914396 /* ReactExampleTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ReactExampleTests.m; sourceTree = "<group>"; };
-		8F1D8D81CFBEF8A1D6DBFEE4 /* Pods-ReactExampleTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ReactExampleTests.debug.xcconfig"; path = "Target Support Files/Pods-ReactExampleTests/Pods-ReactExampleTests.debug.xcconfig"; sourceTree = "<group>"; };
+		AC68B7327A3ED7A13642626E /* libPods-ReactExampleTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-ReactExampleTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		B23A218AD50EBC4EA45F416E /* Pods-ReactExampleTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ReactExampleTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-ReactExampleTests/Pods-ReactExampleTests.release.xcconfig"; sourceTree = SOURCE_ROOT; };
 		C202449017C94855B351AE73 /* libc++.tbd */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.tbd"; path = "usr/lib/libc++.tbd"; sourceTree = SDKROOT; };
-		CAD079947E5D98CC6C2E58A2 /* Pods-ReactExampleTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ReactExampleTests.release.xcconfig"; path = "Target Support Files/Pods-ReactExampleTests/Pods-ReactExampleTests.release.xcconfig"; sourceTree = "<group>"; };
-		E1588A423C2A93E226CAA32F /* libPods-ReactExample.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-ReactExample.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		E519C424F8AE4D5C5B454345 /* Pods-ReactExample.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ReactExample.debug.xcconfig"; path = "Target Support Files/Pods-ReactExample/Pods-ReactExample.debug.xcconfig"; sourceTree = "<group>"; };
+		DE0AD34812997F4FC9D2B96B /* libPods-ReactExample.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-ReactExample.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		E09BD542C94DF83E2EE00595 /* Pods-ReactExample.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ReactExample.release.xcconfig"; path = "Pods/Target Support Files/Pods-ReactExample/Pods-ReactExample.release.xcconfig"; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -76,7 +76,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9BB0481E1941F8E9E31EE2EA /* libPods-ReactExampleTests.a in Frameworks */,
+				22B758D4B4AB47E220943094 /* libPods-ReactExampleTests.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -87,7 +87,7 @@
 				EF9CDEC26BA64438B1A9F856 /* libc++.tbd in Frameworks */,
 				3F9518C821FBBBA900BB64A5 /* libRealmReact.a in Frameworks */,
 				B06E5AD59A024665BD24C8C7 /* libz.tbd in Frameworks */,
-				0CCAB2A8EBABFE3B7A0C71E1 /* libPods-ReactExample.a in Frameworks */,
+				13D64EEAE34A1CF62266D89F /* libPods-ReactExample.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -130,8 +130,8 @@
 			children = (
 				C202449017C94855B351AE73 /* libc++.tbd */,
 				3C4594A7EF1647D68ADF0ED0 /* libz.tbd */,
-				E1588A423C2A93E226CAA32F /* libPods-ReactExample.a */,
-				612B839133792ECD786E0CC4 /* libPods-ReactExampleTests.a */,
+				DE0AD34812997F4FC9D2B96B /* libPods-ReactExample.a */,
+				AC68B7327A3ED7A13642626E /* libPods-ReactExampleTests.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -150,10 +150,10 @@
 		81F77E92F0F5B58257A1163A /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				E519C424F8AE4D5C5B454345 /* Pods-ReactExample.debug.xcconfig */,
-				5D7EB777800C564F45D3B0FF /* Pods-ReactExample.release.xcconfig */,
-				8F1D8D81CFBEF8A1D6DBFEE4 /* Pods-ReactExampleTests.debug.xcconfig */,
-				CAD079947E5D98CC6C2E58A2 /* Pods-ReactExampleTests.release.xcconfig */,
+				3F47825A483282902E078A10 /* Pods-ReactExample.debug.xcconfig */,
+				E09BD542C94DF83E2EE00595 /* Pods-ReactExample.release.xcconfig */,
+				2AD7C23EDFD4833BB64BDD11 /* Pods-ReactExampleTests.debug.xcconfig */,
+				B23A218AD50EBC4EA45F416E /* Pods-ReactExampleTests.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -205,7 +205,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 00E357021AD99517003FC87E /* Build configuration list for PBXNativeTarget "ReactExampleTests" */;
 			buildPhases = (
-				DAC6E22B0BCEB9D12AA2C4EB /* [CP] Check Pods Manifest.lock */,
+				94270831F55F9B97CB574829 /* [CP] Check Pods Manifest.lock */,
 				00E356EA1AD99517003FC87E /* Sources */,
 				00E356EB1AD99517003FC87E /* Frameworks */,
 				00E356EC1AD99517003FC87E /* Resources */,
@@ -224,7 +224,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "ReactExample" */;
 			buildPhases = (
-				7A59B185921CD2E3A8F5AF06 /* [CP] Check Pods Manifest.lock */,
+				6F32E437613F528942859BBE /* [CP] Check Pods Manifest.lock */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
@@ -325,7 +325,7 @@
 			shellPath = /bin/sh;
 			shellScript = "export NODE_BINARY=node\n../node_modules/react-native/scripts/react-native-xcode.sh\n";
 		};
-		7A59B185921CD2E3A8F5AF06 /* [CP] Check Pods Manifest.lock */ = {
+		6F32E437613F528942859BBE /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -347,7 +347,7 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		DAC6E22B0BCEB9D12AA2C4EB /* [CP] Check Pods Manifest.lock */ = {
+		94270831F55F9B97CB574829 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -419,7 +419,7 @@
 /* Begin XCBuildConfiguration section */
 		00E356F61AD99517003FC87E /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 8F1D8D81CFBEF8A1D6DBFEE4 /* Pods-ReactExampleTests.debug.xcconfig */;
+			baseConfigurationReference = 2AD7C23EDFD4833BB64BDD11 /* Pods-ReactExampleTests.debug.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				GCC_PREPROCESSOR_DEFINITIONS = (
@@ -441,7 +441,7 @@
 		};
 		00E356F71AD99517003FC87E /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = CAD079947E5D98CC6C2E58A2 /* Pods-ReactExampleTests.release.xcconfig */;
+			baseConfigurationReference = B23A218AD50EBC4EA45F416E /* Pods-ReactExampleTests.release.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				COPY_PHASE_STRIP = NO;
@@ -460,7 +460,7 @@
 		};
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = E519C424F8AE4D5C5B454345 /* Pods-ReactExample.debug.xcconfig */;
+			baseConfigurationReference = 3F47825A483282902E078A10 /* Pods-ReactExample.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CC = "$(SRCROOT)/../../../scripts/ccache-clang.sh";
@@ -479,7 +479,7 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 5D7EB777800C564F45D3B0FF /* Pods-ReactExample.release.xcconfig */;
+			baseConfigurationReference = E09BD542C94DF83E2EE00595 /* Pods-ReactExample.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CC = "$(SRCROOT)/../../../scripts/ccache-clang.sh";

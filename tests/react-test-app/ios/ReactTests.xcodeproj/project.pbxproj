@@ -7,15 +7,15 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		07BF1102462B94ED615ED322 /* libPods-RealmReactTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A9CC189DB1B988ED44A344BB /* libPods-RealmReactTests.a */; };
 		13B07FBC1A68108700A75B9A /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB01A68108700A75B9A /* AppDelegate.m */; };
 		13B07FBD1A68108700A75B9A /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB11A68108700A75B9A /* LaunchScreen.xib */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
 		1A9D2B80E7D649D2B5D8FE09 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 4E45185577984C00AA740BFE /* libz.tbd */; };
+		245440B952E2C544F9CDB0D3 /* libPods-RealmReactTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F3B1864B706D6E4BF523D470 /* libPods-RealmReactTests.a */; };
+		2AE23CE52CB77C91684FCAE2 /* libPods-ReactTestApp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EC2D7E24C5A46A53987AB428 /* libPods-ReactTestApp.a */; };
 		3F02502D21FA75B2004DF36F /* libRealmReact.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 855301951E1FF78600FF108E /* libRealmReact.a */; };
 		3F2785FE21F94A1E00D243F3 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 4E45185577984C00AA740BFE /* libz.tbd */; };
-		6D141A0CCB54EB666F116095 /* libPods-ReactTestApp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = BCF5B1CBA7306A91ABA806C6 /* libPods-ReactTestApp.a */; };
 		8553016B1E1FF6D500FF108E /* RealmJSTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = 8553016A1E1FF6D500FF108E /* RealmJSTests.mm */; };
 		855301CF1E20069D00FF108E /* dates-v3.realm in Resources */ = {isa = PBXBuildFile; fileRef = 855301CD1E20069D00FF108E /* dates-v3.realm */; };
 		855301D01E20069D00FF108E /* dates-v5.realm in Resources */ = {isa = PBXBuildFile; fileRef = 855301CE1E20069D00FF108E /* dates-v5.realm */; };
@@ -59,19 +59,19 @@
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = ReactTests/Info.plist; sourceTree = "<group>"; };
 		13B07FB71A68108700A75B9A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = ReactTests/main.m; sourceTree = "<group>"; };
 		193A0C4F1D2C485DBE5ACC72 /* RealmReact.xcodeproj */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = "wrapper.pb-project"; name = RealmReact.xcodeproj; path = "../node_modules/realm/react-native/ios/RealmReact.xcodeproj"; sourceTree = "<group>"; };
-		3621C3DBC07DBC3166A16046 /* Pods-RealmReactTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RealmReactTests.release.xcconfig"; path = "Target Support Files/Pods-RealmReactTests/Pods-RealmReactTests.release.xcconfig"; sourceTree = "<group>"; };
 		4E45185577984C00AA740BFE /* libz.tbd */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
-		54D3293F38846F312E09549B /* Pods-RealmReactTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RealmReactTests.debug.xcconfig"; path = "Target Support Files/Pods-RealmReactTests/Pods-RealmReactTests.debug.xcconfig"; sourceTree = "<group>"; };
+		5D0E6A5E310181A4243DC976 /* Pods-RealmReactTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RealmReactTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-RealmReactTests/Pods-RealmReactTests.debug.xcconfig"; sourceTree = SOURCE_ROOT; };
+		62CE006B73F93219175A513E /* Pods-RealmReactTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RealmReactTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-RealmReactTests/Pods-RealmReactTests.release.xcconfig"; sourceTree = SOURCE_ROOT; };
 		8553016A1E1FF6D500FF108E /* RealmJSTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = RealmJSTests.mm; path = ../../ios/RealmJSTests.mm; sourceTree = "<group>"; };
 		855301CD1E20069D00FF108E /* dates-v3.realm */ = {isa = PBXFileReference; lastKnownFileType = file; path = "dates-v3.realm"; sourceTree = "<group>"; };
 		855301CE1E20069D00FF108E /* dates-v5.realm */ = {isa = PBXFileReference; lastKnownFileType = file; path = "dates-v5.realm"; sourceTree = "<group>"; };
 		855301D11E2006F400FF108E /* RealmReactTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = RealmReactTests.m; path = ReactTests/RealmReactTests.m; sourceTree = "<group>"; };
 		8B37A7097A134D5CBB4C462A /* libc++.tbd */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.tbd"; path = "usr/lib/libc++.tbd"; sourceTree = SDKROOT; };
 		A4CEF4BA1F7F862D00BA3B26 /* sync-v1.realm */ = {isa = PBXFileReference; lastKnownFileType = file; path = "sync-v1.realm"; sourceTree = "<group>"; };
-		A9CC189DB1B988ED44A344BB /* libPods-RealmReactTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-RealmReactTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		B33B048E82A09A7065703ACF /* Pods-ReactTestApp.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ReactTestApp.release.xcconfig"; path = "Target Support Files/Pods-ReactTestApp/Pods-ReactTestApp.release.xcconfig"; sourceTree = "<group>"; };
-		BCF5B1CBA7306A91ABA806C6 /* libPods-ReactTestApp.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-ReactTestApp.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		E3165CC57DFAFA09BA3C448A /* Pods-ReactTestApp.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ReactTestApp.debug.xcconfig"; path = "Target Support Files/Pods-ReactTestApp/Pods-ReactTestApp.debug.xcconfig"; sourceTree = "<group>"; };
+		B4AD696A6981CCCB8562CA07 /* Pods-ReactTestApp.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ReactTestApp.debug.xcconfig"; path = "Pods/Target Support Files/Pods-ReactTestApp/Pods-ReactTestApp.debug.xcconfig"; sourceTree = SOURCE_ROOT; };
+		CEC170030BD878AC562D7038 /* Pods-ReactTestApp.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ReactTestApp.release.xcconfig"; path = "Pods/Target Support Files/Pods-ReactTestApp/Pods-ReactTestApp.release.xcconfig"; sourceTree = SOURCE_ROOT; };
+		EC2D7E24C5A46A53987AB428 /* libPods-ReactTestApp.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-ReactTestApp.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		F3B1864B706D6E4BF523D470 /* libPods-RealmReactTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-RealmReactTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -80,7 +80,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				3F2785FE21F94A1E00D243F3 /* libz.tbd in Frameworks */,
-				07BF1102462B94ED615ED322 /* libPods-RealmReactTests.a in Frameworks */,
+				245440B952E2C544F9CDB0D3 /* libPods-RealmReactTests.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -90,8 +90,8 @@
 			files = (
 				3F02502D21FA75B2004DF36F /* libRealmReact.a in Frameworks */,
 				E2050A7A5BE14CEA9A9E0722 /* libc++.tbd in Frameworks */,
-				6D141A0CCB54EB666F116095 /* libPods-ReactTestApp.a in Frameworks */,
 				1A9D2B80E7D649D2B5D8FE09 /* libz.tbd in Frameworks */,
+				2AE23CE52CB77C91684FCAE2 /* libPods-ReactTestApp.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -116,9 +116,9 @@
 			isa = PBXGroup;
 			children = (
 				8B37A7097A134D5CBB4C462A /* libc++.tbd */,
-				BCF5B1CBA7306A91ABA806C6 /* libPods-ReactTestApp.a */,
 				4E45185577984C00AA740BFE /* libz.tbd */,
-				A9CC189DB1B988ED44A344BB /* libPods-RealmReactTests.a */,
+				EC2D7E24C5A46A53987AB428 /* libPods-ReactTestApp.a */,
+				F3B1864B706D6E4BF523D470 /* libPods-RealmReactTests.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -178,10 +178,10 @@
 		A45F5652ADB79789CDE5186C /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				E3165CC57DFAFA09BA3C448A /* Pods-ReactTestApp.debug.xcconfig */,
-				B33B048E82A09A7065703ACF /* Pods-ReactTestApp.release.xcconfig */,
-				54D3293F38846F312E09549B /* Pods-RealmReactTests.debug.xcconfig */,
-				3621C3DBC07DBC3166A16046 /* Pods-RealmReactTests.release.xcconfig */,
+				B4AD696A6981CCCB8562CA07 /* Pods-ReactTestApp.debug.xcconfig */,
+				CEC170030BD878AC562D7038 /* Pods-ReactTestApp.release.xcconfig */,
+				5D0E6A5E310181A4243DC976 /* Pods-RealmReactTests.debug.xcconfig */,
+				62CE006B73F93219175A513E /* Pods-RealmReactTests.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -193,7 +193,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 00E357021AD99517003FC87E /* Build configuration list for PBXNativeTarget "RealmReactTests" */;
 			buildPhases = (
-				1AB570A149A2139DC9C115AD /* [CP] Check Pods Manifest.lock */,
+				02CF4E905525F87F72DB54B4 /* [CP] Check Pods Manifest.lock */,
 				00E356EA1AD99517003FC87E /* Sources */,
 				00E356EB1AD99517003FC87E /* Frameworks */,
 				00E356EC1AD99517003FC87E /* Resources */,
@@ -212,7 +212,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "ReactTestApp" */;
 			buildPhases = (
-				96107BF1F5B3822555A2E756 /* [CP] Check Pods Manifest.lock */,
+				646C2873DE2863787DA10406 /* [CP] Check Pods Manifest.lock */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
@@ -315,7 +315,7 @@
 			shellPath = /bin/sh;
 			shellScript = "export NODE_BINARY=node\n../node_modules/react-native/scripts/react-native-xcode.sh\n";
 		};
-		1AB570A149A2139DC9C115AD /* [CP] Check Pods Manifest.lock */ = {
+		02CF4E905525F87F72DB54B4 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -337,7 +337,7 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		96107BF1F5B3822555A2E756 /* [CP] Check Pods Manifest.lock */ = {
+		646C2873DE2863787DA10406 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -410,7 +410,7 @@
 /* Begin XCBuildConfiguration section */
 		00E356F61AD99517003FC87E /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 54D3293F38846F312E09549B /* Pods-RealmReactTests.debug.xcconfig */;
+			baseConfigurationReference = 5D0E6A5E310181A4243DC976 /* Pods-RealmReactTests.debug.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				DEAD_CODE_STRIPPING = NO;
@@ -444,7 +444,7 @@
 		};
 		00E356F71AD99517003FC87E /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 3621C3DBC07DBC3166A16046 /* Pods-RealmReactTests.release.xcconfig */;
+			baseConfigurationReference = 62CE006B73F93219175A513E /* Pods-RealmReactTests.release.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				COPY_PHASE_STRIP = NO;
@@ -475,7 +475,7 @@
 		};
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = E3165CC57DFAFA09BA3C448A /* Pods-ReactTestApp.debug.xcconfig */;
+			baseConfigurationReference = B4AD696A6981CCCB8562CA07 /* Pods-ReactTestApp.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				INFOPLIST_FILE = ReactTests/Info.plist;
@@ -487,7 +487,7 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = B33B048E82A09A7065703ACF /* Pods-ReactTestApp.release.xcconfig */;
+			baseConfigurationReference = CEC170030BD878AC562D7038 /* Pods-ReactTestApp.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				INFOPLIST_FILE = ReactTests/Info.plist;
