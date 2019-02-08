@@ -14,10 +14,6 @@ Currently this directory consists of:
 npm install
 ```
 
-While iterating on the tests re-install the package to pack tests and re-install them: When running `npm install` a
-post-install script will package the test suite and install that as well as Realm from an archive. Make sure the
-integration-tests folder contains a `realm-*.tgz` file before running this.
-
 ## Running the tests
 
 To run tests on Android, start an emulator and run:
@@ -28,6 +24,6 @@ To run tests on iOS:
 
     npm run test/ios
 
-To run tests both processes in sequence, start an Android emulator and run:
+To run tests in both processes in sequence, start an Android emulator and run:
 
     npm test
