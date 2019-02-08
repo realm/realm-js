@@ -34,7 +34,8 @@ def onLinux() {
         }
         // Install the packaged version of realm into the app and run the tests
         dir('integration-tests/environments/electron') {
-          sh 'npm install'
+          // Install the package, leaving out the optional packages to prevent Realm being installed from NPM
+          sh 'npm install --no-optional'
           // Run both main and renderer tests catching any errors
           def error = null;
           // First the main process
