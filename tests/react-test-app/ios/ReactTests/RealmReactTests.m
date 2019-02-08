@@ -26,6 +26,7 @@
 #import <React/RCTJavaScriptExecutor.h>
 #import <React/RCTBridge.h>
 #import <React/RCTEventDispatcher.h>
+#import <React/RCTEventEmitter.h>
 #import <React/RCTJavaScriptLoader.h>
 
 #import "RealmJSTests.h"
@@ -46,6 +47,21 @@ struct RealmJSCRuntime {
 - (void)setUp;
 - (void *)runtime;
 @end
+
+@interface RealmTestEventEmitter : RCTEventEmitter <RCTBridgeModule>
+@end
+@implementation RealmTestEventEmitter
+RCT_EXPORT_MODULE();
+
+- (NSArray<NSString *> *)supportedEvents {
+    return @[@"test-names", @"dummy", @"run-test"];
+}
+@end
+
+static void sendAppEvent(NSString *name, id body) {
+    [[RCTBridge.currentBridge moduleForClass:RealmTestEventEmitter.class]
+     sendEventWithName:name body:body];
+}
 
 @interface RealmReactTests : RealmJSTests
 @end
@@ -85,7 +101,7 @@ struct RealmJSCRuntime {
         JSGlobalContextRef ctx = ((struct RealmJSCRuntime *)bridge.runtime)->ctx;
         JSGlobalContextSetIncludesNativeCallStackWhenReportingExceptions(ctx, false);
 
-        [bridge.eventDispatcher sendAppEventWithName:@"realm-test-names" body:nil];
+        sendAppEvent(@"test-names", nil);
         NSDictionary *testCaseNames = [self waitForEvent:@"realm-test-names"];
         NSAssert(testCaseNames.count, @"No test names were provided by the JS");
 
@@ -140,7 +156,7 @@ struct RealmJSCRuntime {
             [runLoop runMode:NSDefaultRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.1]];
             [runLoop runMode:NSRunLoopCommonModes beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.1]];
             [NSThread sleepForTimeInterval:0.01];  // Bad things may happen without some sleep.
-            [RCTBridge.currentBridge.eventDispatcher sendAppEventWithName:@"realm-dummy" body:nil]; // Ensure RN has an event loop running
+            sendAppEvent(@"dummy", nil); // Ensure RN has an event loop running
         }
     }
 }
@@ -192,7 +208,7 @@ struct RealmJSCRuntime {
         module = [module substringToIndex:(module.length - suffix.length)];
     }
 
-    [RCTBridge.currentBridge.eventDispatcher sendAppEventWithName:@"realm-run-test" body:@{@"suite": module, @"name": method}];
+    sendAppEvent(@"run-test", @{@"suite": module, @"name": method});
 
     id error;
     @try {

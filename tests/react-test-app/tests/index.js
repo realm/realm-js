@@ -18,7 +18,7 @@
 
 'use strict';
 
-import { NativeAppEventEmitter, NativeModules } from 'react-native';
+import { NativeAppEventEmitter, NativeEventEmitter, NativeModules } from 'react-native';
 import * as RealmTests from 'realm-tests';
 import ListViewTest from './listview-test';
 
@@ -26,22 +26,44 @@ RealmTests.registerTests({
     ListViewTest,
 });
 
-// Listen for event signalling native is ready to receive test names
-NativeAppEventEmitter.addListener('realm-test-names', () => {
-    NativeModules.Realm.emit('realm-test-names', getTestNames());
-});
+if (NativeModules.RealmTestEventEmitter) {
+    const realmTestEmitter = new NativeEventEmitter(NativeModules.RealmTestEventEmitter);
+    // Listen for event signalling native is ready to receive test names
+    realmTestEmitter.addListener('test-names', () => {
+        NativeModules.Realm.emit('realm-test-names', getTestNames());
+    });
 
-// Listen for event to run a particular test.
-NativeAppEventEmitter.addListener('realm-run-test', async ({suite, name}) => {
-    let error;
-    try {
-        await RealmTests.runTest(suite, name);
-    } catch (e) {
-        error = '' + e;
-    }
+    // Listen for event to run a particular test.
+    realmTestEmitter.addListener('run-test', async ({suite, name}) => {
+        let error;
+        try {
+            await RealmTests.runTest(suite, name);
+        } catch (e) {
+            error = '' + e;
+        }
 
-    NativeModules.Realm.emit('realm-test-finished', error);
-});
+        NativeModules.Realm.emit('realm-test-finished', error);
+    });
+    realmTestEmitter.addListener('dummy', () => {});
+}
+else {
+    // Listen for event signalling native is ready to receive test names
+    NativeAppEventEmitter.addListener('realm-test-names', () => {
+        NativeModules.Realm.emit('realm-test-names', getTestNames());
+    });
+
+    // Listen for event to run a particular test.
+    NativeAppEventEmitter.addListener('realm-run-test', async ({suite, name}) => {
+        let error;
+        try {
+            await RealmTests.runTest(suite, name);
+        } catch (e) {
+            error = '' + e;
+        }
+
+        NativeModules.Realm.emit('realm-test-finished', error);
+    });
+}
 
 export function getTestNames() {
     return RealmTests.getTestNames();
