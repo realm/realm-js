@@ -75,6 +75,7 @@ startedSimulator=false
 log_temp=
 ros_log_temp=
 test_temp_dir=
+nvm_old_default=
 cleanup() {
   # Kill started object server
   stop_server || true
@@ -104,6 +105,11 @@ cleanup() {
   fi
   if [ -n "$test_temp_dir" ] && [ -e "$test_temp_dir" ]; then
     rm -rf "$test_temp_dir" || true
+  fi
+
+  # Restore nvm state
+  if [ -n "$nvm_old_default" ]; then
+    nvm alias default $nvm_old_default
   fi
 }
 
@@ -222,6 +228,12 @@ fi
 if [[ "$(command -v nvm)" ]]; then
   nvm install 8.15.0
 fi
+set_nvm_default() {
+  if [[ "$(command -v nvm)" ]]; then
+    nvm_old_default="$(nvm alias default --no-colors | cut -d ' ' -f 3)"
+    nvm alias default $(nvm current)
+  fi
+}
 
 # Remove cached packages
 rm -rf ~/.yarn-cache/npm-realm-*
@@ -249,6 +261,7 @@ case "$TARGET" in
   ;;
 "react-tests")
   npm run check-environment
+  set_nvm_default
   download_server
   start_server
   pushd tests/react-test-app
@@ -264,6 +277,7 @@ case "$TARGET" in
   ;;
 "react-example")
   npm run check-environment
+  set_nvm_default
   pushd examples/ReactExample
 
   npm install --no-save
