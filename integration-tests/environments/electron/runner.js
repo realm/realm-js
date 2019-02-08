@@ -68,8 +68,12 @@ function runElectron(processType, serverUrl) {
 async function run() {
     const mochaConfig = {};
 
-    // Check if an argument for junit path was requested
     const processType = process.argv[2];
+    if (processType !== "main" && processType !== "renderer") {
+        throw Error("You need to call this with a runtime argument specifying the process type");
+    }
+
+    // Check if an argument for junit path was requested
     const junitFilePath = process.argv[3];
     if (junitFilePath) {
         mochaConfig.reporter = "mocha-junit-reporter";
@@ -77,6 +81,7 @@ async function run() {
             mochaFile: junitFilePath,
         };
     }
+
     // Start the mocha remote server
     const server = new MochaRemoteServer(mochaConfig, {
         id: processType,

@@ -269,9 +269,7 @@ describe("#deleteFile", () => {
 
     // TODO: Fix the issue on Android that prevents this from passing
 
-    it.environment({
-        android: false,
-    }, "deletes a Realm with a space in its path", () => {
+    it.skipIf('android', "deletes a Realm with a space in its path", () => {
         expectDeletion("my realm.realm");
     });
 });

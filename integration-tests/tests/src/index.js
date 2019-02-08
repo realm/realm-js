@@ -37,7 +37,7 @@ if (!global.environment || typeof global.environment !== "object") {
 }
 
 // Patch in a function that can skip running tests in specific environments
-global.it.environment = require("./utils/environment-test");
+global.it.skipIf = require("./utils/skip-if");
 
 describe(global.title, () => {
     require("./realm-constructor");
