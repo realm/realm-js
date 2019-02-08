@@ -33,24 +33,21 @@ const url = require("url");
 let mainWindow;
 
 app.on("ready", () => {
-    // Create the browser window.
-    // This needs to happen even if we are not testing the renderer because otherwise the spectron app.start will never
-    // resolve ...
-    mainWindow = new BrowserWindow({ show: false });
-
-    // Load the index.html of the app.
-    mainWindow.loadURL(url.format({
-        pathname: path.join(__dirname, "index.html"),
-        protocol: "file:",
-        slashes: true,
-    }));
-
     const processType = process.argv[2];
     const mochaRemoteServerURL = process.argv[3] || "ws://localhost:8090";
     global.options = { mochaRemoteServerURL, processType };
     if (processType === "main") {
         require("./mocha.js")(mochaRemoteServerURL, "main");
-    } else if (processType !== "renderer") {
+    } else if (processType === "renderer") {
+        mainWindow = new BrowserWindow({ show: false });
+        // Load the index.html of the app.
+        mainWindow.loadURL(url.format({
+            pathname: path.join(__dirname, "index.html"),
+            protocol: "file:",
+            slashes: true,
+        }));
+    } else {
         console.error("Expected a process runtime argument");
+        process.exit(1);
     }
 });
