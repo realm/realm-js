@@ -35,65 +35,74 @@ namespace realm {
 
 std::string default_realm_file_directory()
 {
+    std::string ret;
+    @autoreleasepool {
 #if TARGET_OS_IPHONE
-    // On iOS the Documents directory isn't user-visible, so put files there
-    NSString *path = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES)[0];
+        // On iOS the Documents directory isn't user-visible, so put files there
+        NSString *path = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES)[0];
 #else
-    // On OS X it is, so put files in Application Support. If we aren't running
-    // in a sandbox, put it in a subdirectory based on the bundle identifier
-    // to avoid accidentally sharing files between applications
-    NSString *path = NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, YES)[0];
-    if (![[NSProcessInfo processInfo] environment][@"APP_SANDBOX_CONTAINER_ID"]) {
-        NSString *identifier = [[NSBundle mainBundle] bundleIdentifier];
-        if ([identifier length] == 0) {
-            identifier = [[[NSBundle mainBundle] executablePath] lastPathComponent];
-        }
-        path = [path stringByAppendingPathComponent:identifier];
+        // On OS X it is, so put files in Application Support. If we aren't running
+        // in a sandbox, put it in a subdirectory based on the bundle identifier
+        // to avoid accidentally sharing files between applications
+        NSString *path = NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, YES)[0];
+        if (![[NSProcessInfo processInfo] environment][@"APP_SANDBOX_CONTAINER_ID"]) {
+            NSString *identifier = [[NSBundle mainBundle] bundleIdentifier];
+            if ([identifier length] == 0) {
+                identifier = [[[NSBundle mainBundle] executablePath] lastPathComponent];
+            }
+            path = [path stringByAppendingPathComponent:identifier];
 
-        // create directory
-        [[NSFileManager defaultManager] createDirectoryAtPath:path
-                                  withIntermediateDirectories:YES
-                                                   attributes:nil
-                                                        error:nil];
-    }
+            // create directory
+            [[NSFileManager defaultManager] createDirectoryAtPath:path
+                                      withIntermediateDirectories:YES
+                                                       attributes:nil
+                                                            error:nil];
+        }
 #endif
-    return path.UTF8String;
+        ret = path.UTF8String;
+    }
+    return ret;
 }
 
 void ensure_directory_exists_for_file(const std::string &fileName)
 {
-    NSString *docsDir = [@(fileName.c_str()) stringByDeletingLastPathComponent];
-    NSFileManager *manager = [NSFileManager defaultManager];
+    @autoreleasepool {
+        NSString *docsDir = [@(fileName.c_str()) stringByDeletingLastPathComponent];
+        NSFileManager *manager = [NSFileManager defaultManager];
 
-    if ([manager fileExistsAtPath:docsDir]) {
-        return;
-    }
+        if ([manager fileExistsAtPath:docsDir]) {
+            return;
+        }
 
-    NSError *error = nil;
-    if ([manager createDirectoryAtPath:docsDir withIntermediateDirectories:YES attributes:nil error:&error]) {
-        throw std::runtime_error(util::format("Failed to create directory \"%1\": %2", docsDir.UTF8String, error_description(error).UTF8String));
+        NSError *error = nil;
+        if ([manager createDirectoryAtPath:docsDir withIntermediateDirectories:YES attributes:nil error:&error]) {
+            throw std::runtime_error(util::format("Failed to create directory \"%1\": %2", docsDir.UTF8String, error_description(error).UTF8String));
+        }
     }
 }
 
 void copy_bundled_realm_files()
 {
-    NSString *docsDir = @(default_realm_file_directory().c_str());
-    NSFileManager *manager = [NSFileManager defaultManager];
-    for (id bundle in [NSBundle allBundles]) {
-        NSString *resourcePath = [bundle resourcePath];
-        for (NSString *path in [manager enumeratorAtPath:resourcePath]) {
-            if (![path containsString:@".realm"]) {
-                continue;
-            }
-            
-            NSString *docsPath = [docsDir stringByAppendingPathComponent:path];
-            if ([manager fileExistsAtPath:docsPath]) {
-                continue;
-            }
+    @autoreleasepool {
+        NSString *docsDir = @(default_realm_file_directory().c_str());
+        NSFileManager *manager = [NSFileManager defaultManager];
+        for (id bundle in [NSBundle allBundles]) {
+            NSString *resourcePath = [bundle resourcePath];
+            for (NSString *path in [manager enumeratorAtPath:resourcePath]) {
+                if (![path containsString:@".realm"]) {
+                    continue;
+                }
 
-            NSError *error = nil;
-            if (![manager copyItemAtPath:[resourcePath stringByAppendingPathComponent:path] toPath:docsPath error:&error]) {
-                throw std::runtime_error(util::format("Failed to copy file from \"%1\" to \"%2\": %3", path.UTF8String, docsPath.UTF8String, error_description(error).UTF8String));
+                NSString *docsPath = [docsDir stringByAppendingPathComponent:path];
+                if ([manager fileExistsAtPath:docsPath]) {
+                    continue;
+                }
+
+                NSError *error = nil;
+                if (![manager copyItemAtPath:[resourcePath stringByAppendingPathComponent:path] toPath:docsPath error:&error]) {
+                    throw std::runtime_error(util::format("Failed to copy file from \"%1\" to \"%2\": %3",
+                                                          path.UTF8String, docsPath.UTF8String, error_description(error).UTF8String));
+                }
             }
         }
     }
@@ -101,31 +110,35 @@ void copy_bundled_realm_files()
     
 void remove_realm_files_from_directory(const std::string &directory)
 {
-    NSFileManager *manager = [NSFileManager defaultManager];
-    NSString *fileDir = @(directory.c_str());
+    @autoreleasepool {
+        NSFileManager *manager = [NSFileManager defaultManager];
+        NSString *fileDir = @(directory.c_str());
 
-    for (NSString *path in [manager enumeratorAtPath:fileDir]) {
-        if (![path.pathExtension isEqualToString:@"realm"] && ![path.pathExtension isEqualToString:@"realm.lock"] && ![path.pathExtension isEqualToString:@"realm.management"]) {
-            continue;
-        }
-        NSError *error = nil;
-        NSString *filePath = [fileDir stringByAppendingPathComponent:path];
-        if (![manager removeItemAtPath:filePath error:&error]) {
-            throw std::runtime_error(util::format("Failed to delete file at path \"%1\": %2", filePath.UTF8String, error_description(error).UTF8String));
+        for (NSString *path in [manager enumeratorAtPath:fileDir]) {
+            if (![path.pathExtension isEqualToString:@"realm"] && ![path.pathExtension isEqualToString:@"realm.lock"] && ![path.pathExtension isEqualToString:@"realm.management"]) {
+                continue;
+            }
+            NSError *error = nil;
+            NSString *filePath = [fileDir stringByAppendingPathComponent:path];
+            if (![manager removeItemAtPath:filePath error:&error]) {
+                throw std::runtime_error(util::format("Failed to delete file at path \"%1\": %2", filePath.UTF8String, error_description(error).UTF8String));
+            }
         }
     }
 }
 
 void remove_file(const std::string &path)
 {
-    NSFileManager *manager = [NSFileManager defaultManager];
-    NSString *filePath = @(path.c_str());
+    @autoreleasepool {
+        NSFileManager *manager = [NSFileManager defaultManager];
+        NSString *filePath = @(path.c_str());
 
-    NSError *error = nil;
-    if (![manager removeItemAtPath:filePath error:&error]) {
-        if (error.code != NSFileNoSuchFileError)
-            throw std::runtime_error(util::format("Failed to delete file at path \"%1\": %2",
-                                                  filePath.UTF8String, error_description(error).UTF8String));
+        NSError *error = nil;
+        if (![manager removeItemAtPath:filePath error:&error]) {
+            if (error.code != NSFileNoSuchFileError)
+                throw std::runtime_error(util::format("Failed to delete file at path \"%1\": %2",
+                                                      filePath.UTF8String, error_description(error).UTF8String));
+        }
     }
 }
 
