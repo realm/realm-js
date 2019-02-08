@@ -70,6 +70,8 @@ stage('package') {
   node('docker') {
     // Unstash the files in the repository
     unstash 'source'
+    // Remove any archive from the workspace, which might have been produced by previous runs of the job
+    sh 'realm-*.tgz'
     // TODO: Consider moving the node on the other side of the stages
     docker.build(
       'ci/realm-js:android-build',
@@ -81,7 +83,7 @@ stage('package') {
       sh 'cd react-native/android && ./gradlew publishAndroid'
       // Package up the app
       sh 'npm pack'
-      // TODO: Archive and stash the package
+      // Archive and stash the package
       archiveArtifacts 'realm-*.tgz'
       stash includes: 'realm-*.tgz', name: 'package'
     }
