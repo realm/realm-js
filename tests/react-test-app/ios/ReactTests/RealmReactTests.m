@@ -34,13 +34,7 @@
 @interface RCTWebSocketExecutor : NSObject
 @end
 
-extern void JSGlobalContextSetIncludesNativeCallStackWhenReportingExceptions(JSGlobalContextRef ctx, bool includesNativeCallStack);
 extern NSMutableArray *RCTGetModuleClasses(void);
-
-struct RealmJSCRuntime {
-  void* vtbl;
-  JSGlobalContextRef ctx;
-};
 
 @interface RCTBridge ()
 + (instancetype)currentBridge;
@@ -89,17 +83,8 @@ static void sendAppEvent(NSString *name, id body) {
 + (XCTestSuite *)defaultTestSuite {
     @autoreleasepool {
         XCTestSuite *suite = [super defaultTestSuite];
-        Class executorClass = [self executorClass];
-        RCTBridge *bridge = [RCTBridge currentBridge];
-        if (executorClass) {
-            bridge.executorClass = executorClass;
-        }
-        [bridge reload];
+        [RCTBridge.currentBridge reload];
         [self waitForNotification:RCTJavaScriptDidLoadNotification];
-        bridge = [RCTBridge currentBridge];
-
-        JSGlobalContextRef ctx = ((struct RealmJSCRuntime *)bridge.runtime)->ctx;
-        JSGlobalContextSetIncludesNativeCallStackWhenReportingExceptions(ctx, false);
 
         sendAppEvent(@"test-names", nil);
         NSDictionary *testCaseNames = [self waitForEvent:@"realm-test-names"];
@@ -120,6 +105,18 @@ static void sendAppEvent(NSString *name, id body) {
 
         return suite;
     }
+}
+
++ (void)setUp {
+    [super setUp];
+
+    Class executorClass = [self executorClass];
+    RCTBridge *bridge = [RCTBridge currentBridge];
+    if (executorClass != bridge.executorClass) {
+        bridge.executorClass = executorClass;
+    }
+    [bridge reload];
+    [self waitForNotification:RCTJavaScriptDidLoadNotification];
 }
 
 + (NSNotification *)waitForNotification:(NSString *)notificationName {
