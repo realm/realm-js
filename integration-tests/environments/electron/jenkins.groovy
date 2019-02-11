@@ -30,6 +30,8 @@ def onLinux() {
       ) {
         // Unstash the package produced when packaging
         dir('integration-tests') {
+          // Remove any archive from the workspace, which might have been produced by previous runs of the job
+          sh 'rm -f realm-*.tgz'
           unstash 'package'
         }
         // Install the packaged version of realm into the app and run the tests
