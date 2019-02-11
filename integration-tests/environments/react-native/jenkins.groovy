@@ -45,7 +45,7 @@ def onAndroid() {
             sh 'npm install'
             try {
               // Wait for the device
-              timeout(10) { // minutes
+              timeout(30) { // minutes
                 // In case the tests fail, it's nice to have an idea on the devices attached to the machine
                 sh 'adb devices'
                 sh 'adb wait-for-device'
@@ -86,7 +86,7 @@ def onIOS(Map args=[:]) {
           // Installing the package will also pack up the tests and install them together with the Realm JS package
           sh 'npm install'
           try {
-            timeout(10) { // minutes
+            timeout(30) { // minutes
               sh 'npm run test/ios -- test-results.xml'
             }
           } finally {

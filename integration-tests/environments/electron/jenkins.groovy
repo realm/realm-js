@@ -38,7 +38,7 @@ def onLinux() {
         dir('integration-tests/environments/electron') {
           // Install the package, leaving out the optional packages to prevent Realm being installed from NPM
           sh 'npm install --no-optional'
-          timeout(10) { // minutes
+          timeout(30) { // minutes
             // Run both main and renderer tests catching any errors
             def error = null;
             // First the main process
