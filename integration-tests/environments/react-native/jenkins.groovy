@@ -45,14 +45,14 @@ def onAndroid() {
             sh 'npm install'
             try {
               // Wait for the device
-              timeout(15) { // minutes
-                  // In case the tests fail, it's nice to have an idea on the devices attached to the machine
-                  sh 'adb devices'
-                  sh 'adb wait-for-device'
+              timeout(10) { // minutes
+                // In case the tests fail, it's nice to have an idea on the devices attached to the machine
+                sh 'adb devices'
+                sh 'adb wait-for-device'
+                // Uninstall any other installations of this package before trying to install it again
+                sh 'adb uninstall io.realm.tests.reactnative || true' // '|| true' to prevent a build failure
+                sh 'npm run test/android -- test-results.xml'
               }
-              // Uninstall any other installations of this package before trying to install it again
-              sh 'adb uninstall io.realm.tests.reactnative || true' // '|| true' to prevent a build failure
-              sh 'npm run test/android -- test-results.xml'
             } finally {
               junit(
                 allowEmptyResults: true,
@@ -86,7 +86,9 @@ def onIOS(Map args=[:]) {
           // Installing the package will also pack up the tests and install them together with the Realm JS package
           sh 'npm install'
           try {
-            sh 'npm run test/ios -- test-results.xml'
+            timeout(10) { // minutes
+              sh 'npm run test/ios -- test-results.xml'
+            }
           } finally {
             junit(
               allowEmptyResults: true,

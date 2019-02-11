@@ -38,30 +38,32 @@ def onLinux() {
         dir('integration-tests/environments/electron') {
           // Install the package, leaving out the optional packages to prevent Realm being installed from NPM
           sh 'npm install --no-optional'
-          // Run both main and renderer tests catching any errors
-          def error = null;
-          // First the main process
-          try {
-            // Using xvfb to allow Electron to open a window
-            sh 'xvfb-run npm run test/main -- main-test-results.xml'
-          } catch (Exception e) {
-            error = e;
-          }
-          // Then the renderer process
-          try {
-            // Using xvfb to allow Electron to open a window
-            sh 'xvfb-run npm run test/renderer -- renderer-test-results.xml'
-          } catch (Exception e) {
-            error = e;
-          }
-          // Archive all test results
-          junit(
-            allowEmptyResults: true,
-            testResults: '*-test-results.xml',
-          )
-          // Throw any errors that might have occurred
-          if (error) {
-            throw error
+          timeout(10) { // minutes
+            // Run both main and renderer tests catching any errors
+            def error = null;
+            // First the main process
+            try {
+              // Using xvfb to allow Electron to open a window
+              sh 'xvfb-run npm run test/main -- main-test-results.xml'
+            } catch (Exception e) {
+              error = e;
+            }
+            // Then the renderer process
+            try {
+              // Using xvfb to allow Electron to open a window
+              sh 'xvfb-run npm run test/renderer -- renderer-test-results.xml'
+            } catch (Exception e) {
+              error = e;
+            }
+            // Archive all test results
+            junit(
+              allowEmptyResults: true,
+              testResults: '*-test-results.xml',
+            )
+            // Throw any errors that might have occurred
+            if (error) {
+              throw error
+            }
           }
         }
       }
