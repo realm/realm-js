@@ -208,6 +208,7 @@ class RealmClass : public ClassDefinition<T, SharedRealm, ObservableClass<T>> {
     using NativeAccessor = realm::js::NativeAccessor<T>;
 
 public:
+    using ObjectDefaults = typename Schema<T>::ObjectDefaults;
     using ObjectDefaultsMap = typename Schema<T>::ObjectDefaultsMap;
     using ConstructorMap = typename Schema<T>::ConstructorMap;
 
@@ -239,6 +240,7 @@ public:
     static void privileges(ContextType, ObjectType, Arguments &, ReturnValue&);
     static void get_schema_name_from_object(ContextType, ObjectType, Arguments &, ReturnValue&);
     static void create_object_schema(ContextType, ObjectType, Arguments &, ReturnValue&);
+    static void create_object_schema_property(ContextType, ObjectType, Arguments &, ReturnValue&);
 
 #if REALM_ENABLE_SYNC
     static void async_open_realm(ContextType, ObjectType, Arguments &, ReturnValue&);
@@ -307,6 +309,7 @@ public:
         {"deleteModel", wrap<delete_model>},
         {"privileges", wrap<privileges>},
         {"_createObjectSchema", wrap<create_object_schema>},
+        {"_createObjectSchemaProperty", wrap<create_object_schema_property>},
         {"_objectForObjectId", wrap<object_for_object_id>},
         {"_schemaName", wrap<get_schema_name_from_object>},
     };
@@ -1351,6 +1354,69 @@ void RealmClass<T>::create_object_schema(ContextType ctx, ObjectType this_object
     // Perform the schema update
     realm->update_schema(
         updated_schema,
+        realm->schema_version() + 1,
+        nullptr,
+        nullptr,
+        true
+    );
+}
+
+/**
+ * Creates a property on an existing "object schema" in the current schema.
+ *
+ * TODO: This is exposed as an internal `_createSchemaProperty` API because this should eventually be published as
+ * `Realm.schema[0].createProperty`.
+ */
+template<typename T>
+void RealmClass<T>::create_object_schema_property(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
+    args.validate_count(3);
+
+    std::string object_schema_name = Value::validated_to_string(ctx, args[0], "objectSchemaName");
+    std::string property_name = Value::validated_to_string(ctx, args[1], "propertyName");
+    ValueType property_schema = args[2];
+
+    // Parse the schema object provided by the user
+    ObjectDefaults defaults;
+    Property parsed_property = Schema<T>::parse_property(
+        ctx,
+        property_schema,
+        object_schema_name,
+        property_name,
+        defaults
+    );
+
+    // Get a handle to the Realms group
+    SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
+    if (!realm->is_in_transaction()) {
+        throw std::runtime_error("Can only create object schema property within a transaction.");
+    }
+
+    // Determine if the object schema exists
+    realm::Schema schema = realm->schema();
+    auto object_schema = schema.find(object_schema_name);
+    if (object_schema == schema.end()) {
+        throw InvalidNameException(util::format(
+            "Missing object schema named '%1'",
+            object_schema_name
+        ));
+    }
+
+    // Determine if we already have a property with the requested name
+    for (const Property &property : object_schema->persisted_properties) {
+        if (property.name == property_name) {
+            throw InvalidNameException(util::format(
+                "Another property named '%1' already exists on object schema named '%2'",
+                property_name,
+                object_schema_name
+            ));
+        }
+    }
+
+    // Add the property to the list of persisted properties
+    object_schema->persisted_properties.emplace_back(parsed_property);
+    // Perform the schema update
+    realm->update_schema(
+        schema,
         realm->schema_version() + 1,
         nullptr,
         nullptr,

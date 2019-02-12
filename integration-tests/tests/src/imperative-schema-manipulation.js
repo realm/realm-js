@@ -77,5 +77,100 @@ describe("Realm._createObjectSchema", () => {
     });
 });
 
+describe("Realm._createObjectSchemaProperty", () => {
+    it("is a function", () => {
+        const realm = new Realm({ schema: PersonAndDogsSchema });
+        // There is a function defined on the Realm
+        expect(realm._createObjectSchemaProperty).to.be.a("function");
+    });
+
+    it("creates a property from a name and string type", () => {
+        const realm = new Realm({ schema: PersonAndDogsSchema });
+        realm.write(() => {
+            realm._createObjectSchemaProperty("Person", "nickname", "string?");
+        });
+        const personClass = realm.schema.find(s => s.name === "Person");
+        expect(personClass.properties.nickname).to.deep.equal({
+            indexed: false,
+            name: "nickname",
+            optional: true,
+            type: "string",
+        });
+    });
+
+    it("creates a property from a name and an object type", () => {
+        const realm = new Realm({ schema: PersonAndDogsSchema });
+        realm.write(() => {
+            realm._createObjectSchemaProperty("Person", "alterEgo", "Person");
+        });
+        const personClass = realm.schema.find(s => s.name === "Person");
+        expect(personClass.properties.alterEgo).to.deep.equal({
+            indexed: false,
+            name: "alterEgo",
+            optional: true,
+            type: "object",
+            objectType: "Person",
+        });
+    });
+
+    it("creates a property from a name and an object", () => {
+        const realm = new Realm({ schema: PersonAndDogsSchema });
+        realm.write(() => {
+            realm._createObjectSchemaProperty("Person", "ages", {
+                type: "int[]",
+                optional: false,
+            });
+        });
+        const personClass = realm.schema.find(s => s.name === "Person");
+        expect(personClass.properties.ages).to.deep.equal({
+            indexed: false,
+            name: "ages",
+            optional: false,
+            type: "list",
+            objectType: "int",
+        });
+    });
+
+    it("throws if called outside a write transaction", () => {
+        const realm = new Realm({ schema: PersonAndDogsSchema });
+        expect(() => {
+            realm._createObjectSchemaProperty("Person", "nickname", "string?");
+        }).to.throw("Can only create object schema property within a transaction");
+    });
+
+    it("throws if asked to create property on a missing class", () => {
+        const realm = new Realm({ schema: PersonAndDogsSchema });
+        expect(() => {
+            realm.write(() => {
+                realm._createObjectSchemaProperty("Whatever", "nickname", "string?");
+            });
+        }).to.throw("Missing object schema named 'Whatever'");
+    });
+
+    it("throws if asked to create an existing property", () => {
+        const realm = new Realm({ schema: PersonAndDogsSchema });
+        expect(() => {
+            realm.write(() => {
+                realm._createObjectSchemaProperty("Person", "name", "int");
+            });
+        }).to.throw("Another property named 'name' already exists on object schema named 'Person'");
+    });
+
+    it("throws if asked to create a property without a type", () => {
+        const realm = new Realm({ schema: PersonAndDogsSchema });
+        expect(() => {
+            realm.write(() => {
+                realm._createObjectSchemaProperty("Person", "nickname");
+            });
+        }).to.throw("Invalid arguments: 3 expected, but 2 supplied.");
+    });
+
+    it("throws if asked to create a property with an invalid type", () => {
+        const realm = new Realm({ schema: PersonAndDogsSchema });
+        expect(() => {
+            realm.write(() => {
+                realm._createObjectSchemaProperty("Person", "nickname", "w00t");
+            });
+        }).to.throw("Property 'Person.nickname' of type 'object' has unknown object type 'w00t'");
     });
 });
