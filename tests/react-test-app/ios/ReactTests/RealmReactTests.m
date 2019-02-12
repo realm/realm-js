@@ -66,10 +66,18 @@ static void sendAppEvent(NSString *name, id body) {
 
 @implementation RealmReactTests
 
+static void noOpIdSetter(id self, SEL sel, id value) { }
+
 + (void)load {
     RCTAddLogFunction(^(RCTLogLevel level, RCTLogSource source, NSString *fileName, NSNumber *lineNumber, NSString *message) {
         NSAssert(level < RCTLogLevelError, RCTFormatLog(nil, level, fileName, lineNumber, message));
     });
+
+    // Don't let RCTDevSettings override the executor class as we want to control it for the tests
+    Class devSettings = objc_lookUpClass("RCTDevSettings");
+    if (devSettings) {
+        class_replaceMethod(devSettings, @selector(setExecutorClass:), (IMP)noOpIdSetter, "v@:@");
+    }
 }
 
 + (Class)executorClass {
