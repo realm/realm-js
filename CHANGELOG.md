@@ -1,7 +1,7 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
-* None.
+* Added methods on an Realm instance (`realm._createObjectSchema` and `realm._createObjectSchemaProperty`) to perform schema manipulation. Specifically creating an object schema and a property on an existing object schema. (partly solving [#2216](https://github.com/realm/realm-js/issues/2216))
 
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
