@@ -456,12 +456,7 @@ JSValueRef RPCServer::run_callback(JSContextRef ctx, JSObjectRef function, JSObj
         callbackResult = server->m_callback_results.pop_if([&](json result) {
             auto resultCallbackId = result["callback"].get<u_int64_t>();
             auto resultCallbackCounter = result["callback_call_counter"].get<u_int64_t>();
-            if (resultCallbackId == callback_id && resultCallbackCounter == counter) {
-                return true;
-            }
-            else {
-                return false;
-            }
+            return resultCallbackId == callback_id && resultCallbackCounter == counter;
         });
 
         if (callbackResult == nullptr) {
@@ -472,21 +467,16 @@ JSValueRef RPCServer::run_callback(JSContextRef ctx, JSObjectRef function, JSObj
     json results = callbackResult;
     json error = results["error"];
 
-    auto resultCallbackId = results["callback"];
-    if (resultCallbackId.is_null()) {
-
-    }
     // The callback id should be identical!
-    assert(callback_id == resultCallbackId.get<RPCObjectID>());
+    assert(callback_id == results["callback"].get<RPCObjectID>());
 
     if (!error.is_null()) {
         JSStringRef message = JSStringCreateWithUTF8CString(error.get<std::string>().c_str());
         JSValueRef arguments[] { JSValueMakeString(ctx, message) };
         JSStringRelease(message);
-
         *exception = JSObjectMakeError(ctx, 1, arguments, nullptr);
+        return nullptr;
     }
-
 
     return server->deserialize_json_value(results["result"]);
 
