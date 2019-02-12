@@ -44,11 +44,41 @@ extern NSMutableArray *RCTGetModuleClasses(void);
 
 @interface RealmTestEventEmitter : RCTEventEmitter <RCTBridgeModule>
 @end
-@implementation RealmTestEventEmitter
+@implementation RealmTestEventEmitter {
+    dispatch_group_t _group;
+}
 RCT_EXPORT_MODULE();
+
++ (BOOL)requiresMainQueueSetup {
+    return NO;
+}
+
+- (instancetype)init {
+    if ((self = [super init])) {
+        _group = dispatch_group_create();
+        dispatch_group_enter(_group);
+    }
+    return self;
+}
 
 - (NSArray<NSString *> *)supportedEvents {
     return @[@"test-names", @"dummy", @"run-test"];
+}
+
+- (void)waitForLoad {
+    if (dispatch_group_wait(_group, dispatch_time(DISPATCH_TIME_NOW, 60.0 * NSEC_PER_SEC))) {
+        @throw [NSException exceptionWithName:@"ConditionTimeout"
+                                       reason:[NSString stringWithFormat:@"Timed out waiting for script load"]
+                                     userInfo:nil];
+    }
+}
+
+- (void)startObserving {
+    dispatch_group_leave(_group);
+}
+
+- (void)stopObserving {
+    dispatch_group_enter(_group);
 }
 @end
 
@@ -89,40 +119,41 @@ static void noOpIdSetter(id self, SEL sel, id value) { }
 }
 
 + (XCTestSuite *)defaultTestSuite {
-    @autoreleasepool {
-        XCTestSuite *suite = [super defaultTestSuite];
-        [RCTBridge.currentBridge reload];
-        [self waitForNotification:RCTJavaScriptDidLoadNotification];
+    XCTestSuite *suite = [super defaultTestSuite];
 
-        sendAppEvent(@"test-names", nil);
-        NSDictionary *testCaseNames = [self waitForEvent:@"realm-test-names"];
+    @autoreleasepool {
+        static NSDictionary *testCaseNames;
+        if (!testCaseNames) {
+            RealmTestEventEmitter *eventEmitter = [RCTBridge.currentBridge moduleForClass:RealmTestEventEmitter.class];
+            [eventEmitter waitForLoad];
+            [eventEmitter sendEventWithName:@"test-names" body:nil];
+            testCaseNames = [self waitForEvent:@"realm-test-names"];
+        }
         NSAssert(testCaseNames.count, @"No test names were provided by the JS");
 
         NSString *nameSuffix = [self classNameSuffix];
+        NSDictionary *renamedTestCases = testCaseNames;
         if (nameSuffix.length) {
             NSMutableDictionary *renamedTestCaseNames = [[NSMutableDictionary alloc] init];
             for (NSString *name in testCaseNames) {
                 renamedTestCaseNames[[name stringByAppendingString:nameSuffix]] = testCaseNames[name];
             }
-            testCaseNames = renamedTestCaseNames;
+            renamedTestCases = renamedTestCaseNames;
         }
 
-        for (XCTestSuite *testSuite in [self testSuitesFromDictionary:testCaseNames]) {
+        for (XCTestSuite *testSuite in [self testSuitesFromDictionary:renamedTestCases]) {
             [suite addTest:testSuite];
         }
 
-        return suite;
     }
+    return suite;
 }
 
 + (void)setUp {
     [super setUp];
 
-    Class executorClass = [self executorClass];
     RCTBridge *bridge = [RCTBridge currentBridge];
-    if (executorClass != bridge.executorClass) {
-        bridge.executorClass = executorClass;
-    }
+    bridge.executorClass = self.executorClass;
     [bridge reload];
     [self waitForNotification:RCTJavaScriptDidLoadNotification];
 }
