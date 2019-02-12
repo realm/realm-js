@@ -269,6 +269,9 @@ public:
     static void copy_bundled_realm_files(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void delete_file(ContextType, ObjectType, Arguments &, ReturnValue &);
 
+    static void create_user_agent_description(ContextType, ObjectType, Arguments &, ReturnValue &);
+    static void extend_query_based_schema(ContextType, ObjectType, Arguments &, ReturnValue &);
+
     // static properties
     static void get_default_path(ContextType, ObjectType, ReturnValue &);
     static void set_default_path(ContextType, ObjectType, ValueType value);
@@ -280,9 +283,11 @@ public:
         {"clearTestState", wrap<clear_test_state>},
         {"copyBundledRealmFiles", wrap<copy_bundled_realm_files>},
         {"deleteFile", wrap<delete_file>},
- #if REALM_ENABLE_SYNC
+        {"_createUserAgentDescription", wrap<create_user_agent_description>},
+        {"_extendQueryBasedSchema", wrap<extend_query_based_schema>},
+#if REALM_ENABLE_SYNC
         {"_asyncOpen", wrap<async_open_realm>},
- #endif
+#endif
     };
 
     PropertyMap<T> const static_properties = {
@@ -1311,7 +1316,7 @@ void RealmClass<T>::update_schema(ContextType ctx, ObjectType this_object, Argum
     if (!realm->is_in_transaction()) {
         throw std::runtime_error("Can only create object schema within a transaction.");
     }
-    
+
     // Perform the schema update
     realm->update_schema(
         parsed_schema,
@@ -1322,5 +1327,15 @@ void RealmClass<T>::update_schema(ContextType ctx, ObjectType this_object, Argum
     );
 }
 
+// These are replaced by the JS-defined functions when running outside of the RPC environment
+template<typename T>
+void RealmClass<T>::create_user_agent_description(ContextType, ObjectType, Arguments&, ReturnValue &return_value) {
+    return_value.set("RealmJS/RPC");
+}
+
+template<typename T>
+void RealmClass<T>::extend_query_based_schema(ContextType, ObjectType, Arguments&, ReturnValue &) {
+    // don't need to do anything
+}
 } // js
 } // realm
