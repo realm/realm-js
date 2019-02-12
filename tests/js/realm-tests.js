@@ -1282,27 +1282,35 @@ module.exports = {
 
     // FIXME: We need to test adding a property also calls the listener
     testSchemaUpdatesNewClass: function() {
-        return new Promise((resolve, reject) => {
-            let called = false;
-            let realm1 = new Realm({ _cache: false });
-            TestCase.assertTrue(realm1.empty);
-            TestCase.assertEqual(realm1.schema.length, 0);  // empty schema
-            realm1.addListener('schema', (realm, event, schema) => {
-                TestCase.assertEqual(event, 'schema');
-                TestCase.assertEqual(schema.length, 1);
-                TestCase.assertEqual(realm.schema.length, 1);
-                TestCase.assertEqual(schema[0].name, 'TestObject');
-                TestCase.assertEqual(realm1.schema.length, 1);
-                TestCase.assertEqual(realm.schema[0].name, 'TestObject');
-                called = true;
-            });
+        let realm1 = new Realm({ _cache: false });
+        TestCase.assertTrue(realm1.empty);
+        TestCase.assertEqual(realm1.schema.length, 0);  // empty schema
 
-            const schema = [{
-                name: 'TestObject',
-                properties: {
-                    prop0: 'string',
+        const schema = [{
+            name: 'TestObject',
+            properties: {
+                prop0: 'string',
+            }
+        }];
+
+        return new Promise((resolve, reject) => {
+            realm1.addListener('schema', (realm, event, schema) => {
+                try {
+                    TestCase.assertEqual(event, 'schema');
+                    if (schema.length == 0) {
+                        return;
+                    }
+                    TestCase.assertEqual(schema.length, 1);
+                    TestCase.assertEqual(realm.schema.length, 1);
+                    TestCase.assertEqual(schema[0].name, 'TestObject');
+                    TestCase.assertEqual(realm1.schema.length, 1);
+                    TestCase.assertEqual(realm.schema[0].name, 'TestObject');
+                    setTimeout(resolve, 1);
                 }
-            }];
+                catch (e) {
+                    setTimeout(() => reject(e), 1);
+                }
+            });
 
             let realm2 = new Realm({ schema: schema, _cache: false });
             TestCase.assertEqual(realm1.schema.length, 0); // not yet updated
@@ -1311,13 +1319,7 @@ module.exports = {
             // give some time to let advance_read to complete
             // in real world, a Realm will not be closed just after its
             // schema has been updated
-            setTimeout(() => {
-                if (called) {
-                    resolve();
-                } else {
-                    reject();
-                }
-            }, 1000);
+            setTimeout(() => reject(new Error('Schema change listener was not called')), 1000);
         });
     },
 
