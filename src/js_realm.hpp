@@ -238,7 +238,7 @@ public:
     static void object_for_object_id(ContextType, ObjectType, Arguments &, ReturnValue&);
     static void privileges(ContextType, ObjectType, Arguments &, ReturnValue&);
     static void get_schema_name_from_object(ContextType, ObjectType, Arguments &, ReturnValue&);
-    static void create_schema_class(ContextType, ObjectType, Arguments &, ReturnValue&);
+    static void create_object_schema(ContextType, ObjectType, Arguments &, ReturnValue&);
 
 #if REALM_ENABLE_SYNC
     static void async_open_realm(ContextType, ObjectType, Arguments &, ReturnValue&);
@@ -306,7 +306,7 @@ public:
         {"writeCopyTo", wrap<writeCopyTo>},
         {"deleteModel", wrap<delete_model>},
         {"privileges", wrap<privileges>},
-        {"_createSchemaClass", wrap<create_schema_class>},
+        {"_createObjectSchema", wrap<create_object_schema>},
         {"_objectForObjectId", wrap<object_for_object_id>},
         {"_schemaName", wrap<get_schema_name_from_object>},
     };
@@ -795,20 +795,6 @@ template<typename T>
 void RealmClass<T>::get_schema(ContextType ctx, ObjectType object, ReturnValue &return_value) {
     auto& schema = get_internal<T, RealmClass<T>>(object)->get()->schema();
     ObjectType schema_object = Schema<T>::object_for_schema(ctx, schema);
-
-    // Patch in the methods to modify the schema
-    // PropertyAttributes attributes = ReadOnly | DontEnum | DontDelete;
-    /*
-    PropertyAttributes attributes = ReadOnly | DontDelete;
-    Object::set_property(
-        ctx,
-        schema_object,
-        "createClass",
-        Object::get_property(ctx, object, "_createSchemaClass"),
-        attributes
-    );
-    */
-
     return_value.set(schema_object);
 }
 
@@ -1309,8 +1295,14 @@ class InvalidNameException : public std::invalid_argument {
         InvalidNameException(const char* __s) : std::invalid_argument(__s) {}
 };
 
+/**
+ * Creates an "object schema" in the current schema.
+ *
+ * TODO: This is exposed as an internal `_createObjectSchema` API because this should eventually be published as
+ * `Realm.schema.createClass`.
+ */
 template<typename T>
-void RealmClass<T>::create_schema_class(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
+void RealmClass<T>::create_object_schema(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_between(1, 3);
 
     // Create a schema object from the arguments, which can be parsed
@@ -1339,13 +1331,15 @@ void RealmClass<T>::create_schema_class(ContextType ctx, ObjectType this_object,
 
     // Get a handle to the Realms group
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
-    Group& group = realm->read_group();
+    if (!realm->is_in_transaction()) {
+        throw std::runtime_error("Can only create object schema within a transaction.");
+    }
 
     // Determine if we already have an object schema with the requested name
     realm::Schema schema = realm->schema();
     if (schema.find(parsed_object_schema.name) != schema.end()) {
         throw InvalidNameException(util::format(
-            "Another class named '%1' already exists",
+            "Another object schema named '%1' already exists",
             parsed_object_schema.name
         ));
     }
@@ -1360,7 +1354,7 @@ void RealmClass<T>::create_schema_class(ContextType ctx, ObjectType this_object,
         realm->schema_version() + 1,
         nullptr,
         nullptr,
-        realm->is_in_transaction()
+        true
     );
 }
 
