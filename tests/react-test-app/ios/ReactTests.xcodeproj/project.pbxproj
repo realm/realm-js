@@ -143,9 +143,7 @@
 				8553016A1E1FF6D500FF108E /* RealmJSTests.mm */,
 				855301D11E2006F400FF108E /* RealmReactTests.m */,
 			);
-			indentWidth = 2;
 			sourceTree = "<group>";
-			tabWidth = 2;
 		};
 		83CBBA001A601CBA00E9B192 /* Products */ = {
 			isa = PBXGroup;
