@@ -86,6 +86,7 @@ class RPCServer {
     static JSValueRef run_callback(JSContextRef, JSObjectRef, JSObjectRef, size_t, const JSValueRef[], JSValueRef *exception);
 
     RPCObjectID store_object(JSObjectRef object);
+    JSObjectRef get_object(RPCObjectID) const;
 
     json serialize_json_value(JSValueRef value);
     JSValueRef deserialize_json_value(const json dict);

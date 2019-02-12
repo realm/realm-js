@@ -193,7 +193,7 @@ RPCServer::RPCServer() {
         return (json){{"result", m_session_id}};
     };
     m_requests["/create_realm"] = [this](const json dict) {
-        JSObjectRef realm_constructor = m_session_id ? JSObjectRef(m_objects[m_session_id]) : NULL;
+        JSObjectRef realm_constructor = m_session_id ? JSObjectRef(get_object(m_session_id)) : NULL;
         if (!realm_constructor) {
             throw std::runtime_error("Realm constructor not found!");
         }
@@ -211,7 +211,7 @@ RPCServer::RPCServer() {
         return (json){{"result", realm_id}};
     };
     m_requests["/create_user"] = [this](const json dict) {
-        JSObjectRef realm_constructor = m_session_id ? JSObjectRef(m_objects[m_session_id]) : NULL;
+        JSObjectRef realm_constructor = m_session_id ? JSObjectRef(get_object(m_session_id)) : NULL;
         if (!realm_constructor) {
             throw std::runtime_error("Realm constructor not found!");
         }
@@ -232,7 +232,7 @@ RPCServer::RPCServer() {
         return (json){{"result", serialize_json_value(user_object)}};
     };
     m_requests["/_adminUser"] = [this](const json dict) {
-        JSObjectRef realm_constructor = m_session_id ? JSObjectRef(m_objects[m_session_id]) : NULL;
+        JSObjectRef realm_constructor = m_session_id ? JSObjectRef(get_object(m_session_id)) : NULL;
         if (!realm_constructor) {
             throw std::runtime_error("Realm constructor not found!");
         }
@@ -253,7 +253,7 @@ RPCServer::RPCServer() {
         return (json){{"result", serialize_json_value(user_object)}};
     };
     m_requests["/_getExistingUser"] = [this](const json dict) {
-        JSObjectRef realm_constructor = m_session_id ? JSObjectRef(m_objects[m_session_id]) : NULL;
+        JSObjectRef realm_constructor = m_session_id ? JSObjectRef(get_object(m_session_id)) : NULL;
         if (!realm_constructor) {
             throw std::runtime_error("Realm constructor not found!");
         }
@@ -275,7 +275,7 @@ RPCServer::RPCServer() {
 
     };
     m_requests["/reconnect"] = [this](const json dict) {
-        JSObjectRef realm_constructor = m_session_id ? JSObjectRef(m_objects[m_session_id]) : NULL;
+        JSObjectRef realm_constructor = m_session_id ? JSObjectRef(get_object(m_session_id)) : NULL;
         if (!realm_constructor) {
             throw std::runtime_error("Realm constructor not found!");
         }
@@ -295,7 +295,7 @@ RPCServer::RPCServer() {
         return json::object();
     };
     m_requests["/_initializeSyncManager"] = [this](const json dict) {
-        JSObjectRef realm_constructor = m_session_id ? JSObjectRef(m_objects[m_session_id]) : NULL;
+        JSObjectRef realm_constructor = m_session_id ? JSObjectRef(get_object(m_session_id)) : NULL;
         if (!realm_constructor) {
             throw std::runtime_error("Realm constructor not found!");
         }
@@ -315,7 +315,7 @@ RPCServer::RPCServer() {
         return json::object();
     };
     m_requests["/_asyncOpen"] = [this](const json dict) {
-        JSObjectRef realm_constructor = m_session_id ? JSObjectRef(m_objects[m_session_id]) : NULL;
+        JSObjectRef realm_constructor = m_session_id ? JSObjectRef(get_object(m_session_id)) : NULL;
         if (!realm_constructor) {
             throw std::runtime_error("Realm constructor not found!");
         }
@@ -333,7 +333,7 @@ RPCServer::RPCServer() {
         return json::object();
     };
     m_requests["/call_method"] = [this](const json dict) {
-        JSObjectRef object = m_objects[dict["id"].get<RPCObjectID>()];
+        JSObjectRef object = get_object(dict["id"].get<RPCObjectID>());
         std::string method_string = dict["name"].get<std::string>();
         JSObjectRef function = jsc::Object::validated_get_function(m_context, object, method_string);
 
@@ -350,13 +350,18 @@ RPCServer::RPCServer() {
     m_requests["/get_property"] = [this](const json dict) {
         RPCObjectID oid = dict["id"].get<RPCObjectID>();
         json name = dict["name"];
-        JSValueRef value;
 
-        if (name.is_number()) {
-            value = jsc::Object::get_property(m_context, m_objects[oid], name.get<unsigned int>());
+        JSValueRef value;
+        if (JSValueRef object = get_object(oid)) {
+            if (name.is_number()) {
+                value = jsc::Object::get_property(m_context, get_object(oid), name.get<unsigned int>());
+            }
+            else {
+                value = jsc::Object::get_property(m_context, get_object(oid), name.get<std::string>());
+            }
         }
         else {
-            value = jsc::Object::get_property(m_context, m_objects[oid], name.get<std::string>());
+            value = jsc::Value::from_null(m_context);
         }
 
         return (json){{"result", serialize_json_value(value)}};
@@ -367,10 +372,10 @@ RPCServer::RPCServer() {
         JSValueRef value = deserialize_json_value(dict["value"]);
 
         if (name.is_number()) {
-            jsc::Object::set_property(m_context, m_objects[oid], name.get<unsigned int>(), value);
+            jsc::Object::set_property(m_context, get_object(oid), name.get<unsigned int>(), value);
         }
         else {
-            jsc::Object::set_property(m_context, m_objects[oid], name.get<std::string>(), value);
+            jsc::Object::set_property(m_context, get_object(oid), name.get<std::string>(), value);
         }
 
         return json::object();
@@ -381,7 +386,7 @@ RPCServer::RPCServer() {
         return json::object();
     };
     m_requests["/get_all_users"] = [this](const json dict) {
-        JSObjectRef realm_constructor = m_session_id ? JSObjectRef(m_objects[m_session_id]) : NULL;
+        JSObjectRef realm_constructor = m_session_id ? JSObjectRef(get_object(m_session_id)) : NULL;
         if (!realm_constructor) {
             throw std::runtime_error("Realm constructor not found!");
         }
@@ -553,6 +558,11 @@ RPCObjectID RPCServer::store_object(JSObjectRef object) {
     RPCObjectID next_id = s_next_id++;
     m_objects.emplace(next_id, js::Protected<JSObjectRef>(m_context, object));
     return next_id;
+}
+
+JSObjectRef RPCServer::get_object(RPCObjectID oid) const {
+    auto it = m_objects.find(oid);
+    return it == m_objects.end() ? nullptr : static_cast<JSObjectRef>(it->second);
 }
 
 json RPCServer::serialize_json_value(JSValueRef js_value) {
