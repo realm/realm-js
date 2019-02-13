@@ -13,7 +13,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
 ### Internal
-* None.
+* Added integration tests running in various environments (Node.js on MacOS and Linux, React Native on iOS and Android & Electron main and renderer processes on Linux). Existing tests should eventually be migrated to this to ensure they pass in all relevant environments. ([#2227](https://github.com/realm/realm-js/pull/2227)).
 
 2.23.0 Release notes (2019-2-1)
 =============================================================
@@ -38,7 +38,6 @@ x.x.x Release notes (yyyy-MM-dd)
 * Upgraded to Realm Core v5.13.0.
 * Upgraded to Realm Sync v3.14.14.
 * Stopped including headers from developers JDK when building the Android native module. ([#2223](https://github.com/realm/realm-js/pull/2223))
-* Added integration tests running in various environments (Node.js on MacOS and Linux, React Native on iOS and Android & Electron main and renderer processes on Linux). ([#2227](https://github.com/realm/realm-js/pull/2227)).
 
 2.22.0 Release notes (2019-1-10)
 =============================================================
