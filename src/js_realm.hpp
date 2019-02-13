@@ -1290,12 +1290,6 @@ void RealmClass<T>::privileges(ContextType ctx, ObjectType this_object, Argument
 #endif
 }
 
-class InvalidNameException : public std::invalid_argument {
-    public:
-        InvalidNameException(const std::string& __s) : std::invalid_argument(__s) {}
-        InvalidNameException(const char* __s) : std::invalid_argument(__s) {}
-};
-
 /**
  * Updates the schema.
  *
