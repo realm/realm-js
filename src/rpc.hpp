@@ -43,11 +43,15 @@ class RPCWorker {
     RPCWorker();
     ~RPCWorker();
 
-    void add_task(std::function<json()>);
-    json pop_task_result();
+    template<typename Fn>
+    json add_task(Fn&&);
+    void invoke_callback(json);
+    json resolve_callback(json args);
+    std::future<json> add_promise();
+
     bool try_run_task();
     void stop();
-    json try_pop_task_result();
+    json try_pop_callback();
     bool should_stop();
 
   private:
@@ -56,15 +60,16 @@ class RPCWorker {
     std::thread m_thread;
     CFRunLoopRef m_loop;
 #endif
-    ConcurrentDeque<std::packaged_task<json()>> m_tasks;
-    ConcurrentDeque<std::future<json>> m_futures;
+    ConcurrentDeque<std::function<void()>> m_tasks;
+    ConcurrentDeque<std::promise<json>> m_promises;
+    ConcurrentDeque<json> m_callbacks;
 };
 
 class RPCServer {
   public:
     RPCServer();
     ~RPCServer();
-    json perform_request(std::string name, const json &args);
+    json perform_request(std::string const& name, json&& args);
     bool try_run_task();
 
 
@@ -78,15 +83,18 @@ class RPCServer {
     // because protecting the value in m_callbacks pins the function object and prevents it from being moved
     // by the garbage collector upon compaction.
     std::map<JSObjectRef, RPCObjectID> m_callback_ids;
-    ConcurrentDeque<json> m_callback_results;
     RPCObjectID m_session_id;
     RPCWorker m_worker;
     u_int64_t m_callback_call_counter;
+
+    std::mutex m_pending_callbacks_mutex;
+    std::map<std::pair<uint64_t, uint64_t>, std::promise<json>> m_pending_callbacks;
 
     static JSValueRef run_callback(JSContextRef, JSObjectRef, JSObjectRef, size_t, const JSValueRef[], JSValueRef *exception);
 
     RPCObjectID store_object(JSObjectRef object);
     JSObjectRef get_object(RPCObjectID) const;
+    JSObjectRef get_realm_constructor() const;
 
     json serialize_json_value(JSValueRef value);
     JSValueRef deserialize_json_value(const json dict);

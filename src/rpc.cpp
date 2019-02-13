@@ -111,26 +111,39 @@ RPCWorker::~RPCWorker() {
     stop();
 }
 
-void RPCWorker::add_task(std::function<json()> task) {
-    m_tasks.push_back(std::packaged_task<json()>(task));
-}
-
-json RPCWorker::pop_task_result() {
-    // This might block until a future has been added.
-    auto future = m_futures.pop_back();
-
-    // This will block until a return value (or exception) is available.
+template<typename Fn>
+json RPCWorker::add_task(Fn&& fn) {
+    std::promise<json> p;
+    auto future = p.get_future();
+    m_promises.push_back(std::move(p));
+    m_tasks.push_back([&] {
+        auto result = fn();
+        m_promises.pop_back().set_value(std::move(result));
+    });
     return future.get();
 }
 
-json RPCWorker::try_pop_task_result() {
-    // This might block until a future has been added.
-    auto future = m_futures.try_pop_back(0);
-    if (!future) {
-        return json::object();
-    }
-    // This will block until a return value (or exception) is available.
-    return (*future).get();
+void RPCWorker::invoke_callback(json callback) {
+    m_tasks.push_back([=, callback = std::move(callback)]() mutable {
+        if (auto promise = m_promises.try_pop_back(0)) {
+            promise->set_value(std::move(callback));
+        }
+        else {
+            m_callbacks.push_back(std::move(callback));
+        }
+    });
+}
+
+std::future<json> RPCWorker::add_promise() {
+    std::promise<json> p;
+    auto future = p.get_future();
+    m_promises.push_back(std::move(p));
+    return future;
+}
+
+json RPCWorker::try_pop_callback() {
+    auto cb = m_callbacks.try_pop_back(0);
+    return cb ? *cb : json::object();
 }
 
 bool RPCWorker::try_run_task() {
@@ -139,17 +152,11 @@ bool RPCWorker::try_run_task() {
     }
 
     // Use a 10 millisecond timeout to keep this thread unblocked.
-    auto task = m_tasks.try_pop_back(10);
-    if (!task) {
-        return false;
+    if (auto task = m_tasks.try_pop_back(10)) {
+        (*task)();
+        return m_stop;
     }
-
-    (*task)();
-
-    // Since this can be called recursively, it must be pushed to the front of the queue *after* running the task.
-    m_futures.push_front(task->get_future());
-
-    return m_stop;
+    return false;
 }
 
 bool RPCWorker::should_stop() {
@@ -193,10 +200,7 @@ RPCServer::RPCServer() {
         return (json){{"result", m_session_id}};
     };
     m_requests["/create_realm"] = [this](const json dict) {
-        JSObjectRef realm_constructor = m_session_id ? JSObjectRef(get_object(m_session_id)) : NULL;
-        if (!realm_constructor) {
-            throw std::runtime_error("Realm constructor not found!");
-        }
+        JSObjectRef realm_constructor = get_realm_constructor();
 
         json::array_t args = dict["arguments"];
         size_t arg_count = args.size();
@@ -211,10 +215,7 @@ RPCServer::RPCServer() {
         return (json){{"result", realm_id}};
     };
     m_requests["/create_user"] = [this](const json dict) {
-        JSObjectRef realm_constructor = m_session_id ? JSObjectRef(get_object(m_session_id)) : NULL;
-        if (!realm_constructor) {
-            throw std::runtime_error("Realm constructor not found!");
-        }
+        JSObjectRef realm_constructor = get_realm_constructor();
 
         JSObjectRef sync_constructor = (JSObjectRef)jsc::Object::get_property(m_context, realm_constructor, "Sync");
         JSObjectRef user_constructor = (JSObjectRef)jsc::Object::get_property(m_context, sync_constructor, "User");
@@ -232,10 +233,7 @@ RPCServer::RPCServer() {
         return (json){{"result", serialize_json_value(user_object)}};
     };
     m_requests["/_adminUser"] = [this](const json dict) {
-        JSObjectRef realm_constructor = m_session_id ? JSObjectRef(get_object(m_session_id)) : NULL;
-        if (!realm_constructor) {
-            throw std::runtime_error("Realm constructor not found!");
-        }
+        JSObjectRef realm_constructor = get_realm_constructor();
 
         JSObjectRef sync_constructor = (JSObjectRef)jsc::Object::get_property(m_context, realm_constructor, "Sync");
         JSObjectRef user_constructor = (JSObjectRef)jsc::Object::get_property(m_context, sync_constructor, "User");
@@ -253,10 +251,7 @@ RPCServer::RPCServer() {
         return (json){{"result", serialize_json_value(user_object)}};
     };
     m_requests["/_getExistingUser"] = [this](const json dict) {
-        JSObjectRef realm_constructor = m_session_id ? JSObjectRef(get_object(m_session_id)) : NULL;
-        if (!realm_constructor) {
-            throw std::runtime_error("Realm constructor not found!");
-        }
+        JSObjectRef realm_constructor = get_realm_constructor();
 
         JSObjectRef sync_constructor = (JSObjectRef)jsc::Object::get_property(m_context, realm_constructor, "Sync");
         JSObjectRef user_constructor = (JSObjectRef)jsc::Object::get_property(m_context, sync_constructor, "User");
@@ -275,10 +270,7 @@ RPCServer::RPCServer() {
 
     };
     m_requests["/reconnect"] = [this](const json dict) {
-        JSObjectRef realm_constructor = m_session_id ? JSObjectRef(get_object(m_session_id)) : NULL;
-        if (!realm_constructor) {
-            throw std::runtime_error("Realm constructor not found!");
-        }
+        JSObjectRef realm_constructor = get_realm_constructor();
 
         JSObjectRef sync_constructor = (JSObjectRef)jsc::Object::get_property(m_context, realm_constructor, "Sync");
         JSObjectRef reconnect_method = (JSObjectRef)jsc::Object::get_property(m_context, sync_constructor, "reconnect");
@@ -295,10 +287,7 @@ RPCServer::RPCServer() {
         return json::object();
     };
     m_requests["/_initializeSyncManager"] = [this](const json dict) {
-        JSObjectRef realm_constructor = m_session_id ? JSObjectRef(get_object(m_session_id)) : NULL;
-        if (!realm_constructor) {
-            throw std::runtime_error("Realm constructor not found!");
-        }
+        JSObjectRef realm_constructor = get_realm_constructor();
 
         JSObjectRef sync_constructor = (JSObjectRef)jsc::Object::get_property(m_context, realm_constructor, "Sync");
         JSObjectRef initialize_sync_manager_method = (JSObjectRef)jsc::Object::get_property(m_context, sync_constructor, "_initializeSyncManager");
@@ -315,10 +304,7 @@ RPCServer::RPCServer() {
         return json::object();
     };
     m_requests["/_asyncOpen"] = [this](const json dict) {
-        JSObjectRef realm_constructor = m_session_id ? JSObjectRef(get_object(m_session_id)) : NULL;
-        if (!realm_constructor) {
-            throw std::runtime_error("Realm constructor not found!");
-        }
+        JSObjectRef realm_constructor = get_realm_constructor();
 
         JSObjectRef _asyncOpen_method = (JSObjectRef)jsc::Object::get_property(m_context, realm_constructor, "_asyncOpen");
         json::array_t args = dict["arguments"];
@@ -386,10 +372,7 @@ RPCServer::RPCServer() {
         return json::object();
     };
     m_requests["/get_all_users"] = [this](const json dict) {
-        JSObjectRef realm_constructor = m_session_id ? JSObjectRef(get_object(m_session_id)) : NULL;
-        if (!realm_constructor) {
-            throw std::runtime_error("Realm constructor not found!");
-        }
+        JSObjectRef realm_constructor = get_realm_constructor();
 
         JSObjectRef sync_constructor = (JSObjectRef)jsc::Object::get_property(m_context, realm_constructor, "Sync");
         JSObjectRef user_constructor = (JSObjectRef)jsc::Object::get_property(m_context, sync_constructor, "User");
@@ -426,7 +409,8 @@ RPCServer::~RPCServer() {
     JSGlobalContextRelease(m_context);
 }
 
-JSValueRef RPCServer::run_callback(JSContextRef ctx, JSObjectRef function, JSObjectRef this_object, size_t argc, const JSValueRef arguments[], JSValueRef* exception) {
+JSValueRef RPCServer::run_callback(JSContextRef ctx, JSObjectRef function, JSObjectRef this_object,
+                                   size_t argc, const JSValueRef arguments[], JSValueRef* exception) {
     RPCServer* server = get_rpc_server(JSContextGetGlobalContext(ctx));
     if (!server) {
         return JSValueMakeUndefined(ctx);
@@ -439,37 +423,28 @@ JSValueRef RPCServer::run_callback(JSContextRef ctx, JSObjectRef function, JSObj
     json arguments_json = server->serialize_json_value(arguments_array);
     json this_json = server->serialize_json_value(this_object);
 
-    // The next task on the stack will instruct the JS to run this callback.
-    // This captures references since it will be executed before exiting this function.
-    server->m_worker.add_task([&]() -> json {
-        return {
-            {"callback", callback_id},
-            {"this", this_json},
-            {"arguments", arguments_json},
-            {"callback_call_counter", counter}
-        };
-    });
-
-    // Wait for this callback call result to come off the result stack.
-    json callbackResult = nullptr;
-    while (callbackResult == nullptr) {
-        callbackResult = server->m_callback_results.pop_if([&](json result) {
-            auto resultCallbackId = result["callback"].get<u_int64_t>();
-            auto resultCallbackCounter = result["callback_call_counter"].get<u_int64_t>();
-            return resultCallbackId == callback_id && resultCallbackCounter == counter;
-        });
-
-        if (callbackResult == nullptr) {
-            server->m_worker.try_run_task();
-        }
+    std::future<json> future;
+    {
+        std::lock_guard<std::mutex> lock(server->m_pending_callbacks_mutex);
+        future = server->m_pending_callbacks[{callback_id, counter}].get_future();
     }
 
-    json results = callbackResult;
-    json error = results["error"];
+    // The next task on the stack will instruct the JS to run this callback.
+    // This captures references since it will be executed before exiting this function.
+    server->m_worker.invoke_callback({
+        {"callback", callback_id},
+        {"this", this_json},
+        {"arguments", arguments_json},
+        {"callback_call_counter", counter}
+    });
 
+    while (!server->try_run_task() && future.wait_for(std::chrono::milliseconds(10)) != std::future_status::ready);
+
+    json results = future.get();
     // The callback id should be identical!
     assert(callback_id == results["callback"].get<RPCObjectID>());
 
+    json error = results["error"];
     if (!error.is_null()) {
         JSStringRef message = JSStringCreateWithUTF8CString(error.get<std::string>().c_str());
         JSValueRef arguments[] { JSValueMakeString(ctx, message) };
@@ -479,10 +454,9 @@ JSValueRef RPCServer::run_callback(JSContextRef ctx, JSObjectRef function, JSObj
     }
 
     return server->deserialize_json_value(results["result"]);
-
 }
 
-json RPCServer::perform_request(std::string name, const json &args) {
+json RPCServer::perform_request(std::string const& name, json&& args) {
     std::lock_guard<std::mutex> lock(m_request_mutex);
 
     // Only create_session is allowed without the correct session id (since it creates the session id).
@@ -490,52 +464,52 @@ json RPCServer::perform_request(std::string name, const json &args) {
         return {{"error", "Invalid session ID"}};
     }
 
+    auto resolve_callback = [&] {
+        auto callback_id = args["callback"].get<uint64_t>();
+        auto callback_counter = args["callback_call_counter"].get<uint64_t>();
+        std::lock_guard<std::mutex> lock(m_pending_callbacks_mutex);
+        auto cb = m_pending_callbacks.find({callback_id, callback_counter});
+        if (cb != m_pending_callbacks.end()) {
+            cb->second.set_value(args);
+            m_pending_callbacks.erase(cb);
+        }
+    };
+
     // The callback_result message contains the return value (or exception) of a callback ran by run_callback().
     if (name == "/callback_result") {
-        json results(args);
-        m_callback_results.push_back(std::move(results));
+        std::future<json> result = m_worker.add_promise();
+        resolve_callback();
+        return result.get();
     }
-    else if (name == "/callback_poll_result") {
-        json results(args);
-        m_callback_results.push_back(std::move(results));
+    if (name == "/callback_poll_result") {
+        resolve_callback();
         return json::object();
     }
-    else if (name == "/callbacks_poll") {
-        auto result = m_worker.try_pop_task_result();
-        return result;
+    if (name == "/callbacks_poll") {
+        return m_worker.try_pop_callback();
     }
-    else {
-        RPCRequest action = m_requests[name];
-        assert(action);
 
-        m_worker.add_task([=] {
+    RPCRequest *action = &m_requests[name];
+    assert(action && *action);
+
+    return m_worker.add_task([=] {
+        try {
+            return (*action)(args);
+        }
+        catch (jsc::Exception const& ex) {
+            json exceptionAsJson = nullptr;
             try {
-                return action(args);
+                exceptionAsJson = serialize_json_value(ex);
             }
-            catch (jsc::Exception ex) {
-                json exceptionAsJson = nullptr;
-                try {
-                    exceptionAsJson = serialize_json_value(ex);
-                }
-                catch (...) {
-                    exceptionAsJson = {{"error", "An exception occured while processing the request. Could not serialize the exception as JSON"}};
-                }
-                return (json){{"error", exceptionAsJson}, {"message", ex.what()}};
+            catch (...) {
+                exceptionAsJson = {{"error", "An exception occured while processing the request. Could not serialize the exception as JSON"}};
             }
-            catch (std::exception &exception) {
-                return (json){{"error", exception.what()}};
-            }
-        });
-
-    }
-
-    try {
-        // This will either be the return value (or exception) of the action perform, OR an instruction to run a callback.
-        auto result = m_worker.pop_task_result();
-        return result;
-    } catch (std::exception &exception) {
-        return {{"error", exception.what()}};
-    }
+            return (json){{"error", exceptionAsJson}, {"message", ex.what()}};
+        }
+        catch (std::exception const& exception) {
+            return (json){{"error", exception.what()}};
+        }
+    });
 }
 
 bool RPCServer::try_run_task() {
@@ -553,6 +527,14 @@ RPCObjectID RPCServer::store_object(JSObjectRef object) {
 JSObjectRef RPCServer::get_object(RPCObjectID oid) const {
     auto it = m_objects.find(oid);
     return it == m_objects.end() ? nullptr : static_cast<JSObjectRef>(it->second);
+}
+
+JSObjectRef RPCServer::get_realm_constructor() const {
+    JSObjectRef realm_constructor = m_session_id ? JSObjectRef(get_object(m_session_id)) : NULL;
+    if (!realm_constructor) {
+        throw std::runtime_error("Realm constructor not found!");
+    }
+    return realm_constructor;
 }
 
 json RPCServer::serialize_json_value(JSValueRef js_value) {

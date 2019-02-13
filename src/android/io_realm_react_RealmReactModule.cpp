@@ -106,8 +106,7 @@ JNIEXPORT jstring JNICALL Java_io_realm_react_RealmReactModule_processChromeDebu
 {
     const char* cmd = env->GetStringUTFChars(chrome_cmd, NULL);
     const char* args = env->GetStringUTFChars(chrome_args, NULL);
-    json parsed_args = json::parse(args);
-    json response = s_rpc_server->perform_request(cmd, parsed_args);
+    json response = s_rpc_server->perform_request(cmd, json::parse(args));
     env->ReleaseStringUTFChars(chrome_cmd, cmd);
     env->ReleaseStringUTFChars(chrome_args, args);
     return env->NewStringUTF(response.dump().c_str());

@@ -232,7 +232,7 @@ RCT_REMAP_METHOD(emit, emitEvent:(NSString *)eventName withObject:(id)object) {
 
             if (rpcServer) {
                 json args = json::parse([[(GCDWebServerDataRequest *)request text] UTF8String]);
-                std::string responseText = rpcServer->perform_request(request.path.UTF8String, args).dump();
+                std::string responseText = rpcServer->perform_request(request.path.UTF8String, std::move(args)).dump();
 
                 responseData = [NSData dataWithBytes:responseText.c_str() length:responseText.length()];
             }
