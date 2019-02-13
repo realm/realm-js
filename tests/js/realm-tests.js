@@ -1313,7 +1313,11 @@ module.exports = {
             });
 
             let realm2 = new Realm({ schema: schema, _cache: false });
-            TestCase.assertEqual(realm1.schema.length, 0); // not yet updated
+            if (!isChromeWorker) {
+                // Not updated until we return to the event loop and the autorefresh can happen
+                // When running in Chrome this can happen at any time due to the async RPC
+                TestCase.assertEqual(realm1.schema.length, 0);
+            }
             TestCase.assertEqual(realm2.schema.length, 1);
 
             // give some time to let advance_read to complete
