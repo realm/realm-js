@@ -35,7 +35,10 @@ describe("Realm._updateSchema", () => {
     it("creates a class schema from a name", () => {
         const realm = new Realm({ schema: PersonAndDogsSchema });
         realm.write(() => {
-            realm._updateSchema([ ...realm.schema, { name: "MyClass", properties: {} } ]);
+            realm._updateSchema([
+                ...realm.schema,
+                { name: "MyClass", properties: { } },
+            ]);
         });
         const classNames = realm.schema.map(s => s.name);
         expect(classNames).to.contain("MyClass");
@@ -44,7 +47,10 @@ describe("Realm._updateSchema", () => {
     it("creates a class schema from a name and properties", () => {
         const realm = new Realm({ schema: PersonAndDogsSchema });
         realm.write(() => {
-            realm._updateSchema([ ...realm.schema, { name: "MyClass", properties: { myField: "string" } } ]);
+            realm._updateSchema([
+                ...realm.schema,
+                { name: "MyClass", properties: { myField: "string" } },
+            ]);
         });
         const MyClassSchema = realm.schema.find(s => s.name === "MyClass");
         expect(MyClassSchema).to.deep.equal({
@@ -60,10 +66,44 @@ describe("Realm._updateSchema", () => {
         });
     });
 
+    it("can use a newly added class", () => {
+        const realm = new Realm({ schema: PersonAndDogsSchema });
+        realm.write(() => {
+            realm._updateSchema([
+                ...realm.schema,
+                { name: "MyClass", properties: { myField: "string" } },
+            ]);
+            realm.create("MyClass", { myField: "some string" });
+            const myClassObjects = realm.objects("MyClass");
+            expect(myClassObjects).to.be.of.length(1);
+            expect(myClassObjects[0].myField).to.equal("some string");
+        });
+    });
+
+    it("fires the schema change event", (done) => {
+        const realm = new Realm({ schema: PersonAndDogsSchema });
+        realm.addListener("schema", () => {
+            expect(realm.schema).to.have.length(3);
+            const objectSchemaNames = realm.schema.map(s => s.name);
+            expect(objectSchemaNames).to.contain("MyClass");
+            done();
+        });
+
+        realm.write(() => {
+            realm._updateSchema([
+                ...realm.schema,
+                { name: "MyClass", properties: { myField: "string" } },
+            ]);
+        });
+    });
+
     it("throws if creating a class schema outside of a transaction", () => {
         const realm = new Realm({ schema: PersonAndDogsSchema });
         expect(() => {
-            realm._updateSchema([ ...realm.schema, { name: "MyClass", properties: {} } ]);
+            realm._updateSchema([
+                ...realm.schema,
+                { name: "MyClass", properties: {} },
+            ]);
         }).to.throw("Can only create object schema within a transaction.");
     });
 
@@ -71,7 +111,10 @@ describe("Realm._updateSchema", () => {
         const realm = new Realm({ schema: PersonAndDogsSchema });
         expect(() => {
             realm.write(() => {
-                realm._updateSchema([ ...realm.schema, { name: "Person", properties: {} } ]);
+                realm._updateSchema([
+                    ...realm.schema,
+                    { name: "Person", properties: {} },
+                ]);
             });
         }).to.throw("Type 'Person' appears more than once in the schema.");
     });
