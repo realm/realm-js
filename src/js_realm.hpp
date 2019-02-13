@@ -239,8 +239,7 @@ public:
     static void object_for_object_id(ContextType, ObjectType, Arguments &, ReturnValue&);
     static void privileges(ContextType, ObjectType, Arguments &, ReturnValue&);
     static void get_schema_name_from_object(ContextType, ObjectType, Arguments &, ReturnValue&);
-    static void create_object_schema(ContextType, ObjectType, Arguments &, ReturnValue&);
-    static void create_object_schema_property(ContextType, ObjectType, Arguments &, ReturnValue&);
+    static void update_schema(ContextType, ObjectType, Arguments &, ReturnValue&);
 
 #if REALM_ENABLE_SYNC
     static void async_open_realm(ContextType, ObjectType, Arguments &, ReturnValue&);
@@ -308,8 +307,7 @@ public:
         {"writeCopyTo", wrap<writeCopyTo>},
         {"deleteModel", wrap<delete_model>},
         {"privileges", wrap<privileges>},
-        {"_createObjectSchema", wrap<create_object_schema>},
-        {"_createObjectSchemaProperty", wrap<create_object_schema_property>},
+        {"_updateSchema", wrap<update_schema>},
         {"_objectForObjectId", wrap<object_for_object_id>},
         {"_schemaName", wrap<get_schema_name_from_object>},
     };
@@ -1299,125 +1297,31 @@ class InvalidNameException : public std::invalid_argument {
 };
 
 /**
- * Creates an "object schema" in the current schema.
+ * Updates the schema.
  *
- * TODO: This is exposed as an internal `_createObjectSchema` API because this should eventually be published as
- * `Realm.schema.createClass`.
+ * TODO: This is exposed as an internal `_updateSchema` API because this should eventually be published as
+ * `Realm.schema.update`.
  */
 template<typename T>
-void RealmClass<T>::create_object_schema(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
-    args.validate_between(1, 3);
-
-    // Create a schema object from the arguments, which can be parsed
-    // We could take this as an argument directly, but that would result in a less intuitive API
-    ObjectType object_schema = Object::create_empty(ctx);
-
-    std::string name = Value::validated_to_string(ctx, args[0], "name");
-    Object::set_property(ctx, object_schema, "name", Value::from_string(ctx, name));
-
-    if (args.count >= 2) {
-        ObjectType properties = Value::validated_to_object(ctx, args[1], "properties");
-        Object::set_property(ctx, object_schema, "properties", properties);
-    } else {
-        // Use an empty object if no properties are supplied
-        Object::set_property(ctx, object_schema, "properties", Object::create_empty(ctx));
-    }
-
-    if (args.count >= 3) {
-        Object::set_property(ctx, object_schema, "primaryKey", args[2]);
-    }
+void RealmClass<T>::update_schema(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
+    args.validate_count(1);
+    ObjectType schema = Value::validated_to_array(ctx, args[0], "schema");
 
     // Parse the schema object provided by the user
     ObjectDefaultsMap defaults;
     ConstructorMap constructors;
-    ObjectSchema parsed_object_schema = Schema<T>::parse_object_schema(ctx, object_schema, defaults, constructors);
+    realm::Schema parsed_schema = Schema<T>::parse_schema(ctx, schema, defaults, constructors);
 
     // Get a handle to the Realms group
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
     if (!realm->is_in_transaction()) {
         throw std::runtime_error("Can only create object schema within a transaction.");
     }
-
-    // Determine if we already have an object schema with the requested name
-    realm::Schema schema = realm->schema();
-    if (schema.find(parsed_object_schema.name) != schema.end()) {
-        throw InvalidNameException(util::format(
-            "Another object schema named '%1' already exists",
-            parsed_object_schema.name
-        ));
-    }
     
-    // Create a vector from the existing schema
-    std::vector<ObjectSchema> updated_schema(schema.begin(), schema.end());
-    // Add the new object schema to the end of the updated schema
-    updated_schema.emplace_back(parsed_object_schema);
     // Perform the schema update
     realm->update_schema(
-        updated_schema,
-        realm->schema_version() + 1,
-        nullptr,
-        nullptr,
-        true
-    );
-}
-
-/**
- * Creates a property on an existing "object schema" in the current schema.
- *
- * TODO: This is exposed as an internal `_createSchemaProperty` API because this should eventually be published as
- * `Realm.schema[0].createProperty`.
- */
-template<typename T>
-void RealmClass<T>::create_object_schema_property(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
-    args.validate_count(3);
-
-    std::string object_schema_name = Value::validated_to_string(ctx, args[0], "objectSchemaName");
-    std::string property_name = Value::validated_to_string(ctx, args[1], "propertyName");
-    ValueType property_schema = args[2];
-
-    // Parse the schema object provided by the user
-    ObjectDefaults defaults;
-    Property parsed_property = Schema<T>::parse_property(
-        ctx,
-        property_schema,
-        object_schema_name,
-        property_name,
-        defaults
-    );
-
-    // Get a handle to the Realms group
-    SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
-    if (!realm->is_in_transaction()) {
-        throw std::runtime_error("Can only create object schema property within a transaction.");
-    }
-
-    // Determine if the object schema exists
-    realm::Schema schema = realm->schema();
-    auto object_schema = schema.find(object_schema_name);
-    if (object_schema == schema.end()) {
-        throw InvalidNameException(util::format(
-            "Missing object schema named '%1'",
-            object_schema_name
-        ));
-    }
-
-    // Determine if we already have a property with the requested name
-    for (const Property &property : object_schema->persisted_properties) {
-        if (property.name == property_name) {
-            throw InvalidNameException(util::format(
-                "Another property named '%1' already exists on object schema named '%2'",
-                property_name,
-                object_schema_name
-            ));
-        }
-    }
-
-    // Add the property to the list of persisted properties
-    object_schema->persisted_properties.emplace_back(parsed_property);
-    // Perform the schema update
-    realm->update_schema(
-        schema,
-        realm->schema_version() + 1,
+        parsed_schema,
+        realm->schema_version(),
         nullptr,
         nullptr,
         true
