@@ -58,3 +58,8 @@ realm-object-server/
 tests/react-test-app/ios/out.txt
 *.iml
 crash.log
+
+# Integration tests
+integration-tests/**/realm-*.tgz
+integration-tests/**/realm-integration-tests-*.tgz
+integration-tests/environments/electron/dist/

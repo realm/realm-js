@@ -1,0 +1,26 @@
+{
+  "name": "@realm/integration-tests",
+  "version": "0.1.0",
+  "description": "A wrapper module that can install and run Realm JS tests in various environments",
+  "private": true,
+  "scripts": {
+    "start": "cd tests && npm start --",
+    "lint": "npm run tests/lint && npm run environments/lint",
+    "test": "npm run environments/test",
+    "tests/install": "cd tests && npm install",
+    "tests/lint": "cd tests && eslint **/*.js",
+    "postinstall": "npm run realm/pack && npm run tests/install && npm run environments/install",
+    "realm/pack": "REALM_BUILD_ANDROID=1 npm pack ..",
+    "environments/install": "node environments 'npm install'",
+    "environments/lint": "node environments 'eslint **/*.js'",
+    "environments/test": "node environments 'npm test'"
+  },
+  "devDependencies": {
+    "babel-eslint": "^8.2.6",
+    "concurrently": "^4.1.0",
+    "eslint": "^5.1.0",
+    "eslint-plugin-flowtype": "^2.50.0",
+    "eslint-plugin-react": "^7.10.0",
+    "eslint-plugin-react-native": "^3.2.1"
+  }
+}

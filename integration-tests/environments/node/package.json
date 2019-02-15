@@ -1,0 +1,21 @@
+{
+  "name": "realm-node-tests",
+  "version": "0.1.0",
+  "description": "Realm JS tests running in a Node.js environment",
+  "private": true,
+  "scripts": {
+    "test": "mocha --exit index.js",
+    "preinstall": "npm pack ../../tests && test -f realm-integration-tests-0.1.0.tgz && test -f ../../realm-*.tgz",
+    "install": "npm install realm-integration-tests-0.1.0.tgz ../../realm-*.tgz --build-from-source=realm --no-save"
+  },
+  "peerDependencies": {
+    "realm": "*",
+    "realm-integration-tests": "*"
+  },
+  "dependencies": {
+    "fs-extra": "^7.0.1",
+    "mocha": "^5.2.0",
+    "mocha-cli": "^1.0.1",
+    "mocha-junit-reporter": "^1.18.0"
+  }
+}

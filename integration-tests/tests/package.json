@@ -1,0 +1,22 @@
+{
+  "name": "realm-integration-tests",
+  "version": "0.1.0",
+  "description": "A set of tests that can run in different environments",
+  "main": "src/index.js",
+  "private": true,
+  "scripts": {
+    "start": "mocha --require src/utils/inject-globals.js --watch src/index.js"
+  },
+  "peerDependencies": {
+    "mocha": "^5.2.0",
+    "realm": "*"
+  },
+  "devDependencies": {
+    "fs-extra": "^7.0.1",
+    "mocha": "^5.2.0",
+    "realm": "../.."
+  },
+  "dependencies": {
+    "chai": "^4.2.0"
+  }
+}
