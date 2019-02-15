@@ -7,7 +7,7 @@
     "test/android": "node harness/runner.js android",
     "test/ios": "node harness/runner.js ios",
     "preinstall": "npm pack ../../tests && test -f realm-integration-tests-0.1.0.tgz && test -f ../../realm-*.tgz",
-    "install": "npm install realm-integration-tests-0.1.0.tgz ../../realm-*.tgz --no-save"
+    "install": "npm install realm-integration-tests-0.1.0.tgz ../../realm-*.tgz --build-from-source=realm --no-save"
   },
   "peerDependencies": {
     "realm": "*",

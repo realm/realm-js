@@ -15,7 +15,7 @@
     "test/main": "node runner.js main",
     "test/renderer": "node runner.js renderer",
     "preinstall": "npm pack ../../tests && test -f realm-integration-tests-0.1.0.tgz && test -f ../../realm-*.tgz",
-    "install": "npm install ../../realm-*.tgz realm-integration-tests-0.1.0.tgz --no-save",
+    "install": "npm install ../../realm-*.tgz realm-integration-tests-0.1.0.tgz --build-from-source=realm --no-save",
     "postinstall": "./rebuild-realm.sh",
     "package": "electron-builder --dir"
   },
