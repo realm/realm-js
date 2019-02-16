@@ -14,6 +14,9 @@
     "realm-integration-tests": "*"
   },
   "dependencies": {
+    "command-line-args": "^4.0.6",
+    "decompress": "^4.2.0",
+    "https-proxy-agent": "^2.2.1",
     "mocha": "^5.2.0",
     "mocha-junit-reporter": "^1.18.0",
     "mocha-remote-client": "^0.9.1",
@@ -24,6 +27,7 @@
   },
   "devDependencies": {
     "babel-preset-react-native": "^5",
+    "fs-extra": "^4.0.3",
     "mocha-remote-server": "^0.9.1",
     "react-test-renderer": "16.4.1"
   }
