@@ -65,6 +65,30 @@ stage('check') {
   }
 }
 
+stage('test') {
+  parallel(
+    eslint: doDockerBuild('eslint-ci', {
+      step([$class: 'CheckStylePublisher', canComputeNew: false, canRunOnFailed: true, defaultEncoding: '', healthy: '', pattern: 'eslint.xml', unHealthy: ''])
+    }),
+    jsdoc: doDockerBuild('jsdoc', {
+      publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'docs/output', reportFiles: 'index.html', reportName: 'Docs'])
+    }),
+    linux_node_debug: doDockerBuild('node Debug'),
+    linux_node_release: doDockerBuild('node Release'),
+    linux_test_runners: doDockerBuild('test-runners'),
+    macos_node_debug: doMacBuild('node Debug'),
+    macos_node_release: doMacBuild('node Release'),
+    macos_react_tests_debug: doMacBuild('react-tests Debug'),
+    macos_react_tests_release: doMacBuild('react-tests Release'),
+    macos_react_example_debug: doMacBuild('react-example Debug'),
+    macos_react_example_release: doMacBuild('react-example Release'),
+    //android_react_tests: doAndroidBuild('react-tests-android', {
+    //  junit 'tests/react-test-app/tests.xml'
+    //}),
+    windows_node: doWindowsBuild(),
+  )
+}
+
 // Create the Realm JS npm package
 stage('package') {
   node('docker') {
@@ -90,28 +114,8 @@ stage('package') {
   }
 }
 
-stage('test (and build)') {
+stage('integration tests') {
   parallel(
-    eslint: doDockerBuild('eslint-ci', {
-      step([$class: 'CheckStylePublisher', canComputeNew: false, canRunOnFailed: true, defaultEncoding: '', healthy: '', pattern: 'eslint.xml', unHealthy: ''])
-    }),
-    jsdoc: doDockerBuild('jsdoc', {
-      publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'docs/output', reportFiles: 'index.html', reportName: 'Docs'])
-    }),
-    linux_node_debug: doDockerBuild('node Debug'),
-    linux_node_release: doDockerBuild('node Release'),
-    linux_test_runners: doDockerBuild('test-runners'),
-    macos_node_debug: doMacBuild('node Debug'),
-    macos_node_release: doMacBuild('node Release'),
-    macos_react_tests_debug: doMacBuild('react-tests Debug'),
-    macos_react_tests_release: doMacBuild('react-tests Release'),
-    macos_react_example_debug: doMacBuild('react-example Debug'),
-    macos_react_example_release: doMacBuild('react-example Release'),
-    //android_react_tests: doAndroidBuild('react-tests-android', {
-    //  junit 'tests/react-test-app/tests.xml'
-    //}),
-    windows_node: doWindowsBuild(),
-
     // Integration tests:
     // The tests above should be removed once we manage to move them to the new test harness in ./integration-tests
     'React Native on Android': ReactNativeTests.onAndroid(),
