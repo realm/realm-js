@@ -153,9 +153,16 @@ static void noOpIdSetter(id self, SEL sel, id value) { }
     [super setUp];
 
     RCTBridge *bridge = [RCTBridge currentBridge];
+    RealmTestEventEmitter *oldEmitter = [bridge moduleForClass:RealmTestEventEmitter.class];
     bridge.executorClass = self.executorClass;
     [bridge reload];
-    [self waitForNotification:RCTJavaScriptDidLoadNotification];
+
+    // Wait for the bridge to reinitialize our module
+    RealmTestEventEmitter *emitter;
+    while (!(emitter = [RCTBridge.currentBridge moduleForName:@"RealmTestEventEmitter" lazilyLoadIfNecessary:NO]) || emitter == oldEmitter) {
+        [NSRunLoop.currentRunLoop runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.1]];
+    }
+    [emitter waitForLoad];
 }
 
 + (NSNotification *)waitForNotification:(NSString *)notificationName {
