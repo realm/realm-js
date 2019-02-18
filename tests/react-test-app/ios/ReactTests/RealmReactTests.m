@@ -267,7 +267,7 @@ static void noOpIdSetter(id self, SEL sel, id value) { }
 
 @end
 
-
+#if RCT_DEV
 @implementation RealmReactChromeTests
 
 + (Class)executorClass {
@@ -279,3 +279,4 @@ static void noOpIdSetter(id self, SEL sel, id value) { }
 }
 
 @end
+#endif

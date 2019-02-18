@@ -19,16 +19,4 @@ target 'ReactTestApp' do
   target 'RealmReactTests' do
     inherit! :search_paths
   end
-
-  # Define RCT_DEV for release builds so that we can run the chrome tests against both debug and release
-  post_install do |installer|
-    installer.pods_project.targets.each do |target|
-      if target.product_name == 'React'
-        target.build_configurations.each do |config|
-          config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= ['$(inherited)']
-          config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] << 'RCT_DEV=1'
-        end
-      end
-    end
-  end
 end
