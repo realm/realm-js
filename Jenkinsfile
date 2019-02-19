@@ -65,7 +65,7 @@ stage('check') {
   }
 }
 
-stage('test') {
+stage('package and test') {
   parallel(
     eslint: doDockerBuild('eslint-ci', {
       step([$class: 'CheckStylePublisher', canComputeNew: false, canRunOnFailed: true, defaultEncoding: '', healthy: '', pattern: 'eslint.xml', unHealthy: ''])
@@ -88,32 +88,8 @@ stage('test') {
     //  junit 'tests/react-test-app/tests.xml'
     //}),
     windows_node: doWindowsBuild(),
+    package: packageNpmArchive(),
   )
-}
-
-// Create the Realm JS npm package
-stage('package') {
-  node('docker') {
-    // Unstash the files in the repository
-    unstash 'source'
-    // Remove any archive from the workspace, which might have been produced by previous runs of the job
-    sh 'rm -f realm-*.tgz'
-    // TODO: Consider moving the node on the other side of the stages
-    docker.build(
-      'ci/realm-js:android-build',
-      '-f Dockerfile.android .'
-    ).inside {
-      // Install dependencies
-      sh 'npm install'
-      // Publish the Android module
-      sh 'cd react-native/android && ./gradlew publishAndroid'
-      // Package up the app
-      sh 'npm pack'
-      // Archive and stash the package
-      archiveArtifacts 'realm-*.tgz'
-      stash includes: 'realm-*.tgz', name: 'package'
-    }
-  }
 }
 
 stage('integration tests') {
@@ -273,6 +249,32 @@ def doWindowsBuild() {
         }
       } finally {
         deleteDir()
+      }
+    }
+  }
+}
+
+def packageNpmArchive() {
+  return {
+    node('docker') {
+      // Unstash the files in the repository
+      unstash 'source'
+      // Remove any archive from the workspace, which might have been produced by previous runs of the job
+      sh 'rm -f realm-*.tgz'
+      // TODO: Consider moving the node on the other side of the stages
+      docker.build(
+        'ci/realm-js:android-build',
+        '-f Dockerfile.android .'
+      ).inside {
+        // Install dependencies
+        sh 'npm install'
+        // Publish the Android module
+        sh 'cd react-native/android && ./gradlew publishAndroid'
+        // Package up the app
+        sh 'npm pack'
+        // Archive and stash the package
+        archiveArtifacts 'realm-*.tgz'
+        stash includes: 'realm-*.tgz', name: 'package'
       }
     }
   }
