@@ -73,8 +73,10 @@ stage('test') {
     jsdoc: doDockerBuild('jsdoc', {
       publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'docs/output', reportFiles: 'index.html', reportName: 'Docs'])
     }),
-    linux_node_debug: doDockerBuild('node Debug'),
-    linux_node_release: doDockerBuild('node Release'),
+    linux_node_8_debug: doDockerBuild('node Debug v8.15.0'),
+    linux_node_8_release: doDockerBuild('node Release v8.15.0'),
+    linux_node_10_debug: doDockerBuild('node Debug v10.15.1'),
+    linux_node_10_release: doDockerBuild('node Release v10.15.1'),
     linux_test_runners: doDockerBuild('test-runners'),
     macos_node_debug: doMacBuild('node Debug'),
     macos_node_release: doMacBuild('node Release'),
