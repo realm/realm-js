@@ -229,7 +229,8 @@ def doDockerBuild(target, postStep = null) {
 def doMacBuild(target, postStep = null) {
   return {
     node('osx_vegas') {
-      withEnv(['DEVELOPER_DIR=/Applications/Xcode-9.4.app/Contents/Developer']) {
+      withEnv(['DEVELOPER_DIR=/Applications/Xcode-9.4.app/Contents/Developer',
+               'REALM_SET_NVM_ALIAS=1']) {
         doInside("./scripts/test.sh", target, postStep)
       }
     }

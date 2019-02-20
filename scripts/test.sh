@@ -231,7 +231,7 @@ if [[ "$(command -v nvm)" ]]; then
   nvm install $NODE_VERSION
 fi
 set_nvm_default() {
-  if [[ "$(command -v nvm)" ]]; then
+  if [ -n "$REALM_SET_NVM_ALIAS" ] && [[ "$(command -v nvm)" ]]; then
     nvm_old_default="$(nvm alias default --no-colors | cut -d ' ' -f 3)"
     nvm alias default $(nvm current)
   fi
