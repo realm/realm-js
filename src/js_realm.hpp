@@ -208,6 +208,7 @@ class RealmClass : public ClassDefinition<T, SharedRealm, ObservableClass<T>> {
     using NativeAccessor = realm::js::NativeAccessor<T>;
 
 public:
+    using ObjectDefaults = typename Schema<T>::ObjectDefaults;
     using ObjectDefaultsMap = typename Schema<T>::ObjectDefaultsMap;
     using ConstructorMap = typename Schema<T>::ConstructorMap;
 
@@ -238,6 +239,8 @@ public:
     static void object_for_object_id(ContextType, ObjectType, Arguments &, ReturnValue&);
     static void privileges(ContextType, ObjectType, Arguments &, ReturnValue&);
     static void get_schema_name_from_object(ContextType, ObjectType, Arguments &, ReturnValue&);
+    static void update_schema(ContextType, ObjectType, Arguments &, ReturnValue&);
+
 #if REALM_ENABLE_SYNC
     static void async_open_realm(ContextType, ObjectType, Arguments &, ReturnValue&);
 #endif
@@ -304,6 +307,7 @@ public:
         {"writeCopyTo", wrap<writeCopyTo>},
         {"deleteModel", wrap<delete_model>},
         {"privileges", wrap<privileges>},
+        {"_updateSchema", wrap<update_schema>},
         {"_objectForObjectId", wrap<object_for_object_id>},
         {"_schemaName", wrap<get_schema_name_from_object>},
     };
@@ -791,7 +795,8 @@ void RealmClass<T>::get_schema_version(ContextType ctx, ObjectType object, Retur
 template<typename T>
 void RealmClass<T>::get_schema(ContextType ctx, ObjectType object, ReturnValue &return_value) {
     auto& schema = get_internal<T, RealmClass<T>>(object)->get()->schema();
-    return_value.set(Schema<T>::object_for_schema(ctx, schema));
+    ObjectType schema_object = Schema<T>::object_for_schema(ctx, schema);
+    return_value.set(schema_object);
 }
 
 template<typename T>
@@ -1283,6 +1288,38 @@ void RealmClass<T>::privileges(ContextType ctx, ObjectType this_object, Argument
 #else
     throw std::logic_error("Realm.privileges() can only be used with Query-based Realms.");
 #endif
+}
+
+/**
+ * Updates the schema.
+ *
+ * TODO: This is exposed as an internal `_updateSchema` API because this should eventually be published as
+ * `Realm.schema.update`.
+ */
+template<typename T>
+void RealmClass<T>::update_schema(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
+    args.validate_count(1);
+    ObjectType schema = Value::validated_to_array(ctx, args[0], "schema");
+
+    // Parse the schema object provided by the user
+    ObjectDefaultsMap defaults;
+    ConstructorMap constructors;
+    realm::Schema parsed_schema = Schema<T>::parse_schema(ctx, schema, defaults, constructors);
+
+    // Get a handle to the Realms group
+    SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
+    if (!realm->is_in_transaction()) {
+        throw std::runtime_error("Can only create object schema within a transaction.");
+    }
+    
+    // Perform the schema update
+    realm->update_schema(
+        parsed_schema,
+        realm->schema_version(),
+        nullptr,
+        nullptr,
+        true
+    );
 }
 
 } // js
