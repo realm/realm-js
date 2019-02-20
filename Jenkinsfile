@@ -67,16 +67,16 @@ stage('check') {
 
 stage('package and test') {
   parallel(
-    eslint: doDockerBuild('eslint-ci', {
+    eslint: doDockerBuild('eslint-ci', 10, {
       step([$class: 'CheckStylePublisher', canComputeNew: false, canRunOnFailed: true, defaultEncoding: '', healthy: '', pattern: 'eslint.xml', unHealthy: ''])
     }),
-    jsdoc: doDockerBuild('jsdoc', {
+    jsdoc: doDockerBuild('jsdoc', 10, {
       publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'docs/output', reportFiles: 'index.html', reportName: 'Docs'])
     }),
-    linux_node_8_debug: doDockerBuild('node Debug v8.15.0'),
-    linux_node_8_release: doDockerBuild('node Release v8.15.0'),
-    linux_node_10_debug: doDockerBuild('node Debug v10.15.1'),
-    linux_node_10_release: doDockerBuild('node Release v10.15.1'),
+    linux_node_8_debug: doDockerBuild('node Debug v8.15.0', 8),
+    linux_node_8_release: doDockerBuild('node Release v8.15.0', 8),
+    linux_node_10_debug: doDockerBuild('node Debug v10.15.1', 10),
+    linux_node_10_release: doDockerBuild('node Release v10.15.1', 10),
     linux_test_runners: doDockerBuild('test-runners'),
     macos_node_debug: doMacBuild('node Debug'),
     macos_node_release: doMacBuild('node Release'),
@@ -200,7 +200,7 @@ def doAndroidBuild(target, postStep = null) {
   }
 }
 
-def doDockerBuild(target, postStep = null) {
+def doDockerBuild(target, nodeVersion = 10, postStep = null) {
   return {
     node('docker && !aws') {
       deleteDir()
@@ -210,7 +210,7 @@ def doDockerBuild(target, postStep = null) {
         reportStatus(target, 'PENDING', 'Build has started')
 
         // We use the bitnami/node image since it comes with GCC 6.3
-        docker.image('bitnami/node:6').inside('-e HOME=/tmp') {
+        docker.image("bitnami/node:${nodeVersion}").inside('-e HOME=/tmp') {
           sh "scripts/test.sh ${target}"
           if(postStep) {
             postStep.call()
