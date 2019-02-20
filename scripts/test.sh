@@ -81,21 +81,25 @@ cleanup() {
   # Kill started object server
   stop_server || true
 
-  echo "shutting down running simulators"
-  shutdown_ios_simulator >/dev/null 2>&1
+  if [ "$(uname)" = 'Darwin' ]; then
+    echo "shutting down running simulators"
+    shutdown_ios_simulator >/dev/null 2>&1
 
-  # Quit Simulator.app to give it a chance to go down gracefully
-  if $startedSimulator; then
-    osascript -e 'tell app "Simulator" to quit without saving' || true
-    sleep 0.25 # otherwise the pkill following will get it too early
+    # Quit Simulator.app to give it a chance to go down gracefully
+    if $startedSimulator; then
+      osascript -e 'tell app "Simulator" to quit without saving' || true
+      sleep 0.25 # otherwise the pkill following will get it too early
+    fi
   fi
 
-  # Kill all child processes.
-  pkill -9 -P $$ || true
+  if [[ "$(command -v pkill)" ]]; then
+    # Kill all child processes.
+    pkill -9 -P $$ || true
 
-  # Kill react native packager
-  pkill -x node || true
-  rm -f "$PACKAGER_OUT" "$LOGCAT_OUT"
+    # Kill react native packager
+    pkill -x node || true
+    rm -f "$PACKAGER_OUT" "$LOGCAT_OUT"
+  fi
 
   # Cleanup temp files
   if [ -n "$log_temp" ] && [ -e "$log_temp" ]; then
