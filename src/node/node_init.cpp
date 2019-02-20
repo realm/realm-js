@@ -17,13 +17,16 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #include "node_init.hpp"
+
 #include "js_realm.hpp"
+#include "js_adapter.hpp"
 
 namespace realm {
 namespace node {
 
-static void init(v8::Local<v8::Object> exports) {
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
+static void init(v8::Local<v8::Object> exports, v8::Local<v8::Value> module,
+                 v8::Local<v8::Context> context) {
+    v8::Isolate* isolate = context->GetIsolate();
     v8::Local<v8::Function> realm_constructor = js::RealmClass<Types>::create_constructor(isolate);
 
     Nan::Set(exports, realm_constructor->GetName(), realm_constructor);
@@ -32,4 +35,4 @@ static void init(v8::Local<v8::Object> exports) {
 } // node
 } // realm
 
-NODE_MODULE(Realm, realm::node::init);
+NODE_MODULE_CONTEXT_AWARE(Realm, realm::node::init);
