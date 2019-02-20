@@ -15,7 +15,7 @@
     "spectron": "^3.7.2"
   },
   "dependencies": {
-    "install-local": "^0.6.2",
+    "install-local": "^1.0.0",
     "segfault-handler": "^1.0.1"
   },
   "localDependencies": {
