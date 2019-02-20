@@ -1297,9 +1297,6 @@ module.exports = {
             realm1.addListener('schema', (realm, event, schema) => {
                 try {
                     TestCase.assertEqual(event, 'schema');
-                    if (schema.length == 0) {
-                        return;
-                    }
                     TestCase.assertEqual(schema.length, 1);
                     TestCase.assertEqual(realm.schema.length, 1);
                     TestCase.assertEqual(schema[0].name, 'TestObject');
