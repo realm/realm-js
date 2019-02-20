@@ -108,7 +108,7 @@ class Collection {
      * @example
      * // Sort wines by price in descending order, then sort ties by age in
      * // ascending order
-     * wines.sorted([['price', false], ['age'])
+     * wines.sorted([['price', false], ['age']])
      * @example
      * // Sort a list of numbers in ascending order
      * let sortedPrices = wine.pricesSeen.sort()
