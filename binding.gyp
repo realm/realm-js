@@ -1,14 +1,19 @@
 {
- "includes": [
+  "conditions": [
+    ["OS=='linux'", {
+      "variables": {
+        "realm_download_binaries": "1"
+      }
+    }]
+  ],
+  "includes": [
     "target_defaults.gypi",
     "realm.gypi"
   ],
   "targets": [
     {
       "target_name": "realm",
-      "dependencies": [
-        "object-store"
-      ],
+      "dependencies": [ "object-store" ],
       "sources": [
         "src/js_realm.cpp",
         "src/node/node_init.cpp",
@@ -78,6 +83,21 @@
         "binding.gyp",
         "dependencies.list",
         "package.json",
+
+        "scripts/build-node-pre-gyp.sh",
+        "scripts/docker_build_wrapper.sh",
+        "scripts/download-object-server.sh",
+        "scripts/generate-token.js",
+        "scripts/github_release.rb",
+        "scripts/install-js-sync-server.sh",
+        "scripts/nvm-wrapper.sh",
+        "scripts/prepublish.sh",
+        "scripts/ros-mac-helper-builder.sh",
+        "scripts/utils.sh",
+
+        "binding.gyp",
+        "dependencies.list",
+        "package.json",
         "realm.gypi",
         "target_defaults.gypi",
 
@@ -87,9 +107,12 @@
         "lib/index.d.ts",
         "lib/index.js",
         "lib/management-schema.js",
+        "lib/notification-worker.js",
+        "lib/notifier.js",
         "lib/permission-api.js",
         "lib/submit-analytics.js",
         "lib/user-methods.js",
+        "lib/worker.js",
 
         "lib/browser/base64.js",
         "lib/browser/collections.js",
@@ -100,11 +123,11 @@
         "lib/browser/results.js",
         "lib/browser/rpc.js",
         "lib/browser/session.js",
+        "lib/browser/subscription.js",
         "lib/browser/user.js",
-        "lib/browser/util.js"
+        "lib/browser/util.js",
 
         "scripts/build-node-pre-gyp.ps1",
-        "scripts/build-node-pre-gyp.sh",
         "scripts/ccache-clang++.sh",
         "scripts/ccache-clang.sh",
         "scripts/changelog-header.sh",
@@ -116,13 +139,18 @@
         "scripts/download-realm.js",
         "scripts/download_and_start_server.sh",
         "scripts/find-ios-device.rb",
+        "scripts/find-ios-runtime.rb",
         "scripts/git-win-symlink-aliases",
         "scripts/handle-license-check.js",
+        "scripts/nvm-wrapper.sh",
+        "scripts/pack-with-pre-gyp.sh",
         "scripts/prepublish.js",
         "scripts/publish.sh",
         "scripts/react-tests-android.js",
         "scripts/set-version.sh",
+        "scripts/test-ros-server.js",
         "scripts/test.sh",
+        "scripts/utils.sh",
 
         "tests/.eslintrc.json",
         "tests/index.js",
