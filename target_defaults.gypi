@@ -33,7 +33,7 @@
           "CLANG_CXX_LIBRARY": "libc++",
           "GCC_ENABLE_CPP_EXCEPTIONS": "YES",
           "GCC_ENABLE_CPP_RTTI": "YES",
-          "MACOSX_DEPLOYMENT_TARGET": "10.8",
+          "MACOSX_DEPLOYMENT_TARGET": "10.9",
           "OTHER_LDFLAGS": ["-framework Foundation"],
           "WARNING_CFLAGS": [ "<@(warning-flags)" ]
         }
