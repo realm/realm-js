@@ -9,6 +9,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * When debugging with React Native, calling `Realm.open()` would crash since `Realm._asyncOpen()` was not available in the debugger. ([#2234](https://github.com/realm/realm-js/pull/2234), since v2.20.0)
 * Added several missing functions to the Chrome debugging support library. ([#2242](https://github.com/realm/realm-js/pull/2242)).
 * Fixed incorrect results when reading data from Realm from within a callback function when debugging in Chrome. ([#2242](https://github.com/realm/realm-js/pull/2242)).
+* Report the correct user agent to the sync server rather than always "RealmJS/Unknown". ([#2242](https://github.com/realm/realm-js/pull/2242), since v2.23.0).
 
 ### Compatibility
 * Realm Object Server: 3.11.0 or later.
