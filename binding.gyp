@@ -84,17 +84,6 @@
         "dependencies.list",
         "package.json",
 
-        "scripts/build-node-pre-gyp.sh",
-        "scripts/docker_build_wrapper.sh",
-        "scripts/download-object-server.sh",
-        "scripts/generate-token.js",
-        "scripts/github_release.rb",
-        "scripts/install-js-sync-server.sh",
-        "scripts/nvm-wrapper.sh",
-        "scripts/prepublish.sh",
-        "scripts/ros-mac-helper-builder.sh",
-        "scripts/utils.sh",
-
         "binding.gyp",
         "dependencies.list",
         "package.json",
@@ -154,6 +143,7 @@
 
         "tests/.eslintrc.json",
         "tests/index.js",
+        "tests/js/adapter-tests.ts",
         "tests/js/admin-user-helper.js",
         "tests/js/asserts.js",
         "tests/js/async-tests.js",
@@ -164,6 +154,7 @@
         "tests/js/linkingobjects-tests.js",
         "tests/js/list-tests.js",
         "tests/js/migration-tests.js",
+        "tests/js/notifier-tests.ts",
         "tests/js/object-id-tests.js",
         "tests/js/object-tests.js",
         "tests/js/package.json",
