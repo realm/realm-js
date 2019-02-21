@@ -961,8 +961,6 @@ public:
     static void has_existing_sessions(ContextType, ObjectType, Arguments &, ReturnValue &);
 
     static void create_global_notifier(ContextType, ObjectType, Arguments &, ReturnValue &);
-    static void get_listener_directory(ContextType, ObjectType, Arguments &, ReturnValue &);
-    static void set_listener_directory(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void enable_multiplexing(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void deserialize_change_set(ContextType, ObjectType, Arguments &, ReturnValue &);
 
@@ -984,8 +982,6 @@ public:
         {"setLogger", wrap<set_sync_logger>},
         {"setSyncLogger", wrap<set_sync_logger>},
         {"_createNotifier", wrap<create_global_notifier>},
-        {"getListenerDirectory", wrap<get_listener_directory>},
-        {"_setListenerDirectory", wrap<set_listener_directory>},
         {"_deserializeChangeSet", wrap<deserialize_change_set>},
 #endif
     };
@@ -1282,23 +1278,10 @@ void SyncClass<T>::enable_multiplexing(ContextType ctx, ObjectType this_object, 
 }
 
 #if REALM_PLATFORM_NODE
-static std::string s_listener_directory;
-template<typename T>
-void SyncClass<T>::get_listener_directory(ContextType ctx, ObjectType, Arguments& arguments, ReturnValue &return_value) {
-    arguments.validate_count(0);
-    return_value.set(s_listener_directory);
-}
-
-template<typename T>
-void SyncClass<T>::set_listener_directory(ContextType ctx, ObjectType, Arguments& arguments, ReturnValue &) {
-    arguments.validate_count(1);
-    s_listener_directory = normalize_realm_path(Value::validated_to_string(ctx, arguments[0]));
-}
-
 template<typename T>
 void SyncClass<T>::create_global_notifier(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue &return_value) {
-    args.validate_maximum(4);
-    std::string local_root_dir = s_listener_directory;
+    args.validate_maximum(5);
+    std::string local_root_dir = normalize_realm_path(Value::validated_to_string(ctx, args[4], "listenerDirectory"));
     util::try_make_dir(local_root_dir);
 
     std::string server_base_url = Value::validated_to_string(ctx, args[0], "serverUrl");
@@ -1327,11 +1310,9 @@ void SyncClass<T>::create_global_notifier(ContextType ctx, ObjectType this_objec
     auto user_callback = Value::validated_to_function(ctx, args[2], "callback");
 
     SyncConfig sync_config_template(shared_user, server_base_url);
-    if (args.count == 4) {
-        if (!Value::is_undefined(ctx, args[3])) {
-            ObjectType ssl_config_object = Value::validated_to_object(ctx, args[3], "sslConfiguration");
-            SyncClass<T>::populate_sync_config_for_ssl(ctx, ssl_config_object, sync_config_template);
-        }
+    if (!Value::is_undefined(ctx, args[3])) {
+        ObjectType ssl_config_object = Value::validated_to_object(ctx, args[3], "sslConfiguration");
+        SyncClass<T>::populate_sync_config_for_ssl(ctx, ssl_config_object, sync_config_template);
     }
 
     sync_config_template.bind_session_handler = SyncClass<T>::session_bind_callback(ctx, this_object);
