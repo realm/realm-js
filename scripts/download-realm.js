@@ -87,9 +87,9 @@ function download(serverFolder, archive, destination) {
         }
 
         const lastModified = new Date(response.headers.get('Last-Modified'));
-        const contentLength = response.headers.get('Content-Length');
+        const contentLength = parseInt(response.headers.get('Content-Length'), 10);
         return fs.stat(destination).then(stat => {
-            if (stat.mtime.getTime() <= lastModified.getTime() || stat.size !== +contentLength) {
+            if (stat.mtime.getTime() <= lastModified.getTime() || stat.size !== contentLength) {
                 return saveFile(response);
             }
         }).catch(() => saveFile(response));
