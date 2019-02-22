@@ -257,7 +257,7 @@ def doWindowsBuild() {
 
 def packageNpmArchive() {
   return {
-    node('docker') {
+    node('docker && !aws') {
       // Unstash the files in the repository
       unstash 'source'
       // Remove any archive from the workspace, which might have been produced by previous runs of the job
