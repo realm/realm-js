@@ -720,9 +720,14 @@ describe('Multi-process Notifier', () => {
         });
         Realm.Sync.setLogLevel('info');
 
-        worker = new Realm.Worker(__dirname + '/support/notification-worker.ts',
-                                  {execArgv: ['-r', 'ts-node/register'],
-                                   env: {communication_realm_path: tmpIpcPath, HOME: __dirname}});
+        worker = new Realm.Worker(__dirname + '/support/notification-worker.ts', {
+            execArgv: ['-r', 'ts-node/register'],
+            env: {
+                communication_realm_path: tmpIpcPath,
+                HOME: __dirname,
+                PATH: process.env.PATH,
+            }
+        });
 
         if (useTestServer) {
             rosController = new TestObjectServer();
