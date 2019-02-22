@@ -18,6 +18,7 @@
       "-fexceptions",
       "-frtti",
       "-std=c++14",
+      "-fvisibility=hidden",
       "<@(warning-flags)"
     ],
     "include_dirs": [
@@ -25,7 +26,15 @@
     ],
     "conditions": [
       ["OS=='win'", {
-        "defines": [ "_UNICODE", "UNICODE", "WIN32=1", "_HAS_EXCEPTIONS=1", "WIN32_LEAN_AND_MEAN", "_WIN32_WINNT=0x600", "_ENABLE_EXTENDED_ALIGNED_STORAGE" ]
+        "defines": [
+          "_UNICODE",
+          "UNICODE",
+          "WIN32=1",
+          "_HAS_EXCEPTIONS=1",
+          "WIN32_LEAN_AND_MEAN",
+          "_WIN32_WINNT=0x600",
+          "_ENABLE_EXTENDED_ALIGNED_STORAGE"
+        ]
       }],
       ["OS=='mac'", {
         "xcode_settings": {
@@ -33,6 +42,7 @@
           "CLANG_CXX_LIBRARY": "libc++",
           "GCC_ENABLE_CPP_EXCEPTIONS": "YES",
           "GCC_ENABLE_CPP_RTTI": "YES",
+          "GCC_SYMBOLS_PRIVATE_EXTERN": "YES",
           "MACOSX_DEPLOYMENT_TARGET": "10.9",
           "OTHER_LDFLAGS": ["-framework Foundation"],
           "WARNING_CFLAGS": [ "<@(warning-flags)" ]

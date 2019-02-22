@@ -14,6 +14,9 @@
     {
       "target_name": "realm",
       "dependencies": [ "object-store" ],
+      "xcode_settings": {
+        "OTHER_LDFLAGS": ["-framework Foundation", "-Wl,-exported_symbols_list /dev/null"],
+      },
       "sources": [
         "src/js_realm.cpp",
         "src/node/node_init.cpp",
