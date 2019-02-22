@@ -49,7 +49,7 @@ if (isNodeProccess) {
 
 function uuid() {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-        var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+        var r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
         return v.toString(16);
     });
 }
@@ -135,7 +135,7 @@ module.exports = {
                 let successCounter = 0;
                 function checkSuccess() {
                     successCounter++;
-                    if (successCounter == 2) {
+                    if (successCounter === 2) {
                         resolve();
                     }
                 }
@@ -489,7 +489,7 @@ module.exports = {
             })
             .then(realm => { throw new Error("Should fail with IncompatibleSyncedRealmError") })
             .catch(e => {
-                if (e.name == "IncompatibleSyncedRealmError") {
+                if (e.name === "IncompatibleSyncedRealmError") {
                     const backupRealm = new Realm(e.configuration);
                     TestCase.assertEqual(backupRealm.objects('Dog').length, 3);
                     return;
@@ -535,7 +535,7 @@ module.exports = {
                         return;
                     }
 
-                    if (error.name == "IncompatibleSyncedRealmError") {
+                    if (error.name === "IncompatibleSyncedRealmError") {
                         const backupRealm = new Realm(error.configuration);
                         TestCase.assertEqual(backupRealm.objects('Dog').length, 3);
                         resolve();
@@ -574,7 +574,7 @@ module.exports = {
                         _reject("Should fail with IncompatibleSyncedRealmError");
                     }
                     catch (e) {
-                        if (e.name == "IncompatibleSyncedRealmError") {
+                        if (e.name === "IncompatibleSyncedRealmError") {
                             const backupRealm = new Realm(e.configuration);
                             TestCase.assertEqual(backupRealm.objects('Dog').length, 3);
                             resolve();
@@ -870,18 +870,14 @@ module.exports = {
                 config.schema = [{ name: 'Dog', properties: { name: 'string' } }];
                 Realm.deleteFile(config);
 
-                let realm = new Realm(config);
-
-                let listener_called = false;
-                let schema_listener = function (realm, msg, newSchema) {
-                    listener_called = true;
-                };
-                realm.addListener('schema', schema_listener);
+                return Promise.all([user, Realm.open(config)]);
+            }).then(([user, realm]) => {
                 const session = realm.syncSession;
                 TestCase.assertInstanceOf(session, Realm.Sync.Session);
                 TestCase.assertEqual(session.user.identity, user.identity);
                 TestCase.assertEqual(session.state, 'active');
 
+                TestCase.assertEqual(realm.objects('Dog').length, 0);
                 let results1 = realm.objects('Dog').filtered("name == 'Lassy 1'");
                 let results2 = realm.objects('Dog').filtered("name == 'Lassy 2'");
 
@@ -891,91 +887,64 @@ module.exports = {
                 let subscription2 = results2.subscribe('foobar');
                 TestCase.assertEqual(subscription2.state, Realm.Sync.SubscriptionState.Creating);
 
-                let called1 = false;
-                let called2 = false;
-
-                subscription1.addListener((subscription, state) => {
-                    if (state === Realm.Sync.SubscriptionState.Complete) {
-                        results1.addListener((collection, changeset) => {
-                            TestCase.assertEqual(collection.length, 1);
-                            TestCase.assertTrue(collection[0].name === 'Lassy 1', "The object is not synced correctly");
-                            results1.removeAllListeners();
-                            TestCase.assertUndefined(subscription1.name);
-                            called1 = true;
-                        });
-                    } else if (state === Realm.Sync.SubscriptionState.Invalidated) {
-                        subscription1.removeAllListeners();
-                    }
-                });
-
-                subscription2.addListener((subscription, state) => {
-                    if (state === Realm.Sync.SubscriptionState.Complete) {
-                        results2.addListener((collection, changeset) => {
-                            TestCase.assertEqual(collection.length, 1);
-                            TestCase.assertTrue(collection[0].name === 'Lassy 2', "The object is not synced correctly");
-                            results2.removeAllListeners();
-                            TestCase.assertEqual(subscription2.name, 'foobar');
-                            called2 = true;
-                        });
-                    } else if (state === Realm.Sync.SubscriptionState.Invalidated) {
-                        subscription2.removeAllListeners();
-                    }
-                });
-
-                return new Promise((resolve, reject) => {
-                    let retries = 0;
-                    let token;
-                    token = setInterval(() => {
-                        if (!called1 || !called2 || !listener_called) {
-                            // Time out after 10s
-                            if (++retries < 30) {
-                                reject('Partial sync listeners timed out');
-                                clearInterval(token);
+                let waitForSubscription = (results, subscription, subName, dogName) => {
+                    return new Promise((resolve, reject) => {
+                        subscription.addListener((subscription, state) => {
+                            if (state !== Realm.Sync.SubscriptionState.Complete) {
+                                return;
                             }
-                            return;
+                            try {
+                                subscription.removeAllListeners();
+                                results.addListener((collection, changeset) => {
+                                    TestCase.assertEqual(collection.length, 1);
+                                    TestCase.assertEqual(collection[0].name, dogName);
+                                    results.removeAllListeners();
+                                    TestCase.assertEqual(subscription.name, subName);
+                                    resolve();
+                                });
+                            }
+                            catch (e) {
+                                reject(e);
+                            }
+                        });
+                    });
+                };
+                return Promise.all([
+                    waitForSubscription(results1, subscription1, undefined, 'Lassy 1'),
+                    waitForSubscription(results2, subscription2, 'foobar', 'Lassy 2'),
+                ]).then(() => [realm, subscription1, subscription2]);
+            }).then(([realm, subscription1, subscription2]) => {
+                let listOfSubscriptions = realm.subscriptions();
+                TestCase.assertEqual(listOfSubscriptions.length, 2 + 5); // 2 = the two subscriptions, 5 = the permissions classes
+                TestCase.assertEqual(listOfSubscriptions[0]['name'], '[Dog] name == "Lassy 1" '); // the query is the default name; notice the trailing whitespace!
+                TestCase.assertEqual(listOfSubscriptions[0]['query'], 'name == "Lassy 1" '); // notice the trailing whitespace!
+                TestCase.assertEqual(listOfSubscriptions[0]['objectType'], 'Dog');
+                TestCase.assertEqual(listOfSubscriptions[1]['name'], 'foobar');
+                TestCase.assertEqual(listOfSubscriptions[1]['query'], 'name == "Lassy 2" '); // notice the trailing whitespace!
+                TestCase.assertEqual(listOfSubscriptions[1]['objectType'], 'Dog');
+
+                listOfSubscriptions = realm.subscriptions('foobar');
+                TestCase.assertEqual(listOfSubscriptions.length, 1);
+
+                listOfSubscriptions = realm.subscriptions('*bar');
+                TestCase.assertEqual(listOfSubscriptions.length, 1);
+
+                listOfSubscriptions = realm.subscriptions('RABOOF');
+                TestCase.assertEqual(listOfSubscriptions.length, 0);
+
+                subscription1.unsubscribe();
+                realm.unsubscribe('foobar');
+
+                return new Promise(resolve => {
+                    realm.objects('__ResultSets').addListener((subscriptions) => {
+                        if (subscriptions.length === 5) {
+                            resolve(realm);
                         }
-                        clearInterval(token);
-
-                        let listOfSubscriptions = realm.subscriptions();
-                        TestCase.assertEqual(listOfSubscriptions.length, 2 + 5); // 2 = the two subscriptions, 5 = the permissions classes
-                        TestCase.assertEqual(listOfSubscriptions[0]['name'], '[Dog] name == "Lassy 1" '); // the query is the default name; notice the trailing whitespace!
-                        TestCase.assertEqual(listOfSubscriptions[0]['query'], 'name == "Lassy 1" '); // notice the trailing whitespace!
-                        TestCase.assertEqual(listOfSubscriptions[0]['objectType'], 'Dog');
-                        TestCase.assertEqual(listOfSubscriptions[1]['name'], 'foobar');
-                        TestCase.assertEqual(listOfSubscriptions[1]['query'], 'name == "Lassy 2" '); // notice the trailing whitespace!
-                        TestCase.assertEqual(listOfSubscriptions[1]['objectType'], 'Dog');
-
-                        listOfSubscriptions = realm.subscriptions('foobar');
-                        TestCase.assertEqual(listOfSubscriptions.length, 1);
-
-                        listOfSubscriptions = realm.subscriptions('*bar');
-                        TestCase.assertEqual(listOfSubscriptions.length, 1);
-
-                        listOfSubscriptions = realm.subscriptions('RABOOF');
-                        TestCase.assertEqual(listOfSubscriptions.length, 0);
-
-                        subscription1.unsubscribe();
-                        realm.unsubscribe('foobar');
-                        realm.removeAllListeners();
-
-                        // check if subscriptions have been removed
-                        // subscription1.unsubscribe() requires a server round-trip so it might take a while
-                        let retries2 = 0;
-                        token = setInterval(() => {
-                            listOfSubscriptions = realm.subscriptions();
-                            if (listOfSubscriptions.length === 5) { // the 5 permissions classes
-                                clearInterval(token);
-                                realm.close();
-                                resolve();
-                            }
-                            // Time out after 10s
-                            if (++retries2 > 20) {
-                                reject('Removing listeners timed out');
-                                clearInterval(token);
-                            }
-                        }, 500);
-                    }, 500);
+                    });
                 });
+            }).then(realm => {
+                TestCase.assertEqual(realm.subscriptions().length, 5); // the 5 permissions classes
+                realm.close();
             });
     },
 
@@ -1002,7 +971,7 @@ module.exports = {
             TestCase.assertThrows(() => realm.objects('Dog'));
             return new Promise(resolve => {
                 realm.addListener('schema', () => {
-                    if (realm.schema.find(s => s.name == 'Dog')) {
+                    if (realm.schema.find(s => s.name === 'Dog')) {
                         setTimeout(() => resolve(realm), 0);
                         realm.removeAllListeners();
                     }
