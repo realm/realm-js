@@ -302,10 +302,8 @@ case "$TARGET" in
   ;;
 "react-tests-android")
   npm run check-environment
-  if [ "$(uname)" = 'Darwin' ]; then
-    download_server
-    start_server
-  fi
+  download_server
+  start_server
 
   [[ $CONFIGURATION == 'Debug' ]] && exit 0
   XCPRETTY=''
@@ -350,13 +348,9 @@ case "$TARGET" in
   ;;
 "node")
   npm run check-environment
-  if [ "$(uname)" = 'Darwin' ]; then
-    npm install --no-save --build-from-source=realm --realm_enable_sync
-    download_server
-    start_server
-  else
-    npm install --no-save --build-from-source=realm
-  fi
+  npm install --no-save --build-from-source=realm --realm_enable_sync
+  download_server
+  start_server
 
   # Change to a temp directory.
   cd "$(mktemp -q -d -t realm.node.XXXXXX)"
@@ -370,10 +364,8 @@ case "$TARGET" in
   ;;
 "electron")
   npm ci
-  if [ "$(uname)" = 'Darwin' ]; then
-    download_server
-    start_server
-  fi
+  download_server
+  start_server
 
   pushd "$SRCROOT/tests/electron"
   # Build Realm and runtime deps for electron
@@ -381,30 +373,23 @@ case "$TARGET" in
   export npm_config_target=4.0.6
   export npm_config_runtime=electron
   export npm_config_disturl=https://atom.io/download/electron
-  if [ "$(uname)" = 'Darwin' ]; then
-    export npm_config_realm_enable_sync=true
-  fi
-  npm ci
+  npm ci --realm_enable_sync
   ./node_modules/.bin/install-local
 
   npm test -- --process=main
 
-  if [ "$(uname)" = 'Darwin' ]; then
-    popd
-    stop_server
-    rm -rf realm-object-server-data
-    rm -rf realm-object-server
-    start_server
-    pushd "$SRCROOT/tests/electron"
-  fi
+  popd
+  stop_server
+  rm -rf realm-object-server-data
+  rm -rf realm-object-server
+  start_server
+  pushd "$SRCROOT/tests/electron"
 
   npm test -- --process=render
 
   popd
 
-  if [ "$(uname)" = 'Darwin' ]; then
-    stop_server
-  fi
+  stop_server
   ;;
 "test-runners")
   npm run check-environment

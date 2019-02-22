@@ -2,8 +2,6 @@
 
 set -eo pipefail
 
-[ "$(uname -s)" != "Darwin" ] && exit
-
 . dependencies.list
 
 #use existing server if same version
