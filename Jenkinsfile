@@ -180,7 +180,7 @@ def doInside(script, target, postStep = null) {
     }
     reportStatus(target, 'SUCCESS', 'Success!')
   } catch(Exception e) {
-  	reportStatus(target, 'FAILURE', e.toString())
+    reportStatus(target, 'FAILURE', e.toString())
     currentBuild.rawBuild.setResult(Result.FAILURE)
     e.printStackTrace()
     throw e
@@ -214,7 +214,9 @@ def doDockerBuild(target, nodeVersion = 10, postStep = null) {
 
         // We use the bitnami/node image since it comes with GCC 6.3
         docker.image("bitnami/node:${nodeVersion}").inside('-e HOME=/tmp') {
-          sh "scripts/test.sh ${target}"
+          withCredentials([string(credentialsId: 'realm-sync-feature-token-enterprise', variable: 'realmFeatureToken')]) {
+            sh "REALM_FEATURE_TOKEN=${realmFeatureToken} SYNC_WORKER_FEATURE_TOKEN=${realmFeatureToken} scripts/test.sh ${target}"
+          }
           if(postStep) {
             postStep.call()
           }
