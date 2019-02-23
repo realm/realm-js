@@ -255,7 +255,7 @@ case "$TARGET" in
   ;;
 "eslint-ci")
   [[ $CONFIGURATION == 'Debug' ]] && exit 0
-  npm install
+  npm ci
   ./node_modules/.bin/eslint -f checkstyle . > eslint.xml || true
   ;;
 "license-check")
@@ -290,7 +290,7 @@ case "$TARGET" in
   npm ci
 
   pushd examples/ReactExample
-  npm install --no-save
+  npm ci
   ./node_modules/.bin/install-local
   open_chrome
   start_packager
@@ -313,7 +313,7 @@ case "$TARGET" in
   popd
 
   pushd tests/react-test-app
-  npm install --no-save
+  npm ci
   ./node_modules/.bin/install-local
 
   echo "Resetting logcat"
@@ -348,7 +348,7 @@ case "$TARGET" in
   ;;
 "node")
   npm run check-environment
-  npm install --no-save --build-from-source=realm --realm_enable_sync
+  npm ci --build-from-source=realm --realm_enable_sync
   download_server
   start_server
 
@@ -357,7 +357,7 @@ case "$TARGET" in
   test_temp_dir=$PWD # set it to be cleaned at exit
 
   pushd "$SRCROOT/tests"
-  npm install
+  npm ci
   npm run test
   popd
   stop_server
@@ -393,7 +393,7 @@ case "$TARGET" in
   ;;
 "test-runners")
   npm run check-environment
-  npm install --no-save
+  npm ci
   npm run test-runners
   ;;
 "all")
