@@ -13,7 +13,13 @@
   "targets": [
     {
       "target_name": "realm",
-      "dependencies": [ "object-store" ],
+      "conditions": [
+        [ "OS!='mac'", {
+          "dependencies": [ "object-store", "OpenSSL" ],
+        }, {
+          "dependencies": [ "object-store" ],
+        }]
+      ],
       "xcode_settings": {
         "OTHER_LDFLAGS": ["-framework Foundation", "-Wl,-exported_symbols_list /dev/null"],
       },
@@ -57,14 +63,6 @@
         "src",
         "src/object-store/external/json",
       ],
-      "conditions": [
-        ["runtime=='electron'", {
-          "dependencies": [ "OpenSSL" ]
-        }],
-        ["OS=='win'", {
-          "dependencies": [ "OpenSSL" ]
-        }],
-      ]
     },
     {
       "target_name": "action_after_build",
