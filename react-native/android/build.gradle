@@ -113,11 +113,26 @@ task downloadOpenSSL_arm(type: Download) {
     dest new File(downloadsDir, "openssl-release-1.0.2k-Android-armeabi-v7a.tar.gz")
 }
 
+task downloadOpenSSL_arm64(type: Download) {
+    src "https://static.realm.io/downloads/openssl/1.0.2k/Android/arm64-v8a/openssl-release-1.0.2k-Android-arm64-v8a.tar.gz"
+    onlyIfNewer true
+    overwrite true
+    dest new File(downloadsDir, "openssl-release-1.0.2k-Android-arm64-v8a.tar.gz")
+}
+
 task prepareOpenSSL_arm(dependsOn: downloadOpenSSL_arm, type:Copy) {
     from tarTree(downloadOpenSSL_arm.dest)
     into "$coreDownloadDir/core"
     rename { String fileName ->
         fileName.replace("-arm-", "-armeabi-")
+    }
+}
+
+task prepareOpenSSL_arm64(dependsOn: downloadOpenSSL_arm64, type:Copy) {
+    from tarTree(downloadOpenSSL_arm64.dest)
+    into "$coreDownloadDir/core"
+    rename { String fileName ->
+        fileName.replace("-arm-", "-arm64-")
     }
 }
 
@@ -227,7 +242,7 @@ def getNdkBuildFullPath() {
     return ndkBuildFullPath
 }
 
-task buildReactNdkLib(dependsOn: [downloadJSCHeaders,prepareRealmCore,prepareOpenSSL_x86,prepareOpenSSL_arm], type: Exec) {
+task buildReactNdkLib(dependsOn: [downloadJSCHeaders,prepareRealmCore,prepareOpenSSL_x86,prepareOpenSSL_arm64,prepareOpenSSL_arm], type: Exec) {
     inputs.files('src/main/jni')
     outputs.dir("$buildDir/realm-react-ndk/all")
     commandLine getNdkBuildFullPath(),
