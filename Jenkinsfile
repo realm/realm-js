@@ -2,23 +2,23 @@
 import groovy.json.JsonOutput
 
 @Library('realm-ci') _
-
 repoName = 'realm-js' // This is a global variable
 
-def gitTag
-def gitSha
-def dependencies
-def version
+def nodeVersions = ['8.15.0', '10.15.1']
+def electronVersions = ['1.6.0', '1.7.0', '1.8.0', '2.0.0', '3.0.0']
+def nodeTestVersion = '8.15.0'
+def gitTag = null
+def formattedVersion = null
+dependencies = null
 
-def ElectronTests
-def NodeJsTests
-def ReactNativeTests
+// def ElectronTests
+// def NodeJsTests
+// def ReactNativeTests
 
 // == Stages
 
 stage('check') {
   node('docker && !aws') {
-    // - checkout the source
     checkout([
       $class: 'GitSCM',
       branches: scm.branches,
@@ -26,18 +26,15 @@ stage('check') {
       extensions: scm.extensions + [
         [$class: 'WipeWorkspace'],
         [$class: 'CleanCheckout'],
+        [$class: 'CloneOption', depth: 0, shallow: false, noTags: false],
         [$class: 'SubmoduleOption', recursiveSubmodules: true]
       ],
       userRemoteConfigs: scm.userRemoteConfigs
     ])
-
-    stash name: 'source', includes:'**/*', excludes:'react-native/android/src/main/jni/src/object-store/.dockerignore'
-
     dependencies = readProperties file: 'dependencies.list'
-
     gitTag = readGitTag()
-    gitSha = readGitSha()
-    version = getVersion()
+    def gitSha = readGitSha()
+    def version = getVersion()
     echo "tag: ${gitTag}"
     if (gitTag == "") {
       echo "No tag given for this build"
@@ -51,6 +48,7 @@ stage('check') {
       }
     }
     echo "version: ${version}"
+    stash name: 'realm-js-source', includes:'**/*', excludes:'react-native/android/src/main/jni/src/object-store/.dockerignore'
 
     if (['master'].contains(env.BRANCH_NAME)) {
       // If we're on master, instruct the docker image builds to push to the
@@ -65,39 +63,68 @@ stage('check') {
   }
 }
 
-stage('package and test') {
-  parallel(
-    eslint: doDockerBuild('eslint-ci', 10, {
-      step([$class: 'CheckStylePublisher', canComputeNew: false, canRunOnFailed: true, defaultEncoding: '', healthy: '', pattern: 'eslint.xml', unHealthy: ''])
-    }),
-    jsdoc: doDockerBuild('jsdoc', 10, {
-      publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'docs/output', reportFiles: 'index.html', reportName: 'Docs'])
-    }),
-    linux_node_8_debug: doDockerBuild('node Debug v8.15.0', 8),
-    linux_node_8_release: doDockerBuild('node Release v8.15.0', 8),
-    linux_node_10_debug: doDockerBuild('node Debug v10.15.1', 10),
-    linux_node_10_release: doDockerBuild('node Release v10.15.1', 10),
-    linux_test_runners: doDockerBuild('test-runners'),
-    macos_node_debug: doMacBuild('node Debug'),
-    macos_node_release: doMacBuild('node Release'),
-    macos_react_tests_debug: doMacBuild('react-tests Debug'),
-    macos_react_tests_release: doMacBuild('react-tests Release'),
-    macos_react_example_debug: doMacBuild('react-example Debug'),
-    macos_react_example_release: doMacBuild('react-example Release'),
-    macos_electron_debug: doMacBuild('electron Debug'),
-    macos_electron_release: doMacBuild('electron Release'),
-    //android_react_tests: doAndroidBuild('react-tests-android', {
-    //  junit 'tests/react-test-app/tests.xml'
-    //}),
-    windows_node: doWindowsBuild(),
-    package: packageNpmArchive(),
-  )
+stage('test') {
+  parallelExecutors = [:]
+  parallelExecutors["eslint"] = doDockerBuild('eslint-ci', 10, {
+    step([
+      $class: 'CheckStylePublisher',
+      canComputeNew: false,
+      canRunOnFailed: true,
+      defaultEncoding: '',
+      healthy: '',
+      pattern: 'eslint.xml',
+      unHealthy: '',
+      maxWarnings: 0,
+      ignoreFailures: false])
+  })
+  parallelExecutors["jsdoc"] = doDockerBuild('jsdoc', 10, {
+    publishHTML([
+      allowMissing: false,
+      alwaysLinkToLastBuild: false,
+      keepAll: false,
+      reportDir: 'docs/output',
+      reportFiles: 'index.html',
+      reportName: 'Docs'
+    ])
+  })
+  for (def nodeVersion in nodeVersions) {
+    parallelExecutors["macOS node ${nodeVersion} Debug"]   = doMacBuild("node Debug ${nodeVersion}")
+    parallelExecutors["macOS node ${nodeVersion} Release"] = doMacBuild("node Release ${nodeVersion}")
+    parallelExecutors["Linux node ${nodeVersion} Debug"]   = doDockerBuild("node Debug ${nodeVersion}", nodeVersion)
+    parallelExecutors["Linux node ${nodeVersion} Release"] = doDockerBuild("node Release ${nodeVersion}", nodeVersion)
+    parallelExecutors["Linux test runners ${nodeVersion}"] = doDockerBuild('test-runners', nodeVersion)
+  }
+  parallelExecutors["React Native iOS Debug"] = doMacBuild('react-tests Debug')
+  parallelExecutors["React Native iOS Release"] = doMacBuild('react-tests Release')
+  parallelExecutors["React Native iOS Example Debug"] = doMacBuild('react-example Debug')
+  parallelExecutors["React Native iOS Example Release"] = doMacBuild('react-example Release')
+  parallelExecutors["macOS Electron Debug"] = doMacBuild('electron Debug')
+  parallelExecutors["macOS Electron Release"] = doMacBuild('electron Release')
+  parallelExecutors["Windows node"] = doWindowsBuild()
+  //android_react_tests: doAndroidBuild('react-tests-android', {
+  //  junit 'tests/react-test-app/tests.xml'
+  //}),
+  parallel parallelExecutors
+}
+
+/*
+stage('build') {
+  parallelExecutors = [:]
+  for (def nodeVersion in nodeVersions) {
+    parallelExecutors["Mac Node ${nodeVersion}"]   = { buildMacOS(nodeVersion, this.&buildCommon) }
+    parallelExecutors["Linux Node ${nodeVersion}"] = { buildLinux(nodeVersion, this.&buildCommon) }
+  }
+  for (def electronVersion in electronVersions) {
+    parallelExecutors["Mac Electron ${electronVersion}"]          = { buildMacOS(electronVersion, this.&buildElectronCommon) }
+    parallelExecutors["Linux Electron ${electronVersion}"]        = { buildLinux(electronVersion, this.&buildElectronCommon) }
+    parallelExecutors["Windows Electron ${electronVersion} ia32"] = { buildWindowsElectron(electronVersion, 'ia32') }
+    parallelExecutors["Windows Electron ${electronVersion} x64"]  = { buildWindowsElectron(electronVersion, 'x64') }
+  }
+  parallel parallelExecutors
 }
 
 stage('integration tests') {
   parallel(
-    // Integration tests:
-    // The tests above should be removed once we manage to move them to the new test harness in ./integration-tests
     'React Native on Android': ReactNativeTests.onAndroid(),
     'React Native on iOS': ReactNativeTests.onIOS(),
     'Node.js v10 on Mac': NodeJsTests.onMacOS(nodeVersion: '10'),
@@ -108,26 +135,156 @@ stage('integration tests') {
   )
 }
 
+if (gitTag) {
+  stage('publish') {
+    publish(nodeVersions, dependencies, gitTag)
+  }
+}
+*/
+
 // == Methods
 
+def myNode(nodeSpec, block) {
+  node(nodeSpec) {
+    echo "Running job on ${env.NODE_NAME}"
+    try {
+      block.call()
+    } finally {
+      deleteDir()
+    }
+  }
+}
+
+def buildDockerEnv(name, dockerfile='Dockerfile', extra_args='') {
+  docker.withRegistry("https://${env.DOCKER_REGISTRY}", "ecr:eu-west-1:aws-ci-user") {
+    sh "sh ./scripts/docker_build_wrapper.sh $name . ${extra_args}"
+  }
+  return docker.image(name)
+}
+
+def buildCommon(nodeVersion, platform) {
+  sshagent(credentials: ['realm-ci-ssh']) {
+    sh "mkdir -p ~/.ssh"
+    sh "ssh-keyscan github.com >> ~/.ssh/known_hosts"
+    sh "echo \"Host github.com\n\tStrictHostKeyChecking no\n\" >> ~/.ssh/config"
+    sh "./scripts/nvm-wrapper.sh ${nodeVersion} npm run package"
+  }
+  dir("build/stage/node-pre-gyp/${dependencies.VERSION}") {
+    stash includes: 'realm-*', name: "pre-gyp-${platform}-${nodeVersion}"
+  }
+}
+
+def buildElectronCommon(electronVersion, platform) {
+  sh "${env.WORKSPACE}/scripts/build-electron.sh ${electronVersion} ${nodeTestVersion}"
+  dir("build/stage/node-pre-gyp/${dependencies.VERSION}") {
+    stash includes: 'realm-*', name: "electron-pre-gyp-${platform}-${electronVersion}"
+  }
+}
+
+def buildLinux(nodeVersion, workerFunction, variant = "Release") {
+  myNode('docker') {
+    unstash 'realm-js-source'
+    def image
+    withCredentials([[$class: 'StringBinding', credentialsId: 'packagecloud-sync-devel-master-token', variable: 'PACKAGECLOUD_MASTER_TOKEN']]) {
+      image = buildDockerEnv('ci/realm-js-private:build', 'Dockerfile')
+    }
+    sh "bash ./scripts/utils.sh set-version ${dependencies.VERSION}"
+    image.inside('-e HOME=/tmp') {
+      workerFunction(nodeVersion, 'linux', variant)
+    }
+  }
+}
+
+def buildMacOS(nodeVersion, workerFunction, variant = "Release") {
+  myNode('osx_vegas') {
+    env.DEVELOPER_DIR = "/Applications/Xcode-9.4.app/Contents/Developer"
+    unstash 'realm-js-source'
+    sh "bash ./scripts/utils.sh set-version ${dependencies.VERSION}"
+    workerFunction(nodeVersion, 'macos', variant)
+  }
+}
+
+def buildWindows(nodeVersion, arch) {
+  myNode('windows && nodejs && cph-windows-01') {
+    unstash 'realm-js-source'
+
+    bat 'npm install --ignore-scripts --production'
+
+    withEnv(["_MSPDBSRV_ENDPOINT_=${UUID.randomUUID().toString()}"]) {
+      retry(3) {
+        bat ".\\node_modules\\node-pre-gyp\\bin\\node-pre-gyp.cmd rebuild --build_v8_with_gn=false --target_arch=${arch} --target=${nodeVersion}"
+      }
+    }
+    bat ".\\node_modules\\node-pre-gyp\\bin\\node-pre-gyp.cmd package --build_v8_with_gn=false --target_arch=${arch} --target=${nodeVersion}"
+    dir("build/stage/node-pre-gyp/${dependencies.VERSION}") {
+      stash includes: 'realm-*', name: "pre-gyp-windows-${arch}-${nodeVersion}"
+    }
+  }
+}
+
+def buildWindowsElectron(electronVersion, arch) {
+  myNode('windows && nodejs && cph-windows-01') {
+    unstash 'realm-js-source'
+    bat 'npm install --ignore-scripts --production'
+    withEnv([
+      "npm_config_target=${electronVersion}",
+      "npm_config_target_arch=${arch}",
+      'npm_config_disturl=https://atom.io/download/electron',
+      'npm_config_runtime=electron',
+      "npm_config_devdir=${env.HOME}/.electron-gyp"
+    ]) {
+      withEnv(["_MSPDBSRV_ENDPOINT_=${UUID.randomUUID().toString()}"]) {
+        bat '.\\node_modules\\node-pre-gyp\\bin\\node-pre-gyp.cmd rebuild --realm_enable_sync'
+      }
+      bat '.\\node_modules\\node-pre-gyp\\bin\\node-pre-gyp.cmd package'
+    }
+    dir("build/stage/node-pre-gyp/${dependencies.VERSION}") {
+      stash includes: 'realm-*', name: "electron-pre-gyp-windows-${arch}-${electronVersion}"
+    }
+  }
+}
+
+def testNode(nodeVersion, platform, variant) {
+  withCredentials([string(credentialsId: 'realm-sync-feature-token-enterprise', variable: 'realmFeatureToken')]) {
+    sh "REALM_FEATURE_TOKEN=${realmFeatureToken} SYNC_WORKER_FEATURE_TOKEN=${realmFeatureToken} ./scripts/nvm-wrapper.sh ${nodeVersion} scripts/test.sh node ${variant} ${nodeVersion}"
+    junit allowEmptyResults: true, keepLongStdio: true, testResults: "results.xml"
+  }
+}
+
+def publish(nodeVersions, dependencies, tag) {
+  myNode('docker') {
+    for (def platform in ['macos', 'linux', 'windows-ia32', 'windows-x64']) {
+      for (def version in nodeVersions) {
+        unstash "pre-gyp-${platform}-${version}"
+      }
+    }
+
+    for (def platform in ['macos', 'linux', 'windows-ia32', 'windows-x64']) {
+      for (def version in electronVersions) {
+        unstash "electron-pre-gyp-${platform}-${version}"
+      }
+    }
+
+    withCredentials([[$class: 'FileBinding', credentialsId: 'c0cc8f9e-c3f1-4e22-b22f-6568392e26ae', variable: 's3cfg_config_file']]) {
+      sh "s3cmd -c \$s3cfg_config_file put --multipart-chunk-size-mb 5 realm-* 's3://static.realm.io/node-pre-gyp/${formattedVersion}/'"
+    }
+  }
+}
+
+
+
 def readGitTag() {
-  sh "git describe --exact-match --tags HEAD | tail -n 1 > tag.txt 2>&1 || true"
-  def tag = readFile('tag.txt').trim()
-  return tag
+  return sh(returnStdout: true, script: 'git describe --exact-match --tags HEAD || echo ""').readLines().last().trim()
 }
 
 def readGitSha() {
-  sh "git rev-parse HEAD | cut -b1-8 > sha.txt"
-  def sha = readFile('sha.txt').readLines().last().trim()
-  return sha
+  return sh(returnStdout: true, script: 'git rev-parse --short HEAD').readLines().last().trim()
 }
 
-def getVersion(){
+def getVersion() {
   def dependencies = readProperties file: 'dependencies.list'
-  def gitTag = readGitTag()
-  def gitSha = readGitSha()
-  if (gitTag == "") {
-    return "${dependencies.VERSION}-g${gitSha}"
+  if (readGitTag() == "") {
+    return "${dependencies.VERSION}-g${readGitSha()}"
   }
   else {
     return dependencies.VERSION
@@ -164,7 +321,7 @@ def doInside(script, target, postStep = null) {
     retry(3) { // retry unstash up to three times to mitigate network and contention
       dir(env.WORKSPACE) {
         deleteDir()
-        unstash 'source'
+        unstash 'realm-js-source'
       }
     }
     wrap([$class: 'AnsiColorBuildWrapper']) {
@@ -197,7 +354,7 @@ def doAndroidBuild(target, postStep = null) {
   return {
     node('docker && android && !aws') {
         timeout(time: 1, unit: 'HOURS') {
-            doDockerInside("./scripts/docker-android-wrapper.sh ./scripts/test.sh", target, postStep)
+            doDockerInside('./scripts/docker-android-wrapper.sh ./scripts/test.sh', target, postStep)
         }
     }
   }
@@ -205,17 +362,20 @@ def doAndroidBuild(target, postStep = null) {
 
 def doDockerBuild(target, nodeVersion = 10, postStep = null) {
   return {
-    node('docker && !aws') {
+    node('docker') {
       deleteDir()
-      unstash 'source'
+      unstash 'realm-js-source'
+      def image
+      withCredentials([[$class: 'StringBinding', credentialsId: 'packagecloud-sync-devel-master-token', variable: 'PACKAGECLOUD_MASTER_TOKEN']]) {
+        image = buildDockerEnv('ci/realm-js:build', 'Dockerfile')
+      }
+      sh "bash ./scripts/utils.sh set-version ${dependencies.VERSION}"
 
       try {
         reportStatus(target, 'PENDING', 'Build has started')
-
-        // We use the bitnami/node image since it comes with GCC 6.3
-        docker.image("bitnami/node:${nodeVersion}").inside('-e HOME=/tmp') {
+        image.inside('-e HOME=/tmp') {
           withCredentials([string(credentialsId: 'realm-sync-feature-token-enterprise', variable: 'realmFeatureToken')]) {
-            sh "REALM_FEATURE_TOKEN=${realmFeatureToken} SYNC_WORKER_FEATURE_TOKEN=${realmFeatureToken} scripts/test.sh ${target}"
+            sh "REALM_FEATURE_TOKEN=${realmFeatureToken} SYNC_WORKER_FEATURE_TOKEN=${realmFeatureToken} scripts/test.sh ${target} ${nodeVersion}"
           }
           if(postStep) {
             postStep.call()
@@ -237,7 +397,7 @@ def doMacBuild(target, postStep = null) {
       withEnv(['DEVELOPER_DIR=/Applications/Xcode-9.4.app/Contents/Developer',
                'SDKROOT=macosx10.13',
                'REALM_SET_NVM_ALIAS=1']) {
-        doInside("./scripts/test.sh", target, postStep)
+        doInside('./scripts/test.sh', target, postStep)
       }
     }
   }
@@ -246,7 +406,7 @@ def doMacBuild(target, postStep = null) {
 def doWindowsBuild() {
   return {
     node('windows && nodejs') {
-      unstash 'source'
+      unstash 'realm-js-source'
       try {
         bat 'npm install --build-from-source=realm --realm_enable_sync'
         dir('tests') {
@@ -265,7 +425,7 @@ def packageNpmArchive() {
   return {
     node('docker && !aws') {
       // Unstash the files in the repository
-      unstash 'source'
+      unstash 'realm-js-source'
       // Remove any archive from the workspace, which might have been produced by previous runs of the job
       sh 'rm -f realm-*.tgz'
       // TODO: Consider moving the node on the other side of the stages
