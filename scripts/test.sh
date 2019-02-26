@@ -59,7 +59,7 @@ start_server() {
   mkdir -p "$(pwd)/build"
   ros_log_temp="$(pwd)/build/ros_out.txt"
   ROS_SKIP_PROMPTS=true ./node_modules/.bin/ros start --data realm-object-server-data 2>&1 | tee $ros_log_temp &
-  SERVER_PID=$(jobs -l | grep node_modules/.bin/ros | cut -f2 -d" ")
+  SERVER_PID=$(jobs -l | grep node_modules/.bin/ros | awk '{split($0, a, / */); print a[2]}')
   echo ROS PID: ${SERVER_PID}
   ( tail -f -n0 $ros_log_temp & ) | grep -q "Realm Object Server has started and is listening"
 }
