@@ -18,6 +18,8 @@
 
 'use strict';
 
+/* global navigator, WorkerNavigator */
+
 const require_method = require;
 
 // Prevent React Native packager from seeing modules required with this
