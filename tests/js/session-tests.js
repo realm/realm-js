@@ -95,6 +95,18 @@ function waitForSessionConnected(session) {
     });
 }
 
+function unexpectedError(e) {
+    function printObject(o) {
+        var out = '';
+        for (var p in o) {
+            out += p + ': ' + o[p] + '\n';
+        }
+        return out;
+    }
+
+    return `Failed with unexpected error ${e}: ${printObject(e)}`;
+}
+
 module.exports = {
     testLocalRealmHasNoSession() {
         let realm = new Realm();
@@ -494,16 +506,7 @@ module.exports = {
                     TestCase.assertEqual(backupRealm.objects('Dog').length, 3);
                     return;
                 }
-
-                function printObject(o) {
-                    var out = '';
-                    for (var p in o) {
-                      out += p + ': ' + o[p] + '\n';
-                    }
-                    return out;
-                  }
-
-                throw new Error("Failed with unexpected error " + printObject(e));
+                throw new Error(unexpectedError(e));
             });
     },
 
@@ -542,7 +545,7 @@ module.exports = {
                         return;
                     }
 
-                    _reject("Failed with unexpected error" + JSON.stringify(error));
+                    _reject(unexpectedError(error));
                 });
             });
         });
@@ -581,7 +584,7 @@ module.exports = {
                             return;
                         }
 
-                        _reject("Failed with unexpected error" + JSON.stringify(e));
+                        _reject(unexpectedError(e));
                     }
             });
         });
