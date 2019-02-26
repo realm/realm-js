@@ -26,7 +26,8 @@ const Realm = require('realm');
 const TestCase = require('./asserts');
 let schemas = require('./schemas');
 
-const isNodeProccess = (typeof process === 'object' && process + '' === '[object process]');
+const isElectronProcess = typeof process === 'object' && process.type === 'renderer';
+const isNodeProccess = typeof process === 'object' && process + '' === '[object process]' && !isElectronProcess;
 
 const require_method = require;
 function node_require(module) {
@@ -856,6 +857,10 @@ module.exports = {
     },
 
     testPartialSync() {
+        if (!isNodeProccess) {
+            return;
+        }
+
         const username = uuid();
         const credentials = Realm.Sync.Credentials.nickname(username);
         return runOutOfProcess(__dirname + '/partial-sync-api-helper.js', username, REALM_MODULE_PATH)
@@ -955,7 +960,7 @@ module.exports = {
 
                         // check if subscriptions have been removed
                         // subscription1.unsubscribe() requires a server round-trip so it might take a while
-                        let retries = 0;
+                        let retries2 = 0;
                         token = setInterval(() => {
                             listOfSubscriptions = realm.subscriptions();
                             if (listOfSubscriptions.length == 5) { // the 5 permissions classes
@@ -964,7 +969,7 @@ module.exports = {
                                 resolve();
                             }
                             // Time out after 10s
-                            if (++retries > 20) {
+                            if (++retries2 > 20) {
                                 reject('Removing listeners timed out');
                                 clearInterval(token);
                             }

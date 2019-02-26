@@ -33,7 +33,6 @@ The API reference is located at [realm.io/docs/javascript/latest/api/](https://r
 In case you don't want to use the precompiled version on npm, you can build Realm yourself from source. You’ll need an Internet connection the first time you build in order to download the core library.
 
 Prerequisites:
-- npm < 5.0 (due to symlinks not working)
 - Xcode 7.2+
 - Android SDK 23+
 - [Android NDK 10e](https://developer.android.com/ndk/downloads/older_releases)

@@ -18,7 +18,7 @@
 
 'use strict';
 
-import { NativeAppEventEmitter, NativeModules } from 'react-native';
+import { NativeAppEventEmitter, NativeEventEmitter, NativeModules } from 'react-native';
 import * as RealmTests from 'realm-tests';
 import ListViewTest from './listview-test';
 
@@ -26,13 +26,14 @@ RealmTests.registerTests({
     ListViewTest,
 });
 
+const realmTestEmitter = new NativeEventEmitter(NativeModules.RealmTestEventEmitter);
 // Listen for event signalling native is ready to receive test names
-NativeAppEventEmitter.addListener('realm-test-names', () => {
+realmTestEmitter.addListener('test-names', () => {
     NativeModules.Realm.emit('realm-test-names', getTestNames());
 });
 
 // Listen for event to run a particular test.
-NativeAppEventEmitter.addListener('realm-run-test', async ({suite, name}) => {
+realmTestEmitter.addListener('run-test', async ({suite, name}) => {
     let error;
     try {
         await RealmTests.runTest(suite, name);
@@ -42,6 +43,7 @@ NativeAppEventEmitter.addListener('realm-run-test', async ({suite, name}) => {
 
     NativeModules.Realm.emit('realm-test-finished', error);
 });
+realmTestEmitter.addListener('dummy', () => {});
 
 export function getTestNames() {
     return RealmTests.getTestNames();

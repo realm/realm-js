@@ -21,7 +21,6 @@
 const fs = require('fs-extra');
 const path = require('path');
 const os = require('os');
-const child_process = require('child_process');
 const fetch = require('node-fetch');
 const HttpsProxyAgent = require('https-proxy-agent');
 const ini = require('ini');
@@ -56,21 +55,6 @@ function getTempDir() {
            path.join(os.tmpdir(), TEMP_DIR_SUFFIX);
 }
 
-function exec() {
-    const args = Array.from(arguments);
-    return new Promise((resolve, reject) => {
-        function callback(error, stdout, stderr) {
-            if (error) {
-                reject(error);
-            } else {
-                resolve(stdout.trim());
-            }
-        }
-        args.push(callback);
-        child_process.exec.apply(null, args);
-    });
-}
-
 function printProgress(input, totalBytes, archive) {
     const ProgressBar = require('progress');
     const StreamCounter = require('stream-counter');
@@ -97,38 +81,31 @@ function download(serverFolder, archive, destination) {
         const agentOpts = require('url').parse(proxyUrl);
         agent = new HttpsProxyAgent(agentOpts);
     }
-    return fetch(url, { agent }).then((response) => {
+    return fetch(url, {agent}).then(response => {
         if (response.status !== 200) {
             throw new Error(`Error downloading ${url} - received status ${response.status} ${response.statusText}`);
         }
 
         const lastModified = new Date(response.headers.get('Last-Modified'));
-        return fs.exists(destination)
-                 .then(exists => {
-                     if (!exists) {
-                         return saveFile();
-                     } else {
-                         return fs.stat(destination)
-                                  .then(stat => {
-                                      if (stat.mtime.getTime() !== lastModified.getTime()) {
-                                          return saveFile();
-                                      }
-                         })
-                     }
-        });
-
-        function saveFile() {
-            if (process.stdout.isTTY) {
-                printProgress(response.body, parseInt(response.headers.get('Content-Length')), archive);
-            } else {
-                console.log(`Downloading ${archive}`);
+        const contentLength = parseInt(response.headers.get('Content-Length'), 10);
+        return fs.stat(destination).then(stat => {
+            if (stat.mtime.getTime() <= lastModified.getTime() || stat.size !== contentLength) {
+                return saveFile(response);
             }
-            return new Promise((resolve) => {
-                const file = fs.createWriteStream(destination);
-                response.body.pipe(file).once('finish', () => file.close(resolve));
-            }).then(() => fs.utimes(destination, lastModified, lastModified));
-        }
+        }).catch(() => saveFile(response));
     });
+
+    function saveFile(response) {
+        if (process.stdout.isTTY) {
+            printProgress(response.body, parseInt(response.headers.get('Content-Length')), archive);
+        } else {
+            console.log(`Downloading ${archive}`);
+        }
+        return new Promise((resolve) => {
+            const file = fs.createWriteStream(destination);
+            response.body.pipe(file).once('finish', () => file.close(resolve));
+        });
+    }
 }
 
 function extract(downloadedArchive, targetFolder, archiveRootFolder) {
@@ -169,25 +146,25 @@ function getCoreRequirements(dependencies, options, required = {}) {
         case 'mac':
             required.CORE_SERVER_FOLDER += `/macos/${flavor}`;
             required.CORE_ARCHIVE = `realm-core-${flavor}-v${dependencies.REALM_CORE_VERSION}-Darwin-devel.tar.gz`;
-            return Promise.resolve(required);
+            return required;
         case 'ios':
             flavor = flavor === 'Debug' ? 'MinSizeDebug' : flavor;
             required.CORE_SERVER_FOLDER += `/ios/${flavor}`;
             required.CORE_ARCHIVE = `realm-core-${flavor}-v${dependencies.REALM_CORE_VERSION}-iphoneos.tar.gz`;
-            return Promise.resolve(required);
+            return required;
         case 'win': {
             if (!options.arch) throw new Error(`Specifying '--arch' is required for platform 'win'`);
             const arch = options.arch === 'ia32' ? 'Win32' : options.arch;
             required.CORE_SERVER_FOLDER += `/windows/${arch}/nouwp/${flavor}`;
             required.CORE_ARCHIVE = `realm-core-${flavor}-v${dependencies.REALM_CORE_VERSION}-Windows-${arch}-devel.tar.gz`;
-            return Promise.resolve(required);
+            return required;
         }
         case 'linux':
             required.CORE_SERVER_FOLDER = 'core';
             required.CORE_ARCHIVE = `realm-core-${flavor}-v${dependencies.REALM_CORE_VERSION}-Linux-devel.tar.gz`;
-            return Promise.resolve(required);
+            return required;
         default:
-            return Promise.reject(new Error(`Unsupported core platform '${options.platform}'`));
+            throw new Error(`Unsupported core platform '${options.platform}'`);
     }
 }
 
@@ -199,11 +176,11 @@ function getSyncRequirements(dependencies, options, required = {}) {
         case 'mac':
             required.SYNC_ARCHIVE = `realm-sync-node-cocoa-${dependencies.REALM_SYNC_VERSION}.tar.gz`;
             required.SYNC_ARCHIVE_ROOT = `realm-sync-node-cocoa-${dependencies.REALM_SYNC_VERSION}`;
-            return Promise.resolve(required);
+            return required;
         case 'ios':
             required.SYNC_ARCHIVE = `realm-sync-cocoa-${dependencies.REALM_SYNC_VERSION}.tar.gz`;
             required.SYNC_ARCHIVE_ROOT = `core`;
-            return Promise.resolve(required);
+            return required;
         case 'win': {
             const arch = options.arch === 'ia32' ? 'Win32' : options.arch;
             required.SYNC_ARCHIVE = `realm-sync-${flavor}-v${dependencies.REALM_SYNC_VERSION}-Windows-${arch}-devel.tar.gz`;
@@ -214,7 +191,7 @@ function getSyncRequirements(dependencies, options, required = {}) {
             required.SYNC_ARCHIVE = `realm-sync-Release-v${dependencies.REALM_SYNC_VERSION}-Linux-devel.tar.gz`;
             return getCoreRequirements(dependencies, options, required);
         default:
-            return Promise.reject(new Error(`Unsupported sync platform '${options.platform}'`));
+            throw new Error(`Unsupported sync platform '${options.platform}'`);
     }
 }
 
@@ -278,15 +255,13 @@ ensureDirExists(getTempDir());
 
 const dependencies = ini.parse(fs.readFileSync(path.resolve(__dirname, '../dependencies.list'), 'utf8'));
 
-(options.sync ? getSyncRequirements : getCoreRequirements)(dependencies, options)
-    .then(requirements => {
-        console.log('Resolved requirements:', requirements);
-        if (!shouldSkipAcquire(realmDir, requirements, options.force)) {
-            return acquire(requirements, realmDir)
-        }
-    })
-    .then(() => console.log('Success'))
-    .catch(error => {
-        console.error(error);
-        process.exit(1);
-    });
+const requirements = (options.sync ? getSyncRequirements : getCoreRequirements)(dependencies, options);
+console.log('Resolved requirements:', requirements);
+if (!shouldSkipAcquire(realmDir, requirements, options.force)) {
+    acquire(requirements, realmDir)
+        .then(() => console.log('Success'))
+        .catch(error => {
+            console.error(error);
+            process.exit(1);
+        });
+}

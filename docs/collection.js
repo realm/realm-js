@@ -16,6 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+/* eslint getter-return: "off" */
+
 /**
  * Abstract base class containing methods shared by {@link Realm.List} and {@link Realm.Results}.
  *

@@ -8,6 +8,7 @@ export NPM_CONFIG_PROGRESS=false
 
 TARGET=$1
 CONFIGURATION=${2:-Release}
+NODE_VERSION=${3:-v8.15.0}
 
 if echo "$CONFIGURATION" | grep -i "^Debug$" > /dev/null ; then
   CONFIGURATION="Debug"
@@ -52,14 +53,15 @@ download_server() {
 
 start_server() {
   echo "test.sh: starting ROS"
-  #disabled ROS logging
-  # sh ./object-server-for-testing/start-object-server.command &> /dev/null &
-
-  #enabled ROS logging
-  #sh ./object-server-for-testing/start-object-server.command &
-  export ROS_SKIP_PROMPTS=true &&  ./node_modules/.bin/ros start --data realm-object-server-data &
-  SERVER_PID=$!
+  if [ -z "${SYNC_WORKER_FEATURE_TOKEN}" ]; then
+      die "SYNC_WORKER_FEATURE_TOKEN must be set to run tests."
+  fi
+  mkdir -p "$(pwd)/build"
+  ros_log_temp="$(pwd)/build/ros_out.txt"
+  ROS_SKIP_PROMPTS=true ./node_modules/.bin/ros start --data realm-object-server-data 2>&1 | tee $ros_log_temp &
+  SERVER_PID=$(jobs -l | grep node_modules/.bin/ros | cut -f2 -d" ")
   echo ROS PID: ${SERVER_PID}
+  ( tail -f -n0 $ros_log_temp & ) | grep -q "Realm Object Server has started and is listening"
 }
 
 stop_server() {
@@ -72,33 +74,47 @@ stop_server() {
 
 startedSimulator=false
 log_temp=
+ros_log_temp=
 test_temp_dir=
+nvm_old_default=
 cleanup() {
   # Kill started object server
   stop_server || true
 
-  echo "shutting down running simulators"
-  shutdown_ios_simulator >/dev/null 2>&1
+  if [ "$(uname)" = 'Darwin' ]; then
+    echo "shutting down running simulators"
+    shutdown_ios_simulator >/dev/null 2>&1
 
-  # Quit Simulator.app to give it a chance to go down gracefully
-  if $startedSimulator; then
-    osascript -e 'tell app "Simulator" to quit without saving' || true
-    sleep 0.25 # otherwise the pkill following will get it too early
+    # Quit Simulator.app to give it a chance to go down gracefully
+    if $startedSimulator; then
+      osascript -e 'tell app "Simulator" to quit without saving' || true
+      sleep 0.25 # otherwise the pkill following will get it too early
+    fi
   fi
 
-  # Kill all child processes.
-  pkill -9 -P $$ || true
+  if [[ "$(command -v pkill)" ]]; then
+    # Kill all child processes.
+    pkill -9 -P $$ || true
 
-  # Kill react native packager
-  pkill -x node || true
-  rm -f "$PACKAGER_OUT" "$LOGCAT_OUT"
+    # Kill react native packager
+    pkill -x node || true
+    rm -f "$PACKAGER_OUT" "$LOGCAT_OUT"
+  fi
 
   # Cleanup temp files
   if [ -n "$log_temp" ] && [ -e "$log_temp" ]; then
     rm "$log_temp" || true
   fi
+  if [ -n "$ros_log_temp" ] && [ -e "$ros_log_temp" ]; then
+    rm "$ros_log_temp" || true
+  fi
   if [ -n "$test_temp_dir" ] && [ -e "$test_temp_dir" ]; then
     rm -rf "$test_temp_dir" || true
+  fi
+
+  # Restore nvm state
+  if [ -n "$nvm_old_default" ]; then
+    nvm alias default $nvm_old_default
   fi
 }
 
@@ -117,11 +133,12 @@ open_chrome() {
 }
 
 start_packager() {
+  rm -r $TMPDIR/react-* || true
   watchman watch-del-all || true
-  ./node_modules/react-native/scripts/packager.sh | tee "$PACKAGER_OUT" &
+  ./node_modules/react-native/scripts/packager.sh --reset-cache | tee "$PACKAGER_OUT" &
 
   while :; do
-    if grep -Fxq "Metro Bundler ready." "$PACKAGER_OUT"; then
+    if grep -Fxq "Loading dependency graph, done." "$PACKAGER_OUT"; then
       break
     else
       echo "Waiting for packager."
@@ -135,29 +152,19 @@ xctest() {
 
   # - Run the build and test
   echo "Building application"
-  xcrun xcodebuild -scheme "$1" -configuration "$CONFIGURATION" -sdk iphonesimulator -destination id="${IOS_SIM_DEVICE_ID}" -derivedDataPath ./build build || {
+  xcrun xcodebuild -workspace "$1.xcworkspace" -scheme "$1" -configuration "$CONFIGURATION" -sdk iphonesimulator -destination id="${IOS_SIM_DEVICE_ID}" -derivedDataPath ./build build-for-testing || {
       EXITCODE=$?
       echo "*** Failure (exit code $EXITCODE). ***"
       exit $EXITCODE
   }
 
-  echo "Installing application on ${SIM_DEVICE_NAME}"
-  echo "Application Path" $(pwd)/build/Build/Products/$CONFIGURATION-iphonesimulator/$1.app
-  xcrun simctl install ${SIM_DEVICE_NAME} $(pwd)/build/Build/Products/$CONFIGURATION-iphonesimulator/$1.app
-
-
-  echo "Launching application. (output is in $(pwd)/build/out.txt)"
-  testpid=$(xcrun simctl launch --stdout=$(pwd)/build/out.txt --stderr=$(pwd)/build/err.txt ${SIM_DEVICE_NAME} io.realm.$1 | grep -m1 -o '\d\+$')
-  tail -n +0 -f $(pwd)/build/out.txt &
-  stdoutpid=$!
-  tail -n +0 -f $(pwd)/build/err.txt &
-  stderrpid=$!
-
-  # `kill -0` checks if a signal can be sent to the pid without actually doing so
-  while kill -0 $testpid 2> /dev/null; do sleep 1; done
-
-  kill $stdoutpid
-  kill $stderrpid
+  log_temp="$(pwd)/build/out.txt"
+  echo "Launching tests. (output is in ${log_temp})"
+  xcrun xcodebuild -workspace "$1.xcworkspace" -scheme "$1" -configuration "$CONFIGURATION" -sdk iphonesimulator -destination id="${IOS_SIM_DEVICE_ID}" -derivedDataPath ./build test-without-building 2>&1 | tee "$log_temp" || {
+      EXITCODE=$?
+      echo "*** Failure (exit code $EXITCODE). ***"
+      exit $EXITCODE
+  }
 
   echo "Shuttting down ${SIM_DEVICE_NAME} simulator. (device is not deleted. you can use it to debug the app)"
   shutdown_ios_simulator
@@ -188,6 +195,10 @@ setup_ios_simulator() {
   IOS_SIM_DEVICE_ID=$(xcrun simctl create ${SIM_DEVICE_NAME} com.apple.CoreSimulator.SimDeviceType.iPhone-SE ${IOS_RUNTIME})
   #boot new test simulator
   xcrun simctl boot ${SIM_DEVICE_NAME}
+
+  printf "Waiting for springboard to ensure device is ready..."
+  xcrun simctl launch ${SIM_DEVICE_NAME} com.apple.springboard 1>/dev/null 2>/dev/null || true
+  echo "  done"
 }
 
 shutdown_ios_simulator() {
@@ -221,8 +232,14 @@ if [[ -z "$(command -v nvm)" ]]; then
   set -e
 fi
 if [[ "$(command -v nvm)" ]]; then
-  nvm install 6.11.3
+  nvm install $NODE_VERSION
 fi
+set_nvm_default() {
+  if [ -n "$REALM_SET_NVM_ALIAS" ] && [[ "$(command -v nvm)" ]]; then
+    nvm_old_default="$(nvm alias default --no-colors | cut -d ' ' -f 3)"
+    nvm alias default $(nvm current)
+  fi
+}
 
 # Remove cached packages
 rm -rf ~/.yarn-cache/npm-realm-*
@@ -250,30 +267,34 @@ case "$TARGET" in
   ;;
 "react-tests")
   npm run check-environment
+  set_nvm_default
   download_server
   start_server
   pushd tests/react-test-app
-  npm install
+  npm install --no-save
+  ./node_modules/.bin/install-local
   open_chrome
   start_packager
 
   pushd ios
+  pod install
   xctest ReactTests
   stop_server
   ;;
 "react-example")
   npm run check-environment
+  set_nvm_default
   pushd examples/ReactExample
 
-  npm install
+  npm install --no-save
+  ./node_modules/.bin/install-local
   open_chrome
   start_packager
 
-  echo "{ \"test\" : true }" > $(pwd)/components/params.json
   pushd ios
+  pod install
   xctest ReactExample
   popd
-  echo "{}" > $(pwd)/components/params.json
   ;;
 "react-tests-android")
   npm run check-environment
@@ -290,7 +311,8 @@ case "$TARGET" in
   popd
 
   pushd tests/react-test-app
-  npm install
+  npm install --no-save
+  ./node_modules/.bin/install-local
 
   echo "Resetting logcat"
   # Despite the docs claiming -c to work, it doesn't, so `-T 1` alleviates that.
@@ -325,17 +347,11 @@ case "$TARGET" in
 "node")
   npm run check-environment
   if [ "$(uname)" = 'Darwin' ]; then
-    echo "downloading server"
+    npm install --no-save --build-from-source=realm --realm_enable_sync
     download_server
-    echo "starting server"
     start_server
-
-    npm_tests_cmd="npm run test"
-    npm install --build-from-source=realm --realm_enable_sync
-
   else
-    npm_tests_cmd="npm run test"
-    npm install --build-from-source=realm
+    npm install --no-save --build-from-source=realm
   fi
 
   # Change to a temp directory.
@@ -344,41 +360,39 @@ case "$TARGET" in
 
   pushd "$SRCROOT/tests"
   npm install
-  eval "$npm_tests_cmd"
+  npm run test
   popd
   stop_server
   ;;
 "electron")
+  npm install --no-save
   if [ "$(uname)" = 'Darwin' ]; then
     download_server
     start_server
   fi
 
-  # Change to a temp directory - because this is what is done for node - but we pushd right after?
-  cd "$(mktemp -q -d -t realm.electron.XXXXXX)"
-  test_temp_dir=$PWD # set it to be cleaned at exit
   pushd "$SRCROOT/tests/electron"
-
+  # Build Realm and runtime deps for electron
+  export npm_config_target=4.0.3
+  export npm_config_runtime=electron
+  export npm_config_disturl=https://atom.io/download/electron
   if [ "$(uname)" = 'Darwin' ]; then
-    npm install --build-from-source --realm_enable_sync
-  else
-    npm install --build-from-source
+    export npm_config_realm_enable_sync=true
   fi
-
-  # npm test -- --filter=ListTests
-  # npm test -- --filter=LinkingObjectsTests
-  # npm test -- --filter=ObjectTests
-  # npm test -- --filter=RealmTests
-  # npm test -- --filter=ResultsTests
-  # npm test -- --filter=QueryTests
-  # npm test -- --filter=MigrationTests
-  # npm test -- --filter=EncryptionTests
-  # npm test -- --filter=UserTests
-  # npm test -- --filter=SessionTests
-  # npm test -- --filter=GarbageCollectionTests
-  # npm test -- --filter=AsyncTests
+  npm install --no-save
+  ./node_modules/.bin/install-local
 
   npm test -- --process=main
+
+  if [ "$(uname)" = 'Darwin' ]; then
+    popd
+    stop_server
+    rm -rf realm-object-server-data
+    rm -rf realm-object-server
+    start_server
+    pushd "$SRCROOT/tests/electron"
+  fi
+
   npm test -- --process=render
 
   popd
@@ -389,6 +403,7 @@ case "$TARGET" in
   ;;
 "test-runners")
   npm run check-environment
+  npm install --no-save
   npm run test-runners
   ;;
 "all")

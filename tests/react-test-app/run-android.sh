@@ -16,8 +16,10 @@ fi
 
 cp ../../src/object-store/tests/query.json node_modules/realm-tests/query-tests.json
 
-echo "Uninstalling old apk"
-adb uninstall io.realm.react.testapp || true
+if adb shell pm list packages | grep -q io.realm.react.testapp; then
+    echo "Uninstalling old apk"
+    adb uninstall io.realm.react.testapp
+fi
 
 echo "Reversing port for physical device"
 adb reverse tcp:8081 tcp:8081
@@ -29,7 +31,7 @@ echo "Building Release APK"
 pushd android && ./gradlew assembleRelease
 
 echo "Installing APK"
-adb install app/build/outputs/apk/app-release.apk
+adb install app/build/outputs/apk/release/app-release.apk
 
 echo "Starting the Main Activity"
 adb shell am start -n io.realm.react.testapp/.MainActivity

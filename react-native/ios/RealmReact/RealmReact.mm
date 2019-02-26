@@ -18,12 +18,14 @@
 
 #import "RealmReact.h"
 #import "RealmAnalytics.h"
-#import "RCTBridge+Private.h"
-#import "RCTJavaScriptExecutor.h"
 
-#import "jsc_init.h"
+#import "jsc/jsc_init.h"
+
+#import "impl/realm_coordinator.hpp"
 #import "shared_realm.hpp"
-#import "realm_coordinator.hpp"
+
+#import <React/RCTBridge+Private.h>
+#import <React/RCTJavaScriptExecutor.h>
 
 #import <objc/runtime.h>
 #import <arpa/inet.h>
@@ -50,8 +52,9 @@ using namespace realm::rpc;
 @end
 
 // the part of the RCTCxxBridge private class we care about
-@interface RCTBridge (RCTCxxBridge)
+@interface RCTBridge (Realm_RCTCxxBridge)
 - (JSGlobalContextRef)jsContextRef;
+- (void *)runtime;
 @end
 
 extern "C" JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executor, bool create) {
@@ -229,7 +232,7 @@ RCT_REMAP_METHOD(emit, emitEvent:(NSString *)eventName withObject:(id)object) {
 
             if (rpcServer) {
                 json args = json::parse([[(GCDWebServerDataRequest *)request text] UTF8String]);
-                std::string responseText = rpcServer->perform_request(request.path.UTF8String, args).dump();
+                std::string responseText = rpcServer->perform_request(request.path.UTF8String, std::move(args)).dump();
 
                 responseData = [NSData dataWithBytes:responseText.c_str() length:responseText.length()];
             }
@@ -317,7 +320,19 @@ void _initializeOnJSThread(JSContextRefExtractor jsContextExtractor) {
             }
 
             _initializeOnJSThread(^{
-                return [bridge jsContextRef];
+                // RN < 0.58 has a private method that returns the js context
+                if ([bridge respondsToSelector:@selector(jsContextRef)]) {
+                    return [bridge jsContextRef];
+                }
+                // RN 0.58+ wraps the js context in the jsi abstraction layer,
+                // which doesn't have any way to obtain the JSGlobalContextRef,
+                // so engage in some undefined behavior and slurp out the
+                // member variable
+                struct RealmJSCRuntime {
+                    virtual ~RealmJSCRuntime() = 0;
+                    JSGlobalContextRef ctx_;
+                };
+                return static_cast<RealmJSCRuntime*>(bridge.runtime)->ctx_;
             });
         } queue:RCTJSThread];
     } else { // React Native 0.44 and older
