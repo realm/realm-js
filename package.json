@@ -80,7 +80,7 @@
   "dependencies": {
     "deepmerge": "2.1.0",
     "nan": "^2.12.1",
-    "node-fetch": "^1.7.3",
+    "node-fetch-retry": "^1.0.1",
     "node-machine-id": "^1.1.10",
     "node-pre-gyp": "^0.11.0",
     "prop-types": "^15.6.2",

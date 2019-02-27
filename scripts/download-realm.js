@@ -21,7 +21,7 @@
 const fs = require('fs-extra');
 const path = require('path');
 const os = require('os');
-const fetch = require('node-fetch');
+const fetch = require('node-fetch-retry');
 const HttpsProxyAgent = require('https-proxy-agent');
 const ini = require('ini');
 const decompress = require('decompress');
@@ -81,7 +81,7 @@ function download(serverFolder, archive, destination) {
         const agentOpts = require('url').parse(proxyUrl);
         agent = new HttpsProxyAgent(agentOpts);
     }
-    return fetch(url, {agent}).then(response => {
+    return fetch(url, {agent, retry: 3}).then(response => {
         if (response.status !== 200) {
             throw new Error(`Error downloading ${url} - received status ${response.status} ${response.statusText}`);
         }
