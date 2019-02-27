@@ -5,7 +5,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * Add support for React Native v0.58. ([#2239](https://github.com/realm/realm-js/issues/2239))
 
 ### Fixed
-* Fixed an assertion failure after creating an object with a null int primary key in a synchronized Realm. ([#3227](https://github.com/realm/realm-core/pull/3227))
+* Fixed an assertion failure when using a synchronized Realm and an object was created after another object was created with an int primary key of `null`. ([#3227](https://github.com/realm/realm-core/pull/3227))
 * When debugging with React Native, calling `Realm.open()` would crash since `Realm._asyncOpen()` was not available in the debugger. ([#2234](https://github.com/realm/realm-js/pull/2234), since v2.20.0)
 * Added several missing functions to the Chrome debugging support library. ([#2242](https://github.com/realm/realm-js/pull/2242), since v2.2.19).
 * Fixed incorrect results when reading data from Realm from within a callback function when debugging in Chrome. ([#2242](https://github.com/realm/realm-js/pull/2242)).
