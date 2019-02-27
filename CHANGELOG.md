@@ -1,8 +1,8 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
-* Added a `_updateSchema` method on an Realm instance to perform schema manipulation. Specifically creating an object schema and a property on an existing object schema. (partly solving [#2216](https://github.com/realm/realm-js/issues/2216))
-* Add support for react-native 0.58 ([#2239](https://github.com/realm/realm-js/issues/2239)).
+* Add the method `Realm._updateSchema` to perform schema manipulation. Specifically creating an object schema and a property on an existing object schema. (partly solving [#2216](https://github.com/realm/realm-js/issues/2216))
+* Add support for React Native v0.58. ([#2239](https://github.com/realm/realm-js/issues/2239))
 
 ### Fixed
 * Fixed an assertion failure after creating an object with a null int primary key in a synchronized Realm. ([#3227](https://github.com/realm/realm-core/pull/3227))
@@ -17,7 +17,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
 ### Internal
-* Added integration tests running in various environments (Node.js on MacOS and Linux, React Native on iOS and Android & Electron main and renderer processes on Linux). Existing tests should eventually be migrated to this to ensure they pass in all relevant environments. ([#2227](https://github.com/realm/realm-js/pull/2227)).
+* Added integration tests running in various environments (Node.js on MacOS and Linux, React Native on iOS and Android & Electron main and renderer processes on Linux). Existing tests should eventually be migrated to this to ensure they pass in all relevant environments. ([#2227](https://github.com/realm/realm-js/pull/2227))
 
 2.23.0 Release notes (2019-2-1)
 =============================================================
