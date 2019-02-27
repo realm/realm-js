@@ -1,4 +1,4 @@
-x.x.x Release notes (yyyy-MM-dd)
+2.24.0 Release notes (2019-2-27)
 =============================================================
 ### Enhancements
 * Add support for React Native v0.58. ([#2239](https://github.com/realm/realm-js/issues/2239))
