@@ -117,27 +117,12 @@ var rosController;
 
 require('jasmine-co').install();
 
-function deleteFolderRecursive(path) {
-    if (fs.existsSync(path)) {
-        fs.readdirSync(path).forEach(function (file, index) {
-            var curPath = path + "/" + file;
-            if (fs.lstatSync(curPath).isDirectory()) { // recurse
-                deleteFolderRecursive(curPath);
-            } else { // delete file
-                fs.unlinkSync(curPath);
-            }
-        });
-        fs.rmdirSync(path);
-    }
-}
-
+let tmpDir;
 
 describe('Adapter', () => {
     beforeEach(async () => {
         Realm.clearTestState();
-
-        deleteFolderRecursive('./realm-object-server/test-realms');
-        fs.mkdirSync('./realm-object-server/test-realms');
+        tmpDir = tmp.dirSync({unsafeCleanup: true});
 
         if (useTestServer) {
             rosController = new TestObjectServer();
@@ -154,10 +139,11 @@ describe('Adapter', () => {
         }
         await rosController.shutdown();
         Realm.clearTestState();
+        tmpDir.removeCallback();
     });
 
     function createAdapter(regex, ros) {
-        adapter = new Realm.Sync.Adapter("./realm-object-server/adapter", `realm://localhost:${rosController.httpPort}`,
+        adapter = new Realm.Sync.Adapter(tmpDir.name, `realm://localhost:${rosController.httpPort}`,
             ros.adminUser, '.*test.*', (path: String) => {
                 var promise = nextChangePromise;
                 nextChangePromise = undefined;
