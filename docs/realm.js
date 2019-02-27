@@ -16,6 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+/* eslint getter-return: "off" */
+
 /**
  * A Realm instance represents a Realm database.
  *

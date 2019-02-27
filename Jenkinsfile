@@ -1,12 +1,18 @@
 #!groovy
 import groovy.json.JsonOutput
 
+@Library('realm-ci') _
+
 repoName = 'realm-js' // This is a global variable
 
 def gitTag
 def gitSha
 def dependencies
 def version
+
+def ElectronTests
+def NodeJsTests
+def ReactNativeTests
 
 // == Stages
 
@@ -18,6 +24,7 @@ stage('check') {
       branches: scm.branches,
       gitTool: 'native git',
       extensions: scm.extensions + [
+        [$class: 'WipeWorkspace'],
         [$class: 'CleanCheckout'],
         [$class: 'SubmoduleOption', recursiveSubmodules: true]
       ],
@@ -50,24 +57,29 @@ stage('check') {
       // cache registry
       env.DOCKER_PUSH = "1"
     }
+
+    // Load the integration tests groovy scripts
+    ElectronTests = load 'integration-tests/environments/electron/jenkins.groovy'
+    NodeJsTests = load 'integration-tests/environments/node/jenkins.groovy'
+    ReactNativeTests = load 'integration-tests/environments/react-native/jenkins.groovy'
   }
 }
 
-stage('build') {
+stage('package and test') {
   parallel(
-    eslint: doDockerBuild('eslint-ci', {
+    eslint: doDockerBuild('eslint-ci', 10, {
       step([$class: 'CheckStylePublisher', canComputeNew: false, canRunOnFailed: true, defaultEncoding: '', healthy: '', pattern: 'eslint.xml', unHealthy: ''])
     }),
-    jsdoc: doDockerBuild('jsdoc', {
+    jsdoc: doDockerBuild('jsdoc', 10, {
       publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'docs/output', reportFiles: 'index.html', reportName: 'Docs'])
     }),
-    linux_node_debug: doDockerBuild('node Debug'),
-    linux_node_release: doDockerBuild('node Release'),
+    linux_node_8_debug: doDockerBuild('node Debug v8.15.0', 8),
+    linux_node_8_release: doDockerBuild('node Release v8.15.0', 8),
+    linux_node_10_debug: doDockerBuild('node Debug v10.15.1', 10),
+    linux_node_10_release: doDockerBuild('node Release v10.15.1', 10),
     linux_test_runners: doDockerBuild('test-runners'),
     macos_node_debug: doMacBuild('node Debug'),
     macos_node_release: doMacBuild('node Release'),
-    //macos_realmjs_debug: doMacBuild('realmjs Debug'),
-    //macos_realmjs_release: doMacBuild('realmjs Release'),
     macos_react_tests_debug: doMacBuild('react-tests Debug'),
     macos_react_tests_release: doMacBuild('react-tests Release'),
     macos_react_example_debug: doMacBuild('react-example Debug'),
@@ -75,7 +87,21 @@ stage('build') {
     //android_react_tests: doAndroidBuild('react-tests-android', {
     //  junit 'tests/react-test-app/tests.xml'
     //}),
-    windows_node: doWindowsBuild()
+    windows_node: doWindowsBuild(),
+    package: packageNpmArchive(),
+  )
+}
+
+stage('integration tests') {
+  parallel(
+    // Integration tests:
+    // The tests above should be removed once we manage to move them to the new test harness in ./integration-tests
+    'React Native on Android': ReactNativeTests.onAndroid(),
+    'React Native on iOS': ReactNativeTests.onIOS(),
+    'Node.js v10 on Mac': NodeJsTests.onMacOS(nodeVersion: '10'),
+    'Node.js v8 on Linux': NodeJsTests.onLinux(nodeVersion: '8'),
+    'Node.js v10 on Linux': NodeJsTests.onLinux(nodeVersion: '10'),
+    'Electron on Linux': ElectronTests.onLinux(),
   )
 }
 
@@ -174,7 +200,7 @@ def doAndroidBuild(target, postStep = null) {
   }
 }
 
-def doDockerBuild(target, postStep = null) {
+def doDockerBuild(target, nodeVersion = 10, postStep = null) {
   return {
     node('docker && !aws') {
       deleteDir()
@@ -184,7 +210,7 @@ def doDockerBuild(target, postStep = null) {
         reportStatus(target, 'PENDING', 'Build has started')
 
         // We use the bitnami/node image since it comes with GCC 6.3
-        docker.image('bitnami/node:6').inside('-e HOME=/tmp') {
+        docker.image("bitnami/node:${nodeVersion}").inside('-e HOME=/tmp') {
           sh "scripts/test.sh ${target}"
           if(postStep) {
             postStep.call()
@@ -203,8 +229,10 @@ def doDockerBuild(target, postStep = null) {
 def doMacBuild(target, postStep = null) {
   return {
     node('osx_vegas') {
-      env.DEVELOPER_DIR = "/Applications/Xcode-9.4.app/Contents/Developer"
-      doInside("./scripts/test.sh", target, postStep)
+      withEnv(['DEVELOPER_DIR=/Applications/Xcode-9.4.app/Contents/Developer',
+               'REALM_SET_NVM_ALIAS=1']) {
+        doInside("./scripts/test.sh", target, postStep)
+      }
     }
   }
 }
@@ -227,3 +255,28 @@ def doWindowsBuild() {
   }
 }
 
+def packageNpmArchive() {
+  return {
+    node('docker && !aws') {
+      // Unstash the files in the repository
+      unstash 'source'
+      // Remove any archive from the workspace, which might have been produced by previous runs of the job
+      sh 'rm -f realm-*.tgz'
+      // TODO: Consider moving the node on the other side of the stages
+      docker.build(
+        'ci/realm-js:android-build',
+        '-f Dockerfile.android .'
+      ).inside {
+        // Install dependencies
+        sh 'npm install'
+        // Publish the Android module
+        sh 'cd react-native/android && ./gradlew publishAndroid'
+        // Package up the app
+        sh 'npm pack'
+        // Archive and stash the package
+        archiveArtifacts 'realm-*.tgz'
+        stash includes: 'realm-*.tgz', name: 'package'
+      }
+    }
+  }
+}

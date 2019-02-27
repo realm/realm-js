@@ -33,14 +33,7 @@ function uuid() {
 }
 
 function closeAfterUpload(realm) {
-    return new Promise((resolve, reject) => {
-        realm.syncSession.addProgressNotification('upload', 'forCurrentlyOutstandingWork', (transferred, transferable) => {
-            if (transferred >= transferable) {
-                realm.close();
-                resolve();
-            }
-        });
-    });
+    return realm.syncSession.uploadAllLocalChanges().then(() => realm.close());
 }
 
 const Realm = require('realm');
@@ -49,6 +42,7 @@ const schemas = require('./schemas');
 
 let pathSeparator = '/';
 const isNodeProcess = typeof process === 'object' && process + '' === '[object process]';
+const isChromeWorker = !isNodeProcess && typeof WorkerGlobalScope !== 'undefined' && navigator instanceof WorkerNavigator;
 if (isNodeProcess && process.platform === 'win32') {
     pathSeparator = '\\';
 }
@@ -1474,42 +1468,45 @@ module.exports = {
 
     // FIXME: We need to test adding a property also calls the listener
     testSchemaUpdatesNewClass: function() {
+        let realm1 = new Realm({ _cache: false });
+        TestCase.assertTrue(realm1.empty);
+        TestCase.assertEqual(realm1.schema.length, 0);  // empty schema
+
+        const schema = [{
+            name: 'TestObject',
+            properties: {
+                prop0: 'string',
+            }
+        }];
+
         return new Promise((resolve, reject) => {
-            let called = false;
-            let realm1 = new Realm({ _cache: false });
-            TestCase.assertTrue(realm1.empty);
-            TestCase.assertEqual(realm1.schema.length, 0);  // empty schema
             realm1.addListener('schema', (realm, event, schema) => {
-                TestCase.assertEqual(event, 'schema');
-                TestCase.assertEqual(schema.length, 1);
-                TestCase.assertEqual(realm.schema.length, 1);
-                TestCase.assertEqual(schema[0].name, 'TestObject');
-                TestCase.assertEqual(realm1.schema.length, 1);
-                TestCase.assertEqual(realm.schema[0].name, 'TestObject');
-                called = true;
+                try {
+                    TestCase.assertEqual(event, 'schema');
+                    TestCase.assertEqual(schema.length, 1);
+                    TestCase.assertEqual(realm.schema.length, 1);
+                    TestCase.assertEqual(schema[0].name, 'TestObject');
+                    TestCase.assertEqual(realm1.schema.length, 1);
+                    TestCase.assertEqual(realm.schema[0].name, 'TestObject');
+                    setTimeout(resolve, 1);
+                }
+                catch (e) {
+                    setTimeout(() => reject(e), 1);
+                }
             });
 
-            const schema = [{
-                name: 'TestObject',
-                properties: {
-                    prop0: 'string',
-                }
-            }];
-
             let realm2 = new Realm({ schema: schema, _cache: false });
-            TestCase.assertEqual(realm1.schema.length, 0); // not yet updated
+            if (!isChromeWorker) {
+                // Not updated until we return to the event loop and the autorefresh can happen
+                // When running in Chrome this can happen at any time due to the async RPC
+                TestCase.assertEqual(realm1.schema.length, 0);
+            }
             TestCase.assertEqual(realm2.schema.length, 1);
 
             // give some time to let advance_read to complete
             // in real world, a Realm will not be closed just after its
             // schema has been updated
-            setTimeout(() => {
-                if (called) {
-                    resolve();
-                } else {
-                    reject();
-                }
-            }, 1000);
+            setTimeout(() => reject(new Error('Schema change listener was not called')), 1000);
         });
     },
 
@@ -1519,61 +1516,63 @@ module.exports = {
         }
 
         const realmId = uuid();
+        let realm2 = null, called = false;
+        const config = {
+            schema: [schemas.TestObject],
+            sync: {
+                url: `realm://localhost:9080/${realmId}`,
+                fullSynchronization: false,
+            },
+        };
+
         // We need an admin user to create the reference Realm
         return Realm.Sync.User.login('http://localhost:9080', Realm.Sync.Credentials.nickname("admin", true))
             .then(user1 => {
-                const config = {
-                    schema: [schemas.TestObject],
-                    sync: {
-                        user: user1,
-                        url: `realm://localhost:9080/${realmId}`,
-                        fullSynchronization: false,
-                    },
-                };
-
+                config.sync.user = user1;
                 const realm = new Realm(config);
-                TestCase.assertEqual(realm.schema.length, 7); // 5 permissions, 1 results set, 1 test object
-                return closeAfterUpload(realm)
-                    .then(() => {
-                        return Realm.Sync.User.login('http://localhost:9080', Realm.Sync.Credentials.anonymous());
-                    }).then((user2) => {
-                        const dynamicConfig = {
-                            sync: { user: user2, url: `realm://localhost:9080/${realmId}`, fullSynchronization: false },
-                        };
+                if (isChromeWorker) {
+                    TestCase.assertEqual(realm.schema.length, 1); // 1 test object
+                }
+                else {
+                    TestCase.assertEqual(realm.schema.length, 7); // 5 permissions, 1 results set, 1 test object
+                }
+                return closeAfterUpload(realm);
+            })
+            .then(() => {
+                return Realm.Sync.User.login('http://localhost:9080', Realm.Sync.Credentials.anonymous());
+            }).then((user2) => {
+                const dynamicConfig = {
+                    sync: { user: user2, url: `realm://localhost:9080/${realmId}`, fullSynchronization: false },
+                };
+                return Realm.open(dynamicConfig);
+            }).then((realm) => {
+                realm2 = realm;
+                TestCase.assertEqual(realm2.schema.length, 7); // 5 permissions, 1 results set, 1 test object
+                realm2.addListener('schema', (realm, event, schema) => {
+                    TestCase.assertEqual(realm2.schema.length, 8); // 5 permissions, 1 results set, 1 test object, 1 foo object
+                    called = true;
+                });
 
-                        return Realm.open(dynamicConfig);
-                    }).then((realm2) => {
-                        TestCase.assertEqual(realm2.schema.length, 7); // 5 permissions, 1 results set, 1 test object
-                        let called = false;
-                        realm2.addListener('schema', (realm, event, schema) => {
-                            TestCase.assertEqual(realm2.schema.length, 8); // 5 permissions, 1 results set, 1 test object, 1 foo object
-                            called = true;
-                        });
-
-                        config.schema.push({
-                            name: 'Foo',
-                            properties: {
-                                doubleCol: 'double',
-                            }
-                        });
-
-                        return Realm.open(config)
-                            .then((realm) => {
-                                return closeAfterUpload(realm);
-                            })
-                            .then(() => {
-                                return new Promise((resolve, reject) => {
-                                    setTimeout(() => {
-                                        realm2.close();
-                                        if (called) {
-                                            resolve();
-                                        } else {
-                                            reject();
-                                        }
-                                    }, 1000);
-                                });;
-                            });
-                    });
+                config.schema.push({
+                    name: 'Foo',
+                    properties: {
+                        doubleCol: 'double',
+                    }
+                });
+                return Realm.open(config);
+            }).then((realm) => {
+                return closeAfterUpload(realm);
+            }).then(() => {
+                return new Promise((resolve, reject) => {
+                    setTimeout(() => {
+                        realm2.close();
+                        if (called) {
+                            resolve();
+                        } else {
+                            reject();
+                        }
+                    }, 1000);
+                });
             });
     },
 

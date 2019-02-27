@@ -16,7 +16,7 @@ const url = require("url");
 const JASMIN_FILTER_KEY = "--filter";
 const MAIN_PROCESS_KEY = "--process";
 
-function getJasminFilter() {
+function getJasmineFilter() {
   const filterArg = process.argv.find((arg) => arg.indexOf(JASMIN_FILTER_KEY) === 0);
   return filterArg ? filterArg.slice(JASMIN_FILTER_KEY.length + 1) : null;
 }
@@ -26,7 +26,7 @@ function getProcess() {
   return filterArg ? filterArg.slice(MAIN_PROCESS_KEY.length + 1) : 'render';
 }
 
-const filter = getJasminFilter();
+const filter = getJasmineFilter();
 const runIn = getProcess();
 
 // Keep a global reference of the window object, if you don´t, the window will

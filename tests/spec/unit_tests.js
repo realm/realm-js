@@ -70,7 +70,7 @@ for (const suiteName in tests) {
                 try {
                     let result = RealmTests.runTest(suiteName, testName);
                     if (result instanceof Promise) {
-                        result.then(done, done.fail.bind(done));
+                        result.then(done).catch(done.fail.bind(done));
                     } else {
                         done();
                     }

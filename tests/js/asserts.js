@@ -253,7 +253,7 @@ function TestFailureError(message, depth) {
 
     // This regular expression will match stack trace lines provided by JavaScriptCore.
     // Example: someMethod@file:///path/to/file.js:10:24
-    const regex = /^(?:.*?@)?([^\[\(].+?):(\d+)(?::(\d+))?\s*$/;
+    const regex = /^(?:.*?@)?([^[(].+?):(\d+)(?::(\d+))?\s*$/;
 
     // Remove the top two stack frames and use information from the third, if possible.
     const stack = error.stack && error.stack.split('\n');

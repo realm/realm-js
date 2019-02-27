@@ -7,10 +7,15 @@ x.x.x Release notes (yyyy-MM-dd)
   changed, while `Realm.create(type, properties, 'never')` is equal to `Realm.create(type, properties, false)` and
   `Realm.create(type, properties, 'all')` is equal to `Realm.create(type, properties, false)`. 
   `Realm.create(type, properties, update)` is now deprecated. ([#2089](https://github.com/realm/realm-js/issues/2089))
+* Added a `_updateSchema` method on an Realm instance to perform schema manipulation. Specifically creating an object schema and a property on an existing object schema. (partly solving [#2216](https://github.com/realm/realm-js/issues/2216))
+* Add support for react-native 0.58 ([#2239](https://github.com/realm/realm-js/issues/2239)).
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None.
+* Fixed an assertion failure after creating an object with a null int primary key in a synchronized Realm. ([#3227](https://github.com/realm/realm-core/pull/3227))
+* When debugging with React Native, calling `Realm.open()` would crash since `Realm._asyncOpen()` was not available in the debugger. ([#2234](https://github.com/realm/realm-js/pull/2234), since v2.20.0)
+* Added several missing functions to the Chrome debugging support library. ([#2242](https://github.com/realm/realm-js/pull/2242), since v2.2.19).
+* Fixed incorrect results when reading data from Realm from within a callback function when debugging in Chrome. ([#2242](https://github.com/realm/realm-js/pull/2242)).
+* Report the correct user agent to the sync server rather than always "RealmJS/Unknown". ([#2242](https://github.com/realm/realm-js/pull/2242), since v2.23.0).
 
 ### Compatibility
 * Realm Object Server: 3.11.0 or later.
@@ -18,7 +23,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
 ### Internal
-* None.
+* Added integration tests running in various environments (Node.js on MacOS and Linux, React Native on iOS and Android & Electron main and renderer processes on Linux). Existing tests should eventually be migrated to this to ensure they pass in all relevant environments. ([#2227](https://github.com/realm/realm-js/pull/2227)).
 
 2.23.0 Release notes (2019-2-1)
 =============================================================
@@ -32,6 +37,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * Realm initialized the filesystem when being imported instead of waiting for the first Realm to be opened. ([#2218] (https://github.com/realm/realm-js/issues/2218), since v2.22.0)
 * Sync sessions for Realms which were closed while the session was paused would sometimes not be cleaned up correctly. ([realm/realm-object-store#766](https://github.com/realm/realm-object-store/pull/766), since v2.16.0)
 * Querying Realm instances obtained from `Realm.Sync.Adapter` would sometimes pin the read transaction version, resulting in the file rapidly growing in size as further transactions were processed. ([realm/realm-object-store#766](https://github.com/realm/realm-object-store/pull/766), since v2.0.2)
+* Realm initialized the filesystem when being imported instead of waiting for the first Realm to be opened. ([#2218] (https://github.com/realm/realm-js/issues/2218), since v2.22.0).
 
 ### Compatibility
 * Realm Object Server: 3.11.0 or later.
@@ -40,8 +46,8 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Internal
 * Upgraded to Object Store commit: 0f2f8347cb32afddef1753a018f70f65972a4679
-* Upgraded to Realm Core v5.13.0.
-* Upgraded to Realm Sync v3.14.14.
+* Upgraded to Realm Core v5.14.0.
+* Upgraded to Realm Sync v3.15.0.
 * Stopped including headers from developers JDK when building the Android native module. ([#2223](https://github.com/realm/realm-js/pull/2223))
 
 2.22.0 Release notes (2019-1-10)

@@ -83,7 +83,6 @@ export default class TodoItemsView extends React.Component {
     }
 
     renderRow(item, sectionIndex, rowIndex) {
-        let RowClass;
         let editing = false;
 
         return (

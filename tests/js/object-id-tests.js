@@ -50,7 +50,7 @@ module.exports = {
 
         const credentials = Realm.Sync.Credentials.anonymous();
         return Realm.Sync.User.login('http://localhost:9080', credentials).then(user => {
-            const config = user.createConfiguration({ sync: { url: 'realm://localhost:9080/~/myrealm' },
+            const config = user.createConfiguration({ sync: { url: 'realm://localhost:9080/~/myrealm', fullSynchronization: true },
                              schema: [{ name: 'IntegerPrimaryKey', properties: { int: 'int?' }, primaryKey: 'int' },
                                       { name: 'StringPrimaryKey', properties: { string: 'string?' }, primaryKey: 'string' },
                                       { name: 'NoPrimaryKey', properties: { string: 'string' }},
