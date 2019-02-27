@@ -7,6 +7,10 @@ const username = process.argv[2];
 const realmName = process.argv[3];
 const realmModule = process.argv[4];
 
+// Ensure node-pre-gyp uses the correct binary
+if (process.env.REALM_ELECTRON_VERSION) {
+    process.versions.electron = process.env.REALM_ELECTRON_VERSION;
+}
 const Realm = require(realmModule);
 
 function createObjects(user) {

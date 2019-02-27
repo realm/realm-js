@@ -1,0 +1,34 @@
+{
+  "name": "realm-react-native-tests",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "test": "npm run test/android && npm run test/ios",
+    "test/android": "node harness/runner.js android",
+    "test/ios": "node harness/runner.js ios",
+    "preinstall": "npm pack ../../tests && test -f realm-integration-tests-0.1.0.tgz && test -f ../../realm-*.tgz",
+    "install": "npm install realm-integration-tests-0.1.0.tgz ../../realm-*.tgz --build-from-source=realm --no-save"
+  },
+  "peerDependencies": {
+    "realm": "*",
+    "realm-integration-tests": "*"
+  },
+  "dependencies": {
+    "command-line-args": "^4.0.6",
+    "decompress": "^4.2.0",
+    "https-proxy-agent": "^2.2.1",
+    "mocha": "^5.2.0",
+    "mocha-junit-reporter": "^1.18.0",
+    "mocha-remote-client": "^0.9.1",
+    "path-browserify": "^1.0.0",
+    "react": "16.4.1",
+    "react-native": "0.56.0",
+    "react-native-fs": "^2.13.3"
+  },
+  "devDependencies": {
+    "babel-preset-react-native": "^5",
+    "fs-extra": "^4.0.3",
+    "mocha-remote-server": "^0.9.1",
+    "react-test-renderer": "16.4.1"
+  }
+}

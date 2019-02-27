@@ -1,0 +1,16 @@
+[
+  {
+    "name": "Person",
+    "properties": {
+      "name": "string",
+      "age": "int"
+    }
+  }, {
+    "name": "Dog",
+    "properties": {
+      "name": "string",
+      "age": "int",
+      "owner": "Person"
+    }
+  }
+]

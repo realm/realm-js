@@ -23,26 +23,17 @@ import React from 'react';
 import {
     Platform,
     StatusBar,
-    Text,
-    TouchableOpacity,
-    View,
 } from 'react-native';
 
-import TodoItem from './todo-item';
 import TodoListView from './todo-listview';
-import TodoListItem from './todo-list-item';
 import ItemsScreen from './items-screen'
 import realm from './realm';
-import styles from './styles';
 
 import { StackNavigator } from 'react-navigation';
-import RNExitApp from 'react-native-exit-app-no-history';
-
-const params = require("./params.json");
 
 class HomeScreen extends React.Component {
     static navigationOptions = {
-        title: 'Todo Lists',
+        title: 'My Todo Lists',
     };
 
     constructor(props) {
@@ -57,10 +48,6 @@ class HomeScreen extends React.Component {
         }
         this.todoLists.addListener((name, changes) => {
             console.log("changed: " + JSON.stringify(changes));
-            if (params) {
-                console.error("params.json indicates a test run. Exiting application");
-                RNExitApp.exitApp();
-            }
         });
         console.log("registered listener");
 

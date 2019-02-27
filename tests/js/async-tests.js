@@ -25,6 +25,8 @@ const TestCase = require('./asserts');
 const schemas = require('./schemas');
 const Worker = require('./worker');
 
+const isElectron = typeof process === 'object' && process.type === 'renderer';
+
 function createNotificationTest(config, getObservable, addListener, removeListener, messages, expectedCount) {
     return new Promise((resolve, reject) => {
         let realm = new Realm(config);

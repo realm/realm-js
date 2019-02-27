@@ -1,0 +1,2 @@
+// This is a dummy base configuration file so that Xcode doesn't decide to
+// inherit from the parent ReactTests project when building in a workspace

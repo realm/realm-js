@@ -21,6 +21,11 @@
 
 'use strict';
 
+// Ensure node-pre-gyp uses the correct binary
+if (process.env.REALM_ELECTRON_VERSION) {
+    process.versions.electron = process.env.REALM_ELECTRON_VERSION;
+}
+
 const Realm = require(process.argv[2]);
 
 process.on('message', (message) => {

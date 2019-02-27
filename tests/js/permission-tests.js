@@ -73,29 +73,11 @@ function subscribe(results) {
 }
 
 function waitForUpload(realm) {
-    let session = realm.syncSession;
-    return new Promise(resolve => {
-        let callback = (transferred, total) => {
-            if (transferred === total) {
-                session.removeProgressNotification(callback);
-                resolve(realm);
-            }
-        };
-        session.addProgressNotification('upload', 'forCurrentlyOutstandingWork', callback);
-    });
+    return realm.syncSession.uploadAllLocalChanges().then(() => realm);
 }
 
 function waitForDownload(realm) {
-    let session = realm.syncSession;
-    return new Promise(resolve => {
-        let callback = (transferred, total) => {
-            if (transferred === total) {
-                session.removeProgressNotification(callback);
-                resolve(realm);
-            }
-        };
-        session.addProgressNotification('download', 'forCurrentlyOutstandingWork', callback);
-    });
+    return realm.syncSession.downloadAllServerChanges().then(() => realm);
 }
 
 function permissionForPath(permissions, path) {
@@ -332,42 +314,46 @@ module.exports = {
 
                 let rooms = realm.objects(PrivateChatRoomSchema.name);
                 let subscription = rooms.subscribe();
-                subscription.addListener((sub, state) => {
-                    if (state === Realm.Sync.SubscriptionState.Complete) {
-                        let roles = realm.objects(Realm.Permissions.Role).filtered(`name = '__User:${user.identity}'`);
-                        TestCase.assertEqual(roles.length, 1);
-
-                        realm.write(() => {
-                            const permission = realm.create(Realm.Permissions.Permission,
-                                { canUpdate: true, canRead: true, canQuery: true, role: roles[0] });
-
-                            let room = realm.create(PrivateChatRoomSchema.name, { name: `#sales_${uuid()}` });
-                            room.permissions.push(permission);
-                        });
-
-                        waitForUpload(realm).then(() => {
-                            realm.close();
-                            Realm.deleteFile(config);
-                            // connecting with an empty schema should be possible, permission is added implicitly
-                            return Realm.open(user.createConfiguration());
-                        })
-                        .then(waitForUpload)
-                        .then(waitForDownload)
-                        .then((realm) => {
-                            let permissions = realm.objects(Realm.Permissions.Permission).filtered(`role.name = '__User:${user.identity}'`);
-                            TestCase.assertEqual(permissions.length, 1);
-                            TestCase.assertTrue(permissions[0].canRead);
-                            TestCase.assertTrue(permissions[0].canQuery);
-                            TestCase.assertTrue(permissions[0].canUpdate);
-                            TestCase.assertFalse(permissions[0].canDelete);
-                            TestCase.assertFalse(permissions[0].canSetPermissions);
-                            TestCase.assertFalse(permissions[0].canCreate);
-                            TestCase.assertFalse(permissions[0].canModifySchema);
-                            realm.close();
-                            resolve();
-                        });
+                const callback = (sub, state) => {
+                    if (state !== Realm.Sync.SubscriptionState.Complete) {
+                        return;
                     }
-                });
+                    sub.removeListener(callback);
+
+                    let roles = realm.objects(Realm.Permissions.Role).filtered(`name = '__User:${user.identity}'`);
+                    TestCase.assertEqual(roles.length, 1);
+
+                    realm.write(() => {
+                        const permission = realm.create(Realm.Permissions.Permission,
+                            { canUpdate: true, canRead: true, canQuery: true, role: roles[0] });
+
+                        let room = realm.create(PrivateChatRoomSchema.name, { name: `#sales_${uuid()}` });
+                        room.permissions.push(permission);
+                    });
+
+                    waitForUpload(realm).then(() => {
+                        realm.close();
+                        Realm.deleteFile(config);
+                        // connecting with an empty schema should be possible, permission is added implicitly
+                        return Realm.open(user.createConfiguration());
+                    })
+                    .then(waitForUpload)
+                    .then(waitForDownload)
+                    .then((realm) => {
+                        let permissions = realm.objects(Realm.Permissions.Permission).filtered(`role.name = '__User:${user.identity}'`);
+                        TestCase.assertEqual(permissions.length, 1);
+                        TestCase.assertTrue(permissions[0].canRead);
+                        TestCase.assertTrue(permissions[0].canQuery);
+                        TestCase.assertTrue(permissions[0].canUpdate);
+                        TestCase.assertFalse(permissions[0].canDelete);
+                        TestCase.assertFalse(permissions[0].canSetPermissions);
+                        TestCase.assertFalse(permissions[0].canCreate);
+                        TestCase.assertFalse(permissions[0].canModifySchema);
+                        realm.close();
+                        resolve();
+                    }).catch(error => reject(error));
+                };
+                subscription.addListener(callback);
             }).catch(error => reject(error));
         });
     },

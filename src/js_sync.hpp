@@ -50,8 +50,12 @@ inline realm::SyncManager& syncManagerShared(typename T::Context &ctx) {
     static std::once_flag flag;
     std::call_once(flag, [ctx] {
         auto realm_constructor = js::Value<T>::validated_to_object(ctx, js::Object<T>::get_global(ctx, "Realm"));
-        auto result = js::Object<T>::call_method(ctx, realm_constructor, "_createUserAgentDescription", 0, nullptr);
-        std::string user_agent_binding_info = js::Value<T>::validated_to_string(ctx, result);
+        std::string user_agent_binding_info;
+        auto user_agent_function = js::Object<T>::get_property(ctx, realm_constructor, "_createUserAgentDescription");
+        if (js::Value<T>::is_function(ctx, user_agent_function)) {
+            auto result = js::Function<T>::call(ctx, js::Value<T>::to_function(ctx, user_agent_function), realm_constructor, 0, nullptr);
+            user_agent_binding_info = js::Value<T>::validated_to_string(ctx, result);
+        }
         ensure_directory_exists_for_file(default_realm_file_directory());
         SyncManager::shared().configure(default_realm_file_directory(), SyncManager::MetadataMode::NoEncryption, user_agent_binding_info);
     });
@@ -715,7 +719,7 @@ void SessionClass<T>::wait_for_completion(Direction direction, ContextType ctx, 
                 Object::set_property(protected_ctx, error_object, "errorCode", Value::from_number(protected_ctx, error.value()));
                 callback_arguments[0] = error_object;
             } else {
-                callback_arguments[0] = Value::from_undefined(ctx);
+                callback_arguments[0] = Value::from_undefined(protected_ctx);
             }
             Function<T>::callback(protected_ctx, protected_callback, typename T::Object(), 1, callback_arguments);
         });
