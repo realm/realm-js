@@ -1,7 +1,7 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
-* Add the method `Realm._updateSchema` to perform schema manipulation. Specifically creating an object schema and a property on an existing object schema. (partly solving [#2216](https://github.com/realm/realm-js/issues/2216))
+* Add the method `realm._updateSchema` to perform schema manipulation on an open Realm. Specifically creating an object schema and a property on an existing object schema are tested. It's undocumented as it's not fully tested and the API is subject to change. (partly solving [#2216](https://github.com/realm/realm-js/issues/2216))
 * Add support for React Native v0.58. ([#2239](https://github.com/realm/realm-js/issues/2239))
 
 ### Fixed
