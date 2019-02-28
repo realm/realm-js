@@ -4,8 +4,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * None.
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None.
+* Add `Realm.Sync.setSyncLogger()` to TypeScript definitions and API documentation. ([#2125](https://github.com/realm/realm-js/issues/2125) and [realm-js-private#517](https://github.com/realm/realm-js-private/issues/517), since v2.0.0)
 
 ### Compatibility
 * Realm Object Server: 3.11.0 or later.

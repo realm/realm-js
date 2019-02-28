@@ -220,6 +220,13 @@ class Sync {
     static setLogLevel(log_level) {}
 
     /**
+     * Capture the sync log.
+     * @param {Realm.Sync~LogLevel} log_level - The log level.
+     * @param {string} message - The log message.
+     */
+    static setSyncLogger(log_level, message) {}
+
+    /**
      * Set the application part of the User-Agent string that will be sent to the Realm Object Server when a session
      * is created.
      *
