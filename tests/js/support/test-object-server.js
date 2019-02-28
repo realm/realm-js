@@ -220,7 +220,7 @@ global.TestObjectServer = module.exports = class TestObjectServer extends EventE
 
 function signAdminToken(key, token) {
     const tokenStr = JSON.stringify(token);
-    const signature = key.sign(new Buffer(tokenStr), 'base64', 'base64');
-    const tokenB64 = new Buffer(tokenStr).toString('base64');
+    const signature = key.sign(Buffer.from(tokenStr), 'base64', 'base64');
+    const tokenB64 = Buffer.from(tokenStr).toString('base64');
     return `${tokenB64}:${signature}`;
 }
