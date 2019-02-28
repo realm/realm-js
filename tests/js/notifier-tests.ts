@@ -742,6 +742,7 @@ describe('Multi-process Notifier', () => {
     });
 
     afterEach(async function() {
+        await worker.stop();
         await Realm.Sync.removeAllListeners();
         if (rosController) {
             await rosController.shutdown();
