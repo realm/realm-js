@@ -472,9 +472,20 @@ describe('Notifier', () => {
         });
     }
 
+    function config(options = {}) {
+        return {
+            serverUrl: `realm://127.0.0.1:${rosController.httpPort}`,
+            adminUser: rosController.adminUser,
+            filterRegex: '.*',
+            sslConfiguration: {
+                validate: false
+            },
+            ...options
+        };
+    }
+
     it('should support async change callbacks', async () => {
-        await Realm.Sync.addListener({serverUrl: `realm://127.0.0.1:${rosController.httpPort}`,
-            adminUser: rosController.adminUser, filterRegex: '.*', sslConfiguration: { validate: false }}, 'change', enqueuePendingChange);
+        await Realm.Sync.addListener(config(), 'change', enqueuePendingChange);
 
         const [realm1, realm2] = await Promise.all([
             rosController.createRealm('demo/test1', userRealmSchema),
@@ -521,8 +532,7 @@ describe('Notifier', () => {
     });
 
     it('should properly handle many realms changing at once', async () => {
-        await Realm.Sync.addListener({serverUrl: `realm://127.0.0.1:${rosController.httpPort}`,
-            adminUser: rosController.adminUser, filterRegex: '.*'}, 'change', enqueuePendingChange);
+        await Realm.Sync.addListener(config(), 'change', enqueuePendingChange);
 
         // Make writes on 10 Realms at once without giving it the chance to
         // deliver notifications between them
@@ -546,8 +556,7 @@ describe('Notifier', () => {
 
     xit('should correctly handle realms which are deleted and then re-created', async() => {
         let realm = await rosController.createRealm('demo/test', userRealmSchema);
-        await Realm.Sync.addListener({serverUrl: `realm://127.0.0.1:${rosController.httpPort}`,
-            adminUser: rosController.adminUser, filterRegex: '.*'}, 'change', enqueuePendingChange);
+        await Realm.Sync.addListener(config(), 'change', enqueuePendingChange);
 
         realm.write(() => realm.create('IntObject', [1]));
 
@@ -583,8 +592,7 @@ describe('Notifier', () => {
 
     it('should notify for watched Realms being deleted', async() => {
         const realm = await rosController.createRealm('demo/test', userRealmSchema);
-        await Realm.Sync.addListener({serverUrl: `realm://127.0.0.1:${rosController.httpPort}`,
-            adminUser: rosController.adminUser, filterRegex: '.*'}, 'delete', enqueuePendingChange);
+        await Realm.Sync.addListener(config(), 'delete', enqueuePendingChange);
 
         await rosController.deleteRealm('/demo/test');
 
@@ -601,8 +609,7 @@ describe('Notifier', () => {
             rosController.createRealm('demo/test1', userRealmSchema),
             rosController.createRealm('demo/test2', userRealmSchema),
         ]);
-        await Realm.Sync.addListener({serverUrl: `realm://127.0.0.1:${rosController.httpPort}`,
-            adminUser: rosController.adminUser, filterRegex: '/demo/test2'}, 'delete', enqueuePendingChange);
+        await Realm.Sync.addListener(config({filterRegex: '/demo/test2'}), 'delete', enqueuePendingChange);
 
         await rosController.deleteRealm('/demo/test1');
         await rosController.deleteRealm('/demo/test2');
@@ -621,8 +628,7 @@ describe('Notifier', () => {
             rosController.createRealm('demo/test2', userRealmSchema),
             rosController.createRealm('demo/test3', userRealmSchema),
         ]);
-        await Realm.Sync.addListener({serverUrl: `realm://127.0.0.1:${rosController.httpPort}`,
-            adminUser: rosController.adminUser, filterRegex: '.*'}, 'delete', enqueuePendingChange);
+        await Realm.Sync.addListener(config(), 'delete', enqueuePendingChange);
 
         await rosController.deleteRealm('/demo/test1');
 
@@ -640,10 +646,8 @@ describe('Notifier', () => {
             rosController.createRealm('demo/test2', userRealmSchema),
         ]);
 
-        await Realm.Sync.addListener({serverUrl: `realm://127.0.0.1:${rosController.httpPort}`,
-            adminUser: rosController.adminUser, filterRegex: '.*'}, 'change', enqueuePendingChange);
-        await Realm.Sync.addListener({serverUrl: `realm://127.0.0.1:${rosController.httpPort}`,
-            adminUser: rosController.adminUser, filterRegex: '.*'}, 'delete', enqueuePendingChange);
+        await Realm.Sync.addListener(config(), 'change', enqueuePendingChange);
+        await Realm.Sync.addListener(config(), 'delete', enqueuePendingChange);
 
         realm1.write(() => realm1.create('IntObject', [0]));
         const [change1, resolve1] = await nextPendingChange();
@@ -690,8 +694,7 @@ describe('Notifier', () => {
         const path = `${root}/realms${realmFile.path}/${realmFile._objectId()}.realm`;
         expect(fs.existsSync(path)).toBeTruthy();
 
-        await Realm.Sync.addListener({serverUrl: `realm://127.0.0.1:${rosController.httpPort}`,
-            adminUser: rosController.adminUser, filterRegex: '.*'}, 'delete', enqueuePendingChange);
+        await Realm.Sync.addListener(config(), 'delete', enqueuePendingChange);
 
         // Local copy should still exist immediately after deleting on the server
         await rosController.deleteRealm('/demo/test');
