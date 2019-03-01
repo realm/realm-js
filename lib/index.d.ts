@@ -568,6 +568,7 @@ declare namespace Realm.Sync {
     function setLogLevel(logLevel: 'all' | 'trace' | 'debug' | 'detail' | 'info' | 'warn' | 'error' | 'fatal' | 'off'): void;
     function setUserAgent(userAgent: string): void;
     function initiateClientReset(path: string): void;
+    function hasExistingSessions(): boolean;
     function reconnect(): void;
 
     /**

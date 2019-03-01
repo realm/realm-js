@@ -1431,5 +1431,45 @@ module.exports = {
                     resolve();
                 });
         });
+    },
+
+    testHasExistingSessions() {
+        if(!isNodeProccess) {
+            return;
+        }
+
+        TestCase.assertFalse(Realm.Sync.hasExistingSessions());
+
+        const AUTH_URL = 'http://localhost:9080';
+        const REALM_URL = 'realm://localhost:9080/~/active_sessions';
+        return new Promise((resolve, reject) => {
+            Realm.Sync.User.login(AUTH_URL, Realm.Sync.Credentials.nickname("admin", true))
+                .then((admin1) => {
+                    const admin1Config = admin1.createConfiguration({
+                        sync: {
+                            url: REALM_URL,
+                            fullSynchronization: true
+                        }
+                    });
+                    let realm = new Realm(admin1Config);
+                    realm.close();
+
+                    // Wait for the session to finish
+                    let intervalId;
+                    let it = 50;
+                    intervalId = setInterval(function() {
+                        if ((!Realm.Sync.hasExistingSessions())) {
+                            clearInterval(intervalId);
+                            resolve();
+                        } else if (it < 0) {
+                            clearInterval(intervalId);
+                            reject("Failed to cleanup session in time");
+                        } else {
+                            it--;
+                        }
+                    }, 100);
+
+                });
+        });
     }
 };

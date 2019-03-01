@@ -1,7 +1,7 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
-* None.
+* Added `Realm.Sync.hasExistingSessions()` which returns `true` if Realm has a reference to any sync session regardless of their state. ([#2248](https://github.com/realm/realm-js/issues/2248))
 
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)

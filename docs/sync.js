@@ -246,6 +246,12 @@ class Sync {
      * }
      */
     static initiateClientReset(path) {}
+
+    /**
+     * Returns `true` if Realm still has a references to any sync sessions regardless of their state.
+     * If `false` is returned it means that no sessions currently exists.
+     */
+    static hasExistingSessions() {}
 }
 
 /**
