@@ -920,6 +920,7 @@ public:
     static void set_sync_user_agent(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void initiate_client_reset(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void reconnect(ContextType, ObjectType, Arguments &, ReturnValue &);
+    static void has_existing_sessions(ContextType, ObjectType, Arguments &, ReturnValue &);
 
     // private
     static std::function<SyncBindSessionHandler> session_bind_callback(ContextType ctx, ObjectType sync_constructor);
@@ -930,6 +931,7 @@ public:
     static void get_is_developer_edition(ContextType, ObjectType, ReturnValue &);
 
     MethodMap<T> const static_methods = {
+        {"hasExistingSessions", {wrap<has_existing_sessions>}},
         {"setLogLevel", wrap<set_sync_log_level>},
         {"setUserAgent", wrap<set_sync_user_agent>},
         {"initiateClientReset", wrap<initiate_client_reset>},
@@ -1186,6 +1188,11 @@ void SyncClass<T>::populate_sync_config_for_ssl(ContextType ctx, ObjectType conf
     if (Value::is_function(ctx, validate_callback)) {
         config.ssl_verify_callback = SSLVerifyCallbackSyncThreadFunctor<T> { ctx, Value::to_function(ctx, validate_callback) };
     }
+}
+
+template<typename T>
+void SyncClass<T>::has_existing_sessions(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
+    return_value.set(SyncManager::shared().has_existing_sessions());
 }
 
 } // js

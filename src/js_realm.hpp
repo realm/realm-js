@@ -240,7 +240,6 @@ public:
     static void privileges(ContextType, ObjectType, Arguments &, ReturnValue&);
     static void get_schema_name_from_object(ContextType, ObjectType, Arguments &, ReturnValue&);
     static void update_schema(ContextType, ObjectType, Arguments &, ReturnValue&);
-    static void has_existing_sessions(ContextType, ObjectType, Arguments &, ReturnValue &);
 
 #if REALM_ENABLE_SYNC
     static void async_open_realm(ContextType, ObjectType, Arguments &, ReturnValue&);
@@ -313,7 +312,6 @@ public:
         {"writeCopyTo", wrap<writeCopyTo>},
         {"deleteModel", wrap<delete_model>},
         {"privileges", wrap<privileges>},
-        {"hasExistingSessions", {wrap<has_existing_sessions>}},
         {"_updateSchema", wrap<update_schema>},
         {"_objectForObjectId", wrap<object_for_object_id>},
         {"_schemaName", wrap<get_schema_name_from_object>},
@@ -845,10 +843,6 @@ void RealmClass<T>::get_is_partial_realm(ContextType ctx, ObjectType object, Ret
     return_value.set(config.sync_config && config.sync_config->is_partial);
 }
 
-template<typename T>
-void RealmClass<T>::has_existing_sessions(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
-    return_value.set(SyncManager::shared().has_existing_sessions());
-}
 #endif
 
 #if REALM_ENABLE_SYNC
