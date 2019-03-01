@@ -1,19 +1,19 @@
 "use strict";
 export {};
 
+const Realm = require('../..');
 const RosController = require('./support/ros-controller');
 const TestObjectServer = require('./support/test-object-server');
 const fs = require("fs");
-const path = require("path");
 const os = require('os');
-const Realm = require('../..');
-const tmp = require('tmp');
-const notificationNotReceivedTimeout = 20000;
-const notificationFilterPattern = '^(?!.*\/__).*'
+const path = require("path");
 const spawn = require("child_process").spawn;
+const tmp = require('tmp');
+
+const notificationNotReceivedTimeout = 20000;
 
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 20000;
-const useTestServer = true; // process.env.REALM_NODEJS_FORCE_TEST_SERVER || os.platform() != 'darwin';
+const useTestServer = false; // process.env.REALM_NODEJS_FORCE_TEST_SERVER || os.platform() != 'darwin';
 
 const allTypesRealmSchema = [
     {
@@ -119,6 +119,15 @@ require('jasmine-co').install();
 
 let tmpDir;
 
+const realmNamePrefix = path.basename(tmp.dirSync().name);
+let currentTestName: String;
+jasmine.getEnv().addReporter({
+    specStarted: (result) => {
+        currentTestName = result.fullName.replace(/ /g, '_').replace('Adapter', realmNamePrefix);
+    }
+});
+Realm.Sync.setLogLevel('error');
+
 describe('Adapter', () => {
     beforeEach(async () => {
         Realm.clearTestState();
@@ -130,6 +139,7 @@ describe('Adapter', () => {
             rosController = new RosController();
         }
 
+        rosController.setRealmPathPrefix(currentTestName);
         return rosController.start();
     });
 
@@ -142,9 +152,9 @@ describe('Adapter', () => {
         tmpDir.removeCallback();
     });
 
-    function createAdapter(regex, ros) {
+    function createAdapter(ros) {
         adapter = new Realm.Sync.Adapter(tmpDir.name, `realm://localhost:${rosController.httpPort}`,
-            ros.adminUser, '.*test.*', (path: String) => {
+            ros.adminUser, `.*${currentTestName}.*`, (path: String) => {
                 var promise = nextChangePromise;
                 nextChangePromise = undefined;
 
@@ -182,17 +192,17 @@ describe('Adapter', () => {
     }
 
     // Execute `action`, then wait for the adatper's callback to fire.
-    // The path provided by the adapter callback is checked against `regex`.
+    // The path provided by the adapter callback is checked against `expectedPath`.
     // Resolves to the path the adapter provides to the callback.
-    function notificationPromise(ros, regex, action): Promise<String> {
+    function notificationPromise(ros, expectedPath, action): Promise<String> {
         return realmStatusPromise(ros, action, (path) => {
-            expect(path).toMatch(regex);
+            expect(path).toEqual(`/${currentTestName}/${expectedPath}`);
         });
     }
 
     // FIXME: This name doesn't seem to describe what the function does / returns.
-    async function advancePromise(ros, regex, objects, adapter, realm, action) {
-        let path = await notificationPromise(ros, regex, action);
+    async function advancePromise(ros, expectedPath, objects, adapter, realm, action) {
+        let path = await notificationPromise(ros, expectedPath, action);
         applyInstructions(objects, adapter.current(path), realm.schema);
         compareObjects(objects, realm);
         adapter.advance(path);
@@ -304,11 +314,11 @@ describe('Adapter', () => {
 
     it("test new realm", async () => {
         try {
-            createAdapter('demo/test1', rosController);
+            createAdapter(rosController);
 
             let realm;
-            let path = await notificationPromise(rosController, 'demo/test1', () => {
-                realm = rosController.createRealm('demo/test1', allTypesRealmSchema);
+            let path = await notificationPromise(rosController, 'test1', () => {
+                realm = rosController.createRealm('test1', allTypesRealmSchema);
             });
             realm = await realm;
 
@@ -319,7 +329,7 @@ describe('Adapter', () => {
             expect(adapter.advance(path)).toBeUndefined();
             expect(adapter.current(path)).toBeUndefined();
 
-            path = await notificationPromise(rosController, 'demo/test1', () => {
+            path = await notificationPromise(rosController, 'test1', () => {
                 realm.write(() => realm.create('TestObject', [1]));
                 realm.close();
             });
@@ -334,11 +344,11 @@ describe('Adapter', () => {
 
     it("test existing realm", async () => {
         try {
-            let realm = await rosController.createRealm('demo/test1', allTypesRealmSchema);
-            await notificationPromise(rosController, 'demo/test1', () => {
-                createAdapter('demo/test1', rosController);
+            let realm = await rosController.createRealm('test1', allTypesRealmSchema);
+            await notificationPromise(rosController, 'test1', () => {
+                createAdapter(rosController);
             });
-            let path = await notificationPromise(rosController, 'demo/test1', () => {
+            let path = await notificationPromise(rosController, 'test1', () => {
                 realm.write(() => realm.create('TestObject', [0]))
                 realm.close();
             });
@@ -354,9 +364,9 @@ describe('Adapter', () => {
     });
 
     it("test schema", async () => {
-        (await rosController.createRealm('demo/test1', allTypesRealmSchema)).close();
-        const path = await notificationPromise(rosController, 'demo/test1', () => {
-            createAdapter('demo/test1', rosController)
+        (await rosController.createRealm('test1', allTypesRealmSchema)).close();
+        const path = await notificationPromise(rosController, 'test1', () => {
+            createAdapter(rosController)
         });
 
         const instructions = adapter.current(path);
@@ -401,11 +411,11 @@ describe('Adapter', () => {
     });
 
     it("test all data types", async () => {
-        let realm = await rosController.createRealm('demo/test1', allTypesRealmSchema);
-        await notificationPromise(rosController, 'demo/test1', () => {
-            createAdapter('demo/test1', rosController)
+        let realm = await rosController.createRealm('test1', allTypesRealmSchema);
+        await notificationPromise(rosController, 'test1', () => {
+            createAdapter(rosController)
         });
-        var path = await notificationPromise(rosController, 'demo/test1', () => {
+        var path = await notificationPromise(rosController, 'test1', () => {
             realm.write(() => realm.create('TestObject', [2]));
         });
 
@@ -418,7 +428,7 @@ describe('Adapter', () => {
         expect(adapter.advance(path)).toBeUndefined();
         expect(adapter.current(path)).toBeUndefined();
 
-        path = await notificationPromise(rosController, 'demo/test1', () => {
+        path = await notificationPromise(rosController, 'test1', () => {
             realm.write(() => realm.create('AllTypesObject',
                 ['1.11', true, 0x7FFFFFFFFFFFFFFF, 11111.11111, 11.11, '2', new Date(2),
                     RANDOM_DATA, [3.33], [[4.44]]]))
@@ -432,11 +442,11 @@ describe('Adapter', () => {
     it("test date type", async () => {
         let testDates = ['1969-07-20 20:18:04+00', '2017-12-12 15:00:37.447+00', '2017-12-07 20:16:03.837+00']
 
-        let realm = await rosController.createRealm('demo/test1', [timestampObjectSchema])
-        await notificationPromise(rosController, 'demo/test1', () => {
-            createAdapter('demo/test1', rosController)
+        let realm = await rosController.createRealm('test1', [timestampObjectSchema])
+        await notificationPromise(rosController, 'test1', () => {
+            createAdapter(rosController)
         })
-        var path = await notificationPromise(rosController, 'demo/test1', () => {
+        var path = await notificationPromise(rosController, 'test1', () => {
             realm.write(() => {
                 for (let i = 0; i < testDates.length; i++) {
                     realm.create('TimestampObject', { intCol: i, dateCol: new Date(testDates[i]) })
@@ -458,17 +468,17 @@ describe('Adapter', () => {
 
     it("test link instructions", async () => {
         var objects = {};
-        let realm = await rosController.createRealm('demo/test1', primaryObjectsSchema);
-        let path = await notificationPromise(rosController, 'demo/test1', () => {
-            createAdapter('demo/test1', rosController);
+        let realm = await rosController.createRealm('test1', primaryObjectsSchema);
+        let path = await notificationPromise(rosController, 'test1', () => {
+            createAdapter(rosController);
         });
 
         adapter.advance(path);
 
-        await advancePromise(rosController, 'demo/test1', objects, adapter, realm, () => {
+        await advancePromise(rosController, 'test1', objects, adapter, realm, () => {
             realm.write(() => realm.create('PrimaryLinksObject', ['1', null, null, null, [], [], []]));
         });
-        await advancePromise(rosController, 'demo/test1', objects, adapter, realm, () => {
+        await advancePromise(rosController, 'test1', objects, adapter, realm, () => {
             realm.write(() => {
                 var object = realm.objects('PrimaryLinksObject')[0];
                 object.stringPrimaryCol = ['1', 'data1'];
@@ -479,7 +489,7 @@ describe('Adapter', () => {
                 object.testObjectList = [object.testObjectCol, [2.2]];
             });
         });
-        await advancePromise(rosController, 'demo/test1', objects, adapter, realm, () => {
+        await advancePromise(rosController, 'test1', objects, adapter, realm, () => {
             realm.write(() => {
                 var object = realm.objects('PrimaryLinksObject')[0];
                 object.stringPrimaryCol = null;
@@ -490,7 +500,7 @@ describe('Adapter', () => {
                 object.testObjectList.splice(0, 1, [3.3], [4.4]);
             });
         });
-        await advancePromise(rosController, 'demo/test1', objects, adapter, realm, () => {
+        await advancePromise(rosController, 'test1', objects, adapter, realm, () => {
             realm.write(() => {
                 var object = realm.objects('PrimaryLinksObject')[0];
                 object.stringPrimaryList[1] = ['5', 'data5'];
@@ -498,7 +508,7 @@ describe('Adapter', () => {
                 object.testObjectList[1] = [5.5];
             });
         });
-        await advancePromise(rosController, 'demo/test1', objects, adapter, realm, () => {
+        await advancePromise(rosController, 'test1', objects, adapter, realm, () => {
             realm.write(() => {
                 var object = realm.objects('PrimaryLinksObject')[0];
                 object.stringPrimaryList = [];
@@ -511,14 +521,14 @@ describe('Adapter', () => {
 
     it("test deletion", async () => {
         var objects = {};
-        let realm = await rosController.createRealm('demo/test1', primaryObjectsSchema);
-        let path = await notificationPromise(rosController, 'demo/test1', () => {
-            createAdapter('demo/test1', rosController);
+        let realm = await rosController.createRealm('test1', primaryObjectsSchema);
+        let path = await notificationPromise(rosController, 'test1', () => {
+            createAdapter(rosController);
         });
 
         adapter.advance(path);
 
-        await advancePromise(rosController, 'demo/test1', objects, adapter, realm, () => {
+        await advancePromise(rosController, 'test1', objects, adapter, realm, () => {
             realm.write(() => realm.create('PrimaryLinksObject',
                 ['0', ['0', 'data0'], [0, 'data0'], [0.1],
                     [['1', 'data1'], ['2', 'data2']],
@@ -526,7 +536,7 @@ describe('Adapter', () => {
                     [[1.1], [2.2]]]))
         });
 
-        await advancePromise(rosController, 'demo/test1', objects, adapter, realm, () => {
+        await advancePromise(rosController, 'test1', objects, adapter, realm, () => {
             realm.write(() => {
                 // delete all existing objects, backlinks should get nullified
                 var object = realm.objects('PrimaryLinksObject')[0];
@@ -538,7 +548,7 @@ describe('Adapter', () => {
                 realm.delete(object.intPrimaryList[0]);
             });
         });
-        await advancePromise(rosController, 'demo/test1', objects, adapter, realm, () => {
+        await advancePromise(rosController, 'test1', objects, adapter, realm, () => {
             realm.write(() => {
                 // insert multiple links to a single object to test backlinks
                 // backlinks for newly created objects should get nullified
@@ -564,7 +574,7 @@ describe('Adapter', () => {
             });
         });
 
-        await advancePromise(rosController, 'demo/test1', objects, adapter, realm, () => {
+        await advancePromise(rosController, 'test1', objects, adapter, realm, () => {
             realm.write(() => {
                 // insert multiple links to a single object to test backlinks
                 // delete in next transaction
@@ -590,7 +600,7 @@ describe('Adapter', () => {
             });
         });
 
-        await advancePromise(rosController, 'demo/test1', objects, adapter, realm, () => {
+        await advancePromise(rosController, 'test1', objects, adapter, realm, () => {
             realm.write(() => {
                 // delete old objects, backlinks should update
                 realm.delete(realm.objects('TestObject'));
@@ -599,7 +609,7 @@ describe('Adapter', () => {
             });
         });
 
-        await advancePromise(rosController, 'demo/test1', objects, adapter, realm, () => {
+        await advancePromise(rosController, 'test1', objects, adapter, realm, () => {
             realm.write(() => {
                 // setup 2 of each object type to test move_last_over in
                 // the next test
@@ -625,7 +635,7 @@ describe('Adapter', () => {
             });
         });
 
-        await advancePromise(rosController, 'demo/test1', objects, adapter, realm, () => {
+        await advancePromise(rosController, 'test1', objects, adapter, realm, () => {
             realm.write(() => {
                 // test move_last_over of existing objects
                 var testObjects = realm.objects('TestObject');
@@ -658,7 +668,7 @@ describe('Adapter', () => {
             });
         });
 
-        await advancePromise(rosController, 'demo/test1', objects, adapter, realm, () => {
+        await advancePromise(rosController, 'test1', objects, adapter, realm, () => {
             realm.write(() => {
                 // test move_last_over replacing existing objects with new object
                 realm.create('TestObject', [4]);
@@ -688,7 +698,7 @@ describe('Adapter', () => {
             });
         });
 
-        await advancePromise(rosController, 'demo/test1', objects, adapter, realm, () => {
+        await advancePromise(rosController, 'test1', objects, adapter, realm, () => {
             realm.write(() => {
                 // test move_last_over replacing new objects with new object
                 realm.create('TestObject', [6]);
@@ -724,7 +734,7 @@ describe('Adapter', () => {
             });
         });
 
-        await advancePromise(rosController, 'demo/test1', objects, adapter, realm, () => {
+        await advancePromise(rosController, 'test1', objects, adapter, realm, () => {
             realm.write(() => {
                 var stringPrimaryCount = realm.objects('StringPrimaryObject').length;
                 var intPrimaryCount = realm.objects('IntPrimaryObject').length;
@@ -770,38 +780,38 @@ describe('Adapter', () => {
 
     it("test schema without primary keys", async () => {
         var objects = {};
-        let realm = await rosController.createRealm('demo/test1', schemaWithoutPrimaryKeys);
-        let path = await notificationPromise(rosController, 'demo/test1', () => {
-            createAdapter('demo/test1', rosController);
+        let realm = await rosController.createRealm('test1', schemaWithoutPrimaryKeys);
+        let path = await notificationPromise(rosController, 'test1', () => {
+            createAdapter(rosController);
         });
 
         adapter.advance(path);
 
-        await advancePromise(rosController, 'demo/test1', objects, adapter, realm, () => {
+        await advancePromise(rosController, 'test1', objects, adapter, realm, () => {
             realm.write(() => realm.create('TestObject', [1, 3.3, "Object 1"]));
         });
 
-        await advancePromise(rosController, 'demo/test1', objects, adapter, realm, () => {
+        await advancePromise(rosController, 'test1', objects, adapter, realm, () => {
             realm.write(() => realm.delete(realm.objects('TestObject')[0]));
         });
 
-        await advancePromise(rosController, 'demo/test1', objects, adapter, realm, () => {
+        await advancePromise(rosController, 'test1', objects, adapter, realm, () => {
             realm.write(() => {
                 let object = realm.create('LinkObject', { link: [2, 6.6, 'Object 2'], list: [[3, 10.0, 'Object 3']] })
                 object.list.push(object.link);
             });
         });
 
-        await advancePromise(rosController, 'demo/test1', objects, adapter, realm, () => {
+        await advancePromise(rosController, 'test1', objects, adapter, realm, () => {
             realm.write(() => realm.delete(realm.objects('TestObject').filtered('intCol == 2')[0]));
         });
         realm.close();
     });
 
     it("should collapse changes made to a single object", async () => {
-        const realm = await rosController.createRealm('demo/test1', [timestampObjectSchema]);
-        const path = await notificationPromise(rosController, 'demo/test1', () => {
-            createAdapter('demo/test1', rosController);
+        const realm = await rosController.createRealm('test1', [timestampObjectSchema]);
+        const path = await notificationPromise(rosController, 'test1', () => {
+            createAdapter(rosController);
         });
         adapter.advance(path); // skip schema init
 
@@ -814,7 +824,7 @@ describe('Adapter', () => {
             dateCol: new Date()
         };
 
-        await notificationPromise(rosController, 'demo/test1', () => {
+        await notificationPromise(rosController, 'test1', () => {
             realm.write(() => {
                 realm.create('TimestampObject', object1);
                 realm.create('TimestampObject', object2);
@@ -840,13 +850,13 @@ describe('Adapter', () => {
     });
 
     it("should not collapse changes made to different objects", async () => {
-        const realm = await rosController.createRealm('demo/test1', schemaWithoutPrimaryKeys);
-        const path = await notificationPromise(rosController, 'demo/test1', () => {
-            createAdapter('demo/test1', rosController);
+        const realm = await rosController.createRealm('test1', schemaWithoutPrimaryKeys);
+        const path = await notificationPromise(rosController, 'test1', () => {
+            createAdapter(rosController);
         });
         adapter.advance(path); // skip schema init
 
-        await notificationPromise(rosController, 'demo/test1', () => {
+        await notificationPromise(rosController, 'test1', () => {
             realm.write(() => {
                 realm.create('TestObject', [1, 2, "3"]);
                 realm.create('TestObject', [4, 5, "6"]);
@@ -854,7 +864,7 @@ describe('Adapter', () => {
         });
         adapter.advance(path); // skip first write
 
-        await notificationPromise(rosController, 'demo/test1', () => {
+        await notificationPromise(rosController, 'test1', () => {
             realm.write(() => {
                 const objects = realm.objects('TestObject');
                 objects[0].intCol = 7;
@@ -898,12 +908,12 @@ describe('Adapter', () => {
         const schema = [
             {name: 'Object1', properties: {prop1: 'int', prop2: 'int'}},
         ];
-        const realm = await rosController.createRealm('demo/test1', schema);
+        const realm = await rosController.createRealm('test1', schema);
         await realm.syncSession.uploadAllLocalChanges();
         realm.close();
 
-        const path = await notificationPromise(rosController, 'demo/test1', () => {
-            createAdapter('demo/test1', rosController);
+        const path = await notificationPromise(rosController, 'test1', () => {
+            createAdapter(rosController);
         });
 
         const expected = [{
@@ -922,19 +932,19 @@ describe('Adapter', () => {
             {name: 'Object1', properties: {prop1: 'int'}},
             {name: 'Object2', properties: {prop2: 'int'}},
         ];
-        (await rosController.createRealm('demo/test1', schema)).close();
+        (await rosController.createRealm('test1', schema)).close();
 
-        const path = await notificationPromise(rosController, 'demo/test1', () => {
-            createAdapter('demo/test1', rosController);
+        const path = await notificationPromise(rosController, 'test1', () => {
+            createAdapter(rosController);
         });
         adapter.advance(path);
 
-        const nextChangePromise = notificationPromise(rosController, 'demo/test1', () => {});
+        const nextChangePromise = notificationPromise(rosController, 'test1', () => {});
         const newSchema = [
             {name: 'Object1', properties: {prop3: 'string?', prop4: 'Object2?'}},
             {name: 'Object2', properties: {prop5: 'bool', prop6: 'double'}},
         ];
-        (await rosController.createRealm('demo/test1', newSchema)).close();
+        (await rosController.createRealm('test1', newSchema)).close();
         await nextChangePromise;
 
         const expected = [
