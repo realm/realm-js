@@ -3,6 +3,8 @@
 const Realm = require('../../..');
 const fs = require('fs');
 const http = require('http');
+const path = require('path');
+const tmp = require('tmp');
 
 function waitForUpload(realm) {
     return realm.syncSession.uploadAllLocalChanges().then(() => { return realm; });
@@ -14,14 +16,26 @@ global.RosController = module.exports = class RosController {
         this.adminToken = JSON.parse(fs.readFileSync('../realm-object-server-data/keys/admin.json', 'utf8'))['ADMIN_TOKEN'];
         this.adminUser = Realm.Sync.User.login(`http://127.0.0.1:${this.httpPort}`,
                                                Realm.Sync.Credentials.adminToken(this.adminToken));
+        this._temp = tmp.dirSync({ unsafeCleanup: true});
     }
 
     start() {
-        return Promise.resolve();
+        return Realm.open({
+            path: path.join(this._temp.name, 'admin.realm'),
+            sync: {
+                user: this.adminUser,
+                url: `realm://127.0.0.1:${this.httpPort}/__admin`
+            }
+        }).then(realm => {
+            this.adminRealm = realm;
+        });
     }
 
     shutdown() {
-        return Promise.resolve();
+        return waitForUpload(this.adminRealm).then(realm => {
+            realm.close();
+            this._temp.removeCallback();
+        });
     }
 
     createRealm(serverPath, schema, localPath) {
