@@ -1,10 +1,9 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
-* None.
+* Add `Realm.Sync.setLogger()` to capture the sync client's log. ([#2125](https://github.com/realm/realm-js/issues/2125) and [realm-js-private#517](https://github.com/realm/realm-js-private/issues/517))
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
 * None.
 
 ### Compatibility

@@ -220,6 +220,12 @@ class Sync {
     static setLogLevel(log_level) {}
 
     /**
+     * Capture the sync client's log.
+     * @param {function(log_level, message)} logCallback - The log callback.
+     */
+    static setLogger(logCallback) {}
+
+    /**
      * Set the application part of the User-Agent string that will be sent to the Realm Object Server when a session
      * is created.
      *
