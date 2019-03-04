@@ -920,6 +920,7 @@ public:
     static void set_sync_user_agent(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void initiate_client_reset(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void reconnect(ContextType, ObjectType, Arguments &, ReturnValue &);
+    static void has_existing_sessions(ContextType, ObjectType, Arguments &, ReturnValue &);
 
     // private
     static std::function<SyncBindSessionHandler> session_bind_callback(ContextType ctx, ObjectType sync_constructor);
@@ -930,6 +931,7 @@ public:
     static void get_is_developer_edition(ContextType, ObjectType, ReturnValue &);
 
     MethodMap<T> const static_methods = {
+        {"_hasExistingSessions", {wrap<has_existing_sessions>}},
         {"setLogLevel", wrap<set_sync_log_level>},
         {"setUserAgent", wrap<set_sync_user_agent>},
         {"initiateClientReset", wrap<initiate_client_reset>},
@@ -991,6 +993,12 @@ template<typename T>
 void SyncClass<T>::reconnect(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_count(0);
     syncManagerShared<T>(ctx).reconnect();
+}
+
+template<typename T>
+void SyncClass<T>::has_existing_sessions(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue & return_value) {
+    args.validate_count(0);
+    return_value.set(syncManagerShared<T>(ctx).has_existing_sessions());
 }
 
 template<typename T>
@@ -1100,6 +1108,22 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
         config.sync_config->error_handler = std::move(error_handler);
         config.sync_config->is_partial = is_partial;
 
+        SyncSessionStopPolicy session_stop_policy = SyncSessionStopPolicy::AfterChangesUploaded;
+        ValueType session_stop_policy_value = Object::get_property(ctx, sync_config_object, "_sessionStopPolicy");
+        if (!Value::is_undefined(ctx, session_stop_policy_value)) {
+            std::string stop_session = Value::validated_to_string(ctx, session_stop_policy_value, "_sessionStopPolicy");
+            if (stop_session == std::string("immediately")) {
+                session_stop_policy = SyncSessionStopPolicy::Immediately;
+            } else if (stop_session == std::string("never")) {
+                session_stop_policy = SyncSessionStopPolicy::LiveIndefinitely;
+            } else if (stop_session == std::string("after-upload")) {
+                session_stop_policy = SyncSessionStopPolicy::AfterChangesUploaded;
+            } else {
+                throw std::invalid_argument("Unknown argument for _sessionStopPolicy: " + stop_session);
+            }
+        }
+        config.sync_config->stop_policy = session_stop_policy;
+
         ValueType custom_partial_sync_identifier_value = Object::get_property(ctx, sync_config_object, "customQueryBasedSyncIdentifier");
         if (!Value::is_undefined(ctx, custom_partial_sync_identifier_value)) {
             config.sync_config->custom_partial_sync_identifier = std::string(Value::validated_to_string(ctx, custom_partial_sync_identifier_value, "customQueryBasedSyncIdentifier"));
@@ -1187,6 +1211,7 @@ void SyncClass<T>::populate_sync_config_for_ssl(ContextType ctx, ObjectType conf
         config.ssl_verify_callback = SSLVerifyCallbackSyncThreadFunctor<T> { ctx, Value::to_function(ctx, validate_callback) };
     }
 }
+
 
 } // js
 } // realm

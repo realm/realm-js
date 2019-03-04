@@ -1431,5 +1431,114 @@ module.exports = {
                     resolve();
                 });
         });
+    },
+
+    test_hasExistingSessions() {
+        if(!isNodeProccess) {
+            return;
+        }
+
+        TestCase.assertFalse(Realm.Sync._hasExistingSessions());
+
+        const AUTH_URL = 'http://localhost:9080';
+        const REALM_URL = 'realm://localhost:9080/~/active_sessions';
+        return new Promise((resolve, reject) => {
+            Realm.Sync.User.login(AUTH_URL, Realm.Sync.Credentials.nickname("admin", true))
+                .then((admin1) => {
+                    const admin1Config = admin1.createConfiguration({
+                        sync: {
+                            url: REALM_URL,
+                            fullSynchronization: true
+                        }
+                    });
+                    let realm = new Realm(admin1Config);
+                    realm.close();
+
+                    // Wait for the session to finish
+                    let intervalId;
+                    let it = 50;
+                    intervalId = setInterval(function() {
+                        if ((!Realm.Sync._hasExistingSessions())) {
+                            clearInterval(intervalId);
+                            resolve();
+                        } else if (it < 0) {
+                            clearInterval(intervalId);
+                            reject("Failed to cleanup session in time");
+                        } else {
+                            it--;
+                        }
+                    }, 100);
+
+                });
+        });
+    },
+
+    testSessionStopPolicy() {
+        if(!isNodeProccess) {
+            return;
+        }
+
+        const AUTH_URL = 'http://localhost:9080';
+        const REALM_URL = 'realm://localhost:9080/~/stop_policy';
+        return new Promise((resolve, reject) => {
+            Realm.Sync.User.login(AUTH_URL, Realm.Sync.Credentials.nickname("admin", true))
+                .then((admin1) => {
+                    // Check valid input
+                    const config1 = admin1.createConfiguration({
+                        sync: {
+                            url: REALM_URL,
+                            fullSynchronization: true,
+                            _sessionStopPolicy: 'after-upload'
+                        }
+                    });
+                    new Realm(config1).close();
+
+                    const config2 = config1;
+                    config2.sync._sessionStopPolicy = 'immediately';
+                    new Realm(config2).close();
+
+                    const config3 = config1;
+                    config3.sync._sessionStopPolicy = 'never';
+                    new Realm(config3).close();
+
+                    // Invalid input
+                    const config4 = config1;
+                    config4.sync._sessionStopPolicy = "foo";
+                    TestCase.assertThrows(() => new Realm(config4));
+                    resolve();
+                });
+        });
+    },
+
+    testSessionStopPolicyImmediately() {
+        if(!isNodeProccess) {
+            return;
+        }
+
+        const AUTH_URL = 'http://localhost:9080';
+        const REALM_URL = 'realm://localhost:9080/~/stop_policy_immediately';
+        return new Promise((resolve, reject) => {
+            Realm.Sync.User.login(AUTH_URL, Realm.Sync.Credentials.nickname("admin", true))
+                .then((admin1) => {
+                    // Check valid input
+                    const config1 = admin1.createConfiguration({
+                        sync: {
+                            url: REALM_URL,
+                            fullSynchronization: true,
+                            _sessionStopPolicy: 'immediately'
+                        }
+                    });
+
+                    {
+                        TestCase.assertFalse(Realm.Sync._hasExistingSessions());
+                        const realm = new Realm(config1);
+                        const session = realm.syncSession;
+                        TestCase.assertTrue(Realm.Sync._hasExistingSessions());
+                        realm.close();
+                    }
+                    TestCase.assertFalse(Realm.Sync._hasExistingSessions());
+                    resolve();
+                });
+        });
     }
 };

@@ -453,6 +453,11 @@ declare namespace Realm.Sync {
 
     type ErrorCallback = (session: Session, error: SyncError) => void;
     type SSLVerifyCallback = (sslVerifyObject: SSLVerifyObject) => boolean;
+    enum SessionStopPolicy {
+        AfterUpload = "after-upload",
+        Immediately = "immediately",
+        Never = "never"
+    }
 
     interface SSLConfiguration {
         validate?: boolean;
@@ -474,6 +479,7 @@ declare namespace Realm.Sync {
         partial?: boolean;
         fullSynchronization?: boolean;
         _disableQueryBasedSyncUrlChecks?:boolean;
+        _sessionStopPolicy?:SessionStopPolicy;
         custom_http_headers?: { [header: string]: string };
         customQueryBasedSyncIdentifier?: string;
     }
@@ -569,6 +575,8 @@ declare namespace Realm.Sync {
         sslConfiguration?: SSLConfiguration;
     }
 
+    type LogLevel = 'all' | 'trace' | 'debug' | 'detail' | 'info' | 'warn' | 'error' | 'fatal' | 'off';
+
     /**
      * @deprecated, to be removed in future versions
      */
@@ -581,9 +589,11 @@ declare namespace Realm.Sync {
     function addListener(config: RealmListenerConfiguration, eventName: RealmListenerEventName, changeCallback: (changeEvent: ChangeEvent) => Promise<void>): void;
     function removeAllListeners(): Promise<void>;
     function removeListener(regex: string, name: string, changeCallback: (changeEvent: ChangeEvent) => void): Promise<void>;
-    function setLogLevel(logLevel: 'all' | 'trace' | 'debug' | 'detail' | 'info' | 'warn' | 'error' | 'fatal' | 'off'): void;
+    function setLogLevel(logLevel: LogLevel): void;
+    function setLogger(callback: (level: LogLevel, message: string) => void): void;
     function setUserAgent(userAgent: string): void;
     function initiateClientReset(path: string): void;
+    function _hasExistingSessions(): boolean;
     function reconnect(): void;
 
     /**

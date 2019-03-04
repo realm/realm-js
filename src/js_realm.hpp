@@ -842,6 +842,7 @@ void RealmClass<T>::get_is_partial_realm(ContextType ctx, ObjectType object, Ret
     auto config = realm->config();
     return_value.set(config.sync_config && config.sync_config->is_partial);
 }
+
 #endif
 
 #if REALM_ENABLE_SYNC
