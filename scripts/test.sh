@@ -69,6 +69,7 @@ stop_server() {
   if [[ ${SERVER_PID} -gt 0 ]] ; then
     echo server is running. killing it
     kill -9 ${SERVER_PID} >/dev/null 2>&1  || true
+    wait ${SERVER_PID} >/dev/null 2>&1 || true # wait may fail if the server exits fast enough
   fi
 }
 

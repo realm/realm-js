@@ -4,7 +4,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * Add `Realm.Sync.setLogger()` to capture the sync client's log. ([#2125](https://github.com/realm/realm-js/issues/2125) and [realm-js-private#517](https://github.com/realm/realm-js-private/issues/517))
 
 ### Fixed
-* None.
+* Fixed broken user auth functions when running in electron. ([#2264](https://github.com/realm/realm-js/pull/2264), since v2.24.0)
 
 ### Compatibility
 * Realm Object Server: 3.11.0 or later.
