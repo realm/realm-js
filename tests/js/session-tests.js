@@ -1433,12 +1433,12 @@ module.exports = {
         });
     },
 
-    testHasExistingSessions() {
+    test_hasExistingSessions() {
         if(!isNodeProccess) {
             return;
         }
 
-        TestCase.assertFalse(Realm.Sync.hasExistingSessions());
+        TestCase.assertFalse(Realm.Sync._hasExistingSessions());
 
         const AUTH_URL = 'http://localhost:9080';
         const REALM_URL = 'realm://localhost:9080/~/active_sessions';
@@ -1458,7 +1458,7 @@ module.exports = {
                     let intervalId;
                     let it = 50;
                     intervalId = setInterval(function() {
-                        if ((!Realm.Sync.hasExistingSessions())) {
+                        if ((!Realm.Sync._hasExistingSessions())) {
                             clearInterval(intervalId);
                             resolve();
                         } else if (it < 0) {
@@ -1530,13 +1530,13 @@ module.exports = {
                     });
 
                     {
-                        TestCase.assertFalse(Realm.Sync.hasExistingSessions());
+                        TestCase.assertFalse(Realm.Sync._hasExistingSessions());
                         const realm = new Realm(config1);
                         const session = realm.syncSession;
-                        TestCase.assertTrue(Realm.Sync.hasExistingSessions());
+                        TestCase.assertTrue(Realm.Sync._hasExistingSessions());
                         realm.close();
                     }
-                    TestCase.assertFalse(Realm.Sync.hasExistingSessions());
+                    TestCase.assertFalse(Realm.Sync._hasExistingSessions());
                     resolve();
                 });
         });
