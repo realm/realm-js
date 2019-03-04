@@ -22,10 +22,56 @@ import { IPerson, PersonAndDogSchema } from "./schemas/person-and-dogs";
 
 const RealmAsAny = Realm as any;
 
+<<<<<<< HEAD
 describe("Realm#constructor", () => {
     it("is a function", () => {
         expect(Realm).to.be.a("function");
         expect(Realm instanceof Function).to.equal(true);
+=======
+describe("new Realm({ ... })", () => {
+  it("is a function", () => {
+    expect(Realm).to.be.a("function");
+    expect(Realm instanceof Function).to.equal(true);
+  });
+
+  it("creates a Realm instance", () => {
+    const realm = new Realm();
+    expect(realm instanceof Realm).to.equal(true);
+    expect(realm.path).to.equal(Realm.defaultPath);
+  });
+
+  it("creates a Realm instance with an empty schema", () => {
+    const realm = new Realm({ schema: [] });
+    expect(realm instanceof Realm).to.equal(true);
+    expect(realm.schema).to.deep.equal([]);
+  });
+
+  it("creates multiple Realm files when called with a non-empty string", async () => {
+    // Opening a file at at relative path
+    const realm1 = new Realm("temporary-1.realm");
+    // Expect an instance of Realm
+    expect(realm1 instanceof Realm).to.equal(true);
+    // Expect the file to be created
+    const fileExists = await fs.exists(realm1.path);
+    expect(fileExists).to.equal(true);
+    // Expect that the path is in the default path
+    const defaultPathDir = path.dirname(Realm.defaultPath);
+    expect(realm1.path).to.equal(
+      path.resolve(defaultPathDir, "temporary-1.realm")
+    );
+    // Open another Realm as well
+    const realm2 = new Realm("temporary-2.realm");
+    expect(realm2.path).to.equal(
+      path.resolve(defaultPathDir, "temporary-2.realm")
+    );
+  });
+
+  describe("called with invalid arguments", () => {
+    it("throws when called with an empty string", () => {
+      expect(() => {
+        const r = new Realm("");
+      }).to.throw(); // The actual message varies across environments
+>>>>>>> Fixed linting issues and renamed some tests
     });
 
     it("creates a Realm instance", () => {
@@ -294,7 +340,7 @@ describe("Realm#constructor", () => {
 
 // Testing static methods
 
-describe("#deleteFile", () => {
+describe("Realm.deleteFile", () => {
     function expectDeletion(path?: string) {
         // Create the Realm with a schema
         const realm = new Realm({ path, schema: PersonAndDogSchema });
