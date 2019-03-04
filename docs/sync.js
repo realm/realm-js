@@ -436,7 +436,7 @@ class Credentials {
      * Creates credentials with a custom provider and user identifier.
      * @param {string} providerName Provider used to verify the credentials.
      * @param {string} token A string identifying the user. Usually an identity token or a username.
-     * @param {userInfo} token Data describing the user further or null if the user does not have any extra data.
+     * @param {userInfo} userInfo Data describing the user further or null if the user does not have any extra data.
      * The data will be serialized to JSON, so all values must be mappable to a valid JSON data type.
      * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.Sync.User.login|User.login}.
      */
