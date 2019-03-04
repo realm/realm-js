@@ -12,7 +12,8 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
 ### Internal
-* None.
+* Add `Realm.Sync.SyncConfiguration._sessionStopPolicy` for setting the behaviour of the sync session.
+* Add `Realm.Sync._hasExistingSessions()` which returns `true` if Realm has a reference to any sync session regardless of its state. ([#2248](https://github.com/realm/realm-js/issues/2248))
 
 2.24.0 Release notes (2019-2-27)
 =============================================================

@@ -437,6 +437,11 @@ declare namespace Realm.Sync {
 
     type ErrorCallback = (session: Session, error: SyncError) => void;
     type SSLVerifyCallback = (sslVerifyObject: SSLVerifyObject) => boolean;
+    enum SessionStopPolicy {
+        AfterUpload = "after-upload",
+        Immediately = "immediately",
+        Never = "never"
+    }
 
     interface SSLConfiguration {
         validate?: boolean;
@@ -458,6 +463,7 @@ declare namespace Realm.Sync {
         partial?: boolean;
         fullSynchronization?: boolean;
         _disableQueryBasedSyncUrlChecks?:boolean;
+        _sessionStopPolicy?:SessionStopPolicy;
         custom_http_headers?: { [header: string]: string };
         customQueryBasedSyncIdentifier?: string;
     }
@@ -571,6 +577,7 @@ declare namespace Realm.Sync {
     function setLogger(callback: (level: LogLevel, message: string) => void): void;
     function setUserAgent(userAgent: string): void;
     function initiateClientReset(path: string): void;
+    function _hasExistingSessions(): boolean;
     function reconnect(): void;
 
     /**
