@@ -559,6 +559,8 @@ declare namespace Realm.Sync {
         sslConfiguration?: SSLConfiguration;
     }
 
+    type LogLevel = 'all' | 'trace' | 'debug' | 'detail' | 'info' | 'warn' | 'error' | 'fatal' | 'off';
+
     /**
      * @deprecated, to be removed in future versions
      */
@@ -571,7 +573,8 @@ declare namespace Realm.Sync {
     function addListener(config: RealmListenerConfiguration, eventName: RealmListenerEventName, changeCallback: (changeEvent: ChangeEvent) => Promise<void>): void;
     function removeAllListeners(): Promise<void>;
     function removeListener(regex: string, name: string, changeCallback: (changeEvent: ChangeEvent) => void): Promise<void>;
-    function setLogLevel(logLevel: 'all' | 'trace' | 'debug' | 'detail' | 'info' | 'warn' | 'error' | 'fatal' | 'off'): void;
+    function setLogLevel(logLevel: LogLevel): void;
+    function setLogger(callback: (level: LogLevel, message: string) => void): void;
     function setUserAgent(userAgent: string): void;
     function initiateClientReset(path: string): void;
     function hasExistingSessions(): boolean;
