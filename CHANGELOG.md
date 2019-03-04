@@ -13,7 +13,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
 ### Internal
-* None.
+* Added `Realm.Sync.SyncConfiguration._sessionStopPolicy` for setting the behaviour of the sync session.
 
 2.24.0 Release notes (2019-2-27)
 =============================================================
