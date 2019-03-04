@@ -255,7 +255,7 @@ class Sync {
 
     /**
      * Returns `true` if Realm still has a reference to any sync sessions regardless of their state.
-     * If `false` is returned it means that no sessions currently exists.
+     * If `false` is returned it means that no sessions currently exist.
      */
     static hasExistingSessions() {}
 }
