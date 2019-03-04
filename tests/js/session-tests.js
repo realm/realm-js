@@ -1488,24 +1488,24 @@ module.exports = {
                         sync: {
                             url: REALM_URL,
                             fullSynchronization: true,
-                            _sessionStopPolicy: Realm.Sync.SessionStopPolicy.AfterUpload
+                            _sessionStopPolicy: 'after-upload'
                         }
                     });
                     new Realm(config1).close();
 
                     const config2 = config1;
-                    config2.sync._sessionStopPolicy = Realm.Sync.SessionStopPolicy.Immediately;
+                    config2.sync._sessionStopPolicy = 'immediately';
                     new Realm(config2).close();
 
                     const config3 = config1;
-                    config3.sync._sessionStopPolicy = Realm.Sync.SessionStopPolicy.Never;
+                    config3.sync._sessionStopPolicy = 'never';
                     new Realm(config3).close();
 
                     // Invalid input
                     const config4 = config1;
                     config4.sync._sessionStopPolicy = "foo";
                     TestCase.assertThrows(() => new Realm(config4));
-                    resolve()
+                    resolve();
                 });
         });
     },
@@ -1516,7 +1516,7 @@ module.exports = {
         }
 
         const AUTH_URL = 'http://localhost:9080';
-        const REALM_URL = 'realm://localhost:9080/~/stop_policy';
+        const REALM_URL = 'realm://localhost:9080/~/stop_policy_immediately';
         return new Promise((resolve, reject) => {
             Realm.Sync.User.login(AUTH_URL, Realm.Sync.Credentials.nickname("admin", true))
                 .then((admin1) => {
@@ -1525,7 +1525,7 @@ module.exports = {
                         sync: {
                             url: REALM_URL,
                             fullSynchronization: true,
-                            _sessionStopPolicy: Realm.Sync.SessionStopPolicy.Immediately
+                            _sessionStopPolicy: 'immediately'
                         }
                     });
 
