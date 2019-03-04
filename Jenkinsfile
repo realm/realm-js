@@ -84,6 +84,8 @@ stage('package and test') {
     macos_react_tests_release: doMacBuild('react-tests Release'),
     macos_react_example_debug: doMacBuild('react-example Debug'),
     macos_react_example_release: doMacBuild('react-example Release'),
+    macos_electron_debug: doMacBuild('electron Debug'),
+    macos_electron_release: doMacBuild('electron Release'),
     //android_react_tests: doAndroidBuild('react-tests-android', {
     //  junit 'tests/react-test-app/tests.xml'
     //}),
