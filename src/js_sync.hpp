@@ -931,7 +931,7 @@ public:
     static void get_is_developer_edition(ContextType, ObjectType, ReturnValue &);
 
     MethodMap<T> const static_methods = {
-        {"__hasExistingSessions", {wrap<has_existing_sessions>}},
+        {"_hasExistingSessions", {wrap<has_existing_sessions>}},
         {"setLogLevel", wrap<set_sync_log_level>},
         {"setUserAgent", wrap<set_sync_user_agent>},
         {"initiateClientReset", wrap<initiate_client_reset>},
