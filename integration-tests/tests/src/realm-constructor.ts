@@ -16,9 +16,11 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-const { expect } = require("chai");
+import { expect } from "chai";
 
-const PersonAndDogsSchema = require("./schemas/person-and-dogs");
+import { PersonAndDogSchema, Person } from "./schemas/person-and-dogs";
+
+const RealmAsAny = Realm as any;
 
 describe("Realm#constructor", () => {
     it("is a function", () => {
@@ -63,7 +65,7 @@ describe("Realm#constructor", () => {
 
         it("throws when called with two strings", () => {
             expect(() => {
-                new Realm("", "");
+                new RealmAsAny("", "");
             }).to.throw("Invalid arguments when constructing 'Realm'");
         });
     });
@@ -111,7 +113,7 @@ describe("Realm#constructor", () => {
             expect(realm1.schema.length).to.equal(0);
             realm1.close();
             // Re-open with a different version
-            const realm2 = new Realm({ schema: PersonAndDogsSchema, schemaVersion: 2 });
+            const realm2 = new Realm({ schema: PersonAndDogSchema, schemaVersion: 2 });
             expect(realm2.schemaVersion).to.equal(2);
             expect(realm2.schema.length).to.equal(2);
             // Add an object, using the schema
@@ -119,7 +121,7 @@ describe("Realm#constructor", () => {
                 realm2.create("Person", { name: "John Doe", age: 42 });
             });
             // Expect an object
-            const persons = realm2.objects("Person");
+            const persons = realm2.objects<Person>("Person");
             expect(persons.length).to.equal(1);
             expect(persons[0].name).to.equal("John Doe");
             expect(persons[0].age).to.equal(42);
@@ -139,7 +141,7 @@ describe("Realm#constructor", () => {
     describe("re-opening without a schema", () => {
         it("has the same schema as before", () => {
             // Open the Realm with a schema
-            const realm = new Realm({ schema: PersonAndDogsSchema });
+            const realm = new Realm({ schema: PersonAndDogSchema });
             realm.close();
             // Re-open it without a schema
             const reopenedRealm = new Realm();
@@ -152,57 +154,61 @@ describe("Realm#constructor", () => {
     describe("schema validation", () => {
         it("fails when passed an object", () => {
             expect(() => {
-                new Realm({ schema: {} });
+                new RealmAsAny({ schema: {} });
             }).throws("schema must be of type 'array', got");
         });
 
         it("fails when passed an array with non-objects", () => {
             expect(() => {
-                new Realm({ schema: [ "" ] });
+                new RealmAsAny({ schema: [""] });
             }).throws("Failed to read ObjectSchema: JS value must be of type 'object', got");
         });
 
         it("fails when passed an array with empty object", () => {
             expect(() => {
-                new Realm({ schema: [ {} ] });
+                new RealmAsAny({ schema: [{}] });
             }).throws("Failed to read ObjectSchema: name must be of type 'string', got ");
         });
 
         it("fails when passed an array with an object without 'properties'", () => {
             expect(() => {
-                new Realm({ schema: [ { name: "SomeObject" } ] });
+                new RealmAsAny({ schema: [{ name: "SomeObject" }] });
             }).throws("Failed to read ObjectSchema: properties must be of type 'object', got ");
         });
 
         it("fails when passed an array with an object without 'name'", () => {
             expect(() => {
-                new Realm({ schema: [ { properties: {} } ] });
+                new RealmAsAny({ schema: [{ properties: {} }] });
             }).throws("Failed to read ObjectSchema: name must be of type 'string', got ");
         });
 
-        function expectInvalidProperty(property, message) {
+        function expectInvalidProperty(badProperty: Realm.PropertyType | Realm.ObjectSchemaProperty, message: string) {
             expect(() => {
-                new Realm({ schema: [
-                    { name: "InvalidObject", properties: {
-                        bad: property,
-                        nummeric: "int",
-                        another: "AnotherObject"
-                    } },
-                    { name: "AnotherObject", properties: {} }
-                ]});
+                new Realm({
+                    schema: [
+                        {
+                            name: "InvalidObject", properties: {
+                                bad: badProperty,
+                                nummeric: "int",
+                                another: "AnotherObject"
+                            }
+                        },
+                        { name: "AnotherObject", properties: {} }
+                    ]
+                });
             }).throws(message);
         }
 
         it("fails when asking for a list of lists", () => {
             expectInvalidProperty(
-                { type:"list[]", objectType: "InvalidObject" },
+                { type: "list[]", objectType: "InvalidObject" },
                 "List property 'InvalidObject.bad' must have a non-list value type"
             );
         });
 
         it("fails when asking for an optional list", () => {
             expectInvalidProperty(
-                { type:"list?", objectType: "InvalidObject" },
+                { type: "list?", objectType: "InvalidObject" },
                 "List property 'InvalidObject.bad' cannot be optional"
             );
         });
@@ -236,14 +242,18 @@ describe("Realm#constructor", () => {
         });
 
         it("allows list of objects with objectType defined", () => {
-            new Realm({ schema: [
-                { name: "SomeObject", properties: {
-                    myObjects: {
-                        type: "object[]",
-                        objectType: "SomeObject"
-                    }
-                } },
-            ]});
+            new Realm({
+                schema: [
+                    {
+                        name: "SomeObject", properties: {
+                            myObjects: {
+                                type: "object[]",
+                                objectType: "SomeObject"
+                            }
+                        }
+                    },
+                ]
+            });
         });
     });
 
@@ -253,9 +263,9 @@ describe("Realm#constructor", () => {
 // Testing static methods
 
 describe("#deleteFile", () => {
-    function expectDeletion(path) {
+    function expectDeletion(path?: string) {
         // Create the Realm with a schema
-        const realm = new Realm({ path, schema: PersonAndDogsSchema });
+        const realm = new Realm({ path, schema: PersonAndDogSchema });
         realm.close();
         // Delete the Realm
         Realm.deleteFile({ path });
@@ -263,6 +273,7 @@ describe("#deleteFile", () => {
         const reopenedRealm = new Realm({ path });
         expect(reopenedRealm.schema).to.deep.equal([]);
     }
+
     it("deletes the default Realm", () => {
         expectDeletion();
     });
@@ -270,7 +281,9 @@ describe("#deleteFile", () => {
     // TODO: Fix the issue on Android that prevents this from passing
     // @see https://github.com/realm/realm-js-private/issues/507
 
+    /*
     it.skipIf('android', "deletes a Realm with a space in its path", () => {
         expectDeletion("my realm.realm");
     });
+    */
 });

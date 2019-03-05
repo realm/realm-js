@@ -16,9 +16,13 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+import { Func, AsyncFunc, Test } from "mocha";
+
+type Filtering = { [k: string]: string | boolean };
+
 // Implements a way to skip tests on specific platforms
 
-function shouldSkipProperty(filterValue, environmentValue) {
+function shouldSkipProperty(filterValue: boolean | string, environmentValue: string) {
     if (filterValue === true) {
         // If filter value is strictly true, the environment must not be loosely true
         return !!environmentValue;
@@ -31,7 +35,7 @@ function shouldSkipProperty(filterValue, environmentValue) {
     }
 }
 
-function shouldSkip(filter) {
+function shouldSkip(filter: Filtering) {
     for (const k in filter) {
         if (shouldSkipProperty(filter[k], environment[k])) {
             return true;
@@ -51,11 +55,11 @@ function shouldSkip(filter) {
  * If a string is provided skipIf will simply be called with an object with the provided string as key and `true` as the
  * value for that single property.
  */
-function skipIf(filter, title, callback) {
+export function skipIf(filter: string | string[] | Filtering, title: string, callback: Func | AsyncFunc): Test {
     if (typeof filter === 'string') {
         return skipIf({ [filter]: true }, title, callback);
     } else if (Array.isArray(filter)) {
-        const filterObject = {};
+        const filterObject: Filtering = {};
         for (let environment of filter) {
             filterObject[environment] = true;
         }
@@ -68,5 +72,3 @@ function skipIf(filter, title, callback) {
         }
     }
 }
-
-module.exports = skipIf;

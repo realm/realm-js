@@ -1,9 +1,0 @@
-{
-    "extends": "../.eslintrc.json",
-    "globals": {
-      "Realm": true,
-      "fs": true,
-      "path": true,
-      "environment": true
-    }
-}

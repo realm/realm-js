@@ -1,0 +1,21 @@
+{
+    "compilerOptions": {
+        "target": "es5",
+        "moduleResolution": "node",
+        "outDir": "dist",
+        "typeRoots": [
+            "node_modules/@types"
+        ],
+        "types": [
+            "realm",
+            "node",
+            "mocha",
+            "chai"
+        ],
+        "noResolve": true,
+        "noImplicitAny": true
+    },
+    "include": [
+        "src/**/*.ts"
+    ]
+}

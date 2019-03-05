@@ -16,6 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+import * as Realm from 'realm';
+
 if (!global.Realm) {
     throw new Error("Expected 'Realm' to be available as a global");
 }
@@ -46,5 +48,9 @@ describe(global.title, () => {
 
 afterEach(() => {
     // Remove all Realm files in the default directory
-    Realm.clearTestState();
+    if ("clearTestState" in Realm) {
+        (Realm as any).clearTestState();
+    } else {
+        throw new Error("Expected a method to clear the test state");
+    }
 });

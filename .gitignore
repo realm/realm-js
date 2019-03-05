@@ -46,7 +46,6 @@ local.properties
 
 # Visual Studio Code
 .vscode
-tsconfig.json
 
 # Tests
 object-server-for-testing/
@@ -67,3 +66,4 @@ examples/ReactExample/ios/ReactExample.xcworkspace/
 integration-tests/**/realm-*.tgz
 integration-tests/**/realm-integration-tests-*.tgz
 integration-tests/environments/electron/dist/
+integration-tests/tests/dist/

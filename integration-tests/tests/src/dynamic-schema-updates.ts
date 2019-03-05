@@ -16,16 +16,16 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-const { expect } = require("chai");
+import { expect } from "chai";
 
-const PersonAndDogsSchema = require("./schemas/person-and-dogs");
+import { PersonAndDogSchema } from "./schemas/person-and-dogs";
 
 describe("Realm._updateSchema", () => {
     it("is a function", () => {
-        const realm = new Realm({ schema: PersonAndDogsSchema });
+        const realm = new Realm({ schema: PersonAndDogSchema });
         expect(realm.schema).to.be.an("array");
         // There is a function defined on the Realm
-        expect(realm._updateSchema).to.be.a("function");
+        expect(Realm._updateSchema).to.be.a("function");
         // Expect no enumerable field on the schema property
         expect(Object.keys(realm.schema)).to.not.contain("update");
         // TODO: This function gets put on the schema to
@@ -33,11 +33,11 @@ describe("Realm._updateSchema", () => {
     });
 
     it("creates a class schema from a name", () => {
-        const realm = new Realm({ schema: PersonAndDogsSchema });
+        const realm = new Realm({ schema: PersonAndDogSchema });
         realm.write(() => {
-            realm._updateSchema([
+            Realm._updateSchema([
                 ...realm.schema,
-                { name: "MyClass", properties: { } },
+                { name: "MyClass", properties: {} },
             ]);
         });
         const classNames = realm.schema.map(s => s.name);
@@ -45,9 +45,9 @@ describe("Realm._updateSchema", () => {
     });
 
     it("creates a class schema from a name and properties", () => {
-        const realm = new Realm({ schema: PersonAndDogsSchema });
+        const realm = new Realm({ schema: PersonAndDogSchema });
         realm.write(() => {
-            realm._updateSchema([
+            Realm._updateSchema([
                 ...realm.schema,
                 { name: "MyClass", properties: { myField: "string" } },
             ]);
@@ -67,21 +67,21 @@ describe("Realm._updateSchema", () => {
     });
 
     it("can use a newly added class", () => {
-        const realm = new Realm({ schema: PersonAndDogsSchema });
+        const realm = new Realm({ schema: PersonAndDogSchema });
         realm.write(() => {
-            realm._updateSchema([
+            Realm._updateSchema([
                 ...realm.schema,
                 { name: "MyClass", properties: { myField: "string" } },
             ]);
             realm.create("MyClass", { myField: "some string" });
-            const myClassObjects = realm.objects("MyClass");
+            const myClassObjects = realm.objects<any>("MyClass");
             expect(myClassObjects).to.be.of.length(1);
             expect(myClassObjects[0].myField).to.equal("some string");
         });
     });
 
     it("fires the schema change event", (done) => {
-        const realm = new Realm({ schema: PersonAndDogsSchema });
+        const realm = new Realm({ schema: PersonAndDogSchema });
         realm.addListener("schema", () => {
             expect(realm.schema).to.have.length(3);
             const objectSchemaNames = realm.schema.map(s => s.name);
@@ -90,7 +90,7 @@ describe("Realm._updateSchema", () => {
         });
 
         realm.write(() => {
-            realm._updateSchema([
+            Realm._updateSchema([
                 ...realm.schema,
                 { name: "MyClass", properties: { myField: "string" } },
             ]);
@@ -98,9 +98,9 @@ describe("Realm._updateSchema", () => {
     });
 
     it("throws if creating a class schema outside of a transaction", () => {
-        const realm = new Realm({ schema: PersonAndDogsSchema });
+        const realm = new Realm({ schema: PersonAndDogSchema });
         expect(() => {
-            realm._updateSchema([
+            Realm._updateSchema([
                 ...realm.schema,
                 { name: "MyClass", properties: {} },
             ]);
@@ -108,10 +108,10 @@ describe("Realm._updateSchema", () => {
     });
 
     it("throws if asked to create a class that already exists", () => {
-        const realm = new Realm({ schema: PersonAndDogsSchema });
+        const realm = new Realm({ schema: PersonAndDogSchema });
         expect(() => {
             realm.write(() => {
-                realm._updateSchema([
+                Realm._updateSchema([
                     ...realm.schema,
                     { name: "Person", properties: {} },
                 ]);
@@ -120,19 +120,19 @@ describe("Realm._updateSchema", () => {
     });
 
     it("throws if called without a schema object", () => {
-        const realm = new Realm({ schema: PersonAndDogsSchema });
+        const realm = new Realm({ schema: PersonAndDogSchema });
         expect(() => {
             realm.write(() => {
-                realm._updateSchema();
+                (Realm as any)._updateSchema();
             });
         }).to.throw("Invalid arguments: 1 expected, but 0 supplied.");
     });
 
     it("throws if called with an unexpected type", () => {
-        const realm = new Realm({ schema: PersonAndDogsSchema });
+        const realm = new Realm({ schema: PersonAndDogSchema });
         expect(() => {
             realm.write(() => {
-                realm._updateSchema("w00t");
+                (Realm as any)._updateSchema("w00t");
             });
         }).to.throw("schema must be of type 'array', got (w00t)");
     });
