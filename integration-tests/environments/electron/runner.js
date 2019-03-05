@@ -69,7 +69,7 @@ async function run() {
     const mochaConfig = {};
 
     const processType = process.argv[2];
-    if (processType !== "main" && processType !== "renderer") {
+    if (processType !== "main" && processType !== "renderer") {
         throw Error("You need to call this with a runtime argument specifying the process type");
     }
 
@@ -96,7 +96,7 @@ async function run() {
         server.run(resolve);
     });
 
-    await Promise.race([electronApp, mochaTests]);
+    await Promise.all([electronApp, mochaTests]);
 }
 
 run().then(failures => {

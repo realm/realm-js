@@ -41,7 +41,10 @@ module.exports = (serverURL, processType) => {
             runner.on("end", () => {
                 const p = process.type === "renderer" ? require("electron").remote.process : process;
                 // Exit the process with the number of failures
-                p.exit(runner.failures);
+                // Wait 100 ms to allow sending the event to the mocha remote server
+                setTimeout(() => {
+                    p.exit(runner.failures);
+                }, 100);
             });
         },
     });
