@@ -38,7 +38,7 @@ const ros = {
     createTestUser: () => {
         return Realm.Sync.User.login(
             REALM_OBJECT_SERVER_URL,
-            Realm.Sync.Credentials.nickname(`react-realm-context-tests-${uuid()}`),
+            Realm.Sync.Credentials.nickname(`react-js-tests-${uuid()}`),
         );
     },
 };
