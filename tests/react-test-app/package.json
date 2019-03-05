@@ -7,7 +7,7 @@
   },
   "dependencies": {
     "react": "16.6.3",
-    "react-native": "0.58.4",
+    "react-native": "^0.58.6",
     "react-native-exception-handler": "^2.4.3",
     "react-native-exit-app-no-history": "^1.0.2",
     "react-native-fs": "^2.8.5",
@@ -18,6 +18,7 @@
   },
   "devDependencies": {
     "eslint": "^3.0.0",
+    "fs-extra": "^4.0.3",
     "install-local": "^1.0.0",
     "invariant": "^2.2.2",
     "metro-react-native-babel-preset": "^0.45.0"
