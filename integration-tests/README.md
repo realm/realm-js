@@ -68,7 +68,7 @@ npm test
 If you're iterating on the tests to solve an issue which shows itself in a particular environment, the workflow could be:
 1. Rebuild the Realm JS native module (if you're making changes to the C++ code), by running `npm run build-changes` in the project root.
 2. Produce a packaged version of Realm JS, by running `npm run realm/pack` in the `./integration-tests` directory.
-3. Re-install the packaged version of Realm JS, by running `npm install` in the environments directory. This will    install Realm JS from the packaged version you've just created.
+3. Re-install the packaged version of Realm JS, by running `npm install` in the environments directory. This will install Realm JS from the packaged version you've just created.
 
 ### How to write tests
 
