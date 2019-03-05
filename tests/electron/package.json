@@ -8,7 +8,7 @@
     "test": "node ./runner.js"
   },
   "devDependencies": {
-    "electron": "^4.0.3",
+    "electron": "^4.0.6",
     "jasmine": "^2.5.1",
     "jasmine-console-reporter": "^1.2.7",
     "jasmine-reporters": "^2.2.0",
