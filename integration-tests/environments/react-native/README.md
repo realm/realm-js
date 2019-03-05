@@ -7,8 +7,7 @@ Currently this directory consists of:
 - A test harness in `harness`, where:
   - `android-cli.js` wraps the Android specific `adb` and `emulator` CLIs.
   - `react-native-cli.js` wraps the `react-native` CLI.
-  - `runner.js` starts a mocha remote server, the metro bundler and starts the app
-    (using `react-native run-android` or `react-native run-android`)
+  - `runner.js` starts a mocha remote server, the metro bundler and starts the app (using `react-native run-android` or `react-native run-android`)
 
 ```bash
 npm install
