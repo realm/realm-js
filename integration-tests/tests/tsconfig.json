@@ -3,9 +3,6 @@
         "target": "es5",
         "moduleResolution": "node",
         "outDir": "dist",
-        "typeRoots": [
-            "node_modules/@types"
-        ],
         "types": [
             "realm",
             "node",
