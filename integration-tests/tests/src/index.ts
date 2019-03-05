@@ -16,7 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import * as Realm from 'realm';
 
 if (!global.Realm) {
     throw new Error("Expected 'Realm' to be available as a global");
@@ -41,6 +40,9 @@ if (!global.environment || typeof global.environment !== "object") {
 // Patch in a function that can skip running tests in specific environments
 global.it.skipIf = require("./utils/skip-if");
 
+// Set the value of the UndocumentedRealm from the Realm global provided by the environment
+global.UndocumentedRealm = Realm as any;
+
 describe(global.title, () => {
     require("./realm-constructor");
     require("./dynamic-schema-updates");
@@ -49,7 +51,7 @@ describe(global.title, () => {
 afterEach(() => {
     // Remove all Realm files in the default directory
     if ("clearTestState" in Realm) {
-        (Realm as any).clearTestState();
+        UndocumentedRealm.clearTestState();
     } else {
         throw new Error("Expected a method to clear the test state");
     }
