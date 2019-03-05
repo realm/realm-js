@@ -20,7 +20,8 @@ const { expect } = require("chai");
 
 describe("Realm.Sync.Credentials", () => {
     it("defines the object", () => {
-        expect(Realm.Sync);
+        expect(Realm).has.key('Sync');
+        expect(Realm.Sync).has.key('User');
         expect(Realm.Sync.Credentials).to.be.an("object");
     });
 

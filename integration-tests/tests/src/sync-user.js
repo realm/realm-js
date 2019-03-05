@@ -23,15 +23,14 @@ const { withRos } = require("./utils/with-ros");
 
 describe("Realm.Sync.User", () => {
     it("defines the login function", () => {
-        expect(Realm.Sync);
-        expect(Realm.Sync.User);
+        expect(Realm).has.key('Sync');
+        expect(Realm.Sync).has.key('User');
         expect(Realm.Sync.User.login).to.be.a("function");
     });
 
     withRos.it("can authenticate using the nickname provider", async function () {
         const nickname = `realm-js-tests-${uuid()}`;
         const credentials = Realm.Sync.Credentials.nickname(nickname);
-        expect(Realm.Sync.User.login).to.be.a("function");
         const user = await Realm.Sync.User.login(this.ros.url, credentials);
         const serializedUser = user.serialize();
         expect(serializedUser.identity).to.be.a("string");
