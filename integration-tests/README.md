@@ -78,7 +78,6 @@ Tests will have access to the following globals:
 
 - [the Mocha hook globals](https://mochajs.org/#hooks) (define, it, after, before, etc.).
 - `Realm` the Realm constructor.
-- An `UndocumentedRealm` which extends the `Realm` constructor with some methods which are not documented or considered a part of the public Realm JS API.
 - `fs` the lowest common denominator of the [`fs-extra`](https://www.npmjs.com/package/fs-extra) and [`react-native-fs`](https://www.npmjs.com/package/react-native-fs) APIs.
 - `path` the lowest common denominator of the Node.js path interface and a [node-independent implementation of Node's path](https://www.npmjs.com/package/path-browserify) module.
 - `it.skipIf` skips tests based on the environment, see `tests/src/utils/skip-if.js` for a detailed explanation.

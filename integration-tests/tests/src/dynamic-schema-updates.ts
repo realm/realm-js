@@ -22,7 +22,7 @@ import { PersonAndDogSchema } from "./schemas/person-and-dogs";
 
 describe("realm._updateSchema", () => {
     it("is a function", () => {
-        const realm = new UndocumentedRealm({ schema: PersonAndDogSchema });
+        const realm = new Realm({ schema: PersonAndDogSchema });
         expect(realm.schema).to.be.an("array");
         // There is a function defined on the Realm
         expect(realm._updateSchema).to.be.a("function");
@@ -33,7 +33,7 @@ describe("realm._updateSchema", () => {
     });
 
     it("creates a class schema from a name", () => {
-        const realm = new UndocumentedRealm({ schema: PersonAndDogSchema });
+        const realm = new Realm({ schema: PersonAndDogSchema });
         realm.write(() => {
             realm._updateSchema([
                 ...realm.schema,
@@ -45,7 +45,7 @@ describe("realm._updateSchema", () => {
     });
 
     it("creates a class schema from a name and properties", () => {
-        const realm = new UndocumentedRealm({ schema: PersonAndDogSchema });
+        const realm = new Realm({ schema: PersonAndDogSchema });
         realm.write(() => {
             realm._updateSchema([
                 ...realm.schema,
@@ -67,7 +67,7 @@ describe("realm._updateSchema", () => {
     });
 
     it("can use a newly added class", () => {
-        const realm = new UndocumentedRealm({ schema: PersonAndDogSchema });
+        const realm = new Realm({ schema: PersonAndDogSchema });
         realm.write(() => {
             realm._updateSchema([
                 ...realm.schema,
@@ -81,7 +81,7 @@ describe("realm._updateSchema", () => {
     });
 
     it("fires the schema change event", (done) => {
-        const realm = new UndocumentedRealm({ schema: PersonAndDogSchema });
+        const realm = new Realm({ schema: PersonAndDogSchema });
         realm.addListener("schema", () => {
             expect(realm.schema).to.have.length(3);
             const objectSchemaNames = realm.schema.map(s => s.name);
@@ -98,7 +98,7 @@ describe("realm._updateSchema", () => {
     });
 
     it("throws if creating a class schema outside of a transaction", () => {
-        const realm = new UndocumentedRealm({ schema: PersonAndDogSchema });
+        const realm = new Realm({ schema: PersonAndDogSchema });
         expect(() => {
             realm._updateSchema([
                 ...realm.schema,
@@ -108,7 +108,7 @@ describe("realm._updateSchema", () => {
     });
 
     it("throws if asked to create a class that already exists", () => {
-        const realm = new UndocumentedRealm({ schema: PersonAndDogSchema });
+        const realm = new Realm({ schema: PersonAndDogSchema });
         expect(() => {
             realm.write(() => {
                 realm._updateSchema([

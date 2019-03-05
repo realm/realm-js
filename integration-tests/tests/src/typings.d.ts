@@ -11,13 +11,7 @@ type Require = (id: string) => any;
 
 type Environment = { [key: string]: string };
 
-declare class UndocumentedRealmClass extends Realm {
-    static clearTestState(): void;
-    _updateSchema(schema: any): void;
-}
-
 interface Global extends NodeJS.Global {
-    UndocumentedRealm: typeof UndocumentedRealmClass;
     Realm: Realm;
     title: string;
     fs: fs;
@@ -26,7 +20,6 @@ interface Global extends NodeJS.Global {
     require: Require;
 }
 
-declare var UndocumentedRealm: typeof UndocumentedRealmClass;
 declare var global: Global;
 declare var fs: fs;
 declare var path: path;

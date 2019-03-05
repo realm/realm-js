@@ -309,7 +309,7 @@ declare namespace Realm.Sync {
         static azureAD(token: string): Credentials;
         static jwt(token: string, providerName?: string): Credentials;
         static adminToken(token: string): AdminCredentials;
-        static custom(providerName: string, token: string, userInfo?: {[key: string]: any}): Credentials;
+        static custom(providerName: string, token: string, userInfo?: { [key: string]: any }): Credentials;
 
         readonly identityProvider: string;
         readonly token: string;
@@ -333,11 +333,11 @@ declare namespace Realm.Sync {
 
         static requestPasswordReset(server: string, email: string): Promise<void>;
 
-        static completePasswordReset(server:string, resetToken:string, newPassword:string): Promise<void>;
+        static completePasswordReset(server: string, resetToken: string, newPassword: string): Promise<void>;
 
-        static requestEmailConfirmation(server:string, email:string): Promise<void>;
+        static requestEmailConfirmation(server: string, email: string): Promise<void>;
 
-        static confirmEmail(server:string, confirmationToken:string): Promise<void>;
+        static confirmEmail(server: string, confirmationToken: string): Promise<void>;
 
         static deserialize(serialized: SerializedUser | SerializedTokenUser): Realm.Sync.User;
 
@@ -462,8 +462,8 @@ declare namespace Realm.Sync {
         error?: ErrorCallback;
         partial?: boolean;
         fullSynchronization?: boolean;
-        _disableQueryBasedSyncUrlChecks?:boolean;
-        _sessionStopPolicy?:SessionStopPolicy;
+        _disableQueryBasedSyncUrlChecks?: boolean;
+        _sessionStopPolicy?: SessionStopPolicy;
         custom_http_headers?: { [header: string]: string };
         customQueryBasedSyncIdentifier?: string;
     }
@@ -523,11 +523,11 @@ declare namespace Realm.Sync {
     }
 
     enum SubscriptionState {
-         Error,
-         Creating,
-         Pending,
-         Complete,
-         Invalidated,
+        Error,
+        Creating,
+        Pending,
+        Complete,
+        Invalidated,
     }
 
     /**
@@ -753,6 +753,12 @@ declare class Realm {
     static copyBundledRealmFiles(): void;
 
     /**
+     * Clears the state by closing and deleting any Realm in the default directory and logout all users.
+     * @private Not a part of the public API: It's primarily used from the library's tests.
+     */
+    static clearTestState(): void;
+
+    /**
      * @param  {Realm.Configuration} config?
      */
     constructor(config?: Realm.Configuration);
@@ -860,15 +866,23 @@ declare class Realm {
      */
     writeCopyTo(path: string, encryptionKey?: ArrayBuffer | ArrayBufferView): void;
 
-    privileges() : Realm.Permissions.RealmPrivileges;
-    privileges(objectType: string | Realm.ObjectSchema | Function) : Realm.Permissions.ClassPrivileges;
-    privileges(obj: Realm.Object) : Realm.Permissions.ObjectPrivileges;
+    privileges(): Realm.Permissions.RealmPrivileges;
+    privileges(objectType: string | Realm.ObjectSchema | Function): Realm.Permissions.ClassPrivileges;
+    privileges(obj: Realm.Object): Realm.Permissions.ObjectPrivileges;
 
-    permissions() : Realm.Permissions.Realm;
-    permissions(objectType: string | Realm.ObjectSchema | Function) : Realm.Permissions.Class;
+    permissions(): Realm.Permissions.Realm;
+    permissions(objectType: string | Realm.ObjectSchema | Function): Realm.Permissions.Class;
 
     subscriptions(name?: string): NamedSubscription[];
     unsubscribe(name: string): void;
+
+    /**
+     * Update the schema of the Realm.
+     * 
+     * @param schema The schema which the Realm should be updated to use.
+     * @private Not a part of the public API: Consider passing a `schema` when constructing the `Realm` instead.
+     */
+    _updateSchema(schema: Realm.ObjectSchema[]): void;
 }
 
 declare module 'realm' {
