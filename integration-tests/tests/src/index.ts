@@ -41,15 +41,10 @@ import { skipIf } from "./utils/skip-if";
 global.it.skipIf = skipIf;
 
 describe(global.title, () => {
-<<<<<<< HEAD
     require("./realm-constructor");
     require("./dynamic-schema-updates");
-=======
-  require("./realm-constructor");
-  require("./dynamic-schema-updates");
-  require("./sync-credentials");
-  require("./sync-user");
->>>>>>> Adding Realm.Sync.Credentials and Realm.Sync.User.login tests
+    require("./sync-credentials");
+    require("./sync-user");
 });
 
 afterEach(() => {
