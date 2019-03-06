@@ -313,9 +313,7 @@ describe("#deleteFile", () => {
   // TODO: Fix the issue on Android that prevents this from passing
   // @see https://github.com/realm/realm-js-private/issues/507
 
-  /*
-    it.skipIf('android', "deletes a Realm with a space in its path", () => {
-        expectDeletion("my realm.realm");
-    });
-    */
+  it.skipIf("android", "deletes a Realm with a space in its path", () => {
+    expectDeletion("my realm.realm");
+  });
 });

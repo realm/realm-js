@@ -29,6 +29,6 @@ declare var environment: Environment;
 // Extend the mocha test function with the skipIf that we patch in from index.ts
 declare namespace Mocha {
     interface TestFunction {
-        skipIf: (env: Environment) => void;
+        skipIf: (env: Environment | string[] | string, title: string, callback: Mocha.AsyncFunc | Mocha.Func) => void;
     }
 }
