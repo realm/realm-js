@@ -20,17 +20,19 @@ const { expect } = require("chai");
 
 describe("Realm.Sync.Credentials", () => {
     it("defines the object", () => {
-        expect(Realm).has.key('Sync');
-        expect(Realm.Sync).has.key('User');
+        expect(Realm).has.key("Sync");
+        expect(Realm.Sync).has.key("User");
         expect(Realm.Sync.Credentials).to.be.an("object");
     });
 
     it("can build admin-token credentials", () => {
-        const credentials = Realm.Sync.Credentials.adminToken("secret-admin-token");
+        const credentials = Realm.Sync.Credentials.adminToken(
+            "secret-admin-token"
+        );
         expect(credentials).to.deep.equal({
             identityProvider: "adminToken",
             token: "secret-admin-token",
-            userInfo: {},
+            userInfo: {}
         });
     });
 
@@ -39,25 +41,31 @@ describe("Realm.Sync.Credentials", () => {
         expect(credentials).to.deep.equal({
             identityProvider: "anonymous",
             token: undefined,
-            userInfo: {},
+            userInfo: {}
         });
     });
 
     it("can build azureAD credentials", () => {
-        const credentials = Realm.Sync.Credentials.azureAD("secret-azure-ad-token");
+        const credentials = Realm.Sync.Credentials.azureAD(
+            "secret-azure-ad-token"
+        );
         expect(credentials).to.deep.equal({
             identityProvider: "azuread",
             token: "secret-azure-ad-token",
-            userInfo: {},
+            userInfo: {}
         });
     });
 
     it("can build custom credentials", () => {
-        const credentials = Realm.Sync.Credentials.custom("custom-provider", "token-a", { customProperty: "customValue" });
+        const credentials = Realm.Sync.Credentials.custom(
+            "custom-provider",
+            "token-a",
+            { customProperty: "customValue" }
+        );
         expect(credentials).to.deep.equal({
             identityProvider: "custom-provider",
             token: "token-a",
-            userInfo: { customProperty: "customValue" },
+            userInfo: { customProperty: "customValue" }
         });
     });
 
@@ -66,7 +74,7 @@ describe("Realm.Sync.Credentials", () => {
         expect(credentials).to.deep.equal({
             identityProvider: "facebook",
             token: "facebook-token",
-            userInfo: {},
+            userInfo: {}
         });
     });
 
@@ -75,7 +83,7 @@ describe("Realm.Sync.Credentials", () => {
         expect(credentials).to.deep.equal({
             identityProvider: "google",
             token: "google-token",
-            userInfo: {},
+            userInfo: {}
         });
     });
 
@@ -84,16 +92,19 @@ describe("Realm.Sync.Credentials", () => {
         expect(credentials).to.deep.equal({
             identityProvider: "jwt",
             token: "jwt-token",
-            userInfo: {},
+            userInfo: {}
         });
     });
 
     it("can build jwt credentials (with custom providerName)", () => {
-        const credentials = Realm.Sync.Credentials.jwt("jwt-token", "jwt/custom-name");
+        const credentials = Realm.Sync.Credentials.jwt(
+            "jwt-token",
+            "jwt/custom-name"
+        );
         expect(credentials).to.deep.equal({
             identityProvider: "jwt/custom-name",
             token: "jwt-token",
-            userInfo: {},
+            userInfo: {}
         });
     });
 
@@ -103,8 +114,8 @@ describe("Realm.Sync.Credentials", () => {
             identityProvider: "nickname",
             token: "nicky",
             userInfo: {
-                is_admin: false,
-            },
+                is_admin: false
+            }
         });
     });
 
@@ -114,32 +125,39 @@ describe("Realm.Sync.Credentials", () => {
             identityProvider: "nickname",
             token: "nicky",
             userInfo: {
-                is_admin: true,
-            },
+                is_admin: true
+            }
         });
     });
 
     it("can build username + password credentials", () => {
-        const credentials = Realm.Sync.Credentials.usernamePassword("someone", "very-secret");
+        const credentials = Realm.Sync.Credentials.usernamePassword(
+            "someone",
+            "very-secret"
+        );
         expect(credentials).to.deep.equal({
             identityProvider: "password",
             token: "someone",
             userInfo: {
                 password: "very-secret",
-                register: undefined,
-            },
+                register: undefined
+            }
         });
     });
 
     it("can build username + password credentials (creating the user)", () => {
-        const credentials = Realm.Sync.Credentials.usernamePassword("someone", "very-secret", true);
+        const credentials = Realm.Sync.Credentials.usernamePassword(
+            "someone",
+            "very-secret",
+            true
+        );
         expect(credentials).to.deep.equal({
             identityProvider: "password",
             token: "someone",
             userInfo: {
                 password: "very-secret",
-                register: true,
-            },
+                register: true
+            }
         });
     });
 });

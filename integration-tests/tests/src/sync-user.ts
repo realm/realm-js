@@ -16,25 +16,28 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-const { expect } = require("chai");
-const uuid = require("uuid").v4;
+import { expect } from "chai";
+import * as uuid from "uuid";
 
-const { withRos } = require("./utils/with-ros");
+import { withRos } from "./utils/with-ros";
 
 describe("Realm.Sync.User", () => {
     it("defines the login function", () => {
-        expect(Realm).has.key('Sync');
-        expect(Realm.Sync).has.key('User');
+        expect(Realm).has.key("Sync");
+        expect(Realm.Sync).has.key("User");
         expect(Realm.Sync.User.login).to.be.a("function");
     });
 
-    withRos.it("can authenticate using the nickname provider", async function () {
-        const nickname = `realm-js-tests-${uuid()}`;
-        const credentials = Realm.Sync.Credentials.nickname(nickname);
-        const user = await Realm.Sync.User.login(this.ros.url, credentials);
-        const serializedUser = user.serialize();
-        expect(serializedUser.identity).to.be.a("string");
-        expect(serializedUser.refreshToken).to.be.a("string");
-        expect(serializedUser.isAdmin).to.equal(false);
-    });
+    withRos.it(
+        "can authenticate using the nickname provider",
+        async function() {
+            const nickname = `realm-js-tests-${uuid()}`;
+            const credentials = Realm.Sync.Credentials.nickname(nickname);
+            const user = await Realm.Sync.User.login(this.ros.url, credentials);
+            const serializedUser = user.serialize();
+            expect(serializedUser.identity).to.be.a("string");
+            expect(serializedUser.refreshToken).to.be.a("string");
+            expect(serializedUser.isAdmin).to.equal(false);
+        }
+    );
 });
