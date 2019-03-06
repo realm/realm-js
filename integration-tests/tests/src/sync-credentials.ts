@@ -20,9 +20,8 @@ const { expect } = require("chai");
 
 describe("Realm.Sync.Credentials", () => {
     it("defines the object", () => {
-        expect(Realm).has.key("Sync");
-        expect(Realm.Sync).has.key("User");
-        expect(Realm.Sync.Credentials).to.be.an("object");
+        expect(Realm.Sync).to.not.equal(undefined);
+        expect(Realm.Sync.Credentials).to.not.equal(undefined);
     });
 
     it("can build admin-token credentials", () => {

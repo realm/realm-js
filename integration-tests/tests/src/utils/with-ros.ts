@@ -1,6 +1,9 @@
 import { ITestCallbackContext } from "mocha";
 import * as Realm from "realm";
-import { v4 as uuid } from "uuid";
+import * as uuid from "uuid";
+
+// TODO: Adapt this to the environment passed as a global instead of reading it from the process global, which will not
+// be available from React Native.
 
 const { REALM_OBJECT_SERVER_URL } = process.env;
 
@@ -26,13 +29,13 @@ interface ITestCallbackContextWithROS extends ITestCallbackContext {
 }
 
 const ros: IRealmObjectServer = {
-    url: REALM_OBJECT_SERVER_URL,
     createTestUser: () => {
         return Realm.Sync.User.login(
             REALM_OBJECT_SERVER_URL,
             Realm.Sync.Credentials.nickname(`realm-js-tests-${uuid()}`)
         );
-    }
+    },
+    url: REALM_OBJECT_SERVER_URL
 };
 
 /**
@@ -47,7 +50,7 @@ export const withROS = {
         ) => PromiseLike<any> | void
     ) => {
         if (typeof REALM_OBJECT_SERVER_URL === "string") {
-            it(expectation, function(...args) {
+            it(expectation, function (...args) {
                 // Communicating with ROS takes longer than other tests
                 this.timeout(5000);
                 return callback.call({ ...this, ros }, ...args);
