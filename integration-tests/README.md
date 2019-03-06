@@ -74,6 +74,21 @@ If you're iterating on the tests to solve an issue which shows itself in a parti
 
 Because of limitiations (see below), we need to explicit require in the files which defines the individual tests: To write a new test, simply add it in the relevant file in `test/src/` or create a new file and make sure to require that from `test/src/index.ts`.
 
+The tests are written in TypeScript and we use tslint (with prettier) restrict the TypeScript language to a set of recommended coding-style guidelines.
+To automatically check linting rules and fix issues enable a tslint plugin for your editor.
+
+Alternatively, check for issues running
+
+```bash
+npm run lint
+```
+
+and to automatically fix issues run
+
+```bash
+npm run lint -- --fix
+```
+
 Tests will have access to the following globals:
 
 - [the Mocha hook globals](https://mochajs.org/#hooks) (define, it, after, before, etc.).

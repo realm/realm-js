@@ -10,7 +10,10 @@
             "chai"
         ],
         "noResolve": true,
-        "noImplicitAny": true
+        "noImplicitAny": true,
+        "lib": [
+            "es2015.promise"
+        ]
     },
     "include": [
         "src/**/*.ts"

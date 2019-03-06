@@ -16,59 +16,68 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { Func, AsyncFunc, Test } from "mocha";
+import { AsyncFunc, Func, Test } from "mocha";
 
-type Filtering = { [k: string]: string | boolean };
+interface IFiltering {
+  [k: string]: string | boolean;
+}
 
 // Implements a way to skip tests on specific platforms
 
-function shouldSkipProperty(filterValue: boolean | string, environmentValue: string) {
-    if (filterValue === true) {
-        // If filter value is strictly true, the environment must not be loosely true
-        return !!environmentValue;
-    } else if (filterValue) {
-        // If filter value is some other non-falsy value, the environment must match exactly
-        return filterValue === environmentValue;
-    } else {
-        // A falsy filter expects a falsy environment
-        return !environmentValue;
-    }
+function shouldSkipProperty(
+  filterValue: boolean | string,
+  environmentValue: string
+) {
+  if (filterValue === true) {
+    // If filter value is strictly true, the environment must not be loosely true
+    return !!environmentValue;
+  } else if (filterValue) {
+    // If filter value is some other non-falsy value, the environment must match exactly
+    return filterValue === environmentValue;
+  } else {
+    // A falsy filter expects a falsy environment
+    return !environmentValue;
+  }
 }
 
-function shouldSkip(filter: Filtering) {
-    for (const k in filter) {
-        if (shouldSkipProperty(filter[k], environment[k])) {
-            return true;
-        }
+function shouldSkip(filter: IFiltering) {
+  for (const k in filter) {
+    if (shouldSkipProperty(filter[k], environment[k])) {
+      return true;
     }
-    return false;
+  }
+  return false;
 }
 
 /**
  * Skips the test if the values provided in `filter` matches that of the environment.
  * Use this to skip particular tests based on the environment, if we for example have a failing test which is not
  * applicable for the environment or if we want to eventually fix it, but doesn't want the tests to fail right now.
- * 
+ *
  * @argument filter can be an object, an array or a string. If an object is provided every key with value `true` will
  * skip the test if the same key has a "truly" value (a true boolean, a string, etc). If an array is provided it will
  * be turned into an object with the array elements as keys and `true` values and `skipIf` will be called recursively.
  * If a string is provided skipIf will simply be called with an object with the provided string as key and `true` as the
  * value for that single property.
  */
-export function skipIf(filter: string | string[] | Filtering, title: string, callback: Func | AsyncFunc): Test {
-    if (typeof filter === 'string') {
-        return skipIf({ [filter]: true }, title, callback);
-    } else if (Array.isArray(filter)) {
-        const filterObject: Filtering = {};
-        for (let environment of filter) {
-            filterObject[environment] = true;
-        }
-        return skipIf(filterObject, title, callback);
-    } else {
-        if (shouldSkip(filter)) {
-            it.skip(title, callback);
-        } else {
-            it(title, callback);
-        }
+export function skipIf(
+  filter: string | string[] | IFiltering,
+  title: string,
+  callback: Func | AsyncFunc
+): Test {
+  if (typeof filter === "string") {
+    return skipIf({ [filter]: true }, title, callback);
+  } else if (Array.isArray(filter)) {
+    const filterObject: IFiltering = {};
+    for (const environment of filter) {
+      filterObject[environment] = true;
     }
+    return skipIf(filterObject, title, callback);
+  } else {
+    if (shouldSkip(filter)) {
+      it.skip(title, callback);
+    } else {
+      it(title, callback);
+    }
+  }
 }

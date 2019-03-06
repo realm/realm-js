@@ -16,40 +16,39 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-
 if (!global.Realm) {
-    throw new Error("Expected 'Realm' to be available as a global");
+  throw new Error("Expected 'Realm' to be available as a global");
 }
 
 if (!global.title) {
-    throw new Error("Expected 'title' to be available as a global");
+  throw new Error("Expected 'title' to be available as a global");
 }
 
 if (!global.fs) {
-    throw new Error("Expected 'fs' to be available as a global");
+  throw new Error("Expected 'fs' to be available as a global");
 }
 
 if (!global.path) {
-    throw new Error("Expected 'path' to be available as a global");
+  throw new Error("Expected 'path' to be available as a global");
 }
 
 if (!global.environment || typeof global.environment !== "object") {
-    throw new Error("Expected 'environment' to be available as a global");
+  throw new Error("Expected 'environment' to be available as a global");
 }
 
 // Patch in a function that can skip running tests in specific environments
 global.it.skipIf = require("./utils/skip-if");
 
 describe(global.title, () => {
-    require("./realm-constructor");
-    require("./dynamic-schema-updates");
+  require("./realm-constructor");
+  require("./dynamic-schema-updates");
 });
 
 afterEach(() => {
-    // Remove all Realm files in the default directory
-    if ("clearTestState" in Realm) {
-        Realm.clearTestState();
-    } else {
-        throw new Error("Expected a method to clear the test state");
-    }
+  // Remove all Realm files in the default directory
+  if ("clearTestState" in Realm) {
+    Realm.clearTestState();
+  } else {
+    throw new Error("Expected a method to clear the test state");
+  }
 });

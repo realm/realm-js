@@ -7,7 +7,8 @@
   "scripts": {
     "build": "tsc -p .",
     "start": "ts-mocha --project ./tsconfig.json --require src/utils/segfault-handler.js --require src/utils/inject-globals.js --watch-extensions ts,js --watch src/index.ts",
-    "prepack": "(test -d node_modules || npm ci) && npm run build"
+    "prepack": "(test -d node_modules || npm ci) && npm run build",
+    "lint": "tslint -p ."
   },
   "peerDependencies": {
     "mocha": "^5.2.0",
@@ -19,10 +20,14 @@
     "@types/node": "^11.10.4",
     "fs-extra": "^7.0.1",
     "mocha": "^5.2.0",
+    "prettier": "^1.16.4",
     "realm": "../..",
     "segfault-handler": "^1.0.1",
     "ts-mocha": "^6.0.0",
     "tslint": "^5.13.1",
+    "tslint-config-prettier": "^1.18.0",
+    "tslint-eslint-rules": "^5.4.0",
+    "tslint-plugin-prettier": "^2.0.1",
     "typescript": "^3.3.3333"
   },
   "dependencies": {
