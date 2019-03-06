@@ -19,31 +19,31 @@
 import * as Realm from "realm";
 
 export interface IPerson {
-  name: string;
-  age: number;
+    name: string;
+    age: number;
 }
 
 export const PersonSchema: Realm.ObjectSchema = {
-  name: "Person",
-  properties: {
-    age: "int",
-    name: "string"
-  }
+    name: "Person",
+    properties: {
+        age: "int",
+        name: "string"
+    }
 };
 
 export interface IDog {
-  name: string;
-  age: number;
-  owner: IPerson;
+    name: string;
+    age: number;
+    owner: IPerson;
 }
 
 export const DogSchema: Realm.ObjectSchema = {
-  name: "Dog",
-  properties: {
-    age: "int",
-    name: "string",
-    owner: "Person"
-  }
+    name: "Dog",
+    properties: {
+        age: "int",
+        name: "string",
+        owner: "Person"
+    }
 };
 
 export const PersonAndDogSchema = [PersonSchema, DogSchema];

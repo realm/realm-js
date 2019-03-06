@@ -1,14 +1,17 @@
 {
-    "extends": [
-      "tslint:latest",
-      "tslint-eslint-rules",
-      "tslint-config-prettier"
+  "extends": [
+    "tslint:latest",
+    "tslint-eslint-rules",
+    "tslint-config-prettier"
+  ],
+  "rulesDirectory": [
+    "tslint-plugin-prettier"
+  ],
+  "rules": {
+    "prettier": [
+      true,
+      { "tabWidth": 4 }
     ],
-    "rulesDirectory": [
-      "tslint-plugin-prettier"
-    ],
-    "rules": {
-      "prettier": true,
-      "no-var-requires": false
-    }
+    "no-var-requires": false
   }
+}

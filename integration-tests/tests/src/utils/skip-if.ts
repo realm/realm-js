@@ -19,34 +19,34 @@
 import { AsyncFunc, Func, Test } from "mocha";
 
 interface IFiltering {
-  [k: string]: string | boolean;
+    [k: string]: string | boolean;
 }
 
 // Implements a way to skip tests on specific platforms
 
 function shouldSkipProperty(
-  filterValue: boolean | string,
-  environmentValue: string
+    filterValue: boolean | string,
+    environmentValue: string
 ) {
-  if (filterValue === true) {
-    // If filter value is strictly true, the environment must not be loosely true
-    return !!environmentValue;
-  } else if (filterValue) {
-    // If filter value is some other non-falsy value, the environment must match exactly
-    return filterValue === environmentValue;
-  } else {
-    // A falsy filter expects a falsy environment
-    return !environmentValue;
-  }
+    if (filterValue === true) {
+        // If filter value is strictly true, the environment must not be loosely true
+        return !!environmentValue;
+    } else if (filterValue) {
+        // If filter value is some other non-falsy value, the environment must match exactly
+        return filterValue === environmentValue;
+    } else {
+        // A falsy filter expects a falsy environment
+        return !environmentValue;
+    }
 }
 
 function shouldSkip(filter: IFiltering) {
-  for (const k in filter) {
-    if (shouldSkipProperty(filter[k], environment[k])) {
-      return true;
+    for (const k in filter) {
+        if (shouldSkipProperty(filter[k], environment[k])) {
+            return true;
+        }
     }
-  }
-  return false;
+    return false;
 }
 
 /**
@@ -61,23 +61,23 @@ function shouldSkip(filter: IFiltering) {
  * value for that single property.
  */
 export function skipIf(
-  filter: string | string[] | IFiltering,
-  title: string,
-  callback: Func | AsyncFunc
+    filter: string | string[] | IFiltering,
+    title: string,
+    callback: Func | AsyncFunc
 ): Test {
-  if (typeof filter === "string") {
-    return skipIf({ [filter]: true }, title, callback);
-  } else if (Array.isArray(filter)) {
-    const filterObject: IFiltering = {};
-    for (const environment of filter) {
-      filterObject[environment] = true;
-    }
-    return skipIf(filterObject, title, callback);
-  } else {
-    if (shouldSkip(filter)) {
-      it.skip(title, callback);
+    if (typeof filter === "string") {
+        return skipIf({ [filter]: true }, title, callback);
+    } else if (Array.isArray(filter)) {
+        const filterObject: IFiltering = {};
+        for (const environment of filter) {
+            filterObject[environment] = true;
+        }
+        return skipIf(filterObject, title, callback);
     } else {
-      it(title, callback);
+        if (shouldSkip(filter)) {
+            it.skip(title, callback);
+        } else {
+            it(title, callback);
+        }
     }
-  }
 }
