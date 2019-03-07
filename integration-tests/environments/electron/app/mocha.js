@@ -34,7 +34,7 @@ module.exports = (serverURL, processType) => {
                 electron: process.type === "browser" ? "main" : "renderer",
             };
             // Add the integration test suite
-            const testIndexPath = require.resolve("realm-integration-tests/src/index.js");
+            const testIndexPath = require.resolve("realm-integration-tests");
             mocha.addFile(testIndexPath);
         },
         whenRunning: (runner) => {
