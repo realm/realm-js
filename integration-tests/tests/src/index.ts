@@ -37,7 +37,8 @@ if (!global.environment || typeof global.environment !== "object") {
 }
 
 // Patch in a function that can skip running tests in specific environments
-global.it.skipIf = require("./utils/skip-if");
+import { skipIf } from "./utils/skip-if";
+global.it.skipIf = skipIf;
 
 describe(global.title, () => {
     require("./realm-constructor");
@@ -46,5 +47,9 @@ describe(global.title, () => {
 
 afterEach(() => {
     // Remove all Realm files in the default directory
-    Realm.clearTestState();
+    if ("clearTestState" in Realm) {
+        Realm.clearTestState();
+    } else {
+        throw new Error("Expected a method to clear the test state");
+    }
 });
