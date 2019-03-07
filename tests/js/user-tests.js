@@ -177,8 +177,9 @@ module.exports = {
   // FIXME: reenable test when https://github.com/realm/realm-js/issues/2274 is fixed
   /*
   testLoginTowardsMisbehavingServer() {
-    // Try authenticating towards a server thats clearly not ROS
-    return Realm.Sync.User.login('https://github.com/realm/realm-js', Realm.Sync.Credentials.anonymous())
+    // Try authenticating using an endpoint that doesn't exist
+    return Realm.Sync.User.login('http://localhost:9080/invalid-auth-endpoint', Realm.Sync.Credentials.anonymous())
+      .then(() => { throw new Error('Login should have failed'); })
       .catch((e) => {
         assertIsError(e);
         TestCase.assertEqual(
