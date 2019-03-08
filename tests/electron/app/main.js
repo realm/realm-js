@@ -55,15 +55,11 @@ app.on("ready", () => {
     console.log("Running tests in the main process.");
     const jasmine = require("./jasmine.js").execute(filter);
     jasmine.onComplete((passed) => {
-      process.exit(passed ? 0 : -1);
+      console.log(`Testing completed with status ${passed ? 0 : -1}`)
     });
   } else if(runIn === "render") {
     console.log("Running tests in the render process.");
   } else {
     throw new Error("Can only run the tests in the 'main' or 'render' process");
   }
-});
-
-app.on("quit", (e, exitCode) => {
-  console.log("Electron process stopped, with status", exitCode);
 });
