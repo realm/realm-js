@@ -79,7 +79,7 @@
   },
   "dependencies": {
     "deepmerge": "2.1.0",
-    "fs-extra": "^7.0.1",
+    "fs-extra": "^4.0.3",
     "nan": "^2.12.1",
     "node-fetch": "^1.7.3",
     "node-machine-id": "^1.1.10",
