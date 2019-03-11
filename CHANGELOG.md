@@ -1,7 +1,7 @@
-x.x.x Release notes (yyyy-MM-dd)
+2.25.0 Release notes (2019-3-7)
 =============================================================
 ### Enhancements
-* Add `Realm.Sync.setLogger()` to capture the sync client's log. ([#2125](https://github.com/realm/realm-js/issues/2125) and [realm-js-private#517](https://github.com/realm/realm-js-private/issues/517))
+* Added `Realm.Sync.setLogger()` to capture the sync client's log. ([#2125](https://github.com/realm/realm-js/issues/2125) and [realm-js-private#517](https://github.com/realm/realm-js-private/issues/517))
 
 ### Fixed
 * Fixed broken user auth functions when running in electron. ([#2264](https://github.com/realm/realm-js/pull/2264), since v2.24.0)
@@ -12,8 +12,8 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
 ### Internal
-* Add `Realm.Sync.SyncConfiguration._sessionStopPolicy` for setting the behaviour of the sync session.
-* Add `Realm.Sync._hasExistingSessions()` which returns `true` if Realm has a reference to any sync session regardless of its state. ([#2248](https://github.com/realm/realm-js/issues/2248))
+* Added `Realm.Sync.SyncConfiguration._sessionStopPolicy` for setting the behaviour of the sync session.
+* Added `Realm.Sync._hasExistingSessions()` which returns `true` if Realm has a reference to any sync session regardless of its state. ([#2248](https://github.com/realm/realm-js/issues/2248))
 * Implemented the integration tests using TypeScript.
 
 2.24.0 Release notes (2019-2-27)
