@@ -867,7 +867,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "if [[ -d \"$HOME/.asdf/shims\" ]]; then\n  export PATH=$HOME/.asdf/shims:$PATH\nfi\n\n[ -z \"$NVM_DIR\" ] && export NVM_DIR=\"$HOME/.nvm\"\n\nif [[ -s \"$HOME/.nvm/nvm.sh\" ]]; then\n  . \"$HOME/.nvm/nvm.sh\"\nelif [[ -x \"$(command -v brew)\" && -s \"$(brew --prefix nvm)/nvm.sh\" ]]; then\n  . \"$(brew --prefix nvm)/nvm.sh\"\nfi\n \nif [[ \"$(command -v nvm)\" ]]; then\n  [ ! -z \"$(nvm use v8.15.0 2>&1 | grep 'N/A')\" ] && echo \"Please install node v8.15.0\" && exit\nfi\n\n[ \"$(node --version)\" != \"v8.15.0\" ] && echo \"Please install node v8.15.0\" && exit\n\ncd ..\nnode scripts/download-realm.js ios --sync\n";
+			shellScript = "if [[ -d \"$HOME/.asdf/shims\" ]]; then\n  export PATH=$HOME/.asdf/shims:$PATH\nfi\n\n[ -z \"$NVM_DIR\" ] && export NVM_DIR=\"$HOME/.nvm\"\n\nif [[ -s \"$HOME/.nvm/nvm.sh\" ]]; then\n  . \"$HOME/.nvm/nvm.sh\"\nelif [[ -x \"$(command -v brew)\" && -s \"$(brew --prefix nvm)/nvm.sh\" ]]; then\n  . \"$(brew --prefix nvm)/nvm.sh\"\nfi\n\necho \"Using Node.js $(node --version)\"\n\ncd ..\nnode scripts/download-realm.js ios --sync\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
