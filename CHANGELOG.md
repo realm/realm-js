@@ -1,4 +1,4 @@
-2.25.0 Release notes (2019-3-7)
+2.25.0 Release notes (2019-3-12)
 =============================================================
 ### Enhancements
 * Added `Realm.Sync.setLogger()` to capture the sync client's log. ([#2125](https://github.com/realm/realm-js/issues/2125) and [realm-js-private#517](https://github.com/realm/realm-js-private/issues/517))
