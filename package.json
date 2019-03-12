@@ -78,6 +78,7 @@
     "check-environment": "node scripts/check-environment.js"
   },
   "dependencies": {
+    "command-line-args": "^4.0.6",
     "decompress": "^4.2.0",
     "deepmerge": "2.1.0",
     "fs-extra": "^4.0.3",
@@ -97,7 +98,6 @@
   "devDependencies": {
     "@types/node": "^4.9.1",
     "babel-eslint": "^8.2.6",
-    "command-line-args": "^4.0.6",
     "eslint": "^5.12.1",
     "eslint-plugin-jasmine": "^2.10.1",
     "eslint-plugin-react": "^7.12.4",
