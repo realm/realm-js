@@ -7,7 +7,7 @@
   "scripts": {
     "build": "tsc -p .",
     "start": "ts-mocha --project ./tsconfig.json --require src/utils/segfault-handler.js --require src/utils/inject-globals.js --watch-extensions ts,js --watch src/index.ts",
-    "prepack": "(test -d node_modules || npm ci) && npm run build",
+    "prepack": "(test -d node_modules || npm ci --build-from-source=realm) && npm run build",
     "lint": "tslint -p ."
   },
   "peerDependencies": {
