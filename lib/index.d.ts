@@ -71,12 +71,17 @@ declare namespace Realm {
     }
 
     /**
+     * A function which can be called to migrate a Realm from one version of the schema to another.
+     */
+    type MigrationCallback = (oldRealm: Realm, newRealm: Realm) => void;
+
+    /**
      * realm configuration
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.html#~Configuration }
      */
     interface Configuration {
         encryptionKey?: ArrayBuffer | ArrayBufferView | Int8Array;
-        migration?: (oldRealm: Realm, newRealm: Realm) => void;
+        migration?: MigrationCallback;
         shouldCompactOnLaunch?: (totalBytes: number, usedBytes: number) => boolean;
         path?: string;
         fifoFilesFallbackPath?: string;
