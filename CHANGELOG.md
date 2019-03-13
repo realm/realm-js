@@ -14,6 +14,7 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Internal
 * Fixing the Electron integration tests. ([#2286](https://github.com/realm/realm-js/pull/2286))
+* Fixed adding a property to an existing object schema using the internal `realm._updateSchema`. ([#2283](https://github.com/realm/realm-js/pull/2283), since v2.24.0)
 
 2.25.0 Release notes (2019-3-12)
 =============================================================
