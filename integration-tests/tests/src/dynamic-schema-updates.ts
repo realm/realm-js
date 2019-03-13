@@ -91,8 +91,9 @@ describe("realm._updateSchema", () => {
                 },
                 friends: {
                     indexed: false,
-                    name: "owner",
+                    name: "friends",
                     objectType: "Dog",
+                    optional: false,
                     type: "list"
                 },
                 name: {
