@@ -1321,7 +1321,7 @@ void RealmClass<T>::update_schema(ContextType ctx, ObjectType this_object, Argum
     // Perform the schema update
     realm->update_schema(
         parsed_schema,
-        realm->schema_version(),
+        realm->schema_version() + 1,
         nullptr,
         nullptr,
         true
