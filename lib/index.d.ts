@@ -437,7 +437,7 @@ declare namespace Realm.Sync {
 
     type ErrorCallback = (session: Session, error: SyncError) => void;
     type SSLVerifyCallback = (sslVerifyObject: SSLVerifyObject) => boolean;
-    enum SessionStopPolicy {
+    const enum SessionStopPolicy {
         AfterUpload = "after-upload",
         Immediately = "immediately",
         Never = "never"
