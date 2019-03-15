@@ -23,6 +23,9 @@ const fs = require("fs");
 const path = require("path");
 const { MochaRemoteServer } = require("mocha-remote-server");
 
+// Adjust this as the expected execution time increases
+const TIMEOUT_MS = 1000 * 30; // 30 seconds
+
 const appPaths = {
     darwin: "dist/mac/realm-electron-tests.app/Contents/MacOS/realm-electron-tests",
     linux: "dist/linux-unpacked/realm-electron-tests",
@@ -44,7 +47,7 @@ function determineSpawnParameters(processType, serverUrl) {
     } else {
         console.warn("🚧 Running an unpackaged version of the app 🚧");
         return {
-            command: path.resolve(__dirname, "node_modules/.bin/electron", process.platform === "win32" ? ".cmd" : ""),
+            command: require("electron"),
             args: [".", processType, serverUrl],
         };
     }
@@ -54,22 +57,18 @@ function runElectron(processType, serverUrl) {
     const { command, args } = determineSpawnParameters(processType, serverUrl);
     // Spawn the Electron app
     const appProcess = spawn(command, args, { stdio: "inherit" });
+    // If the runner closes, we should kill the Electron app
     process.on("exit", () => {
         appProcess.kill("SIGHUP");
     });
-    // Return a promise that resolves when the app close
-    return new Promise((resolve, reject) => {
-        appProcess.on("close", (code) => {
-            resolve(code);
-        });
-    });
+    return appProcess;
 }
 
 async function run() {
     const mochaConfig = {};
 
     const processType = process.argv[2];
-    if (processType !== "main" && processType !== "renderer") {
+    if (processType !== "main" && processType !== "renderer") {
         throw Error("You need to call this with a runtime argument specifying the process type");
     }
 
@@ -91,15 +90,39 @@ async function run() {
     });
     await server.start();
 
-    const electronApp = runElectron(processType, server.getUrl());
-    const mochaTests = new Promise((resolve, reject) => {
-        server.run(resolve);
-    });
+    // Spawn the electron process
+    const appProcess = runElectron(processType, server.getUrl());
+    console.log(`Started the Electron app (pid = ${appProcess.pid})`);
 
-    await Promise.race([electronApp, mochaTests]);
+    try {
+        await new Promise((resolve, reject) => {
+            // Succeed after the tests has run
+            server.run(resolve);
+            // Fail if the electron app closes (before the mocha tests completes)
+            appProcess.on("close", (code) => {
+                const err = new Error(`Electron app closed before tests completed (code = ${code})`);
+                reject(err);
+            });
+        });
+    } finally {
+        console.log("Shutting down the Electron app");
+        appProcess.kill("SIGKILL");
+    }
 }
 
-run().then(failures => {
+function timeout(ms) {
+    return new Promise((_, reject) => {
+        setTimeout(() => {
+            const err = new Error(`Timed out after ${ms}ms`);
+            reject(err);
+        }, ms);
+    });
+}
+
+Promise.race([
+    run(),
+    timeout(TIMEOUT_MS),
+]).then(failures => {
     // Exit with the same status as the Electron process
     process.exit(failures > 0 ? 1 : 0);
 }, (error) => {
