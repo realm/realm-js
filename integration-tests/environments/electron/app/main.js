@@ -33,6 +33,7 @@ const url = require("url");
 let mainWindow;
 
 app.on("ready", () => {
+    console.log("Electron app is ready");
     const processType = process.argv[2];
     const mochaRemoteServerURL = process.argv[3] || "ws://localhost:8090";
     global.options = { mochaRemoteServerURL, processType };

@@ -13,7 +13,7 @@ const POLL_LOG_DELAY = 500;
 
 const filterOption = process.argv[2] || null;
 
-const doneMatcher = /Electron process stopped, with status ([-\d]+)/;
+const doneMatcher = /Testing completed with status ([-\d]+)/;
 
 const app = new Application({
   path: ELECTRON_PATH,
@@ -27,20 +27,18 @@ app.start().then(() => {
   // Keep reading the log, until Jasmine prints "ALL DONE"
   return new Promise((resolve, reject) => {
     const timeout = setInterval(() => {
+      if (!app.isRunning()) {
+        clearTimeout(timeout);
+        reject(new Error("Electron process unexpectedly exited"));
+      }
       app.client.getMainProcessLogs().then((logs) => {
         logs.forEach((msg) => {
           console.log(msg);
           const doneTest = doneMatcher.exec(msg);
-          if(doneTest) {
-            const statusCode = parseInt(doneTest[1], 10);
+          if (doneTest) {
             clearTimeout(timeout);
-            resolve(statusCode);
-          }
-        });
-        app.client.getWindowCount().then((count) => {
-          if(count === 0) {
-            const err = new Error("All Electron windows unexpectedly closed.");
-            reject(err);
+            const statusCode = parseInt(doneTest[1], 10);
+            app.stop().then(() => resolve(statusCode));
           }
         });
       });

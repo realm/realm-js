@@ -34,15 +34,8 @@ module.exports = (serverURL, processType) => {
                 electron: process.type === "browser" ? "main" : "renderer",
             };
             // Add the integration test suite
-            const testIndexPath = require.resolve("realm-integration-tests/src/index.js");
+            const testIndexPath = require.resolve("realm-integration-tests");
             mocha.addFile(testIndexPath);
-        },
-        whenRunning: (runner) => {
-            runner.on("end", () => {
-                const p = process.type === "renderer" ? require("electron").remote.process : process;
-                // Exit the process with the number of failures
-                p.exit(runner.failures);
-            });
         },
     });
 };

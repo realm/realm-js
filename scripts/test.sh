@@ -69,6 +69,7 @@ stop_server() {
   if [[ ${SERVER_PID} -gt 0 ]] ; then
     echo server is running. killing it
     kill -9 ${SERVER_PID} >/dev/null 2>&1  || true
+    wait ${SERVER_PID} >/dev/null 2>&1 || true # wait may fail if the server exits fast enough
   fi
 }
 
@@ -268,10 +269,12 @@ case "$TARGET" in
 "react-tests")
   npm run check-environment
   set_nvm_default
+  npm ci
   download_server
   start_server
+
   pushd tests/react-test-app
-  npm install --no-save
+  npm ci
   ./node_modules/.bin/install-local
   open_chrome
   start_packager
@@ -284,8 +287,9 @@ case "$TARGET" in
 "react-example")
   npm run check-environment
   set_nvm_default
-  pushd examples/ReactExample
+  npm ci
 
+  pushd examples/ReactExample
   npm install --no-save
   ./node_modules/.bin/install-local
   open_chrome
@@ -365,7 +369,7 @@ case "$TARGET" in
   stop_server
   ;;
 "electron")
-  npm install --no-save
+  npm ci
   if [ "$(uname)" = 'Darwin' ]; then
     download_server
     start_server
@@ -373,13 +377,14 @@ case "$TARGET" in
 
   pushd "$SRCROOT/tests/electron"
   # Build Realm and runtime deps for electron
-  export npm_config_target=4.0.3
+  export npm_config_build_from_source=realm
+  export npm_config_target=4.0.6
   export npm_config_runtime=electron
   export npm_config_disturl=https://atom.io/download/electron
   if [ "$(uname)" = 'Darwin' ]; then
     export npm_config_realm_enable_sync=true
   fi
-  npm install --no-save
+  npm ci
   ./node_modules/.bin/install-local
 
   npm test -- --process=main

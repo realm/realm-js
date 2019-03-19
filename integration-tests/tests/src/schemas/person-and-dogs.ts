@@ -16,8 +16,34 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-// Require this file to get the segfault handler registered
-// - this produce prettier stacktraces when a segfault is experienced.
+import * as Realm from "realm";
 
-const SegfaultHandler = require("segfault-handler");
-SegfaultHandler.registerHandler("crash.log");
+export interface IPerson {
+    name: string;
+    age: number;
+}
+
+export const PersonSchema: Realm.ObjectSchema = {
+    name: "Person",
+    properties: {
+        age: "int",
+        name: "string"
+    }
+};
+
+export interface IDog {
+    name: string;
+    age: number;
+    owner: IPerson;
+}
+
+export const DogSchema: Realm.ObjectSchema = {
+    name: "Dog",
+    properties: {
+        age: "int",
+        name: "string",
+        owner: "Person"
+    }
+};
+
+export const PersonAndDogSchema = [PersonSchema, DogSchema];
