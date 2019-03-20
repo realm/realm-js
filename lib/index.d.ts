@@ -20,6 +20,16 @@
 // With great contributions to @akim95 on github
 
 declare namespace Realm {
+    interface CollectionChangeSet {
+        insertions: number[];
+        deletions: number[];
+        modifications: number[];
+        newModifications: number[];
+        oldModifications: number[];
+    }
+
+    type CollectionChangeCallback<T> = (collection: Collection<T>, change: CollectionChangeSet) => void;
+
     /**
      * PropertyType
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.html#~PropertyType }
@@ -101,6 +111,13 @@ declare namespace Realm {
         [keys: string]: any;
     }
 
+    interface ObjectChangeSet {
+        deleted: boolean;
+        changedProperties: string[]
+    }
+
+    type ObjectChangeCallback = (object: Object, changes: ObjectChangeSet) => void;
+
     /**
      * Object
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.Object.html }
@@ -125,6 +142,15 @@ declare namespace Realm {
          * @returns number
          */
         linkingObjectsCount(): number;
+
+        /**
+         * @returns void
+         */
+        addListener(callback: ObjectChangeCallback): void;
+
+        removeListener(callback: ObjectChangeCallback): void;
+
+        removeAllListeners(): void;
     }
 
     const Object: {
@@ -136,16 +162,6 @@ declare namespace Realm {
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.Collection.html#~SortDescriptor }
      */
     type SortDescriptor = [string] | [string, boolean];
-
-    interface CollectionChangeSet {
-        insertions: number[];
-        deletions: number[];
-        modifications: number[];
-        newModifications: number[];
-        oldModifications: number[];
-    }
-
-    type CollectionChangeCallback<T> = (collection: Collection<T>, change: CollectionChangeSet) => void;
 
     /**
      * Collection
