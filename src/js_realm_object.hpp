@@ -126,12 +126,13 @@ typename T::Object RealmObjectClass<T>::create_instance(ContextType ctx, realm::
 }
 
 template<typename T>
-void RealmObjectClass<T>::get_property(ContextType ctx, ObjectType object, const String &property, ReturnValue &return_value) {
+void RealmObjectClass<T>::get_property(ContextType ctx, ObjectType object, const String &property_name, ReturnValue &return_value) {
     auto realm_object = get_internal<T, RealmObjectClass<T>>(object);
-    std::string name = property;
-    if (realm_object->get_object_schema().property_for_name(name)) {
+    std::string alias_name = property_name;
+    const Property* prop = realm_object->get_object_schema().property_for_alias(alias_name);
+    if (prop) {
         NativeAccessor<T> accessor(ctx, realm_object->realm(), realm_object->get_object_schema());
-        auto result = realm_object->template get_property_value<ValueType>(accessor, name);
+        auto result = realm_object->template get_property_value<ValueType>(accessor, *prop);
         return_value.set(result);
     }
 }
@@ -217,14 +218,16 @@ std::vector<String<T>> RealmObjectClass<T>::get_property_names(ContextType ctx, 
     auto realm_object = get_internal<T, RealmObjectClass<T>>(object);
     auto &object_schema = realm_object->get_object_schema();
 
+    // When parsing schema objects from JS, we always ensure an alias is set. If the user didn't define
+    // one, the name property will be used as the alias.
     std::vector<String> names;
     names.reserve(object_schema.persisted_properties.size() + object_schema.computed_properties.size());
 
     for (auto &prop : object_schema.persisted_properties) {
-        names.push_back(prop.name);
+        names.push_back(prop.alias);
     }
     for (auto &prop : object_schema.computed_properties) {
-        names.push_back(prop.name);
+        names.push_back(prop.alias);
     }
 
     return names;

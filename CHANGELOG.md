@@ -1,7 +1,7 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
-* None.
+* Added support for defining property aliases in the schema using `name: { type: 'int', alias: 'aliasName' }`. In that case `name` will be  used in the Realm file, while the alias is used for reading/writing the property as well as querying it.
 
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)

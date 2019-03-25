@@ -37,6 +37,7 @@ declare namespace Realm {
         default?: any;
         optional?: boolean;
         indexed?: boolean;
+        alias?: string;
     }
 
     // properties types

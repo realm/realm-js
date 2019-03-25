@@ -455,6 +455,9 @@ class Realm {
  *   This is not supported for `"list"` properties of object types and `"linkingObjects"` properties.
  * @property {boolean} [indexed] - Signals if this property should be indexed. Only supported for
  *   `"string"`, `"int"`, and `"bool"` properties.
+ * @property {string} [alias] - an alias in JavaScript for the underlying name in the Realm file. If set, this must be
+ *   used when reading/writing the property or making queries against it. Trying to use the internal name will throw
+ *   an exception.
  */
 
 /**

@@ -154,7 +154,7 @@ typename T::Object ResultsClass<T>::create_instance(ContextType ctx, SharedRealm
     return create_object<T, ResultsClass<T>>(ctx, new realm::js::Results<T>(realm, *table));
 }
 
-inline void alias_backlinks(parser::KeyPathMapping &mapping, const realm::SharedRealm &realm)
+inline void setup_aliases(parser::KeyPathMapping &mapping, const realm::SharedRealm &realm)
 {
     const realm::Schema &schema = realm->schema();
     for (auto it = schema.begin(); it != schema.end(); ++it) {
@@ -165,6 +165,12 @@ inline void alias_backlinks(parser::KeyPathMapping &mapping, const realm::Shared
                 std::string native_name = "@links." + target_object_schema->name + "." + property.link_origin_property_name;
                 mapping.add_mapping(table, property.name, native_name);
             }
+        }
+
+        for (const Property &property : it->persisted_properties) {
+            auto target_object_schema = schema.find(property.object_type);
+            const TableRef table = ObjectStore::table_for_object_type(realm->read_group(), it->name);
+            mapping.add_mapping(table, property.alias, property.name);
         }
     }
 }
@@ -183,7 +189,7 @@ typename T::Object ResultsClass<T>::create_filtered(ContextType ctx, const U &co
     DescriptorOrdering ordering;
     parser::KeyPathMapping mapping;
     mapping.set_backlink_class_prefix(ObjectStore::table_name_for_object_type(""));
-    alias_backlinks(mapping, realm);
+    setup_aliases(mapping, realm);
 
     parser::ParserResult result = parser::parse(query_string);
     NativeAccessor<T> accessor(ctx, realm, object_schema);

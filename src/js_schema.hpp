@@ -62,7 +62,7 @@ typename T::Object Schema<T>::dict_for_property_array(ContextType ctx, const Obj
 
     for (uint32_t i = 0; i < count; i++) {
         ValueType value = Object::get_property(ctx, array, i);
-        Object::set_property(ctx, dict, object_schema.persisted_properties[i].name, value);
+        Object::set_property(ctx, dict, object_schema.persisted_properties[i].alias, value);
     }
 
     return dict;
@@ -171,6 +171,7 @@ Property Schema<T>::parse_property(ContextType ctx, ValueType attributes, String
     static const String object_type_string = "objectType";
     static const String optional_string = "optional";
     static const String property_string = "property";
+    static const String alias_string = "alias";
 
     Property prop;
     prop.name = std::move(property_name);
@@ -202,6 +203,13 @@ Property Schema<T>::parse_property(ContextType ctx, ValueType attributes, String
         ValueType indexed_value = Object::get_property(ctx, property_object, indexed_string);
         if (!Value::is_undefined(ctx, indexed_value)) {
             prop.is_indexed = Value::validated_to_boolean(ctx, indexed_value);
+        }
+
+        ValueType alias_value = Object::get_property(ctx, property_object, alias_string);
+        if (!Value::is_undefined(ctx, alias_value)) {
+            prop.alias = Value::validated_to_string(ctx, alias_value);
+        } else {
+            prop.alias = prop.name; // If no alias is defined, the alias is equal to the underlying property name
         }
     }
     else {
@@ -385,6 +393,9 @@ typename T::Object Schema<T>::object_for_property(ContextType ctx, const Propert
 
     static const String optional_string = "optional";
     Object::set_property(ctx, object, optional_string, Value::from_boolean(ctx, is_nullable(property.type)));
+
+    static const String alias_string =  "alias";
+    Object::set_property(ctx, object, alias_string, Value::from_string(ctx, property.alias));
 
     return object;
 }
