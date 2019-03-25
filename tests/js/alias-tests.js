@@ -52,11 +52,29 @@ function addTestObjects(realm) {
 module.exports = {
 
     testAliasInSchema() {
-        const realm = getRealm();
+        const Person = {
+            name: 'Person',
+            properties: {
+                name:     {type: 'string', alias: '_name'},
+                age:      'double',
+                married:  {type: 'bool', default: false, alias: '_married'},
+                children: {type: 'list', objectType: 'Person', alias: '_children'},
+                parents:  {type: 'linkingObjects', objectType: 'Person', property: 'children', alias: '_parents'},
+            }
+        };
 
-        // Schema objects returned expose both name and alias
-        TestCase.assertEqual(realm.schema[0].properties['name'].alias === 'otherName');
+        const realm = new Realm({
+            schema: [Person]
+        });
+
+        const props = realm.schema[0].properties;
+        TestCase.assertEqual(props['name'].alias, '_name');
+        TestCase.assertEqual(props['age'].alias, '');
+        TestCase.assertEqual(props['married'].alias, '_married');
+        TestCase.assertEqual(props['children'].alias, '_children');
+        TestCase.assertEqual(props['parents'].alias, '_parents');
     },
+
 
     testAliasWhenCreatingObjects() {
         const realm = getRealm();
@@ -92,8 +110,9 @@ module.exports = {
         let results = realm.objects("ObjectA").filtered("otherName = 'Foo'");
         TestCase.assertEqual(results.length, 1);
 
-        // Querying on internal names throws
-        TestCase.assertThrows(() => realm.objects("ObjectA").filtered("name = 'Foo'"));
+        // Querying on internal names are still allowed
+        results = realm.objects("ObjectA").filtered("name = 'Foo'");
+        TestCase.assertEqual(results.length, 1);
     },
 
 };
