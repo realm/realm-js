@@ -66,6 +66,53 @@ describe("realm._updateSchema", () => {
         });
     });
 
+    it("creates a property on an existing class", () => {
+        const realm = new Realm({ schema: PersonAndDogSchema });
+        // Copy the schema
+        const updatedSchema = [...realm.schema];
+        // Locate the Dog schema
+        const dogSchema = updatedSchema.find(s => s.name === "Dog");
+        // Add a fields property
+        dogSchema.properties.friends = "Dog[]";
+        // Update the schema
+        realm.write(() => {
+            realm._updateSchema(updatedSchema);
+        });
+
+        const ModifiedDogSchema = realm.schema.find(s => s.name === "Dog");
+        expect(ModifiedDogSchema).to.deep.equal({
+            name: "Dog",
+            properties: {
+                age: {
+                    indexed: false,
+                    name: "age",
+                    optional: false,
+                    type: "int"
+                },
+                friends: {
+                    indexed: false,
+                    name: "friends",
+                    objectType: "Dog",
+                    optional: false,
+                    type: "list"
+                },
+                name: {
+                    indexed: false,
+                    name: "name",
+                    optional: false,
+                    type: "string"
+                },
+                owner: {
+                    indexed: false,
+                    name: "owner",
+                    objectType: "Person",
+                    optional: true,
+                    type: "object"
+                }
+            }
+        });
+    });
+
     it("can use a newly added class", () => {
         const realm = new Realm({ schema: PersonAndDogSchema });
         realm.write(() => {

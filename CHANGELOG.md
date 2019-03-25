@@ -2,10 +2,11 @@ x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
 * Added support for defining property aliases in the schema using `name: { type: 'int', alias: 'aliasName' }`. In that case `name` will be  used in the Realm file, while the alias is used for reading/writing the property as well as querying it.
+* Add `RealmObject.addListener()`, `RealmObject.removeListener()`, and `RealmObject.removeAllListeners()` to set up and remove object-level notifications. ([#763](https://github.com/realm/realm-js/issues/763))
 
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None.
+* Fixed retrying authentication requests. The issue could be observed as "Cannot read property 'get' of undefined." errors being thrown when the authenticate requests were retried. ([#2297](https://github.com/realm/realm-js/issues/2297), since v2.24.0)
 
 ### Compatibility
 * Realm Object Server: 3.11.0 or later.
@@ -13,7 +14,8 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
 ### Internal
-* None.
+* Fixing the Electron integration tests. ([#2286](https://github.com/realm/realm-js/pull/2286))
+* Fixed adding a property to an existing object schema using the internal `realm._updateSchema`. ([#2283](https://github.com/realm/realm-js/pull/2283), since v2.24.0)
 
 2.25.0 Release notes (2019-3-12)
 =============================================================

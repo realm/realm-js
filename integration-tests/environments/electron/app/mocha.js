@@ -37,12 +37,5 @@ module.exports = (serverURL, processType) => {
             const testIndexPath = require.resolve("realm-integration-tests");
             mocha.addFile(testIndexPath);
         },
-        whenRunning: (runner) => {
-            runner.on("end", () => {
-                const p = process.type === "renderer" ? require("electron").remote.process : process;
-                // Exit the process with the number of failures
-                p.exit(runner.failures);
-            });
-        },
     });
 };

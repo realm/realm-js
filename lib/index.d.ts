@@ -20,6 +20,16 @@
 // With great contributions to @akim95 on github
 
 declare namespace Realm {
+    interface CollectionChangeSet {
+        insertions: number[];
+        deletions: number[];
+        modifications: number[];
+        newModifications: number[];
+        oldModifications: number[];
+    }
+
+    type CollectionChangeCallback<T> = (collection: Collection<T>, change: CollectionChangeSet) => void;
+
     /**
      * PropertyType
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.html#~PropertyType }
@@ -72,12 +82,17 @@ declare namespace Realm {
     }
 
     /**
+     * A function which can be called to migrate a Realm from one version of the schema to another.
+     */
+    type MigrationCallback = (oldRealm: Realm, newRealm: Realm) => void;
+
+    /**
      * realm configuration
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.html#~Configuration }
      */
     interface Configuration {
         encryptionKey?: ArrayBuffer | ArrayBufferView | Int8Array;
-        migration?: (oldRealm: Realm, newRealm: Realm) => void;
+        migration?: MigrationCallback;
         shouldCompactOnLaunch?: (totalBytes: number, usedBytes: number) => boolean;
         path?: string;
         fifoFilesFallbackPath?: string;
@@ -101,6 +116,13 @@ declare namespace Realm {
     interface ObjectPropsType {
         [keys: string]: any;
     }
+
+    interface ObjectChangeSet {
+        deleted: boolean;
+        changedProperties: string[]
+    }
+
+    type ObjectChangeCallback = (object: Object, changes: ObjectChangeSet) => void;
 
     /**
      * Object
@@ -126,6 +148,15 @@ declare namespace Realm {
          * @returns number
          */
         linkingObjectsCount(): number;
+
+        /**
+         * @returns void
+         */
+        addListener(callback: ObjectChangeCallback): void;
+
+        removeListener(callback: ObjectChangeCallback): void;
+
+        removeAllListeners(): void;
     }
 
     const Object: {
@@ -137,16 +168,6 @@ declare namespace Realm {
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.Collection.html#~SortDescriptor }
      */
     type SortDescriptor = [string] | [string, boolean];
-
-    interface CollectionChangeSet {
-        insertions: number[];
-        deletions: number[];
-        modifications: number[];
-        newModifications: number[];
-        oldModifications: number[];
-    }
-
-    type CollectionChangeCallback<T> = (collection: Collection<T>, change: CollectionChangeSet) => void;
 
     /**
      * Collection
@@ -438,7 +459,7 @@ declare namespace Realm.Sync {
 
     type ErrorCallback = (session: Session, error: SyncError) => void;
     type SSLVerifyCallback = (sslVerifyObject: SSLVerifyObject) => boolean;
-    enum SessionStopPolicy {
+    const enum SessionStopPolicy {
         AfterUpload = "after-upload",
         Immediately = "immediately",
         Never = "never"

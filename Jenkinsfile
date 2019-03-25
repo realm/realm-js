@@ -103,7 +103,8 @@ stage('integration tests') {
     'Node.js v10 on Mac': NodeJsTests.onMacOS(nodeVersion: '10'),
     'Node.js v8 on Linux': NodeJsTests.onLinux(nodeVersion: '8'),
     'Node.js v10 on Linux': NodeJsTests.onLinux(nodeVersion: '10'),
-    'Electron on Linux': ElectronTests.onLinux(),
+    // 'Electron on Linux': ElectronTests.onLinux(),
+    'Electron on Mac': ElectronTests.onMacOS(),
   )
 }
 

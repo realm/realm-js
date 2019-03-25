@@ -26,7 +26,7 @@
   "devDependencies": {
     "command-line-args": "^4.0.6",
     "decompress": "^4.2.0",
-    "electron": "^4.0.3",
+    "electron": "4.1.0",
     "electron-builder": "^20.38.5",
     "https-proxy-agent": "^2.2.1",
     "mocha-junit-reporter": "^1.18.0",
