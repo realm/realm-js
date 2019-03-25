@@ -159,6 +159,9 @@ static inline void parse_property_type(StringData object_name, Property& prop, S
     if (prop.type == PropertyType::Object && !is_array(prop.type)) {
         prop.type |= PropertyType::Nullable;
     }
+
+    // If no alias is defined, the alias becomes the underlying column name.
+    prop.alias = prop.name;
 }
 
 
@@ -208,8 +211,6 @@ Property Schema<T>::parse_property(ContextType ctx, ValueType attributes, String
         ValueType alias_value = Object::get_property(ctx, property_object, alias_string);
         if (!Value::is_undefined(ctx, alias_value)) {
             prop.alias = Value::validated_to_string(ctx, alias_value);
-        } else {
-            prop.alias = prop.name; // If no alias is defined, the alias is equal to the underlying property name
         }
     }
     else {

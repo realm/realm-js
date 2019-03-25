@@ -69,7 +69,7 @@ module.exports = {
 
         const props = realm.schema[0].properties;
         TestCase.assertEqual(props['name'].alias, '_name');
-        TestCase.assertEqual(props['age'].alias, '');
+        TestCase.assertEqual(props['age'].alias, 'age');
         TestCase.assertEqual(props['married'].alias, '_married');
         TestCase.assertEqual(props['children'].alias, '_children');
         TestCase.assertEqual(props['parents'].alias, '_parents');
