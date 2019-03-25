@@ -62,7 +62,8 @@ typename T::Object Schema<T>::dict_for_property_array(ContextType ctx, const Obj
 
     for (uint32_t i = 0; i < count; i++) {
         ValueType value = Object::get_property(ctx, array, i);
-        Object::set_property(ctx, dict, object_schema.persisted_properties[i].alias, value);
+        Property prop = object_schema.persisted_properties[i];
+        Object::set_property(ctx, dict, !prop.alias.empty() ? prop.alias : prop.name, value);
     }
 
     return dict;
@@ -159,9 +160,6 @@ static inline void parse_property_type(StringData object_name, Property& prop, S
     if (prop.type == PropertyType::Object && !is_array(prop.type)) {
         prop.type |= PropertyType::Nullable;
     }
-
-    // If no alias is defined, the alias becomes the underlying column name.
-    prop.alias = prop.name;
 }
 
 
@@ -396,7 +394,7 @@ typename T::Object Schema<T>::object_for_property(ContextType ctx, const Propert
     Object::set_property(ctx, object, optional_string, Value::from_boolean(ctx, is_nullable(property.type)));
 
     static const String alias_string =  "alias";
-    Object::set_property(ctx, object, alias_string, Value::from_string(ctx, property.alias));
+    Object::set_property(ctx, object, alias_string, property.alias.empty() ? Value::from_undefined(ctx) : Value::from_string(ctx, property.alias));
 
     return object;
 }

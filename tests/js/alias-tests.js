@@ -56,6 +56,7 @@ module.exports = {
             name: 'Person',
             properties: {
                 name:     {type: 'string', alias: '_name'},
+                address:  {type: 'string', indexed: true },
                 age:      'double',
                 married:  {type: 'bool', default: false, alias: '_married'},
                 children: {type: 'list', objectType: 'Person', alias: '_children'},
@@ -69,7 +70,8 @@ module.exports = {
 
         const props = realm.schema[0].properties;
         TestCase.assertEqual(props['name'].alias, '_name');
-        TestCase.assertEqual(props['age'].alias, 'age');
+        TestCase.assertEqual(props['address'].alias, undefined);
+        TestCase.assertEqual(props['age'].alias, undefined);
         TestCase.assertEqual(props['married'].alias, '_married');
         TestCase.assertEqual(props['children'].alias, '_children');
         TestCase.assertEqual(props['parents'].alias, '_parents');

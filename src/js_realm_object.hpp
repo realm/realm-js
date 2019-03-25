@@ -242,10 +242,10 @@ std::vector<String<T>> RealmObjectClass<T>::get_property_names(ContextType ctx, 
     names.reserve(object_schema.persisted_properties.size() + object_schema.computed_properties.size());
 
     for (auto &prop : object_schema.persisted_properties) {
-        names.push_back(prop.alias);
+        names.push_back(!prop.alias.empty() ? prop.alias : prop.name);
     }
     for (auto &prop : object_schema.computed_properties) {
-        names.push_back(prop.alias);
+        names.push_back(!prop.alias.empty() ? prop.alias : prop.name);
     }
 
     return names;

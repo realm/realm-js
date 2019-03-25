@@ -68,7 +68,7 @@ public:
 
     OptionalValue value_for_property(ValueType dict, Property const& prop, size_t) {
         ObjectType object = Value::validated_to_object(m_ctx, dict);
-        ValueType value = Object::get_property(m_ctx, object, prop.alias);
+        ValueType value = Object::get_property(m_ctx, object, !prop.alias.empty() ? prop.alias : prop.name);
         if (Value::is_undefined(m_ctx, value)) {
             return util::none;
         }

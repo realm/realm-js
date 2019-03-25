@@ -168,7 +168,6 @@ inline void setup_aliases(parser::KeyPathMapping &mapping, const realm::SharedRe
         }
 
         for (const Property &property : it->persisted_properties) {
-            auto target_object_schema = schema.find(property.object_type);
             const TableRef table = ObjectStore::table_for_object_type(realm->read_group(), it->name);
             mapping.add_mapping(table, property.alias, property.name);
         }
