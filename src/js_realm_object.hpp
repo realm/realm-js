@@ -159,8 +159,8 @@ template<typename T>
 bool RealmObjectClass<T>::set_property(ContextType ctx, ObjectType object, const String &property, ValueType value) {
     auto realm_object = get_internal<T, RealmObjectClass<T>>(object);
 
-    std::string property_name = property;
-    const Property* prop = realm_object->get_object_schema().property_for_name(property_name);
+    std::string alias_name = property;
+    const Property* prop = realm_object->get_object_schema().property_for_alias(alias_name);
     if (!prop) {
         return false;
     }
@@ -170,7 +170,7 @@ bool RealmObjectClass<T>::set_property(ContextType ctx, ObjectType object, const
         throw TypeErrorException(accessor, realm_object->get_object_schema().name, *prop, value);
     }
 
-    realm_object->set_property_value(accessor, property_name, value, true);
+    realm_object->set_property_value(accessor, prop->name, value, true);
     return true;
 }
 

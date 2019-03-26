@@ -1,6 +1,9 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
+* Added 4 new fields to query-based Subscriptions: `createdAt`, `updatedAt`, `expiresAt` and `timeToLive`. These make it possible to better reason about and control current subscriptions. (Issue [#6453](https://github.com/realm/realm-java/issues/6453))
+* Added the option of updating the query controlled by a Subscription using either `Realm.s.findAllAsync(String name, boolean update)`,  `RealmQuery.subscribe(String name, boolean update)` or `Subscription.setQuery(RealmQuery query)`. (Issue [#6453](https://github.com/realm/realm-java/issues/6453))
+* Added the option of setting a time-to-live for subscriptions. Setting this will automatically delete the subscription after the provided TTL has expired and the subscription hasn't been used. (Issue [#6453](https://github.com/realm/realm-java/issues/6453))
 * Added support for defining property aliases in the schema using `name: { type: 'int', alias: 'aliasName' }`. In that case `name` will be  used in the Realm file, while the alias is used for reading/writing the property as well as querying it.
 * Add `RealmObject.addListener()`, `RealmObject.removeListener()`, and `RealmObject.removeAllListeners()` to set up and remove object-level notifications. ([#763](https://github.com/realm/realm-js/issues/763))
 
@@ -16,6 +19,7 @@ x.x.x Release notes (yyyy-MM-dd)
 ### Internal
 * Fixing the Electron integration tests. ([#2286](https://github.com/realm/realm-js/pull/2286))
 * Fixed adding a property to an existing object schema using the internal `realm._updateSchema`. ([#2283](https://github.com/realm/realm-js/pull/2283), since v2.24.0)
+* Updated to Object Store commit: 4e7325b4df29b27f3d44faf7225a962a3d732450
 
 2.25.0 Release notes (2019-3-12)
 =============================================================

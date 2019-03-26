@@ -83,6 +83,7 @@ struct ResultsClass : ClassDefinition<T, realm::js::Results<T>, CollectionClass<
     static void get_optional(ContextType, ObjectType, ReturnValue &);
     static void get_index(ContextType, ObjectType, uint32_t, ReturnValue &);
 
+    static void description(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void snapshot(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void filtered(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void sorted(ContextType, ObjectType, Arguments &, ReturnValue &);
@@ -112,6 +113,7 @@ struct ResultsClass : ClassDefinition<T, realm::js::Results<T>, CollectionClass<
     std::string const name = "Results";
 
     MethodMap<T> const methods = {
+        {"description", wrap<description>},
         {"snapshot", wrap<snapshot>},
         {"filtered", wrap<filtered>},
         {"sorted", wrap<sorted>},
@@ -264,6 +266,16 @@ void ResultsClass<T>::get_index(ContextType ctx, ObjectType object, uint32_t ind
     auto results = get_internal<T, ResultsClass<T>>(object);
     NativeAccessor<T> accessor(ctx, *results);
     return_value.set(results->get(accessor, index));
+}
+
+template<typename T>
+void ResultsClass<T>::description(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
+    args.validate_maximum(0);
+    auto results = get_internal<T, ResultsClass<T>>(this_object);
+    auto query = results->get_query();
+    auto descriptor = results->get_descriptor_ordering();
+    std::string serialized_query = query.get_description() + " " + descriptor.get_description(query.get_table());
+    return_value.set(Value::from_string(ctx, serialized_query));
 }
 
 template<typename T>

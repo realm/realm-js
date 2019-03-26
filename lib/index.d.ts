@@ -19,6 +19,8 @@
 // TypeScript Version: 2.3.2
 // With great contributions to @akim95 on github
 
+import SubscriptionState = Realm.Sync.SubscriptionState;
+
 declare namespace Realm {
     interface CollectionChangeSet {
         insertions: number[];
@@ -713,6 +715,12 @@ interface NamedSubscription {
     name: string,
     objectType: string,
     query: string
+    readonly state: SubscriptionState;
+    readonly error: string;
+    readonly createdAt: Date;
+    readonly updatedAt: Date;
+    readonly expiresAt: Date;
+    timeToLive: number;
 }
 
 declare class Realm {

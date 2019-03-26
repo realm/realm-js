@@ -874,6 +874,31 @@ class Subscription {
     get error() {}
 
     /**
+     *  FIXME
+     */
+    get query() {}
+
+    /**
+     * FIXME
+     */
+    get createdAt() {}
+
+    /**
+     * FIXME
+     */
+    get updatedAt() {}
+
+    /**
+     * FIXME
+     */
+    get expiresAt() {}
+
+    /**
+     * FIXME
+     */
+    get timeToLive() {}
+
+    /**
      * Unsubscribe a query-based synced `Realm.Results`. The state will change to `Realm.Sync.SubscriptionState.Invalidated`.
      * The `Realm.Results` will not produce any meaningful values. Moreover, any objects matching the query will be
      * removed if they are not matched by any other query. The object removal is done asynchronously.
