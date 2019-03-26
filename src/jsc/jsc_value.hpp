@@ -50,6 +50,7 @@ inline const char *jsc::Value::typeof(JSContextRef ctx, const JSValueRef &value)
         case kJSTypeString: return "string";
         case kJSTypeBoolean: return "boolean";
         case kJSTypeUndefined: return "undefined";
+        case kJSTypeSymbol: return "symbol";
     }
 }
 
