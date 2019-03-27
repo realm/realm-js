@@ -28,7 +28,8 @@ function getRealm() {
     const schemas = [{
         name: 'ObjectA',
         properties: {
-            name: { type: 'string', alias: "otherName"}
+            name: { type: 'string', alias: "otherName"},
+            age: {type: 'int', optional: true}
         }
     }];
 
@@ -84,24 +85,45 @@ module.exports = {
 
         // Creating objects most use the alias
         realm.create('ObjectA', {
-            otherName: 'Foo'
+            otherName: 'Foo',
+            age: 42
         });
-
+[]
         // Creating uses arrays still work
-        realm.create('ObjectA', ['Bar'])
+        realm.create('ObjectA', ['Bar', 42])
 
         // Using the internal name instead of the alias throws an exception.
         TestCase.assertThrows(() => realm.create('ObjectA', { name: 'Boom' }));
+    },
+
+    testAliasWhenUpdatingObjects() {
+        const realm = getRealm();
+        realm.beginTransaction();
+
+        let obj = realm.create('ObjectA', { otherName: 'Foo' });
+
+        // Setting properties can use alias
+        obj.otherName = "Bar";
+        TestCase.assertEqual(obj.otherName, "Bar");
+
+        // Setting properties can still use internal name
+        obj.name = "Baz";
+        TestCase.assertEqual(obj.otherName, "Baz");
     },
 
     testAliasWhenReadingProperties() {
         const realm = getRealm();
         addTestObjects(realm);
 
-        // Internal names are not visible as properties, only aliases are.
+        // Both internal and aliases can be read on the  object
         let obj = realm.objects("ObjectA")[0];
-        TestCase.assertEqual(obj.name, undefined);
+        TestCase.assertEqual(obj.name, 'Foo');
         TestCase.assertEqual(obj.otherName, 'Foo');
+
+        // But only aliases are visible as keys
+        for(var key in obj) {
+            TestCase.assertFalse(key === 'name');
+        } 
     },
 
     testAliasInQueries() {
