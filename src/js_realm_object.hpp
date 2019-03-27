@@ -146,8 +146,8 @@ typename T::Object RealmObjectClass<T>::create_instance(ContextType ctx, realm::
 template<typename T>
 void RealmObjectClass<T>::get_property(ContextType ctx, ObjectType object, const String &property_name, ReturnValue &return_value) {
     auto realm_object = get_internal<T, RealmObjectClass<T>>(object);
-    std::string alias_name = property_name;
-    const Property* prop = realm_object->get_object_schema().property_for_alias(alias_name);
+    std::string prop_name = property_name;
+    const Property* prop = realm_object->get_object_schema().property_for_alias(prop_name);
     if (prop) {
         NativeAccessor<T> accessor(ctx, realm_object->realm(), realm_object->get_object_schema());
         auto result = realm_object->template get_property_value<ValueType>(accessor, *prop);
@@ -156,11 +156,10 @@ void RealmObjectClass<T>::get_property(ContextType ctx, ObjectType object, const
 }
 
 template<typename T>
-bool RealmObjectClass<T>::set_property(ContextType ctx, ObjectType object, const String &property, ValueType value) {
+bool RealmObjectClass<T>::set_property(ContextType ctx, ObjectType object, const String &property_name, ValueType value) {
     auto realm_object = get_internal<T, RealmObjectClass<T>>(object);
-
-    std::string property_name = property;
-    const Property* prop = realm_object->get_object_schema().property_for_name(property_name);
+    std::string prop_name = property_name;
+    const Property* prop = realm_object->get_object_schema().property_for_alias(prop_name);
     if (!prop) {
         return false;
     }
@@ -170,7 +169,7 @@ bool RealmObjectClass<T>::set_property(ContextType ctx, ObjectType object, const
         throw TypeErrorException(accessor, realm_object->get_object_schema().name, *prop, value);
     }
 
-    realm_object->set_property_value(accessor, property_name, value, true);
+    realm_object->set_property_value(accessor, prop->name, value, true);
     return true;
 }
 
@@ -236,8 +235,6 @@ std::vector<String<T>> RealmObjectClass<T>::get_property_names(ContextType ctx, 
     auto realm_object = get_internal<T, RealmObjectClass<T>>(object);
     auto &object_schema = realm_object->get_object_schema();
 
-    // When parsing schema objects from JS, we always ensure an alias is set. If the user didn't define
-    // one, the name property will be used as the alias.
     std::vector<String> names;
     names.reserve(object_schema.persisted_properties.size() + object_schema.computed_properties.size());
 
