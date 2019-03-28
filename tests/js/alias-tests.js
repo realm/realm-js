@@ -108,7 +108,7 @@ module.exports = {
 
         // Setting properties can still use internal name
         obj.name = "Baz";
-        TestCase.assertEqual(obj.otherName, "Baz");
+        TestCase.assertEqual(obj.otherName, "Bar");
     },
 
     testAliasWhenReadingProperties() {
@@ -117,7 +117,7 @@ module.exports = {
 
         // Both internal and aliases can be read on the  object
         let obj = realm.objects("ObjectA")[0];
-        TestCase.assertEqual(obj.name, 'Foo');
+        TestCase.assertEqual(obj.name, undefined);
         TestCase.assertEqual(obj.otherName, 'Foo');
 
         // But only aliases are visible as keys

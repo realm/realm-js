@@ -346,7 +346,7 @@ class Realm {
      * @param {string} name - Optional parameter to query for either a specific name or pattern (using
      *   cards `?` and `*`).
      * @throws {Error} If `name` is not a string.
-     * @returns {Realm.Results} containing all current subscriptions.
+     * @returns {Realm.Results} containing all current {@link Realm.Sync.NamedSubscription}s.
      */
     subscriptions(name) {}
 
