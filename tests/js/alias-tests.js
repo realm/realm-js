@@ -41,10 +41,12 @@ function getRealm() {
 function addTestObjects(realm) {
     realm.beginTransaction();
     realm.create('ObjectA', {
-        otherName: 'Foo'
+        otherName: 'Foo',
+        age: 41
     });
     realm.create('ObjectA', {
-        otherName: 'Bar'
+        otherName: 'Bar',
+        age: 42
     });
     realm.commitTransaction();
 }
@@ -69,6 +71,7 @@ module.exports = {
             schema: [Person]
         });
 
+        // Aliases are only set if explicitly defined in the schema
         const props = realm.schema[0].properties;
         TestCase.assertEqual(props['name'].alias, '_name');
         TestCase.assertEqual(props['address'].alias, undefined);
@@ -88,7 +91,7 @@ module.exports = {
             otherName: 'Foo',
             age: 42
         });
-[]
+
         // Creating uses arrays still work
         realm.create('ObjectA', ['Bar', 42])
 
@@ -102,25 +105,31 @@ module.exports = {
 
         let obj = realm.create('ObjectA', { otherName: 'Foo' });
 
-        // Setting properties can use alias
+        // Setting properties must use alias
         obj.otherName = "Bar";
         TestCase.assertEqual(obj.otherName, "Bar");
 
-        // Setting properties can still use internal name
+        // If no alias is defined, the internal name still works
+        obj.age = 1;
+        TestCase.assertEqual(obj.age, 1);
+
+        // If an alias is defined, it must be used when setting properties. Using the internal name
+        // doesn't work.
         obj.name = "Baz";
-        TestCase.assertEqual(obj.otherName, "Baz");
+        TestCase.assertEqual(obj.otherName, "Bar");
     },
 
     testAliasWhenReadingProperties() {
         const realm = getRealm();
         addTestObjects(realm);
 
-        // Both internal and aliases can be read on the  object
+        // Aliases must be used when reading properties
         let obj = realm.objects("ObjectA")[0];
-        TestCase.assertEqual(obj.name, 'Foo');
+        TestCase.assertEqual(obj.name, undefined);
         TestCase.assertEqual(obj.otherName, 'Foo');
+        TestCase.assertEqual(obj.age, 41);
 
-        // But only aliases are visible as keys
+        // Only aliases are visible as keys
         for(var key in obj) {
             TestCase.assertFalse(key === 'name');
         } 
