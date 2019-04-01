@@ -1,7 +1,7 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
-* Add support for defining property aliases in the schema using `name: { type: 'int', alias: 'aliasName' }`. In that case `name` will be  used in the Realm file, while the alias is used for reading/writing the property as well as querying it.
+* Add support for defining mapped properties in the schema using `name: { type: 'int', mapTo: 'internalName' }`. In that case the mapped name is used internally in the underlying Realm file, while the property key is used for reading/writing the property as well as querying it.
 * Add `RealmObject.addListener()`, `RealmObject.removeListener()`, and `RealmObject.removeAllListeners()` to set up and remove object-level notifications. ([#763](https://github.com/realm/realm-js/issues/763))
 
 ### Fixed
