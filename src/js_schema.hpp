@@ -396,8 +396,8 @@ typename T::Object Schema<T>::object_for_property(ContextType ctx, const Propert
     static const String optional_string = "optional";
     Object::set_property(ctx, object, optional_string, Value::from_boolean(ctx, is_nullable(property.type)));
 
-    static const String mapped_to_string =  "mappedTo";
-    Object::set_property(ctx, object, mapped_to_string, Value::from_string(ctx, property.name));
+    static const String map_to_string =  "mapTo";
+    Object::set_property(ctx, object, map_to_string, Value::from_string(ctx, property.name));
 
     return object;
 }

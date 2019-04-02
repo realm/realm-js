@@ -73,12 +73,12 @@ module.exports = {
 
         // Mapped properties are reported for all variants, no matter if the public_name is set or not.
         const props = realm.schema[0].properties;
-        TestCase.assertEqual(props['_name'].mappedTo, 'name');
-        TestCase.assertEqual(props['address'].mappedTo, 'address');
-        TestCase.assertEqual(props['age'].mappedTo, 'age');
-        TestCase.assertEqual(props['_married'].mappedTo, 'married');
-        TestCase.assertEqual(props['_children'].mappedTo, 'children');
-        TestCase.assertEqual(props['_parents'].mappedTo, 'parents');
+        TestCase.assertEqual(props['_name'].mapTo, 'name');
+        TestCase.assertEqual(props['address'].mapTo, 'address');
+        TestCase.assertEqual(props['age'].mapTo, 'age');
+        TestCase.assertEqual(props['_married'].mapTo, 'married');
+        TestCase.assertEqual(props['_children'].mapTo, 'children');
+        TestCase.assertEqual(props['_parents'].mapTo, 'parents');
     },
 
 
