@@ -84,13 +84,6 @@ LOCAL_SRC_FILES += src/object-store/src/sync/impl/sync_metadata.cpp
 LOCAL_SRC_FILES += src/object-store/src/sync/impl/work_queue.cpp
 endif
 
-# Workaround for memmove/memcpy bug
-ifeq ($(strip $(TARGET_ARCH_ABI)),armeabi-v7a)
-BUILD_WRAP_MEMMOVE = 1
-else
-BUILD_WRAP_MEMMOVE = 0
-endif
-
 LOCAL_C_INCLUDES := src
 LOCAL_C_INCLUDES += src/jsc
 LOCAL_C_INCLUDES += src/object-store/src
