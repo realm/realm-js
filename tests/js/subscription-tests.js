@@ -275,7 +275,7 @@ module.exports = {
                                     resolve();
                                 }
                             });
-                            }, 2);
+                        }, 2);
                     }
                 });
             });
