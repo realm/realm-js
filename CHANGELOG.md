@@ -1,11 +1,11 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
-* Added 4 new fields to query-based Subscriptions: `createdAt`, `updatedAt`, `expiresAt` and `timeToLive`. These make it possible to better reason about and control current subscriptions. (Issue [#6453](https://github.com/realm/realm-java/issues/6453))
-* Added the option of updating the query controlled by a Subscription using either `Realm.s.findAllAsync(String name, boolean update)`,  `RealmQuery.subscribe(String name, boolean update)` or `Subscription.setQuery(RealmQuery query)`. (Issue [#6453](https://github.com/realm/realm-java/issues/6453))
-* Added the option of setting a time-to-live for subscriptions. Setting this will automatically delete the subscription after the provided TTL has expired and the subscription hasn't been used. (Issue [#6453](https://github.com/realm/realm-java/issues/6453))
-* Added `Realm.Results.description()` which returns a string representation of the query.
-* Added support for defining property aliases in the schema using `name: { type: 'int', alias: 'aliasName' }`. In that case `name` will be  used in the Realm file, while the alias is used for reading/writing the property as well as querying it.
+* Add 4 new fields to query-based subscriptions: `createdAt`, `updatedAt`, `expiresAt` and `timeToLive`. These make it possible to better reason about and control current subscriptions. ([#6453](https://github.com/realm/realm-java/issues/6453))
+* Add the option of updating the query controlled by a subscription using either `Realm.s.findAllAsync(String name, boolean update)`,  `RealmQuery.subscribe(String name, boolean update)` or `Subscription.setQuery(RealmQuery query)`. ([#6453](https://github.com/realm/realm-java/issues/6453))
+* Add the option of setting a time-to-live for subscriptions. Setting this will automatically delete the subscription after the provided TTL has expired and the subscription hasn't been used. ([#6453](https://github.com/realm/realm-java/issues/6453))
+* Add `Realm.Results.description()` which returns a string representation of the query.
+* Add support for defining property aliases in the schema using `name: { type: 'int', alias: 'aliasName' }`. In that case `name` will be  used in the Realm file, while the alias is used for reading/writing the property as well as querying it.
 * Add support for defining mapped properties in the schema using `name: { type: 'int', mapTo: 'internalName' }`. In that case the mapped name is used internally in the underlying Realm file, while the property key is used for reading/writing the property as well as querying it.
 * Add `RealmObject.addListener()`, `RealmObject.removeListener()`, and `RealmObject.removeAllListeners()` to set up and remove object-level notifications. ([#763](https://github.com/realm/realm-js/issues/763))
 

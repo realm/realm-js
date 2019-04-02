@@ -159,7 +159,7 @@ class Collection {
      *
      * @param {string|Realm.Sync.SubscriptionOptions} options - an optional name or configuration object for the subscription.
      *   The configuration object must contain `name` and the optional properties `update` and `timeToLive`.
-     *   If `update == true` the query on an existing subscription will be updated. If `timeToLive` is set, it indicates
+     *   If `update` is true the query on an existing subscription will be updated. If `timeToLive` is set, it indicates
      *   to Realm for how long it must be kept alive, after which it will be automatically removed.
      * @returns {Realm.Sync.Subscription} - the Realm.Sync.Subscription instance.
      * @throws {Error} if the partial sync is not enabled in the configuration or the query is not supported by Realm Object Server.

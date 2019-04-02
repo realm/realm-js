@@ -861,7 +861,7 @@ class Session {
  * @property {number} timeToLive - Defines, in milliseconds, for how long the subscription should be kept alive after
  *   last being used. If `null` the subscription is kept alive indefinitely. If set to a value
  *   {@link Subscription.expiresAt} returns the date after which Realm automatically will delete the subscription.
- *   Deleting the subscription means the data covered by it are removed locally from the device, but not deleted on
+ *   Deleting the subscription implies the data covered by it are removed locally from the device, but not deleted on
  *   the server.
  * @memberOf Realm.Sync
  * @extends Realm.Object
