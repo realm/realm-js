@@ -28,7 +28,7 @@ function getRealm() {
     const schemas = [{
         name: 'ObjectA',
         properties: {
-            name: { type: 'string', alias: "otherName"},
+            otherName: { type: 'string', mapTo: "name"},
             age: {type: 'int', optional: true}
         }
     }];
@@ -41,10 +41,12 @@ function getRealm() {
 function addTestObjects(realm) {
     realm.beginTransaction();
     realm.create('ObjectA', {
-        otherName: 'Foo'
+        otherName: 'Foo',
+        age: 41
     });
     realm.create('ObjectA', {
-        otherName: 'Bar'
+        otherName: 'Bar',
+        age: 42
     });
     realm.commitTransaction();
 }
@@ -56,12 +58,12 @@ module.exports = {
         const Person = {
             name: 'Person',
             properties: {
-                name:     {type: 'string', alias: '_name'},
+                _name:     {type: 'string', mapTo: 'name'},
                 address:  {type: 'string', indexed: true },
                 age:      'double',
-                married:  {type: 'bool', default: false, alias: '_married'},
-                children: {type: 'list', objectType: 'Person', alias: '_children'},
-                parents:  {type: 'linkingObjects', objectType: 'Person', property: 'children', alias: '_parents'},
+                _married:  {type: 'bool', default: false, mapTo: 'married'},
+                _children: {type: 'list', objectType: 'Person', mapTo: 'children'},
+                _parents:  {type: 'linkingObjects', objectType: 'Person', property: 'children', mapTo: 'parents'},
             }
         };
 
@@ -69,13 +71,14 @@ module.exports = {
             schema: [Person]
         });
 
+        // Mapped properties are reported for all variants, no matter if the public_name is set or not.
         const props = realm.schema[0].properties;
-        TestCase.assertEqual(props['name'].alias, '_name');
-        TestCase.assertEqual(props['address'].alias, undefined);
-        TestCase.assertEqual(props['age'].alias, undefined);
-        TestCase.assertEqual(props['married'].alias, '_married');
-        TestCase.assertEqual(props['children'].alias, '_children');
-        TestCase.assertEqual(props['parents'].alias, '_parents');
+        TestCase.assertEqual(props['_name'].mappedTo, 'name');
+        TestCase.assertEqual(props['address'].mappedTo, 'address');
+        TestCase.assertEqual(props['age'].mappedTo, 'age');
+        TestCase.assertEqual(props['_married'].mappedTo, 'married');
+        TestCase.assertEqual(props['_children'].mappedTo, 'children');
+        TestCase.assertEqual(props['_parents'].mappedTo, 'parents');
     },
 
 
@@ -88,7 +91,7 @@ module.exports = {
             otherName: 'Foo',
             age: 42
         });
-[]
+
         // Creating uses arrays still work
         realm.create('ObjectA', ['Bar', 42])
 
@@ -102,11 +105,15 @@ module.exports = {
 
         let obj = realm.create('ObjectA', { otherName: 'Foo' });
 
-        // Setting properties can use alias
+        // Setting properties must use alias
         obj.otherName = "Bar";
         TestCase.assertEqual(obj.otherName, "Bar");
 
-        // Setting properties can still use internal name
+        // If no alias is defined, the internal name still works
+        obj.age = 1;
+        TestCase.assertEqual(obj.age, 1);
+
+        // Even if a mapped name is set, only the public name can be used when updating properties.
         obj.name = "Baz";
         TestCase.assertEqual(obj.otherName, "Bar");
     },
@@ -115,12 +122,13 @@ module.exports = {
         const realm = getRealm();
         addTestObjects(realm);
 
-        // Both internal and aliases can be read on the  object
+        // The mapped property names cannot be used when reading properties
         let obj = realm.objects("ObjectA")[0];
         TestCase.assertEqual(obj.name, undefined);
         TestCase.assertEqual(obj.otherName, 'Foo');
+        TestCase.assertEqual(obj.age, 41);
 
-        // But only aliases are visible as keys
+        // Only the Javascript property names are visible as keys, not the mapped names.
         for(var key in obj) {
             TestCase.assertFalse(key === 'name');
         } 

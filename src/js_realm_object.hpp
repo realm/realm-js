@@ -147,7 +147,7 @@ template<typename T>
 void RealmObjectClass<T>::get_property(ContextType ctx, ObjectType object, const String &property_name, ReturnValue &return_value) {
     auto realm_object = get_internal<T, RealmObjectClass<T>>(object);
     std::string prop_name = property_name;
-    const Property* prop = realm_object->get_object_schema().property_for_alias(prop_name);
+    const Property* prop = realm_object->get_object_schema().property_for_public_name(prop_name);
     if (prop) {
         NativeAccessor<T> accessor(ctx, realm_object->realm(), realm_object->get_object_schema());
         auto result = realm_object->template get_property_value<ValueType>(accessor, *prop);
@@ -159,7 +159,7 @@ template<typename T>
 bool RealmObjectClass<T>::set_property(ContextType ctx, ObjectType object, const String &property_name, ValueType value) {
     auto realm_object = get_internal<T, RealmObjectClass<T>>(object);
     std::string prop_name = property_name;
-    const Property* prop = realm_object->get_object_schema().property_for_alias(prop_name);
+    const Property* prop = realm_object->get_object_schema().property_for_public_name(prop_name);
     if (!prop) {
         return false;
     }
@@ -239,10 +239,10 @@ std::vector<String<T>> RealmObjectClass<T>::get_property_names(ContextType ctx, 
     names.reserve(object_schema.persisted_properties.size() + object_schema.computed_properties.size());
 
     for (auto &prop : object_schema.persisted_properties) {
-        names.push_back(!prop.alias.empty() ? prop.alias : prop.name);
+        names.push_back(!prop.public_name.empty() ? prop.public_name : prop.name);
     }
     for (auto &prop : object_schema.computed_properties) {
-        names.push_back(!prop.alias.empty() ? prop.alias : prop.name);
+        names.push_back(!prop.public_name.empty() ? prop.public_name : prop.name);
     }
 
     return names;

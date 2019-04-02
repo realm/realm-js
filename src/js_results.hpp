@@ -171,7 +171,7 @@ inline void setup_aliases(parser::KeyPathMapping &mapping, const realm::SharedRe
 
         for (const Property &property : it->persisted_properties) {
             const TableRef table = ObjectStore::table_for_object_type(realm->read_group(), it->name);
-            mapping.add_mapping(table, property.alias, property.name);
+            mapping.add_mapping(table, property.public_name, property.name);
         }
     }
 }
@@ -318,7 +318,7 @@ void ResultsClass<T>::subscribe(ContextType ctx, ObjectType this_object, Argumen
 
     util::Optional<std::string> subscription_name;
     bool update = false;
-    util::Optional<int64_t> ttl = none;
+    util::Optional<int64_t> ttl = util::none;
     if (args.count == 1) {
         if (Value::is_string(ctx, args[0])) {
             subscription_name = util::Optional<std::string>(Value::validated_to_string(ctx, args[0]));
@@ -327,19 +327,18 @@ void ResultsClass<T>::subscribe(ContextType ctx, ObjectType this_object, Argumen
             ValueType name_value = Object::get_property(ctx, options_object, "name");
             if (Value::is_undefined(ctx, name_value)) {
                 throw std::logic_error("A 'name' must be set.");
-            } else {
+            } 
+            else {
                 subscription_name = util::Optional<std::string>(Value::validated_to_string(ctx, name_value));
             }
 
             ValueType update_value = Object::get_property(ctx, options_object, "update");
-            if (!Value::is_undefined(ctx, update_value)) {
+            if (!Value::is_undefined(ctx, update_value))
                 update = Value::validated_to_boolean(ctx, update_value, "update");
-            }
 
             ValueType ttl_value = Object::get_property(ctx, options_object, "timeToLive");
-            if (!Value::is_undefined(ctx, ttl_value)) {
+            if (!Value::is_undefined(ctx, ttl_value))
                 ttl = util::Optional<int64_t>(Value::validated_to_number(ctx, ttl_value, "timeToLive"));
-            }
         }
     }
     else {
