@@ -38,24 +38,24 @@ class PermissionChange {
      * Gets the unique identifier of this object in the Management realm.
      * @type {string}
      */
-    get id() {}
+    get id() { }
 
     /**
      * Gets the creation time of this object.
      * @type {Date}
      */
-    get createdAt() {}
+    get createdAt() { }
 
     /**
      * Gets when the object was updated the last time.
      * @type {Date}
      */
-    get updatedAt() {}
+    get updatedAt() { }
 
     /**
      *
      */
-    get statusCode() {}
+    get statusCode() { }
 
     /**
      * A detailed message describing the status (success, error) of the operation. null if the object
@@ -63,37 +63,37 @@ class PermissionChange {
      * Filled by the server after an object was processed with additional info
      * explaining the status if necessary.
      */
-    get statusMessage() {}
+    get statusMessage() { }
 
     /**
      * The identifier of the user who will have changed permissions
      * @type {string}
      */
-    get userId() {}
+    get userId() { }
 
     /**
      * The URL for the Realm that the changes should apply to.
      * @type {string}
      */
-    get realmUrl() {}
+    get realmUrl() { }
 
     /**
      * Should the user be allowed to read from the Realm?
      * @type {bool}
      */
-    get mayRead() {}
+    get mayRead() { }
 
     /**
      * Should the user be allowed to write to the Realm?
      * @type {bool}
      */
-    get mayWrite() {}
+    get mayWrite() { }
 
     /**
      * Should the user be allowed to manage the Realm?
      * @type {bool}
      */
-    get mayManage() {}
+    get mayManage() { }
 }
 
 /**
@@ -114,24 +114,24 @@ class PermissionOffer {
      * Gets the unique identifier of this object in the Management realm.
      * @type {string}
      */
-    get id() {}
+    get id() { }
 
     /**
      * Gets the creation time of this object.
      * @type {Date}
      */
-    get createdAt() {}
+    get createdAt() { }
 
     /**
      * Gets when the object was updated the last time.
      * @type {Date}
      */
-    get updatedAt() {}
+    get updatedAt() { }
 
     /**
      *
      */
-    get statusCode() {}
+    get statusCode() { }
 
     /**
      * A detailed message describing the status (success, error) of the operation. null if the object
@@ -139,44 +139,44 @@ class PermissionOffer {
      * Filled by the server after an object was processed with additional info
      * explaining the status if necessary.
      */
-    get statusMessage() {}
+    get statusMessage() { }
 
     /**
      * Gets the token that can be used to offer the permissions defined in this object to another user.
      * @type {string}
      */
-    get token() {}
+    get token() { }
 
     /**
      * The URL for the Realm that the changes should apply to.
      * @type {string}
      */
-    get realmUrl() {}
+    get realmUrl() { }
 
     /**
      * Should the user be allowed to read from the Realm?
      * @type {bool}
      */
-    get mayRead() {}
+    get mayRead() { }
 
     /**
      * Should the user be allowed to write to the Realm?
      * @type {bool}
      */
-    get mayWrite() {}
+    get mayWrite() { }
 
     /**
      * Should the user be allowed to manage the Realm?
      * @type {bool}
      */
-    get mayManage() {}
+    get mayManage() { }
 
     /**
      * Gets or sets the expiration date and time of the offer.
      * If null, the offer will never expire. Otherwise, the offer may not be consumed past the expiration date.
      * @type {Date}
      */
-    get expiresAt() {}
+    get expiresAt() { }
 }
 
 /**
@@ -195,24 +195,24 @@ class PermissionOfferResponse {
      * Gets the unique identifier of this object in the Management realm.
      * @type {string}
      */
-    get id() {}
+    get id() { }
 
     /**
      * Gets the creation time of this object.
      * @type {Date}
      */
-    get createdAt() {}
+    get createdAt() { }
 
     /**
      * Gets when the object was updated the last time.
      * @type {Date}
      */
-    get updatedAt() {}
+    get updatedAt() { }
 
     /**
      *
      */
-    get statusCode() {}
+    get statusCode() { }
 
     /**
      * A detailed message describing the status (success, error) of the operation. null if the object
@@ -220,19 +220,19 @@ class PermissionOfferResponse {
      * Filled by the server after an object was processed with additional info
      * explaining the status if necessary.
      */
-    get statusMessage() {}
+    get statusMessage() { }
 
     /**
      * Gets the token that can be used to offer the permissions defined in this object to another user.
      * @type {string}
      */
-    get token() {}
+    get token() { }
 
     /**
      * The URL for the Realm that the changes should apply to.
      * @type {string}
      */
-    get realmUrl() {}
+    get realmUrl() { }
 }
 
 
@@ -257,19 +257,19 @@ class Permission {
      * This property cannot be modified once set.
      * @type {Realm.Permissions.Role}
      */
-    get role() {}
+    get role() { }
 
     /**
      * Whether the user can read the object to which this Permission is attached.
      * @type {boolean}
      */
-    get canRead() {}
+    get canRead() { }
 
     /**
      * Whether the user can modify the object to which this Permission is attached.
      * @type {boolean}
      */
-    get canUpdate() {}
+    get canUpdate() { }
 
     /**
      * Whether the user can delete the object to which this Permission is attached.
@@ -278,14 +278,14 @@ class Permission {
      * to Realms or Classes.
      * @type {boolean}
      */
-    get canDelete() {}
+    get canDelete() { }
 
     /**
      * Whether the user can add or modify Permissions for the object which this
      * Permission is attached to.
      * @type {boolean}
      */
-    get canSetPermissions() {}
+    get canSetPermissions() { }
 
     /**
      *  Whether the user can subscribe to queries for this object type.
@@ -294,7 +294,7 @@ class Permission {
      * to Realms or Objects.
      * @type {boolean}
      */
-    get canQuery() {}
+    get canQuery() { }
 
     /**
      * Whether the user can create new objects of the type this Permission is attached to.
@@ -303,7 +303,7 @@ class Permission {
      * to Realms or Objects.
      * @type {boolean}
      */
-    get canCreate() {}
+    get canCreate() { }
 
     /**
      * Whether the user can modify the schema of the Realm which this
@@ -313,7 +313,7 @@ class Permission {
      * to Realms or Objects.
      * @type {boolean}
      */
-    get canModifySchema() {}
+    get canModifySchema() { }
 }
 
 /**
@@ -331,7 +331,7 @@ class User {
      * the same value as Realm.Sync.User.identity.
      * @type {string}
      */
-    get id() {}
+    get id() { }
 }
 
 /**
@@ -351,13 +351,13 @@ class Role {
      * The name of the Role.
      * @type {string}
      */
-    get name() {}
+    get name() { }
 
     /**
      * The users which belong to the role.
      * @type {Array<Realm.Permissions.User>}
      */
-    get members() {}
+    get members() { }
 }
 
 /**
@@ -374,20 +374,20 @@ class Class {
      * @type {string}
      * @deprecated Use name() instead.
      */
-    get class_name() {}
+    get class_name() { }
 
     /**
      * The name of the class which these permissions apply to.
      * @type {string}
      * @since 2.18.0
      */
-    get name() {}
+    get name() { }
 
     /**
      * The permissions for this class.
      * @type {Array<Realm.Permissions.Permission>}
      */
-    get permissions() {}
+    get permissions() { }
 
     /**
      * Finds the Class-level permissions associated with the named Role. If either the role or the permission
@@ -402,7 +402,7 @@ class Class {
      * @type {Realm.Permissions.Permission}
      * @since 2.18.0
      */
-     findOrCreate(roleName) {}
+    findOrCreate(roleName) { }
 }
 
 /**
@@ -419,7 +419,7 @@ class Realm {
      * The permissions for the Realm.
      * @type {Array<Realm.Permissions.Permission>}
      */
-    get permissions() {}
+    get permissions() { }
 
     /**
      * Finds the Realm-level permissions associated with the named Role. If either the role or the permission
@@ -434,5 +434,5 @@ class Realm {
      * @type {Realm.Permissions.Permission}
      * @since 2.17.0
      */
-    findOrCreate(roleName) {}
+    findOrCreate(roleName) { }
 }

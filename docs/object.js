@@ -29,14 +29,14 @@ class Object {
      * @returns {boolean} indicating if the object can be safely accessed.
      * @since 0.12.0
      */
-    isValid() {}
+    isValid() { }
 
     /**
      * Returns the schema for the type this object belongs to.
      * @returns {Realm~ObjectSchema} the schema that describes this object.
      * @since 1.8.1
      */
-    objectSchema() {}
+    objectSchema() { }
 
     /**
      * Returns all the objects that link to this object in the specified relationship.
@@ -46,14 +46,14 @@ class Object {
      * @returns {Realm.Results} the objects that link to this object.
      * @since 1.9.0
      */
-    linkingObjects(objectType, property) {}
+    linkingObjects(objectType, property) { }
 
     /**
      * Returns the total count of incoming links to this object
      * @returns {number} number of links to this object.
      * @since 2.6.0
      */
-    linkingObjectsCount() {}
+    linkingObjectsCount() { }
 
     /**
      * Add a listener `callback` which will be called when a **live** object instance changes.
@@ -75,18 +75,18 @@ class Object {
      *   });
      * })
      */
-    addListener(callback) {}
+    addListener(callback) { }
 
     /**
      * Remove the listener `callback`
      * @param {function(obj, changes)} callback - A function previously added as listener
      * @since 2.23.0
      */
-     removeListener(callback) {}
+    removeListener(callback) { }
 
     /**
      * Remove all listeners.
      * @since 2.23.0
      */
-     removeAllListeners() {}
+    removeAllListeners() { }
 }
