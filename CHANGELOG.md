@@ -6,7 +6,7 @@ x.x.x Release notes (yyyy-MM-dd)
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
 * Fixed retrying authentication requests. The issue could be observed as "Cannot read property 'get' of undefined." errors being thrown when the authenticate requests were retried. ([#2297](https://github.com/realm/realm-js/issues/2297), since v2.24.0)
-* The `memmove` hack was never included in releases. ([#1895](https://github.com/realm/realm-js/issues/1895), since v2.11.0)
+* Due to a rare race condition in some Android devices (including Samsung SM-T111), an app could crash hard. A workaround was introduced but never included in any releases. ([#1895](https://github.com/realm/realm-js/issues/1895), since v2.11.0)
 
 ### Compatibility
 * Realm Object Server: 3.11.0 or later.
