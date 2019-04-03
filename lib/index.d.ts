@@ -20,6 +20,16 @@
 // With great contributions to @akim95 on github
 
 declare namespace Realm {
+    interface CollectionChangeSet {
+        insertions: number[];
+        deletions: number[];
+        modifications: number[];
+        newModifications: number[];
+        oldModifications: number[];
+    }
+
+    type CollectionChangeCallback<T> = (collection: Collection<T>, change: CollectionChangeSet) => void;
+
     /**
      * PropertyType
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.html#~PropertyType }
@@ -77,12 +87,17 @@ declare namespace Realm {
     }
 
     /**
+     * A function which can be called to migrate a Realm from one version of the schema to another.
+     */
+    type MigrationCallback = (oldRealm: Realm, newRealm: Realm) => void;
+
+    /**
      * realm configuration
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.html#~Configuration }
      */
     interface Configuration {
         encryptionKey?: ArrayBuffer | ArrayBufferView | Int8Array;
-        migration?: (oldRealm: Realm, newRealm: Realm) => void;
+        migration?: MigrationCallback;
         shouldCompactOnLaunch?: (totalBytes: number, usedBytes: number) => boolean;
         path?: string;
         fifoFilesFallbackPath?: string;
@@ -106,6 +121,13 @@ declare namespace Realm {
     interface ObjectPropsType {
         [keys: string]: any;
     }
+
+    interface ObjectChangeSet {
+        deleted: boolean;
+        changedProperties: string[]
+    }
+
+    type ObjectChangeCallback = (object: Object, changes: ObjectChangeSet) => void;
 
     /**
      * Object
@@ -131,6 +153,15 @@ declare namespace Realm {
          * @returns number
          */
         linkingObjectsCount(): number;
+
+        /**
+         * @returns void
+         */
+        addListener(callback: ObjectChangeCallback): void;
+
+        removeListener(callback: ObjectChangeCallback): void;
+
+        removeAllListeners(): void;
     }
 
     const Object: {
@@ -142,16 +173,6 @@ declare namespace Realm {
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.Collection.html#~SortDescriptor }
      */
     type SortDescriptor = [string] | [string, boolean];
-
-    interface CollectionChangeSet {
-        insertions: number[];
-        deletions: number[];
-        modifications: number[];
-        newModifications: number[];
-        oldModifications: number[];
-    }
-
-    type CollectionChangeCallback<T> = (collection: Collection<T>, change: CollectionChangeSet) => void;
 
     /**
      * Collection
@@ -315,7 +336,7 @@ declare namespace Realm.Sync {
         static azureAD(token: string): Credentials;
         static jwt(token: string, providerName?: string): Credentials;
         static adminToken(token: string): AdminCredentials;
-        static custom(providerName: string, token: string, userInfo?: {[key: string]: any}): Credentials;
+        static custom(providerName: string, token: string, userInfo?: { [key: string]: any }): Credentials;
 
         readonly identityProvider: string;
         readonly token: string;
@@ -339,11 +360,11 @@ declare namespace Realm.Sync {
 
         static requestPasswordReset(server: string, email: string): Promise<void>;
 
-        static completePasswordReset(server:string, resetToken:string, newPassword:string): Promise<void>;
+        static completePasswordReset(server: string, resetToken: string, newPassword: string): Promise<void>;
 
-        static requestEmailConfirmation(server:string, email:string): Promise<void>;
+        static requestEmailConfirmation(server: string, email: string): Promise<void>;
 
-        static confirmEmail(server:string, confirmationToken:string): Promise<void>;
+        static confirmEmail(server: string, confirmationToken: string): Promise<void>;
 
         static deserialize(serialized: SerializedUser | SerializedTokenUser): Realm.Sync.User;
 
@@ -443,6 +464,11 @@ declare namespace Realm.Sync {
 
     type ErrorCallback = (session: Session, error: SyncError) => void;
     type SSLVerifyCallback = (sslVerifyObject: SSLVerifyObject) => boolean;
+    const enum SessionStopPolicy {
+        AfterUpload = "after-upload",
+        Immediately = "immediately",
+        Never = "never"
+    }
 
     interface SSLConfiguration {
         validate?: boolean;
@@ -463,7 +489,8 @@ declare namespace Realm.Sync {
         error?: ErrorCallback;
         partial?: boolean;
         fullSynchronization?: boolean;
-        _disableQueryBasedSyncUrlChecks?:boolean;
+        _disableQueryBasedSyncUrlChecks?: boolean;
+        _sessionStopPolicy?: SessionStopPolicy;
         custom_http_headers?: { [header: string]: string };
         customQueryBasedSyncIdentifier?: string;
     }
@@ -523,11 +550,11 @@ declare namespace Realm.Sync {
     }
 
     enum SubscriptionState {
-         Error,
-         Creating,
-         Pending,
-         Complete,
-         Invalidated,
+        Error,
+        Creating,
+        Pending,
+        Complete,
+        Invalidated,
     }
 
     /**
@@ -559,6 +586,8 @@ declare namespace Realm.Sync {
         sslConfiguration?: SSLConfiguration;
     }
 
+    type LogLevel = 'all' | 'trace' | 'debug' | 'detail' | 'info' | 'warn' | 'error' | 'fatal' | 'off';
+
     /**
      * @deprecated, to be removed in future versions
      */
@@ -571,9 +600,11 @@ declare namespace Realm.Sync {
     function addListener(config: RealmListenerConfiguration, eventName: RealmListenerEventName, changeCallback: (changeEvent: ChangeEvent) => Promise<void>): void;
     function removeAllListeners(): Promise<void>;
     function removeListener(regex: string, name: string, changeCallback: (changeEvent: ChangeEvent) => void): Promise<void>;
-    function setLogLevel(logLevel: 'all' | 'trace' | 'debug' | 'detail' | 'info' | 'warn' | 'error' | 'fatal' | 'off'): void;
+    function setLogLevel(logLevel: LogLevel): void;
+    function setLogger(callback: (level: LogLevel, message: string) => void): void;
     function setUserAgent(userAgent: string): void;
     function initiateClientReset(path: string): void;
+    function _hasExistingSessions(): boolean;
     function reconnect(): void;
 
     /**
@@ -749,6 +780,12 @@ declare class Realm {
     static copyBundledRealmFiles(): void;
 
     /**
+     * Clears the state by closing and deleting any Realm in the default directory and logout all users.
+     * @private Not a part of the public API: It's primarily used from the library's tests.
+     */
+    static clearTestState(): void;
+
+    /**
      * @param  {Realm.Configuration} config?
      */
     constructor(config?: Realm.Configuration);
@@ -866,15 +903,23 @@ declare class Realm {
      */
     writeCopyTo(path: string, encryptionKey?: ArrayBuffer | ArrayBufferView): void;
 
-    privileges() : Realm.Permissions.RealmPrivileges;
-    privileges(objectType: string | Realm.ObjectSchema | Function) : Realm.Permissions.ClassPrivileges;
-    privileges(obj: Realm.Object) : Realm.Permissions.ObjectPrivileges;
+    privileges(): Realm.Permissions.RealmPrivileges;
+    privileges(objectType: string | Realm.ObjectSchema | Function): Realm.Permissions.ClassPrivileges;
+    privileges(obj: Realm.Object): Realm.Permissions.ObjectPrivileges;
 
-    permissions() : Realm.Permissions.Realm;
-    permissions(objectType: string | Realm.ObjectSchema | Function) : Realm.Permissions.Class;
+    permissions(): Realm.Permissions.Realm;
+    permissions(objectType: string | Realm.ObjectSchema | Function): Realm.Permissions.Class;
 
     subscriptions(name?: string): NamedSubscription[];
     unsubscribe(name: string): void;
+
+    /**
+     * Update the schema of the Realm.
+     * 
+     * @param schema The schema which the Realm should be updated to use.
+     * @private Not a part of the public API: Consider passing a `schema` when constructing the `Realm` instead.
+     */
+    _updateSchema(schema: Realm.ObjectSchema[]): void;
 }
 
 declare module 'realm' {

@@ -220,6 +220,12 @@ class Sync {
     static setLogLevel(log_level) {}
 
     /**
+     * Capture the sync client's log.
+     * @param {function(log_level, message)} logCallback - The log callback.
+     */
+    static setLogger(logCallback) {}
+
+    /**
      * Set the application part of the User-Agent string that will be sent to the Realm Object Server when a session
      * is created.
      *
@@ -246,6 +252,12 @@ class Sync {
      * }
      */
     static initiateClientReset(path) {}
+
+    /**
+     * Returns `true` if Realm still has a reference to any sync sessions regardless of their state.
+     * If `false` is returned it means that no sessions currently exist.
+     */
+    static _hasExistingSessions() {}
 }
 
 /**
@@ -424,7 +436,7 @@ class Credentials {
      * Creates credentials with a custom provider and user identifier.
      * @param {string} providerName Provider used to verify the credentials.
      * @param {string} token A string identifying the user. Usually an identity token or a username.
-     * @param {userInfo} token Data describing the user further or null if the user does not have any extra data.
+     * @param {userInfo} userInfo Data describing the user further or null if the user does not have any extra data.
      * The data will be serialized to JSON, so all values must be mappable to a valid JSON data type.
      * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.Sync.User.login|User.login}.
      */

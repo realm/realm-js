@@ -84,6 +84,8 @@ stage('package and test') {
     macos_react_tests_release: doMacBuild('react-tests Release'),
     macos_react_example_debug: doMacBuild('react-example Debug'),
     macos_react_example_release: doMacBuild('react-example Release'),
+    macos_electron_debug: doMacBuild('electron Debug'),
+    macos_electron_release: doMacBuild('electron Release'),
     //android_react_tests: doAndroidBuild('react-tests-android', {
     //  junit 'tests/react-test-app/tests.xml'
     //}),
@@ -101,7 +103,8 @@ stage('integration tests') {
     'Node.js v10 on Mac': NodeJsTests.onMacOS(nodeVersion: '10'),
     'Node.js v8 on Linux': NodeJsTests.onLinux(nodeVersion: '8'),
     'Node.js v10 on Linux': NodeJsTests.onLinux(nodeVersion: '10'),
-    'Electron on Linux': ElectronTests.onLinux(),
+    // 'Electron on Linux': ElectronTests.onLinux(),
+    'Electron on Mac': ElectronTests.onMacOS(),
   )
 }
 
@@ -230,6 +233,7 @@ def doMacBuild(target, postStep = null) {
   return {
     node('osx_vegas') {
       withEnv(['DEVELOPER_DIR=/Applications/Xcode-9.4.app/Contents/Developer',
+               'SDKROOT=macosx10.13',
                'REALM_SET_NVM_ALIAS=1']) {
         doInside("./scripts/test.sh", target, postStep)
       }

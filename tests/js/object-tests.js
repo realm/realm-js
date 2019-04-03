@@ -562,5 +562,126 @@ module.exports = {
             obj._setLink('stringLink', 'c');
             TestCase.assertEqual(obj.stringLink, null);
         });
+    },
+
+    testNotification: function() {
+        const realm = new Realm({schema: [schemas.StringOnly]});
+
+        let obj;
+        realm.write(function() {
+            obj = realm.create(schemas.StringOnly.name, { stringCol: 'foo' });
+        });
+
+        let calls = 0;
+        let resolve = () => {};
+
+        obj.addListener(function(obj, changes) {
+            calls++;
+            switch (calls) {
+                case 1:
+                    break;
+                case 2:
+                    TestCase.assertFalse(changes.deleted);
+                    TestCase.assertEqual(changes.changedProperties.length, 1);
+                    TestCase.assertEqual(changes.changedProperties[0], 'stringCol');
+                    TestCase.assertEqual(obj['stringCol'], 'bar');
+                    break;
+                case 3:
+                    TestCase.assertTrue(changes.deleted);
+                    TestCase.assertEqual(changes.changedProperties.length, 0);
+                    realm.close();
+                    resolve();
+            }
+        });
+
+        return new Promise((r, _reject) => {
+            resolve = r;
+            realm.write(function() {
+                obj['stringCol'] = 'bar';
+            });
+            realm.write(function() {
+                realm.delete(obj);
+            });
+        });
+    },
+
+    testAddAndRemoveListener: function() {
+        const realm = new Realm({schema: [schemas.StringOnly]});
+
+        let obj;
+        realm.write(function() {
+            obj = realm.create(schemas.StringOnly.name, { stringCol: 'foo' });
+        });
+
+        let calls = 0;
+
+        let listener = function(obj, changes) {
+            calls++;
+            if (calls === 2) {
+                TestCase.assertEqual(obj['stringCol'], 'bar');
+            }
+        };
+
+        obj.addListener(listener);
+
+        return new Promise((resolve, reject) => {
+            realm.write(function() {
+                obj['stringCol'] = 'bar';
+            });
+
+            setTimeout(() => {
+                obj.removeListener(listener);
+                realm.write(function() {
+                    obj['stringCol'] = 'foobar';
+                });
+
+                setTimeout(() => {
+                    TestCase.assertEqual(realm.objects(schemas.StringOnly.name)[0]['stringCol'], 'foobar');
+                    TestCase.assertEqual(calls, 2); // listener only called twice
+                    realm.close();
+                    resolve();
+                }, 2000);
+            }, 2000);
+        });
+    },
+
+    testAddAndRemoveAllListeners: function() {
+        const realm = new Realm({schema: [schemas.StringOnly]});
+
+        let obj;
+        realm.write(function() {
+            obj = realm.create(schemas.StringOnly.name, { stringCol: 'foo' });
+        });
+
+        let calls = 0;
+
+        let listener = function(obj, changes) {
+            calls++;
+            if (calls === 2) {
+                TestCase.assertEqual(obj['stringCol'], 'bar');
+            }
+        };
+
+        obj.addListener(listener);
+
+        return new Promise((resolve, reject) => {
+            realm.write(function() {
+                obj['stringCol'] = 'bar';
+            });
+
+            setTimeout(() => {
+                obj.removeAllListeners();
+                realm.write(function() {
+                    obj['stringCol'] = 'foobar';
+                });
+
+                setTimeout(() => {
+                    TestCase.assertEqual(realm.objects(schemas.StringOnly.name)[0]['stringCol'], 'foobar');
+                    TestCase.assertEqual(calls, 2); // listener only called twice
+                    realm.close();
+                    resolve();
+                }, 2000);
+            }, 2000);
+        });
     }
 };

@@ -41,7 +41,6 @@
 		3FCE2A8B1F58BDEF00D4855B /* primitive_list_notifier.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3FCE2A891F58BDE500D4855B /* primitive_list_notifier.cpp */; };
 		3FCE2A931F58BE0300D4855B /* uuid.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3FCE2A911F58BDFF00D4855B /* uuid.cpp */; };
 		3FCE2A971F58BE2200D4855B /* sync_permission.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3FCE2A951F58BE1D00D4855B /* sync_permission.cpp */; };
-		3FDC253821F919AD0087FB9B /* sync_file.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 504CF85A1EBCAE3600A9A4B6 /* sync_file.cpp */; };
 		3FDC253921F91E320087FB9B /* package.json in Resources */ = {isa = PBXBuildFile; fileRef = 02879D8B1DC29D5600777A5D /* package.json */; };
 		420FB79F1F7FBFE900D43D0F /* partial_sync.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 423737AF1F7E333400FAEDFF /* partial_sync.cpp */; };
 		425A121120235A1400C2F932 /* work_queue.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 425A120F20235A1400C2F932 /* work_queue.cpp */; };
@@ -868,7 +867,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "if [[ -d \"$HOME/.asdf/shims\" ]]; then\n  export PATH=$HOME/.asdf/shims:$PATH\nfi\n\n[ -z \"$NVM_DIR\" ] && export NVM_DIR=\"$HOME/.nvm\"\n\nif [[ -s \"$HOME/.nvm/nvm.sh\" ]]; then\n  . \"$HOME/.nvm/nvm.sh\"\nelif [[ -x \"$(command -v brew)\" && -s \"$(brew --prefix nvm)/nvm.sh\" ]]; then\n  . \"$(brew --prefix nvm)/nvm.sh\"\nfi\n \nif [[ \"$(command -v nvm)\" ]]; then\n nvm install 8.15.0\nfi\n\ncd ..\n[ ! -d node_modules/fs-extra ] && npm install --no-save\nnode scripts/download-realm.js ios --sync\n";
+			shellScript = "if [[ -d \"$HOME/.asdf/shims\" ]]; then\n  export PATH=$HOME/.asdf/shims:$PATH\nfi\n\n[ -z \"$NVM_DIR\" ] && export NVM_DIR=\"$HOME/.nvm\"\n\nif [[ -s \"$HOME/.nvm/nvm.sh\" ]]; then\n  . \"$HOME/.nvm/nvm.sh\"\nelif [[ -x \"$(command -v brew)\" && -s \"$(brew --prefix nvm)/nvm.sh\" ]]; then\n  . \"$(brew --prefix nvm)/nvm.sh\"\nfi\n\necho \"Using Node.js $(node --version)\"\n\ncd ..\nnode scripts/download-realm.js ios --sync\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -987,7 +986,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 2.23.0;
+				CURRENT_PROJECT_VERSION = 2.25.0;
 				CXX = "$(SRCROOT)/../scripts/ccache-clang++.sh";
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -1060,7 +1059,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 2.23.0;
+				CURRENT_PROJECT_VERSION = 2.25.0;
 				CXX = "$(SRCROOT)/../scripts/ccache-clang++.sh";
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;

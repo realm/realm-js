@@ -52,7 +52,7 @@ function getTempDir() {
      * be able to clean up files.
      */
     return process.env.REALM_DOWNLOAD_CORE_TEMP_DIR ||
-           path.join(os.tmpdir(), TEMP_DIR_SUFFIX);
+        path.join(os.tmpdir(), TEMP_DIR_SUFFIX);
 }
 
 function printProgress(input, totalBytes, archive) {
@@ -61,15 +61,15 @@ function printProgress(input, totalBytes, archive) {
 
     const message = `Downloading ${archive} [:bar] (:ratek)`;
     const bar = new ProgressBar(message, {
-       complete: '=',
-       incomplete: ' ',
-       width: process.stdout.columns - message.length,
-       total: totalBytes / 1024
-     });
+        complete: '=',
+        incomplete: ' ',
+        width: process.stdout.columns - message.length,
+        total: totalBytes / 1024
+    });
 
-     input.pipe(new StreamCounter()).on('progress', function() {
-         bar.tick((this.bytes / 1024) - bar.curr);
-     });
+    input.pipe(new StreamCounter()).on('progress', function () {
+        bar.tick((this.bytes / 1024) - bar.curr);
+    });
 }
 
 function download(serverFolder, archive, destination) {
@@ -81,7 +81,7 @@ function download(serverFolder, archive, destination) {
         const agentOpts = require('url').parse(proxyUrl);
         agent = new HttpsProxyAgent(agentOpts);
     }
-    return fetch(url, {agent}).then(response => {
+    return fetch(url, { agent }).then(response => {
         if (response.status !== 200) {
             throw new Error(`Error downloading ${url} - received status ${response.status} ${response.statusText}`);
         }
@@ -116,13 +116,13 @@ function extract(downloadedArchive, targetFolder, archiveRootFolder) {
         const base = path.basename(downloadedArchive).split('.');
         const tempExtractLocation = path.resolve(getTempDir(), base.slice(0, base.length - 2).join('.'));
         return decompress(downloadedArchive, tempExtractLocation)
-               .then(() => fs.readdir(path.resolve(tempExtractLocation, archiveRootFolder)))
-               .then(items => Promise.all(items.map(item => {
-                   const source = path.resolve(tempExtractLocation, archiveRootFolder, item);
-                   const target = path.resolve(targetFolder, item);
-                   return fs.copy(source, target, { filter: n => path.extname(n) !== '.so' });
-               })))
-               .then(() => fs.remove(tempExtractLocation))
+            .then(() => fs.readdir(path.resolve(tempExtractLocation, archiveRootFolder)))
+            .then(items => Promise.all(items.map(item => {
+                const source = path.resolve(tempExtractLocation, archiveRootFolder, item);
+                const target = path.resolve(targetFolder, item);
+                return fs.copy(source, target, { filter: n => path.extname(n) !== '.so' });
+            })))
+            .then(() => fs.remove(tempExtractLocation))
     }
 }
 

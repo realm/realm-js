@@ -842,6 +842,7 @@ void RealmClass<T>::get_is_partial_realm(ContextType ctx, ObjectType object, Ret
     auto config = realm->config();
     return_value.set(config.sync_config && config.sync_config->is_partial);
 }
+
 #endif
 
 #if REALM_ENABLE_SYNC
@@ -1344,7 +1345,7 @@ void RealmClass<T>::update_schema(ContextType ctx, ObjectType this_object, Argum
     // Perform the schema update
     realm->update_schema(
         parsed_schema,
-        realm->schema_version(),
+        realm->schema_version() + 1,
         nullptr,
         nullptr,
         true

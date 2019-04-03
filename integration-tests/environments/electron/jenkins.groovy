@@ -71,4 +71,55 @@ def onLinux() {
   }
 }
 
+
+def onMacOS(Map args=[:]) {
+  def nodeVersion = args.get('nodeVersion', '10')
+  return {
+    node('macos') {
+      // Unstash the files in the repository
+      unstash 'source'
+      nvm(nodeVersion) {
+        // Unstash the package produced when packaging
+        dir('integration-tests') {
+          // Remove any archive from the workspace, which might have been produced by previous runs of the job
+          sh 'rm -f realm-*.tgz'
+          unstash 'package'
+        }
+        // Install the packaged version of realm into the app and run the tests
+        dir('integration-tests/environments/electron') {
+          // Install the package, leaving out the optional packages to prevent Realm being installed from NPM
+          sh 'npm install --no-optional'
+          timeout(30) { // minutes
+            // Run both main and renderer tests catching any errors
+            def error = null;
+            // First the main process
+            try {
+              // Using xvfb to allow Electron to open a window
+              sh 'npm run test/main -- main-test-results.xml'
+            } catch (Exception e) {
+              error = e;
+            }
+            // Then the renderer process
+            try {
+              // Using xvfb to allow Electron to open a window
+              sh 'npm run test/renderer -- renderer-test-results.xml'
+            } catch (Exception e) {
+              error = e;
+            }
+            // Archive all test results
+            junit(
+              allowEmptyResults: true,
+              testResults: '*-test-results.xml',
+            )
+            // Throw any errors that might have occurred
+            if (error) {
+              throw error
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
 return this

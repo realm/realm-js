@@ -1,17 +1,52 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
+* Add `RealmObject.addListener()`, `RealmObject.removeListener()`, and `RealmObject.removeAllListeners()` to set up and remove object-level notifications. ([#763](https://github.com/realm/realm-js/issues/763))
 * Added a new `Realm.UpdateMode` enum with the values: `never`, `modified`, `all`. This replaces the current 
   `Realm.create(type, properties, update)` with `Realm.create(type, properties, updateMode)`.
   `Realm.create(type, properties, 'modified')` is a new mode that only update existing properties that actually
   changed, while `Realm.create(type, properties, 'never')` is equal to `Realm.create(type, properties, false)` and
-  `Realm.create(type, properties, 'all')` is equal to `Realm.create(type, properties, false)`. 
+  `Realm.create(type, properties, 'all')` is equal to `Realm.create(type, properties, true)`. 
   `Realm.create(type, properties, update)` is now deprecated. ([#2089](https://github.com/realm/realm-js/issues/2089))
-* Added a `_updateSchema` method on an Realm instance to perform schema manipulation. Specifically creating an object schema and a property on an existing object schema. (partly solving [#2216](https://github.com/realm/realm-js/issues/2216))
-* Add support for react-native 0.58 ([#2239](https://github.com/realm/realm-js/issues/2239)).
 
 ### Fixed
-* Fixed an assertion failure after creating an object with a null int primary key in a synchronized Realm. ([#3227](https://github.com/realm/realm-core/pull/3227))
+* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
+* Fixed retrying authentication requests. The issue could be observed as "Cannot read property 'get' of undefined." errors being thrown when the authenticate requests were retried. ([#2297](https://github.com/realm/realm-js/issues/2297), since v2.24.0)
+
+### Compatibility
+* Realm Object Server: 3.11.0 or later.
+* APIs are backwards compatible with all previous release of realm in the 2.x.y series.
+* File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
+
+### Internal
+* Fixing the Electron integration tests. ([#2286](https://github.com/realm/realm-js/pull/2286))
+* Fixed adding a property to an existing object schema using the internal `realm._updateSchema`. ([#2283](https://github.com/realm/realm-js/pull/2283), since v2.24.0)
+
+2.25.0 Release notes (2019-3-12)
+=============================================================
+### Enhancements
+* Added `Realm.Sync.setLogger()` to capture the sync client's log. ([#2125](https://github.com/realm/realm-js/issues/2125) and [realm-js-private#517](https://github.com/realm/realm-js-private/issues/517))
+
+### Fixed
+* Fixed broken user auth functions when running in electron. ([#2264](https://github.com/realm/realm-js/pull/2264), since v2.24.0)
+
+### Compatibility
+* Realm Object Server: 3.11.0 or later.
+* APIs are backwards compatible with all previous release of realm in the 2.x.y series.
+* File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
+
+### Internal
+* Added `Realm.Sync.SyncConfiguration._sessionStopPolicy` for setting the behaviour of the sync session.
+* Added `Realm.Sync._hasExistingSessions()` which returns `true` if Realm has a reference to any sync session regardless of its state. ([#2248](https://github.com/realm/realm-js/issues/2248))
+* Implemented the integration tests using TypeScript.
+
+2.24.0 Release notes (2019-2-27)
+=============================================================
+### Enhancements
+* Add support for React Native v0.58. ([#2239](https://github.com/realm/realm-js/issues/2239))
+
+### Fixed
+* Fixed an assertion failure when using a synchronized Realm and an object was created after another object was created with an int primary key of `null`. ([#3227](https://github.com/realm/realm-core/pull/3227))
 * When debugging with React Native, calling `Realm.open()` would crash since `Realm._asyncOpen()` was not available in the debugger. ([#2234](https://github.com/realm/realm-js/pull/2234), since v2.20.0)
 * Added several missing functions to the Chrome debugging support library. ([#2242](https://github.com/realm/realm-js/pull/2242), since v2.2.19).
 * Fixed incorrect results when reading data from Realm from within a callback function when debugging in Chrome. ([#2242](https://github.com/realm/realm-js/pull/2242)).
@@ -23,7 +58,8 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
 ### Internal
-* Added integration tests running in various environments (Node.js on MacOS and Linux, React Native on iOS and Android & Electron main and renderer processes on Linux). Existing tests should eventually be migrated to this to ensure they pass in all relevant environments. ([#2227](https://github.com/realm/realm-js/pull/2227)).
+* Add integration tests running in various environments (Node.js on MacOS and Linux, React Native on iOS and Android & Electron main and renderer processes on Linux). Existing tests should eventually be migrated to this to ensure they pass in all relevant environments. ([#2227](https://github.com/realm/realm-js/pull/2227))
+* Add the method `realm._updateSchema` to perform schema manipulation on an open Realm. Specifically creating an object schema and a property on an existing object schema are tested. It's undocumented as it's not fully tested and the API is subject to change. (partly solving [#2216](https://github.com/realm/realm-js/issues/2216))
 
 2.23.0 Release notes (2019-2-1)
 =============================================================
