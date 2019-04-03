@@ -6,7 +6,7 @@ x.x.x Release notes (yyyy-MM-dd)
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
 * Fixed retrying authentication requests. The issue could be observed as "Cannot read property 'get' of undefined." errors being thrown when the authenticate requests were retried. ([#2297](https://github.com/realm/realm-js/issues/2297), since v2.24.0)
-* Fixed types of the `level` argument passed to the callback provided to `Realm.Sync.setLogger`, it was a string type but actually a nummeric value is passed. ([#2125](https://github.com/realm/realm-js/issues/2125), since v2.25.0)
+* Fixed types of the `level` argument passed to the callback provided to `Realm.Sync.setLogger`, it was a string type but actually a numeric value is passed. ([#2125](https://github.com/realm/realm-js/issues/2125), since v2.25.0)
 
 ### Compatibility
 * Realm Object Server: 3.11.0 or later.
