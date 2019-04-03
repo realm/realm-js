@@ -215,15 +215,23 @@ class Sync {
 
     /**
      * Set the sync log level.
-     * @param {Realm.Sync~LogLevel} log_level - The new log level.
+     * @param {Realm.Sync~LogLevel} level - The new log level.
      */
-    static setLogLevel(log_level) {}
+    static setLogLevel(level) { }
+
+    /**
+     * A callback passed to `Realm.Sync.setLogger` when instrumenting the Realm Sync client with a custom logger.
+     * @callback Realm.Sync~logCallback
+     * @param {number} level The level of the log entry between 0 and 8 inclusively.
+     * Use this as an index into `['all', 'trace', 'debug', 'detail', 'info', 'warn', 'error', 'fatal', 'off']` to get the name of the level.
+     * @param {string} message The message of the log entry.
+     */
 
     /**
      * Capture the sync client's log.
-     * @param {function(log_level, message)} logCallback - The log callback.
+     * @param {Realm.Sync~logCallback} logger - The log callback.
      */
-    static setLogger(logCallback) {}
+    static setLogger(logger) { }
 
     /**
      * Set the application part of the User-Agent string that will be sent to the Realm Object Server when a session
