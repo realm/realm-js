@@ -912,7 +912,7 @@ declare class Realm {
     permissions(): Realm.Permissions.Realm;
     permissions(objectType: string | Realm.ObjectSchema | Function): Realm.Permissions.Class;
 
-    subscriptions(name?: string): NamedSubscription[];
+    subscriptions(name?: string): Realm.Results<NamedSubscription>;
     unsubscribe(name: string): void;
 
     /**
