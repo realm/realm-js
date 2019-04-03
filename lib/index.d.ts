@@ -582,7 +582,7 @@ declare namespace Realm.Sync {
 
     type LogLevel = 'all' | 'trace' | 'debug' | 'detail' | 'info' | 'warn' | 'error' | 'fatal' | 'off';
     
-    enum NummericLogLevel {
+    enum NumericLogLevel {
         All,
         Trace,
         Debug,
