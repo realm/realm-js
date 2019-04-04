@@ -122,6 +122,10 @@ class Sync {
      *
      * Currently supported events:
      *
+     *  * `'startup'`: Emitted when the listener start. It returns the Realm(s) matching the filter
+     *    regex. A [ChangeEvent]{@link Realm.Sync.ChangeEvent} argument
+     *    containing the `path` and `realm` properties (other [ChangeEvent]{@link Realm.Sync.ChangeEvent} 
+     *    properties are N/A). 
      *  * `'available'`: Emitted whenever there is a new Realm which has a virtual
      *    path matching the filter regex, either due to the Realm being newly created
      *    or the listener being added. The virtual path (i.e. the portion of the
@@ -150,7 +154,11 @@ class Sync {
      * Only events on Realms with a _virtual path_ that matches the filter regex are emitted.
      *
      * Currently supported events:
-     *
+     * 
+     *  * `'startup'`: Emitted when the listener start. It returns the Realm(s) matching the filter
+     *    regex. A [ChangeEvent]{@link Realm.Sync.ChangeEvent} argument
+     *    containing the `path` and `realm` properties (other [ChangeEvent]{@link Realm.Sync.ChangeEvent} 
+     *    properties are N/A). 
      *  * `'available'`: Emitted whenever there is a new Realm which has a virtual
      *    path matching the filter regex, either due to the Realm being newly created
      *    or the listener being added. The virtual path (i.e. the portion of the
@@ -990,6 +998,10 @@ class Subscription {
  *
  * Currently supported events:
  *
+ *  * `'startup'`: Emitted when the listener start. It returns the Realm(s) matching the filter
+ *    regex. A [ChangeEvent]{@link Realm.Sync.ChangeEvent} argument
+ *    containing the `path` and `realm` properties (other [ChangeEvent]{@link Realm.Sync.ChangeEvent} 
+ *    properties are N/A).    
  *  * `'available'`: Emitted whenever there is a new Realm which has a virtual
  *    path matching the filter regex, either due to the Realm being newly created
  *    or the listener being added. The virtual path (i.e. the portion of the
@@ -1009,18 +1021,23 @@ class Subscription {
  *
  * @example
  * // my-worker.js
- * function onchange(path) {
- *    console.log(`Realm created at ${path}`);
+ * function onstartup(path) {
+ *    console.log(`Realm at ${path} deleted`);
  * }
- *
- * function onavailable(change) {
+ * 
+ * function onavailable(startup) {
+ *    console.log(`Realm startup at ${startup.path}`);
+ * }
+ * 
+ * function onchange(change) {
  *    console.log(`Realm at ${change.path} changed`);
  * }
  *
  * function ondelete(path) {
  *    console.log(`Realm at ${path} deleted`);
  * }
- *
+ * 
+
  * module.exports = {onchange, oncavailable, ondelete};
  *
  * // server script
