@@ -81,6 +81,10 @@ function getRealm() {
 module.exports = {
 
     testSubscriptionWrapperProperties() {
+        if (!isNodeProccess) {
+            return;
+        }
+
         return getRealm().then(realm => {
             return new Promise((resolve, reject) => {
                 const subscription = realm.objects("ObjectA").subscribe("test");
@@ -92,6 +96,10 @@ module.exports = {
     },
 
     testNamedSubscriptionProperties() {
+        if (!isNodeProccess) {
+            return;
+        }
+
         return getRealm().then(realm => {
             return new Promise((resolve, reject) => {
                 const now = new Date();
@@ -117,6 +125,10 @@ module.exports = {
     },
 
     testUpdateQuery: function () {
+        if (!isNodeProccess) {
+            return;
+        }
+
         return getRealm().then(realm => {
             return new Promise((resolve, reject) => {
                 const sub = realm.objects("ObjectA").filtered("name = 'Foo'").subscribe("update-named-sub-query");
@@ -155,6 +167,10 @@ module.exports = {
     },
 
     testUpdateTtl() {
+        if (!isNodeProccess) {
+            return;
+        }
+
         return getRealm().then(realm => {
             const sub = realm.objects("ObjectA").filtered("name = 'Foo'").subscribe("update-named-sub-query");
             return new Promise((resolve, reject) => {
@@ -180,6 +196,10 @@ module.exports = {
     },
 
     testUpdateReadOnlyProperties() {
+        if (!isNodeProccess) {
+            return;
+        }
+
         return getRealm().then(realm => {
             return new Promise((resolve, reject) => {
                 const sub = realm.objects("ObjectA").subscribe("read-only-test");
@@ -201,6 +221,10 @@ module.exports = {
     },
 
     testSubscribeWithTtl() {
+        if (!isNodeProccess) {
+            return;
+        }
+
         return getRealm().then(realm => {
             return new Promise((resolve, reject) => {
                 const now = new Date();
@@ -223,6 +247,10 @@ module.exports = {
     },
 
     testSubscribeAndUpdateQuery() {
+        if (!isNodeProccess) {
+            return;
+        }
+
         return getRealm().then(realm => {
             return new Promise((resolve, reject) => {
                 let query1 = realm.objects("ObjectA");
@@ -251,6 +279,10 @@ module.exports = {
     },
 
     testSubscribeAndUpdateTtl() {
+        if (!isNodeProccess) {
+            return;
+        }
+
         return getRealm().then(realm => {
             const query1 = realm.objects("ObjectA");
 
@@ -283,6 +315,10 @@ module.exports = {
     },
 
     testSubscribeWithInvalidOptions() {
+        if (!isNodeProccess) {
+            return;
+        }
+
         return getRealm().then(realm => {
             return new Promise((resolve, reject) => {
                 let query = realm.objects("ObjectA");
