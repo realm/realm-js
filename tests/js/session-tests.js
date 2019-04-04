@@ -937,7 +937,7 @@ module.exports = {
                         clearInterval(token);
 
                         let listOfSubscriptions = realm.subscriptions();
-                        TestCase.assertArrayLength(listOfSubscriptions, 2 + 5); // 2 = the two subscriptions, 5 = the permissions classes
+                        TestCase.assertEqual(listOfSubscriptions.length, 2 + 5); // 2 = the two subscriptions, 5 = the permissions classes
                         TestCase.assertEqual(listOfSubscriptions[0]['name'], '[Dog] name == "Lassy 1" '); // the query is the default name; notice the trailing whitespace!
                         TestCase.assertEqual(listOfSubscriptions[0]['query'], 'name == "Lassy 1" '); // notice the trailing whitespace!
                         TestCase.assertEqual(listOfSubscriptions[0]['objectType'], 'Dog');
