@@ -79,6 +79,8 @@ module.exports = {
         TestCase.assertEqual(props['_married'].mapTo, 'married');
         TestCase.assertEqual(props['_children'].mapTo, 'children');
         TestCase.assertEqual(props['_parents'].mapTo, 'parents');
+
+        realm.close();
     },
 
 
@@ -97,6 +99,10 @@ module.exports = {
 
         // Using the internal name instead of the alias throws an exception.
         TestCase.assertThrows(() => realm.create('ObjectA', { name: 'Boom' }));
+
+        realm.commitTransaction();
+
+        realm.close();
     },
 
     testAliasWhenUpdatingObjects() {
@@ -116,6 +122,10 @@ module.exports = {
         // Even if a mapped name is set, only the public name can be used when updating properties.
         obj.name = "Baz";
         TestCase.assertEqual(obj.otherName, "Bar");
+
+        realm.commitTransaction();
+
+        realm.close();
     },
 
     testAliasWhenReadingProperties() {
@@ -131,7 +141,9 @@ module.exports = {
         // Only the Javascript property names are visible as keys, not the mapped names.
         for(var key in obj) {
             TestCase.assertFalse(key === 'name');
-        } 
+        }
+
+        realm.close();
     },
 
     testAliasInQueries() {
@@ -145,6 +157,8 @@ module.exports = {
         // Querying on internal names are still allowed
         results = realm.objects("ObjectA").filtered("name = 'Foo'");
         TestCase.assertEqual(results.length, 1);
+
+        realm.close();
     },
 
 };
