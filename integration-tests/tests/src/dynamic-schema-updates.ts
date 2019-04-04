@@ -184,3 +184,4 @@ describe("realm._updateSchema", () => {
         }).to.throw("schema must be of type 'array', got (w00t)");
     });
 });
+
