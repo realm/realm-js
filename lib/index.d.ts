@@ -19,7 +19,19 @@
 // TypeScript Version: 2.3.2
 // With great contributions to @akim95 on github
 
+import SubscriptionState = Realm.Sync.SubscriptionState;
+
 declare namespace Realm {
+    interface CollectionChangeSet {
+        insertions: number[];
+        deletions: number[];
+        modifications: number[];
+        newModifications: number[];
+        oldModifications: number[];
+    }
+
+    type CollectionChangeCallback<T> = (collection: Collection<T>, change: CollectionChangeSet) => void;
+
     /**
      * PropertyType
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.html#~PropertyType }
@@ -37,11 +49,18 @@ declare namespace Realm {
         default?: any;
         optional?: boolean;
         indexed?: boolean;
+        mapTo?: string;
     }
 
     // properties types
     interface PropertiesTypes {
         [keys: string]: PropertyType | ObjectSchemaProperty;
+    }
+
+    enum UpdateMode {
+        Never = 'never',
+        Modified = 'modified',
+        All = 'all'
     }
 
     /**
@@ -71,12 +90,17 @@ declare namespace Realm {
     }
 
     /**
+     * A function which can be called to migrate a Realm from one version of the schema to another.
+     */
+    type MigrationCallback = (oldRealm: Realm, newRealm: Realm) => void;
+
+    /**
      * realm configuration
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.html#~Configuration }
      */
     interface Configuration {
         encryptionKey?: ArrayBuffer | ArrayBufferView | Int8Array;
-        migration?: (oldRealm: Realm, newRealm: Realm) => void;
+        migration?: MigrationCallback;
         shouldCompactOnLaunch?: (totalBytes: number, usedBytes: number) => boolean;
         path?: string;
         fifoFilesFallbackPath?: string;
@@ -100,6 +124,13 @@ declare namespace Realm {
     interface ObjectPropsType {
         [keys: string]: any;
     }
+
+    interface ObjectChangeSet {
+        deleted: boolean;
+        changedProperties: string[]
+    }
+
+    type ObjectChangeCallback = (object: Object, changes: ObjectChangeSet) => void;
 
     /**
      * Object
@@ -125,6 +156,15 @@ declare namespace Realm {
          * @returns number
          */
         linkingObjectsCount(): number;
+
+        /**
+         * @returns void
+         */
+        addListener(callback: ObjectChangeCallback): void;
+
+        removeListener(callback: ObjectChangeCallback): void;
+
+        removeAllListeners(): void;
     }
 
     const Object: {
@@ -137,16 +177,6 @@ declare namespace Realm {
      */
     type SortDescriptor = [string] | [string, boolean];
 
-    interface CollectionChangeSet {
-        insertions: number[];
-        deletions: number[];
-        modifications: number[];
-        newModifications: number[];
-        oldModifications: number[];
-    }
-
-    type CollectionChangeCallback<T> = (collection: Collection<T>, change: CollectionChangeSet) => void;
-
     /**
      * Collection
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.Collection.html }
@@ -154,6 +184,8 @@ declare namespace Realm {
     interface Collection<T> extends ReadonlyArray<T> {
         readonly type: PropertyType;
         readonly optional: boolean;
+
+        description(): string;
 
         /**
          * @returns boolean
@@ -185,6 +217,7 @@ declare namespace Realm {
          * @returns Results<T>
          */
         subscribe(subscriptionName?: string): Realm.Sync.Subscription;
+        subscribe(options?: Realm.Sync.SubscriptionOptions): Realm.Sync.Subscription;
 
         /**
          * @returns Results
@@ -294,6 +327,12 @@ declare namespace Realm.Sync {
     interface SerializedTokenUser {
         server: string;
         adminToken: string;
+    }
+
+    interface SubscriptionOptions {
+        name: string;
+        update?: boolean;
+        timeToLive: number;
     }
 
     class AdminCredentials extends Credentials {
@@ -688,9 +727,15 @@ interface ProgressPromise extends Promise<Realm> {
 }
 
 interface NamedSubscription {
-    name: string,
-    objectType: string,
+    readonly name: string,
+    readonly objectType: string,
     query: string
+    readonly state: SubscriptionState;
+    readonly error: string;
+    readonly createdAt: Date;
+    readonly updatedAt: Date;
+    readonly expiresAt: Date;
+    timeToLive: number;
 }
 
 declare class Realm {
@@ -778,8 +823,18 @@ declare class Realm {
      * @param  {T&Realm.ObjectPropsType} properties
      * @param  {boolean} update?
      * @returns T
+     *
+     * @deprecated, to be removed in future versions. Use `create(type, properties, UpdateMode)` instead.
      */
     create<T>(type: string | Realm.ObjectClass | Function, properties: T | Realm.ObjectPropsType, update?: boolean): T;
+
+    /**
+     * @param  {string|Realm.ObjectClass|Function} type
+     * @param  {T&Realm.ObjectPropsType} properties
+     * @param  {Realm.UpdateMode} mode? If not provided, `Realm.UpdateMode.Never` is used.
+     * @returns T
+     */
+    create<T>(type: string | Realm.ObjectClass | Function, properties: T | Realm.ObjectPropsType, mode?: Realm.UpdateMode): T;
 
     /**
      * @param  {Realm.Object|Realm.Object[]|Realm.List<any>|Realm.Results<any>|any} object
@@ -873,7 +928,7 @@ declare class Realm {
     permissions(): Realm.Permissions.Realm;
     permissions(objectType: string | Realm.ObjectSchema | Function): Realm.Permissions.Class;
 
-    subscriptions(name?: string): NamedSubscription[];
+    subscriptions(name?: string): Realm.Results<NamedSubscription>;
     unsubscribe(name: string): void;
 
     /**

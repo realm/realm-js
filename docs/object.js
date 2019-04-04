@@ -54,4 +54,39 @@ class Object {
      * @since 2.6.0
      */
     linkingObjectsCount() {}
+
+    /**
+     * Add a listener `callback` which will be called when a **live** object instance changes.
+     * @param {function(obj, changes)} callback - A function to be called when changes occur.
+     *   The callback function is called with two arguments:
+     *   - `obj`: the object that changed,
+     *   - `changes`: a dictionary with keys `deleted`, and `changedProperties`. `deleted` is true
+     *       if the object has been deleted. `changesProperties` is an array of properties that have changed
+     *       their value.
+     * @throws {Error} If `callback` is not a function.
+     * @since 2.23.0
+     * @example
+     * wine.addListener((obj, changes) => {
+     *  // obj === wine
+     *  console.log(`object is deleted: ${changes.deleted}`);
+     *  console.log(`${changes.changedProperties.length} properties have been changed:`);
+     *  changes.changedProperties.forEach(prop => {
+     *      console.log(` ${prop}`);
+     *   });
+     * })
+     */
+    addListener(callback) {}
+
+    /**
+     * Remove the listener `callback`
+     * @param {function(obj, changes)} callback - A function previously added as listener
+     * @since 2.23.0
+     */
+     removeListener(callback) {}
+
+    /**
+     * Remove all listeners.
+     * @since 2.23.0
+     */
+     removeAllListeners() {}
 }

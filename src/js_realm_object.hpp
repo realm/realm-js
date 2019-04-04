@@ -39,7 +39,19 @@ namespace js {
 template<typename> class NativeAccessor;
 
 template<typename T>
-struct RealmObjectClass : ClassDefinition<T, realm::Object> {
+class RealmObject : public realm::Object {
+public:
+    RealmObject(RealmObject const& obj) : realm::Object(obj) {};
+    RealmObject(realm::Object const& obj) : realm::Object(obj) {};
+    RealmObject(RealmObject&&) = default;
+    RealmObject& operator=(RealmObject&&) = default;
+    RealmObject& operator=(RealmObject const&) = default;
+
+    std::vector<std::pair<Protected<typename T::Function>, NotificationToken>> m_notification_tokens;
+};
+
+template<typename T>
+struct RealmObjectClass : ClassDefinition<T, realm::js::RealmObject<T>> {
     using ContextType = typename T::Context;
     using FunctionType = typename T::Function;
     using ObjectType = typename T::Object;
@@ -51,7 +63,7 @@ struct RealmObjectClass : ClassDefinition<T, realm::Object> {
     using ReturnValue = js::ReturnValue<T>;
     using Arguments = js::Arguments<T>;
 
-    static ObjectType create_instance(ContextType, realm::Object);
+    static ObjectType create_instance(ContextType, realm::js::RealmObject<T>);
 
     static void get_property(ContextType, ObjectType, const String &, ReturnValue &);
     static bool set_property(ContextType, ObjectType, const String &, ValueType);
@@ -64,6 +76,9 @@ struct RealmObjectClass : ClassDefinition<T, realm::Object> {
     static void get_object_id(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void is_same_object(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void set_link(ContextType, ObjectType, Arguments &, ReturnValue &);
+    static void add_listener(ContextType, ObjectType, Arguments &, ReturnValue &);
+    static void remove_listener(ContextType, ObjectType, Arguments &, ReturnValue &);
+    static void remove_all_listeners(ContextType, ObjectType, Arguments &, ReturnValue &);
 
     static void get_realm(ContextType, ObjectType, ReturnValue &);
 
@@ -83,6 +98,9 @@ struct RealmObjectClass : ClassDefinition<T, realm::Object> {
         {"_objectId", wrap<get_object_id>},
         {"_isSameObject", wrap<is_same_object>},
         {"_setLink", wrap<set_link>},
+        {"addListener", wrap<add_listener>},
+        {"removeListener", wrap<remove_listener>},
+        {"removeAllListeners", wrap<remove_all_listeners>},
     };
 
     PropertyMap<T> const properties = {
@@ -102,12 +120,12 @@ void RealmObjectClass<T>::get_object_schema(ContextType ctx, ObjectType this_obj
 }
 
 template<typename T>
-typename T::Object RealmObjectClass<T>::create_instance(ContextType ctx, realm::Object realm_object) {
+typename T::Object RealmObjectClass<T>::create_instance(ContextType ctx, realm::js::RealmObject<T> realm_object) {
     static String prototype_string = "prototype";
 
     auto delegate = get_delegate<T>(realm_object.realm().get());
     auto name = realm_object.get_object_schema().name;
-    auto object = create_object<T, RealmObjectClass<T>>(ctx, new realm::Object(std::move(realm_object)));
+    auto object = create_object<T, RealmObjectClass<T>>(ctx, new realm::js::RealmObject<T>(std::move(realm_object)));
 
     if (!delegate || !delegate->m_constructors.count(name)) {
         return object;
@@ -126,22 +144,22 @@ typename T::Object RealmObjectClass<T>::create_instance(ContextType ctx, realm::
 }
 
 template<typename T>
-void RealmObjectClass<T>::get_property(ContextType ctx, ObjectType object, const String &property, ReturnValue &return_value) {
+void RealmObjectClass<T>::get_property(ContextType ctx, ObjectType object, const String &property_name, ReturnValue &return_value) {
     auto realm_object = get_internal<T, RealmObjectClass<T>>(object);
-    std::string name = property;
-    if (realm_object->get_object_schema().property_for_name(name)) {
+    std::string prop_name = property_name;
+    const Property* prop = realm_object->get_object_schema().property_for_public_name(prop_name);
+    if (prop) {
         NativeAccessor<T> accessor(ctx, realm_object->realm(), realm_object->get_object_schema());
-        auto result = realm_object->template get_property_value<ValueType>(accessor, name);
+        auto result = realm_object->template get_property_value<ValueType>(accessor, *prop);
         return_value.set(result);
     }
 }
 
 template<typename T>
-bool RealmObjectClass<T>::set_property(ContextType ctx, ObjectType object, const String &property, ValueType value) {
+bool RealmObjectClass<T>::set_property(ContextType ctx, ObjectType object, const String &property_name, ValueType value) {
     auto realm_object = get_internal<T, RealmObjectClass<T>>(object);
-
-    std::string property_name = property;
-    const Property* prop = realm_object->get_object_schema().property_for_name(property_name);
+    std::string prop_name = property_name;
+    const Property* prop = realm_object->get_object_schema().property_for_public_name(prop_name);
     if (!prop) {
         return false;
     }
@@ -151,7 +169,7 @@ bool RealmObjectClass<T>::set_property(ContextType ctx, ObjectType object, const
         throw TypeErrorException(accessor, realm_object->get_object_schema().name, *prop, value);
     }
 
-    realm_object->set_property_value(accessor, property_name, value, true);
+    realm_object->set_property_value(accessor, prop->name, value, true);
     return true;
 }
 
@@ -221,10 +239,10 @@ std::vector<String<T>> RealmObjectClass<T>::get_property_names(ContextType ctx, 
     names.reserve(object_schema.persisted_properties.size() + object_schema.computed_properties.size());
 
     for (auto &prop : object_schema.persisted_properties) {
-        names.push_back(prop.name);
+        names.push_back(!prop.public_name.empty() ? prop.public_name : prop.name);
     }
     for (auto &prop : object_schema.computed_properties) {
-        names.push_back(prop.name);
+        names.push_back(!prop.public_name.empty() ? prop.public_name : prop.name);
     }
 
     return names;
@@ -274,15 +292,84 @@ void RealmObjectClass<T>::is_same_object(ContextType ctx, ObjectType object, Arg
     return_value.set(self->row().get_table() == other->row().get_table()
                      && self->row().get_index() == other->row().get_index());
 }
-    
+
 template<typename T>
 void RealmObjectClass<T>::linking_objects_count(ContextType, ObjectType object, Arguments &, ReturnValue &return_value) {
     auto realm_object = get_internal<T, RealmObjectClass<T>>(object);
     const Row& row = realm_object->row();
-    
+
     return_value.set((uint32_t)row.get_backlink_count());
 }
-    
+
+
+template<typename T>
+void RealmObjectClass<T>::add_listener(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue& return_value) {
+    args.validate_maximum(1);
+
+    auto realm_object = get_internal<T, RealmObjectClass<T>>(this_object);
+
+    auto callback = Value::validated_to_function(ctx, args[0]);
+    Protected<FunctionType> protected_callback(ctx, callback);
+    Protected<ObjectType> protected_this(ctx, this_object);
+    Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
+
+    auto token = realm_object->add_notification_callback([=](CollectionChangeSet const& change_set, std::exception_ptr exception) {
+            HANDLESCOPE
+
+            bool deleted = false;
+            std::vector<ValueType> scratch;
+
+            if (!change_set.deletions.empty()) {
+                deleted = true;
+            }
+            else {
+                auto table = realm_object->row().get_table();
+                for (size_t i = 0; i < change_set.columns.size(); ++i) {
+                    if (change_set.columns[i].empty()) {
+                        continue;
+                    }
+                    scratch.push_back(Value::from_string(protected_ctx, std::string(table->get_column_name(i))));
+                }
+            }
+
+            ObjectType object = Object::create_empty(protected_ctx);
+            Object::set_property(protected_ctx, object, "deleted", Value::from_boolean(protected_ctx, deleted));
+            Object::set_property(protected_ctx, object, "changedProperties", Object::create_array(protected_ctx, scratch));
+
+            ValueType arguments[] {
+                static_cast<ObjectType>(protected_this),
+                object
+            };
+            Function::callback(protected_ctx, protected_callback, protected_this, 2, arguments);
+        });
+    realm_object->m_notification_tokens.emplace_back(protected_callback, std::move(token));
+}
+
+template<typename T>
+void RealmObjectClass<T>::remove_listener(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
+    args.validate_maximum(1);
+
+    auto callback = Value::validated_to_function(ctx, args[0]);
+    auto protected_function = Protected<FunctionType>(ctx, callback);
+
+    auto realm_object = get_internal<T, RealmObjectClass<T>>(this_object);
+
+    auto& tokens = realm_object->m_notification_tokens;
+    auto compare = [&](auto&& token) {
+        return typename Protected<FunctionType>::Comparator()(token.first, protected_function);
+    };
+    tokens.erase(std::remove_if(tokens.begin(), tokens.end(), compare), tokens.end());
+}
+
+template<typename T>
+void RealmObjectClass<T>::remove_all_listeners(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
+    args.validate_maximum(0);
+
+    auto realm_object = get_internal<T, RealmObjectClass<T>>(this_object);
+    realm_object->m_notification_tokens.clear();
+}
+
+
 } // js
 } // realm
 
