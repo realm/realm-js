@@ -946,13 +946,13 @@ module.exports = {
                         TestCase.assertEqual(listOfSubscriptions[1]['objectType'], 'Dog');
 
                         listOfSubscriptions = realm.subscriptions('foobar');
-                        TestCase.assertArrayLength(listOfSubscriptions, 1);
+                        TestCase.assertEqual(listOfSubscriptions.length, 1);
 
                         listOfSubscriptions = realm.subscriptions('*bar');
-                        TestCase.assertArrayLength(listOfSubscriptions, 1);
+                        TestCase.assertEqual(listOfSubscriptions.length, 1);
 
                         listOfSubscriptions = realm.subscriptions('RABOOF');
-                        TestCase.assertArrayLength(listOfSubscriptions, 0);
+                        TestCase.assertEqual(listOfSubscriptions.length, 0);
 
                         subscription1.unsubscribe();
                         realm.unsubscribe('foobar');
@@ -963,7 +963,7 @@ module.exports = {
                         let retries2 = 0;
                         token = setInterval(() => {
                             listOfSubscriptions = realm.subscriptions();
-                            if (listOfSubscriptions.length == 5) { // the 5 permissions classes
+                            if (listOfSubscriptions.length === 5) { // the 5 permissions classes
                                 clearInterval(token);
                                 realm.close();
                                 resolve();

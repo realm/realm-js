@@ -1,6 +1,10 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
+* Add 4 new fields to `NamedSubscription` which reprents query-based subscriptions: `createdAt`, `updatedAt`, `expiresAt` and `timeToLive`. These make it possible to better reason about and control current subscriptions. ([#2266](https://github.com/realm/realm-js/issues/2266))
+* Add the option of updating the query controlled by a subscription using either `Results.subscribe({name: 'name', update: true})` or the `NamedSubscription.query` property. ([#2266](https://github.com/realm/realm-js/issues/2266))
+* Add the option of setting a time-to-live for subscriptions using either `Results.subscribe({name: 'name', timeToLive: <valueInMs>})` or the `NamedSubscription.timeToLive` property. ([#2266](https://github.com/realm/realm-js/issues/2266))
+* Add `Realm.Results.description()` which returns a string representation of the query.
 * Add support for defining mapped properties in the schema using `name: { type: 'int', mapTo: 'internalName' }`. In that case the mapped name is used internally in the underlying Realm file, while the property key is used for reading/writing the property as well as querying it.
 * Add `RealmObject.addListener()`, `RealmObject.removeListener()`, and `RealmObject.removeAllListeners()` to set up and remove object-level notifications. ([#763](https://github.com/realm/realm-js/issues/763))
 * Added a new `Realm.UpdateMode` enum with the values: `never`, `modified`, `all`. This replaces the current 

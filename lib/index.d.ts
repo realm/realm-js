@@ -19,6 +19,8 @@
 // TypeScript Version: 2.3.2
 // With great contributions to @akim95 on github
 
+import SubscriptionState = Realm.Sync.SubscriptionState;
+
 declare namespace Realm {
     interface CollectionChangeSet {
         insertions: number[];
@@ -183,6 +185,8 @@ declare namespace Realm {
         readonly type: PropertyType;
         readonly optional: boolean;
 
+        description(): string;
+
         /**
          * @returns boolean
          */
@@ -213,6 +217,7 @@ declare namespace Realm {
          * @returns Results<T>
          */
         subscribe(subscriptionName?: string): Realm.Sync.Subscription;
+        subscribe(options?: Realm.Sync.SubscriptionOptions): Realm.Sync.Subscription;
 
         /**
          * @returns Results
@@ -322,6 +327,12 @@ declare namespace Realm.Sync {
     interface SerializedTokenUser {
         server: string;
         adminToken: string;
+    }
+
+    interface SubscriptionOptions {
+        name: string;
+        update?: boolean;
+        timeToLive: number;
     }
 
     class AdminCredentials extends Credentials {
@@ -716,9 +727,15 @@ interface ProgressPromise extends Promise<Realm> {
 }
 
 interface NamedSubscription {
-    name: string,
-    objectType: string,
+    readonly name: string,
+    readonly objectType: string,
     query: string
+    readonly state: SubscriptionState;
+    readonly error: string;
+    readonly createdAt: Date;
+    readonly updatedAt: Date;
+    readonly expiresAt: Date;
+    timeToLive: number;
 }
 
 declare class Realm {
@@ -911,7 +928,7 @@ declare class Realm {
     permissions(): Realm.Permissions.Realm;
     permissions(objectType: string | Realm.ObjectSchema | Function): Realm.Permissions.Class;
 
-    subscriptions(name?: string): NamedSubscription[];
+    subscriptions(name?: string): Realm.Results<NamedSubscription>;
     unsubscribe(name: string): void;
 
     /**
