@@ -297,6 +297,7 @@ void ResultsClass<T>::subscribe(ContextType ctx, ObjectType this_object, Argumen
 
     auto results = get_internal<T, ResultsClass<T>>(this_object);
     auto realm = results->get_realm();
+    auto object_schema = results->get_object_schema();
     auto sync_config = realm->config().sync_config;
     IncludeDescriptor inclusion_paths;
 
@@ -312,17 +313,17 @@ void ResultsClass<T>::subscribe(ContextType ctx, ObjectType this_object, Argumen
 
         parser::KeyPathMapping mapping;
         mapping.set_backlink_class_prefix(ObjectStore::table_name_for_object_type(""));
-        alias_backlinks(mapping, realm);  // see Results
+        alias_backlinks(mapping, realm);
         DescriptorOrdering combined_orderings;
 
         for (unsigned int i = 0; i < prop_count; i++) {
             ValueType value = Object::validated_get_property(ctx, js_prop_names, i);
             std::string path = Value::validated_to_string(ctx, value);
             DescriptorOrdering ordering;
-            DescriptorOrderingState ordering_state = parser::parse_include_path(path);
+            parser::DescriptorOrderingState ordering_state = parser::parse_include_path(path);
             NativeAccessor<T> accessor(ctx, realm, object_schema);
             query_builder::ArgumentConverter<ValueType, NativeAccessor<T>> converter(accessor, &args.value[1], args.count - 1);
-            query_builder::apply_ordering(ordering, query.get_table(), ordering_state, mapping);
+            query_builder::apply_ordering(ordering, results->get_query().get_table(), ordering_state, mapping);
             combined_orderings.append_include(ordering.compile_included_backlinks());
         }
         inclusion_paths = combined_orderings.compile_included_backlinks();
@@ -331,8 +332,8 @@ void ResultsClass<T>::subscribe(ContextType ctx, ObjectType this_object, Argumen
         subscription_name = util::none;
     }
 
-    SubscriptionOptions options;
-    options.name = subscription_name;
+    partial_sync::SubscriptionOptions options;
+    options.user_provided_name = subscription_name;
     options.inclusions = inclusion_paths;
     auto subscription = partial_sync::subscribe(*results, options);
     return_value.set(SubscriptionClass<T>::create_instance(ctx, std::move(subscription), subscription_name));
