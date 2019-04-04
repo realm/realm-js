@@ -58,9 +58,61 @@ describe("realm._updateSchema", () => {
             properties: {
                 myField: {
                     indexed: false,
+                    mapTo: "myField",
                     name: "myField",
                     optional: false,
                     type: "string"
+                }
+            }
+        });
+    });
+
+    it("creates a property on an existing class", () => {
+        const realm = new Realm({ schema: PersonAndDogSchema });
+        // Copy the schema
+        const updatedSchema = [...realm.schema];
+        // Locate the Dog schema
+        const dogSchema = updatedSchema.find(s => s.name === "Dog");
+        // Add a fields property
+        dogSchema.properties.friends = "Dog[]";
+        // Update the schema
+        realm.write(() => {
+            realm._updateSchema(updatedSchema);
+        });
+
+        const ModifiedDogSchema = realm.schema.find(s => s.name === "Dog");
+        expect(ModifiedDogSchema).to.deep.equal({
+            name: "Dog",
+            properties: {
+                age: {
+                    indexed: false,
+                    mapTo: "age",
+                    name: "age",
+                    optional: false,
+                    type: "int"
+                },
+                friends: {
+                    indexed: false,
+                    mapTo: "friends",
+                    name: "friends",
+                    objectType: "Dog",
+                    optional: false,
+                    type: "list"
+                },
+                name: {
+                    indexed: false,
+                    mapTo: "name",
+                    name: "name",
+                    optional: false,
+                    type: "string"
+                },
+                owner: {
+                    indexed: false,
+                    mapTo: "owner",
+                    name: "owner",
+                    objectType: "Person",
+                    optional: true,
+                    type: "object"
                 }
             }
         });

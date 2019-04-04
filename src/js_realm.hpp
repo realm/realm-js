@@ -963,6 +963,36 @@ void RealmClass<T>::object_for_primary_key(ContextType ctx, ObjectType this_obje
 template<typename T>
 void RealmClass<T>::create(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_maximum(3);
+    bool update = false;
+    bool only_update_diff_objects = false;
+    if (args.count == 3) {
+        if (Value::is_boolean(ctx, args[2])) {
+            // Deprecated API
+            update = Value::validated_to_boolean(ctx, args[2]);
+            only_update_diff_objects = false;
+        }
+        else if (Value::is_string(ctx, args[2])) {
+            // New API accepting an updateMode parameter
+            std::string mode = Value::validated_to_string(ctx, args[2]);
+            if (mode == "never") {
+                update = false;
+                only_update_diff_objects = false;
+            }
+            else if (mode == "modified") {
+                update = true;
+                only_update_diff_objects = true;
+            }
+            else if (mode == "all") {
+                update = true;
+                only_update_diff_objects = false;
+            } else {
+                throw std::runtime_error("Unsupported 'updateMode'. Only 'never', 'modified' or 'all' is supported.");
+            }
+        }
+        else {
+            throw std::runtime_error("Unsupported 'updateMode'. Only the strings 'never', 'modified' or 'all' is supported.");
+        }
+    }
 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
     realm->verify_open();
@@ -971,12 +1001,6 @@ void RealmClass<T>::create(ContextType ctx, ObjectType this_object, Arguments &a
     ObjectType object = Value::validated_to_object(ctx, args[1], "properties");
     if (Value::is_array(ctx, args[1])) {
         object = Schema<T>::dict_for_property_array(ctx, object_schema, object);
-    }
-
-    bool update = false;
-    bool only_update_diff_objects = false;
-    if (args.count == 3) {
-        update = Value::validated_to_boolean(ctx, args[2], "update");
     }
 
     NativeAccessor accessor(ctx, realm, object_schema);
@@ -1321,7 +1345,7 @@ void RealmClass<T>::update_schema(ContextType ctx, ObjectType this_object, Argum
     // Perform the schema update
     realm->update_schema(
         parsed_schema,
-        realm->schema_version(),
+        realm->schema_version() + 1,
         nullptr,
         nullptr,
         true

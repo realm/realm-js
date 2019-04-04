@@ -83,6 +83,7 @@ struct ResultsClass : ClassDefinition<T, realm::js::Results<T>, CollectionClass<
     static void get_optional(ContextType, ObjectType, ReturnValue &);
     static void get_index(ContextType, ObjectType, uint32_t, ReturnValue &);
 
+    static void description(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void snapshot(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void filtered(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void sorted(ContextType, ObjectType, Arguments &, ReturnValue &);
@@ -112,6 +113,7 @@ struct ResultsClass : ClassDefinition<T, realm::js::Results<T>, CollectionClass<
     std::string const name = "Results";
 
     MethodMap<T> const methods = {
+        {"description", wrap<description>},
         {"snapshot", wrap<snapshot>},
         {"filtered", wrap<filtered>},
         {"sorted", wrap<sorted>},
@@ -154,7 +156,7 @@ typename T::Object ResultsClass<T>::create_instance(ContextType ctx, SharedRealm
     return create_object<T, ResultsClass<T>>(ctx, new realm::js::Results<T>(realm, *table));
 }
 
-inline void alias_backlinks(parser::KeyPathMapping &mapping, const realm::SharedRealm &realm)
+inline void setup_aliases(parser::KeyPathMapping &mapping, const realm::SharedRealm &realm)
 {
     const realm::Schema &schema = realm->schema();
     for (auto it = schema.begin(); it != schema.end(); ++it) {
@@ -165,6 +167,11 @@ inline void alias_backlinks(parser::KeyPathMapping &mapping, const realm::Shared
                 std::string native_name = "@links." + target_object_schema->name + "." + property.link_origin_property_name;
                 mapping.add_mapping(table, property.name, native_name);
             }
+        }
+
+        for (const Property &property : it->persisted_properties) {
+            const TableRef table = ObjectStore::table_for_object_type(realm->read_group(), it->name);
+            mapping.add_mapping(table, property.public_name, property.name);
         }
     }
 }
@@ -183,7 +190,7 @@ typename T::Object ResultsClass<T>::create_filtered(ContextType ctx, const U &co
     DescriptorOrdering ordering;
     parser::KeyPathMapping mapping;
     mapping.set_backlink_class_prefix(ObjectStore::table_name_for_object_type(""));
-    alias_backlinks(mapping, realm);
+    setup_aliases(mapping, realm);
 
     parser::ParserResult result = parser::parse(query_string);
     NativeAccessor<T> accessor(ctx, realm, object_schema);
@@ -262,6 +269,16 @@ void ResultsClass<T>::get_index(ContextType ctx, ObjectType object, uint32_t ind
 }
 
 template<typename T>
+void ResultsClass<T>::description(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
+    args.validate_maximum(0);
+    auto results = get_internal<T, ResultsClass<T>>(this_object);
+    auto query = results->get_query();
+    auto descriptor = results->get_descriptor_ordering();
+    std::string serialized_query = query.get_description() + " " + descriptor.get_description(query.get_table());
+    return_value.set(Value::from_string(ctx, serialized_query));
+}
+
+template<typename T>
 void ResultsClass<T>::snapshot(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_maximum(0);
     auto results = get_internal<T, ResultsClass<T>>(this_object);
@@ -302,31 +319,53 @@ void ResultsClass<T>::subscribe(ContextType ctx, ObjectType this_object, Argumen
     IncludeDescriptor inclusion_paths;
 
     util::Optional<std::string> subscription_name;
+    bool update = false;
+    util::Optional<int64_t> ttl = util::none;
     if (args.count == 1) {
-        subscription_name = util::Optional<std::string>(Value::validated_to_string(ctx, args[0]));
-    }
-    else if (args.count == 2) {
-        ObjectType js_prop_names = Value::validated_to_object(ctx, args[1]);
-        size_t prop_count = Object::validated_get_length(ctx, js_prop_names);
-        std::vector<std::string> include_paths;
-        include_paths.reserve(prop_count);
+        if (Value::is_string(ctx, args[0])) {
+            subscription_name = util::Optional<std::string>(Value::validated_to_string(ctx, args[0]));
+        } else {
+            ObjectType options_object = Value::validated_to_object(ctx, args[0]);
+            ValueType name_value = Object::get_property(ctx, options_object, "name");
+            if (Value::is_undefined(ctx, name_value)) {
+                throw std::logic_error("A 'name' must be set.");
+            } 
+            else {
+                subscription_name = util::Optional<std::string>(Value::validated_to_string(ctx, name_value));
+            }
 
-        parser::KeyPathMapping mapping;
-        mapping.set_backlink_class_prefix(ObjectStore::table_name_for_object_type(""));
-        alias_backlinks(mapping, realm);
-        DescriptorOrdering combined_orderings;
+            ValueType update_value = Object::get_property(ctx, options_object, "update");
+            if (!Value::is_undefined(ctx, update_value))
+                update = Value::validated_to_boolean(ctx, update_value, "update");
 
-        for (unsigned int i = 0; i < prop_count; i++) {
-            ValueType value = Object::validated_get_property(ctx, js_prop_names, i);
-            std::string path = Value::validated_to_string(ctx, value);
-            DescriptorOrdering ordering;
-            parser::DescriptorOrderingState ordering_state = parser::parse_include_path(path);
-            NativeAccessor<T> accessor(ctx, realm, object_schema);
-            query_builder::ArgumentConverter<ValueType, NativeAccessor<T>> converter(accessor, &args.value[1], args.count - 1);
-            query_builder::apply_ordering(ordering, results->get_query().get_table(), ordering_state, mapping);
-            combined_orderings.append_include(ordering.compile_included_backlinks());
+            ValueType ttl_value = Object::get_property(ctx, options_object, "timeToLive");
+            if (!Value::is_undefined(ctx, ttl_value))
+                ttl = util::Optional<int64_t>(Value::validated_to_number(ctx, ttl_value, "timeToLive"));
+
+            ObjectType js_prop_names = Value::validated_to_object(ctx, options_object, "inclusions");
+            if (!Value::is_undefined(ctx, js_prop_names)) {
+                size_t prop_count = Object::validated_get_length(ctx, js_prop_names);
+                std::vector<std::string> include_paths;
+                include_paths.reserve(prop_count);
+
+                parser::KeyPathMapping mapping;
+                mapping.set_backlink_class_prefix(ObjectStore::table_name_for_object_type(""));
+                alias_backlinks(mapping, realm);
+                DescriptorOrdering combined_orderings;
+
+                for (unsigned int i = 0; i < prop_count; i++) {
+                    ValueType value = Object::validated_get_property(ctx, js_prop_names, i);
+                    std::string path = Value::validated_to_string(ctx, value);
+                    DescriptorOrdering ordering;
+                    parser::DescriptorOrderingState ordering_state = parser::parse_include_path(path);
+                    NativeAccessor<T> accessor(ctx, realm, object_schema);
+                    query_builder::ArgumentConverter<ValueType, NativeAccessor<T>> converter(accessor, &args.value[1], args.count - 1);
+                    query_builder::apply_ordering(ordering, results->get_query().get_table(), ordering_state, mapping);
+                    combined_orderings.append_include(ordering.compile_included_backlinks());
+                }
+                inclusion_paths = combined_orderings.compile_included_backlinks();
+            }
         }
-        inclusion_paths = combined_orderings.compile_included_backlinks();
     }
     else {
         subscription_name = util::none;
@@ -335,7 +374,10 @@ void ResultsClass<T>::subscribe(ContextType ctx, ObjectType this_object, Argumen
     partial_sync::SubscriptionOptions options;
     options.user_provided_name = subscription_name;
     options.inclusions = inclusion_paths;
+    options.ttl = ttl;
+    options.update = update;
     auto subscription = partial_sync::subscribe(*results, options);
+
     return_value.set(SubscriptionClass<T>::create_instance(ctx, std::move(subscription), subscription_name));
 }
 #endif
