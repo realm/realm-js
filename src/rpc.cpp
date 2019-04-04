@@ -551,6 +551,11 @@ json RPCServer::serialize_json_value(JSValueRef js_value) {
             return {{"value", jsc::Value::to_string(m_context, js_value)}};
         case kJSTypeObject:
             break;
+#if defined __IPHONE_12_2 || defined __MAC_10_14_4
+        case kJSTypeSymbol:
+            break;
+#endif
+
     }
 
     JSObjectRef js_object = jsc::Value::validated_to_object(m_context, js_value);
