@@ -25,15 +25,6 @@ APP_LDFLAGS += -fvisibility=hidden
 # https://stackoverflow.com/questions/16748392/cant-find-symbols-in-stdint-h
 APP_CPPFLAGS += -D__STDC_LIMIT_MACROS=1
 
-# Workaround for memmove/memcpy bug
-ifeq ($(strip $(BUILD_WRAP_MEMMOVE)),1)
-APP_CPPFLAGS += -DREALM_WRAP_MEMMOVE=1
-APP_LDFLAGS += -Wl,--wrap,memmove
-APP_LDFLAGS += -Wl,--wrap,memcpy
-else
-APP_CPPFLAGS += -DREALM_WRAP_MEMMOVE=0
-endif
-
 ifeq ($(strip $(BUILD_TYPE_SYNC)),1)
 APP_CPPFLAGS += -DREALM_ENABLE_SYNC=1
 APP_LDFLAGS += -lz

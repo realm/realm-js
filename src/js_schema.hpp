@@ -208,8 +208,11 @@ Property Schema<T>::parse_property(ContextType ctx, ValueType attributes, String
 
         ValueType internal_name_value = Object::get_property(ctx, property_object, internal_name_string);
         if (!Value::is_undefined(ctx, internal_name_value)) {
-            prop.public_name = prop.name;
-            prop.name = Value::validated_to_string(ctx, internal_name_value);
+            std::string internal_name = Value::validated_to_string(ctx, internal_name_value);
+            if (internal_name != prop.name) {
+                prop.public_name = prop.name;
+                prop.name = internal_name;
+            }
         }
     }
     else {
