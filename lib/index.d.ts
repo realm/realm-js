@@ -57,6 +57,12 @@ declare namespace Realm {
         [keys: string]: PropertyType | ObjectSchemaProperty;
     }
 
+    enum UpdateMode {
+        Never = 'never',
+        Modified = 'modified',
+        All = 'all'
+    }
+
     /**
      * ObjectSchema
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.html#~ObjectSchema }
@@ -817,8 +823,18 @@ declare class Realm {
      * @param  {T&Realm.ObjectPropsType} properties
      * @param  {boolean} update?
      * @returns T
+     *
+     * @deprecated, to be removed in future versions. Use `create(type, properties, UpdateMode)` instead.
      */
     create<T>(type: string | Realm.ObjectClass | Function, properties: T | Realm.ObjectPropsType, update?: boolean): T;
+
+    /**
+     * @param  {string|Realm.ObjectClass|Function} type
+     * @param  {T&Realm.ObjectPropsType} properties
+     * @param  {Realm.UpdateMode} mode? If not provided, `Realm.UpdateMode.Never` is used.
+     * @returns T
+     */
+    create<T>(type: string | Realm.ObjectClass | Function, properties: T | Realm.ObjectPropsType, mode?: Realm.UpdateMode): T;
 
     /**
      * @param  {Realm.Object|Realm.Object[]|Realm.List<any>|Realm.Results<any>|any} object
