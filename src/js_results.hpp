@@ -350,7 +350,7 @@ void ResultsClass<T>::subscribe(ContextType ctx, ObjectType this_object, Argumen
 
                 parser::KeyPathMapping mapping;
                 mapping.set_backlink_class_prefix(ObjectStore::table_name_for_object_type(""));
-                alias_backlinks(mapping, realm);
+                setup_aliases(mapping, realm);
                 DescriptorOrdering combined_orderings;
 
                 for (unsigned int i = 0; i < prop_count; i++) {
@@ -374,7 +374,7 @@ void ResultsClass<T>::subscribe(ContextType ctx, ObjectType this_object, Argumen
     partial_sync::SubscriptionOptions options;
     options.user_provided_name = subscription_name;
     options.inclusions = inclusion_paths;
-    options.ttl = ttl;
+    options.time_to_live_ms = ttl;
     options.update = update;
     auto subscription = partial_sync::subscribe(*results, options);
 
