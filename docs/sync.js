@@ -1037,8 +1037,7 @@ class Subscription {
  *    console.log(`Realm at ${path} deleted`);
  * }
  * 
-
- * module.exports = {onchange, oncavailable, ondelete};
+ * module.exports = {onstartup, onchange, oncavailable, ondelete};
  *
  * // server script
  * Realm.Sync.addListener(realmServerURL, adminUser, '.*', new Realm.Worker('my-worker'));
