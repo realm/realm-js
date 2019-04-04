@@ -83,6 +83,7 @@ struct ResultsClass : ClassDefinition<T, realm::js::Results<T>, CollectionClass<
     static void get_optional(ContextType, ObjectType, ReturnValue &);
     static void get_index(ContextType, ObjectType, uint32_t, ReturnValue &);
 
+    static void description(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void snapshot(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void filtered(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void sorted(ContextType, ObjectType, Arguments &, ReturnValue &);
@@ -112,6 +113,7 @@ struct ResultsClass : ClassDefinition<T, realm::js::Results<T>, CollectionClass<
     std::string const name = "Results";
 
     MethodMap<T> const methods = {
+        {"description", wrap<description>},
         {"snapshot", wrap<snapshot>},
         {"filtered", wrap<filtered>},
         {"sorted", wrap<sorted>},
@@ -267,6 +269,16 @@ void ResultsClass<T>::get_index(ContextType ctx, ObjectType object, uint32_t ind
 }
 
 template<typename T>
+void ResultsClass<T>::description(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
+    args.validate_maximum(0);
+    auto results = get_internal<T, ResultsClass<T>>(this_object);
+    auto query = results->get_query();
+    auto descriptor = results->get_descriptor_ordering();
+    std::string serialized_query = query.get_description() + " " + descriptor.get_description(query.get_table());
+    return_value.set(Value::from_string(ctx, serialized_query));
+}
+
+template<typename T>
 void ResultsClass<T>::snapshot(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_maximum(0);
     auto results = get_internal<T, ResultsClass<T>>(this_object);
@@ -305,14 +317,35 @@ void ResultsClass<T>::subscribe(ContextType ctx, ObjectType this_object, Argumen
     auto sync_config = realm->config().sync_config;
 
     util::Optional<std::string> subscription_name;
+    bool update = false;
+    util::Optional<int64_t> ttl = util::none;
     if (args.count == 1) {
-        subscription_name = util::Optional<std::string>(Value::validated_to_string(ctx, args[0]));
+        if (Value::is_string(ctx, args[0])) {
+            subscription_name = util::Optional<std::string>(Value::validated_to_string(ctx, args[0]));
+        } else {
+            ObjectType options_object = Value::validated_to_object(ctx, args[0]);
+            ValueType name_value = Object::get_property(ctx, options_object, "name");
+            if (Value::is_undefined(ctx, name_value)) {
+                throw std::logic_error("A 'name' must be set.");
+            } 
+            else {
+                subscription_name = util::Optional<std::string>(Value::validated_to_string(ctx, name_value));
+            }
+
+            ValueType update_value = Object::get_property(ctx, options_object, "update");
+            if (!Value::is_undefined(ctx, update_value))
+                update = Value::validated_to_boolean(ctx, update_value, "update");
+
+            ValueType ttl_value = Object::get_property(ctx, options_object, "timeToLive");
+            if (!Value::is_undefined(ctx, ttl_value))
+                ttl = util::Optional<int64_t>(Value::validated_to_number(ctx, ttl_value, "timeToLive"));
+        }
     }
     else {
         subscription_name = util::none;
     }
 
-    auto subscription = partial_sync::subscribe(*results, subscription_name);
+    auto subscription = partial_sync::subscribe(*results, subscription_name, ttl, update);
     return_value.set(SubscriptionClass<T>::create_instance(ctx, std::move(subscription), subscription_name));
 }
 #endif
