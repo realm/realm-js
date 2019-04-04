@@ -62,7 +62,8 @@ typename T::Object Schema<T>::dict_for_property_array(ContextType ctx, const Obj
 
     for (uint32_t i = 0; i < count; i++) {
         ValueType value = Object::get_property(ctx, array, i);
-        Object::set_property(ctx, dict, object_schema.persisted_properties[i].name, value);
+        Property prop = object_schema.persisted_properties[i];
+        Object::set_property(ctx, dict, !prop.public_name.empty() ? prop.public_name : prop.name, value);
     }
 
     return dict;
@@ -171,6 +172,7 @@ Property Schema<T>::parse_property(ContextType ctx, ValueType attributes, String
     static const String object_type_string = "objectType";
     static const String optional_string = "optional";
     static const String property_string = "property";
+    static const String internal_name_string = "mapTo";
 
     Property prop;
     prop.name = std::move(property_name);
@@ -202,6 +204,15 @@ Property Schema<T>::parse_property(ContextType ctx, ValueType attributes, String
         ValueType indexed_value = Object::get_property(ctx, property_object, indexed_string);
         if (!Value::is_undefined(ctx, indexed_value)) {
             prop.is_indexed = Value::validated_to_boolean(ctx, indexed_value);
+        }
+
+        ValueType internal_name_value = Object::get_property(ctx, property_object, internal_name_string);
+        if (!Value::is_undefined(ctx, internal_name_value)) {
+            std::string internal_name = Value::validated_to_string(ctx, internal_name_value);
+            if (internal_name != prop.name) {
+                prop.public_name = prop.name;
+                prop.name = internal_name;
+            }
         }
     }
     else {
@@ -330,10 +341,12 @@ typename T::Object Schema<T>::object_for_object_schema(ContextType ctx, const Ob
 
     ObjectType properties = Object::create_empty(ctx);
     for (auto& property : object_schema.persisted_properties) {
-        Object::set_property(ctx, properties, property.name, object_for_property(ctx, property));
+        auto property_key = property.public_name.empty() ? property.name : property.public_name;
+        Object::set_property(ctx, properties, property_key, object_for_property(ctx, property));
     }
     for (auto& property : object_schema.computed_properties) {
-        Object::set_property(ctx, properties, property.name, object_for_property(ctx, property));
+        auto property_key = property.public_name.empty() ? property.name : property.public_name;
+        Object::set_property(ctx, properties, property_key, object_for_property(ctx, property));
     }
 
     static const String properties_string = "properties";
@@ -352,7 +365,7 @@ typename T::Object Schema<T>::object_for_property(ContextType ctx, const Propert
     ObjectType object = Object::create_empty(ctx);
 
     static const String name_string = "name";
-    Object::set_property(ctx, object, name_string, Value::from_string(ctx, property.name));
+    Object::set_property(ctx, object, name_string, Value::from_string(ctx, property.public_name.empty() ? property.name : property.public_name));
 
     static const String type_string = "type";
     if (is_array(property.type)) {
@@ -385,6 +398,9 @@ typename T::Object Schema<T>::object_for_property(ContextType ctx, const Propert
 
     static const String optional_string = "optional";
     Object::set_property(ctx, object, optional_string, Value::from_boolean(ctx, is_nullable(property.type)));
+
+    static const String map_to_string =  "mapTo";
+    Object::set_property(ctx, object, map_to_string, Value::from_string(ctx, property.name));
 
     return object;
 }

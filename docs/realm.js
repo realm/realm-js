@@ -455,6 +455,10 @@ class Realm {
  *   This is not supported for `"list"` properties of object types and `"linkingObjects"` properties.
  * @property {boolean} [indexed] - Signals if this property should be indexed. Only supported for
  *   `"string"`, `"int"`, and `"bool"` properties.
+ * @property {string} [mapTo] - Set this to the name of the underlying property in the Realm file if the Javascript property
+ *   name is different than the name used in the Realm file. This can e.g. be used to have different naming convention in
+ *   Javascript than what is being used in the Realm file. Reading and writing properties must be done using the public
+ *   name. Queries can be done using both the public and the underlying property name.
  */
 
 /**
