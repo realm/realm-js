@@ -58,6 +58,7 @@ describe("realm._updateSchema", () => {
             properties: {
                 myField: {
                     indexed: false,
+                    mapTo: "myField",
                     name: "myField",
                     optional: false,
                     type: "string"
@@ -85,12 +86,14 @@ describe("realm._updateSchema", () => {
             properties: {
                 age: {
                     indexed: false,
+                    mapTo: "age",
                     name: "age",
                     optional: false,
                     type: "int"
                 },
                 friends: {
                     indexed: false,
+                    mapTo: "friends",
                     name: "friends",
                     objectType: "Dog",
                     optional: false,
@@ -98,12 +101,14 @@ describe("realm._updateSchema", () => {
                 },
                 name: {
                     indexed: false,
+                    mapTo: "name",
                     name: "name",
                     optional: false,
                     type: "string"
                 },
                 owner: {
                     indexed: false,
+                    mapTo: "owner",
                     name: "owner",
                     objectType: "Person",
                     optional: true,

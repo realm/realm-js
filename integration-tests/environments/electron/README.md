@@ -6,7 +6,7 @@ Install this environment with the `--no-optional` runtime flag:
 npm install --no-optional
 ```
 
-The `realm` and `realm-integration-tests` packages are listed as `optionalDependencies` in the `package.json` because `electron-builder` will only include packages listed in `dependencies` or `optionalDependencies` in the packaged `app.asar` file. We don't want to list the two in `dependencies` as that would pollute the `package-lock.json` and make it impossible to install changed versions of the arhives.
+The `realm` and `realm-integration-tests` packages are listed as `optionalDependencies` in the `package.json` because `electron-builder` will only include packages listed in `dependencies` or `optionalDependencies` in the packaged `app.asar` file. We don't want to list the two in `dependencies` as that would pollute the `package-lock.json` and make it impossible to install changed versions of the archives.
 
 Currently this directory consists of:
 - `runner.js` which start the Mocha remote server and the Electron app (using the distribution package when available).

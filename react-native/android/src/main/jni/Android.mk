@@ -84,13 +84,6 @@ LOCAL_SRC_FILES += src/object-store/src/sync/impl/sync_metadata.cpp
 LOCAL_SRC_FILES += src/object-store/src/sync/impl/work_queue.cpp
 endif
 
-# Workaround for memmove/memcpy bug
-ifeq ($(strip $(TARGET_ARCH_ABI)),armeabi-v7a)
-BUILD_WRAP_MEMMOVE = 1
-else
-BUILD_WRAP_MEMMOVE = 0
-endif
-
 LOCAL_C_INCLUDES := src
 LOCAL_C_INCLUDES += src/jsc
 LOCAL_C_INCLUDES += src/object-store/src
@@ -115,6 +108,14 @@ LOCAL_STATIC_LIBRARIES += realm-android-$(TARGET_ARCH_ABI)
 LOCAL_STATIC_LIBRARIES += crypto-$(TARGET_ARCH_ABI)
 endif
 
+# Workaround for memmove/memcpy bug
+ifeq ($(TARGET_ARCH_ABI),armeabi-v7a)
+LOCAL_CPPFLAGS += -DREALM_WRAP_MEMMOVE=1
+LOCAL_LDFLAGS += -Wl,--wrap,memmove
+LOCAL_LDFLAGS += -Wl,--wrap,memcpy
+else
+LOCAL_CPPFLAGS += -DREALM_WRAP_MEMMOVE=0
+endif
 
 LOCAL_SHARED_LIBRARIES := libjsc
 include $(BUILD_SHARED_LIBRARY)

@@ -1,11 +1,11 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
-* Add `RealmObject.addListener()`, `RealmObject.removeListener()`, and `RealmObject.removeAllListeners()` to set up and remove object-level notifications. ([#763](https://github.com/realm/realm-js/issues/763))
+* None.
 
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* Fixed retrying authentication requests. The issue could be observed as "Cannot read property 'get' of undefined." errors being thrown when the authenticate requests were retried. ([#2297](https://github.com/realm/realm-js/issues/2297), since v2.24.0)
+* None.
 
 ### Compatibility
 * Realm Object Server: 3.11.0 or later.
@@ -13,6 +13,35 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
 ### Internal
+* None.
+
+2.26.0 Release notes (2019-4-4)
+=============================================================
+### Enhancements
+* Add 4 new fields to `NamedSubscription` which reprents query-based subscriptions: `createdAt`, `updatedAt`, `expiresAt` and `timeToLive`. These make it possible to better reason about and control current subscriptions. ([#2266](https://github.com/realm/realm-js/issues/2266))
+* Add the option of updating the query controlled by a subscription using either `Results.subscribe({name: 'name', update: true})` or the `NamedSubscription.query` property. ([#2266](https://github.com/realm/realm-js/issues/2266))
+* Add the option of setting a time-to-live for subscriptions using either `Results.subscribe({name: 'name', timeToLive: <valueInMs>})` or the `NamedSubscription.timeToLive` property. ([#2266](https://github.com/realm/realm-js/issues/2266))
+* Add `Realm.Results.description()` which returns a string representation of the query.
+* Add support for defining mapped properties in the schema using `name: { type: 'int', mapTo: 'internalName' }`. In that case the mapped name is used internally in the underlying Realm file, while the property key is used for reading/writing the property as well as querying it.
+* Add `RealmObject.addListener()`, `RealmObject.removeListener()`, and `RealmObject.removeAllListeners()` to set up and remove object-level notifications. ([#763](https://github.com/realm/realm-js/issues/763))
+* Add a new `Realm.UpdateMode` enum with the values: `never`, `modified`, `all`. This replaces the current 
+  `Realm.create(type, properties, update)` with `Realm.create(type, properties, updateMode)`.
+  `Realm.create(type, properties, 'modified')` is a new mode that only update existing properties that actually
+  changed, while `Realm.create(type, properties, 'never')` is equal to `Realm.create(type, properties, false)` and
+  `Realm.create(type, properties, 'all')` is equal to `Realm.create(type, properties, true)`. 
+  `Realm.create(type, properties, update)` is now deprecated. ([#2089](https://github.com/realm/realm-js/issues/2089))
+
+### Fixed
+* Fixed retrying authentication requests. The issue could be observed as "Cannot read property 'get' of undefined." errors being thrown when the authenticate requests were retried. ([#2297](https://github.com/realm/realm-js/issues/2297), since v2.24.0)
+* Due to a rare race condition in some Android devices (including Samsung SM-T111), an app could crash hard. A workaround was introduced but never included in any releases. ([#1895](https://github.com/realm/realm-js/issues/1895), since v2.11.0)
+
+### Compatibility
+* Realm Object Server: 3.11.0 or later.
+* APIs are backwards compatible with all previous release of realm in the 2.x.y series.
+* File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
+
+### Internal
+* Updated to Object Store commit: ab91c2bb4a915c0f159291f08caf1dc13e717573
 * Fixing the Electron integration tests. ([#2286](https://github.com/realm/realm-js/pull/2286))
 * Fixed adding a property to an existing object schema using the internal `realm._updateSchema`. ([#2283](https://github.com/realm/realm-js/pull/2283), since v2.24.0)
 
