@@ -4,8 +4,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * None.
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None.
+* Fixed Xcode 10.2 Build Errors by providing `kJSTypeSymbol` for switch cases. ([#2305](https://github.com/realm/realm-js/issues/2305) and [#2246](https://github.com/realm/realm-js/issues/2246), since v2.25.0)
 
 ### Compatibility
 * Realm Object Server: 3.11.0 or later.
