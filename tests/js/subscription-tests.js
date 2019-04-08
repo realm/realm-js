@@ -89,10 +89,6 @@ function getRealm() {
 }
 
 function verifySubscriptionWithParents(parentToInclude) {
-    if (!isNodeProccess) {
-        return;
-    }
-
     return getRealm().then(realm => {
         realm.write(() => {
             let obj_a1 = realm.create('ObjectA', {name: "a1"});
@@ -451,14 +447,23 @@ module.exports = {
     },
 
     testSubscribeToChildrenWithNamedParents() {
+        if (!isNodeProccess) {
+            return;
+        }
         return verifySubscriptionWithParents("parents");
     },
 
     testSubscribeToChildrenWithUnnamedParents() {
+        if (!isNodeProccess) {
+            return;
+        }
         return verifySubscriptionWithParents("@links.Parent.child");
     },
 
     testSubscribeToChildrenWithMalformedInclusion1() {
+        if (!isNodeProccess) {
+            return;
+        }
         return new Promise((resolve, reject) => {
             verifySubscriptionWithParents("something.wrong").then(() => {
                 reject();
@@ -472,6 +477,9 @@ module.exports = {
     },
 
     testSubscribeToChildrenWithMalformedInclusion2() {
+        if (!isNodeProccess) {
+            return;
+        }
         return new Promise((resolve, reject) => {
             verifySubscriptionWithParents("@links.Parent.missing_property").then(() => {
                 reject();
