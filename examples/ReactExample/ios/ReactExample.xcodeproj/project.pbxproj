@@ -11,8 +11,8 @@
 		13B07FBD1A68108700A75B9A /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB11A68108700A75B9A /* LaunchScreen.xib */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
-		13D64EEAE34A1CF62266D89F /* libPods-ReactExample.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DE0AD34812997F4FC9D2B96B /* libPods-ReactExample.a */; };
 		22B758D4B4AB47E220943094 /* libPods-ReactExampleTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = AC68B7327A3ED7A13642626E /* libPods-ReactExampleTests.a */; };
+		3D7BC41DD97EC5A8AEDC5D40 /* libPods-ReactExample.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DE0AD34812997F4FC9D2B96B /* libPods-ReactExample.a */; };
 		3F2C205B1F59D921005D67C0 /* components in Resources */ = {isa = PBXBuildFile; fileRef = 3F2C20571F59D921005D67C0 /* components */; };
 		3F9518C821FBBBA900BB64A5 /* libRealmReact.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 859609611E23C0AB009C7E43 /* libRealmReact.a */; };
 		8573DE511E23DDA700914396 /* ReactExampleTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 8573DE501E23DDA700914396 /* ReactExampleTests.m */; };
@@ -87,7 +87,7 @@
 				EF9CDEC26BA64438B1A9F856 /* libc++.tbd in Frameworks */,
 				3F9518C821FBBBA900BB64A5 /* libRealmReact.a in Frameworks */,
 				B06E5AD59A024665BD24C8C7 /* libz.tbd in Frameworks */,
-				13D64EEAE34A1CF62266D89F /* libPods-ReactExample.a in Frameworks */,
+				3D7BC41DD97EC5A8AEDC5D40 /* libPods-ReactExample.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

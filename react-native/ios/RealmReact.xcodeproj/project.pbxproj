@@ -66,7 +66,10 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		29A29363744E2B506829ACDB /* Pods-RealmReact.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RealmReact.release.xcconfig"; path = "Target Support Files/Pods-RealmReact/Pods-RealmReact.release.xcconfig"; sourceTree = "<group>"; };
 		3F8D968A220CE21400327C8C /* RealmReact.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = RealmReact.xcconfig; sourceTree = "<group>"; };
+		7F2F49A593483C89C2B487B5 /* libPods-RealmReact.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-RealmReact.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		8AB6D529F499D831B8D9B186 /* Pods-RealmReact.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RealmReact.debug.xcconfig"; path = "Target Support Files/Pods-RealmReact/Pods-RealmReact.debug.xcconfig"; sourceTree = "<group>"; };
 		F60690131CA2766F0003FB26 /* libRealmReact.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libRealmReact.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		F60690161CA2766F0003FB26 /* RealmReact.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RealmReact.h; sourceTree = "<group>"; };
 		F60690181CA2766F0003FB26 /* RealmReact.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = RealmReact.mm; sourceTree = "<group>"; };
@@ -87,12 +90,31 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		0CD5A8368E118FF5E24D880F /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				8AB6D529F499D831B8D9B186 /* Pods-RealmReact.debug.xcconfig */,
+				29A29363744E2B506829ACDB /* Pods-RealmReact.release.xcconfig */,
+			);
+			path = Pods;
+			sourceTree = "<group>";
+		};
+		BB816A843BB740222ECBD39C /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				7F2F49A593483C89C2B487B5 /* libPods-RealmReact.a */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		F606900A1CA2766F0003FB26 = {
 			isa = PBXGroup;
 			children = (
 				F60690221CA277BE0003FB26 /* Libraries */,
 				F60690151CA2766F0003FB26 /* RealmReact */,
 				F60690141CA2766F0003FB26 /* Products */,
+				0CD5A8368E118FF5E24D880F /* Pods */,
+				BB816A843BB740222ECBD39C /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -141,6 +163,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = F606901C1CA2766F0003FB26 /* Build configuration list for PBXNativeTarget "RealmReact" */;
 			buildPhases = (
+				4202F9403C59DE195E595819 /* [CP] Check Pods Manifest.lock */,
 				F606900F1CA2766F0003FB26 /* Sources */,
 				F60690111CA2766F0003FB26 /* Copy Headers */,
 				85CA5FE41F1536660038172D /* Frameworks */,
@@ -216,6 +239,31 @@
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 /* End PBXReferenceProxy section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		4202F9403C59DE195E595819 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-RealmReact-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		F606900F1CA2766F0003FB26 /* Sources */ = {
@@ -363,6 +411,7 @@
 		};
 		F606901D1CA2766F0003FB26 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 8AB6D529F499D831B8D9B186 /* Pods-RealmReact.debug.xcconfig */;
 			buildSettings = {
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
@@ -385,6 +434,7 @@
 		};
 		F606901E1CA2766F0003FB26 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 29A29363744E2B506829ACDB /* Pods-RealmReact.release.xcconfig */;
 			buildSettings = {
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",

@@ -52,12 +52,21 @@ git submodule update --init --recursive
 Note: If you have cloned the repo previously make sure you remove your node_modules directory since it may contain stale dependencies which may cause the build to fail.
 
 ### Building for iOS:
+- Run `npm install` in `/react-native`.
+- Run `pod install` in `/react-native/ios`.
 - Open `react-native/ios/RealmReact.xcodeproj` in Xcode
 - Select `RealmReact` under `Targets`
 - Build: `⌘ + B`
 
+Troubleshooting:
+
+- You might have to  remove `libPod-RealmReact.a` from `Build Phases > Link Binaries With Libraries` from the `RealmReact` target.
+
+
 ### Building for Android:
-- `cd react-native/android`
+- Build Realm using `npm install --build-from-source=realm`.
+- Run `npm install` in `/react-native`.
+- Run `cd react-native/android`
 - `./gradlew publishAndroid`
 - The compiled version of the Android module is here: `<project-root>/android`
 
