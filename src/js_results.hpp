@@ -196,7 +196,10 @@ typename T::Object ResultsClass<T>::create_filtered(ContextType ctx, const U &co
     NativeAccessor<T> accessor(ctx, realm, object_schema);
     query_builder::ArgumentConverter<ValueType, NativeAccessor<T>> converter(accessor, &args.value[1], args.count - 1);
     query_builder::apply_predicate(query, result.predicate, converter, mapping);
-    query_builder::apply_ordering(ordering, query.get_table(), result.ordering);
+    query_builder::apply_ordering(ordering, query.get_table(), result.ordering, mapping);
+    if (ordering.will_apply_include()) {
+        throw std::runtime_error("An INCLUDE clause is not supported on local queries, only on query based subscriptions.");
+    }
 
     return create_instance(ctx, collection.filter(std::move(query)).apply_ordering(std::move(ordering)));
 }
