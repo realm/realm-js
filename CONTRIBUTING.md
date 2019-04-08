@@ -39,7 +39,7 @@ Realm welcomes all contributions! The only requirement we have is that, like man
 
 [Please submit your CLA electronically using our Google form](https://docs.google.com/forms/d/1bVp-Wp5nmNFz9Nx-ngTmYBVWVdwTyKj4T0WtfVm0Ozs/viewform?fbzx=4154977190905366979) so we can accept your submissions. The GitHub username you file there will need to match that of your Pull Requests. If you have any questions or cannot file the CLA electronically, you can email <help@realm.io>.
 
-### Guidelines
+### How To: Add a new function 
 
 Adding new functionality to Realm JavaScript requires that you modify a few places in the repository. As an example, consider adding a function `crashOnStart()` to the class `Realm`. The subsections below guides you through where and what to add.
 
@@ -116,7 +116,7 @@ To finish adding your new function, you will have to add your function a few pla
 * Documentation is added in `docs/realm.js`
 * Add an entry to `CHANGELOG.md` if applicable (Breaking changes/Enhancements/Bug fixes)
 
-### Updating Object Store
+### How To: Update Object Store
 
 [Object Store](https://github.com/realm/realm-object-store) is the cross platform abstraction shared between all SDKs supported by Realm.
 
@@ -132,4 +132,21 @@ is built. These files are:
 * iOS: `/Realm.xcodeworkspace`: Open in XCode and add the files to RealmJS under `Build Phases`
 * Node: `/realm.gypi`
 
+### How To: Debug React Native Unit tests
 
+This guide assumes that development is happening on a Mac.
+
+When developing new functionality, unit- and integration tests are being run on many different platforms. One of them being React Native.
+If a bug occurs on this platform, it is, unfortunately, rather difficult to debug due to the complex nature of this repository and the React Native build system.
+
+Debugging and working with the unit tests in an iterative mannner is done the following way:
+
+1. Run `./scripts/test.sh react-tests` to install all the dependencies.
+2. Run `./node_modules/.bin/ros start --data realm-object-server-data` in one terminal window.
+3. `cd tests/react-test-app && npm start` in another terminal window
+4. Open `tests/react-test-app/ios/ReactTests.xcworkspace` (note: not the xcodeproj) in Xcode.
+5. Hit Cmd-U to run the tests.
+
+If you want to modify the Javascript in an iterative manner or enable break points you need to do it on the files located in `tests/react-test-app/node_modules/realm-tests`. These files are a copy of the original files located in `tests/js` so any changes must manually be copied back. The reason for this is that the React Native Metro Bundler doesn't support symlinks.
+
+Note that it isn't possible to easily run a single unit test from Xcode. Instead you should disable the tests manually by modifying `tests/react-test-app/node_modules/realm-tests/index.js`.
