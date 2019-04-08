@@ -48,7 +48,7 @@ stage('check') {
       }
     }
     echo "version: ${version}"
-    stash name: 'realm-js-source', includes:'**/*', excludes:'react-native/android/src/main/jni/src/object-store/.dockerignore'
+    stash name: 'source', includes:'**/*', excludes:'react-native/android/src/main/jni/src/object-store/.dockerignore'
 
     if (['master'].contains(env.BRANCH_NAME)) {
       // If we're on master, instruct the docker image builds to push to the
@@ -107,7 +107,6 @@ stage('test') {
   parallel parallelExecutors
 }
 
-/*
 stage('build') {
   parallelExecutors = [:]
   for (def nodeVersion in nodeVersions) {
@@ -130,11 +129,12 @@ stage('integration tests') {
     'Node.js v10 on Mac': NodeJsTests.onMacOS(nodeVersion: '10'),
     'Node.js v8 on Linux': NodeJsTests.onLinux(nodeVersion: '8'),
     'Node.js v10 on Linux': NodeJsTests.onLinux(nodeVersion: '10'),
-    // 'Electron on Linux': ElectronTests.onLinux(),
+    'Electron on Linux': ElectronTests.onLinux(),
     'Electron on Mac': ElectronTests.onMacOS(),
   )
 }
 
+/*
 if (gitTag) {
   stage('publish') {
     publish(nodeVersions, dependencies, gitTag)
@@ -183,7 +183,7 @@ def buildElectronCommon(electronVersion, platform) {
 
 def buildLinux(nodeVersion, workerFunction, variant = "Release") {
   myNode('docker') {
-    unstash 'realm-js-source'
+    unstash 'source'
     def image
     withCredentials([[$class: 'StringBinding', credentialsId: 'packagecloud-sync-devel-master-token', variable: 'PACKAGECLOUD_MASTER_TOKEN']]) {
       image = buildDockerEnv('ci/realm-js-private:build', 'Dockerfile')
@@ -198,7 +198,7 @@ def buildLinux(nodeVersion, workerFunction, variant = "Release") {
 def buildMacOS(nodeVersion, workerFunction, variant = "Release") {
   myNode('osx_vegas') {
     env.DEVELOPER_DIR = "/Applications/Xcode-9.4.app/Contents/Developer"
-    unstash 'realm-js-source'
+    unstash 'source'
     sh "bash ./scripts/utils.sh set-version ${dependencies.VERSION}"
     workerFunction(nodeVersion, 'macos', variant)
   }
@@ -206,7 +206,7 @@ def buildMacOS(nodeVersion, workerFunction, variant = "Release") {
 
 def buildWindows(nodeVersion, arch) {
   myNode('windows && nodejs && cph-windows-01') {
-    unstash 'realm-js-source'
+    unstash 'source'
 
     bat 'npm install --ignore-scripts --production'
 
@@ -224,7 +224,7 @@ def buildWindows(nodeVersion, arch) {
 
 def buildWindowsElectron(electronVersion, arch) {
   myNode('windows && nodejs && cph-windows-01') {
-    unstash 'realm-js-source'
+    unstash 'source'
     bat 'npm install --ignore-scripts --production'
     withEnv([
       "npm_config_target=${electronVersion}",
@@ -240,6 +240,19 @@ def buildWindowsElectron(electronVersion, arch) {
     }
     dir("build/stage/node-pre-gyp/${dependencies.VERSION}") {
       stash includes: 'realm-*', name: "electron-pre-gyp-windows-${arch}-${electronVersion}"
+    }
+  }
+}
+
+def buildAndroid() {
+  myNode('docker && !aws') {
+    unstash 'source'
+    sh 'rm -f realm-*.tgz'
+    docker.build('ci/realm-js:android-build', '-f Dockerfile.android .').inside {
+      sh 'npm install'
+      sh 'cd react-native/android && ./gradlew publishAndroid'
+      sh 'npm pack'
+      stash includes: 'realm-*.tgz', name: 'android'
     }
   }
 }
@@ -321,7 +334,7 @@ def doInside(script, target, postStep = null) {
     retry(3) { // retry unstash up to three times to mitigate network and contention
       dir(env.WORKSPACE) {
         deleteDir()
-        unstash 'realm-js-source'
+        unstash 'source'
       }
     }
     wrap([$class: 'AnsiColorBuildWrapper']) {
@@ -364,7 +377,7 @@ def doDockerBuild(target, nodeVersion = 10, postStep = null) {
   return {
     node('docker') {
       deleteDir()
-      unstash 'realm-js-source'
+      unstash 'source'
       def image
       withCredentials([[$class: 'StringBinding', credentialsId: 'packagecloud-sync-devel-master-token', variable: 'PACKAGECLOUD_MASTER_TOKEN']]) {
         image = buildDockerEnv('ci/realm-js:build', 'Dockerfile')
@@ -406,7 +419,7 @@ def doMacBuild(target, postStep = null) {
 def doWindowsBuild() {
   return {
     node('windows && nodejs') {
-      unstash 'realm-js-source'
+      unstash 'source'
       try {
         bat 'npm install --build-from-source=realm --realm_enable_sync'
         dir('tests') {
@@ -421,28 +434,5 @@ def doWindowsBuild() {
   }
 }
 
-def packageNpmArchive() {
-  return {
-    node('docker && !aws') {
-      // Unstash the files in the repository
-      unstash 'realm-js-source'
-      // Remove any archive from the workspace, which might have been produced by previous runs of the job
-      sh 'rm -f realm-*.tgz'
-      // TODO: Consider moving the node on the other side of the stages
-      docker.build(
-        'ci/realm-js:android-build',
-        '-f Dockerfile.android .'
-      ).inside {
-        // Install dependencies
-        sh 'npm install'
-        // Publish the Android module
-        sh 'cd react-native/android && ./gradlew publishAndroid'
-        // Package up the app
-        sh 'npm pack'
-        // Archive and stash the package
-        archiveArtifacts 'realm-*.tgz'
-        stash includes: 'realm-*.tgz', name: 'package'
-      }
-    }
-  }
+def doAndroidBuild() {
 }

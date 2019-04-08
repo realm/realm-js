@@ -17,9 +17,9 @@
 ////////////////////////////////////////////////////////////////////////////
 
 def onLinux() {
+  def electronVersion = args.get('electronVersion', '4.0.8')
   return {
     node('docker') {
-      // Unstash the files in the repository
       unstash 'source'
       docker.build(
         'ci/realm-js:electron',
@@ -28,16 +28,12 @@ def onLinux() {
       ).inside(
         '-e HOME=/tmp' // NPM will create folders in ~/.npm
       ) {
-        // Unstash the package produced when packaging
         dir('integration-tests') {
-          // Remove any archive from the workspace, which might have been produced by previous runs of the job
-          sh 'rm -f realm-*.tgz'
-          unstash 'package'
+          unstash "electron-pre-gyp-linux-${electronVersion}"
         }
         // Install the packaged version of realm into the app and run the tests
         dir('integration-tests/environments/electron') {
-          // Install the package, leaving out the optional packages to prevent Realm being installed from NPM
-          sh 'npm install --no-optional'
+          sh 'npm install'
           timeout(30) { // minutes
             // Run both main and renderer tests catching any errors
             def error = null;
@@ -73,22 +69,18 @@ def onLinux() {
 
 
 def onMacOS(Map args=[:]) {
+  def electronVersion = args.get('electronVersion', '4.0.8')
   def nodeVersion = args.get('nodeVersion', '10')
   return {
     node('macos') {
-      // Unstash the files in the repository
       unstash 'source'
       nvm(nodeVersion) {
-        // Unstash the package produced when packaging
         dir('integration-tests') {
-          // Remove any archive from the workspace, which might have been produced by previous runs of the job
-          sh 'rm -f realm-*.tgz'
-          unstash 'package'
+          unstash "electron-pre-gyp-macos-${electronVersion}"
         }
         // Install the packaged version of realm into the app and run the tests
         dir('integration-tests/environments/electron') {
-          // Install the package, leaving out the optional packages to prevent Realm being installed from NPM
-          sh 'npm install --no-optional'
+          sh 'npm install'
           timeout(30) { // minutes
             // Run both main and renderer tests catching any errors
             def error = null;

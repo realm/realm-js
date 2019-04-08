@@ -19,13 +19,8 @@
 def onAndroid() {
   return {
     node('docker && android') {
-      // Unstash the files in the repository
       unstash 'source'
-      // Build the image and run inside of it (again)
-      docker.build(
-        'ci/realm-js:android-build',
-        '-f Dockerfile.android .'
-      ).inside(
+      docker.build('ci/realm-js:android-build', '-f Dockerfile.android .').inside(
         // Mounting ~/.android/adbkey(.pub) to reuse the adb keys
         // Mounting ~/gradle-cache as ~/.gradle to prevent gradle from being redownloaded
         // Mounting ~/ccache as ~/.ccache to reuse the C-Cache across builds
@@ -35,9 +30,7 @@ def onAndroid() {
         // Locking the Android device to prevent other jobs from interfering
         lock("${NODE_NAME}-android") {
           dir('integration-tests') {
-            // Remove any archive from the workspace, which might have been produced by previous runs of the job
-            sh 'rm -f realm-*.tgz'
-            unstash 'package'
+            unstash 'android'
           }
           // Install the packaged version of realm into the app and run the tests
           dir('integration-tests/environments/react-native') {
@@ -50,7 +43,7 @@ def onAndroid() {
                 sh 'adb devices'
                 sh 'adb wait-for-device'
                 // Uninstall any other installations of this package before trying to install it again
-                sh 'adb uninstall io.realm.tests.reactnative || true' // '|| true' to prevent a build failure
+                sh 'adb uninstall io.realm.tests.reactnative || true' // '|| true' because the app might already not be installed
                 sh 'npm run test/android -- test-results.xml'
               }
             } finally {
@@ -72,14 +65,13 @@ def onIOS(Map args=[:]) {
   def nodeVersion = args.get('nodeVersion', '10')
   return {
     node('macos') {
-      // Unstash the files in the repository
       unstash 'source'
       nvm(nodeVersion) {
         // Unstash the package produced when packaging
         dir('integration-tests') {
-          // Remove any archive from the workspace, which might have been produced by previous runs of the job
-          sh 'rm -f realm-*.tgz'
-          unstash 'package'
+          // Use the android package because we actually just need any realm-js
+          // package at all; the iOS build system never uses a prebuilt library
+          unstash 'android'
         }
         // Install the packaged version of realm into the app and run the tests
         dir('integration-tests/environments/react-native') {

@@ -23,11 +23,9 @@ def onMacOS(Map args=[:]) {
       // Unstash the files in the repository
       unstash 'source'
       nvm(nodeVersion) {
-        // Unstash the package produced when packaging
         dir('integration-tests') {
-          // Remove any archive from the workspace, which might have been produced by previous runs of the job
           sh 'rm -f realm-*.tgz'
-          unstash 'package'
+          unstash "pre-gyp-macos-${nodeVersion}"
         }
         // Install the packaged version of realm into the app and run the tests
         dir('integration-tests/environments/node') {
@@ -50,18 +48,14 @@ def onLinux(Map args=[:]) {
   def nodeVersion = args.get('nodeVersion', '10')
   return {
     node('docker') {
-      // Unstash the files in the repository
       unstash 'source'
       docker.image(
         "node:${nodeVersion}"
       ).inside(
         '-e HOME=/tmp' // NPM will create folders in ~/.npm
       ) {
-        // Unstash the package produced when packaging
         dir('integration-tests') {
-          // Remove any archive from the workspace, which might have been produced by previous runs of the job
-          sh 'rm -f realm-*.tgz'
-          unstash 'package'
+          unstash 'pre-gyp-linux-${nodeVersion}'
         }
         // Install the packaged version of realm into the app and run the tests
         dir('integration-tests/environments/node') {
