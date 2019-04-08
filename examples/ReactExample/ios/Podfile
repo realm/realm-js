@@ -17,6 +17,8 @@ target 'ReactExample' do
   pod 'Folly', :podspec => '../node_modules/react-native/third-party-podspecs/Folly.podspec'
   pod 'RNFS', :path => '../node_modules/react-native-fs'
 
+  pod 'ReactNativeExceptionHandler', :path => '../node_modules/react-native-exception-handler'
+
   target 'ReactExampleTests' do
       inherit! :search_paths
   end

@@ -102,7 +102,7 @@ android {
     }
 
     defaultConfig {
-        applicationId "com.rndiffapp"
+        applicationId "io.realm.react.example"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
@@ -138,6 +138,8 @@ android {
 }
 
 dependencies {
+    implementation project(':react-native-fs')
+    implementation project(':react-native-exception-handler')
     implementation project(':react-native-exit-app-no-history')
     implementation "com.android.support:appcompat-v7:${rootProject.ext.supportLibVersion}"
     implementation "com.facebook.react:react-native:+"  // From node_modules

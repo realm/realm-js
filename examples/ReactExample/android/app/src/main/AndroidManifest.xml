@@ -9,6 +9,7 @@
     <uses-sdk android:targetSdkVersion="22" />
 
     <application
+      android:usesCleartextTraffic="true"
       android:name=".MainApplication"
       android:allowBackup="true"
       android:label="@string/app_name"
