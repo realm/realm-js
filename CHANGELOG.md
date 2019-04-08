@@ -1,7 +1,7 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
-* None.
+* Add an optional parameter to the `SubscriptionOptions`: `inclusions` which is an array of linkingObjects properties. This tells subscriptions to include objects linked through these relationships as well (links and lists are already included by default). ([#2296](https://github.com/realm/realm-js/pull/2296)
 
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
