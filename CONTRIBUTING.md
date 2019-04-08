@@ -116,7 +116,7 @@ To finish adding your new function, you will have to add your function a few pla
 * Documentation is added in `docs/realm.js`
 * Add an entry to `CHANGELOG.md` if applicable (Breaking changes/Enhancements/Bug fixes)
 
-### How To: Updating Object Store
+### How To: Update Object Store
 
 [Object Store](https://github.com/realm/realm-object-store) is the cross platform abstraction shared between all SDKs supported by Realm.
 
@@ -147,6 +147,6 @@ Debugging and working with the unit tests in an iterative mannner is done the fo
 4. Open `tests/react-test-app/ios/ReactTests.xcworkspace` (note: not the xcodeproj) in Xcode.
 5. Hit Cmd-U to run the tests.
 
-If want to modify the Javascripts in an iterative manner or enable break points you need to do it on the files located in `tests/react-test-app/node_modules/realm-tests`. These files are a copy of the original files located in `tests/js` so any changes must manually be copied back. The reason for this is that the React Native Metro Bundler doesn't support symlinks.
+If you want to modify the Javascript in an iterative manner or enable break points you need to do it on the files located in `tests/react-test-app/node_modules/realm-tests`. These files are a copy of the original files located in `tests/js` so any changes must manually be copied back. The reason for this is that the React Native Metro Bundler doesn't support symlinks.
 
 Note that it isn't possible to easily run a single unit test from Xcode. Instead you should disable the tests manually by modifying `tests/react-test-app/node_modules/realm-tests/index.js`.
