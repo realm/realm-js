@@ -328,7 +328,7 @@ module.exports = {
       TestCase.assertEqual(e.status, 404);
       TestCase.assertEqual(e.code, 612);
       TestCase.assertEqual(e.message, "The account does not exist.");
-      TestCase.assertEqual(e.type, "https://realm.io/docs/object-server/problems/unknown-account");
+      TestCase.assertEqual(e.type, "https://docs.realm.io/server/troubleshoot/errors#unknown-account");
     }).then(account => { if (account) { throw new Error("Retrieving nonexistent account should fail"); }});
   },
 

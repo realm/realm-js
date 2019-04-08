@@ -329,7 +329,7 @@ void ResultsClass<T>::subscribe(ContextType ctx, ObjectType this_object, Argumen
             ValueType name_value = Object::get_property(ctx, options_object, "name");
             if (Value::is_undefined(ctx, name_value)) {
                 throw std::logic_error("A 'name' must be set.");
-            } 
+            }
             else {
                 subscription_name = util::Optional<std::string>(Value::validated_to_string(ctx, name_value));
             }
@@ -342,9 +342,11 @@ void ResultsClass<T>::subscribe(ContextType ctx, ObjectType this_object, Argumen
             if (!Value::is_undefined(ctx, ttl_value))
                 ttl = util::Optional<int64_t>(Value::validated_to_number(ctx, ttl_value, "timeToLive"));
 
-            ObjectType js_prop_names = Value::validated_to_object(ctx, options_object, "inclusions");
-            if (!Value::is_undefined(ctx, js_prop_names)) {
-                size_t prop_count = Object::validated_get_length(ctx, js_prop_names);
+            ValueType user_includes = Object::get_property(ctx, options_object, "inclusions");
+            if (!Value::is_undefined(ctx, user_includes)) {
+                ObjectType property_paths = Value::validated_to_array(ctx, user_includes, "inclusions");
+
+                size_t prop_count = Object::validated_get_length(ctx, property_paths);
                 std::vector<std::string> include_paths;
                 include_paths.reserve(prop_count);
 
@@ -354,12 +356,9 @@ void ResultsClass<T>::subscribe(ContextType ctx, ObjectType this_object, Argumen
                 DescriptorOrdering combined_orderings;
 
                 for (unsigned int i = 0; i < prop_count; i++) {
-                    ValueType value = Object::validated_get_property(ctx, js_prop_names, i);
-                    std::string path = Value::validated_to_string(ctx, value);
+                    std::string path = Object::validated_get_string(ctx, property_paths, i);
                     DescriptorOrdering ordering;
                     parser::DescriptorOrderingState ordering_state = parser::parse_include_path(path);
-                    NativeAccessor<T> accessor(ctx, realm, object_schema);
-                    query_builder::ArgumentConverter<ValueType, NativeAccessor<T>> converter(accessor, &args.value[1], args.count - 1);
                     query_builder::apply_ordering(ordering, results->get_query().get_table(), ordering_state, mapping);
                     combined_orderings.append_include(ordering.compile_included_backlinks());
                 }

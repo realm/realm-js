@@ -60,12 +60,22 @@ function getRealm() {
     return new Promise((resolve, reject) => {
         Realm.Sync.User.login(AUTH_URL, Realm.Sync.Credentials.nickname("admin", true))
             .then((user) => {
-                const schemas = [{
-                    name: 'ObjectA',
-                    properties: {
-                        name: { type: 'string'}
-                    }
-                }];
+                const schemas = [
+                    {
+                        name: 'Parent',
+                        properties: {
+                            name: { type: 'string' },
+                            child: 'ObjectA',
+                        }
+                    },
+                    {
+                        name: 'ObjectA',
+                        properties: {
+                            name: { type: 'string' },
+                            parents: { type: 'linkingObjects', objectType: 'Parent', property: 'child' },
+                        }
+                    },
+                ];
 
                 const config = user.createConfiguration({
                     schema: schemas,
@@ -75,6 +85,52 @@ function getRealm() {
                 });
                 resolve(new Realm(config));
             });
+    });
+}
+
+function verifySubscriptionWithParents(parentToInclude) {
+    if (!isNodeProccess) {
+        return;
+    }
+
+    return getRealm().then(realm => {
+        realm.write(() => {
+            let obj_a1 = realm.create('ObjectA', {name: "a1"});
+            let obj_a2 = realm.create('ObjectA', {name: "a2"});
+            let parent_1 = realm.create('Parent', {name: "p1", child: obj_a1});
+            let parent_2 = realm.create('Parent', {name: "p2", child: obj_a1});
+            let parent_3 = realm.create('Parent', {name: "p3"});
+        });
+        let a_objects = realm.objects('ObjectA');
+        TestCase.assertEqual(a_objects.length, 2);
+        TestCase.assertEqual(a_objects[0].parents.length, 2);
+        TestCase.assertEqual(a_objects[1].parents.length, 0);
+        return new Promise((resolve, reject) => {
+            const query = realm.objects("ObjectA");
+            const sub = query.subscribe({name: "a_with_parents", inclusions: [parentToInclude]});
+            sub.addListener((subscription, state) => {
+                if (state === Realm.Sync.SubscriptionState.Complete) {
+                    sub.removeAllListeners();
+                    let a_objects = realm.objects('ObjectA').sorted("name");
+                    let parent_objects = realm.objects('Parent').sorted("name");
+                    // one object is not linked to and therefore not included in the subscription
+                    TestCase.assertEqual(a_objects.length, 2);
+                    TestCase.assertEqual(parent_objects.length, 2);
+                    TestCase.assertEqual(a_objects[0].name, "a1");
+                    TestCase.assertEqual(a_objects[1].name, "a2");
+                    TestCase.assertEqual(parent_objects[0].name, "p1");
+                    TestCase.assertEqual(parent_objects[1].name, "p2");
+                    TestCase.assertNotEqual(parent_objects[0].child, null);
+                    TestCase.assertNotEqual(parent_objects[1].child, null);
+                    TestCase.assertEqual(parent_objects[0].child.name, a_objects[0].name);
+                    TestCase.assertEqual(parent_objects[1].child.name, a_objects[0].name);
+                    resolve();
+                }
+                else if (state === Realm.Sync.SubscriptionState.Error) {
+                    reject(subscription.error);
+                }
+            });
+        });
     });
 }
 
@@ -250,7 +306,7 @@ module.exports = {
         if (!isNodeProccess) {
             return;
         }
-
+        console.log("beginning subscribeAndUpdateQuery() test")
         return getRealm().then(realm => {
             return new Promise((resolve, reject) => {
                 let query1 = realm.objects("ObjectA");
@@ -324,6 +380,106 @@ module.exports = {
                 let query = realm.objects("ObjectA");
                 TestCase.assertThrows(() => query.subscribe({ update: true, timeToLive: 1000})); // Missing name
                 resolve();
+            });
+        });
+    },
+
+    testSubscribeToChildrenWithoutParents() {
+        if (!isNodeProccess) {
+            return;
+        }
+
+        return getRealm().then(realm => {
+            realm.write(() => {
+                let obj_a1 = realm.create('ObjectA', {name: "a1"});
+                let obj_a2 = realm.create('ObjectA', {name: "a2"});
+                let parent_1 = realm.create('Parent', {name: "p1", link: obj_a1});
+                let parent_2 = realm.create('Parent', {name: "p2", link: obj_a1});
+            });
+            return new Promise((resolve, reject) => {
+                const query = realm.objects("ObjectA");
+                const sub = query.subscribe("a_objs" );
+                sub.addListener((subscription, state) => {
+                    if (state === Realm.Sync.SubscriptionState.Complete) {
+                        sub.removeAllListeners();
+                        let a_objects = realm.objects('ObjectA');
+                        let parent_objects = realm.objects('Parent');
+                        TestCase.assertEqual(a_objects.length, 2);
+                        // parent objects were removed from local copy because they were not subscribed to
+                        TestCase.assertEqual(parent_objects.length, 0);
+                        resolve();
+                    }
+                    else if (state === Realm.Sync.SubscriptionState.Error) {
+                        reject(subscription.error);
+                    }
+                });
+            });
+        });
+    },
+
+    testSubscribeParentsWithForwardLinks() {
+        if (!isNodeProccess) {
+            return;
+        }
+
+        return getRealm().then(realm => {
+            realm.write(() => {
+                let obj_a1 = realm.create('ObjectA', {name: "a1"});
+                let obj_a2 = realm.create('ObjectA', {name: "a2"});
+                let parent_1 = realm.create('Parent', {name: "p1", child: obj_a1});
+                let parent_2 = realm.create('Parent', {name: "p2", child: obj_a1});
+            });
+            return new Promise((resolve, reject) => {
+                const query = realm.objects("Parent");
+                const sub = query.subscribe("parent_objects" );
+                sub.addListener((subscription, state) => {
+                    if (state === Realm.Sync.SubscriptionState.Complete) {
+                        sub.removeAllListeners();
+                        let parent_objects = realm.objects('Parent');
+                        let a_objects = realm.objects("ObjectA");
+                        TestCase.assertEqual(parent_objects.length, 2);
+                        // one object is not linked to and therefore not included in the subscription
+                        TestCase.assertEqual(a_objects.length, 1);
+                        resolve();
+                    }
+                    else if (state === Realm.Sync.SubscriptionState.Error) {
+                        reject(subscription.error);
+                    }
+                });
+            });
+        });
+    },
+
+    testSubscribeToChildrenWithNamedParents() {
+        return verifySubscriptionWithParents("parents");
+    },
+
+    testSubscribeToChildrenWithUnnamedParents() {
+        return verifySubscriptionWithParents("@links.Parent.child");
+    },
+
+    testSubscribeToChildrenWithMalformedInclusion1() {
+        return new Promise((resolve, reject) => {
+            verifySubscriptionWithParents("something.wrong").then(() => {
+                reject();
+            }).catch(err => {
+                TestCase.assertEqual(err.message, "No property 'something' on object of type 'ObjectA'");
+                resolve();
+            }).catch(err => {
+                reject(err);
+            });
+        });
+    },
+
+    testSubscribeToChildrenWithMalformedInclusion2() {
+        return new Promise((resolve, reject) => {
+            verifySubscriptionWithParents("@links.Parent.missing_property").then(() => {
+                reject();
+            }).catch(err => {
+                TestCase.assertEqual(err.message, "No property 'missing_property' found in type 'Parent' which links to type 'ObjectA'");
+                resolve();
+            }).catch(err => {
+                reject(err);
             });
         });
     },
