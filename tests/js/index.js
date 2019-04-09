@@ -49,6 +49,7 @@ var TESTS = {
     MigrationTests: require('./migration-tests'),
     EncryptionTests: require('./encryption-tests'),
     ObjectIDTests: require('./object-id-tests'),
+    AliasTests: require('./alias-tests'),
     // Garbagecollectiontests: require('./garbage-collection'),
 };
 
@@ -56,6 +57,7 @@ var TESTS = {
 if (global.enableSyncTests) {
     TESTS.UserTests = require('./user-tests');
     TESTS.SessionTests = require('./session-tests');
+    TESTS.SubscriptionTests = require('./subscription-tests');
 
     // FIXME: Permission tests currently fail in react native
     if (isNodeProcess) {

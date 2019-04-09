@@ -859,7 +859,75 @@ class Session {
 }
 
 /**
- * An object encapsulating query-based sync subscriptions.
+ * A managed Realm object representing a subscription. Subscriptions are used by Query-based Realms to define which
+ * data should be available on the device.
+ *
+ * @property {string|Realm.Results} query - Defines the query handled by this subscription. A string representation
+ *   is always returned. When setting the query either a string representation of the query or the
+ *   {@link Realm.Results} directly can can be used. It is possible to get the string representation of a query
+ *   using {@link Realm.Results.description()}.
+ * @property {number} timeToLive - Defines, in milliseconds, for how long the subscription should be kept alive after
+ *   last being used. If `null` the subscription is kept alive indefinitely. If set to a value
+ *   {@link Subscription.expiresAt} returns the date after which Realm automatically will delete the subscription.
+ *   Deleting the subscription implies the data covered by it are removed locally from the device, but not deleted on
+ *   the server.
+ * @memberOf Realm.Sync
+ * @extends Realm.Object
+ */
+class NamedSubscription {
+
+    /**
+     * Gets the current state of the subscription.
+     * Can be either:
+     *  - Realm.Sync.SubscriptionState.Error: An error occurred while creating or processing the query-based sync subscription.
+     *  - Realm.Sync.SubscriptionState.Creating: The subscription is being created.
+     *  - Realm.Sync.SubscriptionState.Pending: The subscription was created, but has not yet been processed by the sync server.
+     *  - Realm.Sync.SubscriptionState.Complete: The subscription has been processed by the sync server and data is being synced to the device.
+     *  - Realm.Sync.SubscriptionState.Invalidated: The subscription has been removed.
+     * @type {number}
+     */
+    get state() {}
+
+    /**
+     * Returns the error message if  the server encountered an error when evaluating the query covered by this
+     * subscription. `undefined` is returned if `state != Realm.Sync.SubscriptionState.Error`.
+     * @readonly
+     * @type {string}
+     */
+    get error() {}
+
+    /**
+     * Returns the date for when this subscription was first created.
+     */
+    get createdAt() {}
+
+    /**
+     * Returns when this subscription was last used or updated.
+     *
+     * "Used" in this context means that someone resubscribed to the subscription.
+     *
+     * "Updated" means that someone updated the {@link Subscription.query} or some other field part of this class.
+     *
+     * This field is NOT updated whenever the results of the query changes.
+     *
+     * This field plus {@link Subscription.timeToLive} defines {@link Subscription.expiresAt}.
+     */
+    get updatedAt() {}
+
+    /**
+     * Returns the point in time from which Realm can safely delete this subscription. This will
+     * happen automatically.
+     *
+     * Realm will attempt to cleanup expired subscriptions when the app is started or whenever
+     * any subscription is modified, there is no guarantee it will happen immediately after it
+     * expires.
+     */
+    get expiresAt() {}
+}
+
+/**
+ * An immutable object encapsulating a snapshot of the state of a query-based sync subscriptions.
+ *
  * @memberof Realm.Sync
  */
 class Subscription {
@@ -876,7 +944,8 @@ class Subscription {
     get state() { }
 
     /**
-     * Gets the error message. `undefined` if no error.
+     * Returns the error message if  the server encountered an error when evaluating the query covered by this
+     * subscription. `undefined` is returned if `state != Realm.Sync.SubscriptionState.Error`.
      * @type {string}
      */
     get error() { }
