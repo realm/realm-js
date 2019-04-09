@@ -12,7 +12,6 @@
     "react-native-exception-handler": "^2.4.3",
     "react-native-fs": "^2.8.5",
     "react-navigation": "^1.0.0",
-    "realm": "file:../..",
     "xmlbuilder": "^4.2.1"
   },
   "resolutions": {
