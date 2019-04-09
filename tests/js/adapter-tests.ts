@@ -115,8 +115,6 @@ var nextAvailablePromise = undefined;
 var adapter;
 var rosController;
 
-require('jasmine-co').install();
-
 let tmpDir;
 
 const realmNamePrefix = path.basename(tmp.dirSync().name);

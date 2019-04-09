@@ -34,8 +34,6 @@ const ipcSchema = [{
     }
 }];
 
-require('jasmine-co').install();
-
 let nextChangePromise = undefined;
 let nextAvailablePromise = undefined;
 let rosController = undefined;
@@ -192,6 +190,7 @@ function createRealmAndChangeListener() {
 
 describe('Notifier', () => {
     beforeEach(function() {
+        Realm.clearTestState();
         this.tmpListenerDir = tmp.dirSync({ unsafeCleanup: true });
         Realm.Sync.setListenerDirectory(this.tmpListenerDir.name);
         Realm.Sync.setSyncLogger((level, message) => {
@@ -214,7 +213,6 @@ describe('Notifier', () => {
         await rosController.shutdown()
         this.tmpListenerDir.removeCallback();
         rosController = undefined;
-        Realm.clearTestState();
     });
 
 
@@ -736,6 +734,7 @@ describe('Notifier', () => {
 describe('Multi-process Notifier', () => {
     let tmpIpcPath, worker;
     beforeEach(function() {
+        Realm.clearTestState();
         this.tmpListenerDir = tmp.dirSync({ unsafeCleanup: true });
         this.tmpIpcDir = tmp.dirSync({ unsafeCleanup: true });
         tmpIpcPath = this.tmpIpcDir.name + '/test.realm';
@@ -773,7 +772,6 @@ describe('Multi-process Notifier', () => {
         this.tmpListenerDir.removeCallback();
         this.tmpIpcDir.removeCallback();
         rosController = undefined;
-        Realm.clearTestState();
     });
 
     async function expectNotifications(regex: string, fn) { //}: (() => Promise<object>) => Promise<void>) {

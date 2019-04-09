@@ -131,11 +131,8 @@ module.exports = {
                 schema: [{ name: 'Dog', properties: { name: 'string' } }],
             };
             return Realm.open(config).then(realm => {
-                return new Promise((resolve, reject) => {
-                    TestCase.assertDefined(realm.syncSession.config.custom_http_headers);
-                    TestCase.assertEqual(realm.syncSession.config.custom_http_headers['X-Foo'], 'Bar');
-                    resolve();
-                });
+                  TestCase.assertDefined(realm.syncSession.config.custom_http_headers);
+                  TestCase.assertEqual(realm.syncSession.config.custom_http_headers['X-Foo'], 'Bar');
             });
         });
     },
