@@ -24,7 +24,7 @@ x.x.x Release notes (yyyy-MM-dd)
 ### Internal
 * Updated to core version 5.19.1.
 * Updated to sync version 4.4.2.
-* Updated to object store commit 3ff4170
+* Updated to object store commit 1a084db8d0
 
 2.26.0 Release notes (2019-4-4)
 =============================================================
