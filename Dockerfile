@@ -12,6 +12,7 @@ RUN yum -y install \
     make \
     perl \
     which \
+    openssh-clients \
  && yum clean all \
  \
   # TODO: install openssl in /usr/local
