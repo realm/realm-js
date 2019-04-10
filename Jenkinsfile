@@ -6,14 +6,14 @@ repoName = 'realm-js' // This is a global variable
 
 def nodeVersions = ['8.15.0', '10.15.1']
 def electronVersions = ['2.0.18', '3.0.16', '3.1.8', '4.0.8', '4.1.4']
-def nodeTestVersion = '8.15.0'
 def gitTag = null
 def formattedVersion = null
 dependencies = null
+nodeTestVersion = '8.15.0'
 
-// def ElectronTests
-// def NodeJsTests
-// def ReactNativeTests
+def ElectronTests
+def NodeJsTests
+def ReactNativeTests
 
 // == Stages
 
@@ -63,9 +63,10 @@ stage('check') {
   }
 }
 
+/*
 stage('test') {
   parallelExecutors = [:]
-  parallelExecutors["eslint"] = doDockerBuild('eslint-ci', 10, {
+  parallelExecutors["eslint"] = testLinux('eslint-ci', 10, {
     step([
       $class: 'CheckStylePublisher',
       canComputeNew: false,
@@ -77,7 +78,7 @@ stage('test') {
       maxWarnings: 0,
       ignoreFailures: false])
   })
-  parallelExecutors["jsdoc"] = doDockerBuild('jsdoc', 10, {
+  parallelExecutors["jsdoc"] = testLinux('jsdoc', 10, {
     publishHTML([
       allowMissing: false,
       alwaysLinkToLastBuild: false,
@@ -88,37 +89,39 @@ stage('test') {
     ])
   })
   for (def nodeVersion in nodeVersions) {
-    parallelExecutors["macOS node ${nodeVersion} Debug"]   = doMacBuild("node Debug ${nodeVersion}")
-    parallelExecutors["macOS node ${nodeVersion} Release"] = doMacBuild("node Release ${nodeVersion}")
-    parallelExecutors["Linux node ${nodeVersion} Debug"]   = doDockerBuild("node Debug ${nodeVersion}", nodeVersion)
-    parallelExecutors["Linux node ${nodeVersion} Release"] = doDockerBuild("node Release ${nodeVersion}", nodeVersion)
-    parallelExecutors["Linux test runners ${nodeVersion}"] = doDockerBuild('test-runners', nodeVersion)
+    parallelExecutors["macOS node ${nodeVersion} Debug"]   = testMacOS("node Debug ${nodeVersion}")
+    parallelExecutors["macOS node ${nodeVersion} Release"] = testMacOS("node Release ${nodeVersion}")
+    parallelExecutors["Linux node ${nodeVersion} Debug"]   = testLinux("node Debug ${nodeVersion}", nodeVersion)
+    parallelExecutors["Linux node ${nodeVersion} Release"] = testLinux("node Release ${nodeVersion}", nodeVersion)
+    parallelExecutors["Linux test runners ${nodeVersion}"] = testLinux('test-runners', nodeVersion)
   }
-  parallelExecutors["React Native iOS Debug"] = doMacBuild('react-tests Debug')
-  parallelExecutors["React Native iOS Release"] = doMacBuild('react-tests Release')
-  parallelExecutors["React Native iOS Example Debug"] = doMacBuild('react-example Debug')
-  parallelExecutors["React Native iOS Example Release"] = doMacBuild('react-example Release')
-  parallelExecutors["macOS Electron Debug"] = doMacBuild('electron Debug')
-  parallelExecutors["macOS Electron Release"] = doMacBuild('electron Release')
-  parallelExecutors["Windows node"] = doWindowsBuild()
-  //android_react_tests: doAndroidBuild('react-tests-android', {
+  parallelExecutors["React Native iOS Debug"] = testMacOS('react-tests Debug')
+  parallelExecutors["React Native iOS Release"] = testMacOS('react-tests Release')
+  parallelExecutors["React Native iOS Example Debug"] = testMacOS('react-example Debug')
+  parallelExecutors["React Native iOS Example Release"] = testMacOS('react-example Release')
+  parallelExecutors["macOS Electron Debug"] = testMacOS('electron Debug')
+  parallelExecutors["macOS Electron Release"] = testMacOS('electron Release')
+  parallelExecutors["Windows node"] = testWindows()
+  //android_react_tests: testAndroid('react-tests-android', {
   //  junit 'tests/react-test-app/tests.xml'
   //}),
   parallel parallelExecutors
 }
+*/
 
 stage('build') {
   parallelExecutors = [:]
-  for (def nodeVersion in nodeVersions) {
-    parallelExecutors["Mac Node ${nodeVersion}"]   = { buildMacOS(nodeVersion, this.&buildCommon) }
-    parallelExecutors["Linux Node ${nodeVersion}"] = { buildLinux(nodeVersion, this.&buildCommon) }
+  nodeVersions.each { nodeVersion ->
+    parallelExecutors["macOS Node ${nodeVersion}"] = buildMacOS { buildCommon(nodeVersion, it) }
+    parallelExecutors["Linux Node ${nodeVersion}"] = buildLinux { buildCommon(nodeVersion, it) }
   }
-  for (def electronVersion in electronVersions) {
-    parallelExecutors["Mac Electron ${electronVersion}"]          = { buildMacOS(electronVersion, this.&buildElectronCommon) }
-    parallelExecutors["Linux Electron ${electronVersion}"]        = { buildLinux(electronVersion, this.&buildElectronCommon) }
-    parallelExecutors["Windows Electron ${electronVersion} ia32"] = { buildWindowsElectron(electronVersion, 'ia32') }
-    parallelExecutors["Windows Electron ${electronVersion} x64"]  = { buildWindowsElectron(electronVersion, 'x64') }
+  electronVersions.each { electronVersion ->
+    parallelExecutors["macOS Electron ${electronVersion}"]        = buildMacOS { buildElectronCommon(electronVersion, it) }
+    parallelExecutors["Linux Electron ${electronVersion}"]        = buildLinux { buildElectronCommon(electronVersion, it) }
+    parallelExecutors["Windows Electron ${electronVersion} ia32"] = buildWindowsElectron(electronVersion, 'ia32')
+    parallelExecutors["Windows Electron ${electronVersion} x64"]  = buildWindowsElectron(electronVersion, 'x64')
   }
+  parallelExecutors["Android React Native"] = buildAndroid()
   parallel parallelExecutors
 }
 
@@ -126,21 +129,19 @@ stage('integration tests') {
   parallel(
     'React Native on Android': ReactNativeTests.onAndroid(),
     'React Native on iOS': ReactNativeTests.onIOS(),
-    'Node.js v10 on Mac': NodeJsTests.onMacOS(nodeVersion: '10'),
-    'Node.js v8 on Linux': NodeJsTests.onLinux(nodeVersion: '8'),
-    'Node.js v10 on Linux': NodeJsTests.onLinux(nodeVersion: '10'),
+    'Node.js v10 on Mac': NodeJsTests.onMacOS(nodeVersion: '10.15.1'),
+    'Node.js v8 on Linux': NodeJsTests.onLinux(nodeVersion: '8.15.0'),
+    'Node.js v10 on Linux': NodeJsTests.onLinux(nodeVersion: '10.15.1'),
     'Electron on Linux': ElectronTests.onLinux(),
     'Electron on Mac': ElectronTests.onMacOS(),
   )
 }
 
-/*
 if (gitTag) {
   stage('publish') {
     publish(nodeVersions, dependencies, gitTag)
   }
 }
-*/
 
 // == Methods
 
@@ -175,92 +176,106 @@ def buildCommon(nodeVersion, platform) {
 }
 
 def buildElectronCommon(electronVersion, platform) {
-  sh "${env.WORKSPACE}/scripts/build-electron.sh ${electronVersion} ${nodeTestVersion}"
-  dir("build/stage/node-pre-gyp/${dependencies.VERSION}") {
-    stash includes: 'realm-*', name: "electron-pre-gyp-${platform}-${electronVersion}"
-  }
-}
-
-def buildLinux(nodeVersion, workerFunction, variant = "Release") {
-  myNode('docker') {
-    unstash 'source'
-    def image
-    withCredentials([[$class: 'StringBinding', credentialsId: 'packagecloud-sync-devel-master-token', variable: 'PACKAGECLOUD_MASTER_TOKEN']]) {
-      image = buildDockerEnv('ci/realm-js-private:build', 'Dockerfile')
-    }
-    sh "bash ./scripts/utils.sh set-version ${dependencies.VERSION}"
-    image.inside('-e HOME=/tmp') {
-      workerFunction(nodeVersion, 'linux', variant)
+  withEnv([
+    "npm_config_target=${electronVersion}",
+    "npm_config_disturl=https://atom.io/download/electron",
+    "npm_config_runtime=electron",
+    "npm_config_devdir=${env.HOME}/.electron-gyp"
+  ]) {
+    sh "./scripts/nvm-wrapper.sh ${nodeTestVersion} npm run package"
+    dir("build/stage/node-pre-gyp/${dependencies.VERSION}") {
+      stash includes: 'realm-*', name: "electron-pre-gyp-${platform}-${electronVersion}"
     }
   }
 }
 
-def buildMacOS(nodeVersion, workerFunction, variant = "Release") {
-  myNode('osx_vegas') {
-    env.DEVELOPER_DIR = "/Applications/Xcode-9.4.app/Contents/Developer"
-    unstash 'source'
-    sh "bash ./scripts/utils.sh set-version ${dependencies.VERSION}"
-    workerFunction(nodeVersion, 'macos', variant)
+def buildLinux(workerFunction) {
+  return {
+    myNode('docker') {
+      unstash 'source'
+      def image
+      withCredentials([[$class: 'StringBinding', credentialsId: 'packagecloud-sync-devel-master-token', variable: 'PACKAGECLOUD_MASTER_TOKEN']]) {
+        image = buildDockerEnv('ci/realm-js-private:build', 'Dockerfile')
+      }
+      sh "bash ./scripts/utils.sh set-version ${dependencies.VERSION}"
+      image.inside('-e HOME=/tmp') {
+        workerFunction('linux')
+      }
+    }
+  }
+}
+
+def buildMacOS(workerFunction) {
+  return {
+    myNode('osx_vegas') {
+      withEnv([
+        "DEVELOPER_DIR=/Applications/Xcode-9.4.app/Contents/Developer",
+        "SDKROOT=macosx10.13"
+      ]) {
+        unstash 'source'
+        sh "bash ./scripts/utils.sh set-version ${dependencies.VERSION}"
+        workerFunction('macos')
+      }
+    }
   }
 }
 
 def buildWindows(nodeVersion, arch) {
-  myNode('windows && nodejs && cph-windows-01') {
-    unstash 'source'
+  return {
+    myNode('windows && nodejs && cph-windows-01') {
+      unstash 'source'
 
-    bat 'npm install --ignore-scripts --production'
+      bat 'npm install --ignore-scripts --production'
 
-    withEnv(["_MSPDBSRV_ENDPOINT_=${UUID.randomUUID().toString()}"]) {
-      retry(3) {
-        bat ".\\node_modules\\node-pre-gyp\\bin\\node-pre-gyp.cmd rebuild --build_v8_with_gn=false --target_arch=${arch} --target=${nodeVersion}"
+      withEnv(["_MSPDBSRV_ENDPOINT_=${UUID.randomUUID().toString()}"]) {
+        retry(3) {
+          bat ".\\node_modules\\node-pre-gyp\\bin\\node-pre-gyp.cmd rebuild --build_v8_with_gn=false --target_arch=${arch} --target=${nodeVersion}"
+        }
       }
-    }
-    bat ".\\node_modules\\node-pre-gyp\\bin\\node-pre-gyp.cmd package --build_v8_with_gn=false --target_arch=${arch} --target=${nodeVersion}"
-    dir("build/stage/node-pre-gyp/${dependencies.VERSION}") {
-      stash includes: 'realm-*', name: "pre-gyp-windows-${arch}-${nodeVersion}"
+      bat ".\\node_modules\\node-pre-gyp\\bin\\node-pre-gyp.cmd package --build_v8_with_gn=false --target_arch=${arch} --target=${nodeVersion}"
+      dir("build/stage/node-pre-gyp/${dependencies.VERSION}") {
+        stash includes: 'realm-*', name: "pre-gyp-windows-${arch}-${nodeVersion}"
+      }
     }
   }
 }
 
 def buildWindowsElectron(electronVersion, arch) {
-  myNode('windows && nodejs && cph-windows-01') {
-    unstash 'source'
-    bat 'npm install --ignore-scripts --production'
-    withEnv([
-      "npm_config_target=${electronVersion}",
-      "npm_config_target_arch=${arch}",
-      'npm_config_disturl=https://atom.io/download/electron',
-      'npm_config_runtime=electron',
-      "npm_config_devdir=${env.HOME}/.electron-gyp"
-    ]) {
-      withEnv(["_MSPDBSRV_ENDPOINT_=${UUID.randomUUID().toString()}"]) {
-        bat '.\\node_modules\\node-pre-gyp\\bin\\node-pre-gyp.cmd rebuild --realm_enable_sync'
+  return {
+    myNode('windows && nodejs && cph-windows-01') {
+      unstash 'source'
+      bat 'npm install --ignore-scripts --production'
+      withEnv([
+        "npm_config_target=${electronVersion}",
+        "npm_config_target_arch=${arch}",
+        'npm_config_disturl=https://atom.io/download/electron',
+        'npm_config_runtime=electron',
+        "npm_config_devdir=${env.HOME}/.electron-gyp"
+      ]) {
+        withEnv(["_MSPDBSRV_ENDPOINT_=${UUID.randomUUID().toString()}"]) {
+          bat '.\\node_modules\\node-pre-gyp\\bin\\node-pre-gyp.cmd rebuild --realm_enable_sync'
+        }
+        bat '.\\node_modules\\node-pre-gyp\\bin\\node-pre-gyp.cmd package'
       }
-      bat '.\\node_modules\\node-pre-gyp\\bin\\node-pre-gyp.cmd package'
-    }
-    dir("build/stage/node-pre-gyp/${dependencies.VERSION}") {
-      stash includes: 'realm-*', name: "electron-pre-gyp-windows-${arch}-${electronVersion}"
+      dir("build/stage/node-pre-gyp/${dependencies.VERSION}") {
+        stash includes: 'realm-*', name: "electron-pre-gyp-windows-${arch}-${electronVersion}"
+      }
     }
   }
 }
 
 def buildAndroid() {
-  myNode('docker && !aws') {
-    unstash 'source'
-    sh 'rm -f realm-*.tgz'
-    docker.build('ci/realm-js:android-build', '-f Dockerfile.android .').inside {
-      sh 'npm install'
-      sh 'cd react-native/android && ./gradlew publishAndroid'
-      sh 'npm pack'
-      stash includes: 'realm-*.tgz', name: 'android'
+  return {
+    myNode('docker && !aws') {
+      unstash 'source'
+      sh 'rm -f realm-*.tgz'
+      docker.build('ci/realm-js:android-build', '-f Dockerfile.android .').inside {
+        sh 'npm install'
+        sh 'cd react-native/android && ./gradlew publishAndroid'
+        sh 'npm pack'
+        stash includes: 'realm-*.tgz', name: 'android'
+      }
     }
-  }
-}
-
-def testNode(nodeVersion, platform, variant) {
-  withCredentials([string(credentialsId: 'realm-sync-feature-token-enterprise', variable: 'realmFeatureToken')]) {
-    sh "REALM_FEATURE_TOKEN=${realmFeatureToken} SYNC_WORKER_FEATURE_TOKEN=${realmFeatureToken} ./scripts/nvm-wrapper.sh ${nodeVersion} scripts/test.sh node ${variant} ${nodeVersion}"
-    junit allowEmptyResults: true, keepLongStdio: true, testResults: "results.xml"
   }
 }
 
@@ -270,9 +285,6 @@ def publish(nodeVersions, dependencies, tag) {
       for (def version in nodeVersions) {
         unstash "pre-gyp-${platform}-${version}"
       }
-    }
-
-    for (def platform in ['macos', 'linux', 'windows-ia32', 'windows-x64']) {
       for (def version in electronVersions) {
         unstash "electron-pre-gyp-${platform}-${version}"
       }
@@ -363,7 +375,7 @@ def doDockerInside(script, target, postStep = null) {
   }
 }
 
-def doAndroidBuild(target, postStep = null) {
+def testAndroid(target, postStep = null) {
   return {
     node('docker && android && !aws') {
         timeout(time: 1, unit: 'HOURS') {
@@ -373,7 +385,7 @@ def doAndroidBuild(target, postStep = null) {
   }
 }
 
-def doDockerBuild(target, nodeVersion = 10, postStep = null) {
+def testLinux(target, nodeVersion = 10, postStep = null) {
   return {
     node('docker') {
       deleteDir()
@@ -404,7 +416,7 @@ def doDockerBuild(target, nodeVersion = 10, postStep = null) {
   }
 }
 
-def doMacBuild(target, postStep = null) {
+def testMacOS(target, postStep = null) {
   return {
     node('osx_vegas') {
       withEnv(['DEVELOPER_DIR=/Applications/Xcode-9.4.app/Contents/Developer',
@@ -416,7 +428,7 @@ def doMacBuild(target, postStep = null) {
   }
 }
 
-def doWindowsBuild() {
+def testWindows() {
   return {
     node('windows && nodejs') {
       unstash 'source'
@@ -432,7 +444,4 @@ def doWindowsBuild() {
       }
     }
   }
-}
-
-def doAndroidBuild() {
 }
