@@ -302,7 +302,6 @@ module.exports = {
         if (!isNodeProccess) {
             return;
         }
-        console.log("beginning subscribeAndUpdateQuery() test")
         return getRealm().then(realm => {
             return new Promise((resolve, reject) => {
                 let query1 = realm.objects("ObjectA");
@@ -464,32 +463,22 @@ module.exports = {
         if (!isNodeProccess) {
             return;
         }
-        return new Promise((resolve, reject) => {
-            verifySubscriptionWithParents("something.wrong").then(() => {
-                reject();
-            }).catch(err => {
-                TestCase.assertEqual(err.message, "No property 'something' on object of type 'ObjectA'");
-                resolve();
-            }).catch(err => {
-                reject(err);
-            });
-        });
+        return verifySubscriptionWithParents("something.wrong").then(() => {
+            throw new Error('subscription should have failed')
+        },
+            (err) => TestCase.assertEqual(err.message, "No property 'something' on object of type 'ObjectA'")
+        );
     },
 
     testSubscribeToChildrenWithMalformedInclusion2() {
         if (!isNodeProccess) {
             return;
         }
-        return new Promise((resolve, reject) => {
-            verifySubscriptionWithParents("@links.Parent.missing_property").then(() => {
-                reject();
-            }).catch(err => {
-                TestCase.assertEqual(err.message, "No property 'missing_property' found in type 'Parent' which links to type 'ObjectA'");
-                resolve();
-            }).catch(err => {
-                reject(err);
-            });
-        });
+        return verifySubscriptionWithParents("@links.Parent.missing_property").then(() => {
+            throw new Error('subscription should have failed')
+        },
+            (err) => TestCase.assertEqual(err.message, "No property 'missing_property' found in type 'Parent' which links to type 'ObjectA'")
+        );
     },
 
 };

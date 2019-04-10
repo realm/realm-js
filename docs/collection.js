@@ -162,7 +162,9 @@ class Collection {
      *   If `update` is true the query on an existing subscription will be updated. If `timeToLive` is set, it indicates
      *   to Realm for how long it must be kept alive, after which it will be automatically removed. The `inclusions` property
      *   is an array of property paths which specifies which linkingObjects relationships should be included in the subscription.
-     *   This only applies to linkingObjects properties because link and list properties are automatically included by default.
+     *   This can be a set of paths to a linkingObject (eg: link.to.myLinkingObject) or if the reverse relationship is not named
+     *   with a linkingObject, it can be verbosly specified using the forward link `@links.MyClassName.myLinkProperty` syntax.
+     *   Subscriptions already include link and list properties (in the forward direction) automatically by default.
      * @returns {Realm.Sync.Subscription} - the Realm.Sync.Subscription instance.
      * @throws {Error} if the partial sync is not enabled in the configuration or the query is not supported by Realm Object Server.
      * @since 2.3.0
