@@ -156,7 +156,7 @@ def myNode(nodeSpec, block) {
   }
 }
 
-def buildDockerEnv(name, dockerfile='Dockerfile', extra_args='') {
+def buildDockerEnv(name, extra_args='') {
   docker.withRegistry("https://${env.DOCKER_REGISTRY}", "ecr:eu-west-1:aws-ci-user") {
     sh "sh ./scripts/docker_build_wrapper.sh $name . ${extra_args}"
   }
@@ -195,7 +195,7 @@ def buildLinux(workerFunction) {
       unstash 'source'
       def image
       withCredentials([[$class: 'StringBinding', credentialsId: 'packagecloud-sync-devel-master-token', variable: 'PACKAGECLOUD_MASTER_TOKEN']]) {
-        image = buildDockerEnv('ci/realm-js-private:build', 'Dockerfile')
+        image = buildDockerEnv('ci/realm-js:build')
       }
       sh "bash ./scripts/utils.sh set-version ${dependencies.VERSION}"
       image.inside('-e HOME=/tmp') {
@@ -266,11 +266,15 @@ def buildWindowsElectron(electronVersion, arch) {
 
 def buildAndroid() {
   return {
-    myNode('docker && !aws') {
+    myNode('docker') {
       unstash 'source'
-      sh 'rm -f realm-*.tgz'
-      docker.build('ci/realm-js:android-build', '-f Dockerfile.android .').inside {
-        sh 'npm install'
+      def image
+      withCredentials([[$class: 'StringBinding', credentialsId: 'packagecloud-sync-devel-master-token', variable: 'PACKAGECLOUD_MASTER_TOKEN']]) {
+        image = buildDockerEnv('ci/realm-js:android-build', '-f Dockerfile.android')
+      }
+      sh "bash ./scripts/utils.sh set-version ${dependencies.VERSION}"
+      image.inside('-e HOME=/tmp') {
+        sh 'npm ci --ignore-scripts'
         sh 'cd react-native/android && ./gradlew publishAndroid'
         sh 'npm pack'
         stash includes: 'realm-*.tgz', name: 'android'
@@ -392,7 +396,7 @@ def testLinux(target, nodeVersion = 10, postStep = null) {
       unstash 'source'
       def image
       withCredentials([[$class: 'StringBinding', credentialsId: 'packagecloud-sync-devel-master-token', variable: 'PACKAGECLOUD_MASTER_TOKEN']]) {
-        image = buildDockerEnv('ci/realm-js:build', 'Dockerfile')
+        image = buildDockerEnv('ci/realm-js:build')
       }
       sh "bash ./scripts/utils.sh set-version ${dependencies.VERSION}"
 
