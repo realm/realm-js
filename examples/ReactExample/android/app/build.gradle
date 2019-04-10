@@ -140,7 +140,6 @@ android {
 dependencies {
     implementation project(':react-native-fs')
     implementation project(':react-native-exception-handler')
-    implementation project(':react-native-exit-app-no-history')
     implementation "com.android.support:appcompat-v7:${rootProject.ext.supportLibVersion}"
     implementation "com.facebook.react:react-native:+"  // From node_modules
     implementation project(":realm")

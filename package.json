@@ -30,7 +30,7 @@
     "url": "https://github.com/realm/realm-js/issues"
   },
   "typings": "./lib/index.d.ts",
-  "main": "lib/index.js",
+  "main": "./lib/index.js",
   "files": [
     "android",
     "lib",
