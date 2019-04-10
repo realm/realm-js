@@ -103,7 +103,7 @@ function verifySubscriptionWithParents(parentToInclude) {
         TestCase.assertEqual(a_objects[1].parents.length, 0);
         return new Promise((resolve, reject) => {
             const query = realm.objects("ObjectA");
-            const sub = query.subscribe({name: "a_with_parents", inclusions: [parentToInclude]});
+            const sub = query.subscribe({includeLinkingObjects: [parentToInclude]});
             sub.addListener((subscription, state) => {
                 if (state === Realm.Sync.SubscriptionState.Complete) {
                     sub.removeAllListeners();
@@ -365,7 +365,7 @@ module.exports = {
         });
     },
 
-    testSubscribeWithInvalidOptions() {
+    testSubscribeWithoutName() {
         if (!isNodeProccess) {
             return;
         }
@@ -373,7 +373,21 @@ module.exports = {
         return getRealm().then(realm => {
             return new Promise((resolve, reject) => {
                 let query = realm.objects("ObjectA");
-                TestCase.assertThrows(() => query.subscribe({ update: true, timeToLive: 1000})); // Missing name
+                query.subscribe({ update: true, timeToLive: 1000}); // Missing name, doesn't throw
+                resolve();
+            });
+        });
+    },
+
+    testSubscribeWithMisspelledConfigParameter() {
+        if (!isNodeProccess) {
+            return;
+        }
+
+        return getRealm().then(realm => {
+            return new Promise((resolve, reject) => {
+                let query = realm.objects("ObjectA");
+                TestCase.assertThrowsContaining(() => query.subscribe({ naem: "myName" }), "Unexpected property in subscription options: 'naem'");
                 resolve();
             });
         });

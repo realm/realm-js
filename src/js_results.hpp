@@ -329,25 +329,33 @@ void ResultsClass<T>::subscribe(ContextType ctx, ObjectType this_object, Argumen
             subscription_name = util::Optional<std::string>(Value::validated_to_string(ctx, args[0]));
         } else {
             ObjectType options_object = Value::validated_to_object(ctx, args[0]);
-            ValueType name_value = Object::get_property(ctx, options_object, "name");
-            if (Value::is_undefined(ctx, name_value)) {
-                throw std::logic_error("A 'name' must be set.");
-            }
-            else {
-                subscription_name = util::Optional<std::string>(Value::validated_to_string(ctx, name_value));
+
+            std::vector<const char*> available_options = {"name", "update", "timeToLive", "includeLinkingObjects"};
+            enum SubscriptionOptions { NAME, UPDATE, TTL, INCLUSIONS };
+            std::vector<node::String> prop_names = Object::get_property_names(ctx, options_object);
+            for (size_t i = 0; i < prop_names.size(); ++i) {
+                std::string prop = prop_names[i];
+                if (std::find(available_options.begin(), available_options.end(), prop) == available_options.end()) {
+                    throw std::logic_error("Unexpected property in subscription options: '" + prop + "'.");
+                }
             }
 
-            ValueType update_value = Object::get_property(ctx, options_object, "update");
+            ValueType name_value = Object::get_property(ctx, options_object, available_options[NAME]);
+            if (!Value::is_undefined(ctx, name_value)) {
+                subscription_name = util::Optional<std::string>(Value::validated_to_string(ctx, name_value, available_options[NAME]));
+            }
+
+            ValueType update_value = Object::get_property(ctx, options_object, available_options[UPDATE]);
             if (!Value::is_undefined(ctx, update_value))
-                update = Value::validated_to_boolean(ctx, update_value, "update");
+                update = Value::validated_to_boolean(ctx, update_value, available_options[UPDATE]);
 
-            ValueType ttl_value = Object::get_property(ctx, options_object, "timeToLive");
+            ValueType ttl_value = Object::get_property(ctx, options_object, available_options[TTL]);
             if (!Value::is_undefined(ctx, ttl_value))
-                ttl = util::Optional<int64_t>(Value::validated_to_number(ctx, ttl_value, "timeToLive"));
+                ttl = util::Optional<int64_t>(Value::validated_to_number(ctx, ttl_value, available_options[TTL]));
 
-            ValueType user_includes = Object::get_property(ctx, options_object, "inclusions");
+            ValueType user_includes = Object::get_property(ctx, options_object, available_options[INCLUSIONS]);
             if (!Value::is_undefined(ctx, user_includes)) {
-                ObjectType property_paths = Value::validated_to_array(ctx, user_includes, "inclusions");
+                ObjectType property_paths = Value::validated_to_array(ctx, user_includes, available_options[INCLUSIONS]);
 
                 size_t prop_count = Object::validated_get_length(ctx, property_paths);
                 std::vector<std::string> include_paths;
