@@ -11,10 +11,6 @@ def formattedVersion = null
 dependencies = null
 nodeTestVersion = '8.15.0'
 
-def ElectronTests
-def NodeJsTests
-def ReactNativeTests
-
 // == Stages
 
 stage('check') {
@@ -55,15 +51,9 @@ stage('check') {
       // cache registry
       env.DOCKER_PUSH = "1"
     }
-
-    // Load the integration tests groovy scripts
-    ElectronTests = load 'integration-tests/environments/electron/jenkins.groovy'
-    NodeJsTests = load 'integration-tests/environments/node/jenkins.groovy'
-    ReactNativeTests = load 'integration-tests/environments/react-native/jenkins.groovy'
   }
 }
 
-/*
 stage('test') {
   parallelExecutors = [:]
   parallelExecutors["eslint"] = testLinux('eslint-ci', 10, {
@@ -107,7 +97,6 @@ stage('test') {
   //}),
   parallel parallelExecutors
 }
-*/
 
 stage('build') {
   parallelExecutors = [:]
@@ -127,13 +116,13 @@ stage('build') {
 
 stage('integration tests') {
   parallel(
-    'React Native on Android': ReactNativeTests.onAndroid(),
-    'React Native on iOS': ReactNativeTests.onIOS(),
-    'Node.js v10 on Mac': NodeJsTests.onMacOS(nodeVersion: '10.15.1'),
-    'Node.js v8 on Linux': NodeJsTests.onLinux(nodeVersion: '8.15.0'),
-    'Node.js v10 on Linux': NodeJsTests.onLinux(nodeVersion: '10.15.1'),
-    'Electron on Linux': ElectronTests.onLinux(),
-    'Electron on Mac': ElectronTests.onMacOS(),
+    'React Native on Android':  inAndroidContainer { reactNativeIntegrationTests(it, 'android') },
+    'React Native on iOS':      buildMacOS { reactNativeIntegrationTests(it, 'ios') },
+    'Electron on Mac':          buildMacOS { electronIntegrationTests('4.1.4', it) },
+    'Electron on Linux':        buildLinux { electronIntegrationTests('4.1.4', it) },
+    'Node.js v10 on Mac':       buildMacOS { nodeIntegrationTests('10.15.1', it) },
+    'Node.js v8 on Linux':      buildLinux { nodeIntegrationTests('8.15.0', it) },
+    'Node.js v10 on Linux':     buildLinux { nodeIntegrationTests('10.15.1', it) }
   )
 }
 
@@ -144,6 +133,94 @@ if (gitTag) {
 }
 
 // == Methods
+
+def nodeIntegrationTests(nodeVersion, platform) {
+  unstash 'source'
+  unstash "pre-gyp-${platform}-${nodeVersion}"
+  sh "./scripts/nvm-wrapper.sh ${nodeVersion} ./scripts/pack-with-pre-gyp.sh"
+
+  dir('integration-tests/environments/node') {
+    sh "../../../scripts/nvm-wrapper.sh ${nodeVersion} npm install"
+    try {
+      sh "../../../scripts/nvm-wrapper.sh ${nodeVersion} npm test -- --reporter mocha-junit-reporter"
+    } finally {
+      junit(
+        allowEmptyResults: true,
+        testResults: 'test-results.xml',
+      )
+    }
+  }
+}
+
+def electronIntegrationTests(electronVersion, platform) {
+  def nodeVersion = '10.15.1'
+  unstash 'source'
+  unstash "electron-pre-gyp-${platform}-${electronVersion}"
+  sh "./scripts/nvm-wrapper.sh ${nodeVersion} ./scripts/pack-with-pre-gyp.sh"
+
+  // On linux we need to use xvfb to let up open GUI windows on the headless machine
+  def commandPrefix = platform == 'linux' ? 'xvfb-run ' : ''
+
+  dir('integration-tests/environments/electron') {
+    sh "../../../scripts/nvm-wrapper.sh ${nodeVersion} npm install"
+    try {
+      sh "../../../scripts/nvm-wrapper.sh ${nodeVersion} ${commandPrefix} npm run test/main -- main-test-results.xml"
+      sh "../../../scripts/nvm-wrapper.sh ${nodeVersion} ${commandPrefix} npm run test/renderer -- renderer-test-results.xml"
+    } finally {
+      junit(
+        allowEmptyResults: true,
+        testResults: '*-test-results.xml',
+      )
+    }
+  }
+}
+
+def reactNativeIntegrationTests(hostPlatform, targetPlatform) {
+  def nodeVersion = '10.15.1'
+  unstash 'source'
+
+  def nvm
+  if (targetPlatform == "android") {
+    nvm = ""
+  }
+  else {
+    nvm = "${env.WORKSPACE}/scripts/nvm-wrapper.sh ${nodeVersion}"
+  }
+
+  dir('integration-tests') {
+    sh "${targetPlatform == "android" ? "REALM_BUILD_ANDROID=1" : ""} ${nvm} npm pack .."
+  }
+
+  dir('integration-tests/environments/react-native') {
+    sh "${nvm} npm install"
+
+    // Locking the Android device to prevent other jobs from interfering
+    lock("${NODE_NAME}-android") {
+      if (targetPlatform == "android") {
+        // In case the tests fail, it's nice to have an idea on the devices attached to the machine
+        sh 'adb devices'
+        sh 'adb wait-for-device'
+        // Uninstall any other installations of this package before trying to install it again
+        sh 'adb uninstall io.realm.tests.reactnative || true' // '|| true' because the app might already not be installed
+      }
+
+      try {
+        timeout(30) { // minutes
+          sh "${nvm} npm run test/${targetPlatform} -- test-results.xml"
+        }
+      } finally {
+        junit(
+          allowEmptyResults: true,
+          testResults: 'test-results.xml',
+        )
+        if (targetPlatform == "android") {
+          // Read out the logs in case we want some more information to debug from
+          sh 'adb logcat -d -s ReactNativeJS:*'
+        }
+      }
+    }
+  }
+}
 
 def myNode(nodeSpec, block) {
   node(nodeSpec) {
@@ -264,22 +341,37 @@ def buildWindowsElectron(electronVersion, arch) {
   }
 }
 
-def buildAndroid() {
+def inAndroidContainer(workerFunction) {
   return {
-    myNode('docker') {
+    myNode('docker && android') {
       unstash 'source'
       def image
       withCredentials([[$class: 'StringBinding', credentialsId: 'packagecloud-sync-devel-master-token', variable: 'PACKAGECLOUD_MASTER_TOKEN']]) {
         image = buildDockerEnv('ci/realm-js:android-build', '-f Dockerfile.android')
       }
       sh "bash ./scripts/utils.sh set-version ${dependencies.VERSION}"
-      image.inside('-e HOME=/tmp') {
-        sh 'npm ci --ignore-scripts'
-        sh 'cd react-native/android && ./gradlew publishAndroid'
-        sh 'npm pack'
-        stash includes: 'realm-*.tgz', name: 'android'
+      image.inside(
+        // Mounting ~/.android/adbkey(.pub) to reuse the adb keys
+        "-v ${HOME}/.android/adbkey:/home/jenkins/.android/adbkey:ro -v ${HOME}/.android/adbkey.pub:/home/jenkins/.android/adbkey.pub:ro " +
+        // Mounting ~/gradle-cache as ~/.gradle to prevent gradle from being redownloaded
+        "-v ${HOME}/gradle-cache:/home/jenkins/.gradle " +
+        // Mounting ~/ccache as ~/.ccache to reuse the cache across builds
+        "-v ${HOME}/ccache:/home/jenkins/.ccache " +
+        // Mounting /dev/bus/usb with --privileged to allow connecting to the device via USB
+        "-v /dev/bus/usb:/dev/bus/usb --privileged"
+      ) {
+        workerFunction()
       }
     }
+  }
+}
+
+def buildAndroid() {
+  inAndroidContainer {
+    sh 'npm ci --ignore-scripts'
+    sh 'cd react-native/android && ./gradlew publishAndroid'
+    sh 'npm pack'
+    stash includes: 'realm-*.tgz', name: 'android'
   }
 }
 
@@ -299,7 +391,6 @@ def publish(nodeVersions, dependencies, tag) {
     }
   }
 }
-
 
 
 def readGitTag() {

@@ -22,7 +22,7 @@
     "mocha-remote-client": "^0.9.1",
     "path-browserify": "^1.0.0",
     "react": "16.4.1",
-    "react-native": "0.56.0",
+    "react-native": "^0.58.0",
     "react-native-fs": "^2.13.3"
   },
   "devDependencies": {
