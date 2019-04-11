@@ -38,7 +38,6 @@
     "scripts",
     "src",
     "vendor",
-    "tests",
     "binding.gyp",
     "realm.gypi",
     "target_defaults.gypi",
