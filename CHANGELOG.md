@@ -9,6 +9,23 @@ x.x.x Release notes (yyyy-MM-dd)
 * Improved freelist management which results in better write performance ([core PR #2927](https://github.com/realm/realm-sync/issues/2927))
 
 ### Fixed
+* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
+* None.
+
+### Compatibility
+* Realm Object Server: 3.11.0 or later.
+* APIs are backwards compatible with all previous release of realm in the 2.x.y series.
+* File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
+
+### Internal
+* None.
+
+2.26.1 Release notes (2019-4-12)
+=============================================================
+### Enhancements
+* None.
+
+### Fixed
 * Fixed Xcode 10.2 Build Errors by providing `kJSTypeSymbol` for switch cases. ([#2305](https://github.com/realm/realm-js/issues/2305) and [#2246](https://github.com/realm/realm-js/issues/2246), since v2.25.0)
 * Making a query that compares two integer properties could cause a segmentation fault in the server or x86 node apps. ([core PR #3253](https://github.com/realm/realm-core/issues/3253))
 * Fix an error in the calculation of the downloadable_bytes value supplied to the progress callback. (See sync version 4.0.0)
