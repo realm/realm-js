@@ -329,7 +329,7 @@ void ResultsClass<T>::subscribe(ContextType ctx, ObjectType this_object, Argumen
 
             std::vector<const char*> available_options = {"name", "update", "timeToLive", "includeLinkingObjects"};
             enum SubscriptionOptions { NAME, UPDATE, TTL, INCLUSIONS };
-            std::vector<node::String> prop_names = Object::get_property_names(ctx, options_object);
+            auto prop_names = Object::get_property_names(ctx, options_object);
             for (size_t i = 0; i < prop_names.size(); ++i) {
                 std::string prop = prop_names[i];
                 if (std::find(available_options.begin(), available_options.end(), prop) == available_options.end()) {
