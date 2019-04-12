@@ -13,6 +13,10 @@ RUN yum -y install \
     perl \
     which \
     openssh-clients \
+    xorg-x11-server-Xvfb \
+    libXScrnSaver \
+    gtk3 \
+    alsa-lib \
  && yum clean all \
  \
   # TODO: install openssl in /usr/local
