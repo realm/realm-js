@@ -88,7 +88,7 @@ function getRealm() {
     });
 }
 
-function verifySubscriptionWithParents(parentToInclude) {
+function verifySubscriptionWithParents(parentToInclude, filterClause) {
     return getRealm().then(realm => {
         realm.write(() => {
             let obj_a1 = realm.create('ObjectA', {name: "a1"});
@@ -102,8 +102,19 @@ function verifySubscriptionWithParents(parentToInclude) {
         TestCase.assertEqual(a_objects[0].parents.length, 2);
         TestCase.assertEqual(a_objects[1].parents.length, 0);
         return new Promise((resolve, reject) => {
-            const query = realm.objects("ObjectA");
-            const sub = query.subscribe({includeLinkingObjects: [parentToInclude]});
+            if (!filterClause) {
+                filterClause = "TRUEPREDICATE"
+            }
+            const query = realm.objects("ObjectA").filtered(filterClause);
+            let listOfInclusionPropertyPaths = [];
+            if (parentToInclude) {
+                listOfInclusionPropertyPaths.push(parentToInclude);
+            }
+            let subscriptionOptions = {
+                includeLinkingObjects: listOfInclusionPropertyPaths,
+            }
+            const sub = query.subscribe(subscriptionOptions);
+            const desc = sub.query;
             sub.addListener((subscription, state) => {
                 if (state === Realm.Sync.SubscriptionState.Complete) {
                     sub.removeAllListeners();
@@ -493,6 +504,34 @@ module.exports = {
         },
             (err) => TestCase.assertEqual(err.message, "No property 'missing_property' found in type 'Parent' which links to type 'ObjectA'")
         );
+    },
+
+    testSubscribeToChildrenWithMalformedInclusion3() {
+        if (!isNodeProccess) {
+            return;
+        }
+        return verifySubscriptionWithParents(4.2).then(() => {
+            throw new Error('subscription should have failed')
+        },
+            (err) => TestCase.assertEqual(err.message, "JS value must be of type 'string', got (4.2)")
+        );
+    },
+
+    // As a convienence, we do not disallow users to write the INCLUDE as part of the query itself,
+    // but it should not be encouraged nor documented. It is mostly to enable users to run
+    // subscription queries that are directly copied from Studio.
+    testSubscribeWithManualInclusion1() {
+        if (!isNodeProccess) {
+            return;
+        }
+        return verifySubscriptionWithParents("", "TRUEPREDICATE INCLUDE(@links.Parent.child)");
+    },
+
+    testSubscribeWithManualInclusion2() {
+        if (!isNodeProccess) {
+            return;
+        }
+        return verifySubscriptionWithParents("", "TRUEPREDICATE INCLUDE(parents)");
     },
 
 };

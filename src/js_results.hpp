@@ -189,7 +189,7 @@ typename T::Object ResultsClass<T>::create_filtered(ContextType ctx, const U &co
     auto const &object_schema = collection.get_object_schema();
     DescriptorOrdering ordering;
     parser::KeyPathMapping mapping;
-    mapping.set_backlink_class_prefix(ObjectStore::table_name_for_object_type(""));
+    mapping.set_backlink_class_prefix(ObjectStore::table_name_for_object_type("")); // prefix is "class_" defined by object store
     setup_aliases(mapping, realm);
 
     parser::ParserResult result = parser::parse(query_string);
@@ -197,9 +197,6 @@ typename T::Object ResultsClass<T>::create_filtered(ContextType ctx, const U &co
     query_builder::ArgumentConverter<ValueType, NativeAccessor<T>> converter(accessor, &args.value[1], args.count - 1);
     query_builder::apply_predicate(query, result.predicate, converter, mapping);
     query_builder::apply_ordering(ordering, query.get_table(), result.ordering, mapping);
-    if (ordering.will_apply_include()) {
-        throw std::runtime_error("An INCLUDE clause is not supported on local queries, only on query based subscriptions.");
-    }
 
     return create_instance(ctx, collection.filter(std::move(query)).apply_ordering(std::move(ordering)));
 }
@@ -357,23 +354,23 @@ void ResultsClass<T>::subscribe(ContextType ctx, ObjectType this_object, Argumen
             if (!Value::is_undefined(ctx, user_includes)) {
                 ObjectType property_paths = Value::validated_to_array(ctx, user_includes, available_options[INCLUSIONS]);
 
-                size_t prop_count = Object::validated_get_length(ctx, property_paths);
-                std::vector<std::string> include_paths;
-                include_paths.reserve(prop_count);
-
                 parser::KeyPathMapping mapping;
-                mapping.set_backlink_class_prefix(ObjectStore::table_name_for_object_type(""));
-                setup_aliases(mapping, realm);
+                mapping.set_backlink_class_prefix(ObjectStore::table_name_for_object_type("")); // prefix is "class_"
+                setup_aliases(mapping, realm); // this enables user defined linkingObjects property names to be parsed
                 DescriptorOrdering combined_orderings;
 
+                size_t prop_count = Object::validated_get_length(ctx, property_paths);
                 for (unsigned int i = 0; i < prop_count; i++) {
                     std::string path = Object::validated_get_string(ctx, property_paths, i);
                     DescriptorOrdering ordering;
-                    parser::DescriptorOrderingState ordering_state = parser::parse_include_path(path);
+                    // the parser provides a special function just for this
+                    parser::DescriptorOrderingState ordering_state = parser::parse_include_path(path); // throws
                     query_builder::apply_ordering(ordering, results->get_query().get_table(), ordering_state, mapping);
                     combined_orderings.append_include(ordering.compile_included_backlinks());
                 }
-                inclusion_paths = combined_orderings.compile_included_backlinks();
+                if (combined_orderings.will_apply_include()) {
+                    inclusion_paths = combined_orderings.compile_included_backlinks();
+                }
             }
         }
     }

@@ -165,13 +165,12 @@ module.exports = {
             realm.objects(schemas.StringOnly.name).filtered('stringCol = $0');
         }, "Request for argument at index 0 but no arguments are provided");
     },
-    testIncludeSyntaxInvalidOnLocalQueries: function() {
+    testIncludeSyntaxOnLocalQueries: function() {
         var realm = new Realm({ schema: [schemas.Country, schemas.Language] });
-        TestCase.assertThrowsContaining(function() {
-            realm.objects(schemas.Language.name).filtered('TRUEPREDICATE INCLUDE(@links.Country.languages)');
-        }, "An INCLUDE clause is not supported on local queries, only on query based subscriptions.");
-        TestCase.assertThrowsContaining(function() {
-            realm.objects(schemas.Language.name).filtered('TRUEPREDICATE INCLUDE(spokenIn)');
-        }, "An INCLUDE clause is not supported on local queries, only on query based subscriptions.");
+        // The following is arbitrarily allowed, though it is a no-op because local
+        // queries already include all linkingObjects. This is mostly to support users
+        // who copy-paste subscriptions into local Realm files to test.
+        realm.objects(schemas.Language.name).filtered('TRUEPREDICATE INCLUDE(@links.Country.languages)');
+        realm.objects(schemas.Language.name).filtered('TRUEPREDICATE INCLUDE(spokenIn)');
     },
 };
