@@ -330,9 +330,10 @@ declare namespace Realm.Sync {
     }
 
     interface SubscriptionOptions {
-        name: string;
+        name?: string;
         update?: boolean;
-        timeToLive: number;
+        timeToLive?: number;
+        includeLinkingObjects?: string[];
     }
 
     class AdminCredentials extends Credentials {
