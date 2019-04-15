@@ -26,6 +26,7 @@ if( typeof Realm.Sync !== 'undefined' && Realm.Sync !== null ) {
 }
 
 const isNodeProcess = typeof process === 'object' && process + '' === '[object process]';
+const isElectronProcess = isNodeProcess && (process.type === 'renderer' || (process.versions && process.versions.electron));
 const require_method = require;
 function node_require(module) { return require_method(module); }
 
@@ -59,10 +60,9 @@ if (global.enableSyncTests) {
     TESTS.SessionTests = require('./session-tests');
     TESTS.SubscriptionTests = require('./subscription-tests');
 
-    if (isNodeProcess) {
+    if (isNodeProcess && !isElectronProcess) {
         // FIXME: Permission tests currently fail in react native
         TESTS.PermissionTests = require('./permission-tests');
-
         node_require('./adapter-tests');
         node_require('./notifier-tests');
     }
