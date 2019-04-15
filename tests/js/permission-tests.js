@@ -33,7 +33,7 @@ function createUsersWithTestRealms(count) {
         return Realm.Sync.User
             .login('http://localhost:9080', Realm.Sync.Credentials.anonymous())
             .then(user => {
-                new Realm({sync: {user, url: 'realm://localhost:9080/~/test', fullSynchronization: true }}).close();
+                new Realm({sync: {user, url: 'realm://localhost:9080/~/test', fullSynchronization: true}}).close();
                 return user;
             });
     };
@@ -49,10 +49,10 @@ function repeatUntil(fn, predicate) {
     let retries = 0
     function check() {
         if (retries > 3) {
-            return Promise.reject(new Error("operation timed out"));
+            return Promise.reject(new Error("repeatUtil timed out"));
         }
         ++retries;
-        return fn().then(x => predicate(x) ? x : wait(100).then(check));
+        return fn().then(x => predicate(x) ? x : wait(100 * retries).then(check));
     }
     return check;
 }
@@ -137,63 +137,49 @@ module.exports = {
         });
     },
 
-    testOfferPermissions() {
-        return createUsersWithTestRealms(2).then(([user1, user2]) => {
-            const path = `/${user1.identity}/test`;
-            return user1.offerPermissions(`/${user1.identity}/test`, 'read')
-                .then(token => user2.acceptPermissionOffer(token))
-                .then(realmUrl => {
-                    TestCase.assertEqual(realmUrl, path);
-                    return realmUrl;
-                })
-                .then(repeatUntil(() => user2.getGrantedPermissions('any'),
-                                  permissions => permissions.length > 2
-                                              && permissionForPath(permissions, path)))
-                .then(permissions => {
-                    let permission = permissionForPath(permissions, path)
-                    TestCase.assertDefined(permission);
-                    TestCase.assertEqual(permission.mayRead, true);
-                    TestCase.assertEqual(permission.mayWrite, false);
-                    TestCase.assertEqual(permission.mayManage, false);
-                });
-        });
+    async testOfferPermissions() {
+        const [user1, user2] = await createUsersWithTestRealms(2);
+        const path = `/${user1.identity}/test`;
+        const token = await user1.offerPermissions(`/${user1.identity}/test`, 'read');
+        const realmUrl = await user2.acceptPermissionOffer(token);
+        TestCase.assertEqual(realmUrl, path);
+
+        let permission;
+        for (let i = 0; !permission && i < 3; ++i) {
+            permission = await permissionForPath(await user2.getGrantedPermissions('any'), path);
+            if (!permission) {
+                await wait(100 * (i + 1));
+            }
+        }
+
+        TestCase.assertDefined(permission);
+        TestCase.assertEqual(permission.mayRead, true);
+        TestCase.assertEqual(permission.mayWrite, false);
+        TestCase.assertEqual(permission.mayManage, false);
     },
 
-    testInvalidatePermissionOffer() {
-        let user1, user2, token;
-        return createUsersWithTestRealms(2)
-            .then(users => {
-                user1 = users[0];
-                user2 = users[1];
-                return user1.offerPermissions(`/${user1.identity}/test`, 'read');
-            })
-            .then(t => {
-                token = t;
-                return user1.invalidatePermissionOffer(token);
-            })
-            // Since we don't yet support notification when the invalidation has
-            // gone through, wait for a bit and hope the server is done
-            // processing.
-            .then(() => wait(100))
-            .then(() => user2.acceptPermissionOffer(token))
-            // We want the call to fail, i.e. the catch() below should be
-            // called.
-            .then(() => {
-                throw new Error("User was able to accept an invalid permission offer token");
-            })
-            .catch(error => {
-                try {
-                    TestCase.assertEqual(error.message, 'The permission offer is expired.');
-                    TestCase.assertEqual(error.statusCode, 701);
-                }
-                catch (e) {
-                    throw new Error(e);
-                }
-            });
+    async testInvalidatePermissionOffer() {
+        const [user1, user2] = await createUsersWithTestRealms(2);
+        const token = await user1.offerPermissions(`/${user1.identity}/test`, 'read');
+        await user1.invalidatePermissionOffer(token);
+        // Since we don't yet support notification when the invalidation has
+        // gone through, wait for a bit and hope the server is done
+        // processing.
+        await wait(100);
+        try {
+            await user2.acceptPermissionOffer(token);
+        }
+        catch (error) {
+            TestCase.assertEqual(error.message, 'The permission offer is expired.');
+            TestCase.assertEqual(error.statusCode, 701);
+            return;
+        }
+        throw new Error("User was able to accept an invalid permission offer token");
     },
 
-    testObjectPermissions() {
-        let config = (user, url) => {
+    async testObjectPermissions() {
+        const realmUrl = `realm://localhost:9080/testObjectPermissions_${uuid()}`
+        let config = (user) => {
             return {
                 schema: [
                     {
@@ -207,52 +193,45 @@ module.exports = {
                     Realm.Permissions.User,
                     Realm.Permissions.Role,
                 ],
-                sync: {user: user, url: url, fullSynchronization: false }
+                sync: {user, url: realmUrl, fullSynchronization: false}
             };
         };
-        let owner, otherUser
-        return Realm.Sync.User
-            .login('http://localhost:9080', Realm.Sync.Credentials.nickname(uuid()))
-            .then(user => {
-                owner = user;
-                new Realm({sync: {user, url: 'realm://localhost:9080/default'}}).close();
-                return Realm.Sync.User.login('http://localhost:9080', Realm.Sync.Credentials.nickname(uuid()))
-            })
-            .then((user) => {
-                otherUser = user;
-                let realm = new Realm(config(owner, 'realm://localhost:9080/default'));
-                realm.write(() => {
-                    let user = realm.create(Realm.Permissions.User, {id: otherUser.identity})
-                    let role = realm.create(Realm.Permissions.Role, {name: 'reader'})
-                    role.members.push(user)
+        const owner = await Realm.Sync.User.login('http://localhost:9080', Realm.Sync.Credentials.nickname(uuid(), true));
+        const otherUser = await Realm.Sync.User.login('http://localhost:9080', Realm.Sync.Credentials.nickname(uuid()));
 
-                    let obj1 = realm.create('Object', {value: 1});
-                    let obj2 = realm.create('Object', {value: 2});
-                    obj2.permissions.push(realm.create(Realm.Permissions.Permission,
-                                                       {role: role, canRead: true, canUpdate: false}))
-                });
-                return waitForUpload(realm).then(() => realm.close());
-            })
-            .then(() => Realm.open(config(otherUser, `realm://localhost:9080/default`)))
-            .then((realm) => subscribe(realm.objects('Object')).then(() => realm))
-            .then((realm) => {
-                // Should have full access to the Realm as a whole
-                TestCase.assertSimilar('object', realm.privileges(),
-                                       {read: true, update: true, modifySchema: true, setPermissions: true});
-                TestCase.assertSimilar('object', realm.privileges('Object'),
-                                       {read: true, update: true, create: true, subscribe: true, setPermissions: true});
-                // Verify that checking via constructor works too
-                TestCase.assertSimilar('object', realm.privileges(Realm.Permissions.User),
-                                       {read: true, update: true, create: true, subscribe: true, setPermissions: true});
+        const ownerRealm = new Realm(config(owner));
+        ownerRealm.write(() => {
+            let user = ownerRealm.create(Realm.Permissions.User, {id: otherUser.identity})
+            let role = ownerRealm.create(Realm.Permissions.Role, {name: 'reader'})
+            role.members.push(user)
 
-                // Should only be able to see the second object
-                let results = realm.objects('Object')
-                TestCase.assertEqual(results.length, 1);
-                TestCase.assertEqual(results[0].value, 2);
-                TestCase.assertSimilar('object', realm.privileges(results[0]),
-                                       {read: true, update: false, delete: false, setPermissions: false});
-                realm.close();
-            });
+            let obj1 = ownerRealm.create('Object', {value: 1});
+            let obj2 = ownerRealm.create('Object', {value: 2});
+            obj2.permissions.push(ownerRealm.create(Realm.Permissions.Permission,
+                                                    {role: role, canRead: true, canUpdate: false}))
+        });
+        await ownerRealm.syncSession.uploadAllLocalChanges();
+        ownerRealm.close();
+
+        const realm = await Realm.open(config(otherUser));
+        await subscribe(realm.objects('Object'));
+
+        // Should have full access to the Realm as a whole
+        TestCase.assertSimilar('object', realm.privileges(),
+                               {read: true, update: true, modifySchema: true, setPermissions: true});
+        TestCase.assertSimilar('object', realm.privileges('Object'),
+                               {read: true, update: true, create: true, subscribe: true, setPermissions: true});
+        // Verify that checking via constructor works too
+        TestCase.assertSimilar('object', realm.privileges(Realm.Permissions.User),
+                               {read: true, update: true, create: true, subscribe: true, setPermissions: true});
+
+        // Should only be able to see the second object
+        let results = realm.objects('Object')
+        TestCase.assertEqual(results.length, 1);
+        TestCase.assertEqual(results[0].value, 2);
+        TestCase.assertSimilar('object', realm.privileges(results[0]),
+                               {read: true, update: false, delete: false, setPermissions: false});
+        realm.close();
     },
 
     testAddPermissionSchemaForQueryBasedRealmOnly() {

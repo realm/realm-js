@@ -139,41 +139,32 @@ module.exports = {
 
     testProperties() {
         return Realm.Sync.User.login('http://localhost:9080', Realm.Sync.Credentials.anonymous()).then(user => {
-            return new Promise((resolve, reject) => {
-                const accessTokenRefreshed = this;
-                let successCounter = 0;
-                function checkSuccess() {
-                    successCounter++;
-                    if (successCounter === 2) {
-                        resolve();
-                    }
-                }
-
-                function postTokenRefreshChecks(sender, error) {
+            let postTokenRefreshChecks;
+            const gotToken = new Promise((resolve, reject) => {
+                postTokenRefreshChecks = (sender) => {
                     try {
-                        TestCase.assertEqual(error, accessTokenRefreshed);
                         TestCase.assertEqual(sender.url, `realm://localhost:9080/${user.identity}/myrealm`);
-                        checkSuccess();
+                        resolve();
                     }
                     catch (e) {
                         reject(e)
                     }
                 }
-
-                // Let the error handler trigger our checks when the access token was refreshed.
-                postTokenRefreshChecks._notifyOnAccessTokenRefreshed = accessTokenRefreshed;
-
-                const config = user.createConfiguration({ sync: { url: 'realm://localhost:9080/~/myrealm', error: postTokenRefreshChecks, fullSynchronization: true } });
-                const realm = new Realm(config);
-                const session = realm.syncSession;
-                TestCase.assertInstanceOf(session, Realm.Sync.Session);
-                TestCase.assertEqual(session.user.identity, user.identity);
-                TestCase.assertEqual(session.config.url, config.sync.url);
-                TestCase.assertEqual(session.config.user.identity, config.sync.user.identity);
-                TestCase.assertUndefined(session.url);
-                TestCase.assertEqual(session.state, 'active');
-                checkSuccess();
             });
+
+            // Tell refreshAccessToken to call our error handler after successfully getting a token
+            postTokenRefreshChecks._notifyOnAccessTokenRefreshed = true;
+
+            const config = user.createConfiguration({ sync: { url: 'realm://localhost:9080/~/myrealm', error: postTokenRefreshChecks, fullSynchronization: true } });
+            const realm = new Realm(config);
+            const session = realm.syncSession;
+            TestCase.assertInstanceOf(session, Realm.Sync.Session);
+            TestCase.assertEqual(session.user.identity, user.identity);
+            TestCase.assertEqual(session.config.url, config.sync.url);
+            TestCase.assertEqual(session.config.user.identity, config.sync.user.identity);
+            TestCase.assertUndefined(session.url);
+            TestCase.assertEqual(session.state, 'active');
+            return gotToken;
         });
     },
 
@@ -774,6 +765,7 @@ module.exports = {
                     url: `realm://localhost:9080/default/__partial/`,
                     _disableQueryBasedSyncUrlChecks: true,
                     fullSynchronization: false,
+                    error: () => {},
                 },
                 schema: [ { name: 'Dog', properties: { name: 'string' } } ]
             };
@@ -798,36 +790,36 @@ module.exports = {
         });
     },
 
-    testCustomPartialSyncIdentifier() {
+    async testCustomPartialSyncIdentifier() {
         const username = uuid();
-        const credentials = Realm.Sync.Credentials.nickname(username);
-        return Realm.Sync.User.login('http://localhost:9080', credentials).then(user => {
-            const customRealm = new Realm({
-                schema: [ { name: 'Dog', properties: { name: 'string' } } ],
-                sync: {
-                    user: user,
-                    url: 'realm://localhost:9080/default',
-                    fullSynchronization: false,
-                    customQueryBasedSyncIdentifier: "foo/bar",
-                }
-            });
-            // Ensure that the custom partial sync identifier was picked up and appended to the url
-            TestCase.assertTrue(customRealm.path.endsWith(encodeURIComponent("default/__partial/foo/bar")));
-            customRealm.close();
-
-            const basicRealm = new Realm({
-                schema: [ { name: 'Dog', properties: { name: 'string' } } ],
-                sync: {
-                    user,
-                    url: 'realm://localhost:9080/default',
-                    fullSynchronization: false,
-                }
-            });
-
-            // Sanity check - when there's no custom identifier, it should not end in /foo/bar
-            TestCase.assertFalse(basicRealm.path.endsWith(encodeURIComponent("default/__partial/foo/bar")));
-            basicRealm.close();
+        const credentials = Realm.Sync.Credentials.nickname(username, true);
+        const user = await Realm.Sync.User.login('http://localhost:9080', credentials);
+        const customRealm = await Realm.open({
+            schema: [ { name: 'Dog', properties: { name: 'string' } } ],
+            sync: {
+                user: user,
+                url: 'realm://localhost:9080/default',
+                fullSynchronization: false,
+                customQueryBasedSyncIdentifier: "foo/bar",
+            }
         });
+
+        // Ensure that the custom partial sync identifier was picked up and appended to the url
+        TestCase.assertTrue(customRealm.path.endsWith(encodeURIComponent("default/__partial/foo/bar")));
+        customRealm.close();
+
+        const basicRealm = await Realm.open({
+            schema: [ { name: 'Dog', properties: { name: 'string' } } ],
+            sync: {
+                user,
+                url: 'realm://localhost:9080/default',
+                fullSynchronization: false,
+            }
+        });
+
+        // Sanity check - when there's no custom identifier, it should not end in /foo/bar
+        TestCase.assertFalse(basicRealm.path.endsWith(encodeURIComponent("default/__partial/foo/bar")));
+        basicRealm.close();
     },
 
     testSubscribeInFullRealm() {
@@ -856,96 +848,91 @@ module.exports = {
         TestCase.assertThrows(() => Realm.automaticSyncConfiguration('foo', 'bar')); // too many arguments
     },
 
-    testPartialSync() {
+    async testPartialSync() {
         if (!isNodeProccess) {
             return;
         }
 
         const username = uuid();
-        const credentials = Realm.Sync.Credentials.nickname(username);
-        return runOutOfProcess(__dirname + '/partial-sync-api-helper.js', username, REALM_MODULE_PATH)
-            .then(() => Realm.Sync.User.login('http://localhost:9080', credentials))
-            .then(user => {
-                let config = Realm.Sync.User.current.createConfiguration();
-                config.schema = [{ name: 'Dog', properties: { name: 'string' } }];
-                Realm.deleteFile(config);
+        const path = `/~/testPartialSync`;
+        const credentials = Realm.Sync.Credentials.nickname(username, true);
+        await runOutOfProcess(__dirname + '/partial-sync-api-helper.js', username, REALM_MODULE_PATH, path)
+        const user = await Realm.Sync.User.login('http://localhost:9080', credentials);
 
-                return Promise.all([user, Realm.open(config)]);
-            }).then(([user, realm]) => {
-                const session = realm.syncSession;
-                TestCase.assertInstanceOf(session, Realm.Sync.Session);
-                TestCase.assertEqual(session.user.identity, user.identity);
-                TestCase.assertEqual(session.state, 'active');
+        let config = Realm.Sync.User.current.createConfiguration({sync: {url: `realm://localhost:9080${path}`}});
+        config.schema = [{ name: 'Dog', properties: { name: 'string' } }];
+        const realm = await Realm.open(config);
 
-                TestCase.assertEqual(realm.objects('Dog').length, 0);
-                let results1 = realm.objects('Dog').filtered("name == 'Lassy 1'");
-                let results2 = realm.objects('Dog').filtered("name == 'Lassy 2'");
+        const session = realm.syncSession;
+        TestCase.assertInstanceOf(session, Realm.Sync.Session);
+        TestCase.assertEqual(session.user.identity, user.identity);
+        TestCase.assertEqual(session.state, 'active');
 
-                let subscription1 = results1.subscribe();
-                TestCase.assertEqual(subscription1.state, Realm.Sync.SubscriptionState.Creating);
+        TestCase.assertEqual(realm.objects('Dog').length, 0);
+        const results1 = realm.objects('Dog').filtered("name == 'Lassy 1'");
+        const results2 = realm.objects('Dog').filtered("name == 'Lassy 2'");
 
-                let subscription2 = results2.subscribe('foobar');
-                TestCase.assertEqual(subscription2.state, Realm.Sync.SubscriptionState.Creating);
+        const subscription1 = results1.subscribe();
+        TestCase.assertEqual(subscription1.state, Realm.Sync.SubscriptionState.Creating);
 
-                let waitForSubscription = (results, subscription, subName, dogName) => {
-                    return new Promise((resolve, reject) => {
-                        subscription.addListener((subscription, state) => {
-                            if (state !== Realm.Sync.SubscriptionState.Complete) {
-                                return;
-                            }
-                            try {
-                                subscription.removeAllListeners();
-                                results.addListener((collection, changeset) => {
-                                    TestCase.assertEqual(collection.length, 1);
-                                    TestCase.assertEqual(collection[0].name, dogName);
-                                    results.removeAllListeners();
-                                    TestCase.assertEqual(subscription.name, subName);
-                                    resolve();
-                                });
-                            }
-                            catch (e) {
-                                reject(e);
-                            }
+        const subscription2 = results2.subscribe('foobar');
+        TestCase.assertEqual(subscription2.state, Realm.Sync.SubscriptionState.Creating);
+
+        const waitForSubscription = (results, subscription, subName, dogName) => {
+            return new Promise((resolve, reject) => {
+                subscription.addListener((subscription, state) => {
+                    if (state !== Realm.Sync.SubscriptionState.Complete) {
+                        return;
+                    }
+                    try {
+                        subscription.removeAllListeners();
+                        results.addListener((collection, changeset) => {
+                            TestCase.assertEqual(collection.length, 1);
+                            TestCase.assertEqual(collection[0].name, dogName);
+                            results.removeAllListeners();
+                            TestCase.assertEqual(subscription.name, subName);
+                            resolve();
                         });
-                    });
-                };
-                return Promise.all([
-                    waitForSubscription(results1, subscription1, undefined, 'Lassy 1'),
-                    waitForSubscription(results2, subscription2, 'foobar', 'Lassy 2'),
-                ]).then(() => [realm, subscription1, subscription2]);
-            }).then(([realm, subscription1, subscription2]) => {
-                let listOfSubscriptions = realm.subscriptions();
-                TestCase.assertEqual(listOfSubscriptions.length, 2 + 5); // 2 = the two subscriptions, 5 = the permissions classes
-                TestCase.assertEqual(listOfSubscriptions[0]['name'], '[Dog] name == "Lassy 1" '); // the query is the default name; notice the trailing whitespace!
-                TestCase.assertEqual(listOfSubscriptions[0]['query'], 'name == "Lassy 1" '); // notice the trailing whitespace!
-                TestCase.assertEqual(listOfSubscriptions[0]['objectType'], 'Dog');
-                TestCase.assertEqual(listOfSubscriptions[1]['name'], 'foobar');
-                TestCase.assertEqual(listOfSubscriptions[1]['query'], 'name == "Lassy 2" '); // notice the trailing whitespace!
-                TestCase.assertEqual(listOfSubscriptions[1]['objectType'], 'Dog');
-
-                listOfSubscriptions = realm.subscriptions('foobar');
-                TestCase.assertEqual(listOfSubscriptions.length, 1);
-
-                listOfSubscriptions = realm.subscriptions('*bar');
-                TestCase.assertEqual(listOfSubscriptions.length, 1);
-
-                listOfSubscriptions = realm.subscriptions('RABOOF');
-                TestCase.assertEqual(listOfSubscriptions.length, 0);
-
-                subscription1.unsubscribe();
-                realm.unsubscribe('foobar');
-
-                return new Promise(resolve => {
-                    realm.objects('__ResultSets').addListener((subscriptions) => {
-                        if (subscriptions.length === 5) {
-                            resolve(realm);
-                        }
-                    });
+                    }
+                    catch (e) {
+                        reject(e);
+                    }
                 });
-            }).then(realm => {
-                TestCase.assertEqual(realm.subscriptions().length, 5); // the 5 permissions classes
-                realm.close();
             });
+        };
+        await waitForSubscription(results1, subscription1, undefined, 'Lassy 1');
+        await waitForSubscription(results2, subscription2, 'foobar', 'Lassy 2');
+
+        let listOfSubscriptions = realm.subscriptions();
+        TestCase.assertEqual(listOfSubscriptions.length, 2 + 5); // 2 = the two subscriptions, 5 = the permissions classes
+        TestCase.assertEqual(listOfSubscriptions[0]['name'], '[Dog] name == "Lassy 1" '); // the query is the default name; notice the trailing whitespace!
+        TestCase.assertEqual(listOfSubscriptions[0]['query'], 'name == "Lassy 1" '); // notice the trailing whitespace!
+        TestCase.assertEqual(listOfSubscriptions[0]['objectType'], 'Dog');
+        TestCase.assertEqual(listOfSubscriptions[1]['name'], 'foobar');
+        TestCase.assertEqual(listOfSubscriptions[1]['query'], 'name == "Lassy 2" '); // notice the trailing whitespace!
+        TestCase.assertEqual(listOfSubscriptions[1]['objectType'], 'Dog');
+
+        listOfSubscriptions = realm.subscriptions('foobar');
+        TestCase.assertEqual(listOfSubscriptions.length, 1);
+
+        listOfSubscriptions = realm.subscriptions('*bar');
+        TestCase.assertEqual(listOfSubscriptions.length, 1);
+
+        listOfSubscriptions = realm.subscriptions('RABOOF');
+        TestCase.assertEqual(listOfSubscriptions.length, 0);
+
+        subscription1.unsubscribe();
+        realm.unsubscribe('foobar');
+
+        await new Promise(resolve => {
+            realm.objects('__ResultSets').addListener((subscriptions) => {
+                if (subscriptions.length === 5) {
+                    resolve();
+                }
+            });
+        });
+
+        TestCase.assertEqual(realm.subscriptions().length, 5); // the 5 permissions classes
     },
 
     testPartialSyncWithDynamicSchema() {
@@ -1162,41 +1149,38 @@ module.exports = {
         });
     },
 
-    testResumePause() {
-        if(!isNodeProccess) {
-            return;
-        }
+    async testResumePause() {
+        const user = await Realm.Sync.User.register('http://localhost:9080', uuid(), 'password')
+        const config = {
+            sync: {
+                user: user,
+                url: 'realm://localhost:9080/~/testResumePause',
+                fullSynchronization: true,
+            }
+        };
 
-        return Realm.Sync.User.register('http://localhost:9080', uuid(), 'password')
-        .then((user) => {
-            const config = {
-                sync: {
-                    user: user,
-                    url: `realm://localhost:9080/~/${uuid()}`,
-                    fullSynchronization: true,
+        const realm = await Realm.open(config);
+        const session = realm.syncSession;
+
+        let started = false;
+        return new Promise((resolve, reject) => {
+            session.addConnectionNotification((newState, oldState) => {
+                if (newState === Realm.Sync.ConnectionState.Connected) {
+                    if (started) {
+                        resolve();
+                    }
+                    else {
+                        started = true;
+                        session.pause();
+                    }
                 }
-            };
-
-            return Realm.open(config);
-        }).then((realm) => {
-            return new Promise((resolve, reject) => {
-                const session = realm.syncSession;
-
-                const checks = {
-                    started: false,
-                    stopped: false,
-                    restarted: false
+                if (newState === Realm.Sync.ConnectionState.Disconnected) {
+                    session.resume();
                 }
+            });
 
-                session.addConnectionNotification((newState, oldState) => {
-                    if (newState === Realm.Sync.ConnectionState.Connected && checks.started === false) { checks.started = true; session.pause(); }
-                    if (newState === Realm.Sync.ConnectionState.Connected && checks.started === true) { checks.restarted = true; resolve(); }
-                    if (newState === Realm.Sync.ConnectionState.Disconnected) { checks.stopped = true; session.resume();}
-                });
-
-                setTimeout(() => { reject("Timeout") }, 10000);
-            })
-        })
+            setTimeout(() => { reject('Connection state notification timed out') }, 10000);
+        });
     },
 
     testMultipleResumes() {
@@ -1277,7 +1261,7 @@ module.exports = {
         }
 
         const AUTH_URL = 'http://localhost:9080';
-        const REALM_URL = 'realm://localhost:9080/completion_realm';
+        const REALM_URL = `realm://localhost:9080/completion_realm/${uuid()}`;
         const schema = {
             'name': 'CompletionHandlerObject',
             properties: {
@@ -1285,43 +1269,39 @@ module.exports = {
             }
         };
 
-        return new Promise((resolve, reject) => {
-            let admin2Realm;
-            Realm.Sync.User.login(AUTH_URL, Realm.Sync.Credentials.nickname("admin1", true))
-                .then((admin1) => {
-                    const admin1Config = admin1.createConfiguration({
-                        schema: [schema],
-                        sync:  {
-                            url: REALM_URL,
-                            fullSynchronization: true
-                        }
-                    });
-                    return Realm.open(admin1Config);
-                })
-                .then((admin1Realm) => {
-                    admin1Realm.write(() => { admin1Realm.create('CompletionHandlerObject', { 'name': 'foo'}); });
-                    return admin1Realm.syncSession.uploadAllLocalChanges();
-                })
-                .then(() => {
-                    return Realm.Sync.User.login(AUTH_URL, Realm.Sync.Credentials.nickname("admin2", true));
-                })
-                .then((admin2) => {
-                    const admin2Config = admin2.createConfiguration({
-                        schema: [schema],
-                        sync:  {
-                            url: REALM_URL,
-                            fullSynchronization: true
-                        }
-                    });
-                    admin2Realm = new Realm(admin2Config);
-                    return admin2Realm.syncSession.downloadAllServerChanges();
-                })
-                .then(() => {
-                    TestCase.assertEqual(1,  admin2Realm.objects('CompletionHandlerObject').length);
-                    resolve();
-                })
-                .catch(e => reject(e));
-        });
+        let admin2Realm;
+        return Realm.Sync.User.login(AUTH_URL, Realm.Sync.Credentials.nickname("admin1", true))
+            .then((admin1) => {
+                const admin1Config = admin1.createConfiguration({
+                    schema: [schema],
+                    sync:  {
+                        url: REALM_URL,
+                        fullSynchronization: true
+                    }
+                });
+                return Realm.open(admin1Config);
+            })
+            .then((admin1Realm) => {
+                admin1Realm.write(() => { admin1Realm.create('CompletionHandlerObject', { 'name': 'foo'}); });
+                return admin1Realm.syncSession.uploadAllLocalChanges();
+            })
+            .then(() => {
+                return Realm.Sync.User.login(AUTH_URL, Realm.Sync.Credentials.nickname("admin2", true));
+            })
+            .then((admin2) => {
+                const admin2Config = admin2.createConfiguration({
+                    schema: [schema],
+                    sync:  {
+                        url: REALM_URL,
+                        fullSynchronization: true
+                    }
+                });
+                admin2Realm = new Realm(admin2Config);
+                return admin2Realm.syncSession.downloadAllServerChanges();
+            })
+            .then(() => {
+                TestCase.assertEqual(1,  admin2Realm.objects('CompletionHandlerObject').length);
+            });
     },
 
     testDownloadAllServerChangesTimeout() {
@@ -1331,23 +1311,21 @@ module.exports = {
 
         const AUTH_URL = 'http://localhost:9080';
         const REALM_URL = 'realm://localhost:9080/timeout_download_realm';
-        return new Promise((resolve, reject) => {
-            Realm.Sync.User.login(AUTH_URL, Realm.Sync.Credentials.nickname("admin", true))
-                .then((admin1) => {
-                    const admin1Config = admin1.createConfiguration({
-                        sync: {
-                            url: REALM_URL,
-                            fullSynchronization: true
-                        }
-                    });
-                    let realm = new Realm(admin1Config);
-                    realm.syncSession.downloadAllServerChanges(1).then(() => {
-                        reject("Download did not time out");
-                    }).catch(e => {
-                        resolve();
-                    });
+        let realm;
+        return Realm.Sync.User.login(AUTH_URL, Realm.Sync.Credentials.nickname("admin", true))
+            .then((admin1) => {
+                const admin1Config = admin1.createConfiguration({
+                    sync: {
+                        url: REALM_URL,
+                        fullSynchronization: true
+                    }
                 });
-        });
+                realm = new Realm(admin1Config);
+                return realm.syncSession.downloadAllServerChanges(1);
+            }).then(() => { throw new Error('Download did not time out'); }, (e) => {
+                TestCase.assertEqual(e, 'Downloading changes did not complete in 1 ms.');
+                return realm.syncSession.downloadAllServerChanges();
+            });
     },
 
     testUploadAllLocalChangesTimeout() {
@@ -1357,23 +1335,21 @@ module.exports = {
 
         const AUTH_URL = 'http://localhost:9080';
         const REALM_URL = 'realm://localhost:9080/timeout_upload_realm';
-        return new Promise((resolve, reject) => {
-            Realm.Sync.User.login(AUTH_URL, Realm.Sync.Credentials.nickname("admin", true))
-                .then((admin1) => {
-                    const admin1Config = admin1.createConfiguration({
-                        sync: {
-                            url: REALM_URL,
-                            fullSynchronization: true
-                        }
-                    });
-                    let realm = new Realm(admin1Config);
-                    realm.syncSession.uploadAllLocalChanges(1).then(() => {
-                        reject("Upload did not time out");
-                    }).catch(e => {
-                        resolve();
-                    });
+        let realm;
+        return Realm.Sync.User.login(AUTH_URL, Realm.Sync.Credentials.nickname("admin", true))
+            .then((admin1) => {
+                const admin1Config = admin1.createConfiguration({
+                    sync: {
+                        url: REALM_URL,
+                        fullSynchronization: true
+                    }
                 });
-        });
+                realm = new Realm(admin1Config);
+                return realm.syncSession.uploadAllLocalChanges(1);
+            }).then(() => { throw new Error('Upload did not time out'); }, (e) => {
+                TestCase.assertEqual(e, 'Uploading changes did not complete in 1 ms.');
+                return realm.syncSession.uploadAllLocalChanges();
+            });
     },
 
     testReconnect() {

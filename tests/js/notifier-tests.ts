@@ -789,9 +789,10 @@ describe('Multi-process Notifier', () => {
                     }
 
                     clearTimeout(timeout);
+                    events.removeAllListeners();
+
                     resolve(events[i]);
                     ++i;
-                    events.removeAllListeners();
                 });
             });
         });
