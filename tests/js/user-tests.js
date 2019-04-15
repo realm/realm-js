@@ -205,13 +205,13 @@ module.exports = {
     if (!isNodeProcess) {
       return
     }
+
     // read admin token from ROS
+    const rosDataDir = process.env.ROS_DATA_DIR || '../realm-object-server-data';
+    const adminToken = JSON.parse(fs.readFileSync(`${rosDataDir}/keys/admin.json`, 'utf8'))['ADMIN_TOKEN'];
 
-    let obj = JSON.parse(fs.readFileSync('../realm-object-server-data/keys/admin.json', 'utf8'));
-    let token = obj['ADMIN_TOKEN'];
-
-    let credentials = Realm.Sync.Credentials.adminToken(token);
-    let user = Realm.Sync.User.login('http://localhost:9080', credentials);
+    const credentials = Realm.Sync.Credentials.adminToken(adminToken);
+    const user = Realm.Sync.User.login('http://localhost:9080', credentials);
     TestCase.assertTrue(user.isAdmin);
   },
 

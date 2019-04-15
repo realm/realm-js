@@ -46,22 +46,21 @@ die() {
   exit 1
 }
 
-download_server() {
-  echo "test.sh: downloading ROS"
-  ./scripts/download-object-server.sh
-}
-
 start_server() {
   echo "test.sh: starting ROS"
   if [ -z "${SYNC_WORKER_FEATURE_TOKEN}" ]; then
       die "SYNC_WORKER_FEATURE_TOKEN must be set to run tests."
   fi
+
+  ./scripts/download-object-server.sh
   mkdir -p "$(pwd)/build"
-  ros_log_temp="$(pwd)/build/ros_out.txt"
-  ROS_SKIP_PROMPTS=true ./node_modules/.bin/ros start --data realm-object-server-data 2>&1 | tee $ros_log_temp | grep -v 'info: \[sync\]' &
-  SERVER_PID=$(jobs -l | grep node_modules/.bin/ros | awk '{split($0, a, / */); print a[2]}')
+  local ros_log_temp=$(mktemp)
+  node ./scripts/test-ros-server.js | tee $ros_log_temp &
+  ( tail -f $ros_log_temp & ) | grep -q 'Started: '
+
+  SERVER_PID=$(jobs -l | grep 'test-ros-server' | awk '{split($0, a, / */); print a[2]}')
+  export ROS_DATA_DIR="$(perl -ne 'print "$1\n" if /^Started: (.*?)$/' $ros_log_temp)"
   echo ROS PID: ${SERVER_PID}
-  ( tail -f -n0 $ros_log_temp & ) | grep -q "Realm Object Server has started and is listening"
 }
 
 stop_server() {
@@ -75,7 +74,6 @@ stop_server() {
 
 startedSimulator=false
 log_temp=
-ros_log_temp=
 test_temp_dir=
 nvm_old_default=
 cleanup() {
@@ -105,9 +103,6 @@ cleanup() {
   # Cleanup temp files
   if [ -n "$log_temp" ] && [ -e "$log_temp" ]; then
     rm "$log_temp" || true
-  fi
-  if [ -n "$ros_log_temp" ] && [ -e "$ros_log_temp" ]; then
-    rm "$ros_log_temp" || true
   fi
   if [ -n "$test_temp_dir" ] && [ -e "$test_temp_dir" ]; then
     rm -rf "$test_temp_dir" || true
@@ -270,7 +265,6 @@ case "$TARGET" in
   npm run check-environment
   set_nvm_default
   npm ci
-  download_server
   start_server
 
   pushd tests/react-test-app
@@ -302,7 +296,6 @@ case "$TARGET" in
   ;;
 "react-tests-android")
   npm run check-environment
-  download_server
   start_server
 
   [[ $CONFIGURATION == 'Debug' ]] && exit 0
@@ -349,7 +342,6 @@ case "$TARGET" in
 "node")
   npm run check-environment
   npm ci --build-from-source=realm --realm_enable_sync
-  download_server
   start_server
 
   # Change to a temp directory.
@@ -364,7 +356,6 @@ case "$TARGET" in
   ;;
 "electron")
   npm ci
-  download_server
   start_server
 
   pushd "$SRCROOT/tests/electron"
@@ -380,8 +371,6 @@ case "$TARGET" in
 
   popd
   stop_server
-  rm -rf realm-object-server-data
-  rm -rf realm-object-server
   start_server
   pushd "$SRCROOT/tests/electron"
 
@@ -411,20 +400,6 @@ case "$TARGET" in
   pushd src/object-store
   cmake -DCMAKE_BUILD_TYPE="$CONFIGURATION" .
   make run-tests
-  ;;
-"download-object-server")
-  # shellcheck disable=SC1091
-  . dependencies.list
-
-  object_server_bundle="realm-object-server-bundled_node_darwin-$REALM_OBJECT_SERVER_VERSION.tar.gz"
-  curl -f -L "https://static.realm.io/downloads/object-server/$object_server_bundle" -o "$object_server_bundle"
-  rm -rf tests/sync-bundle
-  mkdir -p tests/sync-bundle
-  tar -C tests/sync-bundle -xf "$object_server_bundle"
-  rm "$object_server_bundle"
-
-  echo -e "enterprise:\n  skip_setup: true\n" >> "tests/sync-bundle/object-server/configuration.yml"
-  touch "tests/sync-bundle/object-server/do_not_open_browser"
   ;;
 *)
   echo "Invalid target '${TARGET}'"

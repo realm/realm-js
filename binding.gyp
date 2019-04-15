@@ -127,7 +127,6 @@
         "scripts/docker_build_wrapper.sh",
         "scripts/download-object-server.sh",
         "scripts/download-realm.js",
-        "scripts/download_and_start_server.sh",
         "scripts/find-ios-device.rb",
         "scripts/find-ios-runtime.rb",
         "scripts/git-win-symlink-aliases",

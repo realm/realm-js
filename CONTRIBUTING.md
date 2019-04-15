@@ -142,7 +142,7 @@ If a bug occurs on this platform, it is, unfortunately, rather difficult to debu
 Debugging and working with the unit tests in an iterative mannner is done the following way:
 
 1. Run `./scripts/test.sh react-tests` to install all the dependencies.
-2. Run `./node_modules/.bin/ros start --data realm-object-server-data` in one terminal window.
+2. Run `npm run ros-start` in one terminal window.
 3. `cd tests/react-test-app && npm start` in another terminal window
 4. Open `tests/react-test-app/ios/ReactTests.xcworkspace` (note: not the xcodeproj) in Xcode.
 5. Hit Cmd-U to run the tests.
