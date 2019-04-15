@@ -1,9 +1,15 @@
-const ROS = require('realm-object-server');
+// Change the working directory before importing ROS because the version of
+// realm-js used by ROS captures the working directory on load (this has since
+// been fixed)
+const tmp = require('tmp');
+const dataDir = tmp.dirSync().name;
+process.chdir(dataDir);
 
+const ROS = require('realm-object-server');
+const NodeRSA = require('node-rsa');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const tmp = require('tmp');
 
 // Bypass the mandatory email prompt.
 process.env.ROS_TOS_EMAIL_ADDRESS = 'ci@realm.io';
@@ -29,7 +35,10 @@ if (!process.env.SYNC_WORKER_FEATURE_TOKEN) {
     }
 }
 
-const dataDir = tmp.dirSync().name;
+fs.mkdirSync(`${dataDir}/keys`);
+const jwtKey = new NodeRSA({b: 1024});
+fs.writeFileSync(`${dataDir}/keys/jwt.pem`, jwtKey.exportKey('private'));
+
 const server = new ROS.BasicServer();
 server.start({
     // The desired logging threshold. Can be one of: all, trace, debug, detail, info, warn, error, fatal, off)
@@ -48,6 +57,9 @@ server.start({
         new ROS.auth.DebugAuthProvider(),
         new ROS.auth.PasswordAuthProvider({
             autoCreateAdminUser: true,
+        }),
+        new ROS.auth.JwtAuthProvider({
+            publicKey: jwtKey.exportKey('public')
         }),
     ],
     autoKeyGen: true,
