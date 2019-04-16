@@ -286,6 +286,14 @@ RPCServer::RPCServer() {
         jsc::Function::call(m_context, reconnect_method, arg_count, arg_values);
         return json::object();
     };
+    m_requests["/_hasExistingSessions"] = [this](const json dict) {
+        JSObjectRef realm_constructor = get_realm_constructor();
+        JSObjectRef sync_constructor = (JSObjectRef)jsc::Object::get_property(m_context, realm_constructor, "Sync");
+        JSObjectRef method = (JSObjectRef)jsc::Object::get_property(m_context, sync_constructor, "_hasExistingSessions");
+
+        auto result = jsc::Function::call(m_context, method, 0, nullptr);
+        return (json){{"result", serialize_json_value(result)}};
+    };
     m_requests["/_initializeSyncManager"] = [this](const json dict) {
         JSObjectRef realm_constructor = get_realm_constructor();
 
@@ -490,7 +498,7 @@ json RPCServer::perform_request(std::string const& name, json&& args) {
     }
 
     RPCRequest *action = &m_requests[name];
-    assert(action && *action);
+    REALM_ASSERT_RELEASE(action && *action);
 
     return m_worker.add_task([=] {
         try {
