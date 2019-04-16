@@ -397,8 +397,14 @@ RPCServer::RPCServer() {
             m_objects.emplace(m_session_id, realm_constructor);
         }
 
+        // The JS side of things only gives us the refreshAccessToken callback
+        // when creating a session so we need to hold onto it.
+        auto refresh_access_token = m_callbacks[0];
+
         m_callbacks.clear();
         m_callback_ids.clear();
+        m_callbacks[0] = refresh_access_token;
+        m_callback_ids[refresh_access_token] = 0;
         JSGarbageCollect(m_context);
         js::clear_test_state();
 
@@ -426,7 +432,13 @@ JSValueRef RPCServer::run_callback(JSContextRef ctx, JSObjectRef function, JSObj
 
     u_int64_t counter = server->m_callback_call_counter++;
     // The first argument was curried to be the callback id.
-    RPCObjectID callback_id = server->m_callback_ids[function];
+    auto it = server->m_callback_ids.find(function);
+    if (it == server->m_callback_ids.end()) {
+        // Callback will no longer exist if it was pending while clearTestState()
+        // was called. Just return undefined when that happens.
+        return JSValueMakeUndefined(ctx);
+    }
+    RPCObjectID callback_id = it->second;
     JSObjectRef arguments_array = jsc::Object::create_array(ctx, uint32_t(argc), arguments);
     json arguments_json = server->serialize_json_value(arguments_array);
     json this_json = server->serialize_json_value(this_object);
