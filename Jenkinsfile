@@ -446,10 +446,12 @@ def doInside(script, target, postStep = null) {
     }
     wrap([$class: 'AnsiColorBuildWrapper']) {
       withCredentials([string(credentialsId: 'realm-sync-feature-token-enterprise', variable: 'realmFeatureToken')]) {
-        sh "SYNC_WORKER_FEATURE_TOKEN=${realmFeatureToken} bash ${script} ${target}"
+        timeout(time: 1, unit: 'HOURS') {
+          sh "SYNC_WORKER_FEATURE_TOKEN=${realmFeatureToken} bash ${script} ${target}"
+        }
       }
     }
-    if(postStep) {
+    if (postStep) {
        postStep.call()
     }
     dir(env.WORKSPACE) {
@@ -494,10 +496,12 @@ def testLinux(target, nodeVersion = 10, postStep = null) {
       try {
         reportStatus(target, 'PENDING', 'Build has started')
         image.inside('-e HOME=/tmp') {
-          withCredentials([string(credentialsId: 'realm-sync-feature-token-enterprise', variable: 'realmFeatureToken')]) {
-            sh "REALM_FEATURE_TOKEN=${realmFeatureToken} SYNC_WORKER_FEATURE_TOKEN=${realmFeatureToken} scripts/test.sh ${target} ${nodeVersion}"
+          timeout(time: 1, unit: 'HOURS') {
+            withCredentials([string(credentialsId: 'realm-sync-feature-token-enterprise', variable: 'realmFeatureToken')]) {
+              sh "REALM_FEATURE_TOKEN=${realmFeatureToken} SYNC_WORKER_FEATURE_TOKEN=${realmFeatureToken} scripts/test.sh ${target} ${nodeVersion}"
+            }
           }
-          if(postStep) {
+          if (postStep) {
             postStep.call()
           }
           deleteDir()
