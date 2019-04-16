@@ -322,7 +322,7 @@ module.exports = {
     });
   },
 
-  testRetrieveNotExistingAccount() {
+  testRetrieveNonExistentAccount() {
     if (!isNodeProcess) {
       return;
     }
@@ -337,12 +337,12 @@ module.exports = {
 
       let notExistingUsername = uuid();
       return user.retrieveAccount('password', notExistingUsername)
-    }).catch(e => {
+    }).then(() => { throw new Error("Retrieving nonexistent account should fail") }, (e) => {
       TestCase.assertEqual(e.status, 404);
       TestCase.assertEqual(e.code, 612);
       TestCase.assertEqual(e.message, "The account does not exist.");
-      TestCase.assertEqual(e.type, "https://realm.io/docs/object-server/problems/unknown-account");
-    }).then(account => { if (account) { throw new Error("Retrieving nonexistent account should fail"); }});
+      TestCase.assertEqual(e.type, "https://docs.realm.io/server/troubleshoot/errors#unknown-account");
+    });
   },
 
   testCreateConfiguration_defaultConfig() {
