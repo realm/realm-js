@@ -469,7 +469,18 @@ JSValueRef RPCServer::run_callback(JSContextRef ctx, JSObjectRef function, JSObj
         JSStringRef message = JSStringCreateWithUTF8CString(error.get<std::string>().c_str());
         JSValueRef arguments[] { JSValueMakeString(ctx, message) };
         JSStringRelease(message);
-        *exception = JSObjectMakeError(ctx, 1, arguments, nullptr);
+        JSObjectRef error = JSObjectMakeError(ctx, 1, arguments, nullptr);
+        *exception = error;
+
+        json stack = results["stack"];
+        if (stack.is_string()) {
+            JSStringRef stack_json = JSStringCreateWithUTF8CString(stack.get<std::string>().c_str());
+            JSValueRef array = JSValueMakeFromJSONString(ctx, stack_json);
+            JSStringRelease(stack_json);
+            JSStringRef key = JSStringCreateWithUTF8CString("stack");
+            JSObjectSetProperty(ctx, error, key, array, 0, nullptr);
+            JSStringRelease(key);
+        }
         return nullptr;
     }
 
