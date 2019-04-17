@@ -42,7 +42,7 @@ function handleMessage(message) {
         let realm = new Realm(message[0]);
         realm.write(() => {
             if (message[1] == 'create') {
-                result = message[3].map((value) => realm.create(message[2], value));
+                message[3].map((value) => realm.create(message[2], value));
             }
             else if (message[1] == 'delete') {
                 let objects = realm.objects(message[2]);
@@ -50,12 +50,12 @@ function handleMessage(message) {
                 realm.delete(objects);
             }
             else if (message[1] == 'update') {
-                result = message[3].map((value) => realm.create(message[2], value, true));
+                message[3].map((value) => realm.create(message[2], value, true));
             }
             else if (message[1] == 'list_method') {
                 var listObject = realm.objects(message[2])[0];
                 var list = listObject[message[3]];
-                result = list[message[4]].apply(list, message.slice(5));
+                list[message[4]].apply(list, message.slice(5));
             }
             else {
                 throw new Error('Unknown realm method: ' + message[1]);
