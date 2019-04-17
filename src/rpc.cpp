@@ -116,7 +116,7 @@ json RPCWorker::add_task(Fn&& fn) {
     std::promise<json> p;
     auto future = p.get_future();
     m_promises.push_back(std::move(p));
-    m_tasks.push_back([&] {
+    m_tasks.push_back([this, fn = std::move(fn)] {
         auto result = fn();
         m_promises.pop_back().set_value(std::move(result));
     });
