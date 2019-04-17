@@ -52,7 +52,7 @@ global.RosController = module.exports = class RosController {
 
     deleteRealm(serverPath) {
         const request = http.request({
-            host: 'localhost',
+            host: '127.0.0.1',
             port: this.httpPort,
             path: `/api/realm/${this.pathPrefix}/${serverPath}`,
             method: 'DELETE',

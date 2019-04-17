@@ -1294,11 +1294,11 @@ module.exports = {
         }
 
         return Realm.Sync.User
-            .login('http://localhost:9080', Realm.Sync.Credentials.anonymous())
+            .login('http://127.0.0.1:9080', Realm.Sync.Credentials.anonymous())
             .then(user => {
                 const config = {
                     schema: [schemas.TestObject],
-                    sync: {user, url: 'realm://localhost:9080/~/test', fullSynchronization: true },
+                    sync: {user, url: 'realm://127.0.0.1:9080/~/test', fullSynchronization: true },
                 };
 
                 const realm = new Realm(config);
@@ -1513,13 +1513,13 @@ module.exports = {
         const config = {
             schema: [schemas.TestObject],
             sync: {
-                url: `realm://localhost:9080/${realmId}`,
+                url: `realm://127.0.0.1:9080/${realmId}`,
                 fullSynchronization: false,
             },
         };
 
         // We need an admin user to create the reference Realm
-        return Realm.Sync.User.login('http://localhost:9080', Realm.Sync.Credentials.nickname("admin", true))
+        return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.nickname("admin", true))
             .then(user1 => {
                 config.sync.user = user1;
                 const realm = new Realm(config);
@@ -1532,10 +1532,10 @@ module.exports = {
                 return closeAfterUpload(realm);
             })
             .then(() => {
-                return Realm.Sync.User.login('http://localhost:9080', Realm.Sync.Credentials.anonymous());
+                return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.anonymous());
             }).then((user2) => {
                 const dynamicConfig = {
-                    sync: { user: user2, url: `realm://localhost:9080/${realmId}`, fullSynchronization: false },
+                    sync: { user: user2, url: `realm://127.0.0.1:9080/${realmId}`, fullSynchronization: false },
                 };
                 return Realm.open(dynamicConfig);
             }).then((realm) => {

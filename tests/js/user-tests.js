@@ -87,7 +87,7 @@ function signToken(userId, isAdmin) {
 module.exports = {
 
   testLogout() {
-    return Realm.Sync.User.login('http://localhost:9080', Realm.Sync.Credentials.anonymous()).then((user) => {
+    return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.anonymous()).then((user) => {
       assertIsUser(user);
 
       assertIsSameUser(user, Realm.Sync.User.current);
@@ -97,14 +97,14 @@ module.exports = {
       TestCase.assertUndefined(Realm.Sync.User.current);
 
       // Can we open a realm with the registered user?
-      TestCase.assertThrows(() => new Realm({sync: {user: user, url: 'realm://localhost:9080/~/test'}}));
+      TestCase.assertThrows(() => new Realm({sync: {user: user, url: 'realm://127.0.0.1:9080/~/test'}}));
     });
   },
 
   testRegisterUser() {
-    return Realm.Sync.User.login('http://localhost:9080', Realm.Sync.Credentials.anonymous()).then((user) => {
+    return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.anonymous()).then((user) => {
       // Can we open a realm with the registered user?
-      const realm = new Realm({sync: {user: user, url: 'realm://localhost:9080/~/test'}});
+      const realm = new Realm({sync: {user: user, url: 'realm://127.0.0.1:9080/~/test'}});
       TestCase.assertInstanceOf(realm, Realm);
     });
   },
@@ -112,9 +112,9 @@ module.exports = {
   testRegisterExistingUser() {
     const username = uuid();
     const credentials = Realm.Sync.Credentials.usernamePassword(username, 'password', true);
-    return Realm.Sync.User.login('http://localhost:9080', credentials).then((user) => {
+    return Realm.Sync.User.login('http://127.0.0.1:9080', credentials).then((user) => {
       assertIsUser(user);
-      return Realm.Sync.User.login('http://localhost:9080', credentials)
+      return Realm.Sync.User.login('http://127.0.0.1:9080', credentials)
         .then((user) => { throw new Error(user); })
         .catch((e) => {
             assertIsAuthError(e, 611, "The provided credentials are invalid or the user does not exist.");
@@ -141,14 +141,14 @@ module.exports = {
     const username = uuid();
     const registerCredentials = Realm.Sync.Credentials.usernamePassword(username, 'password', true);
     // Create user, logout the new user, then login
-    return Realm.Sync.User.login('http://localhost:9080', registerCredentials).then((user) => {
+    return Realm.Sync.User.login('http://127.0.0.1:9080', registerCredentials).then((user) => {
       user.logout();
       const loginCredentials = Realm.Sync.Credentials.usernamePassword(username, 'password', false);
-      return Realm.Sync.User.login('http://localhost:9080', loginCredentials);
+      return Realm.Sync.User.login('http://127.0.0.1:9080', loginCredentials);
     }).then((user => {
       assertIsUser(user);
       // Can we open a realm with the logged-in user?
-      const config = user.createConfiguration({ sync: { url: 'realm://localhost:9080/~/test' }});
+      const config = user.createConfiguration({ sync: { url: 'realm://127.0.0.1:9080/~/test' }});
       const realm = new Realm(config);
       TestCase.assertInstanceOf(realm, Realm);
       realm.close();
@@ -157,35 +157,35 @@ module.exports = {
 
   testAuthenticateWithPassword() {
     const username = uuid();
-    return Realm.Sync.User.login('http://localhost:9080', Realm.Sync.Credentials.usernamePassword(username, 'password', true)).then((user) => {
+    return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.usernamePassword(username, 'password', true)).then((user) => {
       user.logout();
-      return Realm.Sync.User.login('http://localhost:9080', Realm.Sync.Credentials.usernamePassword(username, 'password'));
+      return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.usernamePassword(username, 'password'));
     }).then((user => {
       assertIsUser(user);
-      const realm = new Realm(user.createConfiguration({ sync: { url: 'realm://localhost:9080/~/test' } }));
+      const realm = new Realm(user.createConfiguration({ sync: { url: 'realm://127.0.0.1:9080/~/test' } }));
       TestCase.assertInstanceOf(realm, Realm);
       realm.close();
     }))
   },
 
   testLoginMissingUsername() {
-    TestCase.assertThrows(() => Realm.Sync.User.login('http://localhost:9080', undefined, 'password'));
+    TestCase.assertThrows(() => Realm.Sync.User.login('http://127.0.0.1:9080', undefined, 'password'));
   },
 
   testLoginMissingPassword() {
     const username = uuid();
-    TestCase.assertThrows(() => Realm.Sync.User.login('http://localhost:9080', username, undefined));
+    TestCase.assertThrows(() => Realm.Sync.User.login('http://127.0.0.1:9080', username, undefined));
   },
 
   testLoginNonExistingUser() {
-    return Realm.Sync.User.login('http://localhost:9080', Realm.Sync.Credentials.usernamePassword('foo', 'pass', false))
+    return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.usernamePassword('foo', 'pass', false))
       .then((user) => { throw new Error(user); })
       .catch((e) => assertIsAuthError(e, 611, "The provided credentials are invalid or the user does not exist."))
   },
 
   testLoginTowardsMisbehavingServer() {
     // Try authenticating using an endpoint that doesn't exist
-    return Realm.Sync.User.login('http://localhost:9080/invalid-auth-endpoint', Realm.Sync.Credentials.anonymous())
+    return Realm.Sync.User.login('http://127.0.0.1:9080/invalid-auth-endpoint', Realm.Sync.Credentials.anonymous())
       .then(() => { throw new Error('Login should have failed'); })
       .catch((e) => {
         assertIsError(e);
@@ -201,11 +201,11 @@ module.exports = {
       return;
     }
 
-    return Realm.Sync.User.login('http://localhost:9080', Realm.Sync.Credentials.jwt(signToken('user_name', false)))
+    return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.jwt(signToken('user_name', false)))
       .then(user => {
           TestCase.assertEqual(user.identity, 'user_name');
           TestCase.assertFalse(user.isAdmin);
-          return Realm.Sync.User.login('http://localhost:9080', Realm.Sync.Credentials.jwt(signToken('admin_user', true)))
+          return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.jwt(signToken('admin_user', true)))
       }).then(user => {
           TestCase.assertEqual(user.identity, 'admin_user');
           TestCase.assertTrue(user.isAdmin);
@@ -225,7 +225,7 @@ module.exports = {
     // read admin token from ROS
     const adminToken = JSON.parse(fs.readFileSync(`${rosDataDir}/keys/admin.json`, 'utf8'))['ADMIN_TOKEN'];
     const credentials = Realm.Sync.Credentials.adminToken(adminToken);
-    const user = Realm.Sync.User.login('http://localhost:9080', credentials);
+    const user = Realm.Sync.User.login('http://127.0.0.1:9080', credentials);
     TestCase.assertTrue(user.isAdmin);
   },
 
@@ -234,13 +234,13 @@ module.exports = {
     TestCase.assertArrayLength(Object.keys(all), 0);
 
     let user1;
-    return Realm.Sync.User.login('http://localhost:9080', Realm.Sync.Credentials.anonymous()).then((user) => {
+    return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.anonymous()).then((user) => {
       const all = Realm.Sync.User.all;
       TestCase.assertArrayLength(Object.keys(all), 1);
       assertIsSameUser(all[user.identity], user);
       user1 = user;
 
-      return Realm.Sync.User.login('http://localhost:9080', Realm.Sync.Credentials.anonymous());
+      return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.anonymous());
     }).then((user2) => {
         let all = Realm.Sync.User.all;
         TestCase.assertArrayLength(Object.keys(all), 2);
@@ -263,11 +263,11 @@ module.exports = {
     TestCase.assertUndefined(Realm.Sync.User.current);
 
     let user1;
-    return Realm.Sync.User.login('http://localhost:9080', Realm.Sync.Credentials.anonymous()).then((user) => {
+    return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.anonymous()).then((user) => {
       user1 = user;
       assertIsSameUser(Realm.Sync.User.current, user1);
 
-      return Realm.Sync.User.login('http://localhost:9080', Realm.Sync.Credentials.anonymous());
+      return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.anonymous());
     }).then((user2) => {
       TestCase.assertThrows(() => Realm.Sync.User.current, 'We expect Realm.Sync.User.current to throw if > 1 user.');
       user2.logout();
@@ -280,18 +280,18 @@ module.exports = {
   },
 
   testGetExistingUser() {
-    return Realm.Sync.User.login('http://localhost:9080', Realm.Sync.Credentials.anonymous()).then((user) => {
+    return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.anonymous()).then((user) => {
       let identity = user.identity;
-      let user1 = Realm.Sync.User._getExistingUser('http://localhost:9080', identity);
+      let user1 = Realm.Sync.User._getExistingUser('http://127.0.0.1:9080', identity);
       assertIsSameUser(user1, user);
       user.logout();
-      let user2 = Realm.Sync.User._getExistingUser('http://localhost:9080', identity);
+      let user2 = Realm.Sync.User._getExistingUser('http://127.0.0.1:9080', identity);
       TestCase.assertUndefined(user2);
     });
   },
 
   testManagementRealm() {
-    return Realm.Sync.User.login('http://localhost:9080', Realm.Sync.Credentials.anonymous()).then((user) => {
+    return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.anonymous()).then((user) => {
       let realm = user.openManagementRealm();
       TestCase.assertInstanceOf(realm, Realm);
 
@@ -310,7 +310,7 @@ module.exports = {
     }
 
     const credentials = Realm.Sync.Credentials.usernamePassword(global.testAdminUserInfo.username, global.testAdminUserInfo.password);
-    return Realm.Sync.User.login('http://localhost:9080', credentials).then((user) => {
+    return Realm.Sync.User.login('http://127.0.0.1:9080', credentials).then((user) => {
       TestCase.assertTrue(user.isAdmin, "Test requires an admin user");
 
       return user.retrieveAccount('password', global.testAdminUserInfo.username)
@@ -332,7 +332,7 @@ module.exports = {
     }
 
     const credentials = Realm.Sync.Credentials.usernamePassword(global.testAdminUserInfo.username, global.testAdminUserInfo.password);
-    return Realm.Sync.User.login('http://localhost:9080', credentials).then((user) => {
+    return Realm.Sync.User.login('http://127.0.0.1:9080', credentials).then((user) => {
       TestCase.assertTrue(user.isAdmin, "Test requires an admin user");
 
       let notExistingUsername = uuid();
@@ -346,9 +346,9 @@ module.exports = {
   },
 
   testCreateConfiguration_defaultConfig() {
-      return Realm.Sync.User.login('http://localhost:9080', Realm.Sync.Credentials.anonymous()).then((user) => {
+      return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.anonymous()).then((user) => {
           let config = user.createConfiguration();
-          TestCase.assertEqual(config.sync.url, "realm://localhost:9080/default");
+          TestCase.assertEqual(config.sync.url, "realm://127.0.0.1:9080/default");
           TestCase.assertUndefined(config.sync.partial);
           TestCase.assertFalse(config.sync.fullSynchronization);
       });
@@ -358,23 +358,23 @@ module.exports = {
     const tests = [
 
         // If no URL is provided default to using `/default`
-        { auth: 'http://localhost/auth', sync: undefined, output:'realm://localhost/default' },
-        { auth: 'http://localhost/auth?foo', sync: undefined, output:'realm://localhost/default' },
-        { auth: 'http://localhost:1234/auth?foo', sync: undefined, output:'realm://localhost:1234/default' },
-        { auth: 'https://localhost/auth', sync: undefined, output:'realms://localhost/default' },
+        { auth: 'http://127.0.0.1/auth', sync: undefined, output:'realm://127.0.0.1/default' },
+        { auth: 'http://127.0.0.1/auth?foo', sync: undefined, output:'realm://127.0.0.1/default' },
+        { auth: 'http://127.0.0.1:1234/auth?foo', sync: undefined, output:'realm://127.0.0.1:1234/default' },
+        { auth: 'https://127.0.0.1/auth', sync: undefined, output:'realms://127.0.0.1/default' },
 
         // If relative URL is used, use auth host
-        { auth: 'http://localhost/auth', sync: '/default1', output: 'realm://localhost/default1' },
-        { auth: 'http://localhost/auth', sync: '/~/default1', output: 'realm://localhost/~/default1' },
-        { auth: 'http://localhost/auth', sync: '~/default1', output: 'realm://localhost/~/default1' },
-        { auth: 'http://localhost/auth?foo', sync: '/default1', output:'realm://localhost/default1' },
-        { auth: 'http://localhost:1234/auth?foo', sync: '/default1', output:'realm://localhost:1234/default1' },
-        { auth: 'https://localhost/auth', sync: '/default1', output:'realms://localhost/default1' },
+        { auth: 'http://127.0.0.1/auth', sync: '/default1', output: 'realm://127.0.0.1/default1' },
+        { auth: 'http://127.0.0.1/auth', sync: '/~/default1', output: 'realm://127.0.0.1/~/default1' },
+        { auth: 'http://127.0.0.1/auth', sync: '~/default1', output: 'realm://127.0.0.1/~/default1' },
+        { auth: 'http://127.0.0.1/auth?foo', sync: '/default1', output:'realm://127.0.0.1/default1' },
+        { auth: 'http://127.0.0.1:1234/auth?foo', sync: '/default1', output:'realm://127.0.0.1:1234/default1' },
+        { auth: 'https://127.0.0.1/auth', sync: '/default1', output:'realms://127.0.0.1/default1' },
 
         // If full URL is used, no automatic conversions should be applied
-        { auth: 'http://localhost/auth', sync: 'realm://foo.bar.com/default', output: 'realm://foo.bar.com/default' },
-        { auth: 'http://localhost/auth', sync: 'realms://foo.bar.com/default', output: 'realms://foo.bar.com/default' },
-        { auth: 'http://localhost:1234/auth', sync: 'realm://foo.bar.com:5678/~/default', output: 'realm://foo.bar.com:5678/~/default' },
+        { auth: 'http://127.0.0.1/auth', sync: 'realm://foo.bar.com/default', output: 'realm://foo.bar.com/default' },
+        { auth: 'http://127.0.0.1/auth', sync: 'realms://foo.bar.com/default', output: 'realms://foo.bar.com/default' },
+        { auth: 'http://127.0.0.1:1234/auth', sync: 'realm://foo.bar.com:5678/~/default', output: 'realm://foo.bar.com:5678/~/default' },
     ];
 
     const adminCreds = Realm.Sync.Credentials.adminToken("foo"); // Fake user
@@ -394,20 +394,20 @@ module.exports = {
   },
 
   testCreateConfiguration_useOldConfiguration() {
-      return Realm.Sync.User.login('http://localhost:9080', Realm.Sync.Credentials.anonymous()).then((user) => {
-          let config = user.createConfiguration({ sync: { url: 'http://localhost:9080/other_realm', partial: true }});
-          TestCase.assertEqual(config.sync.url, 'http://localhost:9080/other_realm');
+      return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.anonymous()).then((user) => {
+          let config = user.createConfiguration({ sync: { url: 'http://127.0.0.1:9080/other_realm', partial: true }});
+          TestCase.assertEqual(config.sync.url, 'http://127.0.0.1:9080/other_realm');
           TestCase.assertUndefined(config.sync.fullSynchronization);
           TestCase.assertTrue(config.sync.partial);
       });
   },
 
   testCreateConfiguration_settingPartialAndFullSynchronizationThrows() {
-      return Realm.Sync.User.login('http://localhost:9080', Realm.Sync.Credentials.anonymous()).then((user) => {
+      return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.anonymous()).then((user) => {
           TestCase.assertThrowsContaining(() => {
                   let config = {
                     sync: {
-                      url: 'http://localhost:9080/~/default',
+                      url: 'http://127.0.0.1:9080/~/default',
                       partial: true,
                       fullSynchronization: false
                     }
@@ -418,12 +418,12 @@ module.exports = {
   },
 
   testOpen_partialAndFullSynchronizationSetThrows() {
-      return Realm.Sync.User.login('http://localhost:9080', Realm.Sync.Credentials.anonymous()).then((user) => {
+      return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.anonymous()).then((user) => {
           TestCase.assertThrowsContaining(() => {
               new Realm({
                   sync: {
                     user: user,
-                    url: 'http://localhost:9080/~/default',
+                    url: 'http://127.0.0.1:9080/~/default',
                     partial: false,
                     fullSynchronization: true
                   }
@@ -433,22 +433,22 @@ module.exports = {
   },
 
   testSerialize() {
-    return Realm.Sync.User.login('http://localhost:9080', Realm.Sync.Credentials.anonymous()).then((user) => {
+    return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.anonymous()).then((user) => {
       const serialized = user.serialize();
       TestCase.assertFalse(serialized.isAdmin);
       TestCase.assertEqual(serialized.identity, user.identity);
-      TestCase.assertEqual(serialized.server, 'http://localhost:9080');
+      TestCase.assertEqual(serialized.server, 'http://127.0.0.1:9080');
       TestCase.assertEqual(serialized.refreshToken, user.token);
     });
   },
 
   testDeserialize() {
-    return Realm.Sync.User.login('http://localhost:9080', Realm.Sync.Credentials.anonymous())
+    return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.anonymous())
       .then((user) => {
         const userConfig = user.createConfiguration({
           schema: [{ name: 'Dog', properties: { name: 'string' } }],
           sync: {
-            url: 'realm://localhost:9080/~/foo',
+            url: 'realm://127.0.0.1:9080/~/foo',
             fullSynchronization: true,
           }
         });
@@ -477,7 +477,7 @@ module.exports = {
         const config = deserialized.createConfiguration({
           schema: [{ name: 'Dog', properties: { name: 'string' } }],
           sync: {
-            url: 'realm://localhost:9080/~/foo',
+            url: 'realm://127.0.0.1:9080/~/foo',
             fullSynchronization: true,
           }
         });
@@ -548,7 +548,7 @@ module.exports = {
     // Create a user, open two clients at different local paths, synchronize changes
     const username = uuid();
     return new Promise((resolve) => {
-      Realm.Sync.User.register('http://localhost:9080', username, 'password', (error ,user) => {
+      Realm.Sync.User.register('http://127.0.0.1:9080', username, 'password', (error ,user) => {
         failOnError(error);
 
         const clientA = new Realm({
@@ -556,7 +556,7 @@ module.exports = {
           schema: schema,
           sync:   {
             user: user,
-            url:  'http://localhost:9080/~/test',
+            url:  'http://127.0.0.1:9080/~/test',
           },
         });
 
@@ -565,7 +565,7 @@ module.exports = {
           schema: schema,
           sync:   {
             user: user,
-            url:  'http://localhost:9080/~/test',
+            url:  'http://127.0.0.1:9080/~/test',
           },
         });
 

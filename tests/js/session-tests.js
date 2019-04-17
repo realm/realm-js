@@ -118,11 +118,11 @@ module.exports = {
     },
 
     testCustomHTTPHeaders() {
-        return Realm.Sync.User.login('http://localhost:9080', Realm.Sync.Credentials.anonymous()).then(user => {
+        return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.anonymous()).then(user => {
             let config = {
                 sync: {
                     user,
-                    url: `realm://localhost:9080/~/${uuid()}`,
+                    url: `realm://127.0.0.1:9080/~/${uuid()}`,
                     fullSynchronization: true,
                     custom_http_headers: {
                         'X-Foo': 'Bar'
@@ -138,12 +138,12 @@ module.exports = {
     },
 
     testProperties() {
-        return Realm.Sync.User.login('http://localhost:9080', Realm.Sync.Credentials.anonymous()).then(user => {
+        return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.anonymous()).then(user => {
             let postTokenRefreshChecks;
             const gotToken = new Promise((resolve, reject) => {
                 postTokenRefreshChecks = (sender) => {
                     try {
-                        TestCase.assertEqual(sender.url, `realm://localhost:9080/${user.identity}/myrealm`);
+                        TestCase.assertEqual(sender.url, `realm://127.0.0.1:9080/${user.identity}/myrealm`);
                         resolve();
                     }
                     catch (e) {
@@ -155,7 +155,7 @@ module.exports = {
             // Tell refreshAccessToken to call our error handler after successfully getting a token
             postTokenRefreshChecks._notifyOnAccessTokenRefreshed = true;
 
-            const config = user.createConfiguration({ sync: { url: 'realm://localhost:9080/~/myrealm', error: postTokenRefreshChecks, fullSynchronization: true } });
+            const config = user.createConfiguration({ sync: { url: 'realm://127.0.0.1:9080/~/myrealm', error: postTokenRefreshChecks, fullSynchronization: true } });
             const realm = new Realm(config);
             const session = realm.syncSession;
             TestCase.assertInstanceOf(session, Realm.Sync.Session);
@@ -181,12 +181,12 @@ module.exports = {
 
         const credentials = Realm.Sync.Credentials.nickname(username);
         return runOutOfProcess(__dirname + '/download-api-helper.js', username, realmName, REALM_MODULE_PATH)
-            .then(() => Realm.Sync.User.login('http://localhost:9080', credentials))
+            .then(() => Realm.Sync.User.login('http://127.0.0.1:9080', credentials))
             .then(u => {
                 user = u;
 
                 config = {
-                    sync: { user, url: `realm://localhost:9080/~/${realmName}`, fullSynchronization: true },
+                    sync: { user, url: `realm://127.0.0.1:9080/~/${realmName}`, fullSynchronization: true },
                     schema: [{ name: 'Dog', properties: { name: 'string' } }],
                 };
 
@@ -216,11 +216,11 @@ module.exports = {
         let user, config;
         const credentials = Realm.Sync.Credentials.nickname(username);
         return runOutOfProcess(__dirname + '/download-api-helper.js', username, realmName, REALM_MODULE_PATH)
-            .then(() => Realm.Sync.User.login('http://localhost:9080', credentials))
+            .then(() => Realm.Sync.User.login('http://127.0.0.1:9080', credentials))
             .then(u => {
                 user = u;
                 config = {
-                    sync: { user, url: `realm://localhost:9080/~/${realmName}`, fullSynchronization: true },
+                    sync: { user, url: `realm://127.0.0.1:9080/~/${realmName}`, fullSynchronization: true },
                     schema: [{ name: 'Dog', properties: { name: 'string' } }],
                     schemaVersion: 1,
                 };
@@ -257,10 +257,10 @@ module.exports = {
 
         const credentials = Realm.Sync.Credentials.nickname(username);
         return runOutOfProcess(__dirname + '/download-api-helper.js', username, realmName, REALM_MODULE_PATH)
-            .then(() => Realm.Sync.User.login('http://localhost:9080', credentials))
+            .then(() => Realm.Sync.User.login('http://127.0.0.1:9080', credentials))
             .then(user => {
                 let config = {
-                    sync: { user, url: `realm://localhost:9080/~/${realmName}`, fullSynchronization: true },
+                    sync: { user, url: `realm://127.0.0.1:9080/~/${realmName}`, fullSynchronization: true },
                     schema: [{ name: 'Dog', properties: { name: 'string' } }],
                 };
                 return new Promise((resolve, reject) => {
@@ -306,10 +306,10 @@ module.exports = {
 
         const credentials = Realm.Sync.Credentials.nickname(username);
         return runOutOfProcess(__dirname + '/download-api-helper.js', username, realmName, REALM_MODULE_PATH)
-            .then(() => Realm.Sync.User.login('http://localhost:9080', credentials))
+            .then(() => Realm.Sync.User.login('http://127.0.0.1:9080', credentials))
             .then(user => {
                 let config = {
-                    sync: { user, url: `realm://localhost:9080/~/${realmName}`, fullSynchronization: true }
+                    sync: { user, url: `realm://127.0.0.1:9080/~/${realmName}`, fullSynchronization: true }
                 };
                 return new Promise((resolve, reject) => {
                     Realm.openAsync(config, (error, realm) => {
@@ -402,9 +402,9 @@ module.exports = {
     },
 
     testErrorHandling() {
-        return Realm.Sync.User.login('http://localhost:9080', Realm.Sync.Credentials.anonymous()).then(user => {
+        return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.anonymous()).then(user => {
             return new Promise((resolve, _reject) => {
-                const config = user.createConfiguration({ sync: { url: 'realm://localhost:9080/~/myrealm' } });
+                const config = user.createConfiguration({ sync: { url: 'realm://127.0.0.1:9080/~/myrealm' } });
                 config.sync.error = (sender, error) => {
                     try {
                         TestCase.assertEqual(error.message, 'simulated error');
@@ -434,11 +434,11 @@ module.exports = {
 
         const credentials = Realm.Sync.Credentials.nickname(username);
         return runOutOfProcess(__dirname + '/nested-list-helper.js', __dirname + '/schemas.js', username, realmName, REALM_MODULE_PATH)
-            .then(() => Realm.Sync.User.login('http://localhost:9080', credentials))
+            .then(() => Realm.Sync.User.login('http://127.0.0.1:9080', credentials))
             .then(user => {
                 let config = {
                     schema: [schemas.ParentObject, schemas.NameObject],
-                    sync: { user, url: `realm://localhost:9080/~/${realmName}`, fullSynchronization: true }
+                    sync: { user, url: `realm://127.0.0.1:9080/~/${realmName}`, fullSynchronization: true }
                 };
                 return Realm.open(config)
             }).then(realm => {
@@ -474,14 +474,14 @@ module.exports = {
             Realm.copyBundledRealmFiles();
         }
 
-        return Realm.Sync.User.login('http://localhost:9080', Realm.Sync.Credentials.anonymous())
+        return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.anonymous())
             .then(user => {
                 const config = {
                     path: realm,
                     sync: {
                         user,
                         error : err => console.log(err),
-                        url: 'realm://localhost:9080/~/sync-v1',
+                        url: 'realm://127.0.0.1:9080/~/sync-v1',
                         fullSynchronization: true,
                     }
                 };
@@ -508,14 +508,14 @@ module.exports = {
             Realm.copyBundledRealmFiles();
         }
 
-        return Realm.Sync.User.login('http://localhost:9080', Realm.Sync.Credentials.anonymous()).then(user => {
+        return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.anonymous()).then(user => {
             return new Promise((resolve, _reject) => {
                 const config = {
                     path: realm,
                     sync: {
                         user,
                         error : err => console.log(err),
-                        url: 'realm://localhost:9080/~/sync-v1',
+                        url: 'realm://127.0.0.1:9080/~/sync-v1',
                         fullSynchronization: true,
                     }
                 };
@@ -549,14 +549,14 @@ module.exports = {
             Realm.copyBundledRealmFiles();
         }
 
-        return Realm.Sync.User.login('http://localhost:9080', Realm.Sync.Credentials.anonymous()).then(user => {
+        return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.anonymous()).then(user => {
             return new Promise((resolve, _reject) => {
                     const config = {
                         path: realm,
                         sync: {
                             user,
                             error : err => console.log(err),
-                            url: 'realm://localhost:9080/~/sync-v1'
+                            url: 'realm://127.0.0.1:9080/~/sync-v1'
                         }
                     };
 
@@ -587,12 +587,12 @@ module.exports = {
         const realmName = uuid();
 
         return runOutOfProcess(__dirname + '/download-api-helper.js', username, realmName, REALM_MODULE_PATH)
-            .then(() => Realm.Sync.User.login('http://localhost:9080', username, 'password'))
+            .then(() => Realm.Sync.User.login('http://127.0.0.1:9080', username, 'password'))
             .then(user => {
                 let config = {
                     sync: {
                         user,
-                        url: `realm://localhost:9080/~/${realmName}`
+                        url: `realm://127.0.0.1:9080/~/${realmName}`
                     },
                     schema: [{ name: 'Dog', properties: { name: 'string' } }],
                 };
@@ -622,12 +622,12 @@ module.exports = {
 
         const credentials = Realm.Sync.Credentials.nickname(username);
         return runOutOfProcess(__dirname + '/download-api-helper.js', username, realmName, REALM_MODULE_PATH)
-            .then(() => Realm.Sync.User.login('http://localhost:9080', credentials))
+            .then(() => Realm.Sync.User.login('http://127.0.0.1:9080', credentials))
             .then(user => {
                 let config = {
                     sync: {
                         user,
-                        url: `realm://localhost:9080/~/${realmName}`
+                        url: `realm://127.0.0.1:9080/~/${realmName}`
                     },
                     schema: [{ name: 'Dog', properties: { name: 'string' } }],
                 };
@@ -690,12 +690,12 @@ module.exports = {
 
         const credentials = Realm.Sync.Credentials.nickname(username);
         return runOutOfProcess(__dirname + '/download-api-helper.js', username, realmName, REALM_MODULE_PATH)
-            .then(() => Realm.Sync.User.login('http://localhost:9080', credentials))
+            .then(() => Realm.Sync.User.login('http://127.0.0.1:9080', credentials))
             .then(user => {
                 let config = {
                     sync: {
                         user,
-                        url: `realm://localhost:9080/~/${realmName}`
+                        url: `realm://127.0.0.1:9080/~/${realmName}`
                     },
                     schema: [{ name: 'Dog', properties: { name: 'string' } }],
                 };
@@ -717,13 +717,13 @@ module.exports = {
 
         const credentials = Realm.Sync.Credentials.nickname(username);
         return runOutOfProcess(__dirname + '/download-api-helper.js', username, realmName, REALM_MODULE_PATH)
-            .then(() => Realm.Sync.User.login('http://localhost:9080', credentials))
+            .then(() => Realm.Sync.User.login('http://127.0.0.1:9080', credentials))
             .then(user => {
                 return new Promise((resolve, reject) => {
                     let config = {
                         sync: {
                             user,
-                            url: `realm://localhost:9080/~/${realmName}`
+                            url: `realm://127.0.0.1:9080/~/${realmName}`
                         },
                         schema: [{ name: 'Dog', properties: { name: 'string' } }],
                     };
@@ -754,11 +754,11 @@ module.exports = {
     testDisableUrlCheck() {
         const username = uuid();
         const credentials = Realm.Sync.Credentials.nickname(username);
-        return Realm.Sync.User.login('http://localhost:9080', credentials).then(user => {
+        return Realm.Sync.User.login('http://127.0.0.1:9080', credentials).then(user => {
             let config = {
                 sync: {
                     user: user,
-                    url: `realm://localhost:9080/default/__partial/`,
+                    url: `realm://127.0.0.1:9080/default/__partial/`,
                     _disableQueryBasedSyncUrlChecks: true,
                     fullSynchronization: false,
                     error: () => {},
@@ -774,11 +774,11 @@ module.exports = {
     testPartialUrlCheck() {
         const username = uuid();
         const credentials = Realm.Sync.Credentials.nickname(username);
-        return Realm.Sync.User.login('http://localhost:9080', credentials).then(user => {
+        return Realm.Sync.User.login('http://127.0.0.1:9080', credentials).then(user => {
             let config = {
                 sync: {
                     user: user,
-                    url: `realm://localhost:9080/default/__partial/`,  // <--- not allowed URL
+                    url: `realm://127.0.0.1:9080/default/__partial/`,  // <--- not allowed URL
                     fullSynchronization: false,
                 }
             };
@@ -789,12 +789,12 @@ module.exports = {
     async testCustomPartialSyncIdentifier() {
         const username = uuid();
         const credentials = Realm.Sync.Credentials.nickname(username, true);
-        const user = await Realm.Sync.User.login('http://localhost:9080', credentials);
+        const user = await Realm.Sync.User.login('http://127.0.0.1:9080', credentials);
         const customRealm = await Realm.open({
             schema: [ { name: 'Dog', properties: { name: 'string' } } ],
             sync: {
                 user: user,
-                url: 'realm://localhost:9080/default',
+                url: 'realm://127.0.0.1:9080/default',
                 fullSynchronization: false,
                 customQueryBasedSyncIdentifier: "foo/bar",
             }
@@ -808,7 +808,7 @@ module.exports = {
             schema: [ { name: 'Dog', properties: { name: 'string' } } ],
             sync: {
                 user,
-                url: 'realm://localhost:9080/default',
+                url: 'realm://127.0.0.1:9080/default',
                 fullSynchronization: false,
             }
         });
@@ -821,11 +821,11 @@ module.exports = {
     testSubscribeInFullRealm() {
         const username = uuid();
         const credentials = Realm.Sync.Credentials.nickname(username);
-        return Realm.Sync.User.login('http://localhost:9080', credentials).then(user => {
+        return Realm.Sync.User.login('http://127.0.0.1:9080', credentials).then(user => {
             let config = {
                 sync: {
                     user: user,
-                    url: 'realm://localhost:9080/~/default',
+                    url: 'realm://127.0.0.1:9080/~/default',
                     fullSynchronization: true, // <---- calling subscribe should fail
                     error: (session, error) => console.log(error)
                 },
@@ -853,9 +853,9 @@ module.exports = {
         const path = `/~/testPartialSync`;
         const credentials = Realm.Sync.Credentials.nickname(username, true);
         await runOutOfProcess(__dirname + '/partial-sync-api-helper.js', username, REALM_MODULE_PATH, path)
-        const user = await Realm.Sync.User.login('http://localhost:9080', credentials);
+        const user = await Realm.Sync.User.login('http://127.0.0.1:9080', credentials);
 
-        let config = Realm.Sync.User.current.createConfiguration({sync: {url: `realm://localhost:9080${path}`}});
+        let config = Realm.Sync.User.current.createConfiguration({sync: {url: `realm://127.0.0.1:9080${path}`}});
         config.schema = [{ name: 'Dog', properties: { name: 'string' } }];
         const realm = await Realm.open(config);
 
@@ -938,12 +938,12 @@ module.exports = {
         const username = uuid();
         const credentials = Realm.Sync.Credentials.nickname(username);
         let user;
-        return Realm.Sync.User.login('http://localhost:9080', credentials).then(u => {
+        return Realm.Sync.User.login('http://127.0.0.1:9080', credentials).then(u => {
             user = u;
             let config = {
                 sync: {
                     user: user,
-                    url: 'realm://localhost:9080/~/dynamicSchema',
+                    url: 'realm://127.0.0.1:9080/~/dynamicSchema',
                     fullSynchronization: false,
                     error: (session, error) => console.log(error)
                 }
@@ -985,12 +985,12 @@ module.exports = {
 
         const username = uuid();
         const credentials = Realm.Sync.Credentials.nickname(username);
-        return Realm.Sync.User.login('http://localhost:9080', credentials).then(user => {
+        return Realm.Sync.User.login('http://127.0.0.1:9080', credentials).then(user => {
             let config = {
                 schema: [{name: 'Role', properties: {name: 'string'}}],
                 sync: {
                     user: user,
-                    url: 'realm://localhost:9080/~/roleClass',
+                    url: 'realm://127.0.0.1:9080/~/roleClass',
                     fullSynchronization: false,
                     error: (session, error) => console.log(error)
                 }
@@ -1009,10 +1009,10 @@ module.exports = {
             return;
         }
 
-        return Realm.Sync.User.login('http://localhost:9080', Realm.Sync.Credentials.anonymous()).then(user => {
+        return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.anonymous()).then(user => {
             return new Promise((resolve, _reject) => {
                 var realm;
-                const config = user.createConfiguration({ sync: { url: 'realm://localhost:9080/~/myrealm' } });
+                const config = user.createConfiguration({ sync: { url: 'realm://127.0.0.1:9080/~/myrealm' } });
                 config.sync.error = (sender, error) => {
                     try {
                         TestCase.assertEqual(error.name, 'ClientReset');
@@ -1038,11 +1038,11 @@ module.exports = {
     },
 
     testAddConnectionNotification() {
-        return Realm.Sync.User.login('http://localhost:9080', Realm.Sync.Credentials.anonymous()).then((u) => {
+        return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.anonymous()).then((u) => {
             let config = {
                 sync: {
                     user: u,
-                    url: `realm://localhost:9080/~/${uuid()}`,
+                    url: `realm://127.0.0.1:9080/~/${uuid()}`,
                     fullSynchronization: true,
                 }
             };
@@ -1060,11 +1060,11 @@ module.exports = {
     },
 
     testRemoveConnectionNotification() {
-        return Realm.Sync.User.login('http://localhost:9080', Realm.Sync.Credentials.anonymous()).then((u) => {
+        return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.anonymous()).then((u) => {
             let config = {
                 sync: {
                     user: u,
-                    url: `realm://localhost:9080/~/${uuid()}`,
+                    url: `realm://127.0.0.1:9080/~/${uuid()}`,
                     fullSynchronization: true,
                 }
             };
@@ -1093,11 +1093,11 @@ module.exports = {
             return;
         }
 
-        return Realm.Sync.User.login('http://localhost:9080', Realm.Sync.Credentials.anonymous()).then((u) => {
+        return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.anonymous()).then((u) => {
             let config = {
                 sync: {
                     user: u,
-                    url: `realm://localhost:9080/~/${uuid()}`,
+                    url: `realm://127.0.0.1:9080/~/${uuid()}`,
                     fullSynchronization: true,
                 }
             };
@@ -1135,11 +1135,11 @@ module.exports = {
     },
 
     async testResumePause() {
-        const user = await Realm.Sync.User.register('http://localhost:9080', uuid(), 'password')
+        const user = await Realm.Sync.User.register('http://127.0.0.1:9080', uuid(), 'password')
         const config = {
             sync: {
                 user: user,
-                url: 'realm://localhost:9080/~/testResumePause',
+                url: 'realm://127.0.0.1:9080/~/testResumePause',
                 fullSynchronization: true,
             }
         };
@@ -1156,11 +1156,11 @@ module.exports = {
     },
 
     async testMultipleResumes() {
-        const user = await Realm.Sync.User.register('http://localhost:9080', uuid(), 'password')
+        const user = await Realm.Sync.User.register('http://127.0.0.1:9080', uuid(), 'password')
         const config = {
             sync: {
                 user: user,
-                url: `realm://localhost:9080/~/${uuid()}`,
+                url: `realm://127.0.0.1:9080/~/${uuid()}`,
                 fullSynchronization: true,
             }
         };
@@ -1184,11 +1184,11 @@ module.exports = {
     },
 
     async testMultiplePauses() {
-        const user = await Realm.Sync.User.register('http://localhost:9080', uuid(), 'password')
+        const user = await Realm.Sync.User.register('http://127.0.0.1:9080', uuid(), 'password')
         const config = {
             sync: {
                 user: user,
-                url: `realm://localhost:9080/~/${uuid()}`,
+                url: `realm://127.0.0.1:9080/~/${uuid()}`,
                 fullSynchronization: true,
             }
         };
@@ -1212,8 +1212,8 @@ module.exports = {
     },
 
     testUploadDownloadAllChanges() {
-        const AUTH_URL = 'http://localhost:9080';
-        const REALM_URL = `realm://localhost:9080/completion_realm/${uuid()}`;
+        const AUTH_URL = 'http://127.0.0.1:9080';
+        const REALM_URL = `realm://127.0.0.1:9080/completion_realm/${uuid()}`;
         const schema = {
             'name': 'CompletionHandlerObject',
             properties: {
@@ -1261,8 +1261,8 @@ module.exports = {
             return;
         }
 
-        const AUTH_URL = 'http://localhost:9080';
-        const REALM_URL = 'realm://localhost:9080/timeout_download_realm';
+        const AUTH_URL = 'http://127.0.0.1:9080';
+        const REALM_URL = 'realm://127.0.0.1:9080/timeout_download_realm';
         let realm;
         return Realm.Sync.User.login(AUTH_URL, Realm.Sync.Credentials.nickname("admin", true))
             .then((admin1) => {
@@ -1285,8 +1285,8 @@ module.exports = {
             return;
         }
 
-        const AUTH_URL = 'http://localhost:9080';
-        const REALM_URL = 'realm://localhost:9080/timeout_upload_realm';
+        const AUTH_URL = 'http://127.0.0.1:9080';
+        const REALM_URL = 'realm://127.0.0.1:9080/timeout_upload_realm';
         let realm;
         return Realm.Sync.User.login(AUTH_URL, Realm.Sync.Credentials.nickname("admin", true))
             .then((admin1) => {
@@ -1305,8 +1305,8 @@ module.exports = {
     },
 
     testReconnect() {
-        const AUTH_URL = 'http://localhost:9080';
-        const REALM_URL = 'realm://localhost:9080/~/reconnect';
+        const AUTH_URL = 'http://127.0.0.1:9080';
+        const REALM_URL = 'realm://127.0.0.1:9080/~/reconnect';
         return Realm.Sync.User.login(AUTH_URL, Realm.Sync.Credentials.nickname("admin", true))
             .then((admin1) => {
                 const admin1Config = admin1.createConfiguration({
@@ -1326,8 +1326,8 @@ module.exports = {
     test_hasExistingSessions() {
         TestCase.assertFalse(Realm.Sync._hasExistingSessions());
 
-        const AUTH_URL = 'http://localhost:9080';
-        const REALM_URL = 'realm://localhost:9080/~/active_sessions';
+        const AUTH_URL = 'http://127.0.0.1:9080';
+        const REALM_URL = 'realm://127.0.0.1:9080/~/active_sessions';
         return Realm.Sync.User.login(AUTH_URL, Realm.Sync.Credentials.nickname("admin", true))
             .then((admin1) => {
                 const admin1Config = admin1.createConfiguration({
@@ -1359,8 +1359,8 @@ module.exports = {
     },
 
     testSessionStopPolicy() {
-        const AUTH_URL = 'http://localhost:9080';
-        const REALM_URL = 'realm://localhost:9080/~/stop_policy';
+        const AUTH_URL = 'http://127.0.0.1:9080';
+        const REALM_URL = 'realm://127.0.0.1:9080/~/stop_policy';
         return Realm.Sync.User.login(AUTH_URL, Realm.Sync.Credentials.nickname("admin", true))
             .then((admin1) => {
                 // Check valid input
@@ -1389,8 +1389,8 @@ module.exports = {
     },
 
     testSessionStopPolicyImmediately() {
-        const AUTH_URL = 'http://localhost:9080';
-        const REALM_URL = 'realm://localhost:9080/~/stop_policy_immediately';
+        const AUTH_URL = 'http://127.0.0.1:9080';
+        const REALM_URL = 'realm://127.0.0.1:9080/~/stop_policy_immediately';
         return Realm.Sync.User.login(AUTH_URL, Realm.Sync.Credentials.nickname("admin", true))
             .then((admin1) => {
                 // Check valid input

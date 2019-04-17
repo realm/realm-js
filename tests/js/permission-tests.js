@@ -31,9 +31,9 @@ function uuid() {
 function createUsersWithTestRealms(count) {
     const createUserWithTestRealm = () => {
         return Realm.Sync.User
-            .login('http://localhost:9080', Realm.Sync.Credentials.anonymous())
+            .login('http://127.0.0.1:9080', Realm.Sync.Credentials.anonymous())
             .then(user => {
-                new Realm({sync: {user, url: 'realm://localhost:9080/~/test', fullSynchronization: true}}).close();
+                new Realm({sync: {user, url: 'realm://127.0.0.1:9080/~/test', fullSynchronization: true}}).close();
                 return user;
             });
     };
@@ -91,11 +91,11 @@ function permissionForPath(permissions, path) {
 const getPartialRealm = () => {
     const testID = uuid();
     return Realm.Sync.User
-        .login('http://localhost:9080', Realm.Sync.Credentials.nickname("user-" + testID, true))
+        .login('http://127.0.0.1:9080', Realm.Sync.Credentials.nickname("user-" + testID, true))
         .then(user => {
             const config = user.createConfiguration({
                 sync: {
-                    url: 'realm://localhost:9080/test_' + testID,
+                    url: 'realm://127.0.0.1:9080/test_' + testID,
                     fullSynchronization: false,
                 }
             });
@@ -178,7 +178,7 @@ module.exports = {
     },
 
     async testObjectPermissions() {
-        const realmUrl = `realm://localhost:9080/testObjectPermissions_${uuid()}`
+        const realmUrl = `realm://127.0.0.1:9080/testObjectPermissions_${uuid()}`
         let config = (user) => {
             return {
                 schema: [
@@ -196,8 +196,8 @@ module.exports = {
                 sync: {user, url: realmUrl, fullSynchronization: false}
             };
         };
-        const owner = await Realm.Sync.User.login('http://localhost:9080', Realm.Sync.Credentials.nickname(uuid(), true));
-        const otherUser = await Realm.Sync.User.login('http://localhost:9080', Realm.Sync.Credentials.nickname(uuid()));
+        const owner = await Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.nickname(uuid(), true));
+        const otherUser = await Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.nickname(uuid()));
 
         const ownerRealm = new Realm(config(owner));
         ownerRealm.write(() => {
@@ -235,7 +235,7 @@ module.exports = {
     },
 
     testAddPermissionSchemaForQueryBasedRealmOnly() {
-        return Realm.Sync.User.register('http://localhost:9080', uuid(), 'password').then((user) => {
+        return Realm.Sync.User.register('http://127.0.0.1:9080', uuid(), 'password').then((user) => {
             let config = {
                 schema: [],
                 sync: {
@@ -278,7 +278,7 @@ module.exports = {
 
     testUsingAddedPermissionSchemas() {
         return new Promise((resolve, reject) => {
-            Realm.Sync.User.register('http://localhost:9080', uuid(), 'password').then((user) => {
+            Realm.Sync.User.register('http://127.0.0.1:9080', uuid(), 'password').then((user) => {
                 const config = user.createConfiguration();
                 const PrivateChatRoomSchema = {
                     name: 'PrivateChatRoom',
