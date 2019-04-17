@@ -733,7 +733,7 @@ describe('Notifier', () => {
 
 describe('Multi-process Notifier', () => {
     let tmpIpcPath, worker;
-    beforeEach(function() {
+    beforeEach(async function() {
         Realm.clearTestState();
         this.tmpListenerDir = tmp.dirSync({ unsafeCleanup: true });
         this.tmpIpcDir = tmp.dirSync({ unsafeCleanup: true });
@@ -760,7 +760,8 @@ describe('Multi-process Notifier', () => {
         }
 
         rosController.setRealmPathPrefix(currentTestName);
-        return rosController.start()
+        await rosController.start()
+        await worker.firstWorker;
     });
 
     afterEach(async function() {
