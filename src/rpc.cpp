@@ -514,7 +514,7 @@ json RPCServer::perform_request(std::string const& name, json&& args) {
     }
     if (name == "/callback_poll_result") {
         resolve_callback();
-        return json::object();
+        return m_worker.try_pop_callback();
     }
     if (name == "/callbacks_poll") {
         return m_worker.try_pop_callback();
