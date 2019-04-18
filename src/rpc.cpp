@@ -458,7 +458,7 @@ JSValueRef RPCServer::run_callback(JSContextRef ctx, JSObjectRef function, JSObj
         {"callback_call_counter", counter}
     });
 
-    while (!server->try_run_task() && future.wait_for(std::chrono::milliseconds(10)) != std::future_status::ready);
+    while (!server->try_run_task() && future.wait_for(std::chrono::microseconds(100)) != std::future_status::ready);
 
     json results = future.get();
     // The callback id should be identical!
