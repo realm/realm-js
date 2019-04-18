@@ -1103,10 +1103,12 @@ module.exports = {
             };
             return Realm.open(config);
         }).then(realm => {
+            let session = realm.syncSession;
+            session.pause();
+            TestCase.assertEqual(session.connectionState, Realm.Sync.ConnectionState.Disconnected);
+            TestCase.assertFalse(session.isConnected());
+
             return new Promise((resolve, reject) => {
-                let session = realm.syncSession;
-                TestCase.assertEqual(session.connectionState, Realm.Sync.ConnectionState.Disconnected);
-                TestCase.assertFalse(session.isConnected());
                 session.addConnectionNotification((newState, oldState) => {
                     switch (newState) {
                         case Realm.Sync.ConnectionState.Disconnected:
@@ -1129,6 +1131,7 @@ module.exports = {
                         resolve();
                     }
                 });
+                session.resume();
                 setTimeout(() => { reject() }, 10000);
             });
         });
