@@ -5,7 +5,7 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None.
+* Fixes an issue where calling `user.logout()` would not revoke the refresh token on the server. (Since v2.24.0)
 
 ### Compatibility
 * Realm Object Server: 3.11.0 or later.
@@ -40,11 +40,11 @@ x.x.x Release notes (yyyy-MM-dd)
 * Add `Realm.Results.description()` which returns a string representation of the query.
 * Add support for defining mapped properties in the schema using `name: { type: 'int', mapTo: 'internalName' }`. In that case the mapped name is used internally in the underlying Realm file, while the property key is used for reading/writing the property as well as querying it.
 * Add `RealmObject.addListener()`, `RealmObject.removeListener()`, and `RealmObject.removeAllListeners()` to set up and remove object-level notifications. ([#763](https://github.com/realm/realm-js/issues/763))
-* Add a new `Realm.UpdateMode` enum with the values: `never`, `modified`, `all`. This replaces the current 
+* Add a new `Realm.UpdateMode` enum with the values: `never`, `modified`, `all`. This replaces the current
   `Realm.create(type, properties, update)` with `Realm.create(type, properties, updateMode)`.
   `Realm.create(type, properties, 'modified')` is a new mode that only update existing properties that actually
   changed, while `Realm.create(type, properties, 'never')` is equal to `Realm.create(type, properties, false)` and
-  `Realm.create(type, properties, 'all')` is equal to `Realm.create(type, properties, true)`. 
+  `Realm.create(type, properties, 'all')` is equal to `Realm.create(type, properties, true)`.
   `Realm.create(type, properties, update)` is now deprecated. ([#2089](https://github.com/realm/realm-js/issues/2089))
 
 ### Fixed
