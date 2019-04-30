@@ -589,7 +589,7 @@ declare namespace Realm.Sync {
         readonly realm: Realm;
     }
 
-    type RealmListenerEventName = 'available' | 'change' | 'delete';
+    type RealmListenerEventName = 'startup' | 'available' | 'change' | 'delete';
 
     interface RealmListenerConfiguration {
         serverUrl: string;

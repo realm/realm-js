@@ -122,6 +122,10 @@ class Sync {
      *
      * Currently supported events:
      *
+     *  * `'startup'`: Emitted when the listener start. It returns the Realm(s) matching the filter
+     *    regex. A [ChangeEvent]{@link Realm.Sync.ChangeEvent} argument
+     *    containing the `path` and `realm` properties (other [ChangeEvent]{@link Realm.Sync.ChangeEvent} 
+     *    properties are N/A). 
      *  * `'available'`: Emitted whenever there is a new Realm which has a virtual
      *    path matching the filter regex, either due to the Realm being newly created
      *    or the listener being added. The virtual path (i.e. the portion of the
@@ -150,7 +154,10 @@ class Sync {
      * Only events on Realms with a _virtual path_ that matches the filter regex are emitted.
      *
      * Currently supported events:
-     *
+     * 
+     *  * `'startup'`: Emitted for every Realm matching the filter regex, before the corresponding Realm is opened for Sync.
+     *    A [ChangeEvent]{@link Realm.Sync.ChangeEvent} argument is passed containing containing the `path` and `realm`
+     *    properties, (other [ChangeEvent]{@link Realm.Sync.ChangeEvent} properties are N/A).
      *  * `'available'`: Emitted whenever there is a new Realm which has a virtual
      *    path matching the filter regex, either due to the Realm being newly created
      *    or the listener being added. The virtual path (i.e. the portion of the
@@ -990,6 +997,9 @@ class Subscription {
  *
  * Currently supported events:
  *
+ *  * `'startup'`: Emitted for every Realm matching the filter regex, before the corresponding Realm is opened for Sync.
+ *    A [ChangeEvent]{@link Realm.Sync.ChangeEvent} argument is passed containing containing the `path` and `realm`
+ *    properties, (other [ChangeEvent]{@link Realm.Sync.ChangeEvent} properties are N/A).
  *  * `'available'`: Emitted whenever there is a new Realm which has a virtual
  *    path matching the filter regex, either due to the Realm being newly created
  *    or the listener being added. The virtual path (i.e. the portion of the
@@ -1009,11 +1019,15 @@ class Subscription {
  *
  * @example
  * // my-worker.js
- * function onchange(path) {
- *    console.log(`Realm created at ${path}`);
+ * function onstartup(startup) {
+ *    console.log(`Realm at ${startup.path} startup`);
  * }
- *
- * function onavailable(change) {
+ * 
+ * function onavailable(path) {
+ *    console.log(`Realm available at ${path}`);
+ * }
+ * 
+ * function onchange(change) {
  *    console.log(`Realm at ${change.path} changed`);
  * }
  *
@@ -1021,7 +1035,7 @@ class Subscription {
  *    console.log(`Realm at ${path} deleted`);
  * }
  *
- * module.exports = {onchange, oncavailable, ondelete};
+ * module.exports = {onstartup, onchange, oncavailable, ondelete};
  *
  * // server script
  * Realm.Sync.addListener(realmServerURL, adminUser, '.*', new Realm.Worker('my-worker'));
