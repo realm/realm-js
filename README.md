@@ -18,7 +18,7 @@ Please see the detailed instructions in our docs to use [Realm Javascript](https
 
 ### Realm React Native and Node.js
 
-The documentation can be found at [realm.io/docs/javascript/latest/](https://realm.io/docs/javascript/latest/).  
+The documentation can be found at [realm.io/docs/javascript/latest/](https://realm.io/docs/javascript/latest/).
 The API reference is located at [realm.io/docs/javascript/latest/api/](https://realm.io/docs/javascript/latest/api/).
 
 ## Getting Help
@@ -76,7 +76,7 @@ npm install --build-from-source=realm
 
             ```
             npm install -g --production windows-build-tools
-            ```  
+            ```
 
     * Option 2: Manually install and configure
 
@@ -113,8 +113,6 @@ In the debugging pane, you can find `Debug LLDB + NodeJS` in the dropdown. First
 Some users have reported the Chrome debugging being too slow to use after integrating Realm into their react-native project. This is due to the blocking nature of the RPC calls made through the Realm library. See https://github.com/realm/realm-js/issues/491 for more information. The best workaround is to use Safari instead, as a user has described [here](https://github.com/realm/realm-js/issues/491#issuecomment-404670910).
 
 ## Running the tests
-
-You will need to install `nvm` to run the tests. Currently it is only possible to test using node 6, so please `nvm install 6.11.3`.
 
 The tests will spawn a new shell when running, so you need to make sure that new shell instances use the correct version of `npm`. On Mac you can add the following to your prefered shell setup:
 
