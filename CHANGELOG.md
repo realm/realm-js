@@ -12,7 +12,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
 ### Internal
-* Update dependencies and fix vulnerabilities.
+* Building for node.js using Xcode 10.x supported.
 
 2.26.1 Release notes (2019-4-12)
 =============================================================
