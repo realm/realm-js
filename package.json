@@ -120,7 +120,7 @@
     }
   },
   "engines": {
-    "node": ">=6"
+    "node": ">=8"
   },
   "binary": {
     "module_name": "realm",
