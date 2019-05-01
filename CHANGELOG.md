@@ -4,7 +4,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * Emit a `startup` event to the `Realm.Sync` event listener when a Realm matching the regex is detected upon the listener startup. ([realm-js-private#521](https://github.com/realm/realm-js-private/issues/521))
 
 ### Fixed
-* Fixes an issue where calling `user.logout()` would not revoke the refresh token on the server. ([#2348](https://github.com/realm/realm-js/pull/2348), since v2.24.0)
+* Fixed an issue where calling `user.logout()` would not revoke the refresh token on the server. ([#2348](https://github.com/realm/realm-js/pull/2348), since v2.24.0)
 
 ### Compatibility
 * Realm Object Server: 3.11.0 or later.
