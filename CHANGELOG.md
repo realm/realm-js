@@ -1,11 +1,10 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
-* [Sync] Emit a `startup` event to the Sync event listener when a Realm matching the regex is detected upon the listener startup.
+* Emit a `startup` event to the `Realm.Sync` event listener when a Realm matching the regex is detected upon the listener startup. ([realm-js-private#521](https://github.com/realm/realm-js-private/issues/521))
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* Fixes an issue where calling `user.logout()` would not revoke the refresh token on the server. (Since v2.24.0)
+* Fixed an issue where calling `user.logout()` would not revoke the refresh token on the server. ([#2348](https://github.com/realm/realm-js/pull/2348), since v2.24.0)
 
 ### Compatibility
 * Realm Object Server: 3.11.0 or later.
@@ -13,7 +12,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
 ### Internal
-* None.
+* Building for node.js using Xcode 10.x supported.
 
 2.26.1 Release notes (2019-4-12)
 =============================================================
