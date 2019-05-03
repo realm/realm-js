@@ -293,6 +293,22 @@ describe('Notifier', () => {
         realm.close();
     });
 
+    it('should return local listener Realms', async() => {
+        const [callback, realm] = await createRealmAndChangeListener();
+        await notificationPromise('test',
+            () => realm.write(() => realm.create('IntObject', [0])),
+            { IntObject: { insertions: [ 0 ] } });
+        realm.close();
+
+        await Realm.Sync.removeAllListeners();
+
+        let realms = Realm.Sync.localListenerRealms('test');
+        expect(realms).toBeDefined();
+        expect(realms.length).toEqual(1);
+        expect(realms[0].path).toMatch('\/test$');
+        expect(realms[0].realm()).toBeDefined();
+    });
+
     it("test change multiple notifications", async function() {
         const [callback, realm] = await createRealmAndChangeListener();
 

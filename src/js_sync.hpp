@@ -961,6 +961,7 @@ public:
     static void has_existing_sessions(ContextType, ObjectType, Arguments &, ReturnValue &);
 
     static void create_global_notifier(ContextType, ObjectType, Arguments &, ReturnValue &);
+    static void local_listener_realms(ContextType, ObjectType, Arguments&, ReturnValue &);
     static void enable_multiplexing(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void deserialize_change_set(ContextType, ObjectType, Arguments &, ReturnValue &);
 
@@ -982,6 +983,7 @@ public:
         {"setLogger", wrap<set_sync_logger>},
         {"setSyncLogger", wrap<set_sync_logger>},
         {"_createNotifier", wrap<create_global_notifier>},
+        {"_localListenerRealms", wrap<local_listener_realms>},
         {"_deserializeChangeSet", wrap<deserialize_change_set>},
 #endif
     };
@@ -1322,6 +1324,56 @@ void SyncClass<T>::create_global_notifier(ContextType ctx, ObjectType this_objec
                                                      std::move(sync_config_template)); // Throws
     return_value.set(create_object<T, GlobalNotifierClass<T>>(ctx, notifier.get()));
     notifier.release();
+}
+
+template <typename T>
+void SyncClass<T>::local_listener_realms(ContextType ctx, ObjectType this_object, Arguments& args,
+                                         ReturnValue& return_value)
+{
+    args.validate_count(1);
+
+    std::string local_root_dir = normalize_realm_path(Value::validated_to_string(ctx, args[0], "listenerDirectory"));
+    std::string admin_realm_path = util::File::resolve("realms.realm", local_root_dir);
+    // if the admin Realm doesn't exists, then there is no local Realm files to return (notifier didn't run yet here).
+    if (!util::File::exists(admin_realm_path)) {
+        return_value.set_undefined();
+        return;
+    }
+
+    Realm::Config config;
+    config.cache = false;
+    config.path = admin_realm_path;
+    config.force_sync_history = true;
+
+    auto realm = Realm::get_shared_realm(config);
+
+    auto& group = realm->read_group();
+    auto& table = *ObjectStore::table_for_object_type(group, "RealmFile");
+    size_t path_col_ndx = table.get_column_index("path");
+
+    std::vector<std::string> local_realms;
+    for (size_t i = 0, size = table.size(); i < size; ++i) {
+        auto virtual_path = table.get_string(path_col_ndx, i);
+        auto id = sync::object_id_for_row(group, table, i);
+        std::string file_path = util::format("%1/realms%2/%3.realm", local_root_dir, virtual_path, id.to_string());
+
+        // filter out Realms not present locally
+        if (util::File::exists(file_path)) {
+            local_realms.push_back(virtual_path);
+            local_realms.push_back(file_path);
+        }
+    }
+
+    if (local_realms.empty()) {
+        return_value.set_undefined();
+        return;
+    }
+
+    auto arr = Nan::New<v8::Array>(local_realms.size());
+    for (size_t i = 0; i < local_realms.size(); i++) {
+        Nan::Set(arr, i, Nan::New<v8::String>(local_realms[i]).ToLocalChecked());
+    }
+    return_value.set(arr);
 }
 
 template<typename T>
