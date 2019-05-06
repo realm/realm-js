@@ -109,7 +109,7 @@ LOCAL_STATIC_LIBRARIES += crypto-$(TARGET_ARCH_ABI)
 endif
 
 # Workaround for memmove/memcpy bug
-ifeq ($(TARGET_ARCH_ABI),armeabi-v7a)
+ifeq ($(TARGET_ARCH_ABI),armeabi-v7a,arm64-v8a)
 LOCAL_CPPFLAGS += -DREALM_WRAP_MEMMOVE=1
 LOCAL_LDFLAGS += -Wl,--wrap,memmove
 LOCAL_LDFLAGS += -Wl,--wrap,memcpy

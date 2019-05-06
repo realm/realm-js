@@ -237,7 +237,7 @@ def getNdkBuildFullPath() {
             null)
     }
 
-    checkNdkVersion(ndkBuildFullPath);
+    // checkNdkVersion(ndkBuildFullPath);
 
     return ndkBuildFullPath
 }
