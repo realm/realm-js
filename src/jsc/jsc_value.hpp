@@ -50,6 +50,9 @@ inline const char *jsc::Value::typeof(JSContextRef ctx, const JSValueRef &value)
         case kJSTypeString: return "string";
         case kJSTypeBoolean: return "boolean";
         case kJSTypeUndefined: return "undefined";
+        #if defined __IPHONE_12_2 || defined __MAC_10_14_4
+            case kJSTypeSymbol: return "symbol";
+        #endif
     }
 }
 
