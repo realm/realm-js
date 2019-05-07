@@ -293,20 +293,67 @@ describe('Notifier', () => {
         realm.close();
     });
 
-    it('should return local listener Realms', async() => {
-        const [callback, realm] = await createRealmAndChangeListener();
-        await notificationPromise('test',
-            () => realm.write(() => realm.create('IntObject', [0])),
-            { IntObject: { insertions: [ 0 ] } });
-        realm.close();
+    describe('localListenerRealms', async () => {
+        it('should return local listener Realms', async() => {
+            const [callback, realm] = await createRealmAndChangeListener();
+            await notificationPromise('test',
+                () => realm.write(() => realm.create('IntObject', [0])),
+                { IntObject: { insertions: [ 0 ] } });
+            realm.close();
 
-        await Realm.Sync.removeAllListeners();
+            await Realm.Sync.removeAllListeners();
 
-        let realms = Realm.Sync.localListenerRealms('test');
-        expect(realms).toBeDefined();
-        expect(realms.length).toEqual(1);
-        expect(realms[0].path).toMatch('\/test$');
-        expect(realms[0].realm()).toBeDefined();
+            let realms = Realm.Sync.localListenerRealms('test');
+            expect(realms).toBeDefined();
+            expect(realms.length).toEqual(1);
+            expect(realms[0].path).toMatch('\/test$');
+            expect(realms[0].realm()).toBeDefined();
+        });
+
+        it('should not return any Realms before the first listener is added', async () => {
+            (await rosController.createRealm('test', userRealmSchema)).close();
+
+            let realms = Realm.Sync.localListenerRealms('.*');
+            expect(realms.length).toEqual(0);
+        });
+
+        it('should not return any Realms after changing the listener directory', async () => {
+            const [callback, realm] = await createRealmAndChangeListener();
+            await notificationPromise('test',
+                () => realm.write(() => realm.create('IntObject', [0])),
+                { IntObject: { insertions: [ 0 ] } });
+            realm.close();
+            await Realm.Sync.removeAllListeners();
+
+            const newListenerDirectory = tmp.dirSync({unsafeCleanup: true});
+            Realm.Sync.setListenerDirectory(newListenerDirectory.name);
+            expect(Realm.Sync.localListenerRealms('.*').length).toEqual(0);
+
+            // Ensure the admin Realm is downloaded in the new directory
+            await availablePromise('test', () => {
+                addAvailableListener('.*', rosController);
+            });
+            Realm.Sync.removeAllListeners();
+
+            // Still should be empty because the actual Realm wasn't downloaded
+            // for an available notification
+            expect(Realm.Sync.localListenerRealms('.*').length).toEqual(0);
+
+            newListenerDirectory.removeCallback();
+        });
+
+        it('should filter Realms using the regex', async () => {
+            const [callback, realm] = await createRealmAndChangeListener();
+            await notificationPromise('test',
+                () => realm.write(() => realm.create('IntObject', [0])),
+                { IntObject: { insertions: [ 0 ] } });
+            realm.close();
+            await Realm.Sync.removeAllListeners();
+
+            expect(Realm.Sync.localListenerRealms('.*').length).toEqual(1);
+            expect(Realm.Sync.localListenerRealms('^$').length).toEqual(0);
+            expect(Realm.Sync.localListenerRealms(`^\/${rosController.pathPrefix}\/test$`).length).toEqual(1);
+        });
     });
 
     it("test change multiple notifications", async function() {
