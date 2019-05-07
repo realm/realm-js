@@ -8,7 +8,7 @@
     "jasmine-console-reporter": "^1.2.7",
     "jasmine-reporters": "^2.2.0",
     "needle": "^1.3.0",
-    "segfault-handler": "^1.0.1",
+    "segfault-handler": "^1.1.0",
     "terminate": "^1.0.8",
     "tmp": "^0.0.30",
     "url-parse": "^1.1.7",

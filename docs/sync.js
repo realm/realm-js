@@ -150,7 +150,7 @@ class Sync {
      * Only events on Realms with a _virtual path_ that matches the filter regex are emitted.
      *
      * Currently supported events:
-     *
+     * 
      *  * `'available'`: Emitted whenever there is a new Realm which has a virtual
      *    path matching the filter regex, either due to the Realm being newly created
      *    or the listener being added. The virtual path (i.e. the portion of the
@@ -1017,11 +1017,11 @@ class Subscription {
  *
  * @example
  * // my-worker.js
- * function onchange(path) {
- *    console.log(`Realm created at ${path}`);
+ * function onavailable(path) {
+ *    console.log(`Realm available at ${path}`);
  * }
- *
- * function onavailable(change) {
+ * 
+ * function onchange(change) {
  *    console.log(`Realm at ${change.path} changed`);
  * }
  *

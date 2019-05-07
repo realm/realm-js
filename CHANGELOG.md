@@ -1,6 +1,23 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
+* Emit a `startup` event to the `Realm.Sync` event listener when a Realm matching the regex is detected upon the listener startup. ([realm-js-private#521](https://github.com/realm/realm-js-private/issues/521))
+
+### Fixed
+* Add UpdateMode type ([#2359](https://github.com/realm/realm-js/pull/2359), since v2.26.1)
+* Fixed an issue where calling `user.logout()` would not revoke the refresh token on the server. ([#2348](https://github.com/realm/realm-js/pull/2348), since v2.24.0)
+
+### Compatibility
+* Realm Object Server: 3.11.0 or later.
+* APIs are backwards compatible with all previous release of realm in the 2.x.y series.
+* File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
+
+### Internal
+* Building for node.js using Xcode 10.x supported.
+
+2.26.1 Release notes (2019-4-12)
+=============================================================
+### Enhancements
 * None.
 
 ### Fixed
@@ -25,11 +42,11 @@ x.x.x Release notes (yyyy-MM-dd)
 * Add `Realm.Results.description()` which returns a string representation of the query.
 * Add support for defining mapped properties in the schema using `name: { type: 'int', mapTo: 'internalName' }`. In that case the mapped name is used internally in the underlying Realm file, while the property key is used for reading/writing the property as well as querying it.
 * Add `RealmObject.addListener()`, `RealmObject.removeListener()`, and `RealmObject.removeAllListeners()` to set up and remove object-level notifications. ([#763](https://github.com/realm/realm-js/issues/763))
-* Add a new `Realm.UpdateMode` enum with the values: `never`, `modified`, `all`. This replaces the current 
+* Add a new `Realm.UpdateMode` enum with the values: `never`, `modified`, `all`. This replaces the current
   `Realm.create(type, properties, update)` with `Realm.create(type, properties, updateMode)`.
   `Realm.create(type, properties, 'modified')` is a new mode that only update existing properties that actually
   changed, while `Realm.create(type, properties, 'never')` is equal to `Realm.create(type, properties, false)` and
-  `Realm.create(type, properties, 'all')` is equal to `Realm.create(type, properties, true)`. 
+  `Realm.create(type, properties, 'all')` is equal to `Realm.create(type, properties, true)`.
   `Realm.create(type, properties, update)` is now deprecated. ([#2089](https://github.com/realm/realm-js/issues/2089))
 
 ### Fixed
