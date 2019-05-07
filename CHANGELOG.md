@@ -14,6 +14,7 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Internal
 * Building for node.js using Xcode 10.x supported.
+* Fixing the Electron integration tests. ([#2286](https://github.com/realm/realm-js/pull/2286) and [#2320](https://github.com/realm/realm-js/pull/2320))
 
 2.26.1 Release notes (2019-4-12)
 =============================================================
@@ -58,7 +59,6 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Internal
 * Updated to Object Store commit: ab91c2bb4a915c0f159291f08caf1dc13e717573
-* Fixing the Electron integration tests. ([#2286](https://github.com/realm/realm-js/pull/2286) & [#2320](https://github.com/realm/realm-js/pull/2320))
 * Fixed adding a property to an existing object schema using the internal `realm._updateSchema`. ([#2283](https://github.com/realm/realm-js/pull/2283), since v2.24.0)
 
 2.25.0 Release notes (2019-3-12)
