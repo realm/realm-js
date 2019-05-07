@@ -1,7 +1,7 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
-* Emit a `startup` event to the `Realm.Sync` event listener when a Realm matching the regex is detected upon the listener startup. ([realm-js-private#521](https://github.com/realm/realm-js-private/issues/521))
+* Added `Realm.Sync.localListenerRealms(regex)` to return the list of local Realms downloaded by the global notifier. ([realm-js-private#521](https://github.com/realm/realm-js-private/issues/521)).
 
 ### Fixed
 * Add `UpdateMode` type. ([#2359](https://github.com/realm/realm-js/pull/2359), since v2.26.1)
