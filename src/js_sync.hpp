@@ -32,6 +32,7 @@
 #include <realm/util/uri.hpp>
 
 #if REALM_PLATFORM_NODE
+#include "impl/realm_coordinator.hpp"
 #include "node/js_global_notifier.hpp"
 #include "node/sync_logger.hpp"
 #endif
@@ -1334,18 +1335,28 @@ void SyncClass<T>::local_listener_realms(ContextType ctx, ObjectType this_object
 
     std::string local_root_dir = normalize_realm_path(Value::validated_to_string(ctx, args[0], "listenerDirectory"));
     std::string admin_realm_path = util::File::resolve("realms.realm", local_root_dir);
-    // if the admin Realm doesn't exists, then there is no local Realm files to return (notifier didn't run yet here).
+    // if the admin Realm doesn't exists, then there is no local Realm files to
+    // return (notifier didn't run yet here).
     if (!util::File::exists(admin_realm_path)) {
         return_value.set_undefined();
         return;
     }
 
-    Realm::Config config;
-    config.cache = false;
-    config.path = admin_realm_path;
-    config.force_sync_history = true;
-
-    auto realm = Realm::get_shared_realm(config);
+    // If the admin Realm is already open we need to get it from the
+    // coordinator to get the matching sync configuration, but if it's not
+    // already open we want to open it without creating a sync session.
+    std::shared_ptr<Realm> realm;
+    if (auto coordinator = realm::_impl::RealmCoordinator::get_existing_coordinator(admin_realm_path)) {
+        realm = coordinator->get_realm();
+    }
+    else {
+        Realm::Config config;
+        config.cache = false;
+        config.path = admin_realm_path;
+        config.force_sync_history = true;
+        config.schema_mode = SchemaMode::Additive;
+        realm = Realm::get_shared_realm(config);
+    }
 
     auto& group = realm->read_group();
     auto& table = *ObjectStore::table_for_object_type(group, "RealmFile");
