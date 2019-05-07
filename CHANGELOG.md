@@ -4,8 +4,9 @@ x.x.x Release notes (yyyy-MM-dd)
 * Emit a `startup` event to the `Realm.Sync` event listener when a Realm matching the regex is detected upon the listener startup. ([realm-js-private#521](https://github.com/realm/realm-js-private/issues/521))
 
 ### Fixed
-* Add UpdateMode type ([#2359](https://github.com/realm/realm-js/pull/2359), since v2.26.1)
+* Add `UpdateMode` type. ([#2359](https://github.com/realm/realm-js/pull/2359), since v2.26.1)
 * Fixed an issue where calling `user.logout()` would not revoke the refresh token on the server. ([#2348](https://github.com/realm/realm-js/pull/2348), since v2.24.0)
+* Fixed types of the `level` argument passed to the callback provided to `Realm.Sync.setLogger`, it was a string type but actually a numeric value is passed. ([#2125](https://github.com/realm/realm-js/issues/2125), since v2.25.0)
 
 ### Compatibility
 * Realm Object Server: 3.11.0 or later.
@@ -22,8 +23,6 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Fixed
 * Fixed Xcode 10.2 Build Errors by providing `kJSTypeSymbol` for switch cases. ([#2305](https://github.com/realm/realm-js/issues/2305) and [#2246](https://github.com/realm/realm-js/issues/2246), since v2.25.0)
-* Fixed types of the `level` argument passed to the callback provided to `Realm.Sync.setLogger`, it was a string type but actually a numeric value is passed. ([#2125](https://github.com/realm/realm-js/issues/2125), since v2.25.0)
-
 
 ### Compatibility
 * Realm Object Server: 3.11.0 or later.
