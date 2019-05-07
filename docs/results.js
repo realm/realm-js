@@ -35,5 +35,5 @@ class Results extends Collection {
      * @throws {Error} If no property with the name exists.
      * @since 2.0.0-rc20
      */
-    update(property, value) {}
+    update(property, value) { }
 }

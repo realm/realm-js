@@ -40,7 +40,7 @@ class Collection {
      * @type {number}
      * @readonly
      */
-    get length() {}
+    get length() { }
 
     /**
      * The {@linkplain Realm~PropertyType type} of values in the collection.
@@ -48,7 +48,7 @@ class Collection {
      * @readonly
      * @since 2.0.0
      */
-    get type() {}
+    get type() { }
 
     /**
      * Whether `null` is a valid value for the collection.
@@ -56,21 +56,21 @@ class Collection {
      * @readonly
      * @since 2.0.0
      */
-    get optional() {}
+    get optional() { }
 
     /**
      * Checks if this collection has not been deleted and is part of a valid Realm.
      * @returns {boolean} indicating if the collection can be safely accessed.
      * @since 0.14.0
      */
-    isValid() {}
+    isValid() { }
 
     /**
      * Checks if this collection is empty.
      * @returns {boolean} indicating if the collection is empty or not.
      * @since 2.7.0
      */
-    isEmpty() {}
+    isEmpty() { }
 
     /**
      * Returns new _Results_ that represent this collection being filtered by the provided query.
@@ -87,7 +87,7 @@ class Collection {
      * @example
      * let merlots = wines.filtered('variety == "Merlot" && vintage <= $0', maxYear);
      */
-    filtered(query, ...arg) {}
+    filtered(query, ...arg) { }
 
     /**
      * Returns new _Results_ that represent a sorted view of this collection.
@@ -124,7 +124,7 @@ class Collection {
      * @throws {Error} If a specified property does not exist.
      * @returns {Realm.Results<T>} sorted according to the arguments passed in.
      */
-    sorted(descriptor, reverse) {}
+    sorted(descriptor, reverse) { }
 
     /**
      * Create a frozen snapshot of the collection.
@@ -141,7 +141,7 @@ class Collection {
      *
      * @returns {Realm.Results<T>} which will **not** live update.
      */
-    snapshot() {}
+    snapshot() { }
 
     /**
      * Subscribe to a subset of objects matching the query of the collection. The Realm will only be
@@ -165,28 +165,28 @@ class Collection {
      * @throws {Error} if the partial sync is not enabled in the configuration or the query is not supported by Realm Object Server.
      * @since 2.3.0
      */
-    subscribe(subscriptionName) {}
+    subscribe(subscriptionName) { }
 
     /**
      * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/entries Array.prototype.entries}
      * @returns {Realm.Collection~Iterator<T>} of each `[index, object]` pair in the collection
      * @since 0.11.0
      */
-    entries() {}
+    entries() { }
 
     /**
      * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/keys Array.prototype.keys}
      * @returns {Realm.Collection~Iterator<T>} of each index in the collection
      * @since 0.11.0
      */
-    keys() {}
+    keys() { }
 
     /**
      * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/values Array.prototype.values}
      * @returns {Realm.Collection~Iterator<T>} of each Realm object in the collection
      * @since 0.11.0
      */
-    values() {}
+    values() { }
 
     /**
      * This is the same method as the {@link Realm.Collection#values values()} method.
@@ -204,7 +204,7 @@ class Collection {
      *   // do something with each object
      * }
      */
-    [Symbol.iterator]() {}
+    [Symbol.iterator]() { }
 
     /**
      * Joins all objects in the collection into a string.
@@ -214,7 +214,7 @@ class Collection {
      * @returns {string}
      * @since 0.11.0
      */
-    join(separator) {}
+    join(separator) { }
 
     /**
      * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/slice Array.prototype.slice}
@@ -228,7 +228,7 @@ class Collection {
      *   including, the end index.
      * @since 0.11.0
      */
-    slice(start, end) {}
+    slice(start, end) { }
 
     /**
      * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/find Array.prototype.find}
@@ -243,7 +243,7 @@ class Collection {
      *   in the collection.
      * @since 0.11.0
      */
-    find(callback, thisArg) {}
+    find(callback, thisArg) { }
 
     /**
      * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/findIndex Array.prototype.findIndex}
@@ -258,18 +258,18 @@ class Collection {
      *   if `true` was never returned.
      * @since 0.11.0
      */
-    findIndex(callback, thisArg) {}
+    findIndex(callback, thisArg) { }
 
-   /**
-    Finds the index of the given object in the collection.
-    * @param {T} object - The value to search for in the collection.
-    * @throws {Error} If the argument is a {@link Realm.Object} that does not
-    *                 belong to the same Realm as the collection.
-    * @returns {number} representing the index where the value was found, or
-    *          `-1` if not in collection.
-    * @since 1.8.2
-    */
-   indexOf(object) {}
+    /**
+     Finds the index of the given object in the collection.
+     * @param {T} object - The value to search for in the collection.
+     * @throws {Error} If the argument is a {@link Realm.Object} that does not
+     *                 belong to the same Realm as the collection.
+     * @returns {number} representing the index where the value was found, or
+     *          `-1` if not in collection.
+     * @since 1.8.2
+     */
+    indexOf(object) { }
 
     /**
      * Returns the minimum value of the values in the collection or of the
@@ -284,7 +284,7 @@ class Collection {
      * @returns {number} the minimum value.
      * @since 1.12.1
      */
-    min(property) {}
+    min(property) { }
 
     /**
      * Returns the maximum value of the values in the collection or of the
@@ -299,7 +299,7 @@ class Collection {
      * @returns {number} the maximum value.
      * @since 1.12.1
      */
-    max(property) {}
+    max(property) { }
 
     /**
      * Computes the sum of the values in the collection or of the given
@@ -313,7 +313,7 @@ class Collection {
      * @returns {number} the sum.
      * @since 1.12.1
      */
-    sum(property) {}
+    sum(property) { }
 
     /**
      * Computes the average of the values in the collection or of the given
@@ -327,7 +327,7 @@ class Collection {
      * @returns {number} the sum.
      * @since 1.12.1
      */
-    avg(property) {}
+    avg(property) { }
 
     /**
      * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/forEach Array.prototype.forEach}
@@ -339,7 +339,7 @@ class Collection {
      * @param {object} [thisArg] - The value of `this` when `callback` is called.
      * @since 0.11.0
      */
-    forEach(callback, thisArg) {}
+    forEach(callback, thisArg) { }
 
     /**
      * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/every Array.prototype.every}
@@ -354,7 +354,7 @@ class Collection {
      *   collection.
      * @since 0.11.0
      */
-    every(callback, thisArg) {}
+    every(callback, thisArg) { }
 
     /**
      * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/some Array.prototype.some}
@@ -369,7 +369,7 @@ class Collection {
      *   otherwise `false`.
      * @since 0.11.0
      */
-    some(callback, thisArg) {}
+    some(callback, thisArg) { }
 
     /**
      * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/map Array.prototype.map}
@@ -383,7 +383,7 @@ class Collection {
      *   in the collection.
      * @since 0.11.0
      */
-    map(callback, thisArg) {}
+    map(callback, thisArg) { }
 
     /**
      * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/reduce Array.prototype.reduce}
@@ -404,7 +404,7 @@ class Collection {
      *   - If the collection is empty, then `initialValue` _must_ be supplied and will be returned.
      * @since 0.11.0
      */
-    reduce(callback, initialValue) {}
+    reduce(callback, initialValue) { }
 
     /**
      * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/reduceRight Array.prototype.reduceRight}
@@ -425,7 +425,7 @@ class Collection {
      *   - If the collection is empty, then `initialValue` _must_ be supplied and will be returned.
      * @since 0.11.0
      */
-    reduceRight(callback, initialValue) {}
+    reduceRight(callback, initialValue) { }
 
     /**
      * Add a listener `callback` which will be called when a **live** collection instance changes.
@@ -447,7 +447,7 @@ class Collection {
      *  console.log(`new size of collection: ${collection.length}`);
      * });
      */
-    addListener(callback) {}
+    addListener(callback) { }
 
     /**
      * Remove the listener `callback` from the collection instance.
@@ -455,12 +455,12 @@ class Collection {
      *   added as a listener through the {@link Collection#addListener addListener} method.
      * @throws {Error} If `callback` is not a function.
      */
-    removeListener(callback) {}
+    removeListener(callback) { }
 
     /**
      * Remove all `callback` listeners from the collection instance.
      */
-    removeAllListeners(name) {}
+    removeAllListeners(name) { }
 
 }
 

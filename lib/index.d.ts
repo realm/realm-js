@@ -599,6 +599,18 @@ declare namespace Realm.Sync {
     }
 
     type LogLevel = 'all' | 'trace' | 'debug' | 'detail' | 'info' | 'warn' | 'error' | 'fatal' | 'off';
+    
+    enum NumericLogLevel {
+        All,
+        Trace,
+        Debug,
+        Detail,
+        Info,
+        Warn,
+        Error,
+        Fatal,
+        Off,
+    }
 
     /**
      * @deprecated, to be removed in future versions
@@ -613,7 +625,7 @@ declare namespace Realm.Sync {
     function removeAllListeners(): Promise<void>;
     function removeListener(regex: string, name: string, changeCallback: (changeEvent: ChangeEvent) => void): Promise<void>;
     function setLogLevel(logLevel: LogLevel): void;
-    function setLogger(callback: (level: LogLevel, message: string) => void): void;
+    function setLogger(callback: (level: NumericLogLevel, message: string) => void): void;
     function setUserAgent(userAgent: string): void;
     function initiateClientReset(path: string): void;
     function _hasExistingSessions(): boolean;
