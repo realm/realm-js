@@ -1,11 +1,14 @@
 'use strict';
 
-var jasmineReporters = require('jasmine-reporters');
-var junitReporter = new jasmineReporters.JUnitXmlReporter({
+const jasmineReporters = require('jasmine-reporters');
+const SpecReporter = require('jasmine-spec-reporter').SpecReporter;
+
+jasmine.getEnv().addReporter(new jasmineReporters.JUnitXmlReporter({
     savePath: '.',
     consolidateAll: false
-});
-jasmine.getEnv().addReporter(junitReporter);
-
-var JasmineConsoleReporter = require('jasmine-console-reporter');
-jasmine.getEnv().addReporter(new JasmineConsoleReporter()); 
+}));
+jasmine.getEnv().addReporter(new SpecReporter({
+  spec: {
+    displayPending: true
+  }
+}));

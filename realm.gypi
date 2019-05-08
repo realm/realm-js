@@ -1,20 +1,12 @@
 {
   "variables": {
+    "realm_enable_sync%": "1",
     "realm_download_binaries%": "1",
     "use_realm_debug%": "<!(node -p \"'REALMJS_USE_DEBUG_CORE' in process.env ? 1 : 0\")",
     "realm_js_dir%": "<(module_root_dir)",
     "runtime%": "node"
   },
   "conditions": [
-    ["OS=='mac'", {
-      "variables": {
-        "realm_enable_sync%": "1"
-      }
-    }, {
-      "variables": {
-        "realm_enable_sync%": "0"
-      }
-    }],
     ["use_realm_debug", {
       "variables": {
         "debug_library_suffix": "-dbg",
@@ -33,7 +25,7 @@
       "type": "static_library",
       "include_dirs": [
         "src/object-store/src",
-        "src/object-store/external/pegtl"
+        "src/object-store/external/json"
       ],
       "defines": [ "REALM_PLATFORM_NODE=1" ],
       "sources": [
@@ -42,9 +34,9 @@
         "src/object-store/src/index_set.cpp",
         "src/object-store/src/list.cpp",
         "src/object-store/src/object.cpp",
-        "src/object-store/src/placeholder.cpp",
         "src/object-store/src/object_schema.cpp",
         "src/object-store/src/object_store.cpp",
+        "src/object-store/src/placeholder.cpp",
         "src/object-store/src/results.cpp",
         "src/object-store/src/schema.cpp",
         "src/object-store/src/shared_realm.cpp",
@@ -59,29 +51,14 @@
         "src/object-store/src/impl/transact_log_handler.cpp",
         "src/object-store/src/impl/weak_realm_notifier.cpp",
         "src/object-store/src/util/uuid.cpp",
+
+        "src/object-store/external/json/json.hpp",
+        "src/object-store/src/audit.hpp",
         "src/object-store/src/binding_callback_thread_observer.hpp",
         "src/object-store/src/binding_context.hpp",
         "src/object-store/src/collection_notifications.hpp",
-        "src/object-store/src/descriptor_ordering.hpp",
         "src/object-store/src/execution_context_id.hpp",
         "src/object-store/src/feature_checks.hpp",
-        "src/object-store/src/impl/apple/external_commit_helper.hpp",
-        "src/object-store/src/impl/apple/keychain_helper.hpp",
-        "src/object-store/src/impl/collection_change_builder.hpp",
-        "src/object-store/src/impl/collection_notifier.hpp",
-        "src/object-store/src/impl/epoll/external_commit_helper.hpp",
-        "src/object-store/src/impl/external_commit_helper.hpp",
-        "src/object-store/src/impl/generic/external_commit_helper.hpp",
-        "src/object-store/src/impl/list_notifier.hpp",
-        "src/object-store/src/impl/notification_wrapper.hpp",
-        "src/object-store/src/impl/object_accessor_impl.hpp",
-        "src/object-store/src/impl/object_notifier.hpp",
-        "src/object-store/src/impl/primitive_list_notifier.hpp",
-        "src/object-store/src/impl/realm_coordinator.hpp",
-        "src/object-store/src/impl/results_notifier.hpp",
-        "src/object-store/src/impl/transact_log_handler.hpp",
-        "src/object-store/src/impl/weak_realm_notifier.hpp",
-        "src/object-store/src/impl/windows/external_commit_helper.hpp",
         "src/object-store/src/index_set.hpp",
         "src/object-store/src/list.hpp",
         "src/object-store/src/object.hpp",
@@ -92,6 +69,31 @@
         "src/object-store/src/results.hpp",
         "src/object-store/src/schema.hpp",
         "src/object-store/src/shared_realm.hpp",
+        "src/object-store/src/thread_safe_reference.hpp",
+        "src/object-store/src/impl/collection_change_builder.hpp",
+        "src/object-store/src/impl/collection_notifier.hpp",
+        "src/object-store/src/impl/list_notifier.hpp",
+        "src/object-store/src/impl/notification_wrapper.hpp",
+        "src/object-store/src/impl/object_accessor_impl.hpp",
+        "src/object-store/src/impl/object_notifier.hpp",
+        "src/object-store/src/impl/primitive_list_notifier.hpp",
+        "src/object-store/src/impl/realm_coordinator.hpp",
+        "src/object-store/src/impl/results_notifier.hpp",
+        "src/object-store/src/impl/transact_log_handler.hpp",
+        "src/object-store/src/impl/weak_realm_notifier.hpp",
+        "src/object-store/src/impl/apple/external_commit_helper.hpp",
+        "src/object-store/src/impl/apple/keychain_helper.hpp",
+        "src/object-store/src/impl/epoll/external_commit_helper.hpp",
+        "src/object-store/src/impl/external_commit_helper.hpp",
+        "src/object-store/src/impl/generic/external_commit_helper.hpp",
+        "src/object-store/src/impl/windows/external_commit_helper.hpp",
+        "src/object-store/src/sync/partial_sync.hpp",
+        "src/object-store/src/sync/subscription_state.hpp",
+        "src/object-store/src/sync/sync_config.hpp",
+        "src/object-store/src/sync/sync_manager.hpp",
+        "src/object-store/src/sync/sync_permission.hpp",
+        "src/object-store/src/sync/sync_session.hpp",
+        "src/object-store/src/sync/sync_user.hpp",
         "src/object-store/src/sync/impl/apple/network_reachability_observer.hpp",
         "src/object-store/src/sync/impl/apple/system_configuration.hpp",
         "src/object-store/src/sync/impl/network_reachability.hpp",
@@ -99,24 +101,19 @@
         "src/object-store/src/sync/impl/sync_file.hpp",
         "src/object-store/src/sync/impl/sync_metadata.hpp",
         "src/object-store/src/sync/impl/work_queue.hpp",
-        "src/object-store/src/sync/partial_sync.hpp",
-        "src/object-store/src/sync/sync_config.hpp",
-        "src/object-store/src/sync/sync_manager.hpp",
-        "src/object-store/src/sync/sync_permission.hpp",
-        "src/object-store/src/sync/sync_session.hpp",
-        "src/object-store/src/sync/sync_user.hpp",
-        "src/object-store/src/thread_safe_reference.hpp",
+        "src/object-store/src/server/adapter.hpp",
+        "src/object-store/src/server/admin_realm.hpp",
+        "src/object-store/src/server/global_notifier.hpp",
         "src/object-store/src/util/aligned_union.hpp",
-        "src/object-store/src/util/android/event_loop_signal.hpp",
-        "src/object-store/src/util/apple/event_loop_signal.hpp",
         "src/object-store/src/util/atomic_shared_ptr.hpp",
-        "src/object-store/src/util/compiler.hpp",
+        "src/object-store/src/util/event_loop_dispatcher.hpp",
         "src/object-store/src/util/event_loop_signal.hpp",
         "src/object-store/src/util/fifo.hpp",
-        "src/object-store/src/util/generic/event_loop_signal.hpp",
         "src/object-store/src/util/tagged_bool.hpp",
-        "src/object-store/src/util/time.hpp",
         "src/object-store/src/util/uuid.hpp",
+        "src/object-store/src/util/android/event_loop_signal.hpp",
+        "src/object-store/src/util/apple/event_loop_signal.hpp",
+        "src/object-store/src/util/generic/event_loop_signal.hpp",
         "src/object-store/src/util/uv/event_loop_signal.hpp",
       ],
       "conditions": [
@@ -143,15 +140,18 @@
         ["realm_enable_sync", {
           "dependencies": [ "realm-sync" ],
           "sources": [
-            "src/object-store/src/sync/partial_sync.cpp",
-            "src/object-store/src/sync/sync_config.cpp",
-            "src/object-store/src/sync/sync_manager.cpp",
-            "src/object-store/src/sync/sync_user.cpp",
-            "src/object-store/src/sync/sync_session.cpp",
-            "src/object-store/src/sync/sync_config.cpp",
+            "src/object-store/src/server/adapter.cpp",
+            "src/object-store/src/server/admin_realm.cpp",
+            "src/object-store/src/server/global_notifier.cpp",
             "src/object-store/src/sync/impl/sync_file.cpp",
             "src/object-store/src/sync/impl/sync_metadata.cpp",
-            "src/object-store/src/sync/impl/work_queue.cpp"
+            "src/object-store/src/sync/impl/work_queue.cpp",
+            "src/object-store/src/sync/partial_sync.cpp",
+            "src/object-store/src/sync/sync_config.cpp",
+            "src/object-store/src/sync/sync_config.cpp",
+            "src/object-store/src/sync/sync_manager.cpp",
+            "src/object-store/src/sync/sync_session.cpp",
+            "src/object-store/src/sync/sync_user.cpp",
           ],
         }, {
           "dependencies": [ "realm-core" ]
@@ -161,9 +161,7 @@
         "defines": [ "REALM_PLATFORM_NODE=1" ],
         "include_dirs": [
           "src/object-store/src",
-          "src/object-store/src/impl",
           "src/object-store/src/impl/apple",
-          "src/object-store/external/pegtl"
         ]
       },
       "export_dependent_settings": [

@@ -613,6 +613,15 @@ declare namespace Realm.Sync {
     }
 
     /**
+     * LocalRealm
+     * @see { @link https://realm.io/docs/javascript/latest/api/Realm.Sync.LocalRealm.html }
+     */
+    interface LocalRealm {
+        readonly path: string;
+        realm (): Realm;
+    }
+
+    /**
      * @deprecated, to be removed in future versions
      */
     function addListener(serverURL: string, adminUser: Realm.Sync.User, regex: string, name: RealmListenerEventName, changeCallback: (changeEvent: ChangeEvent) => void): void;
@@ -630,6 +639,7 @@ declare namespace Realm.Sync {
     function initiateClientReset(path: string): void;
     function _hasExistingSessions(): boolean;
     function reconnect(): void;
+    function localListenerRealms(regex: string): Array<LocalRealm>;
 
     /**
      * @deprecated, to be removed in future versions

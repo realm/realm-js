@@ -7,10 +7,10 @@
     "realm": "../../.."
   },
   "jest": {
-      "testEnvironment": "node",
-      "unmockedModulePathPatterns": [
-          "realm"
-      ],
-      "testRegex": "test.js"
+    "testEnvironment": "node",
+    "unmockedModulePathPatterns": [
+      "realm"
+    ],
+    "testRegex": "test.js"
   }
 }
