@@ -1,4 +1,4 @@
-x.x.x Release notes (yyyy-MM-dd)
+2.27.0 Release notes (2019-5-8)
 =============================================================
 ### Enhancements
 * Added `Realm.Sync.localListenerRealms(regex)` to return the list of local Realms downloaded by the global notifier. ([realm-js-private#521](https://github.com/realm/realm-js-private/issues/521)).
