@@ -266,6 +266,35 @@ class Sync {
      * If `false` is returned it means that no sessions currently exist.
      */
     static _hasExistingSessions() { }
+
+    /**
+     * Returns a list of local Realms previously downloaded via the global notifier.
+     *
+     * @param {string} regex - The regular expression used to filter the returned Realms by virtual path.
+     * @return {Array<LocalRealm>} An array of [LocalRealm]{@link Realm.Sync.LocalRealm}.
+     */
+    static localListenerRealms(regex) { }
+}
+
+/**
+ * Represent an entry for a local Realm, downloaded previously by the global notifier.
+ *
+ * @memberof Realm.Sync
+ */
+class LocalRealm {
+    /**
+     * The virtual path of the local Realm. This is the portion of the URL of
+     * the synced Realm after the protocol and the host name.
+     * @type {string}
+     * @readonly
+     */
+    get path() { }
+
+    /**
+     * An instance of the local Realm.
+     * @returns {Realm}
+     */
+    realm() { }
 }
 
 /**
