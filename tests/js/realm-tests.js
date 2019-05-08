@@ -18,6 +18,8 @@
 
 'use strict';
 
+/* global navigator, WorkerNavigator */
+
 const require_method = require;
 
 // Prevent React Native packager from seeing modules required with this
@@ -435,86 +437,77 @@ module.exports = {
         });
     },
 
-    testRealmCreateOrUpdate_diffedUpdatesOnlyTriggerNotificationsForChangedValues() {
+    async testRealmCreateOrUpdate_diffedUpdatesOnlyTriggerNotificationsForChangedValues() {
         const realm = new Realm({schema: [schemas.AllPrimaryTypes, schemas.TestObject]});
-        return new Promise((resolve, reject) => {
-            let notification = 0;
-            realm.objects('AllPrimaryTypesObject').addListener((objects, changes) => {
-                switch (notification) {
-                    case 0:
-                        TestCase.assertEqual(changes.insertions.length, 0);
-                        TestCase.assertEqual(objects.length, 0);
-                        break;
-                    case 1:
-                        TestCase.assertEqual(changes.insertions.length, 2);
-                        TestCase.assertEqual(objects[0].boolCol, false);
-                        break;
-                    case 2:
-                        TestCase.assertEqual(changes.modifications.length, 1);
-                        TestCase.assertEqual(objects[0].boolCol, true);
-                        break;
-                    case 3:
-                        TestCase.assertEqual(changes.modifications.length, 1);
-                        TestCase.assertEqual(changes.modifications[0],1);
-                        break;
-                    case 4:
-                        TestCase.assertEqual(changes.modifications.length, 1);
-                        TestCase.assertEqual(changes.modifications[0], 0);
-                        TestCase.assertEqual(objects[0].boolCol, true);
-                        resolve();
-                        break;
-                    default:
-                        reject("Notifications triggered too many times");
-                }
-                notification++;
-            });
 
-            let template = Realm.createTemplateObject(schemas.AllPrimaryTypes);
-
-            // First notification -> Object created
-            realm.write(() => {
-                // Create Initial object
-                realm.create('AllPrimaryTypesObject', Object.assign(template, {
-                    primaryCol: '35',
-                    boolCol: false,
-                }));
-                realm.create('AllPrimaryTypesObject', Object.assign(template, {
-                    primaryCol: '36',
-                    boolCol: false,
-                }));
-            });
-
-            realm.write(() => {
-                // Update object with a change in value.
-                realm.create('AllPrimaryTypesObject',{
-                    primaryCol: '35',
-                    boolCol: true,
-                }, 'modified');
-            });
-
-            realm.write(() => {
-                // Update object with no change in value
-                realm.create('AllPrimaryTypesObject', {
-                    primaryCol: '35',
-                    boolCol: true,
-                }, 'modified');
-
-                // Update other object to ensure that notifications are triggered
-                realm.create('AllPrimaryTypesObject', {
-                    primaryCol: '36',
-                    boolCol: true,
-                }, 'all');
-            });
-
-            realm.write(() => {
-                // Update object with no change in value and no diffed update.
-                // This should still trigger a notification
-                realm.create('AllPrimaryTypesObject',{
-                    primaryCol: '35',
-                    boolCol: true,
-                }, 'all');
-            });
+        let resolve;
+        realm.objects('AllPrimaryTypesObject').addListener((objects, changes) => {
+            resolve([objects, changes]);
+            resolve = undefined;
         });
+
+        let [objects, changes] = await new Promise(r => resolve = r);
+        TestCase.assertEqual(changes.insertions.length, 0);
+        TestCase.assertEqual(objects.length, 0);
+
+        let template = Realm.createTemplateObject(schemas.AllPrimaryTypes);
+
+        // First notification -> Object created
+        realm.write(() => {
+            // Create Initial object
+            realm.create('AllPrimaryTypesObject', Object.assign(template, {
+                primaryCol: '35',
+                boolCol: false,
+            }));
+            realm.create('AllPrimaryTypesObject', Object.assign(template, {
+                primaryCol: '36',
+                boolCol: false,
+            }));
+        });
+        [objects, changes] = await new Promise(r => resolve = r);
+        TestCase.assertEqual(changes.insertions.length, 2);
+        TestCase.assertEqual(objects[0].boolCol, false);
+
+        realm.write(() => {
+            // Update object with a change in value.
+            realm.create('AllPrimaryTypesObject',{
+                primaryCol: '35',
+                boolCol: true,
+            }, 'modified');
+        });
+        [objects, changes] = await new Promise(r => resolve = r);
+        TestCase.assertEqual(changes.modifications.length, 1);
+        TestCase.assertEqual(objects[0].boolCol, true);
+
+        realm.write(() => {
+            // Update object with no change in value
+            realm.create('AllPrimaryTypesObject', {
+                primaryCol: '35',
+                boolCol: true,
+            }, 'modified');
+
+            // Update other object to ensure that notifications are triggered
+            realm.create('AllPrimaryTypesObject', {
+                primaryCol: '36',
+                boolCol: true,
+            }, 'all');
+        });
+        [objects, changes] = await new Promise(r => resolve = r);
+        TestCase.assertEqual(changes.modifications.length, 1);
+        TestCase.assertEqual(changes.modifications[0],1);
+
+        realm.write(() => {
+            // Update object with no change in value and no diffed update.
+            // This should still trigger a notification
+            realm.create('AllPrimaryTypesObject',{
+                primaryCol: '35',
+                boolCol: true,
+            }, 'all');
+        });
+        [objects, changes] = await new Promise(r => resolve = r);
+        TestCase.assertEqual(changes.modifications.length, 1);
+        TestCase.assertEqual(changes.modifications[0], 0);
+        TestCase.assertEqual(objects[0].boolCol, true);
     },
 
     testRealmCreatePrimaryKey: function() {
@@ -1301,11 +1294,11 @@ module.exports = {
         }
 
         return Realm.Sync.User
-            .login('http://localhost:9080', Realm.Sync.Credentials.anonymous())
+            .login('http://127.0.0.1:9080', Realm.Sync.Credentials.anonymous())
             .then(user => {
                 const config = {
                     schema: [schemas.TestObject],
-                    sync: {user, url: 'realm://localhost:9080/~/test', fullSynchronization: true },
+                    sync: {user, url: 'realm://127.0.0.1:9080/~/test', fullSynchronization: true },
                 };
 
                 const realm = new Realm(config);
@@ -1520,13 +1513,13 @@ module.exports = {
         const config = {
             schema: [schemas.TestObject],
             sync: {
-                url: `realm://localhost:9080/${realmId}`,
+                url: `realm://127.0.0.1:9080/${realmId}`,
                 fullSynchronization: false,
             },
         };
 
         // We need an admin user to create the reference Realm
-        return Realm.Sync.User.login('http://localhost:9080', Realm.Sync.Credentials.nickname("admin", true))
+        return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.nickname("admin", true))
             .then(user1 => {
                 config.sync.user = user1;
                 const realm = new Realm(config);
@@ -1539,10 +1532,10 @@ module.exports = {
                 return closeAfterUpload(realm);
             })
             .then(() => {
-                return Realm.Sync.User.login('http://localhost:9080', Realm.Sync.Credentials.anonymous());
+                return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.anonymous());
             }).then((user2) => {
                 const dynamicConfig = {
-                    sync: { user: user2, url: `realm://localhost:9080/${realmId}`, fullSynchronization: false },
+                    sync: { user: user2, url: `realm://127.0.0.1:9080/${realmId}`, fullSynchronization: false },
                 };
                 return Realm.open(dynamicConfig);
             }).then((realm) => {

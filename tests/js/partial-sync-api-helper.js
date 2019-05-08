@@ -32,7 +32,7 @@ function createObjects(user) {
     const config = {
         sync: {
             user,
-            url: `realm://localhost:9080${realmPath}`,
+            url: `realm://127.0.0.1:9080${realmPath}`,
             fullSynchronization: false,
             error: err => console.log('partial-sync-api-helper', err)
         },
@@ -59,7 +59,7 @@ function createObjects(user) {
 }
 
 const credentials = Realm.Sync.Credentials.nickname(username);
-Realm.Sync.User.login('http://localhost:9080', credentials)
+Realm.Sync.User.login('http://127.0.0.1:9080', credentials)
     .catch((error) => {
         const loginError = JSON.stringify(error);
         console.error(`partial-sync-api-helper failed:\n User login error:\n${loginError}`);

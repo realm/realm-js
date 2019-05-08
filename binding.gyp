@@ -1,21 +1,35 @@
 {
- "includes": [
+  "conditions": [
+    ["OS=='linux'", {
+      "variables": {
+        "realm_download_binaries": "1"
+      }
+    }]
+  ],
+  "includes": [
     "target_defaults.gypi",
     "realm.gypi"
   ],
   "targets": [
     {
       "target_name": "realm",
-      "dependencies": [
-        "object-store"
+      "conditions": [
+        [ "OS!='mac'", {
+          "dependencies": [ "object-store", "OpenSSL" ],
+        }, {
+          "dependencies": [ "object-store" ],
+        }]
       ],
+      "xcode_settings": {
+        "OTHER_LDFLAGS": ["-framework Foundation", "-Wl,-exported_symbols_list /dev/null"],
+      },
       "sources": [
         "src/js_realm.cpp",
         "src/node/node_init.cpp",
         "src/node/platform.cpp",
+        "src/node/sync_logger.cpp",
 
         "src/concurrent_deque.hpp",
-        "src/event_loop_dispatcher.hpp",
         "src/js_class.hpp",
         "src/js_collection.hpp",
         "src/js_list.hpp",
@@ -28,6 +42,8 @@
         "src/js_sync.hpp",
         "src/js_types.hpp",
         "src/js_util.hpp",
+        "src/node/js_adapter.hpp",
+        "src/node/js_global_notifier.hpp",
         "src/node/node_class.hpp",
         "src/node/node_context.hpp",
         "src/node/node_exception.hpp",
@@ -39,20 +55,14 @@
         "src/node/node_string.hpp",
         "src/node/node_types.hpp",
         "src/node/node_value.hpp",
+        "src/node/sync_logger.hpp",
         "src/platform.hpp",
         "src/rpc.hpp",
       ],
       "include_dirs": [
-        "src"
+        "src",
+        "src/object-store/external/json",
       ],
-      "conditions": [
-        ["runtime=='electron'", {
-          "dependencies": [ "OpenSSL" ]
-        }],
-        ["OS=='win'", {
-          "dependencies": [ "OpenSSL" ]
-        }],
-      ]
     },
     {
       "target_name": "action_after_build",
@@ -74,6 +84,10 @@
         "binding.gyp",
         "dependencies.list",
         "package.json",
+
+        "binding.gyp",
+        "dependencies.list",
+        "package.json",
         "realm.gypi",
         "target_defaults.gypi",
 
@@ -83,9 +97,12 @@
         "lib/index.d.ts",
         "lib/index.js",
         "lib/management-schema.js",
+        "lib/notification-worker.js",
+        "lib/notifier.js",
         "lib/permission-api.js",
         "lib/submit-analytics.js",
         "lib/user-methods.js",
+        "lib/worker.js",
 
         "lib/browser/base64.js",
         "lib/browser/collections.js",
@@ -96,11 +113,11 @@
         "lib/browser/results.js",
         "lib/browser/rpc.js",
         "lib/browser/session.js",
+        "lib/browser/subscription.js",
         "lib/browser/user.js",
-        "lib/browser/util.js"
+        "lib/browser/util.js",
 
         "scripts/build-node-pre-gyp.ps1",
-        "scripts/build-node-pre-gyp.sh",
         "scripts/ccache-clang++.sh",
         "scripts/ccache-clang.sh",
         "scripts/changelog-header.sh",
@@ -110,18 +127,23 @@
         "scripts/docker_build_wrapper.sh",
         "scripts/download-object-server.sh",
         "scripts/download-realm.js",
-        "scripts/download_and_start_server.sh",
         "scripts/find-ios-device.rb",
+        "scripts/find-ios-runtime.rb",
         "scripts/git-win-symlink-aliases",
         "scripts/handle-license-check.js",
+        "scripts/nvm-wrapper.sh",
+        "scripts/pack-with-pre-gyp.sh",
         "scripts/prepublish.js",
         "scripts/publish.sh",
         "scripts/react-tests-android.js",
         "scripts/set-version.sh",
+        "scripts/test-ros-server.js",
         "scripts/test.sh",
+        "scripts/utils.sh",
 
         "tests/.eslintrc.json",
         "tests/index.js",
+        "tests/js/adapter-tests.ts",
         "tests/js/admin-user-helper.js",
         "tests/js/asserts.js",
         "tests/js/async-tests.js",
@@ -132,6 +154,7 @@
         "tests/js/linkingobjects-tests.js",
         "tests/js/list-tests.js",
         "tests/js/migration-tests.js",
+        "tests/js/notifier-tests.ts",
         "tests/js/object-id-tests.js",
         "tests/js/object-tests.js",
         "tests/js/package.json",

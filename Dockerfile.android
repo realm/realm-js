@@ -39,20 +39,21 @@ RUN adduser --uid 1001 --disabled-password --gecos "" jenkins
 # Install the SDK and NDK as jenkins
 USER jenkins
 
-# Install the Android SDK
+# Install the Android SDK and NDK
 ENV ANDROID_HOME /home/jenkins/android-sdk
-RUN mkdir -p ${ANDROID_HOME} && cd ${ANDROID_HOME} && \
+ENV PATH ${PATH}:${ANDROID_HOME}/tools:${ANDROID_HOME}/tools/bin:${ANDROID_HOME}/platform-tools
+ENV ANDROID_NDK /home/jenkins/android-ndk
+
+RUN echo 'Installing Android SDK' && \
+    mkdir -p ${ANDROID_HOME} && cd ${ANDROID_HOME} && \
     curl -sO https://dl.google.com/android/repository/sdk-tools-linux-${ANDROID_SDK_VERSION}.zip && \
     unzip -q sdk-tools-linux-*.zip && \
-    rm sdk-tools-linux-*.zip
-ENV PATH ${PATH}:${ANDROID_HOME}/tools:${ANDROID_HOME}/tools/bin:${ANDROID_HOME}/platform-tools
-# Print the version of the SDK using the sdkmanager
-RUN sdkmanager --update
-RUN yes | sdkmanager "tools" "platform-tools" "build-tools;${ANDROID_BUILD_TOOLS_VERSION}" "platforms;android-26"
-
-# Install the Android NDK
-ENV ANDROID_NDK /home/jenkins/android-ndk
-RUN cd ${ANDROID_NDK}/.. && \
+    rm sdk-tools-linux-*.zip && \
+    sdkmanager --update && \
+    yes | sdkmanager "tools" "platform-tools" "build-tools;${ANDROID_BUILD_TOOLS_VERSION}" "platforms;android-26" && \
+    \
+    echo 'Installing Android NDK' && \
+    cd ${ANDROID_NDK}/.. && \
     curl -sO http://dl.google.com/android/repository/android-ndk-${ANDROID_NDK_VERSION}-linux-x86_64.zip && \
     unzip -q android-ndk-*-linux-x86_64.zip && \
     rm android-ndk-*-linux-x86_64.zip && \
