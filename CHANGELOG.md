@@ -2,9 +2,13 @@ x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
 * Added `Realm.Sync.localListenerRealms(regex)` to return the list of local Realms downloaded by the global notifier. ([realm-js-private#521](https://github.com/realm/realm-js-private/issues/521)).
+* Encryption now uses hardware optimized functions, which significantly improves the performance of encrypted Realms. ([realm-core#3241](https://github.com/realm/realm-core/pull/3241))
+* Improved query performance when using `in` queries. ([realm-core#3241](https://github.com/realm/realm-core/pull/3241))
+* Improved query performance when querying integer properties with indexes, e.g. primary key properties. ([realm-core#3272](https://github.com/realm/realm-core/pull/3272))
+* Improved write performance when writing changes to disk. ([realm-core#2927](https://github.com/realm/realm-core/pull/2927))
 
 ### Fixed
-* Add `UpdateMode` type. ([#2359](https://github.com/realm/realm-js/pull/2359), since v2.26.1)
+* Added `UpdateMode` type. ([#2359](https://github.com/realm/realm-js/pull/2359), since v2.26.1)
 * Fixed an issue where calling `user.logout()` would not revoke the refresh token on the server. ([#2348](https://github.com/realm/realm-js/pull/2348), since v2.24.0)
 * Fixed types of the `level` argument passed to the callback provided to `Realm.Sync.setLogger`, it was a string type but actually a numeric value is passed. ([#2125](https://github.com/realm/realm-js/issues/2125), since v2.25.0)
 
@@ -15,7 +19,11 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Internal
 * Building for node.js using Xcode 10.x supported.
-* Fixing the Electron integration tests. ([#2286](https://github.com/realm/realm-js/pull/2286) and [#2320](https://github.com/realm/realm-js/pull/2320))
+* Fixed the Electron integration tests. ([#2286](https://github.com/realm/realm-js/pull/2286) and [#2320](https://github.com/realm/realm-js/pull/2320))
+* Added `Realm.Sync.Adapter` implemetation.
+* Upgraded to Realm Core v5.19.1.
+* Upgraded to Realm Sync v4.2.3.
+* Upgraded to Object Store commit d4bda636dbfb3926898c6ad5bf7f91f72affeb8d.
 
 2.26.1 Release notes (2019-4-12)
 =============================================================
