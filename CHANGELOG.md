@@ -15,7 +15,7 @@ NOTE: This release is only compatible with Realm Object Server 3.21.0 or later.
 
 ### Internal
 * Updated to Relm Sync 4.4.2.
-* Updated to Object Store commit e4b1314d21b521fd604af7f1aacf3ca94272c19a
+* Updated to Object Store commit b96cd7ae5ff531a94fd759bdef9a5bb9e329a332
 
 
 2.27.0-rc.2 Release notes (2019-5-8)
