@@ -139,7 +139,7 @@ Building and running the full test suite can be done on macOS or Linux by runnin
 Iterative development requires performing more of the steps manually:
 
 1. Run `npm ci --ignore-scripts` in the repository root directory to install the library dependencies (but skip building Realm).
-2. Run `npm ci` in the `tests` directory to install test dependencies
+2. Run `npm ci` in the `tests` directory to install test dependencies.
 3. Run `npm run build-changes` to build a debug copy of the library.
 4. Run `npm run start-ros` to launch a ROS instance which the sync tests can run against. By default this has logging disabled, but you can change the log level by setting the `ROS_LOG_LEVEL` environment variable. When this starts, it'll print `Started: /path/to/tmp/dir`. Take note of this path for future steps.
 5. In the `tests` directory, run `ROS_DATA_DIR=/path/to/temp/dir npm run js-tests` to run all of the tests, with `ROS_DATA_DIR` set to the directory printed during ROS startup. Run `npm run js-tests -- --filter=NotificationTests` to run only tests matching the filter (either suite name or test name). To debug the tests using the Chrome debugger, run `node --inspect-brk ./node_modules/.bin/jasmine` and then open `chrome://inspect` and select the appropriate Node process. The native side of things can be debugged by instead (or additionally) attaching lldb/gdb to the process.
@@ -163,6 +163,6 @@ Debugging and working with the unit tests in an iterative mannner is done the fo
 
 If you want to modify the Javascript in an iterative manner or enable break points you need to do it on the files located in `tests/react-test-app/node_modules/realm-tests`. These files are a copy of the original files located in `tests/js` so any changes must manually be copied back. The reason for this is that the React Native Metro Bundler doesn't support symlinks.
 
-The javascript tests are run twice: once directly in the simulator, and once in Chrome, talking to the simulator via the RPC bridge used for Chrome debugging. When running the Chrome tests you can open the Chrome Developer Tools on the tab that they open to debug the tests themselves. The JS engine running inside the simulator (for both the RPC server and the tests themselves in the non-Chrome test suite) can be debugged using the Safari developer tools.
+The Javascript tests are run twice: once directly in the simulator, and once in Chrome, talking to the simulator via the RPC bridge used for Chrome debugging. When running the Chrome tests you can open the Chrome Developer Tools on the tab that they open to debug the tests themselves. The JS engine running inside the simulator (for both the RPC server and the tests themselves in the non-Chrome test suite) can be debugged using the Safari developer tools.
 
 Note that it isn't possible to easily run a single unit test from Xcode. Instead you should disable the tests manually by modifying `tests/react-test-app/node_modules/realm-tests/index.js`.

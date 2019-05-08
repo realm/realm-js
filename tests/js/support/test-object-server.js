@@ -187,7 +187,7 @@ global.TestObjectServer = module.exports = class TestObjectServer extends EventE
 
         // Tell the sync worker to delete the Realm
         const request = http.request({
-            host: 'localhost',
+            host: '127.0.0.1',
             port: this.httpPort,
             path: `/api/realm/${serverPath}`,
             method: 'DELETE',
