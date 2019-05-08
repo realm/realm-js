@@ -59,7 +59,10 @@ void clear_test_state() {
     SyncManager::shared().reset_for_testing();
 #if REALM_ANDROID
     s_test_files_path = realm::default_realm_file_directory();
-    util::remove_dir_recursive(s_test_files_path + "/realm-object-server");
+    auto ros_dir = s_test_files_path + "/realm-object-server";
+    if (File::exists(ros_dir)) {
+        util::remove_dir_recursive(s_test_files_path + "/realm-object-server");
+    }
 #else
     auto remove_test_files = [] {
         if (!s_test_files_path.empty()) {
