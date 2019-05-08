@@ -27,13 +27,13 @@
  *
  */
 class Realm {
-   /**
-    * Indicates if this Realm contains any objects.
-    * @type {boolean}
-    * @readonly
-    * @since 1.10.0
-    */
-    get empty() {}
+    /**
+     * Indicates if this Realm contains any objects.
+     * @type {boolean}
+     * @readonly
+     * @since 1.10.0
+     */
+    get empty() { }
 
     /**
      * The path to the file where this Realm is stored.
@@ -41,7 +41,7 @@ class Realm {
      * @readonly
      * @since 0.12.0
      */
-    get path() {}
+    get path() { }
 
     /**
      * Indicates if this Realm was opened as read-only.
@@ -49,7 +49,7 @@ class Realm {
      * @readonly
      * @since 0.12.0
      */
-    get readOnly() {}
+    get readOnly() { }
 
     /**
      * A normalized representation of the schema provided in the
@@ -58,15 +58,15 @@ class Realm {
      * @readonly
      * @since 0.12.0
      */
-    get schema() {}
+    get schema() { }
 
-   /**
-    * The current schema version of this Realm.
-    * @type {number}
-    * @readonly
-    * @since 0.12.0
-    */
-    get schemaVersion() {}
+    /**
+     * The current schema version of this Realm.
+     * @type {number}
+     * @readonly
+     * @since 0.12.0
+     */
+    get schemaVersion() { }
 
     /**
      * Indicates if this Realm is in a write transaction.
@@ -74,7 +74,7 @@ class Realm {
      * @readonly
      * @since 1.10.3
      */
-    get isInTransaction() {}
+    get isInTransaction() { }
 
     /**
      * Indicates if this Realm has been closed.
@@ -82,13 +82,13 @@ class Realm {
      * @readonly
      * @since 2.1.0
      */
-     get isClosed() {}
+    get isClosed() { }
 
     /**
      * Gets the sync session if this is a synced Realm
      * @type {Session}
      */
-    get syncSession() {}
+    get syncSession() { }
 
     /**
      * Create a new `Realm` instance using the provided `config`. If a Realm does not yet exist
@@ -104,7 +104,7 @@ class Realm {
      * @throws {Error} If anything in the provided `config` is invalid.
      * @throws {IncompatibleSyncedRealmError} when an incompatible synced Realm is opened
      */
-    constructor(config) {}
+    constructor(config) { }
 
     /**
      * Open a Realm asynchronously with a promise. If the Realm is synced, it will be fully
@@ -115,7 +115,7 @@ class Realm {
      * @returns {ProgressPromise} - a promise that will be resolved with the Realm instance when it's available.
      * @throws {Error} If anything in the provided `config` is invalid.
      */
-    static open(config) {}
+    static open(config) { }
 
     /**
      * Open a Realm asynchronously with a callback. If the Realm is synced, it will be fully
@@ -126,7 +126,7 @@ class Realm {
      * @throws {Error} If anything in the provided `config` is invalid
      * @throws {IncompatibleSyncedRealmError} when an incompatible synced Realm is opened
      */
-    static openAsync(config, callback, progressCallback) {}
+    static openAsync(config, callback, progressCallback) { }
 
     /**
      * Return a configuration for a default synced Realm. The server URL for the user will be used as base for
@@ -137,7 +137,7 @@ class Realm {
      * @since 2.3.0
      * @deprecated use {@link Sync.User.createConfiguration()} instead.
      */
-    static automaticSyncConfiguration(user) {}
+    static automaticSyncConfiguration(user) { }
 
     /**
      * Creates a template object for a Realm model class where all optional fields are `undefined` and all required
@@ -146,13 +146,13 @@ class Realm {
      *
      * @param {Realm~ObjectSchema} schema object describing the class
      */
-    static createTemplateObject(objectSchema) {}
+    static createTemplateObject(objectSchema) { }
 
     /**
      * Closes this Realm so it may be re-opened with a newer schema version.
      * All objects and collections from this Realm are no longer valid after calling this method.
      */
-    close() {}
+    close() { }
 
     /**
      * Returns the granted privileges.
@@ -174,7 +174,7 @@ class Realm {
      * @since 2.3.0
      * @see {Realm.Permissions} for details of privileges and roles.
      */
-    privileges(arg) {}
+    privileges(arg) { }
 
     /**
      * Returns the fine-grained permissions object associated with either the Realm itself or a Realm model class.
@@ -185,7 +185,7 @@ class Realm {
      * @since 2.18.0
      * @see {Realm.Permissions} for details of priviliges and roles.
      */
-    permissions(arg) {}
+    permissions(arg) { }
 
     /**
      * Create a new Realm object of the given type and with the specified properties.
@@ -210,18 +210,18 @@ class Realm {
      * Deletes the provided Realm object, or each one inside the provided collection.
      * @param {Realm.Object|Realm.Object[]|Realm.List|Realm.Results} object
      */
-    delete(object) {}
+    delete(object) { }
 
     /**
      * Deletes a Realm model, including all of its objects.
      * @param {string} name - the model name
      */
-    deleteModel(name) {}
+    deleteModel(name) { }
 
     /**
      * **WARNING:** This will delete **all** objects in the Realm!
      */
-    deleteAll() {}
+    deleteAll() { }
 
     /**
      * Returns all objects of the given `type` in the Realm.
@@ -229,7 +229,7 @@ class Realm {
      * @throws {Error} If type passed into this method is invalid.
      * @returns {Realm.Results} that will live-update as objects are created and destroyed.
      */
-    objects(type) {}
+    objects(type) { }
 
     /**
      * Searches for a Realm object by its primary key.
@@ -240,7 +240,7 @@ class Realm {
      * @returns {Realm.Object|undefined} if no object is found.
      * @since 0.14.0
      */
-    objectForPrimaryKey(type, key) {}
+    objectForPrimaryKey(type, key) { }
 
     /**
      * Add a listener `callback` for the specified event `name`.
@@ -251,47 +251,47 @@ class Realm {
      *   it was added.
      * @throws {Error} If an invalid event `name` is supplied, or if `callback` is not a function.
      */
-    addListener(name, callback) {}
+    addListener(name, callback) { }
 
-   /**
-    * Remove the listener `callback` for the specfied event `name`.
-    * @param {string} name - The event name.
-    *   _Currently, only the "change" and "schema" events are supported_.
-    * @param {callback(Realm, string)|callback(Realm, string, Schema)} callback - Function that was previously added as a
-    *   listener for this event through the {@link Realm#addListener addListener} method.
-    * @throws {Error} If an invalid event `name` is supplied, or if `callback` is not a function.
-    */
-    removeListener(name, callback) {}
+    /**
+     * Remove the listener `callback` for the specfied event `name`.
+     * @param {string} name - The event name.
+     *   _Currently, only the "change" and "schema" events are supported_.
+     * @param {callback(Realm, string)|callback(Realm, string, Schema)} callback - Function that was previously added as a
+     *   listener for this event through the {@link Realm#addListener addListener} method.
+     * @throws {Error} If an invalid event `name` is supplied, or if `callback` is not a function.
+     */
+    removeListener(name, callback) { }
 
-   /**
-    * Remove all event listeners (restricted to the event `name`, if provided).
-    * @param {string} [name] - The name of the event whose listeners should be removed.
-    *   _Currently, only the "change" and "schema" events are supported_.
-    * @throws {Error} When invalid event `name` is supplied
-    */
-    removeAllListeners(name) {}
+    /**
+     * Remove all event listeners (restricted to the event `name`, if provided).
+     * @param {string} [name] - The name of the event whose listeners should be removed.
+     *   _Currently, only the "change" and "schema" events are supported_.
+     * @throws {Error} When invalid event `name` is supplied
+     */
+    removeAllListeners(name) { }
 
-   /**
-    * Synchronously call the provided `callback` inside a write transaction.
-    * @param {function()} callback
-    */
-    write(callback) {}
+    /**
+     * Synchronously call the provided `callback` inside a write transaction.
+     * @param {function()} callback
+     */
+    write(callback) { }
 
     /**
      * Initiate a write transaction.
      * @throws {Error} When already in write transaction
      */
-    beginTransaction() {}
+    beginTransaction() { }
 
     /**
      * Commit a write transaction.
      */
-    commitTransaction() {}
+    commitTransaction() { }
 
     /**
      * Cancel a write transaction.
      */
-    cancelTransaction() {}
+    cancelTransaction() { }
 
     /**
      * Replaces all string columns in this Realm with a string enumeration column and compacts the
@@ -309,7 +309,7 @@ class Realm {
      * then replacing the database with the temporary one.
      * @returns {true} if compaction succeeds.
      */
-    compact() {}
+    compact() { }
 
     /**
      * Writes a compacted copy of the Realm to the given path.
@@ -321,7 +321,7 @@ class Realm {
      * @param {string} path path to save the Realm to
      * @param {ArrayBuffer|ArrayBufferView} [encryptionKey] - Optional 64-byte encryption key to encrypt the new file with.
      */
-    writeCopyTo(path, encryptionKey) {}
+    writeCopyTo(path, encryptionKey) { }
 
     /**
      * Get the current schema version of the Realm at the given path.
@@ -332,21 +332,21 @@ class Realm {
      * @throws {Error} When passing an invalid or non-matching encryption key.
      * @returns {number} version of the schema, or `-1` if no Realm exists at `path`.
      */
-    static schemaVersion(path, encryptionKey) {}
+    static schemaVersion(path, encryptionKey) { }
 
     /**
      * Delete the Realm file for the given configuration.
      * @param {Realm~Configuration} config
      * @throws {Error} If anything in the provided `config` is invalid.
      */
-    static deleteFile(config) {}
+    static deleteFile(config) { }
 
     /**
      * Copy all bundled Realm files to app's default file folder.
      * This is only implemented for React Native.
      * @throws {Error} If an I/O error occured or method is not implemented.
      */
-    static copyBundledRealmFiles() {}
+    static copyBundledRealmFiles() { }
 
     /**
      * Get a list of subscriptions. THIS METHOD IS IN BETA AND MAY CHANGE IN FUTURE VERSIONS.
@@ -355,14 +355,14 @@ class Realm {
      * @throws {Error} If `name` is not a string.
      * @returns {Realm.Results} containing all current {@link Realm.Sync.NamedSubscription}s.
      */
-    subscriptions(name) {}
+    subscriptions(name) { }
 
     /**
      * Unsubscribe a named subscription. THIS METHOD IS IN BETA AND MAY CHANGE IN FUTURE VERSIONS.
      * @param {string} name - The name of the subscription.
      * @throws {Error} If `name` is not a string or an empty string.
      */
-    unsubscribe(name) {}
+    unsubscribe(name) { }
 }
 /**
  * This describes the different options used to create a {@link Realm} instance.

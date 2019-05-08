@@ -58,8 +58,8 @@ class Protected<JSGlobalContextRef> {
 template<>
 class Protected<JSValueRef> {
   protected:
-    JSGlobalContextRef m_context;
-    JSValueRef m_value;
+    JSGlobalContextRef m_context = nullptr;
+    JSValueRef m_value = nullptr;
 
   public:
     Protected() {}

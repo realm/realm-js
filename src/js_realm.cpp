@@ -17,8 +17,9 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #include "platform.hpp"
-#include "realm_coordinator.hpp"
 #include "js_types.hpp"
+
+#include "impl/realm_coordinator.hpp"
 
 #if REALM_ENABLE_SYNC
 #include "sync/sync_manager.hpp"
@@ -47,19 +48,35 @@ void set_default_path(std::string path) {
     s_default_path = path;
 }
 
-void delete_all_realms() {
+static std::string s_test_files_path;
+void clear_test_state() {
     realm::_impl::RealmCoordinator::clear_all_caches();
     realm::remove_realm_files_from_directory(realm::default_realm_file_directory());
-}
-
-void clear_test_state() {
-    delete_all_realms();
 #if REALM_ENABLE_SYNC
     for(auto &user : SyncManager::shared().all_logged_in_users()) {
         user->log_out();
     }
     SyncManager::shared().reset_for_testing();
-    SyncManager::shared().configure(default_realm_file_directory(), SyncManager::MetadataMode::NoEncryption);
+#if REALM_ANDROID
+    s_test_files_path = realm::default_realm_file_directory();
+    auto ros_dir = s_test_files_path + "/realm-object-server";
+    if (File::exists(ros_dir)) {
+        util::remove_dir_recursive(s_test_files_path + "/realm-object-server");
+    }
+#else
+    auto remove_test_files = [] {
+        if (!s_test_files_path.empty()) {
+            util::remove_dir_recursive(s_test_files_path);
+        }
+    };
+    remove_test_files();
+
+    if (s_test_files_path.empty()) {
+        atexit(remove_test_files);
+    }
+    s_test_files_path = util::make_temp_dir();
+#endif
+    SyncManager::shared().configure(s_test_files_path, SyncManager::MetadataMode::NoEncryption);
 #endif
 }
 

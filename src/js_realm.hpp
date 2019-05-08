@@ -190,7 +190,6 @@ class RealmDelegate : public BindingContext {
 
 std::string default_path();
 void set_default_path(std::string path);
-void delete_all_realms();
 void clear_test_state();
 
 template<typename T>

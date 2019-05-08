@@ -66,19 +66,7 @@ for (const suiteName in tests) {
         beforeEach(() => RealmTests.runTest(suiteName, 'beforeEach'));
 
         for (const testName of tests[suiteName]) {
-            it(testName, (done) => {
-                try {
-                    let result = RealmTests.runTest(suiteName, testName);
-                    if (result instanceof Promise) {
-                        result.then(done).catch(done.fail.bind(done));
-                    } else {
-                        done();
-                    }
-                }
-                catch (e) {
-                    done.fail(e);
-                }
-            });
+            it(testName, () => RealmTests.runTest(suiteName, testName));
         }
 
         afterEach(() => RealmTests.runTest(suiteName, 'afterEach'));

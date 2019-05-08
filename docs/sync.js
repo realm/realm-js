@@ -137,7 +137,7 @@ class Sync {
      * Only available in the Enterprise Edition.
      * @deprecated Use `addListener(config, eventName, changeCallback)` instead`.
      */
-    static addListener(serverUrl, adminUser, filterRegex, name, changeCallback) {}
+    static addListener(serverUrl, adminUser, filterRegex, name, changeCallback) { }
 
     /**
      * Add a sync listener to listen to changes across multiple Realms.
@@ -150,7 +150,7 @@ class Sync {
      * Only events on Realms with a _virtual path_ that matches the filter regex are emitted.
      *
      * Currently supported events:
-     *
+     * 
      *  * `'available'`: Emitted whenever there is a new Realm which has a virtual
      *    path matching the filter regex, either due to the Realm being newly created
      *    or the listener being added. The virtual path (i.e. the portion of the
@@ -165,7 +165,7 @@ class Sync {
      *
      * Only available in the Enterprise Edition.
      */
-    static addListener(config, eventName, changeCallback) {}
+    static addListener(config, eventName, changeCallback) { }
 
     /**
      * Add a sync listener to listen to changes across multiple Realms.
@@ -177,7 +177,7 @@ class Sync {
      *
      * Only available in the Enterprise Edition.
      */
-    static addListener(serverUrl, adminUser, filterRegex, worker) {}
+    static addListener(serverUrl, adminUser, filterRegex, worker) { }
 
     /**
      * Calling this method will force Realm to attempt to reconnect to the server immediately.
@@ -187,7 +187,7 @@ class Sync {
      * where it is possible to detect the network condition (e.g. Airplane mode). Manually calling this method can
      * provide a smoother user experience.
      */
-    static reconnect() {}
+    static reconnect() { }
 
     /**
      * Remove a previously registered sync listener.
@@ -196,7 +196,7 @@ class Sync {
      * @param {string} name - The event name.
      * @param {function(changeEvent)} changeCallback - The previously registered callback to be removed.
      */
-    static removeListener(regex, name, changeCallback) {}
+    static removeListener(regex, name, changeCallback) { }
 
     /**
      * Remove a previously registered sync listener.
@@ -205,25 +205,33 @@ class Sync {
      * @param {string} worker - The worker registered as a listener.
      * @return {Promise<void>} A promise which is resolved when the worker has finished shutting down.
      */
-    static removeListener(regex, worker) {}
+    static removeListener(regex, worker) { }
 
     /**
      * Remove all previously registered listeners.
      * @return {Promise<void>} A promise which is resolved when all workers (if any) have finished shutting down.
      */
-    static removeAllListeners(name) {}
+    static removeAllListeners(name) { }
 
     /**
      * Set the sync log level.
-     * @param {Realm.Sync~LogLevel} log_level - The new log level.
+     * @param {Realm.Sync~LogLevel} level - The new log level.
      */
-    static setLogLevel(log_level) {}
+    static setLogLevel(level) { }
+
+    /**
+     * A callback passed to `Realm.Sync.setLogger` when instrumenting the Realm Sync client with a custom logger.
+     * @callback Realm.Sync~logCallback
+     * @param {number} level The level of the log entry between 0 and 8 inclusively.
+     * Use this as an index into `['all', 'trace', 'debug', 'detail', 'info', 'warn', 'error', 'fatal', 'off']` to get the name of the level.
+     * @param {string} message The message of the log entry.
+     */
 
     /**
      * Capture the sync client's log.
-     * @param {function(log_level, message)} logCallback - The log callback.
+     * @param {Realm.Sync~logCallback} logger - The log callback.
      */
-    static setLogger(logCallback) {}
+    static setLogger(logger) { }
 
     /**
      * Set the application part of the User-Agent string that will be sent to the Realm Object Server when a session
@@ -233,7 +241,7 @@ class Sync {
      * can no longer be changed.
      * @param {string} the user agent description
      */
-    static setUserAgent(userAgent) {}
+    static setUserAgent(userAgent) { }
 
     /**
      * Initiate a client reset. The Realm must be closed prior to the reset.
@@ -251,13 +259,42 @@ class Sync {
      *   }
      * }
      */
-    static initiateClientReset(path) {}
+    static initiateClientReset(path) { }
 
     /**
      * Returns `true` if Realm still has a reference to any sync sessions regardless of their state.
      * If `false` is returned it means that no sessions currently exist.
      */
-    static _hasExistingSessions() {}
+    static _hasExistingSessions() { }
+
+    /**
+     * Returns a list of local Realms previously downloaded via the global notifier.
+     *
+     * @param {string} regex - The regular expression used to filter the returned Realms by virtual path.
+     * @return {Array<LocalRealm>} An array of [LocalRealm]{@link Realm.Sync.LocalRealm}.
+     */
+    static localListenerRealms(regex) { }
+}
+
+/**
+ * Represent an entry for a local Realm, downloaded previously by the global notifier.
+ *
+ * @memberof Realm.Sync
+ */
+class LocalRealm {
+    /**
+     * The virtual path of the local Realm. This is the portion of the URL of
+     * the synced Realm after the protocol and the host name.
+     * @type {string}
+     * @readonly
+     */
+    get path() { }
+
+    /**
+     * An instance of the local Realm.
+     * @returns {Realm}
+     */
+    realm() { }
 }
 
 /**
@@ -278,13 +315,13 @@ class ChangeEvent {
      * the synced Realm after the protocol and the host name.
      * @type {string}
      */
-    get path() {}
+    get path() { }
 
     /**
      * The changed realm, with the changes applied.
      * @type {Realm}
      */
-    get realm() {}
+    get realm() { }
 
     /**
      * The modified Realm prior to any of the changes being applied. This can
@@ -293,7 +330,7 @@ class ChangeEvent {
      *
      * @type {Realm}
      */
-    get oldRealm() {}
+    get oldRealm() { }
 
     /**
      * The change indexes for all added, removed, and modified objects in the
@@ -318,7 +355,7 @@ class ChangeEvent {
      *
      * @type {object}
      */
-    get changes() {}
+    get changes() { }
 }
 
 /**
@@ -335,13 +372,13 @@ class AuthError extends Error {
      * The numerical code for this error.
      * @type {number}
      */
-    get code() {}
+    get code() { }
 
     /**
      * The unique help URI that describes this error.
      * @type {string}
      */
-    get type() {}
+    get type() { }
 }
 
 /**
@@ -352,13 +389,13 @@ class IncompatibleSyncedRealmError {
     /**
      * The name of the error is 'IncompatibleSyncedRealmError'
      */
-    get name() {}
+    get name() { }
 
     /**
      * The {Realm~Configuration} of the backed up Realm.
      * @type {Realm~Configuration}
      */
-    get configuration() {}
+    get configuration() { }
 }
 
 /**
@@ -376,21 +413,21 @@ class Credentials {
      * otherwise, they'll be logged in if the password matches.
      * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.Sync.User.login|User.login}.
      */
-    static usernamePassword(username, password, createUser) {}
+    static usernamePassword(username, password, createUser) { }
 
     /**
      * Creates credentials based on a Facebook login.
      * @param {string} token A Facebook authentication token, obtained by logging into Facebook..
      * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.Sync.User.login|User.login}.
      */
-    static facebook(token) {}
+    static facebook(token) { }
 
     /**
      * Creates credentials based on a Google login.
      * @param {string} token A Google authentication token, obtained by logging into Google..
      * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.Sync.User.login|User.login}.
      */
-    static google(token) {}
+    static google(token) { }
 
     /**
      * Creates credentials for an anonymous user. These can only be used once - using them a second
@@ -398,7 +435,7 @@ class Credentials {
      * in with the Anonymous credentials, use {@linkcode Realm.Sync.User.current|User.current} or {@linkcode Realm.Sync.User.all|User.all}
      * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.Sync.User.login|User.login}.
      */
-    static anonymous() {}
+    static anonymous() { }
 
     /**
      * Creates credentials based on a login with a nickname. If multiple users try to login
@@ -407,14 +444,14 @@ class Credentials {
      * @param {boolean} [isAdmin] An optional parameter controlling whether the user is admin. Default is `false`.
      * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.Sync.User.login|User.login}.
      */
-    static nickname(value, isAdmin) {}
+    static nickname(value, isAdmin) { }
 
     /**
      * Creates credentials based on an Active Directory login.
      * @param {string} token An access token, obtained by logging into Azure Active Directory.
      * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.Sync.User.login|User.login}.
      */
-    static azureAD(token) {}
+    static azureAD(token) { }
 
     /**
      * Creates credentials based on a JWT login.
@@ -423,14 +460,14 @@ class Credentials {
      * name - `jwt` - will be used.
      * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.Sync.User.login|User.login}.
      */
-    static jwt(token, providerName) {}
+    static jwt(token, providerName) { }
 
     /**
      * Creates credentials based on an admin token. Using this credential will not contact the Realm Object Server.
      * @param {string} token The admin token.
      * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.Sync.User.login|User.login}.
      */
-    static adminToken(token) {}
+    static adminToken(token) { }
 
     /**
      * Creates credentials with a custom provider and user identifier.
@@ -440,26 +477,26 @@ class Credentials {
      * The data will be serialized to JSON, so all values must be mappable to a valid JSON data type.
      * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.Sync.User.login|User.login}.
      */
-    static custom(providerName, token, userInfo) {}
+    static custom(providerName, token, userInfo) { }
 
 
     /**
      * Gets the identity provider for the credentials.
      * @returns {string} The identity provider, such as Google, Facebook, etc.
      */
-    get identityProvider() {}
+    get identityProvider() { }
 
     /**
      * Gets the access token.
      * @returns {string}
      */
-    get token() {}
+    get token() { }
 
     /**
      * Gets additional user information associated with the credentials.
      * @returns {object} A dictionary, containing the additional information.
      */
-    get userInfo() {}
+    get userInfo() { }
 }
 
 /**
@@ -475,7 +512,7 @@ class User {
      * @return {Promise<User> | User} A {@linkcode Realm.Sync.User|User} object if the credentials are
      * {@linkcode Realm.Sync.Credentials.adminToken|adminToken}, {@link Realm.Sync.User|`Promise<User>`} otherwise.
      */
-    static login(server, credentials) {}
+    static login(server, credentials) { }
 
     /**
      * Request a password reset email to be sent to a user's email.
@@ -487,7 +524,7 @@ class User {
      * @param {string} email - The email that corresponds to the user's username.
      * @return {Promise<void>} A promise which is resolved when the request has been sent.
      */
-    static requestPasswordReset(server, email) {}
+    static requestPasswordReset(server, email) { }
 
     /**
      * Complete the password reset flow by using the reset token sent to the user's email as a one-time authorization token to change the password.
@@ -501,7 +538,7 @@ class User {
      * @param {string} newPassword - The user's new password.
      * @return {Promise<void>} A promise which is resolved when the request has been sent.
      */
-    static completePasswordReset(server, resetToken, newPassword) {}
+    static completePasswordReset(server, resetToken, newPassword) { }
 
     /**
      * Request an email confirmation email to be sent to a user's email.
@@ -511,7 +548,7 @@ class User {
      * @param {string} email - The email that corresponds to the user's username.
      * @return {Promise<void>} A promise which is resolved when the request has been sent.
      */
-    static requestEmailConfirmation(server, email) {}
+    static requestEmailConfirmation(server, email) { }
 
     /**
      * Complete the email confirmation flow by using the confirmation token sent to the user's email as a one-time authorization token to confirm their email.
@@ -524,58 +561,58 @@ class User {
      * @param {string} confirmationToken - The token that was sent to the user's email address.
      * @return {Promise<void>} A promise which is resolved when the request has been sent.
      */
-    static confirmEmail(server, confirmationToken) {}
+    static confirmEmail(server, confirmationToken) { }
 
     /**
      * Creates a new sync user instance from the serialized representation.
      * @param {object} serialized - the serialized version of the user, obtained by calling {@link User#serialize}.
      */
-    static deserialize(serialized) {}
+    static deserialize(serialized) { }
 
     /**
      * A dictionary containing users that are currently logged in.
      * The keys in the dictionary are user identities, values are corresponding User objects.
      * @type {object}
      */
-    static get all() {}
+    static get all() { }
 
     /**
      * Get the currently logged in user.
      * Throws error if > 1 user logged in, returns undefined if no users logged in.
      * @type {User}
      */
-    static get current() {}
+    static get current() { }
 
     /**
      * Gets the server URL that was used for authentication.
      * @type {string}
      */
-    get server() {}
+    get server() { }
 
     /**
      * Gets the identity of this user on the Realm Object Server.
      * The identity is a guaranteed to be unique among all users on the Realm Object Server.
      * @type {string}
      */
-    get identity() {}
+    get identity() { }
 
     /**
      * Gets this user's refresh token. This is the user's credential for accessing the Realm
      * Object Server and should be treated as sensitive data.
      * @type {string}
      */
-    get token() {}
+    get token() { }
 
     /**
      * Returns true if this user is an administrator.
      * @type {bool}
      */
-    get isAdmin() {}
+    get isAdmin() { }
 
     /**
      * Returns true if the token is an administrator token.
      */
-    get isAdminToken() {}
+    get isAdminToken() { }
 
     /**
      * Creates the configuration object required to open a synchronized Realm.
@@ -584,7 +621,7 @@ class User {
      * @returns {Realm.Configuration} the full Realm configuration
      * @since 3.0.0
      */
-    createConfiguration(config) {}
+    createConfiguration(config) { }
 
     /**
      * Serializes a user to an object, that can be persisted or passed to another component to create a new instance
@@ -592,14 +629,14 @@ class User {
      * be treated as sensitive data.
      * @returns {object} an object, containing the user identity, server url, and refresh token.
      */
-    serialize() {}
+    serialize() { }
 
     /**
      * Logs out the user from the Realm Object Server. Once the Object Server has confirmed the logout the user
      * credentials will be deleted from this device.
      * @return {Promise<void>} A promise which is resolved when the user has logged out both locally and on the server.
      */
-    logout() {}
+    logout() { }
 
     /**
      * Get the management realm for this User.
@@ -607,7 +644,7 @@ class User {
      * This includes giving others access to the Realms.
      * @returns {Realm}
      */
-    openManagementRealm() {}
+    openManagementRealm() { }
 
     /**
      * Get account information for a user. (requires administrator privilidges)
@@ -627,7 +664,7 @@ class User {
      *   "metadata":[]
      * }
      */
-    retrieveAccount(provider, username) {}
+    retrieveAccount(provider, username) { }
 
     /**
      * Asynchronously retrieves all permissions associated with the user calling this method.
@@ -687,22 +724,22 @@ class User {
     /**
      * @deprecated to be removed in future versions. Use User.login(server, Credentials.usernamePassword) instead.
      */
-    static register(server, username, password) {}
+    static register(server, username, password) { }
 
     /**
      * @deprecated to be removed in future versions. Use User.login(server, Credentials.adminToken) instead.
      */
-    static adminUser(adminToken, server) {}
+    static adminUser(adminToken, server) { }
 
     /**
      * @deprecated to be removed in future versions. Use User.login(server, Credentials.SOME-PROVIDER) instead.
      */
-    static registerWithProvider(server, options) {}
+    static registerWithProvider(server, options) { }
 
     /**
      * @deprecated to be removed in future versions. Use User.login(server, Credentials.SOME-PROVIDER) instead.
      */
-    static authenticate(server, provider, options) {}
+    static authenticate(server, provider, options) { }
 }
 
 /**
@@ -718,19 +755,19 @@ class Session {
      * constructed with.
      * @type {object}
      */
-    get config() {}
+    get config() { }
 
     /**
      * Gets the User that this session was created with.
      * @type {User}
      */
-    get user() {}
+    get user() { }
 
     /**
      * Gets the URL of the Realm Object Server that this session is connected to.
      * @type {string}
      */
-    get url() {}
+    get url() { }
 
     /**
      * Gets the current state of the session.
@@ -740,7 +777,7 @@ class Session {
      *  - "invalid": A non-recoverable error has occurred, and this session is semantically invalid. A new session should be created.
      * @type {string}
      */
-    get state() {}
+    get state() { }
 
     /**
      * Register a progress notification callback on a session object
@@ -756,13 +793,13 @@ class Session {
      *   - `transferred` - the current number of bytes already transferred
      *   - `transferable` - the total number of transferable bytes (the number of bytes already transferred plus the number of bytes pending transfer)
      */
-    addProgressNotification(direction, mode, progressCallback) {}
+    addProgressNotification(direction, mode, progressCallback) { }
 
     /** Unregister a progress notification callback that was previously registered with addProgressNotification.
      * Calling the function multiple times with the same callback is ignored.
     * @param {callback(transferred, transferable)} callback - a previously registered progress callback
     */
-    removeProgressNotification(progressCallback) {}
+    removeProgressNotification(progressCallback) { }
 
     /**
      * Registers a connection notification on the session object. This will be notified about changes to the
@@ -772,7 +809,7 @@ class Session {
      *   - `newState` - the new state of the connection
      *   - `oldState` - the state the connection transitioned from.
      */
-    addConnectionNotification(connectionCallback) {}
+    addConnectionNotification(connectionCallback) { }
 
     /**
      * Unregister a state notification callback that was previously registered with addStateNotification.
@@ -780,7 +817,7 @@ class Session {
      *
      * @param {callback(oldState, newState)} callback - a previously registered state callback.
      */
-    removeConnectionNotification(connectionCallback) {}
+    removeConnectionNotification(connectionCallback) { }
 
     /**
      * Gets the current state of the connection to the server. Multiple sessions might share the same underlying
@@ -796,14 +833,14 @@ class Session {
      *
      * @type {string}
      */
-    connectionState() {}
+    connectionState() { }
 
     /**
      * Returns `true` if the session is currently active and connected to the server, `false` if not.
      *
      * @type {boolean}
      */
-    isConnected() {}
+    isConnected() { }
 
     /**
      * Resumes a sync session that has been paused.
@@ -813,7 +850,7 @@ class Session {
      *
      * This method is idempotent so it will be a no-op if the session is already started.
      */
-    resume() {}
+    resume() { }
 
     /**
      * Pause a sync session.
@@ -823,7 +860,7 @@ class Session {
      *
      * This method is idempotent so it will be a no-op if the session is already paused.
      */
-    pause() {}
+    pause() { }
 
     /**
      * This method returns a promise that does not resolve successfully until all known local changes have been uploaded
@@ -835,7 +872,7 @@ class Session {
      * @param timeout maximum amount of time to wait in milliseconds before the promise is rejected. If no timeout
      * is specified the method will wait forever.
      */
-    uploadAllLocalChanges(timeoutMs) {}
+    uploadAllLocalChanges(timeoutMs) { }
 
     /**
      * This method returns a promise that does not resolve successfully until all known remote changes have been
@@ -847,7 +884,7 @@ class Session {
      * @param timeout maximum amount of time to wait in milliseconds before the promise will be rejected. If no timeout
      * is specified the method will wait forever.
      */
-    downloadAllServerChanges(timeoutMs) {}
+    downloadAllServerChanges(timeoutMs) { }
 }
 
 /**
@@ -933,21 +970,21 @@ class Subscription {
      *  - Realm.Sync.SubscriptionState.Invalidated: The subscription has been removed.
      * @type {number}
      */
-    get state() {}
+    get state() { }
 
     /**
      * Returns the error message if  the server encountered an error when evaluating the query covered by this
      * subscription. `undefined` is returned if `state != Realm.Sync.SubscriptionState.Error`.
      * @type {string}
      */
-    get error() {}
+    get error() { }
 
     /**
      * Unsubscribe a query-based synced `Realm.Results`. The state will change to `Realm.Sync.SubscriptionState.Invalidated`.
      * The `Realm.Results` will not produce any meaningful values. Moreover, any objects matching the query will be
      * removed if they are not matched by any other query. The object removal is done asynchronously.
      */
-    unsubscribe() {}
+    unsubscribe() { }
 
     /**
      * Adds a listener `callback` which will be called when the state of the subscription changes.
@@ -966,7 +1003,7 @@ class Subscription {
      *     }
      * }
      */
-     addListener(callback) {}
+    addListener(callback) { }
 
     /**
      * Remove the listener `callback` from the subscription instance.
@@ -974,12 +1011,12 @@ class Subscription {
      *   added as a listener through the {@link Subscription#addListener addListener} method.
      * @throws {Error} If `callback` is not a function.
      */
-    removeListener(callback) {}
+    removeListener(callback) { }
 
     /**
      * Remove all listeners from the subscription instance.
      */
-    removeAllListeners() {}
+    removeAllListeners() { }
 }
 
 /**
@@ -1009,11 +1046,11 @@ class Subscription {
  *
  * @example
  * // my-worker.js
- * function onchange(path) {
- *    console.log(`Realm created at ${path}`);
+ * function onavailable(path) {
+ *    console.log(`Realm available at ${path}`);
  * }
- *
- * function onavailable(change) {
+ * 
+ * function onchange(change) {
  *    console.log(`Realm at ${change.path} changed`);
  * }
  *
@@ -1040,7 +1077,7 @@ class Worker {
      * * `env`: An object containing environment variables to set for the child process.
      * * `execArgv`: Command-line arguments to pass to the `node` worker processes.
      */
-    constructor(moduleName, options = {}) {}
+    constructor(moduleName, options = {}) { }
 }
 
 /**
@@ -1059,7 +1096,7 @@ class Adapter {
 	 *  to process for the given realm_path
      * @param {Realm.Sync~SSLConfiguration} [ssl] - SSL configuration for the spawned sync sessions.
 	 */
-	constructor(localPath, serverUrl, adminUser, regex, changeCallback, ssl) {}
+    constructor(localPath, serverUrl, adminUser, regex, changeCallback, ssl) { }
 
 	/**
 	 * Get the Array of current instructions for the given Realm.
@@ -1119,14 +1156,14 @@ class Adapter {
      *
 	 * @returns {Array(instructions)} or {undefined} if all transactions have been processed
 	 */
-	current(path) {}
+    current(path) { }
 
 	/**
 	 * Advance the to the next transaction indicating that you are done processing the current
 	 * instructions for the given Realm.
 	 * @param {string} path - the path for the Realm to advance
 	 */
-	advance(path) {}
+    advance(path) { }
 
 	/**
 	 * Open the Realm used by the Adapter for the given path. This is useful for writing two way
@@ -1135,11 +1172,11 @@ class Adapter {
      * @param {Realm~ObjectSchema[]} [schema] - optional schema to apply when opening the Realm
 	 * @returns {Realm}
 	 */
-	realmAtPath(path, schema) {}
+    realmAtPath(path, schema) { }
 
 	/**
 	 * Close the adapter and all opened Realms.
 	 */
-	close() {}
+    close() { }
 }
 

@@ -34,7 +34,7 @@ class List extends Collection {
      * @throws {Error} If not inside a write transaction.
      * @returns {T|undefined} if the list is empty.
      */
-    pop() {}
+    pop() { }
 
     /**
      * Add one or more values to the _end_ of the list.
@@ -48,14 +48,14 @@ class List extends Collection {
      * @returns {number} equal to the new {@link Realm.List#length length} of
      *          the list after adding the values.
      */
-    push(...value) {}
+    push(...value) { }
 
     /**
      * Remove the **first** value from the list and return it.
      * @throws {Error} If not inside a write transaction.
      * @returns {T|undefined} if the list is empty.
      */
-    shift() {}
+    shift() { }
 
     /**
      * Changes the contents of the list by removing value and/or inserting new value.
@@ -71,7 +71,7 @@ class List extends Collection {
      * @returns {T[]} containing the value that were removed from the list. The
      *   array is empty if no value were removed.
      */
-    splice(index, count, ...object) {}
+    splice(index, count, ...object) { }
 
     /**
      * Add one or more values to the _beginning_ of the list.
@@ -84,5 +84,5 @@ class List extends Collection {
      * @returns {number} equal to the new {@link Realm.List#length length} of
      *          the list after adding the values.
      */
-    unshift(...object) {}
+    unshift(...object) { }
 }

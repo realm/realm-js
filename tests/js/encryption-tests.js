@@ -76,12 +76,12 @@ module.exports = {
         }
 
         const credentials = Realm.Sync.Credentials.usernamePassword('realm-admin', '');
-        return Realm.Sync.User.login('http://localhost:9080', credentials).then(adminUser => {
+        return Realm.Sync.User.login('http://127.0.0.1:9080', credentials).then(adminUser => {
             new Realm({
                 encryptionKey: new Int8Array(64),
                 sync: {
                     user: adminUser,
-                    url: 'realm://localhost:9080/~/encryptedRealm'
+                    url: 'realm://127.0.0.1:9080/~/encryptedRealm'
                 }
             });
             adminUser.logout(); // FIXME: clearTestState() doesn't clean up enough and Realm.Sync.User.current might not work

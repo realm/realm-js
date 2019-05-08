@@ -17,7 +17,7 @@ function createObjects(user) {
     const config = {
         sync: {
             user: user,
-            url: `realm://localhost:9080/~/${realmName}`,
+            url: `realm://127.0.0.1:9080/~/${realmName}`,
             error: err => console.log(err)
         },
         schema: [{ name: 'Dog', properties: { name: 'string' } }]
@@ -45,7 +45,7 @@ function createObjects(user) {
 }
 
 const credentials = Realm.Sync.Credentials.nickname(username);
-Realm.Sync.User.login('http://localhost:9080', credentials)
+Realm.Sync.User.login('http://127.0.0.1:9080', credentials)
     .catch((error) => {
         const loginError = JSON.stringify(error);
         console.error(`download-api-helper failed:\n User login error:\n${loginError}`);

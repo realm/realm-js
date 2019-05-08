@@ -45,11 +45,6 @@ describe(global.title, () => {
     require("./dynamic-schema-updates");
 });
 
-afterEach(() => {
-    // Remove all Realm files in the default directory
-    if ("clearTestState" in Realm) {
-        Realm.clearTestState();
-    } else {
-        throw new Error("Expected a method to clear the test state");
-    }
+beforeEach(() => {
+    Realm.clearTestState();
 });

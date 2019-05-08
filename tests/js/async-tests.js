@@ -28,11 +28,11 @@ const Worker = require('./worker');
 const isElectron = typeof process === 'object' && process.type === 'renderer';
 
 function createNotificationTest(config, getObservable, addListener, removeListener, messages, expectedCount) {
-    return new Promise((resolve, reject) => {
-        let realm = new Realm(config);
-        let observable = getObservable(realm);
-        let worker = new Worker(__dirname + '/worker-tests-script.js', [REALM_MODULE_PATH]); // eslint-disable-line no-undef 
+    let realm = new Realm(config);
+    let observable = getObservable(realm);
+    let worker = new Worker(__dirname + '/worker-tests-script.js', [REALM_MODULE_PATH]); // eslint-disable-line no-undef
 
+    return new Promise((resolve, reject) => {
         // Test will fail if it does not receive a change event within a second.
         let timer = setTimeout(() => {
             reject(new Error('Timed out waiting for change notification'));
@@ -43,12 +43,16 @@ function createNotificationTest(config, getObservable, addListener, removeListen
             worker.terminate(cb);
         };
 
-        var count = 0;
-        var listener = addListener(observable, () => count++, resolve, reject, cleanup);
-
         messages.push(['echo', 'resolve']);
-        var messageIndex = 0;
+        let messageIndex = 0;
+        let send = () => {
+            worker.postMessage(messages[messageIndex++]);
+        };
 
+        let count = 0;
+        let listener = addListener(observable, () => { send(); return count++; }, resolve, reject, cleanup);
+
+        let removedListener = false;
         worker.onmessage = (message) => {
             if (message.error) {
                 cleanup(() => reject(message.error));
@@ -63,15 +67,19 @@ function createNotificationTest(config, getObservable, addListener, removeListen
                     }
                 });
             }
+            else if (message.result == 'removeListener') {
+                removeListener(observable, listener);
+                removedListener = true;
+                send();
+            }
+            else if (removedListener) {
+                send();
+            }
             else {
-                if (message.result == 'removeListener') {
-                    removeListener(observable, listener);
-                }
-                worker.postMessage(messages[messageIndex++]);
+                // Send the next message in increment() after getting the notification for the
+                // thing we just did
             }
         };
-
-        worker.postMessage(messages[messageIndex++]);
     });
 }
 
@@ -119,22 +127,24 @@ module.exports = {
     testChangeNotifications() {
         var config = { schema: [schemas.TestObject] };
         return createNotificationTest(
-            config,
-            (realm) => realm,
-            (realm, increment, resolve, reject, cleanup) => realm.addListener('change', () => {
-                try {
-                    var objects = realm.objects('TestObject');
-                    TestCase.assertEqual(objects.length, 1);
-                    TestCase.assertEqual(objects[0].doubleCol, 42);
-                    increment();
-                } catch (e) {
-                    reject(e);
-                    cleanup();
-                }
-            }),
+            config, (realm) => realm,
+            (realm, increment, resolve, reject, cleanup) => {
+                realm.addListener('change', () => {
+                    try {
+                        var objects = realm.objects('TestObject');
+                        TestCase.assertEqual(objects.length, 1);
+                        TestCase.assertEqual(objects[0].doubleCol, 42);
+                        increment();
+                    } catch (e) {
+                        reject(e);
+                        cleanup();
+                    }
+                });
+                increment();
+            },
             undefined,
             [[config, 'create', 'TestObject', [{doubleCol: 42}]]],
-            1
+            2
         );
     },
 

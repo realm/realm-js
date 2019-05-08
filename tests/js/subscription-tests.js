@@ -55,8 +55,8 @@ function uuid() {
 }
 
 function getRealm() {
-    const AUTH_URL = 'http://localhost:9080';
-    const REALM_URL = 'realm://localhost:9080/~/' + uuid().replace("-", "_");
+    const AUTH_URL = 'http://127.0.0.1:9080';
+    const REALM_URL = 'realm://127.0.0.1:9080/~/' + uuid().replace("-", "_");
     return new Promise((resolve, reject) => {
         Realm.Sync.User.login(AUTH_URL, Realm.Sync.Credentials.nickname("admin", true))
             .then((user) => {

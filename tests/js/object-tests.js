@@ -564,18 +564,18 @@ module.exports = {
         });
     },
 
-    testNotification: function() {
+    async testNotification() {
         const realm = new Realm({schema: [schemas.StringOnly]});
 
         let obj;
-        realm.write(function() {
+        realm.write(() => {
             obj = realm.create(schemas.StringOnly.name, { stringCol: 'foo' });
         });
 
         let calls = 0;
-        let resolve = () => {};
+        let resolve;
 
-        obj.addListener(function(obj, changes) {
+        obj.addListener((obj, changes) => {
             calls++;
             switch (calls) {
                 case 1:
@@ -590,22 +590,23 @@ module.exports = {
                     TestCase.assertTrue(changes.deleted);
                     TestCase.assertEqual(changes.changedProperties.length, 0);
                     realm.close();
-                    resolve();
             }
+            resolve();
         });
+        await new Promise(r => resolve = r);
 
-        return new Promise((r, _reject) => {
-            resolve = r;
-            realm.write(function() {
-                obj['stringCol'] = 'bar';
-            });
-            realm.write(function() {
-                realm.delete(obj);
-            });
+        realm.write(() => {
+            obj['stringCol'] = 'bar';
         });
+        await new Promise(r => resolve = r);
+
+        realm.write(() => {
+            realm.delete(obj);
+        });
+        await new Promise(r => resolve = r);
     },
 
-    testAddAndRemoveListener: function() {
+    testAddAndRemoveListener: async function() {
         const realm = new Realm({schema: [schemas.StringOnly]});
 
         let obj;
@@ -614,33 +615,43 @@ module.exports = {
         });
 
         let calls = 0;
+        let resolve;
 
         let listener = function(obj, changes) {
             calls++;
-            if (calls === 2) {
+            if (calls === 1) {
+                TestCase.assertEqual(obj['stringCol'], 'foo');
+            }
+            else if (calls === 2) {
                 TestCase.assertEqual(obj['stringCol'], 'bar');
             }
+            else {
+                throw new Error('Too many calls to listener')
+            }
+            resolve();
         };
 
+        const initialNotification = new Promise(r => resolve = r);
         obj.addListener(listener);
+        await initialNotification;
+
+        const firstChange = new Promise(r => resolve = r);
+        realm.write(function() {
+            obj['stringCol'] = 'bar';
+        });
+        await firstChange;
+        obj.removeListener(listener);
+
+        realm.write(function() {
+            obj['stringCol'] = 'foobar';
+        });
 
         return new Promise((resolve, reject) => {
-            realm.write(function() {
-                obj['stringCol'] = 'bar';
-            });
-
             setTimeout(() => {
-                obj.removeListener(listener);
-                realm.write(function() {
-                    obj['stringCol'] = 'foobar';
-                });
-
-                setTimeout(() => {
-                    TestCase.assertEqual(realm.objects(schemas.StringOnly.name)[0]['stringCol'], 'foobar');
-                    TestCase.assertEqual(calls, 2); // listener only called twice
-                    realm.close();
-                    resolve();
-                }, 2000);
+                TestCase.assertEqual(realm.objects(schemas.StringOnly.name)[0]['stringCol'], 'foobar');
+                TestCase.assertEqual(calls, 2); // listener only called twice
+                realm.close();
+                resolve();
             }, 2000);
         });
     },

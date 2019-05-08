@@ -26,6 +26,7 @@ if( typeof Realm.Sync !== 'undefined' && Realm.Sync !== null ) {
 }
 
 const isNodeProcess = typeof process === 'object' && process + '' === '[object process]';
+const isElectronProcess = isNodeProcess && (process.type === 'renderer' || (process.versions && process.versions.electron));
 const require_method = require;
 function node_require(module) { return require_method(module); }
 
@@ -59,15 +60,23 @@ if (global.enableSyncTests) {
     TESTS.SessionTests = require('./session-tests');
     TESTS.SubscriptionTests = require('./subscription-tests');
 
-    // FIXME: Permission tests currently fail in react native
-    if (isNodeProcess) {
+    if (isNodeProcess && !isElectronProcess) {
+        // FIXME: Permission tests currently fail in react native
         TESTS.PermissionTests = require('./permission-tests');
+        node_require('./adapter-tests');
+        node_require('./notifier-tests');
     }
 }
 
 // If on node, run the async tests
 if (isNodeProcess && process.platform !== 'win32') {
     TESTS.AsyncTests = node_require('./async-tests');
+}
+
+if (global.enableSyncTests) {
+    // Ensure that the sync manager is initialized as initializing it
+    // after calling clearTestState() doesn't work
+    Realm.Sync.User.all;
 }
 
 var SPECIAL_METHODS = {
@@ -114,33 +123,15 @@ exports.prepare = function(done) {
 };
 
 exports.runTest = function(suiteName, testName) {
-    var testSuite = TESTS[suiteName];
-    var testMethod = testSuite && testSuite[testName];
+    const testSuite = TESTS[suiteName];
+    const testMethod = testSuite && testSuite[testName];
 
     if (testMethod) {
-        // Start fresh in case of a crash in a previous run.
         Realm.clearTestState();
         console.warn("Starting test " + testName);
-        var promise;
-        try {
-            promise = testMethod.call(testSuite);
-
-            // If the test returns a promise, then clear state on success or failure.
-            if (promise) {
-                promise.then(
-                    function() { Realm.clearTestState(); },
-                    function() { Realm.clearTestState(); }
-                );
-            }
-
-            return promise;
-        } finally {
-            // Synchronously clear state if the test is not async.
-            if (!promise) {
-                Realm.clearTestState();
-            }
-        }
-    } else if (!testSuite || !(testName in SPECIAL_METHODS)) {
-        throw new Error('Missing test: ' + suiteName + '.' + testName);
+        return testMethod.call(testSuite);
+    }
+    if (!testSuite || !(testName in SPECIAL_METHODS)) {
+        throw new Error(`Missing test: ${suiteName}.${testName}`);
     }
 }
