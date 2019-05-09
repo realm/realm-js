@@ -158,9 +158,13 @@ class Collection {
      * });
      *
      * @param {string|Realm.Sync.SubscriptionOptions} options - an optional name or configuration object for the subscription.
-     *   The configuration object must contain `name` and the optional properties `update` and `timeToLive`.
-     *   If `update` is true the query on an existing subscription will be updated. If `timeToLive` is set, it indicates
-     *   to Realm for how long it must be kept alive, after which it will be automatically removed.
+     *   The configuration object has the following optional properties available: `name`, `update`, `timeToLive` and `includeLinkingObjects`.
+     *   If `update` is true the query on an existing subscription referred to by `name` will be updated. If `timeToLive` is set,
+     *   the subscription will be kept alive only for this amount of time in milliseconds. A subscription which expires will be automatically removed.
+     *   The `includeLinkingObjects` property is an array of property path strings which specifies which linkingObjects relationships should be included in the subscription.
+     *   This can be a set of paths to a linkingObject (eg: link.to.myLinkingObject) or if the reverse relationship is not named
+     *   with a linkingObject, it can be verbosly specified using the forward link syntax `@links.MyClassName.myLinkProperty`.
+     *   Subscriptions already include link and list properties (in the forward direction) automatically by default.
      * @returns {Realm.Sync.Subscription} - the Realm.Sync.Subscription instance.
      * @throws {Error} if the partial sync is not enabled in the configuration or the query is not supported by Realm Object Server.
      * @since 2.3.0
