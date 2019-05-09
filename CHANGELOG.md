@@ -1,4 +1,4 @@
-2.28.0 Release notes (YYYY-MM-DD)
+x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 NOTE: This release is only compatible with Realm Object Server 3.21.0 or later.
 
