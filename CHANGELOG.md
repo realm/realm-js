@@ -6,11 +6,11 @@ NOTE: This release is only compatible with Realm Object Server 3.21.0 or later.
 * Add an optional parameter to the `SubscriptionOptions`: `inclusions` which is an array of linkingObjects properties. This tells subscriptions to include objects linked through these relationships as well (links and lists are already included by default). ([#2296](https://github.com/realm/realm-js/pull/2296)
 
 ### Fixed
-* Making a query that compares two integer properties could cause a segmentation fault in the server or x86 node apps. ([core PR #3253](https://github.com/realm/realm-core/issues/3253))
+* Making a query that compares two integer properties could cause a segmentation fault in the server or x86 node apps. ([realm-core#3253](https://github.com/realm/realm-core/issues/3253))
 * Fix an error in the calculation of the downloadable_bytes value supplied to the progress callback. (See sync version 4.0.0)
-* HTTP requests made by the Sync client now always include a Host: header, as required by HTTP/1.1, although its value will be empty if no value is specified by the application. (sync v4.2.0)
+* HTTP requests made by the Sync client now always include a `Host: header`, as required by HTTP/1.1, although its value will be empty if no value is specified by the application. (sync v4.2.0)
 * The server no longer rejects subscriptions based on queries with distinct and/or limit clauses. (sync 4.2.0)
-* A bug was fixed where if a user had canCreate but not canUpdate privileges on a class, the user would be able to create the object, but not actually set any meaningful values on that object, despite the rule that objects created within the same transaction can always be modified. (sync 4.2.0)
+* A bug was fixed where if a user had `canCreate` but not `canUpdate` privileges on a class, the user would be able to create the object, but not actually set any meaningful values on that object, despite the rule that objects created within the same transaction can always be modified. (sync 4.2.0)
 
 ### Compatibility
 * Realm Object Server: 3.21.0 or later.
