@@ -184,6 +184,58 @@ void RPCWorker::stop() {
     }
 }
 
+static json read_object_properties(Object& object) {
+    json cache;
+    if (!object.is_valid()) {
+        return cache;
+    }
+
+    // Send the values of the primitive and short string properties directly
+    // as the overhead of doing so is tiny compared to even a single RPC request
+    auto& object_schema = object.get_object_schema();
+    auto row = object.row();
+    for (auto& property : object_schema.persisted_properties) {
+        if (is_array(property.type)) {
+            continue;
+        }
+        if (is_nullable(property.type) && row.is_null(property.table_column)) {
+            cache[property.name] = {{"value", json(nullptr)}};
+            continue;
+        }
+        auto cache_value = [&](auto&& v) {
+            cache[property.name] = {{"value", v}};
+        };
+        switch (property.type & ~PropertyType::Flags) {
+            case PropertyType::Bool:   cache_value(row.get_bool(property.table_column)); break;
+            case PropertyType::Int:    cache_value(row.get_int(property.table_column)); break;
+            case PropertyType::Float:  cache_value(row.get_float(property.table_column)); break;
+            case PropertyType::Double: cache_value(row.get_double(property.table_column)); break;
+            case PropertyType::Date: {
+                auto ts = row.get_timestamp(property.table_column);
+                cache[property.name] = {
+                    {"type", RealmObjectTypesDate},
+                    {"value", ts.get_seconds() * 1000.0 + ts.get_nanoseconds() / 1000000.0},
+                };
+                break;
+            }
+            break;
+            case PropertyType::String: {
+                auto str = row.get_string(property.table_column);
+                // A completely abitrary upper limit on how big of a string we'll pre-cache
+                if (str.size() < 100) {
+                    cache_value(str);
+                }
+                break;
+            }
+            case PropertyType::Data:
+            case PropertyType::Object:
+            break;
+            default: REALM_UNREACHABLE();
+        }
+    }
+    return cache;
+}
+
 RPCServer::RPCServer() {
     m_context = JSGlobalContextCreate(NULL);
     get_rpc_server(m_context) = this;
@@ -359,17 +411,42 @@ RPCServer::RPCServer() {
         JSValueRef result = jsc::Function::call(m_context, function, object, arg_count, arg_values);
         return (json){{"result", serialize_json_value(result)}};
     };
+    m_requests["/get_object"] = [this](const json dict) -> json {
+        RPCObjectID oid = dict["id"].get<RPCObjectID>();
+        json name = dict["name"];
+        JSObjectRef object = get_object(oid);
+        if (!object) {
+            return {{"result", nullptr}};
+        }
+
+        json result;
+        if (jsc::Object::is_instance<js::RealmObjectClass<jsc::Types>>(m_context, object)) {
+            auto obj = jsc::Object::get_internal<js::RealmObjectClass<jsc::Types>>(object);
+            result = read_object_properties(*obj);
+        }
+        if (result.find(name) == result.end()) {
+            if (name.is_number()) {
+                auto key = name.get<unsigned int>();
+                result[key] = serialize_json_value(jsc::Object::get_property(m_context, object, key));
+            }
+            else {
+                auto key = name.get<std::string>();
+                result[key] = serialize_json_value(jsc::Object::get_property(m_context, object, key));
+            }
+        }
+        return {{"result", result}};
+    };
     m_requests["/get_property"] = [this](const json dict) {
         RPCObjectID oid = dict["id"].get<RPCObjectID>();
         json name = dict["name"];
 
         JSValueRef value;
-        if (JSValueRef object = get_object(oid)) {
+        if (JSObjectRef object = get_object(oid)) {
             if (name.is_number()) {
-                value = jsc::Object::get_property(m_context, get_object(oid), name.get<unsigned int>());
+                value = jsc::Object::get_property(m_context, object, name.get<unsigned int>());
             }
             else {
-                value = jsc::Object::get_property(m_context, get_object(oid), name.get<std::string>());
+                value = jsc::Object::get_property(m_context, object, name.get<std::string>());
             }
         }
         else {
@@ -623,7 +700,8 @@ json RPCServer::serialize_json_value(JSValueRef js_value) {
         return {
             {"type", RealmObjectTypesObject},
             {"id", store_object(js_object)},
-            {"schema", serialize_object_schema(object->get_object_schema())}
+            {"schema", serialize_object_schema(object->get_object_schema())},
+            {"cache", read_object_properties(*object)}
         };
     }
     else if (jsc::Object::is_instance<js::ListClass<jsc::Types>>(m_context, js_object)) {
@@ -645,6 +723,7 @@ json RPCServer::serialize_json_value(JSValueRef js_value) {
         };
     }
     else if (jsc::Object::is_instance<js::RealmClass<jsc::Types>>(m_context, js_object)) {
+        auto realm = jsc::Object::get_internal<js::RealmClass<jsc::Types>>(js_object);
         json realm_dict {
             {"_isPartialRealm", serialize_json_value(jsc::Object::get_property(m_context, js_object, "_isPartialRealm"))},
             {"inMemory", serialize_json_value(jsc::Object::get_property(m_context, js_object, "inMemory"))},
@@ -655,6 +734,7 @@ json RPCServer::serialize_json_value(JSValueRef js_value) {
         return {
             {"type", RealmObjectTypesRealm},
             {"id", store_object(js_object)},
+            {"realmId", (uintptr_t)realm->get()},
             {"data", realm_dict}
         };
     }
