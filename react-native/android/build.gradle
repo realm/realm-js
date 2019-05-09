@@ -101,8 +101,20 @@ task downloadOpenSSL_x86(type: Download) {
     dest new File(downloadsDir, "openssl-release-1.0.2k-Android-x86.tar.gz")
 }
 
+task downloadOpenSSL_x86_64(type: Download) {
+    src "https://static.realm.io/downloads/openssl/1.0.2k/Android/x86_64/openssl-release-1.0.2k-Android-x86_64.tar.gz"
+    onlyIfNewer true
+    overwrite true
+    dest new File(downloadsDir, "openssl-release-1.0.2k-Android-x86_64.tar.gz")
+}
+
 task prepareOpenSSL_x86(dependsOn: downloadOpenSSL_x86, type:Copy) {
     from tarTree(downloadOpenSSL_x86.dest)
+    into "$coreDownloadDir/core"
+}
+
+task prepareOpenSSL_x86_64(dependsOn: downloadOpenSSL_x86_64, type:Copy) {
+    from tarTree(downloadOpenSSL_x86_64.dest)
     into "$coreDownloadDir/core"
 }
 
@@ -113,6 +125,13 @@ task downloadOpenSSL_arm(type: Download) {
     dest new File(downloadsDir, "openssl-release-1.0.2k-Android-armeabi-v7a.tar.gz")
 }
 
+task downloadOpenSSL_arm_64(type: Download) {
+    src "https://static.realm.io/downloads/openssl/1.0.2k/Android/arm64-v8a/openssl-release-1.0.2k-Android-arm64-v8a.tar.gz"
+    onlyIfNewer true
+    overwrite true
+    dest new File(downloadsDir, "openssl-release-1.0.2k-Android-arm64-v8a.tar.gz")
+}
+
 task prepareOpenSSL_arm(dependsOn: downloadOpenSSL_arm, type:Copy) {
     from tarTree(downloadOpenSSL_arm.dest)
     into "$coreDownloadDir/core"
@@ -120,6 +139,15 @@ task prepareOpenSSL_arm(dependsOn: downloadOpenSSL_arm, type:Copy) {
         fileName.replace("-arm-", "-armeabi-")
     }
 }
+
+task prepareOpenSSL_arm_64(dependsOn: downloadOpenSSL_arm_64, type:Copy) {
+    from tarTree(downloadOpenSSL_arm_64.dest)
+    into "$coreDownloadDir/core"
+    rename { String fileName ->
+        fileName.replace("-arm-", "-armeabi-")
+    }
+}
+
 
 def getDependenciesVersion(keyName) {
     def inputFile = new File(buildscript.sourceFile.getParent() + "/../../dependencies.list")
@@ -227,7 +255,7 @@ def getNdkBuildFullPath() {
     return ndkBuildFullPath
 }
 
-task buildReactNdkLib(dependsOn: [downloadJSCHeaders,prepareRealmCore,prepareOpenSSL_x86,prepareOpenSSL_arm], type: Exec) {
+task buildReactNdkLib(dependsOn: [downloadJSCHeaders, prepareRealmCore, prepareOpenSSL_x86, prepareOpenSSL_x86_64, prepareOpenSSL_arm, prepareOpenSSL_arm_64], type: Exec) {
     inputs.files('src/main/jni')
     outputs.dir("$buildDir/realm-react-ndk/all")
     commandLine getNdkBuildFullPath(),
@@ -285,6 +313,8 @@ android {
 }
 
 task publishAndroid(dependsOn: [generateVersionClass, packageReactNdkLibs], type: Sync) {
+    group = 'Publishing'
+
     // Copy task can only have one top level
     into "$publishDir"
 
@@ -300,7 +330,7 @@ task publishAndroid(dependsOn: [generateVersionClass, packageReactNdkLibs], type
     }
 
     // copy gradle wrapper files
-    FileTree gradleWrapper = fileTree(projectDir).include('gradlew*').include('gradle/**')
+    FileTree gradleWrapper = fileTree(projectDir).include('gradlew*').include('gradle/**').include('settings.gradle')
     into ('/') {
         from gradleWrapper
     }
