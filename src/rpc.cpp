@@ -211,6 +211,14 @@ RPCServer::RPCServer() {
         }
 
         JSObjectRef realm_object = jsc::Function::construct(m_context, realm_constructor, arg_count, arg_values);
+
+        JSObjectRef add_listener_method = (JSObjectRef)jsc::Object::get_property(m_context, realm_object, "addListener");
+        JSValueRef listener_args[] = {
+            jsc::Value::from_string(m_context, "beforenotify"),
+            deserialize_json_value(dict["beforeNotify"])
+        };
+        jsc::Function::call(m_context, add_listener_method, realm_object, 2, listener_args);
+
         return (json){{"result", serialize_json_value(realm_object)}};
     };
     m_requests["/create_user"] = [this](const json dict) {
