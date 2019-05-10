@@ -1,4 +1,4 @@
-x.x.x Release notes (yyyy-MM-dd)
+2.27.0 Release notes (2019-5-10)
 =============================================================
 NOTE: This release is only compatible with Realm Object Server 3.21.0 or later.
 
