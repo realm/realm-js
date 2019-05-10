@@ -404,6 +404,7 @@ RPCServer::RPCServer() {
         m_callback_ids.clear();
         m_callbacks[0] = refresh_access_token;
         m_callback_ids[refresh_access_token] = 0;
+        ++m_reset_counter;
         JSGarbageCollect(m_context);
         js::clear_test_state();
 
@@ -457,7 +458,15 @@ JSValueRef RPCServer::run_callback(JSContextRef ctx, JSObjectRef function, JSObj
         {"callback_call_counter", counter}
     });
 
-    while (!server->try_run_task() && future.wait_for(std::chrono::microseconds(100)) != std::future_status::ready);
+    uint64_t reset_counter = server->m_reset_counter;
+    while (!server->try_run_task() &&
+           future.wait_for(std::chrono::microseconds(100)) != std::future_status::ready &&
+           reset_counter == server->m_reset_counter);
+
+    if (reset_counter != server->m_reset_counter) {
+        // clearTestState() was called while the callback was pending
+        return JSValueMakeUndefined(ctx);
+    }
 
     json results = future.get();
     // The callback id should be identical!
