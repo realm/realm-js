@@ -56,6 +56,7 @@ class RPCWorker {
 
   private:
     bool m_stop = false;
+    int m_depth = 0;
 #if __APPLE__
     std::thread m_thread;
     CFRunLoopRef m_loop;

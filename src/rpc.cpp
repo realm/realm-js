@@ -125,10 +125,19 @@ json RPCWorker::add_task(Fn&& fn) {
 
 void RPCWorker::invoke_callback(json callback) {
     m_tasks.push_back([=, callback = std::move(callback)]() mutable {
-        if (auto promise = m_promises.try_pop_back(0)) {
+        if (m_depth == 1) {
+            // The callback was invoked directly from the event loop. Push it
+            // onto the queue of callbacks to be processed by /callbacks_poll
+            m_callbacks.push_back(std::move(callback));
+        }
+        else if (auto promise = m_promises.try_pop_back(0)) {
+            // The callback was invoked from within a call to something else,
+            // and there's someone waiting for its result.
             promise->set_value(std::move(callback));
         }
         else {
+            // The callback was invoked from within a call to something else,
+            // but there's no one waiting for the result. Shouldn't be possible?
             m_callbacks.push_back(std::move(callback));
         }
     });
@@ -153,7 +162,9 @@ bool RPCWorker::try_run_task() {
 
     // Use a 10 millisecond timeout to keep this thread unblocked.
     if (auto task = m_tasks.try_pop_back(10)) {
+        ++m_depth;
         (*task)();
+        --m_depth;
         return m_stop;
     }
     return false;
