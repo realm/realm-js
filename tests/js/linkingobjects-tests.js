@@ -205,19 +205,42 @@ module.exports = {
         });
 
         TestCase.assertEqual(john.linkingObjectsCount(), 0);
-        
+
         var olivier;
         realm.write(function() {
             olivier = realm.create('PersonObject', {name: 'Olivier', age: 0});
             realm.create('PersonObject', {name: 'Christine', age: 25, children: [olivier]});
         });
-        
+
         TestCase.assertEqual(olivier.linkingObjectsCount(), 1);
-        
+
         realm.write(function() {
             john.children.push(olivier);
         });
 
         TestCase.assertEqual(olivier.linkingObjectsCount(), 2);
+    },
+
+    testLinking: function () {
+        var realm = new Realm({schema: [schemas.Activity, schemas.Log]});
+
+        realm.write(function () {
+            realm.create('Activity', { id: 1, label: 'green', logs: [] });
+        });
+
+        realm.write(function () {
+            var newLog = realm.create('Log', { date: new Date() });
+            var activity = realm.objectForPrimaryKey('Activity', 1);
+            activity.logs.push(newLog);
+        });
+
+        var activities = realm.objects('Activity');
+        TestCase.assertEqual(activities.length, 1);
+        var logs = realm.objects('Log');
+        TestCase.assertEqual(logs.length, 1);
+        TestCase.assertEqual(logs[0]['belongsTo'].length, 1);
+        TestCase.assertEqual(logs[0]['belongsTo'][0]['id'], 1);
+
+        realm.close();
     }
 };

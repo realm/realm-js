@@ -324,3 +324,20 @@ exports.Country = {
     }
 };
 
+exports.Log = {
+    name: 'Log',
+    properties: {
+        date: 'date',
+        belongsTo: {type: 'linkingObjects', objectType: 'Activity', property: 'logs'}
+    }
+};
+
+exports.Activity = {
+    name: 'Activity',
+    primaryKey: 'id',
+    properties: {
+        id: {type: 'int', indexed: true},
+        label: 'string',
+        logs: 'Log[]',
+    }
+};
