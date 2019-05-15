@@ -28,7 +28,7 @@ NOTE: These release notes contain release notes from v2.27.0-rc.2 and v2.27.0-rc
 
 ### Internal
 * Updated to Realm Core v5.19.1.
-* Updated to Relm Sync v4.4.2.
+* Updated to Realm Sync v4.4.2.
 * Updated to Object Store commit 3e48b69764c0a2aaaa7a3b947d6d0dae215f9a09.
 * Building for node.js using Xcode 10.x supported.
 * Fixed the Electron integration tests. ([#2286](https://github.com/realm/realm-js/pull/2286) and [#2320](https://github.com/realm/realm-js/pull/2320))
