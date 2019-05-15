@@ -1,6 +1,6 @@
 X.Y.Z Release notes
 =============================================================
-NOTE: This release is only compatible with Realm Object Server 3.21.0 or later.
+NOTE: The minimum version of Realm Object Server has been increased to 3.21.0 and attempting to connect to older versions will produce protocol mismatch errors. Realm Cloud has already been upgraded to this version, and users using that do not need to worry about this.
 NOTE: These release notes contain release notes from v2.27.0-rc.2 and v2.27.0-rc.3.
 
 ### Enhancements
