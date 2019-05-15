@@ -1,7 +1,8 @@
 X.Y.Z Release notes
 =============================================================
 NOTE: The minimum version of Realm Object Server has been increased to 3.21.0 and attempting to connect to older versions will produce protocol mismatch errors. Realm Cloud has already been upgraded to this version, and users using that do not need to worry about this.
-NOTE: These release notes contain release notes from v2.27.0-rc.2 and v2.27.0-rc.3.
+
+Changes since 2.26.1 (including v2.27.0-rc.2 and v2.27.0-rc.3):
 
 ### Enhancements
 * Add an optional parameter to the `SubscriptionOptions`: `inclusions` which is an array of linkingObjects properties. This tells subscriptions to include objects linked through these relationships as well (links and lists are already included by default). ([#2296](https://github.com/realm/realm-js/pull/2296)
