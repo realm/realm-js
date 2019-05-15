@@ -34,34 +34,32 @@ function uuid() {
 function getRealm() {
     const AUTH_URL = 'http://127.0.0.1:9080';
     const REALM_URL = 'realm://127.0.0.1:9080/~/' + uuid().replace("-", "_");
-    return new Promise((resolve, reject) => {
-        Realm.Sync.User.login(AUTH_URL, Realm.Sync.Credentials.nickname("admin", true))
-            .then((user) => {
-                const schemas = [
-                    {
-                        name: 'Parent',
-                        properties: {
-                            name: { type: 'string' },
-                            child: 'ObjectA',
-                        }
-                    },
-                    {
-                        name: 'ObjectA',
-                        properties: {
-                            name: { type: 'string' },
-                            parents: { type: 'linkingObjects', objectType: 'Parent', property: 'child' },
-                        }
-                    },
-                ];
-
-                const config = user.createConfiguration({
-                    schema: schemas,
-                    sync: {
-                        url: REALM_URL,
+    return Realm.Sync.User.login(AUTH_URL, Realm.Sync.Credentials.nickname("admin", true))
+        .then((user) => {
+            const schemas = [
+                {
+                    name: 'Parent',
+                    properties: {
+                        name: { type: 'string' },
+                        child: 'ObjectA',
                     }
-                });
-                resolve(new Realm(config));
+                },
+                {
+                    name: 'ObjectA',
+                    properties: {
+                        name: { type: 'string' },
+                        parents: { type: 'linkingObjects', objectType: 'Parent', property: 'child' },
+                    }
+                },
+            ];
+
+            const config = user.createConfiguration({
+                schema: schemas,
+                sync: {
+                    url: REALM_URL,
+                }
             });
+            return new Realm(config);
     });
 }
 
@@ -126,12 +124,9 @@ module.exports = {
 
     testSubscriptionWrapperProperties() {
         return getRealm().then(realm => {
-            return new Promise((resolve, reject) => {
-                const subscription = realm.objects("ObjectA").subscribe("test");
-                TestCase.assertEqual(subscription.name, "test");
-                TestCase.assertEqual(subscription.state, Realm.Sync.SubscriptionState.Creating);
-                resolve();
-            });
+            const subscription = realm.objects("ObjectA").subscribe("test");
+            TestCase.assertEqual(subscription.name, "test");
+            TestCase.assertEqual(subscription.state, Realm.Sync.SubscriptionState.Creating);
         });
     },
 
@@ -328,21 +323,15 @@ module.exports = {
 
     testSubscribeWithoutName() {
         return getRealm().then(realm => {
-            return new Promise((resolve, reject) => {
-                let query = realm.objects("ObjectA");
-                query.subscribe({ update: true, timeToLive: 1000}); // Missing name, doesn't throw
-                resolve();
-            });
+            let query = realm.objects("ObjectA");
+            query.subscribe({ update: true, timeToLive: 1000}); // Missing name, doesn't throw
         });
     },
 
     testSubscribeWithMisspelledConfigParameter() {
         return getRealm().then(realm => {
-            return new Promise((resolve, reject) => {
-                let query = realm.objects("ObjectA");
-                TestCase.assertThrowsContaining(() => query.subscribe({ naem: "myName" }), "Unexpected property in subscription options: 'naem'");
-                resolve();
-            });
+            let query = realm.objects("ObjectA");
+            TestCase.assertThrowsContaining(() => query.subscribe({ naem: "myName" }), "Unexpected property in subscription options: 'naem'");
         });
     },
 
