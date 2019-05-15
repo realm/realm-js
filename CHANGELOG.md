@@ -1,4 +1,41 @@
-2.27.0 Release notes (2019-5-10)
+X.Y.Z Release notes
+=============================================================
+NOTE: The minimum version of Realm Object Server has been increased to 3.21.0 and attempting to connect to older versions will produce protocol mismatch errors. Realm Cloud has already been upgraded to this version, and users using that do not need to worry about this.
+
+Changes since v2.26.1 (including v2.27.0-rc.2 and v2.27.0-rc.3):
+
+### Enhancements
+* Add an optional parameter to the `SubscriptionOptions`: `inclusions` which is an array of linkingObjects properties. This tells subscriptions to include objects linked through these relationships as well (links and lists are already included by default). ([#2296](https://github.com/realm/realm-js/pull/2296)
+* Added `Realm.Sync.localListenerRealms(regex)` to return the list of local Realms downloaded by the global notifier. ([realm-js-private#521](https://github.com/realm/realm-js-private/issues/521)).
+* Encryption now uses hardware optimized functions, which significantly improves the performance of encrypted Realms. ([realm-core#3241](https://github.com/realm/realm-core/pull/3241))
+* Improved query performance when using `in` queries. ([realm-core#3241](https://github.com/realm/realm-core/pull/3241))
+* Improved query performance when querying integer properties with indexes, e.g. primary key properties. ([realm-core#3272](https://github.com/realm/realm-core/pull/3272))
+* Improved write performance when writing changes to disk. ([realm-core#2927](https://github.com/realm/realm-core/pull/2927))
+
+### Fixed
+* Making a query that compares two integer properties could cause a segmentation fault in the server or x86 node apps. ([realm-core#3253](https://github.com/realm/realm-core/issues/3253))
+* Fix an error in the calculation of the `transferable` value supplied to the progress callback. ([realm-sync#2695](https://github.com/realm/realm-sync/issues/2695), since v1.12.0)
+* HTTP requests made by the Sync client now always include a `Host: header`, as required by HTTP/1.1, although its value will be empty if no value is specified by the application. ([realm-sync#2861](https://github.com/realm/realm-sync/pull/2861), since v1.0.0)
+* Added `UpdateMode` type to support the three modes of `Realm.create()`. ([#2359](https://github.com/realm/realm-js/pull/2359), since v2.26.1)
+* Fixed an issue where calling `user.logout()` would not revoke the refresh token on the server. ([#2348](https://github.com/realm/realm-js/pull/2348), since v2.24.0)
+* Fixed types of the `level` argument passed to the callback provided to `Realm.Sync.setLogger`, it was a string type but actually a numeric value is passed. ([#2125](https://github.com/realm/realm-js/issues/2125), since v2.25.0)
+* Avoid creating Realm instances on the sync worker thread. ([raas#1539](https://github.com/realm/raas/issues/1539) and [realm-object-store#793](https://github.com/realm/realm-object-store/pull/793))
+
+### Compatibility
+* Realm Object Server: 3.21.0 or later.
+* APIs are backwards compatible with all previous release of realm in the 2.x.y series.
+* File format: Generates Realms with format v9 (Reads and upgrades all previous formats).
+
+### Internal
+* Updated to Realm Core v5.19.1.
+* Updated to Realm Sync v4.4.2.
+* Updated to Object Store commit 3e48b69764c0a2aaaa7a3b947d6d0dae215f9a09.
+* Building for node.js using Xcode 10.x supported.
+* Fixed the Electron integration tests. ([#2286](https://github.com/realm/realm-js/pull/2286) and [#2320](https://github.com/realm/realm-js/pull/2320))
+* Added `Realm.Sync.Adapter` implemetation.
+
+
+2.27.0-rc.3 Release notes (2019-5-10)
 =============================================================
 NOTE: This release is only compatible with Realm Object Server 3.21.0 or later.
 
