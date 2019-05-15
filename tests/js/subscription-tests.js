@@ -65,6 +65,10 @@ function getRealm() {
     });
 }
 
+function pendingOrComplete(state) {
+    return state === Realm.Sync.SubscriptionState.Pending || state === Realm.Sync.SubscriptionState.Complete;
+}
+
 function verifySubscriptionWithParents(parentToInclude, filterClause) {
     return getRealm().then(realm => {
         realm.write(() => {
@@ -138,11 +142,11 @@ module.exports = {
                 const now_plus_2_sec = new Date(now.getTime() + 2000);
                 const sub = realm.objects("ObjectA").subscribe("named-test");
                 sub.addListener((subscription, state) => {
-                    if (state === Realm.Sync.SubscriptionState.Pending) {
+                    if (pendingOrComplete(state)) {
                         sub.removeAllListeners();
                         const namedSub = realm.subscriptions("named-test")[0];
                         TestCase.assertEqual(namedSub.name, "named-test");
-                        TestCase.assertEqual(namedSub.state, Realm.Sync.SubscriptionState.Pending);
+                        TestCase.assertTrue(pendingOrComplete(namedSub.state));
                         TestCase.assertEqual(namedSub.error, undefined);
                         TestCase.assertEqual(namedSub.objectType, "ObjectA");
                         TestCase.assertTrue(namedSub.createdAt.getTime() >= now.getTime() && namedSub.createdAt.getTime() < now_plus_2_sec.getTime());
@@ -175,7 +179,7 @@ module.exports = {
                             // Updating the query using a string
                             namedSub.query = "truepredicate";
                             TestCase.assertEqual(namedSub.query, "truepredicate");
-                            TestCase.assertEqual(namedSub.state, Realm.Sync.SubscriptionState.Pending);
+                            TestCase.assertTrue(pendingOrComplete(namedSub.state));
                             TestCase.assertEqual(namedSub.error, undefined);
                             TestCase.assertTrue(updated.getTime() < namedSub.updatedAt.getTime());
                             updated = namedSub.updatedAt;
@@ -199,7 +203,7 @@ module.exports = {
             const sub = realm.objects("ObjectA").filtered("name = 'Foo'").subscribe("update-named-sub-query");
             return new Promise((resolve, reject) => {
                 sub.addListener((subscription, state) => {
-                    if (state === Realm.Sync.SubscriptionState.Pending) {
+                    if (pendingOrComplete(state)) {
                         sub.removeAllListeners();
                         const namedSub = realm.subscriptions("update-named-sub-query")[0];
                         let updated = namedSub.updatedAt;
@@ -224,7 +228,7 @@ module.exports = {
             return new Promise((resolve, reject) => {
                 const sub = realm.objects("ObjectA").subscribe("read-only-test");
                 sub.addListener((subscription, state) => {
-                    if (state === Realm.Sync.SubscriptionState.Pending) {
+                    if (pendingOrComplete(state)) {
                         sub.removeAllListeners();
                         const namedSub = realm.subscriptions("read-only-test")[0];
                         TestCase.assertThrows(() => namedSub.name = "Foo");
@@ -248,7 +252,7 @@ module.exports = {
                 const query = realm.objects("ObjectA");
                 const sub = query.subscribe({ name: "with-ttl", timeToLive: 1000});
                 sub.addListener((subscription, state) => {
-                    if (state === Realm.Sync.SubscriptionState.Pending) {
+                    if (pendingOrComplete(state)) {
                         sub.removeAllListeners();
                         const namedSub = realm.subscriptions("with-ttl")[0];
                         TestCase.assertTrue(now.getTime() <= namedSub.createdAt.getTime() && namedSub.createdAt.getTime() < now_plus_2_sec.getTime());
@@ -268,7 +272,7 @@ module.exports = {
                 let query1 = realm.objects("ObjectA");
                 const sub1 = query1.subscribe("update-query");
                 sub1.addListener((subscription1, state1) => {
-                    if (state1 === Realm.Sync.SubscriptionState.Pending) {
+                    if (pendingOrComplete(state1)) {
                         sub1.removeAllListeners();
                         const namedSub = realm.subscriptions("update-query")[0];
                         const update1 = namedSub.updatedAt;
@@ -276,7 +280,7 @@ module.exports = {
                             let query2 = realm.objects('ObjectA').filtered("name = 'Foo'");
                             const sub2 = query2.subscribe({name: 'update-query', update: true});
                             sub2.addListener((subscription2, state2) => {
-                                if (state2 === Realm.Sync.SubscriptionState.Pending) {
+                                if (pendingOrComplete(state2)) {
                                     sub2.removeAllListeners();
                                     TestCase.assertFalse(query1.description() === query2.description());
                                     TestCase.assertTrue(update1.getTime() < namedSub.updatedAt.getTime());
@@ -297,7 +301,7 @@ module.exports = {
             return new Promise((resolve, reject) => {
                 const sub1 = query1.subscribe({name: "update-query", timeToLive: 1000});
                 sub1.addListener((subscription1, state1) => {
-                    if (state1 === Realm.Sync.SubscriptionState.Pending) {
+                    if (pendingOrComplete(state1)) {
                         sub1.removeAllListeners();
                         const namedSub = realm.subscriptions("update-query")[0];
                         const update1 = namedSub.updatedAt;
@@ -306,7 +310,7 @@ module.exports = {
                         setTimeout(function() {
                             const sub2 = query1.subscribe({name: 'update-query', update: true, timeToLive: 5000});
                             sub2.addListener((subscription2, state2) => {
-                                if (state2 === Realm.Sync.SubscriptionState.Pending) {
+                                if (pendingOrComplete(state2)) {
                                     sub2.removeAllListeners();
                                     TestCase.assertTrue(update1.getTime() < namedSub.updatedAt.getTime());
                                     TestCase.assertTrue(expires1.getTime() < namedSub.expiresAt.getTime());
