@@ -1,4 +1,4 @@
-X.Y.Z Release notes
+2.27.0 Release notes (2019-5-15)
 =============================================================
 NOTE: The minimum version of Realm Object Server has been increased to 3.21.0 and attempting to connect to older versions will produce protocol mismatch errors. Realm Cloud has already been upgraded to this version, and users using that do not need to worry about this.
 
