@@ -44,7 +44,6 @@ const schemas = require('./schemas');
 
 let pathSeparator = '/';
 const isNodeProcess = typeof process === 'object' && process + '' === '[object process]';
-const isChromeWorker = !isNodeProcess && typeof WorkerGlobalScope !== 'undefined' && navigator instanceof WorkerNavigator;
 if (isNodeProcess && process.platform === 'win32') {
     pathSeparator = '\\';
 }
@@ -1520,12 +1519,7 @@ module.exports = {
             .then(user1 => {
                 config.sync.user = user1;
                 const realm = new Realm(config);
-                if (isChromeWorker) {
-                    TestCase.assertEqual(realm.schema.length, 1); // 1 test object
-                }
-                else {
-                    TestCase.assertEqual(realm.schema.length, 7); // 5 permissions, 1 results set, 1 test object
-                }
+                TestCase.assertEqual(realm.schema.length, 7); // 5 permissions, 1 results set, 1 test object
                 return closeAfterUpload(realm);
             })
             .then(() => {
