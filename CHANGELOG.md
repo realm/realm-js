@@ -17,7 +17,7 @@ Changes since v2.26.1 (including v2.27.0-rc.2 and v2.27.0-rc.3):
 * Fix an error in the calculation of the `transferable` value supplied to the progress callback. ([realm-sync#2695](https://github.com/realm/realm-sync/issues/2695), since v1.12.0)
 * HTTP requests made by the Sync client now always include a `Host: header`, as required by HTTP/1.1, although its value will be empty if no value is specified by the application. ([realm-sync#2861](https://github.com/realm/realm-sync/pull/2861), since v1.0.0)
 x* Subscriptions based on queries with distinct and/or limit clauses are no longer rejected. ([realm-sync#2890](https://github.com/realm/realm-sync/pull/2790), since v2.3.0)
-* Added `UpdateMode` type. ([#2359](https://github.com/realm/realm-js/pull/2359), since v2.26.1)
+* Added `UpdateMode` type to support the three modes of `Realm.create()`. ([#2359](https://github.com/realm/realm-js/pull/2359), since v2.26.1)
 * Fixed an issue where calling `user.logout()` would not revoke the refresh token on the server. ([#2348](https://github.com/realm/realm-js/pull/2348), since v2.24.0)
 * Fixed types of the `level` argument passed to the callback provided to `Realm.Sync.setLogger`, it was a string type but actually a numeric value is passed. ([#2125](https://github.com/realm/realm-js/issues/2125), since v2.25.0)
 * Avoid creating Realm instances on the sync worker thread. ([raas#1539](https://github.com/realm/raas/issues/1539) and [realm-object-store#793](https://github.com/realm/realm-object-store/pull/793))
