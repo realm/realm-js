@@ -20,32 +20,9 @@
 
 'use strict';
 
-/* global REALM_MODULE_PATH */
-
 const Realm = require('realm');
 const TestCase = require('./asserts');
-let schemas = require('./schemas');
-
-const isElectronProcess = typeof process === 'object' && process.type === 'renderer';
-const isNodeProccess = typeof process === 'object' && process + '' === '[object process]' && !isElectronProcess;
-
-const require_method = require;
-function node_require(module) {
-    return require_method(module);
-}
-
-let tmp;
-let fs;
-let execFile;
-let path;
-
-if (isNodeProccess) {
-    tmp = node_require('tmp');
-    fs = node_require('fs');
-    execFile = node_require('child_process').execFile;
-    tmp.setGracefulCleanup();
-    path = node_require("path");
-}
+const schemas = require('./schemas');
 
 function uuid() {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
@@ -144,10 +121,6 @@ function verifySubscriptionWithParents(parentToInclude, filterClause) {
 module.exports = {
 
     testSubscriptionWrapperProperties() {
-        if (!isNodeProccess) {
-            return;
-        }
-
         return getRealm().then(realm => {
             return new Promise((resolve, reject) => {
                 const subscription = realm.objects("ObjectA").subscribe("test");
@@ -159,10 +132,6 @@ module.exports = {
     },
 
     testNamedSubscriptionProperties() {
-        if (!isNodeProccess) {
-            return;
-        }
-
         return getRealm().then(realm => {
             return new Promise((resolve, reject) => {
                 const now = new Date();
@@ -188,10 +157,6 @@ module.exports = {
     },
 
     testUpdateQuery: function () {
-        if (!isNodeProccess) {
-            return;
-        }
-
         return getRealm().then(realm => {
             return new Promise((resolve, reject) => {
                 const sub = realm.objects("ObjectA").filtered("name = 'Foo'").subscribe("update-named-sub-query");
@@ -206,7 +171,7 @@ module.exports = {
                             // Updating the query must either be a string or a Results objects
                             TestCase.assertThrows(() => namedSub.query = 0);
                             TestCase.assertThrows(() => namedSub.query = true);
-    
+
                             // Updating the query using a string
                             namedSub.query = "truepredicate";
                             TestCase.assertEqual(namedSub.query, "truepredicate");
@@ -214,7 +179,7 @@ module.exports = {
                             TestCase.assertEqual(namedSub.error, undefined);
                             TestCase.assertTrue(updated.getTime() < namedSub.updatedAt.getTime());
                             updated = namedSub.updatedAt;
-                            
+
                             setTimeout(function() {
                                 // Updating the query using a Results object
                                 namedSub.query = realm.objects('ObjectA').filtered('name = "Bar"');
@@ -230,10 +195,6 @@ module.exports = {
     },
 
     testUpdateTtl() {
-        if (!isNodeProccess) {
-            return;
-        }
-
         return getRealm().then(realm => {
             const sub = realm.objects("ObjectA").filtered("name = 'Foo'").subscribe("update-named-sub-query");
             return new Promise((resolve, reject) => {
@@ -259,10 +220,6 @@ module.exports = {
     },
 
     testUpdateReadOnlyProperties() {
-        if (!isNodeProccess) {
-            return;
-        }
-
         return getRealm().then(realm => {
             return new Promise((resolve, reject) => {
                 const sub = realm.objects("ObjectA").subscribe("read-only-test");
@@ -284,10 +241,6 @@ module.exports = {
     },
 
     testSubscribeWithTtl() {
-        if (!isNodeProccess) {
-            return;
-        }
-
         return getRealm().then(realm => {
             return new Promise((resolve, reject) => {
                 const now = new Date();
@@ -310,9 +263,6 @@ module.exports = {
     },
 
     testSubscribeAndUpdateQuery() {
-        if (!isNodeProccess) {
-            return;
-        }
         return getRealm().then(realm => {
             return new Promise((resolve, reject) => {
                 let query1 = realm.objects("ObjectA");
@@ -333,7 +283,7 @@ module.exports = {
                                     resolve();
                                 }
                             });
-                        }, 2);    
+                        }, 2);
                     }
                 });
             });
@@ -341,10 +291,6 @@ module.exports = {
     },
 
     testSubscribeAndUpdateTtl() {
-        if (!isNodeProccess) {
-            return;
-        }
-
         return getRealm().then(realm => {
             const query1 = realm.objects("ObjectA");
 
@@ -377,10 +323,6 @@ module.exports = {
     },
 
     testSubscribeWithoutName() {
-        if (!isNodeProccess) {
-            return;
-        }
-
         return getRealm().then(realm => {
             return new Promise((resolve, reject) => {
                 let query = realm.objects("ObjectA");
@@ -391,10 +333,6 @@ module.exports = {
     },
 
     testSubscribeWithMisspelledConfigParameter() {
-        if (!isNodeProccess) {
-            return;
-        }
-
         return getRealm().then(realm => {
             return new Promise((resolve, reject) => {
                 let query = realm.objects("ObjectA");
@@ -405,10 +343,6 @@ module.exports = {
     },
 
     testSubscribeToChildrenWithoutParents() {
-        if (!isNodeProccess) {
-            return;
-        }
-
         return getRealm().then(realm => {
             realm.write(() => {
                 let obj_a1 = realm.create('ObjectA', {name: "a1"});
@@ -438,10 +372,6 @@ module.exports = {
     },
 
     testSubscribeParentsWithForwardLinks() {
-        if (!isNodeProccess) {
-            return;
-        }
-
         return getRealm().then(realm => {
             realm.write(() => {
                 let obj_a1 = realm.create('ObjectA', {name: "a1"});
@@ -471,23 +401,14 @@ module.exports = {
     },
 
     testSubscribeToChildrenWithNamedParents() {
-        if (!isNodeProccess) {
-            return;
-        }
         return verifySubscriptionWithParents("parents");
     },
 
     testSubscribeToChildrenWithUnnamedParents() {
-        if (!isNodeProccess) {
-            return;
-        }
         return verifySubscriptionWithParents("@links.Parent.child");
     },
 
     testSubscribeToChildrenWithMalformedInclusion1() {
-        if (!isNodeProccess) {
-            return;
-        }
         return verifySubscriptionWithParents("something.wrong").then(() => {
             throw new Error('subscription should have failed')
         },
@@ -496,9 +417,6 @@ module.exports = {
     },
 
     testSubscribeToChildrenWithMalformedInclusion2() {
-        if (!isNodeProccess) {
-            return;
-        }
         return verifySubscriptionWithParents("@links.Parent.missing_property").then(() => {
             throw new Error('subscription should have failed')
         },
@@ -507,9 +425,6 @@ module.exports = {
     },
 
     testSubscribeToChildrenWithMalformedInclusion3() {
-        if (!isNodeProccess) {
-            return;
-        }
         return verifySubscriptionWithParents(4.2).then(() => {
             throw new Error('subscription should have failed')
         },
@@ -521,17 +436,10 @@ module.exports = {
     // but it should not be encouraged nor documented. It is mostly to enable users to run
     // subscription queries that are directly copied from Studio.
     testSubscribeWithManualInclusion1() {
-        if (!isNodeProccess) {
-            return;
-        }
         return verifySubscriptionWithParents("", "TRUEPREDICATE INCLUDE(@links.Parent.child)");
     },
 
     testSubscribeWithManualInclusion2() {
-        if (!isNodeProccess) {
-            return;
-        }
         return verifySubscriptionWithParents("", "TRUEPREDICATE INCLUDE(parents)");
     },
-
 };
