@@ -69,15 +69,18 @@ template<typename T>
 class RealmDelegate : public BindingContext {
 private:
     void did_change(std::vector<ObserverState> const&, std::vector<void*> const&, bool) override {
+        HANDLESCOPE
         notify(m_notifications, "change");
     }
 
     void schema_did_change(realm::Schema const& schema) override {
+        HANDLESCOPE
         ObjectType schema_object = Schema<T>::object_for_schema(m_context, schema);
         notify(m_schema_notifications, "schema", schema_object);
     }
 
     void before_notify() override {
+        HANDLESCOPE
         notify(m_before_notify_notifications, "beforenotify");
     }
 
@@ -168,8 +171,6 @@ public:
     // from inside the handler
     template<typename... Args>
     void notify(std::list<Protected<FunctionType>> notifications, const char *name, Args&&... args) {
-        HANDLESCOPE
-
         auto realm = m_realm.lock();
         if (!realm) {
             throw std::runtime_error("Realm no longer exists");
