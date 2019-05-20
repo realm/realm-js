@@ -56,6 +56,7 @@ class RPCWorker {
 
   private:
     bool m_stop = false;
+    int m_depth = 0;
 #if __APPLE__
     std::thread m_thread;
     CFRunLoopRef m_loop;
@@ -86,6 +87,7 @@ class RPCServer {
     RPCObjectID m_session_id;
     RPCWorker m_worker;
     u_int64_t m_callback_call_counter;
+    uint64_t m_reset_counter = 0;
 
     std::mutex m_pending_callbacks_mutex;
     std::map<std::pair<uint64_t, uint64_t>, std::promise<json>> m_pending_callbacks;

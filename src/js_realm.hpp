@@ -67,7 +67,24 @@ class RealmClass;
 
 template<typename T>
 class RealmDelegate : public BindingContext {
-  public:
+private:
+    void did_change(std::vector<ObserverState> const&, std::vector<void*> const&, bool) override {
+        HANDLESCOPE
+        notify(m_notifications, "change");
+    }
+
+    void schema_did_change(realm::Schema const& schema) override {
+        HANDLESCOPE
+        ObjectType schema_object = Schema<T>::object_for_schema(m_context, schema);
+        notify(m_schema_notifications, "schema", schema_object);
+    }
+
+    void before_notify() override {
+        HANDLESCOPE
+        notify(m_before_notify_notifications, "beforenotify");
+    }
+
+public:
     using GlobalContextType = typename T::GlobalContext;
     using FunctionType = typename T::Function;
     using ObjectType = typename T::Object;
@@ -77,14 +94,6 @@ class RealmDelegate : public BindingContext {
     using ObjectDefaultsMap = typename Schema<T>::ObjectDefaultsMap;
     using ConstructorMap = typename Schema<T>::ConstructorMap;
 
-    virtual void did_change(std::vector<ObserverState> const& observers, std::vector<void*> const& invalidated, bool version_changed) {
-        notify("change");
-    }
-
-    virtual void schema_did_change(realm::Schema const& schema) {
-        schema_notify("schema", schema);
-    }
-
     RealmDelegate(std::weak_ptr<realm::Realm> realm, GlobalContextType ctx) : m_context(ctx), m_realm(realm) {}
 
     ~RealmDelegate() {
@@ -93,24 +102,15 @@ class RealmDelegate : public BindingContext {
         m_constructors.clear();
         m_notifications.clear();
         m_schema_notifications.clear();
+        m_before_notify_notifications.clear();
     }
 
     void add_notification(FunctionType notification) {
-        for (auto &handler : m_notifications) {
-            if (handler == notification) {
-                return;
-            }
-        }
-        m_notifications.emplace_back(m_context, notification);
+        add(m_notifications, notification);
     }
 
     void remove_notification(FunctionType notification) {
-        for (auto iter = m_notifications.begin(); iter != m_notifications.end(); ++iter) {
-            if (*iter == notification) {
-                m_notifications.erase(iter);
-                return;
-            }
-        }
+        remove(m_notifications, notification);
     }
 
     void remove_all_notifications() {
@@ -119,26 +119,29 @@ class RealmDelegate : public BindingContext {
 
     void add_schema_notification(FunctionType notification) {
         SharedRealm realm = m_realm.lock();
-        realm->read_group(); // to get the schema change handler going
-        for (auto &handler : m_schema_notifications) {
-            if (handler == notification) {
-                return;
-            }
-        }
-        m_schema_notifications.emplace_back(m_context, notification);
+        // schema change notifications only happen if the Realm has a read transaction active
+        realm->read_group();
+        add(m_schema_notifications, notification);
     }
 
     void remove_schema_notification(FunctionType notification) {
-        for (auto iter = m_schema_notifications.begin(); iter != m_schema_notifications.end(); ++iter) {
-            if (*iter == notification) {
-                m_schema_notifications.erase(iter);
-                return;
-            }
-        }
+        remove(m_schema_notifications, notification);
     }
 
     void remove_all_schema_notifications() {
         m_schema_notifications.clear();
+    }
+
+    void add_before_notify_notification(FunctionType notification) {
+        add(m_before_notify_notifications, notification);
+    }
+
+    void remove_before_notify_notification(FunctionType notification) {
+        remove(m_before_notify_notifications, notification);
+    }
+
+    void remove_all_before_notify_notification() {
+        m_before_notify_notifications.clear();
     }
 
     ObjectDefaultsMap m_defaults;
@@ -148,40 +151,37 @@ class RealmDelegate : public BindingContext {
     Protected<GlobalContextType> m_context;
     std::list<Protected<FunctionType>> m_notifications;
     std::list<Protected<FunctionType>> m_schema_notifications;
+    std::list<Protected<FunctionType>> m_before_notify_notifications;
     std::weak_ptr<realm::Realm> m_realm;
 
-    void notify(const char *notification_name) {
-        HANDLESCOPE
-
-        SharedRealm realm = m_realm.lock();
-        if (!realm) {
-            throw std::runtime_error("Realm no longer exists");
+    void add(std::list<Protected<FunctionType>>& notifications, FunctionType fn) {
+        if (std::find(notifications.begin(), notifications.end(), fn) != notifications.end()) {
+            return;
         }
-
-        ObjectType realm_object = create_object<T, RealmClass<T>>(m_context, new SharedRealm(realm));
-        ValueType arguments[] = {realm_object, Value::from_string(m_context, notification_name)};
-
-        std::list<Protected<FunctionType>> notifications_copy(m_notifications);
-        for (auto &callback : notifications_copy) {
-            Function<T>::callback(m_context, callback, realm_object, 2, arguments);
-        }
+        notifications.emplace_back(m_context, std::move(fn));
     }
 
-    void schema_notify(const char *notification_name, realm::Schema const& schema) {
-        HANDLESCOPE
+    void remove(std::list<Protected<FunctionType>>& notifications, FunctionType fn) {
+        // This doesn't just call remove() because that would create a new Protected<FunctionType>
+        notifications.remove_if([&](auto& notification) { return notification == fn; });
+    }
 
-        SharedRealm realm = m_realm.lock();
+    // Note that this intentionally copies the `notifications` argument as we
+    // want to iterate over a copy in case the user adds/removes notifications
+    // from inside the handler
+    template<typename... Args>
+    void notify(std::list<Protected<FunctionType>> notifications, const char *name, Args&&... args) {
+        auto realm = m_realm.lock();
         if (!realm) {
             throw std::runtime_error("Realm no longer exists");
         }
 
         ObjectType realm_object = create_object<T, RealmClass<T>>(m_context, new SharedRealm(realm));
-        ObjectType schema_object = Schema<T>::object_for_schema(m_context, schema);
-        ValueType arguments[] = {realm_object, Value::from_string(m_context, notification_name), schema_object};
+        ValueType arguments[] = {realm_object, Value::from_string(m_context, name), args...};
+        auto argc = std::distance(std::begin(arguments), std::end(arguments));
 
-        std::list<Protected<FunctionType>> notifications_copy(m_schema_notifications);
-        for (auto &callback : notifications_copy) {
-            Function<T>::callback(m_context, callback, realm_object, 3, arguments);
+        for (auto &callback : notifications) {
+            Function<T>::callback(m_context, callback, realm_object, argc, arguments);
         }
     }
 
@@ -261,7 +261,7 @@ public:
     // static methods
     static void constructor(ContextType, ObjectType, Arguments &);
     static SharedRealm create_shared_realm(ContextType, realm::Realm::Config, bool, ObjectDefaultsMap &&, ConstructorMap &&);
-    static bool get_realm_config(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], realm::Realm::Config &, ObjectDefaultsMap &, ConstructorMap &);
+    static bool get_realm_config(ContextType ctx, size_t argc, const ValueType arguments[], realm::Realm::Config &, ObjectDefaultsMap &, ConstructorMap &);
 
     static void schema_version(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void clear_test_state(ContextType, ObjectType, Arguments &, ReturnValue &);
@@ -350,14 +350,6 @@ public:
             default:
                 throw;
         }
-    }
-
-    static std::string validated_notification_name(ContextType ctx, const ValueType &value) {
-        std::string name = Value::validated_to_string(ctx, value, "notification name");
-        if (name == "change" || name == "schema") {
-            return name;
-        }
-        throw std::runtime_error("Only the 'change' and 'schema' notification names are supported.");
     }
 
     static const ObjectSchema& validated_object_schema_for_value(ContextType ctx, const SharedRealm &realm, const ValueType &value) {
@@ -459,7 +451,7 @@ static inline void convert_outdated_datetime_columns(const SharedRealm &realm) {
 }
 
 template<typename T>
-bool RealmClass<T>::get_realm_config(ContextType ctx, ObjectType this_object, size_t argc, const ValueType arguments[], realm::Realm::Config& config, ObjectDefaultsMap& defaults, ConstructorMap& constructors) {
+bool RealmClass<T>::get_realm_config(ContextType ctx, size_t argc, const ValueType arguments[], realm::Realm::Config& config, ObjectDefaultsMap& defaults, ConstructorMap& constructors) {
     bool schema_updated = false;
 
     if (argc > 1) {
@@ -563,7 +555,7 @@ bool RealmClass<T>::get_realm_config(ContextType ctx, ObjectType this_object, si
                         Value::from_number(ctx, used_bytes)
                     };
 
-                    ValueType should_compact = Function<T>::callback(ctx, should_compact_on_launch_function, this_object, 2, arguments);
+                    ValueType should_compact = Function<T>::callback(ctx, should_compact_on_launch_function, {}, 2, arguments);
                     return Value::to_boolean(ctx, should_compact);
                 };
             }
@@ -628,10 +620,11 @@ bool RealmClass<T>::get_realm_config(ContextType ctx, ObjectType this_object, si
 
 template<typename T>
 void RealmClass<T>::constructor(ContextType ctx, ObjectType this_object, Arguments& args) {
+    set_internal<T, RealmClass<T>>(this_object, nullptr);
     realm::Realm::Config config;
     ObjectDefaultsMap defaults;
     ConstructorMap constructors;
-    bool schema_updated = get_realm_config(ctx, this_object, args.count, args.value, config, defaults, constructors);
+    bool schema_updated = get_realm_config(ctx, args.count, args.value, config, defaults, constructors);
     auto realm = create_shared_realm(ctx, config, schema_updated, std::move(defaults), std::move(constructors));
 
     // Fix for datetime -> timestamp conversion
@@ -852,7 +845,7 @@ void RealmClass<T>::async_open_realm(ContextType ctx, ObjectType this_object, Ar
     Realm::Config config;
     ObjectDefaultsMap defaults;
     ConstructorMap constructors;
-    bool schema_updated = get_realm_config(ctx, this_object, args.count - 1, args.value, config, defaults, constructors);
+    bool schema_updated = get_realm_config(ctx, args.count - 1, args.value, config, defaults, constructors);
 
     if (!config.sync_config) {
         throw std::logic_error("_asyncOpen can only be used on a synchronized Realm.");
@@ -1125,7 +1118,7 @@ template<typename T>
 void RealmClass<T>::add_listener(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_maximum(2);
 
-    auto name = validated_notification_name(ctx, args[0]);
+    std::string name = Value::validated_to_string(ctx, args[0], "notification name");
     auto callback = Value::validated_to_function(ctx, args[1]);
 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
@@ -1133,8 +1126,14 @@ void RealmClass<T>::add_listener(ContextType ctx, ObjectType this_object, Argume
     if (name == "change") {
         get_delegate<T>(realm.get())->add_notification(callback);
     }
-    else {
+    else if (name == "beforenotify") {
+        get_delegate<T>(realm.get())->add_before_notify_notification(callback);
+    }
+    else if (name == "schema") {
         get_delegate<T>(realm.get())->add_schema_notification(callback);
+    }
+    else {
+        throw std::runtime_error(util::format("Unknown event name '%1': only 'change', 'schema' and 'beforenotify' are supported.", name));
     }
 }
 
@@ -1142,7 +1141,7 @@ template<typename T>
 void RealmClass<T>::remove_listener(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_maximum(2);
 
-    auto name = validated_notification_name(ctx, args[0]);
+    std::string name = Value::validated_to_string(ctx, args[0], "notification name");
     auto callback = Value::validated_to_function(ctx, args[1]);
 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
@@ -1150,8 +1149,14 @@ void RealmClass<T>::remove_listener(ContextType ctx, ObjectType this_object, Arg
     if (name == "change") {
         get_delegate<T>(realm.get())->remove_notification(callback);
     }
-    else {
+    else if (name == "beforenotify") {
+        get_delegate<T>(realm.get())->remove_before_notify_notification(callback);
+    }
+    else if (name == "schema") {
         get_delegate<T>(realm.get())->remove_schema_notification(callback);
+    }
+    else {
+        throw std::runtime_error(util::format("Unknown event name '%1': only 'change', 'schema' and 'beforenotify' are supported", name));
     }
 }
 
@@ -1160,7 +1165,7 @@ void RealmClass<T>::remove_all_listeners(ContextType ctx, ObjectType this_object
     args.validate_maximum(1);
     std::string name = "change";
     if (args.count) {
-        name = validated_notification_name(ctx, args[0]);
+        name = Value::validated_to_string(ctx, args[0], "notification name");
     }
 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
@@ -1168,8 +1173,14 @@ void RealmClass<T>::remove_all_listeners(ContextType ctx, ObjectType this_object
     if (name == "change") {
         get_delegate<T>(realm.get())->remove_all_notifications();
     }
-    else {
+    else if (name == "beforenotify") {
+        get_delegate<T>(realm.get())->remove_all_before_notify_notification();
+    }
+    else if (name == "schema") {
         get_delegate<T>(realm.get())->remove_all_schema_notifications();
+    }
+    else {
+        throw std::runtime_error(util::format("Unknown event name '%1': only 'change', 'schema' and 'beforenotify' are supported", name));
     }
 }
 

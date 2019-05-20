@@ -20,32 +20,9 @@
 
 'use strict';
 
-/* global REALM_MODULE_PATH */
-
 const Realm = require('realm');
 const TestCase = require('./asserts');
-let schemas = require('./schemas');
-
-const isElectronProcess = typeof process === 'object' && process.type === 'renderer';
-const isNodeProccess = typeof process === 'object' && process + '' === '[object process]' && !isElectronProcess;
-
-const require_method = require;
-function node_require(module) {
-    return require_method(module);
-}
-
-let tmp;
-let fs;
-let execFile;
-let path;
-
-if (isNodeProccess) {
-    tmp = node_require('tmp');
-    fs = node_require('fs');
-    execFile = node_require('child_process').execFile;
-    tmp.setGracefulCleanup();
-    path = node_require("path");
-}
+const schemas = require('./schemas');
 
 function uuid() {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
@@ -57,35 +34,37 @@ function uuid() {
 function getRealm() {
     const AUTH_URL = 'http://127.0.0.1:9080';
     const REALM_URL = 'realm://127.0.0.1:9080/~/' + uuid().replace("-", "_");
-    return new Promise((resolve, reject) => {
-        Realm.Sync.User.login(AUTH_URL, Realm.Sync.Credentials.nickname("admin", true))
-            .then((user) => {
-                const schemas = [
-                    {
-                        name: 'Parent',
-                        properties: {
-                            name: { type: 'string' },
-                            child: 'ObjectA',
-                        }
-                    },
-                    {
-                        name: 'ObjectA',
-                        properties: {
-                            name: { type: 'string' },
-                            parents: { type: 'linkingObjects', objectType: 'Parent', property: 'child' },
-                        }
-                    },
-                ];
-
-                const config = user.createConfiguration({
-                    schema: schemas,
-                    sync: {
-                        url: REALM_URL,
+    return Realm.Sync.User.login(AUTH_URL, Realm.Sync.Credentials.nickname("admin", true))
+        .then((user) => {
+            const schemas = [
+                {
+                    name: 'Parent',
+                    properties: {
+                        name: { type: 'string' },
+                        child: 'ObjectA',
                     }
-                });
-                resolve(new Realm(config));
+                },
+                {
+                    name: 'ObjectA',
+                    properties: {
+                        name: { type: 'string' },
+                        parents: { type: 'linkingObjects', objectType: 'Parent', property: 'child' },
+                    }
+                },
+            ];
+
+            const config = user.createConfiguration({
+                schema: schemas,
+                sync: {
+                    url: REALM_URL,
+                }
             });
+            return new Realm(config);
     });
+}
+
+function pendingOrComplete(state) {
+    return state === Realm.Sync.SubscriptionState.Pending || state === Realm.Sync.SubscriptionState.Complete;
 }
 
 function verifySubscriptionWithParents(parentToInclude, filterClause) {
@@ -144,36 +123,25 @@ function verifySubscriptionWithParents(parentToInclude, filterClause) {
 module.exports = {
 
     testSubscriptionWrapperProperties() {
-        if (!isNodeProccess) {
-            return;
-        }
-
         return getRealm().then(realm => {
-            return new Promise((resolve, reject) => {
-                const subscription = realm.objects("ObjectA").subscribe("test");
-                TestCase.assertEqual(subscription.name, "test");
-                TestCase.assertEqual(subscription.state, Realm.Sync.SubscriptionState.Creating);
-                resolve();
-            });
+            const subscription = realm.objects("ObjectA").subscribe("test");
+            TestCase.assertEqual(subscription.name, "test");
+            TestCase.assertEqual(subscription.state, Realm.Sync.SubscriptionState.Creating);
         });
     },
 
     testNamedSubscriptionProperties() {
-        if (!isNodeProccess) {
-            return;
-        }
-
         return getRealm().then(realm => {
             return new Promise((resolve, reject) => {
                 const now = new Date();
                 const now_plus_2_sec = new Date(now.getTime() + 2000);
                 const sub = realm.objects("ObjectA").subscribe("named-test");
                 sub.addListener((subscription, state) => {
-                    if (state === Realm.Sync.SubscriptionState.Pending) {
+                    if (pendingOrComplete(state)) {
                         sub.removeAllListeners();
                         const namedSub = realm.subscriptions("named-test")[0];
                         TestCase.assertEqual(namedSub.name, "named-test");
-                        TestCase.assertEqual(namedSub.state, Realm.Sync.SubscriptionState.Pending);
+                        TestCase.assertTrue(pendingOrComplete(namedSub.state));
                         TestCase.assertEqual(namedSub.error, undefined);
                         TestCase.assertEqual(namedSub.objectType, "ObjectA");
                         TestCase.assertTrue(namedSub.createdAt.getTime() >= now.getTime() && namedSub.createdAt.getTime() < now_plus_2_sec.getTime());
@@ -188,10 +156,6 @@ module.exports = {
     },
 
     testUpdateQuery: function () {
-        if (!isNodeProccess) {
-            return;
-        }
-
         return getRealm().then(realm => {
             return new Promise((resolve, reject) => {
                 const sub = realm.objects("ObjectA").filtered("name = 'Foo'").subscribe("update-named-sub-query");
@@ -206,15 +170,15 @@ module.exports = {
                             // Updating the query must either be a string or a Results objects
                             TestCase.assertThrows(() => namedSub.query = 0);
                             TestCase.assertThrows(() => namedSub.query = true);
-    
+
                             // Updating the query using a string
                             namedSub.query = "truepredicate";
                             TestCase.assertEqual(namedSub.query, "truepredicate");
-                            TestCase.assertEqual(namedSub.state, Realm.Sync.SubscriptionState.Pending);
+                            TestCase.assertTrue(pendingOrComplete(namedSub.state));
                             TestCase.assertEqual(namedSub.error, undefined);
                             TestCase.assertTrue(updated.getTime() < namedSub.updatedAt.getTime());
                             updated = namedSub.updatedAt;
-                            
+
                             setTimeout(function() {
                                 // Updating the query using a Results object
                                 namedSub.query = realm.objects('ObjectA').filtered('name = "Bar"');
@@ -230,15 +194,11 @@ module.exports = {
     },
 
     testUpdateTtl() {
-        if (!isNodeProccess) {
-            return;
-        }
-
         return getRealm().then(realm => {
             const sub = realm.objects("ObjectA").filtered("name = 'Foo'").subscribe("update-named-sub-query");
             return new Promise((resolve, reject) => {
                 sub.addListener((subscription, state) => {
-                    if (state === Realm.Sync.SubscriptionState.Pending) {
+                    if (pendingOrComplete(state)) {
                         sub.removeAllListeners();
                         const namedSub = realm.subscriptions("update-named-sub-query")[0];
                         let updated = namedSub.updatedAt;
@@ -259,15 +219,11 @@ module.exports = {
     },
 
     testUpdateReadOnlyProperties() {
-        if (!isNodeProccess) {
-            return;
-        }
-
         return getRealm().then(realm => {
             return new Promise((resolve, reject) => {
                 const sub = realm.objects("ObjectA").subscribe("read-only-test");
                 sub.addListener((subscription, state) => {
-                    if (state === Realm.Sync.SubscriptionState.Pending) {
+                    if (pendingOrComplete(state)) {
                         sub.removeAllListeners();
                         const namedSub = realm.subscriptions("read-only-test")[0];
                         TestCase.assertThrows(() => namedSub.name = "Foo");
@@ -284,10 +240,6 @@ module.exports = {
     },
 
     testSubscribeWithTtl() {
-        if (!isNodeProccess) {
-            return;
-        }
-
         return getRealm().then(realm => {
             return new Promise((resolve, reject) => {
                 const now = new Date();
@@ -295,7 +247,7 @@ module.exports = {
                 const query = realm.objects("ObjectA");
                 const sub = query.subscribe({ name: "with-ttl", timeToLive: 1000});
                 sub.addListener((subscription, state) => {
-                    if (state === Realm.Sync.SubscriptionState.Pending) {
+                    if (pendingOrComplete(state)) {
                         sub.removeAllListeners();
                         const namedSub = realm.subscriptions("with-ttl")[0];
                         TestCase.assertTrue(now.getTime() <= namedSub.createdAt.getTime() && namedSub.createdAt.getTime() < now_plus_2_sec.getTime());
@@ -310,15 +262,12 @@ module.exports = {
     },
 
     testSubscribeAndUpdateQuery() {
-        if (!isNodeProccess) {
-            return;
-        }
         return getRealm().then(realm => {
             return new Promise((resolve, reject) => {
                 let query1 = realm.objects("ObjectA");
                 const sub1 = query1.subscribe("update-query");
                 sub1.addListener((subscription1, state1) => {
-                    if (state1 === Realm.Sync.SubscriptionState.Pending) {
+                    if (pendingOrComplete(state1)) {
                         sub1.removeAllListeners();
                         const namedSub = realm.subscriptions("update-query")[0];
                         const update1 = namedSub.updatedAt;
@@ -326,14 +275,14 @@ module.exports = {
                             let query2 = realm.objects('ObjectA').filtered("name = 'Foo'");
                             const sub2 = query2.subscribe({name: 'update-query', update: true});
                             sub2.addListener((subscription2, state2) => {
-                                if (state2 === Realm.Sync.SubscriptionState.Pending) {
+                                if (pendingOrComplete(state2)) {
                                     sub2.removeAllListeners();
                                     TestCase.assertFalse(query1.description() === query2.description());
                                     TestCase.assertTrue(update1.getTime() < namedSub.updatedAt.getTime());
                                     resolve();
                                 }
                             });
-                        }, 2);    
+                        }, 2);
                     }
                 });
             });
@@ -341,17 +290,13 @@ module.exports = {
     },
 
     testSubscribeAndUpdateTtl() {
-        if (!isNodeProccess) {
-            return;
-        }
-
         return getRealm().then(realm => {
             const query1 = realm.objects("ObjectA");
 
             return new Promise((resolve, reject) => {
                 const sub1 = query1.subscribe({name: "update-query", timeToLive: 1000});
                 sub1.addListener((subscription1, state1) => {
-                    if (state1 === Realm.Sync.SubscriptionState.Pending) {
+                    if (pendingOrComplete(state1)) {
                         sub1.removeAllListeners();
                         const namedSub = realm.subscriptions("update-query")[0];
                         const update1 = namedSub.updatedAt;
@@ -360,7 +305,7 @@ module.exports = {
                         setTimeout(function() {
                             const sub2 = query1.subscribe({name: 'update-query', update: true, timeToLive: 5000});
                             sub2.addListener((subscription2, state2) => {
-                                if (state2 === Realm.Sync.SubscriptionState.Pending) {
+                                if (pendingOrComplete(state2)) {
                                     sub2.removeAllListeners();
                                     TestCase.assertTrue(update1.getTime() < namedSub.updatedAt.getTime());
                                     TestCase.assertTrue(expires1.getTime() < namedSub.expiresAt.getTime());
@@ -377,38 +322,20 @@ module.exports = {
     },
 
     testSubscribeWithoutName() {
-        if (!isNodeProccess) {
-            return;
-        }
-
         return getRealm().then(realm => {
-            return new Promise((resolve, reject) => {
-                let query = realm.objects("ObjectA");
-                query.subscribe({ update: true, timeToLive: 1000}); // Missing name, doesn't throw
-                resolve();
-            });
+            let query = realm.objects("ObjectA");
+            query.subscribe({ update: true, timeToLive: 1000}); // Missing name, doesn't throw
         });
     },
 
     testSubscribeWithMisspelledConfigParameter() {
-        if (!isNodeProccess) {
-            return;
-        }
-
         return getRealm().then(realm => {
-            return new Promise((resolve, reject) => {
-                let query = realm.objects("ObjectA");
-                TestCase.assertThrowsContaining(() => query.subscribe({ naem: "myName" }), "Unexpected property in subscription options: 'naem'");
-                resolve();
-            });
+            let query = realm.objects("ObjectA");
+            TestCase.assertThrowsContaining(() => query.subscribe({ naem: "myName" }), "Unexpected property in subscription options: 'naem'");
         });
     },
 
     testSubscribeToChildrenWithoutParents() {
-        if (!isNodeProccess) {
-            return;
-        }
-
         return getRealm().then(realm => {
             realm.write(() => {
                 let obj_a1 = realm.create('ObjectA', {name: "a1"});
@@ -438,10 +365,6 @@ module.exports = {
     },
 
     testSubscribeParentsWithForwardLinks() {
-        if (!isNodeProccess) {
-            return;
-        }
-
         return getRealm().then(realm => {
             realm.write(() => {
                 let obj_a1 = realm.create('ObjectA', {name: "a1"});
@@ -471,23 +394,14 @@ module.exports = {
     },
 
     testSubscribeToChildrenWithNamedParents() {
-        if (!isNodeProccess) {
-            return;
-        }
         return verifySubscriptionWithParents("parents");
     },
 
     testSubscribeToChildrenWithUnnamedParents() {
-        if (!isNodeProccess) {
-            return;
-        }
         return verifySubscriptionWithParents("@links.Parent.child");
     },
 
     testSubscribeToChildrenWithMalformedInclusion1() {
-        if (!isNodeProccess) {
-            return;
-        }
         return verifySubscriptionWithParents("something.wrong").then(() => {
             throw new Error('subscription should have failed')
         },
@@ -496,9 +410,6 @@ module.exports = {
     },
 
     testSubscribeToChildrenWithMalformedInclusion2() {
-        if (!isNodeProccess) {
-            return;
-        }
         return verifySubscriptionWithParents("@links.Parent.missing_property").then(() => {
             throw new Error('subscription should have failed')
         },
@@ -507,9 +418,6 @@ module.exports = {
     },
 
     testSubscribeToChildrenWithMalformedInclusion3() {
-        if (!isNodeProccess) {
-            return;
-        }
         return verifySubscriptionWithParents(4.2).then(() => {
             throw new Error('subscription should have failed')
         },
@@ -521,17 +429,10 @@ module.exports = {
     // but it should not be encouraged nor documented. It is mostly to enable users to run
     // subscription queries that are directly copied from Studio.
     testSubscribeWithManualInclusion1() {
-        if (!isNodeProccess) {
-            return;
-        }
         return verifySubscriptionWithParents("", "TRUEPREDICATE INCLUDE(@links.Parent.child)");
     },
 
     testSubscribeWithManualInclusion2() {
-        if (!isNodeProccess) {
-            return;
-        }
         return verifySubscriptionWithParents("", "TRUEPREDICATE INCLUDE(parents)");
     },
-
 };
