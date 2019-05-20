@@ -161,8 +161,16 @@ module.exports = {
     },
     testMalformedQueries: function() {
         var realm = new Realm({ schema: [schemas.StringOnly] });
-        TestCase.assertThrows(function() {
+        TestCase.assertThrowsContaining(function() {
             realm.objects(schemas.StringOnly.name).filtered('stringCol = $0');
         }, "Request for argument at index 0 but no arguments are provided");
-    }
+    },
+    testIncludeSyntaxOnLocalQueries: function() {
+        var realm = new Realm({ schema: [schemas.Country, schemas.Language] });
+        // The following is arbitrarily allowed, though it is a no-op because local
+        // queries already include all linkingObjects. This is mostly to support users
+        // who copy-paste subscriptions into local Realm files to test.
+        realm.objects(schemas.Language.name).filtered('TRUEPREDICATE INCLUDE(@links.Country.languages)');
+        realm.objects(schemas.Language.name).filtered('TRUEPREDICATE INCLUDE(spokenIn)');
+    },
 };

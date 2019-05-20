@@ -189,14 +189,14 @@ typename T::Object ResultsClass<T>::create_filtered(ContextType ctx, const U &co
     auto const &object_schema = collection.get_object_schema();
     DescriptorOrdering ordering;
     parser::KeyPathMapping mapping;
-    mapping.set_backlink_class_prefix(ObjectStore::table_name_for_object_type(""));
+    mapping.set_backlink_class_prefix(ObjectStore::table_name_for_object_type("")); // prefix is "class_" defined by object store
     setup_aliases(mapping, realm);
 
     parser::ParserResult result = parser::parse(query_string);
     NativeAccessor<T> accessor(ctx, realm, object_schema);
     query_builder::ArgumentConverter<ValueType, NativeAccessor<T>> converter(accessor, &args.value[1], args.count - 1);
     query_builder::apply_predicate(query, result.predicate, converter, mapping);
-    query_builder::apply_ordering(ordering, query.get_table(), result.ordering);
+    query_builder::apply_ordering(ordering, query.get_table(), result.ordering, mapping);
 
     return create_instance(ctx, collection.filter(std::move(query)).apply_ordering(std::move(ordering)));
 }
@@ -314,7 +314,9 @@ void ResultsClass<T>::subscribe(ContextType ctx, ObjectType this_object, Argumen
 
     auto results = get_internal<T, ResultsClass<T>>(this_object);
     auto realm = results->get_realm();
+    auto object_schema = results->get_object_schema();
     auto sync_config = realm->config().sync_config;
+    IncludeDescriptor inclusion_paths;
 
     util::Optional<std::string> subscription_name;
     bool update = false;
@@ -324,28 +326,65 @@ void ResultsClass<T>::subscribe(ContextType ctx, ObjectType this_object, Argumen
             subscription_name = util::Optional<std::string>(Value::validated_to_string(ctx, args[0]));
         } else {
             ObjectType options_object = Value::validated_to_object(ctx, args[0]);
-            ValueType name_value = Object::get_property(ctx, options_object, "name");
-            if (Value::is_undefined(ctx, name_value)) {
-                throw std::logic_error("A 'name' must be set.");
-            } 
-            else {
-                subscription_name = util::Optional<std::string>(Value::validated_to_string(ctx, name_value));
+
+            std::vector<const char*> available_options = {"name", "update", "timeToLive", "includeLinkingObjects"};
+            enum SubscriptionOptions { NAME, UPDATE, TTL, INCLUSIONS };
+            auto prop_names = Object::get_property_names(ctx, options_object);
+            for (size_t i = 0; i < prop_names.size(); ++i) {
+                std::string prop = prop_names[i];
+                if (std::find(available_options.begin(), available_options.end(), prop) == available_options.end()) {
+                    throw std::logic_error("Unexpected property in subscription options: '" + prop + "'.");
+                }
             }
 
-            ValueType update_value = Object::get_property(ctx, options_object, "update");
-            if (!Value::is_undefined(ctx, update_value))
-                update = Value::validated_to_boolean(ctx, update_value, "update");
+            ValueType name_value = Object::get_property(ctx, options_object, available_options[NAME]);
+            if (!Value::is_undefined(ctx, name_value)) {
+                subscription_name = util::Optional<std::string>(Value::validated_to_string(ctx, name_value, available_options[NAME]));
+            }
 
-            ValueType ttl_value = Object::get_property(ctx, options_object, "timeToLive");
+            ValueType update_value = Object::get_property(ctx, options_object, available_options[UPDATE]);
+            if (!Value::is_undefined(ctx, update_value))
+                update = Value::validated_to_boolean(ctx, update_value, available_options[UPDATE]);
+
+            ValueType ttl_value = Object::get_property(ctx, options_object, available_options[TTL]);
             if (!Value::is_undefined(ctx, ttl_value))
-                ttl = util::Optional<int64_t>(Value::validated_to_number(ctx, ttl_value, "timeToLive"));
+                ttl = util::Optional<int64_t>(Value::validated_to_number(ctx, ttl_value, available_options[TTL]));
+
+            ValueType user_includes = Object::get_property(ctx, options_object, available_options[INCLUSIONS]);
+            if (!Value::is_undefined(ctx, user_includes)) {
+                ObjectType property_paths = Value::validated_to_array(ctx, user_includes, available_options[INCLUSIONS]);
+
+                parser::KeyPathMapping mapping;
+                mapping.set_backlink_class_prefix(ObjectStore::table_name_for_object_type("")); // prefix is "class_"
+                setup_aliases(mapping, realm); // this enables user defined linkingObjects property names to be parsed
+                DescriptorOrdering combined_orderings;
+
+                size_t prop_count = Object::validated_get_length(ctx, property_paths);
+                for (unsigned int i = 0; i < prop_count; i++) {
+                    std::string path = Object::validated_get_string(ctx, property_paths, i);
+                    DescriptorOrdering ordering;
+                    // the parser provides a special function just for this
+                    parser::DescriptorOrderingState ordering_state = parser::parse_include_path(path); // throws
+                    query_builder::apply_ordering(ordering, results->get_query().get_table(), ordering_state, mapping);
+                    combined_orderings.append_include(ordering.compile_included_backlinks());
+                }
+                if (combined_orderings.will_apply_include()) {
+                    inclusion_paths = combined_orderings.compile_included_backlinks();
+                }
+            }
         }
     }
     else {
         subscription_name = util::none;
     }
 
-    auto subscription = partial_sync::subscribe(*results, subscription_name, ttl, update);
+    partial_sync::SubscriptionOptions options;
+    options.user_provided_name = subscription_name;
+    options.inclusions = inclusion_paths;
+    options.time_to_live_ms = ttl;
+    options.update = update;
+    auto subscription = partial_sync::subscribe(*results, options);
+
     return_value.set(SubscriptionClass<T>::create_instance(ctx, std::move(subscription), subscription_name));
 }
 #endif
