@@ -47,7 +47,7 @@ The hook function is simply a technique (originally published in 1999 https://ww
   memcpy(orig_func, "\x00\x4b\x18\x47", 4);
   memcpy(orig_func + 4, &new_func, 4);
 
-For none Thumb we simply set the current program PC to the address of the new function (swap_function) 
+For non-Thumb we simply set the current program PC to the address of the new function (swap_function) 
     LDR	PC, [PC] <---- [PC] get the address of the current PC (remember the first call of swap_function is triggered automatically when loading the shared object) so when 
                         execute this assembly later at the address of the original function, this will jump to swap_function
 
