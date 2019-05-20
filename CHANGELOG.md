@@ -1,10 +1,10 @@
-x.x.x Release notes (yyyy-MM-dd)
+2.28.0 Release notes (2019-5-20)
 =============================================================
 ### Enhancements
 * Improve performance when using Chrome Debugging with React Native by adding caching and reducing the number of RPC calls required. Read-heavy workflows are as much as 10x faster. Write-heavy workflows will see a much smaller improvement, but also had a smaller performance hit to begin with. (Issue: [#491](https://github.com/realm/realm-js/issues/491), PR: [#2373](https://github.com/realm/realm-js/pull/2373)).
+* Reduce bundle size for React Native apps. Thanks for @lebedev. ([#2241](https://github.com/realm/realm-js/pull/2241))
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
 * Opening a query-based Realm using `new Realm` did not automatically add the required types to the schema when running in Chrome, resulting in errors when trying to manage subscriptions. (PR: [#2373](https://github.com/realm/realm-js/pull/2373), since v2.15.0).
 * The Chrome debugger did not properly enforce read isolation, meaning that reading a property twice in a row could produce different values if another thread performed a write in between the reads. This was typically only relevant to synchronized Realms due to the lack of multithreading support in the supported Javascript environments. (PR: [#2373](https://github.com/realm/realm-js/pull/2373), since v1.0.0).
 * The RPC server for Chrome debugging would sometimes deadlock if a notification fired at the same time as a Realm function which takes a callback was called. (PR: [#2373](https://github.com/realm/realm-js/pull/2373), since v1.0.0 in various forms).
