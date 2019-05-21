@@ -3,6 +3,7 @@
 ### Enhancements
 * Improve performance when using Chrome Debugging with React Native by adding caching and reducing the number of RPC calls required. Read-heavy workflows are as much as 10x faster. Write-heavy workflows will see a much smaller improvement, but also had a smaller performance hit to begin with. (Issue: [#491](https://github.com/realm/realm-js/issues/491), PR: [#2373](https://github.com/realm/realm-js/pull/2373)).
 * Reduce bundle size for React Native apps. Thanks for @lebedev. ([#2241](https://github.com/realm/realm-js/pull/2241))
+* Support 64 bit for React Native Android. ([#2221](https://github.com/realm/realm-js/issues/2221))
 
 ### Fixed
 * Opening a query-based Realm using `new Realm` did not automatically add the required types to the schema when running in Chrome, resulting in errors when trying to manage subscriptions. (PR: [#2373](https://github.com/realm/realm-js/pull/2373), since v2.15.0).
@@ -60,7 +61,6 @@ NOTE: This release is only compatible with Realm Object Server 3.21.0 or later.
 
 ### Enhancements
 * Add an optional parameter to the `SubscriptionOptions`: `inclusions` which is an array of linkingObjects properties. This tells subscriptions to include objects linked through these relationships as well (links and lists are already included by default). ([#2296](https://github.com/realm/realm-js/pull/2296)
-* Support 64 bit for React Native Android. ([#2221](https://github.com/realm/realm-js/issues/2221)
 
 ### Fixed
 * Making a query that compares two integer properties could cause a segmentation fault in the server or x86 node apps. ([realm-core#3253](https://github.com/realm/realm-core/issues/3253))
