@@ -293,7 +293,6 @@ def buildMacOS(workerFunction) {
   return {
     myNode('osx_vegas') {
       withEnv([
-        "DEVELOPER_DIR=/Applications/Xcode-9.4.app/Contents/Developer",
         "SDKROOT=macosx10.13"
       ]) {
         unstash 'source'
@@ -525,8 +524,7 @@ def testLinux(target, nodeVersion = 10, postStep = null) {
 def testMacOS(target, postStep = null) {
   return {
     node('osx_vegas') {
-      withEnv(['DEVELOPER_DIR=/Applications/Xcode-9.4.app/Contents/Developer',
-               'SDKROOT=macosx10.13',
+      withEnv(['SDKROOT=macosx10.13',
                'REALM_SET_NVM_ALIAS=1']) {
         doInside('./scripts/test.sh', target, postStep)
       }
