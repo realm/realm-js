@@ -1,4 +1,4 @@
-2.28.0 Release notes (2019-5-20)
+2.28.0 Release notes (2019-5-22)
 =============================================================
 ### Enhancements
 * Improve performance when using Chrome Debugging with React Native by adding caching and reducing the number of RPC calls required. Read-heavy workflows are as much as 10x faster. Write-heavy workflows will see a much smaller improvement, but also had a smaller performance hit to begin with. (Issue: [#491](https://github.com/realm/realm-js/issues/491), PR: [#2373](https://github.com/realm/realm-js/pull/2373)).
