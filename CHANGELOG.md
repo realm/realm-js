@@ -2,7 +2,7 @@
 =============================================================
 ### Enhancements
 * Improve performance when using Chrome Debugging with React Native by adding caching and reducing the number of RPC calls required. Read-heavy workflows are as much as 10x faster. Write-heavy workflows will see a much smaller improvement, but also had a smaller performance hit to begin with. (Issue: [#491](https://github.com/realm/realm-js/issues/491), PR: [#2373](https://github.com/realm/realm-js/pull/2373)).
-* Reduce bundle size for React Native apps. Thanks for @lebedev. ([#2241](https://github.com/realm/realm-js/pull/2241))
+* Reduce bundle size for React Native apps. Thanks to @lebedev. ([#2241](https://github.com/realm/realm-js/pull/2241))
 * Support 64 bit for React Native Android. ([#2221](https://github.com/realm/realm-js/issues/2221))
 
 ### Fixed
