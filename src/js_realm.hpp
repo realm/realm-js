@@ -267,6 +267,7 @@ public:
     static void clear_test_state(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void copy_bundled_realm_files(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void delete_file(ContextType, ObjectType, Arguments &, ReturnValue &);
+    static void realm_file_exists(ContextType, ObjectType, Arguments &, ReturnValue &);
 
     static void create_user_agent_description(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void extend_query_based_schema(ContextType, ObjectType, Arguments &, ReturnValue &);
@@ -282,6 +283,7 @@ public:
         {"clearTestState", wrap<clear_test_state>},
         {"copyBundledRealmFiles", wrap<copy_bundled_realm_files>},
         {"deleteFile", wrap<delete_file>},
+        {"exists", wrap<realm_file_exists},
         {"_createUserAgentDescription", wrap<create_user_agent_description>},
         {"_extendQueryBasedSchema", wrap<extend_query_based_schema>},
 #if REALM_ENABLE_SYNC
@@ -400,6 +402,36 @@ public:
             throw std::runtime_error("Object type '" + object_type + "' not found in schema.");
         }
         return *object_schema;
+    }
+
+    static realm::Realm::Config validate_and_normalize_config(ContextType ctx, ValueType value) {
+        if (!Value::is_object(ctx, value)) {
+            throw std::runtime_error("Invalid argument, expected a Realm configuration object");
+        }
+
+        ObjectType config_object = Value::validated_to_object(ctx, value);
+        realm::Realm::Config config;
+
+        static const String path_string = "path";
+        ValueType path_value = Object::get_property(ctx, config_object, path_string);
+        if (!Value::is_undefined(ctx, path_value)) {
+            config.path = Value::validated_to_string(ctx, path_value, "path");
+        }
+        else {
+            #if REALM_ENABLE_SYNC
+            ValueType sync_config_value = Object::get_property(ctx, config_object, "sync");
+            if (!Value::is_undefined(ctx, sync_config_value)) {
+                SyncClass<T>::populate_sync_config(ctx, Value::validated_to_object(ctx, Object::get_global(ctx, "Realm")), config_object, config);
+            }
+            #endif
+
+            if (config.path.empty()) {
+                config.path = js::default_path();
+            }
+        }
+
+        config.path = normalize_realm_path(config.path);
+        return config;
     }
 };
 
@@ -719,41 +751,22 @@ void RealmClass<T>::copy_bundled_realm_files(ContextType ctx, ObjectType this_ob
 template<typename T>
 void RealmClass<T>::delete_file(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_maximum(1);
-
     ValueType value = args[0];
-    if (!Value::is_object(ctx, value)) {
-        throw std::runtime_error("Invalid argument, expected a Realm configuration object");
-    }
-
-    ObjectType config_object = Value::validated_to_object(ctx, value);
-    realm::Realm::Config config;
-
-    static const String path_string = "path";
-    ValueType path_value = Object::get_property(ctx, config_object, path_string);
-    if (!Value::is_undefined(ctx, path_value)) {
-        config.path = Value::validated_to_string(ctx, path_value, "path");
-    }
-    else {
-        #if REALM_ENABLE_SYNC
-        ValueType sync_config_value = Object::get_property(ctx, config_object, "sync");
-        if (!Value::is_undefined(ctx, sync_config_value)) {
-            SyncClass<T>::populate_sync_config(ctx, Value::validated_to_object(ctx, Object::get_global(ctx, "Realm")), config_object, config);
-        }
-        #endif
-
-        if (config.path.empty()) {
-            config.path = js::default_path();
-        }
-    }
-
-    config.path = normalize_realm_path(config.path);
-
+    realm::Realm::Config config = validate_and_normalize_config(ctx, value)
     std::string realm_file_path = config.path;
     realm::remove_file(realm_file_path);
     realm::remove_file(realm_file_path + ".lock");
     realm::remove_file(realm_file_path + ".note");
     realm::remove_directory(realm_file_path + ".management");
+}
 
+template<typename T>
+void RealmClass<T>::realm_file_exists(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
+    args.validate_maximum(1);
+    ValueType value = args[0];
+    realm::Realm::Config config = validate_and_normalize_config(ctx, value)
+    std::string realm_file_path = config.path;
+    return realm::file_exists(realm_file_path);
 }
 
 template<typename T>

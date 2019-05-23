@@ -827,6 +827,11 @@ declare class Realm {
     static clearTestState(): void;
 
     /**
+     * Checks if the Realm already exists on disk.
+     */
+    static exists(config: Realm.Configuration): boolean;
+
+    /**
      * @param  {Realm.Configuration} config?
      */
     constructor(config?: Realm.Configuration);

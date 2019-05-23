@@ -147,4 +147,13 @@ void remove_directory(const std::string &path)
     remove_file(path); // works for directories too
 }
 
+bool file_exists(const std::string &path)
+{
+    @autoreleasepool {
+        NSFileManager *manager = [NSFileManager defaultManager];
+        NSString *filePath = @(path.c_str());
+        return [manager fileExistsAtPath:filePath];
+    }
+}
+
 }
