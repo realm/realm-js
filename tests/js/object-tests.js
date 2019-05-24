@@ -694,5 +694,24 @@ module.exports = {
                 }, 2000);
             }, 2000);
         });
+    },
+
+    testFloatValues: function() {
+        const realm = new Realm({schema: [schemas.FloatOnly]});
+        let values = [0.0, 1.0, Infinity, NaN];
+
+        values.forEach(function(v) {
+            realm.write(function () {
+                realm.create(schemas.FloatOnly.name, { floatCol: v });
+            })
+        });
+
+        var floats = realm.objects(schemas.FloatOnly.name);
+        TestCase.assertEqual(floats.length, values.length);
+        for (var i = 0; i < values.length; i++) {
+            TestCase.assertEqualWithTolerance(floats[i]['floatCol'], values[i], 0.0001);
+        }
+
+        realm.close();
     }
 };

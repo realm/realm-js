@@ -4,8 +4,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * None.
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None.
+* Not-a-number (NaN) was wrongly assumed not to be an illegal values in Realm Core (thanks to @jsflax for discovering this).
 
 ### Compatibility
 * Realm Object Server: 3.11.0 or later.
