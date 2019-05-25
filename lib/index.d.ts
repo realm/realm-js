@@ -505,8 +505,29 @@ declare namespace Realm.Sync {
         _disableQueryBasedSyncUrlChecks?: boolean;
         _sessionStopPolicy?: SessionStopPolicy;
         custom_http_headers?: { [header: string]: string };
-        customQueryBasedSyncIdentifier?: string;
+        customQueryBasedSyncIdentifier?: string,
+        newRealmFileBehavior?: OpenRealmBehaviorConfiguration
+        existingRealmFileBehavior?: OpenRealmBehaviorConfiguration
     }
+
+    interface OpenRealmBehaviorConfiguration {
+        readonly type: OpenRealmBehaviorType
+        readonly timeOut?: number;
+        readonly timeOutBehavior?: OpenRealmTimeOutBehavior;
+    }
+
+    const enum OpenRealmBehaviorType {
+        OpenImmediately = "openImmediately",
+        SyncBeforeOpen = 'syncBeforeOpen'
+    }
+
+    const enum OpenRealmTimeOutBehavior {
+        ThrowException = 'throwException',
+        OpenLocalRealm = 'openLocalRealm'
+    }
+
+    const openLocalRealmBehavior: OpenRealmBehaviorConfiguration;
+    const syncBeforeOpenBehavior: OpenRealmBehaviorConfiguration;
 
     enum ConnectionState {
         Disconnected = "disconnected",
@@ -729,7 +750,7 @@ declare namespace Realm.Permissions {
     }
 
     class ClassPrivileges {
-        canCreate: boolean
+        canCreate: boolean;
         canRead: boolean;
         canUpdate: boolean;
         canQuery: boolean;
@@ -746,7 +767,8 @@ declare namespace Realm.Permissions {
 }
 
 interface ProgressPromise extends Promise<Realm> {
-    progress(callback: Realm.Sync.ProgressNotificationCallback): Promise<Realm>
+    cancel(): void;
+    progress(callback: Realm.Sync.ProgressNotificationCallback): Promise<Realm>;
 }
 
 interface NamedSubscription {

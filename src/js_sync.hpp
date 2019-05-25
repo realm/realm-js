@@ -762,17 +762,13 @@ void SessionClass<T>::wait_for_completion(Direction direction, ContextType ctx, 
             Function<T>::callback(protected_ctx, protected_callback, typename T::Object(), 1, callback_arguments);
         });
 
-        bool callback_registered;
         switch(direction) {
             case Upload:
-                callback_registered = session->wait_for_upload_completion(std::move(completion_handler));
+                session->wait_for_upload_completion(std::move(completion_handler));
                 break;
             case Download:
-                callback_registered = session->wait_for_download_completion(std::move(completion_handler));
+                session->wait_for_download_completion(std::move(completion_handler));
                 break;
-        }
-        if (!callback_registered) {
-            throw new logic_error("Could not register upload/download completion handler");
         }
         auto syncSession = create_object<T, SessionClass<T>>(ctx, new WeakSession(session));
         PropertyAttributes attributes = ReadOnly | DontEnum | DontDelete;
@@ -1393,6 +1389,8 @@ void SyncClass<T>::deserialize_change_set(ContextType ctx, ObjectType this_objec
     return_value.set(create_object<T, ChangeObject<T>>(ctx, new GlobalNotifier::ChangeNotification(serialized)));
 }
 #endif
+
+
 
 } // js
 } // realm
