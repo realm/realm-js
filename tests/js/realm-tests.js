@@ -238,6 +238,43 @@ module.exports = {
         TestCase.assertEqual(realm.readOnly, true);
     },
 
+    testRealmExists: function() {
+
+        // Local Realms
+        let config = {schema: [schemas.TestObject]};
+        TestCase.assertFalse(Realm.exists(config));
+        new Realm(config).close();
+        TestCase.assertTrue(Realm.exists(config));
+
+        // Sync Realms
+        if (!global.enableSyncTests) {
+            return;
+        }
+        return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.nickname("admin", true))
+            .then(user => {
+                const fullSyncConfig = user.createConfiguration({
+                    schema: [schemas.TestObject],
+                    sync: {
+                        url: `realm://127.0.0.1:9080/test`,
+                        fullSynchronization: true,
+                    },
+                });
+                TestCase.assertFalse(Realm.exists(fullSyncConfig));
+                new Realm(fullSyncConfig).close();
+                TestCase.assertTrue(Realm.exists(fullSyncConfig));
+
+                const queryBasedConfig = user.createConfiguration({
+                    schema: [schemas.TestObject],
+                    sync: {
+                        url: `realm://127.0.0.1:9080/test`,
+                    },
+                });
+                TestCase.assertFalse(Realm.exists(queryBasedConfig));
+                new Realm(queryBasedConfig).close();
+                TestCase.assertTrue(Realm.exists(queryBasedConfig));
+            });
+    },
+
     testRealmOpen: function() {
         let realm = new Realm({schema: [schemas.TestObject], schemaVersion: 1});
         realm.write(() => {

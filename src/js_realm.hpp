@@ -766,7 +766,7 @@ void RealmClass<T>::realm_file_exists(ContextType ctx, ObjectType this_object, A
     ValueType value = args[0];
     realm::Realm::Config config = validate_and_normalize_config(ctx, value);
     std::string realm_file_path = config.path;
-    return realm::file_exists(realm_file_path);
+    return_value.set(realm::file_exists(realm_file_path));
 }
 
 template<typename T>
