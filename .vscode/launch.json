@@ -26,12 +26,11 @@
             "type": "node",
             "request": "launch",
             "name": "Debug Node Unit Tests (rebuild)",
-            "preLaunchTask": "rebuild-node-tests",
+            "preLaunchTask": "Rebuild Node Tests",
             "cwd": "${workspaceRoot}/tests",
-            "program": "${workspaceRoot}/tests/node_modules/jasmine/bin/jasmine.js",
-            "args": [
-                "spec/unit_tests.js"
-            ]
+            "program": "${workspaceFolder}/tests/node_modules/jasmine/bin/jasmine.js",
+            "args": ["spec/unit_tests.js"],
+
         },
         {
             "type": "node",
@@ -47,8 +46,9 @@
             "type": "node",
             "request": "launch",
             "name": "Download & Start Server",
-            "cwd": "${workspaceRoot}/scripts"
-            
+            "cwd": "${workspaceRoot}/scripts",
+            "program": "${workspaceRoot}/scripts/test-ros-server.js"
+
         },
         {
             "type": "node",
