@@ -62,8 +62,8 @@ static std::string normalize_realm_path(std::string path) {
     return path;
 }
 
-template<typename T>
-class RealmClass;
+template<typename T> class RealmClass;
+template<typename T> class AsyncOpenTaskClass;
 
 template<typename T>
 class RealmDelegate : public BindingContext {
@@ -205,6 +205,7 @@ class RealmClass : public ClassDefinition<T, SharedRealm, ObservableClass<T>> {
     using Value = js::Value<T>;
     using ReturnValue = js::ReturnValue<T>;
     using NativeAccessor = realm::js::NativeAccessor<T>;
+    using RealmCallbackHandler = void(std::shared_ptr<Realm> realm, std::exception_ptr error);
 
 public:
     using ObjectDefaults = typename Schema<T>::ObjectDefaults;
@@ -887,61 +888,85 @@ void RealmClass<T>::async_open_realm(ContextType ctx, ObjectType this_object, Ar
         Function<T>::callback(protected_ctx, protected_callback, protected_this, 1, callback_arguments);
     }
 
-    // First download the Realm with no schema set to avoid spurious writes that
-    // the server may either reject (for read-only Realms) or just waste time
-    // merging.
-    std::shared_ptr<Realm> realm;
-    try {
-        auto download_config = config;
-        download_config.schema = util::none;
-        download_config.cache = false;
-        realm = realm::Realm::get_shared_realm(std::move(download_config));
-    }
-    catch (const RealmFileException& ex) {
-        handleRealmFileException(ctx, config, ex);
-    }
-
-    auto session = user->session_for_on_disk_path(realm->config().path);
-    EventLoopDispatcher<WaitHandler> wait_handler([=, config=std::move(config),
-                                                   defaults=std::move(defaults),
-                                                   constructors=std::move(constructors)](std::error_code error_code) mutable {
+    AsyncOpenTask* ptr = new AsyncOpenTask(Realm::get_synchronized_realm(config));
+    EventLoopDispatcher<RealmCallbackHandler> callback_handler([=, config=std::move(config),
+                                                               defaults=std::move(defaults),
+                                                               constructors=std::move(constructors)](std::shared_ptr<Realm> realm, std::exception_ptr error) mutable {
         HANDLESCOPE
-        if (error_code) {
-            ObjectType object = Object::create_empty(protected_ctx);
-            Object::set_property(protected_ctx, object, "message", Value::from_string(protected_ctx, error_code.message()));
-            Object::set_property(protected_ctx, object, "errorCode", Value::from_number(protected_ctx, error_code.value()));
+        if (error) {
+            try {
+                std::rethrow_exception(error);
+            } catch(const std::exception& e) {
+                ObjectType object = Object::create_empty(protected_ctx);
+                 Object::set_property(protected_ctx, object, "message", Value::from_string(protected_ctx, e.what()));
+                 Object::set_property(protected_ctx, object, "errorCode", Value::from_number(protected_ctx, 1));
 
-            ValueType callback_arguments[2];
-            callback_arguments[0] = Value::from_null(protected_ctx);
-            callback_arguments[1] = object;
-
-            Function<T>::callback(protected_ctx, protected_callback, typename T::Object(), 2, callback_arguments);
-            return;
+                 ValueType callback_arguments[1];
+                 callback_arguments[0] = object;
+                 Function<T>::callback(protected_ctx, protected_callback, protected_this, 1, callback_arguments);
+                 return;
+            }
         }
 
-        // Ensure that all of our metadata tables are properly initialized if
-        // this is a query-based sync Realm
-        if (config.sync_config->is_partial) {
-            realm->update_schema({}, 0);
-        }
-        realm->close();
+        realm->close(); // FIXME Can we re-use this Realm?
 
         // Reopen it with the real configuration and pass that Realm back to the callback
-        auto final_realm = create_shared_realm(protected_ctx, std::move(config),
-                                               schema_updated, std::move(defaults),
-                                               std::move(constructors));
+        ObjectDefaultsMap m_defaults;
+        ConstructorMap m_constructors;
+        auto final_realm = RealmClass<T>::create_shared_realm(protected_ctx, std::move(config), schema_updated, std::move(defaults), std::move(constructors));
         ObjectType object = create_object<T, RealmClass<T>>(protected_ctx, new SharedRealm(final_realm));
 
         ValueType callback_arguments[2];
         callback_arguments[0] = object;
         callback_arguments[1] = Value::from_null(protected_ctx);
         Function<T>::callback(protected_ctx, protected_callback, typename T::Object(), 2, callback_arguments);
-
-        // Ensure the sync session is kept alive while we close and reopen the Realm
-        static_cast<void>(session);
     });
-    session->wait_for_download_completion(std::move(wait_handler));
-    return_value.set(create_object<T, SessionClass<T>>(ctx, new WeakSession(session)));
+
+    ptr->start(callback_handler);
+    set_internal<T, AsyncOpenTaskClass<T>>(this_object, ptr);
+    return_value.set(get_internal<T, AsyncOpenTaskClass<T>>(this_object));
+
+//    auto session = user->session_for_on_disk_path(realm->config().path);
+//    EventLoopDispatcher<WaitHandler> wait_handler([=, config=std::move(config),
+//                                                   defaults=std::move(defaults),
+//                                                   constructors=std::move(constructors)](std::error_code error_code) mutable {
+//        HANDLESCOPE
+//        if (error_code) {
+//            ObjectType object = Object::create_empty(protected_ctx);
+//            Object::set_property(protected_ctx, object, "message", Value::from_string(protected_ctx, error_code.message()));
+//            Object::set_property(protected_ctx, object, "errorCode", Value::from_number(protected_ctx, error_code.value()));
+//
+//            ValueType callback_arguments[2];
+//            callback_arguments[0] = Value::from_null(protected_ctx);
+//            callback_arguments[1] = object;
+//
+//            Function<T>::callback(protected_ctx, protected_callback, typename T::Object(), 2, callback_arguments);
+//            return;
+//        }
+//
+//        // Ensure that all of our metadata tables are properly initialized if
+//        // this is a query-based sync Realm
+//        if (config.sync_config->is_partial) {
+//            realm->update_schema({}, 0);
+//        }
+//        realm->close();
+//
+//        // Reopen it with the real configuration and pass that Realm back to the callback
+//        auto final_realm = create_shared_realm(protected_ctx, std::move(config),
+//                                               schema_updated, std::move(defaults),
+//                                               std::move(constructors));
+//        ObjectType object = create_object<T, RealmClass<T>>(protected_ctx, new SharedRealm(final_realm));
+//
+//        ValueType callback_arguments[2];
+//        callback_arguments[0] = object;
+//        callback_arguments[1] = Value::from_null(protected_ctx);
+//        Function<T>::callback(protected_ctx, protected_callback, typename T::Object(), 2, callback_arguments);
+//
+//        // Ensure the sync session is kept alive while we close and reopen the Realm
+//        static_cast<void>(session);
+//    });
+//    session->wait_for_download_completion(std::move(wait_handler));
+//    return_value.set(create_object<T, SessionClass<T>>(ctx, new WeakSession(session)));
 }
 #endif
 
@@ -1395,101 +1420,19 @@ class AsyncOpenTaskClass : public ClassDefinition<T, AsyncOpenTask> {
 public:
     std::string const name = "AsyncOpenTask";
 
-    static FunctionType create_constructor(ContextType);
-
-    static void constructor(ContextType, ObjectType, Arguments &);
     static void add_download_notification(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void cancel(ContextType, ObjectType, Arguments &, ReturnValue &);
-    static void start(ContextType, ObjectType, Arguments &, ReturnValue &);
 
     MethodMap<T> const methods = {
         {"addDownloadNotification", wrap<add_download_notification>},
         {"cancel", wrap<cancel>},
-        {"start", wrap<start>}
     };
 };
 
 template<typename T>
-void AsyncOpenTaskClass<T>::constructor(ContextType ctx, ObjectType this_object, Arguments& args) {
-    args.validate_maximum(1);
-    Object::set_property(ctx, this_object, "_config", args.get(0));
-}
-
-template<typename T>
-void AsyncOpenTaskClass<T>::start(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue & return_value) {
-    args.validate_maximum(1);
-
-    auto config_object = Object::get_property(ctx, this_object, "_config");
-    auto callback_function = Value::validated_to_function(ctx, args[0]);
-
-    Realm::Config config;
-    ObjectDefaultsMap defaults;
-    ConstructorMap constructors;
-    bool schema_updated = get_realm_config(ctx, this_object, 1, config_object, Object::create_array(ctx, 1, config_object), defaults, constructors);
-
-    if (!config.sync_config) {
-        ObjectType object = Object::create_empty(ctx);
-        Object::set_property(ctx, object, "message", "_asyncOpen can only be used on a synchronized Realm.");
-        Object::set_property(ctx, object, "errorCode", Value::from_number(ctx, 1));
-        ValueType callback_arguments[1];
-        callback_arguments[0] = object;
-        Function::callback(ctx, callback_function, this_object, 1, callback_arguments);
-        return;
-    }
-    auto& user = config.sync_config->user;
-    if (user && user->state() == SyncUser::State::Error) {
-        ObjectType object = Object::create_empty(ctx);
-        Object::set_property(ctx, object, "message", "Cannot open synced Realm because the associated session previously experienced a fatal error");
-        Object::set_property(ctx, object, "errorCode", Value::from_number(ctx, 1));
-        ValueType callback_arguments[1];
-        callback_arguments[0] = object;
-        Function::callback(ctx, callback_function, this_object, 1, callback_arguments);
-        return;
-    }
-
-    std::unique_ptr<AsyncOpenTask> task = Realm::get_synchronized_realm(config);
-    set_internal<T, RealmClass<T>>(this_object, task);
-
-    Protected<FunctionType> protected_callback(ctx, callback_function);
-    Protected<ObjectType> protected_this(ctx, this_object);
-    Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
-    EventLoopDispatcher<RealmCallbackHandler> callback_handler([=, config=std::move(config)](std::shared_ptr<Realm> realm, std::exception_ptr error) mutable {
-        HANDLESCOPE
-        if (error) {
-            try {
-                std::rethrow_exception(error);
-            } catch(const std::exception& e) {
-                ObjectType object = Object::create_empty(protected_ctx);
-                 Object::set_property(protected_ctx, object, "message", Value::from_string(protected_ctx, e.what()));
-                 Object::set_property(protected_ctx, object, "errorCode", Value::from_number(protected_ctx, 1));
-
-                 ValueType callback_arguments[1];
-                 callback_arguments[0] = object;
-                 Function::callback(protected_ctx, protected_callback, protected_this, 1, callback_arguments);
-                 return;
-            }
-        }
-
-        realm->close(); // FIXME Can we re-use this Realm?
-
-        // Reopen it with the real configuration and pass that Realm back to the callback
-        ObjectDefaultsMap m_defaults;
-        ConstructorMap m_constructors;
-        auto final_realm = RealmClass<T>::create_shared_realm(protected_ctx, std::move(config), schema_updated, std::move(defaults), std::move(constructors));
-        ObjectType object = create_object<T, RealmClass<T>>(protected_ctx, new SharedRealm(final_realm));
-
-        ValueType callback_arguments[2];
-        callback_arguments[0] = object;
-        callback_arguments[1] = Value::from_null(protected_ctx);
-        Function::callback(protected_ctx, protected_callback, typename T::Object(), 2, callback_arguments);
-    });
-    task->start(callback_handler);
-}
-
-template<typename T>
 void AsyncOpenTaskClass<T>::cancel(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue & return_value) {
-    std::unique_ptr<AsyncOpenTask> task = get_internal<T, AsyncOpenTask>(this_object);
-    task->cancel();
+    auto task = get_internal<T, AsyncOpenTaskClass<T>>(this_object);
+    task.cancel();
 }
 
 template<typename T>
