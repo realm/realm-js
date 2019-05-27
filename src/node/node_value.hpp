@@ -155,9 +155,6 @@ inline node::String node::Value::to_string(v8::Isolate* isolate, const v8::Local
 template<>
 inline double node::Value::to_number(v8::Isolate* isolate, const v8::Local<v8::Value> &value) {
     double number = Nan::To<double>(value).FromMaybe(NAN);
-    if (std::isnan(number)) {
-        return std::nan("");
-    }
     return number;
 }
 

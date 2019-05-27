@@ -4,7 +4,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * None.
 
 ### Fixed
-* Not-a-number (NaN) was wrongly assumed not to be an illegal values in Realm Core (thanks to @jsflax for discovering this).
+* Not-a-number (NaN) was wrongly assumed to be an illegal value in Realm Core (thanks to @jsflax for discovering this).
 
 ### Compatibility
 * Realm Object Server: 3.11.0 or later.

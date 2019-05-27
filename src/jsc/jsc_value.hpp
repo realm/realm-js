@@ -176,9 +176,6 @@ inline double jsc::Value::to_number(JSContextRef ctx, const JSValueRef &value) {
     if (exception) {
         throw jsc::Exception(ctx, exception);
     }
-    if (isnan(number)) {
-        std::nan("");
-    }
     return number;
 }
 
