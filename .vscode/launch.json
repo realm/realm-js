@@ -45,8 +45,9 @@
             "type": "node",
             "request": "launch",
             "name": "Start Object Server",
-            "program": "${workspaceFolder}/scripts/test-ros-server.js",
-            "cwd": "${workspaceFolder}/tests",
+            "runtimeExecutable": "npm",
+            "runtimeArgs": ["run-script", "start-ros"],
+            "cwd": "${workspaceFolder}",
             "stopOnEntry": false
         },
         {
