@@ -155,7 +155,11 @@ inline node::String node::Value::to_string(v8::Isolate* isolate, const v8::Local
 template<>
 inline double node::Value::to_number(v8::Isolate* isolate, const v8::Local<v8::Value> &value) {
     double number = Nan::To<double>(value).FromMaybe(NAN);
-    return number;
+    if (value->IsNumber() || value->IsDate() || (value->IsString() && !std::isnan(number)))  {
+        return number;
+    }
+    throw std::invalid_argument(util::format("Value '%1' not convertible to a number.",
+                                                 (std::string)to_string(isolate, value)));
 }
 
 template<>
