@@ -21,6 +21,7 @@
 #include <unistd.h>
 #include <cstdio>
 #include <android/asset_manager.h>
+#include <sys/stat.h>
 
 #include "../platform.hpp"
 
@@ -113,6 +114,6 @@ namespace realm {
     {
         // Assume that if anything exists at the path, it is a file.
         struct stat buf;
-        return (stat(file.c_str(), &buf) == 0);
+        return (stat(path.c_str(), &buf) == 0);
     }
 }
