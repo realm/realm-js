@@ -173,15 +173,11 @@ template<>
 inline double jsc::Value::to_number(JSContextRef ctx, const JSValueRef &value) {
     JSValueRef exception = nullptr;
 
-    if (is_number(ctx, value) || is_date(ctx, value) || is_string(ctx, value)) {
-        double number = JSValueToNumber(ctx, value, &exception);
-        if (exception) {
-            throw jsc::Exception(ctx, exception);
-        }
-        return number;
+    double number = JSValueToNumber(ctx, value, &exception);
+    if (exception) {
+        throw jsc::Exception(ctx, exception);
     }
-    throw std::invalid_argument(util::format("Value '%1' not convertible to a number.",
-                                    std::string(to_string(ctx, value))));
+    return number;
 }
 
 
