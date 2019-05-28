@@ -18,7 +18,6 @@
             "request": "launch",
             "name": "Debug LLDB only",
             "program": "node",
-            "cwd": "${workspaceRoot}/tests",
             "args": ["${workspaceRoot}/tests/node_modules/jasmine/bin/jasmine.js", "spec/unit_tests.js"],
             "stopOnEntry": false
         },
@@ -27,7 +26,7 @@
             "request": "launch",
             "name": "Debug Node Unit Tests (rebuild)",
             "preLaunchTask": "Rebuild Node Tests",
-            "cwd": "${workspaceRoot}/tests",
+            "cwd": "${workspaceFolder}/tests",
             "program": "${workspaceFolder}/tests/node_modules/jasmine/bin/jasmine.js",
             "args": ["spec/unit_tests.js"],
 
@@ -45,10 +44,10 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Download & Start Server",
-            "cwd": "${workspaceRoot}/scripts",
-            "program": "${workspaceRoot}/scripts/test-ros-server.js"
-
+            "name": "Start Object Server",
+            "program": "${workspaceFolder}/scripts/test-ros-server.js",
+            "cwd": "${workspaceFolder}/tests",
+            "stopOnEntry": false
         },
         {
             "type": "node",
@@ -62,7 +61,7 @@
     "compounds": [
         {
             "name": "Rebuild + Start Server + Debug",
-            "configurations": ["Download & Start Server", "Debug Node Unit Tests (rebuild)"]
+            "configurations": ["Start Object Server", "Debug Node Unit Tests (rebuild)"]
         },
         {
             "name": "Debug LLDB + NodeJS",
