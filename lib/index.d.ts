@@ -526,8 +526,8 @@ declare namespace Realm.Sync {
         OpenLocalRealm = 'openLocalRealm'
     }
 
-    const openLocalRealmBehavior: OpenRealmBehaviorConfiguration;
-    const syncBeforeOpenBehavior: OpenRealmBehaviorConfiguration;
+    let openLocalRealmBehavior: OpenRealmBehaviorConfiguration;
+    let syncBeforeOpenBehavior: OpenRealmBehaviorConfiguration;
 
     enum ConnectionState {
         Disconnected = "disconnected",

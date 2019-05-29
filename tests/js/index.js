@@ -66,6 +66,7 @@ if (global.enableSyncTests) {
         node_require('./adapter-tests');
         node_require('./notifier-tests');
     }
+    TESTS.OpenBehaviorTests = require('./open-behavior-tests');
 }
 
 // If on node, run the async tests
