@@ -4,8 +4,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * None.
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None.
+* A bug in instruction cache invalidation could lead to SIGBUS errors on RN Android. ([#2391](https://github.com/realm/realm-js/issues/2391), since v2.28.0)
 
 ### Compatibility
 * Realm Object Server: 3.11.0 or later.

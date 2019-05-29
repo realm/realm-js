@@ -23,41 +23,43 @@
 #include <mutex>
 #include <JavaScriptCore/JSContextRef.h>
 
+#include <android/log.h>
+
 #include "jsc_init.h"
 #include "shared_realm.hpp"
 #include "impl/realm_coordinator.hpp"
 
 /**
-`__attribute__((constructor))` will trigger a first call to swap_function() which will install the function hook. 
+`__attribute__((constructor))` will trigger a first call to swap_function() which will install the function hook.
 
 The hook function is simply a technique (originally published in 1999 https://www.microsoft.com/en-us/research/project/detours/#!publications) to replace
  the original function call by another one by substituting the address of the original function `JSGlobalContextCreateInGroup` by an assembly JUMP instruction in order to branch into our custom function `create_context`
- (which has the same signature as the original).The custom function will then remove the hook to be able to invoke the original `JSGlobalContextCreateInGroup` 
+ (which has the same signature as the original).The custom function will then remove the hook to be able to invoke the original `JSGlobalContextCreateInGroup`
  in order to obtain the JS context, needed to initialize Realm.
 
  The assembly code to perform the jump is architecture specific, similarly for the size of this "Hook". Here's how it's calculated for the various architectures
 
- - ARM 32 bit: 
+ - ARM 32 bit:
  ARM supports two instruction mode, Thumb & ARM (with different size for the opcodes).
  if we're using Thumb then the jump is performed using the BX instruction (see https://web.eecs.umich.edu/~prabal/teaching/eecs373-f10/readings/ARMv7-M_ARM.pdf)
- BX allows to branch to a specific address stored in a global register with the option to switch instruction from Thumb to ARM. This is performed using this code 
+ BX allows to branch to a specific address stored in a global register with the option to switch instruction from Thumb to ARM. This is performed using this code
   LDR R3, [PC, #0]; <---- This load the current address referenced by the current Program Counter address with a 0 offset
-  BX R3; <---- This will perform the jump 
+  BX R3; <---- This will perform the jump
 
   memcpy(orig_func, "\x00\x4b\x18\x47", 4);
   memcpy(orig_func + 4, &new_func, 4);
 
-For non-Thumb we simply set the current program PC to the address of the new function (swap_function) 
-    LDR	PC, [PC] <---- [PC] get the address of the current PC (remember the first call of swap_function is triggered automatically when loading the shared object) so when 
+For non-Thumb we simply set the current program PC to the address of the new function (swap_function)
+    LDR	PC, [PC] <---- [PC] get the address of the current PC (remember the first call of swap_function is triggered automatically when loading the shared object) so when
                         execute this assembly later at the address of the original function, this will jump to swap_function
 
     memcpy(orig_func, "\x00\xf0\x9f\xe5", 4);
-    memcpy(orig_func + 4, &new_func, 4);  
+    memcpy(orig_func + 4, &new_func, 4);
 
 - ARM 64 bit:
-Doesn't have Thumb instruction, but also doesn't expose the program counter (PC) as a general register so it cannot be used anymore. The workaround is to use a `BR` 
+Doesn't have Thumb instruction, but also doesn't expose the program counter (PC) as a general register so it cannot be used anymore. The workaround is to use a `BR`
 instruction (see https://static.docs.arm.com/ddi0596/a/DDI_0596_ARM_a64_instruction_set_architecture.pdf) (be careful to not use `BLR` accidentally BLR perform the same thing as BR
-but as a side effect will set the PC to PC + 4 after the jump, 4 is the size of the instruction, the idea of BLR is to jump to a subroutine, then go back to the next instruction 
+but as a side effect will set the PC to PC + 4 after the jump, 4 is the size of the instruction, the idea of BLR is to jump to a subroutine, then go back to the next instruction
 in the assembly after the jump completes, the next instruction is located at current PC + 4, this is not our use case since we want to perform an unconditional jump).
     LDR X3, .+8 <--- load into the global register X3 the address of the current PC + an offset of 8 bytes
     BR X3 <---- perform the jump into the address of the new function (swap_function) located 8 bytes after the previous two assembly instructions.
@@ -66,10 +68,10 @@ in the assembly after the jump completes, the next instruction is located at cur
     memcpy(orig_func + 8, &new_func, 8);
 
 How is the assembly transformed into hex code:
-- You can use the manual instruction to work out the instruction value based on the opcodes. 
+- You can use the manual instruction to work out the instruction value based on the opcodes.
 - You can also write the assembly then cross-compile to access the hexcode after disassembling it
-Example: 
-create a file `hook.s` with the following assembly content 
+Example:
+create a file `hook.s` with the following assembly content
 ```
 .section .text
 .global _start
@@ -84,7 +86,7 @@ $NDK_HOME/toolchains/arm-linux-androideabi-4.9/prebuilt/darwin-x86_64/aarch64-li
 you can link it using
 $NDK_HOME/toolchains/arm-linux-androideabi-4.9/prebuilt/darwin-x86_64/aarch64-linux-android/bin/ld hook.o -o hook
 
-now inspect the ARM64 executable using 
+now inspect the ARM64 executable using
 objdump -d hook
 ```
 hook:	file format ELF64-aarch64-little
@@ -94,14 +96,14 @@ _start:
   4000b0:	43 00 00 58 	ldr	x3, #8
   4000b4:	60 00 1f d6 	br	x3
 ```
-This is the method used for AMR 64bit 
+This is the method used for AMR 64bit
 
-- You can also use this online tool to convert hex to assembly & assembly to hex http://armconverter.com 
+- You can also use this online tool to convert hex to assembly & assembly to hex http://armconverter.com
 
 
 The ARM_FUNCTION_HOOK_SIZE is the number of bytes the hook need to rewrite to install the jump code.
 
-Example for AARCH64: 
+Example for AARCH64:
  It's simply two ARM64 instructions, 4 bytes each (the first memcpy is 8) and the actual function address will also be 8 bytes (second memcpy)
  so the total is 16 bytes.
 */
@@ -143,6 +145,7 @@ static JSGlobalContextRef create_context(JSContextGroupRef group, JSClassRef glo
 
 static void swap_function()
 {
+    __android_log_print(ANDROID_LOG_INFO, "svap_function", "BEGIN");
     static int8_t s_orig_code[HOOK_SIZE];
     static bool s_swapped = false;
 
@@ -173,10 +176,12 @@ static void swap_function()
 
 #if __arm__ || __aarch64__
         if (orig_thumb) {
+            __android_log_print(ANDROID_LOG_INFO, "swap_function", "orig_thumb = true");
             // LDR R3, [PC, #0]; BX R3;
             memcpy(orig_func, "\x00\x4b\x18\x47", ARM_FUNCTION_HOOK_SIZE);
             memcpy(orig_func + ARM_FUNCTION_HOOK_SIZE, &new_func, ARM_FUNCTION_HOOK_SIZE);
-        } else {            
+        } else {
+            __android_log_print(ANDROID_LOG_INFO, "swap_function", "orig_thumb = false");
             memcpy(orig_func, ARM_FUNCTION_HOOK, ARM_FUNCTION_HOOK_SIZE);
             memcpy(orig_func + ARM_FUNCTION_HOOK_SIZE, &new_func, ARM_FUNCTION_HOOK_SIZE);
         }
@@ -191,8 +196,11 @@ static void swap_function()
 
     s_swapped = !s_swapped;
 
-    __builtin___clear_cache((void *)page_start, (void *)(code_end - page_start));
+    __builtin___clear_cache((void *)page_start, (void *)code_end);
 
     // Return this region to no longer being writable.
     mprotect((void*)page_start, code_end - page_start, PROT_READ | PROT_EXEC);
+
+    __android_log_print(ANDROID_LOG_INFO, "swap_function", "END");
+
 }
