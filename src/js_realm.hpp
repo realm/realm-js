@@ -888,7 +888,7 @@ void RealmClass<T>::async_open_realm(ContextType ctx, ObjectType this_object, Ar
         Function<T>::callback(protected_ctx, protected_callback, protected_this, 1, callback_arguments);
     }
 
-    AsyncOpenTask* ptr = new AsyncOpenTask(Realm::get_synchronized_realm(config));
+    std::shared_ptr<AsyncOpenTask>* ptr = new std::shared_ptr<AsyncOpenTask>(Realm::get_synchronized_realm(config));
     EventLoopDispatcher<RealmCallbackHandler> callback_handler([=, config=std::move(config),
                                                                defaults=std::move(defaults),
                                                                constructors=std::move(constructors)](std::shared_ptr<Realm> realm, std::exception_ptr error) mutable {
@@ -901,9 +901,10 @@ void RealmClass<T>::async_open_realm(ContextType ctx, ObjectType this_object, Ar
                  Object::set_property(protected_ctx, object, "message", Value::from_string(protected_ctx, e.what()));
                  Object::set_property(protected_ctx, object, "errorCode", Value::from_number(protected_ctx, 1));
 
-                 ValueType callback_arguments[1];
-                 callback_arguments[0] = object;
-                 Function<T>::callback(protected_ctx, protected_callback, protected_this, 1, callback_arguments);
+                 ValueType callback_arguments[2];
+                 callback_arguments[0] = Value::from_undefined(protected_ctx);
+                 callback_arguments[1] = object;
+                 Function<T>::callback(protected_ctx, protected_callback, protected_this, 2, callback_arguments);
                  return;
             }
         }
@@ -922,51 +923,8 @@ void RealmClass<T>::async_open_realm(ContextType ctx, ObjectType this_object, Ar
         Function<T>::callback(protected_ctx, protected_callback, typename T::Object(), 2, callback_arguments);
     });
 
-    ptr->start(callback_handler);
-    set_internal<T, AsyncOpenTaskClass<T>>(this_object, ptr);
-    return_value.set(get_internal<T, AsyncOpenTaskClass<T>>(this_object));
-
-//    auto session = user->session_for_on_disk_path(realm->config().path);
-//    EventLoopDispatcher<WaitHandler> wait_handler([=, config=std::move(config),
-//                                                   defaults=std::move(defaults),
-//                                                   constructors=std::move(constructors)](std::error_code error_code) mutable {
-//        HANDLESCOPE
-//        if (error_code) {
-//            ObjectType object = Object::create_empty(protected_ctx);
-//            Object::set_property(protected_ctx, object, "message", Value::from_string(protected_ctx, error_code.message()));
-//            Object::set_property(protected_ctx, object, "errorCode", Value::from_number(protected_ctx, error_code.value()));
-//
-//            ValueType callback_arguments[2];
-//            callback_arguments[0] = Value::from_null(protected_ctx);
-//            callback_arguments[1] = object;
-//
-//            Function<T>::callback(protected_ctx, protected_callback, typename T::Object(), 2, callback_arguments);
-//            return;
-//        }
-//
-//        // Ensure that all of our metadata tables are properly initialized if
-//        // this is a query-based sync Realm
-//        if (config.sync_config->is_partial) {
-//            realm->update_schema({}, 0);
-//        }
-//        realm->close();
-//
-//        // Reopen it with the real configuration and pass that Realm back to the callback
-//        auto final_realm = create_shared_realm(protected_ctx, std::move(config),
-//                                               schema_updated, std::move(defaults),
-//                                               std::move(constructors));
-//        ObjectType object = create_object<T, RealmClass<T>>(protected_ctx, new SharedRealm(final_realm));
-//
-//        ValueType callback_arguments[2];
-//        callback_arguments[0] = object;
-//        callback_arguments[1] = Value::from_null(protected_ctx);
-//        Function<T>::callback(protected_ctx, protected_callback, typename T::Object(), 2, callback_arguments);
-//
-//        // Ensure the sync session is kept alive while we close and reopen the Realm
-//        static_cast<void>(session);
-//    });
-//    session->wait_for_download_completion(std::move(wait_handler));
-//    return_value.set(create_object<T, SessionClass<T>>(ctx, new WeakSession(session)));
+    (*ptr)->start(callback_handler);
+    return_value.set(create_object<T, AsyncOpenTaskClass<T>>(ctx, ptr));
 }
 #endif
 
@@ -1401,7 +1359,7 @@ void RealmClass<T>::extend_query_based_schema(ContextType, ObjectType, Arguments
 }
 
 template<typename T>
-class AsyncOpenTaskClass : public ClassDefinition<T, AsyncOpenTask> {
+class AsyncOpenTaskClass : public ClassDefinition<T, std::shared_ptr<AsyncOpenTask>> {
     using GlobalContextType = typename T::GlobalContext;
     using ContextType = typename T::Context;
     using FunctionType = typename T::Function;
@@ -1420,6 +1378,8 @@ class AsyncOpenTaskClass : public ClassDefinition<T, AsyncOpenTask> {
 public:
     std::string const name = "AsyncOpenTask";
 
+    static FunctionType create_constructor(ContextType);
+
     static void add_download_notification(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void cancel(ContextType, ObjectType, Arguments &, ReturnValue &);
 
@@ -1427,12 +1387,24 @@ public:
         {"addDownloadNotification", wrap<add_download_notification>},
         {"cancel", wrap<cancel>},
     };
+
+    static void get_empty(ContextType, ObjectType, ReturnValue &);
+
+    PropertyMap<T> const properties = {
+        {"empty", {wrap<get_empty>, nullptr}},
+    };
 };
 
 template<typename T>
+inline typename T::Function AsyncOpenTaskClass<T>::create_constructor(ContextType ctx) {
+    FunctionType constructor = ObjectWrap<T, AsyncOpenTaskClass<T>>::create_constructor(ctx);
+    return constructor;
+}
+
+template<typename T>
 void AsyncOpenTaskClass<T>::cancel(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue & return_value) {
-    auto task = get_internal<T, AsyncOpenTaskClass<T>>(this_object);
-    task.cancel();
+    std::shared_ptr<AsyncOpenTask> task = *get_internal<T, AsyncOpenTaskClass<T>>(this_object);
+    task->cancel();
 }
 
 template<typename T>
@@ -1440,6 +1412,11 @@ void AsyncOpenTaskClass<T>::add_download_notification(ContextType ctx, ObjectTyp
 //    std::unique_ptr<AsyncOpenTask> task = get_internal<T, AsyncOpenTask>(this_object);
 
     // TODO
+}
+
+template<typename T>
+void AsyncOpenTaskClass<T>::get_empty(ContextType ctx, ObjectType object, ReturnValue &return_value) {
+    // Test
 }
 
 

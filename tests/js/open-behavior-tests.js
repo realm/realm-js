@@ -69,6 +69,8 @@ if (isNodeProcess && process.platform === 'win32') {
 
 const fs = isNodeProcess ? nodeRequire('fs-extra') : require('react-native-fs');
 
+Realm.Sync.setLogLevel('debug');
+
 module.exports = {
 
     testNewFile_openLocal: function() {
@@ -79,6 +81,7 @@ module.exports = {
             .then(user => {
                 let config = user.createConfiguration({
                     sync: {
+                        url: 'http://127.0.0.1/new_file_local_' + uuid(),
                         newRealmFileBehavior: Realm.Sync.openLocalRealmBehavior
                     }
                 });
@@ -86,7 +89,7 @@ module.exports = {
                 return Realm.open(config);
             })
             .then(realm => {
-                TestCase.assertTrue(realm !== undefined);
+                TestCase.assertTrue(realm.path !== undefined);
                 realm.close();
                 return new Promise((resolve) => {
                     resolve();
@@ -95,36 +98,30 @@ module.exports = {
     },
 
     testExistingFile_openLocal: function() {
-        return getLoggedInUser()
+        return getLoggedOutUser()
             .then(user => {
-                // Create a Realm with one object
                 let config = user.createConfiguration({
-                    schema: [schemas.TestObject]
+                    schema: [schemas.TestObject],
+                    sync: {
+                        newRealmFileBehavior: Realm.Sync.openLocalRealmBehavior,
+                    }
                 });
                 TestCase.assertFalse(Realm.exists(config));
-                return Realm.open(config);
-            })
-            .then(realm => {
+                const realm = new Realm(config);
                 realm.write(() => {
-                    realm.create({'doubleCol': 42.123});
-                })
+                    realm.create(schemas.TestObject.name, {'doubleCol': 42.123});
+                });
                 realm.close();
-                return Realm.Sync.User.current.logout();
-            })
-            .then(() => {
-                return getLoggedOutUser();
-            })
-            .then(user => {
-                // Re-open the Realm, which should be possible even without the user
-                // being able to create a server connection.
-                let config = user.createConfiguration({
+
+                // Re-open the Realm
+                config = Realm.Sync.User.current.createConfiguration({
                     sync: {
                         existingRealmFileBehavior: {
                             type: 'openImmediately'
                         } 
                     }
                 });
-                TestCase.assertTrue(Realm.exists(config));
+
                 return Realm.open(config);
             })
             .then(realm => {
@@ -137,11 +134,30 @@ module.exports = {
     },
 
     testNewFile_syncBeforeOpen: function() {
-
+        return getLoggedInUser()
+            .then(user => {
+                const config = user.createConfiguration({
+                    sync: {
+                        fullSynchronization: true,
+                        _sessionStopPolicy: 'immediately',
+                        newRealmFileBehavior: {
+                            type: 'syncBeforeOpen'
+                        },
+                        url: 'realm://127.0.0.1:9080/new_realm_' + uuid()
+                    }
+                });
+                return Realm.open(config);
+            })
+            .then(realm => {
+                return new Promise((resolve) => {
+                    TestCase.assertTrue(realm.empty)
+                    realm.close();
+                    resolve();                    
+                });
+            });
     },
 
     testExistingFile_syncBeforeOpen: function() {
-
     },
 
     testNewFile_syncBeforeOpen_throwOnTimeOut: function() {
@@ -186,10 +202,10 @@ module.exports = {
 
     testExistingFileBehavior_invalidOptions: function() {
 
-    }
+    },
 
     // testSchemaUpdatesPartialRealm: function() {
-    //
+    
     //     const realmId = uuid();
     //     let realm2 = null, called = false;
     //     const config = {
@@ -199,7 +215,7 @@ module.exports = {
     //             fullSynchronization: false,
     //         },
     //     };
-    //
+    
     //     // We need an admin user to create the reference Realm
     //     return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.nickname("admin", true))
     //         .then(user1 => {
@@ -227,7 +243,7 @@ module.exports = {
     //                 TestCase.assertEqual(realm2.schema.length, 8); // 5 permissions, 1 results set, 1 test object, 1 foo object
     //                 called = true;
     //             });
-    //
+    
     //             config.schema.push({
     //                 name: 'Foo',
     //                 properties: {
