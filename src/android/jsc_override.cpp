@@ -23,8 +23,6 @@
 #include <mutex>
 #include <JavaScriptCore/JSContextRef.h>
 
-#include <android/log.h>
-
 #include "jsc_init.h"
 #include "shared_realm.hpp"
 #include "impl/realm_coordinator.hpp"
@@ -145,7 +143,7 @@ static JSGlobalContextRef create_context(JSContextGroupRef group, JSClassRef glo
 
 static void swap_function()
 {
-    __android_log_print(ANDROID_LOG_INFO, "svap_function", "BEGIN");
+    // TODO: should we do a byte alignment for s_orig_code using alignas(16) or similar?
     static int8_t s_orig_code[HOOK_SIZE];
     static bool s_swapped = false;
 
@@ -176,16 +174,15 @@ static void swap_function()
 
 #if __arm__ || __aarch64__
         if (orig_thumb) {
-            __android_log_print(ANDROID_LOG_INFO, "swap_function", "orig_thumb = true");
             // LDR R3, [PC, #0]; BX R3;
             memcpy(orig_func, "\x00\x4b\x18\x47", ARM_FUNCTION_HOOK_SIZE);
             memcpy(orig_func + ARM_FUNCTION_HOOK_SIZE, &new_func, ARM_FUNCTION_HOOK_SIZE);
         } else {
-            __android_log_print(ANDROID_LOG_INFO, "swap_function", "orig_thumb = false");
             memcpy(orig_func, ARM_FUNCTION_HOOK, ARM_FUNCTION_HOOK_SIZE);
             memcpy(orig_func + ARM_FUNCTION_HOOK_SIZE, &new_func, ARM_FUNCTION_HOOK_SIZE);
         }
 #else
+        // TODO: It would be safer to generate an indirect jump to an absolute address since distance might be greater than +/- 2^31
         int32_t jmp_offset = (int64_t)new_func - (int64_t)orig_func - HOOK_SIZE;
 
         // Change original function to jump to our new one.
@@ -200,7 +197,4 @@ static void swap_function()
 
     // Return this region to no longer being writable.
     mprotect((void*)page_start, code_end - page_start, PROT_READ | PROT_EXEC);
-
-    __android_log_print(ANDROID_LOG_INFO, "swap_function", "END");
-
 }
