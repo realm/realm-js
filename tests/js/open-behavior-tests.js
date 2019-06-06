@@ -51,10 +51,10 @@ function getLoggedOutUser() {
     });
 }
 
-function getLoggedInUser() {
-    return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.nickname("admin", true))
+function getLoggedInUser(userName) {
+    const userId = (userName === undefined) ? 'admin' : userName;
+    return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.nickname(userId, true))
 }
-
 
 const Realm = require('realm');
 const TestCase = require('./asserts');
@@ -152,118 +152,428 @@ module.exports = {
                 return new Promise((resolve) => {
                     TestCase.assertTrue(realm.empty)
                     realm.close();
-                    resolve();                    
+                    resolve();
                 });
             });
     },
 
     testExistingFile_syncBeforeOpen: function() {
+        // 1. Open empty Realm
+        // 2. Close Realm
+        // 3. Let other user upload changes to the Realm on the server.
+        // 4. Re-open empty Realm with `existingRealmFileBehavior = syncWhenOpen`
+        const realmName = 'existing_realm_' + uuid();
+        return getLoggedInUser()
+            .then(user => {
+                const config = user.createConfiguration({
+                    schema: [schemas.TestObject],
+                    sync: {
+                        fullSynchronization: true,
+                        _sessionStopPolicy: 'immediately',
+                        url: 'realm://127.0.0.1:9080/' + realmName
+                    }
+                });
+                return Realm.open(config);
+            })
+            .then(userRealm => {
+                userRealm.close();
+                return getLoggedInUser('other_admin');
+            })
+            .then(otherUser => {
+                const config = otherUser.createConfiguration({
+                    schema: [schemas.TestObject],
+                    sync: {
+                        fullSynchronization: true,
+                        _sessionStopPolicy: 'immediately',
+                        url: 'realm://127.0.0.1:9080/' + realmName
+                    }
+                });
+                return Realm.open(config);
+            })
+            .then(otherUserRealm => {
+                otherUserRealm.write(() => {
+                    otherUserRealm.create(schemas.TestObject.name, { doubleCol: 42.133 });
+                });
+                return otherUserRealm.syncSession.uploadAllLocalChanges().then(() => {
+                    otherUserRealm.close();
+                });
+            })
+            .then(() => {
+                return getLoggedInUser();
+            })
+            .then(user => {
+                const config = user.createConfiguration({
+                    schema: [schemas.TestObject],
+                    sync: {
+                        fullSynchronization: true,
+                        _sessionStopPolicy: 'immediately',
+                        existingRealmBehavior: {
+                            type: 'syncBeforeOpen'
+                        },
+                        url: 'realm://127.0.0.1:9080/' + realmName
+                    }
+                });
+                return Realm.open(config);
+            })
+            .then(userRealm => {
+                return new Promise(resolve => {
+                    TestCase.assertTrue(userRealm.objects(schemas.TestObject.name).length === 1);
+                    resolve();
+                })
+            })
     },
 
     testNewFile_syncBeforeOpen_throwOnTimeOut: function() {
-
+        return getLoggedInUser()
+            .then(user => {
+                const config = user.createConfiguration({
+                    sync: {
+                        fullSynchronization: true,
+                        _sessionStopPolicy: 'immediately',
+                        newRealmFileBehavior: {
+                            type: 'syncBeforeOpen',
+                            timeOut: 0,
+                            timeOutBehavior: 'throwException'
+                        },
+                        url: 'realm://127.0.0.1:9080/sync_before_open_' + uuid()
+                    }
+                });
+                return Realm.open(config);
+            })
+            .then(realm => {
+                realm.close();
+                throw new Error("It shouldn't be posssible to open the Realm");
+            })
+            .catch(e => {
+                TestCase.assertTrue(e.message.includes('could not be downloaded in the allocated time'));
+            });
     },
 
     testExistingFile_syncBeforeOpen_throwOnTimeOut: function() {
-
+        const realmName = 'sync_timeout_throw_' + uuid();
+        return getLoggedInUser()
+            .then(user => {
+                const config = user.createConfiguration({
+                    sync: {
+                        fullSynchronization: true,
+                        _sessionStopPolicy: 'immediately',
+                        url: 'realm://127.0.0.1:9080/' + realmName
+                    }
+                });
+                return Realm.open(config);
+            })
+            .then(realm => {
+                realm.close();
+                const config = Realm.Sync.User.current.createConfiguration({
+                    sync: {
+                        fullSynchronization: true,
+                        _sessionStopPolicy: 'immediately',
+                        existingRealmFileBehavior: {
+                            type: 'syncBeforeOpen',
+                            timeOut: 0,
+                            timeOutBehavior: 'throwException'
+                        },
+                        url: 'realm://127.0.0.1:9080/' + realmName
+                    }
+                });
+                return Realm.open(config);
+            })
+            .then(realm => {
+                throw Error("Realm should fail to open.");
+            })
+            .catch(e => {
+                TestCase.assertTrue(e.message.includes('could not be downloaded in the allocated time'));
+            });
     },
 
     testNewFile_syncBeforeOpen_openLocalOnTimeOut: function() {
-
+        // 1. Add data to server Realm from User 1
+        // 2. Open Realm with User 2
+        // 3. Timeout and check that the returned Realm is empty.
+        const realmName = 'sync_timeout_open_' + uuid();
+        return getLoggedInUser("User1")
+            .then(user1 => {
+                const config = user1.createConfiguration({
+                    schema: [schemas.TestObject],
+                    sync: {
+                        fullSynchronization: true,
+                        _sessionStopPolicy: 'immediately',
+                        url: 'realm://127.0.0.1:9080/' + realmName
+                    }
+                });
+                return Realm.open(config);
+            })
+            .then(realm => {
+                realm.write(() => {
+                    realm.create(schemas.TestObject.name, { doubleCol: 42.123 });
+                });
+                return realm.syncSession.uploadAllLocalChanges().then(() => {
+                    realm.close();
+                });
+            })
+            .then(() => {
+                return getLoggedInUser("User2");
+            })
+            .then(user2 => {
+                const config = user2.createConfiguration({
+                    schema: [schemas.TestObject],
+                    sync: {
+                        fullSynchronization: true,
+                        _sessionStopPolicy: 'immediately',
+                        newRealmFileBehavior: {
+                            type: 'syncBeforeOpen',
+                            timeOut: 0,
+                            timeOutBehavior: 'openLocal'
+                        },
+                        url: 'realm://127.0.0.1:9080/' + realmName
+                    }
+                });
+                return Realm.open(config);
+            })
+            .then(realm => {
+                return new Promise(resolve => {
+                    TestCase.assertEqual(0, realm.objects(schemas.TestObject.name).length);
+                    realm.close();
+                    resolve();
+                })
+            });
     },
 
     testExistingFile_syncBeforeOpen_openLocalOnTimeOut: function () {
-
+        // 1. Open empty Realm
+        // 2. Close Realm
+        // 3. Let other user upload changes to the Realm on the server.
+        // 4. Re-open empty Realm with timeOut and localOpen, Realm should still be empty.
+        const realmName = 'existing_realm_' + uuid();
+        return getLoggedInUser()
+            .then(user => {
+                const config = user.createConfiguration({
+                    schema: [schemas.TestObject],
+                    sync: {
+                        fullSynchronization: true,
+                        _sessionStopPolicy: 'immediately',
+                        url: 'realm://127.0.0.1:9080/' + realmName
+                    }
+                });
+                return Realm.open(config);
+            })
+            .then(userRealm => {
+                userRealm.close();
+                return getLoggedInUser('other_admin');
+            })
+            .then(otherUser => {
+                const config = otherUser.createConfiguration({
+                    schema: [schemas.TestObject],
+                    sync: {
+                        fullSynchronization: true,
+                        _sessionStopPolicy: 'immediately',
+                        url: 'realm://127.0.0.1:9080/' + realmName
+                    }
+                });
+                return Realm.open(config);
+            })
+            .then(otherUserRealm => {
+                otherUserRealm.write(() => {
+                    otherUserRealm.create(schemas.TestObject.name, { doubleCol: 42.133 });
+                });
+                return otherUserRealm.syncSession.uploadAllLocalChanges().then(() => {
+                    otherUserRealm.close();
+                });
+            })
+            .then(() => {
+                return getLoggedInUser();
+            })
+            .then(user => {
+                const config = user.createConfiguration({
+                    schema: [schemas.TestObject],
+                    sync: {
+                        fullSynchronization: true,
+                        _sessionStopPolicy: 'immediately',
+                        existingRealmFileBehavior: {
+                            type: 'syncBeforeOpen',
+                            timeOut: 0,
+                            timeOutBehavior: 'openLocal'
+                        },
+                        url: 'realm://127.0.0.1:9080/' + realmName
+                    }
+                });
+                return Realm.open(config);
+            })
+            .then(userRealm => {
+                return new Promise(resolve => {
+                    TestCase.assertTrue(userRealm.objects(schemas.TestObject.name).length === 0);
+                    resolve();
+                })
+            })
     },
 
     testCancel: function() {
+        let openPromise = new Promise((resolve, reject) => {
+            return getLoggedInUser()
+            .then(user => {
+                const config = user.createConfiguration({
+                    sync: {
+                        fullSynchronization: true,
+                        _sessionStopPolicy: 'immediately',
+                        newRealmFileBehavior: {
+                            type: 'syncBeforeOpen'
+                        },
+                        url: 'realm://127.0.0.1:9080/new_realm_' + uuid()
+                    }
+                });
+                
+                let promise = Realm.open(config);
+                promise.cancel();
+                return promise;
+            })
+            .then(realm => {
+                reject("Realm was opened after being canceled");
+            })
+            .catch(e => {
+                reject("An erro was thrown after open was canceled: " + e.message);
+            });
+        });
 
-    },
-
-    testCancel_localOpen: function() {
-
+        // Wait for 1 second after canceling. The open promise should not emit any events in that period.
+        let timeOutPromise = new Promise((resolve, reject) => {
+            let wait = setTimeout(() => {
+                clearTimeout(wait);
+                resolve();
+            }, 1000);
+        });
+        return Promise.race([openPromise, timeOutPromise]);
     },
 
     testCancel_multipleOpenCalls: function() {
+        // Due to us sharing the same session for each URL, canceling a download will cancel all current
+        // calls to the same URL. This is probably acceptable for this use case.
+        let openPromise = new Promise((resolve, reject) => {
+            return getLoggedInUser()
+            .then(user => {
+                const config = user.createConfiguration({
+                    sync: {
+                        fullSynchronization: true,
+                        _sessionStopPolicy: 'immediately',
+                        newRealmFileBehavior: {
+                            type: 'syncBeforeOpen'
+                        },
+                        url: 'realm://127.0.0.1:9080/new_realm_' + uuid()
+                    }
+                });
+                
+                let openPromise1 = Realm.open(config);
+                let openPromise2 = Realm.open(config);
+                openPromise1.cancel(); // Will cancel both promise 1 and 2 at the native level.
 
+                // Waiting 1 second should be enough for two other promises to finish.
+                let timeOutPromise = new Promise((resolve, reject) => {
+                    let wait = setTimeout(() => {
+                        clearTimeout(wait);
+                        resolve("Success");
+                    }, 1000);
+                });
+
+                return Promise.race([openPromise1, openPromise2, timeOutPromise]);
+            })
+            .then(result => {
+                TestCase.assertEqual("Success", result);
+                resolve();
+            })
+        });
     },
 
-    testDownloadListener: function() {
-
-    },
-
-    testDownloadListener_whenCanceled: function() {
-
-    },
-
-    testNewFileBehavior_invalidOptions: function() {
-
-    },
-
-    testExistingFileBehavior_invalidOptions: function() {
-
-    },
-
-    // testSchemaUpdatesPartialRealm: function() {
-    
-    //     const realmId = uuid();
-    //     let realm2 = null, called = false;
-    //     const config = {
-    //         schema: [schemas.TestObject],
-    //         sync: {
-    //             url: `realm://127.0.0.1:9080/${realmId}`,
-    //             fullSynchronization: false,
-    //         },
-    //     };
-    
-    //     // We need an admin user to create the reference Realm
-    //     return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.nickname("admin", true))
-    //         .then(user1 => {
-    //             config.sync.user = user1;
-    //             const realm = new Realm(config);
-    //             if (isChromeWorker) {
-    //                 TestCase.assertEqual(realm.schema.length, 1); // 1 test object
-    //             }
-    //             else {
-    //                 TestCase.assertEqual(realm.schema.length, 7); // 5 permissions, 1 results set, 1 test object
-    //             }
-    //             return closeAfterUpload(realm);
-    //         })
-    //         .then(() => {
-    //             return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.anonymous());
-    //         }).then((user2) => {
-    //             const dynamicConfig = {
-    //                 sync: { user: user2, url: `realm://127.0.0.1:9080/${realmId}`, fullSynchronization: false },
-    //             };
-    //             return Realm.open(dynamicConfig);
-    //         }).then((realm) => {
-    //             realm2 = realm;
-    //             TestCase.assertEqual(realm2.schema.length, 7); // 5 permissions, 1 results set, 1 test object
-    //             realm2.addListener('schema', (realm, event, schema) => {
-    //                 TestCase.assertEqual(realm2.schema.length, 8); // 5 permissions, 1 results set, 1 test object, 1 foo object
-    //                 called = true;
-    //             });
-    
-    //             config.schema.push({
-    //                 name: 'Foo',
-    //                 properties: {
-    //                     doubleCol: 'double',
+    // testDownloadListener: function() {
+    //     return new Promise(resolve => {
+    //         return getLoggedInUser().then(user => {
+    //             const config = user.createConfiguration({
+    //                 sync: {
+    //                     fullSynchronization: true,
+    //                     _sessionStopPolicy: 'immediately',
+    //                     newRealmFileBehavior: {
+    //                         type: 'syncBeforeOpen'
+    //                     },
+    //                     url: 'realm://127.0.0.1:9080/downloadlistener_' + uuid()
     //                 }
     //             });
-    //             return Realm.open(config);
-    //         }).then((realm) => {
-    //             return closeAfterUpload(realm);
-    //         }).then(() => {
-    //             return new Promise((resolve, reject) => {
-    //                 setTimeout(() => {
-    //                     realm2.close();
-    //                     if (called) {
-    //                         resolve();
-    //                     } else {
-    //                         reject();
-    //                     }
-    //                 }, 1000);
+    //             return Realm.open(config).progress((transferred, transferable) => {
+    //                 console.log(transferred + ", " + transferable);
+    //                 if (transferred > 0 && transferred === transferable) {
+    //                     resolve();
+    //                 }
     //             });
-    //         });
+    //         })
+    //     });
     // },
+
+    testDownloadListener_whenCanceled: function() {
+        let openPromise = new Promise((resolve, reject) => {
+            return getLoggedInUser()
+            .then(user => {
+                const config = user.createConfiguration({
+                    sync: {
+                        fullSynchronization: true,
+                        _sessionStopPolicy: 'immediately',
+                        newRealmFileBehavior: {
+                            type: 'syncBeforeOpen',
+                        },
+                        url: 'realm://127.0.0.1:9080/downloadlistener_cancel_' + uuid()
+                    }
+                });
+                let promise = Realm.open(config);
+                promise.progress((transferred, transferable) => {
+                    reject("Progress listener called"); 
+                });
+                promise.cancel();
+                return promise;
+            })
+            .then(() => {
+                reject("Realm was opened after being canceled");
+            })
+            .catch(e => {
+                reject("An error was thrown after open was canceled: " + e.message);
+            });
+        });
+
+        // Wait for 1 second after canceling. The open promise should not emit any events in that period.
+        let timeOutPromise = new Promise((resolve, reject) => {
+            let wait = setTimeout(() => {
+                clearTimeout(wait);
+                resolve();
+            }, 1000);
+        });
+
+        return Promise.race[timeOutPromise, openPromise];
+    },
+
+    testBehavior_invalidOptions: function() {
+        return new Promise((resolve, reject) => {
+            return getLoggedInUser().then(user => {
+
+                // New file behavior tests
+                let config = user.createConfiguration({ sync: { newRealmFileBehavior: { type: 'foo' } } });
+                TestCase.assertThrows(() => Realm.open(config));
+
+                config = user.createConfiguration({ 
+                    sync: { 
+                        newRealmFileBehavior: { 
+                            type: 'openLocal',
+                            timeOutBehavior: 'foo' 
+                        } 
+                    } 
+                });
+                TestCase.assertThrows(() => Realm.open(config));
+
+                config = user.createConfiguration({ 
+                    sync: { 
+                        newRealmFileBehavior: { 
+                            type: 'openLocal',
+                            timeOut: 'bar'
+                        } 
+                    } 
+                });
+                TestCase.assertThrows(() => Realm.open(config));
+                resolve();
+            });
+        });
+    },
 };

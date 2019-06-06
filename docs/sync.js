@@ -107,6 +107,22 @@
  *
  * @memberof Realm
  */
+
+/**
+ * The default behavior settings if you want to open a synchronized Realm immediately and start working on it.
+ * If this is the first time you open the Realm, it will be empty while the server data is being downloaded
+ * in the background.
+ *
+ * @typedef {Object} Realm.Sync.openLocalRealmBehavior
+ */
+
+/**
+ * The default behavior settings if you want to fully synchronize a Realm before it is opened.
+ * If this takes more than 30 seconds, and exception will be thrown.
+ *
+ * @typedef {Object} Realm.Sync.syncBeforeOpenBehavior
+ */
+
 class Sync {
     /**
      * Add a sync listener to listen to changes across multiple Realms.
@@ -1179,4 +1195,3 @@ class Adapter {
 	 */
     close() { }
 }
-

@@ -893,11 +893,16 @@ void RealmClass<T>::async_open_realm(ContextType ctx, ObjectType this_object, Ar
                                                                defaults=std::move(defaults),
                                                                constructors=std::move(constructors)](std::shared_ptr<Realm> realm, std::exception_ptr error) mutable {
         HANDLESCOPE
+
+        // Since the callback is only ever invoked once, make sure to release reference to AsyncOpenTask, so internal
+        // resources like the RealmCoordinator are correctly released.
+        delete ptr;
+
         if (error) {
             try {
                 std::rethrow_exception(error);
             } catch(const std::exception& e) {
-                ObjectType object = Object::create_empty(protected_ctx);
+                 ObjectType object = Object::create_empty(protected_ctx);
                  Object::set_property(protected_ctx, object, "message", Value::from_string(protected_ctx, e.what()));
                  Object::set_property(protected_ctx, object, "errorCode", Value::from_number(protected_ctx, 1));
 
@@ -908,8 +913,10 @@ void RealmClass<T>::async_open_realm(ContextType ctx, ObjectType this_object, Ar
                  return;
             }
         }
-
-        realm->close(); // FIXME Can we re-use this Realm?
+        
+        // We need to let the JS side control the lifecycle of the Realm, so close the one from ObjectStore
+        // and re-open here.
+        realm->close();
 
         // Reopen it with the real configuration and pass that Realm back to the callback
         ObjectDefaultsMap m_defaults;
@@ -1374,6 +1381,7 @@ class AsyncOpenTaskClass : public ClassDefinition<T, std::shared_ptr<AsyncOpenTa
     using ObjectDefaultsMap = typename Schema<T>::ObjectDefaultsMap;
     using ConstructorMap = typename Schema<T>::ConstructorMap;
     using RealmCallbackHandler = void(std::shared_ptr<Realm> realm, std::exception_ptr error);
+    using SyncProgressHandler = void(uint64_t transferred_bytes, uint64_t transferrable_bytes);
 
 public:
     std::string const name = "AsyncOpenTask";
@@ -1409,17 +1417,24 @@ void AsyncOpenTaskClass<T>::cancel(ContextType ctx, ObjectType this_object, Argu
 
 template<typename T>
 void AsyncOpenTaskClass<T>::add_download_notification(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue & return_value) {
-//    std::unique_ptr<AsyncOpenTask> task = get_internal<T, AsyncOpenTask>(this_object);
+    args.validate_maximum(1);
+    auto callback_function = Value::validated_to_function(ctx, args[0]);
 
-    // TODO
+    Protected<FunctionType> protected_callback(ctx, callback_function);
+    Protected<ObjectType> protected_this(ctx, this_object);
+    Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
+
+    EventLoopDispatcher<SyncProgressHandler> callback_handler([=](uint64_t transferred_bytes, uint64_t transferrable_bytes) mutable {
+        HANDLESCOPE
+        ValueType callback_arguments[2];
+        callback_arguments[0] = Value::from_number(ctx, transferred_bytes);
+        callback_arguments[1] = Value::from_number(ctx, transferrable_bytes);
+        Function::callback(protected_ctx, protected_callback, typename T::Object(), 2, callback_arguments);
+    });
+
+    std::shared_ptr<AsyncOpenTask> task = *get_internal<T, AsyncOpenTaskClass<T>>(this_object);
+    task->register_download_progress_notifier(callback_handler); // Ignore token as we don't want to unregister.
 }
-
-template<typename T>
-void AsyncOpenTaskClass<T>::get_empty(ContextType ctx, ObjectType object, ReturnValue &return_value) {
-    // Test
-}
-
-
 
 } // js
 } // realm
