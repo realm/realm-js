@@ -75,7 +75,7 @@ void ensure_directory_exists_for_file(const std::string &fileName)
         }
 
         NSError *error = nil;
-        if ([manager createDirectoryAtPath:docsDir withIntermediateDirectories:YES attributes:nil error:&error]) {
+        if (![manager createDirectoryAtPath:docsDir withIntermediateDirectories:YES attributes:nil error:&error]) {
             throw std::runtime_error(util::format("Failed to create directory \"%1\": %2", docsDir.UTF8String, error_description(error).UTF8String));
         }
     }
