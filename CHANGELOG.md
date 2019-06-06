@@ -1,3 +1,20 @@
+x.x.x Release notes (YYYY-MM-DD)
+=============================================================
+### Enhancements
+* For synchronized Realms it is now possible to choose the behavior when opening the Realm. You can either choose to open the local Realm immediately or wait for it to be synchronized with the server first. These options are controlled through `Realm.Sync.SyncConfiguration.newRealmFileBehavior` and `Realm.Sync.SyncConfiguration.existingRealmFileBehavior`. See the [docs](XXX) for more information.
+
+### Fixed
+* None.
+
+### Compatibility
+* Realm Object Server: 3.21.0 or later.
+* APIs are backwards compatible with all previous release of realm in the 2.x.y series.
+* File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
+
+### Internal
+* Updated to Object Store commit 1569de88994ec86cbf28dac613b193557acacf18
+
+
 2.27.0 Release notes (2019-5-10)
 =============================================================
 NOTE: This release is only compatible with Realm Object Server 3.21.0 or later.
