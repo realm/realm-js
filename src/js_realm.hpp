@@ -1395,12 +1395,6 @@ public:
         {"addDownloadNotification", wrap<add_download_notification>},
         {"cancel", wrap<cancel>},
     };
-
-    static void get_empty(ContextType, ObjectType, ReturnValue &);
-
-    PropertyMap<T> const properties = {
-        {"empty", {wrap<get_empty>, nullptr}},
-    };
 };
 
 template<typename T>
