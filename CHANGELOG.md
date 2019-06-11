@@ -8,7 +8,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * None.
 
 ### Compatibility
-* Realm Object Server: 3.11.0 or later.
+* Realm Object Server: 3.21.0 or later.
 * APIs are backwards compatible with all previous release of realm in the 2.x.y series.
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
@@ -24,7 +24,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * A bug in instruction cache invalidation could lead to SIGBUS errors on RN Android. ([#2391](https://github.com/realm/realm-js/issues/2391), since v2.28.0)
 
 ### Compatibility
-* Realm Object Server: 3.11.0 or later.
+* Realm Object Server: 3.21.0 or later.
 * APIs are backwards compatible with all previous release of realm in the 2.x.y series.
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
