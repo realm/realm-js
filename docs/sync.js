@@ -713,7 +713,7 @@ class User {
     /**
      * Asynchronously retrieve the permission offers that this user has created by invoking
      * {@link Realm#Sync#User#offerPermissions offerPermissions}.
-     * @returns {Promise} a collection with a collection of {@link PermissionOffer PermissionOffer} objects.
+     * @returns {Promise} A promise that, upon completion, contains a collection of {@link PermissionOffer PermissionOffer} objects.
      */
     getPermissionOffers() { }
 
