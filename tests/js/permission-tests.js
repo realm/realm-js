@@ -33,8 +33,11 @@ function createUsersWithTestRealms(count) {
         return Realm.Sync.User
             .login('http://127.0.0.1:9080', Realm.Sync.Credentials.anonymous())
             .then(user => {
-                new Realm({sync: {user, url: 'realm://127.0.0.1:9080/~/test', fullSynchronization: true}}).close();
-                return user;
+                const realm = new Realm({sync: {user, url: 'realm://127.0.0.1:9080/~/test', fullSynchronization: true}});
+                return realm.syncSession.uploadAllLocalChanges()
+                    .then(() => {
+                        return user;
+                    });
             });
     };
 
@@ -43,18 +46,6 @@ function createUsersWithTestRealms(count) {
 
 function wait(t) {
     return new Promise(resolve => setTimeout(resolve, t));
-}
-
-function repeatUntil(fn, predicate) {
-    let retries = 0
-    function check() {
-        if (retries > 3) {
-            return Promise.reject(new Error("repeatUtil timed out"));
-        }
-        ++retries;
-        return fn().then(x => predicate(x) ? x : wait(100 * retries).then(check));
-    }
-    return check;
 }
 
 function subscribe(results) {
@@ -122,14 +113,13 @@ module.exports = {
             return user
                 .applyPermissions({userId: `${user.identity}`},
                                   `/${user.identity}/test`, 'read')
-                .then(repeatUntil(() => user.getGrantedPermissions('any'),
-                                  permissions => {
-                                      let permission = permissionForPath(permissions, path);
-                                      return permission && !permission.mayWrite;
-                                  }))
+                .then(() => {
+                    return user.getGrantedPermissions('any');
+                })
                 .then(permissions => {
                     let permission = permissionForPath(permissions, path);
                     TestCase.assertDefined(permission);
+                    TestCase.assertEqual(permission.accessLevel, 'read');
                     TestCase.assertEqual(permission.mayRead, true);
                     TestCase.assertEqual(permission.mayWrite, false);
                     TestCase.assertEqual(permission.mayManage, false);
@@ -171,10 +161,25 @@ module.exports = {
         }
         catch (error) {
             TestCase.assertEqual(error.message, 'The permission offer is expired.');
-            TestCase.assertEqual(error.statusCode, 701);
+            TestCase.assertEqual(error.code, 701);
             return;
         }
         throw new Error("User was able to accept an invalid permission offer token");
+    },
+
+    async testGetPermissionOffers() {
+        const [user] = await createUsersWithTestRealms(1);
+        const tokenRead = await user.offerPermissions(`/${user.identity}/test`, 'read');
+        const tokenWrite = await user.offerPermissions(`/${user.identity}/test`, 'write');
+
+        const offers = await user.getPermissionOffers();
+        TestCase.assertEqual(offers.length, 2);
+
+        await user.invalidatePermissionOffer(tokenRead);
+
+        const offersAfterDeletion = await user.getPermissionOffers();
+        TestCase.assertEqual(offersAfterDeletion.length, 1);
+        TestCase.assertEqual(offersAfterDeletion[0].token, tokenWrite);
     },
 
     async testObjectPermissions() {
