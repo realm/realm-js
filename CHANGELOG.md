@@ -1,4 +1,4 @@
-3.0.0 Release notes (2019-6-13)
+3.0.0-beta.1 Release notes (2019-6-13)
 =============================================================
 ### Breaking Changes
 * Reworked the internal implementation of the permission API. For the most part, the method signatures haven't changed or where they have changed, the API have remained close to the original (e.g. `Results<T>` has changed to `T[]`).
@@ -21,6 +21,7 @@
 
 ### Internal
 * None.
+
 
 2.28.1 Release notes (2019-6-3)
 =============================================================
