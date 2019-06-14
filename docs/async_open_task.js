@@ -20,10 +20,19 @@
 class AsyncOpenTask {
 
     /**
-     * FIXME
+     * Cancels any current running download.
+     * If multiple AsyncOpenTasks are all in the progress for the same Realm, then canceling one of them
+     * wil cancel all of them.
      */
     cancel() { }
 
-
+    /**
+     * Register to receive progress notifications while the download is in progress.
+     *
+     * @param {callback(transferred, transferable)} callback - called with the following arguments:
+     *   - `transferred` - the current number of bytes already transferred
+     *   - `transferable` - the total number of transferable bytes (the number of bytes already transferred plus the number of bytes pending transfer)
+     */
+    progress(callback) {}
 
 }

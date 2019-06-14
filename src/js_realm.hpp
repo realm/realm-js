@@ -44,6 +44,7 @@
 #include "results.hpp"
 
 #include <realm/disable_sync_to_disk.hpp>
+#include <realm/util/file.hpp>
 
 namespace realm {
 namespace js {
@@ -419,12 +420,12 @@ public:
             config.path = Value::validated_to_string(ctx, path_value, "path");
         }
         else {
-            #if REALM_ENABLE_SYNC
+#if REALM_ENABLE_SYNC
             ValueType sync_config_value = Object::get_property(ctx, config_object, "sync");
             if (!Value::is_undefined(ctx, sync_config_value)) {
                 SyncClass<T>::populate_sync_config(ctx, Value::validated_to_object(ctx, Object::get_global(ctx, "Realm")), config_object, config);
             }
-            #endif
+#endif
 
             if (config.path.empty()) {
                 config.path = js::default_path();
@@ -767,7 +768,7 @@ void RealmClass<T>::realm_file_exists(ContextType ctx, ObjectType this_object, A
     ValueType value = args[0];
     realm::Realm::Config config = validate_and_normalize_config(ctx, value);
     std::string realm_file_path = config.path;
-    return_value.set(realm::file_exists(realm_file_path));
+    return_value.set(File::exists(realm_file_path));
 }
 
 template<typename T>
@@ -896,7 +897,7 @@ void RealmClass<T>::async_open_realm(ContextType ctx, ObjectType this_object, Ar
 
         // Since the callback is only ever invoked once, make sure to release reference to AsyncOpenTask, so internal
         // resources like the RealmCoordinator are correctly released.
-        delete ptr;
+        set_internal(nullptr);
 
         if (error) {
             try {

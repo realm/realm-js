@@ -110,10 +110,4 @@ namespace realm {
         system(cmd.c_str());
     }
 
-    bool file_exists(const std::string &path)
-    {
-        // Assume that if anything exists at the path, it is a file.
-        struct stat buf;
-        return (stat(path.c_str(), &buf) == 0);
-    }
 }

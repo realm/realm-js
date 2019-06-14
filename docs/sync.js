@@ -118,7 +118,7 @@
 
 /**
  * The default behavior settings if you want to fully synchronize a Realm before it is opened.
- * If this takes more than 30 seconds, and exception will be thrown.
+ * If this takes more than 30 seconds, an exception will be thrown.
  *
  * @typedef {Object} Realm.Sync.syncBeforeOpenBehavior
  */

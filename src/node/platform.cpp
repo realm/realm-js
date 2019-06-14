@@ -185,15 +185,4 @@ void remove_file(const std::string &path)
     }
 }
 
-bool file_exists(const std::string &path)
-{
-    FileSystemRequest exists_req;
-    if (uv_fs_stat(uv_default_loop(), &exists_req, path.c_str(), nullptr) != 0) {
-        if (exists_req.result == UV_ENOENT) {
-            return false;
-        }
-    }
-    return true;
-}
-
 } // realm

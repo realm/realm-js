@@ -91,9 +91,6 @@ module.exports = {
             .then(realm => {
                 TestCase.assertTrue(realm.path !== undefined);
                 realm.close();
-                return new Promise((resolve) => {
-                    resolve();
-                });
             })
     },
 

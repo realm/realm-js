@@ -345,6 +345,7 @@ class Realm {
      * Checks if the Realm already exists on disk.
      * @param {Realm~Configuration} config The configuration for the Realm.
      * @throws {Error} if anything in the provided `config` is invalid.
+     * @returns {boolean} returns `true` if the Realm exists on the device, `false` if not.
      */
     static exists(config) { }
 
