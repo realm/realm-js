@@ -130,7 +130,7 @@ module.exports = {
             });
     },
 
-    testNewFile_syncBeforeOpen: function() {
+    testNewFile_downloadBeforeOpen: function() {
         return getLoggedInUser()
             .then(user => {
                 const config = user.createConfiguration({
@@ -138,7 +138,7 @@ module.exports = {
                         fullSynchronization: true,
                         _sessionStopPolicy: 'immediately',
                         newRealmFileBehavior: {
-                            type: 'syncBeforeOpen'
+                            type: 'downloadBeforeOpen'
                         },
                         url: 'realm://127.0.0.1:9080/new_realm_' + uuid()
                     }
@@ -154,7 +154,7 @@ module.exports = {
             });
     },
 
-    testExistingFile_syncBeforeOpen: function() {
+    testExistingFile_downloadBeforeOpen: function() {
         // 1. Open empty Realm
         // 2. Close Realm
         // 3. Let other user upload changes to the Realm on the server.
@@ -205,7 +205,7 @@ module.exports = {
                         fullSynchronization: true,
                         _sessionStopPolicy: 'immediately',
                         existingRealmBehavior: {
-                            type: 'syncBeforeOpen'
+                            type: 'downloadBeforeOpen'
                         },
                         url: 'realm://127.0.0.1:9080/' + realmName
                     }
@@ -220,7 +220,7 @@ module.exports = {
             })
     },
 
-    testNewFile_syncBeforeOpen_throwOnTimeOut: function() {
+    testNewFile_downloadBeforeOpen_throwOnTimeOut: function() {
         return getLoggedInUser()
             .then(user => {
                 const config = user.createConfiguration({
@@ -228,7 +228,7 @@ module.exports = {
                         fullSynchronization: true,
                         _sessionStopPolicy: 'immediately',
                         newRealmFileBehavior: {
-                            type: 'syncBeforeOpen',
+                            type: 'downloadBeforeOpen',
                             timeOut: 0,
                             timeOutBehavior: 'throwException'
                         },
@@ -246,7 +246,7 @@ module.exports = {
             });
     },
 
-    testExistingFile_syncBeforeOpen_throwOnTimeOut: function() {
+    testExistingFile_downloadBeforeOpen_throwOnTimeOut: function() {
         const realmName = 'sync_timeout_throw_' + uuid();
         return getLoggedInUser()
             .then(user => {
@@ -266,7 +266,7 @@ module.exports = {
                         fullSynchronization: true,
                         _sessionStopPolicy: 'immediately',
                         existingRealmFileBehavior: {
-                            type: 'syncBeforeOpen',
+                            type: 'downloadBeforeOpen',
                             timeOut: 0,
                             timeOutBehavior: 'throwException'
                         },
@@ -283,7 +283,7 @@ module.exports = {
             });
     },
 
-    testNewFile_syncBeforeOpen_openLocalOnTimeOut: function() {
+    testNewFile_downloadBeforeOpen_openLocalOnTimeOut: function() {
         // 1. Add data to server Realm from User 1
         // 2. Open Realm with User 2
         // 3. Timeout and check that the returned Realm is empty.
@@ -318,7 +318,7 @@ module.exports = {
                         fullSynchronization: true,
                         _sessionStopPolicy: 'immediately',
                         newRealmFileBehavior: {
-                            type: 'syncBeforeOpen',
+                            type: 'downloadBeforeOpen',
                             timeOut: 0,
                             timeOutBehavior: 'openLocal'
                         },
@@ -336,7 +336,7 @@ module.exports = {
             });
     },
 
-    testExistingFile_syncBeforeOpen_openLocalOnTimeOut: function () {
+    testExistingFile_downloadBeforeOpen_openLocalOnTimeOut: function () {
         // 1. Open empty Realm
         // 2. Close Realm
         // 3. Let other user upload changes to the Realm on the server.
@@ -387,7 +387,7 @@ module.exports = {
                         fullSynchronization: true,
                         _sessionStopPolicy: 'immediately',
                         existingRealmFileBehavior: {
-                            type: 'syncBeforeOpen',
+                            type: 'downloadBeforeOpen',
                             timeOut: 0,
                             timeOutBehavior: 'openLocal'
                         },
@@ -413,7 +413,7 @@ module.exports = {
                         fullSynchronization: true,
                         _sessionStopPolicy: 'immediately',
                         newRealmFileBehavior: {
-                            type: 'syncBeforeOpen'
+                            type: 'downloadBeforeOpen'
                         },
                         url: 'realm://127.0.0.1:9080/new_realm_' + uuid()
                     }
@@ -452,7 +452,7 @@ module.exports = {
                         fullSynchronization: true,
                         _sessionStopPolicy: 'immediately',
                         newRealmFileBehavior: {
-                            type: 'syncBeforeOpen'
+                            type: 'downloadBeforeOpen'
                         },
                         url: 'realm://127.0.0.1:9080/new_realm_' + uuid()
                     }
@@ -487,7 +487,7 @@ module.exports = {
     //                     fullSynchronization: true,
     //                     _sessionStopPolicy: 'immediately',
     //                     newRealmFileBehavior: {
-    //                         type: 'syncBeforeOpen'
+    //                         type: 'downloadBeforeOpen'
     //                     },
     //                     url: 'realm://127.0.0.1:9080/downloadlistener_' + uuid()
     //                 }
@@ -511,7 +511,7 @@ module.exports = {
                         fullSynchronization: true,
                         _sessionStopPolicy: 'immediately',
                         newRealmFileBehavior: {
-                            type: 'syncBeforeOpen',
+                            type: 'downloadBeforeOpen',
                         },
                         url: 'realm://127.0.0.1:9080/downloadlistener_cancel_' + uuid()
                     }

@@ -517,17 +517,17 @@ declare namespace Realm.Sync {
     }
 
     const enum OpenRealmBehaviorType {
-        OpenImmediately = "openImmediately",
-        SyncBeforeOpen = 'syncBeforeOpen'
+        DownloadBeforeOpen = 'downloadBeforeOpen',
+        OpenImmediately = "openImmediately"
     }
 
     const enum OpenRealmTimeOutBehavior {
-        ThrowException = 'throwException',
-        OpenLocalRealm = 'openLocalRealm'
+        OpenLocalRealm = 'openLocalRealm',
+        ThrowException = 'throwException'
     }
 
     let openLocalRealmBehavior: OpenRealmBehaviorConfiguration;
-    let syncBeforeOpenBehavior: OpenRealmBehaviorConfiguration;
+    let downloadBeforeOpenBehavior: OpenRealmBehaviorConfiguration;
 
     enum ConnectionState {
         Disconnected = "disconnected",
