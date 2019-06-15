@@ -44,7 +44,6 @@ const schemas = require('./schemas');
 
 let pathSeparator = '/';
 const isNodeProcess = typeof process === 'object' && process + '' === '[object process]';
-const isChromeWorker = !isNodeProcess && typeof WorkerGlobalScope !== 'undefined' && navigator instanceof WorkerNavigator;
 if (isNodeProcess && process.platform === 'win32') {
     pathSeparator = '\\';
 }
@@ -1048,7 +1047,7 @@ module.exports = {
         TestCase.assertEqual(secondNotificationCount, 1);
 
         TestCase.assertThrowsContaining(() => realm.addListener('invalid', () => {}),
-                                        "Only the 'change' and 'schema' notification names are supported.");
+                                        "Unknown event name 'invalid': only 'change', 'schema' and 'beforenotify' are supported.");
 
         realm.addListener('change', () => {
             throw new Error('expected error message');
@@ -1526,11 +1525,8 @@ module.exports = {
             });
 
             let realm2 = new Realm({ schema: schema, _cache: false });
-            if (!isChromeWorker) {
-                // Not updated until we return to the event loop and the autorefresh can happen
-                // When running in Chrome this can happen at any time due to the async RPC
-                TestCase.assertEqual(realm1.schema.length, 0);
-            }
+            // Not updated until we return to the event loop and the autorefresh can happen
+            TestCase.assertEqual(realm1.schema.length, 0);
             TestCase.assertEqual(realm2.schema.length, 1);
 
             // give some time to let advance_read to complete
@@ -1560,12 +1556,7 @@ module.exports = {
             .then(user1 => {
                 config.sync.user = user1;
                 const realm = new Realm(config);
-                if (isChromeWorker) {
-                    TestCase.assertEqual(realm.schema.length, 1); // 1 test object
-                }
-                else {
-                    TestCase.assertEqual(realm.schema.length, 7); // 5 permissions, 1 results set, 1 test object
-                }
+                TestCase.assertEqual(realm.schema.length, 7); // 5 permissions, 1 results set, 1 test object
                 return closeAfterUpload(realm);
             })
             .then(() => {

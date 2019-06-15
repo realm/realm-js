@@ -125,10 +125,19 @@ json RPCWorker::add_task(Fn&& fn) {
 
 void RPCWorker::invoke_callback(json callback) {
     m_tasks.push_back([=, callback = std::move(callback)]() mutable {
-        if (auto promise = m_promises.try_pop_back(0)) {
+        if (m_depth == 1) {
+            // The callback was invoked directly from the event loop. Push it
+            // onto the queue of callbacks to be processed by /callbacks_poll
+            m_callbacks.push_back(std::move(callback));
+        }
+        else if (auto promise = m_promises.try_pop_back(0)) {
+            // The callback was invoked from within a call to something else,
+            // and there's someone waiting for its result.
             promise->set_value(std::move(callback));
         }
         else {
+            // The callback was invoked from within a call to something else,
+            // but there's no one waiting for the result. Shouldn't be possible?
             m_callbacks.push_back(std::move(callback));
         }
     });
@@ -153,7 +162,9 @@ bool RPCWorker::try_run_task() {
 
     // Use a 10 millisecond timeout to keep this thread unblocked.
     if (auto task = m_tasks.try_pop_back(10)) {
+        ++m_depth;
         (*task)();
+        --m_depth;
         return m_stop;
     }
     return false;
@@ -171,6 +182,58 @@ void RPCWorker::stop() {
         m_loop = nullptr;
 #endif
     }
+}
+
+static json read_object_properties(Object& object) {
+    json cache;
+    if (!object.is_valid()) {
+        return cache;
+    }
+
+    // Send the values of the primitive and short string properties directly
+    // as the overhead of doing so is tiny compared to even a single RPC request
+    auto& object_schema = object.get_object_schema();
+    auto row = object.row();
+    for (auto& property : object_schema.persisted_properties) {
+        if (is_array(property.type)) {
+            continue;
+        }
+        if (is_nullable(property.type) && row.is_null(property.table_column)) {
+            cache[property.name] = {{"value", json(nullptr)}};
+            continue;
+        }
+        auto cache_value = [&](auto&& v) {
+            cache[property.name] = {{"value", v}};
+        };
+        switch (property.type & ~PropertyType::Flags) {
+            case PropertyType::Bool:   cache_value(row.get_bool(property.table_column)); break;
+            case PropertyType::Int:    cache_value(row.get_int(property.table_column)); break;
+            case PropertyType::Float:  cache_value(row.get_float(property.table_column)); break;
+            case PropertyType::Double: cache_value(row.get_double(property.table_column)); break;
+            case PropertyType::Date: {
+                auto ts = row.get_timestamp(property.table_column);
+                cache[property.name] = {
+                    {"type", RealmObjectTypesDate},
+                    {"value", ts.get_seconds() * 1000.0 + ts.get_nanoseconds() / 1000000.0},
+                };
+                break;
+            }
+            break;
+            case PropertyType::String: {
+                auto str = row.get_string(property.table_column);
+                // A completely abitrary upper limit on how big of a string we'll pre-cache
+                if (str.size() < 100) {
+                    cache_value(str);
+                }
+                break;
+            }
+            case PropertyType::Data:
+            case PropertyType::Object:
+            break;
+            default: REALM_UNREACHABLE();
+        }
+    }
+    return cache;
 }
 
 RPCServer::RPCServer() {
@@ -211,8 +274,15 @@ RPCServer::RPCServer() {
         }
 
         JSObjectRef realm_object = jsc::Function::construct(m_context, realm_constructor, arg_count, arg_values);
-        RPCObjectID realm_id = store_object(realm_object);
-        return (json){{"result", realm_id}};
+
+        JSObjectRef add_listener_method = (JSObjectRef)jsc::Object::get_property(m_context, realm_object, "addListener");
+        JSValueRef listener_args[] = {
+            jsc::Value::from_string(m_context, "beforenotify"),
+            deserialize_json_value(dict["beforeNotify"])
+        };
+        jsc::Function::call(m_context, add_listener_method, realm_object, 2, listener_args);
+
+        return (json){{"result", serialize_json_value(realm_object)}};
     };
     m_requests["/create_user"] = [this](const json dict) {
         JSObjectRef realm_constructor = get_realm_constructor();
@@ -341,17 +411,42 @@ RPCServer::RPCServer() {
         JSValueRef result = jsc::Function::call(m_context, function, object, arg_count, arg_values);
         return (json){{"result", serialize_json_value(result)}};
     };
+    m_requests["/get_object"] = [this](const json dict) -> json {
+        RPCObjectID oid = dict["id"].get<RPCObjectID>();
+        json name = dict["name"];
+        JSObjectRef object = get_object(oid);
+        if (!object) {
+            return {{"result", nullptr}};
+        }
+
+        json result;
+        if (jsc::Object::is_instance<js::RealmObjectClass<jsc::Types>>(m_context, object)) {
+            auto obj = jsc::Object::get_internal<js::RealmObjectClass<jsc::Types>>(object);
+            result = read_object_properties(*obj);
+        }
+        if (result.find(name) == result.end()) {
+            if (name.is_number()) {
+                auto key = name.get<unsigned int>();
+                result[key] = serialize_json_value(jsc::Object::get_property(m_context, object, key));
+            }
+            else {
+                auto key = name.get<std::string>();
+                result[key] = serialize_json_value(jsc::Object::get_property(m_context, object, key));
+            }
+        }
+        return {{"result", result}};
+    };
     m_requests["/get_property"] = [this](const json dict) {
         RPCObjectID oid = dict["id"].get<RPCObjectID>();
         json name = dict["name"];
 
         JSValueRef value;
-        if (JSValueRef object = get_object(oid)) {
+        if (JSObjectRef object = get_object(oid)) {
             if (name.is_number()) {
-                value = jsc::Object::get_property(m_context, get_object(oid), name.get<unsigned int>());
+                value = jsc::Object::get_property(m_context, object, name.get<unsigned int>());
             }
             else {
-                value = jsc::Object::get_property(m_context, get_object(oid), name.get<std::string>());
+                value = jsc::Object::get_property(m_context, object, name.get<std::string>());
             }
         }
         else {
@@ -405,6 +500,7 @@ RPCServer::RPCServer() {
         m_callback_ids.clear();
         m_callbacks[0] = refresh_access_token;
         m_callback_ids[refresh_access_token] = 0;
+        ++m_reset_counter;
         JSGarbageCollect(m_context);
         js::clear_test_state();
 
@@ -458,7 +554,15 @@ JSValueRef RPCServer::run_callback(JSContextRef ctx, JSObjectRef function, JSObj
         {"callback_call_counter", counter}
     });
 
-    while (!server->try_run_task() && future.wait_for(std::chrono::microseconds(100)) != std::future_status::ready);
+    uint64_t reset_counter = server->m_reset_counter;
+    while (!server->try_run_task() &&
+           future.wait_for(std::chrono::microseconds(100)) != std::future_status::ready &&
+           reset_counter == server->m_reset_counter);
+
+    if (reset_counter != server->m_reset_counter) {
+        // clearTestState() was called while the callback was pending
+        return JSValueMakeUndefined(ctx);
+    }
 
     json results = future.get();
     // The callback id should be identical!
@@ -596,7 +700,8 @@ json RPCServer::serialize_json_value(JSValueRef js_value) {
         return {
             {"type", RealmObjectTypesObject},
             {"id", store_object(js_object)},
-            {"schema", serialize_object_schema(object->get_object_schema())}
+            {"schema", serialize_object_schema(object->get_object_schema())},
+            {"cache", read_object_properties(*object)}
         };
     }
     else if (jsc::Object::is_instance<js::ListClass<jsc::Types>>(m_context, js_object)) {
@@ -604,8 +709,8 @@ json RPCServer::serialize_json_value(JSValueRef js_value) {
         return {
             {"type", RealmObjectTypesList},
             {"id", store_object(js_object)},
-            {"size", list->size()},
-            {"schema", get_type(*list)},
+            {"dataType", string_for_property_type(list->get_type() & ~realm::PropertyType::Flags)},
+            {"optional", is_nullable(list->get_type())},
          };
     }
     else if (jsc::Object::is_instance<js::ResultsClass<jsc::Types>>(m_context, js_object)) {
@@ -613,20 +718,33 @@ json RPCServer::serialize_json_value(JSValueRef js_value) {
         return {
             {"type", RealmObjectTypesResults},
             {"id", store_object(js_object)},
-            {"size", results->size()},
-            {"schema", get_type(*results)},
+            {"dataType", string_for_property_type(results->get_type() & ~realm::PropertyType::Flags)},
+            {"optional", is_nullable(results->get_type())},
         };
     }
     else if (jsc::Object::is_instance<js::RealmClass<jsc::Types>>(m_context, js_object)) {
+        auto realm = jsc::Object::get_internal<js::RealmClass<jsc::Types>>(js_object);
+        json realm_dict {
+            {"_isPartialRealm", serialize_json_value(jsc::Object::get_property(m_context, js_object, "_isPartialRealm"))},
+            {"inMemory", serialize_json_value(jsc::Object::get_property(m_context, js_object, "inMemory"))},
+            {"path", serialize_json_value(jsc::Object::get_property(m_context, js_object, "path"))},
+            {"readOnly", serialize_json_value(jsc::Object::get_property(m_context, js_object, "readOnly"))},
+            {"syncSession", serialize_json_value(jsc::Object::get_property(m_context, js_object, "syncSession"))},
+        };
         return {
             {"type", RealmObjectTypesRealm},
             {"id", store_object(js_object)},
+            {"realmId", (uintptr_t)realm->get()},
+            {"data", realm_dict}
         };
     }
     else if (jsc::Object::is_instance<js::UserClass<jsc::Types>>(m_context, js_object)) {
         auto user = *jsc::Object::get_internal<js::UserClass<jsc::Types>>(js_object);
         json user_dict {
-            {"isAdmin", user->is_admin()}
+            {"identity", user->identity()},
+            {"isAdmin", user->is_admin()},
+            {"isAdminToken", user->token_type() == SyncUser::TokenType::Admin},
+            {"server", user->server_url()},
         };
         return {
             {"type", RealmObjectTypesUser},
@@ -637,7 +755,7 @@ json RPCServer::serialize_json_value(JSValueRef js_value) {
     else if (jsc::Object::is_instance<js::SessionClass<jsc::Types>>(m_context, js_object)) {
         json session_dict {
             {"user", serialize_json_value(jsc::Object::get_property(m_context, js_object, "user"))},
-            {"config", serialize_json_value(jsc::Object::get_property(m_context, js_object, "config"))}
+            {"config", serialize_json_value(jsc::Object::get_property(m_context, js_object, "config"))},
         };
         return {
             {"type", RealmObjectTypesSession},

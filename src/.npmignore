@@ -7,5 +7,6 @@
 /object-store/**/*.sh
 /object-store/**/CMake*
 /object-store/**/Makefile
+/object-store/.git
 /object-store/external/catch/
 /object-store/tests/

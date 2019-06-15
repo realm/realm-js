@@ -197,7 +197,7 @@ class Realm {
      *       default value.
      *     - 'all': If an existing object is found, all properties provided will be updated, any other properties will
      *       remain unchanged.
-     *     - 'modified: If an existing object exists, only properties where the value has actually changed will be
+     *     - 'modified': If an existing object exists, only properties where the value has actually changed will be
      *       updated. This improves notifications and server side performance but also have implications for how changes
      *       across devices are merged. For most use cases, the behaviour will match the intuitive behaviour of how
      *       changes should be merged, but if updating an entire object is considered an atomic operation, this mode
@@ -523,4 +523,3 @@ class Realm {
  *   any object of this type from inside the same Realm, and will always be _optional_
  *   (meaning it may also be assigned `null` or `undefined`).
  */
-
