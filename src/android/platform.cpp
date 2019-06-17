@@ -21,7 +21,6 @@
 #include <unistd.h>
 #include <cstdio>
 #include <android/asset_manager.h>
-#include <sys/stat.h>
 
 #include "../platform.hpp"
 
@@ -109,5 +108,4 @@ namespace realm {
         std::string cmd = "rm " + path;
         system(cmd.c_str());
     }
-
 }
