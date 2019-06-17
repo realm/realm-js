@@ -23,11 +23,13 @@ import React from 'react';
 import {
     Platform,
     StatusBar,
+    View
 } from 'react-native';
 
 import TodoListView from './todo-listview';
 import ItemsScreen from './items-screen'
 import realm from './realm';
+import ModalView from './ModalView'
 
 import { StackNavigator } from 'react-navigation';
 
@@ -56,7 +58,9 @@ class HomeScreen extends React.Component {
         this._addNewTodoList = this._addNewTodoList.bind(this);
         this._onPressTodoList = this._onPressTodoList.bind(this);
 
-        this.state = {};
+        this.state = {
+            isModalVisible: false
+        };
     }
 
     get currentListView() {
@@ -68,6 +72,23 @@ class HomeScreen extends React.Component {
         if (Platform.OS == 'ios') {
             StatusBar.setBarStyle('light-content');
         }
+    }
+
+    componentDidMount() {
+        // Register an action to create an item
+        setTimeout(() => { // setTimeout is a work-around: https://github.com/aksonov/react-native-router-flux/issues/2791#issuecomment-358157174
+            Actions.refresh({
+                title: project.name,
+                rightTitle: " Create",
+                onRight: () => {
+                    this.toggleModal();
+                }
+            });
+        }, 0);
+    }
+
+    _onPressCreate() {
+        this._addNewTodoList();
     }
 
     render() {
@@ -83,13 +104,27 @@ class HomeScreen extends React.Component {
             onPressItem: this._onPressTodoList,
         }
 
-        return <TodoListView items={this.todoLists} {...properties} />;
+        return (
+            <View>
+                <TodoListView items={this.todoLists} {...properties} />
+                <ModalView
+                    placeholder="Please enter a description"
+                    confirmLabel="Create Item"
+                    isModalVisible={this.state.isModalVisible}
+                    toggleModal={this.toggleModal}
+                    handleSubmit={this._addNewTodoList()} />
+            </View>
+        );
     }
 
     renderScene(route) {
         console.log(this.todoLists);
         return <route.component items={this.todoLists} {...route.passProps} />
     }
+
+    toggleModal = () => {
+        this.setState({ isModalVisible: !this.state.isModalVisible });
+    };
 
     _addNewTodoItem(list) {
         let items = list.items;
