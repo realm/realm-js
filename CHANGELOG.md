@@ -12,7 +12,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
 ### Internal
-* None.
+* The `examples/ReactExample` app is upgeaded to React Native v0.59. ([22282](https://github.com/realm/realm-js/issues/2282))
 
 2.28.1 Release notes (2019-6-3)
 =============================================================

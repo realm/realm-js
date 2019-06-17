@@ -11,6 +11,8 @@
     "react-native": "^0.59.6",
     "react-native-exception-handler": "^2.4.3",
     "react-native-fs": "^2.8.5",
+    "react-native-modal": "^11.0.1",
+    "react-native-router-flux": "^4.0.6",
     "react-navigation": "^1.0.0",
     "xmlbuilder": "^4.2.1"
   },
