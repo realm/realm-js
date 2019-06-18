@@ -926,7 +926,8 @@ void RealmClass<T>::async_open_realm(ContextType ctx, ObjectType this_object, Ar
     });
 
     (*ptr)->start(callback_handler);
-    return_value.set(create_object<T, AsyncOpenTaskClass<T>>(ctx, ptr));
+    auto obj = create_object<T, AsyncOpenTaskClass<T>>(ctx, ptr);
+    return_value.set(obj);
 }
 #endif
 
