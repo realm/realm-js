@@ -33,6 +33,7 @@
 
 #if REALM_ENABLE_SYNC
 #include "js_sync.hpp"
+#include "sync/async_open_task.hpp"
 #include "sync/sync_config.hpp"
 #include "sync/sync_manager.hpp"
 #endif
@@ -890,7 +891,7 @@ void RealmClass<T>::async_open_realm(ContextType ctx, ObjectType this_object, Ar
 
         // Since the callback is only ever invoked once, make sure to release reference to AsyncOpenTask, so internal
         // resources like the RealmCoordinator are correctly released.
-        set_internal(nullptr);
+        set_internal<T, AsyncOpenTaskClass<T>>(this_object, nullptr);
 
         if (error) {
             try {
