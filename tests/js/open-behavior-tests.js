@@ -52,7 +52,7 @@ function getLoggedInUser(userName) {
 const Realm = require('realm');
 const schemas = require('./schemas');
 const TestCase = require('./asserts');
-const Utils = require('./util');
+const Utils = require('./test-utils');
 
 let pathSeparator = '/';
 const isNodeProcess = typeof process === 'object' && process + '' === '[object process]';
