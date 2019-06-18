@@ -23,17 +23,11 @@
 const Realm = require('realm');
 const TestCase = require('./asserts');
 const schemas = require('./schemas');
-
-function uuid() {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-        var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
-        return v.toString(16);
-    });
-}
+const Utils = require('./test-utils');
 
 function getRealm() {
     const AUTH_URL = 'http://127.0.0.1:9080';
-    const REALM_URL = 'realm://127.0.0.1:9080/~/' + uuid().replace("-", "_");
+    const REALM_URL = 'realm://127.0.0.1:9080/~/' + Utils.uuid().replace("-", "_");
     return Realm.Sync.User.login(AUTH_URL, Realm.Sync.Credentials.nickname("admin", true))
         .then((user) => {
             const schemas = [

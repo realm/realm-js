@@ -27,13 +27,6 @@ function nodeRequire(module) {
     return require_method(module);
 }
 
-function uuid() {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-        var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
-        return v.toString(16);
-    });
-}
-
 function closeAfterUpload(realm) {
     return realm.syncSession.uploadAllLocalChanges().then(() => realm.close());
 }
@@ -57,8 +50,9 @@ function getLoggedInUser(userName) {
 }
 
 const Realm = require('realm');
-const TestCase = require('./asserts');
 const schemas = require('./schemas');
+const TestCase = require('./asserts');
+const Utils = require('./util');
 
 let pathSeparator = '/';
 const isNodeProcess = typeof process === 'object' && process + '' === '[object process]';
@@ -81,7 +75,7 @@ module.exports = {
             .then(user => {
                 let config = user.createConfiguration({
                     sync: {
-                        url: 'http://127.0.0.1/new_file_local_' + uuid(),
+                        url: 'http://127.0.0.1/new_file_local_' + Utils.uuid(),
                         newRealmFileBehavior: Realm.Sync.openLocalRealmBehavior
                     }
                 });
@@ -140,7 +134,7 @@ module.exports = {
                         newRealmFileBehavior: {
                             type: 'downloadBeforeOpen'
                         },
-                        url: 'realm://127.0.0.1:9080/new_realm_' + uuid()
+                        url: 'realm://127.0.0.1:9080/new_realm_' + Utils.uuid()
                     }
                 });
                 return Realm.open(config);
@@ -159,7 +153,7 @@ module.exports = {
         // 2. Close Realm
         // 3. Let other user upload changes to the Realm on the server.
         // 4. Re-open empty Realm with `existingRealmFileBehavior = syncWhenOpen`
-        const realmName = 'existing_realm_' + uuid();
+        const realmName = 'existing_realm_' + Utils.uuid();
         return getLoggedInUser()
             .then(user => {
                 const config = user.createConfiguration({
@@ -232,7 +226,7 @@ module.exports = {
                             timeOut: 0,
                             timeOutBehavior: 'throwException'
                         },
-                        url: 'realm://127.0.0.1:9080/sync_before_open_' + uuid()
+                        url: 'realm://127.0.0.1:9080/sync_before_open_' + Utils.uuid()
                     }
                 });
                 return Realm.open(config);
@@ -247,7 +241,7 @@ module.exports = {
     },
 
     testExistingFile_downloadBeforeOpen_throwOnTimeOut: function() {
-        const realmName = 'sync_timeout_throw_' + uuid();
+        const realmName = 'sync_timeout_throw_' + Utils.uuid();
         return getLoggedInUser()
             .then(user => {
                 const config = user.createConfiguration({
@@ -287,7 +281,7 @@ module.exports = {
         // 1. Add data to server Realm from User 1
         // 2. Open Realm with User 2
         // 3. Timeout and check that the returned Realm is empty.
-        const realmName = 'sync_timeout_open_' + uuid();
+        const realmName = 'sync_timeout_open_' + Utils.uuid();
         return getLoggedInUser("User1")
             .then(user1 => {
                 const config = user1.createConfiguration({
@@ -341,7 +335,7 @@ module.exports = {
         // 2. Close Realm
         // 3. Let other user upload changes to the Realm on the server.
         // 4. Re-open empty Realm with timeOut and localOpen, Realm should still be empty.
-        const realmName = 'existing_realm_' + uuid();
+        const realmName = 'existing_realm_' + Utils.uuid();
         return getLoggedInUser()
             .then(user => {
                 const config = user.createConfiguration({
@@ -415,7 +409,7 @@ module.exports = {
                         newRealmFileBehavior: {
                             type: 'downloadBeforeOpen'
                         },
-                        url: 'realm://127.0.0.1:9080/new_realm_' + uuid()
+                        url: 'realm://127.0.0.1:9080/new_realm_' + Utils.uuid()
                     }
                 });
                 
@@ -454,7 +448,7 @@ module.exports = {
                         newRealmFileBehavior: {
                             type: 'downloadBeforeOpen'
                         },
-                        url: 'realm://127.0.0.1:9080/new_realm_' + uuid()
+                        url: 'realm://127.0.0.1:9080/new_realm_' + Utils.uuid()
                     }
                 });
                 
@@ -513,7 +507,7 @@ module.exports = {
                         newRealmFileBehavior: {
                             type: 'downloadBeforeOpen',
                         },
-                        url: 'realm://127.0.0.1:9080/downloadlistener_cancel_' + uuid()
+                        url: 'realm://127.0.0.1:9080/downloadlistener_cancel_' + Utils.uuid()
                     }
                 });
                 let promise = Realm.open(config);

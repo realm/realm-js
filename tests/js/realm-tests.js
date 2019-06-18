@@ -27,13 +27,6 @@ function nodeRequire(module) {
     return require_method(module);
 }
 
-function uuid() {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-        var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
-        return v.toString(16);
-    });
-}
-
 function closeAfterUpload(realm) {
     return realm.syncSession.uploadAllLocalChanges().then(() => realm.close());
 }
@@ -41,6 +34,7 @@ function closeAfterUpload(realm) {
 const Realm = require('realm');
 const TestCase = require('./asserts');
 const schemas = require('./schemas');
+const Utils = require('./test-utils');
 
 let pathSeparator = '/';
 const isNodeProcess = typeof process === 'object' && process + '' === '[object process]';
@@ -1541,7 +1535,7 @@ module.exports = {
             return;
         }
 
-        const realmId = uuid();
+        const realmId = Utils.uuid();
         let realm2 = null, called = false;
         const config = {
             schema: [schemas.TestObject],
