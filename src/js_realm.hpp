@@ -884,6 +884,7 @@ void RealmClass<T>::async_open_realm(ContextType ctx, ObjectType this_object, Ar
     }
 
     std::shared_ptr<AsyncOpenTask>* ptr = new std::shared_ptr<AsyncOpenTask>(Realm::get_synchronized_realm(config));
+    auto obj = create_object<T, AsyncOpenTaskClass<T>>(ctx, ptr);
     EventLoopDispatcher<RealmCallbackHandler> callback_handler([=, config=std::move(config),
                                                                defaults=std::move(defaults),
                                                                constructors=std::move(constructors)](std::shared_ptr<Realm> realm, std::exception_ptr error) mutable {
@@ -926,7 +927,6 @@ void RealmClass<T>::async_open_realm(ContextType ctx, ObjectType this_object, Ar
     });
 
     (*ptr)->start(callback_handler);
-    auto obj = create_object<T, AsyncOpenTaskClass<T>>(ctx, ptr);
     return_value.set(obj);
 }
 #endif
