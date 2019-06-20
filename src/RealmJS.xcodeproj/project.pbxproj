@@ -42,6 +42,7 @@
 		3FDC253821F919AD0087FB9B /* sync_file.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 504CF85A1EBCAE3600A9A4B6 /* sync_file.cpp */; };
 		420FB79F1F7FBFE900D43D0F /* partial_sync.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 423737AF1F7E333400FAEDFF /* partial_sync.cpp */; };
 		4261AF8E203C42000052450D /* work_queue.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 425A120F20235A1400C2F932 /* work_queue.cpp */; };
+		42E204DD22BBC8E000C306FC /* async_open_task.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 42E204DB22BBC8E000C306FC /* async_open_task.cpp */; };
 		502B07E41E2CD201007A84ED /* object.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 502B07E31E2CD1FA007A84ED /* object.cpp */; };
 		504CF85E1EBCAE3600A9A4B6 /* network_reachability_observer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 504CF8541EBCAE3600A9A4B6 /* network_reachability_observer.cpp */; };
 		504CF85F1EBCAE3600A9A4B6 /* system_configuration.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 504CF8561EBCAE3600A9A4B6 /* system_configuration.cpp */; };
@@ -186,6 +187,8 @@
 		425A120F20235A1400C2F932 /* work_queue.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = work_queue.cpp; sourceTree = "<group>"; };
 		425A121020235A1400C2F932 /* work_queue.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = work_queue.hpp; sourceTree = "<group>"; };
 		426FCDFF1F7DA2F9005565DC /* sync_config.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = sync_config.cpp; path = src/sync/sync_config.cpp; sourceTree = "<group>"; };
+		42E204DB22BBC8E000C306FC /* async_open_task.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = async_open_task.cpp; path = src/sync/async_open_task.cpp; sourceTree = "<group>"; };
+		42E204DC22BBC8E000C306FC /* async_open_task.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = async_open_task.hpp; path = src/sync/async_open_task.hpp; sourceTree = "<group>"; };
 		502B07E31E2CD1FA007A84ED /* object.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = object.cpp; path = src/object.cpp; sourceTree = "<group>"; };
 		502B07E51E2CD20D007A84ED /* object.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = object.hpp; path = src/object.hpp; sourceTree = "<group>"; };
 		504CF8541EBCAE3600A9A4B6 /* network_reachability_observer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = network_reachability_observer.cpp; sourceTree = "<group>"; };
@@ -448,6 +451,8 @@
 		02E315CC1DB80DE000555337 /* sync */ = {
 			isa = PBXGroup;
 			children = (
+				42E204DB22BBC8E000C306FC /* async_open_task.cpp */,
+				42E204DC22BBC8E000C306FC /* async_open_task.hpp */,
 				504CF8521EBCAE3600A9A4B6 /* impl */,
 				423737AF1F7E333400FAEDFF /* partial_sync.cpp */,
 				423737B01F7E333400FAEDFF /* partial_sync.hpp */,
@@ -795,6 +800,7 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				English,
 				en,
 			);
 			mainGroup = 02B58CA71AE99CEB009B348C;
@@ -929,6 +935,7 @@
 				F63FF3221C1642BB00B3B8E0 /* GCDWebServerMultiPartFormRequest.m in Sources */,
 				F63FF31E1C1642BB00B3B8E0 /* GCDWebServerRequest.m in Sources */,
 				F63FF31F1C1642BB00B3B8E0 /* GCDWebServerResponse.m in Sources */,
+				42E204DD22BBC8E000C306FC /* async_open_task.cpp in Sources */,
 				F63FF3271C1642BB00B3B8E0 /* GCDWebServerStreamedResponse.m in Sources */,
 				F63FF3231C1642BB00B3B8E0 /* GCDWebServerURLEncodedFormRequest.m in Sources */,
 			);

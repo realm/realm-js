@@ -152,6 +152,7 @@
             "src/object-store/src/sync/sync_manager.cpp",
             "src/object-store/src/sync/sync_session.cpp",
             "src/object-store/src/sync/sync_user.cpp",
+            "src/object-store/src/sync/async_open_task.cpp",
           ],
         }, {
           "dependencies": [ "realm-core" ]
