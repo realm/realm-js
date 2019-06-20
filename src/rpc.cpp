@@ -339,11 +339,12 @@ RPCServer::RPCServer() {
         return (json){{"result", serialize_json_value(user_object)}};
 
     };
-    m_requests["/reconnect"] = [this](const json dict) {
+    m_requests["/call_sync_function"] = [this](const json dict) {
         JSObjectRef realm_constructor = get_realm_constructor();
-
         JSObjectRef sync_constructor = (JSObjectRef)jsc::Object::get_property(m_context, realm_constructor, "Sync");
-        JSObjectRef reconnect_method = (JSObjectRef)jsc::Object::get_property(m_context, sync_constructor, "reconnect");
+
+        std::string name = dict["name"];
+        JSObjectRef method = (JSObjectRef)jsc::Object::get_property(m_context, sync_constructor, name);
 
         json::array_t args = dict["arguments"];
         size_t arg_count = args.size();
@@ -353,33 +354,8 @@ RPCServer::RPCServer() {
             arg_values[i] = deserialize_json_value(args[i]);
         }
 
-        jsc::Function::call(m_context, reconnect_method, arg_count, arg_values);
-        return json::object();
-    };
-    m_requests["/_hasExistingSessions"] = [this](const json dict) {
-        JSObjectRef realm_constructor = get_realm_constructor();
-        JSObjectRef sync_constructor = (JSObjectRef)jsc::Object::get_property(m_context, realm_constructor, "Sync");
-        JSObjectRef method = (JSObjectRef)jsc::Object::get_property(m_context, sync_constructor, "_hasExistingSessions");
-
-        auto result = jsc::Function::call(m_context, method, 0, nullptr);
+        auto result = jsc::Function::call(m_context, method, arg_count, arg_values);
         return (json){{"result", serialize_json_value(result)}};
-    };
-    m_requests["/_initializeSyncManager"] = [this](const json dict) {
-        JSObjectRef realm_constructor = get_realm_constructor();
-
-        JSObjectRef sync_constructor = (JSObjectRef)jsc::Object::get_property(m_context, realm_constructor, "Sync");
-        JSObjectRef initialize_sync_manager_method = (JSObjectRef)jsc::Object::get_property(m_context, sync_constructor, "_initializeSyncManager");
-
-        json::array_t args = dict["arguments"];
-        size_t arg_count = args.size();
-        JSValueRef arg_values[arg_count];
-
-        for (size_t i = 0; i < arg_count; i++) {
-            arg_values[i] = deserialize_json_value(args[i]);
-        }
-
-        jsc::Function::call(m_context, initialize_sync_manager_method, arg_count, arg_values);
-        return json::object();
     };
     m_requests["/_asyncOpen"] = [this](const json dict) {
         JSObjectRef realm_constructor = get_realm_constructor();
