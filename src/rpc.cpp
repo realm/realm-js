@@ -45,7 +45,8 @@ static const char * const RealmObjectTypesResults = "results";
 static const char * const RealmObjectTypesRealm = "realm";
 static const char * const RealmObjectTypesUser = "user";
 static const char * const RealmObjectTypesSession = "session";
-static const char * const RealmObjectTypeSubscription = "subscription";
+static const char * const RealmObjectTypesSubscription = "subscription";
+static const char * const RealmObjectTypesAsyncOpenTask = "asyncopentask";
 static const char * const RealmObjectTypesUndefined = "undefined";
 
 json serialize_object_schema(const realm::ObjectSchema &object_schema) {
@@ -369,8 +370,8 @@ RPCServer::RPCServer() {
             arg_values[i] = deserialize_json_value(args[i]);
         }
 
-        jsc::Function::call(m_context, _asyncOpen_method, arg_count, arg_values);
-        return json::object();
+        auto result = jsc::Function::call(m_context, _asyncOpen_method, arg_count, arg_values);
+        return (json){{"result", serialize_json_value(result)}};
     };
     m_requests["/call_method"] = [this](const json dict) {
         JSObjectRef object = get_object(dict["id"].get<RPCObjectID>());
@@ -745,9 +746,15 @@ json RPCServer::serialize_json_value(JSValueRef js_value) {
             {"error", serialize_json_value(jsc::Object::get_property(m_context, js_object, "error"))}
         };
         return {
-            {"type", RealmObjectTypeSubscription},
+            {"type", RealmObjectTypesSubscription},
             {"id", store_object(js_object)},
             {"data", subscription_dict}
+        };
+    }
+    else if (jsc::Object::is_instance<js::AsyncOpenTaskClass<jsc::Types>>(m_context, js_object)) {
+        return {
+            {"type", RealmObjectTypesAsyncOpenTask},
+            {"id", store_object(js_object)},
         };
     }
     else if (jsc::Value::is_array(m_context, js_object)) {
@@ -779,6 +786,7 @@ json RPCServer::serialize_json_value(JSValueRef js_value) {
                 {"value", it->second}
             };
         }
+        return json::object();
     }
     else {
         // Serialize this JS object as a plain object since it doesn't match any known types above.
