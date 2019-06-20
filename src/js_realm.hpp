@@ -918,8 +918,8 @@ void RealmClass<T>::async_open_realm(ContextType ctx, ObjectType this_object, Ar
             }
         }
 
-        auto realm = Realm::get_shared_realm(std::move(realm_ref), Context<T>::get_execution_context_id(ctx));
-        set_binding_context(ctx, realm, schema_updated, std::move(defaults), std::move(constructors));
+        auto realm = Realm::get_shared_realm(std::move(realm_ref), Context<T>::get_execution_context_id(protected_ctx));
+        set_binding_context(protected_ctx, realm, schema_updated, std::move(defaults), std::move(constructors));
         ObjectType object = create_object<T, RealmClass<T>>(protected_ctx, new SharedRealm(realm));
 
         ValueType callback_arguments[2];

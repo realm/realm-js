@@ -68,9 +68,11 @@ module.exports = {
     testExistingFile_openLocal: function() {
         return getLoggedOutUser()
             .then(user => {
+                const url = 'http://127.0.0.1/existing_file_local_' + Utils.uuid();
                 let config = user.createConfiguration({
                     schema: [schemas.TestObject],
                     sync: {
+                        url,
                         newRealmFileBehavior: Realm.Sync.openLocalRealmBehavior,
                     }
                 });
@@ -82,8 +84,9 @@ module.exports = {
                 realm.close();
 
                 // Re-open the Realm
-                config = Realm.Sync.User.current.createConfiguration({
+                config = user.createConfiguration({
                     sync: {
+                        url,
                         existingRealmFileBehavior: {
                             type: 'openImmediately'
                         }
@@ -250,15 +253,16 @@ module.exports = {
         // 2. Open Realm with User 2
         // 3. Timeout and check that the returned Realm is empty.
         const realmName = 'sync_timeout_open_' + Utils.uuid();
+        const syncConfig = {
+            fullSynchronization: true,
+            _sessionStopPolicy: 'immediately',
+            url: 'realm://127.0.0.1:9080/' + realmName,
+        };
         return getLoggedInUser("User1")
             .then(user1 => {
                 const config = user1.createConfiguration({
                     schema: [schemas.TestObject],
-                    sync: {
-                        fullSynchronization: true,
-                        _sessionStopPolicy: 'immediately',
-                        url: 'realm://127.0.0.1:9080/' + realmName
-                    }
+                    sync: syncConfig,
                 });
                 return Realm.open(config);
             })
@@ -277,22 +281,25 @@ module.exports = {
                 const config = user2.createConfiguration({
                     schema: [schemas.TestObject],
                     sync: {
-                        fullSynchronization: true,
-                        _sessionStopPolicy: 'immediately',
+                        ...syncConfig,
                         newRealmFileBehavior: {
                             type: 'downloadBeforeOpen',
                             timeOut: 0,
                             timeOutBehavior: 'openLocal'
                         },
-                        url: 'realm://127.0.0.1:9080/' + realmName
                     }
                 });
                 return Realm.open(config);
             })
             .then(realm => {
+                const user = realm.syncSession.user;
                 TestCase.assertEqual(0, realm.objects(schemas.TestObject.name).length);
                 realm.close();
-            });
+                // Wait for the download to complete so that we don't call
+                // clearTestState() while a download is in progress
+                return Realm.open(user.createConfiguration({sync: syncConfig}));
+            })
+            .then(r => r.close());
     },
 
     testExistingFile_downloadBeforeOpen_openLocalOnTimeOut: function () {
@@ -301,15 +308,16 @@ module.exports = {
         // 3. Let other user upload changes to the Realm on the server.
         // 4. Re-open empty Realm with timeOut and localOpen, Realm should still be empty.
         const realmName = 'existing_realm_' + Utils.uuid();
+        const syncConfig = {
+            fullSynchronization: true,
+            _sessionStopPolicy: 'immediately',
+            url: 'realm://127.0.0.1:9080/' + realmName,
+        };
         return getLoggedInUser()
             .then(user => {
                 const config = user.createConfiguration({
                     schema: [schemas.TestObject],
-                    sync: {
-                        fullSynchronization: true,
-                        _sessionStopPolicy: 'immediately',
-                        url: 'realm://127.0.0.1:9080/' + realmName
-                    }
+                    sync: syncConfig,
                 });
                 return Realm.open(config);
             })
@@ -320,11 +328,7 @@ module.exports = {
             .then(otherUser => {
                 const config = otherUser.createConfiguration({
                     schema: [schemas.TestObject],
-                    sync: {
-                        fullSynchronization: true,
-                        _sessionStopPolicy: 'immediately',
-                        url: 'realm://127.0.0.1:9080/' + realmName
-                    }
+                    sync: syncConfig,
                 });
                 return Realm.open(config);
             })
@@ -343,21 +347,24 @@ module.exports = {
                 const config = user.createConfiguration({
                     schema: [schemas.TestObject],
                     sync: {
-                        fullSynchronization: true,
-                        _sessionStopPolicy: 'immediately',
+                        ...syncConfig,
                         existingRealmFileBehavior: {
                             type: 'downloadBeforeOpen',
                             timeOut: 0,
                             timeOutBehavior: 'openLocal'
                         },
-                        url: 'realm://127.0.0.1:9080/' + realmName
                     }
                 });
                 return Realm.open(config);
             })
             .then(userRealm => {
+                const user = userRealm.syncSession.user;
                 TestCase.assertTrue(userRealm.objects(schemas.TestObject.name).length === 0);
+                // Wait for the download to complete so that we don't call
+                // clearTestState() while a download is in progress
+                return Realm.open(user.createConfiguration({sync: syncConfig}));
             })
+            .then(r => r.close());
     },
 
     testCancel: function() {
