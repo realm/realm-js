@@ -12,7 +12,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
 ### Internal
-* Updated to Object Store commit: 877587c21d99f7c0f47473fee6a2b02a8d5c3c22
+* Updated to Object Store commit: 8cd7b40eb294c4292726a6215339742eea5107c9
 * Updated to Realm Core v5.22.0
 * Updated to Realm Sync v4.6.1
 
