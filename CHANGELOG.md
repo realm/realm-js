@@ -13,6 +13,9 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Internal
 * Updated to Object Store commit: 877587c21d99f7c0f47473fee6a2b02a8d5c3c22
+* Updated to Realm Core v5.22.0
+* Updated to Realm Sync v4.6.1
+
 
 2.28.1 Release notes (2019-6-3)
 =============================================================
