@@ -248,7 +248,7 @@ module.exports = {
                 const fullSyncConfig = user.createConfiguration({
                     schema: [schemas.TestObject],
                     sync: {
-                        url: `realm://127.0.0.1:9080/test`,
+                        url: `realm://127.0.0.1:9080/testRealmExists_${Utils.uuid()}`,
                         fullSynchronization: true,
                     },
                 });
@@ -259,7 +259,7 @@ module.exports = {
                 const queryBasedConfig = user.createConfiguration({
                     schema: [schemas.TestObject],
                     sync: {
-                        url: `realm://127.0.0.1:9080/test`,
+                        url: `realm://127.0.0.1:9080/testRealmExists_${Utils.uuid()}`,
                     },
                 });
                 TestCase.assertFalse(Realm.exists(queryBasedConfig));
