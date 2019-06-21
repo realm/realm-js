@@ -53,7 +53,8 @@ module.exports = {
                 let config = user.createConfiguration({
                     sync: {
                         url: 'http://127.0.0.1/new_file_local_' + Utils.uuid(),
-                        newRealmFileBehavior: Realm.Sync.openLocalRealmBehavior
+                        newRealmFileBehavior: Realm.Sync.openLocalRealmBehavior,
+                        error: () => {},
                     }
                 });
                 TestCase.assertFalse(Realm.exists(config));
@@ -74,6 +75,7 @@ module.exports = {
                     sync: {
                         url,
                         newRealmFileBehavior: Realm.Sync.openLocalRealmBehavior,
+                        error: () => {},
                     }
                 });
                 TestCase.assertFalse(Realm.exists(config));
