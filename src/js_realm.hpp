@@ -897,8 +897,7 @@ void RealmClass<T>::async_open_realm(ContextType ctx, ObjectType this_object, Ar
         handleRealmFileException(ctx, config, ex);
     }
 
-    EventLoopDispatcher<RealmCallbackHandler> callback_handler([=, config=std::move(config),
-                                                               defaults=std::move(defaults),
+    EventLoopDispatcher<RealmCallbackHandler> callback_handler([=, defaults=std::move(defaults),
                                                                constructors=std::move(constructors)](ThreadSafeReference<Realm>&& realm_ref, std::exception_ptr error) mutable {
         HANDLESCOPE
 
