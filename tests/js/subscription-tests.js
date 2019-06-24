@@ -301,10 +301,10 @@ module.exports = {
                             sub2.addListener((subscription2, state2) => {
                                 if (pendingOrComplete(state2)) {
                                     sub2.removeAllListeners();
-                                    TestCase.assertTrue(update1.getTime() < namedSub.updatedAt.getTime());
-                                    TestCase.assertTrue(expires1.getTime() < namedSub.expiresAt.getTime());
-                                    TestCase.assertEqual(namedSub.timeToLive, 5000);
-                                    TestCase.assertTrue(queryDescription === namedSub.query);
+                                    TestCase.assertTrue(update1.getTime() < namedSub.updatedAt.getTime(), "'UpdatedAt' was not updated correctly.");
+                                    TestCase.assertTrue(expires1.getTime() < namedSub.expiresAt.getTime(), "'expiresAt' was not updated correctly.");
+                                    TestCase.assertEqual(namedSub.timeToLive, 5000, "'timeToLive' was not updated correctly.");
+                                    TestCase.assertTrue(queryDescription === namedSub.query, "'query' was not updated correctly.");
                                     resolve();
                                 }
                             });
