@@ -18,10 +18,6 @@
 
 #pragma once
 
-#include <cctype>
-#include <list>
-#include <map>
-
 #include "js_class.hpp"
 #include "js_types.hpp"
 #include "js_util.hpp"
@@ -30,6 +26,7 @@
 #include "js_results.hpp"
 #include "js_schema.hpp"
 #include "js_observable.hpp"
+#include "platform.hpp"
 
 #if REALM_ENABLE_SYNC
 #include "js_sync.hpp"
@@ -38,14 +35,19 @@
 #include "sync/sync_manager.hpp"
 #endif
 
-#include "shared_realm.hpp"
 #include "binding_context.hpp"
 #include "object_accessor.hpp"
-#include "platform.hpp"
 #include "results.hpp"
+#include "shared_realm.hpp"
+#include "thread_safe_reference.hpp"
 
 #include <realm/disable_sync_to_disk.hpp>
 #include <realm/util/file.hpp>
+#include <realm/util/scope_exit.hpp>
+
+#include <cctype>
+#include <list>
+#include <map>
 
 namespace realm {
 namespace js {
@@ -207,7 +209,7 @@ class RealmClass : public ClassDefinition<T, SharedRealm, ObservableClass<T>> {
     using Value = js::Value<T>;
     using ReturnValue = js::ReturnValue<T>;
     using NativeAccessor = realm::js::NativeAccessor<T>;
-    using RealmCallbackHandler = void(std::shared_ptr<Realm> realm, std::exception_ptr error);
+    using RealmCallbackHandler = void(ThreadSafeReference<Realm>&& realm, std::exception_ptr error);
 
 public:
     using ObjectDefaults = typename Schema<T>::ObjectDefaults;
@@ -265,6 +267,7 @@ public:
     static void constructor(ContextType, ObjectType, Arguments &);
     static SharedRealm create_shared_realm(ContextType, realm::Realm::Config, bool, ObjectDefaultsMap &&, ConstructorMap &&);
     static bool get_realm_config(ContextType ctx, size_t argc, const ValueType arguments[], realm::Realm::Config &, ObjectDefaultsMap &, ConstructorMap &);
+    static void set_binding_context(ContextType ctx, std::shared_ptr<Realm> const& realm, bool schema_updated, ObjectDefaultsMap&& defaults, ConstructorMap&& constructors);
 
     static void schema_version(ContextType, ObjectType, Arguments &, ReturnValue &);
     static void clear_test_state(ContextType, ObjectType, Arguments &, ReturnValue &);
@@ -337,7 +340,7 @@ public:
     };
 
   private:
-    static void handleRealmFileException(ContextType ctx, realm::Realm::Config config, const RealmFileException& ex) {
+    static void handleRealmFileException(ContextType ctx, realm::Realm::Config const& config, const RealmFileException& ex) {
         switch (ex.kind()) {
             case RealmFileException::Kind::IncompatibleSyncedRealm: {
                 ObjectType configuration = Object::create_empty(ctx);
@@ -680,7 +683,14 @@ SharedRealm RealmClass<T>::create_shared_realm(ContextType ctx, realm::Realm::Co
     catch (const RealmFileException& ex) {
         handleRealmFileException(ctx, config, ex);
     }
+    set_binding_context(ctx, realm, schema_updated, std::move(defaults), std::move(constructors));
 
+    return realm;
+}
+
+template<typename T>
+void RealmClass<T>::set_binding_context(ContextType ctx, std::shared_ptr<Realm> const& realm, bool schema_updated,
+                                        ObjectDefaultsMap&& defaults, ConstructorMap&& constructors) {
     GlobalContextType global_context = Context<T>::get_global_context(ctx);
     if (!realm->m_binding_context) {
         realm->m_binding_context.reset(new RealmDelegate<T>(realm, global_context));
@@ -698,7 +708,7 @@ SharedRealm RealmClass<T>::create_shared_realm(ContextType ctx, realm::Realm::Co
 #if REALM_ENABLE_SYNC
     // For query-based Realms we need to register the constructors for the
     // permissions types even if a schema isn't specified
-    else if (config.sync_config && config.sync_config->is_partial && js_binding_context->m_constructors.empty()) {
+    else if (realm->is_partial() && js_binding_context->m_constructors.empty()) {
         ValueType schema_value = Object::create_array(ctx);
         auto realm_constructor = Value::validated_to_object(ctx, Object::get_global(ctx, "Realm"));
         Object::call_method(ctx, realm_constructor, "_extendQueryBasedSchema", 1, &schema_value);
@@ -707,8 +717,6 @@ SharedRealm RealmClass<T>::create_shared_realm(ContextType ctx, realm::Realm::Co
         js_binding_context->m_constructors = std::move(constructors);
     }
 #endif
-
-    return realm;
 }
 
 template<typename T>
@@ -748,8 +756,7 @@ template<typename T>
 void RealmClass<T>::delete_file(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_maximum(1);
     ValueType value = args[0];
-    realm::Realm::Config config = validate_and_normalize_config(ctx, value);
-    std::string realm_file_path = config.path;
+    std::string realm_file_path = validate_and_normalize_config(ctx, value).path;
     realm::remove_file(realm_file_path);
     realm::remove_file(realm_file_path + ".lock");
     realm::remove_file(realm_file_path + ".note");
@@ -760,8 +767,7 @@ template<typename T>
 void RealmClass<T>::realm_file_exists(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_maximum(1);
     ValueType value = args[0];
-    realm::Realm::Config config = validate_and_normalize_config(ctx, value);
-    std::string realm_file_path = config.path;
+    std::string realm_file_path = validate_and_normalize_config(ctx, value).path;
     return_value.set(File::exists(realm_file_path));
 }
 
@@ -883,16 +889,17 @@ void RealmClass<T>::async_open_realm(ContextType ctx, ObjectType this_object, Ar
         Function<T>::callback(protected_ctx, protected_callback, protected_this, 1, callback_arguments);
     }
 
-    std::shared_ptr<AsyncOpenTask>* ptr = new std::shared_ptr<AsyncOpenTask>(Realm::get_synchronized_realm(config));
-    auto obj = create_object<T, AsyncOpenTaskClass<T>>(ctx, ptr);
-    EventLoopDispatcher<RealmCallbackHandler> callback_handler([=, config=std::move(config),
-                                                               defaults=std::move(defaults),
-                                                               constructors=std::move(constructors)](std::shared_ptr<Realm> realm, std::exception_ptr error) mutable {
-        HANDLESCOPE
+    std::shared_ptr<AsyncOpenTask> task;
+    try {
+        task = Realm::get_synchronized_realm(config);
+    }
+    catch (const RealmFileException& ex) {
+        handleRealmFileException(ctx, config, ex);
+    }
 
-        // Since the callback is only ever invoked once, make sure to release reference to AsyncOpenTask, so internal
-        // resources like the RealmCoordinator are correctly released.
-        set_internal<T, AsyncOpenTaskClass<T>>(this_object, nullptr);
+    EventLoopDispatcher<RealmCallbackHandler> callback_handler([=, defaults=std::move(defaults),
+                                                               constructors=std::move(constructors)](ThreadSafeReference<Realm>&& realm_ref, std::exception_ptr error) mutable {
+        HANDLESCOPE
 
         if (error) {
             try {
@@ -909,25 +916,18 @@ void RealmClass<T>::async_open_realm(ContextType ctx, ObjectType this_object, Ar
                  return;
             }
         }
-        
-        // We need to let the JS side control the lifecycle of the Realm, so close the one from ObjectStore
-        // and re-open here.
-        realm->close();
 
-        // Reopen it with the real configuration and pass that Realm back to the callback
-        ObjectDefaultsMap m_defaults;
-        ConstructorMap m_constructors;
-        auto final_realm = RealmClass<T>::create_shared_realm(protected_ctx, std::move(config), schema_updated, std::move(defaults), std::move(constructors));
-        ObjectType object = create_object<T, RealmClass<T>>(protected_ctx, new SharedRealm(final_realm));
+        auto realm = Realm::get_shared_realm(std::move(realm_ref), Context<T>::get_execution_context_id(protected_ctx));
+        set_binding_context(protected_ctx, realm, schema_updated, std::move(defaults), std::move(constructors));
+        ObjectType object = create_object<T, RealmClass<T>>(protected_ctx, new SharedRealm(realm));
 
         ValueType callback_arguments[2];
         callback_arguments[0] = object;
         callback_arguments[1] = Value::from_null(protected_ctx);
         Function<T>::callback(protected_ctx, protected_callback, typename T::Object(), 2, callback_arguments);
     });
-
-    (*ptr)->start(callback_handler);
-    return_value.set(obj);
+    task->start(callback_handler);
+    return_value.set(create_object<T, AsyncOpenTaskClass<T>>(ctx, new std::shared_ptr<AsyncOpenTask>(task)));
 }
 #endif
 
@@ -1394,7 +1394,6 @@ class AsyncOpenTaskClass : public ClassDefinition<T, std::shared_ptr<AsyncOpenTa
     using Arguments = js::Arguments<T>;
     using ObjectDefaultsMap = typename Schema<T>::ObjectDefaultsMap;
     using ConstructorMap = typename Schema<T>::ConstructorMap;
-    using RealmCallbackHandler = void(std::shared_ptr<Realm> realm, std::exception_ptr error);
     using SyncProgressHandler = void(uint64_t transferred_bytes, uint64_t transferrable_bytes);
 
 public:
@@ -1412,9 +1411,8 @@ public:
 };
 
 template<typename T>
-inline typename T::Function AsyncOpenTaskClass<T>::create_constructor(ContextType ctx) {
-    FunctionType constructor = ObjectWrap<T, AsyncOpenTaskClass<T>>::create_constructor(ctx);
-    return constructor;
+typename T::Function AsyncOpenTaskClass<T>::create_constructor(ContextType ctx) {
+    return ObjectWrap<T, AsyncOpenTaskClass<T>>::create_constructor(ctx);
 }
 
 template<typename T>
@@ -1446,4 +1444,3 @@ void AsyncOpenTaskClass<T>::add_download_notification(ContextType ctx, ObjectTyp
 
 } // js
 } // realm
-
