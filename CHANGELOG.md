@@ -2,6 +2,7 @@ x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
 * For synchronized Realms it is now possible to choose the behavior when opening the Realm. You can either choose to open the local Realm immediately or wait for it to be synchronized with the server first. These options are controlled through `Realm.Sync.SyncConfiguration.newRealmFileBehavior` and `Realm.Sync.SyncConfiguration.existingRealmFileBehavior`. See the [docs](XXX) for more information.
+* Added support for unicode characters in realm path and filenames for Windows. Thanks to @rajivshah3. ([realm-core#3293](https://github.com/realm/realm-core/pull/3293) and [#2319](https://github.com/realm/realm-js/issues/2319))
 
 ### Fixed
 * A React Native iOS app could crash on the first launch. Thanks to @max-zu. ([#2400](https://github.com/realm/realm-js/issues/2400), since v1.0.0)

@@ -904,7 +904,7 @@ void RealmClass<T>::async_open_realm(ContextType ctx, ObjectType this_object, Ar
         if (error) {
             try {
                 std::rethrow_exception(error);
-            } catch(const std::exception& e) {
+            } catch (const std::exception& e) {
                  ObjectType object = Object::create_empty(protected_ctx);
                  Object::set_property(protected_ctx, object, "message", Value::from_string(protected_ctx, e.what()));
                  Object::set_property(protected_ctx, object, "errorCode", Value::from_number(protected_ctx, 1));
@@ -1433,8 +1433,8 @@ void AsyncOpenTaskClass<T>::add_download_notification(ContextType ctx, ObjectTyp
     EventLoopDispatcher<SyncProgressHandler> callback_handler([=](uint64_t transferred_bytes, uint64_t transferrable_bytes) mutable {
         HANDLESCOPE
         ValueType callback_arguments[2];
-        callback_arguments[0] = Value::from_number(ctx, transferred_bytes);
-        callback_arguments[1] = Value::from_number(ctx, transferrable_bytes);
+        callback_arguments[0] = Value::from_number(protected_ctx, transferred_bytes);
+        callback_arguments[1] = Value::from_number(protected_ctx, transferrable_bytes);
         Function::callback(protected_ctx, protected_callback, typename T::Object(), 2, callback_arguments);
     });
 
