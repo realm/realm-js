@@ -213,6 +213,56 @@ module.exports = {
         });
     },
 
+    testMigrationAddProperty: function() {
+        const schemaV0 = {
+            name: 'Person',
+            properties: {
+                name: 'string'
+            }
+        };
+
+        const schemaV1 = {
+            name: 'Person',
+            properties: {
+                name: 'string',
+                firstName: 'string?'
+            }
+        };
+
+        var realm = new Realm({
+            schemaVersion: 0,
+            schema: [schemaV0]
+        });
+        realm.write(() => {
+            realm.create('Person', { name: 'Fred Bloggs' });
+        });
+        realm.close();
+
+        realm = new Realm({
+            schemaVersion: 1,
+            schema: [schemaV1],
+            migration: (oldRealm, newRealm) => {
+                console.log('old', JSON.stringify(oldRealm.schema));
+                console.log('new', JSON.stringify(newRealm.schema));
+                newRealm.create('Person', { name: 'Freddy Bloggson', firstName: 'Freddy' });
+                newRealm.create('Person', { name: 'Blogs Fredson' });
+            }
+        });
+
+        realm.create('Person', { name: 'Bloggy Freddy' });
+
+        const objs = realm.objects('Person');
+        TestCase.assertEqual(objs.length, 4);
+
+        TestCase.assertEqual(objs[0]['name'], 'Fred Bloggs');
+        TestCase.assertNull(objs[0]['firstName']);
+
+        TestCase.assertEqual(objs[1]['name'], 'Freddy Bloggson');
+        TestCase.assertEqual(objs[1]['firstName'], 'Freddy');
+
+        realm.close();
+    },
+
     testDeleteModelMigration: function() {
         const schema = [{
             name: 'TestObject',
