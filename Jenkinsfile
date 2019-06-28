@@ -311,7 +311,7 @@ def buildWindows(nodeVersion, arch) {
 
       bat 'npm install --ignore-scripts --production'
 
-      withEnv(["_MSPDBSRV_ENDPOINT_=${UUID.randomUUID().toString()}"]) {
+      withEnv(["_MSPDBSRV_ENDPOINT_=${UUID.randomUUID().toString()}", "NODE_PRE_GYP_ABI_CROSSWALK=${env.WORKSPACE}/node-pre-gyp-abi_crosswalk.json"]) {
         retry(3) {
           bat ".\\node_modules\\node-pre-gyp\\bin\\node-pre-gyp.cmd rebuild --build_v8_with_gn=false --target_arch=${arch} --target=${nodeVersion}"
         }
