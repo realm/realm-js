@@ -225,7 +225,7 @@ module.exports = {
             name: 'Person',
             properties: {
                 name: 'string',
-                firstName: 'string?'
+                firstName: { type: 'string', optional: true }
             }
         };
 
@@ -242,14 +242,14 @@ module.exports = {
             schemaVersion: 1,
             schema: [schemaV1],
             migration: (oldRealm, newRealm) => {
-                console.log('old', JSON.stringify(oldRealm.schema));
-                console.log('new', JSON.stringify(newRealm.schema));
                 newRealm.create('Person', { name: 'Freddy Bloggson', firstName: 'Freddy' });
                 newRealm.create('Person', { name: 'Blogs Fredson' });
             }
         });
 
-        realm.create('Person', { name: 'Bloggy Freddy' });
+        realm.write(() => {
+            realm.create('Person', { name: 'Bloggy Freddy' });
+        });
 
         const objs = realm.objects('Person');
         TestCase.assertEqual(objs.length, 4);
