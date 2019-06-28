@@ -46,6 +46,7 @@ local.properties
 
 # Visual Studio Code
 .vscode
+.vs
 
 # Tests
 object-server-for-testing/

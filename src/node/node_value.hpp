@@ -149,7 +149,7 @@ inline bool node::Value::to_boolean(v8::Isolate* isolate, const v8::Local<v8::Va
 
 template<>
 inline node::String node::Value::to_string(v8::Isolate* isolate, const v8::Local<v8::Value> &value) {
-    return value->ToString();
+    return value->ToString(isolate->GetCurrentContext()).ToLocalChecked();
 }
 
 template<>

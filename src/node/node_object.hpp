@@ -26,15 +26,7 @@ namespace js {
 template<>
 inline v8::Local<v8::Value> node::Object::get_property(v8::Isolate* isolate, const v8::Local<v8::Object> &object, StringData key) {
     Nan::TryCatch trycatch;
-    v8::Local<v8::String> node_key;
-
-    // If we have just plain ASCII, we can skip the conversion from UTF-8
-    if (std::all_of(key.data(), key.data() + key.size(), [](char c) { return c <= 127; })) {
-        node_key = v8::String::NewExternal(isolate, new v8::ExternalOneByteStringResourceImpl(key.data(), key.size()));
-    }
-    else {
-        node_key = v8::String::NewFromUtf8(isolate, key.data(), v8::String::kNormalString, key.size());
-    }
+    v8::Local<v8::String> node_key = v8::String::NewFromUtf8(isolate, key.data(), v8::String::kNormalString, key.size());
 
     auto value = Nan::Get(object, node_key);
     if (trycatch.HasCaught()) {
@@ -104,8 +96,9 @@ inline std::vector<node::String> node::Object::get_property_names(v8::Isolate* i
     std::vector<node::String> names;
     names.reserve(count);
 
+	v8::Local<v8::Context> ctx = isolate->GetCurrentContext();
     for (uint32_t i = 0; i < count; i++) {
-        names.push_back(array->Get(i)->ToString());
+        names.push_back(array->Get(i)->ToString(ctx).ToLocalChecked());
     }
 
     return names;

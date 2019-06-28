@@ -48,9 +48,9 @@ inline String<node::Types>::String(const v8::Local<v8::String> &s) {
     if (s.IsEmpty() || s->Length() == 0) {
         return;
     }
-    m_str.resize(s->Utf8Length());
-    const int flags = v8::String::NO_NULL_TERMINATION | v8::String::REPLACE_INVALID_UTF8;
-    s->WriteUtf8(&m_str[0], m_str.size(), 0, flags);
+
+	Nan::Utf8String ustring(s);
+	m_str = std::string(*ustring, ustring.length());
 }
 
 } // js
