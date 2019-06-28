@@ -306,7 +306,7 @@ def buildMacOS(workerFunction) {
 
 def buildWindows(nodeVersion, arch) {
   return {
-    myNode('windows && nodejs && cph-windows-01') {
+    myNode('windows && nodejs') {
       unstash 'source'
 
       bat 'npm install --ignore-scripts --production'
@@ -315,8 +315,8 @@ def buildWindows(nodeVersion, arch) {
         retry(3) {
           bat ".\\node_modules\\node-pre-gyp\\bin\\node-pre-gyp.cmd rebuild --build_v8_with_gn=false --target_arch=${arch} --target=${nodeVersion}"
         }
+		bat ".\\node_modules\\node-pre-gyp\\bin\\node-pre-gyp.cmd package --build_v8_with_gn=false --target_arch=${arch} --target=${nodeVersion}"
       }
-      bat ".\\node_modules\\node-pre-gyp\\bin\\node-pre-gyp.cmd package --build_v8_with_gn=false --target_arch=${arch} --target=${nodeVersion}"
       dir("build/stage/node-pre-gyp/${dependencies.VERSION}") {
         stash includes: 'realm-*', name: "pre-gyp-windows-${arch}-${nodeVersion}"
       }
@@ -326,7 +326,7 @@ def buildWindows(nodeVersion, arch) {
 
 def buildWindowsElectron(electronVersion, arch) {
   return {
-    myNode('windows && nodejs && cph-windows-01') {
+    myNode('windows && nodejs') {
       unstash 'source'
       bat 'npm install --ignore-scripts --production'
       withEnv([
