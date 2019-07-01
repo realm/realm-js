@@ -341,6 +341,9 @@ case "$TARGET" in
   ;;
 "node")
   npm run check-environment
+  if [ $CONFIGURATION == 'Debug' ]; then
+    export npm_config_debug=1
+  fi
   npm ci --build-from-source=realm --realm_enable_sync
   start_server
 
