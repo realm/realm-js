@@ -56,6 +56,7 @@ var TESTS = {
 
 // If sync is enabled, run the sync tests
 if (global.enableSyncTests) {
+    TESTS.OpenBehaviorTests = require('./open-behavior-tests');
     TESTS.UserTests = require('./user-tests');
     TESTS.SessionTests = require('./session-tests');
     TESTS.SubscriptionTests = require('./subscription-tests');

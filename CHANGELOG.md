@@ -1,20 +1,3 @@
-x.x.x Release notes (yyyy-MM-dd)
-=============================================================
-### Enhancements
-* None.
-
-### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None.
-
-### Compatibility
-* Realm Object Server: 3.23.1 or later.
-* APIs are backwards compatible with all previous release of realm in the 2.x.y series.
-* File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
-
-### Internal
-* None.
-
 3.0.0-beta.1 Release notes (2019-6-13)
 =============================================================
 ### Breaking Changes
@@ -38,6 +21,25 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Internal
 * None.
+
+x.x.x Release notes (yyyy-MM-dd)
+=============================================================
+### Enhancements
+* For synchronized Realms it is now possible to choose the behavior when opening the Realm. You can either choose to open the local Realm immediately or wait for it to be synchronized with the server first. These options are controlled through `Realm.Sync.SyncConfiguration.newRealmFileBehavior` and `Realm.Sync.SyncConfiguration.existingRealmFileBehavior`. See the [docs](XXX) for more information.
+* Added support for unicode characters in realm path and filenames for Windows. Thanks to @rajivshah3. ([realm-core#3293](https://github.com/realm/realm-core/pull/3293) and [#2319](https://github.com/realm/realm-js/issues/2319))
+
+### Fixed
+* A React Native iOS app could crash on the first launch. Thanks to @max-zu. ([#2400](https://github.com/realm/realm-js/issues/2400), since v1.0.0)
+
+### Compatibility
+* Realm Object Server: 3.23.1 or later.
+* APIs are backwards compatible with all previous release of realm in the 2.x.y series.
+* File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
+
+### Internal
+* Updated to Object Store commit: 8cd7b40eb294c4292726a6215339742eea5107c9
+* Updated to Realm Core v5.22.0
+* Updated to Realm Sync v4.6.1
 
 
 2.28.1 Release notes (2019-6-3)

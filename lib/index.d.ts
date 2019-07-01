@@ -505,8 +505,29 @@ declare namespace Realm.Sync {
         _disableQueryBasedSyncUrlChecks?: boolean;
         _sessionStopPolicy?: SessionStopPolicy;
         custom_http_headers?: { [header: string]: string };
-        customQueryBasedSyncIdentifier?: string;
+        customQueryBasedSyncIdentifier?: string,
+        newRealmFileBehavior?: OpenRealmBehaviorConfiguration
+        existingRealmFileBehavior?: OpenRealmBehaviorConfiguration
     }
+
+    interface OpenRealmBehaviorConfiguration {
+        readonly type: OpenRealmBehaviorType
+        readonly timeOut?: number;
+        readonly timeOutBehavior?: OpenRealmTimeOutBehavior;
+    }
+
+    const enum OpenRealmBehaviorType {
+        DownloadBeforeOpen = 'downloadBeforeOpen',
+        OpenImmediately = "openImmediately"
+    }
+
+    const enum OpenRealmTimeOutBehavior {
+        OpenLocalRealm = 'openLocalRealm',
+        ThrowException = 'throwException'
+    }
+
+    let openLocalRealmBehavior: OpenRealmBehaviorConfiguration;
+    let downloadBeforeOpenBehavior: OpenRealmBehaviorConfiguration;
 
     enum ConnectionState {
         Disconnected = "disconnected",
@@ -729,7 +750,7 @@ declare namespace Realm.Permissions {
     }
 
     class ClassPrivileges {
-        canCreate: boolean
+        canCreate: boolean;
         canRead: boolean;
         canUpdate: boolean;
         canQuery: boolean;
@@ -746,7 +767,8 @@ declare namespace Realm.Permissions {
 }
 
 interface ProgressPromise extends Promise<Realm> {
-    progress(callback: Realm.Sync.ProgressNotificationCallback): Promise<Realm>
+    cancel(): void;
+    progress(callback: Realm.Sync.ProgressNotificationCallback): Promise<Realm>;
 }
 
 interface NamedSubscription {
@@ -825,6 +847,11 @@ declare class Realm {
      * @private Not a part of the public API: It's primarily used from the library's tests.
      */
     static clearTestState(): void;
+
+    /**
+     * Checks if the Realm already exists on disk.
+     */
+    static exists(config: Realm.Configuration): boolean;
 
     /**
      * @param  {Realm.Configuration} config?
