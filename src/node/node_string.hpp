@@ -49,8 +49,8 @@ inline String<node::Types>::String(const v8::Local<v8::String> &s) {
         return;
     }
 
-	Nan::Utf8String ustring(s);
-	m_str = std::string(*ustring, ustring.length());
+    m_str.resize(Nan::DecodeBytes(s, Nan::Encoding::UTF8));
+    Nan::DecodeWrite(&m_str[0], m_str.size(), s, Nan::Encoding::UTF8);
 }
 
 } // js

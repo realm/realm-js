@@ -23,10 +23,32 @@
 namespace realm {
 namespace js {
 
+class ExternalOneByteStringResourceImpl : public v8::String::ExternalOneByteStringResource {
+public:
+    explicit ExternalOneByteStringResourceImpl(StringData data)
+    : m_data(data)
+    {
+    }
+
+    const char* data() const { return m_data.data(); }
+
+    size_t length() const { return m_data.size(); }
+private:
+    const StringData m_data;
+};
+
 template<>
 inline v8::Local<v8::Value> node::Object::get_property(v8::Isolate* isolate, const v8::Local<v8::Object> &object, StringData key) {
     Nan::TryCatch trycatch;
-    v8::Local<v8::String> node_key = v8::String::NewFromUtf8(isolate, key.data(), v8::String::kNormalString, key.size());
+    v8::Local<v8::String> node_key;
+
+    // If we have just plain ASCII, we can skip the conversion from UTF-8 
+    if (std::all_of(key.data(), key.data() + key.size(), [](char c) { return c <= 127; })) {
+        node_key = v8::String::NewExternal(isolate, new ExternalOneByteStringResourceImpl(key));
+    }
+    else {
+        node_key = v8::String::NewFromUtf8(isolate, key.data(), v8::String::kNormalString, key.size());
+    }
 
     auto value = Nan::Get(object, node_key);
     if (trycatch.HasCaught()) {
