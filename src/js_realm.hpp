@@ -571,7 +571,9 @@ bool RealmClass<T>::get_realm_config(ContextType ctx, size_t argc, const ValueTy
 
                 config.migration_function = [=](SharedRealm old_realm, SharedRealm realm, realm::Schema&) {
                     // the migration function called early so the binding context might not be set
-                    realm->m_binding_context.reset(new RealmDelegate<T>(realm, Context<T>::get_global_context(ctx)));
+                    if (!realm->m_binding_context) {
+                        realm->m_binding_context.reset(new RealmDelegate<T>(realm, Context<T>::get_global_context(ctx)));
+                    }
 
                     auto old_realm_ptr = new SharedRealm(old_realm);
                     auto realm_ptr = new SharedRealm(realm);
