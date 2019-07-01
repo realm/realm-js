@@ -188,7 +188,7 @@ inline v8::Local<v8::FunctionTemplate> ObjectWrap<ClassType>::create_template() 
     if (s_class.string_accessor.getter || s_class.index_accessor.getter || s_class.index_accessor.setter) {
         // Use our own wrapper for the setter since we want to throw for negative indices.
         auto &string_accessor = s_class.string_accessor;
-		Nan::SetNamedPropertyHandler(instance_tpl, string_accessor.getter ? string_accessor.getter : get_nonexistent_property, set_property, 0, 0, string_accessor.enumerator);
+        Nan::SetNamedPropertyHandler(instance_tpl, string_accessor.getter ? string_accessor.getter : get_nonexistent_property, set_property, 0, 0, string_accessor.enumerator);
     }
 
     return scope.Escape(tpl);
