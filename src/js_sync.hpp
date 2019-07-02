@@ -1134,18 +1134,10 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
             ssl_verify_callback = std::move(ssl_verify_functor);
         }
 
-        bool is_partial = false; // Change to `true` when `partial` is removed
+        bool is_partial = true;
         ValueType full_synchronization_value = Object::get_property(ctx, sync_config_object, "fullSynchronization");
-        ValueType partial_value = Object::get_property(ctx, sync_config_object, "partial");
 
-        // Disallow setting `partial` and `fullSynchronization` at the same time
-        if (!Value::is_undefined(ctx, full_synchronization_value) && !Value::is_undefined(ctx, partial_value)) {
-            throw std::invalid_argument("'partial' and 'fullSynchronization' were both set. 'partial' has been deprecated, use only 'fullSynchronization'");
-        }
-
-        if (!Value::is_undefined(ctx, partial_value)) {
-            is_partial = Value::validated_to_boolean(ctx, partial_value);
-        } else if (!Value::is_undefined(ctx, full_synchronization_value)) {
+        if (!Value::is_undefined(ctx, full_synchronization_value)) {
             is_partial = !Value::validated_to_boolean(ctx, full_synchronization_value);
         }
 
