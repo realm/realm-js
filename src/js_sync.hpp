@@ -1202,15 +1202,12 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
             config.sync_config->custom_http_headers = std::move(http_headers);
         }
 
-        // TODO: remove
-        config.sync_config->client_validate_ssl = client_validate_ssl;
-        config.sync_config->ssl_trust_certificate_path = ssl_trust_certificate_path;
-        config.sync_config->ssl_verify_callback = std::move(ssl_verify_callback);
-
         ValueType ssl_config_value = Object::get_property(ctx, sync_config_object, "ssl");
         if (Value::is_object(ctx, ssl_config_value)) {
             auto ssl_config_object = Value::to_object(ctx, ssl_config_value);
             populate_sync_config_for_ssl(ctx, ssl_config_object, *config.sync_config);
+        } else {
+            throw std::invalid_argument("Object is expected for 'ssl'");
         }
 
         config.schema_mode = SchemaMode::Additive;

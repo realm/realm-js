@@ -27,14 +27,6 @@
  *    The `error` callback can take up to five optional arguments: `name`, `message`, `isFatal`,
  *    `category`, and `code`.
  *
- * @deprecated
- * @property {boolean} [validate_ssl] - Indicating if SSL certificates must be validated.
- * @deprecated
- * @property {string} [ssl_trust_certificate_path] - A path where to find trusted SSL certificates.
- * @deprecated
- * @property {Realm.Sync~sslValidateCallback} [open_ssl_verify_callback] - A callback function used to
- * accept or reject the server's SSL certificate.
- *
  * @property {Realm.Sync~SSLConfiguration} [ssl] - SSL configuration.
  * @deprecated
  * @property {boolean} [partial] - Whether this Realm should be opened in 'query-based synchronization' mode.
