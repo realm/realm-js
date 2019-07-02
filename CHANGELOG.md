@@ -6,6 +6,7 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Fixed
 * A React Native iOS app could crash on the first launch. Thanks to @max-zu. ([#2400](https://github.com/realm/realm-js/issues/2400), since v1.0.0)
+* When creating objects using migration, a native crash could occur if a new optional property was added to the schema. ([#1612](https://github.com/realm/realm-js/issues/1612), since v1.0.0)
 
 ### Compatibility
 * Realm Object Server: 3.21.0 or later.
