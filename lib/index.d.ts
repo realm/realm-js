@@ -492,15 +492,8 @@ declare namespace Realm.Sync {
     interface SyncConfiguration {
         user: User;
         url: string;
-        /** @deprecated use `ssl` instead */
-        validate_ssl?: boolean;
-        /** @deprecated use `ssl` instead */
-        ssl_trust_certificate_path?: string;
-        /** @deprecated use `ssl` instead */
-        open_ssl_verify_callback?: SSLVerifyCallback;
         ssl?: SSLConfiguration;
         error?: ErrorCallback;
-        partial?: boolean;
         fullSynchronization?: boolean;
         _disableQueryBasedSyncUrlChecks?: boolean;
         _sessionStopPolicy?: SessionStopPolicy;
@@ -817,13 +810,6 @@ declare class Realm {
      * @param {ProgressNotificationCallback} progressCallback? a progress notification callback for 'download' direction and 'forCurrentlyOutstandingWork' mode
      */
     static openAsync(config: Realm.Configuration, callback: (error: any, realm: Realm) => void, progressCallback?: Realm.Sync.ProgressNotificationCallback): void
-
-    /**
-     * @deprecated in favor of `Realm.Sync.User.createConfiguration()`.
-     * Return a configuration for a default Realm.
-     * @param {Realm.Sync.User} optional user.
-     */
-    static automaticSyncConfiguration(user?: Realm.Sync.User): string;
 
     /**
      * @param {Realm.ObjectSchema} object schema describing the object that should be created.
