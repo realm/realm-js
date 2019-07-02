@@ -834,10 +834,6 @@ module.exports = {
         });
     },
 
-    testInvalidArugmentsToAutomaticSyncConfiguration() {
-        TestCase.assertThrows(() => Realm.automaticSyncConfiguration('foo', 'bar')); // too many arguments
-    },
-
     async testPartialSync() {
         if (!isNodeProccess) {
             return;
