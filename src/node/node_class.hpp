@@ -272,6 +272,11 @@ inline void ObjectWrap<ClassType>::get_indexes(const Nan::PropertyCallbackInfo<v
 
 template<typename ClassType>
 inline void ObjectWrap<ClassType>::set_property(v8::Local<v8::Name> property, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info) {
+    if (!property->IsString()) {
+        info.GetReturnValue().SetUndefined();
+        return;
+    }
+
     if (s_class.index_accessor.getter || s_class.index_accessor.setter) {
         try {
             // Negative indices are passed into this string property interceptor, so check for them here.
@@ -369,6 +374,7 @@ void wrap(uint32_t index, v8::Local<v8::Value> value, const Nan::PropertyCallbac
 template<node::StringPropertyType::GetterType F>
 void wrap(v8::Local<v8::Name> property, const v8::PropertyCallbackInfo<v8::Value>& info) {
     if (!property->IsString()) {
+        info.GetReturnValue().SetUndefined();
         return;
     }
 
@@ -385,6 +391,7 @@ void wrap(v8::Local<v8::Name> property, const v8::PropertyCallbackInfo<v8::Value
 template<node::StringPropertyType::SetterType F>
 void wrap(v8::Local<v8::Name> property, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info) {
     if (!property->IsString()) {
+        info.GetReturnValue().SetUndefined();
         return;
     }
 
