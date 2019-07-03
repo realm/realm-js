@@ -1,4 +1,4 @@
-x.x.x Release notes (yyyy-MM-dd)
+2.29.0 Release notes (2019-7-3)
 =============================================================
 ### Enhancements
 * For synchronized Realms it is now possible to choose the behavior when opening the Realm. You can either choose to open the local Realm immediately or wait for it to be synchronized with the server first. These options are controlled through `Realm.Sync.SyncConfiguration.newRealmFileBehavior` and `Realm.Sync.SyncConfiguration.existingRealmFileBehavior`. See the [docs](XXX) for more information.
