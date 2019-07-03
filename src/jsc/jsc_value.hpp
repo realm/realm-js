@@ -171,13 +171,19 @@ inline jsc::String jsc::Value::to_string(JSContextRef ctx, const JSValueRef &val
 
 template<>
 inline double jsc::Value::to_number(JSContextRef ctx, const JSValueRef &value) {
-    JSValueRef exception = nullptr;
+    // JSValueRef exception = nullptr;
 
-    double number = JSValueToNumber(ctx, value, &exception);
-    if (exception) {
-        throw jsc::Exception(ctx, exception);
+    // double number = JSValueToNumber(ctx, value, &exception);
+    // if (exception) {
+    //     throw jsc::Exception(ctx, exception);
+    // }
+    double number = JSValueToNumber(ctx, value, nullptr);
+    // is JSValueIsDate too new?
+    if (JSValueIsNumber(ctx, value) || JSValueIsDate(ctx, value) || (JSValueIsString(ctx, value) && !std::is_nan(number))) {
+        return number;
     }
-    return number;
+    throw std::invalid_argument(util::format("Value '%1' not convertible to a number.",
+                                                (std::string)to_string(isolate, value)));
 }
 
 
