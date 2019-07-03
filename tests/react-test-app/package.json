@@ -7,7 +7,7 @@
   },
   "dependencies": {
     "react": "16.6.3",
-    "react-native": "^0.58.6",
+    "react-native": "^0.59.9",
     "react-native-exception-handler": "^2.4.3",
     "react-native-exit-app-no-history": "^1.0.2",
     "react-native-fs": "^2.8.5",

@@ -1,18 +1,41 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
-* None.
+* For synchronized Realms it is now possible to choose the behavior when opening the Realm. You can either choose to open the local Realm immediately or wait for it to be synchronized with the server first. These options are controlled through `Realm.Sync.SyncConfiguration.newRealmFileBehavior` and `Realm.Sync.SyncConfiguration.existingRealmFileBehavior`. See the [docs](XXX) for more information.
+* Added support for unicode characters in realm path and filenames for Windows. Thanks to @rajivshah3. ([realm-core#3293](https://github.com/realm/realm-core/pull/3293) and [#2319](https://github.com/realm/realm-js/issues/2319))
 
 ### Fixed
 * Not-a-number (NaN) was wrongly assumed to be an illegal value in Realm Core (thanks to @jsflax for discovering this).
+* A React Native iOS app could crash on the first launch. Thanks to @max-zu. ([#2400](https://github.com/realm/realm-js/issues/2400), since v1.0.0)
+* When creating objects using migration, a native crash could occur if a new optional property was added to the schema. ([#1612](https://github.com/realm/realm-js/issues/1612), since v1.0.0)
 
 ### Compatibility
-* Realm Object Server: 3.11.0 or later.
+* Realm Object Server: 3.21.0 or later.
+* APIs are backwards compatible with all previous release of realm in the 2.x.y series.
+* File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
+
+### Internal
+* Updated to Object Store commit: 8cd7b40eb294c4292726a6215339742eea5107c9
+* Updated to Realm Core v5.22.0
+* Updated to Realm Sync v4.6.1
+
+
+2.28.1 Release notes (2019-6-3)
+=============================================================
+### Enhancements
+* None.
+
+### Fixed
+* A bug in instruction cache invalidation could lead to SIGBUS errors on RN Android. ([#2391](https://github.com/realm/realm-js/issues/2391), since v2.28.0)
+
+### Compatibility
+* Realm Object Server: 3.21.0 or later.
 * APIs are backwards compatible with all previous release of realm in the 2.x.y series.
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
 ### Internal
 * None.
+
 
 2.28.0 Release notes (2019-5-22)
 =============================================================
