@@ -49,8 +49,16 @@ inline String<node::Types>::String(const v8::Local<v8::String> &s) {
         return;
     }
 
-    m_str.resize(Nan::DecodeBytes(s, Nan::Encoding::UTF8));
-    Nan::DecodeWrite(&m_str[0], m_str.size(), s, Nan::Encoding::UTF8);
+    const int flags = v8::String::NO_NULL_TERMINATION | v8::String::REPLACE_INVALID_UTF8;
+
+#if V8_MAJOR_VERSION > 6 // after Node.js 10
+    v8::Isolate* isolate = v8::Isolate::GetCurrent();
+    m_str.resize(s->Utf8Length(isolate));
+    s->WriteUtf8(isolate, &m_str[0], m_str.size(), 0, flags);
+#else
+    m_str.resize(s->Utf8Length());
+    s->WriteUtf8(&m_str[0], m_str.size(), 0, flags);
+#endif
 }
 
 } // js
