@@ -31,7 +31,7 @@
     "mocha-junit-reporter": "^1.18.0",
     "mocha-remote-cli": "^0.9.1",
     "mocha-remote-server": "^0.9.1",
-    "node-gyp": "^3.7.0",
+    "node-gyp": "^5.0.1",
     "node-pre-gyp": "^0.10.3"
   },
   "dependencies": {
