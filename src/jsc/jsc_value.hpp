@@ -178,7 +178,7 @@ inline double jsc::Value::to_number(JSContextRef ctx, const JSValueRef &value) {
     //     throw jsc::Exception(ctx, exception);
     // }
     double number = JSValueToNumber(ctx, value, nullptr);
-    if (JSValueIsNumber(ctx, value) || (JSValueIsString(ctx, value) && !std::isnan(number))) {
+    if (is_number(ctx, value) || is_date(ctx, value) || (is_string(ctx, value) && !std::isnan(number))) {
         return number;
     }
     throw std::invalid_argument(util::format("Value '%1' not convertible to a number.",
