@@ -29,18 +29,13 @@ Realm.Sync.setLogLevel('debug');
 
 // Returns a user that looks valid but isn't able to establish a connection to the server
 function getLoggedOutUser() {
-    return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.nickname("admin", true))
+    return Utils.getAdminUser()
         .then(user => {
             const serializedUser = user.serialize();
             return user.logout().then(() => {
                 return Realm.Sync.User.deserialize(serializedUser);
             });
         });
-}
-
-function getLoggedInUser(userName) {
-    const userId = userName || 'admin';
-    return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.nickname(userId, true))
 }
 
 module.exports = {
@@ -104,7 +99,7 @@ module.exports = {
     },
 
     testNewFile_downloadBeforeOpen: function() {
-        return getLoggedInUser()
+        return Utils.getAdminUser()
             .then(user => {
                 const config = user.createConfiguration({
                     sync: {
@@ -130,7 +125,7 @@ module.exports = {
         // 3. Let other user upload changes to the Realm on the server.
         // 4. Re-open empty Realm with `existingRealmFileBehavior = syncWhenOpen`
         const realmName = 'existing_realm_' + Utils.uuid();
-        return getLoggedInUser()
+        return Utils.getAdminUser()
             .then(user => {
                 const config = user.createConfiguration({
                     schema: [schemas.TestObject],
@@ -144,7 +139,7 @@ module.exports = {
             })
             .then(userRealm => {
                 userRealm.close();
-                return getLoggedInUser('other_admin');
+                return Utils.getAdminUser('other_admin');
             })
             .then(otherUser => {
                 const config = otherUser.createConfiguration({
@@ -166,7 +161,7 @@ module.exports = {
                 });
             })
             .then(() => {
-                return getLoggedInUser();
+                return Utils.getAdminUser();
             })
             .then(user => {
                 const config = user.createConfiguration({
@@ -188,7 +183,7 @@ module.exports = {
     },
 
     testNewFile_downloadBeforeOpen_throwOnTimeOut: function() {
-        return getLoggedInUser()
+        return Utils.getAdminUser()
             .then(user => {
                 const config = user.createConfiguration({
                     sync: {
@@ -215,7 +210,7 @@ module.exports = {
 
     testExistingFile_downloadBeforeOpen_throwOnTimeOut: function() {
         const realmName = 'sync_timeout_throw_' + Utils.uuid();
-        return getLoggedInUser()
+        return Utils.getAdminUser()
             .then(user => {
                 const config = user.createConfiguration({
                     sync: {
@@ -260,7 +255,7 @@ module.exports = {
             _sessionStopPolicy: 'immediately',
             url: 'realm://127.0.0.1:9080/' + realmName,
         };
-        return getLoggedInUser("User1")
+        return Utils.getAdminUser("User1")
             .then(user1 => {
                 const config = user1.createConfiguration({
                     schema: [schemas.TestObject],
@@ -277,7 +272,7 @@ module.exports = {
                 });
             })
             .then(() => {
-                return getLoggedInUser("User2");
+                return Utils.getAdminUser("User2");
             })
             .then(user2 => {
                 const config = user2.createConfiguration({
@@ -315,7 +310,7 @@ module.exports = {
             _sessionStopPolicy: 'immediately',
             url: 'realm://127.0.0.1:9080/' + realmName,
         };
-        return getLoggedInUser()
+        return Utils.getAdminUser()
             .then(user => {
                 const config = user.createConfiguration({
                     schema: [schemas.TestObject],
@@ -325,7 +320,7 @@ module.exports = {
             })
             .then(userRealm => {
                 userRealm.close();
-                return getLoggedInUser('other_admin');
+                return Utils.getAdminUser('other_admin');
             })
             .then(otherUser => {
                 const config = otherUser.createConfiguration({
@@ -343,7 +338,7 @@ module.exports = {
                 });
             })
             .then(() => {
-                return getLoggedInUser();
+                return Utils.getAdminUser();
             })
             .then(user => {
                 const config = user.createConfiguration({
@@ -371,7 +366,7 @@ module.exports = {
 
     testCancel: function() {
         let openPromise = new Promise((resolve, reject) => {
-            return getLoggedInUser()
+            return Utils.getAdminUser()
             .then(user => {
                 const config = user.createConfiguration({
                     sync: {
@@ -404,7 +399,7 @@ module.exports = {
     testCancel_multipleOpenCalls: function() {
         // Due to us sharing the same session for each URL, canceling a download will cancel all current
         // calls to the same URL. This is probably acceptable for this use case.
-        return getLoggedInUser()
+        return Utils.getAdminUser()
         .then(user => {
             const config = user.createConfiguration({
                 sync: {
@@ -429,7 +424,7 @@ module.exports = {
 
     // testDownloadListener: function() {
     //     return new Promise(resolve => {
-    //         return getLoggedInUser().then(user => {
+    //         return Utils.getAdminUser().then(user => {
     //             const config = user.createConfiguration({
     //                 sync: {
     //                     fullSynchronization: true,
@@ -452,7 +447,7 @@ module.exports = {
 
     testDownloadListener_whenCanceled: function() {
         let openPromise = new Promise((resolve, reject) => {
-            return getLoggedInUser()
+            return Utils.getAdminUser()
             .then(user => {
                 const config = user.createConfiguration({
                     sync: {
@@ -485,7 +480,7 @@ module.exports = {
     },
 
     testBehavior_invalidOptions: function() {
-        return getLoggedInUser().then(user => {
+        return Utils.getAdminUser().then(user => {
 
             // New file behavior tests
             let config = user.createConfiguration({ sync: { newRealmFileBehavior: { type: 'foo' } } });

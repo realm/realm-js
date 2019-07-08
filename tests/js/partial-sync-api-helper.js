@@ -27,6 +27,7 @@ const realmModule = process.argv[3];
 const realmPath = process.argv[4] || '/default';
 
 const Realm = require(realmModule);
+const Utils = require('./test-utils');
 
 function createObjects(user) {
     const config = {
@@ -58,8 +59,7 @@ function createObjects(user) {
     });
 }
 
-const credentials = Realm.Sync.Credentials.nickname(username);
-Realm.Sync.User.login('http://127.0.0.1:9080', credentials)
+Utils.getRegularUser(username)
     .catch((error) => {
         const loginError = JSON.stringify(error);
         console.error(`partial-sync-api-helper failed:\n User login error:\n${loginError}`);

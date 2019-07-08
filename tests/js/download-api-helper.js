@@ -12,6 +12,7 @@ if (process.env.REALM_ELECTRON_VERSION) {
     process.versions.electron = process.env.REALM_ELECTRON_VERSION;
 }
 const Realm = require(realmModule);
+const Utils = require('./test-utils');
 
 function createObjects(user) {
     const config = {
@@ -32,20 +33,10 @@ function createObjects(user) {
 
     console.log("Dogs count " + realm.objects('Dog').length);
 
-    let session = realm.syncSession;
-    return new Promise((resolve, reject) => {
-        let callback = (transferred, total) => {
-            if (transferred === total) {
-                session.removeProgressNotification(callback);
-                resolve(realm);
-            }
-        }
-        session.addProgressNotification('upload', 'forCurrentlyOutstandingWork', callback);
-    });
+    return realm.syncSession.uploadAllLocalChanges();
 }
 
-const credentials = Realm.Sync.Credentials.nickname(username);
-Realm.Sync.User.login('http://127.0.0.1:9080', credentials)
+Utils.getRegularUser(username)
     .catch((error) => {
         const loginError = JSON.stringify(error);
         console.error(`download-api-helper failed:\n User login error:\n${loginError}`);

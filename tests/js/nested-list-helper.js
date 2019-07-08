@@ -9,6 +9,8 @@ const realmName = process.argv[4];
 const realmModule = process.argv[5];
 
 const Realm = require(realmModule);
+const Utils = require('./test-utils');
+
 // Ensure that schemas.js gets the correct module with `require('realm')`
 require.cache[require.resolve('realm')] = require.cache[require.resolve(realmModule)];
 let schemas = require(process.argv[2]);
@@ -54,8 +56,7 @@ function createObjects(user) {
     });
 }
 
-const credentials = Realm.Sync.Credentials.nickname(username);
-Realm.Sync.User.login('http://127.0.0.1:9080', credentials)
+Utils.getRegularUser(username)
     .catch((error) => {
         const loginError = JSON.stringify(error);
         console.error(`nested-list-helper failed:\n User login error:\n${loginError}`);
