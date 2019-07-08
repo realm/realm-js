@@ -22,7 +22,7 @@
 ### Internal
 * None.
 
-x.x.x Release notes (yyyy-MM-dd)
+2.29.0 Release notes (2019-7-3)
 =============================================================
 ### Enhancements
 * For synchronized Realms it is now possible to choose the behavior when opening the Realm. You can either choose to open the local Realm immediately or wait for it to be synchronized with the server first. These options are controlled through `Realm.Sync.SyncConfiguration.newRealmFileBehavior` and `Realm.Sync.SyncConfiguration.existingRealmFileBehavior`. See the [docs](XXX) for more information.
@@ -31,6 +31,7 @@ x.x.x Release notes (yyyy-MM-dd)
 ### Fixed
 * A React Native iOS app could crash on the first launch. Thanks to @max-zu. ([#2400](https://github.com/realm/realm-js/issues/2400), since v1.0.0)
 * When creating objects using migration, a native crash could occur if a new optional property was added to the schema. ([#1612](https://github.com/realm/realm-js/issues/1612), since v1.0.0)
+* Constructing an `inclusions` made unnecessary table comparisons. This resulted in poor performance for subscriptions using the `includeLinkingObjects` functionality. ([realm/realm-core#3311](https://github.com/realm/realm-core/issues/3311), since v2.27.0-rc.3)
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.
@@ -39,8 +40,8 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Internal
 * Updated to Object Store commit: 8cd7b40eb294c4292726a6215339742eea5107c9
-* Updated to Realm Core v5.22.0
-* Updated to Realm Sync v4.6.1
+* Updated to Realm Core v5.23.0
+* Updated to Realm Sync v4.6.2
 
 
 2.28.1 Release notes (2019-6-3)
