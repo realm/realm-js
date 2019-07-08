@@ -834,9 +834,9 @@ module.exports = {
         const username = Utils.uuid();
         const path = `/~/testPartialSync`;
         await runOutOfProcess(__dirname + '/partial-sync-api-helper.js', username, REALM_MODULE_PATH, path)
-        const user = await Utils.getAdminUser(username);
+        const user = await Utils.getRegularUser(username);
 
-        let config = Realm.Sync.User.current.createConfiguration({sync: {url: `realm://127.0.0.1:9080${path}`}});
+        let config = user.createConfiguration({sync: {url: `realm://127.0.0.1:9080${path}`}});
         config.schema = [{ name: 'Dog', properties: { name: 'string' } }];
         const realm = await Realm.open(config);
 
