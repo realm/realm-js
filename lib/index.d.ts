@@ -345,7 +345,8 @@ declare namespace Realm.Sync {
         static facebook(token: string): Credentials;
         static google(token: string): Credentials;
         static anonymous(): Credentials;
-        static nickname(value: string, isAdmin?: boolean): Credentials;
+        /** @deprecated will be removed in a future ROS version. Use usernamePassword or anonymous instead. */
+        static nickname(value: string): Credentials;
         static azureAD(token: string): Credentials;
         static jwt(token: string, providerName?: string): Credentials;
         static adminToken(token: string): AdminCredentials;

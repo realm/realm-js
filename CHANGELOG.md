@@ -1,3 +1,9 @@
+3.0.0-beta.X Release notes (TBD)
+=============================================================
+### Breaking Changes
+* Removed the `isAdmin` parameter from `Credentials.nickname` as that has no effect in new ROS versions.
+* Deprecated the `Credentials.nickname` method as the nickname auth provider will not be supported in future ROS versions.
+
 3.0.0-beta.1 Release notes (2019-6-13)
 =============================================================
 ### Breaking Changes
