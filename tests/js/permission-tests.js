@@ -234,7 +234,8 @@ module.exports = {
     },
 
     testAddPermissionSchemaForQueryBasedRealmOnly() {
-        return Realm.Sync.User.register('http://127.0.0.1:9080', Utils.uuid(), 'password').then((user) => {
+        const creds = Realm.Sync.Credentials.usernamePassword(Utils.uuid(), 'password');
+        return Realm.Sync.User.login('http://127.0.0.1:9080', creds).then((user) => {
             let config = {
                 schema: [],
                 sync: {
@@ -285,7 +286,8 @@ module.exports = {
             }
         };
 
-        return Realm.Sync.User.register('http://127.0.0.1:9080', Utils.uuid(), 'password').then((user) => {
+        const creds = Realm.Sync.Credentials.usernamePassword(Utils.uuid(), 'password');
+        return Realm.Sync.User.login('http://127.0.0.1:9080', creds).then((user) => {
             const config = user.createConfiguration({
                 schema: [PrivateChatRoomSchema],
                 sync: {

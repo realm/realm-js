@@ -1112,28 +1112,6 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
             }
         }
 
-        bool client_validate_ssl = true;
-        ValueType validate_ssl_temp = Object::get_property(ctx, sync_config_object, "validate_ssl");
-        if (!Value::is_undefined(ctx, validate_ssl_temp)) {
-            client_validate_ssl = Value::validated_to_boolean(ctx, validate_ssl_temp, "validate_ssl");
-        }
-
-        util::Optional<std::string> ssl_trust_certificate_path;
-        ValueType trust_certificate_path_temp = Object::get_property(ctx, sync_config_object, "ssl_trust_certificate_path");
-         if (!Value::is_undefined(ctx, trust_certificate_path_temp)) {
-            ssl_trust_certificate_path = std::string(Value::validated_to_string(ctx, trust_certificate_path_temp, "ssl_trust_certificate_path"));
-        }
-        else {
-            ssl_trust_certificate_path = util::none;
-        }
-
-        std::function<sync::Session::SSLVerifyCallback> ssl_verify_callback;
-        ValueType ssl_verify_func = Object::get_property(ctx, sync_config_object, "open_ssl_verify_callback");
-        if (!Value::is_undefined(ctx, ssl_verify_func)) {
-            SSLVerifyCallbackSyncThreadFunctor<T> ssl_verify_functor {ctx, Value::validated_to_function(ctx, ssl_verify_func)};
-            ssl_verify_callback = std::move(ssl_verify_functor);
-        }
-
         bool is_partial = true;
         ValueType full_synchronization_value = Object::get_property(ctx, sync_config_object, "fullSynchronization");
 
@@ -1195,11 +1173,14 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
         }
 
         ValueType ssl_config_value = Object::get_property(ctx, sync_config_object, "ssl");
-        if (Value::is_object(ctx, ssl_config_value)) {
-            auto ssl_config_object = Value::to_object(ctx, ssl_config_value);
-            populate_sync_config_for_ssl(ctx, ssl_config_object, *config.sync_config);
-        } else {
-            throw std::invalid_argument("Object is expected for 'ssl'");
+        if (!Value::is_undefined(ctx, ssl_config_value)) {
+            if (Value::is_object(ctx, ssl_config_value)) {
+                auto ssl_config_object = Value::to_object(ctx, ssl_config_value);
+                populate_sync_config_for_ssl(ctx, ssl_config_object, *config.sync_config);
+            }
+            else {
+                throw std::invalid_argument("Object is expected for 'ssl'");
+            }
         }
 
         config.schema_mode = SchemaMode::Additive;

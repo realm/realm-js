@@ -18,7 +18,8 @@ function createObjects(user) {
         sync: {
             user: user,
             url: `realm://127.0.0.1:9080/~/${realmName}`,
-            error: err => console.log(err)
+            error: err => console.log(err),
+            fullSynchronization: true
         },
         schema: [{ name: 'Dog', properties: { name: 'string' } }]
     };
@@ -44,7 +45,7 @@ function createObjects(user) {
     });
 }
 
-const credentials = Realm.Sync.Credentials.nickname(username);
+const credentials = Realm.Sync.Credentials.usernamePassword(username, 'password');
 Realm.Sync.User.login('http://127.0.0.1:9080', credentials)
     .catch((error) => {
         const loginError = JSON.stringify(error);

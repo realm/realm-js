@@ -392,19 +392,6 @@ declare namespace Realm.Sync {
         acceptPermissionOffer(token: string): Promise<string>
         invalidatePermissionOffer(permissionOfferOrToken: PermissionOffer | string): Promise<void>;
         getPermissionOffers(): Promise<PermissionOffer[]>;
-
-        // Deprecated
-
-        /** @deprecated, to be removed in future versions */
-        static adminUser(adminToken: string, server?: string): User;
-        /** @deprecated, to be removed in future versions */
-        static login(server: string, username: string, password: string): Promise<Realm.Sync.User>;
-        /** @deprecated, to be removed in future versions */
-        static register(server: string, username: string, password: string): Promise<Realm.Sync.User>;
-        /** @deprecated, to be removed in future versions */
-        static registerWithProvider(server: string, options: { provider: string, providerToken: string, userInfo: any }): Promise<Realm.Sync.User>;
-        /** @deprecated, to be removed in future versions */
-        static authenticate(server: string, provider: string, options: any): Promise<Realm.Sync.User>;
     }
 
     interface _PermissionConditionUserId {

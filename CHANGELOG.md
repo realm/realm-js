@@ -1,3 +1,34 @@
+X.Y.Z Release notes
+=============================================================
+### Breaking Changes
+* Removed deprecated configuration option `partial`. Use `fullSynchronization` in the future.
+* Removed deprecated `class_name` from `Realm.Permissions.Class`. Use `name` in the future.
+* Removed deprecated SSL options `validate_ssl`, `ssl_trust_certificate_path`, and `open_ssl_verify_callback` from configuration. Use `ssl` in the future.
+* Removed deprecated method.
+
+  | Removed              | Use instead |
+  | ---------------------|-------------|
+  | `Realm.automaticSyncConfiguration()` | `Realm.Sync.User.createConfiguration()` |
+  | `Realm.Sync.User.register()` | `Realm.Sync.User.login(server, Credentials.usernamePassword)` |
+  | `Realm.Sync.User.adminUser()` | `Realm.Sync.User.login(server, Credentials.adminToken)` |
+  | `Realm.Sync.User.registerWithProvider()` | `Realm.Sync.User.login(server, Credentials.SOME-PROVIDER)` |
+  | `Realm.Sync.User.authenticate()` | `Realm.Sync.User.login(server, Credentials.SOME-PROVIDER) ` |
+
+### Enhancements
+* None.
+
+### Fixed
+* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
+* None.
+
+### Compatibility
+* Realm Object Server: 3.23.1 or later.
+* APIs are backwards compatible with all previous release of realm in the 2.x.y series.
+* File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
+
+### Internal
+* None.
+
 3.0.0-beta.1 Release notes (2019-6-13)
 =============================================================
 ### Breaking Changes
@@ -11,7 +42,6 @@
 * Added `User.getPermissionOffers` API to get a collection of all permission offers the user has created.
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
 * None.
 
 ### Compatibility
