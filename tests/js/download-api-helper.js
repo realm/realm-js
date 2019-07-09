@@ -33,18 +33,10 @@ function createObjects(user) {
 
     console.log("Dogs count " + realm.objects('Dog').length);
 
-    let session = realm.syncSession;
-    return new Promise((resolve, reject) => {
-        let callback = (transferred, total) => {
-            if (transferred === total) {
-                session.removeProgressNotification(callback);
-                resolve(realm);
-            }
-        }
-        session.addProgressNotification('upload', 'forCurrentlyOutstandingWork', callback);
-    });
+    return realm.syncSession.uploadAllLocalChanges();
 }
 
+// seems like we can't just use the test-utils.getRegularUser method
 const credentials = Realm.Sync.Credentials.usernamePassword(username, 'password');
 Realm.Sync.User.login('http://127.0.0.1:9080', credentials)
     .catch((error) => {

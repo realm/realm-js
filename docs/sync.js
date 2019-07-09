@@ -403,10 +403,10 @@ class Credentials {
      * Creates credentials based on a login with a nickname. If multiple users try to login
      * with the same nickname, they'll get the same underlying sync user.
      * @param {string} value The nickname of the user.
-     * @param {boolean} [isAdmin] An optional parameter controlling whether the user is admin. Default is `false`.
      * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.Sync.User.login|User.login}.
+     * @deprecated will be removed in a future ROS version. Use {@linkcode Realm.Sync.Credentials.usernamePassword} or {@linkcode Realm.Sync.Credentials.anonymous} instead.
      */
-    static nickname(value, isAdmin) { }
+    static nickname(value) { }
 
     /**
      * Creates credentials based on an Active Directory login.

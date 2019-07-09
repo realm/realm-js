@@ -112,7 +112,7 @@ module.exports = {
     },
 
     testCustomHTTPHeaders() {
-        return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.anonymous()).then(user => {
+        return Utils.getRegularUser().then(user => {
             let config = {
                 sync: {
                     user,
@@ -132,7 +132,7 @@ module.exports = {
     },
 
     testProperties() {
-        return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.anonymous()).then(user => {
+        return Utils.getRegularUser().then(user => {
             let postTokenRefreshChecks;
             const gotToken = new Promise((resolve, reject) => {
                 postTokenRefreshChecks = (sender) => {
@@ -173,9 +173,8 @@ module.exports = {
 
         let user, config;
 
-        const credentials = Realm.Sync.Credentials.usernamePassword(username, 'password');
         return runOutOfProcess(__dirname + '/download-api-helper.js', username, realmName, REALM_MODULE_PATH)
-            .then(() => Realm.Sync.User.login('http://127.0.0.1:9080', credentials))
+            .then(() => Utils.getRegularUser(username))
             .then(u => {
                 user = u;
 
@@ -207,9 +206,8 @@ module.exports = {
         const expectedObjectsCount = 3;
 
         let user, config;
-        const credentials = Realm.Sync.Credentials.usernamePassword(username, 'password');
         return runOutOfProcess(__dirname + '/download-api-helper.js', username, realmName, REALM_MODULE_PATH)
-            .then(() => Realm.Sync.User.login('http://127.0.0.1:9080', credentials))
+            .then(() => Utils.getRegularUser(username))
             .then(u => {
                 user = u;
                 config = {
@@ -263,7 +261,7 @@ module.exports = {
     },
 
     testErrorHandling() {
-        return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.anonymous()).then(user => {
+        return Utils.getRegularUser().then(user => {
             return new Promise((resolve, _reject) => {
                 const config = user.createConfiguration({ sync: { url: 'realm://127.0.0.1:9080/~/myrealm' } });
                 config.sync.error = (sender, error) => {
@@ -293,9 +291,8 @@ module.exports = {
         const username = Utils.uuid();
         const realmName = Utils.uuid();
 
-        const credentials = Realm.Sync.Credentials.usernamePassword(username, 'password');
         return runOutOfProcess(__dirname + '/nested-list-helper.js', __dirname + '/schemas.js', username, realmName, REALM_MODULE_PATH)
-            .then(() => Realm.Sync.User.login('http://127.0.0.1:9080', credentials))
+            .then(() => Utils.getRegularUser(username))
             .then(user => {
                 let config = {
                     schema: [schemas.ParentObject, schemas.NameObject],
@@ -335,7 +332,7 @@ module.exports = {
             Realm.copyBundledRealmFiles();
         }
 
-        return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.anonymous())
+        return Utils.getRegularUser()
             .then(user => {
                 const config = {
                     path: realm,
@@ -369,7 +366,7 @@ module.exports = {
             Realm.copyBundledRealmFiles();
         }
 
-        return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.anonymous()).then(user => {
+        return Utils.getRegularUser().then(user => {
             return new Promise((resolve, _reject) => {
                     const config = {
                         path: realm,
@@ -440,14 +437,14 @@ module.exports = {
         const username = Utils.uuid();
         const realmName = Utils.uuid();
 
-        const credentials = Realm.Sync.Credentials.nickname(username);
         return runOutOfProcess(__dirname + '/download-api-helper.js', username, realmName, REALM_MODULE_PATH)
-            .then(() => Realm.Sync.User.login('http://127.0.0.1:9080', credentials))
+            .then(() => Utils.getRegularUser(username))
             .then(user => {
                 let config = {
                     sync: {
-                        user,
-                        url: `realm://127.0.0.1:9080/~/${realmName}`
+                        user: user,
+                        url: `realm://127.0.0.1:9080/~/${realmName}`,
+                        fullSynchronization: true
                     },
                     schema: [{ name: 'Dog', properties: { name: 'string' } }],
                 };
@@ -508,9 +505,8 @@ module.exports = {
         const realmName = Utils.uuid();
         let progressCalled = false;
 
-        const credentials = Realm.Sync.Credentials.nickname(username);
         return runOutOfProcess(__dirname + '/download-api-helper.js', username, realmName, REALM_MODULE_PATH)
-            .then(() => Realm.Sync.User.login('http://127.0.0.1:9080', credentials))
+            .then(() => Utils.getRegularUser(username))
             .then(user => {
                 let config = {
                     sync: {
@@ -530,8 +526,7 @@ module.exports = {
 
     testDisableUrlCheck() {
         const username = Utils.uuid();
-        const credentials = Realm.Sync.Credentials.nickname(username);
-        return Realm.Sync.User.login('http://127.0.0.1:9080', credentials).then(user => {
+        return Utils.getRegularUser(username).then(user => {
             let config = {
                 sync: {
                     user: user,
@@ -550,8 +545,7 @@ module.exports = {
 
     testPartialUrlCheck() {
         const username = Utils.uuid();
-        const credentials = Realm.Sync.Credentials.nickname(username);
-        return Realm.Sync.User.login('http://127.0.0.1:9080', credentials).then(user => {
+        return Utils.getRegularUser(username).then(user => {
             let config = {
                 sync: {
                     user: user,
@@ -565,8 +559,7 @@ module.exports = {
 
     async testCustomPartialSyncIdentifier() {
         const username = Utils.uuid();
-        const credentials = Realm.Sync.Credentials.nickname(username, true);
-        const user = await Realm.Sync.User.login('http://127.0.0.1:9080', credentials);
+        const user = await Utils.getAdminUser(username);
         const customRealm = await Realm.open({
             schema: [ { name: 'Dog', properties: { name: 'string' } } ],
             sync: {
@@ -597,8 +590,7 @@ module.exports = {
 
     testSubscribeInFullRealm() {
         const username = Utils.uuid();
-        const credentials = Realm.Sync.Credentials.nickname(username);
-        return Realm.Sync.User.login('http://127.0.0.1:9080', credentials).then(user => {
+        return Utils.getRegularUser(username).then(user => {
             let config = {
                 sync: {
                     user: user,
@@ -624,11 +616,10 @@ module.exports = {
 
         const username = Utils.uuid();
         const path = `/~/testPartialSync`;
-        const credentials = Realm.Sync.Credentials.nickname(username, true);
         await runOutOfProcess(__dirname + '/partial-sync-api-helper.js', username, REALM_MODULE_PATH, path)
-        const user = await Realm.Sync.User.login('http://127.0.0.1:9080', credentials);
+        const user = await Utils.getRegularUser(username);
 
-        let config = Realm.Sync.User.current.createConfiguration({sync: {url: `realm://127.0.0.1:9080${path}`}});
+        let config = user.createConfiguration({sync: {url: `realm://127.0.0.1:9080${path}`}});
         config.schema = [{ name: 'Dog', properties: { name: 'string' } }];
         const realm = await Realm.open(config);
 
@@ -706,9 +697,8 @@ module.exports = {
             return;
         }
         const username = Utils.uuid();
-        const credentials = Realm.Sync.Credentials.nickname(username);
         let user;
-        return Realm.Sync.User.login('http://127.0.0.1:9080', credentials).then(u => {
+        return Utils.getRegularUser(username).then(u => {
             user = u;
             let config = {
                 sync: {
@@ -754,8 +744,7 @@ module.exports = {
         }
 
         const username = Utils.uuid();
-        const credentials = Realm.Sync.Credentials.nickname(username);
-        return Realm.Sync.User.login('http://127.0.0.1:9080', credentials).then(user => {
+        return Utils.getRegularUser(username).then(user => {
             let config = {
                 schema: [{name: 'Role', properties: {name: 'string'}}],
                 sync: {
@@ -779,7 +768,7 @@ module.exports = {
             return;
         }
 
-        return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.anonymous()).then(user => {
+        return Utils.getRegularUser().then(user => {
             return new Promise((resolve, _reject) => {
                 var realm;
                 const config = user.createConfiguration({ sync: { url: 'realm://127.0.0.1:9080/~/myrealm' } });
@@ -808,7 +797,7 @@ module.exports = {
     },
 
     testAddConnectionNotification() {
-        return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.anonymous()).then((u) => {
+        return Utils.getRegularUser().then((u) => {
             let config = {
                 sync: {
                     user: u,
@@ -830,7 +819,7 @@ module.exports = {
     },
 
     testRemoveConnectionNotification() {
-        return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.anonymous()).then((u) => {
+        return Utils.getRegularUser().then((u) => {
             let config = {
                 sync: {
                     user: u,
@@ -863,7 +852,7 @@ module.exports = {
             return;
         }
 
-        return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.anonymous()).then((u) => {
+        return Utils.getRegularUser().then((u) => {
             let config = {
                 sync: {
                     user: u,
@@ -908,8 +897,7 @@ module.exports = {
     },
 
     async testResumePause() {
-        const creds = Realm.Sync.Credentials.usernamePassword(Utils.uuid(), 'password');
-        const user = await Realm.Sync.User.login('http://127.0.0.1:9080', creds);
+        const user = await Utils.getRegularUser();
         const config = {
             sync: {
                 user: user,
@@ -930,8 +918,7 @@ module.exports = {
     },
 
     async testMultipleResumes() {
-        const creds = Realm.Sync.Credentials.usernamePassword(Utils.uuid(), 'password');
-        const user = await Realm.Sync.User.login('http://127.0.0.1:9080', creds);
+        const user = await Utils.getRegularUser();
         const config = {
             sync: {
                 user: user,
@@ -959,8 +946,7 @@ module.exports = {
     },
 
     async testMultiplePauses() {
-        const creds = Realm.Sync.Credentials.usernamePassword(Utils.uuid(), 'password');
-        const user = await Realm.Sync.User.login('http://127.0.0.1:9080', creds);
+        const user = await Utils.getRegularUser()
         const config = {
             sync: {
                 user: user,
@@ -988,7 +974,6 @@ module.exports = {
     },
 
     testUploadDownloadAllChanges() {
-        const AUTH_URL = 'http://127.0.0.1:9080';
         const REALM_URL = `realm://127.0.0.1:9080/completion_realm/${Utils.uuid()}`;
         const schema = {
             'name': 'CompletionHandlerObject',
@@ -998,7 +983,7 @@ module.exports = {
         };
 
         let admin2Realm;
-        return Realm.Sync.User.login(AUTH_URL, Realm.Sync.Credentials.nickname("admin1", true))
+        return Utils.getAdminUser("admin1")
             .then((admin1) => {
                 const admin1Config = admin1.createConfiguration({
                     schema: [schema],
@@ -1014,7 +999,7 @@ module.exports = {
                 return admin1Realm.syncSession.uploadAllLocalChanges();
             })
             .then(() => {
-                return Realm.Sync.User.login(AUTH_URL, Realm.Sync.Credentials.nickname("admin2", true));
+                return Utils.getAdminUser("admin2");
             })
             .then((admin2) => {
                 const admin2Config = admin2.createConfiguration({
@@ -1037,10 +1022,9 @@ module.exports = {
             return;
         }
 
-        const AUTH_URL = 'http://127.0.0.1:9080';
         const REALM_URL = 'realm://127.0.0.1:9080/timeout_download_realm';
         let realm;
-        return Realm.Sync.User.login(AUTH_URL, Realm.Sync.Credentials.nickname("admin", true))
+        return Utils.getAdminUser()
             .then((admin1) => {
                 const admin1Config = admin1.createConfiguration({
                     sync: {
@@ -1061,10 +1045,9 @@ module.exports = {
             return;
         }
 
-        const AUTH_URL = 'http://127.0.0.1:9080';
         const REALM_URL = 'realm://127.0.0.1:9080/timeout_upload_realm';
         let realm;
-        return Realm.Sync.User.login(AUTH_URL, Realm.Sync.Credentials.nickname("admin", true))
+        return Utils.getAdminUser()
             .then((admin1) => {
                 const admin1Config = admin1.createConfiguration({
                     sync: {
@@ -1081,9 +1064,8 @@ module.exports = {
     },
 
     testReconnect() {
-        const AUTH_URL = 'http://127.0.0.1:9080';
         const REALM_URL = 'realm://127.0.0.1:9080/~/reconnect';
-        return Realm.Sync.User.login(AUTH_URL, Realm.Sync.Credentials.nickname("admin", true))
+        return Utils.getAdminUser()
             .then((admin1) => {
                 const admin1Config = admin1.createConfiguration({
                     sync: {
@@ -1102,9 +1084,8 @@ module.exports = {
     test_hasExistingSessions() {
         TestCase.assertFalse(Realm.Sync._hasExistingSessions());
 
-        const AUTH_URL = 'http://127.0.0.1:9080';
         const REALM_URL = 'realm://127.0.0.1:9080/~/active_sessions';
-        return Realm.Sync.User.login(AUTH_URL, Realm.Sync.Credentials.nickname("admin", true))
+        return Utils.getAdminUser()
             .then((admin1) => {
                 const admin1Config = admin1.createConfiguration({
                     sync: {
@@ -1135,9 +1116,8 @@ module.exports = {
     },
 
     testSessionStopPolicy() {
-        const AUTH_URL = 'http://127.0.0.1:9080';
         const REALM_URL = 'realm://127.0.0.1:9080/~/stop_policy';
-        return Realm.Sync.User.login(AUTH_URL, Realm.Sync.Credentials.nickname("admin", true))
+        return Utils.getAdminUser()
             .then((admin1) => {
                 // Check valid input
                 const config1 = admin1.createConfiguration({
@@ -1165,9 +1145,8 @@ module.exports = {
     },
 
     testSessionStopPolicyImmediately() {
-        const AUTH_URL = 'http://127.0.0.1:9080';
         const REALM_URL = 'realm://127.0.0.1:9080/~/stop_policy_immediately';
-        return Realm.Sync.User.login(AUTH_URL, Realm.Sync.Credentials.nickname("admin", true))
+        return Utils.getAdminUser()
             .then((admin1) => {
                 // Check valid input
                 const config1 = admin1.createConfiguration({

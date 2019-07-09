@@ -243,7 +243,7 @@ module.exports = {
         if (!global.enableSyncTests) {
             return;
         }
-        return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.nickname("admin", true))
+        return Utils.getAdminUser()
             .then(user => {
                 const fullSyncConfig = user.createConfiguration({
                     schema: [schemas.TestObject],
@@ -1323,8 +1323,7 @@ module.exports = {
             return;
         }
 
-        return Realm.Sync.User
-            .login('http://127.0.0.1:9080', Realm.Sync.Credentials.anonymous())
+        return Utils.getRegularUser()
             .then(user => {
                 const config = {
                     schema: [schemas.TestObject],
@@ -1546,7 +1545,7 @@ module.exports = {
         };
 
         // We need an admin user to create the reference Realm
-        return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.nickname("admin", true))
+        return Utils.getAdminUser()
             .then(user1 => {
                 config.sync.user = user1;
                 const realm = new Realm(config);
@@ -1554,7 +1553,7 @@ module.exports = {
                 return closeAfterUpload(realm);
             })
             .then(() => {
-                return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.anonymous());
+                return Utils.getRegularUser();
             }).then((user2) => {
                 const dynamicConfig = {
                     sync: { user: user2, url: `realm://127.0.0.1:9080/${realmId}`, fullSynchronization: false },

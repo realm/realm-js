@@ -1,6 +1,8 @@
 X.Y.Z Release notes
 =============================================================
 ### Breaking Changes
+* Removed the `isAdmin` parameter from `Credentials.nickname` as that has no effect in new Realm Object Server versions.
+* Deprecated the `Credentials.nickname` method as the nickname auth provider will not be supported in future Realm Object Server versions.
 * Removed deprecated configuration option `partial`. Use `fullSynchronization` in the future.
 * Removed deprecated method `Realm.Sync.setFeatureToken()` since all features are avaiable for all.
 * Removed deprecated methods `Realm.Sync.addListener(serverUrl, adminUser, filterRegex, name, changeCallback)` and `Realm.Sync.addListener(serverUrl, adminUser, filterRegex, worker)`. Use `Realm.Sync.addListener(config, eventName, changeCallback|worker)` in the future.
