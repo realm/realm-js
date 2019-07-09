@@ -115,37 +115,6 @@ class Sync {
     /**
      * Add a sync listener to listen to changes across multiple Realms.
      *
-     * @param {string} serverUrl - The sync server to listen to.
-     * @param {SyncUser} adminUser - an admin user obtained by calling {@linkcode Realm.Sync.User.login|User.login} with admin credentials.
-     * @param {string} filterRegex - A regular expression used to determine which changed Realms should trigger events. Use `.*` to match all Realms.
-     * @param {string} name - The name of the event.
-     * @param {function(changeEvent)} changeCallback - The callback to invoke with the events.
-     *
-     * Registers the `changeCallback` to be called each time the given event occurs on the specified server.
-     * Only events on Realms with a _virtual path_ that matches the filter regex are emitted.
-     *
-     * Currently supported events:
-     *
-     *  * `'available'`: Emitted whenever there is a new Realm which has a virtual
-     *    path matching the filter regex, either due to the Realm being newly created
-     *    or the listener being added. The virtual path (i.e. the portion of the
-     *    URL after the protocol and hostname) is passed as an argument.
-     *  * `'change'`: Emitted whenever the data within a Realm matching the filter
-     *    regex has changed. A [ChangeEvent]{@link Realm.Sync.ChangeEvent} argument
-     *    is passed containing information about which Realm changed and what
-     *    objects within the Realm changed.
-     *  * `'delete'`: Emitted whenever a Realm matching the filter regex has been
-     *    deleted from the server. The virtual path of the Realm being deleted is
-     *    passed as an argument.
-     *
-     * Only available in the Enterprise Edition.
-     * @deprecated Use `addListener(config, eventName, changeCallback)` instead`.
-     */
-    static addListener(serverUrl, adminUser, filterRegex, name, changeCallback) { }
-
-    /**
-     * Add a sync listener to listen to changes across multiple Realms.
-     *
      * @param {Realm.Sync.RealmListenerConfiguration} config - The configuration object for Realms being observed.
      * @param {string} eventName - The name of the event to observe.
      * @param {function(changeEvent)} changeCallback - The callback to invoke with the events.
@@ -171,17 +140,6 @@ class Sync {
      */
     static addListener(config, eventName, changeCallback) { }
 
-    /**
-     * Add a sync listener to listen to changes across multiple Realms.
-     *
-     * @param {string} serverUrl - The sync server to listen to.
-     * @param {SyncUser} adminUser - an admin user obtained by calling {@linkcode Realm.Sync.User.login|User.login} with admin credentials.
-     * @param {string} filterRegex - A regular expression used to determine which changed Realms should trigger events. Use `.*` to match all Realms.
-     * @param {Realm.Worker} worker - Worker to deliver events to.
-     *
-     * Only available in the Enterprise Edition.
-     */
-    static addListener(serverUrl, adminUser, filterRegex, worker) { }
 
     /**
      * Calling this method will force Realm to attempt to reconnect to the server immediately.

@@ -839,8 +839,12 @@ describe('Multi-process Notifier', () => {
     });
 
     async function expectNotifications(regex: string, fn) { //}: (() => Promise<object>) => Promise<void>) {
-        await Realm.Sync.addListener(`realm://127.0.0.1:${rosController.httpPort}`,
-            rosController.adminUser, notificationFilterPrefix + regex, worker);
+        const config = {
+            serverUrl: `realm://127.0.0.1:${rosController.httpPort}`,
+            adminUser: rosController.adminUser,
+            filterRegex: `${notificationFilterPrefix}${regex}`,
+        }
+        await Realm.Sync.addListener(config, 'change', worker);
         const realm = await Realm.open({path: tmpIpcPath, schema: ipcSchema});
         const events = realm.objects('Event');
         let i = 0;
