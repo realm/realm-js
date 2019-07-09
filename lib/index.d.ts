@@ -635,11 +635,6 @@ declare namespace Realm.Sync {
     function reconnect(): void;
     function localListenerRealms(regex: string): Array<LocalRealm>;
 
-    /**
-     * @deprecated, to be removed in future versions
-     */
-    function setFeatureToken(token: string): void;
-
     type Instruction = {
         type: 'INSERT' | 'SET' | 'DELETE' | 'CLEAR' | 'LIST_SET' | 'LIST_INSERT' | 'LIST_ERASE' | 'LIST_CLEAR' | 'ADD_TYPE' | 'ADD_PROPERTIES' | 'CHANGE_IDENTITY' | 'SWAP_IDENTITY'
         object_type: string,
