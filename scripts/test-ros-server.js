@@ -53,7 +53,6 @@ server.start({
     dataPath: dataDir,
     authProviders: [
         new ROS.auth.AnonymousAuthProvider(),
-        new ROS.auth.NicknameAuthProvider(),
         new ROS.auth.DebugAuthProvider(),
         new ROS.auth.PasswordAuthProvider({
             autoCreateAdminUser: true,

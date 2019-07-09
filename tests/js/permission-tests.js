@@ -24,8 +24,7 @@ var Utils = require('./test-utils');
 
 function createUsersWithTestRealms(count) {
     const createUserWithTestRealm = () => {
-        return Realm.Sync.User
-            .login('http://127.0.0.1:9080', Realm.Sync.Credentials.anonymous())
+        return Utils.getRegularUser()
             .then(user => {
                 const realm = new Realm({sync: {user, url: 'realm://127.0.0.1:9080/~/test', fullSynchronization: true}});
                 return realm.syncSession.uploadAllLocalChanges()
@@ -75,8 +74,7 @@ function permissionForPath(permissions, path) {
 
 const getPartialRealm = () => {
     const testID = Utils.uuid();
-    return Realm.Sync.User
-        .login('http://127.0.0.1:9080', Realm.Sync.Credentials.nickname("user-" + testID, true))
+    return Utils.getAdminUser("user-" + testID)
         .then(user => {
             const config = user.createConfiguration({
                 sync: {
@@ -195,8 +193,8 @@ module.exports = {
                 sync: {user, url: realmUrl, fullSynchronization: false}
             };
         };
-        const owner = await Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.nickname(Utils.uuid(), true));
-        const otherUser = await Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.nickname(Utils.uuid()));
+        const owner = await Utils.getAdminUser();
+        const otherUser = await Utils.getRegularUser();
 
         const ownerRealm = new Realm(config(owner));
         ownerRealm.write(() => {
@@ -234,7 +232,7 @@ module.exports = {
     },
 
     testAddPermissionSchemaForQueryBasedRealmOnly() {
-        return Realm.Sync.User.register('http://127.0.0.1:9080', Utils.uuid(), 'password').then((user) => {
+        return Utils.getRegularUser().then((user) => {
             let config = {
                 schema: [],
                 sync: {
@@ -285,7 +283,7 @@ module.exports = {
             }
         };
 
-        return Realm.Sync.User.register('http://127.0.0.1:9080', Utils.uuid(), 'password').then((user) => {
+        return Utils.getRegularUser().then((user) => {
             const config = user.createConfiguration({
                 schema: [PrivateChatRoomSchema],
                 sync: {
