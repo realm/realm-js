@@ -2,9 +2,10 @@ X.Y.Z Release notes
 =============================================================
 ### Breaking Changes
 * Removed deprecated configuration option `partial`. Use `fullSynchronization` in the future.
+* Removed deprecated method `Realm.Sync.setFeatureToken()` since all features are avaiable for all.
 * Removed deprecated `class_name` from `Realm.Permissions.Class`. Use `name` in the future.
 * Removed deprecated SSL options `validate_ssl`, `ssl_trust_certificate_path`, and `open_ssl_verify_callback` from configuration. Use `ssl` in the future.
-* Removed deprecated method.
+* Removed deprecated methods:
 
   | Removed              | Use instead |
   | ---------------------|-------------|
@@ -13,6 +14,7 @@ X.Y.Z Release notes
   | `Realm.Sync.User.adminUser()` | `Realm.Sync.User.login(server, Credentials.adminToken)` |
   | `Realm.Sync.User.registerWithProvider()` | `Realm.Sync.User.login(server, Credentials.SOME-PROVIDER)` |
   | `Realm.Sync.User.authenticate()` | `Realm.Sync.User.login(server, Credentials.SOME-PROVIDER) ` |
+  | `Realm.openAsync()` | `Realm.open()` |
 
 ### Enhancements
 * None.

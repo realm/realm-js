@@ -789,14 +789,6 @@ declare class Realm {
      * @param {Configuration} config
      */
     static open(config: Realm.Configuration): ProgressPromise;
-    /**
-     * @deprecated in favor of `Realm.open`
-     * Open a realm asynchronously with a callback. If the realm is synced, it will be fully synchronized before it is available.
-     * @param {Configuration} config
-     * @param {Function} callback will be called when the realm is ready.
-     * @param {ProgressNotificationCallback} progressCallback? a progress notification callback for 'download' direction and 'forCurrentlyOutstandingWork' mode
-     */
-    static openAsync(config: Realm.Configuration, callback: (error: any, realm: Realm) => void, progressCallback?: Realm.Sync.ProgressNotificationCallback): void
 
     /**
      * @param {Realm.ObjectSchema} object schema describing the object that should be created.
