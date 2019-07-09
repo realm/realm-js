@@ -458,7 +458,7 @@ class Credentials {
      * with the same nickname, they'll get the same underlying sync user.
      * @param {string} value The nickname of the user.
      * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.Sync.User.login|User.login}.
-     * @deprecated will be removed in a future ROS version. Use usernamePassword or anonymous instead.
+     * @deprecated will be removed in a future ROS version. Use {@linkcode Realm.Sync.Credentials.usernamePassword} or {@linkcode Realm.Sync.Credentials.anonymous} instead.
      */
     static nickname(value) { }
 
