@@ -21,6 +21,7 @@
 var Realm = require('realm');
 var TestCase = require('./asserts');
 var Schemas = require('./schemas');
+const Utils = require('./test-utils');
 
 module.exports = {
     testEncryptedInvalidKeys: function() {
@@ -75,8 +76,7 @@ module.exports = {
             return Promise.resolve();
         }
 
-        const credentials = Realm.Sync.Credentials.usernamePassword('realm-admin', '');
-        return Realm.Sync.User.login('http://127.0.0.1:9080', credentials).then(adminUser => {
+        return Utils.getAdminUser().then(adminUser => {
             new Realm({
                 encryptionKey: new Int8Array(64),
                 sync: {

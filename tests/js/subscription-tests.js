@@ -22,13 +22,11 @@
 
 const Realm = require('realm');
 const TestCase = require('./asserts');
-const schemas = require('./schemas');
 const Utils = require('./test-utils');
 
 function getRealm() {
-    const AUTH_URL = 'http://127.0.0.1:9080';
     const REALM_URL = 'realm://127.0.0.1:9080/~/' + Utils.uuid().replace("-", "_");
-    return Realm.Sync.User.login(AUTH_URL, Realm.Sync.Credentials.nickname("admin", true))
+    return Utils.getAdminUser()
         .then((user) => {
             const schemas = [
                 {
