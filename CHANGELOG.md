@@ -6,6 +6,7 @@ x.x.x Release notes (yyyy-MM-dd)
 ### Fixed
 * Queries involving an indexed int property which were constrained by a List with an order different from the table's order would give incorrect results. ([realm/realm-core#3307](https://github.com/realm/realm-core/issues/3307), since v2.27.0-rc.2)
 * Queries involving an indexed int column had a memory leak if run multiple times. ([realm/realm-cocoa#6186](https://github.com/realm/realm-cocoa/issues/6186), since v2.27.0-rc.2)
+* Not-a-number (NaN) was wrongly assumed to be an illegal value in Realm Core (thanks to @jsflax for discovering this).
 
 ### Compatibility
 * Realm Object Server: 3.21.0 or later.
@@ -24,7 +25,6 @@ x.x.x Release notes (yyyy-MM-dd)
 * Added support for unicode characters in realm path and filenames for Windows. Thanks to @rajivshah3. ([realm-core#3293](https://github.com/realm/realm-core/pull/3293) and [#2319](https://github.com/realm/realm-js/issues/2319))
 
 ### Fixed
-* Not-a-number (NaN) was wrongly assumed to be an illegal value in Realm Core (thanks to @jsflax for discovering this).
 * A React Native iOS app could crash on the first launch. Thanks to @max-zu. ([#2400](https://github.com/realm/realm-js/issues/2400), since v1.0.0)
 * When creating objects using migration, a native crash could occur if a new optional property was added to the schema. ([#1612](https://github.com/realm/realm-js/issues/1612), since v1.0.0)
 * Constructing an `inclusions` made unnecessary table comparisons. This resulted in poor performance for subscriptions using the `includeLinkingObjects` functionality. ([realm/realm-core#3311](https://github.com/realm/realm-core/issues/3311), since v2.27.0-rc.3)

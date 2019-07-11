@@ -698,9 +698,10 @@ module.exports = {
 
     testFloatValues: function() {
         const realm = new Realm({schema: [schemas.FloatOnly]});
-        let values = [0.0, 1.0, Infinity, NaN];
+        let values = [0.0, 1.0, NaN];
 
         values.forEach(function(v) {
+            console.log('FISK:', v);
             realm.write(function () {
                 realm.create(schemas.FloatOnly.name, { floatCol: v });
             })
