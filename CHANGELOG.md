@@ -4,6 +4,21 @@
 * Removed the `isAdmin` parameter from `Credentials.nickname` as that has no effect in new Realm Object Server versions.
 * Deprecated the `Credentials.nickname` method as the nickname auth provider will not be supported in future Realm Object Server versions.
 
+## Enchancements
+* None.
+
+### Fixed
+* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
+* None.
+
+### Compatibility
+* Realm Object Server: 3.23.1 or later.
+* APIs are backwards compatible with all previous release of realm in the 2.x.y series.
+* File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
+
+## Internal
+* None
+
 3.0.0-beta.1 Release notes (2019-6-13)
 =============================================================
 ### Breaking Changes
@@ -25,8 +40,27 @@
 * APIs are backwards compatible with all previous release of realm in the 2.x.y series.
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
-### Internal
+## Internal
+* None
+
+x.x.x Release notes (yyyy-MM-dd)
+=============================================================
+### Enhancements
 * None.
+
+### Fixed
+* Queries involving an indexed int property which were constrained by a List with an order different from the table's order would give incorrect results. ([realm/realm-core#3307](https://github.com/realm/realm-core/issues/3307), since v2.27.0-rc.2)
+* Queries involving an indexed int column had a memory leak if run multiple times. ([realm/realm-cocoa#6186](https://github.com/realm/realm-cocoa/issues/6186), since v2.27.0-rc.2)
+
+### Compatibility
+* Realm Object Server: 3.21.0 or later.
+* APIs are backwards compatible with all previous release of realm in the 2.x.y series.
+* File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
+
+### Internal
+* Updated to Realm Core v5.23.1.
+* Updated to Realm Sync v4.6.3.
+
 
 2.29.0 Release notes (2019-7-3)
 =============================================================
