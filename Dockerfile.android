@@ -1,5 +1,5 @@
 # Starting from a slimmed version of the latest stable Debian
-FROM debian:stable-slim
+FROM debian:stretch-slim
 
 # Setting environment variables for versions
 # See https://developer.android.com/studio/#command-tools for the latest SDK version
