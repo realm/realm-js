@@ -4,8 +4,8 @@ x.x.x Release notes (yyyy-MM-dd)
 * None.
 
 ### Fixed
-* Queries involving an indexed int property which were constrained by a List with an order different from the table's order would give incorrect results. ([realm/realm-core#3307](https://github.com/realm/realm-core/issues/3307), since v???)
-* Queries involving an indexed int column had a memory leak if run multiple times. ([realm/realm-cocoa#6186](https://github.com/realm/realm-cocoa/issues/6186), since v???)
+* Queries involving an indexed int property which were constrained by a List with an order different from the table's order would give incorrect results. ([realm/realm-core#3307](https://github.com/realm/realm-core/issues/3307), since v2.27.0-rc.2)
+* Queries involving an indexed int column had a memory leak if run multiple times. ([realm/realm-cocoa#6186](https://github.com/realm/realm-cocoa/issues/6186), since v2.27.0-rc.2)
 
 ### Compatibility
 * Realm Object Server: 3.21.0 or later.
