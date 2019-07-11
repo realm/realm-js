@@ -171,12 +171,6 @@ inline jsc::String jsc::Value::to_string(JSContextRef ctx, const JSValueRef &val
 
 template<>
 inline double jsc::Value::to_number(JSContextRef ctx, const JSValueRef &value) {
-    // JSValueRef exception = nullptr;
-
-    // double number = JSValueToNumber(ctx, value, &exception);
-    // if (exception) {
-    //     throw jsc::Exception(ctx, exception);
-    // }
     double number = JSValueToNumber(ctx, value, nullptr);
     if (is_number(ctx, value) || is_date(ctx, value) || (is_string(ctx, value) && !std::isnan(number))) {
         return number;

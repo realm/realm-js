@@ -701,7 +701,6 @@ module.exports = {
         let values = [0.0, 1.0, NaN];
 
         values.forEach(function(v) {
-            console.log('FISK:', v);
             realm.write(function () {
                 realm.create(schemas.FloatOnly.name, { floatCol: v });
             })
