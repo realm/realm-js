@@ -1,6 +1,25 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
+* None.
+
+### Fixed
+* Queries involving an indexed int property which were constrained by a List with an order different from the table's order would give incorrect results. ([realm/realm-core#3307](https://github.com/realm/realm-core/issues/3307), since v2.27.0-rc.2)
+* Queries involving an indexed int column had a memory leak if run multiple times. ([realm/realm-cocoa#6186](https://github.com/realm/realm-cocoa/issues/6186), since v2.27.0-rc.2)
+
+### Compatibility
+* Realm Object Server: 3.21.0 or later.
+* APIs are backwards compatible with all previous release of realm in the 2.x.y series.
+* File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
+
+### Internal
+* Updated to Realm Core v5.23.1.
+* Updated to Realm Sync v4.6.3.
+
+
+2.29.0 Release notes (2019-7-3)
+=============================================================
+### Enhancements
 * For synchronized Realms it is now possible to choose the behavior when opening the Realm. You can either choose to open the local Realm immediately or wait for it to be synchronized with the server first. These options are controlled through `Realm.Sync.SyncConfiguration.newRealmFileBehavior` and `Realm.Sync.SyncConfiguration.existingRealmFileBehavior`. See the [docs](XXX) for more information.
 * Added support for unicode characters in realm path and filenames for Windows. Thanks to @rajivshah3. ([realm-core#3293](https://github.com/realm/realm-core/pull/3293) and [#2319](https://github.com/realm/realm-js/issues/2319))
 
@@ -8,6 +27,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * Not-a-number (NaN) was wrongly assumed to be an illegal value in Realm Core (thanks to @jsflax for discovering this).
 * A React Native iOS app could crash on the first launch. Thanks to @max-zu. ([#2400](https://github.com/realm/realm-js/issues/2400), since v1.0.0)
 * When creating objects using migration, a native crash could occur if a new optional property was added to the schema. ([#1612](https://github.com/realm/realm-js/issues/1612), since v1.0.0)
+* Constructing an `inclusions` made unnecessary table comparisons. This resulted in poor performance for subscriptions using the `includeLinkingObjects` functionality. ([realm/realm-core#3311](https://github.com/realm/realm-core/issues/3311), since v2.27.0-rc.3)
 
 ### Compatibility
 * Realm Object Server: 3.21.0 or later.
@@ -16,8 +36,8 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Internal
 * Updated to Object Store commit: 8cd7b40eb294c4292726a6215339742eea5107c9
-* Updated to Realm Core v5.22.0
-* Updated to Realm Sync v4.6.1
+* Updated to Realm Core v5.23.0
+* Updated to Realm Sync v4.6.2
 
 
 2.28.1 Release notes (2019-6-3)
