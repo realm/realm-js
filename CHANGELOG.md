@@ -34,20 +34,6 @@ X.Y.Z Release notes
 ### Internal
 * None.
 
-## Enchancements
-* None.
-
-### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None.
-
-### Compatibility
-* Realm Object Server: 3.23.1 or later.
-* APIs are backwards compatible with all previous release of realm in the 2.x.y series.
-* File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
-
-## Internal
-* None
 
 3.0.0-beta.1 Release notes (2019-6-13)
 =============================================================
