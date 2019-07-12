@@ -1,4 +1,4 @@
-X.Y.Z Release notes
+3.0.0 Release notes (2019-7-12)
 =============================================================
 ### Breaking Changes
 * Removed the `isAdmin` parameter from `Credentials.nickname` as that has no effect in new Realm Object Server versions.
