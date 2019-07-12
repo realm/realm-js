@@ -13,7 +13,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
 ### Internal
-* None.
+* Added support for Electron v4.2 ([#2452](https://github.com/realm/realm-js/issues/2452))
 
 2.29.1 Release notes (2019-7-11)
 =============================================================
