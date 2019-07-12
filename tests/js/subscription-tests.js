@@ -23,17 +23,11 @@
 const Realm = require('realm');
 const TestCase = require('./asserts');
 const schemas = require('./schemas');
-
-function uuid() {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-        var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
-        return v.toString(16);
-    });
-}
+const Utils = require('./test-utils');
 
 function getRealm() {
     const AUTH_URL = 'http://127.0.0.1:9080';
-    const REALM_URL = 'realm://127.0.0.1:9080/~/' + uuid().replace("-", "_");
+    const REALM_URL = 'realm://127.0.0.1:9080/~/' + Utils.uuid().replace("-", "_");
     return Realm.Sync.User.login(AUTH_URL, Realm.Sync.Credentials.nickname("admin", true))
         .then((user) => {
             const schemas = [
@@ -277,8 +271,8 @@ module.exports = {
                             sub2.addListener((subscription2, state2) => {
                                 if (pendingOrComplete(state2)) {
                                     sub2.removeAllListeners();
-                                    TestCase.assertFalse(query1.description() === query2.description());
-                                    TestCase.assertTrue(update1.getTime() < namedSub.updatedAt.getTime());
+                                    TestCase.assertFalse(query1.description() === query2.description(), "'description()' was not updated.");
+                                    TestCase.assertTrue(update1.getTime() < namedSub.updatedAt.getTime(), "'updatedAt' was not correctly updated.");
                                     resolve();
                                 }
                             });
@@ -307,10 +301,10 @@ module.exports = {
                             sub2.addListener((subscription2, state2) => {
                                 if (pendingOrComplete(state2)) {
                                     sub2.removeAllListeners();
-                                    TestCase.assertTrue(update1.getTime() < namedSub.updatedAt.getTime());
-                                    TestCase.assertTrue(expires1.getTime() < namedSub.expiresAt.getTime());
-                                    TestCase.assertEqual(namedSub.timeToLive, 5000);
-                                    TestCase.assertTrue(queryDescription === namedSub.query);
+                                    TestCase.assertTrue(update1.getTime() < namedSub.updatedAt.getTime(), "'UpdatedAt' was not updated correctly.");
+                                    TestCase.assertTrue(expires1.getTime() < namedSub.expiresAt.getTime(), "'expiresAt' was not updated correctly.");
+                                    TestCase.assertEqual(namedSub.timeToLive, 5000, "'timeToLive' was not updated correctly.");
+                                    TestCase.assertTrue(queryDescription === namedSub.query, "'query' was not updated correctly.");
                                     resolve();
                                 }
                             });

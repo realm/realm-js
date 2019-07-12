@@ -342,6 +342,14 @@ class Realm {
     static deleteFile(config) { }
 
     /**
+     * Checks if the Realm already exists on disk.
+     * @param {Realm~Configuration} config The configuration for the Realm.
+     * @throws {Error} if anything in the provided `config` is invalid.
+     * @returns {boolean} returns `true` if the Realm exists on the device, `false` if not.
+     */
+    static exists(config) { }
+
+    /**
      * Copy all bundled Realm files to app's default file folder.
      * This is only implemented for React Native.
      * @throws {Error} If an I/O error occured or method is not implemented.

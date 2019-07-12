@@ -1163,6 +1163,26 @@ module.exports = {
         TestCase.assertThrowsContaining(() => object.int.min("foo"), "Invalid arguments: at most 0 expected, but 1 supplied")
     },
 
+    testPrimitiveListFunctions: function () {
+        const realm = new Realm({schema: [schemas.PrimitiveArrays]});
+        realm.write(() => {
+            realm.create('PrimitiveArrays', {
+                int:    [1, 2, 3],
+                float:  [1.1, 2.2, 3.3],
+                double: [1.11, 2.22, 3.33],
+                date:   [DATE1, DATE2, DATE3],
+                string: ['1', '2', '3'],
+            });
+        });
+
+        let objects = realm.objects('PrimitiveArrays');
+        TestCase.assertEqual(objects.length, 1);
+        TestCase.assertEqual(objects[0]['string'].length, 3);
+        TestCase.assertEqual(objects[0]['string'].join(','), '1,2,3');
+
+        realm.close();
+    },
+
     testListAggregateFunctionsUnsupported: function() {
         const NullableBasicTypesList = {
             name: 'NullableBasicTypesList',

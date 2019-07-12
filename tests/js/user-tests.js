@@ -22,6 +22,7 @@
 
 const Realm = require('realm');
 const TestCase = require('./asserts');
+const Utils = require('./test-utils');
 const isNodeProcess = typeof process === 'object' && process + '' === '[object process]';
 
 const require_method = require;
@@ -34,13 +35,6 @@ if (isNodeProcess) {
   fs = node_require('fs');
   jwt = node_require('jsonwebtoken');
   rosDataDir = process.env.ROS_DATA_DIR || '../realm-object-server-data';
-}
-
-function uuid() {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-    const r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
-    return v.toString(16);
-  });
 }
 
 function assertIsUser(user, isAdmin) {
@@ -110,7 +104,7 @@ module.exports = {
   },
 
   testRegisterExistingUser() {
-    const username = uuid();
+    const username = Utils.uuid();
     const credentials = Realm.Sync.Credentials.usernamePassword(username, 'password', true);
     return Realm.Sync.User.login('http://127.0.0.1:9080', credentials).then((user) => {
       assertIsUser(user);
@@ -127,7 +121,7 @@ module.exports = {
   },
 
   testRegisterMissingPassword() {
-    TestCase.assertThrows(() => Realm.Sync.Credentials.usernamePassword(uuid(), undefined));
+    TestCase.assertThrows(() => Realm.Sync.Credentials.usernamePassword(Utils.uuid(), undefined));
   },
 
   testRegisterServerOffline() {
@@ -138,7 +132,7 @@ module.exports = {
   },
 
   testLogin() {
-    const username = uuid();
+    const username = Utils.uuid();
     const registerCredentials = Realm.Sync.Credentials.usernamePassword(username, 'password', true);
     // Create user, logout the new user, then login
     return Realm.Sync.User.login('http://127.0.0.1:9080', registerCredentials).then((user) => {
@@ -156,7 +150,7 @@ module.exports = {
   },
 
   testAuthenticateWithPassword() {
-    const username = uuid();
+    const username = Utils.uuid();
     return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.usernamePassword(username, 'password', true)).then((user) => {
       user.logout();
       return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.usernamePassword(username, 'password'));
@@ -173,7 +167,7 @@ module.exports = {
   },
 
   testLoginMissingPassword() {
-    const username = uuid();
+    const username = Utils.uuid();
     TestCase.assertThrows(() => Realm.Sync.User.login('http://127.0.0.1:9080', username, undefined));
   },
 
@@ -335,7 +329,7 @@ module.exports = {
     return Realm.Sync.User.login('http://127.0.0.1:9080', credentials).then((user) => {
       TestCase.assertTrue(user.isAdmin, "Test requires an admin user");
 
-      let notExistingUsername = uuid();
+      let notExistingUsername = Utils.uuid();
       return user.retrieveAccount('password', notExistingUsername)
     }).then(() => { throw new Error("Retrieving nonexistent account should fail") }, (e) => {
       TestCase.assertEqual(e.status, 404);
@@ -546,7 +540,7 @@ module.exports = {
     const schema = [Foo.schema, Bar.schema];
 
     // Create a user, open two clients at different local paths, synchronize changes
-    const username = uuid();
+    const username = Utils.uuid();
     return new Promise((resolve) => {
       Realm.Sync.User.register('http://127.0.0.1:9080', username, 'password', (error ,user) => {
         failOnError(error);
