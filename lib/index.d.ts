@@ -393,19 +393,6 @@ declare namespace Realm.Sync {
         acceptPermissionOffer(token: string): Promise<string>
         invalidatePermissionOffer(permissionOfferOrToken: PermissionOffer | string): Promise<void>;
         getPermissionOffers(): Promise<PermissionOffer[]>;
-
-        // Deprecated
-
-        /** @deprecated, to be removed in future versions */
-        static adminUser(adminToken: string, server?: string): User;
-        /** @deprecated, to be removed in future versions */
-        static login(server: string, username: string, password: string): Promise<Realm.Sync.User>;
-        /** @deprecated, to be removed in future versions */
-        static register(server: string, username: string, password: string): Promise<Realm.Sync.User>;
-        /** @deprecated, to be removed in future versions */
-        static registerWithProvider(server: string, options: { provider: string, providerToken: string, userInfo: any }): Promise<Realm.Sync.User>;
-        /** @deprecated, to be removed in future versions */
-        static authenticate(server: string, provider: string, options: any): Promise<Realm.Sync.User>;
     }
 
     interface _PermissionConditionUserId {
@@ -493,15 +480,8 @@ declare namespace Realm.Sync {
     interface SyncConfiguration {
         user: User;
         url: string;
-        /** @deprecated use `ssl` instead */
-        validate_ssl?: boolean;
-        /** @deprecated use `ssl` instead */
-        ssl_trust_certificate_path?: string;
-        /** @deprecated use `ssl` instead */
-        open_ssl_verify_callback?: SSLVerifyCallback;
         ssl?: SSLConfiguration;
         error?: ErrorCallback;
-        partial?: boolean;
         fullSynchronization?: boolean;
         _disableQueryBasedSyncUrlChecks?: boolean;
         _sessionStopPolicy?: SessionStopPolicy;
@@ -644,14 +624,6 @@ declare namespace Realm.Sync {
         realm (): Realm;
     }
 
-    /**
-     * @deprecated, to be removed in future versions
-     */
-    function addListener(serverURL: string, adminUser: Realm.Sync.User, regex: string, name: RealmListenerEventName, changeCallback: (changeEvent: ChangeEvent) => void): void;
-    /**
-     * @deprecated, to be removed in future versions
-     */
-    function addListener(serverURL: string, adminUser: Realm.Sync.User, regex: string, name: RealmListenerEventName, changeCallback: (changeEvent: ChangeEvent) => Promise<void>): void;
     function addListener(config: RealmListenerConfiguration, eventName: RealmListenerEventName, changeCallback: (changeEvent: ChangeEvent) => void): void;
     function addListener(config: RealmListenerConfiguration, eventName: RealmListenerEventName, changeCallback: (changeEvent: ChangeEvent) => Promise<void>): void;
     function removeAllListeners(): Promise<void>;
@@ -663,11 +635,6 @@ declare namespace Realm.Sync {
     function _hasExistingSessions(): boolean;
     function reconnect(): void;
     function localListenerRealms(regex: string): Array<LocalRealm>;
-
-    /**
-     * @deprecated, to be removed in future versions
-     */
-    function setFeatureToken(token: string): void;
 
     type Instruction = {
         type: 'INSERT' | 'SET' | 'DELETE' | 'CLEAR' | 'LIST_SET' | 'LIST_INSERT' | 'LIST_ERASE' | 'LIST_CLEAR' | 'ADD_TYPE' | 'ADD_PROPERTIES' | 'CHANGE_IDENTITY' | 'SWAP_IDENTITY'
@@ -810,21 +777,6 @@ declare class Realm {
      * @param {Configuration} config
      */
     static open(config: Realm.Configuration): ProgressPromise;
-    /**
-     * @deprecated in favor of `Realm.open`
-     * Open a realm asynchronously with a callback. If the realm is synced, it will be fully synchronized before it is available.
-     * @param {Configuration} config
-     * @param {Function} callback will be called when the realm is ready.
-     * @param {ProgressNotificationCallback} progressCallback? a progress notification callback for 'download' direction and 'forCurrentlyOutstandingWork' mode
-     */
-    static openAsync(config: Realm.Configuration, callback: (error: any, realm: Realm) => void, progressCallback?: Realm.Sync.ProgressNotificationCallback): void
-
-    /**
-     * @deprecated in favor of `Realm.Sync.User.createConfiguration()`.
-     * Return a configuration for a default Realm.
-     * @param {Realm.Sync.User} optional user.
-     */
-    static automaticSyncConfiguration(user?: Realm.Sync.User): string;
 
     /**
      * @param {Realm.ObjectSchema} object schema describing the object that should be created.

@@ -18,7 +18,8 @@ function createObjects(user) {
         sync: {
             user: user,
             url: `realm://127.0.0.1:9080/~/${realmName}`,
-            error: err => console.log(err)
+            error: err => console.log(err),
+            fullSynchronization: true
         },
         schema: [{ name: 'Dog', properties: { name: 'string' } }]
     };

@@ -179,10 +179,9 @@ module.exports = {
                 user = u;
 
                 config = {
-                    sync: { user, url: `realm://127.0.0.1:9080/~/${realmName}`, fullSynchronization: true },
+                    sync: { user: user, url: `realm://127.0.0.1:9080/~/${realmName}`, fullSynchronization: true },
                     schema: [{ name: 'Dog', properties: { name: 'string' } }],
                 };
-
                 return Realm.open(config)
             }).then(realm => {
                 let actualObjectsCount = realm.objects('Dog').length;
@@ -212,7 +211,7 @@ module.exports = {
             .then(u => {
                 user = u;
                 config = {
-                    sync: { user, url: `realm://127.0.0.1:9080/~/${realmName}`, fullSynchronization: true },
+                    sync: { user: user, url: `realm://127.0.0.1:9080/~/${realmName}`, fullSynchronization: true },
                     schema: [{ name: 'Dog', properties: { name: 'string' } }],
                     schemaVersion: 1,
                 };
@@ -238,100 +237,6 @@ module.exports = {
             });
     },
 
-    testRealmOpenAsync() {
-        if (!isNodeProccess) {
-            return;
-        }
-
-        const username = Utils.uuid();
-        const realmName = Utils.uuid();
-        const expectedObjectsCount = 3;
-
-        return runOutOfProcess(__dirname + '/download-api-helper.js', username, realmName, REALM_MODULE_PATH)
-            .then(() => Utils.getRegularUser(username))
-            .then(user => {
-                let config = {
-                    sync: { user, url: `realm://127.0.0.1:9080/~/${realmName}`, fullSynchronization: true },
-                    schema: [{ name: 'Dog', properties: { name: 'string' } }],
-                };
-                return new Promise((resolve, reject) => {
-                    Realm.openAsync(config, (error, realm) => {
-                        try {
-                            if (error) {
-                                reject(error);
-                            }
-
-                            let actualObjectsCount = realm.objects('Dog').length;
-                            TestCase.assertEqual(actualObjectsCount, expectedObjectsCount, "Synced realm does not contain the expected objects count");
-
-                            setTimeout(() => {
-                                try {
-                                    const session = realm.syncSession;
-                                    TestCase.assertInstanceOf(session, Realm.Sync.Session);
-                                    TestCase.assertEqual(session.user.identity, user.identity);
-                                    TestCase.assertEqual(session.config.url, config.sync.url);
-                                    TestCase.assertEqual(session.config.user.identity, config.sync.user.identity);
-                                    TestCase.assertEqual(session.state, 'active');
-                                    resolve();
-                                } catch (e) {
-                                    reject(e);
-                                }
-                            }, 50);
-                        }
-                        catch (e) {
-                            reject(e);
-                        }
-                    });
-                });
-            });
-    },
-
-    testRealmOpenAsyncNoSchema() {
-        if (!isNodeProccess) {
-            return;
-        }
-
-        const username = Utils.uuid();
-        const realmName = Utils.uuid();
-        const expectedObjectsCount = 3;
-
-        return runOutOfProcess(__dirname + '/download-api-helper.js', username, realmName, REALM_MODULE_PATH)
-            .then(() => Utils.getRegularUser(username))
-            .then(user => {
-                let config = {
-                    sync: { user, url: `realm://127.0.0.1:9080/~/${realmName}`, fullSynchronization: true }
-                };
-                return new Promise((resolve, reject) => {
-                    Realm.openAsync(config, (error, realm) => {
-                        if (error) {
-                            reject(error);
-                            return;
-                        }
-                        try {
-                            let actualObjectsCount = realm.objects('Dog').length;
-                            TestCase.assertEqual(actualObjectsCount, expectedObjectsCount, "Synced realm does not contain the expected objects count");
-
-                            let firstDog = realm.objects('Dog')[0];
-                            TestCase.assertTrue(({}).hasOwnProperty.call(firstDog, 'name'), "Synced realm does not have an inffered schema");
-                            TestCase.assertTrue(firstDog.name, "Synced realm object's property should have a value");
-                            TestCase.assertTrue(firstDog.name.indexOf('Lassy') !== -1, "Synced realm object's property should contain the actual written value");
-
-                            const session = realm.syncSession;
-                            TestCase.assertInstanceOf(session, Realm.Sync.Session);
-                            TestCase.assertEqual(session.user.identity, user.identity);
-                            TestCase.assertEqual(session.config.url, config.sync.url);
-                            TestCase.assertEqual(session.config.user.identity, config.sync.user.identity);
-                            TestCase.assertEqual(session.state, 'active');
-                            resolve();
-                        }
-                        catch (e) {
-                            reject(e);
-                        }
-                    });
-                });
-            });
-    },
-
     testRealmOpenLocalRealm() {
         const username = Utils.uuid();
         const expectedObjectsCount = 3;
@@ -352,42 +257,6 @@ module.exports = {
 
             let actualObjectsCount = realm.objects('Dog').length;
             TestCase.assertEqual(actualObjectsCount, expectedObjectsCount, "Local realm does not contain the expected objects count");
-        });
-    },
-
-    testRealmOpenAsyncLocalRealm() {
-        const username = Utils.uuid();
-        const expectedObjectsCount = 3;
-
-
-        return new Promise((resolve, reject) => {
-            const accessTokenRefreshed = this;
-            let successCounter = 0;
-
-            let config = {
-                schema: [{ name: 'Dog', properties: { name: 'string' } }],
-            };
-
-            Realm.openAsync(config, (error, realm) => {
-                try {
-                    if (error) {
-                        reject(error);
-                    }
-
-                    realm.write(() => {
-                        for (let i = 1; i <= 3; i++) {
-                            realm.create('Dog', { name: `Lassy ${i}` });
-                        }
-                    });
-
-                    let actualObjectsCount = realm.objects('Dog').length;
-                    TestCase.assertEqual(actualObjectsCount, expectedObjectsCount, "Local realm does not contain the expected objects count");
-                    resolve();
-                }
-                catch (e) {
-                    reject(e);
-                }
-            });
         });
     },
 
@@ -427,7 +296,7 @@ module.exports = {
             .then(user => {
                 let config = {
                     schema: [schemas.ParentObject, schemas.NameObject],
-                    sync: { user, url: `realm://127.0.0.1:9080/~/${realmName}`, fullSynchronization: true }
+                    sync: { user: user, url: `realm://127.0.0.1:9080/~/${realmName}`, fullSynchronization: true }
                 };
                 return Realm.open(config)
             }).then(realm => {
@@ -485,47 +354,6 @@ module.exports = {
                 }
                 throw new Error(unexpectedError(e));
             });
-    },
-
-    testIncompatibleSyncedRealmOpenAsync() {
-        let realm = "sync-v1.realm";
-        if (isNodeProccess) {
-            realm = copyFileToTempDir(path.join(process.cwd(), "data", realm));
-        }
-        else {
-            //copy the bundled RN realm files for the test
-            Realm.copyBundledRealmFiles();
-        }
-
-        return Utils.getRegularUser().then(user => {
-            return new Promise((resolve, _reject) => {
-                const config = {
-                    path: realm,
-                    sync: {
-                        user,
-                        error : err => console.log(err),
-                        url: 'realm://127.0.0.1:9080/~/sync-v1',
-                        fullSynchronization: true,
-                    }
-                };
-
-                Realm.openAsync(config, (error, realm) => {
-                    if (!error) {
-                        _reject("Should fail with IncompatibleSyncedRealmError");
-                        return;
-                    }
-
-                    if (error.name === "IncompatibleSyncedRealmError") {
-                        const backupRealm = new Realm(error.configuration);
-                        TestCase.assertEqual(backupRealm.objects('Dog').length, 3);
-                        resolve();
-                        return;
-                    }
-
-                    _reject(unexpectedError(error));
-                });
-            });
-        });
     },
 
     testIncompatibleSyncedRealmConsructor() {
@@ -614,8 +442,9 @@ module.exports = {
             .then(user => {
                 let config = {
                     sync: {
-                        user,
-                        url: `realm://127.0.0.1:9080/~/${realmName}`
+                        user: user,
+                        url: `realm://127.0.0.1:9080/~/${realmName}`,
+                        fullSynchronization: true
                     },
                     schema: [{ name: 'Dog', properties: { name: 'string' } }],
                 };
@@ -681,8 +510,9 @@ module.exports = {
             .then(user => {
                 let config = {
                     sync: {
-                        user,
-                        url: `realm://127.0.0.1:9080/~/${realmName}`
+                        user: user,
+                        url: `realm://127.0.0.1:9080/~/${realmName}`,
+                        fullSynchronization: true,
                     },
                     schema: [{ name: 'Dog', properties: { name: 'string' } }],
                 };
@@ -692,49 +522,6 @@ module.exports = {
                     new Promise((_, reject) => setTimeout(() => reject("Progress Notifications API failed to call progress callback for Realm constructor"), 5000))
                 ]);
             }).then(() => TestCase.assertTrue(progressCalled));
-    },
-
-    testProgressNotificationsForRealmOpenAsync() {
-        if (!isNodeProccess) {
-            return;
-        }
-
-        const username = Utils.uuid();
-        const realmName = Utils.uuid();
-
-        return runOutOfProcess(__dirname + '/download-api-helper.js', username, realmName, REALM_MODULE_PATH)
-            .then(() => Utils.getRegularUser(username))
-            .then(user => {
-                return new Promise((resolve, reject) => {
-                    let config = {
-                        sync: {
-                            user,
-                            url: `realm://127.0.0.1:9080/~/${realmName}`
-                        },
-                        schema: [{ name: 'Dog', properties: { name: 'string' } }],
-                    };
-
-                    let progressCalled = false;
-
-                    Realm.openAsync(config,
-                        (error, realm) => {
-                            if (error) {
-                                reject(error);
-                                return;
-                            }
-
-                            TestCase.assertTrue(progressCalled);
-                            resolve();
-                        },
-                        (transferred, total) => {
-                            progressCalled = true;
-                        });
-
-                    setTimeout(function() {
-                        reject("Progress Notifications API failed to call progress callback for Realm constructor");
-                    }, 5000);
-                });
-            });
     },
 
     testDisableUrlCheck() {
@@ -820,10 +607,6 @@ module.exports = {
             TestCase.assertThrows(() => realm.objects('Dog').filtered("name == 'Lassy 1'").subscribe());
             realm.close();
         });
-    },
-
-    testInvalidArugmentsToAutomaticSyncConfiguration() {
-        TestCase.assertThrows(() => Realm.automaticSyncConfiguration('foo', 'bar')); // too many arguments
     },
 
     async testPartialSync() {

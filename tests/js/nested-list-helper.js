@@ -16,9 +16,11 @@ let schemas = require(process.argv[2]);
 
 function createObjects(user) {
     const config = {
-        sync: { user,
+        sync: {
+            user: user,
             url: `realm://127.0.0.1:9080/~/${realmName}`,
-            error: err => console.log(err)
+            error: err => console.log(err),
+            fullSynchronization: true,
         },
         schema: [schemas.ParentObject, schemas.NameObject],
     };

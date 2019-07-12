@@ -372,13 +372,6 @@ class Class {
     /**
      * The name of the class which these permissions apply to.
      * @type {string}
-     * @deprecated Use name() instead.
-     */
-    get class_name() { }
-
-    /**
-     * The name of the class which these permissions apply to.
-     * @type {string}
      * @since 2.18.0
      */
     get name() { }

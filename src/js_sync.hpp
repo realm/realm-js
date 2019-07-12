@@ -1112,40 +1112,10 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
             }
         }
 
-        bool client_validate_ssl = true;
-        ValueType validate_ssl_temp = Object::get_property(ctx, sync_config_object, "validate_ssl");
-        if (!Value::is_undefined(ctx, validate_ssl_temp)) {
-            client_validate_ssl = Value::validated_to_boolean(ctx, validate_ssl_temp, "validate_ssl");
-        }
-
-        util::Optional<std::string> ssl_trust_certificate_path;
-        ValueType trust_certificate_path_temp = Object::get_property(ctx, sync_config_object, "ssl_trust_certificate_path");
-         if (!Value::is_undefined(ctx, trust_certificate_path_temp)) {
-            ssl_trust_certificate_path = std::string(Value::validated_to_string(ctx, trust_certificate_path_temp, "ssl_trust_certificate_path"));
-        }
-        else {
-            ssl_trust_certificate_path = util::none;
-        }
-
-        std::function<sync::Session::SSLVerifyCallback> ssl_verify_callback;
-        ValueType ssl_verify_func = Object::get_property(ctx, sync_config_object, "open_ssl_verify_callback");
-        if (!Value::is_undefined(ctx, ssl_verify_func)) {
-            SSLVerifyCallbackSyncThreadFunctor<T> ssl_verify_functor {ctx, Value::validated_to_function(ctx, ssl_verify_func)};
-            ssl_verify_callback = std::move(ssl_verify_functor);
-        }
-
-        bool is_partial = false; // Change to `true` when `partial` is removed
+        bool is_partial = true;
         ValueType full_synchronization_value = Object::get_property(ctx, sync_config_object, "fullSynchronization");
-        ValueType partial_value = Object::get_property(ctx, sync_config_object, "partial");
 
-        // Disallow setting `partial` and `fullSynchronization` at the same time
-        if (!Value::is_undefined(ctx, full_synchronization_value) && !Value::is_undefined(ctx, partial_value)) {
-            throw std::invalid_argument("'partial' and 'fullSynchronization' were both set. 'partial' has been deprecated, use only 'fullSynchronization'");
-        }
-
-        if (!Value::is_undefined(ctx, partial_value)) {
-            is_partial = Value::validated_to_boolean(ctx, partial_value);
-        } else if (!Value::is_undefined(ctx, full_synchronization_value)) {
+        if (!Value::is_undefined(ctx, full_synchronization_value)) {
             is_partial = !Value::validated_to_boolean(ctx, full_synchronization_value);
         }
 
@@ -1202,15 +1172,15 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
             config.sync_config->custom_http_headers = std::move(http_headers);
         }
 
-        // TODO: remove
-        config.sync_config->client_validate_ssl = client_validate_ssl;
-        config.sync_config->ssl_trust_certificate_path = ssl_trust_certificate_path;
-        config.sync_config->ssl_verify_callback = std::move(ssl_verify_callback);
-
         ValueType ssl_config_value = Object::get_property(ctx, sync_config_object, "ssl");
-        if (Value::is_object(ctx, ssl_config_value)) {
-            auto ssl_config_object = Value::to_object(ctx, ssl_config_value);
-            populate_sync_config_for_ssl(ctx, ssl_config_object, *config.sync_config);
+        if (!Value::is_undefined(ctx, ssl_config_value)) {
+            if (Value::is_object(ctx, ssl_config_value)) {
+                auto ssl_config_object = Value::to_object(ctx, ssl_config_value);
+                populate_sync_config_for_ssl(ctx, ssl_config_object, *config.sync_config);
+            }
+            else {
+                throw std::invalid_argument("Object is expected for 'ssl'");
+            }
         }
 
         config.schema_mode = SchemaMode::Additive;

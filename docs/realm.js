@@ -118,28 +118,6 @@ class Realm {
     static open(config) { }
 
     /**
-     * Open a Realm asynchronously with a callback. If the Realm is synced, it will be fully
-     * synchronized before it is available.
-     * @param {Realm~Configuration} config
-     * @param  {callback(error, realm)} - will be called when the Realm is ready.
-     * @param  {callback(transferred, transferable)} [progressCallback] - an optional callback for download progress notifications
-     * @throws {Error} If anything in the provided `config` is invalid
-     * @throws {IncompatibleSyncedRealmError} when an incompatible synced Realm is opened
-     */
-    static openAsync(config, callback, progressCallback) { }
-
-    /**
-     * Return a configuration for a default synced Realm. The server URL for the user will be used as base for
-     * the URL for the synced Realm. If no user is supplied, the current user will be used.
-     * @param {Realm.Sync.User} - an optional sync user
-     * @throws {Error} if zero or multiple users are logged in
-     * @returns {Realm~Configuration} - a configuration matching a default synced Realm.
-     * @since 2.3.0
-     * @deprecated use {@link Sync.User.createConfiguration()} instead.
-     */
-    static automaticSyncConfiguration(user) { }
-
-    /**
      * Creates a template object for a Realm model class where all optional fields are `undefined` and all required
      * fields have the default value for the given data type, either the value set by the `default` property in the
      * schema or the default value for the datatype if the schema doesn't specify one, i.e. `0`, false and `""`.

@@ -25,7 +25,8 @@ global.RosController = module.exports = class RosController {
             path: path.join(this._temp.name, 'admin.realm'),
             sync: {
                 user: this.adminUser,
-                url: `realm://127.0.0.1:${this.httpPort}/__admin`
+                url: `realm://127.0.0.1:${this.httpPort}/__admin`,
+                fullSynchronization: true
             }
         }).then(realm => {
             this.adminRealm = realm;
@@ -45,7 +46,8 @@ global.RosController = module.exports = class RosController {
             schema: schema,
             sync: {
                 user: this.adminUser,
-                url: `realm://127.0.0.1:${this.httpPort}/${this.pathPrefix}/${serverPath}`
+                url: `realm://127.0.0.1:${this.httpPort}/${this.pathPrefix}/${serverPath}`,
+                fullSynchronization: true
             }
         }).then(r => waitForUpload(r));
     }
