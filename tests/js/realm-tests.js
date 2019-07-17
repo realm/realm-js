@@ -1042,13 +1042,6 @@ module.exports = {
 
         TestCase.assertThrowsContaining(() => realm.addListener('invalid', () => {}),
                                         "Unknown event name 'invalid': only 'change', 'schema' and 'beforenotify' are supported.");
-
-        realm.addListener('change', () => {
-            throw new Error('expected error message');
-        });
-
-        TestCase.assertThrowsContaining(() => realm.write(() => {}),
-                                        'expected error message');
     },
 
     testSchema: function() {
