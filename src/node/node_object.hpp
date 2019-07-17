@@ -118,7 +118,7 @@ inline std::vector<node::String> node::Object::get_property_names(v8::Isolate* i
     std::vector<node::String> names;
     names.reserve(count);
 
-	v8::Local<v8::Context> ctx = isolate->GetCurrentContext();
+    v8::Local<v8::Context> ctx = isolate->GetCurrentContext();
     for (uint32_t i = 0; i < count; i++) {
         names.push_back(array->Get(i)->ToString(ctx).ToLocalChecked());
     }
