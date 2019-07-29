@@ -86,14 +86,14 @@ stage('build') {
   nodeVersions.each { nodeVersion ->
     parallelExecutors["macOS Node ${nodeVersion}"] = buildMacOS { buildCommon(nodeVersion, it) }
     parallelExecutors["Linux Node ${nodeVersion}"] = buildLinux { buildCommon(nodeVersion, it) }
-    parallelExecutors["Windows Node ${nodeVersion} ia32"] = buildWindows(nodeVersion, 'ia32')
-    parallelExecutors["Windows Node ${nodeVersion} x64"] = buildWindows(nodeVersion, 'x64')
+    // parallelExecutors["Windows Node ${nodeVersion} ia32"] = buildWindows(nodeVersion, 'ia32')
+    // parallelExecutors["Windows Node ${nodeVersion} x64"] = buildWindows(nodeVersion, 'x64')
   }
   electronVersions.each { electronVersion ->
     parallelExecutors["macOS Electron ${electronVersion}"]        = buildMacOS { buildElectronCommon(electronVersion, it) }
     parallelExecutors["Linux Electron ${electronVersion}"]        = buildLinux { buildElectronCommon(electronVersion, it) }
-    parallelExecutors["Windows Electron ${electronVersion} ia32"] = buildWindowsElectron(electronVersion, 'ia32')
-    parallelExecutors["Windows Electron ${electronVersion} x64"]  = buildWindowsElectron(electronVersion, 'x64')
+    // parallelExecutors["Windows Electron ${electronVersion} ia32"] = buildWindowsElectron(electronVersion, 'ia32')
+    // parallelExecutors["Windows Electron ${electronVersion} x64"]  = buildWindowsElectron(electronVersion, 'x64')
   }
   parallelExecutors["Android React Native"] = buildAndroid()
   parallel parallelExecutors
@@ -120,7 +120,7 @@ stage('test') {
   parallelExecutors["React Native iOS Example Release"] = testMacOS('react-example Release')
   parallelExecutors["macOS Electron Debug"] = testMacOS('electron Debug')
   parallelExecutors["macOS Electron Release"] = testMacOS('electron Release')
-  parallelExecutors["Windows node"] = testWindows()
+  // parallelExecutors["Windows node"] = testWindows()
   //android_react_tests: testAndroid('react-tests-android', {
   //  junit 'tests/react-test-app/tests.xml'
   //}),
