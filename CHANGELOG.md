@@ -1,22 +1,15 @@
-x.x.x Release notes (yyyy-MM-dd)
+3.0.0-node12.1 Release notes (2019-7-29)
 =============================================================
-### Breaking Changes
-* On Node.js and Electron, change notification callbacks will no longer be invoked directly by the `Realm.write()` call. Instead, they will be invoked asynchronously on a subsequent event loop tick. 
+### Known Issues
+* On Node.js and Electron, Realm -> JS callbacks may process microtasks at inappropriate times. This means that synchronous functions which take a callback (such as `realm.write()`) may unexpectedly let other asynchronous operations run.
 
 ### Enhancements
 * Added prebuilt binaries for Node.js 12 and Electron 5. ([#2425](https://github.com/realm/realm-js/pull/2425))
-
-### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None.
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.
 * APIs are backwards compatible with all previous release of realm in the 2.x.y series.
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
-
-### Internal
-* None.
 
 3.0.0-beta.2 Release notes (2019-7-12)
 =============================================================
