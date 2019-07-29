@@ -384,7 +384,7 @@ def buildAndroid() {
 
 def publish(nodeVersions, electronVersions, dependencies, tag) {
   myNode('docker') {
-    for (def platform in ['macos', 'linux', 'windows-ia32', 'windows-x64']) {
+    for (def platform in ['macos', 'linux']) {
       for (def version in nodeVersions) {
         unstash "pre-gyp-${platform}-${version}"
       }
