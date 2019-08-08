@@ -75,7 +75,7 @@ npm install --build-from-source=realm
          - Open an elevated command prompt (As Administrator)
 
             ```
-            npm install -g --production windows-build-tools
+            npm install -g --production windows-build-tools --vs2015
             ```
 
     * Option 2: Manually install and configure
