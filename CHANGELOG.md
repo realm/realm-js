@@ -5,6 +5,7 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Fixed
 * Fixed Coop with Jitsi-Meet iOS SDK ([2193](https://github.com/realm/realm-js/issues/2193)).
+* Fixed Gradle build error with Android Studio 3.5+.
 
 ### Compatibility
 * Realm Object Server: 3.21.0 or later.
