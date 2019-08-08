@@ -5,7 +5,7 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None.
+* Fixed Gradle build error with Android Studio 3.5+.
 
 ### Compatibility
 * Realm Object Server: 3.21.0 or later.
