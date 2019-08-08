@@ -204,6 +204,13 @@ exports.StringOnly = {
     }
 };
 
+exports.FloatOnly = {
+    name: 'FloatObjectonly',
+    properties: {
+        floatCol: 'float'
+    }
+};
+
 exports.DefaultValues = {
     name: 'DefaultValuesObject',
     properties: {
