@@ -76,7 +76,8 @@ npm install --build-from-source=realm
 
             ```
             npm install -g --production windows-build-tools --vs2015
-            ```       
+            ```  
+                 
              
     * Option 2: Manually install and configure
 
