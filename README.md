@@ -76,11 +76,22 @@ npm install --build-from-source=realm
 
             ```
             npm install -g --production windows-build-tools --vs2015
-            ```
-
+            ```       
+             
     * Option 2: Manually install and configure
 
         - Check [node-gyp](https://github.com/nodejs/node-gyp) manual for custom installation procedure for Windows
+        
+   Install openssl libraries vith vcpkg
+  
+        ```
+        git clone https://github.com/Microsoft/vcpkg
+        cd vcpkg
+        bootstrap-vcpkg.bat
+        vcpkg install openssl:x64-windows
+        mkdir C:\src\vcpkg\installed\x64-windows-static\lib
+        copy .\packages\openssl-windows_x64-windows\lib\*.lib C:\src\vcpkg\installed\x64-windows-static\lib
+        ```
 
 ### Building docs:
 API documentation is written using [JSDoc](http://usejsdoc.org/).
