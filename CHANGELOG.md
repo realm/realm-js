@@ -1,7 +1,7 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
-* Don't throw an exception when HTTP request times out as it can indicate that the device is offline. ([RJS-4](https://jira.mongodb.org/browse/RJS-4))
+* [React Native only] Don't throw an exception when HTTP requests time out as it can indicate that the device is offline. ([RJS-4](https://jira.mongodb.org/browse/RJS-4))
 
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)

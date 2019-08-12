@@ -124,12 +124,14 @@ module.exports = {
     TestCase.assertThrows(() => Realm.Sync.Credentials.usernamePassword(Utils.uuid(), undefined));
   },
 
-  testRegisterServerOffline() {
+  // FIXME: enable test when we have better support for retries of HTTP requests
+/*  testRegisterServerOffline() {
     // Because it waits for answer this takes some time..
     return Realm.Sync.User.login('http://fake_host.local', Realm.Sync.Credentials.anonymous())
       .catch((e) => {})
       .then((user) => { if (user) { throw new Error('should not have been able to register'); }})
   },
+*/
 
   testLogin() {
     const username = Utils.uuid();
