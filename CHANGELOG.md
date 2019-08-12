@@ -1,4 +1,4 @@
-2.30.0 Release notes (2019-8-12)
+2.30.0-beta.1 Release notes (2019-8-12)
 =============================================================
 ### Enhancements
 * [React Native only] Don't throw an exception when HTTP requests time out as it can indicate that the device is offline. ([RJS-4](https://jira.mongodb.org/browse/RJS-4))
