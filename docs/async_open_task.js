@@ -17,12 +17,15 @@
 ////////////////////////////////////////////////////////////////////////////
 
 
+/**
+ * @memberof Realm.Sync
+ */
 class AsyncOpenTask {
 
     /**
      * Cancels any current running download.
      * If multiple AsyncOpenTasks are all in the progress for the same Realm, then canceling one of them
-     * wil cancel all of them.
+     * will cancel all of them.
      */
     cancel() { }
 
