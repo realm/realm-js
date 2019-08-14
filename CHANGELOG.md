@@ -14,6 +14,7 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Internal
 * Added support for Electron v4.2 ([#2452](https://github.com/realm/realm-js/issues/2452))
+* Upgraded to Realm Sync v4.7.3.
 
 2.29.1 Release notes (2019-7-11)
 =============================================================
