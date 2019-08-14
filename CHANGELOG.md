@@ -4,8 +4,8 @@ x.x.x Release notes (yyyy-MM-dd)
 * None.
 
 ### Fixed
-* Fixed Coop with Jitsi-Meet iOS SDK ([2193](https://github.com/realm/realm-js/issues/2193)).
-* Fixed Gradle build error with Android Studio 3.5+.
+* Fixed Coop with Jitsi-Meet iOS SDK. Thanks to @djorkaeffalexandre. ([#2193](https://github.com/realm/realm-js/issues/2193))
+* Fixed Gradle build error with Android Studio 3.5+. Thanks to @MarcBernstein. ([#2468](https://github.com/realm/realm-js/pull/2468))
 
 ### Compatibility
 * Realm Object Server: 3.21.0 or later.
@@ -13,7 +13,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
 ### Internal
-* Added support for Electron v4.2 ([#2452](https://github.com/realm/realm-js/issues/2452))
+* Added support for Electron v4.2. ([#2452](https://github.com/realm/realm-js/issues/2452))
 * Upgraded to Realm Sync v4.7.3.
 
 2.29.1 Release notes (2019-7-11)
