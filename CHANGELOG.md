@@ -1,4 +1,4 @@
-x.x.x Release notes (yyyy-MM-dd)
+2.29.2 Release notes (2019-8-14)
 =============================================================
 ### Enhancements
 * None.
