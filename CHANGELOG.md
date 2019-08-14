@@ -4,7 +4,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * None.
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
+* Fixed Coop with Jitsi-Meet iOS SDK ([2193](https://github.com/realm/realm-js/issues/2193)).
 * Fixed Gradle build error with Android Studio 3.5+.
 
 ### Compatibility
