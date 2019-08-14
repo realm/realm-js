@@ -98,17 +98,6 @@
  */
 
 /**
- * When opening a Realm created with Realm Mobile Platform v1.x, it is automatically
- * migrated to the v2.x format. In case this migration
- * is not possible, an exception is thrown. The exception´s `message` property will be equal
- * to `IncompatibleSyncedRealmException`. The Realm is backed up, and the property `configuration`
- * is a {Realm~Configuration} which refers to it. You can open it as a local, read-only Realm, and
- * copy objects to a new synced Realm.
- *
- * @memberof Realm
- */
-
-/**
  * The default behavior settings if you want to open a synchronized Realm immediately and start working on it.
  * If this is the first time you open the Realm, it will be empty while the server data is being downloaded
  * in the background.
@@ -123,6 +112,16 @@
  * @typedef {Object} Realm.Sync.downloadBeforeOpenBehavior
  */
 
+/**
+ * When opening a Realm created with Realm Mobile Platform v1.x, it is automatically
+ * migrated to the v2.x format. In case this migration
+ * is not possible, an exception is thrown. The exception´s `message` property will be equal
+ * to `IncompatibleSyncedRealmException`. The Realm is backed up, and the property `configuration`
+ * is a {Realm~Configuration} which refers to it. You can open it as a local, read-only Realm, and
+ * copy objects to a new synced Realm.
+ *
+ * @memberof Realm
+ */
 class Sync {
     /**
      * Add a sync listener to listen to changes across multiple Realms.
@@ -166,7 +165,7 @@ class Sync {
      * Only events on Realms with a _virtual path_ that matches the filter regex are emitted.
      *
      * Currently supported events:
-     * 
+     *
      *  * `'available'`: Emitted whenever there is a new Realm which has a virtual
      *    path matching the filter regex, either due to the Realm being newly created
      *    or the listener being added. The virtual path (i.e. the portion of the
@@ -1065,7 +1064,7 @@ class Subscription {
  * function onavailable(path) {
  *    console.log(`Realm available at ${path}`);
  * }
- * 
+ *
  * function onchange(change) {
  *    console.log(`Realm at ${change.path} changed`);
  * }
