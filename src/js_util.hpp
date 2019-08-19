@@ -89,7 +89,7 @@ void compute_aggregate_on_collection(typename T::ContextType ctx, typename T::Ob
 
     auto list = get_internal<typename T::Type, T>(this_object);
 
-    size_t column = 0;
+    ColKey column = {};
     if (list->get_type() == realm::PropertyType::Object) {
         const ObjectSchema& object_schema = list->get_object_schema();
         std::string property_name = T::Value::validated_to_string(ctx, args[0]);
@@ -98,7 +98,7 @@ void compute_aggregate_on_collection(typename T::ContextType ctx, typename T::Ob
             throw std::invalid_argument(util::format("Property '%1' does not exist on object '%2'",
                                                      property_name, object_schema.name));
         }
-        column = property->table_column;
+        column = property->column_key;
     }
     else {
         args.validate_maximum(0);

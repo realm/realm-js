@@ -472,12 +472,12 @@ static inline void convert_outdated_datetime_columns(const SharedRealm &realm) {
                         realm->begin_transaction();
                     }
 
-                    for (size_t row_index = 0; row_index < table->size(); row_index++) {
-                        if (table->is_null(property.table_column, row_index)) {
+                    for (auto& obj : *table) {
+                        if (obj.is_null(property.column_key)) {
                             continue;
                         }
-                        auto milliseconds = table->get_timestamp(property.table_column, row_index).get_seconds();
-                        table->set_timestamp(property.table_column, row_index, Timestamp(milliseconds / 1000, (milliseconds % 1000) * 1000000));
+                        auto milliseconds = obj.get<realm::Timestamp>(property.column_key).get_seconds();
+                        obj.set<realm::Timestamp>(property.column_key, Timestamp(milliseconds / 1000, (milliseconds % 1000) * 1000000));
                     }
                 }
             }
@@ -634,12 +634,6 @@ bool RealmClass<T>::get_realm_config(ContextType ctx, size_t argc, const ValueTy
                     old_realm_ptr->reset();
                     realm_ptr->reset();
                 };
-            }
-
-            static const String cache_string = "_cache";
-            ValueType cache_value = Object::get_property(ctx, object, cache_string);
-            if (!Value::is_undefined(ctx, cache_value)) {
-                config.cache = Value::validated_to_boolean(ctx, cache_value, "_cache");
             }
 
             static const String automatic_change_notifications_string = "_automaticChangeNotifications";
@@ -1030,7 +1024,7 @@ void RealmClass<T>::delete_one(ContextType ctx, ObjectType this_object, Argument
         }
 
         realm::TableRef table = ObjectStore::table_for_object_type(realm->read_group(), object->get_object_schema().name);
-        table->move_last_over(object->row().get_index());
+        table->remove_object(object->obj().get_key());
     }
     else if (Value::is_array(ctx, arg)) {
         uint32_t length = Object::validated_get_length(ctx, arg);
@@ -1043,7 +1037,7 @@ void RealmClass<T>::delete_one(ContextType ctx, ObjectType this_object, Argument
 
             auto realm_object = get_internal<T, RealmObjectClass<T>>(object);
             realm::TableRef table = ObjectStore::table_for_object_type(realm->read_group(), realm_object->get_object_schema().name);
-            table->move_last_over(realm_object->row().get_index());
+            table->remove_object(realm_object->obj().get_key());
         }
     }
     else if (Object::template is_instance<ResultsClass<T>>(ctx, arg)) {

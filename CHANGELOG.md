@@ -1,3 +1,21 @@
+x.x.x Release notes (yyyy-MM-dd)
+=============================================================
+### Enhancements
+* None.
+
+### Fixed
+* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
+* None.
+
+### Compatibility
+* Realm Object Server: 3.21.0 or later.
+* APIs are backwards compatible with all previous release of realm in the 2.x.y series.
+* File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
+
+### Internal
+* Upgraded to Realm Core v6.0.0-alpha.15.
+* Upgraded to Realm Sync v4.5.1-core6.0.
+
 2.29.2 Release notes (2019-8-14)
 =============================================================
 ### Enhancements
