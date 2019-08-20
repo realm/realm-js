@@ -1,34 +1,65 @@
 {
-    // See https://go.microsoft.com/fwlink/?LinkId=733558
-    // for the documentation about the tasks.json format
-    "version": "0.1.0",
+    "version": "2.0.0",
     "tasks": [
         {
-            "taskName": "Rebuild Node Tests",
+            "label": "Rebuild Node Tests",
             "command": "npm",
-            "isShellCommand": true,
-            "showOutput": "always",
-            "suppressTaskName": true,
-            "args": ["run", "rebuild-changes"],
-            "isBuildCommand": false
+            "args": [
+                "run",
+                "rebuild-changes"
+            ],
+            "options": {
+                "env": {
+                    "REALMJS_USE_DEBUG_CORE": "1"
+                }
+            },
+            "type": "shell",
+            "group": "none",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
         },
         {
-            "taskName": "Build Node Tests",
+            "label": "Build Node Tests",
             "command": "npm",
-            "isShellCommand": true,
-            "showOutput": "always",
-            "suppressTaskName": true,
-            "args": ["run", "build-changes"],
-            "isBuildCommand": true
+            "args": [
+                "run",
+                "build-changes"
+            ],
+            "options": {
+                "env": {
+                    "REALMJS_USE_DEBUG_CORE": "1"
+                }
+            },
+            "type": "shell",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "group": "build",
         },
         {
-            "taskName": "Download and Start Server",
+            "label": "Download and Start Server",
             "command": "${workspaceRoot}/scripts/download_and_start_server.sh",
-            "isShellCommand": true,
-            "showOutput": "always",
-            "echoCommand": true,
+            "type": "shell",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
             "isBackground": true,
-            "suppressTaskName": true
         }
     ]
 }
