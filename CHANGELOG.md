@@ -1,3 +1,19 @@
+X.Y.Z Release notes (TBD)
+=============================================================
+### Enhancements
+* None.
+
+### Fixed
+* None.
+
+### Compatibility
+* Realm Object Server: 3.21.0 or later.
+* APIs are backwards compatible with all previous release of realm in the 2.x.y series.
+* File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
+
+### Internal
+* Add support for direct access to sync workers on Cloud, bypassing the Sync Proxy [RJS-6](https://jira.mongodb.org/browse/RJS-6)
+
 2.29.2 Release notes (2019-8-14)
 =============================================================
 ### Enhancements
