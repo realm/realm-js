@@ -18,6 +18,15 @@
           "dependencies": [ "object-store", "OpenSSL" ],
         }, {
           "dependencies": [ "object-store" ],
+        }],
+        ["realm_enable_sync", {
+          "sources": [
+            "src/js_sync.hpp",
+            "src/node/sync_logger.cpp",
+            "src/node/sync_logger.hpp",
+            "src/node/js_adapter.hpp",
+            "src/node/js_global_notifier.hpp",
+          ]
         }]
       ],
       "xcode_settings": {
