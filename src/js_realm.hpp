@@ -1378,6 +1378,7 @@ void RealmClass<T>::extend_query_based_schema(ContextType, ObjectType, Arguments
     // don't need to do anything
 }
 
+#if REALM_ENABLE_SYNC
 template<typename T>
 class AsyncOpenTaskClass : public ClassDefinition<T, std::shared_ptr<AsyncOpenTask>> {
     using GlobalContextType = typename T::GlobalContext;
@@ -1440,6 +1441,7 @@ void AsyncOpenTaskClass<T>::add_download_notification(ContextType ctx, ObjectTyp
     std::shared_ptr<AsyncOpenTask> task = *get_internal<T, AsyncOpenTaskClass<T>>(this_object);
     task->register_download_progress_notifier(callback_handler); // Ignore token as we don't want to unregister.
 }
+#endif
 
 } // js
 } // realm
