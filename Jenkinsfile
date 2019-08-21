@@ -536,7 +536,7 @@ def testMacOS(target, postStep = null) {
 
 def testWindows() {
   return {
-    node('windows && nodejs') {
+    node('windows && nodejs-12') {
       unstash 'source'
       try {
         bat 'npm install --build-from-source=realm --realm_enable_sync'
