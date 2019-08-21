@@ -27,7 +27,6 @@
         "src/js_realm.cpp",
         "src/node/node_init.cpp",
         "src/node/platform.cpp",
-        "src/node/sync_logger.cpp",
 
         "src/concurrent_deque.hpp",
         "src/js_class.hpp",
@@ -55,14 +54,22 @@
         "src/node/node_string.hpp",
         "src/node/node_types.hpp",
         "src/node/node_value.hpp",
-        "src/node/sync_logger.hpp",
         "src/platform.hpp",
         "src/rpc.hpp",
       ],
       "include_dirs": [
         "src",
         "src/object-store/external/json",
+        "src/object-store/src"
       ],
+      "conditions": [
+        ["realm_enable_sync", {
+          "sources": [
+            "src/node/sync_logger.hpp",
+            "src/node/sync_logger.cpp",
+          ]
+        }]
+      ]
     },
     {
       "target_name": "action_after_build",
