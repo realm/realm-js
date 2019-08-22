@@ -113,6 +113,7 @@ stage('test') {
     parallelExecutors["Linux node ${nodeVersion} Debug"]   = testLinux("node Debug ${nodeVersion}", nodeVersion)
     parallelExecutors["Linux node ${nodeVersion} Release"] = testLinux("node Release ${nodeVersion}", nodeVersion)
     parallelExecutors["Linux test runners ${nodeVersion}"] = testLinux('test-runners', nodeVersion)
+    parallelExecutors["Windows node ${nodeVersion}"] = testWindows(nodeVersion)
   }
   parallelExecutors["React Native iOS Debug"] = testMacOS('react-tests Debug')
   parallelExecutors["React Native iOS Release"] = testMacOS('react-tests Release')
@@ -120,7 +121,6 @@ stage('test') {
   parallelExecutors["React Native iOS Example Release"] = testMacOS('react-example Release')
   parallelExecutors["macOS Electron Debug"] = testMacOS('electron Debug')
   parallelExecutors["macOS Electron Release"] = testMacOS('electron Release')
-  parallelExecutors["Windows node"] = testWindows()
   //android_react_tests: testAndroid('react-tests-android', {
   //  junit 'tests/react-test-app/tests.xml'
   //}),
@@ -306,7 +306,7 @@ def buildMacOS(workerFunction) {
 
 def buildWindows(nodeVersion, arch) {
   return {
-    myNode('windows && nodejs && cph-windows-01') {
+    myNode('windows && nodejs') {
       unstash 'source'
 
       bat 'npm install --ignore-scripts --production'
@@ -326,7 +326,7 @@ def buildWindows(nodeVersion, arch) {
 
 def buildWindowsElectron(electronVersion, arch) {
   return {
-    myNode('windows && nodejs && cph-windows-01') {
+    myNode('windows && nodejs') {
       unstash 'source'
       bat 'npm install --ignore-scripts --production'
       withEnv([
@@ -534,16 +534,19 @@ def testMacOS(target, postStep = null) {
   }
 }
 
-def testWindows() {
+def testWindows(nodeVersion) {
   return {
-    node('windows && nodejs') {
+    node('windows && nodist') {
       unstash 'source'
+      bat "nodist add ${nodeVersion}"
       try {
-        bat 'npm install --build-from-source=realm --realm_enable_sync'
-        dir('tests') {
-          bat 'npm install'
-          bat 'npm run test'
-          junit 'junitresults-*.xml'
+        withEnv(["NODE_NODIST_VERSION=${nodeVersion}"]) {
+          bat 'npm install --build-from-source=realm --realm_enable_sync'
+          dir('tests') {
+            bat 'npm install'
+            bat 'npm run test'
+            junit 'junitresults-*.xml'
+          }
         }
       } finally {
         deleteDir()
