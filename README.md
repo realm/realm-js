@@ -71,9 +71,14 @@ or manually create the symlinks using directory junctions
 ```
 #run in elevated command prompt
 cd realm-js\react-native\android\src\main\jni
+#remove src and vendor files
+del src
+del vendor
 mklink /j "src" "../../../../../src/"
 mklink /j "vendor" "../../../../../vendor"
 cd realm-js\tests\react-test-app\android\app\src\main
+#remove assets file
+del assets
 mklink /j assets "../../../../../data"
 ```
 
