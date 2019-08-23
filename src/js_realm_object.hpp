@@ -213,7 +213,7 @@ void RealmObjectClass<T>::set_link(ContextType ctx, ObjectType object, Arguments
     }
 
     if (obj_key) {
-        realm_object->obj().set_link(prop->column_key, obj_key);
+        realm_object->obj().set(prop->column_key, obj_key);
     }
     else {
         realm_object->obj().set_null(prop->column_key);
@@ -252,8 +252,9 @@ template<typename T>
 void RealmObjectClass<T>::get_object_id(ContextType ctx, ObjectType object, Arguments &args, ReturnValue& return_value) {
     args.validate_maximum(0);
 
+    auto realm_object = get_internal<T, RealmObjectClass<T>>(object);
     // An object key is int64_t, and JS can only handle 32 bit ints. Safer to return the key as a string.
-    stringstream ss;
+    std::stringstream ss;
     ss << realm_object->obj().get_key().value;
     return_value.set(ss.str());
 }
@@ -316,11 +317,13 @@ void RealmObjectClass<T>::add_listener(ContextType ctx, ObjectType this_object, 
                 deleted = true;
             }
             else {
-                auto table = realm_object->row().get_table();
-                for (size_t i = 0; i < change_set.columns.size(); ++i) {
-                    if (change_set.columns[i].empty()) {
+                auto table = realm_object->obj().get_table();
+                for (auto const& it : change_set.columns) {
+                    if (it.empty()) {
                         continue;
                     }
+                    auto col_key = it.first;
+
                     scratch.push_back(Value::from_string(protected_ctx, std::string(table->get_column_name(i))));
                 }
             }
@@ -394,8 +397,8 @@ void realm::js::RealmObjectClass<T>::linking_objects(ContextType ctx, ObjectType
     }
 
     realm::TableRef table = ObjectStore::table_for_object_type(object->realm()->read_group(), target_object_schema->name);
-    auto& obj = object->obj();
-    auto tv = obj.get_table()->get_backlink_view(table, link_property->column_key);
+    auto obj = object->obj();
+    auto tv = obj.get_backlink_view(table, link_property->column_key);
 
     return_value.set(ResultsClass<T>::create_instance(ctx, realm::Results(object->realm(), std::move(tv))));
 }

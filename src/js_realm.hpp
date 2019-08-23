@@ -209,7 +209,9 @@ class RealmClass : public ClassDefinition<T, SharedRealm, ObservableClass<T>> {
     using Value = js::Value<T>;
     using ReturnValue = js::ReturnValue<T>;
     using NativeAccessor = realm::js::NativeAccessor<T>;
+#if REALM_ENABLE_SYNC
     using RealmCallbackHandler = void(ThreadSafeReference<Realm>&& realm, std::exception_ptr error);
+#endif
 
 public:
     using ObjectDefaults = typename Schema<T>::ObjectDefaults;

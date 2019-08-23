@@ -85,7 +85,7 @@ public:
     }
 
     template<typename T>
-    T unbox(ValueType value, bool create = false, bool update = false, bool only_update_diff_objects = false, size_t current_row = realm::npos);
+    T unbox(ValueType value, bool create = false, bool update = false, bool only_update_diff_objects = false, ObjKey current_obj = ObjKey());
 
     template<typename T>
     util::Optional<T> unbox_optional(ValueType value) {
@@ -171,63 +171,63 @@ private:
 namespace _impl {
 template<typename JSEngine>
 struct Unbox<JSEngine, bool> {
-    static bool call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, bool, bool, bool, size_t) {
+    static bool call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, bool, bool, bool, ObjKey) {
         return js::Value<JSEngine>::validated_to_boolean(ctx->m_ctx, value, "Property");
     }
 };
 
 template<typename JSEngine>
 struct Unbox<JSEngine, int64_t> {
-    static int64_t call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, bool, bool, bool, size_t) {
+    static int64_t call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, bool, bool, bool, ObjKey) {
         return js::Value<JSEngine>::validated_to_number(ctx->m_ctx, value, "Property");
     }
 };
 
 template<typename JSEngine>
 struct Unbox<JSEngine, float> {
-    static float call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, bool, bool, bool, size_t) {
+    static float call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, bool, bool, bool, ObjKey) {
         return js::Value<JSEngine>::validated_to_number(ctx->m_ctx, value, "Property");
     }
 };
 
 template<typename JSEngine>
 struct Unbox<JSEngine, double> {
-    static double call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, bool, bool, bool, size_t) {
+    static double call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, bool, bool, bool, ObjKey) {
         return js::Value<JSEngine>::validated_to_number(ctx->m_ctx, value, "Property");
     }
 };
 
 template<typename JSEngine>
 struct Unbox<JSEngine, util::Optional<bool>> {
-    static util::Optional<bool> call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, bool, bool, bool, size_t) {
+    static util::Optional<bool> call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, bool, bool, bool, ObjKey) {
         return ctx->template unbox_optional<bool>(value);
 }
 };
 
 template<typename JSEngine>
 struct Unbox<JSEngine, util::Optional<int64_t>> {
-    static util::Optional<int64_t> call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, bool, bool, bool, size_t) {
+    static util::Optional<int64_t> call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, bool, bool, bool, ObjKey) {
         return ctx->template unbox_optional<int64_t>(value);
 }
 };
 
 template<typename JSEngine>
 struct Unbox<JSEngine, util::Optional<float>> {
-    static util::Optional<float> call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, bool, bool, bool, size_t) {
+    static util::Optional<float> call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, bool, bool, bool, ObjKey) {
         return ctx->template unbox_optional<float>(value);
 }
 };
 
 template<typename JSEngine>
 struct Unbox<JSEngine, util::Optional<double>> {
-    static util::Optional<double> call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, bool, bool, bool, size_t) {
+    static util::Optional<double> call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, bool, bool, bool, ObjKey) {
         return ctx->template unbox_optional<double>(value);
 }
 };
 
 template<typename JSEngine>
 struct Unbox<JSEngine, StringData> {
-    static StringData call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, bool, bool, bool, size_t) {
+    static StringData call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, bool, bool, bool, ObjKey) {
         if (ctx->is_null(value)) {
             return StringData();
         }
@@ -238,7 +238,7 @@ struct Unbox<JSEngine, StringData> {
 
 template<typename JSEngine>
 struct Unbox<JSEngine, BinaryData> {
-    static BinaryData call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value value, bool, bool, bool, size_t) {
+    static BinaryData call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value value, bool, bool, bool, ObjKey) {
         if (ctx->is_null(value)) {
             return BinaryData();
         }
@@ -265,14 +265,14 @@ struct Unbox<JSEngine, BinaryData> {
 
 template<typename JSEngine>
 struct Unbox<JSEngine, Mixed> {
-    static Mixed call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, bool, bool, bool, size_t) {
+    static Mixed call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, bool, bool, bool, ObjKey) {
         throw std::runtime_error("'Any' type is unsupported");
     }
 };
 
 template<typename JSEngine>
 struct Unbox<JSEngine, Timestamp> {
-    static Timestamp call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, bool, bool, bool, size_t) {
+    static Timestamp call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, bool, bool, bool, ObjKey) {
         if (ctx->is_null(value)) {
             return Timestamp();
         }
@@ -293,7 +293,7 @@ struct Unbox<JSEngine, Timestamp> {
 
 template<typename JSEngine>
 struct Unbox<JSEngine, Obj> {
-    static Obj call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, bool create, bool try_update, bool only_update_diffed, size_t current_row) {
+    static Obj call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, bool create, bool try_update, bool only_update_diffed, ObjKey current_row) {
         using Value = js::Value<JSEngine>;
         using ValueType = typename JSEngine::Value;
 
@@ -324,7 +324,7 @@ struct Unbox<JSEngine, Obj> {
 
 template<typename T>
 template<typename U>
-U NativeAccessor<T>::unbox(ValueType value, bool create, bool update, bool only_update_diff_objects, size_t current_row) {
+U NativeAccessor<T>::unbox(ValueType value, bool create, bool update, bool only_update_diff_objects, ObjKey current_row) {
     return _impl::Unbox<T, U>::call(this, std::move(value), create, update, only_update_diff_objects, current_row);
 }
 

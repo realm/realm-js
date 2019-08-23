@@ -69,14 +69,6 @@
         "src/object-store/external/json",
         "src/object-store/src"
       ],
-      "conditions": [
-        ["realm_enable_sync", {
-          "sources": [
-            "src/node/sync_logger.hpp",
-            "src/node/sync_logger.cpp",
-          ]
-        }]
-      ]
     },
     {
       "target_name": "action_after_build",
