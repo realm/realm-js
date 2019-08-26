@@ -318,13 +318,12 @@ void RealmObjectClass<T>::add_listener(ContextType ctx, ObjectType this_object, 
             }
             else {
                 auto table = realm_object->obj().get_table();
-                for (auto const& it : change_set.columns) {
-                    if (it.empty()) {
+                for (const auto &col : change_set.columns) {
+                    if (col.second.empty()) {
                         continue;
                     }
-                    auto col_key = it.first;
-
-                    scratch.push_back(Value::from_string(protected_ctx, std::string(table->get_column_name(i))));
+                    ColKey col_key(col.first);
+                    scratch.push_back(Value::from_string(protected_ctx, std::string(table->get_column_name(col_key))));
                 }
             }
 

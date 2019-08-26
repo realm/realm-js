@@ -18,6 +18,8 @@
 
 #pragma once
 
+#include <realm/keys.hpp>
+
 #include "js_list.hpp"
 #include "js_realm_object.hpp"
 #include "js_schema.hpp"
@@ -318,6 +320,13 @@ struct Unbox<JSEngine, Obj> {
         auto child = realm::Object::create<ValueType>(*ctx, ctx->m_realm, *ctx->m_object_schema,
                                                       static_cast<ValueType>(object), try_update, only_update_diffed, current_row);
         return child.obj();
+    }
+};
+
+template<typename JSEngine>
+struct Unbox<JSEngine, ObjKey> {
+    static ObjKey call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, bool create, bool try_update, bool only_update_diffed, ObjKey current_row) {
+        return current_row;
     }
 };
 } // namespace _impl
