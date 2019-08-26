@@ -26,16 +26,6 @@ const TestCase = require('./asserts');
 const isNodeProccess = (typeof process === 'object' && process + '' === '[object process]');
 
 module.exports = {
-    testNonSynced: function() {
-        let realm = new Realm({schema: [{ name: 'Dog', properties: { name: 'string' } }]});
-        var dog;
-        realm.write(() => {
-            dog = realm.create('Dog', ['Fido']);
-        });
-        TestCase.assertThrowsContaining(() => dog._objectId(), "_objectId() can only be used with objects from synced Realms");
-        TestCase.assertThrowsContaining(() => realm._objectForObjectId('Dog', 'foo'), "Realm._objectForObjectId() can only be used with synced Realms");
-    },
-
     testSynced: function() {
         if (!global.enableSyncTests) {
             return Promise.resolve();
@@ -61,17 +51,17 @@ module.exports = {
                     none = realm.create('NoPrimaryKey', ["hello, world"]);
                 });
 
-                let integerId = integer._objectId();
-                let nullIntegerId = nullInteger._objectId();
+                let integerId = integer.objectId();
+                let nullIntegerId = nullInteger.objectId();
                 let stringId = string._objectId();
-                let nullStringId = nullString._objectId();
-                let noneId = none._objectId();
+                let nullStringId = nullString.objectId();
+                let noneId = none.objectId();
 
-                TestCase.assertTrue(integer._isSameObject(realm._objectForObjectId('IntegerPrimaryKey', integerId)));
-                TestCase.assertTrue(nullInteger._isSameObject(realm._objectForObjectId('IntegerPrimaryKey', nullIntegerId)));
-                TestCase.assertTrue(string._isSameObject(realm._objectForObjectId('StringPrimaryKey', stringId)));
-                TestCase.assertTrue(nullString._isSameObject(realm._objectForObjectId('StringPrimaryKey', nullStringId)));
-                TestCase.assertTrue(none._isSameObject(realm._objectForObjectId('NoPrimaryKey', noneId)));
+                TestCase.assertTrue(integer._isSameObject(realm.objectForObjectId('IntegerPrimaryKey', integerId)));
+                TestCase.assertTrue(nullInteger._isSameObject(realm.objectForObjectId('IntegerPrimaryKey', nullIntegerId)));
+                TestCase.assertTrue(string._isSameObject(realm.objectForObjectId('StringPrimaryKey', stringId)));
+                TestCase.assertTrue(nullString._isSameObject(realm.objectForObjectId('StringPrimaryKey', nullStringId)));
+                TestCase.assertTrue(none._isSameObject(realm.objectForObjectId('NoPrimaryKey', noneId)));
             });
         });
 
