@@ -6,15 +6,15 @@
             "command": "npm",
             "args": [
                 "run",
-                "rebuild-changes"
+                "rebuild"
             ],
             "options": {
                 "env": {
-                    "REALMJS_USE_DEBUG_CORE": "1"
+                    "REALMJS_USE_DEBUG_CORE": ""
                 }
             },
             "type": "shell",
-            "group": "none",
+            "group": "build",
             "presentation": {
                 "echo": true,
                 "reveal": "always",
@@ -23,13 +23,14 @@
                 "showReuseMessage": true,
                 "clear": false
             },
+            "problemMatcher": []
         },
         {
             "label": "Build Node Tests",
             "command": "npm",
             "args": [
                 "run",
-                "build-changes"
+                "build"
             ],
             "options": {
                 "env": {
@@ -37,6 +38,7 @@
                 }
             },
             "type": "shell",
+            "group": "build",
             "presentation": {
                 "echo": true,
                 "reveal": "always",
@@ -44,8 +46,7 @@
                 "panel": "shared",
                 "showReuseMessage": true,
                 "clear": false
-            },
-            "group": "build",
+            }
         },
         {
             "label": "Download and Start Server",
@@ -59,7 +60,7 @@
                 "showReuseMessage": true,
                 "clear": false
             },
-            "isBackground": true,
+            "isBackground": true
         }
     ]
 }

@@ -9,7 +9,7 @@
             "request": "launch",
             "name": "LaunchLLDBNEw",
             "program": "C:\\Progra~1\\nodejs\\node.exe",
-            "args": ["--inspect-brk=5858", "${workspaceFolder}/tests/node_modules/jasmine/bin/jasmine.js", "spec/unit_tests.js"],
+            "args": ["--inspect-brk=5858", "${workspaceFolder}/tests/node_modules/jasmine/bin/jasmine.js", "spec/unit_tests.js", "--filter=testListSubscriptGetters"],
             "cwd": "${workspaceFolder}/tests",
             "stopOnEntry": false,
             
@@ -50,14 +50,9 @@
             "cwd": "${workspaceRoot}/tests",
             "program": "${workspaceRoot}/tests/node_modules/jasmine/bin/jasmine.js",
             "args": [
-                "spec/unit_tests.js"
-            ],
-            "windows": {
-                "env": {
-                    "Path": "C:\\Lubo\\mongodb\\src\\vcpkg\\packages\\openssl-windows_x64-windows\\bin;%PATH%"
-            }},
-
-            
+                "spec/unit_tests.js",
+                "--filter=testListSubscriptGetters"
+            ]
         },
         {
             "type": "node",
