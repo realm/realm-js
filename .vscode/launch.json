@@ -8,10 +8,13 @@
             "type": "lldb",
             "request": "launch",
             "name": "LaunchLLDBNEw",
-            "program": "C:\\Progra~1\\nodejs\\node.exe",
+            "program": "node",
             "args": ["--inspect-brk=5858", "${workspaceFolder}/tests/node_modules/jasmine/bin/jasmine.js", "spec/unit_tests.js", "--filter=testListSubscriptGetters"],
             "cwd": "${workspaceFolder}/tests",
             "stopOnEntry": false,
+            "windows": {
+                "program": "C:\\Progra~1\\nodejs\\node.exe"
+            }
             
         },
         {
@@ -51,7 +54,7 @@
             "program": "${workspaceRoot}/tests/node_modules/jasmine/bin/jasmine.js",
             "args": [
                 "spec/unit_tests.js",
-                "--filter=testListSubscriptGetters"
+                "--filter=."
             ]
         },
         {
