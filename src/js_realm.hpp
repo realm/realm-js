@@ -462,34 +462,6 @@ inline typename T::Function RealmClass<T>::create_constructor(ContextType ctx) {
     return realm_constructor;
 }
 
-static inline void convert_outdated_datetime_columns(const SharedRealm &realm) {
-    realm::util::Optional<int> old_file_format_version = realm->file_format_upgraded_from_version();
-    if (old_file_format_version && old_file_format_version < 5) {
-        // any versions earlier than file format 5 are stored as milliseconds and need to be converted to the new format
-        for (auto& object_schema : realm->schema()) {
-            auto table = ObjectStore::table_for_object_type(realm->read_group(), object_schema.name);
-            for (auto& property : object_schema.persisted_properties) {
-                if (property.type == realm::PropertyType::Date) {
-                    if (!realm->is_in_transaction()) {
-                        realm->begin_transaction();
-                    }
-
-                    for (auto& obj : *table) {
-                        if (obj.is_null(property.column_key)) {
-                            continue;
-                        }
-                        auto milliseconds = obj.get<realm::Timestamp>(property.column_key).get_seconds();
-                        obj.set<realm::Timestamp>(property.column_key, Timestamp(milliseconds / 1000, (milliseconds % 1000) * 1000000));
-                    }
-                }
-            }
-            if (realm->is_in_transaction()) {
-                realm->commit_transaction();
-            }
-        }
-    }
-}
-
 template<typename T>
 bool RealmClass<T>::get_realm_config(ContextType ctx, size_t argc, const ValueType arguments[], realm::Realm::Config& config, ObjectDefaultsMap& defaults, ConstructorMap& constructors) {
     bool schema_updated = false;
@@ -665,9 +637,6 @@ void RealmClass<T>::constructor(ContextType ctx, ObjectType this_object, Argumen
     ConstructorMap constructors;
     bool schema_updated = get_realm_config(ctx, args.count, args.value, config, defaults, constructors);
     auto realm = create_shared_realm(ctx, config, schema_updated, std::move(defaults), std::move(constructors));
-
-    // Fix for datetime -> timestamp conversion
-    convert_outdated_datetime_columns(realm);
 
     set_internal<T, RealmClass<T>>(this_object, new SharedRealm(realm));
 }
