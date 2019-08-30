@@ -14,6 +14,8 @@ x.x.x Release notes (yyyy-MM-dd)
 ### Internal
 * Updated to Realm Core v5.23.2.
 * Updated to Realm Sync v4.7.4.
+* Add support for direct access to sync workers on Cloud, bypassing the Sync Proxy. [RJS-6](https://jira.mongodb.org/browse/RJS-6)
+
 
 2.29.2 Release notes (2019-8-14)
 =============================================================
@@ -32,6 +34,7 @@ x.x.x Release notes (yyyy-MM-dd)
 ### Internal
 * Added support for Electron v4.2. ([#2452](https://github.com/realm/realm-js/issues/2452))
 * Upgraded to Realm Sync v4.7.3.
+
 
 2.29.1 Release notes (2019-7-11)
 =============================================================
