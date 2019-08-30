@@ -1,11 +1,10 @@
-x.x.x Release notes (yyyy-MM-dd)
+X.Y.Z Release notes (TBD)
 =============================================================
 ### Enhancements
 * None.
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* Fixed Gradle build error with Android Studio 3.5+.
+* None.
 
 ### Compatibility
 * Realm Object Server: 3.21.0 or later.
@@ -13,7 +12,25 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
 ### Internal
-* Added support for Electron v4.2 ([#2452](https://github.com/realm/realm-js/issues/2452))
+* Add support for direct access to sync workers on Cloud, bypassing the Sync Proxy [RJS-6](https://jira.mongodb.org/browse/RJS-6)
+
+2.29.2 Release notes (2019-8-14)
+=============================================================
+### Enhancements
+* None.
+
+### Fixed
+* Fixed Coop with Jitsi-Meet iOS SDK. Thanks to @djorkaeffalexandre. ([#2193](https://github.com/realm/realm-js/issues/2193))
+* Fixed Gradle build error with Android Studio 3.5+. Thanks to @MarcBernstein. ([#2468](https://github.com/realm/realm-js/pull/2468))
+
+### Compatibility
+* Realm Object Server: 3.21.0 or later.
+* APIs are backwards compatible with all previous release of realm in the 2.x.y series.
+* File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
+
+### Internal
+* Added support for Electron v4.2. ([#2452](https://github.com/realm/realm-js/issues/2452))
+* Upgraded to Realm Sync v4.7.3.
 
 2.29.1 Release notes (2019-7-11)
 =============================================================

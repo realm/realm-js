@@ -19,7 +19,9 @@
 #include "node_init.hpp"
 
 #include "js_realm.hpp"
+#if REALM_ENABLE_SYNC
 #include "js_adapter.hpp"
+#endif
 
 namespace realm {
 namespace node {
