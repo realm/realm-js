@@ -997,8 +997,8 @@ module.exports = {
         TestCase.assertEqual(page1.length, 5);
         TestCase.assertEqual(page2.length, 5);
         for (let i = 0; i < 5; i++) {
-            TestCase.assertEqual(page1[i], `${i}`);
-            TestCase.assertEqual(page2[i], `${i + 5}`);
+            TestCase.assertEqual(page1[i]['stringCol'], `${i}`);
+            TestCase.assertEqual(page2[i]['stringCol'], `${i + 5}`);
         }
         realm.close();
     },
