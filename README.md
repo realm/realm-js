@@ -48,18 +48,6 @@ cd realm-js
 git submodule update --init --recursive
 ```
 
-Note: If you have cloned the repo previously make sure you remove your node_modules directory since it may contain stale dependencies which may cause the build to fail.
-
-### Building for iOS:
-- Open `react-native/ios/RealmReact.xcodeproj` in Xcode
-- Select `RealmReact` under `Targets`
-- Build: `⌘ + B`
-
-### Building for Android:
-- `cd react-native/android`
-- `./gradlew publishAndroid`
-- The compiled version of the Android module is here: `<project-root>/android`
-
 Note: On Windows the RealmJS repo should be cloned with symlinks enabled 
 ```
 #run in elevated command prompt
@@ -76,6 +64,18 @@ mklink /j "vendor" "../../../../../vendor"
 cd realm-js\tests\react-test-app\android\app\src\main
 mklink /j assets "../../../../../data"
 ```
+
+Note: If you have cloned the repo previously make sure you remove your node_modules directory since it may contain stale dependencies which may cause the build to fail.
+
+### Building for iOS:
+- Open `react-native/ios/RealmReact.xcodeproj` in Xcode
+- Select `RealmReact` under `Targets`
+- Build: `⌘ + B`
+
+### Building for Android:
+- `cd react-native/android`
+- `./gradlew publishAndroid`
+- The compiled version of the Android module is here: `<project-root>/android`
 
 ### Building for nodejs:
 Be sure you have python2.7 as the default python. 3.x won't work, and it's not enough to use `--python=python2.7` as parameter to npm.
