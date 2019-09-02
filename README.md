@@ -60,7 +60,7 @@ Note: If you have cloned the repo previously make sure you remove your node_modu
 - `./gradlew publishAndroid`
 - The compiled version of the Android module is here: `<project-root>/android`
 
-Note: On Windows the RealmJS repo should be cloned with symlynks enabled 
+Note: On Windows the RealmJS repo should be cloned with symlinks enabled 
 ```
 #run in elevated command prompt
 git clone -c core.symlinks=true https://github.com/realm/realm-js
