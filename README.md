@@ -101,7 +101,7 @@ npm install --build-from-source=realm
 
         - Check [node-gyp](https://github.com/nodejs/node-gyp) manual for custom installation procedure for Windows
         
-   Install openssl libraries vith vcpkg
+   Install openssl libraries with vcpkg
   
         ```
         git clone https://github.com/Microsoft/vcpkg
