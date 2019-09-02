@@ -97,7 +97,6 @@ npm install --build-from-source=realm
             npm install -g --production windows-build-tools --vs2015
             ```  
                  
-             
     * Option 2: Manually install and configure
 
         - Check [node-gyp](https://github.com/nodejs/node-gyp) manual for custom installation procedure for Windows
