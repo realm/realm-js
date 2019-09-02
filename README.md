@@ -115,8 +115,8 @@ npm install --build-from-source=realm
         bootstrap-vcpkg.bat
         vcpkg install openssl:x64-windows-static
         mkdir C:\src\vcpkg\installed\x64-windows-static\lib
-        copy .\packages\openssl-windows_x64-windows\lib\libeay32.lib C:\src\vcpkg\installed\x64-windows-static\lib\
-        copy .\packages\openssl-windows_x64-windows\lib\ssleay32.dll.lib C:\src\vcpkg\installed\x64-windows-static\lib
+        copy .\packages\openssl-windows_x64-windows-static\lib\libeay32.lib C:\src\vcpkg\installed\x64-windows-static\lib\
+        copy .\packages\openssl-windows_x64-windows-static\lib\ssleay32.lib C:\src\vcpkg\installed\x64-windows-static\lib
         ```
 
 ### Building docs:
