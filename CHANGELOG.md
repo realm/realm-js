@@ -4,7 +4,7 @@ X.Y.Z Release notes (TBD)
 * None.
 
 ### Fixed
-* None.
+* fix error screen shown in React Native when refreshAdminToken and refreshAccessToken receive error result
 
 ### Compatibility
 * Realm Object Server: 3.21.0 or later.
