@@ -134,11 +134,6 @@ VSCode has good support for debugging JavaScript, but to work with C++ code, you
 * CodeLLDB
 
 To begin, you will need to build the node addon and prepare the test environment:
-
-```
-
-```
-
 ```
 npm install --build-from-source --debug
 (cd tests && npm install)
