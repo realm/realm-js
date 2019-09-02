@@ -5,6 +5,7 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Fixed
 * Named pipes on Android are now created with 0666 permissions instead of 0600. This fixes a bug on Huawei devices which caused named pipes to change owners during app upgrades causing subsequent ACCESS DENIED errors. This should have not practical security implications. ([realm/realm-core#3328](https://github.com/realm/realm-core/pull/3328), since v0.10.0)
+* fix error screen shown in React Native when refreshAdminToken and refreshAccessToken receive error result
 
 ### Compatibility
 * Realm Object Server: 3.21.0 or later.
