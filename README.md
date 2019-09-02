@@ -113,14 +113,10 @@ npm install --build-from-source=realm
         git clone https://github.com/Microsoft/vcpkg
         cd vcpkg
         bootstrap-vcpkg.bat
-        vcpkg install openssl:x64-windows
+        vcpkg install openssl:x64-windows-static
         mkdir C:\src\vcpkg\installed\x64-windows-static\lib
         copy .\packages\openssl-windows_x64-windows\lib\libeay32.lib C:\src\vcpkg\installed\x64-windows-static\lib\
         copy .\packages\openssl-windows_x64-windows\lib\ssleay32.dll.lib C:\src\vcpkg\installed\x64-windows-static\lib
-
-        #Copy openssl DLLs next to realm.node compiled binary
-        copy .\packages\openssl-windows_x64-windows\bin\libeay32.dll <project-root>\realm-js\compiled\node-v64_win32_x64\
-        copy .\packages\openssl-windows_x64-windows\bin\ssleay32.dll <project-root>\realm-js\compiled\node-v64_win32_x64\
         ```
 
 ### Building docs:
