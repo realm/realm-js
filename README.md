@@ -44,7 +44,7 @@ Clone RealmJS repository:
 
 ```
 git clone https://github.com/realm/realm-js.git
-cd relm-js
+cd realm-js
 git submodule update --init --recursive
 ```
 
