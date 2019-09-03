@@ -44,8 +44,25 @@ Clone RealmJS repository:
 
 ```
 git clone https://github.com/realm/realm-js.git
-cd relm-js
+cd realm-js
 git submodule update --init --recursive
+```
+
+Note: On Windows the RealmJS repo should be cloned with symlinks enabled 
+```
+#run in elevated command prompt
+git clone -c core.symlinks=true https://github.com/realm/realm-js
+
+```
+
+or manually create the symlinks using directory junctions if you already have the repo cloned.
+```
+#run in elevated command prompt
+cd realm-js\react-native\android\src\main\jni
+mklink /j "src" "../../../../../src/"
+mklink /j "vendor" "../../../../../vendor"
+cd realm-js\tests\react-test-app\android\app\src\main
+mklink /j assets "../../../../../data"
 ```
 
 Note: If you have cloned the repo previously make sure you remove your node_modules directory since it may contain stale dependencies which may cause the build to fail.
@@ -59,23 +76,6 @@ Note: If you have cloned the repo previously make sure you remove your node_modu
 - `cd react-native/android`
 - `./gradlew publishAndroid`
 - The compiled version of the Android module is here: `<project-root>/android`
-
-Note: On Windows the RealmJS repo should be cloned with symlynks enabled 
-```
-#run in elevated command prompt
-git clone -c core.symlinks=true https://github.com/realm/realm-js
-
-```
-
-or manually create the symlinks using directory junctions
-```
-#run in elevated command prompt
-cd realm-js\react-native\android\src\main\jni
-mklink /j "src" "../../../../../src/"
-mklink /j "vendor" "../../../../../vendor"
-cd realm-js\tests\react-test-app\android\app\src\main
-mklink /j assets "../../../../../data"
-```
 
 ### Building for nodejs:
 Be sure you have python2.7 as the default python. 3.x won't work, and it's not enough to use `--python=python2.7` as parameter to npm.
@@ -97,12 +97,11 @@ npm install --build-from-source=realm
             npm install -g --production windows-build-tools --vs2015
             ```  
                  
-             
     * Option 2: Manually install and configure
 
         - Check [node-gyp](https://github.com/nodejs/node-gyp) manual for custom installation procedure for Windows
         
-   Install openssl libraries vith vcpkg
+   Install openssl libraries with vcpkg
   
         ```
         git clone https://github.com/Microsoft/vcpkg
@@ -135,11 +134,6 @@ VSCode has good support for debugging JavaScript, but to work with C++ code, you
 * CodeLLDB
 
 To begin, you will need to build the node addon and prepare the test environment:
-
-```
-
-```
-
 ```
 npm install --build-from-source --debug
 (cd tests && npm install)
