@@ -1253,6 +1253,9 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
             config.sync_config->ssl_verify_callback = std::move(ssl_verify_functor);
         }
 #endif
+
+    // FIXME: remove once Client Resync is implemented
+    config.sync_config->client_resync_mode = realm::ClientResyncMode::Manual;
     }
 }
 
