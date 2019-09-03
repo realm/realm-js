@@ -84,6 +84,7 @@ mklink /j assets "../../../../../data"
 
 ### Building for nodejs:
 Be sure you have python2.7 as the default python. 3.x won't work, and it's not enough to use `--python=python2.7` as parameter to npm.
+For example you can use Homebrew to install it.
 ```
 brew install python@2
 ```
@@ -155,7 +156,7 @@ Some users have reported the Chrome debugging being too slow to use after integr
 
 ## Running the tests
 
-The tests will spawn a new shell when running, so you need to make sure that new shell instances use the correct version of `npm`. On Mac you can add the following to your prefered shell setup:
+The tests will spawn a new shell when running, so you need to make sure that new shell instances use the correct version of `npm`. On Mac you can use Homebrew and you can add the following to your prefered shell setup:
 
 ```
 export NVM_DIR="$HOME/.nvm"
