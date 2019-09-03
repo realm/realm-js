@@ -55,7 +55,7 @@ git clone -c core.symlinks=true https://github.com/realm/realm-js
 
 ```
 
-or manually create the symlinks using directory junctions
+or manually create the symlinks using directory junctions if you already have the repo cloned.
 ```
 #run in elevated command prompt
 cd realm-js\react-native\android\src\main\jni
