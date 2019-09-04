@@ -34,18 +34,17 @@ In case you don't want to use the precompiled version on npm, you can build Real
 
 Prerequisites:
 - Xcode 7.2+
+- nodejs
+- nvm (on Mac)
+- cocoapods (on Mac)
 - Android SDK 23+
 - [Android NDK 10e](https://developer.android.com/ndk/downloads/older_releases)
 
-First clone this repository:
+Clone RealmJS repository:
 
 ```
 git clone https://github.com/realm/realm-js.git
-```
-
-Then in the cloned directory:
-
-```
+cd relm-js
 git submodule update --init --recursive
 ```
 
@@ -61,8 +60,34 @@ Note: If you have cloned the repo previously make sure you remove your node_modu
 - `./gradlew publishAndroid`
 - The compiled version of the Android module is here: `<project-root>/android`
 
+Note: On Windows the RealmJS repo should be cloned with symlynks enabled 
+```
+#run in elevated command prompt
+git clone -c core.symlinks=true https://github.com/realm/realm-js
+
+```
+
+or manually create the symlinks using directory junctions
+```
+#run in elevated command prompt
+cd realm-js\react-native\android\src\main\jni
+#remove src and vendor files
+del src
+del vendor
+mklink /j "src" "../../../../../src/"
+mklink /j "vendor" "../../../../../vendor"
+cd realm-js\tests\react-test-app\android\app\src\main
+#remove assets file
+del assets
+mklink /j assets "../../../../../data"
+```
+
 ### Building for nodejs:
 Be sure you have python2.7 as the default python. 3.x won't work, and it's not enough to use `--python=python2.7` as parameter to npm.
+For example you can use Homebrew to install it.
+```
+brew install python@2
+```
 
 ```
 npm install --build-from-source=realm
@@ -75,12 +100,25 @@ npm install --build-from-source=realm
          - Open an elevated command prompt (As Administrator)
 
             ```
-            npm install -g --production windows-build-tools
-            ```
-
+            npm install -g --production windows-build-tools --vs2015
+            ```  
+                 
+             
     * Option 2: Manually install and configure
 
         - Check [node-gyp](https://github.com/nodejs/node-gyp) manual for custom installation procedure for Windows
+        
+   Install openssl libraries vith vcpkg
+  
+        ```
+        git clone https://github.com/Microsoft/vcpkg
+        cd vcpkg
+        bootstrap-vcpkg.bat
+        vcpkg install openssl:x64-windows-static
+        mkdir C:\src\vcpkg\installed\x64-windows-static\lib
+        copy .\packages\openssl-windows_x64-windows-static\lib\libeay32.lib C:\src\vcpkg\installed\x64-windows-static\lib\
+        copy .\packages\openssl-windows_x64-windows-static\lib\ssleay32.lib C:\src\vcpkg\installed\x64-windows-static\lib
+        ```
 
 ### Building docs:
 API documentation is written using [JSDoc](http://usejsdoc.org/).
@@ -101,6 +139,10 @@ VSCode has good support for debugging JavaScript, but to work with C++ code, you
 To begin, you will need to build the node addon and prepare the test environment:
 
 ```
+
+```
+
+```
 npm install --build-from-source --debug
 (cd tests && npm install)
 ```
@@ -114,11 +156,16 @@ Some users have reported the Chrome debugging being too slow to use after integr
 
 ## Running the tests
 
-The tests will spawn a new shell when running, so you need to make sure that new shell instances use the correct version of `npm`. On Mac you can add the following to your prefered shell setup:
+The tests will spawn a new shell when running, so you need to make sure that new shell instances use the correct version of `npm`. On Mac you can use Homebrew and you can add the following to your prefered shell setup:
 
 ```
 export NVM_DIR="$HOME/.nvm"
 . "$(brew --prefix nvm)/nvm.sh"
+```
+
+Install cocoapods
+```
+sudo gem install cocoapods
 ```
 
 You can now use `scripts/test.sh` to run the various tests.

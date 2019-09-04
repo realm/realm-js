@@ -67,3 +67,7 @@ integration-tests/**/realm-*.tgz
 integration-tests/**/realm-integration-tests-*.tgz
 integration-tests/environments/electron/dist/
 integration-tests/tests/dist/
+
+#Ignore symlinked directories (otherwise on Windows they are shown as untracked files)
+/react-native/android/src/main/jni/vendor/
+/react-native/android/src/main/jni/src/
