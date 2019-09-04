@@ -22,7 +22,6 @@
     "mocha": "^5.2.0",
     "prettier": "^1.16.4",
     "realm": "../..",
-    "segfault-handler": "^1.0.1",
     "ts-mocha": "^6.0.0",
     "tslint": "^5.13.1",
     "tslint-config-prettier": "^1.18.0",

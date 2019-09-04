@@ -9,8 +9,16 @@
             "request": "launch",
             "name": "Debug LLDB",
             "program": "node",
+            "windows": {
+                "program": "C:\\Progra~1\\nodejs\\node.exe"
+            },
             "cwd": "${workspaceRoot}/tests",
-            "args": ["--debug-brk=5858", "${workspaceRoot}/tests/node_modules/jasmine/bin/jasmine.js", "spec/unit_tests.js"],
+            "args": [
+                "--inspect-brk=5858",
+                "${workspaceRoot}/tests/node_modules/jasmine/bin/jasmine.js",
+                "spec/unit_tests.js",
+                "--filter=."
+            ],
             "stopOnEntry": true
         },
         {
@@ -18,9 +26,16 @@
             "request": "launch",
             "name": "Debug LLDB only",
             "program": "node",
-            "cwd": "${workspaceRoot}/tests",
-            "args": ["${workspaceRoot}/tests/node_modules/jasmine/bin/jasmine.js", "spec/unit_tests.js"],
-            "stopOnEntry": false
+            "windows": {
+                "program": "C:\\Progra~1\\nodejs\\node.exe"
+            },
+            "args": [
+                "${workspaceFolder}/tests/node_modules/jasmine/bin/jasmine.js",
+                "spec/unit_tests.js",
+                "--filter=."
+            ],
+            "cwd": "${workspaceFolder}/tests",
+            "stopOnEntry": false,
         },
         {
             "type": "node",
@@ -30,7 +45,8 @@
             "cwd": "${workspaceRoot}/tests",
             "program": "${workspaceRoot}/tests/node_modules/jasmine/bin/jasmine.js",
             "args": [
-                "spec/unit_tests.js"
+                "spec/unit_tests.js",
+                "--filter=."
             ]
         },
         {
@@ -40,7 +56,8 @@
             "cwd": "${workspaceRoot}/tests",
             "program": "${workspaceRoot}/tests/node_modules/jasmine/bin/jasmine.js",
             "args": [
-                "spec/unit_tests.js"
+                "spec/unit_tests.js",
+                "--filter=."
             ]
         },
         {
@@ -48,13 +65,12 @@
             "request": "launch",
             "name": "Download & Start Server",
             "cwd": "${workspaceRoot}/scripts"
-            
         },
         {
             "type": "node",
             "request": "attach",
             "name": "Attach to Port",
-            "protocol": "legacy",
+            "protocol": "inspector",
             "address": "localhost",
             "port": 5858
         }
@@ -62,11 +78,17 @@
     "compounds": [
         {
             "name": "Rebuild + Start Server + Debug",
-            "configurations": ["Download & Start Server", "Debug Node Unit Tests (rebuild)"]
+            "configurations": [
+                "Download & Start Server",
+                "Debug Node Unit Tests (rebuild)"
+            ]
         },
         {
             "name": "Debug LLDB + NodeJS",
-            "configurations": ["Debug LLDB", "Attach to Port"]
+            "configurations": [
+                "Debug LLDB",
+                "Attach to Port"
+            ]
         }
     ]
 }

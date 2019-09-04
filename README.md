@@ -23,51 +23,38 @@ The API reference is located at [realm.io/docs/javascript/latest/api/](https://r
 
 ## Getting Help
 
-- **Need help with your code?**: Look for previous questions on the  [#realm tag](https://stackoverflow.com/questions/tagged/realm?sort=newest) — or [ask a new question](https://stackoverflow.com/questions/ask?tags=realm). We actively monitor and answer questions on SO!
-- **Have a bug to report?** [Open an issue](https://github.com/realm/realm-js/issues/new). If possible, include the version of Realm, a full log, the Realm file, and a project that shows the issue.
-- **Have a feature request?** [Open an issue](https://github.com/realm/realm-js/issues/new). Tell us what the feature should do, and why you want the feature.
-- Sign up for our [**Community Newsletter**](https://go.pardot.com/l/210132/2017-04-26/3j74l) to get regular tips, learn about other use-cases and get alerted of blog posts and tutorials about Realm.
+* **Need help with your code?**: Look for previous questions on the  [#realm tag](https://stackoverflow.com/questions/tagged/realm?sort=newest) — or [ask a new question](https://stackoverflow.com/questions/ask?tags=realm). We actively monitor and answer questions on SO!
+* **Have a bug to report?** [Open an issue](https://github.com/realm/realm-js/issues/new). If possible, include the version of Realm, a full log, the Realm file, and a project that shows the issue.
+* **Have a feature request?** [Open an issue](https://github.com/realm/realm-js/issues/new). Tell us what the feature should do, and why you want the feature.
+* Sign up for our [**Community Newsletter**](https://go.pardot.com/l/210132/2017-04-26/3j74l) to get regular tips, learn about other use-cases and get alerted of blog posts and tutorials about Realm.
 
 ## Building Realm
 
 In case you don't want to use the precompiled version on npm, you can build Realm yourself from source. You’ll need an Internet connection the first time you build in order to download the core library.
 
 Prerequisites:
-- Xcode 7.2+
-- nodejs
-- nvm (on Mac)
-- cocoapods (on Mac)
-- Android SDK 23+
-- [Android NDK 10e](https://developer.android.com/ndk/downloads/older_releases)
+* Xcode 7.2+
+* nodejs
+* nvm (on Mac)
+* cocoapods (on Mac)
+* Android SDK 23+
+* [Android NDK 10e](https://developer.android.com/ndk/downloads/older_releases)
 
 Clone RealmJS repository:
 
 ```
 git clone https://github.com/realm/realm-js.git
-cd relm-js
+cd realm-js
 git submodule update --init --recursive
 ```
 
-Note: If you have cloned the repo previously make sure you remove your node_modules directory since it may contain stale dependencies which may cause the build to fail.
-
-### Building for iOS:
-- Open `react-native/ios/RealmReact.xcodeproj` in Xcode
-- Select `RealmReact` under `Targets`
-- Build: `⌘ + B`
-
-### Building for Android:
-- `cd react-native/android`
-- `./gradlew publishAndroid`
-- The compiled version of the Android module is here: `<project-root>/android`
-
-Note: On Windows the RealmJS repo should be cloned with symlynks enabled 
+Note: On Windows the RealmJS repo should be cloned with symlinks enabled 
 ```
 #run in elevated command prompt
 git clone -c core.symlinks=true https://github.com/realm/realm-js
-
 ```
 
-or manually create the symlinks using directory junctions
+or manually create the symlinks using directory junctions if you already have the repo cloned.
 ```
 #run in elevated command prompt
 cd realm-js\react-native\android\src\main\jni
@@ -82,6 +69,18 @@ del assets
 mklink /j assets "../../../../../data"
 ```
 
+Note: If you have cloned the repo previously make sure you remove your node_modules directory since it may contain stale dependencies which may cause the build to fail.
+
+### Building for iOS:
+* Open `react-native/ios/RealmReact.xcodeproj` in Xcode
+* Select `RealmReact` under `Targets`
+* Build: `⌘ + B`
+
+### Building for Android:
+* `cd react-native/android`
+* `./gradlew publishAndroid`
+* The compiled version of the Android module is here: `<project-root>/android`
+
 ### Building for nodejs:
 Be sure you have python2.7 as the default python. 3.x won't work, and it's not enough to use `--python=python2.7` as parameter to npm.
 For example you can use Homebrew to install it.
@@ -93,37 +92,34 @@ brew install python@2
 npm install --build-from-source=realm
 ```
 
- - On Windows you will need to setup the environment for node-gyp
+#### Additional steps for Windows
+On Windows you will need to setup the environment for node-gyp:
 
-    * Option 1: Install windows-build-tools node package
+* Option 1: Install windows-build-tools node package
 
-         - Open an elevated command prompt (As Administrator)
+    ```
+    # run in elevated command prompt (as Administrator)
+    npm install -g --production windows-build-tools --vs201
+    ```
 
-            ```
-            npm install -g --production windows-build-tools --vs2015
-            ```  
-                 
-             
-    * Option 2: Manually install and configure
+* Option 2: Manually install and configure as described in the [node-gyp](https://github.com/nodejs/node-gyp) manual.
 
-        - Check [node-gyp](https://github.com/nodejs/node-gyp) manual for custom installation procedure for Windows
-        
-   Install openssl libraries vith vcpkg
-  
-        ```
-        git clone https://github.com/Microsoft/vcpkg
-        cd vcpkg
-        bootstrap-vcpkg.bat
-        vcpkg install openssl:x64-windows-static
-        mkdir C:\src\vcpkg\installed\x64-windows-static\lib
-        copy .\packages\openssl-windows_x64-windows-static\lib\libeay32.lib C:\src\vcpkg\installed\x64-windows-static\lib\
-        copy .\packages\openssl-windows_x64-windows-static\lib\ssleay32.lib C:\src\vcpkg\installed\x64-windows-static\lib
-        ```
+You also need to install openssl libraries with vcpkg:
 
-### Building docs:
+```
+git clone https://github.com/Microsoft/vcpkg
+cd vcpkg
+bootstrap-vcpkg.bat
+vcpkg install openssl:x64-windows-static
+mkdir C:\src\vcpkg\installed\x64-windows-static\lib
+copy .\packages\openssl-windows_x64-windows-static\lib\libeay32.lib C:\src\vcpkg\installed\x64-windows-static\lib\
+copy .\packages\openssl-windows_x64-windows-static\lib\ssleay32.lib C:\src\vcpkg\installed\x64-windows-static\lib
+```
+
+### Building docs
 API documentation is written using [JSDoc](http://usejsdoc.org/).
 
-- `npm run jsdoc`
+* `npm run jsdoc`
 
 The generated docs can be found by opening `docs/output/realm/<version>/index.html`.
 
@@ -137,11 +133,6 @@ VSCode has good support for debugging JavaScript, but to work with C++ code, you
 * CodeLLDB
 
 To begin, you will need to build the node addon and prepare the test environment:
-
-```
-
-```
-
 ```
 npm install --build-from-source --debug
 (cd tests && npm install)
