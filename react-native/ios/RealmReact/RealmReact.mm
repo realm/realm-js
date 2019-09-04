@@ -306,7 +306,7 @@ void _initializeOnJSThread(JSContextRefExtractor jsContextExtractor) {
 #else
         @throw [NSException exceptionWithName:@"Invalid Executor" reason:@"Chrome debug mode not supported in Release builds" userInfo:nil];
 #endif
-    } else if ([bridge isKindOfClass:objc_lookUpClass("RCTCxxBridge")]) {
+    } else if ([bridge isKindOfClass:objc_lookUpClass("RCTCxxBridge")] || [NSStringFromClass([bridge class]) isEqual: @"RCTCxxBridge"]) {
         // probe for the new C++ bridge in React Native 0.45+
 
         __weak __typeof__(self) weakSelf = self;

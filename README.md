@@ -58,9 +58,14 @@ or manually create the symlinks using directory junctions if you already have th
 ```
 #run in elevated command prompt
 cd realm-js\react-native\android\src\main\jni
+#remove src and vendor files
+del src
+del vendor
 mklink /j "src" "../../../../../src/"
 mklink /j "vendor" "../../../../../vendor"
 cd realm-js\tests\react-test-app\android\app\src\main
+#remove assets file
+del assets
 mklink /j assets "../../../../../data"
 ```
 
@@ -78,6 +83,7 @@ Note: If you have cloned the repo previously make sure you remove your node_modu
 
 ### Building for nodejs:
 Be sure you have python2.7 as the default python. 3.x won't work, and it's not enough to use `--python=python2.7` as parameter to npm.
+For example you can use Homebrew to install it.
 ```
 brew install python@2
 ```
@@ -101,18 +107,14 @@ On Windows you will need to setup the environment for node-gyp:
 You also need to install openssl libraries with vcpkg:
 
 ```
-    git clone https://github.com/Microsoft/vcpkg
-    cd vcpkg
-    bootstrap-vcpkg.bat
-    vcpkg install openssl:x64-windows
-    mkdir C:\src\vcpkg\installed\x64-windows-static\lib
-    copy .\packages\openssl-windows_x64-windows\lib\libeay32.lib C:\src\vcpkg\installed\x64-windows-static\lib\
-    copy .\packages\openssl-windows_x64-windows\lib\ssleay32.dll.lib C:\src\vcpkg\installed\x64-windows-static\lib
-    
-    # Copy openssl DLLs next to realm.node compiled binary
-    copy .\packages\openssl-windows_x64-windows\bin\libeay32.dll <project-root>\realm-js\compiled\node-v64_win32_x64\
-    copy .\packages\openssl-windows_x64-windows\bin\ssleay32.dll <project-root>\realm-js\compiled\node-v64_win32_x64\
- ```
+git clone https://github.com/Microsoft/vcpkg
+cd vcpkg
+bootstrap-vcpkg.bat
+vcpkg install openssl:x64-windows-static
+mkdir C:\src\vcpkg\installed\x64-windows-static\lib
+copy .\packages\openssl-windows_x64-windows-static\lib\libeay32.lib C:\src\vcpkg\installed\x64-windows-static\lib\
+copy .\packages\openssl-windows_x64-windows-static\lib\ssleay32.lib C:\src\vcpkg\installed\x64-windows-static\lib
+```
 
 ### Building docs
 API documentation is written using [JSDoc](http://usejsdoc.org/).
@@ -145,7 +147,7 @@ Some users have reported the Chrome debugging being too slow to use after integr
 
 ## Running the tests
 
-The tests will spawn a new shell when running, so you need to make sure that new shell instances use the correct version of `npm`. On Mac you can add the following to your prefered shell setup:
+The tests will spawn a new shell when running, so you need to make sure that new shell instances use the correct version of `npm`. On Mac you can use Homebrew and you can add the following to your prefered shell setup:
 
 ```
 export NVM_DIR="$HOME/.nvm"

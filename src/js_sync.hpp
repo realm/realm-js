@@ -558,11 +558,16 @@ void SessionClass<T>::simulate_error(ContextType ctx, ObjectType this_object, Ar
 
 template<typename T>
 void SessionClass<T>::refresh_access_token(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &) {
-    args.validate_count(3);
+    args.validate_between(3, 4);
 
     if (auto session = get_internal<T, SessionClass<T>>(this_object)->lock()) {
         std::string sync_label = Value::validated_to_string(ctx, args[2], "syncLabel");
         session->set_multiplex_identifier(std::move(sync_label));
+
+        if (args.count == 4 && !Value::is_undefined(ctx, args[3])) {
+            std::string url_prefix = Value::validated_to_string(ctx, args[3], "urlPrefix");
+            session->set_url_prefix(std::move(url_prefix));
+        }
 
         std::string access_token = Value::validated_to_string(ctx, args[0], "accessToken");
         std::string realm_url = Value::validated_to_string(ctx, args[1], "realmUrl");
@@ -1248,6 +1253,9 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
             config.sync_config->ssl_verify_callback = std::move(ssl_verify_functor);
         }
 #endif
+
+    // FIXME: remove once Client Resync is implemented
+    config.sync_config->client_resync_mode = realm::ClientResyncMode::Manual;
     }
 }
 
