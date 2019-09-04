@@ -354,7 +354,7 @@ case "$TARGET" in
   check_test_results ReactTests
   ;;
 "node")
-npm run check-environment
+  npm run check-environment
   npm ci --build-from-source=realm --realm_enable_sync
   start_server
 
