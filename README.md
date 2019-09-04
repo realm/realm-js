@@ -86,36 +86,35 @@ brew install python@2
 npm install --build-from-source=realm
 ```
 
- - On Windows you will need to setup the environment for node-gyp
+#### Additional steps for Windows
+On Windows you will need to setup the environment for node-gyp:
 
-    * Option 1: Install windows-build-tools node package
+* Option 1: Install windows-build-tools node package
 
-         - Open an elevated command prompt (As Administrator)
+    ```
+    # run in elevated command prompt (as Administrator)
+    npm install -g --production windows-build-tools --vs201
+    ```
 
-            ```
-            npm install -g --production windows-build-tools --vs2015
-            ```
-    * Option 2: Manually install and configure
+* Option 2: Manually install and configure as described in the [node-gyp](https://github.com/nodejs/node-gyp) manual.
 
-        - Check [node-gyp](https://github.com/nodejs/node-gyp) manual for custom installation procedure for Windows
-        
-   Install openssl libraries with vcpkg
-  
-        ```
-        git clone https://github.com/Microsoft/vcpkg
-        cd vcpkg
-        bootstrap-vcpkg.bat
-        vcpkg install openssl:x64-windows
-        mkdir C:\src\vcpkg\installed\x64-windows-static\lib
-        copy .\packages\openssl-windows_x64-windows\lib\libeay32.lib C:\src\vcpkg\installed\x64-windows-static\lib\
-        copy .\packages\openssl-windows_x64-windows\lib\ssleay32.dll.lib C:\src\vcpkg\installed\x64-windows-static\lib
+You also need to install openssl libraries with vcpkg:
 
-        #Copy openssl DLLs next to realm.node compiled binary
-        copy .\packages\openssl-windows_x64-windows\bin\libeay32.dll <project-root>\realm-js\compiled\node-v64_win32_x64\
-        copy .\packages\openssl-windows_x64-windows\bin\ssleay32.dll <project-root>\realm-js\compiled\node-v64_win32_x64\
-        ```
+```
+    git clone https://github.com/Microsoft/vcpkg
+    cd vcpkg
+    bootstrap-vcpkg.bat
+    vcpkg install openssl:x64-windows
+    mkdir C:\src\vcpkg\installed\x64-windows-static\lib
+    copy .\packages\openssl-windows_x64-windows\lib\libeay32.lib C:\src\vcpkg\installed\x64-windows-static\lib\
+    copy .\packages\openssl-windows_x64-windows\lib\ssleay32.dll.lib C:\src\vcpkg\installed\x64-windows-static\lib
+    
+    # Copy openssl DLLs next to realm.node compiled binary
+    copy .\packages\openssl-windows_x64-windows\bin\libeay32.dll <project-root>\realm-js\compiled\node-v64_win32_x64\
+    copy .\packages\openssl-windows_x64-windows\bin\ssleay32.dll <project-root>\realm-js\compiled\node-v64_win32_x64\
+ ```
 
-### Building docs:
+### Building docs
 API documentation is written using [JSDoc](http://usejsdoc.org/).
 
 * `npm run jsdoc`
