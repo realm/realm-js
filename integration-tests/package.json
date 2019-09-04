@@ -21,6 +21,7 @@
     "eslint": "^5.1.0",
     "eslint-plugin-flowtype": "^2.50.0",
     "eslint-plugin-react": "^7.10.0",
-    "eslint-plugin-react-native": "^3.2.1"
+    "eslint-plugin-react-native": "^3.2.1",
+    "segfault-handler": "^1.3.0"
   }
 }

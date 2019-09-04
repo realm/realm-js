@@ -34,19 +34,35 @@ In case you don't want to use the precompiled version on npm, you can build Real
 
 Prerequisites:
 - Xcode 7.2+
+- nodejs
+- nvm (on Mac)
+- cocoapods (on Mac)
 - Android SDK 23+
 - [Android NDK 10e](https://developer.android.com/ndk/downloads/older_releases)
 
-First clone this repository:
+Clone RealmJS repository:
 
 ```
 git clone https://github.com/realm/realm-js.git
-```
-
-Then in the cloned directory:
-
-```
+cd realm-js
 git submodule update --init --recursive
+```
+
+Note: On Windows the RealmJS repo should be cloned with symlinks enabled 
+```
+#run in elevated command prompt
+git clone -c core.symlinks=true https://github.com/realm/realm-js
+
+```
+
+or manually create the symlinks using directory junctions if you already have the repo cloned.
+```
+#run in elevated command prompt
+cd realm-js\react-native\android\src\main\jni
+mklink /j "src" "../../../../../src/"
+mklink /j "vendor" "../../../../../vendor"
+cd realm-js\tests\react-test-app\android\app\src\main
+mklink /j assets "../../../../../data"
 ```
 
 Note: If you have cloned the repo previously make sure you remove your node_modules directory since it may contain stale dependencies which may cause the build to fail.
@@ -63,6 +79,9 @@ Note: If you have cloned the repo previously make sure you remove your node_modu
 
 ### Building for nodejs:
 Be sure you have python2.7 as the default python. 3.x won't work, and it's not enough to use `--python=python2.7` as parameter to npm.
+```
+brew install python@2
+```
 
 ```
 npm install --build-from-source=realm
@@ -75,12 +94,28 @@ npm install --build-from-source=realm
          - Open an elevated command prompt (As Administrator)
 
             ```
-            npm install -g --production windows-build-tools
-            ```
-
+            npm install -g --production windows-build-tools --vs2015
+            ```  
+                 
     * Option 2: Manually install and configure
 
         - Check [node-gyp](https://github.com/nodejs/node-gyp) manual for custom installation procedure for Windows
+        
+   Install openssl libraries with vcpkg
+  
+        ```
+        git clone https://github.com/Microsoft/vcpkg
+        cd vcpkg
+        bootstrap-vcpkg.bat
+        vcpkg install openssl:x64-windows
+        mkdir C:\src\vcpkg\installed\x64-windows-static\lib
+        copy .\packages\openssl-windows_x64-windows\lib\libeay32.lib C:\src\vcpkg\installed\x64-windows-static\lib\
+        copy .\packages\openssl-windows_x64-windows\lib\ssleay32.dll.lib C:\src\vcpkg\installed\x64-windows-static\lib
+
+        #Copy openssl DLLs next to realm.node compiled binary
+        copy .\packages\openssl-windows_x64-windows\bin\libeay32.dll <project-root>\realm-js\compiled\node-v64_win32_x64\
+        copy .\packages\openssl-windows_x64-windows\bin\ssleay32.dll <project-root>\realm-js\compiled\node-v64_win32_x64\
+        ```
 
 ### Building docs:
 API documentation is written using [JSDoc](http://usejsdoc.org/).
@@ -99,7 +134,6 @@ VSCode has good support for debugging JavaScript, but to work with C++ code, you
 * CodeLLDB
 
 To begin, you will need to build the node addon and prepare the test environment:
-
 ```
 npm install --build-from-source --debug
 (cd tests && npm install)
@@ -119,6 +153,11 @@ The tests will spawn a new shell when running, so you need to make sure that new
 ```
 export NVM_DIR="$HOME/.nvm"
 . "$(brew --prefix nvm)/nvm.sh"
+```
+
+Install cocoapods
+```
+sudo gem install cocoapods
 ```
 
 You can now use `scripts/test.sh` to run the various tests.
