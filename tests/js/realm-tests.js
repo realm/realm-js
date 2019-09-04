@@ -27,13 +27,6 @@ function nodeRequire(module) {
     return require_method(module);
 }
 
-function uuid() {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-        var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
-        return v.toString(16);
-    });
-}
-
 function closeAfterUpload(realm) {
     return realm.syncSession.uploadAllLocalChanges().then(() => realm.close());
 }
@@ -41,6 +34,7 @@ function closeAfterUpload(realm) {
 const Realm = require('realm');
 const TestCase = require('./asserts');
 const schemas = require('./schemas');
+const Utils = require('./test-utils');
 
 let pathSeparator = '/';
 const isNodeProcess = typeof process === 'object' && process + '' === '[object process]';
@@ -235,6 +229,43 @@ module.exports = {
         realm = new Realm({readOnly: true});
         TestCase.assertEqual(realm.schema.length, 1);
         TestCase.assertEqual(realm.readOnly, true);
+    },
+
+    testRealmExists: function() {
+
+        // Local Realms
+        let config = {schema: [schemas.TestObject]};
+        TestCase.assertFalse(Realm.exists(config));
+        new Realm(config).close();
+        TestCase.assertTrue(Realm.exists(config));
+
+        // Sync Realms
+        if (!global.enableSyncTests) {
+            return;
+        }
+        return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.nickname("admin", true))
+            .then(user => {
+                const fullSyncConfig = user.createConfiguration({
+                    schema: [schemas.TestObject],
+                    sync: {
+                        url: `realm://127.0.0.1:9080/testRealmExists_${Utils.uuid()}`,
+                        fullSynchronization: true,
+                    },
+                });
+                TestCase.assertFalse(Realm.exists(fullSyncConfig));
+                new Realm(fullSyncConfig).close();
+                TestCase.assertTrue(Realm.exists(fullSyncConfig));
+
+                const queryBasedConfig = user.createConfiguration({
+                    schema: [schemas.TestObject],
+                    sync: {
+                        url: `realm://127.0.0.1:9080/testRealmExists_${Utils.uuid()}`,
+                    },
+                });
+                TestCase.assertFalse(Realm.exists(queryBasedConfig));
+                new Realm(queryBasedConfig).close();
+                TestCase.assertTrue(Realm.exists(queryBasedConfig));
+            });
     },
 
     testRealmOpen: function() {
@@ -507,6 +538,25 @@ module.exports = {
         TestCase.assertEqual(changes.modifications.length, 1);
         TestCase.assertEqual(changes.modifications[0], 0);
         TestCase.assertEqual(objects[0].boolCol, true);
+    },
+
+    testRealmCreateOrUpdate_DefaultValue: function () {
+        const realm = new Realm({schema: [schemas.OptionalString]});
+
+        realm.write(() => {
+            realm.create(schemas.OptionalString.name, { name: 'Alex'});
+            realm.create(schemas.OptionalString.name, { name: 'Birger'}, 'modified');
+        });
+
+        let objs = realm.objects(schemas.OptionalString.name);
+
+        TestCase.assertEqual(objs[0]['name'], 'Alex');
+        TestCase.assertEqual(objs[0]['age'], 0);
+
+        TestCase.assertEqual(objs[1]['name'], 'Birger');
+        TestCase.assertEqual(objs[1]['age'], 0);
+
+        realm.close();
     },
 
     testRealmCreatePrimaryKey: function() {
@@ -1504,7 +1554,7 @@ module.exports = {
             return;
         }
 
-        const realmId = uuid();
+        const realmId = Utils.uuid();
         let realm2 = null, called = false;
         const config = {
             schema: [schemas.TestObject],

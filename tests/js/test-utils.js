@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2016 Realm Inc.
+// Copyright 2019 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,25 +16,15 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#include "node_init.hpp"
+/* eslint-env es6, node */
 
-#include "js_realm.hpp"
-#if REALM_ENABLE_SYNC
-#include "js_adapter.hpp"
-#endif
+'use strict';
 
-namespace realm {
-namespace node {
-
-static void init(v8::Local<v8::Object> exports, v8::Local<v8::Value> module,
-                 v8::Local<v8::Context> context) {
-    v8::Isolate* isolate = context->GetIsolate();
-    v8::Local<v8::Function> realm_constructor = js::RealmClass<Types>::create_constructor(isolate);
-
-    Nan::Set(exports, realm_constructor->GetName(), realm_constructor);
-}
-
-} // node
-} // realm
-
-NODE_MODULE_CONTEXT_AWARE(Realm, realm::node::init);
+module.exports = {
+    uuid: function() {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+            let r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
+    }
+};

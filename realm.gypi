@@ -87,6 +87,7 @@
         "src/object-store/src/impl/external_commit_helper.hpp",
         "src/object-store/src/impl/generic/external_commit_helper.hpp",
         "src/object-store/src/impl/windows/external_commit_helper.hpp",
+        "src/object-store/src/sync/async_open_task.hpp",
         "src/object-store/src/sync/partial_sync.hpp",
         "src/object-store/src/sync/subscription_state.hpp",
         "src/object-store/src/sync/sync_config.hpp",
@@ -108,7 +109,6 @@
         "src/object-store/src/util/atomic_shared_ptr.hpp",
         "src/object-store/src/util/event_loop_dispatcher.hpp",
         "src/object-store/src/util/event_loop_signal.hpp",
-        "src/object-store/src/util/fifo.hpp",
         "src/object-store/src/util/tagged_bool.hpp",
         "src/object-store/src/util/uuid.hpp",
         "src/object-store/src/util/android/event_loop_signal.hpp",
@@ -125,7 +125,6 @@
         ["OS=='linux'", {
           "sources": [
             "src/object-store/src/impl/epoll/external_commit_helper.cpp",
-            "src/object-store/src/util/fifo.cpp",
           ]
         }],
         ["OS=='mac'", {
@@ -134,7 +133,6 @@
             "src/object-store/src/impl/apple/keychain_helper.cpp",
             "src/object-store/src/sync/impl/apple/network_reachability_observer.cpp",
             "src/object-store/src/sync/impl/apple/system_configuration.cpp",
-            "src/object-store/src/util/fifo.cpp",
           ]
         }],
         ["realm_enable_sync", {
@@ -147,6 +145,7 @@
             "src/object-store/src/sync/impl/sync_metadata.cpp",
             "src/object-store/src/sync/impl/work_queue.cpp",
             "src/object-store/src/sync/partial_sync.cpp",
+            "src/object-store/src/sync/async_open_task.cpp",
             "src/object-store/src/sync/sync_config.cpp",
             "src/object-store/src/sync/sync_config.cpp",
             "src/object-store/src/sync/sync_manager.cpp",

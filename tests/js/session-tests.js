@@ -24,6 +24,7 @@
 
 const Realm = require('realm');
 const TestCase = require('./asserts');
+const Utils = require('./test-utils');
 let schemas = require('./schemas');
 
 const isElectronProcess = typeof process === 'object' && process.type === 'renderer';
@@ -45,13 +46,6 @@ if (isNodeProccess) {
     execFile = node_require('child_process').execFile;
     tmp.setGracefulCleanup();
     path = node_require("path");
-}
-
-function uuid() {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-        var r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
-        return v.toString(16);
-    });
 }
 
 function copyFileToTempDir(filename) {
@@ -122,7 +116,7 @@ module.exports = {
             let config = {
                 sync: {
                     user,
-                    url: `realm://127.0.0.1:9080/~/${uuid()}`,
+                    url: `realm://127.0.0.1:9080/~/${Utils.uuid()}`,
                     fullSynchronization: true,
                     custom_http_headers: {
                         'X-Foo': 'Bar'
@@ -173,8 +167,8 @@ module.exports = {
             return;
         }
 
-        const username = uuid();
-        const realmName = uuid();
+        const username = Utils.uuid();
+        const realmName = Utils.uuid();
         const expectedObjectsCount = 3;
 
         let user, config;
@@ -209,8 +203,8 @@ module.exports = {
             return;
         }
 
-        const username = uuid();
-        const realmName = uuid();
+        const username = Utils.uuid();
+        const realmName = Utils.uuid();
         const expectedObjectsCount = 3;
 
         let user, config;
@@ -251,8 +245,8 @@ module.exports = {
             return;
         }
 
-        const username = uuid();
-        const realmName = uuid();
+        const username = Utils.uuid();
+        const realmName = Utils.uuid();
         const expectedObjectsCount = 3;
 
         const credentials = Realm.Sync.Credentials.nickname(username);
@@ -300,8 +294,8 @@ module.exports = {
             return;
         }
 
-        const username = uuid();
-        const realmName = uuid();
+        const username = Utils.uuid();
+        const realmName = Utils.uuid();
         const expectedObjectsCount = 3;
 
         const credentials = Realm.Sync.Credentials.nickname(username);
@@ -343,7 +337,7 @@ module.exports = {
     },
 
     testRealmOpenLocalRealm() {
-        const username = uuid();
+        const username = Utils.uuid();
         const expectedObjectsCount = 3;
 
         const accessTokenRefreshed = this;
@@ -366,7 +360,7 @@ module.exports = {
     },
 
     testRealmOpenAsyncLocalRealm() {
-        const username = uuid();
+        const username = Utils.uuid();
         const expectedObjectsCount = 3;
 
 
@@ -429,8 +423,8 @@ module.exports = {
             return;
         }
 
-        const username = uuid();
-        const realmName = uuid();
+        const username = Utils.uuid();
+        const realmName = Utils.uuid();
 
         const credentials = Realm.Sync.Credentials.nickname(username);
         return runOutOfProcess(__dirname + '/nested-list-helper.js', __dirname + '/schemas.js', username, realmName, REALM_MODULE_PATH)
@@ -583,8 +577,8 @@ module.exports = {
             return;
         }
 
-        const username = uuid();
-        const realmName = uuid();
+        const username = Utils.uuid();
+        const realmName = Utils.uuid();
 
         return runOutOfProcess(__dirname + '/download-api-helper.js', username, realmName, REALM_MODULE_PATH)
             .then(() => Realm.Sync.User.login('http://127.0.0.1:9080', username, 'password'))
@@ -617,8 +611,8 @@ module.exports = {
             return;
         }
 
-        const username = uuid();
-        const realmName = uuid();
+        const username = Utils.uuid();
+        const realmName = Utils.uuid();
 
         const credentials = Realm.Sync.Credentials.nickname(username);
         return runOutOfProcess(__dirname + '/download-api-helper.js', username, realmName, REALM_MODULE_PATH)
@@ -684,8 +678,8 @@ module.exports = {
             return;
         }
 
-        const username = uuid();
-        const realmName = uuid();
+        const username = Utils.uuid();
+        const realmName = Utils.uuid();
         let progressCalled = false;
 
         const credentials = Realm.Sync.Credentials.nickname(username);
@@ -712,8 +706,8 @@ module.exports = {
             return;
         }
 
-        const username = uuid();
-        const realmName = uuid();
+        const username = Utils.uuid();
+        const realmName = Utils.uuid();
 
         const credentials = Realm.Sync.Credentials.nickname(username);
         return runOutOfProcess(__dirname + '/download-api-helper.js', username, realmName, REALM_MODULE_PATH)
@@ -752,7 +746,7 @@ module.exports = {
     },
 
     testDisableUrlCheck() {
-        const username = uuid();
+        const username = Utils.uuid();
         const credentials = Realm.Sync.Credentials.nickname(username);
         return Realm.Sync.User.login('http://127.0.0.1:9080', credentials).then(user => {
             let config = {
@@ -772,7 +766,7 @@ module.exports = {
     },
 
     testPartialUrlCheck() {
-        const username = uuid();
+        const username = Utils.uuid();
         const credentials = Realm.Sync.Credentials.nickname(username);
         return Realm.Sync.User.login('http://127.0.0.1:9080', credentials).then(user => {
             let config = {
@@ -787,7 +781,7 @@ module.exports = {
     },
 
     async testCustomPartialSyncIdentifier() {
-        const username = uuid();
+        const username = Utils.uuid();
         const credentials = Realm.Sync.Credentials.nickname(username, true);
         const user = await Realm.Sync.User.login('http://127.0.0.1:9080', credentials);
         const customRealm = await Realm.open({
@@ -819,7 +813,7 @@ module.exports = {
     },
 
     testSubscribeInFullRealm() {
-        const username = uuid();
+        const username = Utils.uuid();
         const credentials = Realm.Sync.Credentials.nickname(username);
         return Realm.Sync.User.login('http://127.0.0.1:9080', credentials).then(user => {
             let config = {
@@ -849,7 +843,7 @@ module.exports = {
             return;
         }
 
-        const username = uuid();
+        const username = Utils.uuid();
         const path = `/~/testPartialSync`;
         const credentials = Realm.Sync.Credentials.nickname(username, true);
         await runOutOfProcess(__dirname + '/partial-sync-api-helper.js', username, REALM_MODULE_PATH, path)
@@ -932,7 +926,7 @@ module.exports = {
         if (!isNodeProccess) {
             return;
         }
-        const username = uuid();
+        const username = Utils.uuid();
         const credentials = Realm.Sync.Credentials.nickname(username);
         let user;
         return Realm.Sync.User.login('http://127.0.0.1:9080', credentials).then(u => {
@@ -980,7 +974,7 @@ module.exports = {
             return;
         }
 
-        const username = uuid();
+        const username = Utils.uuid();
         const credentials = Realm.Sync.Credentials.nickname(username);
         return Realm.Sync.User.login('http://127.0.0.1:9080', credentials).then(user => {
             let config = {
@@ -1039,7 +1033,7 @@ module.exports = {
             let config = {
                 sync: {
                     user: u,
-                    url: `realm://127.0.0.1:9080/~/${uuid()}`,
+                    url: `realm://127.0.0.1:9080/~/${Utils.uuid()}`,
                     fullSynchronization: true,
                 }
             };
@@ -1061,7 +1055,7 @@ module.exports = {
             let config = {
                 sync: {
                     user: u,
-                    url: `realm://127.0.0.1:9080/~/${uuid()}`,
+                    url: `realm://127.0.0.1:9080/~/${Utils.uuid()}`,
                     fullSynchronization: true,
                 }
             };
@@ -1094,7 +1088,7 @@ module.exports = {
             let config = {
                 sync: {
                     user: u,
-                    url: `realm://127.0.0.1:9080/~/${uuid()}`,
+                    url: `realm://127.0.0.1:9080/~/${Utils.uuid()}`,
                     fullSynchronization: true,
                 }
             };
@@ -1135,7 +1129,7 @@ module.exports = {
     },
 
     async testResumePause() {
-        const user = await Realm.Sync.User.register('http://127.0.0.1:9080', uuid(), 'password')
+        const user = await Realm.Sync.User.register('http://127.0.0.1:9080', Utils.uuid(), 'password')
         const config = {
             sync: {
                 user: user,
@@ -1156,11 +1150,11 @@ module.exports = {
     },
 
     async testMultipleResumes() {
-        const user = await Realm.Sync.User.register('http://127.0.0.1:9080', uuid(), 'password')
+        const user = await Realm.Sync.User.register('http://127.0.0.1:9080', Utils.uuid(), 'password')
         const config = {
             sync: {
                 user: user,
-                url: `realm://127.0.0.1:9080/~/${uuid()}`,
+                url: `realm://127.0.0.1:9080/~/${Utils.uuid()}`,
                 fullSynchronization: true,
             }
         };
@@ -1184,11 +1178,11 @@ module.exports = {
     },
 
     async testMultiplePauses() {
-        const user = await Realm.Sync.User.register('http://127.0.0.1:9080', uuid(), 'password')
+        const user = await Realm.Sync.User.register('http://127.0.0.1:9080', Utils.uuid(), 'password')
         const config = {
             sync: {
                 user: user,
-                url: `realm://127.0.0.1:9080/~/${uuid()}`,
+                url: `realm://127.0.0.1:9080/~/${Utils.uuid()}`,
                 fullSynchronization: true,
             }
         };
@@ -1213,7 +1207,7 @@ module.exports = {
 
     testUploadDownloadAllChanges() {
         const AUTH_URL = 'http://127.0.0.1:9080';
-        const REALM_URL = `realm://127.0.0.1:9080/completion_realm/${uuid()}`;
+        const REALM_URL = `realm://127.0.0.1:9080/completion_realm/${Utils.uuid()}`;
         const schema = {
             'name': 'CompletionHandlerObject',
             properties: {

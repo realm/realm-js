@@ -11,8 +11,28 @@ x.x.x Release notes (yyyy-MM-dd)
 * Added `User.getPermissionOffers` API to get a collection of all permission offers the user has created.
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
+* Named pipes on Android are now created with 0666 permissions instead of 0600. This fixes a bug on Huawei devices which caused named pipes to change owners during app upgrades causing subsequent ACCESS DENIED errors. This should have no practical security implications. ([realm/realm-core#3328](https://github.com/realm/realm-core/pull/3328), since v0.10.0)
+* fix error screen shown in React Native when refreshAdminToken and refreshAccessToken receive error result
+
+### Compatibility
+* Realm Object Server: 3.21.0 or later.
+* APIs are backwards compatible with all previous release of realm in the 2.x.y series.
+* File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
+
+### Internal
+* Updated to Realm Core v5.23.2.
+* Updated to Realm Sync v4.7.4.
+* Add support for direct access to sync workers on Cloud, bypassing the Sync Proxy. [RJS-6](https://jira.mongodb.org/browse/RJS-6)
+
+
+2.29.2 Release notes (2019-8-14)
+=============================================================
+### Enhancements
 * None.
+
+### Fixed
+* Fixed Coop with Jitsi-Meet iOS SDK. Thanks to @djorkaeffalexandre. ([#2193](https://github.com/realm/realm-js/issues/2193))
+* Fixed Gradle build error with Android Studio 3.5+. Thanks to @MarcBernstein. ([#2468](https://github.com/realm/realm-js/pull/2468))
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.
@@ -20,7 +40,50 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
 ### Internal
+* Added support for Electron v4.2. ([#2452](https://github.com/realm/realm-js/issues/2452))
+* Upgraded to Realm Sync v4.7.3.
+
+
+2.29.1 Release notes (2019-7-11)
+=============================================================
+### Enhancements
 * None.
+
+### Fixed
+* Queries involving an indexed int property which were constrained by a List with an order different from the table's order would give incorrect results. ([realm/realm-core#3307](https://github.com/realm/realm-core/issues/3307), since v2.27.0-rc.2)
+* Queries involving an indexed int column had a memory leak if run multiple times. ([realm/realm-cocoa#6186](https://github.com/realm/realm-cocoa/issues/6186), since v2.27.0-rc.2)
+
+### Compatibility
+* Realm Object Server: 3.21.0 or later.
+* APIs are backwards compatible with all previous release of realm in the 2.x.y series.
+* File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
+
+### Internal
+* Updated to Realm Core v5.23.1.
+* Updated to Realm Sync v4.6.3.
+
+
+2.29.0 Release notes (2019-7-3)
+=============================================================
+### Enhancements
+* For synchronized Realms it is now possible to choose the behavior when opening the Realm. You can either choose to open the local Realm immediately or wait for it to be synchronized with the server first. These options are controlled through `Realm.Sync.SyncConfiguration.newRealmFileBehavior` and `Realm.Sync.SyncConfiguration.existingRealmFileBehavior`. See the [docs](XXX) for more information.
+* Added support for unicode characters in realm path and filenames for Windows. Thanks to @rajivshah3. ([realm-core#3293](https://github.com/realm/realm-core/pull/3293) and [#2319](https://github.com/realm/realm-js/issues/2319))
+
+### Fixed
+* A React Native iOS app could crash on the first launch. Thanks to @max-zu. ([#2400](https://github.com/realm/realm-js/issues/2400), since v1.0.0)
+* When creating objects using migration, a native crash could occur if a new optional property was added to the schema. ([#1612](https://github.com/realm/realm-js/issues/1612), since v1.0.0)
+* Constructing an `inclusions` made unnecessary table comparisons. This resulted in poor performance for subscriptions using the `includeLinkingObjects` functionality. ([realm/realm-core#3311](https://github.com/realm/realm-core/issues/3311), since v2.27.0-rc.3)
+
+### Compatibility
+* Realm Object Server: 3.21.0 or later.
+* APIs are backwards compatible with all previous release of realm in the 2.x.y series.
+* File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
+
+### Internal
+* Updated to Object Store commit: 8cd7b40eb294c4292726a6215339742eea5107c9
+* Updated to Realm Core v5.23.0
+* Updated to Realm Sync v4.6.2
+
 
 2.28.1 Release notes (2019-6-3)
 =============================================================
