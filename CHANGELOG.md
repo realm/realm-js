@@ -15,7 +15,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * fix error screen shown in React Native when refreshAdminToken and refreshAccessToken receive error result
 
 ### Compatibility
-* Realm Object Server: 3.21.0 or later.
+* Realm Object Server: 3.23.1 or later.
 * APIs are backwards compatible with all previous release of realm in the 2.x.y series.
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
@@ -35,7 +35,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * Fixed Gradle build error with Android Studio 3.5+. Thanks to @MarcBernstein. ([#2468](https://github.com/realm/realm-js/pull/2468))
 
 ### Compatibility
-* Realm Object Server: 3.23.1 or later.
+* Realm Object Server: 3.21.0 or later.
 * APIs are backwards compatible with all previous release of realm in the 2.x.y series.
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 

@@ -112,7 +112,7 @@ cleanup() {
   if [ -n "$nvm_old_default" ]; then
     echo Restoring nvm default to $nvm_old_default
     nvm alias default $nvm_old_default
-    echo nvm default restored succesfuly 
+    echo nvm default restored successfully 
   fi
 }
 
@@ -354,7 +354,7 @@ case "$TARGET" in
   check_test_results ReactTests
   ;;
 "node")
-npm run check-environment
+  npm run check-environment
   npm ci --build-from-source=realm --realm_enable_sync
   start_server
 
