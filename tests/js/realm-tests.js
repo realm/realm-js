@@ -1554,10 +1554,6 @@ module.exports = {
             return;
         }
 
-        if (!global.testAdminUserInfo) {
-            return Promise.reject("Test requires an admin user");
-        }
-
         const realmId = Utils.uuid();
         let realm2 = null, called = false;
         const config = {
@@ -1569,7 +1565,7 @@ module.exports = {
         };
 
         // We need an admin user to create the reference Realm
-        return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.usernamePassword(global.testAdminUserInfo.username, global.testAdminUserInfo.password))
+        return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.usernamePassword("realm-admin", ""))
             .then(user1 => {
                 config.sync.user = user1;
                 const realm = new Realm(config);
