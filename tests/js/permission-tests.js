@@ -75,8 +75,13 @@ function permissionForPath(permissions, path) {
 
 const getPartialRealm = () => {
     const testID = Utils.uuid();
+    
+    if (!global.testAdminUserInfo) {
+        throw new Error("Test requires an admin user");
+    }
+
     return Realm.Sync.User
-        .login('http://127.0.0.1:9080', Realm.Sync.Credentials.nickname("user-" + testID, true))
+        .login('http://127.0.0.1:9080', Realm.Sync.Credentials.usernamePassword(global.testAdminUserInfo.username, global.testAdminUserInfo.password))
         .then(user => {
             const config = user.createConfiguration({
                 sync: {
@@ -177,6 +182,10 @@ module.exports = {
     },
 
     async testObjectPermissions() {
+        if (!global.testAdminUserInfo) {
+            throw new Error("Test requires an admin user");
+        }
+
         const realmUrl = `realm://127.0.0.1:9080/testObjectPermissions_${Utils.uuid()}`
         let config = (user) => {
             return {
@@ -195,7 +204,7 @@ module.exports = {
                 sync: {user, url: realmUrl, fullSynchronization: false}
             };
         };
-        const owner = await Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.nickname(Utils.uuid(), true));
+        const owner = await Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.usernamePassword(global.testAdminUserInfo.username, global.testAdminUserInfo.password));
         const otherUser = await Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.nickname(Utils.uuid()));
 
         const ownerRealm = new Realm(config(owner));

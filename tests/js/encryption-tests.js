@@ -75,7 +75,11 @@ module.exports = {
             return Promise.resolve();
         }
 
-        const credentials = Realm.Sync.Credentials.usernamePassword('realm-admin', '');
+        if (!global.testAdminUserInfo) {
+            return Promise.reject("Test requires an admin user");
+        }
+
+        const credentials = Realm.Sync.Credentials.usernamePassword(global.testAdminUserInfo.username, global.testAdminUserInfo.password);
         return Realm.Sync.User.login('http://127.0.0.1:9080', credentials).then(adminUser => {
             new Realm({
                 encryptionKey: new Int8Array(64),
