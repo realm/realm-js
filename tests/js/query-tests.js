@@ -173,7 +173,7 @@ module.exports = {
         realm.objects(schemas.Language.name).filtered('TRUEPREDICATE INCLUDE(@links.Country.languages)');
         realm.objects(schemas.Language.name).filtered('TRUEPREDICATE INCLUDE(spokenIn)');
     },
-    testOrQueries: function() {
+    testOrQueries_Float: function() {
         var realm = new Realm({ schema: [schemas.FloatOnly] });
         realm.write(function() {
             realm.create(schemas.FloatOnly.name, { floatCol: 1.0 });
@@ -188,6 +188,29 @@ module.exports = {
 
         var objects_3 = realm.objects(schemas.FloatOnly.name).filtered('floatCol = 0.0 || floatCol = 3.0');
         TestCase.assertEqual(objects_3.length, 0);
+
+        realm.close();
+    },
+
+    testOrQueries_Double: function() {
+        var realm = new Realm({ schema: [schemas.DoubleOnly] });
+        realm.write(function() {
+            realm.create(schemas.DoubleOnly.name, { doubleCol: 1.0 });
+            realm.create(schemas.DoubleOnly.name, { doubleCol: 2.0 });
+            realm.create(schemas.DoubleOnly.name, {});
+        });
+
+        var objects_1 = realm.objects(schemas.DoubleOnly.name).filtered('doubleCol = 1.0 || doubleCol = 2.0');
+        TestCase.assertEqual(objects_1.length, 2);
+
+        var objects_2 = realm.objects(schemas.DoubleOnly.name).filtered('doubleCol = 1.0 || doubleCol = 3.0');
+        TestCase.assertEqual(objects_2.length, 1);
+
+        var objects_3 = realm.objects(schemas.DoubleOnly.name).filtered('doubleCol = 0.0 || doubleCol = 3.0');
+        TestCase.assertEqual(objects_3.length, 0);
+
+        var objects_4 = realm.objects(schemas.DoubleOnly.name).filtered('doubleCol = null || doubleCol = 3.0');
+        TestCase.assertEqual(objects_4.length, 1);
 
         realm.close();
     },

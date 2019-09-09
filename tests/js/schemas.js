@@ -207,9 +207,17 @@ exports.StringOnly = {
 exports.FloatOnly = {
     name: 'FloatObjectonly',
     properties: {
-        floatCol: 'float'
+        floatCol: 'float?'
     }
 };
+
+exports.DoubleOnly = {
+    name: 'doubleObjectonly',
+    properties: {
+        doubleCol: 'double?'
+    }
+};
+
 
 exports.DefaultValues = {
     name: 'DefaultValuesObject',
