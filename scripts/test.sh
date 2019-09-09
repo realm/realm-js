@@ -49,7 +49,7 @@ die() {
 start_server() {
   echo "test.sh: starting ROS"
   if [ -z "${SYNC_WORKER_FEATURE_TOKEN}" ]; then
-      die "SYNC_WORKER_FEATURE_TOKEN must be set to run tests."
+     die "SYNC_WORKER_FEATURE_TOKEN must be set to run tests."
   fi
 
   ./scripts/download-object-server.sh
@@ -110,7 +110,9 @@ cleanup() {
 
   # Restore nvm state
   if [ -n "$nvm_old_default" ]; then
+    echo Restoring nvm default to $nvm_old_default
     nvm alias default $nvm_old_default
+    echo nvm default restored successfully 
   fi
 }
 
@@ -213,6 +215,7 @@ delete_ios_simulator() {
 cleanup >/dev/null 2>&1
 trap cleanup EXIT
 
+echo Checking for nvm installation
 # Use a consistent version of Node if possible.
 if [[ -z "$(command -v nvm)" ]]; then
   set +e
@@ -228,11 +231,22 @@ if [[ -z "$(command -v nvm)" ]]; then
   set -e
 fi
 if [[ "$(command -v nvm)" ]]; then
-  nvm install $NODE_VERSION
+  echo nvm installing $NODE_VERSION
+  set +e
+  nvm install $NODE_VERSION 
+  retVal=$?
+  if [ $retVal -ne 0 ]; then
+      echo "Error while installing $NODE_VERSION $retVal"
+      exit $retVal
+  fi
+  set -e
+  echo nvm install of $NODE_VERSION completed
 fi
 set_nvm_default() {
   if [ -n "$REALM_SET_NVM_ALIAS" ] && [[ "$(command -v nvm)" ]]; then
+    echo REALM_SET_NVM_ALIAS is set. 
     nvm_old_default="$(nvm alias default --no-colors | cut -d ' ' -f 3)"
+    echo Setting nvm default alias to $(nvm current)
     nvm alias default $(nvm current)
   fi
 }

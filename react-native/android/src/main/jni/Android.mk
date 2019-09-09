@@ -59,7 +59,6 @@ LOCAL_SRC_FILES += src/object-store/src/impl/results_notifier.cpp
 LOCAL_SRC_FILES += src/object-store/src/impl/transact_log_handler.cpp
 LOCAL_SRC_FILES += src/object-store/src/impl/weak_realm_notifier.cpp
 LOCAL_SRC_FILES += src/object-store/src/impl/epoll/external_commit_helper.cpp
-LOCAL_SRC_FILES += src/object-store/src/util/fifo.cpp
 LOCAL_SRC_FILES += src/object-store/src/util/uuid.cpp
 LOCAL_SRC_FILES += src/object-store/src/binding_callback_thread_observer.cpp
 LOCAL_SRC_FILES += src/object-store/src/collection_notifications.cpp

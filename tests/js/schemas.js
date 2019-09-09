@@ -227,6 +227,14 @@ exports.DefaultValues = {
     }
 };
 
+exports.OptionalString = {
+    name: 'OptionalString',
+    properties: {
+        name: 'string',
+        age: { type: 'int', optional: true, default: 0 }
+    }
+};
+
 exports.QueryObject = {
     name: 'QueryObject',
     properties: [

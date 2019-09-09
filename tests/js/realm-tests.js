@@ -540,6 +540,25 @@ module.exports = {
         TestCase.assertEqual(objects[0].boolCol, true);
     },
 
+    testRealmCreateOrUpdate_DefaultValue: function () {
+        const realm = new Realm({schema: [schemas.OptionalString]});
+
+        realm.write(() => {
+            realm.create(schemas.OptionalString.name, { name: 'Alex'});
+            realm.create(schemas.OptionalString.name, { name: 'Birger'}, 'modified');
+        });
+
+        let objs = realm.objects(schemas.OptionalString.name);
+
+        TestCase.assertEqual(objs[0]['name'], 'Alex');
+        TestCase.assertEqual(objs[0]['age'], 0);
+
+        TestCase.assertEqual(objs[1]['name'], 'Birger');
+        TestCase.assertEqual(objs[1]['age'], 0);
+
+        realm.close();
+    },
+
     testRealmCreatePrimaryKey: function() {
         const realm = new Realm({schema: [schemas.IntPrimary]});
 
