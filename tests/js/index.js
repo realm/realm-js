@@ -107,7 +107,7 @@ exports.registerTests = function(tests) {
 };
 
 exports.prepare = function(done) {
-    if (!global.enableSyncTests || global.testAdminUserInfo) {
+    if (!global.enableSyncTests || !isNodeProcess || global.testAdminUserInfo) {
         done();
         return;
     }
