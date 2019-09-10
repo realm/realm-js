@@ -35,7 +35,6 @@
 		02F59EC51C88F17D007F774C /* shared_realm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02F59EBD1C88F17D007F774C /* shared_realm.cpp */; };
 		02F59EE21C88F2BB007F774C /* realm_coordinator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02F59EDB1C88F2BA007F774C /* realm_coordinator.cpp */; };
 		02F59EE31C88F2BB007F774C /* transact_log_handler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02F59EDD1C88F2BB007F774C /* transact_log_handler.cpp */; };
-		3F8D962F2203B67E00327C8C /* fifo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3F8D962D2203B67E00327C8C /* fifo.cpp */; };
 		3FCE2A8B1F58BDEF00D4855B /* primitive_list_notifier.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3FCE2A891F58BDE500D4855B /* primitive_list_notifier.cpp */; };
 		3FCE2A931F58BE0300D4855B /* uuid.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3FCE2A911F58BDFF00D4855B /* uuid.cpp */; };
 		3FCE2A971F58BE2200D4855B /* sync_permission.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3FCE2A951F58BE1D00D4855B /* sync_permission.cpp */; };
@@ -798,6 +797,7 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				English,
 				en,
 			);
 			mainGroup = 02B58CA71AE99CEB009B348C;
@@ -880,7 +880,6 @@
 				02414BA91CE6ABCF00A8669F /* collection_notifications.cpp in Sources */,
 				02414BA61CE6ABCF00A8669F /* collection_notifier.cpp in Sources */,
 				02022A581DA476CD000F0C4F /* external_commit_helper.cpp in Sources */,
-				3F8D962F2203B67E00327C8C /* fifo.cpp in Sources */,
 				02F59EBF1C88F17D007F774C /* index_set.cpp in Sources */,
 				F63FF2C91C12469E00B3B8E0 /* js_realm.cpp in Sources */,
 				F63FF2C61C12469E00B3B8E0 /* jsc_init.cpp in Sources */,

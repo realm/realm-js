@@ -20,6 +20,23 @@ x.x.x Release notes (yyyy-MM-dd)
 * Upgraded to Realm Core v6.0.0-alpha.17.
 * Upgraded to Realm Sync v4.6.1-core6.0.
 
+
+x.x.x Release notes (yyyy-MM-dd)
+=============================================================
+### Enhancements
+* Named pipes on Android are now created with 0666 permissions instead of 0600. This fixes a bug on Huawei devices which caused named pipes to change owners during app upgrades causing subsequent ACCESS DENIED errors. This should have no practical security implications. ([realm/realm-core#3328](https://github.com/realm/realm-core/pull/3328), since v0.10.0)
+* fix error screen shown in React Native when refreshAdminToken and refreshAccessToken receive error result
+
+### Compatibility
+* Realm Object Server: 3.21.0 or later.
+* APIs are backwards compatible with all previous release of realm in the 2.x.y series.
+* File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
+
+### Internal
+* Updated to Realm Core v5.23.2.
+* Updated to Realm Sync v4.7.4.
+* Add support for direct access to sync workers on Cloud, bypassing the Sync Proxy. [RJS-6](https://jira.mongodb.org/browse/RJS-6)
+
 2.29.2 Release notes (2019-8-14)
 =============================================================
 ### Enhancements
@@ -37,6 +54,7 @@ x.x.x Release notes (yyyy-MM-dd)
 ### Internal
 * Added support for Electron v4.2. ([#2452](https://github.com/realm/realm-js/issues/2452))
 * Upgraded to Realm Sync v4.7.3.
+
 
 2.29.1 Release notes (2019-7-11)
 =============================================================

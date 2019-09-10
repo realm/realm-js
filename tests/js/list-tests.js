@@ -986,6 +986,26 @@ module.exports = {
         });
     },
 
+    testPagenation: function() {
+        const realm = new Realm({schema: [schemas.StringOnly]});
+        realm.write(() => {
+            for (let i = 0; i < 10; i++) {
+                realm.create(schemas.StringOnly.name, { stringCol: `${i}` });
+            }
+        });
+
+        let objects = realm.objects(schemas.StringOnly.name);
+        let page1 = objects.slice(0, 5);
+        let page2 = objects.slice(5, 10);
+        TestCase.assertEqual(page1.length, 5);
+        TestCase.assertEqual(page2.length, 5);
+        for (let i = 0; i < 5; i++) {
+            TestCase.assertEqual(page1[i]['stringCol'], `${i}`);
+            TestCase.assertEqual(page2[i]['stringCol'], `${i + 5}`);
+        }
+        realm.close();
+    },
+
     testIsValid: function() {
         const realm = new Realm({schema: [schemas.PersonObject, schemas.PersonList]});
         let object;
