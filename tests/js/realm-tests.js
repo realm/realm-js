@@ -1565,7 +1565,7 @@ module.exports = {
         };
 
         // We need an admin user to create the reference Realm
-        return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.nickname("admin", true))
+        return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.usernamePassword("realm-admin", ""))
             .then(user1 => {
                 config.sync.user = user1;
                 const realm = new Realm(config);

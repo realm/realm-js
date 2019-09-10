@@ -257,6 +257,7 @@ const dependencies = ini.parse(fs.readFileSync(path.resolve(__dirname, '../depen
 
 const requirements = (options.sync ? getSyncRequirements : getCoreRequirements)(dependencies, options);
 console.log('Resolved requirements:', requirements);
+console.log('Resolved options:', options);
 if (!shouldSkipAcquire(realmDir, requirements, options.force)) {
     acquire(requirements, realmDir)
         .then(() => console.log('Success'))

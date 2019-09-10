@@ -1,14 +1,21 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
+### Breaking Changes
+* Reworked the internal implementation of the permission API. For the most part, the method signatures haven't changed or where they have changed, the API have remained close to the original (e.g. `Results<T>` has changed to `T[]`).
+  * Changed the return type of `User.getGrantedPermissions` from `Results<Permission>` to `Permission[]`. This means that the collection is no longer observable like regular Realm-backed collections. If you need to be notified for changes of this collection, you need to implement a polling-based mechanism yourself.
+  * `Permission.mayRead/mayWrite/mayManage` have been deprecated in favor of a more-consistent `AccessLevel` API.
+  * Removed the `User.openManagementRealm` method.
+  * Changed the return type of `User.applyPermissions` from `Promise<PermissionChange>` to `Promise<void>`.
+
 ### Enhancements
-* None.
+* Added `User.getPermissionOffers` API to get a collection of all permission offers the user has created.
 
 ### Fixed
 * Named pipes on Android are now created with 0666 permissions instead of 0600. This fixes a bug on Huawei devices which caused named pipes to change owners during app upgrades causing subsequent ACCESS DENIED errors. This should have no practical security implications. ([realm/realm-core#3328](https://github.com/realm/realm-core/pull/3328), since v0.10.0)
 * fix error screen shown in React Native when refreshAdminToken and refreshAccessToken receive error result
 
 ### Compatibility
-* Realm Object Server: 3.21.0 or later.
+* Realm Object Server: 3.23.1 or later.
 * APIs are backwards compatible with all previous release of realm in the 2.x.y series.
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
