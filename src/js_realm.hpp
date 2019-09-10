@@ -1227,10 +1227,9 @@ void RealmClass<T>::object_for_object_id(ContextType ctx, ObjectType this_object
     const Group& group = realm->read_group();
     auto table = ObjectStore::table_for_object_type(group, object_schema.name);
     auto object_id = ObjectID::from_string(object_id_string);
-    auto object_key = table->global_to_local_object_id_hashed(object_id);
-    auto obj = table->get_object(object_key);
-    if (obj) {
-        return_value.set(RealmObjectClass<T>::create_instance(ctx, realm::Object(realm, object_schema.name, obj)));
+    auto object_key = table->get_obj_key(object_id);
+    if (object_key) {
+        return_value.set(RealmObjectClass<T>::create_instance(ctx, realm::Object(realm, object_schema.name, object_key)));
     }
 }
 

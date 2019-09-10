@@ -1369,7 +1369,7 @@ void SyncClass<T>::local_listener_realms(ContextType ctx, ObjectType this_object
     std::vector<std::string> local_realms;
     for (auto& obj : table) {
         auto virtual_path = obj.get<String>(path_col_key);
-        std::string file_path = util::format("%1/realms%2/%3.realm", local_root_dir, virtual_path, obj.get_key());
+        std::string file_path = util::format("%1/realms%2/%3.realm", local_root_dir, virtual_path, obj.get_key().value);
 
         // filter out Realms not present locally
         if (util::File::exists(file_path)) {
