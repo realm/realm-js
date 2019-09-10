@@ -5,7 +5,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * `Realm.delete(Realm.Collection)` will conserve rhe order.
 
 ### Enhancements
-* None.
+* Added `Realm.object_for_object_id()`. ([realm/realm-js-private#401](https://github.com/realm/realm-js-private/issues/401))
 
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)

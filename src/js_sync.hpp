@@ -1255,7 +1255,8 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
 #endif
 
     // FIXME: remove once Client Resync is implemented
-    config.sync_config->client_resync_mode = realm::ClientResyncMode::Manual;
+    // FIXME: disabled due to old core/sync
+    // config.sync_config->client_resync_mode = realm::ClientResyncMode::Manual;
     }
 }
 
@@ -1350,12 +1351,11 @@ void SyncClass<T>::local_listener_realms(ContextType ctx, ObjectType this_object
     // coordinator to get the matching sync configuration, but if it's not
     // already open we want to open it without creating a sync session.
     std::shared_ptr<Realm> realm;
-    if (auto coordinator = realm::_impl::RealmCoordinator::get_existing_coordinator(admin_realm_path)) {
+    if (auto coordinator = realm::_impl::RealmCoordinator::get_coordinator(admin_realm_path)) {
         realm = coordinator->get_realm();
     }
     else {
         Realm::Config config;
-        config.cache = false;
         config.path = admin_realm_path;
         config.force_sync_history = true;
         config.schema_mode = SchemaMode::Additive;
@@ -1364,13 +1364,12 @@ void SyncClass<T>::local_listener_realms(ContextType ctx, ObjectType this_object
 
     auto& group = realm->read_group();
     auto& table = *ObjectStore::table_for_object_type(group, "RealmFile");
-    size_t path_col_ndx = table.get_column_index("path");
+    auto path_col_key = table.get_column_key("path");
 
     std::vector<std::string> local_realms;
-    for (size_t i = 0, size = table.size(); i < size; ++i) {
-        auto virtual_path = table.get_string(path_col_ndx, i);
-        auto id = sync::object_id_for_row(group, table, i);
-        std::string file_path = util::format("%1/realms%2/%3.realm", local_root_dir, virtual_path, id.to_string());
+    for (auto& obj : table) {
+        auto virtual_path = obj.get<String>(path_col_key);
+        std::string file_path = util::format("%1/realms%2/%3.realm", local_root_dir, virtual_path, obj.get_key());
 
         // filter out Realms not present locally
         if (util::File::exists(file_path)) {

@@ -210,7 +210,7 @@ class RealmClass : public ClassDefinition<T, SharedRealm, ObservableClass<T>> {
     using ReturnValue = js::ReturnValue<T>;
     using NativeAccessor = realm::js::NativeAccessor<T>;
 #if REALM_ENABLE_SYNC
-    using RealmCallbackHandler = void(ThreadSafeReference<Realm>&& realm, std::exception_ptr error);
+    using RealmCallbackHandler = void(ThreadSafeReference&& realm, std::exception_ptr error);
 #endif
 
 public:
@@ -322,7 +322,7 @@ public:
         {"deleteModel", wrap<delete_model>},
         {"privileges", wrap<privileges>},
         {"_updateSchema", wrap<update_schema>},
-        {"_objectForObjectId", wrap<object_for_object_id>},
+        {"objectForObjectId", wrap<object_for_object_id>},
         {"_schemaName", wrap<get_schema_name_from_object>},
     };
 
@@ -868,7 +868,7 @@ void RealmClass<T>::async_open_realm(ContextType ctx, ObjectType this_object, Ar
     }
 
     EventLoopDispatcher<RealmCallbackHandler> callback_handler([=, defaults=std::move(defaults),
-                                                               constructors=std::move(constructors)](ThreadSafeReference<Realm>&& realm_ref, std::exception_ptr error) mutable {
+                                                               constructors=std::move(constructors)](ThreadSafeReference&& realm_ref, std::exception_ptr error) mutable {
         HANDLESCOPE
 
         if (error) {
@@ -1219,24 +1219,19 @@ void RealmClass<T>::writeCopyTo(ContextType ctx, ObjectType this_object, Argumen
 template<typename T>
 void RealmClass<T>::object_for_object_id(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue& return_value) {
     args.validate_count(2);
-
-#if REALM_ENABLE_SYNC
     SharedRealm realm = *get_internal<T, RealmClass<T>>(this_object);
-    if (!sync::has_object_ids(realm->read_group()))
-        throw std::logic_error("Realm._objectForObjectId() can only be used with synced Realms.");
 
     auto& object_schema = validated_object_schema_for_value(ctx, realm, args[0]);
     std::string object_id_string = Value::validated_to_string(ctx, args[1]);
-    auto object_id = sync::ObjectID::from_string(object_id_string);
 
     const Group& group = realm->read_group();
-    size_t ndx = sync::row_for_object_id(group, *ObjectStore::table_for_object_type(group, object_schema.name), object_id);
-    if (ndx != realm::npos) {
-        return_value.set(RealmObjectClass<T>::create_instance(ctx, realm::Object(realm, object_schema.name, ndx)));
+    auto table = ObjectStore::table_for_object_type(group, object_schema.name);
+    auto object_id = ObjectID::from_string(object_id_string);
+    auto object_key = table->global_to_local_object_id_hashed(object_id);
+    auto obj = table->get_object(object_key);
+    if (obj) {
+        return_value.set(RealmObjectClass<T>::create_instance(ctx, realm::Object(realm, object_schema.name, obj)));
     }
-#else
-    throw std::logic_error("Realm._objectForObjectId() can only be used with synced Realms.");
-#endif // REALM_ENABLE_SYNC
 }
 
 template<typename T>
@@ -1280,7 +1275,7 @@ void RealmClass<T>::privileges(ContextType ctx, ObjectType this_object, Argument
         auto arg = Value::to_object(ctx, args[0]);
         if (Object::template is_instance<RealmObjectClass<T>>(ctx, arg)) {
             auto obj = get_internal<T, RealmObjectClass<T>>(arg);
-            auto p = realm->get_privileges(obj->row());
+            auto p = realm->get_privileges(obj->obj());
 
             ObjectType object = Object::create_empty(ctx);
             Object::set_property(ctx, object, "read", Value::from_boolean(ctx, has_privilege(p, Privilege::Read)));
