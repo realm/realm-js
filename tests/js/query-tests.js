@@ -93,7 +93,7 @@ function runQuerySuite(suite) {
             args = getArgs(3);
             results = realm.objects(type);
             results = results.filtered.apply(results, args);
-         
+
             TestCase.assertEqual(test[1].length, results.length, "Query '" + args[0] + "' on type '" + type+ "' expected " + test[1].length + " results, got " + results.length);
 
             var objSchema = suite.schema.find(function(el) { return el.name == type });
@@ -123,25 +123,25 @@ function runQuerySuite(suite) {
 
 
 module.exports = {
-    testDateQueries: function() { 
+    testDateQueries: function() {
         runQuerySuite(testCases.dateTests);
     },
-    testBoolQueries: function() { 
+    testBoolQueries: function() {
         runQuerySuite(testCases.boolTests);
     },
-    testIntQueries: function() { 
+    testIntQueries: function() {
         runQuerySuite(testCases.intTests);
     },
-    testFloatQueries: function() { 
+    testFloatQueries: function() {
         runQuerySuite(testCases.floatTests);
     },
-    testDoubleQueries: function() { 
+    testDoubleQueries: function() {
         runQuerySuite(testCases.doubleTests);
     },
-    testStringQueries: function() { 
+    testStringQueries: function() {
         runQuerySuite(testCases.stringTests);
     },
-    testBinaryQueries: function() { 
+    testBinaryQueries: function() {
         runQuerySuite(testCases.binaryTests);
     },
     testObjectQueries: function() {

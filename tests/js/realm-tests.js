@@ -764,6 +764,7 @@ module.exports = {
         realm.write(createAndTestObject);
 
         // Defaults should still work when creating another Realm instance.
+        // Works if: realm = new Realm({schema: [schemas.DefaultValues, schemas.TestObject]});
         realm = new Realm();
         realm.write(createAndTestObject);
     },
@@ -816,7 +817,6 @@ module.exports = {
                 intCol: 'int'
             }
         };
-
         let realm = new Realm({schema: [CustomObject, InvalidObject]});
 
         realm.write(() => {
@@ -849,6 +849,7 @@ module.exports = {
         }, 'Constructor was not registered in the schema for this Realm');
 
         // The constructor should still work when creating another Realm instance.
+        // Works if: realm = new Realm({schema: [CustomObject, InvalidObject]});
         realm = new Realm();
         TestCase.assertTrue(realm.objects('CustomObject')[0] instanceof CustomObject);
         TestCase.assertTrue(realm.objects(CustomObject).length > 0);
@@ -898,19 +899,19 @@ module.exports = {
 
             realm.delete(objects[0]);
             TestCase.assertEqual(objects.length, 9, 'wrong object count');
-            TestCase.assertEqual(objects[0].doubleCol, 9, "wrong property value");
-            TestCase.assertEqual(objects[1].doubleCol, 1, "wrong property value");
+            TestCase.assertEqual(objects[0].doubleCol, 1, "wrong property value");
+            TestCase.assertEqual(objects[1].doubleCol, 2, "wrong property value");
 
             realm.delete([objects[0], objects[1]]);
             TestCase.assertEqual(objects.length, 7, 'wrong object count');
-            TestCase.assertEqual(objects[0].doubleCol, 7, "wrong property value");
-            TestCase.assertEqual(objects[1].doubleCol, 8, "wrong property value");
+            TestCase.assertEqual(objects[0].doubleCol, 3, "wrong property value");
+            TestCase.assertEqual(objects[1].doubleCol, 4, "wrong property value");
 
-            const threeObjects = realm.objects('TestObject').filtered("doubleCol < 5");
-            TestCase.assertEqual(threeObjects.length, 3, "wrong results count");
-            realm.delete(threeObjects);
-            TestCase.assertEqual(objects.length, 4, 'wrong object count');
-            TestCase.assertEqual(threeObjects.length, 0, 'threeObject should have been deleted');
+            const twoObjects = realm.objects('TestObject').filtered("doubleCol < 5");
+            TestCase.assertEqual(twoObjects.length, 2, "wrong results count");
+            realm.delete(twoObjects);
+            TestCase.assertEqual(objects.length, 5, 'wrong object count');
+            TestCase.assertEqual(twoObjects.length, 0, 'threeObject should have been deleted');
 
             const o = objects[0];
             realm.delete(o);
@@ -1167,7 +1168,7 @@ module.exports = {
 
         // copy should not overwrite existing files
         Realm.copyBundledRealmFiles();
-        realm = new Realm({path: 'dates-bundle.realm', schema: [schemas.DateObject]});
+        realm = new Realm({path: 'realm-bundle.realm', schema: [schemas.DateObject]});
         TestCase.assertEqual(realm.objects('Date')[0].currentDate.getTime(), 1);
     },
 
@@ -1316,7 +1317,7 @@ module.exports = {
 
         const realm2 = new Realm(config);
         TestCase.assertEqual(realm2.objects('TestObject').length, 0);
-        realm.close();
+        realm2.close();
     },
 
     testRealmDeleteFileCustomConfigPath: function() {
@@ -1334,7 +1335,7 @@ module.exports = {
 
         const realm2 = new Realm(config);
         TestCase.assertEqual(realm2.objects('TestObject').length, 0);
-        realm.close();
+        realm2.close();
     },
 
     testRealmDeleteFileSyncConfig: function() {
@@ -1503,7 +1504,7 @@ module.exports = {
         Realm.copyBundledRealmFiles();
 
         TestCase.assertThrowsContaining(() => {
-            new Realm({ path: 'dates-v3.realm', disableFormatUpgrade: true } );
+            new Realm({ path: 'realm-bundle.realm', disableFormatUpgrade: true } );
         }, 'The Realm file format must be allowed to be upgraded in order to proceed.');
     },
 

@@ -205,19 +205,56 @@ module.exports = {
         });
 
         TestCase.assertEqual(john.linkingObjectsCount(), 0);
-        
+
         var olivier;
+        var id;
         realm.write(function() {
             olivier = realm.create('PersonObject', {name: 'Olivier', age: 0});
+            id = olivier.objectId();
             realm.create('PersonObject', {name: 'Christine', age: 25, children: [olivier]});
         });
-        
+
         TestCase.assertEqual(olivier.linkingObjectsCount(), 1);
-        
+        TestCase.assertEqual(olivier.objectId(), id);
+
         realm.write(function() {
             john.children.push(olivier);
         });
 
+        TestCase.assertEqual(olivier.objectId(), id);
+        TestCase.assertEqual(john.children.length, 1);
+        TestCase.assertEqual(john.children[0]['name'], 'Olivier');
+        TestCase.assertEqual(realm.objects('PersonObject').length, 3);
+        TestCase.assertEqual(olivier.parents.length, 2);
         TestCase.assertEqual(olivier.linkingObjectsCount(), 2);
+    },
+
+    testLinkingObjectsCountNonRecursive: function () {
+        var realm = new Realm({schema: [schemas.ParentObject, schemas.NameObject]});
+
+        var parent;
+        realm.write(() => {
+            parent = realm.create('ParentObject', { id : 0 });
+        });
+
+        TestCase.assertEqual(realm.objects('ParentObject').length, 1);
+
+        var child;
+        realm.write(() => {
+            child = realm.create('NameObject', { family: 'Johnson', given: ['Olivier'], prefix: [] });
+            realm.create('ParentObject', { id: 1, name: [child] });
+        });
+        TestCase.assertEqual(realm.objects('ParentObject').length, 2);
+        TestCase.assertEqual(realm.objects('NameObject').length, 1);
+        TestCase.assertEqual(child.linkingObjectsCount(), 1);
+
+        realm.write(() => {
+            parent.name.push(child);
+        });
+        TestCase.assertEqual(realm.objects('ParentObject').length, 2);
+        TestCase.assertEqual(realm.objects('NameObject').length, 1);
+        TestCase.assertEqual(child.linkingObjectsCount(), 2);
+
+        realm.close();
     }
 };

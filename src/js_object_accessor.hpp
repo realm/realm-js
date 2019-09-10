@@ -323,10 +323,11 @@ struct Unbox<JSEngine, Obj> {
     }
 };
 
+// FIXME: Why do we need this? It is required in order to compile and seems to be used by the query builder
 template<typename JSEngine>
 struct Unbox<JSEngine, ObjKey> {
     static ObjKey call(NativeAccessor<JSEngine> *ctx, typename JSEngine::Value const& value, bool create, bool try_update, bool only_update_diffed, ObjKey current_row) {
-        return current_row;
+        return Unbox<JSEngine, Obj>::call(ctx, value, create, try_update, only_update_diffed, current_row).get_key();
     }
 };
 } // namespace _impl

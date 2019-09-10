@@ -291,7 +291,6 @@ template<typename T>
 void RealmObjectClass<T>::linking_objects_count(ContextType, ObjectType object, Arguments &, ReturnValue &return_value) {
     auto realm_object = get_internal<T, RealmObjectClass<T>>(object);
     const Obj& obj = realm_object->obj();
-
     return_value.set(static_cast<uint32_t>(obj.get_backlink_count()));
 }
 

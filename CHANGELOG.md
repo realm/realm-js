@@ -1,5 +1,9 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
+### Breaking changes
+* Support of the old timestamp type has been removed, and older files cannot be upgraded. The new timestamp type was introduced in v1.0.0.
+* `Realm.delete(Realm.Collection)` will conserve rhe order.
+
 ### Enhancements
 * None.
 
@@ -9,8 +13,8 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Compatibility
 * Realm Object Server: 3.21.0 or later.
-* APIs are backwards compatible with all previous release of realm in the 2.x.y series.
-* File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
+* APIs are backwards compatible with all previous release of realm in the 4.x.y series.
+* File format: Generates Realms with format v10 (automatically upgrades Realms with format v9).
 
 ### Internal
 * Upgraded to Realm Core v6.0.0-alpha.15.
