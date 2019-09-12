@@ -1,7 +1,7 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
-* Added `Realm.Sync.Configuration.client_reset_mode`. Default is `'recover'`.
+* Added support for Client Resync which automatically will recover the local Realm in case the server is rolled back. This largely replaces the Client Reset mechanism. Can be configured using `Realm.Sync.Configuration.clientResyncMode`. Three modes are available: `'recover'`, `'discard`', and `'manual'`. Default is `'recover'`. ([#2328](https://github.com/realm/realm-js/issues/2328))
 
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
