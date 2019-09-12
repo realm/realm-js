@@ -494,6 +494,7 @@ declare namespace Realm.Sync {
         Manual = 'manual',
         Recover = 'recover'
     }
+
     interface SyncConfiguration {
         user: User;
         url: string;
