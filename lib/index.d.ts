@@ -489,6 +489,11 @@ declare namespace Realm.Sync {
         validateCallback?: SSLVerifyCallback;
     }
 
+    const enum ClientResyncMode {
+        Discard = 'discard',
+        Manual = 'manual',
+        Recover = 'recover'
+    }
     interface SyncConfiguration {
         user: User;
         url: string;
@@ -505,9 +510,10 @@ declare namespace Realm.Sync {
         _disableQueryBasedSyncUrlChecks?: boolean;
         _sessionStopPolicy?: SessionStopPolicy;
         custom_http_headers?: { [header: string]: string };
-        customQueryBasedSyncIdentifier?: string,
-        newRealmFileBehavior?: OpenRealmBehaviorConfiguration
-        existingRealmFileBehavior?: OpenRealmBehaviorConfiguration
+        customQueryBasedSyncIdentifier?: string;
+        newRealmFileBehavior?: OpenRealmBehaviorConfiguration;
+        existingRealmFileBehavior?: OpenRealmBehaviorConfiguration;
+        clientResyncMode?: ClientResyncMode;
     }
 
     interface OpenRealmBehaviorConfiguration {
