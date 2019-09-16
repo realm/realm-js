@@ -1051,6 +1051,34 @@ module.exports = {
         });
     },
 
+    testClientResyncIncorrectModeForQueryBasedSync() {
+        // FIXME: try to enable for React Native
+        if (!isNodeProcess) {
+            return;
+        }
+
+        return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.anonymous()).then(user => {
+            return new Promise((resolve, reject) => {
+                var realm;
+                let config = {
+                    sync: {
+                        user: user,
+                        url: 'realm://127.0.0.1:9080/~/dynamicSchema',
+                        fullSynchronization: false,
+                        clientResyncMode: 'recover'
+                    }
+                };
+                try {
+                    new Realm(config);
+                    reject('Should have failed if incorrect resync mode.');
+                }
+                catch (e) {
+                    resolve();
+                }
+            });
+        });
+    },
+
     testAddConnectionNotification() {
         return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.anonymous()).then((u) => {
             let config = {
