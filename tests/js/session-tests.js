@@ -28,7 +28,7 @@ const Utils = require('./test-utils');
 let schemas = require('./schemas');
 
 const isElectronProcess = typeof process === 'object' && process.type === 'renderer';
-const isNodeProccess = typeof process === 'object' && process + '' === '[object process]' && !isElectronProcess;
+const isNodeProcess = typeof process === 'object' && process + '' === '[object process]' && !isElectronProcess;
 
 const require_method = require;
 function node_require(module) {
@@ -40,7 +40,7 @@ let fs;
 let execFile;
 let path;
 
-if (isNodeProccess) {
+if (isNodeProcess) {
     tmp = node_require('tmp');
     fs = node_require('fs');
     execFile = node_require('child_process').execFile;
@@ -163,7 +163,7 @@ module.exports = {
     },
 
     testRealmOpen() {
-        if (!isNodeProccess) {
+        if (!isNodeProcess) {
             return;
         }
 
@@ -199,7 +199,7 @@ module.exports = {
     },
 
     testRealmOpenWithExistingLocalRealm() {
-        if (!isNodeProccess) {
+        if (!isNodeProcess) {
             return;
         }
 
@@ -241,7 +241,7 @@ module.exports = {
     },
 
     testRealmOpenAsync() {
-        if (!isNodeProccess) {
+        if (!isNodeProcess) {
             return;
         }
 
@@ -290,7 +290,7 @@ module.exports = {
     },
 
     testRealmOpenAsyncNoSchema() {
-        if (!isNodeProccess) {
+        if (!isNodeProcess) {
             return;
         }
 
@@ -419,7 +419,7 @@ module.exports = {
     },
 
     testListNestedSync() {
-        if (!isNodeProccess) {
+        if (!isNodeProcess) {
             return;
         }
 
@@ -460,7 +460,7 @@ module.exports = {
 
     testIncompatibleSyncedRealmOpen() {
         let realm = "sync-v1.realm";
-        if (isNodeProccess) {
+        if (isNodeProcess) {
             realm = copyFileToTempDir(path.join(process.cwd(), "data", realm));
         }
         else {
@@ -494,7 +494,7 @@ module.exports = {
 
     testIncompatibleSyncedRealmOpenAsync() {
         let realm = "sync-v1.realm";
-        if (isNodeProccess) {
+        if (isNodeProcess) {
             realm = copyFileToTempDir(path.join(process.cwd(), "data", realm));
         }
         else {
@@ -535,7 +535,7 @@ module.exports = {
 
     testIncompatibleSyncedRealmConsructor() {
         let realm = "sync-v1.realm";
-        if (isNodeProccess) {
+        if (isNodeProcess) {
             realm = copyFileToTempDir(path.join(process.cwd(), "data", realm));
         }
         else {
@@ -607,7 +607,7 @@ module.exports = {
     },*/
 
     testProgressNotificationsUnregisterForRealmConstructor() {
-        if (!isNodeProccess) {
+        if (!isNodeProcess) {
             return;
         }
 
@@ -674,7 +674,7 @@ module.exports = {
     },
 
     testProgressNotificationsForRealmOpen() {
-        if (!isNodeProccess) {
+        if (!isNodeProcess) {
             return;
         }
 
@@ -702,7 +702,7 @@ module.exports = {
     },
 
     testProgressNotificationsForRealmOpenAsync() {
-        if (!isNodeProccess) {
+        if (!isNodeProcess) {
             return;
         }
 
@@ -839,7 +839,7 @@ module.exports = {
     },
 
     async testPartialSync() {
-        if (!isNodeProccess) {
+        if (!isNodeProcess) {
             return;
         }
 
@@ -923,7 +923,7 @@ module.exports = {
     },
 
     testPartialSyncWithDynamicSchema() {
-        if (!isNodeProccess) {
+        if (!isNodeProcess) {
             return;
         }
         const username = Utils.uuid();
@@ -970,7 +970,7 @@ module.exports = {
     },
 
     testRoleClassWithPartialSyncCanCoexistWithPermissionsClass() {
-        if (!isNodeProccess) {
+        if (!isNodeProcess) {
             return;
         }
 
@@ -996,7 +996,7 @@ module.exports = {
 
     testClientReset() {
         // FIXME: try to enable for React Native
-        if (!isNodeProccess) {
+        if (!isNodeProcess) {
             return;
         }
 
@@ -1031,7 +1031,7 @@ module.exports = {
 
     testClientResyncIncorrectMode() {
         // FIXME: try to enable for React Native
-        if (!isNodeProccess) {
+        if (!isNodeProcess) {
             return;
         }
 
@@ -1042,7 +1042,7 @@ module.exports = {
                 config.sync.clientResyncMode = 'foobar'; // incorrect mode
                 try {
                     new Realm(config);
-                    reject();
+                    reject('Should have failed if incorrect resync mode.');
                 }
                 catch (e) {
                     resolve();
@@ -1103,7 +1103,7 @@ module.exports = {
     },
 
     testConnectionState() {
-        if (!isNodeProccess) {
+        if (!isNodeProcess) {
             return;
         }
 
@@ -1274,7 +1274,7 @@ module.exports = {
     },
 
     testDownloadAllServerChangesTimeout() {
-        if (!isNodeProccess) {
+        if (!isNodeProcess) {
             return;
         }
 
@@ -1298,7 +1298,7 @@ module.exports = {
     },
 
     testUploadAllLocalChangesTimeout() {
-        if (!isNodeProccess) {
+        if (!isNodeProcess) {
             return;
         }
 

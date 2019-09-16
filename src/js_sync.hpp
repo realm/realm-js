@@ -1254,7 +1254,7 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
         }
 #endif
 
-        ClientResyncMode clientResyncMode = realm::ClientResyncMode::Recover;
+        ClientResyncMode clientResyncMode = realm::ClientResyncMode::Manual;
         ValueType client_resync_mode_temp = Object::get_property(ctx, sync_config_object, "clientResyncMode");
         if (!Value::is_undefined(ctx, client_resync_mode_temp)) {
             std::string client_resync_mode = std::string(Value::validated_to_string(ctx, client_resync_mode_temp, "client_resync_mode"));
@@ -1267,6 +1267,9 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
             } else {
                 throw std::invalid_argument("Unknown argument for clientResyncMode: " + client_resync_mode);
             }
+        }
+        if (config.sync_config->is_partial && clientResyncMode != realm::ClientResyncMode::Manual) {
+            throw std::invalid_argument("Only 'manual' resync mode is supported for query-based sync.");
         }
         config.sync_config->client_resync_mode = clientResyncMode;
     }
