@@ -51,7 +51,7 @@
  * @property {string} [clientResyncMode] A Client Resync is triggered if the device and server cannot agree on a common shared history
  *     for the Realm file, thus making it impossible for the device to upload or receive any changes.
  *     This can happen if the server is rolled back or restored from backup. Just having the device offline will not trigger a Client Resync.
- *     The three different modes are `'recover'`, `'discard'`, and `'manual'` with 'recover' as default value.
+ *     The three different modes are `'recover'`, `'discard'`, and `'manual'` with 'recover' as the default value.
  */
 
 /**
@@ -62,7 +62,7 @@
  *     This is the default mode for fully synchronized Realms. It is not yet supported by query-based Realms.
  * @property "discard" - The local Realm will be discarded and replaced with the server side Realm.
  *     All local changes will be lost. This mode is not yet supported by query-based Realms.
- * @property "manual" - A manual Client Resync is also known as a Client Reset. A error will be thrown.
+ * @property "manual" - A manual Client Resync is also known as a Client Reset. An error will be thrown.
  *     See also {@link Realm.Sync.initiateClientReset}.
  */
 
