@@ -48,6 +48,9 @@
  * @property {string} [customQueryBasedSyncIdentifier] - A custom identifier to append to the Realm url rather than the default
  *    identifier which is comprised of the user id and a random string. It allows you to reuse query based Realms across
  *    different devices.
+ * @property {Object} [newRealmFileBehavior] - Whether to create a new file and sync in background or wait for the file to be synced.
+ * @property {Object} [existingRealmFileBehavior] - Whether to open existing file and sync in background or wait for the sync of the
+ *    file to complete and then open.
  */
 
 /**
