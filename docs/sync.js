@@ -51,7 +51,8 @@
  * @property {string} [clientResyncMode] A Client Resync is triggered if the device and server cannot agree on a common shared history
  *     for the Realm file, thus making it impossible for the device to upload or receive any changes.
  *     This can happen if the server is rolled back or restored from backup. Just having the device offline will not trigger a Client Resync.
- *     The three different modes are `'recover'`, `'discard'`, and `'manual'` with `'manual'` as the default value.
+ *     The three different modes are `'recover'`, `'discard'`, and `'manual'` with `'manual'` as the default value for
+ *     query-based sync and `'recover'` for full sync.
  *     Query-based synced Realm only support `'manual'`.
  */
 
