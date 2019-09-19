@@ -1,4 +1,4 @@
-x.x.x Release notes (yyyy-MM-dd)
+3.1.0 Release notes (2019-9-19)
 =============================================================
 ### Enhancements
 * Added support for Client Resync which can automatically recover the local Realm in case the server is rolled back. This largely replaces the Client Reset mechanism. It is configured using `Realm.Sync.Configuration.clientResyncMode`. Three modes are available: `'recover'`, `'discard`', and `'manual'` but currently only `'manual'` is supported for query-based sync. Default is `'recover'` for full sync and `'manual'` for query-based sync. ([#2328](https://github.com/realm/realm-js/issues/2328))
