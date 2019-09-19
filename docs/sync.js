@@ -54,6 +54,9 @@
  *     The three different modes are `'recover'`, `'discard'`, and `'manual'` with `'manual'` as the default value for
  *     query-based sync and `'recover'` for full sync.
  *     Query-based synced Realm only support `'manual'`.
+ * @property {Object} [newRealmFileBehavior] - Whether to create a new file and sync in background or wait for the file to be synced.
+ * @property {Object} [existingRealmFileBehavior] - Whether to open existing file and sync in background or wait for the sync of the
+ *    file to complete and then open.
  */
 
 /**
