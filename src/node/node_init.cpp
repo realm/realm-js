@@ -30,21 +30,14 @@
  namespace realm {
  namespace node {
 
-static void init(v8::Local<v8::Object> exports, v8::Local<v8::Value> module,
-                 v8::Local<v8::Context> context) {
-    v8::Isolate* isolate = context->GetIsolate();
-    v8::Local<v8::Function> realm_constructor = js::RealmClass<Types>::create_constructor(isolate);
-
-    Nan::Set(exports, realm_constructor->GetName(), realm_constructor);
-}
-
 static void napi_init(Napi::Env env, v8::Isolate* isolate, Napi::Object exports) {
-	v8::Local<v8::Function> realm_constructor = js::RealmClass<Types>::create_constructor(isolate);
+	//v8::Local<v8::Function> realm_constructor = js::RealmClass<Types>::create_constructor(env);
+	Napi::Function realm_constructor = js::RealmClass<Types>::create_constructor(env);
 
-	auto ctorName = realm_constructor->GetName().As<v8::String>();
+	/*auto ctorName = realm_constructor.GetName().As<v8::String>();
 	v8::String::Utf8Value value(ctorName);
 	char* v = *value;
-	Napi::String::New(env, v);
+	Napi::String::New(env, v);*/
 	//Nan::Set(exports, realm_constructor->GetName(), realm_constructor);
 	//exports.Set(Napi::String::New(env, v), Napi::Function::New(env, Method));
 }

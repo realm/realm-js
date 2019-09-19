@@ -20,9 +20,45 @@
 
 #include "node_types.hpp"
 
+#include "napi.h"
+#include "node_napi_convert.hpp"
+
+
 namespace realm {
 namespace js {
 
+//template<>
+//class String<node::Types> {
+//	std::string m_str;
+//
+//public:
+//	String(const char* s) : m_str(s) {}
+//	String(const std::string& s) : m_str(s) {}
+//	String(const v8::Local<v8::String>& s);
+//	String(v8::Local<v8::String>&& s) : String(s) {}
+//
+//	operator std::string() const & {
+//		return m_str;
+//	}
+//	operator std::string() && {
+//		return std::move(m_str);
+//	}
+//	operator v8::Local<v8::String>() const {
+//		return Nan::New(m_str).ToLocalChecked();
+//	}
+//};
+//
+//inline String<node::Types>::String(const v8::Local<v8::String>& s) {
+//	if (s.IsEmpty() || s->Length() == 0) {
+//		return;
+//	}
+//	m_str.resize(s->Utf8Length());
+//	const int flags = v8::String::NO_NULL_TERMINATION | v8::String::REPLACE_INVALID_UTF8;
+//	s->WriteUtf8(&m_str[0], m_str.size(), 0, flags);
+//}
+
+
+//NAPI: consider removing in favor of Napi::String
 template<>
 class String<node::Types> {
     std::string m_str;
@@ -30,27 +66,24 @@ class String<node::Types> {
   public:
     String(const char* s) : m_str(s) {}
     String(const std::string &s) : m_str(s) {}
-    String(const v8::Local<v8::String> &s);
-    String(v8::Local<v8::String> &&s) : String(s) {}
+    String(const Napi::String &s);
+    String(Napi::String &&s) : String(s) {}
 
     operator std::string() const& {
         return m_str;
     }
+
     operator std::string() && {
         return std::move(m_str);
     }
-    operator v8::Local<v8::String>() const {
-        return Nan::New(m_str).ToLocalChecked();
+
+    Napi::String ToString(Napi::Env env) {
+		return Napi::String::New(env, m_str);
     }
 };
 
-inline String<node::Types>::String(const v8::Local<v8::String> &s) {
-    if (s.IsEmpty() || s->Length() == 0) {
-        return;
-    }
-    m_str.resize(s->Utf8Length());
-    const int flags = v8::String::NO_NULL_TERMINATION | v8::String::REPLACE_INVALID_UTF8;
-    s->WriteUtf8(&m_str[0], m_str.size(), 0, flags);
+inline String<node::Types>::String(const Napi::String &s) {
+	m_str = s.Utf8Value();
 }
 
 } // js

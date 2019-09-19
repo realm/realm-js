@@ -20,53 +20,114 @@
 
 #include "node_types.hpp"
 
+#include "napi.h"
+#include "node_napi_convert.hpp"
+
 namespace realm {
 namespace js {
 
-template<>
-inline v8::Local<v8::Value> node::Function::call(v8::Isolate* isolate, const v8::Local<v8::Function> &function, const v8::Local<v8::Object> &this_object, size_t argc, const v8::Local<v8::Value> arguments[]) {
-    Nan::TryCatch trycatch;
+//template<>
+//inline v8::Local<v8::Value> node::Function::call(Napi::Env env, const v8::Local<v8::Function> &function, const v8::Local<v8::Object> &this_object, size_t argc, const v8::Local<v8::Value> arguments[]) {
+//	v8::Isolate* isolate = realm::node::getIsolate(env);
+//	Nan::TryCatch trycatch;
+//
+//    auto recv = this_object.IsEmpty() ? isolate->GetCurrentContext()->Global() : this_object;
+//    auto result = Nan::Call(function, recv, (int)argc, const_cast<v8::Local<v8::Value>*>(arguments));
+//
+//    if (trycatch.HasCaught()) {
+//        throw node::Exception(env, trycatch.Exception());
+//    }
+//    return result.ToLocalChecked();
+//}
 
-    auto recv = this_object.IsEmpty() ? isolate->GetCurrentContext()->Global() : this_object;
-    auto result = Nan::Call(function, recv, (int)argc, const_cast<v8::Local<v8::Value>*>(arguments));
-
-    if (trycatch.HasCaught()) {
-        throw node::Exception(isolate, trycatch.Exception());
-    }
-    return result.ToLocalChecked();
+template <>
+inline Napi::Value node::Function::call(Napi::Env env, const Napi::Function& function, const Napi::Object& this_object, size_t argc, const Napi::Value arguments[]) {
+	auto recv = this_object.IsEmpty() ? env.Global() : this_object;
+	try {
+		std::vector<napi_value> args(const_cast<const Napi::Value*>(arguments), const_cast<const Napi::Value*>(arguments) + argc);
+		auto result = function.Call(recv, args);
+		return result;
+	}
+	catch (const Napi::Error &e) {
+		throw node::Exception(env, e.Message());
+	}
 }
 
-template<>
-inline v8::Local<v8::Value> node::Function::callback(v8::Isolate* isolate, const v8::Local<v8::Function> &function, const v8::Local<v8::Object> &this_object, size_t argc, const v8::Local<v8::Value> arguments[]) {
-    if (!isolate->GetCallingContext().IsEmpty()) {
-        // if there are any JavaScript frames on the stack below this one we don't need to
-        // go through the trouble of calling MakeCallback. MakeCallback is only for when a
-        // thread with no JavaScript frames on its stack needs to call into JavaScript, like in
-        // an uv_async callback.
-        return call(isolate, function, this_object, argc, arguments);
-    }
+//template <>
+//inline v8::Local<v8::Value> node::Function::callback(Napi::Env env, const v8::Local<v8::Function> &function, const v8::Local<v8::Object> &this_object, size_t argc, const v8::Local<v8::Value> arguments[])
+//{
+//	v8::Isolate *isolate = realm::node::getIsolate(env);
+//	if (!isolate->GetCallingContext().IsEmpty())
+//	{
+//		// if there are any JavaScript frames on the stack below this one we don't need to
+//		// go through the trouble of calling MakeCallback. MakeCallback is only for when a
+//		// thread with no JavaScript frames on its stack needs to call into JavaScript, like in
+//		// an uv_async callback.
+//		return call(env, function, this_object, argc, arguments);
+//	}
+//
+//	v8::TryCatch trycatch(isolate);
+//
+//	auto recv = this_object.IsEmpty() ? isolate->GetCurrentContext()->Global() : this_object;
+//	auto result = ::node::MakeCallback(isolate, recv, function, (int)argc, const_cast<v8::Local<v8::Value> *>(arguments));
+//
+//	if (trycatch.HasCaught())
+//	{
+//		::node::FatalException(isolate, trycatch);
+//	}
+//	return result;
+//}
 
-    v8::TryCatch trycatch(isolate);
-    
-    auto recv = this_object.IsEmpty() ? isolate->GetCurrentContext()->Global() : this_object;
-    auto result = ::node::MakeCallback(isolate, recv, function, (int)argc, const_cast<v8::Local<v8::Value>*>(arguments));
+template <>
+inline Napi::Value node::Function::callback(Napi::Env env, const Napi::Function& function, const Napi::Object& this_object, size_t argc, const Napi::Value arguments[]) {
+	//NAPI: if possible do not use Napi::Function::MakeCallback
+	//v8::Isolate* isolate = realm::node::getIsolate(env);
+	//if (!isolate->GetCallingContext().IsEmpty())
+	//{
+	//	// if there are any JavaScript frames on the stack below this one we don't need to
+	//	// go through the trouble of calling MakeCallback. MakeCallback is only for when a
+	//	// thread with no JavaScript frames on its stack needs to call into JavaScript, like in
+	//	// an uv_async callback.
+	//	return call(env, function, this_object, argc, arguments);
+	//}
 
-    if (trycatch.HasCaught()) {
-        ::node::FatalException(isolate, trycatch);
-    }
-    return result;
+	auto recv = this_object.IsEmpty() ? env.Global() : this_object;
+	try	{
+		std::vector<napi_value> args(const_cast<const Napi::Value*>(arguments), const_cast<const Napi::Value*>(arguments) + argc);
+		auto result = function.MakeCallback(recv, args);
+		return result;
+	}
+	catch (const Napi::Error& e) {
+		throw node::Exception(env, e.Message());
+	}
 }
 
-template<>
-inline v8::Local<v8::Object> node::Function::construct(v8::Isolate* isolate, const v8::Local<v8::Function> &function, size_t argc, const v8::Local<v8::Value> arguments[]) {
-    Nan::TryCatch trycatch;
-    auto result = Nan::NewInstance(function, (int)argc, const_cast<v8::Local<v8::Value>*>(arguments));
+//template <>
+//inline v8::Local<v8::Object> node::Function::construct(Napi::Env env, const v8::Local<v8::Function> &function, size_t argc, const v8::Local<v8::Value> arguments[])
+//{
+//	v8::Isolate *isolate = realm::node::getIsolate(env);
+//	Nan::TryCatch trycatch;
+//	auto result = Nan::NewInstance(function, (int)argc, const_cast<v8::Local<v8::Value> *>(arguments));
+//
+//	if (trycatch.HasCaught())
+//	{
+//		throw node::Exception(env, trycatch.Exception());
+//	}
+//	return result.ToLocalChecked();
+//}
 
-    if (trycatch.HasCaught()) {
-        throw node::Exception(isolate, trycatch.Exception());
-    }
-    return result.ToLocalChecked();
+
+template <>
+inline Napi::Object node::Function::construct(Napi::Env env, const Napi::Function& function, size_t argc, const Napi::Value arguments[]) {
+	try {
+		std::vector<napi_value> args(const_cast<const Napi::Value*>(arguments), const_cast<const Napi::Value*>(arguments) + argc);
+		auto result = function.New(args);
+		return result;
+	}
+	catch (const Napi::Error& e) {
+		throw node::Exception(env, e.Message());
+	}
 }
-    
-} // js
-} // realm
+
+} // namespace js
+} // namespace realm

@@ -19,18 +19,34 @@
 #pragma once
 
 #include "node_types.hpp"
+#include "napi.h"
+#include "node_napi_convert.hpp"
 
 namespace realm {
 namespace js {
 
-template<>
-inline v8::Local<v8::Context> node::Context::get_global_context(v8::Isolate* isolate) {
-    return isolate->GetCurrentContext();
-}
+//template<>
+//inline v8::Local<v8::Context> node::Context::get_global_context(v8::Isolate* isolate) {
+//	return isolate->GetCurrentContext();
+//}
 
 template<>
-inline AbstractExecutionContextID node::Context::get_execution_context_id(v8::Isolate* isolate)
+inline Napi::Object node::Context::get_global_context(Napi::Env env) {
+	return env.Global();
+}
+
+//template<>
+//inline AbstractExecutionContextID node::Context::get_execution_context_id(v8::Isolate* isolate)
+//{
+//	return reinterpret_cast<AbstractExecutionContextID>(isolate);
+//}
+
+
+//NAPI: AbstractExecutionContextID does not exists in NAPI
+template<>
+inline AbstractExecutionContextID node::Context::get_execution_context_id(Napi::Env env)
 {
+	v8::Isolate* isolate = realm::node::getIsolate(env);
     return reinterpret_cast<AbstractExecutionContextID>(isolate);
 }
 

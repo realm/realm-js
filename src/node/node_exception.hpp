@@ -19,13 +19,21 @@
 #pragma once
 
 #include "node_types.hpp"
+#include "napi.h"
 
 namespace realm {
 namespace js {
 
+
+//template<>
+//inline v8::Local<v8::Value> node::Exception::value(v8::Isolate* isolate, const std::string& message) {
+//	return Nan::Error(message.c_str());
+//}
+
 template<>
-inline v8::Local<v8::Value> node::Exception::value(v8::Isolate* isolate, const std::string &message) {
-    return Nan::Error(message.c_str());
+inline Napi::Value node::Exception::value(Napi::Env env, const std::string &message) {
+	//NAPI: investigate Napi::Error instead of Napi::Value result
+	return Napi::String::New(env, message);
 }
     
 } // js

@@ -30,18 +30,20 @@
 
 #include "js_types.hpp"
 
+#include "napi.h"
+
 #define HANDLESCOPE Nan::HandleScope handle_scope;
 
 namespace realm {
 namespace node {
 
 struct Types {
-    using Context = v8::Isolate*;
-    using GlobalContext = v8::Local<v8::Context>;
-    using Value = v8::Local<v8::Value>;
-    using Object = v8::Local<v8::Object>;
-    using String = v8::Local<v8::String>;
-    using Function = v8::Local<v8::Function>;
+	using Context = Napi::Env; //v8::Isolate*;
+	using GlobalContext = Napi::Object;//v8::Local<v8::Context>; //NAPI: or Napi::ObjectReference ?
+	using Value = Napi::Value; //v8::Local<v8::Value>;
+	using Object = Napi::Object; //v8::Local<v8::Object>;
+	using String = Napi::String; //v8::Local<v8::String>;
+	using Function = Napi::Function; //v8::Local<v8::Function>;
 
     using ConstructorCallback = Nan::FunctionCallback;
     using FunctionCallback = Nan::FunctionCallback;
