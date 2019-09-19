@@ -48,9 +48,27 @@
  * @property {string} [customQueryBasedSyncIdentifier] - A custom identifier to append to the Realm url rather than the default
  *    identifier which is comprised of the user id and a random string. It allows you to reuse query based Realms across
  *    different devices.
+ * @property {string} [clientResyncMode] A Client Resync is triggered if the device and server cannot agree on a common shared history
+ *     for the Realm file, thus making it impossible for the device to upload or receive any changes.
+ *     This can happen if the server is rolled back or restored from backup. Just having the device offline will not trigger a Client Resync.
+ *     The three different modes are `'recover'`, `'discard'`, and `'manual'` with `'manual'` as the default value for
+ *     query-based sync and `'recover'` for full sync.
+ *     Query-based synced Realm only support `'manual'`.
  * @property {Object} [newRealmFileBehavior] - Whether to create a new file and sync in background or wait for the file to be synced.
  * @property {Object} [existingRealmFileBehavior] - Whether to open existing file and sync in background or wait for the sync of the
  *    file to complete and then open.
+ */
+
+/**
+ * This describes the client resync modes.
+ * @typedef {("recover"|"discard"|"manual")} Realm.Sync~ClientResyncMode
+ * @property "recover" - Realm will compare the local Realm with the Realm on the server and automatically transfer
+ *     any changes from the local Realm that makes sense to the Realm provided by the server.
+ *     This is the default mode for fully synchronized Realms. It is not yet supported by query-based Realms.
+ * @property "discard" - The local Realm will be discarded and replaced with the server side Realm.
+ *     All local changes will be lost. This mode is not yet supported by query-based Realms.
+ * @property "manual" - A manual Client Resync is also known as a Client Reset. An error will be thrown.
+ *     See also {@link Realm.Sync.initiateClientReset}.
  */
 
 /**
