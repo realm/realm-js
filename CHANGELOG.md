@@ -1,3 +1,19 @@
+x.x.x Release notes (yyyy-MM-dd)
+=============================================================
+### Enhancements
+* None.
+
+### Fixed
+* Fixed check for if the partial sync schema needs to be initialized. ([realm/realm-object-store#843](https://github.com/realm/realm-object-store/pull/843))
+
+### Compatibility
+* Realm Object Server: 3.23.1 or later.
+* APIs are backwards compatible with all previous release of realm in the 2.x.y series.
+* File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
+
+### Internal
+* None.
+
 3.0.0 Release notes (2019-9-11)
 =============================================================
 ### Breaking Changes
