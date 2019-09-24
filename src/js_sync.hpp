@@ -903,7 +903,7 @@ void SubscriptionClass<T>::add_listener(ContextType ctx, ObjectType this_object,
 
     auto token = subscription->add_notification_callback([=]() {
         HANDLESCOPE
-
+        std::cout << "GED 1: " << static_cast<double>(subscription->state()) << "\n";
         ValueType arguments[2];
         arguments[0] = static_cast<ObjectType>(protected_this),
         arguments[1] = Value::from_number(protected_ctx, static_cast<double>(subscription->state()));

@@ -53,7 +53,7 @@ module.exports = {
 
                 let integerId = integer.objectId();
                 let nullIntegerId = nullInteger.objectId();
-                let stringId = string._objectId();
+                let stringId = string.objectId();
                 let nullStringId = nullString.objectId();
                 let noneId = none.objectId();
 

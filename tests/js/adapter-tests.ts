@@ -281,7 +281,7 @@ describe('Adapter', () => {
                     actual_object = realm.objectForPrimaryKey(object_type, change_object[object_schema.primaryKey]);
                 }
                 else {
-                    actual_object = realm._objectForObjectId(object_type, identity);
+                    actual_object = realm.objectForObjectId(object_type, identity);
                 }
 
                 expect(actual_object).toBeDefined();

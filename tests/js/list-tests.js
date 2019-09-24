@@ -797,8 +797,6 @@ module.exports = {
         TestCase.assertArraysEqual(values(list.sorted([['link.value', false]])), [3, 2, 1]);
         TestCase.assertArraysEqual(values(list.sorted([['link.value', true]])), [1, 2, 3]);
 
-        // FIXME: reenable when sorting on primitive lists work again
-        /*
         TestCase.assertThrowsContaining(() => prim.int.sorted('value', true),
                                         "Cannot sort on key path 'value': arrays of 'int' can only be sorted on 'self'");
         TestCase.assertThrowsContaining(() => prim.int.sorted('!ARRAY_VALUE', true),
@@ -826,7 +824,6 @@ module.exports = {
         TestCase.assertArraysEqual(prim.optString.sorted(), [null, 'a', 'b', 'c']);
         TestCase.assertArraysEqual(prim.optData.sorted(), [null, DATA1, DATA2, DATA3]);
         TestCase.assertArraysEqual(prim.optDate.sorted(), [null, DATE1, DATE2, DATE3]);
-        */
     },
 
     testArrayMethods: function() {

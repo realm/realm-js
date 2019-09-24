@@ -151,15 +151,23 @@ module.exports = {
 
     testUpdateQuery: function () {
         return getRealm().then(realm => {
+            console.log('FISK 1')
             return new Promise((resolve, reject) => {
+                console.log('FISK 2')
                 const sub = realm.objects("ObjectA").filtered("name = 'Foo'").subscribe("update-named-sub-query");
+                console.log('FISK 3')
                 sub.addListener((subscription, state) => {
+                    console.log('FISK 4', state)
                     if (state === Realm.Sync.SubscriptionState.Complete) {
+                        console.log('FISK 5')
                         sub.removeAllListeners();
+                        console.log('FISK 6')
                         const namedSub = realm.subscriptions("update-named-sub-query")[0];
+                        console.log('FISK 7')
                         let updated = namedSub.updatedAt;
                         setTimeout(function() {
                             realm.beginTransaction();
+                            console.log('FISK 8')
 
                             // Updating the query must either be a string or a Results objects
                             TestCase.assertThrows(() => namedSub.query = 0);
@@ -177,10 +185,15 @@ module.exports = {
                                 // Updating the query using a Results object
                                 namedSub.query = realm.objects('ObjectA').filtered('name = "Bar"');
                                 TestCase.assertTrue(updated.getTime() < namedSub.updatedAt.getTime());
+                                console.log('FISK 9')
+
                                 realm.commitTransaction();
+                                console.log('FISK 10')
                                 resolve();
                             }, 2);
                         }, 2);
+                    } else {
+                        console.log('FISK 100', state, subscription.error)
                     }
                 });
             });
