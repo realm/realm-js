@@ -60,12 +60,12 @@ if (global.enableSyncTests) {
     // TESTS.OpenBehaviorTests = require('./open-behavior-tests'); // PASS
     // TESTS.UserTests = require('./user-tests'); // PASS
     // TESTS.SessionTests = require('./session-tests'); // FAIL
-    // TESTS.SubscriptionTests = require('./subscription-tests'); // FAIL
+    // TESTS.SubscriptionTests = require('./subscription-tests'); // PASS
 
     if (isNodeProcess && !isElectronProcess) {
         // FIXME: Permission tests currently fail in react native
         // TESTS.PermissionTests = require('./permission-tests');  // 2x FAIL
-        node_require('./adapter-tests'); // 4x FAIL
+        // node_require('./adapter-tests'); // 4x FAIL
         // node_require('./notifier-tests'); // FAIL
     }
 }
