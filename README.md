@@ -99,7 +99,7 @@ On Windows you will need to setup the environment for node-gyp:
 
     ```
     # run in elevated command prompt (as Administrator)
-    npm install -g --production windows-build-tools --vs201
+    npm install -g --production windows-build-tools --vs2015
     ```
 
 * Option 2: Manually install and configure as described in the [node-gyp](https://github.com/nodejs/node-gyp) manual.
