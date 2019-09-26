@@ -24,13 +24,47 @@
 #include "js_sync.hpp"
 
 #include <json.hpp>
+#include <future>
 
 namespace realm {
 namespace js {
 
 template<typename T>
+struct JSPredicateFunctor {
+    using GlobalContextType = typename T::GlobalContext;
+    using FunctionType = typename T::Function;
+    using ObjectType = typename T::Object;
+    using ValueType = typename T::Value;
+    using Value = js::Value<T>;
+    using Function = js::Function<T>;
+public:
+    JSPredicateFunctor(Protected<GlobalContextType> ctx, Protected<ObjectType> this_object, Protected<FunctionType> predicate)
+    : m_js_function([ctx, this_object, predicate](std::string realm_path, std::promise<bool>&& result) {
+        HANDLESCOPE
+        ValueType arguments[1] = { Value::from_string(ctx, realm_path) };
+        ValueType js_result = Function::callback(ctx, predicate, this_object, 1, arguments);
+        result.set_value(Value::validated_to_boolean(ctx, js_result));
+    }) {
+        
+    }
+
+    // this method is called on a background thread but it needs to call into JavaScript and wait for a result
+    bool operator()(const std::string& realm_path) {
+        std::promise<bool> promise;
+        std::future<bool> result = promise.get_future();
+        m_js_function(realm_path, std::move(promise));
+        return result.get();
+    }
+private:
+    EventLoopDispatcher<void(std::string, std::promise<bool>&&)> m_js_function;
+};
+
+template<typename T>
 void AdapterClass<T>::constructor(ContextType ctx, ObjectType this_object, Arguments& arguments) {
     arguments.validate_between(5, 6);
+
+    Protected<GlobalContextType> protected_ctx = Context<T>::get_global_context(ctx);
+    Protected<ObjectType> protected_this(ctx, this_object);
 
     auto path = Value::validated_to_string(ctx, arguments[0]);
     util::try_make_dir(path);
@@ -47,12 +81,21 @@ void AdapterClass<T>::constructor(ContextType ctx, ObjectType this_object, Argum
     if (!shared_user->is_admin()) {
         throw std::runtime_error("User needs to be an admin.");
     }
-    std::string regex_string = Value::validated_to_string(ctx, arguments[3], "regex");
-    std::regex regex(regex_string);
 
-    Protected<GlobalContextType> protected_ctx = Context<T>::get_global_context(ctx);
+    std::function<bool(const std::string&)> predicate;
+    if (Value::is_string(ctx, arguments[3])) {
+        std::string regex_string = Value::to_string(ctx, arguments[3]);
+        predicate = [regex = std::regex(regex_string)](const std::string& realm_path) {
+            return std::regex_match(realm_path, regex);
+        };
+    } else if (Value::is_function(ctx, arguments[3])) {
+        Protected<FunctionType> js_predicate(ctx, Value::to_function(ctx, arguments[3]));
+        predicate = JSPredicateFunctor<T>(protected_ctx, protected_this, js_predicate);
+    } else {
+        throw std::runtime_error("Expected filter to be a regular expression string or a predicate function.");
+    }
+
     Protected<FunctionType> user_callback(ctx, Value::validated_to_function(ctx, arguments[4], "callback"));
-    Protected<ObjectType> protected_this(ctx, this_object);
 
     SyncConfig sync_config_template(shared_user, url);
 
@@ -68,11 +111,9 @@ void AdapterClass<T>::constructor(ContextType ctx, ObjectType this_object, Argum
     auto adapter = new Adapter(EventLoopDispatcher<void(std::string)>([=](auto realm_path) {
         HANDLESCOPE
 
-        if (std::regex_match(realm_path, regex)) {
-            ValueType arguments[1] = { Value::from_string(protected_ctx, realm_path) };
-            Function::callback(protected_ctx, user_callback, protected_this, 1, arguments);
-        }
-    }), regex, path, std::move(sync_config_template));
+        ValueType arguments[1] = { Value::from_string(ctx, realm_path) };
+        Function::callback(protected_ctx, user_callback, protected_this, 1, arguments);
+    }), std::move(predicate), path, std::move(sync_config_template));
     set_internal<T, AdapterClass<T>>(this_object, adapter);
 }
 

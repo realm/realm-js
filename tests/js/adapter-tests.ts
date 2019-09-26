@@ -118,7 +118,7 @@ var rosController;
 let tmpDir;
 
 const realmNamePrefix = path.basename(tmp.dirSync().name);
-let currentTestName: String;
+let currentTestName: string;
 jasmine.getEnv().addReporter({
     specStarted: (result) => {
         currentTestName = result.fullName.replace(/ /g, '_').replace('Adapter', realmNamePrefix);
@@ -148,6 +148,30 @@ describe('Adapter', () => {
         await rosController.shutdown();
         Realm.clearTestState();
         tmpDir.removeCallback();
+    });
+
+    it("predicate functions", async () => {
+        function predicate(realmPath: string) {
+            if (realmPath.indexOf(currentTestName) != -1) {
+                return true;
+            }
+            return false;
+        }
+
+        (await rosController.createRealm("predicateFilteredRealm", allTypesRealmSchema)).close();
+
+        await new Promise(async (resolve, reject) => {
+            var timeout = setTimeout(() => reject('Notification not recieved'), notificationNotReceivedTimeout);
+
+            function callback(realmPath: string) {
+                expect(realmPath).toBe(`/${currentTestName}/predicateFilteredRealm`);
+                clearTimeout(timeout);
+                resolve();
+            }
+    
+            adapter = new Realm.Sync.Adapter(tmpDir.name, `realm://localhost:${rosController.httpPort}`,
+                rosController.adminUser, predicate, callback);
+        });
     });
 
     function createAdapter(ros) {
