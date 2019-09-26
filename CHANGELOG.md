@@ -5,7 +5,7 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Fixed
 * Chained OR equals queries on an unindexed string column failed to match any results if any of the strings were 64 bytes or longer. ([realm/realm-core#3386](https://github.com/realm/realm-core/pull/3386), since v2.27.0-rc.2).
-* ixed serialization of a query which looks for a null timestamp. This only affects query based sync. ([realm/realm-core#3388](https://github.com/realm/realm-core/pull/3388), since v3.0.0)
+* Fixed serialization of a query which looks for a null timestamp. This only affects query based sync. ([realm/realm-core#3388](https://github.com/realm/realm-core/pull/3388), since v3.0.0)
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.
