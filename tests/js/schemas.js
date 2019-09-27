@@ -204,6 +204,13 @@ exports.StringOnly = {
     }
 };
 
+exports.IntOnly = {
+    name: 'IntOnlyObject',
+    properties: {
+        intCol: 'int',
+    }
+};
+
 exports.FloatOnly = {
     name: 'FloatObjectonly',
     properties: {
