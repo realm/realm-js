@@ -1,9 +1,6 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
-* None.
-
-### Enhancements
 * `Realm.Sync.Adapter` can now accept a predicate function filter instead of a regex.
 
 ### Fixed
