@@ -4,7 +4,9 @@ x.x.x Release notes (yyyy-MM-dd)
 * None.
 
 ### Fixed
-* Fixed VS Code React Native debugger context
+* Chained OR equals queries on an unindexed string column failed to match any results if any of the strings were 64 bytes or longer. ([realm/realm-core#3386](https://github.com/realm/realm-core/pull/3386), since v2.27.0-rc.2).
+* Fixed serialization of a query which looks for a null timestamp. This only affects query based sync. ([realm/realm-core#3388](https://github.com/realm/realm-core/pull/3388), since v3.0.0)
+* Fixed VS Code React Native debugger context. Thanks to @sam-drew. ([#2476)(https://github.com/realm/realm-js/issues/2476))
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.
@@ -12,7 +14,9 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
 ### Internal
-* None.
+* Updated to Realm Core v5.23.5.
+* Updated to Realm Sync v4.7.8.
+
 
 3.1.0 Release notes (2019-9-19)
 =============================================================

@@ -213,7 +213,7 @@ void RealmObjectClass<T>::set_link(ContextType ctx, ObjectType object, Arguments
     }
 
     if (row_ndx == realm::not_found) {
-        realm_object->row().set_null(prop->table_column);
+        realm_object->row().nullify_link(prop->table_column);
     }
     else {
         realm_object->row().set_link(prop->table_column, row_ndx);
