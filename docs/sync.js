@@ -1124,7 +1124,7 @@ class Adapter {
 	 * @param {string} serverUrl - the sync server to listen to
 	 * @param {SyncUser} adminUser - an admin user obtained by calling {@linkcode Realm.Sync.User.login|User.login} with admin credentials.
 	 * @param {(string|Realm.Sync.Adapter~RealmWatchPredicate)} filter - a filter used to determine which changed Realms should be monitored -
-	 *  can be a regular expression string or a predicate function. Use `.*` to match all all Realms.
+	 *  can be a regular expression string or a predicate function. Use `'.*'` to match all Realms.
 	 * @param {Realm.Sync.Adapter~RealmChangeCallback} changeCallback - called when a new transaction is available
 	 *  to process for the given realm_path
      * @param {Realm.Sync~SSLConfiguration} [ssl] - SSL configuration for the spawned sync sessions.
