@@ -123,14 +123,14 @@
  * If this is the first time you open the Realm, it will be empty while the server data is being downloaded
  * in the background.
  *
- * @typedef {Object} Realm.Sync.openLocalRealmBehavior
+ * @typedef {Object} Realm.Sync~openLocalRealmBehavior
  */
 
 /**
  * The default behavior settings if you want to fully synchronize a Realm before it is opened.
  * If this takes more than 30 seconds, an exception will be thrown.
  *
- * @typedef {Object} Realm.Sync.downloadBeforeOpenBehavior
+ * @typedef {Object} Realm.Sync~downloadBeforeOpenBehavior
  */
 
 /**
@@ -1123,9 +1123,9 @@ class Adapter {
 	 * @param {string} localPath - the local path where realm files are stored
 	 * @param {string} serverUrl - the sync server to listen to
 	 * @param {SyncUser} adminUser - an admin user obtained by calling {@linkcode Realm.Sync.User.login|User.login} with admin credentials.
-	 * @param {string} regex - a regular expression used to determine which changed Realms should be monitored -
-	 *  use `.*` to match all all Realms
-	 * @param {function(realmPath)} changeCallback - called when a new transaction is available
+	 * @param {(string|Realm.Sync.Adapter~RealmWatchPredicate)} filter - a filter used to determine which changed Realms should be monitored -
+	 *  can be a regular expression string or a predicate function. Use `'.*'` to match all Realms.
+	 * @param {Realm.Sync.Adapter~RealmChangeCallback} changeCallback - called when a new transaction is available
 	 *  to process for the given realm_path
      * @param {Realm.Sync~SSLConfiguration} [ssl] - SSL configuration for the spawned sync sessions.
 	 */
@@ -1212,3 +1212,14 @@ class Adapter {
 	 */
     close() { }
 }
+
+/**
+ * @callback Realm.Sync.Adapter~RealmWatchPredicate
+ * @param {string} path - the path of the realm to consider for change tracking
+ * @returns {boolean} - whether or not to track changes for the realm 
+ */
+
+/**
+ * @callback Realm.Sync.Adapter~RealmChangeCallback
+ * @param {string} path - the path of the realm for which a new transaction is available
+ */

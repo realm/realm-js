@@ -650,6 +650,8 @@ declare namespace Realm.Sync {
         realm (): Realm;
     }
 
+    type RealmWatchPredicate = (realmPath: string) => boolean;
+
     /**
      * @deprecated, to be removed in future versions
      */
@@ -693,7 +695,7 @@ declare namespace Realm.Sync {
             local_path: string,
             server_url: string,
             admin_user: User,
-            regex: string,
+            filter: string | RealmWatchPredicate,
             change_callback: Function,
             ssl?: SSLConfiguration
         )

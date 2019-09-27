@@ -118,7 +118,7 @@ var rosController;
 let tmpDir;
 
 const realmNamePrefix = path.basename(tmp.dirSync().name);
-let currentTestName: String;
+let currentTestName: string;
 jasmine.getEnv().addReporter({
     specStarted: (result) => {
         currentTestName = result.fullName.replace(/ /g, '_').replace('Adapter', realmNamePrefix);
@@ -148,6 +148,52 @@ describe('Adapter', () => {
         await rosController.shutdown();
         Realm.clearTestState();
         tmpDir.removeCallback();
+    });
+
+    it("predicate functions", async () => {
+        // set up the predicate so that it only permits realms whose path ends in 'predicateFilteredRealm'
+        let numberOfRealmsSeenByPredicate = 0;
+        function predicate(realmPath: string) {
+            if (realmPath.indexOf(currentTestName) != -1) {
+                numberOfRealmsSeenByPredicate++;
+                return realmPath.endsWith('predicateFilteredRealm');
+            }
+            return false;
+        }
+
+        // create a realm that should pass through the predicate
+        (await rosController.createRealm("predicateFilteredRealm", allTypesRealmSchema)).close();
+
+        // create a realm that shouldn't pass through the predicate
+        (await rosController.createRealm("ignoredRealm", allTypesRealmSchema)).close();
+
+        // create another realm that will pass the predicate but after a delay so that the ignored realm would have fired the change callback
+        // if predicate filtering didn't work
+        setTimeout(async () => {
+            (await rosController.createRealm("another_predicateFilteredRealm", allTypesRealmSchema)).close();
+        }, 500);
+
+        const realmsSeenInChangeCallback: string[] = [];
+        await new Promise(async (resolve, reject) => {
+            const timeout = setTimeout(() => reject('Notification not recieved'), notificationNotReceivedTimeout);
+    
+            function callback(realmPath: string) {
+                realmsSeenInChangeCallback.push(realmPath);
+                if (realmsSeenInChangeCallback.length == 2) {
+                    clearTimeout(timeout);
+                    resolve();
+                }
+            }
+    
+            adapter = new Realm.Sync.Adapter(tmpDir.name, `realm://localhost:${rosController.httpPort}`,
+                rosController.adminUser, predicate, callback);
+        });
+
+        expect(realmsSeenInChangeCallback).toEqual([
+            `/${currentTestName}/predicateFilteredRealm`,
+            `/${currentTestName}/another_predicateFilteredRealm`
+        ]);
+        expect(numberOfRealmsSeenByPredicate).toEqual(3);
     });
 
     function createAdapter(ros) {
