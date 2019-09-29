@@ -164,6 +164,17 @@ inline void node::Object::set_property(Napi::Env env, const Napi::Object& object
 //    }
 //}
 
+template<>
+inline void node::Object::set_property(Napi::Env env, const Napi::Object& object, uint32_t index, const Napi::Value& value) {
+	try {
+		Napi::Object obj = object;
+		obj.Set(index, value);
+	}
+	catch (const Napi::Error& e) {
+		throw node::Exception(env, e.Message());
+	}
+}
+
 //template<>
 //inline std::vector<node::String> node::Object::get_property_names(Napi::Env env, const v8::Local<v8::Object> &object) {
 //    auto maybe_array = Nan::GetPropertyNames(object);
@@ -184,20 +195,63 @@ inline void node::Object::set_property(Napi::Env env, const Napi::Object& object
 //    return names;
 //}
 
+template<>
+inline std::vector<node::String> node::Object::get_property_names(Napi::Env env, const Napi::Object& object) {
+	try {
+		auto propertyNames = object.GetPropertyNames();
+
+		uint32_t count = propertyNames.Length();
+		std::vector<node::String> names;
+		names.reserve(count);
+
+		for (uint32_t i = 0; i < count; i++) {
+			names.push_back(node::Value::to_string(env, propertyNames[i]));
+		}
+
+		return names;
+	}
+	catch (const Napi::Error& e) {
+		throw node::Exception(env, e.Message());
+	}
+}
+
 //template<>
 //inline v8::Local<v8::Value> node::Object::get_prototype(Napi::Env env, const v8::Local<v8::Object> &object) {
 //    return object->GetPrototype();
 //}
+
+template<>
+inline Napi::Value node::Object::get_prototype(Napi::Env env, const Napi::Object& object) {
+	napi_value result;
+	napi_status status = napi_get_prototype(env, object, &result);
+	if (status != napi_ok) {
+		throw node::Exception(env, "Failed to get object's prototype");
+	}
+	return Napi::Object(env, result);
+}
 
 //template<>
 //inline void node::Object::set_prototype(Napi::Env env, const v8::Local<v8::Object> &object, const v8::Local<v8::Value> &prototype) {
 //    Nan::SetPrototype(object, prototype);
 //}
 
+//NAPI: SetPrototype is not available in napi
+template<>
+inline void node::Object::set_prototype(Napi::Env env, const Napi::Object& object, const Napi::Value& prototype) {
+	auto v8Value = *reinterpret_cast<v8::Local<v8::Value>*>((napi_value)object);
+	auto v8ProtoValue = *reinterpret_cast<v8::Local<v8::Value>*>((napi_value)prototype);
+	Nan::SetPrototype(v8Value, v8ProtoValue);
+}
+
 //template<>
 //inline v8::Local<v8::Object> node::Object::create_empty(Napi::Env env) {
 //    return Nan::New<v8::Object>();
 //}
+
+template<>
+inline Napi::Object node::Object::create_empty(Napi::Env env) {
+	return Napi::Object();
+}
 
 //template<>
 //inline v8::Local<v8::Object> node::Object::create_array(Napi::Env env, uint32_t length, const v8::Local<v8::Value> values[]) {
@@ -209,10 +263,29 @@ inline void node::Object::set_property(Napi::Env env, const Napi::Object& object
 //    return array;
 //}
 
+template<>
+inline Napi::Object node::Object::create_array(Napi::Env env, uint32_t length, const Napi::Value values[]) {
+	Napi::Array array = Napi::Array();
+    for (uint32_t i = 0; i < length; i++) {
+        set_property(env, array, i, values[i]);
+    }
+    return array;
+}
+
 //template<>
 //inline v8::Local<v8::Object> node::Object::create_date(Napi::Env env, double time) {
 //    return Nan::New<v8::Date>(time).ToLocalChecked();
 //}
+
+//NAPI: Napi::Date is experimental it seems. 
+template<>
+inline Napi::Object node::Object::create_date(Napi::Env env, double time) {
+	Napi::Function date_constructor = env.Global().Get("Date").As<Napi::Function>();
+	Napi::Number value = Napi::Number::New(env, time);
+	return date_constructor.New({ value });
+}
+
+//NAPI: implement these below
 
 //template<>
 //template<typename ClassType>
@@ -245,11 +318,21 @@ inline void node::Object::set_property(Napi::Env env, const Napi::Object& object
 //	Object::set_property(env, isolate->GetCurrentContext()->Global(), key, value);
 //}
 
+template<>
+inline void node::Object::set_global(Napi::Env env, const node::String &key, const Napi::Value &value) {
+	Object::set_property(env, env.Global(), key, value);
+}
+
 //template<>
 //inline v8::Local<v8::Value> node::Object::get_global(Napi::Env env, const node::String &key) {
 //	v8::Isolate* isolate = realm::node::getIsolate(env);
 //	return Object::get_property(env, isolate->GetCurrentContext()->Global(), key);
 //}
+
+template<>
+inline Napi::Value node::Object::get_global(Napi::Env env, const node::String &key) {
+	return Object::get_property(env, env.Global(), key);
+}
 
 } // js
 } // realm

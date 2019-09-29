@@ -23,6 +23,9 @@
 #include "js_class.hpp"
 #include "js_util.hpp"
 
+#include "napi.h"
+#include "node_napi_convert.hpp"
+
 namespace realm {
 namespace node {
 
@@ -37,18 +40,22 @@ using IndexPropertyType = js::IndexPropertyType<Types>;
 using StringPropertyType = js::StringPropertyType<Types>;
 
 template<typename ClassType>
-class ObjectWrap : public Nan::ObjectWrap {
+class ObjectWrap : public Napi::ObjectWrap<ClassType> {
     using Internal = typename ClassType::Internal;
     using ParentClassType = typename ClassType::Parent;
 
   public:
-    static v8::Local<v8::Function> create_constructor(v8::Isolate*);
+	//static v8::Local<v8::Function> create_constructor(v8::Isolate*);
+    static Napi::Function create_constructor(Napi::Env env);
+
     static v8::Local<v8::Object> create_instance(v8::Isolate*, Internal* = nullptr);
 
-    static v8::Local<v8::FunctionTemplate> get_template() {
-        static Nan::Persistent<v8::FunctionTemplate> js_template(create_template());
-        return Nan::New(js_template);
-    }
+
+//Napi: not needed. using create_template
+    //static v8::Local<v8::FunctionTemplate> get_template() {
+    //    static Nan::Persistent<v8::FunctionTemplate> js_template(create_template());
+    //    return Nan::New(js_template);
+    //}
 
     static void construct(const Nan::FunctionCallbackInfo<v8::Value>&);
 
@@ -74,7 +81,8 @@ class ObjectWrap : public Nan::ObjectWrap {
 
     ObjectWrap(Internal* object = nullptr) : m_object(object) {}
 
-    static v8::Local<v8::FunctionTemplate> create_template();
+	//static v8::Local<v8::FunctionTemplate> create_template();
+    static Napi::Function create_template();
 
     static void setup_method(v8::Local<v8::FunctionTemplate>, const std::string &, Nan::FunctionCallback);
     static void setup_static_method(v8::Local<v8::FunctionTemplate>, const std::string &, Nan::FunctionCallback);
@@ -127,17 +135,60 @@ static inline std::vector<v8::Local<v8::Value>> get_arguments(const Nan::Functio
 template<typename ClassType>
 ClassType ObjectWrap<ClassType>::s_class;
 
+//template<typename ClassType>
+//inline v8::Local<v8::Function> ObjectWrap<ClassType>::create_constructor(v8::Isolate* isolate) {
+//    Nan::EscapableHandleScope scope;
+//
+//    v8::Local<v8::FunctionTemplate> tpl = get_template();
+//    v8::Local<v8::Function> constructor = Nan::GetFunction(tpl).ToLocalChecked();
+//
+//    for (auto &pair : s_class.static_properties) {
+//        setup_property<v8::Object>(constructor, pair.first, pair.second);
+//    }
+//
+//    return scope.Escape(constructor);
+//}
+
 template<typename ClassType>
-inline v8::Local<v8::Function> ObjectWrap<ClassType>::create_constructor(v8::Isolate* isolate) {
-    Nan::EscapableHandleScope scope;
+inline Napi::Function ObjectWrap<ClassType>::create_constructor(Napi::Env env) {
+    Napi::EscapableHandleScope scope;
 
-    v8::Local<v8::FunctionTemplate> tpl = get_template();
-    v8::Local<v8::Function> constructor = Nan::GetFunction(tpl).ToLocalChecked();
+	v8::Local<v8::FunctionTemplate> tpl = Nan::New<v8::FunctionTemplate>(construct);
+	v8::Local<v8::ObjectTemplate> instance_tpl = tpl->InstanceTemplate();
+	v8::Local<v8::String> name = Nan::New(s_class.name).ToLocalChecked();
 
-    for (auto &pair : s_class.static_properties) {
-        setup_property<v8::Object>(constructor, pair.first, pair.second);
-    }
+	tpl->SetClassName(name);
+	instance_tpl->SetInternalFieldCount(1);
 
+	DefineClass(env, )
+
+	v8::Local<v8::FunctionTemplate> super_tpl = ObjectWrap<ParentClassType>::get_template();
+	if (!super_tpl.IsEmpty()) {
+		tpl->Inherit(super_tpl);
+	}
+
+	// Static properties are setup in create_constructor() because V8.
+	for (auto& pair : s_class.static_methods) {
+		setup_static_method(tpl, pair.first, pair.second);
+	}
+	for (auto& pair : s_class.methods) {
+		setup_method(tpl, pair.first, pair.second);
+	}
+	for (auto& pair : s_class.properties) {
+		setup_property<v8::ObjectTemplate>(instance_tpl, pair.first, pair.second);
+	}
+
+	if (s_class.index_accessor.getter) {
+		auto& index_accessor = s_class.index_accessor;
+		Nan::SetIndexedPropertyHandler(instance_tpl, index_accessor.getter, index_accessor.setter ? index_accessor.setter : set_readonly_index, 0, 0, get_indexes);
+	}
+	if (s_class.string_accessor.getter || s_class.index_accessor.getter || s_class.index_accessor.setter) {
+		// Use our own wrapper for the setter since we want to throw for negative indices.
+		auto& string_accessor = s_class.string_accessor;
+		instance_tpl->SetNamedPropertyHandler(string_accessor.getter ? string_accessor.getter : get_nonexistent_property, set_property, 0, 0, string_accessor.enumerator);
+	}
+
+	return scope.Escape(tpl);
     return scope.Escape(constructor);
 }
 
@@ -154,45 +205,46 @@ inline v8::Local<v8::Object> ObjectWrap<ClassType>::create_instance(v8::Isolate*
     return scope.Escape(instance);
 }
 
-template<typename ClassType>
-inline v8::Local<v8::FunctionTemplate> ObjectWrap<ClassType>::create_template() {
-    Nan::EscapableHandleScope scope;
-
-    v8::Local<v8::FunctionTemplate> tpl = Nan::New<v8::FunctionTemplate>(construct);
-    v8::Local<v8::ObjectTemplate> instance_tpl = tpl->InstanceTemplate();
-    v8::Local<v8::String> name = Nan::New(s_class.name).ToLocalChecked();
-
-    tpl->SetClassName(name);
-    instance_tpl->SetInternalFieldCount(1);
-
-    v8::Local<v8::FunctionTemplate> super_tpl = ObjectWrap<ParentClassType>::get_template();
-    if (!super_tpl.IsEmpty()) {
-        tpl->Inherit(super_tpl);
-    }
-
-    // Static properties are setup in create_constructor() because V8.
-    for (auto &pair : s_class.static_methods) {
-        setup_static_method(tpl, pair.first, pair.second);
-    }
-    for (auto &pair : s_class.methods) {
-        setup_method(tpl, pair.first, pair.second);
-    }
-    for (auto &pair : s_class.properties) {
-        setup_property<v8::ObjectTemplate>(instance_tpl, pair.first, pair.second);
-    }
-
-    if (s_class.index_accessor.getter) {
-        auto &index_accessor = s_class.index_accessor;
-        Nan::SetIndexedPropertyHandler(instance_tpl, index_accessor.getter, index_accessor.setter ? index_accessor.setter : set_readonly_index, 0, 0, get_indexes);
-    }
-    if (s_class.string_accessor.getter || s_class.index_accessor.getter || s_class.index_accessor.setter) {
-        // Use our own wrapper for the setter since we want to throw for negative indices.
-        auto &string_accessor = s_class.string_accessor;
-        instance_tpl->SetNamedPropertyHandler(string_accessor.getter ? string_accessor.getter : get_nonexistent_property, set_property, 0, 0, string_accessor.enumerator);
-    }
-
-    return scope.Escape(tpl);
-}
+//Napi: not needed using create_constructor only
+//template<typename ClassType>
+//inline v8::Local<v8::FunctionTemplate> ObjectWrap<ClassType>::create_template() {
+//	Nan::EscapableHandleScope scope;
+//
+//	v8::Local<v8::FunctionTemplate> tpl = Nan::New<v8::FunctionTemplate>(construct);
+//	v8::Local<v8::ObjectTemplate> instance_tpl = tpl->InstanceTemplate();
+//	v8::Local<v8::String> name = Nan::New(s_class.name).ToLocalChecked();
+//
+//	tpl->SetClassName(name);
+//	instance_tpl->SetInternalFieldCount(1);
+//
+//	v8::Local<v8::FunctionTemplate> super_tpl = ObjectWrap<ParentClassType>::get_template();
+//	if (!super_tpl.IsEmpty()) {
+//		tpl->Inherit(super_tpl);
+//	}
+//
+//	// Static properties are setup in create_constructor() because V8.
+//	for (auto& pair : s_class.static_methods) {
+//		setup_static_method(tpl, pair.first, pair.second);
+//	}
+//	for (auto& pair : s_class.methods) {
+//		setup_method(tpl, pair.first, pair.second);
+//	}
+//	for (auto& pair : s_class.properties) {
+//		setup_property<v8::ObjectTemplate>(instance_tpl, pair.first, pair.second);
+//	}
+//
+//	if (s_class.index_accessor.getter) {
+//		auto& index_accessor = s_class.index_accessor;
+//		Nan::SetIndexedPropertyHandler(instance_tpl, index_accessor.getter, index_accessor.setter ? index_accessor.setter : set_readonly_index, 0, 0, get_indexes);
+//	}
+//	if (s_class.string_accessor.getter || s_class.index_accessor.getter || s_class.index_accessor.setter) {
+//		// Use our own wrapper for the setter since we want to throw for negative indices.
+//		auto& string_accessor = s_class.string_accessor;
+//		instance_tpl->SetNamedPropertyHandler(string_accessor.getter ? string_accessor.getter : get_nonexistent_property, set_property, 0, 0, string_accessor.enumerator);
+//	}
+//
+//	return scope.Escape(tpl);
+//}
 
 template<typename ClassType>
 inline void ObjectWrap<ClassType>::setup_method(v8::Local<v8::FunctionTemplate> tpl, const std::string &name, Nan::FunctionCallback callback) {

@@ -80,12 +80,13 @@ class Protected<node::Types::Value> : public node::Protected<v8::Value> {
     Protected(v8::Isolate* isolate, v8::Local<v8::Value> value) : node::Protected<v8::Value>(value) {}
 };
 
-template<>
-class Protected<node::Types::Object> : public node::Protected<v8::Object> {
-  public:
-    Protected() : node::Protected<v8::Object>() {}
-    Protected(v8::Isolate* isolate, v8::Local<v8::Object> object) : node::Protected<v8::Object>(object) {}
-};
+//NAPI: uncomment and fix Protected<node::Types::Object>
+//template<>
+//class Protected<node::Types::Object> : public node::Protected<v8::Object> {
+//  public:
+//    Protected() : node::Protected<v8::Object>() {}
+//    Protected(v8::Isolate* isolate, v8::Local<v8::Object> object) : node::Protected<v8::Object>(object) {}
+//};
 
 template<>
 class Protected<node::Types::Function> : public node::Protected<v8::Function> {
