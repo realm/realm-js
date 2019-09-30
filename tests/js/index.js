@@ -42,29 +42,29 @@ if (isNodeProcess) {
 }
 
 var TESTS = {
-    // ListTests: require('./list-tests'), // PASS
-    // LinkingObjectsTests: require('./linkingobjects-tests'), // PASS
-    // ObjectTests: require('./object-tests'), // PASS
-    // RealmTests: require('./realm-tests'), // 3x FAIL(non-sync)
-    // ResultsTests: require('./results-tests'), // PASS
-    // QueryTests: require('./query-tests'), // PASS
-    // MigrationTests: require('./migration-tests'), // PASS
-    // EncryptionTests: require('./encryption-tests'), // PASS
-    // ObjectIDTests: require('./object-id-tests'), // PASS
-    // AliasTests: require('./alias-tests'), // PASS
-    // // Garbagecollectiontests: require('./garbage-collection'),
+    // ListTests: require('./list-tests'), // 31x PASS
+    // LinkingObjectsTests: require('./linkingobjects-tests'), // 7x PASS
+    // ObjectTests: require('./object-tests'), // 16x PASS
+    // RealmTests: require('./realm-tests'), // 4x FAIL, 54x PASS
+    // ResultsTests: require('./results-tests'), // 29x PASS
+    // QueryTests: require('./query-tests'), // 16x PASS
+    // MigrationTests: require('./migration-tests'), // 10x PASS
+    // EncryptionTests: require('./encryption-tests'), // 4x PASS
+    // ObjectIDTests: require('./object-id-tests'), // 1x PASS
+    // AliasTests: require('./alias-tests'), // 5x PASS
+    // Garbagecollectiontests: require('./garbage-collection'),
 };
 
 // If sync is enabled, run the sync tests
 if (global.enableSyncTests) {
-    // TESTS.OpenBehaviorTests = require('./open-behavior-tests'); // PASS
-    // TESTS.UserTests = require('./user-tests'); // PASS
-    // TESTS.SessionTests = require('./session-tests'); // FAIL
-    // TESTS.SubscriptionTests = require('./subscription-tests'); // PASS
+    // TESTS.OpenBehaviorTests = require('./open-behavior-tests'); // 12x PASS
+    // TESTS.UserTests = require('./user-tests'); // 30x PASS
+    // TESTS.SessionTests = require('./session-tests'); // CRASH
+    // TESTS.SubscriptionTests = require('./subscription-tests'); // 19x PASS
 
     if (isNodeProcess && !isElectronProcess) {
         // FIXME: Permission tests currently fail in react native
-        // TESTS.PermissionTests = require('./permission-tests');  // 2x FAIL
+        // TESTS.PermissionTests = require('./permission-tests');  // 2x FAIL, 13x PASS
         // node_require('./adapter-tests'); // 4x FAIL
         // node_require('./notifier-tests'); // FAIL
     }

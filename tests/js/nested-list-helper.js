@@ -22,35 +22,35 @@ function createObjects(user) {
         schema: [schemas.ParentObject, schemas.NameObject],
     };
 
-    const realm = new Realm(config);
-
-    realm.write(() => {
-        realm.create('ParentObject', {
-            id: 1,
-            name: [
-                { family: 'Larsen', given: ['Hans', 'Jørgen'], prefix: [] },
-                { family: 'Hansen', given: ['Ib'], prefix: [] }
-            ]
+    return Realm.open(config).then(realm => {
+        realm.write(() => {
+            realm.create('ParentObject', {
+                id: 1,
+                name: [
+                    { family: 'Larsen', given: ['Hans', 'Jørgen'], prefix: [] },
+                    { family: 'Hansen', given: ['Ib'], prefix: [] }
+                ]
+            });
+            realm.create('ParentObject', {
+                id: 2,
+                name: [
+                    { family: 'Petersen', given: ['Gurli', 'Margrete'], prefix: [] }
+                ]
+            });
         });
-        realm.create('ParentObject', {
-            id: 2,
-            name: [
-                {family: 'Petersen', given: ['Gurli', 'Margrete'], prefix: [] }
-            ]
-        });
-    });
 
-    console.log("JSON: " + JSON.stringify(realm.objects('ParentObject')));
+        console.log("JSON: " + JSON.stringify(realm.objects('ParentObject')));
 
-    let session = realm.syncSession;
-    return new Promise((resolve, reject) => {
-        let callback = (transferred, total) => {
-            if (transferred === total) {
-                session.removeProgressNotification(callback);
-                resolve(realm);
+        let session = realm.syncSession;
+        return new Promise((resolve, reject) => {
+            let callback = (transferred, total) => {
+                if (transferred === total) {
+                    session.removeProgressNotification(callback);
+                    resolve(realm);
+                }
             }
-        }
-        session.addProgressNotification('upload', 'forCurrentlyOutstandingWork', callback);
+            session.addProgressNotification('upload', 'forCurrentlyOutstandingWork', callback);
+        });
     });
 }
 
