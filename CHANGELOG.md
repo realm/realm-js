@@ -1,7 +1,7 @@
-x.x.x Release notes (yyyy-MM-dd)
+3.2.0 Release notes (2019-9-30)
 =============================================================
 ### Enhancements
-* `Realm.Sync.Adapter` can now accept a predicate function filter instead of a regex.
+* `Realm.Sync.Adapter` can now accept a predicate function filter instead of a regex. ([#2539](https://github.com/realm/realm-js/pull/2539))
 
 ### Fixed
 * Chained OR equals queries on an unindexed string column failed to match any results if any of the strings were 64 bytes or longer. ([realm/realm-core#3386](https://github.com/realm/realm-core/pull/3386), since v2.27.0-rc.2).
