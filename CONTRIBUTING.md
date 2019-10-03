@@ -146,6 +146,11 @@ Iterative development requires performing more of the steps manually:
 
 After making changes to the C++ source files rerun `npm run build-changes` to rebuild the files which have changed. Changes to JS or TS files don't require any manual steps beyond rerunning the tests.
 
+If you want the Realm JS Sync client's logs in the console, run your command with the `DEBUG=realm` environment variable sat (i.e. `DEBUG=realm npm run js-tests`)
+To adjust the lowest log level set the `REALM_LOG_LEVEL` environment variable (defaults to `info`).
+
+Some tests have been instrumented with detailed logging, run your command with the `DEBUG=tests:*` environment variable sat to see these (i.e. `DEBUG=tests:* npm run js-tests`)
+
 ### How To: Debug React Native Unit tests
 
 This guide assumes that development is happening on a Mac.
