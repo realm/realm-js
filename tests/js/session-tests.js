@@ -22,7 +22,11 @@
 
 /* global REALM_MODULE_PATH */
 
+// Run these tests with the `DEBUG=tests:session` enrivonment variable set to get the stdout of sub-processes.
+
+const debug = require('debug')('tests:session');
 const Realm = require('realm');
+
 const TestCase = require('./asserts');
 const Utils = require('./test-utils');
 let schemas = require('./schemas');
@@ -59,17 +63,17 @@ function copyFileToTempDir(filename) {
 function runOutOfProcess() {
     const args = Array.prototype.slice.call(arguments);
     let tmpDir = tmp.dirSync();
-    console.log(`runOutOfProcess : ${args.join(' ')}`);
+    debug(`runOutOfProcess : ${args.join(' ')}`);
     return new Promise((resolve, reject) => {
         try {
-            execFile(process.execPath, args, {cwd: tmpDir.name}, (error, stdout, stderr) => {
+            execFile(process.execPath, args, { cwd: tmpDir.name }, (error, stdout, stderr) => {
                 if (error) {
                     console.error("runOutOfProcess failed\n", error, stdout, stderr);
                     reject(new Error(`Running ${args[0]} failed. error: ${error}`));
                     return;
                 }
 
-                console.log('runOutOfProcess success\n' + stdout);
+                debug('runOutOfProcess success\n' + stdout);
                 resolve();
             });
         }
