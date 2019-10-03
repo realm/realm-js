@@ -802,10 +802,6 @@ describe('Multi-process Notifier', () => {
         this.tmpIpcDir = tmp.dirSync({ unsafeCleanup: true });
         tmpIpcPath = this.tmpIpcDir.name + '/test.realm';
         Realm.Sync.setListenerDirectory(this.tmpListenerDir.name);
-        Realm.Sync.setSyncLogger((level, message) => {
-            console.log('test-client: %s', message);
-        });
-        Realm.Sync.setLogLevel('info');
 
         worker = new Realm.Worker(__dirname + '/support/notification-worker.ts', {
             execArgv: ['-r', 'ts-node/register'],

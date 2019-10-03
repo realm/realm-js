@@ -25,8 +25,6 @@ const TestCase = require('./asserts');
 const schemas = require('./schemas');
 const Utils = require('./test-utils');
 
-Realm.Sync.setLogLevel('debug');
-
 // Returns a user that looks valid but isn't able to establish a connection to the server
 function getLoggedOutUser() {
     return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.nickname("admin", true))
