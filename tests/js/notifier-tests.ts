@@ -192,10 +192,6 @@ describe('Notifier', () => {
         Realm.clearTestState();
         this.tmpListenerDir = tmp.dirSync({ unsafeCleanup: true });
         Realm.Sync.setListenerDirectory(this.tmpListenerDir.name);
-        Realm.Sync.setSyncLogger((level, message) => {
-            console.log('test-client: %s', message);
-        });
-        Realm.Sync.setLogLevel('info');
 
         if (useTestServer) {
             rosController = new TestObjectServer();
