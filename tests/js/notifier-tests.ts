@@ -88,7 +88,6 @@ function addAvailableListener(regex, ros, expectedRealms = undefined) {
     return new Promise(async (resolve, reject) => {
         let timeout;
         const callback = (path) => {
-            console.log('callback', path);
             if (expectedRealms) {
                 for (let i = 0; i < expectedRealms.length; i++) {
                     if (!path.match(notificationFilterPrefix + expectedRealms[i])) {
