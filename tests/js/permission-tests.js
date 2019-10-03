@@ -192,8 +192,9 @@ module.exports = {
         };
         const owner = await Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.nickname(Utils.uuid(), true));
         const otherUser = await Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.nickname(Utils.uuid()));
+        console.log('isAdmin', owner.isAdmin, otherUser.isAdmin);
 
-        const ownerRealm = new Realm(config(owner));
+        const ownerRealm = await Realm.open(config(owner));
         ownerRealm.write(() => {
             let user = ownerRealm.create(Realm.Permissions.User, {id: otherUser.identity})
             let role = ownerRealm.create(Realm.Permissions.Role, {name: 'reader'})
@@ -205,13 +206,16 @@ module.exports = {
                                                     {role: role, canRead: true, canUpdate: false}))
         });
         await ownerRealm.syncSession.uploadAllLocalChanges();
+        console.log('original privileges', ownerRealm.privileges());
         ownerRealm.close();
 
         const realm = await Realm.open(config(otherUser));
         await subscribe(realm.objects('Object'));
 
         // Should have full access to the Realm as a whole
-        TestCase.assertSimilar('object', realm.privileges(),
+        let priv = realm.privileges();
+        console.log('privileges', priv);
+        TestCase.assertSimilar('object', priv,
                                {read: true, update: true, modifySchema: true, setPermissions: true});
         TestCase.assertSimilar('object', realm.privileges('Object'),
                                {read: true, update: true, create: true, subscribe: true, setPermissions: true});
@@ -287,19 +291,20 @@ module.exports = {
                     _sessionStopPolicy: 'immediately'
                 },
             });
-            const realm = new Realm(config);
-
-            let rooms = realm.objects(PrivateChatRoomSchema.name);
-            let subscription = rooms.subscribe();
-            return new Promise((resolve, reject) => {
-                const callback = (sub, state) => {
-                    if (state !== Realm.Sync.SubscriptionState.Complete) {
-                        return;
-                    }
-                    sub.removeListener(callback);
-                    resolve(realm);
-                };
-                subscription.addListener(callback);
+            return Realm.open(config)
+            .then(realm => {
+                let rooms = realm.objects(PrivateChatRoomSchema.name);
+                let subscription = rooms.subscribe();
+                return new Promise((resolve, reject) => {
+                    const callback = (sub, state) => {
+                        if (state !== Realm.Sync.SubscriptionState.Complete) {
+                            return;
+                        }
+                        sub.removeListener(callback);
+                        resolve(realm);
+                    };
+                    subscription.addListener(callback);
+                })
             })
         })
         .then(realm => {

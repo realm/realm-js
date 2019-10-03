@@ -3,6 +3,7 @@ x.x.x Release notes (yyyy-MM-dd)
 ### Breaking changes
 * Support of the old timestamp type has been removed, and older files cannot be upgraded. The new timestamp type was introduced in v1.0.0.
 * `Realm.delete(Realm.Collection)` will conserve rhe order.
+* It is only possible to compact a Realm when a single instance is open.
 
 ### Enhancements
 * Added `Realm.object_for_object_id()`. ([realm/realm-js-private#401](https://github.com/realm/realm-js-private/issues/401))

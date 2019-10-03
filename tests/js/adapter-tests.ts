@@ -944,9 +944,10 @@ describe('Adapter', () => {
             {name: 'Object1', properties: {prop3: 'string?', prop4: 'Object2?'}},
             {name: 'Object2', properties: {prop5: 'bool', prop6: 'double'}},
         ];
-        (await rosController.createRealm('test1', newSchema)).close();
+        const realm = await rosController.createRealm('test1', newSchema);
+        await realm.syncSession.uploadAllLocalChanges();
+        realm.close();
         await nextChangePromise;
-
         const expected = [
             {
                 type: 'ADD_PROPERTIES',

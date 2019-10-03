@@ -849,8 +849,10 @@ module.exports = {
         }, 'Constructor was not registered in the schema for this Realm');
 
         // The constructor should still work when creating another Realm instance.
-        // Works if: realm = new Realm({schema: [CustomObject, InvalidObject]});
+        // realm = new Realm({schema: [CustomObject, InvalidObject]});
         realm = new Realm();
+        let obj = realm.objects('CustomObject')[0];
+        console.log(typeof(obj), obj instanceof CustomObject);
         TestCase.assertTrue(realm.objects('CustomObject')[0] instanceof CustomObject);
         TestCase.assertTrue(realm.objects(CustomObject).length > 0);
     },
@@ -1299,7 +1301,7 @@ module.exports = {
     testManualCompactMultipleInstances: function() {
         const realm1 = new Realm({schema: [schemas.StringOnly]});
         const realm2 = new Realm({schema: [schemas.StringOnly]});
-        TestCase.assertTrue(realm1.compact());
+        TestCase.assertFalse(realm1.compact());
     },
 
     testRealmDeleteFileDefaultConfigPath: function() {
@@ -1511,7 +1513,7 @@ module.exports = {
 
     // FIXME: We need to test adding a property also calls the listener
     testSchemaUpdatesNewClass: function() {
-        let realm1 = new Realm({ _cache: false });
+        let realm1 = new Realm();
         TestCase.assertTrue(realm1.empty);
         TestCase.assertEqual(realm1.schema.length, 0);  // empty schema
 
@@ -1538,7 +1540,7 @@ module.exports = {
                 }
             });
 
-            let realm2 = new Realm({ schema: schema, _cache: false });
+            let realm2 = new Realm({ schema: schema });
             // Not updated until we return to the event loop and the autorefresh can happen
             TestCase.assertEqual(realm1.schema.length, 0);
             TestCase.assertEqual(realm2.schema.length, 1);
@@ -1569,7 +1571,8 @@ module.exports = {
         return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.nickname("admin", true))
             .then(user1 => {
                 config.sync.user = user1;
-                const realm = new Realm(config);
+                return Realm.open(config)
+            }).then(realm => {
                 TestCase.assertEqual(realm.schema.length, 7); // 5 permissions, 1 results set, 1 test object
                 return closeAfterUpload(realm);
             })
@@ -1580,8 +1583,7 @@ module.exports = {
                     sync: { user: user2, url: `realm://127.0.0.1:9080/${realmId}`, fullSynchronization: false },
                 };
                 return Realm.open(dynamicConfig);
-            }).then((realm) => {
-                realm2 = realm;
+            }).then((realm2) => {
                 TestCase.assertEqual(realm2.schema.length, 7); // 5 permissions, 1 results set, 1 test object
                 realm2.addListener('schema', (realm, event, schema) => {
                     TestCase.assertEqual(realm2.schema.length, 8); // 5 permissions, 1 results set, 1 test object, 1 foo object
@@ -1594,13 +1596,14 @@ module.exports = {
                         doubleCol: 'double',
                     }
                 });
+                console.log('config = ', JSON.stringify(config));
                 return Realm.open(config);
-            }).then((realm) => {
-                return closeAfterUpload(realm);
+            }).then((realm3) => {
+                console.log('realm3.schema = ', JSON.stringify(realm3.schema));
+                return closeAfterUpload(realm3);
             }).then(() => {
                 return new Promise((resolve, reject) => {
                     setTimeout(() => {
-                        realm2.close();
                         if (called) {
                             resolve();
                         } else {
