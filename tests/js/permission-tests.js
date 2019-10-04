@@ -206,9 +206,8 @@ module.exports = {
         };
         const owner = await Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.usernamePassword(global.testAdminUserInfo.username, global.testAdminUserInfo.password));
         const otherUser = await Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.nickname(Utils.uuid()));
-        console.log('isAdmin', owner.isAdmin, otherUser.isAdmin);
 
-        const ownerRealm = await Realm.open(config(owner));
+        const ownerRealm = new Realm(config(owner));;
         ownerRealm.write(() => {
             let user = ownerRealm.create(Realm.Permissions.User, {id: otherUser.identity})
             let role = ownerRealm.create(Realm.Permissions.Role, {name: 'reader'})
@@ -220,7 +219,6 @@ module.exports = {
                                                     {role: role, canRead: true, canUpdate: false}))
         });
         await ownerRealm.syncSession.uploadAllLocalChanges();
-        console.log('original privileges', ownerRealm.privileges());
         ownerRealm.close();
 
         const realm = await Realm.open(config(otherUser));
@@ -228,7 +226,6 @@ module.exports = {
 
         // Should have full access to the Realm as a whole
         let priv = realm.privileges();
-        console.log('privileges', priv);
         TestCase.assertSimilar('object', priv,
                                {read: true, update: true, modifySchema: true, setPermissions: true});
         TestCase.assertSimilar('object', realm.privileges('Object'),

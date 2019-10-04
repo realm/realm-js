@@ -47,9 +47,6 @@
           "OTHER_LDFLAGS": ["-framework Foundation"],
           "WARNING_CFLAGS": [ "<@(warning-flags)" ]
         }
-      }],
-      ["OS=='linux'", {
-        "defines": [ "_GLIBCXX_USE_CXX11_ABI=0" ]
       }]
     ],
     # windows stuff
