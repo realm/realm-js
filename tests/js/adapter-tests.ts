@@ -124,7 +124,6 @@ jasmine.getEnv().addReporter({
         currentTestName = result.fullName.replace(/ /g, '_').replace('Adapter', realmNamePrefix);
     }
 });
-Realm.Sync.setLogLevel('error');
 
 describe('Adapter', () => {
     beforeEach(async () => {
@@ -146,7 +145,6 @@ describe('Adapter', () => {
             adapter.close();
         }
         await rosController.shutdown();
-        Realm.clearTestState();
         tmpDir.removeCallback();
     });
 
