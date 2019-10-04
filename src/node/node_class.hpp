@@ -40,7 +40,7 @@ using IndexPropertyType = js::IndexPropertyType<Types>;
 using StringPropertyType = js::StringPropertyType<Types>;
 
 template<typename ClassType>
-class ObjectWrap : public Napi::ObjectWrap<ClassType> {
+class ObjectWrap : public Napi::ObjectWrap<ObjectWrap<ClassType>> {
     using Internal = typename ClassType::Internal;
     using ParentClassType = typename ClassType::Parent;
 
@@ -51,7 +51,7 @@ class ObjectWrap : public Napi::ObjectWrap<ClassType> {
     static v8::Local<v8::Object> create_instance(v8::Isolate*, Internal* = nullptr);
 
 
-//Napi: not needed. using create_template
+    //Napi: not needed. using create_template
     //static v8::Local<v8::FunctionTemplate> get_template() {
     //    static Nan::Persistent<v8::FunctionTemplate> js_template(create_template());
     //    return Nan::New(js_template);
@@ -119,16 +119,30 @@ class ObjectWrap<void> {
 };
 
 // This helper function is needed outside the scope of the ObjectWrap class as well.
-static inline std::vector<v8::Local<v8::Value>> get_arguments(const Nan::FunctionCallbackInfo<v8::Value> &info) {
-    int count = info.Length();
-    std::vector<v8::Local<v8::Value>> arguments;
-    arguments.reserve(count);
+//static inline std::vector<v8::Local<v8::Value>> get_arguments(const Nan::FunctionCallbackInfo<v8::Value> &info) {
+//    int count = info.Length();
+//    std::vector<v8::Local<v8::Value>> arguments;
+//    arguments.reserve(count);
+//
+//    for (int i = 0; i < count; i++) {
+//        arguments.push_back(info[i]);
+//    }
+//    
+//    return arguments;
+//}
 
-    for (int i = 0; i < count; i++) {
-        arguments.push_back(info[i]);
-    }
-    
-    return arguments;
+static inline node::Arguments get_arguments(const Napi::CallbackInfo& info) {
+	size_t count = info.Length();
+	std::vector<Napi::Value> arguments;
+	arguments.reserve(count);
+
+	for (int i = 0; i < count; i++) {
+		arguments.push_back(info[i]);
+	}
+
+	node::Arguments args{ info.Env(), count, arguments.data() };
+
+	return args;
 }
 
 // The static class variable must be defined as well.
@@ -151,45 +165,49 @@ ClassType ObjectWrap<ClassType>::s_class;
 
 template<typename ClassType>
 inline Napi::Function ObjectWrap<ClassType>::create_constructor(Napi::Env env) {
-    Napi::EscapableHandleScope scope;
+    Napi::EscapableHandleScope scope(env);
 
-	v8::Local<v8::FunctionTemplate> tpl = Nan::New<v8::FunctionTemplate>(construct);
-	v8::Local<v8::ObjectTemplate> instance_tpl = tpl->InstanceTemplate();
-	v8::Local<v8::String> name = Nan::New(s_class.name).ToLocalChecked();
+	//v8::Local<v8::FunctionTemplate> tpl = Nan::New<v8::FunctionTemplate>(construct);
+	//v8::Local<v8::ObjectTemplate> instance_tpl = tpl->InstanceTemplate();
+	//v8::Local<v8::String> name = Nan::New(s_class.name).ToLocalChecked();
 
-	tpl->SetClassName(name);
-	instance_tpl->SetInternalFieldCount(1);
+	//tpl->SetClassName(name);
+	//instance_tpl->SetInternalFieldCount(1);
 
-	DefineClass(env, )
+	//Napi: internal field should be set as last argument
+	const std::vector<Napi::ClassPropertyDescriptor<realm::node::ObjectWrap<ClassType>>> properties;
+	Napi::Function constructor = Napi::ObjectWrap<realm::node::ObjectWrap<ClassType>>::DefineClass(env, s_class.name.c_str(), properties, nullptr);
 
-	v8::Local<v8::FunctionTemplate> super_tpl = ObjectWrap<ParentClassType>::get_template();
-	if (!super_tpl.IsEmpty()) {
-		tpl->Inherit(super_tpl);
-	}
+	//Napi: setup parent class chain
+	//v8::Local<v8::FunctionTemplate> super_tpl = ObjectWrap<ParentClassType>::get_template();
+	//if (!super_tpl.IsEmpty()) {
+	//	tpl->Inherit(super_tpl);
+	//}
 
+
+	//Napi: setup properties and accessors on the class
 	// Static properties are setup in create_constructor() because V8.
-	for (auto& pair : s_class.static_methods) {
-		setup_static_method(tpl, pair.first, pair.second);
-	}
-	for (auto& pair : s_class.methods) {
-		setup_method(tpl, pair.first, pair.second);
-	}
-	for (auto& pair : s_class.properties) {
-		setup_property<v8::ObjectTemplate>(instance_tpl, pair.first, pair.second);
-	}
+	//for (auto& pair : s_class.static_methods) {
+	//	setup_static_method(tpl, pair.first, pair.second);
+	//}
+	//for (auto& pair : s_class.methods) {
+	//	setup_method(tpl, pair.first, pair.second);
+	//}
+	//for (auto& pair : s_class.properties) {
+	//	setup_property<v8::ObjectTemplate>(instance_tpl, pair.first, pair.second);
+	//}
 
-	if (s_class.index_accessor.getter) {
-		auto& index_accessor = s_class.index_accessor;
-		Nan::SetIndexedPropertyHandler(instance_tpl, index_accessor.getter, index_accessor.setter ? index_accessor.setter : set_readonly_index, 0, 0, get_indexes);
-	}
-	if (s_class.string_accessor.getter || s_class.index_accessor.getter || s_class.index_accessor.setter) {
-		// Use our own wrapper for the setter since we want to throw for negative indices.
-		auto& string_accessor = s_class.string_accessor;
-		instance_tpl->SetNamedPropertyHandler(string_accessor.getter ? string_accessor.getter : get_nonexistent_property, set_property, 0, 0, string_accessor.enumerator);
-	}
+	//if (s_class.index_accessor.getter) {
+	//	auto& index_accessor = s_class.index_accessor;
+	//	Nan::SetIndexedPropertyHandler(instance_tpl, index_accessor.getter, index_accessor.setter ? index_accessor.setter : set_readonly_index, 0, 0, get_indexes);
+	//}
+	//if (s_class.string_accessor.getter || s_class.index_accessor.getter || s_class.index_accessor.setter) {
+	//	// Use our own wrapper for the setter since we want to throw for negative indices.
+	//	auto& string_accessor = s_class.string_accessor;
+	//	instance_tpl->SetNamedPropertyHandler(string_accessor.getter ? string_accessor.getter : get_nonexistent_property, set_property, 0, 0, string_accessor.enumerator);
+	//}
 
-	return scope.Escape(tpl);
-    return scope.Escape(constructor);
+    return scope.Escape(constructor).As<Napi::Function>();
 }
 
 template<typename ClassType>
@@ -348,112 +366,240 @@ namespace js {
 template<typename ClassType>
 class ObjectWrap<node::Types, ClassType> : public node::ObjectWrap<ClassType> {};
 
-template<node::ArgumentsMethodType F>
-void wrap(const Nan::FunctionCallbackInfo<v8::Value>& info) {
-    v8::Isolate* isolate = info.GetIsolate();
-    auto arguments = node::get_arguments(info);
-    node::Arguments args{isolate, arguments.size(), arguments.data()};
-    node::ReturnValue return_value(info.GetReturnValue());
+//template<node::ArgumentsMethodType F>
+//void wrap(const Nan::FunctionCallbackInfo<v8::Value>& info) {
+//    v8::Isolate* isolate = info.GetIsolate();
+//    auto arguments = node::get_arguments(info);
+//    node::Arguments args{isolate, arguments.size(), arguments.data()};
+//    node::ReturnValue return_value(info.GetReturnValue());
+//
+//    try {
+//        F(isolate, info.This(), args, return_value);
+//    }
+//    catch (std::exception &e) {
+//        Nan::ThrowError(node::Exception::value(isolate, e));
+//    }
+//}
 
-    try {
-        F(isolate, info.This(), args, return_value);
-    }
-    catch (std::exception &e) {
-        Nan::ThrowError(node::Exception::value(isolate, e));
-    }
+template<node::ArgumentsMethodType F>
+Napi::Value wrap(const Napi::CallbackInfo& info) {
+	Napi::Env env = info.Env();
+	auto args = node::get_arguments(info);
+	node::ReturnValue result(env);
+
+	try {
+		F(env, info.This().As<Napi::Object>(), args, result);
+		return result.ToValue();
+	}
+	catch (std::exception& e) {
+		Napi::Error::New(info.Env(), e.what()).ThrowAsJavaScriptException();
+	}
 }
 
+//template<node::PropertyType::GetterType F>
+//void wrap(v8::Local<v8::String> property, const Nan::PropertyCallbackInfo<v8::Value>& info) {
+//    v8::Isolate* isolate = info.GetIsolate();
+//    node::ReturnValue return_value(info.GetReturnValue());
+//    try {
+//        F(isolate, info.This(), return_value);
+//    }
+//    catch (std::exception &e) {
+//        Nan::ThrowError(node::Exception::value(isolate, e));
+//    }
+//}
 
 template<node::PropertyType::GetterType F>
-void wrap(v8::Local<v8::String> property, const Nan::PropertyCallbackInfo<v8::Value>& info) {
-    v8::Isolate* isolate = info.GetIsolate();
-    node::ReturnValue return_value(info.GetReturnValue());
-    try {
-        F(isolate, info.This(), return_value);
-    }
-    catch (std::exception &e) {
-        Nan::ThrowError(node::Exception::value(isolate, e));
-    }
+Napi::Value wrap(const Napi::String& property, const Napi::CallbackInfo& info) {
+	Napi::Env env = info.Env();
+	node::ReturnValue result(env);
+	try {
+		F(env, info.This().As<Napi::Object>(), result);
+		return result.ToValue();
+	}
+	catch (std::exception& e) {
+		Napi::Error::New(info.Env(), e.what()).ThrowAsJavaScriptException();
+	}
 }
+
+
+//template<node::PropertyType::SetterType F>
+//void wrap(v8::Local<v8::String> property, v8::Local<v8::Value> value, const Nan::PropertyCallbackInfo<void>& info) {
+//    v8::Isolate* isolate = info.GetIsolate();
+//    try {
+//        F(isolate, info.This(), value);
+//    }
+//    catch (std::exception &e) {
+//        Nan::ThrowError(node::Exception::value(isolate, e));
+//    }
+//}
+
 
 template<node::PropertyType::SetterType F>
-void wrap(v8::Local<v8::String> property, v8::Local<v8::Value> value, const Nan::PropertyCallbackInfo<void>& info) {
-    v8::Isolate* isolate = info.GetIsolate();
+Napi::Value wrap(const Napi::String& property, const Napi::Value& value, const Napi::CallbackInfo& info) {
+	Napi::Env env = info.Env();
+
     try {
-        F(isolate, info.This(), value);
+		F(env, info.This().As<Napi::Object>(), value);
+		return Napi::Value::From(env, env.Undefined());
     }
-    catch (std::exception &e) {
-        Nan::ThrowError(node::Exception::value(isolate, e));
+    catch (std::exception& e) {
+		Napi::Error::New(info.Env(), e.what()).ThrowAsJavaScriptException();
     }
 }
+
+//
+//template<node::IndexPropertyType::GetterType F>
+//void wrap(uint32_t index, const Nan::PropertyCallbackInfo<v8::Value>& info) {
+//    v8::Isolate* isolate = info.GetIsolate();
+//    node::ReturnValue return_value(info.GetReturnValue());
+//    try {
+//        F(isolate, info.This(), index, return_value);
+//    }
+//    catch (std::out_of_range &) {
+//        // Out-of-bounds index getters should just return undefined in JS.
+//        return_value.set_undefined();
+//    }
+//    catch (std::exception &e) {
+//        Nan::ThrowError(node::Exception::value(isolate, e));
+//    }
+//}
 
 template<node::IndexPropertyType::GetterType F>
-void wrap(uint32_t index, const Nan::PropertyCallbackInfo<v8::Value>& info) {
-    v8::Isolate* isolate = info.GetIsolate();
-    node::ReturnValue return_value(info.GetReturnValue());
-    try {
-        F(isolate, info.This(), index, return_value);
-    }
-    catch (std::out_of_range &) {
-        // Out-of-bounds index getters should just return undefined in JS.
-        return_value.set_undefined();
-    }
+Napi::Value wrap(uint32_t index, const Napi::CallbackInfo& info) {
+	Napi::Env env = info.Env();
+    node::ReturnValue result(env);
+
+	try {
+		try {
+			F(env, info.This().As<Napi::Object>(), index, result);
+		}
+		catch (std::out_of_range&) {
+			// Out-of-bounds index getters should just return undefined in JS.
+			result.set_undefined();
+		}
+		return result.ToValue();
+	}
     catch (std::exception &e) {
-        Nan::ThrowError(node::Exception::value(isolate, e));
+		Napi::Error::New(info.Env(), e.what()).ThrowAsJavaScriptException();
     }
 }
+
+//template<node::IndexPropertyType::SetterType F>
+//void wrap(uint32_t index, v8::Local<v8::Value> value, const Nan::PropertyCallbackInfo<v8::Value>& info) {
+//    v8::Isolate* isolate = info.GetIsolate();
+//    try {
+//        if (F(isolate, info.This(), index, value)) {
+//            // Indicate that the property was intercepted.
+//            info.GetReturnValue().Set(value);
+//        }
+//    }
+//    catch (std::exception &e) {
+//        Nan::ThrowError(node::Exception::value(isolate, e));
+//    }
+//}
 
 template<node::IndexPropertyType::SetterType F>
-void wrap(uint32_t index, v8::Local<v8::Value> value, const Nan::PropertyCallbackInfo<v8::Value>& info) {
-    v8::Isolate* isolate = info.GetIsolate();
+Napi::Value wrap(uint32_t index, const Napi::Value& value, const Napi::CallbackInfo& info) {
+	Napi::Env env = info.Env();
+
     try {
-        if (F(isolate, info.This(), index, value)) {
-            // Indicate that the property was intercepted.
-            info.GetReturnValue().Set(value);
-        }
+		bool success = F(env, info.This().As<Napi::Object>(), index, value);
+		
+		// Indicate that the property was intercepted.
+		return Napi::Value::From(env, success);
     }
     catch (std::exception &e) {
-        Nan::ThrowError(node::Exception::value(isolate, e));
+		Napi::Error::New(info.Env(), e.what()).ThrowAsJavaScriptException();
     }
 }
+
+//template<node::StringPropertyType::GetterType F>
+//void wrap(v8::Local<v8::String> property, const v8::PropertyCallbackInfo<v8::Value>& info) {
+//    v8::Isolate* isolate = info.GetIsolate();
+//    node::ReturnValue return_value(info.GetReturnValue());
+//    try {
+//        F(isolate, info.This(), property, return_value);
+//    }
+//    catch (std::exception &e) {
+//        Nan::ThrowError(node::Exception::value(isolate, e));
+//    }
+//}
 
 template<node::StringPropertyType::GetterType F>
-void wrap(v8::Local<v8::String> property, const v8::PropertyCallbackInfo<v8::Value>& info) {
-    v8::Isolate* isolate = info.GetIsolate();
-    node::ReturnValue return_value(info.GetReturnValue());
+Napi::Value wrap(const Napi::String& property, const Napi::CallbackInfo& info) {
+	Napi::Env env = info.Env();
+	node::ReturnValue result(env);
+
     try {
-        F(isolate, info.This(), property, return_value);
+        F(env, info.This().As<Napi::Object>(), property, result);
+		return result.ToValue();
     }
     catch (std::exception &e) {
-        Nan::ThrowError(node::Exception::value(isolate, e));
+		Napi::Error::New(info.Env(), e.what()).ThrowAsJavaScriptException();
     }
 }
 
+//template<node::StringPropertyType::SetterType F>
+//void wrap(v8::Local<v8::String> property, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info) {
+//    v8::Isolate* isolate = info.GetIsolate();
+//    try {
+//        if (F(isolate, info.This(), property, value)) {
+//            // Indicate that the property was intercepted.
+//            info.GetReturnValue().Set(value);
+//        }
+//    }
+//    catch (std::exception &e) {
+//        Nan::ThrowError(node::Exception::value(isolate, e));
+//    }
+//}
+
+//Napi: all Setters should return true
 template<node::StringPropertyType::SetterType F>
-void wrap(v8::Local<v8::String> property, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info) {
-    v8::Isolate* isolate = info.GetIsolate();
+Napi::Value wrap(const Napi::String& property, const Napi::Value& value, const Napi::CallbackInfo& info) {
+	Napi::Env env = info.Env();
+	
     try {
-        if (F(isolate, info.This(), property, value)) {
-            // Indicate that the property was intercepted.
-            info.GetReturnValue().Set(value);
-        }
+		bool success = F(env, info.This().As<Napi::Object>(), property, value);
+		
+		// Indicate that the property was intercepted.
+		return Napi::Value::From(env, success);
     }
     catch (std::exception &e) {
-        Nan::ThrowError(node::Exception::value(isolate, e));
+		Napi::Error::New(info.Env(), e.what()).ThrowAsJavaScriptException();
     }
 }
+
+//template<node::StringPropertyType::EnumeratorType F>
+//void wrap(const v8::PropertyCallbackInfo<v8::Array>& info) {
+//    auto names = F(info.GetIsolate(), info.This());
+//    int count = (int)names.size();
+//    v8::Local<v8::Array> array = Nan::New<v8::Array>(count);
+//
+//    for (int i = 0; i < count; i++) {
+//        Nan::Set(array, i, v8::Local<v8::String>(names[i]));
+//    }
+//
+//    info.GetReturnValue().Set(array);
+//}
 
 template<node::StringPropertyType::EnumeratorType F>
-void wrap(const v8::PropertyCallbackInfo<v8::Array>& info) {
-    auto names = F(info.GetIsolate(), info.This());
-    int count = (int)names.size();
-    v8::Local<v8::Array> array = Nan::New<v8::Array>(count);
+Napi::Value wrap(const Napi::CallbackInfo& info) {
+	Napi::Env env = info.Env();
+    
+	try {
+		auto names = F(env, info.This().As<Napi::Object>());
 
-    for (int i = 0; i < count; i++) {
-        Nan::Set(array, i, v8::Local<v8::String>(names[i]));
-    }
+		int count = (int)names.size();
+		Napi::Array array = Napi::Array::New(env, count);
+		for (int i = 0; i < count; i++) {
+			array.Set(i, names[i]);
+		}
 
-    info.GetReturnValue().Set(array);
+		return array;
+	}
+	catch (std::exception & e) {
+		Napi::Error::New(info.Env(), e.what()).ThrowAsJavaScriptException();
+	}
 }
 
 } // js

@@ -238,7 +238,7 @@ inline Napi::Value node::Object::get_prototype(Napi::Env env, const Napi::Object
 //NAPI: SetPrototype is not available in napi
 template<>
 inline void node::Object::set_prototype(Napi::Env env, const Napi::Object& object, const Napi::Value& prototype) {
-	auto v8Value = *reinterpret_cast<v8::Local<v8::Value>*>((napi_value)object);
+	auto v8Value = *reinterpret_cast<v8::Local<v8::Object>*>((napi_value)object);
 	auto v8ProtoValue = *reinterpret_cast<v8::Local<v8::Value>*>((napi_value)prototype);
 	Nan::SetPrototype(v8Value, v8ProtoValue);
 }

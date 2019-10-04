@@ -23,39 +23,87 @@
 namespace realm {
 namespace node {
 
+//Napi: could reimplement with Napi::ObjectReference
 template<typename MemberType>
 class Protected {
-    // TODO: Figure out why Nan::CopyablePersistentTraits causes a build failure.
-    Nan::Persistent<MemberType, v8::CopyablePersistentTraits<MemberType>> m_value;
+protected:
+	Napi::Env m_env;
+	napi_ref m_ref;
 
-  public:
-    Protected() {}
-    Protected(v8::Local<MemberType> value) : m_value(value) {}
+public:
+	Protected() : m_env(nullptr), m_ref(nullptr) {}
 
-    operator v8::Local<MemberType>() const {
-        return Nan::New(m_value);
-    }
-    explicit operator bool() const {
-        return m_value.isEmpty();
-    }
-    bool operator==(const v8::Local<MemberType> &other) const {
-        return m_value == other;
-    }
-    bool operator!=(const v8::Local<MemberType> &other) const {
-        return m_value != other;
-    }
-    bool operator==(const Protected<MemberType> &other) const {
-        return m_value == other.m_value;
-    }
-    bool operator!=(const Protected<MemberType> &other) const {
-        return m_value != other.m_value;
-    }
+	Protected(Napi::Env env, MemberType value) : m_env(env) {
+		napi_status status = napi_create_reference(env, value, 1, &m_ref);
+		if (status != napi_ok) {
+			throw new std::runtime_error(util::format("Can't create protected reference: napi_status %1", status));
+		}
 
-    struct Comparator {
-        bool operator()(const Protected<MemberType>& a, const Protected<MemberType>& b) const {
-            return Nan::New(a.m_value)->StrictEquals(Nan::New(b.m_value));
-        }
-    };
+	}
+
+	~Protected() {
+		napi_delete_reference(m_env, m_ref);
+	}
+
+	operator MemberType() const {
+		napi_value value;
+		napi_status status = napi_get_reference_value(m_env, m_ref, &value);
+		if (status != napi_ok) {
+			throw new std::runtime_error(util::format("Can't get protected reference: napi_status %1", status));
+		}
+
+		return MemberType(m_env, value);
+	}
+
+	explicit operator bool() const {
+		napi_value value;
+		napi_status status = napi_get_reference_value(m_env, m_ref, &value);
+		if (status != napi_ok) {
+			throw new std::runtime_error(util::format("Can't get protected reference: napi_status %1", status));
+		}
+
+		return value == nullptr;
+	}
+
+	bool operator==(const MemberType &other) const {
+		napi_value value;
+		napi_status status = napi_get_reference_value(m_env, m_ref, &value);
+		if (status != napi_ok) {
+			throw new std::runtime_error(util::format("Can't get protected reference: napi_status %1", status));
+		}
+
+	    return value == other;
+	}
+
+	bool operator!=(const MemberType& other) const {
+		napi_value value;
+		napi_status status = napi_get_reference_value(m_env, m_ref, &value);
+		if (status != napi_ok) {
+			throw new std::runtime_error(util::format("Can't get protected reference: napi_status %1", status));
+		}
+
+		return value != other;
+	}
+
+	bool operator==(const Protected<MemberType> &other) const {
+		MemberType thisValue = *this;
+		MemberType otherValue = *other;
+		return thisValue == otherValue;
+	}
+
+	bool operator!=(const Protected<MemberType> &other) const {
+		MemberType thisValue = *this;
+		MemberType otherValue = *other;
+		return thisValue != otherValue;
+	}
+
+	struct Comparator {
+	    bool operator()(const Protected<MemberType>& a, const Protected<MemberType>& b) const {
+			MemberType aValue = *a;
+			MemberType bValue = *b;
+			return aValue == bValue;
+	    }
+	};
 };
 
 } // node
@@ -63,44 +111,42 @@ class Protected {
 namespace js {
 
 template<>
-class Protected<node::Types::GlobalContext> : public node::Protected<v8::Context> {
+class Protected<node::Types::GlobalContext> {
+	node::Types::GlobalContext m_ctx;
   public:
-    Protected() : node::Protected<v8::Context>() {}
-    Protected(v8::Local<v8::Context> ctx) : node::Protected<v8::Context>(ctx) {}
+	Protected(node::Types::GlobalContext ctx) : m_ctx(ctx) {}
 
-    operator v8::Isolate*() const {
-        return v8::Local<v8::Context>(*this)->GetIsolate();
+	operator Napi::Env() const {
+		return m_ctx;
     }
+
+	//Napi: comparing Napi::Env does not have a meaning in Napi since Napi::Env maps to v8::Isolate not to v8::Context. Validate the runtime behavior of this
+	//this is used in RealmClass<T>::set_binding_context -> REALM_ASSERT(js_binding_context->m_context == global_context);
+	bool operator==(const Protected<node::Types::GlobalContext>& other) const {
+		return true;
+	}
+};
+
+//Napi: Can't use Napi::Persistent on Napi::Value
+template<>
+class Protected<node::Types::Value> : public node::Protected<Napi::Value> {
+  public:
+    //Protected() : node::Protected<Napi::Value>() {}
+    Protected(Napi::Env env, Napi::Value value) : node::Protected<Napi::Value>(env, value) {}
 };
 
 template<>
-class Protected<node::Types::Value> : public node::Protected<v8::Value> {
+class Protected<node::Types::Object> : public node::Protected<Napi::Object> {
   public:
-    Protected() : node::Protected<v8::Value>() {}
-    Protected(v8::Isolate* isolate, v8::Local<v8::Value> value) : node::Protected<v8::Value>(value) {}
+    //Protected() : node::Protected<Napi::Object>() {}
+    Protected(Napi::Env env, Napi::Object object) : node::Protected<Napi::Object>(env, object) {}
 };
-
-//NAPI: uncomment and fix Protected<node::Types::Object>
-//template<>
-//class Protected<node::Types::Object> : public node::Protected<v8::Object> {
-//  public:
-//    Protected() : node::Protected<v8::Object>() {}
-//    Protected(v8::Isolate* isolate, v8::Local<v8::Object> object) : node::Protected<v8::Object>(object) {}
-//};
 
 template<>
-class Protected<node::Types::Function> : public node::Protected<v8::Function> {
+class Protected<node::Types::Function> : public node::Protected<Napi::Function> {
   public:
-    Protected() : node::Protected<v8::Function>() {}
-    Protected(v8::Isolate* isolate, v8::Local<v8::Function> object) : node::Protected<v8::Function>(object) {}
-};
-
-template<typename T>
-struct GlobalCopyablePersistentTraits {
-    typedef v8::Persistent<T, GlobalCopyablePersistentTraits<T>> CopyablePersistent;
-    static const bool kResetInDestructor = false;
-    template<typename S, typename M>
-    static inline void Copy(const v8::Persistent<S, M> &source, CopyablePersistent *dest) {}
+    //Protected() : node::Protected<Napi::Function>() {}
+    Protected(Napi::Env env, Napi::Function function) : node::Protected<Napi::Function>(env, function) {}
 };
 
 } // js

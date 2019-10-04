@@ -31,8 +31,8 @@ namespace js {
 //}
 
 template<>
-inline Napi::Object node::Context::get_global_context(Napi::Env env) {
-	return env.Global();
+inline Napi::Env node::Context::get_global_context(Napi::Env env) {
+	return env;
 }
 
 //template<>
