@@ -384,14 +384,14 @@ declare namespace Realm.Sync {
         createConfiguration(config?: Realm.PartialConfiguration): Realm.Configuration
         serialize(): SerializedUser | SerializedTokenUser;
         logout(): Promise<void>;
-        openManagementRealm(): Realm;
         retrieveAccount(provider: string, username: string): Promise<Account>;
 
-        getGrantedPermissions(recipient: 'any' | 'currentUser' | 'otherUser'): Promise<Results<Permission>>;
-        applyPermissions(condition: PermissionCondition, realmUrl: string, accessLevel: AccessLevel): Promise<PermissionChange>;
+        getGrantedPermissions(recipient: 'any' | 'currentUser' | 'otherUser'): Promise<Permission[]>;
+        applyPermissions(condition: PermissionCondition, realmUrl: string, accessLevel: AccessLevel): Promise<void>;
         offerPermissions(realmUrl: string, accessLevel: AccessLevel, expiresAt?: Date): Promise<string>;
         acceptPermissionOffer(token: string): Promise<string>
         invalidatePermissionOffer(permissionOfferOrToken: PermissionOffer | string): Promise<void>;
+        getPermissionOffers(): Promise<PermissionOffer[]>;
 
         // Deprecated
 
@@ -489,6 +489,12 @@ declare namespace Realm.Sync {
         validateCallback?: SSLVerifyCallback;
     }
 
+    const enum ClientResyncMode {
+        Discard = 'discard',
+        Manual = 'manual',
+        Recover = 'recover'
+    }
+
     interface SyncConfiguration {
         user: User;
         url: string;
@@ -505,9 +511,10 @@ declare namespace Realm.Sync {
         _disableQueryBasedSyncUrlChecks?: boolean;
         _sessionStopPolicy?: SessionStopPolicy;
         custom_http_headers?: { [header: string]: string };
-        customQueryBasedSyncIdentifier?: string,
-        newRealmFileBehavior?: OpenRealmBehaviorConfiguration
-        existingRealmFileBehavior?: OpenRealmBehaviorConfiguration
+        customQueryBasedSyncIdentifier?: string;
+        newRealmFileBehavior?: OpenRealmBehaviorConfiguration;
+        existingRealmFileBehavior?: OpenRealmBehaviorConfiguration;
+        clientResyncMode?: ClientResyncMode;
     }
 
     interface OpenRealmBehaviorConfiguration {
@@ -621,7 +628,7 @@ declare namespace Realm.Sync {
     }
 
     type LogLevel = 'all' | 'trace' | 'debug' | 'detail' | 'info' | 'warn' | 'error' | 'fatal' | 'off';
-    
+
     enum NumericLogLevel {
         All,
         Trace,
@@ -642,6 +649,8 @@ declare namespace Realm.Sync {
         readonly path: string;
         realm (): Realm;
     }
+
+    type RealmWatchPredicate = (realmPath: string) => boolean;
 
     /**
      * @deprecated, to be removed in future versions
@@ -686,7 +695,7 @@ declare namespace Realm.Sync {
             local_path: string,
             server_url: string,
             admin_user: User,
-            regex: string,
+            filter: string | RealmWatchPredicate,
             change_callback: Function,
             ssl?: SSLConfiguration
         )
@@ -983,7 +992,7 @@ declare class Realm {
 
     /**
      * Update the schema of the Realm.
-     * 
+     *
      * @param schema The schema which the Realm should be updated to use.
      * @private Not a part of the public API: Consider passing a `schema` when constructing the `Realm` instead.
      */

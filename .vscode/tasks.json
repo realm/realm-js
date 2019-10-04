@@ -46,7 +46,8 @@
                 "panel": "shared",
                 "showReuseMessage": true,
                 "clear": false
-            }
+            },
+            "problemMatcher": []
         },
         {
             "label": "Download and Start Server",

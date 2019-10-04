@@ -102,7 +102,6 @@
         "lib/extensions.js",
         "lib/index.d.ts",
         "lib/index.js",
-        "lib/management-schema.js",
         "lib/notification-worker.js",
         "lib/notifier.js",
         "lib/permission-api.js",

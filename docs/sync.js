@@ -48,6 +48,27 @@
  * @property {string} [customQueryBasedSyncIdentifier] - A custom identifier to append to the Realm url rather than the default
  *    identifier which is comprised of the user id and a random string. It allows you to reuse query based Realms across
  *    different devices.
+ * @property {string} [clientResyncMode] A Client Resync is triggered if the device and server cannot agree on a common shared history
+ *     for the Realm file, thus making it impossible for the device to upload or receive any changes.
+ *     This can happen if the server is rolled back or restored from backup. Just having the device offline will not trigger a Client Resync.
+ *     The three different modes are `'recover'`, `'discard'`, and `'manual'` with `'manual'` as the default value for
+ *     query-based sync and `'recover'` for full sync.
+ *     Query-based synced Realm only support `'manual'`.
+ * @property {Object} [newRealmFileBehavior] - Whether to create a new file and sync in background or wait for the file to be synced.
+ * @property {Object} [existingRealmFileBehavior] - Whether to open existing file and sync in background or wait for the sync of the
+ *    file to complete and then open.
+ */
+
+/**
+ * This describes the client resync modes.
+ * @typedef {("recover"|"discard"|"manual")} Realm.Sync~ClientResyncMode
+ * @property "recover" - Realm will compare the local Realm with the Realm on the server and automatically transfer
+ *     any changes from the local Realm that makes sense to the Realm provided by the server.
+ *     This is the default mode for fully synchronized Realms. It is not yet supported by query-based Realms.
+ * @property "discard" - The local Realm will be discarded and replaced with the server side Realm.
+ *     All local changes will be lost. This mode is not yet supported by query-based Realms.
+ * @property "manual" - A manual Client Resync is also known as a Client Reset. An error will be thrown.
+ *     See also {@link Realm.Sync.initiateClientReset}.
  */
 
 /**
@@ -102,14 +123,14 @@
  * If this is the first time you open the Realm, it will be empty while the server data is being downloaded
  * in the background.
  *
- * @typedef {Object} Realm.Sync.openLocalRealmBehavior
+ * @typedef {Object} Realm.Sync~openLocalRealmBehavior
  */
 
 /**
  * The default behavior settings if you want to fully synchronize a Realm before it is opened.
  * If this takes more than 30 seconds, an exception will be thrown.
  *
- * @typedef {Object} Realm.Sync.downloadBeforeOpenBehavior
+ * @typedef {Object} Realm.Sync~downloadBeforeOpenBehavior
  */
 
 /**
@@ -654,14 +675,6 @@ class User {
     logout() { }
 
     /**
-     * Get the management realm for this User.
-     * This Realm can be used to control access and permissions for Realms owned by the user.
-     * This includes giving others access to the Realms.
-     * @returns {Realm}
-     */
-    openManagementRealm() { }
-
-    /**
      * Get account information for a user. (requires administrator privilidges)
      * @param {string} provider - the provider to query for user account information (ex. 'password')
      * @param {string} username - the target username which account information should be retrieved
@@ -684,12 +697,10 @@ class User {
     /**
      * Asynchronously retrieves all permissions associated with the user calling this method.
      * @param {string} recipient the optional recipient of the permission. Can be either
-     * 'any' which is the default, or 'currentUser' or 'otherUser' if you want only permissions
+     * 'any', which is the default, 'currentUser', or 'otherUser' if you want only permissions
      * belonging to the user or *not* belonging to the user.
-     * @returns {Promise} a Promise with a queryable collection of permission objects that provides detailed
+     * @returns {Promise} a Promise with a collection of permission objects that provides detailed
      * information regarding the granted access.
-     * The collection is a live query similar to what you would get by callig Realm.objects,
-     * so the same features apply - you can listen for notifications or filter it.
      */
     getGrantedPermissions(recipient) { }
 
@@ -700,8 +711,7 @@ class User {
      * @param {string} realmUrl - The path to the Realm that you want to apply permissions to.
      * @param {string} accessLevel - The access level you want to set: 'none', 'read', 'write' or 'admin'.
      * @returns {Promise} a Promise that, upon completion, indicates that the permissions have been
-     * successfully applied by the server. It will be resolved with the
-     * {@link PermissionChange PermissionChange} object that refers to the applied permission.
+     * successfully applied by the server.
      */
     applyPermissions(condition, realmUrl, accessLevel) { }
 
@@ -713,15 +723,16 @@ class User {
      * setting is additive, i.e. you cannot revoke permissions for users who previously had a higher access level.
      * Can be 'read', 'write' or 'admin'.
      * @param {Date} [expiresAt] - Optional expiration date of the offer. If set to null, the offer doesn't expire.
-     * @returns {string} - A token that can be shared with another user, e.g. via email or message and then consumed by
-     * User.acceptPermissionOffer to obtain permissions to a Realm.
+     * @returns {Promise} A Promise that, upon completion, contains a token that can be shared with another user,
+     * e.g. via email or message and then consumed by {@link Realm#Sync#User#.acceptPermissionOffer} to obtain
+     * permissions to a Realm.
      */
     offerPermissions(realmUrl, accessLevel, expiresAt) { }
 
     /**
      * Consumes a token generated by {@link Realm#Sync#User#offerPermissions offerPermissions} to obtain permissions to a shared Realm.
      * @param {string} token - The token, generated by User.offerPermissions
-     * @returns {string} The url of the Realm that the token has granted permissions to.
+     * @returns {Promise} A Promise that, upon completion, contains the url of the Realm that the token has granted permissions to.
      */
     acceptPermissionOffer(token) { }
 
@@ -734,6 +745,13 @@ class User {
      * {@link Realm#Sync#User#offerPermissions offerPermissions}.
      */
     invalidatePermissionOffer(permissionOfferOrToken) { }
+
+    /**
+     * Asynchronously retrieve the permission offers that this user has created by invoking
+     * {@link Realm#Sync#User#offerPermissions offerPermissions}.
+     * @returns {Promise} A promise that, upon completion, contains a collection of {@link PermissionOffer PermissionOffer} objects.
+     */
+    getPermissionOffers() { }
 
     // Deprecated
     /**
@@ -1105,9 +1123,9 @@ class Adapter {
 	 * @param {string} localPath - the local path where realm files are stored
 	 * @param {string} serverUrl - the sync server to listen to
 	 * @param {SyncUser} adminUser - an admin user obtained by calling {@linkcode Realm.Sync.User.login|User.login} with admin credentials.
-	 * @param {string} regex - a regular expression used to determine which changed Realms should be monitored -
-	 *  use `.*` to match all all Realms
-	 * @param {function(realmPath)} changeCallback - called when a new transaction is available
+	 * @param {(string|Realm.Sync.Adapter~RealmWatchPredicate)} filter - a filter used to determine which changed Realms should be monitored -
+	 *  can be a regular expression string or a predicate function. Use `'.*'` to match all Realms.
+	 * @param {Realm.Sync.Adapter~RealmChangeCallback} changeCallback - called when a new transaction is available
 	 *  to process for the given realm_path
      * @param {Realm.Sync~SSLConfiguration} [ssl] - SSL configuration for the spawned sync sessions.
 	 */
@@ -1194,3 +1212,14 @@ class Adapter {
 	 */
     close() { }
 }
+
+/**
+ * @callback Realm.Sync.Adapter~RealmWatchPredicate
+ * @param {string} path - the path of the realm to consider for change tracking
+ * @returns {boolean} - whether or not to track changes for the realm 
+ */
+
+/**
+ * @callback Realm.Sync.Adapter~RealmChangeCallback
+ * @param {string} path - the path of the realm for which a new transaction is available
+ */

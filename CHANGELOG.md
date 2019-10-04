@@ -7,6 +7,51 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Enhancements
 * Added `Realm.object_for_object_id()`. ([realm/realm-js-private#401](https://github.com/realm/realm-js-private/issues/401))
+* `Realm.Sync.Adapter` can now accept a predicate function filter instead of a regex.
+
+### Fixed
+* Chained OR equals queries on an unindexed string column failed to match any results if any of the strings were 64 bytes or longer. ([realm/realm-core#3386](https://github.com/realm/realm-core/pull/3386), since v2.27.0-rc.2).
+* Fixed serialization of a query which looks for a null timestamp. This only affects query based sync. ([realm/realm-core#3388](https://github.com/realm/realm-core/pull/3388), since v3.0.0)
+* Fixed VS Code React Native debugger context. Thanks to @sam-drew. ([#2476)(https://github.com/realm/realm-js/issues/2476))
+
+### Compatibility
+* Realm Object Server: 3.23.1 or later.
+* APIs are backwards compatible with all previous release of realm in the 2.x.y series.
+* File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
+
+### Internal
+* Updated to Realm Core v5.23.5.
+* Updated to Realm Sync v4.7.8.
+
+
+3.1.0 Release notes (2019-9-19)
+=============================================================
+### Enhancements
+* Added support for Client Resync which can automatically recover the local Realm in case the server is rolled back. This largely replaces the Client Reset mechanism. It is configured using `Realm.Sync.Configuration.clientResyncMode`. Three modes are available: `'recover'`, `'discard`', and `'manual'` but currently only `'manual'` is supported for query-based sync. Default is `'recover'` for full sync and `'manual'` for query-based sync. ([#2328](https://github.com/realm/realm-js/issues/2328))
+
+### Fixed
+* Fixed check for if the partial sync schema needs to be initialized. ([realm/realm-object-store#843](https://github.com/realm/realm-object-store/pull/843))
+
+### Compatibility
+* Realm Object Server: 3.23.1 or later.
+* APIs are backwards compatible with all previous release of realm in the 2.x.y series.
+* File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
+
+### Internal
+* None.
+
+
+3.0.0 Release notes (2019-9-11)
+=============================================================
+### Breaking Changes
+* Reworked the internal implementation of the permission API. For the most part, the method signatures haven't changed or where they have changed, the API have remained close to the original (e.g. `Results<T>` has changed to `T[]`).
+  * Changed the return type of `User.getGrantedPermissions` from `Results<Permission>` to `Permission[]`. This means that the collection is no longer observable like regular Realm-backed collections. If you need to be notified for changes of this collection, you need to implement a polling-based mechanism yourself.
+  * `Permission.mayRead/mayWrite/mayManage` have been deprecated in favor of a more-consistent `AccessLevel` API.
+  * Removed the `User.openManagementRealm` method.
+  * Changed the return type of `User.applyPermissions` from `Promise<PermissionChange>` to `Promise<void>`.
+
+### Enhancements
+* Added `User.getPermissionOffers` API to get a collection of all permission offers the user has created.
 
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
@@ -29,7 +74,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * fix error screen shown in React Native when refreshAdminToken and refreshAccessToken receive error result
 
 ### Compatibility
-* Realm Object Server: 3.21.0 or later.
+* Realm Object Server: 3.23.1 or later.
 * APIs are backwards compatible with all previous release of realm in the 2.x.y series.
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
@@ -79,7 +124,7 @@ x.x.x Release notes (yyyy-MM-dd)
 2.29.0 Release notes (2019-7-3)
 =============================================================
 ### Enhancements
-* For synchronized Realms it is now possible to choose the behavior when opening the Realm. You can either choose to open the local Realm immediately or wait for it to be synchronized with the server first. These options are controlled through `Realm.Sync.SyncConfiguration.newRealmFileBehavior` and `Realm.Sync.SyncConfiguration.existingRealmFileBehavior`. See the [docs](XXX) for more information.
+* For synchronized Realms it is now possible to choose the behavior when opening the Realm. You can either choose to open the local Realm immediately or wait for it to be synchronized with the server first. These options are controlled through `Realm.Sync.SyncConfiguration.newRealmFileBehavior` and `Realm.Sync.SyncConfiguration.existingRealmFileBehavior`. See the [docs](https://realm.io/docs/javascript/2.29.0/api/Realm.Sync.html#~SyncConfiguration) for more information.
 * Added support for unicode characters in realm path and filenames for Windows. Thanks to @rajivshah3. ([realm-core#3293](https://github.com/realm/realm-core/pull/3293) and [#2319](https://github.com/realm/realm-js/issues/2319))
 
 ### Fixed

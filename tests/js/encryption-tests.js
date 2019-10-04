@@ -75,7 +75,8 @@ module.exports = {
             return Promise.resolve();
         }
 
-        const credentials = Realm.Sync.Credentials.usernamePassword('realm-admin', '');
+ 
+        const credentials = Realm.Sync.Credentials.usernamePassword("realm-admin", "");
         return Realm.Sync.User.login('http://127.0.0.1:9080', credentials).then(adminUser => {
             new Realm({
                 encryptionKey: new Int8Array(64),

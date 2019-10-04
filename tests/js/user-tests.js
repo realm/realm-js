@@ -284,16 +284,6 @@ module.exports = {
     });
   },
 
-  testManagementRealm() {
-    return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.anonymous()).then((user) => {
-      let realm = user.openManagementRealm();
-      TestCase.assertInstanceOf(realm, Realm);
-
-      TestCase.assertArraysEqual(realm.schema.map(o => o.name),
-                                 ['PermissionChange', 'PermissionOffer', 'PermissionOfferResponse']);
-    });
-  },
-
   testRetrieveAccount() {
     if (!isNodeProcess) {
       return;
