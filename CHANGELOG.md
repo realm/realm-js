@@ -1,4 +1,4 @@
-x.x.x Release notes (yyyy-MM-dd)
+v3.3.0-rc.1 Release notes (2019-10-9)
 =============================================================
 ### Enhancements
 * Improve performance of changeset scanning when syncing data. This happens on a background thread, so it shouldn't have any visible effect.
