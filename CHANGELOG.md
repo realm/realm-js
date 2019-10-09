@@ -1,7 +1,7 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
-* Improve performance of changeset scanning. For changesets involving large numbers of objects that are otherwise cheap to process this speeds up changeset integration by ~20%. ([realm/realm-sync#3128](https://github.com/realm/realm-sync/pull/3128)).
+* Improve performance of changeset scanning when syncing data. This happens on a background thread, so it shouldn't have any visible effect.
 
 ### Fixed
 * None.
