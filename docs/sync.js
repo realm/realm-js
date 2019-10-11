@@ -139,7 +139,7 @@
  */
 
 /**
- * The default behavior settings uf you wat to complete downloading a synchronized Realm before opening it.
+ * The default behavior settings if you want to wait for downloading a synchronized Realm to complete before opening it.
  *
  * @typedef {Realm.Sync~OpenRealmBehaviorConfiguration} Realm.Sync~downloadBeforeOpenBehavior
  */
