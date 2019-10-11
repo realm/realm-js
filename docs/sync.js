@@ -125,7 +125,7 @@
  * @typedef {Object} Realm.Sync~OpenRealmBehaviorConfiguration
  * @property {string} type - how to open a Realm - 'downloadBeforeOpen' to wait for download to complete or 'openImmediately' to open the local Realm
  * @property {number} [timeOut] - how long to wait for a download (in ms). Default: infinity
- * @property {string} [timeOutBehavior] - what to do when download times out - 'openLocalRealm' to open local Realm or 'throwException' to throw an exception
+ * @property {string} [timeOutBehavior] - what to do when download times out - 'openLocalRealm' to open the local Realm or 'throwException' to throw an exception.
  * @see {@link Realm.Sync~openLocalRealmBehavior}
  * @see {@link Realm.Sync~downloadBeforeOpenBehavior}
  */
