@@ -14,6 +14,7 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Internal
 * Cleaned up the console output produced by `./tests`. ([#2548](https://github.com/realm/realm-js/pull/2548))
+* Added a README.md to the React Test App directory. ([#2561](https://github.com/realm/realm-js/pull/2561))
 
 3.2.0 Release notes (2019-9-30)
 =============================================================
