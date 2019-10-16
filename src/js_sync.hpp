@@ -1366,7 +1366,7 @@ void SyncClass<T>::local_listener_realms(ContextType ctx, ObjectType this_object
     // coordinator to get the matching sync configuration, but if it's not
     // already open we want to open it without creating a sync session.
     std::shared_ptr<Realm> realm;
-    if (auto coordinator = realm::_impl::RealmCoordinator::get_coordinator(admin_realm_path)) {
+    if (auto coordinator = realm::_impl::RealmCoordinator::get_existing_coordinator(admin_realm_path)) {
         realm = coordinator->get_realm();
     }
     else {
@@ -1383,8 +1383,9 @@ void SyncClass<T>::local_listener_realms(ContextType ctx, ObjectType this_object
 
     std::vector<std::string> local_realms;
     for (auto& obj : table) {
-        auto virtual_path = obj.get<String>(path_col_key);
-        std::string file_path = util::format("%1/realms%2/%3.realm", local_root_dir, virtual_path, obj.get_key().value);
+        auto virtual_path = obj.get<StringData>(path_col_key);
+        ObjectID id = table.get_object_id(obj.get_key());
+        std::string file_path = util::format("%1/realms%2/%3.realm", local_root_dir, virtual_path, id.to_string());
 
         // filter out Realms not present locally
         if (util::File::exists(file_path)) {
