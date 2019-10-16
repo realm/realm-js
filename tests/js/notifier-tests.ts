@@ -231,7 +231,7 @@ describe('Notifier', () => {
         const realm = await rosController.createRealm('test', userRealmSchema);
         await notificationPromise('test',
             () => realm.write(() => realm.create('IntObject', [0])),
-            { IntObject: { insertions: [0] } });
+            { IntObject: { insertions: [512] } });
         realm.close();
 
         // Verify that the GN's copy of the Realm is in the expected place
@@ -241,7 +241,7 @@ describe('Notifier', () => {
             throw new Error(`No matching RealmFile for filter "path ENDSWITH '${currentTestName}/test' in admin Realm. `
                             + `These were found: ${adminRealm.objects('RealmFile').map((f) => f.path)}`);
         }
-        expect(fs.existsSync(`${temp.name}/realms${realmFile.path}/${realmFile._objectId()}.realm`)).toBeTruthy();
+        expect(fs.existsSync(`${temp.name}/realms${realmFile.path}/${realmFile.objectId()}.realm`)).toBeTruthy();
         temp.removeCallback();
     });
 
@@ -284,7 +284,7 @@ describe('Notifier', () => {
         const [callback, realm] = await createRealmAndChangeListener();
         await notificationPromise('test',
             () => realm.write(() => realm.create('IntObject', [0])),
-            { IntObject: { insertions: [ 0 ] } });
+            { IntObject: { insertions: [ 512 ] } });
         realm.close();
     });
 
@@ -293,7 +293,7 @@ describe('Notifier', () => {
             const [callback, realm] = await createRealmAndChangeListener();
             await notificationPromise('test',
                 () => realm.write(() => realm.create('IntObject', [0])),
-                { IntObject: { insertions: [ 0 ] } });
+                { IntObject: { insertions: [ 512 ] } });
             realm.close();
 
             await Realm.Sync.removeAllListeners();
@@ -316,7 +316,7 @@ describe('Notifier', () => {
             const [callback, realm] = await createRealmAndChangeListener();
             await notificationPromise('test',
                 () => realm.write(() => realm.create('IntObject', [0])),
-                { IntObject: { insertions: [ 0 ] } });
+                { IntObject: { insertions: [ 512 ] } });
             realm.close();
             await Realm.Sync.removeAllListeners();
 
@@ -341,7 +341,7 @@ describe('Notifier', () => {
             const [callback, realm] = await createRealmAndChangeListener();
             await notificationPromise('test',
                 () => realm.write(() => realm.create('IntObject', [0])),
-                { IntObject: { insertions: [ 0 ] } });
+                { IntObject: { insertions: [ 512 ] } });
             realm.close();
             await Realm.Sync.removeAllListeners();
 
@@ -358,12 +358,12 @@ describe('Notifier', () => {
                 realm.create('IntObject', [0]);
                 realm.create('IntObject', [1]);
             }),
-            { IntObject: { insertions: [0, 1] } });
+            { IntObject: { insertions: [512, 513] } });
         await notificationPromise('test', () => realm.write(() => {
                 realm.objects('IntObject')[0].int = 2;
                 realm.delete(realm.objects('IntObject')[1]);
             }),
-            { IntObject: { deletions: [1], modifications: [0] } });
+            { IntObject: { deletions: [513], modifications: [512] } });
         realm.close();
     });
 
@@ -374,7 +374,7 @@ describe('Notifier', () => {
         await addChangeListener('.*', rosController);
         await notificationPromise('test',
             () => realm.write(() => realm.create('IntObject', [0])),
-            { IntObject: { insertions: [0] } });
+            { IntObject: { insertions: [512] } });
 
         // Remove the listener then add a new one and verify it only gets notified
         // for the new change
@@ -382,7 +382,7 @@ describe('Notifier', () => {
         await addChangeListener('.*', rosController);
         await notificationPromise('test',
             () => realm.write(() => realm.create('IntObject', [0])),
-            { IntObject: { insertions: [1] } });
+            { IntObject: { insertions: [513] } });
         realm.close();
     }, LONG_TIMEOUT);
 
@@ -395,10 +395,10 @@ describe('Notifier', () => {
 
         await notificationPromise('test',
             () => realm1.write(() => realm1.create('IntObject', [0])),
-            { IntObject: { insertions: [ 0 ] } });
+            { IntObject: { insertions: [ 512 ] } });
         await notificationPromise('test',
             () => realm2.write(() => realm2.create('IntObject', [0])),
-            { IntObject: { insertions: [ 0 ] } });
+            { IntObject: { insertions: [ 512 ] } });
         realm1.close();
         realm2.close();
     });
@@ -407,7 +407,7 @@ describe('Notifier', () => {
         const [callback, realm] = await createRealmAndChangeListener();
         await notificationPromise('test',
             () => realm.write(() => realm.create('IntObject', [0])),
-            { IntObject: { insertions: [ 0 ] } });
+            { IntObject: { insertions: [ 512 ] } });
 
         Realm.Sync.removeListener(`${notificationFilterPrefix}.*`, 'change', callback);
         await expectNoNotificationPromise(() =>
@@ -419,7 +419,7 @@ describe('Notifier', () => {
         const [callback, realm] = await createRealmAndChangeListener();
         await notificationPromise('test',
             () => realm.write(() => realm.create('IntObject', [0])),
-            { IntObject: { insertions: [ 0 ] } });
+            { IntObject: { insertions: [ 512 ] } });
 
         Realm.Sync.removeAllListeners();
         await expectNoNotificationPromise(() =>
@@ -434,7 +434,7 @@ describe('Notifier', () => {
                 realm.create('IntObject', [1]);
                 realm.create('IntObject', [2]);
             }),
-            { IntObject: { insertions: [0, 1] } });
+            { IntObject: { insertions: [512, 513] } });
         await changeObjectPromise(
             () => realm.write(() => realm.objects('IntObject')[0].int = 3),
             (changes) => {
@@ -454,7 +454,7 @@ describe('Notifier', () => {
         ]);
         await notificationPromise('test',
             () => realm1.write(() => realm1.create('IntObject', [0])),
-            { IntObject: { insertions: [ 0 ] } });
+            { IntObject: { insertions: [ 512 ] } });
         await expectNoNotificationPromise(() =>
             realm2.write(() => realm2.create('IntObject', [0])));
         realm1.close();
@@ -470,12 +470,12 @@ describe('Notifier', () => {
         await addChangeListener('.*test1', rosController);
         await notificationPromise('.*test1',
             () => realm1.write(() => realm1.create('IntObject', [0])),
-            { IntObject: { insertions: [ 0 ] } });
+            { IntObject: { insertions: [ 512 ] } });
 
         await addChangeListener('.*test2', rosController);
         await notificationPromise('.*test2',
             () => realm2.write(() => realm2.create('IntObject', [0])),
-            { IntObject: { insertions: [ 0 ] } });
+            { IntObject: { insertions: [ 512 ] } });
         realm1.close();
         realm2.close();
     });
@@ -519,7 +519,7 @@ describe('Notifier', () => {
         await addChangeListener('.*test2', rosController);
         await notificationPromise('.*test2',
             () => realm2.write(() => realm2.create('IntObject', [0])),
-            { IntObject: { insertions: [ 0 ] } });
+            { IntObject: { insertions: [ 512 ] } });
         await addAvailableListener('.*test.', rosController, ['test1', 'test2', 'test3']);
         realm1.close();
         realm2.close();
@@ -763,13 +763,13 @@ describe('Notifier', () => {
         const [callback, realm] = await createRealmAndChangeListener();
         await notificationPromise('test',
             () => realm.write(() => realm.create('IntObject', [0])),
-            { IntObject: { insertions: [ 0 ] } });
+            { IntObject: { insertions: [ 512 ] } });
         realm.close();
 
         // Verify that the local copy exists
         const root = Realm.Sync.getListenerDirectory();
         const realmFile = rosController.adminRealm.objects('RealmFile').filtered('path == "/demo/test"')[0];
-        const path = `${root}/realms${realmFile.path}/${realmFile._objectId()}.realm`;
+        const path = `${root}/realms${realmFile.path}/${realmFile.objectId()}.realm`;
         expect(fs.existsSync(path)).toBeTruthy();
 
         await Realm.Sync.addListener(config(), 'delete', enqueuePendingChange);
@@ -927,16 +927,16 @@ describe('Multi-process Notifier', () => {
             expectEvent(await next(), 'available', 'test');
 
             realm.write(() => realm.create('IntObject', [0]));
-            expectEvent(await next(), 'change', 'test', [0]);
+            expectEvent(await next(), 'change', 'test', [512]);
 
             realm.write(() => realm.create('IntObject', [0]));
-            expectEvent(await next(), 'change', 'test', [1]);
+            expectEvent(await next(), 'change', 'test', [513]);
 
             realm.write(() => { realm.objects('IntObject')[1].int = 2; });
-            expectEvent(await next(), 'change', 'test', [], [], [1]);
+            expectEvent(await next(), 'change', 'test', [], [], [513]);
 
             realm.write(() => { realm.delete(realm.objects('IntObject')[0]); });
-            expectEvent(await next(), 'change', 'test', [0], [0, 1], []);
+            expectEvent(await next(), 'change', 'test', [], [512], []);
         });
         realm.close();
     });
