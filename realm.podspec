@@ -13,7 +13,11 @@ Pod::Spec.new do |s|
   s.platform     = :ios, "9.0"
 
   s.source       = { :git => "https://github.com/realm/realm-js.git", :tag => "v#{s.version}" }
-  s.source_files  = "ios/**/*.{h,m}"
+  s.source_files = "src/object-store/src/*.{cpp,hpp}",
+                   "react-native/ios/**/*.{m,mm,h}",
+                   "src/ios/*.mm",
+                   "src/jsc/*.{cpp,hpp}",
+                   "src/*.{cpp,hpp}"
 
   s.dependency 'React'
 end
