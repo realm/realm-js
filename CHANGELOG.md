@@ -4,7 +4,7 @@
 * Improve performance of changeset scanning when syncing data. This happens on a background thread, so it shouldn't have any visible effect.
 
 ### Fixed
-* Added `react-native.config.js` to distrubition file. ([#2564](https://github.com/realm/realm-js/issues/2564) and [#2460](https://github.com/realm/realm-js/issues/2460), since v3.2.0)
+* Added `react-native.config.js` to distribution file. ([#2564](https://github.com/realm/realm-js/issues/2564) and [#2460](https://github.com/realm/realm-js/issues/2460), since v3.2.0)
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.
