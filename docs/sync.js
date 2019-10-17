@@ -54,9 +54,10 @@
  *     The three different modes are `'recover'`, `'discard'`, and `'manual'` with `'manual'` as the default value for
  *     query-based sync and `'recover'` for full sync.
  *     Query-based synced Realm only support `'manual'`.
- * @property {Object} [newRealmFileBehavior] - Whether to create a new file and sync in background or wait for the file to be synced.
- * @property {Object} [existingRealmFileBehavior] - Whether to open existing file and sync in background or wait for the sync of the
- *    file to complete and then open.
+ * @property {Realm.Sync~OpenRealmBehaviorConfiguration} [newRealmFileBehavior] - Whether to create a new file and sync in background or wait for the file to be synced.
+       If not set, the Realm will be downloaded before opened.
+ * @property {Realm.Sync~OpenRealmBehaviorConfiguration} [existingRealmFileBehavior] - Whether to open existing file and sync in background or wait for the sync of the
+ *    file to complete and then open. If not set, the Realm will be downloaded before opened.
  */
 
 /**
@@ -119,18 +120,28 @@
  */
 
 /**
+ * Specify how to open a synced Realm.
+ *
+ * @typedef {Object} Realm.Sync~OpenRealmBehaviorConfiguration
+ * @property {string} type - how to open a Realm - 'downloadBeforeOpen' to wait for download to complete or 'openImmediately' to open the local Realm
+ * @property {number} [timeOut] - how long to wait for a download (in ms). Default: infinity
+ * @property {string} [timeOutBehavior] - what to do when download times out - 'openLocalRealm' to open the local Realm or 'throwException' to throw an exception.
+ * @see {@link Realm.Sync~openLocalRealmBehavior}
+ * @see {@link Realm.Sync~downloadBeforeOpenBehavior}
+ */
+
+/**
  * The default behavior settings if you want to open a synchronized Realm immediately and start working on it.
  * If this is the first time you open the Realm, it will be empty while the server data is being downloaded
  * in the background.
  *
- * @typedef {Object} Realm.Sync~openLocalRealmBehavior
+ * @typedef {Realm.Sync~OpenRealmBehaviorConfiguration} Realm.Sync~openLocalRealmBehavior
  */
 
 /**
- * The default behavior settings if you want to fully synchronize a Realm before it is opened.
- * If this takes more than 30 seconds, an exception will be thrown.
+ * The default behavior settings if you want to wait for downloading a synchronized Realm to complete before opening it.
  *
- * @typedef {Object} Realm.Sync~downloadBeforeOpenBehavior
+ * @typedef {Realm.Sync~OpenRealmBehaviorConfiguration} Realm.Sync~downloadBeforeOpenBehavior
  */
 
 /**

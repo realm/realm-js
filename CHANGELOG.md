@@ -14,7 +14,7 @@
 ### Internal
 * Cleaned up the console output produced by `./tests`. ([#2548](https://github.com/realm/realm-js/pull/2548))
 * Updated to Realm Sync from 4.7.8 to 4.7.10.
-
+* Added a README.md to the React Test App directory. ([#2561](https://github.com/realm/realm-js/pull/2561))
 
 3.2.0 Release notes (2019-9-30)
 =============================================================
