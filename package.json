@@ -41,7 +41,8 @@
     "binding.gyp",
     "realm.gypi",
     "target_defaults.gypi",
-    "dependencies.list"
+    "dependencies.list",
+    "react-native.config.js"
   ],
   "scripts": {
     "get-version": "node -p process.env.npm_package_version",
