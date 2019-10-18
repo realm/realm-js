@@ -291,15 +291,10 @@ def buildLinux(workerFunction) {
 
 def buildMacOS(workerFunction) {
   return {
-    myNode('osx_vegas') {
-      withEnv([
-        "DEVELOPER_DIR=/Applications/Xcode-9.4.app/Contents/Developer",
-        "SDKROOT=macosx10.13"
-      ]) {
-        unstash 'source'
-        sh "bash ./scripts/utils.sh set-version ${dependencies.VERSION}"
-        workerFunction('macos')
-      }
+    myNode('macos && cph') {
+      unstash 'source'
+      sh "bash ./scripts/utils.sh set-version ${dependencies.VERSION}"
+      workerFunction('macos')
     }
   }
 }
@@ -524,12 +519,8 @@ def testLinux(target, nodeVersion = 10, postStep = null) {
 
 def testMacOS(target, postStep = null) {
   return {
-    node('osx_vegas') {
-      withEnv(['DEVELOPER_DIR=/Applications/Xcode-9.4.app/Contents/Developer',
-               'SDKROOT=macosx10.13',
-               'REALM_SET_NVM_ALIAS=1']) {
-        doInside('./scripts/test.sh', target, postStep)
-      }
+    node('macos && cph') {
+      doInside('./scripts/test.sh', target, postStep)
     }
   }
 }
