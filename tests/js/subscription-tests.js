@@ -301,9 +301,9 @@ module.exports = {
                         setTimeout(function() {
                             const sub2 = query1.subscribe({name: 'update-query', update: true, timeToLive: 5000});
                             sub2.addListener((subscription2, state2) => {
-                                if (pendingOrComplete(state2)) {
+                                if (pendingOrComplete(state2) && namedSub.timeToLive === 5000) {
                                     sub2.removeAllListeners();
-                                    TestCase.assertTrue(update1.getTime() < namedSub.updatedAt.getTime(), "'UpdatedAt' was not updated correctly.");
+                                    TestCase.assertTrue(update1.getTime() < namedSub.updatedAt.getTime(), "'updatedAt' was not updated correctly.");
                                     TestCase.assertTrue(expires1.getTime() < namedSub.expiresAt.getTime(), "'expiresAt' was not updated correctly.");
                                     TestCase.assertEqual(namedSub.timeToLive, 5000, "'timeToLive' was not updated correctly.");
                                     TestCase.assertTrue(queryDescription === namedSub.query, "'query' was not updated correctly.");

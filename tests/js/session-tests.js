@@ -462,154 +462,6 @@ module.exports = {
             });
     },
 
-    testIncompatibleSyncedRealmOpen() {
-        let realm = "sync-v1.realm";
-        if (isNodeProcess) {
-            realm = copyFileToTempDir(path.join(process.cwd(), "data", realm));
-        }
-        else {
-            //copy the bundled RN realm files for the test
-            Realm.copyBundledRealmFiles();
-        }
-
-        return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.anonymous())
-            .then(user => {
-                const config = {
-                    path: realm,
-                    sync: {
-                        user,
-                        error : err => console.log(err),
-                        url: 'realm://127.0.0.1:9080/~/sync-v1',
-                        fullSynchronization: true,
-                    }
-                };
-                return Realm.open(config)
-            })
-            .then(realm => { throw new Error("Should fail with IncompatibleSyncedRealmError") })
-            .catch(e => {
-                if (e.name === "IncompatibleSyncedRealmError") {
-                    const backupRealm = new Realm(e.configuration);
-                    TestCase.assertEqual(backupRealm.objects('Dog').length, 3);
-                    return;
-                }
-                throw new Error(unexpectedError(e));
-            });
-    },
-
-    testIncompatibleSyncedRealmOpenAsync() {
-        let realm = "sync-v1.realm";
-        if (isNodeProcess) {
-            realm = copyFileToTempDir(path.join(process.cwd(), "data", realm));
-        }
-        else {
-            //copy the bundled RN realm files for the test
-            Realm.copyBundledRealmFiles();
-        }
-
-        return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.anonymous()).then(user => {
-            return new Promise((resolve, _reject) => {
-                const config = {
-                    path: realm,
-                    sync: {
-                        user,
-                        error : err => console.log(err),
-                        url: 'realm://127.0.0.1:9080/~/sync-v1',
-                        fullSynchronization: true,
-                    }
-                };
-
-                Realm.openAsync(config, (error, realm) => {
-                    if (!error) {
-                        _reject("Should fail with IncompatibleSyncedRealmError");
-                        return;
-                    }
-
-                    if (error.name === "IncompatibleSyncedRealmError") {
-                        const backupRealm = new Realm(error.configuration);
-                        TestCase.assertEqual(backupRealm.objects('Dog').length, 3);
-                        resolve();
-                        return;
-                    }
-
-                    _reject(unexpectedError(error));
-                });
-            });
-        });
-    },
-
-    testIncompatibleSyncedRealmConsructor() {
-        let realm = "sync-v1.realm";
-        if (isNodeProcess) {
-            realm = copyFileToTempDir(path.join(process.cwd(), "data", realm));
-        }
-        else {
-            //copy the bundled RN realm files for the test
-            Realm.copyBundledRealmFiles();
-        }
-
-        return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.anonymous()).then(user => {
-            return new Promise((resolve, _reject) => {
-                    const config = {
-                        path: realm,
-                        sync: {
-                            user,
-                            error : err => console.log(err),
-                            url: 'realm://127.0.0.1:9080/~/sync-v1'
-                        }
-                    };
-
-                    try {
-                        const realm = new Realm(config);
-                        _reject("Should fail with IncompatibleSyncedRealmError");
-                    }
-                    catch (e) {
-                        if (e.name === "IncompatibleSyncedRealmError") {
-                            const backupRealm = new Realm(e.configuration);
-                            TestCase.assertEqual(backupRealm.objects('Dog').length, 3);
-                            resolve();
-                            return;
-                        }
-
-                        _reject(unexpectedError(e));
-                    }
-            });
-        });
-    },
-
-/*    testProgressNotificationsForRealmConstructor() {
-        if (!isNodeProccess) {
-            return;
-        }
-
-        const username = Utils.uuid();
-        const realmName = Utils.uuid();
-
-        return runOutOfProcess(__dirname + '/download-api-helper.js', username, realmName, REALM_MODULE_PATH)
-            .then(() => Realm.Sync.User.login('http://127.0.0.1:9080', username, 'password'))
-            .then(user => {
-                let config = {
-                    sync: {
-                        user,
-                        url: `realm://127.0.0.1:9080/~/${realmName}`
-                    },
-                    schema: [{ name: 'Dog', properties: { name: 'string' } }],
-                };
-
-                return Realm.open(config).then((realm) => {
-                    return new Promise((resolve, reject) => {
-                        realm.syncSession.addProgressNotification('download', 'reportIndefinitely', (transferred, transferable) => {
-                            if (transferred === transferable) {
-                                resolve();
-                            }
-                        });
-                        setTimeout(function() {
-                            reject("Progress Notifications API failed to call progress callback for Realm constructor");
-                        }, 5000);
-                    });
-                });
-            });
-    },*/
-
     testProgressNotificationsUnregisterForRealmConstructor() {
         if (!isNodeProcess) {
             return;
@@ -1233,7 +1085,7 @@ module.exports = {
     },
 
     async testMultiplePauses() {
-        const user = await Realm.Sync.User.register('http://127.0.0.1:9080', Utils.uuid(), 'password')
+        const user = await Realm.Sync.User.register('http://127.0.0.1:9080', Utils.uuid(), 'password');
         const config = {
             sync: {
                 user: user,
@@ -1297,7 +1149,8 @@ module.exports = {
                         fullSynchronization: true
                     }
                 });
-                return Realm.open(config).then(admin2Realm => {
+                return Realm.open(admin2Config).then(r => {
+                    admin2Realm = r;
                     return admin2Realm.syncSession.downloadAllServerChanges();
                 });
             })

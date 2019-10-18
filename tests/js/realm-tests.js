@@ -803,7 +803,7 @@ module.exports = {
             properties: {
                 intCol: 'int'
             }
-        }
+        };
 
         function InvalidObject() {
             return {};
@@ -852,7 +852,6 @@ module.exports = {
         // realm = new Realm({schema: [CustomObject, InvalidObject]});
         realm = new Realm();
         let obj = realm.objects('CustomObject')[0];
-        console.log(typeof(obj), obj instanceof CustomObject);
         TestCase.assertTrue(realm.objects('CustomObject')[0] instanceof CustomObject);
         TestCase.assertTrue(realm.objects(CustomObject).length > 0);
     },
@@ -1571,7 +1570,7 @@ module.exports = {
         return Realm.Sync.User.login('http://127.0.0.1:9080', Realm.Sync.Credentials.usernamePassword("realm-admin", ""))
             .then(user1 => {
                 config.sync.user = user1;
-                return Realm.open(config)
+                return Realm.open(config);
             }).then(realm => {
                 TestCase.assertEqual(realm.schema.length, 7); // 5 permissions, 1 results set, 1 test object
                 return closeAfterUpload(realm);
@@ -1596,10 +1595,8 @@ module.exports = {
                         doubleCol: 'double',
                     }
                 });
-                console.log('config = ', JSON.stringify(config));
                 return Realm.open(config);
             }).then((realm3) => {
-                console.log('realm3.schema = ', JSON.stringify(realm3.schema));
                 return closeAfterUpload(realm3);
             }).then(() => {
                 return new Promise((resolve, reject) => {
@@ -1607,7 +1604,7 @@ module.exports = {
                         if (called) {
                             resolve();
                         } else {
-                            reject();
+                            reject('listener never called');
                         }
                     }, 1000);
                 });
