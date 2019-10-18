@@ -1,4 +1,4 @@
-name: Node CI
+name: CI
 
 on: 
   push:
@@ -23,7 +23,7 @@ jobs:
         node-version: ${{ matrix.node-version }}
     - name: npm install, build, and test
       run: |
-        npm ci --ignore-scripts
+        npm install --ignore-scripts
         npm test node
       env:
         CI: true
