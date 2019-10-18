@@ -20,8 +20,7 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import { ListView as BaseListView } from 'deprecated-react-native-listview';
-import ListViewDataSource from 'deprecated-react-native-listview';
+import ReactNativeListView from 'deprecated-react-native-listview';
 
 
 function hashObjects(array) {
@@ -32,7 +31,7 @@ function hashObjects(array) {
     return hash;
 }
 
-class DataSource extends ListViewDataSource {
+class DataSource extends ReactNativeListView.DataSource {
     cloneWithRowsAndSections(inputData, sectionIds, rowIds) {
         let data = {};
 
@@ -173,7 +172,7 @@ export default class ListView extends React.Component {
 
     render() {
         return (
-            <BaseListView {...this.props} ref="listView" renderRow={this.renderRow} />
+            <ReactNativeListView {...this.props} ref="listView" renderRow={this.renderRow} />
         );
     }
 
