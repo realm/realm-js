@@ -1,7 +1,7 @@
 {
   "name": "realm",
   "description": "Realm is a mobile database: an alternative to SQLite and key-value stores",
-  "version": "3.2.0",
+  "version": "3.3.0-rc.1",
   "license": "See the actual license in the file LICENSE",
   "homepage": "https://realm.io",
   "keywords": [
@@ -41,7 +41,8 @@
     "binding.gyp",
     "realm.gypi",
     "target_defaults.gypi",
-    "dependencies.list"
+    "dependencies.list",
+    "react-native.config.js"
   ],
   "scripts": {
     "get-version": "node -p process.env.npm_package_version",
@@ -117,15 +118,6 @@
     "semver": "^5.6.0",
     "shelljs": "^0.7.7",
     "shx": "^0.2.2"
-  },
-  "rnpm": {
-    "ios": {
-      "project": "react-native/ios/RealmReact.xcodeproj",
-      "sharedLibraries": [
-        "libc++",
-        "libz"
-      ]
-    }
   },
   "engines": {
     "node": ">=8"

@@ -7,6 +7,7 @@
     "test": "jest"
   },
   "dependencies": {
+    "@babel/runtime": "^7.6.3",
     "react": "16.6.3",
     "react-native": "^0.59.9",
     "react-native-exception-handler": "^2.4.3",
