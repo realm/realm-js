@@ -253,15 +253,9 @@ void RealmObjectClass<T>::get_object_id(ContextType ctx, ObjectType object, Argu
     args.validate_maximum(0);
 
     auto realm_object = get_internal<T, RealmObjectClass<T>>(object);
-    const Group& group = realm_object->realm()->read_group();
-    ConstTableRef table = ObjectStore::table_for_object_type(group, realm_object->get_object_schema().name);
-
-    std::stringstream ss;
     const Obj& obj = realm_object->obj();
-    auto obj_key = obj.get_key();
-    auto obj_id = table->get_object_id(obj_key);
-    ss << obj_id.to_string();
-    return_value.set(ss.str());
+    auto obj_id = obj.get_object_id();
+    return_value.set(obj_id.to_string());
 }
 
 template<typename T>
