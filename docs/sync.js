@@ -163,7 +163,7 @@ class Sync {
      * @param {string} filterRegex - A regular expression used to determine which changed Realms should trigger events. Use `.*` to match all Realms.
      * @param {string} name - The name of the event.
      * @param {function(changeEvent)} changeCallback - The callback to invoke with the events.
-     * @return {Promise<void>} A promise which is resolved when the worker has started.
+     * @returns {Promise<void>} A promise which is resolved when the worker has started.
      *
      * Registers the `changeCallback` to be called each time the given event occurs on the specified server.
      * Only events on Realms with a _virtual path_ that matches the filter regex are emitted.
@@ -192,7 +192,7 @@ class Sync {
      * @param {Realm.Sync.RealmListenerConfiguration} config - The configuration object for Realms being observed.
      * @param {string} eventName - The name of the event to observe.
      * @param {function(changeEvent)} changeCallback - The callback to invoke with the events.
-     * @return {Promise<void>} A promise which is resolved when the worker has started.
+     * @returns {Promise<void>} A promise which is resolved when the worker has started.
      *
      * Registers the `changeCallback` to be called each time the given event occurs on the specified server.
      * Only events on Realms with a _virtual path_ that matches the filter regex are emitted.
@@ -221,7 +221,7 @@ class Sync {
      * @param {SyncUser} adminUser - an admin user obtained by calling {@linkcode Realm.Sync.User.login|User.login} with admin credentials.
      * @param {string} filterRegex - A regular expression used to determine which changed Realms should trigger events. Use `.*` to match all Realms.
      * @param {Realm.Worker} worker - Worker to deliver events to.
-     * @return {Promise<void>} A promise which is resolved when the worker has started.
+     * @returns {Promise<void>} A promise which is resolved when the worker has started.
      *
      */
     static addListener(serverUrl, adminUser, filterRegex, worker) { }
