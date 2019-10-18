@@ -24,10 +24,10 @@ import {
     StyleSheet,
     Text,
     View,
-    ListView,
     TouchableHighlight
 } from 'react-native';
 
+import ListView from 'deprecated-react-native-listview';
 import Store from 'react-native-store';
 import SQLite from 'react-native-sqlite-storage';
 import Realm from 'realm';
