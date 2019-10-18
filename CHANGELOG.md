@@ -4,6 +4,7 @@
 * Improve performance of changeset scanning when syncing data. This happens on a background thread, so it shouldn't have any visible effect.
 
 ### Fixed
+* Fixed incorrect return type of `Realm.Sync.addListener()` in API doc and Typescript definition. ([#2566](https://github.com/realm/realm-js/issues/2566), since v2.23.0)
 * Added `react-native.config.js` to distribution file. ([#2564](https://github.com/realm/realm-js/issues/2564) and [#2460](https://github.com/realm/realm-js/issues/2460), since v3.2.0)
 * Fixed user methods (authentication etc) when running on the Electron main process, where `XMLHttpRequest` is `undefined`. ([#2274](https://github.com/realm/realm-js/issues/2274), since v2.24.0)
 

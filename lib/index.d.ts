@@ -647,7 +647,7 @@ declare namespace Realm.Sync {
      */
     interface LocalRealm {
         readonly path: string;
-        realm (): Realm;
+        realm(): Realm;
     }
 
     type RealmWatchPredicate = (realmPath: string) => boolean;
@@ -655,13 +655,13 @@ declare namespace Realm.Sync {
     /**
      * @deprecated, to be removed in future versions
      */
-    function addListener(serverURL: string, adminUser: Realm.Sync.User, regex: string, name: RealmListenerEventName, changeCallback: (changeEvent: ChangeEvent) => void): void;
+    function addListener(serverURL: string, adminUser: Realm.Sync.User, regex: string, name: RealmListenerEventName, changeCallback: (changeEvent: ChangeEvent) => void): Promise<void>;
     /**
      * @deprecated, to be removed in future versions
      */
-    function addListener(serverURL: string, adminUser: Realm.Sync.User, regex: string, name: RealmListenerEventName, changeCallback: (changeEvent: ChangeEvent) => Promise<void>): void;
-    function addListener(config: RealmListenerConfiguration, eventName: RealmListenerEventName, changeCallback: (changeEvent: ChangeEvent) => void): void;
-    function addListener(config: RealmListenerConfiguration, eventName: RealmListenerEventName, changeCallback: (changeEvent: ChangeEvent) => Promise<void>): void;
+    function addListener(serverURL: string, adminUser: Realm.Sync.User, regex: string, name: RealmListenerEventName, changeCallback: (changeEvent: ChangeEvent) => Promise<void>): Promise<void>;
+    function addListener(config: RealmListenerConfiguration, eventName: RealmListenerEventName, changeCallback: (changeEvent: ChangeEvent) => void): Promise<void>;
+    function addListener(config: RealmListenerConfiguration, eventName: RealmListenerEventName, changeCallback: (changeEvent: ChangeEvent) => Promise<void>): Promise<void>;
     function removeAllListeners(): Promise<void>;
     function removeListener(regex: string, name: string, changeCallback: (changeEvent: ChangeEvent) => void): Promise<void>;
     function setLogLevel(logLevel: LogLevel): void;
