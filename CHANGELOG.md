@@ -14,6 +14,7 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Internal
 * Cleaned up the console output produced by `./tests`. ([#2548](https://github.com/realm/realm-js/pull/2548))
+* Using the 'deprecated-react-native-listview' instead of `ListView` from the 'react-native' package. Thanks to @Kevin-Lev. ([#2568](https://github.com/realm/realm-js/pull/2568))
 
 3.2.0 Release notes (2019-9-30)
 =============================================================
