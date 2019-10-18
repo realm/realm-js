@@ -5,6 +5,7 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Fixed
 * Fixed incorrect return type of `Realm.Sync.addListener()` in API doc and Typescript definition. ([#2566](https://github.com/realm/realm-js/issues/2566), since v2.23.0)
+* Fixed user methods (authentication etc) when running on the Electron main process, where `XMLHttpRequest` is `undefined`. ([#2274](https://github.com/realm/realm-js/issues/2274), since v2.24.0)
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.
