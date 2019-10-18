@@ -342,26 +342,6 @@ public:
     };
 
   private:
-    static void handleRealmFileException(ContextType ctx, realm::Realm::Config const& config, const RealmFileException& ex) {
-        switch (ex.kind()) {
-            case RealmFileException::Kind::IncompatibleSyncedRealm: {
-                ObjectType configuration = Object::create_empty(ctx);
-                Object::set_property(ctx, configuration, "path", Value::from_string(ctx, ex.path()));
-                Object::set_property(ctx, configuration, "readOnly", Value::from_boolean(ctx, true));
-                if (!config.encryption_key.empty()) {
-                    Object::set_property(ctx, configuration, "encryption_key", Value::from_binary(ctx, BinaryData(&config.encryption_key[0], 64)));
-                }
-
-                ObjectType object = Object::create_empty(ctx);
-                Object::set_property(ctx, object, "name", Value::from_string(ctx, "IncompatibleSyncedRealmError"));
-                Object::set_property(ctx, object, "configuration", configuration);
-                throw Exception<T>(ctx, object);
-            }
-            default:
-                throw;
-        }
-    }
-
     static const ObjectSchema& validated_object_schema_for_value(ContextType ctx, const SharedRealm &realm, const ValueType &value) {
         std::string object_type;
 
@@ -647,12 +627,7 @@ SharedRealm RealmClass<T>::create_shared_realm(ContextType ctx, realm::Realm::Co
     config.execution_context = Context<T>::get_execution_context_id(ctx);
 
     SharedRealm realm;
-    try {
-        realm = realm::Realm::get_shared_realm(config);
-    }
-    catch (const RealmFileException& ex) {
-        handleRealmFileException(ctx, config, ex);
-    }
+    realm = realm::Realm::get_shared_realm(config);
     set_binding_context(ctx, realm, schema_updated, std::move(defaults), std::move(constructors));
 
     return realm;
@@ -860,12 +835,7 @@ void RealmClass<T>::async_open_realm(ContextType ctx, ObjectType this_object, Ar
     }
 
     std::shared_ptr<AsyncOpenTask> task;
-    try {
-        task = Realm::get_synchronized_realm(config);
-    }
-    catch (const RealmFileException& ex) {
-        handleRealmFileException(ctx, config, ex);
-    }
+    task = Realm::get_synchronized_realm(config);
 
     EventLoopDispatcher<RealmCallbackHandler> callback_handler([=, defaults=std::move(defaults),
                                                                constructors=std::move(constructors)](ThreadSafeReference&& realm_ref, std::exception_ptr error) mutable {
