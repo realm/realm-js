@@ -163,6 +163,7 @@ class Sync {
      * @param {string} filterRegex - A regular expression used to determine which changed Realms should trigger events. Use `.*` to match all Realms.
      * @param {string} name - The name of the event.
      * @param {function(changeEvent)} changeCallback - The callback to invoke with the events.
+     * @return {Promise<void>} A promise which is resolved when the worker has started.
      *
      * Registers the `changeCallback` to be called each time the given event occurs on the specified server.
      * Only events on Realms with a _virtual path_ that matches the filter regex are emitted.
@@ -181,7 +182,6 @@ class Sync {
      *    deleted from the server. The virtual path of the Realm being deleted is
      *    passed as an argument.
      *
-     * Only available in the Enterprise Edition.
      * @deprecated Use `addListener(config, eventName, changeCallback)` instead`.
      */
     static addListener(serverUrl, adminUser, filterRegex, name, changeCallback) { }
@@ -192,6 +192,7 @@ class Sync {
      * @param {Realm.Sync.RealmListenerConfiguration} config - The configuration object for Realms being observed.
      * @param {string} eventName - The name of the event to observe.
      * @param {function(changeEvent)} changeCallback - The callback to invoke with the events.
+     * @return {Promise<void>} A promise which is resolved when the worker has started.
      *
      * Registers the `changeCallback` to be called each time the given event occurs on the specified server.
      * Only events on Realms with a _virtual path_ that matches the filter regex are emitted.
@@ -210,7 +211,6 @@ class Sync {
      *    deleted from the server. The virtual path of the Realm being deleted is
      *    passed as an argument.
      *
-     * Only available in the Enterprise Edition.
      */
     static addListener(config, eventName, changeCallback) { }
 
@@ -221,8 +221,8 @@ class Sync {
      * @param {SyncUser} adminUser - an admin user obtained by calling {@linkcode Realm.Sync.User.login|User.login} with admin credentials.
      * @param {string} filterRegex - A regular expression used to determine which changed Realms should trigger events. Use `.*` to match all Realms.
      * @param {Realm.Worker} worker - Worker to deliver events to.
+     * @return {Promise<void>} A promise which is resolved when the worker has started.
      *
-     * Only available in the Enterprise Edition.
      */
     static addListener(serverUrl, adminUser, filterRegex, worker) { }
 
@@ -1227,7 +1227,7 @@ class Adapter {
 /**
  * @callback Realm.Sync.Adapter~RealmWatchPredicate
  * @param {string} path - the path of the realm to consider for change tracking
- * @returns {boolean} - whether or not to track changes for the realm 
+ * @returns {boolean} - whether or not to track changes for the realm
  */
 
 /**
