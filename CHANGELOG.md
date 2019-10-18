@@ -5,6 +5,7 @@
 
 ### Fixed
 * Added `react-native.config.js` to distribution file. ([#2564](https://github.com/realm/realm-js/issues/2564) and [#2460](https://github.com/realm/realm-js/issues/2460), since v3.2.0)
+* Fixed user methods (authentication etc) when running on the Electron main process, where `XMLHttpRequest` is `undefined`. ([#2274](https://github.com/realm/realm-js/issues/2274), since v2.24.0)
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.
@@ -14,7 +15,7 @@
 ### Internal
 * Cleaned up the console output produced by `./tests`. ([#2548](https://github.com/realm/realm-js/pull/2548))
 * Updated to Realm Sync from 4.7.8 to 4.7.10.
-* Added a README.md to the React Test App directory. ([#2561](https://github.com/realm/realm-js/pull/2561))
+* Added a `README.md` to the React Test App directory. ([#2561](https://github.com/realm/realm-js/pull/2561))
 
 3.2.0 Release notes (2019-9-30)
 =============================================================
