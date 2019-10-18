@@ -4,7 +4,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * None.
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
+* Fixed user methods (authentication etc) when running on the Electron main process, where `XMLHttpRequest` is `undefined`. ([#2274](https://github.com/realm/realm-js/issues/2274), since v2.24.0)
 * None.
 
 ### Compatibility
@@ -14,6 +14,7 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Internal
 * Cleaned up the console output produced by `./tests`. ([#2548](https://github.com/realm/realm-js/pull/2548))
+* Added a README.md to the React Test App directory. ([#2561](https://github.com/realm/realm-js/pull/2561))
 * Using the 'deprecated-react-native-listview' instead of `ListView` from the 'react-native' package. Thanks to @Kevin-Lev. ([#2568](https://github.com/realm/realm-js/pull/2568))
 
 3.2.0 Release notes (2019-9-30)
