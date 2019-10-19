@@ -6,6 +6,10 @@ jobs:
   build:
     runs-on: macOS-latest
     steps:
+    - name: Setup Node
+      uses: actions/setup-node@v1
+      with:
+       node-version: '10.x'
     - name: Initialize React Native app
       run: npx react-native init MyRealmApp --directory .
     - name: Run a multi-line script
