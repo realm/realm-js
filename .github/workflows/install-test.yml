@@ -1,5 +1,4 @@
-name: CI
-
+name: Install test
 on: [pull_request]
 #  schedule:
 #    - cron: "0 11 * * 1"
