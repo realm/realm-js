@@ -11,10 +11,13 @@ jobs:
       with:
        node-version: '10.x'
     - name: Initialize React Native app
-      run: npx react-native init MyRealmApp --directory .
-    - name: Run a multi-line script
+      run: npx react-native init MyRealmApp
+    - name: Install latest Realm JS
       run: npm install realm
+      working-directory: MyRealmApp
     - name: Manually link Realm
       run: npx react-native link realm
+      working-directory: MyRealmApp
     - name: Start the app
       run: npx react-native run-ios
+      working-directory: MyRealmApp
