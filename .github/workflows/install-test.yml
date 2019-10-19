@@ -6,6 +6,7 @@ jobs:
   build:
     runs-on: macOS-latest
     steps:
+    - uses: actions/checkout@v1
     - name: Setup Node
       uses: actions/setup-node@v1
       with:
@@ -18,6 +19,11 @@ jobs:
     - name: Manually link Realm
       run: npx react-native link realm
       working-directory: MyRealmApp
+    - name: Copying scripts
+      run: cp ./tests/install-test/* ./MyRealmApp
     - name: Start the app
       run: npx react-native run-ios
       working-directory: MyRealmApp
+    - name: Wait for app
+      run: node wait-for-app.js
+      timeout-minutes: 1
