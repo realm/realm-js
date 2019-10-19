@@ -1,0 +1,17 @@
+name: CI
+
+on:
+  schedule:
+    - cron: "0 11 * * 1"
+jobs:
+  build:
+    runs-on: macOS-latest
+    steps:
+    - name: Initialize React Native app
+      run: npx react-native init MyRealmApp --directory .
+    - name: Run a multi-line script
+      run: npm install realm
+    - name: Manually link Realm
+      run: npx react-native link realm
+    - name: Start the app
+      run: npx react-native run-ios
