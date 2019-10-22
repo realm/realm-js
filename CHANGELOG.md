@@ -1,5 +1,7 @@
 2.23.0-hotfix.1 Release notes (2019-10-22)
 =============================================================
+**Note:** Only Linux is supported in this version.
+
 ### Enhancements
 * Performance improved for queries comparing a constant value to a property over unary link path (eg: "someLink.Id == 42"). ([realm/realm-core#3670](https://github.com/realm/realm-core/issues/3370))
 * Performance significantly improved when making a query on the property of a linked table, when the property is indexed.
