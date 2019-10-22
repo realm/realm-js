@@ -55,27 +55,27 @@ stage('check') {
 
 stage('build') {
   parallel(
-    eslint: doDockerBuild('eslint-ci', {
+/*    eslint: doDockerBuild('eslint-ci', {
       step([$class: 'CheckStylePublisher', canComputeNew: false, canRunOnFailed: true, defaultEncoding: '', healthy: '', pattern: 'eslint.xml', unHealthy: ''])
     }),
     jsdoc: doDockerBuild('jsdoc', {
       publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'docs/output', reportFiles: 'index.html', reportName: 'Docs'])
-    }),
+    }),*/
     linux_node_debug: doDockerBuild('node Debug'),
     linux_node_release: doDockerBuild('node Release'),
     linux_test_runners: doDockerBuild('test-runners'),
-    macos_node_debug: doMacBuild('node Debug'),
-    macos_node_release: doMacBuild('node Release'),
+    //macos_node_debug: doMacBuild('node Debug'),
+    //macos_node_release: doMacBuild('node Release'),
     //macos_realmjs_debug: doMacBuild('realmjs Debug'),
     //macos_realmjs_release: doMacBuild('realmjs Release'),
-    macos_react_tests_debug: doMacBuild('react-tests Debug'),
-    macos_react_tests_release: doMacBuild('react-tests Release'),
-    macos_react_example_debug: doMacBuild('react-example Debug'),
-    macos_react_example_release: doMacBuild('react-example Release'),
+    //macos_react_tests_debug: doMacBuild('react-tests Debug'),
+    //macos_react_tests_release: doMacBuild('react-tests Release'),
+    //macos_react_example_debug: doMacBuild('react-example Debug'),
+    //macos_react_example_release: doMacBuild('react-example Release'),
     //android_react_tests: doAndroidBuild('react-tests-android', {
     //  junit 'tests/react-test-app/tests.xml'
     //}),
-    windows_node: doWindowsBuild()
+    //windows_node: doWindowsBuild()
   )
 }
 
