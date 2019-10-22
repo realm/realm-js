@@ -724,12 +724,12 @@ module.exports = {
         }, "Property 'IndexedSchema.floatCol' of type 'float' cannot be indexed.");
 
         TestCase.assertThrowsContaining(() => {
-            IndexedSchema.properties = { doubleCol: {type: 'double', indexed: true} }
+            IndexedSchema.properties = { doubleCol: {type: 'double', indexed: true} };
             new Realm({schema: [IndexedSchema], path: '3.realm'});
         }, "Property 'IndexedSchema.doubleCol' of type 'double' cannot be indexed.");
 
         TestCase.assertThrowsContaining(() => {
-            IndexedSchema.properties = { dataCol: {type: 'data', indexed: true} }
+            IndexedSchema.properties = { dataCol: {type: 'data', indexed: true} };
             new Realm({schema: [IndexedSchema], path: '4.realm'});
         }, "Property 'IndexedSchema.dataCol' of type 'data' cannot be indexed.");
 
@@ -1582,13 +1582,14 @@ module.exports = {
                     sync: { user: user2, url: `realm://127.0.0.1:9080/${realmId}`, fullSynchronization: false },
                 };
                 return Realm.open(dynamicConfig);
-            }).then((realm2) => {
+            }).then(r => {
+                realm2 = r;
                 TestCase.assertEqual(realm2.schema.length, 7); // 5 permissions, 1 results set, 1 test object
                 realm2.addListener('schema', (realm, event, schema) => {
                     TestCase.assertEqual(realm2.schema.length, 8); // 5 permissions, 1 results set, 1 test object, 1 foo object
                     called = true;
                 });
-
+            }).then(() => {
                 config.schema.push({
                     name: 'Foo',
                     properties: {
@@ -1601,6 +1602,7 @@ module.exports = {
             }).then(() => {
                 return new Promise((resolve, reject) => {
                     setTimeout(() => {
+                        realm2.close();
                         if (called) {
                             resolve();
                         } else {
