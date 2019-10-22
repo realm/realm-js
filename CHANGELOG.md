@@ -1,3 +1,23 @@
+2.23.0-hotfix.1 Release notes (2019-10-22)
+=============================================================
+### Enhancements
+* Performance improved for queries comparing a constant value to a property over unary link path (eg: "someLink.Id == 42"). ([realm/realm-core#3670](https://github.com/realm/realm-core/issues/3370))
+* Performance significantly improved when making a query on the property of a linked table, when the property is indexed.
+
+### Fixed
+* None.
+
+### Compatibility
+* Realm Object Server: 3.11.0 or later.
+* APIs are backwards compatible with all previous release of realm in the 2.x.y series.
+* File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
+
+### Internal
+* Upgraded to Realm Object Store commit d4e5fc5356da57e4d74879ea111ebc5fbf98708c.
+* Upgraded to Realm Core v5.14.0-hotfix.2.
+* Upgraded to Realm Sync v3.15.0-hotfix.0.
+
+
 2.23.0 Release notes (2019-2-1)
 =============================================================
 ### Enhancements
