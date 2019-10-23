@@ -1,11 +1,13 @@
 "use strict";
 
+const path = require("path");
+
 module.exports = {
   // config for a library is scoped under "dependency" key
   dependency: {
     platforms: {
       ios: {
-        project: 'react-native/ios/RealmReact.xcodeproj',
+        podspecPath: path.resolve(__dirname, 'realm.podspec'),
         sharedLibraries: [
           'libc++',
           'libz'
