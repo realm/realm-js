@@ -65,8 +65,8 @@ public:
 		, m_realm(parent.m_realm)
 		, m_object_schema(nullptr) 
 	{
-#if defined(WIN32) && WIN32
 		auto schema = m_realm->schema().find(prop.object_type);
+#if defined(WIN32) && WIN32
 		if (schema != m_realm->schema().end()) {
 			m_object_schema = &*schema;
 		}
