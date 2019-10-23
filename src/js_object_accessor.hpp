@@ -65,10 +65,14 @@ public:
 		, m_realm(parent.m_realm)
 		, m_object_schema(nullptr) 
 	{
+#if defined(WIN32) && WIN32
 		auto schema = m_realm->schema().find(prop.object_type);
 		if (schema != m_realm->schema().end()) {
 			m_object_schema = &*schema;
 		}
+#else
+		m_object_schema = &*schema;
+#endif
 	}
 
     OptionalValue value_for_property(ValueType dict, Property const& prop, size_t) {
