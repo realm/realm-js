@@ -7,7 +7,7 @@ module.exports = {
   dependency: {
     platforms: {
       ios: {
-        podspecPath: path.resolve(__dirname, 'realm.podspec'),
+        podspecPath: path.resolve(__dirname, 'Realm.podspec'),
         sharedLibraries: [
           'libc++',
           'libz'
