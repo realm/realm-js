@@ -58,6 +58,7 @@ Pod::Spec.new do |s|
                              'vendor/*.hpp'
   
   s.source_files           = source_files + header_files
+  s.private_header_files   = header_files
   
   s.frameworks             = 'Security', 'JavaScriptCore'
   s.library                = 'c++', 'z'
@@ -87,5 +88,5 @@ Pod::Spec.new do |s|
                              'vendor/realm-ios/librealm-parser-ios.a'
 
   s.dependency 'React'
-  s.dependency 'GCDWebServer'
+  s.dependency 'GCDWebServer' # TODO: Ensure the version from the local filesystem is used
 end
