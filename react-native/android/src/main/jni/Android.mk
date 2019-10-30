@@ -53,7 +53,6 @@ LOCAL_SRC_FILES += src/object-store/src/impl/collection_change_builder.cpp
 LOCAL_SRC_FILES += src/object-store/src/impl/collection_notifier.cpp
 LOCAL_SRC_FILES += src/object-store/src/impl/list_notifier.cpp
 LOCAL_SRC_FILES += src/object-store/src/impl/object_notifier.cpp
-LOCAL_SRC_FILES += src/object-store/src/impl/primitive_list_notifier.cpp
 LOCAL_SRC_FILES += src/object-store/src/impl/realm_coordinator.cpp
 LOCAL_SRC_FILES += src/object-store/src/impl/results_notifier.cpp
 LOCAL_SRC_FILES += src/object-store/src/impl/transact_log_handler.cpp
