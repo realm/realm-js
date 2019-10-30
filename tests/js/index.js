@@ -35,44 +35,44 @@ if (isNodeProcess && process.platform === 'win32') {
 }
 
 // catching segfaults during testing can help debugging
-//uncomment to enable segfault handler
+// uncomment to enable segfault handler
 // if (isNodeProcess) {
 //     const SegfaultHandler = node_require('segfault-handler');
 //     SegfaultHandler.registerHandler("crash.log");
 // }
 
 var TESTS = {
-    ListTests: require('./list-tests'), // 31x PASS
-    LinkingObjectsTests: require('./linkingobjects-tests'), // 7x PASS
-    ObjectTests: require('./object-tests'), // 16x PASS
-    RealmTests: require('./realm-tests'), // 3x FAIL, 55x PASS
-    ResultsTests: require('./results-tests'), // 29x PASS
-    QueryTests: require('./query-tests'), // 16x PASS
-    MigrationTests: require('./migration-tests'), // 10x PASS
-    EncryptionTests: require('./encryption-tests'), // 4x PASS
-    ObjectIDTests: require('./object-id-tests'), // 1x PASS
-    AliasTests: require('./alias-tests'), // 5x PASS
+    ListTests: require('./list-tests'),
+    LinkingObjectsTests: require('./linkingobjects-tests'),
+    ObjectTests: require('./object-tests'),
+    RealmTests: require('./realm-tests'),
+    ResultsTests: require('./results-tests'),
+    QueryTests: require('./query-tests'),
+    MigrationTests: require('./migration-tests'),
+    EncryptionTests: require('./encryption-tests'),
+    ObjectIDTests: require('./object-id-tests'),
+    AliasTests: require('./alias-tests'),
     // Garbagecollectiontests: require('./garbage-collection'),
 };
 
 // If sync is enabled, run the sync tests
 if (global.enableSyncTests) {
-    TESTS.OpenBehaviorTests = require('./open-behavior-tests'); // 12x PASS
-    TESTS.UserTests = require('./user-tests'); // 30x PASS
-    TESTS.SessionTests = require('./session-tests'); // CRASH
-    TESTS.SubscriptionTests = require('./subscription-tests'); // 19x PASS
+    TESTS.OpenBehaviorTests = require('./open-behavior-tests');
+    TESTS.UserTests = require('./user-tests');
+    TESTS.SessionTests = require('./session-tests');
+    TESTS.SubscriptionTests = require('./subscription-tests');
 
     if (isNodeProcess && !isElectronProcess) {
         // FIXME: Permission tests currently fail in react native
-        TESTS.PermissionTests = require('./permission-tests');  // 14x PASS
-        node_require('./adapter-tests'); // 1x FAIL, 1x PENDING, 13x PASS
-        node_require('./notifier-tests'); // 8x PENDING, 17x FAIL, 11x PASS
+        TESTS.PermissionTests = require('./permission-tests');
+        node_require('./adapter-tests');
+        node_require('./notifier-tests');
     }
 }
 
 // If on node, run the async tests
 if (isNodeProcess && process.platform !== 'win32') {
-    TESTS.AsyncTests = node_require('./async-tests');  // 12x PASS
+    TESTS.AsyncTests = node_require('./async-tests');
 }
 
 if (global.enableSyncTests) {

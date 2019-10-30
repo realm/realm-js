@@ -1,13 +1,54 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
+NOTE: This version bumps the Realm file format to version 10. It is not possible to downgrade version 9 or earlier. Moreover, older files will automatically be upgraded to the new file format.
+
 ### Breaking changes
 * Support of the old timestamp type has been removed, and older files cannot be upgraded. The new timestamp type was introduced in v1.0.0.
-* `Realm.delete(Realm.Collection)` will conserve rhe order.
+* `Realm.delete(Realm.Collection)` will conserve the order.
 * It is only possible to compact a Realm when a single instance is open.
+
 
 ### Enhancements
 * Added `Realm.object_for_object_id()`. ([realm/realm-js-private#401](https://github.com/realm/realm-js-private/issues/401))
-* `Realm.Sync.Adapter` can now accept a predicate function filter instead of a regex.
+
+### Fixed
+* None
+
+### Compatibility
+* Realm Object Server: 3.23.1 or later.
+* APIs are backwards compatible with all previous release of realm in the 4.x.y series.
+* File format: Generates Realms with format v10 (reads and upgrades file format v5 and later)
+
+### Internal
+* Updated to Realm Core v6.0.0-alpha.23.
+* Updated to Realm Sync v4.7.1-core6.4.
+
+
+3.3.0 Release notes (2019-10-18)
+=============================================================
+### Enhancements
+* Improve performance of changeset scanning when syncing data. This happens on a background thread, so it shouldn't have any visible effect.
+
+### Fixed
+* Fixed incorrect return type of `Realm.Sync.addListener()` in API doc and Typescript definition. ([#2566](https://github.com/realm/realm-js/issues/2566), since v2.23.0)
+* Added `react-native.config.js` to distribution file. ([#2564](https://github.com/realm/realm-js/issues/2564) and [#2460](https://github.com/realm/realm-js/issues/2460), since v3.2.0)
+* Fixed user methods (authentication, etc.) when running on the Electron main process, where `XMLHttpRequest` is `undefined`. ([#2274](https://github.com/realm/realm-js/issues/2274), since v2.24.0)
+
+### Compatibility
+* Realm Object Server: 3.23.1 or later.
+* APIs are backwards compatible with all previous release of realm in the 2.x.y series.
+* File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
+
+### Internal
+* Cleaned up the console output produced by `./tests`. ([#2548](https://github.com/realm/realm-js/pull/2548))
+* Added a `README.md` to the React Test App directory. ([#2561](https://github.com/realm/realm-js/pull/2561))
+* Using the 'deprecated-react-native-listview' instead of `ListView` from the 'react-native' package. Thanks to @Kevin-Lev. ([#2568](https://github.com/realm/realm-js/pull/2568))
+* Updated to Realm Sync from 4.7.8 to 4.7.10.
+
+3.2.0 Release notes (2019-9-30)
+=============================================================
+### Enhancements
+* `Realm.Sync.Adapter` can now accept a predicate function filter instead of a regex. ([#2539](https://github.com/realm/realm-js/pull/2539))
 
 ### Fixed
 * Chained OR equals queries on an unindexed string column failed to match any results if any of the strings were 64 bytes or longer. ([realm/realm-core#3386](https://github.com/realm/realm-core/pull/3386), since v2.27.0-rc.2).
@@ -55,22 +96,6 @@ x.x.x Release notes (yyyy-MM-dd)
 * Added `User.getPermissionOffers` API to get a collection of all permission offers the user has created.
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None.
-
-### Compatibility
-* Realm Object Server: 3.21.0 or later.
-* APIs are backwards compatible with all previous release of realm in the 4.x.y series.
-* File format: Generates Realms with format v10 (automatically upgrades Realms with format v9).
-
-### Internal
-* Upgraded to Realm Core v6.0.0-alpha.17.
-* Upgraded to Realm Sync v4.6.1-core6.0.
-
-
-x.x.x Release notes (yyyy-MM-dd)
-=============================================================
-### Enhancements
 * Named pipes on Android are now created with 0666 permissions instead of 0600. This fixes a bug on Huawei devices which caused named pipes to change owners during app upgrades causing subsequent ACCESS DENIED errors. This should have no practical security implications. ([realm/realm-core#3328](https://github.com/realm/realm-core/pull/3328), since v0.10.0)
 * fix error screen shown in React Native when refreshAdminToken and refreshAccessToken receive error result
 
