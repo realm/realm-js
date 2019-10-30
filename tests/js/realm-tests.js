@@ -115,7 +115,7 @@ module.exports = {
     testRealmConstructorDynamicSchema: function() {
         let realm = new Realm({schema: [schemas.TestObject]});
         realm.write(() => {
-            realm.create('TestObject', [1])
+            realm.create('TestObject', [1]);
         });
         realm.close();
 
@@ -762,11 +762,7 @@ module.exports = {
         };
 
         realm.write(createAndTestObject);
-
-        // Defaults should still work when creating another Realm instance.
-        // Works if: realm = new Realm({schema: [schemas.DefaultValues, schemas.TestObject]});
-        realm = new Realm();
-        realm.write(createAndTestObject);
+        realm.close();
     },
 
     testRealmCreateWithChangingDefaults: function() {
@@ -847,13 +843,13 @@ module.exports = {
                 realm.create(InvalidCustomObject, {intCol: 1});
             });
         }, 'Constructor was not registered in the schema for this Realm');
+        realm.close();
 
-        // The constructor should still work when creating another Realm instance.
-        // realm = new Realm({schema: [CustomObject, InvalidObject]});
-        realm = new Realm();
+        realm = new Realm({schema: [CustomObject, InvalidObject]});
         let obj = realm.objects('CustomObject')[0];
         TestCase.assertTrue(realm.objects('CustomObject')[0] instanceof CustomObject);
         TestCase.assertTrue(realm.objects(CustomObject).length > 0);
+        realm.close();
     },
 
     testRealmCreateWithChangingConstructor: function() {
