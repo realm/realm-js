@@ -1,23 +1,24 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
-NOTE: This version bumps the Realm file format to version 10. It is not possible to downgrade version 9 or earlier. Moreover, older files will automatically be upgraded to the new file format.
+NOTE: This version bumps the Realm file format to version 10. It is not possible to downgrade version 9 or earlier. Moreover, older files will automatically be upgraded to the new file format. Files created by Realm JavaScript prior to v1.0.0, might to be upgradeable.
 
 ### Breaking changes
 * Support of the old timestamp type has been removed, and older files cannot be upgraded. The new timestamp type was introduced in v1.0.0.
-* `Realm.delete(Realm.Collection)` will conserve the order.
-* It is only possible to compact a Realm when a single instance is open.
-
+* `Realm.delete(Realm.Collection)` will conserve the order i.e., if a `Realm.Results` is `[1, 2, 3]` (pseudo-notation), `Realm.delete(2)` will produce `[1, 3]`.
+* It is only possible to compact a Realm when a single instance is open. Consider to use configuration parameter `shouldCompactOnLaunch` in the future.
+* Schemas are not cached but will be reread when opening a Realm. This has an impact of default values as they are not persisted in the Realm files.
 
 ### Enhancements
-* Added `Realm.object_for_object_id()`. ([realm/realm-js-private#401](https://github.com/realm/realm-js-private/issues/401))
+* Added `Realm.objectForObjectId()`. ([realm/realm-js-private#401](https://github.com/realm/realm-js-private/issues/401))
+* Added `Realm.Object.objectId()` which returns a unique identifier for the object. ([realm/realm-js-private#401](https://github.com/realm/realm-js-private/issues/401))
 
 ### Fixed
-* None
+* None.
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.
-* APIs are backwards compatible with all previous release of realm in the 4.x.y series.
-* File format: Generates Realms with format v10 (reads and upgrades file format v5 and later)
+* APIs are backwards compatible with all previous release of Realm JavaScript in the 4.x.y series.
+* File format: generates Realms with format v10 (reads and upgrades file format v5 and later).
 
 ### Internal
 * Updated to Realm Core v6.0.0-alpha.23.
