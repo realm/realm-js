@@ -2,16 +2,7 @@ require 'json'
 
 package = JSON.parse(File.read(File.expand_path('package.json', __dir__)))
 
-# Building the podspec from a local .git repository when developing - GitHub otherwise
-git_path_local = File.expand_path('.git', __dir__)
-git_path = File.directory?(git_path_local) ? "file://#{git_path_local}" : 'https://github.com/realm/realm-js.git'
-
 app_path = File.expand_path('../..', __dir__)
-node_modules_path = File.expand_path('node_modules', app_path)
-react_native_module_path = File.expand_path('react-native', node_modules_path)
-if not File.directory?(react_native_module_path)
-  raise "Couldn't find React Native node module (#{react_native_module_path}) - did you install `npm install react-native`?"
-end
 
 Pod::Spec.new do |s|
   s.name                   = "RealmJS"
@@ -23,37 +14,16 @@ Pod::Spec.new do |s|
   s.homepage               = package['homepage']
   s.platform               = :ios, '9.0'
 
-  s.source                 = { :git => git_path, :tag => "v#{s.version}", :submodules => true }
+  # The source field is a required field in the podspec, but it is not ment to be used.
+  # This is because the Podspec is not ment to be published into a CocoaPod repository, instead React Native uses a :path style dependency when adding this to the users projects Podfile.
+  # @see https://guides.cocoapods.org/using/the-podfile.html#using-the-files-from-a-folder-local-to-the-machine
+  # @see https://github.com/react-native-community/cli/blob/master/docs/autolinking.md#platform-ios
+  s.source                 = { :http => 'https://github.com/realm/realm-js/blob/master/CONTRIBUTING.md#how-to-debug-react-native-podspec' }
 
-  s.prepare_command        = <<-CMD
-    # Run `npm ci` to install the dependencies the download script needs, if not installed as a node_module
-    ([ -d '../../node_modules' ] || npm ci) && node ./scripts/download-realm.js ios --sync;
-    # Clean up from any previous builds
-    rm -rf include
-    # Build up the include directory
-    mkdir -p include include/jsc include/impl/apple include/util/apple include/sync/impl/apple
-    # Copy headers from Realm JS
-    cp src/*.hpp include
-    # Copy headers from RealmReact
-    cp react-native/ios/RealmReact/*.h include
-    # Copy headers from the vendor root directory
-    cp vendor/*.hpp include
-    # Copy headers from core + sync
-    cp -r vendor/realm-ios/include include/core+sync
-    # Copy headers from object store
-    cp src/object-store/src/*.hpp include
-    cp src/object-store/src/sync/*.hpp include/sync
-    cp src/object-store/src/sync/impl/*.hpp include/sync/impl
-    cp src/object-store/src/sync/impl/apple/*.hpp include/sync/impl/apple
-    cp src/object-store/src/impl/*.hpp include/impl
-    cp src/object-store/src/impl/apple/*.hpp include/impl/apple
-    cp src/object-store/src/util/*.hpp include/util
-    cp src/object-store/src/util/apple/*.hpp include/util/apple
-    cp src/object-store/external/json/*.hpp include
-  CMD
+  s.prepare_command        = 'node ./scripts/download-realm.js ios --sync'
 
   s.source_files           = 'src/*.cpp',
-                             'src/jsc/*.{cpp,hpp,h}',
+                             'src/jsc/*.cpp',
                              'src/ios/*.mm',
                              'src/object-store/src/*.cpp',
                              'src/object-store/src/sync/*.cpp',
@@ -66,30 +36,39 @@ Pod::Spec.new do |s|
                              'react-native/ios/RealmReact/*.mm',
                              'vendor/*.cpp'
   
-  s.frameworks             = 'Security', 'JavaScriptCore'
+  s.frameworks             = 'JavaScriptCore'
   s.library                = 'c++', 'z'
   s.compiler_flags         = '-DREALM_HAVE_CONFIG -DREALM_ENABLE_SYNC'
-  s.header_mappings_dir    = 'include'
-  s.preserve_paths         = 'include', 'scripts'
-  s.pod_target_xcconfig    = { 'CC' => '$(PODS_TARGET_SRCROOT)/scripts/ccache-clang.sh',
+  s.pod_target_xcconfig    = { # Ensures ccache is used if installed on the users machine
+                               'CC' => '$(PODS_TARGET_SRCROOT)/scripts/ccache-clang.sh',
                                'CXX' => '$(PODS_TARGET_SRCROOT)/scripts/ccache-clang++.sh',
+                               # Setting up clang
                                'CLANG_CXX_LANGUAGE_STANDARD' => 'c++14',
                                'CLANG_CXX_LIBRARY' => 'libc++',
+                               # Disabling warnings that object store, core and sync has a lot of
                                'CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF' => 'NO',
                                'CLANG_WARN_DOCUMENTATION_COMMENTS' => 'NO',
+                               # Setting the current project version and versioning system to get a symbol for analytics
                                'CURRENT_PROJECT_VERSION' => s.version,
                                'VERSIONING_SYSTEM' => 'apple-generic',
+                               # Header search paths are prefixes to the path specified in #include macros
                                'HEADER_SEARCH_PATHS' => [
-                                 '"$(PODS_TARGET_SRCROOT)/include/"',
-                                 '"$(PODS_TARGET_SRCROOT)/include/core+sync/"',
-                                 "'#{app_path}/ios/Pods/Headers/Public/'/**"
+                                 '"$(PODS_TARGET_SRCROOT)/src/"',
+                                 '"$(PODS_TARGET_SRCROOT)/src/jsc/"',
+                                 '"$(PODS_TARGET_SRCROOT)/src/object-store/src/"',
+                                 '"$(PODS_TARGET_SRCROOT)/src/object-store/external/json/"',
+                                 '"$(PODS_TARGET_SRCROOT)/vendor/"',
+                                 '"$(PODS_TARGET_SRCROOT)/vendor/realm-ios/include/"',
+                                 '"$(PODS_TARGET_SRCROOT)/react-native/ios/RealmReact/"',
+                                 # 👇 could be '"$(PODS_ROOT)/Headers/Public/React-Core/"', but this breaks linting.
+                                 "'#{app_path}/ios/Pods/Headers/Public/React-Core'"
                                ].join(' ')
                              }
   
-  s.ios.deployment_target  = '8.0'
   # TODO: Consider providing an option to build with the -dbg binaries instead
-  s.ios.vendored_libraries = 'vendor/realm-ios/librealm-ios.a',
-                             'vendor/realm-ios/librealm-parser-ios.a'
+  s.ios.vendored_libraries = 'vendor/realm-ios/librealm-ios.a', 'vendor/realm-ios/librealm-parser-ios.a'
+  # s.watchos.vendored_libraries = 'vendor/realm-ios/librealm-watchos.a', 'vendor/realm-ios/librealm-parser-watchos.a'
+  # s.tvos.vendored_libraries = 'vendor/realm-ios/librealm-tvos.a', 'vendor/realm-ios/librealm-parser-tvos.a'
 
   s.dependency 'React'
   # TODO: Ensure the same version of GCDWebServer is used for Android
