@@ -1,11 +1,10 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
-* None.
+* Support mirroring of binary files. Thanks to @malice00. ([#2501](https://github.com/realm/realm-js/issues/2501))
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None.
+* Fixed an out-of-range bug in Windows builds. ([realm/realm-object-store#832](https://github.com/realm/realm-object-store/issues/832))
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.
