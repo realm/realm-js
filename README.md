@@ -99,10 +99,15 @@ On Windows you will need to setup the environment for node-gyp:
 
     ```
     # run in elevated command prompt (as Administrator)
-    npm install -g --production windows-build-tools --vs201
+    npm install -g --production windows-build-tools
     ```
 
 * Option 2: Manually install and configure as described in the [node-gyp](https://github.com/nodejs/node-gyp) manual.
+
+    Note you may need to configure the build tools path using npm
+    ```
+    npm config set msbuild_path "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Current\Bin\MSBuild.exe"
+    ```
 
 You also need to install openssl libraries with vcpkg:
 
