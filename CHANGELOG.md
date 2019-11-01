@@ -1,4 +1,4 @@
-x.x.x Release notes (yyyy-MM-dd)
+4.0.0 Release notes (2019-11-1)
 =============================================================
 NOTE: This version bumps the Realm file format to version 10. It is not possible to downgrade version 9 or earlier. Moreover, older files will automatically be upgraded to the new file format. Files created by Realm JavaScript prior to v1.0.0, might to be upgradeable.
 
