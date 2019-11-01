@@ -5,7 +5,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * Performance significantly improved when making a query on the property of a linked table, when the property is indexed. ([]())
 
 ### Fixed
-* Fixed an out-of-range bug in Windows builds. In debug mode, the exception `can't dereference out of range vector iterator` will be thrown and the process will terminate. ([realm/realm-object-store#832](https://github.com/realm/realm-object-store/issues/832))
+* Fixed an out-of-range bug in Windows builds. In debug mode, the exception `can't dereference out of range vector iterator` would be thrown and the process would terminate. ([realm/realm-object-store#832](https://github.com/realm/realm-object-store/issues/832))
 * A race between extending the file and activity in the encryption layer could lead to crash and corruption. This race has been fixed. The bug may hit on Android, if encryption is in use. It could also affect Linux on file systems where POSIX `prealloc()` is unsupported. ([realm/realm-core#3427](https://github.com/realm/realm-core/pulls/3427))
 
 ### Compatibility
