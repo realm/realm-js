@@ -4,7 +4,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * Support mirroring of binary files. Thanks to @malice00. ([#2501](https://github.com/realm/realm-js/issues/2501))
 
 ### Fixed
-* Fixed an out-of-range bug in Windows builds. ([realm/realm-object-store#832](https://github.com/realm/realm-object-store/issues/832))
+* Fixed an out-of-range bug in Windows builds. In debug mode, the exception `can't dereference out of range vector iterator` will be thrown and the process will terminate. ([realm/realm-object-store#832](https://github.com/realm/realm-object-store/issues/832))
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.
