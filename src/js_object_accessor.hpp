@@ -61,10 +61,15 @@ public:
     { }
 
     NativeAccessor(NativeAccessor& parent, const Property& prop)
-    : m_ctx(parent.m_ctx)
-    , m_realm(parent.m_realm)
-    , m_object_schema(&*m_realm->schema().find(prop.object_type))
-    { }
+		: m_ctx(parent.m_ctx)
+		, m_realm(parent.m_realm)
+		, m_object_schema(nullptr) 
+	{
+		auto schema = m_realm->schema().find(prop.object_type);
+		if (schema != m_realm->schema().end()) {
+			m_object_schema = &*schema;
+		}
+	}
 
     OptionalValue value_for_property(ValueType dict, Property const& prop, size_t) {
         ObjectType object = Value::validated_to_object(m_ctx, dict);
