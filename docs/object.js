@@ -89,4 +89,12 @@ class Object {
      * @since 2.23.0
      */
     removeAllListeners() { }
+
+    /**
+     * Returns a unique identifier. For synced objects, the uniqueness is only guaranteed when the object has been
+     * synchronized.
+     * @see {@link Realm#objectForObjectId objectForObjectId}
+     * @since 4.0.0
+     */
+    objectId() { }
 }
