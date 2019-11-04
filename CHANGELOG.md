@@ -1,7 +1,7 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
-* Added a CocoaPod Podspec file, enabling [autolinking](https://github.com/react-native-community/cli/blob/master/docs/autolinking.md) for React Native on iOS. ([#2586](https://github.com/realm/realm-js/pull/2586)).
+* Added a CocoaPod Podspec file, enabling [autolinking](https://github.com/react-native-community/cli/blob/master/docs/autolinking.md) for React Native on iOS. ([#2586](https://github.com/realm/realm-js/pull/2586))
 
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
