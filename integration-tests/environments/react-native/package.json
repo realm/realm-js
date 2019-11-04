@@ -6,8 +6,10 @@
     "test": "npm run test/android && npm run test/ios",
     "test/android": "node harness/runner.js android",
     "test/ios": "node harness/runner.js ios",
-    "preinstall": "npm pack ../../tests && test -f realm-integration-tests-0.1.0.tgz && test -f ../../realm-*.tgz",
-    "install": "npm install realm-integration-tests-0.1.0.tgz ../../realm-*.tgz --no-save"
+    "preinstall": "test -f ../../realm-integration-tests.tgz && test -f ../../realm.tgz"
+  },
+  "peerDependencies": {
+    "realm-integration-tests": "*"
   },
   "dependencies": {
     "mocha": "^6.2.2",
@@ -16,7 +18,9 @@
     "path-browserify": "^1.0.0",
     "react": "16.8.1",
     "react-native": "0.61.3",
-    "react-native-fs": "^2.16.1"
+    "react-native-fs": "^2.16.1",
+    "realm": "file://../../realm.tgz",
+    "realm-integration-tests": "file://../../realm-integration-tests.tgz"
   },
   "devDependencies": {
     "@babel/core": "^7.5.0",

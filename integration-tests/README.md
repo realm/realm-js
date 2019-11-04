@@ -176,7 +176,12 @@ Install additional dependencies
     npm install mocha mocha-junit-reporter mocha-remote-client react-native-fs path-browserify
     npm install mocha-remote-server fs-extra --save-dev
 
-Open the `package.json` of both `react-native` and `react-native-backup`, compare, copy over the scripts and delete anything "jest" related.
+Open the `package.json` of both `react-native` and `react-native-backup`:
+
+1. compare,
+2. copy over the scripts
+3. copy over the `realm` and `realm-integration-tests` dependencies.
+4. delete anything "jest" related.
 
 Install dependencies again to run the postinstall script
 
