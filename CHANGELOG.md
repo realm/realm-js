@@ -5,7 +5,6 @@ x.x.x Release notes (yyyy-MM-dd)
 * Performance significantly improved when making a query on the property of a linked table, when the property is indexed. ([realm/realm-core#3432](https://github.com/realm/realm-core/pull/3432))
 
 ### Fixed
-* Fixed an out-of-range bug in Windows builds. In debug mode, the exception `can't dereference out of range vector iterator` would be thrown and the process would terminate. ([realm/realm-object-store#832](https://github.com/realm/realm-object-store/issues/832))
 * On Android, the Realm file could be corrupted when using encrypted realms. It has never been reported in this project. ([realm/realm-core#3427](https://github.com/realm/realm-core/pulls/3427))
 
 ### Compatibility
@@ -14,6 +13,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
 ### Internal
+* Fixed an out-of-range bug in Windows builds. In debug mode, the exception `can't dereference out of range vector iterator` would be thrown and the process would terminate. ([realm/realm-object-store#832](https://github.com/realm/realm-object-store/issues/832))
 * Updated from Realm Core v5.23.5 to v5.23.6.
 * Updated from Realm Sync v4.7.10 to v4.7.12.
 
