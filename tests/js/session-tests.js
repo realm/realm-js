@@ -1100,8 +1100,8 @@ module.exports = {
                         resolve();
                     }
                 });
-                realm.close()
-            })
+                realm.close();
+            });
         });
     },
 
@@ -1129,7 +1129,7 @@ module.exports = {
                 session.addConnectionNotification(callback1);
                 session.addConnectionNotification(callback2);
                 session.removeConnectionNotification(callback1);
-                realm.close()
+                realm.close();
             });
         });
     },
@@ -1156,18 +1156,20 @@ module.exports = {
 
             return new Promise((resolve, reject) => {
                 session.addConnectionNotification((newState, oldState) => {
+                    let state = session.connectionState;
+                    let isConnected = session.isConnected;
                     switch (newState) {
                         case Realm.Sync.ConnectionState.Disconnected:
-                            TestCase.assertEqual(session.connectionState, Realm.Sync.ConnectionState.Disconnected);
-                            TestCase.assertFalse(session.isConnected());
+                            TestCase.assertEqual(state, Realm.Sync.ConnectionState.Disconnected);
+                            TestCase.assertFalse(isConnected);
                             break;
                         case Realm.Sync.ConnectionState.Connecting:
-                            TestCase.assertEqual(session.connectionState, Realm.Sync.ConnectionState.Connecting);
-                            TestCase.assertFalse(session.isConnected());
+                            TestCase.assertEqual(state, Realm.Sync.ConnectionState.Connecting);
+                            TestCase.assertFalse(isConnected);
                             break;
                         case Realm.Sync.ConnectionState.Connected:
-                            TestCase.assertEqual(session.connectionState, Realm.Sync.ConnectionState.Connected);
-                            TestCase.assertTrue(session.isConnected());
+                            TestCase.assertEqual(state, Realm.Sync.ConnectionState.Connected);
+                            TestCase.assertTrue(isConnected);
                             break;
                         default:
                             reject(`unknown connection value: ${newState}`);
@@ -1184,7 +1186,7 @@ module.exports = {
     },
 
     async testResumePause() {
-        const user = await Realm.Sync.User.register('http://127.0.0.1:9080', Utils.uuid(), 'password')
+        const user = await Realm.Sync.User.register('http://127.0.0.1:9080', Utils.uuid(), 'password');
         const config = {
             sync: {
                 user: user,
@@ -1205,7 +1207,7 @@ module.exports = {
     },
 
     async testMultipleResumes() {
-        const user = await Realm.Sync.User.register('http://127.0.0.1:9080', Utils.uuid(), 'password')
+        const user = await Realm.Sync.User.register('http://127.0.0.1:9080', Utils.uuid(), 'password');
         const config = {
             sync: {
                 user: user,
