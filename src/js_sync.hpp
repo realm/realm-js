@@ -35,6 +35,7 @@
 #include "impl/realm_coordinator.hpp"
 #include "node/js_global_notifier.hpp"
 #include "node/sync_logger.hpp"
+#include "node_napi_convert.hpp"
 #endif
 
 #if REALM_ANDROID
@@ -999,7 +1000,8 @@ inline typename T::Function SyncClass<T>::create_constructor(ContextType ctx) {
     Object::set_property(ctx, sync_constructor, "User", ObjectWrap<T, UserClass<T>>::create_constructor(ctx), attributes);
     Object::set_property(ctx, sync_constructor, "Session", ObjectWrap<T, SessionClass<T>>::create_constructor(ctx), attributes);
 #if REALM_PLATFORM_NODE
-    Object::set_property(ctx, sync_constructor, "Adapter", ObjectWrap<T, AdapterClass<T>>::create_constructor(ctx), attributes);
+	//NAPI: enable when js_adapter is done with NAPI
+    //Object::set_property(ctx, sync_constructor, "Adapter", ObjectWrap<T, AdapterClass<T>>::create_constructor(ctx), attributes);
 #endif
 
     return sync_constructor;
@@ -1041,7 +1043,9 @@ template<typename T>
 void SyncClass<T>::set_sync_logger(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_count(1);
     auto callback_fn = Value::validated_to_function(ctx, args[0], "logger_callback");
-    syncManagerShared<T>(ctx).set_logger_factory(*new realm::node::SyncLoggerFactory(ctx, callback_fn));
+
+	//NAPI: implement with NAPI
+    //syncManagerShared<T>(ctx).set_logger_factory(*new realm::node::SyncLoggerFactory(ctx, callback_fn));
 }
 #endif
 
@@ -1384,11 +1388,18 @@ void SyncClass<T>::local_listener_realms(ContextType ctx, ObjectType this_object
         return;
     }
 
-    auto arr = Nan::New<v8::Array>(local_realms.size());
+	//NAPI: remove comment
+    /*auto arr = Nan::New<v8::Array>(local_realms.size());
     for (size_t i = 0; i < local_realms.size(); i++) {
         Nan::Set(arr, i, Nan::New<v8::String>(local_realms[i]).ToLocalChecked());
     }
-    return_value.set(arr);
+	return_value.set(arr);*/
+
+	Napi::Array arr = Napi::Array::New(ctx, local_realms.size());
+	for (size_t i = 0; i < local_realms.size(); i++) {
+		arr.Set(i, Napi::String::New(ctx, local_realms[i]));
+	}
+	return_value.set(arr);
 }
 
 template<typename T>

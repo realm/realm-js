@@ -141,6 +141,7 @@ inline void node::Object::set_property(Napi::Env env, const Napi::Object& object
 	try {
 		Napi::Object obj = object;
 		if (attributes) {
+			//Napi: is this setting property value or defining new property
 			napi_property_attributes napi_attributes = napi_default | attributes;
 			auto propDescriptor = Napi::PropertyDescriptor::Value(key, value, napi_attributes);
 			obj.DefineProperty(propDescriptor);
@@ -285,13 +286,17 @@ inline Napi::Object node::Object::create_date(Napi::Env env, double time) {
 	return date_constructor.New({ value });
 }
 
-//NAPI: implement these below
-
 //template<>
 //template<typename ClassType>
 //inline v8::Local<v8::Object> node::Object::create_instance(Napi::Env env, typename ClassType::Internal* internal) {
 //    return node::ObjectWrap<ClassType>::create_instance(isolate, internal);
 //}
+
+template<>
+template<typename ClassType>
+inline Napi::Object node::Object::create_instance(Napi::Env env, typename ClassType::Internal* internal) {
+    return node::ObjectWrap<ClassType>::create_instance(env, internal);
+}
 
 //template<>
 //template<typename ClassType>
@@ -299,11 +304,23 @@ inline Napi::Object node::Object::create_date(Napi::Env env, double time) {
 //    return node::ObjectWrap<ClassType>::has_instance(isolate, object);
 //}
 
+template<>
+template<typename ClassType>
+inline bool node::Object::is_instance(Napi::Env env, const Napi::Object& object) {
+    return node::ObjectWrap<ClassType>::is_instance(env, object);
+}
+
 //template<>
 //template<typename ClassType>
 //inline typename ClassType::Internal* node::Object::get_internal(const v8::Local<v8::Object> &object) {
 //    return *Nan::ObjectWrap::Unwrap<node::ObjectWrap<ClassType>>(object);
 //}
+
+template<>
+template<typename ClassType>
+inline typename ClassType::Internal* node::Object::get_internal(const Napi::Object& object) {
+    return node::ObjectWrap<ClassType>::get_internal(object);
+}
 
 //template<>
 //template<typename ClassType>
@@ -311,6 +328,12 @@ inline Napi::Object node::Object::create_date(Napi::Env env, double time) {
 //    auto wrap = Nan::ObjectWrap::Unwrap<node::ObjectWrap<ClassType>>(object);
 //    *wrap = ptr;
 //}
+
+template<>
+template<typename ClassType>
+inline void node::Object::set_internal(const Napi::Object& object, typename ClassType::Internal* internal) {
+	return node::ObjectWrap<ClassType>::set_internal(object, internal);
+}
 
 //template<>
 //inline void node::Object::set_global(Napi::Env env, const node::String &key, const v8::Local<v8::Value> &value) {

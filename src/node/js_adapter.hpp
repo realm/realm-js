@@ -181,9 +181,10 @@ public:
 
     bool key(string_t& val) override
     {
-        m_key = &m_string_pool[val];
-        if (m_key->IsEmpty())
-            *m_key = node::String(val);
+		//NAPI: implement with NAPI. Why we go from std::string to v8::String using node::String here
+        //m_key = &m_string_pool[val];
+        //if (m_key->IsEmpty())
+        //    *m_key =  node::String(val);
         return true;
     }
 

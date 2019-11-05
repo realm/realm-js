@@ -99,8 +99,8 @@ public:
 
 	struct Comparator {
 	    bool operator()(const Protected<MemberType>& a, const Protected<MemberType>& b) const {
-			MemberType aValue = *a;
-			MemberType bValue = *b;
+			MemberType aValue = a;
+			MemberType bValue = b;
 			return aValue == bValue;
 	    }
 	};

@@ -24,7 +24,8 @@
 
 #include "js_realm.hpp"
 #if REALM_ENABLE_SYNC
-#include "js_adapter.hpp"
+//NAPI: enable and implement js_adapter.hpp which is node_adapter.hpp actually
+//#include "js_adapter.hpp"
 #endif
 
  namespace realm {

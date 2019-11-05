@@ -48,7 +48,7 @@ inline Napi::Value node::Function::call(Napi::Env env, const Napi::Function& fun
 		auto result = function.Call(recv, args);
 		return result;
 	}
-	catch (const Napi::Error &e) {
+	catch (const Napi::Error& e) {
 		throw node::Exception(env, e.Message());
 	}
 }

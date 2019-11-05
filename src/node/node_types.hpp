@@ -48,10 +48,14 @@ struct Types {
 
 	
 	typedef Napi::Value(*NapiFunctionCallback)(const Napi::CallbackInfo& info);
-	typedef Napi::Value(*NapiIndexGetterCallback)(uint32_t index, const Napi::CallbackInfo& info);
-	typedef Napi::Value(*NapiIndexSetterCallback)(uint32_t index, const Napi::Value& value, const Napi::CallbackInfo& info);
-	typedef Napi::Value(*NapiPropertyGetterCallback)(const Napi::String& property, const Napi::CallbackInfo& info);
-	typedef Napi::Value(*NapiPropertySetterCallback)(const Napi::String& property, const Napi::Value& value, const Napi::CallbackInfo& info);
+
+	typedef Napi::Value(*NapiIndexGetterCallback)(const Napi::CallbackInfo& info, uint32_t index);
+	typedef Napi::Value(*NapiIndexSetterCallback)(const Napi::CallbackInfo& info, uint32_t index, const Napi::Value& value);
+	typedef Napi::Value(*NapiPropertyGetterCallback)(const Napi::CallbackInfo& info);
+	typedef Napi::Value(*NapiPropertySetterCallback)(const Napi::CallbackInfo& info, const Napi::Value& value);
+
+	typedef Napi::Value(*NapiStringPropertyGetterCallback)(const Napi::CallbackInfo& info, const Napi::String& property);
+	typedef Napi::Value(*NapiStringPropertySetterCallback)(const Napi::CallbackInfo& info, const Napi::String& property, const Napi::Value& value);
 
 	//using ConstructorCallback = Nan::FunctionCallback;
     //using FunctionCallback = Nan::FunctionCallback;
@@ -75,8 +79,8 @@ struct Types {
 	//using StringPropertySetterCallback = v8::NamedPropertySetterCallback;
 	//using StringPropertyEnumeratorCallback = v8::NamedPropertyEnumeratorCallback;
 
-	using StringPropertyGetterCallback = NapiPropertyGetterCallback;
-	using StringPropertySetterCallback = NapiPropertySetterCallback;
+	using StringPropertyGetterCallback = NapiStringPropertyGetterCallback;
+	using StringPropertySetterCallback = NapiStringPropertySetterCallback;
 	using StringPropertyEnumeratorCallback = NapiFunctionCallback;
 };
 
