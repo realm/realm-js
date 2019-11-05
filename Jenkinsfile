@@ -294,7 +294,7 @@ def buildMacOS(workerFunction) {
     myNode('osx_vegas') {
       withEnv([
         "DEVELOPER_DIR=/Applications/Xcode-10.3.app/Contents/Developer",
-        "SDKROOT=macosx10.13"
+        "SDKROOT=macosx10.14"
       ]) {
         unstash 'source'
         sh "bash ./scripts/utils.sh set-version ${dependencies.VERSION}"
@@ -526,7 +526,7 @@ def testMacOS(target, postStep = null) {
   return {
     node('osx_vegas') {
       withEnv(['DEVELOPER_DIR=/Applications/Xcode-10.3.app/Contents/Developer',
-               'SDKROOT=macosx10.13',
+               'SDKROOT=macosx10.14',
                'REALM_SET_NVM_ALIAS=1']) {
         doInside('./scripts/test.sh', target, postStep)
       }
