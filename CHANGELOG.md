@@ -14,6 +14,7 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Internal
 * Fixed a couple of flaky tests.
+* Upgraded to Xcode 10.3 for building and testing.
 
 3.3.0 Release notes (2019-10-18)
 =============================================================
