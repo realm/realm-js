@@ -1157,7 +1157,7 @@ module.exports = {
             return new Promise((resolve, reject) => {
                 session.addConnectionNotification((newState, oldState) => {
                     let state = session.connectionState;
-                    let isConnected = session.isConnected;
+                    let isConnected = session.isConnected();
                     switch (newState) {
                         case Realm.Sync.ConnectionState.Disconnected:
                             TestCase.assertEqual(state, Realm.Sync.ConnectionState.Disconnected);
