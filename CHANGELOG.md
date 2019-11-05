@@ -13,7 +13,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
 ### Internal
-* None.
+* Fixed a couple of flaky tests.
 
 3.3.0 Release notes (2019-10-18)
 =============================================================

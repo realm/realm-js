@@ -1492,11 +1492,11 @@ module.exports = {
 
         TestCase.assertThrows(function() {
             new Realm({schema: schema, deleteRealmIfMigrationNeeded: true, readOnly: true});
-        }, "Cannot set 'deleteRealmIfMigrationNeeded' when 'readOnly' is set.")
+        }, "Cannot set 'deleteRealmIfMigrationNeeded' when 'readOnly' is set.");
 
         TestCase.assertThrows(function() {
             new Realm({schema: schema, deleteRealmIfMigrationNeeded: true, migration: function(oldRealm, newRealm) {}});
-        }, "Cannot include 'migration' when 'deleteRealmIfMigrationNeeded' is set.")
+        }, "Cannot include 'migration' when 'deleteRealmIfMigrationNeeded' is set.");
     },
 
     testDisableFileFormatUpgrade: function() {
