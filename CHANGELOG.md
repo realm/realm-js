@@ -1,4 +1,23 @@
-4.0.0 Release notes (2019-11-1)
+x.x.x Release notes (yyyy-MM-dd)
+=============================================================
+### Enhancements
+* None.
+
+### Fixed
+* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
+* None.
+
+### Compatibility
+* Realm Object Server: 3.23.1 or later.
+* APIs are backwards compatible with all previous release of Realm JavaScript in the 4.x.y series.
+* File format: generates Realms with format v10 (reads and upgrades file format v5 or later).
+
+### Internal
+* Updated Realm Core from v6.0.0-alpha.23 to v6.0.0-alpha.24.
+* Updated Realm Sync from v4.7.1-core6.4 to v4.7.1-core6.5.
+* Updated Realm Object Store to a0a23b2692e0f7e5780b0b5ba8933282adee519f.
+
+4.0.0-alpha.1 Release notes (2019-11-1)
 =============================================================
 NOTE: This version bumps the Realm file format to version 10. It is not possible to downgrade version 9 or earlier. Moreover, older files will automatically be upgraded to the new file format. Files created by Realm JavaScript prior to v1.0.0, might to be upgradeable.
 
