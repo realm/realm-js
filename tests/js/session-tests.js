@@ -1230,12 +1230,12 @@ module.exports = {
                 } else {
                     reject(`Session should have been connected but was '${session.connectionState}'.`);
                 }
-            }, 1000);
+            }, 2000);
         });
     },
 
     async testMultiplePauses() {
-        const user = await Realm.Sync.User.register('http://127.0.0.1:9080', Utils.uuid(), 'password')
+        const user = await Realm.Sync.User.register('http://127.0.0.1:9080', Utils.uuid(), 'password');
         const config = {
             sync: {
                 user: user,
@@ -1258,7 +1258,7 @@ module.exports = {
                 } else {
                     reject(`Session should have been disconnected but was '${session.connectionState}'.`);
                 }
-            }, 1000);
+            }, 2000);
         });
     },
 
