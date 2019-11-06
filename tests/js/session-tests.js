@@ -93,7 +93,7 @@ function waitForConnectionState(session, state) {
         };
         session.addConnectionNotification(callback);
         callback(session.connectionState);
-        setTimeout(() => { reject('Connection state notification timed out') }, 10000);
+        setTimeout(() => { reject('Connection state notification timed out'); }, 10000);
     });
 }
 
@@ -1223,15 +1223,9 @@ module.exports = {
         session.resume();
         session.resume();
         session.resume();
-        return new Promise((resolve, reject) => {
-            setTimeout(() => {
-                if (session.isConnected()) {
-                    resolve();
-                } else {
-                    reject(`Session should have been connected but was '${session.connectionState}'.`);
-                }
-            }, 2000);
-        });
+
+        await waitForConnectionState(session, Realm.Sync.ConnectionState.Connected);
+        TestCase.assertTrue(session.isConnected());
     },
 
     async testMultiplePauses() {
@@ -1251,15 +1245,9 @@ module.exports = {
         session.pause();
         session.pause();
         session.pause();
-        return new Promise((resolve, reject) => {
-            setTimeout(() => {
-                if (!session.isConnected()) {
-                    resolve();
-                } else {
-                    reject(`Session should have been disconnected but was '${session.connectionState}'.`);
-                }
-            }, 2000);
-        });
+
+        await waitForConnectionState(session, Realm.Sync.ConnectionState.Disconnected);
+        TestCase.assertFalse(session.isConnected());
     },
 
     testUploadDownloadAllChanges() {
