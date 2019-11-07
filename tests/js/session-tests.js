@@ -1302,10 +1302,18 @@ module.exports = {
 
         const AUTH_URL = 'http://127.0.0.1:9080';
         const REALM_URL = 'realm://127.0.0.1:9080/timeout_download_realm';
+        const schema = {
+            name: 'CompletionHandlerObject',
+            properties: {
+                'name': { type: 'string'}
+            }
+        };
+
         let realm;
         return Realm.Sync.User.login(AUTH_URL, Realm.Sync.Credentials.nickname("admin", true))
             .then((admin1) => {
                 const admin1Config = admin1.createConfiguration({
+                    schema: [schema],
                     sync: {
                         url: REALM_URL,
                         fullSynchronization: true
