@@ -115,9 +115,9 @@ stage('test') {
     parallelExecutors["Linux test runners ${nodeVersion}"] = testLinux('test-runners', nodeVersion)
     parallelExecutors["Windows node ${nodeVersion}"] = testWindows(nodeVersion)
   }
-  parallelExecutors["React Native iOS Debug"] = testMacOS('react-tests Debug')
+  //  parallelExecutors["React Native iOS Debug"] = testMacOS('react-tests Debug')
   parallelExecutors["React Native iOS Release"] = testMacOS('react-tests Release')
-  parallelExecutors["React Native iOS Example Debug"] = testMacOS('react-example Debug')
+  // parallelExecutors["React Native iOS Example Debug"] = testMacOS('react-example Debug')
   parallelExecutors["React Native iOS Example Release"] = testMacOS('react-example Release')
   parallelExecutors["macOS Electron Debug"] = testMacOS('electron Debug')
   parallelExecutors["macOS Electron Release"] = testMacOS('electron Release')
@@ -293,8 +293,7 @@ def buildMacOS(workerFunction) {
   return {
     myNode('osx_vegas') {
       withEnv([
-        "DEVELOPER_DIR=/Applications/Xcode-9.4.app/Contents/Developer",
-        "SDKROOT=macosx10.13"
+        "DEVELOPER_DIR=/Applications/Xcode-11.2.app/Contents/Developer",
       ]) {
         unstash 'source'
         sh "bash ./scripts/utils.sh set-version ${dependencies.VERSION}"
@@ -525,8 +524,7 @@ def testLinux(target, nodeVersion = 10, postStep = null) {
 def testMacOS(target, postStep = null) {
   return {
     node('osx_vegas') {
-      withEnv(['DEVELOPER_DIR=/Applications/Xcode-9.4.app/Contents/Developer',
-               'SDKROOT=macosx10.13',
+      withEnv(['DEVELOPER_DIR=/Applications/Xcode-11.2.app/Contents/Developer',
                'REALM_SET_NVM_ALIAS=1']) {
         doInside('./scripts/test.sh', target, postStep)
       }

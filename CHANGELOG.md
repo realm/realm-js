@@ -13,9 +13,11 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
 ### Internal
-* Fixed an out-of-range bug in Windows builds. In debug mode, the exception `can't dereference out of range vector iterator` would be thrown and the process would terminate. ([realm/realm-object-store#832](https://github.com/realm/realm-object-store/issues/832))
 * Updated from Realm Core v5.23.5 to v5.23.6.
 * Updated from Realm Sync v4.7.10 to v4.7.12.
+* Fixed an out-of-range bug in Windows builds. In debug mode, the exception `can't dereference out of range vector iterator` would be thrown and the process would terminate. ([realm/realm-object-store#832](https://github.com/realm/realm-object-store/issues/832))
+* Fixed a couple of flaky tests.
+* Upgraded to Xcode 10.3 for building and testing.
 
 3.3.0 Release notes (2019-10-18)
 =============================================================
