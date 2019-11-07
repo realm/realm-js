@@ -15,7 +15,7 @@ x.x.x Release notes (yyyy-MM-dd)
 ### Internal
 * Updated Realm Core from v6.0.0-alpha.23 to v6.0.0-alpha.24.
 * Updated Realm Sync from v4.7.1-core6.4 to v4.7.1-core6.5.
-* Updated Realm Object Store to a0a23b2692e0f7e5780b0b5ba8933282adee519f.
+* Updated Realm Object Store to 83d712cda100b42e6dcf3e32d04c0b08eeb6840e.
 
 4.0.0-alpha.1 Release notes (2019-11-1)
 =============================================================
