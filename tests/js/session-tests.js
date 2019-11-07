@@ -1175,12 +1175,12 @@ module.exports = {
                             reject(`unknown connection value: ${newState}`);
                     }
 
-                    if (oldState === Realm.Sync.ConnectionState.Connecting && newState === Realm.Sync.ConnectionState.Connected) {
+                    if (newState === Realm.Sync.ConnectionState.Connected) {
                         resolve();
                     }
                 });
                 session.resume();
-                setTimeout(() => { reject() }, 10000);
+                setTimeout(() => { reject('timeout') }, 10000);
             });
         });
     },

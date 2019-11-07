@@ -12,7 +12,7 @@ This project hosts the JavaScript versions of [Realm](https://realm.io/). Curren
 
 ## Getting Started
 
-Please see the detailed instructions in our docs to use [Realm Javascript](https://realm.io/docs/javascript/latest/#getting-started).
+Please see the detailed instructions in our docs to use [Realm Javascript](https://realm.io/docs/javascript/latest/#getting-started). Please notice that currently only node.js version 8 and 10 are supported.
 
 ## Documentation
 
@@ -33,8 +33,8 @@ The API reference is located at [realm.io/docs/javascript/latest/api/](https://r
 In case you don't want to use the precompiled version on npm, you can build Realm yourself from source. You’ll need an Internet connection the first time you build in order to download the core library.
 
 Prerequisites:
-* Xcode 7.2+
-* nodejs
+* Xcode 9.4+
+* node.js version 8 or 10
 * nvm (on Mac)
 * cocoapods (on Mac)
 * Android SDK 23+
@@ -48,7 +48,7 @@ cd realm-js
 git submodule update --init --recursive
 ```
 
-Note: On Windows the RealmJS repo should be cloned with symlinks enabled 
+Note: On Windows the RealmJS repo should be cloned with symlinks enabled
 ```
 #run in elevated command prompt
 git clone -c core.symlinks=true https://github.com/realm/realm-js
