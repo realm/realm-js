@@ -4,8 +4,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * None.
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None.
+* Fixed a segmentation fault when calling `Realm.deleteAll()` after `Realm.deleteModel()`. ([#2597](https://github.com/realm/realm-js/issues/2597))
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.
