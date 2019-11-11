@@ -1,4 +1,4 @@
-x.x.x Release notes (yyyy-MM-dd)
+3.4.0 Release notes (2019-11-11)
 =============================================================
 ### Enhancements
 * Support mirroring of binary files. Thanks to @malice00. ([#2501](https://github.com/realm/realm-js/issues/2501))
