@@ -214,6 +214,7 @@ class Realm {
 
     /**
      * Deletes a Realm model, including all of its objects.
+     * If called outside a migration function, {@link Realm#schema schema} and {@link Realm#schemaVersion schemaVersion} are updated.
      * @param {string} name - the model name
      */
     deleteModel(name) { }

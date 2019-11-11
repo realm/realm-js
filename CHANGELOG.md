@@ -3,9 +3,11 @@ x.x.x Release notes (yyyy-MM-dd)
 ### Enhancements
 * Support mirroring of binary files. Thanks to @malice00. ([#2501](https://github.com/realm/realm-js/issues/2501))
 * Performance significantly improved when making a query on the property of a linked table, when the property is indexed. ([realm/realm-core#3432](https://github.com/realm/realm-core/pull/3432))
+* Added a CocoaPod Podspec file, enabling [autolinking](https://github.com/react-native-community/cli/blob/master/docs/autolinking.md) for React Native on iOS. ([#2586](https://github.com/realm/realm-js/pull/2586))
 
 ### Fixed
 * On Android, the Realm file could be corrupted when using encrypted realms. It has never been reported in this project. ([realm/realm-core#3427](https://github.com/realm/realm-core/pulls/3427))
+* Fixed a segmentation fault when calling `Realm.deleteAll()` after `Realm.deleteModel()`. ([#2597](https://github.com/realm/realm-js/issues/2597), since v1.12.0)
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.

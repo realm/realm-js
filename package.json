@@ -42,7 +42,8 @@
     "realm.gypi",
     "target_defaults.gypi",
     "dependencies.list",
-    "react-native.config.js"
+    "react-native.config.js",
+    "RealmJS.podspec"
   ],
   "scripts": {
     "get-version": "node -p process.env.npm_package_version",
