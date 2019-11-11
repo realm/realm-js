@@ -942,6 +942,31 @@ module.exports = {
         TestCase.assertEqual(realm.objects('IntPrimaryObject').length, 0);
     },
 
+    testDeleteAllAfterDeleteModel: function() {
+        const realm = new Realm({schema: [schemas.TestObject, schemas.IntPrimary]});
+
+        realm.write(() => {
+            realm.create('TestObject', {doubleCol: 1});
+            realm.create('TestObject', {doubleCol: 2});
+            realm.create('IntPrimaryObject', {primaryCol: 2, valueCol: 'value'});
+        });
+
+        TestCase.assertEqual(realm.objects('TestObject').length, 2);
+        TestCase.assertEqual(realm.objects('IntPrimaryObject').length, 1);
+
+        console.log('FISK 0', realm.schema);
+        realm.write(() => {
+            realm.deleteModel('IntPrimaryObject');
+        });
+        console.log('FISK 1', realm.schema);
+        realm.write(() => {
+            realm.deleteAll();
+        });
+
+        TestCase.assertEqual(realm.objects('TestObject').length, 0);
+        TestCase.assertThrows(() => realm.objects('IntPrimaryObject'));
+    },
+
     testRealmObjects: function() {
         const realm = new Realm({schema: [schemas.PersonObject, schemas.DefaultValues, schemas.TestObject]});
 

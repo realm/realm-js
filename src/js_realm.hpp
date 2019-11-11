@@ -783,8 +783,17 @@ void RealmClass<T>::delete_model(ContextType ctx, ObjectType this_object, Argume
 
     SharedRealm& realm = *get_internal<T, RealmClass<T>>(this_object);
 
+    Group& group = realm->read_group();
     std::string model_name = Value::validated_to_string(ctx, value, "deleteModel");
-    ObjectStore::delete_data_for_object(realm->read_group(), model_name);
+    ObjectStore::delete_data_for_object(group, model_name);
+    if (!realm->is_in_migration()) {
+        realm::Schema new_schema = ObjectStore::schema_from_group(group);
+        realm->update_schema(new_schema,
+                             realm->schema_version() + 1,
+                             nullptr,
+                             nullptr,
+                             true);
+    }
 }
 
 template<typename T>
