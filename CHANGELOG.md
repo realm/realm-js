@@ -1,7 +1,7 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
-* None.
+* Added a CocoaPod Podspec file, enabling [autolinking](https://github.com/react-native-community/cli/blob/master/docs/autolinking.md) for React Native on iOS. ([#2586](https://github.com/realm/realm-js/pull/2586))
 
 ### Fixed
 * Fixed a segmentation fault when calling `Realm.deleteAll()` after `Realm.deleteModel()`. ([#2597](https://github.com/realm/realm-js/issues/2597), since v1.12.0)
