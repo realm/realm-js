@@ -152,29 +152,39 @@ Because React Native bundles its JavaScript source files into a single bundle, u
 
 First move the existing environment to a backup location that you can copy files from:
 
-    cd ./environments
-    mv react-native react-native-backup
+```bash
+cd ./environments
+mv react-native react-native-backup
+```
 
 Initialize a new React Native app into the `react-native` directory:
 
-    npx react-native init RealmReactNativeTests --directory react-native --npm
+```bash
+npx react-native init RealmReactNativeTests --directory react-native --npm
+```
 
 Clean up unneeded files
 
-    cd ./environments
-    rm -r react-native/__tests__
-    rm react-native/App.js
+```bash
+cd ./environments
+rm -r react-native/__tests__
+rm react-native/App.js
+```
 
 Copy over files related to the test harness
 
-    cd ./environments
-    cp -r react-native-backup/README.md react-native-backup/harness react-native-backup/src react-native-backup/index.js react-native
+```bash
+cd ./environments
+cp -r react-native-backup/README.md react-native-backup/harness react-native-backup/src react-native-backup/index.js react-native
+```
 
 Install additional dependencies
 
-    cd react-native
-    npm install mocha mocha-junit-reporter mocha-remote-client react-native-fs path-browserify
-    npm install mocha-remote-server fs-extra --save-dev
+```bash
+cd react-native
+npm install mocha mocha-junit-reporter mocha-remote-client react-native-fs path-browserify
+npm install mocha-remote-server fs-extra --save-dev
+```
 
 Open the `package.json` of both `react-native` and `react-native-backup`:
 
@@ -185,7 +195,9 @@ Open the `package.json` of both `react-native` and `react-native-backup`:
 
 Install dependencies again to run the postinstall script
 
-    cd ios
-    pod install
-    cd -
-    npm install
+```bash
+cd ios
+pod install
+cd -
+npm install
+```
