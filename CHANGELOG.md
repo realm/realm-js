@@ -4,8 +4,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * None.
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None.
+* Fixed a bug when the sync client reconnect after failing to integrate a changeset. The bug would lead to further corruption of the client's Realm file. ([RSYNC-48](https://jira.mongodb.org/browse/RSYNC-48), since v2.3.0-alpha.1)
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.
@@ -13,7 +12,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
 ### Internal
-* None.
+* Upgrade from Realm Sync v4.7.12 to v4.8.2.
 
 3.4.0 Release notes (2019-11-11)
 =============================================================
