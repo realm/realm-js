@@ -461,7 +461,7 @@ void ResultsClass<T>::add_listener(ContextType ctx, U& collection, ObjectType th
     Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
 
     auto token = collection.add_notification_callback([=](CollectionChangeSet const& change_set, std::exception_ptr exception) {
-            HANDLESCOPE
+            HANDLESCOPE(protected_ctx)
             ValueType arguments[] {
                 static_cast<ObjectType>(protected_this),
                 CollectionClass<T>::create_collection_change_set(protected_ctx, change_set)

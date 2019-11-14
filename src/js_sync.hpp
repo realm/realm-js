@@ -329,7 +329,7 @@ public:
     typename T::Function func() const { return m_func; }
 
     void operator()(std::shared_ptr<SyncSession> session, SyncError error) {
-        HANDLESCOPE
+        HANDLESCOPE(m_ctx)
 
         std::string name = "Error";
         auto error_object = Object<T>::create_empty(m_ctx);
@@ -415,9 +415,9 @@ public:
                                   int preverify_ok,
                                   int depth)
     {
-        HANDLESCOPE
-
         const Protected<typename T::GlobalContext>& ctx = this_object->m_ctx;
+		HANDLESCOPE(ctx)
+
 
         typename T::Object ssl_certificate_object = Object<T>::create_empty(ctx);
         Object<T>::set_property(ctx, ssl_certificate_object, "serverAddress", Value<T>::from_string(ctx, server_address));
@@ -614,7 +614,7 @@ void SessionClass<T>::add_progress_notification(ContextType ctx, ObjectType this
         std::function<ProgressHandler> progressFunc;
 
         util::EventLoopDispatcher<ProgressHandler> progress_handler([=](uint64_t transferred_bytes, uint64_t transferrable_bytes) {
-            HANDLESCOPE
+            HANDLESCOPE(protected_ctx)
             ValueType callback_arguments[2];
             callback_arguments[0] = Value::from_number(protected_ctx, transferred_bytes);
             callback_arguments[1] = Value::from_number(protected_ctx, transferrable_bytes);
@@ -662,7 +662,7 @@ void SessionClass<T>::add_connection_notification(ContextType ctx, ObjectType th
         std::function<ConnectionHandler> connectionFunc;
 
         util::EventLoopDispatcher<ConnectionHandler> connection_handler([=](SyncSession::ConnectionState old_state, SyncSession::ConnectionState new_state) {
-            HANDLESCOPE
+            HANDLESCOPE(protected_ctx)
             ValueType callback_arguments[2];
             callback_arguments[0] = Value::from_string(protected_ctx, get_connection_state_value(new_state));
             callback_arguments[1] = Value::from_string(protected_ctx, get_connection_state_value(old_state));
@@ -755,7 +755,7 @@ void SessionClass<T>::wait_for_completion(Direction direction, ContextType ctx, 
         Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
 
         util::EventLoopDispatcher<DownloadUploadCompletionHandler> completion_handler([=](std::error_code error) {
-            HANDLESCOPE
+            HANDLESCOPE(protected_ctx)
             ValueType callback_arguments[1];
             if (error) {
                 ObjectType error_object = Object::create_empty(protected_ctx);
@@ -1074,7 +1074,7 @@ std::function<SyncBindSessionHandler> SyncClass<T>::session_bind_callback(Contex
     Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
     Protected<ObjectType> protected_sync_constructor(ctx, sync_constructor);
     return util::EventLoopDispatcher<SyncBindSessionHandler>([protected_ctx, protected_sync_constructor](const std::string& path, const realm::SyncConfig& config, std::shared_ptr<SyncSession>) {
-        HANDLESCOPE
+        HANDLESCOPE(protected_ctx)
         ObjectType user_constructor = Object::validated_get_object(protected_ctx, protected_sync_constructor, "User");
         FunctionType refreshAccessToken = Object::validated_get_function(protected_ctx, user_constructor, "_refreshAccessToken");
 

@@ -64,7 +64,6 @@ static Napi::Object NAPI_Init(Napi::Env env, Napi::Object exports) {
 /////////////////////
 
   realm::node::napi_init(env, currentIsolate, exports);
-  exports.Set(Napi::String::New(env, "hello"), Napi::Function::New(env, Method));
   return exports;
 }
 

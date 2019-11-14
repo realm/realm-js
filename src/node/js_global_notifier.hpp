@@ -155,7 +155,7 @@ private:
 
 template<typename T>
 void GlobalNotifierCallback<T>::realm_changed(GlobalNotifier* notifier) {
-    HANDLESCOPE
+    HANDLESCOPE(m_ctx)
 
     ValueType arguments[] = { Value::from_string(m_ctx, "change") };
     Function::callback(m_ctx, m_callback, Object::create_empty(m_ctx), 1, arguments);
@@ -163,7 +163,7 @@ void GlobalNotifierCallback<T>::realm_changed(GlobalNotifier* notifier) {
 
 template<typename T>
 bool GlobalNotifierCallback<T>::realm_available(StringData id, StringData virtual_path) {
-    HANDLESCOPE
+    HANDLESCOPE(m_ctx)
 
     ValueType arguments[] = {
         Value::from_string(m_ctx, "available"),
@@ -176,14 +176,14 @@ bool GlobalNotifierCallback<T>::realm_available(StringData id, StringData virtua
 
 template<typename T>
 void GlobalNotifierCallback<T>::download_complete() {
-    HANDLESCOPE
+    HANDLESCOPE(m_ctx)
     ValueType arguments[] = { Value::from_string(m_ctx, "downloadComplete"), };
     Function::callback(m_ctx, m_callback, Object::create_empty(m_ctx), 1, arguments);
 }
 
 template<typename T>
 void GlobalNotifierCallback<T>::error(std::exception_ptr err) {
-    HANDLESCOPE
+	HANDLESCOPE(m_ctx)
     try {
         std::rethrow_exception(err);
     }

@@ -32,7 +32,8 @@
 
 #include "napi.h"
 
-#define HANDLESCOPE Nan::HandleScope handle_scope;
+//NAPI: all placess that use this define HANDLESCOPE should be checked so indeed a Napi::HandleScope is present
+#define HANDLESCOPE(env) Napi::HandleScope handle_scope(env);
 
 namespace realm {
 namespace node {

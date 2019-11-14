@@ -29,15 +29,15 @@ namespace js {
 inline napi_property_attributes operator|(napi_property_attributes a, PropertyAttributes b) {
 	int flag = napi_default;
 
-	if (!(b & DontEnum)) {
+	if ((b & DontEnum) != DontEnum) {
 		flag |= napi_enumerable;
 	}
 
-	if (!(b & DontDelete)) {
+	if ((b & DontDelete) != DontDelete) {
 		flag |= napi_configurable;
 	}
 
-	if (!(b & ReadOnly)) {
+	if ((b & ReadOnly) != ReadOnly) {
 		flag |= napi_writable;
 	}
 
@@ -143,7 +143,8 @@ inline void node::Object::set_property(Napi::Env env, const Napi::Object& object
 		if (attributes) {
 			//Napi: is this setting property value or defining new property
 			napi_property_attributes napi_attributes = napi_default | attributes;
-			auto propDescriptor = Napi::PropertyDescriptor::Value(key, value, napi_attributes);
+			std::string name = key;
+			auto propDescriptor = Napi::PropertyDescriptor::Value(name, value, napi_attributes);
 			obj.DefineProperty(propDescriptor);
 		}
 		else {
@@ -251,7 +252,7 @@ inline void node::Object::set_prototype(Napi::Env env, const Napi::Object& objec
 
 template<>
 inline Napi::Object node::Object::create_empty(Napi::Env env) {
-	return Napi::Object();
+	return Napi::Object::New(env);
 }
 
 //template<>
@@ -266,7 +267,7 @@ inline Napi::Object node::Object::create_empty(Napi::Env env) {
 
 template<>
 inline Napi::Object node::Object::create_array(Napi::Env env, uint32_t length, const Napi::Value values[]) {
-	Napi::Array array = Napi::Array();
+	Napi::Array array = Napi::Array::New(env, length);
     for (uint32_t i = 0; i < length; i++) {
         set_property(env, array, i, values[i]);
     }
