@@ -4,8 +4,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * None.
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None.
+* Fixed a bug in use of dangling accessors after integrating a changeset. The bug could lead to fatal crashes. ([RSYNC-71](https://jira.mongodb.org/browse/RSYNC-71), since v2.0.0)
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.
@@ -13,7 +12,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
 ### Internal
-* None.
+* Upgrade from Realm Sync v4.8.2 to v4.8.3.
 
 3.4.1 Release notes (2019-11-12)
 =============================================================
