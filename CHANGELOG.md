@@ -4,7 +4,6 @@ x.x.x Release notes (yyyy-MM-dd)
 * None.
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
 * None.
 
 ### Compatibility
@@ -13,7 +12,8 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
 ### Internal
-* None.
+* Upgrade from Realm Sync v4.8.2 to v4.8.3.
+* Fixed a bug in debug mode which could occasionally lead to the assertion `Assertion failed: m_ct_history->size() == m_ct_history_size`. ([RSYNC-71](https://jira.mongodb.org/browse/RSYNC-71), since v2.0.0)
 
 3.4.1 Release notes (2019-11-12)
 =============================================================
