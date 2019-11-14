@@ -4,7 +4,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * None.
 
 ### Fixed
-* Fixed a bug in use of dangling accessors after integrating a changeset. The bug could lead to fatal crashes. ([RSYNC-71](https://jira.mongodb.org/browse/RSYNC-71), since v2.0.0)
+* None.
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.
@@ -13,6 +13,7 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Internal
 * Upgrade from Realm Sync v4.8.2 to v4.8.3.
+* Fixed a bug which can lead to a fatal crash after integrating a changeset from the server. This can only happen in debug mode. ([RSYNC-71](https://jira.mongodb.org/browse/RSYNC-71), since v2.0.0)
 
 3.4.1 Release notes (2019-11-12)
 =============================================================
