@@ -354,3 +354,20 @@ exports.Country = {
     }
 };
 
+
+
+exports.Dog = {
+    name: 'Dog',
+    properties: {
+        name: 'string',
+        owners: {type: 'linkingObjects', objectType: 'Person', property: 'dog'},
+    }
+};
+
+exports.Person = {
+    name: 'Person',
+    properties: {
+        name: 'string',
+        dog: 'Dog',
+    }
+};
