@@ -43,6 +43,40 @@ NOTE: This version bumps the Realm file format to version 10. It is not possible
 * Updated to Realm Core v6.0.0-alpha.23.
 * Updated to Realm Sync v4.7.1-core6.4.
 
+
+3.4.2 Release notes (2019-11-14)
+=============================================================
+### Enhancements
+* None.
+
+### Fixed
+* None.
+
+### Compatibility
+* Realm Object Server: 3.23.1 or later.
+* APIs are backwards compatible with all previous release of realm in the 2.x.y series.
+* File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
+
+### Internal
+* Upgrade from Realm Sync v4.8.2 to v4.8.3.
+* Fixed a bug in debug mode which could occasionally lead to the assertion `Assertion failed: m_ct_history->size() == m_ct_history_size`. ([RSYNC-71](https://jira.mongodb.org/browse/RSYNC-71), since v2.0.0)
+
+3.4.1 Release notes (2019-11-12)
+=============================================================
+### Enhancements
+* None.
+
+### Fixed
+* Fixed a bug when the sync client reconnect after failing to integrate a changeset. The bug would lead to further corruption of the client's Realm file. ([RSYNC-48](https://jira.mongodb.org/browse/RSYNC-48), since v2.3.0-alpha.1)
+
+### Compatibility
+* Realm Object Server: 3.23.1 or later.
+* APIs are backwards compatible with all previous release of realm in the 2.x.y series.
+* File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
+
+### Internal
+* Upgrade from Realm Sync v4.7.12 to v4.8.2.
+
 3.4.0 Release notes (2019-11-11)
 =============================================================
 ### Enhancements
