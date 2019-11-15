@@ -41,8 +41,32 @@ public:
 
 	}
 
+	Protected(const Protected& other) : m_env(other.m_env) {
+		m_ref = other.m_ref;
+		uint32_t result;
+		napi_status status = napi_reference_ref(m_env, m_ref, &result);
+		if (status != napi_ok) {
+			throw new std::runtime_error(util::format("Can't increase protected reference count: napi_status %1", status));
+		}
+	}
+
+	Protected& operator=(const Protected& other) {
+		return *this = Protected(other);
+	}
+
 	~Protected() {
-		napi_delete_reference(m_env, m_ref);
+		uint32_t result;
+		napi_status status = napi_reference_unref(m_env, m_ref, &result);
+		if (status != napi_ok) {
+			throw new std::runtime_error(util::format("Can't decrease protected reference count: napi_status %1", status));
+		}
+
+		if (result == 0) {
+			napi_status status = napi_delete_reference(m_env, m_ref);
+			if (status != napi_ok) {
+				throw new std::runtime_error(util::format("Can't unallocate protected reference: napi_status %1", status));
+			}
+		}
 	}
 
 	operator MemberType() const {
@@ -50,6 +74,10 @@ public:
 		napi_status status = napi_get_reference_value(m_env, m_ref, &value);
 		if (status != napi_ok) {
 			throw new std::runtime_error(util::format("Can't get protected reference: napi_status %1", status));
+		}
+
+		if (value == nullptr) {
+			throw new std::runtime_error(util::format("Can not use unallocated protected reference"));
 		}
 
 		return MemberType(m_env, value);
@@ -62,6 +90,10 @@ public:
 			throw new std::runtime_error(util::format("Can't get protected reference: napi_status %1", status));
 		}
 
+		if (value == nullptr) {
+			throw new std::runtime_error(util::format("Can not use unallocated protected reference"));
+		}
+
 		return value == nullptr;
 	}
 
@@ -72,6 +104,10 @@ public:
 			throw new std::runtime_error(util::format("Can't get protected reference: napi_status %1", status));
 		}
 
+		if (value == nullptr) {
+			throw new std::runtime_error(util::format("Can not use unallocated protected reference"));
+		}
+
 	    return value == other;
 	}
 
@@ -80,6 +116,10 @@ public:
 		napi_status status = napi_get_reference_value(m_env, m_ref, &value);
 		if (status != napi_ok) {
 			throw new std::runtime_error(util::format("Can't get protected reference: napi_status %1", status));
+		}
+
+		if (value == nullptr) {
+			throw new std::runtime_error(util::format("Can not use unallocated protected reference"));
 		}
 
 		return value != other;
