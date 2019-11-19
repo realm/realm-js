@@ -14,7 +14,7 @@
     "test": "npm run test/main && npm run test/renderer",
     "test/main": "node runner.js main",
     "test/renderer": "node runner.js renderer",
-    "preinstall": "npm install ../../realm-integration-tests.tgz ../../realm.tgz",
+    "preinstall": "npm run tests/pack --prefix ../.. && npm install ../../realm-integration-tests.tgz ../../realm.tgz",
     "package": "electron-builder --dir"
   },
   "devDependencies": {
