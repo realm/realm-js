@@ -151,9 +151,6 @@ def nodeIntegrationTests(nodeVersion, platform) {
   dir('integration-tests') {
     // Renaming the package to avoid having to specify version in the apps package.json
     sh 'mv realm-*.tgz realm.tgz'
-    // Pack up and renaming the integration tests
-    sh "../scripts/nvm-wrapper.sh ${nodeVersion} npm pack ./tests"
-    sh 'mv realm-integration-tests-*.tgz realm-integration-tests.tgz'
   }
 
   dir('integration-tests/environments/node') {
@@ -178,9 +175,6 @@ def electronIntegrationTests(electronVersion, platform) {
   dir('integration-tests') {
     // Renaming the package to avoid having to specify version in the apps package.json
     sh 'mv realm-*.tgz realm.tgz'
-    // Pack up and renaming the integration tests
-    sh "../scripts/nvm-wrapper.sh ${nodeVersion} npm pack ./tests"
-    sh 'mv realm-integration-tests-*.tgz realm-integration-tests.tgz'
   }
 
   // On linux we need to use xvfb to let up open GUI windows on the headless machine
@@ -216,9 +210,6 @@ def reactNativeIntegrationTests(hostPlatform, targetPlatform) {
     unstash 'android'
     // Renaming the package to avoid having to specify version in the apps package.json
     sh 'mv realm-*.tgz realm.tgz'
-    // Pack up and renaming the integration tests
-    sh "${nvm} npm pack ./tests"
-    sh 'mv realm-integration-tests-*.tgz realm-integration-tests.tgz'
   }
 
   dir('integration-tests/environments/react-native') {
