@@ -217,7 +217,7 @@ def reactNativeIntegrationTests(hostPlatform, targetPlatform) {
     // Renaming the package to avoid having to specify version in the apps package.json
     sh 'mv realm-*.tgz realm.tgz'
     // Pack up and renaming the integration tests
-    sh "../scripts/nvm-wrapper.sh ${nodeVersion} npm pack ./tests"
+    sh "${nvm} npm pack ./tests"
     sh 'mv realm-integration-tests-*.tgz realm-integration-tests.tgz'
   }
 
