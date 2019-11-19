@@ -105,7 +105,6 @@ if (gitTag) {
   }
 }
 
-/*
 stage('test') {
   parallelExecutors = [:]
   for (def nodeVersion in nodeVersions) {
@@ -127,7 +126,6 @@ stage('test') {
   //}),
   parallel parallelExecutors
 }
-*/
 
 stage('integration tests') {
   parallel(
