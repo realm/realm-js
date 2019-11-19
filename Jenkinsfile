@@ -54,6 +54,7 @@ stage('check') {
   }
 }
 
+/*
 stage('pretest') {
   parallelExecutors = [:]
   parallelExecutors["eslint"] = testLinux('eslint-ci', 10, {
@@ -126,6 +127,7 @@ stage('test') {
   //}),
   parallel parallelExecutors
 }
+*/
 
 stage('integration tests') {
   parallel(
