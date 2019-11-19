@@ -167,6 +167,14 @@ def electronIntegrationTests(electronVersion, platform) {
   unstash "electron-pre-gyp-${platform}-${electronVersion}"
   sh "./scripts/nvm-wrapper.sh ${nodeVersion} ./scripts/pack-with-pre-gyp.sh"
 
+  dir('integration-tests') {
+    // Renaming the package to avoid having to specify version in the apps package.json
+    sh 'mv realm-*.tgz realm.tgz'
+    // Pack up and renaming the integration tests
+    sh 'npm pack ./tests'
+    sh 'mv realm-integration-tests-*.tgz realm-integration-tests.tgz'
+  }
+
   // On linux we need to use xvfb to let up open GUI windows on the headless machine
   def commandPrefix = platform == 'linux' ? 'xvfb-run ' : ''
 
@@ -198,6 +206,7 @@ def reactNativeIntegrationTests(hostPlatform, targetPlatform) {
 
   dir('integration-tests') {
     sh "${targetPlatform == "android" ? "REALM_BUILD_ANDROID=1" : ""} ${nvm} npm pack .."
+    sh "mv realm-*.tgz realm.tgz"
   }
 
   dir('integration-tests/environments/react-native') {
