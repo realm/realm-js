@@ -21,7 +21,7 @@ All following commands assume that you've changed directory into the `./integrat
 ### Installing the integration tests
 
 The individual environments can be installed and run independently (see "Installing an environment on CI").
-For convenience to developers, this directory contains a package that will produce a packaged version of Realm JS and install all environments:
+For convenience to developers, this directory contains a package that will produce a packaged version of Realm JS, a packaged version of the integration tests suite and install all environments:
 
 ```bash
 npm install
@@ -33,7 +33,7 @@ The environments consume Realm and the test suite as packaged `.tgz` files to re
 
 ### Running the tests while developing
 
-For rapid iteration on the test suite, use the "start" script to start mocha in `--watch` mode
+For rapid iteration on the test suite, use the "start" script (from the `./tests` directory) to start mocha in `--watch` mode
 
 ```bash
 npm start
@@ -45,7 +45,7 @@ When fixing a single failing test, it's beneficial to use mochas [`--grep`](http
 npm start -- --grep "Realm#constructor"
 ```
 
-It's adviced to have two terminals open, one occationally running `npm run build-changes` when changes are made to the C++ source-code of Realm JS and another running `npm start` to continiously run the integration tests when code change.
+It's adviced to have two terminals open, one occationally running `npm run build-changes` (from the project root directory) when changes are made to the C++ source-code of Realm JS and another running `npm start` (from the `./tests` directory) to continiously run the integration tests when code change.
 The tests will re-run when the test suite changes and it has Realm JS installed as a symbolic link and will therefore run the latest Realm JS javascript code when the tests run. To reload the native module, you will however need to kill and restart the process running in the second terminal.
 
 ### Running the tests in all or specific environments
