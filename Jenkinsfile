@@ -54,7 +54,6 @@ stage('check') {
   }
 }
 
-/*
 stage('pretest') {
   parallelExecutors = [:]
   parallelExecutors["eslint"] = testLinux('eslint-ci', 10, {
@@ -106,6 +105,7 @@ if (gitTag) {
   }
 }
 
+/*
 stage('test') {
   parallelExecutors = [:]
   for (def nodeVersion in nodeVersions) {
