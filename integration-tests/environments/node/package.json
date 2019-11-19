@@ -4,8 +4,8 @@
   "description": "Realm JS tests running in a Node.js environment",
   "private": true,
   "scripts": {
-    "test": "mocha --exit index.js",
-    "preinstall": "npm run tests/pack --prefix ../.. && npm install ../../realm-integration-tests.tgz ../../realm.tgz",
+    "preinstall": "npm install ../../realm-integration-tests.tgz ../../realm.tgz",
+    "test": "mocha --exit index.js"
   },
   "dependencies": {
     "command-line-args": "^4.0.6",
@@ -15,7 +15,7 @@
     "mocha": "^5.2.0",
     "mocha-cli": "^1.0.1",
     "mocha-junit-reporter": "^1.18.0",
-    "realm": "file://../../realm.tgz",
-    "realm-integration-tests": "file://../../realm-integration-tests.tgz"
+    "realm": "file:../../realm.tgz",
+    "realm-integration-tests": "file:../../realm-integration-tests.tgz"
   }
 }
