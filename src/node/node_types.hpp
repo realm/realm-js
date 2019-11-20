@@ -50,13 +50,14 @@ struct Types {
 	
 	typedef Napi::Value(*NapiFunctionCallback)(const Napi::CallbackInfo& info);
 
-	typedef Napi::Value(*NapiIndexGetterCallback)(const Napi::CallbackInfo& info, uint32_t index);
-	typedef Napi::Value(*NapiIndexSetterCallback)(const Napi::CallbackInfo& info, uint32_t index, const Napi::Value& value);
+	typedef Napi::Value(*NapiIndexGetterCallback)(const Napi::CallbackInfo& info, const Napi::Object& instance, uint32_t index);
+	typedef Napi::Value(*NapiIndexSetterCallback)(const Napi::CallbackInfo& info, const Napi::Object& instance, uint32_t index, const Napi::Value& value);
 	typedef Napi::Value(*NapiPropertyGetterCallback)(const Napi::CallbackInfo& info);
-	typedef Napi::Value(*NapiPropertySetterCallback)(const Napi::CallbackInfo& info, const Napi::Value& value);
+	typedef void(*NapiPropertySetterCallback)(const Napi::CallbackInfo& info, const Napi::Value& value);
 
-	typedef Napi::Value(*NapiStringPropertyGetterCallback)(const Napi::CallbackInfo& info, const Napi::String& property);
-	typedef Napi::Value(*NapiStringPropertySetterCallback)(const Napi::CallbackInfo& info, const Napi::String& property, const Napi::Value& value);
+	typedef Napi::Value(*NapiStringPropertyGetterCallback)(const Napi::CallbackInfo& info, const Napi::Object& instance, const Napi::String& property);
+	typedef Napi::Value(*NapiStringPropertySetterCallback)(const Napi::CallbackInfo& info, const Napi::Object& instance, const Napi::String& property, const Napi::Value& value);
+	typedef Napi::Value(*NapiStringPropertyEnumeratorCallback)(const Napi::CallbackInfo& info, const Napi::Object& instance);
 
 	//using ConstructorCallback = Nan::FunctionCallback;
     //using FunctionCallback = Nan::FunctionCallback;
@@ -82,7 +83,7 @@ struct Types {
 
 	using StringPropertyGetterCallback = NapiStringPropertyGetterCallback;
 	using StringPropertySetterCallback = NapiStringPropertySetterCallback;
-	using StringPropertyEnumeratorCallback = NapiFunctionCallback;
+	using StringPropertyEnumeratorCallback = NapiStringPropertyEnumeratorCallback;
 };
 
 template<typename ClassType>

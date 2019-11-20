@@ -73,12 +73,11 @@ inline bool node::Value::is_array_buffer(Napi::Env env, const Napi::Value& value
 //    return value->IsArrayBufferView();
 //}
 
-//NAPI: IsArrayBufferView does not exists in NAPI
+
 template<>
 inline bool node::Value::is_array_buffer_view(Napi::Env env, const Napi::Value& value) {
-	auto v8Value  = reinterpret_cast<v8::Local<v8::Value>*>((napi_value)value);
-	return (*v8Value)->IsArrayBufferView();
-		
+	//return env.Global().Get("ArrayBuffer").As<Napi::Function>().Get("isView").As<Napi::Function>().Call({ value });
+	return value.IsTypedArray() || value.IsDataView();
 }
 
 //template<>
@@ -89,8 +88,7 @@ inline bool node::Value::is_array_buffer_view(Napi::Env env, const Napi::Value& 
 //NAPI: IsDate does not exists in NAPI
 template<>
 inline bool node::Value::is_date(Napi::Env env, const Napi::Value& value) {
-	auto v8Value = reinterpret_cast<v8::Local<v8::Value>*>((napi_value)value);
-	return (*v8Value)->IsDate();
+	return value.IsObject() && value.As<Napi::Object>().InstanceOf(env.Global().Get("Date").As<Napi::Function>());
 }
 
 //template<>
@@ -355,15 +353,23 @@ inline OwnedBinaryData node::Value::to_binary(Napi::Env env, const Napi::Value v
 		return make_owned_binary_data(static_cast<char*>(arrayBuffer.Data()), arrayBuffer.ByteLength());
 	}
 	else if (Value::is_array_buffer_view(env, value)) {
-		//NAPI: fix for ArrayBufferView
-		auto v8Value = *reinterpret_cast<v8::Local<v8::Value>*>((napi_value)value);
+		int64_t byteLength = value.As<Napi::Object>().Get("byteLength").As<Napi::Number>();
+		int64_t byteOffset = value.As<Napi::Object>().Get("byteOffset").As<Napi::Number>();
+		Napi::ArrayBuffer arrayBuffer = value.As<Napi::Object>().Get("buffer").As<Napi::ArrayBuffer>();
+		return make_owned_binary_data(static_cast<char*>(arrayBuffer.Data()) + byteOffset, byteLength);
+
+
+
+
+		//NAPI: fix for ArrayBufferView. REMOVE
+		/*auto v8Value = *reinterpret_cast<v8::Local<v8::Value>*>((napi_value)value);
 		v8::Local<v8::ArrayBufferView> array_buffer_view = v8Value.As<v8::ArrayBufferView>();
 		std::unique_ptr<char[]> data(new char[array_buffer_view->ByteLength()]);
 
 		size_t bytes = array_buffer_view->CopyContents(data.get(), array_buffer_view->ByteLength());
 		OwnedData owned_data(std::move(data), bytes);
 
-		return *reinterpret_cast<OwnedBinaryData*>(&owned_data);
+		return *reinterpret_cast<OwnedBinaryData*>(&owned_data);*/
 	}
 	//NAPI: redundant case of node::Buffer. Should be handled by the IsArrayBufferView check above
 	//else if (::node::Buffer::HasInstance(value)) {

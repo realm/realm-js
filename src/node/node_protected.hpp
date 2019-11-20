@@ -29,24 +29,30 @@ class Protected {
 protected:
 	Napi::Env m_env;
 	napi_ref m_ref;
-
+	bool m_isValue;
 public:
-	Protected() : m_env(nullptr), m_ref(nullptr) {}
+	Protected() : m_env(nullptr), m_ref(nullptr), m_isValue(false) {}
 
-	Protected(Napi::Env env, MemberType value) : m_env(env) {
+	Protected(Napi::Env env, MemberType value) : m_env(env), m_isValue(false) {
 		napi_status status = napi_create_reference(env, value, 1, &m_ref);
+		if (status == napi_object_expected) {
+			m_isValue = true;
+			Napi::Object object = Napi::Object::New(m_env);
+			object.Set("value", value);
+			status = napi_create_reference(env, object, 1, &m_ref);
+		}
+
 		if (status != napi_ok) {
-			throw new std::runtime_error(util::format("Can't create protected reference: napi_status %1", status));
+			throw std::runtime_error(util::format("Can't create protected reference: napi_status %1", status));
 		}
 
 	}
 
-	Protected(const Protected& other) : m_env(other.m_env) {
-		m_ref = other.m_ref;
+	Protected(const Protected& other) : m_env(other.m_env), m_ref(other.m_ref), m_isValue(other.m_isValue) {
 		uint32_t result;
 		napi_status status = napi_reference_ref(m_env, m_ref, &result);
 		if (status != napi_ok) {
-			throw new std::runtime_error(util::format("Can't increase protected reference count: napi_status %1", status));
+			throw std::runtime_error(util::format("Can't increase protected reference count: napi_status %1", status));
 		}
 	}
 
@@ -58,13 +64,13 @@ public:
 		uint32_t result;
 		napi_status status = napi_reference_unref(m_env, m_ref, &result);
 		if (status != napi_ok) {
-			throw new std::runtime_error(util::format("Can't decrease protected reference count: napi_status %1", status));
+			throw std::runtime_error(util::format("Can't decrease protected reference count: napi_status %1", status));
 		}
 
 		if (result == 0) {
 			napi_status status = napi_delete_reference(m_env, m_ref);
 			if (status != napi_ok) {
-				throw new std::runtime_error(util::format("Can't unallocate protected reference: napi_status %1", status));
+				throw std::runtime_error(util::format("Can't unallocate protected reference: napi_status %1", status));
 			}
 		}
 	}
@@ -73,56 +79,71 @@ public:
 		napi_value value;
 		napi_status status = napi_get_reference_value(m_env, m_ref, &value);
 		if (status != napi_ok) {
-			throw new std::runtime_error(util::format("Can't get protected reference: napi_status %1", status));
+			throw std::runtime_error(util::format("Can't get protected reference: napi_status %1", status));
 		}
 
 		if (value == nullptr) {
-			throw new std::runtime_error(util::format("Can not use unallocated protected reference"));
+			throw std::runtime_error(util::format("Can not use unallocated protected reference"));
 		}
 
-		return MemberType(m_env, value);
+		if (m_isValue) {
+			Napi::Object object = Napi::Object(m_env, value);
+			return object.Get("value").As<MemberType>();
+		}
+
+		MemberType member = MemberType(m_env, value);
+		return member;
 	}
 
 	explicit operator bool() const {
 		napi_value value;
 		napi_status status = napi_get_reference_value(m_env, m_ref, &value);
 		if (status != napi_ok) {
-			throw new std::runtime_error(util::format("Can't get protected reference: napi_status %1", status));
+			throw std::runtime_error(util::format("Can't get protected reference: napi_status %1", status));
 		}
 
 		if (value == nullptr) {
-			throw new std::runtime_error(util::format("Can not use unallocated protected reference"));
+			throw std::runtime_error(util::format("Can not use unallocated protected reference"));
 		}
 
 		return value == nullptr;
 	}
 
 	bool operator==(const MemberType &other) const {
-		napi_value value;
+		/*napi_value value;
 		napi_status status = napi_get_reference_value(m_env, m_ref, &value);
 		if (status != napi_ok) {
-			throw new std::runtime_error(util::format("Can't get protected reference: napi_status %1", status));
+			throw std::runtime_error(util::format("Can't get protected reference: napi_status %1", status));
 		}
 
 		if (value == nullptr) {
-			throw new std::runtime_error(util::format("Can not use unallocated protected reference"));
+			throw std::runtime_error(util::format("Can not use unallocated protected reference"));
 		}
 
-	    return value == other;
+		return value == other;
+		
+		*/
+
+		MemberType memberType = *this;
+
+	    return memberType == other;
 	}
 
 	bool operator!=(const MemberType& other) const {
-		napi_value value;
+		/*napi_value value;
 		napi_status status = napi_get_reference_value(m_env, m_ref, &value);
 		if (status != napi_ok) {
-			throw new std::runtime_error(util::format("Can't get protected reference: napi_status %1", status));
+			throw std::runtime_error(util::format("Can't get protected reference: napi_status %1", status));
 		}
 
 		if (value == nullptr) {
-			throw new std::runtime_error(util::format("Can not use unallocated protected reference"));
+			throw std::runtime_error(util::format("Can not use unallocated protected reference"));
 		}
-
 		return value != other;
+		*/
+
+		MemberType memberType = *this;
+		return memberType != other;
 	}
 
 	bool operator==(const Protected<MemberType> &other) const {

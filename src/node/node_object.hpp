@@ -239,6 +239,7 @@ inline Napi::Value node::Object::get_prototype(Napi::Env env, const Napi::Object
 
 template<>
 inline void node::Object::set_prototype(Napi::Env env, const Napi::Object& object, const Napi::Value& prototype) {
+	//NAPI: cache this function
 	auto setPrototypeOfFunc = env.Global().Get("Object").As<Napi::Object>().Get("setPrototypeOf").As<Napi::Function>();
 	if (setPrototypeOfFunc.IsEmpty() || setPrototypeOfFunc.IsUndefined()) {
 		throw std::runtime_error("no 'setPrototypeOf'");

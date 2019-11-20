@@ -32,7 +32,6 @@ namespace js {
 
 template<>
 inline Napi::Value node::Exception::value(Napi::Env env, const std::string &message) {
-	//NAPI: investigate Napi::Error instead of Napi::Value result
 	return Napi::String::New(env, message);
 }
     

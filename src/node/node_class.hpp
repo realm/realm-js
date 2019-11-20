@@ -45,7 +45,7 @@ class WrappedObject : public Napi::ObjectWrap<WrappedObject<ClassType>> {
 public:
 	//Napi: This is called when ObjectWrap<ClassType> objects are created from JS. This is the new "construct" method. 
 	WrappedObject(const Napi::CallbackInfo& info);
-	static Napi::Value create_instance_with_proxy_parent(const Napi::CallbackInfo& info);
+	static Napi::Value create_instance_with_proxy(const Napi::CallbackInfo& info);
 
 	static Napi::Function init(Napi::Env env, const std::string& name, node::Types::FunctionCallback constructor_callback, const std::vector<Napi::ClassPropertyDescriptor<WrappedObject<ClassType>>>& properties, const IndexPropertyType* indexPropertyHandlers = nullptr, const StringPropertyType* namedPropertyHandlers = nullptr);
 
@@ -56,34 +56,43 @@ public:
 	
 	static bool is_instance(Napi::Env env, const Napi::Object& object);
 
+	static WrappedObject<ClassType>* TryUnwrap(const Napi::Object& object);
+
 	Internal* get_internal();
 	void set_internal(Internal* internal);
+	static void set_factory_constructor(const Napi::Function& factoryConstructor);
 
 	Napi::Value method_callback(const Napi::CallbackInfo& info);
 	Napi::Value getter_callback(const Napi::CallbackInfo& info);
-	Napi::Value setter_callback(const Napi::CallbackInfo& info, const Napi::Value& value);
+	void setter_callback(const Napi::CallbackInfo& info, const Napi::Value& value);
 
 
 private:
 	std::unique_ptr<Internal> m_internal;
 	static Napi::FunctionReference constructor;
+	static Napi::FunctionReference factory_constructor;
 	static IndexPropertyType* m_indexPropertyHandlers;
 	static StringPropertyType* m_namedPropertyHandlers;
 	static std::string m_name;
 
 	class ProxyHandler {
 		public:
-			static Napi::Value get_proxy_handler(Napi::Env env);
+			//static Napi::Value get_proxy_handler(Napi::Env env);
 			static Napi::Value get_instance_proxy_handler(Napi::Env env);
 		
 		private:
 			static Napi::ObjectReference proxyHandler;
 		
-			static Napi::Value getProxyTrap(const Napi::CallbackInfo& info);
-			static Napi::Value setProxyTrap(const Napi::CallbackInfo& info);
+			//static Napi::Value getProxyTrap(const Napi::CallbackInfo& info);
+			//static Napi::Value setProxyTrap(const Napi::CallbackInfo& info);
 
-			static Napi::Value instanceGetProxyTrap(const Napi::CallbackInfo& info);
+			static Napi::Value combinedGetProxyTrap(const Napi::CallbackInfo& info);
+			static Napi::Value combinedSetProxyTrap(const Napi::CallbackInfo& info);
+			static Napi::Value combinedGetProxyTrapHandleFunctions(const Napi::CallbackInfo& info, bool* handled);
+			//static Napi::Value instanceGetProxyTrap(const Napi::CallbackInfo& info);
 			static Napi::Value ownKeysProxyTrap(const Napi::CallbackInfo& info);
+			static Napi::Value getPrototypeofProxyTrap(const Napi::CallbackInfo& info);
+			static Napi::Value setPrototypeofProxyTrap(const Napi::CallbackInfo& info);
 		};
 		
 	//NAPI: remove if not needed
@@ -92,6 +101,9 @@ private:
 
 template<typename ClassType>
 Napi::FunctionReference WrappedObject<ClassType>::constructor;
+
+template<typename ClassType>
+Napi::FunctionReference WrappedObject<ClassType>::factory_constructor;
 
 template<typename ClassType>
 IndexPropertyType* WrappedObject<ClassType>::m_indexPropertyHandlers;
@@ -252,10 +264,6 @@ ClassType ObjectWrap<ClassType>::s_class;
 
 template<typename ClassType>
 WrappedObject<ClassType>::WrappedObject(const Napi::CallbackInfo& info) : Napi::ObjectWrap<WrappedObject<ClassType>>(info) {
-	if (!info.IsConstructCall()) {
-		Napi::Error::New(info.Env(), "Constructor must be called with new").ThrowAsJavaScriptException();
-	}
-
 	node::Types::FunctionCallback constructor_callback = (node::Types::FunctionCallback)info.Data();
 	constructor_callback(info);
 }
@@ -307,7 +315,7 @@ Napi::Function WrappedObject<ClassType>::init(Napi::Env env, const std::string& 
 //This creates the required JS instance with a Proxy parent to support get and set handlers and returns a proxy created on the JS instance to support property enumeration handler
 //the returned JS Proxy has only ownKeys trap setup so that all other member accesses skip the Proxy and go directly to the JS instance
 template<typename ClassType>
-Napi::Value WrappedObject<ClassType>::create_instance_with_proxy_parent(const Napi::CallbackInfo& info) {
+Napi::Value WrappedObject<ClassType>::create_instance_with_proxy(const Napi::CallbackInfo& info) {
 	if (constructor.IsEmpty()) {
 		throw std::runtime_error("Class not initialized. Call init() first");
 	}
@@ -316,69 +324,97 @@ Napi::Value WrappedObject<ClassType>::create_instance_with_proxy_parent(const Na
 		throw std::runtime_error("This function should be called as a constructor");
 	}
 
-	Napi::Env env = info.Env();
-	Napi::HandleScope scope(env);
+	try {
+		Napi::Env env = info.Env();
+		Napi::HandleScope scope(env);
 
-	//NAPI: pass the arguments here as well?
-	auto arguments = get_arguments(info);
-	std::vector<napi_value> arrgs(arguments.begin(), arguments.end());
-	Napi::Object instance = constructor.New(arrgs);
-	instance.Set("isRealmInstance", Napi::Boolean::New(env, true));
-	instance.Set("_instance", instance);
-	
-	//NAPI: debugger calls this too many times. Consider doing that in debug only
-	instance.Set("splice", env.Undefined());
+		auto arguments = get_arguments(info);
+		std::vector<napi_value> arrgs(arguments.begin(), arguments.end());
+		Napi::Object instance = constructor.New(arrgs);
+		instance.Set("isRealmInstance", Napi::Boolean::New(env, true));
+		instance.Set("_instance", instance);
 
-	info.This().As<Napi::Object>().Set("isRealmCtor", Napi::Boolean::New(env, true));
+		//NAPI: debugger calls this too many times. Consider doing that in debug only
+		//NAPI: remove or only in debug
+		instance.Set("splice", env.Undefined());
 
-	auto proxyFunc = env.Global().Get("Proxy").As<Napi::Function>();
-	Napi::Object parentProxy = proxyFunc.New({ Napi::Object::New(env), ProxyHandler::get_proxy_handler(env) });
+		info.This().As<Napi::Object>().Set("isRealmCtor", Napi::Boolean::New(env, true));
 
+		auto proxyFunc = env.Global().Get("Proxy").As<Napi::Function>();
 
-	auto setPrototypeOfFunc = env.Global().Get("Object").As<Napi::Object>().Get("setPrototypeOf").As<Napi::Function>();
-	if (setPrototypeOfFunc.IsEmpty()) {
-		throw std::runtime_error("no 'setPrototypeOf'");
-	}
-	
-	auto getPrototypeOfFunc = env.Global().Get("Object").As<Napi::Object>().Get("getPrototypeOf").As<Napi::Function>();
-	if (getPrototypeOfFunc.IsEmpty()) {
-		throw std::runtime_error("no 'getPrototypeOf'");
-	}
+		//Napi::Object parentProxy = proxyFunc.New({ Napi::Object::New(env), ProxyHandler::get_proxy_handler(env) });
 
-	Napi::Value rootObject = instance;
-	while (!rootObject.IsNull() && !rootObject.IsEmpty() && !rootObject.IsUndefined()) {
-		 Napi::Value proto = getPrototypeOfFunc.Call({ rootObject });
-		 if (proto.IsObject()) {
-			 Napi::Value protoParent = getPrototypeOfFunc.Call({ proto.As<Napi::Object>() });
-			 if (protoParent.IsNull() || protoParent.IsUndefined()) {
-				 break;
+		auto setPrototypeOfFunc = env.Global().Get("Object").As<Napi::Object>().Get("setPrototypeOf").As<Napi::Function>();
+		//NAPI: remove these checks
+		if (setPrototypeOfFunc.IsUndefined()) {
+			throw std::runtime_error("no 'setPrototypeOf'");
+		}
+
+		/*
+		auto getPrototypeOfFunc = env.Global().Get("Object").As<Napi::Object>().Get("getPrototypeOf").As<Napi::Function>();
+		if (getPrototypeOfFunc.IsUndefined()) {
+			throw std::runtime_error("no 'getPrototypeOf'");
+		}
+
+		
+		Napi::Value rootObject = instance;
+		while (!rootObject.IsNull() && !rootObject.IsEmpty() && !rootObject.IsUndefined()) {
+			 Napi::Value proto = getPrototypeOfFunc.Call({ rootObject });
+			 if (proto.IsObject()) {
+				 Napi::Value protoParent = getPrototypeOfFunc.Call({ proto.As<Napi::Object>() });
+				 if (protoParent.IsNull() || protoParent.IsUndefined()) {
+					 break;
+				 }
 			 }
-		 }
-		 rootObject = proto;
+			 rootObject = proto;
+		}
+
+		//change the root of the prototype chain to be a JS Proxy instead of JS Object
+		setPrototypeOfFunc.Call({ rootObject, parentProxy });
+		*/
+
+		auto instanceProxyFunc = env.Global().Get("Proxy").As<Napi::Function>();
+
+		setPrototypeOfFunc.Call({ info.This(), instance });
+		Napi::Object instanceProxy = proxyFunc.New({ info.This(), ProxyHandler::get_instance_proxy_handler(env) });
+
+		return instanceProxy;
 	}
-
-	//change the root of the prototype chain to be a JS Proxy instead of JS Object
-	setPrototypeOfFunc.Call({ rootObject, parentProxy });
-
-	auto instanceProxyFunc = env.Global().Get("Proxy").As<Napi::Function>();
-	
-	setPrototypeOfFunc.Call({ info.This(), instance });
-	Napi::Object instanceProxy = proxyFunc.New({ info.This(), ProxyHandler::get_instance_proxy_handler(env) });
-	
-	return instanceProxy;
+	catch (std::exception & e) {
+		throw Napi::Error::New(info.Env(), e.what());
+	}
 }
 
 //NAPI: this should call create_instance_with_proxy_parent to get the whole js proto chain
 template<typename ClassType>
 Napi::Object WrappedObject<ClassType>::create_instance(Napi::Env env) {
 	
-	if (constructor.IsEmpty()) {
+	if (constructor.IsEmpty() || factory_constructor.IsEmpty()) {
 		throw std::runtime_error("Class not initialized. Call init() first");
 	}
 	Napi::EscapableHandleScope scope(env);
 
-	Napi::Object instance = constructor.New({});
+	Napi::Object instance = factory_constructor.New({});
 	return scope.Escape(instance).As<Napi::Object>();
+}
+
+template<typename ClassType>
+WrappedObject<ClassType>* WrappedObject<ClassType>::TryUnwrap(const Napi::Object& object) {
+	Napi::Env env = object.Env();
+
+	WrappedObject<ClassType>* unwrapped;
+	napi_status status = napi_unwrap(env, object, reinterpret_cast<void**>(&unwrapped));
+	if ((status) != napi_ok) {
+		Napi::Object instance = object.Get("_instance").As<Napi::Object>();
+		if (instance.IsUndefined() || instance.IsNull()) {
+			throw Napi::Error::New(env, "Invalid object. No _instance member");
+		}
+
+		status = napi_unwrap(env, instance, reinterpret_cast<void**>(&unwrapped));
+	}
+
+	NAPI_THROW_IF_FAILED(env, status, nullptr);
+	return unwrapped;
 }
 
 template<typename ClassType>
@@ -391,6 +427,11 @@ inline void WrappedObject<ClassType>::set_internal(Internal* internal) {
 	m_internal = std::unique_ptr<Internal>(internal);
 }
 
+template<typename ClassType>
+void WrappedObject<ClassType>::set_factory_constructor(const Napi::Function& factoryConstructor) {
+	factory_constructor = Napi::Persistent(factoryConstructor);
+	factory_constructor.SuppressDestruct();
+}
 
 template<typename ClassType>
 inline bool WrappedObject<ClassType>::is_instance(Napi::Env env, const Napi::Object& object) {
@@ -419,28 +460,28 @@ Napi::Value WrappedObject<ClassType>::getter_callback(const Napi::CallbackInfo& 
 }
 
 template<typename ClassType>
-Napi::Value WrappedObject<ClassType>::setter_callback(const Napi::CallbackInfo& info, const Napi::Value& value) {
+void WrappedObject<ClassType>::setter_callback(const Napi::CallbackInfo& info, const Napi::Value& value) {
 	PropertyType* propertyType = (PropertyType*)info.Data();
-	return propertyType->setter(info, value);
+	propertyType->setter(info, value);
 }
 
-template<typename ClassType>
-Napi::Value WrappedObject<ClassType>::ProxyHandler::get_proxy_handler(Napi::Env env) {
-	//NAPI: is caching this working
-	/*if (!proxyHandler.IsEmpty()) {
-		return proxyHandler.Value();
-	}*/
-
-	Napi::EscapableHandleScope scope(env);
-
-	Napi::Object proxyObj = Napi::Object::New(env);
-	Napi::PropertyDescriptor getTrapFunc = Napi::PropertyDescriptor::Function("get", getProxyTrap);
-	Napi::PropertyDescriptor setTrapFunc = Napi::PropertyDescriptor::Function("set", setProxyTrap);
-	proxyObj.DefineProperties({ getTrapFunc , setTrapFunc });
-
-	proxyHandler = Napi::Persistent(proxyObj);
-	return scope.Escape(proxyObj);
-}
+//template<typename ClassType>
+//Napi::Value WrappedObject<ClassType>::ProxyHandler::get_proxy_handler(Napi::Env env) {
+//	//NAPI: is caching this working
+//	/*if (!proxyHandler.IsEmpty()) {
+//		return proxyHandler.Value();
+//	}*/
+//
+//	Napi::EscapableHandleScope scope(env);
+//
+//	Napi::Object proxyObj = Napi::Object::New(env);
+//	Napi::PropertyDescriptor getTrapFunc = Napi::PropertyDescriptor::Function("get", getProxyTrap);
+//	Napi::PropertyDescriptor setTrapFunc = Napi::PropertyDescriptor::Function("set", setProxyTrap);
+//	proxyObj.DefineProperties({ getTrapFunc , setTrapFunc });
+//
+//	proxyHandler = Napi::Persistent(proxyObj);
+//	return scope.Escape(proxyObj);
+//}
 
 template<typename ClassType>
 Napi::Value WrappedObject<ClassType>::ProxyHandler::get_instance_proxy_handler(Napi::Env env) {
@@ -449,24 +490,192 @@ Napi::Value WrappedObject<ClassType>::ProxyHandler::get_instance_proxy_handler(N
 	Napi::EscapableHandleScope scope(env);
 
 	Napi::Object proxyObj = Napi::Object::New(env);
-	Napi::PropertyDescriptor instanceGetTrapFunc = Napi::PropertyDescriptor::Function("get", instanceGetProxyTrap);
+	Napi::PropertyDescriptor instanceGetTrapFunc = Napi::PropertyDescriptor::Function("get", combinedGetProxyTrap);
+	Napi::PropertyDescriptor instanceSetTrapFunc = Napi::PropertyDescriptor::Function("set", combinedSetProxyTrap);
 	Napi::PropertyDescriptor ownKeysTrapFunc = Napi::PropertyDescriptor::Function("ownKeys", ownKeysProxyTrap);
-	proxyObj.DefineProperties({ instanceGetTrapFunc, ownKeysTrapFunc });
-
-	//NAPI: set gettrap which will call the instance members with the correct this. Now the this is the functor this but napi expects the correct instance this
-
-
+	Napi::PropertyDescriptor getPrototypeOfFunc = Napi::PropertyDescriptor::Function("getPrototypeOf", getPrototypeofProxyTrap);
+	Napi::PropertyDescriptor setPrototypeOfFunc = Napi::PropertyDescriptor::Function("setPrototypeOf", setPrototypeofProxyTrap);
+	
+	proxyObj.DefineProperties({ instanceGetTrapFunc, instanceSetTrapFunc, ownKeysTrapFunc, getPrototypeOfFunc, setPrototypeOfFunc });
 	return scope.Escape(proxyObj);
 }
 
+//template<typename ClassType>
+//Napi::Value WrappedObject<ClassType>::ProxyHandler::getProxyTrap(const Napi::CallbackInfo& info) {
+//	Napi::Env env = info.Env();
+//	Napi::EscapableHandleScope scope(env);
+//
+//	Napi::Object target = info[0].As<Napi::Object>();
+//	auto tt = info[1].Type();
+//	if (!info[1].IsString())	{
+//		Napi::Value value = target.Get(info[1]);
+//		return scope.Escape(value);
+//	}
+//
+//	Napi::String property = info[1].As<Napi::String>();
+//	std::string text = property;
+//
+//
+//	Napi::Object instance = target.Get("_instance").As<Napi::Object>();
+//	if (instance.IsEmpty() || instance.IsUndefined() || instance.IsNull()) {
+//		Napi::Value value = target.Get(info[1]);
+//		return scope.Escape(value);
+//	}
+//
+//	WrappedObject<ClassType>* wrappedObject = WrappedObject<ClassType>::Unwrap(instance);
+//	if (wrappedObject->m_indexPropertyHandlers == nullptr && wrappedObject->m_namedPropertyHandlers == nullptr) {
+//		//Sanity check. get and set proxy callbacks should be called only when either an index or a named property handler is set
+//		throw std::runtime_error("Internal error. No index or named property handler is set");
+//	}
+//
+//
+//	//if accessor is a number call index get handler
+//	if (wrappedObject->m_indexPropertyHandlers != nullptr) {
+//		napi_value prop_value = property;
+//		napi_value res;
+//		napi_status status = napi_coerce_to_number(env, prop_value, &res);
+//		if (status == napi_ok) {
+//			int32_t index = -1;
+//			status = napi_get_value_int32(env, res, &index);
+//			if (status != napi_ok || index < 0) {
+//				throw Napi::Error::New(info.Env(), "Index should be a positive integer number");
+//			}
+//
+//			Napi::Value result = wrappedObject->m_indexPropertyHandlers->getter(info, index);
+//			return scope.Escape(result);
+//		}
+//	}
+//
+//	//call accessor as named handler
+//	if (wrappedObject->m_namedPropertyHandlers != nullptr) {
+//		Napi::Value result = wrappedObject->m_namedPropertyHandlers->getter(info, property);
+//		return scope.Escape(result);
+//	}
+//
+//	Napi::Value value = target.Get(info[1]);
+//	return scope.Escape(value);
+//}
+//
+//template<typename ClassType>
+//Napi::Value WrappedObject<ClassType>::ProxyHandler::setProxyTrap(const Napi::CallbackInfo& info) {
+//	Napi::Env env = info.Env();
+//	Napi::EscapableHandleScope scope(env);
+//
+//	Napi::Object target = info[0].As<Napi::Object>();
+//	Napi::String property = info[1].As<Napi::String>();
+//	Napi::Value value = info[2];
+//	std::string text = property;
+//
+//
+//	Napi::Object instance = target.Get("_instance").As<Napi::Object>();
+//	WrappedObject<ClassType>* wrappedObject = WrappedObject<ClassType>::Unwrap(instance);
+//	if (wrappedObject->m_indexPropertyHandlers == nullptr && wrappedObject->m_namedPropertyHandlers == nullptr) {
+//		//Sanity check. get and set proxy callbacks should be called only when either an index or a named property handler is set
+//		throw Napi::Error::New(info.Env(), "Internal error. No index or named property handler is set");
+//	}
+//
+//
+//	//if accessor is a number call index handler
+//	if (wrappedObject->m_indexPropertyHandlers != nullptr) {
+//		napi_value prop_value = property;
+//		napi_value res;
+//		napi_status status = napi_coerce_to_number(env, prop_value, &res);
+//		if (status == napi_ok) {
+//			int32_t index = -1;
+//			status = napi_get_value_int32(env, res, &index);
+//			if (status != napi_ok || index < 0) {
+//				throw Napi::Error::New(info.Env(), "Index should be a positive integer number");
+//			}
+//
+//			Napi::Value result = wrappedObject->m_indexPropertyHandlers->setter(info, index, value);
+//			return scope.Escape(result);
+//		}
+//	}
+//
+//	//call accessor as named handler
+//	if (wrappedObject->m_namedPropertyHandlers != nullptr) {
+//		Napi::Value result = wrappedObject->m_namedPropertyHandlers->setter(info, property, value);
+//		return scope.Escape(result);
+//	}
+//
+//	return scope.Escape(env.Undefined());
+//}
+
+//template<typename ClassType>
+//Napi::Value WrappedObject<ClassType>::ProxyHandler::instanceGetProxyTrap(const Napi::CallbackInfo& info) {
+//	Napi::Env env = info.Env();
+//	Napi::EscapableHandleScope scope(env);
+//
+//	Napi::Object target = info[0].As<Napi::Object>();
+//	Napi::Value arg1 = info[1];
+//	if (!arg1.IsString()) {
+//		Napi::Value value = target.Get(arg1);
+//		return scope.Escape(value);
+//	}
+//
+//	Napi::String property = arg1.As<Napi::String>();
+//	std::string propertyName = property;
+//
+//	//NAPI: cache this function for performance 
+//	auto getPrototypeOfFunc = env.Global().Get("Object").As<Napi::Object>().Get("getPrototypeOf").As<Napi::Function>();
+//	if (getPrototypeOfFunc.IsUndefined()) {
+//		throw std::runtime_error("no 'getPrototypeOf'");
+//	}
+//
+//	Napi::Object targetPrototype = getPrototypeOfFunc.Call({ target }).As<Napi::Object>();
+//
+//
+//	//NAPI: preserve a FunctionReference to this 'hasOwnProperty' function when creating the ProxyHandler and use that to optimize this call a bit
+//	//this checks for property existence without trigering the get trap of index and named handlers
+//	Napi::Boolean targetHasProperty = env.Global().Get("Object").As<Napi::Object>().Get("hasOwnProperty").As<Napi::Function>().Call(target, { property }).As<Napi::Boolean>();
+//
+//	if (!targetHasProperty)	{
+//		Napi::Value propertyValue = targetPrototype.Get(propertyName);
+//		
+//		if (propertyValue.IsFunction()) {
+//			Napi::Function bindFunc = propertyValue.As<Napi::Function>().Get("bind").As<Napi::Function>();
+//			if (bindFunc.IsEmpty() || bindFunc.IsUndefined()) {
+//				throw std::runtime_error("bind function not found on function " + propertyName);
+//			}
+//
+//			Napi::Function boundFunc = bindFunc.Call(propertyValue, { targetPrototype }).As<Napi::Function>();
+//			target.Set(propertyName, boundFunc);
+//
+//			return scope.Escape(boundFunc);
+//		}
+//
+//		return scope.Escape(propertyValue);
+//	}
+//
+//	Napi::Value propertyValue = target.Get(propertyName);
+//	return scope.Escape(propertyValue);
+//}
+
+//inline static Napi::Object GetPrototype(Napi::Env env, const Napi::Object& object) {
+//	auto getPrototypeOfFunc = env.Global().Get("Object").As<Napi::Object>().Get("getPrototypeOf").As<Napi::Function>();
+//	if (getPrototypeOfFunc.IsUndefined()) {
+//		throw std::runtime_error("no 'getPrototypeOf'");
+//	}
+//
+//	Napi::Object instance = getPrototypeOfFunc.Call({ object }).As<Napi::Object>();
+//	return instance;
+//}
+
 template<typename ClassType>
-Napi::Value WrappedObject<ClassType>::ProxyHandler::getProxyTrap(const Napi::CallbackInfo& info) {
+Napi::Value WrappedObject<ClassType>::ProxyHandler::combinedGetProxyTrap(const Napi::CallbackInfo& info) {
 	Napi::Env env = info.Env();
 	Napi::EscapableHandleScope scope(env);
 
+	//if its a function property return it
+	bool handled = true;
+	Napi::Value result = combinedGetProxyTrapHandleFunctions(info, &handled);
+	if (handled) {
+		return scope.Escape(result);
+	}
+
 	Napi::Object target = info[0].As<Napi::Object>();
-	auto tt = info[1].Type();
-	if (!info[1].IsString())	{
+	
+	if (!info[1].IsString()) {
 		Napi::Value value = target.Get(info[1]);
 		return scope.Escape(value);
 	}
@@ -474,18 +683,20 @@ Napi::Value WrappedObject<ClassType>::ProxyHandler::getProxyTrap(const Napi::Cal
 	Napi::String property = info[1].As<Napi::String>();
 	std::string text = property;
 
-
 	Napi::Object instance = target.Get("_instance").As<Napi::Object>();
-	if (instance.IsEmpty() || instance.IsUndefined() || instance.IsNull()) {
+	if (instance.IsUndefined() || instance.IsNull()) {
 		Napi::Value value = target.Get(info[1]);
 		return scope.Escape(value);
 	}
 
 	WrappedObject<ClassType>* wrappedObject = WrappedObject<ClassType>::Unwrap(instance);
-	if (wrappedObject->m_indexPropertyHandlers == nullptr && wrappedObject->m_namedPropertyHandlers == nullptr) {
-		//Sanity check. get and set proxy callbacks should be called only when either an index or a named property handler is set
-		throw std::runtime_error("Internal error. No index or named property handler is set");
-	}
+	//WrappedObject<ClassType>* wrappedObject = WrappedObject<ClassType>::TryUnwrap(target);
+	//if (wrappedObject->m_indexPropertyHandlers == nullptr && wrappedObject->m_namedPropertyHandlers == nullptr) {
+	//	//Sanity check. get and set proxy callbacks should be called only when either an index or a named property handler is set
+	//	//throw std::runtime_error("Internal error. No index or named property handler is set");
+	//	Napi::Value value = target.Get(info[1]);
+	//	return scope.Escape(value);
+	//}
 
 
 	//if accessor is a number call index get handler
@@ -497,17 +708,17 @@ Napi::Value WrappedObject<ClassType>::ProxyHandler::getProxyTrap(const Napi::Cal
 			int32_t index = -1;
 			status = napi_get_value_int32(env, res, &index);
 			if (status != napi_ok || index < 0) {
-				Napi::Error::New(info.Env(), "Index should be a positive integer number").ThrowAsJavaScriptException();
+				throw Napi::Error::New(info.Env(), "Index should be a positive integer number");
 			}
 
-			Napi::Value result = wrappedObject->m_indexPropertyHandlers->getter(info, index);
+			Napi::Value result = wrappedObject->m_indexPropertyHandlers->getter(info, instance, index);
 			return scope.Escape(result);
 		}
 	}
 
 	//call accessor as named handler
 	if (wrappedObject->m_namedPropertyHandlers != nullptr) {
-		Napi::Value result = wrappedObject->m_namedPropertyHandlers->getter(info, property);
+		Napi::Value result = wrappedObject->m_namedPropertyHandlers->getter(info, instance, property);
 		return scope.Escape(result);
 	}
 
@@ -516,23 +727,88 @@ Napi::Value WrappedObject<ClassType>::ProxyHandler::getProxyTrap(const Napi::Cal
 }
 
 template<typename ClassType>
-Napi::Value WrappedObject<ClassType>::ProxyHandler::setProxyTrap(const Napi::CallbackInfo& info) {
+Napi::Value WrappedObject<ClassType>::ProxyHandler::combinedGetProxyTrapHandleFunctions(const Napi::CallbackInfo& info, bool* handled) {
+	*handled = true;
 	Napi::Env env = info.Env();
 	Napi::EscapableHandleScope scope(env);
 
 	Napi::Object target = info[0].As<Napi::Object>();
-	Napi::String property = info[1].As<Napi::String>();
-	Napi::Value value = info[2];
-	std::string text = property;
+	Napi::Value arg1 = info[1];
+	
+	//if the target prototype chain don't have the property return any value to allow named and index handlers to kick in
+	if (!target.Has(arg1)) {
+		*handled = false;
+		return scope.Escape(env.Undefined());
+	}
 
+	//skip non string property names like Symbol
+	if (!arg1.IsString()) {
+		Napi::Value value = target.Get(arg1);
+		return scope.Escape(value);
+	}
+
+	Napi::String property = arg1.As<Napi::String>();
+	std::string propertyName = property;
+
+	//NAPI: cache this function for performance 
+	Napi::Object instance = target.Get("_instance").As<Napi::Object>();
+	if (instance.IsUndefined() || instance.IsNull()) {
+		throw Napi::Error::New(env, "Invalid object. No _instance member");
+	}
+
+	//NAPI: preserve a FunctionReference to this 'hasOwnProperty' function when creating the ProxyHandler and use that to optimize this call a bit
+	//this checks for property existence without going up the proptotype chain
+	Napi::Boolean targetHasOwnProperty = env.Global().Get("Object").As<Napi::Object>().Get("hasOwnProperty").As<Napi::Function>().Call(target, { property }).As<Napi::Boolean>();
+
+	if (targetHasOwnProperty) {
+		Napi::Value propertyValue = target.Get(propertyName);
+		return scope.Escape(propertyValue);
+	}
+
+	
+	Napi::Value propertyValue = instance.Get(propertyName);
+
+	//bind the function from the instance and set it on the target object
+	if (propertyValue.IsFunction()) {
+		Napi::Function bindFunc = propertyValue.As<Napi::Function>().Get("bind").As<Napi::Function>();
+		if (bindFunc.IsEmpty() || bindFunc.IsUndefined()) {
+			throw std::runtime_error("bind function not found on function " + propertyName);
+		}
+
+		Napi::Function boundFunc = bindFunc.Call(propertyValue, { instance }).As<Napi::Function>();
+		target.Set(propertyName, boundFunc);
+
+		return scope.Escape(boundFunc);
+	}
+	
+	//return the non function property on the instance
+	return scope.Escape(propertyValue);
+}
+
+template<typename ClassType>
+Napi::Value WrappedObject<ClassType>::ProxyHandler::combinedSetProxyTrap(const Napi::CallbackInfo& info) {
+	Napi::Env env = info.Env();
+	Napi::EscapableHandleScope scope(env);
+
+	Napi::Object target = info[0].As<Napi::Object>();
+	Napi::Value arg1 = info[1];
+	Napi::Value value = info[2];
+
+	//if the target prototype chain have the property set it
+	if (target.Has(arg1)) {
+		target.Set(arg1, value);
+		return scope.Escape(env.Undefined());
+	}
+
+	Napi::String property = info[1].As<Napi::String>();
+	std::string text = property;
 
 	Napi::Object instance = target.Get("_instance").As<Napi::Object>();
 	WrappedObject<ClassType>* wrappedObject = WrappedObject<ClassType>::Unwrap(instance);
-	if (wrappedObject->m_indexPropertyHandlers == nullptr && wrappedObject->m_namedPropertyHandlers == nullptr) {
-		//Sanity check. get and set proxy callbacks should be called only when either an index or a named property handler is set
-		Napi::Error::New(info.Env(), "Internal error. No index or named property handler is set").ThrowAsJavaScriptException();
-	}
-
+	//if (wrappedObject->m_indexPropertyHandlers == nullptr && wrappedObject->m_namedPropertyHandlers == nullptr) {
+	//	//Sanity check. get and set proxy callbacks should be called only when either an index or a named property handler is set
+	//	throw Napi::Error::New(info.Env(), "Internal error. No index or named property handler is set");
+	//}
 
 	//if accessor is a number call index handler
 	if (wrappedObject->m_indexPropertyHandlers != nullptr) {
@@ -543,72 +819,26 @@ Napi::Value WrappedObject<ClassType>::ProxyHandler::setProxyTrap(const Napi::Cal
 			int32_t index = -1;
 			status = napi_get_value_int32(env, res, &index);
 			if (status != napi_ok || index < 0) {
-				Napi::Error::New(info.Env(), "Index should be a positive integer number").ThrowAsJavaScriptException();
+				throw Napi::Error::New(info.Env(), "Index should be a positive integer number");
 			}
 
-			Napi::Value result = wrappedObject->m_indexPropertyHandlers->setter(info, index, value);
+			Napi::Value result = wrappedObject->m_indexPropertyHandlers->setter(info, instance, index, value);
 			return scope.Escape(result);
 		}
 	}
 
 	//call accessor as named handler
 	if (wrappedObject->m_namedPropertyHandlers != nullptr) {
-		Napi::Value result = wrappedObject->m_namedPropertyHandlers->setter(info, property, value);
-		return scope.Escape(result);
-	}
-
-	return scope.Escape(env.Undefined());
-}
-
-template<typename ClassType>
-Napi::Value WrappedObject<ClassType>::ProxyHandler::instanceGetProxyTrap(const Napi::CallbackInfo& info) {
-	Napi::Env env = info.Env();
-	Napi::EscapableHandleScope scope(env);
-
-	Napi::Object target = info[0].As<Napi::Object>();
-	Napi::Value arg1 = info[1];
-	if (!arg1.IsString()) {
-		Napi::Value value = target.Get(arg1);
-		return scope.Escape(value);
-	}
-
-	Napi::String property = arg1.As<Napi::String>();
-	std::string propertyName = property;
-
-	//NAPI: cache this function for performance 
-	auto getPrototypeOfFunc = env.Global().Get("Object").As<Napi::Object>().Get("getPrototypeOf").As<Napi::Function>();
-	if (getPrototypeOfFunc.IsEmpty() || getPrototypeOfFunc.IsUndefined()) {
-		throw std::runtime_error("no 'getPrototypeOf'");
-	}
-
-	Napi::Object targetPrototype = getPrototypeOfFunc.Call({ target }).As<Napi::Object>();
-
-
-	//NAPI: preserve a FunctionReference to this 'hasOwnProperty' function when creating the ProxyHandler and use that to optimize this call a bit
-	//this checks for property existence without trigering the get trap of index and named handlers
-	Napi::Boolean targetHasProperty = env.Global().Get("Object").As<Napi::Object>().Get("hasOwnProperty").As<Napi::Function>().Call(target, { property }).As<Napi::Boolean>();
-
-	if (!targetHasProperty)	{
-		Napi::Value propertyValue = targetPrototype.Get(propertyName);
-		
-		if (propertyValue.IsFunction()) {
-			Napi::Function bindFunc = propertyValue.As<Napi::Function>().Get("bind").As<Napi::Function>();
-			if (bindFunc.IsEmpty() || bindFunc.IsUndefined()) {
-				throw std::runtime_error("bind function not found on function " + propertyName);
-			}
-
-			Napi::Function boundFunc = bindFunc.Call(propertyValue, { targetPrototype }).As<Napi::Function>();
-			target.Set(propertyName, boundFunc);
-
-			return scope.Escape(boundFunc);
+		Napi::Boolean result = wrappedObject->m_namedPropertyHandlers->setter(info, instance, property, value).As<Napi::Boolean>();
+		if (result) {
+			return scope.Escape(result);
 		}
-
-		return scope.Escape(propertyValue);
 	}
 
-	Napi::Value propertyValue = target.Get(propertyName);
-	return scope.Escape(propertyValue);
+	instance.Set(text, value);
+	return scope.Escape(Napi::Boolean::New(env, true));
 }
+
 
 
 template<typename ClassType>
@@ -622,11 +852,40 @@ Napi::Value WrappedObject<ClassType>::ProxyHandler::ownKeysProxyTrap(const Napi:
 	WrappedObject<ClassType>* wrappedObject = WrappedObject<ClassType>::Unwrap(instance);
 	if (wrappedObject->m_namedPropertyHandlers == nullptr) {
 		//Sanity check. ownKeys proxy callbacks should be called only when a named property handler is set
-		Napi::Error::New(info.Env(), "Internal error. No named property handler is set").ThrowAsJavaScriptException();
+		throw Napi::Error::New(info.Env(), "Internal error. No named property handler is set");
 	}
 
-	Napi::Value result = wrappedObject->m_namedPropertyHandlers->enumerator(info);
+	Napi::Value result = wrappedObject->m_namedPropertyHandlers->enumerator(info, instance);
 	return scope.Escape(result);
+}
+
+template<typename ClassType>
+Napi::Value WrappedObject<ClassType>::ProxyHandler::getPrototypeofProxyTrap(const Napi::CallbackInfo& info) {
+	Napi::Env env = info.Env();
+	Napi::EscapableHandleScope scope(env);
+
+	Napi::Object target = info[0].As<Napi::Object>();
+	Napi::Object proto = target.Get("_proto").As<Napi::Object>();
+	
+	if (proto.IsUndefined()) {
+		auto getPrototypeOfFunc = env.Global().Get("Object").As<Napi::Object>().Get("getPrototypeOf").As<Napi::Function>();
+		proto = getPrototypeOfFunc.Call({ target }).As<Napi::Object>();
+		
+	}
+	
+	return scope.Escape(proto);
+}
+
+template<typename ClassType>
+Napi::Value WrappedObject<ClassType>::ProxyHandler::setPrototypeofProxyTrap(const Napi::CallbackInfo& info) {
+	Napi::Env env = info.Env();
+	Napi::EscapableHandleScope scope(env);
+
+	Napi::Object target = info[0].As<Napi::Object>();
+	Napi::Value proto = info[1];
+	target.Set("_proto", proto);
+
+	return scope.Escape(Napi::Boolean::New(env, true));
 }
 
 template<typename ClassType>
@@ -635,7 +894,7 @@ Napi::Function ObjectWrap<ClassType>::create_constructor(Napi::Env env) {
 	
 	//since NAPI ctors can't change the returned type we need to return a factory func which will be called when 'new ctor()' is called from JS. 
 	//This will create a JS Proxy on top of the prototype chain of that instance and return the instance to the caller. The proxy is needed to support named and index handlers
-	Napi::Function factory = Napi::Function::New(env, WrappedObject<ClassType>::create_instance_with_proxy_parent, s_class.name);
+	Napi::Function factory = Napi::Function::New(env, WrappedObject<ClassType>::create_instance_with_proxy, s_class.name);
 	auto ctorPrototypeProperty = ctor.Get("prototype");
 	auto factoryPrototypeProperty = factory.Get("prototype");
 	auto setPrototypeOfFunc = env.Global().Get("Object").As<Napi::Object>().Get("setPrototypeOf").As<Napi::Function>();
@@ -646,6 +905,8 @@ Napi::Function ObjectWrap<ClassType>::create_constructor(Napi::Env env) {
 	//the factory function should have the same prototype property as the constructor.prototype so `instanceOf` works
 	factory.Set("prototype", ctorPrototypeProperty);
 	setPrototypeOfFunc.Call({ factory, ctor });
+
+	WrappedObject<ClassType>::set_factory_constructor(factory);
 
 	return factory;
 }
@@ -723,13 +984,18 @@ template<typename ClassType>
 Napi::Object ObjectWrap<ClassType>::create_instance(Napi::Env env, Internal* internal) {
 	Napi::EscapableHandleScope scope(env);
 
-	Napi::Object instance = WrappedObject<ClassType>::create_instance(env);
+	Napi::Object factory = WrappedObject<ClassType>::create_instance(env);
+	Napi::Object instance = factory.Get("_instance").As<Napi::Object>();
+	if (instance.IsUndefined() || instance.IsNull()) {
+		throw Napi::Error::New(env, "Invalid object. No _instance member");
+	}
+
 	if (internal) {
 		WrappedObject<ClassType>* wrappedObject = WrappedObject<ClassType>::Unwrap(instance);
 		wrappedObject->set_internal(internal);
 	}
 	
-    return scope.Escape(instance).As<Napi::Object>();
+    return scope.Escape(factory).As<Napi::Object>();
 }
 
 template<typename ClassType>
@@ -739,31 +1005,32 @@ inline bool ObjectWrap<ClassType>::is_instance(Napi::Env env, const Napi::Object
 
 template<typename ClassType>
 typename ClassType::Internal* ObjectWrap<ClassType>::get_internal(const Napi::Object& object) {
-	WrappedObject<ClassType>* wrappedObject = WrappedObject<ClassType>::Unwrap(object);
+	WrappedObject<ClassType>* wrappedObject = WrappedObject<ClassType>::TryUnwrap(object);
 	return wrappedObject->get_internal();
 }
 
 template<typename ClassType>
 void ObjectWrap<ClassType>::set_internal(const Napi::Object& object, typename ClassType::Internal* internal) {
-	WrappedObject<ClassType>* wrappedObject = WrappedObject<ClassType>::Unwrap(object);
+	WrappedObject<ClassType>* wrappedObject = WrappedObject<ClassType>::TryUnwrap(object);
 	wrappedObject->set_internal(internal);
 }
 
 template<typename ClassType>
 Napi::Value ObjectWrap<ClassType>::constructor_callback(const Napi::CallbackInfo& info) {
 	if (reinterpret_cast<void*>(ObjectWrap<ClassType>::s_class.constructor) != nullptr) {
-		try {
+		//NAPI: remove try catch commented code
+		//try {
 			auto arguments = get_arguments(info);
 			node::Arguments args { info.Env(), arguments.size(), arguments.data() };
 			s_class.constructor(info.Env(), info.This().As<Napi::Object>(), args);
 			return Napi::Value(); //return a value to comply with Napi::FunctionCallback
-		}
-		catch (std::exception & e) {
-			Napi::Error::New(info.Env(), e.what()).ThrowAsJavaScriptException();
-		}
+		//}
+		//catch (std::exception & e) {
+			//throw Napi::Error::New(info.Env(), e.what());
+			//throw std::runtime_error("Invalid arguments when constructing 'Realm'");
+		//}
 	}
 	else {
-		//Napi::Error::New(info.Env(), "Illegal constructor").ThrowAsJavaScriptException();
 		return Napi::Value();
 	}
 }
@@ -901,7 +1168,8 @@ Napi::Value wrap(const Napi::CallbackInfo& info) {
 		return result.ToValue();
 	}
 	catch (std::exception& e) {
-		Napi::Error::New(info.Env(), e.what()).ThrowAsJavaScriptException();
+		throw Napi::Error::New(info.Env(), e.what());
+		//throw e;
 	}
 }
 
@@ -925,7 +1193,8 @@ Napi::Value wrap(const Napi::CallbackInfo& info) {
 		return result.ToValue();
 	}
 	catch (std::exception& e) {
-		Napi::Error::New(info.Env(), e.what()).ThrowAsJavaScriptException();
+		throw Napi::Error::New(info.Env(), e.what());
+		//throw e;
 	}
 }
 
@@ -941,15 +1210,15 @@ Napi::Value wrap(const Napi::CallbackInfo& info) {
 //    }
 //}
 template<node::PropertyType::SetterType F>
-Napi::Value wrap(const Napi::CallbackInfo& info, const Napi::Value& value) {
+void wrap(const Napi::CallbackInfo& info, const Napi::Value& value) {
 	Napi::Env env = info.Env();
 
     try {
 		F(env, info.This().As<Napi::Object>(), value);
-		return Napi::Value::From(env, env.Undefined());
     }
     catch (std::exception& e) {
-		Napi::Error::New(info.Env(), e.what()).ThrowAsJavaScriptException();
+		throw Napi::Error::New(info.Env(), e.what());
+		//throw e;
     }
 }
 
@@ -970,13 +1239,13 @@ Napi::Value wrap(const Napi::CallbackInfo& info, const Napi::Value& value) {
 //    }
 //}
 template<node::IndexPropertyType::GetterType F>
-Napi::Value wrap(const Napi::CallbackInfo& info, uint32_t index) {
+Napi::Value wrap(const Napi::CallbackInfo& info, const Napi::Object& instance, uint32_t index) {
 	Napi::Env env = info.Env();
     node::ReturnValue result(env);
 
 	try {
 		try {
-			F(env, info.This().As<Napi::Object>(), index, result);
+			F(env, instance, index, result);
 			return result.ToValue();
 		}
 		catch (std::out_of_range&) {
@@ -985,7 +1254,8 @@ Napi::Value wrap(const Napi::CallbackInfo& info, uint32_t index) {
 		}
 	}
     catch (std::exception &e) {
-		Napi::Error::New(info.Env(), e.what()).ThrowAsJavaScriptException();
+		throw Napi::Error::New(info.Env(), e.what());
+		//throw e;
     }
 }
 
@@ -1003,17 +1273,18 @@ Napi::Value wrap(const Napi::CallbackInfo& info, uint32_t index) {
 //    }
 //}
 template<node::IndexPropertyType::SetterType F>
-Napi::Value wrap(const Napi::CallbackInfo& info, uint32_t index, const Napi::Value& value) {
+Napi::Value wrap(const Napi::CallbackInfo& info, const Napi::Object& instance, uint32_t index, const Napi::Value& value) {
 	Napi::Env env = info.Env();
 
     try {
-		bool success = F(env, info.This().As<Napi::Object>(), index, value);
+		bool success = F(env, instance, index, value);
 		
 		// Indicate that the property was intercepted.
 		return Napi::Value::From(env, success);
     }
     catch (std::exception &e) {
-		Napi::Error::New(info.Env(), e.what()).ThrowAsJavaScriptException();
+		throw Napi::Error::New(info.Env(), e.what());
+		//throw e;
     }
 }
 
@@ -1029,16 +1300,17 @@ Napi::Value wrap(const Napi::CallbackInfo& info, uint32_t index, const Napi::Val
 //    }
 //}
 template<node::StringPropertyType::GetterType F>
-Napi::Value wrap(const Napi::CallbackInfo& info, const Napi::String& property) {
+Napi::Value wrap(const Napi::CallbackInfo& info, const Napi::Object& instance, const Napi::String& property) {
 	Napi::Env env = info.Env();
 	node::ReturnValue result(env);
 	
 	try {
-        F(env, info.This().As<Napi::Object>(), property, result);
+        F(env, instance, property, result);
 		return result.ToValue();
     }
     catch (std::exception &e) {
-		Napi::Error::New(info.Env(), e.what()).ThrowAsJavaScriptException();
+		throw Napi::Error::New(info.Env(), e.what());
+		//throw e;
     }
 }
 
@@ -1059,16 +1331,15 @@ Napi::Value wrap(const Napi::CallbackInfo& info, const Napi::String& property) {
 //Napi: all Setters should return true
 template<node::StringPropertyType::SetterType F>
 //Napi::Value wrap(const Napi::String& property, const Napi::Value& value, const Napi::CallbackInfo& info) {
-Napi::Value wrap(const Napi::CallbackInfo& info, const Napi::String& property, const Napi::Value& value) {
+Napi::Value wrap(const Napi::CallbackInfo& info, const Napi::Object& instance, const Napi::String& property, const Napi::Value& value) {
 	Napi::Env env = info.Env();
     try {
-		bool success = F(env, info.This().As<Napi::Object>(), property, value);
-		
-		// Indicate that the property was intercepted.
+		bool success = F(env, instance, property, value);
 		return Napi::Value::From(env, success);
     }
     catch (std::exception &e) {
-		Napi::Error::New(info.Env(), e.what()).ThrowAsJavaScriptException();
+		throw Napi::Error::New(info.Env(), e.what());
+		//throw e;
     }
 }
 
@@ -1086,11 +1357,11 @@ Napi::Value wrap(const Napi::CallbackInfo& info, const Napi::String& property, c
 //}
 
 template<node::StringPropertyType::EnumeratorType F>
-Napi::Value wrap(const Napi::CallbackInfo& info) {
+Napi::Value wrap(const Napi::CallbackInfo& info, const Napi::Object& instance) {
 	Napi::Env env = info.Env();
     
 	try {
-		auto names = F(env, info.This().As<Napi::Object>());
+		auto names = F(env, instance);
 
 		int count = (int)names.size();
 		Napi::Array array = Napi::Array::New(env, count);
@@ -1101,7 +1372,8 @@ Napi::Value wrap(const Napi::CallbackInfo& info) {
 		return array;
 	}
 	catch (std::exception & e) {
-		Napi::Error::New(info.Env(), e.what()).ThrowAsJavaScriptException();
+		throw Napi::Error::New(info.Env(), e.what());
+		//throw e;
 	}
 }
 
