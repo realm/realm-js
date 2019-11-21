@@ -129,8 +129,8 @@ stage('test') {
 
 stage('integration tests') {
   parallel(
-    'React Native on Android':  inAndroidContainer { reactNativeIntegrationTests(it, 'android') },
-    'React Native on iOS':      buildMacOS { reactNativeIntegrationTests(it, 'ios') },
+    'React Native on Android':  inAndroidContainer { reactNativeIntegrationTests('android') },
+    'React Native on iOS':      buildMacOS { reactNativeIntegrationTests('ios') },
     'Electron on Mac':          buildMacOS { electronIntegrationTests('4.1.4', it) },
     'Electron on Linux':        buildLinux { electronIntegrationTests('4.1.4', it) },
     'Node.js v10 on Mac':       buildMacOS { nodeIntegrationTests('10.15.1', it) },
@@ -145,6 +145,13 @@ def nodeIntegrationTests(nodeVersion, platform) {
   unstash 'source'
   unstash "pre-gyp-${platform}-${nodeVersion}"
   sh "./scripts/nvm-wrapper.sh ${nodeVersion} ./scripts/pack-with-pre-gyp.sh"
+
+  dir('integration-tests') {
+    // Renaming the package to avoid having to specify version in the apps package.json
+    sh 'mv realm-*.tgz realm.tgz'
+    // Package up the integration tests
+    sh "../scripts/nvm-wrapper.sh ${nodeVersion} npm run tests/pack"
+  }
 
   dir('integration-tests/environments/node') {
     sh "../../../scripts/nvm-wrapper.sh ${nodeVersion} npm install"
@@ -165,6 +172,13 @@ def electronIntegrationTests(electronVersion, platform) {
   unstash "electron-pre-gyp-${platform}-${electronVersion}"
   sh "./scripts/nvm-wrapper.sh ${nodeVersion} ./scripts/pack-with-pre-gyp.sh"
 
+  dir('integration-tests') {
+    // Renaming the package to avoid having to specify version in the apps package.json
+    sh 'mv realm-*.tgz realm.tgz'
+    // Package up the integration tests
+    sh "../scripts/nvm-wrapper.sh ${nodeVersion} npm run tests/pack"
+  }
+
   // On linux we need to use xvfb to let up open GUI windows on the headless machine
   def commandPrefix = platform == 'linux' ? 'xvfb-run ' : ''
 
@@ -182,7 +196,7 @@ def electronIntegrationTests(electronVersion, platform) {
   }
 }
 
-def reactNativeIntegrationTests(hostPlatform, targetPlatform) {
+def reactNativeIntegrationTests(targetPlatform) {
   def nodeVersion = '10.15.1'
   unstash 'source'
 
@@ -195,7 +209,11 @@ def reactNativeIntegrationTests(hostPlatform, targetPlatform) {
   }
 
   dir('integration-tests') {
-    sh "${targetPlatform == "android" ? "REALM_BUILD_ANDROID=1" : ""} ${nvm} npm pack .."
+    unstash 'android'
+    // Renaming the package to avoid having to specify version in the apps package.json
+    sh 'mv realm-*.tgz realm.tgz'
+    // Package up the integration tests
+    sh "${nvm} npm run tests/pack"
   }
 
   dir('integration-tests/environments/react-native') {

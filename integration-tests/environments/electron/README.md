@@ -1,12 +1,12 @@
 # Realm JS tests running in an Electron environment
 
-Install this environment with the `--no-optional` runtime flag:
+To install this environment, simply run:
 
 ```bash
-npm install --no-optional
+npm install
 ```
 
-The `realm` and `realm-integration-tests` packages are listed as `optionalDependencies` in the `package.json` because `electron-builder` will only include packages listed in `dependencies` or `optionalDependencies` in the packaged `app.asar` file. We don't want to list the two in `dependencies` as that would pollute the `package-lock.json` and make it impossible to install changed versions of the archives.
+The `realm` and `realm-integration-tests` packages are listed as local archive `dependencies` in the `package.json` because `electron-builder` will only include packages listed in `dependencies` in the packaged `app.asar` file. To avoid integrity checks failing when NPM compares the SHA of the archives with SHA in the package-lock.json we `npm install` the archives on `preinstall`.
 
 Currently this directory consists of:
 - `runner.js` which start the Mocha remote server and the Electron app (using the distribution package when available).

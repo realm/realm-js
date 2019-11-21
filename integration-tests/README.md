@@ -21,7 +21,7 @@ All following commands assume that you've changed directory into the `./integrat
 ### Installing the integration tests
 
 The individual environments can be installed and run independently (see "Installing an environment on CI").
-For convenience to developers, this directory contains a package that will produce a packaged version of Realm JS and install all environments:
+For convenience to developers, this directory contains a package that will produce a packaged version of Realm JS, a packaged version of the integration tests suite and install all environments:
 
 ```bash
 npm install
@@ -33,7 +33,7 @@ The environments consume Realm and the test suite as packaged `.tgz` files to re
 
 ### Running the tests while developing
 
-For rapid iteration on the test suite, use the "start" script to start mocha in `--watch` mode
+For rapid iteration on the test suite, use the "start" script (from the `./tests` directory) to start mocha in `--watch` mode
 
 ```bash
 npm start
@@ -45,7 +45,7 @@ When fixing a single failing test, it's beneficial to use mochas [`--grep`](http
 npm start -- --grep "Realm#constructor"
 ```
 
-It's adviced to have two terminals open, one occationally running `npm run build-changes` when changes are made to the C++ source-code of Realm JS and another running `npm start` to continiously run the integration tests when code change.
+It's adviced to have two terminals open, one occationally running `npm run build-changes` (from the project root directory) when changes are made to the C++ source-code of Realm JS and another running `npm start` (from the `./tests` directory) to continiously run the integration tests when code change.
 The tests will re-run when the test suite changes and it has Realm JS installed as a symbolic link and will therefore run the latest Realm JS javascript code when the tests run. To reload the native module, you will however need to kill and restart the process running in the second terminal.
 
 ### Running the tests in all or specific environments
@@ -147,3 +147,57 @@ Because React Native's packager (Metro) [does not support symbolic links](https:
 ### Don't call `require` with an expression in `./tests` nor `./environments/react-native`
 
 Because React Native bundles its JavaScript source files into a single bundle, using the Metro bundler, we need to be explicit in the files we include in the test-suite. I.e. we cannot call the require function with a expression which value will only be known at runtime, such as iterating over a list of files, would be. Therefore `tests/src/index.js` must require all individual files in which our tests are defined: We cannot simply ask for all */**.tests.js files to be included.
+
+## Upgrading the React Native environment
+
+First move the existing environment to a backup location that you can copy files from:
+
+```bash
+cd ./environments
+mv react-native react-native-backup
+```
+
+Initialize a new React Native app into the `react-native` directory:
+
+```bash
+npx react-native init RealmReactNativeTests --directory react-native --npm
+```
+
+Clean up unneeded files
+
+```bash
+cd ./environments
+rm -r react-native/__tests__
+rm react-native/App.js
+```
+
+Copy over files related to the test harness
+
+```bash
+cd ./environments
+cp -r react-native-backup/README.md react-native-backup/harness react-native-backup/src react-native-backup/index.js react-native
+```
+
+Install additional dependencies
+
+```bash
+cd react-native
+npm install mocha mocha-junit-reporter mocha-remote-client react-native-fs path-browserify
+npm install mocha-remote-server fs-extra --save-dev
+```
+
+Open the `package.json` of both `react-native` and `react-native-backup`:
+
+1. compare,
+2. copy over the scripts
+3. copy over the `realm` and `realm-integration-tests` dependencies.
+4. delete anything "jest" related.
+
+Install dependencies again to run the postinstall script
+
+```bash
+cd ios
+pod install
+cd -
+npm install
+```
