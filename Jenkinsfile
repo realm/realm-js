@@ -227,6 +227,10 @@ def reactNativeIntegrationTests(targetPlatform) {
         sh 'adb wait-for-device'
         // Uninstall any other installations of this package before trying to install it again
         sh 'adb uninstall io.realm.tests.reactnative || true' // '|| true' because the app might already not be installed
+      } else if (targetPlatform == "ios") {
+        dir('ios') {
+          sh 'pod install'
+        }
       }
 
       try {
