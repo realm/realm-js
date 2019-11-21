@@ -160,17 +160,22 @@ inline void setup_aliases(parser::KeyPathMapping &mapping, const realm::SharedRe
 {
     const realm::Schema &schema = realm->schema();
     for (auto it = schema.begin(); it != schema.end(); ++it) {
+        TableRef table;
         for (const Property &property : it->computed_properties) {
             if (property.type == realm::PropertyType::LinkingObjects) {
+                if (!table) {
+                    table = ObjectStore::table_for_object_type(realm->read_group(), it->name);
+                }
                 auto target_object_schema = schema.find(property.object_type);
-                const TableRef table = ObjectStore::table_for_object_type(realm->read_group(), it->name);
                 std::string native_name = "@links." + target_object_schema->name + "." + property.link_origin_property_name;
                 mapping.add_mapping(table, property.name, native_name);
             }
         }
 
         for (const Property &property : it->persisted_properties) {
-            const TableRef table = ObjectStore::table_for_object_type(realm->read_group(), it->name);
+            if (!table) {
+                table = ObjectStore::table_for_object_type(realm->read_group(), it->name);
+            }
             mapping.add_mapping(table, property.public_name, property.name);
         }
     }
