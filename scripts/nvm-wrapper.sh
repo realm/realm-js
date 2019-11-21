@@ -18,10 +18,12 @@ if [[ $# -lt 2 ]]; then
   exit 1
 fi
 
-if [ "$(uname)" = 'Darwin' ]; then
+if [ -n $NVM_DIR ]; then
+  source $NVM_DIR/nvm.sh
+elif [ "$(uname)" = 'Darwin' ]; then
   source "$(brew --prefix nvm)/nvm.sh"
 else
-  source $NVM_DIR/nvm.sh
+  die "Could not find the nvm.sh script"
 fi
 
 node_version=$1
