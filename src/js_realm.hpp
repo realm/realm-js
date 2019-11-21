@@ -175,6 +175,10 @@ public:
     // from inside the handler
     template<typename... Args>
     void notify(std::list<Protected<FunctionType>> notifications, const char *name, Args&&... args) {
+        if (notifications.empty()) {
+            return;
+        }
+        
         auto realm = m_realm.lock();
         if (!realm) {
             throw std::runtime_error("Realm no longer exists");
