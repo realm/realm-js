@@ -233,18 +233,18 @@ def reactNativeIntegrationTests(targetPlatform) {
         }
       }
 
-      try {
-        timeout(30) { // minutes
+      timeout(30) { // minutes
+        try {
           sh "${nvm} npm run test/${targetPlatform} -- test-results.xml"
-        }
-      } finally {
-        junit(
-          allowEmptyResults: true,
-          testResults: 'test-results.xml',
-        )
-        if (targetPlatform == "android") {
-          // Read out the logs in case we want some more information to debug from
-          sh 'adb logcat -d -s ReactNativeJS:*'
+        } finally {
+          junit(
+            allowEmptyResults: true,
+            testResults: 'test-results.xml',
+          )
+          if (targetPlatform == "android") {
+            // Read out the logs in case we want some more information to debug from
+            sh 'adb logcat -d -s ReactNativeJS:*'
+          }
         }
       }
     }
