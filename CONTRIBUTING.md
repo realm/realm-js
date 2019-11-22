@@ -171,3 +171,9 @@ If you want to modify the Javascript in an iterative manner or enable break poin
 The Javascript tests are run twice: once directly in the simulator, and once in Chrome, talking to the simulator via the RPC bridge used for Chrome debugging. When running the Chrome tests you can open the Chrome Developer Tools on the tab that they open to debug the tests themselves. The JS engine running inside the simulator (for both the RPC server and the tests themselves in the non-Chrome test suite) can be debugged using the Safari developer tools.
 
 Note that it isn't possible to easily run a single unit test from Xcode. Instead you should disable the tests manually by modifying `tests/react-test-app/node_modules/realm-tests/index.js`.
+
+### How To: Debug React Native Podspec
+
+The [Podspec](./RealmJS.podspec) file follows [the CocoaPods Podspec syntax](https://guides.cocoapods.org/syntax/podspec.html). It describes how Realm JS is build for React Native apps on iOS and is automatically discovered by the React Native CLI when running `pod install` from a users project.
+
+The Podspec file expects to be located in the `./node_modules/realm/` folder of a React Native project with a `./ios/Podfile` file. The easiest way to verify that changes to the Podspec is not breaking installing the library, install Realm JS in a new React Native app, make the changes to the `./node_modules/realm/RealmJS.podspec` and run `pod lib lint --verbose` from the `./node_modules/realm/` directory. Consider adding `--no-clean` to prevent the CocoaPods CLI from deleting the temporary project created during linting. Once linting passes, try installing the pod and running the consuming app on an iOS device.

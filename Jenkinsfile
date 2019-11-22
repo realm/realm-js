@@ -227,20 +227,24 @@ def reactNativeIntegrationTests(targetPlatform) {
         sh 'adb wait-for-device'
         // Uninstall any other installations of this package before trying to install it again
         sh 'adb uninstall io.realm.tests.reactnative || true' // '|| true' because the app might already not be installed
+      } else if (targetPlatform == "ios") {
+        dir('ios') {
+          sh 'pod install'
+        }
       }
 
-      try {
-        timeout(30) { // minutes
+      timeout(30) { // minutes
+        try {
           sh "${nvm} npm run test/${targetPlatform} -- test-results.xml"
-        }
-      } finally {
-        junit(
-          allowEmptyResults: true,
-          testResults: 'test-results.xml',
-        )
-        if (targetPlatform == "android") {
-          // Read out the logs in case we want some more information to debug from
-          sh 'adb logcat -d -s ReactNativeJS:*'
+        } finally {
+          junit(
+            allowEmptyResults: true,
+            testResults: 'test-results.xml',
+          )
+          if (targetPlatform == "android") {
+            // Read out the logs in case we want some more information to debug from
+            sh 'adb logcat -d -s ReactNativeJS:*'
+          }
         }
       }
     }
