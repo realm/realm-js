@@ -14,6 +14,7 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Internal
 * Upgraded the React Native integration tests app (now using RN v0.61.3). ([#2603](https://github.com/realm/realm-js/pull/2603))
+* Optimized notification logic when there are no listeners
 
 3.4.2 Release notes (2019-11-14)
 =============================================================
