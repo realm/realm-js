@@ -235,7 +235,7 @@ def reactNativeIntegrationTests(targetPlatform) {
 
       timeout(30) { // minutes
         try {
-          sh "DEBUG=mocha-remote:* ${nvm} npm run test/${targetPlatform} -- test-results.xml"
+          sh "${nvm} npm run test/${targetPlatform} -- test-results.xml"
         } finally {
           junit(
             allowEmptyResults: true,
