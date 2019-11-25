@@ -9,9 +9,20 @@ Currently this directory consists of:
   - `react-native-cli.js` wraps the `react-native` CLI.
   - `runner.js` starts a mocha remote server, the metro bundler and starts the app (using `react-native run-android` or `react-native run-android`)
 
+To install this environment, simply run:
+
 ```bash
 npm install
 ```
+
+Before building for iOS ensure you've run `pod install` in the `./ios` directory
+
+```bash
+cd ios
+pod install
+```
+
+To avoid integrity checks failing when NPM compares the SHA of the `realm` and `realm-integration-tests` archives with SHA in the package-lock.json we `npm install` the archives on `preinstall`.
 
 ## Running the tests
 
