@@ -88,6 +88,14 @@ module.exports = {
         TestCase.assertTrue(realm.isClosed);
     },
 
+    testRealmCallCloseTwice: function () {
+        const realm = new Realm({schema: []});
+        realm.close();
+        TestCase.assertTrue(realm.isClosed);
+        realm.close();
+        TestCase.assertTrue(realm.isClosed);
+    },
+
     testRealmConstructorSchemaVersion: function() {
         const defaultRealm = new Realm({schema: []});
         TestCase.assertEqual(defaultRealm.schemaVersion, 0);
