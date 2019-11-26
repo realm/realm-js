@@ -954,11 +954,9 @@ module.exports = {
         TestCase.assertEqual(realm.objects('TestObject').length, 2);
         TestCase.assertEqual(realm.objects('IntPrimaryObject').length, 1);
 
-        console.log('FISK 0', realm.schema);
         realm.write(() => {
             realm.deleteModel('IntPrimaryObject');
         });
-        console.log('FISK 1', realm.schema);
         realm.write(() => {
             realm.deleteAll();
         });
