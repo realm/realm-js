@@ -92,7 +92,7 @@ module.exports = {
         const realm = new Realm({schema: []});
         realm.close();
         TestCase.assertTrue(realm.isClosed);
-        realm.close();
+        TestCase.assertThrows(() => realm.close());
         TestCase.assertTrue(realm.isClosed);
     },
 
@@ -1751,9 +1751,9 @@ module.exports = {
     testObjectWithoutProperties: function() {
         const realm = new Realm({schema: [schemas.ObjectWithoutProperties]});
         realm.write(() => {
-            TestCase.assertThrows(() => {
+//            TestCase.assertThrows(() => {
                 realm.create(schemas.ObjectWithoutProperties.name, {});
-            });
+//            });
         });
         realm.objects(schemas.ObjectWithoutProperties.name);
         realm.close();

@@ -1,7 +1,10 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
+### Breaking changes
+* Calling `Realm.close()` on a closed Realm will throw an exception.
+
 ### Enhancements
-* Improved performance for some queries involving links. ([RJS-350](https://jira.mongodb.org/browse/RJS-340))
+* None.
 
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
@@ -46,7 +49,7 @@ NOTE: This version bumps the Realm file format to version 10. It is not possible
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
-* None.
+* Improved performance for some queries involving links. ([RJS-350](https://jira.mongodb.org/browse/RJS-340))
 
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
