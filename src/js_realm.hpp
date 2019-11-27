@@ -178,7 +178,7 @@ public:
         if (notifications.empty()) {
             return;
         }
-        
+
         auto realm = m_realm.lock();
         if (!realm) {
             throw std::runtime_error("Realm no longer exists");
@@ -914,28 +914,28 @@ void RealmClass<T>::object_for_primary_key(ContextType ctx, ObjectType this_obje
 template<typename T>
 void RealmClass<T>::create(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value) {
     args.validate_maximum(3);
-    bool update = false;
-    bool only_update_diff_objects = false;
+    realm::CreatePolicy policy = realm::CreatePolicy::ForceCreate;
     if (args.count == 3) {
         if (Value::is_boolean(ctx, args[2])) {
             // Deprecated API
-            update = Value::validated_to_boolean(ctx, args[2]);
-            only_update_diff_objects = false;
+            if (Value::validated_to_boolean(ctx, args[2])) {
+                policy = realm::CreatePolicy::UpdateAll;
+            }
+            else {
+                policy = realm::CreatePolicy::ForceCreate;
+            }
         }
         else if (Value::is_string(ctx, args[2])) {
             // New API accepting an updateMode parameter
             std::string mode = Value::validated_to_string(ctx, args[2]);
             if (mode == "never") {
-                update = false;
-                only_update_diff_objects = false;
+                policy = realm::CreatePolicy::ForceCreate;
             }
             else if (mode == "modified") {
-                update = true;
-                only_update_diff_objects = true;
+                policy = realm::CreatePolicy::UpdateModified;
             }
             else if (mode == "all") {
-                update = true;
-                only_update_diff_objects = false;
+                policy = realm::CreatePolicy::UpdateAll;
             } else {
                 throw std::runtime_error("Unsupported 'updateMode'. Only 'never', 'modified' or 'all' is supported.");
             }
@@ -955,7 +955,7 @@ void RealmClass<T>::create(ContextType ctx, ObjectType this_object, Arguments &a
     }
 
     NativeAccessor accessor(ctx, realm, object_schema);
-    auto realm_object = realm::Object::create<ValueType>(accessor, realm, object_schema, object, update, only_update_diff_objects);
+    auto realm_object = realm::Object::create<ValueType>(accessor, realm, object_schema, object, policy);
     return_value.set(RealmObjectClass<T>::create_instance(ctx, std::move(realm_object)));
 }
 

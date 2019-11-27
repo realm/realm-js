@@ -1748,4 +1748,15 @@ module.exports = {
         }, 'Wrong Realm type');
     } ,
 
+    testObjectWithoutProperties: function() {
+        const realm = new Realm({schema: [schemas.ObjectWithoutProperties]});
+        realm.write(() => {
+            TestCase.assertThrows(() => {
+                realm.create(schemas.ObjectWithoutProperties.name, {});
+            });
+        });
+        realm.objects(schemas.ObjectWithoutProperties.name);
+        realm.close();
+    }
+
 };
