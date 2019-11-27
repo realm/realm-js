@@ -31,10 +31,15 @@ class ReturnValue<node::Types> {
 	Napi::Value m_value;
 
   public:
-	ReturnValue(Napi::Env env) : m_env(env), m_value(Napi::Value()) {}
+	ReturnValue(Napi::Env env) : m_env(env), m_value(Napi::Value(env, env.Undefined())) {}
 	ReturnValue(Napi::Env env, Napi::Value value) : m_env(env), m_value(value) {}
 
 	Napi::Value ToValue() {
+		//guard check. Empty values cause node to fail in obscure places, so return undefined instead
+		if (m_value.IsEmpty()) {
+			return Napi::Value(m_env, m_env.Undefined());
+		}
+
 		return m_value;
 	}
 

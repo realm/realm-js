@@ -1000,8 +1000,7 @@ inline typename T::Function SyncClass<T>::create_constructor(ContextType ctx) {
     Object::set_property(ctx, sync_constructor, "User", ObjectWrap<T, UserClass<T>>::create_constructor(ctx), attributes);
     Object::set_property(ctx, sync_constructor, "Session", ObjectWrap<T, SessionClass<T>>::create_constructor(ctx), attributes);
 #if REALM_PLATFORM_NODE
-	//NAPI: enable when js_adapter is done with NAPI
-    //Object::set_property(ctx, sync_constructor, "Adapter", ObjectWrap<T, AdapterClass<T>>::create_constructor(ctx), attributes);
+    Object::set_property(ctx, sync_constructor, "Adapter", ObjectWrap<T, AdapterClass<T>>::create_constructor(ctx), attributes);
 #endif
 
     return sync_constructor;
@@ -1044,8 +1043,7 @@ void SyncClass<T>::set_sync_logger(ContextType ctx, ObjectType this_object, Argu
     args.validate_count(1);
     auto callback_fn = Value::validated_to_function(ctx, args[0], "logger_callback");
 
-	//NAPI: implement with NAPI
-    //syncManagerShared<T>(ctx).set_logger_factory(*new realm::node::SyncLoggerFactory(ctx, callback_fn));
+    syncManagerShared<T>(ctx).set_logger_factory(*new realm::node::SyncLoggerFactory(ctx, callback_fn));
 }
 #endif
 

@@ -91,6 +91,7 @@ private:
 			static Napi::Value combinedGetProxyTrapHandleFunctions(const Napi::CallbackInfo& info, bool* handled);
 			//static Napi::Value instanceGetProxyTrap(const Napi::CallbackInfo& info);
 			static Napi::Value ownKeysProxyTrap(const Napi::CallbackInfo& info);
+			static Napi::Value getOwnPropertyDescriptorTrap(const Napi::CallbackInfo& info);
 			static Napi::Value getPrototypeofProxyTrap(const Napi::CallbackInfo& info);
 			static Napi::Value setPrototypeofProxyTrap(const Napi::CallbackInfo& info);
 		};
@@ -264,6 +265,11 @@ ClassType ObjectWrap<ClassType>::s_class;
 
 template<typename ClassType>
 WrappedObject<ClassType>::WrappedObject(const Napi::CallbackInfo& info) : Napi::ObjectWrap<WrappedObject<ClassType>>(info) {
+	//skip the constructor_callback if create_instance is creating a JS instance only
+	if (info.Length() == 1 && info[0].IsNull())	{
+		return;
+	}
+
 	node::Types::FunctionCallback constructor_callback = (node::Types::FunctionCallback)info.Data();
 	constructor_callback(info);
 }
@@ -331,14 +337,18 @@ Napi::Value WrappedObject<ClassType>::create_instance_with_proxy(const Napi::Cal
 		auto arguments = get_arguments(info);
 		std::vector<napi_value> arrgs(arguments.begin(), arguments.end());
 		Napi::Object instance = constructor.New(arrgs);
-		instance.Set("isRealmInstance", Napi::Boolean::New(env, true));
-		instance.Set("_instance", instance);
+		//using DefineProperty to make it non enumerable and non configurable and non writable
+
+		instance.DefineProperty(Napi::PropertyDescriptor::Value("_instance", instance, napi_default)); //instance.Set("_instance", instance);
+		
 
 		//NAPI: debugger calls this too many times. Consider doing that in debug only
-		//NAPI: remove or only in debug
-		instance.Set("splice", env.Undefined());
-
-		info.This().As<Napi::Object>().Set("isRealmCtor", Napi::Boolean::New(env, true));
+		//NAPI: remove or define it only in debug
+		instance.DefineProperty(Napi::PropertyDescriptor::Value("splice", env.Undefined(), napi_default)); //instance.Set("splice", env.Undefined());
+		
+		
+		info.This().As<Napi::Object>().DefineProperty(Napi::PropertyDescriptor::Value("isRealmCtor", Napi::Boolean::New(env, true), napi_default)); //info.This().As<Napi::Object>().Set("isRealmCtor", Napi::Boolean::New(env, true));
+		
 
 		auto proxyFunc = env.Global().Get("Proxy").As<Napi::Function>();
 
@@ -377,7 +387,8 @@ Napi::Value WrappedObject<ClassType>::create_instance_with_proxy(const Napi::Cal
 
 		setPrototypeOfFunc.Call({ info.This(), instance });
 		Napi::Object instanceProxy = proxyFunc.New({ info.This(), ProxyHandler::get_instance_proxy_handler(env) });
-
+		
+		instance.DefineProperty(Napi::PropertyDescriptor::Value("_instanceProxy", instanceProxy, napi_default)); //instance.Set("_instanceProxy", instanceProxy);
 		return instanceProxy;
 	}
 	catch (std::exception & e) {
@@ -394,7 +405,8 @@ Napi::Object WrappedObject<ClassType>::create_instance(Napi::Env env) {
 	}
 	Napi::EscapableHandleScope scope(env);
 
-	Napi::Object instance = factory_constructor.New({});
+	//creating a JS instance only. pass null as first and single argument
+	Napi::Object instance = factory_constructor.New({ env.Null() });
 	return scope.Escape(instance).As<Napi::Object>();
 }
 
@@ -493,10 +505,11 @@ Napi::Value WrappedObject<ClassType>::ProxyHandler::get_instance_proxy_handler(N
 	Napi::PropertyDescriptor instanceGetTrapFunc = Napi::PropertyDescriptor::Function("get", combinedGetProxyTrap);
 	Napi::PropertyDescriptor instanceSetTrapFunc = Napi::PropertyDescriptor::Function("set", combinedSetProxyTrap);
 	Napi::PropertyDescriptor ownKeysTrapFunc = Napi::PropertyDescriptor::Function("ownKeys", ownKeysProxyTrap);
+	Napi::PropertyDescriptor getOwnPropertyDescriptorTrapFunc = Napi::PropertyDescriptor::Function("getOwnPropertyDescriptor", getOwnPropertyDescriptorTrap);
 	Napi::PropertyDescriptor getPrototypeOfFunc = Napi::PropertyDescriptor::Function("getPrototypeOf", getPrototypeofProxyTrap);
 	Napi::PropertyDescriptor setPrototypeOfFunc = Napi::PropertyDescriptor::Function("setPrototypeOf", setPrototypeofProxyTrap);
 	
-	proxyObj.DefineProperties({ instanceGetTrapFunc, instanceSetTrapFunc, ownKeysTrapFunc, getPrototypeOfFunc, setPrototypeOfFunc });
+	proxyObj.DefineProperties({ instanceGetTrapFunc, instanceSetTrapFunc, ownKeysTrapFunc, getOwnPropertyDescriptorTrapFunc, getPrototypeOfFunc, setPrototypeOfFunc });
 	return scope.Escape(proxyObj);
 }
 
@@ -674,18 +687,19 @@ Napi::Value WrappedObject<ClassType>::ProxyHandler::combinedGetProxyTrap(const N
 	}
 
 	Napi::Object target = info[0].As<Napi::Object>();
-	
-	if (!info[1].IsString()) {
-		Napi::Value value = target.Get(info[1]);
+	Napi::Value propertyArg = info[1];
+
+	if (!propertyArg.IsString()) {
+		Napi::Value value = target.Get(propertyArg);
 		return scope.Escape(value);
 	}
 
-	Napi::String property = info[1].As<Napi::String>();
+	Napi::String property = propertyArg.As<Napi::String>();
 	std::string text = property;
 
 	Napi::Object instance = target.Get("_instance").As<Napi::Object>();
 	if (instance.IsUndefined() || instance.IsNull()) {
-		Napi::Value value = target.Get(info[1]);
+		Napi::Value value = target.Get(propertyArg);
 		return scope.Escape(value);
 	}
 
@@ -768,7 +782,7 @@ Napi::Value WrappedObject<ClassType>::ProxyHandler::combinedGetProxyTrapHandleFu
 	
 	Napi::Value propertyValue = instance.Get(propertyName);
 
-	//bind the function from the instance and set it on the target object
+	//bind the function from the instance and set it on the target object. Napi does not work if a function is invoked with this instance different than the class it is defined onto
 	if (propertyValue.IsFunction()) {
 		Napi::Function bindFunc = propertyValue.As<Napi::Function>().Get("bind").As<Napi::Function>();
 		if (bindFunc.IsEmpty() || bindFunc.IsUndefined()) {
@@ -857,6 +871,25 @@ Napi::Value WrappedObject<ClassType>::ProxyHandler::ownKeysProxyTrap(const Napi:
 
 	Napi::Value result = wrappedObject->m_namedPropertyHandlers->enumerator(info, instance);
 	return scope.Escape(result);
+}
+
+template<typename ClassType>
+Napi::Value WrappedObject<ClassType>::ProxyHandler::getOwnPropertyDescriptorTrap(const Napi::CallbackInfo& info) {
+	//This exists only for ownKeysTrap to work properly with Object.keys(). It does not check if the property is from the named handler or it is an existing property on the instance. 
+	//This implementation can be extended to return the true property descriptor if the property is an existing one
+	
+	Napi::Env env = info.Env();
+	Napi::EscapableHandleScope scope(env);
+
+	Napi::Object target = info[0].As<Napi::Object>();
+	Napi::String key = info[1].As<Napi::String>();
+	std::string text = key;
+
+	Napi::Object descriptor = Napi::Object::New(env);
+	descriptor.Set("enumerable", Napi::Boolean::New(env, true));
+	descriptor.Set("configurable", Napi::Boolean::New(env, true));
+	
+	return scope.Escape(descriptor);
 }
 
 template<typename ClassType>
@@ -1163,8 +1196,13 @@ Napi::Value wrap(const Napi::CallbackInfo& info) {
 	node::Arguments args { info.Env(), arguments.size(), arguments.data() };
 	node::ReturnValue result(env);
 
+	Napi::Object instanceProxy = info.This().As<Napi::Object>().Get("_instanceProxy").As<Napi::Object>();
+	if (instanceProxy.IsUndefined()) {
+		instanceProxy = info.This().As<Napi::Object>();
+	}
+
 	try {
-		F(env, info.This().As<Napi::Object>(), args, result);
+		F(env, instanceProxy, args, result);
 		return result.ToValue();
 	}
 	catch (std::exception& e) {

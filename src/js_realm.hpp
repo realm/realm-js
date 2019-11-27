@@ -74,19 +74,19 @@ class RealmDelegate : public BindingContext {
 private:
 	//NAPI: uncomment these methods
     void did_change(std::vector<ObserverState> const&, std::vector<void*> const&, bool) override {
-		//HANDLESCOPE(m_context)
-        //notify(m_notifications, "change");
+		HANDLESCOPE(m_context)
+        notify(m_notifications, "change");
     }
 
     void schema_did_change(realm::Schema const& schema) override {
-		//HANDLESCOPE(m_context)
-        //ObjectType schema_object = Schema<T>::object_for_schema(m_context, schema);
-        //notify(m_schema_notifications, "schema", schema_object);
+		HANDLESCOPE(m_context)
+        ObjectType schema_object = Schema<T>::object_for_schema(m_context, schema);
+        notify(m_schema_notifications, "schema", schema_object);
     }
 
     void before_notify() override {
-        //HANDLESCOPE(m_context)
-        //notify(m_before_notify_notifications, "beforenotify");
+        HANDLESCOPE(m_context)
+        notify(m_before_notify_notifications, "beforenotify");
     }
 
 public:
