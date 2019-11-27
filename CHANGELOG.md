@@ -1,4 +1,4 @@
-x.x.x Release notes (yyyy-MM-dd)
+x.y.z Release notes (yyyy-MM-dd)
 =============================================================
 ### Breaking changes
 * Calling `Realm.close()` on a closed Realm will throw an exception.
@@ -7,7 +7,6 @@ x.x.x Release notes (yyyy-MM-dd)
 * None.
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
 * None.
 
 ### Compatibility
@@ -46,13 +45,12 @@ NOTE: This version bumps the Realm file format to version 10. It is not possible
 * Updated to Realm Core v6.0.0-alpha.23.
 * Updated to Realm Sync v4.7.1-core6.4.
 
-x.x.x Release notes (yyyy-MM-dd)
+3.5.0-alpha.1 Release notes (2019-11-27)
 =============================================================
 ### Enhancements
 * Improved performance for some queries involving links. ([RJS-350](https://jira.mongodb.org/browse/RJS-340))
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
 * None.
 
 ### Compatibility
