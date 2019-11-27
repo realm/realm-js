@@ -354,3 +354,8 @@ exports.Country = {
     }
 };
 
+exports.ObjectWithoutProperties = {
+    name: 'ObjectWithoutProperties',
+    properties: {}
+};
+
