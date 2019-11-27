@@ -962,11 +962,9 @@ module.exports = {
         TestCase.assertEqual(realm.objects('TestObject').length, 2);
         TestCase.assertEqual(realm.objects('IntPrimaryObject').length, 1);
 
-        console.log('FISK 0', realm.schema);
         realm.write(() => {
             realm.deleteModel('IntPrimaryObject');
         });
-        console.log('FISK 1', realm.schema);
         realm.write(() => {
             realm.deleteAll();
         });
@@ -1750,5 +1748,16 @@ module.exports = {
             realm.unsubscribe('foo');
         }, 'Wrong Realm type');
     } ,
+
+    testObjectWithoutProperties: function() {
+        const realm = new Realm({schema: [schemas.ObjectWithoutProperties]});
+        realm.write(() => {
+            TestCase.assertThrows(() => {
+                realm.create(schemas.ObjectWithoutProperties.name, {});
+            });
+        });
+        realm.objects(schemas.ObjectWithoutProperties.name);
+        realm.close();
+    }
 
 };
