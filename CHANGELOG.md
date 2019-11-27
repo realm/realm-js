@@ -1,4 +1,4 @@
-x.y.z Release notes (yyyy-MM-dd)
+4.0.0-alpha.2 Release notes (2019-11-27)
 =============================================================
 ### Breaking changes
 * Calling `Realm.close()` on a closed Realm will throw an exception.
