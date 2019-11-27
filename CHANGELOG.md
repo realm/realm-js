@@ -19,7 +19,7 @@ NOTE: The synchronization protocol version has been bumped from 29 to 30. The se
 * Added a test to verify that `Realm.close()` is idempotent.
 * Upgraded the React Native integration tests app (now using RN v0.61.3). ([#2603](https://github.com/realm/realm-js/pull/2603) & [#2609](https://github.com/realm/realm-js/pull/2609))
 * Upgraded Realm Object Store to commit be469eedfb573024839fd61d69e92933b9c1fc9e. ([RJS-349](https://jira.mongodb.org/browse/RJS-349))
-* Upgraded to Realm Sync from v4.8.3 to v4.9.0. ([RJS-350](https://jira.mongodb.org/browse/RJS-350))
+* Upgraded Realm Sync from v4.8.3 to v4.9.0. ([RJS-350](https://jira.mongodb.org/browse/RJS-350))
 
 3.4.2 Release notes (2019-11-14)
 =============================================================
