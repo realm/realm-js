@@ -17,6 +17,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * Added a test to verify that `Realm.close()` is idempotent.
 * Upgraded the React Native integration tests app (now using RN v0.61.3). ([#2603](https://github.com/realm/realm-js/pull/2603) & [#2609](https://github.com/realm/realm-js/pull/2609))
 * Optimized notification logic when there are no listeners
+* Upgraded Realm Object Store to commit be469eedfb573024839fd61d69e92933b9c1fc9e.
 
 3.4.2 Release notes (2019-11-14)
 =============================================================
