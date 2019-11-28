@@ -4,7 +4,6 @@ x.x.x Release notes (yyyy-MM-dd)
 * None.
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
 * None.
 
 ### Compatibility
@@ -13,7 +12,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
 ### Internal
-* None.
+* Added a couple of options to `Realm.Session.config` to ease debugging.
 
 3.5.0-alpha.1 Release notes (2019-11-27)
 =============================================================
