@@ -1,4 +1,4 @@
-x.x.x Release notes (yyyy-MM-dd)
+3.5.0-alpha.1 Release notes (2019-11-27)
 =============================================================
 NOTE: The synchronization protocol version has been bumped from 29 to 30. The server side remains compatible with protocol versions back to, and including 22. The client side remains compatible with protocol versions back to, and including 26 (Realm JavaScript v2.27.0).
 
@@ -6,7 +6,6 @@ NOTE: The synchronization protocol version has been bumped from 29 to 30. The se
 * Improved performance for some queries involving links. ([RJS-350](https://jira.mongodb.org/browse/RJS-340))
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
 * None.
 
 ### Compatibility
