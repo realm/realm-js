@@ -36,8 +36,8 @@ Pod::Spec.new do |s|
   s.source                 = { :http => 'https://github.com/realm/realm-js/blob/master/CONTRIBUTING.md#how-to-debug-react-native-podspec' }
 
   s.script_phase           = { :name => 'Download Realm Core & Sync',
-                               :script => 'node ${PODS_TARGET_SRCROOT}/scripts/download-realm.js ios --sync',
-                               :shell_path => '/usr/bin/env bash' }
+                               :script => 'echo "Using Node.js $(node --version)" && node ${PODS_TARGET_SRCROOT}/scripts/download-realm.js ios --sync',
+                               :execution_position => :before_compile }
 
   s.source_files           = 'src/*.cpp',
                              'src/jsc/*.cpp',
