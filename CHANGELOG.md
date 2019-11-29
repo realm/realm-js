@@ -4,8 +4,8 @@ x.x.x Release notes (yyyy-MM-dd)
 * None.
 
 ### Fixed
+* Fixed a React Native iOS build failure ('realm/util/assert.hpp' file not found) when installing in a repository where CocoaPods (ios/Pods) are committed to repository. ([#2617](https://github.com/realm/realm-js/issues/2617), since v3.4.0)
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None.
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.
